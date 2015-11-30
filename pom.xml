@@ -8,9 +8,9 @@
         <module>webman</module>
         <module>export-core</module>
 		<module>import-core</module>
-		<module>edit-core</module>
 		<module>datahub</module>
-	</modules>
+    <module>versionman</module>
+  </modules>
 
     <packaging>pom</packaging>
     <name>dataservice</name>

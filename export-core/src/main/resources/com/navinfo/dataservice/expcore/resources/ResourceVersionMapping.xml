@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    glm版本和资源目录的对应关系
+-->
+<maping>
+    <resource dir="163">
+        <glm-version>1.6.3</glm-version>
+    </resource>
+	<resource dir="173">
+        <glm-version>1.7.3</glm-version>
+    </resource>
+	<resource dir="1732">
+        <glm-version>1.7.3.2</glm-version>
+    </resource>
+    <resource dir="180">
+        <glm-version>1.8.0</glm-version>
+    </resource>
+    <resource dir="180">
+        <glm-version>1.8.0.1</glm-version>
+    </resource>
+    <resource dir="180">
+        <glm-version>1.8.0.2</glm-version>
+    </resource>
+    
+    <resource dir="181">
+        <glm-version>1.8.1</glm-version>
+    </resource>
+    <resource dir="190">
+        <glm-version>1.9.0</glm-version>
+    </resource>
+    <resource dir="200">
+        <glm-version>2.0.0</glm-version>
+    </resource>
+    <resource dir="210">
+        <glm-version>2.1.0</glm-version>
+    </resource>
+    <resource dir="220">
+        <glm-version>2.2.0</glm-version>
+    </resource>
+    <resource dir="230">
+        <glm-version>2.3.0</glm-version>
+    </resource>
+    <resource dir="240">
+        <glm-version>2.4.0</glm-version>
+    </resource>
+</maping>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls>
+   <feature name="临时表统计信息收集">
+   		
+		<step value="8">        	
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_POI'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_LINE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_PLATFORM'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_STRAND'); END;]]></sql>
+        </step>
+        <step value="10">        	
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_LINK'); END;]]></sql>
+        </step>
+        
+    </feature>
+</sqls>

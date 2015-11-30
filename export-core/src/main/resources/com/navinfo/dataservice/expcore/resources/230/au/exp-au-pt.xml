@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- @authur:liuqing @time:2011-12-14 -->
+<sqls>
+
+
+	<feature name="PT_FEATURE">
+
+		<step value="7">
+
+			<sql><![CDATA[
+                        INSERT /*+ append */
+                         INTO TEMP_PT_POI
+                           (PID)
+                           (SELECT P.AUDATA_ID
+                              FROM TMAU_EXP_AU_PT_POI P  WHERE P.BATCH_ID  [batch]);
+                        ]]></sql>
+
+			<sql><![CDATA[
+                        INSERT /*+ append */
+                         INTO TEMP_PT_LINE
+                           (PID)
+                           (SELECT P.AUDATA_ID
+                              FROM TMAU_EXP_AU_PT_LINE P WHERE P.BATCH_ID  [batch]);
+                        ]]></sql>
+
+			<sql><![CDATA[
+                        INSERT /*+ append */
+                         INTO TEMP_PT_PLATFORM
+                           (PID)
+                           (SELECT P.AUDATA_ID
+                              FROM TMAU_EXP_AU_PT_PLATFORM P WHERE P.BATCH_ID  [batch]);
+                        ]]></sql>
+
+			<sql><![CDATA[
+                        INSERT /*+ append */
+                         INTO TEMP_PT_STRAND
+                           (PID)
+                           (SELECT P.AUDATA_ID
+                                    FROM TMAU_EXP_AU_PT_STRAND P WHERE P.BATCH_ID  [batch]);
+                        ]]></sql>
+			<sql><![CDATA[
+                        INSERT /*+ append */
+                         INTO TEMP_PT_COMPANY
+                           (PID)
+                           (SELECT P.AUDATA_ID
+                                    FROM TMAU_EXP_AU_PT_COMPANY P WHERE P.BATCH_ID  [batch]);
+                        ]]></sql>
+
+			<sql><![CDATA[
+                        INSERT /*+ append */
+                         INTO TEMP_PT_SYSTEM
+                           (PID)
+                           (SELECT P.AUDATA_ID
+                                    FROM TMAU_EXP_AU_PT_SYSTEM P WHERE P.BATCH_ID  [batch]);
+                        ]]></sql>
+
+
+			<sql><![CDATA[
+                        INSERT /*+ append */
+                         INTO TEMP_PT_ETA_ACCESS
+                           (PID)
+                           (SELECT P.AUDATA_ID
+                                    FROM TMAU_EXP_AU_PT_ETA_ACCESS P WHERE P.BATCH_ID  [batch]);
+                        ]]></sql>
+
+
+			<sql><![CDATA[
+                        INSERT /*+ append */
+                         INTO TEMP_PT_ETA_STOP
+                           (PID)
+                           (SELECT P.AUDATA_ID
+                                    FROM TMAU_EXP_AU_PT_ETA_STOP P WHERE P.BATCH_ID  [batch]);
+                        ]]></sql>
+
+			<sql><![CDATA[
+                        INSERT /*+ append */
+                         INTO TEMP_PT_ETA_LINE
+                           (PID)
+                           (SELECT P.AUDATA_ID
+                                    FROM TMAU_EXP_AU_PT_ETA_LINE P WHERE P.BATCH_ID  [batch]);
+                        ]]></sql>
+			<sql><![CDATA[
+                        INSERT /*+ append */
+                         INTO TEMP_PT_TRANSFER
+                           (PID)
+                           (SELECT P.AUDATA_ID
+                                    FROM TMAU_EXP_AU_PT_TRANSFER P WHERE P.BATCH_ID  [batch]);
+                        ]]></sql> 
+		</step>
+
+
+		<step value="100">
+			<!--//////////////////////////////////////////公交POI//////////////////////////////////////////////////////////// -->
+			<!--PT_POI -->
+			<sql><![CDATA[
+                         SELECT P.*
+                          FROM AU_PT_POI P,  TEMP_PT_POI R
+                         WHERE P.AUDATA_ID = R.PID;
+                         ]]></sql>
+
+			<!--PT_POI_NAME -->
+			<sql><![CDATA[
+                         SELECT P.*
+                          FROM AU_PT_POI_NAME P,  TEMP_PT_POI R
+                         WHERE P.AUDATA_ID = R.PID;
+                         ]]></sql>
+
+
+			<!--PT_POI_PARENT -->
+			<sql><![CDATA[
+                         SELECT P.*
+                          FROM AU_PT_POI_PARENT P, AU_PT_POI_CHILDREN PC, TEMP_PT_POI R
+                         WHERE PC.AUDATA_ID = R.PID 
+                         AND P.GROUP_ID=PC.GROUP_ID
+                         UNION
+                         SELECT P.*
+                          FROM AU_PT_POI_PARENT P,  TEMP_PT_POI R
+                         WHERE P.AUDATA_ID = R.PID 
+                         ;
+                         ]]></sql>
+
+
+			<!--PT_POI_CHILDREN -->
+			<sql><![CDATA[
+                         SELECT P.*
+                          FROM AU_PT_POI_CHILDREN P,TEMP_PT_POI R
+                         WHERE P.AUDATA_ID = R.PID
+                         UNION
+                         SELECT P.*
+                          FROM AU_PT_POI_CHILDREN P,AU_PT_POI_PARENT PA,TEMP_PT_POI R
+                         WHERE PA.AUDATA_ID = R.PID
+                         AND P.GROUP_ID=PA.GROUP_ID
+                         ;
+                         ]]></sql>
+
+			<!--AU_PT_ETA_ACCESS -->
+			<sql><![CDATA[
+                         SELECT P.*
+                          FROM AU_PT_ETA_ACCESS P,  TEMP_PT_ETA_ACCESS R
+                         WHERE P.AUDATA_ID = R.PID;
+                         ]]></sql>
+
+
+			<!--AU_PT_ETA_STOP -->
+			<sql><![CDATA[
+                         SELECT P.*
+                          FROM AU_PT_ETA_STOP P,  TEMP_PT_ETA_STOP R
+                         WHERE P.AUDATA_ID = R.PID;
+                         ]]></sql>
+
+
+			<!--//////////////////////////////////////////站台//////////////////////////////////////////////////////////// -->
+			<!--PT_PLATFORM -->
+			<sql><![CDATA[
+                         SELECT P.*
+                          FROM AU_PT_PLATFORM P,
+                          TEMP_PT_PLATFORM R
+                         WHERE P.AUDATA_ID = R.PID;
+                         ]]></sql>
+			<!--PT_PLATFORM_NAME -->
+			<sql><![CDATA[
+                         SELECT P.*
+                          FROM AU_PT_PLATFORM_NAME P,
+                          TEMP_PT_PLATFORM T
+                         WHERE P.AUDATA_ID=T.PID;
+                         ]]></sql>
+
+			<!--PT_TRANSFER -->
+			<sql><![CDATA[
+                        SELECT P.*
+                          FROM AU_PT_TRANSFER P,
+                          TMAU_EXP_AU_PT_TRANSFER T 
+                          WHERE P.AUDATA_ID=T.AUDATA_ID 
+                          AND T.BATCH_ID  [batch];
+                         ]]></sql>
+
+			<!--PT_PLATFORM_ACCESS -->
+			<sql><![CDATA[
+                         SELECT P.*
+                          FROM AU_PT_PLATFORM_ACCESS P,
+                          TEMP_PT_PLATFORM T
+                         WHERE P.AUDATA_ID=T.PID;
+                         ]]></sql>
+
+			<!--//////////////////////////////////////////公交线路//////////////////////////////////////////////////////////// -->
+			<!--PT_LINE -->
+			<sql><![CDATA[
+                         SELECT P.*
+                          FROM AU_PT_LINE P,TEMP_PT_LINE T
+                         WHERE  P.AUDATA_ID=T.PID;
+                         ]]></sql>
+			<!--PT_LINE_NAME -->
+			<sql><![CDATA[
+                         SELECT P.*
+                          FROM AU_PT_LINE_NAME P,TEMP_PT_LINE T
+                         WHERE  P.AUDATA_ID=T.PID;
+                         ]]></sql>
+
+			<!--PT_ETA_LINE -->
+			<sql><![CDATA[
+                         SELECT P.*
+                          FROM AU_PT_ETA_LINE P,  TEMP_PT_ETA_LINE R
+                         WHERE P.AUDATA_ID = R.PID;
+                         ]]></sql>
+			<!--PT_STRAND -->
+			<sql><![CDATA[
+                         SELECT P.*
+                          FROM AU_PT_STRAND P,TEMP_PT_STRAND T
+                         WHERE  P.AUDATA_ID=T.PID;
+                         ]]></sql>
+
+			<!--PT_STRAND_NAME -->
+			<sql><![CDATA[
+                         SELECT P.*
+                          FROM AU_PT_STRAND_NAME P,TEMP_PT_STRAND T
+                         WHERE  P.AUDATA_ID=T.PID;
+                         ]]></sql>
+
+			<!--PT_STRAND_PLATFORM -->
+			<sql><![CDATA[
+                         SELECT P.*
+                          FROM AU_PT_STRAND_PLATFORM P,
+                          TEMP_PT_STRAND T
+                         WHERE  P.AUDATA_ID=T.PID
+                         ]]></sql>
+
+
+			<!--//////////////////////////////////////////公交公司和公交系统//////////////////////////////////////////////////////////// -->
+			<!--PT_COMPANY -->
+			<sql><![CDATA[
+                         SELECT P.*
+                          FROM AU_PT_COMPANY P,TEMP_PT_COMPANY T
+                         WHERE P.AUDATA_ID=T.PID;
+                         ]]></sql>
+
+			<!--PT_SYSTEM -->
+			<sql><![CDATA[
+                         SELECT P.*
+                          FROM AU_PT_SYSTEM P,TEMP_PT_SYSTEM T
+                           WHERE P.AUDATA_ID=T.PID;
+                         ]]></sql>
+
+
+
+
+
+
+		</step>
+	</feature>
+
+</sqls>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<exp-config>
+	<attrs type="general attributes">
+	    <attr name="gdbVersion" value="240" desc="gdb模型版本，对应的是导出脚本路径" />
+	    <attr name="fastCopy" value="false" desc="快速拷贝是不用设置模型和脚本，直接将表从源库复制到目标库" />
+	    <attr name="exportMode" value="copy" desc="值域：copy/cut/delete" />
+	</attrs>
+	<attrs type="source attributes">
+	    <attr name="sourceUserName" value="acg_schema_zq_1" desc="" />
+	    <attr name="sourcePassword" value="acg_schema_zq_1" desc="" />
+	    <attr name="sourceIp" value="192.168.4.103" desc="" />
+	    <attr name="sourcePort" value="1521" desc="" />
+	    <attr name="sourceServiceName" value="orcl11g" desc="" />
+	    <attr name="sourceTablespaceName" value="" desc="" />
+	</attrs>
+    <attrs type="input attributes">
+	    <attr name="condition" value="mesh" desc="mesh/area/polygon" />
+	    <attr name="conditionParams" value="605621,605624" desc="" />
+	    <attr name="feature" value="all" desc="all/poi/link/face" />
+	    <attr name="dataIntegrity" value="true" desc="是否带毛边提取" />
+	    <attr name="multiThread4Input" value="true" desc="从源库读数据时是否使用多线程" />
+    </attrs>
+   	<attrs type="output attributes">
+	    <attr name="multiThread4Output" value="true" desc="写入目标库时是否使用多线程" />
+   	</attrs>
+   	<attrs type="target attributes">
+   		<attr name="truncateData" value="false" desc="" />
+   		<attr name="destroyTarget" value="true" desc="在导出失败时，是否把失败的版本加入清理队列。在newTarget属性为false时，万万不能设置为true" />
+   		<attr name="newTarget" value="true" desc="" />
+   		<attr name="targetSysName" value="app_user" desc="" />
+   		<attr name="targetSysPassword" value="n@vidms" desc="" />
+   		<attr name="targetUserName" value="" desc="" />
+   		<attr name="targetPassword" value="" desc="" />
+   		<attr name="targetIp" value="192.168.3.42" desc="" />
+   		<attr name="targetPort" value="1521" desc="" />
+   		<attr name="targetServiceName" value="orcl" desc="" />
+   		<attr name="targetTablespaceName" value="" desc="" />
+   	</attrs>
+</exp-config>

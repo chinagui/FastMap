@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2011-11-3
+-->
+<sqls>
+
+
+    <!--索引：文字表-->
+    <feature name="AU_PHOTO,AU_AUDIO,AU_VIDEO">
+        <step value="100">
+            <!--AU_PHOTO-->
+            <sql><![CDATA[SELECT P.* FROM
+                            AU_PHOTO P,TEMP_AU_PHOTO T WHERE P.PHOTO_ID=T.PID;
+                    ]]></sql>
+            <!--AU_AUDIO-->
+            <sql><![CDATA[SELECT P.* FROM
+                            AU_AUDIO P,TEMP_AU_AUDIO T WHERE P.AUDIO_ID=T.PID;
+                    ]]></sql>
+            <!--AU_VIDEO-->
+            <sql><![CDATA[SELECT P.* FROM
+                            AU_VIDEO P,TEMP_AU_VIDEO T WHERE P.VIDEO_ID=T.PID;
+                    ]]></sql>
+
+        </step>
+
+    </feature>
+
+</sqls>

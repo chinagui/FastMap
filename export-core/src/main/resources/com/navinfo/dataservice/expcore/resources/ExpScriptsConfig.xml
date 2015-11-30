@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- public final static int INTEGER = 4; public final static int VARCHAR 
+	= 12; -->
+<scripts-config>
+	<!--全要素导出 -->
+	<scripts name="全要素按图幅复制"  exp-mode="copy" feature="all" condition="mesh"
+			main-script="exp-all-main.xml" />
+	<scripts name="" exp-mode="copy" feature="all" condition="area"
+		main-script="exp-all-main.xml"
+		replacer="com.navinfo.dms.tools.expcore.sql.replacer.AreaSqlReplacer" />
+	<scripts name="" exp-mode="copy" feature="all" condition="polygon"
+		main-script="exp-all-main.xml"
+		replacer="com.navinfo.dms.tools.expcore.sql.replacer.PolygonSqlReplacer" />
+</scripts-config>

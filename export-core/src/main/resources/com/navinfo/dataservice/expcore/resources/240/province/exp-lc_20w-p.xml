@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2011-01-24
+导出20万
+-->
+<sqls>
+    <!--///////////////////////////////////////////////////土地覆盖/////////////////////////////////////////////////////////-->
+    <feature name="LC_FEATURE">
+
+        <step value="100">
+            <!--
+                根据图幅号直接提取数据表：
+                1.LC_FACE_20W
+                2.LC_FACE_TOPO_20W
+                3.LC_LINK_20W
+                4.LC_LINK_MESH_20W
+                5.LC_LINK_KIND_20W
+                6.LC_NODE_20W
+                7.LC_NODE_MESH_20W
+                9.LC_FEATURE_20W
+            -->
+            <!--LC_FACE-->
+            <sql><![CDATA[SELECT P.* FROM LC_FACE_20W P ; ]]></sql>
+            <!--LC_FACE_NAME_20W-->
+            <sql><![CDATA[
+                        SELECT P.*
+                          FROM LC_FACE_NAME_20W P;
+                        ]]></sql>
+            <!--LC_FACE_TOPO_20W-->
+            <sql><![CDATA[
+                        SELECT P.*
+                          FROM LC_FACE_TOPO_20W P  ;
+                        ]]></sql>
+
+            <!--LC_LINK_20W-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM LC_LINK_20W P ;
+                         ]]></sql>
+
+            <!--LC_LINK_MESH_20W-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM LC_LINK_MESH_20W P;
+                         ]]></sql>
+            <!--LC_LINK_KIND_20W-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM LC_LINK_KIND_20W P;
+                         ]]></sql>
+            <!--LC_NODE_20W-->
+            <sql><![CDATA[
+                        SELECT P.*
+                          FROM LC_NODE_20W P;
+                        ]]></sql>
+            <!--LC_NODE_MESH-->
+            <sql><![CDATA[
+                        SELECT P.*
+                          FROM LC_NODE_MESH_20W P;
+                        ]]></sql>
+
+            <!--LC_FEATURE_20W-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM LC_FEATURE_20W P;
+                         ]]></sql>
+        </step>
+    </feature>
+</sqls>

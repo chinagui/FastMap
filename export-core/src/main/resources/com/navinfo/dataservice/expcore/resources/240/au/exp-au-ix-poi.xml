@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2011-11-3
+提取外业POI
+-->
+<sqls>
+
+
+
+    <feature name="IX_POI">
+        <!--
+            外业成果POI导出:
+            1.根据meshId提取
+        -->
+        <step value="7">
+            <!--按图幅过滤IX_POI-->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_IX_POI
+                          (PID)
+                          (SELECT DISTINCT AUDATA_ID FROM TMAU_EXP_AU_IX_POI WHERE BATCH_ID [batch]);
+                        ]]></sql>
+            <!-- 按任务过滤TMAU表中外业任务号 -->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_AU_POI_FIELD_TASK
+                          (PID)
+                          (SELECT DISTINCT ID FROM TMAU_EXP_AU_FIELDTASK WHERE BATCH_ID [batch]);
+                        ]]></sql>
+        </step>
+        
+      	<!-- 210模型增加 -->
+        <step value="9">
+        	<!--提取同一POI -->
+			<sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_SAMEPOI
+                          (PID)
+                          (SELECT DISTINCT P.SAMEPOI_AUDATA_ID
+                              FROM AU_IX_SAMEPOI_PART P,TEMP_FILTER_IX_POI T
+                             WHERE P.AUDATA_ID = T.PID);
+                        ]]></sql>
+        </step>
+        
+        
+        <step value="10">  
+            <!--	父在图幅内，子在图幅外，子提取-->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI
+                          (PID)
+                        (SELECT AUDATA_ID FROM
+                          (WITH CH AS 
+                          (SELECT /*+ ORDERED USE_HASH(P) USE_HASH(C) NO_SWAP_JOIN_INPUTS(C)*/
+                          	C.AUDATA_ID,C.FIELD_TASK_ID
+                              FROM TEMP_FILTER_IX_POI T,  AU_IX_POI_PARENT P,AU_IX_POI_CHILDREN C
+                             WHERE P.GROUP_ID = C.GROUP_ID
+                               AND P.AUDATA_ID = T.PID)
+                           SELECT CH.AUDATA_ID FROM CH,TEMP_AU_POI_FIELD_TASK TP WHERE CH.FIELD_TASK_ID=TP.PID
+                           UNION ALL SELECT CH.AUDATA_ID FROM CH WHERE NOT EXISTS(SELECT 1 FROM TEMP_AU_POI_FIELD_TASK)));
+                        ]]></sql>
+
+            <!--	子在图幅内，父在图幅外，父提取，父的其他子不提-->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI
+                          (PID)
+                        (SELECT AUDATA_ID FROM
+                          (WITH CH AS 
+                          (SELECT /*+ ORDERED USE_HASH(C) USE_HASH(P) NO_SWAP_JOIN_INPUTS(P)*/
+							 P.AUDATA_ID,P.FIELD_TASK_ID
+							  FROM TEMP_FILTER_IX_POI T, AU_IX_POI_CHILDREN C, AU_IX_POI_PARENT P
+							 WHERE C.AUDATA_ID = T.PID
+							   AND  P.GROUP_ID = C.GROUP_ID)
+						   SELECT CH.AUDATA_ID FROM CH,TEMP_AU_POI_FIELD_TASK TP WHERE CH.FIELD_TASK_ID=TP.PID
+                           UNION ALL SELECT CH.AUDATA_ID FROM CH WHERE NOT EXISTS(SELECT 1 FROM TEMP_AU_POI_FIELD_TASK)));
+                        ]]></sql>
+
+			<!-- 210模型增加 -->
+			<!-- 提取同一关系组成员 -->
+			<sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI
+                          (PID)
+                          (SELECT P.AUDATA_ID 
+                              FROM AU_IX_SAMEPOI_PART P,TEMP_IX_SAMEPOI T 
+							 WHERE P.SAMEPOI_AUDATA_ID = T.PID);
+                        ]]></sql>
+
+        </step>
+        <step value="13">
+
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_IX_POI
+                          (PID)
+                          (SELECT P.PID FROM TEMP_IX_POI P);
+                        ]]></sql>
+
+
+        </step>
+        <!--去重-->
+        <step value="16">
+
+            <sql>
+                <![CDATA[TRUNCATE TABLE TEMP_IX_POI;]]></sql>
+
+
+        </step>
+        <!--去重-->
+        <step value="19">
+
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI
+                          (PID)
+                          (SELECT DISTINCT PID FROM TEMP_FILTER_IX_POI P);
+                        ]]></sql>
+
+
+        </step>
+
+
+        <step value="100">
+            <!--
+                提取POI信息:
+                1. IX_POI
+                2. IX_POI_CONTACT
+                3. IX_POI_CHILDREN
+                4. IX_POI_PARENT
+                5. IX_POI_NAME
+                6. IX_POI_ADDRESS
+                7. IX_POI_ICON
+                8. IX_POI_PHOTO
+                9. IX_POI_NODE
+                10. IX_SAMEPOI
+                11. IX_SAMEPOI_PART
+            -->
+            <!--IX_POI-->
+            <sql><![CDATA[SELECT P.* FROM AU_IX_POI P,TEMP_IX_POI T WHERE P.AUDATA_ID=T.PID;]]></sql>
+            <!--AU_IX_POI_FLAG-->
+            <sql><![CDATA[SELECT P.* FROM AU_IX_POI_FLAG P,TEMP_IX_POI T WHERE P.AUDATA_ID=T.PID;]]></sql>
+            <!--IX_POI_CONTACT-->
+            <sql><![CDATA[SELECT P.* FROM AU_IX_POI_CONTACT P,TEMP_IX_POI T WHERE P.AUDATA_ID=T.PID;]]></sql>
+            <!--IX_POI_CHILDREN-->
+            <sql><![CDATA[
+                          SELECT P.*
+                            FROM AU_IX_POI_CHILDREN P, TEMP_IX_POI T
+                           WHERE P.AUDATA_ID = T.PID;
+                         ]]></sql>
+            <!--IX_POI_PARENT-->
+            <sql><![CDATA[
+                          SELECT P.*
+                            FROM AU_IX_POI_PARENT P, TEMP_IX_POI T
+                           WHERE (P.AUDATA_ID = T.PID);
+                         ]]></sql>
+            <!--IX_POI_NAME-->
+            <sql><![CDATA[SELECT P.* FROM AU_IX_POI_NAME P,TEMP_IX_POI T WHERE P.AUDATA_ID=T.PID;]]></sql>
+            <!--AU_IX_POI_NAME_FLAG-->
+            <sql><![CDATA[SELECT P.* FROM AU_IX_POI_NAME_FLAG P,(SELECT P.AUNAME_ID FROM AU_IX_POI_NAME P,TEMP_IX_POI T WHERE P.AUDATA_ID=T.PID) T WHERE P.AUNAME_ID=T.AUNAME_ID;]]></sql>
+            <!--IX_POI_ADDRESS-->
+            <sql><![CDATA[SELECT P.* FROM AU_IX_POI_ADDRESS P,TEMP_IX_POI T WHERE P.AUDATA_ID=T.PID;]]></sql>
+
+
+            <sql><![CDATA[SELECT P.* FROM AU_IX_POI_RESTAURANT P,TEMP_IX_POI T WHERE P.AUDATA_ID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM AU_IX_POI_BUILDING P,TEMP_IX_POI T WHERE P.AUDATA_ID=T.PID;]]></sql>
+
+ 			<sql><![CDATA[SELECT P.* FROM AU_IX_POI_HOTEL P,TEMP_IX_POI T WHERE P.AUDATA_ID=T.PID;]]></sql>
+ 			<sql><![CDATA[SELECT P.* FROM AU_IX_POI_PHOTO P,TEMP_IX_POI T WHERE P.AUDATA_ID=T.PID;]]></sql>
+
+			<!--GLM190新增-->
+			<sql><![CDATA[SELECT P.* FROM AU_IX_POI_PARKING P,TEMP_IX_POI T WHERE P.AUDATA_ID =T.PID;]]></sql>
+			<sql><![CDATA[SELECT P.* FROM AU_IX_POI_GASSTATION P,TEMP_IX_POI T WHERE P.AUDATA_ID=T.PID;]]></sql>
+			<sql><![CDATA[SELECT P.* FROM AU_IX_POI_CHARGINGSTATION P,TEMP_IX_POI T WHERE P.AUDATA_ID=T.PID;]]></sql>
+			<sql><![CDATA[SELECT P.* FROM AU_IX_POI_CHARGINGPLOT P,(SELECT P.AUCHARG_ID FROM AU_IX_POI_CHARGINGSTATION P,TEMP_IX_POI T WHERE P.AUDATA_ID=T.PID) T WHERE P.AUCHARG_ID=T.AUCHARG_ID;]]></sql>
+			<!-- 
+			<sql><![CDATA[SELECT P.* FROM AU_IX_POI_RP00 P,TEMP_IX_POI T WHERE P.AUDATA_ID=T.PID;]]></sql>
+			<sql><![CDATA[SELECT P.* FROM AU_IX_POI_NAME_RP00 P,TEMP_IX_POI T WHERE P.AUDATA_ID=T.PID;]]></sql>
+			<sql><![CDATA[SELECT P.* FROM AU_IX_POI_NOKIA P,TEMP_IX_POI T WHERE P.AUDATA_ID=T.PID;]]></sql>
+			 -->
+			<!-- 210模型增加 -->
+			<sql><![CDATA[SELECT P.* FROM AU_IX_SAMEPOI P,TEMP_IX_SAMEPOI T WHERE P.SAMEPOI_AUDATA_ID =T.PID;]]></sql>
+			<sql><![CDATA[SELECT P.* FROM AU_IX_SAMEPOI_PART P,TEMP_IX_SAMEPOI T WHERE P.SAMEPOI_AUDATA_ID =T.PID;]]></sql>
+
+        </step>
+
+    </feature>
+	
+
+
+
+</sqls>

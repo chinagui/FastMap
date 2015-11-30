@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2010-01-24
+导出100万比例尺下的数据
+-->
+<sqls>
+    <import file="clean-index.xml"/>
+    <import file="clean-data.xml"/>
+    <import file="exp-ad_100w.xml"/>
+    <import file="exp-lc_100w.xml"/>
+    <import file="exp-ix_100w.xml"/>
+    <import file="exp-shared.xml"/>
+    <import file="table-stats.xml"/>
+</sqls>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2011-11-3
+提取外业POI
+-->
+<sqls>
+	<feature name="AU_IX_POI_RP00">
+	  <step value="7">
+            <!--按图幅过滤AU_IX_POI_RP00-->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI_RP00
+                          (PID)
+                          (SELECT DISTINCT AUDATA_ID FROM TMAU_EXP_AU_IX_POI_RP WHERE BATCH_ID [batch]);
+                        ]]></sql>
+        </step>
+        <step value="100">
+            <sql><![CDATA[SELECT P.* FROM AU_IX_POI_RP00 P,TEMP_IX_POI_RP00 T WHERE P.AUDATA_ID=T.PID;]]></sql>
+			<sql><![CDATA[SELECT P.* FROM AU_IX_POI_NAME_RP00 P,TEMP_IX_POI_RP00 T WHERE P.AUDATA_ID=T.PID;]]></sql>
+        </step>
+	 </feature>
+	  <feature name="AU_IX_POI_NOKIA">
+	  <step value="7">
+            <!--按图幅过滤AU_IX_POI_NOKIA-->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_IX_POI_NK
+                          (PID)
+                          (SELECT DISTINCT AUDATA_ID FROM TMAU_EXP_AU_IX_POI_NOKIA WHERE BATCH_ID [batch]);
+                        ]]></sql>
+        </step>       
+        <step value="10">
+            <!--	父在图幅内，子在图幅外，子提取-->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI_NK
+                          (PID)
+                          (SELECT /*+ ORDERED USE_HASH(P) USE_HASH(C) NO_SWAP_JOIN_INPUTS(C)*/
+                          	C.AUDATA_ID
+                              FROM TEMP_FILTER_IX_POI_NK T,  AU_IX_POI_PARENT P,AU_IX_POI_CHILDREN C
+                             WHERE P.GROUP_ID = C.GROUP_ID
+                               AND P.AUDATA_ID = T.PID);
+                        ]]></sql>
+
+            <!--	子在图幅内，父在图幅外，父提取，父的其他子不提-->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI_NK
+                          (PID)
+                          (SELECT /*+ ORDERED USE_HASH(C) USE_HASH(P) NO_SWAP_JOIN_INPUTS(P)*/
+							 P.AUDATA_ID
+							  FROM TEMP_FILTER_IX_POI_NK T, AU_IX_POI_CHILDREN C, AU_IX_POI_PARENT P
+							 WHERE C.AUDATA_ID = T.PID
+							   AND  P.GROUP_ID = C.GROUP_ID);
+                        ]]></sql>
+
+
+        </step>
+        <step value="13">
+
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_IX_POI_NK
+                          (PID)
+                          (SELECT P.PID FROM TEMP_IX_POI_NK P);
+                        ]]></sql>
+
+
+        </step>
+        <!--去重-->
+        <step value="16">
+
+            <sql>
+                <![CDATA[TRUNCATE TABLE TEMP_IX_POI_NK;]]></sql>
+
+
+        </step>
+        <!--去重-->
+        <step value="19">
+
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI_NK
+                          (PID)
+                          (SELECT DISTINCT PID FROM TEMP_FILTER_IX_POI_NK P);
+                        ]]></sql>
+
+
+        </step>
+        <step value="100">
+            <sql><![CDATA[SELECT P.* FROM AU_IX_POI_NOKIA P WHERE EXISTS (SELECT 1 FROM TEMP_IX_POI_NK T WHERE P.AUDATA_ID=T.PID);]]></sql>
+        </step>
+	 </feature>
+
+
+
+</sqls>

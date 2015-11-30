@@ -1,0 +1,109 @@
+create table temp_merge_raw_operate_log as
+select * from operate_log where 1=0;
+create table temp_pa as
+select * from au_ix_pointaddress where 1=0;
+create table temp_mpa_log_state(
+pid number(10),
+log varchar2(200),
+state number(1));
+create table temp_mpa_au /*extends au_ix_pointaddress*/(
+  AUDATA_ID           NUMBER(10) not null,
+  PID                 NUMBER(10) default 0 not null,
+  GEOMETRY            SDO_GEOMETRY,
+  X_GUIDE             NUMBER(10,5) default 0 not null,
+  Y_GUIDE             NUMBER(10,5) default 0 not null,
+  GUIDE_LINK_PID      NUMBER(10) default 0 not null,
+  --GUIDE_NAME_GROUPID  NUMBER(10) default 0 not null,
+  LOCATE_LINK_PID     NUMBER(10) default 0 not null,
+  LOCATE_NAME_GROUPID NUMBER(10) default 0 not null,
+  GUIDE_LINK_SIDE     NUMBER(1) default 0 not null,
+  LOCATE_LINK_SIDE    NUMBER(1) default 0 not null,
+  SRC_PID             NUMBER(10),
+  REGION_ID           NUMBER(10) default 0 not null,
+  MESH_ID             NUMBER(6) default 0 not null,
+  MESH_ID_2K          VARCHAR2(12),
+  EDIT_FLAG           NUMBER(1) default 1 not null,
+  IDCODE              VARCHAR2(32),
+  DPR_NAME            VARCHAR2(100),
+  DP_NAME             VARCHAR2(35),
+  OPERATOR            VARCHAR2(32),
+  MEMOIRE             VARCHAR2(200),
+  DPF_NAME            VARCHAR2(500),
+  POSTER_ID           VARCHAR2(100),
+  ADDRESS_FLAG        NUMBER(1) default 0 not null,
+  VERIFED             VARCHAR2(1) default 'F' not null,
+  STATE               NUMBER(1) default 0 not null,
+  LOG                 VARCHAR2(1000),
+  MEMO                VARCHAR2(500),
+  RESERVED            VARCHAR2(1000),
+  DATA_VERSION        VARCHAR2(128),
+  GEO_TASK_ID         NUMBER(10) default 0 not null,
+  ATT_TASK_ID         NUMBER(10) default 0 not null,
+  FIELD_TASK_ID       NUMBER(10) default 0 not null,
+  GEO_OPRSTATUS       NUMBER(2) default 0 not null,
+  GEO_CHECKSTATUS     NUMBER(2) default 0 not null,
+  ATT_OPRSTATUS       NUMBER(2) default 0 not null,
+  ATT_CHECKSTATUS     NUMBER(2) default 0 not null,
+  IMP_DATE            DATE,
+  Child_Pa_Pid number(10),
+  Parent_Pa_Pid number(10),
+  group_id number(10),
+  main_pid number(10),
+  has_update_name number(1),
+  has_update_fatherson number(1),
+  new_State number(1)
+);
+create table Temp_mpa_unchanged as/*=au_ix_pointaddress*/
+select * from au_ix_pointaddress where 1=0;
+create table Temp_mpa_error as/*=au_ix_pointaddress*/
+select * from au_ix_pointaddress where 1=0;
+create table Temp_mpa_del as/*=ix_pointaddress*/
+select * from ix_pointaddress where 1=0;
+create table Temp_mpa_add as/*=ix_pointaddress*/
+select * from ix_pointaddress where 1=0;
+create table Temp_mpa_update_before as/*=ix_pointaddress*/
+select * from ix_pointaddress where 1=0;
+create table Temp_mpa_update_after as/*=ix_pointaddress*/
+select * from ix_pointaddress where 1=0;
+
+create table Temp_mpa_name_del as/*=ix_pointaddress_name*/
+select * from ix_pointaddress_name where 1=0;
+create table Temp_mpa_name_add as/*=ix_pointaddress_name*/
+select * from ix_pointaddress_name where 1=0;
+create table Temp_mpa_name_update_del as/*=ix_pointaddress_name*/
+select * from ix_pointaddress_name where 1=0;
+create table Temp_mpa_name_update_add as/*=ix_pointaddress_name*/
+select * from ix_pointaddress_name where 1=0;
+
+
+create table Temp_mpa_parent_del as
+select * from ix_pointaddress_parent where 1=0;
+create table Temp_mpa_parent_add as
+select * from ix_pointaddress_parent where 1=0;
+
+
+create table Temp_mpa_children_del as/*=ix_pointaddress_name*/
+select * from ix_pointaddress_children where 1=0;
+create table Temp_mpa_children_add as/*=ix_pointaddress_name*/
+select * from ix_pointaddress_children where 1=0;
+create table Temp_mpa_children_update_del as/*=ix_pointaddress_name*/
+select * from ix_pointaddress_children where 1=0;
+create table Temp_mpa_children_update_add as/*=ix_pointaddress_name*/
+select * from ix_pointaddress_children where 1=0;
+
+create table Temp_Mpa_Children_Cascade_Del as
+select * from ix_pointaddress_children where 1=0;
+
+create table Temp_Mpa_Children_Cascade_Del2 as
+select * from ix_pointaddress_children where 1=0;
+
+
+--1. 如果AU_IX_POINTADDRESS_FLAG中存在FLAG_CODE为“150000060000”的记录，
+-- 母库IX_POINTADDRESS_FLAG表中不存在该记录，则新增一条记录，FLAG_CODE赋值为“150000060000”，存在则不处理。
+create table temp_ix_pointaddress_flag_add as/*=ix_pointaddress_flag*/
+select * from ix_pointaddress_flag where 1=0;
+
+--2. 如果AU_IX_POINTADDRESS_FLAG中不存在FLAG_CODE为“150000060000”的记录，
+-- 母库IX_POINTADDRESS_FLAG表中存在该记录，则删除该记录，否则不处理。
+create table temp_ix_pointaddress_flag_del as/*=ix_pointaddress_flag*/
+select * from ix_pointaddress_flag where 1=0;

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls>
+   <feature name="临时表统计信息收集">
+		<step value="8">
+			<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LC_LINK'); END;]]></sql>
+			<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LC_NODE'); END;]]></sql>
+			<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LU_LINK'); END;]]></sql>
+			<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LU_NODE'); END;]]></sql>
+			<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_FILTER_RW_LINK'); END;]]></sql>
+			<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_FILTER_RW_NODE'); END;]]></sql>
+			
+			
+			
+			 				       
+        </step>
+        <step value="11">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LC_FACE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LU_FACE'); END;]]></sql>	
+        		
+        </step>
+        <step value="14">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LC_LINK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LU_LINK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RW_LINK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RW_FEATURE'); END;]]></sql>
+        	
+        	
+        	
+        </step>
+        <step value="17">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LC_FACE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LU_FACE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RW_LINK'); END;]]></sql>  
+        	
+        	      	
+        </step>
+        <step value="20">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_FILTER_RW_LINK'); END;]]></sql>
+        </step>
+        <step value="23">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LC_FEATURE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LC_LINK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LU_FEATURE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LU_LINK'); END;]]></sql>
+        	
+        </step>
+        <step value="26">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_FILTER_RW_NODE'); END;]]></sql>
+        </step>
+        <step value="29">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LC_NODE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LU_NODE'); END;]]></sql>
+        	
+        </step>
+         <step value="32">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_LINK_NAMEID'); END;]]></sql>
+        </step>
+        
+        
+        
+    </feature>
+</sqls>

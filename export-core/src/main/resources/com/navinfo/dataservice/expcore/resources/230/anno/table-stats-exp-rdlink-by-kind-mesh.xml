@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls>
+   <feature name="临时表统计信息收集">
+		<step value="8">
+			<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_FILTER_RD_LINK'); END;]]></sql>
+        </step>
+        <step value="11">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_LINK_NAMEGID'); END;]]></sql>
+        		
+        </step>
+        <step value="14">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_LINK_NAMEID'); END;]]></sql>
+        </step>
+        <step value="59">
+         <sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_NODE'); END;]]></sql>
+        </step>        
+         <step value="65">
+         <sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_FILTER_RD_NODE'); END;]]></sql>
+        </step>
+        
+        
+        
+    </feature>
+</sqls>

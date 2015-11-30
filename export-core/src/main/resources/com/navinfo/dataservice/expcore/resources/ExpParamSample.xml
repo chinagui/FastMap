@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<samples>
+    <!--
+       feature="all" 全要素
+       version-id="13"  13为母库版本号
+       extend="true"    按图幅导出是否扩一圈
+       type="by-mesh"   按图幅导出
+       scale="20w"      导出20w比例尺的数据，此项为空则默认为2.5w，scale可以的值有:2.5w,20w,100w,top
+    -->
+    <request>
+        <task name="按图幅导出全要素数据" owner="lq" task-id="12345">
+            <task-item feature="all" version-id="13">
+                <condition type="by-mesh">
+                    <!--导出图幅号为595673,595672-->
+                    <param name="mesh" type="4">595672</param>
+                    <param name="mesh" type="4">595673</param>
+                </condition>
+            </task-item>
+            <task-item feature="pt" version-id="13">
+                <condition type="by-citycode">
+                    <!--导出公交城市号为110099，1100-->
+                    <param name="citycode" type="4">1100</param>
+                </condition>
+            </task-item>
+        </task>
+    </request>
+
+
+    <!--
+       feature="ad" 行政区划
+       version-id="13"  13为母库版本号
+       type="by-mesh"   按图幅号导出
+       公交导出模式为：选择一个行政区划，如北京，然后转换成图幅类表，导出新政区划信息和参考信息（不包括POI）
+    -->
+    <request>
+        <task name="大范围行政区划作业导出" owner="lq" task-id="12345">
+            <task-item feature="ad" version-id="14">
+                <condition type="by-mesh">
+                    <!--行政区划110000对应的图幅列表-->
+                    <param name="mesh" type="4">595525</param>
+                    <param name="mesh" type="4">595526</param>
+                </condition>
+            </task-item>
+        </task>
+    </request>
+    <!--
+       feature="poi" POI
+       version-id="13"  13为母库版本号
+       对于大幅面作业，导出POI以被参考之用
+    -->
+    <request>
+        <task name="大范围行政区划作业导出" owner="lq" task-id="12345">
+            <task-item feature="ad" version-id="14">
+                <condition type="by-mesh">
+                    <!--行政区划110000对应的图幅列表-->
+                    <param name="mesh" type="4">595525</param>
+                    <param name="mesh" type="4">595526</param>
+                </condition>
+            </task-item>
+        </task>
+    </request>
+
+    <!--
+       feature="pt" 公交
+       version-id="13"  13为母库版本号
+       type="by-citycode"   按行政区划号导出
+
+       feature="pt-ref"  公交作业参考数据
+
+    -->
+    <request>
+        <task name="公交作业导出" owner="lq" task-id="12345">
+            <task-item feature="pt" version-id="13">
+                <condition type="by-citycode">
+                    <!--导出公交城市号为110099，1100-->
+                    <param name="citycode" type="4">1100</param>
+                    <param name="citycode" type="4">110099</param>
+                </condition>
+            </task-item>
+            <task-item feature="pt-ref" version-id="14">
+                <condition type="by-mesh">
+                    <!--公交城市号为110099，1100对应的图幅列表-->
+                    <param name="mesh" type="4">595525</param>
+                    <param name="mesh" type="4">595526</param>
+                </condition>
+            </task-item>
+        </task>
+    </request>
+
+
+    <!--
+       feature="tmc" TMC
+       version-id="14"  14为元数据库  ,tmc需要从元数据库导出
+       type="by-citycode"   按行政区划号导出
+    -->
+    <request>
+        <task name="TMC作业导出" owner="lq" task-id="12345">
+            <task-item feature="all" version-id="14">
+                <condition type="by-mesh" extend="true">
+                    <!--导出图幅号为595673-->
+                    <param name="mesh" type="4">595673</param>
+                </condition>
+            </task-item>
+            <task-item feature="tmc" version-id="13">
+                <condition type="by-citycode">
+                    <!--导出595673图幅对应的TMC城市号32-->
+                    <param name="citycode" type="4">32</param>
+                </condition>
+            </task-item>
+        </task>
+    </request>
+
+    <!--
+       feature="all" 全要素
+       version-id="13"  13为母库版本号
+       extend="true"    按图幅导出是否扩一圈
+       type="by-mesh"   按图幅导出
+
+
+       feature="au"     导出外业数据
+       version-id="14"  14为外业库版本号
+       type="by-batch"   按批次导出，批次号建议为整形的任务号，保证唯一
+       <sqls></sqls>     外业数据导出，可以通过传入sql的方式，导入符合sql的外业数据
+                         如果<sqls></sqls>为空，则按批次号到TMAU_EXP_*中查找可导出的数据
+                         TMAU_EXP_*可以查看下面的定义
+    -->
+    <request>
+
+        <task name="按图幅导出全要素数据" owner="lq" task-id="12345">
+            <task-item feature="all" version-id="13">
+                <condition type="by-mesh">
+                    <!--导出图幅号为595673-->
+                    <param name="mesh" type="4">595673</param>
+                </condition>
+            </task-item>
+
+            <task-item feature="au" version-id="14">
+                <condition type="by-batch">
+                    <!--批次号建议为整形的任务号，保证唯一-->
+                    <param name="batch" type="4">11123</param>
+
+                        <sql>INSERT /*+ APPEND */
+                            INTO TMAU_EXP_AU_MARK
+                            (MARK_ID, BATCH_ID)
+                            (SELECT MARK_ID, 11123 FROM AU_MARK WHERE MESH_ID = 595673)
+                        </sql>
+
+                       <!-- <sql>INSERT /*+ APPEND */
+                            INTO TMAU_EXP_AU_TOPOIMAGE
+                            (IMAGE_ID, BATCH_ID)
+                            (SELECT IMAGE_ID, 11123 FROM AU_TOPOIMAGE WHERE IMAGE_ID=1)
+                        </sql>-->
+
+                        <!--<sql>INSERT /*+ APPEND */
+                            INTO TMAU_EXP_AU_SERIESPHOTO
+                            (PHOTO_ID, BATCH_ID)
+                            (SELECT PHOTO_ID, 11123 FROM AU_SERIESPHOTO WHERE PHOTO_ID = 1)
+                        </sql>-->
+
+                        <sql>INSERT /*+ APPEND */
+                            INTO TMAU_EXP_AU_GPSTRACK
+                            (GPSTRACK_ID, BATCH_ID)
+                            (SELECT GPSTRACK_ID, 11123 FROM AU_GPSTRACK WHERE MESH_ID = 595673)
+                        </sql>
+
+                        <sql>INSERT /*+ APPEND */
+                            INTO TMAU_EXP_AU_ADAS_MARK
+                            (MARK_ID, BATCH_ID)
+                            (SELECT MARK_ID, 11123 FROM AU_ADAS_MARK WHERE MESH_ID = 595673)
+                        </sql>
+
+                        <sql>INSERT /*+ APPEND */
+                            INTO TMAU_EXP_AU_ADAS_GPSTRACK
+                            (GPSTRACK_ID, BATCH_ID)
+                            (SELECT GPSTRACK_ID, 11123 FROM AU_ADAS_GPSTRACK WHERE MESH_ID = 595673)
+                        </sql>
+
+                        <sql>INSERT /*+ APPEND */
+                            INTO TMAU_EXP_AU_IX_POI
+                            (AUDATA_ID, BATCH_ID)
+                            (SELECT AUDATA_ID, 11123 FROM AU_IX_POI WHERE MESH_ID = 595673)
+                        </sql>
+
+                        <sql>INSERT /*+ APPEND */
+                            INTO TMAU_EXP_AU_IX_POINTADDRESS
+                            (AUDATA_ID, BATCH_ID)
+                            (SELECT AUDATA_ID, 11123 FROM AU_IX_POINTADDRESS WHERE MESH_ID = 595673)
+                        </sql>
+
+                        <sql>INSERT /*+ APPEND */
+                            INTO TMAU_EXP_AU_IX_ANNOTATION
+                            (AUDATA_ID, BATCH_ID)
+                            (SELECT AUDATA_ID, 11123 FROM AU_IX_ANNOTATION WHERE MESH_ID = 595673)
+                        </sql>
+
+                        <sql>INSERT /*+ APPEND */
+                            INTO TMAU_EXP_AU_PT_POI
+                            (AUDATA_ID, BATCH_ID)
+                            (SELECT AUDATA_ID, 11123 FROM AU_PT_POI WHERE CITY_CODE = cityCode + ")
+                        </sql>
+
+                        <sql>INSERT /*+ APPEND */
+                            INTO TMAU_EXP_AU_PT_PLATFORM
+                            (AUDATA_ID, BATCH_ID)
+                            (SELECT AUDATA_ID, 11123 FROM AU_PT_PLATFORM WHERE CITY_CODE = cityCode + ")
+                        </sql>
+
+                        <sql>INSERT /*+ APPEND */
+                            INTO TMAU_EXP_AU_PT_LINE
+                            (AUDATA_ID, BATCH_ID)
+                            (SELECT AUDATA_ID, 11123 FROM AU_PT_LINE WHERE CITY_CODE = cityCode + ")
+                        </sql>
+
+                        <sql>INSERT /*+ APPEND */
+                            INTO TMAU_EXP_AU_PT_STRAND
+                            (AUDATA_ID, BATCH_ID)
+                            (SELECT AUDATA_ID, 11123 FROM AU_PT_STRAND WHERE CITY_CODE = cityCode + ")
+                        </sql>
+
+                        <sql>INSERT /*+ APPEND */
+                            INTO TMAU_EXP_AU_PT_COMPANY
+                            (AUDATA_ID, BATCH_ID)
+                            (SELECT AUDATA_ID, 11123 FROM AU_PT_COMPANY WHERE CITY_CODE = cityCode + ")
+                        </sql>
+
+                        <sql>INSERT /*+ APPEND */
+                            INTO TMAU_EXP_AU_PT_SYSTEM
+                            (AUDATA_ID, BATCH_ID)
+                            (SELECT AUDATA_ID, 11123 FROM AU_PT_SYSTEM WHERE CITY_CODE = cityCode + ")
+                        </sql>
+
+
+                </condition>
+            </task-item>
+        </task>
+    </request>
+    
+    
+    
+    
+    <request>
+        <task name="代理点作业" owner="lq" task-id="12345">
+        	<!-- 
+            	内业代理店数据导出
+            	version-id="12" 内业数据库
+             -->
+            <task-item feature="proxy-poi" version-id="12">
+                <condition type="by-kind-status">
+                    <!--kind 表示POI种别，status表示作业状态  -->
+                    <param name="kind" type="12">11</param>
+                    <param name="kind" type="12">22</param>
+                    <param name="status" type="12">1</param>
+                    <param name="status" type="12">2</param>
+                </condition>
+            </task-item>
+            <!-- 
+            	外业代理店数据导出
+            	version-id="13" 外业数据库
+             -->
+            <task-item feature="proxy-poi-au" version-id="13">
+                <condition type="by-kind-status">
+                    <!--kind 表示POI种别，status表示作业状态  -->
+                    <param name="kind" type="12">11</param>
+                    <param name="kind" type="12">22</param>
+                    <param name="status" type="12">1</param>
+                    <param name="status" type="12">2</param>
+                </condition>
+            </task-item>
+        </task>
+    </request>
+    
+    <request>
+        <task name="数据检查数据下载" owner="lq" task-id="12345">
+            <task-item feature="ck" version-id="13">
+                <condition type="by-mesh-vmTaskId">
+                    <param name="mesh" type="4">595525</param>
+                    <param name="vmTaskId" type="12">1234567890asb</param>
+                </condition>
+            </task-item>
+        </task>
+    </request>
+
+
+</samples>

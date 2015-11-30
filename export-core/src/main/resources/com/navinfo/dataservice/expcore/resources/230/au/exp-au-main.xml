@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls>
+    <import file="clean-index.xml"/>
+    <import file="clean-data.xml"/>
+
+
+
+    <import file="exp-au-mark-gps.xml"/>
+    <import file="exp-au-ix-poi.xml"/>
+    <import file="exp-au-ix-pointaddress.xml"/>
+    <import file="exp-au-ix-anno.xml"/>
+    <import file="exp-au-adas.xml"/>
+    <import file="exp-au-pt.xml"/>
+    <import file="au_multimedia-query.xml"/>
+    <import file="exp-au-info.xml"/>
+    <import file="table-stats-au.xml"/>
+</sqls>

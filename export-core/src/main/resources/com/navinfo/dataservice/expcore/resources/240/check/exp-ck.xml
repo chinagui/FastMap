@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	@authur:liuqing
+	@time:2010-08-23
+	高超提交给测试的数据
+-->
+<sqls>
+	<feature name="CHECK RESULT">
+
+
+		<step value="100">
+			<!--
+			
+			-->
+			<sql><![CDATA[SELECT P.* FROM NI_VAL_EXCEPTION P WHERE MESH_ID [mesh] AND TASK_NAME [vmTaskId]; ]]></sql>
+		</step>
+	</feature>
+</sqls>

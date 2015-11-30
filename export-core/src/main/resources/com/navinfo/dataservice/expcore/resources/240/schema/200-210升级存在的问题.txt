@@ -1,0 +1,7 @@
+1. RD_ELECTRONICEYE .LINK_PID,原脚本没有默认值，母库的新脚本有默认值；
+2. IX_POI_GASSTATION变更清单中改变值域，实际没有加入值域限制；
+3. PARK_IX_POI_ADDRESS变更清单不清晰，母库新脚本字段也不对；
+4. IX_poi_detail中去除了外键，模型中没有
+
+
+*从表25开始验证了constraint；

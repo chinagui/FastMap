@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	@authur:liuqing
+	@time:2010-08-24
+-->
+<sqls>
+    <!--///////////////////////////////////////////////////Zone///////////////////////////////////////////////////////// -->
+    <feature name="TMC_FEATURE">
+
+
+        <step value="100">
+
+            <sql><![CDATA[SELECT P.* FROM TMC_POINT P WHERE P.CID [citycode]; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM TMC_POINT_TRANSLATENAME P,TMC_POINT T WHERE T.CID [citycode] AND P.TMC_ID=T.TMC_ID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM TMC_LINE P WHERE P.CID [citycode]; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM TMC_LINE_TRANSLATENAME P,TMC_LINE T WHERE T.CID [citycode] AND P.TMC_ID=T.TMC_ID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM TMC_AREA P WHERE P.CID [citycode]; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM TMC_AREA_TRANSLATENAME P ,TMC_AREA T WHERE T.CID [citycode] AND P.TMC_ID=T.TMC_ID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM TMC_VERSION P WHERE P.LOCTABLE_ID [citycode]; ]]></sql>
+            <!-- 
+            <sql><![CDATA[SELECT P.* FROM TMC_LOCATION_CODE P;]]></sql>
+             -->
+        </step>
+    </feature>
+</sqls>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- @authur:liuqing @time:2011-12-14 -->
+<sqls>
+
+	<feature name="AU_INFO">
+		<step value="100">
+			<!--PT_STRAND_PLATFORM -->
+			<sql><![CDATA[                        
+                         SELECT P.*
+			  FROM AU_TASK_INFO P
+			 WHERE EXISTS
+			 (SELECT 1
+			          FROM TMAU_EXP_AU_FIELDTASK t
+			         WHERE p.imp_task_id = t.id
+			           AND T.BATCH_ID [batch])
+                         ]]></sql>
+
+
+			<sql><![CDATA[                         
+                         SELECT P.*
+			  FROM AU_DATA_STATISTICS P
+			 WHERE EXISTS
+			 (SELECT 1
+			          FROM TMAU_EXP_AU_FIELDTASK t
+			         WHERE p.TASK_ID = t.id
+			           AND T.BATCH_ID [batch])
+                         ]]></sql>
+            <sql><![CDATA[                         
+                         SELECT P.*
+			  FROM AU_LOG_STATISTICS P
+			 WHERE EXISTS
+			 (SELECT 1
+			          FROM TMAU_EXP_AU_FIELDTASK t
+			         WHERE p.TASK_ID = t.id
+			           AND T.BATCH_ID [batch])
+                         
+                         ]]></sql>             
+
+
+
+
+
+		</step>
+	</feature>
+
+</sqls>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls>
+   <feature name="临时表统计信息收集">
+		<step value="8">
+			<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_IX_ANNOTATION'); END;]]></sql>
+        </step>
+    </feature>
+</sqls>

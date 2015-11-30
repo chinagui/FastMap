@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- @authur:liuqing @time:2010-08-25 -->
+<sqls>
+	<!--///////////////////////////////////////////////////铁路///////////////////////////////////////////////////////// -->
+
+
+	<import file="poi_query.xml" />
+
+	<feature name="IX_POI">
+		<step value="1">
+			<sql><![CDATA[TRUNCATE TABLE TEMP_IX_POI;]]></sql>
+			<sql><![CDATA[TRUNCATE TABLE TEMP_IX_SAMEPOI;]]></sql>
+			<sql><![CDATA[TRUNCATE TABLE TEMP_IX_POI_GROUP;]]></sql>
+		</step>
+
+
+		<step value="13">
+
+			<sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI
+                          (PID)
+                          (SELECT PID FROM IX_POI WHERE KIND_CODE [kind]);
+                        ]]></sql>
+
+
+
+		</step>
+
+		<step value="16">
+
+
+
+			<!--提取同一POI -->
+			<sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_SAMEPOI
+                          (PID)
+                          (SELECT DISTINCT P.GROUP_ID
+                              FROM IX_SAMEPOI_PART P,TEMP_IX_POI T
+                             WHERE P.POI_PID = T.PID);
+                        ]]></sql>
+
+		</step>
+
+
+
+
+	</feature>
+	<feature name="M_PARAMETER">
+        <step value="100">
+            <sql><![CDATA[SELECT P.* FROM M_PARAMETER P WHERE NAME IN ('DATA_VERSION','GLM_VERSION','LANG_CODE','REGION_INFO','COORDINATE_SYS','COORDINATE_UNIT','XY_PRECISION','Z_PRECISION','ADAS_PARA');]]></sql>
+        </step>
+    </feature>
+
+	<import file="table-stats-exp-proxypoi-main.xml"/>
+
+</sqls>

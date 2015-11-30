@@ -1,0 +1,3879 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls>
+	<unique>
+		<group id="ix_poi_name_flag_del">
+			<operate type="delete">			
+				<sql table_name="IX_POI_NAME_FLAG" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT  p.poi_pid AS poi_pid, ipnt.*
+							  FROM ix_poi_name_flag ipnt, ix_poi_name p, au_ix_poi poi2
+							 WHERE poi2.pid = p.poi_pid
+							   AND poi2.state = 1
+							   AND poi2.att_oprstatus = 0
+							   AND NOT EXISTS
+							 (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = poi2.pid)
+							   AND ipnt.name_id = p.name_id
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+				  SELECT  p.poi_pid AS poi_pid, ipnt.*
+							  FROM ix_poi_name_flag ipnt, ix_poi_name p, au_ix_poi poi2
+							 WHERE poi2.pid = p.poi_pid
+							   AND poi2.state = 1
+							  AND poi2.geo_oprstatus = 0
+							   AND NOT EXISTS
+							 (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = poi2.pid)
+							   AND ipnt.name_id = p.name_id
+				                
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+				  SELECT  p.poi_pid AS poi_pid, ipnt.*
+							  FROM ix_poi_name_flag ipnt, ix_poi_name p, au_ix_poi poi2
+							 WHERE poi2.pid = p.poi_pid
+							   AND poi2.state = 1
+							   AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							   AND NOT EXISTS
+							 (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = poi2.pid)
+							   AND ipnt.name_id = p.name_id				                     
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			</operate>
+		</group>
+	<!-- 	<group id="ix_poi_name_tone_del">
+			<operate type="delete">			
+				<sql table_name="IX_POI_NAME_TONE" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT DISTINCT p.poi_pid AS poi_pid, ipnt.*
+							  FROM IX_POI_NAME_TONE ipnt, ix_poi_name p, au_ix_poi poi2
+							 WHERE poi2.pid = p.poi_pid
+							   AND poi2.state = 1
+							   AND poi2.att_oprstatus = 0
+							   AND NOT EXISTS
+							 (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = poi2.pid)
+							   AND ipnt.name_id = p.name_id
+
+
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+				  SELECT DISTINCT p.poi_pid AS poi_pid, ipnt.*
+							  FROM IX_POI_NAME_TONE ipnt, ix_poi_name p, au_ix_poi poi2
+							 WHERE poi2.pid = p.poi_pid
+							   AND poi2.state = 1
+							  AND poi2.geo_oprstatus = 0
+							   AND NOT EXISTS
+							 (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = poi2.pid)
+							   AND ipnt.name_id = p.name_id
+				                
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+				  SELECT DISTINCT p.poi_pid AS poi_pid, ipnt.*
+							  FROM IX_POI_NAME_TONE ipnt, ix_poi_name p, au_ix_poi poi2
+							 WHERE poi2.pid = p.poi_pid
+							   AND poi2.state = 1
+							   AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							   AND NOT EXISTS
+							 (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = poi2.pid)
+							   AND ipnt.name_id = p.name_id				                     
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			</operate>
+		</group>  -->
+		<!-- <group id="ix_poi_chargingplot_del">
+			<operate type="delete">			
+				<sql table_name="IX_POI_CHARGINGPLOT" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT P.POI_PID,IPNT.*
+							  FROM IX_POI_CHARGINGPLOT IPNT, IX_POI_CHARGINGSTATION P
+							 WHERE EXISTS (SELECT 1
+							          FROM IX_POI_CHARGINGSTATION POI1
+							         WHERE EXISTS (SELECT 1
+							                  FROM AU_IX_POI POI2
+							                 WHERE POI2.PID = POI1.POI_PID
+							                   AND POI2.STATE = 1
+							                   AND POI2.ATT_OPRSTATUS = 0
+							                   AND NOT EXISTS
+							                 (SELECT 1
+							                          FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                         WHERE TMP.PID = POI2.PID)  
+							                )
+							           AND POI1.CHARGING_ID = IPNT.CHARGING_ID)
+							   AND IPNT.CHARGING_ID = P.CHARGING_ID
+
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT P.POI_PID,IPNT.*
+							  FROM IX_POI_CHARGINGPLOT IPNT, IX_POI_CHARGINGSTATION P
+							 WHERE EXISTS (SELECT 1
+							          FROM IX_POI_CHARGINGSTATION POI1
+							         WHERE EXISTS (SELECT 1
+							                  FROM AU_IX_POI POI2
+							                 WHERE POI2.PID = POI1.POI_PID
+							                   AND POI2.STATE = 1
+							                   AND POI2.GEO_OPRSTATUS = 0
+							                   AND NOT EXISTS
+							                 (SELECT 1
+							                          FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                         WHERE TMP.PID = POI2.PID)  
+							                )
+							           AND POI1.CHARGING_ID = IPNT.CHARGING_ID)
+							   AND IPNT.CHARGING_ID = P.CHARGING_ID
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                       SELECT P.POI_PID,IPNT.*
+							  FROM IX_POI_CHARGINGPLOT IPNT, IX_POI_CHARGINGSTATION P
+							 WHERE EXISTS (SELECT 1
+							          FROM IX_POI_CHARGINGSTATION POI1
+							         WHERE EXISTS (SELECT 1
+							                  FROM AU_IX_POI POI2
+							                 WHERE POI2.PID = POI1.POI_PID
+							                   AND POI2.STATE = 1
+							                   AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS=0)
+							                   AND NOT EXISTS
+							                 (SELECT 1
+							                          FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                         WHERE TMP.PID = POI2.PID)  
+							                )
+							           AND POI1.CHARGING_ID = IPNT.CHARGING_ID)
+							   AND IPNT.CHARGING_ID = P.CHARGING_ID
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			</operate>
+		</group>  -->
+		<group id="ix_poi">
+			<operate type="delete">
+		<!--	<sql table_name="IX_POI_EVENT" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_EVENT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_POI_EVENT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_EVENT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>   -->
+			<!-- <sql table_name="IX_POI_TOURROUTE" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_TOURROUTE POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_POI_TOURROUTE POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_TOURROUTE POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>  -->
+		<!--  	<sql table_name="IX_POI_PARKING" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_PARKING POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_POI_PARKING POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_PARKING POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql> -->
+		<!-- 	<sql table_name="IX_POI_DETAIL" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_DETAIL POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_POI_DETAIL POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_DETAIL POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>  -->
+		<!--  <sql table_name="IX_POI_CHARGINGSTATION" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_CHARGINGSTATION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_POI_CHARGINGSTATION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_CHARGINGSTATION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql> -->	
+			<sql table_name="IX_POI_BUILDING" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_BUILDING POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_POI_BUILDING POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_BUILDING POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_ADDRESS" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ADDRESS POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ADDRESS POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ADDRESS POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND ( POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0 )
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_CONTACT" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_CONTACT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_CONTACT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_CONTACT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND ( POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0 )
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_NAME" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_NAME POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_NAME POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_NAME POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND ( POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0 )
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_PARENT" object_id="IXPoiParent" pid_col="GROUP_ID">
+					<att>
+				 <![CDATA[
+	                        SELECT C.*
+								  FROM AU_IX_POI L, IX_POI_PARENT C
+								 WHERE L.STATE = 1
+								   AND L.ATT_OPRSTATUS = 0
+								   AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+								         1
+								          FROM TEMP_AU_IX_POI_MUL_TASK TMP
+								         WHERE TMP.PID = L.PID)
+								   AND C.PARENT_POI_PID = L.PID
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT C.*
+								  FROM AU_IX_POI L, IX_POI_PARENT C
+								 WHERE L.STATE = 1
+								   AND L.GEO_OPRSTATUS = 0
+								   AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+								         1
+								          FROM TEMP_AU_IX_POI_MUL_TASK TMP
+								         WHERE TMP.PID = L.PID)
+								   AND C.PARENT_POI_PID = L.PID
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT C.*
+								  FROM AU_IX_POI L, IX_POI_PARENT C
+								 WHERE L.STATE = 1
+								   AND (L.ATT_OPRSTATUS = 0 OR L.GEO_OPRSTATUS = 0)
+								   AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+								         1
+								          FROM TEMP_AU_IX_POI_MUL_TASK TMP
+								         WHERE TMP.PID = L.PID)
+								   AND C.PARENT_POI_PID = L.PID
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_CHILDREN" object_id="IXPoiParent"
+					pid_col="GROUP_ID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+								  FROM IX_POI_CHILDREN P
+								 WHERE EXISTS (SELECT 1
+								          FROM (SELECT C.GROUP_ID
+								                  FROM AU_IX_POI L, IX_POI_PARENT C
+								                 WHERE L.STATE = 1
+								                   AND L.ATT_OPRSTATUS = 0
+								                   AND NOT EXISTS (SELECT /*use_hash(poi2,tmp)*/
+								                         1
+								                          FROM TEMP_AU_IX_POI_MUL_TASK TMP
+								                         WHERE TMP.PID = L.PID)
+								                   AND C.PARENT_POI_PID = L.PID) V
+								         WHERE P.GROUP_ID = V.GROUP_ID)
+								UNION
+								SELECT *
+								  FROM IX_POI_CHILDREN C
+								 WHERE EXISTS (SELECT 1
+								          FROM AU_IX_POI L
+								         WHERE L.STATE = 1
+								           AND L.ATT_OPRSTATUS = 0
+								           AND NOT EXISTS (SELECT /*use_hash(poi2,tmp)*/
+								                 1
+								                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+								                 WHERE TMP.PID = L.PID)
+								           AND C.CHILD_POI_PID = L.PID)
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+								  FROM IX_POI_CHILDREN P
+								 WHERE EXISTS (SELECT 1
+								          FROM (SELECT C.GROUP_ID
+								                  FROM AU_IX_POI L, IX_POI_PARENT C
+								                 WHERE L.STATE = 1
+								                   AND L.GEO_OPRSTATUS = 0
+								                   AND NOT EXISTS (SELECT /*use_hash(poi2,tmp)*/
+								                         1
+								                          FROM TEMP_AU_IX_POI_MUL_TASK TMP
+								                         WHERE TMP.PID = L.PID)
+								                   AND C.PARENT_POI_PID = L.PID) V
+								         WHERE P.GROUP_ID = V.GROUP_ID)
+								UNION
+								SELECT *
+								  FROM IX_POI_CHILDREN C
+								 WHERE EXISTS (SELECT 1
+								          FROM AU_IX_POI L
+								         WHERE L.STATE = 1
+								           AND L.GEO_OPRSTATUS = 0
+								           AND NOT EXISTS (SELECT /*use_hash(poi2,tmp)*/
+								                 1
+								                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+								                 WHERE TMP.PID = L.PID)
+								           AND C.CHILD_POI_PID = L.PID)
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+								  FROM IX_POI_CHILDREN P
+								 WHERE EXISTS (SELECT 1
+								          FROM (SELECT C.GROUP_ID
+								                  FROM AU_IX_POI L, IX_POI_PARENT C
+								                 WHERE L.STATE = 1
+								                   AND (L.ATT_OPRSTATUS = 0 OR L.GEO_OPRSTATUS = 0)
+								                   AND NOT EXISTS (SELECT /*use_hash(poi2,tmp)*/
+								                         1
+								                          FROM TEMP_AU_IX_POI_MUL_TASK TMP
+								                         WHERE TMP.PID = L.PID)
+								                   AND C.PARENT_POI_PID = L.PID) V
+								         WHERE P.GROUP_ID = V.GROUP_ID)
+								UNION
+								SELECT *
+								  FROM IX_POI_CHILDREN C
+								 WHERE EXISTS (SELECT 1
+								          FROM AU_IX_POI L
+								         WHERE L.STATE = 1
+								           AND (L.ATT_OPRSTATUS = 0 OR L.GEO_OPRSTATUS = 0)
+								           AND NOT EXISTS (SELECT /*use_hash(poi2,tmp)*/
+								                 1
+								                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+								                 WHERE TMP.PID = L.PID)
+								           AND C.CHILD_POI_PID = L.PID)
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_FLAG" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_FLAG POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_POI_FLAG POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_FLAG POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_ENTRYIMAGE" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ENTRYIMAGE POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_POI_ENTRYIMAGE POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ENTRYIMAGE POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_ICON" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ICON POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_POI_ICON POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ICON POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_PHOTO" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_PHOTO POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_POI_PHOTO POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_PHOTO POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_AUDIO" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_AUDIO POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_POI_AUDIO POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_AUDIO POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_VIDEO" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_VIDEO POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_POI_VIDEO POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_VIDEO POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				
+				<!--<sql table_name="IX_SAMEPOI_PART" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_SAMEPOI_PART POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_SAMEPOI_PART POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_SAMEPOI_PART POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>-->
+			<!--  <sql table_name="IX_POI_ADVERTISEMENT" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ADVERTISEMENT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_POI_ADVERTISEMENT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ADVERTISEMENT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql> -->	
+			<!-- <sql table_name="IX_POI_GASSTATION" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_GASSTATION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_POI_GASSTATION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_GASSTATION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>  -->	
+				<sql table_name="IX_POI_INTRODUCTION" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_INTRODUCTION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_POI_INTRODUCTION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_INTRODUCTION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_ATTRACTION" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ATTRACTION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_POI_ATTRACTION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ATTRACTION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_HOTEL" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_HOTEL POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_POI_HOTEL POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_HOTEL POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			<!-- 	<sql table_name="IX_POI_BUSINESSTIME" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_BUSINESSTIME POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_POI_BUSINESSTIME POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_BUSINESSTIME POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>  -->
+				
+				<sql table_name="IX_POI_RESTAURANT" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_RESTAURANT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT *
+							  FROM IX_POI_RESTAURANT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_RESTAURANT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT /*+use_hash(poi2,tmp)*/
+							                 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID))
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI" object_id="IXPoi" pid_col="PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.PID
+							           AND POI2.STATE = 1
+							           AND POI2.ATT_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID)  
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                         SELECT *
+							  FROM IX_POI POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.PID
+							           AND POI2.STATE = 1
+							           AND POI2.GEO_OPRSTATUS = 0
+							           AND NOT EXISTS (SELECT 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID)  
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.PID
+							           AND POI2.STATE = 1
+							           AND (POI2.ATT_OPRSTATUS = 0 OR POI2.GEO_OPRSTATUS = 0)
+							           AND NOT EXISTS (SELECT 1
+							                  FROM TEMP_AU_IX_POI_MUL_TASK TMP
+							                 WHERE TMP.PID = POI2.PID)  
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				
+
+			</operate>
+			<operate type="add">
+				<sql table_name="IX_POI_FLAG" object_id="IXPoi"
+					pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                      WITH AURS AS
+							  (SELECT AU.PID, AUF.FLAG_CODE
+							     FROM AU_IX_POI AU, AU_IX_POI_FLAG AUF
+							    WHERE AU.STATE = ${STATE}
+							      AND AU.ATT_OPRSTATUS = 0
+							      AND AU.AUDATA_ID = AUF.AUDATA_ID
+							      AND ${NOT} EXISTS
+							    (SELECT 1 FROM TEMP_HIS_IX_POI_EXT EXT WHERE EXT.PID = AU.PID)
+							      AND NOT EXISTS
+							    (SELECT 1 FROM TEMP_AU_IX_POI_MUL_TASK TMP WHERE TMP.PID = AU.PID))
+							   SELECT AURS.PID as POI_PID,
+							         '110000200000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000200000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000200000')
+							  UNION ALL
+							  SELECT AURS.PID as POI_PID,
+							         '110000210000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000210000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000210000')
+							  UNION ALL
+							  SELECT AURS.PID as POI_PID,
+							         '110000220000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000220000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000220000')
+							  UNION ALL
+							  SELECT AURS.PID as POI_PID,
+							         '110000110002' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000110002'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000110002')
+							  UNION ALL
+							  SELECT AURS.PID as POI_PID,
+							         '110000030000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000030000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000030000')
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                     WITH AURS AS
+							  (SELECT AU.PID, AUF.FLAG_CODE
+							     FROM AU_IX_POI AU, AU_IX_POI_FLAG AUF
+							    WHERE AU.STATE = ${STATE}
+							      AND AU.ATT_OPRSTATUS = 0
+							      AND AU.AUDATA_ID = AUF.AUDATA_ID
+							      AND ${NOT} EXISTS
+							    (SELECT 1 FROM TEMP_HIS_IX_POI_EXT EXT WHERE EXT.PID = AU.PID)
+							      AND NOT EXISTS
+							    (SELECT 1 FROM TEMP_AU_IX_POI_MUL_TASK TMP WHERE TMP.PID = AU.PID))
+							   SELECT AURS.PID as POI_PID,
+							         '110000200000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000200000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000200000')
+							  UNION ALL
+							  SELECT AURS.PID as POI_PID,
+							         '110000210000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000210000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000210000')
+							  UNION ALL
+							  SELECT AURS.PID as POI_PID,
+							         '110000220000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000220000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000220000')
+							  UNION ALL
+							  SELECT AURS.PID as POI_PID,
+							         '110000110002' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000110002'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000110002')
+							  UNION ALL
+							  SELECT AURS.PID as POI_PID,
+							         '110000030000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000030000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000030000')
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                      WITH AURS AS
+							  (SELECT AU.PID, AUF.FLAG_CODE
+							     FROM AU_IX_POI AU, AU_IX_POI_FLAG AUF
+							    WHERE AU.STATE = ${STATE}
+							      AND AU.ATT_OPRSTATUS = 0
+							      AND AU.AUDATA_ID = AUF.AUDATA_ID
+							      AND ${NOT} EXISTS
+							    (SELECT 1 FROM TEMP_HIS_IX_POI_EXT EXT WHERE EXT.PID = AU.PID)
+							      AND NOT EXISTS
+							    (SELECT 1 FROM TEMP_AU_IX_POI_MUL_TASK TMP WHERE TMP.PID = AU.PID))
+							   SELECT AURS.PID as POI_PID,
+							         '110000200000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000200000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000200000')
+							  UNION ALL
+							  SELECT AURS.PID as POI_PID,
+							         '110000210000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000210000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000210000')
+							  UNION ALL
+							  SELECT AURS.PID as POI_PID,
+							         '110000220000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000220000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000220000')
+							  UNION ALL
+							  SELECT AURS.PID as POI_PID,
+							         '110000110002' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000110002'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000110002')
+							  UNION ALL
+							  SELECT AURS.PID as POI_PID,
+							         '110000030000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000030000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000030000')
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_NAME_FLAG" object_id="IXPoi"
+					pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                     SELECT p.pid as POI_PID, auf.name_id, auf.flag_code, 0 AS u_record, NULL AS u_fields
+					        FROM au_ix_poi p, au_ix_poi_name aun, au_ix_poi_name_flag auf
+					       WHERE p.state =  ${STATE}
+					         AND p.att_oprstatus=0
+					         AND p.audata_id = aun.audata_id
+					         AND aun.auname_id = auf.auname_id
+					         AND ${NOT} EXISTS
+					       (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = p.pid)
+					         AND NOT EXISTS (SELECT 1
+					                FROM temp_au_ix_poi_mul_task tmp
+					               WHERE tmp.pid = p.pid)
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                   SELECT p.pid as POI_PID, auf.name_id, auf.flag_code, 0 AS u_record, NULL AS u_fields
+					        FROM au_ix_poi p, au_ix_poi_name aun, au_ix_poi_name_flag auf
+					       WHERE p.state =  ${STATE}
+					         AND p.geo_oprstatus=0
+					         AND p.audata_id = aun.audata_id
+					         AND aun.auname_id = auf.auname_id
+					         AND ${NOT} EXISTS
+					       (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = p.pid)
+					         AND NOT EXISTS (SELECT 1
+					                FROM temp_au_ix_poi_mul_task tmp
+					               WHERE tmp.pid = p.pid)
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                     SELECT p.pid as POI_PID, auf.name_id, auf.flag_code, 0 AS u_record, NULL AS u_fields
+					        FROM au_ix_poi p, au_ix_poi_name aun, au_ix_poi_name_flag auf
+					       WHERE p.state =  ${STATE}
+					         AND (p.geo_oprstatus=0 or p.att_oprstatus=0)
+					         AND p.audata_id = aun.audata_id
+					         AND aun.auname_id = auf.auname_id
+					         AND ${NOT} EXISTS
+					       (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = p.pid)
+					         AND NOT EXISTS (SELECT 1
+					                FROM temp_au_ix_poi_mul_task tmp
+					               WHERE tmp.pid = p.pid)
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_HOTEL" object_id="IXPoi"
+					pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                     SELECT hotel_id,
+					             poi_pid,
+					             credit_card,
+					             rating,
+					             checkin_time,
+					             checkout_time,
+					             room_count,
+					             room_type,
+					             room_price,
+					             breakfast,
+					             service,
+					             parking,
+					             long_description,
+								 long_descrip_eng,
+								 open_hour,
+								 open_hour_eng,
+								 telephone,
+								 address,
+								 city,
+								 photo_name,
+					             0             AS TRAVELGUIDE_FLAG,
+					             0             AS u_record,
+					             NULL          AS u_fields
+					        FROM au_ix_poi p, au_ix_poi_hotel auh
+					       WHERE p.state = ${STATE}
+					         AND p.att_oprstatus=0
+					         AND p.audata_id = auh.audata_id
+					         AND ${NOT} EXISTS
+					       (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = p.pid)
+					         AND NOT EXISTS
+					       (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = p.pid)
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                    SELECT hotel_id,
+					             poi_pid,
+					             credit_card,
+					             rating,
+					             checkin_time,
+					             checkout_time,
+					             room_count,
+					             room_type,
+					             room_price,
+					             breakfast,
+					             service,
+					             parking,
+					             long_description,
+								 long_descrip_eng,
+								 open_hour,
+								 open_hour_eng,
+								 telephone,
+								 address,
+								 city,
+								 photo_name,
+					             0             AS TRAVELGUIDE_FLAG,
+					             0             AS u_record,
+					             NULL          AS u_fields
+					        FROM au_ix_poi p, au_ix_poi_hotel auh
+					       WHERE p.state = ${STATE}
+					         AND p.geo_oprstatus=0
+					         AND p.audata_id = auh.audata_id
+					         AND ${NOT} EXISTS
+					       (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = p.pid)
+					         AND NOT EXISTS
+					       (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = p.pid)
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                      SELECT hotel_id,
+					             poi_pid,
+					             credit_card,
+					             rating,
+					             checkin_time,
+					             checkout_time,
+					             room_count,
+					             room_type,
+					             room_price,
+					             breakfast,
+					             service,
+					             parking,
+					             long_description,
+								 long_descrip_eng,
+								 open_hour,
+								 open_hour_eng,
+								 telephone,
+								 address,
+								 city,
+								 photo_name,
+					             0             AS TRAVELGUIDE_FLAG,
+					             0             AS u_record,
+					             NULL          AS u_fields
+					        FROM au_ix_poi p, au_ix_poi_hotel auh
+					       WHERE p.state = ${STATE}
+					         AND (p.att_oprstatus=0 or p.geo_oprstatus=0)
+					         AND p.audata_id = auh.audata_id
+					         AND ${NOT} EXISTS
+					       (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = p.pid)
+					         AND NOT EXISTS
+					       (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = p.pid)
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_PHOTO" object_id="IXPoi"
+					pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                      SELECT poi_pid, photo_id, status, memo, 0 as u_record, null as u_fields
+						    FROM au_ix_poi p, au_ix_poi_photo aup
+						   WHERE p.state = ${STATE}
+					         AND p.att_oprstatus=0 
+						     AND p.audata_id = aup.audata_id
+						     AND ${NOT} EXISTS
+						   (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = p.pid)
+						     AND NOT EXISTS
+						   (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = p.pid)
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                     SELECT poi_pid, photo_id, status, memo, 0 as u_record, null as u_fields
+						    FROM au_ix_poi p, au_ix_poi_photo aup
+						   WHERE p.state = ${STATE}
+					         AND p.geo_oprstatus=0 
+						     AND p.audata_id = aup.audata_id
+						     AND ${NOT} EXISTS
+						   (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = p.pid)
+						     AND NOT EXISTS
+						   (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = p.pid)
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                      SELECT poi_pid, photo_id, status, memo, 0 as u_record, null as u_fields
+						    FROM au_ix_poi p, au_ix_poi_photo aup
+						   WHERE p.state = ${STATE}
+					         AND (p.att_oprstatus=0 or p.geo_oprstatus=0) 
+						     AND p.audata_id = aup.audata_id
+						     AND ${NOT} EXISTS
+						   (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = p.pid)
+						     AND NOT EXISTS
+						   (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = p.pid)
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			</operate>
+		</group>
+		<group id="tenant">
+		</group>
+		<group id="ix_poi_flag_innerpoi">
+			<operate type="add">
+				<sql table_name="IX_POI_FLAG" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT au.pid as POI_PID, '110000030000' AS FLAG_CODE, 0 AS u_record, NULL AS u_fields
+							  FROM au_ix_poi au
+							 WHERE au.state = ${STATE}
+							   AND au.att_oprstatus = 0
+							   AND instr(au.log, '改内部POI') > 0
+							   AND ${NOT} EXISTS
+							 (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = au.pid)
+							   AND NOT EXISTS
+							 (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = au.pid)
+							   AND NOT EXISTS (SELECT 1
+							          FROM ix_poi_flag ipf
+							         WHERE ipf.poi_pid = au.pid
+							           AND ipf.flag_code = '110000030000')
+							   AND EXISTS (SELECT 1
+            					     FROM au_ix_poi_flag aipf
+          							WHERE aipf.poi_pid = au.pid
+             						 AND aipf.flag_code = '110000030000')
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                         SELECT au.pid as POI_PID, '110000030000' AS FLAG_CODE, 0 AS u_record, NULL AS u_fields
+							  FROM au_ix_poi au
+							 WHERE au.state = ${STATE}
+							   AND au.geo_oprstatus = 0
+							   AND instr(au.log, '改内部POI') > 0
+							   AND ${NOT} EXISTS
+							 (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = au.pid)
+							   AND NOT EXISTS
+							 (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = au.pid)
+							   AND NOT EXISTS (SELECT 1
+							          FROM ix_poi_flag ipf
+							         WHERE ipf.poi_pid = au.pid
+							           AND ipf.flag_code = '110000030000')
+							   AND EXISTS (SELECT 1
+            					     FROM au_ix_poi_flag aipf
+          							WHERE aipf.poi_pid = au.pid
+             						 AND aipf.flag_code = '110000030000')
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                         SELECT au.pid as POI_PID, '110000030000' AS FLAG_CODE, 0 AS u_record, NULL AS u_fields
+							  FROM au_ix_poi au
+							 WHERE au.state = ${STATE}
+							   AND (au.geo_oprstatus = 0 or au.att_oprstatus = 0)
+							   AND instr(au.log, '改内部POI') > 0
+							   AND ${NOT} EXISTS
+							 (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = au.pid)
+							   AND NOT EXISTS
+							 (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = au.pid)
+							   AND NOT EXISTS (SELECT 1
+							          FROM ix_poi_flag ipf
+							         WHERE ipf.poi_pid = au.pid
+							           AND ipf.flag_code = '110000030000')
+							   AND EXISTS (SELECT 1
+            					     FROM au_ix_poi_flag aipf
+          							WHERE aipf.poi_pid = au.pid
+             						 AND aipf.flag_code = '110000030000')
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			</operate>
+			
+		</group>
+			<group id="ix_poi_flag_reference_address"> 
+			<operate type="add">
+				<sql table_name="IX_POI_FLAG" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT au.pid as POI_PID, '110030060000' AS FLAG_CODE, 0 AS u_record, NULL AS u_fields
+							  FROM au_ix_poi au
+							 WHERE au.state = ${STATE}
+							   AND au.att_oprstatus = 0
+							   AND instr(au.label, '参照地址') > 0
+							   AND ${NOT} EXISTS
+							 (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = au.pid)
+							   AND NOT EXISTS
+							 (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = au.pid)
+							   AND NOT EXISTS (SELECT 1
+							          FROM ix_poi_flag ipf
+							         WHERE ipf.poi_pid = au.pid
+							           AND ipf.flag_code = '110030060000')
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                         SELECT au.pid as POI_PID, '110030060000' AS FLAG_CODE, 0 AS u_record, NULL AS u_fields
+							  FROM au_ix_poi au
+							 WHERE au.state = ${STATE}
+							   AND au.geo_oprstatus = 0
+							   AND instr(au.label, '参照地址') > 0
+							   AND ${NOT} EXISTS
+							 (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = au.pid)
+							   AND NOT EXISTS
+							 (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = au.pid)
+							   AND NOT EXISTS (SELECT 1
+							          FROM ix_poi_flag ipf
+							         WHERE ipf.poi_pid = au.pid
+							           AND ipf.flag_code = '110030060000')
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                         SELECT au.pid as POI_PID, '110030060000' AS FLAG_CODE, 0 AS u_record, NULL AS u_fields
+							  FROM au_ix_poi au
+							 WHERE au.state = ${STATE}
+							   AND (au.geo_oprstatus = 0 or au.att_oprstatus = 0)
+							   AND instr(au.label, '参照地址') > 0
+							   AND ${NOT} EXISTS
+							 (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = au.pid)
+							   AND NOT EXISTS
+							 (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = au.pid)
+							   AND NOT EXISTS (SELECT 1
+							          FROM ix_poi_flag ipf
+							         WHERE ipf.poi_pid = au.pid
+							           AND ipf.flag_code = '110030060000')
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			</operate>
+			
+		</group>
+		
+		
+		<group id="ix_poi_flag_poilevel_nokia">
+		<operate type="delete">
+				<sql table_name="IX_POI_FLAG" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                         SELECT *
+							  FROM ix_poi_flag t
+							 WHERE  
+							    EXISTS
+							 (SELECT 1
+							          FROM au_ix_poi au
+							         WHERE au.state = ${STATE}
+							           AND au.att_oprstatus = 0
+							           AND EXISTS (SELECT 1
+							          FROM au_ix_poi_flag t2
+							         WHERE t2.poi_pid = t.poi_pid
+							           AND t2.flag_code =t.flag_code AND AU.AUDATA_ID=T2.AUDATA_ID)
+							           AND ${NOT} EXISTS
+							         (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = au.pid)
+							           AND NOT EXISTS (SELECT 1
+							                  FROM temp_au_ix_poi_mul_task tmp
+							                 WHERE tmp.pid = au.pid)
+							           AND au.pid = t.poi_pid) 
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                         SELECT *
+							  FROM ix_poi_flag t
+							 WHERE  EXISTS
+							 (SELECT 1
+							          FROM au_ix_poi au
+							         WHERE au.state = ${STATE}
+							           AND au.geo_oprstatus = 0
+							           AND EXISTS (SELECT 1
+							          FROM au_ix_poi_flag t2
+							         WHERE t2.poi_pid = t.poi_pid
+							           AND t2.flag_code =t.flag_code AND AU.AUDATA_ID=T2.AUDATA_ID)
+							           AND ${NOT} EXISTS
+							         (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = au.pid)
+							           AND NOT EXISTS (SELECT 1
+							                  FROM temp_au_ix_poi_mul_task tmp
+							                 WHERE tmp.pid = au.pid)
+							           AND au.pid = t.poi_pid) 
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                         SELECT *
+							  FROM ix_poi_flag t
+							 WHERE  EXISTS
+							 (SELECT 1
+							          FROM au_ix_poi au
+							         WHERE au.state = ${STATE}
+							           AND (au.geo_oprstatus = 0 or au.att_oprstatus=0)
+							           AND EXISTS (SELECT 1
+							          FROM au_ix_poi_flag t2
+							         WHERE t2.poi_pid = t.poi_pid
+							           AND t2.flag_code =t.flag_code AND AU.AUDATA_ID=T2.AUDATA_ID)
+							           AND ${NOT} EXISTS
+							         (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = au.pid)
+							           AND NOT EXISTS (SELECT 1
+							                  FROM temp_au_ix_poi_mul_task tmp
+							                 WHERE tmp.pid = au.pid)
+							           AND au.pid = t.poi_pid) 
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			</operate>
+			<operate type="add">
+				<sql table_name="IX_POI_FLAG" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        WITH aurs AS
+							 (SELECT au.pid, auf.flag_code
+							    FROM au_ix_poi au, au_ix_poi_flag auf
+							   WHERE au.state =  ${STATE}
+							     AND au.att_oprstatus = 0
+							     AND au.audata_id = auf.audata_id							     
+							     AND ${NOT} EXISTS
+							   (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = au.pid)
+							     AND NOT EXISTS
+							   (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = au.pid))
+							SELECT aurs.pid AS POI_PID, aurs.flag_code AS flag_code, 0 AS u_record, NULL AS u_fields
+							  FROM aurs						 
+
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                         WITH aurs AS
+							 (SELECT au.pid, auf.flag_code
+							    FROM au_ix_poi au, au_ix_poi_flag auf
+							   WHERE au.state =  ${STATE}
+							     AND au.geo_oprstatus = 0
+							     AND au.audata_id = auf.audata_id							    
+							     AND ${NOT} EXISTS
+							   (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = au.pid)
+							     AND NOT EXISTS
+							   (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = au.pid))
+							SELECT aurs.pid AS POI_PID, aurs.flag_code AS flag_code, 0 AS u_record, NULL AS u_fields
+							  FROM aurs	
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                         WITH aurs AS
+							 (SELECT au.pid, auf.flag_code
+							    FROM au_ix_poi au, au_ix_poi_flag auf
+							   WHERE au.state =  ${STATE}
+							     AND (au.att_oprstatus = 0 or au.geo_oprstatus=0)
+							     AND au.audata_id = auf.audata_id							    
+							     AND ${NOT} EXISTS
+							   (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = au.pid)
+							     AND NOT EXISTS
+							   (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = au.pid))
+							SELECT aurs.pid AS POI_PID, aurs.flag_code AS flag_code, 0 AS u_record, NULL AS u_fields
+							  FROM aurs	
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			</operate>	
+			
+		</group>
+
+
+	<group id="ix_poi_flag_yuCaiJi">  <!-- 融合时，如果AU_IX_POI表中，LABLE字段包含“改预采集标识”，如果母库IX_POI_FLAG中存在FLAG_CODE为"110000240000"的记录，则删除此记录，如果不存在，则不处理，也不报错    -->
+		<operate type="delete">
+			<sql table_name="IX_POI_FLAG" object_id="IXPoi" pid_col="POI_PID">
+				<att>
+				 <![CDATA[
+						select * FROM  ix_poi_flag t WHERE t.flag_code IN ('110000240000') and
+						  EXISTS (
+						  SELECT 1
+						    FROM au_ix_poi au
+						   WHERE au.state = 2
+						     AND au.att_oprstatus = 0
+						     AND instr(au.label, '改预采集标识') > 0 AND ${NOT} EXISTS
+							 (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = au.pid)
+							   AND NOT EXISTS
+							 (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = au.pid))
+	                    ]]>
+				</att>
+				<geo>
+				 <![CDATA[
+	                 	select * FROM  ix_poi_flag t WHERE t.flag_code IN ('110000240000') and
+						  EXISTS (
+						  SELECT 1
+						    FROM au_ix_poi au
+						   WHERE au.state = 2
+						     AND au.geo_oprstatus = 0
+						     AND instr(au.label, '改预采集标识') > 0 AND ${NOT} EXISTS
+							 (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = au.pid)
+							   AND NOT EXISTS
+							 (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = au.pid))
+	                    ]]>
+				</geo>
+				<geoatt>
+				 <![CDATA[
+	                      select * FROM  ix_poi_flag t WHERE t.flag_code IN ('110000240000') and
+						  EXISTS (
+						  SELECT 1
+						    FROM au_ix_poi au
+						   WHERE au.state = 2
+						      AND (au.geo_oprstatus = 0 or au.att_oprstatus=0)
+						     AND instr(au.label, '改预采集标识') > 0 AND ${NOT} EXISTS
+							 (SELECT 1 FROM temp_his_ix_poi_ext ext WHERE ext.pid = au.pid)
+							   AND NOT EXISTS
+							 (SELECT 1 FROM temp_au_ix_poi_mul_task tmp WHERE tmp.pid = au.pid) )
+	                    ]]>
+				</geoatt>
+
+			</sql>
+		</operate>
+	</group>
+	</unique>
+	<mul>
+	<group id="ix_poi_name_flag_del">
+			<operate type="delete">			
+				<sql table_name="IX_POI_NAME_FLAG" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                       	SELECT  p.poi_pid as POI_PID, IPNT.*
+							  FROM IX_POI_NAME_FLAG IPNT, IX_POI_NAME P
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = P.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID})
+							   AND IPNT.NAME_ID = P.NAME_ID
+
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                         	SELECT  p.poi_pid as POI_PID, IPNT.*
+							  FROM IX_POI_NAME_FLAG IPNT, IX_POI_NAME P
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = P.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID})
+							   AND IPNT.NAME_ID = P.NAME_ID
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                           	SELECT p.poi_pid as POI_PID, IPNT.*
+							  FROM IX_POI_NAME_FLAG IPNT, IX_POI_NAME P
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = P.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID})
+							   AND IPNT.NAME_ID = P.NAME_ID
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			</operate>
+		</group>
+	<!-- <group id="ix_poi_name_tone_del">
+			<operate type="delete">			
+				<sql table_name="IX_POI_NAME_TONE" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT P.POI_PID,IPNT.*
+								  FROM IX_POI_NAME_TONE IPNT, IX_POI_NAME P
+								 WHERE EXISTS (SELECT 1
+								          FROM AU_IX_POI POI2
+								         WHERE POI2.PID = P.POI_PID
+								           AND POI2.AUDATA_ID = ${AUDATA_ID})
+								   AND IPNT.NAME_ID = P.NAME_ID
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                         SELECT P.POI_PID,IPNT.*
+								  FROM IX_POI_NAME_TONE IPNT, IX_POI_NAME P
+								 WHERE EXISTS (SELECT 1
+								          FROM AU_IX_POI POI2
+								         WHERE POI2.PID = P.POI_PID
+								           AND POI2.AUDATA_ID = ${AUDATA_ID})
+								   AND IPNT.NAME_ID = P.NAME_ID
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT P.POI_PID,IPNT.*
+								  FROM IX_POI_NAME_TONE IPNT, IX_POI_NAME P
+								 WHERE EXISTS (SELECT 1
+								          FROM AU_IX_POI POI2
+								         WHERE POI2.PID = P.POI_PID
+								           AND POI2.AUDATA_ID = ${AUDATA_ID})
+								   AND IPNT.NAME_ID = P.NAME_ID
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			</operate>
+		</group>	 --> 
+			
+<!--  <group id="ix_poi_chargingplot_del">
+			<operate type="delete">			
+				<sql table_name="IX_POI_CHARGINGPLOT" object_id="IXPoi"
+					pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                       SELECT P.POI_PID,IPNT.*
+							  FROM IX_POI_CHARGINGPLOT IPNT, IX_POI_CHARGINGSTATION P
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = P.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID})
+							   AND IPNT.CHARGING_ID = P.CHARGING_ID
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT P.POI_PID,IPNT.*
+							  FROM IX_POI_CHARGINGPLOT IPNT, IX_POI_CHARGINGSTATION P
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = P.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID})
+							   AND IPNT.CHARGING_ID = P.CHARGING_ID
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT P.POI_PID,IPNT.*
+							  FROM IX_POI_CHARGINGPLOT IPNT, IX_POI_CHARGINGSTATION P
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = P.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID})
+							   AND IPNT.CHARGING_ID = P.CHARGING_ID
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			</operate>
+		</group>	-->		
+	<group id="ix_poi">
+			<operate type="delete">
+		<!-- 	<sql table_name="IX_POI_EVENT" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_EVENT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_EVENT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_EVENT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>   -->
+		<!--  <sql table_name="IX_POI_TOURROUTE" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_TOURROUTE POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_TOURROUTE POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_TOURROUTE POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql> -->	
+			<!--  <sql table_name="IX_POI_PARKING" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_PARKING POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_PARKING POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_PARKING POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>  -->
+		<!--  	<sql table_name="IX_POI_DETAIL" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_DETAIL POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_DETAIL POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_DETAIL POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql> -->
+			<sql table_name="IX_POI_BUILDING" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_BUILDING POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_BUILDING POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_BUILDING POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				
+			<sql table_name="IX_POI_ADDRESS" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ADDRESS POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ADDRESS POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_ADDRESS POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_CONTACT" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_CONTACT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_CONTACT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_CONTACT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				
+					
+				<sql table_name="IX_POI_NAME" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_NAME POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_NAME POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_NAME POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_FLAG" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_FLAG POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_FLAG POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_FLAG POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_ENTRYIMAGE" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ENTRYIMAGE POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ENTRYIMAGE POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_ENTRYIMAGE POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_ENTRYIMAGE" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ENTRYIMAGE POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ENTRYIMAGE POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_ENTRYIMAGE POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_ICON" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ICON POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ICON POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_ICON POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_PHOTO" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_PHOTO POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_PHOTO POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_PHOTO POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_AUDIO" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_AUDIO POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_AUDIO POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_AUDIO POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_VIDEO" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_VIDEO POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_VIDEO POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_VIDEO POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				
+				<!--<sql table_name="IX_SAMEPOI_PART" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_SAMEPOI_PART POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_SAMEPOI_PART POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_SAMEPOI_PART POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>-->
+			<!-- <sql table_name="IX_POI_ADVERTISEMENT" object_id="IXPoi"
+					pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ADVERTISEMENT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ADVERTISEMENT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_ADVERTISEMENT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>  -->	
+			<!-- <sql table_name="IX_POI_GASSTATION" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_GASSTATION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_GASSTATION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_GASSTATION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>   -->	
+				<sql table_name="IX_POI_INTRODUCTION" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_INTRODUCTION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_INTRODUCTION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_INTRODUCTION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_ATTRACTION" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ATTRACTION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_ATTRACTION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_ATTRACTION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_HOTEL" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_HOTEL POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_HOTEL POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_HOTEL POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>
+		<!-- 		<sql table_name="IX_POI_CHARGINGSTATION" object_id="IXPoi"
+					pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_CHARGINGSTATION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_CHARGINGSTATION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_CHARGINGSTATION POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>   -->
+				<sql table_name="IX_POI_RESTAURANT" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_RESTAURANT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_RESTAURANT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_RESTAURANT POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			<!--  <sql table_name="IX_POI_BUSINESSTIME" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_BUSINESSTIME POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_BUSINESSTIME POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                          SELECT *
+							  FROM IX_POI_BUSINESSTIME POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.POI_PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							        )
+	                    ]]>
+					</geoatt>
+
+				</sql> -->	
+				<sql table_name="IX_POI" object_id="IXPoi" pid_col="PID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							           )
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							           )
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                         SELECT *
+							  FROM IX_POI POI1
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI POI2
+							         WHERE POI2.PID = POI1.PID
+							           AND POI2.AUDATA_ID = ${AUDATA_ID}
+							           )
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_PARENT" object_id="IXPoiParent" pid_col="GROUP_ID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+					          FROM IX_POI_PARENT P
+					         WHERE EXISTS (SELECT 1
+					                  FROM (SELECT C.GROUP_ID
+					                          FROM AU_IX_POI L, IX_POI_PARENT C
+					                         WHERE L.AUDATA_ID = ${AUDATA_ID}
+					                           AND C.PARENT_POI_PID = L.PID) V
+					                 WHERE P.GROUP_ID = V.GROUP_ID)
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT *
+					          FROM IX_POI_PARENT P
+					         WHERE EXISTS (SELECT 1
+					                  FROM (SELECT C.GROUP_ID
+					                          FROM AU_IX_POI L, IX_POI_PARENT C
+					                         WHERE L.AUDATA_ID = ${AUDATA_ID}
+					                           AND C.PARENT_POI_PID = L.PID) V
+					                 WHERE P.GROUP_ID = V.GROUP_ID)
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                       SELECT *
+					          FROM IX_POI_PARENT P
+					         WHERE EXISTS (SELECT 1
+					                  FROM (SELECT C.GROUP_ID
+					                          FROM AU_IX_POI L, IX_POI_PARENT C
+					                         WHERE L.AUDATA_ID = ${AUDATA_ID}
+					                           AND C.PARENT_POI_PID = L.PID) V
+					                 WHERE P.GROUP_ID = V.GROUP_ID)
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_CHILDREN" object_id="IXPoiParent"
+					pid_col="GROUP_ID">
+					<att>
+				 <![CDATA[
+	                        SELECT *
+							  FROM IX_POI_CHILDREN P
+							 WHERE EXISTS (SELECT 1
+							          FROM (SELECT C.GROUP_ID
+							                  FROM AU_IX_POI L, IX_POI_PARENT C
+							                 WHERE L.AUDATA_ID = ${AUDATA_ID}
+							                   AND C.PARENT_POI_PID = L.PID) V
+							         WHERE P.GROUP_ID = V.GROUP_ID)
+							UNION
+							SELECT *
+							  FROM IX_POI_CHILDREN C
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI L
+							         WHERE L.AUDATA_ID = ${AUDATA_ID}
+							           AND C.CHILD_POI_PID = L.PID)
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                      SELECT *
+							  FROM IX_POI_CHILDREN P
+							 WHERE EXISTS (SELECT 1
+							          FROM (SELECT C.GROUP_ID
+							                  FROM AU_IX_POI L, IX_POI_PARENT C
+							                 WHERE L.AUDATA_ID = ${AUDATA_ID}
+							                   AND C.PARENT_POI_PID = L.PID) V
+							         WHERE P.GROUP_ID = V.GROUP_ID)
+							UNION
+							SELECT *
+							  FROM IX_POI_CHILDREN C
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI L
+							         WHERE L.AUDATA_ID = ${AUDATA_ID}
+							           AND C.CHILD_POI_PID = L.PID)
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                         SELECT *
+							  FROM IX_POI_CHILDREN P
+							 WHERE EXISTS (SELECT 1
+							          FROM (SELECT C.GROUP_ID
+							                  FROM AU_IX_POI L, IX_POI_PARENT C
+							                 WHERE L.AUDATA_ID = ${AUDATA_ID}
+							                   AND C.PARENT_POI_PID = L.PID) V
+							         WHERE P.GROUP_ID = V.GROUP_ID)
+							UNION
+							SELECT *
+							  FROM IX_POI_CHILDREN C
+							 WHERE EXISTS (SELECT 1
+							          FROM AU_IX_POI L
+							         WHERE L.AUDATA_ID = ${AUDATA_ID}
+							           AND C.CHILD_POI_PID = L.PID)
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			</operate>
+			<operate type="add">
+				<sql table_name="IX_POI_FLAG" object_id="IXPoi"
+					pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                      WITH AURS AS
+							  (SELECT PID, FLAG_CODE
+							     FROM AU_IX_POI AU, AU_IX_POI_FLAG AUF
+							    WHERE AU.AUDATA_ID = ${AUDATA_ID}
+							      AND AU.AUDATA_ID = AUF.AUDATA_ID)
+							  SELECT AURS.PID,
+							         '110000200000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000200000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000200000')
+							  UNION ALL
+							  SELECT AURS.PID,
+							         '110000210000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000210000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000210000')
+							  UNION ALL
+							  SELECT AURS.PID,
+							         '110000220000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000220000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000220000')
+							  UNION ALL
+							  SELECT AURS.PID,
+							         '110000110002' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000110002'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000110002')
+							  UNION ALL
+							  SELECT AURS.PID,
+							         '110000030000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000030000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000030000')
+
+
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                         WITH AURS AS
+							  (SELECT PID, FLAG_CODE
+							     FROM AU_IX_POI AU, AU_IX_POI_FLAG AUF
+							    WHERE AU.AUDATA_ID = ${AUDATA_ID}
+							      AND AU.AUDATA_ID = AUF.AUDATA_ID)
+							  SELECT AURS.PID,
+							         '110000200000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000200000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000200000')
+							  UNION ALL
+							  SELECT AURS.PID,
+							         '110000210000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000210000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000210000')
+							  UNION ALL
+							  SELECT AURS.PID,
+							         '110000220000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000220000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000220000')
+							  UNION ALL
+							  SELECT AURS.PID,
+							         '110000110002' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000110002'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000110002')
+							  UNION ALL
+							  SELECT AURS.PID,
+							         '110000030000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000030000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000030000')
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        WITH AURS AS
+							  (SELECT PID, FLAG_CODE
+							     FROM AU_IX_POI AU, AU_IX_POI_FLAG AUF
+							    WHERE AU.AUDATA_ID = ${AUDATA_ID}
+							      AND AU.AUDATA_ID = AUF.AUDATA_ID)
+							  SELECT AURS.PID,
+							         '110000200000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000200000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000200000')
+							  UNION ALL
+							  SELECT AURS.PID,
+							         '110000210000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000210000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000210000')
+							  UNION ALL
+							  SELECT AURS.PID,
+							         '110000220000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000220000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000220000')
+							  UNION ALL
+							  SELECT AURS.PID,
+							         '110000110002' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000110002'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000110002')
+							  UNION ALL
+							  SELECT AURS.PID,
+							         '110000030000' AS FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+							   WHERE FLAG_CODE = '110000030000'
+							     AND NOT EXISTS (SELECT 1
+							            FROM IX_POI_FLAG RS
+							           WHERE RS.POI_PID = AURS.PID
+							             AND RS.FLAG_CODE = '110000030000')
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_NAME_FLAG" object_id="IXPoi"
+					pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                      SELECT aun.POI_PID AS POI_PID ,auf.name_id, auf.flag_code, 0 AS u_record, NULL AS u_fields
+					        FROM au_ix_poi_name aun, au_ix_poi_name_flag auf
+					       WHERE aun.audata_id =  ${AUDATA_ID}
+					         AND aun.auname_id = auf.auname_id
+
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                       SELECT aun.POI_PID AS POI_PID ,auf.name_id, auf.flag_code, 0 AS u_record, NULL AS u_fields
+					        FROM au_ix_poi_name aun, au_ix_poi_name_flag auf
+					       WHERE aun.audata_id =  ${AUDATA_ID}
+					         AND aun.auname_id = auf.auname_id 
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                       SELECT aun.POI_PID AS POI_PID ,auf.name_id, auf.flag_code, 0 AS u_record, NULL AS u_fields
+					        FROM au_ix_poi_name aun, au_ix_poi_name_flag auf
+					       WHERE aun.audata_id =  ${AUDATA_ID}
+					         AND aun.auname_id = auf.auname_id
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_HOTEL" object_id="IXPoi"
+					pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                      SELECT hotel_id,
+				             poi_pid,
+				             credit_card,
+				             rating,
+				             checkin_time,
+				             checkout_time,
+				             room_count,
+				             room_type,
+				             room_price,
+				             breakfast,
+				             service,
+				             parking,
+				             long_description,
+							 long_descrip_eng,
+							 open_hour,
+							 open_hour_eng,
+							 telephone,
+							 address,
+							 city,
+							 photo_name,
+					         0             AS TRAVELGUIDE_FLAG,
+				             0             AS u_record,
+				             NULL          AS u_fields
+				        FROM au_ix_poi_hotel auh
+				       WHERE  auh.audata_id = ${AUDATA_ID}
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                        SELECT hotel_id,
+				             poi_pid,
+				             credit_card,
+				             rating,
+				             checkin_time,
+				             checkout_time,
+				             room_count,
+				             room_type,
+				             room_price,
+				             breakfast,
+				             service,
+				             parking,
+				             long_description,
+							 long_descrip_eng,
+							 open_hour,
+							 open_hour_eng,
+							 telephone,
+							 address,
+							 city,
+							 photo_name,
+					         0             AS TRAVELGUIDE_FLAG,
+				             0             AS u_record,
+				             NULL          AS u_fields
+				        FROM au_ix_poi_hotel auh
+				       WHERE  auh.audata_id = ${AUDATA_ID}
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT hotel_id,
+				             poi_pid,
+				             credit_card,
+				             rating,
+				             checkin_time,
+				             checkout_time,
+				             room_count,
+				             room_type,
+				             room_price,
+				             breakfast,
+				             service,
+				             parking,
+				             long_description,
+							 long_descrip_eng,
+							 open_hour,
+							 open_hour_eng,
+							 telephone,
+							 address,
+							 city,
+							 photo_name,
+					         0             AS TRAVELGUIDE_FLAG,
+				             0             AS u_record,
+				             NULL          AS u_fields
+				        FROM au_ix_poi_hotel auh
+				       WHERE  auh.audata_id = ${AUDATA_ID}
+	                    ]]>
+					</geoatt>
+
+				</sql>
+				<sql table_name="IX_POI_PHOTO" object_id="IXPoi"
+					pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                      SELECT poi_pid, photo_id, status, memo, 0 as u_record, null as u_fields
+							    FROM au_ix_poi_photo aup
+							   WHERE aup.audata_id = ${AUDATA_ID}
+
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                      SELECT poi_pid, photo_id, status, memo, 0 as u_record, null as u_fields
+							    FROM au_ix_poi_photo aup
+							   WHERE aup.audata_id = ${AUDATA_ID}
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                      SELECT poi_pid, photo_id, status, memo, 0 as u_record, null as u_fields
+							    FROM au_ix_poi_photo aup
+							   WHERE aup.audata_id = ${AUDATA_ID}
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			</operate>
+		</group>
+		<group id="tenant">
+		</group>
+	<group id="ix_poi_flag_innerpoi">
+			<operate type="add">
+				<sql table_name="IX_POI_FLAG" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT au.poi_pid as POI_PID, '110000030000' AS FLAG_CODE, 0 AS u_record, NULL AS u_fields
+							  FROM au_ix_poi_flag au
+							 WHERE au.audata_id=${AUDATA_ID}
+							   AND au.flag_code = '110000030000'
+							   AND NOT EXISTS (SELECT 1
+							          FROM ix_poi_flag ipf
+							         WHERE ipf.poi_pid = au.poi_pid
+							           AND ipf.flag_code = '110000030000')
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                         SELECT au.poi_pid as POI_PID, '110000030000' AS FLAG_CODE, 0 AS u_record, NULL AS u_fields
+							  FROM au_ix_poi_flag au
+							 WHERE au.audata_id=${AUDATA_ID}
+							   AND au.flag_code = '110000030000'
+							   AND NOT EXISTS (SELECT 1
+							          FROM ix_poi_flag ipf
+							         WHERE ipf.poi_pid = au.poi_pid
+							           AND ipf.flag_code = '110000030000')
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                         SELECT au.poi_pid as POI_PID, '110000030000' AS FLAG_CODE, 0 AS u_record, NULL AS u_fields
+							  FROM au_ix_poi_flag au
+							 WHERE au.audata_id=${AUDATA_ID}
+							   AND au.flag_code = '110000030000'
+							   AND NOT EXISTS (SELECT 1
+							          FROM ix_poi_flag ipf
+							         WHERE ipf.poi_pid = au.poi_pid
+							           AND ipf.flag_code = '110000030000')
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			</operate>
+			
+		</group>
+		
+		<group id="ix_poi_flag_reference_address">
+			<operate type="add">
+				<sql table_name="IX_POI_FLAG" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                        SELECT au.pid as POI_PID, '110030060000' AS FLAG_CODE, 0 AS u_record, NULL AS u_fields
+							  FROM au_ix_poi au
+							 WHERE au.audata_id=${AUDATA_ID}
+							   AND instr(au.label, '参照地址') > 0
+							   AND NOT EXISTS (SELECT 1
+							          FROM ix_poi_flag ipf
+							         WHERE ipf.poi_pid = au.pid
+							           AND ipf.flag_code = '110030060000')
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                         SELECT au.pid as POI_PID, '110030060000' AS FLAG_CODE, 0 AS u_record, NULL AS u_fields
+							  FROM au_ix_poi au
+							 WHERE au.audata_id=${AUDATA_ID}
+							   AND instr(au.label, '参照地址') > 0
+							   AND NOT EXISTS (SELECT 1
+							          FROM ix_poi_flag ipf
+							         WHERE ipf.poi_pid = au.pid
+							           AND ipf.flag_code = '110030060000')
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                         SELECT au.pid as POI_PID, '110030060000' AS FLAG_CODE, 0 AS u_record, NULL AS u_fields
+							  FROM au_ix_poi au
+							 WHERE au.audata_id=${AUDATA_ID}
+							   AND instr(au.label, '参照地址') > 0
+							   AND NOT EXISTS (SELECT 1
+							          FROM ix_poi_flag ipf
+							         WHERE ipf.poi_pid = au.pid
+							           AND ipf.flag_code = '110030060000')
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			</operate>
+			
+		</group>
+		
+
+		<group id="ix_poi_flag_poilevel_nokia">
+		<operate type="delete">
+				<sql table_name="IX_POI_FLAG" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                         SELECT *
+							  FROM ix_poi_flag t
+							  WHERE  EXISTS (SELECT 1
+							          FROM au_ix_poi_flag t2,au_ix_poi au
+							         WHERE t2.poi_pid = t.poi_pid and t2.audata_id=au.audata_id and au.audata_id=${AUDATA_ID}     
+							           AND t2.flag_code =t.flag_code)
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                         SELECT *
+							  FROM ix_poi_flag t
+							  WHERE  EXISTS (SELECT 1
+							          FROM au_ix_poi_flag t2,au_ix_poi au
+							         WHERE t2.poi_pid = t.poi_pid and t2.audata_id=au.audata_id and au.audata_id=${AUDATA_ID}     
+							           AND t2.flag_code =t.flag_code)  
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        SELECT *
+							  FROM ix_poi_flag t
+							  WHERE  EXISTS (SELECT 1
+							          FROM au_ix_poi_flag t2,au_ix_poi au
+							         WHERE t2.poi_pid = t.poi_pid and t2.audata_id=au.audata_id and au.audata_id=${AUDATA_ID}     
+							           AND t2.flag_code =t.flag_code)  
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			</operate>
+			<operate type="add">
+				<sql table_name="IX_POI_FLAG" object_id="IXPoi" pid_col="POI_PID">
+					<att>
+				 <![CDATA[
+	                       WITH AURS AS
+							  (SELECT AU.PID, AUF.FLAG_CODE
+							     FROM AU_IX_POI AU, AU_IX_POI_FLAG AUF
+							    WHERE au.audata_id=${AUDATA_ID}    
+							      AND AU.AUDATA_ID = AUF.AUDATA_ID
+							   )
+							   SELECT AURS.PID as POI_PID,
+							         AURS.FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                         WITH AURS AS
+							  (SELECT AU.PID, AUF.FLAG_CODE
+							     FROM AU_IX_POI AU, AU_IX_POI_FLAG AUF
+							    WHERE au.audata_id=${AUDATA_ID}    
+							      AND AU.AUDATA_ID = AUF.AUDATA_ID 
+							   )
+							  SELECT AURS.PID as POI_PID,
+							         AURS.FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        WITH AURS AS
+							  (SELECT AU.PID, AUF.FLAG_CODE
+							     FROM AU_IX_POI AU, AU_IX_POI_FLAG AUF
+							    WHERE au.audata_id=${AUDATA_ID}    
+							      AND AU.AUDATA_ID = AUF.AUDATA_ID 
+							   )
+							   SELECT AURS.PID as POI_PID,
+							         AURS.FLAG_CODE,
+							         0 AS U_RECORD,
+							         NULL AS U_FIELDS
+							    FROM AURS
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			</operate>	
+			
+		</group>
+
+		
+		
+		<group id="ix_poi_flag_yuCaiJi">  <!-- 融合时，如果AU_IX_POI表中，LABLE字段包含“改预采集标识”，如果母库IX_POI_FLAG中存在FLAG_CODE为"110000240000"的记录，则删除此记录，如果不存在，则不处理，也不报错
+-->
+		<operate type="delete">
+				<sql table_name="IX_POI_FLAG" object_id="IXPoi" pid_col="POI_PID">  
+					<att>
+				 <![CDATA[
+							    select * FROM ix_poi_flag t
+									WHERE t.flag_code IN ('110000240000')
+									 AND EXISTS (SELECT 1
+									        FROM au_ix_poi au
+									       WHERE t.poi_pid = au.pid and au.audata_id=${AUDATA_ID}
+									         AND  instr(au.label, '改预采集标识') > 0)     
+	                    ]]>
+					</att>
+					<geo>
+				 <![CDATA[
+	                           select * FROM ix_poi_flag t
+									WHERE t.flag_code IN ('110000240000')
+									 AND EXISTS (SELECT 1
+									        FROM au_ix_poi au
+									       WHERE t.poi_pid = au.pid and au.audata_id=${AUDATA_ID}
+									         AND  instr(au.label, '改预采集标识') > 0)    
+	                    ]]>
+					</geo>
+					<geoatt>
+				 <![CDATA[
+	                        select * FROM ix_poi_flag t
+									WHERE t.flag_code IN ('110000240000')
+									 AND EXISTS (SELECT 1
+									        FROM au_ix_poi au
+									       WHERE t.poi_pid = au.pid and au.audata_id=${AUDATA_ID}
+									         AND  instr(au.label, '改预采集标识') > 0)    
+	                    ]]>
+					</geoatt>
+
+				</sql>
+			</operate>	
+		</group>
+		
+	</mul>
+</sqls>

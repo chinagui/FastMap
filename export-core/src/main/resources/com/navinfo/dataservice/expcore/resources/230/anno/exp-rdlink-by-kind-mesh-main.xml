@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--2)	2.5万道路：通过NaviDMS的数据导出功能，按照图幅分省的范围，导出道路种别为六级以上的数据作为参考数据。
+（图幅分省范围、道路种别是可选项）道路数据只导出道路基本信息包括道路LINK表、道路形态表、道路名称表、道路名称与LINK关系表-->
+<sqls>
+    <import file="clean-index.xml"/>
+
+    <import file="clean-data.xml"/>
+    <feature name="RD_LINK">
+        <step value="7">
+            <!--
+             condition="mesh"：按图幅导出的sql
+             condition="area"：按区域导出的sql
+             no condition ：所有都符合
+            -->
+            <!--按图幅过滤RD_LINK-->
+            <sql condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_RD_LINK
+                          (PID)
+                          (SELECT LINK_PID FROM RD_LINK WHERE KIND<7 AND MESH_ID [mesh]);
+                    ]]></sql>
+
+        </step>
+
+        <step value="10">
+
+            <!--提取Link关联名称（RD_LINK_NAME关联）,并去重 -->
+            <sql><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_LINK_NAMEGID
+                           (PID)
+                           (SELECT DISTINCT P.NAME_GROUPID
+                              FROM RD_LINK_NAME P, TEMP_FILTER_RD_LINK T
+                             WHERE P.LINK_PID = T.PID);
+                         ]]></sql>
+            
+        </step>
+        <step value="13">
+            <sql><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_LINK_NAMEID
+                           (PID)
+                           (SELECT DISTINCT P.NAME_ID
+                              FROM RD_NAME P, TEMP_RD_LINK_NAMEGID T
+                             WHERE P.NAME_GROUPID = T.PID);
+                         ]]></sql>
+        </step>
+        <step value="100">
+            <!--
+                   查询返回RD_LINK相关信息：
+               -->
+            <!--Link表 -->
+            <sql><![CDATA[SELECT P.* FROM RD_LINK P,TEMP_FILTER_RD_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
+            <!--Link关系表 -->
+            <sql><![CDATA[SELECT P.* FROM RD_LINK_FORM P,TEMP_FILTER_RD_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
+            <!--RD_LINK_NAME -->
+            <sql><![CDATA[SELECT P.* FROM RD_LINK_NAME P,TEMP_FILTER_RD_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
+            <!--RD_NAME -->
+            <sql><![CDATA[SELECT P.* FROM RD_NAME P,TEMP_RD_LINK_NAMEID T WHERE P.NAME_ID=T.PID; ]]></sql>
+
+
+        </step>
+
+    </feature>
+
+    <import file="exp-rd_node.xml"/>
+    <import file="table-stats-exp-rdlink-by-kind-mesh.xml"/>
+</sqls>

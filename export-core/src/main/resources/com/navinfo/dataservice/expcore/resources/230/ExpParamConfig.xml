@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- public final static int INTEGER = 4; public final static int VARCHAR 
+	= 12; -->
+<exp-param>
+	<default-param-converter
+		class="com.navinfo.dms.tools.dataexport.source.parameter.converter.DoNothingParamConverter" />
+	<default-sql-var-replace
+		class="com.navinfo.dms.tools.dataexport.export.sqlprocess.replacer.DefauleSqlReplacer" />
+
+
+	<!--//////////////////////////////////////////////////////内业//////////////////////////////////////////////// -->
+	<!--全要素导出 -->
+	<feature level="all">
+		<condition type="by-mesh" exp-config-file="exp-all-main.xml" />
+		<condition type="by-area" exp-config-file="exp-all-main.xml"
+			replacer="com.navinfo.dms.tools.dataexport.export.sqlprocess.replacer.AreaSqlReplacer" />
+	</feature>
+	<feature level="meta">
+		<condition type="by-mesh" exp-config-file="exp-meta.xml" />
+	</feature> 	
+	<feature level="province">
+		<condition type="by-mesh" exp-config-file="exp-all-by-province-main.xml" />
+	</feature> 
+	<feature level="province-20w">
+		<condition type="by-mesh" exp-config-file="exp-all-main-p.xml" />
+	</feature> 
+	<feature level="province-100w">
+		<condition type="by-mesh" exp-config-file="exp-all-main.xml" />
+	</feature> 
+	<feature level="province-top">
+		<condition type="by-mesh" exp-config-file="exp-all-main.xml" />
+	</feature> 
+
+	<!--导出公交 -->
+	<feature level="pt">
+		<condition type="by-citycode" exp-config-file="exp-pt-by-citycode-main.xml" />
+	</feature>
+
+	<!--公交参考 -->
+	<feature level="pt-ref">
+		<condition type="by-mesh" exp-config-file="exp-pt-ref-main.xml" />
+	</feature>
+
+
+	<!--导出行政区划 -->
+	<feature level="ad">
+		<condition type="by-mesh" exp-config-file="exp-ad-by-mesh-main.xml" />
+	</feature>
+
+	<feature level="poi">
+		<condition type="by-mesh" exp-config-file="exp-poi-by-mesh-main.xml" />
+	</feature>
+
+	<!--行政区划参考 -->
+	<!--<feature level="ad-ref"> <condition type="by-mesh" exp-config-file="exp-ad-ref-main.xml" 
+		/> </feature> -->
+
+	<!--导出TMC -->
+	<feature level="tmc">
+		<condition type="by-citycode" exp-config-file="exp-tmc-by-citycode-main.xml" />
+	</feature>
+
+
+	<!--导出20w,2.5W文字 -->
+	<feature level="20w-anno">
+		<condition type="by-mesh" exp-config-file="exp-20w-anno-by-mesh-main.xml" />
+	</feature>
+
+
+	<!--导出2.5万背景 -->
+	<feature level="2.5w-background">
+		<condition type="by-mesh" exp-config-file="exp-2.5w-background-by-mesh-main.xml" />
+	</feature>
+
+	<!--2.5万道路：通过NaviDMS的数据导出功能，按照图幅分省的范围，导出道路种别为六级以上的数据作为参考数据 -->
+	<feature level="2.5w-rd">
+		<condition type="by-mesh" exp-config-file="exp-rdlink-by-kind-mesh-main.xml" />
+	</feature>
+	<!--/////////////////////////////////////////////////外业///////////////////////////////////////////////////// -->
+
+	<!-- 以AU为前缀的level为外业库的数据，所以，au为前缀是不能乱用的 -->
+	<feature level="au">
+		<condition type="by-batch" exp-config-file="exp-au-main.xml" />
+	</feature>
+
+
+	<!--成果库创建 -->
+	<feature level="copy-all">
+		<!--默认的成果库复制 -->
+		<condition type="archive-n"
+			after-copy-exec="com.navinfo.dms.tools.dataexport.export.plugin.DefaultArchiveDbCreatePlugin" />
+		<!--成果库K创建 -->
+		<condition type="archive-k"
+			after-copy-exec="com.navinfo.dms.tools.dataexport.export.plugin.ArchiveDbKCreatePlugin" />
+		<!--成果库G创建 -->
+		<condition type="archive-g"
+			after-copy-exec="com.navinfo.dms.tools.dataexport.export.plugin.ArchiveDbGCreatePlugin" />
+	</feature>
+
+
+	<!--检查结果导出 -->
+	<feature level="ck">
+		<condition type="by-mesh-vmTaskId" exp-config-file="exp-ck.xml" />
+	</feature>
+	
+	
+	<!--代理店(内业) -->
+	<feature level="proxy-poi">
+		<condition type="by-kind-status" exp-config-file="exp-proxypoi-main.xml" />
+	</feature>
+	<!--代理店(外业) -->
+	<feature level="proxy-poi-au">
+		<condition type="by-kind-status" exp-config-file="exp-proxypoi-au-main.xml" />
+	</feature>
+	
+	<feature level="virtual-merge-au">
+		<condition type="by-batch" exp-config-file="exp-virtual-merge-au-main.xml" />
+	</feature> 
+	
+	<!--多边形导出 -->
+	<feature level="polygon">
+		<condition type="by-polygon" exp-config-file="exp-polygon-main.xml"
+			replacer="com.navinfo.dms.tools.dataexport.export.sqlprocess.replacer.PolygonSqlReplacer" />
+	</feature>
+</exp-param>

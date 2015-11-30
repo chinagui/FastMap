@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls>
+    <import file="clean-index.xml"/>
+    <import file="clean-data.xml"/>
+
+
+
+    
+    <import file="exp-au-ix-poi.xml"/>
+    <import file="exp-au-ix-pointaddress.xml"/>
+    <import file="exp-au-ix-anno.xml"/>
+    <import file="exp-virtual-merge-au-ix-poi.xml"/>      
+    <import file="table-stats-au.xml"/>
+</sqls>

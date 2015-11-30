@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2011-11-3
+导出外业mark 等参考数据
+-->
+<sqls>
+
+
+
+    <feature name="AU_MARK..">
+        <step value="7">
+
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_AU_MARK
+                          (PID)
+                          (SELECT DISTINCT P.MARK_ID FROM
+                            TMAU_EXP_AU_MARK P
+                            WHERE P.BATCH_ID [batch]);
+                    ]]></sql>
+
+
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_AU_GPSTRACK_GROUP
+                          (PID)
+                          (SELECT DISTINCT P.GROUP_ID FROM
+                            TMAU_EXP_AU_GPSTRACK_GROUP P
+                             WHERE P.BATCH_ID [batch]);
+                    ]]></sql>
+            
+            
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_AU_GPSTRACK
+                          (PID)
+                          (SELECT DISTINCT P.GPSTRACK_ID FROM
+                            AU_GPSTRACK P,TMAU_EXP_AU_GPSTRACK_GROUP T
+                             WHERE P.GROUP_ID = T.GROUP_ID AND T.BATCH_ID [batch]);
+                    ]]></sql>
+                    
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_AU_SERIESPHOTO
+                          (PID)
+                          (SELECT DISTINCT P.PHOTO_ID FROM
+                            TMAU_EXP_AU_SERIESPHOTO P
+                            WHERE P.BATCH_ID [batch]);
+                    ]]></sql>
+        </step>
+        
+        <step value="10">
+            <!--添加AU_PHOTO-->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_AU_PHOTO
+                          (PID)
+                          (SELECT DISTINCT P.PHOTO_ID FROM
+                            AU_MARK_PHOTO P,TEMP_AU_MARK T WHERE P.MARK_ID=T.PID);
+                    ]]></sql>
+
+            <!--添加AU_AUDIO-->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO  TEMP_AU_AUDIO
+                          (PID)
+                          (SELECT DISTINCT P.AUDIO_ID FROM
+                            AU_MARK_AUDIO P,TEMP_AU_MARK T WHERE P.MARK_ID=T.PID);
+                    ]]></sql>
+
+            <!--添加AU_VIDEO-->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_AU_VIDEO
+                          (PID)
+                          (SELECT DISTINCT P.VIDEO_ID FROM
+                            AU_MARK_VIDEO P,TEMP_AU_MARK T WHERE P.MARK_ID=T.PID);
+                    ]]></sql>
+
+            <!--添加AU_VIDEO-->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_AU_VIDEO
+                          (PID)
+                          (SELECT DISTINCT P.VIDEO_ID FROM
+                            AU_GPSTRACK_GROUP_VIDEO P,TEMP_AU_GPSTRACK_GROUP T WHERE P.GROUP_ID=T.PID);
+                    ]]></sql>
+
+
+        </step>
+
+
+        <!--
+                    外业成果导出:
+            1.根据meshId提取
+        -->
+        <step value="100">
+            <!--
+                   根据图幅号直接提取数据表：
+               -->
+            <!--AU_MARK-->
+            <sql><![CDATA[SELECT P.* FROM
+                            AU_MARK P,TEMP_AU_MARK T WHERE P.MARK_ID=T.PID;
+                            ]]></sql>
+            <!--AU_MARK_PHOTO-->
+            <sql><![CDATA[SELECT P.* FROM
+                            AU_MARK_PHOTO P,TEMP_AU_MARK T WHERE P.MARK_ID=T.PID;
+                            ]]></sql>
+            <!--AU_MARK_AUDIO-->
+            <sql><![CDATA[SELECT P.* FROM
+                            AU_MARK_AUDIO P,TEMP_AU_MARK T WHERE P.MARK_ID=T.PID;
+                            ]]></sql>
+            <!--AU_MARK_VIDEO-->
+            <sql><![CDATA[SELECT P.* FROM
+                            AU_MARK_VIDEO P,TEMP_AU_MARK T WHERE P.MARK_ID=T.PID;
+                            ]]></sql>
+            <!--AU_DRAFT-->
+            <sql><![CDATA[SELECT P.* FROM
+                            AU_DRAFT P,TEMP_AU_MARK T WHERE P.MARK_ID=T.PID;
+                            ]]></sql>
+            <!--AU_GPSRECORD-->
+            <sql><![CDATA[SELECT P.* FROM
+                            AU_GPSRECORD P,TEMP_AU_MARK T WHERE P.MARK_ID=T.PID;
+                            ]]></sql>
+
+            <!--AU_GPSTRACK_GROUP-->
+            <sql><![CDATA[SELECT P.* FROM
+                            AU_GPSTRACK_GROUP P,TEMP_AU_GPSTRACK_GROUP T
+                            WHERE P.GROUP_ID=T.PID;  ]]></sql>
+            <!--AU_GPSTRACK-->
+            <sql><![CDATA[SELECT P.* FROM
+                            AU_GPSTRACK P,TEMP_AU_GPSTRACK T
+                            WHERE P.GPSTRACK_ID=T.PID;  ]]></sql>
+
+            <!--AU_GPSTRACK_PHOTO-->
+            <sql><![CDATA[SELECT P.* FROM
+                            AU_GPSTRACK_PHOTO P,TEMP_AU_GPSTRACK T
+                            WHERE P.GPSTRACK_ID=T.PID;  ]]></sql>
+
+            <!--AU_GPSTRACK_GROUP_VIDEO-->
+            <sql><![CDATA[SELECT P.* FROM
+                            AU_GPSTRACK_GROUP_VIDEO P,TEMP_AU_GPSTRACK_GROUP T
+                            WHERE P.GROUP_ID=T.PID;  ]]></sql>
+
+
+            <!--AU_SERIESPHOTO-->
+            <sql>
+                <![CDATA[SELECT P.* FROM
+                            AU_SERIESPHOTO P,
+                            TEMP_AU_SERIESPHOTO T
+                            WHERE P.PHOTO_ID=T.PID ;  ]]></sql>
+
+            <!--AU_TOPOIMAGE-->
+            <sql>
+                <![CDATA[SELECT P.* FROM
+                            AU_TOPOIMAGE P,
+                            TMAU_EXP_AU_TOPOIMAGE T
+                            WHERE P.IMAGE_ID=T.IMAGE_ID
+                            AND T.BATCH_ID [batch];  ]]></sql>
+        </step>
+
+
+    </feature>
+
+
+
+</sqls>

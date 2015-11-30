@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2011-11-3
+-->
+<sqls>
+
+    <!--索引：文字表-->
+    <feature name="IX_ANNOTATION">
+        <step value="7">
+            <!--按图幅过滤IX_POI-->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_ANNOTATION
+                          (PID)
+                          (SELECT DISTINCT AUDATA_ID FROM TMAU_EXP_AU_IX_ANNOTATION WHERE BATCH_ID [batch]);
+                        ]]></sql>
+        </step>
+        <!--
+            提取原则：
+            1.按图幅提取
+        -->
+        <step value="100">
+            <!--IX_ANNOTATION-->
+            <sql><![CDATA[SELECT P.*
+                              FROM AU_IX_ANNOTATION P, TEMP_IX_ANNOTATION T
+                             WHERE P.AUDATA_ID = T.PID;]]></sql>
+            <!--AU_IX_ANNOTATION_NAME-->
+            <sql><![CDATA[
+                         SELECT P.*
+                              FROM AU_IX_ANNOTATION_NAME P, TEMP_IX_ANNOTATION T
+                             WHERE P.AUDATA_ID = T.PID;
+                         ]]></sql>
+
+        </step>
+    </feature>
+
+
+</sqls>

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2010-10-11
+-->
+<sqls>
+    <import file="clean-index.xml"/>
+    <import file="clean-data.xml"/>
+
+    <import file="exp-simple-rd_link.xml"/>
+
+
+    <!--立交关系-->
+    <import file="exp-rd_gsc.xml"/>
+    <!--同一关系-->
+    <import file="exp-rd_sameln.xml"/>
+
+    <!--土地覆盖 水系绿地-->
+    <import file="exp-lc.xml"/>
+    <!--功能面-->
+    <import file="exp-lu.xml"/>
+    <!--行政区划-->
+    <import file="exp-ad.xml"/>
+    <!--导出铁路-->
+    <import file="exp-rw.xml"/>
+
+
+    <import file="poi_query.xml">
+        <exclude sqlId="poi_parent_group_sql"/>
+    </import>
+
+
+    <feature name="IX_POI">
+        <!--STEP 从4开始：
+            1.因为在市街图中STEP=3时，开始插入关联POI到临时表
+        -->
+        <!--
+            提取原则：
+            1.按图幅提取
+        -->
+
+
+        <step value="13">
+            <!--按图幅过滤IX_POI-->
+            <sql condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_IX_POI
+                          (PID)
+                          (SELECT PID FROM IX_POI WHERE MESH_ID [mesh] AND KIND_CODE IN ('230103','230111','230108','230114'));
+                        ]]></sql>
+            <sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_IX_POI
+                          (PID)
+                          (SELECT PID FROM IX_POI
+                            WHERE AND KIND_CODE IN ('230103','230111','230108','230114')
+                            AND SDO_ANYINTERACT(GEOMETRY,
+                                              [area]) = 'TRUE');
+                        ]]></sql>
+
+
+        </step>
+
+        <step value="16">
+            <!--POI在图幅内 ，与POI相关联的图幅外LINK要提取-->
+            <!--  根据POI查询引导link  -->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT I.LINK_PID FROM IX_POI I,TEMP_FILTER_IX_POI T WHERE I.PID=T.PID);
+                        ]]></sql>
+
+
+            <!--	父在图幅内，子在图幅外，子提取-->
+            <!--<sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI
+                          (PID)
+                          (SELECT  /*+INDEX(T TEMP_IDX_FIPOI)*/ C.CHILD_POI_PID
+                              FROM IX_POI_PARENT P, IX_POI_CHILDREN C, TEMP_FILTER_IX_POI T
+                             WHERE P.GROUP_ID = C.GROUP_ID
+                               AND P.PARENT_POI_PID = T.PID);
+                        ]]></sql>-->
+
+            <!--	子在图幅内，父在图幅外，父提取，父的其他子不提-->
+            <!--<sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI
+                          (PID)
+                          (SELECT /*+INDEX(T TEMP_IDX_FIPOI)*/ P.PARENT_POI_PID
+                              FROM IX_POI_PARENT P, IX_POI_CHILDREN C, TEMP_FILTER_IX_POI T
+                             WHERE P.GROUP_ID = C.GROUP_ID
+                               AND C.CHILD_POI_PID = T.PID);
+                        ]]></sql>-->
+
+
+            <!--提取同一POI-->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_SAMEPOI
+                          (PID)
+                          (SELECT DISTINCT P.GROUP_ID
+                              FROM IX_SAMEPOI_PART P,TEMP_FILTER_IX_POI T
+                             WHERE P.POI_PID = T.PID);
+                        ]]></sql>
+
+        </step>
+
+        <step value="19">
+
+            <!--补充同一POI-->
+            <!--<sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI
+                          (PID)
+                          (SELECT  P.POI_PID
+                              FROM IX_SAMEPOI_PART P,TEMP_IX_SAMEPOI T
+                             WHERE P.GROUP_ID = T.PID);
+                        ]]></sql>-->
+            <!--LINK在图幅内，与LINK相关联的POI要提取-->
+            <!--<sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI
+                          (PID)
+                          (SELECT P.PID FROM IX_POI P,TEMP_FILTER_RD_LINK L WHERE P.LINK_PID=L.PID);
+                        ]]></sql>-->
+
+
+        </step>
+        <step value="22">
+
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_IX_POI
+                          (PID)
+                          (SELECT P.PID FROM TEMP_IX_POI P);
+                        ]]></sql>
+
+
+        </step>
+        <!--去重-->
+        <step value="25">
+
+            <sql>
+                <![CDATA[TRUNCATE TABLE TEMP_IX_POI;]]></sql>
+
+
+        </step>
+        <!--去重-->
+        <step value="28">
+
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI
+                          (PID)
+                          (SELECT DISTINCT PID FROM TEMP_FILTER_IX_POI P);
+                        ]]></sql>
+
+
+        </step>
+
+    </feature>
+	<import file="table-stats-exp-pt-ref-main.xml"/>
+
+</sqls>

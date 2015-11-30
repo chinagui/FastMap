@@ -1,0 +1,1 @@
+create or replace function clob_compare(p_src clob,p_value varchar2) return number deterministic is begin if p_src is null then if p_value is null then return 0; else return -1; end if; end if; if dbms_lob.getlength(p_src) <= 4000 then if to_char(p_src) <> p_value then return -1; else return 0; end if; else return dbms_lob.compare(p_src,p_value); end if; end ;;

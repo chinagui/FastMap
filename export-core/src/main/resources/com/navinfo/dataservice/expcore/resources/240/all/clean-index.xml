@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls>
+    <feature name="CREATE_INDEX">
+        <!--创建非真正临时表时请设置为nologging-->
+        <step value="0">
+             
+        </step>
+    </feature>
+</sqls>

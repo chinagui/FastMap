@@ -5,11 +5,13 @@
     <artifactId>dataservice</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <modules>
-        <module>webman</module>
+		<module>navi-common</module>
+		<module>ds-common</module>
+		<module>datahub</module>
         <module>export-core</module>
 		<module>import-core</module>
-		<module>datahub</module>
-    <module>versionman</module>
+		<module>versionman</module>
+        <module>webman</module>
   </modules>
 
     <packaging>pom</packaging>
@@ -64,122 +66,15 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>4.6</junit.version>
         <org.springframework.version>4.2.0.RELEASE</org.springframework.version>
-		<jdbc.groupId>com.oracle</jdbc.groupId>
-        <jdbc.artifactId>ojdbc6</jdbc.artifactId>
-		<jdbc.version>11.2.0.1.0</jdbc.version>
+		<ojdbc.groupId>com.oracle</ojdbc.groupId>
+        <ojdbc.artifactId>ojdbc6</ojdbc.artifactId>
+		<ojdbc.version>11.2.0.1.0</ojdbc.version>
+		<mysql.connector.version>5.1.35</mysql.connector.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>com.navinfo.dms</groupId>
-                <artifactId>NaviCommon</artifactId>
-                <version>1.0-SNAPSHOT</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jasig.cas</groupId>
-                        <artifactId>cas-client</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>ognl</groupId>
-                        <artifactId>ognl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-fileupload</groupId>
-                        <artifactId>commons-fileupload</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>cglib</groupId>
-                        <artifactId>cglib</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-context-support</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-webmvc</artifactId>
-                    </exclusion>
-
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-test</artifactId>
-                    </exclusion>
-
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-jdbc</artifactId>
-                    </exclusion>
-
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-oxm</artifactId>
-                    </exclusion>
-
-                    <exclusion>
-                        <groupId>com.thoughtworks.xstream</groupId>
-                        <artifactId>xstream</artifactId>
-                    </exclusion>
-
-                    <exclusion>
-                        <groupId>org.codehaus.jackson</groupId>
-                        <artifactId>jackson-mapper-asl</artifactId>
-                    </exclusion>
-
-                    <exclusion>
-                        <groupId>org.opensymphony.quartz</groupId>
-                        <artifactId>quartz</artifactId>
-                    </exclusion>
-
-                    <exclusion>
-                        <groupId>org.apache.poi</groupId>
-                        <artifactId>poi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.navinfo.sso</groupId>
-                        <artifactId>ssoclient</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.tenace.framework</groupId>
-                        <artifactId>tenace</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.navinfo.orgnization.plugins</groupId>
-                        <artifactId>organization</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.jcraft</groupId>
-                        <artifactId>jsch</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-			<dependency>
-				<groupId>com.navinfo.dms.vm</groupId>
-				<artifactId>VMCommon</artifactId>
-				<version>1.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.navinfo.dataservice</groupId>
-				<artifactId>export-core</artifactId>
-				<version>0.0.1-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>com.navinfo.dataservice</groupId>
-				<artifactId>datahub</artifactId>
-				<version>0.0.1-SNAPSHOT</version>
-			</dependency>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-plugin-api</artifactId>
-                <version>2.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>1.2.13</version>
-            </dependency>
+		<!-- apache commons start-->
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
@@ -217,33 +112,118 @@
                 <artifactId>commons-net</artifactId>
                 <version>2.0</version>
             </dependency>
+			
+			<dependency>
+				<groupId>commons-httpclient</groupId>
+				<artifactId>commons-httpclient</artifactId>
+				<version>3.1</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>commons-dbcp</groupId>
+				<artifactId>commons-dbcp</artifactId>
+				<version>1.4</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>commons-fileupload</groupId>
+				<artifactId>commons-fileupload</artifactId>
+				<version>1.2.1</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>commons-beanutils</groupId>
+				<artifactId>commons-beanutils</artifactId>
+				<version>1.8.3</version>
+			</dependency>
+		<!-- apache commons end-->
+		<!-- utils start-->
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>1.2.13</version>
+            </dependency>
+			
             <dependency>
                 <groupId>dom4j</groupId>
                 <artifactId>dom4j</artifactId>
                 <version>1.6.1</version>
             </dependency>
+			
             <dependency>
                 <groupId>cglib</groupId>
                 <artifactId>cglib</artifactId>
                 <version>2.2</version>
             </dependency>
+			
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-core</artifactId>
 				<version>2.6.0-rc4</version>
 			</dependency>
+			
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
 				<version>2.6.0-rc4</version>
 			</dependency>
+			
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-annotations</artifactId>
 				<version>2.6.0-rc4</version>
 			</dependency>
+			
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>servlet-api</artifactId>
+                <version>2.4</version>
+                <scope>provided</scope>
+            </dependency>
+			
+			<dependency>
+				<groupId>com.jcraft</groupId>
+				<artifactId>jsch</artifactId>
+				<version>0.1.43</version>
+			</dependency>
+			
+            <dependency>
+                <groupId>net.sf.ehcache</groupId>
+                <artifactId>ehcache</artifactId>
+                <version>1.2.3</version>
+            </dependency>
 
-            <!-- apache commons end-->
+            <dependency>
+                <groupId>javax.mail</groupId>
+                <artifactId>mail</artifactId>
+                <version>1.4.1</version>
+            </dependency>
+			
+            <dependency>
+                <groupId>org.apache.velocity</groupId>
+                <artifactId>velocity</artifactId>
+                <version>1.5</version>
+            </dependency>
+			
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.6.1</version>
+            </dependency>
+			
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>1.6.2</version>
+            </dependency>
+			
+			<dependency>
+				<groupId>org.apache.poi</groupId>
+				<artifactId>poi</artifactId>
+				<version>3.5-beta6</version>
+			</dependency>
+		<!-- utils end-->
+		<!-- spring start-->	
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-core</artifactId>
@@ -280,28 +260,26 @@
                 <artifactId>spring-web</artifactId>
                 <version>${org.springframework.version}</version>
             </dependency>
+			
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-webmvc</artifactId>
                 <version>${org.springframework.version}</version>
             </dependency>
+			
             <dependency>
                 <groupId>com.thoughtworks.xstream</groupId>
                 <artifactId>xstream</artifactId>
                 <version>1.4.8</version>
             </dependency>
+			
             <dependency>
                 <groupId>org.codehaus.jackson</groupId>
                 <artifactId>jackson-mapper-asl</artifactId>
                 <version>1.5.3</version>
             </dependency>
-            <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>servlet-api</artifactId>
-                <version>2.5</version>
-                <scope>provided</scope>
-            </dependency>
-            <!-- for test begin -->
+		<!-- spring end-->
+		<!-- for test begin -->
             <dependency>
                 <groupId>p6spy</groupId>
                 <artifactId>p6spy</artifactId>
@@ -315,23 +293,15 @@
                 <scope>test</scope>
             </dependency>
 
-            <!-- for test end  -->
+		<!-- for test end  -->
 
-            <!-- jdbc driver -->
+		<!-- jdbc driver start-->
             <dependency>
-                <groupId>${jdbc.groupId}</groupId>
-                <artifactId>${jdbc.artifactId}</artifactId>
-                <version>${jdbc.version}</version>
+                <groupId>${ojdbc.groupId}</groupId>
+                <artifactId>${ojdbc.artifactId}</artifactId>
+                <version>${ojdbc.version}</version>
                 <!--<scope>provided</scope>-->
             </dependency>
-
-
-            <dependency>
-                <groupId>net.sf.ehcache</groupId>
-                <artifactId>ehcache</artifactId>
-                <version>1.2.3</version>
-            </dependency>
-
             <dependency>
                 <groupId>com.oracle</groupId>
                 <artifactId>sdoapi</artifactId>
@@ -342,26 +312,53 @@
                 <artifactId>sdoutl</artifactId>
                 <version>11.2.0.1.0</version>
             </dependency>
+			<dependency>
+				<groupId>mysql</groupId>
+				<artifactId>mysql-connector-java</artifactId>
+				<version>${mysql.connector.version}</version>
+			</dependency>
+			
+		<!-- jdbc driver start-->
+		
+		<!-- dataservice module start -->		
+			<dependency>
+				<groupId>com.navinfo.dms.vm</groupId>
+				<artifactId>VMCommon</artifactId>
+				<version>1.0.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>navi-common</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+				<exclusions>
+					<exclusion>
+						<groupId>javax.servlet</groupId>
+						<artifactId>servlet-api</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>ds-common</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>export-core</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>datahub</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+		<!-- dataservice module start -->	
             <dependency>
-                <groupId>javax.mail</groupId>
-                <artifactId>mail</artifactId>
-                <version>1.4.1</version>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-plugin-api</artifactId>
+                <version>2.0</version>
             </dependency>
-            <dependency>
-                <groupId>org.apache.velocity</groupId>
-                <artifactId>velocity</artifactId>
-                <version>1.5</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>1.6.1</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
-                <version>1.6.2</version>
-            </dependency>
+			
         </dependencies>
 
     </dependencyManagement>

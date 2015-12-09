@@ -21,12 +21,12 @@
       <artifactId>junit</artifactId>
     </dependency>
 	<dependency>
-		<groupId>com.navinfo.dms</groupId>
-		<artifactId>NaviCommon</artifactId>
-	</dependency>
-	<dependency>
 		<groupId>com.navinfo.dms.vm</groupId>
 		<artifactId>VMCommon</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>navi-common</artifactId>
 	</dependency>
   </dependencies>
 </project>

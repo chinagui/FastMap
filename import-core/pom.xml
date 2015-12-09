@@ -16,17 +16,17 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <dependencies>
-	<dependency>
-		<groupId>com.navinfo.dms</groupId>
-		<artifactId>NaviCommon</artifactId>
-	</dependency>
-	<dependency>
-		<groupId>com.navinfo.dms.vm</groupId>
-		<artifactId>VMCommon</artifactId>
-	</dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
+	<dependency>
+		<groupId>com.navinfo.dms.vm</groupId>
+		<artifactId>VMCommon</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>navi-common</artifactId>
+	</dependency>
   </dependencies>
 </project>

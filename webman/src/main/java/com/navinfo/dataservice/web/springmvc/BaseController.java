@@ -1,11 +1,15 @@
-package com.navinfo.dataservice.datahub.springmvc;
+package com.navinfo.dataservice.web.springmvc;
 
 import java.net.URLDecoder;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.navicommons.config.SystemGlobals;
 import com.navinfo.navicommons.database.Page;
@@ -32,48 +36,76 @@ public class BaseController {
     public static final String AU_DEFAULT_FTP_PASSWORD = SystemGlobals.getValue("au.ftp.password", "test");
 
     protected Logger logger = Logger.getLogger(this.getClass());
+
+    protected ModelAndView createQueryJsonModelAndView(Page page) {
+        return new ModelAndView("jsonView", "query", page);
+    }
+
+    protected ModelAndView createQueryForNoPageJsonModelAndView(Page page) {
+        return new ModelAndView("jsonView", "queryForNoPage", page);
+    }
+
+    protected ModelAndView createDMLJsonModelAndView(Map map) {
+        return new ModelAndView("jsonView", "dml", map);
+    }
     
-    
+    protected ModelAndView createDataJsonModelAndView(Map map) {
+        return new ModelAndView("jsonView", "data", map);
+    }
+
+    protected ModelAndView createXMLModelAndView(Object obj) {
+        return new ModelAndView("xmlView", BindingResult.MODEL_KEY_PREFIX + "response", obj);
+    }
+
+    protected ModelAndView createModelAndView(Object obj) {
+        // 可以通过request或http请求头来决定返回view类型
+        return createXMLModelAndView(obj);
+    }
+
 
     protected Map<String,?> exception(Exception e) {
         return exception(e.getMessage());
     }
-
     protected Map<String,?> exception(String msg) {
-        return createModelMap(0,msg,null);
-    }
-
-    protected Map<String,?> success(String msg) {
         return createModelMap(1,msg,null);
     }
-    protected Map<String,?> success(Map<String,Object> data) {
-        return createModelMap(1,null,data);
+
+    // 验证不通过的
+    protected Map<String,?> fail(String msg) {
+        return createModelMap(0,msg,null);
     }
-    protected Map<String,?> success(String msg,Map<String,Object> data) {
-        return createModelMap(1,msg,data);
+    protected Map<String,?> success(String msg) {
+        return createModelMap(100,msg,null);
     }
-    protected Map<String,Object> success(String msg,Page page) {
-        return createModelMapByPage(1,msg,page);
+    protected Map<String,?> success(String msg,Map<String,?> result) {
+        return createModelMap(100,msg,result);
     }
-    protected Map<String,Object> success(Page page) {
-        return createModelMapByPage(1,null,page);
+    protected Map<String,?> success(Map<String,?> result) {
+        return createModelMap(100,null,result);
     }
-    @SuppressWarnings("unchecked")
+    protected Map<String,?> success(String msg,Page page){
+    	return createModelMap(100,msg,page);
+    }
+    protected Map<String,?> success(Page page){
+    	return createModelMap(100,null,page);
+    }
     private Map<String,?> createModelMap(int code,String msg,Object data){
-    	Map result = new HashMap();
-        result.put("code", Integer.valueOf(code));//0,失败，1，成功
-        result.put("msg", "123");
-        result.put("data", data);
-        return result;
-    }
-    private Map<String,Object> createModelMapByPage(int code,String msg,Page page){
     	Map<String,Object> result = new HashMap<String,Object>();
-        result.put("code", code);//0,失败，1，成功
-        result.put("msg", msg);
-        result.put("data", page);
-        return result;
+    	result.put("code", code);
+    	result.put("msg", msg);
+    	result.put("data", data);
+    	return result;
     }
 
+    protected ModelAndView createQueryJsonModelAndViewForXMLFormat(Page page) {
+        List list = (List) page.getResult();
+        StringBuffer sb = new StringBuffer();
+        for (Iterator iterator = list.iterator(); iterator.hasNext();) {
+            Object obj = iterator.next();
+            sb.append(obj.toString());
+        }
+        return new ModelAndView("jsonView", "query", sb.toString());
+    }
     protected String URLDecode(String parameter) throws Exception {
         if (parameter == null || parameter.trim().length() == 0) {
             return null;
@@ -106,10 +138,5 @@ public class BaseController {
         return value.toString().split(",");
     }
 
-    public static void main(String[] args){
-    	Map<String,Object> result = new HashMap<String,Object>();
-    	result.put("msg", null);
-    	System.out.println("success");
-    	System.out.println(result.getClass().getName());
-    }
+
 }

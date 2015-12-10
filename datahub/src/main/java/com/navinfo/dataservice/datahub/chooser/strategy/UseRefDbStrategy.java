@@ -65,7 +65,7 @@ public class UseRefDbStrategy extends DbServerStrategy{
 						String ip = rs.getString("SERVER_IP");
 						String port = rs.getString("SERVER_PORT");
 						String type = rs.getString("SERVER_TYPE");
-						inDb = new DbServer(ip,port,type);
+						inDb = new DbServer(type,ip,port);
 						inDb.setSid(rs.getInt("SERVER_ID"));
 					}
 					return inDb;

@@ -32,7 +32,10 @@ public class DbServerStrategyFactory {
 				strategy = new ByProvinceStrategy(strategyLock);
 			}else if(DbServerStrategy.RANDOM.equals(type)){
 				strategy = new RandomStrategy(strategyLock);
-			}else{
+			}else if(DbServerStrategy.USE_REF_DB.equals(type)){
+				strategy = new UseRefDbStrategy(strategyLock);
+			}
+			else{
 				throw new DataHubException("不支持的dbServerStrategy类型："+type);
 			}
 			strategyMap.put(type, strategy);

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.datahub.controller;
+package com.navinfo.dataservice.web.datahub.controller;
 
 
 import java.util.HashMap;
@@ -14,7 +14,7 @@ import org.springframework.web.servlet.ModelAndView;
 import com.navinfo.dataservice.datahub.chooser.strategy.DbServerStrategy;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.UnifiedDb;
-import com.navinfo.dataservice.datahub.springmvc.BaseController;
+import com.navinfo.dataservice.web.springmvc.BaseController;
 import com.navinfo.navicommons.utils.StringUtils;
 
 /** 
@@ -47,10 +47,10 @@ public class DataHubController extends BaseController {
 			//省份代码，使用按省份分配策略
 			String provCode = URLDecode(request.getParameter("provcode"));
 			if(StringUtils.isEmpty(dbName)){
-				throw new IllegalArgumentException("dbName参数不能为空。");
+				throw new IllegalArgumentException("name参数不能为空。");
 			}
 			if(StringUtils.isEmpty(dbType)){
-				throw new IllegalArgumentException("dbType参数不能为空。");
+				throw new IllegalArgumentException("type参数不能为空。");
 			}
 			Map<String,String> strategyParam = new HashMap<String,String>();
 			if(StringUtils.isNotEmpty(refDbName)&&StringUtils.isNotEmpty(refDbType)){
@@ -76,13 +76,13 @@ public class DataHubController extends BaseController {
 	@RequestMapping(value = "/datahub/getdbbyname/")
 	public ModelAndView getDbByName(HttpServletRequest request){
 		try{
-			String dbName = URLDecode(request.getParameter("dbName"));
-			String dbType = URLDecode(request.getParameter("dbType"));
+			String dbName = URLDecode(request.getParameter("name"));
+			String dbType = URLDecode(request.getParameter("type"));
 			if(StringUtils.isEmpty(dbName)){
-				throw new IllegalArgumentException("dbName参数不能为空。");
+				throw new IllegalArgumentException("name参数不能为空。");
 			}
 			if(StringUtils.isEmpty(dbType)){
-				throw new IllegalArgumentException("dbType参数不能为空。");
+				throw new IllegalArgumentException("type参数不能为空。");
 			}
 			DbManager dbMan = new DbManager();
 			UnifiedDb db = dbMan.getDbByName(dbName, dbType);
@@ -95,9 +95,9 @@ public class DataHubController extends BaseController {
 	@RequestMapping(value = "/datahub/getdbbyid/")
 	public ModelAndView getDbById(HttpServletRequest request){
 		try{
-			String dbId = URLDecode(request.getParameter("dbId"));
+			String dbId = URLDecode(request.getParameter("id"));
 			if(StringUtils.isEmpty(dbId)){
-				throw new IllegalArgumentException("dbId参数不能为空。");
+				throw new IllegalArgumentException("id参数不能为空。");
 			}
 			DbManager dbMan = new DbManager();
 			UnifiedDb db = dbMan.getDbById(Integer.parseInt(dbId));

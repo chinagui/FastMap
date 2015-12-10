@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.datahub.manager;
+package com.navinfo.dataservice.web.datahub.manager;
 
 
 import java.util.Map;
@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.datahub.exception.DataHubException;
+import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.UnifiedDb;
 /** 
  * @ClassName: DataHubManager 

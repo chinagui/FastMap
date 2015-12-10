@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.datahub.springmvc;
+package com.navinfo.dataservice.web.springmvc;
 
 /**
  * @author arnold

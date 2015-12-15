@@ -1,5 +1,5 @@
 .project
 .settings
-target
+/target
 .classpath
-logs
+/logs

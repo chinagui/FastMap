@@ -1,4 +1,9 @@
 .project
 .settings
-target
+/target
 .classpath
+/logs
+/bin
+/work
+.mvnclasspath
+.tomcatplugin

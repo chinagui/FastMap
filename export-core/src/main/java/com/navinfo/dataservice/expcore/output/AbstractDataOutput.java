@@ -6,18 +6,15 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dms.commons.config.Config;
-import com.navinfo.dms.commons.database.ColumnMetaData;
-import com.navinfo.dms.commons.database.DataBaseUtils;
+import com.navinfo.navicommons.database.ColumnMetaData;
+import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.dataservice.expcore.ExporterResult;
 import com.navinfo.dataservice.expcore.target.tablerename.TableReName;
-import com.navinfo.dataservice.expcore.target.ExportTarget;
-import com.navinfo.dms.tools.vm.config.SystemConfig;
-import com.navinfo.dms.tools.vm.thread.ThreadLocalContext;
+import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 
 /**
  * Created by IntelliJ IDEA.

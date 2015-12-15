@@ -8,11 +8,12 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbutils.DbUtils;
 
-import com.navinfo.dms.commons.database.QueryRunner;
+import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
-import com.navinfo.dms.tools.vm.database.ConnectionRegister;
-import com.navinfo.dms.tools.vm.procedure.ProcedureBase;
-import com.navinfo.dms.tools.vm.thread.ThreadLocalContext;
+import com.navinfo.dataservice.commons.database.oracle.ConnectionRegister;
+import com.navinfo.navicommons.database.sql.DbLinkCreator;
+import com.navinfo.navicommons.database.sql.ProcedureBase;
+import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 
 @SuppressWarnings("serial")
 public class ProgramBlockExecThreadHandler extends ThreadHandler {

@@ -7,7 +7,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dms.tools.vm.log.VMTaskLogger;
+import com.navinfo.dataservice.commons.log.DSJobLogger;
 
 /**
  * 

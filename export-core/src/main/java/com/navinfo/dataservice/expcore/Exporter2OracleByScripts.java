@@ -12,7 +12,7 @@ import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.dataservice.expcore.input.OracleInput;
 import com.navinfo.dataservice.expcore.output.DataOutput;
 import com.navinfo.dataservice.expcore.output.Oracle2OracleDataOutput;
-import com.navinfo.dms.tools.vm.thread.ThreadLocalContext;
+import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 
 /** 
  * @ClassName: Exporter2OracleByScripts 

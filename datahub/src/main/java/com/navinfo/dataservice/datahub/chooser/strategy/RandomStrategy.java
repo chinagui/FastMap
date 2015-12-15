@@ -49,14 +49,14 @@ public class RandomStrategy extends DbServerStrategy {
 			throws DataHubException {
 		Connection conn = null;
 		try{
-			String count_sql = "SELECT count(1) as c_num from unified_db_server where USE_TYPE = ?";
+			String count_sql = "SELECT count(1) as c_num from unified_db_server where USE_TYPE like ?";
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
-			int c_num = run.queryForInt(conn, count_sql, useType);
+			int c_num = run.queryForInt(conn, count_sql, "%"+useType+"%");
 			DbServer db = null;
 			if(c_num>0){
 				int index = RandomUtils.nextInt(c_num);
-				String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.server_type FROM unified_db_server s where s.USE_TYPE = ? limit ?,1";
+				String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.server_type FROM unified_db_server s where s.USE_TYPE like ? limit ?,1";
 
 				db = run.query(conn, sql,new ResultSetHandler<DbServer>(){
 
@@ -73,7 +73,7 @@ public class RandomStrategy extends DbServerStrategy {
 						return inDb;
 					}
 					
-				}, useType,index);
+				}, "%"+useType+"%",index);
 			}
 			return db;
 		}catch (Exception e) {

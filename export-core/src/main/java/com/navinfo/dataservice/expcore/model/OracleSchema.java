@@ -8,15 +8,13 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
-import com.navinfo.dms.commons.config.MavenConfigMap;
-import com.navinfo.dms.commons.database.QueryRunner;
-import com.navinfo.dms.commons.utils.StringUtils;
-import com.navinfo.dataservice.expcore.target.ExportTarget;
-import com.navinfo.dms.tools.vm.config.SystemConfig;
-import com.navinfo.dms.tools.vm.database.PoolDataSource;
-import com.navinfo.dms.tools.vm.database.PoolDataSourceFactory;
-import com.navinfo.dms.tools.vm.log.VMTaskLogger;
-import com.navinfo.dms.tools.vm.manager.VMTaskManager;
+import com.navinfo.navicommons.config.MavenConfigMap;
+import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.utils.StringUtils;
+import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.database.oracle.PoolDataSource;
+import com.navinfo.dataservice.commons.database.oracle.PoolDataSourceFactory;
+import com.navinfo.dataservice.commons.log.DSJobLogger;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
@@ -30,7 +28,7 @@ import com.thoughtworks.xstream.annotations.XStreamOmitField;
 @XStreamAlias("OracleSchema")
 public class OracleSchema{
 
-	private Logger log = Logger.getLogger(VMTaskManager.class);
+	private Logger log = Logger.getLogger(this.getClass());
 
     private String userName;
     private String password;
@@ -43,7 +41,7 @@ public class OracleSchema{
 	private PoolDataSource bds;
 
     public OracleSchema(){
-    	log = VMTaskLogger.getLogger(log);
+    	log = DSJobLogger.getLogger(log);
     }
     public OracleSchema(String userName,String password,String ip,int port,String serviceName,String tablespaceName){
     	this.userName=userName;

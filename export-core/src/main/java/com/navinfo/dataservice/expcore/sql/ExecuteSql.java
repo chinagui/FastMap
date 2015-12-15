@@ -15,7 +15,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dms.commons.exception.DMSException;
+import com.navinfo.navicommons.exception.DMSException;
 import com.navinfo.dataservice.expcore.config.ExportConfig;
 import com.navinfo.dataservice.expcore.input.OracleInput;
 import com.navinfo.dataservice.expcore.output.DataOutput;
@@ -24,11 +24,11 @@ import com.navinfo.dataservice.expcore.sql.handler.DMLExecThreadHandler;
 import com.navinfo.dataservice.expcore.sql.handler.ProgramBlockExecThreadHandler;
 import com.navinfo.dataservice.expcore.sql.handler.QueryExecThreadHandler;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
-import com.navinfo.dms.tools.vm.config.SystemConfig;
-import com.navinfo.dms.tools.vm.database.ConnectionRegister;
-import com.navinfo.dms.tools.vm.log.VMTaskLogger;
-import com.navinfo.dms.tools.vm.thread.ThreadLocalContext;
-import com.navinfo.dms.tools.vm.thread.VMThreadPoolExecutor;
+import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.database.oracle.ConnectionRegister;
+import com.navinfo.dataservice.commons.log.DSJobLogger;
+import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
+import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 
 /**
  * 多线程按步骤执行sql 每个数据库生成一个文件（如果导入sqlite），然后进行文件合并
@@ -53,7 +53,7 @@ public class ExecuteSql {
 	 *            系统配置
 	 */
 	public ExecuteSql(ExportConfig expConfig,OracleInput input,DataOutput output) {
-		log = VMTaskLogger.getLogger(log);
+		log = DSJobLogger.getLogger(log);
 		this.expConfig = expConfig;
 		this.input=input;
 		this.output=output;

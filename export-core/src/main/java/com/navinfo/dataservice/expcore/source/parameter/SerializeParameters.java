@@ -17,11 +17,11 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 
 import com.navinfo.dataservice.expcore.config.ExportConfig;
-import com.navinfo.dms.tools.vm.database.MyDriverManagerConnectionWrapper;
-import com.navinfo.dms.tools.vm.database.dhcp.MyPoolGuardConnectionWrapper;
-import com.navinfo.dms.tools.vm.database.dhcp.MyPoolableConnection;
-import com.navinfo.dms.tools.vm.procedure.ProcedureBase;
-import com.navinfo.dms.tools.vm.sql.PackageExec;
+import com.navinfo.dataservice.commons.database.oracle.MyDriverManagerConnectionWrapper;
+import com.navinfo.dataservice.commons.database.oracle.MyPoolGuardConnectionWrapper;
+import com.navinfo.dataservice.commons.database.oracle.MyPoolableConnection;
+import com.navinfo.navicommons.database.sql.ProcedureBase;
+import com.navinfo.navicommons.database.sql.PackageExec;
 
 /**
  * Created by IntelliJ IDEA. User: liuqing Date: 11-11-18 Time: 下午3:30

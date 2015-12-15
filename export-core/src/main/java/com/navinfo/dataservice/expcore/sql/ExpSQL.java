@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
 
-import com.navinfo.dms.commons.database.DataBaseUtils;
+import com.navinfo.navicommons.database.DataBaseUtils;
 
 /**
  * @author liuqing

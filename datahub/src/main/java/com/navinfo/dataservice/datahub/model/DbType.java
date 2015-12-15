@@ -24,4 +24,9 @@ public class DbType {
 	public static final String DB_FINAL_POI = "finalPoi";
 	public static final String DB_FINAL_BJ_POI = "finalBjPoi";
 	public static final String DB_FINAL_XA_POI = "finalXaPoi";
+	public static final String DB_COL_STATICS  ="colStaticPoi";                                                 
+	public static final String DB_COL_INFORMATION_POI ="colInformationPoi";
+	public static final String DB_COL_AD_FACE= "colADFace";
+	public static final String DB_COL_EXCEPTION = "colException";
+	public static final String DB_DATA_GDBCHANGE = "dbDataGdbChange";
 }

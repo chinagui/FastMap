@@ -15,7 +15,7 @@ import com.navinfo.dataservice.expcore.source.OracleSource;
 import com.navinfo.dataservice.expcore.source.parameter.ScriptsConfigManager;
 import com.navinfo.dataservice.expcore.source.parameter.SerializeParameters;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
-import com.navinfo.dms.tools.vm.log.VMTaskLogger;
+import com.navinfo.dataservice.commons.log.DSJobLogger;
 
 /** 
  * @ClassName: OracleInput 
@@ -34,7 +34,7 @@ public class OracleInput implements DataInput {
 	protected Map<Integer, List<ExpSQL>> expSqlMap;
 
 	public OracleInput(ExportConfig expConfig)throws ExportException{
-		log = VMTaskLogger.getLogger(log);
+		log = DSJobLogger.getLogger(log);
 		this.expConfig=expConfig;
 		initSource();
 	}

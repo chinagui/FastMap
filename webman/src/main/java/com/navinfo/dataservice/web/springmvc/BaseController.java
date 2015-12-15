@@ -81,13 +81,13 @@ public class BaseController {
         return createModelMap(100,msg,result);
     }
     protected Map<String,?> success(Map<String,?> result) {
-        return createModelMap(100,null,result);
+        return createModelMap(100,"success",result);
     }
     protected Map<String,?> success(String msg,Page page){
     	return createModelMap(100,msg,page);
     }
     protected Map<String,?> success(Page page){
-    	return createModelMap(100,null,page);
+    	return createModelMap(100,"success",page);
     }
     private Map<String,?> createModelMap(int code,String msg,Object data){
     	Map<String,Object> result = new HashMap<String,Object>();

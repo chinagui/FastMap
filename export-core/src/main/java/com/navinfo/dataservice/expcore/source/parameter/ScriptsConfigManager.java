@@ -12,9 +12,9 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
-import com.navinfo.dms.commons.utils.StringUtils;
+import com.navinfo.navicommons.utils.StringUtils;
 import com.navinfo.dataservice.expcore.exception.ExportConfigException;
-import com.navinfo.dms.tools.vm.log.VMTaskLogger;
+import com.navinfo.dataservice.commons.log.DSJobLogger;
 
 /** 
  * @ClassName: ScriptsConfigManager 
@@ -27,7 +27,7 @@ public class ScriptsConfigManager {
 	protected Logger log = Logger.getLogger(ScriptsConfigManager.class);
 	protected List<ScriptsConfig> scriptsConfList;
 	private ScriptsConfigManager(){
-		log = VMTaskLogger.getLogger(log);
+		log = DSJobLogger.getLogger(log);
 		parseXmlScriptsConfig();
 	}
 	private static class SingletonHolder{

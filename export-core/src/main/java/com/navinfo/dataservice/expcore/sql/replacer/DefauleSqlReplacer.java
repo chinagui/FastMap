@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import com.navinfo.dms.commons.utils.StringUtils;
+import com.navinfo.navicommons.utils.StringUtils;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 
 /**

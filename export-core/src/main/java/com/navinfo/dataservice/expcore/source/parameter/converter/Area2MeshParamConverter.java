@@ -4,7 +4,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.navinfo.dms.commons.geo.GeoUtils;
+import com.navinfo.navicommons.geo.GeoUtils;
 
 /**
  * 按区域导出图幅，先将区域转换成图幅

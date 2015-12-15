@@ -7,7 +7,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dms.tools.vm.log.VMTaskLogger;
+import com.navinfo.dataservice.commons.log.DSJobLogger;
 
 public class ExportTargetConfig {
 	
@@ -46,11 +46,11 @@ public class ExportTargetConfig {
 
     public ExportTargetConfig() {
 		super();
-		log = VMTaskLogger.getLogger(log);
+		log = DSJobLogger.getLogger(log);
 	}
     public ExportTargetConfig(String jsonConfig){
     	super();
-		log = VMTaskLogger.getLogger(log);
+		log = DSJobLogger.getLogger(log);
     	this.parseByJsonConfig(jsonConfig);
     }
 

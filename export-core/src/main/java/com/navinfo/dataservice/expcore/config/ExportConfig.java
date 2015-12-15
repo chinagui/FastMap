@@ -1,10 +1,8 @@
 package com.navinfo.dataservice.expcore.config;
 
-import com.navinfo.dms.commons.utils.StringUtils;
+import com.navinfo.navicommons.utils.StringUtils;
 import com.navinfo.dataservice.expcore.exception.ExportConfigValidateException;
 import com.navinfo.dataservice.expcore.exception.ExportException;
-import com.navinfo.dataservice.expcore.model.OracleSchema;
-import com.navinfo.dataservice.expcore.target.TargetType;
 
 import java.io.StringReader;
 import java.lang.reflect.Method;
@@ -19,7 +17,7 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
-import com.navinfo.dms.tools.vm.log.VMTaskLogger;
+import com.navinfo.dataservice.commons.log.DSJobLogger;
 
 public class ExportConfig {
 	
@@ -86,11 +84,11 @@ public class ExportConfig {
 
     public ExportConfig() {
 		super();
-		log = VMTaskLogger.getLogger(log);
+		log = DSJobLogger.getLogger(log);
 	}
     public ExportConfig(String xmlConfig) throws ExportException{
     	super();
-		log = VMTaskLogger.getLogger(log);
+		log = DSJobLogger.getLogger(log);
     	this.parseByXmlConfig(xmlConfig);
     }
 

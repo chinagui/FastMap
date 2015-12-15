@@ -107,6 +107,36 @@ public class DataHubController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	@RequestMapping(value = "/datahub/getonlydbbyname/")
+	public ModelAndView getOnlyDbByName(HttpServletRequest request){
+		try{
+			String dbName = URLDecode(request.getParameter("name"));
+			if(StringUtils.isEmpty(dbName)){
+				throw new IllegalArgumentException("name参数不能为空。");
+			}
+			DbManager dbMan = new DbManager();
+			UnifiedDb db = dbMan.getOnlyDbByName(dbName);
+			return new ModelAndView("jsonView", success(db.getConnectParam()));
+		}catch(Exception e){
+			log.error("获取db失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	@RequestMapping(value = "/datahub/getonlydbbytype/")
+	public ModelAndView getOnlyDbByType(HttpServletRequest request){
+		try{
+			String dbType = URLDecode(request.getParameter("type"));
+			if(StringUtils.isEmpty(dbType)){
+				throw new IllegalArgumentException("type参数不能为空。");
+			}
+			DbManager dbMan = new DbManager();
+			UnifiedDb db = dbMan.getOnlyDbByType(dbType);
+			return new ModelAndView("jsonView", success(db.getConnectParam()));
+		}catch(Exception e){
+			log.error("获取db失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
 	
 	public static void main(String[] args){
 		Map<String,Object> map = new HashMap<String,Object>();

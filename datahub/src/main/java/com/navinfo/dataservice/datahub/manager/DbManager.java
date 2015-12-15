@@ -87,16 +87,16 @@ public class DbManager {
 		Connection conn = null;
 		try{
 			String sql = "select D.DB_ID,D.DB_NAME,D.DB_PASSWD,D.DB_ROLE,D.DB_TYPE,D.TABLESPACE_NAME,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME" +
-					" from UNIFIED_DB D,UNIFIED_DB_SERVER S where D.DB_NAME=? AND D.DB_TYPE=?";
+					" from UNIFIED_DB D,UNIFIED_DB_SERVER S where D.SERVER_ID=S.SERVER_ID AND D.DB_NAME=? AND D.DB_TYPE=?";
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
-			UnifiedDb db = run.query(conn,sql, new DbResultSetHandler(),dbName,dbType);
+			UnifiedDb db = run.query(conn,sql, new DbResultSetHandler(false),dbName,dbType);
 			return db;
 			
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new DataHubException("从管理库中查询出现sql或格式错误错误，原因："+e.getMessage(),e);
+			throw new DataHubException("从管理库中查询出现sql或格式错误，原因："+e.getMessage(),e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -105,16 +105,52 @@ public class DbManager {
 		Connection conn = null;
 		try{
 			String sql = "select D.DB_ID,D.DB_NAME,D.DB_PASSWD,D.DB_ROLE,D.DB_TYPE,D.TABLESPACE_NAME,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME" +
-					" from UNIFIED_DB D,UNIFIED_DB_SERVER S where D.DB_ID=?";
+					" from UNIFIED_DB D,UNIFIED_DB_SERVER S where D.SERVER_ID=S.SERVER_ID AND D.DB_ID=?";
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
-			UnifiedDb db = run.query(conn,sql, new DbResultSetHandler(),dbId);
+			UnifiedDb db = run.query(conn,sql, new DbResultSetHandler(false),dbId);
 			return db;
 			
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new DataHubException("从管理库中查询出现sql或格式错误错误，原因："+e.getMessage(),e);
+			throw new DataHubException("从管理库中查询出现sql或格式错误，原因："+e.getMessage(),e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	public UnifiedDb getOnlyDbByName(String dbName)throws DataHubException{
+		Connection conn = null;
+		try{
+			String sql = "select D.DB_ID,D.DB_NAME,D.DB_PASSWD,D.DB_ROLE,D.DB_TYPE,D.TABLESPACE_NAME,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME" +
+					" from UNIFIED_DB D,UNIFIED_DB_SERVER S where D.SERVER_ID=S.SERVER_ID AND D.DB_NAME=?";
+			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
+			QueryRunner run = new QueryRunner();
+			UnifiedDb db = run.query(conn,sql, new DbResultSetHandler(true),dbName);
+			return db;
+			
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new DataHubException("从管理库中查询出现sql或格式错误，原因："+e.getMessage(),e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	public UnifiedDb getOnlyDbByType(String dbType)throws DataHubException{
+		Connection conn = null;
+		try{
+			String sql = "select D.DB_ID,D.DB_NAME,D.DB_PASSWD,D.DB_ROLE,D.DB_TYPE,D.TABLESPACE_NAME,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME" +
+					" from UNIFIED_DB D,UNIFIED_DB_SERVER S where D.SERVER_ID=S.SERVER_ID AND D.DB_TYPE=?";
+			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
+			QueryRunner run = new QueryRunner();
+			UnifiedDb db = run.query(conn,sql, new DbResultSetHandler(true),dbType);
+			return db;
+			
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new DataHubException("从管理库中查询出现sql或格式错误，原因："+e.getMessage(),e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -132,7 +168,14 @@ public class DbManager {
 			e.printStackTrace();
 		}
 	}
+	
 	class DbResultSetHandler implements ResultSetHandler<UnifiedDb>{
+		boolean checkCount=false;
+		DbResultSetHandler(boolean checkCount){
+			super();
+			this.checkCount=checkCount;
+		}
+		
 
 		/* (non-Javadoc)
 		 * @see org.apache.commons.dbutils.ResultSetHandler#handle(java.sql.ResultSet)
@@ -153,8 +196,10 @@ public class DbManager {
 						 ,rs.getString("SERVER_IP"),rs.getString("SERVER_PORT"));
 				 server.setServiceName(rs.getString("SERVICE_NAME"));
 				 db.setDbServer(server);
-				 return db;
 			 }
+			if(checkCount&&rs.next()){
+				throw new SQLException("验证错误:结果集超过1条。");
+			}
 			return db;
 		}
 		

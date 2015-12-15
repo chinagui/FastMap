@@ -13,13 +13,13 @@ import java.util.Map;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dms.commons.database.QueryRunner;
-import com.navinfo.dms.commons.database.sql.SQLQuery;
-import com.navinfo.dms.commons.utils.StringUtils;
+import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.SQLQuery;
+import com.navinfo.navicommons.utils.StringUtils;
 import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.dataservice.expcore.model.OracleSchema;
-import com.navinfo.dms.tools.vm.sql.PackageExec;
-import com.navinfo.dms.tools.vm.sql.SqlExec;
+import com.navinfo.navicommons.database.sql.PackageExec;
+import com.navinfo.navicommons.database.sql.SqlExec;
 
 /** 
  * @ClassName: OracleTarget 

@@ -10,11 +10,11 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dms.commons.database.QueryRunner;
+import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
-import com.navinfo.dms.tools.vm.database.ConnectionRegister;
-import com.navinfo.dms.tools.vm.manager.DbLinkCreator;
-import com.navinfo.dms.tools.vm.thread.ThreadLocalContext;
+import com.navinfo.dataservice.commons.database.oracle.ConnectionRegister;
+import com.navinfo.navicommons.database.sql.DbLinkCreator;
+import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 
 /**
  * 执行DDL语句

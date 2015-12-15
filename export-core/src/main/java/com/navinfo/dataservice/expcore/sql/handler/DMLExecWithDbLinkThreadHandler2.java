@@ -5,7 +5,7 @@ import java.util.concurrent.CountDownLatch;
 
 import javax.sql.DataSource;
 
-import com.navinfo.dms.tools.vm.thread.ThreadLocalContext;
+import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 
 /**
  * 执行DML语句，支持关闭SQL语句中使用到的DbLink，暂时只支持关闭一个DbLink

@@ -9,9 +9,9 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dms.commons.exception.ThreadExecuteException;
+import com.navinfo.navicommons.exception.ThreadExecuteException;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
-import com.navinfo.dms.tools.vm.thread.ThreadLocalContext;
+import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 
 /**
  * User: liuqing

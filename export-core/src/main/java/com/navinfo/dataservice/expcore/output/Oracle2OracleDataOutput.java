@@ -11,19 +11,19 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbutils.DbUtils;
 
-import com.navinfo.dms.commons.database.ColumnMetaData;
-import com.navinfo.dms.commons.database.DataBaseUtils;
-import com.navinfo.dms.commons.utils.RandomUtil;
-import com.navinfo.dms.commons.utils.StringUtils;
+import com.navinfo.navicommons.database.ColumnMetaData;
+import com.navinfo.navicommons.database.DataBaseUtils;
+import com.navinfo.navicommons.utils.RandomUtil;
+import com.navinfo.navicommons.utils.StringUtils;
 import com.navinfo.dataservice.expcore.ExporterResult;
 import com.navinfo.dataservice.expcore.config.ExportConfig;
 import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.dataservice.expcore.model.OracleSchema;
 import com.navinfo.dataservice.expcore.output.AbstractDataOutput;
 import com.navinfo.dataservice.expcore.target.OracleTarget;
-import com.navinfo.dms.tools.vm.config.SystemConfig;
-import com.navinfo.dms.tools.vm.database.ConnectionRegister;
-import com.navinfo.dms.tools.vm.thread.ThreadLocalContext;
+import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.database.oracle.ConnectionRegister;
+import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 
 /**
  * Created by IntelliJ IDEA. User: liuqing Date: 11-1-27 Time: 上午11:03

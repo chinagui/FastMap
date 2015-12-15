@@ -1,20 +1,13 @@
 package com.navinfo.dataservice.expcore;
 
 import org.apache.log4j.Logger;
-import com.navinfo.dataservice.expcore.source.ExportSource;
-import com.navinfo.dataservice.expcore.source.OracleSource;
 import com.navinfo.dataservice.expcore.sql.ExecuteSql;
-import com.navinfo.dataservice.expcore.target.ExportTarget;
-import com.navinfo.dataservice.expcore.target.OracleTarget;
 import com.navinfo.dataservice.expcore.config.ExportConfig;
 import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.dataservice.expcore.exception.ExportInitException;
-import com.navinfo.dataservice.expcore.input.DataInput;
 import com.navinfo.dataservice.expcore.input.OracleInput;
 import com.navinfo.dataservice.expcore.output.DataOutput;
-import com.navinfo.dms.tools.vm.database.PoolDataSource;
-import com.navinfo.dms.tools.vm.database.PoolDataSourceFactory;
-import com.navinfo.dms.tools.vm.log.VMTaskLogger;
+import com.navinfo.dataservice.commons.log.DSJobLogger;
 
 /**
  * User: Xiao Xiaowen  数据导出的入口，给定参数，实现导出功能 目前支持:
@@ -30,7 +23,7 @@ public abstract class FlexibleExporter implements Exporter {
 	private DataOutput output;
 
 	public FlexibleExporter(ExportConfig expConfig) {
-		log = VMTaskLogger.getLogger(log);
+		log = DSJobLogger.getLogger(log);
 		this.expConfig=expConfig;
 	}
 

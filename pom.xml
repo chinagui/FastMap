@@ -12,6 +12,7 @@
 		<module>import-core</module>
 		<module>versionman</module>
         <module>webman</module>
+    	<module>fos-engine-edit</module>
   </modules>
 
     <packaging>pom</packaging>
@@ -222,6 +223,79 @@
 				<artifactId>poi</artifactId>
 				<version>3.5-beta6</version>
 			</dependency>
+			
+			<dependency>
+			 	<groupId>org.apache.hbase</groupId>
+				<artifactId>hbase-client</artifactId>
+			 	<version>1.0.1.1</version>
+		    </dependency>
+		    
+		    <dependency>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-common</artifactId>
+				<version>2.6.0</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.vividsolutions</groupId>
+				<artifactId>jts</artifactId>
+				<version>1.13</version>
+			</dependency>
+		    <dependency>
+				<groupId>net.sf.json-lib</groupId>
+				<artifactId>json-lib</artifactId>
+				<version>2.4</version>
+				<classifier>jdk15</classifier> 
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-dbcp2</artifactId>
+				<version>2.1</version>
+			</dependency>
+		    <dependency>
+				<groupId>org.codehaus.jettison</groupId>
+				<artifactId>jettison</artifactId>
+				<version>1.1</version>
+			</dependency>
+				<dependency>
+				<groupId>org.hbase</groupId>
+				<artifactId>asynchbase</artifactId>
+				<version>1.6.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.solr</groupId>
+				<artifactId>solr-solrj</artifactId>
+				<version>5.2.1</version>
+			</dependency>
+			<dependency>
+				<groupId>org.json</groupId>
+				<artifactId>json</artifactId>
+				<version>20090211</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mapfish.geo</groupId>
+				<artifactId>mapfish-geo-lib</artifactId>
+				<version>1.2.0</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>org.apache.uima</groupId>
+				<artifactId>uimaj-core</artifactId>
+				<version>2.3.1</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>ch.hsr</groupId>
+				<artifactId>geohash</artifactId>
+				<version>1.1.0</version>
+			</dependency>
+		
+			<dependency>
+				<groupId>org.apache.hbase</groupId>
+				<artifactId>hbase-server</artifactId>
+				<version>1.0.1.1</version>
+			</dependency>
+			
 		<!-- utils end-->
 		<!-- spring start-->	
             <dependency>
@@ -350,6 +424,11 @@
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
 				<artifactId>datahub</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>fos-engine-edit</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 		<!-- dataservice module start -->	

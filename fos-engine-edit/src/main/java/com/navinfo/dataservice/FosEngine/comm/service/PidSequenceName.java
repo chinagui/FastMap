@@ -11,4 +11,6 @@ public class PidSequenceName {
 	public static final String restrictPidName = "SEQ_RD_RESTRICTION";
 	
 	public static final String restrictDetailPidName = "SEQ_RD_RESTRICTION_Detail";
+	
+	public static final String speedLimitPidName = "SEQ_RD_SPEEDLIMIT";
 }

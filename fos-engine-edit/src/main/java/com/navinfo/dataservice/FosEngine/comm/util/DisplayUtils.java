@@ -83,22 +83,7 @@ public class DisplayUtils {
 
 	}
 
-	private static double getLinkLength(double[][] points) {
-		double length = 0;
-
-		for (int i = 1; i < points.length; i++) {
-			double prePoint[] = points[i - 1];
-
-			double currentPoint[] = points[i];
-
-			double len = Math.sqrt(Math.pow(currentPoint[0] - prePoint[0], 2)
-					+ Math.pow(currentPoint[1] - prePoint[1], 2));
-
-			length += len;
-		}
-
-		return length;
-	}
+	
 
 	private static double[] lookFor1_4Point(double[][] points, double len1_4) {
 		double point[] = new double[2];
@@ -136,157 +121,302 @@ public class DisplayUtils {
 	/***********************************************************************/
 	
 	//获取进入线3米再向右找6米的位置
-	public static double[] getTipPoint(JGeometry geom, double inPointLng,
-			double inPointLat) {
+	public static double[][] getLinkPointPos(String linkWkt, String pointWkt,
+			int tipsCnt, int seqNum) throws Exception {
+		double[][] position = new double[2][2];
 
-		double point[] = new double[2];
+		/*
+		 * 1、对线、点进行墨卡托数组转 2、根据点所处线的位置，转换线数组顺序 3、求出线的长度，判断按照线上挂的tips个数，是否超过线的长度
+		 * 4、如果未超出，则按照3米为单位，向线通行方向的逆向扩展 5、如果超出，则按照线长度与tips个数比例，向线通行方向的逆向扩展
+		 * 6、找出seqNum * 3米（或者新比例值）位置，作为引导坐标位置 7、按照引导坐标位置和线通行方向向右找6米位置作为显示坐标位置
+		 * 8、转换墨卡托坐标为经纬度坐标返回
+		 */
 
-		double ps[] = geom.getOrdinatesArray();
+		// 默认是3米，如果按照tips个数 * 3 米超出了LINK的长度，则重新计算这个值
+		double unit = 3;
+		
+		double vertiUnit = 8;
 
-		double endTwoPointMers[][] = findEndTwoPointMercator(ps, inPointLng, inPointLat);
-		
-		double k = 0;
-		
-		double c = 0;
-		
-		boolean isVerticalX = false;
-		
-		if (endTwoPointMers[0][0] != endTwoPointMers[1][0]){
-			
-			if (endTwoPointMers[0][1] != endTwoPointMers[1][1]){
-				
-				k = (endTwoPointMers[1][1] - endTwoPointMers[0][1]) / (endTwoPointMers[1][0] - endTwoPointMers[0][0]);
-				
-				c = endTwoPointMers[0][1] - k * endTwoPointMers[0][0];
-				
-			}else{
-				k = 0;
-				
-				c = endTwoPointMers[0][1];
-			}
-			
-		}else{
-			isVerticalX = true;
-		}
-		
-		if (!isVerticalX){
-			
-			double[] pointMer = get_3_6_MeterPoint(endTwoPointMers, k, c);
-			
-			point[0] = MercatorProjection.metersXToLongitude(pointMer[0]);
-			
-			point[1] = MercatorProjection.metersYToLatitude(pointMer[1]);
-			
-		}else{
-			double[] tmpPoint = new double[2];
-			
-			tmpPoint[0] = endTwoPointMers[0][0];
-			
-			if (endTwoPointMers[0][1] > endTwoPointMers[1][1]){
-				tmpPoint[1] = endTwoPointMers[0][1] - 3;
-				
-				point[0] = MercatorProjection.metersXToLongitude(tmpPoint[0] + 6);
-				
-				point[1] = MercatorProjection.metersYToLatitude(tmpPoint[1]);
-			}else{
-				tmpPoint[1] = endTwoPointMers[0][1] + 3;
-				
-				point[0] = MercatorProjection.metersXToLongitude(tmpPoint[0] - 6);
-				
-				point[1] = MercatorProjection.metersYToLatitude(tmpPoint[1]);
-			}
+		// 1、对线、点进行墨卡托数组转
+		double[][] linkMerArray = convertLinkToMerArray(linkWkt);
+
+		double[] pointMerArray = convertPointToMerArray(pointWkt);
+
+		// 2、根据点所处线的位置，转换线数组顺序
+		isReverseLinkOrder(linkMerArray, pointMerArray);
+
+		// 3、求出线的长度，判断按照线上挂的tips个数，是否超过线的长度
+		double linkLength = getLinkLength(linkMerArray);
+
+		boolean isExceedLink = false;
+
+		if (tipsCnt * 3 > linkLength) {
+			isExceedLink = true;
 		}
 
-		return point;
+		// 5、如果超出，则按照线长度与tips个数比例，向线通行方向的逆向扩展
+		if (isExceedLink) {
+			unit = linkLength / (tipsCnt + 1);
+		}
+
+		// 6、找出seqNum * 3米（或者新比例值）位置，作为引导坐标位置
+		double[] guidePosition = new double[2];
+
+		// 返回值为引导坐标所处的LINK形状段上的第几段，从0开始
+		int guideSeqNum = getGuidePosition(linkMerArray, unit, seqNum,
+				guidePosition);
+
+		// 按照引导坐标位置和线通行方向向右找6米位置作为显示坐标位置
+		double[] displayPosition = getDisplayPosition(linkMerArray,
+				guidePosition, guideSeqNum,vertiUnit);
+
+		// 转换墨卡托坐标为经纬度坐标返回
+		
+		guidePosition[0] = MercatorProjection.metersXToLongitude(guidePosition[0]);
+		
+		guidePosition[1] = MercatorProjection.metersYToLatitude(guidePosition[1]);
+
+		position[0] = guidePosition;
+		
+		displayPosition[0] = MercatorProjection.metersXToLongitude(displayPosition[0]);
+		
+		displayPosition[1] = MercatorProjection.metersYToLatitude(displayPosition[1]);
+
+		position[1] = displayPosition;
+
+		return position;
 	}
 
-	private static double[][] findEndTwoPointMercator(double ps[],
-			double inPointLng, double inPointLat) {
+	// 转换线经纬度wkt为以米为单位的二维数组
+	private static double[][] convertLinkToMerArray(String linkWkt)
+			throws Exception {
 
-		double endTwoPointMers[][] = new double[2][];
+		WKTReader reader = new WKTReader();
 
-		endTwoPointMers[0] = new double[] {
-				MercatorProjection.longitudeToMetersX(inPointLng),
-				MercatorProjection.latitudeToMetersY(inPointLat) };
+		Geometry geom = reader.read(linkWkt);
 
-		if (ps[0] == inPointLng && ps[1] == inPointLat) {
+		Coordinate[] cs = geom.getCoordinates();
 
-			endTwoPointMers[1] = new double[] {
-					MercatorProjection.longitudeToMetersX(ps[2]),
-					MercatorProjection.latitudeToMetersY(ps[3]) };
+		double[][] linkMerArray = new double[cs.length][2];
+
+		int num = 0;
+
+		for (Coordinate c : cs) {
+			double[] p = new double[2];
+
+			// 此处需要进行对经纬度转换为墨卡托值
+			p[0] = MercatorProjection.longitudeToMetersX(c.x);
+
+			p[1] = MercatorProjection.latitudeToMetersY(c.y);
+
+			linkMerArray[num++] = p;
+		}
+
+		return linkMerArray;
+
+	}
+
+	// 转换点经纬度wkt为以米为单位的数组
+	private static double[] convertPointToMerArray(String pointWkt)
+			throws Exception {
+
+		double[] pointMerArray = new double[2];
+
+		WKTReader reader = new WKTReader();
+
+		Geometry geom = reader.read(pointWkt);
+
+		// 此处需要进行对经纬度转换为墨卡托值
+		pointMerArray[0] = geom.getCentroid().getX();
+
+		pointMerArray[1] = geom.getCentroid().getY();
+
+		return pointMerArray;
+	}
+
+	// 根据点所处线的位置，转换线数组顺序
+	private static void isReverseLinkOrder(double[][] linkMerArray,
+			double[] pointMerArray) {
+
+		if (linkMerArray[0][0] != pointMerArray[0]
+				|| linkMerArray[0][1] != pointMerArray[1]) {
+			int lenLinkArray = linkMerArray.length;
+
+			int len = lenLinkArray / 2;
+
+			double[] temp = null;
+
+			for (int i = 0; i < len; i++) {
+				temp = linkMerArray[i];
+				linkMerArray[i] = linkMerArray[lenLinkArray - 1 - i];
+				linkMerArray[lenLinkArray - 1 - i] = temp;
+			}
+		}
+	}
+
+	// 求出线的长度
+	private static double getLinkLength(double[][] linkMerArray) {
+
+		double length = 0;
+
+		for (int i = 0; i < linkMerArray.length - 2; i++) {
+
+			double[] curPoint = linkMerArray[i];
+
+			double[] nextPoint = linkMerArray[i + 1];
+
+			length += Math.sqrt(Math.pow(nextPoint[0] - curPoint[0], 2)
+					+ Math.pow(nextPoint[1] - curPoint[1], 2));
+		}
+
+		return length;
+	}
+
+	// 求出引导坐标位置
+	/**
+	 * 
+	 * @param linkMerArray
+	 * @param unit
+	 * @param seqNum
+	 * @return 返回值为引导坐标所处的LINK形状段上的第几段，从0开始
+	 */
+	private static int getGuidePosition(double[][] linkMerArray, double unit,
+			int seqNum, double[] guidePosition) {
+
+		int guideSeqNum = 0;
+
+		double guidePointDistance = unit * seqNum;
+
+		for (int i = 0; i < linkMerArray.length - 2; i++) {
+
+			double[] curPoint = linkMerArray[i];
+
+			double[] nextPoint = linkMerArray[i + 1];
+
+			guideSeqNum = i;
+
+			double ppDistance = Math.sqrt(Math.pow(nextPoint[0] - curPoint[0],
+					2) + Math.pow(nextPoint[1] - curPoint[1], 2));
+
+			if (ppDistance > guidePointDistance) {
+
+				if (curPoint[0] != nextPoint[0]) {
+					double k = (curPoint[1] - nextPoint[1])
+							/ (curPoint[0] - nextPoint[0]);
+
+					double c = curPoint[1] - k * curPoint[0];
+
+					if (curPoint[0] < nextPoint[0]) {
+						// 递增
+						guidePosition[0] = curPoint[0]
+								+ (guidePointDistance / ppDistance)
+								* (nextPoint[0] - curPoint[0]);
+
+					} else {
+						// 递减
+						guidePosition[0] = curPoint[0]
+								+ (guidePointDistance / ppDistance)
+								* (nextPoint[0] - curPoint[0]);
+					}
+
+					guidePosition[1] = k * guidePosition[0] + c;
+				} else {
+					// 与Y轴垂直
+					guidePosition[0] = curPoint[0];
+
+					if (curPoint[1] < nextPoint[1]) {
+						guidePosition[1] = curPoint[1] + guidePointDistance;
+					} else {
+						guidePosition[1] = curPoint[1] - guidePointDistance;
+					}
+				}
+
+				break;
+			} else {
+				guidePointDistance -= ppDistance;
+			}
+		}
+
+		return guideSeqNum;
+	}
+
+	// 按照引导坐标位置和线通行方向向右找vertiUnit=6米位置作为显示坐标位置
+	private static double[] getDisplayPosition(double[][] linkMerArray,
+			double[] guidePosition, int guideSeqNum,double vertiUnit) {
+
+		double[] displayPosition = new double[2];
+
+		double[] startPoint = linkMerArray[guideSeqNum];
+
+		double[] stopPoint = linkMerArray[guideSeqNum + 1];
+
+		if (startPoint[0] != stopPoint[0]) {
+			// 不与Y轴垂直
+
+			double k = (startPoint[1] - stopPoint[1])
+					/ (startPoint[0] - stopPoint[0]);
+
+
+			if (k != 0) {
+				// 不与X轴平行
+				double k1 = -1 / k;
+				double c1 = guidePosition[1] - (guidePosition[0] * k1);
+				double x1 = guidePosition[0] + (vertiUnit / Math.sqrt(1 + k1 * k1));
+				double y1 = k1 * x1 + c1;
+				double x2 = guidePosition[0] - (vertiUnit / Math.sqrt(1 + k1 * k1));
+				double y2 = k1 * x2 + c1;
+				if (k > 0) {
+					if (startPoint[0] < stopPoint[0]) {
+						displayPosition[0] = x1;
+
+						displayPosition[1] = y1;
+					} else {
+						displayPosition[0] = x2;
+
+						displayPosition[1] = y2;
+					}
+				} else {
+					if (startPoint[0] < stopPoint[0]) {
+						displayPosition[0] = x2;
+
+						displayPosition[1] = y2;
+					} else {
+						displayPosition[0] = x1;
+
+						displayPosition[1] = y1;
+					}
+				}
+			} else {
+				// 与X轴平行
+
+				if (startPoint[0] < stopPoint[0]) {
+
+					displayPosition[0] = guidePosition[0];
+
+					displayPosition[1] = guidePosition[1] - vertiUnit;
+				} else {
+					displayPosition[0] = guidePosition[0];
+
+					displayPosition[1] = guidePosition[1] + vertiUnit;
+				}
+			}
+
 		} else {
+			// 与Y轴平行
 
-			endTwoPointMers[1] = new double[] {
-					MercatorProjection.longitudeToMetersX(ps[ps.length - 2]),
-					MercatorProjection.latitudeToMetersY(ps[ps.length - 1]) };
+			if (startPoint[1] < stopPoint[1]) {
+
+				displayPosition[0] = guidePosition[0] + vertiUnit;
+
+				displayPosition[1] = guidePosition[1];
+			} else {
+				displayPosition[0] = guidePosition[0] - vertiUnit;
+
+				displayPosition[1] = guidePosition[1];
+			}
 		}
 
-		return endTwoPointMers;
-
-	}
-	
-	private static double[] get_3_6_MeterPoint(double endTwoPointMers[][],double k,double c){
-		double[] point = new double[2];
-		
-		//寻找方向
-		if (k > 0){
-			if (endTwoPointMers[0][0] < endTwoPointMers[1][0]){
-				point[0] = endTwoPointMers[0][0] + k * 3;
-			}else{
-				point[0] = endTwoPointMers[0][0] - k * 3;
-			}
-		}else if (k < 0){
-			if (endTwoPointMers[0][0] > endTwoPointMers[1][0]){
-				point[0] = endTwoPointMers[0][0] + k * 3;
-			}else{
-				point[0] = endTwoPointMers[0][0] - k * 3;
-			}
-		}else{
-			if (endTwoPointMers[0][0] > endTwoPointMers[1][0]){
-				point[0] = endTwoPointMers[0][0] - 3;
-			}else{
-				point[0] = endTwoPointMers[0][0] + 3;
-			}
-		}
-		
-		point[1] = k * point[0] + c;
-		
-		if (k !=0){
-			double k1 = 1 / k;
-			
-			double c1 = point[1] - k1 * point[0];
-			
-			//求出左右两个点
-			
-			double px1 = point[0] - k1 * 6;
-			
-			double py1 = k1 * px1 + c1;
-			
-			double px2 = point[0] + k1 * 6;
-			
-			double py2 = k1 * px2 + c1;
-			
-			//寻找右边点
-			if (py1 < (k * px1 + c)){
-				point[0] = px1;
-				
-				point[1] = py1;
-			}else{
-				point[0] = px2;
-				
-				point[1] = py2;
-			}
-		}else{
-			if (endTwoPointMers[0][0] < point[0]){
-			
-				point[1] += 6;
-			}else{
-				point[1] -= 6;
-			}
-		}
-		
-		
-		return point;
+		return displayPosition;
 	}
 	
 	/*********************************************************************/

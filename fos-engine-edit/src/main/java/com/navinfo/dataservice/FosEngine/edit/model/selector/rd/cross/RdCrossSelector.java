@@ -11,6 +11,9 @@ import com.navinfo.dataservice.FosEngine.comm.exception.DataNotFoundException;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ISelector;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.cross.RdCross;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.cross.RdCrossLink;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.cross.RdCrossName;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.cross.RdCrossNode;
 
 public class RdCrossSelector implements ISelector {
 
@@ -57,16 +60,34 @@ public class RdCrossSelector implements ISelector {
 						.loadRowsByParentId(id, isLock);
 
 				cross.setLinks(links);
+				
+				for (IRow row : cross.getLinks()) {
+					RdCrossLink obj = (RdCrossLink) row;
+
+					cross.linkMap.put(obj.rowId(), obj);
+				}
 
 				List<IRow> nodes = new RdCrossNodeSelector(conn)
 						.loadRowsByParentId(id, isLock);
 
 				cross.setNodes(nodes);
+				
+				for (IRow row : cross.getNodes()) {
+					RdCrossNode obj = (RdCrossNode) row;
+
+					cross.nodeMap.put(obj.rowId(), obj);
+				}
 
 				List<IRow> names = new RdCrossNameSelector(conn)
 						.loadRowsByParentId(id, isLock);
 
 				cross.setNames(names);
+				
+				for (IRow row : cross.getNames()) {
+					RdCrossName obj = (RdCrossName) row;
+
+					cross.nameMap.put(obj.rowId(), obj);
+				}
 
 				cross.setRowId(resultSet.getString("row_id"));
 

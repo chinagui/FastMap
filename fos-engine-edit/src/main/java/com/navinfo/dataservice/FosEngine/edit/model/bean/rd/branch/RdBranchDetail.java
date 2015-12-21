@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity;
+package com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -17,47 +17,47 @@ import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
 
-public class RdLaneTopology implements IObj {
-
-	private String rowId;
+public class RdBranchDetail implements IObj {
 
 	private int pid;
 
-	private int connexityPid;
+	private int branchPid;
+
+	private int voiceDir;
 	
-	private int outLinkPid;
+	private int estabType;
 	
-	private int inLaneInfo;
+	private int nameKind;
 	
-	private int busLaneInfo;
+	private String exitNum;
 	
-	private int reachDir;
+	private int branchType;
 	
-	private int relationshipType=1;
+	private String patternCode;
 	
-	private List<IRow> vias = new ArrayList<IRow>();
+	private String arrowCode;
 	
+	private int arrowFlag;
+	
+	private int guideCode;
+	
+	private String rowId;
+
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
-	public Map<String,RdLaneVia> viaMap = new HashMap<String,RdLaneVia>();
-
-	public RdLaneTopology() {
-
-	}
+	private List<IRow> names = new ArrayList<IRow>();
+	
+	public Map<Integer, RdBranchName> nameMap = new HashMap<Integer, RdBranchName>();
 
 	@Override
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
 	}
 
-	public List<IRow> getVias() {
-		return vias;
+	public RdBranchDetail() {
+
 	}
 
-	public void setVias(List<IRow> vias) {
-		this.vias = vias;
-	}
-	
 	public int getPid() {
 		return pid;
 	}
@@ -66,52 +66,84 @@ public class RdLaneTopology implements IObj {
 		this.pid = pid;
 	}
 
-	public int getConnexityPid() {
-		return connexityPid;
+	public String getArrowCode() {
+		return arrowCode;
 	}
 
-	public void setConnexityPid(int connexityPid) {
-		this.connexityPid = connexityPid;
+	public void setArrowCode(String arrowCode) {
+		this.arrowCode = arrowCode;
 	}
 
-	public int getOutLinkPid() {
-		return outLinkPid;
+	public int getVoiceDir() {
+		return voiceDir;
 	}
 
-	public void setOutLinkPid(int outLinkPid) {
-		this.outLinkPid = outLinkPid;
+	public void setVoiceDir(int voiceDir) {
+		this.voiceDir = voiceDir;
 	}
 
-	public int getInLaneInfo() {
-		return inLaneInfo;
+	public int getEstabType() {
+		return estabType;
 	}
 
-	public void setInLaneInfo(int inLaneInfo) {
-		this.inLaneInfo = inLaneInfo;
+	public void setEstabType(int estabType) {
+		this.estabType = estabType;
 	}
 
-	public int getBusLaneInfo() {
-		return busLaneInfo;
+	public int getNameKind() {
+		return nameKind;
 	}
 
-	public void setBusLaneInfo(int busLaneInfo) {
-		this.busLaneInfo = busLaneInfo;
+	public void setNameKind(int nameKind) {
+		this.nameKind = nameKind;
 	}
 
-	public int getReachDir() {
-		return reachDir;
+	public String getExitNum() {
+		return exitNum;
 	}
 
-	public void setReachDir(int reachDir) {
-		this.reachDir = reachDir;
+	public void setExitNum(String exitNum) {
+		this.exitNum = exitNum;
 	}
 
-	public int getRelationshipType() {
-		return relationshipType;
+	public int getBranchType() {
+		return branchType;
 	}
 
-	public void setRelationshipType(int relationshipType) {
-		this.relationshipType = relationshipType;
+	public void setBranchType(int branchType) {
+		this.branchType = branchType;
+	}
+
+	public String getPatternCode() {
+		return patternCode;
+	}
+
+	public void setPatternCode(String patternCode) {
+		this.patternCode = patternCode;
+	}
+
+	public int getArrowFlag() {
+		return arrowFlag;
+	}
+
+	public void setArrowFlag(int arrowFlag) {
+		this.arrowFlag = arrowFlag;
+	}
+
+	public int getGuideCode() {
+		return guideCode;
+	}
+
+	public void setGuideCode(int guideCode) {
+		this.guideCode = guideCode;
+	}
+
+	public List<IRow> getNames() {
+		return names;
+	}
+
+	public void setNames(List<IRow> names) {
+		this.names = names;
 	}
 
 	@Override
@@ -133,19 +165,19 @@ public class RdLaneTopology implements IObj {
 			if (json.get(key) instanceof JSONArray) {
 
 				switch (key) {
-				case "vias":
-					vias.clear();
+				case "names":
+					names.clear();
 
 					ja = json.getJSONArray(key);
 
 					for (int i = 0; i < ja.size(); i++) {
 						JSONObject jo = ja.getJSONObject(i);
 
-						RdLaneVia row = new RdLaneVia();
+						RdBranchName row = new RdBranchName();
 
 						row.Unserialize(jo);
 
-						vias.add(row);
+						names.add(row);
 					}
 
 					break;
@@ -155,11 +187,11 @@ public class RdLaneTopology implements IObj {
 				}
 
 			} else {
-				if (!"objStatus".equals(key)) {
-					Field f = this.getClass().getDeclaredField(key);
-					f.setAccessible(true);
-					f.set(this, json.get(key));
-				}
+				Field f = this.getClass().getDeclaredField(key);
+
+				f.setAccessible(true);
+
+				f.set(this, json.get(key));
 			}
 		}
 
@@ -169,7 +201,7 @@ public class RdLaneTopology implements IObj {
 	@Override
 	public String tableName() {
 
-		return "rd_lane_topology";
+		return "rd_branch_detail";
 	}
 
 	@Override
@@ -186,14 +218,14 @@ public class RdLaneTopology implements IObj {
 	@Override
 	public ObjType objType() {
 
-		return ObjType.RDLANETOPOLOGY;
+		return ObjType.RDBRANCHDETAIL;
 	}
+
 
 	@Override
 	public void copy(IRow row) {
 
 	}
-
 	@Override
 	public Map<String, Object> changedFields() {
 
@@ -203,34 +235,39 @@ public class RdLaneTopology implements IObj {
 	@Override
 	public String primaryKey() {
 
-		return "pid";
+		return "branch_pid";
 	}
 
 	@Override
 	public int primaryValue() {
 
-		return this.getConnexityPid();
+		return this.getBranchPid();
 	}
 
 	@Override
 	public List<List<IRow>> children() {
-		List<List<IRow>> children = new ArrayList<List<IRow>>();
 
-		children.add(this.getVias());
-	
-		return children;
+		return null;
 	}
 
 	@Override
 	public String primaryTableName() {
 
-		return "rd_lane_connexity";
+		return "rd_branch";
 	}
 
 	@Override
 	public String rowId() {
 
 		return this.rowId;
+	}
+
+	public int getBranchPid() {
+		return branchPid;
+	}
+
+	public void setBranchPid(int branchPid) {
+		this.branchPid = branchPid;
 	}
 
 	@Override
@@ -291,6 +328,7 @@ public class RdLaneTopology implements IObj {
 	@Override
 	public int pid() {
 		// TODO Auto-generated method stub
-		return pid;
+		return this.getPid();
 	}
+
 }

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity;
+package com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -15,15 +15,19 @@ import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
 
-public class RdLaneVia implements IRow {
+public class RdSeriesbranch implements IRow {
 
-	private int topologyId;
-
-	private int linkPid;
-
-	private int groupId = 1;
-
-	private int seqNum = 1;
+	private int branchPid;
+	
+	private int type;
+	
+	private int voiceDir;
+	
+	private String patternCode;
+	
+	private String arrowCode;
+	
+	private int arrowFlag;
 
 	private String rowId;
 
@@ -38,8 +42,48 @@ public class RdLaneVia implements IRow {
 		this.rowId = rowId;
 	}
 
-	public RdLaneVia() {
+	public RdSeriesbranch() {
 
+	}
+
+	public String getArrowCode() {
+		return arrowCode;
+	}
+
+	public void setArrowCode(String arrowCode) {
+		this.arrowCode = arrowCode;
+	}
+
+	public int getType() {
+		return type;
+	}
+
+	public void setType(int type) {
+		this.type = type;
+	}
+
+	public int getVoiceDir() {
+		return voiceDir;
+	}
+
+	public void setVoiceDir(int voiceDir) {
+		this.voiceDir = voiceDir;
+	}
+
+	public String getPatternCode() {
+		return patternCode;
+	}
+
+	public void setPatternCode(String patternCode) {
+		this.patternCode = patternCode;
+	}
+
+	public int getArrowFlag() {
+		return arrowFlag;
+	}
+
+	public void setArrowFlag(int arrowFlag) {
+		this.arrowFlag = arrowFlag;
 	}
 
 	@Override
@@ -51,13 +95,29 @@ public class RdLaneVia implements IRow {
 	@Override
 	public boolean Unserialize(JSONObject json) throws Exception {
 
-		return false;
+		Iterator keys = json.keys();
+
+		while (keys.hasNext()) {
+
+			String key = (String) keys.next();
+
+			if (!"objStatus".equals(key)) {
+
+				Field f = this.getClass().getDeclaredField(key);
+
+				f.setAccessible(true);
+
+				f.set(this, json.get(key));
+			}
+
+		}
+		return true;
 	}
 
 	@Override
 	public String tableName() {
 
-		return "rd_lane_via";
+		return "rd_seriesbranch";
 	}
 
 	@Override
@@ -74,38 +134,14 @@ public class RdLaneVia implements IRow {
 	@Override
 	public ObjType objType() {
 
-		return ObjType.RDLANEVIA;
+		return ObjType.RDSERIESBRANCH;
 	}
 
-	public int getLinkPid() {
-		return linkPid;
-	}
-
-	public void setLinkPid(int linkPid) {
-		this.linkPid = linkPid;
-	}
-
-	public int getGroupId() {
-		return groupId;
-	}
-
-	public void setGroupId(int groupId) {
-		this.groupId = groupId;
-	}
-
-	public int getSeqNum() {
-		return seqNum;
-	}
-
-	public void setSeqNum(int seqNum) {
-		this.seqNum = seqNum;
-	}
 
 	@Override
 	public void copy(IRow row) {
 
 	}
-
 	@Override
 	public Map<String, Object> changedFields() {
 
@@ -115,13 +151,13 @@ public class RdLaneVia implements IRow {
 	@Override
 	public String primaryKey() {
 
-		return "topology_id";
+		return "branch_pid";
 	}
 
 	@Override
 	public int primaryValue() {
 
-		return this.getTopologyId();
+		return this.getBranchPid();
 	}
 
 	@Override
@@ -133,7 +169,7 @@ public class RdLaneVia implements IRow {
 	@Override
 	public String primaryTableName() {
 
-		return "rd_lane_topology";
+		return "rd_branch";
 	}
 
 	@Override
@@ -142,12 +178,12 @@ public class RdLaneVia implements IRow {
 		return this.getRowId();
 	}
 
-	public int getTopologyId() {
-		return topologyId;
+	public int getBranchPid() {
+		return branchPid;
 	}
 
-	public void setTopologyId(int topologyId) {
-		this.topologyId = topologyId;
+	public void setBranchPid(int branchPid) {
+		this.branchPid = branchPid;
 	}
 
 	@Override

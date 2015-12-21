@@ -2,7 +2,11 @@ package com.navinfo.navicommons.utils;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -135,10 +139,10 @@ public abstract class StringUtils {
      * @param connector
      * @return
      */
-	public static String collection2String(Collection<String> coll,String connector){
+	public static String collection2String(Collection<?> coll,String connector){
 		String resultStr="";
-		for(String str:coll){
-			resultStr+=connector+str;
+		for(Iterator<?> i = coll.iterator();i.hasNext();){
+			resultStr+=connector+i.next();
 		}
 		if(resultStr.length()>0){
 			return resultStr.substring(connector.length());
@@ -146,11 +150,11 @@ public abstract class StringUtils {
 			return null;
 		}
 	}
-	public static String collection2String(Collection<String> collection,String connector,Collection<String> filters){
+	public static String collection2String(Collection<?> collection,String connector,Collection<?> filters){
 		String resultStr="";
-		for(String str:collection){
-			if(filters.contains(str))continue;
-			resultStr+=connector+str;
+		for(Object obj:collection){
+			if(filters.contains(obj))continue;
+			resultStr+=connector+obj;
 		}
 		if(resultStr.length()>0){
 			return resultStr.substring(connector.length());
@@ -160,12 +164,31 @@ public abstract class StringUtils {
 	}
     
     public static void main(String[] args) {
-        String test = "select s from [mesh] and [mesh]  s[ss]s [task] from [pk]";
-        Map pro = new HashMap();
-        pro.put("mesh", "73");
-        pro.put("task", "74");
-        pro.put("pk", "75");
-        System.out.println(expandVariables(test, pro, "[", "]"));
+//        String test = "select s from [mesh] and [mesh]  s[ss]s [task] from [pk]";
+//        Map pro = new HashMap();
+//        pro.put("mesh", "73");
+//        pro.put("task", "74");
+//        pro.put("pk", "75");
+//        System.out.println(expandVariables(test, pro, "[", "]"));
+//    	Random r = new Random();
+//    	Object o = (Object)r;
+//    	System.out.println(o.equals(r)?"true":"false");
+    	Set<String> set = new HashSet<String>();
+    	set.add("123");
+    	set.add("456");
+    	set.add("789");
+    	Set<String> filter = new HashSet<String>();
+    	filter.add("456");
+    	System.out.println(StringUtils.collection2String(set, ","));
+    	System.out.println(StringUtils.collection2String(set, ",",filter));
+    	Set<Integer> set1 = new HashSet<Integer>();
+    	set1.add(123);
+    	set1.add(456);
+    	set1.add(789);
+    	Set<Integer> filter1 = new HashSet<Integer>();
+    	filter1.add(456);
+    	System.out.println(StringUtils.collection2String(set1, ","));
+    	System.out.println(StringUtils.collection2String(set1, ",",filter1));
     }
 
 }

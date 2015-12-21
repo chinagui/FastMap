@@ -84,14 +84,14 @@ public class DbManager {
 		}
 	}
 	public UnifiedDb getDbByName(String dbName,String dbType)throws DataHubException{
+		UnifiedDb db=null;
 		Connection conn = null;
 		try{
 			String sql = "select D.DB_ID,D.DB_NAME,D.DB_PASSWD,D.DB_ROLE,D.DB_TYPE,D.TABLESPACE_NAME,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME" +
 					" from UNIFIED_DB D,UNIFIED_DB_SERVER S where D.SERVER_ID=S.SERVER_ID AND D.DB_NAME=? AND D.DB_TYPE=?";
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
-			UnifiedDb db = run.query(conn,sql, new DbResultSetHandler(false),dbName,dbType);
-			return db;
+			db = run.query(conn,sql, new DbResultSetHandler(false),dbName,dbType);
 			
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -100,16 +100,20 @@ public class DbManager {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+		if(db==null){
+			throw new DataHubException("未查询到该数据库的信息。");
+		}
+		return db;
 	}
 	public UnifiedDb getDbById(int dbId)throws DataHubException{
+		UnifiedDb db=null;
 		Connection conn = null;
 		try{
 			String sql = "select D.DB_ID,D.DB_NAME,D.DB_PASSWD,D.DB_ROLE,D.DB_TYPE,D.TABLESPACE_NAME,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME" +
 					" from UNIFIED_DB D,UNIFIED_DB_SERVER S where D.SERVER_ID=S.SERVER_ID AND D.DB_ID=?";
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
-			UnifiedDb db = run.query(conn,sql, new DbResultSetHandler(false),dbId);
-			return db;
+			db = run.query(conn,sql, new DbResultSetHandler(false),dbId);
 			
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -118,16 +122,20 @@ public class DbManager {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+		if(db==null){
+			throw new DataHubException("未查询到该数据库的信息。");
+		}
+		return db;
 	}
 	public UnifiedDb getOnlyDbByName(String dbName)throws DataHubException{
+		UnifiedDb db=null;
 		Connection conn = null;
 		try{
 			String sql = "select D.DB_ID,D.DB_NAME,D.DB_PASSWD,D.DB_ROLE,D.DB_TYPE,D.TABLESPACE_NAME,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME" +
 					" from UNIFIED_DB D,UNIFIED_DB_SERVER S where D.SERVER_ID=S.SERVER_ID AND D.DB_NAME=?";
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
-			UnifiedDb db = run.query(conn,sql, new DbResultSetHandler(true),dbName);
-			return db;
+			db = run.query(conn,sql, new DbResultSetHandler(true),dbName);
 			
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -136,16 +144,20 @@ public class DbManager {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+		if(db==null){
+			throw new DataHubException("未查询到该数据库的信息。");
+		}
+		return db;
 	}
 	public UnifiedDb getOnlyDbByType(String dbType)throws DataHubException{
+		UnifiedDb db=null;
 		Connection conn = null;
 		try{
 			String sql = "select D.DB_ID,D.DB_NAME,D.DB_PASSWD,D.DB_ROLE,D.DB_TYPE,D.TABLESPACE_NAME,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME" +
 					" from UNIFIED_DB D,UNIFIED_DB_SERVER S where D.SERVER_ID=S.SERVER_ID AND D.DB_TYPE=?";
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
-			UnifiedDb db = run.query(conn,sql, new DbResultSetHandler(true),dbType);
-			return db;
+			db = run.query(conn,sql, new DbResultSetHandler(true),dbType);
 			
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -154,6 +166,10 @@ public class DbManager {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+		if(db==null){
+			throw new DataHubException("未查询到该数据库的信息。");
+		}
+		return db;
 	}
 	public static void main(String[] args){
 		try{

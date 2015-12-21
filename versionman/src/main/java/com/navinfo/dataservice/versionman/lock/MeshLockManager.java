@@ -2,6 +2,8 @@ package com.navinfo.dataservice.versionman.lock;
 
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -9,6 +11,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
@@ -33,15 +36,57 @@ public class MeshLockManager {
 	}
 
 	/**
-	 * 返回被锁定的图幅Set，如果null则没有锁
+	 * 返回状态为锁定或者已借出的图幅Set，否则返回null
 	 * @param prjId
 	 * @param meshes
 	 * @return
 	 * @throws LockException
 	 */
-    public Set<String> query(int prjId,Set<String> meshes)throws LockException{
-    	
-    	return null;
+    public Set<Integer> query(int prjId,Set<Integer> meshes)throws LockException{
+    	if(meshes==null){
+    		throw new LockException("查询锁失败：传入图幅为空，请检查。");
+    	}
+    	int size = meshes.size();
+    	if(size==0){
+    		throw new LockException("查询锁失败：传入图幅为空，请检查。");
+    	}
+    	Connection conn = null;
+    	try{
+			QueryRunner run = new QueryRunner();
+			conn = manDataSource.getConnection();
+			//当size超过1000时，才转clob，提高效率
+			String meshInClause = null;
+			Clob clobMeshes=null;
+			if(size>1000){
+				clobMeshes=conn.createClob();
+				clobMeshes.setString(1, StringUtils.collection2String(meshes, ","));
+				meshInClause = " MESH_ID IN (select to_number(column_value) from table(clob_to_table(?)))";
+			}else{
+				meshInClause = " MESH_ID IN ("+StringUtils.collection2String(meshes, ",")+")";
+			}
+			StringBuffer sqlBuf = new StringBuffer();
+			sqlBuf.append("SELECT MESH_ID FROM FM_MESH WHERE");
+			sqlBuf.append(meshInClause);
+			sqlBuf.append(" AND (HANDLE_PROJECT_ID <> ? OR LOCK_STATUS=1)");
+			
+			Set<Integer> result = null;
+			if(size>1000){
+				result = run.query(conn, sqlBuf.toString(), new FmMeshResultSetHandler4QueryLock(),clobMeshes, prjId);
+			}else{
+				result = run.query(conn, sqlBuf.toString(), new FmMeshResultSetHandler4QueryLock(), prjId);
+			}
+			return result;
+    	}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			if(e instanceof LockException){
+				throw (LockException)e;
+			}else{
+				throw new LockException("申请图幅锁发生SQL错误，"+e.getMessage(),e);
+			}
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
     }
 
     /**
@@ -86,6 +131,15 @@ public class MeshLockManager {
 					updateCount = run.update(conn, sqlBuf.toString(),prjId,lockType,lockSeq,clobMeshes,prjId);
 				}else{
 					updateCount = run.update(conn, sqlBuf.toString(),prjId,lockType,lockSeq,prjId);
+				}
+			}else if(lockType==FmMesh4Lock.TYPE_GIVE_BACK){
+				sqlBuf.append("UPDATE FM_MESH SET LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,UPDATE_TIME=SYSDATE WHERE");
+				sqlBuf.append(meshInClause);
+				sqlBuf.append(" AND PROJECT_ID <> ? AND HANDLE_PROJECT_ID = ? AND LOCK_STATUS=0");
+				if(size>1000){
+					updateCount = run.update(conn, sqlBuf.toString(),lockType,lockSeq,clobMeshes,prjId,prjId);
+				}else{
+					updateCount = run.update(conn, sqlBuf.toString(),lockType,lockSeq,prjId,prjId);
 				}
 			}else{
 				sqlBuf.append("UPDATE FM_MESH SET LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,UPDATE_TIME=SYSDATE WHERE");
@@ -276,16 +330,33 @@ public class MeshLockManager {
 //		System.out.println(Long.MAX_VALUE);
 			MeshLockManager man = new MeshLockManager(MultiDataSourceFactory.getInstance().getManDataSource());
 			Set<Integer> meshes = new HashSet<Integer>();
-			for(int i=0;i<1001;i++){
-				meshes.add(100000+i);
-			}
-//			meshes.add(595672);
-//			meshes.add(595671);
-			man.lock(1, meshes, FmMesh4Lock.TYPE_GIVE_BACK);
-//			System.out.println(result);
+//			for(int i=0;i<1001;i++){
+//				meshes.add(100000+i);
+//			}
+			meshes.add(595672);
+			meshes.add(595671);
+			int result = 0;
+			man.lock(2, meshes, FmMesh4Lock.TYPE_BORROW);
+			System.out.println(man.query(1, meshes));
 			System.out.println("over.");
 		}catch(Exception e){
 			e.printStackTrace();
+		}
+		
+	}
+	class FmMeshResultSetHandler4QueryLock implements ResultSetHandler<Set<Integer>>{
+		@Override
+		public Set<Integer> handle(ResultSet rs) throws SQLException {
+			Set<Integer> meshSet = null;
+			if(rs.next()){
+				meshSet = new HashSet<Integer>();
+			}else{
+				return null;
+			}
+			do{
+				meshSet.add(rs.getInt(1));
+			} while(rs.next());
+			return meshSet;
 		}
 		
 	}

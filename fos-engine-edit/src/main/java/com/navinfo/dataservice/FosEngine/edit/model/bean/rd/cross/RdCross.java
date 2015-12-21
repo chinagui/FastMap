@@ -38,6 +38,12 @@ public class RdCross implements IObj {
 	private String rowId;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
+	
+	public Map<String, RdCrossLink> linkMap = new HashMap<String, RdCrossLink>();
+	
+	public Map<String, RdCrossName> nameMap = new HashMap<String, RdCrossName>();
+	
+	public Map<String, RdCrossNode> nodeMap = new HashMap<String, RdCrossNode>();
 
 	public RdCross() {
 

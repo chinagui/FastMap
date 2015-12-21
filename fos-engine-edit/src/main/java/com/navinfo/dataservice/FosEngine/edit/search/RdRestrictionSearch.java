@@ -20,7 +20,8 @@ import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionDetail;
-import com.navinfo.dataservice.FosEngine.tips.RdRestriction.RdRestrictionTipsBuilder;
+import com.navinfo.dataservice.FosEngine.tips.restriction.RdRestrictionTipsBuilder;
+import com.navinfo.dataservice.FosEngine.tips.restriction.RdRestrictionTipsBuilder_Old;
 
 public class RdRestrictionSearch implements ISearch {
 
@@ -224,7 +225,7 @@ public class RdRestrictionSearch implements ISearch {
 
 				jsonM.put("c", String.valueOf((int)angle));
 
-				double[] point = RdRestrictionTipsBuilder
+				double[] point = RdRestrictionTipsBuilder_Old
 						.calculateTipsPosition(sNodePid, eNodePid, nodePid,
 								geom, 7);
 
@@ -332,7 +333,7 @@ public class RdRestrictionSearch implements ISearch {
 
 				jsonM.put("c", String.valueOf((int)angle));
 
-				double[] point = RdRestrictionTipsBuilder
+				double[] point = RdRestrictionTipsBuilder_Old
 						.calculateTipsPosition(sNodePid, eNodePid, nodePid,
 								geom, 7);
 

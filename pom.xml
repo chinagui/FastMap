@@ -13,7 +13,9 @@
 		<module>versionman</module>
         <module>webman</module>
     	<module>fos-engine-edit</module>
-  </modules>
+    	<module>fos-engine-man</module>
+    	<module>fos-engine-meta</module>
+    </modules>
 
     <packaging>pom</packaging>
     <name>dataservice</name>
@@ -429,6 +431,16 @@
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
 				<artifactId>fos-engine-edit</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>fos-engine-man</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>fos-engine-meta</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 		<!-- dataservice module start -->	

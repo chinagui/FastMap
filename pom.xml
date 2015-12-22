@@ -15,6 +15,7 @@
     	<module>fos-engine-edit</module>
     	<module>fos-engine-man</module>
     	<module>fos-engine-meta</module>
+    	<module>solr-core</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -394,6 +395,12 @@
 				<version>${mysql.connector.version}</version>
 			</dependency>
 			
+			<dependency>
+				<groupId>org.apache.solr</groupId>
+				<artifactId>solr-solrj</artifactId>
+				<version>5.2.1</version>
+			</dependency>
+			
 		<!-- jdbc driver start-->
 		
 		<!-- dataservice module start -->		
@@ -441,6 +448,11 @@
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
 				<artifactId>fos-engine-meta</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>solr-core</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 		<!-- dataservice module start -->	

@@ -50,7 +50,7 @@ public class RdRestrictionTipsBuilder {
 		while (resultSet.next()) {
 			num++;
 			
-			String rowkey = TipsImportUtils.generateRowkey(lonlat, uniqId, type);
+			String rowkey = TipsImportUtils.generateRowkey( uniqId, type);
 			
 			String source = TipsImportUtils.generateSource(type);
 			

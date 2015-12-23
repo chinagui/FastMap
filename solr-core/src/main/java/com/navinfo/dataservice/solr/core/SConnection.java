@@ -75,6 +75,7 @@ public class SConnection {
 		
 		if (docs.size() >= flushCnt){
 			this.flushData();
+			
 		}
 	}
 	

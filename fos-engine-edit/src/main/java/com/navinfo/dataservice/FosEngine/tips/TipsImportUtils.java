@@ -20,15 +20,12 @@ public class TipsImportUtils {
 	 * @param type
 	 * @return
 	 */
-	public static String generateRowkey(double[] lonlat, String uniqId,
+	public static String generateRowkey( String uniqId,
 			String type) {
 
 		StringBuilder rowkey = new StringBuilder();
 
-		rowkey.append(GeoHash.geoHashStringWithCharacterPrecision(lonlat[1],
-				lonlat[0], 12));
-
-		rowkey.append(String.format("%04d", Integer.parseInt(type)));
+		rowkey.append("11");
 
 		rowkey.append(uniqId);
 

@@ -22,6 +22,8 @@ public class Command implements ICommand {
 
 	private List<Integer> outLinkPids;
 
+	private List<Integer> restricInfos;
+
 	public int getInLinkPid() {
 		return inLinkPid;
 	}
@@ -54,11 +56,19 @@ public class Command implements ICommand {
 		this.projectId = projectId;
 	}
 
+	public List<Integer> getRestricInfos() {
+		return restricInfos;
+	}
+
+	public void setRestricInfos(List<Integer> restricInfos) {
+		this.restricInfos = restricInfos;
+	}
+
 	@Override
 	public OperType getOperType() {
 		return OperType.CREATE;
 	}
-	
+
 	@Override
 	public ObjType getObjType() {
 		return ObjType.RDRESTRICTION;
@@ -80,16 +90,30 @@ public class Command implements ICommand {
 
 		this.inLinkPid = data.getInt("inLinkPid");
 
-		JSONArray array = data.getJSONArray("outLinkPids");
-		
-		outLinkPids = new ArrayList<Integer>();
-		
-		for(int i=0;i<array.size();i++){
-			
-			int pid = array.getInt(i);
-			
-			if(!outLinkPids.contains(pid)){
-				outLinkPids.add(pid);
+		if (data.containsKey("outLinkPids")) {
+			JSONArray array = data.getJSONArray("outLinkPids");
+
+			outLinkPids = new ArrayList<Integer>();
+
+			for (int i = 0; i < array.size(); i++) {
+
+				int pid = array.getInt(i);
+
+				if (!outLinkPids.contains(pid)) {
+					outLinkPids.add(pid);
+				}
+			}
+		} else {
+
+			JSONArray array = data.getJSONArray("infos");
+
+			restricInfos = new ArrayList<Integer>();
+
+			for (int i = 0; i < array.size(); i++) {
+
+				int info = array.getInt(i);
+
+				restricInfos.add(info);
 			}
 		}
 	}

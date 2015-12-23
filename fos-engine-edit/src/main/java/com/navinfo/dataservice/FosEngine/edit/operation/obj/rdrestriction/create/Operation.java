@@ -64,8 +64,21 @@ public class Operation implements IOperation {
 
 		restrict.setNodePid(command.getNodePid());
 
-		List<Integer> outLinkPids = command.getOutLinkPids();
+		List<Integer> outLinkPids = null;
 
+		if (command.getOutLinkPids() != null) {
+			outLinkPids = command.getOutLinkPids();
+		}
+
+		else {
+			outLinkPids = calOutLinks(command.getInLinkPid(),
+					command.getNodePid());
+			
+			if (outLinkPids.size() == 0){
+				throw new Exception("进入点不在路口上或者该路口没有退出线");
+			}
+		}
+		
 		this.calViaLinks(command.getInLinkPid(), command.getNodePid(),
 				outLinkPids);
 
@@ -75,12 +88,12 @@ public class Operation implements IOperation {
 		List<IRow> details = new ArrayList<IRow>();
 
 		List<Integer> restricInfos = new ArrayList<Integer>();
-
-		for (int outLinkPid:outLinkPids) {
+		
+		List<Integer> newRestricInfos = command.getRestricInfos();
+		
+		for (int outLinkPid : outLinkPids) {
 
 			RdRestrictionDetail detail = new RdRestrictionDetail();
-
-			detail.setPid(PidService.getInstance().applyRestrictionDetailPid());
 
 			detail.setRestricPid(restrict.getPid());
 
@@ -93,14 +106,22 @@ public class Operation implements IOperation {
 					outLinkSegment);
 
 			int restricInfo = this.calRestricInfo(angle);
+			
+			if (newRestricInfos != null){
+				if (newRestricInfos.contains(restricInfo)){
+					newRestricInfos.remove(Integer.valueOf(restricInfo));
+				}
+				else{
+					continue;
+				}
+			}
+			
+			detail.setPid(PidService.getInstance().applyRestrictionDetailPid());
 
 			detail.setRestricInfo(restricInfo);
-			
-			detail.setRelationshipType(relationTypeMap.get(detail.getOutLinkPid()));
 
-			if (!restricInfos.contains(restricInfo)) {
-				restricInfos.add(restricInfo);
-			}
+			detail.setRelationshipType(relationTypeMap.get(detail
+					.getOutLinkPid()));
 
 			List<Integer> viaLinkPids = viaLinkPidMap.get(detail
 					.getOutLinkPid());
@@ -129,30 +150,85 @@ public class Operation implements IOperation {
 			details.add(detail);
 
 		}
+		
+		if(details.size() == 0){
+			throw new Exception("找不到对应的退出线！");
+		}
 
 		restrict.setDetails(details);
 
 		if (restricInfos.size() > 0) {
 			StringBuilder sb = new StringBuilder();
-			
+
 			for (Integer restricInfo : restricInfos) {
 				sb.append("[");
-				
+
 				sb.append(restricInfo);
-				
+
 				sb.append("]");
-				
+
 				sb.append(",");
 			}
-			
-			sb.deleteCharAt(sb.length()-1);
-			
+
+			sb.deleteCharAt(sb.length() - 1);
+
 			restrict.setRestricInfo(sb.toString());
 		}
 
 		result.insertObject(restrict, ObjStatus.INSERT);
 
 		return null;
+	}
+
+	/**
+	 * 计算退出线
+	 * 
+	 * @param inLinkPid
+	 * @param nodePid
+	 * @param restricInfos
+	 */
+	private List<Integer> calOutLinks(int inLinkPid, int nodePid)
+			throws Exception {
+
+		List<Integer> outLinkPids = new ArrayList<Integer>();
+
+		String sql = "with c1 as  (select * from rd_cross_node where node_pid = 185526), c2 as  (select *   from rd_link b  where exists (select null from c1 c where c.node_pid in (b.s_node_pid))  and link_pid not in    (select d.link_pid     from rd_cross_link d    where d.pid in (select pid from c1)) union all select *   from rd_link b  where exists (select null from c1 c where c.node_pid in (b.e_node_pid))  and link_pid not in    (select d.link_pid     from rd_cross_link d    where d.pid in (select pid from c1)))  select * from c2  where exists  (select null     from c1    where (c2.direct = 1)     or (c2.direct = 2 and c2.s_node_pid = c1.node_pid)     or (c2.direct = 3 and c2.e_node_pid = c1.node_pid)) ";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, nodePid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				int outLinkPid = resultSet.getInt("link_pid");
+				
+				if (outLinkPid == inLinkPid){
+					continue;
+				}
+
+				outLinkPids.add(outLinkPid);
+			}
+
+			return outLinkPids;
+		} catch (Exception e) {
+			throw e;
+
+		} finally {
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+			}
+
+		}
 	}
 
 	/**
@@ -163,8 +239,8 @@ public class Operation implements IOperation {
 	 * @param outLinkPids
 	 * @throws Exception
 	 */
-	private void calViaLinks(int inLinkPid, int nodePid, List<Integer> outLinkPids)
-			throws Exception {
+	private void calViaLinks(int inLinkPid, int nodePid,
+			List<Integer> outLinkPids) throws Exception {
 
 		outLinkSegmentMap = new HashMap<Integer, LineSegment>();
 
@@ -193,8 +269,8 @@ public class Operation implements IOperation {
 
 				sb.append(",");
 			}
-			
-			sb.deleteCharAt(sb.length()-1);
+
+			sb.deleteCharAt(sb.length() - 1);
 
 			pstmt.setString(3, sb.toString());
 

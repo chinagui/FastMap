@@ -9,7 +9,6 @@ import oracle.sql.STRUCT;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.FosEngine.comm.geom.GeoTranslator;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ISelector;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
@@ -23,6 +22,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLinkSidewalk;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLinkWalkstair;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLinkZone;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class RdLinkSelector implements ISelector {

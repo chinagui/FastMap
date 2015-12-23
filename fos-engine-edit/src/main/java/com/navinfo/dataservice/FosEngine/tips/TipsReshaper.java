@@ -1,8 +1,8 @@
 package com.navinfo.dataservice.FosEngine.tips;
 
-import com.navinfo.dataservice.FosEngine.comm.db.HBaseAddress;
-import com.navinfo.dataservice.FosEngine.comm.db.OracleAddress;
-import com.navinfo.dataservice.FosEngine.comm.db.SolrAddress;
+import com.navinfo.dataservice.commons.db.HBaseAddress;
+import com.navinfo.dataservice.commons.db.OracleAddress;
+import com.navinfo.dataservice.commons.db.SolrAddress;
 
 public class TipsReshaper {
 

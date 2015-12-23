@@ -28,10 +28,10 @@ import org.apache.hadoop.hbase.client.Table;
 
 import ch.hsr.geohash.GeoHash;
 
-import com.navinfo.dataservice.FosEngine.comm.constant.BusinessConstant;
-import com.navinfo.dataservice.FosEngine.comm.geom.Geojson;
-import com.navinfo.dataservice.FosEngine.comm.mercator.MercatorProjection;
-import com.navinfo.dataservice.FosEngine.comm.service.ProgressService;
+import com.navinfo.dataservice.commons.constant.BusinessConstant;
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.commons.service.ProgressService;
 
 /**
  * 交限Tips创建类

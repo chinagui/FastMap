@@ -1,14 +1,6 @@
 package com.navinfo.dataservice.FosEngine.test;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import ch.hsr.geohash.GeoHash;
-
-import com.navinfo.dataservice.FosEngine.comm.db.HBaseAddress;
-import com.navinfo.dataservice.FosEngine.comm.mercator.MercatorProjection;
-import com.navinfo.dataservice.FosEngine.comm.util.GridUtils;
-import com.navinfo.dataservice.FosEngine.comm.util.ZipUtils;
-import com.navinfo.dataservice.FosEngine.tips.TipsSelector;
+import com.navinfo.dataservice.commons.util.GridUtils;
 
 public class Test4 {
 

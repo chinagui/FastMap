@@ -3,9 +3,9 @@ package com.navinfo.dataservice.FosEngine.edit.search;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.FosEngine.comm.util.JsonUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.ISerializable;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 
 /**
  * 查询对象模型

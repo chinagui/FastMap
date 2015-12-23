@@ -13,10 +13,10 @@ import org.hbase.async.Scanner;
 
 import ch.hsr.geohash.GeoHash;
 
-import com.navinfo.dataservice.FosEngine.comm.db.HBaseAddress;
-import com.navinfo.dataservice.FosEngine.comm.geom.GeoTranslator;
-import com.navinfo.dataservice.FosEngine.comm.util.GeohashUtils;
-import com.navinfo.dataservice.FosEngine.comm.util.GridUtils;
+import com.navinfo.dataservice.commons.db.HBaseAddress;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.GeohashUtils;
+import com.navinfo.dataservice.commons.util.GridUtils;
 
 public class ExportTips {
 

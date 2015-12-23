@@ -1,7 +1,7 @@
 package com.navinfo.dataservice.FosEngine.photos;
 
-import com.navinfo.dataservice.FosEngine.comm.db.HBaseAddress;
-import com.navinfo.dataservice.FosEngine.comm.db.SolrAddress;
+import com.navinfo.dataservice.commons.db.HBaseAddress;
+import com.navinfo.dataservice.commons.db.SolrAddress;
 
 /**
  * 照片导入基类

@@ -14,8 +14,8 @@ import net.sf.json.JSONObject;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
-import com.navinfo.dataservice.FosEngine.comm.geom.Geojson;
 import com.navinfo.dataservice.FosEngine.tips.TipsImportUtils;
+import com.navinfo.dataservice.commons.geom.Geojson;
 
 public class RdRestrictionTipsBuilder {
 

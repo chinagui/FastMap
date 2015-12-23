@@ -38,7 +38,7 @@
 
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>fos-engine-edit</artifactId>
+			<artifactId>ds-common</artifactId>
 		</dependency>
 	</dependencies>
 </project>

@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.FosEngine.photos;
 
-import com.navinfo.dataservice.FosEngine.comm.db.HBaseAddress;
+import com.navinfo.dataservice.commons.db.HBaseAddress;
 
 /**
  * 创建照片库

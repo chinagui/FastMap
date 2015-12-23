@@ -11,14 +11,14 @@ import java.util.Set;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.FosEngine.comm.geom.GeoTranslator;
-import com.navinfo.dataservice.FosEngine.comm.geom.Geojson;
-import com.navinfo.dataservice.FosEngine.comm.service.LogPidService;
 import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.service.LogPidService;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class LogWriter {

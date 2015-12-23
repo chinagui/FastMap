@@ -1,7 +1,7 @@
 package com.navinfo.dataservice.FosEngine.test;
 
-import com.navinfo.dataservice.FosEngine.comm.db.ConfigLoader;
 import com.navinfo.dataservice.FosEngine.edit.operation.Transaction;
+import com.navinfo.dataservice.commons.db.ConfigLoader;
 
 
 

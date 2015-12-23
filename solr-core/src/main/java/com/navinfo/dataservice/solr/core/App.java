@@ -1,10 +1,10 @@
 package com.navinfo.dataservice.solr.core;
 
-import org.json.JSONException;
-
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.FosEngine.comm.geom.GeoTranslator;
+import org.json.JSONException;
+
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 
 /**
  * Hello world!

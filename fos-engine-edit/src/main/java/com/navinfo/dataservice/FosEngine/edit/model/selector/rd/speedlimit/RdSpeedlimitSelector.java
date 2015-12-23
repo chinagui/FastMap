@@ -9,11 +9,11 @@ import oracle.sql.STRUCT;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.FosEngine.comm.exception.DataNotFoundException;
-import com.navinfo.dataservice.FosEngine.comm.geom.GeoTranslator;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ISelector;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.commons.exception.DataNotFoundException;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 
 public class RdSpeedlimitSelector implements ISelector {
 

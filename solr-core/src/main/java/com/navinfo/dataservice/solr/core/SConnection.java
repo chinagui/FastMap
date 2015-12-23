@@ -19,8 +19,8 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONException;
 
-import com.navinfo.dataservice.FosEngine.comm.geom.GeoTranslator;
-import com.navinfo.dataservice.FosEngine.comm.geom.Geojson;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 
 public class SConnection {
 

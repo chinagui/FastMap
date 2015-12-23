@@ -4,7 +4,6 @@ import java.sql.Connection;
 
 import net.sf.json.JSONArray;
 
-import com.navinfo.dataservice.FosEngine.comm.db.DBOraclePoolManager;
 import com.navinfo.dataservice.FosEngine.edit.check.CkExceptionOperator;
 import com.navinfo.dataservice.FosEngine.edit.log.LogWriter;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
@@ -12,8 +11,8 @@ import com.navinfo.dataservice.FosEngine.edit.model.Result;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.FosEngine.edit.operation.IProcess;
-import com.navinfo.dataservice.FosEngine.edit.operation.OperType;
 import com.navinfo.dataservice.FosEngine.edit.operation.OperatorFactory;
+import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 
 public class Process implements IProcess {
 

@@ -3,7 +3,6 @@ package com.navinfo.dataservice.FosEngine.edit.display;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.FosEngine.comm.util.JsonUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.ISerializable;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
 

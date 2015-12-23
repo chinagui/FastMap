@@ -10,9 +10,6 @@ import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Table;
 
-import com.navinfo.dataservice.FosEngine.comm.db.HBaseAddress;
-import com.navinfo.dataservice.FosEngine.comm.db.OracleAddress;
-import com.navinfo.dataservice.FosEngine.comm.service.ProgressService;
 import com.navinfo.dataservice.FosEngine.tips.Rotary.RotaryTipsBuilder;
 import com.navinfo.dataservice.FosEngine.tips.bridge.BridgeTipsBuilder;
 import com.navinfo.dataservice.FosEngine.tips.connexity.RdLaneConnexityTipsBuilder;
@@ -25,6 +22,9 @@ import com.navinfo.dataservice.FosEngine.tips.highway.HighwayTipsBuilder;
 import com.navinfo.dataservice.FosEngine.tips.linkname.LinkNameTipsBuilder;
 import com.navinfo.dataservice.FosEngine.tips.restriction.RdRestrictionTipsBuilder;
 import com.navinfo.dataservice.FosEngine.tips.speedLimit.RdSpeedLimitTipsBuilder;
+import com.navinfo.dataservice.commons.db.HBaseAddress;
+import com.navinfo.dataservice.commons.db.OracleAddress;
+import com.navinfo.dataservice.commons.service.ProgressService;
 
 /**
  * 创建Tips
@@ -128,7 +128,7 @@ public class TipsBuilder {
 
 		progressManager.updateProgress("完成度:" + 30 + "%");
 
-		RdCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+		RdCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab, null);
 
 		progressManager.updateProgress("完成度:" + 35 + "%");
 

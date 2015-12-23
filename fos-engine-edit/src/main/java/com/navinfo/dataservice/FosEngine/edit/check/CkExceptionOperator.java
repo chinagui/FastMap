@@ -12,11 +12,11 @@ import java.util.Set;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.FosEngine.comm.constant.CheckConstant;
-import com.navinfo.dataservice.FosEngine.comm.service.LogPidService;
 import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
+import com.navinfo.dataservice.commons.constant.CheckConstant;
+import com.navinfo.dataservice.commons.service.LogPidService;
 
 public class CkExceptionOperator {
 

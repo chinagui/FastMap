@@ -5,13 +5,12 @@ import java.util.ArrayList;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import org.apache.hadoop.hbase.client.Put;
 import org.hbase.async.GetRequest;
 import org.hbase.async.KeyValue;
 import org.hbase.async.PutRequest;
 
-import com.navinfo.dataservice.FosEngine.comm.db.HBaseAddress;
 import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
+import com.navinfo.dataservice.commons.db.HBaseAddress;
 
 public class TipsOperator {
 

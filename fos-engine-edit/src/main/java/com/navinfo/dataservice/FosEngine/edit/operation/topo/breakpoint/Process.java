@@ -8,7 +8,6 @@ import net.sf.json.JSONArray;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.FosEngine.comm.db.DBOraclePoolManager;
 import com.navinfo.dataservice.FosEngine.edit.log.LogWriter;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
@@ -25,8 +24,8 @@ import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.restrict.RdRestr
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.FosEngine.edit.operation.IProcess;
-import com.navinfo.dataservice.FosEngine.edit.operation.OperType;
 import com.navinfo.dataservice.FosEngine.edit.operation.OperatorFactory;
+import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Point;
 

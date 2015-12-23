@@ -3,9 +3,9 @@ package com.navinfo.dataservice.FosEngine.tips.restriction;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.FosEngine.comm.util.JsonUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.ISerializable;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 
 /**
  * 交限Tips模型

@@ -3,7 +3,6 @@ package com.navinfo.dataservice.FosEngine.edit.operation.obj.rdnode.update;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.FosEngine.comm.service.PidService;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
@@ -11,6 +10,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNodeForm;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNodeMesh;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNodeName;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
+import com.navinfo.dataservice.commons.service.PidService;
 
 public class Operation implements IOperation {
 

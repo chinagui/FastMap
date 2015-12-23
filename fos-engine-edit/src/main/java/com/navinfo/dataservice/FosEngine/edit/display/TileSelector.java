@@ -6,8 +6,8 @@ import java.util.List;
 import org.hbase.async.GetRequest;
 import org.hbase.async.KeyValue;
 
-import com.navinfo.dataservice.FosEngine.comm.constant.HBaseConstant;
-import com.navinfo.dataservice.FosEngine.comm.db.HBaseAddress;
+import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.db.HBaseAddress;
 
 /**
  * 瓦片的查询类

@@ -168,5 +168,9 @@
 		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>solr-core</artifactId>
 	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>ds-common</artifactId>
+	</dependency>
 </dependencies>
 </project>

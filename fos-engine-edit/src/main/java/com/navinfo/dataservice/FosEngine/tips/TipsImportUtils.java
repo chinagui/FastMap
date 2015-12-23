@@ -2,7 +2,6 @@ package com.navinfo.dataservice.FosEngine.tips;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import ch.hsr.geohash.GeoHash;
 
 /**
  * tips导入辅助工具，如rowkey生成，source生成

@@ -16,9 +16,9 @@ import oracle.sql.STRUCT;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
-import com.navinfo.dataservice.FosEngine.comm.geom.Geojson;
-import com.navinfo.dataservice.FosEngine.comm.util.DisplayUtils;
 import com.navinfo.dataservice.FosEngine.tips.TipsImportUtils;
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.util.DisplayUtils;
 import com.navinfo.dataservice.solr.core.SConnection;
 
 public class RdCrossTipsBuilder {

@@ -9,14 +9,14 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-
 import net.sf.json.JSONObject;
 
+import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
-import com.navinfo.dataservice.FosEngine.comm.util.UuidUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.IOperator;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNodeName;
+import com.navinfo.dataservice.commons.util.UuidUtils;
 
 public class RdNodeNameOperator implements IOperator {
 

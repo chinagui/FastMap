@@ -26,9 +26,8 @@ public class DisplayUtils {
 			return kind + 1;
 		}
 	}
-	
-	
-	//获取按照道路通行方向取四分之一位置
+
+	// 获取按照道路通行方向取四分之一位置
 	public static double[] get1_4Point(JGeometry geom, int direct) {
 
 		double linkPoints[][] = getLinkPoints(geom, direct);
@@ -52,38 +51,36 @@ public class DisplayUtils {
 		int num = 0;
 
 		if (direct == 1 || direct == 2) {
-			for (int i=0;i<ps.length;i += 2) {
+			for (int i = 0; i < ps.length; i += 2) {
 
 				double lng = ps[i];
 
-				double lat = ps[i+1];
+				double lat = ps[i + 1];
 
 				double lngMer = MercatorProjection.longitudeToMetersX(lng);
 
 				double latMer = MercatorProjection.latitudeToMetersY(lat);
 
-				points[num++] = new double[]{lngMer,latMer};
+				points[num++] = new double[] { lngMer, latMer };
 			}
 		} else {
-			for(int i=ps.length - 1;i>=0;i -= 2){
-								
+			for (int i = ps.length - 1; i >= 0; i -= 2) {
+
 				double lat = ps[i];
 
-				double lng = ps[i-1];
+				double lng = ps[i - 1];
 
 				double lngMer = MercatorProjection.longitudeToMetersX(lng);
 
 				double latMer = MercatorProjection.latitudeToMetersY(lat);
 
-				points[num++] = new double[]{lngMer,latMer};
+				points[num++] = new double[] { lngMer, latMer };
 			}
 		}
 
 		return points;
 
 	}
-
-	
 
 	private static double[] lookFor1_4Point(double[][] points, double len1_4) {
 		double point[] = new double[2];
@@ -116,11 +113,10 @@ public class DisplayUtils {
 
 		return point;
 	}
-	
-	
+
 	/***********************************************************************/
-	
-	//获取进入线3米再向右找6米的位置
+
+	// 获取进入线3米再向右找6米的位置
 	public static double[][] getLinkPointPos(String linkWkt, String pointWkt,
 			int tipsCnt, int seqNum) throws Exception {
 		double[][] position = new double[2][2];
@@ -134,7 +130,7 @@ public class DisplayUtils {
 
 		// 默认是3米，如果按照tips个数 * 3 米超出了LINK的长度，则重新计算这个值
 		double unit = 3;
-		
+
 		double vertiUnit = 8;
 
 		// 1、对线、点进行墨卡托数组转
@@ -168,19 +164,23 @@ public class DisplayUtils {
 
 		// 按照引导坐标位置和线通行方向向右找6米位置作为显示坐标位置
 		double[] displayPosition = getDisplayPosition(linkMerArray,
-				guidePosition, guideSeqNum,vertiUnit);
+				guidePosition, guideSeqNum, vertiUnit);
 
 		// 转换墨卡托坐标为经纬度坐标返回
-		
-		guidePosition[0] = MercatorProjection.metersXToLongitude(guidePosition[0]);
-		
-		guidePosition[1] = MercatorProjection.metersYToLatitude(guidePosition[1]);
+
+		guidePosition[0] = MercatorProjection
+				.metersXToLongitude(guidePosition[0]);
+
+		guidePosition[1] = MercatorProjection
+				.metersYToLatitude(guidePosition[1]);
 
 		position[0] = guidePosition;
-		
-		displayPosition[0] = MercatorProjection.metersXToLongitude(displayPosition[0]);
-		
-		displayPosition[1] = MercatorProjection.metersYToLatitude(displayPosition[1]);
+
+		displayPosition[0] = MercatorProjection
+				.metersXToLongitude(displayPosition[0]);
+
+		displayPosition[1] = MercatorProjection
+				.metersYToLatitude(displayPosition[1]);
 
 		position[1] = displayPosition;
 
@@ -342,7 +342,7 @@ public class DisplayUtils {
 
 	// 按照引导坐标位置和线通行方向向右找vertiUnit=6米位置作为显示坐标位置
 	private static double[] getDisplayPosition(double[][] linkMerArray,
-			double[] guidePosition, int guideSeqNum,double vertiUnit) {
+			double[] guidePosition, int guideSeqNum, double vertiUnit) {
 
 		double[] displayPosition = new double[2];
 
@@ -356,14 +356,15 @@ public class DisplayUtils {
 			double k = (startPoint[1] - stopPoint[1])
 					/ (startPoint[0] - stopPoint[0]);
 
-
 			if (k != 0) {
 				// 不与X轴平行
 				double k1 = -1 / k;
 				double c1 = guidePosition[1] - (guidePosition[0] * k1);
-				double x1 = guidePosition[0] + (vertiUnit / Math.sqrt(1 + k1 * k1));
+				double x1 = guidePosition[0]
+						+ (vertiUnit / Math.sqrt(1 + k1 * k1));
 				double y1 = k1 * x1 + c1;
-				double x2 = guidePosition[0] - (vertiUnit / Math.sqrt(1 + k1 * k1));
+				double x2 = guidePosition[0]
+						- (vertiUnit / Math.sqrt(1 + k1 * k1));
 				double y2 = k1 * x2 + c1;
 				if (k > 0) {
 					if (startPoint[0] < stopPoint[0]) {
@@ -418,10 +419,10 @@ public class DisplayUtils {
 
 		return displayPosition;
 	}
-	
+
 	/*********************************************************************/
-	
-	//获取路口主点挂接LINK角平分线30米位置点
+
+	// 获取路口主点挂接LINK角平分线30米位置点
 	public static double[] getCrossPoint(String inLinkWkt, String outLinkWkt,
 			String pointWkt) throws Exception {
 		double[] point = new double[2];
@@ -616,195 +617,376 @@ public class DisplayUtils {
 
 		psOutLink[3] = MercatorProjection.latitudeToMetersY(psOutLink[3]);
 	}
-	
+
 	/*************************************************************************/
-	
-	//求跨图幅的LINK，被图幅边界打断后的WKT列表
-	public static List<String> getSplitLinkByMeshs(String wkt) throws ParseException{
-		
+
+	// 求跨图幅的LINK，被图幅边界打断后的WKT列表
+	public static List<String> getSplitLinkByMeshs(String wkt)
+			throws ParseException {
+
 		WKTReader reader = new WKTReader();
-		
+
 		WKTWriter writer = new WKTWriter();
-		
+
 		Geometry geomLink = reader.read(wkt);
-		
+
 		Geometry geomBound = geomLink.getBoundary();
-		
-		double minLon = 180,minLat = 90,maxLon = 0,maxLat = 0;
-		
+
+		double minLon = 180, minLat = 90, maxLon = 0, maxLat = 0;
+
 		Coordinate[] csBound = geomBound.getCoordinates();
-		
-		for(Coordinate c: csBound){
-			if (minLon > c.x){
+
+		for (Coordinate c : csBound) {
+			if (minLon > c.x) {
 				minLon = c.x;
 			}
-			
-			if (minLat > c.y){
+
+			if (minLat > c.y) {
 				minLat = c.y;
 			}
-			
-			if (maxLon < c.x){
+
+			if (maxLon < c.x) {
 				maxLon = c.x;
 			}
-			
-			if (maxLat < c.y){
+
+			if (maxLat < c.y) {
 				maxLat = c.y;
 			}
 		}
-		
-//		String[] meshs = MeshUtils.area2Meshes(minLon, minLat, maxLon, maxLat);
-		
+
+		// String[] meshs = MeshUtils.area2Meshes(minLon, minLat, maxLon,
+		// maxLat);
+
 		Set<String> meshs = new HashSet<String>();
-		
+
 		meshs.add(MeshUtils.lonlat2Mesh(minLon, minLat));
-		
+
 		meshs.add(MeshUtils.lonlat2Mesh(maxLon, minLat));
-		
+
 		meshs.add(MeshUtils.lonlat2Mesh(maxLon, maxLat));
-		
+
 		meshs.add(MeshUtils.lonlat2Mesh(minLon, maxLat));
-		
-		if (meshs.size() > 1){
-			
+
+		if (meshs.size() > 1) {
+
 			List<String> list = new ArrayList<String>();
-			
-			for(String mesh : meshs){
+
+			for (String mesh : meshs) {
 
 				String meshWkt = MeshUtils.mesh2WKT(mesh);
-		
+
 				Geometry geomMesh = reader.read(meshWkt);
-				
+
 				Geometry geomInter = geomMesh.intersection(geomLink);
-				
-				
+
 				list.add(writer.write(geomInter));
 			}
-			
+
 			return list;
-		}else{
+		} else {
 			return null;
 		}
-		
-		
+
 	}
-	
-	
+
 	/**********************************************************************************/
-	
+
 	// 计算LINK与正北方向的夹角
-		public static double calIncloudedAngle(String wkt, int direct)
-				throws Exception {
-			double includedAngle = 0;
+	public static double calIncloudedAngle(String wkt, int direct)
+			throws Exception {
+		double includedAngle = 0;
 
-			WKTReader reader = new WKTReader();
+		WKTReader reader = new WKTReader();
 
-			Geometry link = reader.read(wkt);
+		Geometry link = reader.read(wkt);
 
-			double startX = 0, startY = 0, stopX = 0, stopY = 0;
+		double startX = 0, startY = 0, stopX = 0, stopY = 0;
 
-			double[] points = getTraffic2Points(link, direct);
+		double[] points = getTraffic2Points(link, direct);
 
-			startX = points[0];
+		startX = points[0];
 
-			startY = points[1];
+		startY = points[1];
 
-			stopX = points[2];
+		stopX = points[2];
 
-			stopY = points[3];
+		stopY = points[3];
 
-			if (startX != stopX && startY != stopY) {
+		if (startX != stopX && startY != stopY) {
 
-				int quadrant = getQuadrant(startX, startY, stopX, stopY);
+			int quadrant = getQuadrant(startX, startY, stopX, stopY);
 
-				switch (quadrant) {
-				case 1:
-					includedAngle = Math.atan((stopY - startY) / (stopX - startX))
-							* 180 / Math.PI;
-					break;
-				case 2:
-					includedAngle = Math.atan((stopY - startY) / (startX - stopX))
-							* 180 / Math.PI + 270;
-					break;
-				case 3:
-					includedAngle = Math.atan((stopY - startY) / (stopX - startX))
-							* 180 / Math.PI + 180;
-					break;
-				case 4:
-					includedAngle = Math.atan((startY - stopY) / (stopX - startX))
-							* 180 / Math.PI + 90;
-					break;
-				default:
-					break;
+			switch (quadrant) {
+			case 1:
+				includedAngle = Math.atan((stopY - startY) / (stopX - startX))
+						* 180 / Math.PI;
+				break;
+			case 2:
+				includedAngle = Math.atan((stopY - startY) / (startX - stopX))
+						* 180 / Math.PI + 270;
+				break;
+			case 3:
+				includedAngle = Math.atan((stopY - startY) / (stopX - startX))
+						* 180 / Math.PI + 180;
+				break;
+			case 4:
+				includedAngle = Math.atan((startY - stopY) / (stopX - startX))
+						* 180 / Math.PI + 90;
+				break;
+			default:
+				break;
+			}
+
+		} else {
+
+			if (startX == stopX) {
+				if (startY < stopY) {
+					includedAngle = 0;
+				} else {
+					includedAngle = 180;
 				}
-
 			} else {
+				if (startX < stopX) {
+					includedAngle = 90;
+				} else {
+					includedAngle = 270;
+				}
+			}
 
-				if (startX == stopX) {
-					if (startY < stopY) {
-						includedAngle = 0;
+		}
+
+		return includedAngle;
+	}
+
+	private static double[] getTraffic2Points(Geometry link, int direct) {
+
+		double[] points = new double[4];
+
+		Coordinate[] cs = link.getCoordinates();
+
+		if (direct == 1 || direct == 2) {
+			points[0] = cs[0].x;
+
+			points[1] = cs[0].y;
+
+			points[2] = cs[1].x;
+
+			points[3] = cs[1].y;
+		} else {
+
+			int len = cs.length;
+
+			points[0] = cs[len - 1].x;
+
+			points[1] = cs[len - 1].y;
+
+			points[2] = cs[len - 2].x;
+
+			points[3] = cs[len - 2].y;
+		}
+
+		return points;
+	}
+
+	private static int getQuadrant(double startX, double startY, double stopX,
+			double stopY) {
+
+		if (startX < stopX) {
+			if (startY < stopY) {
+				// 第一象限
+				return 1;
+			} else {
+				return 4;
+			}
+		} else {
+			if (startY < stopY) {
+				return 2;
+			} else {
+				return 3;
+			}
+		}
+	}
+
+	// 求限速tips显示坐标位置
+	public static double[] calSpeedLimitPos(String linkWkt, String pointWkt,
+			int direct) throws Exception {
+		double[] position = new double[2];
+
+		double[][] linkMerArray = convertLinkToMerArray(linkWkt);
+
+		double[] pointMerArray = convertPointToMerArray(pointWkt);
+
+		double startx, starty, stopx, stopy;
+
+		double range[] = findLinkRange(linkMerArray, pointMerArray, direct);
+		
+		startx = range[0];
+		
+		starty = range[1];
+		
+		stopx = range[2];
+		
+		stopy = range[3];
+
+		if (startx != stopx) {
+			double k = (starty - stopy) / (startx - stopx);
+
+			if (starty != stopy) {
+				double c1 = starty - (-1 / k) * startx;
+
+				if (k > 0) {
+					if (startx < stopx) {
+
+						position[0] = startx + 6
+								/ (Math.pow(1 + ((1 / k) * (1 + 1 / k)), 2));
+
+						position[1] = position[0] * (-1 / k) + c1;
 					} else {
-						includedAngle = 180;
+						position[0] = startx - 6
+								/ (Math.pow(1 + ((1 / k) * (1 + 1 / k)), 2));
+
+						position[1] = position[0] * (-1 / k) + c1;
 					}
 				} else {
-					if (startX < stopX) {
-						includedAngle = 90;
+					if (startx < stopx) {
+
+						position[0] = startx - 6
+								/ (Math.pow(1 + ((1 / k) * (1 + 1 / k)), 2));
+
+						position[1] = position[0] * (-1 / k) + c1;
 					} else {
-						includedAngle = 270;
+						position[0] = startx + 6
+								/ (Math.pow(1 + ((1 / k) * (1 + 1 / k)), 2));
+
+						position[1] = position[0] * (-1 / k) + c1;
 					}
 				}
-
-			}
-
-			return includedAngle;
-		}
-
-		private static double[] getTraffic2Points(Geometry link, int direct) {
-
-			double[] points = new double[4];
-
-			Coordinate[] cs = link.getCoordinates();
-
-			if (direct == 1 || direct == 2) {
-				points[0] = cs[0].x;
-
-				points[1] = cs[0].y;
-
-				points[2] = cs[1].x;
-
-				points[3] = cs[1].y;
 			} else {
+				position[0] = startx;
 
-				int len = cs.length;
+				if (startx < stopx) {
 
-				points[0] = cs[len - 1].x;
-
-				points[1] = cs[len - 1].y;
-
-				points[2] = cs[len - 2].x;
-
-				points[3] = cs[len - 2].y;
-			}
-
-			return points;
-		}
-
-		private static int getQuadrant(double startX, double startY, double stopX,
-				double stopY) {
-
-			if (startX < stopX) {
-				if (startY < stopY) {
-					// 第一象限
-					return 1;
+					position[1] = starty - 6;
 				} else {
-					return 4;
-				}
-			} else {
-				if (startY < stopY) {
-					return 2;
-				} else {
-					return 3;
+					position[1] = starty + 6;
 				}
 			}
+		} else {
+			position[1] = starty;
+
+			if (starty < stopy) {
+				position[0] = startx + 6;
+			} else {
+				position[0] = startx - 6;
+			}
 		}
-	
+
+		position[0] = MercatorProjection.metersXToLongitude(position[0]);
+
+		position[1] = MercatorProjection.metersYToLatitude(position[1]);
+
+		return position;
+	}
+
+	private static double[] findLinkRange(double[][] linkMerArray,
+			double[] pointMerArray, int direct) {
+	    double[] interPoint = new double[2];
+		
+		double range[] = new double[4];
+		
+		double startx=0,starty=0,stopx=0,stopy=0;
+
+		if (direct == 0 || direct == 2) {
+
+			for (int i = 0; i < linkMerArray.length - 1; i++) {
+
+				if (linkMerArray[i][0] <= pointMerArray[0]
+						&& linkMerArray[i + 1][0] >= pointMerArray[0]
+						&& linkMerArray[i][1] <= pointMerArray[1]
+						&& linkMerArray[i + 1][1] >= pointMerArray[1]) {
+					
+					 startx = linkMerArray[i][0];
+					
+					 starty = linkMerArray[i][1];
+					
+					 stopx = linkMerArray[i+1][0];
+					
+					 stopy = linkMerArray[i+1][1];
+
+					break;
+				}
+
+			}
+
+		} else {
+
+			for (int i = linkMerArray.length-1; i > 0; i--) {
+
+				if (linkMerArray[i][0] <= pointMerArray[0]
+						&& linkMerArray[i - 1][0] >= pointMerArray[0]
+						&& linkMerArray[i][1] <= pointMerArray[1]
+						&& linkMerArray[i - 1][1] >= pointMerArray[1]) {
+					
+					 startx = linkMerArray[i][0];
+					
+					 starty = linkMerArray[i][1];
+					
+					 stopx = linkMerArray[i-1][0];
+					
+					 stopy = linkMerArray[i-1][1];
+
+					break;
+				}
+
+			}
+		}
+		
+		if ((starty - pointMerArray[1]) * (pointMerArray[0] - stopx) !=
+				(pointMerArray[1] - stopy) * (startx - pointMerArray[0])){
+			
+			if (startx != stopx){
+				
+				if (starty != stopy){
+					
+					double k1 = (starty - stopy) / (startx - stopx);
+					
+					double c1 = starty - k1 * startx;
+					
+					double k2 = -1 / k1;
+					
+					double c2 = pointMerArray[1] - k2 * pointMerArray[0];
+					
+					interPoint[0] = (c2 - c1) / (k1 - k2);
+					
+					interPoint[1] = k1 * interPoint[0] + c1;
+					
+				}else{
+					interPoint[0] = pointMerArray[0];
+					
+					interPoint[1] = starty;
+				}
+				
+			}else{
+				interPoint[0] = startx;
+				
+				interPoint[1] = pointMerArray[1];
+			}
+			
+		}else{
+			interPoint[0] = pointMerArray[0];
+			
+			interPoint[1] = pointMerArray[1];
+		}
+		
+		range[0] = interPoint[0];
+		
+		range[1] = interPoint[1];
+		
+		range[2] = stopx;
+		
+		range[3] = stopy;
+
+		return range;
+	}
+
 }

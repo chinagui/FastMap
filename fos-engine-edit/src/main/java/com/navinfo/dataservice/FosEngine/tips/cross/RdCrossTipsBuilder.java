@@ -57,7 +57,7 @@ public class RdCrossTipsBuilder {
 
 		while (resultSet.next()) {
 			num++;
-			
+			uniqId = resultSet.getString("pid");
 			
 			String rowkey = TipsImportUtils.generateRowkey(uniqId, type);
 			

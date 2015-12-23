@@ -14,7 +14,9 @@ import com.navinfo.dataservice.FosEngine.tips.TipsImportUtils;
 
 public class RdSpeedLimitTipsBuilder {
 
-	private static String sql = "";
+	private static String sql = "select a.pid,a.link_pid,a.tollgate_flag,a.direct,a.speed_value, a.speed_flag,a.capture_flag,a.limit_src," +
+			"a.geometry point_geom,b.geometry link_geom  " +
+			"from rd_speedlimit a,rd_link b where a.link_pid = b.link_pid";
 	
 	private static String type = "1101";
 	
@@ -35,8 +37,6 @@ public class RdSpeedLimitTipsBuilder {
 
 		int num = 0;
 		
-		double[] lonlat = new double[2];
-		
 		String uniqId = null;
 		
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -45,13 +45,15 @@ public class RdSpeedLimitTipsBuilder {
 		while (resultSet.next()) {
 			num++;
 			
+			uniqId = resultSet.getString("pid");
+			
 			String rowkey = TipsImportUtils.generateRowkey( uniqId, type);
 			
 			String source = TipsImportUtils.generateSource(type);
 			
 			String track = TipsImportUtils.generateTrack(date);
 			
-			String geometry = generateGeometry();
+			String geometry = generateGeometry(resultSet);
 			
 			String deep = generateDeep();
 			
@@ -79,7 +81,8 @@ public class RdSpeedLimitTipsBuilder {
 		
 	}
 	
-	private static String generateGeometry(){
+	private static String generateGeometry(ResultSet resultSet){
+		
 		
 		
 		return null;

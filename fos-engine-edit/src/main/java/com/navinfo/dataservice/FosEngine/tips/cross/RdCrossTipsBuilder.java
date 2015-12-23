@@ -23,7 +23,7 @@ import com.navinfo.dataservice.solr.core.SConnection;
 
 public class RdCrossTipsBuilder {
 	
-	public static final WKT wkt = new WKT();
+	private static final WKT wkt = new WKT();
 
 	private static String sql = "with tmp1 as ( select a.pid,        a.node_pid,        b.geometry geom,        row_number() over(partition by a.node_pid order by b.link_pid) ro   from rd_cross_node a, rd_link b  where a.is_main = 1    and a.node_pid in (b.s_node_pid, b.e_node_pid)),  " +
 			"  tmp2 as (    select a.pid,a.node_pid,a.geom geom1,b.geom geom2    from tmp1 a,tmp1 b where a.pid = b.pid and a.node_pid = b.node_pid    and a.ro= 1 and b.ro = 2    )   " +

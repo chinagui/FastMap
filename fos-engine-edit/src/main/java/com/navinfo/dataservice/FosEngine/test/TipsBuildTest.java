@@ -37,7 +37,7 @@ public class TipsBuildTest {
 		
 		HBaseAddress.initHBaseAddress("192.168.3.156");
 		
-		t.run(fmgdbOA, pmOA, UuidUtils.genUuid());
+		t.run(fmgdbOA, pmOA, UuidUtils.genUuid(),"http://192.168.4.130:8081/solr/tips");
 	}
 
 }

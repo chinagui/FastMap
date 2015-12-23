@@ -55,11 +55,11 @@ public class SConnection {
 		
 		String id = json.getString("i");
 		
-		JSONObject geojson = json.getJSONObject("g");
+		JSONObject geojson = json.getJSONObject("g").getJSONObject("g_location");
 		
 		String wkt = GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(geojson));
 		
-		String stage = json.getString("stage");
+		String stage = json.getJSONObject("m").getString("a");
 		
 		SolrInputDocument doc = new SolrInputDocument();
 		
@@ -145,6 +145,45 @@ public class SConnection {
         		String location = snapshot.getString("g");
         		
         		snapshot.put("g", this.covertLonLat2Piexls(location, z, px, py));
+        		
+        		snapshots.add(snapshot);
+        	}
+        }else{
+        	//暂先不处理
+        }
+		
+		return snapshots;
+	}
+	
+	
+	public List<JSONObject> queryTipsWeb(String wkt) throws SolrServerException, IOException{
+		List<JSONObject> snapshots = new ArrayList<JSONObject>();
+		
+		String param = "wkt:\"intersects("+wkt+")\"";
+		
+		SolrQuery query = new SolrQuery();  
+		
+		query.set("q", param);
+		
+		query.addField("snapshot");
+		
+		query.set("start", 0);
+		
+		query.set("rows", fetchNum);
+		
+        QueryResponse response = solrClient.query(query);
+        
+        SolrDocumentList sdList = response.getResults();
+        
+        long totalNum = sdList.getNumFound();
+        
+        if (totalNum <= fetchNum){
+        	for(int i=0;i<totalNum;i++){
+        		SolrDocument doc = sdList.get(i);
+        		
+        		JSONObject snapshot = JSONObject.fromObject(doc.get("snapshot"));
+        		
+        		String location = snapshot.getString("g");
         		
         		snapshots.add(snapshot);
         	}

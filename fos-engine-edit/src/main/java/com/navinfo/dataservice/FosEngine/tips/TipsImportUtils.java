@@ -25,6 +25,8 @@ public class TipsImportUtils {
 		StringBuilder rowkey = new StringBuilder();
 
 		rowkey.append("11");
+		
+		rowkey.append(type);
 
 		rowkey.append(uniqId);
 

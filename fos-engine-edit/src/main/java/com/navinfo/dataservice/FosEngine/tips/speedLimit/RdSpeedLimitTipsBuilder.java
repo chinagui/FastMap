@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.FosEngine.tips.speedLimit;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -10,7 +9,6 @@ import java.util.List;
 
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.util.GeometryExceptionWithContext;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 

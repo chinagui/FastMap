@@ -32,7 +32,7 @@ public class BridgeTipsBuilder {
 	private static WKTReader wktReader = new WKTReader();
 
 	private static String sql = "with tmp1 as  "
-			+ "(select   --+ no_merge    link_pid,    decode(direct, 1, s_node_pid, 2, s_node_pid, e_node_pid) "
+			+ "(select link_pid,    decode(direct, 1, s_node_pid, 2, s_node_pid, e_node_pid) "
 			+ "s_node_pid,    decode(direct, 1, e_node_pid, 2, e_node_pid, s_node_pid) e_node_pid    "
 			+ " from rd_link a    where "
 			+ "a.link_pid in          (select link_pid from rd_link_form where form_of_way = 30)),"

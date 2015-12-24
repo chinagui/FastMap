@@ -26,8 +26,8 @@ public class DirectTipsBuilder {
 	private static final WKT wkt = new WKT();
 
 	private static String sql = "select a.link_pid,a.direct,b.time_domain,a.geometry "
-			+ "from rd_link a,rd_link_limit b"
-			+ "where a.link_pid = b.link_pid"
+			+ "from rd_link a,rd_link_limit b "
+			+ "where a.link_pid = b.link_pid "
 			+ " and b.type=1 and time_domain is not null";
 
 	private static String type = "1203";
@@ -154,6 +154,8 @@ public class DirectTipsBuilder {
 		json.put("agl", DisplayUtils.calIncloudedAngle(linkWkt, direct));
 
 		json.put("dr", direct);
+		
+		json.put("time", resultSet.getString("time_domain"));
 
 		return json.toString();
 	}

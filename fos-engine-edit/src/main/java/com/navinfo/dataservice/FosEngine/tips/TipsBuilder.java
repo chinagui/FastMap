@@ -133,11 +133,11 @@ public class TipsBuilder {
 //
 //		progressManager.updateProgress("完成度:" + 30 + "%");
 
-		RdCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
+//		RdCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
 
 //		progressManager.updateProgress("完成度:" + 35 + "%");
 //
-//		DirectTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+		DirectTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
 //
 //		progressManager.updateProgress("完成度:" + 40 + "%");
 //
@@ -165,7 +165,7 @@ public class TipsBuilder {
 //
 //		progressManager.updateProgress("完成度:" + 80 + "%");
 
-		RdSpeedLimitTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
+//		RdSpeedLimitTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
 
 		progressManager.updateProgress("完成度:" + 100 + "%");
 		

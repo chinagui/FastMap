@@ -121,11 +121,11 @@ public class TipsBuilder {
 
 //		progressManager.updateProgress("完成度:" + 10 + "%");
 //
-//		BridgeTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
+		BridgeTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
 //
 //		progressManager.updateProgress("完成度:" + 15 + "%");
 //
-//		RdLaneConnexityTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+		RdLaneConnexityTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
 //
 //		progressManager.updateProgress("完成度:" + 25 + "%");
 //
@@ -133,11 +133,11 @@ public class TipsBuilder {
 //
 //		progressManager.updateProgress("完成度:" + 30 + "%");
 
-//		RdCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
+		RdCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
 
 //		progressManager.updateProgress("完成度:" + 35 + "%");
 //
-//		DirectTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
+		DirectTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
 //
 //		progressManager.updateProgress("完成度:" + 40 + "%");
 //
@@ -149,7 +149,7 @@ public class TipsBuilder {
 //
 //		progressManager.updateProgress("完成度:" + 50 + "%");
 //
-//		HighwayTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
+		HighwayTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
 //
 //		progressManager.updateProgress("完成度:" + 55 + "%");
 //
@@ -165,7 +165,7 @@ public class TipsBuilder {
 //
 //		progressManager.updateProgress("完成度:" + 80 + "%");
 
-//		RdSpeedLimitTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
+		RdSpeedLimitTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
 
 		progressManager.updateProgress("完成度:" + 100 + "%");
 		

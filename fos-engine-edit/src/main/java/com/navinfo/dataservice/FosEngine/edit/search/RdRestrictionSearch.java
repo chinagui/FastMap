@@ -17,7 +17,6 @@ import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionDetail;
-import com.navinfo.dataservice.FosEngine.tips.restriction.RdRestrictionTipsBuilder_Old;
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
@@ -224,9 +223,7 @@ public class RdRestrictionSearch implements ISearch {
 
 				jsonM.put("c", String.valueOf((int)angle));
 
-				double[] point = RdRestrictionTipsBuilder_Old
-						.calculateTipsPosition(sNodePid, eNodePid, nodePid,
-								geom, 7);
+				double[] point = null;
 
 				JSONArray geo = new JSONArray();
 
@@ -332,9 +329,7 @@ public class RdRestrictionSearch implements ISearch {
 
 				jsonM.put("c", String.valueOf((int)angle));
 
-				double[] point = RdRestrictionTipsBuilder_Old
-						.calculateTipsPosition(sNodePid, eNodePid, nodePid,
-								geom, 7);
+				double[] point = null;
 
 
 				snapshot.setG(Geojson.lonlat2Pixel(point[0],point[1],z,px,py));

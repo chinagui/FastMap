@@ -149,7 +149,7 @@ public class TipsBuilder {
 //
 //		progressManager.updateProgress("完成度:" + 50 + "%");
 //
-		HighwayTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
+//		HighwayTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
 //
 //		progressManager.updateProgress("完成度:" + 55 + "%");
 //
@@ -157,7 +157,7 @@ public class TipsBuilder {
 //
 //		progressManager.updateProgress("完成度:" + 60 + "%");
 //
-//		RdRestrictionTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+		RdRestrictionTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
 //
 //		progressManager.updateProgress("完成度:" + 70 + "%");
 //

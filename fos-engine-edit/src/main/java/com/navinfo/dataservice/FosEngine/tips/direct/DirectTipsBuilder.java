@@ -18,6 +18,7 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.FosEngine.tips.TipsImportUtils;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
 import com.navinfo.dataservice.solr.core.SConnection;
 
@@ -87,7 +88,7 @@ public class DirectTipsBuilder {
 
 			puts.add(put);
 			
-			JSONObject solrIndexJson = assembleSolrIndex(rowkey, geometry, 0);
+			JSONObject solrIndexJson = assembleSolrIndex(rowkey, JSONObject.fromObject(geometry), 0, date, type);
 
 			solrConn.addTips(solrIndexJson);
 			
@@ -161,15 +162,34 @@ public class DirectTipsBuilder {
 	}
 
 	// 组装solr索引
-	private static JSONObject assembleSolrIndex(String rowkey, String geom,
-			int stage) {
+	private static JSONObject assembleSolrIndex(String rowkey, JSONObject geom,
+			int stage, String date, String type) throws Exception {
 		JSONObject json = new JSONObject();
 
-		json.put("i", rowkey);
+		json.put("id", rowkey);
 
-		json.put("g", geom);
+		json.put("stage", stage);
 
-		json.put("m", "{\"a\":\"" + stage + "\"}");
+		json.put("date", date);
+
+		json.put("t_lifecycle", 0);
+
+		json.put("t_command", 0);
+
+		json.put("handler", 0);
+
+		json.put("s_sourceType", type);
+
+		json.put("s_sourceCode", 11);
+
+		JSONObject geojson = geom.getJSONObject("g_location");
+
+		json.put("g_location", geojson);
+
+		json.put("g_guide", geom.getJSONObject("g_guide"));
+
+		json.put("wkt",
+				GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(geojson)));
 
 		return json;
 	}

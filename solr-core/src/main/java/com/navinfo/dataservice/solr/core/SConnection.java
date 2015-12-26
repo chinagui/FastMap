@@ -19,7 +19,6 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONException;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 
 public class SConnection {
@@ -53,23 +52,29 @@ public class SConnection {
 	
 	public void addTips(JSONObject json) throws JSONException, SolrServerException, IOException {
 		
-		String id = json.getString("i");
-		
-		JSONObject geojson = json.getJSONObject("g").getJSONObject("g_location");
-		
-		String wkt = GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(geojson));
-		
-		String stage = json.getJSONObject("m").getString("a");
-		
 		SolrInputDocument doc = new SolrInputDocument();
 		
-		doc.addField("id", id);
+		doc.addField("id", json.getString("id"));
 		
-		doc.addField("wkt", wkt);
+		doc.addField("wkt", json.getString("wkt"));
 		
-		doc.addField("stage", stage);
+		doc.addField("stage", json.getInt("stage"));
 		
-		doc.addField("snapshot", json.toString());
+		doc.addField("date", json.getString("date"));
+		
+		doc.addField("t_lifecycle", json.getInt("t_lifecycle"));
+		
+		doc.addField("t_command", json.getInt("t_command"));
+		
+		doc.addField("handler", json.getInt("handler"));
+		
+		doc.addField("s_sourceCode", json.getInt("s_sourceCode"));
+		
+		doc.addField("s_sourceType", json.getString("s_sourceType"));
+		
+		doc.addField("g_location", json.getString("g_location"));
+		
+		doc.addField("g_guide", json.getString("g_guide"));
 		
 		docs.add(doc);
 		
@@ -79,6 +84,33 @@ public class SConnection {
 		}
 	}
 	
+	public boolean checkTipsMobile(String wkt, String date) throws SolrServerException, IOException{
+		
+		String param = "wkt:\"intersects("+wkt+")\" AND date:["+date+" TO *]";
+		
+		SolrQuery query = new SolrQuery();  
+		
+		query.set("q", param);
+		
+		query.addField("id");
+		
+		query.set("start", 0);
+		
+		query.set("rows", fetchNum);
+		
+		QueryResponse response = solrClient.query(query);
+		
+		SolrDocumentList sdList = response.getResults();
+        
+        long totalNum = sdList.getNumFound();
+        
+        if (totalNum > 0){
+        	return true;
+        }
+        else{
+        	return false;
+        }
+	}
 	
 	public List<String> queryTipsMobile(String wkt) throws SolrServerException, IOException{
 		List<String> rowkeys = new ArrayList<String>();
@@ -124,8 +156,6 @@ public class SConnection {
 		
 		query.set("q", param);
 		
-		query.addField("snapshot");
-		
 		query.set("start", 0);
 		
 		query.set("rows", fetchNum);
@@ -140,7 +170,7 @@ public class SConnection {
         	for(int i=0;i<totalNum;i++){
         		SolrDocument doc = sdList.get(i);
         		
-        		JSONObject snapshot = JSONObject.fromObject(doc.get("snapshot"));
+        		JSONObject snapshot = JSONObject.fromObject(doc);
         		
         		String location = snapshot.getString("g");
         		
@@ -155,17 +185,28 @@ public class SConnection {
 		return snapshots;
 	}
 	
-	
-	public List<JSONObject> queryTipsWeb(String wkt) throws SolrServerException, IOException{
+	public List<JSONObject> queryTipsWeb(String wkt, int type, JSONArray stages) throws SolrServerException, IOException{
 		List<JSONObject> snapshots = new ArrayList<JSONObject>();
 		
-		String param = "wkt:\"intersects("+wkt+")\"";
+		String param = "wkt:\"intersects("+wkt+")\" AND s_sourceType:"+type;
+		
+		String fq = "";
+		
+		for (int i =0;i<stages.size();i++){
+			int stage = stages.getInt(i);
+			
+			fq+="stage:"+stage;
+			
+			if (i!=stages.size()-1){
+				fq+=" OR ";
+			}
+		}
 		
 		SolrQuery query = new SolrQuery();  
 		
 		query.set("q", param);
 		
-		query.addField("snapshot");
+		query.set("fq", fq);
 		
 		query.set("start", 0);
 		
@@ -181,9 +222,91 @@ public class SConnection {
         	for(int i=0;i<totalNum;i++){
         		SolrDocument doc = sdList.get(i);
         		
-        		JSONObject snapshot = JSONObject.fromObject(doc.get("snapshot"));
+        		JSONObject snapshot = JSONObject.fromObject(doc);
         		
-        		String location = snapshot.getString("g");
+        		snapshots.add(snapshot);
+        	}
+        }else{
+        	//暂先不处理
+        }
+		
+		return snapshots;
+	}
+	
+	public List<JSONObject> queryTipsWeb(String wkt, JSONArray stages) throws SolrServerException, IOException{
+		List<JSONObject> snapshots = new ArrayList<JSONObject>();
+		
+		String param = "wkt:\"intersects("+wkt+")\"";
+		
+		String fq = "";
+		
+		for (int i =0;i<stages.size();i++){
+			int stage = stages.getInt(i);
+			
+			fq+="stage:"+stage;
+			
+			if (i!=stages.size()-1){
+				fq+=" OR ";
+			}
+		}
+		
+		SolrQuery query = new SolrQuery();  
+		
+		query.set("q", param);
+		
+		query.set("fq", fq);
+		
+		query.set("start", 0);
+		
+		query.set("rows", fetchNum);
+		
+		query.addField("s_sourceType");
+		
+        QueryResponse response = solrClient.query(query);
+        
+        SolrDocumentList sdList = response.getResults();
+        
+        long totalNum = sdList.getNumFound();
+        
+        if (totalNum <= fetchNum){
+        	for(int i=0;i<totalNum;i++){
+        		SolrDocument doc = sdList.get(i);
+        		
+        		JSONObject snapshot = JSONObject.fromObject(doc);
+        		
+        		snapshots.add(snapshot);
+        	}
+        }else{
+        	//暂先不处理
+        }
+		
+		return snapshots;
+	}
+	
+	public List<JSONObject> queryTipsWeb(String wkt) throws SolrServerException, IOException{
+		List<JSONObject> snapshots = new ArrayList<JSONObject>();
+		
+		String param = "wkt:\"intersects("+wkt+")\"";
+		
+		SolrQuery query = new SolrQuery();  
+		
+		query.set("q", param);
+		
+		query.set("start", 0);
+		
+		query.set("rows", fetchNum);
+		
+        QueryResponse response = solrClient.query(query);
+        
+        SolrDocumentList sdList = response.getResults();
+        
+        long totalNum = sdList.getNumFound();
+        
+        if (totalNum <= fetchNum){
+        	for(int i=0;i<totalNum;i++){
+        		SolrDocument doc = sdList.get(i);
+        		
+        		JSONObject snapshot = JSONObject.fromObject(doc);
         		
         		snapshots.add(snapshot);
         	}

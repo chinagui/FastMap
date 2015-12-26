@@ -14,10 +14,10 @@ public class GridSelector {
 		this.conn = conn;
 	}
 
-	public List<Integer> getByUser(int userId) throws Exception{
+	public List<Integer> getByUser(int userId, int projectId) throws Exception{
 		List<Integer> list = new ArrayList<Integer>();
 		
-		String sql = "select grid_id from grid where user_id=?";
+		String sql = "select grid_id from grid a, prj_progrid_relation b where a.grid_id = b.grid_id and a.user_id=:1 and b.project_id=:2";
 		
 		PreparedStatement pstmt = null;
 
@@ -27,6 +27,8 @@ public class GridSelector {
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setInt(1, userId);
+			
+			pstmt.setInt(2, projectId);
 
 			resultSet = pstmt.executeQuery();
 

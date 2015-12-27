@@ -136,13 +136,12 @@ public class ExportTips {
 		return ja;
 	}
 	
-	private static List<Get> generateGets(JSONArray grids, String date) throws Exception{
+	private static List<Get> generateGets(JSONArray grids, String date, String solrUrl) throws Exception{
 		List<Get> gets = new ArrayList<Get>();
 		
 		Set<String> set = new HashSet<String>();
 		
-		SConnection conn = new SConnection(
-				"http://192.168.4.130:8081/solr/tips/");
+		SConnection conn = new SConnection(solrUrl);
 		
 		for(int i=0; i<grids.size(); i++){
 			String gridId = grids.getString(i);
@@ -266,7 +265,7 @@ public class ExportTips {
 	 * @return 导出个数
 	 * @throws Exception
 	 */
-	public static int run(JSONArray grids, String date, String fileName)
+	public static int run(JSONArray grids, String date, String fileName, String solrUrl)
 			throws Exception {
 
 		int count = 0;
@@ -286,7 +285,7 @@ public class ExportTips {
 //				
 //		}
 		
-		List<Get> gets = generateGets(grids, date);
+		List<Get> gets = generateGets(grids, date, solrUrl);
 		
 		JSONArray ja = exportByGets(gets);
 		
@@ -307,7 +306,7 @@ public class ExportTips {
 		
 		grids.add(59567201);
 		grids.add(59567202);
-		System.out.println(run(grids, "20150302010101", "C:/Users/wangshishuai3966/Desktop/1.txt"));
+		System.out.println(run(grids, "20150302010101", "C:/Users/wangshishuai3966/Desktop/1.txt","http://192.168.4.130:8081/solr/tips/"));
 		System.out.println("done");
 	}
 }

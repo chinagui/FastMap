@@ -29,7 +29,7 @@ public class SConnection {
 	
 	private int flushCnt = 5000;
 	
-	private int fetchNum = 1000;
+	private int fetchNum = Integer.MAX_VALUE;
 	
 	public SConnection(String url){
 		solrClient = new HttpSolrClient(url);
@@ -96,7 +96,7 @@ public class SConnection {
 		
 		query.set("start", 0);
 		
-		query.set("rows", fetchNum);
+		query.set("rows", 1);
 		
 		QueryResponse response = solrClient.query(query);
 		
@@ -112,10 +112,10 @@ public class SConnection {
         }
 	}
 	
-	public List<String> queryTipsMobile(String wkt) throws SolrServerException, IOException{
+	public List<String> queryTipsMobile(String wkt, String date) throws SolrServerException, IOException{
 		List<String> rowkeys = new ArrayList<String>();
 		
-		String param = "wkt:\"intersects("+wkt+")\"";
+		String param = "wkt:\"intersects("+wkt+")\" AND date:["+date+" TO *]";
 		
 		SolrQuery query = new SolrQuery();  
 		
@@ -133,15 +133,11 @@ public class SConnection {
         
         long totalNum = sdList.getNumFound();
         
-        if (totalNum <= fetchNum){
-        	for(int i=0;i<totalNum;i++){
-        		SolrDocument doc = sdList.get(i);
-        		
-        		rowkeys.add(doc.get("id").toString());
-        	}
-        }else{
-        	//暂先不处理
-        }
+    	for(int i=0;i<totalNum;i++){
+    		SolrDocument doc = sdList.get(i);
+    		
+    		rowkeys.add(doc.get("id").toString());
+    	}
 		
 		return rowkeys;
 	}

@@ -313,6 +313,35 @@ public class SConnection {
 		return snapshots;
 	}
 	
+	public JSONObject getById(String id) throws Exception{
+		
+		String param = "id:"+id;
+		
+		SolrQuery query = new SolrQuery();  
+		
+		query.set("q", param);
+		
+		query.set("start", 0);
+		
+		query.set("rows", fetchNum);
+		
+        QueryResponse response = solrClient.query(query);
+        
+        SolrDocumentList sdList = response.getResults();
+        
+        long totalNum = sdList.getNumFound();
+        
+        if (totalNum==0){
+        	return null;
+        }
+        
+		SolrDocument doc = sdList.get(0);
+		
+		JSONObject snapshot = JSONObject.fromObject(doc);
+		
+		return snapshot;
+	}
+	
 	public void persistentData() throws SolrServerException, IOException{
 		
 		this.flushData();

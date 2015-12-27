@@ -11,8 +11,15 @@ import org.hbase.async.PutRequest;
 
 import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
+import com.navinfo.dataservice.solr.core.SConnection;
 
 public class TipsOperator {
+	
+	private SConnection solrConn;
+	
+	public TipsOperator(String solrUrl){
+		solrConn = new SConnection(solrUrl);
+	}
 
 	/**
 	 * 修改tips
@@ -22,7 +29,7 @@ public class TipsOperator {
 	 * @return
 	 * @throws Exception
 	 */
-	public static boolean update(String rowkey, int stage, int handler)
+	public boolean update(String rowkey, int stage, int handler)
 			throws Exception {
 
 		final GetRequest get = new GetRequest("tips", rowkey, "data", "track");
@@ -44,8 +51,10 @@ public class TipsOperator {
 			JSONObject jo = new JSONObject();
 
 			jo.put("stage", stage);
+			
+			String date = StringUtils.getCurrentTime();
 
-			jo.put("date", StringUtils.getCurrentTime());
+			jo.put("date", date);
 
 			jo.put("handler", handler);
 
@@ -56,6 +65,24 @@ public class TipsOperator {
 			PutRequest put = new PutRequest("tips", rowkey, "data", "track", track.toString());
 
 			HBaseAddress.getHBaseClient().put(put);
+			
+			JSONObject solrIndex = solrConn.getById(rowkey);
+			
+			solrIndex.put("stage", stage);
+			
+			solrIndex.put("date", date);
+			
+			if (0 == lifecycle) {
+				solrIndex.put("t_lifecycle", 2);
+			}
+			
+			solrIndex.put("handler", handler);
+			
+			solrConn.addTips(solrIndex);
+			
+			solrConn.persistentData();
+			
+			solrConn.closeConnection();
 		}
 
 		return true;
@@ -67,7 +94,7 @@ public class TipsOperator {
 	 * @param rowkey
 	 * @return
 	 */
-	public static boolean delete(String rowkey) {
+	public boolean delete(String rowkey) {
 		return false;
 	}
 

@@ -3,6 +3,7 @@ package com.navinfo.dataservice.FosEngine.edit.model.selector.rd.laneconnexity;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -127,6 +128,76 @@ public class RdLaneConnexitySelector implements ISelector {
 			throws Exception {
 
 		return null;
+	}
+	
+	public List<RdLaneConnexity> loadRdLaneConnexityByLinkPid(int linkPid,boolean isLock) throws Exception
+	{
+		List<RdLaneConnexity> laneConns = new ArrayList<RdLaneConnexity>();
+		
+		String sql = "select * from rd_laneconnexity where in_link_pid = :1 and u_record!=2 ";
+		
+		if (isLock){
+			sql += " for update nowait";
+		}
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+
+			pstmt.setInt(2, 2);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdLaneConnexity laneConn = new RdLaneConnexity();
+				
+				laneConn.setPid(resultSet.getInt("pid"));
+				
+				laneConn.setRowId(resultSet.getString("row_id"));
+				
+				laneConn.setInLinkPid(resultSet.getInt("in_link_pid"));
+				
+				laneConn.setNodePid(resultSet.getInt("node_pid"));
+				
+				laneConn.setLaneInfo(resultSet.getString("lane_info"));
+				
+				laneConn.setConflictFlag(resultSet.getInt("conflict_flag"));
+				
+				laneConn.setKgFlag(resultSet.getInt("kg_flag"));
+				
+				laneConn.setLaneNum(resultSet.getInt("lane_num"));
+				
+				laneConn.setLeftExtend(resultSet.getInt("left_extend"));
+				
+				laneConn.setRightExtend(resultSet.getInt("right_extend"));
+				
+				laneConn.setSrcFlag(resultSet.getInt("src_flag"));
+				
+				laneConns.add(laneConn);
+			}
+		} catch (Exception e) {
+			
+			throw e;
+		} finally {
+			try {
+				resultSet.close();
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+				
+			}
+		}
+		
+		return laneConns;
 	}
 
 }

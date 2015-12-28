@@ -5,6 +5,9 @@ import java.util.List;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneConnexity;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneTopology;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestriction;
@@ -40,9 +43,37 @@ public class Command implements ICommand {
 
 	private List<RdRestrictionDetail> restrictionDetails;
 
-	private List<List<RdRestrictionVia>> listVias;
+	private List<List<RdRestrictionVia>> listRestrictionVias;
 	
-	
+	private List<RdLaneConnexity> laneConnextys;
+
+	public List<RdLaneConnexity> getLaneConnextys() {
+		return laneConnextys;
+	}
+
+	public void setLaneConnexitys(List<RdLaneConnexity> laneConnextys) {
+		this.laneConnextys = laneConnextys;
+	}
+
+	public List<RdLaneTopology> getLaneTopologys() {
+		return laneTopologys;
+	}
+
+	public void setLaneTopologys(List<RdLaneTopology> laneTopologys) {
+		this.laneTopologys = laneTopologys;
+	}
+
+	public List<List<RdLaneVia>> getLaneVias() {
+		return laneVias;
+	}
+
+	public void setLaneVias(List<List<RdLaneVia>> laneVias) {
+		this.laneVias = laneVias;
+	}
+
+	private List<RdLaneTopology> laneTopologys;
+
+	private List<List<RdLaneVia>> laneVias;
 
 	public int getProjectId() {
 		return projectId;
@@ -77,12 +108,12 @@ public class Command implements ICommand {
 		this.restrictionDetails = restrictionDetails;
 	}
 
-	public List<List<RdRestrictionVia>> getListVias() {
-		return listVias;
+	public List<List<RdRestrictionVia>> geListRestrictVias() {
+		return listRestrictionVias;
 	}
 
-	public void setListVias(List<List<RdRestrictionVia>> listVias) {
-		this.listVias = listVias;
+	public void setRestrictListVias(List<List<RdRestrictionVia>> listVias) {
+		this.listRestrictionVias = listVias;
 	}
 
 	public RdLink getLink1() {

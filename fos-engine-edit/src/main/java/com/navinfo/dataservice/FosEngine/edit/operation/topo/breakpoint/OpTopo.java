@@ -23,8 +23,6 @@ public class OpTopo implements IOperation {
 
 	private JSONArray jaDisplayLink;
 
-	private Connection conn;
-
 	public OpTopo(Command command, Connection conn, RdLink rdLinkBreakpoint,
 			JSONArray jaDisplayLink) {
 		this.command = command;
@@ -33,7 +31,6 @@ public class OpTopo implements IOperation {
 
 		this.jaDisplayLink = jaDisplayLink;
 
-		this.conn = conn;
 	}
 
 	@Override

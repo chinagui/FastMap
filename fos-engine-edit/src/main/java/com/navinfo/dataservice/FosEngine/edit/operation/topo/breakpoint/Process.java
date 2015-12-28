@@ -6,16 +6,20 @@ import java.util.List;
 
 import net.sf.json.JSONArray;
 
-import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.FosEngine.edit.log.LogWriter;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneConnexity;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneTopology;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionVia;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.laneconnexity.RdLaneConnexitySelector;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.laneconnexity.RdLaneTopologySelector;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.laneconnexity.RdLaneViaSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.restrict.RdRestrictionDetailSelector;
@@ -30,8 +34,6 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Point;
 
 public class Process implements IProcess {
-	
-	private static Logger logger = Logger.getLogger(Process.class);
 
 	private Command command;
 
@@ -104,16 +106,35 @@ public class Process implements IProcess {
 			command.setRestrictionDetails(details);
 
 			// 获取LINK上交限经过线
-			List<List<RdRestrictionVia>> listVias = new RdRestrictionViaSelector(
+			List<List<RdRestrictionVia>> restrictVias = new RdRestrictionViaSelector(
 					conn).loadRestrictionViaByLinkPid(command.getLinkPid(),
 					true);
+			
+			command.setRestrictListVias(restrictVias);
 
-			command.setListVias(listVias);
+			// 获取此LINK上车信进入线
+			List<RdLaneConnexity> laneConnexitys = new RdLaneConnexitySelector(conn)
+					.loadRdLaneConnexityByLinkPid(command.getLinkPid(), true);
+
+			command.setLaneConnexitys(laneConnexitys);
+
+			// 获取此LINK上车信退出线
+			List<RdLaneTopology> topos = new RdLaneTopologySelector(
+					conn).loadToposByLinkPid(command.getLinkPid(), true);
+
+			command.setLaneTopologys(topos);
+
+			// 获取LINK上车信经过线
+			List<List<RdLaneVia>> laneVias = new RdLaneViaSelector(
+					conn).loadRdLaneViaByLinkPid(command.getLinkPid(),
+					true);
+			
+			command.setLaneVias(laneVias);
 
 			return true;
 
 		} catch (SQLException e) {
-			
+
 			throw e;
 		}
 
@@ -139,7 +160,7 @@ public class Process implements IProcess {
 
 			msg = operation.run(result);
 
-			OpRefRestrict opRefRes = new OpRefRestrict(command, conn);
+			OpRefRestrict opRefRes = new OpRefRestrict(command);
 
 			opRefRes.run(result);
 
@@ -150,7 +171,7 @@ public class Process implements IProcess {
 			conn.commit();
 
 		} catch (Exception e) {
-			
+
 			conn.rollback();
 
 			throw e;
@@ -158,7 +179,7 @@ public class Process implements IProcess {
 			try {
 				conn.close();
 			} catch (Exception e) {
-				
+
 			}
 		}
 
@@ -201,13 +222,13 @@ public class Process implements IProcess {
 
 	@Override
 	public void postCheck() throws Exception {
-		
+
 		// 对数据进行检查、检查结果存储在数据库，并存储在临时变量postCheckMsg中
 	}
 
 	@Override
 	public String getPostCheck() throws Exception {
-		
+
 		return postCheckMsg;
 	}
 

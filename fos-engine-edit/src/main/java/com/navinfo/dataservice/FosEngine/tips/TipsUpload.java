@@ -535,8 +535,8 @@ public class TipsUpload {
 		photo.setA_shootDate(extContent.getString("shootDate"));
 
 		photo.setA_deviceNum(extContent.getString("deviceNum"));
-
-		photo.setA_type(1);
+		
+		photo.setA_fileName(attachment.getString("content"));
 
 		photo.setA_content(1);
 

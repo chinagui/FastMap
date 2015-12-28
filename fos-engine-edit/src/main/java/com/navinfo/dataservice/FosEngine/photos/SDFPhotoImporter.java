@@ -147,8 +147,6 @@ public class SDFPhotoImporter {
 
 		p.setA_uuid(uuid);
 
-		p.setA_type(type);
-
 		p.setA_longitude(lng);
 
 		p.setA_latitude(lat);

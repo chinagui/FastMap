@@ -200,8 +200,6 @@ public class TracksUpload {
 
 		photo.setA_deviceNum(extContent.getString("deviceNum"));
 
-		photo.setA_type(1);
-
 		photo.setA_content(1);
 
 		return photo;

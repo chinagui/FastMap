@@ -17,6 +17,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionVia;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.laneconnexity.RdLaneTopologySelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.laneconnexity.RdLaneViaSelector;
@@ -25,6 +26,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.node.RdNodeSelec
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.restrict.RdRestrictionDetailSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.restrict.RdRestrictionViaSelector;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.speedlimit.RdSpeedlimitSelector;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.FosEngine.edit.operation.IProcess;
@@ -130,6 +132,12 @@ public class Process implements IProcess {
 					true);
 			
 			command.setLaneVias(laneVias);
+			
+			//获取link上的点限速
+			List<RdSpeedlimit> limits = new RdSpeedlimitSelector
+					(conn).loadSpeedlimitByLinkPid(command.getLinkPid(), true);
+			
+			command.setSpeedlimits(limits);
 
 			return true;
 

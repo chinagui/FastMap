@@ -13,6 +13,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionVia;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.FosEngine.edit.operation.OperType;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -46,6 +47,20 @@ public class Command implements ICommand {
 	private List<List<RdRestrictionVia>> listRestrictionVias;
 	
 	private List<RdLaneConnexity> laneConnextys;
+	
+	private List<RdLaneTopology> laneTopologys;
+
+	private List<List<RdLaneVia>> laneVias;
+
+	private List<RdSpeedlimit> speedlimits;
+	
+	public List<RdSpeedlimit> getSpeedlimits() {
+		return speedlimits;
+	}
+
+	public void setSpeedlimits(List<RdSpeedlimit> speedlimits) {
+		this.speedlimits = speedlimits;
+	}
 
 	public List<RdLaneConnexity> getLaneConnextys() {
 		return laneConnextys;
@@ -70,10 +85,6 @@ public class Command implements ICommand {
 	public void setLaneVias(List<List<RdLaneVia>> laneVias) {
 		this.laneVias = laneVias;
 	}
-
-	private List<RdLaneTopology> laneTopologys;
-
-	private List<List<RdLaneVia>> laneVias;
 
 	public int getProjectId() {
 		return projectId;

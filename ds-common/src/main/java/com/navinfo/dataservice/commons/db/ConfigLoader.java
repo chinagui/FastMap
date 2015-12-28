@@ -63,6 +63,9 @@ public class ConfigLoader {
 			// hbase初始化
 			HBaseAddress.initHBaseClient(config
 					.getString(PropConstant.hbaseQuorum));
+			
+			HBaseAddress.initHBaseAddress(config
+					.getString(PropConstant.hbaseQuorum));
 
 			// solr初始化
 		} catch (Exception e) {

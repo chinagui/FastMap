@@ -116,7 +116,7 @@ public class TipsUpload {
 			String rowkey = json.getString("rowkey");
 
 			String operateDate = json.getString("t_operateDate");
-
+			
 			JSONArray attachments = json.getJSONArray("attachments");
 
 			JSONArray newFeedbacks = new JSONArray();
@@ -489,7 +489,7 @@ public class TipsUpload {
 		
 		index.put("g_location", geojson);
 		
-		json.put("wkt",
+		index.put("wkt",
 				GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(geojson)));
 		
 		return index;
@@ -548,6 +548,6 @@ public class TipsUpload {
 
 		TipsUpload a = new TipsUpload("http://192.168.4.130:8081/solr/tips/");
 
-		a.run("C:\\1\\tips.txt");
+		a.run("C:/tips2.txt");
 	}
 }

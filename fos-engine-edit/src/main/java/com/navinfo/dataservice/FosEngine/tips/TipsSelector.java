@@ -25,6 +25,12 @@ import com.navinfo.dataservice.solr.core.SConnection;
  * Tips查询
  */
 public class TipsSelector {
+	
+	private SConnection solrConn;
+	
+	public TipsSelector(String solrUrl){
+		solrConn = new SConnection(solrUrl);
+	}
 
 	/**
 	 * 范围查询Tips
@@ -33,7 +39,7 @@ public class TipsSelector {
 	 * @return Tips JSON数组
 	 * @throws Exception
 	 */
-	public static JSONArray searchDataBySpatial(String wkt) throws Exception {
+	public JSONArray searchDataBySpatial(String wkt) throws Exception {
 		JSONArray array = new JSONArray();
 
 		SConnection conn = new SConnection(
@@ -56,7 +62,7 @@ public class TipsSelector {
 	 * 
 	 * @throws Exception
 	 */
-	public static JSONArray searchDataByTileWithGap(int x, int y, int z, int gap)
+	public JSONArray searchDataByTileWithGap(int x, int y, int z, int gap)
 			throws Exception {
 		JSONArray array = new JSONArray();
 
@@ -81,7 +87,7 @@ public class TipsSelector {
 
 				snapshot.setT(1);
 				
-				JSONObject geojson = json.getJSONObject("g_location");
+				JSONObject geojson = JSONObject.fromObject(json.getString("g_location"));
 
 				Geojson.point2Pixel(geojson, z, px, py);
 				
@@ -105,7 +111,7 @@ public class TipsSelector {
 	 * @return Tips JSON对象
 	 * @throws Exception
 	 */
-	public static JSONObject searchDataByRowkey(String rowkey) throws Exception {
+	public JSONObject searchDataByRowkey(String rowkey) throws Exception {
 		JSONObject json = new JSONObject();
 
 		try {
@@ -140,7 +146,7 @@ public class TipsSelector {
 	 * @return Tips JSON数组
 	 * @throws Exception
 	 */
-	public static JSONArray searchDataByCondition(String condition)
+	public JSONArray searchDataByCondition(String condition)
 			throws Exception {
 		JSONArray array = new JSONArray();
 
@@ -155,7 +161,7 @@ public class TipsSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public static JSONObject getStats(JSONArray grids, JSONArray stages)
+	public JSONObject getStats(JSONArray grids, JSONArray stages)
 			throws Exception {
 		JSONObject jsonData = new JSONObject();
 
@@ -171,7 +177,12 @@ public class TipsSelector {
 		for (JSONObject json : tips) {
 			int type = Integer.valueOf(json.getInt("s_sourceType"));
 
-			map.put(type, map.get(type) + 1);
+			if (map.containsKey(type)){
+				map.put(type, map.get(type) + 1);
+			}
+			else{
+				map.put(type, 1);
+			}
 		}
 
 		JSONArray data = new JSONArray();
@@ -210,7 +221,7 @@ public class TipsSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public static JSONArray getSnapshot(JSONArray grids, JSONArray stages,
+	public JSONArray getSnapshot(JSONArray grids, JSONArray stages,
 			int type) throws Exception {
 		JSONArray jsonData = new JSONArray();
 
@@ -230,7 +241,13 @@ public class TipsSelector {
 
 			snapshot.setT(1);
 			
-			snapshot.setG(json.getJSONObject("g_location").getJSONArray("coordinates"));
+			snapshot.setG(JSONObject.fromObject(json.getString("g_location")).getJSONArray("coordinates"));
+			
+			JSONObject m = new JSONObject();
+			
+			m.put("a", json.getString("stage"));
+			
+			snapshot.setM(m);
 
 			jsonData.add(snapshot.Serialize(null));
 
@@ -247,7 +264,7 @@ public class TipsSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public static boolean checkUpdate(String grid, String date)
+	public boolean checkUpdate(String grid, String date)
 			throws Exception {
 
 		String wkt = GridUtils.grid2Wkt(grid);
@@ -268,12 +285,13 @@ public class TipsSelector {
 
 		// System.out.println(checkUpdate("59567201","20151227163723"));
 
+		TipsSelector selector = new TipsSelector("http://192.168.4.130:8081/solr/tips/");
 		JSONArray a = new JSONArray();
 		a.add(59567201);
 		JSONArray b = new JSONArray();
 		b.add(1);
-		int type = 1704;
-		getSnapshot(a, b, type);
-
+		int type = 1407;
+		//System.out.println(selector.getSnapshot(a, b, type));
+		System.out.println(selector.getStats(a, b));
 	}
 }

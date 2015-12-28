@@ -2,8 +2,10 @@ package com.navinfo.dataservice.FosEngine.export;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import net.sf.json.JSONArray;
@@ -21,17 +23,26 @@ import org.hbase.async.Scanner;
 import ch.hsr.geohash.GeoHash;
 
 import com.navinfo.dataservice.commons.db.HBaseAddress;
+import com.navinfo.dataservice.commons.util.FileUtils;
 import com.navinfo.dataservice.commons.util.GridUtils;
 import com.navinfo.dataservice.solr.core.SConnection;
 
 public class ExportTips {
 
-	private static JSONArray exportByGrid(String gridId, String date) throws Exception{
-		
+	private SConnection solrConn;
+	
+	private String folderName;
+
+	public ExportTips(String solrUrl) {
+		solrConn = new SConnection(solrUrl);
+	}
+
+	private JSONArray exportByGrid(String gridId, String date) throws Exception {
+
 		JSONArray ja = new JSONArray();
-		
+
 		double mbr[] = GridUtils.grid2Location(gridId);
-		
+
 		String startRowkey = GeoHash.geoHashStringWithCharacterPrecision(
 				mbr[1], mbr[0], 12);
 
@@ -65,20 +76,22 @@ public class ExportTips {
 			for (List<KeyValue> list : rows) {
 
 				boolean flag = false;
-				
+
 				JSONObject json = new JSONObject();
 				for (KeyValue kv : list) {
-					
+
 					String rowkey = new String(kv.key());
-					
-					double lonlat[] = GridUtils.geohash2Lonlat(rowkey.substring(0, 12));
-					
-					if (!flag && !gridId.equals(GridUtils.location2Grid(lonlat[0], lonlat[1]))){
-						flag=false;
+
+					double lonlat[] = GridUtils.geohash2Lonlat(rowkey
+							.substring(0, 12));
+
+					if (!flag
+							&& !gridId.equals(GridUtils.location2Grid(
+									lonlat[0], lonlat[1]))) {
+						flag = false;
 						break;
-					}
-					else{
-						flag=true;
+					} else {
+						flag = true;
 					}
 
 					String key = new String(kv.qualifier());
@@ -86,7 +99,7 @@ public class ExportTips {
 					if ("geometry".equals(key) || "source".equals(key)) {
 						JSONObject jo = JSONObject.fromObject(new String(kv
 								.value()));
-						
+
 						json.putAll(jo);
 
 					} else if ("deep".equals(key)) {
@@ -110,7 +123,7 @@ public class ExportTips {
 						}
 
 						json.put("t_lifecycle", jo.getInt("t_lifecycle"));
-						
+
 						json.put("t_operateDate", lastDate);
 
 						json.put("rowkey", new String(kv.key()));
@@ -132,52 +145,51 @@ public class ExportTips {
 				}
 			}
 		}
-		
+
 		return ja;
 	}
-	
-	private static List<Get> generateGets(JSONArray grids, String date, String solrUrl) throws Exception{
+
+	private List<Get> generateGets(JSONArray grids, String date)
+			throws Exception {
 		List<Get> gets = new ArrayList<Get>();
-		
+
 		Set<String> set = new HashSet<String>();
-		
-		SConnection conn = new SConnection(solrUrl);
-		
-		for(int i=0; i<grids.size(); i++){
+
+		for (int i = 0; i < grids.size(); i++) {
 			String gridId = grids.getString(i);
-			
+
 			String wkt = GridUtils.grid2Wkt(gridId);
-			
-			List<String> rowkeys = conn.queryTipsMobile(wkt, date);
-			
-			for(String rowkey:rowkeys){
-				if (set.contains(rowkey)){
+
+			List<String> rowkeys = solrConn.queryTipsMobile(wkt, date);
+
+			for (String rowkey : rowkeys) {
+				if (set.contains(rowkey)) {
 					continue;
 				}
-				
+
 				set.add(rowkey);
-				
+
 				Get get = new Get(rowkey.getBytes());
-				
+
 				get.addColumn("data".getBytes(), "geometry".getBytes());
-				
+
 				get.addColumn("data".getBytes(), "deep".getBytes());
-				
+
 				get.addColumn("data".getBytes(), "source".getBytes());
-				
+
 				get.addColumn("data".getBytes(), "track".getBytes());
-				
+
 				get.addColumn("data".getBytes(), "feedback".getBytes());
-				
+
 				gets.add(get);
 			}
-			
+
 		}
-		
+
 		return gets;
 	}
-	
-	private static JSONArray exportByGets(List<Get> gets) throws Exception{
+
+	private JSONArray exportByGets(List<Get> gets) throws Exception{
 		
 		JSONArray ja = new JSONArray();
 		
@@ -186,6 +198,12 @@ public class ExportTips {
 		Table htab = hbaseConn.getTable(TableName.valueOf("tips"));
 		
 		Result[] results = htab.get(gets);
+		
+		Set<String> photoIdSet = new HashSet<String>();
+		
+		List<Get> photoGets = new ArrayList<Get>();
+		
+		List<JSONObject> list = new ArrayList<JSONObject>();
 
 		for(Result result : results){
 			
@@ -241,72 +259,192 @@ public class ExportTips {
 
 			json.put("t_handler", 0);
 			
+			boolean flag=false;
+			
 			if (result.containsColumn("data".getBytes(), "feedback".getBytes())) {
 				JSONObject feedback = JSONObject.fromObject(new String(result
 						.getValue("data".getBytes(), "feedback".getBytes())));
+				
+				JSONArray farray = feedback.getJSONArray("f_array");
 
-				json.put("feedback", feedback.getJSONArray("f_array"));
+				json.put("feedback", farray);
+				
+				for(int i=0;i<farray.size();i++){
+					JSONObject jo = farray.getJSONObject(i);
+					int type = jo.getInt("type");
+					if (type != 1){
+						continue;
+					}
+					
+					flag = true;
+					
+					String id = jo.getString("content");
+					if(photoIdSet.contains(id)){
+						continue;
+					}
+					
+					photoIdSet.add(id);
+					
+					Get get = new Get(id.getBytes());
+
+					get.addColumn("data".getBytes(), "attribute".getBytes());
+
+					get.addColumn("data".getBytes(), "origin".getBytes());
+
+					photoGets.add(get);
+					
+				}
 			} else {
 				json.put("feedback", new JSONArray());
 			}
-
-			ja.add(json);
+			
+			if (flag){
+				list.add(json);
+			}
+			else{
+				ja.add(json);
+			}
 
 		}
 		
+		if(list.size() > 0){
+			Map<String, JSONObject> photoMap = exportPhotos(photoGets);
+			
+			for(int i=0;i<list.size();i++){
+				JSONObject json = list.get(i);
+				
+				JSONArray feedbacks = json.getJSONArray("feedback");
+				
+				JSONArray newFeedbacks = new JSONArray();
+				
+				for(int j=0;j<feedbacks.size();j++){
+					JSONObject feedback = feedbacks.getJSONObject(j);
+					
+					int type = feedback.getInt("type");
+					
+					if (type != 1){
+						newFeedbacks.add(feedback);
+						continue;
+					}
+					
+					String id = feedback.getString("content");
+					
+					JSONObject extContent = photoMap.get(id);
+					
+					feedback.put("extContent", extContent);
+					
+					newFeedbacks.add(feedback);
+				}
+				
+				json.put("feedback", newFeedbacks);
+				
+				ja.add(json);
+			}
+		}
+		
+		
 		return ja;
+	}
+	
+	private Map<String, JSONObject> exportPhotos(List<Get> gets) throws Exception{
+		
+		Map<String, JSONObject> photoMap = new HashMap<String, JSONObject>();
+		
+		Connection hbaseConn = HBaseAddress.getHBaseConnection();
+
+		Table htab = hbaseConn.getTable(TableName.valueOf("photos"));
+		
+		Result[] results = htab.get(gets);
+		
+		for (Result result : results){
+			if (result.isEmpty()) {
+				continue;
+			}
+			
+			String rowkey = new String(result.getRow());
+			
+			JSONObject attribute = JSONObject.fromObject(new String(result.getValue("data".getBytes(),
+					"attribute".getBytes())));
+			
+			JSONObject extContent = new JSONObject();
+			
+			extContent.put("latitude", attribute.getDouble("a_latitude"));
+			
+			extContent.put("longitude", attribute.getDouble("a_longitude"));
+			
+			extContent.put("direction", attribute.getInt("a_direction"));
+			
+			extContent.put("shootDate", attribute.getString("a_shootDate"));
+			
+			extContent.put("deviceNum", attribute.getString("a_deviceNum"));
+			
+			photoMap.put(rowkey, extContent);
+			
+			String fileName = this.folderName + attribute.getString("a_fileName");
+			
+			FileUtils.makeSmallImage(result.getValue("data".getBytes(),"origin".getBytes()), fileName);
+			
+		}
+		
+		return photoMap;
+		
 	}
 
 	/**
 	 * 根据网格和时间导出tips
-	 * @param grids 网格数组 整型
-	 * @param date 时间
-	 * @param fileName 导出文件名
+	 * 
+	 * @param grids
+	 *            网格数组 整型
+	 * @param date
+	 *            时间
+	 * @param fileName
+	 *            导出文件名
 	 * @return 导出个数
 	 * @throws Exception
 	 */
-	public static int run(JSONArray grids, String date, String fileName, String solrUrl)
+	public int export(JSONArray grids, String date, String folderName, String fileName)
 			throws Exception {
 
 		int count = 0;
-
-		PrintWriter pw = new PrintWriter(fileName);
 		
-//		for(int i=0;i<grids.size();i++){
-//			String gridId = String.valueOf(grids.getInt(i));
-//			
-//			JSONArray ja = exportByGrid(gridId, date);
-//			
-//			for(int j=0;j<ja.size();j++){
-//				pw.println(ja.getJSONObject(j).toString());
-//				
-//				count+=1;
-//			}
-//				
-//		}
-		
-		List<Get> gets = generateGets(grids, date, solrUrl);
-		
-		JSONArray ja = exportByGets(gets);
-		
-		for(int j=0;j<ja.size();j++){
-			pw.println(ja.getJSONObject(j).toString());
-			
-			count+=1;
+		if (! folderName.endsWith("/")){
+			folderName += "/";
 		}
 		
+		this.folderName = folderName;
+		
+		fileName = folderName + fileName;
+
+		PrintWriter pw = new PrintWriter(fileName);
+
+		List<Get> gets = generateGets(grids, date);
+
+		JSONArray ja = exportByGets(gets);
+
+		for (int j = 0; j < ja.size(); j++) {
+			pw.println(ja.getJSONObject(j).toString());
+
+			count += 1;
+		}
+
 		pw.close();
+
+		solrConn.closeConnection();
 
 		return count;
 	}
-	
+
 	public static void main(String[] args) throws Exception {
 		HBaseAddress.initHBaseAddress("192.168.3.156");
-		JSONArray grids=new JSONArray();
-		
+		JSONArray grids = new JSONArray();
+
 		grids.add(59567201);
 		grids.add(59567202);
-		System.out.println(run(grids, "20150302010101", "C:/Users/wangshishuai3966/Desktop/1.txt","http://192.168.4.130:8081/solr/tips/"));
+
+		ExportTips exporter = new ExportTips(
+				"http://192.168.4.130:8081/solr/tips/");
+		System.out.println(exporter.export(grids, "20150302010101","C:/Users/wangshishuai3966/Desktop"
+				,"1.txt"));
 		System.out.println("done");
 	}
 }

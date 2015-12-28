@@ -4,6 +4,7 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -156,6 +157,45 @@ public class FileUtils {
 		encoder.encode(tagImage);
 
 		return bos.getBytes();
+	}
+	
+	public static void makeSmallImage(byte[] bytes, String dstImageFileName) throws Exception {
+		JPEGImageEncoder encoder = null;
+		BufferedImage tagImage = null;
+		Image srcImage = null;
+		ByteInputStream bis = new ByteInputStream(bytes, bytes.length);
+		
+		srcImage = ImageIO.read(bis);
+		int srcWidth = srcImage.getWidth(null);// 原图片宽度
+		int srcHeight = srcImage.getHeight(null);// 原图片高度
+		int dstMaxSize = 120;// 目标缩略图的最大宽度/高度，宽度与高度将按比例缩写
+		int dstWidth = srcWidth;// 缩略图宽度
+		int dstHeight = srcHeight;// 缩略图高度
+		float scale = 0;
+		// 计算缩略图的宽和高
+		if (srcWidth > dstMaxSize) {
+			dstWidth = dstMaxSize;
+			scale = (float) srcWidth / (float) dstMaxSize;
+			dstHeight = Math.round((float) srcHeight / scale);
+		}
+		srcHeight = dstHeight;
+		if (srcHeight > dstMaxSize) {
+			dstHeight = dstMaxSize;
+			scale = (float) srcHeight / (float) dstMaxSize;
+			dstWidth = Math.round((float) dstWidth / scale);
+		}
+		// 生成缩略图
+		tagImage = new BufferedImage(dstWidth, dstHeight,
+				BufferedImage.TYPE_INT_RGB);
+		tagImage.getGraphics().drawImage(srcImage, 0, 0, dstWidth, dstHeight,
+				null);
+		FileOutputStream fileOutputStream = new FileOutputStream(dstImageFileName);
+
+		//ByteOutputStream bos = new ByteOutputStream();
+
+		encoder = JPEGCodec.createJPEGEncoder(fileOutputStream);
+		encoder.encode(tagImage);
+
 	}
 	
 	public static void main(String[] args) throws Exception {

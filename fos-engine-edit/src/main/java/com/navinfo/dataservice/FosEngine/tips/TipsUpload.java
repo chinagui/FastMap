@@ -118,7 +118,7 @@ public class TipsUpload {
 			String operateDate = json.getString("t_operateDate");
 			
 			JSONArray attachments = json.getJSONArray("attachments");
-
+			
 			JSONArray newFeedbacks = new JSONArray();
 
 			for (int i = 0; i < attachments.size(); i++) {
@@ -259,7 +259,7 @@ public class TipsUpload {
 
 		Put put = new Put(rowkey.getBytes());
 
-		JSONObject jsonTrack = generateTrackJson(3, json.getInt("t_handler"),
+		JSONObject jsonTrack = generateTrackJson(3, json.getInt("t_handler"),json.getInt("t_command"),
 				null);
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
@@ -348,7 +348,7 @@ public class TipsUpload {
 		int lifecycle = json.getInt("t_lifecycle");
 
 		JSONObject jsonTrack = generateTrackJson(lifecycle,
-				json.getInt("t_handler"), oldTip.getJSONArray("t_trackInfo"));
+				json.getInt("t_handler"),json.getInt("t_command"), oldTip.getJSONArray("t_trackInfo"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
@@ -436,12 +436,14 @@ public class TipsUpload {
 	 * @param oldTrackInfo
 	 * @return
 	 */
-	private JSONObject generateTrackJson(int lifecycle, int handler,
+	private JSONObject generateTrackJson(int lifecycle, int handler, int command,
 			JSONArray oldTrackInfo) {
 
 		JSONObject jsonTrack = new JSONObject();
 
 		jsonTrack.put("t_lifecycle", lifecycle);
+		
+		jsonTrack.put("t_command", command);
 
 		JSONObject jsonTrackInfo = new JSONObject();
 
@@ -450,7 +452,7 @@ public class TipsUpload {
 		jsonTrackInfo.put("date", currentDate);
 
 		jsonTrackInfo.put("handler", handler);
-
+		
 		if (null == oldTrackInfo) {
 
 			oldTrackInfo = new JSONArray();

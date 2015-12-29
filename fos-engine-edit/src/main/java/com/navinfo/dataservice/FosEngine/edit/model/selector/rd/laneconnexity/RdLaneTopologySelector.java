@@ -114,7 +114,7 @@ public class RdLaneTopologySelector implements ISelector {
 
 		List<IRow> rows = new ArrayList<IRow>();
 
-		String sql = "select * from rd_lane_topology where connexity_id=:1 and u_record!=:2";
+		String sql = "select * from rd_lane_topology where connexity_pid=:1 and u_record!=:2";
 
 		if (isLock) {
 			sql += " for update nowait";

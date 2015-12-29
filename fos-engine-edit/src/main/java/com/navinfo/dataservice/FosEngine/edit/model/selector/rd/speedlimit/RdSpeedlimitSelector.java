@@ -27,7 +27,7 @@ public class RdSpeedlimitSelector implements ISelector {
 
 		RdSpeedlimit obj = new RdSpeedlimit();
 
-		String sql = "select * from " + obj.tableName() + " where node_pid=:1";
+		String sql = "select * from " + obj.tableName() + " where pid=:1";
 
 		PreparedStatement pstmt = null;
 
@@ -50,15 +50,15 @@ public class RdSpeedlimitSelector implements ISelector {
 
 				obj.setRowId(resultSet.getString("row_id"));
 				
-				obj.setLinkPid(resultSet.getInt("linkPid"));
+				obj.setLinkPid(resultSet.getInt("link_pid"));
 				
 				obj.setDirect(resultSet.getInt("direct"));
 				
 				obj.setSpeedValue(resultSet.getInt("speed_value"));
 				
-				obj.setSpeedType(resultSet.getInt("speedType"));
+				obj.setSpeedType(resultSet.getInt("speed_type"));
 				
-				obj.setTollgateFlag(resultSet.getInt("tollgate_flag"));
+//				obj.setTollgateFlag(resultSet.getInt("tollgate_flag"));
 				
 				obj.setSpeedDependent(resultSet.getInt("speed_dependent"));
 				
@@ -172,8 +172,6 @@ public class RdSpeedlimitSelector implements ISelector {
 				limit.setSpeedValue(resultSet.getInt("speed_value"));
 				
 				limit.setSpeedType(resultSet.getInt("speedType"));
-				
-				limit.setTollgateFlag(resultSet.getInt("tollgate_flag"));
 				
 				limit.setSpeedDependent(resultSet.getInt("speed_dependent"));
 				

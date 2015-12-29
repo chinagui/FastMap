@@ -120,7 +120,7 @@ public class RdBranchDetailSelector implements ISelector {
 
 		List<IRow> rows = new ArrayList<IRow>();
 
-		String sql = "select * from rd_detail where branch_pid=:1 and u_record!=:2";
+		String sql = "select * from rd_branch_detail where branch_pid=:1 and u_record!=:2";
 
 		if (isLock) {
 			sql += " for update nowait";

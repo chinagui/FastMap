@@ -54,7 +54,7 @@ public class RdCrossSelector implements ISelector {
 
 				cross.setElectroeye(resultSet.getInt("electroeye"));
 
-				cross.setKgFlag(resultSet.getInt("kgFlag"));
+				cross.setKgFlag(resultSet.getInt("kg_flag"));
 
 				List<IRow> links = new RdCrossLinkSelector(conn)
 						.loadRowsByParentId(id, isLock);

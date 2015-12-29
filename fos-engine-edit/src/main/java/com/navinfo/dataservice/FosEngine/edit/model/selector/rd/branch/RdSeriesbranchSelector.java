@@ -105,7 +105,7 @@ public class RdSeriesbranchSelector implements ISelector {
 
 		List<IRow> rows = new ArrayList<IRow>();
 
-		String sql = "select * from rd_seriesbranch where branch_pid=:1 and u_record!=:2 order by seq_num";
+		String sql = "select * from rd_seriesbranch where branch_pid=:1 and u_record!=:2";
 
 		if (isLock) {
 			sql += " for update nowait";

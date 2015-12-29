@@ -9,6 +9,7 @@ import java.util.Map;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 
 import com.navinfo.dataservice.FosEngine.edit.model.IObj;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
@@ -16,6 +17,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -31,8 +33,6 @@ public class RdSpeedlimit implements IObj {
 	
 	private int speedType;
 	
-	private int tollgateFlag;
-	
 	private int speedDependent;
 	
 	private int speedFlag;
@@ -44,6 +44,26 @@ public class RdSpeedlimit implements IObj {
 	private int captureFlag;
 	
 	private String descript;
+	
+	private int meshId;
+	
+	private int status=7;
+	
+	private int ckStatus;
+	
+	private int adjaFlag;
+	
+	private int recStatusIn;
+	
+	private int recStatusOut;
+	
+	private String timeDescript;
+	
+	private Geometry geometry;
+	
+	private String laneSpeedValue;
+	
+	private String rowId;
 	
 	public int getLinkPid() {
 		return linkPid;
@@ -75,14 +95,6 @@ public class RdSpeedlimit implements IObj {
 
 	public void setSpeedType(int speedType) {
 		this.speedType = speedType;
-	}
-
-	public int getTollgateFlag() {
-		return tollgateFlag;
-	}
-
-	public void setTollgateFlag(int tollgateFlag) {
-		this.tollgateFlag = tollgateFlag;
 	}
 
 	public int getSpeedDependent() {
@@ -205,26 +217,6 @@ public class RdSpeedlimit implements IObj {
 		this.laneSpeedValue = laneSpeedValue;
 	}
 
-	private int meshId;
-	
-	private int status=7;
-	
-	private int ckStatus;
-	
-	private int adjaFlag;
-	
-	private int recStatusIn;
-	
-	private int recStatusOut;
-	
-	private String timeDescript;
-	
-	private Geometry geometry;
-	
-	private String laneSpeedValue;
-	
-	private String rowId;
-
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
 	public RdSpeedlimit() {
@@ -265,7 +257,11 @@ public class RdSpeedlimit implements IObj {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
 		
-		return JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+
+		JSONObject json = JSONObject.fromObject(this, jsonConfig);
+
+		return json;
 	}
 
 	@Override

@@ -6,17 +6,15 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ISelector;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranchVia;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneVia;
+import com.navinfo.dataservice.FosEngine.edit.model.operator.rd.branch.RdBranchViaOperator;
+import com.navinfo.dataservice.FosEngine.edit.model.operator.rd.laneconnexity.RdLaneViaOperator;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 
 public class RdBranchViaSelector implements ISelector {
-
-	private static Logger logger = Logger
-			.getLogger(RdBranchViaSelector.class);
 
 	private Connection conn;
 
@@ -160,5 +158,125 @@ public class RdBranchViaSelector implements ISelector {
 
 		return rows;
 	}
+	
+	
+	public List<List<RdBranchVia>> loadRdBranchViaByLinkPid(
+			int linkPid, boolean isLock) throws Exception {
+		List<List<RdBranchVia>> list = new ArrayList<List<RdBranchVia>>();
+
+		List<RdBranchVia> listVia = new ArrayList<RdBranchVia>();
+
+		String sql = "select a.*,b.s_node_pid,b.e_node_pid,c.node_pid in_node_pid from rd_branch_via a,rd_link b,rd_branch c" +
+				" where a.link_pid = b.link_pid and a.link_pid = :1 and a.branch_pid = c.branch_pid " +
+				" order by a.branch_pid,a.seq_num  ";
+		
+		if (isLock){
+			sql += " for update nowait ";
+		}
+
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+
+		pstmt.setInt(1, linkPid);
+
+		ResultSet resultSet = pstmt.executeQuery();
+
+		int preBranchPid = 0;
+
+		boolean isChanged = false;
+
+		int preSNodePid = 0;
+
+		int preENodePid = 0;
+
+		int viaSeqNum = 0;
+
+		while (resultSet.next()) {
+			RdBranchVia via = new RdBranchVia();
+
+			int tmpBranchPid = resultSet.getInt("branch_pid");
+
+			if (preBranchPid == 0) {
+				preBranchPid = tmpBranchPid;
+			} else if (preBranchPid != tmpBranchPid) {
+				isChanged = true;
+
+				preBranchPid = tmpBranchPid;
+			}
+
+			int tempLinkPid = resultSet.getInt("link_pid");
+
+			if (tempLinkPid == linkPid) {
+				viaSeqNum = resultSet.getInt("seq_num");
+
+			} else {
+				preSNodePid = resultSet.getInt("s_node_pid");
+
+				preENodePid = resultSet.getInt("e_node_pid");
+			}
+
+			if (viaSeqNum == 0) {
+				continue;
+			}
+
+			via.setBranchPid(resultSet.getInt("topology_id"));
+
+			via.setLinkPid(resultSet.getInt("link_pid"));
+
+			via.setGroupId(resultSet.getInt("group_id"));
+
+			via.setSeqNum(resultSet.getInt("seq_num"));
+
+			via.setRowId(resultSet.getString("row_id"));
+
+			via.iseteNodePid(resultSet.getInt("e_node_pid"));
+
+			via.isetsNodePid(resultSet.getInt("s_node_pid"));
+
+			if (!isChanged) {
+				listVia.add(via);
+
+			} else {
+
+				RdBranchViaOperator op = new RdBranchViaOperator(
+						conn, via);
+				
+
+				listVia = op.repaireViaDirect(listVia, preSNodePid,
+						preENodePid, linkPid);
+
+				list.add(listVia);
+
+				listVia = new ArrayList<RdBranchVia>();
+
+				listVia.add(via);
+
+				isChanged = false;
+			}
+
+		}
+
+		if (listVia.size() > 0) {
+			RdBranchViaOperator op = new RdBranchViaOperator(conn,
+					null);
+
+			listVia = op.repaireViaDirect(listVia, preSNodePid, preENodePid,
+					linkPid);
+
+			list.add(listVia);
+		}
+		try {
+
+			resultSet.close();
+
+			pstmt.close();
+
+		} catch (Exception e) {
+			
+		}
+
+		return list;
+	}
+	
+
 
 }

@@ -6,20 +6,13 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ISelector;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneVia;
-import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.FosEngine.edit.model.operator.rd.laneconnexity.RdLaneViaOperator;
-import com.navinfo.dataservice.FosEngine.edit.model.operator.rd.restrict.RdRestrictionViaOperator;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 
 public class RdLaneViaSelector implements ISelector {
-
-	private static Logger logger = Logger
-			.getLogger(RdLaneViaSelector.class);
 
 	private Connection conn;
 

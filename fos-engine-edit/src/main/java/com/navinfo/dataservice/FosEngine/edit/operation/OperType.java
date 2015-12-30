@@ -8,4 +8,5 @@ public enum OperType {
 	UPDATE,
 	DELETE,
 	BREAK,
+	SMOOTHREPIRELINK
 }

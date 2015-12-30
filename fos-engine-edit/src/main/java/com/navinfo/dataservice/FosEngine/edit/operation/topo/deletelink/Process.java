@@ -5,8 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.FosEngine.edit.log.LogWriter;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
@@ -23,8 +21,6 @@ import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 
 public class Process implements IProcess {
 
-	private static Logger logger = Logger.getLogger(Process.class);
-	
 	private Command command;
 
 	private Result result;

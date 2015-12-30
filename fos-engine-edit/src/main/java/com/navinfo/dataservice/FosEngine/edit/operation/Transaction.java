@@ -20,7 +20,7 @@ public class Transaction {
 	 * 操作类型
 	 */
 	private OperType operType;
-	
+
 	/**
 	 * 对象类型
 	 */
@@ -61,12 +61,12 @@ public class Transaction {
 		JSONObject json = JSONObject.fromObject(requester);
 
 		operType = Enum.valueOf(OperType.class, json.getString("command"));
-		
+
 		objType = Enum.valueOf(ObjType.class, json.getString("type"));
-		
-		switch(objType){
+
+		switch (objType) {
 		case RDLINK:
-			switch(operType){
+			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlink.create.Command(
 						json, requester);
@@ -74,20 +74,23 @@ public class Transaction {
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlink.update.Command(
 						json, requester);
 			case DELETE:
-				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.deletelink.Command(json,
-						requester);
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.deletelink.Command(
+						json, requester);
 			case BREAK:
-				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Command(json,
-						requester);
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Command(
+						json, requester);
+			case SMOOTHREPIRELINK:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.smoothrepirelink.Command(
+						json, requester);
 			}
 		case RDNODE:
-			switch(operType){
+			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Command(json,
-						requester);
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Command(
+						json, requester);
 			}
 		case RDRESTRICTION:
-			switch(operType){
+			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdrestriction.create.Command(
 						json, requester);
@@ -110,9 +113,9 @@ public class Transaction {
 	 */
 	private IProcess createProcess(ICommand command) throws Exception {
 
-		switch(objType){
+		switch (objType) {
 		case RDLINK:
-			switch(operType){
+			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlink.create.Process(
 						command);
@@ -125,15 +128,18 @@ public class Transaction {
 			case BREAK:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Process(
 						command);
+			case SMOOTHREPIRELINK:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.smoothrepirelink.Process(
+						command);
 			}
 		case RDNODE:
-			switch(operType){
+			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Process(
 						command);
 			}
 		case RDRESTRICTION:
-			switch(operType){
+			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdrestriction.create.Process(
 						command);
@@ -172,10 +178,10 @@ public class Transaction {
 
 		return process.getResult().getLogs();
 	}
-	
-	public JSONArray getCheckLog(){
+
+	public JSONArray getCheckLog() {
 		return process.getResult().getCheckResults();
-				
+
 	}
 
 }

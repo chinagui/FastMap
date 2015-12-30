@@ -60,6 +60,18 @@ public class RdBranch implements IObj {
 	public Map<Integer, RdBranchSchematic> schematicMap = new HashMap<Integer, RdBranchSchematic>();
 
 	public Map<String, RdBranchVia> viaMap = new HashMap<String, RdBranchVia>();
+	
+	private int outNodePid;
+	
+	
+
+	public int igetOutNodePid() {
+		return outNodePid;
+	}
+
+	public void isetOutNodePid(int outNodePid) {
+		this.outNodePid = outNodePid;
+	}
 
 	@Override
 	public void setRowId(String rowId) {

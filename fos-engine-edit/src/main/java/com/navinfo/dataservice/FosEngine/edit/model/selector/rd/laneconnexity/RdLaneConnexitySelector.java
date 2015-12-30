@@ -149,8 +149,6 @@ public class RdLaneConnexitySelector implements ISelector {
 
 			pstmt.setInt(1, linkPid);
 
-			pstmt.setInt(2, 2);
-
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {

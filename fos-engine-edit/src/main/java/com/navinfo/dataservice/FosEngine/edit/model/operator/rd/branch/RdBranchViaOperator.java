@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -261,6 +262,43 @@ public class RdBranchViaOperator implements IOperator {
 				+ " set u_record=2 where row_id='" + via.rowId() + "'";
 
 		stmt.addBatch(sql);
+	}
+	
+	
+	// 维护经过线方向
+	public List<RdBranchVia> repaireViaDirect(List<RdBranchVia> vias,
+			int preSNodePid, int preENodePid, int linkPid) {
+		List<RdBranchVia> newVias = new ArrayList<RdBranchVia>();
+
+		for (RdBranchVia v : vias) {
+			if (v.getLinkPid() == linkPid) {
+
+				if (preSNodePid != 0 && preENodePid != 0) {
+					if (v.igetsNodePid() == preSNodePid
+							|| v.igetsNodePid() == preENodePid) {
+
+					} else {
+						int tempPid = v.igetsNodePid();
+
+						v.isetsNodePid(v.igeteNodePid());
+
+						v.iseteNodePid(tempPid);
+					}
+				} else {
+					if (v.igeteNodePid() == v.igetInNodePid()) {
+						int tempPid = v.igetsNodePid();
+
+						v.isetsNodePid(v.igeteNodePid());
+
+						v.iseteNodePid(tempPid);
+					}
+				}
+			}
+
+			newVias.add(v);
+		}
+
+		return newVias;
 	}
 
 }

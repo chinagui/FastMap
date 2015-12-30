@@ -9,6 +9,8 @@ import net.sf.json.JSONArray;
 import com.navinfo.dataservice.FosEngine.edit.log.LogWriter;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranch;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneVia;
@@ -18,6 +20,8 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestricti
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.branch.RdBranchSelector;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.branch.RdBranchViaSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.laneconnexity.RdLaneTopologySelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.laneconnexity.RdLaneViaSelector;
@@ -138,6 +142,24 @@ public class Process implements IProcess {
 					(conn).loadSpeedlimitByLinkPid(command.getLinkPid(), true);
 			
 			command.setSpeedlimits(limits);
+			
+			//获取以改LINK作为分歧进入线的分歧
+			
+			List<RdBranch> inBranchs = new RdBranchSelector(conn).loadRdBranchByInLinkPid(command.getLinkPid(), true);
+			
+			command.setInBranchs(inBranchs);
+			
+			//获取已该LINK作为分歧退出线的分歧
+			
+			List<RdBranch> outBranchs = new RdBranchSelector(conn).loadRdBranchByOutLinkPid(command.getLinkPid(), true);
+			
+			command.setOutBranchs(outBranchs);
+			
+			//获取该LINK为分歧经过线的BRANCH_VIA
+			
+			List<List<RdBranchVia>> branchVias = new RdBranchViaSelector(conn).loadRdBranchViaByLinkPid(command.getLinkPid(), true);
+			
+			command.setBranchVias(branchVias);
 
 			return true;
 
@@ -168,9 +190,21 @@ public class Process implements IProcess {
 
 			msg = operation.run(result);
 
-			OpRefRestrict opRefRes = new OpRefRestrict(command);
+			OpRefRestrict opRefRestrict = new OpRefRestrict(command);
 
-			opRefRes.run(result);
+			opRefRestrict.run(result);
+			
+			OpRefBranch opRefBranch = new OpRefBranch(command);
+			
+			opRefBranch.run(result);
+			
+			OpRefLaneConnexity opRefLaneConnexity = new OpRefLaneConnexity(command);
+			
+			opRefLaneConnexity.run(result);
+			
+			OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(command);
+			
+			opRefSpeedlimit.run(result);
 
 			this.recordData();
 

@@ -14,13 +14,13 @@ import java.sql.PreparedStatement;
 import javax.imageio.ImageIO;
 
 public class ImportPatterImage {
-	
+
 	private static Connection conn;
-	
+
 	private static PreparedStatement pstmt;
-	
-	private static String sql = "insert into pattern_image values (:1,:2)";
-	
+
+	private static String sql = "update SC_MODEL_MATCH_G set format=:1,file_content=:2 where file_name=:3";
+
 	private static int counter = 0;
 
 	public static InputStream getJpgStream(String filePath) throws Exception {
@@ -35,74 +35,80 @@ public class ImportPatterImage {
 				Color.WHITE, null);
 
 		ImageIO.write(newBufferedImage, "jpg", out);
-		
+
 		InputStream in = new ByteArrayInputStream(out.toByteArray());
 
 		return in;
 	}
-	
+
 	public static void main(String[] args) throws Exception {
 
 		String username = args[0];
-		
+
 		String password = args[1];
-		
+
 		String ip = args[2];
-		
+
 		int port = Integer.parseInt(args[3]);
-		
+
 		String serviceName = args[4];
-		
+
 		String path = args[5];
-		
+
 		Class.forName("oracle.jdbc.driver.OracleDriver");
 
-		conn = DriverManager
-				.getConnection("jdbc:oracle:thin:@"+ip+":"+port+":"+serviceName,
-						username, password);
-		
+		conn = DriverManager.getConnection("jdbc:oracle:thin:@" + ip + ":"
+				+ port + ":" + serviceName, username, password);
+
 		conn.setAutoCommit(false);
-		
+
 		pstmt = conn.prepareStatement(sql);
-		
+
 		readData(path);
-		
+
 		conn.commit();
-		
+
 		conn.close();
 	}
-	
-	private static void readData(String path)throws Exception
-	{
+
+	private static void readData(String path) throws Exception {
 		File file = new File(path);
-		
+
 		File[] files = file.listFiles();
-		
-		for(File f : files){
-			if (f.isDirectory()){
+
+		for (File f : files) {
+			if (f.isDirectory()) {
 				readData(f.getAbsolutePath());
-			}else{
-				if (f.getName().toLowerCase().endsWith(".bmp") || f.getName().toLowerCase().endsWith(".png")){
-					
-					pstmt.setString(1, f.getName());
-					
+			} else {
+				if (f.getName().toLowerCase().endsWith(".bmp")
+						|| f.getName().toLowerCase().endsWith(".png")) {
+
+					String[] splits = f.getName().split("\\.");
+
 					InputStream in = null;
 					try {
+						pstmt.setString(1, "jpg");
+
 						in = getJpgStream(f.getAbsolutePath());
 					} catch (Exception e) {
-						
+						String format = splits[splits.length - 1];
+
+						pstmt.setString(1, format);
+
 						in = new FileInputStream(f.getAbsoluteFile());
 					}
-					
+
 					pstmt.setBlob(2, in);
-					
+
+					pstmt.setString(3, splits[0]);
+
 					pstmt.execute();
-					
+
 					counter++;
-					
-					if (counter % 10000 == 0){
+
+					if (counter % 100 == 0) {
 						System.out.println(counter);
-						
+
 						conn.commit();
 					}
 				}

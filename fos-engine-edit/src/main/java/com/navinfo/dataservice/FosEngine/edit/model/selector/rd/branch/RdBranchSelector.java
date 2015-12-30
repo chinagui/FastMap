@@ -317,4 +317,110 @@ public class RdBranchSelector implements ISelector {
 		return branchs;
 	}
 
+	public RdBranch loadByLinkNodeLink(int inLinkPid, int nodePid, int outLinkPid, boolean isLock)throws Exception
+	{
+		
+		RdBranch branch = new RdBranch();
+		
+		String sql = "select * from rd_branch where in_link_pid=:1 and node_pid=:2 and out_link_pid=:3 and u_record!=2";
+		
+		if (isLock){
+			sql += " for update nowait";
+		}
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, inLinkPid);
+			
+			pstmt.setInt(2, nodePid);
+			
+			pstmt.setInt(3, outLinkPid);
+
+			resultSet = pstmt.executeQuery();
+			
+			if(resultSet.next()){
+
+				int id = resultSet.getInt("branch_pid");
+				
+				branch.setPid(resultSet.getInt("branch_pid"));
+
+				branch.setInLinkPid(resultSet.getInt("in_link_pid"));
+
+				branch.setNodePid(resultSet.getInt("node_pid"));
+
+				branch.setOutLinkPid(resultSet.getInt("out_link_pid"));
+
+				branch.setRelationshipType(resultSet
+						.getInt("relationship_type"));
+
+				branch.setRowId(resultSet.getString("row_id"));
+
+				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
+						conn);
+
+				branch.setDetails(detailSelector.loadRowsByParentId(id, isLock));
+
+				RdSignboardSelector signboardSelector = new RdSignboardSelector(
+						conn);
+
+				branch.setSignboards(signboardSelector.loadRowsByParentId(id,
+						isLock));
+
+				RdSignasrealSelector signasrealSelector = new RdSignasrealSelector(
+						conn);
+
+				branch.setSignasreals(signasrealSelector.loadRowsByParentId(id,
+						isLock));
+
+				RdSeriesbranchSelector seriesbranchSelector = new RdSeriesbranchSelector(
+						conn);
+
+				branch.setSeriesbranches(seriesbranchSelector
+						.loadRowsByParentId(id, isLock));
+
+				RdBranchRealimageSelector realimageSelector = new RdBranchRealimageSelector(
+						conn);
+
+				branch.setRealimages(realimageSelector.loadRowsByParentId(id,
+						isLock));
+
+				RdBranchSchematicSelector schematicSelector = new RdBranchSchematicSelector(
+						conn);
+
+				branch.setSchematics(schematicSelector.loadRowsByParentId(id,
+						isLock));
+
+				RdBranchViaSelector viaSelector = new RdBranchViaSelector(conn);
+
+				branch.setVias(viaSelector.loadRowsByParentId(id, isLock));
+
+			}
+			else{
+				return null;
+			}
+		} catch (Exception e) {
+			
+			throw e;
+		} finally {
+			try {
+				resultSet.close();
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+				
+			}
+		}
+		
+		return branch;
+		
+	}
 }

@@ -21,4 +21,12 @@ public class PidSequenceName {
 	public static final String crossPidName = "SEQ_RD_CROSS";
 	
 	public static final String crossNameIdName = "SEQ_RD_CROSS_NAMEID";
+	
+	public static final String branchPidName = "SEQ_RD_BRANCH";
+	
+	public static final String branchDetailIdName = "SEQ_RD_BRANCH_DETAIL";
+	
+	public static final String branchNameIdName = "SEQ_RD_BRANCH_Name";
+	
+	
 }

@@ -5,6 +5,8 @@ import java.util.List;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranch;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneVia;
@@ -54,6 +56,36 @@ public class Command implements ICommand {
 
 	private List<RdSpeedlimit> speedlimits;
 	
+	private List<RdBranch> inBranchs;
+	
+	private List<RdBranch> outBranchs;
+	
+	private List<List<RdBranchVia>> branchVias;
+	
+	public List<RdBranch> getInBranchs() {
+		return inBranchs;
+	}
+
+	public void setInBranchs(List<RdBranch> inBranchs) {
+		this.inBranchs = inBranchs;
+	}
+
+	public List<RdBranch> getOutBranchs() {
+		return outBranchs;
+	}
+
+	public void setOutBranchs(List<RdBranch> outBranchs) {
+		this.outBranchs = outBranchs;
+	}
+
+	public List<List<RdBranchVia>> getBranchVias() {
+		return branchVias;
+	}
+
+	public void setBranchVias(List<List<RdBranchVia>> branchVias) {
+		this.branchVias = branchVias;
+	}
+
 	public List<RdSpeedlimit> getSpeedlimits() {
 		return speedlimits;
 	}

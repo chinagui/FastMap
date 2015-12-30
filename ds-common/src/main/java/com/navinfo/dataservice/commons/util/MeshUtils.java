@@ -2,6 +2,7 @@ package com.navinfo.dataservice.commons.util;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -14,7 +15,7 @@ public abstract class MeshUtils {
 
 	public static void main(String[] args) {
 		int meshid = 595673;
-		
+
 		System.out.println(lonlat2Mesh(136.31313, 39.3131));
 		// (M3*10+M4)*3600+M6*450+60*3600
 		// (M1*10+M2)*2400+M5*300
@@ -34,14 +35,14 @@ public abstract class MeshUtils {
 		 * allMesh.length; i++) { String s = allMesh[i];
 		 * System.out.println("mesh" + (i + 1) + ":" + s); }
 		 */
-//		System.out
-//				.println("==================================================");
-//		Set<String> allMesh = get9NeighborMesh2("45172", 3);
-//		int i = 0;
-//		for (String s : allMesh) {
-//			System.out.println("mesh" + (i + 1) + ":" + s);
-//			i++;
-//		}
+		// System.out
+		// .println("==================================================");
+		// Set<String> allMesh = get9NeighborMesh2("45172", 3);
+		// int i = 0;
+		// for (String s : allMesh) {
+		// System.out.println("mesh" + (i + 1) + ":" + s);
+		// i++;
+		// }
 
 		/*
 		 * System.out.println("=================================================="
@@ -86,19 +87,20 @@ public abstract class MeshUtils {
 		return new int[] { lbX, lbY, cX, cY, rtX, rtY };
 
 	}
-	
+
 	/**
 	 * 根据图幅号计算左下/中心坐标点/右上坐标点的经纬度
+	 * 
 	 * @param meshId
 	 * @return 左下/中心坐标点/右上坐标点经纬度
 	 */
 	public static double[] mesh2LocationLatLon(String meshId) {
 		int[] data = mesh2Location(meshId);
-		
+
 		double[] result = new double[data.length];
-		
-		for( int i=0; i<data.length; i++){
-			result[i]=second2Decimal(data[i]);
+
+		for (int i = 0; i < data.length; i++) {
+			result[i] = second2Decimal(data[i]);
 		}
 
 		return result;
@@ -311,9 +313,10 @@ public abstract class MeshUtils {
 		}
 		return meshId;
 	}
-	
+
 	/**
 	 * 经纬度转图幅号
+	 * 
 	 * @param lon
 	 * @param lat
 	 * @return
@@ -501,4 +504,102 @@ public abstract class MeshUtils {
 			return outMeshes;
 		}
 	}
+
+	/**
+	 * 点是否在图框线上
+	 * 
+	 * @param dLongitude
+	 * @param dLatitude
+	 * @return
+	 */
+	public static boolean isPointAtMeshBorder(double dLongitude, double dLatitude){
+		int model = 0;
+
+        int[] result = CalculateIdealRowIndex(dLatitude);
+
+        int rowIndex = result[0];
+        int remainder = result[1];
+        				
+        switch (rowIndex % 3)
+        {
+            case 0: //第一行
+                {
+                    if (300000 - remainder == 12) //余数距离上框等于0.012秒
+                        model |= 0x01;
+                    else if (remainder == 0)
+                        model |= 0x01;
+                }
+                break;
+            case 1: //第二行由于上下边框均不在其内，因此不在图框上
+                break;
+            case 2: //第三行
+                {
+                    if (remainder == 12) //余数距离下框等于0.012秒
+                        model |= 0x01;
+                }
+                break;
+        }
+
+        result = CalculateIdealColumnIndex(dLongitude);
+
+        if (0 == result[1])
+            model |= 0x10;
+        
+        if(model == 0){
+        	return false;
+        }
+        else{
+        	return true;
+        }
+	}
+
+	/**
+	 * 根据纬度计算该点位于理想图幅分割的行序号
+	 * 
+	 * @param dLatitude
+	 * @return 行序号，余数
+	 */
+	private static int[] CalculateIdealRowIndex(double dLatitude) {
+		int[] result = new int[2];
+
+		// 相对区域纬度 = 绝对纬度 - 0.0
+		double regionLatitude = dLatitude - 0.0;
+
+		// 相对的以秒为单位的纬度
+		double secondLatitude = regionLatitude * 3600;
+
+		// 为避免浮点数的内存影响，将秒*10的三次方(由于0.00001度为0.036秒)
+		long longsecond = (int) Math.floor(secondLatitude * 1000);
+
+		result[0] = (int) (longsecond / 300000);
+
+		result[1] = (int) (longsecond % 300000);
+		
+		return result;
+	}
+	
+    /**
+     *  根据经度计算该点位于理想图幅分割的列序号
+     * @param dLongitude
+     * @return 列序号，余数
+     */
+    private static int[] CalculateIdealColumnIndex(double dLongitude)
+    {
+    	int[] result = new int[2];
+    	
+        //相对区域经度 = 绝对经度 - 60.0
+        double regionLongitude = dLongitude - 60.0;
+
+        //相对的以秒为单位的经度
+        double secondLongitude = regionLongitude * 3600;
+
+        //为避免浮点数的内存影响，将秒*10的三次方(由于0.00001度为0.036秒)
+        long longsecond = (int)Math.floor(secondLongitude * 1000);
+
+        result[0] = (int)(longsecond / 450000);
+        
+        result[1] = (int)(longsecond % 450000);
+        
+        return result;
+    }
 }

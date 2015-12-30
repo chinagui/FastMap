@@ -13,4 +13,12 @@ public class PidSequenceName {
 	public static final String restrictDetailPidName = "SEQ_RD_RESTRICTION_Detail";
 	
 	public static final String speedLimitPidName = "SEQ_RD_SPEEDLIMIT";
+	
+	public static final String laneConnexityPidName = "SEQ_RD_LANE_CONNEXITY";
+	
+	public static final String laneTopologyPidName = "SEQ_RD_LANE_TOPOLOGY";
+	
+	public static final String crossPidName = "SEQ_RD_CROSS";
+	
+	public static final String crossNameIdName = "SEQ_RD_CROSS_NAMEID";
 }

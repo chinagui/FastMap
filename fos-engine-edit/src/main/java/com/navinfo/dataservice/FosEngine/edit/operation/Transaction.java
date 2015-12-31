@@ -82,6 +82,9 @@ public class Transaction {
 			case SMOOTHREPIRELINK:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.smoothrepirelink.Command(
 						json, requester);
+			case REPAIRE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.repaire.Command(
+						json, requester);	
 			}
 		case RDNODE:
 			switch (operType) {
@@ -131,6 +134,9 @@ public class Transaction {
 			case SMOOTHREPIRELINK:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.smoothrepirelink.Process(
 						command);
+			case REPAIRE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.repaire.Process(
+						command);	
 			}
 		case RDNODE:
 			switch (operType) {

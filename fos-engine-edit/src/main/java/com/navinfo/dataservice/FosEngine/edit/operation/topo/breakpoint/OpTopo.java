@@ -22,6 +22,8 @@ public class OpTopo implements IOperation {
 	private RdLink rdLinkBreakpoint;
 
 	private JSONArray jaDisplayLink;
+	
+	private RdNode breakPoint;
 
 	public OpTopo(Command command, Connection conn, RdLink rdLinkBreakpoint,
 			JSONArray jaDisplayLink) {
@@ -32,17 +34,37 @@ public class OpTopo implements IOperation {
 		this.jaDisplayLink = jaDisplayLink;
 
 	}
+	
+	public OpTopo(Command command, Connection conn, RdLink rdLinkBreakpoint,
+			JSONArray jaDisplayLink,RdNode breakPoint) {
+		this.command = command;
+
+		this.rdLinkBreakpoint = rdLinkBreakpoint;
+
+		this.jaDisplayLink = jaDisplayLink;
+		
+		this.breakPoint = breakPoint;
+
+	}
 
 	@Override
 	public String run(Result result) throws Exception {
 
 		this.breakpoint(result);
+		
+		if (this.breakPoint == null){
+			
+			breakPoint = new RdNode();
 
-		RdNode breakpoint = new RdNode();
-
-		breakpoint.setPid(PidService.getInstance().applyNodePid());
-
-		breakpoint.copy(command.getsNode());
+			breakPoint.setPid(PidService.getInstance().applyNodePid());
+	
+			breakPoint.copy(command.getsNode());
+			
+			result.insertObject(breakPoint, ObjStatus.INSERT);
+		
+		}else{
+			result.insertObject(breakPoint, ObjStatus.UPDATE);
+		}
 
 		JSONObject geoPoint = new JSONObject();
 
@@ -51,18 +73,16 @@ public class OpTopo implements IOperation {
 		geoPoint.put("coordinates", new double[] { command.getPoint().getX(),
 				command.getPoint().getY() });
 
-		breakpoint.setGeometry(GeoTranslator.geojson2Jts(geoPoint, 100000, 0));
+		breakPoint.setGeometry(GeoTranslator.geojson2Jts(geoPoint, 100000, 0));
 
-		result.insertObject(breakpoint, ObjStatus.INSERT);
+		command.getLink1().seteNodePid(breakPoint.getPid());
 
-		command.getLink1().seteNodePid(breakpoint.getPid());
-
-		command.getLink2().setsNodePid(breakpoint.getPid());
+		command.getLink2().setsNodePid(breakPoint.getPid());
 
 		result.insertObject(command.getLink1(), ObjStatus.INSERT);
 
 		result.insertObject(command.getLink2(), ObjStatus.INSERT);
-
+		
 		jaDisplayLink.add(command.getLink1().Serialize(ObjLevel.BRIEF));
 
 		jaDisplayLink.add(command.getLink2().Serialize(ObjLevel.BRIEF));

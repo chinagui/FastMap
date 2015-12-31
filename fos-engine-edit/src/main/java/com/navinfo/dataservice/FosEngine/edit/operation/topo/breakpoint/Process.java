@@ -160,6 +160,13 @@ public class Process implements IProcess {
 			List<List<RdBranchVia>> branchVias = new RdBranchViaSelector(conn).loadRdBranchViaByLinkPid(command.getLinkPid(), true);
 			
 			command.setBranchVias(branchVias);
+			
+			if (command.getBreakNodePid() != 0){
+				
+				RdNode breakNode = (RdNode) nodeSelector.loadById(command.getBreakNodePid(), true);
+				
+				command.setBreakNode(breakNode);
+			}
 
 			return true;
 
@@ -184,9 +191,18 @@ public class Process implements IProcess {
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
 			}
-
-			IOperation operation = new OpTopo(command, conn,
+			
+			IOperation operation = null;
+			
+			if (command.getBreakNodePid() == 0){
+				operation = new OpTopo(command, conn,
 					this.rdLinkBreakpoint, jaDisplayLink);
+			}else{
+				RdNode breakNode = (RdNode) new RdNodeSelector(conn).loadById(command.getBreakNodePid(), true);
+				
+				operation = new OpTopo(command, conn,
+						this.rdLinkBreakpoint, jaDisplayLink,breakNode);
+			}
 
 			msg = operation.run(result);
 

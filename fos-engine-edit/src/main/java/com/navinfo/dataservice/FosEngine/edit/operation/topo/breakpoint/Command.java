@@ -41,6 +41,11 @@ public class Command implements ICommand {
 	private RdNode eNode;
 	
 	private int projectId;
+	
+	//下面两个字段,在以已存在的node通过移动位置来打断LINK的记录
+	private int breakNodePid;
+	
+	private RdNode breakNode;
 
 	private List<RdRestriction> restrictions;
 
@@ -195,6 +200,10 @@ public class Command implements ICommand {
 				.getDouble("latitude");
 		
 		this.projectId = json.getInt("projectId");
+		
+		if (json.containsKey("breakNodePid")){
+			this.breakNodePid = json.getInt("breakNodePid");
+		}
 
 		Coordinate coord = new Coordinate(lng, lat);
 
@@ -238,4 +247,18 @@ public class Command implements ICommand {
 		return requester;
 	}
 
+	public int getBreakNodePid() {
+		return breakNodePid;
+	}
+
+
+	public RdNode getBreakNode() {
+		return breakNode;
+	}
+
+	public void setBreakNode(RdNode breakNode) {
+		this.breakNode = breakNode;
+	}
+
+	
 }

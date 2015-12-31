@@ -2,6 +2,7 @@ package com.navinfo.dataservice.FosEngine.edit.operation.topo.repaire;
 
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
@@ -66,7 +67,7 @@ public class Operation implements IOperation {
 		boolean isChanged = updateLink.fillChangeFields(content);
 
 		if (isChanged) {
-			result.getUpdateObjects().add(updateLink);
+			result.insertObject(updateLink, ObjStatus.UPDATE);
 		}
 		
 		return null;

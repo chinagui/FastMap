@@ -14,7 +14,6 @@ import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.FosEngine.edit.operation.IProcess;
 import com.navinfo.dataservice.FosEngine.edit.operation.OperatorFactory;
-import com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlink.update.Command;
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 
 public class Process implements IProcess {

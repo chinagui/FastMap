@@ -2,6 +2,7 @@ package com.navinfo.dataservice.FosEngine.edit.operation.topo.departnode;
 
 import java.sql.Connection;
 
+import com.navinfo.dataservice.FosEngine.edit.log.LogWriter;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
@@ -10,6 +11,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.node.RdNodeSelec
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.FosEngine.edit.operation.IProcess;
+import com.navinfo.dataservice.FosEngine.edit.operation.OperatorFactory;
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 
 public class Process implements IProcess {
@@ -121,8 +123,13 @@ public class Process implements IProcess {
 
 	@Override
 	public boolean recordData() throws Exception {
-		// TODO Auto-generated method stub
-		return false;
+		OperatorFactory.recordData(conn, result);
+
+		LogWriter lw = new LogWriter(conn);
+
+		lw.recordLog(command, result);
+
+		return true;
 	}
 
 }

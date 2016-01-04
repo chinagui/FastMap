@@ -45,6 +45,17 @@ public class RdSpeedlimitSearch implements ISearch {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	
+	//通过传入点限速的LINKPID和通行方向，返回跟踪LINK路径
+	public String trackSpeedLimitLink(int linkPid,int direct) throws Exception{
+		
+		RdSpeedlimitSelector selector = new RdSpeedlimitSelector(conn);
+		
+		return selector.trackSpeedLimitLink(linkPid, direct);
+	}
+	
+	
 	public static void main(String[] args) throws Exception {
 		ConfigLoader.initDBConn("C:/Users/wangshishuai3966/git/FosEngine/FosEngine/src/config.properties");
 		

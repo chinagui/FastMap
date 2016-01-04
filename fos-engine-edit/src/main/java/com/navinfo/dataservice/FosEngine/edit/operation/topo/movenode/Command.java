@@ -15,11 +15,15 @@ public class Command implements ICommand {
 	
 	private double latitude;
 	
-	private int projectId;
-	
 	private String requester;
 	
-	public Command(JSONObject json,String requester,int projectId){
+	private int projectId;
+	
+	public int getProjectId() {
+		return projectId;
+	}
+	
+	public Command(JSONObject json,String requester){
 		
 		this.nodePid = json.getInt("nodePid");
 		
@@ -27,9 +31,7 @@ public class Command implements ICommand {
 		
 		this.latitude = json.getJSONObject("data").getDouble("latitude");
 		
-		this.projectId = projectId;
-		
-		
+		this.projectId = json.getInt("projectId");
 	}
 
 	@Override
@@ -62,9 +64,6 @@ public class Command implements ICommand {
 		return latitude;
 	}
 
-	public int getProjectId() {
-		return projectId;
-	}
 
 	
 }

@@ -79,11 +79,17 @@ public class Transaction {
 			case BREAK:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Command(
 						json, requester);
-			case SMOOTHREPIRELINK:
-				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.smoothrepirelink.Command(
-						json, requester);
 			case REPAIRE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.repaire.Command(
+						json, requester);	
+			case MOVENODE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.movenode.Command(
+						json, requester);		
+			case DEPARTNODE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.departnode.Command(
+						json, requester);
+			case UPDATELINKLIMIT:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlink.updatelinklimit.Command(
 						json, requester);	
 			}
 		case RDNODE:
@@ -131,11 +137,17 @@ public class Transaction {
 			case BREAK:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Process(
 						command);
-			case SMOOTHREPIRELINK:
-				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.smoothrepirelink.Process(
-						command);
 			case REPAIRE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.repaire.Process(
+						command);	
+			case DEPARTNODE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.departnode.Process(
+						command);
+			case MOVENODE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.movenode.Process(
+						command);	
+			case UPDATELINKLIMIT:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlink.updatelinklimit.Process(
 						command);	
 			}
 		case RDNODE:

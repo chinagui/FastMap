@@ -20,7 +20,12 @@ public class Command implements ICommand {
 	
 	private int projectId;
 	
-	public Command(JSONObject json,String requester,int projectId){
+	public int getProjectId() {
+		return projectId;
+	}
+
+
+	public Command(JSONObject json,String requester){
 		this.requester = requester;
 		
 		this.linkPid = json.getInt("linkPid");
@@ -31,7 +36,7 @@ public class Command implements ICommand {
 		
 		this.latitude = json.getJSONObject("data").getDouble("latitude");
 		
-		this.projectId = projectId;
+		this.projectId = json.getInt("projectId");
 	}
 	
 
@@ -70,9 +75,4 @@ public class Command implements ICommand {
 	}
 
 
-	public int getProjectId() {
-		return projectId;
-	}
-
-	
 }

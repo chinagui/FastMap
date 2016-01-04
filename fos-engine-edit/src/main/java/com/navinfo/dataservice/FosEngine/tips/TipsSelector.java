@@ -92,6 +92,12 @@ public class TipsSelector {
 				Geojson.point2Pixel(geojson, z, px, py);
 				
 				snapshot.setG(geojson.getJSONArray("coordinates"));
+				
+				JSONObject m = new JSONObject();
+				
+				m.put("a", json.getString("stage"));
+				
+				snapshot.setM(m);
 
 				array.add(snapshot.Serialize(null));
 
@@ -292,6 +298,8 @@ public class TipsSelector {
 		b.add(1);
 		int type = 1407;
 		//System.out.println(selector.getSnapshot(a, b, type));
-		System.out.println(selector.getStats(a, b));
+		//System.out.println(selector.getStats(a, b));
+		
+		System.out.println(selector.searchDataByTileWithGap(107946, 49615, 17, 5));
 	}
 }

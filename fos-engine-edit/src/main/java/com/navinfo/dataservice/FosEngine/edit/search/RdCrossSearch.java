@@ -49,11 +49,11 @@ public class RdCrossSearch implements ISearch {
 	public static void main(String[] args) throws Exception {
 		ConfigLoader.initDBConn("C:/Users/wangshishuai3966/git/FosEngine/FosEngine/src/config.properties");
 		
-		Connection conn = DBOraclePoolManager.getConnection(1);
+		Connection conn = DBOraclePoolManager.getConnection(11);
 		
 		RdCrossSearch s = new RdCrossSearch(conn);
 		
-		IObj obj = s.searchDataByPid(654733);
+		IObj obj = s.searchDataByPid(3313);
 		
 		System.out.println(obj.Serialize(null));
 	}

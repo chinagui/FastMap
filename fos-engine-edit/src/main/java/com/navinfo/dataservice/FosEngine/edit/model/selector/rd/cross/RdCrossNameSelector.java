@@ -57,7 +57,7 @@ public class RdCrossNameSelector implements ISelector {
 
 				name.setPid(resultSet.getInt("pid"));
 
-				name.setLangCode(resultSet.getString("langCode"));
+				name.setLangCode(resultSet.getString("lang_code"));
 
 				name.setName(resultSet.getString("name"));
 

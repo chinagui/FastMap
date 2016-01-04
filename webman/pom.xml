@@ -42,6 +42,11 @@
 		<artifactId>fos-engine-meta</artifactId>
 	</dependency>
 	
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>fos-engine-man</artifactId>
+	</dependency>
+	
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

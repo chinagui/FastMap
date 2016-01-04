@@ -56,6 +56,10 @@ public class ConfigLoader {
 
 			// 项目库初始化
 			DBOraclePoolManager.initPools();
+			
+			DBOraclePoolManager.initMetaPool();
+			
+			DBOraclePoolManager.initManagePool();
 
 			// PID库初始化
 			PidService.getInstance();

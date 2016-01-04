@@ -27,7 +27,7 @@ public class DBOraclePoolManager {
 	/**
 	 * 存放各个项目的连接池 key为项目ID value为连接池类
 	 */
-	private static Map<Integer, DBOraclePool> map = new HashMap<Integer, DBOraclePool>();
+	private static Map<String, DBOraclePool> map = new HashMap<String, DBOraclePool>();
 
 	/**
 	 * 项目库的配置信息
@@ -90,7 +90,7 @@ public class DBOraclePoolManager {
 
 					DBOraclePool pool = new DBOraclePool(jsonConnMsg);
 
-					map.put(projectId, pool);
+					map.put(String.valueOf(projectId), pool);
 				} catch (Exception e) {
 
 					logger.error(LoggerConstant.errorPmConfig, e);
@@ -126,6 +126,53 @@ public class DBOraclePoolManager {
 		}
 	}
 
+	public static void initMetaPool() throws Exception {
+		
+		JSONObject config = ConfigLoader.getConfig();
+
+		JSONObject jsonConnMsg = new JSONObject();
+
+		jsonConnMsg.put("ip", config.getString(PropConstant.metaIp));
+
+		jsonConnMsg.put("port", config.getInt(PropConstant.metaPort));
+
+		jsonConnMsg.put("serviceName",
+				config.getString(PropConstant.metaServiceName));
+
+		jsonConnMsg.put("username",
+				config.getString(PropConstant.metaUsername));
+
+		jsonConnMsg.put("password",
+				config.getString(PropConstant.metaPassword));
+		
+		DBOraclePool pool = new DBOraclePool(jsonConnMsg);
+		
+		map.put("meta", pool);
+	}
+	
+	public static void initManagePool() throws Exception {
+		
+		JSONObject config = ConfigLoader.getConfig();
+
+		JSONObject jsonConnMsg = new JSONObject();
+
+		jsonConnMsg.put("ip", config.getString(PropConstant.pmIp));
+
+		jsonConnMsg.put("port", config.getInt(PropConstant.pmPort));
+
+		jsonConnMsg.put("serviceName",
+				config.getString(PropConstant.pmServiceName));
+
+		jsonConnMsg.put("username",
+				config.getString(PropConstant.pmUsername));
+
+		jsonConnMsg.put("password",
+				config.getString(PropConstant.pmPassword));
+
+		DBOraclePool pool = new DBOraclePool(jsonConnMsg);
+		
+		map.put("man", pool);
+	}
 	/**
 	 * 从项目库读取单个项目的连接信息，并初始化其连接
 	 * 
@@ -162,7 +209,7 @@ public class DBOraclePoolManager {
 
 			pstmt = conn.prepareStatement(sql);
 
-			pstmt.setInt(1, projectId);
+			pstmt.setInt(1, Integer.valueOf(projectId));
 
 			resultSet = pstmt.executeQuery();
 
@@ -172,7 +219,7 @@ public class DBOraclePoolManager {
 
 			DBOraclePool pool = new DBOraclePool(jsonConnMsg);
 
-			map.put(projectId, pool);
+			map.put(String.valueOf(projectId), pool);
 
 		} catch (Exception e) {
 
@@ -215,7 +262,7 @@ public class DBOraclePoolManager {
 
 		DBOraclePool pool = new DBOraclePool(jsonConnMsg);
 
-		map.put(projectId, pool);
+		map.put(String.valueOf(projectId), pool);
 	}
 
 	/**
@@ -240,15 +287,26 @@ public class DBOraclePoolManager {
 	 */
 	public static Connection getConnection(int projectId) throws Exception {
 
-		if (!map.containsKey(projectId)) {
+		String str = String.valueOf(projectId);
+
+		if (!map.containsKey(str)) {
 			try {
 				addProjectConn(projectId);
 			} catch (Exception e) {
-				throw new OracleConnException(String.valueOf(projectId));
+				throw new OracleConnException(str);
 			}
 
 		}
 
-		return map.get(projectId).getConnection();
+		return map.get(str).getConnection();
+	}
+
+	public static Connection getConnectionByName(String name) throws Exception {
+
+		if (!map.containsKey(name)) {
+			throw new OracleConnException(name);
+		}
+
+		return map.get(name).getConnection();
 	}
 }

@@ -37,4 +37,14 @@ public class PropConstant {
 	public static final String pidDbPassword = "pid_db_password";
 	
 	public static final String oracleDriver = "oracle.jdbc.driver.OracleDriver";
+	
+	public static final String metaIp = "meta_ip";
+
+	public static final String metaPort = "meta_port";
+
+	public static final String metaServiceName = "meta_service_name";
+
+	public static final String metaUsername = "meta_username";
+
+	public static final String metaPassword = "meta_password";
 }

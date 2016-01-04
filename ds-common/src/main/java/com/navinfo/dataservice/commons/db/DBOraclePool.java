@@ -14,31 +14,50 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 
 public class DBOraclePool {
 
-	private static Logger logger = Logger.getLogger(DBOraclePool.class);
-
 	private BasicDataSource dataSource = null;
 
-	private JSONObject jsonConnMsg;
+	private String ip;
+	
+	private int port;
+	
+	private String serviceName;
+	
+	private String username;
+	
+	private String password;
 
 	public DBOraclePool(JSONObject jsonConnMsg) throws Exception {
 
-		this.jsonConnMsg = jsonConnMsg;
+		ip = jsonConnMsg.getString("ip");
 
+		port = jsonConnMsg.getInt("port");
+
+		serviceName = jsonConnMsg.getString("serviceName");
+
+		username = jsonConnMsg.getString("username");
+
+		password = jsonConnMsg.getString("password");
+
+		this.init();
+	}
+	
+	public DBOraclePool(String ip, int port, String serviceName, String username, String password) throws Exception{
+		this.ip= ip;
+		
+		this.port = port;
+		
+		this.serviceName = serviceName;
+		
+		this.username = username;
+		
+		this.password = password;
+		
 		this.init();
 	}
 
 	private void init() throws Exception {
 
-		String ip = jsonConnMsg.getString("ip");
-
-		int port = jsonConnMsg.getInt("port");
-
-		String serviceName = jsonConnMsg.getString("serviceName");
-
-		String username = jsonConnMsg.getString("username");
-
-		String password = jsonConnMsg.getString("password");
-
+		
 		Properties p = new Properties();
 		p.setProperty("driverClassName", PropConstant.oracleDriver);
 		p.setProperty("url", "jdbc:oracle:thin:@" + ip + ":" + port + ":"

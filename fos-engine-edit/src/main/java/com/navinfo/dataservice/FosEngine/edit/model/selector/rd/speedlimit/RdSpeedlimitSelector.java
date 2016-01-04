@@ -222,5 +222,49 @@ public class RdSpeedlimitSelector implements ISelector {
 
 		return limits;
 	}
+	
+	
+	//通过传入点限速的LINKPID和通行方向，返回跟踪LINK路径
+	public String trackSpeedLimitLink(int linkPid,int direct) throws Exception
+	{
+		String path = null;
+		
+		String sql = "select package_utils.track_links(:1,:2) v_path from dual ";
+				
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+
+			pstmt.setInt(2, direct);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				path = resultSet.getString("v_path");
+			}
+		} catch (Exception e) {
+			
+			throw e;
+		} finally {
+			try {
+				resultSet.close();
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+				
+			}
+		}
+		
+		return path;
+	}
 
 }

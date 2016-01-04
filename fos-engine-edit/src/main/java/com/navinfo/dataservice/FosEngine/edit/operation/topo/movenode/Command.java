@@ -19,8 +19,6 @@ public class Command implements ICommand {
 	
 	private String requester;
 	
-	private JSONArray mountLinks;
-	
 	public Command(JSONObject json,String requester,int projectId){
 		
 		this.nodePid = json.getInt("nodePid");
@@ -31,7 +29,6 @@ public class Command implements ICommand {
 		
 		this.projectId = projectId;
 		
-		this.mountLinks = json.getJSONArray("mountLinks");
 		
 	}
 
@@ -67,10 +64,6 @@ public class Command implements ICommand {
 
 	public int getProjectId() {
 		return projectId;
-	}
-
-	public JSONArray getMountLinks() {
-		return mountLinks;
 	}
 
 	

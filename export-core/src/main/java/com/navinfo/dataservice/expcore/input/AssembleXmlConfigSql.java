@@ -18,7 +18,7 @@ import com.navinfo.dataservice.expcore.source.parameter.ScriptsConfigManager;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.expcore.sql.ExpXMLSQLManager;
 import com.navinfo.dataservice.expcore.sql.replacer.SqlReplacer;
-import com.navinfo.dataservice.commons.log.DSJobLogger;
+import com.navinfo.dataservice.commons.log.JobLogger;
 
 /**
  * Created by IntelliJ IDEA. User: liuqing Date: 11-5-9 Time: 下午6:25
@@ -42,7 +42,7 @@ public class AssembleXmlConfigSql implements AssembleSql {
 	 */
 
 	public AssembleXmlConfigSql(String expMode,String feature,String condition,Set<String> conditionParams) throws ClassNotFoundException,Exception{
-		log = DSJobLogger.getLogger(log);
+		log = JobLogger.getLogger(log);
 		this.scriptsConf=ScriptsConfigManager.getInstance().getScriptsConfig(expMode, feature, condition);
 		log.info(this.scriptsConf.getReplacerClassName());
 		Class repClass = Class.forName(this.scriptsConf.getReplacerClassName());

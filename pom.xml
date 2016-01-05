@@ -15,7 +15,8 @@
     	<module>fos-engine-edit</module>
     	<module>fos-engine-man</module>
     	<module>fos-engine-meta</module>
-    </modules>
+		<module>datahub-web</module>
+  </modules>
 
     <packaging>pom</packaging>
     <name>dataservice</name>

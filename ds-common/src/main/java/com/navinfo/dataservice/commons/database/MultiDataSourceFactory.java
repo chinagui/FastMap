@@ -17,7 +17,7 @@ import com.navinfo.dataservice.commons.database.oracle.MyDriverManagerDataSource
 import com.navinfo.dataservice.commons.database.oracle.MyDriverManagerConnectionWrapper;
 import com.navinfo.dataservice.commons.database.oracle.PoolDataSource;
 import com.navinfo.dataservice.commons.exception.DataSourceException;
-import com.navinfo.dataservice.commons.log.DSJobLogger;
+import com.navinfo.dataservice.commons.log.JobLogger;
 import com.navinfo.navicommons.config.MavenConfigMap;
 
 /**
@@ -92,7 +92,7 @@ public class MultiDataSourceFactory {
 	 */
 
 	public BasicDataSource getDataSource(String dataSourceKey, MavenConfigMap config, boolean cache) {
-		log = DSJobLogger.getLogger(log);
+		log = JobLogger.getLogger(log);
 		BasicDataSource dataSource = dataSourceMap.get(dataSourceKey);
 		if (dataSource == null || dataSource.isClosed()) {
 			try {

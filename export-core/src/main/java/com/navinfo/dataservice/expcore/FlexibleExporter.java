@@ -7,7 +7,7 @@ import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.dataservice.expcore.exception.ExportInitException;
 import com.navinfo.dataservice.expcore.input.OracleInput;
 import com.navinfo.dataservice.expcore.output.DataOutput;
-import com.navinfo.dataservice.commons.log.DSJobLogger;
+import com.navinfo.dataservice.commons.log.JobLogger;
 
 /**
  * User: Xiao Xiaowen  数据导出的入口，给定参数，实现导出功能 目前支持:
@@ -23,7 +23,7 @@ public abstract class FlexibleExporter implements Exporter {
 	private DataOutput output;
 
 	public FlexibleExporter(ExportConfig expConfig) {
-		log = DSJobLogger.getLogger(log);
+		log = JobLogger.getLogger(log);
 		this.expConfig=expConfig;
 	}
 
@@ -54,7 +54,7 @@ public abstract class FlexibleExporter implements Exporter {
 			exportSqlExecutor.execute();
 			//...
 			result.setStatus(ExporterResult.STATUS_SUCCESS);
-			if(expConfig.isNewTarget()){
+			if(expConfig.getTargetDbId()==0){
 				String msg = "";
 			}
 		} catch (Exception e) {

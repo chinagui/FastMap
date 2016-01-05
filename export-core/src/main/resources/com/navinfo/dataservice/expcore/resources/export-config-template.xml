@@ -6,12 +6,7 @@
 	    <attr name="exportMode" value="copy" desc="值域：copy/cut/delete" />
 	</attrs>
 	<attrs type="source attributes">
-	    <attr name="sourceUserName" value="acg_schema_zq_1" desc="" />
-	    <attr name="sourcePassword" value="acg_schema_zq_1" desc="" />
-	    <attr name="sourceIp" value="192.168.4.103" desc="" />
-	    <attr name="sourcePort" value="1521" desc="" />
-	    <attr name="sourceServiceName" value="orcl11g" desc="" />
-	    <attr name="sourceTablespaceName" value="" desc="" />
+	    <attr name="sourceDbId" value="12" desc="" />
 	</attrs>
     <attrs type="input attributes">
 	    <attr name="condition" value="mesh" desc="mesh/area/polygon" />

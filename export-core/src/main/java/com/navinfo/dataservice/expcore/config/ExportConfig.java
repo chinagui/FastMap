@@ -17,7 +17,7 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
-import com.navinfo.dataservice.commons.log.DSJobLogger;
+import com.navinfo.dataservice.commons.log.JobLogger;
 
 public class ExportConfig {
 	
@@ -30,12 +30,7 @@ public class ExportConfig {
 	public final static String MODE_CUT="cut";
 	public final static String MODE_DELETE="delete";
 	
-	protected String sourceUserName;
-	protected String sourcePassword;
-	protected String sourceIp;
-	protected int sourcePort;
-	protected String sourceServiceName;
-	protected String sourceTablespaceName;
+	protected int sourceDbId=0;//
 	
 	protected String condition;
 //	public final static String CONDITION_FULL="full";
@@ -52,17 +47,8 @@ public class ExportConfig {
 	
 	protected boolean truncateData=false;//在写入目标的子版本之前是否清理数据
 	protected boolean destroyTarget=false;//导出失败时，是否销毁
-	
-//	protected TargetType targetType;
-	protected boolean newTarget=true;//没有指定导出目标时为true，指定导出目标时为false
-	protected String targetSysName;//如果newTarget==true，则需要传入dba（具备创建用户的权限）用户
-	protected String targetSysPassword;
-	protected String targetUserName;
-	protected String targetPassword;
-	protected String targetIp;
-	protected int targetPort;
-	protected String targetServiceName;
-	protected String targetTablespaceName;
+
+	protected int targetDbId=0;//
 	
 	protected boolean multiThread4Input=true;
 	protected boolean multiThread4Output=true;
@@ -84,11 +70,11 @@ public class ExportConfig {
 
     public ExportConfig() {
 		super();
-		log = DSJobLogger.getLogger(log);
+		log = JobLogger.getLogger(log);
 	}
     public ExportConfig(String xmlConfig) throws ExportException{
     	super();
-		log = DSJobLogger.getLogger(log);
+		log = JobLogger.getLogger(log);
     	this.parseByXmlConfig(xmlConfig);
     }
 
@@ -146,19 +132,6 @@ public class ExportConfig {
 		this.destroyTarget = destroyTarget;
 	}
 
-
-	/**
-	 * @return the newTarget
-	 */
-	public boolean isNewTarget() {
-		return newTarget;
-	}
-	/**
-	 * @param newTarget the newTarget to set
-	 */
-	public void setNewTarget(boolean newTarget) {
-		this.newTarget = newTarget;
-	}
 	/**
 	 * @return the meshes
 	 */
@@ -303,173 +276,19 @@ public class ExportConfig {
 	public void setMultiThread4Output(boolean multiThread4Output) {
 		this.multiThread4Output = multiThread4Output;
 	}
-	/**
-	 * @return the sourceUserName
-	 */
-	public String getSourceUserName() {
-		return sourceUserName;
+
+	public int getSourceDbId() {
+		return sourceDbId;
 	}
-	/**
-	 * @param sourceUserName the sourceUserName to set
-	 */
-	public void setSourceUserName(String sourceUserName) {
-		this.sourceUserName = sourceUserName;
+	public void setSourceDbId(int sourceDbId) {
+		this.sourceDbId = sourceDbId;
 	}
-	/**
-	 * @return the sourcePassword
-	 */
-	public String getSourcePassword() {
-		return sourcePassword;
+
+	public int getTargetDbId() {
+		return targetDbId;
 	}
-	/**
-	 * @param sourcePassword the sourcePassword to set
-	 */
-	public void setSourcePassword(String sourcePassword) {
-		this.sourcePassword = sourcePassword;
-	}
-	/**
-	 * @return the sourceIp
-	 */
-	public String getSourceIp() {
-		return sourceIp;
-	}
-	/**
-	 * @param sourceIp the sourceIp to set
-	 */
-	public void setSourceIp(String sourceIp) {
-		this.sourceIp = sourceIp;
-	}
-	/**
-	 * @return the sourcePort
-	 */
-	public int getSourcePort() {
-		return sourcePort;
-	}
-	/**
-	 * @param sourcePort the sourcePort to set
-	 */
-	public void setSourcePort(int sourcePort) {
-		this.sourcePort = sourcePort;
-	}
-	/**
-	 * @return the sourceServiceName
-	 */
-	public String getSourceServiceName() {
-		return sourceServiceName;
-	}
-	/**
-	 * @param sourceServiceName the sourceServiceName to set
-	 */
-	public void setSourceServiceName(String sourceServiceName) {
-		this.sourceServiceName = sourceServiceName;
-	}
-	/**
-	 * @return the sourceTablespaceName
-	 */
-	public String getSourceTablespaceName() {
-		return sourceTablespaceName;
-	}
-	/**
-	 * @param sourceTablespaceName the sourceTablespaceName to set
-	 */
-	public void setSourceTablespaceName(String sourceTablespaceName) {
-		this.sourceTablespaceName = sourceTablespaceName;
-	}
-	/**
-	 * @return the targetUserName
-	 */
-	public String getTargetUserName() {
-		return targetUserName;
-	}
-	/**
-	 * @param targetUserName the targetUserName to set
-	 */
-	public void setTargetUserName(String targetUserName) {
-		this.targetUserName = targetUserName;
-	}
-	/**
-	 * @return the targetPassword
-	 */
-	public String getTargetPassword() {
-		return targetPassword;
-	}
-	/**
-	 * @param targetPassword the targetPassword to set
-	 */
-	public void setTargetPassword(String targetPassword) {
-		this.targetPassword = targetPassword;
-	}
-	/**
-	 * @return the targetSysName
-	 */
-	public String getTargetSysName() {
-		return targetSysName;
-	}
-	/**
-	 * @param targetSysName the targetSysName to set
-	 */
-	public void setTargetSysName(String targetSysName) {
-		this.targetSysName = targetSysName;
-	}
-	/**
-	 * @return the targetSysPassword
-	 */
-	public String getTargetSysPassword() {
-		return targetSysPassword;
-	}
-	/**
-	 * @param targetSysPassword the targetSysPassword to set
-	 */
-	public void setTargetSysPassword(String targetSysPassword) {
-		this.targetSysPassword = targetSysPassword;
-	}
-	/**
-	 * @return the targetIp
-	 */
-	public String getTargetIp() {
-		return targetIp;
-	}
-	/**
-	 * @param targetIp the targetIp to set
-	 */
-	public void setTargetIp(String targetIp) {
-		this.targetIp = targetIp;
-	}
-	/**
-	 * @return the targetPort
-	 */
-	public int getTargetPort() {
-		return targetPort;
-	}
-	/**
-	 * @param targetPort the targetPort to set
-	 */
-	public void setTargetPort(int targetPort) {
-		this.targetPort = targetPort;
-	}
-	/**
-	 * @return the targetServiceName
-	 */
-	public String getTargetServiceName() {
-		return targetServiceName;
-	}
-	/**
-	 * @param targetServiceName the targetServiceName to set
-	 */
-	public void setTargetServiceName(String targetServiceName) {
-		this.targetServiceName = targetServiceName;
-	}
-	/**
-	 * @return the targetTablespaceName
-	 */
-	public String getTargetTablespaceName() {
-		return targetTablespaceName;
-	}
-	/**
-	 * @param targetTablespaceName the targetTablespaceName to set
-	 */
-	public void setTargetTablespaceName(String targetTablespaceName) {
-		this.targetTablespaceName = targetTablespaceName;
+	public void setTargetDbId(int targetDbId) {
+		this.targetDbId = targetDbId;
 	}
 	@Override
 	public String toString() {

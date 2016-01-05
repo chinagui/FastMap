@@ -29,5 +29,9 @@
 		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>ds-common</artifactId>
 	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>datahub</artifactId>
+	</dependency>
   </dependencies>
 </project>

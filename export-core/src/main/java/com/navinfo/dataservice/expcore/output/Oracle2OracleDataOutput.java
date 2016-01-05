@@ -18,7 +18,9 @@ import com.navinfo.navicommons.utils.StringUtils;
 import com.navinfo.dataservice.expcore.ExporterResult;
 import com.navinfo.dataservice.expcore.config.ExportConfig;
 import com.navinfo.dataservice.expcore.exception.ExportException;
-import com.navinfo.dataservice.expcore.model.OracleSchema;
+import com.navinfo.dataservice.datahub.exception.DataHubException;
+import com.navinfo.dataservice.datahub.manager.DbManager;
+import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.expcore.output.AbstractDataOutput;
 import com.navinfo.dataservice.expcore.target.OracleTarget;
 import com.navinfo.dataservice.commons.config.SystemConfig;
@@ -39,33 +41,19 @@ public class Oracle2OracleDataOutput extends AbstractDataOutput {
 		initTarget();
 	}
 	public void initTarget()throws ExportException{
-		if(expConfig.isNewTarget()){
-			if(StringUtils.isEmpty(expConfig.getTargetUserName())
-					||StringUtils.isEmpty(expConfig.getTargetPassword())){
-				String userNameStr="VM_" + RandomUtil.nextString(10);
-				expConfig.setTargetUserName(userNameStr);
-				expConfig.setTargetPassword(userNameStr);
-			}
+		OracleSchema schema = null;
+		try{
+			schema = (OracleSchema)new DbManager().getDbById(expConfig.getTargetDbId());
+		}catch(DataHubException e){
+			throw new ExportException("初始化导出目标时从datahub中获取库出现错误："+e.getMessage(),e);
 		}
-		OracleSchema schema = new OracleSchema(expConfig.getTargetUserName(),
-				expConfig.getTargetPassword(),
-				expConfig.getTargetIp(),
-				expConfig.getTargetPort(),
-				expConfig.getTargetServiceName(),
-				expConfig.getTargetTablespaceName());
-		if(expConfig.isNewTarget()){
-			try{	
-				schema.create(expConfig.getTargetSysName(),expConfig.getTargetSysPassword());
-			}catch(SQLException e){
-				log.error("创建目标库时失败。",e);
-				throw new ExportException("创建目标库时失败。",e);
-			}
+		if(schema==null){
+			throw new ExportException("导出参数错误，目标库的id不能为空");
 		}
-		this.target=new OracleTarget(schema,expConfig.isNewTarget());
+		this.target=new OracleTarget(schema);
 		target.init(expConfig.getGdbVersion());
 
-		expResult.setNewTargetUserName(target.getSchema().getUserName());
-		expResult.setNewTargetPassword(target.getSchema().getPassword());
+		expResult.setNewTargetDbId(target.getSchema().getDbId());
 	}
 	public void releaseTarget(){
 		target.release(expConfig.isDestroyTarget());

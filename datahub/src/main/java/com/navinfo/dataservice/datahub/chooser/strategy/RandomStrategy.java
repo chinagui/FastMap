@@ -55,8 +55,11 @@ public class RandomStrategy extends DbServerStrategy {
 			int c_num = run.queryForInt(conn, count_sql, "%"+useType+"%");
 			DbServer db = null;
 			if(c_num>0){
+//				int index = RandomUtils.nextInt(c_num);
+//				String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.server_type FROM unified_db_server s where s.USE_TYPE like ? limit ?,1";
 				int index = RandomUtils.nextInt(c_num);
-				String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.server_type FROM unified_db_server s where s.USE_TYPE like ? limit ?,1";
+				index++;
+				String sql = "SELECT * FROM (SELECT s.server_id,s.SERVER_IP,s.server_port,s.service_name,s.server_type,ROWNUM AS RN FROM unified_db_server s where s.USE_TYPE like ?) WHERE RN=?";
 
 				db = run.query(conn, sql,new ResultSetHandler<DbServer>(){
 
@@ -65,9 +68,10 @@ public class RandomStrategy extends DbServerStrategy {
 						DbServer inDb = null;
 						if(rs.next()){
 							String ip = rs.getString("SERVER_IP");
-							String port = rs.getString("SERVER_PORT");
+							int port = rs.getInt("SERVER_PORT");
 							String type = rs.getString("SERVER_TYPE");
-							inDb = new DbServer(type,ip,port);
+							String sname = rs.getString("SERVICE_NAME");
+							inDb = new DbServer(type,ip,port,sname);
 							inDb.setSid(rs.getInt("SERVER_ID"));
 						}
 						return inDb;

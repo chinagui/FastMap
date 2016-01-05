@@ -13,18 +13,19 @@ public class DbServer {
 	private int sid;
 	protected String type=DbServerType.TYPE_NONE;
 	private String ip;
-	private String port;
+	private int port;
 	private String serviceName;
 	private Set<String> useType;
 	private String descp;
 	
 	private String identity;//ip:port
 	
-	public DbServer(String type,String ip,String port){
+	public DbServer(String type,String ip,int port,String serviceName){
 		this.type=type;
 		this.ip=ip;
 		this.port=port;
 		this.identity=ip+":"+port;
+		this.serviceName=serviceName;
 	}
 	
 	public int getSid() {
@@ -47,10 +48,10 @@ public class DbServer {
 	public void setIp(String ip) {
 		this.ip = ip;
 	}
-	public String getPort() {
+	public int getPort() {
 		return port;
 	}
-	public void setPort(String port) {
+	public void setPort(int port) {
 		this.port = port;
 	}
 	public String getServiceName() {

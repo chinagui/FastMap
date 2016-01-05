@@ -88,7 +88,7 @@ public class Exporter2OracleByScripts extends FlexibleExporter {
 			
 			Exporter2OracleByScripts export = new Exporter2OracleByScripts(expConfig);
 			ExporterResult result = export.execute();
-			System.out.println(result.getNewTargetUserName()+":"+result.getNewTargetPassword());
+			System.out.println(result.getNewTargetDbId());
 		}catch(Exception e){
 			System.out.println(e.getMessage());
 			e.printStackTrace();

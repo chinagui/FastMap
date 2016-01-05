@@ -13,8 +13,8 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
-import com.navinfo.dataservice.FosEngine.comm.db.HBaseAddress;
-import com.navinfo.dataservice.FosEngine.comm.util.FileUtils;
+import com.navinfo.dataservice.commons.db.HBaseAddress;
+import com.navinfo.dataservice.commons.util.FileUtils;
 
 public class CollectorImport {
 

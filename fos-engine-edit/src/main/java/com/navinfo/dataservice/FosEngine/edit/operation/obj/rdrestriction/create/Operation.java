@@ -8,10 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-
-import com.navinfo.dataservice.FosEngine.comm.geom.AngleCalculator;
-import com.navinfo.dataservice.FosEngine.comm.service.PidService;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
@@ -19,6 +15,8 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestricti
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
+import com.navinfo.dataservice.commons.geom.AngleCalculator;
+import com.navinfo.dataservice.commons.service.PidService;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;
 

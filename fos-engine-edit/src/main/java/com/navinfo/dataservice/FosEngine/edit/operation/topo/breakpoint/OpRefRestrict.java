@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint;
 
-import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
@@ -17,12 +16,8 @@ public class OpRefRestrict implements IOperation {
 
 	private Result result;
 
-	private Connection conn;
-
-	public OpRefRestrict(Command command, Connection conn) {
+	public OpRefRestrict(Command command) {
 		this.command = command;
-
-		this.conn = conn;
 
 	}
 
@@ -35,7 +30,7 @@ public class OpRefRestrict implements IOperation {
 
 		this.handleRdRestrictionDetails(command.getRestrictionDetails());
 
-		this.handleRdRestrictionVias(command.getListVias());
+		this.handleRdRestrictionVias(command.geListRestrictVias());
 
 		return null;
 	}

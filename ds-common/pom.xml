@@ -12,6 +12,20 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>ds-common</name>
 	<url>http://maven.apache.org</url>
+	<build>
+        <plugins>
+            <plugin>
+				  <artifactId>maven-compiler-plugin</artifactId>
+				      <configuration>
+				         <encoding>UTF-8</encoding>
+				         <compilerArguments>
+				                  <verbose />
+				                  <bootclasspath>${java.home}\lib\rt.jar</bootclasspath>
+				           </compilerArguments>
+				     </configuration>
+				</plugin>
+		</plugins>
+    </build>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
@@ -31,6 +45,46 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.json-lib</groupId>
+			<artifactId>json-lib</artifactId>
+			<version>2.4</version>
+			<classifier>jdk15</classifier> 
+		</dependency>
+			<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-dbcp2</artifactId>
+		</dependency>
+		 <dependency>
+		 	<groupId>org.apache.hbase</groupId>
+			<artifactId>hbase-client</artifactId>
+	    </dependency>
+	    <dependency>
+			<groupId>org.hbase</groupId>
+			<artifactId>asynchbase</artifactId>
+			<exclusions>
+	            <exclusion>
+	                <groupId>org.slf4j</groupId>
+					<artifactId>log4j-over-slf4j</artifactId>
+	            </exclusion>
+	        </exclusions>
+       </dependency>
+       <dependency>
+			<groupId>org.apache.solr</groupId>
+			<artifactId>solr-solrj</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.vividsolutions</groupId>
+			<artifactId>jts</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.mapfish.geo</groupId>
+			<artifactId>mapfish-geo-lib</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>ch.hsr</groupId>
+			<artifactId>geohash</artifactId>
 		</dependency>
 	</dependencies>
 </project>

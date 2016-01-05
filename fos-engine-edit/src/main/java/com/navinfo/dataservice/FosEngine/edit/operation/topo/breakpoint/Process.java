@@ -6,33 +6,40 @@ import java.util.List;
 
 import net.sf.json.JSONArray;
 
-import org.apache.log4j.Logger;
-
-import com.navinfo.dataservice.FosEngine.comm.db.DBOraclePoolManager;
 import com.navinfo.dataservice.FosEngine.edit.log.LogWriter;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranch;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranchVia;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneConnexity;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneTopology;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionVia;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.branch.RdBranchSelector;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.branch.RdBranchViaSelector;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.laneconnexity.RdLaneConnexitySelector;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.laneconnexity.RdLaneTopologySelector;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.laneconnexity.RdLaneViaSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.restrict.RdRestrictionDetailSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.restrict.RdRestrictionViaSelector;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.speedlimit.RdSpeedlimitSelector;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.FosEngine.edit.operation.IProcess;
-import com.navinfo.dataservice.FosEngine.edit.operation.OperType;
 import com.navinfo.dataservice.FosEngine.edit.operation.OperatorFactory;
+import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Point;
 
 public class Process implements IProcess {
-	
-	private static Logger logger = Logger.getLogger(Process.class);
 
 	private Command command;
 
@@ -105,16 +112,66 @@ public class Process implements IProcess {
 			command.setRestrictionDetails(details);
 
 			// 获取LINK上交限经过线
-			List<List<RdRestrictionVia>> listVias = new RdRestrictionViaSelector(
+			List<List<RdRestrictionVia>> restrictVias = new RdRestrictionViaSelector(
 					conn).loadRestrictionViaByLinkPid(command.getLinkPid(),
 					true);
+			
+			command.setRestrictListVias(restrictVias);
 
-			command.setListVias(listVias);
+			// 获取此LINK上车信进入线
+			List<RdLaneConnexity> laneConnexitys = new RdLaneConnexitySelector(conn)
+					.loadRdLaneConnexityByLinkPid(command.getLinkPid(), true);
+
+			command.setLaneConnexitys(laneConnexitys);
+
+			// 获取此LINK上车信退出线
+			List<RdLaneTopology> topos = new RdLaneTopologySelector(
+					conn).loadToposByLinkPid(command.getLinkPid(), true);
+
+			command.setLaneTopologys(topos);
+
+			// 获取LINK上车信经过线
+			List<List<RdLaneVia>> laneVias = new RdLaneViaSelector(
+					conn).loadRdLaneViaByLinkPid(command.getLinkPid(),
+					true);
+			
+			command.setLaneVias(laneVias);
+			
+			//获取link上的点限速
+			List<RdSpeedlimit> limits = new RdSpeedlimitSelector
+					(conn).loadSpeedlimitByLinkPid(command.getLinkPid(), true);
+			
+			command.setSpeedlimits(limits);
+			
+			//获取以改LINK作为分歧进入线的分歧
+			
+			List<RdBranch> inBranchs = new RdBranchSelector(conn).loadRdBranchByInLinkPid(command.getLinkPid(), true);
+			
+			command.setInBranchs(inBranchs);
+			
+			//获取已该LINK作为分歧退出线的分歧
+			
+			List<RdBranch> outBranchs = new RdBranchSelector(conn).loadRdBranchByOutLinkPid(command.getLinkPid(), true);
+			
+			command.setOutBranchs(outBranchs);
+			
+			//获取该LINK为分歧经过线的BRANCH_VIA
+			
+			List<List<RdBranchVia>> branchVias = new RdBranchViaSelector(conn).loadRdBranchViaByLinkPid(command.getLinkPid(), true);
+			
+			command.setBranchVias(branchVias);
+			
+			if (command.getBreakNodePid() != 0){
+				
+				RdNode breakNode = (RdNode) nodeSelector.loadById(command.getBreakNodePid(), true);
+				
+				command.setBreakNode(breakNode);
+			}
 
 			return true;
 
 		} catch (SQLException e) {
-			
+
 			throw e;
 		}
 
@@ -134,15 +191,36 @@ public class Process implements IProcess {
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
 			}
-
-			IOperation operation = new OpTopo(command, conn,
+			
+			IOperation operation = null;
+			
+			if (command.getBreakNodePid() == 0){
+				operation = new OpTopo(command, conn,
 					this.rdLinkBreakpoint, jaDisplayLink);
+			}else{
+				RdNode breakNode = (RdNode) new RdNodeSelector(conn).loadById(command.getBreakNodePid(), true);
+				
+				operation = new OpTopo(command, conn,
+						this.rdLinkBreakpoint, jaDisplayLink,breakNode);
+			}
 
 			msg = operation.run(result);
 
-			OpRefRestrict opRefRes = new OpRefRestrict(command, conn);
+			OpRefRestrict opRefRestrict = new OpRefRestrict(command);
 
-			opRefRes.run(result);
+			opRefRestrict.run(result);
+			
+			OpRefBranch opRefBranch = new OpRefBranch(command);
+			
+			opRefBranch.run(result);
+			
+			OpRefLaneConnexity opRefLaneConnexity = new OpRefLaneConnexity(command);
+			
+			opRefLaneConnexity.run(result);
+			
+			OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(command);
+			
+			opRefSpeedlimit.run(result);
 
 			this.recordData();
 
@@ -151,7 +229,7 @@ public class Process implements IProcess {
 			conn.commit();
 
 		} catch (Exception e) {
-			
+
 			conn.rollback();
 
 			throw e;
@@ -159,7 +237,7 @@ public class Process implements IProcess {
 			try {
 				conn.close();
 			} catch (Exception e) {
-				
+
 			}
 		}
 
@@ -202,13 +280,13 @@ public class Process implements IProcess {
 
 	@Override
 	public void postCheck() throws Exception {
-		
+
 		// 对数据进行检查、检查结果存储在数据库，并存储在临时变量postCheckMsg中
 	}
 
 	@Override
 	public String getPostCheck() throws Exception {
-		
+
 		return postCheckMsg;
 	}
 

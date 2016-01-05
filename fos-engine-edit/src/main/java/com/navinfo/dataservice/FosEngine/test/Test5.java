@@ -1,15 +1,11 @@
 package com.navinfo.dataservice.FosEngine.test;
 
-import java.io.IOException;
 import java.util.Map;
 
-import com.navinfo.dataservice.FosEngine.comm.db.HBaseAddress;
-import com.navinfo.dataservice.FosEngine.comm.util.ZipUtils;
 import com.navinfo.dataservice.FosEngine.photos.CollectorImport;
 import com.navinfo.dataservice.FosEngine.photos.Photo;
 import com.navinfo.dataservice.FosEngine.tips.TipsUpload;
-
-import net.sf.json.JSONArray;
+import com.navinfo.dataservice.commons.db.HBaseAddress;
 
 public class Test5 {
 	

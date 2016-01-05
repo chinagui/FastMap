@@ -8,4 +8,8 @@ public enum OperType {
 	UPDATE,
 	DELETE,
 	BREAK,
+	REPAIRE,
+	DEPARTNODE,
+	MOVENODE,
+	UPDATELINKLIMIT
 }

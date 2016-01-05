@@ -14,7 +14,7 @@ public class ProjectSelector {
 		this.conn = conn;
 	}
 
-	public JSONArray getByUser(String userId) throws Exception{
+	public JSONArray getByUser(int userId) throws Exception{
 		JSONArray array = new JSONArray();
 		
 		String sql = "select project_id from prj_project";
@@ -50,6 +50,14 @@ public class ProjectSelector {
 			if (pstmt != null) {
 				try {
 					pstmt.close();
+				} catch (Exception e) {
+					
+				}
+			}
+			
+			if (conn != null) {
+				try {
+					conn.close();
 				} catch (Exception e) {
 					
 				}

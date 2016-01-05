@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -12,9 +13,10 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
-import com.navinfo.dataservice.FosEngine.comm.util.UuidUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.IOperator;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneVia;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionVia;
+import com.navinfo.dataservice.commons.util.UuidUtils;
 
 public class RdLaneViaOperator implements IOperator {
 
@@ -262,6 +264,42 @@ public class RdLaneViaOperator implements IOperator {
 				+ " set u_record=2 where row_id='" + via.rowId() + "'";
 
 		stmt.addBatch(sql);
+	}
+	
+	// 维护经过线方向
+	public List<RdLaneVia> repaireViaDirect(List<RdLaneVia> vias,
+			int preSNodePid, int preENodePid, int linkPid) {
+		List<RdLaneVia> newVias = new ArrayList<RdLaneVia>();
+
+		for (RdLaneVia v : vias) {
+			if (v.getLinkPid() == linkPid) {
+
+				if (preSNodePid != 0 && preENodePid != 0) {
+					if (v.igetsNodePid() == preSNodePid
+							|| v.igetsNodePid() == preENodePid) {
+
+					} else {
+						int tempPid = v.igetsNodePid();
+
+						v.isetsNodePid(v.igeteNodePid());
+
+						v.iseteNodePid(tempPid);
+					}
+				} else {
+					if (v.igeteNodePid() == v.igetInNodePid()) {
+						int tempPid = v.igetsNodePid();
+
+						v.isetsNodePid(v.igeteNodePid());
+
+						v.iseteNodePid(tempPid);
+					}
+				}
+			}
+
+			newVias.add(v);
+		}
+
+		return newVias;
 	}
 
 }

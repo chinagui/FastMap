@@ -1,9 +1,7 @@
 package com.navinfo.dataservice.FosEngine.edit.operation.obj.rdspeedlimit.update;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.FosEngine.comm.service.PidService;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.speedlimit.RdSpeedlimit;

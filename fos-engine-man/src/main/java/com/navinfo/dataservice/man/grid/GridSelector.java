@@ -3,8 +3,8 @@ package com.navinfo.dataservice.man.grid;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
+
+import net.sf.json.JSONArray;
 
 public class GridSelector {
 	
@@ -14,10 +14,10 @@ public class GridSelector {
 		this.conn = conn;
 	}
 
-	public List<Integer> getByUser(int userId) throws Exception{
-		List<Integer> list = new ArrayList<Integer>();
+	public JSONArray getByUser(int userId, int projectId) throws Exception{
+		JSONArray array = new JSONArray();
 		
-		String sql = "select grid_id from grid where user_id=?";
+		String sql = "select grid_id from grid a, prj_progrid_relation b where a.grid_id = b.grid_id and a.user_id=:1 and b.project_id=:2";
 		
 		PreparedStatement pstmt = null;
 
@@ -27,6 +27,8 @@ public class GridSelector {
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setInt(1, userId);
+			
+			pstmt.setInt(2, projectId);
 
 			resultSet = pstmt.executeQuery();
 
@@ -34,7 +36,7 @@ public class GridSelector {
 				
 				int gridId = resultSet.getInt("grid_id");
 				
-				list.add(gridId);
+				array.add(gridId);
 			}
 		} catch (Exception e) {
 			
@@ -56,9 +58,17 @@ public class GridSelector {
 					
 				}
 			}
+			
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					
+				}
+			}
 
 		}
 		
-		return list;
+		return array;
 	}
 }

@@ -2,13 +2,17 @@ package com.navinfo.dataservice.FosEngine.edit.operation.obj.rdspeedlimit.create
 
 import java.sql.Connection;
 
-import com.navinfo.dataservice.FosEngine.comm.db.DBOraclePoolManager;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.FosEngine.edit.log.LogWriter;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.FosEngine.edit.operation.IProcess;
 import com.navinfo.dataservice.FosEngine.edit.operation.OperatorFactory;
+import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
+import com.navinfo.dataservice.commons.util.MeshUtils;
 
 public class Process implements IProcess {
 
@@ -50,6 +54,18 @@ public class Process implements IProcess {
 
 	@Override
 	public String preCheck() throws Exception {
+		
+		JSONObject geojson = command.getGeometry();
+		
+		JSONArray array = geojson.getJSONArray("coordinates");
+		
+		double lon = array.getDouble(0);
+		
+		double lat = array.getDouble(1);
+		
+		if(MeshUtils.isPointAtMeshBorder(lon, lat)){
+			return "点限速点位不能在图框线上";
+		}
 		
 		return null;
 	}

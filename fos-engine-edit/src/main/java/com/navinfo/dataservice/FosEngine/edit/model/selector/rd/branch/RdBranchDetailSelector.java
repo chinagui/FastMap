@@ -8,11 +8,11 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.FosEngine.comm.exception.DataNotFoundException;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ISelector;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranchDetail;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranchName;
+import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 
 public class RdBranchDetailSelector implements ISelector {
 
@@ -120,7 +120,7 @@ public class RdBranchDetailSelector implements ISelector {
 
 		List<IRow> rows = new ArrayList<IRow>();
 
-		String sql = "select * from rd_detail where branch_pid=:1 and u_record!=:2";
+		String sql = "select * from rd_branch_detail where branch_pid=:1 and u_record!=:2";
 
 		if (isLock) {
 			sql += " for update nowait";

@@ -20,10 +20,13 @@ import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
+import org.json.JSONException;
 
-import com.navinfo.dataservice.FosEngine.comm.db.HBaseAddress;
 import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
 import com.navinfo.dataservice.FosEngine.photos.Photo;
+import com.navinfo.dataservice.commons.db.HBaseAddress;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.solr.core.SConnection;
 
 /**
  * 保存上传的tips数据
@@ -38,8 +41,14 @@ public class TipsUpload {
 	private Map<String, JSONObject> updateTips = new HashMap<String, JSONObject>();
 
 	private Map<String, JSONObject> oldTips = new HashMap<String, JSONObject>();
+	
+	private String currentDate;
 
-	private String operateTime;
+	private SConnection solrConn;
+	
+	public TipsUpload(String solrUrl){
+		solrConn = new SConnection(solrUrl);
+	}
 
 	/**
 	 * 读取文件内容，保存数据 考虑到数据量不会特别大，所以和数据库一次交互即可
@@ -48,8 +57,8 @@ public class TipsUpload {
 	 * @throws Exception
 	 */
 	public Map<String, Photo> run(String fileName) throws Exception {
-
-		operateTime = StringUtils.getCurrentTime();
+		
+		currentDate = StringUtils.getCurrentTime();
 
 		Connection hbaseConn = HBaseAddress.getHBaseConnection();
 
@@ -70,6 +79,10 @@ public class TipsUpload {
 		htab.put(puts);
 
 		htab.close();
+		
+		solrConn.persistentData();
+
+		solrConn.closeConnection();
 
 		return photoInfo;
 	}
@@ -89,7 +102,6 @@ public class TipsUpload {
 		List<Get> gets = new ArrayList<Get>();
 
 		while (scanner.hasNextLine()) {
-			Put put = null;
 
 			String line = scanner.nextLine();
 
@@ -104,9 +116,9 @@ public class TipsUpload {
 			String rowkey = json.getString("rowkey");
 
 			String operateDate = json.getString("t_operateDate");
-
+			
 			JSONArray attachments = json.getJSONArray("attachments");
-
+			
 			JSONArray newFeedbacks = new JSONArray();
 
 			for (int i = 0; i < attachments.size(); i++) {
@@ -211,7 +223,7 @@ public class TipsUpload {
 	 * 
 	 * @param puts
 	 */
-	private void doInsert(List<Put> puts) {
+	private void doInsert(List<Put> puts) throws Exception {
 		Set<Entry<String, JSONObject>> set = insertTips.entrySet();
 
 		Iterator<Entry<String, JSONObject>> it = set.iterator();
@@ -236,6 +248,10 @@ public class TipsUpload {
 
 				puts.add(put);
 			}
+			
+			JSONObject solrIndex = generateSolrIndex(json);
+			
+			solrConn.addTips(solrIndex);
 		}
 	}
 
@@ -243,14 +259,13 @@ public class TipsUpload {
 
 		Put put = new Put(rowkey.getBytes());
 
-		JSONObject jsonTrack = generateTrackJson(3, json.getInt("t_handler"),
+		JSONObject jsonTrack = generateTrackJson(3, json.getInt("t_handler"),json.getInt("t_command"),
 				null);
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
 
 		JSONObject jsonSourceTemplate = TipsParse.getSourceConstruct();
-
 		JSONObject jsonSource = new JSONObject();
 
 		Iterator<String> itKey = jsonSourceTemplate.keys();
@@ -297,7 +312,7 @@ public class TipsUpload {
 	 * 
 	 * @param puts
 	 */
-	private void doUpdate(List<Put> puts) {
+	private void doUpdate(List<Put> puts) throws Exception {
 		Set<Entry<String, JSONObject>> set = updateTips.entrySet();
 
 		Iterator<Entry<String, JSONObject>> it = set.iterator();
@@ -318,6 +333,10 @@ public class TipsUpload {
 			Put put = updatePut(rowkey, json, oldTip);
 
 			puts.add(put);
+			
+			JSONObject solrIndex = generateSolrIndex(json);
+			
+			solrConn.addTips(solrIndex);
 
 		}
 	}
@@ -329,7 +348,7 @@ public class TipsUpload {
 		int lifecycle = json.getInt("t_lifecycle");
 
 		JSONObject jsonTrack = generateTrackJson(lifecycle,
-				json.getInt("t_handler"), oldTip.getJSONArray("t_trackInfo"));
+				json.getInt("t_handler"),json.getInt("t_command"), oldTip.getJSONArray("t_trackInfo"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
@@ -417,21 +436,23 @@ public class TipsUpload {
 	 * @param oldTrackInfo
 	 * @return
 	 */
-	private JSONObject generateTrackJson(int lifecycle, int handler,
+	private JSONObject generateTrackJson(int lifecycle, int handler, int command,
 			JSONArray oldTrackInfo) {
 
 		JSONObject jsonTrack = new JSONObject();
 
 		jsonTrack.put("t_lifecycle", lifecycle);
+		
+		jsonTrack.put("t_command", command);
 
 		JSONObject jsonTrackInfo = new JSONObject();
 
 		jsonTrackInfo.put("stage", 1);
 
-		jsonTrackInfo.put("date", operateTime);
+		jsonTrackInfo.put("date", currentDate);
 
 		jsonTrackInfo.put("handler", handler);
-
+		
 		if (null == oldTrackInfo) {
 
 			oldTrackInfo = new JSONArray();
@@ -442,6 +463,38 @@ public class TipsUpload {
 		jsonTrack.put("t_trackInfo", oldTrackInfo);
 
 		return jsonTrack;
+	}
+	
+	private JSONObject generateSolrIndex(JSONObject json) throws Exception{
+		
+		JSONObject index = new JSONObject();
+		
+		index.put("id", json.getString("rowkey"));
+		
+		index.put("stage", 1);
+		
+		index.put("date", currentDate);
+		
+		index.put("t_lifecycle", json.getInt("t_lifecycle"));
+		
+		index.put("t_command", json.getInt("t_command"));
+		
+		index.put("handler", json.getInt("t_handler"));
+		
+		index.put("s_sourceType", json.getString("s_sourceType"));
+		
+		index.put("s_sourceCode", json.getInt("s_sourceCode"));
+		
+		index.put("g_guide", json.getJSONObject("g_guide"));
+		
+		JSONObject geojson = json.getJSONObject("g_location");
+		
+		index.put("g_location", geojson);
+		
+		index.put("wkt",
+				GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(geojson)));
+		
+		return index;
 	}
 
 	private Photo getPhoto(JSONObject attachment, JSONObject tip) {
@@ -471,7 +524,7 @@ public class TipsUpload {
 
 		photo.setA_uploadUser(tip.getInt("t_handler"));
 
-		photo.setA_uploadDate(operateTime);
+		photo.setA_uploadDate(currentDate);
 
 		photo.setA_longitude(lng);
 
@@ -484,8 +537,8 @@ public class TipsUpload {
 		photo.setA_shootDate(extContent.getString("shootDate"));
 
 		photo.setA_deviceNum(extContent.getString("deviceNum"));
-
-		photo.setA_type(1);
+		
+		photo.setA_fileName(attachment.getString("content"));
 
 		photo.setA_content(1);
 
@@ -495,8 +548,8 @@ public class TipsUpload {
 	public static void main(String[] args) throws Exception {
 		HBaseAddress.initHBaseAddress("192.168.3.156");
 
-		TipsUpload a = new TipsUpload();
+		TipsUpload a = new TipsUpload("http://192.168.4.130:8081/solr/tips/");
 
-		a.run("C:\\1\\tips.txt");
+		a.run("C:/tips2.txt");
 	}
 }

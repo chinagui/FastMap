@@ -9,11 +9,11 @@ import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.FosEngine.comm.util.JsonUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 
 public class RdLaneVia implements IRow {
 
@@ -26,6 +26,12 @@ public class RdLaneVia implements IRow {
 	private int seqNum = 1;
 
 	private String rowId;
+	
+	private int sNodePid;
+
+	private int eNodePid;
+
+	private int inNodePid;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -46,6 +52,30 @@ public class RdLaneVia implements IRow {
 	public JSONObject Serialize(ObjLevel objLevel) {
 
 		return JSONObject.fromObject(this,JsonUtils.getStrConfig());
+	}
+
+	public int igetsNodePid() {
+		return sNodePid;
+	}
+
+	public void isetsNodePid(int sNodePid) {
+		this.sNodePid = sNodePid;
+	}
+
+	public int igeteNodePid() {
+		return eNodePid;
+	}
+
+	public void iseteNodePid(int eNodePid) {
+		this.eNodePid = eNodePid;
+	}
+
+	public int igetInNodePid() {
+		return inNodePid;
+	}
+
+	public void isetInNodePid(int inNodePid) {
+		this.inNodePid = inNodePid;
 	}
 
 	@Override

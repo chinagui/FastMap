@@ -10,21 +10,28 @@ import java.util.List;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
+import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
-import com.navinfo.dataservice.FosEngine.comm.geom.AngleCalculator;
-import com.navinfo.dataservice.FosEngine.comm.geom.Geojson;
-import com.navinfo.dataservice.FosEngine.comm.mercator.MercatorProjection;
 import com.navinfo.dataservice.FosEngine.edit.model.IObj;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionDetail;
-import com.navinfo.dataservice.FosEngine.tips.restriction.RdRestrictionTipsBuilder;
-import com.navinfo.dataservice.FosEngine.tips.restriction.RdRestrictionTipsBuilder_Old;
+import com.navinfo.dataservice.commons.geom.AngleCalculator;
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.commons.util.DisplayUtils;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 
 public class RdRestrictionSearch implements ISearch {
 
+	private static final WKT wktSpatial = new WKT();
+	
+	private static final WKTReader wktReader = new WKTReader();
 
 	private Connection conn;
 
@@ -225,9 +232,7 @@ public class RdRestrictionSearch implements ISearch {
 
 				jsonM.put("c", String.valueOf((int)angle));
 
-				double[] point = RdRestrictionTipsBuilder_Old
-						.calculateTipsPosition(sNodePid, eNodePid, nodePid,
-								geom, 7);
+				double[] point = null;
 
 				JSONArray geo = new JSONArray();
 
@@ -279,7 +284,7 @@ public class RdRestrictionSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select a.pid,        a.restric_info,        a.node_pid,        b.geometry,        b.s_node_pid,        b.e_node_pid,        c.vt   from rd_restriction a,        rd_link b,        (select a.pid, sum(decode(vt, null, 0, 0, 0, 1)) vt           from rd_restriction a,                rd_restriction_detail b,                (select detail_id, sum(package_utils.parse_vehicle(vehicle)) vt                   from rd_restriction_condition   where u_record!=2               group by detail_id) c          where a.pid = b.restric_pid      and a.u_record!=2 and b.u_record!=2      and b.detail_id = c.detail_id(+)                   group by a.pid) c  where a.in_link_pid = b.link_pid    and a.pid = c.pid    and sdo_within_distance(b.geometry,                            sdo_geometry(:1,                                         8307),                            'DISTANCE=0') = 'TRUE'";
+		String sql = "with tmp1 as  (select link_pid, geometry     from rd_link    where sdo_relate(geometry,                     sdo_geometry(:1,                                  8307),                     'mask=anyinteract') = 'TRUE'), tmp2 as  (select a.node_pid,a.in_link_pid,a.pid,a.restric_info     from rd_restriction a    where exists (select null from tmp1 b where a.in_link_pid = b.link_pid)), tmp3 as  (select listagg(vehicle, ',') within group(order by 1) vehicles     from rd_restriction_detail a, rd_restriction_condition b    where exists (select             null             from tmp2 c            where a.restric_pid = c.pid)      and a.detail_id = b.detail_id) select  a.pid,a.restric_info,b.vehicles,c.geometry link_geom,d.geometry point_geom  from tmp2 a,tmp3 b,tmp1 c,rd_node d where a.in_link_pid = c.link_pid and a.node_pid = d.node_pid";
 
 		PreparedStatement pstmt = null;
 
@@ -310,35 +315,30 @@ public class RdRestrictionSearch implements ISearch {
 
 				jsonM.put("b",resultSet.getString("restric_info"));
 
-				int vt = resultSet.getInt("vt");
+				jsonM.put("a", "0");
 
-				if (vt > 0) {
-					vt = 1;
-				}
+				STRUCT struct1 = (STRUCT) resultSet.getObject("link_geom");
 
-				jsonM.put("a", vt);
+				JGeometry geom1 = JGeometry.load(struct1);
 
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+				String linkWkt = new String(wktSpatial.fromJGeometry(geom1));
 
-				JGeometry geom = JGeometry.load(struct);
+				STRUCT struct2 = (STRUCT) resultSet.getObject("point_geom");
 
-				int sNodePid = resultSet.getInt("s_node_pid");
+				JGeometry geom2 = JGeometry.load(struct2);
 
-				int eNodePid = resultSet.getInt("e_node_pid");
+				String pointWkt = new String(wktSpatial.fromJGeometry(geom2));
 
-				int nodePid = resultSet.getInt("node_pid");
-
-				double angle = AngleCalculator.getDisplayAngle(nodePid,
-						sNodePid, eNodePid, geom);
+				int direct = getDirect(linkWkt, pointWkt);
+				
+				double angle = DisplayUtils.calIncloudedAngle(linkWkt, direct);
 
 				jsonM.put("c", String.valueOf((int)angle));
 
-				double[] point = RdRestrictionTipsBuilder_Old
-						.calculateTipsPosition(sNodePid, eNodePid, nodePid,
-								geom, 7);
+				double[][] point = DisplayUtils
+						.getLinkPointPos(linkWkt, pointWkt, 1, 0);
 
-
-				snapshot.setG(Geojson.lonlat2Pixel(point[0],point[1],z,px,py));
+				snapshot.setG(Geojson.lonlat2Pixel(point[1][0],point[1][1],z,px,py));
 				
 				snapshot.setM(jsonM);
 
@@ -367,6 +367,26 @@ public class RdRestrictionSearch implements ISearch {
 		}
 
 		return list;
+	}
+	
+	
+	private static int getDirect(String linkWkt,String pointWkt) throws ParseException{
+		
+		int direct = 2;
+		
+		Geometry link = wktReader.read(linkWkt);
+		
+		Geometry point = wktReader.read(pointWkt);
+		
+		Coordinate[] csLink = link.getCoordinates();
+		
+		Coordinate cPoint = point.getCoordinate();
+		
+		if (csLink[0].x != cPoint.x || csLink[1].y != cPoint.y){
+			direct = 3;
+		}
+		
+		return direct;
 	}
 
 }

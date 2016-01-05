@@ -7,13 +7,13 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.FosEngine.comm.exception.DataNotFoundException;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ISelector;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.cross.RdCross;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.cross.RdCrossLink;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.cross.RdCrossName;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.cross.RdCrossNode;
+import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 
 public class RdCrossSelector implements ISelector {
 
@@ -54,7 +54,7 @@ public class RdCrossSelector implements ISelector {
 
 				cross.setElectroeye(resultSet.getInt("electroeye"));
 
-				cross.setKgFlag(resultSet.getInt("kgFlag"));
+				cross.setKgFlag(resultSet.getInt("kg_flag"));
 
 				List<IRow> links = new RdCrossLinkSelector(conn)
 						.loadRowsByParentId(id, isLock);

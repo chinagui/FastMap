@@ -21,8 +21,8 @@ import org.apache.hadoop.hbase.client.Table;
 
 import ch.hsr.geohash.GeoHash;
 
-import com.navinfo.dataservice.FosEngine.comm.db.HBaseAddress;
-import com.navinfo.dataservice.FosEngine.comm.db.SolrAddress;
+import com.navinfo.dataservice.commons.db.HBaseAddress;
+import com.navinfo.dataservice.commons.db.SolrAddress;
 import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
 import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
@@ -146,8 +146,6 @@ public class SDFPhotoImporter {
 		Photo p = new Photo();
 
 		p.setA_uuid(uuid);
-
-		p.setA_type(type);
 
 		p.setA_longitude(lng);
 

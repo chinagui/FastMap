@@ -5,11 +5,17 @@ import java.util.List;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranch;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranchVia;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneConnexity;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneTopology;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionVia;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.FosEngine.edit.operation.OperType;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -35,14 +41,87 @@ public class Command implements ICommand {
 	private RdNode eNode;
 	
 	private int projectId;
+	
+	//下面两个字段,在以已存在的node通过移动位置来打断LINK的记录
+	private int breakNodePid;
+	
+	private RdNode breakNode;
 
 	private List<RdRestriction> restrictions;
 
 	private List<RdRestrictionDetail> restrictionDetails;
 
-	private List<List<RdRestrictionVia>> listVias;
+	private List<List<RdRestrictionVia>> listRestrictionVias;
 	
+	private List<RdLaneConnexity> laneConnextys;
 	
+	private List<RdLaneTopology> laneTopologys;
+
+	private List<List<RdLaneVia>> laneVias;
+
+	private List<RdSpeedlimit> speedlimits;
+	
+	private List<RdBranch> inBranchs;
+	
+	private List<RdBranch> outBranchs;
+	
+	private List<List<RdBranchVia>> branchVias;
+	
+	public List<RdBranch> getInBranchs() {
+		return inBranchs;
+	}
+
+	public void setInBranchs(List<RdBranch> inBranchs) {
+		this.inBranchs = inBranchs;
+	}
+
+	public List<RdBranch> getOutBranchs() {
+		return outBranchs;
+	}
+
+	public void setOutBranchs(List<RdBranch> outBranchs) {
+		this.outBranchs = outBranchs;
+	}
+
+	public List<List<RdBranchVia>> getBranchVias() {
+		return branchVias;
+	}
+
+	public void setBranchVias(List<List<RdBranchVia>> branchVias) {
+		this.branchVias = branchVias;
+	}
+
+	public List<RdSpeedlimit> getSpeedlimits() {
+		return speedlimits;
+	}
+
+	public void setSpeedlimits(List<RdSpeedlimit> speedlimits) {
+		this.speedlimits = speedlimits;
+	}
+
+	public List<RdLaneConnexity> getLaneConnextys() {
+		return laneConnextys;
+	}
+
+	public void setLaneConnexitys(List<RdLaneConnexity> laneConnextys) {
+		this.laneConnextys = laneConnextys;
+	}
+
+	public List<RdLaneTopology> getLaneTopologys() {
+		return laneTopologys;
+	}
+
+	public void setLaneTopologys(List<RdLaneTopology> laneTopologys) {
+		this.laneTopologys = laneTopologys;
+	}
+
+	public List<List<RdLaneVia>> getLaneVias() {
+		return laneVias;
+	}
+
+	public void setLaneVias(List<List<RdLaneVia>> laneVias) {
+		this.laneVias = laneVias;
+	}
 
 	public int getProjectId() {
 		return projectId;
@@ -77,12 +156,12 @@ public class Command implements ICommand {
 		this.restrictionDetails = restrictionDetails;
 	}
 
-	public List<List<RdRestrictionVia>> getListVias() {
-		return listVias;
+	public List<List<RdRestrictionVia>> geListRestrictVias() {
+		return listRestrictionVias;
 	}
 
-	public void setListVias(List<List<RdRestrictionVia>> listVias) {
-		this.listVias = listVias;
+	public void setRestrictListVias(List<List<RdRestrictionVia>> listVias) {
+		this.listRestrictionVias = listVias;
 	}
 
 	public RdLink getLink1() {
@@ -121,6 +200,10 @@ public class Command implements ICommand {
 				.getDouble("latitude");
 		
 		this.projectId = json.getInt("projectId");
+		
+		if (json.containsKey("breakNodePid")){
+			this.breakNodePid = json.getInt("breakNodePid");
+		}
 
 		Coordinate coord = new Coordinate(lng, lat);
 
@@ -164,4 +247,18 @@ public class Command implements ICommand {
 		return requester;
 	}
 
+	public int getBreakNodePid() {
+		return breakNodePid;
+	}
+
+
+	public RdNode getBreakNode() {
+		return breakNode;
+	}
+
+	public void setBreakNode(RdNode breakNode) {
+		this.breakNode = breakNode;
+	}
+
+	
 }

@@ -11,10 +11,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.FosEngine.comm.geom.GeoTranslator;
-import com.navinfo.dataservice.FosEngine.comm.geom.Geojson;
 import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
-import com.navinfo.dataservice.FosEngine.comm.util.UuidUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.IOperator;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
@@ -28,6 +25,9 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLinkSidewalk;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLinkWalkstair;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLinkZone;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class RdLinkOperator implements IOperator {

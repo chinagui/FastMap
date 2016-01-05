@@ -10,26 +10,48 @@ import java.util.List;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
+import oracle.spatial.geometry.JGeometry;
+import oracle.spatial.util.WKT;
+import oracle.sql.STRUCT;
 
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
-import com.navinfo.dataservice.FosEngine.comm.geom.Geojson;
 import com.navinfo.dataservice.FosEngine.tips.TipsImportUtils;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.DisplayUtils;
+import com.navinfo.dataservice.solr.core.SConnection;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 
 public class RdRestrictionTipsBuilder {
+	
+	private static final WKT wkt = new WKT();
 
-	private static String sql = "";
+	private static final WKTReader wktReader = new WKTReader();
 	
-	private static String type = "1510";
-	
+	private static String sql = "select  a.*,b.geometry link_geom,c.geometry point_geom  from "
+			+ "( select  a.pid,a.in_link_pid,a.node_pid,b.detail   from rd_restriction a,"
+			+ "( select  listagg(a.restric_info||','||a.flag||','||a.out_link_pid||','||b.time_domain,'-')  within group(order by a.out_link_pid) detail,"
+			+ "restric_pid  from rd_restriction_detail a,rd_restriction_condition b "
+			+ "where a.detail_id = b.detail_id(+) group by restric_pid) b "
+			+ "where a.pid = b.restric_pid) a,rd_link b,rd_node c where a.in_link_pid = b.link_pid and a.node_pid = c.node_pid";
+
+	private static String type = "1302";
+
 	/**
 	 * 导入入口程序块
+	 * 
 	 * @param fmgdbConn
 	 * @param htab
 	 */
-	public static void importTips(java.sql.Connection fmgdbConn, Table htab) throws Exception{
-		
+	public static void importTips(java.sql.Connection fmgdbConn, Table htab,String solrUrl)
+			throws Exception {
+
+		SConnection solrConn = new SConnection(solrUrl,5000);
+
 		Statement stmt = fmgdbConn.createStatement();
 
 		ResultSet resultSet = stmt.executeQuery(sql);
@@ -39,39 +61,46 @@ public class RdRestrictionTipsBuilder {
 		List<Put> puts = new ArrayList<Put>();
 
 		int num = 0;
-		
-		double[] lonlat = new double[2];
-		
+
 		String uniqId = null;
-		
+
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 		String date = sdf.format(new Date());
 
 		while (resultSet.next()) {
 			num++;
 			
-			String rowkey = TipsImportUtils.generateRowkey(lonlat, uniqId, type);
-			
+			uniqId = resultSet.getString("pid");
+
+			String rowkey = TipsImportUtils.generateRowkey(uniqId, type);
+
 			String source = TipsImportUtils.generateSource(type);
-			
+
 			String track = TipsImportUtils.generateTrack(date);
-			
+
 			String geometry = generateGeometry(resultSet);
-			
+
 			String deep = generateDeep(resultSet);
-			
+
 			Put put = new Put(rowkey.getBytes());
-			
-			put.addColumn("data".getBytes(), "source".getBytes(),source.getBytes());
-			
-			put.addColumn("data".getBytes(), "track".getBytes(),track.getBytes());
-			
-			put.addColumn("data".getBytes(), "geometry".getBytes(),geometry.getBytes());
-			
-			put.addColumn("data".getBytes(), "deep".getBytes(),deep.getBytes());
-			
+
+			put.addColumn("data".getBytes(), "source".getBytes(),
+					source.getBytes());
+
+			put.addColumn("data".getBytes(), "track".getBytes(),
+					track.getBytes());
+
+			put.addColumn("data".getBytes(), "geometry".getBytes(),
+					geometry.getBytes());
+
+			put.addColumn("data".getBytes(), "deep".getBytes(), deep.getBytes());
+
 			puts.add(put);
 			
+			JSONObject solrIndexJson = assembleSolrIndex(rowkey, JSONObject.fromObject(geometry), 0, date, type);
+
+			solrConn.addTips(solrIndexJson);
+
 			if (num % 5000 == 0) {
 				htab.put(puts);
 
@@ -82,142 +111,193 @@ public class RdRestrictionTipsBuilder {
 
 		htab.put(puts);
 		
+		solrConn.persistentData();
+		
+		solrConn.closeConnection();
+
 	}
-	
-	private static String generateGeometry(ResultSet resultSet) throws Exception{
-		double[] point = null;
 
-		JSONObject geojson = Geojson.point2Geojson(point);
-		
-		JSONObject geometryjson = new JSONObject();
-		geometryjson.put("g_location", geojson);
-		geometryjson.put("g_guide", geojson);
-		
-		return geometryjson.toString();
+	private static String generateGeometry(ResultSet resultSet)
+			throws Exception {
+
+		STRUCT struct1 = (STRUCT) resultSet.getObject("link_geom");
+
+		JGeometry geom1 = JGeometry.load(struct1);
+
+		String linkWkt = new String(wkt.fromJGeometry(geom1));
+
+		STRUCT struct2 = (STRUCT) resultSet.getObject("point_geom");
+
+		JGeometry geom2 = JGeometry.load(struct2);
+
+		String pointWkt = new String(wkt.fromJGeometry(geom2));
+
+		double[][] point = DisplayUtils
+				.getLinkPointPos(linkWkt, pointWkt, 1, 0);
+
+		JSONObject json = new JSONObject();
+
+		json.put("type", "Point");
+
+		json.put("coordinates", point[1]);
+
+		JSONObject geometry = new JSONObject();
+
+		geometry.put("g_location", json);
+
+		json = new JSONObject();
+
+		json.put("type", "Point");
+
+		json.put("coordinates", point[0]);
+
+		geometry.put("g_guide", json);
+
+		return geometry.toString();
 	}
-	
-	private static String generateDeep(ResultSet resultSet) throws Exception{
+
+	private static String generateDeep(ResultSet resultSet) throws Exception {
+
+		JSONObject deep = new JSONObject();
 		
-		JSONObject dpattrjson = new JSONObject();
-
-		JSONArray residarary = new JSONArray();
+		deep.put("id", resultSet.getString("pid"));
 		
-		String residstr = resultSet.getString("resid");
-
-		String[] items = residstr.split("-");
-
-		for (String item : items) {
-			String[] resid = item.split("\\|");
-
-			JSONObject residjson = new JSONObject();
-
-			residjson.put("id", Integer.valueOf(resid[0]));
-			residjson.put("type", Integer.valueOf(resid[1]));
-
-			residarary.add(residjson);
-		}
-
-		dpattrjson.put("resID", residarary);
-
-		JSONObject injson = new JSONObject();
+		JSONObject in = new JSONObject();
 		
-		String linkpid = resultSet.getString("link_pid");
-
-		injson.put("id", linkpid);
-		injson.put("type", 1);
-		dpattrjson.put("in", injson);
-
-		JSONArray infoarary = new JSONArray();
-
-		JSONArray oarary = new JSONArray();
+		in.put("id", resultSet.getString("in_link_pid"));
 		
-		String outstr = resultSet.getString("out_array");
-
-		String[] oitems = outstr.split("-");
-
-		int sq = 0;
-
-		for (String item : oitems) {
-			String[] out = item.split("\\|");
-			JSONObject ojson = new JSONObject();
-
-			JSONArray outarray = new JSONArray();
-
-			JSONObject outjson = new JSONObject();
-
-			outjson.put("id", out[0]);
-			outjson.put("type", 1);
-
-			outarray.add(outjson);
-
-			ojson.put("out", outarray);
-
-			int info = Integer.valueOf(out[1]);
-
-			int flag = Integer.valueOf(out[2]);
-
-			int vt = Integer.valueOf(out[3]);
-
-			ojson.put("oInfo", info);
-			ojson.put("flag", flag);
-			ojson.put("vt", vt);
-			ojson.put("sq", sq);
-
-			JSONObject infojson = new JSONObject();
-
-			infojson.put("info", info);
-			infojson.put("flag", flag);
-			infojson.put("vt", vt);
-			infojson.put("sq", sq);
-
-			sq += 1;
-
-			infoarary.add(infojson);
-
-			JSONArray carary = new JSONArray();
-			if (!"^".equals(out[4])) {
-				String[] cstrs = out[4].split("_");
-
-				for (String cstr : cstrs) {
-
-					JSONObject cjson = new JSONObject();
-
-					String[] ccstrs = cstr.split("@");
-
-					if (" ".equals(ccstrs[0])) {
-						cjson.put("time", JSONNull.getInstance());
-					} else {
-
-						cjson.put("time", ccstrs[0]);
-					}
-
-					if (ccstrs.length > 1) {
-						JSONObject truckjson = new JSONObject();
-
-						truckjson.put("tra", Integer.valueOf(ccstrs[1]));
-						truckjson.put("w", Double.valueOf(ccstrs[2]));
-						truckjson.put("aLd", Double.valueOf(ccstrs[3]));
-						truckjson.put("aCt", Integer.valueOf(ccstrs[4]));
-						truckjson.put("rOut", Integer.valueOf(ccstrs[5]));
-
-						cjson.put("truck", truckjson);
-					} else {
-						cjson.put("truck", JSONObject.fromObject(null));
-					}
-
-					carary.add(cjson);
-				}
+		in.put("type", 1);
+		
+		deep.put("in", in);
+		
+		JSONArray info = new JSONArray();
+		
+		JSONArray o_array = new JSONArray();
+		
+		String[] details = resultSet.getString("detail").split("-");
+		
+		int sq = 1;
+		
+		for(String detail : details){
+			
+			String[] splits = detail.split(",");
+			
+			int restricInfo = Integer.parseInt(splits[0]);
+			
+			int flag = Integer.parseInt(splits[1]);
+			
+			String outLinkPid = splits[2];
+			
+			JSONObject infoJson = new JSONObject();
+			
+			infoJson.put("info", restricInfo);
+			
+			infoJson.put("flag", flag);
+			
+			infoJson.put("sq", sq);
+			
+			info.add(infoJson);
+			
+			infoJson = new JSONObject();
+			
+			infoJson.put("info", restricInfo);
+			
+			infoJson.put("flag", flag);
+			
+			infoJson.put("sq", sq);
+			
+			JSONObject outJson = new JSONObject();
+			
+			outJson.put("id", outLinkPid);
+			
+			outJson.put("type", 1);
+			
+			infoJson.put("out", new JSONObject[]{outJson});
+			
+			if (splits.length == 3){
+				infoJson.put("time", JSONNull.getInstance());
+			}else{
+				infoJson.put("time", splits[3]);
 			}
-			ojson.put("c_array", carary);
-
-			oarary.add(ojson);
+			
+			o_array.add(infoJson);
+			
+			sq++;
 		}
-
-		dpattrjson.put("info", infoarary);
-
-		dpattrjson.put("o_array", oarary);
 		
-		return dpattrjson.toString();
+		deep.put("info", info);
+		
+		deep.put("o_array", o_array);
+		
+		STRUCT struct1 = (STRUCT) resultSet.getObject("link_geom");
+
+		JGeometry geom1 = JGeometry.load(struct1);
+
+		String linkWkt = new String(wkt.fromJGeometry(geom1));
+
+		STRUCT struct2 = (STRUCT) resultSet.getObject("point_geom");
+
+		JGeometry geom2 = JGeometry.load(struct2);
+
+		String pointWkt = new String(wkt.fromJGeometry(geom2));
+		
+		int direct = getDirect(linkWkt, pointWkt);
+		
+		deep.put("agl", DisplayUtils.calIncloudedAngle(linkWkt, direct));
+		
+		return deep.toString();
 	}
 	
+	private static int getDirect(String linkWkt,String pointWkt) throws ParseException{
+		
+		int direct = 2;
+		
+		Geometry link = wktReader.read(linkWkt);
+		
+		Geometry point = wktReader.read(pointWkt);
+		
+		Coordinate[] csLink = link.getCoordinates();
+		
+		Coordinate cPoint = point.getCoordinate();
+		
+		if (csLink[0].x != cPoint.x || csLink[1].y != cPoint.y){
+			direct = 3;
+		}
+		
+		return direct;
+	}
+	
+	
+	private static JSONObject assembleSolrIndex(String rowkey, JSONObject geom,
+			int stage, String date, String type) throws Exception {
+		JSONObject json = new JSONObject();
+
+		json.put("id", rowkey);
+
+		json.put("stage", stage);
+
+		json.put("date", date);
+
+		json.put("t_lifecycle", 0);
+
+		json.put("t_command", 0);
+
+		json.put("handler", 0);
+
+		json.put("s_sourceType", type);
+
+		json.put("s_sourceCode", 11);
+
+		JSONObject geojson = geom.getJSONObject("g_location");
+
+		json.put("g_location", geojson);
+
+		json.put("g_guide", geom.getJSONObject("g_guide"));
+
+		json.put("wkt",
+				GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(geojson)));
+
+		return json;
+	}
+
 }

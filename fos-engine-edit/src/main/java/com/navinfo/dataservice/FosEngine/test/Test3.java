@@ -1,9 +1,9 @@
 package com.navinfo.dataservice.FosEngine.test;
 
-import com.navinfo.dataservice.FosEngine.comm.db.HBaseAddress;
-import com.navinfo.dataservice.FosEngine.tips.TipsSelector;
-
 import net.sf.json.JSONArray;
+
+import com.navinfo.dataservice.FosEngine.tips.TipsSelector;
+import com.navinfo.dataservice.commons.db.HBaseAddress;
 
 public class Test3 {
 

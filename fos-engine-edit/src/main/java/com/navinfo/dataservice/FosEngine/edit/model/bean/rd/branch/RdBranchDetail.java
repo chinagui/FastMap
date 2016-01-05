@@ -10,12 +10,12 @@ import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.FosEngine.comm.util.JsonUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.IObj;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 
 public class RdBranchDetail implements IObj {
 

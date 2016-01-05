@@ -2,10 +2,9 @@ package com.navinfo.dataservice.FosEngine.test;
 
 import java.util.Date;
 
-import com.navinfo.dataservice.FosEngine.comm.db.ConfigLoader;
-import com.navinfo.dataservice.FosEngine.comm.db.DBOraclePoolManager;
-import com.navinfo.dataservice.FosEngine.comm.db.OracleAddress;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.commons.db.ConfigLoader;
+import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 
 //import com.navinfo.comm.util.SerializeUtils;
 

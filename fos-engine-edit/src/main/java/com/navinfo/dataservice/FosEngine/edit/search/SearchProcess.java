@@ -9,11 +9,10 @@ import net.sf.json.JsonConfig;
 import net.sf.json.processors.JsonValueProcessor;
 import net.sf.json.util.JSONUtils;
 
-import com.navinfo.dataservice.FosEngine.comm.db.DBOraclePoolManager;
-import com.navinfo.dataservice.FosEngine.comm.mercator.MercatorProjection;
 import com.navinfo.dataservice.FosEngine.edit.model.IObj;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
+import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 
 /**
  * 查询进程

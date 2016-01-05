@@ -2,10 +2,10 @@ package com.navinfo.dataservice.FosEngine.test;
 
 import ch.hsr.geohash.GeoHash;
 
-import com.navinfo.dataservice.FosEngine.comm.db.HBaseAddress;
-import com.navinfo.dataservice.FosEngine.comm.db.OracleAddress;
-import com.navinfo.dataservice.FosEngine.comm.util.UuidUtils;
 import com.navinfo.dataservice.FosEngine.tips.TipsBuilder;
+import com.navinfo.dataservice.commons.db.HBaseAddress;
+import com.navinfo.dataservice.commons.db.OracleAddress;
+import com.navinfo.dataservice.commons.util.UuidUtils;
 
 //import com.navinfo.comm.util.SerializeUtils;
 
@@ -20,9 +20,9 @@ public class Test1 {
 
 		String uuid = UuidUtils.genUuid();
 		
-		String username1 = "beijing11";
+		String username1 = "gdb240_15win_ml_6p_1216";
 		
-		String password1 ="beijing11";
+		String password1 ="gdb240_15win_ml_6p_1216";
 		
 		int port1 =1521;
 		
@@ -48,13 +48,8 @@ public class Test1 {
 		
 		HBaseAddress.initHBaseAddress("192.168.3.156");
 		
-		b.run(oa1, oa2, uuid);
+		b.run(oa1, oa2, uuid,"http://192.168.4.130:8081/solr/tips");
 		
-		System.out.println(GeoHash.geoHashStringWithCharacterPrecision(39.899996, 116.899996, 16));
-		
-		System.out.println(GeoHash.geoHashStringWithCharacterPrecision(39.899999, 116.899999, 16));
-		
-		System.out.println(GeoHash.geoHashStringWithCharacterPrecision(39.899998, 116.899994, 16));
 	}
 
 

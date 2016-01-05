@@ -3,9 +3,9 @@ package com.navinfo.dataservice.FosEngine.edit.search;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.FosEngine.comm.util.JsonUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.ISerializable;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 
 /**
  * 查询对象模型
@@ -15,6 +15,10 @@ public class SearchSnapshot implements ISerializable {
 	private int t;
 
 	private String i;
+	
+	private JSONArray g;
+
+	private JSONObject m;
 
 	public String getI() {
 		return i;
@@ -32,9 +36,6 @@ public class SearchSnapshot implements ISerializable {
 		this.m = m;
 	}
 
-	private JSONArray g;
-
-	private JSONObject m;
 	
 	public SearchSnapshot() {
 

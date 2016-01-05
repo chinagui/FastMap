@@ -1,8 +1,11 @@
 package com.navinfo.dataservice.FosEngine.tips;
 
+import org.json.JSONException;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import ch.hsr.geohash.GeoHash;
+
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 
 /**
  * tips导入辅助工具，如rowkey生成，source生成
@@ -20,15 +23,14 @@ public class TipsImportUtils {
 	 * @param type
 	 * @return
 	 */
-	public static String generateRowkey(double[] lonlat, String uniqId,
+	public static String generateRowkey( String uniqId,
 			String type) {
 
 		StringBuilder rowkey = new StringBuilder();
 
-		rowkey.append(GeoHash.geoHashStringWithCharacterPrecision(lonlat[1],
-				lonlat[0], 12));
-
-		rowkey.append(String.format("%04d", Integer.parseInt(type)));
+		rowkey.append("11");
+		
+		rowkey.append(type);
 
 		rowkey.append(uniqId);
 
@@ -50,6 +52,12 @@ public class TipsImportUtils {
 	
 	public static String generateTrack(String date){
 		
+		JSONObject track = new JSONObject();
+		
+		track.put("t_lifecycle", 0);
+		
+		track.put("t_command", 0);
+		
 		JSONArray trackinfoarray = new JSONArray();
 
 		JSONObject trackinfo = new JSONObject();
@@ -58,6 +66,42 @@ public class TipsImportUtils {
 		trackinfo.put("date", date);
 		trackinfo.put("handler", 0);
 		
-		return trackinfoarray.toString();
+		trackinfoarray.add(trackinfo);
+		
+		track.put("t_trackInfo", trackinfoarray);
+		
+		return track.toString();
+	}
+	
+	// 组装solr索引
+	public static JSONObject assembleSolrIndex(String rowkey, JSONObject geom,
+			int stage ,String date, String type) throws Exception {
+		JSONObject json = new JSONObject();
+
+		json.put("id", rowkey);
+		
+		json.put("stage", stage);
+		
+		json.put("date", date);
+		
+		json.put("t_lifecycle", 0);
+		
+		json.put("t_command", 0);
+		
+		json.put("handler", 0);
+		
+		json.put("s_sourceType", type);
+		
+		json.put("s_sourceCode", 11);
+		
+		JSONObject geojson = geom.getJSONObject("g_location");
+		
+		json.put("g_location", geojson);
+		
+		json.put("g_guide", geom.getJSONObject("g_guide"));
+
+		json.put("wkt", GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(geojson)));
+
+		return json;
 	}
 }

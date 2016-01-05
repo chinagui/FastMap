@@ -31,11 +31,23 @@ public class Photo {
 
 	private String a_deviceNum;
 
-	private int a_type;
-
 	private int a_content;
 
 	private List<String> a_tag;
+	
+	private String a_address;
+	
+	private String a_fileName;
+	
+	private int a_collectUser;
+	
+	private int a_mesh;
+	
+	private String a_admin;
+	
+	private String a_deviceOrient;
+	
+	private String a_version;
 
 	public String getRowkey() {
 		return rowkey;
@@ -125,14 +137,6 @@ public class Photo {
 		this.a_deviceNum = a_deviceNum;
 	}
 
-	public int getA_type() {
-		return a_type;
-	}
-
-	public void setA_type(int a_type) {
-		this.a_type = a_type;
-	}
-
 	public int getA_content() {
 		return a_content;
 	}
@@ -161,4 +165,61 @@ public class Photo {
 		return "{\"rowkey\":" + rowkey + ",\"a_longitude\":" + a_longitude
 				+ ",\"a_latitude\":" + a_latitude + "}";
 	}
+
+	public String getA_address() {
+		return a_address;
+	}
+
+	public void setA_address(String a_address) {
+		this.a_address = a_address;
+	}
+
+	public String getA_fileName() {
+		return a_fileName;
+	}
+
+	public void setA_fileName(String a_fileName) {
+		this.a_fileName = a_fileName;
+	}
+
+	public int getA_collectUser() {
+		return a_collectUser;
+	}
+
+	public void setA_collectUser(int a_collectUser) {
+		this.a_collectUser = a_collectUser;
+	}
+
+	public int getA_mesh() {
+		return a_mesh;
+	}
+
+	public void setA_mesh(int a_mesh) {
+		this.a_mesh = a_mesh;
+	}
+
+	public String getA_admin() {
+		return a_admin;
+	}
+
+	public void setA_admin(String a_admin) {
+		this.a_admin = a_admin;
+	}
+
+	public String getA_deviceOrient() {
+		return a_deviceOrient;
+	}
+
+	public void setA_deviceOrient(String a_deviceOrient) {
+		this.a_deviceOrient = a_deviceOrient;
+	}
+
+	public String getA_version() {
+		return a_version;
+	}
+
+	public void setA_version(String a_version) {
+		this.a_version = a_version;
+	}
+	
 }

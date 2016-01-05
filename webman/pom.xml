@@ -19,7 +19,34 @@
 	    <groupId>javax.servlet</groupId>
 	    <artifactId>servlet-api</artifactId>
 	</dependency>
-
+	
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>navi-common</artifactId>
+	</dependency>
+	
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>ds-common</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>datahub</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>fos-engine-edit</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>fos-engine-meta</artifactId>
+	</dependency>
+	
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>fos-engine-man</artifactId>
+	</dependency>
+	
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -115,17 +142,7 @@
         <groupId>org.springframework</groupId>
         <artifactId>spring-webmvc</artifactId>
     </dependency>
-    
-	<dependency>
-		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>fos-engine-edit</artifactId>
-	</dependency>
-	
-	<dependency>
-		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>datahub</artifactId>
-	</dependency>
-    
+     
   </dependencies>
   <build>
     <finalName>webman</finalName>

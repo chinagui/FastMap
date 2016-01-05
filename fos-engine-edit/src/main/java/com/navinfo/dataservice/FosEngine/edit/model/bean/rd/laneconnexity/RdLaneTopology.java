@@ -10,12 +10,12 @@ import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.FosEngine.comm.util.JsonUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.IObj;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 
 public class RdLaneTopology implements IObj {
 
@@ -41,6 +41,9 @@ public class RdLaneTopology implements IObj {
 	
 	public Map<String,RdLaneVia> viaMap = new HashMap<String,RdLaneVia>();
 
+	private int outNodePid;
+	
+	
 	public RdLaneTopology() {
 
 	}
@@ -60,6 +63,14 @@ public class RdLaneTopology implements IObj {
 	
 	public int getPid() {
 		return pid;
+	}
+
+	public int igetOutNodePid() {
+		return outNodePid;
+	}
+
+	public void isetOutNodePid(int outNodePid) {
+		this.outNodePid = outNodePid;
 	}
 
 	public void setPid(int pid) {

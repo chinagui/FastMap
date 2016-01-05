@@ -1,0 +1,315 @@
+package com.navinfo.dataservice.FosEngine.edit.check;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+
+import com.navinfo.dataservice.FosEngine.edit.model.ISerializable;
+import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.vividsolutions.jts.geom.Geometry;
+
+public class NiValException implements ISerializable {
+
+	private int valExceptionId;
+
+	private String ruleId;
+
+	private String taskName;
+
+	private int groupId;
+
+	private int level;
+
+	private String situation;
+
+	private String information;
+
+	private String suggestion;
+
+	private Geometry location;
+
+	private String targets;
+
+	private String additionInfo;
+
+	private int delFlag;
+
+	private String created;
+
+	private String updated;
+
+	private int meshId;
+
+	private int scopeFlag=1;
+
+	private String provinceName;
+
+	private int mapScale;
+
+	private String reserved;
+
+	private String extended;
+
+	private String taskId;
+
+	private String qaTaskId;
+
+	private int qaStatus=2;
+
+	private String worker;
+
+	private String qaWorker;
+
+	private int logType;
+
+	private Map<String, Object> changedFields = new HashMap<String, Object>();
+
+	public NiValException() {
+
+	}
+
+	@Override
+	public JSONObject Serialize(ObjLevel objLevel) throws Exception{
+
+
+		if (objLevel == ObjLevel.FULL) {
+			JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+
+			JSONObject json = JSONObject.fromObject(this, jsonConfig);
+
+			return json;
+		} else if (objLevel == ObjLevel.BRIEF) {
+			JSONObject json = new JSONObject();
+
+			json.put("location",
+					GeoTranslator.jts2Geojson(location, 0.00001, 5));
+
+			return json;
+		}
+		return null;
+	
+	}
+
+	@Override
+	public boolean Unserialize(JSONObject json) throws Exception {
+		return false;
+	}
+
+	public String getRuleId() {
+		return ruleId;
+	}
+
+	public void setRuleId(String ruleId) {
+		this.ruleId = ruleId;
+	}
+
+	public String getTaskName() {
+		return taskName;
+	}
+
+	public void setTaskName(String taskName) {
+		this.taskName = taskName;
+	}
+
+	public int getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(int groupId) {
+		this.groupId = groupId;
+	}
+
+	public String getSituation() {
+		return situation;
+	}
+
+	public void setSituation(String situation) {
+		this.situation = situation;
+	}
+
+	public String getInformation() {
+		return information;
+	}
+
+	public void setInformation(String information) {
+		this.information = information;
+	}
+
+	public String getSuggestion() {
+		return suggestion;
+	}
+
+	public void setSuggestion(String suggestion) {
+		this.suggestion = suggestion;
+	}
+
+	public String getTargets() {
+		return targets;
+	}
+
+	public void setTargets(String targets) {
+		this.targets = targets;
+	}
+
+	public String getAdditionInfo() {
+		return additionInfo;
+	}
+
+	public void setAdditionInfo(String additionInfo) {
+		this.additionInfo = additionInfo;
+	}
+
+	public int getMeshId() {
+		return meshId;
+	}
+
+	public void setMeshId(int meshId) {
+		this.meshId = meshId;
+	}
+
+	public int getScopeFlag() {
+		return scopeFlag;
+	}
+
+	public void setScopeFlag(int scopeFlag) {
+		this.scopeFlag = scopeFlag;
+	}
+
+	public String getProvinceName() {
+		return provinceName;
+	}
+
+	public void setProvinceName(String provinceName) {
+		this.provinceName = provinceName;
+	}
+
+	public int getMapScale() {
+		return mapScale;
+	}
+
+	public void setMapScale(int mapScale) {
+		this.mapScale = mapScale;
+	}
+
+	public String getReserved() {
+		return reserved;
+	}
+
+	public void setReserved(String reserved) {
+		this.reserved = reserved;
+	}
+
+	public String getExtended() {
+		return extended;
+	}
+
+	public void setExtended(String extended) {
+		this.extended = extended;
+	}
+
+	public String getTaskId() {
+		return taskId;
+	}
+
+	public void setTaskId(String taskId) {
+		this.taskId = taskId;
+	}
+
+	public String getQaTaskId() {
+		return qaTaskId;
+	}
+
+	public void setQaTaskId(String qaTaskId) {
+		this.qaTaskId = qaTaskId;
+	}
+
+	public int getQaStatus() {
+		return qaStatus;
+	}
+
+	public void setQaStatus(int qaStatus) {
+		this.qaStatus = qaStatus;
+	}
+
+	public String getWorker() {
+		return worker;
+	}
+
+	public void setWorker(String worker) {
+		this.worker = worker;
+	}
+
+	public String getQaWorker() {
+		return qaWorker;
+	}
+
+	public void setQaWorker(String qaWorker) {
+		this.qaWorker = qaWorker;
+	}
+
+	public Map<String, Object> changedFields() {
+
+		return changedFields;
+	}
+
+	public int getLevel() {
+		return level;
+	}
+
+	public void setLevel(int level) {
+		this.level = level;
+	}
+
+	public Geometry getLocation() {
+		return location;
+	}
+
+	public void setLocation(Geometry location) {
+		this.location = location;
+	}
+
+	public int getDelFlag() {
+		return delFlag;
+	}
+
+	public void setDelFlag(int delFlag) {
+		this.delFlag = delFlag;
+	}
+
+	public String getCreated() {
+		return created;
+	}
+
+	public void setCreated(String created) {
+		this.created = created;
+	}
+
+	public String getUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(String updated) {
+		this.updated = updated;
+	}
+
+	public int getLogType() {
+		return logType;
+	}
+
+	public void setLogType(int logType) {
+		this.logType = logType;
+	}
+
+	public int getValExceptionId() {
+		return valExceptionId;
+	}
+
+	public void setValExceptionId(int valExceptionId) {
+		this.valExceptionId = valExceptionId;
+	}
+	
+}

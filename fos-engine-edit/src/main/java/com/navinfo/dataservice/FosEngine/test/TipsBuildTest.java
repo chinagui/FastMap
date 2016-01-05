@@ -1,9 +1,9 @@
 package com.navinfo.dataservice.FosEngine.test;
 
-import com.navinfo.dataservice.FosEngine.comm.db.HBaseAddress;
-import com.navinfo.dataservice.FosEngine.comm.db.OracleAddress;
-import com.navinfo.dataservice.FosEngine.comm.util.UuidUtils;
 import com.navinfo.dataservice.FosEngine.tips.TipsBuilder;
+import com.navinfo.dataservice.commons.db.HBaseAddress;
+import com.navinfo.dataservice.commons.db.OracleAddress;
+import com.navinfo.dataservice.commons.util.UuidUtils;
 
 public class TipsBuildTest {
 
@@ -37,7 +37,7 @@ public class TipsBuildTest {
 		
 		HBaseAddress.initHBaseAddress("192.168.3.156");
 		
-		t.run(fmgdbOA, pmOA, UuidUtils.genUuid());
+		t.run(fmgdbOA, pmOA, UuidUtils.genUuid(),"http://192.168.4.130:8081/solr/tips");
 	}
 
 }

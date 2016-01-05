@@ -1,7 +1,7 @@
 package com.navinfo.dataservice.FosEngine.test;
 
-import com.navinfo.dataservice.FosEngine.comm.db.OracleAddress;
 import com.navinfo.dataservice.FosEngine.export.ExportBaseData;
+import com.navinfo.dataservice.commons.db.OracleAddress;
 
 public class ExportBaseDataTest {
 

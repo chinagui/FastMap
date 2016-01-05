@@ -2,8 +2,8 @@ package com.navinfo.dataservice.FosEngine.photos;
 
 import java.util.List;
 
-import com.navinfo.dataservice.FosEngine.comm.db.HBaseAddress;
-import com.navinfo.dataservice.FosEngine.comm.db.SolrAddress;
+import com.navinfo.dataservice.commons.db.HBaseAddress;
+import com.navinfo.dataservice.commons.db.SolrAddress;
 
 /**
  * 搜索照片库

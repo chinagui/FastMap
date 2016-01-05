@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.FosEngine.tips;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -14,23 +13,24 @@ import net.sf.json.JSONObject;
 
 import org.hbase.async.GetRequest;
 import org.hbase.async.KeyValue;
-import org.hbase.async.Scanner;
 
-import ch.hsr.geohash.GeoHash;
-
-import com.navinfo.dataservice.FosEngine.comm.constant.BusinessConstant;
-import com.navinfo.dataservice.FosEngine.comm.db.HBaseAddress;
-import com.navinfo.dataservice.FosEngine.comm.geom.GeoTranslator;
-import com.navinfo.dataservice.FosEngine.comm.geom.Geojson;
-import com.navinfo.dataservice.FosEngine.comm.mercator.MercatorProjection;
-import com.navinfo.dataservice.FosEngine.comm.util.GeohashUtils;
-import com.navinfo.dataservice.FosEngine.comm.util.GridUtils;
 import com.navinfo.dataservice.FosEngine.edit.search.SearchSnapshot;
+import com.navinfo.dataservice.commons.db.HBaseAddress;
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.commons.util.GridUtils;
+import com.navinfo.dataservice.solr.core.SConnection;
 
 /**
  * Tips查询
  */
 public class TipsSelector {
+	
+	private SConnection solrConn;
+	
+	public TipsSelector(String solrUrl){
+		solrConn = new SConnection(solrUrl);
+	}
 
 	/**
 	 * 范围查询Tips
@@ -39,72 +39,19 @@ public class TipsSelector {
 	 * @return Tips JSON数组
 	 * @throws Exception
 	 */
-	public static JSONArray searchDataBySpatial(String wkt) throws Exception {
+	public JSONArray searchDataBySpatial(String wkt) throws Exception {
 		JSONArray array = new JSONArray();
 
-		try {
+		SConnection conn = new SConnection(
+				"http://192.168.4.130:8081/solr/tips/");
 
-			double mbr[] = GeoTranslator.getMBR(wkt);
+		List<JSONObject> snapshots = conn.queryTipsWeb(wkt);
 
-			String startRowkey = GeoHash.geoHashStringWithCharacterPrecision(
-					mbr[1], mbr[0], 12);
+		for (JSONObject snapshot : snapshots) {
 
-			String stopRowkey = GeoHash.geoHashStringWithCharacterPrecision(
-					mbr[3], mbr[2], 12) + "{";
+			snapshot.put("t", 1);
 
-			Scanner scanner = HBaseAddress.getHBaseClient().newScanner("tips");
-
-			scanner.setStartKey(startRowkey);
-
-			scanner.setStopKey(stopRowkey);
-
-			scanner.setFamily("data");
-
-			scanner.setQualifier("geometry");
-
-			byte[][] qs = new byte[2][];
-
-			qs[0] = "geometry".getBytes();
-
-			qs[1] = "deep".getBytes();
-
-			scanner.setQualifiers(qs);
-
-			ArrayList<ArrayList<KeyValue>> rows;
-
-			while ((rows = scanner.nextRows().joinUninterruptibly()) != null) {
-
-				for (List<KeyValue> list : rows) {
-
-					JSONObject json = new JSONObject();
-					for (KeyValue kv : list) {
-
-						if ("geometry".equals(new String(kv.qualifier()))) {
-							JSONObject jsonGeom = JSONObject
-									.fromObject(new String(kv.value()));
-
-							json.put("id", new String(kv.key()));
-
-							json.put("type", "tips");
-
-							json.put("g", jsonGeom.getJSONObject("g_location"));
-
-						} else {
-							JSONObject jsonDeep = JSONObject
-									.fromObject(new String(kv.value()));
-
-							JSONArray info = jsonDeep.getJSONArray("info");
-
-							json.put("info", info);
-						}
-
-					}
-					array.add(json);
-				}
-			}
-		} catch (Exception e) {
-
-			throw e;
+			array.add(snapshot);
 		}
 
 		return array;
@@ -115,7 +62,7 @@ public class TipsSelector {
 	 * 
 	 * @throws Exception
 	 */
-	public static JSONArray searchDataByTileWithGap(int x, int y, int z, int gap)
+	public JSONArray searchDataByTileWithGap(int x, int y, int z, int gap)
 			throws Exception {
 		JSONArray array = new JSONArray();
 
@@ -123,90 +70,37 @@ public class TipsSelector {
 
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-			double mbr[] = GeoTranslator.getMBR(wkt);
-
-			String startRowkey = GeoHash.geoHashStringWithCharacterPrecision(
-					mbr[1], mbr[0], 12);
-
-			String stopRowkey = GeoHash.geoHashStringWithCharacterPrecision(
-					mbr[3], mbr[2], 12) + "{";
-
-			Scanner scanner = HBaseAddress.getHBaseClient().newScanner("tips");
-
-			scanner.setStartKey(startRowkey);
-
-			scanner.setStopKey(stopRowkey);
-
-			scanner.setFamily("data");
-
-			byte[][] qs = new byte[2][];
-
-			qs[0] = "geometry".getBytes();
-
-			qs[1] = "track".getBytes();
-
-			scanner.setQualifiers(qs);
-
-			ArrayList<ArrayList<KeyValue>> rows = null;
-
 			double px = MercatorProjection.tileXToPixelX(x);
 
 			double py = MercatorProjection.tileYToPixelY(y);
 
-			while ((rows = scanner.nextRows().joinUninterruptibly()) != null) {
+			SConnection conn = new SConnection(
+					"http://192.168.4.130:8081/solr/tips/");
 
-				for (List<KeyValue> list : rows) {
+			List<JSONObject> snapshots = conn.queryTipsWeb(wkt);
 
-					boolean flag = false;
+			for (JSONObject json : snapshots) {
+				
+				SearchSnapshot snapshot = new SearchSnapshot();
+				
+				snapshot.setI(json.getString("id"));
 
-					SearchSnapshot snapshot = new SearchSnapshot();
+				snapshot.setT(1);
+				
+				JSONObject geojson = JSONObject.fromObject(json.getString("g_location"));
 
-					for (KeyValue kv : list) {
+				Geojson.point2Pixel(geojson, z, px, py);
+				
+				snapshot.setG(geojson.getJSONArray("coordinates"));
+				
+				JSONObject m = new JSONObject();
+				
+				m.put("a", json.getString("stage"));
+				
+				snapshot.setM(m);
 
-						String rowkey = new String(kv.key());
+				array.add(snapshot.Serialize(null));
 
-						if ("geometry".equals(new String(kv.qualifier()))) {
-							JSONObject jsonGeom = JSONObject
-									.fromObject(new String(kv.value()));
-
-							snapshot.setI(rowkey);
-
-							snapshot.setT(1);
-
-							JSONObject geojson = jsonGeom
-									.getJSONObject("g_location");
-
-							Geojson.point2Pixel(geojson, z, px, py);
-
-							snapshot.setG(geojson.getJSONArray("coordinates"));
-
-						} else if ("track".equals(new String(kv.qualifier()))) {
-							JSONObject jsonTrack = JSONObject
-									.fromObject(new String(kv.value()));
-
-							JSONArray tTrackInfo = jsonTrack
-									.getJSONArray("t_trackInfo");
-
-							int stage = tTrackInfo.getJSONObject(
-									tTrackInfo.size() - 1).getInt("stage");
-
-							if (stage != 1 && stage != 3) {
-								break;
-							}
-
-							JSONObject jo = new JSONObject();
-
-							jo.put("a", String.valueOf(stage));
-
-							snapshot.setM(jo);
-
-							flag = true;
-						}
-					}
-					if (flag) {
-						array.add(snapshot.Serialize(null));
-					}
-				}
 			}
 		} catch (Exception e) {
 
@@ -223,7 +117,7 @@ public class TipsSelector {
 	 * @return Tips JSON对象
 	 * @throws Exception
 	 */
-	public static JSONObject searchDataByRowkey(String rowkey) throws Exception {
+	public JSONObject searchDataByRowkey(String rowkey) throws Exception {
 		JSONObject json = new JSONObject();
 
 		try {
@@ -258,7 +152,7 @@ public class TipsSelector {
 	 * @return Tips JSON数组
 	 * @throws Exception
 	 */
-	public static JSONArray searchDataByCondition(String condition)
+	public JSONArray searchDataByCondition(String condition)
 			throws Exception {
 		JSONArray array = new JSONArray();
 
@@ -273,75 +167,30 @@ public class TipsSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public static JSONObject getStats(JSONArray grids, JSONArray stages)
+	public JSONObject getStats(JSONArray grids, JSONArray stages)
 			throws Exception {
 		JSONObject jsonData = new JSONObject();
 
-		String enclosingGeohash[] = GridUtils.getEnclosingRectangle(grids);
-
-		String startRowkey = enclosingGeohash[0];
-
-		String stopRowkey = enclosingGeohash[1] + "{";
-
-		Scanner scanner = HBaseAddress.getHBaseClient().newScanner("tips");
-
-		scanner.setStartKey(startRowkey);
-
-		scanner.setStopKey(stopRowkey);
-
-		scanner.setFamily("data");
-
-		scanner.setQualifier("track");
-
-		ArrayList<ArrayList<KeyValue>> rows = null;
+		SConnection conn = new SConnection(
+				"http://192.168.4.130:8081/solr/tips/");
 
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		
+		String wkt = GridUtils.grids2Wkt(grids);
 
-		Class<BusinessConstant> bc = BusinessConstant.class;
+		List<JSONObject> tips = conn.queryTipsWeb(wkt, stages);
 
-		Field[] fields = bc.getFields();
+		for (JSONObject json : tips) {
+			int type = Integer.valueOf(json.getInt("s_sourceType"));
 
-		for (Field f : fields) {
-			if (f.getName().startsWith("tips")) {
-				map.put(Integer.valueOf((String) f.get(bc)), 0);
+			if (map.containsKey(type)){
+				map.put(type, map.get(type) + 1);
+			}
+			else{
+				map.put(type, 1);
 			}
 		}
 
-		while ((rows = scanner.nextRows().joinUninterruptibly()) != null) {
-
-			for (List<KeyValue> list : rows) {
-
-				for (KeyValue kv : list) {
-
-					String rowkey = new String(kv.key());
-
-					double[] lonlat = GridUtils.geohash2Lonlat(rowkey
-							.substring(0, 12));
-
-					if (GridUtils.isInGrids(lonlat[0], lonlat[1], grids)) {
-
-						JSONObject jsonTrack = JSONObject
-								.fromObject(new String(kv.value()));
-
-						JSONArray tTrackInfo = jsonTrack
-								.getJSONArray("t_trackInfo");
-
-						int stage = tTrackInfo.getJSONObject(
-								tTrackInfo.size() - 1).getInt("stage");
-
-						if (stages.contains(stage)) {
-
-							int type = Integer
-									.valueOf(rowkey.substring(12, 14));
-
-							map.put(type, map.get(type) + 1);
-						}
-					}
-
-				}
-			}
-
-		}
 		JSONArray data = new JSONArray();
 
 		Set<Entry<Integer, Integer>> set = map.entrySet();
@@ -378,95 +227,35 @@ public class TipsSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public static JSONArray getSnapshot(JSONArray grids, JSONArray stages,
+	public JSONArray getSnapshot(JSONArray grids, JSONArray stages,
 			int type) throws Exception {
 		JSONArray jsonData = new JSONArray();
 
-		String enclosingGeohash[] = GridUtils.getEnclosingRectangle(grids);
+		SConnection conn = new SConnection(
+				"http://192.168.4.130:8081/solr/tips/");
 
-		String strType = String.format("%02d", type);
+		String wkt = GridUtils.grids2Wkt(grids);
 
-		String startRowkey = enclosingGeohash[0] + strType;
+		List<JSONObject> tips = conn.queryTipsWeb(wkt,
+				type, stages);
 
-		String stopRowkey = enclosingGeohash[1] + strType + "{";
+		for (JSONObject json : tips) {
+			
+			SearchSnapshot snapshot = new SearchSnapshot();
+			
+			snapshot.setI(json.getString("id"));
 
-		Scanner scanner = HBaseAddress.getHBaseClient().newScanner("tips");
+			snapshot.setT(1);
+			
+			snapshot.setG(JSONObject.fromObject(json.getString("g_location")).getJSONArray("coordinates"));
+			
+			JSONObject m = new JSONObject();
+			
+			m.put("a", json.getString("stage"));
+			
+			snapshot.setM(m);
 
-		scanner.setStartKey(startRowkey);
-
-		scanner.setStopKey(stopRowkey);
-
-		scanner.setFamily("data");
-
-		byte[][] qs = new byte[2][];
-
-		qs[0] = "geometry".getBytes();
-
-		qs[1] = "track".getBytes();
-
-		scanner.setQualifiers(qs);
-
-		ArrayList<ArrayList<KeyValue>> rows = null;
-
-		while ((rows = scanner.nextRows().joinUninterruptibly()) != null) {
-
-			for (List<KeyValue> list : rows) {
-
-				boolean flag = false;
-
-				JSONArray coords = null;
-
-				SearchSnapshot snapshot = new SearchSnapshot();
-
-				for (KeyValue kv : list) {
-
-					String rowkey = new String(kv.key());
-
-					double[] lonlat = GridUtils.geohash2Lonlat(rowkey
-							.substring(0, 12));
-
-					if ("track".equals(new String(kv.qualifier()))) {
-						if (GridUtils.isInGrids(lonlat[0], lonlat[1], grids)) {
-
-							JSONObject jsonTrack = JSONObject
-									.fromObject(new String(kv.value()));
-
-							JSONArray tTrackInfo = jsonTrack
-									.getJSONArray("t_trackInfo");
-
-							int stage = tTrackInfo.getJSONObject(
-									tTrackInfo.size() - 1).getInt("stage");
-
-							if (stages.contains(stage)) {
-
-								snapshot.setI(rowkey);
-
-								snapshot.setT(type);
-
-								JSONObject jm = new JSONObject();
-
-								jm.put("a", String.valueOf(stage));
-
-								snapshot.setM(jm);
-
-								flag = true;
-							}
-						}
-					} else if ("geometry".equals(new String(kv.qualifier()))) {
-
-						coords = JSONObject.fromObject(new String(kv.value()))
-								.getJSONObject("g_location")
-								.getJSONArray("coordinates");
-					}
-
-					snapshot.setG(coords);
-
-				}
-
-				if (flag) {
-					jsonData.add(snapshot);
-				}
-			}
+			jsonData.add(snapshot.Serialize(null));
 
 		}
 
@@ -481,72 +270,36 @@ public class TipsSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public static boolean checkUpdate(String grid, String date)
+	public boolean checkUpdate(String grid, String date)
 			throws Exception {
-		boolean flag = false;
 
-		double mbr[] = GridUtils.grid2Location(grid);
+		String wkt = GridUtils.grid2Wkt(grid);
 
-		String startRowkey = GeoHash.geoHashStringWithCharacterPrecision(
-				mbr[1], mbr[0], 12);
+		SConnection conn = new SConnection(
+				"http://192.168.4.130:8081/solr/tips/");
 
-		String stopRowkey = GeoHash.geoHashStringWithCharacterPrecision(mbr[3],
-				mbr[2], 12) + "{";
-
-		Scanner scanner = HBaseAddress.getHBaseClient().newScanner("tips");
-
-		scanner.setStartKey(startRowkey);
-
-		scanner.setStopKey(stopRowkey);
-
-		scanner.setFamily("data");
-
-		scanner.setQualifier("track");
-
-		ArrayList<ArrayList<KeyValue>> rows = null;
-
-		JSONArray grids = new JSONArray();
-
-		grids.add(grid);
-
-		while ((rows = scanner.nextRows().joinUninterruptibly()) != null) {
-
-			for (List<KeyValue> list : rows) {
-
-				for (KeyValue kv : list) {
-
-					String rowkey = new String(kv.key());
-
-					if (!GeohashUtils.isWithin(rowkey, mbr[0], mbr[2], mbr[1],
-							mbr[3])) {
-						break;
-					}
-
-					if ("track".equals(new String(kv.qualifier()))) {
-
-						JSONObject jo = JSONObject.fromObject(new String(kv
-								.value()));
-
-						JSONArray tTrackInfo = jo.getJSONArray("t_trackInfo");
-
-						String lastDate = tTrackInfo.getJSONObject(
-								tTrackInfo.size() - 1).getString("date");
-
-						if (date.compareTo(lastDate) < 0) {
-							flag = true;
-						}
-
-					}
-				}
-
-				if (flag) {
-					break;
-				}
-			}
-
-		}
+		boolean flag = conn.checkTipsMobile(wkt, date);
 
 		return flag;
 	}
 
+	public static void main(String[] args) throws Exception {
+		// JSONArray ja =
+		// searchDataBySpatial("POLYGON ((113.70469 26.62879, 119.70818 26.62879, 119.70818 29.62948, 113.70469 29.62948, 113.70469 26.62879))");
+
+		// System.out.println(ja.size());
+
+		// System.out.println(checkUpdate("59567201","20151227163723"));
+
+		TipsSelector selector = new TipsSelector("http://192.168.4.130:8081/solr/tips/");
+		JSONArray a = new JSONArray();
+		a.add(59567201);
+		JSONArray b = new JSONArray();
+		b.add(1);
+		int type = 1407;
+		//System.out.println(selector.getSnapshot(a, b, type));
+		//System.out.println(selector.getStats(a, b));
+		
+		System.out.println(selector.searchDataByTileWithGap(107946, 49615, 17, 5));
+	}
 }

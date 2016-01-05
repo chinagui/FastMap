@@ -9,11 +9,11 @@ import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.FosEngine.comm.util.JsonUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 
 public class RdBranchVia implements IRow {
 
@@ -28,6 +28,38 @@ public class RdBranchVia implements IRow {
 	private String rowId;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
+	
+	private int sNodePid;
+	
+	private int eNodePid;
+	
+	private int inNodePid;
+	
+	
+
+	public int igetInNodePid() {
+		return inNodePid;
+	}
+
+	public void isetInNodePid(int inNodePid) {
+		this.inNodePid = inNodePid;
+	}
+
+	public int igetsNodePid() {
+		return sNodePid;
+	}
+
+	public void isetsNodePid(int sNodePid) {
+		this.sNodePid = sNodePid;
+	}
+
+	public int igeteNodePid() {
+		return eNodePid;
+	}
+
+	public void iseteNodePid(int eNodePid) {
+		this.eNodePid = eNodePid;
+	}
 
 	public String getRowId() {
 		return rowId;

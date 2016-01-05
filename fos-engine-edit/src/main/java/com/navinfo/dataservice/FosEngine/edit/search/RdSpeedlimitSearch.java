@@ -86,9 +86,9 @@ public class RdSpeedlimitSearch implements ISearch {
 
 				snapshot.setI(String.valueOf(resultSet.getInt("pid")));
 				
-				snapshot.setT(5);
+				snapshot.setT(6);
 
-				jsonM.put("b",resultSet.getString("lane_info"));
+				jsonM.put("a",resultSet.getString("a_val"));
 
 				STRUCT struct1 = (STRUCT) resultSet.getObject("link_geom");
 

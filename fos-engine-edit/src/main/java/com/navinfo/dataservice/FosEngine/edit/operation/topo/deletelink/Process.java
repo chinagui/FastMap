@@ -3,13 +3,20 @@ package com.navinfo.dataservice.FosEngine.edit.operation.topo.deletelink;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.FosEngine.edit.log.LogWriter;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranch;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.cross.RdCross;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.branch.RdBranchSelector;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.cross.RdCrossSelector;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.restrict.RdRestrictionSelector;
@@ -58,20 +65,29 @@ public class Process implements IProcess {
 		ResultSet resultSet = null;
 
 		try {
-			// 检查link是否作为交线的退出线或者经过线
-			String sql = "select a.detail_id from rd_restriction_detail a where a.out_link_pid=:1 "
-					+ "union all (select b.link_pid from rd_restriction_via b where b.link_pid=:2)";
-
+			// 检查link是否作为交线、分歧、车信的退出线或者经过线
+			String sql = "select a.detail_id, '交限' type   from rd_restriction_detail a  where a.out_link_pid = :1 union all (select b.link_pid, '交限' type from rd_restriction_via b where b.link_pid = :2)  union all (select c.topo_id,'车信' type from rd_lane_topo_detail c where c.out_link_pid = :3)  union all (select d.link_pid,'车信' type from rd_lane_via d where d.link_pid = :4)  union all (select e.branch_pid, '分歧' type from rd_branch e where e.out_link_pid = :5)  union all (select f.branch_pid, '分歧' type from rd_branch_via f where f.link_pid=:6) ";
+			
 			stmt = conn.prepareStatement(sql);
 
 			stmt.setInt(1, command.getLinkPid());
 
 			stmt.setInt(2, command.getLinkPid());
+			
+			stmt.setInt(3, command.getLinkPid());
+			
+			stmt.setInt(4, command.getLinkPid());
+			
+			stmt.setInt(5, command.getLinkPid());
+			
+			stmt.setInt(6, command.getLinkPid());
 
 			resultSet = stmt.executeQuery();
 
 			if (resultSet.next()) {
-				return "此link上存在交限关系信息，删除该Link会对应删除此组关系";
+				String type = resultSet.getString("type");
+				
+				return "此link上存在"+type+"关系信息，删除该Link会对应删除此组关系";
 			} else {
 				return null;
 			}
@@ -95,12 +111,20 @@ public class Process implements IProcess {
 	// 锁定盲端节点
 	public void lockRdNode() throws Exception {
 
-		RdNodeSelector node = new RdNodeSelector(this.conn);
+		RdNodeSelector selector = new RdNodeSelector(this.conn);
 
-		List<RdNode> nodes = node.loadEndRdNodeByLinkPid(command.getLinkPid(),
+		List<RdNode> nodes = selector.loadEndRdNodeByLinkPid(command.getLinkPid(),
 				false);
+		
+		List<Integer> nodePids = new ArrayList<Integer>();
+		
+		for(RdNode node : nodes){
+			nodePids.add(node.getPid());
+		}
 
 		command.setNodes(nodes);
+		
+		command.setNodePids(nodePids);
 	}
 
 	// 锁定进入线为该link的交限
@@ -113,6 +137,33 @@ public class Process implements IProcess {
 				.loadRdRestrictionByLinkPid(command.getLinkPid(), true);
 
 		command.setRestrictions(restrictions);
+	}
+	
+	public void lockRdLaneConnexity() throws Exception {
+		
+		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(this.conn);
+		
+		List<RdLaneConnexity> lanes  = selector.loadRdLaneConnexityByLinkPid(command.getLinkPid(), true);
+		
+		command.setLanes(lanes);
+	}
+	
+	public void lockRdBranch() throws Exception {
+		
+		RdBranchSelector selector = new RdBranchSelector(this.conn);
+		
+		List<RdBranch> branches = selector.loadRdBranchByInLinkPid(command.getLinkPid(), true);
+		
+		command.setBranches(branches);
+	}
+	
+	public void lockRdCross() throws Exception {
+		
+		RdCrossSelector selector = new RdCrossSelector(this.conn);
+		
+		List<RdCross> crosses = selector.loadRdCrossByNodeOrLink(command.getNodePids(), command.getLinkPid(), true);
+		
+		command.setCrosses(crosses);
 	}
 
 	@Override
@@ -136,6 +187,12 @@ public class Process implements IProcess {
 		lockRdNode();
 
 		lockRdRestriction();
+		
+		lockRdLaneConnexity();
+		
+		lockRdBranch();
+		
+		lockRdCross();
 
 		return true;
 	}

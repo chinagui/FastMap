@@ -4,7 +4,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.dbcp.BasicDataSource;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
 import com.navinfo.dataservice.datahub.exception.DataHubException;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 /** 
  * @ClassName: AbstractDb 
@@ -13,36 +18,53 @@ import com.navinfo.dataservice.datahub.exception.DataHubException;
  * @Description: TODO
  *  
  */
+@XStreamAlias("OracleSchema")
 public abstract class UnifiedDb {
 	protected int dbId;
 	protected String dbName;
-	protected String dbPasswd;
-	protected int dbRole;
+	protected String dbUserName;
+	protected String dbUserPasswd;
+	protected int dbRole=0;
 	protected String tablespaceName;
 	protected String dbType;
+	protected String gdbVersion;
+	protected int createStatus;
 	protected Date createTime;
 	protected String descp;
 	protected DbServer dbServer;
 
-	public UnifiedDb(){}
-	public UnifiedDb(String dbName,String dbPasswd,int dbRole,String tablespaceName,String dbType){
-		this.dbName=dbName;
-		this.dbPasswd=dbPasswd;
-		this.dbRole=dbRole;
-		this.tablespaceName=tablespaceName;
-		this.dbType=dbType;
-	}
-	public UnifiedDb(int dbId,String dbName,String dbPasswd,int dbRole,String tablespaceName,String dbType,DbServer dbServer){
+	@XStreamOmitField
+	protected DriverManagerDataSource dds;
+
+	@XStreamOmitField
+	protected BasicDataSource bds;
+
+	public UnifiedDb(int dbId,String dbName,String dbType,String gdbVersion
+			,DbServer dbServer,int createStatus){
 		this.dbId=dbId;
 		this.dbName=dbName;
-		this.dbPasswd=dbPasswd;
+		this.dbType=dbType;
+		this.dbServer=dbServer;
+		this.gdbVersion=gdbVersion;
+		this.createStatus=createStatus;
+	}
+	public UnifiedDb(int dbId,String dbName,String dbUserName,String dbUserPasswd,int dbRole,String tablespaceName,String dbType
+			,DbServer dbServer,String gdbVersion,int createStatus,Date createTime,String descp){
+		this.dbId=dbId;
+		this.dbName=dbName;
+		this.dbUserName=dbUserName;
+		this.dbUserPasswd=dbUserPasswd;
 		this.dbRole=dbRole;
 		this.tablespaceName=tablespaceName;
 		this.dbType=dbType;
 		this.dbServer=dbServer;
+		this.gdbVersion=gdbVersion;
+		this.createStatus=createStatus;
+		this.createTime=createTime;
+		this.descp=descp;
 	}
 	
-	public boolean isAdminDb()throws DataHubException{
+	public boolean isSuperDb()throws DataHubException{
 		return dbRole==1?true:false;
 	};
 	/**
@@ -52,20 +74,28 @@ public abstract class UnifiedDb {
 	public Map<String,Object> getConnectParam(){
 		Map<String,Object> map = new HashMap<String,Object>();
 		map.put("dbName", dbName);
-		map.put("dbPasswd", dbPasswd);
+		map.put("dbUserName", dbUserName);
+		map.put("dbUserPasswd", dbUserPasswd);
 		map.put("serverIp", dbServer.getIp());
 		map.put("serverPort", dbServer.getPort());
 		map.put("serverType", dbServer.getType());
 		return map;
 	}
-	public abstract UnifiedDb getAdminDb()throws DataHubException;
-	/**
-	 * 在DbServer上创建数据库
-	 * @return
-	 * @throws Exception
-	 */
-	public abstract boolean create(UnifiedDb adminDb)throws DataHubException;
+	public abstract UnifiedDb getSuperDb()throws DataHubException;
 	public abstract String getConnectString()throws DataHubException;
+
+	/**
+	 * 没有使用连接池的数据库连接，一般子版本使用
+	 */
+	public abstract DriverManagerDataSource getDriverManagerDataSource();
+
+	/**
+	 * 使用连接池的数据库连接
+	 * 一般子版本请不要使用
+	 * 
+	 */
+	public abstract BasicDataSource getPoolDataSource();
+	public abstract void closePoolDataSource();
 	
 /* getter&setter */
 	
@@ -81,11 +111,17 @@ public abstract class UnifiedDb {
 	public void setDbName(String dbName) {
 		this.dbName = dbName;
 	}
-	public String getDbPasswd() {
-		return dbPasswd;
+	public String getDbUserName() {
+		return dbUserName;
 	}
-	public void setDbPasswd(String dbPasswd) {
-		this.dbPasswd = dbPasswd;
+	public void setDbUserName(String dbUserName) {
+		this.dbUserName = dbUserName;
+	}
+	public String getDbUserPasswd() {
+		return dbUserPasswd;
+	}
+	public void setDbUserPasswd(String dbUserPasswd) {
+		this.dbUserPasswd = dbUserPasswd;
 	}
 	public int getDbRole() {
 		return dbRole;

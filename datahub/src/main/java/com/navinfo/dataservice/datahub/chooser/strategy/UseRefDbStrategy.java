@@ -53,7 +53,7 @@ public class UseRefDbStrategy extends DbServerStrategy{
 		}
 		Connection conn = null;
 		try{
-			String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.server_type FROM unified_db_server s,unified_db d WHERE s.server_id=d.SERVER_ID and s.use_type like ? and d.db_name=? and d.db_type=?";
+			String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.service_name,s.server_type FROM unified_db_server s,unified_db d WHERE s.server_id=d.SERVER_ID and s.use_type like ? and d.db_name=? and d.db_type=?";
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
 			DbServer db = run.query(conn, sql,new ResultSetHandler<DbServer>(){
@@ -63,9 +63,10 @@ public class UseRefDbStrategy extends DbServerStrategy{
 					DbServer inDb = null;
 					if(rs.next()){
 						String ip = rs.getString("SERVER_IP");
-						String port = rs.getString("SERVER_PORT");
+						int port = rs.getInt("SERVER_PORT");
 						String type = rs.getString("SERVER_TYPE");
-						inDb = new DbServer(type,ip,port);
+						String sname = rs.getString("SERVICE_NAME");
+						inDb = new DbServer(type,ip,port,sname);
 						inDb.setSid(rs.getInt("SERVER_ID"));
 					}
 					return inDb;

@@ -13,6 +13,5 @@ public interface ExportTarget {
 	 */
 	public void init(String gdbVersion)throws ExportException;
     public void release(boolean destroyTarget);
-    public boolean isNewTarget();
     
 }

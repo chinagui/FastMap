@@ -10,12 +10,14 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.expcore.config.ExportConfig;
 import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.dataservice.expcore.exception.ExportInputException;
-import com.navinfo.dataservice.expcore.model.OracleSchema;
+import com.navinfo.dataservice.datahub.exception.DataHubException;
+import com.navinfo.dataservice.datahub.manager.DbManager;
+import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.expcore.source.OracleSource;
-import com.navinfo.dataservice.expcore.source.parameter.ScriptsConfigManager;
 import com.navinfo.dataservice.expcore.source.parameter.SerializeParameters;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
-import com.navinfo.dataservice.commons.log.DSJobLogger;
+import com.navinfo.dataservice.commons.log.JobLogger;
+import com.navinfo.navicommons.utils.StringUtils;
 
 /** 
  * @ClassName: OracleInput 
@@ -25,7 +27,7 @@ import com.navinfo.dataservice.commons.log.DSJobLogger;
  *  
  */
 public class OracleInput implements DataInput {
-	protected Logger log = Logger.getLogger(ScriptsConfigManager.class);
+	protected Logger log = Logger.getLogger(OracleInput.class);
 	
 	//导入参数
 	protected ExportConfig expConfig;
@@ -34,17 +36,20 @@ public class OracleInput implements DataInput {
 	protected Map<Integer, List<ExpSQL>> expSqlMap;
 
 	public OracleInput(ExportConfig expConfig)throws ExportException{
-		log = DSJobLogger.getLogger(log);
+		log = JobLogger.getLogger(log);
 		this.expConfig=expConfig;
 		initSource();
 	}
 	public void initSource()throws ExportException{
-		OracleSchema schema = new OracleSchema(expConfig.getSourceUserName(),
-				expConfig.getSourcePassword(),
-				expConfig.getSourceIp(),
-				expConfig.getSourcePort(),
-				expConfig.getSourceServiceName(),
-				expConfig.getSourceTablespaceName());
+		OracleSchema schema = null;
+		try{
+			schema = (OracleSchema)new DbManager().getDbById(expConfig.getSourceDbId());
+		}catch(DataHubException e){
+			throw new ExportException("初始化导出源时从datahub查询源库出现错误："+e.getMessage(),e);
+		}
+		if(schema==null){
+			throw new ExportException("导出参数错误，源的dbId不能为空");
+		}
 		this.source=new OracleSource(schema);
 		source.init(expConfig.getGdbVersion());
 	}

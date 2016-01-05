@@ -21,8 +21,7 @@ public class ExporterResult {
 	private long timeConsumingInSec;
 	private String msg;//备注，错误时写入的为错误信息
 	private List<String> exportSteps = new ArrayList<String>();
-	private String newTargetUserName;
-	private String newTargetPassword;
+	private int newTargetDbId;
 	public ExporterResult(){
 		this.status=STATUS_INIT;
 	}
@@ -74,31 +73,11 @@ public class ExporterResult {
 		exportSteps.add("["+sdf.format(new Date())+"]"+content);
 	}
 
-	/**
-	 * @return the newTargetUserName
-	 */
-	public String getNewTargetUserName() {
-		return newTargetUserName;
+	public int getNewTargetDbId() {
+		return newTargetDbId;
 	}
 
-	/**
-	 * @param newTargetUserName the newTargetUserName to set
-	 */
-	public void setNewTargetUserName(String newTargetUserName) {
-		this.newTargetUserName = newTargetUserName;
-	}
-
-	/**
-	 * @return the newTargetPassword
-	 */
-	public String getNewTargetPassword() {
-		return newTargetPassword;
-	}
-
-	/**
-	 * @param newTargetPassword the newTargetPassword to set
-	 */
-	public void setNewTargetPassword(String newTargetPassword) {
-		this.newTargetPassword = newTargetPassword;
+	public void setNewTargetDbId(int newTargetDbId) {
+		this.newTargetDbId = newTargetDbId;
 	}
 }

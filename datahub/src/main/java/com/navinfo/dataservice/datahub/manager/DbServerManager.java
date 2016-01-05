@@ -41,9 +41,8 @@ public class DbServerManager {
 				public List<DbServer> handle(ResultSet rs) throws SQLException {
 					List<DbServer> sers = new ArrayList<DbServer>();
 					while(rs.next()){
-						DbServer ser = new DbServer(rs.getString("SERVER_TYPE"),rs.getString("SERVER_IP"),rs.getString("SERVER_PORT"));
+						DbServer ser = new DbServer(rs.getString("SERVER_TYPE"),rs.getString("SERVER_IP"),rs.getInt("SERVER_PORT"),rs.getString("SERVICE_NAME"));
 						ser.setSid(rs.getInt("SERVER_ID"));
-						ser.setServiceName(rs.getString("SERVICE_NAME"));
 						String useTypes = rs.getString("USE_TYPE");
 						if(StringUtils.isNotEmpty(useTypes)){
 							Set<String> useSet = new HashSet<String>();

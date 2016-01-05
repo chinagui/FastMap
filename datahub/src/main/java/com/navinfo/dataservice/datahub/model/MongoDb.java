@@ -1,8 +1,12 @@
 package com.navinfo.dataservice.datahub.model;
 
+import java.util.Date;
+
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import com.navinfo.dataservice.datahub.exception.DataHubException;
 
@@ -14,33 +18,26 @@ import com.navinfo.dataservice.datahub.exception.DataHubException;
  */
 public class MongoDb extends UnifiedDb {
 	protected Logger log = Logger.getLogger(this.getClass());
-	public MongoDb(){
-		super();
+	public MongoDb(int dbId,String dbName,String dbType,String gdbVersion
+			,DbServer dbServer,int createStatus){
+		super(dbId,dbName,dbType,gdbVersion
+				,dbServer,createStatus);
 	}
-	public MongoDb(String dbName,String dbType){
-		super(dbName,null,-1,null,dbType);
-	}
-	public MongoDb(String dbName,String dbType,DbServer dbServer){
-		super(-1,dbName,null,-1,null,dbType,dbServer);
+	public MongoDb(int dbId,String dbName,String dbUserName,String dbUserPasswd,int dbRole,String tablespaceName,String dbType
+			,DbServer dbServer,String gdbVersion,int createStatus,Date createTime,String descp){
+		super(dbId,dbName,dbUserName,dbUserPasswd,dbRole,tablespaceName,dbType
+				,dbServer,gdbVersion,createStatus,createTime,descp);
 	}
 
 	/* (non-Javadoc)
 	 * @see com.navinfo.dataservice.datahub.model.AbstractDb#getAdminDb()
 	 */
 	@Override
-	public UnifiedDb getAdminDb() throws DataHubException {
+	public UnifiedDb getSuperDb() throws DataHubException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.datahub.model.AbstractDb#create(com.navinfo.dataservice.datahub.model.AbstractDb)
-	 */
-	@Override
-	public boolean create(UnifiedDb adminDb) throws DataHubException {
-		// TODO Auto-generated method stub
-		return false;
-	}
 
 	@Override
 	public String getConnectString()throws DataHubException {
@@ -54,6 +51,20 @@ public class MongoDb extends UnifiedDb {
 			throw new DataHubException("将oracleschema实体对象解析成json时发生错误，原因："+e.getMessage(),e);
 		}
 		return conString;
+	}
+	@Override
+	public DriverManagerDataSource getDriverManagerDataSource() {
+		
+		return null;
+	}
+	@Override
+	public BasicDataSource getPoolDataSource() {
+		
+		return null;
+	}
+	@Override
+	public void closePoolDataSource() {
+		
 	}
 
 }

@@ -1,13 +1,11 @@
 package com.navinfo.dataservice.expcore.config;
 
-import com.navinfo.dataservice.expcore.exception.ExportConfigValidateException;
-import com.navinfo.dataservice.expcore.model.OracleSchema;
-import com.navinfo.dataservice.expcore.target.TargetType;
+import com.navinfo.dataservice.datahub.model.OracleSchema;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.commons.log.DSJobLogger;
+import com.navinfo.dataservice.commons.log.JobLogger;
 
 /**
  * 

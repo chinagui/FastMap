@@ -62,49 +62,39 @@ public class BaseController {
         return createXMLModelAndView(obj);
     }
 
-    @SuppressWarnings("unchecked")
-    protected Map exception(Exception e) {
+
+    protected Map<String,?> exception(Exception e) {
         return exception(e.getMessage());
     }
-
-    protected Map exception(String msg) {
-        Map result = new HashMap();
-        result.put("success", 0);// 失败
-        result.put("message", msg);
-        return result;
-    }
-
-    @SuppressWarnings("unchecked")
-    protected Map success(String message) {
-        Map result = new HashMap();
-        result.put("success", 1);// 成功
-        result.put("message", message);
-        return result;
-    }
-
-    protected String URLDecode(String parameter) throws Exception {
-        if (parameter == null || parameter.trim().length() == 0) {
-            return null;
-        }
-        parameter = URLDecoder.decode(parameter, "UTF-8");
-        return parameter;
+    protected Map<String,?> exception(String msg) {
+        return createModelMap(1,msg,null);
     }
 
     // 验证不通过的
-    @SuppressWarnings("unchecked")
-    protected Map fail(String message) {
-        Map result = new HashMap();
-        result.put("success", 2);// 验证失败
-        result.put("message", message);
-        return result;
+    protected Map<String,?> fail(String msg) {
+        return createModelMap(0,msg,null);
     }
-
-    @SuppressWarnings("unchecked")
-    protected Map success(Map result) {
-        if (result != null) {
-            result.put("success", 1);// 成功
-        }
-        return result;
+    protected Map<String,?> success(String msg) {
+        return createModelMap(100,msg,null);
+    }
+    protected Map<String,?> success(String msg,Map<String,?> result) {
+        return createModelMap(100,msg,result);
+    }
+    protected Map<String,?> success(Map<String,?> result) {
+        return createModelMap(100,"success",result);
+    }
+    protected Map<String,?> success(String msg,Page page){
+    	return createModelMap(100,msg,page);
+    }
+    protected Map<String,?> success(Page page){
+    	return createModelMap(100,"success",page);
+    }
+    private Map<String,?> createModelMap(int code,String msg,Object data){
+    	Map<String,Object> result = new HashMap<String,Object>();
+    	result.put("code", code);
+    	result.put("msg", msg);
+    	result.put("data", data);
+    	return result;
     }
 
     protected ModelAndView createQueryJsonModelAndViewForXMLFormat(Page page) {
@@ -116,7 +106,13 @@ public class BaseController {
         }
         return new ModelAndView("jsonView", "query", sb.toString());
     }
-
+    protected String URLDecode(String parameter) throws Exception {
+        if (parameter == null || parameter.trim().length() == 0) {
+            return null;
+        }
+        parameter = URLDecoder.decode(parameter, "UTF-8");
+        return parameter;
+    }
 
     protected Integer toInteger(Object value) {
         if (value == null)

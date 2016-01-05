@@ -11,13 +11,14 @@ import oracle.sql.BLOB;
 
 import org.apache.commons.codec.binary.Base64;
 
+import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.db.OracleAddress;
 
 public class PatternImageSelector {
 
 	private Connection conn;
-
-	public PatternImageSelector(Connection conn) {
+	
+	public PatternImageSelector(Connection conn){
 		this.conn = conn;
 	}
 
@@ -90,6 +91,14 @@ public class PatternImageSelector {
 
 				}
 			}
+			
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					
+				}
+			}
 
 		}
 
@@ -148,6 +157,13 @@ public class PatternImageSelector {
 				}
 			}
 
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					
+				}
+			}
 		}
 
 		return null;

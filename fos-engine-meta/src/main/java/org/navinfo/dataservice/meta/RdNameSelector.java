@@ -21,8 +21,8 @@ public class RdNameSelector {
 			throws Exception {
 		JSONArray array = new JSONArray();
 
-		String sql = "SELECT *   FROM (SELECT c.*, rownum rn           FROM (select a.name_id, a.name, b.province   from rd_name a, cp_meshlist b  where a.name like :1 and a.admin_id = b.admincode    ) c          WHERE rownum <= :2)  WHERE rn >= :3";
-
+		String sql = "SELECT *   FROM (SELECT c.*, rownum rn           FROM (select a.name_id, max(a.name) name, max(b.province) province                  from rd_name a, cp_meshlist b                  where a.name like :1                    and a.admin_id = b.admincode group by a.name_id) c          WHERE rownum <= :2)  WHERE rn >= :3";
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -81,6 +81,13 @@ public class RdNameSelector {
 				}
 			}
 
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					
+				}
+			}
 		}
 
 		return array;

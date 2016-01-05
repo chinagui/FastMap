@@ -230,6 +230,10 @@ public class DisplayUtils {
 		pointMerArray[0] = geom.getCentroid().getX();
 
 		pointMerArray[1] = geom.getCentroid().getY();
+		
+		pointMerArray[0] = MercatorProjection.longitudeToMetersX(pointMerArray[0]);
+		
+		pointMerArray[1] = MercatorProjection.latitudeToMetersY(pointMerArray[1]);
 
 		return pointMerArray;
 	}
@@ -900,10 +904,12 @@ public class DisplayUtils {
 
 			for (int i = 0; i < linkMerArray.length - 1; i++) {
 
-				if (linkMerArray[i][0] <= pointMerArray[0]
-						&& linkMerArray[i + 1][0] >= pointMerArray[0]
-						&& linkMerArray[i][1] <= pointMerArray[1]
-						&& linkMerArray[i + 1][1] >= pointMerArray[1]) {
+				if (((linkMerArray[i][0] <= pointMerArray[0]
+						&& linkMerArray[i + 1][0] >= pointMerArray[0]) || (linkMerArray[i][0] >= pointMerArray[0]
+						&& linkMerArray[i + 1][0] <= pointMerArray[0]))
+						&& ((linkMerArray[i][1] <= pointMerArray[1]
+						&& linkMerArray[i + 1][1] >= pointMerArray[1]) || (linkMerArray[i][1] >= pointMerArray[1]
+						&& linkMerArray[i + 1][1] <= pointMerArray[1]))) {
 					
 					 startx = linkMerArray[i][0];
 					
@@ -922,10 +928,12 @@ public class DisplayUtils {
 
 			for (int i = linkMerArray.length-1; i > 0; i--) {
 
-				if (linkMerArray[i][0] <= pointMerArray[0]
-						&& linkMerArray[i - 1][0] >= pointMerArray[0]
-						&& linkMerArray[i][1] <= pointMerArray[1]
-						&& linkMerArray[i - 1][1] >= pointMerArray[1]) {
+				if (((linkMerArray[i][0] <= pointMerArray[0]
+						&& linkMerArray[i - 1][0] >= pointMerArray[0]) || (linkMerArray[i][0] >= pointMerArray[0]
+						&& linkMerArray[i - 1][0] <= pointMerArray[0]))
+						&& ((linkMerArray[i][1] <= pointMerArray[1]
+						&& linkMerArray[i - 1][1] >= pointMerArray[1]) || (linkMerArray[i][1] >= pointMerArray[1]
+						&& linkMerArray[i - 1][1] <= pointMerArray[1]))) {
 					
 					 startx = linkMerArray[i][0];
 					

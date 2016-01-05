@@ -230,10 +230,12 @@ public class DisplayUtils {
 		pointMerArray[0] = geom.getCentroid().getX();
 
 		pointMerArray[1] = geom.getCentroid().getY();
-		
-		pointMerArray[0] = MercatorProjection.longitudeToMetersX(pointMerArray[0]);
-		
-		pointMerArray[1] = MercatorProjection.latitudeToMetersY(pointMerArray[1]);
+
+		pointMerArray[0] = MercatorProjection
+				.longitudeToMetersX(pointMerArray[0]);
+
+		pointMerArray[1] = MercatorProjection
+				.latitudeToMetersY(pointMerArray[1]);
 
 		return pointMerArray;
 	}
@@ -823,13 +825,13 @@ public class DisplayUtils {
 		double startx, starty, stopx, stopy;
 
 		double range[] = findLinkRange(linkMerArray, pointMerArray, direct);
-		
+
 		startx = range[0];
-		
+
 		starty = range[1];
-		
+
 		stopx = range[2];
-		
+
 		stopy = range[3];
 
 		if (startx != stopx) {
@@ -894,30 +896,26 @@ public class DisplayUtils {
 
 	private static double[] findLinkRange(double[][] linkMerArray,
 			double[] pointMerArray, int direct) {
-	    double[] interPoint = new double[2];
-		
+		double[] interPoint = new double[2];
+
 		double range[] = new double[4];
-		
-		double startx=0,starty=0,stopx=0,stopy=0;
+
+		double startx = 0, starty = 0, stopx = 0, stopy = 0;
 
 		if (direct == 0 || direct == 2) {
 
 			for (int i = 0; i < linkMerArray.length - 1; i++) {
 
-				if (((linkMerArray[i][0] <= pointMerArray[0]
-						&& linkMerArray[i + 1][0] >= pointMerArray[0]) || (linkMerArray[i][0] >= pointMerArray[0]
-						&& linkMerArray[i + 1][0] <= pointMerArray[0]))
-						&& ((linkMerArray[i][1] <= pointMerArray[1]
-						&& linkMerArray[i + 1][1] >= pointMerArray[1]) || (linkMerArray[i][1] >= pointMerArray[1]
-						&& linkMerArray[i + 1][1] <= pointMerArray[1]))) {
-					
-					 startx = linkMerArray[i][0];
-					
-					 starty = linkMerArray[i][1];
-					
-					 stopx = linkMerArray[i+1][0];
-					
-					 stopy = linkMerArray[i+1][1];
+				if (((linkMerArray[i][0] <= pointMerArray[0] && linkMerArray[i + 1][0] >= pointMerArray[0]) || (linkMerArray[i][0] >= pointMerArray[0] && linkMerArray[i + 1][0] <= pointMerArray[0]))
+						&& ((linkMerArray[i][1] <= pointMerArray[1] && linkMerArray[i + 1][1] >= pointMerArray[1]) || (linkMerArray[i][1] >= pointMerArray[1] && linkMerArray[i + 1][1] <= pointMerArray[1]))) {
+
+					startx = linkMerArray[i][0];
+
+					starty = linkMerArray[i][1];
+
+					stopx = linkMerArray[i + 1][0];
+
+					stopy = linkMerArray[i + 1][1];
 
 					break;
 				}
@@ -926,73 +924,202 @@ public class DisplayUtils {
 
 		} else {
 
-			for (int i = linkMerArray.length-1; i > 0; i--) {
+			for (int i = linkMerArray.length - 1; i > 0; i--) {
 
-				if (((linkMerArray[i][0] <= pointMerArray[0]
-						&& linkMerArray[i - 1][0] >= pointMerArray[0]) || (linkMerArray[i][0] >= pointMerArray[0]
-						&& linkMerArray[i - 1][0] <= pointMerArray[0]))
-						&& ((linkMerArray[i][1] <= pointMerArray[1]
-						&& linkMerArray[i - 1][1] >= pointMerArray[1]) || (linkMerArray[i][1] >= pointMerArray[1]
-						&& linkMerArray[i - 1][1] <= pointMerArray[1]))) {
-					
-					 startx = linkMerArray[i][0];
-					
-					 starty = linkMerArray[i][1];
-					
-					 stopx = linkMerArray[i-1][0];
-					
-					 stopy = linkMerArray[i-1][1];
+				if (((linkMerArray[i][0] <= pointMerArray[0] && linkMerArray[i - 1][0] >= pointMerArray[0]) || (linkMerArray[i][0] >= pointMerArray[0] && linkMerArray[i - 1][0] <= pointMerArray[0]))
+						&& ((linkMerArray[i][1] <= pointMerArray[1] && linkMerArray[i - 1][1] >= pointMerArray[1]) || (linkMerArray[i][1] >= pointMerArray[1] && linkMerArray[i - 1][1] <= pointMerArray[1]))) {
+
+					startx = linkMerArray[i][0];
+
+					starty = linkMerArray[i][1];
+
+					stopx = linkMerArray[i - 1][0];
+
+					stopy = linkMerArray[i - 1][1];
 
 					break;
 				}
 
 			}
 		}
-		
-		if ((starty - pointMerArray[1]) * (pointMerArray[0] - stopx) !=
-				(pointMerArray[1] - stopy) * (startx - pointMerArray[0])){
-			
-			if (startx != stopx){
-				
-				if (starty != stopy){
-					
+
+		if ((starty - pointMerArray[1]) * (pointMerArray[0] - stopx) != (pointMerArray[1] - stopy)
+				* (startx - pointMerArray[0])) {
+
+			if (startx != stopx) {
+
+				if (starty != stopy) {
+
 					double k1 = (starty - stopy) / (startx - stopx);
-					
+
 					double c1 = starty - k1 * startx;
-					
+
 					double k2 = -1 / k1;
-					
+
 					double c2 = pointMerArray[1] - k2 * pointMerArray[0];
-					
+
 					interPoint[0] = (c2 - c1) / (k1 - k2);
-					
+
 					interPoint[1] = k1 * interPoint[0] + c1;
-					
-				}else{
+
+				} else {
 					interPoint[0] = pointMerArray[0];
-					
+
 					interPoint[1] = starty;
+				}
+
+			} else {
+				interPoint[0] = startx;
+
+				interPoint[1] = pointMerArray[1];
+			}
+
+		} else {
+			interPoint[0] = pointMerArray[0];
+
+			interPoint[1] = pointMerArray[1];
+		}
+
+		range[0] = interPoint[0];
+
+		range[1] = interPoint[1];
+
+		range[2] = stopx;
+
+		range[3] = stopy;
+
+		return range;
+	}
+
+	// 显示坐标：
+	// 取link中点坐标，限速的通行方向的右侧2米
+	public static double[] getMid2MPosition(String linkWkt,int direct) throws Exception {
+		double[] position = new double[2];
+
+		double[][] linkMerArray = convertLinkToMerArray(linkWkt);
+		
+		if (direct == 3){
+			int len = linkMerArray.length;
+			
+			for(int i=0;i<len / 2;i++){
+				double tmpPoint[] = linkMerArray[i];
+				linkMerArray[i] = linkMerArray[len - i - 1];
+				linkMerArray[len - i - 1] = tmpPoint;
+			}
+		}
+
+		double linkLength = getLinkLength(linkMerArray);
+		
+		double[] midPoint = new double[2];
+		
+		double[] range = getMidPointRange(linkMerArray, linkLength, midPoint);
+		
+		if (range[0] != range[2]){
+			
+			if (range[1] != range[3]){
+				
+				double k = (range[3] - range[1]) / (range[2] - range[0]);
+				
+				if (k > 0){
+					if (range[2] > range[0]){
+						//递增
+						position[0] = midPoint[0] + (2 / ( 1+ k * k));
+						
+						position[1] = midPoint[1] - (2 * k/ ( 1+ k * k));
+					}else{
+						position[0] = midPoint[0] - (2 / ( 1+ k * k));
+						
+						position[1] = midPoint[1] + (2 * k/ ( 1+ k * k));
+					}
+				}else{
+					if (range[3] > range[1]){
+						//递增
+						position[0] = midPoint[0] - (2 / ( 1+ k * k));
+						
+						position[1] = midPoint[1] - (2 * k/ ( 1+ k * k));
+					}else{
+						position[0] = midPoint[0] - (2 / ( 1+ k * k));
+						
+						position[1] = midPoint[1] + (2 * k/ ( 1+ k * k));
+					}
 				}
 				
 			}else{
-				interPoint[0] = startx;
-				
-				interPoint[1] = pointMerArray[1];
+				//与X轴平行
+				if (range[2] > range[0]){
+					position[0] = midPoint[0];
+					
+					position[1] = midPoint[1] - 2;
+				}else{
+					position[0] = midPoint[0];
+					
+					position[1] = midPoint[1] + 2;
+				}
 			}
 			
 		}else{
-			interPoint[0] = pointMerArray[0];
-			
-			interPoint[1] = pointMerArray[1];
+			//与Y轴平行
+			if (range[3] > range[1]){
+				position[0] = midPoint[0] + 2;
+				
+				position[1] = midPoint[1] ;
+			}else{
+				position[0] = midPoint[0] - 2;
+				
+				position[1] = midPoint[1];
+			}
 		}
 		
-		range[0] = interPoint[0];
+		position[0] = MercatorProjection.metersXToLongitude(position[0]);
 		
-		range[1] = interPoint[1];
-		
-		range[2] = stopx;
-		
-		range[3] = stopy;
+		position[1] = MercatorProjection.metersYToLatitude(position[1]);
+
+		return position;
+	}
+
+	private static double[] getMidPointRange(double[][] linkMerArray,
+			double linkLength, double[] midPoint) {
+		double[] range = new double[4];
+
+		double halfLength = linkLength / 2;
+
+		for (int i = 0; i < linkMerArray.length - 1; i++) {
+			double len = Math.sqrt(Math.pow(linkMerArray[i][0]
+					- linkMerArray[i + 1][0], 2)
+					+ Math.pow(linkMerArray[i][1] - linkMerArray[i + 1][1], 2));
+
+			if (len < halfLength) {
+				halfLength -= len;
+			} else {
+				range[0] = linkMerArray[i][0];
+
+				range[1] = linkMerArray[i][1];
+
+				range[2] = linkMerArray[i + 1][0];
+
+				range[3] = linkMerArray[i + 1][1];
+
+				if (len > halfLength) {
+
+					double scale = halfLength / len;
+
+					midPoint[0] = linkMerArray[i][0] + scale
+							* (linkMerArray[i + 1][0] - linkMerArray[i][0]);
+
+					midPoint[1] = linkMerArray[i][1] + scale
+							* (linkMerArray[i + 1][1] - linkMerArray[i][1]);
+
+					break;
+				} else {
+
+					midPoint[0] = linkMerArray[i + 1][0];
+
+					midPoint[1] = linkMerArray[i + 1][1];
+
+					break;
+				}
+			}
+		}
 
 		return range;
 	}

@@ -62,8 +62,8 @@ public class DBOraclePool {
 		p.setProperty("driverClassName", PropConstant.oracleDriver);
 		p.setProperty("url", "jdbc:oracle:thin:@" + ip + ":" + port + ":"
 				+ serviceName);
-		p.setProperty("password", username);// 连接数据库的密码
-		p.setProperty("username", password);// 连接数据库的用户名
+		p.setProperty("password", password);// 连接数据库的密码
+		p.setProperty("username", username);// 连接数据库的用户名
 		p.setProperty("maxActive", "150");// 最大连接数
 		p.setProperty("minIdle", "10"); // 最大空闲连接
 		p.setProperty("maxIdle", "20"); // 最大空闲连接

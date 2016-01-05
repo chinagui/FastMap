@@ -9,6 +9,8 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.BLOB;
 
+import org.apache.commons.codec.binary.Base64;
+
 import com.navinfo.dataservice.commons.db.OracleAddress;
 
 public class PatternImageSelector {
@@ -23,7 +25,7 @@ public class PatternImageSelector {
 
 		JSONArray array = new JSONArray();
 		
-		String sql = "SELECT *   FROM (SELECT a.*, rownum rn           FROM (select file_name,file_content                   from sc_model_match_g                  where file_name like :1) a          WHERE rownum <= :2)  WHERE rn >= :3";
+		String sql = "SELECT *   FROM (SELECT a.*, rownum rn           FROM (select file_name,file_content,format                 from sc_model_match_g                  where file_name like :1) a          WHERE rownum <= :2)  WHERE rn >= :3";
 
 		PreparedStatement pstmt = null;
 
@@ -52,6 +54,8 @@ public class PatternImageSelector {
 				
 				json.put("fileName", fileName);
 				
+				String format = resultSet.getString("format");
+				
 				BLOB blob = (BLOB)resultSet.getBlob("file_content");
 				
 				InputStream is = blob.getBinaryStream();
@@ -60,7 +64,9 @@ public class PatternImageSelector {
 				is.read(buffer);
 				is.close();
 				
-				json.put("fileContent", buffer);
+				String fileContent = "data:image/"+format+";base64," + new String(Base64.encodeBase64(buffer));
+				
+				json.put("fileContent", fileContent);
 
 				array.add(json);
 			}

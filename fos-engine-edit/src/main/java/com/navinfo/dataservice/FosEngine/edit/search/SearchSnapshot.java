@@ -15,6 +15,10 @@ public class SearchSnapshot implements ISerializable {
 	private int t;
 
 	private String i;
+	
+	private JSONArray g;
+
+	private JSONObject m;
 
 	public String getI() {
 		return i;
@@ -32,9 +36,6 @@ public class SearchSnapshot implements ISerializable {
 		this.m = m;
 	}
 
-	private JSONArray g;
-
-	private JSONObject m;
 	
 	public SearchSnapshot() {
 

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2010-11-3
+-->
+<files>
+    <file name="exp-rd.xml"/>
+    <file name="exp-rw.xml"/>
+    <file name="exp-ad.xml"/>
+    <file name="exp-lc.xml"/>
+    <file name="exp-lu.xml"/>
+    <file name="exp-cm.xml"/>
+    <file name="exp-zone.xml"/>
+    <file name="exp-ix.xml"/>
+    <file name="exp-hw.xml"/>
+    <file name="exp-adas.xml"/>
+    <file name="exp-pt.xml"/>
+    <file name="exp-m_para.xml"/>
+    <file name="exp-ck_excep.xml"/>
+    <file name="exp-log.xml"/>
+</files>

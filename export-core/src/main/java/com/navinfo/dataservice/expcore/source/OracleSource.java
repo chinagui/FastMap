@@ -58,10 +58,8 @@ public class OracleSource implements ExportSource {
 		try{
 			conn=schema.getPoolDataSource().getConnection();
 			installExportViews(gdbVersion,conn);
-			//temp tables
-			if(newTableSuffix){
-				installTempTable(gdbVersion,conn);
-			}
+			//create or truncate temp tables
+			createOrTruncateTempTables(gdbVersion,conn);
 			//
 			//view.sql,"f_str_append_ifnotexists.fnc",
 			String[] pkgFullNames={"logger.pck","PK_TABLE_STATS.pck"};
@@ -85,16 +83,16 @@ public class OracleSource implements ExportSource {
 			throw new ExportException("初始化源.创建视图时发生错误。",e);
 		}
 	}
-	private void installTempTable(String gdbVersion,Connection conn) throws ExportException {
+	private void createOrTruncateTempTables(String gdbVersion,Connection conn) throws ExportException {
 		InputStream is = null;
 		try {
-			String schemaCreateFile = "/com/navinfo/dataservice/expcore/resources/" + gdbVersion + "/schema/temp_table_create.sql";
+			String schemaCreateFile = "/com/navinfo/dataservice/expcore/resources/" + gdbVersion + (newTableSuffix?"/schema/temp_table_create.sql":"/schema/temp_table_truncate.sql");
 			is = OracleSource.class.getResourceAsStream(schemaCreateFile);
 			if (is == null) {
 				Thread.currentThread().getContextClassLoader().getResourceAsStream(schemaCreateFile);
 			}
 			if (is == null)
-				throw new ExportException("在给源库创建临时表时无法找到配置文件:" + schemaCreateFile);
+				throw new ExportException("在给源库创建或清理临时表时无法找到配置文件:" + schemaCreateFile);
 			Reader reader = new InputStreamReader(is, "UTF-8");
 			StringBuilder builder = new StringBuilder();
 			BufferedReader in = new BufferedReader(reader);

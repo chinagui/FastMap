@@ -2,6 +2,7 @@
 
 <configMap>
 
+<!-- common part -->
 	<!--管理数据库的连接 -->
 	<dataSourceKey>MAN</dataSourceKey>
 	<MAN.server.type>ORACLE</MAN.server.type>
@@ -15,8 +16,18 @@
 	<MAN.dataSource.minIdle>2</MAN.dataSource.minIdle>
 	<MAN.dataSource.maxWait>1000</MAN.dataSource.maxWait>
 	<MAN.dataSource.validationQuery>select 1 from dual</MAN.dataSource.validationQuery>
+	
+<!-- datahub part -->	
 	<!-- 数据库服务器默认选择策略，random,只能配置不需要传参的策略类型 -->
 	<dbserver.strategy.default>random</dbserver.strategy.default>
 	<dbserver.cache.enable>false</dbserver.cache.enable>
 	<datahub.oracle.defaultTablespaces>USERS</datahub.oracle.defaultTablespaces>
+	
+<!-- expcore part -->
+    <!--每个任务执行的内部线程数-->
+    <export.multiThread.inputPoolSize>10</export.multiThread.inputPoolSize>
+    <export.multiThread.outputPoolSize>10</export.multiThread.outputPoolSize>
+    <target.file.dir>/u01/dms_test/apache-tomcat-6.0.29/webapps/download/</target.file.dir>
+    <fullcopy.ignore.table.prefix>TEMP_,TMP_,NI_,MDRT_,PIPELINE_,SYS_,STAT_,SHD_,B_,NN_,TMAU_,TASK_EXTENT</fullcopy.ignore.table.prefix>
+    <exclude.table.columns>NI_VAL_EXCEPTION:MESH_ID</exclude.table.columns>
 </configMap>

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- @authur:liuqing @time:2010-08-25 -->
+<sqls>
+	<!--///////////////////////////////////////////////////铁路///////////////////////////////////////////////////////// -->
+
+
+	<import file="poi_query.xml" />
+
+	<feature name="IX_POI">
+		<!--STEP 从4开始： 1.因为在市街图中STEP=3时，开始插入关联POI到临时表 -->
+		<!-- 提取原则： 1.按图幅提取 -->
+
+
+		<step value="13">
+			<!--按图幅过滤IX_POI -->
+			<sql condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_IX_POI
+                          (PID)
+                          (SELECT PID FROM IX_POI WHERE MESH_ID [mesh]);
+                        ]]></sql>
+			<sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_IX_POI
+                          (PID)
+                          (SELECT PID FROM IX_POI
+                            WHERE SDO_ANYINTERACT(GEOMETRY,
+                                              [area]) = 'TRUE');
+                        ]]></sql>
+
+
+		</step>
+
+		<step value="16">
+			<!--POI在图幅内 ，与POI相关联的图幅外LINK要提取 -->
+			<!-- 根据POI查询引导link -->
+			<sql  sqlType="dataIntegrity" condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT I.LINK_PID FROM IX_POI I,TEMP_FILTER_IX_POI T WHERE I.PID=T.PID);
+                        ]]></sql>
+
+
+			<!-- 父在图幅内，子在图幅外，子提取 -->
+			<sql sqlType="dataIntegrity" condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI
+                          (PID)
+                          (
+							SELECT /*+ ORDERED USE_HASH(P) USE_HASH(C) NO_SWAP_JOIN_INPUTS(C)*/
+							 C.CHILD_POI_PID
+							  FROM TEMP_FILTER_IX_POI T, IX_POI_PARENT P, IX_POI_CHILDREN C
+							 WHERE P.GROUP_ID = C.GROUP_ID
+							   AND P.PARENT_POI_PID = T.PID);
+                        ]]></sql>
+
+			<!-- 子在图幅内，父在图幅外，父提取，父的其他子不提 -->
+			<sql sqlType="dataIntegrity" condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI
+                          (PID)
+                          (SELECT /*+ ORDERED USE_HASH(C) USE_HASH(P) NO_SWAP_JOIN_INPUTS(P)*/
+							 P.PARENT_POI_PID
+							  FROM TEMP_FILTER_IX_POI T, IX_POI_CHILDREN C, IX_POI_PARENT P
+							 WHERE P.GROUP_ID = C.GROUP_ID
+							   AND C.CHILD_POI_PID = T.PID);
+                        ]]></sql>
+
+
+			<!--提取同一POI -->
+			<sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_SAMEPOI
+                          (PID)
+                          (SELECT DISTINCT P.GROUP_ID
+                              FROM IX_SAMEPOI_PART P,TEMP_FILTER_IX_POI T
+                             WHERE P.POI_PID = T.PID);
+                        ]]></sql>
+
+		</step>
+
+		<step value="19">
+
+			<!--补充同一POI -->
+			<sql sqlType="dataIntegrity" condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI
+                          (PID)
+                          (SELECT  P.POI_PID
+                              FROM IX_SAMEPOI_PART P,TEMP_IX_SAMEPOI T
+                             WHERE P.GROUP_ID = T.PID);
+                        ]]></sql>
+			<!--LINK在图幅内，与LINK相关联的POI要提取 -->
+			<!--第二步完成图幅内的Link提取 -->
+			<sql sqlType="dataIntegrity" condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI
+                          (PID)
+                          (SELECT P.PID FROM IX_POI P,TEMP_FILTER_RD_LINK L WHERE P.LINK_PID=L.PID);
+                        ]]></sql>
+
+
+		</step>
+		<step value="22">
+
+			<sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_IX_POI
+                          (PID)
+                          (SELECT P.PID FROM TEMP_IX_POI P);
+                        ]]></sql>
+
+
+		</step>
+		<!--去重 -->
+		<step value="25">
+
+			<sql>
+                <![CDATA[TRUNCATE TABLE TEMP_IX_POI;]]></sql>
+
+
+		</step>
+		<!--去重 -->
+		<step value="28">
+
+			<sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI
+                          (PID)
+                          (SELECT DISTINCT PID FROM TEMP_FILTER_IX_POI P);
+                        ]]></sql>
+
+
+		</step>
+		
+	</feature>
+
+
+
+</sqls>

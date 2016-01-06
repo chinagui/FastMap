@@ -1,28 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <configMap>
-    <!--每个任务执行的内部线程数-->
-    <threadPoolSize>10</threadPoolSize>
 
-
-    <insertBatchSize>1000</insertBatchSize>
-    <selectFetchSize>500</selectFetchSize>
-
-
-    <!--是否关闭自动安装检查程序-->
-    <enableInstallCheckPrograme>false</enableInstallCheckPrograme>
-
-
-    <!--导出文件到sqlite时需要使用的参数-->
-    <workTempDir>/u01/dms_test/apache-tomcat-6.0.29/webapps/download/</workTempDir>
-    <exportIgnoreTablePrefix>TEMP_,TMP_,NI_,MDRT_,PIPELINE_,SYS_,STAT_,SHD_,B_,NN_,TMAU_,TASK_EXTENT</exportIgnoreTablePrefix>
-    <!--<exportIgnoreTablePrefix>TEMP_,TMP_,NI_,MDRT_,PIPELINE_,SYS_,STAT_,SHD_,RD_,RW_,IX_,CMG_,AD_,LC_,PT_,TMC_</exportIgnoreTablePrefix>-->
-
-
-    <excludeTableColumns>NI_VAL_EXCEPTION:MESH_ID</excludeTableColumns>
-
-    <defaultVersionsTablespaces>gdb_data</defaultVersionsTablespaces>
-    
-    <publish.version.check.suite>ST003</publish.version.check.suite>
 
 </configMap>

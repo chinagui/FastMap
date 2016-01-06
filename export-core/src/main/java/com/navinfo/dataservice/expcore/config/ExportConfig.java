@@ -21,7 +21,7 @@ import com.navinfo.dataservice.commons.log.JobLogger;
 
 public class ExportConfig {
 	
-	protected String gdbVersion;//230,240,...
+	protected String gdbVersion;//230,240,240+,252+,...
 	
 	protected boolean fastCopy;
 	
@@ -33,7 +33,7 @@ public class ExportConfig {
 	protected int sourceDbId=0;//
 	
 	protected String condition;
-//	public final static String CONDITION_FULL="full";
+
 	public final static String CONDITION_BY_MESH="mesh";
 	public final static String CONDITION_BY_AREA="area";
 	public final static String CONDITION_BY_POLYGON="polygon";

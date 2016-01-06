@@ -8,6 +8,7 @@ import org.apache.commons.dbcp.BasicDataSource;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.UnifiedDb;
+import com.navinfo.dataservice.expcore.config.ExportConfig;
 import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.navicommons.utils.StringUtils;
 
@@ -22,7 +23,8 @@ public class ScriptsInterface {
 	public ScriptsInterface(BasicDataSource manDataSource){
 		this.manDataSource=manDataSource;
 	}
-	public void exportData(UnifiedDb sourceDb,UnifiedDb targetDb,int extendCount)throws ExportException{
+	public void exportData(String srcDbName,String srcBizType,String targetDbName,String target,int extendCount)throws ExportException{
+		ExportConfig expConfig = new ExportConfig();
 		
 	}
 	

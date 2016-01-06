@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- @authur:liuqing @time:2012-02-28 -->
+<sqls>
+
+	<feature name="ADAS">
+		<step value="7">
+			<!--提取link -->
+			<sql condition="mesh"><![CDATA[
+                     INSERT /*+ append */
+                     INTO TEMP_ADAS_LINK
+                       (PID)
+                       (SELECT P.LINK_PID
+                          FROM ADAS_LINK P
+                         WHERE P.RDLINK_PID = 0 AND P.MESH_ID [mesh]);
+                     ]]></sql>
+            <sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_ADAS_LINK
+                          (PID)
+                          (SELECT LINK_PID FROM ADAS_LINK
+                            WHERE RDLINK_PID = 0 AND SDO_ANYINTERACT(GEOMETRY,
+                                              [area]) = 'TRUE');
+                    ]]></sql>
+		</step>
+		<step value="43">
+			<!--提取link -->
+			<sql><![CDATA[
+                     INSERT /*+ append */
+                     INTO TEMP_ADAS_LINK
+                       (PID)
+                       (SELECT P.LINK_PID
+                          FROM ADAS_LINK P, TEMP_FILTER_RD_LINK T
+                           WHERE P.RDLINK_PID = T.PID AND T.PID <> 0);
+                     ]]></sql>
+		</step>
+		<step value="46">
+			<!--提取NODE -->
+			<sql><![CDATA[
+                     INSERT /*+ append */
+                     INTO TEMP_ADAS_NODE
+                       (PID)
+                       (SELECT P.NODE_PID
+                         FROM ADAS_NODE P
+                        WHERE EXISTS
+                        (SELECT 1
+                                 FROM ADAS_LINK L, TEMP_ADAS_LINK T
+                                WHERE L.LINK_PID = T.PID
+                                  AND (P.NODE_PID = L.S_NODE_PID OR
+                                      P.NODE_PID = L.E_NODE_PID)));
+                     ]]></sql>
+		</step>
+
+		<step value="100">
+
+			<!--ADAS_LINK -->
+			<sql><![CDATA[SELECT  P.* FROM ADAS_LINK P,TEMP_ADAS_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
+			<!--ADAS_LINK_GEOMETRY -->
+			<sql><![CDATA[SELECT  P.* FROM ADAS_LINK_GEOMETRY P,TEMP_ADAS_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
+			<!--ADAS_NODE -->
+			<sql><![CDATA[SELECT  P.* FROM ADAS_NODE P,TEMP_ADAS_NODE T WHERE P.NODE_PID=T.PID; ]]></sql>
+			<!--ADAS_NODE_MESH -->
+			<sql><![CDATA[SELECT  P.* FROM ADAS_NODE_MESH P,TEMP_ADAS_NODE T WHERE P.NODE_PID=T.PID; ]]></sql>
+			<!--ADAS_SLOPE -->
+			<sql><![CDATA[SELECT  P.* FROM ADAS_SLOPE P,TEMP_ADAS_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
+			<!--ADAS_NODE_INFO -->
+			<sql><![CDATA[SELECT  P.* FROM ADAS_NODE_INFO P WHERE EXISTS (SELECT 1 FROM ADAS_LINK L, TEMP_ADAS_LINK T WHERE L.LINK_PID = T.PID AND P.IN_LINK_PID=T.PID) AND EXISTS (SELECT 1 FROM ADAS_LINK L, TEMP_ADAS_LINK T WHERE L.LINK_PID = T.PID AND P.OUT_LINK_PID=T.PID); ]]></sql>
+
+		</step>
+
+
+		<step value="101">
+			<sql><![CDATA[DELETE FROM ADAS_NODE_INFO P WHERE EXISTS (SELECT 1 FROM ADAS_LINK L, TEMP_ADAS_LINK T WHERE L.LINK_PID = T.PID AND P.IN_LINK_PID=T.PID) AND EXISTS (SELECT 1 FROM ADAS_LINK L, TEMP_ADAS_LINK T WHERE L.LINK_PID = T.PID AND P.OUT_LINK_PID=T.PID); ]]></sql>
+			<sql><![CDATA[DELETE FROM ADAS_LINK P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_ADAS_LINK T ); ]]></sql>
+			<sql><![CDATA[DELETE FROM ADAS_LINK_GEOMETRY P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_ADAS_LINK T ); ]]></sql>
+			<sql><![CDATA[DELETE FROM ADAS_NODE P WHERE P.NODE_PID IN (SELECT T.PID FROM TEMP_ADAS_NODE T ); ]]></sql>
+			<sql><![CDATA[DELETE FROM ADAS_SLOPE P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_ADAS_LINK T ); ]]></sql>
+			<sql><![CDATA[DELETE FROM ADAS_NODE_MESH P WHERE P.NODE_PID IN (SELECT T.PID FROM TEMP_ADAS_NODE T ); ]]></sql>
+		</step>
+
+
+	</feature>
+
+</sqls>

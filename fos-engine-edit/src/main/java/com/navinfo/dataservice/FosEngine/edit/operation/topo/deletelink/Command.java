@@ -11,6 +11,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLane
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.FosEngine.edit.operation.OperType;
 
@@ -33,6 +34,8 @@ public class Command implements ICommand {
 	private List<RdBranch> branches;
 	
 	private List<RdCross> crosses;
+	
+	private List<RdSpeedlimit> limits;
 	
 	private int projectId;
 	
@@ -58,6 +61,14 @@ public class Command implements ICommand {
 
 	public void setNodePids(List<Integer> nodePids) {
 		this.nodePids = nodePids;
+	}
+
+	public List<RdSpeedlimit> getLimits() {
+		return limits;
+	}
+
+	public void setLimits(List<RdSpeedlimit> limits) {
+		this.limits = limits;
 	}
 
 	public List<RdNode> getNodes() {

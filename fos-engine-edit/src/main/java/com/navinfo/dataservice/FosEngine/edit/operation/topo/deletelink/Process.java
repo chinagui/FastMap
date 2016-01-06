@@ -14,12 +14,14 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLane
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.restrict.RdRestrictionSelector;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.speedlimit.RdSpeedlimitSelector;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.FosEngine.edit.operation.IProcess;
@@ -165,6 +167,15 @@ public class Process implements IProcess {
 		
 		command.setCrosses(crosses);
 	}
+	
+	public void lockRdSpeedlimits() throws Exception {
+		
+		RdSpeedlimitSelector selector = new RdSpeedlimitSelector(this.conn);
+		
+		List<RdSpeedlimit> limits = selector.loadSpeedlimitByLinkPid(command.getLinkPid(), true);
+		
+		command.setLimits(limits);
+	}
 
 	@Override
 	public boolean prepareData() throws Exception {
@@ -193,6 +204,8 @@ public class Process implements IProcess {
 		lockRdBranch();
 		
 		lockRdCross();
+		
+		lockRdSpeedlimits();
 
 		return true;
 	}

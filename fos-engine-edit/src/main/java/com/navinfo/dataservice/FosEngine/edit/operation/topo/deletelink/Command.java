@@ -5,9 +5,13 @@ import java.util.List;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranch;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.cross.RdCross;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.FosEngine.edit.operation.OperType;
 
@@ -19,9 +23,19 @@ public class Command implements ICommand {
 	
 	private RdLink link;
 	
+	private List<Integer> nodePids;
+	
 	private List<RdNode> nodes;
 	
 	private List<RdRestriction> restrictions;
+	
+	private List<RdLaneConnexity> lanes;
+	
+	private List<RdBranch> branches;
+	
+	private List<RdCross> crosses;
+	
+	private List<RdSpeedlimit> limits;
 	
 	private int projectId;
 	
@@ -39,6 +53,22 @@ public class Command implements ICommand {
 
 	public void setLink(RdLink link) {
 		this.link = link;
+	}
+
+	public List<Integer> getNodePids() {
+		return nodePids;
+	}
+
+	public void setNodePids(List<Integer> nodePids) {
+		this.nodePids = nodePids;
+	}
+
+	public List<RdSpeedlimit> getLimits() {
+		return limits;
+	}
+
+	public void setLimits(List<RdSpeedlimit> limits) {
+		this.limits = limits;
 	}
 
 	public List<RdNode> getNodes() {
@@ -64,6 +94,30 @@ public class Command implements ICommand {
 		
 		this.projectId = json.getInt("projectId");
 		
+	}
+
+	public List<RdBranch> getBranches() {
+		return branches;
+	}
+
+	public void setBranches(List<RdBranch> branches) {
+		this.branches = branches;
+	}
+
+	public List<RdLaneConnexity> getLanes() {
+		return lanes;
+	}
+
+	public void setLanes(List<RdLaneConnexity> lanes) {
+		this.lanes = lanes;
+	}
+
+	public List<RdCross> getCrosses() {
+		return crosses;
+	}
+
+	public void setCrosses(List<RdCross> crosses) {
+		this.crosses = crosses;
 	}
 
 	public int getLinkPid() {

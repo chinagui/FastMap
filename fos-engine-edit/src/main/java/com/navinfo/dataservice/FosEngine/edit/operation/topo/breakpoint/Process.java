@@ -2,9 +2,13 @@ package com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.FosEngine.edit.log.LogWriter;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
@@ -182,51 +186,127 @@ public class Process implements IProcess {
 
 		String msg;
 		try {
-			conn.setAutoCommit(false);
+			if (!command.isCheckInfect()) {
+				conn.setAutoCommit(false);
+				this.prepareData();
+				String preCheckMsg = this.preCheck();
+				if (preCheckMsg != null) {
+					throw new Exception(preCheckMsg);
+				}
+				IOperation operation = null;
+				if (command.getBreakNodePid() == 0) {
+					operation = new OpTopo(command, conn,
+							this.rdLinkBreakpoint, jaDisplayLink);
+				} else {
+					RdNode breakNode = (RdNode) new RdNodeSelector(conn)
+							.loadById(command.getBreakNodePid(), true);
 
-			this.prepareData();
-
-			String preCheckMsg = this.preCheck();
-
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
-			
-			IOperation operation = null;
-			
-			if (command.getBreakNodePid() == 0){
-				operation = new OpTopo(command, conn,
-					this.rdLinkBreakpoint, jaDisplayLink);
+					operation = new OpTopo(command, conn,
+							this.rdLinkBreakpoint, jaDisplayLink, breakNode);
+				}
+				msg = operation.run(result);
+				OpRefRestrict opRefRestrict = new OpRefRestrict(command);
+				opRefRestrict.run(result);
+				OpRefBranch opRefBranch = new OpRefBranch(command);
+				opRefBranch.run(result);
+				OpRefLaneConnexity opRefLaneConnexity = new OpRefLaneConnexity(
+						command);
+				opRefLaneConnexity.run(result);
+				OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(command);
+				opRefSpeedlimit.run(result);
+				this.recordData();
+				this.postCheck();
+				conn.commit();
 			}else{
-				RdNode breakNode = (RdNode) new RdNodeSelector(conn).loadById(command.getBreakNodePid(), true);
+				Map<String,List<Integer>> infects = new HashMap<String,List<Integer>>();
 				
-				operation = new OpTopo(command, conn,
-						this.rdLinkBreakpoint, jaDisplayLink,breakNode);
+				List<List<RdBranchVia>> branchVias = command.getBranchVias();
+				
+				List<Integer> infectList = new ArrayList<Integer>();
+				
+				for(List<RdBranchVia> listVias: branchVias){
+					for(RdBranchVia via : listVias){
+						infectList.add(via.getLinkPid());
+					}
+				}
+				
+				infects.put("RDBRANCHVIA", infectList);
+				
+				infectList = new ArrayList<Integer>();
+				
+				for(RdBranch branch: command.getInBranchs()){
+					infectList.add(branch.getPid());
+				}
+				
+				for(RdBranch branch: command.getOutBranchs()){
+					infectList.add(branch.getPid());
+				}
+				
+				infects.put("RDBRANCH", infectList);
+				
+				infectList = new ArrayList<Integer>();
+				
+				for(RdLaneConnexity laneConn: command.getLaneConnextys()){
+					infectList.add(laneConn.getPid());
+				}
+				
+				infects.put("RDLANECONNEXITY", infectList);
+				
+				infectList = new ArrayList<Integer>();
+				
+				for(RdLaneTopology topo: command.getLaneTopologys()){
+					infectList.add(topo.getPid());
+				}
+				
+				infects.put("RDLANETOPOLOGY", infectList);
+				
+				infectList = new ArrayList<Integer>();
+				
+				for(List<RdLaneVia> listVias: command.getLaneVias()){
+					for(RdLaneVia via : listVias){
+						infectList.add(via.getLinkPid());
+					}
+				}
+				
+				infects.put("RDLANEVIA", infectList);
+				
+				infectList = new ArrayList<Integer>();
+				
+				for(RdSpeedlimit limit : command.getSpeedlimits()){
+					infectList.add(limit.getPid());
+				}
+				
+				infects.put("RDSPEEDLIMIT", infectList);
+				
+				infectList = new ArrayList<Integer>();
+				
+				for(RdRestriction res: command.getRestrictions()){
+					infectList.add(res.getPid());
+				}
+				
+				infects.put("RDRESTRICTION", infectList);
+				
+				infectList = new ArrayList<Integer>();
+				
+				for(RdRestrictionDetail detail: command.getRestrictionDetails()){
+					infectList.add(detail.getPid());
+				}
+				
+				infects.put("RDRESTRICTIONDETAIL", infectList);
+				
+				infectList = new ArrayList<Integer>();
+				
+				for(List<RdRestrictionVia> vias: command.geListRestrictVias()){
+					for(RdRestrictionVia via : vias){
+						infectList.add(via.getLinkPid());
+					}
+				}
+				
+				infects.put("RDRESTRICTIONVIA", infectList);
+				
+				msg = JSONObject.fromObject(infects).toString();
+				
 			}
-
-			msg = operation.run(result);
-
-			OpRefRestrict opRefRestrict = new OpRefRestrict(command);
-
-			opRefRestrict.run(result);
-			
-			OpRefBranch opRefBranch = new OpRefBranch(command);
-			
-			opRefBranch.run(result);
-			
-			OpRefLaneConnexity opRefLaneConnexity = new OpRefLaneConnexity(command);
-			
-			opRefLaneConnexity.run(result);
-			
-			OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(command);
-			
-			opRefSpeedlimit.run(result);
-
-			this.recordData();
-
-			this.postCheck();
-
-			conn.commit();
 
 		} catch (Exception e) {
 

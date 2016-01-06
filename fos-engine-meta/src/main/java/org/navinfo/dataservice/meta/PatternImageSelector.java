@@ -169,6 +169,63 @@ public class PatternImageSelector {
 		return null;
 	}
 	
+	/**
+	 * 检查是否有可下载的
+	 * @param date
+	 * @return
+	 * @throws Exception
+	 */
+	public boolean checkUpdate(String date) throws Exception{
+		String sql = "select null from sc_model_match_g where update_time > to_date(:1,'yyyymmddhh24miss')";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setString(1, date);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+				return true;
+			}
+			
+		} catch (Exception e) {
+
+			throw new Exception(e);
+
+		} finally {
+			if (resultSet != null) {
+				try {
+					resultSet.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					
+				}
+			}
+		}
+
+		return false;
+	}
+	
 	public static void main(String[] args) throws Exception{
 		
 		String username1 = "mymeta3";

@@ -340,7 +340,6 @@ public class ExportBaseData {
 		stmt.execute("select createspatialindex('gdb_rdLine','geometry')");
 		stmt.execute("alter table gdb_rdLine add display_style text;");
 		stmt.execute("alter table gdb_rdLine add display_text text;");
-		stmt.execute("alter table gdb_rdLine add names Blob;");
 		stmt.execute("alter table gdb_rdLine add meshid text;");
 		stmt.execute("alter table gdb_rdLine add kind integer;");
 		stmt.execute("alter table gdb_rdLine add direct integer;");
@@ -359,6 +358,7 @@ public class ExportBaseData {
 		stmt.execute("alter table gdb_rdLine add speedLimit Blob;");
 		stmt.execute("alter table gdb_rdLine add op_date text;");
 		stmt.execute("alter table gdb_rdLine add op_lifecycle integer;");
+		stmt.execute("alter table gdb_rdLine add names Blob;");
 
 		String insertSql = "insert into gdb_rdLine values("
 				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -399,55 +399,55 @@ public class ExportBaseData {
 
 			prep.setString(4, json.getString("display_text"));
 			
-			byte[] names = json.getString("names").getBytes();
+			prep.setString(5, json.getString("meshid"));
 
-			prep.setBinaryStream(5, new ByteArrayInputStream(names),
-					names.length);
-			
-			prep.setString(6, json.getString("meshid"));
+			prep.setInt(6, json.getInt("kind"));
 
-			prep.setInt(7, json.getInt("kind"));
+			prep.setInt(7, json.getInt("direct"));
 
-			prep.setInt(8, json.getInt("direct"));
+			prep.setInt(8, json.getInt("appInfo"));
 
-			prep.setInt(9, json.getInt("appInfo"));
+			prep.setInt(9, json.getInt("tollInfo"));
 
-			prep.setInt(10, json.getInt("tollInfo"));
+			prep.setInt(10, json.getInt("multiDigitized"));
 
-			prep.setInt(11, json.getInt("multiDigitized"));
+			prep.setInt(11, json.getInt("specialTraffic"));
 
-			prep.setInt(12, json.getInt("specialTraffic"));
+			prep.setInt(12, json.getInt("fc"));
 
-			prep.setInt(13, json.getInt("fc"));
+			prep.setInt(13, json.getInt("laneNum"));
 
-			prep.setInt(14, json.getInt("laneNum"));
+			prep.setInt(14, json.getInt("laneLeft"));
 
-			prep.setInt(15, json.getInt("laneLeft"));
+			prep.setInt(15, json.getInt("laneRight"));
 
-			prep.setInt(16, json.getInt("laneRight"));
+			prep.setInt(16, json.getInt("isViaduct"));
 
-			prep.setInt(17, json.getInt("isViaduct"));
-
-			prep.setInt(18, json.getInt("paveStatus"));
+			prep.setInt(17, json.getInt("paveStatus"));
 
 			byte[] forms = json.getString("forms").getBytes();
 
-			prep.setBinaryStream(19, new ByteArrayInputStream(forms),
+			prep.setBinaryStream(18, new ByteArrayInputStream(forms),
 					forms.length);
 
 			byte[] styleFactors = json.getString("styleFactors").getBytes();
 
-			prep.setBinaryStream(20, new ByteArrayInputStream(styleFactors),
+			prep.setBinaryStream(19, new ByteArrayInputStream(styleFactors),
 					styleFactors.length);
 
 			byte[] speedLimit = json.getString("speedLimit").getBytes();
 
-			prep.setBinaryStream(21, new ByteArrayInputStream(speedLimit),
+			prep.setBinaryStream(20, new ByteArrayInputStream(speedLimit),
 					speedLimit.length);
 
-			prep.setString(22, json.getString("op_date"));
+			prep.setString(21, json.getString("op_date"));
 
-			prep.setInt(23, json.getInt("op_lifecycle"));
+			prep.setInt(22, json.getInt("op_lifecycle"));
+			
+			byte[] names = json.getString("names").getBytes();
+
+			prep.setBinaryStream(23, new ByteArrayInputStream(names),
+					names.length);
 
 			prep.executeUpdate();
 

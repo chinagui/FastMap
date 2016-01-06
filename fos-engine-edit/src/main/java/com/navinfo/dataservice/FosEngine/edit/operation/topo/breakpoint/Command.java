@@ -67,6 +67,12 @@ public class Command implements ICommand {
 	
 	private List<List<RdBranchVia>> branchVias;
 	
+	private boolean isCheckInfect = false;
+	
+	public boolean isCheckInfect() {
+		return isCheckInfect;
+	}
+
 	public List<RdBranch> getInBranchs() {
 		return inBranchs;
 	}
@@ -212,6 +218,10 @@ public class Command implements ICommand {
 		this.link1 = new RdLink();
 
 		this.link2 = new RdLink();
+		
+		if (json.containsKey("infect") && json.getInt("infect") == 1){
+			this.isCheckInfect = true;
+		}
 	}
 
 	public int getLinkPid() {

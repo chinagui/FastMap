@@ -4,7 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.FosEngine.edit.log.LogWriter;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
@@ -214,29 +218,63 @@ public class Process implements IProcess {
 	public String run() throws Exception {
 
 		try {
-			conn.setAutoCommit(false);
-
-			String preCheckMsg = this.preCheck();
-
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
+			if (!command.isCheckInfect()) {
+				conn.setAutoCommit(false);
+				String preCheckMsg = this.preCheck();
+				if (preCheckMsg != null) {
+					throw new Exception(preCheckMsg);
+				}
+				prepareData();
+				IOperation op = new OpTopo(command);
+				op.run(result);
+				IOperation opRefRestrict = new OpRefRestrict(command);
+				opRefRestrict.run(result);
+				recordData();
+				postCheck();
+				conn.commit();
+			}else{
+				Map<String,List<Integer>> infects = new HashMap<String,List<Integer>>();
+				
+				List<Integer> infectList = new ArrayList<Integer>();
+				
+				infectList = new ArrayList<Integer>();
+				
+				for(RdBranch branch: command.getBranches()){
+					infectList.add(branch.getPid());
+				}
+				
+				infects.put("RDBRANCH", infectList);
+				
+				infectList = new ArrayList<Integer>();
+				
+				for(RdLaneConnexity laneConn: command.getLanes()){
+					infectList.add(laneConn.getPid());
+				}
+				
+				infects.put("RDLANECONNEXITY", infectList);
+				
+				infectList = new ArrayList<Integer>();
+				
+				for(RdSpeedlimit limit : command.getLimits()){
+					infectList.add(limit.getPid());
+				}
+				
+				infects.put("RDSPEEDLIMIT", infectList);
+				
+				infectList = new ArrayList<Integer>();
+				
+				for(RdRestriction res: command.getRestrictions()){
+					infectList.add(res.getPid());
+				}
+				
+				infects.put("RDRESTRICTION", infectList);
+				
+				infectList = new ArrayList<Integer>();
+				
+				
+				
+				return JSONObject.fromObject(infects).toString();
 			}
-
-			prepareData();
-
-			IOperation op = new OpTopo(command);
-
-			op.run(result);
-
-			IOperation opRefRestrict = new OpRefRestrict(command);
-
-			opRefRestrict.run(result);
-
-			recordData();
-
-			postCheck();
-
-			conn.commit();
 
 		} catch (Exception e) {
 			

@@ -39,6 +39,12 @@ public class Command implements ICommand {
 	
 	private int projectId;
 	
+	private boolean isCheckInfect = false;
+	
+	public boolean isCheckInfect() {
+		return isCheckInfect;
+	}
+	
 	public int getProjectId() {
 		return projectId;
 	}
@@ -93,6 +99,10 @@ public class Command implements ICommand {
 		this.linkPid = json.getInt("objId");
 		
 		this.projectId = json.getInt("projectId");
+		
+		if (json.containsKey("infect") && json.getInt("infect") == 1){
+			this.isCheckInfect = true;
+		}
 		
 	}
 

@@ -67,9 +67,6 @@ public class Operation implements IOperation {
 		this.calViaLinks(command.getInLinkPid(), command.getNodePid(),
 				outLinkPids);
 
-		this.calViaLinks(command.getInLinkPid(), command.getNodePid(),
-				outLinkPids);
-
 		List<IRow> details = new ArrayList<IRow>();
 
 		List<Integer> restricInfos = new ArrayList<Integer>();

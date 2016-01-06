@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.FosEngine.edit.operation.obj.rdrestriction;
+package com.navinfo.dataservice.FosEngine.edit.operation;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

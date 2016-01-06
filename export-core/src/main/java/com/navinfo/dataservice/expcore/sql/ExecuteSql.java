@@ -26,7 +26,7 @@ import com.navinfo.dataservice.expcore.sql.handler.QueryExecThreadHandler;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.database.oracle.ConnectionRegister;
-import com.navinfo.dataservice.commons.log.DSJobLogger;
+import com.navinfo.dataservice.commons.log.JobLogger;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 
@@ -53,7 +53,7 @@ public class ExecuteSql {
 	 *            系统配置
 	 */
 	public ExecuteSql(ExportConfig expConfig,OracleInput input,DataOutput output) {
-		log = DSJobLogger.getLogger(log);
+		log = JobLogger.getLogger(log);
 		this.expConfig = expConfig;
 		this.input=input;
 		this.output=output;

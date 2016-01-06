@@ -14,7 +14,7 @@ import org.springframework.web.servlet.ModelAndView;
 import com.navinfo.dataservice.datahub.chooser.strategy.DbServerStrategy;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.UnifiedDb;
-import com.navinfo.dataservice.web.springmvc.BaseController;
+import com.navinfo.navicommons.springmvc.BaseController;
 import com.navinfo.navicommons.utils.StringUtils;
 
 /** 

@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.exception.DataSourceException;
-import com.navinfo.dataservice.commons.log.DSJobLogger;
+import com.navinfo.dataservice.commons.log.JobLogger;
 import com.navinfo.navicommons.config.Config;
 import com.navinfo.navicommons.config.MavenConfigMap;
 
@@ -101,7 +101,7 @@ public class PoolDataSourceFactory {
 	 */
 
 	public PoolDataSource getPoolDataSource(String dataSourceKey, Config config, boolean cache) {
-		log = DSJobLogger.getLogger(log);
+		log = JobLogger.getLogger(log);
 		PoolDataSource dataSource = dataSourceMap.get(dataSourceKey);
 		if (dataSource == null || dataSource.isClosed()) {
 			try {

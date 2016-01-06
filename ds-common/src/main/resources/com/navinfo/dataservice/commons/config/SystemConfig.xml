@@ -18,4 +18,5 @@
 	<!-- 数据库服务器默认选择策略，random,只能配置不需要传参的策略类型 -->
 	<dbserver.strategy.default>random</dbserver.strategy.default>
 	<dbserver.cache.enable>false</dbserver.cache.enable>
+	<datahub.oracle.defaultTablespaces>USERS</datahub.oracle.defaultTablespaces>
 </configMap>

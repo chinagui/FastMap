@@ -17,7 +17,7 @@ import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.SQLQuery;
 import com.navinfo.navicommons.utils.StringUtils;
 import com.navinfo.dataservice.expcore.exception.ExportException;
-import com.navinfo.dataservice.expcore.model.OracleSchema;
+import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.navicommons.database.sql.PackageExec;
 import com.navinfo.navicommons.database.sql.SqlExec;
 

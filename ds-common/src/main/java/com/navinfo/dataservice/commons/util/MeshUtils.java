@@ -15,8 +15,11 @@ public abstract class MeshUtils {
 
 	public static void main(String[] args) {
 		int meshid = 595673;
-
-		System.out.println(lonlat2Mesh(136.31313, 39.3131));
+		double[] a =mesh2LocationLatLon("24967");
+		System.out.println(a[0]+","+a[1]);
+		
+		System.out.println(lonlat2Mesh(109.875,1.833333));
+		
 		// (M3*10+M4)*3600+M6*450+60*3600
 		// (M1*10+M2)*2400+M5*300
 		// int x = (5 * 10 + 6) * 3600 + 3 * 450 + 60 * 3600;
@@ -72,6 +75,14 @@ public abstract class MeshUtils {
 	 * @return 左下/中心坐标点/右上坐标点
 	 */
 	public static int[] mesh2Location(String meshId) {
+		
+		if(meshId.length()<6){
+			int length = 6-meshId.length();
+			for(int i=0;i<length;i++){
+				meshId="0" + meshId;
+			}
+		}
+		
 		int m1 = Integer.valueOf(meshId.substring(0, 1));
 		int m2 = Integer.valueOf(meshId.substring(1, 2));
 		int m3 = Integer.valueOf(meshId.substring(2, 3));
@@ -358,6 +369,13 @@ public abstract class MeshUtils {
 	 * @return
 	 */
 	public static String[] get9NeighborMesh(String meshId) {
+		if(meshId.length()<6){
+			int length = 6-meshId.length();
+			for(int i=0;i<length;i++){
+				meshId="0" + meshId;
+			}
+		}
+		
 		String allMesh[] = new String[9];
 		int m1 = Integer.valueOf(meshId.substring(0, 1));
 		int m2 = Integer.valueOf(meshId.substring(1, 2));
@@ -387,6 +405,13 @@ public abstract class MeshUtils {
 	 * @return 获取除了中心图幅之外的阔圈图幅
 	 */
 	private static Set<String> get8NeighborMesh(String meshId) {
+		if(meshId.length()<6){
+			int length = 6-meshId.length();
+			for(int i=0;i<length;i++){
+				meshId="0" + meshId;
+			}
+		}
+		
 		Set<String> meshes = new HashSet<String>();
 		int m1 = Integer.valueOf(meshId.substring(0, 1));
 		int m2 = Integer.valueOf(meshId.substring(1, 2));

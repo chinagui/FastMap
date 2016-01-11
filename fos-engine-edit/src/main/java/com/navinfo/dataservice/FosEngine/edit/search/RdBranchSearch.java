@@ -40,7 +40,7 @@ public class RdBranchSearch implements ISearch {
 	public IObj searchDataByPid(int pid) throws Exception {
 		RdBranchSelector selector = new RdBranchSelector(conn);
 
-		IObj obj = (IObj) selector.loadById(pid, false);
+		IObj obj = (IObj) selector.loadHighwayById(pid, false);
 
 		return obj;
 	}

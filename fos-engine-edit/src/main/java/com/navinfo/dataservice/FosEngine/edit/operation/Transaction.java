@@ -279,5 +279,9 @@ public class Transaction {
 		return process.getResult().getCheckResults();
 
 	}
+	
+	public int getPid(){
+		return process.getResult().getPrimaryPid();
+	}
 
 }

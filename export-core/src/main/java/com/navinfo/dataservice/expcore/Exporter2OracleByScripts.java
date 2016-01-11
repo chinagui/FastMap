@@ -21,7 +21,7 @@ import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
  * @Description: TODO
  *  
  */
-public class Exporter2OracleByScripts extends FlexibleExporter {
+public class Exporter2OracleByScripts extends ExporterByScripts {
 	
 	public Exporter2OracleByScripts(ExportConfig expConfig){
 		super(expConfig);
@@ -53,6 +53,10 @@ public class Exporter2OracleByScripts extends FlexibleExporter {
 	@Override
 	public DataOutput initDataOutput(ExporterResult result)
 			throws ExportException {
+		if(ExportConfig.MODE_DELETE.equals(expConfig.getExportMode())){
+			//删除数据不需要output
+			return null;
+		}
 		ThreadLocalContext ctx = new ThreadLocalContext(log);
 		Oracle2OracleDataOutput output = new Oracle2OracleDataOutput(expConfig,result,ctx);
 		return output;
@@ -64,7 +68,6 @@ public class Exporter2OracleByScripts extends FlexibleExporter {
 			is = Exporter2OracleByScripts.class.getResourceAsStream("/com/navinfo/dataservice/expcore/resources/export-config-template.xml");
 			String configStr = IOUtils.toString(is);
 			ExportConfig expConfig = new ExportConfig();
-			expConfig.parseByXmlConfig(configStr);
 //			expConfig.setGdbVersion("240");
 //			expConfig.setExportMode(ExportConfig.MODE_COPY);
 //			expConfig.setSourceIp("192.168.4.103");

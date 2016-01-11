@@ -69,16 +69,17 @@ public class OracleSchema extends UnifiedDb {
 		if(bds!=null){
 			return bds;
 		}
-		String dsKey = dbServer.getIp()+":" + dbServer.getPort() + ":" + dbServer.getServiceName();
+		String dsKey = dbServer.getIp()+":" + dbServer.getPort() + ":" + dbUserName;
 		MavenConfigMap dsConfig = new MavenConfigMap();
 		String url = MultiDataSourceFactory.createOracleJdbcUrl(dbServer.getIp(), dbServer.getPort(), dbServer.getServiceName());
+		dsConfig.put(dsKey + ".server.type",dbServer.getType());
 		dsConfig.put(dsKey + ".jdbc.driverClassName", MultiDataSourceFactory.getDriverClassName(DbServerType.TYPE_ORACLE));
 		dsConfig.put(dsKey + ".jdbc.url", url);
 		dsConfig.put(dsKey + ".jdbc.username", dbUserName);
 		dsConfig.put(dsKey + ".jdbc.password", dbUserPasswd);
 		dsConfig.put(dsKey + ".dataSource.initialSize", "2");
 		dsConfig.put(dsKey + ".dataSource.maxActive", "30");
-		bds = MultiDataSourceFactory.getInstance().getDataSource(dsKey, dsConfig, true);
+		bds = MultiDataSourceFactory.getInstance().getDataSource(dsKey, dsConfig);
 		return bds;
 	}
 	@Override

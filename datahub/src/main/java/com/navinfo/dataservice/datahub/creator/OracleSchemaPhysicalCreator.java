@@ -13,6 +13,7 @@ import com.navinfo.dataservice.commons.database.oracle.PoolDataSourceFactory;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
 import com.navinfo.dataservice.datahub.model.UnifiedDb;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.PackageExec;
 import com.navinfo.navicommons.database.sql.SqlExec;
 import com.navinfo.navicommons.utils.StringUtils;
 
@@ -108,9 +109,18 @@ public class OracleSchemaPhysicalCreator implements DbPhysicalCreator{
 		try{
 			conn = db.getDriverManagerDataSource().getConnection();
 			String schemaCreateFile = "/com/navinfo/dataservice/datahub/resources/"
-					+ gdbVersion + "/schema/table_create.sql";
+					+ gdbVersion + "/schema/table_create_gdb.sql";
 			SqlExec sqlExec = new SqlExec(conn);
 			sqlExec.execute(schemaCreateFile);
+			if(gdbVersion.endsWith("+")){
+				String addColumnFile = "/com/navinfo/dataservice/datahub/resources/"
+						+ gdbVersion + "/schema/add_columns_plus.pck";
+				PackageExec packageExec = new PackageExec(conn);
+				packageExec.execute(addColumnFile);
+				String plusFile = "/com/navinfo/dataservice/datahub/resources/"
+						+ gdbVersion + "/schema/table_create_plus.sql";
+				sqlExec.execute(plusFile);
+			}
 		}catch(Exception e){
 			log.error("给目标库安装GDB模型时出错。原因为："+e.getMessage(),e);
 			throw new DataHubException("给目标库安装GDB模型时出错。原因为："+e.getMessage(),e);

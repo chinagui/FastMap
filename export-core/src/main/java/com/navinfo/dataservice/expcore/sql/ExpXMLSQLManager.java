@@ -227,11 +227,16 @@ public class ExpXMLSQLManager {
         Map<String, List<Element>> fileMap = new HashMap<String, List<Element>>();
         try {
             PathMatchingResourcePatternResolver resolover = new PathMatchingResourcePatternResolver();
-            Resource[] resources = resolover.getResources("classpath*:/com/navinfo/dataservice/expcore/resources/" + gdbVersion + "/**/*.xml");
+            
+            Resource[] resources = resolover.getResources("classpath*:/com/navinfo/dataservice/expcore/resources/" + gdbVersion + "/features/**/*.xml");
             for (Resource resource : resources) {
                 List<Element> rootChildren = parseXml(resource.getURL());
                 fileMap.put(resource.getFilename(), rootChildren);
             }
+            //暂时不收集临时表统计信息
+//            Resource statRes = resolover.getResource("classpath*:/com/navinfo/dataservice/expcore/resources/" + gdbVersion + "/features/temp-table-stats.xml");
+//            fileMap.put(statRes.getFilename(),parseXml(statRes.getURL()));
+//            
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);

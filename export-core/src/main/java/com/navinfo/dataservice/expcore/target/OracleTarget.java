@@ -3,6 +3,7 @@ package com.navinfo.dataservice.expcore.target;
 import java.sql.Connection;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
@@ -15,7 +16,8 @@ import com.navinfo.navicommons.database.sql.SqlExec;
  * @Description: TODO
  *  
  */
-public class OracleTarget extends AbstractExportTarget {
+public class OracleTarget implements ExportTarget {
+	protected Logger log = Logger.getLogger(getClass());
 	private OracleSchema schema;
 
 	
@@ -34,7 +36,6 @@ public class OracleTarget extends AbstractExportTarget {
 	public void setSchema(OracleSchema schema) {
 		this.schema = schema;
 	}
-	@Override
 	public void release(boolean destroyTarget) {
 		log.info("destroy the pooldatasource of the source schema.");
 		if(schema!=null){

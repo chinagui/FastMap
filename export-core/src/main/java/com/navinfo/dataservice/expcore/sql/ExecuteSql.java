@@ -114,18 +114,18 @@ public class ExecuteSql {
 				Entry sqlEntry = (Entry) iterator.next();
 				Integer step = (Integer) sqlEntry.getKey();
 				List<ExpSQL> sqlList = (List<ExpSQL>) sqlEntry.getValue();
-				if (expConfig.getExportMode().equals(ExportConfig.MODE_DELETE)) {
-					// 100 输出数据
-					// 101 删除数据
-					// >101 删除重复数据
-					// step 100不执行 >101的也不执行
-					if (step == 100 || step > 101)
-						continue;
-				} else {
+				
+				// 100 输出数据
+				// 101 删除数据
+				if(expConfig.getExportMode().equals(ExportConfig.MODE_COPY)){
 					// step 大于100不执行
-					if (step > 100&&step !=200)
-						continue;
-				}
+					if (step > 100) continue;
+				}else if (expConfig.getExportMode().equals(ExportConfig.MODE_DELETE)) {
+					// 101 删除数据
+					if (step == 100) continue;
+				} 
+				//cut 模式 100和101都执行
+				//full_copy不会到这来
 				log.debug("start execute step "+step);
 				execute(step, filterSql(sqlList), ctx);
 

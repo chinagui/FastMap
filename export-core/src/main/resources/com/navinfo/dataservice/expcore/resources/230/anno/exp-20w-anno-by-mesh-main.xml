@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--文字：按照图幅分省的范围，导出2.5万、20万的文字数据，作为作业数据-->
-<sqls>
-    <import file="exp-ix_anno.xml"/>
-    <import file="table-stats-anno-20w.xml"/>
-</sqls>

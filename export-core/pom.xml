@@ -20,7 +20,7 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
-
+    
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>navi-common</artifactId>
@@ -33,5 +33,16 @@
 		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>datahub</artifactId>
 	</dependency>
+	
+	<dependency>  
+	    <groupId>net.sf.json-lib</groupId>  
+	    <artifactId>json-lib</artifactId>  
+	    <classifier>jdk15</classifier>  
+	</dependency> 
+	<dependency>
+		<groupId>net.sf.ezmorph</groupId>
+		<artifactId>ezmorph</artifactId>
+	</dependency>
+    
   </dependencies>
 </project>

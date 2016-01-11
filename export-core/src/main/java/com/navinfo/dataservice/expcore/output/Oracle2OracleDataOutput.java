@@ -10,11 +10,12 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.navicommons.database.ColumnMetaData;
 import com.navinfo.navicommons.database.DataBaseUtils;
+import com.navinfo.navicommons.database.sql.DbLinkCreator;
 import com.navinfo.navicommons.utils.RandomUtil;
-import com.navinfo.navicommons.utils.StringUtils;
 import com.navinfo.dataservice.expcore.ExporterResult;
 import com.navinfo.dataservice.expcore.config.ExportConfig;
 import com.navinfo.dataservice.expcore.exception.ExportException;
@@ -38,6 +39,7 @@ public class Oracle2OracleDataOutput extends AbstractDataOutput {
 	public Oracle2OracleDataOutput(ExportConfig expConfig,ExporterResult expResult, ThreadLocalContext ctx) throws ExportException{
 		super(expResult,ctx);
 		this.expConfig=expConfig;
+		this.tableReNames=expConfig.getTableReNames();
 		initTarget();
 	}
 	public void initTarget()throws ExportException{
@@ -51,7 +53,6 @@ public class Oracle2OracleDataOutput extends AbstractDataOutput {
 			throw new ExportException("导出参数错误，目标库的id不能为空");
 		}
 		this.target=new OracleTarget(schema);
-		target.init(expConfig.getGdbVersion());
 
 		expResult.setNewTargetDbId(target.getSchema().getDbId());
 	}
@@ -68,8 +69,25 @@ public class Oracle2OracleDataOutput extends AbstractDataOutput {
 		}
 		return batchSize;
 	}
+	
+	public void doOutPut(ResultSet rs,
+			String tableName,
+			String reNameTo,
+			List<ColumnMetaData> tmdList) throws Exception{
+		if(expConfig.getCheckExistTables()!=null&&expConfig.getCheckExistTables().contains(tableName)){
+			this.doInsert(rs, tableName, reNameTo, tmdList);
+		}else{
+			if(ExportConfig.WHEN_EXIST_IGNORE.equals(expConfig.getWhenExist())){
+				this.doMergeOnlyInsert(rs, tableName, reNameTo, tmdList);
+			}else if(ExportConfig.WHEN_EXIST_OVERWRITE.equals(expConfig.getWhenExist())){
+				this.doMergeFull(rs, tableName, reNameTo, tmdList);
+			}else{
+				throw new Exception("导出参数中配置了检查是否已存在的表(checkExistTables)，但未配置已存在如何操作(whenExist)。");
+			}
+		}
+	}
 
-	protected void doOutput(ResultSet rs,
+	protected void doInsert(ResultSet rs,
 			String tableName,
 			String reNameTo,
 			List<ColumnMetaData> tmdList) throws Exception {
@@ -80,21 +98,7 @@ public class Oracle2OracleDataOutput extends AbstractDataOutput {
 		try {
 			DataSource dataSource = target.getSchema().getPoolDataSource();
 			conn = ConnectionRegister.subThreadGetConnection(ctx, dataSource);
-			// logger.debug(insertSql+" tableName="+tableName+" reNameTo="+reNameTo);
-			// logger.debug(insertSql);
-			/*
-			 * if (insertSql.indexOf("IX") > -1) {
-			 * 
-			 * logger.debug(insertSql+" tableName="+tableName+" reNameTo="+reNameTo
-			 * ); }
-			 */
 			stmt = conn.prepareStatement(insertSql);
-			// 在执行数据导入前，先删除所有数据
-			/*
-			 * if (((OracleTarget) exportTarget).isTruncateData()) { //删除表数据 //
-			 * logger.debug("truncate table "+reNameTo+" version info "+
-			 * version.getDataBase().); truncateOuputTable(conn, reNameTo); }
-			 */
 			while (rs.next()) {
 				count++;
 				for (int i = 0; i < tmdList.size(); i++) {
@@ -129,9 +133,160 @@ public class Oracle2OracleDataOutput extends AbstractDataOutput {
 		} catch (Exception e) {
 			log.error("doOutput error! insertSql=" + insertSql, e);
 			throw e;
-			// context.shutdownApp(
-			// new ThreadExecuteException("输出内容到oracle异常，请查看日志文件",
-			// e));e
+		} finally {
+			DbUtils.closeQuietly(stmt);
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+
+	}
+
+	protected void doMergeFull(ResultSet rs,
+			String tableName,
+			String reNameTo,
+			List<ColumnMetaData> tmdList) throws Exception {
+
+        int columnSize = tmdList.size();
+        String setArr[] = new String[columnSize];
+        String parameters[] = new String[columnSize];
+        String columns[] = new String[columnSize];
+        for (int i = 0; i < tmdList.size(); i++) {
+        	setArr[i] = "\""+tmdList.get(i).getColumnName()+"\"=?";
+            parameters[i] = "?";
+            columns[i] = "\""+tmdList.get(i).getColumnName()+"\"";
+        }
+		StringBuilder builder = new StringBuilder("MERGE INTO ");
+        builder.append(tableName);
+        builder.append(" T USING (SELECT ? ROW_ID FROM DUAL) D ON (T.ROW_ID=D.ROW_ID) WHEN MATCHED THEN UPDATE SET ");
+
+        builder.append(StringUtils.join(setArr, ","));
+        
+        builder.append(" WHEN NOT MATCHED THEN INSERT VALUES (");
+        builder.append(StringUtils.join(columns, ","));
+        builder.append(") values(");
+        builder.append(StringUtils.join(parameters, ","));
+        builder.append(")");
+
+
+		String sql =  builder.toString();
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		int count = 0;
+		try {
+			DataSource dataSource = target.getSchema().getPoolDataSource();
+			conn = ConnectionRegister.subThreadGetConnection(ctx, dataSource);
+			stmt = conn.prepareStatement(sql);
+			while (rs.next()) {
+				count++;
+				stmt.setObject(1, rs.getObject("ROW_ID"));//MERGE 条件中使用了
+				for (int i = 0; i < columnSize; i++) {
+					ColumnMetaData tmd = tmdList.get(i);
+					Object value = rs.getObject(tmd.getColumnName());
+					if (tmd.isGeometryColumn() && value == null){
+						stmt.setNull(i + 2, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+						stmt.setNull(i + 2+columnSize, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					}
+					else if (tmd.isClobColumn()) {
+						if (value == null) {
+							stmt.setCharacterStream(i + 2, null);
+							stmt.setCharacterStream(i + 2+columnSize, null);
+						} else {
+							stmt.setCharacterStream(i + 2, rs.getCharacterStream(tmd.getColumnName()));
+							stmt.setCharacterStream(i + 2+columnSize, rs.getCharacterStream(tmd.getColumnName()));
+						}
+					}
+
+					else {
+						stmt.setObject(i + 2, value);
+						stmt.setObject(i + 2+columnSize, value);
+					}
+
+				}
+				stmt.addBatch();
+				// 没n条提交一次，如果n非常大，会报错
+				if (count % calculateBatchSize(tmdList) == 0) {
+					stmt.executeBatch();
+					stmt.clearBatch();
+				}
+
+			}
+			stmt.executeBatch();
+			stmt.clearBatch();
+			// logger.debug(reNameTo + ":" + count);
+		} catch (Exception e) {
+			log.error("doOutput error! mergeSql=" + sql, e);
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(stmt);
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+
+	}
+
+	protected void doMergeOnlyInsert(ResultSet rs,
+			String tableName,
+			String reNameTo,
+			List<ColumnMetaData> tmdList) throws Exception {
+
+        int columnSize = tmdList.size();
+        String parameters[] = new String[columnSize];
+        String columns[] = new String[columnSize];
+        for (int i = 0; i < tmdList.size(); i++) {
+            parameters[i] = "?";
+            columns[i] = "\""+tmdList.get(i).getColumnName()+"\"";
+        }
+		StringBuilder builder = new StringBuilder("MERGE INTO ");
+        builder.append(tableName);
+        builder.append(" T USING (SELECT ? ROW_ID FROM DUAL) D ON (T.ROW_ID=D.ROW_ID) WHEN NOT MATCHED THEN INSERT VALUES (");
+        builder.append(StringUtils.join(columns, ","));
+        builder.append(") values (");
+        builder.append(StringUtils.join(parameters, ","));
+        builder.append(")");
+
+
+		String sql =  builder.toString();
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		int count = 0;
+		try {
+			DataSource dataSource = target.getSchema().getPoolDataSource();
+			conn = ConnectionRegister.subThreadGetConnection(ctx, dataSource);
+			stmt = conn.prepareStatement(sql);
+			while (rs.next()) {
+				count++;
+				stmt.setObject(1, rs.getObject("ROW_ID"));//MERGE 条件中使用了
+				for (int i = 0; i < columnSize; i++) {
+					ColumnMetaData tmd = tmdList.get(i);
+					Object value = rs.getObject(tmd.getColumnName());
+					if (tmd.isGeometryColumn() && value == null){
+						stmt.setNull(i + 2, Types.STRUCT, "MDSYS.SDO_GEOMETRY");
+					}
+					else if (tmd.isClobColumn()) {
+						if (value == null) {
+							stmt.setCharacterStream(i + 2, null);
+						} else {
+							stmt.setCharacterStream(i + 2, rs.getCharacterStream(tmd.getColumnName()));
+						}
+					}
+
+					else {
+						stmt.setObject(i + 2, value);
+					}
+
+				}
+				stmt.addBatch();
+				// 没n条提交一次，如果n非常大，会报错
+				if (count % calculateBatchSize(tmdList) == 0) {
+					stmt.executeBatch();
+					stmt.clearBatch();
+				}
+
+			}
+			stmt.executeBatch();
+			stmt.clearBatch();
+			// logger.debug(reNameTo + ":" + count);
+		} catch (Exception e) {
+			log.error("doOutput error! mergeSql=" + sql, e);
+			throw e;
 		} finally {
 			DbUtils.closeQuietly(stmt);
 			DbUtils.commitAndCloseQuietly(conn);

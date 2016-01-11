@@ -31,7 +31,7 @@ public class JobLogger {
      */
     public static Logger createLogger(DSJob job) throws IOException {
         String output = "logs" + File.separator
-                + job.getTaskId() + File.separator
+                + job.getFlowId() + File.separator
                 + job.getJobType() + File.separator
                 + job.getJobId() + ".log";
         Logger logger = DynamicOutputLogger.getFileLogger(job.getJobId(),

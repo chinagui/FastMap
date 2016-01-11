@@ -79,8 +79,8 @@ public class Transaction {
 			case BREAK:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Command(
 						json, requester);
-			case REPAIRE:
-				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.repaire.Command(
+			case REPAIR:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.repair.Command(
 						json, requester);	
 			case MOVENODE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.movenode.Command(
@@ -176,8 +176,8 @@ public class Transaction {
 			case BREAK:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Process(
 						command);
-			case REPAIRE:
-				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.repaire.Process(
+			case REPAIR:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.repair.Process(
 						command);	
 			case DEPARTNODE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.departnode.Process(

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.FosEngine.edit.operation.topo.repaire;
+package com.navinfo.dataservice.FosEngine.edit.operation.topo.repair;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -40,7 +40,7 @@ public class Command implements ICommand {
 	@Override
 	public OperType getOperType() {
 		
-		return OperType.REPAIRE;
+		return OperType.REPAIR;
 	}
 
 	@Override

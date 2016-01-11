@@ -187,6 +187,72 @@ public class RdRestrictionSelector implements ISelector {
 
 		return reses;
 	}
+	
+	public List<RdRestriction> loadRdRestrictionByNodePid(int nodePid,
+			boolean isLock) throws Exception {
+		List<RdRestriction> reses = new ArrayList<RdRestriction>();
+
+		String sql = "select * from rd_restriction where node_pid = :1 and u_record!=:2";
+
+		if (isLock) {
+			sql = sql + " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, nodePid);
+
+			pstmt.setInt(2, 2);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdRestriction restrict = new RdRestriction();
+
+				restrict.setPid(resultSet.getInt("pid"));
+
+				restrict.setInLinkPid(resultSet.getInt("in_link_pid"));
+
+				restrict.setNodePid(resultSet.getInt("node_pid"));
+
+				restrict.setRestricInfo(resultSet.getString("restric_info"));
+
+				restrict.setKgFlag(resultSet.getInt("kg_flag"));
+
+				restrict.setRowId(resultSet.getString("row_id"));
+
+				RdRestrictionDetailSelector detail = new RdRestrictionDetailSelector(
+						conn);
+
+				restrict.setDetails(detail.loadRowsByParentId(
+						restrict.getPid(), isLock));
+
+				reses.add(restrict);
+			}
+		} catch (Exception e) {
+			
+			throw e;
+		} finally {
+			try {
+				resultSet.close();
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+				
+			}
+		}
+
+		return reses;
+	}
 
 	public IRow loadRdRestrictionByLinkNode(int linkPid, int nodePid,
 			boolean isLock) throws Exception {

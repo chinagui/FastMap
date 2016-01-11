@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class ProjectSelector {
 	
@@ -17,7 +18,7 @@ public class ProjectSelector {
 	public JSONArray getByUser(int userId) throws Exception{
 		JSONArray array = new JSONArray();
 		
-		String sql = "select project_id from prj_project";
+		String sql = "select project_id, prj_name from prj_project";
 		
 		PreparedStatement pstmt = null;
 
@@ -32,7 +33,15 @@ public class ProjectSelector {
 				
 				int projectId = resultSet.getInt("project_id");
 				
-				array.add(projectId);
+				String prjName = resultSet.getString("prj_name");
+				
+				JSONObject json = new JSONObject();
+				
+				json.put("id", projectId);
+				
+				json.put("name", prjName);
+				
+				array.add(json);
 			}
 		} catch (Exception e) {
 			

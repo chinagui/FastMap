@@ -40,7 +40,7 @@ public class RdBranchSearch implements ISearch {
 	public IObj searchDataByPid(int pid) throws Exception {
 		RdBranchSelector selector = new RdBranchSelector(conn);
 
-		IObj obj = (IObj) selector.loadById(pid, false);
+		IObj obj = (IObj) selector.loadHighwayById(pid, false);
 
 		return obj;
 	}
@@ -65,7 +65,7 @@ public class RdBranchSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as  (select link_pid, geometry     from rd_link    where sdo_relate(geometry,                     sdo_geometry(:1,                                  8307),                     'mask=anyinteract') = 'TRUE') select  /*+ index(c) */ a.pid,a.lane_info,b.geometry link_geom,c.geometry point_geom  from rd_lane_connexity a,tmp1 b,rd_node c where a.in_link_pid = b.link_pid and a.node_pid = c.node_pid";
+		String sql = "with tmp1 as  (select link_pid, geometry     from rd_link    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE'), tmp2 as  (select a.in_link_pid,          a.node_pid,          listagg(a.branch_pid, ',') within group(order by 1) branch_pids     from rd_branch a, tmp1 b    where a.in_link_pid = b.link_pid      and exists (select null             from rd_branch_detail d            where a.branch_pid = d.branch_pid              and d.branch_type = 0)    group by a.in_link_pid, a.node_pid) select /*+ index(c) */  a.branch_pids, b.geometry link_geom, c.geometry point_geom   from tmp2 a, tmp1 b, rd_node c  where a.in_link_pid = b.link_pid    and a.node_pid = c.node_pid";
 
 		PreparedStatement pstmt = null;
 
@@ -89,12 +89,10 @@ public class RdBranchSearch implements ISearch {
 				SearchSnapshot snapshot = new SearchSnapshot();
 				
 				JSONObject jsonM = new JSONObject();
-
-				snapshot.setI(String.valueOf(resultSet.getInt("pid")));
 				
 				snapshot.setT(7);
 
-				jsonM.put("a","0");
+				jsonM.put("a",resultSet.getString("branch_pids").split(","));
 
 				STRUCT struct1 = (STRUCT) resultSet.getObject("link_geom");
 

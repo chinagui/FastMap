@@ -79,8 +79,8 @@ public class Transaction {
 			case BREAK:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Command(
 						json, requester);
-			case REPAIRE:
-				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.repaire.Command(
+			case REPAIR:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.repair.Command(
 						json, requester);	
 			case MOVENODE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.movenode.Command(
@@ -97,6 +97,9 @@ public class Transaction {
 			case CREATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Command(
 						json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdnode.update.Command(
+						json, requester);
 			}
 		case RDRESTRICTION:
 			switch (operType) {
@@ -105,6 +108,42 @@ public class Transaction {
 						json, requester);
 			case UPDATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdrestriction.update.Command(
+						json, requester);
+			}
+		case RDCROSS:
+			switch (operType){
+			case CREATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdcross.create.Command(
+						json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdcross.update.Command(
+						json, requester);
+			}
+		case RDBRANCH:
+			switch (operType){
+			case CREATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdbranch.create.Command(
+						json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdbranch.update.Command(
+						json, requester);
+			}
+		case RDLANECONNEXITY:
+			switch (operType){
+			case CREATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlaneconnexity.create.Command(
+						json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlaneconnexity.update.Command(
+						json, requester);
+			}
+		case RDSPEEDLIMIT:
+			switch (operType){
+			case CREATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdspeedlimit.create.Command(
+						json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdspeedlimit.update.Command(
 						json, requester);
 			}
 		}
@@ -137,8 +176,8 @@ public class Transaction {
 			case BREAK:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Process(
 						command);
-			case REPAIRE:
-				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.repaire.Process(
+			case REPAIR:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.repair.Process(
 						command);	
 			case DEPARTNODE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.departnode.Process(
@@ -155,6 +194,9 @@ public class Transaction {
 			case CREATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Process(
 						command);
+			case UPDATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdnode.update.Process(
+						command);
 			}
 		case RDRESTRICTION:
 			switch (operType) {
@@ -163,6 +205,42 @@ public class Transaction {
 						command);
 			case UPDATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdrestriction.update.Process(
+						command);
+			}
+		case RDCROSS:
+			switch (operType){
+			case CREATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdcross.create.Process(
+						command);
+			case UPDATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdcross.update.Process(
+						command);
+			}
+		case RDBRANCH:
+			switch (operType){
+			case CREATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdbranch.create.Process(
+						command);
+			case UPDATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdbranch.update.Process(
+						command);
+			}
+		case RDLANECONNEXITY:
+			switch (operType){
+			case CREATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlaneconnexity.create.Process(
+						command);
+			case UPDATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlaneconnexity.update.Process(
+						command);
+			}
+		case RDSPEEDLIMIT:
+			switch (operType){
+			case CREATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdspeedlimit.create.Process(
+						command);
+			case UPDATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdspeedlimit.update.Process(
 						command);
 			}
 		}
@@ -200,6 +278,10 @@ public class Transaction {
 	public JSONArray getCheckLog() {
 		return process.getResult().getCheckResults();
 
+	}
+	
+	public int getPid(){
+		return process.getResult().getPrimaryPid();
 	}
 
 }

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.FosEngine.edit.operation.topo.deletelink;
+package com.navinfo.dataservice.FosEngine.edit.operation.topo.deletenode;
 
 import java.util.List;
 
@@ -19,13 +19,17 @@ public class Command implements ICommand {
 	
 	private String requester;
 
-	private int linkPid;
+	private int nodePid;
 	
-	private RdLink link;
+	private RdNode node;
 	
-	private List<Integer> nodePids;
+	private List<RdLink> links;
+	
+	private List<Integer> linkPids;
 	
 	private List<RdNode> nodes;
+	
+	private List<Integer> nodePids;
 	
 	private List<RdRestriction> restrictions;
 	
@@ -53,20 +57,12 @@ public class Command implements ICommand {
 		this.projectId = projectId;
 	}
 
-	public RdLink getLink() {
-		return link;
+	public List<RdLink> getLinks() {
+		return links;
 	}
 
-	public void setLink(RdLink link) {
-		this.link = link;
-	}
-
-	public List<Integer> getNodePids() {
-		return nodePids;
-	}
-
-	public void setNodePids(List<Integer> nodePids) {
-		this.nodePids = nodePids;
+	public void setLinks(List<RdLink> links) {
+		this.links = links;
 	}
 
 	public List<RdSpeedlimit> getLimits() {
@@ -85,25 +81,20 @@ public class Command implements ICommand {
 		this.nodes = nodes;
 	}
 
+	public List<Integer> getNodePids() {
+		return nodePids;
+	}
+
+	public void setNodePids(List<Integer> nodePids) {
+		this.nodePids = nodePids;
+	}
+
 	public List<RdRestriction> getRestrictions() {
 		return restrictions;
 	}
 
 	public void setRestrictions(List<RdRestriction> restrictions) {
 		this.restrictions = restrictions;
-	}
-
-	public Command(JSONObject json,String requester) {
-		this.requester = requester;
-		
-		this.linkPid = json.getInt("objId");
-		
-		this.projectId = json.getInt("projectId");
-		
-		if (json.containsKey("infect") && json.getInt("infect") == 1){
-			this.isCheckInfect = true;
-		}
-		
 	}
 
 	public List<RdBranch> getBranches() {
@@ -129,13 +120,29 @@ public class Command implements ICommand {
 	public void setCrosses(List<RdCross> crosses) {
 		this.crosses = crosses;
 	}
-
-	public int getLinkPid() {
-		return linkPid;
+	
+	public int getNodePid() {
+		return nodePid;
 	}
 
-	public void setLinkPid(int linkPid) {
-		this.linkPid = linkPid;
+	public void setNodePid(int nodePid) {
+		this.nodePid = nodePid;
+	}
+
+	public List<Integer> getLinkPids() {
+		return linkPids;
+	}
+
+	public void setLinkPids(List<Integer> linkPids) {
+		this.linkPids = linkPids;
+	}
+
+	public RdNode getNode() {
+		return node;
+	}
+
+	public void setNode(RdNode node) {
+		this.node = node;
 	}
 
 	@Override
@@ -146,13 +153,26 @@ public class Command implements ICommand {
 	
 	@Override
 	public ObjType getObjType() {
-		return ObjType.RDLINK;
+		return ObjType.RDNODE;
 	}
 
 	@Override
 	public String getRequester() {
 		
 		return requester;
+	}
+	
+	public Command(JSONObject json,String requester) {
+		this.requester = requester;
+		
+		this.nodePid = json.getInt("objId");
+		
+		this.projectId = json.getInt("projectId");
+		
+		if (json.containsKey("infect") && json.getInt("infect") == 1){
+			this.isCheckInfect = true;
+		}
+		
 	}
 
 }

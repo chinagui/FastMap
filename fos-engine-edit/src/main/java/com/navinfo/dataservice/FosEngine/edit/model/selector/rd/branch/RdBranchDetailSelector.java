@@ -205,7 +205,97 @@ public class RdBranchDetailSelector implements ISelector {
 
 		return rows;
 	}
+	
+	public List<IRow> loadRowsByParentId(int id, int branchType, boolean isLock)
+			throws Exception {
 
+		List<IRow> rows = new ArrayList<IRow>();
+
+		String sql = "select * from rd_branch_detail where branch_pid=:1 and branch_type=:2 and u_record!=2";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, id);
+
+			pstmt.setInt(2, branchType);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				RdBranchDetail detail = new RdBranchDetail();
+
+				detail.setPid(resultSet.getInt("detail_id"));
+
+				detail.setBranchPid(resultSet.getInt("branch_pid"));
+
+				detail.setVoiceDir(resultSet.getInt("voice_dir"));
+
+				detail.setEstabType(resultSet.getInt("estab_type"));
+
+				detail.setNameKind(resultSet.getInt("name_kind"));
+
+				detail.setExitNum(resultSet.getString("exit_num"));
+
+				detail.setBranchType(resultSet.getInt("branch_type"));
+
+				detail.setPatternCode(resultSet.getString("pattern_code"));
+
+				detail.setArrowCode(resultSet.getString("arrow_code"));
+
+				detail.setArrowFlag(resultSet.getInt("arrow_flag"));
+
+				detail.setGuideCode(resultSet.getInt("guide_code"));
+
+				detail.setRowId(resultSet.getString("row_id"));
+
+				RdBranchNameSelector nameSelector = new RdBranchNameSelector(
+						conn);
+
+				detail.setNames(nameSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : detail.getNames()) {
+					RdBranchName name = (RdBranchName) row;
+
+					detail.nameMap.put(name.getPid(), name);
+				}
+
+				rows.add(detail);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return rows;
+	}
 	@Override
 	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
 

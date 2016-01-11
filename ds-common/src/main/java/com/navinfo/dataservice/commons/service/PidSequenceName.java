@@ -26,7 +26,7 @@ public class PidSequenceName {
 	
 	public static final String branchDetailIdName = "SEQ_RD_BRANCH_DETAIL";
 	
-	public static final String branchNameIdName = "SEQ_RD_BRANCH_Name";
+	public static final String branchNameIdName = "SEQ_RD_BRANCH_NAME";
 	
 	
 }

@@ -266,5 +266,102 @@ public class RdSpeedlimitSelector implements ISelector {
 		
 		return path;
 	}
+	
+	public List<RdSpeedlimit> loadSpeedlimitByLinkPids(List<Integer> linkPids,
+			boolean isLock) throws Exception {
+		List<RdSpeedlimit> limits = new ArrayList<RdSpeedlimit>();
+		
+		String s = "";
+		for(int i=0;i<linkPids.size();i++){
+			if(i>0){
+				s+=",";
+			}
+			
+			s+=linkPids.get(i);
+		}
+
+		String sql = "select * from rd_speedlimit where link_pid in ("+s+") and u_record!=2";
+
+		if (isLock) {
+			sql = sql + " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdSpeedlimit limit = new RdSpeedlimit();
+
+				limit.setPid(resultSet.getInt("pid"));
+
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+				limit.setGeometry(GeoTranslator.struct2Jts(struct, 100000, 0));
+
+				limit.setRowId(resultSet.getString("row_id"));
+				
+				limit.setLinkPid(resultSet.getInt("linkPid"));
+				
+				limit.setDirect(resultSet.getInt("direct"));
+				
+				limit.setSpeedValue(resultSet.getInt("speed_value"));
+				
+				limit.setSpeedType(resultSet.getInt("speedType"));
+				
+				limit.setSpeedDependent(resultSet.getInt("speed_dependent"));
+				
+				limit.setSpeedFlag(resultSet.getInt("speed_flag"));
+				
+				limit.setLimitSrc(resultSet.getInt("limit_src"));
+				
+				limit.setTimeDomain(resultSet.getString("time_domain"));
+				
+				limit.setCaptureFlag(resultSet.getInt("capture_flag"));
+				
+				limit.setDescript(resultSet.getString("descript"));
+				
+				limit.setMeshId(resultSet.getInt("mesh_id"));
+				
+				limit.setStatus(resultSet.getInt("status"));
+				
+				limit.setCkStatus(resultSet.getInt("ck_status"));
+				
+				limit.setAdjaFlag(resultSet.getInt("adja_flag"));
+				
+				limit.setRecStatusIn(resultSet.getInt("rec_status_in"));
+				
+				limit.setRecStatusOut(resultSet.getInt("rec_status_out"));
+				
+				limit.setTimeDescript(resultSet.getString("time_descript"));
+				
+				limit.setLaneSpeedValue(resultSet.getString("lane_speed_value"));
+
+				limits.add(limit);
+			}
+		} catch (Exception e) {
+			
+			throw e;
+		} finally {
+			try {
+				resultSet.close();
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+				
+			}
+		}
+
+		return limits;
+	}
 
 }

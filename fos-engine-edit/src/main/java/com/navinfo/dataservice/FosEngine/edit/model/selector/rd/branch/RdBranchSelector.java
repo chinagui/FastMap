@@ -175,6 +175,93 @@ public class RdBranchSelector implements ISelector {
 		return branch;
 	}
 
+	public IRow loadHighwayById(int id, boolean isLock) throws Exception {
+
+		RdBranch branch = new RdBranch();
+
+		String sql = "select * from " + branch.tableName()
+				+ " where branch_pid=:1 and u_record!=2";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, id);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+
+				branch.setPid(resultSet.getInt("branch_pid"));
+
+				branch.setInLinkPid(resultSet.getInt("in_link_pid"));
+
+				branch.setNodePid(resultSet.getInt("node_pid"));
+
+				branch.setOutLinkPid(resultSet.getInt("out_link_pid"));
+
+				branch.setRelationshipType(resultSet
+						.getInt("relationship_type"));
+
+				branch.setRowId(resultSet.getString("row_id"));
+
+				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
+						conn);
+
+				branch.setDetails(detailSelector.loadRowsByParentId(id, 0, isLock));
+
+				for (IRow row : branch.getDetails()) {
+					RdBranchDetail obj = (RdBranchDetail) row;
+
+					branch.detailMap.put(obj.getPid(), obj);
+				}
+
+				RdBranchViaSelector viaSelector = new RdBranchViaSelector(conn);
+
+				branch.setVias(viaSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : branch.getVias()) {
+					RdBranchVia obj = (RdBranchVia) row;
+
+					branch.viaMap.put(obj.rowId(), obj);
+				}
+			} else {
+
+				throw new DataNotFoundException(null);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return branch;
+	}
+	
 	@Override
 	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
 
@@ -422,5 +509,143 @@ public class RdBranchSelector implements ISelector {
 		
 		return branch;
 		
+	}
+	public List<RdBranch> loadRdBranchByNodePid(int nodePid,boolean isLock)throws Exception
+	{
+		List<RdBranch> branchs = new ArrayList<RdBranch>();
+		
+		String sql = "select * from rd_branch where node_pid = :1 and u_record!=2 ";
+		
+		if (isLock){
+			sql += " for update nowait";
+		}
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, nodePid);
+
+			resultSet = pstmt.executeQuery();
+			
+			while(resultSet.next()){
+				
+				RdBranch branch = new RdBranch();
+
+				branch.setPid(resultSet.getInt("branch_pid"));
+
+				branch.setInLinkPid(resultSet.getInt("in_link_pid"));
+
+				branch.setNodePid(resultSet.getInt("node_pid"));
+
+				branch.setOutLinkPid(resultSet.getInt("out_link_pid"));
+
+				branch.setRelationshipType(resultSet
+						.getInt("relationship_type"));
+
+				branch.setRowId(resultSet.getString("row_id"));
+
+				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
+						conn);
+
+				branch.setDetails(detailSelector.loadRowsByParentId(branch.getPid(), isLock));
+
+				for (IRow row : branch.getDetails()) {
+					RdBranchDetail obj = (RdBranchDetail) row;
+
+					branch.detailMap.put(obj.getPid(), obj);
+				}
+
+				RdSignboardSelector signboardSelector = new RdSignboardSelector(
+						conn);
+
+				branch.setSignboards(signboardSelector.loadRowsByParentId(branch.getPid(),
+						isLock));
+
+				for (IRow row : branch.getSignboards()) {
+					RdSignboard obj = (RdSignboard) row;
+
+					branch.signboardMap.put(obj.getPid(), obj);
+				}
+
+				RdSignasrealSelector signasrealSelector = new RdSignasrealSelector(
+						conn);
+
+				branch.setSignasreals(signasrealSelector.loadRowsByParentId(branch.getPid(),
+						isLock));
+
+				for (IRow row : branch.getSignasreals()) {
+					RdSignasreal obj = (RdSignasreal) row;
+
+					branch.signasrealMap.put(obj.getPid(), obj);
+				}
+
+				RdSeriesbranchSelector seriesbranchSelector = new RdSeriesbranchSelector(
+						conn);
+
+				branch.setSeriesbranches(seriesbranchSelector
+						.loadRowsByParentId(branch.getPid(), isLock));
+
+				for (IRow row : branch.getSeriesbranches()) {
+					RdSeriesbranch obj = (RdSeriesbranch) row;
+
+					branch.seriesbranchMap.put(obj.rowId(), obj);
+				}
+
+				RdBranchRealimageSelector realimageSelector = new RdBranchRealimageSelector(
+						conn);
+
+				branch.setRealimages(realimageSelector.loadRowsByParentId(branch.getPid(),
+						isLock));
+
+				for (IRow row : branch.getRealimages()) {
+					RdBranchRealimage obj = (RdBranchRealimage) row;
+
+					branch.realimageMap.put(obj.rowId(), obj);
+				}
+
+				RdBranchSchematicSelector schematicSelector = new RdBranchSchematicSelector(
+						conn);
+
+				branch.setSchematics(schematicSelector.loadRowsByParentId(branch.getPid(),
+						isLock));
+
+				for (IRow row : branch.getSchematics()) {
+					RdBranchSchematic obj = (RdBranchSchematic) row;
+
+					branch.schematicMap.put(obj.getPid(), obj);
+				}
+
+				RdBranchViaSelector viaSelector = new RdBranchViaSelector(conn);
+
+				branch.setVias(viaSelector.loadRowsByParentId(branch.getPid(), isLock));
+
+				for (IRow row : branch.getVias()) {
+					RdBranchVia obj = (RdBranchVia) row;
+
+					branch.viaMap.put(obj.rowId(), obj);
+				}
+			}
+		} catch (Exception e) {
+			
+			throw e;
+		} finally {
+			try {
+				resultSet.close();
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+				
+			}
+		}
+		
+		return branchs;
 	}
 }

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.FosEngine.edit.operation.topo.deletelink;
+package com.navinfo.dataservice.FosEngine.edit.operation.topo.deletenode;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -65,71 +65,71 @@ public class Process implements IProcess {
 	}
 
 	public String preCheck() throws Exception {
+		return null;
 
-		PreparedStatement stmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			// 检查link是否作为交线、分歧、车信的退出线或者经过线
-			String sql = "select a.detail_id, '交限' type   from rd_restriction_detail a  where a.out_link_pid = :1 union all (select b.link_pid, '交限' type from rd_restriction_via b where b.link_pid = :2)  union all (select c.topo_id,'车信' type from rd_lane_topo_detail c where c.out_link_pid = :3)  union all (select d.link_pid,'车信' type from rd_lane_via d where d.link_pid = :4)  union all (select e.branch_pid, '分歧' type from rd_branch e where e.out_link_pid = :5)  union all (select f.branch_pid, '分歧' type from rd_branch_via f where f.link_pid=:6) ";
-			
-			stmt = conn.prepareStatement(sql);
-
-			stmt.setInt(1, command.getLinkPid());
-
-			stmt.setInt(2, command.getLinkPid());
-			
-			stmt.setInt(3, command.getLinkPid());
-			
-			stmt.setInt(4, command.getLinkPid());
-			
-			stmt.setInt(5, command.getLinkPid());
-			
-			stmt.setInt(6, command.getLinkPid());
-
-			resultSet = stmt.executeQuery();
-
-			if (resultSet.next()) {
-				String type = resultSet.getString("type");
-				
-				return "此link上存在"+type+"关系信息，删除该Link会对应删除此组关系";
-			} else {
-				return null;
-			}
-		} catch (Exception e) {
-			
-			throw e;
-		} finally {
-			releaseResource(stmt, resultSet);
-		}
 	}
 
 	public void lockRdLink() throws Exception {
 
 		RdLinkSelector selector = new RdLinkSelector(this.conn);
 
-		RdLink link = (RdLink) selector.loadById(command.getLinkPid(), true);
+		List<RdLink> links = selector.loadByNodePid(command.getNodePid(), true);
+		
+		List<Integer> linkPids = new ArrayList<Integer>();
+		
+		for(RdLink link : links){
+			linkPids.add(link.getPid());
+		}
 
-		command.setLink(link);
+		command.setLinks(links);
+		
+		command.setLinkPids(linkPids);
 	}
 
-	// 锁定盲端节点
 	public void lockRdNode() throws Exception {
 
 		RdNodeSelector selector = new RdNodeSelector(this.conn);
 
-		List<RdNode> nodes = selector.loadEndRdNodeByLinkPid(command.getLinkPid(),
-				false);
-		
+		RdNode node = (RdNode) selector.loadById(command.getNodePid(), true);
+
+		command.setNode(node);
+
+	}
+
+	// 锁定盲端节点
+	public void lockEndRdNode() throws Exception {
+
+		RdNodeSelector selector = new RdNodeSelector(this.conn);
+
 		List<Integer> nodePids = new ArrayList<Integer>();
 		
-		for(RdNode node : nodes){
-			nodePids.add(node.getPid());
+		nodePids.add(command.getNodePid());
+
+		List<RdNode> nodes = new ArrayList<RdNode>();
+
+		for (Integer linkPid: command.getLinkPids()) {
+
+			List<RdNode> list = selector.loadEndRdNodeByLinkPid(linkPid,
+					true);
+
+			for (RdNode node : list) {
+				int nodePid = node.getPid();
+				
+				if (nodePids.contains(nodePid)) {
+					continue;
+				}
+
+				nodePids.add(node.getPid());
+
+				nodes.add(node);
+			}
+
 		}
+		
+		nodes.add(command.getNode());
 
 		command.setNodes(nodes);
-		
+
 		command.setNodePids(nodePids);
 	}
 
@@ -140,79 +140,82 @@ public class Process implements IProcess {
 		RdRestrictionSelector restriction = new RdRestrictionSelector(this.conn);
 
 		List<RdRestriction> restrictions = restriction
-				.loadRdRestrictionByLinkPid(command.getLinkPid(), true);
+				.loadRdRestrictionByNodePid(command.getNodePid(), true);
 
 		command.setRestrictions(restrictions);
 	}
-	
+
 	public void lockRdLaneConnexity() throws Exception {
-		
-		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(this.conn);
-		
-		List<RdLaneConnexity> lanes  = selector.loadRdLaneConnexityByLinkPid(command.getLinkPid(), true);
-		
+
+		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(
+				this.conn);
+
+		List<RdLaneConnexity> lanes = selector.loadRdLaneConnexityByNodePid(
+				command.getNodePid(), true);
+
 		command.setLanes(lanes);
 	}
-	
+
 	public void lockRdBranch() throws Exception {
-		
+
 		RdBranchSelector selector = new RdBranchSelector(this.conn);
-		
-		List<RdBranch> branches = selector.loadRdBranchByInLinkPid(command.getLinkPid(), true);
-		
+
+		List<RdBranch> branches = selector.loadRdBranchByNodePid(
+				command.getNodePid(), true);
+
 		command.setBranches(branches);
 	}
-	
+
 	public void lockRdCross() throws Exception {
-		
+
 		RdCrossSelector selector = new RdCrossSelector(this.conn);
-		
-		List<Integer> linkPids = new ArrayList<Integer>();
-		
-		linkPids.add(command.getLinkPid());
-		
-		List<RdCross> crosses = selector.loadRdCrossByNodeOrLink(command.getNodePids(), linkPids, true);
-		
+
+		List<RdCross> crosses = selector.loadRdCrossByNodeOrLink(
+				command.getNodePids(), command.getLinkPids(), true);
+
 		command.setCrosses(crosses);
 	}
-	
+
 	public void lockRdSpeedlimits() throws Exception {
-		
+
 		RdSpeedlimitSelector selector = new RdSpeedlimitSelector(this.conn);
-		
-		List<RdSpeedlimit> limits = selector.loadSpeedlimitByLinkPid(command.getLinkPid(), true);
-		
+
+		List<RdSpeedlimit> limits = selector.loadSpeedlimitByLinkPids(
+				command.getLinkPids(), true);
+
 		command.setLimits(limits);
 	}
 
 	@Override
 	public boolean prepareData() throws Exception {
 
-		// 检查link是否可以删除
+		// 检查是否可以删除
 		String msg = preCheck();
 
 		if (null != msg) {
 			throw new Exception(msg);
 		}
 
-		// 获取该link对象
-		lockRdLink();
-
-		if (command.getLink() == null) {
-
-			throw new Exception("指定删除的LINK不存在！");
-		}
-
+		// 获取该rdnode对象
 		lockRdNode();
 
+		if (command.getNode() == null) {
+
+			throw new Exception("指定删除的RDNODE不存在！");
+		}
+
+		lockRdLink();
+
+		lockEndRdNode();
+
 		lockRdRestriction();
-		
+
 		lockRdLaneConnexity();
-		
+
 		lockRdBranch();
-		
+
 		lockRdCross();
-		
+
 		lockRdSpeedlimits();
 
 		return true;
@@ -236,52 +239,49 @@ public class Process implements IProcess {
 				recordData();
 				postCheck();
 				conn.commit();
-			}else{
-				Map<String,List<Integer>> infects = new HashMap<String,List<Integer>>();
-				
+			} else {
+				Map<String, List<Integer>> infects = new HashMap<String, List<Integer>>();
+
 				List<Integer> infectList = new ArrayList<Integer>();
-				
+
 				infectList = new ArrayList<Integer>();
-				
-				for(RdBranch branch: command.getBranches()){
+
+				for (RdBranch branch : command.getBranches()) {
 					infectList.add(branch.getPid());
 				}
-				
+
 				infects.put("RDBRANCH", infectList);
-				
+
 				infectList = new ArrayList<Integer>();
-				
-				for(RdLaneConnexity laneConn: command.getLanes()){
+
+				for (RdLaneConnexity laneConn : command.getLanes()) {
 					infectList.add(laneConn.getPid());
 				}
-				
+
 				infects.put("RDLANECONNEXITY", infectList);
-				
+
 				infectList = new ArrayList<Integer>();
-				
-				for(RdSpeedlimit limit : command.getLimits()){
+
+				for (RdSpeedlimit limit : command.getLimits()) {
 					infectList.add(limit.getPid());
 				}
-				
+
 				infects.put("RDSPEEDLIMIT", infectList);
-				
+
 				infectList = new ArrayList<Integer>();
-				
-				for(RdRestriction res: command.getRestrictions()){
+
+				for (RdRestriction res : command.getRestrictions()) {
 					infectList.add(res.getPid());
 				}
-				
+
 				infects.put("RDRESTRICTION", infectList);
-				
+
 				infectList = new ArrayList<Integer>();
-				
-				
-				
+
 				return JSONObject.fromObject(infects).toString();
 			}
 
 		} catch (Exception e) {
-			
 
 			conn.rollback();
 
@@ -290,7 +290,7 @@ public class Process implements IProcess {
 			try {
 				conn.close();
 			} catch (Exception e) {
-				
+
 			}
 		}
 
@@ -314,13 +314,13 @@ public class Process implements IProcess {
 		try {
 			resultSet.close();
 		} catch (Exception e) {
-			
+
 		}
 
 		try {
 			pstmt.close();
 		} catch (Exception e) {
-			
+
 		}
 	}
 

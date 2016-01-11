@@ -145,23 +145,38 @@ public class RdCrossSelector implements ISelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<RdCross> loadRdCrossByNodeOrLink(List<Integer> nodePids, int linkPid, boolean isLock) throws Exception{
+	public List<RdCross> loadRdCrossByNodeOrLink(List<Integer> nodePids, List<Integer> linkPids, boolean isLock) throws Exception{
 		
 		List<RdCross> result = new ArrayList<RdCross>();
 		
-		String str = "";
-		for(int i=0;i<nodePids.size();i++){
-			
-			if(i>0){
-				str+=",";
-			}
-			
-			str+=nodePids.get(i);
+		String str = nodePids.toString();
+		
+		str.replace("[", "(");
+		
+		str.replace("]", ")");
+		
+		String str2 = linkPids.toString();
+		
+		str2.replace("[", "(");
+		
+		str2.replace("]", ")");
+		
+		if (nodePids.size() == 0 && linkPids.size() == 0){
+			return result;
 		}
-				
-		String sql = "select * from rd_cross a where exists (select null from rd_cross_node b where a.pid=b.pid and b.node_pid in (";
-				
-		sql += str+") and b.u_record!=2 or select null from rd_cross_link c where a.pid=c.pid and c.link_pid="+linkPid+" and c.u_record!=2) and a.u_record!=2";
+		
+		String sql = "";
+		
+		if(nodePids.size() == 0){
+			sql = "select * from rd_cross a where exists (select null from rd_cross_link c where a.pid=c.pid and c.link_pid in ("+str2+") and c.u_record!=2) and a.u_record!=2";
+		}
+		else if (linkPids.size() == 0){
+			sql = "select * from rd_cross a where exists (select null from rd_cross_node b where a.pid=b.pid and b.node_pid in ("+str+") and b.u_record!=2) and a.u_record!=2";
+			
+		}
+		else{
+			sql = "select * from rd_cross a where exists (select null from rd_cross_node b where a.pid=b.pid and b.node_pid in ("+str+") and b.u_record!=2 or select null from rd_cross_link c where a.pid=c.pid and c.link_pid in ("+str2+") and c.u_record!=2) and a.u_record!=2";
+		}
 		
 		Statement pstmt = null;
 

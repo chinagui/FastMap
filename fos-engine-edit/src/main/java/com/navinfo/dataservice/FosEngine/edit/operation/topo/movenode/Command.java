@@ -1,9 +1,11 @@
 package com.navinfo.dataservice.FosEngine.edit.operation.topo.movenode;
 
-import net.sf.json.JSONArray;
+import java.util.List;
+
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.FosEngine.edit.operation.OperType;
 
@@ -19,6 +21,16 @@ public class Command implements ICommand {
 	
 	private int projectId;
 	
+	private List<RdLink> links;
+	
+	public List<RdLink> getLinks() {
+		return links;
+	}
+
+	public void setLinks(List<RdLink> links) {
+		this.links = links;
+	}
+
 	public int getProjectId() {
 		return projectId;
 	}
@@ -27,9 +39,9 @@ public class Command implements ICommand {
 		
 		this.nodePid = json.getInt("nodePid");
 		
-		this.longitude = json.getJSONObject("data").getDouble("longitude");
+		this.longitude = json.getJSONObject("data").getDouble("longitude")*100000;
 		
-		this.latitude = json.getJSONObject("data").getDouble("latitude");
+		this.latitude = json.getJSONObject("data").getDouble("latitude")*100000;
 		
 		this.projectId = json.getInt("projectId");
 	}

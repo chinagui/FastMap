@@ -7,6 +7,8 @@ import com.navinfo.dataservice.FosEngine.edit.model.Result;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.service.PidService;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -29,18 +31,14 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 		
-		this.updateLinkGeomtry();
+		this.updateLinkGeomtry(result);
 		
-		this.updateNodeGeometry();
-		
-		result.insertObject(updateLink, ObjStatus.UPDATE);
-		
-		result.insertObject(updateNode, ObjStatus.UPDATE);
+		this.updateNodeGeometry(result);
 		
 		return null;
 	}
 
-	private void updateLinkGeomtry() throws Exception{
+	private void updateLinkGeomtry(Result result) throws Exception{
 		
 		Geometry geom = updateLink.getGeometry();
 		
@@ -76,20 +74,28 @@ public class Operation implements IOperation {
 		
 		updateLink.fillChangeFields(updateContent);
 		
+		result.insertObject(updateLink, ObjStatus.UPDATE);
 	}
 	
-	private void updateNodeGeometry() throws Exception{
+	private void updateNodeGeometry(Result result) throws Exception{
+		
+		RdNode node = new RdNode();
+		
+		node.setPid(PidService.getInstance().applyNodePid());
+		
+		node.copy(updateNode);
+		
 		JSONObject geojson = new JSONObject();
 		
 		geojson.put("type", "Point");
 		
 		geojson.put("coordinates", new double[]{command.getLongitude(),command.getLatitude()});
 		
-		JSONObject updateContent = new JSONObject();
+		Geometry geo = GeoTranslator.geojson2Jts(geojson);
 		
-		updateContent.put("geometry", geojson);
+		node.setGeometry(geo);
 		
-		updateNode.fillChangeFields(updateContent);
+		result.insertObject(node, ObjStatus.INSERT);
 	}
 	
 }

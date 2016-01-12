@@ -36,15 +36,27 @@ public class PhotoTileBuilder {
 		@Override
 		public void map(ImmutableBytesWritable row, Result values,
 				Context context) throws IOException {
-
-			JSONObject jsonAttr = JSONObject.fromObject(values.getValue(
+			
+			String attr = new String(values.getValue(
 					"data".getBytes(), "attribute".getBytes()));
+			
+			
+			
+			JSONObject jsonAttr = null;
+			try {
+				jsonAttr = JSONObject.fromObject(attr);
+			} catch (Exception e1) {
+				System.out.println(attr);
+				
+				throw new IOException(e1);
+			}
 
 			double longitude = jsonAttr.getDouble("a_longitude");
 
 			double latitude = jsonAttr.getDouble("a_latitude");
 
 			for (byte zoom = 7; zoom <= 16; zoom++) {
+				
 				long tileX = MercatorProjection.longitudeToTileX(longitude,
 						zoom);
 
@@ -109,6 +121,14 @@ public class PhotoTileBuilder {
 
 			}
 			
+			String rowkey = new String(key.get());
+			
+			byte zoom = Byte.parseByte(rowkey.substring(0, 2));
+			
+			int tileX = Integer.parseInt(rowkey.substring(2, 10));
+			
+			int tileY = Integer.parseInt(rowkey.substring(10));
+			
 			Iterator<String> it = map.keySet().iterator();
 			
 			JSONArray ja = new JSONArray();
@@ -120,9 +140,9 @@ public class PhotoTileBuilder {
 					
 					JSONObject json = new JSONObject();
 					
-					json.put("o", Integer.parseInt(tmpKey.substring(0,3)));
+					json.put("o", MercatorProjection.tileXToLongitude(tileX, zoom));
 					
-					json.put("a", Integer.parseInt(tmpKey.substring(3)));
+					json.put("a", MercatorProjection.tileYToLatitude(tileY, zoom));
 					
 					json.put("t", map.get(tmpKey));
 					
@@ -141,6 +161,8 @@ public class PhotoTileBuilder {
 	public static void main(String[] args) throws Exception {
 
 		Configuration conf = HBaseConfiguration.create();
+		
+		conf.set("hbase.zookeeper.quorum", args[0]);
 
 		createTable(conf);
 		
@@ -152,7 +174,7 @@ public class PhotoTileBuilder {
 
 		job.setNumReduceTasks(10);
 
-		job.setJarByClass(Mapper.class);
+		job.setJarByClass(PhotoTileBuilder.class);
 
 		Scan scan = new Scan();
 		

@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.FosEngine.edit.operation.obj.rdspeedlimit.create;
 
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.speedlimit.RdSpeedlimit;
@@ -22,15 +24,22 @@ public class Operation implements IOperation {
 		
 		String msg = null;
 		
-		Geometry geometry = GeoTranslator.geojson2Jts(command.getGeometry(), 100000, 0);
-		
 		RdSpeedlimit limit = new RdSpeedlimit();
 		
 		limit.setPid(PidService.getInstance().applySpeedLimitPid());
 		
-		limit.setGeometry(geometry);
+		JSONObject geoPoint = new JSONObject();
+
+		geoPoint.put("type", "Point");
+
+		geoPoint.put("coordinates", new double[] { command.getLongitude(),
+				command.getLatitude() });
+		
+		limit.setGeometry(GeoTranslator.geojson2Jts(geoPoint, 100000, 0));
 		
 		limit.setDirect(command.getDirect());
+		
+		limit.setLinkPid(command.getLinkPid());
 		
 		result.insertObject(limit, ObjStatus.INSERT);
 		

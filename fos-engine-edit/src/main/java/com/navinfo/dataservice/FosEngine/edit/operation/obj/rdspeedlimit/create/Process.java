@@ -55,13 +55,9 @@ public class Process implements IProcess {
 	@Override
 	public String preCheck() throws Exception {
 		
-		JSONObject geojson = command.getGeometry();
+		double lon = command.getLongitude();
 		
-		JSONArray array = geojson.getJSONArray("coordinates");
-		
-		double lon = array.getDouble(0);
-		
-		double lat = array.getDouble(1);
+		double lat = command.getLatitude();
 		
 		if(MeshUtils.isPointAtMeshBorder(lon, lat)){
 			return "点限速点位不能在图框线上";

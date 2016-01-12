@@ -240,7 +240,7 @@ public class DbManager {
 //			String conString = dbMan.getDbConnectStrByPid(1L);
 //			System.out.println(conString);
 //			System.out.println(RandomUtil.nextString(8));
-			UnifiedDb db = dbMan.createDb("TEMP_TJ_01", "projectDbRoad", "4TEST","240");
+			UnifiedDb db = dbMan.createDb("TEMP_TJ_01", "projectDbRoad", "4TEST","240+");
 			System.out.println(db.getConnectParam());
 			
 		}catch(Exception e){

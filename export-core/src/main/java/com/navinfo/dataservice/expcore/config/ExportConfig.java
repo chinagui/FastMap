@@ -7,25 +7,27 @@ import com.navinfo.dataservice.expcore.exception.ExportException;
 import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
-import org.dom4j.DocumentException;
 import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
 
 import com.navinfo.dataservice.commons.log.JobLogger;
+
+import net.sf.json.JSONObject;
 
 public class ExportConfig {
 	
 	protected String gdbVersion;//230,240,240+,252+,...
 	
-	protected boolean fastCopy;
-	
 	private String exportMode;//
+	public final static String MODE_FULL_COPY="full_copy";//整库复制，走db_link,只支持oracle到oracle
 	public final static String MODE_COPY="copy";
 	public final static String MODE_CUT="cut";
 	public final static String MODE_DELETE="delete";
@@ -54,15 +56,17 @@ public class ExportConfig {
 	protected boolean multiThread4Output=true;
 	
 
-	private boolean dataIntegrity = true;// 是否带毛边提取
+	private boolean dataIntegrity = false;// 是否带毛边提取
 
 	public static final String DATA_INTEGRITY = "dataIntegrity";
 	public static final String DATA_NOT_INTEGRITY = "dataNotIntegrity";
-
-//	private boolean disableAsynchronousExecute = false;// true
-														// :关闭在数据导出后执行根据面批edit_flag
-
-//	private boolean enableCreateScript = false;//子版本在插入数据之前是否创建上脚本，新建和已存在的子版本都会创建
+	
+	//
+	protected Map<String,String> tableReNames;
+	protected List<String> checkExistTables;
+	protected String whenExist;
+	public static final String WHEN_EXIST_IGNORE = "ignore";
+	public static final String WHEN_EXIST_OVERWRITE = "overwrite";
 	
 	protected Logger log = Logger.getLogger(this.getClass());
 	
@@ -72,10 +76,15 @@ public class ExportConfig {
 		super();
 		log = JobLogger.getLogger(log);
 	}
-    public ExportConfig(String xmlConfig) throws ExportException{
+    public ExportConfig(Document xmlConfig) throws ExportException{
     	super();
 		log = JobLogger.getLogger(log);
     	this.parseByXmlConfig(xmlConfig);
+    }
+    public ExportConfig(JSONObject jsonConfig) throws ExportException{
+    	super();
+		log = JobLogger.getLogger(log);
+    	this.parseByJsonConfig(jsonConfig);
     }
 
 	/**
@@ -92,18 +101,6 @@ public class ExportConfig {
 		this.exportMode = exportMode;
 	}
 
-	/**
-	 * @return the fastCopy
-	 */
-	public boolean isFastCopy() {
-		return fastCopy;
-	}
-	/**
-	 * @param fastCopy the fastCopy to set
-	 */
-	public void setFastCopy(boolean fastCopy) {
-		this.fastCopy = fastCopy;
-	}
 	/**
 	 * @return the truncateData
 	 */
@@ -277,6 +274,24 @@ public class ExportConfig {
 		this.multiThread4Output = multiThread4Output;
 	}
 
+	public Map<String, String> getTableReNames() {
+		return tableReNames;
+	}
+	public void setTableReNames(Map<String, String> tableReNames) {
+		this.tableReNames = tableReNames;
+	}
+	public List<String> getCheckExistTables() {
+		return checkExistTables;
+	}
+	public void setCheckExistTables(List<String> checkExistTables) {
+		this.checkExistTables = checkExistTables;
+	}
+	public String getWhenExist() {
+		return whenExist;
+	}
+	public void setWhenExist(String whenExist) {
+		this.whenExist = whenExist;
+	}
 	public int getSourceDbId() {
 		return sourceDbId;
 	}
@@ -294,63 +309,84 @@ public class ExportConfig {
 	public String toString() {
 		return "";
 	}
-	public void parseByXmlConfig(String xmlConfig) throws ExportException{
+	public void parseByXmlConfig(Document rootDoc) throws ExportException{
+		if(rootDoc==null) {
+			log.warn("注意：未传入的解析xml对象，导出的config未被初始化");
+		}
+		List<Element> attrsList = rootDoc.getRootElement().elements();
+		for(Element attrs: attrsList){
+			List<Element> attrList = attrs.elements();
+			for(Element att:attrList){
+				String attName = att.attributeValue("name");
+				String attValue = att.attributeValue("value");
+				if(StringUtils.isEmpty(attName)||StringUtils.isEmpty(attValue)){
+					log.warn("注意：导出配置的xml中存在name或者value为空的attr node，已经被忽略。");
+					continue;
+				}
+				setAttrValue(attName,attValue);
+			}
+		}
+	}
+	public void parseByJsonConfig(JSONObject json)throws ExportException{
+		if(json==null) {
+			log.warn("注意：未传入的解析json对象，导出的config未被初始化");
+		}
+		for(Iterator it = json.keys();it.hasNext();){
+			String attName = (String)it.next();
+			String attValue = (String)json.get(attName);
+			if(StringUtils.isEmpty(attName)||StringUtils.isEmpty(attValue)){
+				log.warn("注意：导出配置的json中存在name或者value为空的属性，已经被忽略。");
+				continue;
+			}
+			setAttrValue(attName,attValue);
+		}
+	}
+	private void setAttrValue(String attName,String attValue)throws ExportException{
 		try{
-			Document rootDoc=readStringXml(xmlConfig);
-			List<Element> attrsList = rootDoc.getRootElement().elements();
-			for(Element attrs: attrsList){
-				List<Element> attrList = attrs.elements();
-				for(Element att:attrList){
-					String attName = att.attributeValue("name");
-					String attValue = att.attributeValue("value");
-					if(StringUtils.isEmpty(attName)||StringUtils.isEmpty(attValue)){
-						log.warn("注意：导出配置的xml中存在name或者value为空的attr node，已经被忽略。");
-						continue;
-					}
-					String methodName = "set"+(char)(attName.charAt(0)-32)+attName.substring(1, attName.length());
-					Class[] argtypes= new Class[]{String.class};
-					if(attName.equals("sourcePort")||attName.equals("targetPort")){
-						argtypes= new Class[]{int.class};
-						Method method = ExportConfig.class.getMethod(methodName, argtypes);
-						method.invoke(this, Integer.parseInt(attValue));
-					}else if(attName.equals("fastCopy")||attName.equals("truncateData")||attName.equals("destroyTarget")||attName.equals("newTarget")
-							||attName.equals("multiThread4Input")||attName.equals("multiThread4Output")||attName.equals("dataIntegrity")){
-						argtypes= new Class[]{boolean.class};
-						Method method = ExportConfig.class.getMethod(methodName, argtypes);
-						method.invoke(this, Boolean.parseBoolean(attValue));
-					}else if(attName.equals("conditionParams")){
-						String[] s= attValue.split(",");
-						Set<String> se = new HashSet<String>(Arrays.asList(s));
-						this.setConditionParams(se);
+			String methodName = "set"+(char)(attName.charAt(0)-32)+attName.substring(1, attName.length());
+			Class[] argtypes= new Class[]{String.class};
+			if(attName.equals("sourceDbId")||attName.equals("targetDbId")){
+				argtypes= new Class[]{int.class};
+				Method method = ExportConfig.class.getMethod(methodName, argtypes);
+				method.invoke(this, Integer.parseInt(attValue));
+			}else if(attName.equals("fastCopy")||attName.equals("truncateData")||attName.equals("destroyTarget")||attName.equals("newTarget")
+					||attName.equals("multiThread4Input")||attName.equals("multiThread4Output")||attName.equals("dataIntegrity")){
+				argtypes= new Class[]{boolean.class};
+				Method method = ExportConfig.class.getMethod(methodName, argtypes);
+				method.invoke(this, Boolean.parseBoolean(attValue));
+			}else if(attName.equals("conditionParams")){
+				String[] s= attValue.split(",");
+				Set<String> se = new HashSet<String>(Arrays.asList(s));
+				this.setConditionParams(se);
+			}else if(attName.equals("checkExistTables")){
+				String[] s= attValue.split(",");
+				List<String> li = Arrays.asList(s);
+				this.setCheckExistTables(li);
+			}else if(attName.equals("tableReNames")){
+				Map<String,String> m = new HashMap<String,String>();
+				String[] sArr= attValue.split(",");
+				for(String s:sArr){
+					String[] rArr = s.split(":");
+					if(rArr!=null&&rArr.length==2){
+						m.put(rArr[0], rArr[1]);
 					}else{
-						argtypes= new Class[]{String.class};
-						Method method = ExportConfig.class.getMethod(methodName, argtypes);
-						method.invoke(this, attValue);
+						log.error("导出参数配置的tableReNames属性存在错误。");
+						throw new ExportException("导出参数配置的tableReNames属性存在错误。");
 					}
 				}
 			}
+			else{
+				argtypes= new Class[]{String.class};
+				Method method = ExportConfig.class.getMethod(methodName, argtypes);
+				method.invoke(this, attValue);
+			}
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
-			String step="导出配置xml解析过程中出错，";
-			if(e instanceof DocumentException){
-				step="xml文档解析出错,";
-			}else if(e instanceof NoSuchMethodException){
-				step="ExportConfig解析过程中未找到方法，";
-			}
-			throw new ExportException(step+"原因为:"+e.getMessage(),e);
+			throw new ExportException("ExportConfig解析过程中未找到方法,原因为:"+e.getMessage(),e);
 		}
-	}
-	public void parseByJsonConfig(String jsonConfig){
-		
 	}
 	public void validate()throws ExportConfigValidateException,Exception{
 		//todo
 	}
 	
-	private Document readStringXml(String xmlParam) throws DocumentException {
-		SAXReader reader = new SAXReader();
-		StringReader sReader = new StringReader(xmlParam);
-		Document document = reader.read(sReader);
-		return document;
-	}
 }

@@ -6,15 +6,17 @@ package com.navinfo.dataservice.commons.job;
  * @date 2015-12-2 下午5:07:29 
  * @Description: TODO
  */
-public class DSJob {
-	private String taskId;
+public abstract class DSJob {
+	private String flowId;
 	private String jobId;
 	private String jobType;
-	public String getTaskId() {
-		return taskId;
+	protected String jobRequest;
+	protected String jobResponse;
+	public String getFlowId() {
+		return flowId;
 	}
-	public void setTaskId(String taskId) {
-		this.taskId = taskId;
+	public void setFlowId(String flowId) {
+		this.flowId = flowId;
 	}
 	public String getJobId() {
 		return jobId;
@@ -28,4 +30,8 @@ public class DSJob {
 	public void setJobType(String jobType) {
 		this.jobType = jobType;
 	}
+	public void preExecute(){
+		parseJobRequest();
+	}
+	public abstract void parseJobRequest();
 }

@@ -79,6 +79,7 @@ public class ExpSQL {
 
 
     public boolean isDML() {
+    	if(sql.contains("@")) return false;
         return sql.toUpperCase().startsWith("INSERT") || sql.toUpperCase().startsWith("DELETE")
                 || sql.toUpperCase().startsWith("UPDATE");
     }

@@ -5,6 +5,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 import org.apache.log4j.Logger;
@@ -12,7 +13,6 @@ import org.apache.log4j.Logger;
 import com.navinfo.navicommons.database.ColumnMetaData;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.dataservice.expcore.ExporterResult;
-import com.navinfo.dataservice.expcore.target.tablerename.TableReName;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 
@@ -27,7 +27,7 @@ public abstract class AbstractDataOutput implements DataOutput {
 	protected Logger log = Logger.getLogger(this.getClass());
 
 
-	protected List<TableReName> tableReNames = new ArrayList<TableReName>();
+	protected Map<String,String> tableReNames;
 	protected ThreadLocalContext ctx;
 	protected ExporterResult expResult;
 
@@ -37,13 +37,6 @@ public abstract class AbstractDataOutput implements DataOutput {
 		log = ctx.getLog();
 	}
 
-	public void addTableReName(TableReName tableReName) {
-		tableReNames.add(tableReName);
-	}
-
-	public void clearTableReName() {
-		tableReNames.clear();
-	}
 
 	/**
 	 * @param resultSet
@@ -52,38 +45,24 @@ public abstract class AbstractDataOutput implements DataOutput {
 	 * @throws Exception
 	 */
 	public void output(ResultSet resultSet,
-			String tableName,
-			String reNameTo) throws Exception {
-
-		// 获取表元数据信息
+			String tableName) throws Exception {
+		//重命名表名
+		String reNameTable = tableName;
+		if(tableReNames!=null&&tableReNames.containsKey(tableName)){
+			reNameTable = tableReNames.get(tableName);
+		}
+		// 获取表元数据信息和过滤忽略字段
 		List<ColumnMetaData> tmdList = getTableMetaData(resultSet, tableName);
-		// 根据元数据生成insert 语句中字段表名信息（非完整的insert）
 		tmdList = DataBaseUtils.removeIgnoreColumn(tmdList, null);
-		doOutput(resultSet, tableName, reNameTo, tmdList);
+		
+		doOutPut(resultSet, tableName, reNameTable, tmdList);
 	}
 
-	protected abstract void doOutput(ResultSet resultSet,
+	protected abstract void doOutPut(ResultSet resultSet,
 			String tableName,
 			String reNameTo,
-			List<ColumnMetaData> tmdList
-			) throws Exception;
+			List<ColumnMetaData> tmdList) throws Exception;
 
-	/**
-	 * 自动转换表名
-	 * 
-	 * @param resultSet
-	 * @param tableName
-	 * @throws Exception
-	 */
-	public void output(ResultSet resultSet, String tableName) throws Exception {
-		String reNameTable = tableName;
-		// logger.debug("开始写表" + tableName + "数据到表" + reNameTable);
-		for (TableReName reName : tableReNames) {
-			reNameTable = reName.reNameTo(reNameTable);
-		}
-		// logger.debug("开始写表" + tableName + "数据到表" + reNameTable);
-		output(resultSet, tableName, reNameTable);
-	}
 
 	/**
 	 * 获取表元数据信息

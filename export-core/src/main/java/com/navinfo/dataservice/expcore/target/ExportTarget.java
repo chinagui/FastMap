@@ -11,7 +11,6 @@ public interface ExportTarget {
 	/**
 	 * 导出失败时，销毁目标实现此方法
 	 */
-	public void init(String gdbVersion)throws ExportException;
     public void release(boolean destroyTarget);
     
 }

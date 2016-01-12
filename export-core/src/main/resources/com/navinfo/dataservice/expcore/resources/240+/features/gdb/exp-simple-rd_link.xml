@@ -4,8 +4,6 @@
 @time:2010-10-11
 -->
 <sqls>
-    <import file="clean-index.xml"/>
-    <import file="clean-data.xml"/>
 
     <feature name="RD_LINK">
         <step value="7">

@@ -4,10 +4,11 @@
 
 <!-- common part -->
 	<!--管理数据库的连接 -->
-	<dataSourceKey>MAN</dataSourceKey>
 	<MAN.server.type>ORACLE</MAN.server.type>
 	<MAN.jdbc.driverClassName>oracle.jdbc.driver.OracleDriver</MAN.jdbc.driverClassName>
 	<MAN.jdbc.url>jdbc:oracle:thin:@192.168.4.131:1521/orcl</MAN.jdbc.url>
+	<MAN.dataSource.validationQuery>select 1 from dual</MAN.dataSource.validationQuery>
+	
 	<MAN.jdbc.username>pmdb1</MAN.jdbc.username>
 	<MAN.jdbc.password>pmdb1</MAN.jdbc.password>
 	<MAN.dataSource.initialSize>2</MAN.dataSource.initialSize>
@@ -15,7 +16,6 @@
 	<MAN.dataSource.maxIdle>10</MAN.dataSource.maxIdle>
 	<MAN.dataSource.minIdle>2</MAN.dataSource.minIdle>
 	<MAN.dataSource.maxWait>1000</MAN.dataSource.maxWait>
-	<MAN.dataSource.validationQuery>select 1 from dual</MAN.dataSource.validationQuery>
 	
 <!-- datahub part -->	
 	<!-- 数据库服务器默认选择策略，random,只能配置不需要传参的策略类型 -->

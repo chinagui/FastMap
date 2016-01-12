@@ -10,6 +10,7 @@ import com.navinfo.dataservice.commons.log.JobLogger;
  * Created by IntelliJ IDEA. User: liuqing Date: 11-5-10 Time: 下午4:38
  * 数据导出的抽象方法，导出数据到不同的载体可以继承此方法
  */
+@Deprecated
 public abstract class AbstractExportTarget implements ExportTarget {
 
 	protected Logger log = Logger.getLogger(getClass());

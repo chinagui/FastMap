@@ -79,6 +79,9 @@ public class MultiDataSourceFactory {
 
 		return getDataSource(dataSourceKey, systemConfig,true);
 	}
+	public BasicDataSource getDataSource(String dataSourceKey, MavenConfigMap config){
+		return getDataSource(dataSourceKey, config,false);
+	}
 
 
 
@@ -91,7 +94,7 @@ public class MultiDataSourceFactory {
 	 * @throws SQLException
 	 */
 
-	public BasicDataSource getDataSource(String dataSourceKey, MavenConfigMap config, boolean cache) {
+	private BasicDataSource getDataSource(String dataSourceKey, MavenConfigMap config, boolean cache) {
 		log = JobLogger.getLogger(log);
 		BasicDataSource dataSource = dataSourceMap.get(dataSourceKey);
 		if (dataSource == null || dataSource.isClosed()) {

@@ -75,7 +75,7 @@ public class OracleSource implements ExportSource {
 	}
 	private void installExportViews(String gdbVersion,Connection conn)throws ExportException{
 		try{
-			String viewFile = "/com/navinfo/dataservice/expcore/resources/" + gdbVersion + "/schema/view.sql";
+			String viewFile = "/com/navinfo/dataservice/expcore/resources/" + gdbVersion + "/scripts/view.sql";
 			SqlExec sqlExec = new SqlExec(conn);
 			sqlExec.execute(viewFile);
 		}catch(Exception e){
@@ -86,7 +86,7 @@ public class OracleSource implements ExportSource {
 	private void createOrTruncateTempTables(String gdbVersion,Connection conn) throws ExportException {
 		InputStream is = null;
 		try {
-			String schemaCreateFile = "/com/navinfo/dataservice/expcore/resources/" + gdbVersion + (newTableSuffix?"/schema/temp_table_create.sql":"/schema/temp_table_truncate.sql");
+			String schemaCreateFile = "/com/navinfo/dataservice/expcore/resources/" + gdbVersion + (newTableSuffix?"/scripts/temp_table_create.sql":"/scripts/temp_table_truncate.sql");
 			is = OracleSource.class.getResourceAsStream(schemaCreateFile);
 			if (is == null) {
 				Thread.currentThread().getContextClassLoader().getResourceAsStream(schemaCreateFile);
@@ -127,7 +127,7 @@ public class OracleSource implements ExportSource {
 		log.debug("package count " + packages.get(0).get("PACKAGE_COUNT"));
 		if (!"2".equals(packages.get(0).get("PACKAGE_COUNT")))
 		{
-			String fulName = "/com/navinfo/dataservice/expcore/resources/" + gdbVersion + "/schema/"+pkgFulName;
+			String fulName = "/com/navinfo/dataservice/expcore/resources/" + gdbVersion + "/scripts/"+pkgFulName;
 			log.debug("使用以下路径中的包：" + fulName);
 			PackageExec packageExec = new PackageExec(conn);
 			packageExec.execute(fulName);

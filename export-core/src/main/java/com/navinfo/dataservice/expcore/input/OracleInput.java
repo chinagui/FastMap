@@ -16,6 +16,8 @@ import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.expcore.source.OracleSource;
 import com.navinfo.dataservice.expcore.source.parameter.SerializeParameters;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
+import com.navinfo.dataservice.expcore.sql.assemble.AssembleSql;
+import com.navinfo.dataservice.expcore.sql.assemble.AssembleXmlConfigSql;
 import com.navinfo.dataservice.commons.log.JobLogger;
 import com.navinfo.navicommons.utils.StringUtils;
 
@@ -90,9 +92,6 @@ public class OracleInput implements DataInput {
 	 */
 	@Override
 	public void loadScripts() throws ExportInputException, Exception {
-		if(expConfig.isFastCopy()){
-			return;
-		}
 		AssembleSql as = new AssembleXmlConfigSql(expConfig.getExportMode(),expConfig.getFeature(),expConfig.getCondition(),expConfig.getConditionParams());
 		expSqlMap = as.assemble(expConfig.getGdbVersion(), source.getTempSuffix());
 

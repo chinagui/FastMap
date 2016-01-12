@@ -20,56 +20,63 @@ public class FileUtils {
 
 	/**
 	 * 读取目录中图片，生成字节数据到map中
+	 * 
 	 * @param dir
 	 * @return
 	 * @throws Exception
 	 */
-	public static Map<String,byte[]> readPhotos(String dir) throws Exception
-	{
-		Map<String,byte[]> map = new HashMap<String,byte[]>();
-		
+	public static Map<String, byte[]> readPhotos(String dir) throws Exception {
+		Map<String, byte[]> map = new HashMap<String, byte[]>();
+
 		File file = new File(dir);
-		
-		if (!file.exists()){
+
+		if (!file.exists()) {
 			return map;
 		}
-		
+
 		File[] files = file.listFiles();
-		
-		for(File f : files){
-			FileInputStream in = new FileInputStream(f);
-			
-			byte[] bytes = new byte[(int) f.length()];
-			
-			in.read(bytes);
-			
-			map.put(f.getName(), bytes);
-			
-			in.close();
+
+		for (File f : files) {
+
+			if (f.isDirectory()) {
+				Map<String, byte[]> submap = readPhotos(f.getAbsolutePath());
+
+				map.putAll(submap);
+			} else {
+				FileInputStream in = new FileInputStream(f);
+
+				byte[] bytes = new byte[(int) f.length()];
+
+				in.read(bytes);
+
+				map.put(f.getName(), bytes);
+
+				in.close();
+			}
 		}
-		
+
 		return map;
 	}
-	
-	
-	public static Map<String,byte[]> genSmallImageMap(String dir) throws Exception{
-		
-		Map<String,byte[]> map = new HashMap<String,byte[]>();
-		
+
+	public static Map<String, byte[]> genSmallImageMap(String dir)
+			throws Exception {
+
+		Map<String, byte[]> map = new HashMap<String, byte[]>();
+
 		File file = new File(dir);
-		
+
 		File[] files = file.listFiles();
-		
-		for(File f : files){
+
+		for (File f : files) {
 			map.put(f.getName(), makeSmallImage(f));
 		}
-		
+
 		return map;
 	}
-	
-	
+
 	/**
 	 * 创建缩略图
+	 * 
 	 * @param srcImageFile
 	 * @return
 	 * @throws Exception
@@ -111,10 +118,10 @@ public class FileUtils {
 
 		return bos.getBytes();
 	}
-	
-	
+
 	/**
 	 * 创建缩略图
+	 * 
 	 * @param srcImageFile
 	 * @return
 	 * @throws Exception
@@ -124,7 +131,7 @@ public class FileUtils {
 		BufferedImage tagImage = null;
 		Image srcImage = null;
 		ByteInputStream bis = new ByteInputStream(bytes, bytes.length);
-		
+
 		srcImage = ImageIO.read(bis);
 		int srcWidth = srcImage.getWidth(null);// 原图片宽度
 		int srcHeight = srcImage.getHeight(null);// 原图片高度
@@ -158,13 +165,14 @@ public class FileUtils {
 
 		return bos.getBytes();
 	}
-	
-	public static void makeSmallImage(byte[] bytes, String dstImageFileName) throws Exception {
+
+	public static void makeSmallImage(byte[] bytes, String dstImageFileName)
+			throws Exception {
 		JPEGImageEncoder encoder = null;
 		BufferedImage tagImage = null;
 		Image srcImage = null;
 		ByteInputStream bis = new ByteInputStream(bytes, bytes.length);
-		
+
 		srcImage = ImageIO.read(bis);
 		int srcWidth = srcImage.getWidth(null);// 原图片宽度
 		int srcHeight = srcImage.getHeight(null);// 原图片高度
@@ -189,20 +197,22 @@ public class FileUtils {
 				BufferedImage.TYPE_INT_RGB);
 		tagImage.getGraphics().drawImage(srcImage, 0, 0, dstWidth, dstHeight,
 				null);
-		FileOutputStream fileOutputStream = new FileOutputStream(dstImageFileName);
+		FileOutputStream fileOutputStream = new FileOutputStream(
+				dstImageFileName);
 
-		//ByteOutputStream bos = new ByteOutputStream();
+		// ByteOutputStream bos = new ByteOutputStream();
 
 		encoder = JPEGCodec.createJPEGEncoder(fileOutputStream);
 		encoder.encode(tagImage);
 
 	}
-	
+
 	public static void main(String[] args) throws Exception {
 		System.out.println(new Date());
-		
-		Map<String,byte[]> map = FileUtils.genSmallImageMap("C:\\Users\\lilei3774\\Desktop\\20151027");
-	
+
+		Map<String, byte[]> map = FileUtils
+				.genSmallImageMap("C:\\Users\\lilei3774\\Desktop\\20151027");
+
 		System.out.println(new Date());
 	}
 }

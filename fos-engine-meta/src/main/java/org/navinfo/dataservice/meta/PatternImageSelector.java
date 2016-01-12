@@ -22,11 +22,13 @@ public class PatternImageSelector {
 		this.conn = conn;
 	}
 
-	public JSONArray searchByName(String name, int pageSize, int pageNum) throws Exception{
+	public JSONObject searchByName(String name, int pageSize, int pageNum) throws Exception{
+		
+		JSONObject result = new JSONObject();
 
 		JSONArray array = new JSONArray();
 		
-		String sql = "SELECT *   FROM (SELECT a.*, rownum rn           FROM (select file_name,file_content,format                 from sc_model_match_g                  where file_name like :1) a          WHERE rownum <= :2)  WHERE rn >= :3";
+		String sql = "SELECT *   FROM (SELECT a.*, rownum rn           FROM (select count(1) over(partition by 1) total,file_name,file_content,format                 from sc_model_match_g                  where file_name like :1) a          WHERE rownum <= :2)  WHERE rn >= :3";
 
 		PreparedStatement pstmt = null;
 
@@ -35,6 +37,8 @@ public class PatternImageSelector {
 		int startRow = pageNum * pageSize + 1;
 
 		int endRow = (pageNum+1) * pageSize;
+		
+		int total = 0;
 		
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -68,7 +72,11 @@ public class PatternImageSelector {
 				String fileContent = "data:image/"+format+";base64," + new String(Base64.encodeBase64(buffer));
 				
 				json.put("fileContent", fileContent);
-
+				
+				if(total==0){
+					total=resultSet.getInt("total");
+				}
+				
 				array.add(json);
 			}
 		} catch (Exception e) {
@@ -101,8 +109,12 @@ public class PatternImageSelector {
 			}
 
 		}
+		
+		result.put("total", total);
+		
+		result.put("data", array);
 
-		return array;
+		return result;
 
 	}
 	
@@ -242,6 +254,6 @@ public class PatternImageSelector {
 		
 		PatternImageSelector selector = new PatternImageSelector(oa1.getConn());
 		
-		System.out.println(selector.searchByName("03513112", 1, 0));
+		System.out.println(selector.searchByName("0", 1, 10));
 	}
 }

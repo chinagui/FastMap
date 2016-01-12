@@ -17,11 +17,14 @@ public class RdNameSelector {
 		this.conn = conn;
 	}
 
-	public JSONArray searchByName(String name, int pageSize, int pageNum)
+	public JSONObject searchByName(String name, int pageSize, int pageNum)
 			throws Exception {
+		
+		JSONObject result = new JSONObject();
+		
 		JSONArray array = new JSONArray();
 
-		String sql = "SELECT *   FROM (SELECT c.*, rownum rn           FROM (select a.name_id, max(a.name) name, max(b.province) province                  from rd_name a, cp_meshlist b                  where a.name like :1                    and a.admin_id = b.admincode group by a.name_id) c          WHERE rownum <= :2)  WHERE rn >= :3";
+		String sql = "SELECT *   FROM (SELECT c.*, rownum rn           FROM (select  count(1) over(partition by 1) total,        a.name_id,        a.name,        b.province   from rd_name a, cp_provincelist b  where a.name like :1    and a.admin_id = b.admincode) c          WHERE rownum <= :2)  WHERE rn >= :3";
 		
 		PreparedStatement pstmt = null;
 
@@ -30,6 +33,8 @@ public class RdNameSelector {
 		int startRow = pageNum * pageSize + 1;
 
 		int endRow = (pageNum + 1) * pageSize;
+		
+		int total = 0;
 
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -43,6 +48,10 @@ public class RdNameSelector {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
+				
+				if(total==0){
+					total = resultSet.getInt("total");
+				}
 
 				int nameId = resultSet.getInt("name_id");
 
@@ -89,8 +98,12 @@ public class RdNameSelector {
 				}
 			}
 		}
+		
+		result.put("total", total);
+		
+		result.put("data", array);
 
-		return array;
+		return result;
 	}
 
 	public static void main(String[] args) throws Exception {

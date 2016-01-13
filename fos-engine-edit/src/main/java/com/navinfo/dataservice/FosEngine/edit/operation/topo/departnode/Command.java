@@ -59,7 +59,7 @@ public class Command implements ICommand {
 	@Override
 	public OperType getOperType() {
 		// TODO Auto-generated method stub
-		return OperType.DEPARTNODE;
+		return OperType.DEPART;
 	}
 
 	@Override

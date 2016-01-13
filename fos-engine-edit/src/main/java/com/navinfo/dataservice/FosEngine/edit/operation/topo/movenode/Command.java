@@ -49,7 +49,7 @@ public class Command implements ICommand {
 	@Override
 	public OperType getOperType() {
 		
-		return OperType.MOVENODE;
+		return OperType.MOVE;
 	}
 
 	@Override

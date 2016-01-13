@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlink.updatelinklimit;
+package com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlink.rdlinkspeedlimit.create;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -33,7 +33,7 @@ public class Command implements ICommand {
 	@Override
 	public OperType getOperType() {
 		
-		return OperType.UPDATELINKLIMIT;
+		return OperType.CREATE;
 	}
 
 	@Override
@@ -45,7 +45,7 @@ public class Command implements ICommand {
 	@Override
 	public ObjType getObjType() {
 		
-		return ObjType.RDLINK;
+		return ObjType.RDLINKSPEEDLIMIT;
 	}
 	
 	public Command(JSONObject json,String requester){

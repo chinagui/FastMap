@@ -57,7 +57,7 @@ public class Transaction {
 	 * 
 	 * @return 命令
 	 */
-	private ICommand createCommand() {
+	private ICommand createCommand() throws Exception {
 		JSONObject json = JSONObject.fromObject(requester);
 
 		operType = Enum.valueOf(OperType.class, json.getString("command"));
@@ -81,16 +81,7 @@ public class Transaction {
 						json, requester);
 			case REPAIR:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.repair.Command(
-						json, requester);	
-			case MOVENODE:
-				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.movenode.Command(
-						json, requester);		
-			case DEPARTNODE:
-				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.departnode.Command(
 						json, requester);
-			case UPDATELINKLIMIT:
-				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlink.updatelinklimit.Command(
-						json, requester);	
 			}
 		case RDNODE:
 			switch (operType) {
@@ -99,6 +90,15 @@ public class Transaction {
 						json, requester);
 			case UPDATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdnode.update.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.deletenode.Command(
+						json, requester);
+			case MOVE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.movenode.Command(
+						json, requester);
+			case DEPART:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.departnode.Command(
 						json, requester);
 			}
 		case RDRESTRICTION:
@@ -109,46 +109,67 @@ public class Transaction {
 			case UPDATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdrestriction.update.Command(
 						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdrestriction.delete.Command(
+						json, requester);
 			}
 		case RDCROSS:
-			switch (operType){
+			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdcross.create.Command(
 						json, requester);
 			case UPDATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdcross.update.Command(
 						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdcross.delete.Command(
+						json, requester);
 			}
 		case RDBRANCH:
-			switch (operType){
+			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdbranch.create.Command(
 						json, requester);
 			case UPDATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdbranch.update.Command(
 						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdbranch.delete.Command(
+						json, requester);
 			}
 		case RDLANECONNEXITY:
-			switch (operType){
+			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlaneconnexity.create.Command(
 						json, requester);
 			case UPDATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlaneconnexity.update.Command(
 						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlaneconnexity.delete.Command(
+						json, requester);
 			}
 		case RDSPEEDLIMIT:
-			switch (operType){
+			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdspeedlimit.create.Command(
 						json, requester);
 			case UPDATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdspeedlimit.update.Command(
 						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdspeedlimit.delete.Command(
+						json, requester);
+			}
+		case RDLINKSPEEDLIMIT:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlink.rdlinkspeedlimit.create.Command(
+						json, requester);
 			}
 		}
 
-		return null;
+		throw new Exception("不支持的操作类型");
 	}
 
 	/**
@@ -178,16 +199,7 @@ public class Transaction {
 						command);
 			case REPAIR:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.repair.Process(
-						command);	
-			case DEPARTNODE:
-				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.departnode.Process(
 						command);
-			case MOVENODE:
-				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.movenode.Process(
-						command);	
-			case UPDATELINKLIMIT:
-				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlink.updatelinklimit.Process(
-						command);	
 			}
 		case RDNODE:
 			switch (operType) {
@@ -196,6 +208,15 @@ public class Transaction {
 						command);
 			case UPDATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdnode.update.Process(
+						command);
+			case DELETE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.deletenode.Process(
+						command);
+			case DEPART:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.departnode.Process(
+						command);
+			case MOVE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.movenode.Process(
 						command);
 			}
 		case RDRESTRICTION:
@@ -206,46 +227,67 @@ public class Transaction {
 			case UPDATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdrestriction.update.Process(
 						command);
+			case DELETE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdrestriction.delete.Process(
+						command);
 			}
 		case RDCROSS:
-			switch (operType){
+			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdcross.create.Process(
 						command);
 			case UPDATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdcross.update.Process(
 						command);
+			case DELETE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdcross.delete.Process(
+						command);
 			}
 		case RDBRANCH:
-			switch (operType){
+			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdbranch.create.Process(
 						command);
 			case UPDATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdbranch.update.Process(
 						command);
+			case DELETE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdbranch.delete.Process(
+						command);
 			}
 		case RDLANECONNEXITY:
-			switch (operType){
+			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlaneconnexity.create.Process(
 						command);
 			case UPDATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlaneconnexity.update.Process(
 						command);
+			case DELETE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlaneconnexity.delete.Process(
+						command);
 			}
 		case RDSPEEDLIMIT:
-			switch (operType){
+			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdspeedlimit.create.Process(
 						command);
 			case UPDATE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdspeedlimit.update.Process(
 						command);
+			case DELETE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdspeedlimit.delete.Process(
+						command);
+			}
+		case RDLINKSPEEDLIMIT:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlink.rdlinkspeedlimit.create.Process(
+						command);
 			}
 		}
 
-		return null;
+		throw new Exception("不支持的操作类型");
 	}
 
 	public Result createResult() {
@@ -279,8 +321,8 @@ public class Transaction {
 		return process.getResult().getCheckResults();
 
 	}
-	
-	public int getPid(){
+
+	public int getPid() {
 		return process.getResult().getPrimaryPid();
 	}
 

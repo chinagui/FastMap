@@ -142,7 +142,7 @@ public class RdSignboardSelector implements ISelector {
 				RdSignboardNameSelector nameSelector = new RdSignboardNameSelector(
 						conn);
 
-				signboard.setNames(nameSelector.loadRowsByParentId(id, isLock));
+				signboard.setNames(nameSelector.loadRowsByParentId(signboard.getPid(), isLock));
 
 				for(IRow row : signboard.getNames()){
 					RdSignboardName name = (RdSignboardName)row;

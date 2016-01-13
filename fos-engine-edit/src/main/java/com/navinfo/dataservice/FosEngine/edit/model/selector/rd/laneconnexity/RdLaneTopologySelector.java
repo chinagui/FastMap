@@ -154,7 +154,7 @@ public class RdLaneTopologySelector implements ISelector {
 				RdLaneViaSelector viaSelector = new RdLaneViaSelector(
 						conn);
 
-				topo.setVias(viaSelector.loadRowsByParentId(id, isLock));
+				topo.setVias(viaSelector.loadRowsByParentId(topo.getPid(), isLock));
 				
 				for(IRow row : topo.getVias()){
 					RdLaneVia via = (RdLaneVia)row;

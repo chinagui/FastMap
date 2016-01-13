@@ -105,7 +105,7 @@ public class RdBranchViaOperator implements IOperator {
 
 				column = StringUtils.toColumnName(column);
 
-				if (value instanceof String) {
+				if (value instanceof String || value==null ) {
 
 					if (!StringUtils.isStringSame(String.valueOf(value),
 							String.valueOf(columnValue))) {

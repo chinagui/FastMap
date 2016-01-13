@@ -170,7 +170,7 @@ public class RdBranchDetailSelector implements ISelector {
 				RdBranchNameSelector nameSelector = new RdBranchNameSelector(
 						conn);
 
-				detail.setNames(nameSelector.loadRowsByParentId(id, isLock));
+				detail.setNames(nameSelector.loadRowsByParentId(detail.getPid(), isLock));
 
 				for (IRow row : detail.getNames()) {
 					RdBranchName name = (RdBranchName) row;

@@ -37,7 +37,7 @@ public class Command implements ICommand {
 	
 	public Command(JSONObject json,String requester){
 		
-		this.nodePid = json.getInt("nodePid");
+		this.nodePid = json.getInt("objId");
 		
 		this.longitude = json.getJSONObject("data").getDouble("longitude")*100000;
 		
@@ -61,7 +61,7 @@ public class Command implements ICommand {
 	@Override
 	public ObjType getObjType() {
 		
-		return ObjType.RDLINK;
+		return ObjType.RDNODE;
 	}
 
 	public int getNodePid() {

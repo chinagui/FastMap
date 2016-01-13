@@ -28,13 +28,15 @@ public class Command implements ICommand {
 	public Command(JSONObject json,String requester){
 		this.requester = requester;
 		
-		this.linkPid = json.getInt("linkPid");
+		JSONObject data = json.getJSONObject("data");
 		
-		this.nodePid = json.getInt("nodePid");
+		this.linkPid = data.getInt("linkPid");
 		
-		this.longitude = json.getJSONObject("data").getDouble("longitude")*100000;
+		this.nodePid = data.getInt("nodePid");
 		
-		this.latitude = json.getJSONObject("data").getDouble("latitude")*100000;
+		this.longitude = data.getDouble("longitude")*100000;
+		
+		this.latitude = data.getDouble("latitude")*100000;
 		
 		this.projectId = json.getInt("projectId");
 	}

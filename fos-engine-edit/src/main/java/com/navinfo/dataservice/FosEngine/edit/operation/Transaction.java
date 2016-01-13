@@ -82,6 +82,9 @@ public class Transaction {
 			case REPAIR:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.repair.Command(
 						json, requester);
+			case DEPART:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.departnode.Command(
+						json, requester);
 			}
 		case RDNODE:
 			switch (operType) {
@@ -96,9 +99,6 @@ public class Transaction {
 						json, requester);
 			case MOVE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.movenode.Command(
-						json, requester);
-			case DEPART:
-				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.departnode.Command(
 						json, requester);
 			}
 		case RDRESTRICTION:
@@ -200,6 +200,9 @@ public class Transaction {
 			case REPAIR:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.repair.Process(
 						command);
+			case DEPART:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.departnode.Process(
+						command);
 			}
 		case RDNODE:
 			switch (operType) {
@@ -211,9 +214,6 @@ public class Transaction {
 						command);
 			case DELETE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.deletenode.Process(
-						command);
-			case DEPART:
-				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.departnode.Process(
 						command);
 			case MOVE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.topo.movenode.Process(

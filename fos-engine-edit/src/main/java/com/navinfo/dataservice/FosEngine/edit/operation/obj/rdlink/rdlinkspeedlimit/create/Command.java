@@ -53,9 +53,11 @@ public class Command implements ICommand {
 
 		this.projectId = json.getInt("projectId");
 		
-		this.pid = json.getJSONObject("data").getInt("pid");
+		JSONObject data = json.getJSONObject("data");
 		
-		this.linkPids = json.getJSONObject("data").getJSONArray("linkPids");
+		this.pid = data.getInt("pid");
+		
+		this.linkPids = data.getJSONArray("linkPids");
 	}
 
 }

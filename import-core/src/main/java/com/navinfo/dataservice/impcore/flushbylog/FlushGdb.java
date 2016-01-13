@@ -36,10 +36,10 @@ public class FlushGdb {
 			Class.forName("oracle.jdbc.driver.OracleDriver");
 			
 			props = new Properties();
+
+			props.load(new FileInputStream(args[0]));
 			
 			stopTime = Long.parseLong(props.getProperty("stopTime"));
-			
-			props.load(new FileInputStream(args[0]));
 			
 			Scanner scanner = new Scanner(new FileInputStream(args[1]));
 			
@@ -61,7 +61,7 @@ public class FlushGdb {
 				}
 			}
 			
-			logDetailQuery.append(")");
+			logDetailQuery.append(") order by op_dt ");
 			
 			init();
 			
@@ -90,9 +90,11 @@ public class FlushGdb {
 	
 	private static void init() throws SQLException{
 		
-		sourceConn = DriverManager.getConnection("", props.getProperty("sourceDBUsername"), props.getProperty("sourceDBPassword"));
+		sourceConn = DriverManager.getConnection("jdbc:oracle:thin:@" + props.getProperty("sourceDBIp") + ":"
+				+ 1521 + ":" + "orcl", props.getProperty("sourceDBUsername"), props.getProperty("sourceDBPassword"));
 		
-		destConn = DriverManager.getConnection("", props.getProperty("destDBUsername"), props.getProperty("destDBPassword"));
+		destConn = DriverManager.getConnection("jdbc:oracle:thin:@" + props.getProperty("destDBIp") + ":"
+				+ 1521 + ":" + "orcl", props.getProperty("destDBUsername"), props.getProperty("destDBPassword"));
 		
 		sourceConn.setAutoCommit(false);
 		
@@ -151,9 +153,10 @@ public class FlushGdb {
 		
 		String dbLinkName = "dblink_"+sdf.format(new Date());
 		
-		String sqlCreateDblink = "";
+		String sqlCreateDblink = "create database link "+dbLinkName+"  connect to "+props.getProperty("destDBUsername")+" identified by "+props.getProperty("destDBPassword")+"  using '(DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = "+props.getProperty("destDBIp")+" )(PORT = 1521 )))(CONNECT_DATA = (SERVICE_NAME = orcl )))'";
 		
 		Statement stmt = sourceConn.createStatement();
+		
 		
 		stmt.execute(sqlCreateDblink);
 		
@@ -161,7 +164,7 @@ public class FlushGdb {
 		
 		stmt.executeUpdate(moveSql);
 		
-		String sqlDropDblink = "";
+		String sqlDropDblink = "drop database link "+dbLinkName;
 		
 		stmt.execute(sqlDropDblink);
 	}
@@ -170,7 +173,7 @@ public class FlushGdb {
 		
 		Statement stmt = sourceConn.createStatement();
 		
-		String sql = "update log_detail set is_ck = 0 ";
+		String sql = "update log_detail set is_ck = 1 ";
 		
 		stmt.execute(sql);
 		
@@ -224,11 +227,17 @@ public class FlushGdb {
 				if (valObj instanceof String){
 					
 					if (!"geometry".equals(keyName)){
-						sb.append("'");
 						
-						sb.append(valObj.toString());
 						
-						sb.append("'");
+						if (!"row_id".equals(keyName)) {
+							sb.append("'");
+							sb.append(valObj.toString());
+							sb.append("'");
+						}else{
+							sb.append("hextoraw('");
+							sb.append(valObj.toString());
+							sb.append("')");
+						}
 					}else{
 						sb.append("sdo_geometry('");
 						
@@ -242,7 +251,6 @@ public class FlushGdb {
 				}
 				
 				if (++tmpPos < keySize){
-					sb.append(it.next());
 					
 					sb.append(",");
 				}
@@ -251,7 +259,7 @@ public class FlushGdb {
 			sb.append(")");
 			
 			return sb.toString();
-		}else if (op_tp == 2){
+		}else if (op_tp == 3){
 
 			String newValue = rs.getString("new");
 			
@@ -300,18 +308,21 @@ public class FlushGdb {
 				}
 				
 				if (++tmpPos < keySize){
-					sb.append(it.next());
 					
 					sb.append(",");
 				}
 			}
 			
-			sb.append(")");
+			sb.append(" where row_id = hextoraw('");
+			
+			sb.append(rs.getString("tb_row_id"));
+			
+			sb.append("')");
 			
 			return sb.toString();
 		
-		}else if (op_tp == 3){
-			return "update "+ rs.getString("tb_nm") +" set u_record = 3 where row_id ="+ rs.getString("row_id");
+		}else if (op_tp == 2){
+			return "update "+ rs.getString("tb_nm") +" set u_record = 2 where row_id =hextoraw('"+ rs.getString("tb_row_id")+"')";
 		}
 		
 		return null;

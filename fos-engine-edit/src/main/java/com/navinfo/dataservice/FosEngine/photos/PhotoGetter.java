@@ -24,7 +24,6 @@ import com.navinfo.dataservice.commons.util.FileUtils;
  */
 public class PhotoGetter {
 
-
 	/**
 	 * 通过uuid获取照片，返回原图或缩略图
 	 * 
@@ -222,5 +221,64 @@ public class PhotoGetter {
 		}
 
 		return array;
+	}
+
+	public static JSONArray getPhotoTile(double minLon, double minLat,
+			double maxLon, double maxLat, int zoom) throws Exception {
+
+		JSONArray array = new JSONArray();
+
+		try {
+
+			long xmin = MercatorProjection.longitudeToTileX(minLon, (byte) zoom);
+
+			long xmax = MercatorProjection.longitudeToTileX(maxLon, (byte) zoom);
+
+			long ymax = MercatorProjection.latitudeToTileY(minLat, (byte) zoom);
+
+			long ymin = MercatorProjection.latitudeToTileY(maxLat, (byte) zoom);
+
+			String startRowkey = String.format("%02d%08d%07d", zoom, xmin, ymin);
+			
+			String stopRowkey = String.format("%02d%08d%07d", zoom, xmax, ymax);
+
+			Scanner scanner = HBaseAddress.getHBaseClient().newScanner("photoTile");
+
+			scanner.setStartKey(startRowkey);
+
+			scanner.setStopKey(stopRowkey);
+
+			scanner.setFamily("data");
+
+			scanner.setQualifier("photo");
+
+			ArrayList<ArrayList<KeyValue>> rows;
+			
+			while ((rows = scanner.nextRows().joinUninterruptibly()) != null) {
+
+				for (List<KeyValue> list : rows) {
+
+					for (KeyValue kv : list) {
+
+						JSONArray a = JSONArray.fromObject(new String(
+								kv.value()));
+
+						array.addAll(a);
+					}
+				}
+			}
+		} catch (Exception e) {
+
+			throw e;
+		}
+
+		return array;
+
+	}
+
+	public static void main(String[] args) throws Exception {
+		HBaseAddress.initHBaseClient("192.168.3.156");
+
+		System.out.println(PhotoGetter.getPhotoTile(117.44933,31.042581,117.44944,31.0426, 7));
 	}
 }

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlink.updatelinklimit;
+package com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlink.rdlinkspeedlimit.create;
 
 import java.util.HashMap;
 import java.util.List;

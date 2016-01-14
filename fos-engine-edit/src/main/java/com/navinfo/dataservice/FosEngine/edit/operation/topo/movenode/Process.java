@@ -1,10 +1,14 @@
 package com.navinfo.dataservice.FosEngine.edit.operation.topo.movenode;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.navinfo.dataservice.FosEngine.edit.log.LogWriter;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
@@ -46,11 +50,28 @@ public class Process implements IProcess {
 		return result;
 	}
 
+	public void lockRdLink() throws Exception {
+
+		RdLinkSelector selector = new RdLinkSelector(this.conn);
+
+		List<RdLink> links = selector.loadByNodePid(command.getNodePid(), true);
+		
+		List<Integer> linkPids = new ArrayList<Integer>();
+		
+		for(RdLink link : links){
+			linkPids.add(link.getPid());
+		}
+
+		command.setLinks(links);
+	}
+	
 	@Override
 	public boolean prepareData() throws Exception {
 		RdNodeSelector nodeSelector = new RdNodeSelector(this.conn);
 		
 		this.updateNode = (RdNode) nodeSelector.loadById(command.getNodePid(), true);
+		
+		lockRdLink();
 		
 		return false;
 	}

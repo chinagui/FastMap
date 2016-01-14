@@ -39,12 +39,12 @@ public class Command implements ICommand {
 	private RdNode sNode;
 
 	private RdNode eNode;
-	
+
 	private int projectId;
-	
-	//下面两个字段,在以已存在的node通过移动位置来打断LINK的记录
+
+	// 下面两个字段,在以已存在的node通过移动位置来打断LINK的记录
 	private int breakNodePid;
-	
+
 	private RdNode breakNode;
 
 	private List<RdRestriction> restrictions;
@@ -52,23 +52,23 @@ public class Command implements ICommand {
 	private List<RdRestrictionDetail> restrictionDetails;
 
 	private List<List<RdRestrictionVia>> listRestrictionVias;
-	
+
 	private List<RdLaneConnexity> laneConnextys;
-	
+
 	private List<RdLaneTopology> laneTopologys;
 
 	private List<List<RdLaneVia>> laneVias;
 
 	private List<RdSpeedlimit> speedlimits;
-	
+
 	private List<RdBranch> inBranchs;
-	
+
 	private List<RdBranch> outBranchs;
-	
+
 	private List<List<RdBranchVia>> branchVias;
-	
+
 	private boolean isCheckInfect = false;
-	
+
 	public boolean isCheckInfect() {
 		return isCheckInfect;
 	}
@@ -199,15 +199,15 @@ public class Command implements ICommand {
 
 		this.linkPid = json.getInt("objId");
 
-		double lng = json.getJSONObject("data")
-				.getDouble("longitude");
+		JSONObject data = json.getJSONObject("data");
 
-		double lat = json.getJSONObject("data")
-				.getDouble("latitude");
-		
+		double lng = data.getDouble("longitude");
+
+		double lat = data.getDouble("latitude");
+
 		this.projectId = json.getInt("projectId");
-		
-		if (json.containsKey("breakNodePid")){
+
+		if (data.containsKey("breakNodePid")) {
 			this.breakNodePid = json.getInt("breakNodePid");
 		}
 
@@ -218,8 +218,8 @@ public class Command implements ICommand {
 		this.link1 = new RdLink();
 
 		this.link2 = new RdLink();
-		
-		if (json.containsKey("infect") && json.getInt("infect") == 1){
+
+		if (json.containsKey("infect") && json.getInt("infect") == 1) {
 			this.isCheckInfect = true;
 		}
 	}
@@ -242,10 +242,10 @@ public class Command implements ICommand {
 
 	@Override
 	public OperType getOperType() {
-		
+
 		return OperType.BREAK;
 	}
-	
+
 	@Override
 	public ObjType getObjType() {
 		return ObjType.RDLINK;
@@ -253,14 +253,13 @@ public class Command implements ICommand {
 
 	@Override
 	public String getRequester() {
-		
+
 		return requester;
 	}
 
 	public int getBreakNodePid() {
 		return breakNodePid;
 	}
-
 
 	public RdNode getBreakNode() {
 		return breakNode;
@@ -270,5 +269,4 @@ public class Command implements ICommand {
 		this.breakNode = breakNode;
 	}
 
-	
 }

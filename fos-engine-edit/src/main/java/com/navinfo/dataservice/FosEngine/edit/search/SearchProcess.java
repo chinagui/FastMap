@@ -12,13 +12,14 @@ import net.sf.json.util.JSONUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.IObj;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 
 /**
  * 查询进程
  */
 public class SearchProcess {
-
 
 	private Connection conn;
 
@@ -95,7 +96,6 @@ public class SearchProcess {
 				json.accumulate(type.toString(), array, getJsonConfig());
 			}
 		} catch (Exception e) {
-			
 
 			throw e;
 
@@ -104,22 +104,21 @@ public class SearchProcess {
 				try {
 					conn.close();
 				} catch (Exception e) {
-					
+
 				}
 			}
 		}
 		return json;
 	}
-	
-	
+
 	/**
 	 * 根据瓦片空间查询
 	 * 
 	 * @return 查询结果
 	 * @throws Exception
 	 */
-	public JSONObject searchDataByTileWithGap(List<ObjType> types, int x,int y,int z,int gap)
-			throws Exception {
+	public JSONObject searchDataByTileWithGap(List<ObjType> types, int x,
+			int y, int z, int gap) throws Exception {
 
 		JSONObject json = new JSONObject();
 
@@ -130,8 +129,9 @@ public class SearchProcess {
 			for (ObjType type : types) {
 
 				ISearch search = factory.createSearch(type);
-				
-				List<SearchSnapshot> list = search.searchDataByTileWithGap(x, y, z, gap);
+
+				List<SearchSnapshot> list = search.searchDataByTileWithGap(x,
+						y, z, gap);
 
 				JSONArray array = new JSONArray();
 
@@ -143,7 +143,6 @@ public class SearchProcess {
 				json.accumulate(type.toString(), array, getJsonConfig());
 			}
 		} catch (Exception e) {
-			
 
 			throw e;
 
@@ -152,13 +151,13 @@ public class SearchProcess {
 				try {
 					conn.close();
 				} catch (Exception e) {
-					
+
 				}
 			}
 		}
 		return json;
 	}
-	
+
 	/**
 	 * 根据pid查询
 	 * 
@@ -176,7 +175,6 @@ public class SearchProcess {
 
 			return obj;
 		} catch (Exception e) {
-			
 
 			throw e;
 
@@ -186,10 +184,35 @@ public class SearchProcess {
 				try {
 					conn.close();
 				} catch (Exception e) {
-					
+
 				}
 			}
 		}
 
+	}
+
+	public List<RdLink> searchLinkByNodePid(int nodePid) throws Exception {
+		try {
+			
+			RdLinkSelector selector = new RdLinkSelector(this.conn);
+			
+			List<RdLink> links = selector.loadByNodePid(nodePid, false);
+			
+			return links;
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+
+				}
+			}
+		}
 	}
 }

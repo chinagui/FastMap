@@ -78,14 +78,15 @@ public class Operation implements IOperation {
 			//link的一个端点打断另外一根link
 			JSONObject interLine = command.getInterLines().getJSONObject(i);
 			JSONObject breakJson = new JSONObject();
+			JSONObject data = interLine.getJSONObject("data");
 			breakJson.put("linkPid", interLine.getInt("linkPid"));
-			breakJson.put("data", interLine.getJSONObject("data"));
 			breakJson.put("projectId", command.getProjectId());
 			if (interLine.getString("type").equals("s")) {
-				breakJson.put("breakNodePid", updateLink.getsNodePid());
+				data.put("breakNodePid", updateLink.getsNodePid());
 			} else {
-				breakJson.put("breakNodePid", updateLink.geteNodePid());
+				data.put("breakNodePid", updateLink.geteNodePid());
 			}
+			breakJson.put("data", data);
 			ICommand breakCommand = new com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Command(
 					breakJson, breakJson.toString());
 			IProcess breakProcess = new com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Process(

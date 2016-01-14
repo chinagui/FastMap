@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.FosEngine.patterimg;
+package com.navinfo.dataservice.FosEngine.patternimg;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -13,7 +13,7 @@ import java.sql.PreparedStatement;
 
 import javax.imageio.ImageIO;
 
-public class ImportPatterImage {
+public class ImportPatternImage {
 
 	private static Connection conn;
 

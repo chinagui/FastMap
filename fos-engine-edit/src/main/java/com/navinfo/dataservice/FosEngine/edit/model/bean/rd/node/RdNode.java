@@ -18,6 +18,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.service.PidService;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class RdNode implements IObj {
@@ -325,6 +326,13 @@ public class RdNode implements IObj {
 			nameCopy.setNodePid(this.getPid());
 
 			nameCopy.copy(name);
+			
+			try {
+				nameCopy.setNameId(PidService.getInstance().applyNodeNameId());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
 			this.names.add(nameCopy);
 		}

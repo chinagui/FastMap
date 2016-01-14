@@ -214,8 +214,8 @@ public class RdBranchSelector implements ISelector {
 
 				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
 						conn);
-
-				branch.setDetails(detailSelector.loadRowsByParentId(id, 0, isLock));
+				
+				branch.setDetails(detailSelector.loadRowsByParentId(id, isLock));
 
 				for (IRow row : branch.getDetails()) {
 					RdBranchDetail obj = (RdBranchDetail) row;

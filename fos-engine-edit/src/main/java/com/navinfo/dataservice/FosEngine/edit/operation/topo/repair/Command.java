@@ -67,15 +67,19 @@ public class Command implements ICommand {
 		
 		this.requester = requester;
 		
-		this.linkPid = json.getInt("linkPid");
-		
-		this.linkGeom = json.getJSONObject("geometry");
-		
-		this.interLines = json.getJSONArray("interLines");
-		
-		this.interNodes = json.getJSONArray("interPoints");
-		
 		this.projectId = json.getInt("projectId");
+		
+		this.linkPid = json.getInt("objId");
+		
+		JSONObject data = json.getJSONObject("data");
+		
+		this.linkGeom = data.getJSONObject("geometry");
+		
+		this.interLines = data.getJSONArray("interLinks");
+		
+		this.interNodes = data.getJSONArray("interNodes");
+		
+		
 	}
 
 }

@@ -109,7 +109,7 @@ public class RdLinkLimitTruckOperator implements IOperator {
 
 				Object value = field.get(limit);
 
-				if (value instanceof String) {
+				if (value instanceof String || value == null) {
 
 					if (!StringUtils.isStringSame(String.valueOf(value),
 							String.valueOf(columnValue))) {

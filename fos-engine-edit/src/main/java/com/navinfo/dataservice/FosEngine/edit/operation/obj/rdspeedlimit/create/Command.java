@@ -12,11 +12,13 @@ public class Command implements ICommand {
 
 	private int projectId;
 	
-	private JSONObject geometry;
-	
 	private int linkPid;
 	
 	private int direct;
+	
+	private double latitude;
+	
+	private double longitude;
 	
 	public int getLinkPid() {
 		return linkPid;
@@ -32,14 +34,6 @@ public class Command implements ICommand {
 
 	public void setDirect(int direct) {
 		this.direct = direct;
-	}
-
-	public JSONObject getGeometry() {
-		return geometry;
-	}
-
-	public void setGeometry(JSONObject geometry) {
-		this.geometry = geometry;
 	}
 
 	public int getProjectId() {
@@ -65,6 +59,22 @@ public class Command implements ICommand {
 		return requester;
 	}
 	
+	public double getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(double latitude) {
+		this.latitude = latitude;
+	}
+
+	public double getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(double longitude) {
+		this.longitude = longitude;
+	}
+
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 
@@ -76,7 +86,9 @@ public class Command implements ICommand {
 		
 		this.linkPid = data.getInt("linkPid");
 		
-		this.geometry = data.getJSONObject("geometry");
+		this.longitude = data.getDouble("longitude");
+		
+		this.latitude = data.getDouble("latitude");
 	}
 
 }

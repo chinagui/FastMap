@@ -9,7 +9,6 @@ public enum OperType {
 	DELETE,
 	BREAK,
 	REPAIR,
-	DEPARTNODE,
-	MOVENODE,
-	UPDATELINKLIMIT
+	DEPART,
+	MOVE,
 }

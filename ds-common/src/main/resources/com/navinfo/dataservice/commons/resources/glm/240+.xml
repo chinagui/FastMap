@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 240+ -->
+<glm version="240+">
+	<table name="IX_POI">
+		<column name="PID" type="NUMBER" pk="1"/>
+		<column name="KIND_CODE" type="VARCHAR2" pk="0"/>
+	</table>
+	<table name="RD_NODE">
+		<column name="NODE_PID" type="NUMBER" pk="1"/>
+		<column name="KIND" type="NUMBER" pk="0"/>
+		<column name="GEOMETRY" type="SDO_GEOMETRY" pk="0"/>
+	</table>
+</glm>

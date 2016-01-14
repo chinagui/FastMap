@@ -24,13 +24,13 @@ public class AssembleFullCopySql{
 	public AssembleFullCopySql() {
 	}
 
-	public List<ExpSQL> assemble(String dbLinkName, OracleSchema sourceSchema, OracleSchema targetSchema, List<String> specifiedTables,List<String> excludeTables) throws Exception {
+	public List<ExpSQL> assemble(String dbLinkName, OracleSchema sourceSchema, OracleSchema targetSchema, List<String> specificTables,List<String> excludedTables) throws Exception {
 		try {
 			List<String> tables = null;
-			if(specifiedTables!=null){
-				tables = specifiedTables;
+			if(specificTables!=null){
+				tables = specificTables;
 			}else{
-				tables = getCopyTables(sourceSchema,excludeTables);
+				tables = getCopyTables(sourceSchema,excludedTables);
 			}
 			
 
@@ -46,7 +46,7 @@ public class AssembleFullCopySql{
 	}
 	
 
-	protected List<String> getCopyTables(OracleSchema schema,List<String> excludeTables) throws Exception {
+	protected List<String> getCopyTables(OracleSchema schema,List<String> excludedTables) throws Exception {
 		String gdbCause = "where 1=1";
 		
 		String ignoreTablePrefixConfig = SystemConfig.getSystemConfig().getValue("fullcopy.ignore.table.prefix");
@@ -56,8 +56,8 @@ public class AssembleFullCopySql{
 				gdbCause += " AND table_name not like '" + prefix + "%' and table_name !='OPERATE_LOG'";
 			}
 		}
-		if(excludeTables!=null){
-			for(String table:excludeTables){
+		if(excludedTables!=null){
+			for(String table:excludedTables){
 				gdbCause += " AND table_name != '" + table + "'";
 			}
 		}

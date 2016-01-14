@@ -28,6 +28,8 @@ public class Operation implements IOperation {
 		
 		limit.setPid(PidService.getInstance().applySpeedLimitPid());
 		
+		result.setPrimaryPid(limit.getPid());
+		
 		JSONObject geoPoint = new JSONObject();
 
 		geoPoint.put("type", "Point");

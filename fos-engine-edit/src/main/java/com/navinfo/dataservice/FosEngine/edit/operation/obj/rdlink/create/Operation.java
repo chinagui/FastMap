@@ -39,6 +39,8 @@ public class Operation implements IOperation {
 		
 		link.setPid(PidService.getInstance().applyLinkPid());
 		
+		result.setPrimaryPid(link.getPid());
+		
 		link.setGeometry(geometry);
 		
 		link.setOriginLinkPid(link.getPid());

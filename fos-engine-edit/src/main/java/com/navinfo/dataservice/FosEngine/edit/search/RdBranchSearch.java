@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
@@ -65,7 +66,7 @@ public class RdBranchSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as  (select link_pid, geometry     from rd_link    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE'), tmp2 as  (select a.in_link_pid,          a.node_pid,          listagg(a.branch_pid, ',') within group(order by 1) branch_pids     from rd_branch a, tmp1 b    where a.in_link_pid = b.link_pid      and exists (select null             from rd_branch_detail d            where a.branch_pid = d.branch_pid              and d.branch_type = 0)    group by a.in_link_pid, a.node_pid) select /*+ index(c) */  a.branch_pids, b.geometry link_geom, c.geometry point_geom   from tmp2 a, tmp1 b, rd_node c  where a.in_link_pid = b.link_pid    and a.node_pid = c.node_pid";
+		String sql = "with tmp1 as  (select link_pid, geometry     from rd_link    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE'), tmp2 as  (select a.in_link_pid,          a.node_pid,          d.branch_type,          listagg(a.branch_pid || '-' || d.detail_id, ',') within group(order by 1) pids     from rd_branch a, tmp1 b, rd_branch_detail d    where a.in_link_pid = b.link_pid      and a.branch_pid = d.branch_pid      and branch_type in (0, 1, 2)    group by a.in_link_pid, a.node_pid, d.branch_type), tmp3 as  (select in_link_pid,          node_pid,          listagg(branch_type || '~' || pids,'^') within group(order by branch_type) a     from tmp2 group by in_link_pid,node_pid) select /*+ index(c) */  a.a, b.geometry link_geom, c.geometry point_geom   from tmp3 a, tmp1 b, rd_node c  where a.in_link_pid = b.link_pid    and a.node_pid = c.node_pid";
 
 		PreparedStatement pstmt = null;
 
@@ -91,8 +92,40 @@ public class RdBranchSearch implements ISearch {
 				JSONObject jsonM = new JSONObject();
 				
 				snapshot.setT(7);
+				
+				JSONArray ja = new JSONArray();
+				
+				String[] splits = resultSet.getString("a").split("\\^");
+				
+				for(String s1: splits){
+					String[] s2 = s1.split("\\~");
+					
+					JSONObject j = new JSONObject();
+					
+					j.put("type", Integer.parseInt(s2[0]));
+					
+					String[] s3 = s2[1].split(",");
+					
+					JSONArray ja2 = new JSONArray();
+					
+					for(String s4: s3){
+						String[] s5 = s4.split("\\-");
+						
+						JSONObject j2 = new JSONObject();
+						
+						j2.put("branchPid", Integer.parseInt(s5[0]));
+						
+						j2.put("detailId", Integer.parseInt(s5[1]));
+						
+						ja2.add(j2);
+					}
+					
+					j.put("ids", ja2);
+					
+					ja.add(j);
+				}
 
-				jsonM.put("a",resultSet.getString("branch_pids").split(","));
+				jsonM.put("a",ja);
 
 				STRUCT struct1 = (STRUCT) resultSet.getObject("link_geom");
 

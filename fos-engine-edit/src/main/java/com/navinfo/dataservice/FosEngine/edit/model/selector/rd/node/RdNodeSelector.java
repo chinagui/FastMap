@@ -70,27 +70,7 @@ public class RdNodeSelector implements ISelector {
 				node.setReserved(resultSet.getString("reserved"));
 
 				node.setRowId(resultSet.getString("row_id"));
-
-				RdNodeNameSelector name = new RdNodeNameSelector(conn);
-
-				node.setNames(name.loadRowsByParentId(id, isLock));
 				
-				for (IRow row : node.getNames()) {
-					RdNodeName obj = (RdNodeName) row;
-
-					node.nameMap.put(obj.rowId(), obj);
-				}
-
-				RdNodeFormSelector form = new RdNodeFormSelector(conn);
-
-				node.setForms(form.loadRowsByParentId(id, isLock));
-				
-				for (IRow row : node.getForms()) {
-					RdNodeForm obj = (RdNodeForm) row;
-
-					node.formMap.put(obj.rowId(), obj);
-				}
-
 				RdNodeMeshSelector mesh = new RdNodeMeshSelector(conn);
 
 				node.setMeshes(mesh.loadRowsByParentId(id, isLock));
@@ -99,6 +79,40 @@ public class RdNodeSelector implements ISelector {
 					RdNodeMesh obj = (RdNodeMesh) row;
 
 					node.meshMap.put(obj.rowId(), obj);
+					
+					node.setMesh(obj.getMeshId());
+				}
+
+				RdNodeNameSelector name = new RdNodeNameSelector(conn);
+				
+				List<IRow> names =name.loadRowsByParentId(id, isLock);
+				
+				for(IRow row : names){
+					row.setMesh(node.mesh());
+				}
+				
+				node.setNames(names);
+				
+				for (IRow row : node.getNames()) {
+					RdNodeName obj = (RdNodeName) row;
+
+					node.nameMap.put(obj.rowId(), obj);
+				}
+
+				RdNodeFormSelector form = new RdNodeFormSelector(conn);
+				
+				List<IRow> forms =form.loadRowsByParentId(id, isLock);
+				
+				for(IRow row : forms){
+					row.setMesh(node.mesh());
+				}
+
+				node.setForms(forms);
+				
+				for (IRow row : node.getForms()) {
+					RdNodeForm obj = (RdNodeForm) row;
+
+					node.formMap.put(obj.rowId(), obj);
 				}
 
 			} else {
@@ -194,19 +208,36 @@ public class RdNodeSelector implements ISelector {
 				node.setReserved(resultSet.getString("reserved"));
 
 				node.setRowId(resultSet.getString("row_id"));
-
-				RdNodeNameSelector name = new RdNodeNameSelector(conn);
-
-				node.setNames(name.loadRowsByParentId(node.getPid(), isLock));
-
-				RdNodeFormSelector form = new RdNodeFormSelector(conn);
-
-				node.setForms(form.loadRowsByParentId(node.getPid(), isLock));
-
+				
 				RdNodeMeshSelector mesh = new RdNodeMeshSelector(conn);
 
 				node.setMeshes(mesh.loadRowsByParentId(node.getPid(),
 						isLock));
+				
+				for(IRow row : node.getMeshes()){
+					
+					node.setMesh(row.mesh());
+				}
+
+				RdNodeNameSelector name = new RdNodeNameSelector(conn);
+				
+				List<IRow> names = name.loadRowsByParentId(node.getPid(), isLock);
+				
+				for(IRow row : names){
+					row.setMesh(node.mesh());
+				}
+				
+				node.setNames(names);
+
+				RdNodeFormSelector form = new RdNodeFormSelector(conn);
+				
+				List<IRow> forms = form.loadRowsByParentId(node.getPid(), isLock);
+				
+				for(IRow row : forms){
+					row.setMesh(node.mesh());
+				}
+
+				node.setForms(forms);
 
 				nodes.add(node);
 			}
@@ -283,19 +314,36 @@ public class RdNodeSelector implements ISelector {
 				node.setReserved(resultSet.getString("reserved"));
 
 				node.setRowId(resultSet.getString("row_id"));
-
-				RdNodeNameSelector name = new RdNodeNameSelector(conn);
-
-				node.setNames(name.loadRowsByParentId(node.getPid(), isLock));
-
-				RdNodeFormSelector form = new RdNodeFormSelector(conn);
-
-				node.setForms(form.loadRowsByParentId(node.getPid(), isLock));
-
+				
 				RdNodeMeshSelector mesh = new RdNodeMeshSelector(conn);
 
 				node.setMeshes(mesh.loadRowsByParentId(node.getPid(),
 						isLock));
+				
+				for(IRow row : node.getMeshes()){
+					
+					node.setMesh(row.mesh());
+				}
+
+				RdNodeNameSelector name = new RdNodeNameSelector(conn);
+				
+				List<IRow> names = name.loadRowsByParentId(node.getPid(), isLock);
+				
+				for(IRow row : names){
+					row.setMesh(node.mesh());
+				}
+				
+				node.setNames(names);
+
+				RdNodeFormSelector form = new RdNodeFormSelector(conn);
+				
+				List<IRow> forms = form.loadRowsByParentId(node.getPid(), isLock);
+				
+				for(IRow row : forms){
+					row.setMesh(node.mesh());
+				}
+
+				node.setForms(forms);
 
 				nodes.add(node);
 			}

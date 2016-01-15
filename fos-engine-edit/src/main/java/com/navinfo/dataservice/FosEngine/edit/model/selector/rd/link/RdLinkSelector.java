@@ -163,6 +163,10 @@ public class RdLinkSelector implements ISelector {
 				List<IRow> forms = new RdLinkFormSelector(conn)
 						.loadRowsByParentId(id, isLock);
 
+				for (IRow row : forms) {
+					row.setMesh(rdLink.getMeshId());
+				}
+
 				rdLink.setForms(forms);
 
 				for (IRow row : rdLink.getForms()) {
@@ -174,6 +178,10 @@ public class RdLinkSelector implements ISelector {
 				// rd_link_int_rtic
 				List<IRow> intRtics = new RdLinkIntRticSelector(conn)
 						.loadRowsByParentId(id, isLock);
+
+				for (IRow row : intRtics) {
+					row.setMesh(rdLink.getMeshId());
+				}
 
 				rdLink.setIntRtics(intRtics);
 
@@ -187,6 +195,10 @@ public class RdLinkSelector implements ISelector {
 				List<IRow> limits = new RdLinkLimitSelector(conn)
 						.loadRowsByParentId(id, isLock);
 
+				for (IRow row : limits) {
+					row.setMesh(rdLink.getMeshId());
+				}
+
 				rdLink.setLimits(limits);
 
 				for (IRow row : rdLink.getLimits()) {
@@ -198,6 +210,10 @@ public class RdLinkSelector implements ISelector {
 				// rd_link_limit_truck
 				List<IRow> trucks = new RdLinkLimitTruckSelector(conn)
 						.loadRowsByParentId(id, isLock);
+
+				for (IRow row : trucks) {
+					row.setMesh(rdLink.getMeshId());
+				}
 
 				rdLink.setLimitTrucks(trucks);
 
@@ -211,6 +227,10 @@ public class RdLinkSelector implements ISelector {
 				List<IRow> names = new RdLinkNameSelector(conn)
 						.loadRowsByParentId(id, isLock);
 
+				for (IRow row : names) {
+					row.setMesh(rdLink.getMeshId());
+				}
+
 				rdLink.setNames(names);
 
 				for (IRow row : rdLink.getNames()) {
@@ -222,6 +242,10 @@ public class RdLinkSelector implements ISelector {
 				// rd_link_rtic
 				List<IRow> rtics = new RdLinkRticSelector(conn)
 						.loadRowsByParentId(id, isLock);
+
+				for (IRow row : rtics) {
+					row.setMesh(rdLink.getMeshId());
+				}
 
 				rdLink.setRtics(rtics);
 
@@ -235,6 +259,10 @@ public class RdLinkSelector implements ISelector {
 				List<IRow> sidewalks = new RdLinkSidewalkSelector(conn)
 						.loadRowsByParentId(id, isLock);
 
+				for (IRow row : sidewalks) {
+					row.setMesh(rdLink.getMeshId());
+				}
+
 				rdLink.setSidewalks(sidewalks);
 
 				for (IRow row : rdLink.getSidewalks()) {
@@ -246,6 +274,10 @@ public class RdLinkSelector implements ISelector {
 				// rd_link_speedlimit
 				List<IRow> speedlimits = new RdLinkSpeedlimitSelector(conn)
 						.loadRowsByParentId(id, isLock);
+
+				for (IRow row : speedlimits) {
+					row.setMesh(rdLink.getMeshId());
+				}
 
 				rdLink.setSpeedlimits(speedlimits);
 
@@ -259,6 +291,10 @@ public class RdLinkSelector implements ISelector {
 				List<IRow> walkstairs = new RdLinkWalkstairSelector(conn)
 						.loadRowsByParentId(id, isLock);
 
+				for (IRow row : walkstairs) {
+					row.setMesh(rdLink.getMeshId());
+				}
+
 				rdLink.setWalkstairs(walkstairs);
 
 				for (IRow row : rdLink.getWalkstairs()) {
@@ -270,6 +306,10 @@ public class RdLinkSelector implements ISelector {
 				// rd_link_zone
 				List<IRow> zones = new RdLinkZoneSelector(conn)
 						.loadRowsByParentId(id, isLock);
+
+				for (IRow row : zones) {
+					row.setMesh(rdLink.getMeshId());
+				}
 
 				rdLink.setZones(zones);
 
@@ -320,8 +360,9 @@ public class RdLinkSelector implements ISelector {
 
 		return null;
 	}
-	
-	public List<RdLink> loadByNodePid(int nodePid, boolean isLock) throws Exception{
+
+	public List<RdLink> loadByNodePid(int nodePid, boolean isLock)
+			throws Exception {
 
 		List<RdLink> links = new ArrayList<RdLink>();
 
@@ -340,14 +381,14 @@ public class RdLinkSelector implements ISelector {
 			pstmt = conn.prepareStatement(sb.toString());
 
 			pstmt.setInt(1, nodePid);
-			
+
 			pstmt.setInt(2, nodePid);
 
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
 				RdLink rdLink = new RdLink();
-				
+
 				rdLink.setPid(resultSet.getInt("link_pid"));
 
 				rdLink.setDirect(resultSet.getInt("direct"));
@@ -450,11 +491,19 @@ public class RdLinkSelector implements ISelector {
 				List<IRow> forms = new RdLinkFormSelector(conn)
 						.loadRowsByParentId(rdLink.getPid(), isLock);
 
+				for (IRow row : forms) {
+					row.setMesh(rdLink.getMeshId());
+				}
+
 				rdLink.setForms(forms);
 
 				// rd_link_int_rtic
 				List<IRow> intRtics = new RdLinkIntRticSelector(conn)
 						.loadRowsByParentId(rdLink.getPid(), isLock);
+
+				for (IRow row : intRtics) {
+					row.setMesh(rdLink.getMeshId());
+				}
 
 				rdLink.setIntRtics(intRtics);
 
@@ -462,41 +511,74 @@ public class RdLinkSelector implements ISelector {
 				List<IRow> limits = new RdLinkLimitSelector(conn)
 						.loadRowsByParentId(rdLink.getPid(), isLock);
 
+				for (IRow row : limits) {
+					row.setMesh(rdLink.getMeshId());
+				}
+
 				rdLink.setLimits(limits);
 
 				// rd_link_limit_truck
 				List<IRow> trucks = new RdLinkLimitTruckSelector(conn)
 						.loadRowsByParentId(rdLink.getPid(), isLock);
 
+				for (IRow row : trucks) {
+					row.setMesh(rdLink.getMeshId());
+				}
+
 				rdLink.setLimitTrucks(trucks);
 
 				// rd_link_name
 				List<IRow> names = new RdLinkNameSelector(conn)
 						.loadRowsByParentId(rdLink.getPid(), isLock);
+				
+				for(IRow row :names){
+					row.setMesh(rdLink.getMeshId());
+				}
+
 
 				rdLink.setNames(names);
 
 				// rd_link_rtic
 				List<IRow> rtics = new RdLinkRticSelector(conn)
 						.loadRowsByParentId(rdLink.getPid(), isLock);
+				
+				for(IRow row :rtics){
+					row.setMesh(rdLink.getMeshId());
+				}
+
 
 				rdLink.setRtics(rtics);
 
 				// rd_link_sidewalk
 				List<IRow> sidewalks = new RdLinkSidewalkSelector(conn)
 						.loadRowsByParentId(rdLink.getPid(), isLock);
+				
+				for(IRow row :sidewalks){
+					row.setMesh(rdLink.getMeshId());
+				}
+
 
 				rdLink.setSidewalks(sidewalks);
 
 				// rd_link_speedlimit
 				List<IRow> speedlimits = new RdLinkSpeedlimitSelector(conn)
 						.loadRowsByParentId(rdLink.getPid(), isLock);
+				
+				for(IRow row :speedlimits){
+					row.setMesh(rdLink.getMeshId());
+				}
+
 
 				rdLink.setSpeedlimits(speedlimits);
 
 				// rd_link_walkstair
 				List<IRow> walkstairs = new RdLinkWalkstairSelector(conn)
 						.loadRowsByParentId(rdLink.getPid(), isLock);
+				
+				for(IRow row :walkstairs){
+					row.setMesh(rdLink.getMeshId());
+				}
+
 
 				rdLink.setWalkstairs(walkstairs);
 
@@ -505,7 +587,7 @@ public class RdLinkSelector implements ISelector {
 						.loadRowsByParentId(rdLink.getPid(), isLock);
 
 				rdLink.setZones(zones);
-				
+
 				links.add(rdLink);
 			}
 		} catch (Exception e) {
@@ -530,9 +612,9 @@ public class RdLinkSelector implements ISelector {
 			}
 
 		}
-		
+
 		return links;
-	
+
 	}
 
 }

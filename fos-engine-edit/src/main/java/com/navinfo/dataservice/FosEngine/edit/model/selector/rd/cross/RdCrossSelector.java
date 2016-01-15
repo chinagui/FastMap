@@ -33,7 +33,7 @@ public class RdCrossSelector implements ISelector {
 
 		RdCross cross = new RdCross();
 
-		String sql = "select * from " + cross.tableName() + " where pid=:1";
+		String sql = "select a.*,c.mesh_id from rd_cross a, rd_cross_node b,rd_node_mesh c where a.pid=b.pid and b.node_pid=c.node_pid and a.pid=:1";
 
 		PreparedStatement pstmt = null;
 
@@ -57,9 +57,15 @@ public class RdCrossSelector implements ISelector {
 				cross.setElectroeye(resultSet.getInt("electroeye"));
 
 				cross.setKgFlag(resultSet.getInt("kg_flag"));
+				
+				cross.setMesh(resultSet.getInt("mesh_id"));
 
 				List<IRow> links = new RdCrossLinkSelector(conn)
 						.loadRowsByParentId(id, isLock);
+				
+				for(IRow row : links){
+					row.setMesh(cross.mesh());
+				}
 
 				cross.setLinks(links);
 				
@@ -71,6 +77,10 @@ public class RdCrossSelector implements ISelector {
 
 				List<IRow> nodes = new RdCrossNodeSelector(conn)
 						.loadRowsByParentId(id, isLock);
+				
+				for(IRow row : nodes){
+					row.setMesh(cross.mesh());
+				}
 
 				cross.setNodes(nodes);
 				
@@ -82,6 +92,10 @@ public class RdCrossSelector implements ISelector {
 
 				List<IRow> names = new RdCrossNameSelector(conn)
 						.loadRowsByParentId(id, isLock);
+				
+				for(IRow row : names){
+					row.setMesh(cross.mesh());
+				}
 
 				cross.setNames(names);
 				
@@ -149,17 +163,17 @@ public class RdCrossSelector implements ISelector {
 		
 		List<RdCross> result = new ArrayList<RdCross>();
 		
-		String str = nodePids.toString();
+		String nodeStr = nodePids.toString();
 		
-		str.replace("[", "(");
+		nodeStr.replace("[", "(");
 		
-		str.replace("]", ")");
+		nodeStr.replace("]", ")");
 		
-		String str2 = linkPids.toString();
+		String linkStr = linkPids.toString();
 		
-		str2.replace("[", "(");
+		linkStr.replace("[", "(");
 		
-		str2.replace("]", ")");
+		linkStr.replace("]", ")");
 		
 		if (nodePids.size() == 0 && linkPids.size() == 0){
 			return result;
@@ -168,14 +182,13 @@ public class RdCrossSelector implements ISelector {
 		String sql = "";
 		
 		if(nodePids.size() == 0){
-			sql = "select * from rd_cross a where exists (select null from rd_cross_link c where a.pid=c.pid and c.link_pid in ("+str2+") and c.u_record!=2) and a.u_record!=2";
+			sql = "select a.*, c.mesh_id   from rd_cross a, RD_LINK c  where   exists (select null           from rd_cross_link d          where a.pid = d.pid            and d.link_pid in ("+linkStr+")            AND D.LINK_PID = C.LINK_PID            and d.u_record != 2)    and a.u_record != 2";
 		}
 		else if (linkPids.size() == 0){
-			sql = "select * from rd_cross a where exists (select null from rd_cross_node b where a.pid=b.pid and b.node_pid in ("+str+") and b.u_record!=2) and a.u_record!=2";
-			
+			sql = "select a.*, c.mesh_id   from rd_cross a, rd_node_mesh c  where  exists (select null           from rd_cross_node d          where a.pid = d.pid            and d.node_pid in ("+nodeStr+")            and d.u_record != 2            and c.node_pid = d.node_pid            )    and a.u_record != 2";
 		}
 		else{
-			sql = "select * from rd_cross a where exists (select null from rd_cross_node b where a.pid=b.pid and b.node_pid in ("+str+") and b.u_record!=2 or select null from rd_cross_link c where a.pid=c.pid and c.link_pid in ("+str2+") and c.u_record!=2) and a.u_record!=2";
+			sql = "select a.*, c.mesh_id   from rd_cross a, rd_node_mesh c  where  exists (select null           from rd_cross_node d          where a.pid = d.pid            and d.node_pid in ("+nodeStr+")            and d.u_record != 2            and c.node_pid = d.node_pid            )    and a.u_record != 2    union    select a.*, c.mesh_id   from rd_cross a, RD_LINK c  where   exists (select null           from rd_cross_link d          where a.pid = d.pid            and d.link_pid in ("+linkStr+")            AND D.LINK_PID = C.LINK_PID            and d.u_record != 2)    and a.u_record != 2";
 		}
 		
 		Statement pstmt = null;
@@ -200,19 +213,33 @@ public class RdCrossSelector implements ISelector {
 				cross.setElectroeye(resultSet.getInt("electroeye"));
 
 				cross.setKgFlag(resultSet.getInt("kg_flag"));
+				
+				cross.setMesh(resultSet.getInt("mesh_id"));
 
 				List<IRow> links = new RdCrossLinkSelector(conn)
 						.loadRowsByParentId(cross.getPid(), isLock);
+				
+				for(IRow row : links){
+					row.setMesh(cross.mesh());
+				}
 
 				cross.setLinks(links);
 				
 				List<IRow> nodes = new RdCrossNodeSelector(conn)
 						.loadRowsByParentId(cross.getPid(), isLock);
+				
+				for(IRow row : nodes){
+					row.setMesh(cross.mesh());
+				}
 
 				cross.setNodes(nodes);
 				
 				List<IRow> names = new RdCrossNameSelector(conn)
 						.loadRowsByParentId(cross.getPid(), isLock);
+				
+				for(IRow row : names){
+					row.setMesh(cross.mesh());
+				}
 
 				cross.setNames(names);
 				

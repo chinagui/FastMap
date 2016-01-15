@@ -74,7 +74,7 @@ public class DBOraclePoolManager {
 			conn = DriverManager.getConnection("jdbc:oracle:thin:@" + ip + ":"
 					+ port + ":" + serviceName, username, password);
 
-			String sql = "select * from prj_project";
+			String sql = "select a.project_id,b.db_user_name,b.db_user_passwd,c.server_ip,c.server_port,c.service_name from project_info a, db_hub b, db_server c where a.db_id=b.db_id and b.server_id=c.server_id";
 
 			stmt = conn.createStatement();
 
@@ -84,11 +84,17 @@ public class DBOraclePoolManager {
 				try {
 					int projectId = resultSet.getInt("project_id");
 
-					String prjDbConn = resultSet.getString("prj_db_conn");
+					String ip = resultSet.getString("server_ip");
+					
+					int port = resultSet.getInt("server_port");
+					
+					String service = resultSet.getString("service_name");
+					
+					String user = resultSet.getString("db_user_name");
+					
+					String password = resultSet.getString("db_user_passwd");
 
-					JSONObject jsonConnMsg = JSONObject.fromObject(prjDbConn);
-
-					DBOraclePool pool = new DBOraclePool(jsonConnMsg);
+					DBOraclePool pool = new DBOraclePool(ip,port,service,user,password);
 
 					map.put(String.valueOf(projectId), pool);
 				} catch (Exception e) {
@@ -205,7 +211,7 @@ public class DBOraclePoolManager {
 			conn = DriverManager.getConnection("jdbc:oracle:thin:@" + ip + ":"
 					+ port + ":" + serviceName, username, password);
 
-			String sql = "select * from prj_project where project_id =:1";
+			String sql = "select a.project_id,b.db_user_name,b.db_user_passwd,c.server_ip,c.server_port,c.service_name from project_info a, db_hub b, db_server c where a.db_id=b.db_id and b.server_id=c.server_id and a.project_id =:1";
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -213,11 +219,17 @@ public class DBOraclePoolManager {
 
 			resultSet = pstmt.executeQuery();
 
-			String prjDbConn = resultSet.getString("prj_db_conn");
+			String ip = resultSet.getString("server_ip");
+			
+			int port = resultSet.getInt("server_port");
+			
+			String service = resultSet.getString("service_name");
+			
+			String user = resultSet.getString("db_user_name");
+			
+			String password = resultSet.getString("db_user_passwd");
 
-			JSONObject jsonConnMsg = JSONObject.fromObject(prjDbConn);
-
-			DBOraclePool pool = new DBOraclePool(jsonConnMsg);
+			DBOraclePool pool = new DBOraclePool(ip,port,service,user,password);
 
 			map.put(String.valueOf(projectId), pool);
 

@@ -18,7 +18,7 @@ public class ProjectSelector {
 	public JSONArray getByUser(int userId) throws Exception{
 		JSONArray array = new JSONArray();
 		
-		String sql = "select project_id, prj_name from prj_project";
+		String sql = "select project_id, project_name from project_info";
 		
 		PreparedStatement pstmt = null;
 
@@ -33,13 +33,13 @@ public class ProjectSelector {
 				
 				int projectId = resultSet.getInt("project_id");
 				
-				String prjName = resultSet.getString("prj_name");
+				String prjName = resultSet.getString("project_name");
 				
 				JSONObject json = new JSONObject();
 				
-				json.put("id", projectId);
+				json.put("projectId", projectId);
 				
-				json.put("name", prjName);
+				json.put("projectName", prjName);
 				
 				array.add(json);
 			}

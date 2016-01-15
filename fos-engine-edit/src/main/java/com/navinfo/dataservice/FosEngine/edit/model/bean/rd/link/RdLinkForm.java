@@ -17,6 +17,8 @@ import com.navinfo.dataservice.commons.util.JsonUtils;
 
 public class RdLinkForm implements IRow {
 
+	private int mesh;
+	
 	private String rowId;
 
 	private int formOfWay = 1;
@@ -194,6 +196,18 @@ public class RdLinkForm implements IRow {
 			return false;
 		}
 
+	}
+
+	@Override
+	public int mesh() {
+		// TODO Auto-generated method stub
+		return mesh;
+	}
+
+	@Override
+	public void setMesh(int mesh) {
+		// TODO Auto-generated method stub
+		this.mesh=mesh;
 	}
 
 }

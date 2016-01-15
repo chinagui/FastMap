@@ -19,6 +19,8 @@ import com.navinfo.dataservice.commons.util.JsonUtils;
 
 public class RdLaneTopology implements IObj {
 
+	private int mesh;
+	
 	private String rowId;
 
 	private int pid;
@@ -303,5 +305,17 @@ public class RdLaneTopology implements IObj {
 	public int pid() {
 		// TODO Auto-generated method stub
 		return pid;
+	}
+
+	@Override
+	public int mesh() {
+		// TODO Auto-generated method stub
+		return mesh;
+	}
+
+	@Override
+	public void setMesh(int mesh) {
+		// TODO Auto-generated method stub
+		this.mesh=mesh;
 	}
 }

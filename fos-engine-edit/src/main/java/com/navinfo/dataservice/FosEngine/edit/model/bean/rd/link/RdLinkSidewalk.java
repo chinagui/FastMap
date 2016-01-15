@@ -17,6 +17,8 @@ import com.navinfo.dataservice.commons.util.JsonUtils;
 
 public class RdLinkSidewalk implements IRow {
 
+	private int mesh;
+	
 	private String rowId;
 
 	private int sidewalkLoc;
@@ -233,4 +235,15 @@ public class RdLinkSidewalk implements IRow {
 
 	}
 
+	@Override
+	public int mesh() {
+		// TODO Auto-generated method stub
+		return mesh;
+	}
+
+	@Override
+	public void setMesh(int mesh) {
+		// TODO Auto-generated method stub
+		this.mesh=mesh;
+	}
 }

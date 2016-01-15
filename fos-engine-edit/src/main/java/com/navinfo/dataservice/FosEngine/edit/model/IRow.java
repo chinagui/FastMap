@@ -82,4 +82,8 @@ public interface IRow extends ISerializable {
 	 * @param json
 	 */
 	public boolean fillChangeFields(JSONObject json) throws Exception;
+	
+	public int mesh();
+	
+	public void setMesh(int mesh);
 }

@@ -22,6 +22,8 @@ import com.navinfo.dataservice.commons.service.PidService;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class RdNode implements IObj {
+	
+	private int mesh;
 
 	private String rowId;
 
@@ -454,5 +456,17 @@ public class RdNode implements IObj {
 			return false;
 		}
 
+	}
+
+	@Override
+	public int mesh() {
+		// TODO Auto-generated method stub
+		return mesh;
+	}
+
+	@Override
+	public void setMesh(int mesh) {
+		// TODO Auto-generated method stub
+		this.mesh=mesh;
 	}
 }

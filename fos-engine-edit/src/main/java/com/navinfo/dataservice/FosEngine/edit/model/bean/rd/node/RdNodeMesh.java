@@ -195,4 +195,14 @@ public class RdNodeMesh implements IRow {
 
 	}
 
+	@Override
+	public int mesh() {
+		// TODO Auto-generated method stub
+		return meshId;
+	}
+
+	@Override
+	public void setMesh(int mesh) {
+		// TODO Auto-generated method stub
+	}
 }

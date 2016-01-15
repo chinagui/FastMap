@@ -17,6 +17,8 @@ import com.navinfo.dataservice.commons.util.JsonUtils;
 
 public class RdCrossNode implements IRow {
 
+	private int mesh;
+	
 	private int pid;
 
 	private int nodePid;
@@ -204,6 +206,18 @@ public class RdCrossNode implements IRow {
 			return false;
 		}
 
+	}
+
+	@Override
+	public int mesh() {
+		// TODO Auto-generated method stub
+		return mesh;
+	}
+
+	@Override
+	public void setMesh(int mesh) {
+		// TODO Auto-generated method stub
+		this.mesh=mesh;
 	}
 
 }

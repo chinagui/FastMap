@@ -402,5 +402,16 @@ public class RdSpeedlimit implements IObj {
 		}
 
 	}
+
+	@Override
+	public int mesh() {
+		// TODO Auto-generated method stub
+		return meshId;
+	}
+
+	@Override
+	public void setMesh(int mesh) {
+		// TODO Auto-generated method stub
+	}
 	
 }

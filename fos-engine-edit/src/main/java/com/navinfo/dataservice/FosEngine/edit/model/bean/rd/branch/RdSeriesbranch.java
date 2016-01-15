@@ -17,6 +17,8 @@ import com.navinfo.dataservice.commons.util.JsonUtils;
 
 public class RdSeriesbranch implements IRow {
 
+	private int mesh;
+	
 	private int branchPid;
 	
 	private int type;
@@ -233,6 +235,18 @@ public class RdSeriesbranch implements IRow {
 			return false;
 		}
 
+	}
+
+	@Override
+	public int mesh() {
+		// TODO Auto-generated method stub
+		return mesh;
+	}
+
+	@Override
+	public void setMesh(int mesh) {
+		// TODO Auto-generated method stub
+		this.mesh=mesh;
 	}
 
 }

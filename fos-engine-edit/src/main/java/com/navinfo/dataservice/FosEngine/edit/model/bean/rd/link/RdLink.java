@@ -972,4 +972,15 @@ public class RdLink implements IObj {
 		this.zones = zones;
 	}
 
+	@Override
+	public int mesh() {
+		// TODO Auto-generated method stub
+		return this.meshId;
+	}
+
+	@Override
+	public void setMesh(int mesh) {
+		// TODO Auto-generated method stub
+	}
+
 }

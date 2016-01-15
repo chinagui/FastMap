@@ -16,6 +16,8 @@ import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 
 public class RdLinkLimit implements IRow {
+	
+	private int mesh;
 
 	private String rowId;
 
@@ -268,6 +270,18 @@ public class RdLinkLimit implements IRow {
 			return false;
 		}
 
+	}
+
+	@Override
+	public int mesh() {
+		// TODO Auto-generated method stub
+		return mesh;
+	}
+
+	@Override
+	public void setMesh(int mesh) {
+		// TODO Auto-generated method stub
+		this.mesh=mesh;
 	}
 
 }

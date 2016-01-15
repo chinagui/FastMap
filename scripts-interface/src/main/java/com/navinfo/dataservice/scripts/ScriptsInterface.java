@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.expcore;
+package com.navinfo.dataservice.scripts;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -18,6 +18,10 @@ import org.apache.commons.io.IOUtils;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.UnifiedDb;
+import com.navinfo.dataservice.expcore.Exporter;
+import com.navinfo.dataservice.expcore.Exporter2OracleByFullCopy;
+import com.navinfo.dataservice.expcore.Exporter2OracleByScripts;
+import com.navinfo.dataservice.expcore.ExporterResult;
 import com.navinfo.dataservice.expcore.config.ExportConfig;
 import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.navicommons.utils.StringUtils;

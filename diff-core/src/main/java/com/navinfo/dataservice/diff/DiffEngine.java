@@ -1,21 +1,16 @@
 package com.navinfo.dataservice.diff;
 
-import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.diff.config.DiffConfig;
-import com.navinfo.dataservice.diff.dataaccess.AccessType;
+import com.navinfo.dataservice.diff.config.DiffTableCache;
+import com.navinfo.dataservice.diff.config.Table;
 import com.navinfo.dataservice.diff.dataaccess.DataAccess;
-import com.navinfo.dataservice.diff.dataaccess.Table;
-import com.navinfo.dataservice.diff.exception.DiffException;
-import com.navinfo.dataservice.diff.scanner.PLSQLDiffScanner;
+import com.navinfo.dataservice.diff.scanner.JavaDiffScanner;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.exception.ThreadExecuteException;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
-import org.springframework.util.Assert;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -37,7 +32,7 @@ public class DiffEngine
 	private DataAccess rightAccess;
 	private List<Table> diffTables;
 	protected VMThreadPoolExecutor poolExecutor;
-	protected PLSQLDiffScanner diffScanner;
+	protected JavaDiffScanner diffScanner;
 
 
 	public DiffEngine(DiffConfig config) {
@@ -54,6 +49,7 @@ public class DiffEngine
 		//diffScanner
 		
 		//diffTables
+		diffTables = DiffTableCache.getAllTables();
 		log.debug("需要差分的表的个数为：" + diffTables.size());
 	}
 	
@@ -85,7 +81,7 @@ public class DiffEngine
 		log.debug("开始执行差分");
 		long t = System.currentTimeMillis();
 		for (final Table table : diffTables) {
-			log.debug("添加差分执行任务，表名为：" + table.getTableName());
+			log.debug("添加差分执行任务，表名为：" + table.getName());
 			poolExecutor.execute(new Runnable() {
 				@Override
 				public void run() {
@@ -93,7 +89,7 @@ public class DiffEngine
 						diffScanner.scan(table,leftAccess.accessTable(table), rightAccess.accessTable(table));
 						latch.countDown();
 					}catch(Exception e){
-						throw new ThreadExecuteException("表名："+table.getTableName()+"差分失败。",e);
+						throw new ThreadExecuteException("表名："+table.getName()+"差分失败。",e);
 					}
 				}
 			});
@@ -118,7 +114,7 @@ public class DiffEngine
 		log.debug("开始填充履历详细改前改后值");
 		long t = System.currentTimeMillis();
 		for (final Table table : diffTables) {
-			log.debug("添加生成履历执行任务，任务名为：" + table.getTableName());
+			log.debug("添加生成履历执行任务，任务名为：" + table.getName());
 			poolExecutor.execute(new Runnable() {
 				@Override
 				public void run() {
@@ -126,7 +122,7 @@ public class DiffEngine
 						diffScanner.fillLogDetail(table,leftAccess.accessTable(table), rightAccess.accessTable(table));
 						latch.countDown();
 					}catch(Exception e){
-						throw new ThreadExecuteException("表名："+table.getTableName()+"差分失败。",e);
+						throw new ThreadExecuteException("表名："+table.getName()+"差分失败。",e);
 					}
 				}
 			});

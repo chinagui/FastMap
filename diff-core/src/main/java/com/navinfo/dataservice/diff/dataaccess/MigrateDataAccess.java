@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.diff.dataaccess;
 
+import com.navinfo.dataservice.diff.config.Table;
+
 
 /**
  * @author arnold
@@ -16,6 +18,6 @@ public class MigrateDataAccess implements DataAccess
     @Override
     public String accessTable(Table table)
     {
-        return table.getTableName();
+        return table.getName();
     }
 }

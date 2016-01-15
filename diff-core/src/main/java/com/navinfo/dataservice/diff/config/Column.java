@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.diff.dataaccess;
+package com.navinfo.dataservice.diff.config;
 
 /** 
  * @ClassName: Column 
@@ -9,7 +9,8 @@ package com.navinfo.dataservice.diff.dataaccess;
 public class Column {
 	private String name;
 	private String type;
-	private boolean pk;
+	private boolean pk=false;
+	private boolean diff=true;//是否参与差分,默认参与
 	public static final String TYPE_NUMBER = "NUMBER";
 	public static final String TYPE_VARCHAR2 = "VARCHAR2";
 	public static final String TYPE_DATA = "DATA";
@@ -32,5 +33,11 @@ public class Column {
 	}
 	public void setPk(boolean pk) {
 		this.pk = pk;
+	}
+	public boolean isDiff() {
+		return diff;
+	}
+	public void setDiff(boolean diff) {
+		this.diff = diff;
 	}
 }

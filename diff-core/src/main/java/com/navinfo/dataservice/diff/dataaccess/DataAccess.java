@@ -3,6 +3,8 @@ package com.navinfo.dataservice.diff.dataaccess;
 
 import java.util.List;
 
+import com.navinfo.dataservice.diff.config.Table;
+
 /**
  * @author arnold
  * @version $Id:Exp$

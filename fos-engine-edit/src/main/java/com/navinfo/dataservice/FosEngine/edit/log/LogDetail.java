@@ -29,10 +29,54 @@ public class LogDetail {
 	private String rowId;
 
 	private int isCk;
-
+	
+	private String tbRowId;
+	
+	private int meshId;
+	
+	private int gridId;
+	
+	
 	public LogDetail() {
 
 	}
+
+	
+	public String getTbRowId() {
+		return tbRowId;
+	}
+
+
+
+	public void setTbRowId(String tbRowId) {
+		this.tbRowId = tbRowId;
+	}
+
+
+
+	public int getMeshId() {
+		return meshId;
+	}
+
+
+
+	public void setMeshId(int meshId) {
+		this.meshId = meshId;
+	}
+
+
+
+	public int getGridId() {
+		return gridId;
+	}
+
+
+
+	public void setGridId(int gridId) {
+		this.gridId = gridId;
+	}
+
+
 
 	public int getOpId() {
 		return opId;

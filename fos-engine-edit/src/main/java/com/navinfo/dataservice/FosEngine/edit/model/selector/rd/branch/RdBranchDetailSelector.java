@@ -6,8 +6,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ISelector;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranchDetail;
@@ -16,8 +14,6 @@ import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 
 public class RdBranchDetailSelector implements ISelector {
 
-	private static Logger logger = Logger
-			.getLogger(RdBranchDetailSelector.class);
 
 	private Connection conn;
 
@@ -30,8 +26,11 @@ public class RdBranchDetailSelector implements ISelector {
 
 		RdBranchDetail detail = new RdBranchDetail();
 
-		String sql = "select * from " + detail.tableName()
-				+ " where detail_id=:1 and u_record!=2";
+//		String sql = "select * from " + detail.tableName()
+//				+ " where detail_id=:1 and u_record!=2";
+		
+		String sql = "select a.*,c.mesh_id from " + detail.tableName()
+				+ " a,rd_branch b,rd_link c where a.detail_id=:1 and a.u_record!=2 and a.branch_pid = b.pid and b.in_link_pid = c.link_pid";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -73,6 +72,8 @@ public class RdBranchDetailSelector implements ISelector {
 				detail.setGuideCode(resultSet.getInt("guide_code"));
 
 				detail.setRowId(resultSet.getString("row_id"));
+				
+				detail.setMesh(resultSet.getInt("mesh_id"));
 
 				RdBranchNameSelector nameSelector = new RdBranchNameSelector(
 						conn);
@@ -81,6 +82,8 @@ public class RdBranchDetailSelector implements ISelector {
 
 				for (IRow row : detail.getNames()) {
 					RdBranchName name = (RdBranchName) row;
+					
+					name.setMesh(detail.mesh());
 
 					detail.nameMap.put(name.getPid(), name);
 				}

@@ -164,10 +164,15 @@ public class RdLaneViaSelector implements ISelector {
 
 		List<RdLaneVia> listVia = new ArrayList<RdLaneVia>();
 
-		String sql = "select a.*, b.s_node_pid, b.e_node_pid, d.node_pid in_node_pid   from rd_lane_via    a,    " +
-				"    rd_link               b,        rd_lane_connexity        d,        rd_lane_topology e " +
+//		String sql = "select a.*, b.s_node_pid, b.e_node_pid, d.node_pid in_node_pid   from rd_lane_via    a,    " +
+//				"    rd_link               b,        rd_lane_connexity        d,        rd_lane_topology e " +
+//				" where a.link_pid = b.link_pid    and a.topology_id = e.topology_id    and e.connexity_pid = d.pid    and exists (select null           from rd_lane_via c          where link_pid = :1   " +
+//				"         and a.topology_id = c.topology_id)  order by a.topology_id, a.seq_num ";
+		
+		String sql = "select a.*, b.s_node_pid, b.e_node_pid, d.node_pid in_node_pid,f.mesh_id   from rd_lane_via    a,    " +
+				"    rd_link               b,        rd_lane_connexity        d,        rd_lane_topology e,rd_link f " +
 				" where a.link_pid = b.link_pid    and a.topology_id = e.topology_id    and e.connexity_pid = d.pid    and exists (select null           from rd_lane_via c          where link_pid = :1   " +
-				"         and a.topology_id = c.topology_id)  order by a.topology_id, a.seq_num ";
+				"         and a.topology_id = c.topology_id) and d.in_link_pid = f.link_pid  order by a.topology_id, a.seq_num ";
 		
 		if (isLock){
 			sql += " for update nowait ";
@@ -232,6 +237,8 @@ public class RdLaneViaSelector implements ISelector {
 			via.isetsNodePid(resultSet.getInt("s_node_pid"));
 
 			via.isetInNodePid(resultSet.getInt("in_node_pid"));
+			
+			via.setMesh(resultSet.getInt("mesh_id"));
 
 			if (!isChanged) {
 				listVia.add(via);

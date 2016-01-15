@@ -19,6 +19,7 @@ import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.service.LogPidService;
+import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class LogWriter {
@@ -103,7 +104,7 @@ public class LogWriter {
 
 		sb.append(detail.tableName());
 
-		sb.append("(op_id, ob_nm, ob_pk, ob_pid, opb_tp, ob_tp, op_dt, tb_nm, old_value, new_value, fd_lst, op_tp, row_id, is_ck) values (");
+		sb.append("(op_id, ob_nm, ob_pk, ob_pid, opb_tp, ob_tp, op_dt, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id,mesh_id) values (");
 
 		sb.append(detail.getOpId());
 
@@ -162,8 +163,13 @@ public class LogWriter {
 		} else {
 			sb.append(",'" + detail.getRowId() + "'");
 		}
+		
 
 		sb.append("," + detail.getIsCk());
+		
+		sb.append(",hextoraw('"+detail.getTbRowId()+"')");
+		
+		sb.append(","+detail.getMeshId());
 
 		sb.append(")");
 
@@ -207,9 +213,9 @@ public class LogWriter {
 
 			ld.setOpDt(dt);
 
-			ld.setOpTp(3);
+			ld.setOpTp(1);
 
-			ld.setOpbTp(3);
+			ld.setOpbTp(1);
 
 			ld.setObNm(r.primaryTableName());
 
@@ -225,7 +231,11 @@ public class LogWriter {
 
 			ld.setNewValue(r.Serialize(ObjLevel.FULL).toString());
 
-			ld.setRowId(r.rowId());
+			ld.setRowId(UuidUtils.genUuid());
+			
+			ld.setTbRowId(r.rowId());
+			
+			ld.setMeshId(r.mesh());
 
 			logOperation.getDetails().add(ld);
 
@@ -240,9 +250,9 @@ public class LogWriter {
 
 						ldC.setOpDt(dt);
 
-						ldC.setOpTp(3);
+						ldC.setOpTp(1);
 
-						ldC.setOpbTp(3);
+						ldC.setOpbTp(1);
 
 						ldC.setObNm(row.primaryTableName());
 
@@ -258,7 +268,11 @@ public class LogWriter {
 
 						ldC.setNewValue(row.Serialize(ObjLevel.FULL).toString());
 
-						ldC.setRowId(row.rowId());
+						ldC.setRowId(UuidUtils.genUuid());
+						
+						ldC.setTbRowId(r.rowId());
+						
+						ldC.setMeshId(r.mesh());
 
 						logOperation.getDetails().add(ldC);
 					}
@@ -291,7 +305,11 @@ public class LogWriter {
 
 			ld.setIsCk(0);
 
-			ld.setRowId(r.rowId());
+			ld.setRowId(UuidUtils.genUuid());
+			
+			ld.setTbRowId(r.rowId());
+			
+			ld.setMeshId(r.mesh());
 
 			Set<Entry<String, Object>> set = r.changedFields().entrySet();
 
@@ -360,12 +378,18 @@ public class LogWriter {
 
 			ld.setOpDt(dt);
 
-			ld.setOpTp(1);
+			ld.setOpTp(3);
 
 			if (r.primaryTableName().equals(r.tableName())) {
-				ld.setOpbTp(1);
+				ld.setOpbTp(3);
+				
+				ld.setObTp(1);
+
 			} else {
 				ld.setOpbTp(2);
+				
+				ld.setObTp(2);
+
 			}
 
 			ld.setObNm(r.primaryTableName());
@@ -373,14 +397,16 @@ public class LogWriter {
 			ld.setObPid(r.primaryValue());
 
 			ld.setObPk(r.primaryKey());
-
-			ld.setObTp(1);
-
+			
 			ld.setTbNm(r.tableName());
 
 			ld.setIsCk(0);
 
-			ld.setRowId(r.rowId());
+			ld.setRowId(UuidUtils.genUuid());
+			
+			ld.setTbRowId(r.rowId());
+			
+			ld.setMeshId(r.mesh());
 
 			logOperation.getDetails().add(ld);
 
@@ -395,9 +421,9 @@ public class LogWriter {
 
 						ldC.setOpDt(dt);
 
-						ldC.setOpTp(1);
+						ldC.setOpTp(3);
 
-						ldC.setOpbTp(1);
+						ldC.setOpbTp(3);
 
 						ldC.setObNm(row.primaryTableName());
 
@@ -405,13 +431,17 @@ public class LogWriter {
 
 						ldC.setObPk(row.primaryKey());
 
-						ldC.setObTp(1);
+						ldC.setObTp(2);
 
 						ldC.setTbNm(row.tableName());
 
 						ldC.setIsCk(0);
 
-						ldC.setRowId(row.rowId());
+						ldC.setRowId(UuidUtils.genUuid());
+						
+						ldC.setTbRowId(r.rowId());
+						
+						ldC.setMeshId(r.mesh());
 
 						logOperation.getDetails().add(ldC);
 					}

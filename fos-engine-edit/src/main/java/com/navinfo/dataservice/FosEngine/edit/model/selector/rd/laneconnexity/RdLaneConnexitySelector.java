@@ -31,8 +31,11 @@ public class RdLaneConnexitySelector implements ISelector {
 
 		RdLaneConnexity connexity = new RdLaneConnexity();
 
-		String sql = "select * from " + connexity.tableName()
-				+ " where pid=:1 and u_record!=2";
+//		String sql = "select * from " + connexity.tableName()
+//				+ " where pid=:1 and u_record!=2";
+		
+		String sql = "select a.*,b.mesh_id from " + connexity.tableName()
+				+ " a,rd_link b where a.pid=:1 and a.u_record!=2 and a.in_link_pid = b.link_pid ";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -70,6 +73,10 @@ public class RdLaneConnexitySelector implements ISelector {
 				connexity.setRightExtend(resultSet.getInt("right_extend"));
 				
 				connexity.setSrcFlag(resultSet.getInt("src_flag"));
+				
+				int meshId = resultSet.getInt("mesh_id");
+				
+				connexity.setMesh(meshId);
 
 				RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(
 						conn);
@@ -79,10 +86,14 @@ public class RdLaneConnexitySelector implements ISelector {
 				for(IRow row : connexity.getTopos()){
 					RdLaneTopology topo = (RdLaneTopology)row;
 					
+					topo.setMesh(meshId);
+					
 					connexity.topologyMap.put(topo.getPid(), topo);
 					
 					for(IRow row2 : topo.getVias()){
 						RdLaneVia via = (RdLaneVia)row2;
+						
+						via.setMesh(meshId);
 						
 						connexity.viaMap.put(via.getRowId(), via);
 					}
@@ -134,7 +145,7 @@ public class RdLaneConnexitySelector implements ISelector {
 	{
 		List<RdLaneConnexity> laneConns = new ArrayList<RdLaneConnexity>();
 		
-		String sql = "select * from rd_lane_connexity where in_link_pid = :1 and u_record!=2 ";
+		String sql = "select a.*,b.mesh_id from rd_lane_connexity a,rd_link b where a.in_link_pid = :1 and a.u_record!=2 and a.in_link_pid = b.link_pid ";
 		
 		if (isLock){
 			sql += " for update nowait";
@@ -176,6 +187,8 @@ public class RdLaneConnexitySelector implements ISelector {
 				
 				laneConn.setSrcFlag(resultSet.getInt("src_flag"));
 				
+				laneConn.setMesh(resultSet.getInt("mesh_id"));
+				
 				laneConns.add(laneConn);
 			}
 		} catch (Exception e) {
@@ -202,7 +215,9 @@ public class RdLaneConnexitySelector implements ISelector {
 	{
 		List<RdLaneConnexity> laneConns = new ArrayList<RdLaneConnexity>();
 		
-		String sql = "select * from rd_lane_connexity where node_pid = :1 and u_record!=2 ";
+//		String sql = "select * from rd_lane_connexity where node_pid = :1 and u_record!=2 ";
+
+		String sql = "select a.*,b.mesh_id from rd_lane_connexity a,rd_link b where a.node_pid = :1 and a.u_record!=2 and a.in_link_pid = b.link_pid ";
 		
 		if (isLock){
 			sql += " for update nowait";
@@ -243,6 +258,8 @@ public class RdLaneConnexitySelector implements ISelector {
 				laneConn.setRightExtend(resultSet.getInt("right_extend"));
 				
 				laneConn.setSrcFlag(resultSet.getInt("src_flag"));
+				
+				laneConn.setMesh(resultSet.getInt("mesh_id"));
 				
 				laneConns.add(laneConn);
 			}

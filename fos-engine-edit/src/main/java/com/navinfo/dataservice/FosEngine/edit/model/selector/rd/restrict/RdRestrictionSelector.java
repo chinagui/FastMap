@@ -31,9 +31,13 @@ public class RdRestrictionSelector implements ISelector {
 
 		RdRestriction restrict = new RdRestriction();
 
-		String sql = "select * from " + restrict.tableName()
-				+ " where pid=:1 and u_record!=2";
+//		String sql = "select * from " + restrict.tableName()
+//				+ " where pid=:1 and u_record!=2";
 
+		String sql = "select a.*,b.mesh_id from " + restrict.tableName()
+				+ " a,rd_link b where a.pid=:1 and a.u_record!=2 and a.in_link_pid = b.link_pid ";
+
+		
 		if (isLock) {
 			sql += " for update nowait";
 		}
@@ -62,6 +66,10 @@ public class RdRestrictionSelector implements ISelector {
 				restrict.setKgFlag(resultSet.getInt("kg_flag"));
 
 				restrict.setRowId(resultSet.getString("row_id"));
+				
+				int meshId = resultSet.getInt("mesh_id");
+				
+				restrict.setMesh(meshId);
 
 				RdRestrictionDetailSelector detailSelector = new RdRestrictionDetailSelector(
 						conn);
@@ -71,10 +79,14 @@ public class RdRestrictionSelector implements ISelector {
 				for(IRow row : restrict.getDetails()){
 					RdRestrictionDetail detail = (RdRestrictionDetail)row;
 					
+					detail.setMesh(meshId);
+					
 					restrict.detailMap.put(detail.getPid(), detail);
 					
 					for(IRow row2 : detail.getConditions()){
 						RdRestrictionCondition condition = (RdRestrictionCondition)row2;
+						
+						condition.setMesh(meshId);
 						
 						restrict.conditionMap.put(condition.getRowId(), condition);
 					}
@@ -126,7 +138,9 @@ public class RdRestrictionSelector implements ISelector {
 			boolean isLock) throws Exception {
 		List<RdRestriction> reses = new ArrayList<RdRestriction>();
 
-		String sql = "select * from rd_restriction where in_link_pid = :1 and u_record!=:2";
+//		String sql = "select * from rd_restriction where in_link_pid = :1 and u_record!=:2";
+		
+		String sql = "select a.*,b.mesh_id from rd_restriction a,rd_link b where a.in_link_pid = :1 and a.u_record!=:2 and b.u_record!=2 and a.in_link_pid = b.link_pid";
 
 		if (isLock) {
 			sql = sql + " for update nowait";
@@ -159,12 +173,20 @@ public class RdRestrictionSelector implements ISelector {
 				restrict.setKgFlag(resultSet.getInt("kg_flag"));
 
 				restrict.setRowId(resultSet.getString("row_id"));
+				
+				int meshId = resultSet.getInt("mesh_id");
+				
+				restrict.setMesh(meshId);
 
 				RdRestrictionDetailSelector detail = new RdRestrictionDetailSelector(
 						conn);
 
 				restrict.setDetails(detail.loadRowsByParentId(
 						restrict.getPid(), isLock));
+				
+				for(IRow obj : restrict.getDetails()){
+					obj.setMesh(meshId);
+				}
 
 				reses.add(restrict);
 			}
@@ -192,7 +214,9 @@ public class RdRestrictionSelector implements ISelector {
 			boolean isLock) throws Exception {
 		List<RdRestriction> reses = new ArrayList<RdRestriction>();
 
-		String sql = "select * from rd_restriction where node_pid = :1 and u_record!=:2";
+//		String sql = "select * from rd_restriction where node_pid = :1 and u_record!=:2";
+		
+		String sql = "select a.*,b.mesh_id from rd_restriction a,rd_link b where a.node_pid = :1 and a.u_record!=:2 and a.in_link_pid = b.link_pid ";
 
 		if (isLock) {
 			sql = sql + " for update nowait";
@@ -225,12 +249,20 @@ public class RdRestrictionSelector implements ISelector {
 				restrict.setKgFlag(resultSet.getInt("kg_flag"));
 
 				restrict.setRowId(resultSet.getString("row_id"));
+				
+				int meshId = resultSet.getInt("mesh_id");
+				
+				restrict.setMesh(meshId);
 
 				RdRestrictionDetailSelector detail = new RdRestrictionDetailSelector(
 						conn);
 
 				restrict.setDetails(detail.loadRowsByParentId(
 						restrict.getPid(), isLock));
+				
+				for(IRow obj : restrict.getDetails()){
+					obj.setMesh(meshId);
+				}
 
 				reses.add(restrict);
 			}
@@ -259,7 +291,9 @@ public class RdRestrictionSelector implements ISelector {
 
 		RdRestriction restrict = new RdRestriction();
 
-		String sql = "select * from rd_restriction where in_link_pid = :1 and node_pid=:2 and u_record!=:3";
+//		String sql = "select * from rd_restriction where in_link_pid = :1 and node_pid=:2 and u_record!=:3";
+		
+		String sql = "select a.*,b.mesh_id from rd_restriction a,rd_link b where a.in_link_pid = :1 and a.node_pid=:2 and a.u_record!=:3 and a.in_link_pid = b.link_pid ";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -293,12 +327,20 @@ public class RdRestrictionSelector implements ISelector {
 				restrict.setKgFlag(resultSet.getInt("kg_flag"));
 
 				restrict.setRowId(resultSet.getString("row_id"));
+				
+				int meshId = resultSet.getInt("mesh_id");
+				
+				restrict.setMesh(meshId);
 
 				RdRestrictionDetailSelector detail = new RdRestrictionDetailSelector(
 						conn);
 
 				restrict.setDetails(detail.loadRowsByParentId(
 						restrict.getPid(), isLock));
+				
+				for(IRow obj : restrict.getDetails()){
+					obj.setMesh(meshId);
+				}
 
 			} else {
 				logger.info("未找到RdRestriction: linkPid " + linkPid

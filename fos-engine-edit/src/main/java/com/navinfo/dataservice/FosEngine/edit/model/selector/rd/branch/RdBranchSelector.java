@@ -32,8 +32,11 @@ public class RdBranchSelector implements ISelector {
 
 		RdBranch branch = new RdBranch();
 
-		String sql = "select * from " + branch.tableName()
-				+ " where branch_pid=:1 and u_record!=2";
+//		String sql = "select * from " + branch.tableName()
+//				+ " where branch_pid=:1 and u_record!=2";
+		
+		String sql = "select a.*,b.mesh from " + branch.tableName()
+				+ " a,rd_link b where a.branch_pid=:1 and a.u_record!=2 and a.in_link_pid = b.link_pid ";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -64,6 +67,10 @@ public class RdBranchSelector implements ISelector {
 						.getInt("relationship_type"));
 
 				branch.setRowId(resultSet.getString("row_id"));
+				
+				int meshId = resultSet.getInt("mesh_id");
+				
+				branch.setMesh(meshId);
 
 				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
 						conn);
@@ -72,6 +79,8 @@ public class RdBranchSelector implements ISelector {
 
 				for (IRow row : branch.getDetails()) {
 					RdBranchDetail obj = (RdBranchDetail) row;
+					
+					obj.setMesh(meshId);
 
 					branch.detailMap.put(obj.getPid(), obj);
 				}
@@ -84,6 +93,8 @@ public class RdBranchSelector implements ISelector {
 
 				for (IRow row : branch.getSignboards()) {
 					RdSignboard obj = (RdSignboard) row;
+					
+					obj.setMesh(meshId);
 
 					branch.signboardMap.put(obj.getPid(), obj);
 				}
@@ -96,6 +107,8 @@ public class RdBranchSelector implements ISelector {
 
 				for (IRow row : branch.getSignasreals()) {
 					RdSignasreal obj = (RdSignasreal) row;
+					
+					obj.setMesh(meshId);
 
 					branch.signasrealMap.put(obj.getPid(), obj);
 				}
@@ -108,6 +121,8 @@ public class RdBranchSelector implements ISelector {
 
 				for (IRow row : branch.getSeriesbranches()) {
 					RdSeriesbranch obj = (RdSeriesbranch) row;
+					
+					obj.setMesh(meshId);
 
 					branch.seriesbranchMap.put(obj.rowId(), obj);
 				}
@@ -120,6 +135,8 @@ public class RdBranchSelector implements ISelector {
 
 				for (IRow row : branch.getRealimages()) {
 					RdBranchRealimage obj = (RdBranchRealimage) row;
+					
+					obj.setMesh(meshId);
 
 					branch.realimageMap.put(obj.rowId(), obj);
 				}
@@ -132,6 +149,8 @@ public class RdBranchSelector implements ISelector {
 
 				for (IRow row : branch.getSchematics()) {
 					RdBranchSchematic obj = (RdBranchSchematic) row;
+					
+					obj.setMesh(meshId);
 
 					branch.schematicMap.put(obj.getPid(), obj);
 				}
@@ -142,6 +161,8 @@ public class RdBranchSelector implements ISelector {
 
 				for (IRow row : branch.getVias()) {
 					RdBranchVia obj = (RdBranchVia) row;
+					
+					obj.setMesh(meshId);
 
 					branch.viaMap.put(obj.rowId(), obj);
 				}
@@ -179,8 +200,11 @@ public class RdBranchSelector implements ISelector {
 
 		RdBranch branch = new RdBranch();
 
-		String sql = "select * from " + branch.tableName()
-				+ " where branch_pid=:1 and u_record!=2";
+//		String sql = "select * from " + branch.tableName()
+//				+ " where a.branch_pid=:1 and a.u_record!=2 ";
+		
+		String sql = "select a.*,b.mesh_id from " + branch.tableName()
+				+ " a,rd_link b where a.branch_pid=:1 and a.u_record!=2 and a.in_link_pid = b.link_pid ";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -198,6 +222,8 @@ public class RdBranchSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
+				
+				int meshId = resultSet.getInt("mesh_id");
 
 				branch.setPid(resultSet.getInt("branch_pid"));
 
@@ -211,6 +237,8 @@ public class RdBranchSelector implements ISelector {
 						.getInt("relationship_type"));
 
 				branch.setRowId(resultSet.getString("row_id"));
+				
+				branch.setMesh(meshId);
 
 				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
 						conn);
@@ -225,6 +253,8 @@ public class RdBranchSelector implements ISelector {
 
 				for (IRow row : branch.getDetails()) {
 					RdBranchDetail obj = (RdBranchDetail) row;
+					
+					obj.setMesh(meshId);
 
 					branch.detailMap.put(obj.getPid(), obj);
 				}
@@ -235,6 +265,8 @@ public class RdBranchSelector implements ISelector {
 
 				for (IRow row : branch.getVias()) {
 					RdBranchVia obj = (RdBranchVia) row;
+					
+					obj.setMesh(meshId);
 
 					branch.viaMap.put(obj.rowId(), obj);
 				}
@@ -285,7 +317,9 @@ public class RdBranchSelector implements ISelector {
 	{
 		List<RdBranch> branchs = new ArrayList<RdBranch>();
 		
-		String sql = "select * from rd_branch where in_link_pid = :1 and u_record!=2 ";
+//		String sql = "select * from rd_branch where in_link_pid = :1 and u_record!=2 ";
+		
+		String sql = "select a.*,b.mesh_id from rd_branch a,rd_link b where a.in_link_pid = :1 and a.u_record!=2 and a.in_link_pid = b.link_pid ";
 		
 		if (isLock){
 			sql += " for update nowait";
@@ -305,6 +339,8 @@ public class RdBranchSelector implements ISelector {
 			while(resultSet.next()){
 				RdBranch branch = new RdBranch();
 				
+				int meshId = resultSet.getInt("mesh_id");
+				
 				branch.setPid(resultSet.getInt("branch_pid"));
 
 				branch.setInLinkPid(resultSet.getInt("in_link_pid"));
@@ -317,6 +353,8 @@ public class RdBranchSelector implements ISelector {
 						.getInt("relationship_type"));
 
 				branch.setRowId(resultSet.getString("row_id"));
+				
+				branch.setMesh(meshId);
 				
 				branchs.add(branch);
 			}
@@ -344,14 +382,16 @@ public class RdBranchSelector implements ISelector {
 	{
 		List<RdBranch> branchs = new ArrayList<RdBranch>();
 		
-		String sql = "select a.*, c.node_pid   from rd_branch a, rd_link b, rd_cross_node c " +
-				" where a.relationship_type = 1    and a.out_link_pid = b.link_pid    and c.node_pid in (b.s_node_pid, b.e_node_pid)    and a.out_link_pid = :1    and a.u_record!=2 " +
-				"union all" +
-				" select a.*,       " +
-				" case          when b.s_node_pid in (d.s_node_pid, d.e_node_pid) then           b.s_node_pid          else           b.e_node_pid        end out_node_pid  " +
-				" from rd_branch a, rd_link b, rd_branch_via c, rd_link d  " +
-				"where a.relationship_type = 2    and a.branch_pid = c.branch_pid    and a.out_link_pid = b.link_pid    and c.link_pid = d.link_pid " +
-				"   and (b.s_node_pid in (d.s_node_pid, d.e_node_pid) or        b.e_node_pid in (d.s_node_pid, d.e_node_pid))    and b.link_pid = :2    and a.u_record!=2 ";
+//		String sql = "select a.*, c.node_pid   from rd_branch a, rd_link b, rd_cross_node c " +
+//				" where a.relationship_type = 1    and a.out_link_pid = b.link_pid    and c.node_pid in (b.s_node_pid, b.e_node_pid)    and a.out_link_pid = :1    and a.u_record!=2 " +
+//				"union all" +
+//				" select a.*,       " +
+//				" case          when b.s_node_pid in (d.s_node_pid, d.e_node_pid) then           b.s_node_pid          else           b.e_node_pid        end out_node_pid  " +
+//				" from rd_branch a, rd_link b, rd_branch_via c, rd_link d  " +
+//				"where a.relationship_type = 2    and a.branch_pid = c.branch_pid    and a.out_link_pid = b.link_pid    and c.link_pid = d.link_pid " +
+//				"   and (b.s_node_pid in (d.s_node_pid, d.e_node_pid) or        b.e_node_pid in (d.s_node_pid, d.e_node_pid))    and b.link_pid = :2    and a.u_record!=2 ";
+		
+		String sql = "select a.*, c.node_pid,d.mesh_id   from rd_branch a, rd_link b, rd_cross_node c,rd_link d  where a.relationship_type = 1    and a.out_link_pid = b.link_pid    and c.node_pid in (b.s_node_pid, b.e_node_pid)    and a.out_link_pid = :1    and a.u_record != 2    and a.in_link_pid = d.link_pid union all select a.*,        case          when b.s_node_pid in (d.s_node_pid, d.e_node_pid) then           b.s_node_pid          else           b.e_node_pid        end out_node_pid,e.mesh_id   from rd_branch a, rd_link b, rd_branch_via c, rd_link d,rd_link e  where a.relationship_type = 2    and a.branch_pid = c.branch_pid    and a.out_link_pid = b.link_pid    and c.link_pid = d.link_pid    and (b.s_node_pid in (d.s_node_pid, d.e_node_pid) or        b.e_node_pid in (d.s_node_pid, d.e_node_pid))    and b.link_pid = :2    and a.u_record != 2    and a.in_link_pid = e.link_pid ";
 		
 //		if (isLock){
 //			sql += " for update nowait";
@@ -371,6 +411,8 @@ public class RdBranchSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 			
 			while(resultSet.next()){
+				int meshId = resultSet.getInt("mesh_id");
+				
 				RdBranch branch = new RdBranch();
 				
 				branch.setPid(resultSet.getInt("branch_pid"));
@@ -387,6 +429,8 @@ public class RdBranchSelector implements ISelector {
 				branch.setRowId(resultSet.getString("row_id"));
 				
 				branch.isetOutNodePid(resultSet.getInt("out_node_pid"));
+				
+				branch.setMesh(meshId);
 				
 				branchs.add(branch);
 			}
@@ -415,7 +459,7 @@ public class RdBranchSelector implements ISelector {
 		
 		RdBranch branch = new RdBranch();
 		
-		String sql = "select * from rd_branch where in_link_pid=:1 and node_pid=:2 and out_link_pid=:3 and u_record!=2";
+		String sql = "select a.*,b.mesh_id from rd_branch a,rd_link b where a.in_link_pid=:1 and a.node_pid=:2 and a.out_link_pid=:3 and a.u_record!=2 and a.in_link_pid = b.link_pid ";
 		
 		if (isLock){
 			sql += " for update nowait";
@@ -437,7 +481,8 @@ public class RdBranchSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 			
 			if(resultSet.next()){
-
+				int meshId = resultSet.getInt("mesh_id");
+				
 				int id = resultSet.getInt("branch_pid");
 				
 				branch.setPid(resultSet.getInt("branch_pid"));
@@ -452,41 +497,67 @@ public class RdBranchSelector implements ISelector {
 						.getInt("relationship_type"));
 
 				branch.setRowId(resultSet.getString("row_id"));
+				
+				branch.setMesh(meshId);
 
 				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
 						conn);
 
 				branch.setDetails(detailSelector.loadRowsByParentId(id, isLock));
+				
+				for(IRow obj : branch.getDetails()){
+					obj.setMesh(meshId);
+				}
 
 				RdSignboardSelector signboardSelector = new RdSignboardSelector(
 						conn);
 
 				branch.setSignboards(signboardSelector.loadRowsByParentId(id,
 						isLock));
+				
+				for(IRow obj : branch.getSignboards()){
+					obj.setMesh(meshId);
+				}
 
 				RdSignasrealSelector signasrealSelector = new RdSignasrealSelector(
 						conn);
 
 				branch.setSignasreals(signasrealSelector.loadRowsByParentId(id,
 						isLock));
+				
+				for(IRow obj : branch.getSignasreals()){
+					obj.setMesh(meshId);
+				}
 
 				RdSeriesbranchSelector seriesbranchSelector = new RdSeriesbranchSelector(
 						conn);
 
 				branch.setSeriesbranches(seriesbranchSelector
 						.loadRowsByParentId(id, isLock));
+				
+				for(IRow obj : branch.getSeriesbranches()){
+					obj.setMesh(meshId);
+				}
 
 				RdBranchRealimageSelector realimageSelector = new RdBranchRealimageSelector(
 						conn);
 
 				branch.setRealimages(realimageSelector.loadRowsByParentId(id,
 						isLock));
+				
+				for(IRow obj : branch.getRealimages()){
+					obj.setMesh(meshId);
+				}
 
 				RdBranchSchematicSelector schematicSelector = new RdBranchSchematicSelector(
 						conn);
 
 				branch.setSchematics(schematicSelector.loadRowsByParentId(id,
 						isLock));
+				
+				for(IRow obj : branch.getSchematics()){
+					obj.setMesh(meshId);
+				}
 
 				RdBranchViaSelector viaSelector = new RdBranchViaSelector(conn);
 
@@ -520,7 +591,9 @@ public class RdBranchSelector implements ISelector {
 	{
 		List<RdBranch> branchs = new ArrayList<RdBranch>();
 		
-		String sql = "select * from rd_branch where node_pid = :1 and u_record!=2 ";
+//		String sql = "select * from rd_branch where node_pid = :1 and u_record!=2 ";
+		
+		String sql = "select a.*,b.mesh_id from rd_branch a,rd_link b where a.node_pid = :1 and a.u_record!=2 and a.in_link_pid=b.link_pid ";
 		
 		if (isLock){
 			sql += " for update nowait";
@@ -539,6 +612,8 @@ public class RdBranchSelector implements ISelector {
 			
 			while(resultSet.next()){
 				
+				int meshId = resultSet.getInt("mesh_id");
+				
 				RdBranch branch = new RdBranch();
 
 				branch.setPid(resultSet.getInt("branch_pid"));
@@ -553,6 +628,8 @@ public class RdBranchSelector implements ISelector {
 						.getInt("relationship_type"));
 
 				branch.setRowId(resultSet.getString("row_id"));
+				
+				branch.setMesh(meshId);
 
 				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
 						conn);
@@ -573,6 +650,8 @@ public class RdBranchSelector implements ISelector {
 
 				for (IRow row : branch.getSignboards()) {
 					RdSignboard obj = (RdSignboard) row;
+					
+					obj.setMesh(meshId);
 
 					branch.signboardMap.put(obj.getPid(), obj);
 				}
@@ -585,6 +664,8 @@ public class RdBranchSelector implements ISelector {
 
 				for (IRow row : branch.getSignasreals()) {
 					RdSignasreal obj = (RdSignasreal) row;
+					
+					obj.setMesh(meshId);
 
 					branch.signasrealMap.put(obj.getPid(), obj);
 				}
@@ -597,6 +678,8 @@ public class RdBranchSelector implements ISelector {
 
 				for (IRow row : branch.getSeriesbranches()) {
 					RdSeriesbranch obj = (RdSeriesbranch) row;
+					
+					obj.setMesh(meshId);
 
 					branch.seriesbranchMap.put(obj.rowId(), obj);
 				}
@@ -609,6 +692,8 @@ public class RdBranchSelector implements ISelector {
 
 				for (IRow row : branch.getRealimages()) {
 					RdBranchRealimage obj = (RdBranchRealimage) row;
+					
+					obj.setMesh(meshId);
 
 					branch.realimageMap.put(obj.rowId(), obj);
 				}
@@ -621,6 +706,8 @@ public class RdBranchSelector implements ISelector {
 
 				for (IRow row : branch.getSchematics()) {
 					RdBranchSchematic obj = (RdBranchSchematic) row;
+					
+					obj.setMesh(meshId);
 
 					branch.schematicMap.put(obj.getPid(), obj);
 				}
@@ -631,6 +718,8 @@ public class RdBranchSelector implements ISelector {
 
 				for (IRow row : branch.getVias()) {
 					RdBranchVia obj = (RdBranchVia) row;
+					
+					obj.setMesh(meshId);
 
 					branch.viaMap.put(obj.rowId(), obj);
 				}

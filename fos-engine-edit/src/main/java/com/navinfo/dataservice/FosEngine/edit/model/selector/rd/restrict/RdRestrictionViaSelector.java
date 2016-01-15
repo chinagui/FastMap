@@ -168,13 +168,22 @@ public class RdRestrictionViaSelector implements ISelector {
 
 		List<RdRestrictionVia> listVia = new ArrayList<RdRestrictionVia>();
 
-		String sql = "select a.*, b.s_node_pid, b.e_node_pid, d.node_pid in_node_pid   from rd_restriction_via    a,    "
+//		String sql = "select a.*, b.s_node_pid, b.e_node_pid, d.node_pid in_node_pid   from rd_restriction_via    a,    "
+//				+ "    rd_link               b,        rd_restriction        d,        "
+//				+ "rd_restriction_detail e  where a.link_pid = b.link_pid   "
+//				+ " and a.detail_id = e.detail_id    and e.restric_pid = d.pid  "
+//				+ "  and exists (select null           from rd_restriction_via c        "
+//				+ "  where link_pid = :1            "
+//				+ "and a.detail_id = c.detail_id)  order by a.detail_id, a.seq_num";
+		
+		
+		String sql = "select a.*, b.s_node_pid, b.e_node_pid, d.node_pid in_node_pid,f.mesh_id   from rd_restriction_via    a,    "
 				+ "    rd_link               b,        rd_restriction        d,        "
-				+ "rd_restriction_detail e  where a.link_pid = b.link_pid   "
+				+ "rd_restriction_detail e ,rd_link f where a.link_pid = b.link_pid   "
 				+ " and a.detail_id = e.detail_id    and e.restric_pid = d.pid  "
 				+ "  and exists (select null           from rd_restriction_via c        "
 				+ "  where link_pid = :1            "
-				+ "and a.detail_id = c.detail_id)  order by a.detail_id, a.seq_num";
+				+ "and a.detail_id = c.detail_id) and d.in_link_pid = f.link_pid order by a.detail_id, a.seq_num";
 
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 
@@ -235,6 +244,8 @@ public class RdRestrictionViaSelector implements ISelector {
 			via.isetsNodePid(resultSet.getInt("s_node_pid"));
 
 			via.isetInNodePid(resultSet.getInt("in_node_pid"));
+			
+			via.setMesh(resultSet.getInt("mesh_id"));
 
 			if (!isChanged) {
 				listVia.add(via);

@@ -9,9 +9,7 @@ import java.util.List;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ISelector;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranchVia;
-import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.FosEngine.edit.model.operator.rd.branch.RdBranchViaOperator;
-import com.navinfo.dataservice.FosEngine.edit.model.operator.rd.laneconnexity.RdLaneViaOperator;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 
 public class RdBranchViaSelector implements ISelector {
@@ -33,8 +31,8 @@ public class RdBranchViaSelector implements ISelector {
 
 		RdBranchVia via = new RdBranchVia();
 
-		String sql = "select * from " + via.tableName()
-				+ " where row_id=:1 and u_record!=2";
+		String sql = "select a.*,c.mesh_id from " + via.tableName()
+				+ " a,rd_branch b,rd_link c where a.row_id=hextoraw('" +rowId +"') and a.u_record!=2 and a.branch_pid = b.branch_pid and b.in_link_pid = c.link_pid ";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -46,8 +44,6 @@ public class RdBranchViaSelector implements ISelector {
 
 		try {
 			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setString(1, rowId);
 
 			resultSet = pstmt.executeQuery();
 
@@ -166,8 +162,8 @@ public class RdBranchViaSelector implements ISelector {
 
 		List<RdBranchVia> listVia = new ArrayList<RdBranchVia>();
 
-		String sql = "select a.*,b.s_node_pid,b.e_node_pid,c.node_pid in_node_pid from rd_branch_via a,rd_link b,rd_branch c" +
-				" where a.link_pid = b.link_pid and a.link_pid = :1 and a.branch_pid = c.branch_pid " +
+		String sql = "select a.*,b.s_node_pid,b.e_node_pid,c.node_pid in_node_pid,d.mesh_id from rd_branch_via a,rd_link b,rd_branch c,rd_link d " +
+				" where a.link_pid = b.link_pid and a.link_pid = :1 and a.branch_pid = c.branch_pid and c.in_link_pid = d.link_pid " +
 				" order by a.branch_pid,a.seq_num  ";
 		
 		if (isLock){
@@ -231,6 +227,8 @@ public class RdBranchViaSelector implements ISelector {
 			via.iseteNodePid(resultSet.getInt("e_node_pid"));
 
 			via.isetsNodePid(resultSet.getInt("s_node_pid"));
+			
+			via.setMesh(resultSet.getInt("mesh_id"));
 
 			if (!isChanged) {
 				listVia.add(via);

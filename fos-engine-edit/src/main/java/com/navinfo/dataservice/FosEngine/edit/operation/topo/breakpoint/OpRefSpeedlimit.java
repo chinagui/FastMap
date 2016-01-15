@@ -45,7 +45,7 @@ public class OpRefSpeedlimit implements IOperation {
 				rr.setLinkPid(command.getLink2().getPid());
 			}
 
-			changedFields.put("inLinkPid", inLinkPid);
+			changedFields.put("linkPid", inLinkPid);
 
 			result.insertObject(rr, ObjStatus.UPDATE);
 

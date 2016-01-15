@@ -165,13 +165,13 @@ public class RdSpeedlimitSelector implements ISelector {
 
 				limit.setRowId(resultSet.getString("row_id"));
 				
-				limit.setLinkPid(resultSet.getInt("linkPid"));
+				limit.setLinkPid(resultSet.getInt("link_pid"));
 				
 				limit.setDirect(resultSet.getInt("direct"));
 				
 				limit.setSpeedValue(resultSet.getInt("speed_value"));
 				
-				limit.setSpeedType(resultSet.getInt("speedType"));
+				limit.setSpeedType(resultSet.getInt("speed_type"));
 				
 				limit.setSpeedDependent(resultSet.getInt("speed_dependent"));
 				
@@ -306,13 +306,13 @@ public class RdSpeedlimitSelector implements ISelector {
 
 				limit.setRowId(resultSet.getString("row_id"));
 				
-				limit.setLinkPid(resultSet.getInt("linkPid"));
+				limit.setLinkPid(resultSet.getInt("link_pid"));
 				
 				limit.setDirect(resultSet.getInt("direct"));
 				
 				limit.setSpeedValue(resultSet.getInt("speed_value"));
 				
-				limit.setSpeedType(resultSet.getInt("speedType"));
+				limit.setSpeedType(resultSet.getInt("speed_type"));
 				
 				limit.setSpeedDependent(resultSet.getInt("speed_dependent"));
 				

@@ -175,7 +175,7 @@ public class RdBranchSelector implements ISelector {
 		return branch;
 	}
 
-	public IRow loadHighwayById(int id, boolean isLock) throws Exception {
+	public IRow loadByPidDetailId(int pid, int detailId, boolean isLock) throws Exception {
 
 		RdBranch branch = new RdBranch();
 
@@ -193,7 +193,7 @@ public class RdBranchSelector implements ISelector {
 		try {
 			pstmt = this.conn.prepareStatement(sql);
 
-			pstmt.setInt(1, id);
+			pstmt.setInt(1, pid);
 
 			resultSet = pstmt.executeQuery();
 
@@ -215,7 +215,13 @@ public class RdBranchSelector implements ISelector {
 				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
 						conn);
 				
-				branch.setDetails(detailSelector.loadRowsByParentId(id, isLock));
+				IRow detail = detailSelector.loadById(detailId, isLock);
+				
+				List<IRow> details = new ArrayList<IRow>();
+				
+				details.add(detail);
+				
+				branch.setDetails(details);
 
 				for (IRow row : branch.getDetails()) {
 					RdBranchDetail obj = (RdBranchDetail) row;
@@ -225,7 +231,7 @@ public class RdBranchSelector implements ISelector {
 
 				RdBranchViaSelector viaSelector = new RdBranchViaSelector(conn);
 
-				branch.setVias(viaSelector.loadRowsByParentId(id, isLock));
+				branch.setVias(viaSelector.loadRowsByParentId(pid, isLock));
 
 				for (IRow row : branch.getVias()) {
 					RdBranchVia obj = (RdBranchVia) row;
@@ -347,9 +353,9 @@ public class RdBranchSelector implements ISelector {
 				"where a.relationship_type = 2    and a.branch_pid = c.branch_pid    and a.out_link_pid = b.link_pid    and c.link_pid = d.link_pid " +
 				"   and (b.s_node_pid in (d.s_node_pid, d.e_node_pid) or        b.e_node_pid in (d.s_node_pid, d.e_node_pid))    and b.link_pid = :2    and a.u_record!=2 ";
 		
-		if (isLock){
-			sql += " for update nowait";
-		}
+//		if (isLock){
+//			sql += " for update nowait";
+//		}
 		
 		PreparedStatement pstmt = null;
 

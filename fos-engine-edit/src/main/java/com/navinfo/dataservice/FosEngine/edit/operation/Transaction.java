@@ -137,6 +137,12 @@ public class Transaction {
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdbranch.delete.Command(
 						json, requester);
 			}
+		case RDBRANCHDETAIL:
+			switch (operType) {
+			case DELETE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdbranchdetail.delete.Command(
+						json, requester);
+			}
 		case RDLANECONNEXITY:
 			switch (operType) {
 			case CREATE:
@@ -253,6 +259,12 @@ public class Transaction {
 						command);
 			case DELETE:
 				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdbranch.delete.Process(
+						command);
+			}
+		case RDBRANCHDETAIL:
+			switch (operType) {
+			case DELETE:
+				return new com.navinfo.dataservice.FosEngine.edit.operation.obj.rdbranchdetail.delete.Process(
 						command);
 			}
 		case RDLANECONNEXITY:

@@ -209,9 +209,9 @@ public class RdLaneTopologySelector implements ISelector {
 				"where a.relationship_type = 2    and a.u_record != 2    and a.out_link_pid = :2    and not exists (select null           from rd_lane_via c          where a.topology_id = c.topology_id)    and a.connexity_pid = d.pid union all select a.*,        case          when b.s_node_pid in (e.s_node_pid, e.e_node_pid) then           b.s_node_pid          else           b.e_node_pid        end out_node_pid   from rd_lane_topology a, rd_lane_via c, rd_link b, rd_link e  where a.relationship_type = 2    and a.u_record != 2    and a.out_link_pid = :3    and a.topology_id = c.topology_id    and a.out_link_pid = b.link_pid    and c.link_pid = e.link_pid    and" +
 				" (b.s_node_pid in (e.s_node_pid, e.e_node_pid) or        b.e_node_pid in (e.s_node_pid, e.e_node_pid)) ";
 		
-		if (isLock){
-			sql += " for update nowait ";
-		}
+//		if (isLock){
+//			sql += " for update nowait ";
+//		}
 		
 		PreparedStatement pstmt = null;
 

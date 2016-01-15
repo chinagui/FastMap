@@ -134,7 +134,7 @@ public class RdLaneConnexitySelector implements ISelector {
 	{
 		List<RdLaneConnexity> laneConns = new ArrayList<RdLaneConnexity>();
 		
-		String sql = "select * from rd_laneconnexity where in_link_pid = :1 and u_record!=2 ";
+		String sql = "select * from rd_lane_connexity where in_link_pid = :1 and u_record!=2 ";
 		
 		if (isLock){
 			sql += " for update nowait";
@@ -202,7 +202,7 @@ public class RdLaneConnexitySelector implements ISelector {
 	{
 		List<RdLaneConnexity> laneConns = new ArrayList<RdLaneConnexity>();
 		
-		String sql = "select * from rd_laneconnexity where node_pid = :1 and u_record!=2 ";
+		String sql = "select * from rd_lane_connexity where node_pid = :1 and u_record!=2 ";
 		
 		if (isLock){
 			sql += " for update nowait";

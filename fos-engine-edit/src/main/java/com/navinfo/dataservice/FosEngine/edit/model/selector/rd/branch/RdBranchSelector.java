@@ -35,7 +35,7 @@ public class RdBranchSelector implements ISelector {
 //		String sql = "select * from " + branch.tableName()
 //				+ " where branch_pid=:1 and u_record!=2";
 		
-		String sql = "select a.*,b.mesh from " + branch.tableName()
+		String sql = "select a.*,b.mesh_id from " + branch.tableName()
 				+ " a,rd_link b where a.branch_pid=:1 and a.u_record!=2 and a.in_link_pid = b.link_pid ";
 
 		if (isLock) {

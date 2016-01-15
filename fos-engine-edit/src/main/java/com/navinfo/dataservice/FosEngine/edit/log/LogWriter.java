@@ -84,7 +84,7 @@ public class LogWriter {
 		if (this.logOperation.getOpDt() == null) {
 			sb.append(",null");
 		} else {
-			sb.append(",'" + this.logOperation.getOpDt() + "'");
+			sb.append(",to_date('"+logOperation.getOpDt()+"','yyyymmddhh24miss')");
 		}
 
 		sb.append("," + this.logOperation.getOpSg());
@@ -129,7 +129,7 @@ public class LogWriter {
 		if (detail.getOpDt() == null) {
 			sb.append(",null");
 		} else {
-			sb.append(",'" + detail.getOpDt() + "'");
+			sb.append(",to_date('"+detail.getOpDt()+"','yyyymmddhh24miss')");
 		}
 
 		if (detail.getTbNm() == null) {

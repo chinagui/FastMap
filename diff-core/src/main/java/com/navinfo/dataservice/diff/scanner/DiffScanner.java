@@ -2,7 +2,7 @@ package com.navinfo.dataservice.diff.scanner;
 
 import java.util.List;
 
-import com.navinfo.dataservice.diff.dataaccess.Table;
+import com.navinfo.dataservice.diff.config.Table;
 import com.navinfo.dataservice.diff.exception.DiffException;
 
 /**

@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.diff.dataaccess;
 
 import com.navinfo.dataservice.datahub.model.OracleSchema;
+import com.navinfo.dataservice.diff.config.Table;
+
 import java.util.List;
 
 /**
@@ -16,6 +18,6 @@ public class LocalDataAccess implements DataAccess
     @Override
     public String accessTable(Table table)
     {
-        return table.getTableName();
+        return table.getName();
     }
 }

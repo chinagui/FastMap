@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.diff.dataaccess;
 
 import com.navinfo.dataservice.datahub.model.OracleSchema;
+import com.navinfo.dataservice.diff.config.Table;
 
 import java.util.List;
 
@@ -21,6 +22,6 @@ public class CrossSchemaDataAccess implements DataAccess
     @Override
     public String accessTable(Table table)
     {
-    	return schema.getDbUserName()+"."+table.getTableName();
+    	return schema.getDbUserName()+"."+table.getName();
     }
 }

@@ -51,6 +51,7 @@ public class ScriptsInterface {
 	}
 	public JSONObject exportData(JSONObject request)throws Exception{
 		ExportConfig expConfig = new ExportConfig(request);
+		
 		Exporter exporter = null;
 		if(ExportConfig.MODE_FULL_COPY.equals(expConfig.getExportMode())){
 			exporter = new Exporter2OracleByFullCopy(expConfig);

@@ -18,6 +18,7 @@
 		<module>solr-core</module>
 		<module>datahub-web</module>
 		<module>diff-core</module>
+    <module>scripts-interface</module>
   </modules>
 
     <packaging>pom</packaging>

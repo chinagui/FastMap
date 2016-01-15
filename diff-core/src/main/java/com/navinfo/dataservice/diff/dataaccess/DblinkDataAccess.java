@@ -2,6 +2,8 @@ package com.navinfo.dataservice.diff.dataaccess;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.diff.config.Table;
+
 
 /**
  * @author arnold

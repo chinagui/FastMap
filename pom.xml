@@ -18,7 +18,7 @@
 		<module>solr-core</module>
 		<module>datahub-web</module>
 		<module>diff-core</module>
-    <module>scripts-interface</module>
+		<module>scripts-interface</module>
   </modules>
 
     <packaging>pom</packaging>
@@ -602,6 +602,19 @@
             <dependency>
 				<groupId>com.navinfo.dataservice</groupId>
 				<artifactId>solr-core</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>diff-core</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			
+			
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>scripts-interface</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 			<!-- dataservice module start -->

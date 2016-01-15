@@ -30,6 +30,10 @@
 	</dependency>
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>diff-core</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>datahub</artifactId>
 	</dependency>
 	<dependency>

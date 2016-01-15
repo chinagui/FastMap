@@ -2,18 +2,16 @@ package com.navinfo.dataservice.diff.config;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import net.sf.json.JSONObject;
 
 import org.dom4j.Document;
 
+
 import com.navinfo.dataservice.commons.job.AbstractJobRequest;
 import com.navinfo.dataservice.commons.job.JobRuntimeException;
+import com.navinfo.dataservice.commons.log.JobLogger;
 
 /**
  * @author arnold
@@ -33,6 +31,22 @@ public class DiffConfig extends AbstractJobRequest
     private String level = LEVEL_COLUMN; //差分粒度：表级，
     public static final String LEVEL_TABLE = "table";
     public static final String LEVEL_COLUMN = "column";
+    
+    public DiffConfig() {
+		super();
+		log = JobLogger.getLogger(log);
+	}
+    public DiffConfig(Document xmlConfig){
+    	super();
+		log = JobLogger.getLogger(log);
+    	this.parseByXmlConfig(xmlConfig);
+    }
+    public DiffConfig(JSONObject jsonConfig){
+    	super();
+		log = JobLogger.getLogger(log);
+    	this.parseByJsonConfig(jsonConfig);
+    }
+    
 	public String getGdbVersion() {
 		return gdbVersion;
 	}

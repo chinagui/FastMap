@@ -18,6 +18,7 @@ import org.apache.commons.io.IOUtils;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.UnifiedDb;
+import com.navinfo.dataservice.diff.config.DiffConfig;
 import com.navinfo.dataservice.expcore.Exporter;
 import com.navinfo.dataservice.expcore.Exporter2OracleByFullCopy;
 import com.navinfo.dataservice.expcore.Exporter2OracleByScripts;
@@ -32,9 +33,9 @@ import com.navinfo.navicommons.utils.StringUtils;
  * @date 2015-12-29 下午4:35:05 
  * @Description: TODO
  */
-public class ScriptsInterface {
+public class ToolScriptsInterface {
 	protected BasicDataSource manDataSource;
-	public ScriptsInterface(BasicDataSource manDataSource){
+	public ToolScriptsInterface(BasicDataSource manDataSource){
 		this.manDataSource=manDataSource;
 	}
 	public JSONObject createDb(JSONObject request)throws Exception{
@@ -63,6 +64,12 @@ public class ScriptsInterface {
 			exporter = new Exporter2OracleByScripts(expConfig);
 		}
 		ExporterResult result = exporter.execute();
+		JSONObject response = new JSONObject();
+		return response;
+	}
+	public JSONObject diff(JSONObject request)throws Exception{
+		DiffConfig expConfig = new DiffConfig(request);
+		//
 		JSONObject response = new JSONObject();
 		return response;
 	}
@@ -106,7 +113,7 @@ public class ScriptsInterface {
 				System.out.println("ERROR:need args:-itype xxx");
 				return;
 			}
-			ScriptsInterface face = new ScriptsInterface(MultiDataSourceFactory.getInstance().getManDataSource());
+			ToolScriptsInterface face = new ToolScriptsInterface(MultiDataSourceFactory.getInstance().getManDataSource());
 			JSONObject request=null;
 			JSONObject response = null;
 			String dir = "F:\\Fm_Projects_Doc\\scripts\\";

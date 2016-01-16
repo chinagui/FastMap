@@ -29,4 +29,7 @@ public class DbType {
 	public static final String DB_COL_AD_FACE= "colADFace";
 	public static final String DB_COL_EXCEPTION = "colException";
 	public static final String DB_DATA_GDBCHANGE = "dbDataGdbChange";
+	
+	public static final String DB_PRJ_ROAD = "prjRoad";
+	public static final String DB_COP_VERSION_ROAD = "copVersionRoad";
 }

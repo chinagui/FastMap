@@ -22,6 +22,7 @@ import com.navinfo.dataservice.datahub.model.DbServer;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /** 
+ * 还未完全支持
  * @ClassName: ByProvinceStrategy 
  * @author Xiao Xiaowen 
  * @date 2015-12-1 上午10:07:19 

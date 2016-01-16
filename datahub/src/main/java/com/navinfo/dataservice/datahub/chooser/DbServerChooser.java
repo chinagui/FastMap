@@ -44,7 +44,7 @@ public class DbServerChooser implements Observer{
 			List<DbServer> dbServerList = dbServerMan.loadDbServers();
 			if(dbServerList!=null){
 				for(DbServer server:dbServerList){
-					Set<String> types = server.getUseType();
+					Set<String> types = server.getBizType();
 					for(String type:types){
 						if(dbServerMap.keySet().contains(type)){
 							List<DbServer> dbSerList = dbServerMap.get(type);
@@ -62,14 +62,14 @@ public class DbServerChooser implements Observer{
 			log.warn("******重要：加载DbServer表出现错误，需检查错误，重新启动服务。******");
 		}
 	}
-	public DbServer getOnlyOneDbServer(String useType)throws DataHubException{
+	public DbServer getOnlyOneDbServer(String bizType)throws DataHubException{
 		if("true".equals(SystemConfig.getSystemConfig().getValue("dbserver.cache.enable"))){
-			List<DbServer> serList = dbServerMap.get(useType);
+			List<DbServer> serList = dbServerMap.get(bizType);
 			if(serList==null||serList.isEmpty()){
-				throw new DataHubException("db server表中未配置该use type："+useType+",无法获取该类型的db server");
+				throw new DataHubException("db server表中未配置该use type："+bizType+",无法获取该类型的db server");
 			}
 			if(serList.size()>1){
-				throw new DataHubException("useType："+useType+"所配置的server不唯一，不能使用唯一查询或者是db server表配置错误。");
+				throw new DataHubException("useType："+bizType+"所配置的server不唯一，不能使用唯一查询或者是db server表配置错误。");
 			}else{
 				return serList.get(0);
 			}
@@ -78,15 +78,15 @@ public class DbServerChooser implements Observer{
 			return null;
 		}
 	}
-	public DbServer getPriorDbServer(String useType,String strategyType,Map<String,String> strategyParamMap)throws DataHubException{
+	public DbServer getPriorDbServer(String bizType,String strategyType,Map<String,String> strategyParamMap)throws DataHubException{
 		if("true".equals(SystemConfig.getSystemConfig().getValue("dbserver.cache.enable"))){
-			List<DbServer> serList = dbServerMap.get(useType);
+			List<DbServer> serList = dbServerMap.get(bizType);
 			if(serList==null||serList.isEmpty()){
-				throw new DataHubException("db server表中未配置该use type："+useType+",无法获取该类型的db server");
+				throw new DataHubException("db server表中未配置该use type："+bizType+",无法获取该类型的db server");
 			}
 			return DbServerStrategyFactory.getInstance().create(strategyType).getPriorDbServer(serList,strategyParamMap);
 		}else{
-			return DbServerStrategyFactory.getInstance().create(strategyType).getPriorDbServer(useType,strategyParamMap);
+			return DbServerStrategyFactory.getInstance().create(strategyType).getPriorDbServer(bizType,strategyParamMap);
 		}
 	}
 	@Override

@@ -15,7 +15,7 @@ public class DbServer {
 	private String ip;
 	private int port;
 	private String serviceName;
-	private Set<String> useType;
+	private Set<String> bizType;
 	private String descp;
 	
 	private String identity;//ip:port
@@ -60,11 +60,11 @@ public class DbServer {
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;
 	}
-	public Set<String> getUseType() {
-		return useType;
+	public Set<String> getBizType() {
+		return bizType;
 	}
-	public void setUseType(Set<String> useType) {
-		this.useType = useType;
+	public void setBizType(Set<String> bizType) {
+		this.bizType = bizType;
 	}
 	public String getDescp() {
 		return descp;

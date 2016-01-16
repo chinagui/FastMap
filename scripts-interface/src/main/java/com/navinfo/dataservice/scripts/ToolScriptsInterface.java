@@ -15,6 +15,7 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
+import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.UnifiedDb;
@@ -34,11 +35,7 @@ import com.navinfo.navicommons.utils.StringUtils;
  * @Description: TODO
  */
 public class ToolScriptsInterface {
-	protected BasicDataSource manDataSource;
-	public ToolScriptsInterface(BasicDataSource manDataSource){
-		this.manDataSource=manDataSource;
-	}
-	public JSONObject createDb(JSONObject request)throws Exception{
+	public static JSONObject createDb(JSONObject request)throws Exception{
 		JSONObject response = new JSONObject();
 		String name = (String)request.get("name");
 		String type = (String)request.get("type");
@@ -54,7 +51,7 @@ public class ToolScriptsInterface {
 		response.put("dbId", String.valueOf(db.getDbId()));
 		return response;
 	}
-	public JSONObject exportData(JSONObject request)throws Exception{
+	public static JSONObject exportData(JSONObject request)throws Exception{
 		ExportConfig expConfig = new ExportConfig(request);
 		
 		Exporter exporter = null;
@@ -67,7 +64,7 @@ public class ToolScriptsInterface {
 		JSONObject response = new JSONObject();
 		return response;
 	}
-	public JSONObject diff(JSONObject request)throws Exception{
+	public static JSONObject diff(JSONObject request)throws Exception{
 		DiffConfig expConfig = new DiffConfig(request);
 		//
 		JSONObject response = new JSONObject();
@@ -108,22 +105,21 @@ public class ToolScriptsInterface {
 			        map.put(args[i], args[i+1]);
 		    }
 			String itype = map.get("itype");
-			itype = "export_data";
+			itype = "create_db";
 			if(StringUtils.isEmpty(itype)){
 				System.out.println("ERROR:need args:-itype xxx");
 				return;
 			}
-			ToolScriptsInterface face = new ToolScriptsInterface(MultiDataSourceFactory.getInstance().getManDataSource());
 			JSONObject request=null;
 			JSONObject response = null;
-			String dir = "F:\\Fm_Projects_Doc\\scripts\\";
+			String dir = SystemConfig.getSystemConfig().getValue("scripts.dir");
 			if("create_db".equals(itype)){
 				request = readJson(dir+"request"+File.separator+"create_db.json");
-				response = face.createDb(request);
+				response = ToolScriptsInterface.createDb(request);
 				writeJson(response,dir+"response"+File.separator+"create_db.json");
 			}else if("export_data".equals(itype)){
 				request = readJson(dir+"request"+File.separator+"export_data.json");
-				response = face.exportData(request);
+				response = ToolScriptsInterface.exportData(request);
 				writeJson(response,dir+"response"+File.separator+"export_data.json");
 			}else{
 				System.out.println("ERROR:need arg -itype");

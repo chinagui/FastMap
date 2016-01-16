@@ -32,7 +32,7 @@ public class DbServerManager {
 		Connection conn = null;
 		try{
 			//如果useType的set为空，则忽略该server
-			String sql = "select s.SERVER_ID,s.SERVER_TYPE,s.SERVER_IP,s.SERVER_PORT,s.SERVICE_NAME,s.USE_TYPE from unified_db_server s";
+			String sql = "select s.SERVER_ID,s.SERVER_TYPE,s.SERVER_IP,s.SERVER_PORT,s.SERVICE_NAME,s.BIZ_TYPE from db_server s";
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
 			return run.query(conn, sql, new ResultSetHandler<List<DbServer>>(){
@@ -43,11 +43,11 @@ public class DbServerManager {
 					while(rs.next()){
 						DbServer ser = new DbServer(rs.getString("SERVER_TYPE"),rs.getString("SERVER_IP"),rs.getInt("SERVER_PORT"),rs.getString("SERVICE_NAME"));
 						ser.setSid(rs.getInt("SERVER_ID"));
-						String useTypes = rs.getString("USE_TYPE");
-						if(StringUtils.isNotEmpty(useTypes)){
-							Set<String> useSet = new HashSet<String>();
-							CollectionUtils.addAll(useSet, useTypes.split(","));
-							ser.setUseType(useSet);
+						String bizTypes = rs.getString("BIZ_TYPE");
+						if(StringUtils.isNotEmpty(bizTypes)){
+							Set<String> bizSet = new HashSet<String>();
+							CollectionUtils.addAll(bizSet, bizTypes.split(","));
+							ser.setBizType(bizSet);
 							sers.add(ser);
 						}else{
 							log.warn("**********注意**********");

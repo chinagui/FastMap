@@ -65,7 +65,7 @@ public class MeshLockManager {
 				meshInClause = " MESH_ID IN ("+StringUtils.collection2String(meshes, ",")+")";
 			}
 			StringBuffer sqlBuf = new StringBuffer();
-			sqlBuf.append("SELECT MESH_ID FROM FM_MESH WHERE");
+			sqlBuf.append("SELECT MESH_ID FROM MESH WHERE");
 			sqlBuf.append(meshInClause);
 			sqlBuf.append(" AND (HANDLE_PROJECT_ID <> ? OR LOCK_STATUS=1)");
 			

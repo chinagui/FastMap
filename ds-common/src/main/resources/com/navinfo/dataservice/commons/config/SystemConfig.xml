@@ -9,14 +9,16 @@
 	<MAN.jdbc.url>jdbc:oracle:thin:@192.168.4.131:1521/orcl</MAN.jdbc.url>
 	<MAN.dataSource.validationQuery>select 1 from dual</MAN.dataSource.validationQuery>
 	
-	<MAN.jdbc.username>pmdb1</MAN.jdbc.username>
-	<MAN.jdbc.password>pmdb1</MAN.jdbc.password>
+	<MAN.jdbc.username>pm_xxw</MAN.jdbc.username>
+	<MAN.jdbc.password>pm_xxw</MAN.jdbc.password>
 	<MAN.dataSource.initialSize>2</MAN.dataSource.initialSize>
 	<MAN.dataSource.maxActive>25</MAN.dataSource.maxActive>
 	<MAN.dataSource.maxIdle>10</MAN.dataSource.maxIdle>
 	<MAN.dataSource.minIdle>2</MAN.dataSource.minIdle>
 	<MAN.dataSource.maxWait>1000</MAN.dataSource.maxWait>
 	
+<!-- scripts interface part -->
+	<scripts.dir>F:\\Fm_Projects_Doc\\scripts\\</scripts.dir>
 <!-- datahub part -->	
 	<!-- 数据库服务器默认选择策略，random,只能配置不需要传参的策略类型 -->
 	<dbserver.strategy.default>random</dbserver.strategy.default>

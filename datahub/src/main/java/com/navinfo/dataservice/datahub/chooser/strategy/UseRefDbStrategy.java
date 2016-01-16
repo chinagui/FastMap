@@ -44,16 +44,16 @@ public class UseRefDbStrategy extends DbServerStrategy{
 	 * @see com.navinfo.dataservice.datahub.chooser.strategy.DbServerStrategy#getPriorDbServer(java.util.Map)
 	 */
 	@Override
-	public DbServer getPriorDbServer(String useType,Map<String, String> params)
+	public DbServer getPriorDbServer(String bizType,Map<String, String> params)
 			throws DataHubException {
 		if(params==null
 				||StringUtils.isEmpty(params.get("refDbName"))
-				||StringUtils.isEmpty(params.get("refDbType"))){
+				||StringUtils.isEmpty(params.get("refBizType"))){
 			throw new DataHubException("必须传入参考库的名称和类型，否则无法选择服务器。");
 		}
 		Connection conn = null;
 		try{
-			String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.service_name,s.server_type FROM unified_db_server s,unified_db d WHERE s.server_id=d.SERVER_ID and s.use_type like ? and d.db_name=? and d.db_type=?";
+			String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.service_name,s.server_type FROM db_server s,db_hub d WHERE s.server_id=d.SERVER_ID and s.biz_type like ? and d.db_name=? and d.biz_type=?";
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
 			DbServer db = run.query(conn, sql,new ResultSetHandler<DbServer>(){
@@ -72,7 +72,7 @@ public class UseRefDbStrategy extends DbServerStrategy{
 					return inDb;
 				}
 				
-			}, "%"+useType+"%", params.get("refDbName"),params.get("refDbType"));
+			}, "%"+bizType+"%", params.get("refDbName"),params.get("refBizType"));
 			return db;
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

@@ -79,7 +79,7 @@ public class ExpSQL {
 
 
     public boolean isDML() {
-    	if(sql.contains("@")) return false;
+    	//if(sql.contains("@")) return false;//如果含有dblink，那么是从源上拷贝数据，需要在目标上执行
         return sql.toUpperCase().startsWith("INSERT") || sql.toUpperCase().startsWith("DELETE")
                 || sql.toUpperCase().startsWith("UPDATE");
     }

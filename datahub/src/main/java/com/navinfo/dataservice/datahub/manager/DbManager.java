@@ -36,26 +36,26 @@ import com.navinfo.navicommons.utils.StringUtils;
  */
 public class DbManager {
 	protected Logger log = Logger.getLogger(this.getClass());
-	
-	public UnifiedDb createDb(String dbType,String descp)throws DataHubException{
-		return createDb(null, dbType, descp, null, null,null);
+	protected String mainSql = "SELECT D.DB_ID,D.DB_NAME,D.DB_USER_NAME,D.DB_USER_PASSWD,D.DB_ROLE,D.BIZ_TYPE,D.TABLESPACE_NAME,D.GDB_VERSION,D.DB_STATUS,D.CREATE_TIME,D.DESCP,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME FROM DB_HUB D,DB_SERVER S ";
+	public UnifiedDb createDb(String bizType,String descp)throws DataHubException{
+		return createDb(null, bizType, descp, null, null,null);
 	}
-	public UnifiedDb createDb(String dbName,String dbType,String descp)throws DataHubException{
-		return createDb(dbName, dbType, descp, null, null,null);
+	public UnifiedDb createDb(String dbName,String bizType,String descp)throws DataHubException{
+		return createDb(dbName, bizType, descp, null, null,null);
 	}
-	public UnifiedDb createDb(String dbName,String dbType,String descp,String gdbVersion)throws DataHubException{
-		return createDb(dbName, dbType, descp, null, null,gdbVersion);
+	public UnifiedDb createDb(String dbName,String bizType,String descp,String gdbVersion)throws DataHubException{
+		return createDb(dbName, bizType, descp, null, null,gdbVersion);
 	}
-	public UnifiedDb createDb(String dbName,String dbType,String descp,String strategyType,Map<String,String> strategyParamMap)throws DataHubException{
-		return createDb(dbName, dbType, descp, null, null,null);
+	public UnifiedDb createDb(String dbName,String bizType,String descp,String strategyType,Map<String,String> strategyParamMap)throws DataHubException{
+		return createDb(dbName, bizType, descp, null, null,null);
 	}
-	public UnifiedDb createDb(String dbName,String dbType,String descp,String strategyType,Map<String,String> strategyParamMap,String gdbVersion)throws DataHubException{
+	public UnifiedDb createDb(String dbName,String bizType,String descp,String strategyType,Map<String,String> strategyParamMap,String gdbVersion)throws DataHubException{
 		UnifiedDb db = null;
 		Connection conn = null;
 		int dbId = 0;
 		QueryRunner run = new QueryRunner();
 		try{
-			String checkSql = "select count(1) from unified_db where create_status<3 and db_name=? and db_type=?";
+			String checkSql = "select count(1) from db_hub where db_status>0 and db_name=? and biz_type=?";
 			DbServer server = null;
 			synchronized(DbManager.class){
 				conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
@@ -63,7 +63,7 @@ public class DbManager {
 					dbName="VM_" + RandomUtil.nextString(10);
 				}else{
 					//验证同类型是否已经存在
-					int count = run.queryForInt(conn, checkSql, dbName,dbType);
+					int count = run.queryForInt(conn, checkSql, dbName,bizType);
 					if(count>0){
 						throw new DataHubException("数据库已经存在，不能重复创建。");
 					}
@@ -72,18 +72,18 @@ public class DbManager {
 				if(StringUtils.isEmpty(strategyType)){
 					strategyType = SystemConfig.getSystemConfig().getValue("dbserver.strategy.default");
 				}
-				server = DbServerChooser.getInstance().getPriorDbServer(dbType,strategyType,strategyParamMap);
+				server = DbServerChooser.getInstance().getPriorDbServer(bizType,strategyType,strategyParamMap);
 				//写入记录
-				String insSql = "insert into unified_db(db_id,db_name,db_user_name,db_user_passwd,db_role,db_type,gdb_version,server_id,CREATE_STATUS,create_time,descp)" +
+				String insSql = "insert into db_hub(db_id,db_name,db_user_name,db_user_passwd,db_role,biz_type,gdb_version,server_id,db_status,create_time,descp)" +
 						"values(DB_SEQ.nextval,?,?,?,0,?,?,?,1,sysdate,?)";
-				run.update(conn, insSql, dbName,dbName,dbName,dbType,gdbVersion,server.getSid(),descp);
+				run.update(conn, insSql, dbName,dbName,dbName,bizType,gdbVersion,server.getSid(),descp);
 				conn.commit();
 			}
 			dbId = run.queryForInt(conn, "SELECT DB_SEQ.CURRVAL FROM DUAL");
 			//由工厂去创建
-			db = UnifiedDbFactory.getInstance().create(dbId,dbName, dbType, gdbVersion, server);
+			db = UnifiedDbFactory.getInstance().create(dbId,dbName, bizType, gdbVersion, server);
 			//创建完成，更新db状态
-			String updateSql = "UPDATE UNIFIED_DB SET TABLESPACE_NAME=?,CREATE_STATUS=2 WHERE DB_ID=?";
+			String updateSql = "UPDATE DB_HUB SET TABLESPACE_NAME=?,DB_STATUS=2 WHERE DB_ID=?";
 			run.update(conn, updateSql,db.getTablespaceName(),db.getDbId());
 			return db;
 		}catch (Exception e) {
@@ -102,7 +102,7 @@ public class DbManager {
 		Connection conn = null;
 		try{
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
-			String errSql = "UPDATE UNIFIED_DB SET CREATE_STATUS=? WHERE DB_ID=?";
+			String errSql = "UPDATE DB_HUB SET DB_STATUS=? WHERE DB_ID=?";
 			log.debug(errSql);
 			new QueryRunner().update(conn, errSql,status,dbId);
 			conn.commit();
@@ -117,8 +117,7 @@ public class DbManager {
 		UnifiedDb db=null;
 		Connection conn = null;
 		try{
-			String sql = "select D.DB_ID,D.DB_NAME,D.DB_USER_NAME,D.DB_USER_PASSWD,D.DB_ROLE,D.DB_TYPE,D.TABLESPACE_NAME,D.GDB_VERSION,D.CREATE_STATUS,D.CREATE_TIME,D.DESCP,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME" +
-					" from UNIFIED_DB D,UNIFIED_DB_SERVER S where D.SERVER_ID=S.SERVER_ID AND D.DB_NAME=? AND D.DB_TYPE=?";
+			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND D.DB_NAME=? AND D.BIZ_TYPE=?";
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
 			db = run.query(conn,sql, new DbResultSetHandler(false),dbName,dbType);
@@ -139,8 +138,7 @@ public class DbManager {
 		UnifiedDb db=null;
 		Connection conn = null;
 		try{
-			String sql = "select D.DB_ID,D.DB_NAME,D.DB_USER_NAME,D.DB_USER_PASSWD,D.DB_ROLE,D.DB_TYPE,D.TABLESPACE_NAME,D.GDB_VERSION,D.CREATE_STATUS,D.CREATE_TIME,D.DESCP,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME" +
-					" from UNIFIED_DB D,UNIFIED_DB_SERVER S where D.SERVER_ID=S.SERVER_ID AND D.DB_ID=?";
+			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND D.DB_ID=?";
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
 			db = run.query(conn,sql, new DbResultSetHandler(false),dbId);
@@ -161,8 +159,7 @@ public class DbManager {
 		UnifiedDb db=null;
 		Connection conn = null;
 		try{
-			String sql = "select D.DB_ID,D.DB_NAME,D.DB_USER_NAME,D.DB_USER_PASSWD,D.DB_ROLE,D.DB_TYPE,D.TABLESPACE_NAME,D.GDB_VERSION,D.CREATE_STATUS,D.CREATE_TIME,D.DESCP,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME" +
-					" from UNIFIED_DB D,UNIFIED_DB_SERVER S where D.SERVER_ID=S.SERVER_ID AND D.DB_NAME=?";
+			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND D.DB_NAME=?";
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
 			db = run.query(conn,sql, new DbResultSetHandler(true),dbName);
@@ -179,15 +176,14 @@ public class DbManager {
 		}
 		return db;
 	}
-	public UnifiedDb getOnlyDbByType(String dbType)throws DataHubException{
+	public UnifiedDb getOnlyDbByType(String bizType)throws DataHubException{
 		UnifiedDb db=null;
 		Connection conn = null;
 		try{
-			String sql = "select D.DB_ID,D.DB_NAME,D.DB_USER_NAME,D.DB_USER_PASSWD,D.DB_ROLE,D.DB_TYPE,D.TABLESPACE_NAME,D.GDB_VERSION,D.CREATE_STATUS,D.CREATE_TIME,D.DESCP,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME" +
-					" from UNIFIED_DB D,UNIFIED_DB_SERVER S where D.SERVER_ID=S.SERVER_ID AND D.DB_TYPE=?";
+			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND D.BIZ_TYPE=?";
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
-			db = run.query(conn,sql, new DbResultSetHandler(true),dbType);
+			db = run.query(conn,sql, new DbResultSetHandler(true),bizType);
 			
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -212,14 +208,12 @@ public class DbManager {
 		UnifiedDb db=null;
 		Connection conn = null;
 		try{
-			String sql = "select D.DB_ID,D.DB_NAME,D.DB_USER_NAME,D.DB_USER_PASSWD,D.DB_ROLE,D.DB_TYPE,D.TABLESPACE_NAME,D.GDB_VERSION,D.CREATE_STATUS,D.CREATE_TIME,D.DESCP,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME" +
-					" from UNIFIED_DB D,UNIFIED_DB_SERVER S where D.SERVER_ID=S.SERVER_ID AND D.DB_TYPE=? AND D.SERVER_ID=? AND D.DB_ROLE=1";
+			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND D.BIZ_TYPE=? AND D.SERVER_ID=? AND D.DB_ROLE=1";
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
-			db = run.query(conn,sql, new DbResultSetHandler(false),normalDb.getDbType(),normalDb.getDbServer().getSid());
+			db = run.query(conn,sql, new DbResultSetHandler(false),normalDb.getBizType(),normalDb.getDbServer().getSid());
 			if(db==null){
-				sql = "select D.DB_ID,D.DB_NAME,D.DB_USER_NAME,D.DB_USER_PASSWD,D.DB_ROLE,D.DB_TYPE,D.TABLESPACE_NAME,D.GDB_VERSION,D.CREATE_STATUS,D.CREATE_TIME,D.DESCP,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME" +
-						" from UNIFIED_DB D,UNIFIED_DB_SERVER S where D.SERVER_ID=S.SERVER_ID AND D.SERVER_ID=? AND D.DB_ROLE=1";
+				sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND D.SERVER_ID=? AND D.DB_ROLE=1";
 				db = run.query(conn,sql, new DbResultSetHandler(false),normalDb.getDbServer().getSid());
 			}
 		}catch (Exception e) {
@@ -240,7 +234,8 @@ public class DbManager {
 //			String conString = dbMan.getDbConnectStrByPid(1L);
 //			System.out.println(conString);
 //			System.out.println(RandomUtil.nextString(8));
-			UnifiedDb db = dbMan.createDb("TEMP_TJ_01", "projectDbRoad", "4TEST","240+");
+			//UnifiedDb db = dbMan.createDb("TEMP_BJ_01", "prjRoad", "4TEST","240+");
+			UnifiedDb db = dbMan.getDbByName("TEMP_BJ_01","prjRoad");
 			System.out.println(db.getConnectParam());
 			
 		}catch(Exception e){
@@ -269,8 +264,8 @@ public class DbManager {
 						 .newdb(rs.getInt("DB_ID"),rs.getString("DB_NAME")
 								 ,rs.getString("DB_USER_NAME"),rs.getString("DB_USER_PASSWD")
 								 ,rs.getInt("DB_ROLE"),rs.getString("TABLESPACE_NAME")
-								 ,rs.getString("DB_TYPE"),server
-								 ,rs.getString("GDB_VERSION"),rs.getInt("CREATE_STATUS")
+								 ,rs.getString("BIZ_TYPE"),server
+								 ,rs.getString("GDB_VERSION"),rs.getInt("DB_STATUS")
 								 ,rs.getTimestamp("CREATE_TIME"),rs.getString("DESCP"));
 			 }
 			if(checkCount&&rs.next()){

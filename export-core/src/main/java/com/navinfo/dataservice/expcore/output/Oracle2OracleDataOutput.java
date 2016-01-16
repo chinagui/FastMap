@@ -75,8 +75,6 @@ public class Oracle2OracleDataOutput extends AbstractDataOutput {
 			String reNameTo,
 			List<ColumnMetaData> tmdList) throws Exception{
 		if(expConfig.getCheckExistTables()!=null&&expConfig.getCheckExistTables().contains(tableName)){
-			this.doInsert(rs, tableName, reNameTo, tmdList);
-		}else{
 			if(ExportConfig.WHEN_EXIST_IGNORE.equals(expConfig.getWhenExist())){
 				this.doMergeOnlyInsert(rs, tableName, reNameTo, tmdList);
 			}else if(ExportConfig.WHEN_EXIST_OVERWRITE.equals(expConfig.getWhenExist())){
@@ -84,6 +82,8 @@ public class Oracle2OracleDataOutput extends AbstractDataOutput {
 			}else{
 				throw new Exception("导出参数中配置了检查是否已存在的表(checkExistTables)，但未配置已存在如何操作(whenExist)。");
 			}
+		}else{
+			this.doInsert(rs, tableName, reNameTo, tmdList);
 		}
 	}
 

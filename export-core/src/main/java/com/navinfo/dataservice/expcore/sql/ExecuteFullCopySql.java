@@ -17,7 +17,7 @@ import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.expcore.config.ExportConfig;
 import com.navinfo.dataservice.expcore.exception.ExportException;
-import com.navinfo.dataservice.expcore.sql.handler.DDLExecThreadHandler;
+import com.navinfo.dataservice.expcore.sql.handler.DMLExecThreadHandler;
 
 /** 
  * @ClassName: ExecuteFullCopySql 
@@ -69,7 +69,7 @@ public class ExecuteFullCopySql {
 				// log.debug(sqlprocess.getSql());
 				// 执行sql
 
-				Runnable handler = new DDLExecThreadHandler(executeDoneSignal, expSQL, dataSource, ctx);
+				Runnable handler = new DMLExecThreadHandler(executeDoneSignal, expSQL, dataSource, ctx);
 				threadPoolExecutor.execute(handler);
 
 			}

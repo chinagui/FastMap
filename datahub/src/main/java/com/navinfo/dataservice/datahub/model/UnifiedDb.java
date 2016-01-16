@@ -26,9 +26,9 @@ public abstract class UnifiedDb {
 	protected String dbUserPasswd;
 	protected int dbRole=0;
 	protected String tablespaceName;
-	protected String dbType;
+	protected String bizType;
 	protected String gdbVersion;
-	protected int createStatus;
+	protected int dbStatus;
 	protected Date createTime;
 	protected String descp;
 	protected DbServer dbServer;
@@ -39,27 +39,27 @@ public abstract class UnifiedDb {
 	@XStreamOmitField
 	protected BasicDataSource bds;
 
-	public UnifiedDb(int dbId,String dbName,String dbType,String gdbVersion
-			,DbServer dbServer,int createStatus){
+	public UnifiedDb(int dbId,String dbName,String bizType,String gdbVersion
+			,DbServer dbServer,int dbStatus){
 		this.dbId=dbId;
 		this.dbName=dbName;
-		this.dbType=dbType;
+		this.bizType=bizType;
 		this.dbServer=dbServer;
 		this.gdbVersion=gdbVersion;
-		this.createStatus=createStatus;
+		this.dbStatus=dbStatus;
 	}
-	public UnifiedDb(int dbId,String dbName,String dbUserName,String dbUserPasswd,int dbRole,String tablespaceName,String dbType
-			,DbServer dbServer,String gdbVersion,int createStatus,Date createTime,String descp){
+	public UnifiedDb(int dbId,String dbName,String dbUserName,String dbUserPasswd,int dbRole,String tablespaceName,String bizType
+			,DbServer dbServer,String gdbVersion,int dbStatus,Date createTime,String descp){
 		this.dbId=dbId;
 		this.dbName=dbName;
 		this.dbUserName=dbUserName;
 		this.dbUserPasswd=dbUserPasswd;
 		this.dbRole=dbRole;
 		this.tablespaceName=tablespaceName;
-		this.dbType=dbType;
+		this.bizType=bizType;
 		this.dbServer=dbServer;
 		this.gdbVersion=gdbVersion;
-		this.createStatus=createStatus;
+		this.dbStatus=dbStatus;
 		this.createTime=createTime;
 		this.descp=descp;
 	}
@@ -135,11 +135,11 @@ public abstract class UnifiedDb {
 	public void setTablespaceName(String tablespaceName) {
 		this.tablespaceName = tablespaceName;
 	}
-	public String getDbType() {
-		return dbType;
+	public String getBizType() {
+		return bizType;
 	}
-	public void setDbType(String dbType) {
-		this.dbType = dbType;
+	public void setBizType(String bizType) {
+		this.bizType = bizType;
 	}
 	public Date getCreateTime() {
 		return createTime;

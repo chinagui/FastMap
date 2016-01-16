@@ -26,26 +26,26 @@ public class UnifiedDbFactory {
 		return SingletonHolder.INSTANCE;
 	}
 	private UnifiedDbFactory(){}
-	public UnifiedDb newdb(int dbId,String dbName,String dbUserName,String dbUserPasswd,int dbRole,String tablespaceName,String dbType
-			,DbServer dbServer,String gdbVersion,int createStatus,Date createTime,String descp){
+	public UnifiedDb newdb(int dbId,String dbName,String dbUserName,String dbUserPasswd,int dbRole,String tablespaceName,String bizType
+			,DbServer dbServer,String gdbVersion,int dbStatus,Date createTime,String descp){
 		UnifiedDb db = null;
 		if(DbServerType.TYPE_MONGODB.equals(dbServer.getType())){
-			db = new MongoDb(dbId,dbName,dbUserName,dbUserPasswd,dbRole,tablespaceName,dbType
-					,dbServer,gdbVersion,createStatus,createTime,descp);
+			db = new MongoDb(dbId,dbName,dbUserName,dbUserPasswd,dbRole,tablespaceName,bizType
+					,dbServer,gdbVersion,dbStatus,createTime,descp);
 		}else if(DbServerType.TYPE_ORACLE.equals(dbServer.getType())){
-			db = new OracleSchema(dbId,dbName,dbUserName,dbUserPasswd,dbRole,tablespaceName,dbType
-					,dbServer,gdbVersion,createStatus,createTime,descp);
+			db = new OracleSchema(dbId,dbName,dbUserName,dbUserPasswd,dbRole,tablespaceName,bizType
+					,dbServer,gdbVersion,dbStatus,createTime,descp);
 		}
 		return db;
 	}
-	public UnifiedDb create(int dbId,String dbName,String dbType,String gdbVersion,DbServer dbServer)throws DataHubException{
+	public UnifiedDb create(int dbId,String dbName,String bizType,String gdbVersion,DbServer dbServer)throws DataHubException{
 		UnifiedDb db = null;
 		DbPhysicalCreator physicalCreator = null;
 		if(DbServerType.TYPE_MONGODB.equals(dbServer.getType())){
-			db = new MongoDb(dbId,dbName,dbType,gdbVersion,dbServer,1);
+			db = new MongoDb(dbId,dbName,bizType,gdbVersion,dbServer,1);
 			physicalCreator = new MongoDbPhysicalCreator();
 		}else if(DbServerType.TYPE_ORACLE.equals(dbServer.getType())){
-			db = new OracleSchema(dbId,dbName,dbType,gdbVersion,dbServer,1);
+			db = new OracleSchema(dbId,dbName,bizType,gdbVersion,dbServer,1);
 			physicalCreator = new OracleSchemaPhysicalCreator();
 		}else{
 			throw new DataHubException("UnifiedDbFactory不支持创建的数据库类型。servertype:"+dbServer.getType());

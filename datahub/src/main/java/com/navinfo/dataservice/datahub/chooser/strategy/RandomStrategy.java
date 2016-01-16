@@ -45,21 +45,21 @@ public class RandomStrategy extends DbServerStrategy {
 		}
 	}
 	@Override
-	public DbServer getPriorDbServer(String useType,Map<String, String> params)
+	public DbServer getPriorDbServer(String bizType,Map<String, String> params)
 			throws DataHubException {
 		Connection conn = null;
 		try{
-			String count_sql = "SELECT count(1) as c_num from unified_db_server where USE_TYPE like ?";
+			String count_sql = "SELECT count(1) as c_num from db_server where biz_type like ?";
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
-			int c_num = run.queryForInt(conn, count_sql, "%"+useType+"%");
+			int c_num = run.queryForInt(conn, count_sql, "%"+bizType+"%");
 			DbServer db = null;
 			if(c_num>0){
 //				int index = RandomUtils.nextInt(c_num);
 //				String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.server_type FROM unified_db_server s where s.USE_TYPE like ? limit ?,1";
 				int index = RandomUtils.nextInt(c_num);
 				index++;
-				String sql = "SELECT * FROM (SELECT s.server_id,s.SERVER_IP,s.server_port,s.service_name,s.server_type,ROWNUM AS RN FROM unified_db_server s where s.USE_TYPE like ?) WHERE RN=?";
+				String sql = "SELECT * FROM (SELECT s.server_id,s.SERVER_IP,s.server_port,s.service_name,s.server_type,ROWNUM AS RN FROM db_server s where s.biz_type like ?) WHERE RN=?";
 
 				db = run.query(conn, sql,new ResultSetHandler<DbServer>(){
 
@@ -77,7 +77,7 @@ public class RandomStrategy extends DbServerStrategy {
 						return inDb;
 					}
 					
-				}, "%"+useType+"%",index);
+				}, "%"+bizType+"%",index);
 			}
 			return db;
 		}catch (Exception e) {

@@ -1,22 +1,13 @@
 package com.navinfo.dataservice.expcore.sql.handler;
 
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import javax.sql.DataSource;
-
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ThreadExecuteException;
-import com.navinfo.dataservice.expcore.sql.ExpSQL;
-import com.navinfo.dataservice.commons.database.oracle.ConnectionRegister;
-import com.navinfo.navicommons.database.sql.DbLinkCreator;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 
 /**

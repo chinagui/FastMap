@@ -12,6 +12,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.cross.RdCrossLink;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLinkForm;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.link.RdLinkFormSelector;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.commons.service.PidService;
 
@@ -29,8 +30,12 @@ public class Operation implements IOperation {
 
 	@Override
 	public String run(Result result) throws Exception {
+		
+		int meshId = new RdNodeSelector(conn).loadById(command.getNodePids().get(0), true).mesh();
 
 		RdCross cross = new RdCross();
+		
+		cross.setMesh(meshId);
 
 		cross.setPid(PidService.getInstance().applyRdCrossPid());
 
@@ -58,6 +63,8 @@ public class Operation implements IOperation {
 				node.setIsMain(1);
 			}
 			
+			node.setMesh(meshId);
+			
 			nodes.add(node);
 		}
 		
@@ -78,6 +85,8 @@ public class Operation implements IOperation {
 			link.setPid(cross.getPid());
 			
 			link.setLinkPid(linkPid);
+			
+			link.setMesh(meshId);
 
 			links.add(link);
 			
@@ -91,6 +100,8 @@ public class Operation implements IOperation {
 			for(IRow formrow : forms){
 
 				RdLinkForm form = (RdLinkForm)formrow;
+				
+				form.setMesh(meshId);
 				
 				if(form.getFormOfWay() == 33){//环岛
 					needAdd = false;
@@ -108,6 +119,8 @@ public class Operation implements IOperation {
 				}
 				else{
 					RdLinkForm form = new RdLinkForm();
+					
+					form.setMesh(meshId);
 					
 					form.setFormOfWay(50);
 					

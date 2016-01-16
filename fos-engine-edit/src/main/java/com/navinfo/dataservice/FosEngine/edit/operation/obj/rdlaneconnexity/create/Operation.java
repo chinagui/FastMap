@@ -11,6 +11,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.Result;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneVia;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.FosEngine.edit.operation.Helper;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
@@ -48,8 +49,12 @@ public class Operation implements IOperation {
 
 	@Override
 	public String run(Result result) throws Exception {
+		
+		int meshId = new RdLinkSelector(conn).loadById(command.getInLinkPid(), true).mesh();
 
 		RdLaneConnexity lane = new RdLaneConnexity();
+		
+		lane.setMesh(meshId);
 
 		lane.setPid(PidService.getInstance().applyLaneConnexityPid());
 
@@ -72,6 +77,8 @@ public class Operation implements IOperation {
 		for (int outLinkPid : outLinkPids) {
 
 			RdLaneTopology topo = new RdLaneTopology();
+			
+			topo.setMesh(meshId);
 
 			topo.setPid(PidService.getInstance().applyLaneTopologyPid());
 
@@ -100,6 +107,8 @@ public class Operation implements IOperation {
 			for (Integer viaLinkPid : viaLinkPids) {
 
 				RdLaneVia via = new RdLaneVia();
+				
+				via.setMesh(meshId);
 
 				via.setTopologyId(topo.getPid());
 

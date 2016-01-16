@@ -114,6 +114,8 @@ public class RdLinkForm implements IRow {
 		this.setFormOfWay(formSource.getFormOfWay());
 
 		this.setRowId(formSource.getRowId());
+		
+		this.setMesh(row.mesh());
 	}
 
 	@Override

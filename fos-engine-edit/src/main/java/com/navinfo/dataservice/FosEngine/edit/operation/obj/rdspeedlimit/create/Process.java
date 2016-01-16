@@ -80,7 +80,7 @@ public class Process implements IProcess {
 				throw new Exception(preCheckMsg);
 			}
 
-			IOperation operation = new Operation(command);
+			IOperation operation = new Operation(command,conn);
 
 			msg = operation.run(result);
 

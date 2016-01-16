@@ -188,6 +188,8 @@ public class RdLinkLimit implements IRow {
 		this.setTimeDomain(sourceLimit.getTimeDomain());
 
 		this.setType(sourceLimit.getType());
+		
+		this.setMesh(sourceLimit.mesh());
 	}
 
 	@Override

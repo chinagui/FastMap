@@ -202,6 +202,8 @@ public class RdLinkName implements IRow {
 		this.setRowId(nameSource.getRowId());
 
 		this.setSeqNum(nameSource.getSeqNum());
+		
+		this.setMesh(row.mesh());
 	}
 
 	@Override

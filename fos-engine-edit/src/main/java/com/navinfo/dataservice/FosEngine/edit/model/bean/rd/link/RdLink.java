@@ -477,6 +477,8 @@ public class RdLink implements IObj {
 		this.setName(sourceLink.getName());
 
 		this.setsNodePid(sourceLink.getsNodePid());
+		
+		this.setMesh(sourceLink.mesh());
 
 		List<IRow> formsSource = sourceLink.getForms();
 

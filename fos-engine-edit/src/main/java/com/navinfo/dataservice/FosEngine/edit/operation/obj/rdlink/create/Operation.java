@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlink.create;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
@@ -35,51 +38,127 @@ public class Operation implements IOperation {
 		
 		Geometry geometry = GeoTranslator.geojson2Jts(command.getGeometry(), 100000, 0);
 		
-		RdLink link = new RdLink();
+		Set<String> meshes = this.getLinkInterMesh(geometry);
 		
-		link.setPid(PidService.getInstance().applyLinkPid());
-		
-		result.setPrimaryPid(link.getPid());
-		
-		link.setGeometry(geometry);
-		
-		link.setOriginLinkPid(link.getPid());
-		
-		link.setWidth(55);
-		
-		Coordinate[] coords = geometry.getCoordinates();
+		if (meshes.size() == 1){
+			RdLink link = new RdLink();
+			
+			int meshId = Integer.parseInt(meshes.iterator().next());
+			
+			link.setMesh(meshId);
+			
+			link.setMeshId(meshId);
+			
+			link.setPid(PidService.getInstance().applyLinkPid());
+			
+			result.setPrimaryPid(link.getPid());
+			
+			link.setGeometry(geometry);
+			
+			link.setOriginLinkPid(link.getPid());
+			
+			link.setWidth(55);
+			
+			Coordinate[] coords = geometry.getCoordinates();
+					
+			if (0 == command.getsNodePid()){
 				
-		if (0 == command.getsNodePid()){
+				Coordinate point = coords[0];
+				
+				RdNode node = createNode(point.x, point.y,link);
+				
+				link.setsNodePid(node.getPid());
+				
+				result.insertObject(node, ObjStatus.INSERT);
+			}
+			else{
+				link.setsNodePid(command.getsNodePid());
+			}
 			
-			Coordinate point = coords[0];
+			if (0 == command.geteNodePid()){
+				
+				Coordinate point = coords[coords.length-1];
+				
+				RdNode node = createNode(point.x, point.y,link);
+				
+				link.seteNodePid(node.getPid());
+				
+				result.insertObject(node, ObjStatus.INSERT);
+			}
+			else{
+				link.seteNodePid(command.geteNodePid());
+			}
 			
-			RdNode node = createNode(point.x, point.y);
+			setLinkChildren(link);
 			
-			link.setsNodePid(node.getPid());
-			
-			result.insertObject(node, ObjStatus.INSERT);
-		}
-		else{
-			link.setsNodePid(command.getsNodePid());
-		}
+			result.insertObject(link, ObjStatus.INSERT);
+		}else{
 		
-		if (0 == command.geteNodePid()){
+			Iterator<String> it = meshes.iterator();
 			
-			Coordinate point = coords[coords.length-1];
-			
-			RdNode node = createNode(point.x, point.y);
-			
-			link.seteNodePid(node.getPid());
-			
-			result.insertObject(node, ObjStatus.INSERT);
-		}
-		else{
-			link.seteNodePid(command.geteNodePid());
-		}
+			while(it.hasNext()){
+				String meshIdStr = it.next();
+				
+				Geometry geomInter = MeshUtils.linkInterMeshPolygon(geometry, MeshUtils.mesh2Jts(meshIdStr));
+				
+				if ("LineString".equals(geomInter.getGeometryType())){
+
+					RdLink link = new RdLink();
+					
+					int meshId = Integer.parseInt(meshIdStr);
+					
+					link.setMesh(meshId);
+					
+					link.setMeshId(meshId);
+					
+					link.setPid(PidService.getInstance().applyLinkPid());
+					
+					result.setPrimaryPid(link.getPid());
+					
+					link.setGeometry(geomInter);
+					
+					link.setOriginLinkPid(link.getPid());
+					
+					link.setWidth(55);
+					
+					Coordinate[] coords = geometry.getCoordinates();
+							
+					if (0 == command.getsNodePid()){
+						
+						Coordinate point = coords[0];
+						
+						RdNode node = createNode(point.x, point.y,link);
+						
+						link.setsNodePid(node.getPid());
+						
+						result.insertObject(node, ObjStatus.INSERT);
+					}
+					else{
+						link.setsNodePid(command.getsNodePid());
+					}
+					
+					if (0 == command.geteNodePid()){
+						
+						Coordinate point = coords[coords.length-1];
+						
+						RdNode node = createNode(point.x, point.y,link);
+						
+						link.seteNodePid(node.getPid());
+						
+						result.insertObject(node, ObjStatus.INSERT);
+					}
+					else{
+						link.seteNodePid(command.geteNodePid());
+					}
+					
+					setLinkChildren(link);
+					
+					result.insertObject(link, ObjStatus.INSERT);
+				
+				}
+			}
 		
-		setLinkChildren(link);
-		
-		result.insertObject(link, ObjStatus.INSERT);
+		}
 		
 		return msg;
 	}
@@ -94,6 +173,8 @@ public class Operation implements IOperation {
 		
 		form.setLinkPid(link.getPid());
 		
+		form.setMesh(link.mesh());
+		
 		List<IRow> forms = new ArrayList<IRow>();
 		
 		forms.add(form);
@@ -101,6 +182,8 @@ public class Operation implements IOperation {
 		link.setForms(forms);
 		
 		RdLinkSpeedlimit speedlimit = new RdLinkSpeedlimit();
+		
+		speedlimit.setMesh(link.mesh());
 		
 		speedlimit.setLinkPid(link.getPid());
 		
@@ -119,13 +202,15 @@ public class Operation implements IOperation {
 	 * @return rdnode
 	 * @throws Exception
 	 */
-	private RdNode createNode(double x , double y) throws Exception{
+	private RdNode createNode(double x , double y,RdLink link) throws Exception{
 		
 		RdNode node = new RdNode();
 		
 		node.setPid(PidService.getInstance().applyNodePid());
 		
 		node.setGeometry(GeoTranslator.point2Jts(x, y));
+		
+		node.setMesh(link.mesh());
 		
 		RdNodeForm form = new RdNodeForm();
 		
@@ -143,6 +228,8 @@ public class Operation implements IOperation {
 		
 		mesh.setMeshId(Integer.valueOf(MeshUtils.lonlat2Mesh(x/100000.0, y/100000.0)));
 		
+		mesh.setMesh(link.mesh());
+		
 		List<IRow> meshes = new ArrayList<IRow>();
 		
 		meshes.add(mesh);
@@ -150,6 +237,19 @@ public class Operation implements IOperation {
 		node.setMeshes(meshes);
 		
 		return node;
+	}
+	
+	
+	private Set<String> getLinkInterMesh(Geometry linkGeom) throws Exception{
+		Set<String> set = new HashSet<String>();
+		
+		Coordinate[] cs = linkGeom.getCoordinates();
+		
+		for(Coordinate c : cs){
+			set.add(MeshUtils.lonlat2Mesh(c.x, c.y));
+		}
+		
+		return set;
 	}
 	
 }

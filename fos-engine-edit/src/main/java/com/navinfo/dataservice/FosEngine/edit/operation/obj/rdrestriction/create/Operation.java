@@ -14,6 +14,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.Result;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionVia;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
 import com.navinfo.dataservice.commons.service.PidService;
@@ -51,8 +52,12 @@ public class Operation implements IOperation {
 
 	@Override
 	public String run(Result result) throws Exception {
+		
+		int meshId = new RdLinkSelector(conn).loadById(command.getInLinkPid(), true).mesh();
 
 		RdRestriction restrict = new RdRestriction();
+		
+		restrict.setMesh(meshId);
 
 		restrict.setPid(PidService.getInstance().applyRestrictionPid());
 
@@ -74,6 +79,8 @@ public class Operation implements IOperation {
 		for (int outLinkPid:outLinkPids) {
 
 			RdRestrictionDetail detail = new RdRestrictionDetail();
+			
+			detail.setMesh(meshId);
 
 			detail.setPid(PidService.getInstance().applyRestrictionDetailPid());
 
@@ -107,6 +114,8 @@ public class Operation implements IOperation {
 			for (Integer viaLinkPid : viaLinkPids) {
 
 				RdRestrictionVia via = new RdRestrictionVia();
+				
+				via.setMesh(meshId);
 
 				via.setDetailId(detail.getPid());
 

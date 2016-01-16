@@ -2,23 +2,43 @@ package com.navinfo.dataservice.commons.util;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
+import com.vividsolutions.jts.io.WKTWriter;
 
 /**
  * Created by IntelliJ IDEA. User: liuqing Date: 2010-8-4 Time: 8:58:15
  * 地理坐标相关的工具类
  */
 public abstract class MeshUtils {
+	
+	private static WKTReader wktReader = new WKTReader();
 
-	public static void main(String[] args) {
-		int meshid = 595673;
-		double[] a =mesh2LocationLatLon("24967");
-		System.out.println(a[0]+","+a[1]);
+	public static void main(String[] args) throws Exception{
+//		int meshid = 595673;
+//		double[] a =mesh2LocationLatLon("24967");
+//		System.out.println(a[0]+","+a[1]);
+//		
+//		System.out.println(lonlat2Mesh(109.875,1.833333));
 		
-		System.out.println(lonlat2Mesh(109.875,1.833333));
+//		String wkt = mesh2WKT("595651"); System.out.println(wkt);
+		
+		String wkt1 = "LINESTRING (1 1, 4 3)";
+		
+		String wkt2 = "POLYGON ((2 2,3 2,3 3,2 3,2 2))";
+		
+		Geometry geom1 = new WKTReader().read(wkt1);
+		
+		Geometry geom2 = new WKTReader().read(wkt2);
+		
+		Geometry geom = linkInterMeshPolygon(geom1, geom2);
+		
+		System.out.println(geom.getGeometryType());
 		
 		// (M3*10+M4)*3600+M6*450+60*3600
 		// (M1*10+M2)*2400+M5*300
@@ -132,6 +152,28 @@ public abstract class MeshUtils {
 		return "POLYGON ((" + lbX + " " + lbY + ", " + lbX + " " + rtY + ", "
 				+ rtX + " " + rtY + ", " + rtX + " " + lbY + "))";
 
+	}
+	
+	/**
+	 * 图幅号转换成POLYGON的JTS对象
+	 * @param meshId
+	 * @return
+	 * @throws ParseException
+	 */
+	public static Geometry mesh2Jts(String meshId) throws ParseException{
+		
+		String wkt = mesh2WKT(meshId);
+		
+		Geometry jts = wktReader.read(wkt);
+		
+		return jts;
+		
+	}
+	
+	public static Geometry linkInterMeshPolygon(Geometry linkGeom,Geometry meshGeom){
+		
+		return meshGeom.intersection(linkGeom);
+		
 	}
 
 	/**

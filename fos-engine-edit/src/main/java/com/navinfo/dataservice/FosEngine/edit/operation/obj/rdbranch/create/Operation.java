@@ -12,6 +12,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.Result;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranch;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranchDetail;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranchVia;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.commons.service.PidService;
 
@@ -40,6 +41,8 @@ public class Operation implements IOperation {
 		if (branch == null) {
 
 			flag = true;
+			
+			int meshId = new RdLinkSelector(conn).loadById(command.getInLinkPid(), true).mesh();
 
 			branch = new RdBranch();
 
@@ -53,6 +56,8 @@ public class Operation implements IOperation {
 
 			branch.setRelationshipType(getRelationShipType(
 					command.getNodePid(), command.getOutLinkPid()));
+			
+			branch.setMesh(meshId);
 
 			List<Integer> viaLinks = this.calViaLinks(command.getInLinkPid(),
 					command.getNodePid(), command.getOutLinkPid());
@@ -72,6 +77,8 @@ public class Operation implements IOperation {
 				
 				vias.add(via);
 				
+				via.setMesh(meshId);
+				
 				seqNum++;
 			}
 			
@@ -83,6 +90,8 @@ public class Operation implements IOperation {
 		detail.setPid(PidService.getInstance().applyBranchDetailId());
 
 		detail.setBranchPid(branch.getPid());
+		
+		detail.setMesh(branch.mesh());
 
 		if (flag) {
 

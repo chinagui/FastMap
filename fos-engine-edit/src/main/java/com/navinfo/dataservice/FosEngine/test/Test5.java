@@ -25,17 +25,7 @@ public class Test5 {
 	
 	
 	public static void main(String[] args) throws Exception {
-		HBaseAddress.initHBaseAddress("192.168.3.156");
 		
-		String filePath = "C:/1";
-		
-		TipsUpload upload = new TipsUpload();
-		
-		Map<String, Photo> map = upload.run(filePath+"/"+"tips.txt");
-		
-		CollectorImport.importPhoto(map, filePath+"/photo");
-		
-		System.out.println("done");
 		
 	}
 

@@ -78,7 +78,6 @@ public class ToolScriptsInterface {
 			JSONObject json = JSONObject.fromObject(str);
 			return json;
 		}catch(Exception e){
-			System.out.println(e.getMessage());
 			e.printStackTrace();
 			throw e;
 		}
@@ -101,11 +100,15 @@ public class ToolScriptsInterface {
 	public static void main(String[] args){
 		try{
 			Map<String,String> map = new HashMap<String,String>();
-			for(int i=0; i<args.length;i++){
+			if(args.length%2!=0){
+				System.out.println("ERROR:need args:-itype xxx");
+				return;
+			}
+			for(int i=0; i<args.length;i+=2){
 			        map.put(args[i], args[i+1]);
 		    }
-			String itype = map.get("itype");
-			itype = "create_db";
+			String itype = map.get("-itype");
+			itype = "export_data";
 			if(StringUtils.isEmpty(itype)){
 				System.out.println("ERROR:need args:-itype xxx");
 				return;
@@ -121,6 +124,8 @@ public class ToolScriptsInterface {
 				request = readJson(dir+"request"+File.separator+"export_data.json");
 				response = ToolScriptsInterface.exportData(request);
 				writeJson(response,dir+"response"+File.separator+"export_data.json");
+			}else if("diff".equals(itype)){
+				
 			}else{
 				System.out.println("ERROR:need arg -itype");
 			}
@@ -128,6 +133,7 @@ public class ToolScriptsInterface {
 			System.out.println("Over.");
 			System.exit(0);
 		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
 			e.printStackTrace();
 		}
 	}

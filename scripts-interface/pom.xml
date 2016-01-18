@@ -40,6 +40,10 @@
 		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>export-core</artifactId>
 	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>versionman</artifactId>
+	</dependency>
 	
 	<dependency>  
 	    <groupId>net.sf.json-lib</groupId>  

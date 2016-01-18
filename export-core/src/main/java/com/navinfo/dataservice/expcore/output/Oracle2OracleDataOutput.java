@@ -154,9 +154,20 @@ public class Oracle2OracleDataOutput extends AbstractDataOutput {
             parameters[i] = "?";
             columns[i] = "\""+tmdList.get(i).getColumnName()+"\"";
         }
+		String pkColumn = null;
+		if("LOG_OPERATION".equals(tableName)){
+			pkColumn = "OP_ID";
+		}else if("RD_NODE".equals(tableName)){
+			pkColumn="NODE_PID";
+		}else{
+			pkColumn = "ROW_ID";
+		}
 		StringBuilder builder = new StringBuilder("MERGE INTO ");
         builder.append(tableName);
-        builder.append(" T USING (SELECT ? ROW_ID FROM DUAL) D ON (T.ROW_ID=D.ROW_ID) WHEN MATCHED THEN UPDATE SET ");
+        builder.append(" T USING (SELECT ? " +pkColumn+
+        		" FROM DUAL) D ON (T." +pkColumn+
+        		"=D." +pkColumn+
+        		") WHEN MATCHED THEN UPDATE SET ");
 
         builder.append(StringUtils.join(setArr, ","));
         
@@ -177,8 +188,8 @@ public class Oracle2OracleDataOutput extends AbstractDataOutput {
 			stmt = conn.prepareStatement(sql);
 			while (rs.next()) {
 				count++;
-				stmt.setObject(1, rs.getObject("ROW_ID"));//MERGE 条件中使用了
 				for (int i = 0; i < columnSize; i++) {
+					stmt.setObject(1, rs.getObject(pkColumn));//MERGE 条件中使用了
 					ColumnMetaData tmd = tmdList.get(i);
 					Object value = rs.getObject(tmd.getColumnName());
 					if (tmd.isGeometryColumn() && value == null){
@@ -234,11 +245,20 @@ public class Oracle2OracleDataOutput extends AbstractDataOutput {
             parameters[i] = "?";
             columns[i] = "\""+tmdList.get(i).getColumnName()+"\"";
         }
+		String pkColumn = null;
+		if("LOG_OPERATION".equals(tableName)){
+			pkColumn = "OP_ID";
+		}else{
+			pkColumn = "ROW_ID";
+		}
 		StringBuilder builder = new StringBuilder("MERGE INTO ");
         builder.append(tableName);
-        builder.append(" T USING (SELECT ? ROW_ID FROM DUAL) D ON (T.ROW_ID=D.ROW_ID) WHEN NOT MATCHED THEN INSERT VALUES (");
+        builder.append(" T USING (SELECT ? " +pkColumn+
+        		" FROM DUAL) D ON (T." +pkColumn+
+        		"=D." +pkColumn+
+        		") WHEN NOT MATCHED THEN INSERT (");
         builder.append(StringUtils.join(columns, ","));
-        builder.append(") values (");
+        builder.append(") VALUES (");
         builder.append(StringUtils.join(parameters, ","));
         builder.append(")");
 
@@ -253,7 +273,7 @@ public class Oracle2OracleDataOutput extends AbstractDataOutput {
 			stmt = conn.prepareStatement(sql);
 			while (rs.next()) {
 				count++;
-				stmt.setObject(1, rs.getObject("ROW_ID"));//MERGE 条件中使用了
+				stmt.setObject(1, rs.getObject(pkColumn));//MERGE 条件中使用了
 				for (int i = 0; i < columnSize; i++) {
 					ColumnMetaData tmd = tmdList.get(i);
 					Object value = rs.getObject(tmd.getColumnName());

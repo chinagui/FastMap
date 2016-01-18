@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.FosEngine.edit.display;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Connection;
@@ -7,9 +8,11 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import net.sf.json.JSONArray;
@@ -19,6 +22,11 @@ import net.sf.json.JSONObject;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
@@ -44,10 +52,12 @@ public class TileBuilder {
 
 	public static class TileMapper extends
 			Mapper<LongWritable, Text, Text, Text> {
-		
+
 		/**
 		 * 根据道路种别，输出显示的颜色
-		 * @param kind	道路种别
+		 * 
+		 * @param kind
+		 *            道路种别
 		 * @return
 		 */
 		public static int kind2Color(int kind) {
@@ -74,8 +84,19 @@ public class TileBuilder {
 
 			int mod = Integer.parseInt(value.toString());
 
-			String sql = "select a.link_pid,a.kind,sdo_util.to_wktgeometry(geometry) geometry,direct,name from rd_link_beijing a, (select b.link_pid,c.name from  rd_link_name b,rd_name c where b.name_groupid = c.name_groupid and b.name_class=1 and b.seq_num =1 and c.lang_code='CHI' ) b where a.link_pid = b.link_pid(+) and mod(a.link_pid,280)="
-					+ mod;
+//			String sql = "select a.link_pid,a.kind,sdo_util.to_wktgeometry(geometry) geometry,direct,name from rd_link_beijing a, (select b.link_pid,c.name from  rd_link_name b,rd_name c where b.name_groupid = c.name_groupid and b.name_class=1 and b.seq_num =1 and c.lang_code='CHI' ) b where a.link_pid = b.link_pid(+) and mod(a.link_pid,280)="
+//					+ mod;
+			
+			String sql = null;
+			
+			if (!"1".equals(context.getConfiguration().get("isgdb"))){
+				sql = "select a.link_pid,a.kind,sdo_util.to_wktgeometry(geometry) geometry,direct,name from rd_link a, (select b.link_pid,c.name from  rd_link_name b,rd_name c where b.name_groupid = c.name_groupid and b.name_class=1 and b.seq_num =1 and c.lang_code='CHI' ) b where a.link_pid = b.link_pid(+) and mod(a.link_pid,50)="
+						+ mod;
+			}else{
+				sql = "select a.link_pid,a.kind,sdo_util.to_wktgeometry(geometry) geometry,direct,name from rd_link a, (select b.link_pid,c.name from  rd_link_name b,rd_name c where b.name_groupid = c.name_groupid and b.name_class=1 and b.seq_num =1 and c.lang_code='CHI' ) b where a.link_pid = b.link_pid(+) and mod(a.link_pid,280)="
+						+ mod;
+			}
+			
 			try {
 
 				Class.forName("oracle.jdbc.driver.OracleDriver");
@@ -88,8 +109,14 @@ public class TileBuilder {
 						"serviceName");
 
 				String ip = context.getConfiguration().get("ip");
+
+				int maxDegree = Integer.parseInt(context.getConfiguration()
+						.get("maxDegree"));
 				
-				int maxDegree = Integer.parseInt(context.getConfiguration().get("maxDegree"));
+				int minDegree = Integer.parseInt(context.getConfiguration()
+						.get("maxDegree"));
+				
+				minDegree = minDegree>=7?minDegree:7;
 
 				int port = Integer.parseInt(context.getConfiguration().get(
 						"port"));
@@ -121,7 +148,7 @@ public class TileBuilder {
 
 					int color = kind2Color(kind);
 
-					for (byte degree = 7; degree <= maxDegree; degree++) {
+					for (byte degree = (byte) minDegree; degree <= (byte)maxDegree; degree++) {
 
 						if (degree <= 7) {
 							if (kind <= 1) {
@@ -384,11 +411,11 @@ public class TileBuilder {
 
 						if (degree >= 1) {
 							if (px != prePx || py != prePy) {
-								
+
 								JSONArray array = new JSONArray();
-								
+
 								array.add(px);
-								
+
 								array.add(py);
 
 								jap.add(array);
@@ -405,27 +432,26 @@ public class TileBuilder {
 						}
 					}
 
-//					if (degree < 1) {
-//						try {
-//							compress(points, 1, jap);
-//						} catch (Exception e) {
-//							// TODO Auto-generated catch block
-//							e.printStackTrace();
-//
-//							throw new Exception(interWkt);
-//						}
-//					}
+					// if (degree < 1) {
+					// try {
+					// compress(points, 1, jap);
+					// } catch (Exception e) {
+					// e.printStackTrace();
+					//
+					// throw new Exception(interWkt);
+					// }
+					// }
 
 					tile.setG(jap);
-					
+
 					JSONObject jsonM = new JSONObject();
-					
+
 					jsonM.put("a", String.valueOf(color));
-					
-					jsonM.put("b", name!=null?name:JSONNull.getInstance());
-					
+
+					jsonM.put("b", name != null ? name : JSONNull.getInstance());
+
 					jsonM.put("c", String.valueOf(kind));
-					
+
 					jsonM.put("d", String.valueOf(direct));
 
 					tile.setM(jsonM);
@@ -502,15 +528,16 @@ public class TileBuilder {
 						}
 
 						tile.setG(jap);
-						
+
 						JSONObject jsonM = new JSONObject();
-						
+
 						jsonM.put("a", String.valueOf(color));
-						
-						jsonM.put("b", name!=null?name:JSONNull.getInstance());
-						
+
+						jsonM.put("b",
+								name != null ? name : JSONNull.getInstance());
+
 						jsonM.put("c", String.valueOf(kind));
-						
+
 						jsonM.put("d", String.valueOf(direct));
 
 						tile.setM(jsonM);
@@ -637,7 +664,7 @@ public class TileBuilder {
 			for (Text value : arg1) {
 
 				JSONObject json = JSONObject.fromObject(value.toString());
-				
+
 				int a = json.getJSONObject("m").getInt("a");
 
 				if (a == 1) {
@@ -846,7 +873,6 @@ public class TileBuilder {
 				}
 
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -857,40 +883,81 @@ public class TileBuilder {
 	 */
 	public static void main(String[] args) throws Exception {
 
+		Properties props = new Properties();
+
+		props.load(new FileInputStream(args[0]));
+
 		Configuration conf = new Configuration();
 
-		conf.set("fs.defaultFS", "hdfs://192.168.3.156:9000");
+		// conf.set("fs.defaultFS", "hdfs://192.168.3.156:9000");
+
+		conf.set("fs.defaultFS", props.getProperty("fs.defaultFS"));
 
 		conf.setBoolean("dfs.permissions", false);
 
-		conf.set("hbase.zookeeper.quorum", "hadoop-01");
+		// conf.set("hbase.zookeeper.quorum", "hadoop-01");
 
-		conf.set("username", "fmgdb14");
+		conf.set("hbase.zookeeper.quorum",
+				props.getProperty("hbase.zookeeper.quorum"));
 
-		conf.set("password", "fmgdb14");
+		// conf.set("username", "fmgdb14");
 
-		conf.set("serviceName", "orcl");
+		conf.set("username", props.getProperty("db.username"));
 
-		conf.set("ip", "192.168.4.131");
+		// conf.set("password", "fmgdb14");
 
-		conf.set("port", "1521");
+		conf.set("password", props.getProperty("db.password"));
 
-		conf.set("splits", "100");
+		// conf.set("serviceName", "orcl");
+
+		conf.set("serviceName", props.getProperty("db.service.name"));
+
+		// conf.set("ip", "192.168.4.131");
+
+		conf.set("ip", props.getProperty("db.ip"));
+
+		// conf.set("port", "1521");
+
+		conf.set("port", props.getProperty("db.port"));
+
+		// conf.set("splits", "100");
+
+		conf.set("isgdb", props.getProperty("isgdb"));
+
+		// if (args.length>1){
+		// conf.set("maxDegree", args[1]);
+		// }else{
+		// conf.set("maxDegree", "16");
+		// }
+
+		conf.set("minDegree", props.getProperty("min.degree"));
+
+		conf.set("maxDegree", props.getProperty("max.degree"));
+
+		String tabName = props.getProperty("tab.name");
 		
-		if (args.length>1){
-			conf.set("maxDegree", args[1]);
-		}else{
-			conf.set("maxDegree", "16");
-		}
+		createHBaseTab(conf, tabName);
 
 		FileSystem fs = FileSystem.get(conf);
 
-		fs.deleteOnExit(new Path("/lilei"));
+		String tmpDir = "/" + String.valueOf(new Date().getTime()) + "/";
 
-		fs.mkdirs(new Path("/lilei"));
+		// fs.deleteOnExit(new Path("/lilei"));
 
-		for (int i = 0; i < 280; i++) {
-			OutputStream out = fs.create(new Path("/lilei/" + i));
+		// fs.mkdirs(new Path("/lilei"));
+
+		fs.mkdirs(new Path(tmpDir));
+
+		int numTask = 50;
+
+		if ("1".equals(props.getProperty("isgdb"))) {
+			numTask = 280;
+		}
+
+		for (int i = 0; i < numTask; i++) {
+			// OutputStream out = fs.create(new Path("/lilei/" + i));
+
+			OutputStream out = fs.create(new Path(tmpDir + i));
 
 			out.write(String.valueOf(i).getBytes());
 
@@ -901,22 +968,22 @@ public class TileBuilder {
 
 		Job job = Job.getInstance(conf, "split link");
 
-		int linkNum = getLinkNum(job);
+//		int linkNum = getLinkNum(job);
+//
+//		int tileNum = 10290067;
 
-		int tileNum = 10290067;
-
-		ProgressThread pt = new ProgressThread(job, linkNum, tileNum, args[0],
-				null);
-
-		Thread thread = new Thread(pt);
-
-		thread.setDaemon(true);
-
-		thread.start();
+//		ProgressThread pt = new ProgressThread(job, linkNum, tileNum, args[0],
+//				null);
+//
+//		Thread thread = new Thread(pt);
+//
+//		thread.setDaemon(true);
+//
+//		thread.start();
 
 		job.setJarByClass(TileBuilder.class);
 
-		job.setNumReduceTasks(280);
+		job.setNumReduceTasks(numTask);
 
 		job.setMapOutputKeyClass(Text.class);
 
@@ -930,17 +997,17 @@ public class TileBuilder {
 
 		job.setMapOutputValueClass(Text.class);
 
-		FileInputFormat.addInputPath(job, new Path("/lilei"));
+		FileInputFormat.addInputPath(job, new Path(tmpDir));
 
-		TableMapReduceUtil.initTableReducerJob("link_tile", TileReducer.class,
+		TableMapReduceUtil.initTableReducerJob(tabName, TileReducer.class,
 				job);
 		job.waitForCompletion(true);
 
-		thread.interrupt();
+//		thread.interrupt();
 
-		Thread.sleep(10000);
+//		Thread.sleep(10000);
 
-		fillProgress(null, args[0], linkNum, tileNum);
+//		fillProgress(null, args[0], linkNum, tileNum);
 
 	}
 
@@ -991,6 +1058,24 @@ public class TileBuilder {
 		stmt.executeUpdate(sql);
 
 		conn.close();
+	}
+
+	private static void createHBaseTab(Configuration conf, String tabName)
+			throws Exception {
+		org.apache.hadoop.hbase.client.Connection conn = ConnectionFactory
+				.createConnection(conf);
+
+		Admin admin = conn.getAdmin();
+
+		TableName tableName = TableName.valueOf(tabName);
+
+		HTableDescriptor htd = new HTableDescriptor(tableName);
+
+		HColumnDescriptor hcd = new HColumnDescriptor("index");
+
+		htd.addFamily(hcd);
+
+		admin.createTable(htd);
 	}
 
 }

@@ -10,16 +10,11 @@ import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Table;
 
-import com.navinfo.dataservice.FosEngine.tips.Rotary.RotaryTipsBuilder;
 import com.navinfo.dataservice.FosEngine.tips.bridge.BridgeTipsBuilder;
 import com.navinfo.dataservice.FosEngine.tips.connexity.RdLaneConnexityTipsBuilder;
-import com.navinfo.dataservice.FosEngine.tips.construct.ConstructTipsBuilder;
 import com.navinfo.dataservice.FosEngine.tips.cross.RdCrossTipsBuilder;
 import com.navinfo.dataservice.FosEngine.tips.direct.DirectTipsBuilder;
-import com.navinfo.dataservice.FosEngine.tips.elect.RdElectTipsBuilder;
-import com.navinfo.dataservice.FosEngine.tips.forbicross.ForbiCrossTipsBuilder;
 import com.navinfo.dataservice.FosEngine.tips.highway.HighwayTipsBuilder;
-import com.navinfo.dataservice.FosEngine.tips.linkname.LinkNameTipsBuilder;
 import com.navinfo.dataservice.FosEngine.tips.restriction.RdRestrictionTipsBuilder;
 import com.navinfo.dataservice.FosEngine.tips.speedLimit.RdSpeedLimitTipsBuilder;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
@@ -119,25 +114,25 @@ public class TipsBuilder {
 		ProgressService progressManager = new ProgressService(pmOA.getConn(),
 				uuid);
 
-//		progressManager.updateProgress("完成度:" + 10 + "%");
+		progressManager.updateProgress("完成度:" + 10 + "%");
 //
-//		BridgeTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
+		BridgeTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
 //
-//		progressManager.updateProgress("完成度:" + 15 + "%");
+		progressManager.updateProgress("完成度:" + 15 + "%");
 //
-//		RdLaneConnexityTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
+		RdLaneConnexityTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
 //
 //		progressManager.updateProgress("完成度:" + 25 + "%");
 //
 //		ConstructTipsBuilder.importTips(fmgdbOA.getConn(), htab);
 //
-//		progressManager.updateProgress("完成度:" + 30 + "%");
+		progressManager.updateProgress("完成度:" + 30 + "%");
 
-//		RdCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
+		RdCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
 
 //		progressManager.updateProgress("完成度:" + 35 + "%");
 //
-//		DirectTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
+		DirectTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
 //
 //		progressManager.updateProgress("完成度:" + 40 + "%");
 //
@@ -147,17 +142,17 @@ public class TipsBuilder {
 //
 //		ForbiCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab);
 //
-//		progressManager.updateProgress("完成度:" + 50 + "%");
+		progressManager.updateProgress("完成度:" + 50 + "%");
 //
-//		HighwayTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
+		HighwayTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
 //
 //		progressManager.updateProgress("完成度:" + 55 + "%");
 //
 //		LinkNameTipsBuilder.importTips(fmgdbOA.getConn(), htab);
 //
-//		progressManager.updateProgress("完成度:" + 60 + "%");
+		progressManager.updateProgress("完成度:" + 60 + "%");
 //
-//		RdRestrictionTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
+		RdRestrictionTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
 //
 //		progressManager.updateProgress("完成度:" + 70 + "%");
 //

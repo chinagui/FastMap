@@ -37,7 +37,7 @@ public class FlushGdb {
 
 	private static WKT wktUtil = new WKT();
 
-	public static void main(String[] args) {
+	public static void flush(String[] args) {
 
 		try {
 			Class.forName("oracle.jdbc.driver.OracleDriver");

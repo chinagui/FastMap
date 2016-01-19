@@ -27,13 +27,13 @@ import com.navinfo.dataservice.commons.util.FileUtils;
 import com.navinfo.dataservice.commons.util.GridUtils;
 import com.navinfo.dataservice.solr.core.SConnection;
 
-public class ExportTips {
+public class TipsExporter {
 
 	private SConnection solrConn;
 	
 	private String folderName;
 
-	public ExportTips(String solrUrl) {
+	public TipsExporter(String solrUrl) {
 		solrConn = new SConnection(solrUrl);
 	}
 
@@ -441,7 +441,7 @@ public class ExportTips {
 		grids.add(59567201);
 		grids.add(59567202);
 
-		ExportTips exporter = new ExportTips(
+		TipsExporter exporter = new TipsExporter(
 				"http://192.168.4.130:8081/solr/tips/");
 		System.out.println(exporter.export(grids, "20150302010101","C:/Users/wangshishuai3966/Desktop"
 				,"1.txt"));

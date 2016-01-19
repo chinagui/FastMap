@@ -118,8 +118,11 @@ public class SConnection {
 			throws SolrServerException, IOException {
 		List<String> rowkeys = new ArrayList<String>();
 
-		String param = "wkt:\"intersects(" + wkt + ")\" AND date:[" + date
-				+ " TO *]";
+		String param = "wkt:\"intersects(" + wkt + ")\"";
+
+		if (date != null && !date.equals("")) {
+			param += " AND date:[" + date + " TO *]";
+		}
 
 		SolrQuery query = new SolrQuery();
 

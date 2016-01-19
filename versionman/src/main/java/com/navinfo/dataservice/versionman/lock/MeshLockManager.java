@@ -124,7 +124,7 @@ public class MeshLockManager {
 			int updateCount=0;
 			//申请锁时，借出例外
 			if(lockType==FmMesh4Lock.TYPE_BORROW){
-				sqlBuf.append("UPDATE FM_MESH SET HANDLE_PROJECT_ID=?,LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,UPDATE_TIME=SYSDATE WHERE");
+				sqlBuf.append("UPDATE MESH SET HANDLE_PROJECT_ID=?,LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE WHERE");
 				sqlBuf.append(meshInClause);
 				sqlBuf.append(" AND HANDLE_PROJECT_ID <> ? AND LOCK_STATUS=0");
 				if(size>1000){
@@ -133,7 +133,7 @@ public class MeshLockManager {
 					updateCount = run.update(conn, sqlBuf.toString(),prjId,lockType,lockSeq,prjId);
 				}
 			}else if(lockType==FmMesh4Lock.TYPE_GIVE_BACK){
-				sqlBuf.append("UPDATE FM_MESH SET LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,UPDATE_TIME=SYSDATE WHERE");
+				sqlBuf.append("UPDATE MESH SET LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE WHERE");
 				sqlBuf.append(meshInClause);
 				sqlBuf.append(" AND PROJECT_ID <> ? AND HANDLE_PROJECT_ID = ? AND LOCK_STATUS=0");
 				if(size>1000){
@@ -142,7 +142,7 @@ public class MeshLockManager {
 					updateCount = run.update(conn, sqlBuf.toString(),lockType,lockSeq,prjId,prjId);
 				}
 			}else{
-				sqlBuf.append("UPDATE FM_MESH SET LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,UPDATE_TIME=SYSDATE WHERE");
+				sqlBuf.append("UPDATE MESH SET LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE WHERE");
 				sqlBuf.append(meshInClause);
 				sqlBuf.append(" AND HANDLE_PROJECT_ID = ? AND LOCK_STATUS=0");
 				if(size>1000){
@@ -182,10 +182,10 @@ public class MeshLockManager {
 			//解锁时，归还例外
 			String sql = null;
 			if(lockType==FmMesh4Lock.TYPE_GIVE_BACK){
-				sql = "UPDATE FM_MESH SET HANDLE_PROJECT_ID=PROJECT_ID,LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,UPDATE_TIME=SYSDATE" +
+				sql = "UPDATE MESH SET HANDLE_PROJECT_ID=PROJECT_ID,LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,LOCK_TIME=SYSDATE" +
 						" WHERE HANDLE_PROJECT_ID=? AND LOCK_TYPE=? AND LOCK_STATUS=1 AND LOCK_SEQ=?";
 			}else{
-				sql = "UPDATE FM_MESH SET LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,UPDATE_TIME=SYSDATE" +
+				sql = "UPDATE MESH SET LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,LOCK_TIME=SYSDATE" +
 						" WHERE HANDLE_PROJECT_ID=? AND LOCK_TYPE=? AND LOCK_STATUS=1 AND LOCK_SEQ=?";
 			}
 			int updateCount = run.update(conn, sql,prjId,lockType,lockSeq);
@@ -232,9 +232,9 @@ public class MeshLockManager {
 			StringBuffer sqlBuf = new StringBuffer();
 			int updateCount=0;
 			if(lockType==FmMesh4Lock.TYPE_GIVE_BACK){
-				sqlBuf.append("UPDATE FM_MESH SET HANDLE_PROJECT_ID=PROJECT_ID,LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,UPDATE_TIME=SYSDATE WHERE");
+				sqlBuf.append("UPDATE MESH SET HANDLE_PROJECT_ID=PROJECT_ID,LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,LOCK_TIME=SYSDATE WHERE");
 			}else{
-				sqlBuf.append("UPDATE FM_MESH SET LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,UPDATE_TIME=SYSDATE WHERE");
+				sqlBuf.append("UPDATE MESH SET LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,LOCK_TIME=SYSDATE WHERE");
 			}
 			sqlBuf.append(meshInClause);
 			sqlBuf.append(" AND LOCK_STATUS=1 AND LOCK_TYPE=? AND HANDLE_PROJECT_ID=?");
@@ -278,7 +278,7 @@ public class MeshLockManager {
 			QueryRunner run = new QueryRunner();
 			conn = manDataSource.getConnection();
 			int lockSeq = run.queryForInt(conn, "SELECT MESHES_LOCK_SEQ.NEXTVAL FROM DUAL");
-			String sql = "UPDATE FM_MESH SET HANDLE_PROJECT_ID=?,LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,UPDATE_TIME=SYSDATE" +
+			String sql = "UPDATE MESH SET HANDLE_PROJECT_ID=?,LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE" +
 					" WHERE MESH_ID IN (select to_number(column_value) from table(clob_to_table(?))) AND LOCK_STATUS=0 AND HANDLE_PROJECT_ID = ?";
 			for(Integer rentPrjId : meshes.keySet()){
 				Set<String> rentMeshes = meshes.get(rentPrjId);
@@ -336,6 +336,7 @@ public class MeshLockManager {
 			meshes.add(595672);
 			meshes.add(595671);
 			int result = 0;
+			man.query(11,meshes);
 			man.lock(2, meshes, FmMesh4Lock.TYPE_BORROW);
 			System.out.println(man.query(1, meshes));
 			System.out.println("over.");

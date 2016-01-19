@@ -20,7 +20,6 @@ public class Test3 {
 		JSONArray grids = new JSONArray();
 		grids.add(59567201);
 		
-		System.out.println(TipsSelector.searchDataByTileWithGap(26967, 12409, 15, 2));
 	}
 
 }

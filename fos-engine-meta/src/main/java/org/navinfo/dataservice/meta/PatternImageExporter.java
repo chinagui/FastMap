@@ -172,7 +172,7 @@ public class PatternImageExporter {
 		
 		Connection sqliteConn = createSqlite(dir);
 		
-		String sql = "select * from sc_model_match_g where b_type in ('2D','3D') and update_time > to_date(:1,'yyyymmddhh24miss')";
+		String sql = "select * from sc_model_match_g where b_type in ('2D','3D') and update_time > to_date('"+date+"','yyyymmddhh24miss')";
 
 		exportImage2Sqlite(sqliteConn, sql);
 

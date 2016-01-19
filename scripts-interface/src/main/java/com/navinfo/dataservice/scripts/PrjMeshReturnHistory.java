@@ -9,7 +9,7 @@ public class PrjMeshReturnHistory {
 	 */
 	public static void main(String[] args) {
 
-		FlushGdb.flush(args);
+		FlushGdb.prjMeshReturnHistory(args);
 	}
 
 }

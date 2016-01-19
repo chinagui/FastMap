@@ -9,7 +9,7 @@ public class Fmgdb2gdbg {
 	 */
 	public static void main(String[] args) {
 
-		FlushGdb.flush(args);
+		FlushGdb.fmgdb2gdbg(args);
 	}
 
 }

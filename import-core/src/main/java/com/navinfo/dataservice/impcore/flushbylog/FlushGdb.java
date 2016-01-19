@@ -10,15 +10,21 @@ import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.Set;
 
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
+
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.versionman.lock.FmMesh4Lock;
+import com.navinfo.dataservice.versionman.lock.MeshLockManager;
 
 public class FlushGdb {
 
@@ -36,6 +42,251 @@ public class FlushGdb {
 	private static long stopTime = 0;
 
 	private static WKT wktUtil = new WKT();
+	
+	public static void copXcopyHistory(String[] args){
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+
+			props = new Properties();
+
+			props.load(new FileInputStream(args[0]));
+
+			stopTime = Long.parseLong(props.getProperty("stopTime"));
+
+			Scanner scanner = new Scanner(new FileInputStream(args[1]));
+
+			while (scanner.hasNextLine()) {
+				meshes.add(Integer.parseInt(scanner.nextLine()));
+			}
+
+			logDetailQuery.append(" and op_dt <= to_date('" + stopTime
+					+ "','yyyymmddhh24miss')");
+
+			int meshSize = meshes.size();
+
+			logDetailQuery.append(" and mesh_id in (");
+
+			for (int i = 0; i < meshSize; i++) {
+
+				logDetailQuery.append(meshes.get(i));
+				if (i < (meshSize - 1)) {
+					logDetailQuery.append(",");
+				}
+			}
+
+			logDetailQuery.append(") order by op_dt ");
+
+			init();
+
+			flushData();
+
+			moveLog();
+
+//			updateLogDetailCk();
+
+			sourceConn.commit();
+
+			destConn.commit();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			try {
+				sourceConn.rollback();
+
+				destConn.rollback();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		}
+	}
+	
+	public static void fmgdb2gdbg(String[] args){
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+
+			props = new Properties();
+
+			props.load(new FileInputStream(args[0]));
+
+			stopTime = Long.parseLong(props.getProperty("stopTime"));
+
+			Scanner scanner = new Scanner(new FileInputStream(args[1]));
+
+			while (scanner.hasNextLine()) {
+				meshes.add(Integer.parseInt(scanner.nextLine()));
+			}
+
+			logDetailQuery.append(" and op_dt <= to_date('" + stopTime
+					+ "','yyyymmddhh24miss')");
+
+			int meshSize = meshes.size();
+
+			logDetailQuery.append(" and mesh_id in (");
+
+			for (int i = 0; i < meshSize; i++) {
+
+				logDetailQuery.append(meshes.get(i));
+				if (i < (meshSize - 1)) {
+					logDetailQuery.append(",");
+				}
+			}
+
+			logDetailQuery.append(") order by op_dt ");
+
+			init();
+
+			flushData();
+
+			moveLog();
+
+			updateLogDetailCk();
+
+			sourceConn.commit();
+
+			destConn.commit();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			try {
+				sourceConn.rollback();
+
+				destConn.rollback();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		}
+	}
+	
+	public static void prjMeshCommit(String[] args){
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+
+			props = new Properties();
+
+			props.load(new FileInputStream(args[0]));
+
+			stopTime = Long.parseLong(props.getProperty("stopTime"));
+
+			Scanner scanner = new Scanner(new FileInputStream(args[1]));
+
+			while (scanner.hasNextLine()) {
+				meshes.add(Integer.parseInt(scanner.nextLine()));
+			}
+
+			logDetailQuery.append(" and op_dt <= to_date('" + stopTime
+					+ "','yyyymmddhh24miss')");
+
+			int meshSize = meshes.size();
+
+			logDetailQuery.append(" and mesh_id in (");
+
+			for (int i = 0; i < meshSize; i++) {
+
+				logDetailQuery.append(meshes.get(i));
+				if (i < (meshSize - 1)) {
+					logDetailQuery.append(",");
+				}
+			}
+
+			logDetailQuery.append(") order by op_dt ");
+
+			init();
+
+			flushData();
+
+			moveLog();
+
+			updateLogDetailCk();
+
+			sourceConn.commit();
+
+			destConn.commit();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			try {
+				sourceConn.rollback();
+
+				destConn.rollback();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		}
+	}
+	
+	public static void prjMeshReturnHistory(String[] args){
+		
+		
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+
+			props = new Properties();
+
+			props.load(new FileInputStream(args[0]));
+
+			stopTime = Long.parseLong(props.getProperty("stopTime"));
+
+			Scanner scanner = new Scanner(new FileInputStream(args[1]));
+
+			while (scanner.hasNextLine()) {
+				meshes.add(Integer.parseInt(scanner.nextLine()));
+			}
+
+			logDetailQuery.append(" and op_dt <= to_date('" + stopTime
+					+ "','yyyymmddhh24miss')");
+
+			int meshSize = meshes.size();
+			
+			Set<Integer> setMesh = new HashSet<Integer>();
+			
+			for(int m : meshes){
+				setMesh.add(m);
+			}
+			
+			int prjId = Integer.parseInt(props.getProperty("project_id"));
+			
+			MeshLockManager man = new MeshLockManager(MultiDataSourceFactory.getInstance().getManDataSource());
+
+			man.lock(prjId, setMesh, FmMesh4Lock.TYPE_GIVE_BACK);
+			
+			logDetailQuery.append(" and mesh_id in (");
+
+			for (int i = 0; i < meshSize; i++) {
+
+				logDetailQuery.append(meshes.get(i));
+				if (i < (meshSize - 1)) {
+					logDetailQuery.append(",");
+				}
+			}
+
+			logDetailQuery.append(") order by op_dt ");
+
+			init();
+
+			flushData();
+
+			moveLog();
+
+//			updateLogDetailCk();
+
+			sourceConn.commit();
+
+			destConn.commit();
+			
+			man.unlock(prjId, setMesh, FmMesh4Lock.TYPE_GIVE_BACK);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			try {
+				sourceConn.rollback();
+
+				destConn.rollback();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		}
+		
+	}
 
 	public static void flush(String[] args) {
 

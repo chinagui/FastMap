@@ -9,7 +9,7 @@ public class CopXcopyHistory {
 	 */
 	public static void main(String[] args) {
 
-		FlushGdb.flush(args);
+		FlushGdb.copXcopyHistory(args);
 	}
 
 }

@@ -7,8 +7,8 @@ package com.navinfo.dataservice.versionman.lock;
  * @Description: TODO
  */
 public class FmMesh4Lock {
-	final static int TYPE_CHECK = 1;
-	final static int TYPE_BATCH = 2;
-	final static int TYPE_BORROW =3;
-	final static int TYPE_GIVE_BACK = 4;
+	public final static int TYPE_CHECK = 1;
+	public final static int TYPE_BATCH = 2;
+	public final static int TYPE_BORROW =3;
+	public final static int TYPE_GIVE_BACK = 4;
 }

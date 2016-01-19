@@ -51,6 +51,16 @@
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>import-core</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>fos-engine-man</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>versionman</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>net.sf.json-lib</groupId>

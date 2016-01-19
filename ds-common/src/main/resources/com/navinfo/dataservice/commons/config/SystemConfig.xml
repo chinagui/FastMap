@@ -17,6 +17,19 @@
 	<MAN.dataSource.minIdle>2</MAN.dataSource.minIdle>
 	<MAN.dataSource.maxWait>1000</MAN.dataSource.maxWait>
 	
+	<META.server.type>ORACLE</META.server.type>
+	<META.jdbc.driverClassName>oracle.jdbc.driver.OracleDriver</META.jdbc.driverClassName>
+	<META.jdbc.url>jdbc:oracle:thin:@192.168.4.131:1521/orcl</META.jdbc.url>
+	<META.dataSource.validationQuery>select 1 from dual</META.dataSource.validationQuery>
+	
+	<META.jdbc.username>mymeta3</META.jdbc.username>
+	<META.jdbc.password>mymeta3</META.jdbc.password>
+	<META.dataSource.initialSize>2</META.dataSource.initialSize>
+	<META.dataSource.maxActive>25</META.dataSource.maxActive>
+	<META.dataSource.maxIdle>10</META.dataSource.maxIdle>
+	<META.dataSource.minIdle>2</META.dataSource.minIdle>
+	<META.dataSource.maxWait>1000</META.dataSource.maxWait>
+	
 <!-- scripts interface part -->
 	<scripts.dir>F:\\Fm_Projects_Doc\\scripts\\</scripts.dir>
 <!-- datahub part -->	

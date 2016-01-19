@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
@@ -24,12 +23,12 @@ import org.apache.uima.pear.util.FileUtil;
 import org.sqlite.SQLiteConfig;
 
 import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
-import com.navinfo.dataservice.commons.db.OracleAddress;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 
-public class ExportBaseData {
+public class GdbDataExporter {
 
-	public static final WKT wkt = new WKT();
+	private static final WKT wkt = new WKT();
+	
 
 	/**
 	 * 导出基础数据
@@ -38,7 +37,7 @@ public class ExportBaseData {
 	 * @param dir
 	 * @throws Exception
 	 */
-	private static void exportRdLine(OracleAddress oa, String dir)
+	private static void exportRdLine(Connection conn, String dir)
 			throws Exception {
 		String sql = "select a.*,        display_text.name,        styleFactors1.types,        styleFactors2.lane_types,        speedlimits.from_speed_limit,        speedlimits.to_speed_limit,        forms.forms   from rd_link a,        (select max(name1)||'/'||max(name2)||'/'||max(name3)||'/'||max(name4) name,link_pid from ( select a.link_pid, case when name_class=1 and seq_num=1 then b.name else null end as name1,  case when name_class=1 and seq_num=2 then b.name else null end as name2,  case when name_class=2 and seq_num=1 then b.name else null end as name3,    case when name_class=2 and seq_num=2 then b.name else null end as name4            from rd_link_name a, rd_name b          where a.name_groupid = b.name_groupid            and b.lang_code = 'CHI'            and a.u_record != 2) group by link_pid) display_text,        (select link_pid,                listagg(type, ',') within group(order by type) types           from (select a.link_pid, type                   from rd_link_limit a                  where type in (0, 4, 5, 6)                    and a.u_record != 2)          group by link_pid) styleFactors1,        (select link_pid,                listagg(lane_type, ',') within group(order by lane_type) lane_types           from rd_lane a          where a.u_record != 2          group by link_pid) styleFactors2,        (select link_pid, from_speed_limit, to_speed_limit           from rd_link_speedlimit a          where speed_type = 0            and a.u_record != 2) speedlimits,        (select link_pid,                listagg(form_of_way, ',') within group(order by form_of_way) forms           from rd_link_form          where u_record != 2          group by link_pid) forms  where a.link_pid = display_text.link_pid(+)    and a.link_pid = styleFactors1.link_pid(+)    and a.link_pid = styleFactors2.link_pid(+)    and a.link_pid = speedlimits.link_pid(+)    and a.link_pid = forms.link_pid(+)    and a.u_record != 2";
 		
@@ -49,8 +48,6 @@ public class ExportBaseData {
 		PrintWriter out = new PrintWriter(dir + "/tmp/rdline.txt");
 
 		String operateDate = StringUtils.getCurrentTime();
-
-		Connection conn = oa.getConn();
 
 		Statement stmt = conn.createStatement();
 
@@ -393,7 +390,7 @@ public class ExportBaseData {
 	 * @param dir
 	 * @throws Exception
 	 */
-	public static void exportBaseData2Sqlite(OracleAddress oa, String dir)
+	public static void exportBaseData2Sqlite(Connection conn, String dir)
 			throws Exception {
 
 		
@@ -429,9 +426,9 @@ public class ExportBaseData {
 
 		String operateDate = StringUtils.getCurrentTime();
 		
-		exportRdLine2Sqlite(sqliteConn, stmt, oa, operateDate);
+		exportRdLine2Sqlite(sqliteConn, stmt, conn, operateDate);
 		
-		exportRdNode2Sqlite(sqliteConn, stmt, oa, operateDate);
+		exportRdNode2Sqlite(sqliteConn, stmt, conn, operateDate);
 		
 		sqliteConn.close();
 
@@ -442,7 +439,7 @@ public class ExportBaseData {
 
 	}
 	
-	private static void exportRdLine2Sqlite(Connection sqliteConn, Statement stmt, OracleAddress oa, String operateDate) throws Exception{
+	private static void exportRdLine2Sqlite(Connection sqliteConn, Statement stmt, Connection conn, String operateDate) throws Exception{
 		// creating a LINESTRING table
 		stmt.execute("create table gdb_rdLine(pid integer primary key)");
 		stmt.execute("select addgeometrycolumn('gdb_rdLine','geometry',4326,'GEOMETRY','XY')");
@@ -473,8 +470,6 @@ public class ExportBaseData {
 				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
-
-		Connection conn = oa.getConn();
 
 		Statement stmt2 = conn.createStatement();
 		
@@ -570,7 +565,7 @@ public class ExportBaseData {
 		sqliteConn.commit();
 	}
 	
-	private static void exportRdNode2Sqlite(Connection sqliteConn, Statement stmt, OracleAddress oa, String operateDate) throws Exception{
+	private static void exportRdNode2Sqlite(Connection sqliteConn, Statement stmt, Connection conn, String operateDate) throws Exception{
 		// creating a LINESTRING table
 		stmt.execute("create table gdb_rdNode(pid integer primary key)");
 		stmt.execute("select addgeometrycolumn('gdb_rdNode','geometry',4326,'GEOMETRY','XY')");
@@ -586,8 +581,6 @@ public class ExportBaseData {
 				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?)";
 
 		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
-
-		Connection conn = oa.getConn();
 
 		Statement stmt2 = conn.createStatement();
 		
@@ -673,30 +666,33 @@ public class ExportBaseData {
 		return json;
 	}
 
-	public static void exportBaseData(OracleAddress oa, String dir)
+	public static void exportBaseData(Connection conn, String dir)
 			throws Exception {
 
-		exportRdLine(oa, dir);
+		exportRdLine(conn, dir);
 		
 
 	}
 
 	public static void main(String[] args) throws Exception {
-		String username1 = "beijing11";
+		String username = "beijing11";
 
-		String password1 = "beijing11";
+		String password = "beijing11";
 
-		int port1 = 1521;
+		int port = 1521;
 
-		String ip1 = "192.168.4.131";
+		String ip = "192.168.4.131";
 
-		String serviceName1 = "orcl";
+		String serviceName = "orcl";
 
-		OracleAddress oa1 = new OracleAddress(username1, password1, port1, ip1,
-				serviceName1);
+		Class.forName("oracle.jdbc.driver.OracleDriver");
+		
+		Connection conn = DriverManager.getConnection(
+				"jdbc:oracle:thin:@" + ip + ":" + port + ":"
+						+ serviceName, username, password);
 
 		 //exportBaseData(oa1, "c:/1");
-		exportBaseData2Sqlite(oa1, "./");
+		exportBaseData2Sqlite(conn, "./");
 		 System.out.println("done");
 	}
 }

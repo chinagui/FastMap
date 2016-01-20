@@ -356,7 +356,7 @@ public class RdNode implements IObj {
 	@Override
 	public Map<String, Object> changedFields() {
 
-		return null;
+		return changedFields;
 	}
 
 	@Override

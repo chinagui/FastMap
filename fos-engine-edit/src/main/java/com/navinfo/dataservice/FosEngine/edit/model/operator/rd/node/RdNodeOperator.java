@@ -37,7 +37,6 @@ public class RdNodeOperator implements IOperator {
 		this.node = node;
 	}
 
-
 	@Override
 	public void insertRow() throws Exception {
 
@@ -51,7 +50,7 @@ public class RdNodeOperator implements IOperator {
 			stmt.executeBatch();
 
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -60,7 +59,7 @@ public class RdNodeOperator implements IOperator {
 					stmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
@@ -80,6 +79,8 @@ public class RdNodeOperator implements IOperator {
 
 			Iterator<Entry<String, Object>> it = set.iterator();
 
+			boolean isChanged = false;
+
 			while (it.hasNext()) {
 				Entry<String, Object> en = it.next();
 
@@ -88,7 +89,7 @@ public class RdNodeOperator implements IOperator {
 				Object columnValue = en.getValue();
 
 				Field field = node.getClass().getDeclaredField(column);
-				
+
 				field.setAccessible(true);
 
 				Object value = field.get(node);
@@ -101,6 +102,8 @@ public class RdNodeOperator implements IOperator {
 							String.valueOf(columnValue))) {
 						sb.append(column + "='" + String.valueOf(columnValue)
 								+ "',");
+
+						isChanged = true;
 					}
 
 				} else if (value instanceof Double) {
@@ -111,6 +114,8 @@ public class RdNodeOperator implements IOperator {
 								+ "="
 								+ Double.parseDouble(String
 										.valueOf(columnValue)) + ",");
+
+						isChanged = true;
 					}
 
 				} else if (value instanceof Integer) {
@@ -120,6 +125,8 @@ public class RdNodeOperator implements IOperator {
 						sb.append(column + "="
 								+ Integer.parseInt(String.valueOf(columnValue))
 								+ ",");
+
+						isChanged = true;
 					}
 
 				} else if (value instanceof Geometry) {
@@ -133,6 +140,8 @@ public class RdNodeOperator implements IOperator {
 					if (!StringUtils.isStringSame(oldWkt, newWkt)) {
 						sb.append("geometry=sdo_geometry('"
 								+ String.valueOf(newWkt) + "',8307),");
+
+						isChanged = true;
 					}
 				}
 			}
@@ -142,12 +151,16 @@ public class RdNodeOperator implements IOperator {
 
 			sql = sql.replace(", where", " where");
 
-			pstmt = conn.prepareStatement(sql);
+			if (isChanged) {
 
-			pstmt.executeUpdate();
+				pstmt = conn.prepareStatement(sql);
+
+				pstmt.executeUpdate();
+
+			}
 
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -156,7 +169,7 @@ public class RdNodeOperator implements IOperator {
 					pstmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
@@ -175,7 +188,7 @@ public class RdNodeOperator implements IOperator {
 			stmt.executeBatch();
 
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -184,7 +197,7 @@ public class RdNodeOperator implements IOperator {
 					stmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}

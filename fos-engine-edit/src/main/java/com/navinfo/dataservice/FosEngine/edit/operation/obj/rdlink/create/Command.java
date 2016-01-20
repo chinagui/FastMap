@@ -18,6 +18,26 @@ public class Command implements ICommand {
 	
 	private int sNodePid;
 	
+	private int kind=7;
+	
+	private int laneNum=2;
+	
+	public int getKind() {
+		return kind;
+	}
+
+	public void setKind(int kind) {
+		this.kind = kind;
+	}
+
+	public int getLaneNum() {
+		return laneNum;
+	}
+
+	public void setLaneNum(int laneNum) {
+		this.laneNum = laneNum;
+	}
+
 	public int geteNodePid() {
 		return eNodePid;
 	}
@@ -77,6 +97,14 @@ public class Command implements ICommand {
 		this.sNodePid = data.getInt("sNodePid");
 		
 		this.geometry = data.getJSONObject("geometry");
+		
+		if(data.containsKey("kind")){
+			this.kind= data.getInt("kind");
+		}
+		
+		if(data.containsKey("laneNum")){
+			this.laneNum = data.getInt("laneNum");
+		}
 	}
 
 }

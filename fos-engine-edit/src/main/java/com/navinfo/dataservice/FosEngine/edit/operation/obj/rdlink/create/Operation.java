@@ -91,6 +91,10 @@ public class Operation implements IOperation {
 			
 			setLinkChildren(link);
 			
+			link.setKind(command.getKind());
+			
+			link.setLaneNum(command.getLaneNum());
+			
 			result.insertObject(link, ObjStatus.INSERT);
 		}else{
 		
@@ -150,6 +154,10 @@ public class Operation implements IOperation {
 					else{
 						link.seteNodePid(command.geteNodePid());
 					}
+					
+					link.setKind(command.getKind());
+					
+					link.setLaneNum(command.getLaneNum());
 					
 					setLinkChildren(link);
 					

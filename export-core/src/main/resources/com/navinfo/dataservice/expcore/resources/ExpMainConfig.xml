@@ -9,6 +9,8 @@
 			main-script="exp-gdb-main.xml" />
 	<scripts name=""  exp-mode="copy,delete,cut" feature="log" condition="mesh"
 			main-script="exp-log-main.xml" />
+	<scripts name=""  exp-mode="copy,delete,cut" feature="ck" condition="mesh"
+			main-script="exp-ck-main.xml" />
 	<scripts name="" exp-mode="copy,delete,cut" feature="gdb" condition="area"
 		main-script="exp-gdb-main.xml"
 		replacer="com.navinfo.dms.tools.expcore.sql.replacer.AreaSqlReplacer" />

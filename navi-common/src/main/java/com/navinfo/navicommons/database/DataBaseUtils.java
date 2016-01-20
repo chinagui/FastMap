@@ -8,7 +8,10 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +19,7 @@ import javax.sql.DataSource;
 
 import oracle.sql.CLOB;
 
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -330,7 +334,59 @@ public abstract class DataBaseUtils {
             keyList.add(rsKey.getString("FKCOLUMN_NAME"));
         return keyList;
     }
+    
+	public  static void turnOnPkConstraint(Connection conn, Set<String> tableNames) throws SQLException {
+		switchConstraint(conn, true,"P",tableNames);
 
+	}
+	public  static void turnOffPkConstraint(Connection conn, Set<String> tableNames) throws SQLException {
+		switchConstraint(conn, false,"P",tableNames);
+
+	}
+	public  static void turnOnFkConstraint(Connection conn, Set<String> tableNames) throws SQLException {
+		switchConstraint(conn, true,"F",tableNames);
+
+	}
+	public  static void turnOffFkConstraint(Connection conn, Set<String> tableNames) throws SQLException {
+		switchConstraint(conn, true,"F",tableNames);
+
+	}
+    
+    private static void switchConstraint(Connection conn, final boolean onOff,String constraintType,Set<String> targetTables)
+            throws SQLException {
+
+		if(targetTables==null||targetTables.size()==0){
+			return;
+		}
+		
+		String tableSql = "select table_name,constraint_name from user_constraints c where c.constraint_type='"+constraintType+"' AND C.TABLE_NAME NOT LIKE 'BIN%' ";
+
+		tableSql += " AND table_name in ('" + StringUtils.join(targetTables,"','")+"')";
+
+		QueryRunner runner = new QueryRunner();
+		//KEY=CONSTRAINT_NAME,VALUE=TABLE_NAME
+		Map<String,String> tables = runner.query(conn, tableSql, new ResultSetHandler<Map<String,String>>() {
+			@Override
+			public Map<String,String> handle(ResultSet rs) throws SQLException {
+				
+				Map<String,String> tables = new HashMap<String,String>();
+				while (rs.next()) {
+					tables.put(new String(rs.getString("CONSTRAINT_NAME")),new String(rs.getString("TABLE_NAME")));	
+				}
+				return tables;
+			}
+
+		});
+		
+		String disable = "DISABLE";
+		if (onOff) {
+			disable = "ENABLE";
+		}
+		for (String constraintName : tables.keySet()) {
+			String primaryKeySql = "ALTER TABLE " + tables.get(constraintName) + " " + disable + " constraint "+constraintName;
+			runner.execute(conn, primaryKeySql);
+		}
+    }
 
     public static void main(String args[]) {
         try {

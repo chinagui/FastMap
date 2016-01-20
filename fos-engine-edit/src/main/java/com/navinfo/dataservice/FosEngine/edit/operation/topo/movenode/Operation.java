@@ -37,7 +37,7 @@ public class Operation implements IOperation {
 
 		for (RdLink link : command.getLinks()) {
 
-			Geometry geom = link.getGeometry();
+			Geometry geom = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
 
 			Coordinate[] cs = geom.getCoordinates();
 

@@ -40,7 +40,7 @@ public class Operation implements IOperation {
 
 	private void updateLinkGeomtry(Result result) throws Exception{
 		
-		Geometry geom = updateLink.getGeometry();
+		Geometry geom = GeoTranslator.transform(updateLink.getGeometry(), 0.00001, 5);
 		
 		Coordinate[] cs = geom.getCoordinates();
 		

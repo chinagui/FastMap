@@ -18,7 +18,6 @@ import com.navinfo.dataservice.FosEngine.edit.model.Result;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
-import com.navinfo.dataservice.commons.service.LogPidService;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -67,7 +66,7 @@ public class LogWriter {
 
 		sb.append("(op_id, us_id, op_cmd, op_dt, op_sg) values (");
 
-		sb.append(this.logOperation.getOpId());
+		sb.append("'" + this.logOperation.getOpId() + "'");
 
 		if (this.logOperation.getUsId() == null) {
 			sb.append(",null");
@@ -106,7 +105,7 @@ public class LogWriter {
 
 		sb.append("(op_id, ob_nm, ob_pk, ob_pid, opb_tp, ob_tp, op_dt, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id,mesh_id) values (");
 
-		sb.append(detail.getOpId());
+		sb.append("'" + detail.getOpId() + "'");
 
 		if (detail.getObNm() == null) {
 			sb.append(",null");
@@ -195,10 +194,8 @@ public class LogWriter {
 
 		logOperation.setOpDt(dt);
 		
-		LogPidService logPidService = new LogPidService(conn);
-
-		int opId = logPidService.generateOpPid();
-
+		String opId = UuidUtils.genUuid();
+		
 		logOperation.setOpId(opId);
 
 		logOperation.setOpSg(1);

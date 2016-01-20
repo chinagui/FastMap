@@ -5,7 +5,7 @@ import java.util.List;
 
 public class LogOperation {
 
-	private int opId;
+	private String opId;
 
 	private String usId;
 
@@ -21,11 +21,11 @@ public class LogOperation {
 
 	}
 
-	public int getOpId() {
+	public String getOpId() {
 		return opId;
 	}
 
-	public void setOpId(int opId) {
+	public void setOpId(String opId) {
 		this.opId = opId;
 	}
 

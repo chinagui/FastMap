@@ -2,7 +2,7 @@ package com.navinfo.dataservice.FosEngine.edit.log;
 
 public class LogDetail {
 
-	private int opId;
+	private String opId;
 
 	private String obNm;
 
@@ -78,11 +78,11 @@ public class LogDetail {
 
 
 
-	public int getOpId() {
+	public String getOpId() {
 		return opId;
 	}
 
-	public void setOpId(int opId) {
+	public void setOpId(String opId) {
 		this.opId = opId;
 	}
 

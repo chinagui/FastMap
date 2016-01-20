@@ -24,6 +24,7 @@ public abstract class AbstractJobRequest {
 	public abstract void validate()throws JobRuntimeException;
 	
 	public abstract void setAttrValue(String attName,String attValue)throws JobRuntimeException;
+	
 
 	public String getGdbVersion() {
 		return gdbVersion;

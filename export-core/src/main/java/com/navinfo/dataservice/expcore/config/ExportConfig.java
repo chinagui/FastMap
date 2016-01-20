@@ -27,6 +27,7 @@ public class ExportConfig {
 	protected String gdbVersion;//230,240,240+,252+,...
 	
 	private String exportMode;//
+	public final static String MODE_FLEXIBLE="flexible";//整库复制，走db_link,只支持oracle到oracle
 	public final static String MODE_FULL_COPY="full_copy";//整库复制，走db_link,只支持oracle到oracle
 	public final static String MODE_COPY="copy";
 	public final static String MODE_CUT="cut";
@@ -67,6 +68,10 @@ public class ExportConfig {
 	protected String whenExist;
 	public static final String WHEN_EXIST_IGNORE = "ignore";
 	public static final String WHEN_EXIST_OVERWRITE = "overwrite";
+	
+	//左右导出属性
+	protected  List<String> flexTables;
+	protected Map<String,String> flexConditions;
 	
 	protected Logger log = Logger.getLogger(this.getClass());
 	
@@ -292,6 +297,18 @@ public class ExportConfig {
 	public void setWhenExist(String whenExist) {
 		this.whenExist = whenExist;
 	}
+	public List<String> getFlexTables() {
+		return flexTables;
+	}
+	public void setFlexTables(List<String> flexTables) {
+		this.flexTables = flexTables;
+	}
+	public Map<String, String> getFlexConditions() {
+		return flexConditions;
+	}
+	public void setFlexConditions(Map<String, String> flexConditions) {
+		this.flexConditions = flexConditions;
+	}
 	public int getSourceDbId() {
 		return sourceDbId;
 	}
@@ -374,6 +391,24 @@ public class ExportConfig {
 						throw new ExportException("导出参数配置的tableReNames属性存在错误。");
 					}
 				}
+				this.setTableReNames(m);
+			}else if(attName.equals("flexTables")){
+				String[] s= attValue.split(",");
+				List<String> li = Arrays.asList(s);
+				this.setFlexTables(li);
+			}else if(attName.equals("flexConditions")){
+				Map<String,String> m = new HashMap<String,String>();
+				String[] sArr= attValue.split(",");
+				for(String s:sArr){
+					String[] rArr = s.split(":");
+					if(rArr!=null&&rArr.length==2){
+						m.put(rArr[0], rArr[1]);
+					}else{
+						log.error("导出参数配置的flexConditions属性存在错误。");
+						throw new ExportException("导出参数配置的flexConditions属性存在错误。");
+					}
+				}
+				this.setFlexConditions(m);
 			}
 			else{
 				argtypes= new Class[]{String.class};

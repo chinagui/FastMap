@@ -20,7 +20,6 @@ import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
-import org.json.JSONException;
 
 import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
 import com.navinfo.dataservice.FosEngine.photos.Photo;
@@ -34,6 +33,19 @@ import com.navinfo.dataservice.solr.core.SConnection;
  * @author lilei3774
  * 
  */
+
+class ErrorType {
+	static int InvalidLifecycle = 1;
+
+	static int Deleted = 2;
+
+	static int InvalidDate = 3;
+
+	static int Notexist = 4;
+	
+	static int InvalidData = 5;
+}
+
 public class TipsUpload {
 
 	private Map<String, JSONObject> insertTips = new HashMap<String, JSONObject>();
@@ -41,12 +53,42 @@ public class TipsUpload {
 	private Map<String, JSONObject> updateTips = new HashMap<String, JSONObject>();
 
 	private Map<String, JSONObject> oldTips = new HashMap<String, JSONObject>();
-	
+
 	private String currentDate;
 
 	private SConnection solrConn;
-	
-	public TipsUpload(String solrUrl){
+
+	private int total;
+
+	private int failed;
+
+	private JSONArray reasons;
+
+	public JSONArray getReasons() {
+		return reasons;
+	}
+
+	public void setReasons(JSONArray reasons) {
+		this.reasons = reasons;
+	}
+
+	public int getTotal() {
+		return total;
+	}
+
+	public void setTotal(int total) {
+		this.total = total;
+	}
+
+	public int getFailed() {
+		return failed;
+	}
+
+	public void setFailed(int failed) {
+		this.failed = failed;
+	}
+
+	public TipsUpload(String solrUrl) {
 		solrConn = new SConnection(solrUrl);
 	}
 
@@ -57,7 +99,13 @@ public class TipsUpload {
 	 * @throws Exception
 	 */
 	public Map<String, Photo> run(String fileName) throws Exception {
-		
+
+		total = 0;
+
+		failed = 0;
+
+		reasons = new JSONArray();
+
 		currentDate = StringUtils.getCurrentTime();
 
 		Connection hbaseConn = HBaseAddress.getHBaseConnection();
@@ -79,7 +127,7 @@ public class TipsUpload {
 		htab.put(puts);
 
 		htab.close();
-		
+
 		solrConn.persistentData();
 
 		solrConn.closeConnection();
@@ -103,72 +151,91 @@ public class TipsUpload {
 
 		while (scanner.hasNextLine()) {
 
-			String line = scanner.nextLine();
+			total += 1;
 
-			JSONObject json = JSONObject.fromObject(line);
+			String rowkey = "";
 
-			int lifecycle = json.getInt("t_lifecycle");
+			try {
 
-			if (lifecycle == 0) {
-				continue;
-			}
+				String line = scanner.nextLine();
 
-			String rowkey = json.getString("rowkey");
+				JSONObject json = JSONObject.fromObject(line);
 
-			String operateDate = json.getString("t_operateDate");
-			
-			JSONArray attachments = json.getJSONArray("attachments");
-			
-			JSONArray newFeedbacks = new JSONArray();
+				rowkey = json.getString("rowkey");
 
-			for (int i = 0; i < attachments.size(); i++) {
-				JSONObject attachment = attachments.getJSONObject(i);
+				int lifecycle = json.getInt("t_lifecycle");
 
-				int type = attachment.getInt("type");
+				if (lifecycle == 0) {
+					failed += 1;
 
-				String content = attachment.getString("content");
+					reasons.add(newReasonObject(rowkey,
+							ErrorType.InvalidLifecycle));
 
-				if (1 == type) {
-
-					Photo photo = getPhoto(attachment, json);
-
-					photoInfo.put(content, photo);
-
-					content = photo.getRowkey();
+					continue;
 				}
 
-				JSONObject newFeedback = new JSONObject();
+				String operateDate = json.getString("t_operateDate");
 
-				newFeedback.put("user", json.getInt("t_handler"));
+				JSONArray attachments = json.getJSONArray("attachments");
 
-				newFeedback.put("userRole", JSONNull.getInstance());
+				JSONArray newFeedbacks = new JSONArray();
 
-				newFeedback.put("type", type);
+				for (int i = 0; i < attachments.size(); i++) {
+					JSONObject attachment = attachments.getJSONObject(i);
 
-				newFeedback.put("content", content);
+					int type = attachment.getInt("type");
 
-				newFeedback.put("auditRemark", JSONNull.getInstance());
+					String content = attachment.getString("content");
 
-				newFeedback.put("date", operateDate);
+					if (1 == type) {
 
-				newFeedbacks.add(newFeedback);
+						Photo photo = getPhoto(attachment, json);
+
+						photoInfo.put(content, photo);
+
+						content = photo.getRowkey();
+					}
+
+					JSONObject newFeedback = new JSONObject();
+
+					newFeedback.put("user", json.getInt("t_handler"));
+
+					newFeedback.put("userRole", JSONNull.getInstance());
+
+					newFeedback.put("type", type);
+
+					newFeedback.put("content", content);
+
+					newFeedback.put("auditRemark", JSONNull.getInstance());
+
+					newFeedback.put("date", operateDate);
+
+					newFeedbacks.add(newFeedback);
+				}
+
+				json.put("feedback", newFeedbacks);
+
+				if (3 == lifecycle) {
+					insertTips.put(rowkey, json);
+				} else {
+					updateTips.put(rowkey, json);
+				}
+
+				Get get = new Get(rowkey.getBytes());
+
+				get.addColumn("data".getBytes(), "track".getBytes());
+
+				get.addColumn("data".getBytes(), "feedback".getBytes());
+
+				gets.add(get);
+
+			} catch (Exception e) {
+				failed += 1;
+
+				reasons.add(newReasonObject(rowkey, ErrorType.InvalidData));
+
+				e.printStackTrace();
 			}
-
-			json.put("feedback", newFeedbacks);
-
-			if (3 == lifecycle) {
-				insertTips.put(rowkey, json);
-			} else {
-				updateTips.put(rowkey, json);
-			}
-
-			Get get = new Get(rowkey.getBytes());
-
-			get.addColumn("data".getBytes(), "track".getBytes());
-
-			get.addColumn("data".getBytes(), "feedback".getBytes());
-
-			gets.add(get);
 
 		}
 
@@ -198,23 +265,29 @@ public class TipsUpload {
 
 			String rowkey = new String(result.getRow());
 
-			JSONObject jo = new JSONObject();
+			try {
+				JSONObject jo = new JSONObject();
 
-			String track = new String(result.getValue("data".getBytes(),
-					"track".getBytes()));
+				String track = new String(result.getValue("data".getBytes(),
+						"track".getBytes()));
 
-			jo.putAll(JSONObject.fromObject(track));
+				jo.putAll(JSONObject.fromObject(track));
 
-			if (result.containsColumn("data".getBytes(), "feedback".getBytes())) {
-				JSONObject feedback = JSONObject.fromObject(new String(result
-						.getValue("data".getBytes(), "feedback".getBytes())));
+				if (result.containsColumn("data".getBytes(),
+						"feedback".getBytes())) {
+					JSONObject feedback = JSONObject.fromObject(new String(
+							result.getValue("data".getBytes(),
+									"feedback".getBytes())));
 
-				jo.put("feedback", feedback);
-			} else {
-				jo.put("feedback", JSONNull.getInstance());
+					jo.put("feedback", feedback);
+				} else {
+					jo.put("feedback", JSONNull.getInstance());
+				}
+
+				oldTips.put(rowkey, jo);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-
-			oldTips.put(rowkey, jo);
 		}
 	}
 
@@ -229,29 +302,55 @@ public class TipsUpload {
 		Iterator<Entry<String, JSONObject>> it = set.iterator();
 
 		while (it.hasNext()) {
-			Entry<String, JSONObject> en = it.next();
 
-			String rowkey = en.getKey();
+			String rowkey = "";
+			
+			try {
+				Entry<String, JSONObject> en = it.next();
 
-			JSONObject json = en.getValue();
+				rowkey = en.getKey();
 
-			if (oldTips.containsKey(rowkey)) {
+				JSONObject json = en.getValue();
 
-				JSONObject oldTip = oldTips.get(rowkey);
+				Put put = null;
 
-				Put put = updatePut(rowkey, json, oldTip);
+				if (oldTips.containsKey(rowkey)) {
+
+					JSONObject oldTip = oldTips.get(rowkey);
+
+					int res = canUpdate(oldTip, json.getString("t_operateDate"));
+					if (res < 0) {
+						failed += 1;
+
+						if (res == -1) {
+							reasons.add(newReasonObject(rowkey,
+									ErrorType.Deleted));
+						} else {
+							reasons.add(newReasonObject(rowkey,
+									ErrorType.InvalidDate));
+						}
+						continue;
+					}
+
+					put = updatePut(rowkey, json, oldTip);
+
+				} else {
+					put = insertPut(rowkey, json);
+				}
+
+				JSONObject solrIndex = generateSolrIndex(json);
+
+				solrConn.addTips(solrIndex);
 
 				puts.add(put);
 
-			} else {
-				Put put = insertPut(rowkey, json);
+			} catch (Exception e) {
+				failed += 1;
+				
+				reasons.add(newReasonObject(rowkey, ErrorType.InvalidData));
 
-				puts.add(put);
+				e.printStackTrace();
 			}
-			
-			JSONObject solrIndex = generateSolrIndex(json);
-			
-			solrConn.addTips(solrIndex);
 		}
 	}
 
@@ -259,8 +358,8 @@ public class TipsUpload {
 
 		Put put = new Put(rowkey.getBytes());
 
-		JSONObject jsonTrack = generateTrackJson(3, json.getInt("t_handler"),json.getInt("t_command"),
-				null);
+		JSONObject jsonTrack = generateTrackJson(3, json.getInt("t_handler"),
+				json.getInt("t_command"), null);
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
@@ -318,26 +417,53 @@ public class TipsUpload {
 		Iterator<Entry<String, JSONObject>> it = set.iterator();
 
 		while (it.hasNext()) {
-			Entry<String, JSONObject> en = it.next();
+			String rowkey="";
+			
+			try {
+				Entry<String, JSONObject> en = it.next();
 
-			String rowkey = en.getKey();
+				rowkey = en.getKey();
 
-			if (!oldTips.containsKey(rowkey)) {
-				continue;
+				if (!oldTips.containsKey(rowkey)) {
+					failed += 1;
+					
+					reasons.add(newReasonObject(rowkey, ErrorType.Notexist));
+
+					continue;
+				}
+
+				JSONObject oldTip = oldTips.get(rowkey);
+
+				JSONObject json = en.getValue();
+
+				int res = canUpdate(oldTip, json.getString("t_operateDate"));
+				if (res < 0) {
+					failed += 1;
+
+					if (res == -1) {
+						reasons.add(newReasonObject(rowkey, ErrorType.Deleted));
+					} else {
+						reasons.add(newReasonObject(rowkey,
+								ErrorType.InvalidDate));
+					}
+
+					continue;
+				}
+
+				Put put = updatePut(rowkey, json, oldTip);
+
+				JSONObject solrIndex = generateSolrIndex(json);
+
+				solrConn.addTips(solrIndex);
+
+				puts.add(put);
+			} catch (Exception e) {
+				failed += 1;
+				
+				reasons.add(newReasonObject(rowkey, ErrorType.InvalidData));
+
+				e.printStackTrace();
 			}
-
-			JSONObject oldTip = oldTips.get(rowkey);
-
-			JSONObject json = en.getValue();
-
-			Put put = updatePut(rowkey, json, oldTip);
-
-			puts.add(put);
-			
-			JSONObject solrIndex = generateSolrIndex(json);
-			
-			solrConn.addTips(solrIndex);
-
 		}
 	}
 
@@ -348,7 +474,8 @@ public class TipsUpload {
 		int lifecycle = json.getInt("t_lifecycle");
 
 		JSONObject jsonTrack = generateTrackJson(lifecycle,
-				json.getInt("t_handler"),json.getInt("t_command"), oldTip.getJSONArray("t_trackInfo"));
+				json.getInt("t_handler"), json.getInt("t_command"),
+				oldTip.getJSONArray("t_trackInfo"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
@@ -436,13 +563,13 @@ public class TipsUpload {
 	 * @param oldTrackInfo
 	 * @return
 	 */
-	private JSONObject generateTrackJson(int lifecycle, int handler, int command,
-			JSONArray oldTrackInfo) {
+	private JSONObject generateTrackJson(int lifecycle, int handler,
+			int command, JSONArray oldTrackInfo) {
 
 		JSONObject jsonTrack = new JSONObject();
 
 		jsonTrack.put("t_lifecycle", lifecycle);
-		
+
 		jsonTrack.put("t_command", command);
 
 		JSONObject jsonTrackInfo = new JSONObject();
@@ -452,7 +579,7 @@ public class TipsUpload {
 		jsonTrackInfo.put("date", currentDate);
 
 		jsonTrackInfo.put("handler", handler);
-		
+
 		if (null == oldTrackInfo) {
 
 			oldTrackInfo = new JSONArray();
@@ -464,36 +591,36 @@ public class TipsUpload {
 
 		return jsonTrack;
 	}
-	
-	private JSONObject generateSolrIndex(JSONObject json) throws Exception{
-		
+
+	private JSONObject generateSolrIndex(JSONObject json) throws Exception {
+
 		JSONObject index = new JSONObject();
-		
+
 		index.put("id", json.getString("rowkey"));
-		
+
 		index.put("stage", 1);
-		
+
 		index.put("date", currentDate);
-		
+
 		index.put("t_lifecycle", json.getInt("t_lifecycle"));
-		
+
 		index.put("t_command", json.getInt("t_command"));
-		
+
 		index.put("handler", json.getInt("t_handler"));
-		
+
 		index.put("s_sourceType", json.getString("s_sourceType"));
-		
+
 		index.put("s_sourceCode", json.getInt("s_sourceCode"));
-		
+
 		index.put("g_guide", json.getJSONObject("g_guide"));
-		
+
 		JSONObject geojson = json.getJSONObject("g_location");
-		
+
 		index.put("g_location", geojson);
-		
+
 		index.put("wkt",
 				GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(geojson)));
-		
+
 		return index;
 	}
 
@@ -537,12 +664,46 @@ public class TipsUpload {
 		photo.setA_shootDate(extContent.getString("shootDate"));
 
 		photo.setA_deviceNum(extContent.getString("deviceNum"));
-		
+
 		photo.setA_fileName(attachment.getString("content"));
 
 		photo.setA_content(1);
 
 		return photo;
+	}
+
+	private int canUpdate(JSONObject oldTips, String operateDate) {
+		int lifecycle = oldTips.getInt("t_lifecycle");
+
+		JSONArray tracks = oldTips.getJSONArray("t_trackInfo");
+
+		JSONObject lastTrack = tracks.getJSONObject(tracks.size() - 1);
+
+		String lastDate = lastTrack.getString("date");
+
+		int lastStage = lastTrack.getInt("stage");
+
+		if (lifecycle == 1 && lastStage == 4) {
+
+			return -1;
+		}
+
+		if (operateDate.compareTo(lastDate) <= 0) {
+			return -2;
+		}
+
+		return 0;
+	}
+
+	private JSONObject newReasonObject(String rowkey, int type) {
+
+		JSONObject json = new JSONObject();
+
+		json.put("rowkey", rowkey);
+
+		json.put("type", type);
+
+		return json;
 	}
 
 	public static void main(String[] args) throws Exception {

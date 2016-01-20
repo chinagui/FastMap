@@ -27,6 +27,14 @@ import com.navinfo.dataservice.versionman.lock.FmMesh4Lock;
 import com.navinfo.dataservice.versionman.lock.MeshLockManager;
 
 public class FlushGdb {
+	
+	static{
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
 
 	private static StringBuilder logDetailQuery = new StringBuilder(
 			" where is_ck = 0 ");
@@ -45,44 +53,7 @@ public class FlushGdb {
 	
 	public static void copXcopyHistory(String[] args){
 		try {
-			Class.forName("oracle.jdbc.driver.OracleDriver");
-
-			props = new Properties();
-
-			props.load(new FileInputStream(args[0]));
-
-			stopTime = Long.parseLong(props.getProperty("stopTime"));
-
-			Scanner scanner = new Scanner(new FileInputStream(args[1]));
-
-			while (scanner.hasNextLine()) {
-				meshes.add(Integer.parseInt(scanner.nextLine()));
-			}
-
-			logDetailQuery.append(" and op_dt <= to_date('" + stopTime
-					+ "','yyyymmddhh24miss')");
-
-			int meshSize = meshes.size();
-
-			logDetailQuery.append(" and mesh_id in (");
-
-			for (int i = 0; i < meshSize; i++) {
-
-				logDetailQuery.append(meshes.get(i));
-				if (i < (meshSize - 1)) {
-					logDetailQuery.append(",");
-				}
-			}
-
-			logDetailQuery.append(") order by op_dt ");
-
-			init();
-
-			flushData();
-
-			moveLog();
-
-//			updateLogDetailCk();
+			flush(args);
 
 			sourceConn.commit();
 
@@ -102,42 +73,7 @@ public class FlushGdb {
 	
 	public static void fmgdb2gdbg(String[] args){
 		try {
-			Class.forName("oracle.jdbc.driver.OracleDriver");
-
-			props = new Properties();
-
-			props.load(new FileInputStream(args[0]));
-
-			stopTime = Long.parseLong(props.getProperty("stopTime"));
-
-			Scanner scanner = new Scanner(new FileInputStream(args[1]));
-
-			while (scanner.hasNextLine()) {
-				meshes.add(Integer.parseInt(scanner.nextLine()));
-			}
-
-			logDetailQuery.append(" and op_dt <= to_date('" + stopTime
-					+ "','yyyymmddhh24miss')");
-
-			int meshSize = meshes.size();
-
-			logDetailQuery.append(" and mesh_id in (");
-
-			for (int i = 0; i < meshSize; i++) {
-
-				logDetailQuery.append(meshes.get(i));
-				if (i < (meshSize - 1)) {
-					logDetailQuery.append(",");
-				}
-			}
-
-			logDetailQuery.append(") order by op_dt ");
-
-			init();
-
-			flushData();
-
-			moveLog();
+			flush(args);
 
 			updateLogDetailCk();
 
@@ -159,42 +95,7 @@ public class FlushGdb {
 	
 	public static void prjMeshCommit(String[] args){
 		try {
-			Class.forName("oracle.jdbc.driver.OracleDriver");
-
-			props = new Properties();
-
-			props.load(new FileInputStream(args[0]));
-
-			stopTime = Long.parseLong(props.getProperty("stopTime"));
-
-			Scanner scanner = new Scanner(new FileInputStream(args[1]));
-
-			while (scanner.hasNextLine()) {
-				meshes.add(Integer.parseInt(scanner.nextLine()));
-			}
-
-			logDetailQuery.append(" and op_dt <= to_date('" + stopTime
-					+ "','yyyymmddhh24miss')");
-
-			int meshSize = meshes.size();
-
-			logDetailQuery.append(" and mesh_id in (");
-
-			for (int i = 0; i < meshSize; i++) {
-
-				logDetailQuery.append(meshes.get(i));
-				if (i < (meshSize - 1)) {
-					logDetailQuery.append(",");
-				}
-			}
-
-			logDetailQuery.append(") order by op_dt ");
-
-			init();
-
-			flushData();
-
-			moveLog();
+			flush(args);
 
 			updateLogDetailCk();
 
@@ -291,7 +192,6 @@ public class FlushGdb {
 	public static void flush(String[] args) {
 
 		try {
-			Class.forName("oracle.jdbc.driver.OracleDriver");
 
 			props = new Properties();
 
@@ -327,12 +227,6 @@ public class FlushGdb {
 			flushData();
 
 			moveLog();
-
-			updateLogDetailCk();
-
-			sourceConn.commit();
-
-			destConn.commit();
 
 		} catch (Exception e) {
 			e.printStackTrace();

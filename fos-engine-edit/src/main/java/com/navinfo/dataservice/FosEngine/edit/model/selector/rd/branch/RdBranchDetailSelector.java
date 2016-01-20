@@ -30,7 +30,7 @@ public class RdBranchDetailSelector implements ISelector {
 //				+ " where detail_id=:1 and u_record!=2";
 		
 		String sql = "select a.*,c.mesh_id from " + detail.tableName()
-				+ " a,rd_branch b,rd_link c where a.detail_id=:1 and a.u_record!=2 and a.branch_pid = b.pid and b.in_link_pid = c.link_pid";
+				+ " a,rd_branch b,rd_link c where a.detail_id=:1 and a.u_record!=2 and a.branch_pid = b.branch_pid and b.in_link_pid = c.link_pid";
 
 		if (isLock) {
 			sql += " for update nowait";

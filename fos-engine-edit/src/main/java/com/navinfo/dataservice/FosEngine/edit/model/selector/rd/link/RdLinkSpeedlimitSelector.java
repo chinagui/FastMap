@@ -66,9 +66,9 @@ public class RdLinkSpeedlimitSelector implements ISelector {
 				
 				row.setSpeedType(resultSet.getInt("speed_type"));
 
-				row.setFromSpeedLimit(resultSet.getInt("from_speed_limit"));
+				row.setFromSpeedLimit(resultSet.getInt("from_speed_limit")/10);
 				
-				row.setToSpeedLimit(resultSet.getInt("to_speed_limit"));
+				row.setToSpeedLimit(resultSet.getInt("to_speed_limit")/10);
 				
 				row.setSpeedClass(resultSet.getInt("speed_class"));
 				

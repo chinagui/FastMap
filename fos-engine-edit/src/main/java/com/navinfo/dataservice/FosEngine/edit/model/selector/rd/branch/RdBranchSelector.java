@@ -196,13 +196,19 @@ public class RdBranchSelector implements ISelector {
 		return branch;
 	}
 
-	public IRow loadByPidDetailId(int pid, int detailId, boolean isLock) throws Exception {
+	public IRow loadByDetailId(int detailId, boolean isLock) throws Exception {
+		
+		RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
+				conn);
+		
+		RdBranchDetail detail = (RdBranchDetail)detailSelector.loadById(detailId, isLock);
+		
+		List<IRow> details = new ArrayList<IRow>();
+		
+		details.add(detail);
 
 		RdBranch branch = new RdBranch();
 
-//		String sql = "select * from " + branch.tableName()
-//				+ " where a.branch_pid=:1 and a.u_record!=2 ";
-		
 		String sql = "select a.*,b.mesh_id from " + branch.tableName()
 				+ " a,rd_link b where a.branch_pid=:1 and a.u_record!=2 and a.in_link_pid = b.link_pid ";
 
@@ -217,7 +223,7 @@ public class RdBranchSelector implements ISelector {
 		try {
 			pstmt = this.conn.prepareStatement(sql);
 
-			pstmt.setInt(1, pid);
+			pstmt.setInt(1, detail.getBranchPid());
 
 			resultSet = pstmt.executeQuery();
 
@@ -240,15 +246,6 @@ public class RdBranchSelector implements ISelector {
 				
 				branch.setMesh(meshId);
 
-				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
-						conn);
-				
-				IRow detail = detailSelector.loadById(detailId, isLock);
-				
-				List<IRow> details = new ArrayList<IRow>();
-				
-				details.add(detail);
-				
 				branch.setDetails(details);
 
 				for (IRow row : branch.getDetails()) {
@@ -261,7 +258,7 @@ public class RdBranchSelector implements ISelector {
 
 				RdBranchViaSelector viaSelector = new RdBranchViaSelector(conn);
 
-				branch.setVias(viaSelector.loadRowsByParentId(pid, isLock));
+				branch.setVias(viaSelector.loadRowsByParentId(branch.getPid(), isLock));
 
 				for (IRow row : branch.getVias()) {
 					RdBranchVia obj = (RdBranchVia) row;

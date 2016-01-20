@@ -92,6 +92,8 @@ public class Operation implements IOperation {
 		detail.setBranchPid(branch.getPid());
 		
 		detail.setMesh(branch.mesh());
+		
+		result.setPrimaryPid(detail.getPid());
 
 		if (flag) {
 

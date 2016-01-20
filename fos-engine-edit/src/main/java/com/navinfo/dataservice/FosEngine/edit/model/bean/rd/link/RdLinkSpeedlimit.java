@@ -16,7 +16,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 
 public class RdLinkSpeedlimit implements IRow {
-	
+
 	private int mesh;
 
 	private String rowId;
@@ -88,19 +88,19 @@ public class RdLinkSpeedlimit implements IRow {
 	private int speedType;
 
 	private int fromSpeedLimit;
-	
+
 	private int toSpeedLimit;
-	
+
 	private int speedClass;
-	
+
 	private int fromLimitSrc;
-	
+
 	private int toLimitSrc;
-	
+
 	private int speedDependent;
 
 	private String timeDomain;
-	
+
 	private int speedClassWork = 1;
 
 	private int linkPid;
@@ -118,7 +118,6 @@ public class RdLinkSpeedlimit implements IRow {
 	public RdLinkSpeedlimit() {
 
 	}
-
 
 	public String getTimeDomain() {
 		return timeDomain;
@@ -139,7 +138,11 @@ public class RdLinkSpeedlimit implements IRow {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
 
-		return JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		fromSpeedLimit = fromSpeedLimit * 10;
+
+		toSpeedLimit = toSpeedLimit * 10;
+
+		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
 	}
 
 	@Override
@@ -190,7 +193,6 @@ public class RdLinkSpeedlimit implements IRow {
 	@Override
 	public void copy(IRow row) {
 
-		
 	}
 
 	@Override
@@ -259,8 +261,13 @@ public class RdLinkSpeedlimit implements IRow {
 					String newValue = json.getString(key);
 
 					if (!newValue.equals(oldValue)) {
-						changedFields.put(key, json.get(key));
+						if (key.equals("fromSpeedLimit")
+								|| key.equals("toSpeedLimit")) {
 
+							changedFields.put(key, json.getInt(key) * 10);
+						} else {
+							changedFields.put(key, json.get(key));
+						}
 					}
 
 				}
@@ -284,7 +291,7 @@ public class RdLinkSpeedlimit implements IRow {
 	@Override
 	public void setMesh(int mesh) {
 		// TODO Auto-generated method stub
-		this.mesh=mesh;
+		this.mesh = mesh;
 	}
 
 }

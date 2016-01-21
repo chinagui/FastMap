@@ -56,64 +56,105 @@ public class RdCrossSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as  (select node_pid     from rd_node    where sdo_relate(geometry,                     sdo_geometry(:1,                                  8307),                     'mask=anyinteract') = 'TRUE') select pid,        listagg(a.node_pid, ',') within group(order by a.node_pid) node_pids,        listagg(sdo_util.to_wktgeometry_varchar(b.geometry), ',') within group(order by a.node_pid) wkts   from rd_cross_node a, rd_node b  where exists (select null from tmp1 b where a.node_pid = b.node_pid)    and a.node_pid = b.node_pid  group by a.pid";
+		String sql = "with tmp1 as  (select node_pid     from rd_node    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE') select pid,        listagg(a.node_pid, ',') within group(order by a.node_pid) node_pids,        listagg(sdo_util.to_wktgeometry_varchar(b.geometry), ',') within group(order by a.node_pid) wkts,        listagg(a.is_main,',') within group(order by a.node_pid) is_mains   from rd_cross_node a, rd_node b  where exists (select null from tmp1 b where a.node_pid = b.node_pid)    and a.node_pid = b.node_pid  group by a.pid";
 
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 		
+		WKTReader wktReader = new WKTReader();
+
 		try {
 			pstmt = conn.prepareStatement(sql);
-			
+
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
 			pstmt.setString(1, wkt);
 
 			resultSet = pstmt.executeQuery();
-			
+
 			double px = MercatorProjection.tileXToPixelX(x);
-			
+
 			double py = MercatorProjection.tileYToPixelY(y);
 
 			while (resultSet.next()) {
 
 				SearchSnapshot snapshot = new SearchSnapshot();
-				
+
 				JSONObject jsonM = new JSONObject();
 
 				snapshot.setI(String.valueOf(resultSet.getInt("pid")));
-				
+
 				snapshot.setT(8);
 
-				jsonM.put("a",resultSet.getString("node_pids"));
+				String isMains = resultSet.getString("is_mains");
+
+				String[] splits = isMains.split(",");
+
+				int mainIndex = 0;
+				for (int i = 0; i < splits.length; i++) {
+
+					if (splits[i].equals("1")) {
+						mainIndex = i;
+						break;
+					}
+				}
+
+				String nodePids = resultSet.getString("node_pids");
+
+				String a = "";
+
+				splits = nodePids.split(",");
+
+				a += splits[mainIndex];
+
+				for (int i = 0; i < splits.length; i++) {
+					if (i != mainIndex) {
+						a += "," + splits[i];
+					}
+				}
+
+				jsonM.put("a", a);
 
 				String wktPoints = resultSet.getString("wkts");
-				
+
 				JSONArray gArray = new JSONArray();
-				
-				String[] splits = wktPoints.split(",");
-				
-				for(String w : splits){
-					Geometry gNode = new WKTReader().read(w);
-					
-					gArray.add(Geojson.lonlat2Pixel(gNode.getCoordinate().x,gNode.getCoordinate().y,z,px,py));
+
+				splits = wktPoints.split(",");
+
+				Geometry gNode = wktReader.read(splits[mainIndex]);
+
+				gArray.add(Geojson.lonlat2Pixel(gNode.getCoordinate().x,
+						gNode.getCoordinate().y, z, px, py));
+
+				for (int i = 0; i < splits.length; i++) {
+
+					if (i != mainIndex) {
+
+						gNode = wktReader.read(splits[i]);
+
+						gArray.add(Geojson.lonlat2Pixel(
+								gNode.getCoordinate().x,
+								gNode.getCoordinate().y, z, px, py));
+
+					}
 				}
 
 				snapshot.setG(gArray);
-				
+
 				snapshot.setM(jsonM);
 
 				list.add(snapshot);
 			}
 		} catch (Exception e) {
-			
+
 			throw new SQLException(e);
 		} finally {
 			if (resultSet != null) {
 				try {
 					resultSet.close();
 				} catch (Exception e) {
-					
+
 				}
 			}
 
@@ -121,7 +162,7 @@ public class RdCrossSearch implements ISearch {
 				try {
 					pstmt.close();
 				} catch (Exception e) {
-					
+
 				}
 			}
 

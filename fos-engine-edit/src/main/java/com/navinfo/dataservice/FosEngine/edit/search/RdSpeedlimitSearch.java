@@ -144,16 +144,90 @@ public class RdSpeedlimitSearch implements ISearch {
 		return selector.trackSpeedLimitLink(linkPid, direct);
 	}
 	
+	public List<SearchSnapshot> mytest() throws Exception {
+
+		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+		String sql = " with tmp1 as  (select link_pid, geometry     from rd_link    where link_pid = 732483) select a.pid,        a.direct,        a.capture_flag || '|' || a.speed_flag || '|' || a.speed_value a_val,        b.geometry link_geom,        a.geometry point_geom   from rd_speedlimit a, tmp1 b  where a.link_pid = b.link_pid";
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			
+			resultSet = pstmt.executeQuery();
+			
+
+			while (resultSet.next()) {
+
+				SearchSnapshot snapshot = new SearchSnapshot();
+				
+				JSONObject jsonM = new JSONObject();
+
+				snapshot.setI(String.valueOf(resultSet.getInt("pid")));
+				
+				snapshot.setT(6);
+
+				jsonM.put("a",resultSet.getString("a_val"));
+
+				STRUCT struct1 = (STRUCT) resultSet.getObject("link_geom");
+
+				JGeometry geom1 = JGeometry.load(struct1);
+
+				String linkWkt = new String(wktSpatial.fromJGeometry(geom1));
+
+				STRUCT struct2 = (STRUCT) resultSet.getObject("point_geom");
+
+				JGeometry geom2 = JGeometry.load(struct2);
+				
+				double angle = DisplayUtils.calIncloudedAngle(linkWkt, resultSet.getInt("direct"));
+
+				jsonM.put("c", String.valueOf((int)angle));
+
+				snapshot.setM(jsonM);
+
+				list.add(snapshot);
+			}
+		} catch (Exception e) {
+			
+			throw new SQLException(e);
+		} finally {
+			if (resultSet != null) {
+				try {
+					resultSet.close();
+				} catch (Exception e) {
+					
+				}
+			}
+
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (Exception e) {
+					
+				}
+			}
+
+		}
+
+		return list;
+	}
+	
+	
 	
 	public static void main(String[] args) throws Exception {
 		ConfigLoader.initDBConn("C:/Users/wangshishuai3966/git/FosEngine/FosEngine/src/config.properties");
 		
-		Connection conn = DBOraclePoolManager.getConnection(1);
+		Connection conn = DBOraclePoolManager.getConnection(11);
 		
 		RdSpeedlimitSearch s = new RdSpeedlimitSearch(conn);
 		
-		IObj obj = s.searchDataByPid(7039);
+//		IObj obj = s.searchDataByPid(7039);
 		
-		System.out.println(obj.Serialize(null));
+		//System.out.println(obj.Serialize(null));
+		
+		s.mytest();
 	}
 }

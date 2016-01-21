@@ -89,7 +89,7 @@ public class TipsSelector {
 				
 				JSONObject geojson = JSONObject.fromObject(json.getString("g_location"));
 
-				Geojson.point2Pixel(geojson, z, px, py);
+				Geojson.coord2Pixel(geojson, z, px, py);
 				
 				snapshot.setG(geojson.getJSONArray("coordinates"));
 				
@@ -300,6 +300,6 @@ public class TipsSelector {
 		//System.out.println(selector.getSnapshot(a, b, type));
 		//System.out.println(selector.getStats(a, b));
 		
-		System.out.println(selector.searchDataByTileWithGap(107946, 49615, 17, 5));
+		System.out.println(selector.searchDataByTileWithGap(107941, 49613, 17, 5));
 	}
 }

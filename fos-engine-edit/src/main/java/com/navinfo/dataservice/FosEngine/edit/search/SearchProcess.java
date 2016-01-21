@@ -12,7 +12,9 @@ import net.sf.json.util.JSONUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.IObj;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.cross.RdCross;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 
@@ -215,4 +217,32 @@ public class SearchProcess {
 			}
 		}
 	}
+	
+	public RdCross searchCrossByNodePid(int nodePid) throws Exception {
+		try {
+			
+			RdCrossSelector selector = new RdCrossSelector(this.conn);
+			
+			RdCross cross = selector.loadCrossByNodePid(nodePid, false);
+			
+			return cross;
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+
+				}
+			}
+		}
+	}
+	
+	
+	
 }

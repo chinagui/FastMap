@@ -272,4 +272,111 @@ public class RdCrossSelector implements ISelector {
 		return result;
 	}
 
+	public RdCross loadCrossByNodePid(int nodePid, boolean isLock) throws Exception {
+
+		RdCross cross = new RdCross();
+
+		String sql = "select a.*, c.mesh_id   from rd_cross a, rd_node_mesh c  where  exists (select null           from rd_cross_node d          where a.pid = d.pid            and d.node_pid =:1      and d.u_record != 2            and c.node_pid = d.node_pid            )    and a.u_record != 2";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, nodePid);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+
+				cross.setPid(resultSet.getInt("pid"));
+
+				cross.setType(resultSet.getInt("type"));
+
+				cross.setSignal(resultSet.getInt("signal"));
+
+				cross.setElectroeye(resultSet.getInt("electroeye"));
+
+				cross.setKgFlag(resultSet.getInt("kg_flag"));
+				
+				cross.setMesh(resultSet.getInt("mesh_id"));
+
+				List<IRow> links = new RdCrossLinkSelector(conn)
+						.loadRowsByParentId(cross.getPid(), isLock);
+				
+				for(IRow row : links){
+					row.setMesh(cross.mesh());
+				}
+
+				cross.setLinks(links);
+				
+				for (IRow row : cross.getLinks()) {
+					RdCrossLink obj = (RdCrossLink) row;
+
+					cross.linkMap.put(obj.rowId(), obj);
+				}
+
+				List<IRow> nodes = new RdCrossNodeSelector(conn)
+						.loadRowsByParentId(cross.getPid(), isLock);
+				
+				for(IRow row : nodes){
+					row.setMesh(cross.mesh());
+				}
+
+				cross.setNodes(nodes);
+				
+				for (IRow row : cross.getNodes()) {
+					RdCrossNode obj = (RdCrossNode) row;
+
+					cross.nodeMap.put(obj.rowId(), obj);
+				}
+
+				List<IRow> names = new RdCrossNameSelector(conn)
+						.loadRowsByParentId(cross.getPid(), isLock);
+				
+				for(IRow row : names){
+					row.setMesh(cross.mesh());
+				}
+
+				cross.setNames(names);
+				
+				for (IRow row : cross.getNames()) {
+					RdCrossName obj = (RdCrossName) row;
+
+					cross.nameMap.put(obj.rowId(), obj);
+				}
+
+				cross.setRowId(resultSet.getString("row_id"));
+
+			} else {
+				
+				return null;
+			}
+		} catch (Exception e) {
+			
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+		}
+
+		return cross;
+	}
 }

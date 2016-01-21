@@ -193,13 +193,70 @@ public class SearchProcess {
 
 	}
 
+	public JSONArray searchDataByCondition(ObjType type, JSONObject condition)
+			throws Exception {
+
+		try {
+			JSONArray array = new JSONArray();
+
+			switch (type) {
+
+			case RDCROSS:
+
+				if (condition.containsKey("nodePid")) {
+
+					int nodePid = condition.getInt("nodePid");
+
+					RdCrossSelector selector = new RdCrossSelector(this.conn);
+
+					RdCross cross = selector.loadCrossByNodePid(nodePid, false);
+
+					array.add(cross.Serialize(ObjLevel.FULL));
+
+				}
+				break;
+				
+			case RDLINK:
+				if (condition.containsKey("nodePid")) {
+
+					int nodePid = condition.getInt("nodePid");
+
+					RdLinkSelector selector = new RdLinkSelector(this.conn);
+
+					List<RdLink> links = selector.loadByNodePid(nodePid, false);
+
+					for (RdLink link : links) {
+						array.add(link.Serialize(ObjLevel.BRIEF));
+					}
+				}
+
+				break;
+			}
+
+			return array;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+
+				}
+			}
+		}
+	}
+
 	public List<RdLink> searchLinkByNodePid(int nodePid) throws Exception {
 		try {
-			
+
 			RdLinkSelector selector = new RdLinkSelector(this.conn);
-			
+
 			List<RdLink> links = selector.loadByNodePid(nodePid, false);
-			
+
 			return links;
 
 		} catch (Exception e) {
@@ -217,14 +274,14 @@ public class SearchProcess {
 			}
 		}
 	}
-	
+
 	public RdCross searchCrossByNodePid(int nodePid) throws Exception {
 		try {
-			
+
 			RdCrossSelector selector = new RdCrossSelector(this.conn);
-			
+
 			RdCross cross = selector.loadCrossByNodePid(nodePid, false);
-			
+
 			return cross;
 
 		} catch (Exception e) {
@@ -242,7 +299,5 @@ public class SearchProcess {
 			}
 		}
 	}
-	
-	
-	
+
 }

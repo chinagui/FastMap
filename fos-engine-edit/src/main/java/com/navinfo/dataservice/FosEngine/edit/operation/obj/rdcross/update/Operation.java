@@ -156,8 +156,8 @@ public class Operation implements IOperation {
 			}
 		}
 		
-		if (content.containsKey("name")) {
-			JSONArray array = content.getJSONArray("name");
+		if (content.containsKey("names")) {
+			JSONArray array = content.getJSONArray("names");
 
 			for (int i = 0; i < array.size(); i++) {
 

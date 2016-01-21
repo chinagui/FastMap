@@ -17,8 +17,6 @@ import com.vividsolutions.jts.io.WKTWriter;
  */
 public abstract class MeshUtils {
 	
-	private static WKTReader wktReader = new WKTReader();
-
 	public static void main(String[] args) throws Exception{
 //		int meshid = 595673;
 //		double[] a =mesh2LocationLatLon("24967");
@@ -164,7 +162,7 @@ public abstract class MeshUtils {
 		
 		String wkt = mesh2WKT(meshId);
 		
-		Geometry jts = wktReader.read(wkt);
+		Geometry jts = new WKTReader().read(wkt);
 		
 		return jts;
 		

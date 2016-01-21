@@ -30,10 +30,6 @@ import com.vividsolutions.jts.io.WKTReader;
 
 public class HighwayTipsBuilder {
 
-	private static final WKT wkt = new WKT();
-	
-	private static final WKTReader wktReader = new WKTReader();
-
 	private static String sql = "with tmp1 as  (select a.branch_pid,          b.arrow_code,          b.exit_num,       "
 			+ "   c.names,          a.in_link_pid,          a.node_pid,          a.out_link_pid     from rd_branch a,   "
 			+ "       (select *             from (select b.*,                         "
@@ -132,13 +128,13 @@ public class HighwayTipsBuilder {
 
 		JGeometry geom1 = JGeometry.load(struct1);
 
-		String linkWkt = new String(wkt.fromJGeometry(geom1));
+		String linkWkt = new String(new WKT().fromJGeometry(geom1));
 
 		STRUCT struct2 = (STRUCT) resultSet.getObject("point_geom");
 
 		JGeometry geom2 = JGeometry.load(struct2);
 
-		String pointWkt = new String(wkt.fromJGeometry(geom2));
+		String pointWkt = new String(new WKT().fromJGeometry(geom2));
 
 		double[][] point = DisplayUtils
 				.getLinkPointPos(linkWkt, pointWkt, 1, 0);
@@ -183,13 +179,13 @@ public class HighwayTipsBuilder {
 
 		JGeometry geom1 = JGeometry.load(struct1);
 
-		String linkWkt = new String(wkt.fromJGeometry(geom1));
+		String linkWkt = new String(new WKT().fromJGeometry(geom1));
 
 		STRUCT struct2 = (STRUCT) resultSet.getObject("point_geom");
 
 		JGeometry geom2 = JGeometry.load(struct2);
 
-		String pointWkt = new String(wkt.fromJGeometry(geom2));
+		String pointWkt = new String(new WKT().fromJGeometry(geom2));
 		
 		double agl = DisplayUtils.calIncloudedAngle(linkWkt, getDirect(linkWkt,pointWkt));
 		
@@ -288,9 +284,9 @@ public class HighwayTipsBuilder {
 		
 		int direct = 2;
 		
-		Geometry link = wktReader.read(linkWkt);
+		Geometry link = new WKTReader().read(linkWkt);
 		
-		Geometry point = wktReader.read(pointWkt);
+		Geometry point = new WKTReader().read(pointWkt);
 		
 		Coordinate[] csLink = link.getCoordinates();
 		

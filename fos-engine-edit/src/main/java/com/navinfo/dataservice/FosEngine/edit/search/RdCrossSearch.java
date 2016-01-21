@@ -21,8 +21,6 @@ import com.vividsolutions.jts.io.WKTReader;
 
 public class RdCrossSearch implements ISearch {
 	
-	private static final WKTReader wktReader = new WKTReader();
-
 	private Connection conn;
 
 	public RdCrossSearch(Connection conn) {
@@ -96,7 +94,7 @@ public class RdCrossSearch implements ISearch {
 				String[] splits = wktPoints.split(",");
 				
 				for(String w : splits){
-					Geometry gNode = wktReader.read(w);
+					Geometry gNode = new WKTReader().read(w);
 					
 					gArray.add(Geojson.lonlat2Pixel(gNode.getCoordinate().x,gNode.getCoordinate().y,z,px,py));
 				}

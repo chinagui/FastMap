@@ -29,10 +29,6 @@ import com.vividsolutions.jts.io.WKTReader;
 
 public class RdRestrictionSearch implements ISearch {
 
-	private static final WKT wktSpatial = new WKT();
-	
-	private static final WKTReader wktReader = new WKTReader();
-
 	private Connection conn;
 
 	public RdRestrictionSearch(Connection conn) {
@@ -321,13 +317,13 @@ public class RdRestrictionSearch implements ISearch {
 
 				JGeometry geom1 = JGeometry.load(struct1);
 
-				String linkWkt = new String(wktSpatial.fromJGeometry(geom1));
+				String linkWkt = new String(new WKT().fromJGeometry(geom1));
 
 				STRUCT struct2 = (STRUCT) resultSet.getObject("point_geom");
 
 				JGeometry geom2 = JGeometry.load(struct2);
 
-				String pointWkt = new String(wktSpatial.fromJGeometry(geom2));
+				String pointWkt = new String(new WKT().fromJGeometry(geom2));
 
 				int direct = getDirect(linkWkt, pointWkt);
 				
@@ -374,9 +370,9 @@ public class RdRestrictionSearch implements ISearch {
 		
 		int direct = 2;
 		
-		Geometry link = wktReader.read(linkWkt);
+		Geometry link = new WKTReader().read(linkWkt);
 		
-		Geometry point = wktReader.read(pointWkt);
+		Geometry point = new WKTReader().read(pointWkt);
 		
 		Coordinate[] csLink = link.getCoordinates();
 		

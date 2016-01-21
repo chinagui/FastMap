@@ -36,10 +36,6 @@ public class GeoTranslator {
 	
 	private static final GeometryFactory geoFactory = new GeometryFactory();
 
-	private static final WKTReader reader = new WKTReader();
-
-	private static final WKTWriter writer = new WKTWriter();
-
 	private static final MfGeoFactory mfFactory = new MfGeoFactory() {
 
 		@Override
@@ -114,9 +110,9 @@ public class GeoTranslator {
 
 		sb2.append(")");
 
-		Geometry line = reader.read(sb.toString());
+		Geometry line = new WKTReader().read(sb.toString());
 
-		Geometry point = reader.read(sb2.toString());
+		Geometry point = new WKTReader().read(sb2.toString());
 
 		if (line.distance(point) <= 1) {
 			flag = true;
@@ -161,9 +157,9 @@ public class GeoTranslator {
 
 		sb2.append(")");
 
-		Geometry line = reader.read(sb.toString());
+		Geometry line = new WKTReader().read(sb.toString());
 
-		Geometry point = reader.read(sb2.toString());
+		Geometry point = new WKTReader().read(sb2.toString());
 
 		if (line.intersects(point)) {
 			flag = true;
@@ -224,7 +220,7 @@ public class GeoTranslator {
 	 */
 	public static String jts2Wkt(Geometry g) {
 
-		String wkt = writer.write(g);
+		String wkt = new WKTWriter().write(g);
 
 		return wkt;
 	}
@@ -244,7 +240,7 @@ public class GeoTranslator {
 
 		g = transform(g, scale, precision);
 
-		String wkt = writer.write(g);
+		String wkt = new WKTWriter().write(g);
 
 		return wkt;
 	}

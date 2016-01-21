@@ -28,10 +28,6 @@ import com.vividsolutions.jts.io.WKTReader;
 
 public class RdRestrictionTipsBuilder {
 	
-	private static final WKT wkt = new WKT();
-
-	private static final WKTReader wktReader = new WKTReader();
-	
 	private static String sql = "select  a.*,b.geometry link_geom,c.geometry point_geom  from "
 			+ "( select  a.pid,a.in_link_pid,a.node_pid,b.detail   from rd_restriction a,"
 			+ "( select  listagg(a.restric_info||','||a.flag||','||a.out_link_pid||','||b.time_domain,'-')  within group(order by a.out_link_pid) detail,"
@@ -124,13 +120,13 @@ public class RdRestrictionTipsBuilder {
 
 		JGeometry geom1 = JGeometry.load(struct1);
 
-		String linkWkt = new String(wkt.fromJGeometry(geom1));
+		String linkWkt = new String(new WKT().fromJGeometry(geom1));
 
 		STRUCT struct2 = (STRUCT) resultSet.getObject("point_geom");
 
 		JGeometry geom2 = JGeometry.load(struct2);
 
-		String pointWkt = new String(wkt.fromJGeometry(geom2));
+		String pointWkt = new String(new WKT().fromJGeometry(geom2));
 
 		double[][] point = DisplayUtils
 				.getLinkPointPos(linkWkt, pointWkt, 1, 0);
@@ -233,13 +229,13 @@ public class RdRestrictionTipsBuilder {
 
 		JGeometry geom1 = JGeometry.load(struct1);
 
-		String linkWkt = new String(wkt.fromJGeometry(geom1));
+		String linkWkt = new String(new WKT().fromJGeometry(geom1));
 
 		STRUCT struct2 = (STRUCT) resultSet.getObject("point_geom");
 
 		JGeometry geom2 = JGeometry.load(struct2);
 
-		String pointWkt = new String(wkt.fromJGeometry(geom2));
+		String pointWkt = new String(new WKT().fromJGeometry(geom2));
 		
 		int direct = getDirect(linkWkt, pointWkt);
 		
@@ -252,9 +248,9 @@ public class RdRestrictionTipsBuilder {
 		
 		int direct = 2;
 		
-		Geometry link = wktReader.read(linkWkt);
+		Geometry link = new WKTReader().read(linkWkt);
 		
-		Geometry point = wktReader.read(pointWkt);
+		Geometry point = new WKTReader().read(pointWkt);
 		
 		Coordinate[] csLink = link.getCoordinates();
 		

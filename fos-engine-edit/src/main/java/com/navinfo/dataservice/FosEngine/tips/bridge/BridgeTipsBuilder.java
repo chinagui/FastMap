@@ -30,8 +30,6 @@ public class BridgeTipsBuilder {
 
 	private static final WKT wkt = new WKT();
 	
-	private static WKTReader wktReader = new WKTReader();
-
 	private static String sql = "with tmp1 as  "
 			+ "(select link_pid,    decode(direct, 1, s_node_pid, 2, s_node_pid, e_node_pid) "
 			+ "s_node_pid,    decode(direct, 1, e_node_pid, 2, e_node_pid, s_node_pid) e_node_pid    "
@@ -408,10 +406,10 @@ public class BridgeTipsBuilder {
 		
 		json.put("type", "LineString");
 		
-		Geometry geom1= wktReader.read(listLink.get(0));
+		Geometry geom1= new WKTReader().read(listLink.get(0));
 		
 		for(int i=1;i<listLink.size();i++){
-			Geometry geom = wktReader.read(listLink.get(i));
+			Geometry geom = new WKTReader().read(listLink.get(i));
 			
 			geom1 = geom1.union(geom);
 		}

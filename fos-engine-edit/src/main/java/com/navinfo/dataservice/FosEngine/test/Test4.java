@@ -1,22 +1,90 @@
 package com.navinfo.dataservice.FosEngine.test;
 
-import com.navinfo.dataservice.commons.util.GridUtils;
+import java.io.IOException;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
 
 public class Test4 {
 
-	public static void main(String[] args) throws Exception {
-		// TODO Auto-generated method stub
+	public static class MyMapper extends Mapper<LongWritable, Text, Text, IntWritable>{
 		
-		
-//		116.25006,39.967934
-		//System.out.println(MercatorProjection.latitudeToTileY(39.967934, (byte)17));
-		//System.out.println(MercatorProjection.longitudeToTileX(116.25006,(byte) 17));
+		private IntWritable iw = new IntWritable(1);
 
-	//ZipUtils.unzipFile("c:/2/tips_10000_20151030095205.zip", "c:/2");
-	     double[] a =GridUtils.geohash2Lonlat("DD94C8988A254A759FA454C9A75409A315402015111313302952".substring(0,12));
-	     
-	     System.out.println(a[0]);
-	     System.out.println(a[1]);
+		@Override
+		protected void map(LongWritable key, Text value, Context context)
+				throws IOException, InterruptedException {
+			
+			context.write(value, iw);
+		}
+		
+		
+	}
+	
+	public static class MyReducer extends Reducer<Text,IntWritable,Text,IntWritable>{
+
+		private IntWritable sumInt = new IntWritable();
+		
+		@Override
+		protected void reduce(Text arg0, Iterable<IntWritable> arg1,
+				Context arg2)
+				throws IOException, InterruptedException {
+
+			int sum = 0;
+			
+			for(IntWritable iw: arg1){
+				
+				sum += iw.get();
+			}
+			
+			sumInt.set(sum);
+			
+			arg2.write(arg0, sumInt);
+			
+		}
+		
+		
+		
+	}
+	
+	public static void main(String[] args) throws Exception {
+	
+		Configuration conf = new Configuration();
+		
+		Job job = Job.getInstance(conf, "com1");
+		
+		job.setJarByClass(Test4.class);
+		
+		job.setMapperClass(MyMapper.class);
+		
+		job.setCombinerClass(MyReducer.class);
+		
+		job.setReducerClass(MyReducer.class);
+		
+		FileInputFormat.addInputPath(job, new Path(args[0]));
+		
+		FileOutputFormat.setOutputPath(job, new Path(args[1]));
+		
+		job.setNumReduceTasks(10);
+		
+		job.setMapOutputKeyClass(Text.class);
+		
+		job.setMapOutputValueClass(IntWritable.class);
+		
+		job.setOutputKeyClass(Text.class);
+		
+		job.setOutputValueClass(IntWritable.class);
+		
+		job.waitForCompletion(true);
 	}
 
 }

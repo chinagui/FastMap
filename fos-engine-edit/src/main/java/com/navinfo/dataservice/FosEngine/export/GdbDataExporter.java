@@ -610,7 +610,7 @@ public class GdbDataExporter {
 
 			prep.setString(2, json.getString("geometry"));
 
-			prep.setString(3, "");
+			prep.setString(3, json.getString("display_style"));
 
 			prep.setString(4, "");
 
@@ -646,6 +646,13 @@ public class GdbDataExporter {
 		int isMain = rs.getInt("is_main");
 
 		json.put("isMain", isMain);
+		
+		if(isMain == 0){
+			json.put("display_style", "28864");
+		}
+		else{
+			json.put("display_style", "12566463");
+		}
 
 		String meshid = rs.getString("mesh_id");
 

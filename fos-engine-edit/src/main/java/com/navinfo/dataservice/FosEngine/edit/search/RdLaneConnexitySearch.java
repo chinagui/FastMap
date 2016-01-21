@@ -7,8 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
@@ -26,10 +26,9 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
 public class RdLaneConnexitySearch implements ISearch {
-	private static final WKT wktSpatial = new WKT();
+	private WKT wktSpatial = new WKT();
 	
-	private static final WKTReader wktReader = new WKTReader();
-
+	private WKTReader wktReader = new WKTReader();
 
 	private Connection conn;
 
@@ -143,13 +142,13 @@ public class RdLaneConnexitySearch implements ISearch {
 					
 				}
 			}
-
+			
 		}
 
 		return list;
 	}
 	
-	private static int getDirect(String linkWkt,String pointWkt) throws ParseException{
+	private int getDirect(String linkWkt,String pointWkt) throws ParseException{
 		
 		int direct = 2;
 		
@@ -168,16 +167,47 @@ public class RdLaneConnexitySearch implements ISearch {
 		return direct;
 	}
 	
+	private static class MyTest implements Runnable{
+		
+		
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			try {
+				Connection conn = DBOraclePoolManager.getConnection(11);
+				
+				RdLaneConnexitySearch s = new RdLaneConnexitySearch(conn);
+				
+				JSONArray.fromObject(s.searchDataByTileWithGap(107942, 49614, 17, 5));
+				
+				System.out.println(Thread.currentThread().getName());
+			
+				conn.close();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
 	public static void main(String[] args) throws Exception {
-		ConfigLoader.initDBConn("C:/Users/wangshishuai3966/git/FosEngine/FosEngine/src/config.properties");
+		ConfigLoader.initDBConn("C:/Users/lilei3774/Desktop/config.properties");
 		
-		Connection conn = DBOraclePoolManager.getConnection(1);
+		List<Thread> threads = new ArrayList<Thread>();
 		
-		RdLaneConnexitySearch s = new RdLaneConnexitySearch(conn);
+		for(int i=0;i<100;i++){
 		
-		IObj obj = s.searchDataByPid(11398);
+			Thread mt = new Thread(new MyTest());
+			
+			threads.add(mt);
 		
-		System.out.println(obj.Serialize(null));
+		}
+		
+		for(Thread t : threads){
+			t.start();
+		}
 	}
 
 }

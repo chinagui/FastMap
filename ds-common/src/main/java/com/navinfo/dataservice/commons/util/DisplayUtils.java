@@ -265,7 +265,7 @@ public class DisplayUtils {
 
 		double length = 0;
 
-		for (int i = 0; i < linkMerArray.length - 2; i++) {
+		for (int i = 0; i <= linkMerArray.length - 2; i++) {
 
 			double[] curPoint = linkMerArray[i];
 
@@ -293,7 +293,7 @@ public class DisplayUtils {
 
 		double guidePointDistance = unit * seqNum;
 
-		for (int i = 0; i < linkMerArray.length - 2; i++) {
+		for (int i = 0; i <= linkMerArray.length - 2; i++) {
 
 			double[] curPoint = linkMerArray[i];
 

@@ -1,7 +1,7 @@
 package com.navinfo.dataservice.diff.dataaccess;
 
+import com.navinfo.dataservice.datahub.glm.GlmTable;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
-import com.navinfo.dataservice.diff.config.Table;
 
 import java.util.List;
 
@@ -14,9 +14,20 @@ import java.util.List;
 public class LocalDataAccess implements DataAccess
 {
 	protected OracleSchema schema;
+	public LocalDataAccess(OracleSchema schema){
+		this.schema=schema;
+	}
 
-    @Override
-    public String accessTable(Table table)
+    public OracleSchema getSchema() {
+		return schema;
+	}
+
+	public void setSchema(OracleSchema schema) {
+		this.schema = schema;
+	}
+
+	@Override
+    public String accessTable(GlmTable table)
     {
         return table.getName();
     }

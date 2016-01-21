@@ -16,6 +16,8 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.utils.MeshUtils;
+import com.navinfo.dataservice.datahub.manager.DbManager;
+import com.navinfo.dataservice.datahub.model.OracleSchema;
 
 /** 
  * @ClassName: InitProjectScriptsInterface 
@@ -41,9 +43,10 @@ public class Exp2CopVersionScriptsInterface {
 			int extendCount = StringUtils.isEmpty(extendCountStr)?0:Integer.valueOf(extendCountStr);
 
 			String allMeshesStr = null;
-			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
+			OracleSchema schema = (OracleSchema)new DbManager().getDbById(Integer.valueOf(targetDbId));
+			conn = schema.getDriverManagerDataSource().getConnection();
 			//计算扩圈，写m_mesh_type
-			String sqlMesh = "INSERT INTO M_MESH_TYPE(MESH_ID,MESH_TYPE)VALUES(?,?)";
+			String sqlMesh = "INSERT INTO M_MESH_TYPE(MESH_ID,\"TYPE\")VALUES(?,?)";
 			stmt = conn.prepareStatement(sqlMesh);
 			Set<String> coreMeshes = new HashSet<String>();
 			CollectionUtils.addAll(coreMeshes, meshes.split(","));
@@ -59,7 +62,7 @@ public class Exp2CopVersionScriptsInterface {
 				extendMeshes.removeAll(coreMeshes);
 				for(String mesh:extendMeshes){
 					stmt.setInt(1, Integer.valueOf(mesh));
-					stmt.setInt(1, 1);
+					stmt.setInt(2, 1);
 					stmt.addBatch();
 				}
 			}else{

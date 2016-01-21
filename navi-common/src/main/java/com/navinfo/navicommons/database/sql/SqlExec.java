@@ -88,9 +88,29 @@ public class SqlExec {
 		}
 
 	}
+	public void executeIgnoreError(String classpath, String fileEncoding) throws Exception {
+		InputStream is = null;
+		try {
+			is = SqlExec.class.getResourceAsStream(classpath);
+			if (is == null) {
+				is=Thread.currentThread().getContextClassLoader()
+						.getResourceAsStream(classpath);
+			}
+			if (is == null)
+				throw new IOException("无法找到配置文件:" + classpath);
+			executeIgnoreError(is, fileEncoding);
+		} catch (Exception e) {
+			//log.error(e.getMessage(), e);
+			throw e;
+		}
+
+	}
 
 	public void execute(String classpath) throws Exception {
 		execute(classpath, encoding);
+	}	
+	public void executeIgnoreError(String classpath) throws Exception {
+		executeIgnoreError(classpath, encoding);
 	}
 
 	/**

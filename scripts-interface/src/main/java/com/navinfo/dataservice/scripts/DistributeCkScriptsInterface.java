@@ -46,7 +46,7 @@ public class DistributeCkScriptsInterface {
 			String gdbVersion = "240+";
 			JSONObject expRequest = new JSONObject();
 			expRequest.put("exportMode", "copy");
-			expRequest.put("feature", "ck_excep");
+			expRequest.put("feature", "ck");
 			expRequest.put("condition", "mesh");
 			expRequest.put("dataIntegrity", "false");
 			expRequest.put("sourceDbId", sourceDbId);

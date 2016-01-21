@@ -11,8 +11,8 @@ import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.diff.DiffEngine;
-import com.navinfo.dataservice.diff.config.Column;
-import com.navinfo.dataservice.diff.config.Table;
+import com.navinfo.dataservice.datahub.glm.GlmColumn;
+import com.navinfo.dataservice.datahub.glm.GlmTable;
 import com.navinfo.dataservice.diff.exception.DiffException;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -36,7 +36,7 @@ public class JavaDiffScanner implements DiffScanner
 
 
     @Override
-    public void scan(Table table,String leftTableFullName,String rightTableFullName)throws DiffException{
+    public void scan(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
     	scanLeftAddData(table,leftTableFullName,rightTableFullName);
     	scanRightAddData(table,leftTableFullName,rightTableFullName);
     	scanUpdateData(table,leftTableFullName,rightTableFullName);
@@ -50,7 +50,7 @@ public class JavaDiffScanner implements DiffScanner
      * @param leftTable  左表
      * @param rightTable 右表
      */
-    public void scanLeftAddData(Table table,String leftTableFullName,String rightTableFullName)
+    public void scanLeftAddData(GlmTable table,String leftTableFullName,String rightTableFullName)
     		throws DiffException
     {
         try
@@ -78,7 +78,7 @@ public class JavaDiffScanner implements DiffScanner
      * @param leftTable  左表
      * @param rightTable 右表
      */
-    public void scanRightAddData(Table table,String leftTableFullName,String rightTableFullName)
+    public void scanRightAddData(GlmTable table,String leftTableFullName,String rightTableFullName)
     		throws DiffException
     {
         try
@@ -106,14 +106,14 @@ public class JavaDiffScanner implements DiffScanner
      * @param leftTable  左表
      * @param rightTable 右表
      */
-    public void scanUpdateData(Table table,String leftTableFullName,String rightTableFullName)
+    public void scanUpdateData(GlmTable table,String leftTableFullName,String rightTableFullName)
     throws DiffException
     {
         try
         {
         	List<String> pkConditions = new ArrayList<String>();
         	List<String> conditions = new ArrayList<String>();
-        	for(Column col:table.getCols()){
+        	for(GlmColumn col:table.getColumns()){
         		if(col.isPk()){
         			pkConditions.add(getEqualsString(col));
         		}else{
@@ -121,9 +121,9 @@ public class JavaDiffScanner implements DiffScanner
         		}
         	}
         	StringBuilder sb = new StringBuilder();
-        	sb.append("INSERT INTO LOG_DETAIL(OP_ID, OP_DT, TB_NM, OP_TP, ROW_ID)\n SELECT SYS_GUID(),SYSDATE,'");
+        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID, OP_DT, TB_NM, OP_TP, TB_ROW_ID)\n SELECT SYS_GUID(),SYSDATE,'");
         	sb.append(table.getName());
-        	sb.append("',2,ROW_ID FROM ");
+        	sb.append("',2,L.ROW_ID FROM ");
         	sb.append(leftTableFullName);
         	sb.append(" L, ");
         	sb.append(rightTableFullName);
@@ -141,16 +141,17 @@ public class JavaDiffScanner implements DiffScanner
 				+","+rightTableFullName,e);
         }
     }
-    private String getEqualsString(Column col){
-    	if(Column.TYPE_CLOB.equals(col.getType())
-    			||Column.TYPE_SDO_GEOMETRY.equals(col.getType())){
-    		return "pk_vm_utils.equal(L."+col.getName()+",R."+col.getName()+")=1";
+    private String getEqualsString(GlmColumn col){
+    	if(GlmColumn.TYPE_CLOB.equals(col.getDataType())
+    			||GlmColumn.TYPE_SDO_GEOMETRY.equals(col.getDataType())
+    			||col.isBlobColumn()){
+    		return "EQUALS.EQUAL(L.\""+col.getName()+"\",R.\""+col.getName()+"\")=1";
     	}else{
-    		return "L."+col.getName()+" = "+"R."+col.getName();
+    		return "L.\""+col.getName()+"\" = "+"R.\""+col.getName()+"\"";
     	}
     }
 
-    public void fillLogDetail(Table table,String leftTableFullName,String rightTableFullName)
+    public void fillLogDetail(GlmTable table,String leftTableFullName,String rightTableFullName)
     throws DiffException
     {
     	fillLeftAddLogDetail(table,leftTableFullName,rightTableFullName);
@@ -159,54 +160,54 @@ public class JavaDiffScanner implements DiffScanner
     	
     }
     
-    private void fillLeftAddLogDetail(Table table,String leftTableFullName,String rightTableFullName)throws DiffException{
+    private void fillLeftAddLogDetail(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
 
     	Connection conn = null;
         try
         {
         	conn = diffServer.getPoolDataSource().getConnection();
         	List<String> colNames = new ArrayList<String>();
-        	for(Column col:table.getCols()){
-        		colNames.add("L."+col.getName());
+        	for(GlmColumn col:table.getColumns()){
+        		colNames.add("L.\""+col.getName()+"\"");
         	}
         	StringBuilder sb = new StringBuilder();
         	sb.append("SELECT ");
         	sb.append(StringUtils.join(colNames,","));
         	sb.append(" FROM ");
         	sb.append(leftTableFullName);
-        	sb.append(" L,LOG_DETAIL D WHERE L.ROW_ID=D.ROW_ID AND D.TB_NM = ?");
+        	sb.append(" L,LOG_DETAIL D WHERE L.ROW_ID=D.TB_ROW_ID AND D.TB_NM = '");
         	sb.append(table.getName());
         	sb.append("'");
         	runner.query(conn,sb.toString(),1000,new FillLeftAddLogDetail(table,diffServer),new Object[0]);
         } catch (SQLException e){
         	log.error(e.getMessage(),e);
-        	throw new DiffException("扫描左表有右表没有的数据时出错：" + e.getMessage() 
+        	throw new DiffException("填充左表有右表没有的履历字段时出错：" + e.getMessage() 
 				+","+leftTableFullName
 				+","+rightTableFullName,e);
         }
     }
-    private void fillLeftDeleteLogDetail(Table table,String leftTableFullName,String rightTableFullName)throws DiffException{
+    private void fillLeftDeleteLogDetail(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
     	//暂时不填充
     }
-    private void fillLeftUpdateLogDetail(Table table,String leftTableFullName,String rightTableFullName)throws DiffException{
+    private void fillLeftUpdateLogDetail(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
 
     	Connection conn = null;
         try
         {
         	conn = diffServer.getPoolDataSource().getConnection();
         	List<String> colNames = new ArrayList<String>();
-        	for(Column col:table.getCols()){
+        	for(GlmColumn col:table.getColumns()){
         		colNames.add("L."+col.getName());
         	}
         	List<String> equalCols = new ArrayList<String>();
         	List<String> leftCols = new ArrayList<String>();
         	List<String> rightCols = new ArrayList<String>();
         	int colIndex=0;
-        	for(Column col:table.getCols()){
+        	for(GlmColumn col:table.getColumns()){
         		colIndex++;
-        		equalCols.add("EQUALS.EQUAL(L."+col.getName()+",R."+col.getName()+") E"+colIndex);
-        		leftCols.add("L."+col.getName()+" L"+colIndex);
-        		rightCols.add("R."+col.getName()+" R"+colIndex);
+        		equalCols.add("EQUALS.EQUAL(L.\""+col.getName()+"\",R.\""+col.getName()+"\") E"+colIndex);
+        		leftCols.add("L.\""+col.getName()+"\" L"+colIndex);
+        		rightCols.add("R.\""+col.getName()+"\" R"+colIndex);
         	}
         	StringBuilder sb = new StringBuilder();
         	sb.append("SELECT ");
@@ -219,13 +220,13 @@ public class JavaDiffScanner implements DiffScanner
         	sb.append(leftTableFullName);
         	sb.append(" L, ");
         	sb.append(rightTableFullName);
-        	sb.append(" R,LOG_DETAIL D WHERE L.ROW_ID=D.ROW_ID AND R.ROW_ID=D.ROW_ID AND D.TB_NM = ?");
+        	sb.append(" R,LOG_DETAIL D WHERE L.ROW_ID=D.TB_ROW_ID AND R.ROW_ID=D.ROW_ID AND D.TB_NM = '");
         	sb.append(table.getName());
         	sb.append("'");
         	runner.query(conn,sb.toString(),1000,new FillLeftAddLogDetail(table,diffServer),new Object[0]);
         } catch (SQLException e){
         	log.error(e.getMessage(),e);
-        	throw new DiffException("扫描左表有右表没有的数据时出错：" + e.getMessage() 
+        	throw new DiffException("填充左表右表都有但字段不一致的履历字段时出错：" + e.getMessage() 
 				+","+leftTableFullName
 				+","+rightTableFullName,e);
         }

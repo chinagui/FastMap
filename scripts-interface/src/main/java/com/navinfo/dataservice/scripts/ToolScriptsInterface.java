@@ -17,8 +17,11 @@ import org.apache.commons.io.IOUtils;
 
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.job.AbstractJobResponse;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.UnifiedDb;
+import com.navinfo.dataservice.diff.DiffEngine;
+import com.navinfo.dataservice.diff.DiffResponse;
 import com.navinfo.dataservice.diff.config.DiffConfig;
 import com.navinfo.dataservice.expcore.Exporter;
 import com.navinfo.dataservice.expcore.Exporter2OracleByFullCopy;
@@ -61,13 +64,22 @@ public class ToolScriptsInterface {
 			exporter = new Exporter2OracleByScripts(expConfig);
 		}
 		ExporterResult result = exporter.execute();
+		if(result.getStatus()==-1){
+			throw new Exception("导出过程出错。");
+		}
 		JSONObject response = new JSONObject();
 		return response;
 	}
 	public static JSONObject diff(JSONObject request)throws Exception{
-		DiffConfig expConfig = new DiffConfig(request);
+		DiffConfig diffConfig = new DiffConfig(request);
 		//
-		JSONObject response = new JSONObject();
+		DiffEngine diffEngine = new DiffEngine(diffConfig);
+		
+		DiffResponse res = diffEngine.execute();
+		if(res.getStatus()!=AbstractJobResponse.STATUS_SUCCESS){
+			throw new Exception("差分过程出错。");
+		}
+		JSONObject response = res.generateJson();
 		return response;
 	}
 	
@@ -108,7 +120,7 @@ public class ToolScriptsInterface {
 			        map.put(args[i], args[i+1]);
 		    }
 			String itype = map.get("-itype");
-			itype = "export_data";
+			itype = "diff";
 			if(StringUtils.isEmpty(itype)){
 				System.out.println("ERROR:need args:-itype xxx");
 				return;
@@ -125,7 +137,9 @@ public class ToolScriptsInterface {
 				response = ToolScriptsInterface.exportData(request);
 				writeJson(response,dir+"response"+File.separator+"export_data.json");
 			}else if("diff".equals(itype)){
-				
+				request = readJson(dir+"request"+File.separator+"diff.json");
+				response = ToolScriptsInterface.diff(request);
+				writeJson(response,dir+"request"+File.separator+"diff.json");
 			}else{
 				System.out.println("ERROR:need arg -itype");
 			}

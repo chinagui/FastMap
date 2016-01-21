@@ -3,7 +3,7 @@ package com.navinfo.dataservice.diff.dataaccess;
 
 import java.util.List;
 
-import com.navinfo.dataservice.diff.config.Table;
+import com.navinfo.dataservice.datahub.glm.GlmTable;
 
 /**
  * @author arnold
@@ -12,6 +12,6 @@ import com.navinfo.dataservice.diff.config.Table;
  */
 public interface DataAccess
 {
-    public String accessTable(Table table);
+    public String accessTable(GlmTable table);
 
 }

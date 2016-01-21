@@ -36,7 +36,7 @@ import com.navinfo.navicommons.utils.StringUtils;
  */
 public class DbManager {
 	protected Logger log = Logger.getLogger(this.getClass());
-	protected String mainSql = "SELECT D.DB_ID,D.DB_NAME,D.DB_USER_NAME,D.DB_USER_PASSWD,D.DB_ROLE,D.BIZ_TYPE,D.TABLESPACE_NAME,D.GDB_VERSION,D.DB_STATUS,D.CREATE_TIME,D.DESCP,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME FROM DB_HUB D,DB_SERVER S ";
+	protected String mainSql = "SELECT D.DB_ID,D.DB_NAME,D.DB_USER_NAME,D.DB_USER_PASSWD,D.DB_ROLE,D.BIZ_TYPE,D.TABLESPACE_NAME,D.GDB_VERSION,D.DB_STATUS,D.CREATE_TIME,D.DESCP,S.SERVER_ID,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME FROM DB_HUB D,DB_SERVER S ";
 	public UnifiedDb createDb(String bizType,String descp)throws DataHubException{
 		return createDb(null, bizType, descp, null, null,null);
 	}
@@ -117,7 +117,7 @@ public class DbManager {
 		UnifiedDb db=null;
 		Connection conn = null;
 		try{
-			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND D.DB_NAME=? AND D.BIZ_TYPE=?";
+			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND D.DB_NAME=? AND D.BIZ_TYPE=? AND D.DB_ROLE=0";
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
 			db = run.query(conn,sql, new DbResultSetHandler(false),dbName,dbType);
@@ -138,7 +138,7 @@ public class DbManager {
 		UnifiedDb db=null;
 		Connection conn = null;
 		try{
-			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND D.DB_ID=?";
+			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND D.DB_ID=? AND D.DB_ROLE=0";
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
 			db = run.query(conn,sql, new DbResultSetHandler(false),dbId);
@@ -159,7 +159,7 @@ public class DbManager {
 		UnifiedDb db=null;
 		Connection conn = null;
 		try{
-			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND D.DB_NAME=?";
+			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND D.DB_NAME=? AND D.DB_ROLE=0";
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
 			db = run.query(conn,sql, new DbResultSetHandler(true),dbName);
@@ -180,7 +180,7 @@ public class DbManager {
 		UnifiedDb db=null;
 		Connection conn = null;
 		try{
-			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND D.BIZ_TYPE=?";
+			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND D.BIZ_TYPE=? AND D.DB_ROLE=0";
 			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
 			db = run.query(conn,sql, new DbResultSetHandler(true),bizType);
@@ -260,6 +260,7 @@ public class DbManager {
 			if(rs.next()){
 				 DbServer server = new DbServer(rs.getString("SERVER_TYPE")
 						 ,rs.getString("SERVER_IP"),rs.getInt("SERVER_PORT"),rs.getString("SERVICE_NAME"));
+				 server.setSid(rs.getInt("SERVER_ID"));
 				 db = UnifiedDbFactory.getInstance()
 						 .newdb(rs.getInt("DB_ID"),rs.getString("DB_NAME")
 								 ,rs.getString("DB_USER_NAME"),rs.getString("DB_USER_PASSWD")

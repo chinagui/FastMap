@@ -49,7 +49,7 @@ public class AssembleFullCopySql{
 	protected List<String> getCopyTables(OracleSchema schema,List<String> excludedTables) throws Exception {
 		String gdbCause = "where 1=1";
 		
-		String ignoreTablePrefixConfig = SystemConfig.getSystemConfig().getValue("fullcopy.ignore.table.prefix");
+		String ignoreTablePrefixConfig = SystemConfig.getSystemConfig().getValue("glm.ignore.table.prefix");
 		if(StringUtils.isNotEmpty(ignoreTablePrefixConfig)){
 			String ignoreTablePrefix[] = ignoreTablePrefixConfig.split(",");
 			for (String prefix : ignoreTablePrefix) {

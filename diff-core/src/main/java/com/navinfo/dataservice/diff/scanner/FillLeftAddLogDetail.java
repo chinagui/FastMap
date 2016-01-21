@@ -24,8 +24,9 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.datahub.model.OracleSchema;
-import com.navinfo.dataservice.diff.config.DiffTableCache;
-import com.navinfo.dataservice.diff.config.Table;
+import com.navinfo.dataservice.datahub.glm.GlmCache;
+import com.navinfo.dataservice.datahub.glm.GlmColumn;
+import com.navinfo.dataservice.datahub.glm.GlmTable;
 import com.navinfo.navicommons.database.ColumnMetaData;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -41,18 +42,18 @@ import com.navinfo.navicommons.utils.StringUtils;
  */
 public class FillLeftAddLogDetail implements ResultSetHandler<String> {
 	protected Logger log = Logger.getLogger(this.getClass());
-	private Table table;
+	private GlmTable table;
     protected OracleSchema diffServer;
 	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	public FillLeftAddLogDetail(Table table,OracleSchema diffServer){
+	public FillLeftAddLogDetail(GlmTable table,OracleSchema diffServer){
 		this.table=table;
 		this.diffServer=diffServer;
 	}
 
 	@Override
 	public String handle(ResultSet rs) throws SQLException {
-		ResultSetMetaData mData = rs.getMetaData();
-		List<ColumnMetaData> tmdList = DataBaseUtils.getTableMetaData(table.getName(), mData);
+//		ResultSetMetaData mData = rs.getMetaData();
+//		List<ColumnMetaData> tmdList = DataBaseUtils.getTableMetaData(table.getName(), mData);
 		String updateSql = "UPDATE LOG_DETAIL SET MESH_ID=?,\"NEW\"=? WHERE ROW_ID=?";
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -60,12 +61,12 @@ public class FillLeftAddLogDetail implements ResultSetHandler<String> {
 			conn = diffServer.getPoolDataSource().getConnection();
 			stmt = conn.prepareStatement(updateSql);
 			int batchCount=0;
+			List<GlmColumn> cols = table.getColumns();
 			while(rs.next()){
 				int meshId = 0;
 				JSONObject json = new JSONObject();
-			    for(int i=0;i<tmdList.size();i++){
-			    	ColumnMetaData tmd = tmdList.get(i);
-			    	String name = tmd.getColumnName();
+			    for(GlmColumn col:cols){
+			    	String name = col.getName();
 					Object value = rs.getObject(name);
 					//获取mesh_id
 			    	if("MESH_ID".equals(name)){
@@ -73,7 +74,7 @@ public class FillLeftAddLogDetail implements ResultSetHandler<String> {
 			    	}
 			    	//获取new json
 					if(value!=null){
-						if(tmd.isGeometryColumn()){
+						if(col.isGeometryColumn()){
 							STRUCT geom = (STRUCT)value;
 							try{
 								String wkt = SpatialAdapters.struct2Wkt(geom);
@@ -82,11 +83,11 @@ public class FillLeftAddLogDetail implements ResultSetHandler<String> {
 								log.error(e.getMessage(),e);
 								throw new SQLException("Geometry字段转换成wkt出错。"+e.getMessage(),e);
 							}
-						}else if(tmd.isClobColumn()){
+						}else if(col.isClobColumn()){
 							CLOB clob = (CLOB)value;
 							String clobStr = DataBaseUtils.clob2String(clob);
 							json.put(name, clobStr);
-						}else if(tmd.isDateColumn()){
+						}else if(col.isDateColumn()||col.isTimestampColumn()){
 							Date date = (Date)value;
 							String dateStr = sdf.format(date);
 							json.put(name, dateStr);

@@ -7,12 +7,10 @@ import java.util.List;
 
 
 import org.apache.log4j.Logger;
-import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.diff.DiffEngine;
-import com.navinfo.dataservice.diff.config.Column;
-import com.navinfo.dataservice.diff.config.Table;
+import com.navinfo.dataservice.datahub.glm.GlmTable;
 import com.navinfo.dataservice.diff.exception.DiffException;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -36,7 +34,7 @@ public class PLSQLDiffScanner implements DiffScanner
 
 
     @Override
-    public void scan(Table table,String leftTableFullName,String rightTableFullName)throws DiffException{
+    public void scan(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
     	scanLeftAddData(table,leftTableFullName,rightTableFullName);
     	scanRightAddData(table,leftTableFullName,rightTableFullName);
     	scanUpdateData(table,leftTableFullName,rightTableFullName);
@@ -50,7 +48,7 @@ public class PLSQLDiffScanner implements DiffScanner
      * @param leftTable  左表
      * @param rightTable 右表
      */
-    public void scanLeftAddData(Table table,String leftTableFullName,String rightTableFullName)
+    public void scanLeftAddData(GlmTable table,String leftTableFullName,String rightTableFullName)
     		throws DiffException
     {
     }
@@ -61,7 +59,7 @@ public class PLSQLDiffScanner implements DiffScanner
      * @param leftTable  左表
      * @param rightTable 右表
      */
-    public void scanRightAddData(Table table,String leftTableFullName,String rightTableFullName)
+    public void scanRightAddData(GlmTable table,String leftTableFullName,String rightTableFullName)
     		throws DiffException
     {
         
@@ -73,18 +71,18 @@ public class PLSQLDiffScanner implements DiffScanner
      * @param leftTable  左表
      * @param rightTable 右表
      */
-    public void scanUpdateData(Table table,String leftTableFullName,String rightTableFullName)
+    public void scanUpdateData(GlmTable table,String leftTableFullName,String rightTableFullName)
     throws DiffException
     {
     }
 
-    public void fillLogDetail(Table table,String leftTableFullName,String rightTableFullName)
+    public void fillLogDetail(GlmTable table,String leftTableFullName,String rightTableFullName)
     throws DiffException
     {
     	fillLeftAddLogDetail(table,leftTableFullName,rightTableFullName);
     }
     
-    private void fillLeftAddLogDetail(Table table,String leftTableFullName,String rightTableFullName)throws DiffException{
+    private void fillLeftAddLogDetail(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
 
     	
     }

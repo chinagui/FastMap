@@ -23,8 +23,8 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.diff.config.DiffTableCache;
-import com.navinfo.dataservice.diff.config.Table;
+import com.navinfo.dataservice.datahub.glm.GlmCache;
+import com.navinfo.dataservice.datahub.glm.GlmTable;
 import com.navinfo.navicommons.database.ColumnMetaData;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -40,11 +40,11 @@ import com.navinfo.navicommons.utils.StringUtils;
  */
 public class FillLeftDeleteLogDetail implements ResultSetHandler<String> {
 	protected Logger log = Logger.getLogger(this.getClass());
-	private Table table;
+	private GlmTable table;
 	private DataSource dataSource;
 	private QueryRunner runner = new QueryRunner();
 	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	public FillLeftDeleteLogDetail(Table table,DataSource dataSource){
+	public FillLeftDeleteLogDetail(GlmTable table,DataSource dataSource){
 		this.table=table;
 		this.dataSource=dataSource;
 	}

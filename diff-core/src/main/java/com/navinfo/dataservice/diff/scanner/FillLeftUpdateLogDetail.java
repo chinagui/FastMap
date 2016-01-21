@@ -26,9 +26,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.datahub.model.OracleSchema;
-import com.navinfo.dataservice.diff.config.Column;
-import com.navinfo.dataservice.diff.config.DiffTableCache;
-import com.navinfo.dataservice.diff.config.Table;
+import com.navinfo.dataservice.datahub.glm.GlmCache;
+import com.navinfo.dataservice.datahub.glm.GlmColumn;
+import com.navinfo.dataservice.datahub.glm.GlmTable;
 import com.navinfo.navicommons.database.ColumnMetaData;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -43,11 +43,11 @@ import com.navinfo.navicommons.geo.SpatialAdapters;
  */
 public class FillLeftUpdateLogDetail implements ResultSetHandler<String> {
 	protected Logger log = Logger.getLogger(this.getClass());
-	private Table table;
+	private GlmTable table;
     protected OracleSchema diffServer;
 	private QueryRunner runner = new QueryRunner();
 	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	public FillLeftUpdateLogDetail(Table table,OracleSchema diffServer){
+	public FillLeftUpdateLogDetail(GlmTable table,OracleSchema diffServer){
 		this.table=table;
 		this.diffServer=diffServer;
 	}
@@ -61,7 +61,7 @@ public class FillLeftUpdateLogDetail implements ResultSetHandler<String> {
 //			throw new SQLException("填充时查询sql出错");
 //		}
 //		int colSize = tmdSize/3;
-		List<Column> cols = table.getCols();
+		List<GlmColumn> cols = table.getColumns();
 		int colsSize = cols.size();
 		String updateSql = "UPDATE LOG_DETAIL SET MESH_ID=?,\"NEW\"=?,\"OLD\"=?,FD_LST=? WHERE ROW_ID=?";
 		Connection conn = null;
@@ -76,7 +76,7 @@ public class FillLeftUpdateLogDetail implements ResultSetHandler<String> {
 				JSONObject jsonRight = new JSONObject();
 				List<String> fdLst = new ArrayList<String>();
 			    for(int i=0;i<cols.size();i++){
-			    	Column col = cols.get(i);
+			    	GlmColumn col = cols.get(i);
 			    	//前1/3的字段为比较值，1/3到2/3的字段为左表的全部字段，2/3到3/3为右表的全部字段
 			    	//==0则左右表值不同
 			    	if(rs.getInt(i)==0){
@@ -89,17 +89,17 @@ public class FillLeftUpdateLogDetail implements ResultSetHandler<String> {
 			    		if("MESH_ID".equals(col.getName())){
 			    			meshId = (int)valueLeft;
 			    		}
-			    		if(Column.TYPE_SDO_GEOMETRY.equals(col.getType())){
+			    		if(col.isGeometryColumn()){
 			    			String wktLeft = SpatialAdapters.struct2Wkt((STRUCT)valueLeft);
 			    			String wktRight = SpatialAdapters.struct2Wkt((STRUCT)valueRight);
 			    			jsonLeft.put(col.getName(), wktLeft);
 			    			jsonRight.put(col.getName(), wktRight);
-			    		}else if(Column.TYPE_CLOB.equals(col.getType())){
+			    		}else if(col.isClobColumn()){
 			    			String clobStrLeft = DataBaseUtils.clob2String((CLOB)valueLeft);
 			    			String clobStrRight = DataBaseUtils.clob2String((CLOB)valueRight);
 			    			jsonLeft.put(col.getName(), clobStrLeft);
 			    			jsonRight.put(col.getName(), clobStrRight);
-			    		}else if(Column.TYPE_DATA.equals(col.getType())){
+			    		}else if(col.isDateColumn()||col.isTimestampColumn()){
 			    			String dateStrLeft = sdf.format((Date)valueLeft);
 			    			String dateStrRight = sdf.format((Date)valueRight);
 			    			jsonLeft.put(col.getName(), dateStrLeft);

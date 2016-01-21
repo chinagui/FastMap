@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.diff.dataaccess;
 
-import com.navinfo.dataservice.diff.config.Table;
+import com.navinfo.dataservice.datahub.glm.GlmTable;
 
 
 /**
@@ -16,7 +16,7 @@ public class MigrateDataAccess implements DataAccess
     }
 
     @Override
-    public String accessTable(Table table)
+    public String accessTable(GlmTable table)
     {
         return table.getName();
     }

@@ -93,7 +93,7 @@ public class RdRestrictionSelector implements ISelector {
 				}
 			} else {
 				
-				throw new DataNotFoundException(null);
+				throw new DataNotFoundException("数据不存在");
 			}
 		} catch (Exception e) {
 			
@@ -345,7 +345,7 @@ public class RdRestrictionSelector implements ISelector {
 			} else {
 				logger.info("未找到RdRestriction: linkPid " + linkPid
 						+ ", nodePid " + nodePid);
-				throw new DataNotFoundException(null);
+				throw new DataNotFoundException("数据不存在");
 			}
 
 			if (resultSet.next()) {

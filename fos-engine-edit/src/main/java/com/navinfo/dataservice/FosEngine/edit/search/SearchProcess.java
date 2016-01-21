@@ -10,13 +10,16 @@ import net.sf.json.processors.JsonValueProcessor;
 import net.sf.json.util.JSONUtils;
 
 import com.navinfo.dataservice.FosEngine.edit.model.IObj;
+import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.cross.RdCross;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
+import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 
 /**
  * 查询进程
@@ -231,9 +234,28 @@ public class SearchProcess {
 				}
 
 				break;
+				
+			case RDBRANCH:
+				if (condition.containsKey("detailId")) {
+
+					int detailId = condition.getInt("detailId");
+
+					RdBranchSelector selector = new RdBranchSelector(conn);
+					
+					IRow row = selector.loadByDetailId(detailId, false);
+					
+					array.add(row.Serialize(ObjLevel.FULL));
+				}
+
+				break;
 			}
 
 			return array;
+		}
+		catch (DataNotFoundException e){
+			
+			return new JSONArray();
+			
 		} catch (Exception e) {
 
 			throw e;

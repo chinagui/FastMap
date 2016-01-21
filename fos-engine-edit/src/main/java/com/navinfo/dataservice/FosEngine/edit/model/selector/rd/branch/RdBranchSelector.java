@@ -168,7 +168,7 @@ public class RdBranchSelector implements ISelector {
 				}
 			} else {
 
-				throw new DataNotFoundException(null);
+				throw new DataNotFoundException("数据不存在");
 			}
 		} catch (Exception e) {
 
@@ -198,19 +198,9 @@ public class RdBranchSelector implements ISelector {
 
 	public IRow loadByDetailId(int detailId, boolean isLock) throws Exception {
 		
-		RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
-				conn);
-		
-		RdBranchDetail detail = (RdBranchDetail)detailSelector.loadById(detailId, isLock);
-		
-		List<IRow> details = new ArrayList<IRow>();
-		
-		details.add(detail);
-
 		RdBranch branch = new RdBranch();
 
-		String sql = "select a.*,b.mesh_id from " + branch.tableName()
-				+ " a,rd_link b where a.branch_pid=:1 and a.u_record!=2 and a.in_link_pid = b.link_pid ";
+		String sql = "select a.*,b.mesh_id from rd_branch a,rd_link b,rd_branch_detail c where a.u_record!=2 and a.in_link_pid = b.link_pid  and a.branch_pid=c.branch_pid and c.detail_id=:1";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -223,7 +213,7 @@ public class RdBranchSelector implements ISelector {
 		try {
 			pstmt = this.conn.prepareStatement(sql);
 
-			pstmt.setInt(1, detail.getBranchPid());
+			pstmt.setInt(1, detailId);
 
 			resultSet = pstmt.executeQuery();
 
@@ -246,30 +236,24 @@ public class RdBranchSelector implements ISelector {
 				
 				branch.setMesh(meshId);
 
+				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
+						conn);
+				
+				IRow detail = detailSelector.loadById(detailId, isLock);
+				
+				List<IRow> details = new ArrayList<IRow>();
+				
+				details.add(detail);
+
 				branch.setDetails(details);
-
-				for (IRow row : branch.getDetails()) {
-					RdBranchDetail obj = (RdBranchDetail) row;
-					
-					obj.setMesh(meshId);
-
-					branch.detailMap.put(obj.getPid(), obj);
-				}
 
 				RdBranchViaSelector viaSelector = new RdBranchViaSelector(conn);
 
 				branch.setVias(viaSelector.loadRowsByParentId(branch.getPid(), isLock));
 
-				for (IRow row : branch.getVias()) {
-					RdBranchVia obj = (RdBranchVia) row;
-					
-					obj.setMesh(meshId);
-
-					branch.viaMap.put(obj.rowId(), obj);
-				}
 			} else {
 
-				throw new DataNotFoundException(null);
+				throw new DataNotFoundException("数据不存在");
 			}
 		} catch (Exception e) {
 

@@ -73,7 +73,7 @@ public class RdBranchNameSelector implements ISelector {
 				name.setRowId(resultSet.getString("row_id"));
 			} else {
 				
-				throw new DataNotFoundException(null);
+				throw new DataNotFoundException("数据不存在");
 			}
 		} catch (Exception e) {
 			

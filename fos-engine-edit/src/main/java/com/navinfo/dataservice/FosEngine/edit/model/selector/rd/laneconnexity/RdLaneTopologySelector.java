@@ -81,7 +81,7 @@ public class RdLaneTopologySelector implements ISelector {
 
 			} else {
 				
-				throw new DataNotFoundException(null);
+				throw new DataNotFoundException("数据不存在");
 			}
 		} catch (Exception e) {
 			

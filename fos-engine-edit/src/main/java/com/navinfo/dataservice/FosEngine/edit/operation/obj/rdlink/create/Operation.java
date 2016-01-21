@@ -36,9 +36,9 @@ public class Operation implements IOperation {
 		
 		String msg = null;
 		
-		Geometry geometry = GeoTranslator.geojson2Jts(command.getGeometry(), 100000, 0);
+		Geometry geo = GeoTranslator.geojson2Jts(command.getGeometry());
 		
-		Set<String> meshes = this.getLinkInterMesh(geometry);
+		Set<String> meshes = this.getLinkInterMesh(geo);
 		
 		if (meshes.size() == 1){
 			RdLink link = new RdLink();
@@ -53,13 +53,13 @@ public class Operation implements IOperation {
 			
 			result.setPrimaryPid(link.getPid());
 			
-			link.setGeometry(geometry);
+			link.setGeometry(GeoTranslator.transform(geo, 100000, 0));
 			
 			link.setOriginLinkPid(link.getPid());
 			
 			link.setWidth(55);
 			
-			Coordinate[] coords = geometry.getCoordinates();
+			Coordinate[] coords = link.getGeometry().getCoordinates();
 					
 			if (0 == command.getsNodePid()){
 				
@@ -103,7 +103,7 @@ public class Operation implements IOperation {
 			while(it.hasNext()){
 				String meshIdStr = it.next();
 				
-				Geometry geomInter = MeshUtils.linkInterMeshPolygon(geometry, MeshUtils.mesh2Jts(meshIdStr));
+				Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo, MeshUtils.mesh2Jts(meshIdStr));
 				
 				if ("LineString".equals(geomInter.getGeometryType())){
 
@@ -119,13 +119,13 @@ public class Operation implements IOperation {
 					
 					result.setPrimaryPid(link.getPid());
 					
-					link.setGeometry(geomInter);
+					link.setGeometry(GeoTranslator.transform(geomInter, 100000, 0));
 					
 					link.setOriginLinkPid(link.getPid());
 					
 					link.setWidth(55);
 					
-					Coordinate[] coords = geometry.getCoordinates();
+					Coordinate[] coords = link.getGeometry().getCoordinates();
 							
 					if (0 == command.getsNodePid()){
 						

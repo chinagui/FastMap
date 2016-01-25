@@ -159,16 +159,8 @@ public class RdSpeedLimitTipsBuilder {
 
 		jsonDeep.put("f", jsonF);
 
-		STRUCT struct2 = (STRUCT) resultSet.getObject("link_geom");
-
-		JGeometry geom2 = JGeometry.load(struct2);
-
-		String linkWkt = new String(wkt.fromJGeometry(geom2));
-
 		jsonDeep.put(
-				"agl",
-				DisplayUtils.calIncloudedAngle(linkWkt,
-						resultSet.getInt("direct")));
+				"agl",calAngle(resultSet));
 
 		jsonDeep.put("toll", resultSet.getInt("tollgate_flag"));
 
@@ -216,6 +208,71 @@ public class RdSpeedLimitTipsBuilder {
 				GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(geojson)));
 
 		return json;
+	}
+	
+	//计算角度
+	private static double calAngle(ResultSet resultSet)throws Exception {
+		
+		double angle = 0;
+		
+		STRUCT struct1 = (STRUCT) resultSet.getObject("point_geom");
+
+		JGeometry geom1 = JGeometry.load(struct1);
+		
+		double[] point = geom1.getFirstPoint();
+
+		STRUCT struct2 = (STRUCT) resultSet.getObject("link_geom");
+
+		JGeometry geom2 = JGeometry.load(struct2);
+		
+		int ps = geom2.getNumPoints();
+		
+		int startIndex = 0;
+		
+		for(int i=0;i<ps-1;i++){
+			double sx = geom2.getOrdinatesArray()[i * 2];
+			
+			double sy = geom2.getOrdinatesArray()[i * 2 + 1];
+			
+			double ex = geom2.getOrdinatesArray()[(i+1) * 2];
+			
+			double ey = geom2.getOrdinatesArray()[(i+1) * 2 + 1];
+			
+			if (isBetween(sx, ex, point[0]) && isBetween(sy, ey, point[1])){
+				startIndex = i;
+				break;
+			}
+		}
+		
+		
+		StringBuilder sb = new StringBuilder("LINESTRING (");
+		
+		sb.append(geom2.getOrdinatesArray()[startIndex * 2]);
+		
+		sb.append(" ");
+		
+		sb.append(geom2.getOrdinatesArray()[startIndex * 2 + 1]);
+		
+		sb.append(", ");
+		
+		sb.append(geom2.getOrdinatesArray()[(startIndex +1) * 2]);
+		
+		sb.append(" ");
+		
+		sb.append(geom2.getOrdinatesArray()[(startIndex +1) * 2 + 1]);
+		
+		sb.append(")");
+		
+		angle = DisplayUtils.calIncloudedAngle(sb.toString(),
+				resultSet.getInt("direct"));
+		
+		return angle;
+		
+		
+	}
+	
+	private static boolean isBetween(double a, double b, double c) {
+	    return b > a ? c >= a && c <= b : c >= b && c <= a;
 	}
 
 }

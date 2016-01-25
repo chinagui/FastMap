@@ -7,9 +7,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
 import com.navinfo.dataservice.FosEngine.edit.model.IObj;
@@ -22,8 +22,6 @@ import com.navinfo.dataservice.commons.util.DisplayUtils;
 
 public class RdSpeedlimitSearch implements ISearch {
 	
-	private static final WKT wktSpatial = new WKT();
-
 	private Connection conn;
 
 	public RdSpeedlimitSearch(Connection conn) {
@@ -71,7 +69,7 @@ public class RdSpeedlimitSearch implements ISearch {
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
 			pstmt.setString(1, wkt);
-
+			
 			resultSet = pstmt.executeQuery();
 			
 			double px = MercatorProjection.tileXToPixelX(x);
@@ -90,17 +88,11 @@ public class RdSpeedlimitSearch implements ISearch {
 
 				jsonM.put("a",resultSet.getString("a_val"));
 
-				STRUCT struct1 = (STRUCT) resultSet.getObject("link_geom");
-
-				JGeometry geom1 = JGeometry.load(struct1);
-
-				String linkWkt = new String(wktSpatial.fromJGeometry(geom1));
-
 				STRUCT struct2 = (STRUCT) resultSet.getObject("point_geom");
 
 				JGeometry geom2 = JGeometry.load(struct2);
 				
-				double angle = DisplayUtils.calIncloudedAngle(linkWkt, resultSet.getInt("direct"));
+				double angle = calAngle(resultSet);
 
 				jsonM.put("c", String.valueOf((int)angle));
 
@@ -111,7 +103,7 @@ public class RdSpeedlimitSearch implements ISearch {
 				list.add(snapshot);
 			}
 		} catch (Exception e) {
-			
+			e.printStackTrace();
 			throw new SQLException(e);
 		} finally {
 			if (resultSet != null) {
@@ -133,6 +125,71 @@ public class RdSpeedlimitSearch implements ISearch {
 		}
 
 		return list;
+	}
+	
+	//计算角度
+	private double calAngle(ResultSet resultSet)throws Exception {
+		
+		double angle = 0;
+		
+		STRUCT struct1 = (STRUCT) resultSet.getObject("point_geom");
+
+		JGeometry geom1 = JGeometry.load(struct1);
+		
+		double[] point = geom1.getFirstPoint();
+
+		STRUCT struct2 = (STRUCT) resultSet.getObject("link_geom");
+
+		JGeometry geom2 = JGeometry.load(struct2);
+		
+		int ps = geom2.getNumPoints();
+		
+		int startIndex = 0;
+		
+		for(int i=0;i<ps-1;i++){
+			double sx = geom2.getOrdinatesArray()[i * 2];
+			
+			double sy = geom2.getOrdinatesArray()[i * 2 + 1];
+			
+			double ex = geom2.getOrdinatesArray()[(i+1) * 2];
+			
+			double ey = geom2.getOrdinatesArray()[(i+1) * 2 + 1];
+			
+			if (isBetween(sx, ex, point[0]) && isBetween(sy, ey, point[1])){
+				startIndex = i;
+				break;
+			}
+		}
+		
+		
+		StringBuilder sb = new StringBuilder("LINESTRING (");
+		
+		sb.append(geom2.getOrdinatesArray()[startIndex * 2]);
+		
+		sb.append(" ");
+		
+		sb.append(geom2.getOrdinatesArray()[startIndex * 2 + 1]);
+		
+		sb.append(", ");
+		
+		sb.append(geom2.getOrdinatesArray()[(startIndex +1) * 2]);
+		
+		sb.append(" ");
+		
+		sb.append(geom2.getOrdinatesArray()[(startIndex +1) * 2 + 1]);
+		
+		sb.append(")");
+		
+		angle = DisplayUtils.calIncloudedAngle(sb.toString(),
+				resultSet.getInt("direct"));
+		
+		return angle;
+		
+		
+	}
+	
+	private static boolean isBetween(double a, double b, double c) {
+	    return b > a ? c >= a && c <= b : c >= b && c <= a;
 	}
 	
 	
@@ -144,90 +201,15 @@ public class RdSpeedlimitSearch implements ISearch {
 		return selector.trackSpeedLimitLink(linkPid, direct);
 	}
 	
-	public List<SearchSnapshot> mytest() throws Exception {
-
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
-
-		String sql = " with tmp1 as  (select link_pid, geometry     from rd_link    where link_pid = 732483) select a.pid,        a.direct,        a.capture_flag || '|' || a.speed_flag || '|' || a.speed_value a_val,        b.geometry link_geom,        a.geometry point_geom   from rd_speedlimit a, tmp1 b  where a.link_pid = b.link_pid";
-		
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-		
-		try {
-			pstmt = conn.prepareStatement(sql);
-			
-			resultSet = pstmt.executeQuery();
-			
-
-			while (resultSet.next()) {
-
-				SearchSnapshot snapshot = new SearchSnapshot();
-				
-				JSONObject jsonM = new JSONObject();
-
-				snapshot.setI(String.valueOf(resultSet.getInt("pid")));
-				
-				snapshot.setT(6);
-
-				jsonM.put("a",resultSet.getString("a_val"));
-
-				STRUCT struct1 = (STRUCT) resultSet.getObject("link_geom");
-
-				JGeometry geom1 = JGeometry.load(struct1);
-
-				String linkWkt = new String(wktSpatial.fromJGeometry(geom1));
-
-				STRUCT struct2 = (STRUCT) resultSet.getObject("point_geom");
-
-				JGeometry geom2 = JGeometry.load(struct2);
-				
-				double angle = DisplayUtils.calIncloudedAngle(linkWkt, resultSet.getInt("direct"));
-
-				jsonM.put("c", String.valueOf((int)angle));
-
-				snapshot.setM(jsonM);
-
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
-			
-			throw new SQLException(e);
-		} finally {
-			if (resultSet != null) {
-				try {
-					resultSet.close();
-				} catch (Exception e) {
-					
-				}
-			}
-
-			if (pstmt != null) {
-				try {
-					pstmt.close();
-				} catch (Exception e) {
-					
-				}
-			}
-
-		}
-
-		return list;
-	}
-	
-	
 	
 	public static void main(String[] args) throws Exception {
-		ConfigLoader.initDBConn("C:/Users/wangshishuai3966/git/FosEngine/FosEngine/src/config.properties");
+		ConfigLoader.initDBConn("C:/Users/lilei3774/Desktop/config.properties");
 		
 		Connection conn = DBOraclePoolManager.getConnection(11);
 		
-		RdSpeedlimitSearch s = new RdSpeedlimitSearch(conn);
+		RdSpeedlimitSearch a = new RdSpeedlimitSearch(conn);
 		
-//		IObj obj = s.searchDataByPid(7039);
+		System.out.println(JSONArray.fromObject(a.searchDataByTileWithGap(0, 0, 0, 0)));
 		
-		//System.out.println(obj.Serialize(null));
-		
-		s.mytest();
 	}
 }

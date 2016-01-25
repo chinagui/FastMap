@@ -65,7 +65,7 @@ public class RdLaneConnexitySearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as  (select link_pid, geometry     from rd_link    where sdo_relate(geometry,                     sdo_geometry(:1,                                  8307),                     'mask=anyinteract') = 'TRUE') select  /*+ index(c) */ a.pid,a.lane_info,b.geometry link_geom,c.geometry point_geom  from rd_lane_connexity a,tmp1 b,rd_node c where a.in_link_pid = b.link_pid and a.node_pid = c.node_pid";
+		String sql = "with tmp1 as  (select link_pid, geometry     from rd_link    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE' and u_record != 2) select /*+ index(c) */  a.pid, a.lane_info, b.geometry link_geom, c.geometry point_geom   from rd_lane_connexity a, tmp1 b, rd_node c  where a.in_link_pid = b.link_pid    and a.node_pid = c.node_pid    and a.u_record != 2 and c.u_record != 2";
 
 		PreparedStatement pstmt = null;
 

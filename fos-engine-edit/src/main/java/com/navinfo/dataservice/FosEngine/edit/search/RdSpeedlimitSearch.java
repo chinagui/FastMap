@@ -57,7 +57,7 @@ public class RdSpeedlimitSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as  (select link_pid, geometry     from rd_link    where sdo_relate(geometry,                     sdo_geometry(:1,                                  8307),                     'mask=anyinteract') = 'TRUE') select  a.pid,a.direct,a.capture_flag||'|'||a.speed_flag||'|'||a.speed_value a_val,b.geometry link_geom,a.geometry point_geom  from rd_speedlimit a,tmp1 b where a.link_pid = b.link_pid";
+		String sql = "with tmp1 as  (select link_pid, geometry     from rd_link    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE' and u_record != 2) select a.pid,        a.direct,        a.capture_flag || '|' || a.speed_flag || '|' || a.speed_value a_val,        b.geometry link_geom,        a.geometry point_geom   from rd_speedlimit a, tmp1 b  where a.link_pid = b.link_pid and a.u_record != 2";
 
 		PreparedStatement pstmt = null;
 

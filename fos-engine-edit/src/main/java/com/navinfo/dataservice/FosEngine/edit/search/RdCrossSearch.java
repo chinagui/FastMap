@@ -56,7 +56,7 @@ public class RdCrossSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as  (select node_pid     from rd_node    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE') select pid,        listagg(a.node_pid, ',') within group(order by a.node_pid) node_pids,        listagg(sdo_util.to_wktgeometry_varchar(b.geometry), ',') within group(order by a.node_pid) wkts,        listagg(a.is_main,',') within group(order by a.node_pid) is_mains   from rd_cross_node a, rd_node b  where exists (select null from tmp1 b where a.node_pid = b.node_pid)    and a.node_pid = b.node_pid  group by a.pid";
+		String sql = "with tmp1 as  (select node_pid     from rd_node    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE' and u_record != 2) select pid,        listagg(a.node_pid, ',') within group(order by a.node_pid) node_pids,        listagg(sdo_util.to_wktgeometry_varchar(b.geometry), ',') within group(order by a.node_pid) wkts,        listagg(a.is_main, ',') within group(order by a.node_pid) is_mains   from rd_cross_node a, rd_node b  where exists (select null from tmp1 b where a.node_pid = b.node_pid)    and a.node_pid = b.node_pid    and a.u_record != 2 and b.u_record != 2  group by a.pid";
 
 		PreparedStatement pstmt = null;
 

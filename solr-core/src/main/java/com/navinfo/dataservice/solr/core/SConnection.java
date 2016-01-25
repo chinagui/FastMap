@@ -76,6 +76,8 @@ public class SConnection {
 		doc.addField("g_location", json.getString("g_location"));
 
 		doc.addField("g_guide", json.getString("g_guide"));
+		
+		doc.addField("deep", json.getString("deep"));
 
 		docs.add(doc);
 

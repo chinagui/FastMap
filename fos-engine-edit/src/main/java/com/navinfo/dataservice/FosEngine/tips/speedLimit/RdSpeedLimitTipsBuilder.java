@@ -88,7 +88,7 @@ public class RdSpeedLimitTipsBuilder {
 
 			puts.add(put);
 
-			JSONObject solrIndexJson = assembleSolrIndex(rowkey, JSONObject.fromObject(geometry), 0, date, type);
+			JSONObject solrIndexJson = assembleSolrIndex(rowkey, JSONObject.fromObject(geometry), 0, date, type, deep);
 
 			solrConn.addTips(solrIndexJson);
 
@@ -179,7 +179,7 @@ public class RdSpeedLimitTipsBuilder {
 
 	// 组装solr索引
 	private static JSONObject assembleSolrIndex(String rowkey, JSONObject geom,
-			int stage, String date, String type) throws Exception {
+			int stage, String date, String type, String deep) throws Exception {
 		JSONObject json = new JSONObject();
 
 		json.put("id", rowkey);
@@ -206,6 +206,8 @@ public class RdSpeedLimitTipsBuilder {
 
 		json.put("wkt",
 				GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(geojson)));
+		
+		json.put("deep", deep);
 
 		return json;
 	}

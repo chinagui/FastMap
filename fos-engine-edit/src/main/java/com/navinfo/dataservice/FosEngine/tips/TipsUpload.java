@@ -620,6 +620,8 @@ public class TipsUpload {
 
 		index.put("wkt",
 				GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(geojson)));
+		
+		index.put("deep", json.getString("deep"));
 
 		return index;
 	}
@@ -711,6 +713,6 @@ public class TipsUpload {
 
 		TipsUpload a = new TipsUpload("http://192.168.4.130:8081/solr/tips/");
 
-		a.run("C:/tips2.txt");
+		a.run("C:/tipstest.txt");
 	}
 }

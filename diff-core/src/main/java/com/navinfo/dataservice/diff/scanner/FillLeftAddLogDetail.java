@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.diff.scanner;
 
 
+import java.math.BigDecimal;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -54,7 +55,8 @@ public class FillLeftAddLogDetail implements ResultSetHandler<String> {
 	public String handle(ResultSet rs) throws SQLException {
 //		ResultSetMetaData mData = rs.getMetaData();
 //		List<ColumnMetaData> tmdList = DataBaseUtils.getTableMetaData(table.getName(), mData);
-		String updateSql = "UPDATE LOG_DETAIL SET MESH_ID=?,\"NEW\"=? WHERE ROW_ID=?";
+		String updateSql = "UPDATE LOG_DETAIL SET MESH_ID=?,\"NEW\"=? WHERE TB_ROW_ID=? AND TB_NM='"+table.getName()+"'";
+
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		try{
@@ -63,49 +65,56 @@ public class FillLeftAddLogDetail implements ResultSetHandler<String> {
 			int batchCount=0;
 			List<GlmColumn> cols = table.getColumns();
 			while(rs.next()){
-				int meshId = 0;
+				BigDecimal meshId = null;
+				String tb_row_id = null;
 				JSONObject json = new JSONObject();
 			    for(GlmColumn col:cols){
 			    	String name = col.getName();
 					Object value = rs.getObject(name);
 					//获取mesh_id
 			    	if("MESH_ID".equals(name)){
-			    		meshId = (int)value;
-			    	}
-			    	//获取new json
-					if(value!=null){
-						if(col.isGeometryColumn()){
-							STRUCT geom = (STRUCT)value;
-							try{
-								String wkt = SpatialAdapters.struct2Wkt(geom);
-								json.put(name,wkt);
-							}catch(Exception e){
-								log.error(e.getMessage(),e);
-								throw new SQLException("Geometry字段转换成wkt出错。"+e.getMessage(),e);
+			    		meshId = (BigDecimal)value;
+			    		json.put(name, meshId);
+			    	}else if("ROW_ID".equals(name)){
+			    		tb_row_id = rs.getString(name);
+			    		json.put(name, tb_row_id);
+			    	}else{
+				    	//获取new json
+						if(value!=null){
+							if(col.isGeometryColumn()){
+								STRUCT geom = (STRUCT)value;
+								try{
+									String wkt = SpatialAdapters.struct2Wkt(geom);
+									json.put(name,wkt);
+								}catch(Exception e){
+									log.error(e.getMessage(),e);
+									throw new SQLException("Geometry字段转换成wkt出错。"+e.getMessage(),e);
+								}
+							}else if(col.isClobColumn()){
+								CLOB clob = (CLOB)value;
+								String clobStr = DataBaseUtils.clob2String(clob);
+								json.put(name, clobStr);
+							}else if(col.isDateColumn()||col.isTimestampColumn()){
+								Date date = (Date)value;
+								String dateStr = sdf.format(date);
+								json.put(name, dateStr);
+							}else{
+								json.put(name, value);
 							}
-						}else if(col.isClobColumn()){
-							CLOB clob = (CLOB)value;
-							String clobStr = DataBaseUtils.clob2String(clob);
-							json.put(name, clobStr);
-						}else if(col.isDateColumn()||col.isTimestampColumn()){
-							Date date = (Date)value;
-							String dateStr = sdf.format(date);
-							json.put(name, dateStr);
 						}else{
-							json.put(name, value);
+							json.put(name, null);
 						}
-					}else{
-						json.put(name, null);
-					}
+			    	}
 			    }
-			    if(meshId>0){
-			    	stmt.setInt(1, meshId);
+			    if(meshId!=null){
+			    	stmt.setBigDecimal(1, meshId);
 			    }else{
 			    	stmt.setNull(1, Types.INTEGER);
 			    }
 				Clob clob = conn.createClob();
 				clob.setString(1, json.toString());
 			    stmt.setClob(2, clob);
+			    stmt.setString(3, tb_row_id);
 			    stmt.addBatch();
 			    batchCount++;
 			    if (batchCount % 1000 == 0) {

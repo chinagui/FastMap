@@ -139,7 +139,7 @@ public class ToolScriptsInterface {
 			}else if("diff".equals(itype)){
 				request = readJson(dir+"request"+File.separator+"diff.json");
 				response = ToolScriptsInterface.diff(request);
-				writeJson(response,dir+"request"+File.separator+"diff.json");
+				writeJson(response,dir+"response"+File.separator+"diff.json");
 			}else{
 				System.out.println("ERROR:need arg -itype");
 			}

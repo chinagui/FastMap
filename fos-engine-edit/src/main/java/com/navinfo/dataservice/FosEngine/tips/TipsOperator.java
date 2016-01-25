@@ -1,23 +1,24 @@
 package com.navinfo.dataservice.FosEngine.tips;
 
-import java.util.ArrayList;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import org.hbase.async.GetRequest;
-import org.hbase.async.KeyValue;
-import org.hbase.async.PutRequest;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.solr.core.SConnection;
 
 public class TipsOperator {
-	
+
 	private SConnection solrConn;
-	
-	public TipsOperator(String solrUrl){
+
+	public TipsOperator(String solrUrl) {
 		solrConn = new SConnection(solrUrl);
 	}
 
@@ -29,61 +30,96 @@ public class TipsOperator {
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean update(String rowkey, int stage, int handler)
+	public boolean update(String rowkey, int stage, int handler, int pid)
 			throws Exception {
 
-		final GetRequest get = new GetRequest("tips", rowkey, "data", "track");
+		Connection hbaseConn = HBaseAddress.getHBaseConnection();
 
-		ArrayList<KeyValue> list = HBaseAddress.getHBaseClient().get(get)
-				.joinUninterruptibly();
-		
-		for (KeyValue kv : list) {
-			JSONObject track = JSONObject.fromObject(new String(kv.value()));
+		Table htab = hbaseConn.getTable(TableName.valueOf("tips"));
 
-			int lifecycle = track.getInt("t_lifecycle");
+		Get get = new Get(rowkey.getBytes());
 
-			if (0 == lifecycle) {
-				track.put("t_lifecycle", 2);
-			}
+		get.addColumn("data".getBytes(), "track".getBytes());
 
-			JSONArray trackInfo = track.getJSONArray("t_trackInfo");
-
-			JSONObject jo = new JSONObject();
-
-			jo.put("stage", stage);
-			
-			String date = StringUtils.getCurrentTime();
-
-			jo.put("date", date);
-
-			jo.put("handler", handler);
-
-			trackInfo.add(jo);
-
-			track.put("t_trackInfo", trackInfo);
-			
-			PutRequest put = new PutRequest("tips", rowkey, "data", "track", track.toString());
-
-			HBaseAddress.getHBaseClient().put(put);
-			
-			JSONObject solrIndex = solrConn.getById(rowkey);
-			
-			solrIndex.put("stage", stage);
-			
-			solrIndex.put("date", date);
-			
-			if (0 == lifecycle) {
-				solrIndex.put("t_lifecycle", 2);
-			}
-			
-			solrIndex.put("handler", handler);
-			
-			solrConn.addTips(solrIndex);
-			
-			solrConn.persistentData();
-			
-			solrConn.closeConnection();
+		if (pid > 0) {
+			get.addColumn("data".getBytes(), "deep".getBytes());
 		}
+
+		Result result = htab.get(get);
+
+		if (result.isEmpty()) {
+			return false;
+		}
+
+		Put put = new Put(rowkey.getBytes());
+
+		JSONObject track = JSONObject.fromObject(new String(result.getValue(
+				"data".getBytes(), "track".getBytes())));
+
+		int lifecycle = track.getInt("t_lifecycle");
+
+		if (0 == lifecycle) {
+			track.put("t_lifecycle", 2);
+		}
+
+		JSONArray trackInfo = track.getJSONArray("t_trackInfo");
+
+		JSONObject jo = new JSONObject();
+
+		jo.put("stage", stage);
+
+		String date = StringUtils.getCurrentTime();
+
+		jo.put("date", date);
+
+		jo.put("handler", handler);
+
+		trackInfo.add(jo);
+
+		track.put("t_trackInfo", trackInfo);
+
+		put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
+				.getBytes());
+
+		String newDeep=null;
+		
+		if (pid > 0) {
+
+			JSONObject deep = JSONObject.fromObject(new String(result.getValue(
+					"data".getBytes(), "deep".getBytes())));
+			if (deep.containsKey("id")) {
+				deep.put("id", String.valueOf(pid));
+				
+				newDeep = deep.toString();
+
+				put.addColumn("data".getBytes(), "deep".getBytes(), deep
+						.toString().getBytes());
+			}
+		}
+
+		JSONObject solrIndex = solrConn.getById(rowkey);
+
+		solrIndex.put("stage", stage);
+
+		solrIndex.put("date", date);
+
+		if (0 == lifecycle) {
+			solrIndex.put("t_lifecycle", 2);
+		}
+
+		solrIndex.put("handler", handler);
+		
+		if(newDeep != null){
+			solrIndex.put("deep", newDeep);
+		}
+		
+		solrConn.addTips(solrIndex);
+
+		solrConn.persistentData();
+
+		solrConn.closeConnection();
+		
+		htab.put(put);
 
 		return true;
 	}

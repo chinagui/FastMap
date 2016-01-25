@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.diff.scanner;
 
 
+import java.math.BigDecimal;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -63,7 +64,8 @@ public class FillLeftUpdateLogDetail implements ResultSetHandler<String> {
 //		int colSize = tmdSize/3;
 		List<GlmColumn> cols = table.getColumns();
 		int colsSize = cols.size();
-		String updateSql = "UPDATE LOG_DETAIL SET MESH_ID=?,\"NEW\"=?,\"OLD\"=?,FD_LST=? WHERE ROW_ID=?";
+		String updateSql = "UPDATE LOG_DETAIL SET MESH_ID=?,\"NEW\"=?,\"OLD\"=?,FD_LST=? WHERE TB_ROW_ID=?";
+
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		try{
@@ -71,12 +73,20 @@ public class FillLeftUpdateLogDetail implements ResultSetHandler<String> {
 			stmt = conn.prepareStatement(updateSql);
 			int batchCount=0;
 			while(rs.next()){
-				int meshId = 0;
+				BigDecimal meshId = null;
+				String tb_row_id = null;
 				JSONObject jsonLeft = new JSONObject();
 				JSONObject jsonRight = new JSONObject();
 				List<String> fdLst = new ArrayList<String>();
-			    for(int i=0;i<cols.size();i++){
-			    	GlmColumn col = cols.get(i);
+			    for(int i=1;i<=cols.size();i++){
+			    	GlmColumn col = cols.get(i-1);
+
+		    		//mesh_id
+		    		if("MESH_ID".equals(col.getName())){
+		    			meshId = (BigDecimal)rs.getObject(i+colsSize);
+		    		}else if("ROW_ID".equals((col.getName()))){
+		    			tb_row_id = rs.getString(i+colsSize);
+			    	}
 			    	//前1/3的字段为比较值，1/3到2/3的字段为左表的全部字段，2/3到3/3为右表的全部字段
 			    	//==0则左右表值不同
 			    	if(rs.getInt(i)==0){
@@ -85,10 +95,6 @@ public class FillLeftUpdateLogDetail implements ResultSetHandler<String> {
 			    		//new,old
 			    		Object valueLeft = rs.getObject(i+colsSize);
 			    		Object valueRight = rs.getObject(i+colsSize+colsSize);
-			    		//mesh_id
-			    		if("MESH_ID".equals(col.getName())){
-			    			meshId = (int)valueLeft;
-			    		}
 			    		if(col.isGeometryColumn()){
 			    			String wktLeft = SpatialAdapters.struct2Wkt((STRUCT)valueLeft);
 			    			String wktRight = SpatialAdapters.struct2Wkt((STRUCT)valueRight);
@@ -110,8 +116,8 @@ public class FillLeftUpdateLogDetail implements ResultSetHandler<String> {
 			    		}
 			    	}
 			    }
-			    if(meshId>0){
-			    	stmt.setInt(1, meshId);
+			    if(meshId!=null){
+			    	stmt.setBigDecimal(1, meshId);
 			    }else{
 			    	stmt.setNull(1, Types.INTEGER);
 			    }
@@ -122,6 +128,7 @@ public class FillLeftUpdateLogDetail implements ResultSetHandler<String> {
 			    stmt.setClob(2, clobLeft);
 			    stmt.setClob(3, clobRight);
 			    stmt.setString(4, StringUtils.join(fdLst,","));
+			    stmt.setString(5, tb_row_id);
 			    stmt.addBatch();
 			    batchCount++;
 			    if (batchCount % 1000 == 0) {

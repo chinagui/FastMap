@@ -7,6 +7,7 @@ import java.util.List;
 
 
 import org.apache.log4j.Logger;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.datahub.model.OracleSchema;
@@ -56,7 +57,7 @@ public class JavaDiffScanner implements DiffScanner
         try
         {
         	StringBuilder sb = new StringBuilder();
-        	sb.append("INSERT INTO LOG_DETAIL(OP_ID, OP_DT, TB_NM, OP_TP, ROW_ID)\n SELECT SYS_GUID(),SYSDATE,'");
+        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, OP_DT, TB_NM, OP_TP, TB_ROW_ID)\n SELECT SYS_GUID(),'DIFF_JOB_ID',SYSDATE,'");
         	sb.append(table.getName());
         	sb.append("',3,ROW_ID FROM ");
         	sb.append(leftTableFullName);
@@ -84,7 +85,7 @@ public class JavaDiffScanner implements DiffScanner
         try
         {
         	StringBuilder sb = new StringBuilder();
-        	sb.append("INSERT INTO LOG_DETAIL(OP_ID, OP_DT, TB_NM, OP_TP, ROW_ID)\n SELECT SYS_GUID(),SYSDATE,'");
+        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, OP_DT, TB_NM, OP_TP, TB_ROW_ID)\n SELECT SYS_GUID(),'DIFF_JOB_ID',SYSDATE,'");
         	sb.append(table.getName());
         	sb.append("',1,ROW_ID FROM ");
         	sb.append(rightTableFullName);
@@ -121,7 +122,7 @@ public class JavaDiffScanner implements DiffScanner
         		}
         	}
         	StringBuilder sb = new StringBuilder();
-        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID, OP_DT, TB_NM, OP_TP, TB_ROW_ID)\n SELECT SYS_GUID(),SYSDATE,'");
+        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, OP_DT, TB_NM, OP_TP, TB_ROW_ID)\n SELECT SYS_GUID(),'DIFF_JOB_ID',SYSDATE,'");
         	sb.append(table.getName());
         	sb.append("',2,L.ROW_ID FROM ");
         	sb.append(leftTableFullName);
@@ -162,10 +163,8 @@ public class JavaDiffScanner implements DiffScanner
     
     private void fillLeftAddLogDetail(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
 
-    	Connection conn = null;
         try
         {
-        	conn = diffServer.getPoolDataSource().getConnection();
         	List<String> colNames = new ArrayList<String>();
         	for(GlmColumn col:table.getColumns()){
         		colNames.add("L.\""+col.getName()+"\"");
@@ -178,7 +177,7 @@ public class JavaDiffScanner implements DiffScanner
         	sb.append(" L,LOG_DETAIL D WHERE L.ROW_ID=D.TB_ROW_ID AND D.TB_NM = '");
         	sb.append(table.getName());
         	sb.append("'");
-        	runner.query(conn,sb.toString(),1000,new FillLeftAddLogDetail(table,diffServer),new Object[0]);
+        	runner.query(diffServer.getPoolDataSource(),sb.toString(),1000,new FillLeftAddLogDetail(table,diffServer),new Object[0]);
         } catch (SQLException e){
         	log.error(e.getMessage(),e);
         	throw new DiffException("填充左表有右表没有的履历字段时出错：" + e.getMessage() 
@@ -191,10 +190,8 @@ public class JavaDiffScanner implements DiffScanner
     }
     private void fillLeftUpdateLogDetail(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
 
-    	Connection conn = null;
         try
         {
-        	conn = diffServer.getPoolDataSource().getConnection();
         	List<String> colNames = new ArrayList<String>();
         	for(GlmColumn col:table.getColumns()){
         		colNames.add("L."+col.getName());
@@ -220,10 +217,10 @@ public class JavaDiffScanner implements DiffScanner
         	sb.append(leftTableFullName);
         	sb.append(" L, ");
         	sb.append(rightTableFullName);
-        	sb.append(" R,LOG_DETAIL D WHERE L.ROW_ID=D.TB_ROW_ID AND R.ROW_ID=D.ROW_ID AND D.TB_NM = '");
+        	sb.append(" R,LOG_DETAIL D WHERE L.ROW_ID=D.TB_ROW_ID AND R.ROW_ID=D.TB_ROW_ID AND D.TB_NM = '");
         	sb.append(table.getName());
         	sb.append("'");
-        	runner.query(conn,sb.toString(),1000,new FillLeftAddLogDetail(table,diffServer),new Object[0]);
+        	runner.query(diffServer.getPoolDataSource(),sb.toString(),1000,new FillLeftUpdateLogDetail(table,diffServer),new Object[0]);
         } catch (SQLException e){
         	log.error(e.getMessage(),e);
         	throw new DiffException("填充左表右表都有但字段不一致的履历字段时出错：" + e.getMessage() 

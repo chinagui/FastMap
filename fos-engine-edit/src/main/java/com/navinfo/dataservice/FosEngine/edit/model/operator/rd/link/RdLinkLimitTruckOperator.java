@@ -144,7 +144,7 @@ public class RdLinkLimitTruckOperator implements IOperator {
 					}
 				}
 			}
-			sb.append(" where row_id='" + limit.getRowId());
+			sb.append(" where row_id='");
 			
 			sb.append(limit.getRowId());
 			

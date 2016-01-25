@@ -152,8 +152,6 @@ public class RdLinkLimitOperator implements IOperator {
 			}
 			sb.append(" where row_id='" + limit.getRowId());
 			
-			sb.append(limit.getRowId());
-			
 			sb.append("'");
 
 			String sql = sb.toString();

@@ -152,8 +152,6 @@ public class RdLinkNameOperator implements IOperator {
 			}
 			sb.append(" where row_id='" + name.getRowId());
 			
-			sb.append(name.getRowId());
-			
 			sb.append("'");
 
 			String sql = sb.toString();

@@ -133,8 +133,6 @@ public class RdLinkFormOperator implements IOperator {
 			}
 			sb.append(" where row_id='" + form.getRowId());
 			
-			sb.append(form.getRowId());
-			
 			sb.append("'");
 
 			String sql = sb.toString();

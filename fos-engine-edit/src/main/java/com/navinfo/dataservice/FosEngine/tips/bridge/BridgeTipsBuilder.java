@@ -50,7 +50,7 @@ public class BridgeTipsBuilder {
 			+ " and a.e_node_pid = d.node_pid  and a.link_pid = e.link_pid(+) "
 			+ "order by root_link_pid,lvl";
 
-	private static String type = "1510";
+	private static String type = "1501";
 
 	/**
 	 * 导入入口程序块

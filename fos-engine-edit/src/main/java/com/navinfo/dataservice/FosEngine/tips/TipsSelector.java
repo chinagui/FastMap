@@ -26,10 +26,10 @@ import com.navinfo.dataservice.solr.core.SConnection;
  */
 public class TipsSelector {
 	
-	private SConnection solrConn;
+	private SConnection conn;
 	
 	public TipsSelector(String solrUrl){
-		solrConn = new SConnection(solrUrl);
+		conn = new SConnection(solrUrl);
 	}
 
 	/**
@@ -41,9 +41,6 @@ public class TipsSelector {
 	 */
 	public JSONArray searchDataBySpatial(String wkt) throws Exception {
 		JSONArray array = new JSONArray();
-
-		SConnection conn = new SConnection(
-				"http://192.168.4.130:8081/solr/tips/");
 
 		List<JSONObject> snapshots = conn.queryTipsWeb(wkt);
 
@@ -73,9 +70,6 @@ public class TipsSelector {
 			double px = MercatorProjection.tileXToPixelX(x);
 
 			double py = MercatorProjection.tileYToPixelY(y);
-
-			SConnection conn = new SConnection(
-					"http://192.168.4.130:8081/solr/tips/");
 
 			List<JSONObject> snapshots = conn.queryTipsWeb(wkt);
 
@@ -208,9 +202,6 @@ public class TipsSelector {
 			throws Exception {
 		JSONObject jsonData = new JSONObject();
 
-		SConnection conn = new SConnection(
-				"http://192.168.4.130:8081/solr/tips/");
-
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
 		
 		String wkt = GridUtils.grids2Wkt(grids);
@@ -268,9 +259,6 @@ public class TipsSelector {
 			int type) throws Exception {
 		JSONArray jsonData = new JSONArray();
 
-		SConnection conn = new SConnection(
-				"http://192.168.4.130:8081/solr/tips/");
-
 		String wkt = GridUtils.grids2Wkt(grids);
 
 		List<JSONObject> tips = conn.queryTipsWeb(wkt,
@@ -311,9 +299,6 @@ public class TipsSelector {
 			throws Exception {
 
 		String wkt = GridUtils.grid2Wkt(grid);
-
-		SConnection conn = new SConnection(
-				"http://192.168.4.130:8081/solr/tips/");
 
 		boolean flag = conn.checkTipsMobile(wkt, date);
 

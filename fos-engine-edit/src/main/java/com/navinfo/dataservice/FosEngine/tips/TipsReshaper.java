@@ -1,9 +1,7 @@
 package com.navinfo.dataservice.FosEngine.tips;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -14,8 +12,6 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
-import org.hbase.async.KeyValue;
-import org.hbase.async.Scanner;
 
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -23,16 +19,16 @@ import com.navinfo.dataservice.solr.core.SConnection;
 
 public class TipsReshaper {
 
-	private int cache =5000;
-	
+	private int cache = 5000;
+
 	private SConnection solrConn;
 
 	public TipsReshaper(String solrUrl, int cache) {
 
 		this.cache = cache;
-		
+
 		solrConn = new SConnection(solrUrl, this.cache);
-		
+
 	}
 
 	public int run() throws Exception {
@@ -56,9 +52,9 @@ public class TipsReshaper {
 			Result result = iter.next();
 
 			JSONObject solrIndex = new JSONObject();
-			
+
 			String rowkey = new String(result.getRow());
-			
+
 			solrIndex.put("id", rowkey);
 
 			// geometry
@@ -71,15 +67,15 @@ public class TipsReshaper {
 			JSONObject g_location = geojo.getJSONObject("g_location");
 
 			solrIndex.put("g_location", g_location);
-			
-			if(g_location.getString("type").equals("Point")){
+
+			if (g_location.getString("type").equals("Point")) {
 				JSONArray coords = g_location.getJSONArray("coordinates");
-				
+
 				double lon = coords.getDouble(0);
 				double lat = coords.getDouble(1);
 
-				if(lon<0.0000000001|| lat <0.0000000001){
-					System.out.println(rowkey+": g_location error");
+				if (lon < 0.0000000001 || lat < 0.0000000001) {
+					System.out.println(rowkey + ": g_location error");
 					continue;
 				}
 			}
@@ -130,7 +126,7 @@ public class TipsReshaper {
 
 			solrIndex.put("s_sourceType", sourcejo.getString("s_sourceType"));
 
-			solrIndex.put("s_sourceCode", sourcejo.getInt("s_sourceType"));
+			solrIndex.put("s_sourceCode", sourcejo.getInt("s_sourceCode"));
 
 			// deep
 
@@ -138,17 +134,17 @@ public class TipsReshaper {
 					"deep".getBytes()));
 
 			solrIndex.put("deep", deep);
-			
+
 			solrConn.addTips(solrIndex);
 
 			count += 1;
-			
-			if(count%cache==0){
+
+			if (count % cache == 0) {
 				System.out.println(count);
 			}
-			
+
 		}
-		
+
 		solrConn.persistentData();
 
 		solrConn.closeConnection();
@@ -163,7 +159,7 @@ public class TipsReshaper {
 		HBaseAddress.initHBaseAddress("192.168.3.156");
 
 		TipsReshaper sa = new TipsReshaper(
-				"http://192.168.4.130:8081/solr/test_tips/",50000);
+				"http://192.168.4.130:8081/solr/tips/", 50000);
 
 		System.out.println(sa.run());
 

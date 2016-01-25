@@ -84,8 +84,10 @@ public class TipsSelector {
 				SearchSnapshot snapshot = new SearchSnapshot();
 				
 				snapshot.setI(json.getString("id"));
+				
+				int type = Integer.valueOf(json.getString("s_sourceType"));
 
-				snapshot.setT(1);
+				snapshot.setT(type);
 				
 				JSONObject geojson = JSONObject.fromObject(json.getString("g_location"));
 
@@ -96,6 +98,41 @@ public class TipsSelector {
 				JSONObject m = new JSONObject();
 				
 				m.put("a", json.getString("stage"));
+				
+				m.put("b", json.getString("t_lifecycle"));
+				
+				JSONObject deep = JSONObject.fromObject(json.getString("deep"));
+				
+				if(type == 1201){
+					m.put("c", String.valueOf(deep.getInt("kind")));
+				}
+				else if (type == 2001 || type == 1901){
+					
+					JSONObject geo = deep.getJSONObject("geo");
+					
+					Geojson.coord2Pixel(geo, z, px, py);
+					
+					m.put("c", geo.getJSONArray("coordinates"));
+				}
+				else if (type == 1203 || type == 1101 || type == 1407){
+					
+					m.put("c", String.valueOf(deep.getDouble("agl")));
+					
+				}
+				else if (type == 1510){
+					
+					JSONObject gSLoc = deep.getJSONObject("gSLoc");
+					
+					Geojson.coord2Pixel(gSLoc, z, px, py);
+					
+					m.put("c", gSLoc.getJSONArray("coordinates"));
+					
+					JSONObject gELoc = deep.getJSONObject("gELoc");
+					
+					Geojson.coord2Pixel(gELoc, z, px, py);
+					
+					m.put("d", gELoc.getJSONArray("coordinates"));
+				}
 				
 				snapshot.setM(m);
 

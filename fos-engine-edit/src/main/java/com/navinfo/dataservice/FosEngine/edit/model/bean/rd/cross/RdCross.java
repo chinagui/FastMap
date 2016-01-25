@@ -289,7 +289,7 @@ public class RdCross implements IObj {
 	@Override
 	public Map<String, Object> changedFields() {
 
-		return null;
+		return changedFields;
 	}
 
 	@Override

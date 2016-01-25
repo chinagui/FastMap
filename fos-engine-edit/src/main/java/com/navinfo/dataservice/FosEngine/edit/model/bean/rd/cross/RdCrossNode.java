@@ -129,7 +129,7 @@ public class RdCrossNode implements IRow {
 	@Override
 	public Map<String, Object> changedFields() {
 
-		return null;
+		return changedFields;
 	}
 
 	@Override

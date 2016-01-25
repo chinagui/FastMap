@@ -104,6 +104,10 @@ public class RdCrossName implements IObj {
 		return "rd_cross_name";
 	}
 
+	public String getRowId() {
+		return rowId;
+	}
+
 	@Override
 	public ObjStatus status() {
 
@@ -175,7 +179,7 @@ public class RdCrossName implements IObj {
 	@Override
 	public Map<String, Object> changedFields() {
 
-		return null;
+		return this.changedFields;
 	}
 
 	@Override

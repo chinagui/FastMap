@@ -24,6 +24,8 @@ public class Process implements IProcess {
 	
 	private RdLink updateLink;
 	
+	private Check check = new Check();
+	
 	public Process(ICommand command) throws Exception {
 		this.command = (Command) command;
 
@@ -59,6 +61,10 @@ public class Process implements IProcess {
 	@Override
 	public String preCheck() throws Exception {
 		
+		check.checkIsVia(conn, command.getLinkPid());
+		
+		check.checkShapePointDistance(command.getLinkGeom());
+		
 		return null;
 	}
 
@@ -76,7 +82,7 @@ public class Process implements IProcess {
 
 			prepareData();
 
-			IOperation op = new Operation(command,updateLink);
+			IOperation op = new Operation(command,updateLink,check);
 
 			op.run(result);
 

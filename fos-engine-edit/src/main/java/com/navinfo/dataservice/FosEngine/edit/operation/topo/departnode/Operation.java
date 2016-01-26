@@ -68,6 +68,8 @@ public class Operation implements IOperation {
 		
 		check.checkPointCoincide(ps);
 		
+		check.checkShapePointDistance(ps);
+		
 		JSONObject geojson = new JSONObject();
 		
 		geojson.put("type", "LineString");

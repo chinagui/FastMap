@@ -86,8 +86,6 @@ public class Process implements IProcess {
 			
 			this.prepareData();
 
-			
-
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
 			}

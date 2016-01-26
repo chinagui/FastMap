@@ -14,11 +14,12 @@ public class Operation implements IOperation {
 	private Command command;
 	
 	private RdLink updateLink;
-
-	public Operation(Command command, RdLink updateLink) {
+	
+	public Operation(Command command, RdLink updateLink,Check check) {
 		this.command = command;
 
 		this.updateLink = updateLink;
+		
 	}
 
 	@Override

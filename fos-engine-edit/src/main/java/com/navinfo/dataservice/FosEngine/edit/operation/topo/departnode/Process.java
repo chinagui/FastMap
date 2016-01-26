@@ -28,14 +28,16 @@ public class Process implements IProcess {
 	
 	private RdNode updateNode;
 	
+	private Check check = new Check();
+	
 	public Process(ICommand command) throws Exception {
 		this.command = (Command) command;
-
+		
 		this.result = new Result();
 
 		this.conn = DBOraclePoolManager.getConnection(this.command
 				.getProjectId());
-
+		
 	}
 
 	@Override
@@ -52,6 +54,7 @@ public class Process implements IProcess {
 
 	@Override
 	public boolean prepareData() throws Exception {
+		
 		RdLinkSelector linkSelector = new RdLinkSelector(this.conn);
 
 		this.updateLink = (RdLink) linkSelector.loadById(command.getLinkPid(),
@@ -66,7 +69,11 @@ public class Process implements IProcess {
 
 	@Override
 	public String preCheck() throws Exception {
-		// TODO Auto-generated method stub
+
+		check.checkIsCrossNode(conn, command.getNodePid());
+		
+		check.checkIsVia(conn, command.getLinkPid());
+		
 		return null;
 	}
 
@@ -74,16 +81,18 @@ public class Process implements IProcess {
 	public String run() throws Exception {
 		try {
 			conn.setAutoCommit(false);
-
+			
+			String preCheckMsg = this.preCheck();
+			
 			this.prepareData();
 
-			String preCheckMsg = this.preCheck();
+			
 
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
 			}
 
-			IOperation operation = new Operation(command, updateLink,updateNode);
+			IOperation operation = new Operation(command, updateLink,updateNode,check);
 
 			operation.run(result);
 

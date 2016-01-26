@@ -20,12 +20,16 @@ public class Operation implements IOperation {
 	
 	private RdNode updateNode;
 	
-	public Operation(Command command,RdLink updateLink,RdNode updateNode){
+	private Check check;
+	
+	public Operation(Command command,RdLink updateLink,RdNode updateNode,Check check){
 		this.command = command;
 		
 		this.updateLink = updateLink;
 		
 		this.updateNode = updateNode;
+		
+		this.check = check;
 	}
 
 	@Override
@@ -61,6 +65,8 @@ public class Operation implements IOperation {
 			
 			ps[ps.length-1][1] = command.getLatitude();
 		}
+		
+		check.checkPointCoincide(ps);
 		
 		JSONObject geojson = new JSONObject();
 		

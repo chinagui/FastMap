@@ -24,6 +24,8 @@ public class Process implements IProcess {
 	
 	private String postCheckMsg;
 	
+	private Check check = new Check();
+	
 	public Process(ICommand command) throws Exception {
 		this.command = (Command) command;
 
@@ -55,13 +57,7 @@ public class Process implements IProcess {
 	@Override
 	public String preCheck() throws Exception {
 		
-		double lon = command.getLongitude();
-		
-		double lat = command.getLatitude();
-		
-		if(MeshUtils.isPointAtMeshBorder(lon, lat)){
-			return "点限速点位不能在图框线上";
-		}
+		check.checkGeometryNoOnMeshBoarder(command.getLongitude(), command.getLatitude());
 		
 		return null;
 	}

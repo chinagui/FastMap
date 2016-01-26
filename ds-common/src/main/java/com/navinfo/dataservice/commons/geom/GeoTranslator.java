@@ -17,6 +17,7 @@ import org.mapfish.geo.MfGeoJSONWriter;
 import org.mapfish.geo.MfGeometry;
 
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.commons.util.DisplayUtils;
 import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -457,7 +458,13 @@ public class GeoTranslator {
 		return point;
 	}
 	
-	
+	public static double getLinkLength(String wkt) throws Exception{
+		
+		double[][] linkMerArray = DisplayUtils.convertLinkToMerArray(wkt);
+		
+		return DisplayUtils.getLinkLength(linkMerArray);
+		
+	}
 	
 	public static double calAngle(double x11,double y11,double x12,double y12,double x21,double y21,double x22,double y22){
 //		double k1 = (y11-y12)/(x11-x12);

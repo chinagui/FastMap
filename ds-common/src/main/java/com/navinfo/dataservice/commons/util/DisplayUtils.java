@@ -188,7 +188,7 @@ public class DisplayUtils {
 	}
 
 	// 转换线经纬度wkt为以米为单位的二维数组
-	private static double[][] convertLinkToMerArray(String linkWkt)
+	public static double[][] convertLinkToMerArray(String linkWkt)
 			throws Exception {
 
 		WKTReader reader = new WKTReader();
@@ -259,9 +259,9 @@ public class DisplayUtils {
 			}
 		}
 	}
-
+	
 	// 求出线的长度
-	private static double getLinkLength(double[][] linkMerArray) {
+	public static double getLinkLength(double[][] linkMerArray) {
 
 		double length = 0;
 

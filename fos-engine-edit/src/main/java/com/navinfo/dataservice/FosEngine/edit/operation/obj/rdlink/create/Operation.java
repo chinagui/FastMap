@@ -26,9 +26,12 @@ public class Operation implements IOperation {
 
 	private Command command;
 
-	public Operation(Command command) {
+	private Check check;
+	
+	public Operation(Command command, Check check) {
 		this.command = command;
 
+		this.check = check;
 	}
 	
 	@Override
@@ -52,6 +55,12 @@ public class Operation implements IOperation {
 			link.setPid(PidService.getInstance().applyLinkPid());
 			
 			result.setPrimaryPid(link.getPid());
+			
+			double linkLength = GeoTranslator.getLinkLength(GeoTranslator.jts2Wkt(geo));
+			
+			check.checkLinkLength(linkLength);
+			
+			link.setLength(linkLength);
 			
 			link.setGeometry(GeoTranslator.transform(geo, 100000, 0));
 			
@@ -120,6 +129,12 @@ public class Operation implements IOperation {
 					result.setPrimaryPid(link.getPid());
 					
 					link.setGeometry(GeoTranslator.transform(geomInter, 100000, 0));
+					
+					double linkLength = GeoTranslator.getLinkLength(GeoTranslator.jts2Wkt(geomInter));
+					
+					check.checkLinkLength(linkLength);
+					
+					link.setLength(linkLength);
 					
 					link.setOriginLinkPid(link.getPid());
 					

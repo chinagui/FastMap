@@ -23,6 +23,8 @@ public class Process implements IProcess {
 	private Connection conn;
 
 	private String postCheckMsg;
+	
+	private Check check = new Check();
 
 	public Process(ICommand command) throws Exception {
 		this.command = (Command) command;
@@ -55,6 +57,10 @@ public class Process implements IProcess {
 	@Override
 	public String preCheck() throws Exception {
 
+		check.checkNoSameRelation(conn, command.getInLinkPid(), command.getNodePid());
+		
+		check.checkGLM08004(conn, command.getInLinkPid(), command.getOutLinkPids());
+		
 		return null;
 	}
 
@@ -72,7 +78,7 @@ public class Process implements IProcess {
 				throw new Exception(preCheckMsg);
 			}
 
-			IOperation operation = new Operation(command, conn);
+			IOperation operation = new Operation(command, conn, check);
 
 			msg = operation.run(result);
 
@@ -100,9 +106,9 @@ public class Process implements IProcess {
 
 	@Override
 	public void postCheck() throws Exception {
-		JSONArray array = new CkExceptionOperator(conn).check(result.getPrimaryPid(), ObjType.RDRESTRICTION);
-		
-		result.setCheckResults(array);
+//		JSONArray array = new CkExceptionOperator(conn).check(result.getPrimaryPid(), ObjType.RDRESTRICTION);
+//		
+//		result.setCheckResults(array);
 	}
 
 	@Override

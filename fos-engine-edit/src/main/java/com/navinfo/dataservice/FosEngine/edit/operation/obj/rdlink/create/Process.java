@@ -20,6 +20,8 @@ public class Process implements IProcess {
 	
 	private String postCheckMsg;
 	
+	private Check check = new Check();
+	
 	public Process(ICommand command) throws Exception {
 		this.command = (Command) command;
 
@@ -51,6 +53,8 @@ public class Process implements IProcess {
 	@Override
 	public String preCheck() throws Exception {
 		
+		check.checkDupilicateNode(command.getGeometry());
+		
 		return null;
 	}
 
@@ -68,7 +72,7 @@ public class Process implements IProcess {
 				throw new Exception(preCheckMsg);
 			}
 
-			IOperation operation = new Operation(command);
+			IOperation operation = new Operation(command, check);
 
 			msg = operation.run(result);
 

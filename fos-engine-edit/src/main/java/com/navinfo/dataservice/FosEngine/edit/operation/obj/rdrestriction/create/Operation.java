@@ -5,8 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
@@ -22,6 +24,8 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;
 
 public class Operation implements IOperation {
+	
+	private Check check;
 
 	private Command command;
 
@@ -44,10 +48,12 @@ public class Operation implements IOperation {
 	 */
 	private Map<Integer, Integer> relationTypeMap;
 
-	public Operation(Command command, Connection conn) {
+	public Operation(Command command, Connection conn, Check check) {
 		this.command = command;
 
 		this.conn = conn;
+		
+		this.check = check;
 	}
 
 	@Override
@@ -71,6 +77,23 @@ public class Operation implements IOperation {
 
 		this.calViaLinks(command.getInLinkPid(), command.getNodePid(),
 				outLinkPids);
+		
+		
+		Set<Integer> pids = new HashSet<Integer>();
+		
+		pids.add(command.getInLinkPid());
+		
+		for(Integer pid:outLinkPids){
+			pids.add(pid);
+			
+			List<Integer> viaLinkPids = viaLinkPidMap.get(pid);
+			
+			for(Integer viapid:viaLinkPids){
+				pids.add(viapid);
+			}
+		}
+		
+		check.checkGLM01017(conn, pids);
 
 		List<IRow> details = new ArrayList<IRow>();
 
@@ -99,6 +122,12 @@ public class Operation implements IOperation {
 			detail.setRestricInfo(restricInfo);
 			
 			detail.setRelationshipType(relationTypeMap.get(detail.getOutLinkPid()));
+			
+			if(detail.getRelationshipType()==1){
+				check.checkGLM26017(conn, command.getNodePid());
+				
+				check.checkGLM08033(conn, command.getInLinkPid(), outLinkPid);
+			}
 
 			if (!restricInfos.contains(restricInfo)) {
 				restricInfos.add(restricInfo);

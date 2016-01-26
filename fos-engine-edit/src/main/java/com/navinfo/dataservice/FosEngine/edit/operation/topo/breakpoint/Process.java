@@ -56,6 +56,8 @@ public class Process implements IProcess {
 	private JSONArray jaDisplayLink;
 
 	private String postCheckMsg;
+	
+	private Check check = new Check();
 
 	public Process(ICommand command) throws Exception {
 		this.command = (Command) command;
@@ -338,6 +340,8 @@ public class Process implements IProcess {
 
 	@Override
 	public String preCheck() throws Exception {
+		
+		check.checkIsCrossLink(conn, command.getLinkPid());
 
 		Point breakPoint = command.getPoint();
 

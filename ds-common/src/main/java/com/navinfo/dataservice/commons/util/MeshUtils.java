@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.commons.util;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -9,35 +11,51 @@ import org.apache.commons.lang.StringUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
-import com.vividsolutions.jts.io.WKTWriter;
 
 /**
  * Created by IntelliJ IDEA. User: liuqing Date: 2010-8-4 Time: 8:58:15
  * 地理坐标相关的工具类
  */
+
+enum MeshLocateRelation {
+	Top, Bottom, Left, Right, LeftTop, LeftBottom, RightTop, RightBottom, Inside,
+};
+
+/**
+ * 
+ */
 public abstract class MeshUtils {
-	
-	public static void main(String[] args) throws Exception{
-//		int meshid = 595673;
-//		double[] a =mesh2LocationLatLon("24967");
-//		System.out.println(a[0]+","+a[1]);
-//		
-//		System.out.println(lonlat2Mesh(109.875,1.833333));
+
+	public static void main(String[] args) throws Exception {
 		
-//		String wkt = mesh2WKT("595651"); System.out.println(wkt);
+		double[] a = mesh2LocationLatLon("595671");
 		
-		String wkt1 = "LINESTRING (1 1, 4 3)";
+		System.out.println(a[0]+","+a[1]);
 		
-		String wkt2 = "POLYGON ((2 2,3 2,3 3,2 3,2 2))";
+		List<String> b = lonlat2MeshIds(a[0],a[1]);
 		
-		Geometry geom1 = new WKTReader().read(wkt1);
+		System.out.println(b.toString());
 		
-		Geometry geom2 = new WKTReader().read(wkt2);
-		
-		Geometry geom = linkInterMeshPolygon(geom1, geom2);
-		
-		System.out.println(geom.getGeometryType());
-		
+		// int meshid = 595673;
+		// double[] a =mesh2LocationLatLon("24967");
+		// System.out.println(a[0]+","+a[1]);
+		//
+		// System.out.println(lonlat2Mesh(109.875,1.833333));
+
+		// String wkt = mesh2WKT("595651"); System.out.println(wkt);
+
+//		String wkt1 = "LINESTRING (1 1, 4 3)";
+//
+//		String wkt2 = "POLYGON ((2 2,3 2,3 3,2 3,2 2))";
+//
+//		Geometry geom1 = new WKTReader().read(wkt1);
+//
+//		Geometry geom2 = new WKTReader().read(wkt2);
+//
+//		Geometry geom = linkInterMeshPolygon(geom1, geom2);
+//
+//		System.out.println(geom.getGeometryType());
+
 		// (M3*10+M4)*3600+M6*450+60*3600
 		// (M1*10+M2)*2400+M5*300
 		// int x = (5 * 10 + 6) * 3600 + 3 * 450 + 60 * 3600;
@@ -93,14 +111,14 @@ public abstract class MeshUtils {
 	 * @return 左下/中心坐标点/右上坐标点
 	 */
 	public static int[] mesh2Location(String meshId) {
-		
-		if(meshId.length()<6){
-			int length = 6-meshId.length();
-			for(int i=0;i<length;i++){
-				meshId="0" + meshId;
+
+		if (meshId.length() < 6) {
+			int length = 6 - meshId.length();
+			for (int i = 0; i < length; i++) {
+				meshId = "0" + meshId;
 			}
 		}
-		
+
 		int m1 = Integer.valueOf(meshId.substring(0, 1));
 		int m2 = Integer.valueOf(meshId.substring(1, 2));
 		int m3 = Integer.valueOf(meshId.substring(2, 3));
@@ -151,27 +169,29 @@ public abstract class MeshUtils {
 				+ rtX + " " + rtY + ", " + rtX + " " + lbY + "))";
 
 	}
-	
+
 	/**
 	 * 图幅号转换成POLYGON的JTS对象
+	 * 
 	 * @param meshId
 	 * @return
 	 * @throws ParseException
 	 */
-	public static Geometry mesh2Jts(String meshId) throws ParseException{
-		
+	public static Geometry mesh2Jts(String meshId) throws ParseException {
+
 		String wkt = mesh2WKT(meshId);
-		
+
 		Geometry jts = new WKTReader().read(wkt);
-		
+
 		return jts;
-		
+
 	}
-	
-	public static Geometry linkInterMeshPolygon(Geometry linkGeom,Geometry meshGeom){
-		
+
+	public static Geometry linkInterMeshPolygon(Geometry linkGeom,
+			Geometry meshGeom) {
+
 		return meshGeom.intersection(linkGeom);
-		
+
 	}
 
 	/**
@@ -409,13 +429,7 @@ public abstract class MeshUtils {
 	 * @return
 	 */
 	public static String[] get9NeighborMesh(String meshId) {
-		if(meshId.length()<6){
-			int length = 6-meshId.length();
-			for(int i=0;i<length;i++){
-				meshId="0" + meshId;
-			}
-		}
-		
+		meshId = StringUtils.leftPad(meshId, 6, '0');
 		String allMesh[] = new String[9];
 		int m1 = Integer.valueOf(meshId.substring(0, 1));
 		int m2 = Integer.valueOf(meshId.substring(1, 2));
@@ -444,14 +458,38 @@ public abstract class MeshUtils {
 	 * @param meshId
 	 * @return 获取除了中心图幅之外的阔圈图幅
 	 */
-	private static Set<String> get8NeighborMesh(String meshId) {
-		if(meshId.length()<6){
-			int length = 6-meshId.length();
-			for(int i=0;i<length;i++){
-				meshId="0" + meshId;
-			}
-		}
-		
+	private static  String[] get8NeighborMesh(String meshId) {
+		meshId = StringUtils.leftPad(meshId, 6, '0');
+		String allMesh[] = new String[8];
+		int m1 = Integer.valueOf(meshId.substring(0, 1));
+		int m2 = Integer.valueOf(meshId.substring(1, 2));
+		int m3 = Integer.valueOf(meshId.substring(2, 3));
+		int m4 = Integer.valueOf(meshId.substring(3, 4));
+		int m5 = Integer.valueOf(meshId.substring(4, 5));
+		int m6 = Integer.valueOf(meshId.substring(5, 6));
+		int x = (m3 * 10 + m4) * 3600 + m6 * 450 + 60 * 3600;
+		int y = (m1 * 10 + m2) * 2400 + m5 * 300;
+		x += 450.0 / 2;
+		y += 300.0 / 2;
+		allMesh[0] = location2Mesh(x - 450, y + 300);
+		allMesh[1] = location2Mesh(x, y + 300);
+		allMesh[2] = location2Mesh(x + 450, y + 300);
+		allMesh[3] = location2Mesh(x - 450, y);
+		//allMesh[4] = location2Mesh(x, y);
+		allMesh[4] = location2Mesh(x + 450, y);
+		allMesh[5] = location2Mesh(x - 450, y - 300);
+		allMesh[6] = location2Mesh(x, y - 300);
+		allMesh[7] = location2Mesh(x + 450, y - 300);
+		return allMesh;
+
+	}
+	
+	/**
+	 * 计算单个图幅邻接的9个图
+	 * @param meshId
+	 * @return 9邻接图幅set
+	 */
+	private static Set<String> get9NeighborMeshSet(String meshId){
 		Set<String> meshes = new HashSet<String>();
 		int m1 = Integer.valueOf(meshId.substring(0, 1));
 		int m2 = Integer.valueOf(meshId.substring(1, 2));
@@ -464,11 +502,11 @@ public abstract class MeshUtils {
 		x += 450.0 / 2;
 		y += 300.0 / 2;
 		meshes.add(location2Mesh(x - 450, y + 300));
-		meshes.add(location2Mesh(x, y + 300));
-		meshes.add(location2Mesh(x + 450, y + 300));
-		meshes.add(location2Mesh(x - 450, y));
-		// meshes.put(location2Mesh(x, y));
-		meshes.add(location2Mesh(x + 450, y));
+		meshes.add( location2Mesh(x, y + 300));
+		meshes.add( location2Mesh(x + 450, y + 300));
+		meshes.add( location2Mesh(x - 450, y));
+		meshes.add(location2Mesh(x, y));
+		meshes.add( location2Mesh(x + 450, y));
 		meshes.add(location2Mesh(x - 450, y - 300));
 		meshes.add(location2Mesh(x, y - 300));
 		meshes.add(location2Mesh(x + 450, y - 300));
@@ -476,37 +514,120 @@ public abstract class MeshUtils {
 	}
 
 	/**
+	 * 计算单个图幅邻接的8个图
+	 * @param meshId
+	 * @return 8邻接图幅set
+	 */
+	private static Set<String> get8NeighborMeshSet(String meshId){
+		Set<String> meshes = new HashSet<String>();
+		int m1 = Integer.valueOf(meshId.substring(0, 1));
+		int m2 = Integer.valueOf(meshId.substring(1, 2));
+		int m3 = Integer.valueOf(meshId.substring(2, 3));
+		int m4 = Integer.valueOf(meshId.substring(3, 4));
+		int m5 = Integer.valueOf(meshId.substring(4, 5));
+		int m6 = Integer.valueOf(meshId.substring(5, 6));
+		int x = (m3 * 10 + m4) * 3600 + m6 * 450 + 60 * 3600;
+		int y = (m1 * 10 + m2) * 2400 + m5 * 300;
+		x += 450.0 / 2;
+		y += 300.0 / 2;
+		meshes.add(location2Mesh(x - 450, y + 300));
+		meshes.add( location2Mesh(x, y + 300));
+		meshes.add( location2Mesh(x + 450, y + 300));
+		meshes.add( location2Mesh(x - 450, y));
+		meshes.add( location2Mesh(x + 450, y));
+		meshes.add(location2Mesh(x - 450, y - 300));
+		meshes.add(location2Mesh(x, y - 300));
+		meshes.add(location2Mesh(x + 450, y - 300));
+		return meshes;
+	}
+	
+	/**
+	 * 计算1圈的扩圈图幅
+	 * 使用set可以保证输入和输出不会有重复
+	 * @param meshSet
+	 * @return 包含自己的外围一圈的图幅Set，无图幅或图幅格式不对，返回null
+	 * @author XXW
+	 */
+	public static Set<String> getNeighborMeshSet(Set<String> meshSet){
+		//
+		if(meshSet!=null){
+			Set<String> neiMeshSet=new HashSet<String>();
+			for(String meshId:meshSet){
+				neiMeshSet.addAll(get9NeighborMeshSet(meshId));
+			}
+			return neiMeshSet;
+		}
+		return null;
+	}
+	
+	/**
+	 * 计算n圈的邻接图幅
+	 * @param meshId
+	 * @param extendCount
+	 * @return
+	 */
+	public static Set<String> getNeighborMeshSet(String meshId,int extendCount){
+		if(StringUtils.isEmpty(meshId)||extendCount<1){
+			return null;
+		}
+		Set<String> outMeshes = new HashSet<String>();
+		if(extendCount==1){
+			outMeshes= get9NeighborMeshSet(meshId);
+			return outMeshes;
+		}else{
+			Set<String> meshes = getNeighborMeshSet(meshId,extendCount-1);
+			outMeshes = getNeighborMeshSet(meshes);
+			return outMeshes;
+		}
+	}
+	
+	/**
 	 * 
 	 * @param meshIds
 	 *            ：已半角逗号分隔开的图符号序列，如"595661,595662"
 	 * @return 不包含自己的外围一圈的图幅Set，无图幅或图幅格式不对，返回null
 	 * @author XXW
 	 */
-	public static Set<String> getNeighborMeshSetButSelves(String[] meshIdArray) {
-		if (meshIdArray != null && meshIdArray.length > 0) {
-			Set<Set<String>> meshSets = new HashSet<Set<String>>();
-			System.out.println(meshIdArray.length);
-			for (String meshId : meshIdArray) {
-				meshSets.add(get8NeighborMesh(meshId));
+	public static Set<String> getNeighborMeshSetButSelves(Set<String> meshSet) {
+		//
+		if(meshSet!=null){
+			Set<String> neiMeshSet=new HashSet<String>();
+			for(String meshId:meshSet){
+				neiMeshSet.addAll(get8NeighborMeshSet(meshId));
 			}
-			Set<String> meshSet = getNonDupMeshSet(meshSets);
-			// 去除自身
+			//去除自身
 			Iterator<String> it = meshSet.iterator();
-			while (it.hasNext()) {
+			while(it.hasNext()){
 				String mesh = it.next();
-				for (int i = 0; i < meshIdArray.length; i++) {
-					if (mesh.equals(meshIdArray[i])) {
-						it.remove();
-						break;
-					}
+				if(meshSet.contains(mesh)){
+					it.remove();
 				}
 			}
 			return meshSet;
-		} else {
-			return null;
 		}
+		return null;
 	}
 
+	/**
+	 * 计算n圈的邻接图幅
+	 * @param meshId
+	 * @param extendCount
+	 * @return
+	 */
+	public static Set<String> getNeighborMeshSet(Set<String> meshSet,int extendCount){
+		if(meshSet==null||extendCount<1){
+			return null;
+		}
+		Set<String> outMeshes = new HashSet<String>();
+		if(extendCount==1){
+			outMeshes= getNeighborMeshSet(meshSet);
+			return outMeshes;
+		}else{
+			Set<String> meshes = getNeighborMeshSet(meshSet,extendCount-1);
+			outMeshes = getNeighborMeshSet(meshes);
+			return outMeshes;
+		}
+	}
 	/**
 	 * 图幅列表去重
 	 * 
@@ -545,77 +666,50 @@ public abstract class MeshUtils {
 	}
 
 	/**
-	 * 获取某图幅某等级下周边9个图幅
-	 * 
-	 * @param meshId
-	 *            图幅ID
-	 * @param level
-	 *            等级
-	 * @return 周边图幅列表
-	 */
-	public static Set<String> get9NeighborMesh2(String meshId, int level) {
-		meshId = StringUtils.leftPad(meshId, 6, '0');
-		Set<String> outMeshes = new HashSet<String>();
-		if (level == 1) {
-			outMeshes = get8NeighborMesh(meshId);
-			outMeshes.add(meshId);
-			return outMeshes;
-		} else {
-			Set<String> meshes = get9NeighborMesh2(meshId, level - 1);
-			for (String mesh : meshes) {
-				outMeshes.addAll(get8NeighborMesh(mesh));
-				outMeshes.add(mesh);
-			}
-			return outMeshes;
-		}
-	}
-
-	/**
 	 * 点是否在图框线上
 	 * 
 	 * @param dLongitude
 	 * @param dLatitude
 	 * @return
 	 */
-	public static boolean isPointAtMeshBorder(double dLongitude, double dLatitude){
+	public static boolean isPointAtMeshBorder(double dLongitude,
+			double dLatitude) {
 		int model = 0;
 
-        int[] result = CalculateIdealRowIndex(dLatitude);
+		int[] result = calculateIdealRowIndex(dLatitude);
 
-        int rowIndex = result[0];
-        int remainder = result[1];
-        				
-        switch (rowIndex % 3)
-        {
-            case 0: //第一行
-                {
-                    if (300000 - remainder == 12) //余数距离上框等于0.012秒
-                        model |= 0x01;
-                    else if (remainder == 0)
-                        model |= 0x01;
-                }
-                break;
-            case 1: //第二行由于上下边框均不在其内，因此不在图框上
-                break;
-            case 2: //第三行
-                {
-                    if (remainder == 12) //余数距离下框等于0.012秒
-                        model |= 0x01;
-                }
-                break;
-        }
+		int rowIndex = result[0];
+		int remainder = result[1];
 
-        result = CalculateIdealColumnIndex(dLongitude);
+		switch (rowIndex % 3) {
+		case 0: // 第一行
+		{
+			if (300000 - remainder == 12) // 余数距离上框等于0.012秒
+				model |= 0x01;
+			else if (remainder == 0)
+				model |= 0x01;
+		}
+			break;
+		case 1: // 第二行由于上下边框均不在其内，因此不在图框上
+			break;
+		case 2: // 第三行
+		{
+			if (remainder == 12) // 余数距离下框等于0.012秒
+				model |= 0x01;
+		}
+			break;
+		}
 
-        if (0 == result[1])
-            model |= 0x10;
-        
-        if(model == 0){
-        	return false;
-        }
-        else{
-        	return true;
-        }
+		result = calculateIdealColumnIndex(dLongitude);
+
+		if (0 == result[1])
+			model |= 0x10;
+
+		if (model == 0) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	/**
@@ -624,7 +718,7 @@ public abstract class MeshUtils {
 	 * @param dLatitude
 	 * @return 行序号，余数
 	 */
-	private static int[] CalculateIdealRowIndex(double dLatitude) {
+	private static int[] calculateIdealRowIndex(double dLatitude) {
 		int[] result = new int[2];
 
 		// 相对区域纬度 = 绝对纬度 - 0.0
@@ -639,32 +733,165 @@ public abstract class MeshUtils {
 		result[0] = (int) (longsecond / 300000);
 
 		result[1] = (int) (longsecond % 300000);
-		
+
 		return result;
 	}
-	
-    /**
-     *  根据经度计算该点位于理想图幅分割的列序号
-     * @param dLongitude
-     * @return 列序号，余数
-     */
-    private static int[] CalculateIdealColumnIndex(double dLongitude)
-    {
-    	int[] result = new int[2];
-    	
-        //相对区域经度 = 绝对经度 - 60.0
-        double regionLongitude = dLongitude - 60.0;
 
-        //相对的以秒为单位的经度
-        double secondLongitude = regionLongitude * 3600;
+	/**
+	 * 根据经度计算该点位于理想图幅分割的列序号
+	 * 
+	 * @param dLongitude
+	 * @return 列序号，余数
+	 */
+	private static int[] calculateIdealColumnIndex(double dLongitude) {
+		int[] result = new int[2];
 
-        //为避免浮点数的内存影响，将秒*10的三次方(由于0.00001度为0.036秒)
-        long longsecond = (int)Math.floor(secondLongitude * 1000);
+		// 相对区域经度 = 绝对经度 - 60.0
+		double regionLongitude = dLongitude - 60.0;
 
-        result[0] = (int)(longsecond / 450000);
-        
-        result[1] = (int)(longsecond % 450000);
-        
-        return result;
-    }
+		// 相对的以秒为单位的经度
+		double secondLongitude = regionLongitude * 3600;
+
+		// 为避免浮点数的内存影响，将秒*10的三次方(由于0.00001度为0.036秒)
+		long longsecond = (int) Math.floor(secondLongitude * 1000);
+
+		result[0] = (int) (longsecond / 450000);
+
+		result[1] = (int) (longsecond % 450000);
+
+		return result;
+	}
+
+	/**
+	 *  计算点所在的图幅号,如果点在图幅边界上,返回所有的图幅号
+	 *  返回顺序,先上再下,先右再左
+	 * @param lon
+	 * @param lat
+	 * @return
+	 */
+	public static List<String> lonlat2MeshIds(double lon, double lat) {
+
+		List<String> rst = new ArrayList<String>();
+
+		int pos = which25TMeshBorderPointAt(lon, lat);
+
+		String sMeshId = lonlat2Mesh(lon, lat);
+
+		rst.add(sMeshId);
+
+		if (0 == pos) // 不在边框上
+			return rst;
+
+		if (0x01 == (pos & 0x0F)) // 上图框
+			rst.add(meshLocator_25T(sMeshId, MeshLocateRelation.Bottom));
+
+		if (0x10 == (pos & 0xF0)) // 右图框
+		{
+			String mesh = meshLocator_25T(sMeshId, MeshLocateRelation.Left);
+			rst.add(mesh);
+			if (0x01 == (pos & 0x0F)) // 上图框
+				rst.add(meshLocator_25T(mesh, MeshLocateRelation.Bottom));
+		}
+
+		return rst;
+	}
+
+	/**
+	 * 误差精度范围内,点是否在图廓边界上
+	 * 
+	 * @param 经纬度
+	 * @return 0x01--上下图框，0x10--左右图框
+	 */
+	private static int which25TMeshBorderPointAt(double dLongitude,
+			double dLatitude) {
+		int model = 0;
+
+		int[] result = calculateIdealRowIndex(dLatitude);
+
+		int rowIndex = result[0];
+		int remainder = result[1];
+
+		switch (rowIndex % 3) {
+		case 0: // 第一行
+		{
+			if (300000 - remainder == 12) // 余数距离上框等于0.012秒
+				model |= 0x01;
+			else if (remainder == 0)
+				model |= 0x01;
+		}
+			break;
+		case 1: // 第二行由于上下边框均不在其内，因此不在图框上
+			break;
+		case 2: // 第三行
+		{
+			if (remainder == 12) // 余数距离下框等于0.012秒
+				model |= 0x01;
+		}
+			break;
+		}
+
+		result = calculateIdealColumnIndex(dLongitude);
+
+		if (0 == result[1])
+			model |= 0x10;
+
+		return model;
+	}
+
+	/**
+	 * 计算目标图幅的周边方位的图幅
+	 * 
+	 * @param mesh
+	 * @param loc
+	 * @return
+	 */
+	private static String meshLocator_25T(String mesh, MeshLocateRelation loc) {
+		if (loc == MeshLocateRelation.Inside)
+			return mesh;
+
+		int M1 = Integer.valueOf(mesh.substring(0, 1));
+		int M2 = Integer.valueOf(mesh.substring(1, 2));
+		int M3 = Integer.valueOf(mesh.substring(2, 3));
+		int M4 = Integer.valueOf(mesh.substring(3, 4));
+		int M5 = Integer.valueOf(mesh.substring(4, 5));
+		int M6 = Integer.valueOf(mesh.substring(5, 6));
+
+		// 该图幅的左下角点
+		double x = (M3 * 10 + M4) * 3600 + M6 * 450 + 60 * 3600;
+		double y = (M1 * 10 + M2) * 2400 + M5 * 300;
+
+		// 该图幅的中间点
+		x += 450.0 / 2;
+		y += 300.0 / 2;
+
+		switch (loc) {
+		case Top: {
+			return lonlat2Mesh(x / 3600.0, (y + 300) / 3600.0);
+		}
+		case Bottom: {
+			return lonlat2Mesh(x / 3600.0, (y - 300) / 3600.0);
+		}
+		case Left: {
+			return lonlat2Mesh((x - 450) / 3600.0, y / 3600.0);
+		}
+		case Right: {
+			return lonlat2Mesh((x + 450) / 3600.0, y / 3600.0);
+		}
+		case LeftTop: {
+			return lonlat2Mesh((x - 450) / 3600.0, (y + 300) / 3600.0);
+		}
+		case LeftBottom: {
+			return lonlat2Mesh((x - 450) / 3600.0, (y - 300) / 3600.0);
+		}
+		case RightTop: {
+			return lonlat2Mesh((x + 450) / 3600.0, (y + 300) / 3600.0);
+		}
+		case RightBottom: {
+			return lonlat2Mesh((x + 450) / 3600.0, (y - 300) / 3600.0);
+		}
+		default: {
+			return mesh;
+		}
+		}
+	}
 }

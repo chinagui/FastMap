@@ -5,23 +5,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.collections.CollectionUtils;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.commons.utils.MeshUtils;
-import com.navinfo.dataservice.diff.config.DiffConfig;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /** 

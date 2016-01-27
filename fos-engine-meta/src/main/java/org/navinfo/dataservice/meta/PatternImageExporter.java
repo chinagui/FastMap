@@ -138,7 +138,7 @@ public class PatternImageExporter {
 			String name = names.getString(i);
 			
 			if(i>0){
-				name+=",";
+				sql+=",";
 			}
 			
 			sql+="'"+name+"'";

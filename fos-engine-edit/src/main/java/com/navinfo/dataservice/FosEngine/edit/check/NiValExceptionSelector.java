@@ -192,8 +192,6 @@ public class NiValExceptionSelector {
 		
 		sql.append((page - 1) * pageSize);
 		
-		System.out.println(sql.toString());
-		
 		try{
 			
 			stmt = conn.createStatement();

@@ -80,7 +80,7 @@ public class Operation implements IOperation {
 			JSONObject interLine = command.getInterLines().getJSONObject(i);
 			JSONObject breakJson = new JSONObject();
 			JSONObject data = interLine.getJSONObject("data");
-			breakJson.put("linkPid", interLine.getInt("linkPid"));
+			breakJson.put("objId", interLine.getInt("linkPid"));
 			breakJson.put("projectId", command.getProjectId());
 			if (interLine.getString("type").equals("s")) {
 				data.put("breakNodePid", updateLink.getsNodePid());

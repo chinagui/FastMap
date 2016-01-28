@@ -152,6 +152,8 @@ public class Operation implements IOperation {
 					RdLinkForm form = new RdLinkForm();
 
 					form.Unserialize(formJson);
+					
+					form.setLinkPid(this.updateLink.getPid());
 
 					result.getAddObjects().add(form);
 
@@ -193,6 +195,8 @@ public class Operation implements IOperation {
 					RdLinkLimit limit = new RdLinkLimit();
 
 					limit.Unserialize(limitJson);
+					
+					limit.setLinkPid(this.updateLink.getPid());
 
 					result.getAddObjects().add(limit);
 
@@ -234,6 +238,8 @@ public class Operation implements IOperation {
 					RdLinkLimitTruck obj = new RdLinkLimitTruck();
 
 					obj.Unserialize(json);
+					
+					obj.setLinkPid(this.updateLink.getPid());
 
 					result.getAddObjects().add(obj);
 
@@ -276,6 +282,8 @@ public class Operation implements IOperation {
 					RdLinkSpeedlimit obj = new RdLinkSpeedlimit();
 
 					obj.Unserialize(json);
+					
+					obj.setLinkPid(this.updateLink.getPid());
 
 					result.getAddObjects().add(obj);
 
@@ -317,6 +325,8 @@ public class Operation implements IOperation {
 					RdLinkSidewalk obj = new RdLinkSidewalk();
 
 					obj.Unserialize(json);
+					
+					obj.setLinkPid(this.updateLink.getPid());
 
 					result.getAddObjects().add(obj);
 
@@ -359,6 +369,8 @@ public class Operation implements IOperation {
 					RdLinkWalkstair obj = new RdLinkWalkstair();
 
 					obj.Unserialize(json);
+					
+					obj.setLinkPid(this.updateLink.getPid());
 
 					result.getAddObjects().add(obj);
 
@@ -400,6 +412,8 @@ public class Operation implements IOperation {
 					RdLinkRtic obj = new RdLinkRtic();
 
 					obj.Unserialize(json);
+					
+					obj.setLinkPid(this.updateLink.getPid());
 
 					result.getAddObjects().add(obj);
 
@@ -441,6 +455,8 @@ public class Operation implements IOperation {
 					RdLinkIntRtic obj = new RdLinkIntRtic();
 
 					obj.Unserialize(json);
+					
+					obj.setLinkPid(this.updateLink.getPid());
 
 					result.getAddObjects().add(obj);
 
@@ -482,6 +498,8 @@ public class Operation implements IOperation {
 					RdLinkZone obj = new RdLinkZone();
 
 					obj.Unserialize(json);
+					
+					obj.setLinkPid(this.updateLink.getPid());
 
 					result.getAddObjects().add(obj);
 
@@ -524,6 +542,8 @@ public class Operation implements IOperation {
 
 					name.Unserialize(nameJson);
 
+					name.setLinkPid(this.updateLink.getPid());
+					
 					result.getAddObjects().add(name);
 
 				}

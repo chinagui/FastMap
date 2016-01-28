@@ -4,6 +4,7 @@ import java.security.MessageDigest;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
+import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
@@ -11,58 +12,84 @@ import com.vividsolutions.jts.io.WKTReader;
 public class NiValCheckOperator {
 
 	private Connection conn;
+	
+	public NiValCheckOperator(){
+		
+	}
 
 	public NiValCheckOperator(Connection conn) {
 		this.conn = conn;
 	}
 
 	public void insertCheckLog(String ruleId, String loc, String targets,
-			int meshId) throws Exception{
+			int meshId,String worker) throws Exception{
 
-		String sql = "merge into ni_val_exception a using dual b on " +
-				"(a.RESERVED = :1) when not matched then   insert    " +
-				" (RESERVED, rule_id, information, location, targets, mesh_id)  " +
-				" values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7)";
-		
+		String sql = "merge into ni_val_exception a using ( select RESERVED from ni_val_exception union all select RESERVED from ck_exception ) b on (a.RESERVED = b.reserved) when not matched then   insert     (RESERVED, ruleid, information, location, targets, mesh_id,worker)   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7,:8)";
 		
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 		
-		String md5 = this.generateMd5(ruleId, CheckItems.getInforByRuleId(ruleId), targets, null);
+		try {
+			String md5 = this.generateMd5(ruleId, CheckItems.getInforByRuleId(ruleId), targets, null);
+			
+			pstmt.setString(1, md5);
+			
+			pstmt.setString(2, md5);
+			
+			pstmt.setString(3, ruleId);
+			
+			pstmt.setString(4, CheckItems.getInforByRuleId(ruleId));
+			
+			pstmt.setString(5, loc);
+			
+			pstmt.setString(6, targets);
+			
+			pstmt.setInt(7, meshId);
+			
+			pstmt.setString(8, worker);
+			
+			pstmt.executeUpdate();
+		} catch (Exception e) {
+			throw e;
+		}finally{
 		
-		pstmt.setString(1, md5);
-		
-		pstmt.setString(2, md5);
-		
-		pstmt.setString(3, ruleId);
-		
-		pstmt.setString(4, CheckItems.getInforByRuleId(ruleId));
-		
-		pstmt.setString(5, loc);
-		
-		pstmt.setString(6, targets);
-		
-		pstmt.setInt(7, meshId);
-		
-		pstmt.executeUpdate();
-		
-		pstmt.close();
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+				
+			}
+			
+		}
 		
 	}
 	
-	public void deleteCheckLog(String ruleId, String targets) throws Exception{
+	public void deleteCheckLog(String reserved,int projectId) throws Exception{
 
 		String sql = "update ni_val_exception set del_flag = 1 where RESERVED =:1";
 		
+		conn = DBOraclePoolManager.getConnection(projectId);
 		
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 		
-		String md5 = this.generateMd5(ruleId, CheckItems.getInforByRuleId(ruleId), targets, null);
+		try {
+			pstmt.setString(1, reserved);
+			
+			pstmt.executeUpdate();
+		} catch (Exception e) {
+			throw e;
+		}finally{
 		
-		pstmt.setString(1, md5);
-		
-		pstmt.executeUpdate();
-		
-		pstmt.close();
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+				
+			}
+			
+			try {
+				conn.close();
+			} catch (Exception e) {
+				
+			}
+		}
 		
 	}
 

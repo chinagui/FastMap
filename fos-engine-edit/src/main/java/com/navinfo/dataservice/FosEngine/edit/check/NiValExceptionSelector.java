@@ -3,17 +3,24 @@ package com.navinfo.dataservice.FosEngine.edit.check;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
+import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class NiValExceptionSelector {
 
 	private Connection conn;
+	
+	public NiValExceptionSelector() {
+	}
 
 	public NiValExceptionSelector(Connection conn) {
 		this.conn = conn;
@@ -152,5 +159,90 @@ public class NiValExceptionSelector {
 
 		return reses;
 	}
+	
+	
+	public JSONArray queryException(int projectId,JSONArray meshes,int pageSize,int page) throws Exception{
+		
+		conn = DBOraclePoolManager.getConnection(projectId);
+		
+		JSONArray results = new JSONArray();
+		
+		Statement stmt = null;
+		
+		ResultSet rs = null;
+		
+		StringBuilder sql = new StringBuilder("select * from (select b.*,rownum rn from (select ruleid,situation,'level' level_,targets,information,a.location.sdo_point.x x," +
+				"a.location.sdo_point.y y,created,worker from ni_val_exception a where del_flag = 0 and mesh_id in (");
+		
+		for(int i=0;i<meshes.size();i++){
+			if (i > 0){
+				sql.append(",");
+				
+				sql.append(meshes.getInt(i));
+			}else{
+				sql.append(meshes.getInt(i));
+			}
+		}
+		
+		sql.append(") order by created ) b where rownum<=");
+		
+		sql.append(pageSize * page);
+		
+		sql.append(") where rn>");
+		
+		sql.append((page - 1) * pageSize);
+		
+		System.out.println(sql.toString());
+		
+		try{
+			
+			stmt = conn.createStatement();
+			
+			rs = stmt.executeQuery(sql.toString());
+			
+			while(rs.next()){
+				JSONObject json = new JSONObject();
+				
+				json.put("ruleid", rs.getString("ruleid"));
+				
+				json.put("situation",rs.getString("situation"));
+				
+				json.put("rank", rs.getInt("level_"));
+				
+				json.put("targets", rs.getString("targets"));
+				
+				json.put("information", rs.getString("information"));
+				
+				json.put("geometry", "("+rs.getInt("x")+","+rs.getInt("y")+")");
+				
+				json.put("create_date", rs.getString("created"));
+				
+				json.put("worker", rs.getString("worker"));
+				
+				results.add(json);
+			}
+			
+		}catch(Exception e){
+			throw e;
+		}finally{
+			try {
+				rs.close();
+			} catch (Exception e) {
+			}
+
+			try {
+				stmt.close();
+			} catch (Exception e) {
+			}
+			
+			try {
+				conn.close();
+			} catch (Exception e) {
+			}
+		}
+		
+		return results;
+	}
+	
 
 }

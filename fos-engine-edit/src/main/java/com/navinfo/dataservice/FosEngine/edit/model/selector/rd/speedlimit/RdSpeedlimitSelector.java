@@ -310,7 +310,7 @@ public class RdSpeedlimitSelector implements ISelector {
 				
 				limit.setDirect(resultSet.getInt("direct"));
 				
-				limit.setSpeedValue(resultSet.getInt("speed_value"));
+				limit.setSpeedValue(resultSet.getInt("speed_value")/10);
 				
 				limit.setSpeedType(resultSet.getInt("speed_type"));
 				

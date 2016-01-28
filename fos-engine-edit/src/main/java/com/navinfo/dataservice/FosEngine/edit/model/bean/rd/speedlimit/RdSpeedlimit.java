@@ -28,43 +28,43 @@ public class RdSpeedlimit implements IObj {
 	private int linkPid;
 
 	private int direct;
-	
+
 	private int speedValue;
-	
+
 	private int speedType;
-	
+
 	private int speedDependent;
-	
+
 	private int speedFlag;
-	
-	private int limitSrc=1;
-	
+
+	private int limitSrc = 1;
+
 	private String timeDomain;
-	
+
 	private int captureFlag;
-	
+
 	private String descript;
-	
+
 	private int meshId;
-	
-	private int status=7;
-	
+
+	private int status = 7;
+
 	private int ckStatus;
-	
+
 	private int adjaFlag;
-	
+
 	private int recStatusIn;
-	
+
 	private int recStatusOut;
-	
+
 	private String timeDescript;
-	
+
 	private Geometry geometry;
-	
+
 	private String laneSpeedValue;
-	
+
 	private String rowId;
-	
+
 	public int getLinkPid() {
 		return linkPid;
 	}
@@ -218,7 +218,7 @@ public class RdSpeedlimit implements IObj {
 	}
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
-	
+
 	public RdSpeedlimit() {
 
 	}
@@ -256,7 +256,7 @@ public class RdSpeedlimit implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
-		
+
 		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 
 		JSONObject json = JSONObject.fromObject(this, jsonConfig);
@@ -276,7 +276,8 @@ public class RdSpeedlimit implements IObj {
 
 			if ("geometry".equals(key)) {
 
-				Geometry jts = GeoTranslator.geojson2Jts(json.getJSONObject(key), 100000, 0);
+				Geometry jts = GeoTranslator.geojson2Jts(
+						json.getJSONObject(key), 100000, 0);
 
 				this.setGeometry(jts);
 
@@ -332,7 +333,6 @@ public class RdSpeedlimit implements IObj {
 
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
 
-
 		return children;
 	}
 
@@ -356,7 +356,7 @@ public class RdSpeedlimit implements IObj {
 
 	@Override
 	public boolean fillChangeFields(JSONObject json) throws Exception {
-		
+
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {
@@ -364,40 +364,52 @@ public class RdSpeedlimit implements IObj {
 
 			if (json.get(key) instanceof JSONArray) {
 				continue;
-			}  else if ("geometry".equals(key)) {
-				changedFields.put(key, json.getJSONObject(key));
-			}  else {
-				if ( !"objStatus".equals(key)) {
-					
+			} else if ("geometry".equals(key)) {
+
+				JSONObject geojson = json.getJSONObject(key);
+
+				String wkt = Geojson.geojson2Wkt(geojson.toString());
+
+				String oldwkt = GeoTranslator.jts2Wkt(geometry, 0.00001, 5);
+
+				if (!wkt.equals(oldwkt)) {
+					changedFields.put(key, json.getJSONObject(key));
+				}
+			} else {
+				if (!"objStatus".equals(key)) {
+
 					Field field = this.getClass().getDeclaredField(key);
-					
+
 					field.setAccessible(true);
-					
+
 					Object objValue = field.get(this);
-					
+
 					String oldValue = null;
-					
-					if (objValue == null){
+
+					if (objValue == null) {
 						oldValue = "null";
-					}else{
+					} else {
 						oldValue = String.valueOf(objValue);
 					}
-					
+
 					String newValue = json.getString(key);
-					
-					if (!newValue.equals(oldValue)){
-						changedFields.put(key, json.get(key));
-						
+
+					if (!newValue.equals(oldValue)) {
+						if (key.equals("speedValue")) {
+
+							changedFields.put(key, json.getInt(key) * 10);
+						} else {
+							changedFields.put(key, json.get(key));
+						}
 					}
 
-					
 				}
 			}
 		}
-		
-		if (changedFields.size() >0){
+
+		if (changedFields.size() > 0) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 
@@ -413,5 +425,5 @@ public class RdSpeedlimit implements IObj {
 	public void setMesh(int mesh) {
 		// TODO Auto-generated method stub
 	}
-	
+
 }

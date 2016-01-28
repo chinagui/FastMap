@@ -105,7 +105,7 @@ public class Process implements IProcess {
 	@Override
 	public void postCheck() throws Exception {
 		
-
+		check.postCheck(conn, result);
 	}
 
 	@Override

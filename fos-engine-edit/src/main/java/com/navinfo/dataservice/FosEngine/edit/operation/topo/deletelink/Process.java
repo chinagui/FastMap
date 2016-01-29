@@ -66,43 +66,45 @@ public class Process implements IProcess {
 
 	public String preCheck() throws Exception {
 
-		PreparedStatement stmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			// 检查link是否作为交线、分歧、车信的退出线或者经过线
-			String sql = "select a.detail_id, '交限' type   from rd_restriction_detail a  where a.out_link_pid = :1 union all (select b.link_pid, '交限' type from rd_restriction_via b where b.link_pid = :2)  union all (select c.topo_id,'车信' type from rd_lane_topo_detail c where c.out_link_pid = :3)  union all (select d.link_pid,'车信' type from rd_lane_via d where d.link_pid = :4)  union all (select e.branch_pid, '分歧' type from rd_branch e where e.out_link_pid = :5)  union all (select f.branch_pid, '分歧' type from rd_branch_via f where f.link_pid=:6) ";
-			
-			stmt = conn.prepareStatement(sql);
-
-			stmt.setInt(1, command.getLinkPid());
-
-			stmt.setInt(2, command.getLinkPid());
-			
-			stmt.setInt(3, command.getLinkPid());
-			
-			stmt.setInt(4, command.getLinkPid());
-			
-			stmt.setInt(5, command.getLinkPid());
-			
-			stmt.setInt(6, command.getLinkPid());
-
-			resultSet = stmt.executeQuery();
-
-			if (resultSet.next()) {
-				String type = resultSet.getString("type");
-				
-				return "此link上存在"+type+"关系信息，删除该Link会对应删除此组关系";
-			} else {
-				return null;
-			}
-		} catch (Exception e) {
-			
-			throw e;
-		} finally {
-			releaseResource(stmt, resultSet);
-		}
+//		PreparedStatement stmt = null;
+//
+//		ResultSet resultSet = null;
+//
+//		try {
+//			// 检查link是否作为交线、分歧、车信的退出线或者经过线
+//			String sql = "select a.detail_id, '交限' type   from rd_restriction_detail a  where a.out_link_pid = :1 union all (select b.link_pid, '交限' type from rd_restriction_via b where b.link_pid = :2)  union all (select c.topo_id,'车信' type from rd_lane_topo_detail c where c.out_link_pid = :3)  union all (select d.link_pid,'车信' type from rd_lane_via d where d.link_pid = :4)  union all (select e.branch_pid, '分歧' type from rd_branch e where e.out_link_pid = :5)  union all (select f.branch_pid, '分歧' type from rd_branch_via f where f.link_pid=:6) ";
+//			
+//			stmt = conn.prepareStatement(sql);
+//
+//			stmt.setInt(1, command.getLinkPid());
+//
+//			stmt.setInt(2, command.getLinkPid());
+//			
+//			stmt.setInt(3, command.getLinkPid());
+//			
+//			stmt.setInt(4, command.getLinkPid());
+//			
+//			stmt.setInt(5, command.getLinkPid());
+//			
+//			stmt.setInt(6, command.getLinkPid());
+//
+//			resultSet = stmt.executeQuery();
+//
+//			if (resultSet.next()) {
+//				String type = resultSet.getString("type");
+//				
+//				return "此link上存在"+type+"关系信息，删除该Link会对应删除此组关系";
+//			} else {
+//				return null;
+//			}
+//		} catch (Exception e) {
+//			
+//			throw e;
+//		} finally {
+//			releaseResource(stmt, resultSet);
+//		}
+		
+		return null;
 	}
 
 	public void lockRdLink() throws Exception {

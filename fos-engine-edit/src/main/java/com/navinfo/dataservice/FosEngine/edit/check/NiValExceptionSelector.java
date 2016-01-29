@@ -11,14 +11,14 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
-import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
+import com.navinfo.dataservice.commons.db.OracleAddress;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class NiValExceptionSelector {
 
 	private Connection conn;
-	
+
 	public NiValExceptionSelector() {
 	}
 
@@ -159,70 +159,70 @@ public class NiValExceptionSelector {
 
 		return reses;
 	}
-	
-	
-	public JSONArray queryException(int projectId,JSONArray meshes,int pageSize,int page) throws Exception{
-		
-		conn = DBOraclePoolManager.getConnection(projectId);
-		
+
+	public JSONArray queryException(JSONArray meshes, int pageSize, int page)
+			throws Exception {
+
 		JSONArray results = new JSONArray();
-		
+
 		Statement stmt = null;
-		
+
 		ResultSet rs = null;
-		
-		StringBuilder sql = new StringBuilder("select * from (select b.*,rownum rn from (select ruleid,situation,'level' level_,targets,information,a.location.sdo_point.x x," +
-				"a.location.sdo_point.y y,created,worker from ni_val_exception a where del_flag = 0 and mesh_id in (");
-		
-		for(int i=0;i<meshes.size();i++){
-			if (i > 0){
+
+		StringBuilder sql = new StringBuilder(
+				"select * from (select b.*,rownum rn from (select ruleid,situation,\"LEVEL\" level_,targets,information,a.location.sdo_point.x x,"
+						+ "a.location.sdo_point.y y,created,worker from ni_val_exception a where mesh_id in (");
+
+		for (int i = 0; i < meshes.size(); i++) {
+			if (i > 0) {
 				sql.append(",");
-				
+
 				sql.append(meshes.getInt(i));
-			}else{
+			} else {
 				sql.append(meshes.getInt(i));
 			}
 		}
-		
+
 		sql.append(") order by created ) b where rownum<=");
-		
+
 		sql.append(pageSize * page);
-		
+
 		sql.append(") where rn>");
-		
+
 		sql.append((page - 1) * pageSize);
-		
-		try{
-			
+
+		try {
+
 			stmt = conn.createStatement();
-			
+
 			rs = stmt.executeQuery(sql.toString());
-			
-			while(rs.next()){
+
+			while (rs.next()) {
 				JSONObject json = new JSONObject();
-				
+
 				json.put("ruleid", rs.getString("ruleid"));
-				
-				json.put("situation",rs.getString("situation"));
-				
+
+				json.put("situation", rs.getString("situation"));
+
 				json.put("rank", rs.getInt("level_"));
-				
+
 				json.put("targets", rs.getString("targets"));
-				
+
 				json.put("information", rs.getString("information"));
-				
-				json.put("geometry", "("+rs.getInt("x")+","+rs.getInt("y")+")");
-				
+
+				json.put("geometry",
+						"(" + rs.getInt("x") + "," + rs.getInt("y") + ")");
+
 				json.put("create_date", rs.getString("created"));
-				
+
 				json.put("worker", rs.getString("worker"));
-				
+
 				results.add(json);
 			}
-			
-		}catch(Exception e){
+
+		} catch (Exception e) {
 			throw e;
-		}finally{
+		} finally {
 			try {
 				rs.close();
 			} catch (Exception e) {
@@ -232,15 +232,94 @@ public class NiValExceptionSelector {
 				stmt.close();
 			} catch (Exception e) {
 			}
-			
+
 			try {
 				conn.close();
 			} catch (Exception e) {
 			}
 		}
-		
+
 		return results;
 	}
-	
 
+	public int queryExceptionCount(JSONArray meshes)
+			throws Exception {
+
+		Statement stmt = null;
+
+		ResultSet rs = null;
+
+		StringBuilder sql = new StringBuilder(
+				"select count(1) count from ni_val_exception a where mesh_id in (");
+
+		for (int i = 0; i < meshes.size(); i++) {
+			if (i > 0) {
+				sql.append(",");
+
+				sql.append(meshes.getInt(i));
+			} else {
+				sql.append(meshes.getInt(i));
+			}
+		}
+
+		sql.append(")");
+
+		try {
+
+			stmt = conn.createStatement();
+
+			rs = stmt.executeQuery(sql.toString());
+
+			if (rs.next()) {
+				return rs.getInt("count");
+			}
+
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			try {
+				rs.close();
+			} catch (Exception e) {
+			}
+
+			try {
+				stmt.close();
+			} catch (Exception e) {
+			}
+
+			try {
+				conn.close();
+			} catch (Exception e) {
+			}
+		}
+
+		return 0;
+	}
+
+	public static void main(String[] args) throws Exception {
+
+		String username1 = "fm_prjgdb_bj";
+
+		String password1 = "fm_prjgdb_bj";
+
+		int port1 = 1521;
+
+		String ip1 = "192.168.4.61";
+
+		String serviceName1 = "orcl";
+
+		OracleAddress oa1 = new OracleAddress(username1, password1, port1, ip1,
+				serviceName1);
+
+		NiValExceptionSelector selector = new NiValExceptionSelector(
+				oa1.getConn());
+
+		JSONArray meshes = new JSONArray();
+
+		meshes.add(595672);
+
+//		System.out.println(selector.queryException(meshes, 10, 1));
+		
+		System.out.println(selector.queryExceptionCount(meshes));
+	}
 }

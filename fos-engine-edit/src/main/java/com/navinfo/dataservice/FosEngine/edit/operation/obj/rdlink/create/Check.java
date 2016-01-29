@@ -8,7 +8,7 @@ import java.sql.Statement;
 
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.FosEngine.edit.check.NiValCheckOperator;
+import com.navinfo.dataservice.FosEngine.edit.check.NiValExceptionOperator;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
@@ -124,7 +124,7 @@ public class Check {
 			if (obj instanceof RdLink){
 				RdLink rdLink = (RdLink)obj;
 				
-				NiValCheckOperator check = new NiValCheckOperator(conn);
+				NiValExceptionOperator check = new NiValExceptionOperator(conn);
 				
 				//获取link的中间点
 				Geometry geo = GeoTranslator.transform(rdLink.getGeometry(),0.00001,5);

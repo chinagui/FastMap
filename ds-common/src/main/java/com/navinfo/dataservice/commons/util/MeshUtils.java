@@ -27,14 +27,20 @@ enum MeshLocateRelation {
 public abstract class MeshUtils {
 
 	public static void main(String[] args) throws Exception {
+		String meshId = "595671";
+		Set<String> meshIdSet = new HashSet<String>();
+		meshIdSet.add("35672");
+		Set<String> result = MeshUtils.getNeighborMeshSet(meshIdSet, 3);
+		System.out.println(result.size());
+		System.out.println(result);
 		
-		double[] a = mesh2LocationLatLon("595671");
+//		double[] a = mesh2LocationLatLon("595671");
 		
-		System.out.println(a[0]+","+a[1]);
-		
-		List<String> b = lonlat2MeshIds(a[0],a[1]);
-		
-		System.out.println(b.toString());
+//		System.out.println(a[0]+","+a[1]);
+//		
+//		List<String> b = lonlat2MeshIds(a[0],a[1]);
+//		
+//		System.out.println(b.toString());
 		
 		// int meshid = 595673;
 		// double[] a =mesh2LocationLatLon("24967");
@@ -489,7 +495,7 @@ public abstract class MeshUtils {
 	 * @param meshId
 	 * @return 9邻接图幅set
 	 */
-	private static Set<String> get9NeighborMeshSet(String meshId){
+	private static Set<String> generate9NeighborMeshSet(String meshId){
 		Set<String> meshes = new HashSet<String>();
 		int m1 = Integer.valueOf(meshId.substring(0, 1));
 		int m2 = Integer.valueOf(meshId.substring(1, 2));
@@ -518,7 +524,7 @@ public abstract class MeshUtils {
 	 * @param meshId
 	 * @return 8邻接图幅set
 	 */
-	private static Set<String> get8NeighborMeshSet(String meshId){
+	private static Set<String> generate8NeighborMeshSet(String meshId){
 		Set<String> meshes = new HashSet<String>();
 		int m1 = Integer.valueOf(meshId.substring(0, 1));
 		int m2 = Integer.valueOf(meshId.substring(1, 2));
@@ -548,14 +554,29 @@ public abstract class MeshUtils {
 	 * @return 包含自己的外围一圈的图幅Set，无图幅或图幅格式不对，返回null
 	 * @author XXW
 	 */
+	private static Set<String> generateNeighborMeshSet(Set<String> meshSet){
+		Set<String> neiMeshSet=new HashSet<String>();
+		for(String meshId:meshSet){
+			neiMeshSet.addAll(generate9NeighborMeshSet(meshId));
+		}
+		return neiMeshSet;
+	}
+
+	/**
+	 * 计算1圈的扩圈图幅
+	 * 使用set可以保证输入和输出不会有重复
+	 * @param meshSet
+	 * @return 包含自己的外围一圈的图幅Set，无图幅或图幅格式不对，返回null
+	 * @author XXW
+	 */
 	public static Set<String> getNeighborMeshSet(Set<String> meshSet){
-		//
+		//check
 		if(meshSet!=null){
-			Set<String> neiMeshSet=new HashSet<String>();
+			Set<String> checkedMeshSet = new HashSet<String>();
 			for(String meshId:meshSet){
-				neiMeshSet.addAll(get9NeighborMeshSet(meshId));
+				checkedMeshSet.add(StringUtils.leftPad(meshId, 6, '0'));
 			}
-			return neiMeshSet;
+			return generateNeighborMeshSet(checkedMeshSet);
 		}
 		return null;
 	}
@@ -566,46 +587,48 @@ public abstract class MeshUtils {
 	 * @param extendCount
 	 * @return
 	 */
-	public static Set<String> getNeighborMeshSet(String meshId,int extendCount){
-		if(StringUtils.isEmpty(meshId)||extendCount<1){
-			return null;
-		}
+	private static Set<String> generateNeighborMeshSet(String meshId,int extendCount){
 		Set<String> outMeshes = new HashSet<String>();
 		if(extendCount==1){
-			outMeshes= get9NeighborMeshSet(meshId);
+			outMeshes= generate9NeighborMeshSet(meshId);
 			return outMeshes;
 		}else{
-			Set<String> meshes = getNeighborMeshSet(meshId,extendCount-1);
-			outMeshes = getNeighborMeshSet(meshes);
+			Set<String> meshes = generateNeighborMeshSet(meshId,extendCount-1);
+			outMeshes = generateNeighborMeshSet(meshes);
 			return outMeshes;
 		}
 	}
-	
 	/**
-	 * 
-	 * @param meshIds
-	 *            ：已半角逗号分隔开的图符号序列，如"595661,595662"
-	 * @return 不包含自己的外围一圈的图幅Set，无图幅或图幅格式不对，返回null
-	 * @author XXW
+	 * 计算n圈的邻接图幅
+	 * @param meshId
+	 * @param extendCount
+	 * @return
 	 */
-	public static Set<String> getNeighborMeshSetButSelves(Set<String> meshSet) {
-		//
-		if(meshSet!=null){
-			Set<String> neiMeshSet=new HashSet<String>();
-			for(String meshId:meshSet){
-				neiMeshSet.addAll(get8NeighborMeshSet(meshId));
-			}
-			//去除自身
-			Iterator<String> it = meshSet.iterator();
-			while(it.hasNext()){
-				String mesh = it.next();
-				if(meshSet.contains(mesh)){
-					it.remove();
-				}
-			}
-			return meshSet;
+	public static Set<String> getNeighborMeshSet(String meshId,int extendCount){
+		if(StringUtils.isNotEmpty(meshId)&&extendCount>0){
+			meshId = StringUtils.leftPad(meshId, 6, '0');
+			return generateNeighborMeshSet(meshId,extendCount);
 		}
 		return null;
+	}
+	
+
+	/**
+	 * 计算n圈的邻接图幅
+	 * @param meshId
+	 * @param extendCount
+	 * @return
+	 */
+	private static Set<String> generateNeighborMeshSet(Set<String> meshSet,int extendCount){
+		Set<String> outMeshes = new HashSet<String>();
+		if(extendCount==1){
+			outMeshes= generateNeighborMeshSet(meshSet);
+			return outMeshes;
+		}else{
+			Set<String> meshes = generateNeighborMeshSet(meshSet,extendCount-1);
+			outMeshes = generateNeighborMeshSet(meshes);
+			return outMeshes;
+		}
 	}
 
 	/**
@@ -615,54 +638,14 @@ public abstract class MeshUtils {
 	 * @return
 	 */
 	public static Set<String> getNeighborMeshSet(Set<String> meshSet,int extendCount){
-		if(meshSet==null||extendCount<1){
-			return null;
-		}
-		Set<String> outMeshes = new HashSet<String>();
-		if(extendCount==1){
-			outMeshes= getNeighborMeshSet(meshSet);
-			return outMeshes;
-		}else{
-			Set<String> meshes = getNeighborMeshSet(meshSet,extendCount-1);
-			outMeshes = getNeighborMeshSet(meshes);
-			return outMeshes;
-		}
-	}
-	/**
-	 * 图幅列表去重
-	 * 
-	 * @param meshSets
-	 * @return
-	 * @author XXW
-	 */
-	public static Set<String> getNonDupMeshSet(Set<Set<String>> meshSets) {
-		Set<String> targetMeshSet = new HashSet<String>();
-		for (Set<String> meshSet : meshSets) {
-			for (String mesh : meshSet) {
-				if (!isExistsInMeshSet(mesh, targetMeshSet)) {
-					targetMeshSet.add(mesh);
-				}
+		if(meshSet!=null&&extendCount>0){
+			Set<String> checkedMeshSet = new HashSet<String>();
+			for(String meshId:meshSet){
+				checkedMeshSet.add(StringUtils.leftPad(meshId, 6, '0'));
 			}
+			return generateNeighborMeshSet(checkedMeshSet,extendCount);
 		}
-		return targetMeshSet;
-	}
-
-	/**
-	 * 图幅是否在图幅列表中存在
-	 * 
-	 * @param targetMesh
-	 * @param meshSet
-	 * @return
-	 * @author XXW
-	 */
-	private static boolean isExistsInMeshSet(String targetMesh,
-			Set<String> meshSet) {
-		for (String mesh : meshSet) {
-			if (targetMesh.equals(mesh)) {
-				return true;
-			}
-		}
-		return false;
+		return null;
 	}
 
 	/**

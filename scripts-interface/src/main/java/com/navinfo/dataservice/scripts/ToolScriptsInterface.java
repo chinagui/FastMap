@@ -120,7 +120,7 @@ public class ToolScriptsInterface {
 			        map.put(args[i], args[i+1]);
 		    }
 			String itype = map.get("-itype");
-			itype = "diff";
+//			itype = "diff";
 			if(StringUtils.isEmpty(itype)){
 				System.out.println("ERROR:need args:-itype xxx");
 				return;

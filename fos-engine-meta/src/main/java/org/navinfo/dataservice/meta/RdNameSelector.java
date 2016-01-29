@@ -24,7 +24,7 @@ public class RdNameSelector {
 		
 		JSONArray array = new JSONArray();
 
-		String sql = "SELECT *   FROM (SELECT c.*, rownum rn           FROM (select  count(1) over(partition by 1) total,        a.name_id,        a.name,        b.province   from rd_name a, cp_provincelist b  where a.name like :1    and a.admin_id = b.admincode) c          WHERE rownum <= :2)  WHERE rn >= :3";
+		String sql = "SELECT *   FROM (SELECT c.*, rownum rn           FROM (select  count(1) over(partition by 1) total,        a.name_groupid,        a.name,        b.province   from rd_name a, cp_provincelist b  where a.name like :1    and a.admin_id = b.admincode) c          WHERE rownum <= :2)  WHERE rn >= :3";
 		
 		PreparedStatement pstmt = null;
 
@@ -53,7 +53,7 @@ public class RdNameSelector {
 					total = resultSet.getInt("total");
 				}
 
-				int nameId = resultSet.getInt("name_id");
+				int nameId = resultSet.getInt("name_groupid");
 
 				String nameStr = resultSet.getString("name");
 

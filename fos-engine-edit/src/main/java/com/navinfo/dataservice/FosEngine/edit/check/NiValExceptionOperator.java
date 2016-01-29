@@ -106,7 +106,7 @@ public class NiValExceptionOperator {
 	public void updateCheckLogStatus(String reserved, int projectId, int type)
 			throws Exception {
 
-		conn = DBOraclePoolManager.getConnection(projectId);
+		//conn = DBOraclePoolManager.getConnection(projectId);
 
 		conn.setAutoCommit(false);
 		
@@ -134,7 +134,7 @@ public class NiValExceptionOperator {
 			
 			pstmt.close();
 			
-			sql="delete from ck_exception where reserved=:1";
+			sql="delete from ni_val_exception where reserved=:1";
 			
 			pstmt = conn.prepareStatement(sql);
 
@@ -225,8 +225,9 @@ public class NiValExceptionOperator {
 		NiValExceptionOperator op = new NiValExceptionOperator(
 				oa1.getConn());
 
-		op.insertCheckLog("12321321", "POINT(116.1313 37.131)", "[link:31]", 13, "13");
+		//op.insertCheckLog("12321321", "POINT(116.1313 37.131)", "[link:31]", 13, "13");
 		
-		oa1.getConn().commit();
+		op.updateCheckLogStatus("77273ee3f0637fbc9e3895b5b5672b37", 11, 1);
+		
 	}
 }

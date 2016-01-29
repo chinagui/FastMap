@@ -125,6 +125,7 @@ public class Check {
 				RdLink rdLink = (RdLink)obj;
 				
 				NiValCheckOperator check = new NiValCheckOperator(conn);
+				
 				//获取link的中间点
 				Coordinate[] cs = rdLink.getGeometry().getCoordinates();
 				
@@ -135,6 +136,8 @@ public class Check {
 				double y = cs[midP].y;
 				
 				String pointWkt = "Point ("+x+" "+y+")";
+				
+				//SHAPING_CHECK_CROSS_RDLINK_RDLINK
 				
 				String sql = "select a.link_pid from rd_link a,rd_link b where a.link_pid = :1 and b.link_pid != :2 and b.s_node_pid not in (a.s_node_pid,a.e_node_pid) and b.e_node_pid not in (a.s_node_pid,a.e_node_pid) and sdo_relate(b.geometry,a.geometry,'mask=anyinteract')='TRUE'";
 				
@@ -150,9 +153,10 @@ public class Check {
 					check.insertCheckLog("SHAPING_CHECK_CROSS_RDLINK_RDLINK", pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId(), "TEST");
 				}
 				
-				this.releadSource(pstmt, resultSet);
+				this.releaseSource(pstmt, resultSet);
 				
-				sql = "select a.link_pid from rd_link a where a.link_pid = :1 and  exists (select null from rd_link b where a.link_pid != b.link_pid and a.s_node_pid in (b.s_node_pid,b.e_node_pid) and a.e_node_pid in (b.s_node_pid,b.e_node_pid)";
+				//GLM01015
+				sql = "select a.link_pid from rd_link a where a.link_pid = :1 and  exists (select null from rd_link b where a.link_pid != b.link_pid and a.s_node_pid in (b.s_node_pid,b.e_node_pid) and a.e_node_pid in (b.s_node_pid,b.e_node_pid))";
 				
 				pstmt = conn.prepareStatement(sql);
 				
@@ -164,16 +168,19 @@ public class Check {
 					check.insertCheckLog("GLM01015", pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId(), "TEST");
 				}
 				
-				this.releadSource(pstmt, resultSet);
+				this.releaseSource(pstmt, resultSet);
 				
+				//GLM56004
 				if (!rdLink.getGeometry().isSimple()){
 					check.insertCheckLog("GLM56004", pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId(), "TEST");
 				}
 				
+				//GLM01014
 				if (rdLink.getsNodePid() == rdLink.geteNodePid()){
 					check.insertCheckLog("GLM01014", pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId(), "TEST");
 				}
 				
+				//GLM01025
 				double sx,sy,ex,ey;
 				
 				if (rdLink.getDirect() == 3){
@@ -210,14 +217,99 @@ public class Check {
 					check.insertCheckLog("GLM01025", pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId(), "TEST");
 				}
 				
-				this.releadSource(pstmt, resultSet);
+				this.releaseSource(pstmt, resultSet);
+				
+				//GLM01027
+				int pointCount = rdLink.getGeometry().getCoordinates().length;
+				
+				if(pointCount >= 490){
+					check.insertCheckLog("GLM01027", pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId(), "TEST");
+				}
+				
+				//PERMIT_CHECK_NO_REPEAT
+				sql = "select a.node_pid from rd_node a,rd_node b where sdo_within_distance(a.geometry, b.geometry, 'DISTANCE=0')='TRUE' and b.node_pid in (:1,:2) and a.node_pid not in (:3,:4)";
+				
+				pstmt = conn.prepareStatement(sql);
+				
+				pstmt.setInt(1, rdLink.geteNodePid());
+				
+				pstmt.setInt(2, rdLink.getsNodePid());
+				
+				pstmt.setInt(3, rdLink.geteNodePid());
+				
+				pstmt.setInt(4, rdLink.getsNodePid());
+				
+				resultSet = pstmt.executeQuery();
+				
+				if (resultSet.next()){
+					check.insertCheckLog("PERMIT_CHECK_NO_REPEAT", pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId(), "TEST");
+				}
+				
+				this.releaseSource(pstmt, resultSet);
+				
+				//GLM03001
+				sql = "select count(1) count,node_pid from rd_node where node_pid in (:1,:2) group by node_pid";
+				
+				pstmt = conn.prepareStatement(sql);
+				
+				pstmt.setInt(1, rdLink.geteNodePid());
+				
+				pstmt.setInt(2, rdLink.getsNodePid());
+				
+				resultSet = pstmt.executeQuery();
+				
+				boolean flag=false;
+				
+				while (resultSet.next()){
+					
+					if(resultSet.getInt("count")>7)
+					{
+						flag=true;
+					}
+					
+				}
+				
+				if(flag){
+					check.insertCheckLog("GLM03001", pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId(), "TEST");
+				}
+				
+				this.releaseSource(pstmt, resultSet);
+				
+				//GLM03056
+				sql = "select count(a.link_pid) count, b.node_pid   from rd_link a, rd_node_form b  where (a.e_node_pid = b.node_pid or a.s_node_pid = b.node_pid)    and b.node_pid in (:1, :2) and b.form_of_way=15  group by b.node_pid";
+				
+				pstmt = conn.prepareStatement(sql);
+				
+				pstmt.setInt(1, rdLink.geteNodePid());
+				
+				pstmt.setInt(2, rdLink.getsNodePid());
+				
+				resultSet = pstmt.executeQuery();
+				
+				flag=false;
+				
+				while (resultSet.next()){
+					
+					if(resultSet.getInt("count")!=2)
+					{
+						flag=true;
+					}
+					
+				}
+				
+				if(flag){
+					check.insertCheckLog("GLM03056", pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId(), "TEST");
+				}
+				
+				this.releaseSource(pstmt, resultSet);
+				
 			}
 		}
 		
 		
 	}
 	
-	private void releadSource(Statement stmt,ResultSet resultSet) throws SQLException{
+	private void releaseSource(Statement stmt,ResultSet resultSet) throws SQLException{
 		resultSet.close();
 		
 		stmt.close();

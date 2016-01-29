@@ -249,6 +249,10 @@ public class RdLinkName implements IRow {
 
 		while (keys.hasNext()) {
 			String key = (String) keys.next();
+			
+			if ("name".equals(key)){
+				continue;
+			}
 
 			if (json.get(key) instanceof JSONArray) {
 				continue;

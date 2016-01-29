@@ -9,6 +9,7 @@ import net.sf.json.JSONArray;
 
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.db.OracleAddress;
+import com.navinfo.dataservice.commons.service.PidService;
 import com.vividsolutions.jts.io.ParseException;
 
 public class NiValExceptionOperator {
@@ -106,7 +107,7 @@ public class NiValExceptionOperator {
 	public void updateCheckLogStatus(String reserved, int projectId, int type)
 			throws Exception {
 
-		//conn = DBOraclePoolManager.getConnection(projectId);
+		conn = DBOraclePoolManager.getConnection(projectId);
 
 		conn.setAutoCommit(false);
 		
@@ -121,13 +122,16 @@ public class NiValExceptionOperator {
 				sql="insert into ni_val_exception_history from ni_val_exception a where a.reserved=:1";
 			}
 			else{
-				sql="insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, reserved, extended, task_id, qa_task_id, qa_status, worker, qa_worker, u_date, row_id) select val_exception_id, ruleid, task_name,";
+				
+				int pid = PidService.getInstance().applyCkExceptionId();
+				
+				sql="insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, reserved, extended, task_id, qa_task_id, qa_status, worker, qa_worker, u_date, row_id) select "+pid+",ruleid, task_name,";
 				
 				sql += type + ",groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, mesh_id, scope_flag, province_name, map_scale, reserved, extended, task_id, qa_task_id, qa_status, worker, qa_worker, u_date, row_id from ni_val_exception a where a.reserved=:1";
 			}
 			
 			pstmt = conn.prepareStatement(sql);
-
+			
 			pstmt.setString(1, reserved);
 			
 			pstmt.executeUpdate();
@@ -227,7 +231,7 @@ public class NiValExceptionOperator {
 
 		//op.insertCheckLog("12321321", "POINT(116.1313 37.131)", "[link:31]", 13, "13");
 		
-		op.updateCheckLogStatus("77273ee3f0637fbc9e3895b5b5672b37", 11, 1);
+		op.updateCheckLogStatus("f9ae31ed7d51317e05a01beb81ca9f2f", 11, 1);
 		
 	}
 }

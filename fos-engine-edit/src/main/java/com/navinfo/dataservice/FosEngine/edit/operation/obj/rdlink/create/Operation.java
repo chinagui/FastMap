@@ -85,6 +85,8 @@ public class Operation implements IOperation {
 			} else {
 				se.put("e", command.geteNodePid());
 			}
+			
+			seNodeList.add(se);
 		}
 
 		String msg = null;
@@ -241,7 +243,7 @@ public class Operation implements IOperation {
 
 		node.setGeometry(GeoTranslator.point2Jts(x, y));
 
-		node.setMesh(Integer.parseInt(MeshUtils.location2Mesh(x, y)));
+		node.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(x, y)));
 
 		RdNodeForm form = new RdNodeForm();
 
@@ -257,9 +259,9 @@ public class Operation implements IOperation {
 
 		mesh.setNodePid(node.getPid());
 
-		mesh.setMeshId(Integer.parseInt(MeshUtils.location2Mesh(x, y)));
+		mesh.setMeshId(Integer.parseInt(MeshUtils.lonlat2Mesh(x, y)));
 
-		mesh.setMesh(Integer.parseInt(MeshUtils.location2Mesh(x, y)));
+		mesh.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(x, y)));
 
 		List<IRow> meshes = new ArrayList<IRow>();
 

@@ -55,6 +55,10 @@ public class Process implements IProcess {
 		
 		check.checkDupilicateNode(command.getGeometry());
 		
+		check.checkGLM04002(conn, command.geteNodePid(), command.getsNodePid());
+		
+		check.checkGLM13002(conn, command.geteNodePid(), command.getsNodePid());
+		
 		return null;
 	}
 
@@ -101,7 +105,7 @@ public class Process implements IProcess {
 	@Override
 	public void postCheck() throws Exception {
 		
-
+		check.postCheck(conn, result);
 	}
 
 	@Override

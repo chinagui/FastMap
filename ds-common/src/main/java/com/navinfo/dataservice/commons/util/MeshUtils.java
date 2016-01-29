@@ -41,6 +41,8 @@ public abstract class MeshUtils {
 //		List<String> b = lonlat2MeshIds(a[0],a[1]);
 //		
 //		System.out.println(b.toString());
+
+
 		
 		// int meshid = 595673;
 		// double[] a =mesh2LocationLatLon("24967");
@@ -758,7 +760,7 @@ public abstract class MeshUtils {
 
 		int pos = which25TMeshBorderPointAt(lon, lat);
 
-		String sMeshId = lonlat2Mesh(lon, lat);
+		String sMeshId = meshLocator_25T(lon, lat);
 
 		rst.add(sMeshId);
 
@@ -877,4 +879,94 @@ public abstract class MeshUtils {
 		}
 		}
 	}
+	
+	/// <summary>
+    /// 根据纬度计算该点位于实际图幅分割的行序号
+    /// </summary>
+    /// <param name="dLatitude">纬度，单位“度”</param>
+    /// <param name="remainder">余数 单位“千秒”</param>
+    private static int[] calculateRealRowIndex(double dLatitude)
+    {
+        //理想行号
+    	int[] result= calculateIdealRowIndex(dLatitude);
+        
+    	int idealRow = result[0];
+        
+        int remainder = result[1];
+
+        int realRow = idealRow;
+
+        switch (idealRow % 3)//三个一组的余数
+        {
+            case 0: //第一行
+                {
+                    if (300000 - remainder <= 12) //余数距离上框小于0.012秒
+                        realRow++;
+                }
+                break;
+            case 1: //第二行
+                break;
+            case 2: //第三行
+                {
+                    if (remainder < 12) //余数距离下框小于等于0.012秒
+                        realRow--;
+                }
+                break;
+        }
+
+        int[] res = new int[2];
+        
+        res[0] = realRow;
+        res[1] = remainder;
+        
+        return res;
+    }
+    
+	 /// <summary>
+    /// 根据经纬度坐标计算图幅号
+    /// </summary>
+    private static String meshLocator_25T(double dLongitude, double dLatitude)
+    {
+        if (0x01 == (which25TMeshBorderPointAt(dLongitude, dLatitude) & 0x0F)) //为了保证它总返回右上的图幅
+            dLatitude += 0.00001;
+
+        int[] res = calculateRealRowIndex(dLatitude);
+        
+        int rowInx = res[0];
+
+        int[] res2 = calculateRealColumnIndex(dLongitude);
+        
+        int colInx = res2[0];
+        
+        //第1、2位 : 纬度取整拉伸1.5倍
+        int M1M2 = (int)(dLatitude * 1.5);
+
+        //第3、4位 : 经度减去日本角点 60度
+        int M3M4 = (int)(dLongitude) - 60;
+
+        //第5位 : 
+        int M5 = rowInx % 8;
+
+        //第6位 : 每列450秒，每度包含8列
+        int M6 = colInx % 8;
+
+        //连接以上数字,组成图幅号
+        String sMeshId = String.format("%d%d%d%d", M1M2, M3M4, M5, M6);
+
+        while (sMeshId.length() < 6)
+        {
+            sMeshId = "0" + sMeshId;
+        }
+
+        return sMeshId;
+    }
+    
+    /// <summary>
+    /// 根据经度计算该点位于实际图幅分割的列序号
+    /// </summary>
+    /// <param name="dLatitude">经度，单位“度”</param>
+    private static int[] calculateRealColumnIndex(double dLongitude)
+    {
+        return calculateIdealColumnIndex(dLongitude);
+    }
 }

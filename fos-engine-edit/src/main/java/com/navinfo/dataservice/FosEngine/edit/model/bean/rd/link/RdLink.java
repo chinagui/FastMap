@@ -609,7 +609,17 @@ public class RdLink implements IObj {
 			if (json.get(key) instanceof JSONArray) {
 				continue;
 			} else if ("geometry".equals(key)) {
-				changedFields.put(key, json.getJSONObject(key));
+				
+				JSONObject geojson = json.getJSONObject(key);
+				
+				String wkt = Geojson.geojson2Wkt(geojson.toString());
+				
+				String oldwkt = GeoTranslator.jts2Wkt(geometry, 0.00001, 5);
+				
+				if(!wkt.equals(oldwkt))
+				{
+					changedFields.put(key, json.getJSONObject(key));
+				}
 			} else {
 				if (!"objStatus".equals(key)) {
 

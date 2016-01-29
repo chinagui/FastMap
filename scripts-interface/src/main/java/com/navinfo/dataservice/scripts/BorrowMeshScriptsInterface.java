@@ -67,7 +67,7 @@ public class BorrowMeshScriptsInterface {
 			delRequest.put("feature", "gdb");
 			delRequest.put("condition", "mesh");
 			delRequest.put("conditionParams", meshStr);
-			delRequest.put("dataIntegrity", "true");
+			delRequest.put("dataIntegrity", "false");
 			delRequest.put("sourceDbId", String.valueOf(targetDbId));
 			delRequest.put("gdbVersion", gdbVersion);
 			JSONObject delResponse = ToolScriptsInterface

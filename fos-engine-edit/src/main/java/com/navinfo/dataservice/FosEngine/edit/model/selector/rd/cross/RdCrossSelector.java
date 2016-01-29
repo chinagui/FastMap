@@ -165,15 +165,15 @@ public class RdCrossSelector implements ISelector {
 		
 		String nodeStr = nodePids.toString();
 		
-		nodeStr.replace("[", "(");
+		nodeStr=nodeStr.replace("[", "(");
 		
-		nodeStr.replace("]", ")");
+		nodeStr=nodeStr.replace("]", ")");
 		
 		String linkStr = linkPids.toString();
 		
-		linkStr.replace("[", "(");
+		linkStr=linkStr.replace("[", "(");
 		
-		linkStr.replace("]", ")");
+		linkStr=linkStr.replace("]", ")");
 		
 		if (nodePids.size() == 0 && linkPids.size() == 0){
 			return result;
@@ -182,13 +182,13 @@ public class RdCrossSelector implements ISelector {
 		String sql = "";
 		
 		if(nodePids.size() == 0){
-			sql = "select a.*, c.mesh_id   from rd_cross a, RD_LINK c  where   exists (select null           from rd_cross_link d          where a.pid = d.pid            and d.link_pid in ("+linkStr+")            AND D.LINK_PID = C.LINK_PID            and d.u_record != 2)    and a.u_record != 2";
+			sql = "select a.*, c.mesh_id   from rd_cross a, RD_LINK c  where   exists (select null           from rd_cross_link d          where a.pid = d.pid            and d.link_pid in "+linkStr+"          AND D.LINK_PID = C.LINK_PID            and d.u_record != 2)    and a.u_record != 2";
 		}
 		else if (linkPids.size() == 0){
-			sql = "select a.*, c.mesh_id   from rd_cross a, rd_node_mesh c  where  exists (select null           from rd_cross_node d          where a.pid = d.pid            and d.node_pid in ("+nodeStr+")            and d.u_record != 2            and c.node_pid = d.node_pid            )    and a.u_record != 2";
+			sql = "select a.*, c.mesh_id   from rd_cross a, rd_node_mesh c  where  exists (select null           from rd_cross_node d          where a.pid = d.pid            and d.node_pid in "+nodeStr+"          and d.u_record != 2            and c.node_pid = d.node_pid            )    and a.u_record != 2";
 		}
 		else{
-			sql = "select a.*, c.mesh_id   from rd_cross a, rd_node_mesh c  where  exists (select null           from rd_cross_node d          where a.pid = d.pid            and d.node_pid in ("+nodeStr+")            and d.u_record != 2            and c.node_pid = d.node_pid            )    and a.u_record != 2    union    select a.*, c.mesh_id   from rd_cross a, RD_LINK c  where   exists (select null           from rd_cross_link d          where a.pid = d.pid            and d.link_pid in ("+linkStr+")            AND D.LINK_PID = C.LINK_PID            and d.u_record != 2)    and a.u_record != 2";
+			sql = "select a.*, c.mesh_id   from rd_cross a, rd_node_mesh c  where  exists (select null           from rd_cross_node d          where a.pid = d.pid            and d.node_pid in "+nodeStr+"           and d.u_record != 2            and c.node_pid = d.node_pid            )    and a.u_record != 2    union    select a.*, c.mesh_id   from rd_cross a, RD_LINK c  where   exists (select null           from rd_cross_link d          where a.pid = d.pid            and d.link_pid in "+linkStr+"           AND D.LINK_PID = C.LINK_PID            and d.u_record != 2)    and a.u_record != 2";
 		}
 		
 		Statement pstmt = null;

@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlink.create;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
@@ -21,6 +22,8 @@ public class Command implements ICommand {
 	private int kind=7;
 	
 	private int laneNum=2;
+	
+	private JSONArray catchLinks;
 	
 	public int getKind() {
 		return kind;
@@ -85,6 +88,12 @@ public class Command implements ICommand {
 		return requester;
 	}
 	
+	
+	
+	public JSONArray getCatchLinks() {
+		return catchLinks;
+	}
+
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 
@@ -104,6 +113,12 @@ public class Command implements ICommand {
 		
 		if(data.containsKey("laneNum")){
 			this.laneNum = data.getInt("laneNum");
+		}
+		
+		if (data.containsKey("catchLinks")){
+			this.catchLinks = data.getJSONArray("catchLinks");
+		}else{
+			this.catchLinks = new JSONArray();
 		}
 	}
 

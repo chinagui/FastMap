@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.expcore;
+package com.navinfo.dataservice.expcore.external;
 
 import java.sql.Connection;
 import java.util.HashSet;
@@ -7,6 +7,9 @@ import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.datahub.glm.Glm;
+import com.navinfo.dataservice.datahub.glm.GlmCache;
+import com.navinfo.dataservice.datahub.glm.GlmTable;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.navicommons.database.DataBaseUtils;
 
@@ -48,11 +51,28 @@ public class ExternalTool4Exporter {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public void removeDupRecord(OracleSchema schema,Set<String> tables)throws Exception{
+	public void removeDupRecord(String gdbVersion,OracleSchema schema,Set<String> tables)throws Exception{
 		Connection conn=null;
 		try{
 			conn = schema.getDriverManagerDataSource().getConnection();
-			
+			if(tables==null||tables.size()==0){
+				return ;
+			}
+			Glm glm = GlmCache.getInstance().getGlm(gdbVersion);
+			Set<GlmTable> removeDupTables = new HashSet<GlmTable>();
+			for(String tableName:tables){
+				StringBuilder sb = new StringBuilder();
+				GlmTable table = glm.getTables().get(tableName);
+				if(table.isPksHasBigColumn()){
+					
+				}else{
+					sb.append("DELETE FROM ");
+					sb.append(table);
+					sb.append(" P WHERE P.ROWID!=(SELECT MAX(T.ROWID) FROM ");
+					sb.append(table);
+					sb.append(" T WHERE ");
+				}
+			}
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

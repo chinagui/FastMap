@@ -58,6 +58,21 @@ public class GlmTable {
 		}
 		return null;
 	}
+	public boolean isPksHasBigColumn(){
+		Set<GlmColumn> set = getPks();
+		if(set!=null){
+			for(GlmColumn col:set){
+				if(col.isBlobColumn()
+						||col.isClobColumn()
+						||col.isGeometryColumn()){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	
     @Override
     public boolean equals(Object o)
     {

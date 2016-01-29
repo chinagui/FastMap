@@ -29,54 +29,60 @@ public class LogDetail {
 	private String rowId;
 
 	private int isCk;
-	
+
 	private String tbRowId;
-	
+
 	private int meshId;
-	
+
 	private int gridId;
-	
-	
+
+	private String comDt;
+
+	private int comSta;
+
 	public LogDetail() {
 
 	}
 
-	
+	public String getComDt() {
+		return comDt;
+	}
+
+	public void setComDt(String comDt) {
+		this.comDt = comDt;
+	}
+
+	public int getComSta() {
+		return comSta;
+	}
+
+	public void setComSta(int comSta) {
+		this.comSta = comSta;
+	}
+
 	public String getTbRowId() {
 		return tbRowId;
 	}
-
-
 
 	public void setTbRowId(String tbRowId) {
 		this.tbRowId = tbRowId;
 	}
 
-
-
 	public int getMeshId() {
 		return meshId;
 	}
-
-
 
 	public void setMeshId(int meshId) {
 		this.meshId = meshId;
 	}
 
-
-
 	public int getGridId() {
 		return gridId;
 	}
 
-
-
 	public void setGridId(int gridId) {
 		this.gridId = gridId;
 	}
-
-
 
 	public String getOpId() {
 		return opId;

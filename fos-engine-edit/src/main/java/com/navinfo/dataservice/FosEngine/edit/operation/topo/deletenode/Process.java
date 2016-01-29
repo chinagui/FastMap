@@ -232,10 +232,26 @@ public class Process implements IProcess {
 					throw new Exception(preCheckMsg);
 				}
 				prepareData();
+				
 				IOperation op = new OpTopo(command);
 				op.run(result);
+				
 				IOperation opRefRestrict = new OpRefRestrict(command);
 				opRefRestrict.run(result);
+				
+				IOperation opRefBranch = new OpRefBranch(command);
+				opRefBranch.run(result);
+				
+				IOperation opRefCross = new OpRefCross(command);
+				opRefCross.run(result);
+				
+				IOperation opRefLaneConnexity = new OpRefLaneConnexity(command);
+				opRefLaneConnexity.run(result);
+				
+				IOperation opRefSpeedlimit = new OpRefSpeedlimit(command);
+				opRefSpeedlimit.run(result);
+				
+				
 				recordData();
 				postCheck();
 				conn.commit();

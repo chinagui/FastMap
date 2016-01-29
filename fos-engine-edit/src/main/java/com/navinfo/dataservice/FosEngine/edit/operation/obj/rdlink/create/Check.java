@@ -127,7 +127,9 @@ public class Check {
 				NiValCheckOperator check = new NiValCheckOperator(conn);
 				
 				//获取link的中间点
-				Coordinate[] cs = rdLink.getGeometry().getCoordinates();
+				Geometry geo = GeoTranslator.transform(rdLink.getGeometry(),0.00001,5);
+				
+				Coordinate[] cs = geo.getCoordinates();
 				
 				int midP = (int)Math.round(cs.length/2);
 				

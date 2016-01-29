@@ -21,8 +21,15 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
-public class LogWriter {
 
+class Status{
+	public static int INSERT=1;
+	public static int DELETE=2;
+	public static int UPDATE=3;
+}
+
+public class LogWriter {
+	
 	private Connection conn;
 
 	private LogOperation logOperation;
@@ -103,7 +110,7 @@ public class LogWriter {
 
 		sb.append(detail.tableName());
 
-		sb.append("(op_id, ob_nm, ob_pk, ob_pid, opb_tp, ob_tp, op_dt, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id,mesh_id) values (");
+		sb.append("(op_id, ob_nm, ob_pk, ob_pid, opb_tp, ob_tp, op_dt, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id,mesh_id,com_sta) values (");
 
 		sb.append("'" + detail.getOpId() + "'");
 
@@ -169,6 +176,8 @@ public class LogWriter {
 		sb.append(",hextoraw('"+detail.getTbRowId()+"')");
 		
 		sb.append(","+detail.getMeshId());
+		
+		sb.append("," + detail.getComSta());
 
 		sb.append(")");
 
@@ -210,9 +219,9 @@ public class LogWriter {
 
 			ld.setOpDt(dt);
 
-			ld.setOpTp(1);
+			ld.setOpTp(Status.INSERT);
 
-			ld.setOpbTp(1);
+			ld.setOpbTp(Status.INSERT);
 
 			ld.setObNm(r.primaryTableName());
 
@@ -247,9 +256,9 @@ public class LogWriter {
 
 						ldC.setOpDt(dt);
 
-						ldC.setOpTp(1);
+						ldC.setOpTp(Status.INSERT);
 
-						ldC.setOpbTp(1);
+						ldC.setOpbTp(Status.INSERT);
 
 						ldC.setObNm(row.primaryTableName());
 
@@ -286,9 +295,9 @@ public class LogWriter {
 
 			ld.setOpDt(dt);
 
-			ld.setOpTp(2);
+			ld.setOpTp(Status.UPDATE);
 
-			ld.setOpbTp(2);
+			ld.setOpbTp(Status.UPDATE);
 
 			ld.setObNm(r.primaryTableName());
 
@@ -375,15 +384,15 @@ public class LogWriter {
 
 			ld.setOpDt(dt);
 
-			ld.setOpTp(3);
+			ld.setOpTp(Status.DELETE);
 
 			if (r.primaryTableName().equals(r.tableName())) {
-				ld.setOpbTp(3);
+				ld.setOpbTp(Status.DELETE);
 				
 				ld.setObTp(1);
 
 			} else {
-				ld.setOpbTp(2);
+				ld.setOpbTp(Status.UPDATE);
 				
 				ld.setObTp(2);
 
@@ -418,9 +427,9 @@ public class LogWriter {
 
 						ldC.setOpDt(dt);
 
-						ldC.setOpTp(3);
+						ldC.setOpTp(Status.DELETE);
 
-						ldC.setOpbTp(3);
+						ldC.setOpbTp(Status.DELETE);
 
 						ldC.setObNm(row.primaryTableName());
 

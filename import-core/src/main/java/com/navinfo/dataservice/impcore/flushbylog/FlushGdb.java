@@ -309,7 +309,7 @@ public class FlushGdb {
 
 		Statement stmt = sourceConn.createStatement();
 
-		String sql = "update log_detail set is_ck = 1 ";
+		String sql = "update log_detail set com_dt = sysdate,com_sta=1 ";
 
 		stmt.execute(sql);
 
@@ -347,7 +347,7 @@ public class FlushGdb {
 				}
 			}
 
-			sb.append(") ");
+			sb.append(",u_record) ");
 
 			sb.append("values(");
 
@@ -368,7 +368,7 @@ public class FlushGdb {
 				}
 			}
 
-			sb.append(")");
+			sb.append(",1)");
 
 			it = json.keys();
 
@@ -436,7 +436,7 @@ public class FlushGdb {
 				}
 			}
 
-			sb.append(" where row_id = hextoraw('");
+			sb.append(",u_record=3 where row_id = hextoraw('");
 
 			sb.append(rs.getString("tb_row_id"));
 
@@ -488,5 +488,6 @@ public class FlushGdb {
 		}
 
 	}
+	
 
 }

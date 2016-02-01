@@ -5,8 +5,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
@@ -75,6 +78,12 @@ public class Operation implements IOperation {
 		this.calViaLinks(conn, command.getInLinkPid(), command.getNodePid(),
 				outLinkPids);
 
+		List<Set<Integer>> dirs = new ArrayList<Set<Integer>>();
+
+		Map<Integer, Set<Integer>> busdirs = new HashMap<Integer, Set<Integer>>();
+
+		this.splitLaneInfo(command.getLaneInfo(), dirs, busdirs);
+
 		List<IRow> topos = new ArrayList<IRow>();
 
 		for (int outLinkPid : outLinkPids) {
@@ -95,9 +104,18 @@ public class Operation implements IOperation {
 			double angle = AngleCalculator.getAngle(inLinkSegment,
 					outLinkSegment);
 
-			int reachDir = this.calRestricInfo(angle);
+			int reachDir = this.calDir(angle);
 
 			topo.setReachDir(reachDir);
+
+			int inLaneInfo = this.calInLaneInfo(reachDir, dirs);
+
+			topo.setInLaneInfo(inLaneInfo);
+
+			int busLaneInfo = this.calBusLaneInfo(reachDir, busdirs,
+					dirs.size());
+
+			topo.setBusLaneInfo(busLaneInfo);
 
 			topo.setRelationshipType(relationTypeMap.get(topo.getOutLinkPid()));
 
@@ -137,7 +155,46 @@ public class Operation implements IOperation {
 		return null;
 	}
 
-	public int calRestricInfo(double angle) {
+	private int calInLaneInfo(int reachDir, List<Set<Integer>> dirs) {
+
+		int inLaneInfo = 0;
+
+		int size = dirs.size();
+
+		for (int i = 0; i < size; i++) {
+			Set<Integer> set = dirs.get(i);
+
+			if (set.contains(reachDir)) {
+				inLaneInfo += Math.pow(2, size - 1 - i);
+			}
+		}
+
+		return inLaneInfo;
+	}
+
+	private int calBusLaneInfo(int reachDir,
+			Map<Integer, Set<Integer>> busdirs, int size) {
+
+		int busLaneInfo = 0;
+
+		Iterator iter = busdirs.entrySet().iterator();
+
+		while (iter.hasNext()) {
+
+			Map.Entry entry = (Map.Entry) iter.next();
+
+			int index = (int) entry.getKey();
+
+			Set<Integer> val = (Set<Integer>) entry.getValue();
+
+			busLaneInfo += Math.pow(2, size - 1 - index);
+
+		}
+
+		return busLaneInfo;
+	}
+
+	private int calDir(double angle) {
 		if (angle > 45 && angle <= 135) {
 			return 3;
 		} else if (angle > 135 && angle <= 225) {
@@ -149,13 +206,14 @@ public class Operation implements IOperation {
 		}
 
 	}
+
 	/**
 	 * 
 	 * @param laneInfo
 	 * @return
 	 */
-	public void splitLaneInfo(String laneInfo, List<Integer> dirs,
-			List<Integer> index) {
+	private void splitLaneInfo(String laneInfo, List<Set<Integer>> dirs,
+			Map<Integer, Set<Integer>> busdirs) {
 
 		String[] splits = laneInfo.split(",");
 
@@ -172,34 +230,26 @@ public class Operation implements IOperation {
 				String first = split.substring(0, 1);
 				String second = split.substring(2, 3);
 
-				List<Integer> result = splitDir(first);
+				Set<Integer> set = splitDir(first);
 
-				for (Integer dir : result) {
-					dirs.add(dir);
-					index.add(i);
-				}
+				dirs.add(set);
 
-				result = splitDir(second);
+				Set<Integer> busset = splitDir(second);
 
-				for (Integer dir : result) {
-					dirs.add(dir);
-					index.add(i);
-				}
+				busdirs.put(i, busset);
+
 			} else {
-				List<Integer> result = splitDir(split);
+				Set<Integer> set = splitDir(split);
 
-				for (Integer dir : result) {
-					dirs.add(dir);
-					index.add(i);
-				}
+				dirs.add(set);
 			}
 		}
 
 	}
 
-	public List<Integer> splitDir(String lane) {
+	private Set<Integer> splitDir(String lane) {
 
-		List<Integer> result = new ArrayList<Integer>();
+		Set<Integer> result = new HashSet<Integer>();
 		switch (lane) {
 		case "a":
 			result.add(1);
@@ -333,19 +383,6 @@ public class Operation implements IOperation {
 		return result;
 	}
 
-	public int calDir(double angle) {
-		if (angle > 45 && angle <= 135) {
-			return 3;
-		} else if (angle > 135 && angle <= 225) {
-			return 4;
-		} else if (angle > 225 && angle <= 315) {
-			return 2;
-		} else {
-			return 1;
-		}
-
-	}
-
 	/**
 	 * 计算经过线
 	 * 
@@ -354,7 +391,7 @@ public class Operation implements IOperation {
 	 * @param outLinkPids
 	 * @throws Exception
 	 */
-	public void calViaLinks(Connection conn, int inLinkPid, int nodePid,
+	private void calViaLinks(Connection conn, int inLinkPid, int nodePid,
 			List<Integer> outLinkPids) throws Exception {
 
 		outLinkSegmentMap = new HashMap<Integer, LineSegment>();

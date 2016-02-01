@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.expcore;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -65,7 +66,8 @@ public class Exporter2OracleByFullCopy implements Exporter {
 			cr.create("COPY_FROM_DBLINK", false, targetSchema.getDriverManagerDataSource(), sourceSchema.getDbUserName(), sourceSchema.getDbUserPasswd(), sourceSchema.getDbServer().getIp(), String.valueOf(sourceSchema.getDbServer().getPort()), sourceSchema.getDbServer().getServiceName());
 			//
 			AssembleFullCopySql assemble = new AssembleFullCopySql();
-			List<ExpSQL> copySqls = assemble.assemble("COPY_FROM_DBLINK", sourceSchema, targetSchema, null, null);
+			//暂时
+			List<ExpSQL> copySqls = assemble.assemble("COPY_FROM_DBLINK", sourceSchema, targetSchema, expConfig.getSpecificTables(), expConfig.getExcludedTables());
 			ExecuteFullCopySql copySqlExecutor = new ExecuteFullCopySql(expConfig,targetSchema);
 			ThreadLocalContext ctx = new ThreadLocalContext(log);
 			copySqlExecutor.execute(copySqls, ctx);

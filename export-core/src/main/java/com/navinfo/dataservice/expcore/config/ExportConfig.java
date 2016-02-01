@@ -27,7 +27,7 @@ public class ExportConfig {
 	protected String gdbVersion;//230,240,240+,252+,...
 	
 	private String exportMode;//
-	public final static String MODE_FLEXIBLE="flexible";//整库复制，走db_link,只支持oracle到oracle
+	public final static String MODE_FLEXIBLE="flexible";//定制导出，走db_link,只支持oracle到oracle
 	public final static String MODE_FULL_COPY="full_copy";//整库复制，走db_link,只支持oracle到oracle
 	public final static String MODE_COPY="copy";
 	public final static String MODE_CUT="cut";
@@ -47,6 +47,7 @@ public class ExportConfig {
 	public final static String FEATURE_POI="poi";
 	public final static String FEATURE_LINK="link";
 	public final static String FEATURE_FACE="face";
+	public final static String FEATURE_CK="ck";
 	
 	protected boolean truncateData=false;//在写入目标的子版本之前是否清理数据
 	protected boolean destroyTarget=false;//导出失败时，是否销毁
@@ -69,7 +70,11 @@ public class ExportConfig {
 	public static final String WHEN_EXIST_IGNORE = "ignore";
 	public static final String WHEN_EXIST_OVERWRITE = "overwrite";
 	
-	//左右导出属性
+	//全库导出属性
+	private List<String> specificTables;
+	private List<String> excludedTables;
+	
+	//自由导出属性
 	protected  List<String> flexTables;
 	protected Map<String,String> flexConditions;
 	
@@ -279,6 +284,20 @@ public class ExportConfig {
 		this.multiThread4Output = multiThread4Output;
 	}
 
+	public List<String> getSpecificTables() {
+		return specificTables;
+	}
+	public void setSpecificTables(List<String> specificTables) {
+		this.specificTables = specificTables;
+	}
+	public List<String> getExcludedTables() {
+		return excludedTables;
+	}
+	public void setExcludedTables(List<String> excludedTables) {
+		this.excludedTables = excludedTables;
+	}
+	
+
 	public Map<String, String> getTableReNames() {
 		return tableReNames;
 	}
@@ -409,6 +428,13 @@ public class ExportConfig {
 					}
 				}
 				this.setFlexConditions(m);
+			}else if(attName.equals("specificTables")
+					||attName.equals("excludedTables")){
+				argtypes= new Class[]{List.class};
+				Method method = ExportConfig.class.getMethod(methodName, argtypes);
+				String[] s= attValue.split(",");
+				List<String> li = Arrays.asList(s);
+				method.invoke(this, li);
 			}
 			else{
 				argtypes= new Class[]{String.class};

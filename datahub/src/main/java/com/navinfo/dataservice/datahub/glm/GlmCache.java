@@ -104,10 +104,8 @@ public class GlmCache {
 			pkSql.append(StringUtils.join(tables.keySet(),"','"));
 			pkSql.append("')");
 			runner.query(conn, pkSql.toString(),new GetPkHandler(tables));
-			//将没有主键的表的row_id字段批成主键
-			for(String name:tables.keySet()){
-				
-			}
+			//批找图幅号的外键或者参考字段
+			//...
 			glm.setTables(tables);
 		}catch (Exception e) {
 			log.error(e.getMessage(), e);

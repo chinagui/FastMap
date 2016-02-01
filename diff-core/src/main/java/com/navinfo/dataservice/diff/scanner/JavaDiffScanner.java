@@ -151,6 +151,7 @@ public class JavaDiffScanner implements DiffScanner
     		return "L.\""+col.getName()+"\" = "+"R.\""+col.getName()+"\"";
     	}
     }
+    
 
     public void fillLogDetail(GlmTable table,String leftTableFullName,String rightTableFullName)
     throws DiffException
@@ -227,6 +228,24 @@ public class JavaDiffScanner implements DiffScanner
 				+","+leftTableFullName
 				+","+rightTableFullName,e);
         }
+    }
+
+    /**
+     * 填充履历的图幅号
+     * @param table
+     * @param leftTableFullName
+     * @param rightTableFullName
+     * @throws DiffException
+     */
+    public void fillLogDetailMesh(GlmTable table,String leftTableFullName,String rightTableFullName)
+    throws DiffException
+    {
+    	if(table.getName().startsWith("IX_")){
+    		
+    	}else if(table.getName().startsWith("RD_")){
+    		
+    	}
+    	
     }
     
 }

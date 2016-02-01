@@ -529,6 +529,11 @@
     create bitmap index EXP_IX_D03 on IX_ANNOTATION (KIND_CODE);
     create bitmap index EXP_IX_D04 on IX_ANNOTATION (RANK);
     create index PK_CK_EXCEPTION_01 on CK_EXCEPTION (RULE_ID,INFORMATION);
+    create index IX_CK_EXCEPTION_01 on CK_EXCEPTION (MESH_ID);
+    create index IX_CK_EXCEPTION_02 on CK_EXCEPTION (RESERVED);
+    create index IX_NI_VAL_EXCEPTION_01 on NI_VAL_EXCEPTION (MESH_ID);
+    create index IX_NI_VAL_EXCEPTION_02 on NI_VAL_EXCEPTION (RESERVED);
+    
 
     
     

@@ -32,7 +32,7 @@ public class Exp2CopVersionScriptsInterface {
 		PreparedStatement stmt = null;
 		try{
 			String sourceDbId = (String)request.get("sourceDbId");
-			Assert.notNull(sourceDbId,"projectId不能为空");
+			Assert.notNull(sourceDbId,"sourceDbId不能为空");
 			String targetDbId = (String)request.get("targetDbId");
 			Assert.notNull(targetDbId,"targetDbId不能为空");
 			String meshes = (String)request.get("meshes");
@@ -51,7 +51,7 @@ public class Exp2CopVersionScriptsInterface {
 			CollectionUtils.addAll(coreMeshes, meshes.split(","));
 			for(String mesh:coreMeshes){
 				stmt.setInt(1, Integer.valueOf(mesh));
-				stmt.setInt(2, 0);
+				stmt.setInt(2, 1);
 				stmt.addBatch();
 			}
 			if(extendCount>0){
@@ -61,7 +61,7 @@ public class Exp2CopVersionScriptsInterface {
 				extendMeshes.removeAll(coreMeshes);
 				for(String mesh:extendMeshes){
 					stmt.setInt(1, Integer.valueOf(mesh));
-					stmt.setInt(2, 1);
+					stmt.setInt(2, 2);
 					stmt.addBatch();
 				}
 			}else{

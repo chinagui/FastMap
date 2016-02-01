@@ -2465,7 +2465,7 @@ create table CK_EXCEPTION  (
    PROVINCE_NAME        VARCHAR2(60),
    MAP_SCALE            NUMBER(2)                      default 0 not null
        check (MAP_SCALE in (0,1,2,3)) disable,
-   RESERVED             VARCHAR2(1000),
+   RESERVED             VARCHAR2(32),
    EXTENDED             VARCHAR2(1000),
    TASK_ID              VARCHAR2(500),
    QA_TASK_ID           VARCHAR2(500),
@@ -8861,7 +8861,7 @@ create table NI_VAL_EXCEPTION  (
    PROVINCE_NAME        VARCHAR2(60),
    MAP_SCALE            NUMBER(2)                      default 0 not null
        check (MAP_SCALE in (0,1,2,3)) disable,
-   RESERVED             VARCHAR2(1000),
+   RESERVED             VARCHAR2(32),
    EXTENDED             VARCHAR2(1000),
    TASK_ID              VARCHAR2(500),
    QA_TASK_ID           VARCHAR2(500),

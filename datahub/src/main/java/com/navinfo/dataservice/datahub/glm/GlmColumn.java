@@ -10,6 +10,8 @@ public class GlmColumn {
 	private String name;
 	private boolean pk;
 	private String dataType;
+	//给表找mesh_id用
+	private GlmTable refTable;//只记录能够找到MESH_ID的字段就行
 	
 	public static final String TYPE_TIMESTAMP="TIMESTAMP(6)";
 	public static final String TYPE_NUMBER="NUMBER";
@@ -43,6 +45,13 @@ public class GlmColumn {
 	public void setDataType(String dataType) {
 		this.dataType = dataType;
 	}
+
+    public GlmTable getRefTable() {
+		return refTable;
+	}
+	public void setRefTable(GlmTable refTable) {
+		this.refTable = refTable;
+	}
 	
 	public boolean isGeometryColumn(){
 		return TYPE_SDO_GEOMETRY.equals(dataType);
@@ -74,8 +83,7 @@ public class GlmColumn {
     }
 
 	
-
-    @Override
+	@Override
     public boolean equals(Object o)
     {
         if (this == o) return true;

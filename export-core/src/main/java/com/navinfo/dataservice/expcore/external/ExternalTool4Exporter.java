@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.expcore.external;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,6 +13,7 @@ import com.navinfo.dataservice.datahub.glm.GlmCache;
 import com.navinfo.dataservice.datahub.glm.GlmTable;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.navicommons.database.DataBaseUtils;
+import com.navinfo.navicommons.database.QueryRunner;
 
 
 /** 
@@ -21,11 +23,11 @@ import com.navinfo.navicommons.database.DataBaseUtils;
  * @Description: TODO
  */
 public class ExternalTool4Exporter {
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected static Logger log = Logger.getLogger(ExternalTool4Exporter.class);
 
 	//进一步可以做多线程
 	
-	public void turnOnPkConstrain(OracleSchema schema,Set<String> tables)throws Exception{
+	public static void turnOnPkConstrain(OracleSchema schema,Set<String> tables)throws Exception{
 		Connection conn=null;
 		try{
 			conn = schema.getDriverManagerDataSource().getConnection();
@@ -38,7 +40,7 @@ public class ExternalTool4Exporter {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public void turnOffPkConstrain(OracleSchema schema,Set<String> tables)throws Exception{
+	public static void turnOffPkConstrain(OracleSchema schema,Set<String> tables)throws Exception{
 		Connection conn=null;
 		try{
 			conn = schema.getDriverManagerDataSource().getConnection();
@@ -47,6 +49,28 @@ public class ExternalTool4Exporter {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("关闭主键时出现错误，原因："+e.getMessage(),e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	/**
+	 * 计算并更新CK_EXCEPTION表的MD5值
+	 * @param schema
+	 * @throws SQLException
+	 */
+	public static void generateCkMd5(OracleSchema schema)throws SQLException{
+		Connection conn=null;
+		try{
+			log.debug("开始计算并更新CK_EXCEPTION表的MD5值");
+			conn = schema.getDriverManagerDataSource().getConnection();
+			String sql = "UPDATE CK_EXCEPTION A SET A.RESERVED = LOWER(UTL_RAW.CAST_TO_RAW(DBMS_OBFUSCATION_TOOLKIT.MD5(INPUT_STRING =>RULE_ID||INFORMATION||TARGETS||NVL(ADDITION_INFO,'null'))))";
+			QueryRunner runner = new QueryRunner();
+			int count = runner.update(conn, sql);
+			log.debug("计算并更新CK_EXCEPTION表的MD5值完毕，共更新了"+count+"条记录");
+		}catch (SQLException e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new SQLException("计算并更新CK_EXCEPTION表的MD5值时出现错误，原因："+e.getMessage(),e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}

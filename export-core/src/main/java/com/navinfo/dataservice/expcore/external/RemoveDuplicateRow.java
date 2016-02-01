@@ -7,5 +7,11 @@ package com.navinfo.dataservice.expcore.external;
  * @Description: TODO
  */
 public class RemoveDuplicateRow {
-
+	public static void removeDup(String feature){
+		if("ck".equals(feature)){
+			
+		}else{
+			
+		}
+	}
 }

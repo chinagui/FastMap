@@ -63,8 +63,7 @@ public class DiffEngine
 			OracleSchema rightSchema = (OracleSchema)dbMan.getDbById(diffConfig.getRightDbId());
 			//安装EQUALS
 			installPcks(leftSchema);
-			grantPrivilege(leftSchema);
-			//赋权限
+			//grantPrivilege(leftSchema);//datahub创建时统一都赋上了跨用户访问权限
 			
 			//data access
 			leftAccess = new LocalDataAccess(leftSchema);

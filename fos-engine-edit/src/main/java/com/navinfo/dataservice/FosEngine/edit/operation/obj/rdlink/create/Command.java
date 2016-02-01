@@ -6,6 +6,7 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.FosEngine.edit.operation.OperType;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 
 public class Command implements ICommand {
 
@@ -94,7 +95,7 @@ public class Command implements ICommand {
 		return catchLinks;
 	}
 
-	public Command(JSONObject json, String requester) {
+	public Command(JSONObject json, String requester) throws Exception{
 		this.requester = requester;
 
 		this.projectId = json.getInt("projectId");
@@ -107,6 +108,8 @@ public class Command implements ICommand {
 		
 		this.geometry = data.getJSONObject("geometry");
 		
+		this.geometry = GeoTranslator.jts2Geojson(GeoTranslator.geojson2Jts(geometry, 1, 5));
+		
 		if(data.containsKey("kind")){
 			this.kind= data.getInt("kind");
 		}
@@ -116,7 +119,24 @@ public class Command implements ICommand {
 		}
 		
 		if (data.containsKey("catchLinks")){
-			this.catchLinks = data.getJSONArray("catchLinks");
+			
+			this.catchLinks = new JSONArray();
+			
+			JSONArray array = data.getJSONArray("catchLinks");
+			
+			for(int i=0;i<array.size();i++){
+				JSONObject jo = array.getJSONObject(i);
+				
+				double lon = Math.round(jo.getDouble("lon")*100000)/100000.0;
+				
+				double lat = Math.round(jo.getDouble("lat")*100000)/100000.0;
+				
+				jo.put("lon",lon);
+				
+				jo.put("lat", lat);
+				
+				this.catchLinks.add(jo);
+			}
 		}else{
 			this.catchLinks = new JSONArray();
 		}

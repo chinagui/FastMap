@@ -52,7 +52,8 @@ public class Operation implements IOperation {
 			geomList = this.splitsLink(result,command.getCatchLinks(),
 					command.getGeometry(),seNodeList);
 
-		} else {
+		} 
+		if(command.getCatchLinks().size()==0 || geomList.size()==0){
 			geomList = new ArrayList<Geometry>();
 
 			geomList.add(GeoTranslator.geojson2Jts(command.getGeometry()));
@@ -303,8 +304,8 @@ public class Operation implements IOperation {
 
 		int pc = 1;
 
-		if (tmpCs.getDouble(0) == catchLinks.getJSONObject(0).getDouble("lon")
-				&& tmpCs.getDouble(1) == catchLinks.getJSONObject(0).getDouble(
+		if (tmpCs.getJSONArray(0).getDouble(0) == catchLinks.getJSONObject(0).getDouble("lon")
+				&& tmpCs.getJSONArray(0).getDouble(1) == catchLinks.getJSONObject(0).getDouble(
 						"lat")) {
 			p = 1;
 		}

@@ -28,5 +28,7 @@ public class PidSequenceName {
 	
 	public static final String branchNameIdName = "SEQ_RD_BRANCH_NAME";
 	
+	public static final String ckExceptionIdName = "SEQ_CK_EXCEPTION";
+	
 	
 }

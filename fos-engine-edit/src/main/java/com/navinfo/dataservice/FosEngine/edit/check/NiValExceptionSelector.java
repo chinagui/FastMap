@@ -170,7 +170,7 @@ public class NiValExceptionSelector {
 		ResultSet rs = null;
 
 		StringBuilder sql = new StringBuilder(
-				"select * from (select b.*,rownum rn from (select ruleid,situation,\"LEVEL\" level_,targets,information,a.location.sdo_point.x x,"
+				"select * from (select b.*,rownum rn from (select reserved,ruleid,situation,\"LEVEL\" level_,targets,information,a.location.sdo_point.x x,"
 						+ "a.location.sdo_point.y y,created,worker from ni_val_exception a where mesh_id in (");
 
 		for (int i = 0; i < meshes.size(); i++) {
@@ -199,6 +199,8 @@ public class NiValExceptionSelector {
 
 			while (rs.next()) {
 				JSONObject json = new JSONObject();
+				
+				json.put("id",  rs.getString("reserved"));
 
 				json.put("ruleid", rs.getString("ruleid"));
 

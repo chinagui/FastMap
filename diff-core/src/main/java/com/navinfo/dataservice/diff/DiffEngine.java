@@ -47,6 +47,7 @@ public class DiffEngine
 	private Set<GlmTable> diffTables;
 	protected VMThreadPoolExecutor diffPoolExecutor;
 	protected VMThreadPoolExecutor logPoolExecutor;
+	protected VMThreadPoolExecutor logMeshPoolExecutor;
 	protected JavaDiffScanner diffScanner;
 
 
@@ -143,6 +144,7 @@ public class DiffEngine
 			initEngine();
 			diffScan();
 			fillLogDetail();
+			calcLogMesh();
 			res.setStatusAndMsg(AbstractJobResponse.STATUS_SUCCESS, "Success");
 		}catch(Exception e){
 			res.setStatusAndMsg(AbstractJobResponse.STATUS_FAILED,"ERROR:"+e.getMessage());
@@ -264,6 +266,74 @@ public class DiffEngine
 			} catch (InterruptedException e) {
 				log.error("关闭线程池失败");
 				throw new ServiceException("关闭线程池失败", e);
+			}
+		}
+	}
+	
+
+	protected void calcLogMesh(){
+		//暂时只计算RD_LINK要素，主表子填充履历时已经取到mesh_id，只需要查询子表就行
+		Set<GlmTable> caclMeshTables = new HashSet<GlmTable>();
+		for (GlmTable table : diffTables){
+			if(table.getName().startsWith("RD_LINK_")){
+				caclMeshTables.add(table);
+			}else{
+				log.debug("暂时过滤填充履历图幅号，表名："+table.getName());
+			}
+		}
+		//初始线程池
+		int poolSize = 10;
+		try {
+			logMeshPoolExecutor = new VMThreadPoolExecutor(poolSize, poolSize, 3,
+					TimeUnit.SECONDS, new LinkedBlockingQueue(),
+					new ThreadPoolExecutor.CallerRunsPolicy());
+		} catch (Exception e) {
+			throw new ServiceException("初始化计算履历图幅号的线程池错误:" + e.getMessage(), e);
+		}
+		
+		//计算
+		final CountDownLatch latch4LogMesh = new CountDownLatch(caclMeshTables.size());
+		logMeshPoolExecutor.addDoneSignal(latch4LogMesh);
+		// 
+		log.debug("开始填充履历图幅号");
+		long t = System.currentTimeMillis();
+		for (final GlmTable table : caclMeshTables) {
+			log.debug("添加填充履历图幅号执行线程，表名为：" + table.getName());
+			logMeshPoolExecutor.execute(new Runnable() {
+				@Override
+				public void run() {
+					try{
+						diffScanner.fillLogDetailMesh(table,leftAccess.accessTable(table), rightAccess.accessTable(table));
+						latch4LogMesh.countDown();
+						log.debug("填充履历图幅号完成，表名为：" + table.getName());
+					}catch(Exception e){
+						throw new ThreadExecuteException("表名："+table.getName()+"差分失败。",e);
+					}
+				}
+			});
+		}
+		try {
+			log.debug("等待各计算履历图幅号任务执行完成");
+			latch4LogMesh.await();
+		} catch (InterruptedException e) {
+			log.warn("线程被打断");
+		}
+		if (logPoolExecutor.getExceptions().size() > 0)
+			throw new ServiceException("计算履历图幅号时发生异常", logPoolExecutor
+					.getExceptions().get(0));
+		log.debug("各计算履历图幅号任务执行完成,用时：" + (System.currentTimeMillis() - t) + "ms");
+		//关闭线程池
+		log.debug("关闭计算履历图幅号的线程池");
+		if (logMeshPoolExecutor != null && !logMeshPoolExecutor.isShutdown()) {
+			logMeshPoolExecutor.shutdownNow();
+			try {
+				while (!logMeshPoolExecutor.isTerminated()) {
+					log.debug("等待线程结束：线程数为" + logMeshPoolExecutor.getActiveCount());
+					Thread.sleep(2000);
+				}
+			} catch (InterruptedException e) {
+				log.error("关闭计算履历图幅号的线程池");
+				throw new ServiceException("关闭计算履历图幅号的线程池", e);
 			}
 		}
 	}

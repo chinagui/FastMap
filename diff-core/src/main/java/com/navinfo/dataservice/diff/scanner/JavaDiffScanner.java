@@ -59,7 +59,7 @@ public class JavaDiffScanner implements DiffScanner
         	StringBuilder sb = new StringBuilder();
         	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, OP_DT, TB_NM, OP_TP, TB_ROW_ID)\n SELECT SYS_GUID(),'DIFF_JOB_ID',SYSDATE,'");
         	sb.append(table.getName());
-        	sb.append("',3,ROW_ID FROM ");
+        	sb.append("',1,ROW_ID FROM ");
         	sb.append(leftTableFullName);
         	sb.append(" L WHERE NOT EXISTS \n (SELECT 1 FROM ");
         	sb.append(rightTableFullName);
@@ -87,7 +87,7 @@ public class JavaDiffScanner implements DiffScanner
         	StringBuilder sb = new StringBuilder();
         	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, OP_DT, TB_NM, OP_TP, TB_ROW_ID)\n SELECT SYS_GUID(),'DIFF_JOB_ID',SYSDATE,'");
         	sb.append(table.getName());
-        	sb.append("',1,ROW_ID FROM ");
+        	sb.append("',2,ROW_ID FROM ");
         	sb.append(rightTableFullName);
         	sb.append(" R WHERE NOT EXISTS \n (SELECT 1 FROM ");
         	sb.append(leftTableFullName);
@@ -124,7 +124,7 @@ public class JavaDiffScanner implements DiffScanner
         	StringBuilder sb = new StringBuilder();
         	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, OP_DT, TB_NM, OP_TP, TB_ROW_ID)\n SELECT SYS_GUID(),'DIFF_JOB_ID',SYSDATE,'");
         	sb.append(table.getName());
-        	sb.append("',2,L.ROW_ID FROM ");
+        	sb.append("',3,L.ROW_ID FROM ");
         	sb.append(leftTableFullName);
         	sb.append(" L, ");
         	sb.append(rightTableFullName);
@@ -177,7 +177,7 @@ public class JavaDiffScanner implements DiffScanner
         	sb.append(leftTableFullName);
         	sb.append(" L,LOG_DETAIL D WHERE L.ROW_ID=D.TB_ROW_ID AND D.TB_NM = '");
         	sb.append(table.getName());
-        	sb.append("'");
+        	sb.append("' AND D.OP_TP = 1");
         	runner.query(diffServer.getPoolDataSource(),sb.toString(),1000,new FillLeftAddLogDetail(table,diffServer),new Object[0]);
         } catch (SQLException e){
         	log.error(e.getMessage(),e);
@@ -220,7 +220,7 @@ public class JavaDiffScanner implements DiffScanner
         	sb.append(rightTableFullName);
         	sb.append(" R,LOG_DETAIL D WHERE L.ROW_ID=D.TB_ROW_ID AND R.ROW_ID=D.TB_ROW_ID AND D.TB_NM = '");
         	sb.append(table.getName());
-        	sb.append("'");
+        	sb.append("' AND D.OP_TP = 3");
         	runner.query(diffServer.getPoolDataSource(),sb.toString(),1000,new FillLeftUpdateLogDetail(table,diffServer),new Object[0]);
         } catch (SQLException e){
         	log.error(e.getMessage(),e);
@@ -240,12 +240,43 @@ public class JavaDiffScanner implements DiffScanner
     public void fillLogDetailMesh(GlmTable table,String leftTableFullName,String rightTableFullName)
     throws DiffException
     {
-    	if(table.getName().startsWith("IX_")){
-    		
-    	}else if(table.getName().startsWith("RD_")){
-    		
-    	}
-    	
+    	fillLeftAddUpdateLogMesh(table,leftTableFullName,rightTableFullName);
+    	fillLeftDeleteLogMesh(table,leftTableFullName,rightTableFullName);
     }
-    
+    private void fillLeftAddUpdateLogMesh(GlmTable table,String leftTableFullName,String rightTableFullName)
+    		throws DiffException{
+        try
+        {
+        	StringBuilder sb = new StringBuilder();
+        	sb.append("SELECT M.LINK_PID PID, M.MESH_ID,L.ROW_ID FROM RD_LINK M,");
+        	sb.append(leftTableFullName);
+        	sb.append(" L,LOG_DETAIL D WHERE M.LINK_PID=L.LINK_PID AND L.ROW_ID=D.TB_ROW_ID AND D.TB_NM = '");
+        	sb.append(table.getName());
+        	sb.append("' AND D.OP_TP in (1,3)");
+        	runner.query(diffServer.getPoolDataSource(),sb.toString(),1000,new FillLogMeshDetail(table,diffServer),new Object[0]);
+        } catch (SQLException e){
+        	log.error(e.getMessage(),e);
+        	throw new DiffException("填充左表有右表没有的履历字段时出错：" + e.getMessage() 
+				+","+leftTableFullName
+				+","+rightTableFullName,e);
+        }
+    }
+    private void fillLeftDeleteLogMesh(GlmTable table,String leftTableFullName,String rightTableFullName)
+    		throws DiffException{
+        try
+        {
+        	StringBuilder sb = new StringBuilder();
+        	sb.append("SELECT M.LINK_PID PID, M.MESH_ID,R.ROW_ID FROM RD_LINK M,");
+        	sb.append(rightTableFullName);
+        	sb.append(" R,LOG_DETAIL D WHERE M.LINK_PID=R.LINK_PID AND R.ROW_ID=D.TB_ROW_ID AND D.TB_NM = '");
+        	sb.append(table.getName());
+        	sb.append("' AND D.OP_TP = 2");
+        	runner.query(diffServer.getPoolDataSource(),sb.toString(),1000,new FillLogMeshDetail(table,diffServer),new Object[0]);
+        } catch (SQLException e){
+        	log.error(e.getMessage(),e);
+        	throw new DiffException("填充左表有右表没有的履历字段时出错：" + e.getMessage() 
+				+","+leftTableFullName
+				+","+rightTableFullName,e);
+        }
+    }
 }

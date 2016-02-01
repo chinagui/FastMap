@@ -150,16 +150,20 @@ public class GlmCache {
 	}
 	
 	public static void main(String[] args){
-		Glm glm = GlmCache.getInstance().getGlm("240+");
-		Map<String,GlmTable> tables = glm.getTables();
-		
-		for(String name:tables.keySet()){
-			System.out.println(name);
-			GlmTable table = tables.get(name);
-			List<GlmColumn> cols = table.getColumns();
-			for(GlmColumn col:cols){
-				System.out.println("--"+col.getName()+":"+col.getDataType()+":"+col.isPk());
-			}
+//		Glm glm = GlmCache.getInstance().getGlm("240+");
+//		Map<String,GlmTable> tables = glm.getTables();
+//		
+//		for(String name:tables.keySet()){
+//			System.out.println(name);
+//			GlmTable table = tables.get(name);
+//			List<GlmColumn> cols = table.getColumns();
+//			for(GlmColumn col:cols){
+//				System.out.println("--"+col.getName()+":"+col.getDataType()+":"+col.isPk());
+//			}
+//		}
+		String ss = "RD_LINK";
+		if(ss.startsWith("RD_LINK")){
+			System.out.println("SS");
 		}
 		System.out.println("Over.");
 	}

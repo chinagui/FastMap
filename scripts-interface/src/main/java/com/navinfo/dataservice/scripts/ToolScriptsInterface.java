@@ -18,6 +18,7 @@ import org.apache.commons.io.IOUtils;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.job.AbstractJobResponse;
+import com.navinfo.dataservice.datahub.chooser.strategy.DbServerStrategy;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.UnifiedDb;
 import com.navinfo.dataservice.diff.DiffEngine;
@@ -48,9 +49,21 @@ public class ToolScriptsInterface {
 		String descp = (String)request.get("descp");
 		String gdbVersion = (String)request.get("gdbVersion");
 
+		String refDbName = (String)request.get("refName");
+		String refDbType = (String)request.get("refType");
+
 		DbManager man = new DbManager();
 		UnifiedDb db = null;
-		db = man.createDb(name,type, descp,gdbVersion);
+		if(StringUtils.isEmpty(refDbName)||StringUtils.isEmpty(refDbType)){
+			db = man.createDb(name,type, descp,gdbVersion);
+		}else{
+			String strategyType = DbServerStrategy.USE_REF_DB;
+			Map<String,String> strategyParam = new HashMap<String,String>();
+			strategyParam.put("refDbName", refDbName);
+			strategyParam.put("refDbType", refDbType);
+			db = man.createDb(name,type, descp,strategyType,strategyParam,gdbVersion);
+		}
+		
 		response.put("dbId", String.valueOf(db.getDbId()));
 		return response;
 	}

@@ -35,6 +35,8 @@ public class Operation implements IOperation {
 		
 		limit.setMesh(meshId);
 		
+		limit.setMeshId(meshId);
+		
 		limit.setPid(PidService.getInstance().applySpeedLimitPid());
 		
 		result.setPrimaryPid(limit.getPid());

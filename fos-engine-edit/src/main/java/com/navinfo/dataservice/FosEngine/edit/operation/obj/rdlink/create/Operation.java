@@ -1,16 +1,16 @@
 package com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlink.create;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.json.JSONException;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.FosEngine.comm.util.AdminUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
@@ -34,11 +34,15 @@ public class Operation implements IOperation {
 	private Command command;
 
 	private Check check;
+	
+	private Connection conn;
 
-	public Operation(Command command, Check check) {
+	public Operation(Command command, Check check, Connection conn) {
 		this.command = command;
 
 		this.check = check;
+		
+		this.conn = conn;
 	}
 
 	@Override
@@ -131,6 +135,8 @@ public class Operation implements IOperation {
 				link.setKind(command.getKind());
 
 				link.setLaneNum(command.getLaneNum());
+				
+				AdminUtils.SetAdminInfo4Link(link, conn);
 
 				result.insertObject(link, ObjStatus.INSERT);
 			} else {
@@ -178,6 +184,8 @@ public class Operation implements IOperation {
 						link.setKind(command.getKind());
 
 						link.setLaneNum(command.getLaneNum());
+						
+						AdminUtils.SetAdminInfo4Link(link, conn);
 
 						setLinkChildren(link);
 

@@ -76,7 +76,7 @@ public class Process implements IProcess {
 				throw new Exception(preCheckMsg);
 			}
 
-			IOperation operation = new Operation(command, check);
+			IOperation operation = new Operation(command, check, conn);
 
 			msg = operation.run(result);
 

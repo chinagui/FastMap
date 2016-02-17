@@ -154,22 +154,30 @@ public class OpTopo implements IOperation {
 		geojson2.put("coordinates", ja2);
 
 		RdLink link1 = new RdLink();
+		
+		link1.copy(rdLinkBreakpoint);
 
 		link1.setPid(PidService.getInstance().applyLinkPid());
 
-		link1.copy(rdLinkBreakpoint);
-
 		link1.setGeometry(GeoTranslator.geojson2Jts(geojson1));
+		
+		double length1 = GeoTranslator.getLinkLength(GeoTranslator.jts2Wkt(link1.getGeometry(), 0.00001, 5));
 
+		link1.setLength(length1);
+		
 		command.setLink1(link1);
 
 		RdLink link2 = new RdLink();
 
+		link2.copy(rdLinkBreakpoint);
+		
 		link2.setPid(PidService.getInstance().applyLinkPid());
 
-		link2.copy(rdLinkBreakpoint);
-
 		link2.setGeometry(GeoTranslator.geojson2Jts(geojson2));
+		
+		double length2 = GeoTranslator.getLinkLength(GeoTranslator.jts2Wkt(link2.getGeometry(), 0.00001, 5));
+
+		link2.setLength(length2);
 
 		command.setLink2(link2);
 

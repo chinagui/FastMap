@@ -2476,6 +2476,8 @@ create table CK_EXCEPTION  (
    MEMO_1               VARCHAR2(500),
    MEMO_2               VARCHAR2(500),
    MEMO_3               VARCHAR2(500),
+   U_RECORD             NUMBER(2)            default 0 not null
+check (U_RECORD in (0,1,2,3)) disable ,
    constraint PK_CK_EXCEPTION primary key (EXCEPTION_ID)
 );
 
@@ -7663,6 +7665,8 @@ check (VEHICLE_CLASS in (1,2,3,4,5)) disable ,
    SYSTEM_ID            NUMBER(6),
    VER_INFO             VARCHAR2(100),
    MEMO                 VARCHAR2(1000),
+   U_RECORD             NUMBER(2)            default 0 not null
+check (U_RECORD in (0,1,2,3)) disable ,
    constraint PK_RD_TOLLGATE_FEE primary key (TOLLCOST_ID)
 );
 
@@ -7681,6 +7685,8 @@ create table RD_TOLLGATE_MAPPING
    SYSTEM_ID            NUMBER(6),
    VER_INFO             VARCHAR2(100),
    MEMO                 VARCHAR2(1000),
+   U_RECORD             NUMBER(2)            default 0 not null
+check (U_RECORD in (0,1,2,3)) disable ,
    constraint PK_RD_TOLLGATE_MAPPING primary key (MAPPING_ID)
 );
 

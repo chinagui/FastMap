@@ -2,6 +2,7 @@ package com.navinfo.dataservice.expcore.external;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -75,7 +76,7 @@ public class ExternalTool4Exporter {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public void removeDupRecord(String gdbVersion,OracleSchema schema,Set<String> tables)throws Exception{
+	public static void removeDupRecord(String gdbVersion,OracleSchema schema,Set<String> tables)throws Exception{
 		Connection conn=null;
 		try{
 			conn = schema.getDriverManagerDataSource().getConnection();
@@ -103,6 +104,20 @@ public class ExternalTool4Exporter {
 			throw new Exception("打开主键时出现错误，原因："+e.getMessage(),e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public static void physicalDeleteRow(String gdbVersion,OracleSchema schema,Set<String> tables)throws Exception{
+		try{
+			if(tables==null||tables.size()==0){
+				Glm glm = GlmCache.getInstance().getGlm(gdbVersion);
+				tables = glm.getTables().keySet();
+			}
+			PhysicalDeleteRow.doDelete(tables, schema);
+			
+		}catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new Exception("打开主键时出现错误，原因："+e.getMessage(),e);
 		}
 	}
 	/**

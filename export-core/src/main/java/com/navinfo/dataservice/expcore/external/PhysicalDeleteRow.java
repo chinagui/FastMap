@@ -3,6 +3,7 @@ package com.navinfo.dataservice.expcore.external;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
@@ -18,18 +19,15 @@ import com.navinfo.navicommons.database.QueryRunner;
  * @date 2016-1-25 下午6:47:44 
  * @Description: TODO
  */
-public class RemoveDuplicateRow {
-	protected static Logger log = Logger.getLogger(RemoveDuplicateRow.class);
-	public static void removeDup(List<String> tables,OracleSchema schema)throws Exception{
+public class PhysicalDeleteRow {
+	protected static Logger log = Logger.getLogger(PhysicalDeleteRow.class);
+	public static void doDelete(Set<String> tables,OracleSchema schema)throws Exception{
 		if(tables!=null&&tables.size()>0){
 			List<ExpSQL> expSQLs = new ArrayList<ExpSQL>();
 			for(String name:tables){
 				ExpSQL expSQL = new ExpSQL();
-				if("NI_VAL_EXCEPTION".equals(name)){
-					expSQL.setSql("DELETE FROM NI_VAL_EXCEPTION WHERE ROWID NOT IN (SELECT MAX(ROWID) FROM NI_VAL_EXCEPTION GROUP BY RESERVED)");
-
-					expSQLs.add(expSQL);
-				}
+				expSQL.setSql("DELETE FROM "+name+" WHERE U_RECORD=2");
+				expSQLs.add(expSQL);
 			}
 			if(expSQLs.size()==1){
 				Connection conn = null;

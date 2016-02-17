@@ -27,8 +27,7 @@ public class NiValExceptionOperator {
 	public void insertCheckLog(String ruleId, String loc, String targets,
 			int meshId, String worker) throws Exception {
 
-		String sql = "merge into ni_val_exception a using ( select RESERVED from ni_val_exception union all select RESERVED from ck_exception ) b on (a.RESERVED = b.reserved) when not matched then   insert     (RESERVED, ruleid, information, location, targets, mesh_id,worker)   values     (:1, :2, :3, sdo_geometry(:4, 8307), :5, :6,:7)";
-
+		String sql = "merge into ni_val_exception a using ( select * from ( select :8 as RESERVED from dual) where RESERVED not in ( select RESERVED          from ni_val_exception          where RESERVED is not null        union all        select RESERVED          from ck_exception          where RESERVED is not null          )) b on (a.RESERVED = b.reserved) when not matched then   insert     (RESERVED, ruleid, information, location, targets, mesh_id, worker)   values     (:1, :2, :3, sdo_geometry(:4, 8307), :5, :6, :7)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 
 		try {
@@ -36,18 +35,22 @@ public class NiValExceptionOperator {
 					CheckItems.getInforByRuleId(ruleId), targets, null);
 
 			pstmt.setString(1, md5);
+			
+			pstmt.setString(2, md5);
 
-			pstmt.setString(2, ruleId);
+			pstmt.setString(3, ruleId);
 
-			pstmt.setString(3, CheckItems.getInforByRuleId(ruleId));
+			pstmt.setString(4, CheckItems.getInforByRuleId(ruleId));
 
-			pstmt.setString(4, loc);
+			pstmt.setString(5, loc);
 
-			pstmt.setString(5, targets);
+			pstmt.setString(6, targets);
 
-			pstmt.setInt(6, meshId);
+			pstmt.setInt(7, meshId);
 
-			pstmt.setString(7, worker);
+			pstmt.setString(8, worker);
+			
+			
 
 			pstmt.executeUpdate();
 		} catch (Exception e) {

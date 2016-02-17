@@ -17,6 +17,9 @@ import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
+import com.navinfo.dataservice.expcore.external.ExternalTool4Exporter;
+import com.navinfo.dataservice.expcore.external.PhysicalDeleteRow;
+import com.navinfo.dataservice.expcore.external.RemoveDuplicateRow;
 
 /** 
  * @ClassName: InitProjectScriptsInterface 
@@ -84,7 +87,9 @@ public class Exp2CopVersionScriptsInterface {
 			expRequest.put("gdbVersion", gdbVersion);
 			JSONObject expResponse = ToolScriptsInterface.exportData(expRequest);
 			response.put("export_data", expResponse);
-
+			//逻辑删除数据
+			ExternalTool4Exporter.physicalDeleteRow(gdbVersion, schema, null);
+			response.put("physical_delete", "success");
 			response.put("msg", "执行成功");
 		}catch(Exception e){
 			response.put("msg", "ERROR:"+e.getMessage());

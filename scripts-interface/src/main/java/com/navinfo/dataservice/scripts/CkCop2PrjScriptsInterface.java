@@ -5,7 +5,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import net.sf.json.JSONObject;
@@ -20,6 +22,7 @@ import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.expcore.external.ExternalTool4Exporter;
+import com.navinfo.dataservice.expcore.external.RemoveDuplicateRow;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /** 
@@ -48,7 +51,7 @@ public class CkCop2PrjScriptsInterface {
 			String gdbVersion = "240+";
 			JSONObject expRequest = new JSONObject();
 			expRequest.put("exportMode", "full_copy");
-			expRequest.put("feature", "ck");
+			expRequest.put("specificTables", "NI_VAL_EXCEPTION");
 			expRequest.put("dataIntegrity", "false");
 			expRequest.put("sourceDbId", sourceDbId);
 			expRequest.put("gdbVersion", gdbVersion);
@@ -56,6 +59,12 @@ public class CkCop2PrjScriptsInterface {
 			//
 			JSONObject expResponse = ToolScriptsInterface.exportData(expRequest);
 			response.put("exp", expResponse);
+			//去重
+			List<String> tables = new ArrayList<String>();
+			tables.add("NI_VAL_EXCEPTION");
+			OracleSchema targetDb = (OracleSchema)new DbManager().getDbById(Integer.valueOf(targetDbId));
+			RemoveDuplicateRow.removeDup(tables, targetDb);
+			response.put("removeDup", "success");
 
 			response.put("msg", "success");
 		}catch(Exception e){

@@ -456,30 +456,96 @@ public class RdLink implements IObj {
 
 		RdLink sourceLink = (RdLink) row;
 
-		this.setDirect(sourceLink.getDirect());
-
+		this.setsNodePid(sourceLink.getsNodePid());
+		
 		this.seteNodePid(sourceLink.geteNodePid());
 
-		this.setFunctionClass(sourceLink.getFunctionClass());
-
-		this.setGeometry(sourceLink.getGeometry());
-
 		this.setKind(sourceLink.getKind());
+		
+		this.setDirect(sourceLink.getDirect());
+		
+		this.setAppInfo(sourceLink.getAppInfo());
+		
+		this.setTollInfo(sourceLink.getTollInfo());
+		
+		this.setRouteAdopt(sourceLink.getRouteAdopt());
 
+		this.setMultiDigitized(sourceLink.getMultiDigitized());
+		
+		this.setDevelopState(sourceLink.getDevelopState());
+		
+		this.setImiCode(sourceLink.getImiCode());
+
+		this.setSpecialTraffic(sourceLink.getSpecialTraffic());
+		
+		this.setFunctionClass(sourceLink.getFunctionClass());
+		
+		this.setUrban(sourceLink.getUrban());
+		
+		this.setPaveStatus(sourceLink.getPaveStatus());
+		
 		this.setLaneLeft(sourceLink.getLaneLeft());
 
 		this.setLaneNum(sourceLink.getLaneNum());
 
 		this.setLaneRight(sourceLink.getLaneRight());
 
-		this.setMultiDigitized(sourceLink.getMultiDigitized());
-
-		this.setName(sourceLink.getName());
-
-		this.setsNodePid(sourceLink.getsNodePid());
+		this.setLaneWidthLeft(sourceLink.getLaneWidthLeft());
 		
-		this.setMesh(sourceLink.mesh());
-
+		this.setLaneWidthRight(sourceLink.getLaneWidthRight());
+		
+		this.setLaneClass(sourceLink.getLaneClass());
+		
+		this.setWidth(sourceLink.getWidth());
+		
+		this.setIsViaduct(sourceLink.getIsViaduct());
+		
+		this.setLeftRegionId(sourceLink.getLeftRegionId());
+		
+		this.setRightRegionId(sourceLink.getRightRegionId());
+		
+		this.setGeometry(sourceLink.getGeometry());
+		
+		this.setLength(sourceLink.getLength());
+		
+		this.setMeshId(sourceLink.getMeshId());
+		
+		this.setOnewayMark(sourceLink.getOnewayMark());
+		
+		this.setStreetLight(sourceLink.getStreetLight());
+		
+		this.setParkingLot(sourceLink.getParkingLot());
+		
+		this.setAdasFlag(sourceLink.getAdasFlag());
+		
+		this.setSidewalkFlag(sourceLink.getSidewalkFlag());
+		
+		this.setWalkstairFlag(sourceLink.getWalkstairFlag());
+		
+		this.setDiciType(sourceLink.getDiciType());
+		
+		this.setWalkFlag(sourceLink.getWalkFlag());
+		
+		this.setDifGroupid(sourceLink.getDifGroupid());
+		
+		this.setSrcFlag(sourceLink.getSrcFlag());
+		
+		this.setDigitalLevel(sourceLink.getDigitalLevel());
+		
+		this.setEditFlag(sourceLink.getEditFlag());
+		
+		this.setTruckFlag(sourceLink.getTruckFlag());
+		
+		this.setOriginLinkPid(sourceLink.getOriginLinkPid());
+		
+		this.setCenterDivider(sourceLink.getCenterDivider());
+		
+		this.setParkingFlag(sourceLink.getParkingFlag());
+		
+		this.setMemo(sourceLink.getMemo());
+		
+		this.setName(sourceLink.getName());
+		
 		List<IRow> formsSource = sourceLink.getForms();
 
 		List<IRow> forms = new ArrayList<IRow>();

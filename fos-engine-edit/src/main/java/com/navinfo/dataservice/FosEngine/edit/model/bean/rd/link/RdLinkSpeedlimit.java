@@ -263,8 +263,14 @@ public class RdLinkSpeedlimit implements IRow {
 					if (!newValue.equals(oldValue)) {
 						if (key.equals("fromSpeedLimit")
 								|| key.equals("toSpeedLimit")) {
+							
+							int limit = json.getInt(key) * 10;
+							
+							newValue = String.valueOf(limit);
 
-							changedFields.put(key, json.getInt(key) * 10);
+							if (!newValue.equals(oldValue)) {
+								changedFields.put(key,limit);
+							}
 						} else {
 							changedFields.put(key, json.get(key));
 						}

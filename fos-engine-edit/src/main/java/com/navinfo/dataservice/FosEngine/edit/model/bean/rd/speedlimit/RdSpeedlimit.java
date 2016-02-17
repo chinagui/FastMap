@@ -396,8 +396,12 @@ public class RdSpeedlimit implements IObj {
 
 					if (!newValue.equals(oldValue)) {
 						if (key.equals("speedValue")) {
-
-							changedFields.put(key, json.getInt(key) * 10);
+							
+							newValue =  String.valueOf(json.getInt(key)*10);
+							
+							if(!newValue.equals(oldValue)){
+								changedFields.put(key, json.getInt(key) * 10);
+							}
 						} else {
 							changedFields.put(key, json.get(key));
 						}

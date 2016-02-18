@@ -1,26 +1,30 @@
 package com.navinfo.dataservice.FosEngine.edit.check;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 
-import com.navinfo.dataservice.FosEngine.edit.model.ISerializable;
+import com.navinfo.dataservice.FosEngine.edit.model.IObj;
+import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
+import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
+import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.vividsolutions.jts.geom.Geometry;
 
-public class NiValException implements ISerializable {
+public class NiValException implements IObj {
 
 	private int valExceptionId;
 
-	private String ruleId;
+	private String ruleid;
 
 	private String taskName;
 
-	private int groupId;
+	private int groupid;
 
 	private int level;
 
@@ -65,6 +69,8 @@ public class NiValException implements ISerializable {
 	private String qaWorker;
 
 	private int logType;
+	
+	private String rowId;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -99,12 +105,12 @@ public class NiValException implements ISerializable {
 		return false;
 	}
 
-	public String getRuleId() {
-		return ruleId;
+	public String getRuleid() {
+		return ruleid;
 	}
 
-	public void setRuleId(String ruleId) {
-		this.ruleId = ruleId;
+	public void setRuleid(String ruleId) {
+		this.ruleid = ruleId;
 	}
 
 	public String getTaskName() {
@@ -115,12 +121,12 @@ public class NiValException implements ISerializable {
 		this.taskName = taskName;
 	}
 
-	public int getGroupId() {
-		return groupId;
+	public int getGroupid() {
+		return groupid;
 	}
 
-	public void setGroupId(int groupId) {
-		this.groupId = groupId;
+	public void setGroupid(int groupId) {
+		this.groupid = groupId;
 	}
 
 	public String getSituation() {
@@ -310,6 +316,102 @@ public class NiValException implements ISerializable {
 
 	public void setValExceptionId(int valExceptionId) {
 		this.valExceptionId = valExceptionId;
+	}
+
+	@Override
+	public String rowId() {
+		
+		return rowId;
+	}
+
+	@Override
+	public void setRowId(String rowId) {
+		
+		this.rowId=rowId;
+	}
+
+	@Override
+	public String tableName() {
+		
+		return "ni_val_exception";
+	}
+
+	@Override
+	public ObjStatus status() {
+		
+		return null;
+	}
+
+	@Override
+	public void setStatus(ObjStatus os) {
+		
+		
+	}
+
+	@Override
+	public ObjType objType() {
+		
+		return null;
+	}
+
+	@Override
+	public void copy(IRow row) {
+		
+		
+	}
+
+	@Override
+	public String primaryKey() {
+		
+		return "val_exception_id";
+	}
+
+	@Override
+	public int primaryValue() {
+		
+		return valExceptionId;
+	}
+
+	@Override
+	public String primaryTableName() {
+		
+		return "ni_val_exception";
+	}
+
+	@Override
+	public List<List<IRow>> children() {
+		
+		return null;
+	}
+
+	@Override
+	public boolean fillChangeFields(JSONObject json) throws Exception {
+		
+		return false;
+	}
+
+	@Override
+	public int mesh() {
+		
+		return this.meshId;
+	}
+
+	@Override
+	public void setMesh(int mesh) {
+		this.meshId=mesh;
+		
+	}
+
+	@Override
+	public List<IRow> relatedRows() {
+		
+		return null;
+	}
+
+	@Override
+	public int pid() {
+		
+		return this.valExceptionId;
 	}
 	
 }

@@ -3,14 +3,15 @@ package com.navinfo.dataservice.FosEngine.edit.check;
 import java.security.MessageDigest;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
-import net.sf.json.JSONArray;
-
+import com.navinfo.dataservice.FosEngine.edit.log.LogWriter;
+import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
+import com.navinfo.dataservice.FosEngine.edit.model.Result;
+import com.navinfo.dataservice.commons.db.ConfigLoader;
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.db.OracleAddress;
 import com.navinfo.dataservice.commons.service.PidService;
-import com.vividsolutions.jts.io.ParseException;
+import com.navinfo.dataservice.commons.util.UuidUtils;
 
 public class NiValExceptionOperator {
 
@@ -27,7 +28,7 @@ public class NiValExceptionOperator {
 	public void insertCheckLog(String ruleId, String loc, String targets,
 			int meshId, String worker) throws Exception {
 
-		String sql = "merge into ni_val_exception a using ( select * from ( select :8 as RESERVED from dual) where RESERVED not in ( select RESERVED          from ni_val_exception          where RESERVED is not null        union all        select RESERVED          from ck_exception          where RESERVED is not null          )) b on (a.RESERVED = b.reserved) when not matched then   insert     (RESERVED, ruleid, information, location, targets, mesh_id, worker)   values     (:1, :2, :3, sdo_geometry(:4, 8307), :5, :6, :7)";
+		String sql = "merge into ni_val_exception a using ( select * from ( select :1 as RESERVED from dual) where RESERVED not in ( select RESERVED          from ni_val_exception          where RESERVED is not null        union all        select RESERVED          from ck_exception          where RESERVED is not null          )) b on (a.RESERVED = b.reserved) when not matched then   insert     (RESERVED, ruleid, information, location, targets, mesh_id, worker, row_id)   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 
 		try {
@@ -50,8 +51,8 @@ public class NiValExceptionOperator {
 
 			pstmt.setString(8, worker);
 			
+			pstmt.setString(9, UuidUtils.genUuid());
 			
-
 			pstmt.executeUpdate();
 		} catch (Exception e) {
 			throw e;
@@ -126,11 +127,33 @@ public class NiValExceptionOperator {
 			}
 			else{
 				
+				NiValExceptionSelector selector = new NiValExceptionSelector(conn);
+				
+				NiValException exception = selector.loadById(reserved, false);
+				
+				CkException ckexception = new CkException();
+				
+				ckexception.copy(exception);
+				
 				int pid = PidService.getInstance().applyCkExceptionId();
 				
-				sql="insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, reserved, extended, task_id, qa_task_id, qa_status, worker, qa_worker, u_date, row_id) select "+pid+",ruleid, task_name,";
+				ckexception.setExceptionId(pid);
 				
-				sql += type + ",groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, mesh_id, scope_flag, province_name, map_scale, reserved, extended, task_id, qa_task_id, qa_status, worker, qa_worker, u_date, row_id from ni_val_exception a where a.reserved=:1";
+				ckexception.setStatus(type);
+				
+				ckexception.setRowId(UuidUtils.genUuid());
+				
+				Result result = new Result();
+				
+				result.insertObject(ckexception, ObjStatus.INSERT);
+				
+				LogWriter writer = new LogWriter(conn);
+				
+				writer.recordLog(new Command(), result);
+				
+				sql="insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, reserved, extended, task_id, qa_task_id, qa_status, worker, qa_worker, u_date, row_id, u_record) select "+pid+",ruleid, task_name,";
+				
+				sql += type + ",groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, mesh_id, scope_flag, province_name, map_scale, reserved, extended, task_id, qa_task_id, qa_status, worker, qa_worker, u_date, '"+ckexception.rowId()+"',1 from ni_val_exception a where a.reserved=:1";
 			}
 			
 			pstmt = conn.prepareStatement(sql);
@@ -216,6 +239,8 @@ public class NiValExceptionOperator {
 
 	public static void main(String[] args) throws Exception {
 
+		ConfigLoader.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
+		
 		String username1 = "fm_prjgdb_bj";
 
 		String password1 = "fm_prjgdb_bj";
@@ -234,7 +259,9 @@ public class NiValExceptionOperator {
 
 		//op.insertCheckLog("12321321", "POINT(116.1313 37.131)", "[link:31]", 13, "13");
 		
-		op.updateCheckLogStatus("f9ae31ed7d51317e05a01beb81ca9f2f", 11, 1);
+		op.updateCheckLogStatus("c667a0d89a21746dd9c2eeef570d6547", 11, 1);
+		
+		System.out.println("done");
 		
 	}
 }

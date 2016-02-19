@@ -132,6 +132,8 @@ public class FlushGdb {
 			while (scanner.hasNextLine()) {
 				meshes.add(Integer.parseInt(scanner.nextLine()));
 			}
+			
+			int userId = Integer.valueOf(args[2]);
 
 			logDetailQuery.append(" and op_dt <= to_date('" + stopTime
 					+ "','yyyymmddhh24miss')");
@@ -148,7 +150,7 @@ public class FlushGdb {
 			
 			MeshLockManager man = new MeshLockManager(MultiDataSourceFactory.getInstance().getManDataSource());
 
-			man.lock(prjId, setMesh, FmMesh4Lock.TYPE_GIVE_BACK);
+			man.lock(prjId, userId, setMesh, FmMesh4Lock.TYPE_GIVE_BACK);
 			
 			logDetailQuery.append(" and mesh_id in (");
 

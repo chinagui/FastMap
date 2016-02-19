@@ -113,6 +113,11 @@ public class InitProjectScriptsInterface {
 			// mesh表
 			String uSql = "UPDATE MESH SET PROJECT_ID=?,HANDLE_PROJECT_ID=? WHERE MESH_ID IN (SELECT MESH_ID FROM PROJECT_MESH WHERE PROJECT_ID=? AND MESH_TYPE=1)";
 			runner.update(conn, uSql, projectId, projectId, projectId);
+			
+			//grid表
+			String gSql = "UPDATE GRID A SET A.PROJECT_ID=?,A.HANDLE_PROJECT_ID=? WHERE EXISTS(SELECT NULL FROM PROJECT_GRID B WHERE A.GRID_ID=B.GRID_ID AND B.PROJECT_ID=?)";
+			runner.update(conn, gSql, projectId, projectId, projectId);
+			
 			conn.commit();
 			response.put("init_fm_man", "success");
 			// export data

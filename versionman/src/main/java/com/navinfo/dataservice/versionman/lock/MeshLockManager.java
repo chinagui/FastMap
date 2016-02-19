@@ -97,7 +97,7 @@ public class MeshLockManager {
      * @return 本次申请锁的批次号
      * @throws LockException
      */
-    public int lock(int prjId,Set<Integer> meshes,int lockType)throws LockException{
+    public int lock(int prjId, int userId, Set<Integer> meshes,int lockType)throws LockException{
     	if(meshes==null){
     		throw new LockException("申请锁失败：传入图幅为空，请检查。");
     	}
@@ -112,13 +112,16 @@ public class MeshLockManager {
 			int lockSeq = run.queryForInt(conn, "SELECT MESHES_LOCK_SEQ.NEXTVAL FROM DUAL");
 			//当size超过1000时，才转clob，提高效率
 			String meshInClause = null;
+			String gridInClause = null;
 			Clob clobMeshes=null;
 			if(size>1000){
 				clobMeshes=conn.createClob();
 				clobMeshes.setString(1, StringUtils.collection2String(meshes, ","));
 				meshInClause = " MESH_ID IN (select to_number(column_value) from table(clob_to_table(?)))";
+				gridInClause = " TRUNC(GRID_ID/100, 0) IN (select to_number(column_value) from table(clob_to_table(?)))";
 			}else{
 				meshInClause = " MESH_ID IN ("+StringUtils.collection2String(meshes, ",")+")";
+				gridInClause = " TRUNC(GRID_ID/100, 0) IN ("+StringUtils.collection2String(meshes, ",")+")";
 			}
 			StringBuffer sqlBuf = new StringBuffer();
 			int updateCount=0;
@@ -132,6 +135,18 @@ public class MeshLockManager {
 				}else{
 					updateCount = run.update(conn, sqlBuf.toString(),prjId,lockType,lockSeq,prjId);
 				}
+				
+				sqlBuf = new StringBuffer();
+				
+				sqlBuf.append("UPDATE GRID SET HANDLE_USER_ID=?,HANDLE_PROJECT_ID=?,LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE WHERE");
+				sqlBuf.append(gridInClause);
+				sqlBuf.append(" AND HANDLE_PROJECT_ID <> ? AND LOCK_STATUS=0");
+				if(size>1000){
+					run.update(conn, sqlBuf.toString(),userId, prjId,lockType,lockSeq,clobMeshes,prjId);
+				}else{
+					run.update(conn, sqlBuf.toString(),userId, prjId,lockType,lockSeq,prjId);
+				}
+				
 			}else if(lockType==FmMesh4Lock.TYPE_GIVE_BACK){
 				sqlBuf.append("UPDATE MESH SET LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE WHERE");
 				sqlBuf.append(meshInClause);
@@ -141,6 +156,16 @@ public class MeshLockManager {
 				}else{
 					updateCount = run.update(conn, sqlBuf.toString(),lockType,lockSeq,prjId,prjId);
 				}
+				
+				sqlBuf=new StringBuffer();
+				sqlBuf.append("UPDATE GRID SET LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE WHERE");
+				sqlBuf.append(gridInClause);
+				sqlBuf.append(" AND PROJECT_ID <> ? AND HANDLE_PROJECT_ID = ? AND LOCK_STATUS=0");
+				if(size>1000){
+					run.update(conn, sqlBuf.toString(),lockType,lockSeq,clobMeshes,prjId,prjId);
+				}else{
+					run.update(conn, sqlBuf.toString(),lockType,lockSeq,prjId,prjId);
+				}
 			}else{
 				sqlBuf.append("UPDATE MESH SET LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE WHERE");
 				sqlBuf.append(meshInClause);
@@ -149,6 +174,16 @@ public class MeshLockManager {
 					updateCount = run.update(conn, sqlBuf.toString(),lockType,lockSeq,clobMeshes,prjId);
 				}else{
 					updateCount = run.update(conn, sqlBuf.toString(),lockType,lockSeq,prjId);
+				}
+				
+				sqlBuf=new StringBuffer();
+				sqlBuf.append("UPDATE GRID SET LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE WHERE");
+				sqlBuf.append(gridInClause);
+				sqlBuf.append(" AND HANDLE_PROJECT_ID = ? AND LOCK_STATUS=0");
+				if(size>1000){
+					run.update(conn, sqlBuf.toString(),lockType,lockSeq,clobMeshes,prjId);
+				}else{
+					run.update(conn, sqlBuf.toString(),lockType,lockSeq,prjId);
 				}
 			}
 			if(updateCount!=size){
@@ -206,7 +241,7 @@ public class MeshLockManager {
 	 * @param lockType
 	 * @throws LockException
 	 */
-	public void unlock(int prjId,Set<Integer> meshes,int lockType)throws LockException{
+	public void unlock(int prjId, Set<Integer> meshes,int lockType)throws LockException{
     	if(meshes==null){
     		throw new LockException("释放锁失败：传入图幅为空，请检查。");
     	}
@@ -220,13 +255,16 @@ public class MeshLockManager {
 			conn = manDataSource.getConnection();
 			//当size超过1000时，才转clob，提高效率
 			String meshInClause = null;
+			String gridInClause = null;
 			Clob clobMeshes=null;
 			if(size>1000){
 				clobMeshes=conn.createClob();
 				clobMeshes.setString(1, StringUtils.collection2String(meshes, ","));
 				meshInClause = " MESH_ID IN (select to_number(column_value) from table(clob_to_table(?)))";
+				gridInClause = " TRUNC(GRID_ID/100, 0) IN (select to_number(column_value) from table(clob_to_table(?)))";
 			}else{
 				meshInClause = " MESH_ID IN ("+StringUtils.collection2String(meshes, ",")+")";
+				gridInClause = " TRUNC(GRID_ID/100, 0) IN ("+StringUtils.collection2String(meshes, ",")+")";
 			}
 			//解锁时，归还例外
 			StringBuffer sqlBuf = new StringBuffer();
@@ -243,6 +281,21 @@ public class MeshLockManager {
 				updateCount = run.update(conn, sqlBuf.toString(),clobMeshes,lockType,prjId);
 			}else{
 				updateCount = run.update(conn, sqlBuf.toString(),lockType,prjId);
+			}
+			
+			sqlBuf = new StringBuffer();
+			if(lockType==FmMesh4Lock.TYPE_GIVE_BACK){
+				sqlBuf.append("UPDATE GRID SET HANDLE_PROJECT_ID=PROJECT_ID,HANDLE_USER_ID=USER_ID,LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,LOCK_TIME=SYSDATE WHERE");
+			}else{
+				sqlBuf.append("UPDATE GRID SET LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,LOCK_TIME=SYSDATE WHERE");
+			}
+			sqlBuf.append(gridInClause);
+			sqlBuf.append(" AND LOCK_STATUS=1 AND LOCK_TYPE=? AND HANDLE_PROJECT_ID=?");
+			
+			if(size>1000){
+				run.update(conn, sqlBuf.toString(),clobMeshes,lockType,prjId);
+			}else{
+				run.update(conn, sqlBuf.toString(),lockType,prjId);
 			}
 			
 			if(updateCount!=size){
@@ -333,12 +386,16 @@ public class MeshLockManager {
 //			for(int i=0;i<1001;i++){
 //				meshes.add(100000+i);
 //			}
-			meshes.add(595672);
-			meshes.add(595671);
+			meshes.add(605713);
 			int result = 0;
-			man.query(11,meshes);
-			man.lock(2, meshes, FmMesh4Lock.TYPE_BORROW);
-			System.out.println(man.query(1, meshes));
+			man.query(12,meshes);
+			//man.lock(11, 4396, meshes, FmMesh4Lock.TYPE_BORROW);
+			//man.unlock(11, meshes, FmMesh4Lock.TYPE_BORROW);
+			
+			//man.lock(11, 4396, meshes, FmMesh4Lock.TYPE_GIVE_BACK);
+			man.unlock(11, meshes, FmMesh4Lock.TYPE_GIVE_BACK);
+			
+			System.out.println(man.query(11, meshes));
 			System.out.println("over.");
 		}catch(Exception e){
 			e.printStackTrace();

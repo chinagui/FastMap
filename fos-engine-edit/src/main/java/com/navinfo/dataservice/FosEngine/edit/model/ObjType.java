@@ -43,5 +43,6 @@ public enum ObjType {
 	RDSERIESBRANCH,
 	RDBRANCHVIA,
 	
-	ADFACE;
+	ADFACE,
+	CKEXCEPTION;
 }

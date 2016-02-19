@@ -1,14 +1,19 @@
 package com.navinfo.dataservice.FosEngine.edit.check;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.FosEngine.edit.model.ISerializable;
+import com.navinfo.dataservice.FosEngine.edit.model.IObj;
+import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
+import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
+import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 
-public class CkException implements ISerializable {
+public class CkException implements IObj {
 
 	private int exceptionId;
 
@@ -42,7 +47,7 @@ public class CkException implements ISerializable {
 
 	private int meshId;
 
-	private int scopeFlag=1;
+	private int scopeFlag = 1;
 
 	private String provinceName;
 
@@ -56,7 +61,7 @@ public class CkException implements ISerializable {
 
 	private String qaTaskId;
 
-	private int qaStatus=2;
+	private int qaStatus = 2;
 
 	private String worker;
 
@@ -67,6 +72,8 @@ public class CkException implements ISerializable {
 	private String memo2;
 
 	private String memo3;
+
+	private String rowId;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -354,5 +361,150 @@ public class CkException implements ISerializable {
 	public Map<String, Object> changedFields() {
 
 		return changedFields;
+	}
+
+	@Override
+	public String rowId() {
+
+		return rowId;
+	}
+
+	@Override
+	public void setRowId(String rowId) {
+
+		this.rowId = rowId;
+	}
+
+	@Override
+	public String tableName() {
+
+		return "ck_exception";
+	}
+
+	@Override
+	public ObjStatus status() {
+
+		return null;
+	}
+
+	@Override
+	public void setStatus(ObjStatus os) {
+
+	}
+
+	@Override
+	public ObjType objType() {
+
+		return ObjType.CKEXCEPTION;
+	}
+
+	@Override
+	public void copy(IRow row) {
+
+	}
+	
+	public void copy(NiValException exception){
+		
+		this.setRuleId(exception.getRuleid());
+		
+		this.setTaskName(exception.getTaskName());
+		
+		this.setGroupId(exception.getGroupid());
+		
+		this.setRank(exception.getLevel());
+		
+		this.setSituation(exception.getSituation());
+		
+		this.setInformation(exception.getInformation());
+		
+		this.setSuggestion(exception.getSuggestion());
+		
+		this.setGeometry(GeoTranslator.jts2Wkt(exception.getLocation()));
+		
+		this.setTargets(exception.getTargets());
+		
+		this.setAdditionInfo(exception.getAdditionInfo());
+		
+		this.setCreateDate(exception.getCreated());
+		
+		this.setUpdateDate(exception.getUpdated());
+		
+		this.setMeshId(exception.getMeshId());
+		
+		this.setScopeFlag(exception.getScopeFlag());
+		
+		this.setProvinceName(exception.getProvinceName());
+		
+		this.setMapScale(exception.getMapScale());
+		
+		this.setReserved(exception.getReserved());
+		
+		this.setExtended(exception.getExtended());
+		
+		this.setTaskId(exception.getTaskId());
+		
+		this.setQaTaskId(exception.getQaTaskId());
+		
+		this.setQaStatus(exception.getQaStatus());
+		
+		this.setWorker(exception.getWorker());
+		
+		this.setQaWorker(exception.getQaWorker());
+	
+		this.setRowId(exception.rowId());
+	}
+
+	@Override
+	public String primaryKey() {
+
+		return "exception_id";
+	}
+
+	@Override
+	public int primaryValue() {
+
+		return this.exceptionId;
+	}
+
+	@Override
+	public String primaryTableName() {
+
+		return "ck_exception";
+	}
+
+	@Override
+	public List<List<IRow>> children() {
+
+		return null;
+	}
+
+	@Override
+	public boolean fillChangeFields(JSONObject json) throws Exception {
+
+		return false;
+	}
+
+	@Override
+	public int mesh() {
+
+		return this.meshId;
+	}
+
+	@Override
+	public void setMesh(int mesh) {
+
+		this.meshId = mesh;
+	}
+
+	@Override
+	public List<IRow> relatedRows() {
+
+		return null;
+	}
+
+	@Override
+	public int pid() {
+
+		return this.exceptionId;
 	}
 }

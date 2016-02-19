@@ -196,7 +196,7 @@ public class RdRestrictionTipsBuilder {
 			
 			infoJson = new JSONObject();
 			
-			infoJson.put("info", restricInfo);
+			infoJson.put("oInfo", restricInfo);
 			
 			infoJson.put("flag", flag);
 			

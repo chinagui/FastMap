@@ -24,8 +24,12 @@ public class BorrowMeshScriptsInterface {
 			String targetProjectIdStr = (String) request.get("targetProjectId");
 			Assert.notNull(targetProjectIdStr, "targetProjectId不能为空");
 
+			String userIdStr = (String) request.get("userId");
+			Assert.notNull(targetProjectIdStr, "userId不能为空");
+			
 			int targetProjectId = Integer.valueOf(targetProjectIdStr);
 			int sourceProjectId = Integer.valueOf(sourceProjectIdStr);
+			int userId = Integer.valueOf(userIdStr);
 
 			String gdbVersion = "240+";
 			String meshStr = (String) request.get("meshes");
@@ -57,7 +61,7 @@ public class BorrowMeshScriptsInterface {
 			System.out.println("locking");
 			MeshLockManager man = new MeshLockManager(MultiDataSourceFactory
 					.getInstance().getManDataSource());
-			man.lock(targetProjectId, meshSet, FmMesh4Lock.TYPE_BORROW);
+			man.lock(targetProjectId, userId, meshSet, FmMesh4Lock.TYPE_BORROW);
 			response.put("lock_mesh", "success");
 
 			System.out.println("locked");

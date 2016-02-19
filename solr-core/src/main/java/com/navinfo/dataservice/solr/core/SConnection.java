@@ -325,6 +325,60 @@ public class SConnection {
 
 		return snapshots;
 	}
+	
+	public List<JSONObject> queryTipsWebType(String wkt, JSONArray types)
+			throws SolrServerException, IOException {
+		List<JSONObject> snapshots = new ArrayList<JSONObject>();
+		
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append("wkt:\"intersects(" + wkt + ")\"");
+		
+		if(types.size()>0){
+			
+			builder.append(" AND s_sourceType:(");
+			
+			for(int i=0;i<types.size();i++){
+				String type = types.getString(i);
+				
+				if(i>0){
+					builder.append(" ");
+				}
+				builder.append(type);
+			}
+			
+			builder.append(")");
+		}
+		
+		SolrQuery query = new SolrQuery();
+
+		query.set("q", builder.toString());
+
+		query.set("start", 0);
+
+		query.set("rows", fetchNum);
+
+		QueryResponse response = solrClient.query(query);
+
+		SolrDocumentList sdList = response.getResults();
+
+		long totalNum = sdList.getNumFound();
+
+		if (totalNum <= fetchNum) {
+			for (int i = 0; i < totalNum; i++) {
+				SolrDocument doc = sdList.get(i);
+
+				JSONObject snapshot = JSONObject.fromObject(doc);
+
+				snapshots.add(snapshot);
+			}
+		} else {
+			// 暂先不处理
+		}
+
+		return snapshots;
+	}
+
 
 	public JSONObject getById(String id) throws Exception {
 

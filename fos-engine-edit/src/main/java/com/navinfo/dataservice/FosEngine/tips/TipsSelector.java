@@ -59,7 +59,7 @@ public class TipsSelector {
 	 * 
 	 * @throws Exception
 	 */
-	public JSONArray searchDataByTileWithGap(int x, int y, int z, int gap)
+	public JSONArray searchDataByTileWithGap(int x, int y, int z, int gap, JSONArray types)
 			throws Exception {
 		JSONArray array = new JSONArray();
 
@@ -71,7 +71,7 @@ public class TipsSelector {
 
 			double py = MercatorProjection.tileYToPixelY(y);
 
-			List<JSONObject> snapshots = conn.queryTipsWeb(wkt);
+			List<JSONObject> snapshots = conn.queryTipsWebType(wkt, types);
 
 			for (JSONObject json : snapshots) {
 				
@@ -134,7 +134,6 @@ public class TipsSelector {
 
 			}
 		} catch (Exception e) {
-
 			throw e;
 		}
 
@@ -322,6 +321,9 @@ public class TipsSelector {
 		//System.out.println(selector.getSnapshot(a, b, type));
 		//System.out.println(selector.getStats(a, b));
 		
-		System.out.println(selector.searchDataByTileWithGap(107941, 49613, 17, 5));
+		JSONArray types = new JSONArray();
+		types.add(1301);
+		types.add(1901);
+		System.out.println(selector.searchDataByTileWithGap(107944, 49615, 17,20,types));
 	}
 }

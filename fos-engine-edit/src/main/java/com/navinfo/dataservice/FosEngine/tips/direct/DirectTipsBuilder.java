@@ -19,6 +19,7 @@ import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.FosEngine.tips.TipsImportUtils;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.timedomain.TimeDecoder;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
 import com.navinfo.dataservice.solr.core.SConnection;
 
@@ -156,7 +157,9 @@ public class DirectTipsBuilder {
 
 		json.put("dr", direct);
 		
-		json.put("time", resultSet.getString("time_domain"));
+		TimeDecoder decoder = new TimeDecoder();
+		
+		json.put("time", decoder.decode(resultSet.getString("time_domain")));
 
 		return json.toString();
 	}

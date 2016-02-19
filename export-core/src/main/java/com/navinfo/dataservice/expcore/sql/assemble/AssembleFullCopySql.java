@@ -14,6 +14,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.datahub.glm.Glm;
+import com.navinfo.dataservice.datahub.glm.GlmCache;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 
@@ -24,13 +26,19 @@ public class AssembleFullCopySql{
 	public AssembleFullCopySql() {
 	}
 
-	public List<ExpSQL> assemble(String dbLinkName, OracleSchema sourceSchema, OracleSchema targetSchema, List<String> specificTables,List<String> excludedTables) throws Exception {
+	public List<ExpSQL> assemble(String dbLinkName, OracleSchema sourceSchema, OracleSchema targetSchema, String gdbVersion,List<String> specificTables,List<String> excludedTables) throws Exception {
 		try {
 			List<String> tables = null;
 			if(specificTables!=null){
 				tables = specificTables;
 			}else{
-				tables = getCopyTables(sourceSchema,excludedTables);
+				Glm glm = GlmCache.getInstance().getGlm(gdbVersion);
+				tables = new ArrayList<String>();
+				tables.addAll(glm.getEditTables().keySet());
+				tables.addAll(glm.getExtendTables().keySet());
+				if(excludedTables!=null){
+					tables.removeAll(excludedTables);
+				}
 			}
 			
 
@@ -41,46 +49,6 @@ public class AssembleFullCopySql{
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw e;
-		}
-
-	}
-	
-
-	protected List<String> getCopyTables(OracleSchema schema,List<String> excludedTables) throws Exception {
-		String gdbCause = "where 1=1";
-		
-		String ignoreTablePrefixConfig = SystemConfig.getSystemConfig().getValue("glm.ignore.table.prefix");
-		if(StringUtils.isNotEmpty(ignoreTablePrefixConfig)){
-			String ignoreTablePrefix[] = ignoreTablePrefixConfig.split(",");
-			for (String prefix : ignoreTablePrefix) {
-				gdbCause += " AND table_name not like '" + prefix + "%' and table_name !='OPERATE_LOG'";
-			}
-		}
-		if(excludedTables!=null){
-			for(String table:excludedTables){
-				gdbCause += " AND table_name != '" + table + "'";
-			}
-		}
-
-		String sql = "select table_name from user_tables " + gdbCause;
-		QueryRunner runner = new QueryRunner();
-		Connection conn = null;
-		try {
-			conn = schema.getPoolDataSource().getConnection();
-			List<String> tables = runner.query(conn, sql, new ResultSetHandler<List<String>>() {
-
-				public List<String> handle(ResultSet rs) throws SQLException {
-					List<String> tables = new ArrayList<String>();
-					while (rs.next()) {
-						String tableName = rs.getString(1);
-						tables.add(tableName);
-					}
-					return tables;
-				}
-			});
-			return tables;
-		} finally {
-			DbUtils.closeQuietly(conn);
 		}
 
 	}

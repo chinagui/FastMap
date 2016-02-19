@@ -13,6 +13,7 @@ import java.util.Set;
  */
 public class GlmTable {
     protected String name;
+    protected boolean editable;
 	//主键字段无顺序
 	protected Set<GlmColumn> pks;
 	//所有字段按column_id排序；
@@ -26,6 +27,12 @@ public class GlmTable {
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	public boolean isEditable() {
+		return editable;
+	}
+	public void setEditable(boolean editable) {
+		this.editable = editable;
 	}
 	public Set<GlmColumn> getPks() {
 		if(pks==null&&columns!=null){

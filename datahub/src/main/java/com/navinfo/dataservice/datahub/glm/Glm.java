@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.datahub.glm;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /** 
@@ -10,7 +11,8 @@ import java.util.Map;
  */
 public class Glm {
 	private String gdbVersion;//240+,...
-	private Map<String,GlmTable> tables;
+	private Map<String,GlmTable> editTables;
+	private Map<String,GlmTable> extendTables;
 	public Glm(String gdbVersion){
 		this.gdbVersion=gdbVersion;
 	}
@@ -20,10 +22,28 @@ public class Glm {
 	public void setGdbVersion(String gdbVersion) {
 		this.gdbVersion = gdbVersion;
 	}
-	public Map<String,GlmTable> getTables() {
-		return tables;
+
+	public Map<String, GlmTable> getExtendTables() {
+		return extendTables;
 	}
-	public void setTables(Map<String,GlmTable> tables) {
-		this.tables = tables;
+	public void setExtendTables(Map<String, GlmTable> extendTables) {
+		this.extendTables = extendTables;
+	}
+	public Map<String, GlmTable> getEditTables() {
+		return editTables;
+	}
+	public void setAllTables(Map<String, GlmTable> tables) {
+		if(tables!=null){
+			editTables = new HashMap<String,GlmTable>();
+			extendTables = new HashMap<String,GlmTable>();
+			for(String key:tables.keySet()){
+				GlmTable table = tables.get(key);
+				if(table.isEditable()){
+					editTables.put(key, table);
+				}else{
+					extendTables.put(key, table);
+				}
+			}
+		}
 	}
 }

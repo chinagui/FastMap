@@ -111,7 +111,7 @@ public class InitProjectScriptsInterface {
 			response.put("export_data", expResponse);
 			
 			//创建索引、包等等
-			OracleSchema schema = (OracleSchema)new DbManager().getDbById(Integer.valueOf(29));
+			OracleSchema schema = (OracleSchema)new DbManager().getDbById(Integer.valueOf(prjDbId));
 			tarConn = schema.getDriverManagerDataSource().getConnection();
 			String sqlFile = "/com/navinfo/dataservice/scripts/resources/prj_utils.sql";
 			SqlExec sqlExec = new SqlExec(tarConn);

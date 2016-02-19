@@ -67,7 +67,7 @@ public class Exporter2OracleByFullCopy implements Exporter {
 			//
 			AssembleFullCopySql assemble = new AssembleFullCopySql();
 			//暂时
-			List<ExpSQL> copySqls = assemble.assemble("COPY_FROM_DBLINK", sourceSchema, targetSchema, expConfig.getSpecificTables(), expConfig.getExcludedTables());
+			List<ExpSQL> copySqls = assemble.assemble("COPY_FROM_DBLINK", sourceSchema, targetSchema, expConfig.getGdbVersion(),expConfig.getSpecificTables(), expConfig.getExcludedTables());
 			ExecuteFullCopySql copySqlExecutor = new ExecuteFullCopySql(expConfig,targetSchema);
 			ThreadLocalContext ctx = new ThreadLocalContext(log);
 			copySqlExecutor.execute(copySqls, ctx);

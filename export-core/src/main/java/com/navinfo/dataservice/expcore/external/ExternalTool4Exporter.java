@@ -55,23 +55,23 @@ public class ExternalTool4Exporter {
 		}
 	}
 	/**
-	 * 计算并更新CK_EXCEPTION表的MD5值
+	 * 计算并更新NI_VAL_EXCEPTION表的MD5值
 	 * @param schema
 	 * @throws SQLException
 	 */
 	public static void generateCkMd5(OracleSchema schema)throws SQLException{
 		Connection conn=null;
 		try{
-			log.debug("开始计算并更新CK_EXCEPTION表的MD5值");
+			log.debug("开始计算并更新NI_VAL_EXCEPTION表的MD5值");
 			conn = schema.getDriverManagerDataSource().getConnection();
-			String sql = "UPDATE CK_EXCEPTION A SET A.RESERVED = LOWER(UTL_RAW.CAST_TO_RAW(DBMS_OBFUSCATION_TOOLKIT.MD5(INPUT_STRING =>RULE_ID||INFORMATION||TARGETS||NVL(ADDITION_INFO,'null'))))";
+			String sql = "UPDATE NI_VAL_EXCEPTION A SET A.RESERVED = LOWER(UTL_RAW.CAST_TO_RAW(DBMS_OBFUSCATION_TOOLKIT.MD5(INPUT_STRING =>RULEID||INFORMATION||TARGETS||NVL(ADDITION_INFO,'null'))))";
 			QueryRunner runner = new QueryRunner();
 			int count = runner.update(conn, sql);
-			log.debug("计算并更新CK_EXCEPTION表的MD5值完毕，共更新了"+count+"条记录");
+			log.debug("计算并更新NI_VAL_EXCEPTION表的MD5值完毕，共更新了"+count+"条记录");
 		}catch (SQLException e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new SQLException("计算并更新CK_EXCEPTION表的MD5值时出现错误，原因："+e.getMessage(),e);
+			throw new SQLException("计算并更新NI_VAL_EXCEPTION表的MD5值时出现错误，原因："+e.getMessage(),e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -87,7 +87,7 @@ public class ExternalTool4Exporter {
 			Set<GlmTable> removeDupTables = new HashSet<GlmTable>();
 			for(String tableName:tables){
 				StringBuilder sb = new StringBuilder();
-				GlmTable table = glm.getTables().get(tableName);
+				GlmTable table = glm.getEditTables().get(tableName);
 				if(table.isPksHasBigColumn()){
 					
 				}else{
@@ -111,7 +111,7 @@ public class ExternalTool4Exporter {
 		try{
 			if(tables==null||tables.size()==0){
 				Glm glm = GlmCache.getInstance().getGlm(gdbVersion);
-				tables = glm.getTables().keySet();
+				tables = glm.getEditTables().keySet();
 			}
 			PhysicalDeleteRow.doDelete(tables, schema);
 			

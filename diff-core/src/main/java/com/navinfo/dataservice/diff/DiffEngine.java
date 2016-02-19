@@ -80,17 +80,17 @@ public class DiffEngine
 			List<String> excluded = diffConfig.getExcludedTables();
 			if(specific!=null&&specific.size()>0){
 				for(String name:specific){
-					diffTables.add(glm.getTables().get(name));
+					diffTables.add(glm.getEditTables().get(name));
 				}
 			}else{
 				if(excluded!=null&&excluded.size()>0){
-					for(GlmTable table:glm.getTables().values()){
+					for(GlmTable table:glm.getEditTables().values()){
 						if(!excluded.contains(table.getName())){
 							diffTables.add(table);
 						}
 					}
 				}else{
-					diffTables.addAll(glm.getTables().values());
+					diffTables.addAll(glm.getEditTables().values());
 				}
 			}
 			log.debug("需要差分的表的个数为：" + diffTables.size());

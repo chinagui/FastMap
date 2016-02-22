@@ -21,6 +21,7 @@ import org.apache.hadoop.hbase.client.Table;
 
 import ch.hsr.geohash.GeoHash;
 
+import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.db.SolrAddress;
 import com.sun.image.codec.jpeg.JPEGCodec;
@@ -38,7 +39,7 @@ public class SDFPhotoImporter {
 		HBaseAddress.initHBaseAddress("192.168.3.156");
 
 		Table photoTab = HBaseAddress.getHBaseConnection().getTable(
-				TableName.valueOf("photo"));
+				TableName.valueOf(HBaseConstant.photoTab));
 
 		String dir = args[0];
 

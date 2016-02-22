@@ -20,6 +20,7 @@ import org.apache.hadoop.hbase.client.Table;
 
 import ch.hsr.geohash.GeoHash;
 
+import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.util.FileUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
@@ -45,7 +46,7 @@ public class PoiPhotoImporter {
 				+ "/Datum_Point.json");
 
 		Table photoTab = HBaseAddress.getHBaseConnection().getTable(
-				TableName.valueOf("photo"));
+				TableName.valueOf(HBaseConstant.photoTab));
 
 		List<Put> puts = new ArrayList<Put>();
 

@@ -26,14 +26,14 @@ public class TileSelector {
 	 * @return 瓦片数据列表
 	 * @throws Exception
 	 */
-	public static List<String> getTiles(int x, int y, int z) throws Exception {
+	public static List<String> getTiles(int x, int y, int z, int projectId) throws Exception {
 
 		List<String> listResult = new ArrayList<String>();
 
 		String key = String.format("%02d", z) + String.format("%08d", x)
 				+ String.format("%07d", y);
 
-		final GetRequest get = new GetRequest(HBaseConstant.linkTileTab, key);
+		final GetRequest get = new GetRequest("linkTile_"+projectId, key);
 
 		ArrayList<KeyValue> list = HBaseAddress.getHBaseClient().get(get)
 				.joinUninterruptibly();

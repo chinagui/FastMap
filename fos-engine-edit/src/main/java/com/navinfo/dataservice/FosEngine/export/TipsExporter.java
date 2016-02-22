@@ -22,6 +22,7 @@ import org.hbase.async.Scanner;
 
 import ch.hsr.geohash.GeoHash;
 
+import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.util.FileUtils;
 import com.navinfo.dataservice.commons.util.GridUtils;
@@ -352,7 +353,7 @@ public class TipsExporter {
 		
 		Connection hbaseConn = HBaseAddress.getHBaseConnection();
 
-		Table htab = hbaseConn.getTable(TableName.valueOf("photos"));
+		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
 		
 		Result[] results = htab.get(gets);
 		

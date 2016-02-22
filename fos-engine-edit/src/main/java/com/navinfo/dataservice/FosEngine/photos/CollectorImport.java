@@ -13,6 +13,7 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
+import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.util.FileUtils;
 
@@ -29,7 +30,7 @@ public class CollectorImport {
 		Map<String,byte[]> mapSltPhoto = FileUtils.genSmallImageMap(dir);
 		
 		Table photoTab = HBaseAddress.getHBaseConnection().getTable(
-				TableName.valueOf("photo"));
+				TableName.valueOf(HBaseConstant.photoTab));
 		
 		List<Put> puts = new ArrayList<Put>();
 		

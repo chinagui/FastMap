@@ -934,7 +934,7 @@ public class TileBuilder {
 
 		conf.set("maxDegree", props.getProperty("max.degree"));
 
-		String tabName = props.getProperty("tab.name");
+		String tabName = "linkTile_"+props.getProperty("tab.name");
 		
 		createHBaseTab(conf, tabName);
 

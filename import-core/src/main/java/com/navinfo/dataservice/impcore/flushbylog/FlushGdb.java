@@ -73,7 +73,7 @@ public class FlushGdb {
 	
 	public static void fmgdb2gdbg(String[] args){
 		try {
-			flush(args);
+			flushNoMesh(args);
 
 			updateLogDetailCk();
 
@@ -223,6 +223,60 @@ public class FlushGdb {
 			}
 
 			logDetailQuery.append(") order by op_dt ");
+
+			init();
+
+			flushData();
+
+			moveLog();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			try {
+				sourceConn.rollback();
+
+				destConn.rollback();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		}
+
+	}
+	
+	public static void flushNoMesh(String[] args) {
+
+		try {
+
+			props = new Properties();
+
+			props.load(new FileInputStream(args[0]));
+
+			stopTime = Long.parseLong(props.getProperty("stopTime"));
+
+//			Scanner scanner = new Scanner(new FileInputStream(args[1]));
+
+//			while (scanner.hasNextLine()) {
+//				meshes.add(Integer.parseInt(scanner.nextLine()));
+//			}
+
+			logDetailQuery.append(" and op_dt <= to_date('" + stopTime
+					+ "','yyyymmddhh24miss')");
+
+//			int meshSize = meshes.size();
+//
+//			logDetailQuery.append(" and mesh_id in (");
+//
+//			for (int i = 0; i < meshSize; i++) {
+//
+//				logDetailQuery.append(meshes.get(i));
+//				if (i < (meshSize - 1)) {
+//					logDetailQuery.append(",");
+//				}
+//			}
+
+//			logDetailQuery.append(") order by op_dt ");
+			
+			logDetailQuery.append(" order by op_dt ");
 
 			init();
 

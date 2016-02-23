@@ -11,7 +11,7 @@ public class Check {
 	// 路口组成link不允许打断
 	public void checkIsCrossLink(Connection conn, int linkPid) throws Exception {
 
-		String sql = "select node_pid from rd_cross_link where link_pid = :1 and rownum =1";
+		String sql = "select null from rd_cross_link where link_pid = :1 and rownum =1";
 
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 

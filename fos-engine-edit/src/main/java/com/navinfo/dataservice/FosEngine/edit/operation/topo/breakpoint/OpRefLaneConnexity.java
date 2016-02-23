@@ -8,7 +8,6 @@ import com.navinfo.dataservice.FosEngine.edit.model.Result;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.laneconnexity.RdLaneVia;
-import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 
 public class OpRefLaneConnexity implements IOperation {
@@ -100,9 +99,9 @@ public class OpRefLaneConnexity implements IOperation {
 					result.insertObject(v, ObjStatus.UPDATE);
 				} else {
 
-					RdRestrictionVia via1 = new RdRestrictionVia();
+					RdLaneVia via1 = new RdLaneVia();
 
-					RdRestrictionVia via2 = new RdRestrictionVia();
+					RdLaneVia via2 = new RdLaneVia();
 
 					via1.copy(v);
 

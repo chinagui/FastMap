@@ -274,6 +274,8 @@ public class DisplayUtils {
 			length += Math.sqrt(Math.pow(nextPoint[0] - curPoint[0], 2)
 					+ Math.pow(nextPoint[1] - curPoint[1], 2));
 		}
+		
+		length = Math.round(length*100)/100.0;
 
 		return length;
 	}

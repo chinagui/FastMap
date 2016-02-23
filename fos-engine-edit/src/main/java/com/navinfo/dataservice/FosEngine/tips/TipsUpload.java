@@ -25,6 +25,7 @@ import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
 import com.navinfo.dataservice.FosEngine.photos.Photo;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.solr.core.SConnection;
 
 /**
@@ -214,6 +215,21 @@ public class TipsUpload {
 				}
 
 				json.put("feedback", newFeedbacks);
+				
+				String sourceType=json.getString("s_sourceType");
+				
+				if(sourceType.equals("2001")){
+					JSONObject glocation = json.getJSONObject("g_location");
+					
+					double length = GeoTranslator.getLinkLength(Geojson
+							.geojson2Wkt(glocation.toString()));
+					
+					JSONObject deep = JSONObject.fromObject(json.getString("deep"));
+					
+					deep.put("len", length);
+					
+					json.put("deep", deep);
+				}
 
 				if (3 == lifecycle) {
 					insertTips.put(rowkey, json);

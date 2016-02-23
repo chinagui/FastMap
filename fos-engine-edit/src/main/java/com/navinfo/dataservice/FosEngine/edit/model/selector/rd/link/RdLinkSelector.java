@@ -1,10 +1,14 @@
 package com.navinfo.dataservice.FosEngine.edit.model.selector.rd.link;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import oracle.sql.STRUCT;
 
@@ -24,13 +28,18 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLinkSpeedlimi
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLinkWalkstair;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLinkZone;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.navicommons.utils.StringUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class RdLinkSelector implements ISelector {
 
 	private static Logger logger = Logger.getLogger(RdLinkSelector.class);
 
-	private Connection conn;
+	private Connection conn=null;
+	
+	public RdLinkSelector(){
+		
+	}
 
 	public RdLinkSelector(Connection conn) {
 		this.conn = conn;
@@ -617,4 +626,62 @@ public class RdLinkSelector implements ISelector {
 
 	}
 
+	public Map<Integer, String> loadNameByLinkPids(Set<Integer> linkPids) throws Exception{
+
+		Map<Integer, String> map = new HashMap<Integer, String>();
+		
+		StringBuilder sb = new StringBuilder(
+				"select b.link_pid, a.name   from rd_name a, rd_link_name b  where a.name_groupid = b.name_groupid    and b.name_class = 1    and b.seq_num = 1  and  b.u_record != 2  and a.lang_code = 'CHI' ");
+		
+		if(linkPids.size()>1000){
+			Clob clob=conn.createClob();
+			clob.setString(1, StringUtils.collection2String(linkPids, ","));
+			sb.append(" and b.link_pid IN (select to_number(column_value) from table(clob_to_table(?)))");
+		}else{
+			sb.append(" and b.link_pid IN ("+StringUtils.collection2String(linkPids, ",")+")");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				
+				int linkPid = resultSet.getInt("link_pid");
+				
+				String name = resultSet.getString("name");
+				
+				map.put(linkPid, name);
+				
+			} 
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+	
+		return map;
+	}
 }

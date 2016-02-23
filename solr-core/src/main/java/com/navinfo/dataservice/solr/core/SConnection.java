@@ -332,7 +332,7 @@ public class SConnection {
 		
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append("wkt:\"intersects(" + wkt + ")\"");
+		builder.append("wkt:\"intersects(" + wkt + ")\"  AND stage:(1 3)");
 		
 		if(types.size()>0){
 			

@@ -52,3 +52,5 @@ values
 
 create index idx_sdo_ad_face on ad_face(geometry) 
 indextype is mdsys.spatial_index;
+
+analyze table ad_face compute statistics;

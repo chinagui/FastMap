@@ -73,9 +73,3 @@ create table NI_VAL_EXCEPTION_HISTORY  (
    LOG_TYPE             NUMBER(5)                      default 0 not null
 );
 
-create table NI_VAL_EXCEPTION_INDEX (
-	EXCEPTION_ID VARCHAR2(32),
-	TABLE_NAME VARCHAR2(32),
-	PID NUMBER(10)
-);
-

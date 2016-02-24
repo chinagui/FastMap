@@ -12,6 +12,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
+import com.navinfo.dataservice.FosEngine.edit.check.NiValExceptionOperator;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
@@ -380,6 +381,8 @@ public class LogWriter {
 		}
 
 		list = result.getDelObjects();
+		
+		NiValExceptionOperator operator = new NiValExceptionOperator(conn);
 
 		for (IRow r : list) {
 			LogDetail ld = new LogDetail();
@@ -394,6 +397,9 @@ public class LogWriter {
 				ld.setOpbTp(Status.DELETE);
 				
 				ld.setObTp(1);
+				
+				//删除关联的检查结果
+				operator.deleteNiValException(r.tableName().toUpperCase(), r.primaryValue());
 
 			} else {
 				ld.setOpbTp(Status.UPDATE);

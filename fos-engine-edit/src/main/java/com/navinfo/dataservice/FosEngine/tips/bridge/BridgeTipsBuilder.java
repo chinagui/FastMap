@@ -100,7 +100,9 @@ public class BridgeTipsBuilder {
 
 				JSONObject geometry = new JSONObject();
 
-				geometry.put("g_location", Geojson.wkt2Geojson(sPointGeom));
+//				geometry.put("g_location", Geojson.wkt2Geojson(sPointGeom));
+				
+				
 
 				geometry.put("g_guide", geometry.getJSONObject("g_location"));
 
@@ -115,17 +117,19 @@ public class BridgeTipsBuilder {
 					deep.put("name", JSONNull.getInstance());
 				}
 
-				deep.put("gELoc", geometry.getJSONObject("g_location"));
+				deep.put("gSLoc", Geojson.wkt2Geojson(sPointGeom));
 
-				deep.put("gEGud", Geojson.wkt2Geojson(ePointGeom));
+				deep.put("gELoc", Geojson.wkt2Geojson(ePointGeom));
 
 				struct = (STRUCT) resultSet.getObject("link_geom");
 
 				geom = JGeometry.load(struct);
 
 				String linkWkt = new String(wkt.fromJGeometry(geom));
+				
+				geometry.put("g_location", Geojson.wkt2Geojson(linkWkt));
 
-				deep.put("geo", Geojson.wkt2Geojson(linkWkt));
+//				deep.put("geo", Geojson.wkt2Geojson(linkWkt));
 
 				JSONArray fArray = new JSONArray();
 
@@ -134,10 +138,12 @@ public class BridgeTipsBuilder {
 				fJson.put("id", uniqId);
 
 				fJson.put("type", 1);
+				
+				fJson.put("flag", "1|2");
 
-				fJson.put("sOff", 0.0);
-
-				fJson.put("eOff", 1.0);
+//				fJson.put("sOff", 0.0);
+//
+//				fJson.put("eOff", 1.0);
 
 				fArray.add(fJson);
 
@@ -228,7 +234,7 @@ public class BridgeTipsBuilder {
 						
 						JSONObject geometry = new JSONObject();
 
-						geometry.put("g_location", Geojson.wkt2Geojson(sPointGeom));
+//						geometry.put("g_location", Geojson.wkt2Geojson(sPointGeom));
 
 						geometry.put("g_guide", geometry.getJSONObject("g_location"));
 						
@@ -265,11 +271,13 @@ public class BridgeTipsBuilder {
 							deep.put("name", listName.get(0));
 						}
 
-						deep.put("gELoc", geometry.getJSONObject("g_location"));
+						deep.put("gSLoc", Geojson.wkt2Geojson(sPointGeom));
 						
-						deep.put("gEGud", Geojson.wkt2Geojson(ePointGeom));
+						deep.put("gELoc", Geojson.wkt2Geojson(ePointGeom));
 						
-						deep.put("geo", connectLinks(listLinkWkt));
+//						deep.put("geo", connectLinks(listLinkWkt));
+						
+						geometry.put("g_location",connectLinks(listLinkWkt));
 						
 						double sumLen = 0;
 						
@@ -283,7 +291,7 @@ public class BridgeTipsBuilder {
 						
 						JSONArray fArray = new JSONArray();
 						
-						double curLen = 0.0;
+//						double curLen = 0.0;
 						
 						for(int i=0;i<listLinkPid.size();i++){
 							JSONObject fJson = new JSONObject();
@@ -292,11 +300,19 @@ public class BridgeTipsBuilder {
 							
 							fJson.put("type", 1);
 							
-							fJson.put("sOff", curLen / sumLen);
+//							fJson.put("sOff", curLen / sumLen);
+//							
+//							curLen += listLinkLength.get(i);
+//							
+//							fJson.put("eOff", curLen / sumLen);
 							
-							curLen += listLinkLength.get(i);
-							
-							fJson.put("eOff", curLen / sumLen);
+							if (i ==0){
+								fJson.put("flag", "1");
+							}else if (i == listLinkPid.size()-1){
+								fJson.put("flag", "2");
+							}else{
+								fJson.put("flag", "0");
+							}
 							
 							fArray.add(fJson);
 						}

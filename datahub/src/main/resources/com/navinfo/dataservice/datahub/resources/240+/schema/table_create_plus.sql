@@ -73,3 +73,9 @@ create table NI_VAL_EXCEPTION_HISTORY  (
    LOG_TYPE             NUMBER(5)                      default 0 not null
 );
 
+create table CK_RESULT_OBJECT (
+	CK_RESULT_ID VARCHAR2(32) not null,
+	TABLE_NAME VARCHAR2(32) not null,
+	PID NUMBER(10) default 0 not null
+);
+

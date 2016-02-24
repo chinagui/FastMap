@@ -166,7 +166,7 @@ public class RdSpeedLimitTipsBuilder {
 
 		jsonDeep.put("rdDir", resultSet.getInt("direct"));
 
-		jsonDeep.put("value", resultSet.getInt("speed_value"));
+		jsonDeep.put("value", resultSet.getInt("speed_value")/10);
 
 		jsonDeep.put("se", resultSet.getInt("speed_flag"));
 

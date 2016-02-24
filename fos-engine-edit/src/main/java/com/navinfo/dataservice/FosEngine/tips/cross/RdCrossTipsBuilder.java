@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
@@ -26,9 +27,7 @@ public class RdCrossTipsBuilder {
 	
 	private static final WKT wkt = new WKT();
 
-	private static String sql = "with tmp1 as ( select a.pid,        a.node_pid,        b.geometry geom,        row_number() over(partition by a.node_pid order by b.link_pid) ro   from rd_cross_node a, rd_link b  where a.is_main = 1    and a.node_pid in (b.s_node_pid, b.e_node_pid)),  " +
-			"  tmp2 as (    select a.pid,a.node_pid,a.geom geom1,b.geom geom2    from tmp1 a,tmp1 b where a.pid = b.pid and a.node_pid = b.node_pid    and a.ro= 1 and b.ro = 2    )   " +
-			" select a.pid,a.node_pid,a.geom1,a.geom2,b.geometry point_geom,c.name from tmp2 a,rd_node b,rd_node_name c    where a.node_pid = b.node_pid and a.node_pid = c.node_pid(+) and c.lang_code(+) in ('CHI','CHT')  ";
+	private static String sql = "with tmp1 as  (select a.pid,          a.node_pid,          b.geometry geom,          row_number() over(partition by a.node_pid order by b.link_pid) ro     from rd_cross_node a, rd_link b    where a.is_main = 1      and a.node_pid in (b.s_node_pid, b.e_node_pid)), tmp2 as  (select a.pid, a.node_pid, a.geom geom1, b.geom geom2     from tmp1 a, tmp1 b    where a.pid = b.pid      and a.node_pid = b.node_pid      and a.ro = 1      and b.ro = 2) select a.pid, a.node_pid, a.geom1, a.geom2, b.geometry point_geom, c.name   from tmp2 a, rd_node b, rd_cross_name c  where a.node_pid = b.node_pid    and a.pid = c.pid(+)    and c.lang_code(+) in ('CHI', 'CHT')";
 	
 	private static String type = "1704";
 	
@@ -167,7 +166,12 @@ public class RdCrossTipsBuilder {
 		
 		json.put("f", jsonF);
 		
-		json.put("name", crossName);
+		if(crossName == null){
+			json.put("name", JSONNull.getInstance());
+		}
+		else{
+			json.put("name", crossName);
+		}
 		
 		return json.toString();
 	}

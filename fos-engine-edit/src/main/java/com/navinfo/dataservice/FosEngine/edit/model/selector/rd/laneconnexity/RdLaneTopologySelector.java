@@ -236,7 +236,7 @@ public class RdLaneTopologySelector implements ISelector {
 				
 				topo.setRowId(resultSet.getString("row_id"));
 				
-				topo.setPid(resultSet.getInt("pid"));
+				topo.setPid(resultSet.getInt("topology_id"));
 				
 				topo.setConnexityPid(resultSet.getInt("connexity_pid"));
 				
@@ -248,7 +248,7 @@ public class RdLaneTopologySelector implements ISelector {
 				
 				topo.setReachDir(resultSet.getInt("reach_dir"));
 				
-				topo.setRelationshipType(resultSet.getInt("relationshit_type"));
+				topo.setRelationshipType(resultSet.getInt("relationship_type"));
 				
 				topo.isetOutNodePid(resultSet.getInt("out_node_pid"));
 				

@@ -13,6 +13,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.service.PidService;
+import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.vividsolutions.jts.geom.Point;
 
 public class OpTopo implements IOperation {
@@ -52,28 +53,31 @@ public class OpTopo implements IOperation {
 
 		this.breakpoint(result);
 		
-		if (this.breakPoint == null){
-			
-			breakPoint = new RdNode();
-
-			breakPoint.setPid(PidService.getInstance().applyNodePid());
-	
-			breakPoint.copy(command.getsNode());
-			
-			result.insertObject(breakPoint, ObjStatus.INSERT);
-		
-		}else{
-			result.insertObject(breakPoint, ObjStatus.UPDATE);
-		}
-
 		JSONObject geoPoint = new JSONObject();
 
 		geoPoint.put("type", "Point");
 
 		geoPoint.put("coordinates", new double[] { command.getPoint().getX(),
 				command.getPoint().getY() });
+		
+		if (this.breakPoint == null){
+			
+			breakPoint = new RdNode();
 
-		breakPoint.setGeometry(GeoTranslator.geojson2Jts(geoPoint, 100000, 0));
+			breakPoint.setPid(PidService.getInstance().applyNodePid());
+			
+			breakPoint.setGeometry(GeoTranslator.geojson2Jts(geoPoint, 100000, 0));
+			
+			breakPoint.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(command.getPoint().getX(), command.getPoint().getY())));
+	
+			breakPoint.copy(command.getsNode());
+			
+			result.insertObject(breakPoint, ObjStatus.INSERT);
+		
+		}
+//		else{
+//			result.insertObject(breakPoint, ObjStatus.UPDATE);
+//		}
 
 		command.getLink1().seteNodePid(breakPoint.getPid());
 

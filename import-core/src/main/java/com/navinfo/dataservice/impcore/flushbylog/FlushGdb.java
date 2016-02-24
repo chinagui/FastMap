@@ -37,7 +37,7 @@ public class FlushGdb {
 	}
 
 	private static StringBuilder logDetailQuery = new StringBuilder(
-			" where is_ck = 0 ");
+			" where com_sta = 0 ");
 
 	private static Connection sourceConn;
 
@@ -455,7 +455,13 @@ public class FlushGdb {
 
 			}
 			
-			pstmt.executeUpdate();
+			try {
+				pstmt.executeUpdate();
+			} catch (Exception e) {
+				System.out.println(sb.toString());
+				e.printStackTrace();
+				throw new Exception(e);
+			}
 
 		} else if (op_tp == 3) {
 

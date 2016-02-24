@@ -114,7 +114,7 @@ public class TileBuilder {
 						.get("maxDegree"));
 				
 				int minDegree = Integer.parseInt(context.getConfiguration()
-						.get("maxDegree"));
+						.get("minDegree"));
 				
 				minDegree = minDegree>=7?minDegree:7;
 
@@ -1066,8 +1066,13 @@ public class TileBuilder {
 				.createConnection(conf);
 
 		Admin admin = conn.getAdmin();
-
+		
 		TableName tableName = TableName.valueOf(tabName);
+		
+		if (admin.tableExists(tableName)){
+			admin.disableTable(tableName);
+			admin.deleteTable(tableName);
+		}
 
 		HTableDescriptor htd = new HTableDescriptor(tableName);
 

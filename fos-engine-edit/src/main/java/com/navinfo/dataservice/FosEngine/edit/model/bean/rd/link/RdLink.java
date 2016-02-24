@@ -114,7 +114,7 @@ public class RdLink implements IObj {
 
 	private String rowId;
 	
-	private String name;
+//	private String name;
 
 	private List<IRow> forms = new ArrayList<IRow>();
 
@@ -284,13 +284,13 @@ public class RdLink implements IObj {
 		this.kind = kind;
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
+//	public String getName() {
+//		return name;
+//	}
+//
+//	public void setName(String name) {
+//		this.name = name;
+//	}
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
@@ -306,7 +306,7 @@ public class RdLink implements IObj {
 
 			json.put("pid", pid);
 
-			json.put("name", name);
+//			json.put("name", name);
 
 			json.put("sNodePid", sNodePid);
 
@@ -544,7 +544,7 @@ public class RdLink implements IObj {
 		
 		this.setMemo(sourceLink.getMemo());
 		
-		this.setName(sourceLink.getName());
+//		this.setName(sourceLink.getName());
 		
 		List<IRow> formsSource = sourceLink.getForms();
 
@@ -642,6 +642,14 @@ public class RdLink implements IObj {
 		children.add(this.getNames());
 
 		children.add(this.getLimits());
+		
+		children.add(this.getIntRtics());
+		
+		children.add(this.getLimitTrucks());
+		
+		children.add(this.getSpeedlimits());
+		
+		children.add(this.getZones());
 
 		return children;
 	}

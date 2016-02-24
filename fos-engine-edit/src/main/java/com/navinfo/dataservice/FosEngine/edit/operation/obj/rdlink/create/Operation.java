@@ -250,13 +250,15 @@ public class Operation implements IOperation {
 
 		node.setPid(PidService.getInstance().applyNodePid());
 
-		node.setGeometry(GeoTranslator.point2Jts(x, y));
+		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y),100000,0));
 
 		node.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(x, y)));
 
 		RdNodeForm form = new RdNodeForm();
 
 		form.setNodePid(node.getPid());
+		
+		form.setMesh(node.mesh());
 
 		List<IRow> forms = new ArrayList<IRow>();
 
@@ -265,7 +267,7 @@ public class Operation implements IOperation {
 		node.setForms(forms);
 
 		RdNodeMesh mesh = new RdNodeMesh();
-
+		
 		mesh.setNodePid(node.getPid());
 
 		mesh.setMeshId(Integer.parseInt(MeshUtils.lonlat2Mesh(x, y)));

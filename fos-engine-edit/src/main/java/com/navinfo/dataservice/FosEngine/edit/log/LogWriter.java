@@ -12,6 +12,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
+import com.navinfo.dataservice.FosEngine.edit.check.NiValExceptionOperator;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
@@ -235,8 +236,10 @@ public class LogWriter {
 
 			ld.setIsCk(0);
 
-			ld.setNewValue(r.Serialize(ObjLevel.FULL).toString());
+//			ld.setNewValue(r.Serialize(ObjLevel.FULL).toString());
 
+			ld.setNewValue(convertObj2NewValue(r).toString());
+			
 			ld.setRowId(UuidUtils.genUuid());
 			
 			ld.setTbRowId(r.rowId());
@@ -272,7 +275,9 @@ public class LogWriter {
 
 						ldC.setIsCk(0);
 
-						ldC.setNewValue(row.Serialize(ObjLevel.FULL).toString());
+//						ldC.setNewValue(row.Serialize(ObjLevel.FULL).toString());
+						
+						ldC.setNewValue(convertObj2NewValue(row).toString());
 
 						ldC.setRowId(UuidUtils.genUuid());
 						
@@ -376,6 +381,8 @@ public class LogWriter {
 		}
 
 		list = result.getDelObjects();
+		
+		NiValExceptionOperator operator = new NiValExceptionOperator(conn);
 
 		for (IRow r : list) {
 			LogDetail ld = new LogDetail();
@@ -390,6 +397,9 @@ public class LogWriter {
 				ld.setOpbTp(Status.DELETE);
 				
 				ld.setObTp(1);
+				
+				//删除关联的检查结果
+				operator.deleteNiValException(r.tableName().toUpperCase(), r.primaryValue());
 
 			} else {
 				ld.setOpbTp(Status.UPDATE);
@@ -456,6 +466,33 @@ public class LogWriter {
 
 		}
 		this.insertRow();
+	}
+	
+	
+	private static JSONObject convertObj2NewValue(IRow row) throws Exception{
+		JSONObject json = new JSONObject();
+		
+		JSONObject rowJson = row.Serialize(ObjLevel.FULL);
+		
+		Iterator<String> keys = rowJson.keys();
+		
+		while(keys.hasNext()){
+			String key = keys.next();
+			
+			if (!(rowJson.get(key) instanceof JSONArray)){
+				if (!"pid".equals(key) && !"geometry".equals(key)){
+					json.put(StringUtils.toColumnName(key), rowJson.get(key));
+				}else if ("geometry".equals(key)){
+					json.put("geometry", Geojson.geojson2Wkt(rowJson.getString("geometry")));
+				}else{
+					json.put(row.primaryKey(), rowJson.get(key));
+				}
+			}
+		}
+		
+		json.put("row_id", row.rowId());
+		
+		return json;
 	}
 
 }

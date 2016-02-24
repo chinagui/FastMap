@@ -796,3 +796,12 @@ create or replace package body package_check is
   end fun_check;
 end;
 /
+
+begin
+  for a in (select distinct table_name from user_indexes where table_name like 'RD%') loop
+    execute immediate 'analyze table ' || a.table_name ||
+                      ' compute statistics';
+  end loop;
+end;
+/
+

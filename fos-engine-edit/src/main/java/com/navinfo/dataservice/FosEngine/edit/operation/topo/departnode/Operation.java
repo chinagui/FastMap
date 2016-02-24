@@ -9,6 +9,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.service.PidService;
+import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -99,9 +100,11 @@ public class Operation implements IOperation {
 		
 		geojson.put("coordinates", new double[]{command.getLongitude(),command.getLatitude()});
 		
-		Geometry geo = GeoTranslator.geojson2Jts(geojson);
+		Geometry geo = GeoTranslator.geojson2Jts(geojson, 100000, 0);
 		
 		node.setGeometry(geo);
+		
+		node.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(command.getLongitude(), command.getLatitude())));
 		
 		result.insertObject(node, ObjStatus.INSERT);
 	}

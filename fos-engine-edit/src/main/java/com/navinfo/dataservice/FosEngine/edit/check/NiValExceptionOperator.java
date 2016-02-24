@@ -53,7 +53,15 @@ public class NiValExceptionOperator {
 			
 			pstmt.setString(9, UuidUtils.genUuid());
 			
-			pstmt.executeUpdate();
+			int res =pstmt.executeUpdate();
+			
+			if(res>0){
+				
+				CkResultObjectOperator op = new CkResultObjectOperator(conn);
+				
+				op.insertCkResultObject(md5, targets);
+			}
+			
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -67,19 +75,36 @@ public class NiValExceptionOperator {
 		}
 
 	}
-
-	public void deleteCheckLog(String reserved, int projectId) throws Exception {
-
-		String sql = "update ni_val_exception set del_flag = 1 where RESERVED =:1";
-
-		conn = DBOraclePoolManager.getConnection(projectId);
-
-		PreparedStatement pstmt = conn.prepareStatement(sql);
-
+	
+	public void deleteNiValException(String tableName, int pid)
+			throws Exception {
+		
+		String sql = "delete from ni_val_exception a where exists (select null from ck_result_object b where a.reserved=b.ck_result_id and b.table_name=? and b.pid=?)";
+		
+		PreparedStatement pstmt=null;
+		
 		try {
-			pstmt.setString(1, reserved);
+			
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setString(1, tableName);
+
+			pstmt.setInt(2, pid);
 
 			pstmt.executeUpdate();
+			
+			pstmt.close();
+
+			sql = "delete from ck_result_object a where a.ck_result_id in (select b.ck_result_id from ck_result_object b where b.table_name=? and b.pid=?)";
+
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setString(1, tableName);
+
+			pstmt.setInt(2, pid);
+
+			pstmt.executeUpdate();
+			
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -90,11 +115,6 @@ public class NiValExceptionOperator {
 
 			}
 
-			try {
-				conn.close();
-			} catch (Exception e) {
-
-			}
 		}
 
 	}
@@ -165,6 +185,16 @@ public class NiValExceptionOperator {
 			pstmt.close();
 			
 			sql="delete from ni_val_exception where reserved=:1";
+			
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setString(1, reserved);
+			
+			pstmt.executeUpdate();
+			
+			pstmt.close();
+			
+			sql="delete from ck_result_object where ck_result_id=:1";
 			
 			pstmt = conn.prepareStatement(sql);
 
@@ -257,9 +287,11 @@ public class NiValExceptionOperator {
 		NiValExceptionOperator op = new NiValExceptionOperator(
 				oa1.getConn());
 
-		//op.insertCheckLog("12321321", "POINT(116.1313 37.131)", "[link:31]", 13, "13");
+		//op.insertCheckLog("3213131", "POINT(116.1313 37.131)", "[RD_LINK,32131]", 13, "13");
 		
-		op.updateCheckLogStatus("c667a0d89a21746dd9c2eeef570d6547", 11, 1);
+		//op.updateCheckLogStatus("c667a0d89a21746dd9c2eeef570d6547", 11, 1);
+		
+		op.deleteNiValException("RD_LINK", 32131);
 		
 		System.out.println("done");
 		

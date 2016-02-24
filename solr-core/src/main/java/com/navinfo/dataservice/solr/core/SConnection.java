@@ -194,26 +194,37 @@ public class SConnection {
 			throws SolrServerException, IOException {
 		List<JSONObject> snapshots = new ArrayList<JSONObject>();
 
-		String param = "wkt:\"intersects(" + wkt + ")\" AND s_sourceType:"
-				+ type;
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append("wkt:\"intersects(");
+		
+		builder.append(wkt);
+		
+		builder.append(")\" AND s_sourceType:");
+		
+		builder.append(type);
 
-		String fq = "";
+		if(stages.size()>0){
+			
+			builder.append(" AND stage:(");
 
-		for (int i = 0; i < stages.size(); i++) {
-			int stage = stages.getInt(i);
-
-			fq += "stage:" + stage;
-
-			if (i != stages.size() - 1) {
-				fq += " OR ";
+			for (int i = 0; i < stages.size(); i++) {
+				int stage = stages.getInt(i);
+	
+				if(i>0){
+					builder.append(" ");
+				}
+				builder.append(stage);
 			}
+			
+			builder.append(")");
 		}
 
 		SolrQuery query = new SolrQuery();
 
-		query.set("q", param);
+		query.set("q", builder.toString());
 
-		query.set("fq", fq);
+		query.set("sort", "date desc");
 
 		query.set("start", 0);
 
@@ -332,7 +343,7 @@ public class SConnection {
 		
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append("wkt:\"intersects(" + wkt + ")\"");
+		builder.append("wkt:\"intersects(" + wkt + ")\"  AND stage:(1 3)");
 		
 		if(types.size()>0){
 			

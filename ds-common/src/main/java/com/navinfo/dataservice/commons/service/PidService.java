@@ -109,7 +109,8 @@ public class PidService {
 			} else {
 				// 不存在對應的序列,報錯且拋出異常
 
-				throw new DataNotFoundException(null);
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.linkPidName);
 			}
 
 		} catch (Exception e) {
@@ -158,7 +159,8 @@ public class PidService {
 				}
 			} else {
 				// 不存在對應的序列,報錯且拋出異常
-				throw new DataNotFoundException(null);
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.nodePidName);
 			}
 
 		} catch (Exception e) {
@@ -206,8 +208,8 @@ public class PidService {
 							PidSequenceName.restrictPidName);
 				}
 			} else {
-				// 不存在對應的序列,報錯且拋出異常
-				throw new DataNotFoundException(null);
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.restrictPidName);
 			}
 
 		} catch (Exception e) {
@@ -256,7 +258,8 @@ public class PidService {
 				}
 			} else {
 				// 不存在對應的序列,報錯且拋出異常
-				throw new DataNotFoundException(null);
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.restrictDetailPidName);
 			}
 
 		} catch (Exception e) {
@@ -305,7 +308,8 @@ public class PidService {
 				}
 			} else {
 				// 不存在對應的序列,報錯且拋出異常
-				throw new DataNotFoundException(null);
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.nodeNameIdName);
 			}
 
 		} catch (Exception e) {
@@ -353,7 +357,8 @@ public class PidService {
 				}
 			} else {
 				// 不存在對應的序列,報錯且拋出異常
-				throw new DataNotFoundException(null);
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.speedLimitPidName);
 			}
 
 		} catch (Exception e) {
@@ -399,7 +404,8 @@ public class PidService {
 				}
 			} else {
 				// 不存在對應的序列,報錯且拋出異常
-				throw new DataNotFoundException(null);
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.laneConnexityPidName);
 			}
 
 		} catch (Exception e) {
@@ -445,7 +451,8 @@ public class PidService {
 				}
 			} else {
 				// 不存在對應的序列,報錯且拋出異常
-				throw new DataNotFoundException(null);
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.laneTopologyPidName);
 			}
 
 		} catch (Exception e) {
@@ -491,7 +498,8 @@ public class PidService {
 				}
 			} else {
 				// 不存在對應的序列,報錯且拋出異常
-				throw new DataNotFoundException(null);
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.crossPidName);
 			}
 
 		} catch (Exception e) {
@@ -537,7 +545,8 @@ public class PidService {
 				}
 			} else {
 				// 不存在對應的序列,報錯且拋出異常
-				throw new DataNotFoundException(null);
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.crossNameIdName);
 			}
 
 		} catch (Exception e) {
@@ -583,7 +592,8 @@ public class PidService {
 				}
 			} else {
 				// 不存在對應的序列,報錯且拋出異常
-				throw new DataNotFoundException(null);
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.branchPidName);
 			}
 
 		} catch (Exception e) {
@@ -629,7 +639,8 @@ public class PidService {
 				}
 			} else {
 				// 不存在對應的序列,報錯且拋出異常
-				throw new DataNotFoundException(null);
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.branchDetailIdName);
 			}
 
 		} catch (Exception e) {
@@ -675,7 +686,8 @@ public class PidService {
 				}
 			} else {
 				// 不存在對應的序列,報錯且拋出異常
-				throw new DataNotFoundException(null);
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.branchNameIdName);
 			}
 
 		} catch (Exception e) {
@@ -721,7 +733,8 @@ public class PidService {
 				}
 			} else {
 				// 不存在對應的序列,報錯且拋出異常
-				throw new DataNotFoundException(null);
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.ckExceptionIdName);
 			}
 
 		} catch (Exception e) {

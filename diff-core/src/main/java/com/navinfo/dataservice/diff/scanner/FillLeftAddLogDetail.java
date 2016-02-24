@@ -125,7 +125,7 @@ public class FillLeftAddLogDetail implements ResultSetHandler<String> {
 			//剩余不到1000的执行掉
 			stmt.executeBatch();
 			stmt.clearBatch();
-		}catch(Exception e){
+		}catch(SQLException e){
 			log.error(e.getMessage(),e);
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw e;

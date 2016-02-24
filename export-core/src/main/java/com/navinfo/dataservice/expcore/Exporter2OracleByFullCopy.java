@@ -16,6 +16,7 @@ import com.navinfo.dataservice.expcore.sql.ExecuteFullCopySql;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.expcore.sql.assemble.AssembleFullCopySql;
 import com.navinfo.navicommons.database.sql.DbLinkCreator;
+import com.navinfo.navicommons.utils.RandomUtil;
 
 /** 
  * @ClassName: FullCopy2OracleByDbLink 
@@ -42,6 +43,7 @@ public class Exporter2OracleByFullCopy implements Exporter {
 		long st = System.currentTimeMillis();
 		OracleSchema sourceSchema = null;
 		OracleSchema targetSchema = null;
+		String dbLinkName = null;
 		try{
 			//get source&target schema
 			try{
@@ -63,14 +65,18 @@ public class Exporter2OracleByFullCopy implements Exporter {
 			}
 			//create db link
 			DbLinkCreator cr = new DbLinkCreator();
-			cr.create("COPY_FROM_DBLINK", false, targetSchema.getDriverManagerDataSource(), sourceSchema.getDbUserName(), sourceSchema.getDbUserPasswd(), sourceSchema.getDbServer().getIp(), String.valueOf(sourceSchema.getDbServer().getPort()), sourceSchema.getDbServer().getServiceName());
+			dbLinkName = targetSchema.getDbUserName()+"_"+RandomUtil.nextNumberStr(4);
+			cr.create(dbLinkName, false, targetSchema.getDriverManagerDataSource(), sourceSchema.getDbUserName(), sourceSchema.getDbUserPasswd(), sourceSchema.getDbServer().getIp(), String.valueOf(sourceSchema.getDbServer().getPort()), sourceSchema.getDbServer().getServiceName());
+			
 			//
 			AssembleFullCopySql assemble = new AssembleFullCopySql();
 			//暂时
-			List<ExpSQL> copySqls = assemble.assemble("COPY_FROM_DBLINK", sourceSchema, targetSchema, expConfig.getGdbVersion(),expConfig.getSpecificTables(), expConfig.getExcludedTables());
+			List<ExpSQL> copySqls = assemble.assemble(dbLinkName, sourceSchema, targetSchema, expConfig.getGdbVersion(),expConfig.getSpecificTables(), expConfig.getExcludedTables());
 			ExecuteFullCopySql copySqlExecutor = new ExecuteFullCopySql(expConfig,targetSchema);
 			ThreadLocalContext ctx = new ThreadLocalContext(log);
 			copySqlExecutor.execute(copySqls, ctx);
+			//删除dblink
+			cr.drop(dbLinkName, false, targetSchema.getDriverManagerDataSource());
 		}catch (Exception e) {
 			log.error(e.getMessage(), e);
 			result.setStatus(ExporterResult.STATUS_FAILED);

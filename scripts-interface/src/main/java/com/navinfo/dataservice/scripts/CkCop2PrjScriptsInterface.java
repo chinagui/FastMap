@@ -47,11 +47,15 @@ public class CkCop2PrjScriptsInterface {
 			OracleSchema sourceDb = (OracleSchema)new DbManager().getDbById(Integer.valueOf(sourceDbId));
 			ExternalTool4Exporter.generateCkMd5(sourceDb);
 			response.put("md5", "success");
+			//generate ck_result_object
+			ExternalTool4Exporter.generateCkResultObject(sourceDb);
+			response.put("ck_result_object", "success");
+			
 			
 			String gdbVersion = "240+";
 			JSONObject expRequest = new JSONObject();
 			expRequest.put("exportMode", "full_copy");
-			expRequest.put("specificTables", "NI_VAL_EXCEPTION");
+			expRequest.put("specificTables", "NI_VAL_EXCEPTION,CK_RESULT_OBJECT");
 			expRequest.put("dataIntegrity", "false");
 			expRequest.put("sourceDbId", sourceDbId);
 			expRequest.put("gdbVersion", gdbVersion);

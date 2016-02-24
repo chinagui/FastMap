@@ -11,22 +11,6 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
-import com.navinfo.dataservice.FosEngine.edit.model.IRow;
-import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranch;
-import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranchDetail;
-import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranchRealimage;
-import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranchSchematic;
-import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranchVia;
-import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdSeriesbranch;
-import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdSignasreal;
-import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdSignboard;
-import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.branch.RdBranchDetailSelector;
-import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.branch.RdBranchRealimageSelector;
-import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.branch.RdBranchSchematicSelector;
-import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.branch.RdBranchViaSelector;
-import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.branch.RdSeriesbranchSelector;
-import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.branch.RdSignasrealSelector;
-import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.branch.RdSignboardSelector;
 import com.navinfo.dataservice.commons.db.OracleAddress;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -336,7 +320,7 @@ public class NiValExceptionSelector {
 				json.put("information", rs.getString("information"));
 
 				json.put("geometry",
-						"(" + rs.getInt("x") + "," + rs.getInt("y") + ")");
+						"(" + rs.getDouble("x") + "," + rs.getDouble("y") + ")");
 
 				json.put("create_date", rs.getString("created"));
 

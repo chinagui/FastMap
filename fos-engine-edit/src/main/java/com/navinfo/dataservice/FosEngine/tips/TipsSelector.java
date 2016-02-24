@@ -339,50 +339,50 @@ public class TipsSelector {
 			JSONObject m = new JSONObject();
 
 			m.put("a", json.getString("stage"));
-			
+
 			m.put("b", json.getString("t_lifecycle"));
 
 			JSONObject deep = JSONObject.fromObject(json.getString("deep"));
 
 			if (type == 1201 || type == 1203 || type == 1101) {
 				JSONObject f = deep.getJSONObject("f");
-				
+
 				if (f.getInt("type") == 1) {
-					
+
+					String name = "无名路";
+
 					int linkPid = Integer.valueOf(f.getString("id"));
 
 					if (map.containsKey(linkPid)) {
 
-						String name = map.get(linkPid);
+						name = map.get(linkPid);
 
-						if (type == 1201) {
+					}
 
-							int kind = deep.getInt("kind");
+					if (type == 1201) {
 
-							name += "(K" + kind + ")";
-						} else if (type == 1203) {
+						int kind = deep.getInt("kind");
 
-							int dr = deep.getInt("dr");
+						name += "(K" + kind + ")";
+					} else if (type == 1203) {
 
-							if (dr == 1) {
-								name += "(双方向)";
-							} else {
-								name += "(单方向)";
-							}
-						} else if (type == 1101) {
+						int dr = deep.getInt("dr");
 
-							double value = deep.getDouble("value");
-
-							name += "(" + value + "km/h)";
+						if (dr == 1) {
+							name += "(双方向)";
+						} else {
+							name += "(单方向)";
 						}
+					} else if (type == 1101) {
 
-						m.put("e", name);
+						double value = deep.getDouble("value");
+
+						name += "(" + Math.round(value) + "km/h)";
 					}
-					else{
-						m.put("e", "无名路");
-					}
-				}
-				else{
+
+					m.put("e", name);
+
+				} else {
 					m.put("e", "无道路");
 				}
 			}
@@ -398,25 +398,23 @@ public class TipsSelector {
 						String name = map.get(linkPid);
 
 						m.put("e", name);
-					}
-					else{
+					} else {
 						m.put("e", "无名路");
 					}
-				}
-				else{
+				} else {
 					m.put("e", "无道路");
 				}
 			} else if (type == 1604) {
 				JSONArray a = deep.getJSONArray("f_array");
 
-				boolean hasLink=false;
-				
+				boolean hasLink = false;
+
 				for (int i = 0; i < a.size(); i++) {
 					JSONObject f = a.getJSONObject(i);
 					if (f.getInt("type") == 1) {
-						
-						hasLink=true;
-						
+
+						hasLink = true;
+
 						int linkPid = Integer.valueOf(f.getString("id"));
 
 						if (map.containsKey(linkPid)) {
@@ -429,42 +427,39 @@ public class TipsSelector {
 						}
 					}
 				}
-				
-				if(!hasLink){
+
+				if (!hasLink) {
 					m.put("e", "无道路");
-				}
-				else{
-					if(!m.containsKey("e")){
+				} else {
+					if (!m.containsKey("e")) {
 						m.put("e", "无名路");
 					}
 				}
-			} else if (type == 1704 || type==1510) {
-				
+			} else if (type == 1704 || type == 1510) {
+
 				String name = deep.getString("name");
-				
-				if(name.equals("null")){
-					if(type==1510){
+
+				if (name.equals("null")) {
+					if (type == 1510) {
 						m.put("e", "无名桥");
-					}
-					else{
+					} else {
 						m.put("e", name);
 					}
-				}
-				else{
-					m.put("e",name);
+				} else {
+					m.put("e", name);
 				}
 			} else if (type == 2001) {
 
 				double length = deep.getDouble("len");
-				
-				double lengthInKM = Math.round(length/10)/100.0;
+
+				double lengthInKM = Math.round(length / 10) / 100.0;
 
 				m.put("e", "测线(" + lengthInKM + "公里)");
 			} else if (type == 1901) {
-				
+
 				JSONArray a = deep.getJSONArray("n_array");
-				
-				if(a.size()>0){
+
+				if (a.size() > 0) {
 					m.put("e", a.get(0));
 				}
 			}
@@ -506,20 +501,23 @@ public class TipsSelector {
 		// System.out.println(ja.size());
 
 		// System.out.println(checkUpdate("59567201","20151227163723"));
-		ConfigLoader.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
+		ConfigLoader
+				.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
 		TipsSelector selector = new TipsSelector(
 				"http://192.168.4.130:8081/solr/tips/");
-		JSONArray a = JSONArray.fromObject("[59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");
+		JSONArray a = JSONArray
+				.fromObject("[59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");
 		JSONArray b = new JSONArray();
 		b.add(1);
 		int type = 1101;
-		 System.out.println(selector.getSnapshot(a, b, type,11));
+		System.out.println(selector.getSnapshot(a, b, type, 11));
 		// System.out.println(selector.getStats(a, b));
 
-//		JSONArray types = new JSONArray();
-//		types.add(1301);
-//		types.add(1901);
-//		System.out.println(selector.searchDataByTileWithGap(107944, 49615, 17,
-//				20, types));
+		// JSONArray types = new JSONArray();
+		// types.add(1301);
+		// types.add(1901);
+		// System.out.println(selector.searchDataByTileWithGap(107944, 49615,
+		// 17,
+		// 20, types));
 	}
 }

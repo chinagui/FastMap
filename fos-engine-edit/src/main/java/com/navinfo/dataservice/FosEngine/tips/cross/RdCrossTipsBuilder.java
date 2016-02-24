@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
@@ -16,6 +17,7 @@ import oracle.sql.STRUCT;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
+import com.google.gson.JsonNull;
 import com.navinfo.dataservice.FosEngine.tips.TipsImportUtils;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
@@ -167,7 +169,12 @@ public class RdCrossTipsBuilder {
 		
 		json.put("f", jsonF);
 		
-		json.put("name", crossName);
+		if(crossName == null){
+			json.put("name", JSONNull.getInstance());
+		}
+		else{
+			json.put("name", crossName);
+		}
 		
 		return json.toString();
 	}

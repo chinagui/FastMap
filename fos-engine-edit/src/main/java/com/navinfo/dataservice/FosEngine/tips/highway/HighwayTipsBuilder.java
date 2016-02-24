@@ -261,7 +261,7 @@ public class HighwayTipsBuilder {
 			
 			out.put("id", splits[4]);
 			
-			out.put("sq", sq);
+			out.put("type", 1);
 			
 			json.put("out", out);
 			

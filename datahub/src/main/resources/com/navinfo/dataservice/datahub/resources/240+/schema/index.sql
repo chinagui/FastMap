@@ -533,7 +533,7 @@
     create index IX_CK_EXCEPTION_02 on CK_EXCEPTION (RESERVED);
     create index IX_NI_VAL_EXCEPTION_01 on NI_VAL_EXCEPTION (MESH_ID);
     create index IX_NI_VAL_EXCEPTION_02 on NI_VAL_EXCEPTION (RESERVED);
-    
+    create index IX_CK_RESULT_OBJECT_01 on CK_RESULT_OBJECT (PID);
 
     
     

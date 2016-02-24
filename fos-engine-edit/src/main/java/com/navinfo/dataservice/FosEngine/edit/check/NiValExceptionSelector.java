@@ -290,7 +290,7 @@ public class NiValExceptionSelector {
 			}
 		}
 
-		sql.append(") order by created ) b where rownum<=");
+		sql.append(") order by created desc ) b where rownum<=");
 
 		sql.append(pageSize * page);
 

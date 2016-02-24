@@ -235,8 +235,10 @@ public class LogWriter {
 
 			ld.setIsCk(0);
 
-			ld.setNewValue(r.Serialize(ObjLevel.FULL).toString());
+//			ld.setNewValue(r.Serialize(ObjLevel.FULL).toString());
 
+			ld.setNewValue(convertObj2NewValue(r).toString());
+			
 			ld.setRowId(UuidUtils.genUuid());
 			
 			ld.setTbRowId(r.rowId());
@@ -272,7 +274,9 @@ public class LogWriter {
 
 						ldC.setIsCk(0);
 
-						ldC.setNewValue(row.Serialize(ObjLevel.FULL).toString());
+//						ldC.setNewValue(row.Serialize(ObjLevel.FULL).toString());
+						
+						ldC.setNewValue(convertObj2NewValue(row).toString());
 
 						ldC.setRowId(UuidUtils.genUuid());
 						
@@ -456,6 +460,33 @@ public class LogWriter {
 
 		}
 		this.insertRow();
+	}
+	
+	
+	private static JSONObject convertObj2NewValue(IRow row) throws Exception{
+		JSONObject json = new JSONObject();
+		
+		JSONObject rowJson = row.Serialize(ObjLevel.FULL);
+		
+		Iterator<String> keys = rowJson.keys();
+		
+		while(keys.hasNext()){
+			String key = keys.next();
+			
+			if (!(rowJson.get(key) instanceof JSONArray)){
+				if (!"pid".equals(key) && !"geometry".equals(key)){
+					json.put(StringUtils.toColumnName(key), rowJson.get(key));
+				}else if ("geometry".equals(key)){
+					json.put("geometry", Geojson.geojson2Wkt(rowJson.getString("geometry")));
+				}else{
+					json.put(row.primaryKey(), rowJson.get(key));
+				}
+			}
+		}
+		
+		json.put("row_id", row.rowId());
+		
+		return json;
 	}
 
 }

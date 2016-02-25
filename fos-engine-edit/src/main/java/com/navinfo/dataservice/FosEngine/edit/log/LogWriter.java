@@ -479,13 +479,18 @@ public class LogWriter {
 		while(keys.hasNext()){
 			String key = keys.next();
 			
-			if (!(rowJson.get(key) instanceof JSONArray)){
-				if (!"pid".equals(key) && !"geometry".equals(key)){
-					json.put(StringUtils.toColumnName(key), rowJson.get(key));
-				}else if ("geometry".equals(key)){
-					json.put("geometry", Geojson.geojson2Wkt(rowJson.getString("geometry")));
-				}else{
-					json.put(row.primaryKey(), rowJson.get(key));
+			if ("name".equals(key) && "rd_link_name".equals(row.tableName())) {
+			}else{
+				if (!(rowJson.get(key) instanceof JSONArray)) {
+					if (!"pid".equals(key) && !"geometry".equals(key)) {
+						json.put(StringUtils.toColumnName(key),
+								rowJson.get(key));
+					} else if ("geometry".equals(key)) {
+						json.put("geometry", Geojson.geojson2Wkt(rowJson
+								.getString("geometry")));
+					} else {
+						json.put(row.primaryKey(), rowJson.get(key));
+					}
 				}
 			}
 		}

@@ -58,7 +58,7 @@ public class RdSpeedlimitSelector implements ISelector {
 				
 				obj.setSpeedType(resultSet.getInt("speed_type"));
 				
-//				obj.setTollgateFlag(resultSet.getInt("tollgate_flag"));
+				obj.setTollgateFlag(resultSet.getInt("tollgate_flag"));
 				
 				obj.setSpeedDependent(resultSet.getInt("speed_dependent"));
 				
@@ -164,6 +164,8 @@ public class RdSpeedlimitSelector implements ISelector {
 				limit.setGeometry(GeoTranslator.struct2Jts(struct, 100000, 0));
 
 				limit.setRowId(resultSet.getString("row_id"));
+				
+				limit.setTollgateFlag(resultSet.getInt("tollgate_flag"));
 				
 				limit.setLinkPid(resultSet.getInt("link_pid"));
 				
@@ -303,6 +305,8 @@ public class RdSpeedlimitSelector implements ISelector {
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
 				limit.setGeometry(GeoTranslator.struct2Jts(struct, 100000, 0));
+				
+				limit.setTollgateFlag(resultSet.getInt("tollgate_flag"));
 
 				limit.setRowId(resultSet.getString("row_id"));
 				

@@ -195,7 +195,7 @@ public class RdSpeedlimitOperator implements IOperator {
 
 		sb.append(speedlimit.tableName());
 
-		sb.append("(pid,link_pid,direct,speed_value,speed_type,speed_dependent,speed_flag,limit_src,time_domain,capture_flag,descript,mesh_id,status,ck_status,adja_flag,rec_status_in,rec_status_out,time_descript,geometry,lane_speed_value,u_record,row_id) values (");
+		sb.append("(pid,link_pid,direct,speed_value,speed_type,tollgate_flag,speed_dependent,speed_flag,limit_src,time_domain,capture_flag,descript,mesh_id,status,ck_status,adja_flag,rec_status_in,rec_status_out,time_descript,geometry,lane_speed_value,u_record,row_id) values (");
 
 		sb.append(speedlimit.getPid());
 
@@ -206,6 +206,8 @@ public class RdSpeedlimitOperator implements IOperator {
 		sb.append("," + speedlimit.getSpeedValue());
 		
 		sb.append("," + speedlimit.getSpeedType());
+		
+		sb.append("," + speedlimit.getTollgateFlag());
 		
 		sb.append("," + speedlimit.getSpeedDependent());
 		

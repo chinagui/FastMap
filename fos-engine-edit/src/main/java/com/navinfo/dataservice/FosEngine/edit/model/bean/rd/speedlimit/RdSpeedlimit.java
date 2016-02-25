@@ -62,8 +62,18 @@ public class RdSpeedlimit implements IObj {
 	private Geometry geometry;
 
 	private String laneSpeedValue;
+	
+	private int tollgateFlag;
 
 	private String rowId;
+
+	public int getTollgateFlag() {
+		return tollgateFlag;
+	}
+
+	public void setTollgateFlag(int tollgateFlag) {
+		this.tollgateFlag = tollgateFlag;
+	}
 
 	public int getLinkPid() {
 		return linkPid;

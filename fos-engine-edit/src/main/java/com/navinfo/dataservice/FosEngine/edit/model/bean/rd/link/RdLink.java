@@ -113,27 +113,27 @@ public class RdLink implements IObj {
 	private Geometry geometry;
 
 	private String rowId;
-	
-//	private String name;
+
+	// private String name;
 
 	private List<IRow> forms = new ArrayList<IRow>();
 
 	private List<IRow> limits = new ArrayList<IRow>();
 
 	private List<IRow> names = new ArrayList<IRow>();
-	
+
 	private List<IRow> intRtics = new ArrayList<IRow>();
 
 	private List<IRow> limitTrucks = new ArrayList<IRow>();
 
 	private List<IRow> rtics = new ArrayList<IRow>();
-	
+
 	private List<IRow> sidewalks = new ArrayList<IRow>();
 
 	private List<IRow> speedlimits = new ArrayList<IRow>();
 
 	private List<IRow> walkstairs = new ArrayList<IRow>();
-	
+
 	private List<IRow> zones = new ArrayList<IRow>();
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
@@ -143,19 +143,19 @@ public class RdLink implements IObj {
 	public Map<String, RdLinkLimit> limitMap = new HashMap<String, RdLinkLimit>();
 
 	public Map<String, RdLinkName> nameMap = new HashMap<String, RdLinkName>();
-	
+
 	public Map<String, RdLinkIntRtic> intRticMap = new HashMap<String, RdLinkIntRtic>();
-	
+
 	public Map<String, RdLinkRtic> rticMap = new HashMap<String, RdLinkRtic>();
-	
+
 	public Map<String, RdLinkLimitTruck> limitTruckMap = new HashMap<String, RdLinkLimitTruck>();
-	
+
 	public Map<String, RdLinkSidewalk> sidewalkMap = new HashMap<String, RdLinkSidewalk>();
-	
+
 	public Map<String, RdLinkSpeedlimit> speedlimitMap = new HashMap<String, RdLinkSpeedlimit>();
-	
+
 	public Map<String, RdLinkWalkstair> walkstairMap = new HashMap<String, RdLinkWalkstair>();
-	
+
 	public Map<String, RdLinkZone> zoneMap = new HashMap<String, RdLinkZone>();
 
 	public RdLink() {
@@ -284,21 +284,30 @@ public class RdLink implements IObj {
 		this.kind = kind;
 	}
 
-//	public String getName() {
-//		return name;
-//	}
-//
-//	public void setName(String name) {
-//		this.name = name;
-//	}
+	// public String getName() {
+	// return name;
+	// }
+	//
+	// public void setName(String name) {
+	// this.name = name;
+	// }
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
 
-		if (objLevel == ObjLevel.FULL) {
+		if (objLevel == ObjLevel.FULL || objLevel == ObjLevel.HISTORY) {
+			
 			JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 
 			JSONObject json = JSONObject.fromObject(this, jsonConfig);
+			
+			JSONArray array = new JSONArray();
+			
+			for(IRow speedlimit : this.getSpeedlimits()){
+				array.add(speedlimit.Serialize(objLevel));
+			}
+			
+			json.put("speedlimits", array);
 
 			return json;
 		} else if (objLevel == ObjLevel.BRIEF) {
@@ -306,7 +315,7 @@ public class RdLink implements IObj {
 
 			json.put("pid", pid);
 
-//			json.put("name", name);
+			// json.put("name", name);
 
 			json.put("sNodePid", sNodePid);
 
@@ -457,33 +466,33 @@ public class RdLink implements IObj {
 		RdLink sourceLink = (RdLink) row;
 
 		this.setsNodePid(sourceLink.getsNodePid());
-		
+
 		this.seteNodePid(sourceLink.geteNodePid());
 
 		this.setKind(sourceLink.getKind());
-		
+
 		this.setDirect(sourceLink.getDirect());
-		
+
 		this.setAppInfo(sourceLink.getAppInfo());
-		
+
 		this.setTollInfo(sourceLink.getTollInfo());
-		
+
 		this.setRouteAdopt(sourceLink.getRouteAdopt());
 
 		this.setMultiDigitized(sourceLink.getMultiDigitized());
-		
+
 		this.setDevelopState(sourceLink.getDevelopState());
-		
+
 		this.setImiCode(sourceLink.getImiCode());
 
 		this.setSpecialTraffic(sourceLink.getSpecialTraffic());
-		
+
 		this.setFunctionClass(sourceLink.getFunctionClass());
-		
+
 		this.setUrban(sourceLink.getUrban());
-		
+
 		this.setPaveStatus(sourceLink.getPaveStatus());
-		
+
 		this.setLaneLeft(sourceLink.getLaneLeft());
 
 		this.setLaneNum(sourceLink.getLaneNum());
@@ -491,61 +500,61 @@ public class RdLink implements IObj {
 		this.setLaneRight(sourceLink.getLaneRight());
 
 		this.setLaneWidthLeft(sourceLink.getLaneWidthLeft());
-		
+
 		this.setLaneWidthRight(sourceLink.getLaneWidthRight());
-		
+
 		this.setLaneClass(sourceLink.getLaneClass());
-		
+
 		this.setWidth(sourceLink.getWidth());
-		
+
 		this.setIsViaduct(sourceLink.getIsViaduct());
-		
+
 		this.setLeftRegionId(sourceLink.getLeftRegionId());
-		
+
 		this.setRightRegionId(sourceLink.getRightRegionId());
-		
+
 		this.setGeometry(sourceLink.getGeometry());
-		
+
 		this.setLength(sourceLink.getLength());
-		
+
 		this.setMeshId(sourceLink.getMeshId());
-		
+
 		this.setOnewayMark(sourceLink.getOnewayMark());
-		
+
 		this.setStreetLight(sourceLink.getStreetLight());
-		
+
 		this.setParkingLot(sourceLink.getParkingLot());
-		
+
 		this.setAdasFlag(sourceLink.getAdasFlag());
-		
+
 		this.setSidewalkFlag(sourceLink.getSidewalkFlag());
-		
+
 		this.setWalkstairFlag(sourceLink.getWalkstairFlag());
-		
+
 		this.setDiciType(sourceLink.getDiciType());
-		
+
 		this.setWalkFlag(sourceLink.getWalkFlag());
-		
+
 		this.setDifGroupid(sourceLink.getDifGroupid());
-		
+
 		this.setSrcFlag(sourceLink.getSrcFlag());
-		
+
 		this.setDigitalLevel(sourceLink.getDigitalLevel());
-		
+
 		this.setEditFlag(sourceLink.getEditFlag());
-		
+
 		this.setTruckFlag(sourceLink.getTruckFlag());
-		
+
 		this.setOriginLinkPid(sourceLink.getOriginLinkPid());
-		
+
 		this.setCenterDivider(sourceLink.getCenterDivider());
-		
+
 		this.setParkingFlag(sourceLink.getParkingFlag());
-		
+
 		this.setMemo(sourceLink.getMemo());
-		
-//		this.setName(sourceLink.getName());
-		
+
+		// this.setName(sourceLink.getName());
+
 		List<IRow> formsSource = sourceLink.getForms();
 
 		List<IRow> forms = new ArrayList<IRow>();
@@ -554,9 +563,9 @@ public class RdLink implements IObj {
 
 			RdLinkForm f = new RdLinkForm();
 
-			f.setLinkPid(this.getPid());
-
 			f.copy(fs);
+
+			f.setLinkPid(this.getPid());
 
 			forms.add(f);
 		}
@@ -571,9 +580,9 @@ public class RdLink implements IObj {
 
 			RdLinkLimit f = new RdLinkLimit();
 
-			f.setLinkPid(this.getPid());
-
 			f.copy(fs);
+
+			f.setLinkPid(this.getPid());
 
 			limits.add(f);
 		}
@@ -588,14 +597,82 @@ public class RdLink implements IObj {
 
 			RdLinkName f = new RdLinkName();
 
-			f.setLinkPid(this.getPid());
-
 			f.copy(fs);
+
+			f.setLinkPid(this.getPid());
 
 			names.add(f);
 		}
 
 		this.setNames(names);
+
+		List<IRow> intRticsSources = sourceLink.getIntRtics();
+
+		List<IRow> intRtics = new ArrayList<IRow>();
+
+		for (IRow fs : intRticsSources) {
+
+			RdLinkIntRtic f = new RdLinkIntRtic();
+
+			f.copy(fs);
+
+			f.setLinkPid(this.getPid());
+
+			intRtics.add(f);
+		}
+
+		this.setIntRtics(intRtics);
+
+		List<IRow> limitTrucksSources = sourceLink.getLimitTrucks();
+
+		List<IRow> limitTrucks = new ArrayList<IRow>();
+
+		for (IRow fs : limitTrucksSources) {
+
+			RdLinkLimitTruck f = new RdLinkLimitTruck();
+
+			f.copy(fs);
+
+			f.setLinkPid(this.getPid());
+
+			limitTrucks.add(f);
+		}
+
+		this.setLimitTrucks(limitTrucks);
+
+		List<IRow> speedlimitSources = sourceLink.getSpeedlimits();
+
+		List<IRow> speedlimits = new ArrayList<IRow>();
+
+		for (IRow fs : speedlimitSources) {
+
+			RdLinkSpeedlimit f = new RdLinkSpeedlimit();
+
+			f.copy(fs);
+
+			f.setLinkPid(this.getPid());
+
+			speedlimits.add(f);
+		}
+
+		this.setSpeedlimits(speedlimits);
+
+		List<IRow> zoneSources = sourceLink.getZones();
+
+		List<IRow> zones = new ArrayList<IRow>();
+
+		for (IRow fs : zoneSources) {
+
+			RdLinkZone f = new RdLinkZone();
+
+			f.copy(fs);
+
+			f.setLinkPid(this.getPid());
+
+			zones.add(f);
+		}
+
+		this.setZones(zones);
 	}
 
 	public boolean isNodeOnLink(int nodePid) {
@@ -642,13 +719,13 @@ public class RdLink implements IObj {
 		children.add(this.getNames());
 
 		children.add(this.getLimits());
-		
+
 		children.add(this.getIntRtics());
-		
+
 		children.add(this.getLimitTrucks());
-		
+
 		children.add(this.getSpeedlimits());
-		
+
 		children.add(this.getZones());
 
 		return children;
@@ -683,15 +760,14 @@ public class RdLink implements IObj {
 			if (json.get(key) instanceof JSONArray) {
 				continue;
 			} else if ("geometry".equals(key)) {
-				
+
 				JSONObject geojson = json.getJSONObject(key);
-				
+
 				String wkt = Geojson.geojson2Wkt(geojson.toString());
-				
+
 				String oldwkt = GeoTranslator.jts2Wkt(geometry, 0.00001, 5);
-				
-				if(!wkt.equals(oldwkt))
-				{
+
+				if (!wkt.equals(oldwkt)) {
 					changedFields.put(key, json.getJSONObject(key));
 				}
 			} else {

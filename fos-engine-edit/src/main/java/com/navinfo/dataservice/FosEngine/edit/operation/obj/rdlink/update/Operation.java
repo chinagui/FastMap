@@ -154,6 +154,8 @@ public class Operation implements IOperation {
 					form.Unserialize(formJson);
 					
 					form.setLinkPid(this.updateLink.getPid());
+					
+					form.setMesh(updateLink.mesh());
 
 					result.getAddObjects().add(form);
 
@@ -197,6 +199,8 @@ public class Operation implements IOperation {
 					limit.Unserialize(limitJson);
 					
 					limit.setLinkPid(this.updateLink.getPid());
+					
+					limit.setMesh(updateLink.mesh());
 
 					result.getAddObjects().add(limit);
 
@@ -240,6 +244,8 @@ public class Operation implements IOperation {
 					obj.Unserialize(json);
 					
 					obj.setLinkPid(this.updateLink.getPid());
+					
+					obj.setMesh(updateLink.mesh());
 
 					result.getAddObjects().add(obj);
 
@@ -284,6 +290,8 @@ public class Operation implements IOperation {
 					obj.Unserialize(json);
 					
 					obj.setLinkPid(this.updateLink.getPid());
+					
+					obj.setMesh(updateLink.mesh());
 
 					result.getAddObjects().add(obj);
 
@@ -327,6 +335,8 @@ public class Operation implements IOperation {
 					obj.Unserialize(json);
 					
 					obj.setLinkPid(this.updateLink.getPid());
+					
+					obj.setMesh(updateLink.mesh());
 
 					result.getAddObjects().add(obj);
 
@@ -371,6 +381,8 @@ public class Operation implements IOperation {
 					obj.Unserialize(json);
 					
 					obj.setLinkPid(this.updateLink.getPid());
+					
+					obj.setMesh(updateLink.mesh());
 
 					result.getAddObjects().add(obj);
 
@@ -414,6 +426,8 @@ public class Operation implements IOperation {
 					obj.Unserialize(json);
 					
 					obj.setLinkPid(this.updateLink.getPid());
+					
+					obj.setMesh(updateLink.mesh());
 
 					result.getAddObjects().add(obj);
 
@@ -457,6 +471,8 @@ public class Operation implements IOperation {
 					obj.Unserialize(json);
 					
 					obj.setLinkPid(this.updateLink.getPid());
+					
+					obj.setMesh(updateLink.mesh());
 
 					result.getAddObjects().add(obj);
 
@@ -500,6 +516,8 @@ public class Operation implements IOperation {
 					obj.Unserialize(json);
 					
 					obj.setLinkPid(this.updateLink.getPid());
+					
+					obj.setMesh(updateLink.mesh());
 
 					result.getAddObjects().add(obj);
 
@@ -543,6 +561,8 @@ public class Operation implements IOperation {
 					name.Unserialize(nameJson);
 
 					name.setLinkPid(this.updateLink.getPid());
+					
+					name.setMesh(updateLink.mesh());
 					
 					result.getAddObjects().add(name);
 

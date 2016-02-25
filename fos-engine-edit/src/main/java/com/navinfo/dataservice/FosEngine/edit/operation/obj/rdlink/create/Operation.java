@@ -270,9 +270,7 @@ public class Operation implements IOperation {
 		
 		mesh.setNodePid(node.getPid());
 
-		mesh.setMeshId(Integer.parseInt(MeshUtils.lonlat2Mesh(x, y)));
-
-		mesh.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(x, y)));
+		mesh.setMeshId(node.mesh());
 
 		List<IRow> meshes = new ArrayList<IRow>();
 

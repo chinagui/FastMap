@@ -124,6 +124,8 @@ public class RdNodeForm implements IRow {
 		this.formOfWay = form.formOfWay;
 
 		this.auxiFlag = form.auxiFlag;
+		
+		this.mesh = form.mesh();
 	}
 
 	@Override

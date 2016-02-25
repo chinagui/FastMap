@@ -90,7 +90,7 @@ public class RdRestrictionConditionOperator implements IOperator {
 	public void updateRow() throws Exception {
 
 		StringBuilder sb = new StringBuilder("update " + condition.tableName()
-				+ " set ");
+				+ " set u_record=3,");
 
 		PreparedStatement pstmt = null;
 
@@ -246,7 +246,7 @@ public class RdRestrictionConditionOperator implements IOperator {
 			throws Exception {
 
 		StringBuilder sb = new StringBuilder("update " + condition.tableName()
-				+ " set ");
+				+ " set u_record=3,");
 
 		for (int i = 0; i < fieldNames.size(); i++) {
 

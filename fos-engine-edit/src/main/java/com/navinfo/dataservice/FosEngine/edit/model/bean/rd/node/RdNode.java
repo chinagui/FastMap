@@ -305,6 +305,8 @@ public class RdNode implements IObj {
 		this.digitalLevel = node.digitalLevel;
 
 		this.reserved = node.reserved;
+		
+		this.mesh = node.mesh();
 
 		this.forms = new ArrayList<IRow>();
 
@@ -312,9 +314,9 @@ public class RdNode implements IObj {
 
 			RdNodeForm formCopy = new RdNodeForm();
 
-			formCopy.setNodePid(this.getPid());
-
 			formCopy.copy(form);
+			
+			formCopy.setNodePid(this.getPid());
 
 			this.forms.add(formCopy);
 		}
@@ -324,10 +326,10 @@ public class RdNode implements IObj {
 		for (IRow name : node.names) {
 
 			RdNodeName nameCopy = new RdNodeName();
+			
+			nameCopy.copy(name);
 
 			nameCopy.setNodePid(this.getPid());
-
-			nameCopy.copy(name);
 			
 			try {
 				nameCopy.setNameId(PidService.getInstance().applyNodeNameId());
@@ -344,10 +346,10 @@ public class RdNode implements IObj {
 		for (IRow mesh : node.meshes) {
 
 			RdNodeMesh meshCopy = new RdNodeMesh();
+			
+			meshCopy.copy(mesh);
 
 			meshCopy.setNodePid(this.getPid());
-
-			meshCopy.copy(mesh);
 
 			this.meshes.add(meshCopy);
 		}

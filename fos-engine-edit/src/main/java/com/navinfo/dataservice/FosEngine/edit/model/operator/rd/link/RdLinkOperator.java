@@ -159,10 +159,10 @@ public class RdLinkOperator implements IOperator {
 			pstmt.close();
 
 			Statement stmt = conn.createStatement();
-			
-			sql = "update rd_link set length=sdo_geom.sdo_length(geometry,0.1) where link_pid = "+rdLink.getPid();
-			
-			stmt.executeUpdate(sql);
+//			
+//			sql = "update rd_link set length=sdo_geom.sdo_length(geometry,0.1) where link_pid = "+rdLink.getPid();
+//			
+//			stmt.executeUpdate(sql);
 
 			// 新增rd_link_form
 			for (IRow r : rdLink.getForms()) {
@@ -265,7 +265,7 @@ public class RdLinkOperator implements IOperator {
 	public void updateRow() throws Exception {
 
 		StringBuilder sb = new StringBuilder("update " + rdLink.tableName()
-				+ " set ");
+				+ " set u_record=3,");
 
 		PreparedStatement pstmt = null;
 

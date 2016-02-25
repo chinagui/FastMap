@@ -76,7 +76,7 @@ public class RdCrossNodeOperator implements IOperator {
 	public void updateRow() throws Exception {
 
 		StringBuilder sb = new StringBuilder("update " + node.tableName()
-				+ " set ");
+				+ " set u_record=3,");
 
 		PreparedStatement pstmt = null;
 
@@ -216,7 +216,7 @@ public class RdCrossNodeOperator implements IOperator {
 			throws Exception {
 
 		StringBuilder sb = new StringBuilder("update " + node.tableName()
-				+ " set ");
+				+ " set u_record=3,");
 
 		for (int i = 0; i < fieldNames.size(); i++) {
 

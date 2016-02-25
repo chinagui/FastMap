@@ -1,15 +1,20 @@
 package com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNodeForm;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNodeMesh;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.service.PidService;
@@ -63,6 +68,8 @@ public class OpTopo implements IOperation {
 		if (this.breakPoint == null){
 			
 			breakPoint = new RdNode();
+			
+			breakPoint.copy(command.getsNode());
 
 			breakPoint.setPid(PidService.getInstance().applyNodePid());
 			
@@ -70,8 +77,6 @@ public class OpTopo implements IOperation {
 			
 			breakPoint.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(command.getPoint().getX(), command.getPoint().getY())));
 	
-			breakPoint.copy(command.getsNode());
-			
 			result.insertObject(breakPoint, ObjStatus.INSERT);
 		
 		}
@@ -186,5 +191,4 @@ public class OpTopo implements IOperation {
 		command.setLink2(link2);
 
 	}
-
 }

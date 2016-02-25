@@ -111,6 +111,8 @@ public class RdNodeMesh implements IRow {
 		RdNodeMesh mesh = (RdNodeMesh) row;
 
 		this.meshId = mesh.meshId;
+		
+		
 	}
 
 	@Override
@@ -203,6 +205,6 @@ public class RdNodeMesh implements IRow {
 
 	@Override
 	public void setMesh(int mesh) {
-		// TODO Auto-generated method stub
+		meshId=mesh;
 	}
 }

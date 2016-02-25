@@ -89,6 +89,8 @@ public class Operation implements IOperation {
 						
 						detail.setRestricPid(restrict.getPid());
 						
+						detail.setMesh(restrict.mesh());
+						
 						result.getAddObjects().add(detail);
 						
 						continue;
@@ -138,6 +140,8 @@ public class Operation implements IOperation {
 							condition.Unserialize(cond);
 							
 							condition.setDetailId(detailId);
+							
+							condition.setMesh(restrict.mesh());
 							
 							result.getAddObjects().add(condition);
 							

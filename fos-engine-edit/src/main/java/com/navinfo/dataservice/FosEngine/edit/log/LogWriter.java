@@ -22,15 +22,14 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
-
-class Status{
-	public static int INSERT=1;
-	public static int DELETE=2;
-	public static int UPDATE=3;
+class Status {
+	public static int INSERT = 1;
+	public static int DELETE = 2;
+	public static int UPDATE = 3;
 }
 
 public class LogWriter {
-	
+
 	private Connection conn;
 
 	private LogOperation logOperation;
@@ -91,7 +90,8 @@ public class LogWriter {
 		if (this.logOperation.getOpDt() == null) {
 			sb.append(",null");
 		} else {
-			sb.append(",to_date('"+logOperation.getOpDt()+"','yyyymmddhh24miss')");
+			sb.append(",to_date('" + logOperation.getOpDt()
+					+ "','yyyymmddhh24miss')");
 		}
 
 		sb.append("," + this.logOperation.getOpSg());
@@ -136,7 +136,7 @@ public class LogWriter {
 		if (detail.getOpDt() == null) {
 			sb.append(",null");
 		} else {
-			sb.append(",to_date('"+detail.getOpDt()+"','yyyymmddhh24miss')");
+			sb.append(",to_date('" + detail.getOpDt() + "','yyyymmddhh24miss')");
 		}
 
 		if (detail.getTbNm() == null) {
@@ -170,14 +170,13 @@ public class LogWriter {
 		} else {
 			sb.append(",'" + detail.getRowId() + "'");
 		}
-		
 
 		sb.append("," + detail.getIsCk());
-		
-		sb.append(",hextoraw('"+detail.getTbRowId()+"')");
-		
-		sb.append(","+detail.getMeshId());
-		
+
+		sb.append(",hextoraw('" + detail.getTbRowId() + "')");
+
+		sb.append("," + detail.getMeshId());
+
 		sb.append("," + detail.getComSta());
 
 		sb.append(")");
@@ -203,9 +202,9 @@ public class LogWriter {
 		logOperation.setOpCmd(command.getOperType().toString());
 
 		logOperation.setOpDt(dt);
-		
+
 		String opId = UuidUtils.genUuid();
-		
+
 		logOperation.setOpId(opId);
 
 		logOperation.setOpSg(1);
@@ -236,14 +235,14 @@ public class LogWriter {
 
 			ld.setIsCk(0);
 
-//			ld.setNewValue(r.Serialize(ObjLevel.FULL).toString());
+			// ld.setNewValue(r.Serialize(ObjLevel.FULL).toString());
 
 			ld.setNewValue(convertObj2NewValue(r).toString());
-			
+
 			ld.setRowId(UuidUtils.genUuid());
-			
+
 			ld.setTbRowId(r.rowId());
-			
+
 			ld.setMeshId(r.mesh());
 
 			logOperation.getDetails().add(ld);
@@ -275,14 +274,14 @@ public class LogWriter {
 
 						ldC.setIsCk(0);
 
-//						ldC.setNewValue(row.Serialize(ObjLevel.FULL).toString());
-						
+						// ldC.setNewValue(row.Serialize(ObjLevel.FULL).toString());
+
 						ldC.setNewValue(convertObj2NewValue(row).toString());
 
 						ldC.setRowId(UuidUtils.genUuid());
-						
-						ldC.setTbRowId(r.rowId());
-						
+
+						ldC.setTbRowId(row.rowId());
+
 						ldC.setMeshId(r.mesh());
 
 						logOperation.getDetails().add(ldC);
@@ -317,9 +316,9 @@ public class LogWriter {
 			ld.setIsCk(0);
 
 			ld.setRowId(UuidUtils.genUuid());
-			
+
 			ld.setTbRowId(r.rowId());
-			
+
 			ld.setMeshId(r.mesh());
 
 			Set<Entry<String, Object>> set = r.changedFields().entrySet();
@@ -381,7 +380,7 @@ public class LogWriter {
 		}
 
 		list = result.getDelObjects();
-		
+
 		NiValExceptionOperator operator = new NiValExceptionOperator(conn);
 
 		for (IRow r : list) {
@@ -395,15 +394,16 @@ public class LogWriter {
 
 			if (r.primaryTableName().equals(r.tableName())) {
 				ld.setOpbTp(Status.DELETE);
-				
+
 				ld.setObTp(1);
-				
-				//删除关联的检查结果
-				operator.deleteNiValException(r.tableName().toUpperCase(), r.primaryValue());
+
+				// 删除关联的检查结果
+				operator.deleteNiValException(r.tableName().toUpperCase(),
+						r.primaryValue());
 
 			} else {
 				ld.setOpbTp(Status.UPDATE);
-				
+
 				ld.setObTp(2);
 
 			}
@@ -413,15 +413,15 @@ public class LogWriter {
 			ld.setObPid(r.primaryValue());
 
 			ld.setObPk(r.primaryKey());
-			
+
 			ld.setTbNm(r.tableName());
 
 			ld.setIsCk(0);
 
 			ld.setRowId(UuidUtils.genUuid());
-			
+
 			ld.setTbRowId(r.rowId());
-			
+
 			ld.setMeshId(r.mesh());
 
 			logOperation.getDetails().add(ld);
@@ -454,9 +454,9 @@ public class LogWriter {
 						ldC.setIsCk(0);
 
 						ldC.setRowId(UuidUtils.genUuid());
-						
-						ldC.setTbRowId(r.rowId());
-						
+
+						ldC.setTbRowId(row.rowId());
+
 						ldC.setMeshId(r.mesh());
 
 						logOperation.getDetails().add(ldC);
@@ -467,36 +467,31 @@ public class LogWriter {
 		}
 		this.insertRow();
 	}
-	
-	
-	private static JSONObject convertObj2NewValue(IRow row) throws Exception{
+
+	private static JSONObject convertObj2NewValue(IRow row) throws Exception {
 		JSONObject json = new JSONObject();
-		
-		JSONObject rowJson = row.Serialize(ObjLevel.FULL);
-		
+
+		JSONObject rowJson = row.Serialize(ObjLevel.HISTORY);
+
 		Iterator<String> keys = rowJson.keys();
-		
-		while(keys.hasNext()){
+
+		while (keys.hasNext()) {
 			String key = keys.next();
-			
-			if ("name".equals(key) && "rd_link_name".equals(row.tableName())) {
-			}else{
-				if (!(rowJson.get(key) instanceof JSONArray)) {
-					if (!"pid".equals(key) && !"geometry".equals(key)) {
-						json.put(StringUtils.toColumnName(key),
-								rowJson.get(key));
-					} else if ("geometry".equals(key)) {
-						json.put("geometry", Geojson.geojson2Wkt(rowJson
-								.getString("geometry")));
-					} else {
-						json.put(row.primaryKey(), rowJson.get(key));
-					}
+
+			if (!(rowJson.get(key) instanceof JSONArray)) {
+				if (!"pid".equals(key) && !"geometry".equals(key)) {
+					json.put(StringUtils.toColumnName(key), rowJson.get(key));
+				} else if ("geometry".equals(key)) {
+					json.put("geometry",
+							Geojson.geojson2Wkt(rowJson.getString("geometry")));
+				} else {
+					json.put(row.primaryKey(), rowJson.get(key));
 				}
 			}
 		}
-		
+
 		json.put("row_id", row.rowId());
-		
+
 		return json;
 	}
 

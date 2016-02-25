@@ -266,6 +266,10 @@ public class RdSpeedlimit implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
+		
+		if(objLevel == ObjLevel.FULL){
+			speedValue/=10;
+		}
 
 		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 
@@ -295,8 +299,15 @@ public class RdSpeedlimit implements IObj {
 				Field f = this.getClass().getDeclaredField(key);
 
 				f.setAccessible(true);
-
-				f.set(this, json.get(key));
+				
+				if("speedValue".equals(key)){
+					int value = json.getInt(key);
+					
+					f.set(this, value*10);
+				}
+				else{
+					f.set(this, json.get(key));
+				}
 			}
 		}
 

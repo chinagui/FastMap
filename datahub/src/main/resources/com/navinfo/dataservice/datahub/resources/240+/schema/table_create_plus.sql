@@ -78,4 +78,4 @@ create table CK_RESULT_OBJECT (
 	TABLE_NAME VARCHAR2(32) not null,
 	PID NUMBER(10) default 0 not null
 );
-
+create index IX_CK_RESULT_OBJECT_01 on CK_RESULT_OBJECT (PID);

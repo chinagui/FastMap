@@ -3,11 +3,8 @@ declare
 begin
   for a in (select table_name
               from user_tab_cols a
-             where column_name = 'ROW_ID'
-             and not exists (
-             select null from user_constraints b where constraint_type='P'
-             and a.TABLE_NAME = b.TABLE_NAME and b.table_name not like 'LOG%'
-             )) loop
+             where column_name = 'ROW_ID' and a.TABLE_NAME in (SELECT TABLE_NAME FROM USER_TABLES)
+            ) loop
   	
     execute immediate 'create unique index idx_' || v_cnt ||
                       '_r on ' || a.table_name || '(row_id)';

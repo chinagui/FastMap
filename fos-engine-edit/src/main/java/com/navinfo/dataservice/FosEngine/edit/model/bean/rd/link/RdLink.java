@@ -18,6 +18,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.ObjStatus;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.util.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class RdLink implements IObj {
@@ -768,7 +769,12 @@ public class RdLink implements IObj {
 				String oldwkt = GeoTranslator.jts2Wkt(geometry, 0.00001, 5);
 
 				if (!wkt.equals(oldwkt)) {
+					
+					double length = GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(geojson));
+					
 					changedFields.put(key, json.getJSONObject(key));
+					
+					changedFields.put("length", length);
 				}
 			} else {
 				if (!"objStatus".equals(key)) {

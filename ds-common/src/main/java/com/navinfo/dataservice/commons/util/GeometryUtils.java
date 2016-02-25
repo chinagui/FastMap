@@ -1,8 +1,30 @@
 package com.navinfo.dataservice.commons.util;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTReader;
 
 public class GeometryUtils {
+	
+	private static double EARTH_RADIUS = 6378137;
+	private static double rad(double d)
+	{
+	    return d * Math.PI / 180.0;
+	}
+
+	public static double getDistance(double lat1, double lng1, double lat2, double lng2)
+	{
+	    double radLat1 = rad(lat1);
+	    double radLat2 = rad(lat2);
+	    double a = radLat1 - radLat2;
+	    double b = rad(lng1) - rad(lng2);
+	    double s = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a/2),2) + 
+	     Math.cos(radLat1)*Math.cos(radLat2)*Math.pow(Math.sin(b/2),2)));
+	    s = s * EARTH_RADIUS;
+	    s = Math.round(s * 10000) / 10000.0;
+	    return s;
+	}
 	
 	 /**
 	  * 是否是逆时针方向
@@ -103,4 +125,34 @@ public class GeometryUtils {
 		 
 	 }
 
+	public static double getLinkLength(Geometry g){
+		
+		double length=0;
+		
+		Coordinate[] coords = g.getCoordinates();
+		
+		for(int i=0;i<coords.length-1;i++){
+			
+			Coordinate p1 = coords[i];
+			
+			Coordinate p2 = coords[i+1];
+			
+			length+=getDistance(p1.y, p1.x, p2.y, p2.x);
+			
+		}
+		
+		return length;
+	}
+	
+	public static void main(String[] args) throws Exception{
+		WKTReader r = new WKTReader();
+		
+		String a="LINESTRING (117.35746 39.13152, 117.35761 39.13144, 117.35788 39.13133, 117.35806 39.13128, 117.35824 39.13124, 117.35869 39.13117, 117.35908 39.13113, 117.35957 39.1311, 117.35984 39.1311, 117.36012 39.13112, 117.36057 39.13118, 117.36136 39.13142, 117.36189 39.13158, 117.36232 39.13173)";
+		
+		Geometry g=r.read(a);
+		
+		System.out.println(GeometryUtils.getLinkLength(g));
+		
+	}
+	
 }

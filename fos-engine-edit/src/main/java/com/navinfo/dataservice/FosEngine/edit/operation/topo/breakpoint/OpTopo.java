@@ -18,6 +18,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNodeMesh;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.service.PidService;
+import com.navinfo.dataservice.commons.util.GeometryUtils;
 import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.vividsolutions.jts.geom.Point;
 
@@ -170,8 +171,8 @@ public class OpTopo implements IOperation {
 
 		link1.setGeometry(GeoTranslator.geojson2Jts(geojson1));
 		
-		double length1 = GeoTranslator.getLinkLength(GeoTranslator.jts2Wkt(link1.getGeometry(), 0.00001, 5));
-
+		double length1 = GeometryUtils.getLinkLength(GeoTranslator.transform(link1.getGeometry(), 0.00001, 5));
+				
 		link1.setLength(length1);
 		
 		command.setLink1(link1);
@@ -184,7 +185,7 @@ public class OpTopo implements IOperation {
 
 		link2.setGeometry(GeoTranslator.geojson2Jts(geojson2));
 		
-		double length2 = GeoTranslator.getLinkLength(GeoTranslator.jts2Wkt(link2.getGeometry(), 0.00001, 5));
+		double length2 = GeometryUtils.getLinkLength(GeoTranslator.transform(link2.getGeometry(), 0.00001, 5));
 
 		link2.setLength(length2);
 

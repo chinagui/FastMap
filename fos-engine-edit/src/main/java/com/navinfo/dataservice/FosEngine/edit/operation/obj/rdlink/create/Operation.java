@@ -25,6 +25,7 @@ import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.FosEngine.edit.operation.IProcess;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.service.PidService;
+import com.navinfo.dataservice.commons.util.GeometryUtils;
 import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -113,8 +114,7 @@ public class Operation implements IOperation {
 
 				result.setPrimaryPid(link.getPid());
 
-				double linkLength = GeoTranslator.getLinkLength(GeoTranslator
-						.jts2Wkt(geo));
+				double linkLength = GeometryUtils.getLinkLength(geo);
 
 				check.checkLinkLength(linkLength);
 
@@ -166,8 +166,7 @@ public class Operation implements IOperation {
 						link.setGeometry(GeoTranslator.transform(geomInter,
 								100000, 0));
 
-						double linkLength = GeoTranslator
-								.getLinkLength(GeoTranslator.jts2Wkt(geomInter));
+						double linkLength = GeometryUtils.getLinkLength(geomInter);
 
 						check.checkLinkLength(linkLength);
 

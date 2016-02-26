@@ -457,9 +457,12 @@ public class FlushGdb {
 			
 			try {
 				pstmt.executeUpdate();
+				
+				pstmt.close();
 			} catch (Exception e) {
 				System.out.println(sb.toString());
 				e.printStackTrace();
+				
 				throw new Exception(e);
 			}
 

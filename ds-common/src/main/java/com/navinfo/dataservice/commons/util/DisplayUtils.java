@@ -376,23 +376,23 @@ public class DisplayUtils {
 				double y2 = k1 * x2 + c1;
 				if (k > 0) {
 					if (startPoint[0] < stopPoint[0]) {
-						displayPosition[0] = x1;
-
-						displayPosition[1] = y1;
-					} else {
 						displayPosition[0] = x2;
 
 						displayPosition[1] = y2;
+					} else {
+						displayPosition[0] = x1;
+
+						displayPosition[1] = y1;
 					}
 				} else {
 					if (startPoint[0] < stopPoint[0]) {
-						displayPosition[0] = x2;
-
-						displayPosition[1] = y2;
-					} else {
 						displayPosition[0] = x1;
 
 						displayPosition[1] = y1;
+					} else {
+						displayPosition[0] = x2;
+
+						displayPosition[1] = y2;
 					}
 				}
 			} else {
@@ -402,11 +402,11 @@ public class DisplayUtils {
 
 					displayPosition[0] = guidePosition[0];
 
-					displayPosition[1] = guidePosition[1] - vertiUnit;
+					displayPosition[1] = guidePosition[1] + vertiUnit;
 				} else {
 					displayPosition[0] = guidePosition[0];
 
-					displayPosition[1] = guidePosition[1] + vertiUnit;
+					displayPosition[1] = guidePosition[1] - vertiUnit;
 				}
 			}
 
@@ -415,11 +415,11 @@ public class DisplayUtils {
 
 			if (startPoint[1] < stopPoint[1]) {
 
-				displayPosition[0] = guidePosition[0] + vertiUnit;
+				displayPosition[0] = guidePosition[0] - vertiUnit;
 
 				displayPosition[1] = guidePosition[1];
 			} else {
-				displayPosition[0] = guidePosition[0] - vertiUnit;
+				displayPosition[0] = guidePosition[0] + vertiUnit;
 
 				displayPosition[1] = guidePosition[1];
 			}

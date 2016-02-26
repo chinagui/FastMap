@@ -252,11 +252,7 @@ public class SearchProcess {
 
 			return array;
 		}
-		catch (DataNotFoundException e){
-			
-			return new JSONArray();
-			
-		} catch (Exception e) {
+		 catch (Exception e) {
 
 			throw e;
 

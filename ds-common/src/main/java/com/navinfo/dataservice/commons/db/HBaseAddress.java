@@ -8,6 +8,7 @@ import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.log4j.Logger;
 import org.hbase.async.HBaseClient;
 
+import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 
 /**
@@ -26,15 +27,11 @@ public class HBaseAddress {
 	 * 
 	 * @throws IOException
 	 */
-	public static void initHBaseAddress() throws IOException {
+	public static void init() throws IOException {
 
-		Configuration conf = new Configuration();
-
-		String address = ConfigLoader.getConfig().getString(PropConstant.hbaseQuorum);
-
-		conf.set("hbase.zookeeper.quorum", address);
-
-		conn = ConnectionFactory.createConnection(conf);
+		HBaseAddress.initHBaseClient(SystemConfig.getSystemConfig().getValue(PropConstant.hbaseAddress));
+		
+		HBaseAddress.initHBaseAddress(SystemConfig.getSystemConfig().getValue(PropConstant.hbaseAddress));
 
 	}
 

@@ -650,6 +650,12 @@ public class RdLink implements IObj {
 		children.add(this.getSpeedlimits());
 		
 		children.add(this.getZones());
+		
+		children.add(this.getRtics());
+		
+		children.add(this.getSidewalks());
+		
+		children.add(this.getWalkstairs());
 
 		return children;
 	}

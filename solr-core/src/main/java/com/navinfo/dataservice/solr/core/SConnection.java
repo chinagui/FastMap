@@ -19,6 +19,8 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONException;
 
+import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.Geojson;
 
 public class SConnection {
@@ -30,6 +32,10 @@ public class SConnection {
 	private int flushCnt = 5000;
 
 	private int fetchNum = Integer.MAX_VALUE;
+	
+	public SConnection(){
+		solrClient = new HttpSolrClient(SystemConfig.getSystemConfig().getValue(PropConstant.solrAddress));
+	}
 
 	public SConnection(String url) {
 		solrClient = new HttpSolrClient(url);

@@ -397,6 +397,49 @@ public class RdLinkOperator implements IOperator {
 
 				op.deleteRow2Sql(stmt);
 			}
+			
+			for (IRow r: rdLink.getRtics()){
+				RdLinkRticOperator op = new RdLinkRticOperator(conn, (RdLinkRtic)r);
+				
+				op.deleteRow2Sql(stmt);
+			}
+			
+			for (IRow r: rdLink.getIntRtics()){
+				RdLinkIntRticOperator op = new RdLinkIntRticOperator(conn, (RdLinkIntRtic)r);
+				
+				op.deleteRow2Sql(stmt);
+			}
+			
+			for (IRow r: rdLink.getLimitTrucks()){
+				RdLinkLimitTruckOperator op = new RdLinkLimitTruckOperator(conn, (RdLinkLimitTruck)r);
+				
+				op.deleteRow2Sql(stmt);
+			}
+			
+			for (IRow r: rdLink.getSidewalks()){
+				RdLinkSidewalkOperator op = new RdLinkSidewalkOperator(conn, (RdLinkSidewalk)r);
+				
+				op.deleteRow2Sql(stmt);
+			}
+			
+			for (IRow r: rdLink.getWalkstairs()){
+				RdLinkWalkstairOperator op = new RdLinkWalkstairOperator(conn, (RdLinkWalkstair)r);
+				
+				op.deleteRow2Sql(stmt);
+			}
+			
+			for (IRow r: rdLink.getZones()){
+				RdLinkZoneOperator op = new RdLinkZoneOperator(conn, (RdLinkZone)r);
+				
+				op.deleteRow2Sql(stmt);
+			}
+			
+			for (IRow r: rdLink.getSpeedlimits()){
+				RdLinkSpeedlimitOperator op = new RdLinkSpeedlimitOperator(conn, (RdLinkSpeedlimit)r);
+				
+				op.deleteRow2Sql(stmt);
+			}
+			
 
 			this.deleteRow2Sql(stmt);
 

@@ -12,9 +12,9 @@ public class PropConstant {
 
 	public static final String pmPassword = "pm_password";
 
-	public static final String hbaseQuorum = "hbase_quorum";
+	public static final String hbaseAddress = "hbase.address";
 
-	public static final String solrAddress = "solr_address";
+	public static final String solrAddress = "solr.address";
 
 	public static final String pidManagerIp = "pid_manager_ip";
 

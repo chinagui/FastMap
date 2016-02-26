@@ -352,7 +352,7 @@ public class RdCrossSelector implements ISelector {
 
 			} else {
 				
-				return null;
+				throw new DataNotFoundException("NodePid:"+nodePid+" 对应的路口不存在");
 			}
 		} catch (Exception e) {
 			

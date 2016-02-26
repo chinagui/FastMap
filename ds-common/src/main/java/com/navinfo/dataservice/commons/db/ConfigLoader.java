@@ -65,13 +65,8 @@ public class ConfigLoader {
 			PidService.getInstance();
 
 			// hbase初始化
-			HBaseAddress.initHBaseClient(config
-					.getString(PropConstant.hbaseQuorum));
-			
-			HBaseAddress.initHBaseAddress(config
-					.getString(PropConstant.hbaseQuorum));
+			HBaseAddress.init();
 
-			// solr初始化
 		} catch (Exception e) {
 			logger.fatal(LoggerConstant.fatal, e);
 

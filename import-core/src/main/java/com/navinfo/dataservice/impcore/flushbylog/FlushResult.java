@@ -6,29 +6,29 @@ import java.util.List;
 public class FlushResult {
 
 	private int total;
-	
+
 	private int updateTotal;
-	
+
 	private int deleteTotal;
-	
+
 	private int insertTotal;
-	
+
 	private int failedTotal;
-	
+
 	private int updateFailed;
-	
+
 	private int deleteFailed;
-	
+
 	private int insertFailed;
-	
+
 	private int logMoved;
-	
+
 	private List<String> insertFailedList = new ArrayList<String>();
-	
+
 	private List<String> updateFailedList = new ArrayList<String>();
-	
+
 	private List<String> deleteFailedList = new ArrayList<String>();
-	
+
 	public int getLogMoved() {
 		return logMoved;
 	}
@@ -37,66 +37,78 @@ public class FlushResult {
 		this.logMoved = logMoved;
 	}
 
-	public void addInsertFailedRowId(String rowId){
+	public void addInsertFailedRowId(String rowId) {
 		insertFailedList.add(rowId);
 	}
-	
-	public void addDeleteFailedRowId(String rowId){
+
+	public void addDeleteFailedRowId(String rowId) {
 		deleteFailedList.add(rowId);
 	}
-	
-	public void addUpdateFailedRowId(String rowId){
+
+	public void addUpdateFailedRowId(String rowId) {
 		updateFailedList.add(rowId);
 	}
-	
+
 	public int getFailedTotal() {
 		return failedTotal;
 	}
+
 	public void setFailedTotal(int failedTotal) {
 		this.failedTotal = failedTotal;
 	}
+
 	public List<String> getInsertFailedList() {
 		return insertFailedList;
 	}
+
 	public void setInsertFailedList(List<String> insertFailedList) {
 		this.insertFailedList = insertFailedList;
 	}
+
 	public List<String> getUpdateFailedList() {
 		return updateFailedList;
 	}
+
 	public void setUpdateFailedList(List<String> updateFailedList) {
 		this.updateFailedList = updateFailedList;
 	}
+
 	public List<String> getDeleteFailedList() {
 		return deleteFailedList;
 	}
+
 	public void setDeleteFailedList(List<String> deleteFailedList) {
 		this.deleteFailedList = deleteFailedList;
 	}
-	
-	public void addTotal(){
-		total+=1;
+
+	public void addTotal() {
+		total += 1;
 	}
-	
-	public void addUpdateTotal(){
-		updateTotal+=1;
+
+	public void addUpdateTotal() {
+		updateTotal += 1;
 	}
-	public void addDeleteTotal(){
-		deleteTotal+=1;
+
+	public void addDeleteTotal() {
+		deleteTotal += 1;
 	}
-	public void addInsertTotal(){
-		insertTotal+=1;
+
+	public void addInsertTotal() {
+		insertTotal += 1;
 	}
-	public void addUpdateFailed(){
-		updateFailed+=1;
+
+	public void addUpdateFailed() {
+		updateFailed += 1;
 	}
-	public void addDeleteFailed(){
-		deleteFailed+=1;
+
+	public void addDeleteFailed() {
+		deleteFailed += 1;
 	}
-	public void addInsertFailed(){
-		insertFailed+=1;
+
+	public void addInsertFailed() {
+		insertFailed += 1;
 	}
-	
+
 	public int getTotal() {
 		return total;
 	}
@@ -152,5 +164,36 @@ public class FlushResult {
 	public void setInsertFailed(int insertFailed) {
 		this.insertFailed = insertFailed;
 	}
-	
+
+	public void print() {
+		System.out.println("Total:" + this.getTotal());
+
+		System.out.println("Insert total:" + this.getInsertTotal());
+
+		System.out.println("Update total:" + this.getUpdateTotal());
+
+		System.out.println("Delete total:" + this.getDeleteTotal());
+
+		System.out.println("Failed total:" + this.getFailedTotal());
+
+		System.out.println("Insert failed:" + this.getInsertFailed());
+
+		if (this.getInsertFailed() > 0) {
+			System.out.println("RowIds:" + this.getInsertFailedList());
+		}
+
+		System.out.println("Update failed:" + this.getUpdateFailed());
+
+		if (this.getUpdateFailed() > 0) {
+			System.out.println("RowIds:" + this.getUpdateFailedList());
+		}
+
+		System.out.println("Delete failed:" + this.getDeleteFailed());
+
+		if (this.getDeleteFailed() > 0) {
+			System.out.println("RowIds:" + this.getDeleteFailedList());
+		}
+
+		System.out.println("Log moved:" + this.getLogMoved());
+	}
 }

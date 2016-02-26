@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.scripts;
 
 import com.navinfo.dataservice.impcore.flushbylog.FlushGdb;
+import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
 
 public class PrjMeshCommit {
 
@@ -9,7 +10,9 @@ public class PrjMeshCommit {
 	 */
 	public static void main(String[] args) {
 
-		FlushGdb.prjMeshCommit(args);
+		FlushResult result = FlushGdb.prjMeshCommit(args);
+		
+		result.print();
 	}
 
 }

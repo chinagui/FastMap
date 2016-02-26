@@ -265,7 +265,7 @@ public class RdLinkOperator implements IOperator {
 	public void updateRow() throws Exception {
 
 		StringBuilder sb = new StringBuilder("update " + rdLink.tableName()
-				+ " set ");
+				+ " set u_record=3,");
 
 		PreparedStatement pstmt = null;
 

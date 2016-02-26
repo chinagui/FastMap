@@ -64,6 +64,16 @@ public class RdSpeedlimit implements IObj {
 	private String laneSpeedValue;
 
 	private String rowId;
+	
+	private int tollgateFlag;
+	
+	public int getTollgateFlag() {
+		return tollgateFlag;
+	}
+
+	public void setTollgateFlag(int tollgateFlag) {
+		this.tollgateFlag = tollgateFlag;
+	}
 
 	public int getLinkPid() {
 		return linkPid;
@@ -257,6 +267,10 @@ public class RdSpeedlimit implements IObj {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
 
+		if (objLevel == ObjLevel.FULL) {
+			speedValue /= 10;
+		}
+
 		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 
 		JSONObject json = JSONObject.fromObject(this, jsonConfig);
@@ -286,7 +300,13 @@ public class RdSpeedlimit implements IObj {
 
 				f.setAccessible(true);
 
-				f.set(this, json.get(key));
+				if ("speedValue".equals(key)) {
+					int value = json.getInt(key);
+
+					f.set(this, value * 10);
+				} else {
+					f.set(this, json.get(key));
+				}
 			}
 		}
 
@@ -396,10 +416,10 @@ public class RdSpeedlimit implements IObj {
 
 					if (!newValue.equals(oldValue)) {
 						if (key.equals("speedValue")) {
-							
-							newValue =  String.valueOf(json.getInt(key)*10);
-							
-							if(!newValue.equals(oldValue)){
+
+							newValue = String.valueOf(json.getInt(key) * 10);
+
+							if (!newValue.equals(oldValue)) {
 								changedFields.put(key, json.getInt(key) * 10);
 							}
 						} else {
@@ -427,7 +447,7 @@ public class RdSpeedlimit implements IObj {
 
 	@Override
 	public void setMesh(int mesh) {
-		this.meshId=mesh;
+		this.meshId = mesh;
 	}
 
 }

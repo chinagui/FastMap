@@ -163,6 +163,8 @@ public class RdNodeName implements IObj {
 		this.phonetic = name.phonetic;
 
 		this.srcFlag = name.srcFlag;
+		
+		this.mesh = name.mesh();
 	}
 
 	@Override

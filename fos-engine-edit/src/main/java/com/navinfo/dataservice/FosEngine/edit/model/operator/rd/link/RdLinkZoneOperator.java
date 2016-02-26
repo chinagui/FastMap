@@ -76,7 +76,7 @@ public class RdLinkZoneOperator implements IOperator {
 	public void updateRow() throws Exception {
 
 		StringBuilder sb = new StringBuilder("update " + zone.tableName()
-				+ " set ");
+				+ " set u_record=3,");
 
 		PreparedStatement pstmt = null;
 

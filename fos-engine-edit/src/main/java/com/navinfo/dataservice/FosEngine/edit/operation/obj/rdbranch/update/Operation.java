@@ -91,6 +91,8 @@ public class Operation implements IOperation {
 						
 						detail.setBranchPid(branch.getPid());
 						
+						detail.setMesh(branch.mesh());
+						
 						result.getAddObjects().add(detail);
 						
 						continue;
@@ -143,6 +145,8 @@ public class Operation implements IOperation {
 							name.Unserialize(cond);
 							
 							name.setDetailId(detailId);
+							
+							name.setMesh(branch.mesh());
 							
 							name.setPid(PidService.getInstance().applyBranchNameId());
 							

@@ -18,6 +18,9 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNodeMesh;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNodeName;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.MeshUtils;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 
 public class RdNodeSelector implements ISelector {
 
@@ -55,6 +58,13 @@ public class RdNodeSelector implements ISelector {
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
+				Geometry geometry = GeoTranslator.struct2Jts(struct);
+
+				Coordinate point = geometry.getCoordinate();
+
+				node.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(point.x,
+						point.y)));
+
 				node.setGeometry(GeoTranslator.struct2Jts(struct, 100000, 0));
 
 				node.setAdasFlag(resultSet.getInt("adas_flag"));
@@ -70,29 +80,27 @@ public class RdNodeSelector implements ISelector {
 				node.setReserved(resultSet.getString("reserved"));
 
 				node.setRowId(resultSet.getString("row_id"));
-				
+
 				RdNodeMeshSelector mesh = new RdNodeMeshSelector(conn);
 
 				node.setMeshes(mesh.loadRowsByParentId(id, isLock));
-				
+
 				for (IRow row : node.getMeshes()) {
 					RdNodeMesh obj = (RdNodeMesh) row;
 
 					node.meshMap.put(obj.rowId(), obj);
-					
-					node.setMesh(obj.getMeshId());
 				}
 
 				RdNodeNameSelector name = new RdNodeNameSelector(conn);
-				
-				List<IRow> names =name.loadRowsByParentId(id, isLock);
-				
-				for(IRow row : names){
+
+				List<IRow> names = name.loadRowsByParentId(id, isLock);
+
+				for (IRow row : names) {
 					row.setMesh(node.mesh());
 				}
-				
+
 				node.setNames(names);
-				
+
 				for (IRow row : node.getNames()) {
 					RdNodeName obj = (RdNodeName) row;
 
@@ -100,15 +108,15 @@ public class RdNodeSelector implements ISelector {
 				}
 
 				RdNodeFormSelector form = new RdNodeFormSelector(conn);
-				
-				List<IRow> forms =form.loadRowsByParentId(id, isLock);
-				
-				for(IRow row : forms){
+
+				List<IRow> forms = form.loadRowsByParentId(id, isLock);
+
+				for (IRow row : forms) {
 					row.setMesh(node.mesh());
 				}
 
 				node.setForms(forms);
-				
+
 				for (IRow row : node.getForms()) {
 					RdNodeForm obj = (RdNodeForm) row;
 
@@ -116,11 +124,11 @@ public class RdNodeSelector implements ISelector {
 				}
 
 			} else {
-				
+
 				throw new DataNotFoundException("数据不存在");
 			}
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -129,7 +137,7 @@ public class RdNodeSelector implements ISelector {
 					resultSet.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 			try {
@@ -137,7 +145,7 @@ public class RdNodeSelector implements ISelector {
 					pstmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
@@ -193,6 +201,13 @@ public class RdNodeSelector implements ISelector {
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
+				Geometry geometry = GeoTranslator.struct2Jts(struct);
+
+				Coordinate point = geometry.getCoordinate();
+
+				node.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(point.x,
+						point.y)));
+
 				node.setGeometry(GeoTranslator.struct2Jts(struct, 100000, 0));
 
 				node.setAdasFlag(resultSet.getInt("adas_flag"));
@@ -208,32 +223,28 @@ public class RdNodeSelector implements ISelector {
 				node.setReserved(resultSet.getString("reserved"));
 
 				node.setRowId(resultSet.getString("row_id"));
-				
+
 				RdNodeMeshSelector mesh = new RdNodeMeshSelector(conn);
 
-				node.setMeshes(mesh.loadRowsByParentId(node.getPid(),
-						isLock));
-				
-				for(IRow row : node.getMeshes()){
-					
-					node.setMesh(row.mesh());
-				}
+				node.setMeshes(mesh.loadRowsByParentId(node.getPid(), isLock));
 
 				RdNodeNameSelector name = new RdNodeNameSelector(conn);
-				
-				List<IRow> names = name.loadRowsByParentId(node.getPid(), isLock);
-				
-				for(IRow row : names){
+
+				List<IRow> names = name.loadRowsByParentId(node.getPid(),
+						isLock);
+
+				for (IRow row : names) {
 					row.setMesh(node.mesh());
 				}
-				
+
 				node.setNames(names);
 
 				RdNodeFormSelector form = new RdNodeFormSelector(conn);
-				
-				List<IRow> forms = form.loadRowsByParentId(node.getPid(), isLock);
-				
-				for(IRow row : forms){
+
+				List<IRow> forms = form.loadRowsByParentId(node.getPid(),
+						isLock);
+
+				for (IRow row : forms) {
 					row.setMesh(node.mesh());
 				}
 
@@ -242,7 +253,7 @@ public class RdNodeSelector implements ISelector {
 				nodes.add(node);
 			}
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -251,7 +262,7 @@ public class RdNodeSelector implements ISelector {
 					resultSet.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 			try {
@@ -259,7 +270,7 @@ public class RdNodeSelector implements ISelector {
 					pstmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
@@ -299,6 +310,13 @@ public class RdNodeSelector implements ISelector {
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
+				Geometry geometry = GeoTranslator.struct2Jts(struct);
+
+				Coordinate point = geometry.getCoordinate();
+
+				node.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(point.x,
+						point.y)));
+
 				node.setGeometry(GeoTranslator.struct2Jts(struct, 100000, 0));
 
 				node.setAdasFlag(resultSet.getInt("adas_flag"));
@@ -314,32 +332,28 @@ public class RdNodeSelector implements ISelector {
 				node.setReserved(resultSet.getString("reserved"));
 
 				node.setRowId(resultSet.getString("row_id"));
-				
+
 				RdNodeMeshSelector mesh = new RdNodeMeshSelector(conn);
 
-				node.setMeshes(mesh.loadRowsByParentId(node.getPid(),
-						isLock));
-				
-				for(IRow row : node.getMeshes()){
-					
-					node.setMesh(row.mesh());
-				}
+				node.setMeshes(mesh.loadRowsByParentId(node.getPid(), isLock));
 
 				RdNodeNameSelector name = new RdNodeNameSelector(conn);
-				
-				List<IRow> names = name.loadRowsByParentId(node.getPid(), isLock);
-				
-				for(IRow row : names){
+
+				List<IRow> names = name.loadRowsByParentId(node.getPid(),
+						isLock);
+
+				for (IRow row : names) {
 					row.setMesh(node.mesh());
 				}
-				
+
 				node.setNames(names);
 
 				RdNodeFormSelector form = new RdNodeFormSelector(conn);
-				
-				List<IRow> forms = form.loadRowsByParentId(node.getPid(), isLock);
-				
-				for(IRow row : forms){
+
+				List<IRow> forms = form.loadRowsByParentId(node.getPid(),
+						isLock);
+
+				for (IRow row : forms) {
 					row.setMesh(node.mesh());
 				}
 
@@ -348,7 +362,7 @@ public class RdNodeSelector implements ISelector {
 				nodes.add(node);
 			}
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -357,7 +371,7 @@ public class RdNodeSelector implements ISelector {
 					resultSet.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 			try {
@@ -365,7 +379,7 @@ public class RdNodeSelector implements ISelector {
 					pstmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}

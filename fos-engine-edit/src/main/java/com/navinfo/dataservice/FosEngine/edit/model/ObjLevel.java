@@ -5,5 +5,5 @@ package com.navinfo.dataservice.FosEngine.edit.model;
  */
 public enum ObjLevel {
 
-	BRIEF, SHORT, FULL;
+	BRIEF, SHORT, FULL, HISTORY;
 }

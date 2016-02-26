@@ -27,8 +27,8 @@ import com.navinfo.dataservice.versionman.lock.FmMesh4Lock;
 import com.navinfo.dataservice.versionman.lock.MeshLockManager;
 
 public class FlushGdb {
-	
-	static{
+
+	static {
 		try {
 			Class.forName("oracle.jdbc.driver.OracleDriver");
 		} catch (ClassNotFoundException e) {
@@ -50,10 +50,12 @@ public class FlushGdb {
 	private static long stopTime = 0;
 
 	private static WKT wktUtil = new WKT();
-	
-	public static void copXcopyHistory(String[] args){
+
+	public static FlushResult copXcopyHistory(String[] args) {
+		FlushResult result = new FlushResult();
+		
 		try {
-			flush(args);
+			result = flush(args);
 
 			sourceConn.commit();
 
@@ -69,11 +71,15 @@ public class FlushGdb {
 				e1.printStackTrace();
 			}
 		}
+		
+		return result;
 	}
-	
-	public static void fmgdb2gdbg(String[] args){
+
+	public static FlushResult fmgdb2gdbg(String[] args) {
+		
+		FlushResult result = new FlushResult();
 		try {
-			flushNoMesh(args);
+			result=flushNoMesh(args);
 
 			updateLogDetailCk();
 
@@ -91,11 +97,15 @@ public class FlushGdb {
 				e1.printStackTrace();
 			}
 		}
+		
+		return result;
 	}
-	
-	public static void prjMeshCommit(String[] args){
+
+	public static FlushResult prjMeshCommit(String[] args) {
+		
+		FlushResult result = new FlushResult();
 		try {
-			flush(args);
+			result=flush(args);
 
 			updateLogDetailCk();
 
@@ -113,11 +123,14 @@ public class FlushGdb {
 				e1.printStackTrace();
 			}
 		}
+		
+		return result;
 	}
-	
-	public static void prjMeshReturnHistory(String[] args){
-		
-		
+
+	public static FlushResult prjMeshReturnHistory(String[] args) {
+
+		FlushResult flushResult = new FlushResult();
+
 		try {
 			Class.forName("oracle.jdbc.driver.OracleDriver");
 
@@ -132,26 +145,27 @@ public class FlushGdb {
 			while (scanner.hasNextLine()) {
 				meshes.add(Integer.parseInt(scanner.nextLine()));
 			}
-			
+
 			int userId = Integer.valueOf(args[2]);
 
 			logDetailQuery.append(" and op_dt <= to_date('" + stopTime
 					+ "','yyyymmddhh24miss')");
 
 			int meshSize = meshes.size();
-			
+
 			Set<Integer> setMesh = new HashSet<Integer>();
-			
-			for(int m : meshes){
+
+			for (int m : meshes) {
 				setMesh.add(m);
 			}
-			
+
 			int prjId = Integer.parseInt(props.getProperty("project_id"));
-			
-			MeshLockManager man = new MeshLockManager(MultiDataSourceFactory.getInstance().getManDataSource());
+
+			MeshLockManager man = new MeshLockManager(MultiDataSourceFactory
+					.getInstance().getManDataSource());
 
 			man.lock(prjId, userId, setMesh, FmMesh4Lock.TYPE_GIVE_BACK);
-			
+
 			logDetailQuery.append(" and mesh_id in (");
 
 			for (int i = 0; i < meshSize; i++) {
@@ -166,16 +180,16 @@ public class FlushGdb {
 
 			init();
 
-			flushData();
+			flushData(flushResult);
 
-			moveLog();
+			moveLog(flushResult);
 
-//			updateLogDetailCk();
+			// updateLogDetailCk();
 
 			sourceConn.commit();
 
 			destConn.commit();
-			
+
 			man.unlock(prjId, setMesh, FmMesh4Lock.TYPE_GIVE_BACK);
 
 		} catch (Exception e) {
@@ -188,10 +202,14 @@ public class FlushGdb {
 				e1.printStackTrace();
 			}
 		}
-		
+
+		return flushResult;
+
 	}
 
-	public static void flush(String[] args) {
+	public static FlushResult flush(String[] args) {
+
+		FlushResult flushResult = new FlushResult();
 
 		try {
 
@@ -226,9 +244,9 @@ public class FlushGdb {
 
 			init();
 
-			flushData();
+			flushData(flushResult);
 
-			moveLog();
+			moveLog(flushResult);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -241,9 +259,12 @@ public class FlushGdb {
 			}
 		}
 
+		return flushResult;
 	}
-	
-	public static void flushNoMesh(String[] args) {
+
+	public static FlushResult flushNoMesh(String[] args) {
+
+		FlushResult flushResult = new FlushResult();
 
 		try {
 
@@ -253,36 +274,36 @@ public class FlushGdb {
 
 			stopTime = Long.parseLong(props.getProperty("stopTime"));
 
-//			Scanner scanner = new Scanner(new FileInputStream(args[1]));
+			// Scanner scanner = new Scanner(new FileInputStream(args[1]));
 
-//			while (scanner.hasNextLine()) {
-//				meshes.add(Integer.parseInt(scanner.nextLine()));
-//			}
+			// while (scanner.hasNextLine()) {
+			// meshes.add(Integer.parseInt(scanner.nextLine()));
+			// }
 
 			logDetailQuery.append(" and op_dt <= to_date('" + stopTime
 					+ "','yyyymmddhh24miss')");
 
-//			int meshSize = meshes.size();
-//
-//			logDetailQuery.append(" and mesh_id in (");
-//
-//			for (int i = 0; i < meshSize; i++) {
-//
-//				logDetailQuery.append(meshes.get(i));
-//				if (i < (meshSize - 1)) {
-//					logDetailQuery.append(",");
-//				}
-//			}
+			// int meshSize = meshes.size();
+			//
+			// logDetailQuery.append(" and mesh_id in (");
+			//
+			// for (int i = 0; i < meshSize; i++) {
+			//
+			// logDetailQuery.append(meshes.get(i));
+			// if (i < (meshSize - 1)) {
+			// logDetailQuery.append(",");
+			// }
+			// }
 
-//			logDetailQuery.append(") order by op_dt ");
-			
+			// logDetailQuery.append(") order by op_dt ");
+
 			logDetailQuery.append(" order by op_dt ");
 
 			init();
 
-			flushData();
+			flushData(flushResult);
 
-			moveLog();
+			moveLog(flushResult);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -294,6 +315,8 @@ public class FlushGdb {
 				e1.printStackTrace();
 			}
 		}
+
+		return flushResult;
 
 	}
 
@@ -316,22 +339,59 @@ public class FlushGdb {
 		destConn.setAutoCommit(false);
 	}
 
-	private static void flushData() throws Exception {
+	private static void flushData(FlushResult flushResult) throws Exception {
+
 		Statement sourceStmt = sourceConn.createStatement();
 
-		ResultSet logrs = sourceStmt.executeQuery("select * from log_detail "
+		ResultSet rs = sourceStmt.executeQuery("select * from log_detail "
 				+ logDetailQuery.toString());
 
-		logrs.setFetchSize(1000);
+		rs.setFetchSize(1000);
 
-		while (logrs.next()) {
+		while (rs.next()) {
 
-			assembleDataSql(logrs);
+			flushResult.addTotal();
+
+			int op_tp = rs.getInt("op_tp");
+
+			String rowId = rs.getString("row_id");
+
+			if (op_tp == 1) {// 新增
+
+				flushResult.addInsertTotal();
+
+				if (insertData(rs) == 0) {
+					flushResult.addInsertFailed();
+
+					flushResult.addInsertFailedRowId(rowId);
+				}
+
+			} else if (op_tp == 3) { // 修改
+
+				flushResult.addUpdateTotal();
+
+				if (updateData(rs) == 0) {
+					flushResult.addUpdateFailed();
+
+					flushResult.addUpdateFailedRowId(rowId);
+				}
+
+			} else if (op_tp == 2) { // 删除
+
+				flushResult.addDeleteTotal();
+
+				if (deleteData(rs) == 0) {
+					flushResult.addDeleteFailed();
+
+					flushResult.addDeleteFailedRowId(rowId);
+				}
+			}
 
 		}
+
 	}
 
-	private static void moveLog() throws Exception {
+	private static void moveLog(FlushResult flushResult) throws Exception {
 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyymmdd");
 
@@ -354,11 +414,14 @@ public class FlushGdb {
 		String moveSql = "insert into log_detail@" + dbLinkName
 				+ " select * from log_detail " + logDetailQuery.toString();
 
-		stmt.executeUpdate(moveSql);
+		int logMoved = stmt.executeUpdate(moveSql);
+
+		flushResult.setLogMoved(logMoved);
 
 		String sqlDropDblink = "drop database link " + dbLinkName;
 
 		stmt.execute(sqlDropDblink);
+
 	}
 
 	private static void updateLogDetailCk() throws Exception {
@@ -372,16 +435,16 @@ public class FlushGdb {
 		stmt.close();
 	}
 
-	private static void assembleDataSql(ResultSet rs) throws Exception {
+	private static int insertData(ResultSet rs) {
 
-		int op_tp = rs.getInt("op_tp");
+		StringBuilder sb = new StringBuilder("insert into ");
 
-		if (op_tp == 1) {
+		PreparedStatement pstmt = null;
+
+		try {
 			String newValue = rs.getString("new");
 
 			JSONObject json = JSONObject.fromObject(newValue);
-
-			StringBuilder sb = new StringBuilder("insert into ");
 
 			sb.append(rs.getString("tb_nm"));
 
@@ -430,7 +493,7 @@ public class FlushGdb {
 
 			tmpPos = 0;
 
-			PreparedStatement pstmt = destConn.prepareStatement(sb.toString());
+			pstmt = destConn.prepareStatement(sb.toString());
 
 			while (it.hasNext()) {
 				tmpPos++;
@@ -444,35 +507,43 @@ public class FlushGdb {
 					pstmt.setObject(tmpPos, valObj);
 				} else {
 
-					JGeometry jg = wktUtil.toJGeometry(valObj.toString().getBytes());
-					
+					JGeometry jg = wktUtil.toJGeometry(valObj.toString()
+							.getBytes());
+
 					jg.setSRID(8307);
-					
+
 					STRUCT s = JGeometry.store(jg, destConn);
-					
+
 					pstmt.setObject(tmpPos, s);
 				}
 
 			}
-			
+
+			return pstmt.executeUpdate();
+		} catch (Exception e) {
+			System.out.println(sb.toString());
+			e.printStackTrace();
+
+			return 0;
+		} finally {
 			try {
-				pstmt.executeUpdate();
-				
 				pstmt.close();
 			} catch (Exception e) {
-				System.out.println(sb.toString());
-				e.printStackTrace();
-				
-				throw new Exception(e);
+
 			}
+		}
+	}
 
-		} else if (op_tp == 3) {
+	private static int updateData(ResultSet rs) {
 
+		PreparedStatement pstmt = null;
+
+		StringBuilder sb = new StringBuilder("update ");
+
+		try {
 			String newValue = rs.getString("new");
 
 			JSONObject json = JSONObject.fromObject(newValue);
-
-			StringBuilder sb = new StringBuilder("update ");
 
 			sb.append(rs.getString("tb_nm"));
 
@@ -511,7 +582,7 @@ public class FlushGdb {
 
 			tmpPos = 0;
 
-			PreparedStatement pstmt = destConn.prepareStatement(sb.toString());
+			pstmt = destConn.prepareStatement(sb.toString());
 
 			while (it.hasNext()) {
 				tmpPos++;
@@ -525,34 +596,63 @@ public class FlushGdb {
 					pstmt.setObject(tmpPos, valObj);
 				} else {
 
-					JGeometry jg = wktUtil.toJGeometry(valObj.toString().getBytes());
-					
+					JGeometry jg = wktUtil.toJGeometry(valObj.toString()
+							.getBytes());
+
 					jg.setSRID(8307);
-					
+
 					STRUCT s = JGeometry.store(jg, destConn);
-					
+
 					pstmt.setObject(tmpPos, s);
 				}
 
 			}
-			
-			pstmt.executeUpdate();
-			
-			pstmt.close();
 
-		} else if (op_tp == 2) {
-			String sql =  "update " + rs.getString("tb_nm")
+			return pstmt.executeUpdate();
+
+		} catch (Exception e) {
+			System.out.println(sb.toString());
+			e.printStackTrace();
+
+			return 0;
+		} finally {
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+
+			}
+		}
+	}
+
+	private static int deleteData(ResultSet rs) {
+
+		PreparedStatement pstmt = null;
+
+		StringBuilder sb = new StringBuilder("update ");
+
+		try {
+
+			String sql = "update " + rs.getString("tb_nm")
 					+ " set u_record = 2 where row_id =hextoraw('"
 					+ rs.getString("tb_row_id") + "')";
-			
-			PreparedStatement pstmt = destConn.prepareStatement(sql);
-			
-			pstmt.executeUpdate();
-			
-			pstmt.close();
+
+			pstmt = destConn.prepareStatement(sql);
+
+			return pstmt.executeUpdate();
+
+		} catch (Exception e) {
+			System.out.println(sb.toString());
+			e.printStackTrace();
+
+			return 0;
+		} finally {
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+
+			}
 		}
 
 	}
-	
 
 }

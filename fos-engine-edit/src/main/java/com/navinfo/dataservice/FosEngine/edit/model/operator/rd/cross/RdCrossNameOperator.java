@@ -84,7 +84,7 @@ public class RdCrossNameOperator implements IOperator {
 	public void updateRow() throws Exception {
 
 		StringBuilder sb = new StringBuilder("update " + name.tableName()
-				+ " set ");
+				+ " set u_record=3,");
 
 		PreparedStatement pstmt = null;
 
@@ -245,7 +245,7 @@ public class RdCrossNameOperator implements IOperator {
 			throws Exception {
 
 		StringBuilder sb = new StringBuilder("update " + name.tableName()
-				+ " set ");
+				+ " set u_record=3,");
 
 		for (int i = 0; i < fieldNames.size(); i++) {
 

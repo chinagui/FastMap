@@ -83,7 +83,7 @@ public class RdSeriesbranchOperator implements IOperator {
 	public void updateRow() throws Exception {
 
 		StringBuilder sb = new StringBuilder("update " + seriesbranch.tableName()
-				+ " set ");
+				+ " set u_record=3,");
 
 		PreparedStatement pstmt = null;
 
@@ -241,7 +241,7 @@ public class RdSeriesbranchOperator implements IOperator {
 			throws Exception {
 
 		StringBuilder sb = new StringBuilder("update " + seriesbranch.tableName()
-				+ " set ");
+				+ " set u_record=3,");
 
 		for (int i = 0; i < fieldNames.size(); i++) {
 

@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.scripts;
 
 import com.navinfo.dataservice.impcore.flushbylog.FlushGdb;
+import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
 
 public class PrjMeshReturnHistory {
 
@@ -9,7 +10,9 @@ public class PrjMeshReturnHistory {
 	 */
 	public static void main(String[] args) {
 
-		FlushGdb.prjMeshReturnHistory(args);
+		FlushResult result = FlushGdb.prjMeshReturnHistory(args);
+		
+		result.print();
 	}
 
 }

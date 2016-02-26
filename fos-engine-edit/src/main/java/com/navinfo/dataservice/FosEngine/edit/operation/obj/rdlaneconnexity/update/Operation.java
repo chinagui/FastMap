@@ -95,6 +95,8 @@ public class Operation implements IOperation {
 								.applyLaneTopologyPid());
 
 						topo.setConnexityPid(lane.getPid());
+						
+						topo.setMesh(lane.mesh());
 
 						result.insertObject(topo, ObjStatus.INSERT);
 
@@ -145,6 +147,8 @@ public class Operation implements IOperation {
 								via.Unserialize(viajson);
 
 								via.setTopologyId(json.getInt("pid"));
+								
+								via.setMesh(lane.mesh());
 
 								result.insertObject(via, ObjStatus.INSERT);
 

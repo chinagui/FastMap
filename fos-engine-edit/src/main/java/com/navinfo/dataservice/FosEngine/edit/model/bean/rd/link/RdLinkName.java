@@ -16,7 +16,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 
 public class RdLinkName implements IRow {
-	
+
 	private int mesh;
 
 	private String rowId;
@@ -32,15 +32,14 @@ public class RdLinkName implements IRow {
 	private int linkPid;
 
 	private int nameGroupid;
-	
+
 	private String inputTime;
-	
+
 	private int srcFlag = 9;
-	
+
 	private int routeAtt;
-	
+
 	private int code;
-	
 
 	public String getInputTime() {
 		return inputTime;
@@ -139,7 +138,13 @@ public class RdLinkName implements IRow {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
 
-		return JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("name");
+		}
+
+		return json;
 	}
 
 	@Override
@@ -202,7 +207,7 @@ public class RdLinkName implements IRow {
 		this.setRowId(nameSource.getRowId());
 
 		this.setSeqNum(nameSource.getSeqNum());
-		
+
 		this.setMesh(row.mesh());
 	}
 
@@ -249,8 +254,8 @@ public class RdLinkName implements IRow {
 
 		while (keys.hasNext()) {
 			String key = (String) keys.next();
-			
-			if ("name".equals(key)){
+
+			if ("name".equals(key)) {
 				continue;
 			}
 
@@ -301,7 +306,7 @@ public class RdLinkName implements IRow {
 	@Override
 	public void setMesh(int mesh) {
 		// TODO Auto-generated method stub
-		this.mesh=mesh;
+		this.mesh = mesh;
 	}
 
 }

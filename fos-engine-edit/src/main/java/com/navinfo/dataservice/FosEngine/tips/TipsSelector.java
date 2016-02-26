@@ -383,7 +383,16 @@ public class TipsSelector {
 					m.put("e", name);
 
 				} else {
-					m.put("e", "无道路");
+					String name = "无道路";
+
+					if (type == 1101) {
+
+						double value = deep.getDouble("value");
+
+						name += "(" + Math.round(value) + "km/h)";
+					}
+
+					m.put("e", name);
 				}
 			}
 

@@ -58,7 +58,7 @@ public class RdSpeedlimitSelector implements ISelector {
 				
 				obj.setSpeedType(resultSet.getInt("speed_type"));
 				
-//				obj.setTollgateFlag(resultSet.getInt("tollgate_flag"));
+				obj.setTollgateFlag(resultSet.getInt("tollgate_flag"));
 				
 				obj.setSpeedDependent(resultSet.getInt("speed_dependent"));
 				
@@ -170,6 +170,8 @@ public class RdSpeedlimitSelector implements ISelector {
 				limit.setDirect(resultSet.getInt("direct"));
 				
 				limit.setSpeedValue(resultSet.getInt("speed_value"));
+				
+				limit.setTollgateFlag(resultSet.getInt("tollgate_flag"));
 				
 				limit.setSpeedType(resultSet.getInt("speed_type"));
 				
@@ -310,7 +312,9 @@ public class RdSpeedlimitSelector implements ISelector {
 				
 				limit.setDirect(resultSet.getInt("direct"));
 				
-				limit.setSpeedValue(resultSet.getInt("speed_value")/10);
+				limit.setSpeedValue(resultSet.getInt("speed_value"));
+				
+				limit.setTollgateFlag(resultSet.getInt("tollgate_flag"));
 				
 				limit.setSpeedType(resultSet.getInt("speed_type"));
 				

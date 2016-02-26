@@ -53,8 +53,12 @@ public class Operation implements IOperation {
 			limit.setLinkPid(linkPid);
 			
 			limit.setSpeedType(rdSpeedlimit.getSpeedType());
+			
+			RdLink link = mapLinks.get(linkPid);
+			
+			limit.setMesh(link.getMeshId());
 
-			if (mapLinks.get(linkPid).getDirect() == 2) {
+			if (link.getDirect() == 2) {
 				limit.setFromSpeedLimit(rdSpeedlimit.getSpeedValue());
 				limit.setToSpeedLimit(0);
 				

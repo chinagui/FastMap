@@ -82,7 +82,7 @@ public class RdLaneViaOperator implements IOperator {
 	public void updateRow() throws Exception {
 
 		StringBuilder sb = new StringBuilder("update " + via.tableName()
-				+ " set ");
+				+ " set u_record=3,");
 
 		PreparedStatement pstmt = null;
 
@@ -228,7 +228,7 @@ public class RdLaneViaOperator implements IOperator {
 			throws Exception {
 
 		StringBuilder sb = new StringBuilder("update " + via.tableName()
-				+ " set ");
+				+ " set u_record=3,");
 
 		for (int i = 0; i < fieldNames.size(); i++) {
 

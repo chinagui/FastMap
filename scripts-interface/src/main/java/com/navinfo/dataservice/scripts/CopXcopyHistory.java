@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.scripts;
 
 import com.navinfo.dataservice.impcore.flushbylog.FlushGdb;
+import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
 
 public class CopXcopyHistory {
 
@@ -9,7 +10,9 @@ public class CopXcopyHistory {
 	 */
 	public static void main(String[] args) {
 
-		FlushGdb.copXcopyHistory(args);
+		FlushResult result = FlushGdb.copXcopyHistory(args);
+		
+		result.print();
 	}
 
 }

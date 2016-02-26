@@ -190,6 +190,8 @@ public class RdRestriction implements IObj {
 		this.kgFlag = restrict.kgFlag;
 
 		this.details = new ArrayList<IRow>();
+		
+		this.mesh = restrict.mesh();
 
 		for (IRow detail : restrict.details) {
 

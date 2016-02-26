@@ -458,14 +458,6 @@ public class GeoTranslator {
 		return point;
 	}
 	
-	public static double getLinkLength(String wkt) throws Exception{
-		
-		double[][] linkMerArray = DisplayUtils.convertLinkToMerArray(wkt);
-		
-		return DisplayUtils.getLinkLength(linkMerArray);
-		
-	}
-	
 	public static double calAngle(double x11,double y11,double x12,double y12,double x21,double y21,double x22,double y22){
 //		double k1 = (y11-y12)/(x11-x12);
 //		double k2 = (y21-y22)/(x21-x22);

@@ -20,7 +20,7 @@ create table LOG_DETAIL (
     OB_TP NUMBER(1) DEFAULT 1 NOT NULL
         CHECK (OB_TP IN (1,2)) DISABLE,
     OP_DT TIMESTAMP,
-    TB_NM VARCHAR2(20),
+    TB_NM VARCHAR2(30),
     OLD CLOB,
     NEW CLOB,
     FD_LST VARCHAR2(1000),
@@ -78,4 +78,4 @@ create table CK_RESULT_OBJECT (
 	TABLE_NAME VARCHAR2(32) not null,
 	PID NUMBER(10) default 0 not null
 );
-
+create index IX_CK_RESULT_OBJECT_01 on CK_RESULT_OBJECT (PID);

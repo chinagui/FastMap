@@ -82,7 +82,7 @@ public class NiValException implements IObj {
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception{
 
 
-		if (objLevel == ObjLevel.FULL) {
+		if (objLevel == ObjLevel.FULL || objLevel == ObjLevel.HISTORY) {
 			JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 
 			JSONObject json = JSONObject.fromObject(this, jsonConfig);

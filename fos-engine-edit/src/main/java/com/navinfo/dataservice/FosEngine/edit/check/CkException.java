@@ -84,7 +84,7 @@ public class CkException implements IObj {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
 
-		if (objLevel == ObjLevel.FULL) {
+		if (objLevel == ObjLevel.FULL || objLevel == ObjLevel.HISTORY) {
 			JSONObject json = JSONObject.fromObject(this);
 
 			return json;

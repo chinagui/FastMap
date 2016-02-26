@@ -87,6 +87,8 @@ public class Operation implements IOperation {
 						
 						row.setNodePid(rdnode.getPid());
 						
+						row.setMesh(rdnode.mesh());
+						
 						result.getAddObjects().add(row);
 					}
 				}
@@ -133,6 +135,8 @@ public class Operation implements IOperation {
 						row.Unserialize(meshJson);
 						
 						row.setNodePid(rdnode.getPid());
+						
+						row.setMesh(rdnode.mesh());
 						
 						result.getAddObjects().add(row);
 					}
@@ -182,6 +186,8 @@ public class Operation implements IOperation {
 						row.setNameId(PidService.getInstance().applyNodeNameId());
 						
 						row.setNodePid(rdnode.getPid());
+						
+						row.setMesh(rdnode.mesh());
 						
 						result.getAddObjects().add(row);
 					}

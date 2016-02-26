@@ -151,6 +151,8 @@ public class RdRestrictionVia implements IRow {
 		this.groupId = via.groupId;
 
 		this.seqNum = via.seqNum;
+		
+		this.mesh = via.mesh();
 
 	}
 

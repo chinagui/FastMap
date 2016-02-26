@@ -247,6 +247,8 @@ public class RdRestrictionDetail implements IObj {
 		this.relationshipType = detail.relationshipType;
 
 		this.conditions = new ArrayList<IRow>();
+		
+		this.mesh = detail.mesh();
 
 		for (IRow condition : detail.conditions) {
 

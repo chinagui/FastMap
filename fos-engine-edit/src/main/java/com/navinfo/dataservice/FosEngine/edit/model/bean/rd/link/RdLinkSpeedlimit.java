@@ -138,9 +138,10 @@ public class RdLinkSpeedlimit implements IRow {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
 
-		fromSpeedLimit = fromSpeedLimit * 10;
-
-		toSpeedLimit = toSpeedLimit * 10;
+		if (objLevel == ObjLevel.FULL) {
+			fromSpeedLimit /= 10;
+			toSpeedLimit /= 10;
+		}
 
 		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
 	}
@@ -160,7 +161,13 @@ public class RdLinkSpeedlimit implements IRow {
 
 				f.setAccessible(true);
 
-				f.set(this, json.get(key));
+				if ("fromSpeedLimit".equals(key) || "toSpeedLimit".equals(key)) {
+					int value = json.getInt(key);
+
+					f.set(this, value * 10);
+				} else {
+					f.set(this, json.get(key));
+				}
 			}
 
 		}
@@ -263,13 +270,13 @@ public class RdLinkSpeedlimit implements IRow {
 					if (!newValue.equals(oldValue)) {
 						if (key.equals("fromSpeedLimit")
 								|| key.equals("toSpeedLimit")) {
-							
+
 							int limit = json.getInt(key) * 10;
-							
+
 							newValue = String.valueOf(limit);
 
 							if (!newValue.equals(oldValue)) {
-								changedFields.put(key,limit);
+								changedFields.put(key, limit);
 							}
 						} else {
 							changedFields.put(key, json.get(key));

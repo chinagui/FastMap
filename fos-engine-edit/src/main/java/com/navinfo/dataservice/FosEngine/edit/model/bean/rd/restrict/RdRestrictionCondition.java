@@ -184,6 +184,8 @@ public class RdRestrictionCondition implements IRow {
 		this.resAxleLoad = condition.resAxleLoad;
 
 		this.resOut = condition.resOut;
+		
+		this.mesh = condition.mesh();
 
 	}
 

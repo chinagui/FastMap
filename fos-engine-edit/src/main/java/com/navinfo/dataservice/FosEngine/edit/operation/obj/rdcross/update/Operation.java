@@ -96,6 +96,8 @@ public class Operation implements IOperation {
 						node.Unserialize(nodeJson);
 						
 						node.setPid(cross.getPid());
+						
+						node.setMesh(cross.mesh());
 
 						result.insertObject(node, ObjStatus.INSERT);
 
@@ -146,6 +148,8 @@ public class Operation implements IOperation {
 						link.Unserialize(json);
 						
 						link.setPid(cross.getPid());
+						
+						link.setMesh(cross.mesh());
 
 						result.insertObject(link, ObjStatus.INSERT);
 
@@ -198,6 +202,8 @@ public class Operation implements IOperation {
 						name.setNameId(PidService.getInstance().applyRdCrossNameId());
 						
 						name.setPid(cross.getPid());
+						
+						name.setMesh(cross.mesh());
 
 						result.insertObject(name, ObjStatus.INSERT);
 
@@ -253,6 +259,8 @@ public class Operation implements IOperation {
 			node.setPid(cross.getPid());
 			
 			node.setNodePid(nodePid);
+			
+			node.setMesh(cross.mesh());
 			
 			result.getAddObjects().add(node);
 		}
@@ -311,6 +319,8 @@ public class Operation implements IOperation {
 			
 			link.setLinkPid(linkPid);
 			
+			link.setMesh(cross.mesh());
+			
 			result.getAddObjects().add(link);
 			
 			//维护道路形态
@@ -342,6 +352,8 @@ public class Operation implements IOperation {
 					RdLinkForm form = new RdLinkForm();
 					
 					form.setLinkPid(linkPid);
+					
+					form.setMesh(cross.mesh());
 					
 					form.setFormOfWay(50);
 					

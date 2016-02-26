@@ -13,6 +13,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.service.PidService;
+import com.navinfo.dataservice.commons.util.GeometryUtils;
 import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.vividsolutions.jts.geom.Point;
 
@@ -63,15 +64,15 @@ public class OpTopo implements IOperation {
 		if (this.breakPoint == null){
 			
 			breakPoint = new RdNode();
-
+			
 			breakPoint.setPid(PidService.getInstance().applyNodePid());
 			
+			breakPoint.copy(command.getsNode());
+
 			breakPoint.setGeometry(GeoTranslator.geojson2Jts(geoPoint, 100000, 0));
 			
 			breakPoint.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(command.getPoint().getX(), command.getPoint().getY())));
 	
-			breakPoint.copy(command.getsNode());
-			
 			result.insertObject(breakPoint, ObjStatus.INSERT);
 		
 		}
@@ -159,32 +160,31 @@ public class OpTopo implements IOperation {
 
 		RdLink link1 = new RdLink();
 		
-		link1.copy(rdLinkBreakpoint);
-
 		link1.setPid(PidService.getInstance().applyLinkPid());
+		
+		link1.copy(rdLinkBreakpoint);
 
 		link1.setGeometry(GeoTranslator.geojson2Jts(geojson1));
 		
-		double length1 = GeoTranslator.getLinkLength(GeoTranslator.jts2Wkt(link1.getGeometry(), 0.00001, 5));
-
+		double length1 = GeometryUtils.getLinkLength(GeoTranslator.transform(link1.getGeometry(), 0.00001, 5));
+		
 		link1.setLength(length1);
 		
 		command.setLink1(link1);
 
 		RdLink link2 = new RdLink();
-
-		link2.copy(rdLinkBreakpoint);
 		
 		link2.setPid(PidService.getInstance().applyLinkPid());
 
+		link2.copy(rdLinkBreakpoint);
+		
 		link2.setGeometry(GeoTranslator.geojson2Jts(geojson2));
 		
-		double length2 = GeoTranslator.getLinkLength(GeoTranslator.jts2Wkt(link2.getGeometry(), 0.00001, 5));
-
+		double length2 = GeometryUtils.getLinkLength(GeoTranslator.transform(link2.getGeometry(), 0.00001, 5));
+		
 		link2.setLength(length2);
 
 		command.setLink2(link2);
 
 	}
-
 }

@@ -67,7 +67,9 @@ public class SConnection {
 
 		doc.addField("stage", json.getInt("stage"));
 
-		doc.addField("date", json.getString("date"));
+		doc.addField("t_operateDate", json.getString("t_operateDate"));
+		
+		doc.addField("t_date", json.getString("t_date"));
 
 		doc.addField("t_lifecycle", json.getInt("t_lifecycle"));
 
@@ -96,7 +98,7 @@ public class SConnection {
 	public boolean checkTipsMobile(String wkt, String date)
 			throws SolrServerException, IOException {
 
-		String param = "wkt:\"intersects(" + wkt + ")\" AND date:[" + date
+		String param = "wkt:\"intersects(" + wkt + ")\" AND t_date:[" + date
 				+ " TO *]";
 
 		SolrQuery query = new SolrQuery();
@@ -129,7 +131,7 @@ public class SConnection {
 		String param = "wkt:\"intersects(" + wkt + ")\"";
 
 		if (date != null && !date.equals("")) {
-			param += " AND date:[" + date + " TO *]";
+			param += " AND t_date:[" + date + " TO *]";
 		}
 
 		SolrQuery query = new SolrQuery();
@@ -230,7 +232,7 @@ public class SConnection {
 
 		query.set("q", builder.toString());
 
-		query.set("sort", "date desc");
+		query.set("sort", "t_date desc");
 
 		query.set("start", 0);
 

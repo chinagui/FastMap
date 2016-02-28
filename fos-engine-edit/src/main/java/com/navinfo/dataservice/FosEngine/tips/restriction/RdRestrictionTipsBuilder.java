@@ -74,7 +74,7 @@ public class RdRestrictionTipsBuilder {
 
 			String track = TipsImportUtils.generateTrack(date);
 
-			String geometry = generateGeometry(resultSet);
+			JSONObject geometry = generateGeometry(resultSet);
 
 			String deep = generateDeep(resultSet);
 
@@ -87,13 +87,13 @@ public class RdRestrictionTipsBuilder {
 					track.getBytes());
 
 			put.addColumn("data".getBytes(), "geometry".getBytes(),
-					geometry.getBytes());
+					geometry.toString().getBytes());
 
 			put.addColumn("data".getBytes(), "deep".getBytes(), deep.getBytes());
 
 			puts.add(put);
 			
-			JSONObject solrIndexJson = assembleSolrIndex(rowkey, JSONObject.fromObject(geometry), 0, date, type, deep);
+			JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(rowkey, 0, date, type, deep.toString(), geometry.getJSONObject("g_location"), geometry.getJSONObject("g_guide"));
 
 			solrConn.addTips(solrIndexJson);
 
@@ -113,7 +113,7 @@ public class RdRestrictionTipsBuilder {
 
 	}
 
-	private static String generateGeometry(ResultSet resultSet)
+	private static JSONObject generateGeometry(ResultSet resultSet)
 			throws Exception {
 
 		STRUCT struct1 = (STRUCT) resultSet.getObject("link_geom");
@@ -149,7 +149,7 @@ public class RdRestrictionTipsBuilder {
 
 		geometry.put("g_guide", json);
 
-		return geometry.toString();
+		return geometry;
 	}
 
 	private static String generateDeep(ResultSet resultSet) throws Exception {
@@ -261,41 +261,6 @@ public class RdRestrictionTipsBuilder {
 		}
 		
 		return direct;
-	}
-	
-	
-	private static JSONObject assembleSolrIndex(String rowkey, JSONObject geom,
-			int stage, String date, String type, String deep) throws Exception {
-		JSONObject json = new JSONObject();
-
-		json.put("id", rowkey);
-
-		json.put("stage", stage);
-
-		json.put("date", date);
-
-		json.put("t_lifecycle", 0);
-
-		json.put("t_command", 0);
-
-		json.put("handler", 0);
-
-		json.put("s_sourceType", type);
-
-		json.put("s_sourceCode", 11);
-
-		JSONObject geojson = geom.getJSONObject("g_location");
-
-		json.put("g_location", geojson);
-
-		json.put("g_guide", geom.getJSONObject("g_guide"));
-
-		json.put("wkt",
-				GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(geojson)));
-		
-		json.put("deep",deep);
-
-		return json;
 	}
 
 }

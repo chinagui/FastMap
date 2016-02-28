@@ -112,20 +112,22 @@ public class TipsExporter {
 					} else if ("track".equals(key)) {
 						JSONObject jo = JSONObject.fromObject(new String(kv
 								.value()));
-
-						JSONArray tTrackInfo = jo.getJSONArray("t_trackInfo");
-
-						String lastDate = tTrackInfo.getJSONObject(
-								tTrackInfo.size() - 1).getString("date");
-
-						if (date.compareTo(lastDate) > 0) {
+						
+						String t_date = jo.getString("t_date");
+						
+						if (date.compareTo(t_date) > 0) {
 							flag = false;
 							break;
 						}
+						
+						JSONArray t_trackInfo = jo.getJSONArray("t_trackInfo");
+
+						String t_operateDate = t_trackInfo.getJSONObject(
+								t_trackInfo.size() - 1).getString("date");
 
 						json.put("t_lifecycle", jo.getInt("t_lifecycle"));
 
-						json.put("t_operateDate", lastDate);
+						json.put("t_operateDate", t_operateDate);
 
 						json.put("rowkey", new String(kv.key()));
 					}

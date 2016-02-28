@@ -16,7 +16,6 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.FosEngine.tips.TipsImportUtils;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
 import com.navinfo.dataservice.solr.core.SConnection;
@@ -69,7 +68,7 @@ public class RdSpeedLimitTipsBuilder {
 
 			String track = TipsImportUtils.generateTrack(date);
 
-			String geometry = generateGeometry(resultSet);
+			JSONObject geometry = generateGeometry(resultSet);
 
 			String deep = generateDeep(resultSet);
 
@@ -81,14 +80,17 @@ public class RdSpeedLimitTipsBuilder {
 			put.addColumn("data".getBytes(), "track".getBytes(),
 					track.getBytes());
 
-			put.addColumn("data".getBytes(), "geometry".getBytes(),
-					geometry.getBytes());
+			put.addColumn("data".getBytes(), "geometry".getBytes(), geometry
+					.toString().getBytes());
 
 			put.addColumn("data".getBytes(), "deep".getBytes(), deep.getBytes());
 
 			puts.add(put);
 
-			JSONObject solrIndexJson = assembleSolrIndex(rowkey, JSONObject.fromObject(geometry), 0, date, type, deep);
+			JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(
+					rowkey, 0, date, type, deep.toString(),
+					geometry.getJSONObject("g_location"),
+					geometry.getJSONObject("g_guide"));
 
 			solrConn.addTips(solrIndexJson);
 
@@ -108,7 +110,7 @@ public class RdSpeedLimitTipsBuilder {
 
 	}
 
-	private static String generateGeometry(ResultSet resultSet)
+	private static JSONObject generateGeometry(ResultSet resultSet)
 			throws Exception {
 
 		STRUCT struct1 = (STRUCT) resultSet.getObject("point_geom");
@@ -140,14 +142,14 @@ public class RdSpeedLimitTipsBuilder {
 
 		geometry.put("g_guide", Geojson.wkt2Geojson(pointWkt));
 
-		return geometry.toString();
+		return geometry;
 	}
 
 	private static String generateDeep(ResultSet resultSet) throws Exception {
 
 		JSONObject jsonDeep = new JSONObject();
 
-//		jsonDeep.put("tp", 1);
+		// jsonDeep.put("tp", 1);
 
 		jsonDeep.put("id", resultSet.getString("pid"));
 
@@ -159,14 +161,13 @@ public class RdSpeedLimitTipsBuilder {
 
 		jsonDeep.put("f", jsonF);
 
-		jsonDeep.put(
-				"agl",calAngle(resultSet));
+		jsonDeep.put("agl", calAngle(resultSet));
 
 		jsonDeep.put("toll", resultSet.getInt("tollgate_flag"));
 
 		jsonDeep.put("rdDir", resultSet.getInt("direct"));
 
-		jsonDeep.put("value", resultSet.getInt("speed_value")/10);
+		jsonDeep.put("value", resultSet.getInt("speed_value") / 10);
 
 		jsonDeep.put("se", resultSet.getInt("speed_flag"));
 
@@ -177,104 +178,67 @@ public class RdSpeedLimitTipsBuilder {
 		return jsonDeep.toString();
 	}
 
-	// 组装solr索引
-	private static JSONObject assembleSolrIndex(String rowkey, JSONObject geom,
-			int stage, String date, String type, String deep) throws Exception {
-		JSONObject json = new JSONObject();
+	// 计算角度
+	private static double calAngle(ResultSet resultSet) throws Exception {
 
-		json.put("id", rowkey);
-
-		json.put("stage", stage);
-
-		json.put("date", date);
-
-		json.put("t_lifecycle", 0);
-
-		json.put("t_command", 0);
-
-		json.put("handler", 0);
-
-		json.put("s_sourceType", type);
-
-		json.put("s_sourceCode", 11);
-
-		JSONObject geojson = geom.getJSONObject("g_location");
-
-		json.put("g_location", geojson);
-
-		json.put("g_guide", geom.getJSONObject("g_guide"));
-
-		json.put("wkt",
-				GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(geojson)));
-		
-		json.put("deep", deep);
-
-		return json;
-	}
-	
-	//计算角度
-	private static double calAngle(ResultSet resultSet)throws Exception {
-		
 		double angle = 0;
-		
+
 		STRUCT struct1 = (STRUCT) resultSet.getObject("point_geom");
 
 		JGeometry geom1 = JGeometry.load(struct1);
-		
+
 		double[] point = geom1.getFirstPoint();
 
 		STRUCT struct2 = (STRUCT) resultSet.getObject("link_geom");
 
 		JGeometry geom2 = JGeometry.load(struct2);
-		
+
 		int ps = geom2.getNumPoints();
-		
+
 		int startIndex = 0;
-		
-		for(int i=0;i<ps-1;i++){
+
+		for (int i = 0; i < ps - 1; i++) {
 			double sx = geom2.getOrdinatesArray()[i * 2];
-			
+
 			double sy = geom2.getOrdinatesArray()[i * 2 + 1];
-			
-			double ex = geom2.getOrdinatesArray()[(i+1) * 2];
-			
-			double ey = geom2.getOrdinatesArray()[(i+1) * 2 + 1];
-			
-			if (isBetween(sx, ex, point[0]) && isBetween(sy, ey, point[1])){
+
+			double ex = geom2.getOrdinatesArray()[(i + 1) * 2];
+
+			double ey = geom2.getOrdinatesArray()[(i + 1) * 2 + 1];
+
+			if (isBetween(sx, ex, point[0]) && isBetween(sy, ey, point[1])) {
 				startIndex = i;
 				break;
 			}
 		}
-		
-		
+
 		StringBuilder sb = new StringBuilder("LINESTRING (");
-		
+
 		sb.append(geom2.getOrdinatesArray()[startIndex * 2]);
-		
+
 		sb.append(" ");
-		
+
 		sb.append(geom2.getOrdinatesArray()[startIndex * 2 + 1]);
-		
+
 		sb.append(", ");
-		
-		sb.append(geom2.getOrdinatesArray()[(startIndex +1) * 2]);
-		
+
+		sb.append(geom2.getOrdinatesArray()[(startIndex + 1) * 2]);
+
 		sb.append(" ");
-		
-		sb.append(geom2.getOrdinatesArray()[(startIndex +1) * 2 + 1]);
-		
+
+		sb.append(geom2.getOrdinatesArray()[(startIndex + 1) * 2 + 1]);
+
 		sb.append(")");
-		
+
 		angle = DisplayUtils.calIncloudedAngle(sb.toString(),
 				resultSet.getInt("direct"));
-		
+
 		return angle;
-		
-		
+
 	}
-	
+
 	private static boolean isBetween(double a, double b, double c) {
-	    return b > a ? c >= a && c <= b : c >= b && c <= a;
+		return b > a ? c >= a && c <= b : c >= b && c <= a;
 	}
 
 }

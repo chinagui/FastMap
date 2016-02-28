@@ -77,6 +77,8 @@ public class TipsOperator {
 		trackInfo.add(jo);
 
 		track.put("t_trackInfo", trackInfo);
+		
+		track.put("t_date", date);
 
 		put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
 				.getBytes());
@@ -101,7 +103,7 @@ public class TipsOperator {
 
 		solrIndex.put("stage", stage);
 
-		solrIndex.put("date", date);
+		solrIndex.put("t_date", date);
 
 		if (0 == lifecycle) {
 			solrIndex.put("t_lifecycle", 2);

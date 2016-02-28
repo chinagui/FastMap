@@ -18,7 +18,6 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.FosEngine.tips.TipsImportUtils;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
 import com.navinfo.dataservice.solr.core.SConnection;
@@ -95,7 +94,7 @@ public class RdCrossTipsBuilder {
 			
 			puts.add(put);
 			
-			JSONObject solrIndexJson = assembleSolrIndex(rowkey, JSONObject.fromObject(geometry), 0, date, type, deep);
+			JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(rowkey, 0, date, type, deep.toString(), geometry.getJSONObject("g_location"), geometry.getJSONObject("g_guide"));
 			
 			solrConn.addTips(solrIndexJson);
 			
@@ -174,41 +173,6 @@ public class RdCrossTipsBuilder {
 		}
 		
 		return json.toString();
-	}
-	
-	//组装solr索引
-	private static JSONObject assembleSolrIndex(String rowkey, JSONObject geom,
-			int stage, String date, String type, String deep) throws Exception {
-		JSONObject json = new JSONObject();
-
-		json.put("id", rowkey);
-
-		json.put("stage", stage);
-
-		json.put("date", date);
-
-		json.put("t_lifecycle", 0);
-
-		json.put("t_command", 0);
-
-		json.put("handler", 0);
-
-		json.put("s_sourceType", type);
-
-		json.put("s_sourceCode", 11);
-
-		JSONObject geojson = geom.getJSONObject("g_location");
-
-		json.put("g_location", geojson);
-
-		json.put("g_guide", geom.getJSONObject("g_guide"));
-
-		json.put("wkt",
-				GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(geojson)));
-		
-		json.put("deep", deep);
-
-		return json;
 	}
 	
 }

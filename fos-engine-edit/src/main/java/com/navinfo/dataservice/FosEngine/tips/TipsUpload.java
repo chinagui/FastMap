@@ -374,12 +374,12 @@ public class TipsUpload {
 		Put put = new Put(rowkey.getBytes());
 
 		JSONObject jsonTrack = generateTrackJson(3, json.getInt("t_handler"),
-				json.getInt("t_command"), null);
+				json.getInt("t_command"), null, json.getString("t_operateDate"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
 
-		JSONObject jsonSourceTemplate = TipsParse.getSourceConstruct();
+		JSONObject jsonSourceTemplate = TipsUploadUtils.getSourceConstruct();
 		JSONObject jsonSource = new JSONObject();
 
 		Iterator<String> itKey = jsonSourceTemplate.keys();
@@ -393,7 +393,7 @@ public class TipsUpload {
 		put.addColumn("data".getBytes(), "source".getBytes(), jsonSource
 				.toString().getBytes());
 
-		JSONObject jsonGeomTemplate = TipsParse.getGeometryConstruct();
+		JSONObject jsonGeomTemplate = TipsUploadUtils.getGeometryConstruct();
 
 		itKey = jsonGeomTemplate.keys();
 
@@ -490,12 +490,12 @@ public class TipsUpload {
 
 		JSONObject jsonTrack = generateTrackJson(lifecycle,
 				json.getInt("t_handler"), json.getInt("t_command"),
-				oldTip.getJSONArray("t_trackInfo"));
+				oldTip.getJSONArray("t_trackInfo"), json.getString("t_operateDate"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
 
-		JSONObject jsonSourceTemplate = TipsParse.getSourceConstruct();
+		JSONObject jsonSourceTemplate = TipsUploadUtils.getSourceConstruct();
 
 		Iterator<String> itKey = jsonSourceTemplate.keys();
 
@@ -510,7 +510,7 @@ public class TipsUpload {
 		put.addColumn("data".getBytes(), "source".getBytes(), jsonSource
 				.toString().getBytes());
 
-		JSONObject jsonGeomTemplate = TipsParse.getGeometryConstruct();
+		JSONObject jsonGeomTemplate = TipsUploadUtils.getGeometryConstruct();
 
 		itKey = jsonGeomTemplate.keys();
 
@@ -579,19 +579,21 @@ public class TipsUpload {
 	 * @return
 	 */
 	private JSONObject generateTrackJson(int lifecycle, int handler,
-			int command, JSONArray oldTrackInfo) {
+			int command, JSONArray oldTrackInfo, String t_operateDate) {
 
 		JSONObject jsonTrack = new JSONObject();
 
 		jsonTrack.put("t_lifecycle", lifecycle);
 
 		jsonTrack.put("t_command", command);
+		
+		jsonTrack.put("t_date", currentDate);
 
 		JSONObject jsonTrackInfo = new JSONObject();
 
 		jsonTrackInfo.put("stage", 1);
 
-		jsonTrackInfo.put("date", currentDate);
+		jsonTrackInfo.put("date", t_operateDate);
 
 		jsonTrackInfo.put("handler", handler);
 
@@ -606,7 +608,7 @@ public class TipsUpload {
 
 		return jsonTrack;
 	}
-
+	
 	private JSONObject generateSolrIndex(JSONObject json) throws Exception {
 
 		JSONObject index = new JSONObject();
@@ -615,7 +617,9 @@ public class TipsUpload {
 
 		index.put("stage", 1);
 
-		index.put("date", currentDate);
+		index.put("t_date", currentDate);
+		
+		index.put("t_operateDate", json.getString("t_operateDate"));
 
 		index.put("t_lifecycle", json.getInt("t_lifecycle"));
 

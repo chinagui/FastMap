@@ -100,15 +100,17 @@ public class TipsReshaper {
 			int t_command = trackjo.getInt("t_command");
 
 			solrIndex.put("t_command", t_command);
-
+			
+			solrIndex.put("t_date", trackjo.getString("t_date"));
+			
 			JSONArray tTrackInfo = trackjo.getJSONArray("t_trackInfo");
 
 			JSONObject lastTrack = tTrackInfo
 					.getJSONObject(tTrackInfo.size() - 1);
 
 			String lastDate = lastTrack.getString("date");
-
-			solrIndex.put("date", lastDate);
+			
+			solrIndex.put("t_operateDate", lastDate);
 
 			int stage = lastTrack.getInt("stage");
 
@@ -159,7 +161,7 @@ public class TipsReshaper {
 		HBaseAddress.initHBaseAddress("192.168.3.156");
 
 		TipsReshaper sa = new TipsReshaper(
-				"http://192.168.4.130:8081/solr/tips/", 50000);
+				"http://192.168.4.130:8081/solr/tips/", 5000);
 
 		System.out.println(sa.run());
 

@@ -23,13 +23,12 @@ public class TipsImportUtils {
 	 * @param type
 	 * @return
 	 */
-	public static String generateRowkey( String uniqId,
-			String type) {
+	public static String generateRowkey(String uniqId, String type) {
 
 		StringBuilder rowkey = new StringBuilder();
 
 		rowkey.append("11");
-		
+
 		rowkey.append(type);
 
 		rowkey.append(uniqId);
@@ -49,15 +48,17 @@ public class TipsImportUtils {
 
 		return sourcejson.toString();
 	}
-	
-	public static String generateTrack(String date){
-		
+
+	public static String generateTrack(String date) {
+
 		JSONObject track = new JSONObject();
-		
+
 		track.put("t_lifecycle", 0);
-		
+
 		track.put("t_command", 0);
-		
+
+		track.put("t_date", date);
+
 		JSONArray trackinfoarray = new JSONArray();
 
 		JSONObject trackinfo = new JSONObject();
@@ -65,42 +66,46 @@ public class TipsImportUtils {
 		trackinfo.put("stage", 0);
 		trackinfo.put("date", date);
 		trackinfo.put("handler", 0);
-		
+
 		trackinfoarray.add(trackinfo);
-		
+
 		track.put("t_trackInfo", trackinfoarray);
-		
+
 		return track.toString();
 	}
-	
+
 	// 组装solr索引
-	public static JSONObject assembleSolrIndex(String rowkey, JSONObject geom,
-			int stage ,String date, String type) throws Exception {
+	public static JSONObject assembleSolrIndex(String rowkey, int stage,
+			String date, String type,  String deep, JSONObject g_location, JSONObject g_guide)
+			throws Exception {
 		JSONObject json = new JSONObject();
 
 		json.put("id", rowkey);
-		
-		json.put("stage", stage);
-		
-		json.put("date", date);
-		
-		json.put("t_lifecycle", 0);
-		
-		json.put("t_command", 0);
-		
-		json.put("handler", 0);
-		
-		json.put("s_sourceType", type);
-		
-		json.put("s_sourceCode", 11);
-		
-		JSONObject geojson = geom.getJSONObject("g_location");
-		
-		json.put("g_location", geojson);
-		
-		json.put("g_guide", geom.getJSONObject("g_guide"));
 
-		json.put("wkt", GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(geojson)));
+		json.put("stage", stage);
+
+		json.put("t_operateDate", date);
+
+		json.put("t_date", date);
+
+		json.put("t_lifecycle", 0);
+
+		json.put("t_command", 0);
+
+		json.put("handler", 0);
+
+		json.put("s_sourceType", type);
+
+		json.put("s_sourceCode", 11);
+
+		json.put("g_location", g_location);
+
+		json.put("g_guide", g_guide);
+
+		json.put("wkt",
+				GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(g_location)));
+		
+		json.put("deep", deep);
 
 		return json;
 	}

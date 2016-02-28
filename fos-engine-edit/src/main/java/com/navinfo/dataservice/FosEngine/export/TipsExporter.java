@@ -229,6 +229,9 @@ public class TipsExporter {
 				json.put("angle",deepjson.getDouble("agl"));
 				
 			}
+			else{
+				json.put("angle", 0);
+			}
 			
 			json.put("deep", deepjson);
 			

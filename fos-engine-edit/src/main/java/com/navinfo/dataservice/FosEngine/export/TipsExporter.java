@@ -249,22 +249,38 @@ public class TipsExporter {
 					"track".getBytes()));
 			
 			JSONObject trackjson = JSONObject.fromObject(track);
-
-			JSONArray tTrackInfo = trackjson.getJSONArray("t_trackInfo");
-
+			
 			json.put("t_lifecycle", trackjson.getInt("t_lifecycle"));
 			
 			json.put("t_command", trackjson.getInt("t_command"));
+
+			JSONArray tTrackInfo = trackjson.getJSONArray("t_trackInfo");
 			
-			String lastDate = tTrackInfo.getJSONObject(
-					tTrackInfo.size() - 1).getString("date");
+			JSONObject lastTrackInfo = tTrackInfo.getJSONObject(
+					tTrackInfo.size() - 1);
+			
+			String lastDate = lastTrackInfo.getString("date");
+			
+			int handler = lastTrackInfo.getInt("handler");
+			
+			for(int i=tTrackInfo.size()-1; i>=0; i++){
+				JSONObject trackinfo = tTrackInfo.getJSONObject(i);
+				
+				if(trackinfo.getInt("stage") != 3){
+					lastDate = trackinfo.getString("date");
+					
+					handler = trackinfo.getInt("handler");
+					
+					break;
+				}
+			}
 			
 			json.put("t_operateDate", lastDate);
+			
+			json.put("t_handler", handler);
 
 			json.put("t_status", 0);
 
-			json.put("t_handler", 0);
-			
 			boolean flag=false;
 			
 			if (result.containsColumn("data".getBytes(), "feedback".getBytes())) {

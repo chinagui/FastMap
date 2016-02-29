@@ -168,7 +168,14 @@ public class TipsSelector {
 				JSONObject injson = JSONObject
 						.fromObject(new String(kv.value()));
 
-				json.putAll(injson);
+				String key = new String(kv.qualifier());
+				
+				if(key.equals("feedback")){
+					json.put("feedback", injson);
+				}
+				else{
+					json.putAll(injson);
+				}
 			}
 
 		} catch (Exception e) {
@@ -341,6 +348,8 @@ public class TipsSelector {
 			m.put("a", json.getString("stage"));
 
 			m.put("b", json.getString("t_lifecycle"));
+			
+			m.put("f", json.getString("t_operateDate"));
 
 			JSONObject deep = JSONObject.fromObject(json.getString("deep"));
 

@@ -32,7 +32,7 @@ public class EditController {
 	private static final Logger logger = Logger
 			.getLogger(EditController.class);
 
-	@RequestMapping(value = "/pdh/obj/edit")
+	@RequestMapping(value = "/editsupport/edit")
 	public void edit(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
@@ -72,7 +72,7 @@ public class EditController {
 		}
 	}
 
-	@RequestMapping(value = "/pdh/obj/getByCondition")
+	@RequestMapping(value = "/editsupport/getByCondition")
 	public void getByCondition(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -108,7 +108,7 @@ public class EditController {
 		}
 	}
 
-	@RequestMapping(value = "/pdh/obj/getByPid")
+	@RequestMapping(value = "/editsupport/getByPid")
 	public void getByPid(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -172,7 +172,7 @@ public class EditController {
 		}
 	}
 
-	@RequestMapping(value = "/pdh/obj/getBySpatial")
+	@RequestMapping(value = "/editsupport/getBySpatial")
 	public void getBySpatial(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 

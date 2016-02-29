@@ -201,9 +201,9 @@ public class Command implements ICommand {
 
 		JSONObject data = json.getJSONObject("data");
 
-		double lng = data.getDouble("longitude");
+		double lng = Math.round(data.getDouble("longitude")*100000)/100000.0;
 
-		double lat = data.getDouble("latitude");
+		double lat = Math.round(data.getDouble("latitude")*100000)/100000.0;
 
 		this.projectId = json.getInt("projectId");
 

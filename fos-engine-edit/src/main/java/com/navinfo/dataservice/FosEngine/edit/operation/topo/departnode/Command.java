@@ -34,9 +34,9 @@ public class Command implements ICommand {
 		
 		this.nodePid = data.getInt("nodePid");
 		
-		this.longitude = data.getDouble("longitude");
+		this.longitude = Math.round(data.getDouble("longitude")*100000)/100000.0;
 		
-		this.latitude = data.getDouble("latitude");
+		this.latitude = Math.round(data.getDouble("latitude")*100000)/100000.0;
 		
 		this.projectId = json.getInt("projectId");
 	}

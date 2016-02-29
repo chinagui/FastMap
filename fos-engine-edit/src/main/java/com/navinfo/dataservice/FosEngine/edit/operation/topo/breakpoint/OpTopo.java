@@ -123,18 +123,34 @@ public class OpTopo implements IOperation {
 			}
 
 			JSONArray jaPE = jaLink.getJSONArray(i + 1);
-
-			if (GeoTranslator.isIntersection(
-					new double[] { jaPS.getDouble(0), jaPS.getDouble(1) },
-					new double[] { jaPE.getDouble(0), jaPE.getDouble(1) },
-					new double[] { lon, lat })) {
-				ja1.add(new double[] { lon, lat });
-				ja2.add(new double[] { lon, lat });
-				hasFound = true;
-			} else if (!hasFound) {
-				ja1.add(jaPS);
-			} else {
-				ja2.add(jaPE);
+			
+			if(!hasFound){
+				
+				//打断点和形状点重合
+				if(lon == jaPE.getDouble(0) && lat == jaPE.getDouble(1)){ 
+					ja1.add(new double[] { lon, lat });
+					hasFound = true;
+				}
+				//打断点在线段上
+				else if (GeoTranslator.isIntersection(
+						new double[] { jaPS.getDouble(0), jaPS.getDouble(1) },
+						new double[] { jaPE.getDouble(0), jaPE.getDouble(1) },
+						new double[] { lon, lat })) {
+					ja1.add(new double[] { lon, lat });
+					ja2.add(new double[] { lon, lat });
+					hasFound = true;
+				}
+				else{
+					if(i>0){
+						ja1.add(jaPS);
+					}
+					
+					ja1.add(jaPE);
+				}
+				
+			}
+			else{
+				ja2.add(jaPS);
 			}
 
 			if (i == jaLink.size() - 2) {

@@ -263,7 +263,7 @@ public class TipsExporter {
 			
 			int handler = lastTrackInfo.getInt("handler");
 			
-			for(int i=tTrackInfo.size()-1; i>=0; i++){
+			for(int i=tTrackInfo.size()-1; i>=0; i--){
 				JSONObject trackinfo = tTrackInfo.getJSONObject(i);
 				
 				if(trackinfo.getInt("stage") != 3){
@@ -385,6 +385,12 @@ public class TipsExporter {
 			
 			String rowkey = new String(result.getRow());
 			
+			byte[] data = result.getValue("data".getBytes(),"origin".getBytes());
+			
+			if(data == null || data.length==0){
+				continue;
+			}
+			
 			JSONObject attribute = JSONObject.fromObject(new String(result.getValue("data".getBytes(),
 					"attribute".getBytes())));
 			
@@ -400,11 +406,11 @@ public class TipsExporter {
 			
 			extContent.put("deviceNum", attribute.getString("a_deviceNum"));
 			
-			photoMap.put(rowkey, extContent);
-			
 			String fileName = this.folderName + attribute.getString("a_fileName");
 			
-			FileUtils.makeSmallImage(result.getValue("data".getBytes(),"origin".getBytes()), fileName);
+			photoMap.put(rowkey, extContent);
+			
+			FileUtils.makeSmallImage(data, fileName);
 			
 		}
 		
@@ -460,8 +466,7 @@ public class TipsExporter {
 		HBaseAddress.initHBaseAddress("192.168.3.156");
 		JSONArray grids = new JSONArray();
 
-		grids.add(59567201);
-		grids.add(59567202);
+		grids.add(60560304);
 
 		TipsExporter exporter = new TipsExporter(
 				"http://192.168.4.130:8081/solr/tips/");

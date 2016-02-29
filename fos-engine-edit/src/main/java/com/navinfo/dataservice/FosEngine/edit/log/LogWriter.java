@@ -15,6 +15,7 @@ import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
 import com.navinfo.dataservice.FosEngine.edit.check.NiValExceptionOperator;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
+import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -482,8 +483,14 @@ public class LogWriter {
 				if (!"pid".equals(key) && !"geometry".equals(key)) {
 					json.put(StringUtils.toColumnName(key), rowJson.get(key));
 				} else if ("geometry".equals(key)) {
-					json.put("geometry",
+					
+					if(row.objType() == ObjType.CKEXCEPTION){
+						json.put(StringUtils.toColumnName(key), rowJson.get(key));
+					}
+					else{
+						json.put("geometry",
 							Geojson.geojson2Wkt(rowJson.getString("geometry")));
+					}
 				} else {
 					json.put(row.primaryKey(), rowJson.get(key));
 				}

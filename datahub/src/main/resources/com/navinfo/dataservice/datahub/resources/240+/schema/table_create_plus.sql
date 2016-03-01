@@ -70,7 +70,9 @@ create table NI_VAL_EXCEPTION_HISTORY  (
        check (QA_STATUS in (1,2))disable,
    WORKER               VARCHAR2(500),
    QA_WORKER            VARCHAR2(500),
-   LOG_TYPE             NUMBER(5)                      default 0 not null
+   LOG_TYPE             NUMBER(5)                      default 0 not null,
+   U_DATE           	VARCHAR2(14),
+   ROW_ID           	RAW(16)
 );
 
 create table CK_RESULT_OBJECT (

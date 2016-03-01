@@ -143,7 +143,7 @@ public class NiValExceptionOperator {
 			
 			if(type==3)
 			{
-				sql="insert into ni_val_exception_history from ni_val_exception a where a.reserved=:1";
+				sql="insert into ni_val_exception_history select * from ni_val_exception a where a.reserved=:1";
 			}
 			else{
 				
@@ -271,9 +271,9 @@ public class NiValExceptionOperator {
 
 		ConfigLoader.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
 		
-		String username1 = "fm_prjgdb_bj";
+		String username1 = "fm_prjgdb_bj02";
 
-		String password1 = "fm_prjgdb_bj";
+		String password1 = "fm_prjgdb_bj02";
 
 		int port1 = 1521;
 
@@ -289,9 +289,9 @@ public class NiValExceptionOperator {
 
 		//op.insertCheckLog("3213131", "POINT(116.1313 37.131)", "[RD_LINK,32131]", 13, "13");
 		
-		//op.updateCheckLogStatus("c667a0d89a21746dd9c2eeef570d6547", 11, 1);
+		op.updateCheckLogStatus("5490db11c96209409ce126ac3058c292", 11, 3);
 		
-		op.deleteNiValException("RD_LINK", 32131);
+		//op.deleteNiValException("RD_LINK", 32131);
 		
 		System.out.println("done");
 		

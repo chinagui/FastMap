@@ -45,6 +45,10 @@ public class CollectorImport {
 			
 			Put put = enclosedPut(entry,mapPhoto,mapSltPhoto);
 			
+			if(put == null){
+				continue;
+			}
+			
 			puts.add(put);
 			
 			num++;
@@ -70,6 +74,10 @@ public class CollectorImport {
 		String name = entry.getKey();
 		
 		byte[] photo = mapPhoto.get(name);
+		
+		if(photo == null){
+			return null;
+		}
 		
 		byte[] sltPhoto = mapSltPhoto.get(name);
 		

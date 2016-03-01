@@ -35,14 +35,13 @@ public class Check {
 
 			resultSet.close();
 
-			pstmt.close();
-
 			if (flag) {
 				throwException("盲端不允许创建路口");
 			}
 
 		}
-
+		
+		pstmt.close();
 	}
 
 	public void checkNodeForm(Connection conn, List<Integer> nodePids) throws Exception {
@@ -92,7 +91,7 @@ public class Check {
 			}
 		}
 		
-		String sql = "select count(1) count from rd_cross_node a where a.node_pid in ("+s+") and exists (select null from rd_cross c where c.pid=a.pid and c.kg_flag=0)";
+		String sql = "select count(1) count from rd_cross_node a where a.node_pid in ("+s+") and a.u_record!=2 and exists (select null from rd_cross c where c.pid=a.pid and c.kg_flag=0 and c.u_record!=2)";
 			
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 

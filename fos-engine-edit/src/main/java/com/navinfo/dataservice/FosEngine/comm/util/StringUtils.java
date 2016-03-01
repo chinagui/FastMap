@@ -31,7 +31,7 @@ public class StringUtils {
 
 		for (int i = 0; i < fieldName.length(); i++) {
 			char c = fieldName.charAt(i);
-			if (c >= 'A' && c <= 'Z') {
+			if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
 				sb.append("_" + c);
 			} else {
 				sb.append(c);

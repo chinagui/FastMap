@@ -289,7 +289,7 @@ public class TipsExporter {
 				
 				JSONArray farray = feedback.getJSONArray("f_array");
 
-				json.put("feedback", farray);
+				json.put("attachments", farray);
 				
 				for(int i=0;i<farray.size();i++){
 					JSONObject jo = farray.getJSONObject(i);
@@ -317,7 +317,7 @@ public class TipsExporter {
 					
 				}
 			} else {
-				json.put("feedback", new JSONArray());
+				json.put("attachments", new JSONArray());
 			}
 			
 			if (flag){
@@ -335,7 +335,7 @@ public class TipsExporter {
 			for(int i=0;i<list.size();i++){
 				JSONObject json = list.get(i);
 				
-				JSONArray feedbacks = json.getJSONArray("feedback");
+				JSONArray feedbacks = json.getJSONArray("attachments");
 				
 				JSONArray newFeedbacks = new JSONArray();
 				
@@ -358,7 +358,7 @@ public class TipsExporter {
 					newFeedbacks.add(feedback);
 				}
 				
-				json.put("feedback", newFeedbacks);
+				json.put("attachments", newFeedbacks);
 				
 				ja.add(json);
 			}

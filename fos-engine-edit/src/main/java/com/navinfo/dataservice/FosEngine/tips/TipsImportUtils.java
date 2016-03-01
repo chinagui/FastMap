@@ -45,6 +45,7 @@ public class TipsImportUtils {
 		sourcejson.put("s_sourceId", JSONObject.fromObject(null));
 		sourcejson.put("s_sourceType", type);
 		sourcejson.put("s_reliability", 100);
+		sourcejson.put("s_sourceProvider", 0);
 
 		return sourcejson.toString();
 	}

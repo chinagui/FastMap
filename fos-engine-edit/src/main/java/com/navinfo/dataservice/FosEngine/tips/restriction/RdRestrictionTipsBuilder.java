@@ -19,6 +19,7 @@ import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.FosEngine.tips.TipsImportUtils;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.timedomain.TimeDecoder;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
 import com.navinfo.dataservice.solr.core.SConnection;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -213,7 +214,10 @@ public class RdRestrictionTipsBuilder {
 			if (splits.length == 3){
 				infoJson.put("time", JSONNull.getInstance());
 			}else{
-				infoJson.put("time", splits[3]);
+				
+				TimeDecoder decoder = new TimeDecoder();
+				
+				infoJson.put("time",  decoder.decode(splits[3]));
 			}
 			
 			o_array.add(infoJson);

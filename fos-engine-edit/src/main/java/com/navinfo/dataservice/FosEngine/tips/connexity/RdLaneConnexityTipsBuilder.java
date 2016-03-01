@@ -189,7 +189,7 @@ public class RdLaneConnexityTipsBuilder {
 				if (bin16.charAt(i-1) == '1'){
 					JSONObject infoJson = JSONObject.fromObject(json.toString());
 					
-					bin16 = convertLaneinfoTo16Bin(inLaneInfo);
+					bin16 = convertLaneinfoTo16Bin(busLaneInfo);
 					
 					if (bin16.charAt(i-1) == '1'){
 						infoJson.put("isBus", 1);
@@ -213,7 +213,9 @@ public class RdLaneConnexityTipsBuilder {
 		
 		bin16 = Integer.toBinaryString(laneInfo);
 		
-		for(int i=0;i<16-bin16.length();i++){
+		int length = bin16.length();
+		
+		for(int i=0;i<16-length;i++){
 			bin16 = "0" + bin16;
 		}
 		

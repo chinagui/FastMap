@@ -40,7 +40,7 @@ public class TipsImportUtils {
 		JSONObject sourcejson = new JSONObject();
 
 		sourcejson.put("s_featureKind", 2);
-		sourcejson.put("s_Project", JSONObject.fromObject(null));
+		sourcejson.put("s_project", JSONObject.fromObject(null));
 		sourcejson.put("s_sourceCode", 11);
 		sourcejson.put("s_sourceId", JSONObject.fromObject(null));
 		sourcejson.put("s_sourceType", type);

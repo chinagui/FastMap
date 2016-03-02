@@ -340,22 +340,35 @@ public class TipsExporter {
 				JSONArray newFeedbacks = new JSONArray();
 				
 				for(int j=0;j<feedbacks.size();j++){
+					
+					JSONObject newFeedback = new JSONObject();
+					
 					JSONObject feedback = feedbacks.getJSONObject(j);
 					
 					int type = feedback.getInt("type");
 					
+					String content = feedback.getString("content");
+					
+					newFeedback.put("type", type);
+					
+					newFeedback.put("content", content);
+					
 					if (type != 1){
-						newFeedbacks.add(feedback);
-						continue;
+						
+						newFeedback.put("id", JSONNull.getInstance());
+						
+						newFeedback.put("extContent", JSONNull.getInstance());
+					}
+					else{
+						
+						newFeedback.put("id", content);
+						
+						JSONObject extContent = photoMap.get(content);
+						
+						newFeedback.put("extContent", extContent);
 					}
 					
-					String id = feedback.getString("content");
-					
-					JSONObject extContent = photoMap.get(id);
-					
-					feedback.put("extContent", extContent);
-					
-					newFeedbacks.add(feedback);
+					newFeedbacks.add(newFeedback);
 				}
 				
 				json.put("attachments", newFeedbacks);

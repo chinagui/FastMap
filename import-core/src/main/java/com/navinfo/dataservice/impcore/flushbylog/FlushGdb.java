@@ -543,7 +543,7 @@ public class FlushGdb {
 
 			int result = pstmt.executeUpdate();
 
-			logDetails.add("\""+logRowId+"\"");
+			logDetails.add("'"+logRowId+"'");
 
 			return result;
 		} catch (Exception e) {
@@ -638,7 +638,7 @@ public class FlushGdb {
 
 			int result = pstmt.executeUpdate();
 
-			logDetails.add("\""+logRowId+"\"");
+			logDetails.add("'"+logRowId+"'");
 
 			return result;
 
@@ -674,7 +674,7 @@ public class FlushGdb {
 
 			int result = pstmt.executeUpdate();
 
-			logDetails.add("\""+logRowId+"\"");
+			logDetails.add("'"+logRowId+"'");
 
 			return result;
 

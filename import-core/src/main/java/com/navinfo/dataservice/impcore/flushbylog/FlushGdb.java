@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.impcore.flushbylog;
 
 import java.io.FileInputStream;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -25,6 +26,7 @@ import oracle.sql.STRUCT;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.versionman.lock.FmMesh4Lock;
 import com.navinfo.dataservice.versionman.lock.MeshLockManager;
+import com.navinfo.navicommons.utils.StringUtils;
 
 public class FlushGdb {
 
@@ -51,9 +53,11 @@ public class FlushGdb {
 
 	private static WKT wktUtil = new WKT();
 
+	private static List<String> logDetails = new ArrayList<String>();
+
 	public static FlushResult copXcopyHistory(String[] args) {
 		FlushResult result = new FlushResult();
-		
+
 		try {
 			result = flush(args);
 
@@ -71,17 +75,15 @@ public class FlushGdb {
 				e1.printStackTrace();
 			}
 		}
-		
+
 		return result;
 	}
 
 	public static FlushResult fmgdb2gdbg(String[] args) {
-		
+
 		FlushResult result = new FlushResult();
 		try {
-			result=flushNoMesh(args);
-
-			updateLogDetailCk();
+			result = flushNoMesh(args);
 
 			sourceConn.commit();
 
@@ -97,17 +99,15 @@ public class FlushGdb {
 				e1.printStackTrace();
 			}
 		}
-		
+
 		return result;
 	}
 
 	public static FlushResult prjMeshCommit(String[] args) {
-		
+
 		FlushResult result = new FlushResult();
 		try {
-			result=flush(args);
-
-			updateLogDetailCk();
+			result = flush(args);
 
 			sourceConn.commit();
 
@@ -123,7 +123,7 @@ public class FlushGdb {
 				e1.printStackTrace();
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -183,8 +183,6 @@ public class FlushGdb {
 			flushData(flushResult);
 
 			moveLog(flushResult);
-
-			// updateLogDetailCk();
 
 			sourceConn.commit();
 
@@ -248,6 +246,8 @@ public class FlushGdb {
 
 			moveLog(flushResult);
 
+			updateLogDetailCk();
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			try {
@@ -304,6 +304,8 @@ public class FlushGdb {
 			flushData(flushResult);
 
 			moveLog(flushResult);
+
+			updateLogDetailCk();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -412,8 +414,17 @@ public class FlushGdb {
 		stmt.execute(sqlCreateDblink);
 
 		String moveSql = "insert into log_detail@" + dbLinkName
-				+ " select * from log_detail " + logDetailQuery.toString();
+				+ " select * from log_detail where";
 
+		Clob clob=null;
+		if(logDetails.size()>1000){
+			clob=sourceConn.createClob();
+			clob.setString(1, StringUtils.collection2String(logDetails, ","));
+			moveSql+= " row_id IN (select column_value from table(clob_to_table(?)))";
+		}else{
+			moveSql+= " row_id IN ("+StringUtils.collection2String(logDetails, ",")+")";
+		}
+		
 		int logMoved = stmt.executeUpdate(moveSql);
 
 		flushResult.setLogMoved(logMoved);
@@ -428,7 +439,16 @@ public class FlushGdb {
 
 		Statement stmt = sourceConn.createStatement();
 
-		String sql = "update log_detail set com_dt = sysdate,com_sta=1 ";
+		String sql = "update log_detail set com_dt = sysdate,com_sta=1 where";
+		
+		Clob clob=null;
+		if(logDetails.size()>1000){
+			clob=sourceConn.createClob();
+			clob.setString(1, StringUtils.collection2String(logDetails, ","));
+			sql+= " row_id IN (select column_value from table(clob_to_table(?)))";
+		}else{
+			sql+= " row_id IN ("+StringUtils.collection2String(logDetails, ",")+")";
+		}
 
 		stmt.execute(sql);
 
@@ -442,6 +462,8 @@ public class FlushGdb {
 		PreparedStatement pstmt = null;
 
 		try {
+			String logRowId = rs.getString("row_id");
+
 			String newValue = rs.getString("new");
 
 			JSONObject json = JSONObject.fromObject(newValue);
@@ -519,7 +541,11 @@ public class FlushGdb {
 
 			}
 
-			return pstmt.executeUpdate();
+			int result = pstmt.executeUpdate();
+
+			logDetails.add("\""+logRowId+"\"");
+
+			return result;
 		} catch (Exception e) {
 			System.out.println(sb.toString());
 			e.printStackTrace();
@@ -541,6 +567,8 @@ public class FlushGdb {
 		StringBuilder sb = new StringBuilder("update ");
 
 		try {
+			String logRowId = rs.getString("row_id");
+
 			String newValue = rs.getString("new");
 
 			JSONObject json = JSONObject.fromObject(newValue);
@@ -608,7 +636,11 @@ public class FlushGdb {
 
 			}
 
-			return pstmt.executeUpdate();
+			int result = pstmt.executeUpdate();
+
+			logDetails.add("\""+logRowId+"\"");
+
+			return result;
 
 		} catch (Exception e) {
 			System.out.println(sb.toString());
@@ -632,13 +664,19 @@ public class FlushGdb {
 
 		try {
 
+			String logRowId = rs.getString("row_id");
+
 			String sql = "update " + rs.getString("tb_nm")
 					+ " set u_record = 2 where row_id =hextoraw('"
 					+ rs.getString("tb_row_id") + "')";
 
 			pstmt = destConn.prepareStatement(sql);
 
-			return pstmt.executeUpdate();
+			int result = pstmt.executeUpdate();
+
+			logDetails.add("\""+logRowId+"\"");
+
+			return result;
 
 		} catch (Exception e) {
 			System.out.println(sb.toString());

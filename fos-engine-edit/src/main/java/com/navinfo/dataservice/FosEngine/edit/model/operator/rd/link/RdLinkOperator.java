@@ -296,10 +296,17 @@ public class RdLinkOperator implements IOperator {
 
 					if (!StringUtils.isStringSame(String.valueOf(value),
 							String.valueOf(columnValue))) {
-						sb.append(column + "='" + String.valueOf(columnValue)
-								+ "',");
-
-						isChanged = true;
+						
+						if(columnValue==null){
+							sb.append(column + "=null,");
+						}
+						else{
+							sb.append(column + "='" + String.valueOf(columnValue)
+									+ "',");
+						}
+						
+						isChanged=true;
+						
 					}
 
 				} else if (value instanceof Double) {

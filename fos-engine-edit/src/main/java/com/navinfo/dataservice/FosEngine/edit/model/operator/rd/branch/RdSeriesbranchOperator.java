@@ -18,7 +18,8 @@ import com.navinfo.dataservice.commons.util.UuidUtils;
 
 public class RdSeriesbranchOperator implements IOperator {
 
-	private static Logger logger = Logger.getLogger(RdSeriesbranchOperator.class);
+	private static Logger logger = Logger
+			.getLogger(RdSeriesbranchOperator.class);
 
 	private Connection conn;
 
@@ -48,7 +49,7 @@ public class RdSeriesbranchOperator implements IOperator {
 			pstmt.setInt(1, seriesbranch.getBranchPid());
 
 			pstmt.setInt(2, seriesbranch.getType());
-			
+
 			pstmt.setInt(3, seriesbranch.getVoiceDir());
 
 			pstmt.setString(4, seriesbranch.getPatternCode());
@@ -56,7 +57,7 @@ public class RdSeriesbranchOperator implements IOperator {
 			pstmt.setString(5, seriesbranch.getArrowCode());
 
 			pstmt.setInt(6, seriesbranch.getArrowFlag());
-			
+
 			pstmt.setInt(7, 1);
 
 			pstmt.setString(8, seriesbranch.rowId());
@@ -82,14 +83,15 @@ public class RdSeriesbranchOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 
-		StringBuilder sb = new StringBuilder("update " + seriesbranch.tableName()
-				+ " set u_record=3,");
+		StringBuilder sb = new StringBuilder("update "
+				+ seriesbranch.tableName() + " set u_record=3,");
 
 		PreparedStatement pstmt = null;
 
 		try {
 
-			Set<Entry<String, Object>> set = seriesbranch.changedFields().entrySet();
+			Set<Entry<String, Object>> set = seriesbranch.changedFields()
+					.entrySet();
 
 			Iterator<Entry<String, Object>> it = set.iterator();
 
@@ -108,12 +110,18 @@ public class RdSeriesbranchOperator implements IOperator {
 
 				column = StringUtils.toColumnName(column);
 
-				if (value instanceof String  || value==null ) {
+				if (value instanceof String || value == null) {
 
 					if (!StringUtils.isStringSame(String.valueOf(value),
 							String.valueOf(columnValue))) {
-						sb.append(column + "='" + String.valueOf(columnValue)
-								+ "',");
+
+						if (columnValue == null) {
+							sb.append(column + "=null,");
+						} else {
+							sb.append(column + "='"
+									+ String.valueOf(columnValue) + "',");
+						}
+
 					}
 
 				} else if (value instanceof Double) {
@@ -212,9 +220,9 @@ public class RdSeriesbranchOperator implements IOperator {
 		sb.append("(branch_pid, type, voice_dir, pattern_code, arrow_code, arrow_flag, u_record, row_id) values (");
 
 		sb.append(seriesbranch.getBranchPid());
-		
+
 		sb.append(seriesbranch.getType());
-		
+
 		sb.append(seriesbranch.getVoiceDir());
 
 		if (seriesbranch.getPatternCode() == null) {
@@ -228,9 +236,9 @@ public class RdSeriesbranchOperator implements IOperator {
 		} else {
 			sb.append(",'" + seriesbranch.getArrowCode() + "'");
 		}
-		
+
 		sb.append(seriesbranch.getArrowFlag());
-		
+
 		sb.append(",1,'" + seriesbranch.rowId() + "')");
 
 		stmt.addBatch(sb.toString());
@@ -240,8 +248,8 @@ public class RdSeriesbranchOperator implements IOperator {
 	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
 			throws Exception {
 
-		StringBuilder sb = new StringBuilder("update " + seriesbranch.tableName()
-				+ " set u_record=3,");
+		StringBuilder sb = new StringBuilder("update "
+				+ seriesbranch.tableName() + " set u_record=3,");
 
 		for (int i = 0; i < fieldNames.size(); i++) {
 
@@ -255,7 +263,8 @@ public class RdSeriesbranchOperator implements IOperator {
 
 			sb.append("=");
 
-			Field field = seriesbranch.getClass().getDeclaredField(fieldNames.get(i));
+			Field field = seriesbranch.getClass().getDeclaredField(
+					fieldNames.get(i));
 
 			Object value = field.get(seriesbranch);
 

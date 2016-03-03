@@ -109,8 +109,15 @@ public class RdBranchViaOperator implements IOperator {
 
 					if (!StringUtils.isStringSame(String.valueOf(value),
 							String.valueOf(columnValue))) {
-						sb.append(column + "='" + String.valueOf(columnValue)
-								+ "',");
+						
+						if(columnValue==null){
+							sb.append(column + "=null,");
+						}
+						else{
+							sb.append(column + "='" + String.valueOf(columnValue)
+									+ "',");
+						}
+						
 					}
 
 				} else if (value instanceof Double) {

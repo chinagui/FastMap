@@ -113,8 +113,15 @@ public class RdLinkLimitTruckOperator implements IOperator {
 
 					if (!StringUtils.isStringSame(String.valueOf(value),
 							String.valueOf(columnValue))) {
-						sb.append(column + "='" + String.valueOf(columnValue)
-								+ "',");
+						
+						if(columnValue==null){
+							sb.append(column + "=null,");
+						}
+						else{
+							sb.append(column + "='" + String.valueOf(columnValue)
+									+ "',");
+						}
+						
 					}
 
 				} else if (value instanceof Double) {
@@ -224,11 +231,11 @@ public class RdLinkLimitTruckOperator implements IOperator {
 		
 		sb.append(",");
 		
-		sb.append("'");
-		
-		sb.append(limit.getTimeDomain());
-		
-		sb.append("'");
+		if (limit.getTimeDomain() == null) {
+			sb.append("null");
+		} else {
+			sb.append("'" + limit.getTimeDomain() + "'");
+		}
 		
 		sb.append(",");
 		

@@ -28,7 +28,7 @@ public class NiValExceptionOperator {
 	public void insertCheckLog(String ruleId, String loc, String targets,
 			int meshId, String worker) throws Exception {
 
-		String sql = "merge into ni_val_exception a using ( select * from ( select :1 as RESERVED from dual) where RESERVED not in ( select RESERVED          from ni_val_exception          where RESERVED is not null        union all        select RESERVED          from ck_exception          where RESERVED is not null          )) b on (a.RESERVED = b.reserved) when not matched then   insert     (RESERVED, ruleid, information, location, targets, mesh_id, worker, row_id)   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9)";
+		String sql = "merge into ni_val_exception a using ( select * from ( select :1 as RESERVED from dual) where RESERVED not in ( select RESERVED          from ni_val_exception          where RESERVED is not null        union all        select RESERVED          from ck_exception          where RESERVED is not null          )) b on (a.RESERVED = b.reserved) when not matched then   insert     (RESERVED, ruleid, information, location, targets, mesh_id, worker, row_id, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, :10, sysdate, sysdate)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 
 		try {
@@ -52,6 +52,8 @@ public class NiValExceptionOperator {
 			pstmt.setString(8, worker);
 			
 			pstmt.setString(9, UuidUtils.genUuid());
+			
+			pstmt.setInt(10, 1);
 			
 			int res =pstmt.executeUpdate();
 			

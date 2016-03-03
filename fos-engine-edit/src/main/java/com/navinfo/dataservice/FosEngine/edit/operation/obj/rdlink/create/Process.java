@@ -76,11 +76,13 @@ public class Process implements IProcess {
 				throw new Exception(preCheckMsg);
 			}
 
-			IOperation operation = new Operation(command, check, conn);
+			Operation operation = new Operation(command, check, conn);
 
 			msg = operation.run(result);
 
 			this.recordData();
+			
+			operation.breakLine();
 
 			this.postCheck();
 

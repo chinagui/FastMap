@@ -69,6 +69,16 @@ public class Process implements IProcess {
 
 		this.jaDisplayLink = new JSONArray();
 	}
+	
+	public Process(ICommand command, Connection conn) throws Exception {
+		this.command = (Command) command;
+
+		this.result = new Result();
+
+		this.conn = conn;
+
+		this.jaDisplayLink = new JSONArray();
+	}
 
 	@Override
 	public ICommand getCommand() {
@@ -181,6 +191,49 @@ public class Process implements IProcess {
 			throw e;
 		}
 
+	}
+	
+	public String runNotCommit() throws Exception {
+		String msg;
+		try {
+				conn.setAutoCommit(false);
+				this.prepareData();
+				String preCheckMsg = this.preCheck();
+				if (preCheckMsg != null) {
+					throw new Exception(preCheckMsg);
+				}
+				IOperation operation = null;
+				if (command.getBreakNodePid() == 0) {
+					operation = new OpTopo(command, conn,
+							this.rdLinkBreakpoint, jaDisplayLink);
+				} else {
+					RdNode breakNode = (RdNode) new RdNodeSelector(conn)
+							.loadById(command.getBreakNodePid(), true);
+
+					operation = new OpTopo(command, conn,
+							this.rdLinkBreakpoint, jaDisplayLink, breakNode);
+				}
+				msg = operation.run(result);
+				OpRefRestrict opRefRestrict = new OpRefRestrict(command);
+				opRefRestrict.run(result);
+				OpRefBranch opRefBranch = new OpRefBranch(command);
+				opRefBranch.run(result);
+				OpRefLaneConnexity opRefLaneConnexity = new OpRefLaneConnexity(
+						command);
+				opRefLaneConnexity.run(result);
+				OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(command);
+				opRefSpeedlimit.run(result);
+				this.recordData();
+				this.postCheck();
+//				conn.commit();
+		}
+		catch (Exception e) {
+
+			conn.rollback();
+
+			throw e;
+		}
+		return msg;
 	}
 
 	@Override

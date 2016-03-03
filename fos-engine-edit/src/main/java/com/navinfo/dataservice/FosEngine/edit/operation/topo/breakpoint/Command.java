@@ -208,7 +208,7 @@ public class Command implements ICommand {
 		this.projectId = json.getInt("projectId");
 
 		if (data.containsKey("breakNodePid")) {
-			this.breakNodePid = json.getInt("breakNodePid");
+			this.breakNodePid = data.getInt("breakNodePid");
 		}
 
 		Coordinate coord = new Coordinate(lng, lat);

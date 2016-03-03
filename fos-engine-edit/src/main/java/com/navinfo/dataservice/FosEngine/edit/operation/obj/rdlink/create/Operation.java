@@ -195,7 +195,7 @@ public class Operation implements IOperation {
 
 			}
 		}
-		this.breakLine();
+//		this.breakLine();
 		
 		return msg;
 	}
@@ -422,7 +422,7 @@ public class Operation implements IOperation {
 		return geoms;
 	}
 
-	private void breakLine() throws Exception {
+	public void breakLine() throws Exception {
 		for (int i = 0; i < command.getCatchLinks().size(); i++) {
 			JSONObject json = command.getCatchLinks().getJSONObject(i);
 			if (json.containsKey("breakNode")) {
@@ -436,9 +436,9 @@ public class Operation implements IOperation {
 				breakJson.put("data", data);
 				ICommand breakCommand = new com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Command(
 						breakJson, breakJson.toString());
-				IProcess breakProcess = new com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Process(
-						breakCommand);
-				breakProcess.run();
+				com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Process breakProcess = new com.navinfo.dataservice.FosEngine.edit.operation.topo.breakpoint.Process(
+						breakCommand, conn);
+				breakProcess.runNotCommit();
 			}
 		}
 	}

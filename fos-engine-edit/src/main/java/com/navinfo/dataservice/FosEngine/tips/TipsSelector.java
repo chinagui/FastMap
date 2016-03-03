@@ -57,6 +57,8 @@ public class TipsSelector {
 
 			array.add(snapshot);
 		}
+		
+		conn.closeConnection();
 
 		return array;
 	}
@@ -141,7 +143,14 @@ public class TipsSelector {
 		} catch (Exception e) {
 			throw e;
 		}
-
+		finally{
+			try{
+				conn.closeConnection();
+			}
+			catch(Exception e){
+				
+			}
+		}
 		return array;
 	}
 
@@ -251,6 +260,8 @@ public class TipsSelector {
 		jsonData.put("total", num);
 
 		jsonData.put("rows", data);
+		
+		conn.closeConnection();
 
 		return jsonData;
 	}
@@ -491,6 +502,8 @@ public class TipsSelector {
 			jsonData.add(snapshot.Serialize(null));
 
 		}
+		
+		conn.closeConnection();
 
 		return jsonData;
 	}
@@ -508,6 +521,8 @@ public class TipsSelector {
 		String wkt = GridUtils.grid2Wkt(grid);
 
 		boolean flag = conn.checkTipsMobile(wkt, date);
+		
+		conn.closeConnection();
 
 		return flag;
 	}

@@ -108,7 +108,7 @@ public class RdLaneConnexitySearch implements ISearch {
 
 				String pointWkt = new String(wktSpatial.fromJGeometry(geom2));
 
-				int direct = getDirect(linkWkt, pointWkt);
+				int direct = DisplayUtils.getDirect(linkWkt, pointWkt);
 				
 				double angle = DisplayUtils.calIncloudedAngle(linkWkt, direct);
 
@@ -148,65 +148,18 @@ public class RdLaneConnexitySearch implements ISearch {
 		return list;
 	}
 	
-	private int getDirect(String linkWkt,String pointWkt) throws ParseException{
-		
-		int direct = 2;
-		
-		Geometry link = wktReader.read(linkWkt);
-		
-		Geometry point = wktReader.read(pointWkt);
-		
-		Coordinate[] csLink = link.getCoordinates();
-		
-		Coordinate cPoint = point.getCoordinate();
-		
-		if (csLink[0].x != cPoint.x || csLink[1].y != cPoint.y){
-			direct = 3;
-		}
-		
-		return direct;
-	}
-	
-	private static class MyTest implements Runnable{
-		
-		
 
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-			try {
-				Connection conn = DBOraclePoolManager.getConnection(11);
-				
-				RdLaneConnexitySearch s = new RdLaneConnexitySearch(conn);
-				
-				JSONArray.fromObject(s.searchDataByTileWithGap(107942, 49614, 17, 5));
-				
-				System.out.println(Thread.currentThread().getName());
-			
-				conn.close();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-	}
-	
 	public static void main(String[] args) throws Exception {
-		ConfigLoader.initDBConn("C:/Users/lilei3774/Desktop/config.properties");
+		ConfigLoader.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
 		
-		List<Thread> threads = new ArrayList<Thread>();
+		Connection conn = DBOraclePoolManager.getConnection(11);
 		
-		for(int i=0;i<100;i++){
+		RdLaneConnexitySearch s = new RdLaneConnexitySearch(conn);
 		
-			Thread mt = new Thread(new MyTest());
-			
-			threads.add(mt);
+		List<SearchSnapshot> ss = s.searchDataByTileWithGap(215885,99234,18, 1);
 		
-		}
-		
-		for(Thread t : threads){
-			t.start();
+		for(SearchSnapshot n : ss){
+			System.out.println(n.Serialize(null));
 		}
 	}
 

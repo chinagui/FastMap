@@ -325,7 +325,7 @@ public class RdRestrictionSearch implements ISearch {
 
 				String pointWkt = new String(new WKT().fromJGeometry(geom2));
 
-				int direct = getDirect(linkWkt, pointWkt);
+				int direct = DisplayUtils.getDirect(linkWkt, pointWkt);
 				
 				double angle = DisplayUtils.calIncloudedAngle(linkWkt, direct);
 
@@ -365,24 +365,6 @@ public class RdRestrictionSearch implements ISearch {
 		return list;
 	}
 	
-	
-	private static int getDirect(String linkWkt,String pointWkt) throws ParseException{
-		
-		int direct = 2;
-		
-		Geometry link = new WKTReader().read(linkWkt);
-		
-		Geometry point = new WKTReader().read(pointWkt);
-		
-		Coordinate[] csLink = link.getCoordinates();
-		
-		Coordinate cPoint = point.getCoordinate();
-		
-		if (csLink[0].x != cPoint.x || csLink[1].y != cPoint.y){
-			direct = 3;
-		}
-		
-		return direct;
-	}
+
 
 }

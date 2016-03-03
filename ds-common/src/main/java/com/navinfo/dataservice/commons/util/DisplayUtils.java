@@ -129,9 +129,9 @@ public class DisplayUtils {
 		 */
 
 		// 默认是3米，如果按照tips个数 * 3 米超出了LINK的长度，则重新计算这个值
-		double unit = 3;
+		double unit = 6;
 
-		double vertiUnit = 8;
+		double vertiUnit = 3;
 
 		// 1、对线、点进行墨卡托数组转
 		double[][] linkMerArray = convertLinkToMerArray(linkWkt);
@@ -146,7 +146,7 @@ public class DisplayUtils {
 
 		boolean isExceedLink = false;
 
-		if (tipsCnt * 3 > linkLength) {
+		if (tipsCnt * unit > linkLength) {
 			isExceedLink = true;
 		}
 
@@ -726,7 +726,7 @@ public class DisplayUtils {
 
 			switch (quadrant) {
 			case 1:
-				includedAngle = Math.atan((stopY - startY) / (stopX - startX))
+				includedAngle = 90 - Math.atan((stopY - startY) / (stopX - startX))
 						* 180 / Math.PI;
 				break;
 			case 2:
@@ -734,7 +734,7 @@ public class DisplayUtils {
 						* 180 / Math.PI + 270;
 				break;
 			case 3:
-				includedAngle = Math.atan((stopY - startY) / (stopX - startX))
+				includedAngle = Math.atan((startX - stopX) / (startY - stopY))
 						* 180 / Math.PI + 180;
 				break;
 			case 4:
@@ -773,24 +773,25 @@ public class DisplayUtils {
 		Coordinate[] cs = link.getCoordinates();
 
 		if (direct == 1 || direct == 2) {
-			points[0] = cs[0].x;
-
-			points[1] = cs[0].y;
-
-			points[2] = cs[1].x;
-
-			points[3] = cs[1].y;
-		} else {
-
 			int len = cs.length;
 
-			points[0] = cs[len - 1].x;
+			points[0] = cs[len - 2].x;
 
-			points[1] = cs[len - 1].y;
+			points[1] = cs[len - 2].y;
 
-			points[2] = cs[len - 2].x;
+			points[2] = cs[len - 1].x;
 
-			points[3] = cs[len - 2].y;
+			points[3] = cs[len - 1].y;
+			
+		} else {
+
+			points[0] = cs[1].x;
+
+			points[1] = cs[1].y;
+
+			points[2] = cs[0].x;
+
+			points[3] = cs[0].y;
 		}
 
 		return points;
@@ -1125,5 +1126,36 @@ public class DisplayUtils {
 
 		return range;
 	}
+	
+	/**
+	 * 计算通行方向 
+	 * @param linkWkt 进入线
+	 * @param pointWkt 进入点
+	 * @return
+	 * @throws ParseException
+	 */
+	public static int getDirect(String linkWkt,String pointWkt) throws ParseException{
+		
+		int direct = 2;
+		
+		Geometry link = new WKTReader().read(linkWkt);
+		
+		Geometry point = new WKTReader().read(pointWkt);
+		
+		Coordinate[] csLink = link.getCoordinates();
+		
+		Coordinate cPoint = point.getCoordinate();
+		
+		if (csLink[0].x == cPoint.x && csLink[0].y == cPoint.y){
+			direct = 3;
+		}
+		
+		return direct;
+	}
 
+	public static void main(String[] args) throws Exception {
+		String wkt = "LINESTRING(116.48686 40.01237, 116.48676 40.01244)";
+		
+		System.out.println(calIncloudedAngle(wkt, 2));
+	}
 }

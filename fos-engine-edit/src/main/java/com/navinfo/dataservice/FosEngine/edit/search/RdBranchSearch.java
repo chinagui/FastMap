@@ -135,7 +135,7 @@ public class RdBranchSearch implements ISearch {
 
 				String pointWkt = new String(new WKT().fromJGeometry(geom2));
 
-				int direct = getDirect(linkWkt, pointWkt);
+				int direct = DisplayUtils.getDirect(linkWkt, pointWkt);
 				
 				double angle = DisplayUtils.calIncloudedAngle(linkWkt, direct);
 
@@ -175,34 +175,17 @@ public class RdBranchSearch implements ISearch {
 		return list;
 	}
 	
-	private static int getDirect(String linkWkt,String pointWkt) throws ParseException{
-		
-		int direct = 2;
-		
-		Geometry link = new WKTReader().read(linkWkt);
-		
-		Geometry point = new WKTReader().read(pointWkt);
-		
-		Coordinate[] csLink = link.getCoordinates();
-		
-		Coordinate cPoint = point.getCoordinate();
-		
-		if (csLink[0].x != cPoint.x || csLink[1].y != cPoint.y){
-			direct = 3;
-		}
-		
-		return direct;
-	}
-
 	public static void main(String[] args) throws Exception {
 		ConfigLoader.initDBConn("C:/Users/wangshishuai3966/git/FosEngine/FosEngine/src/config.properties");
 		
-		Connection conn = DBOraclePoolManager.getConnection(1);
+		Connection conn = DBOraclePoolManager.getConnection(11);
 		
 		RdBranchSearch s = new RdBranchSearch(conn);
 		
-		IObj obj = s.searchDataByPid(3495);
+//		IObj obj = s.searchDataByPid(3495);
+//		
+//		System.out.println(obj.Serialize(null));
 		
-		System.out.println(obj.Serialize(null));
+		System.out.println(s.searchDataByTileWithGap(215895,99230,18, 20));
 	}
 }

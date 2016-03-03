@@ -232,7 +232,7 @@ public class SConnection {
 
 		query.set("q", builder.toString());
 
-		query.set("sort", "t_date desc");
+		query.set("sort", "t_operateDate desc");
 
 		query.set("start", 0);
 

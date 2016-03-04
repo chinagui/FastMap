@@ -27,6 +27,8 @@ import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.GeometryUtils;
 import com.navinfo.dataservice.solr.core.SConnection;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTReader;
 
 /**
  * 保存上传的tips数据
@@ -43,7 +45,7 @@ class ErrorType {
 	static int InvalidDate = 3;
 
 	static int Notexist = 4;
-	
+
 	static int InvalidData = 5;
 }
 
@@ -64,6 +66,8 @@ public class TipsUpload {
 	private int failed;
 
 	private JSONArray reasons;
+
+	private WKTReader reader = new WKTReader();
 
 	public JSONArray getReasons() {
 		return reasons;
@@ -125,13 +129,13 @@ public class TipsUpload {
 
 		doUpdate(puts);
 
-		htab.put(puts);
-
-		htab.close();
-
 		solrConn.persistentData();
 
 		solrConn.closeConnection();
+		
+		htab.put(puts);
+
+		htab.close();
 
 		return photoInfo;
 	}
@@ -215,18 +219,20 @@ public class TipsUpload {
 				}
 
 				json.put("feedback", newFeedbacks);
-				
-				String sourceType=json.getString("s_sourceType");
-				
-				if(sourceType.equals("2001")){
+
+				String sourceType = json.getString("s_sourceType");
+
+				if (sourceType.equals("2001")) {
 					JSONObject glocation = json.getJSONObject("g_location");
-					
-					double length = GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(glocation));
-					
-					JSONObject deep = JSONObject.fromObject(json.getString("deep"));
-					
+
+					double length = GeometryUtils.getLinkLength(GeoTranslator
+							.geojson2Jts(glocation));
+
+					JSONObject deep = JSONObject.fromObject(json
+							.getString("deep"));
+
 					deep.put("len", length);
-					
+
 					json.put("deep", deep);
 				}
 
@@ -319,7 +325,7 @@ public class TipsUpload {
 		while (it.hasNext()) {
 
 			String rowkey = "";
-			
+
 			try {
 				Entry<String, JSONObject> en = it.next();
 
@@ -361,7 +367,7 @@ public class TipsUpload {
 
 			} catch (Exception e) {
 				failed += 1;
-				
+
 				reasons.add(newReasonObject(rowkey, ErrorType.InvalidData));
 
 				e.printStackTrace();
@@ -432,8 +438,8 @@ public class TipsUpload {
 		Iterator<Entry<String, JSONObject>> it = set.iterator();
 
 		while (it.hasNext()) {
-			String rowkey="";
-			
+			String rowkey = "";
+
 			try {
 				Entry<String, JSONObject> en = it.next();
 
@@ -441,7 +447,7 @@ public class TipsUpload {
 
 				if (!oldTips.containsKey(rowkey)) {
 					failed += 1;
-					
+
 					reasons.add(newReasonObject(rowkey, ErrorType.Notexist));
 
 					continue;
@@ -474,7 +480,7 @@ public class TipsUpload {
 				puts.add(put);
 			} catch (Exception e) {
 				failed += 1;
-				
+
 				reasons.add(newReasonObject(rowkey, ErrorType.InvalidData));
 
 				e.printStackTrace();
@@ -490,7 +496,8 @@ public class TipsUpload {
 
 		JSONObject jsonTrack = generateTrackJson(lifecycle,
 				json.getInt("t_handler"), json.getInt("t_command"),
-				oldTip.getJSONArray("t_trackInfo"), json.getString("t_operateDate"));
+				oldTip.getJSONArray("t_trackInfo"),
+				json.getString("t_operateDate"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
@@ -586,7 +593,7 @@ public class TipsUpload {
 		jsonTrack.put("t_lifecycle", lifecycle);
 
 		jsonTrack.put("t_command", command);
-		
+
 		jsonTrack.put("t_date", currentDate);
 
 		JSONObject jsonTrackInfo = new JSONObject();
@@ -608,7 +615,7 @@ public class TipsUpload {
 
 		return jsonTrack;
 	}
-	
+
 	private JSONObject generateSolrIndex(JSONObject json) throws Exception {
 
 		JSONObject index = new JSONObject();
@@ -618,7 +625,7 @@ public class TipsUpload {
 		index.put("stage", 1);
 
 		index.put("t_date", currentDate);
-		
+
 		index.put("t_operateDate", json.getString("t_operateDate"));
 
 		index.put("t_lifecycle", json.getInt("t_lifecycle"));
@@ -637,9 +644,16 @@ public class TipsUpload {
 
 		index.put("g_location", geojson);
 
-		index.put("wkt",
-				GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(geojson)));
+		String wkt = GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(geojson));
 		
+		Geometry g = reader.read(wkt);
+		
+		if(!g.isValid()){
+			throw new Exception("invalid g_location");
+		}
+
+		index.put("wkt", wkt);
+
 		index.put("deep", json.getString("deep"));
 
 		return index;
@@ -732,6 +746,6 @@ public class TipsUpload {
 
 		TipsUpload a = new TipsUpload("http://192.168.4.130:8081/solr/tips/");
 
-		a.run("C:/tipstest.txt");
+		a.run("C:/1.txt");
 	}
 }

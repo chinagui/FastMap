@@ -130,7 +130,7 @@ public class RdRestrictionTipsBuilder {
 		String pointWkt = new String(new WKT().fromJGeometry(geom2));
 
 		double[][] point = DisplayUtils
-				.getLinkPointPos(linkWkt, pointWkt, 1, 0);
+				.getTipsPointPos(linkWkt, pointWkt, 0);
 
 		JSONObject json = new JSONObject();
 

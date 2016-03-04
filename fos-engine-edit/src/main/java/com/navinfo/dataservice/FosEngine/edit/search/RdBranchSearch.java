@@ -142,7 +142,7 @@ public class RdBranchSearch implements ISearch {
 				jsonM.put("c", String.valueOf((int)angle));
 
 				double[][] point = DisplayUtils
-						.getLinkPointPos(linkWkt, pointWkt, 1, 0);
+						.getGdbPointPos(linkWkt, pointWkt, 2);
 
 				snapshot.setG(Geojson.lonlat2Pixel(point[1][0],point[1][1],z,px,py));
 				

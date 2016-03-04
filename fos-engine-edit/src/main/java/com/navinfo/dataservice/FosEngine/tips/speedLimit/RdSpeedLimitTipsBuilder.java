@@ -149,8 +149,6 @@ public class RdSpeedLimitTipsBuilder {
 
 		JSONObject jsonDeep = new JSONObject();
 
-		// jsonDeep.put("tp", 1);
-
 		jsonDeep.put("id", resultSet.getString("pid"));
 
 		JSONObject jsonF = new JSONObject();

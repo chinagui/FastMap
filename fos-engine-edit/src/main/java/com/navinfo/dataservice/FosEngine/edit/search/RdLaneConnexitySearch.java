@@ -115,7 +115,7 @@ public class RdLaneConnexitySearch implements ISearch {
 				jsonM.put("c", String.valueOf((int)angle));
 
 				double[][] point = DisplayUtils
-						.getLinkPointPos(linkWkt, pointWkt, 1, 0);
+						.getGdbPointPos(linkWkt, pointWkt, 1);
 
 				snapshot.setG(Geojson.lonlat2Pixel(point[1][0],point[1][1],z,px,py));
 				
@@ -156,7 +156,7 @@ public class RdLaneConnexitySearch implements ISearch {
 		
 		RdLaneConnexitySearch s = new RdLaneConnexitySearch(conn);
 		
-		List<SearchSnapshot> ss = s.searchDataByTileWithGap(215885,99234,18, 1);
+		List<SearchSnapshot> ss = s.searchDataByTileWithGap(107939,49614,17, 1);
 		
 		for(SearchSnapshot n : ss){
 			System.out.println(n.Serialize(null));

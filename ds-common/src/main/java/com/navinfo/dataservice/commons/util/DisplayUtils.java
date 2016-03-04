@@ -114,11 +114,31 @@ public class DisplayUtils {
 		return point;
 	}
 
-	/***********************************************************************/
+	public static double[][] getTipsPointPos(String linkWkt, String pointWkt,
+			int seqNum) throws Exception {
 
-	// 获取进入线3米再向右找6米的位置
-	public static double[][] getLinkPointPos(String linkWkt, String pointWkt,
-			int tipsCnt, int seqNum) throws Exception {
+		return getLinkPointPos(linkWkt, pointWkt, 3, seqNum, 3, 3, 6);
+	}
+
+	public static double[][] getGdbPointPos(String linkWkt, String pointWkt,
+			int seqNum) throws Exception {
+		return getLinkPointPos(linkWkt, pointWkt, 3, seqNum, 4.5, 2, 3);
+	}
+
+	
+	/**
+	 * @param linkWkt 进入线几何
+	 * @param pointWkt 进入点几何
+	 * @param totalCnt 总共要素类型个数
+	 * @param seqNum 要素类型序号
+	 * @param base 基础距离
+	 * @param unit 递增距离
+	 * @param vertiUnit 线垂直方向移动距离
+	 * @return 显示点位
+	 * @throws Exception
+	 */
+	private static double[][] getLinkPointPos(String linkWkt, String pointWkt,
+			int totalCnt, int seqNum, double base, double unit, double vertiUnit) throws Exception {
 		double[][] position = new double[2][2];
 
 		/*
@@ -129,9 +149,7 @@ public class DisplayUtils {
 		 */
 
 		// 默认是3米，如果按照tips个数 * 3 米超出了LINK的长度，则重新计算这个值
-		double unit = 6;
 
-		double vertiUnit = 3;
 
 		// 1、对线、点进行墨卡托数组转
 		double[][] linkMerArray = convertLinkToMerArray(linkWkt);
@@ -142,24 +160,26 @@ public class DisplayUtils {
 		isReverseLinkOrder(linkMerArray, pointMerArray);
 
 		// 3、求出线的长度，判断按照线上挂的tips个数，是否超过线的长度
-		double linkLength = getLinkLength(linkMerArray);
+		double linkLength = GeometryUtils.getLinkLength(linkWkt);
 
 		boolean isExceedLink = false;
 
-		if (tipsCnt * unit > linkLength) {
+		double total = base + unit * (totalCnt-1);
+
+		if (total > linkLength) {
 			isExceedLink = true;
 		}
 
 		// 5、如果超出，则按照线长度与tips个数比例，向线通行方向的逆向扩展
 		if (isExceedLink) {
-			unit = linkLength / (tipsCnt + 1);
+			unit = linkLength / (totalCnt + 1);
 		}
 
 		// 6、找出seqNum * 3米（或者新比例值）位置，作为引导坐标位置
 		double[] guidePosition = new double[2];
 
 		// 返回值为引导坐标所处的LINK形状段上的第几段，从0开始
-		int guideSeqNum = getGuidePosition(linkMerArray, unit, seqNum,
+		int guideSeqNum = getGuidePosition(linkMerArray, base + unit * seqNum,
 				guidePosition);
 
 		// 按照引导坐标位置和线通行方向向右找6米位置作为显示坐标位置
@@ -259,7 +279,7 @@ public class DisplayUtils {
 			}
 		}
 	}
-	
+
 	// 求出线的长度
 	public static double getLinkLength(double[][] linkMerArray) {
 
@@ -274,8 +294,8 @@ public class DisplayUtils {
 			length += Math.sqrt(Math.pow(nextPoint[0] - curPoint[0], 2)
 					+ Math.pow(nextPoint[1] - curPoint[1], 2));
 		}
-		
-		length = Math.round(length*100)/100.0;
+
+		length = Math.round(length * 100) / 100.0;
 
 		return length;
 	}
@@ -288,12 +308,10 @@ public class DisplayUtils {
 	 * @param seqNum
 	 * @return 返回值为引导坐标所处的LINK形状段上的第几段，从0开始
 	 */
-	private static int getGuidePosition(double[][] linkMerArray, double unit,
-			int seqNum, double[] guidePosition) {
+	private static int getGuidePosition(double[][] linkMerArray,
+			double guidePointDistance, double[] guidePosition) {
 
 		int guideSeqNum = 0;
-
-		double guidePointDistance = unit * seqNum;
 
 		for (int i = 0; i <= linkMerArray.length - 2; i++) {
 
@@ -726,8 +744,9 @@ public class DisplayUtils {
 
 			switch (quadrant) {
 			case 1:
-				includedAngle = 90 - Math.atan((stopY - startY) / (stopX - startX))
-						* 180 / Math.PI;
+				includedAngle = 90
+						- Math.atan((stopY - startY) / (stopX - startX)) * 180
+						/ Math.PI;
 				break;
 			case 2:
 				includedAngle = Math.atan((stopY - startY) / (startX - stopX))
@@ -782,7 +801,7 @@ public class DisplayUtils {
 			points[2] = cs[len - 1].x;
 
 			points[3] = cs[len - 1].y;
-			
+
 		} else {
 
 			points[0] = cs[1].x;
@@ -996,85 +1015,86 @@ public class DisplayUtils {
 
 	// 显示坐标：
 	// 取link中点坐标，限速的通行方向的右侧2米
-	public static double[] getMid2MPosition(String linkWkt,int direct) throws Exception {
+	public static double[] getMid2MPosition(String linkWkt, int direct)
+			throws Exception {
 		double[] position = new double[2];
 
 		double[][] linkMerArray = convertLinkToMerArray(linkWkt);
-		
-		if (direct == 3){
+
+		if (direct == 3) {
 			int len = linkMerArray.length;
-			
-			for(int i=0;i<len / 2;i++){
+
+			for (int i = 0; i < len / 2; i++) {
 				double tmpPoint[] = linkMerArray[i];
 				linkMerArray[i] = linkMerArray[len - i - 1];
 				linkMerArray[len - i - 1] = tmpPoint;
 			}
 		}
 
-		double linkLength = getLinkLength(linkMerArray);
-		
+		double linkLength = GeometryUtils.getLinkLength(linkWkt);
+
 		double[] midPoint = new double[2];
-		
+
 		double[] range = getMidPointRange(linkMerArray, linkLength, midPoint);
-		
-		if (range[0] != range[2]){
-			
-			if (range[1] != range[3]){
-				
+
+		if (range[0] != range[2]) {
+
+			if (range[1] != range[3]) {
+
 				double k = (range[3] - range[1]) / (range[2] - range[0]);
-				
-				if (k > 0){
-					if (range[2] > range[0]){
-						//递增
-						position[0] = midPoint[0] + (2 / ( 1+ k * k));
-						
-						position[1] = midPoint[1] - (2 * k/ ( 1+ k * k));
-					}else{
-						position[0] = midPoint[0] - (2 / ( 1+ k * k));
-						
-						position[1] = midPoint[1] + (2 * k/ ( 1+ k * k));
+
+				if (k > 0) {
+					if (range[2] > range[0]) {
+						// 递增
+						position[0] = midPoint[0] + (2 / (1 + k * k));
+
+						position[1] = midPoint[1] - (2 * k / (1 + k * k));
+					} else {
+						position[0] = midPoint[0] - (2 / (1 + k * k));
+
+						position[1] = midPoint[1] + (2 * k / (1 + k * k));
 					}
-				}else{
-					if (range[3] > range[1]){
-						//递增
-						position[0] = midPoint[0] - (2 / ( 1+ k * k));
-						
-						position[1] = midPoint[1] - (2 * k/ ( 1+ k * k));
-					}else{
-						position[0] = midPoint[0] - (2 / ( 1+ k * k));
-						
-						position[1] = midPoint[1] + (2 * k/ ( 1+ k * k));
+				} else {
+					if (range[3] > range[1]) {
+						// 递增
+						position[0] = midPoint[0] - (2 / (1 + k * k));
+
+						position[1] = midPoint[1] - (2 * k / (1 + k * k));
+					} else {
+						position[0] = midPoint[0] - (2 / (1 + k * k));
+
+						position[1] = midPoint[1] + (2 * k / (1 + k * k));
 					}
 				}
-				
-			}else{
-				//与X轴平行
-				if (range[2] > range[0]){
+
+			} else {
+				// 与X轴平行
+				if (range[2] > range[0]) {
 					position[0] = midPoint[0];
-					
+
 					position[1] = midPoint[1] - 2;
-				}else{
+				} else {
 					position[0] = midPoint[0];
-					
+
 					position[1] = midPoint[1] + 2;
 				}
 			}
-			
-		}else{
-			//与Y轴平行
-			if (range[3] > range[1]){
+
+		} else {
+			// 与Y轴平行
+			if (range[3] > range[1]) {
 				position[0] = midPoint[0] + 2;
-				
-				position[1] = midPoint[1] ;
-			}else{
+
+				position[1] = midPoint[1];
+			} else {
 				position[0] = midPoint[0] - 2;
-				
+
 				position[1] = midPoint[1];
 			}
 		}
-		
+
 		position[0] = MercatorProjection.metersXToLongitude(position[0]);
-		
+
 		position[1] = MercatorProjection.metersYToLatitude(position[1]);
 
 		return position;
@@ -1126,36 +1146,40 @@ public class DisplayUtils {
 
 		return range;
 	}
-	
+
 	/**
-	 * 计算通行方向 
-	 * @param linkWkt 进入线
-	 * @param pointWkt 进入点
+	 * 计算通行方向
+	 * 
+	 * @param linkWkt
+	 *            进入线
+	 * @param pointWkt
+	 *            进入点
 	 * @return
 	 * @throws ParseException
 	 */
-	public static int getDirect(String linkWkt,String pointWkt) throws ParseException{
-		
+	public static int getDirect(String linkWkt, String pointWkt)
+			throws ParseException {
+
 		int direct = 2;
-		
+
 		Geometry link = new WKTReader().read(linkWkt);
-		
+
 		Geometry point = new WKTReader().read(pointWkt);
-		
+
 		Coordinate[] csLink = link.getCoordinates();
-		
+
 		Coordinate cPoint = point.getCoordinate();
-		
-		if (csLink[0].x == cPoint.x && csLink[0].y == cPoint.y){
+
+		if (csLink[0].x == cPoint.x && csLink[0].y == cPoint.y) {
 			direct = 3;
 		}
-		
+
 		return direct;
 	}
 
 	public static void main(String[] args) throws Exception {
 		String wkt = "LINESTRING(116.48686 40.01237, 116.48676 40.01244)";
-		
+
 		System.out.println(calIncloudedAngle(wkt, 2));
 	}
 }

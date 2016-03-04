@@ -1,8 +1,8 @@
 package com.navinfo.dataservice.commons.util;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
 public class GeometryUtils {
@@ -142,6 +142,15 @@ public class GeometryUtils {
 		}
 		
 		return length;
+	}
+	
+	public static double getLinkLength(String wkt) throws ParseException{
+		
+		WKTReader reader = new WKTReader();
+		
+		Geometry g = reader.read(wkt);
+		
+		return getLinkLength(g);
 	}
 	
 	public static void main(String[] args) throws Exception{

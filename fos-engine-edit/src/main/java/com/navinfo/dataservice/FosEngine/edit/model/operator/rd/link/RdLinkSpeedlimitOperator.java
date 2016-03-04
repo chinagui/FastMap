@@ -155,9 +155,9 @@ public class RdLinkSpeedlimitOperator implements IOperator {
 					}
 				}
 			}
-			sb.append(" where row_id='" + limit.getRowId());
+			sb.append(" where row_id=hextoraw('" + limit.getRowId());
 			
-			sb.append("'");
+			sb.append("')");
 
 			String sql = sb.toString();
 
@@ -187,7 +187,7 @@ public class RdLinkSpeedlimitOperator implements IOperator {
 	public void deleteRow() throws Exception {
 
 		String sql = "update " + limit.tableName()
-				+ " set u_record=2 where row_id=?";
+				+ " set u_record=2 where row_id=hextoraw(?)";
 
 		PreparedStatement pstmt = null;
 
@@ -291,8 +291,8 @@ public class RdLinkSpeedlimitOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update rd_link_speedlimit set u_record=2 where row_id = '"
-				+ limit.getRowId() + "'";
+		String sql = "update rd_link_speedlimit set u_record=2 where row_id = hextoraw('"
+				+ limit.getRowId() + "')";
 
 		stmt.addBatch(sql);
 	}

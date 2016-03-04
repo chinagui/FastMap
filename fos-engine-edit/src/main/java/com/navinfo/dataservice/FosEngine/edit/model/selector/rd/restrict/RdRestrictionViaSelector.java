@@ -37,7 +37,7 @@ public class RdRestrictionViaSelector implements ISelector {
 		RdRestrictionVia via = new RdRestrictionVia();
 
 		String sql = "select * from " + via.tableName()
-				+ " where row_id=:1 and u_record!=2";
+				+ " where row_id=hextoraw(:1) and u_record!=2";
 
 		if (isLock) {
 			sql += " for update nowait";

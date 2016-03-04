@@ -157,9 +157,9 @@ public class RdLinkNameOperator implements IOperator {
 					}
 				}
 			}
-			sb.append(" where row_id='" + name.getRowId());
+			sb.append(" where row_id=hextoraw('" + name.getRowId());
 			
-			sb.append("'");
+			sb.append("')");
 
 			String sql = sb.toString();
 
@@ -189,7 +189,7 @@ public class RdLinkNameOperator implements IOperator {
 	public void deleteRow() throws Exception {
 
 		String sql = "update " + name.tableName()
-				+ " set u_record=2 where row_id=?";
+				+ " set u_record=2 where row_id=hextoraw(?)";
 
 		PreparedStatement pstmt = null;
 
@@ -270,8 +270,8 @@ public class RdLinkNameOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update rd_link_name set u_record=2 where row_id = '"
-				+ name.getRowId() + "'";
+		String sql = "update rd_link_name set u_record=2 where row_id = hextoraw('"
+				+ name.getRowId() + "')";
 
 		stmt.addBatch(sql);
 	}

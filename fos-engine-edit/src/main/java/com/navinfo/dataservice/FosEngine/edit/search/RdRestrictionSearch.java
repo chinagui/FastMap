@@ -280,8 +280,8 @@ public class RdRestrictionSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as  (select link_pid, geometry     from rd_link    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE' and u_record != 2), tmp2 as  (select a.node_pid, a.in_link_pid, a.pid, a.restric_info     from rd_restriction a    where exists (select null from tmp1 b where a.in_link_pid = b.link_pid) and a.u_record != 2), tmp3 as  (select listagg(vehicle, ',') within group(order by 1) vehicles     from rd_restriction_detail a, rd_restriction_condition b    where exists (select null from tmp2 c where a.restric_pid = c.pid)      and a.detail_id = b.detail_id and a.u_record != 2 and b.u_record != 2) select a.pid,        a.restric_info,        b.vehicles,        c.geometry     link_geom,        d.geometry     point_geom   from tmp2 a, tmp3 b, tmp1 c, rd_node d  where a.in_link_pid = c.link_pid    and a.node_pid = d.node_pid    and d.u_record != 2 ";
-
+		String sql = "with tmp1 as  (select link_pid, geometry     from rd_link    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2), tmp2 as  (select a.node_pid, a.in_link_pid, a.pid, a.restric_info     from rd_restriction a    where exists (select null from tmp1 b where a.in_link_pid = b.link_pid)      and a.u_record != 2), tmp3 as  (select listagg(vehicle, ',') within group(order by 1) vehicles     from rd_restriction_detail a, rd_restriction_condition b    where exists (select null from tmp2 c where a.restric_pid = c.pid)      and a.detail_id = b.detail_id      and a.u_record != 2      and b.u_record != 2) select /*+ index(d) */        a.pid,        a.restric_info,        b.vehicles,        c.geometry     link_geom,        d.geometry     point_geom   from tmp2 a, tmp3 b, tmp1 c, rd_node d  where a.in_link_pid = c.link_pid    and a.node_pid = d.node_pid    and d.u_record != 2";
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;

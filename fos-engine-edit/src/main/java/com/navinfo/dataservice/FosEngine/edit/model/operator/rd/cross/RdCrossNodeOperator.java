@@ -137,7 +137,7 @@ public class RdCrossNodeOperator implements IOperator {
 
 				}
 			}
-			sb.append(" where row_id='" + node.getRowId() + "'");
+			sb.append(" where row_id=hextoraw('" + node.getRowId() + "')");
 
 			String sql = sb.toString();
 
@@ -167,7 +167,7 @@ public class RdCrossNodeOperator implements IOperator {
 	public void deleteRow() throws Exception {
 
 		String sql = "update " + node.tableName()
-				+ " set u_record=? where row_id=?";
+				+ " set u_record=? where row_id=hextoraw(?)";
 
 		PreparedStatement pstmt = null;
 
@@ -221,42 +221,14 @@ public class RdCrossNodeOperator implements IOperator {
 	@Override
 	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
 			throws Exception {
-
-		StringBuilder sb = new StringBuilder("update " + node.tableName()
-				+ " set u_record=3,");
-
-		for (int i = 0; i < fieldNames.size(); i++) {
-
-			if (i > 0) {
-				sb.append(",");
-			}
-
-			String column = StringUtils.toColumnName(fieldNames.get(i));
-
-			sb.append(column);
-
-			sb.append("=");
-
-			Field field = node.getClass().getDeclaredField(fieldNames.get(i));
-
-			Object value = field.get(node);
-
-			sb.append(value);
-
-		}
-
-		sb.append(" where row_id=");
-
-		sb.append(node.rowId());
-
-		stmt.addBatch(sb.toString());
+		
 	}
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 
 		String sql = "update " + node.tableName()
-				+ " set u_record=2 where row_id='" + node.rowId() + "'";
+				+ " set u_record=2 where row_id=hextoraw('" + node.rowId() + "')";
 
 		stmt.addBatch(sql);
 	}

@@ -140,11 +140,11 @@ public class RdBranchRealimageOperator implements IOperator {
 
 				}
 			}
-			sb.append(" where row_id='" + realimage.getRowId());
+			sb.append(" where row_id=hextoraw('" + realimage.getRowId());
 
 			sb.append(realimage.getRowId());
 
-			sb.append("'");
+			sb.append("')");
 
 			String sql = sb.toString();
 
@@ -174,7 +174,7 @@ public class RdBranchRealimageOperator implements IOperator {
 	public void deleteRow() throws Exception {
 
 		String sql = "update " + realimage.tableName()
-				+ " set u_record=? where row_id=?";
+				+ " set u_record=? where row_id=hextoraw(?)";
 
 		PreparedStatement pstmt = null;
 
@@ -238,42 +238,14 @@ public class RdBranchRealimageOperator implements IOperator {
 	@Override
 	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
 			throws Exception {
-
-		StringBuilder sb = new StringBuilder("update " + realimage.tableName()
-				+ " set u_record=3,");
-
-		for (int i = 0; i < fieldNames.size(); i++) {
-
-			if (i > 0) {
-				sb.append(",");
-			}
-
-			String column = StringUtils.toColumnName(fieldNames.get(i));
-
-			sb.append(column);
-
-			sb.append("=");
-
-			Field field = realimage.getClass().getDeclaredField(fieldNames.get(i));
-
-			Object value = field.get(realimage);
-
-			sb.append(value);
-
-		}
-
-		sb.append(" where row_id=");
-
-		sb.append(realimage.rowId());
-
-		stmt.addBatch(sb.toString());
+		
 	}
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 
 		String sql = "update " + realimage.tableName()
-				+ " set u_record=2 where row_id='" + realimage.rowId() + "'";
+				+ " set u_record=2 where row_id=hextoraw('" + realimage.rowId() + "')";
 
 		stmt.addBatch(sql);
 	}

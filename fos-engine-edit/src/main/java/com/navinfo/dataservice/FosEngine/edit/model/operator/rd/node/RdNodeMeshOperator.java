@@ -143,7 +143,7 @@ public class RdNodeMeshOperator implements IOperator {
 					}
 				}
 			}
-			sb.append(" where row_id='" + mesh.getRowId() + "'");
+			sb.append(" where row_id=hextoraw('" + mesh.getRowId() + "')");
 
 			String sql = sb.toString();
 
@@ -173,7 +173,7 @@ public class RdNodeMeshOperator implements IOperator {
 	public void deleteRow() throws Exception {
 
 		String sql = "update " + mesh.tableName()
-				+ " set u_record=? where row_id=?";
+				+ " set u_record=? where row_id=hextoraw(?)";
 
 		PreparedStatement pstmt = null;
 
@@ -231,7 +231,7 @@ public class RdNodeMeshOperator implements IOperator {
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 
 		String sql = "update " + mesh.tableName()
-				+ " set u_record=2 where row_id='" + mesh.getRowId() + "'";
+				+ " set u_record=2 where row_id=hextoraw('" + mesh.getRowId() + "')";
 
 		stmt.addBatch(sql);
 	}

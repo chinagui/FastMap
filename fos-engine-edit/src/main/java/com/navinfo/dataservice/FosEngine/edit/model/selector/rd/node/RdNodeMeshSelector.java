@@ -34,7 +34,7 @@ public class RdNodeMeshSelector implements ISelector {
 
 		RdNodeMesh mesh = new RdNodeMesh();
 
-		String sql = "select * from " + mesh.tableName() + " where row_id=:1";
+		String sql = "select * from " + mesh.tableName() + " where row_id=hextoraw(:1)";
 
 		if (isLock) {
 			sql += " for update nowait";

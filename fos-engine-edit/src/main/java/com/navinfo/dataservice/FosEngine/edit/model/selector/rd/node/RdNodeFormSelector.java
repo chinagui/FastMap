@@ -28,7 +28,7 @@ public class RdNodeFormSelector implements ISelector {
 
 		RdNodeForm form = new RdNodeForm();
 
-		String sql = "select * from " + form.tableName() + " where row_id=:1";
+		String sql = "select * from " + form.tableName() + " where row_id=hextoraw(:1)";
 
 		if (isLock) {
 			sql += " for update nowait";

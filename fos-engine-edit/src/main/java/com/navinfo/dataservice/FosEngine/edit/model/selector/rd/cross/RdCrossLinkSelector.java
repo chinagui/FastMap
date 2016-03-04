@@ -29,7 +29,7 @@ public class RdCrossLinkSelector implements ISelector {
 
 		RdCrossLink link = new RdCrossLink();
 
-		String sql = "select * from " + link.tableName() + " where row_id=:1";
+		String sql = "select * from " + link.tableName() + " where row_id=hextoraw(:1)";
 
 		if (isLock) {
 			sql += " for update nowait";

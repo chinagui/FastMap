@@ -148,7 +148,7 @@ public class RdLinkIntRticOperator implements IOperator {
 					}
 				}
 			}
-			sb.append(" where row_id='" + rtic.rowId() + "'");
+			sb.append(" where row_id=hextoraw('" + rtic.rowId() + "')");
 
 			String sql = sb.toString();
 
@@ -178,7 +178,7 @@ public class RdLinkIntRticOperator implements IOperator {
 	public void deleteRow() throws Exception {
 
 		String sql = "update " + rtic.tableName()
-				+ " set u_record=2 where row_id=?";
+				+ " set u_record=2 where row_id=hextoraw(?)";
 
 		PreparedStatement pstmt = null;
 
@@ -247,8 +247,8 @@ public class RdLinkIntRticOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update rd_link_int_rtic set u_record=2 where row_id = '"
-				+ rtic.getRowId() + "'";
+		String sql = "update rd_link_int_rtic set u_record=2 where row_id = hextoraw('"
+				+ rtic.getRowId() + "')";
 
 		stmt.addBatch(sql);
 	}

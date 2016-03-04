@@ -146,7 +146,7 @@ public class RdNodeFormOperator implements IOperator {
 					}
 				}
 			}
-			sb.append(" where row_id='" + form.getRowId() + "'");
+			sb.append(" where row_id=hextoraw('" + form.getRowId() + "')");
 
 			String sql = sb.toString();
 
@@ -176,7 +176,7 @@ public class RdNodeFormOperator implements IOperator {
 	public void deleteRow() throws Exception {
 
 		String sql = "update " + form.tableName()
-				+ " set u_record=? where row_id=?";
+				+ " set u_record=? where row_id=hextoraw(?)";
 
 		PreparedStatement pstmt = null;
 
@@ -237,7 +237,7 @@ public class RdNodeFormOperator implements IOperator {
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 
 		String sql = "update " + form.tableName()
-				+ " set u_record=2 where row_id='" + form.getRowId() + "'";
+				+ " set u_record=2 where row_id=hextoraw('" + form.getRowId() + "')";
 
 		stmt.addBatch(sql);
 	}

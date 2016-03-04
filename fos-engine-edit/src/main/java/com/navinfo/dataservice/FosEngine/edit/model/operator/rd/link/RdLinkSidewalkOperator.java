@@ -148,7 +148,7 @@ public class RdLinkSidewalkOperator implements IOperator {
 					}
 				}
 			}
-			sb.append(" where row_id='" + sidewalk.rowId() + "'");
+			sb.append(" where row_id=hextoraw('" + sidewalk.rowId() + "')");
 
 			String sql = sb.toString();
 
@@ -178,7 +178,7 @@ public class RdLinkSidewalkOperator implements IOperator {
 	public void deleteRow() throws Exception {
 
 		String sql = "update " + sidewalk.tableName()
-				+ " set u_record=2 where row_id=?";
+				+ " set u_record=2 where row_id=hextoraw(?)";
 
 		PreparedStatement pstmt = null;
 
@@ -247,8 +247,8 @@ public class RdLinkSidewalkOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update rd_link_sidewalk set u_record=2 where row_id = '"
-				+ sidewalk.getRowId() + "'";
+		String sql = "update rd_link_sidewalk set u_record=2 where row_id = hextoraw('"
+				+ sidewalk.getRowId() + "')";
 
 		stmt.addBatch(sql);
 	}

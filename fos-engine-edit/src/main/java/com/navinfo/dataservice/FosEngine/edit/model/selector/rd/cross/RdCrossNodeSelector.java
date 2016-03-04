@@ -29,7 +29,7 @@ public class RdCrossNodeSelector implements ISelector {
 
 		RdCrossNode node = new RdCrossNode();
 
-		String sql = "select * from " + node.tableName() + " where row_id=:1";
+		String sql = "select * from " + node.tableName() + " where row_id=(:1)";
 
 		if (isLock) {
 			sql += " for update nowait";

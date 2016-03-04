@@ -141,11 +141,11 @@ public class RdBranchViaOperator implements IOperator {
 
 				}
 			}
-			sb.append(" where row_id='" + via.getRowId());
+			sb.append(" where row_id=hextoraw('" + via.getRowId());
 
 			sb.append(via.getRowId());
 
-			sb.append("'");
+			sb.append("')");
 
 			String sql = sb.toString();
 
@@ -175,7 +175,7 @@ public class RdBranchViaOperator implements IOperator {
 	public void deleteRow() throws Exception {
 
 		String sql = "update " + via.tableName()
-				+ " set u_record=? where row_id=?";
+				+ " set u_record=? where row_id=hextoraw(?)";
 
 		PreparedStatement pstmt = null;
 
@@ -231,42 +231,14 @@ public class RdBranchViaOperator implements IOperator {
 	@Override
 	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
 			throws Exception {
-
-		StringBuilder sb = new StringBuilder("update " + via.tableName()
-				+ " set u_record=3,");
-
-		for (int i = 0; i < fieldNames.size(); i++) {
-
-			if (i > 0) {
-				sb.append(",");
-			}
-
-			String column = StringUtils.toColumnName(fieldNames.get(i));
-
-			sb.append(column);
-
-			sb.append("=");
-
-			Field field = via.getClass().getDeclaredField(fieldNames.get(i));
-
-			Object value = field.get(via);
-
-			sb.append(value);
-
-		}
-
-		sb.append(" where row_id=");
-
-		sb.append(via.rowId());
-
-		stmt.addBatch(sb.toString());
+		
 	}
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 
 		String sql = "update " + via.tableName()
-				+ " set u_record=2 where row_id='" + via.rowId() + "'";
+				+ " set u_record=2 where row_id=hextoraw('" + via.rowId() + "')";
 
 		stmt.addBatch(sql);
 	}

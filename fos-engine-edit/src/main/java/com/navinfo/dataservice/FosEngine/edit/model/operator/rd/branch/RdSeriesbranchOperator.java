@@ -145,11 +145,11 @@ public class RdSeriesbranchOperator implements IOperator {
 
 				}
 			}
-			sb.append(" where row_id='" + seriesbranch.getRowId());
+			sb.append(" where row_id=hextoraw('" + seriesbranch.getRowId());
 
 			sb.append(seriesbranch.getRowId());
 
-			sb.append("'");
+			sb.append("')");
 
 			String sql = sb.toString();
 
@@ -179,7 +179,7 @@ public class RdSeriesbranchOperator implements IOperator {
 	public void deleteRow() throws Exception {
 
 		String sql = "update " + seriesbranch.tableName()
-				+ " set u_record=? where row_id=?";
+				+ " set u_record=? where row_id=hextoraw(?)";
 
 		PreparedStatement pstmt = null;
 
@@ -247,43 +247,14 @@ public class RdSeriesbranchOperator implements IOperator {
 	@Override
 	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
 			throws Exception {
-
-		StringBuilder sb = new StringBuilder("update "
-				+ seriesbranch.tableName() + " set u_record=3,");
-
-		for (int i = 0; i < fieldNames.size(); i++) {
-
-			if (i > 0) {
-				sb.append(",");
-			}
-
-			String column = StringUtils.toColumnName(fieldNames.get(i));
-
-			sb.append(column);
-
-			sb.append("=");
-
-			Field field = seriesbranch.getClass().getDeclaredField(
-					fieldNames.get(i));
-
-			Object value = field.get(seriesbranch);
-
-			sb.append(value);
-
-		}
-
-		sb.append(" where row_id=");
-
-		sb.append(seriesbranch.rowId());
-
-		stmt.addBatch(sb.toString());
+		
 	}
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 
 		String sql = "update " + seriesbranch.tableName()
-				+ " set u_record=2 where row_id='" + seriesbranch.rowId() + "'";
+				+ " set u_record=2 where row_id=hextoraw('" + seriesbranch.rowId() + "')";
 
 		stmt.addBatch(sql);
 	}

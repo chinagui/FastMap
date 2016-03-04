@@ -1,9 +1,5 @@
 package com.navinfo.dataservice.FosEngine.patternimg;
 
-import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -12,6 +8,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 
 public class ImportPatternImage {
 
@@ -22,24 +19,24 @@ public class ImportPatternImage {
 	private static String sql = "update SC_MODEL_MATCH_G set format=:1,file_content=:2 where file_name=:3";
 
 	private static int counter = 0;
-
-	public static InputStream getJpgStream(String filePath) throws Exception {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-		BufferedImage bufferedImage = ImageIO.read(new File(filePath));
-
-		BufferedImage newBufferedImage = new BufferedImage(
-				bufferedImage.getWidth(), bufferedImage.getHeight(),
-				BufferedImage.TYPE_INT_RGB);
-		newBufferedImage.createGraphics().drawImage(bufferedImage, 0, 0,
-				Color.WHITE, null);
-
-		ImageIO.write(newBufferedImage, "jpg", out);
-
-		InputStream in = new ByteArrayInputStream(out.toByteArray());
-
-		return in;
-	}
+//
+//	public static InputStream getJpgStream(String filePath) throws Exception {
+//		ByteArrayOutputStream out = new ByteArrayOutputStream();
+//
+//		BufferedImage bufferedImage = ImageIO.read(new File(filePath));
+//
+//		BufferedImage newBufferedImage = new BufferedImage(
+//				bufferedImage.getWidth(), bufferedImage.getHeight(),
+//				BufferedImage.TYPE_INT_RGB);
+//		newBufferedImage.createGraphics().drawImage(bufferedImage, 0, 0,
+//				Color.WHITE, null);
+//
+//		ImageIO.write(newBufferedImage, "jpg", out);
+//
+//		InputStream in = new ByteArrayInputStream(out.toByteArray());
+//
+//		return in;
+//	}
 
 	public static void main(String[] args) throws Exception {
 
@@ -69,7 +66,28 @@ public class ImportPatternImage {
 		conn.commit();
 
 		conn.close();
+		
+		System.out.println("Done. Total:"+counter);
 	}
+	
+	private static boolean isImage(File file)  
+    {  
+        boolean flag = false;   
+        try  
+        {  
+            ImageInputStream is = ImageIO.createImageInputStream(file);  
+            if(null == is)  
+            {  
+                return flag;  
+            }  
+            is.close();  
+            flag = true;  
+        } catch (Exception e)  
+        {  
+            //e.printStackTrace();  
+        }  
+        return flag;  
+    }  
 
 	private static void readData(String path) throws Exception {
 		File file = new File(path);
@@ -80,23 +98,18 @@ public class ImportPatternImage {
 			if (f.isDirectory()) {
 				readData(f.getAbsolutePath());
 			} else {
-				if (f.getName().toLowerCase().endsWith(".bmp")
-						|| f.getName().toLowerCase().endsWith(".png")) {
+				
+				if (isImage(f)) {
 
 					String[] splits = f.getName().split("\\.");
 
 					InputStream in = null;
-					try {
-						pstmt.setString(1, "jpg");
+					
+					String format = splits[splits.length - 1];
 
-						in = getJpgStream(f.getAbsolutePath());
-					} catch (Exception e) {
-						String format = splits[splits.length - 1];
+					pstmt.setString(1, format);
 
-						pstmt.setString(1, format);
-
-						in = new FileInputStream(f.getAbsoluteFile());
-					}
+					in = new FileInputStream(f.getAbsoluteFile());
 
 					pstmt.setBlob(2, in);
 
@@ -106,7 +119,7 @@ public class ImportPatternImage {
 
 					counter++;
 
-					if (counter % 100 == 0) {
+					if (counter % 1000 == 0) {
 						System.out.println(counter);
 
 						conn.commit();

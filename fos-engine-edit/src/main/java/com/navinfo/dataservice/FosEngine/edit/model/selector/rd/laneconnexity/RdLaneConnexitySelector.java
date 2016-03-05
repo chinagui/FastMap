@@ -74,6 +74,8 @@ public class RdLaneConnexitySelector implements ISelector {
 				
 				connexity.setSrcFlag(resultSet.getInt("src_flag"));
 				
+				connexity.setRowId(resultSet.getString("row_id"));
+				
 				int meshId = resultSet.getInt("mesh_id");
 				
 				connexity.setMesh(meshId);

@@ -3,6 +3,7 @@ package com.navinfo.dataservice.FosEngine.edit.operation.obj.rdrestriction.creat
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -13,17 +14,25 @@ public class Check {
 		
 		String str="";
 		
-		Integer[] pids = (Integer[]) linkPids.toArray();
+//		Integer[] pids = (Integer[]) linkPids.toArray();
 		
-		for(int i=0;i<pids.length;i++){
-			int pid = pids[i];
-			
-			if(i>0){
-				str+=",";
-			}
-			
-			str+=pid;
+//		for(int i=0;i<pids.length;i++){
+//			int pid = pids[i];
+//			
+//			if(i>0){
+//				str+=",";
+//			}
+//			
+//			str+=pid;
+//		}
+		
+		Iterator<Integer> it = linkPids.iterator();
+		
+		while(it.hasNext()){
+			str += "," + it.next();
 		}
+		
+		str = str.substring(1);
 		
 		String sql = "select link_pid from rd_link where kind in (11,13) and link_pid in ("+str+") and rownum=1";
 		

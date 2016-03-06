@@ -62,6 +62,8 @@ public class RdLaneTopologySelector implements ISelector {
 				
 				topo.setRelationshipType(resultSet.getInt("relationship_type"));
 				
+				topo.setRowId(resultSet.getString("row_id"));
+				
 				int meshId = resultSet.getInt("mesh_id");
 				
 				topo.setMesh(meshId);
@@ -151,6 +153,8 @@ public class RdLaneTopologySelector implements ISelector {
 				topo.setReachDir(resultSet.getInt("reach_dir"));
 				
 				topo.setRelationshipType(resultSet.getInt("relationship_type"));
+				
+				topo.setRowId(resultSet.getString("row_id"));
 
 				RdLaneViaSelector viaSelector = new RdLaneViaSelector(
 						conn);

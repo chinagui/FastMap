@@ -7,34 +7,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.navinfo.navicommons.utils.StringUtils;
+
 
 public class Check {
 
 	public void checkGLM01017(Connection conn, Set<Integer> linkPids) throws Exception{
 		
-		String str="";
-		
-//		Integer[] pids = (Integer[]) linkPids.toArray();
-		
-//		for(int i=0;i<pids.length;i++){
-//			int pid = pids[i];
-//			
-//			if(i>0){
-//				str+=",";
-//			}
-//			
-//			str+=pid;
-//		}
-		
-		Iterator<Integer> it = linkPids.iterator();
-		
-		while(it.hasNext()){
-			str += "," + it.next();
-		}
-		
-		str = str.substring(1);
-		
-		String sql = "select link_pid from rd_link where kind in (11,13) and link_pid in ("+str+") and rownum=1";
+		String sql = "select link_pid from rd_link where kind in (11,13) and link_pid in ("+StringUtils.collection2String(linkPids, ",")+") and rownum=1";
 		
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 
@@ -77,7 +57,7 @@ public class Check {
 
 		pstmt.close();
 		
-		if (flag) {
+		if (!flag) {
 
 			throwException("如果交限进入线和退出线挂接在同一点上，而且这个点未登记路口（不属于任何路口），则不允许制作和修改");
 		}

@@ -482,7 +482,14 @@ public class Operation implements IOperation {
 
 					for (String s : splits) {
 						if (!s.equals("")) {
-							viaLinks.add(Integer.valueOf(s));
+							
+							int viaPid = Integer.valueOf(s);
+							
+							if(viaPid == inLinkPid || viaPid == outLinkPid){
+								continue;
+							}
+							
+							viaLinks.add(viaPid);
 						}
 					}
 

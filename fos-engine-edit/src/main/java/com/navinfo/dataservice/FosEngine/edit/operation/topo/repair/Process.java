@@ -5,9 +5,10 @@ import java.sql.Connection;
 import com.navinfo.dataservice.FosEngine.edit.log.LogWriter;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
-import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.FosEngine.edit.operation.IProcess;
 import com.navinfo.dataservice.FosEngine.edit.operation.OperatorFactory;
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
@@ -23,6 +24,10 @@ public class Process implements IProcess {
 	private String postCheckMsg;
 	
 	private RdLink updateLink;
+	
+	private RdNode snode;
+	
+	private RdNode enode;
 	
 	private Check check = new Check();
 	
@@ -55,6 +60,12 @@ public class Process implements IProcess {
 		
 		this.updateLink = (RdLink) new RdLinkSelector(conn).loadById(command.getLinkPid(), true);
 		
+		RdNodeSelector nodeSelector = new RdNodeSelector(conn);
+		
+		this.snode = (RdNode) nodeSelector.loadById(updateLink.getsNodePid(), true);
+		
+		this.enode = (RdNode) nodeSelector.loadById(updateLink.geteNodePid(), true);
+		
 		return false;
 	}
 
@@ -82,12 +93,12 @@ public class Process implements IProcess {
 
 			prepareData();
 
-			IOperation op = new Operation(command,updateLink,check);
+			Operation op = new Operation(conn, command,updateLink,snode,enode,check);
 
 			op.run(result);
 
 			recordData();
-
+			
 			postCheck();
 
 			conn.commit();

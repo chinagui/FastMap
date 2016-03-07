@@ -237,13 +237,13 @@ public class RdBranchDetail implements IObj {
 	@Override
 	public String primaryKey() {
 
-		return "branch_pid";
+		return "detail_id";
 	}
 
 	@Override
 	public int primaryValue() {
 
-		return this.getBranchPid();
+		return this.getPid();
 	}
 
 	@Override
@@ -255,7 +255,7 @@ public class RdBranchDetail implements IObj {
 	@Override
 	public String primaryTableName() {
 
-		return "rd_branch";
+		return "rd_branch_detail";
 	}
 
 	@Override

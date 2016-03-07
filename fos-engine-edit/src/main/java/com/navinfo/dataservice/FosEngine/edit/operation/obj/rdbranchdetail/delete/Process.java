@@ -4,8 +4,10 @@ import java.sql.Connection;
 
 import com.navinfo.dataservice.FosEngine.edit.log.LogWriter;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranch;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranchDetail;
 import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.branch.RdBranchDetailSelector;
+import com.navinfo.dataservice.FosEngine.edit.model.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.FosEngine.edit.operation.IOperation;
 import com.navinfo.dataservice.FosEngine.edit.operation.IProcess;
@@ -22,7 +24,9 @@ public class Process implements IProcess {
 
 	private String postCheckMsg;
 
-	private RdBranchDetail branch;
+	private RdBranchDetail detail;
+	
+	private RdBranch branch;
 
 	public Process(ICommand command) throws Exception {
 		this.command = (Command) command;
@@ -51,8 +55,12 @@ public class Process implements IProcess {
 
 		RdBranchDetailSelector selector = new RdBranchDetailSelector(this.conn);
 
-		this.branch = (RdBranchDetail) selector.loadById(command.getPid(),
+		this.detail = (RdBranchDetail) selector.loadById(command.getPid(),
 				true);
+		
+		RdBranchSelector branchSelector = new RdBranchSelector(this.conn);
+		
+		this.branch = (RdBranch) branchSelector.loadById(detail.getBranchPid(), true);
 
 		return true;
 	}
@@ -77,7 +85,7 @@ public class Process implements IProcess {
 				throw new Exception(preCheckMsg);
 			}
 
-			IOperation operation = new Operation(command, this.branch);
+			IOperation operation = new Operation(command, this.detail, this.branch);
 
 			msg = operation.run(result);
 

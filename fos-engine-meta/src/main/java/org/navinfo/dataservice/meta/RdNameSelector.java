@@ -19,24 +19,33 @@ public class RdNameSelector {
 
 	public JSONObject searchByName(String name, int pageSize, int pageNum)
 			throws Exception {
-		
+
 		JSONObject result = new JSONObject();
-		
+
 		JSONArray array = new JSONArray();
 
-		String sql = "SELECT *   FROM (SELECT c.*, rownum rn           FROM (select  count(1) over(partition by 1) total,        a.name_groupid,        a.name,        b.province   from rd_name a, cp_provincelist b  where a.name like :1    and a.admin_id = b.admincode) c          WHERE rownum <= :2)  WHERE rn >= :3";
-		
+		int total = 0;
+
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 
-		int startRow = pageNum * pageSize + 1;
-
-		int endRow = (pageNum + 1) * pageSize;
-		
-		int total = 0;
-
 		try {
+
+			if (name.length() == 0) {
+				result.put("total", total);
+
+				result.put("data", array);
+
+				return result;
+			}
+
+			String sql = "SELECT *   FROM (SELECT c.*, rownum rn           FROM (select  count(1) over(partition by 1) total,        a.name_groupid,        a.name,        b.province   from rd_name a, cp_provincelist b  where a.name like :1    and a.admin_id = b.admincode) c          WHERE rownum <= :2)  WHERE rn >= :3";
+
+			int startRow = pageNum * pageSize + 1;
+
+			int endRow = (pageNum + 1) * pageSize;
+
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setString(1, name + "%");
@@ -48,8 +57,8 @@ public class RdNameSelector {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
-				
-				if(total==0){
+
+				if (total == 0) {
 					total = resultSet.getInt("total");
 				}
 
@@ -69,6 +78,12 @@ public class RdNameSelector {
 
 				array.add(json);
 			}
+
+			result.put("total", total);
+
+			result.put("data", array);
+
+			return result;
 		} catch (Exception e) {
 
 			throw new Exception(e);
@@ -94,16 +109,11 @@ public class RdNameSelector {
 				try {
 					conn.close();
 				} catch (Exception e) {
-					
+
 				}
 			}
 		}
-		
-		result.put("total", total);
-		
-		result.put("data", array);
 
-		return result;
 	}
 
 	public static void main(String[] args) throws Exception {

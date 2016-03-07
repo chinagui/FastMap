@@ -145,13 +145,13 @@ public class RdLaneVia implements IRow {
 	}
 
 	@Override
-	public String primaryKey() {
+	public String parentPKName() {
 
 		return "topology_id";
 	}
 
 	@Override
-	public int primaryValue() {
+	public int parentPKValue() {
 
 		return this.getTopologyId();
 	}
@@ -163,7 +163,7 @@ public class RdLaneVia implements IRow {
 	}
 
 	@Override
-	public String primaryTableName() {
+	public String parentTableName() {
 
 		return "rd_lane_topology";
 	}

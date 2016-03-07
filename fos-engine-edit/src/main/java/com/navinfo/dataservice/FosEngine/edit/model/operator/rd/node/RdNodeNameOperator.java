@@ -47,7 +47,7 @@ public class RdNodeNameOperator implements IOperator {
 		try {
 			pstmt = conn.prepareStatement(sql);
 
-			pstmt.setInt(1, name.getNameId());
+			pstmt.setInt(1, name.getPid());
 
 			pstmt.setInt(2, name.getNameGroupid());
 
@@ -154,7 +154,7 @@ public class RdNodeNameOperator implements IOperator {
 					}
 				}
 			}
-			sb.append(" where name_id=" + name.getNameId());
+			sb.append(" where name_id=" + name.getPid());
 
 			String sql = sb.toString();
 
@@ -193,7 +193,7 @@ public class RdNodeNameOperator implements IOperator {
 
 			pstmt.setInt(1, 2);
 
-			pstmt.setInt(2, name.getNameId());
+			pstmt.setInt(2, name.getPid());
 
 			pstmt.executeUpdate();
 
@@ -225,7 +225,7 @@ public class RdNodeNameOperator implements IOperator {
 		sb.append("(name_id, name_groupid, node_pid, lang_code, name, "
 				+ "phonetic, src_flag, u_record, row_id) values (");
 
-		sb.append(name.getNameId());
+		sb.append(name.getPid());
 
 		sb.append("," + name.getNameGroupid());
 
@@ -285,7 +285,7 @@ public class RdNodeNameOperator implements IOperator {
 
 		sb.append(" where name_id=");
 
-		sb.append(name.getNameId());
+		sb.append(name.getPid());
 
 		stmt.addBatch(sb.toString());
 	}
@@ -294,7 +294,7 @@ public class RdNodeNameOperator implements IOperator {
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 
 		String sql = "update " + name.tableName()
-				+ " set u_record=2 where name_id=" + name.getNameId();
+				+ " set u_record=2 where name_id=" + name.getPid();
 
 		stmt.addBatch(sql);
 	}

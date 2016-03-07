@@ -135,13 +135,13 @@ public class RdNodeForm implements IRow {
 	}
 
 	@Override
-	public String primaryKey() {
+	public String parentPKName() {
 
 		return "node_pid";
 	}
 
 	@Override
-	public int primaryValue() {
+	public int parentPKValue() {
 
 		return this.getNodePid();
 	}
@@ -153,7 +153,7 @@ public class RdNodeForm implements IRow {
 	}
 
 	@Override
-	public String primaryTableName() {
+	public String parentTableName() {
 
 		return "rd_node";
 	}

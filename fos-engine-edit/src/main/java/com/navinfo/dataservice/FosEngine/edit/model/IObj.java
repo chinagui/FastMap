@@ -16,4 +16,7 @@ public interface IObj extends IRow {
 	 * @return pid
 	 */
 	public int pid();
+	
+	
+	public String primaryKey();
 }

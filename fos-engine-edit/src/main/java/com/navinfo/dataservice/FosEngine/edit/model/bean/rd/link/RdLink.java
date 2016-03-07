@@ -697,13 +697,13 @@ public class RdLink implements IObj {
 	}
 
 	@Override
-	public String primaryKey() {
+	public String parentPKName() {
 
 		return "link_pid";
 	}
 
 	@Override
-	public int primaryValue() {
+	public int parentPKValue() {
 
 		return this.getPid();
 	}
@@ -737,7 +737,7 @@ public class RdLink implements IObj {
 	}
 
 	@Override
-	public String primaryTableName() {
+	public String parentTableName() {
 
 		return "rd_link";
 	}
@@ -1152,6 +1152,12 @@ public class RdLink implements IObj {
 	@Override
 	public void setMesh(int mesh) {
 		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public String primaryKey() {
+		// TODO Auto-generated method stub
+		return "link_pid";
 	}
 
 }

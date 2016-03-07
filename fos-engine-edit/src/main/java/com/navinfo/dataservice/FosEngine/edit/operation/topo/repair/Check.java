@@ -8,7 +8,11 @@ import java.util.Set;
 
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.commons.util.GeometryUtils;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 
 public class Check {
 
@@ -42,30 +46,29 @@ public class Check {
 		if (resultSet.next()) {
 			flag = true;
 		}
-		
+
 		resultSet.close();
 
 		pstmt.close();
 
 		if (flag) {
-			
+
 			throwException("对组成路口的node挂接的link线进行编辑操作时，不能分离组成路口的node点");
 		}
 	}
-	
-	//该线是经过线，移动该线造成线线关系（车信、线线交限、线线语音引导、线线分歧、线线顺行）从inLink到outlink的不连续
-	public void checkIsVia(Connection conn,int linkPid) throws Exception
-	{
+
+	// 该线是经过线，移动该线造成线线关系（车信、线线交限、线线语音引导、线线分歧、线线顺行）从inLink到outlink的不连续
+	public void checkIsVia(Connection conn, int linkPid) throws Exception {
 		String sql = "select link_pid from rd_lane_via where link_pid =:1 and rownum=1 union all select link_pid from rd_restriction_via where link_pid =:2 and rownum=1 union all select link_pid from rd_branch_via where link_pid =:3 and rownum=1 ";
 
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 
 		pstmt.setInt(1, linkPid);
-		
+
 		pstmt.setInt(2, linkPid);
-		
+
 		pstmt.setInt(3, linkPid);
-		
+
 		ResultSet resultSet = pstmt.executeQuery();
 
 		boolean flag = false;
@@ -77,53 +80,30 @@ public class Check {
 		resultSet.close();
 
 		pstmt.close();
-		
+
 		if (flag) {
 
 			throwException("该线是经过线，移动该线造成线线关系（车信、线线交限、线线语音引导、线线分歧、线线顺行）从inLink到outlink的不连续");
 		}
 	}
-	
-	//相邻形状点不可过近，不能小于2m
-	public void checkShapePointDistance(double[][] ps) throws Exception {
-		
-		for(int i=0;i<ps.length -1;i++){
-			
-			double smx = MercatorProjection.longitudeToMetersX(ps[i][0]);
-			
-			double smy = MercatorProjection.latitudeToMetersY(ps[i][0]);
-			
-			double emx = MercatorProjection.longitudeToMetersX(ps[i+1][0]);
-			
-			double emy = MercatorProjection.latitudeToMetersY(ps[i+1][0]);
-			
-			double distance = Math.pow(smx - emx, 2) + Math.pow(smy - emy, 2);
-			
-			if (distance <4){
+
+	// 相邻形状点不可过近，不能小于2m
+	public void checkShapePointDistance(JSONObject geom) throws Exception {
+
+		Geometry g = GeoTranslator.geojson2Jts(geom);
+
+		Coordinate[] coords = g.getCoordinates();
+
+		for (int i = 0; i < coords.length - 1; i++) {
+
+			double distance = GeometryUtils.getDistance(coords[i].y,
+					coords[i].x, coords[i + 1].y, coords[i + 1].x);
+
+			if (distance <= 2) {
 				throwException("相邻形状点不可过近，不能小于2m");
 			}
-			
 		}
-		
 	}
-	
-	//相邻形状点不可过近，不能小于2m
-		public void checkShapePointDistance(JSONObject geom) throws Exception {
-			
-			double[][] ps = new double[geom.getJSONArray("coordinates").size()][];
-			
-			for(int i=0;i<geom.getJSONArray("coordinates").size();i++){
-				double[] p = new double[2];
-				
-				p[0] = geom.getJSONArray("coordinates").getJSONArray(i).getDouble(0);
-				
-				p[1] = geom.getJSONArray("coordinates").getJSONArray(i).getDouble(1);
-				
-			}
-			
-			this.checkShapePointDistance(ps);
-			
-		}
 
 	private void throwException(String msg) throws Exception {
 		throw new Exception(msg);

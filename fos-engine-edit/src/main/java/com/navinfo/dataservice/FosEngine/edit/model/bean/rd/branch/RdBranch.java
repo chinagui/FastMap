@@ -366,13 +366,13 @@ public class RdBranch implements IObj {
 	}
 
 	@Override
-	public String primaryKey() {
+	public String parentPKName() {
 
 		return "branch_pid";
 	}
 
 	@Override
-	public int primaryValue() {
+	public int parentPKValue() {
 
 		return this.getPid();
 	}
@@ -400,7 +400,7 @@ public class RdBranch implements IObj {
 	}
 
 	@Override
-	public String primaryTableName() {
+	public String parentTableName() {
 
 		return "rd_branch";
 	}
@@ -481,6 +481,12 @@ public class RdBranch implements IObj {
 	public void setMesh(int mesh) {
 		// TODO Auto-generated method stub
 		this.mesh = mesh;
+	}
+
+	@Override
+	public String primaryKey() {
+		// TODO Auto-generated method stub
+		return "branch_pid";
 	}
 
 }

@@ -13,10 +13,12 @@ import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
 import com.navinfo.dataservice.FosEngine.edit.check.NiValExceptionOperator;
+import com.navinfo.dataservice.FosEngine.edit.model.IObj;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjLevel;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
 import com.navinfo.dataservice.FosEngine.edit.model.Result;
+import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.cross.RdCrossName;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
@@ -224,11 +226,11 @@ public class LogWriter {
 
 			ld.setOpbTp(Status.INSERT);
 
-			ld.setObNm(r.primaryTableName());
+			ld.setObNm(r.parentTableName());
 
-			ld.setObPid(r.primaryValue());
+			ld.setObPid(r.parentPKValue());
 
-			ld.setObPk(r.primaryKey());
+			ld.setObPk(r.parentPKName());
 
 			ld.setObTp(1);
 
@@ -263,11 +265,11 @@ public class LogWriter {
 
 						ldC.setOpbTp(Status.INSERT);
 
-						ldC.setObNm(row.primaryTableName());
+						ldC.setObNm(row.parentTableName());
 
-						ldC.setObPid(row.primaryValue());
+						ldC.setObPid(row.parentPKValue());
 
-						ldC.setObPk(row.primaryKey());
+						ldC.setObPk(row.parentPKName());
 
 						ldC.setObTp(1);
 
@@ -304,11 +306,11 @@ public class LogWriter {
 
 			ld.setOpbTp(Status.UPDATE);
 
-			ld.setObNm(r.primaryTableName());
+			ld.setObNm(r.parentTableName());
 
-			ld.setObPid(r.primaryValue());
+			ld.setObPid(r.parentPKValue());
 
-			ld.setObPk(r.primaryKey());
+			ld.setObPk(r.parentPKName());
 
 			ld.setObTp(1);
 
@@ -364,9 +366,10 @@ public class LogWriter {
 				}
 
 				else {
-					if(value instanceof String){
-						oldValue.put(column, (String.valueOf(value)).replace("'","''"));
-					}else{
+					if (value instanceof String) {
+						oldValue.put(column,
+								(String.valueOf(value)).replace("'", "''"));
+					} else {
 						oldValue.put(column, value);
 					}
 
@@ -397,27 +400,28 @@ public class LogWriter {
 
 			ld.setOpTp(Status.DELETE);
 
-			if (r.primaryTableName().equals(r.tableName())) {
+			if (r.parentTableName().equals(r.tableName())) {
 				ld.setOpbTp(Status.DELETE);
 
 				ld.setObTp(1);
-
-				// 删除关联的检查结果
-				operator.deleteNiValException(r.tableName().toUpperCase(),
-						r.primaryValue());
 
 			} else {
 				ld.setOpbTp(Status.UPDATE);
 
 				ld.setObTp(2);
-
 			}
 
-			ld.setObNm(r.primaryTableName());
+			// 删除关联的检查结果
+			if (r instanceof IObj) {
+				operator.deleteNiValException(r.tableName().toUpperCase(),
+						((IObj) r).pid());
+			}
 
-			ld.setObPid(r.primaryValue());
+			ld.setObNm(r.parentTableName());
 
-			ld.setObPk(r.primaryKey());
+			ld.setObPid(r.parentPKValue());
+
+			ld.setObPk(r.parentPKName());
 
 			ld.setTbNm(r.tableName());
 
@@ -446,11 +450,11 @@ public class LogWriter {
 
 						ldC.setOpbTp(Status.DELETE);
 
-						ldC.setObNm(row.primaryTableName());
+						ldC.setObNm(row.parentTableName());
 
-						ldC.setObPid(row.primaryValue());
+						ldC.setObPid(row.parentPKValue());
 
-						ldC.setObPk(row.primaryKey());
+						ldC.setObPk(row.parentPKName());
 
 						ldC.setObTp(2);
 
@@ -484,28 +488,38 @@ public class LogWriter {
 			String key = keys.next();
 
 			if (!(rowJson.get(key) instanceof JSONArray)) {
-				if (!"pid".equals(key) && !"geometry".equals(key)) {
-					
-					Object value = rowJson.get(key);
-					
-					if(value instanceof String){
-						json.put(StringUtils.toColumnName(key), ((String) value).replace("'", "''"));
-					}
-					else{
-						json.put(StringUtils.toColumnName(key), value);
+				if ("pid".equals(key)) {
+					if (row instanceof IObj) {
+						if (row instanceof RdCrossName) {
+							json.put(key, rowJson.get(key));
+						} else {
+							json.put(((IObj) row).primaryKey(),
+									rowJson.get(key));
+						}
+					} else {
+						json.put(key, rowJson.get(key));
 					}
 					
 				} else if ("geometry".equals(key)) {
-					
-					if(row.objType() == ObjType.CKEXCEPTION){
-						json.put(StringUtils.toColumnName(key), rowJson.get(key));
-					}
-					else{
-						json.put("geometry",
-							Geojson.geojson2Wkt(rowJson.getString("geometry")));
+
+					if (row.objType() == ObjType.CKEXCEPTION) {
+						json.put(StringUtils.toColumnName(key),
+								rowJson.get(key));
+					} else {
+						json.put("geometry", Geojson.geojson2Wkt(rowJson
+								.getString("geometry")));
 					}
 				} else {
-					json.put(row.primaryKey(), rowJson.get(key));
+					
+					Object value = rowJson.get(key);
+
+					if (value instanceof String) {
+						json.put(StringUtils.toColumnName(key),
+								((String) value).replace("'", "''"));
+					} else {
+						json.put(StringUtils.toColumnName(key), value);
+					}
+
 				}
 			}
 		}

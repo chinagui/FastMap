@@ -133,13 +133,13 @@ public class RdCrossNode implements IRow {
 	}
 
 	@Override
-	public String primaryKey() {
+	public String parentPKName() {
 
 		return "pid";
 	}
 
 	@Override
-	public int primaryValue() {
+	public int parentPKValue() {
 
 		return this.getPid();
 	}
@@ -151,7 +151,7 @@ public class RdCrossNode implements IRow {
 	}
 
 	@Override
-	public String primaryTableName() {
+	public String parentTableName() {
 
 		return "rd_cross";
 	}

@@ -188,13 +188,13 @@ public class RdLinkLimitTruck implements IRow {
 	}
 
 	@Override
-	public String primaryKey() {
+	public String parentPKName() {
 
 		return "link_pid";
 	}
 
 	@Override
-	public int primaryValue() {
+	public int parentPKValue() {
 
 		return this.getLinkPid();
 	}
@@ -206,7 +206,7 @@ public class RdLinkLimitTruck implements IRow {
 	}
 
 	@Override
-	public String primaryTableName() {
+	public String parentTableName() {
 
 		return "rd_link";
 	}

@@ -60,17 +60,17 @@ public interface IRow extends ISerializable {
 	/**
 	 * @return 所属主表的主键字段名
 	 */
-	public String primaryKey();
+	public String parentPKName();
 
 	/**
 	 * @return 所属主表的主键字段值
 	 */
-	public int primaryValue();
+	public int parentPKValue();
 
 	/**
 	 * @return 所属主表的表名
 	 */
-	public String primaryTableName();
+	public String parentTableName();
 
 	/**
 	 * @return 所有子表的集合

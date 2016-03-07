@@ -330,7 +330,7 @@ public class RdNode implements IObj {
 			nameCopy.setNodePid(this.getPid());
 			
 			try {
-				nameCopy.setNameId(PidService.getInstance().applyNodeNameId());
+				nameCopy.setPid(PidService.getInstance().applyNodeNameId());
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -366,13 +366,13 @@ public class RdNode implements IObj {
 	}
 
 	@Override
-	public String primaryKey() {
+	public String parentPKName() {
 
 		return "node_pid";
 	}
 
 	@Override
-	public int primaryValue() {
+	public int parentPKValue() {
 
 		return this.getPid();
 	}
@@ -392,7 +392,7 @@ public class RdNode implements IObj {
 	}
 
 	@Override
-	public String primaryTableName() {
+	public String parentTableName() {
 
 		return "rd_node";
 	}
@@ -478,5 +478,11 @@ public class RdNode implements IObj {
 	public void setMesh(int mesh) {
 		// TODO Auto-generated method stub
 		this.mesh=mesh;
+	}
+
+	@Override
+	public String primaryKey() {
+		// TODO Auto-generated method stub
+		return "node_pid";
 	}
 }

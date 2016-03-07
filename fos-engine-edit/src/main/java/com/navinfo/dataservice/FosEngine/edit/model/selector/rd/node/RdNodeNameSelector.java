@@ -52,7 +52,7 @@ public class RdNodeNameSelector implements ISelector {
 
 				RdNodeName name = new RdNodeName();
 
-				name.setNameId(resultSet.getInt("name_id"));
+				name.setPid(resultSet.getInt("name_id"));
 
 				name.setNameGroupid(resultSet.getInt("name_groupid"));
 
@@ -120,7 +120,7 @@ public class RdNodeNameSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				name.setNameId(resultSet.getInt("name_id"));
+				name.setPid(resultSet.getInt("name_id"));
 
 				name.setNameGroupid(resultSet.getInt("name_groupid"));
 

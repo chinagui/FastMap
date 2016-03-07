@@ -183,7 +183,7 @@ public class Operation implements IOperation {
 						
 						row.Unserialize(json);
 						
-						row.setNameId(PidService.getInstance().applyNodeNameId());
+						row.setPid(PidService.getInstance().applyNodeNameId());
 						
 						row.setNodePid(rdnode.getPid());
 						

@@ -20,7 +20,7 @@ public class RdNodeName implements IObj {
 	
 	private int mesh;
 
-	private int nameId;
+	private int pid;
 
 	private int nameGroupid = 1;
 
@@ -42,12 +42,12 @@ public class RdNodeName implements IObj {
 
 	}
 
-	public int getNameId() {
-		return nameId;
+	public int getPid() {
+		return pid;
 	}
 
-	public void setNameId(int nameId) {
-		this.nameId = nameId;
+	public void setPid(int pid) {
+		this.pid = pid;
 	}
 
 	public int getNameGroupid() {
@@ -182,17 +182,17 @@ public class RdNodeName implements IObj {
 	@Override
 	public int pid() {
 
-		return this.getNameId();
+		return this.getPid();
 	}
 
 	@Override
-	public String primaryKey() {
+	public String parentPKName() {
 
 		return "node_pid";
 	}
 
 	@Override
-	public int primaryValue() {
+	public int parentPKValue() {
 
 		return this.getNodePid();
 	}
@@ -204,7 +204,7 @@ public class RdNodeName implements IObj {
 	}
 
 	@Override
-	public String primaryTableName() {
+	public String parentTableName() {
 
 		return "rd_node";
 	}
@@ -277,5 +277,11 @@ public class RdNodeName implements IObj {
 	public void setMesh(int mesh) {
 		// TODO Auto-generated method stub
 		this.mesh=mesh;
+	}
+
+	@Override
+	public String primaryKey() {
+		// TODO Auto-generated method stub
+		return "name_id";
 	}
 }

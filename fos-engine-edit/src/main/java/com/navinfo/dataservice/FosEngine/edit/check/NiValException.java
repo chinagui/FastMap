@@ -361,19 +361,19 @@ public class NiValException implements IObj {
 	}
 
 	@Override
-	public String primaryKey() {
+	public String parentPKName() {
 		
 		return "val_exception_id";
 	}
 
 	@Override
-	public int primaryValue() {
+	public int parentPKValue() {
 		
 		return valExceptionId;
 	}
 
 	@Override
-	public String primaryTableName() {
+	public String parentTableName() {
 		
 		return "ni_val_exception";
 	}
@@ -412,6 +412,12 @@ public class NiValException implements IObj {
 	public int pid() {
 		
 		return this.valExceptionId;
+	}
+
+	@Override
+	public String primaryKey() {
+		// TODO Auto-generated method stub
+		return "val_exception_id";
 	}
 	
 }

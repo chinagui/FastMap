@@ -337,13 +337,13 @@ public class RdSpeedlimit implements IObj {
 	}
 
 	@Override
-	public String primaryKey() {
+	public String parentPKName() {
 
 		return "pid";
 	}
 
 	@Override
-	public int primaryValue() {
+	public int parentPKValue() {
 
 		return this.getPid();
 	}
@@ -357,7 +357,7 @@ public class RdSpeedlimit implements IObj {
 	}
 
 	@Override
-	public String primaryTableName() {
+	public String parentTableName() {
 
 		return "rd_speedlimit";
 	}
@@ -448,6 +448,12 @@ public class RdSpeedlimit implements IObj {
 	@Override
 	public void setMesh(int mesh) {
 		this.meshId = mesh;
+	}
+
+	@Override
+	public String primaryKey() {
+		// TODO Auto-generated method stub
+		return "pid";
 	}
 
 }

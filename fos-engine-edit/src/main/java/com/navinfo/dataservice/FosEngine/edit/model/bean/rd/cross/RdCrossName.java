@@ -189,13 +189,13 @@ public class RdCrossName implements IObj {
 	}
 
 	@Override
-	public String primaryKey() {
+	public String parentPKName() {
 
 		return "pid";
 	}
 
 	@Override
-	public int primaryValue() {
+	public int parentPKValue() {
 
 		return this.getPid();
 	}
@@ -207,7 +207,7 @@ public class RdCrossName implements IObj {
 	}
 
 	@Override
-	public String primaryTableName() {
+	public String parentTableName() {
 
 		return "rd_cross";
 	}
@@ -280,5 +280,11 @@ public class RdCrossName implements IObj {
 	public void setMesh(int mesh) {
 		// TODO Auto-generated method stub
 		this.mesh=mesh;
+	}
+
+	@Override
+	public String primaryKey() {
+		// TODO Auto-generated method stub
+		return "name_id";
 	}
 }

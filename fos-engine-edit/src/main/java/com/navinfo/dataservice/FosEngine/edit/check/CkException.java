@@ -455,19 +455,19 @@ public class CkException implements IObj {
 	}
 
 	@Override
-	public String primaryKey() {
+	public String parentPKName() {
 
 		return "exception_id";
 	}
 
 	@Override
-	public int primaryValue() {
+	public int parentPKValue() {
 
 		return this.exceptionId;
 	}
 
 	@Override
-	public String primaryTableName() {
+	public String parentTableName() {
 
 		return "ck_exception";
 	}
@@ -506,5 +506,11 @@ public class CkException implements IObj {
 	public int pid() {
 
 		return this.exceptionId;
+	}
+
+	@Override
+	public String primaryKey() {
+		// TODO Auto-generated method stub
+		return "exception_id";
 	}
 }

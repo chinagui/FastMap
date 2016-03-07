@@ -205,13 +205,13 @@ public class RdSignboardName implements IObj {
 	}
 
 	@Override
-	public String primaryKey() {
+	public String parentPKName() {
 
 		return "signboard_id";
 	}
 
 	@Override
-	public int primaryValue() {
+	public int parentPKValue() {
 
 		return this.getSignboardId();
 	}
@@ -223,7 +223,7 @@ public class RdSignboardName implements IObj {
 	}
 
 	@Override
-	public String primaryTableName() {
+	public String parentTableName() {
 
 		return "rd_signboard";
 	}
@@ -305,6 +305,12 @@ public class RdSignboardName implements IObj {
 	public void setMesh(int mesh) {
 		// TODO Auto-generated method stub
 		this.mesh=mesh;
+	}
+
+	@Override
+	public String primaryKey() {
+		// TODO Auto-generated method stub
+		return "name_id";
 	}
 
 }

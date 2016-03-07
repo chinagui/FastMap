@@ -163,13 +163,13 @@ public class RdBranchVia implements IRow {
 	}
 
 	@Override
-	public String primaryKey() {
+	public String parentPKName() {
 
 		return "branch_pid";
 	}
 
 	@Override
-	public int primaryValue() {
+	public int parentPKValue() {
 
 		return this.getBranchPid();
 	}
@@ -181,7 +181,7 @@ public class RdBranchVia implements IRow {
 	}
 
 	@Override
-	public String primaryTableName() {
+	public String parentTableName() {
 
 		return "rd_branch";
 	}

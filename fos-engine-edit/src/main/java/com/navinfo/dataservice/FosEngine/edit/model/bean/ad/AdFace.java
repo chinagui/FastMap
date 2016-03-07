@@ -188,13 +188,13 @@ public class AdFace implements IObj {
 	}
 
 	@Override
-	public String primaryKey() {
+	public String parentPKName() {
 
 		return "face_pid";
 	}
 
 	@Override
-	public int primaryValue() {
+	public int parentPKValue() {
 
 		return this.getPid();
 	}
@@ -208,7 +208,7 @@ public class AdFace implements IObj {
 	}
 
 	@Override
-	public String primaryTableName() {
+	public String parentTableName() {
 
 		return "AD_FACE";
 	}
@@ -292,5 +292,11 @@ public class AdFace implements IObj {
 	public void setMesh(int mesh) {
 		// TODO Auto-generated method stub
 		this.meshId = mesh;
+	}
+
+	@Override
+	public String primaryKey() {
+		// TODO Auto-generated method stub
+		return "face_pid";
 	}
 }

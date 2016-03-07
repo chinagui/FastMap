@@ -196,13 +196,13 @@ public class RdRestrictionCondition implements IRow {
 	}
 
 	@Override
-	public String primaryKey() {
+	public String parentPKName() {
 
 		return "detail_id";
 	}
 
 	@Override
-	public int primaryValue() {
+	public int parentPKValue() {
 
 		return this.getDetailId();
 	}
@@ -214,7 +214,7 @@ public class RdRestrictionCondition implements IRow {
 	}
 
 	@Override
-	public String primaryTableName() {
+	public String parentTableName() {
 
 		return "rd_restriction_detail";
 	}

@@ -18,7 +18,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 
 public class RdBranch implements IObj {
-	
+
 	private int mesh;
 
 	private int pid;
@@ -62,10 +62,8 @@ public class RdBranch implements IObj {
 	public Map<Integer, RdBranchSchematic> schematicMap = new HashMap<Integer, RdBranchSchematic>();
 
 	public Map<String, RdBranchVia> viaMap = new HashMap<String, RdBranchVia>();
-	
+
 	private int outNodePid;
-	
-	
 
 	public int igetOutNodePid() {
 		return outNodePid;
@@ -215,7 +213,7 @@ public class RdBranch implements IObj {
 					}
 
 					break;
-					
+
 				case "signboards":
 					signboards.clear();
 
@@ -232,7 +230,7 @@ public class RdBranch implements IObj {
 					}
 
 					break;
-					
+
 				case "signasreals":
 					signasreals.clear();
 
@@ -249,7 +247,7 @@ public class RdBranch implements IObj {
 					}
 
 					break;
-					
+
 				case "seriesbranches":
 					seriesbranches.clear();
 
@@ -266,7 +264,7 @@ public class RdBranch implements IObj {
 					}
 
 					break;
-					
+
 				case "realimages":
 					realimages.clear();
 
@@ -283,7 +281,7 @@ public class RdBranch implements IObj {
 					}
 
 					break;
-					
+
 				case "schematics":
 					schematics.clear();
 
@@ -385,17 +383,17 @@ public class RdBranch implements IObj {
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
 
 		children.add(this.getDetails());
-		
+
 		children.add(this.getSignboards());
-		
+
 		children.add(this.getSignasreals());
-		
+
 		children.add(this.getSeriesbranches());
-		
+
 		children.add(this.getRealimages());
-		
+
 		children.add(this.getSchematics());
-		
+
 		children.add(this.getVias());
 
 		return children;
@@ -445,7 +443,7 @@ public class RdBranch implements IObj {
 					String newValue = json.getString(key);
 
 					if (!newValue.equals(oldValue)) {
-						changedFields.put(key, json.get(key));
+						changedFields.put(key, newValue.replace("'", "''"));
 
 					}
 
@@ -482,7 +480,7 @@ public class RdBranch implements IObj {
 	@Override
 	public void setMesh(int mesh) {
 		// TODO Auto-generated method stub
-		this.mesh=mesh;
+		this.mesh = mesh;
 	}
 
 }

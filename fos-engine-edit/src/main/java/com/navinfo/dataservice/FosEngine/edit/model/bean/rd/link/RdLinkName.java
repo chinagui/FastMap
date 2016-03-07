@@ -281,7 +281,7 @@ public class RdLinkName implements IRow {
 					String newValue = json.getString(key);
 
 					if (!newValue.equals(oldValue)) {
-						changedFields.put(key, json.get(key));
+						changedFields.put(key,newValue.replace("'","''"));
 
 					}
 

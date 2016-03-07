@@ -86,16 +86,16 @@ public class RdLaneConnexitySelector implements ISelector {
 				connexity.setTopos(topoSelector.loadRowsByParentId(id, isLock));
 				
 				for(IRow row : connexity.getTopos()){
-					RdLaneTopology topo = (RdLaneTopology)row;
+					row.setMesh(meshId);
 					
-					topo.setMesh(meshId);
+					RdLaneTopology topo = (RdLaneTopology)row;
 					
 					connexity.topologyMap.put(topo.getPid(), topo);
 					
 					for(IRow row2 : topo.getVias()){
-						RdLaneVia via = (RdLaneVia)row2;
+						row2.setMesh(meshId);
 						
-						via.setMesh(meshId);
+						RdLaneVia via = (RdLaneVia)row2;
 						
 						connexity.viaMap.put(via.getRowId(), via);
 					}

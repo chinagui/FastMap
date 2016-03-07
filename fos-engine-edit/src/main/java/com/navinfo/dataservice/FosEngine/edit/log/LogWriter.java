@@ -364,7 +364,11 @@ public class LogWriter {
 				}
 
 				else {
-					oldValue.put(column, value);
+					if(value instanceof String){
+						oldValue.put(column, (String.valueOf(value)).replace("'","''"));
+					}else{
+						oldValue.put(column, value);
+					}
 
 					newValue.put(column, columnValue);
 				}
@@ -481,7 +485,16 @@ public class LogWriter {
 
 			if (!(rowJson.get(key) instanceof JSONArray)) {
 				if (!"pid".equals(key) && !"geometry".equals(key)) {
-					json.put(StringUtils.toColumnName(key), rowJson.get(key));
+					
+					Object value = rowJson.get(key);
+					
+					if(value instanceof String){
+						json.put(StringUtils.toColumnName(key), ((String) value).replace("'", "''"));
+					}
+					else{
+						json.put(StringUtils.toColumnName(key), value);
+					}
+					
 				} else if ("geometry".equals(key)) {
 					
 					if(row.objType() == ObjType.CKEXCEPTION){

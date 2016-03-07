@@ -19,29 +19,29 @@ import com.navinfo.dataservice.commons.util.JsonUtils;
 public class RdBranchName implements IObj {
 
 	private int mesh;
-	
+
 	private int pid;
 
-	private int seqNum=1;
+	private int seqNum = 1;
 
-	private int nameGroupid=1;
-	
+	private int nameGroupid = 1;
+
 	private int detailId;
-	
+
 	private int nameClass;
-	
+
 	private String langCode;
-	
+
 	private int codeType;
-	
+
 	private String name;
-	
+
 	private String phonetic;
-	
+
 	private int srcFlag;
-	
+
 	private String voiceFile;
-	
+
 	private String rowId;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
@@ -145,7 +145,7 @@ public class RdBranchName implements IObj {
 
 	public JSONObject Serialize(ObjLevel objLevel) {
 
-		return JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
 	}
 
 	@Override
@@ -193,11 +193,11 @@ public class RdBranchName implements IObj {
 		return ObjType.RDBRANCHNAME;
 	}
 
-
 	@Override
 	public void copy(IRow row) {
 
 	}
+
 	@Override
 	public Map<String, Object> changedFields() {
 
@@ -207,13 +207,13 @@ public class RdBranchName implements IObj {
 	@Override
 	public String primaryKey() {
 
-		return "detail_id";
+		return "name_id";
 	}
 
 	@Override
 	public int primaryValue() {
 
-		return this.getDetailId();
+		return this.getPid();
 	}
 
 	@Override
@@ -225,7 +225,7 @@ public class RdBranchName implements IObj {
 	@Override
 	public String primaryTableName() {
 
-		return "rd_branch_detail";
+		return "rd_branch_name";
 	}
 
 	@Override
@@ -236,7 +236,7 @@ public class RdBranchName implements IObj {
 
 	@Override
 	public boolean fillChangeFields(JSONObject json) throws Exception {
-		
+
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {
@@ -246,38 +246,37 @@ public class RdBranchName implements IObj {
 
 			if (json.get(key) instanceof JSONArray) {
 				continue;
-			}  else {
-				if (!"objStatus".equals(key)) {
-					
+			} else {
+				if (!"objStatus".equals(key) && !"detailId".equals(key)) {
+
 					Field field = this.getClass().getDeclaredField(key);
-					
+
 					field.setAccessible(true);
-					
+
 					Object objValue = field.get(this);
-					
+
 					String oldValue = null;
-					
-					if (objValue == null){
+
+					if (objValue == null) {
 						oldValue = "null";
-					}else{
+					} else {
 						oldValue = String.valueOf(objValue);
 					}
-					
+
 					String newValue = json.getString(key);
-					
-					if (!newValue.equals(oldValue)){
-						changedFields.put(key, json.get(key));
-						
+
+					if (!newValue.equals(oldValue)) {
+						changedFields.put(key, newValue.replace("'", "''"));
+
 					}
 
-					
 				}
 			}
 		}
-		
-		if (changedFields.size() >0){
+
+		if (changedFields.size() > 0) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 
@@ -304,7 +303,7 @@ public class RdBranchName implements IObj {
 	@Override
 	public void setMesh(int mesh) {
 		// TODO Auto-generated method stub
-		this.mesh=mesh;
+		this.mesh = mesh;
 	}
 
 }

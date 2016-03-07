@@ -25,6 +25,7 @@ import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.GridUtils;
 import com.navinfo.dataservice.solr.core.SConnection;
 
@@ -360,7 +361,9 @@ public class TipsSelector {
 
 			m.put("b", json.getString("t_lifecycle"));
 			
-			m.put("f", json.getString("t_operateDate"));
+			String operateDate = json.getString("t_operateDate");
+			
+			m.put("f", DateUtils.stringToLong(operateDate, "yyyyMMddHHmmss"));
 
 			JSONObject deep = JSONObject.fromObject(json.getString("deep"));
 

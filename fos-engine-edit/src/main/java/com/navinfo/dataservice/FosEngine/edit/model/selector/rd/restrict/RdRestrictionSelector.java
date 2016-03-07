@@ -77,16 +77,18 @@ public class RdRestrictionSelector implements ISelector {
 				restrict.setDetails(detailSelector.loadRowsByParentId(id, isLock));
 				
 				for(IRow row : restrict.getDetails()){
-					RdRestrictionDetail detail = (RdRestrictionDetail)row;
 					
-					detail.setMesh(meshId);
+					row.setMesh(meshId);
+					
+					RdRestrictionDetail detail = (RdRestrictionDetail)row;
 					
 					restrict.detailMap.put(detail.getPid(), detail);
 					
 					for(IRow row2 : detail.getConditions()){
-						RdRestrictionCondition condition = (RdRestrictionCondition)row2;
 						
-						condition.setMesh(meshId);
+						row2.setMesh(meshId);
+						
+						RdRestrictionCondition condition = (RdRestrictionCondition)row2;
 						
 						restrict.conditionMap.put(condition.getRowId(), condition);
 					}

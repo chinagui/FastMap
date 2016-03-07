@@ -78,9 +78,13 @@ public class RdBranchSelector implements ISelector {
 				branch.setDetails(detailSelector.loadRowsByParentId(id, isLock));
 
 				for (IRow row : branch.getDetails()) {
+					row.setMesh(meshId);
+					
 					RdBranchDetail obj = (RdBranchDetail) row;
 					
-					obj.setMesh(meshId);
+					for(IRow name : obj.getNames()){
+						name.setMesh(meshId);
+					}
 
 					branch.detailMap.put(obj.getPid(), obj);
 				}
@@ -92,10 +96,11 @@ public class RdBranchSelector implements ISelector {
 						isLock));
 
 				for (IRow row : branch.getSignboards()) {
+					
+					row.setMesh(meshId);
+					
 					RdSignboard obj = (RdSignboard) row;
 					
-					obj.setMesh(meshId);
-
 					branch.signboardMap.put(obj.getPid(), obj);
 				}
 
@@ -106,10 +111,10 @@ public class RdBranchSelector implements ISelector {
 						isLock));
 
 				for (IRow row : branch.getSignasreals()) {
+					row.setMesh(meshId);
+					
 					RdSignasreal obj = (RdSignasreal) row;
 					
-					obj.setMesh(meshId);
-
 					branch.signasrealMap.put(obj.getPid(), obj);
 				}
 
@@ -120,10 +125,10 @@ public class RdBranchSelector implements ISelector {
 						.loadRowsByParentId(id, isLock));
 
 				for (IRow row : branch.getSeriesbranches()) {
+					row.setMesh(meshId);
+					
 					RdSeriesbranch obj = (RdSeriesbranch) row;
 					
-					obj.setMesh(meshId);
-
 					branch.seriesbranchMap.put(obj.rowId(), obj);
 				}
 
@@ -134,9 +139,9 @@ public class RdBranchSelector implements ISelector {
 						isLock));
 
 				for (IRow row : branch.getRealimages()) {
-					RdBranchRealimage obj = (RdBranchRealimage) row;
+					row.setMesh(meshId);
 					
-					obj.setMesh(meshId);
+					RdBranchRealimage obj = (RdBranchRealimage) row;
 
 					branch.realimageMap.put(obj.rowId(), obj);
 				}
@@ -148,10 +153,10 @@ public class RdBranchSelector implements ISelector {
 						isLock));
 
 				for (IRow row : branch.getSchematics()) {
+					row.setMesh(meshId);
+					
 					RdBranchSchematic obj = (RdBranchSchematic) row;
 					
-					obj.setMesh(meshId);
-
 					branch.schematicMap.put(obj.getPid(), obj);
 				}
 
@@ -160,10 +165,10 @@ public class RdBranchSelector implements ISelector {
 				branch.setVias(viaSelector.loadRowsByParentId(id, isLock));
 
 				for (IRow row : branch.getVias()) {
+					row.setMesh(meshId);
+					
 					RdBranchVia obj = (RdBranchVia) row;
 					
-					obj.setMesh(meshId);
-
 					branch.viaMap.put(obj.rowId(), obj);
 				}
 			} else {

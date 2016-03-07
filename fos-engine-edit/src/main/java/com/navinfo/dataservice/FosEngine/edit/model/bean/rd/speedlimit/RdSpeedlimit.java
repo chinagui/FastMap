@@ -423,7 +423,7 @@ public class RdSpeedlimit implements IObj {
 								changedFields.put(key, json.getInt(key) * 10);
 							}
 						} else {
-							changedFields.put(key, json.get(key));
+							changedFields.put(key,newValue.replace("'","''"));
 						}
 					}
 

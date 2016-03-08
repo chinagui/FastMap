@@ -467,8 +467,10 @@ public class FlushGdb {
 			String newValue = rs.getString("new");
 
 			JSONObject json = JSONObject.fromObject(newValue);
+			
+			String tableName = rs.getString("tb_nm").toLowerCase();
 
-			sb.append(rs.getString("tb_nm"));
+			sb.append(tableName);
 
 			sb.append(" (");
 
@@ -528,6 +530,10 @@ public class FlushGdb {
 
 					pstmt.setObject(tmpPos, valObj);
 				} else {
+					
+					if(tableName.equals("ck_exception")){
+						pstmt.setObject(tmpPos, valObj);
+					}
 
 					JGeometry jg = wktUtil.toJGeometry(valObj.toString()
 							.getBytes());
@@ -572,8 +578,10 @@ public class FlushGdb {
 			String newValue = rs.getString("new");
 
 			JSONObject json = JSONObject.fromObject(newValue);
+			
+			String tableName = rs.getString("tb_nm").toLowerCase();
 
-			sb.append(rs.getString("tb_nm"));
+			sb.append(tableName);
 
 			sb.append(" set ");
 
@@ -623,6 +631,10 @@ public class FlushGdb {
 
 					pstmt.setObject(tmpPos, valObj);
 				} else {
+					
+					if(tableName.equals("ck_exception")){
+						pstmt.setObject(tmpPos, valObj);
+					}
 
 					JGeometry jg = wktUtil.toJGeometry(valObj.toString()
 							.getBytes());

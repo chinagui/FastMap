@@ -279,7 +279,15 @@ public class RdLinkSpeedlimit implements IRow {
 								changedFields.put(key, limit);
 							}
 						} else {
-							changedFields.put(key,newValue.replace("'","''"));
+							Object value = json.get(key);
+							
+							if(value instanceof String){
+								changedFields.put(key, newValue.replace("'", "''"));
+							}
+							else{
+								changedFields.put(key, value);
+							}
+
 						}
 					}
 

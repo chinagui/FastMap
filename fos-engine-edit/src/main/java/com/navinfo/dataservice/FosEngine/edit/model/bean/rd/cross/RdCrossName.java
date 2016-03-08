@@ -254,7 +254,14 @@ public class RdCrossName implements IObj {
 					String newValue = json.getString(key);
 
 					if (!newValue.equals(oldValue)) {
-						changedFields.put(key,newValue.replace("'","''"));
+						Object value = json.get(key);
+						
+						if(value instanceof String){
+							changedFields.put(key, newValue.replace("'", "''"));
+						}
+						else{
+							changedFields.put(key, value);
+						}
 
 					}
 

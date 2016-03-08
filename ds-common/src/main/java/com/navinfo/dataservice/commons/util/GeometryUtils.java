@@ -141,6 +141,8 @@ public class GeometryUtils {
 			
 		}
 		
+		length = Math.round(length * 10000) / 10000.0;
+		
 		return length;
 	}
 	

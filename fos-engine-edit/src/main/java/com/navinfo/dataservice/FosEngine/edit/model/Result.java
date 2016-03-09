@@ -105,6 +105,12 @@ public class Result implements ISerializable {
 
 		return false;
 	}
+	
+	public void clear(){
+		this.listAddIRow.clear();
+		this.listDelIRow.clear();
+		this.listUpdateIRow.clear();
+	}
 
 	/**
 	 * @return 操作结果信息

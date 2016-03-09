@@ -8,6 +8,7 @@ import net.sf.json.JSONObject;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidDataSourceFactory;
+import com.alibaba.druid.pool.DruidPooledConnection;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 
 public class DBOraclePool {
@@ -93,7 +94,7 @@ public class DBOraclePool {
 		
 		dataSource = (DruidDataSource)DruidDataSourceFactory.createDataSource(p); 
 		
-		dataSource.setInitialSize(25); 
+		dataSource.setInitialSize(3); 
 		
 		dataSource.setMinIdle(3);
 		
@@ -106,6 +107,7 @@ public class DBOraclePool {
 		dataSource.setMaxPoolPreparedStatementPerConnectionSize(20);
 		
 		dataSource.setFilters("stat");
+		
 		
 //		dataSource.setTimeBetweenEvictionRunsMillis(60000);
 //		

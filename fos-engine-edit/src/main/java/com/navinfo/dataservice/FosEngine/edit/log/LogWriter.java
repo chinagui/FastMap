@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.FosEngine.edit.log;
 
 import java.lang.reflect.Field;
+import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
@@ -44,22 +46,38 @@ public class LogWriter {
 
 	public void insertRow() throws Exception {
 
-		Statement stmt = null;
+		PreparedStatement pstmt = null;
 
+		String sql="insert into log_operation (op_id, us_id, op_cmd, op_dt, op_sg) values (?,?,?,to_date(?,'yyyymmddhh24miss'),?)";
+		
 		try {
-			stmt = this.conn.createStatement();
+			pstmt = this.conn.prepareStatement(sql);
+			
+			pstmt.setString(1, logOperation.getOpId());
+			
+			pstmt.setString(2, logOperation.getUsId());
+			
+			pstmt.setString(3, logOperation.getOpCmd());
+			
+			pstmt.setString(4, logOperation.getOpDt());
+			
+			pstmt.setInt(5, logOperation.getOpSg());
+			
+			pstmt.execute();
 
-			this.insertRow2Sql(stmt);
+			pstmt.close();
 
-			stmt.executeBatch();
+			for (LogDetail r : this.logOperation.getDetails()) {
+				this.insertLogDetail(r);
+			}
 
 		} catch (Exception e) {
 			throw e;
 
 		} finally {
 			try {
-				if (stmt != null) {
-					stmt.close();
+				if (pstmt != null) {
+					pstmt.close();
 				}
 			} catch (Exception e) {
 
@@ -107,7 +125,86 @@ public class LogWriter {
 			this.insertLogDetail2Sql(r, stmt);
 		}
 	}
+	public void insertLogDetail(LogDetail detail) throws Exception{
 
+		PreparedStatement pstmt = null;
+
+		String sql="insert into log_detail (op_id, ob_nm, ob_pk, ob_pid, opb_tp, ob_tp, op_dt, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id,mesh_id,com_sta) values (?,?,?,?,?,?,to_date(?,'yyyymmddhh24miss'),?,?,?,?,?,?,?,?,?,?)";
+		
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+			
+			pstmt.setString(1, detail.getOpId());
+			
+			pstmt.setString(2, detail.getObNm());
+			
+			pstmt.setString(3, detail.getObPk());
+			
+			pstmt.setInt(4, detail.getObPid());
+			
+			pstmt.setInt(5, detail.getOpbTp());
+			
+			pstmt.setInt(6, detail.getObTp());
+			
+			pstmt.setString(7, detail.getOpDt());
+			
+			pstmt.setString(8, detail.getTbNm());
+			
+			Clob oldclob = conn.createClob();
+			
+			oldclob.setString(1, detail.getOldValue());
+
+			if (oldclob instanceof com.alibaba.druid.proxy.jdbc.ClobProxyImpl) {
+				com.alibaba.druid.proxy.jdbc.ClobProxyImpl impl = (com.alibaba.druid.proxy.jdbc.ClobProxyImpl) oldclob;
+				oldclob = impl.getRawClob(); // 获取原生的这个 Clob
+			}
+
+			pstmt.setClob(9, oldclob);
+			
+			Clob newclob = conn.createClob();
+			
+			newclob.setString(1, detail.getNewValue());
+
+			if (newclob instanceof com.alibaba.druid.proxy.jdbc.ClobProxyImpl) {
+				com.alibaba.druid.proxy.jdbc.ClobProxyImpl impl = (com.alibaba.druid.proxy.jdbc.ClobProxyImpl) newclob;
+				newclob = impl.getRawClob(); // 获取原生的这个 Clob
+			}
+
+			pstmt.setClob(10, newclob);
+			
+			pstmt.setString(11, detail.getFdLst());
+			
+			pstmt.setInt(12, detail.getOpTp());
+			
+			pstmt.setString(13, detail.getRowId());
+
+			pstmt.setInt(14, detail.getIsCk());
+			
+			pstmt.setString(15, detail.getTbRowId());
+			
+			pstmt.setInt(16, detail.getMeshId());
+			
+			pstmt.setInt(17, detail.getComSta());
+			
+			pstmt.execute();
+
+			pstmt.close();
+
+		} catch (Exception e) {
+			throw e;
+
+		} finally {
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+	}
+	
 	public void insertLogDetail2Sql(LogDetail detail, Statement stmt)
 			throws Exception {
 		StringBuilder sb = new StringBuilder("insert into ");
@@ -116,6 +213,8 @@ public class LogWriter {
 
 		sb.append("(op_id, ob_nm, ob_pk, ob_pid, opb_tp, ob_tp, op_dt, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id,mesh_id,com_sta) values (");
 
+		
+		
 		sb.append("'" + detail.getOpId() + "'");
 
 		if (detail.getObNm() == null) {

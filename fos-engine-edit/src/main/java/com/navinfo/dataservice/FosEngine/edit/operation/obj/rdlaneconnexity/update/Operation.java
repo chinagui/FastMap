@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.FosEngine.edit.operation.obj.rdlaneconnexity.update;
 
 import java.sql.Connection;
+import java.util.HashSet;
+import java.util.Set;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -43,6 +45,14 @@ public class Operation implements IOperation {
 
 				return null;
 			} else {
+				
+				if(content.containsKey("laneInfo")){
+					if(content.getString("laneInfo").length()==0){
+						result.insertObject(lane, ObjStatus.DELETE);
+
+						return null;
+					}
+				}
 
 				boolean isChanged = lane.fillChangeFields(content);
 
@@ -53,6 +63,13 @@ public class Operation implements IOperation {
 		}
 
 		if (content.containsKey("topos")) {
+			
+			Set<Integer> topoPids = new HashSet<Integer>();
+			
+			for(Integer topoPid : lane.topologyMap.keySet()){
+				topoPids.add(topoPid);
+			}
+			
 			JSONArray topos = content.getJSONArray("topos");
 
 			for (int i = 0; i < topos.size(); i++) {
@@ -74,6 +91,9 @@ public class Operation implements IOperation {
 
 						if (ObjStatus.DELETE.toString().equals(
 								json.getString("objStatus"))) {
+							
+							topoPids.remove(topo.getPid());
+							
 							result.insertObject(topo, ObjStatus.DELETE);
 
 							continue;
@@ -99,6 +119,8 @@ public class Operation implements IOperation {
 						topo.setMesh(lane.mesh());
 
 						result.insertObject(topo, ObjStatus.INSERT);
+						
+						topoPids.add(topo.getPid());
 
 						continue;
 					}
@@ -158,6 +180,13 @@ public class Operation implements IOperation {
 
 					}
 				}
+			}
+			
+			if(topoPids.size() == 0){
+				
+				result.clear();
+				
+				result.insertObject(lane, ObjStatus.DELETE);
 			}
 		}
 

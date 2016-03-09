@@ -3,6 +3,7 @@ package com.navinfo.dataservice.commons.geom;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
+import oracle.spatial.util.GeometryExceptionWithContext;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
@@ -210,6 +211,19 @@ public class GeoTranslator {
 		g = transform(g, scale, precision);
 
 		return g;
+	}
+	
+	public static JGeometry Jts2JGeometry(Geometry jts, double scale, int precision) throws GeometryExceptionWithContext{
+		
+		WKT wkt = new WKT();  
+		
+		String str = GeoTranslator.jts2Wkt(jts, scale, precision);
+		
+		JGeometry geom = wkt.toJGeometry(str.getBytes());  
+		
+		geom.setSRID(8307);
+		
+		return geom;
 	}
 
 	/**

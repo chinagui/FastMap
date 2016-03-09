@@ -9,8 +9,13 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import oracle.spatial.geometry.JGeometry;
+import oracle.sql.STRUCT;
+
 import org.apache.log4j.Logger;
 
+import com.alibaba.druid.pool.DruidPooledConnection;
+import com.alibaba.druid.proxy.jdbc.ConnectionProxyImpl;
 import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.IOperator;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
@@ -52,7 +57,7 @@ public class RdLinkOperator implements IOperator {
 		// 新增rd_link
 		String sql = "insert into rd_link"
 				+ "(link_pid, s_node_pid, e_node_pid, kind, direct, app_info, toll_info, route_adopt, multi_digitized, develop_state, imi_code, special_traffic, function_class, urban, pave_status, lane_num, lane_left, lane_right, lane_width_left, lane_width_right, lane_class, width, is_viaduct, left_region_id, right_region_id, geometry, length, oneway_mark, mesh_id, street_light, parking_lot, adas_flag, sidewalk_flag, walkstair_flag, dici_type, walk_flag, dif_groupid, src_flag, digital_level, edit_flag, truck_flag, origin_link_pid, center_divider, parking_flag, memo, u_record,row_id)"
-				+ " values (:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,sdo_geometry(:26,8307),:27,:28,:29,:30,:31,:32,:33,:34,:35,:36,:37,:38,:39,:40,:41,:42,:43,:44,:45,:46,:47)";
+				+ " values (:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,:29,:30,:31,:32,:33,:34,:35,:36,:37,:38,:39,:40,:41,:42,:43,:44,:45,:46,:47)";
 
 		PreparedStatement pstmt = null;
 
@@ -109,8 +114,20 @@ public class RdLinkOperator implements IOperator {
 
 			pstmt.setInt(25, rdLink.getRightRegionId());
 
-			pstmt.setString(26,
-					GeoTranslator.jts2Wkt(rdLink.getGeometry(), 0.00001, 5));
+			STRUCT struct = null;
+			
+			JGeometry geom = GeoTranslator.Jts2JGeometry(rdLink.getGeometry(), 0.00001, 5);
+			
+			if(conn instanceof DruidPooledConnection){
+				ConnectionProxyImpl impl = (ConnectionProxyImpl)((DruidPooledConnection)conn).getConnection();
+				
+				struct = JGeometry.store (geom, impl.getRawObject());  
+			}
+			else{
+				struct = JGeometry.store (geom, conn);  
+			}
+			
+			pstmt.setObject(26, struct);
 
 			pstmt.setDouble(27, rdLink.getLength());
 
@@ -159,10 +176,11 @@ public class RdLinkOperator implements IOperator {
 			pstmt.close();
 
 			Statement stmt = conn.createStatement();
-			
-//			sql = "update rd_link set length=sdo_geom.sdo_length(geometry,0.1) where link_pid = "+rdLink.getPid();
-//			
-//			stmt.executeUpdate(sql);
+
+			// sql =
+			// "update rd_link set length=sdo_geom.sdo_length(geometry,0.1) where link_pid = "+rdLink.getPid();
+			//
+			// stmt.executeUpdate(sql);
 
 			// 新增rd_link_form
 			for (IRow r : rdLink.getForms()) {
@@ -296,17 +314,16 @@ public class RdLinkOperator implements IOperator {
 
 					if (!StringUtils.isStringSame(String.valueOf(value),
 							String.valueOf(columnValue))) {
-						
-						if(columnValue==null){
+
+						if (columnValue == null) {
 							sb.append(column + "=null,");
+						} else {
+							sb.append(column + "='"
+									+ String.valueOf(columnValue) + "',");
 						}
-						else{
-							sb.append(column + "='" + String.valueOf(columnValue)
-									+ "',");
-						}
-						
-						isChanged=true;
-						
+
+						isChanged = true;
+
 					}
 
 				} else if (value instanceof Double) {
@@ -404,49 +421,55 @@ public class RdLinkOperator implements IOperator {
 
 				op.deleteRow2Sql(stmt);
 			}
-			
-			for (IRow r: rdLink.getRtics()){
-				RdLinkRticOperator op = new RdLinkRticOperator(conn, (RdLinkRtic)r);
-				
+
+			for (IRow r : rdLink.getRtics()) {
+				RdLinkRticOperator op = new RdLinkRticOperator(conn,
+						(RdLinkRtic) r);
+
 				op.deleteRow2Sql(stmt);
 			}
-			
-			for (IRow r: rdLink.getIntRtics()){
-				RdLinkIntRticOperator op = new RdLinkIntRticOperator(conn, (RdLinkIntRtic)r);
-				
+
+			for (IRow r : rdLink.getIntRtics()) {
+				RdLinkIntRticOperator op = new RdLinkIntRticOperator(conn,
+						(RdLinkIntRtic) r);
+
 				op.deleteRow2Sql(stmt);
 			}
-			
-			for (IRow r: rdLink.getLimitTrucks()){
-				RdLinkLimitTruckOperator op = new RdLinkLimitTruckOperator(conn, (RdLinkLimitTruck)r);
-				
+
+			for (IRow r : rdLink.getLimitTrucks()) {
+				RdLinkLimitTruckOperator op = new RdLinkLimitTruckOperator(
+						conn, (RdLinkLimitTruck) r);
+
 				op.deleteRow2Sql(stmt);
 			}
-			
-			for (IRow r: rdLink.getSidewalks()){
-				RdLinkSidewalkOperator op = new RdLinkSidewalkOperator(conn, (RdLinkSidewalk)r);
-				
+
+			for (IRow r : rdLink.getSidewalks()) {
+				RdLinkSidewalkOperator op = new RdLinkSidewalkOperator(conn,
+						(RdLinkSidewalk) r);
+
 				op.deleteRow2Sql(stmt);
 			}
-			
-			for (IRow r: rdLink.getWalkstairs()){
-				RdLinkWalkstairOperator op = new RdLinkWalkstairOperator(conn, (RdLinkWalkstair)r);
-				
+
+			for (IRow r : rdLink.getWalkstairs()) {
+				RdLinkWalkstairOperator op = new RdLinkWalkstairOperator(conn,
+						(RdLinkWalkstair) r);
+
 				op.deleteRow2Sql(stmt);
 			}
-			
-			for (IRow r: rdLink.getZones()){
-				RdLinkZoneOperator op = new RdLinkZoneOperator(conn, (RdLinkZone)r);
-				
+
+			for (IRow r : rdLink.getZones()) {
+				RdLinkZoneOperator op = new RdLinkZoneOperator(conn,
+						(RdLinkZone) r);
+
 				op.deleteRow2Sql(stmt);
 			}
-			
-			for (IRow r: rdLink.getSpeedlimits()){
-				RdLinkSpeedlimitOperator op = new RdLinkSpeedlimitOperator(conn, (RdLinkSpeedlimit)r);
-				
+
+			for (IRow r : rdLink.getSpeedlimits()) {
+				RdLinkSpeedlimitOperator op = new RdLinkSpeedlimitOperator(
+						conn, (RdLinkSpeedlimit) r);
+
 				op.deleteRow2Sql(stmt);
 			}
-			
 
 			this.deleteRow2Sql(stmt);
 

@@ -107,9 +107,9 @@ public class DBOraclePool {
 		
 		dataSource.setFilters("stat");
 		
-		dataSource.setTimeBetweenEvictionRunsMillis(60000);
-		
-		dataSource.setMinEvictableIdleTimeMillis(300000);
+//		dataSource.setTimeBetweenEvictionRunsMillis(60000);
+//		
+//		dataSource.setMinEvictableIdleTimeMillis(300000);
 	}
 
 	public synchronized Connection getConnection() throws SQLException {

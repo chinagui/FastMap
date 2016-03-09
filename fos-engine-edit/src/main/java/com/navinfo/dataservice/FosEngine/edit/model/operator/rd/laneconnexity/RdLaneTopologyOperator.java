@@ -229,7 +229,7 @@ public class RdLaneTopologyOperator implements IOperator {
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 
 		String sql = "update " + topo.tableName()
-				+ " set u_record=2 where detail_id=" + topo.getPid();
+				+ " set u_record=2 where topology_id=" + topo.getPid();
 
 		stmt.addBatch(sql);
 

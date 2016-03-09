@@ -245,6 +245,7 @@ public class RdCrossSelector implements ISelector {
 				
 				cross.setRowId(resultSet.getString("row_id"));
 
+				result.add(cross);
 			}
 		} catch (Exception e) {
 			

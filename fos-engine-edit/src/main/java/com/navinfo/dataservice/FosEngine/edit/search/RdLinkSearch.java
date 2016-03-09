@@ -326,7 +326,7 @@ public class RdLinkSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select /*+ index(b) */  a.link_pid,  a.direct,  a.kind,  a.s_node_pid,  a.e_node_pid,  b.name,  a.geometry   from rd_link a, (select b.link_pid,c.name from  rd_link_name b,rd_name c where b.name_groupid = c.name_groupid and b.name_class=1 and b.seq_num =1 and c.lang_code='CHI' and b.u_record != 2  ) b   where a.u_record != 2    and a.link_pid = b.link_pid(+)    and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
+		String sql = "select a.link_pid,  a.direct,  a.kind,  a.s_node_pid,  a.e_node_pid,  b.name,  a.geometry   from rd_link a, (select /*+ index(b) */ b.link_pid,c.name from  rd_link_name b,rd_name c where b.name_groupid = c.name_groupid and b.name_class=1 and b.seq_num =1 and c.lang_code='CHI' and b.u_record != 2  ) b   where a.u_record != 2    and a.link_pid = b.link_pid(+)    and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
 
 		PreparedStatement pstmt = null;
 

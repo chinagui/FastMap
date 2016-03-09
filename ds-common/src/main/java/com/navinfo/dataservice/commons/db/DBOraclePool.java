@@ -4,16 +4,16 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import javax.sql.DataSource;
+
 import net.sf.json.JSONObject;
 
-import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidDataSourceFactory;
-import com.alibaba.druid.pool.DruidPooledConnection;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 
 public class DBOraclePool {
 
-	private DruidDataSource dataSource = null;
+	private DataSource dataSource = null;
 
 	private String ip;
 	
@@ -91,27 +91,20 @@ public class DBOraclePool {
 //		
 //		dataSource.setRemoveAbandonedOnMaintenance(true);
 		
+		p.setProperty("initialSize", "5");
+		p.setProperty("minIdle","5");
+		p.setProperty("maxActive","150");
+		p.setProperty("maxWait","3500");
+		p.setProperty("timeBetweenEvictionRunsMillis","60000");
+		p.setProperty("minEvictableIdleTimeMillis","300000");
+		p.setProperty("filters","stat");
+		p.setProperty("poolPreparedStatements","true");
+		p.setProperty("maxPoolPreparedStatementPerConnectionSize","20");
+		p.setProperty("testWhileIdle","true");
+		p.setProperty("setValidationQuery","select 1 from dual");
 		
-		dataSource = (DruidDataSource)DruidDataSourceFactory.createDataSource(p); 
+		dataSource = DruidDataSourceFactory.createDataSource(p); 
 		
-		dataSource.setInitialSize(3); 
-		
-		dataSource.setMinIdle(3);
-		
-		dataSource.setMaxActive(150); 
-		
-		dataSource.setMaxWait(3500);
-		
-		dataSource.setPoolPreparedStatements(true);
-		
-		dataSource.setMaxPoolPreparedStatementPerConnectionSize(20);
-		
-		dataSource.setFilters("stat");
-		
-		
-//		dataSource.setTimeBetweenEvictionRunsMillis(60000);
-//		
-//		dataSource.setMinEvictableIdleTimeMillis(300000);
 	}
 
 	public synchronized Connection getConnection() throws SQLException {

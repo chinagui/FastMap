@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,6 +25,7 @@ import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.versionman.lock.FmMesh4Lock;
 import com.navinfo.dataservice.versionman.lock.MeshLockManager;
 import com.navinfo.navicommons.utils.StringUtils;
@@ -526,23 +528,38 @@ public class FlushGdb {
 
 				Object valObj = json.get(keyName);
 
-				if (!"geometry".equals(keyName)) {
-
-					pstmt.setObject(tmpPos, valObj);
-				} else {
+				if (!"geometry".equalsIgnoreCase(keyName)) {
 					
 					if(tableName.equals("ck_exception")){
+						
+						if("create_date".equalsIgnoreCase(keyName) || "update_date".equalsIgnoreCase(keyName))
+						{
+							Timestamp ts = new Timestamp( DateUtils.stringToLong(valObj.toString(), "yyyy-MM-dd HH:mm:ss"));
+									
+							pstmt.setTimestamp(tmpPos, ts);
+						}
+						else{
+							pstmt.setObject(tmpPos, valObj);
+						}
+					}
+					else{
 						pstmt.setObject(tmpPos, valObj);
 					}
-
-					JGeometry jg = wktUtil.toJGeometry(valObj.toString()
-							.getBytes());
-
-					jg.setSRID(8307);
-
-					STRUCT s = JGeometry.store(jg, destConn);
-
-					pstmt.setObject(tmpPos, s);
+				} else {
+					
+					if(tableName.equalsIgnoreCase("ck_exception")){
+						pstmt.setObject(tmpPos, valObj);
+					}
+					else{
+						JGeometry jg = wktUtil.toJGeometry(valObj.toString()
+								.getBytes());
+	
+						jg.setSRID(8307);
+	
+						STRUCT s = JGeometry.store(jg, destConn);
+	
+						pstmt.setObject(tmpPos, s);
+					}
 				}
 
 			}
@@ -627,23 +644,24 @@ public class FlushGdb {
 
 				Object valObj = json.get(keyName);
 
-				if (!"geometry".equals(keyName)) {
+				if (!"geometry".equalsIgnoreCase(keyName)) {
 
 					pstmt.setObject(tmpPos, valObj);
 				} else {
 					
-					if(tableName.equals("ck_exception")){
+					if(tableName.equalsIgnoreCase("ck_exception")){
 						pstmt.setObject(tmpPos, valObj);
 					}
-
-					JGeometry jg = wktUtil.toJGeometry(valObj.toString()
-							.getBytes());
-
-					jg.setSRID(8307);
-
-					STRUCT s = JGeometry.store(jg, destConn);
-
-					pstmt.setObject(tmpPos, s);
+					else{
+						JGeometry jg = wktUtil.toJGeometry(valObj.toString()
+								.getBytes());
+	
+						jg.setSRID(8307);
+	
+						STRUCT s = JGeometry.store(jg, destConn);
+	
+						pstmt.setObject(tmpPos, s);
+					}
 				}
 
 			}

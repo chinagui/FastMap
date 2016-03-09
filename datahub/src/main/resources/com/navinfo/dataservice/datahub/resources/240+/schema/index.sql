@@ -1,5 +1,5 @@
 --
-  --CREATE INDEX EXP_RD_68  ON  RD_NAME(NAME_GROUPID);
+     CREATE INDEX EXP_RD_68  ON  RD_NAME(NAME_GROUPID);
 
 --dir:all
   --file:  exp-ad.xml

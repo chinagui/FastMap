@@ -59,13 +59,6 @@ public class VersionSelector {
 				}
 			}
 
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-
-				}
-			}
 
 		}
 
@@ -122,13 +115,6 @@ public class VersionSelector {
 				}
 			}
 
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-
-				}
-			}
 
 		}
 		return array;

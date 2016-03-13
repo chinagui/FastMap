@@ -64,13 +64,6 @@ public class PinyinConverter {
 				}
 			}
 			
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-					
-				}
-			}
 
 		}
 		

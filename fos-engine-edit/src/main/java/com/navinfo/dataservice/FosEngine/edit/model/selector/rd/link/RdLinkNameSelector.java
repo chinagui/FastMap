@@ -40,11 +40,11 @@ public class RdLinkNameSelector implements ISelector {
 			throws Exception {
 
 		StringBuilder sb = new StringBuilder(
-				"select a.*,b.name from rd_link_name a,rd_name b where link_pid =:1 and a.name_groupid=b.name_groupid(+) and b.lang_code(+)='CHI'");
+				"select a.*,b.name from rd_link_name a,rd_name b where link_pid =:1 and a.name_groupid=b.name_groupid(+) and b.lang_code(+)='CHI' and a.u_record!=2");
 
-		if (isLock) {
-			sb.append(" for update nowait");
-		}
+//		if (isLock) {
+//			sb.append(" for update nowait");
+//		}
 
 		PreparedStatement pstmt = null;
 

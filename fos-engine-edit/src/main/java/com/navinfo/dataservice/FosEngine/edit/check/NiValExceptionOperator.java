@@ -130,10 +130,8 @@ public class NiValExceptionOperator {
 	 * @param type 1例外，2确认不修改，3确认已修改
 	 * @throws Exception
 	 */
-	public void updateCheckLogStatus(String reserved, int projectId, int type)
+	public void updateCheckLogStatus(String reserved, int type)
 			throws Exception {
-
-		conn = DBOraclePoolManager.getConnection(projectId);
 
 		conn.setAutoCommit(false);
 		
@@ -215,12 +213,6 @@ public class NiValExceptionOperator {
 			} catch (Exception e) {
 
 			}
-
-			try {
-				conn.close();
-			} catch (Exception e) {
-
-			}
 		}
 	}
 
@@ -291,7 +283,7 @@ public class NiValExceptionOperator {
 
 		//op.insertCheckLog("3213131", "POINT(116.1313 37.131)", "[RD_LINK,32131]", 13, "13");
 		
-		op.updateCheckLogStatus("5490db11c96209409ce126ac3058c292", 11, 3);
+		op.updateCheckLogStatus("5490db11c96209409ce126ac3058c292", 3);
 		
 		//op.deleteNiValException("RD_LINK", 32131);
 		

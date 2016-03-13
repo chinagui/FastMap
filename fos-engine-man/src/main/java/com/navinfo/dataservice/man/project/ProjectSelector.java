@@ -18,7 +18,7 @@ public class ProjectSelector {
 	public JSONArray getByUser(int userId) throws Exception{
 		JSONArray array = new JSONArray();
 		
-		String sql = "select project_id, project_name from project_info";
+		String sql = "select project_id, project_name from project_info order by project_id";
 		
 		PreparedStatement pstmt = null;
 
@@ -29,7 +29,7 @@ public class ProjectSelector {
 
 			resultSet = pstmt.executeQuery();
 
-			if (resultSet.next()) {
+			while (resultSet.next()) {
 				
 				int projectId = resultSet.getInt("project_id");
 				
@@ -64,13 +64,6 @@ public class ProjectSelector {
 				}
 			}
 			
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-					
-				}
-			}
 
 		}
 		
@@ -117,14 +110,6 @@ public class ProjectSelector {
 			if (pstmt != null) {
 				try {
 					pstmt.close();
-				} catch (Exception e) {
-					
-				}
-			}
-			
-			if (conn != null) {
-				try {
-					conn.close();
 				} catch (Exception e) {
 					
 				}

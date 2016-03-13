@@ -104,14 +104,6 @@ public class RdNameSelector {
 
 				}
 			}
-
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-
-				}
-			}
 		}
 
 	}
@@ -132,6 +124,6 @@ public class RdNameSelector {
 
 		RdNameSelector selector = new RdNameSelector(oa1.getConn());
 
-		System.out.println(selector.searchByName("望", 10, 1));
+		System.out.println(selector.searchByName("", 10, 1));
 	}
 }

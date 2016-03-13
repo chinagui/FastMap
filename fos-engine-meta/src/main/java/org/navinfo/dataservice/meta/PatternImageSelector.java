@@ -117,13 +117,6 @@ public class PatternImageSelector {
 				}
 			}
 
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-
-				}
-			}
 
 		}
 
@@ -181,16 +174,9 @@ public class PatternImageSelector {
 				}
 			}
 
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-
-				}
-			}
 		}
 
-		return null;
+		return new byte[0];
 	}
 
 	/**
@@ -239,13 +225,6 @@ public class PatternImageSelector {
 				}
 			}
 
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-
-				}
-			}
 		}
 
 		return false;
@@ -268,6 +247,6 @@ public class PatternImageSelector {
 
 		PatternImageSelector selector = new PatternImageSelector(oa1.getConn());
 
-		System.out.println(selector.searchByName("0", 1, 10));
+		System.out.println(selector.searchByName("", 1, 10));
 	}
 }

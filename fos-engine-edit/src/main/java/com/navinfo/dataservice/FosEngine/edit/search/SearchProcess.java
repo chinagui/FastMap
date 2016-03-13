@@ -28,9 +28,9 @@ public class SearchProcess {
 
 	private Connection conn;
 
-	public SearchProcess(int projectId) throws Exception {
+	public SearchProcess(Connection conn) throws Exception {
 
-		this.conn = DBOraclePoolManager.getConnection(projectId);
+		this.conn = conn;
 
 	}
 
@@ -105,13 +105,6 @@ public class SearchProcess {
 			throw e;
 
 		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-
-				}
-			}
 		}
 		return json;
 	}
@@ -152,13 +145,6 @@ public class SearchProcess {
 			throw e;
 
 		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-
-				}
-			}
 		}
 		return json;
 	}
@@ -185,13 +171,6 @@ public class SearchProcess {
 
 		} finally {
 
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-
-				}
-			}
 		}
 
 	}
@@ -258,13 +237,6 @@ public class SearchProcess {
 
 		} finally {
 
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-
-				}
-			}
 		}
 	}
 
@@ -283,13 +255,6 @@ public class SearchProcess {
 
 		} finally {
 
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-
-				}
-			}
 		}
 	}
 
@@ -307,14 +272,6 @@ public class SearchProcess {
 			throw e;
 
 		} finally {
-
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-
-				}
-			}
 		}
 	}
 

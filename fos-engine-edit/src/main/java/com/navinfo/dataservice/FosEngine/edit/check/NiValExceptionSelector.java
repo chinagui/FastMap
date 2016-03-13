@@ -341,11 +341,6 @@ public class NiValExceptionSelector {
 				stmt.close();
 			} catch (Exception e) {
 			}
-
-			try {
-				conn.close();
-			} catch (Exception e) {
-			}
 		}
 
 		return results;
@@ -393,11 +388,6 @@ public class NiValExceptionSelector {
 
 			try {
 				stmt.close();
-			} catch (Exception e) {
-			}
-
-			try {
-				conn.close();
 			} catch (Exception e) {
 			}
 		}

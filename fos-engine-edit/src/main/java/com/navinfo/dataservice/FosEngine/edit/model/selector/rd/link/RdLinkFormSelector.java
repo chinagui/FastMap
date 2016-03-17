@@ -65,6 +65,12 @@ public class RdLinkFormSelector implements ISelector {
 				form.setFormOfWay(resultSet.getInt("form_of_way"));
 
 				form.setLinkPid(id);
+				
+				form.setAuxiFlag(resultSet.getInt("auxi_flag"));
+				
+				form.setExtendedForm(resultSet.getInt("extended_form"));
+				
+				form.setKgFlag(resultSet.getInt("kg_flag"));
 
 				form.setRowId(resultSet.getString("row_id"));
 

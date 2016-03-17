@@ -18,17 +18,47 @@ import com.navinfo.dataservice.commons.util.JsonUtils;
 public class RdLinkForm implements IRow {
 
 	private int mesh;
-	
+
 	private String rowId;
 
 	private int formOfWay = 1;
 
 	private int linkPid;
 
+	private int extendedForm;
+
+	private int auxiFlag;
+
+	private int kgFlag;
+
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	public RdLinkForm() {
 
+	}
+
+	public int getExtendedForm() {
+		return extendedForm;
+	}
+
+	public void setExtendedForm(int extendedForm) {
+		this.extendedForm = extendedForm;
+	}
+
+	public int getAuxiFlag() {
+		return auxiFlag;
+	}
+
+	public void setAuxiFlag(int auxiFlag) {
+		this.auxiFlag = auxiFlag;
+	}
+
+	public int getKgFlag() {
+		return kgFlag;
+	}
+
+	public void setKgFlag(int kgFlag) {
+		this.kgFlag = kgFlag;
 	}
 
 	public int getLinkPid() {
@@ -58,7 +88,7 @@ public class RdLinkForm implements IRow {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
 
-		return JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
 	}
 
 	@Override
@@ -114,7 +144,7 @@ public class RdLinkForm implements IRow {
 		this.setFormOfWay(formSource.getFormOfWay());
 
 		this.setRowId(formSource.getRowId());
-		
+
 		this.setMesh(row.mesh());
 	}
 
@@ -185,11 +215,10 @@ public class RdLinkForm implements IRow {
 
 					if (!newValue.equals(oldValue)) {
 						Object value = json.get(key);
-						
-						if(value instanceof String){
+
+						if (value instanceof String) {
 							changedFields.put(key, newValue.replace("'", "''"));
-						}
-						else{
+						} else {
 							changedFields.put(key, value);
 						}
 
@@ -216,7 +245,7 @@ public class RdLinkForm implements IRow {
 	@Override
 	public void setMesh(int mesh) {
 		// TODO Auto-generated method stub
-		this.mesh=mesh;
+		this.mesh = mesh;
 	}
 
 }

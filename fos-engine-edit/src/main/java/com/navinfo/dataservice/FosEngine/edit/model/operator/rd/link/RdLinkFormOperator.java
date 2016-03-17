@@ -37,7 +37,7 @@ public class RdLinkFormOperator implements IOperator {
 		form.setRowId(UuidUtils.genUuid());
 
 		StringBuilder sb = new StringBuilder(
-				"insert into rd_link_form(link_pid,form_of_way,u_record,row_id) values (:1,:2,1,:3)");
+				"insert into rd_link_form(link_pid,form_of_way,extended_form,auxi_flag,kg_flag,u_record,row_id) values (:1,:2,:3,:4,:5,1,:6)");
 
 		PreparedStatement pstmt = null;
 
@@ -47,8 +47,14 @@ public class RdLinkFormOperator implements IOperator {
 			pstmt.setInt(1, form.getLinkPid());
 
 			pstmt.setInt(2, form.getFormOfWay());
-
-			pstmt.setString(3, form.getRowId());
+			
+			pstmt.setInt(3, form.getExtendedForm());
+			
+			pstmt.setInt(4, form.getAuxiFlag());
+			
+			pstmt.setInt(5, form.getKgFlag());
+			
+			pstmt.setString(6, form.getRowId());
 
 			pstmt.execute();
 		} catch (Exception e) {
@@ -204,7 +210,7 @@ public class RdLinkFormOperator implements IOperator {
 
 		StringBuilder sb = new StringBuilder("insert into rd_link_form(");
 
-		sb.append("link_pid,form_of_way,u_record,row_id");
+		sb.append("link_pid,form_of_way,extended_form,auxi_flag,kg_flag,u_record,row_id");
 
 		sb.append(") values (");
 
@@ -213,6 +219,18 @@ public class RdLinkFormOperator implements IOperator {
 		sb.append(",");
 
 		sb.append(form.getFormOfWay());
+		
+		sb.append(",");
+
+		sb.append(form.getExtendedForm());
+		
+		sb.append(",");
+
+		sb.append(form.getAuxiFlag());
+		
+		sb.append(",");
+
+		sb.append(form.getKgFlag());
 
 		sb.append(",1,'" + form.getRowId() + "')");
 

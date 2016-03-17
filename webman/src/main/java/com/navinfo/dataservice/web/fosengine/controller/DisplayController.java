@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.web.fosengine.controller;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +23,7 @@ import com.navinfo.dataservice.FosEngine.photos.PhotoGetter;
 import com.navinfo.dataservice.FosEngine.tips.TipsSelector;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.web.util.ResponseUtil;
 
@@ -34,8 +36,6 @@ public class DisplayController {
 	@RequestMapping(value = "/display/link/getByTile")
 	public void getLinkByTile(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-
-		ResponseUtil.setResponseHeader(response);
 
 		String parameter = request.getParameter("parameter");
 
@@ -75,17 +75,16 @@ public class DisplayController {
 					ResponseUtil.assembleFailResult(e.getMessage(), logid));
 
 		}
-
 	}
 
 	@RequestMapping(value = "/display/obj/getByTileWithGap")
 	public void getObjByTile(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
-		ResponseUtil.setResponseHeader(response);
-
 		String parameter = request.getParameter("parameter");
 
+		Connection conn = null;
+		
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -107,7 +106,9 @@ public class DisplayController {
 				types.add(ObjType.valueOf(type.getString(i)));
 			}
 
-			SearchProcess p = new SearchProcess(projectId);
+			conn = DBOraclePoolManager.getConnection(projectId);
+			
+			SearchProcess p = new SearchProcess(conn);
 
 			JSONObject data = p.searchDataByTileWithGap(types, x, y, z, gap);
 
@@ -124,14 +125,21 @@ public class DisplayController {
 					ResponseUtil.assembleFailResult(e.getMessage(), logid));
 
 		}
-
+		finally{
+			if(conn!=null){
+				try{
+					conn.close();
+				}
+				catch(Exception e){
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	@RequestMapping(value = "/display/tip/getByTileWithGap")
 	public void getTipsByTile(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-
-		ResponseUtil.setResponseHeader(response);
 
 		String parameter = request.getParameter("parameter");
 
@@ -176,8 +184,6 @@ public class DisplayController {
 	public void getPhotoByTile(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
-		ResponseUtil.setResponseHeader(response);
-
 		String parameter = request.getParameter("parameter");
 
 		try {
@@ -206,14 +212,11 @@ public class DisplayController {
 			response.getWriter().println(
 					ResponseUtil.assembleFailResult(e.getMessage(), logid));
 		}
-
 	}
 
 	@RequestMapping(value = "/display/photo/heatmap")
 	public void getPhotoHeatmap(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-
-		ResponseUtil.setResponseHeader(response);
 
 		String parameter = request.getParameter("parameter");
 
@@ -246,7 +249,6 @@ public class DisplayController {
 			response.getWriter().println(
 					ResponseUtil.assembleFailResult(e.getMessage(), logid));
 		}
-
 	}
 
 }

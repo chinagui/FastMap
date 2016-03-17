@@ -29,14 +29,11 @@ import com.navinfo.dataservice.web.util.ResponseUtil;
 
 @Controller
 public class EditController {
-	private static final Logger logger = Logger
-			.getLogger(EditController.class);
+	private static final Logger logger = Logger.getLogger(EditController.class);
 
 	@RequestMapping(value = "/editsupport/edit")
 	public void edit(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-
-		ResponseUtil.setResponseHeader(response);
 
 		String parameter = request.getParameter("parameter");
 
@@ -76,9 +73,9 @@ public class EditController {
 	public void getByCondition(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
-		ResponseUtil.setResponseHeader(response);
-
 		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
 
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -89,7 +86,9 @@ public class EditController {
 
 			JSONObject data = jsonReq.getJSONObject("data");
 
-			SearchProcess p = new SearchProcess(projectId);
+			conn = DBOraclePoolManager.getConnection(projectId);
+
+			SearchProcess p = new SearchProcess(conn);
 
 			JSONArray array = p.searchDataByCondition(ObjType.valueOf(objType),
 					data);
@@ -105,6 +104,14 @@ public class EditController {
 
 			response.getWriter().println(
 					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 
@@ -112,9 +119,9 @@ public class EditController {
 	public void getByPid(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
-		ResponseUtil.setResponseHeader(response);
-
 		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
 
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -123,10 +130,10 @@ public class EditController {
 
 			int projectId = jsonReq.getInt("projectId");
 
+			conn = DBOraclePoolManager.getConnection(projectId);
+
 			if (jsonReq.containsKey("detailId")) {
 				int detailId = jsonReq.getInt("detailId");
-
-				Connection conn = DBOraclePoolManager.getConnection(projectId);
 
 				RdBranchSelector selector = new RdBranchSelector(conn);
 
@@ -146,7 +153,7 @@ public class EditController {
 			} else {
 				int pid = jsonReq.getInt("pid");
 
-				SearchProcess p = new SearchProcess(projectId);
+				SearchProcess p = new SearchProcess(conn);
 
 				IObj obj = p.searchDataByPid(ObjType.valueOf(objType), pid);
 
@@ -169,6 +176,14 @@ public class EditController {
 
 			response.getWriter().println(
 					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 
@@ -176,9 +191,9 @@ public class EditController {
 	public void getBySpatial(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
-		ResponseUtil.setResponseHeader(response);
-
 		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
 
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -195,7 +210,9 @@ public class EditController {
 				types.add(ObjType.valueOf(type.getString(i)));
 			}
 
-			SearchProcess p = new SearchProcess(projectId);
+			conn = DBOraclePoolManager.getConnection(projectId);
+
+			SearchProcess p = new SearchProcess(conn);
 
 			JSONObject data = p.searchDataBySpatial(types, wkt);
 
@@ -211,7 +228,14 @@ public class EditController {
 			response.getWriter().println(
 					ResponseUtil.assembleFailResult(e.getMessage(), logid));
 
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 		}
-
 	}
 }

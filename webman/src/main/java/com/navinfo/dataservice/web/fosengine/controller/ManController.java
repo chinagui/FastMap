@@ -31,14 +31,14 @@ public class ManController {
 	public void getVersion(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
-		ResponseUtil.setResponseHeader(response);
-
 		String parameter = request.getParameter("parameter");
 
+		Connection conn = null;
+		
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			Connection conn = DBOraclePoolManager.getConnectionByName("man");
+			conn = DBOraclePoolManager.getConnectionByName("man");
 
 			VersionSelector selector = new VersionSelector(conn);
 
@@ -75,22 +75,31 @@ public class ManController {
 			response.getWriter().println(
 					ResponseUtil.assembleFailResult(e.getMessage(), logid));
 		}
+		finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	@RequestMapping(value = "/man/project/getByUser")
 	public void getProjectByUser(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
-		ResponseUtil.setResponseHeader(response);
-
 		String parameter = request.getParameter("parameter");
 
+		Connection conn = null;
+		
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			int userId = jsonReq.getInt("userId");
 
-			Connection conn = DBOraclePoolManager.getConnectionByName("man");
+			conn = DBOraclePoolManager.getConnectionByName("man");
 
 			ProjectSelector selector = new ProjectSelector(conn);
 
@@ -108,16 +117,25 @@ public class ManController {
 			response.getWriter().println(
 					ResponseUtil.assembleFailResult(e.getMessage(), logid));
 		}
+		finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	@RequestMapping(value = "/man/grid/getByUser")
 	public void getGridByUser(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
-		ResponseUtil.setResponseHeader(response);
-
 		String parameter = request.getParameter("parameter");
 
+		Connection conn = null;
+		
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -125,7 +143,7 @@ public class ManController {
 
 			int projectId = jsonReq.getInt("projectId");
 
-			Connection conn = DBOraclePoolManager.getConnectionByName("man");
+			conn = DBOraclePoolManager.getConnectionByName("man");
 
 			GridSelector selector = new GridSelector(conn);
 
@@ -142,6 +160,15 @@ public class ManController {
 
 			response.getWriter().println(
 					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+		}
+		finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 

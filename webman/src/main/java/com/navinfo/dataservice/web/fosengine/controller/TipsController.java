@@ -35,8 +35,6 @@ public class TipsController {
 	public void checkUpdate(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
-		ResponseUtil.setResponseHeader(response);
-
 		String parameter = request.getParameter("parameter");
 
 		try {
@@ -67,8 +65,6 @@ public class TipsController {
 	@RequestMapping(value = "/fcc/tip/edit")
 	public void edit(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-
-		ResponseUtil.setResponseHeader(response);
 
 		String parameter = request.getParameter("parameter");
 
@@ -109,8 +105,6 @@ public class TipsController {
 	@RequestMapping(value = "/fcc/tip/export")
 	public void export(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-
-		ResponseUtil.setResponseHeader(response);
 
 		String parameter = request.getParameter("parameter");
 
@@ -167,8 +161,6 @@ public class TipsController {
 	public void getByRowkey(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
-		ResponseUtil.setResponseHeader(response);
-
 		String parameter = request.getParameter("parameter");
 
 		try {
@@ -199,8 +191,6 @@ public class TipsController {
 	public void getBySpatial(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
-		ResponseUtil.setResponseHeader(response);
-
 		String parameter = request.getParameter("parameter");
 
 		try {
@@ -230,8 +220,6 @@ public class TipsController {
 	@RequestMapping(value = "/fcc/tip/getSnapshot")
 	public void getSnapshot(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-
-		ResponseUtil.setResponseHeader(response);
 
 		String parameter = request.getParameter("parameter");
 
@@ -269,8 +257,6 @@ public class TipsController {
 	@RequestMapping(value = "/fcc/tip/getStats")
 	public void getStats(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-
-		ResponseUtil.setResponseHeader(response);
 
 		String parameter = request.getParameter("parameter");
 

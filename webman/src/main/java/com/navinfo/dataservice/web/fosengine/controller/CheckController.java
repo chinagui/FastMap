@@ -29,10 +29,10 @@ public class CheckController {
 	public void getCheck(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
-		ResponseUtil.setResponseHeader(response);
-
 		String parameter = request.getParameter("parameter");
 
+		Connection conn = null; 
+		
 		try {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -45,7 +45,7 @@ public class CheckController {
 
 			int pageNum = jsonReq.getInt("pageNum");
 
-			Connection conn = DBOraclePoolManager.getConnection(projectId);
+			conn = DBOraclePoolManager.getConnection(projectId);
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 
@@ -64,16 +64,26 @@ public class CheckController {
 			response.getWriter().println(
 					ResponseUtil.assembleFailResult(e.getMessage(), logid));
 		}
+		finally{
+			if(conn!=null){
+				try{
+					conn.close();
+				}
+				catch(Exception e){
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	@RequestMapping(value = "/check/count")
 	public void getCheckCount(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
-		ResponseUtil.setResponseHeader(response);
-
 		String parameter = request.getParameter("parameter");
 
+		Connection conn = null; 
+		
 		try {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -82,7 +92,7 @@ public class CheckController {
 
 			JSONArray meshes = jsonReq.getJSONArray("meshes");
 
-			Connection conn = DBOraclePoolManager.getConnection(projectId);
+			conn = DBOraclePoolManager.getConnection(projectId);
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 
@@ -100,16 +110,26 @@ public class CheckController {
 			response.getWriter().println(
 					ResponseUtil.assembleFailResult(e.getMessage(), logid));
 		}
+		finally{
+			if(conn!=null){
+				try{
+					conn.close();
+				}
+				catch(Exception e){
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	@RequestMapping(value = "/check/update")
 	public void updateCheck(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
-		ResponseUtil.setResponseHeader(response);
-
 		String parameter = request.getParameter("parameter");
 
+		Connection conn = null;
+		
 		try {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -119,10 +139,12 @@ public class CheckController {
 			String id = jsonReq.getString("id");
 
 			int type = jsonReq.getInt("type");
+			
+			conn = DBOraclePoolManager.getConnection(projectId);
 
-			NiValExceptionOperator selector = new NiValExceptionOperator();
+			NiValExceptionOperator selector = new NiValExceptionOperator(conn);
 
-			selector.updateCheckLogStatus(id, projectId, type);
+			selector.updateCheckLogStatus(id, type);
 
 			response.getWriter().println(
 					ResponseUtil.assembleRegularResult(null));
@@ -135,6 +157,16 @@ public class CheckController {
 
 			response.getWriter().println(
 					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+		}
+		finally{
+			if(conn!=null){
+				try{
+					conn.close();
+				}
+				catch(Exception e){
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 }

@@ -27,8 +27,6 @@ public class PhotoController {
 	public void getVersion(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
-		ResponseUtil.setResponseHeader(response);
-
 		String parameter = request.getParameter("parameter");
 
 		try {
@@ -57,8 +55,6 @@ public class PhotoController {
 	@RequestMapping(value = "/fcc/photo/getDetailByRowkey")
 	public void getDetailByRowkey(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-
-		ResponseUtil.setResponseHeader(response);
 
 		String parameter = request.getParameter("parameter");
 

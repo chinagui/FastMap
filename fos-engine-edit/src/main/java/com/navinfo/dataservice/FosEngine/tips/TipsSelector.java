@@ -120,6 +120,10 @@ public class TipsSelector {
 				} else if (type == 1203 || type == 1101 || type == 1407) {
 
 					m.put("c", String.valueOf(deep.getDouble("agl")));
+					
+					if(type == 1203){
+						m.put("d", String.valueOf(deep.get("dr")));
+					}
 
 				} else if (type == 1510) {
 

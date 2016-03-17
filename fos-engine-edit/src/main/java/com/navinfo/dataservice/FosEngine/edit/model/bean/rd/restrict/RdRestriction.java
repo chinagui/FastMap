@@ -271,7 +271,7 @@ public class RdRestriction implements IObj {
 		while (keys.hasNext()) {
 			String key = (String) keys.next();
 
-			if (json.get(key) instanceof JSONArray) {
+			if (!"restricInfo".equals(key) && json.get(key) instanceof JSONArray) {
 				continue;
 			}  else {
 				if ( !"objStatus".equals(key)) {

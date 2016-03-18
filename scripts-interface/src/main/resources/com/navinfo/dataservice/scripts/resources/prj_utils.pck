@@ -38,7 +38,7 @@ create or replace package package_utils is
                                out_link_pids varchar2)
     return rows_record_restrict
     pipelined;
-	
+    
    FUNCTION num_to_bin (p_num NUMBER) RETURN VARCHAR2;
    
    function parse_vehicle(vehicle number) return number;
@@ -58,7 +58,7 @@ create or replace package body package_utils is
     v_link_row rd_link%rowtype;
   
   begin
-    --è®¡ç®—è¿›å…¥çº¿çš„è·ç¦»è¿›å…¥ç‚¹æœ€è¿‘çš„å½¢çŠ¶ç‚¹
+    --¼ÆËã½øÈëÏßµÄ¾àÀë½øÈëµã×î½üµÄĞÎ×´µã
     select * into v_link_row from rd_link where link_pid = p_in_link_pid;
   
     if v_link_row.s_node_pid = p_in_node_pid then
@@ -173,7 +173,7 @@ create or replace package body package_utils is
             into v_out_node_pid, v_via_path
             from tmp_restrict2;
         else
-          --è®¡ç®—è·ç¦»æœ€çŸ­çš„ç»è¿‡çº¿
+          --¼ÆËã¾àÀë×î¶ÌµÄ¾­¹ıÏß
           declare
             v_min_length number := 100;
             v_tmp_length number;
@@ -202,7 +202,7 @@ create or replace package body package_utils is
           end;
         end if;
       
-        --è®¡ç®—é€€å‡ºç‚¹
+        --¼ÆËãÍË³öµã
         get_restrict_out_shape(p_out_link_pid,
                                v_out_node_pid,
                                v_out_lng1,
@@ -212,7 +212,7 @@ create or replace package body package_utils is
       
       else
       
-        --æ²¡æœ‰ç»è¿‡çº¿ï¼Œåˆ™è®¡ç®—è·ç¦»ï¼Œæ‰¾ä¸€ä¸ªè·ç¦»è¿›å…¥ç‚¹æœ€è¿‘çš„é‚£ä¸ªç‚¹ä½œä¸ºé€€å‡ºç‚¹
+        --Ã»ÓĞ¾­¹ıÏß£¬Ôò¼ÆËã¾àÀë£¬ÕÒÒ»¸ö¾àÀë½øÈëµã×î½üµÄÄÇ¸öµã×÷ÎªÍË³öµã
       
         select *
           into v_link_row
@@ -243,7 +243,7 @@ create or replace package body package_utils is
       commit;
     else
     
-      --æ²¡æœ‰ç»è¿‡çº¿ï¼Œåˆ™è®¡ç®—è·ç¦»ï¼Œæ‰¾ä¸€ä¸ªè·ç¦»è¿›å…¥ç‚¹æœ€è¿‘çš„é‚£ä¸ªç‚¹ä½œä¸ºé€€å‡ºç‚¹
+      --Ã»ÓĞ¾­¹ıÏß£¬Ôò¼ÆËã¾àÀë£¬ÕÒÒ»¸ö¾àÀë½øÈëµã×î½üµÄÄÇ¸öµã×÷ÎªÍË³öµã
     
       select *
         into v_link_row
@@ -295,7 +295,7 @@ create or replace package body package_utils is
                             and level <=
                                 regexp_count(out_link_pids, '[0-9]+')) loop
     
-      --åˆ¤æ–­æ˜¯è·¯å£äº¤é™è¿˜æ˜¯çº¿çº¿äº¤é™
+      --ÅĞ¶ÏÊÇÂ·¿Ú½»ÏŞ»¹ÊÇÏßÏß½»ÏŞ
       declare
       
         v_cnt_cross int;
@@ -319,7 +319,7 @@ create or replace package body package_utils is
                    and c.node_pid in (d.s_node_pid, d.e_node_pid));
       
         if v_cnt_cross > 0 then
-          --è·¯å£äº¤é™
+          --Â·¿Ú½»ÏŞ
           select *
             into v_link_row
             from rd_link
@@ -356,7 +356,7 @@ create or replace package body package_utils is
           end loop;
         
         else
-          --çº¿çº¿äº¤é™
+          --ÏßÏß½»ÏŞ
           declare
             v_via_path varchar2(250);
           begin
@@ -485,13 +485,13 @@ end;
 
 create or replace package body package_check is
   function fun_GLM08049(p_restric_pid int) return int is
-    --è·å–è·¯å£pid
+    --»ñÈ¡Â·¿Úpid
     cross_pid int;
-    --é€€å‡ºç‚¹
+    --ÍË³öµã
     out_node_pid int;
-    --ç»“æœæ•°
+    --½á¹ûÊı
     v_cnt int;
-    --è¿›å…¥ç‚¹
+    --½øÈëµã
     v_in_node_pid int;
   begin
     select node_pid

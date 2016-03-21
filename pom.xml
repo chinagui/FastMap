@@ -19,7 +19,10 @@
 		<module>datahub-web</module>
 		<module>diff-core</module>
 		<module>scripts-interface</module>
-  </modules>
+		<module>fos-engine-fcc</module>
+		<module>fos-engine-photo</module>
+		<module>dao-glm-data</module>
+    </modules>
 
     <packaging>pom</packaging>
     <name>dataservice</name>
@@ -609,7 +612,21 @@
 				<artifactId>dao-fcc-data</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
-			
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>fos-engine-fcc</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>fos-engine-photo</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>dao-glm-data</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
 				<artifactId>diff-core</artifactId>

@@ -8,9 +8,9 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <groupId>com.navinfo.dataservice</groupId>
-  <artifactId>versionman</artifactId>
+  <artifactId>datalock</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>versionman</name>
+  <name>datalock</name>
   <url>http://maven.apache.org</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -5,23 +5,13 @@
     <artifactId>dataservice</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <modules>
-		<module>navi-common</module>
-		<module>ds-common</module>
-		<module>datahub</module>
-        <module>export-core</module>
-		<module>import-core</module>
-		<module>versionman</module>
-        <module>webman</module>
-    	<module>fos-engine-edit</module>
-    	<module>fos-engine-man</module>
-    	<module>fos-engine-meta</module>
-		<module>dao-fcc-data</module>
-		<module>datahub-web</module>
-		<module>diff-core</module>
+		<module>commons</module>
+		<module>dao</module>
+		<module>engine</module>
+		<module>job-server</module>
+		<module>toolbox</module>
+		<module>web</module>
 		<module>scripts-interface</module>
-		<module>fos-engine-fcc</module>
-		<module>fos-engine-photo</module>
-		<module>dao-glm-data</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -80,6 +70,7 @@
         <ojdbc.artifactId>ojdbc6</ojdbc.artifactId>
 		<ojdbc.version>11.2.0.1.0</ojdbc.version>
 		<mysql.connector.version>5.1.35</mysql.connector.version>
+		<dataservice.version>0.0.1-SNAPSHOT</dataservice.version>
     </properties>
 
     <dependencyManagement>
@@ -501,6 +492,7 @@
                 <version>1.5.3</version>
             </dependency>
 			<!-- spring end -->
+			
 		<!-- for test begin -->
             <dependency>
                 <groupId>p6spy</groupId>
@@ -558,17 +550,30 @@
 		    </dependency>
 						
 
-			<!-- jdbc driver start -->
+			<!-- jdbc driver end -->
+			
+			<!-- dao start -->
+			 <dependency>
+				 <groupId>com.rabbitmq</groupId>
+				 <artifactId>amqp-client</artifactId>
+				 <version>3.6.0</version>
+			 </dependency>
+			 <dependency>
+				<groupId>org.springframework.amqp</groupId>
+				<artifactId>spring-rabbit</artifactId>
+				<version>1.5.4.RELEASE</version>
+			 </dependency>
+			<!-- dao end -->
 
 			<!-- dataservice module start -->
 			<dependency>
-				<groupId>com.navinfo.dms.vm</groupId>
-				<artifactId>VMCommon</artifactId>
-				<version>1.0.0</version>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>navi-common</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
-				<artifactId>navi-common</artifactId>
+				<artifactId>commons</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 				<exclusions>
 					<exclusion>
@@ -576,11 +581,6 @@
 						<artifactId>servlet-api</artifactId>
 					</exclusion>
 				</exclusions>
-			</dependency>
-			<dependency>
-				<groupId>com.navinfo.dataservice</groupId>
-				<artifactId>ds-common</artifactId>
-				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>

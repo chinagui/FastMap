@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>dataservice</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+    </parent>
+	<groupId>com.navinfo.dataservice</groupId>
+    <artifactId>toolbox</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <modules>
+		<module>diff-core</module>
+		<module>export-core</module>
+		<module>import-core</module>
+    </modules>
+    <packaging>pom</packaging>
+    <name>toolbox</name>
+
+</project>

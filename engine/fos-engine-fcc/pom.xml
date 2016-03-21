@@ -1,0 +1,54 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.navinfo.dataservice</groupId>
+    <artifactId>engine</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>fos-engine-fcc</artifactId>
+  <name>fos-engine-fcc</name>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <build/>
+  <dependencies>
+  
+  
+  <dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>commons</artifactId>
+	</dependency>
+	  <dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>dao-fcc-data</artifactId>
+	</dependency>
+	 <dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>fos-engine-edit</artifactId>
+	</dependency>
+  <dependency>
+	 	<groupId>org.apache.hbase</groupId>
+		<artifactId>hbase-client</artifactId>
+    </dependency>
+    
+    <dependency>
+		<groupId>org.apache.hadoop</groupId>
+		<artifactId>hadoop-common</artifactId>
+		<exclusions>
+            <exclusion>
+                <groupId>javax.servlet</groupId>
+                <artifactId>servlet-api</artifactId>
+            </exclusion>
+        </exclusions>
+	</dependency>
+	<dependency>
+		<groupId>org.hbase</groupId>
+		<artifactId>asynchbase</artifactId>
+		<exclusions>
+            <exclusion>
+                <groupId>org.slf4j</groupId>
+				<artifactId>log4j-over-slf4j</artifactId>
+            </exclusion>
+        </exclusions>
+	</dependency>
+  </dependencies>
+</project>

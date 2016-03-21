@@ -40,7 +40,7 @@
 
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>fos-engine-edit</artifactId>
+			<artifactId>engine-edit</artifactId>
 		</dependency>
 
 		<dependency>
@@ -50,7 +50,7 @@
 		
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>fos-engine-man</artifactId>
+			<artifactId>engine-man</artifactId>
 		</dependency>
 		
 		<dependency>
@@ -60,12 +60,12 @@
 		
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>fos-engine-meta</artifactId>
+			<artifactId>engine-meta</artifactId>
 		</dependency>
 		
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>fos-engine-fcc</artifactId>
+			<artifactId>engine-fcc</artifactId>
 		</dependency>
 
 		<dependency>

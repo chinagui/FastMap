@@ -37,27 +37,27 @@
 	</dependency>
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>fos-engine-edit</artifactId>
+		<artifactId>engine-edit</artifactId>
 	</dependency>
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>fos-engine-meta</artifactId>
-	</dependency>
-	
-	<dependency>
-		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>fos-engine-man</artifactId>
+		<artifactId>engine-meta</artifactId>
 	</dependency>
 	
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>fos-engine-fcc</artifactId>
+		<artifactId>engine-man</artifactId>
+	</dependency>
+	
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>engine-fcc</artifactId>
 	</dependency>
 	
 	
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>fos-engine-photo</artifactId>
+		<artifactId>engine-photo</artifactId>
 	</dependency>
 	
 	

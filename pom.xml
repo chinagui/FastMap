@@ -15,7 +15,7 @@
     	<module>fos-engine-edit</module>
     	<module>fos-engine-man</module>
     	<module>fos-engine-meta</module>
-		<module>solr-core</module>
+		<module>dao-fcc-data</module>
 		<module>datahub-web</module>
 		<module>diff-core</module>
 		<module>scripts-interface</module>
@@ -606,7 +606,7 @@
 			</dependency>
             <dependency>
 				<groupId>com.navinfo.dataservice</groupId>
-				<artifactId>solr-core</artifactId>
+				<artifactId>dao-fcc-data</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 			

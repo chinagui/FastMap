@@ -594,17 +594,17 @@
 			</dependency>
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
-				<artifactId>fos-engine-edit</artifactId>
+				<artifactId>engine-edit</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
-				<artifactId>fos-engine-man</artifactId>
+				<artifactId>engine-man</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
-				<artifactId>fos-engine-meta</artifactId>
+				<artifactId>engine-meta</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
             <dependency>
@@ -614,12 +614,12 @@
 			</dependency>
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
-				<artifactId>fos-engine-fcc</artifactId>
+				<artifactId>engine-fcc</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
-				<artifactId>fos-engine-photo</artifactId>
+				<artifactId>engine-photo</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 			<dependency>

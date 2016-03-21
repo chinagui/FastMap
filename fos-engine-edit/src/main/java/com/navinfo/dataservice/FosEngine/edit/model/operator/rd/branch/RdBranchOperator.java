@@ -11,7 +11,6 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.IOperator;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranch;
@@ -22,6 +21,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdSeriesbranch;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdSignasreal;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.branch.RdSignboard;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 
 public class RdBranchOperator implements IOperator {

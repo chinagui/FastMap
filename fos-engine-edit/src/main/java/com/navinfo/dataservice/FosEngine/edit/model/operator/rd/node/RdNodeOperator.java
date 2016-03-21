@@ -11,7 +11,6 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.IOperator;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNode;
@@ -20,6 +19,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNodeMesh;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.node.RdNodeName;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.vividsolutions.jts.geom.Geometry;
 

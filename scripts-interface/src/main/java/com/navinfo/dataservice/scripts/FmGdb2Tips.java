@@ -3,10 +3,10 @@ package com.navinfo.dataservice.scripts;
 import java.io.FileInputStream;
 import java.util.Properties;
 
-import com.navinfo.dataservice.FosEngine.tips.TipsBuilder;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.db.OracleAddress;
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.navinfo.dataservice.fosengine.fcc.tips.TipsBuilder;
 
 
 public class FmGdb2Tips {

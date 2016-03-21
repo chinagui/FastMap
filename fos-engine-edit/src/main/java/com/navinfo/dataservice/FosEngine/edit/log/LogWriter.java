@@ -13,7 +13,6 @@ import java.util.Set;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
 import com.navinfo.dataservice.FosEngine.edit.check.NiValExceptionOperator;
 import com.navinfo.dataservice.FosEngine.edit.model.IObj;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
@@ -24,6 +23,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.cross.RdCrossName;
 import com.navinfo.dataservice.FosEngine.edit.operation.ICommand;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.vividsolutions.jts.geom.Geometry;
 

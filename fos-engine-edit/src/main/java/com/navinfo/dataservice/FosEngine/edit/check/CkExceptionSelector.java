@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 
 public class CkExceptionSelector {
 	

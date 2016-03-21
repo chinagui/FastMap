@@ -13,9 +13,9 @@ import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.IOperator;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLinkIntRtic;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 
 public class RdLinkIntRticOperator implements IOperator {

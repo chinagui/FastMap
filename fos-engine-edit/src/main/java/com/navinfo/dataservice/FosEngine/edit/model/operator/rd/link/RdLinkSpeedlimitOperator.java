@@ -11,9 +11,9 @@ import java.util.Set;
 
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.IOperator;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLinkSpeedlimit;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 
 public class RdLinkSpeedlimitOperator implements IOperator {

@@ -22,7 +22,7 @@ import oracle.sql.STRUCT;
 import org.apache.uima.pear.util.FileUtil;
 import org.sqlite.SQLiteConfig;
 
-import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 
 public class GdbDataExporter {

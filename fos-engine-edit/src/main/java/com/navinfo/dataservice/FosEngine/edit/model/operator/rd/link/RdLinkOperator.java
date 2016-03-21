@@ -16,7 +16,6 @@ import org.apache.log4j.Logger;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.druid.proxy.jdbc.ConnectionProxyImpl;
-import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
 import com.navinfo.dataservice.FosEngine.edit.model.IOperator;
 import com.navinfo.dataservice.FosEngine.edit.model.IRow;
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLink;
@@ -32,6 +31,7 @@ import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLinkWalkstair
 import com.navinfo.dataservice.FosEngine.edit.model.bean.rd.link.RdLinkZone;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.vividsolutions.jts.geom.Geometry;
 

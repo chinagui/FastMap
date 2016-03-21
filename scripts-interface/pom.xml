@@ -66,6 +66,11 @@
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>fos-engine-meta</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>fos-engine-fcc</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>net.sf.json-lib</groupId>

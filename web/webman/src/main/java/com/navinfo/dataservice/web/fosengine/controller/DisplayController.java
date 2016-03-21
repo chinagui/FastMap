@@ -19,11 +19,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.navinfo.dataservice.FosEngine.edit.display.TileSelector;
 import com.navinfo.dataservice.FosEngine.edit.model.ObjType;
 import com.navinfo.dataservice.FosEngine.edit.search.SearchProcess;
-import com.navinfo.dataservice.FosEngine.tips.TipsSelector;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
+import com.navinfo.dataservice.fosengine.fcc.tips.TipsSelector;
 import com.navinfo.dataservice.photo.PhotoGetter;
 import com.navinfo.dataservice.web.util.ResponseUtil;
 

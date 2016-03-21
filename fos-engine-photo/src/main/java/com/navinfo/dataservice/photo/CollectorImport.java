@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.FosEngine.photos;
+package com.navinfo.dataservice.photo;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -15,6 +15,7 @@ import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
+import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.FileUtils;
 
 public class CollectorImport {

@@ -54,6 +54,18 @@
 		<artifactId>fos-engine-man</artifactId>
 	</dependency>
 	
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>fos-engine-fcc</artifactId>
+	</dependency>
+	
+	
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>fos-engine-photo</artifactId>
+	</dependency>
+	
+	
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

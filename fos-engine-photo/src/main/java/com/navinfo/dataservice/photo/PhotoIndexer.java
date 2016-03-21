@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.FosEngine.photos;
+package com.navinfo.dataservice.photo;
 
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.db.SolrAddress;

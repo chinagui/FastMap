@@ -22,9 +22,9 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
-import com.navinfo.dataservice.FosEngine.photos.Photo;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.GeometryUtils;
 import com.navinfo.dataservice.solr.core.SConnection;
 import com.vividsolutions.jts.geom.Geometry;

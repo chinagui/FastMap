@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.FosEngine.photos;
+package com.navinfo.dataservice.photo;
 
 import java.io.FileInputStream;
 import java.text.DecimalFormat;
@@ -22,6 +22,7 @@ import ch.hsr.geohash.GeoHash;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
+import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.FileUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;

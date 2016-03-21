@@ -13,8 +13,8 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.navinfo.dataservice.FosEngine.photos.PhotoGetter;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
+import com.navinfo.dataservice.photo.PhotoGetter;
 import com.navinfo.dataservice.web.util.ResponseUtil;
 
 @Controller

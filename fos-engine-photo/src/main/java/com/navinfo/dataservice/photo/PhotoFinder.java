@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.FosEngine.photos;
+package com.navinfo.dataservice.photo;
 
 import java.util.List;
 

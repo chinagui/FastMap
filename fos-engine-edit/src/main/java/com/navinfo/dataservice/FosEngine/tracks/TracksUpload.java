@@ -18,8 +18,8 @@ import org.apache.hadoop.hbase.client.Table;
 import ch.hsr.geohash.GeoHash;
 
 import com.navinfo.dataservice.FosEngine.comm.util.StringUtils;
-import com.navinfo.dataservice.FosEngine.photos.Photo;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
+import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 
 /**

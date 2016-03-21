@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.FosEngine.photos;
+package com.navinfo.dataservice.photo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,6 @@ import org.hbase.async.Scanner;
 
 import ch.hsr.geohash.GeoHash;
 
-import com.navinfo.dataservice.FosEngine.edit.search.SearchSnapshot;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
@@ -201,17 +200,17 @@ public class PhotoGetter {
 						JSONObject jsonGeom = JSONObject.fromObject(new String(
 								kv.value()));
 
-						SearchSnapshot snapshot = new SearchSnapshot();
+						JSONObject json = new JSONObject();
 
-						snapshot.setI(jsonGeom.getString("rowkey"));
+						json.put("i", jsonGeom.getString("rowkey"));
 
-						snapshot.setT(2);
+						json.put("t", 2);
 
-						snapshot.setG(Geojson.lonlat2Pixel(
+						json.put("g", Geojson.lonlat2Pixel(
 								jsonGeom.getDouble("a_longitude"),
 								jsonGeom.getDouble("a_latitude"), z, px, py));
 
-						array.add(snapshot);
+						array.add(json);
 					}
 				}
 			}
@@ -230,19 +229,23 @@ public class PhotoGetter {
 
 		try {
 
-			long xmin = MercatorProjection.longitudeToTileX(minLon, (byte) zoom);
+			long xmin = MercatorProjection
+					.longitudeToTileX(minLon, (byte) zoom);
 
-			long xmax = MercatorProjection.longitudeToTileX(maxLon, (byte) zoom);
+			long xmax = MercatorProjection
+					.longitudeToTileX(maxLon, (byte) zoom);
 
 			long ymax = MercatorProjection.latitudeToTileY(minLat, (byte) zoom);
 
 			long ymin = MercatorProjection.latitudeToTileY(maxLat, (byte) zoom);
 
-			String startRowkey = String.format("%02d%08d%07d", zoom, xmin, ymin);
-			
+			String startRowkey = String
+					.format("%02d%08d%07d", zoom, xmin, ymin);
+
 			String stopRowkey = String.format("%02d%08d%07d", zoom, xmax, ymax);
 
-			Scanner scanner = HBaseAddress.getHBaseClient().newScanner("photoTile");
+			Scanner scanner = HBaseAddress.getHBaseClient().newScanner(
+					"photoTile");
 
 			scanner.setStartKey(startRowkey);
 
@@ -253,15 +256,15 @@ public class PhotoGetter {
 			scanner.setQualifier("photo");
 
 			ArrayList<ArrayList<KeyValue>> rows;
-			
+
 			while ((rows = scanner.nextRows().joinUninterruptibly()) != null) {
 
 				for (List<KeyValue> list : rows) {
 
 					for (KeyValue kv : list) {
 
-						JSONArray a = JSONArray.fromObject(new String(
-								kv.value()));
+						JSONArray a = JSONArray.fromObject(new String(kv
+								.value()));
 
 						array.addAll(a);
 					}
@@ -279,6 +282,7 @@ public class PhotoGetter {
 	public static void main(String[] args) throws Exception {
 		HBaseAddress.initHBaseClient("192.168.3.156");
 
-		System.out.println(PhotoGetter.getPhotoTile(117.44933,31.042581,117.44944,31.0426, 7));
+		System.out.println(PhotoGetter.getPhotoTile(117.44933, 31.042581,
+				117.44944, 31.0426, 7));
 	}
 }

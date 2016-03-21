@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.FosEngine.photos;
+package com.navinfo.dataservice.photo;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -24,6 +24,7 @@ import ch.hsr.geohash.GeoHash;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.db.SolrAddress;
+import com.navinfo.dataservice.commons.photo.Photo;
 import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
 import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;

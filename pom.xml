@@ -568,11 +568,6 @@
 			<!-- dataservice module start -->
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
-				<artifactId>navi-common</artifactId>
-				<version>0.0.1-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>com.navinfo.dataservice</groupId>
 				<artifactId>commons</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 				<exclusions>
@@ -634,7 +629,7 @@
 			</dependency>
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
-				<artifactId>versionman</artifactId>
+				<artifactId>datalock</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 			

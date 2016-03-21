@@ -55,7 +55,7 @@
 		
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>versionman</artifactId>
+			<artifactId>datalock</artifactId>
 		</dependency>
 		
 		<dependency>

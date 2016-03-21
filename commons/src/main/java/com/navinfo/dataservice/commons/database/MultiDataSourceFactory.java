@@ -11,8 +11,8 @@ import org.apache.commons.lang.BooleanUtils;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import com.navinfo.dataservice.commons.database.DbServerType;
 import com.navinfo.dataservice.commons.config.SystemConfig;
-import com.navinfo.dataservice.commons.database.oracle.DbServerType;
 import com.navinfo.dataservice.commons.database.oracle.MyDriverManagerDataSource;
 import com.navinfo.dataservice.commons.database.oracle.MyDriverManagerConnectionWrapper;
 import com.navinfo.dataservice.commons.database.oracle.PoolDataSource;

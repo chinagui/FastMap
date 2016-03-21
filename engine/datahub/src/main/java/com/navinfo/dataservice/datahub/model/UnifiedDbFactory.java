@@ -4,7 +4,7 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.commons.database.oracle.DbServerType;
+import com.navinfo.dataservice.api.model.DbServerType;
 import com.navinfo.dataservice.datahub.creator.DbPhysicalCreator;
 import com.navinfo.dataservice.datahub.creator.MongoDbPhysicalCreator;
 import com.navinfo.dataservice.datahub.creator.OracleSchemaPhysicalCreator;

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.commons.database.oracle;
+package com.navinfo.dataservice.api.model;
 
 /** 
  * @ClassName: DbType 

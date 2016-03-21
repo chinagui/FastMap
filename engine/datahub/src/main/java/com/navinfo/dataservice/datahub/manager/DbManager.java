@@ -10,10 +10,12 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import com.navinfo.dataservice.api.iface.datalock.IDatalockService;
+import com.navinfo.dataservice.api.model.DbServerType;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.commons.database.oracle.DbServerType;
 import com.navinfo.dataservice.datahub.chooser.DbServerChooser;
 import com.navinfo.dataservice.datahub.chooser.strategy.DbServerStrategy;
 import com.navinfo.dataservice.datahub.creator.DbPhysicalCreator;
@@ -37,6 +39,7 @@ import com.navinfo.navicommons.utils.StringUtils;
 public class DbManager {
 	protected Logger log = Logger.getLogger(this.getClass());
 	protected String mainSql = "SELECT D.DB_ID,D.DB_NAME,D.DB_USER_NAME,D.DB_USER_PASSWD,D.DB_ROLE,D.BIZ_TYPE,D.TABLESPACE_NAME,D.GDB_VERSION,D.DB_STATUS,D.CREATE_TIME,D.DESCP,S.SERVER_ID,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME FROM DB_HUB D,DB_SERVER S ";
+
 	public UnifiedDb createDb(String bizType,String descp)throws DataHubException{
 		return createDb(null, bizType, descp, null, null,null);
 	}

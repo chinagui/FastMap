@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.versionman;
+package com.navinfo.dataservice.datalock;
 
 /**
  * Hello world!

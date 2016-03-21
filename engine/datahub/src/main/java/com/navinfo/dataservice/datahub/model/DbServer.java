@@ -2,7 +2,7 @@ package com.navinfo.dataservice.datahub.model;
 
 import java.util.Set;
 
-import com.navinfo.dataservice.commons.database.oracle.DbServerType;
+import com.navinfo.dataservice.api.model.DbServerType;
 /** 
  * @ClassName: DbServer 
  * @author Xiao Xiaowen 

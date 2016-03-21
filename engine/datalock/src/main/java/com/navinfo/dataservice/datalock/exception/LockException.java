@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.versionman.exception;
+package com.navinfo.dataservice.datalock.exception;
 
 /** 
  * @ClassName: LockException 

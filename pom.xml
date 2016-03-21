@@ -12,7 +12,8 @@
 		<module>toolbox</module>
 		<module>web</module>
 		<module>scripts-interface</module>
-    </modules>
+    <module>api</module>
+  </modules>
 
     <packaging>pom</packaging>
     <name>dataservice</name>
@@ -642,6 +643,11 @@
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
 				<artifactId>scripts-interface</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>api</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 			<!-- dataservice module start -->

@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.engine.man.grid.GridSelector;
 import com.navinfo.dataservice.engine.man.project.ProjectSelector;
 import com.navinfo.dataservice.engine.man.version.VersionSelector;
-import com.navinfo.dataservice.web.util.ResponseUtil;
 
 @Controller
 public class ManController {
@@ -55,14 +55,14 @@ public class ManController {
 				json.put("type", type);
 
 				response.getWriter().println(
-						ResponseUtil.assembleRegularResult(json));
+						ResponseUtils.assembleRegularResult(json));
 			}
 
 			else {
 				JSONArray array = selector.getList();
 
 				response.getWriter().println(
-						ResponseUtil.assembleRegularResult(array));
+						ResponseUtils.assembleRegularResult(array));
 
 			}
 
@@ -73,7 +73,7 @@ public class ManController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 		finally {
 			if (conn != null) {
@@ -106,7 +106,7 @@ public class ManController {
 			JSONArray array = selector.getByUser(userId);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(array));
+					ResponseUtils.assembleRegularResult(array));
 
 		} catch (Exception e) {
 
@@ -115,7 +115,7 @@ public class ManController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 		finally {
 			if (conn != null) {
@@ -150,7 +150,7 @@ public class ManController {
 			JSONObject result = selector.getByUser(userId, projectId);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(result));
+					ResponseUtils.assembleRegularResult(result));
 
 		} catch (Exception e) {
 
@@ -159,7 +159,7 @@ public class ManController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 		finally {
 			if (conn != null) {

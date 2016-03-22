@@ -273,6 +273,10 @@ public class RdSpeedlimitSelector implements ISelector {
 			boolean isLock) throws Exception {
 		List<RdSpeedlimit> limits = new ArrayList<RdSpeedlimit>();
 		
+		if(linkPids.size()==0){
+			return limits;
+		}
+		
 		String s = "";
 		for(int i=0;i<linkPids.size();i++){
 			if(i>0){

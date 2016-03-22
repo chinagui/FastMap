@@ -30,19 +30,6 @@
 	<META.dataSource.minIdle>2</META.dataSource.minIdle>
 	<META.dataSource.maxWait>1000</META.dataSource.maxWait>
 	
-	<PID.server.type>ORACLE</PID.server.type>
-	<PID.jdbc.driverClassName>oracle.jdbc.driver.OracleDriver</PID.jdbc.driverClassName>
-	<PID.jdbc.url>jdbc:oracle:thin:@192.168.4.131:1521/orcl</PID.jdbc.url>
-	<PID.dataSource.validationQuery>select 1 from dual</PID.dataSource.validationQuery>
-	
-	<PID.jdbc.username>pid_gdb6</PID.jdbc.username>
-	<PID.jdbc.password>pid_gdb6</PID.jdbc.password>
-	<PID.dataSource.initialSize>2</PID.dataSource.initialSize>
-	<PID.dataSource.maxActive>25</PID.dataSource.maxActive>
-	<PID.dataSource.maxIdle>10</PID.dataSource.maxIdle>
-	<PID.dataSource.minIdle>2</PID.dataSource.minIdle>
-	<PID.dataSource.maxWait>1000</PID.dataSource.maxWait>
-	
     <glm.ignore.table.prefix>TEMP_,TMP_,NI_,MDRT_,PIPELINE_,SYS_,STAT_,SHD_,B_,NN_,TMAU_,TASK_EXTENT,AU_,TMC_,LOG_,CK_RULE</glm.ignore.table.prefix>
 <!-- scripts interface part -->
 	<scripts.dir>F:\\Fm_Projects_Doc\\scripts\\</scripts.dir>

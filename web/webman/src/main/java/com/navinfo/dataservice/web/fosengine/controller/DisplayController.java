@@ -20,12 +20,12 @@ import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.edit.edit.display.TileSelector;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
 import com.navinfo.dataservice.engine.photo.PhotoGetter;
-import com.navinfo.dataservice.web.util.ResponseUtil;
 
 
 @Controller
@@ -60,10 +60,10 @@ public class DisplayController {
 				json.put("RDLINK", list.get(0));
 
 				response.getWriter().println(
-						ResponseUtil.assembleRegularResult(json));
+						ResponseUtils.assembleRegularResult(json));
 			} else {
 				response.getWriter().println(
-						ResponseUtil.assembleRegularResult(null));
+						ResponseUtils.assembleRegularResult(null));
 			}
 
 		} catch (Exception e) {
@@ -73,7 +73,7 @@ public class DisplayController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 
 		}
 	}
@@ -114,7 +114,7 @@ public class DisplayController {
 			JSONObject data = p.searchDataByTileWithGap(types, x, y, z, gap);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(data));
+					ResponseUtils.assembleRegularResult(data));
 
 		} catch (Exception e) {
 
@@ -123,7 +123,7 @@ public class DisplayController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 
 		}
 		finally{
@@ -168,7 +168,7 @@ public class DisplayController {
 					types);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(array));
+					ResponseUtils.assembleRegularResult(array));
 
 		} catch (Exception e) {
 
@@ -177,7 +177,7 @@ public class DisplayController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 	}
 
@@ -202,7 +202,7 @@ public class DisplayController {
 			JSONArray array = PhotoGetter.getPhotoByTileWithGap(x, y, z, gap);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(array));
+					ResponseUtils.assembleRegularResult(array));
 
 		} catch (Exception e) {
 
@@ -211,7 +211,7 @@ public class DisplayController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 	}
 
@@ -239,7 +239,7 @@ public class DisplayController {
 					maxLat, zoom);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(array));
+					ResponseUtils.assembleRegularResult(array));
 
 		} catch (Exception e) {
 
@@ -248,7 +248,7 @@ public class DisplayController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 	}
 

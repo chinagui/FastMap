@@ -22,8 +22,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.engine.man.version.VersionSelector;
-import com.navinfo.dataservice.web.util.ResponseUtil;
 import com.navinfo.navicommons.springmvc.BaseController;
 
 @Controller
@@ -54,7 +54,7 @@ public class MetaController extends BaseController {
 			JSONObject result = selector.searchByName(name, pageSize, pageNum);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(result));
+					ResponseUtils.assembleRegularResult(result));
 
 		} catch (Exception e) {
 
@@ -63,7 +63,7 @@ public class MetaController extends BaseController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 		finally {
 			if (conn != null) {
@@ -103,7 +103,7 @@ public class MetaController extends BaseController {
 				json.put("phonetic", result[1]);
 
 				response.getWriter().println(
-						ResponseUtil.assembleRegularResult(json));
+						ResponseUtils.assembleRegularResult(json));
 			} else {
 				throw new Exception("转拼音失败");
 			}
@@ -115,7 +115,7 @@ public class MetaController extends BaseController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 		finally {
 			if (conn != null) {
@@ -151,7 +151,7 @@ public class MetaController extends BaseController {
 
 			if (data != null) {
 				response.getWriter().println(
-						ResponseUtil.assembleRegularResult(data));
+						ResponseUtils.assembleRegularResult(data));
 			} else {
 				throw new Exception("不在中国省市范围内");
 			}
@@ -163,7 +163,7 @@ public class MetaController extends BaseController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 		finally {
 			if (conn != null) {
@@ -196,7 +196,7 @@ public class MetaController extends BaseController {
 			boolean flag = selector.checkUpdate(date);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(flag));
+					ResponseUtils.assembleRegularResult(flag));
 
 		} catch (Exception e) {
 
@@ -205,7 +205,7 @@ public class MetaController extends BaseController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 		finally {
 			if (conn != null) {
@@ -287,7 +287,7 @@ public class MetaController extends BaseController {
 			json.put("specVersion", specVersion);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(json));
+					ResponseUtils.assembleRegularResult(json));
 
 		} catch (Exception e) {
 
@@ -296,7 +296,7 @@ public class MetaController extends BaseController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 		finally {
 			if (conn != null) {
@@ -351,7 +351,7 @@ public class MetaController extends BaseController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 		finally {
 			if (conn != null) {
@@ -389,7 +389,7 @@ public class MetaController extends BaseController {
 			JSONObject obj = selector.searchByName(name, pageSize, pageNum);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(obj));
+					ResponseUtils.assembleRegularResult(obj));
 
 		} catch (Exception e) {
 
@@ -398,7 +398,7 @@ public class MetaController extends BaseController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 		finally {
 			if (conn != null) {

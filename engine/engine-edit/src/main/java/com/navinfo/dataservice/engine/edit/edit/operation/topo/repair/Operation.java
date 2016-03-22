@@ -43,6 +43,8 @@ public class Operation implements IOperation {
 		
 		JSONObject content = new JSONObject();
 		
+		result.setPrimaryPid(updateLink.getPid());
+		
 		content.put("geometry", command.getLinkGeom());
 		
 		if (command.getInterLines().size() == 0 && command.getInterNodes().size() ==0){

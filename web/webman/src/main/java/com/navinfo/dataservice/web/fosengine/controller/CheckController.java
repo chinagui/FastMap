@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
-import com.navinfo.dataservice.web.util.ResponseUtil;
 
 @Controller
 public class CheckController {
@@ -53,7 +53,7 @@ public class CheckController {
 					pageNum);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(result));
+					ResponseUtils.assembleRegularResult(result));
 
 		} catch (Exception e) {
 
@@ -62,7 +62,7 @@ public class CheckController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 		finally{
 			if(conn!=null){
@@ -99,7 +99,7 @@ public class CheckController {
 			int result = selector.queryExceptionCount(meshes);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(result));
+					ResponseUtils.assembleRegularResult(result));
 
 		} catch (Exception e) {
 
@@ -108,7 +108,7 @@ public class CheckController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 		finally{
 			if(conn!=null){
@@ -147,7 +147,7 @@ public class CheckController {
 			selector.updateCheckLogStatus(id, type);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(null));
+					ResponseUtils.assembleRegularResult(null));
 
 		} catch (Exception e) {
 
@@ -156,7 +156,7 @@ public class CheckController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 		finally{
 			if(conn!=null){

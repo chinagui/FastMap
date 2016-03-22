@@ -14,9 +14,13 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
+import com.navinfo.dataservice.commons.db.HBaseAddress;
+import com.navinfo.dataservice.commons.db.OracleAddress;
 import com.navinfo.dataservice.commons.timedomain.TimeDecoder;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
 import com.navinfo.dataservice.dao.fcc.SConnection;
@@ -27,7 +31,7 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
 public class RdRestrictionTipsBuilder {
-	
+
 	private static String sql = "select  a.*,b.geometry link_geom,c.geometry point_geom  from "
 			+ "( select  a.pid,a.in_link_pid,a.node_pid,b.detail   from rd_restriction a,"
 			+ "( select  listagg(a.restric_info||','||a.flag||','||a.out_link_pid||','||b.time_domain,'-')  within group(order by a.out_link_pid) detail,"
@@ -43,10 +47,10 @@ public class RdRestrictionTipsBuilder {
 	 * @param fmgdbConn
 	 * @param htab
 	 */
-	public static void importTips(java.sql.Connection fmgdbConn, Table htab,String solrUrl)
-			throws Exception {
+	public static void importTips(java.sql.Connection fmgdbConn, Table htab,
+			String solrUrl) throws Exception {
 
-		SConnection solrConn = new SConnection(solrUrl,5000);
+		SConnection solrConn = new SConnection(solrUrl, 5000);
 
 		Statement stmt = fmgdbConn.createStatement();
 
@@ -65,7 +69,7 @@ public class RdRestrictionTipsBuilder {
 
 		while (resultSet.next()) {
 			num++;
-			
+
 			uniqId = resultSet.getString("pid");
 
 			String rowkey = TipsImportUtils.generateRowkey(uniqId, type);
@@ -86,14 +90,17 @@ public class RdRestrictionTipsBuilder {
 			put.addColumn("data".getBytes(), "track".getBytes(),
 					track.getBytes());
 
-			put.addColumn("data".getBytes(), "geometry".getBytes(),
-					geometry.toString().getBytes());
+			put.addColumn("data".getBytes(), "geometry".getBytes(), geometry
+					.toString().getBytes());
 
 			put.addColumn("data".getBytes(), "deep".getBytes(), deep.getBytes());
 
 			puts.add(put);
-			
-			JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(rowkey, 0, date, type, deep.toString(), geometry.getJSONObject("g_location"), geometry.getJSONObject("g_guide"));
+
+			JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(
+					rowkey, 0, date, type, deep.toString(),
+					geometry.getJSONObject("g_location"),
+					geometry.getJSONObject("g_guide"));
 
 			solrConn.addTips(solrIndexJson);
 
@@ -106,9 +113,9 @@ public class RdRestrictionTipsBuilder {
 		}
 
 		htab.put(puts);
-		
+
 		solrConn.persistentData();
-		
+
 		solrConn.closeConnection();
 
 	}
@@ -128,8 +135,7 @@ public class RdRestrictionTipsBuilder {
 
 		String pointWkt = new String(new WKT().fromJGeometry(geom2));
 
-		double[][] point = DisplayUtils
-				.getTipsPointPos(linkWkt, pointWkt, 0);
+		double[][] point = DisplayUtils.getTipsPointPos(linkWkt, pointWkt, 0);
 
 		JSONObject json = new JSONObject();
 
@@ -155,79 +161,79 @@ public class RdRestrictionTipsBuilder {
 	private static String generateDeep(ResultSet resultSet) throws Exception {
 
 		JSONObject deep = new JSONObject();
-		
+
 		deep.put("id", resultSet.getString("pid"));
-		
+
 		JSONObject in = new JSONObject();
-		
+
 		in.put("id", resultSet.getString("in_link_pid"));
-		
+
 		in.put("type", 1);
-		
+
 		deep.put("in", in);
-		
+
 		JSONArray info = new JSONArray();
-		
+
 		JSONArray o_array = new JSONArray();
-		
+
 		String[] details = resultSet.getString("detail").split("-");
-		
+
 		int sq = 1;
-		
-		for(String detail : details){
-			
+
+		for (String detail : details) {
+
 			String[] splits = detail.split(",");
-			
+
 			int restricInfo = Integer.parseInt(splits[0]);
-			
+
 			int flag = Integer.parseInt(splits[1]);
-			
+
 			String outLinkPid = splits[2];
-			
+
 			JSONObject infoJson = new JSONObject();
-			
+
 			infoJson.put("info", restricInfo);
-			
+
 			infoJson.put("flag", flag);
-			
+
 			infoJson.put("sq", sq);
-			
+
 			info.add(infoJson);
-			
+
 			infoJson = new JSONObject();
-			
+
 			infoJson.put("oInfo", restricInfo);
-			
+
 			infoJson.put("flag", flag);
-			
+
 			infoJson.put("sq", sq);
-			
+
 			JSONObject outJson = new JSONObject();
-			
+
 			outJson.put("id", outLinkPid);
-			
+
 			outJson.put("type", 1);
-			
-			infoJson.put("out", new JSONObject[]{outJson});
-			
-			if (splits.length == 3){
+
+			infoJson.put("out", new JSONObject[] { outJson });
+
+			if (splits.length == 3) {
 				infoJson.put("time", JSONNull.getInstance());
-			}else{
-				
+			} else {
+
 				TimeDecoder decoder = new TimeDecoder();
-				
-				infoJson.put("time",  decoder.decode(splits[3]));
+
+				infoJson.put("time", decoder.decode(splits[3]));
 			}
-			
+
 			o_array.add(infoJson);
-			
+
 			sq++;
 		}
-		
+
 		deep.put("info", info);
-		
+
 		deep.put("o_array", o_array);
-		
+
 		STRUCT struct1 = (STRUCT) resultSet.getObject("link_geom");
 
 		JGeometry geom1 = JGeometry.load(struct1);
@@ -239,31 +245,35 @@ public class RdRestrictionTipsBuilder {
 		JGeometry geom2 = JGeometry.load(struct2);
 
 		String pointWkt = new String(new WKT().fromJGeometry(geom2));
+
+		int direct = DisplayUtils.getDirect(linkWkt, pointWkt);
 		
-		int direct = getDirect(linkWkt, pointWkt);
-		
-		deep.put("agl", DisplayUtils.calIncloudedAngle(linkWkt, direct));
-		
+		double agl = DisplayUtils.calIncloudedAngle(linkWkt, direct);
+
+		deep.put("agl", agl);
+
 		return deep.toString();
 	}
-	
-	private static int getDirect(String linkWkt,String pointWkt) throws ParseException{
-		
-		int direct = 2;
-		
-		Geometry link = new WKTReader().read(linkWkt);
-		
-		Geometry point = new WKTReader().read(pointWkt);
-		
-		Coordinate[] csLink = link.getCoordinates();
-		
-		Coordinate cPoint = point.getCoordinate();
-		
-		if (csLink[0].x != cPoint.x || csLink[1].y != cPoint.y){
-			direct = 3;
-		}
-		
-		return direct;
-	}
 
+	public static void main(String[] args) throws Exception {
+		HBaseAddress.initHBaseAddress("192.168.3.156");
+		
+		String username1 = "fm_gdb02";
+		
+		String password1 ="fm_gdb02";
+		
+		int port1 =1521;
+		
+		String ip1 = "192.168.4.131";
+		
+		String serviceName1 = "orcl";
+		
+		OracleAddress oa1 = new OracleAddress(username1,password1,port1,ip1,serviceName1);
+		
+		Connection hbaseConn = HBaseAddress.getHBaseConnection();
+
+		Table htab = hbaseConn.getTable(TableName.valueOf("tips"));
+		
+		RdRestrictionTipsBuilder.importTips(oa1.getConn(), htab, "http://192.168.4.130:8081/solr/tips");
+	}
 }

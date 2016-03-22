@@ -33,6 +33,8 @@ public class OpTopo implements IOperation {
 		RdCross cross = command.getCross();
 
 		result.insertObject(cross, ObjStatus.DELETE);
+		
+		result.setPrimaryPid(cross.getPid());
 
 		RdLinkFormSelector selector = new RdLinkFormSelector(conn);
 

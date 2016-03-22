@@ -17,13 +17,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.engine.fcc.tips.TipsExporter;
 import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
-import com.navinfo.dataservice.web.util.ResponseUtil;
 
 @Controller
 public class TipsController {
@@ -48,7 +48,7 @@ public class TipsController {
 					SystemConfig.getSystemConfig().getValue(PropConstant.solrAddress));
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(selector.checkUpdate(
+					ResponseUtils.assembleRegularResult(selector.checkUpdate(
 							grid, date)));
 
 		} catch (Exception e) {
@@ -58,7 +58,7 @@ public class TipsController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 	}
 
@@ -89,7 +89,7 @@ public class TipsController {
 			op.update(rowkey, stage, handler, pid);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(null));
+					ResponseUtils.assembleRegularResult(null));
 
 		} catch (Exception e) {
 
@@ -98,7 +98,7 @@ public class TipsController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 	}
 
@@ -144,7 +144,7 @@ public class TipsController {
 					+ zipFileName;
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(url));
+					ResponseUtils.assembleRegularResult(url));
 
 		} catch (Exception e) {
 
@@ -153,7 +153,7 @@ public class TipsController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 	}
 
@@ -174,7 +174,7 @@ public class TipsController {
 			JSONObject data = selector.searchDataByRowkey(rowkey);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(data));
+					ResponseUtils.assembleRegularResult(data));
 
 		} catch (Exception e) {
 
@@ -183,7 +183,7 @@ public class TipsController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 	}
 
@@ -204,7 +204,7 @@ public class TipsController {
 			JSONArray array = selector.searchDataBySpatial(wkt);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(array));
+					ResponseUtils.assembleRegularResult(array));
 
 		} catch (Exception e) {
 
@@ -213,7 +213,7 @@ public class TipsController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 	}
 
@@ -241,7 +241,7 @@ public class TipsController {
 					projectId);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(array));
+					ResponseUtils.assembleRegularResult(array));
 
 		} catch (Exception e) {
 
@@ -250,7 +250,7 @@ public class TipsController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 	}
 
@@ -273,7 +273,7 @@ public class TipsController {
 			JSONObject jo = selector.getStats(grids, stages);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(jo));
+					ResponseUtils.assembleRegularResult(jo));
 
 		} catch (Exception e) {
 
@@ -282,7 +282,7 @@ public class TipsController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 	}
 }

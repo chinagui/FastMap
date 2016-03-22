@@ -14,8 +14,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.navinfo.dataservice.commons.util.Log4jUtils;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.engine.photo.PhotoGetter;
-import com.navinfo.dataservice.web.util.ResponseUtil;
 
 @Controller
 public class PhotoController {
@@ -38,7 +38,7 @@ public class PhotoController {
 			JSONArray array = PhotoGetter.getPhotoBySpatial(wkt);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(array));
+					ResponseUtils.assembleRegularResult(array));
 
 		} catch (Exception e) {
 
@@ -47,7 +47,7 @@ public class PhotoController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 
 	}
@@ -66,7 +66,7 @@ public class PhotoController {
 			JSONObject photo = PhotoGetter.getPhotoDetailByUuid(uuid);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(photo));
+					ResponseUtils.assembleRegularResult(photo));
 
 		} catch (Exception e) {
 
@@ -75,7 +75,7 @@ public class PhotoController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 
 	}
@@ -110,7 +110,7 @@ public class PhotoController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 
 	}

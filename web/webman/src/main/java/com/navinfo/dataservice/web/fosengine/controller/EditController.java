@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -25,7 +26,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
-import com.navinfo.dataservice.web.util.ResponseUtil;
 
 @Controller
 public class EditController {
@@ -56,7 +56,7 @@ public class EditController {
 			json.put("pid", t.getPid());
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(json));
+					ResponseUtils.assembleRegularResult(json));
 
 		} catch (Exception e) {
 
@@ -65,7 +65,7 @@ public class EditController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 	}
 
@@ -94,7 +94,7 @@ public class EditController {
 					data);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(array));
+					ResponseUtils.assembleRegularResult(array));
 
 		} catch (Exception e) {
 
@@ -103,7 +103,7 @@ public class EditController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		} finally {
 			if (conn != null) {
 				try {
@@ -142,12 +142,12 @@ public class EditController {
 				if (row != null) {
 
 					response.getWriter().println(
-							ResponseUtil.assembleRegularResult(row
+							ResponseUtils.assembleRegularResult(row
 									.Serialize(ObjLevel.FULL)));
 
 				} else {
 					response.getWriter().println(
-							ResponseUtil.assembleRegularResult(null));
+							ResponseUtils.assembleRegularResult(null));
 				}
 
 			} else {
@@ -160,12 +160,12 @@ public class EditController {
 				if (obj != null) {
 
 					response.getWriter().println(
-							ResponseUtil.assembleRegularResult(obj
+							ResponseUtils.assembleRegularResult(obj
 									.Serialize(ObjLevel.FULL)));
 
 				} else {
 					response.getWriter().println(
-							ResponseUtil.assembleRegularResult(null));
+							ResponseUtils.assembleRegularResult(null));
 				}
 			}
 		} catch (Exception e) {
@@ -175,7 +175,7 @@ public class EditController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		} finally {
 			if (conn != null) {
 				try {
@@ -217,7 +217,7 @@ public class EditController {
 			JSONObject data = p.searchDataBySpatial(types, wkt);
 
 			response.getWriter().println(
-					ResponseUtil.assembleRegularResult(data));
+					ResponseUtils.assembleRegularResult(data));
 
 		} catch (Exception e) {
 
@@ -226,7 +226,7 @@ public class EditController {
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			response.getWriter().println(
-					ResponseUtil.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 
 		} finally {
 			if (conn != null) {

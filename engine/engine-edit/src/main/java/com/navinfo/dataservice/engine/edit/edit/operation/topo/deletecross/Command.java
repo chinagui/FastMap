@@ -4,13 +4,13 @@ import java.util.List;
 
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.engine.edit.edit.model.ObjType;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.branch.RdBranch;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.cross.RdCross;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.laneconnexity.RdLaneConnexity;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.restrict.RdRestriction;
-import com.navinfo.dataservice.engine.edit.edit.operation.ICommand;
-import com.navinfo.dataservice.engine.edit.edit.operation.OperType;
+import com.navinfo.dataservice.dao.glm.iface.ICommand;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 
 public class Command implements ICommand {
 	

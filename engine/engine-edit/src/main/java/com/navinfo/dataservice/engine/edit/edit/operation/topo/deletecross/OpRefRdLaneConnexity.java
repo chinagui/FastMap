@@ -1,9 +1,9 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.deletecross;
 
-import com.navinfo.dataservice.engine.edit.edit.model.IRow;
-import com.navinfo.dataservice.engine.edit.edit.model.ObjStatus;
-import com.navinfo.dataservice.engine.edit.edit.model.Result;
-import com.navinfo.dataservice.engine.edit.edit.operation.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.Result;
 
 public class OpRefRdLaneConnexity implements IOperation {
 	

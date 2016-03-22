@@ -3,12 +3,12 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint;
 import java.util.List;
 import java.util.Map;
 
-import com.navinfo.dataservice.engine.edit.edit.model.ObjStatus;
-import com.navinfo.dataservice.engine.edit.edit.model.Result;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.restrict.RdRestriction;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.restrict.RdRestrictionDetail;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.restrict.RdRestrictionVia;
-import com.navinfo.dataservice.engine.edit.edit.operation.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 
 public class OpRefRestrict implements IOperation {
 

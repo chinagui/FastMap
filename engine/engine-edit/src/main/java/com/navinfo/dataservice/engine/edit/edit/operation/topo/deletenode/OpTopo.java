@@ -1,10 +1,10 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.deletenode;
 
-import com.navinfo.dataservice.engine.edit.edit.model.ObjStatus;
-import com.navinfo.dataservice.engine.edit.edit.model.Result;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.link.RdLink;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.node.RdNode;
-import com.navinfo.dataservice.engine.edit.edit.operation.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 
 public class OpTopo implements IOperation {
 

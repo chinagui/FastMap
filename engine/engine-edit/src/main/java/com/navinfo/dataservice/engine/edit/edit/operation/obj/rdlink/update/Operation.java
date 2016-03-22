@@ -3,20 +3,20 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.update;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.engine.edit.edit.model.ObjStatus;
-import com.navinfo.dataservice.engine.edit.edit.model.Result;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.link.RdLink;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.link.RdLinkForm;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.link.RdLinkIntRtic;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.link.RdLinkLimit;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.link.RdLinkLimitTruck;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.link.RdLinkName;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.link.RdLinkRtic;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.link.RdLinkSidewalk;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.link.RdLinkSpeedlimit;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.link.RdLinkWalkstair;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.link.RdLinkZone;
-import com.navinfo.dataservice.engine.edit.edit.operation.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkIntRtic;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimitTruck;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkRtic;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSidewalk;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkWalkstair;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
 
 public class Operation implements IOperation {
 

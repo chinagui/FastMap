@@ -7,16 +7,16 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.service.PidService;
-import com.navinfo.dataservice.engine.edit.edit.model.IRow;
-import com.navinfo.dataservice.engine.edit.edit.model.ObjStatus;
-import com.navinfo.dataservice.engine.edit.edit.model.Result;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.cross.RdCross;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.cross.RdCrossLink;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.cross.RdCrossName;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.cross.RdCrossNode;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.link.RdLinkForm;
-import com.navinfo.dataservice.engine.edit.edit.model.selector.rd.link.RdLinkFormSelector;
-import com.navinfo.dataservice.engine.edit.edit.operation.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkFormSelector;
 
 public class Operation implements IOperation {
 

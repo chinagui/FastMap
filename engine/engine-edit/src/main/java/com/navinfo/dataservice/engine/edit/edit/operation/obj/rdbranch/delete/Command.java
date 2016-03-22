@@ -2,9 +2,9 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.delete;
 
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.engine.edit.edit.model.ObjType;
-import com.navinfo.dataservice.engine.edit.edit.operation.ICommand;
-import com.navinfo.dataservice.engine.edit.edit.operation.OperType;
+import com.navinfo.dataservice.dao.glm.iface.ICommand;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.iface.OperType;
 
 public class Command implements ICommand {
 

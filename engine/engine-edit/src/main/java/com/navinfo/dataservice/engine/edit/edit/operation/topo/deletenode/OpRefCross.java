@@ -3,13 +3,13 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.deletenode;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.navinfo.dataservice.engine.edit.edit.model.IRow;
-import com.navinfo.dataservice.engine.edit.edit.model.ObjStatus;
-import com.navinfo.dataservice.engine.edit.edit.model.Result;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.cross.RdCross;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.cross.RdCrossLink;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.cross.RdCrossNode;
-import com.navinfo.dataservice.engine.edit.edit.operation.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 
 public class OpRefCross implements IOperation {
 

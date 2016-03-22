@@ -3,12 +3,12 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint;
 import java.util.List;
 import java.util.Map;
 
-import com.navinfo.dataservice.engine.edit.edit.model.ObjStatus;
-import com.navinfo.dataservice.engine.edit.edit.model.Result;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.laneconnexity.RdLaneConnexity;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.laneconnexity.RdLaneTopology;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.laneconnexity.RdLaneVia;
-import com.navinfo.dataservice.engine.edit.edit.operation.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
+import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
+import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
 
 public class OpRefLaneConnexity implements IOperation {
 

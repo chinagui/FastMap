@@ -13,14 +13,14 @@ import java.util.Set;
 
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
 import com.navinfo.dataservice.commons.service.PidService;
-import com.navinfo.dataservice.engine.edit.edit.model.IRow;
-import com.navinfo.dataservice.engine.edit.edit.model.ObjStatus;
-import com.navinfo.dataservice.engine.edit.edit.model.Result;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.laneconnexity.RdLaneConnexity;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.laneconnexity.RdLaneTopology;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.laneconnexity.RdLaneVia;
-import com.navinfo.dataservice.engine.edit.edit.model.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.engine.edit.edit.operation.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
+import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
+import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;
 

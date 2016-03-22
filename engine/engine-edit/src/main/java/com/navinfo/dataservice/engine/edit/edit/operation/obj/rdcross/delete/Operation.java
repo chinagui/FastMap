@@ -1,8 +1,8 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.delete;
 
-import com.navinfo.dataservice.engine.edit.edit.model.Result;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.cross.RdCross;
-import com.navinfo.dataservice.engine.edit.edit.operation.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 
 public class Operation implements IOperation {
 

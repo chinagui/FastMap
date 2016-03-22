@@ -1,0 +1,45 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.navinfo.dataservice</groupId>
+    <artifactId>dao</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>dao-glm-data</artifactId>
+  <name>dao-glm-data</name>
+  <version>0.0.1-SNAPSHOT</version>
+  <build/>
+  <dependencies>
+   <dependency>
+	    <groupId>${ojdbc.groupId}</groupId>
+	    <artifactId>${ojdbc.artifactId}</artifactId>
+	</dependency>
+	
+    <dependency>
+        <groupId>com.oracle</groupId>
+        <artifactId>sdoapi</artifactId>
+    </dependency>
+  
+    <dependency>
+        <groupId>com.oracle</groupId>
+        <artifactId>sdoutl</artifactId>
+    </dependency>
+     <dependency>
+		<groupId>net.sf.json-lib</groupId>
+		<artifactId>json-lib</artifactId>
+		<classifier>jdk15</classifier>  
+     </dependency>
+     <dependency>
+		<groupId>net.sf.ezmorph</groupId>
+		<artifactId>ezmorph</artifactId>
+	</dependency>
+     <dependency>
+		<groupId>com.vividsolutions</groupId>
+		<artifactId>jts</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>commons</artifactId>
+	</dependency>
+  </dependencies>
+</project>

@@ -6,12 +6,12 @@ import java.util.Map;
 
 import net.sf.json.JSONArray;
 
-import com.navinfo.dataservice.engine.edit.edit.model.ObjStatus;
-import com.navinfo.dataservice.engine.edit.edit.model.Result;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.link.RdLink;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.link.RdLinkSpeedlimit;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.speedlimit.RdSpeedlimit;
-import com.navinfo.dataservice.engine.edit.edit.operation.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 
 public class Operation implements IOperation {
 

@@ -5,16 +5,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.commons.service.PidService;
-import com.navinfo.dataservice.engine.edit.edit.model.IRow;
-import com.navinfo.dataservice.engine.edit.edit.model.ObjStatus;
-import com.navinfo.dataservice.engine.edit.edit.model.Result;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.cross.RdCross;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.cross.RdCrossLink;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.cross.RdCrossNode;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.link.RdLinkForm;
-import com.navinfo.dataservice.engine.edit.edit.model.selector.rd.link.RdLinkFormSelector;
-import com.navinfo.dataservice.engine.edit.edit.model.selector.rd.node.RdNodeSelector;
-import com.navinfo.dataservice.engine.edit.edit.operation.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkFormSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 
 public class Operation implements IOperation {
 

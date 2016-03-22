@@ -1,8 +1,8 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdrestriction.delete;
 
-import com.navinfo.dataservice.engine.edit.edit.model.Result;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.restrict.RdRestriction;
-import com.navinfo.dataservice.engine.edit.edit.operation.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 
 public class Operation implements IOperation {
 

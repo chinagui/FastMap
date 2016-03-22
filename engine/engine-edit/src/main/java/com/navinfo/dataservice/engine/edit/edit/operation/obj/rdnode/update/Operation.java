@@ -4,13 +4,13 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.service.PidService;
-import com.navinfo.dataservice.engine.edit.edit.model.ObjStatus;
-import com.navinfo.dataservice.engine.edit.edit.model.Result;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.node.RdNode;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.node.RdNodeForm;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.node.RdNodeMesh;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.node.RdNodeName;
-import com.navinfo.dataservice.engine.edit.edit.operation.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeName;
 
 public class Operation implements IOperation {
 

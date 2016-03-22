@@ -3,8 +3,8 @@ package com.navinfo.dataservice.engine.edit.edit.display;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.engine.edit.edit.model.ISerializable;
-import com.navinfo.dataservice.engine.edit.edit.model.ObjLevel;
+import com.navinfo.dataservice.dao.glm.iface.ISerializable;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 
 /**
  * 瓦片数据模型

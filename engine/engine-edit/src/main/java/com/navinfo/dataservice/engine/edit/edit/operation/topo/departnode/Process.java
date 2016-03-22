@@ -3,15 +3,15 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode;
 import java.sql.Connection;
 
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
-import com.navinfo.dataservice.engine.edit.edit.log.LogWriter;
-import com.navinfo.dataservice.engine.edit.edit.model.Result;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.link.RdLink;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.node.RdNode;
-import com.navinfo.dataservice.engine.edit.edit.model.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.engine.edit.edit.model.selector.rd.node.RdNodeSelector;
-import com.navinfo.dataservice.engine.edit.edit.operation.ICommand;
-import com.navinfo.dataservice.engine.edit.edit.operation.IOperation;
-import com.navinfo.dataservice.engine.edit.edit.operation.IProcess;
+import com.navinfo.dataservice.dao.glm.iface.ICommand;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IProcess;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
+import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
 
 public class Process implements IProcess {

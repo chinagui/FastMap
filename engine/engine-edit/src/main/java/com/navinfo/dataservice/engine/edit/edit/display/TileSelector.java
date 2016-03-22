@@ -6,7 +6,6 @@ import java.util.List;
 import org.hbase.async.GetRequest;
 import org.hbase.async.KeyValue;
 
-import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 
 /**

@@ -1,7 +1,5 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
-import org.json.JSONException;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 

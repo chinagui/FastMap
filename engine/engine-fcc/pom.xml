@@ -23,7 +23,7 @@
 	</dependency>
 	 <dependency>
 		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>engine-edit</artifactId>
+		<artifactId>dao-glm-data</artifactId>
 	</dependency>
   <dependency>
 	 	<groupId>org.apache.hbase</groupId>

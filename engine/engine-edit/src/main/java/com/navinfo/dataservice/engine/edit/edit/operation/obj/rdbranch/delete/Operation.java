@@ -1,8 +1,8 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.delete;
 
-import com.navinfo.dataservice.engine.edit.edit.model.Result;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.branch.RdBranch;
-import com.navinfo.dataservice.engine.edit.edit.operation.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 
 public class Operation implements IOperation {
 

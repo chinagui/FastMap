@@ -4,14 +4,12 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.service.PidService;
-import com.navinfo.dataservice.engine.edit.edit.model.ObjStatus;
-import com.navinfo.dataservice.engine.edit.edit.model.Result;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.branch.RdBranch;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.branch.RdBranchDetail;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.branch.RdBranchName;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.restrict.RdRestrictionCondition;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.restrict.RdRestrictionDetail;
-import com.navinfo.dataservice.engine.edit.edit.operation.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchName;
 
 public class Operation implements IOperation {
 

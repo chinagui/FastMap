@@ -7,14 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.commons.service.PidService;
-import com.navinfo.dataservice.engine.edit.edit.model.IRow;
-import com.navinfo.dataservice.engine.edit.edit.model.ObjStatus;
-import com.navinfo.dataservice.engine.edit.edit.model.Result;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.branch.RdBranch;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.branch.RdBranchDetail;
-import com.navinfo.dataservice.engine.edit.edit.model.bean.rd.branch.RdBranchVia;
-import com.navinfo.dataservice.engine.edit.edit.model.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.engine.edit.edit.operation.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 
 public class Operation implements IOperation {
 

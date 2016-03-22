@@ -12,6 +12,7 @@
     <modules>
 		<module>dao-fcc-data</module>
 		<module>dao-mq</module>
+		<module>dao-glm-data</module>
     </modules>
     <packaging>pom</packaging>
     <name>dao</name>

@@ -7,10 +7,10 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 
 
 /** 
- * @ClassName: MyConnectionFactory 
+ * @ClassName: MQConnector 
  * @author Xiao Xiaowen 
  * @date 2016-3-3 上午11:04:12 
- * @Description: 单例factory
+ * @Description: 单例
  */
 public class MQConnector {
 

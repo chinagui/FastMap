@@ -114,7 +114,15 @@
     
     <dependency>
       <groupId>com.navinfo.dataservice</groupId>
+      <artifactId>api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.navinfo.dataservice</groupId>
       <artifactId>datahub</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.navinfo.dataservice</groupId>
+      <artifactId>datalock</artifactId>
     </dependency>
     
     <dependency>
@@ -125,6 +133,6 @@
     
   </dependencies>
   <build>
-    <finalName>datahub</finalName>
+    <finalName>datahub-web</finalName>
   </build>
 </project>

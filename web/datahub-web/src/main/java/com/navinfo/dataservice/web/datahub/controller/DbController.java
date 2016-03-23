@@ -7,10 +7,12 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.datahub.TestClass;
 import com.navinfo.dataservice.datahub.chooser.strategy.DbServerStrategy;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.UnifiedDb;
@@ -26,13 +28,26 @@ import com.navinfo.navicommons.utils.StringUtils;
 @Controller
 public class DbController extends BaseController {
 	protected Logger log = Logger.getLogger(this.getClass());
+	
+	@RequestMapping(value = "/db/hello/")
+	public ModelAndView test(HttpServletRequest request){
+		String result = "";
+		try{
+			TestClass tc = new TestClass();
+			result = tc.test("XXX!!!");
+		}catch(Exception e){
+			result = "调用内部服务出错";
+			log.error(e.getMessage(),e);
+		}
+		return new ModelAndView("jsonView", "data", result);
+	}
 	@RequestMapping(value = "/db/get/")
 	public ModelAndView getDb(HttpServletRequest request){
 		return new ModelAndView("jsonView", "data", "Hello,Datahub.");
 	}
 	@RequestMapping(value = "/db/getcn/")
 	public ModelAndView getDbCn(HttpServletRequest request){
-		return new ModelAndView("jsonView", "data", "你好，数据中心。");
+		return new ModelAndView("jsonView", "data", "你好，数据中心！");
 	}
 	@RequestMapping(value = "/db/create/")
 	public ModelAndView createDb(HttpServletRequest request){

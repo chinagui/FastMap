@@ -21,8 +21,9 @@ public class HBaseConnector {
 		if (client == null) {
 			synchronized (this) {
 				if (client == null) {
-					client = new HBaseClient(SystemConfig.getSystemConfig()
-							.getValue(PropConstant.hbaseAddress));
+					String hbaseAddress=SystemConfig.getSystemConfig()
+							.getValue(PropConstant.hbaseAddress);
+					client = new HBaseClient(hbaseAddress);
 				}
 			}
 		}

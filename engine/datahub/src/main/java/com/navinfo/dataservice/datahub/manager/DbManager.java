@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.navinfo.dataservice.api.iface.datalock.IDatalockService;
+import com.navinfo.dataservice.api.iface.datalock.DatalockService;
 import com.navinfo.dataservice.api.model.DbServerType;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;

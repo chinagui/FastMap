@@ -1,6 +1,4 @@
-F:\Fm_projects_Src\FOS\dataservice\web\webman\src\main\webapp\WEB-INF\classes
 F:\Fm_projects_Src\FOS\dataservice\web\webman\target\classes
-F:\Fm_projects_Src\FOS\dataservice\web\webman\target\test-classes
 C:\Java\jre7\lib\resources.jar
 C:\Java\jre7\lib\rt.jar
 C:\Java\jre7\lib\jsse.jar
@@ -57,12 +55,12 @@ E:\app\maven_repo\org\apache\velocity\velocity\1.5\velocity-1.5.jar
 E:\app\maven_repo\oro\oro\2.0.8\oro-2.0.8.jar
 F:\Fm_projects_Src\FOS\dataservice\engine\datahub\target\classes
 F:\Fm_projects_Src\FOS\dataservice\engine\datahub\target\test-classes
+E:\app\maven_repo\org\springframework\spring-context-support\4.2.0.RELEASE\spring-context-support-4.2.0.RELEASE.jar
 E:\app\maven_repo\asm\asm\3.1\asm-3.1.jar
 E:\app\maven_repo\commons-logging\commons-logging\1.1.1\commons-logging-1.1.1.jar
 E:\app\maven_repo\cglib\cglib\2.2\cglib-2.2.jar
 E:\app\maven_repo\com\fasterxml\jackson\core\jackson-core\2.6.0-rc4\jackson-core-2.6.0-rc4.jar
 E:\app\maven_repo\com\fasterxml\jackson\core\jackson-databind\2.6.0-rc4\jackson-databind-2.6.0-rc4.jar
 E:\app\maven_repo\com\fasterxml\jackson\core\jackson-annotations\2.6.0-rc4\jackson-annotations-2.6.0-rc4.jar
-E:\app\maven_repo\org\springframework\spring-context-support\4.2.0.RELEASE\spring-context-support-4.2.0.RELEASE.jar
 E:\app\maven_repo\org\springframework\spring-test\4.2.0.RELEASE\spring-test-4.2.0.RELEASE.jar
 E:\app\maven_repo\org\springframework\spring-oxm\4.2.0.RELEASE\spring-oxm-4.2.0.RELEASE.jar

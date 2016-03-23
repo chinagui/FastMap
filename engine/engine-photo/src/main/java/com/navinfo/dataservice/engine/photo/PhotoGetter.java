@@ -6,17 +6,13 @@ import java.util.List;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import org.hbase.async.GetRequest;
 import org.hbase.async.KeyValue;
-import org.hbase.async.Scanner;
-
-import ch.hsr.geohash.GeoHash;
 
 import com.navinfo.dataservice.commons.db.HBaseAddress;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.FileUtils;
+import com.navinfo.dataservice.dao.photo.HBaseController;
 
 /**
  * 获取照片类
@@ -26,75 +22,40 @@ public class PhotoGetter {
 	/**
 	 * 通过uuid获取照片，返回原图或缩略图
 	 * 
-	 * @param uuid
+	 * @param rowkey
 	 * @param type
 	 *            origin 原图; thumbnail 缩略图
 	 * @return JSONObject
 	 * @throws Exception
 	 */
-	public static byte[] getPhotoByUuid(String uuid, String type)
+	public byte[] getPhotoByRowkey(String rowkey, String type)
 			throws Exception {
 
-		try {
-			final GetRequest get = new GetRequest("photo", uuid);
+		HBaseController control = new HBaseController();
 
-			get.family("data");
+		byte[] photo = control.getPhotoByRowkey(rowkey);
 
-			get.qualifier("origin");
-
-			ArrayList<KeyValue> list = HBaseAddress.getHBaseClient().get(get)
-					.joinUninterruptibly();
-
-			for (KeyValue kv : list) {
-				if ("origin".equals(type)) {
-					return kv.value();
-				} else {
-					return FileUtils.makeSmallImage(kv.value());
-				}
-
-			}
-
-			return null;
-		} catch (Exception e) {
-
-			throw e;
+		if ("origin".equals(type)) {
+			return photo;
+		} else {
+			return FileUtils.makeSmallImage(photo);
 		}
-
 	}
 
 	/**
 	 * 通过uuid获取照片详细信息
 	 * 
-	 * @param uuid
+	 * @param rowkey
 	 * @return JSONObject
 	 * @throws Exception
 	 */
-	public static JSONObject getPhotoDetailByUuid(String uuid) throws Exception {
+	public JSONObject getPhotoDetailByRowkey(String rowkey) throws Exception {
 
-		JSONObject json = new JSONObject();
+		HBaseController control = new HBaseController();
 
-		try {
+		byte[] photo = control.getPhotoDetailByRowkey(rowkey);
 
-			final GetRequest get = new GetRequest("photo", uuid);
-
-			get.family("data");
-
-			get.qualifier("attribute");
-
-			ArrayList<KeyValue> list = HBaseAddress.getHBaseClient().get(get)
-					.joinUninterruptibly();
-
-			for (KeyValue kv : list) {
-
-				JSONObject injson = JSONObject
-						.fromObject(new String(kv.value()));
-
-				json.putAll(injson);
-			}
-		} catch (Exception e) {
-
-			throw e;
-		}
+		JSONObject json = JSONObject.fromObject(new String(photo));
 
 		return json;
 	}
@@ -106,47 +67,22 @@ public class PhotoGetter {
 	 * @return JSONArray
 	 * @throws Exception
 	 */
-	public static JSONArray getPhotoBySpatial(String wkt) throws Exception {
+	public JSONArray getPhotoBySpatial(String wkt) throws Exception {
 
 		JSONArray array = new JSONArray();
+		HBaseController controller = new HBaseController();
 
-		double[] mbr = GeoTranslator.getMBR(wkt);
+		ArrayList<ArrayList<KeyValue>> rows = controller.getPhotoBySpatial(wkt);
 
-		try {
-			String startRowkey = GeoHash.geoHashStringWithCharacterPrecision(
-					mbr[1], mbr[0], 12);
+		for (List<KeyValue> list : rows) {
 
-			String stopRowkey = GeoHash.geoHashStringWithCharacterPrecision(
-					mbr[3], mbr[2], 12);
+			for (KeyValue kv : list) {
 
-			Scanner scanner = HBaseAddress.getHBaseClient().newScanner("photo");
+				JSONObject jsonGeom = JSONObject.fromObject(new String(kv
+						.value()));
 
-			scanner.setStartKey(startRowkey);
-
-			scanner.setStopKey(stopRowkey);
-
-			scanner.setFamily("data");
-
-			scanner.setQualifier("brief");
-
-			ArrayList<ArrayList<KeyValue>> rows;
-
-			while ((rows = scanner.nextRows().joinUninterruptibly()) != null) {
-
-				for (List<KeyValue> list : rows) {
-
-					for (KeyValue kv : list) {
-
-						JSONObject jsonGeom = JSONObject.fromObject(new String(
-								kv.value()));
-
-						array.add(jsonGeom);
-					}
-				}
+				array.add(jsonGeom);
 			}
-		} catch (Exception e) {
-
-			throw e;
 		}
 
 		return array;
@@ -159,120 +95,62 @@ public class PhotoGetter {
 	 * @return JSONArray
 	 * @throws Exception
 	 */
-	public static JSONArray getPhotoByTileWithGap(int x, int y, int z, int gap)
+	public JSONArray getPhotoByTileWithGap(int x, int y, int z, int gap)
 			throws Exception {
 
 		JSONArray array = new JSONArray();
 
-		String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+		double px = MercatorProjection.tileXToPixelX(x);
 
-		double[] mbr = GeoTranslator.getMBR(wkt);
+		double py = MercatorProjection.tileYToPixelY(y);
 
-		try {
-			String startRowkey = GeoHash.geoHashStringWithCharacterPrecision(
-					mbr[1], mbr[0], 12);
+		HBaseController controller = new HBaseController();
 
-			String stopRowkey = GeoHash.geoHashStringWithCharacterPrecision(
-					mbr[3], mbr[2], 12);
+		ArrayList<ArrayList<KeyValue>> rows = controller.getPhotoByTileWithGap(
+				x, y, z, gap);
 
-			Scanner scanner = HBaseAddress.getHBaseClient().newScanner("photo");
+		for (List<KeyValue> list : rows) {
 
-			scanner.setStartKey(startRowkey);
+			for (KeyValue kv : list) {
 
-			scanner.setStopKey(stopRowkey);
+				JSONObject jsonGeom = JSONObject.fromObject(new String(kv
+						.value()));
 
-			scanner.setFamily("data");
+				JSONObject json = new JSONObject();
 
-			scanner.setQualifier("brief");
+				json.put("i", jsonGeom.getString("rowkey"));
 
-			ArrayList<ArrayList<KeyValue>> rows;
+				json.put("t", 2);
 
-			double px = MercatorProjection.tileXToPixelX(x);
+				json.put("g", Geojson.lonlat2Pixel(
+						jsonGeom.getDouble("a_longitude"),
+						jsonGeom.getDouble("a_latitude"), z, px, py));
 
-			double py = MercatorProjection.tileYToPixelY(y);
-
-			while ((rows = scanner.nextRows().joinUninterruptibly()) != null) {
-
-				for (List<KeyValue> list : rows) {
-
-					for (KeyValue kv : list) {
-
-						JSONObject jsonGeom = JSONObject.fromObject(new String(
-								kv.value()));
-
-						JSONObject json = new JSONObject();
-
-						json.put("i", jsonGeom.getString("rowkey"));
-
-						json.put("t", 2);
-
-						json.put("g", Geojson.lonlat2Pixel(
-								jsonGeom.getDouble("a_longitude"),
-								jsonGeom.getDouble("a_latitude"), z, px, py));
-
-						array.add(json);
-					}
-				}
+				array.add(json);
 			}
-		} catch (Exception e) {
-
-			throw e;
 		}
 
 		return array;
 	}
 
-	public static JSONArray getPhotoTile(double minLon, double minLat,
+	public JSONArray getPhotoTile(double minLon, double minLat,
 			double maxLon, double maxLat, int zoom) throws Exception {
 
 		JSONArray array = new JSONArray();
 
-		try {
+		HBaseController controller = new HBaseController();
 
-			long xmin = MercatorProjection
-					.longitudeToTileX(minLon, (byte) zoom);
+		ArrayList<ArrayList<KeyValue>> rows = controller.getPhotoTile(minLon,
+				minLat, maxLon, maxLat, zoom);
 
-			long xmax = MercatorProjection
-					.longitudeToTileX(maxLon, (byte) zoom);
+		for (List<KeyValue> list : rows) {
 
-			long ymax = MercatorProjection.latitudeToTileY(minLat, (byte) zoom);
+			for (KeyValue kv : list) {
 
-			long ymin = MercatorProjection.latitudeToTileY(maxLat, (byte) zoom);
+				JSONArray a = JSONArray.fromObject(new String(kv.value()));
 
-			String startRowkey = String
-					.format("%02d%08d%07d", zoom, xmin, ymin);
-
-			String stopRowkey = String.format("%02d%08d%07d", zoom, xmax, ymax);
-
-			Scanner scanner = HBaseAddress.getHBaseClient().newScanner(
-					"photoTile");
-
-			scanner.setStartKey(startRowkey);
-
-			scanner.setStopKey(stopRowkey);
-
-			scanner.setFamily("data");
-
-			scanner.setQualifier("photo");
-
-			ArrayList<ArrayList<KeyValue>> rows;
-
-			while ((rows = scanner.nextRows().joinUninterruptibly()) != null) {
-
-				for (List<KeyValue> list : rows) {
-
-					for (KeyValue kv : list) {
-
-						JSONArray a = JSONArray.fromObject(new String(kv
-								.value()));
-
-						array.addAll(a);
-					}
-				}
+				array.addAll(a);
 			}
-		} catch (Exception e) {
-
-			throw e;
 		}
 
 		return array;
@@ -280,9 +158,15 @@ public class PhotoGetter {
 	}
 
 	public static void main(String[] args) throws Exception {
-		HBaseAddress.initHBaseClient("192.168.3.156");
+//		HBaseAddress.initHBaseClient("192.168.3.156");
 
-		System.out.println(PhotoGetter.getPhotoTile(117.44933, 31.042581,
-				117.44944, 31.0426, 7));
+//		System.out.println(PhotoGetter.getPhotoTile(117.44933, 31.042581,
+//				117.44944, 31.0426, 7));
+		
+		PhotoGetter g = new PhotoGetter();
+		
+		System.out.println(g.getPhotoByRowkey("38602314949e4bcca7bc965969cd9fa9", "origin"));
+		
+		
 	}
 }

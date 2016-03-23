@@ -26,16 +26,16 @@ import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.util.FileUtils;
 import com.navinfo.dataservice.commons.util.GridUtils;
-import com.navinfo.dataservice.dao.fcc.SConnection;
+import com.navinfo.dataservice.dao.fcc.SolrConnection;
 
 public class TipsExporter {
 
-	private SConnection solrConn;
+	private SolrConnection solrConn;
 	
 	private String folderName;
 
 	public TipsExporter(String solrUrl) {
-		solrConn = new SConnection(solrUrl);
+		solrConn = new SolrConnection(solrUrl);
 	}
 
 	private JSONArray exportByGrid(String gridId, String date) throws Exception {

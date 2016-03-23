@@ -198,8 +198,10 @@ public class DisplayController {
 			int z = jsonReq.getInt("z");
 
 			int gap = jsonReq.getInt("gap");
+			
+			PhotoGetter getter = new PhotoGetter();
 
-			JSONArray array = PhotoGetter.getPhotoByTileWithGap(x, y, z, gap);
+			JSONArray array = getter.getPhotoByTileWithGap(x, y, z, gap);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(array));
@@ -234,8 +236,10 @@ public class DisplayController {
 			double maxLat = jsonReq.getDouble("maxLat");
 
 			int zoom = jsonReq.getInt("zoom");
+			
+			PhotoGetter getter = new PhotoGetter();
 
-			JSONArray array = PhotoGetter.getPhotoTile(minLon, minLat, maxLon,
+			JSONArray array = getter.getPhotoTile(minLon, minLat, maxLon,
 					maxLat, zoom);
 
 			response.getWriter().println(

@@ -630,6 +630,11 @@
 			</dependency>
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>dao-photo</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
 				<artifactId>diff-core</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>

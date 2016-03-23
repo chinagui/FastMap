@@ -12,14 +12,14 @@ import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.dao.fcc.SConnection;
+import com.navinfo.dataservice.dao.fcc.SolrConnection;
 
 public class TipsOperator {
 
-	private SConnection solrConn;
+	private SolrConnection solrConn;
 
 	public TipsOperator(String solrUrl) {
-		solrConn = new SConnection(solrUrl);
+		solrConn = new SolrConnection(solrUrl);
 	}
 
 	/**

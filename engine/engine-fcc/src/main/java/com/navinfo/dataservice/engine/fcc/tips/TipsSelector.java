@@ -24,7 +24,7 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.GridUtils;
-import com.navinfo.dataservice.dao.fcc.SConnection;
+import com.navinfo.dataservice.dao.fcc.SolrConnection;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 
@@ -33,10 +33,10 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
  */
 public class TipsSelector {
 
-	private SConnection conn;
+	private SolrConnection conn;
 
 	public TipsSelector(String solrUrl) {
-		conn = new SConnection(solrUrl);
+		conn = new SolrConnection(solrUrl);
 	}
 
 	/**

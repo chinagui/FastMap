@@ -19,7 +19,7 @@ import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.commons.timedomain.TimeDecoder;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
-import com.navinfo.dataservice.dao.fcc.SConnection;
+import com.navinfo.dataservice.dao.fcc.SolrConnection;
 import com.navinfo.dataservice.engine.fcc.tips.TipsImportUtils;
 
 public class DirectTipsBuilder {
@@ -41,7 +41,7 @@ public class DirectTipsBuilder {
 	 */
 	public static void importTips(java.sql.Connection fmgdbConn, Table htab,String solrUrl)
 			throws Exception {
-		SConnection solrConn = new SConnection(solrUrl,5000);
+		SolrConnection solrConn = new SolrConnection(solrUrl,5000);
 		
 		Statement stmt = fmgdbConn.createStatement();
 

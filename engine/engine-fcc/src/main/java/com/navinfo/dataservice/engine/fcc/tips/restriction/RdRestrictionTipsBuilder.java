@@ -23,7 +23,7 @@ import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.db.OracleAddress;
 import com.navinfo.dataservice.commons.timedomain.TimeDecoder;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
-import com.navinfo.dataservice.dao.fcc.SConnection;
+import com.navinfo.dataservice.dao.fcc.SolrConnection;
 import com.navinfo.dataservice.engine.fcc.tips.TipsImportUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -50,7 +50,7 @@ public class RdRestrictionTipsBuilder {
 	public static void importTips(java.sql.Connection fmgdbConn, Table htab,
 			String solrUrl) throws Exception {
 
-		SConnection solrConn = new SConnection(solrUrl, 5000);
+		SolrConnection solrConn = new SolrConnection(solrUrl, 5000);
 
 		Statement stmt = fmgdbConn.createStatement();
 

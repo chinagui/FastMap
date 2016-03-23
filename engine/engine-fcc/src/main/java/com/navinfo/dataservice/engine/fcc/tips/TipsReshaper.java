@@ -15,19 +15,19 @@ import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.fcc.SConnection;
+import com.navinfo.dataservice.dao.fcc.SolrConnection;
 
 public class TipsReshaper {
 
 	private int cache = 5000;
 
-	private SConnection solrConn;
+	private SolrConnection solrConn;
 
 	public TipsReshaper(String solrUrl, int cache) {
 
 		this.cache = cache;
 
-		solrConn = new SConnection(solrUrl, this.cache);
+		solrConn = new SolrConnection(solrUrl, this.cache);
 
 	}
 

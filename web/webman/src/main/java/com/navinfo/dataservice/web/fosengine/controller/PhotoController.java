@@ -35,7 +35,9 @@ public class PhotoController {
 
 			String wkt = jsonReq.getString("wkt");
 
-			JSONArray array = PhotoGetter.getPhotoBySpatial(wkt);
+			PhotoGetter getter = new PhotoGetter();
+
+			JSONArray array = getter.getPhotoBySpatial(wkt);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(array));
@@ -63,7 +65,9 @@ public class PhotoController {
 
 			String uuid = jsonReq.getString("rowkey");
 
-			JSONObject photo = PhotoGetter.getPhotoDetailByUuid(uuid);
+			PhotoGetter getter = new PhotoGetter();
+
+			JSONObject photo = getter.getPhotoDetailByRowkey(uuid);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(photo));
@@ -99,7 +103,9 @@ public class PhotoController {
 
 			String type = jsonReq.getString("type");
 
-			byte[] data = PhotoGetter.getPhotoByUuid(uuid, type);
+			PhotoGetter getter = new PhotoGetter();
+
+			byte[] data = getter.getPhotoByRowkey(uuid, type);
 
 			response.getOutputStream().write(data);
 

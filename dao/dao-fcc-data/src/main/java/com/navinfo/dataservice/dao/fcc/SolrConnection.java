@@ -23,7 +23,7 @@ import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.Geojson;
 
-public class SConnection {
+public class SolrConnection {
 
 	private SolrClient solrClient;
 
@@ -33,15 +33,15 @@ public class SConnection {
 
 	private int fetchNum = Integer.MAX_VALUE;
 	
-	public SConnection(){
+	public SolrConnection(){
 		solrClient = new HttpSolrClient(SystemConfig.getSystemConfig().getValue(PropConstant.solrAddress));
 	}
 
-	public SConnection(String url) {
+	public SolrConnection(String url) {
 		solrClient = new HttpSolrClient(url);
 	}
 
-	public SConnection(String url, int flushCnt) {
+	public SolrConnection(String url, int flushCnt) {
 		solrClient = new HttpSolrClient(url);
 
 		this.flushCnt = flushCnt;

@@ -117,7 +117,7 @@ public class DisplayUtils {
 	public static double[][] getTipsPointPos(String linkWkt, String pointWkt,
 			int seqNum) throws Exception {
 
-		return getLinkPointPos(linkWkt, pointWkt, 3, seqNum, 3, 3, 6);
+		return getLinkPointPos(linkWkt, pointWkt, 3, seqNum, 3, 5, 6);
 	}
 
 	public static double[][] getGdbPointPos(String linkWkt, String pointWkt,

@@ -10,8 +10,7 @@ import com.navinfo.dataservice.commons.db.SolrAddress;
  */
 public class PhotoFinder {
 
-	public List<Object> findPhoto(String condition, SolrAddress sa,
-			HBaseAddress ha) {
+	public List<Object> findPhoto(String condition) {
 		return null;
 	}
 }

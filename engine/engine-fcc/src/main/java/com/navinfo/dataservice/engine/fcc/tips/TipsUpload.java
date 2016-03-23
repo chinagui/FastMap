@@ -26,7 +26,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.GeometryUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.dao.fcc.SConnection;
+import com.navinfo.dataservice.dao.fcc.SolrConnection;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 
@@ -59,7 +59,7 @@ public class TipsUpload {
 
 	private String currentDate;
 
-	private SConnection solrConn;
+	private SolrConnection solrConn;
 
 	private int total;
 
@@ -94,7 +94,7 @@ public class TipsUpload {
 	}
 
 	public TipsUpload(String solrUrl) {
-		solrConn = new SConnection(solrUrl);
+		solrConn = new SolrConnection(solrUrl);
 	}
 
 	/**

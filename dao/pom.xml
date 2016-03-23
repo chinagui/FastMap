@@ -13,6 +13,7 @@
 		<module>dao-fcc-data</module>
 		<module>dao-mq</module>
 		<module>dao-glm-data</module>
+		<module>dao-photo</module>
     </modules>
     <packaging>pom</packaging>
     <name>dao</name>

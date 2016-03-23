@@ -117,7 +117,7 @@ public class TipsBuilder {
 
 		progressManager.updateProgress("完成度:" + 10 + "%");
 //
-		BridgeTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
+//		BridgeTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
 //
 		progressManager.updateProgress("完成度:" + 15 + "%");
 //
@@ -129,11 +129,11 @@ public class TipsBuilder {
 //
 		progressManager.updateProgress("完成度:" + 30 + "%");
 
-		RdCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
+//		RdCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
 
 //		progressManager.updateProgress("完成度:" + 35 + "%");
 //
-		DirectTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
+//		DirectTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
 //
 //		progressManager.updateProgress("完成度:" + 40 + "%");
 //
@@ -153,7 +153,7 @@ public class TipsBuilder {
 //
 		progressManager.updateProgress("完成度:" + 60 + "%");
 //
-		RdRestrictionTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
+//		RdRestrictionTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
 //
 //		progressManager.updateProgress("完成度:" + 70 + "%");
 //
@@ -161,7 +161,7 @@ public class TipsBuilder {
 //
 //		progressManager.updateProgress("完成度:" + 80 + "%");
 
-		RdSpeedLimitTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
+//		RdSpeedLimitTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
 
 		progressManager.updateProgress("完成度:" + 100 + "%");
 		

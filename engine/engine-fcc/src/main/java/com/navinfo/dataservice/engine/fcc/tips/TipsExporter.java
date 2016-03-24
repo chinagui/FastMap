@@ -26,16 +26,15 @@ import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.util.FileUtils;
 import com.navinfo.dataservice.commons.util.GridUtils;
-import com.navinfo.dataservice.dao.fcc.SolrConnection;
+import com.navinfo.dataservice.dao.fcc.SolrController;
 
 public class TipsExporter {
 
-	private SolrConnection solrConn;
+	private SolrController solr = new SolrController();
 	
 	private String folderName;
 
-	public TipsExporter(String solrUrl) {
-		solrConn = new SolrConnection(solrUrl);
+	public TipsExporter() {
 	}
 
 	private JSONArray exportByGrid(String gridId, String date) throws Exception {
@@ -163,7 +162,7 @@ public class TipsExporter {
 
 			String wkt = GridUtils.grid2Wkt(gridId);
 
-			List<String> rowkeys = solrConn.queryTipsMobile(wkt, date);
+			List<String> rowkeys = solr.queryTipsMobile(wkt, date);
 
 			for (String rowkey : rowkeys) {
 				if (set.contains(rowkey)) {
@@ -470,8 +469,6 @@ public class TipsExporter {
 
 		pw.close();
 
-		solrConn.closeConnection();
-
 		return count;
 	}
 
@@ -481,8 +478,7 @@ public class TipsExporter {
 
 		grids.add(60560304);
 
-		TipsExporter exporter = new TipsExporter(
-				"http://192.168.4.130:8081/solr/tips/");
+		TipsExporter exporter = new TipsExporter();
 		System.out.println(exporter.export(grids, "20150302010101","C:/Users/wangshishuai3966/Desktop"
 				,"1.txt"));
 		System.out.println("done");

@@ -26,6 +26,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
 import com.navinfo.dataservice.engine.edit.comm.util.AdminUtils;
+import com.navinfo.dataservice.engine.edit.comm.util.OperateUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -68,7 +69,7 @@ public class Operation implements IOperation {
 
 				Coordinate point = geomList.get(0).getCoordinates()[0];
 
-				RdNode node = createNode(point.x, point.y);
+				RdNode node = OperateUtils.createNode(point.x, point.y);
 
 				result.insertObject(node, ObjStatus.INSERT);
 
@@ -82,7 +83,7 @@ public class Operation implements IOperation {
 				Coordinate point = geomList.get(0).getCoordinates()[geomList
 						.get(0).getCoordinates().length - 1];
 
-				RdNode node = createNode(point.x, point.y);
+				RdNode node = OperateUtils.createNode(point.x, point.y);
 
 				result.insertObject(node, ObjStatus.INSERT);
 
@@ -232,52 +233,6 @@ public class Operation implements IOperation {
 
 	}
 
-	/**
-	 * 创建一个rdnode
-	 * 
-	 * @param x
-	 *            经度
-	 * @param y
-	 *            纬度
-	 * @return rdnode
-	 * @throws Exception
-	 */
-	private RdNode createNode(double x, double y) throws Exception {
-
-		RdNode node = new RdNode();
-
-		node.setPid(PidService.getInstance().applyNodePid());
-
-		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y),100000,0));
-
-		node.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(x, y)));
-
-		RdNodeForm form = new RdNodeForm();
-
-		form.setNodePid(node.getPid());
-		
-		form.setMesh(node.mesh());
-
-		List<IRow> forms = new ArrayList<IRow>();
-
-		forms.add(form);
-
-		node.setForms(forms);
-
-		RdNodeMesh mesh = new RdNodeMesh();
-		
-		mesh.setNodePid(node.getPid());
-
-		mesh.setMeshId(node.mesh());
-
-		List<IRow> meshes = new ArrayList<IRow>();
-
-		meshes.add(mesh);
-
-		node.setMeshes(meshes);
-
-		return node;
-	}
 
 	private Set<String> getLinkInterMesh(Geometry linkGeom) throws Exception {
 		Set<String> set = new HashSet<String>();
@@ -324,7 +279,7 @@ public class Operation implements IOperation {
 
 			double y = coordinates.getJSONArray(0).getDouble(1);
 
-			RdNode node = createNode(x, y);
+			RdNode node = OperateUtils.createNode(x, y);
 
 			result.insertObject(node, ObjStatus.INSERT);
 
@@ -364,7 +319,7 @@ public class Operation implements IOperation {
 					double y = catchLinks
 							.getJSONObject(p).getDouble("lat");
 
-					RdNode node = createNode(x, y);
+					RdNode node = OperateUtils.createNode(x, y);
 
 					result.insertObject(node, ObjStatus.INSERT);
 
@@ -408,7 +363,7 @@ public class Operation implements IOperation {
 
 				double y = tmpCs.getJSONArray(tmpCs.size() -1).getDouble(1);
 
-				RdNode node = createNode(x, y);
+				RdNode node = OperateUtils.createNode(x, y);
 
 				result.insertObject(node, ObjStatus.INSERT);
 

@@ -303,8 +303,6 @@ public class RdBranchSelector implements ISelector {
 	{
 		List<RdBranch> branchs = new ArrayList<RdBranch>();
 		
-//		String sql = "select * from rd_branch where in_link_pid = :1 and u_record!=2 ";
-		
 		String sql = "select a.*,b.mesh_id from rd_branch a,rd_link b where a.in_link_pid = :1 and a.u_record!=2 and a.in_link_pid = b.link_pid ";
 		
 		if (isLock){
@@ -709,6 +707,170 @@ public class RdBranchSelector implements ISelector {
 
 					branch.viaMap.put(obj.rowId(), obj);
 				}
+				
+				branchs.add(branch);
+			}
+		} catch (Exception e) {
+			
+			throw e;
+		} finally {
+			try {
+				resultSet.close();
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+				
+			}
+		}
+		
+		return branchs;
+	}
+	
+	public List<RdBranch> loadRdBranchByLinkNode(int linkPid, int nodePid1, int nodePid2,
+			boolean isLock) throws Exception {
+
+		List<RdBranch> branchs = new ArrayList<RdBranch>();
+		
+		String sql = "select a.*,b.mesh_id from rd_branch a,rd_link b where a.node_pid in (:1,:2) and a.in_link_pid=:3 and a.u_record!=2 and a.in_link_pid=b.link_pid ";
+		
+		if (isLock){
+			sql += " for update nowait";
+		}
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, nodePid1);
+			
+			pstmt.setInt(2, nodePid2);
+
+			pstmt.setInt(3, linkPid);
+
+			resultSet = pstmt.executeQuery();
+			
+			while(resultSet.next()){
+				
+				int meshId = resultSet.getInt("mesh_id");
+				
+				RdBranch branch = new RdBranch();
+
+				branch.setPid(resultSet.getInt("branch_pid"));
+
+				branch.setInLinkPid(resultSet.getInt("in_link_pid"));
+
+				branch.setNodePid(resultSet.getInt("node_pid"));
+
+				branch.setOutLinkPid(resultSet.getInt("out_link_pid"));
+
+				branch.setRelationshipType(resultSet
+						.getInt("relationship_type"));
+
+				branch.setRowId(resultSet.getString("row_id"));
+				
+				branch.setMesh(meshId);
+
+				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
+						conn);
+
+				branch.setDetails(detailSelector.loadRowsByParentId(branch.getPid(), isLock));
+
+				for (IRow row : branch.getDetails()) {
+					RdBranchDetail obj = (RdBranchDetail) row;
+
+					branch.detailMap.put(obj.getPid(), obj);
+				}
+
+				RdSignboardSelector signboardSelector = new RdSignboardSelector(
+						conn);
+
+				branch.setSignboards(signboardSelector.loadRowsByParentId(branch.getPid(),
+						isLock));
+
+				for (IRow row : branch.getSignboards()) {
+					RdSignboard obj = (RdSignboard) row;
+					
+					obj.setMesh(meshId);
+
+					branch.signboardMap.put(obj.getPid(), obj);
+				}
+
+				RdSignasrealSelector signasrealSelector = new RdSignasrealSelector(
+						conn);
+
+				branch.setSignasreals(signasrealSelector.loadRowsByParentId(branch.getPid(),
+						isLock));
+
+				for (IRow row : branch.getSignasreals()) {
+					RdSignasreal obj = (RdSignasreal) row;
+					
+					obj.setMesh(meshId);
+
+					branch.signasrealMap.put(obj.getPid(), obj);
+				}
+
+				RdSeriesbranchSelector seriesbranchSelector = new RdSeriesbranchSelector(
+						conn);
+
+				branch.setSeriesbranches(seriesbranchSelector
+						.loadRowsByParentId(branch.getPid(), isLock));
+
+				for (IRow row : branch.getSeriesbranches()) {
+					RdSeriesbranch obj = (RdSeriesbranch) row;
+					
+					obj.setMesh(meshId);
+
+					branch.seriesbranchMap.put(obj.rowId(), obj);
+				}
+
+				RdBranchRealimageSelector realimageSelector = new RdBranchRealimageSelector(
+						conn);
+
+				branch.setRealimages(realimageSelector.loadRowsByParentId(branch.getPid(),
+						isLock));
+
+				for (IRow row : branch.getRealimages()) {
+					RdBranchRealimage obj = (RdBranchRealimage) row;
+					
+					obj.setMesh(meshId);
+
+					branch.realimageMap.put(obj.rowId(), obj);
+				}
+
+				RdBranchSchematicSelector schematicSelector = new RdBranchSchematicSelector(
+						conn);
+
+				branch.setSchematics(schematicSelector.loadRowsByParentId(branch.getPid(),
+						isLock));
+
+				for (IRow row : branch.getSchematics()) {
+					RdBranchSchematic obj = (RdBranchSchematic) row;
+					
+					obj.setMesh(meshId);
+
+					branch.schematicMap.put(obj.getPid(), obj);
+				}
+
+				RdBranchViaSelector viaSelector = new RdBranchViaSelector(conn);
+
+				branch.setVias(viaSelector.loadRowsByParentId(branch.getPid(), isLock));
+
+				for (IRow row : branch.getVias()) {
+					RdBranchVia obj = (RdBranchVia) row;
+					
+					obj.setMesh(meshId);
+
+					branch.viaMap.put(obj.rowId(), obj);
+				}
+				
+				branchs.add(branch);
 			}
 		} catch (Exception e) {
 			

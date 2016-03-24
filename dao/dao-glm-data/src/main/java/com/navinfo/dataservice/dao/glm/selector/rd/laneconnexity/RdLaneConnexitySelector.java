@@ -284,4 +284,78 @@ public class RdLaneConnexitySelector implements ISelector {
 		
 		return laneConns;
 	}
+	
+	public List<RdLaneConnexity> loadRdLaneConnexityByLinkNode(int linkPid, int nodePid1, int nodePid2,
+			boolean isLock) throws Exception {
+		List<RdLaneConnexity> laneConns = new ArrayList<RdLaneConnexity>();
+		
+		String sql = "select a.*,b.mesh_id from rd_lane_connexity a,rd_link b where a.node_pid = in (:1,:2) and a.in_link_pid=:3 and a.u_record!=2 and a.in_link_pid = b.link_pid ";
+		
+		if (isLock){
+			sql += " for update nowait";
+		}
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, nodePid1);
+			
+			pstmt.setInt(2, nodePid2);
+			
+			pstmt.setInt(3, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdLaneConnexity laneConn = new RdLaneConnexity();
+				
+				laneConn.setPid(resultSet.getInt("pid"));
+				
+				laneConn.setRowId(resultSet.getString("row_id"));
+				
+				laneConn.setInLinkPid(resultSet.getInt("in_link_pid"));
+				
+				laneConn.setNodePid(resultSet.getInt("node_pid"));
+				
+				laneConn.setLaneInfo(resultSet.getString("lane_info"));
+				
+				laneConn.setConflictFlag(resultSet.getInt("conflict_flag"));
+				
+				laneConn.setKgFlag(resultSet.getInt("kg_flag"));
+				
+				laneConn.setLaneNum(resultSet.getInt("lane_num"));
+				
+				laneConn.setLeftExtend(resultSet.getInt("left_extend"));
+				
+				laneConn.setRightExtend(resultSet.getInt("right_extend"));
+				
+				laneConn.setSrcFlag(resultSet.getInt("src_flag"));
+				
+				laneConn.setMesh(resultSet.getInt("mesh_id"));
+				
+				laneConns.add(laneConn);
+			}
+		} catch (Exception e) {
+			
+			throw e;
+		} finally {
+			try {
+				resultSet.close();
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+				
+			}
+		}
+		
+		return laneConns;
+	}
 }

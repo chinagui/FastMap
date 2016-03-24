@@ -12,6 +12,10 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
  * 
  */
 public class TipsImportUtils {
+	
+	public static int ThreadCount=5;
+	
+	public static int QueueSize=20000;
 
 	/**
 	 * 根据类型、位置、唯一ID组合ROWKEY

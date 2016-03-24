@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -19,41 +18,16 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONException;
 
-import com.navinfo.dataservice.commons.config.SystemConfig;
-import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.Geojson;
 
-public class SolrConnection {
-
-	private SolrClient solrClient;
-
-	private List<SolrInputDocument> docs = new ArrayList<SolrInputDocument>();
-
-	private int flushCnt = 5000;
+public class SolrController {
 
 	private int fetchNum = Integer.MAX_VALUE;
-	
-	public SolrConnection(){
-		solrClient = new HttpSolrClient(SystemConfig.getSystemConfig().getValue(PropConstant.solrAddress));
-	}
 
-	public SolrConnection(String url) {
-		solrClient = new HttpSolrClient(url);
-	}
+	private HttpSolrClient client;
 
-	public SolrConnection(String url, int flushCnt) {
-		solrClient = new HttpSolrClient(url);
-
-		this.flushCnt = flushCnt;
-	}
-
-	private void flushData() throws SolrServerException, IOException {
-
-		if (docs.size() > 0) {
-			solrClient.add(docs);
-
-			docs.clear();
-		}
+	public SolrController() {
+		client = SolrConnector.getInstance().getClient();
 	}
 
 	public void addTips(JSONObject json) throws JSONException,
@@ -68,7 +42,7 @@ public class SolrConnection {
 		doc.addField("stage", json.getInt("stage"));
 
 		doc.addField("t_operateDate", json.getString("t_operateDate"));
-		
+
 		doc.addField("t_date", json.getString("t_date"));
 
 		doc.addField("t_lifecycle", json.getInt("t_lifecycle"));
@@ -84,15 +58,12 @@ public class SolrConnection {
 		doc.addField("g_location", json.getString("g_location"));
 
 		doc.addField("g_guide", json.getString("g_guide"));
-		
+
 		doc.addField("deep", json.getString("deep"));
 
-		docs.add(doc);
+		client.add(doc);
 
-		if (docs.size() >= flushCnt) {
-			this.flushData();
-
-		}
+		client.commit();
 	}
 
 	public boolean checkTipsMobile(String wkt, String date)
@@ -111,7 +82,7 @@ public class SolrConnection {
 
 		query.set("rows", 1);
 
-		QueryResponse response = solrClient.query(query);
+		QueryResponse response = client.query(query);
 
 		SolrDocumentList sdList = response.getResults();
 
@@ -144,7 +115,7 @@ public class SolrConnection {
 
 		query.set("rows", fetchNum);
 
-		QueryResponse response = solrClient.query(query);
+		QueryResponse response = client.query(query);
 
 		SolrDocumentList sdList = response.getResults();
 
@@ -173,7 +144,7 @@ public class SolrConnection {
 
 		query.set("rows", fetchNum);
 
-		QueryResponse response = solrClient.query(query);
+		QueryResponse response = client.query(query);
 
 		SolrDocumentList sdList = response.getResults();
 
@@ -203,28 +174,28 @@ public class SolrConnection {
 		List<JSONObject> snapshots = new ArrayList<JSONObject>();
 
 		StringBuilder builder = new StringBuilder();
-		
+
 		builder.append("wkt:\"intersects(");
-		
+
 		builder.append(wkt);
-		
+
 		builder.append(")\" AND s_sourceType:");
-		
+
 		builder.append(type);
 
-		if(stages.size()>0){
-			
+		if (stages.size() > 0) {
+
 			builder.append(" AND stage:(");
 
 			for (int i = 0; i < stages.size(); i++) {
 				int stage = stages.getInt(i);
-	
-				if(i>0){
+
+				if (i > 0) {
 					builder.append(" ");
 				}
 				builder.append(stage);
 			}
-			
+
 			builder.append(")");
 		}
 
@@ -238,7 +209,7 @@ public class SolrConnection {
 
 		query.set("rows", fetchNum);
 
-		QueryResponse response = solrClient.query(query);
+		QueryResponse response = client.query(query);
 
 		SolrDocumentList sdList = response.getResults();
 
@@ -289,7 +260,7 @@ public class SolrConnection {
 
 		query.addField("s_sourceType");
 
-		QueryResponse response = solrClient.query(query);
+		QueryResponse response = client.query(query);
 
 		SolrDocumentList sdList = response.getResults();
 
@@ -324,7 +295,7 @@ public class SolrConnection {
 
 		query.set("rows", fetchNum);
 
-		QueryResponse response = solrClient.query(query);
+		QueryResponse response = client.query(query);
 
 		SolrDocumentList sdList = response.getResults();
 
@@ -344,31 +315,31 @@ public class SolrConnection {
 
 		return snapshots;
 	}
-	
+
 	public List<JSONObject> queryTipsWebType(String wkt, JSONArray types)
 			throws SolrServerException, IOException {
 		List<JSONObject> snapshots = new ArrayList<JSONObject>();
-		
+
 		StringBuilder builder = new StringBuilder();
-		
+
 		builder.append("wkt:\"intersects(" + wkt + ")\"  AND stage:(1 3)");
-		
-		if(types.size()>0){
-			
+
+		if (types.size() > 0) {
+
 			builder.append(" AND s_sourceType:(");
-			
-			for(int i=0;i<types.size();i++){
+
+			for (int i = 0; i < types.size(); i++) {
 				String type = types.getString(i);
-				
-				if(i>0){
+
+				if (i > 0) {
 					builder.append(" ");
 				}
 				builder.append(type);
 			}
-			
+
 			builder.append(")");
 		}
-		
+
 		SolrQuery query = new SolrQuery();
 
 		query.set("q", builder.toString());
@@ -377,7 +348,7 @@ public class SolrConnection {
 
 		query.set("rows", fetchNum);
 
-		QueryResponse response = solrClient.query(query);
+		QueryResponse response = client.query(query);
 
 		SolrDocumentList sdList = response.getResults();
 
@@ -397,7 +368,6 @@ public class SolrConnection {
 
 		return snapshots;
 	}
-
 
 	public JSONObject getById(String id) throws Exception {
 
@@ -411,7 +381,7 @@ public class SolrConnection {
 
 		query.set("rows", fetchNum);
 
-		QueryResponse response = solrClient.query(query);
+		QueryResponse response = client.query(query);
 
 		SolrDocumentList sdList = response.getResults();
 
@@ -426,17 +396,6 @@ public class SolrConnection {
 		JSONObject snapshot = JSONObject.fromObject(doc);
 
 		return snapshot;
-	}
-
-	public void persistentData() throws SolrServerException, IOException {
-
-		this.flushData();
-
-		solrClient.commit();
-	}
-
-	public void closeConnection() throws IOException {
-		solrClient.close();
 	}
 
 	private String covertLonLat2Piexls(String location, int z, double px,

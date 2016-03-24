@@ -12,14 +12,14 @@ import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.dao.fcc.SolrConnection;
+import com.navinfo.dataservice.dao.fcc.SolrController;
 
 public class TipsOperator {
 
-	private SolrConnection solrConn;
+	private SolrController solr = new SolrController();
 
-	public TipsOperator(String solrUrl) {
-		solrConn = new SolrConnection(solrUrl);
+	public TipsOperator() {
+
 	}
 
 	/**
@@ -77,21 +77,21 @@ public class TipsOperator {
 		trackInfo.add(jo);
 
 		track.put("t_trackInfo", trackInfo);
-		
+
 		track.put("t_date", date);
 
 		put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
 				.getBytes());
 
-		String newDeep=null;
-		
+		String newDeep = null;
+
 		if (pid > 0) {
 
 			JSONObject deep = JSONObject.fromObject(new String(result.getValue(
 					"data".getBytes(), "deep".getBytes())));
 			if (deep.containsKey("id")) {
 				deep.put("id", String.valueOf(pid));
-				
+
 				newDeep = deep.toString();
 
 				put.addColumn("data".getBytes(), "deep".getBytes(), deep
@@ -99,7 +99,7 @@ public class TipsOperator {
 			}
 		}
 
-		JSONObject solrIndex = solrConn.getById(rowkey);
+		JSONObject solrIndex = solr.getById(rowkey);
 
 		solrIndex.put("stage", stage);
 
@@ -110,17 +110,13 @@ public class TipsOperator {
 		}
 
 		solrIndex.put("handler", handler);
-		
-		if(newDeep != null){
+
+		if (newDeep != null) {
 			solrIndex.put("deep", newDeep);
 		}
-		
-		solrConn.addTips(solrIndex);
 
-		solrConn.persistentData();
+		solr.addTips(solrIndex);
 
-		solrConn.closeConnection();
-		
 		htab.put(put);
 
 		return true;

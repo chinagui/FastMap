@@ -101,7 +101,7 @@ public class TipsBuilder {
 	 * @return True成功
 	 * @throws Exception
 	 */
-	public boolean run(OracleAddress fmgdbOA, OracleAddress pmOA, String uuid,String solrUrl)
+	public boolean run(OracleAddress fmgdbOA, OracleAddress pmOA, String uuid)
 			throws Exception {
 
 		Connection hbaseConn = HBaseAddress.getHBaseConnection();
@@ -117,11 +117,11 @@ public class TipsBuilder {
 
 		progressManager.updateProgress("完成度:" + 10 + "%");
 //
-//		BridgeTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
+//		BridgeTipsBuilder.importTips(fmgdbOA.getConn(), htab);
 //
 		progressManager.updateProgress("完成度:" + 15 + "%");
 //
-		RdLaneConnexityTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
+		RdLaneConnexityTipsBuilder.importTips(fmgdbOA.getConn(), htab);
 //
 //		progressManager.updateProgress("完成度:" + 25 + "%");
 //
@@ -129,11 +129,11 @@ public class TipsBuilder {
 //
 		progressManager.updateProgress("完成度:" + 30 + "%");
 
-//		RdCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
+//		RdCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab);
 
 //		progressManager.updateProgress("完成度:" + 35 + "%");
 //
-//		DirectTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
+//		DirectTipsBuilder.importTips(fmgdbOA.getConn(), htab);
 //
 //		progressManager.updateProgress("完成度:" + 40 + "%");
 //
@@ -145,7 +145,7 @@ public class TipsBuilder {
 //
 		progressManager.updateProgress("完成度:" + 50 + "%");
 //
-		HighwayTipsBuilder.importTips(fmgdbOA.getConn(), htab, solrUrl);
+		HighwayTipsBuilder.importTips(fmgdbOA.getConn(), htab);
 //
 //		progressManager.updateProgress("完成度:" + 55 + "%");
 //
@@ -153,7 +153,7 @@ public class TipsBuilder {
 //
 		progressManager.updateProgress("完成度:" + 60 + "%");
 //
-//		RdRestrictionTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
+		RdRestrictionTipsBuilder.importTips(fmgdbOA.getConn(), htab);
 //
 //		progressManager.updateProgress("完成度:" + 70 + "%");
 //
@@ -161,7 +161,7 @@ public class TipsBuilder {
 //
 //		progressManager.updateProgress("完成度:" + 80 + "%");
 
-//		RdSpeedLimitTipsBuilder.importTips(fmgdbOA.getConn(), htab,solrUrl);
+		RdSpeedLimitTipsBuilder.importTips(fmgdbOA.getConn(), htab);
 
 		progressManager.updateProgress("完成度:" + 100 + "%");
 		
@@ -201,7 +201,7 @@ public class TipsBuilder {
 		
 		HBaseAddress.initHBaseAddress("192.168.3.156");
 		
-		b.run(oa1, oa2, uuid,"http://192.168.4.130:8081/solr/tips");
+		b.run(oa1, oa2, uuid);
 		
 		System.out.println("done");
 		

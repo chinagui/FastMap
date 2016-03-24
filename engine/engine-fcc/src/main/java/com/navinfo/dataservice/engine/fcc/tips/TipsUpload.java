@@ -26,7 +26,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.GeometryUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.dao.fcc.SolrConnection;
+import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 
@@ -59,8 +59,6 @@ public class TipsUpload {
 
 	private String currentDate;
 
-	private SolrConnection solrConn;
-
 	private int total;
 
 	private int failed;
@@ -68,6 +66,8 @@ public class TipsUpload {
 	private JSONArray reasons;
 
 	private WKTReader reader = new WKTReader();
+	
+	private SolrBulkUpdater solr;
 
 	public JSONArray getReasons() {
 		return reasons;
@@ -93,10 +93,6 @@ public class TipsUpload {
 		this.failed = failed;
 	}
 
-	public TipsUpload(String solrUrl) {
-		solrConn = new SolrConnection(solrUrl);
-	}
-
 	/**
 	 * 读取文件内容，保存数据 考虑到数据量不会特别大，所以和数据库一次交互即可
 	 * 
@@ -120,6 +116,8 @@ public class TipsUpload {
 		Map<String, Photo> photoInfo = new HashMap<String, Photo>();
 
 		List<Get> gets = loadFileContent(fileName, photoInfo);
+		
+		solr = new SolrBulkUpdater(total*2, 1);
 
 		loadOldTips(htab, gets);
 
@@ -129,10 +127,10 @@ public class TipsUpload {
 
 		doUpdate(puts);
 
-		solrConn.persistentData();
-
-		solrConn.closeConnection();
+		solr.commit();
 		
+		solr.close();
+
 		htab.put(puts);
 
 		htab.close();
@@ -361,7 +359,7 @@ public class TipsUpload {
 
 				JSONObject solrIndex = generateSolrIndex(json);
 
-				solrConn.addTips(solrIndex);
+				solr.addTips(solrIndex);
 
 				puts.add(put);
 
@@ -475,7 +473,7 @@ public class TipsUpload {
 
 				JSONObject solrIndex = generateSolrIndex(json);
 
-				solrConn.addTips(solrIndex);
+				solr.addTips(solrIndex);
 
 				puts.add(put);
 			} catch (Exception e) {
@@ -744,7 +742,7 @@ public class TipsUpload {
 	public static void main(String[] args) throws Exception {
 		HBaseAddress.initHBaseAddress("192.168.3.156");
 
-		TipsUpload a = new TipsUpload("http://192.168.4.130:8081/solr/tips/");
+		TipsUpload a = new TipsUpload();
 
 		a.run("C:/1.txt");
 	}

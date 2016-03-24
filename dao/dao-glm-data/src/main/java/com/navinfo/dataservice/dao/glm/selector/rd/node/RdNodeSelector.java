@@ -389,4 +389,52 @@ public class RdNodeSelector implements ISelector {
 		return nodes;
 	}
 
+	
+	public int loadRdLinkCountOnNode(int nodePid)
+			throws Exception {
+
+		String sql = "select count(1) count from rd_link a where a.s_node_pid=:1 or a.e_node_pid=:2";
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, nodePid);
+			
+			pstmt.setInt(2, nodePid);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+				return resultSet.getInt("count");
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+		
+		return 0;
+	}
+
 }

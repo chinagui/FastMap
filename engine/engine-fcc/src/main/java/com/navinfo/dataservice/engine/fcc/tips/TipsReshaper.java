@@ -15,19 +15,18 @@ import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.fcc.SolrConnection;
+import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
 
 public class TipsReshaper {
 
 	private int cache = 5000;
 
-	private SolrConnection solrConn;
+	private SolrBulkUpdater solr;
 
-	public TipsReshaper(String solrUrl, int cache) {
+	public TipsReshaper() {
 
-		this.cache = cache;
-
-		solrConn = new SolrConnection(solrUrl, this.cache);
+		solr = new SolrBulkUpdater(TipsImportUtils.QueueSize,
+				TipsImportUtils.ThreadCount);
 
 	}
 
@@ -100,16 +99,16 @@ public class TipsReshaper {
 			int t_command = trackjo.getInt("t_command");
 
 			solrIndex.put("t_command", t_command);
-			
+
 			solrIndex.put("t_date", trackjo.getString("t_date"));
-			
+
 			JSONArray tTrackInfo = trackjo.getJSONArray("t_trackInfo");
 
 			JSONObject lastTrack = tTrackInfo
 					.getJSONObject(tTrackInfo.size() - 1);
 
 			String lastDate = lastTrack.getString("date");
-			
+
 			solrIndex.put("t_operateDate", lastDate);
 
 			int stage = lastTrack.getInt("stage");
@@ -137,7 +136,7 @@ public class TipsReshaper {
 
 			solrIndex.put("deep", deep);
 
-			solrConn.addTips(solrIndex);
+			solr.addTips(solrIndex);
 
 			count += 1;
 
@@ -147,9 +146,9 @@ public class TipsReshaper {
 
 		}
 
-		solrConn.persistentData();
+		solr.commit();
 
-		solrConn.closeConnection();
+		solr.close();
 
 		return count;
 	}
@@ -160,8 +159,7 @@ public class TipsReshaper {
 
 		HBaseAddress.initHBaseAddress("192.168.3.156");
 
-		TipsReshaper sa = new TipsReshaper(
-				"http://192.168.4.130:8081/solr/tips/", 5000);
+		TipsReshaper sa = new TipsReshaper();
 
 		System.out.println(sa.run());
 

@@ -23,7 +23,8 @@ import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.db.OracleAddress;
 import com.navinfo.dataservice.commons.timedomain.TimeDecoder;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
-import com.navinfo.dataservice.dao.fcc.SolrConnection;
+import com.navinfo.dataservice.dao.fcc.SolrController;
+import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
 import com.navinfo.dataservice.engine.fcc.tips.TipsImportUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -47,10 +48,9 @@ public class RdRestrictionTipsBuilder {
 	 * @param fmgdbConn
 	 * @param htab
 	 */
-	public static void importTips(java.sql.Connection fmgdbConn, Table htab,
-			String solrUrl) throws Exception {
+	public static void importTips(java.sql.Connection fmgdbConn, Table htab) throws Exception {
 
-		SolrConnection solrConn = new SolrConnection(solrUrl, 5000);
+		SolrBulkUpdater solrConn = new SolrBulkUpdater(TipsImportUtils.QueueSize,TipsImportUtils.ThreadCount);
 
 		Statement stmt = fmgdbConn.createStatement();
 
@@ -114,9 +114,9 @@ public class RdRestrictionTipsBuilder {
 
 		htab.put(puts);
 
-		solrConn.persistentData();
-
-		solrConn.closeConnection();
+		solrConn.commit();
+		
+		solrConn.close();
 
 	}
 
@@ -274,6 +274,6 @@ public class RdRestrictionTipsBuilder {
 
 		Table htab = hbaseConn.getTable(TableName.valueOf("tips"));
 		
-		RdRestrictionTipsBuilder.importTips(oa1.getConn(), htab, "http://192.168.4.130:8081/solr/tips");
+		RdRestrictionTipsBuilder.importTips(oa1.getConn(), htab);
 	}
 }

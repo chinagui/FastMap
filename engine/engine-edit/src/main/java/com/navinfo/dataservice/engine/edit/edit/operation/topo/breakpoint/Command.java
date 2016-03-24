@@ -42,10 +42,7 @@ public class Command implements ICommand {
 
 	private int projectId;
 
-	// 下面两个字段,在以已存在的node通过移动位置来打断LINK的记录
-	private int breakNodePid;
-
-	private RdNode breakNode;
+	private int breakNodePid;//在以已存在的node通过移动位置来打断LINK的记录
 
 	private List<RdRestriction> restrictions;
 
@@ -261,12 +258,9 @@ public class Command implements ICommand {
 		return breakNodePid;
 	}
 
-	public RdNode getBreakNode() {
-		return breakNode;
+	public void setBreakNodePid(int breakNodePid) {
+		this.breakNodePid = breakNodePid;
 	}
 
-	public void setBreakNode(RdNode breakNode) {
-		this.breakNode = breakNode;
-	}
 
 }

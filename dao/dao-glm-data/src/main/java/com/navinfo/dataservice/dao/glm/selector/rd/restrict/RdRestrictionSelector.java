@@ -375,5 +375,84 @@ public class RdRestrictionSelector implements ISelector {
 		return restrict;
 
 	}
+	
+	public List<RdRestriction> loadRdRestrictionByLinkNode(int linkPid, int nodePid1, int nodePid2,
+			boolean isLock) throws Exception {
 
+		List<RdRestriction> result = new ArrayList<RdRestriction>();
+		
+		String sql = "select a.*,b.mesh_id from rd_restriction a,rd_link b where a.in_link_pid = :1 and a.node_pid in (:2,:3) and a.u_record!=2 and a.in_link_pid = b.link_pid ";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+
+			pstmt.setInt(2, nodePid1);
+			
+			pstmt.setInt(3, nodePid2);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				
+				RdRestriction restrict = new RdRestriction();
+
+				restrict.setPid(resultSet.getInt("pid"));
+
+				restrict.setInLinkPid(resultSet.getInt("in_link_pid"));
+
+				restrict.setNodePid(resultSet.getInt("node_pid"));
+
+				restrict.setRestricInfo(resultSet.getString("restric_info"));
+
+				restrict.setKgFlag(resultSet.getInt("kg_flag"));
+
+				restrict.setRowId(resultSet.getString("row_id"));
+				
+				int meshId = resultSet.getInt("mesh_id");
+				
+				restrict.setMesh(meshId);
+
+				RdRestrictionDetailSelector detail = new RdRestrictionDetailSelector(
+						conn);
+
+				restrict.setDetails(detail.loadRowsByParentId(
+						restrict.getPid(), isLock));
+				
+				for(IRow obj : restrict.getDetails()){
+					obj.setMesh(meshId);
+				}
+				
+				result.add(restrict);
+
+			} 
+
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			try {
+				resultSet.close();
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+				
+			}
+		}
+
+		return result;
+
+	}
 }

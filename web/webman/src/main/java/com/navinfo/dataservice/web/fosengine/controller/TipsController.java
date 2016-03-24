@@ -28,8 +28,7 @@ import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
 @Controller
 public class TipsController {
 
-	private static final Logger logger = Logger
-			.getLogger(TipsController.class);
+	private static final Logger logger = Logger.getLogger(TipsController.class);
 
 	@RequestMapping(value = "/fcc/tip/checkUpdate")
 	public void checkUpdate(HttpServletRequest request,
@@ -44,8 +43,7 @@ public class TipsController {
 
 			String date = jsonReq.getString("date");
 
-			TipsSelector selector = new TipsSelector(
-					SystemConfig.getSystemConfig().getValue(PropConstant.solrAddress));
+			TipsSelector selector = new TipsSelector();
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(selector.checkUpdate(
@@ -83,9 +81,8 @@ public class TipsController {
 				pid = jsonReq.getInt("pid");
 			}
 
-			TipsOperator op = new TipsOperator(
-					SystemConfig.getSystemConfig().getValue(PropConstant.solrAddress));
-			
+			TipsOperator op = new TipsOperator();
+
 			op.update(rowkey, stage, handler, pid);
 
 			response.getWriter().println(
@@ -127,8 +124,7 @@ public class TipsController {
 
 			String date = jsonReq.getString("date");
 
-			TipsExporter op = new TipsExporter(
-					SystemConfig.getSystemConfig().getValue(PropConstant.solrAddress));
+			TipsExporter op = new TipsExporter();
 
 			JSONArray grids = jsonReq.getJSONArray("grids");
 
@@ -168,8 +164,7 @@ public class TipsController {
 
 			String rowkey = jsonReq.getString("rowkey");
 
-			TipsSelector selector = new TipsSelector(
-					SystemConfig.getSystemConfig().getValue(PropConstant.solrAddress));
+			TipsSelector selector = new TipsSelector();
 
 			JSONObject data = selector.searchDataByRowkey(rowkey);
 
@@ -198,8 +193,7 @@ public class TipsController {
 
 			String wkt = jsonReq.getString("wkt");
 
-			TipsSelector selector = new TipsSelector(
-					SystemConfig.getSystemConfig().getValue(PropConstant.solrAddress));
+			TipsSelector selector = new TipsSelector();
 
 			JSONArray array = selector.searchDataBySpatial(wkt);
 
@@ -234,8 +228,7 @@ public class TipsController {
 
 			int projectId = jsonReq.getInt("projectId");
 
-			TipsSelector selector = new TipsSelector(
-					SystemConfig.getSystemConfig().getValue(PropConstant.solrAddress));
+			TipsSelector selector = new TipsSelector();
 
 			JSONArray array = selector.getSnapshot(grids, stage, type,
 					projectId);
@@ -267,8 +260,7 @@ public class TipsController {
 
 			JSONArray stages = jsonReq.getJSONArray("stage");
 
-			TipsSelector selector = new TipsSelector(
-					SystemConfig.getSystemConfig().getValue(PropConstant.solrAddress));
+			TipsSelector selector = new TipsSelector();
 
 			JSONObject jo = selector.getStats(grids, stages);
 

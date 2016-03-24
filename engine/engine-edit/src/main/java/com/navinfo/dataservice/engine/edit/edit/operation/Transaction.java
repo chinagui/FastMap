@@ -85,9 +85,9 @@ public class Transaction {
 			case REPAIR:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.Command(
 						json, requester);
-			case DEPART:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Command(
-						json, requester);
+//			case DEPART:
+//				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Command(
+//						json, requester);
 			}
 		case RDNODE:
 			switch (operType) {
@@ -209,9 +209,9 @@ public class Transaction {
 			case REPAIR:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.Process(
 						command);
-			case DEPART:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Process(
-						command);
+//			case DEPART:
+//				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Process(
+//						command);
 			}
 		case RDNODE:
 			switch (operType) {

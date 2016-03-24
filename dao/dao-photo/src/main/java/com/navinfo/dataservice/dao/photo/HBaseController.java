@@ -3,8 +3,6 @@ package com.navinfo.dataservice.dao.photo;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.json.JSONArray;
-
 import org.hbase.async.GetRequest;
 import org.hbase.async.KeyValue;
 import org.hbase.async.Scanner;
@@ -18,13 +16,17 @@ import com.navinfo.dataservice.commons.util.ByteUtils;
 public class HBaseController {
 
 	private ArrayList<KeyValue> getByRowkey(String tableName, String rowkey,
-			String famliy, String... qualifiers) throws Exception {
+			String family, String... qualifiers) throws Exception {
 
 		final GetRequest get = new GetRequest(tableName, rowkey);
 
-		get.family(famliy);
+		if (family != null) {
+			get.family(family);
+		}
 
-		get.qualifiers(ByteUtils.toBytes(qualifiers));
+		if (qualifiers.length > 0) {
+			get.qualifiers(ByteUtils.toBytes(qualifiers));
+		}
 
 		ArrayList<KeyValue> list = HBaseConnector.getInstance().getClient()
 				.get(get).joinUninterruptibly();
@@ -65,9 +67,13 @@ public class HBaseController {
 
 		scanner.setStopKey(stopKey);
 
-		scanner.setFamily(family);
+		if (family != null) {
+			scanner.setFamily(family);
+		}
 
-		scanner.setQualifiers(ByteUtils.toBytes(qualifiers));
+		if (qualifiers.length > 0) {
+			scanner.setQualifiers(ByteUtils.toBytes(qualifiers));
+		}
 
 		ArrayList<ArrayList<KeyValue>> rows;
 
@@ -100,33 +106,33 @@ public class HBaseController {
 		return result;
 	}
 
-	public ArrayList<ArrayList<KeyValue>> getPhotoByTileWithGap(int x, int y, int z, int gap) throws Exception{
-		
+	public ArrayList<ArrayList<KeyValue>> getPhotoByTileWithGap(int x, int y,
+			int z, int gap) throws Exception {
+
 		String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-		
+
 		return getPhotoBySpatial(wkt);
 	}
-	
-	public ArrayList<ArrayList<KeyValue>> getPhotoTile(double minLon, double minLat,double maxLon, double maxLat, int zoom) throws Exception {
-		
-		long xmin = MercatorProjection
-				.longitudeToTileX(minLon, (byte) zoom);
 
-		long xmax = MercatorProjection
-				.longitudeToTileX(maxLon, (byte) zoom);
+	public ArrayList<ArrayList<KeyValue>> getPhotoTile(double minLon,
+			double minLat, double maxLon, double maxLat, int zoom)
+			throws Exception {
+
+		long xmin = MercatorProjection.longitudeToTileX(minLon, (byte) zoom);
+
+		long xmax = MercatorProjection.longitudeToTileX(maxLon, (byte) zoom);
 
 		long ymax = MercatorProjection.latitudeToTileY(minLat, (byte) zoom);
 
 		long ymin = MercatorProjection.latitudeToTileY(maxLat, (byte) zoom);
-		
-		String startKey = String
-				.format("%02d%08d%07d", zoom, xmin, ymin);
+
+		String startKey = String.format("%02d%08d%07d", zoom, xmin, ymin);
 
 		String stopKey = String.format("%02d%08d%07d", zoom, xmax, ymax);
-		
+
 		ArrayList<ArrayList<KeyValue>> result = scan("photoTile", startKey,
 				stopKey, "data", "photo");
-		
+
 		return result;
 	}
 

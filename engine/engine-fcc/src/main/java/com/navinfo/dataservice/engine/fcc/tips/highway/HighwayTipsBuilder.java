@@ -18,7 +18,8 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.commons.util.DisplayUtils;
-import com.navinfo.dataservice.dao.fcc.SolrConnection;
+import com.navinfo.dataservice.dao.fcc.SolrController;
+import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
 import com.navinfo.dataservice.engine.fcc.tips.TipsImportUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -36,10 +37,10 @@ public class HighwayTipsBuilder {
 	 * @param fmgdbConn
 	 * @param htab
 	 */
-	public static void importTips(java.sql.Connection fmgdbConn, Table htab,String solrUrl)
+	public static void importTips(java.sql.Connection fmgdbConn, Table htab)
 			throws Exception {
 		
-		SolrConnection solrConn = new SolrConnection(solrUrl,5000);
+		SolrBulkUpdater solrConn = new SolrBulkUpdater(TipsImportUtils.QueueSize,TipsImportUtils.ThreadCount);
 
 		Statement stmt = fmgdbConn.createStatement();
 
@@ -100,10 +101,9 @@ public class HighwayTipsBuilder {
 
 		htab.put(puts);
 		
-		solrConn.persistentData();
+		solrConn.commit();
 		
-		solrConn.closeConnection();
-
+		solrConn.close();
 	}
 
 	private static JSONObject generateGeometry(ResultSet resultSet)

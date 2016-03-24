@@ -26,6 +26,10 @@ public class Check {
 
 	// 对组成路口的node挂接的link线进行编辑操作时，不能分离组成路口的node点
 	public void checkIsCrossNode(Connection conn, int nodePid) throws Exception {
+		
+		if(nodePid <= 0){
+			return;
+		}
 
 		String sql = "select node_pid from rd_cross_node where node_pid = :1 and rownum =1";
 

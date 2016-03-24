@@ -7,139 +7,297 @@ import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
+import com.navinfo.dataservice.engine.edit.comm.util.OperateUtils;
+import com.vividsolutions.jts.geom.Coordinate;
 
 public class Operation implements IOperation {
-	
+
 	private Command command;
-	
+
 	private RdLink updateLink;
-	
+
 	private RdNode enode;
-	
+
 	private RdNode snode;
 	
 	private Connection conn;
-	
-	public Operation(Connection conn, Command command, RdLink updateLink,RdNode snode, RdNode enode, Check check) {
-		
+
+	public Operation(Connection conn, Command command, RdLink updateLink,
+			RdNode snode, RdNode enode, Check check) {
+
 		this.conn = conn;
-		
+
 		this.command = command;
 
 		this.updateLink = updateLink;
-		
-		this.enode = enode;
-		
-		this.snode = snode;
-		
-	}
 
+		this.enode = enode;
+
+		this.snode = snode;
+
+	}
+	
 	@Override
 	public String run(Result result) throws Exception {
-		
+
 		JSONObject content = new JSONObject();
-		
+
 		result.setPrimaryPid(updateLink.getPid());
-		
+
 		content.put("geometry", command.getLinkGeom());
+
+		// 判断端点有没有移动，如果移动，则需要分离节点
 		
-		if (command.getInterLines().size() == 0 && command.getInterNodes().size() ==0){
-			//平滑修型,增删形状点
-		}else if ((command.getInterLines().size() == 1 || command.getInterLines().size() == 2) && command.getInterNodes().size() == 0){
+		JSONArray coords = command.getLinkGeom().getJSONArray("coordinates");
+
+		JSONArray scoord = coords.getJSONArray(0);
+
+		double slon = scoord.getDouble(0);
+		double slat = scoord.getDouble(1);
+		
+		JSONArray ecoord = coords.getJSONArray(coords.size()-1);
+
+		double elon = ecoord.getDouble(0);
+		double elat = ecoord.getDouble(1);
+		
+		boolean sNodeDepart = checkDepartSNode(slon, slat);
+		
+		boolean eNodeDepart = checkDepartENode(elon, elat);
+		
+		com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Process departProcess = null;
+		
+		if(sNodeDepart || eNodeDepart){
 			
-			this.breakLine();
+			JSONObject json = new JSONObject();
 			
-		}else if (command.getInterLines().size() == 0 && (command.getInterNodes().size() == 1 || command.getInterNodes().size() == 2)){
-			//link的一个端点挂接到另外一组link的端点
-			for(int i=0;i<command.getInterNodes().size();i++){
-				JSONObject mountNode = command.getInterNodes().getJSONObject(i);
+			json.put("projectId", command.getProjectId());
+			
+			JSONObject data = new JSONObject();
+			
+			data.put("linkPid", updateLink.getPid());
+			
+			if(sNodeDepart){
+				data.put("sNodePid", updateLink.getsNodePid());
 				
-				int nodePid = mountNode.getInt("nodePid");
+				data.put("slon", slon);
 				
-				int pid = mountNode.getInt("pid");
-				
-				if (nodePid == updateLink.getsNodePid()){
-					content.put("sNodePid", pid);
-					
-					result.insertObject(snode, ObjStatus.DELETE);
-				}else{
-					content.put("eNodePid", pid);
-					
-					result.insertObject(enode, ObjStatus.DELETE);
-				}
+				data.put("slat", slat);
 			}
 			
-		}else if (command.getInterLines().size() == 1 && command.getInterNodes().size() == 1){
-			//link的一个端点打断另外一根link、link的一个端点挂接到另外一组link的端点
-			
-			this.breakLine();
-			
-			for(int i=0;i<command.getInterNodes().size();i++){
-				JSONObject mountNode = command.getInterNodes().getJSONObject(i);
+			if(eNodeDepart){
+				data.put("eNodePid", updateLink.geteNodePid());
 				
-				int nodePid = mountNode.getInt("nodePid");
+				data.put("elon", elon);
 				
-				int pid = mountNode.getInt("pid");
-				
-				if (nodePid == updateLink.getsNodePid()){
-					content.put("sNodePid", pid);
-					
-					result.insertObject(snode, ObjStatus.DELETE);
-				}else{
-					content.put("eNodePid", pid);
-					
-					result.insertObject(enode, ObjStatus.DELETE);
-				}
+				data.put("elat", elat);
 			}
-		}else{
-			//错误请求
+			
+			json.put("data", data);
+			
+			ICommand departCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Command(
+					json, json.toString());
+			
+			departProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Process(
+					departCommand, conn);
+			
+			departProcess.preCheck();
+			
+			departProcess.prepareData();
+			
+			departProcess.processRefObj();
+			
+			departProcess.recordData();
+			
 		}
 		
+		if (command.getInterLines().size() == 0
+				&& command.getInterNodes().size() == 0) {
+			//没有挂接到别的link或node上
+			
+			if(sNodeDepart){ //需要新增节点
+				
+				RdNode node = OperateUtils.createNode(slon, slat);
+				
+				content.put("sNodePid", node.getPid());
+				
+				result.insertObject(node, ObjStatus.INSERT);
+			}
+			
+			if(eNodeDepart){
+				
+				RdNode node = OperateUtils.createNode(elon, elat);
+				
+				content.put("eNodePid", node.getPid());
+				
+				result.insertObject(node, ObjStatus.INSERT);
+			}
+			
+		} else if ((command.getInterLines().size() == 1 || command
+				.getInterLines().size() == 2)
+				&& command.getInterNodes().size() == 0) {
+			//只挂接到link上
+			
+			int sNodePid = updateLink.getsNodePid();
+			
+			int eNodePid = updateLink.geteNodePid();
+			
+			if(sNodeDepart){ //需要新增节点
+				
+				RdNode node = OperateUtils.createNode(slon, slat);
+				
+				content.put("sNodePid", node.getPid());
+				
+				sNodePid=node.getPid();
+				
+				result.insertObject(node, ObjStatus.INSERT);
+			}
+			
+			if(eNodeDepart){
+				
+				RdNode node = OperateUtils.createNode(elon, elat);
+				
+				content.put("eNodePid", node.getPid());
+				
+				eNodePid = node.getPid();
+				
+				result.insertObject(node, ObjStatus.INSERT);
+			}
+
+			this.breakLine(sNodePid, eNodePid);
+
+		} else if (command.getInterLines().size() == 0
+				&& (command.getInterNodes().size() == 1 || command
+						.getInterNodes().size() == 2)) {
+			// link的一个端点挂接到另外一组link的端点
+			for (int i = 0; i < command.getInterNodes().size(); i++) {
+				JSONObject mountNode = command.getInterNodes().getJSONObject(i);
+
+				int nodePid = mountNode.getInt("nodePid");
+
+				int pid = mountNode.getInt("pid");
+
+				if (nodePid == updateLink.getsNodePid()) {
+					content.put("sNodePid", pid);
+
+					if(!sNodeDepart){ //如果是分离节点，需要保留该node，否则不保留
+						result.insertObject(snode, ObjStatus.DELETE);
+					}
+				} else {
+					content.put("eNodePid", pid);
+
+					if(!eNodeDepart){ //如果是分离节点，需要保留该node，否则不保留
+						result.insertObject(enode, ObjStatus.DELETE);
+					}
+				}
+			}
+
+		} else if (command.getInterLines().size() == 1
+				&& command.getInterNodes().size() == 1) {
+			// link的一个端点打断另外一根link、link的一个端点挂接到另外一组link的端点
+
+			for (int i = 0; i < command.getInterNodes().size(); i++) {
+				JSONObject mountNode = command.getInterNodes().getJSONObject(i);
+
+				int nodePid = mountNode.getInt("nodePid");
+
+				int pid = mountNode.getInt("pid");
+
+				if (nodePid == updateLink.getsNodePid()) {
+					content.put("sNodePid", pid);
+
+					if(!sNodeDepart){ //如果是分离节点，需要保留该node，否则不保留
+						result.insertObject(snode, ObjStatus.DELETE);
+					}
+				} else {
+					content.put("eNodePid", pid);
+
+					if(!eNodeDepart){ //如果是分离节点，需要保留该node，否则不保留
+						result.insertObject(enode, ObjStatus.DELETE);
+					}
+				}
+			}
+			
+			int sNodePid = updateLink.getsNodePid();
+			
+			int eNodePid = updateLink.geteNodePid();
+			
+			if(content.containsKey("eNodePid")){
+				if(sNodeDepart){ //需要新增节点
+					
+					RdNode node = OperateUtils.createNode(slon, slat);
+					
+					content.put("sNodePid", node.getPid());
+					
+					sNodePid=node.getPid();
+					
+					result.insertObject(node, ObjStatus.INSERT);
+				}
+			}
+			else{
+				if(eNodeDepart){
+					
+					RdNode node = OperateUtils.createNode(elon, elat);
+					
+					content.put("eNodePid", node.getPid());
+					
+					eNodePid = node.getPid();
+					
+					result.insertObject(node, ObjStatus.INSERT);
+				}
+			}
+			
+			this.breakLine(sNodePid, eNodePid);
+		} else {
+			// 错误请求
+		}
+
 		boolean isChanged = updateLink.fillChangeFields(content);
 
 		if (isChanged) {
 			result.insertObject(updateLink, ObjStatus.UPDATE);
 		}
-		
+
 		return null;
 	}
-	
-	public void breakLine() throws Exception{
-		
+
+	public void breakLine(int sNodePid, int eNodePid) throws Exception {
+
 		JSONArray coords = command.getLinkGeom().getJSONArray("coordinates");
-		
-		for (int i = 0; i <command.getInterLines().size(); i++) {
-			//link的一个端点打断另外一根link
+
+		for (int i = 0; i < command.getInterLines().size(); i++) {
+			// link的一个端点打断另外一根link
 			JSONObject interLine = command.getInterLines().getJSONObject(i);
 			JSONObject breakJson = new JSONObject();
 			JSONObject data = new JSONObject();
-			
+
 			breakJson.put("objId", interLine.getInt("pid"));
 			breakJson.put("projectId", command.getProjectId());
-			
+
 			int nodePid = interLine.getInt("nodePid");
 			if (nodePid == updateLink.getsNodePid()) {
-				data.put("breakNodePid", updateLink.getsNodePid());
-				
+				data.put("breakNodePid", sNodePid);
+
 				JSONArray coord = coords.getJSONArray(0);
-				
+
 				double lon = coord.getDouble(0);
 				double lat = coord.getDouble(1);
-				
+
 				data.put("longitude", lon);
 				data.put("latitude", lat);
 			} else {
-				data.put("breakNodePid", updateLink.geteNodePid());
-				
-				JSONArray coord = coords.getJSONArray(coords.size()-1);
-				
+				data.put("breakNodePid", eNodePid);
+
+				JSONArray coord = coords.getJSONArray(coords.size() - 1);
+
 				double lon = coord.getDouble(0);
 				double lat = coord.getDouble(1);
-				
+
 				data.put("longitude", lon);
 				data.put("latitude", lat);
 			}
@@ -152,4 +310,40 @@ public class Operation implements IOperation {
 		}
 	}
 
+	private boolean checkDepartSNode(double lon, double lat) throws Exception{
+		Coordinate[] oldCoords = updateLink.getGeometry().getCoordinates();
+
+		if (lon != oldCoords[0].x || lat != oldCoords[0].y) {
+			//移动了几何，如果挂接了多条link，需要分离节点
+			
+			RdNodeSelector selector = new RdNodeSelector(conn);
+			
+			int count = selector.loadRdLinkCountOnNode(updateLink.getsNodePid());
+			
+			if(count>1){
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	private boolean checkDepartENode(double lon, double lat) throws Exception{
+		Coordinate[] oldCoords = updateLink.getGeometry().getCoordinates();
+
+		if (lon != oldCoords[oldCoords.length-1].x || lat != oldCoords[oldCoords.length-1].y) {
+			//移动了几何，如果挂接了多条link，需要分离节点
+			
+			RdNodeSelector selector = new RdNodeSelector(conn);
+			
+			int count = selector.loadRdLinkCountOnNode(updateLink.getsNodePid());
+			
+			if(count>1){
+				return true;
+			}
+		}
+		
+		return false;
+	}
+		
 }

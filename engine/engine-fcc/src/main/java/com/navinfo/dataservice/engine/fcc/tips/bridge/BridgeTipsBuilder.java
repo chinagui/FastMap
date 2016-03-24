@@ -18,7 +18,8 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
-import com.navinfo.dataservice.dao.fcc.SolrConnection;
+import com.navinfo.dataservice.dao.fcc.SolrController;
+import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
 import com.navinfo.dataservice.engine.fcc.tips.TipsImportUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -60,7 +61,7 @@ public class BridgeTipsBuilder {
 	public static void importTips(java.sql.Connection fmgdbConn, Table htab,String solrUrl)
 			throws Exception {
 
-		SolrConnection solrConn = new SolrConnection(solrUrl,5000);
+		SolrBulkUpdater solrConn = new SolrBulkUpdater(TipsImportUtils.QueueSize,TipsImportUtils.ThreadCount);
 		
 		Statement stmt = fmgdbConn.createStatement();
 
@@ -376,11 +377,10 @@ public class BridgeTipsBuilder {
 
 		htab.put(puts);
 		
-		solrConn.persistentData();
+		solrConn.commit();
 		
-		solrConn.closeConnection();
+		solrConn.close();
 		
-
 	}
 
 	// 组装solr索引

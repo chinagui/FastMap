@@ -14,17 +14,16 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
-import org.hbase.async.GetRequest;
 import org.hbase.async.KeyValue;
 
 import com.navinfo.dataservice.commons.db.ConfigLoader;
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
-import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.GridUtils;
-import com.navinfo.dataservice.dao.fcc.SolrConnection;
+import com.navinfo.dataservice.dao.fcc.HBaseController;
+import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 
@@ -33,10 +32,9 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
  */
 public class TipsSelector {
 
-	private SolrConnection conn;
+	private SolrController conn = new SolrController();
 
-	public TipsSelector(String solrUrl) {
-		conn = new SolrConnection(solrUrl);
+	public TipsSelector() {
 	}
 
 	/**
@@ -58,7 +56,7 @@ public class TipsSelector {
 			array.add(snapshot);
 		}
 		
-		conn.closeConnection();
+		
 
 		return array;
 	}
@@ -149,7 +147,7 @@ public class TipsSelector {
 		}
 		finally{
 			try{
-				conn.closeConnection();
+				
 			}
 			catch(Exception e){
 				
@@ -169,11 +167,10 @@ public class TipsSelector {
 		JSONObject json = new JSONObject();
 
 		try {
+			
+			HBaseController controller = new HBaseController();
 
-			final GetRequest get = new GetRequest("tips", rowkey);
-
-			ArrayList<KeyValue> list = HBaseAddress.getHBaseClient().get(get)
-					.joinUninterruptibly();
+			ArrayList<KeyValue> list = controller.getTipsByRowkey(rowkey);
 
 			json.put("rowkey", rowkey);
 
@@ -265,7 +262,7 @@ public class TipsSelector {
 
 		jsonData.put("rows", data);
 		
-		conn.closeConnection();
+		
 
 		return jsonData;
 	}
@@ -509,7 +506,7 @@ public class TipsSelector {
 
 		}
 		
-		conn.closeConnection();
+		
 
 		return jsonData;
 	}
@@ -528,8 +525,6 @@ public class TipsSelector {
 
 		boolean flag = conn.checkTipsMobile(wkt, date);
 		
-		conn.closeConnection();
-
 		return flag;
 	}
 
@@ -542,8 +537,7 @@ public class TipsSelector {
 		// System.out.println(checkUpdate("59567201","20151227163723"));
 		ConfigLoader
 				.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
-		TipsSelector selector = new TipsSelector(
-				"http://192.168.4.130:8081/solr/tips/");
+		TipsSelector selector = new TipsSelector();
 		JSONArray a = JSONArray
 				.fromObject("[59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");
 		JSONArray b = new JSONArray();

@@ -161,8 +161,7 @@ public class DisplayController {
 				types = jsonReq.getJSONArray("types");
 			}
 
-			TipsSelector selector = new TipsSelector(
-					SystemConfig.getSystemConfig().getValue(PropConstant.solrAddress));
+			TipsSelector selector = new TipsSelector();
 
 			JSONArray array = selector.searchDataByTileWithGap(x, y, z, gap,
 					types);

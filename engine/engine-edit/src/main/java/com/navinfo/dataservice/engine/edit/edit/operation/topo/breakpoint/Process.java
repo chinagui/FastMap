@@ -56,7 +56,7 @@ public class Process implements IProcess {
 	private JSONArray jaDisplayLink;
 
 	private String postCheckMsg;
-	
+
 	private Check check = new Check();
 
 	public Process(ICommand command) throws Exception {
@@ -69,7 +69,7 @@ public class Process implements IProcess {
 
 		this.jaDisplayLink = new JSONArray();
 	}
-	
+
 	public Process(ICommand command, Connection conn) throws Exception {
 		this.command = (Command) command;
 
@@ -131,58 +131,54 @@ public class Process implements IProcess {
 			List<List<RdRestrictionVia>> restrictVias = new RdRestrictionViaSelector(
 					conn).loadRestrictionViaByLinkPid(command.getLinkPid(),
 					true);
-			
+
 			command.setRestrictListVias(restrictVias);
 
 			// 获取此LINK上车信进入线
-			List<RdLaneConnexity> laneConnexitys = new RdLaneConnexitySelector(conn)
-					.loadRdLaneConnexityByLinkPid(command.getLinkPid(), true);
+			List<RdLaneConnexity> laneConnexitys = new RdLaneConnexitySelector(
+					conn).loadRdLaneConnexityByLinkPid(command.getLinkPid(),
+					true);
 
 			command.setLaneConnexitys(laneConnexitys);
 
 			// 获取此LINK上车信退出线
-			List<RdLaneTopology> topos = new RdLaneTopologySelector(
-					conn).loadToposByLinkPid(command.getLinkPid(), true);
+			List<RdLaneTopology> topos = new RdLaneTopologySelector(conn)
+					.loadToposByLinkPid(command.getLinkPid(), true);
 
 			command.setLaneTopologys(topos);
 
 			// 获取LINK上车信经过线
-			List<List<RdLaneVia>> laneVias = new RdLaneViaSelector(
-					conn).loadRdLaneViaByLinkPid(command.getLinkPid(),
-					true);
-			
+			List<List<RdLaneVia>> laneVias = new RdLaneViaSelector(conn)
+					.loadRdLaneViaByLinkPid(command.getLinkPid(), true);
+
 			command.setLaneVias(laneVias);
-			
-			//获取link上的点限速
-			List<RdSpeedlimit> limits = new RdSpeedlimitSelector
-					(conn).loadSpeedlimitByLinkPid(command.getLinkPid(), true);
-			
+
+			// 获取link上的点限速
+			List<RdSpeedlimit> limits = new RdSpeedlimitSelector(conn)
+					.loadSpeedlimitByLinkPid(command.getLinkPid(), true);
+
 			command.setSpeedlimits(limits);
-			
-			//获取以改LINK作为分歧进入线的分歧
-			
-			List<RdBranch> inBranchs = new RdBranchSelector(conn).loadRdBranchByInLinkPid(command.getLinkPid(), true);
-			
+
+			// 获取以改LINK作为分歧进入线的分歧
+
+			List<RdBranch> inBranchs = new RdBranchSelector(conn)
+					.loadRdBranchByInLinkPid(command.getLinkPid(), true);
+
 			command.setInBranchs(inBranchs);
-			
-			//获取已该LINK作为分歧退出线的分歧
-			
-			List<RdBranch> outBranchs = new RdBranchSelector(conn).loadRdBranchByOutLinkPid(command.getLinkPid(), true);
-			
+
+			// 获取已该LINK作为分歧退出线的分歧
+
+			List<RdBranch> outBranchs = new RdBranchSelector(conn)
+					.loadRdBranchByOutLinkPid(command.getLinkPid(), true);
+
 			command.setOutBranchs(outBranchs);
-			
-			//获取该LINK为分歧经过线的BRANCH_VIA
-			
-			List<List<RdBranchVia>> branchVias = new RdBranchViaSelector(conn).loadRdBranchViaByLinkPid(command.getLinkPid(), true);
-			
+
+			// 获取该LINK为分歧经过线的BRANCH_VIA
+
+			List<List<RdBranchVia>> branchVias = new RdBranchViaSelector(conn)
+					.loadRdBranchViaByLinkPid(command.getLinkPid(), true);
+
 			command.setBranchVias(branchVias);
-			
-			if (command.getBreakNodePid() != 0){
-				
-				RdNode breakNode = (RdNode) nodeSelector.loadById(command.getBreakNodePid(), true);
-				
-				command.setBreakNode(breakNode);
-			}
 
 			return true;
 
@@ -192,42 +188,33 @@ public class Process implements IProcess {
 		}
 
 	}
-	
+
 	public String runNotCommit() throws Exception {
 		String msg;
 		try {
-				conn.setAutoCommit(false);
-				this.prepareData();
-				String preCheckMsg = this.preCheck();
-				if (preCheckMsg != null) {
-					throw new Exception(preCheckMsg);
-				}
-				IOperation operation = null;
-				if (command.getBreakNodePid() == 0) {
-					operation = new OpTopo(command, conn,
-							this.rdLinkBreakpoint, jaDisplayLink);
-				} else {
-					RdNode breakNode = (RdNode) new RdNodeSelector(conn)
-							.loadById(command.getBreakNodePid(), true);
-
-					operation = new OpTopo(command, conn,
-							this.rdLinkBreakpoint, jaDisplayLink, breakNode);
-				}
-				msg = operation.run(result);
-				OpRefRestrict opRefRestrict = new OpRefRestrict(command);
-				opRefRestrict.run(result);
-				OpRefBranch opRefBranch = new OpRefBranch(command);
-				opRefBranch.run(result);
-				OpRefLaneConnexity opRefLaneConnexity = new OpRefLaneConnexity(
-						command);
-				opRefLaneConnexity.run(result);
-				OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(command);
-				opRefSpeedlimit.run(result);
-				this.recordData();
-				this.postCheck();
-//				conn.commit();
-		}
-		catch (Exception e) {
+			conn.setAutoCommit(false);
+			this.prepareData();
+			String preCheckMsg = this.preCheck();
+			if (preCheckMsg != null) {
+				throw new Exception(preCheckMsg);
+			}
+			IOperation operation = null;
+			operation = new OpTopo(command, conn, this.rdLinkBreakpoint,
+					jaDisplayLink);
+			msg = operation.run(result);
+			OpRefRestrict opRefRestrict = new OpRefRestrict(command);
+			opRefRestrict.run(result);
+			OpRefBranch opRefBranch = new OpRefBranch(command);
+			opRefBranch.run(result);
+			OpRefLaneConnexity opRefLaneConnexity = new OpRefLaneConnexity(
+					command);
+			opRefLaneConnexity.run(result);
+			OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(command);
+			opRefSpeedlimit.run(result);
+			this.recordData();
+			this.postCheck();
+			// conn.commit();
+		} catch (Exception e) {
 
 			conn.rollback();
 
@@ -249,16 +236,8 @@ public class Process implements IProcess {
 					throw new Exception(preCheckMsg);
 				}
 				IOperation operation = null;
-				if (command.getBreakNodePid() == 0) {
-					operation = new OpTopo(command, conn,
-							this.rdLinkBreakpoint, jaDisplayLink);
-				} else {
-					RdNode breakNode = (RdNode) new RdNodeSelector(conn)
-							.loadById(command.getBreakNodePid(), true);
-
-					operation = new OpTopo(command, conn,
-							this.rdLinkBreakpoint, jaDisplayLink, breakNode);
-				}
+				operation = new OpTopo(command, conn, this.rdLinkBreakpoint,
+						jaDisplayLink);
 				msg = operation.run(result);
 				OpRefRestrict opRefRestrict = new OpRefRestrict(command);
 				opRefRestrict.run(result);
@@ -272,95 +251,96 @@ public class Process implements IProcess {
 				this.recordData();
 				this.postCheck();
 				conn.commit();
-			}else{
-				Map<String,List<Integer>> infects = new HashMap<String,List<Integer>>();
-				
+			} else {
+				Map<String, List<Integer>> infects = new HashMap<String, List<Integer>>();
+
 				List<List<RdBranchVia>> branchVias = command.getBranchVias();
-				
+
 				List<Integer> infectList = new ArrayList<Integer>();
-				
-				for(List<RdBranchVia> listVias: branchVias){
-					for(RdBranchVia via : listVias){
+
+				for (List<RdBranchVia> listVias : branchVias) {
+					for (RdBranchVia via : listVias) {
 						infectList.add(via.getLinkPid());
 					}
 				}
-				
+
 				infects.put("RDBRANCHVIA", infectList);
-				
+
 				infectList = new ArrayList<Integer>();
-				
-				for(RdBranch branch: command.getInBranchs()){
+
+				for (RdBranch branch : command.getInBranchs()) {
 					infectList.add(branch.getPid());
 				}
-				
-				for(RdBranch branch: command.getOutBranchs()){
+
+				for (RdBranch branch : command.getOutBranchs()) {
 					infectList.add(branch.getPid());
 				}
-				
+
 				infects.put("RDBRANCH", infectList);
-				
+
 				infectList = new ArrayList<Integer>();
-				
-				for(RdLaneConnexity laneConn: command.getLaneConnextys()){
+
+				for (RdLaneConnexity laneConn : command.getLaneConnextys()) {
 					infectList.add(laneConn.getPid());
 				}
-				
+
 				infects.put("RDLANECONNEXITY", infectList);
-				
+
 				infectList = new ArrayList<Integer>();
-				
-				for(RdLaneTopology topo: command.getLaneTopologys()){
+
+				for (RdLaneTopology topo : command.getLaneTopologys()) {
 					infectList.add(topo.getPid());
 				}
-				
+
 				infects.put("RDLANETOPOLOGY", infectList);
-				
+
 				infectList = new ArrayList<Integer>();
-				
-				for(List<RdLaneVia> listVias: command.getLaneVias()){
-					for(RdLaneVia via : listVias){
+
+				for (List<RdLaneVia> listVias : command.getLaneVias()) {
+					for (RdLaneVia via : listVias) {
 						infectList.add(via.getLinkPid());
 					}
 				}
-				
+
 				infects.put("RDLANEVIA", infectList);
-				
+
 				infectList = new ArrayList<Integer>();
-				
-				for(RdSpeedlimit limit : command.getSpeedlimits()){
+
+				for (RdSpeedlimit limit : command.getSpeedlimits()) {
 					infectList.add(limit.getPid());
 				}
-				
+
 				infects.put("RDSPEEDLIMIT", infectList);
-				
+
 				infectList = new ArrayList<Integer>();
-				
-				for(RdRestriction res: command.getRestrictions()){
+
+				for (RdRestriction res : command.getRestrictions()) {
 					infectList.add(res.getPid());
 				}
-				
+
 				infects.put("RDRESTRICTION", infectList);
-				
+
 				infectList = new ArrayList<Integer>();
-				
-				for(RdRestrictionDetail detail: command.getRestrictionDetails()){
+
+				for (RdRestrictionDetail detail : command
+						.getRestrictionDetails()) {
 					infectList.add(detail.getPid());
 				}
-				
+
 				infects.put("RDRESTRICTIONDETAIL", infectList);
-				
+
 				infectList = new ArrayList<Integer>();
-				
-				for(List<RdRestrictionVia> vias: command.geListRestrictVias()){
-					for(RdRestrictionVia via : vias){
+
+				for (List<RdRestrictionVia> vias : command.geListRestrictVias()) {
+					for (RdRestrictionVia via : vias) {
 						infectList.add(via.getLinkPid());
 					}
 				}
-				
+
 				infects.put("RDRESTRICTIONVIA", infectList);
-				
+
 				msg = JSONObject.fromObject(infects).toString();
-				
+
 			}
 
 		} catch (Exception e) {
@@ -393,7 +373,7 @@ public class Process implements IProcess {
 
 	@Override
 	public String preCheck() throws Exception {
-		
+
 		check.checkIsCrossLink(conn, command.getLinkPid());
 
 		Point breakPoint = command.getPoint();

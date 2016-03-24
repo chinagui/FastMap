@@ -1,80 +1,139 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode;
 
+import java.util.List;
+
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 
 public class Command implements ICommand {
-	
+
 	private int linkPid;
-	
+
 	private String requester;
-	
-	private int nodePid;
-	
-	private double longitude;
-	
-	private double latitude;
-	
+
+	private int eNodePid = -1;
+
+	private int sNodePid = -1;
+
+	private double slon;
+
+	private double slat;
+
+	private double elon;
+
+	private double elat;
+
+	private List<RdRestriction> restrictions;
+
+	private List<RdLaneConnexity> lanes;
+
+	private List<RdBranch> branches;
+
 	private int projectId;
-	
+
 	public int getProjectId() {
 		return projectId;
 	}
 
-
-	public Command(JSONObject json,String requester){
+	public Command(JSONObject json, String requester) {
 		this.requester = requester;
-		
+
 		JSONObject data = json.getJSONObject("data");
-		
+
 		this.linkPid = data.getInt("linkPid");
-		
-		this.nodePid = data.getInt("nodePid");
-		
-		this.longitude = Math.round(data.getDouble("longitude")*100000)/100000.0;
-		
-		this.latitude = Math.round(data.getDouble("latitude")*100000)/100000.0;
-		
+
+		if (data.containsKey("sNodePid")) {
+			this.sNodePid = data.getInt("sNodePid");
+
+			this.slon = Math.round(data.getDouble("slon") * 100000) / 100000.0;
+
+			this.slat = Math.round(data.getDouble("slat") * 100000) / 100000.0;
+		}
+
+		if (data.containsKey("eNodePid")) {
+			this.sNodePid = data.getInt("eNodePid");
+
+			this.elon = Math.round(data.getDouble("elon") * 100000) / 100000.0;
+
+			this.elat = Math.round(data.getDouble("elat") * 100000) / 100000.0;
+		}
+
 		this.projectId = json.getInt("projectId");
 	}
-	
 
 	public int getLinkPid() {
 		return linkPid;
 	}
 
-	public int getNodePid() {
-		return nodePid;
+	public int geteNodePid() {
+		return eNodePid;
 	}
 
-	public double getLongitude() {
-		return longitude;
+	public int getsNodePid() {
+		return sNodePid;
 	}
 
-	public double getLatitude() {
-		return latitude;
+	public double getSlon() {
+		return slon;
+	}
+
+	public double getSlat() {
+		return slat;
+	}
+
+	public double getElon() {
+		return elon;
+	}
+
+	public double getElat() {
+		return elat;
+	}
+
+	public List<RdRestriction> getRestrictions() {
+		return restrictions;
+	}
+
+	public void setRestrictions(List<RdRestriction> restrictions) {
+		this.restrictions = restrictions;
+	}
+
+	public List<RdLaneConnexity> getLanes() {
+		return lanes;
+	}
+
+	public void setLanes(List<RdLaneConnexity> lanes) {
+		this.lanes = lanes;
+	}
+
+	public List<RdBranch> getBranches() {
+		return branches;
+	}
+
+	public void setBranches(List<RdBranch> branches) {
+		this.branches = branches;
 	}
 
 	@Override
 	public OperType getOperType() {
-		// TODO Auto-generated method stub
 		return OperType.DEPART;
 	}
 
 	@Override
 	public String getRequester() {
-		// TODO Auto-generated method stub
-		return null;
+		return requester;
 	}
 
 	@Override
 	public ObjType getObjType() {
-		// TODO Auto-generated method stub
 		return ObjType.RDLINK;
 	}
-
 
 }

@@ -15,6 +15,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.engine.edit.comm.util.OperateUtils;
 import com.vividsolutions.jts.geom.Point;
 
 public class OpTopo implements IOperation {
@@ -25,8 +26,6 @@ public class OpTopo implements IOperation {
 
 	private JSONArray jaDisplayLink;
 	
-	private RdNode breakPoint;
-
 	public OpTopo(Command command, Connection conn, RdLink rdLinkBreakpoint,
 			JSONArray jaDisplayLink) {
 		this.command = command;
@@ -37,18 +36,6 @@ public class OpTopo implements IOperation {
 
 	}
 	
-	public OpTopo(Command command, Connection conn, RdLink rdLinkBreakpoint,
-			JSONArray jaDisplayLink,RdNode breakPoint) {
-		this.command = command;
-
-		this.rdLinkBreakpoint = rdLinkBreakpoint;
-
-		this.jaDisplayLink = jaDisplayLink;
-		
-		this.breakPoint = breakPoint;
-
-	}
-
 	@Override
 	public String run(Result result) throws Exception {
 
@@ -61,30 +48,23 @@ public class OpTopo implements IOperation {
 		geoPoint.put("coordinates", new double[] { command.getPoint().getX(),
 				command.getPoint().getY() });
 		
-		if (this.breakPoint == null){
+		if (command.getBreakNodePid() == 0){
 			
-			breakPoint = new RdNode();
+			RdNode node = OperateUtils.createNode(command.getPoint().getX(), command.getPoint().getY());
 			
-			breakPoint.setPid(PidService.getInstance().applyNodePid());
+			result.insertObject(node, ObjStatus.INSERT);
 			
-			breakPoint.copy(command.getsNode());
-
-			breakPoint.setGeometry(GeoTranslator.geojson2Jts(geoPoint, 100000, 0));
-			
-			breakPoint.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(command.getPoint().getX(), command.getPoint().getY())));
-	
-			result.insertObject(breakPoint, ObjStatus.INSERT);
-		
+			command.setBreakNodePid(node.getPid());
 		}
 //		else{
 //			result.insertObject(breakPoint, ObjStatus.UPDATE);
 //		}
 		
-		result.setPrimaryPid(breakPoint.getPid());
+		result.setPrimaryPid(command.getBreakNodePid());
 
-		command.getLink1().seteNodePid(breakPoint.getPid());
+		command.getLink1().seteNodePid(command.getBreakNodePid());
 
-		command.getLink2().setsNodePid(breakPoint.getPid());
+		command.getLink2().setsNodePid(command.getBreakNodePid());
 
 		result.insertObject(command.getLink1(), ObjStatus.INSERT);
 

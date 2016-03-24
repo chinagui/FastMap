@@ -29,13 +29,13 @@ public class RdLinkLimit implements IRow {
 
 	private int linkPid;
 	
-	private int vehicle;
+	private long vehicle;
 	
-	public int getVehicle() {
+	public long getVehicle() {
 		return vehicle;
 	}
 
-	public void setVehicle(int vehicle) {
+	public void setVehicle(long vehicle) {
 		this.vehicle = vehicle;
 	}
 

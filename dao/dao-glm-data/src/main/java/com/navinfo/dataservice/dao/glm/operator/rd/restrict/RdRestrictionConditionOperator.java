@@ -52,7 +52,7 @@ public class RdRestrictionConditionOperator implements IOperator {
 
 			pstmt.setString(2, condition.getTimeDomain());
 
-			pstmt.setInt(3, condition.getVehicle());
+			pstmt.setLong(3, condition.getVehicle());
 
 			pstmt.setInt(4, condition.getResTrailer());
 
@@ -147,6 +147,16 @@ public class RdRestrictionConditionOperator implements IOperator {
 							.parseInt(String.valueOf(columnValue))) {
 						sb.append(column + "="
 								+ Integer.parseInt(String.valueOf(columnValue))
+								+ ",");
+					}
+
+				}
+				else if (value instanceof Long) {
+
+					if (Long.parseLong(String.valueOf(value)) != Long
+							.parseLong(String.valueOf(columnValue))) {
+						sb.append(column + "="
+								+ Long.parseLong(String.valueOf(columnValue))
 								+ ",");
 					}
 

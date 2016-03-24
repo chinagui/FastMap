@@ -25,7 +25,7 @@ public class RdRestrictionCondition implements IRow {
 
 	private String timeDomain;
 
-	private int vehicle;
+	private long vehicle;
 
 	private int resTrailer;
 
@@ -67,11 +67,11 @@ public class RdRestrictionCondition implements IRow {
 		this.detailId = detailId;
 	}
 
-	public int getVehicle() {
+	public long getVehicle() {
 		return vehicle;
 	}
 
-	public void setVehicle(int vehicle) {
+	public void setVehicle(long vehicle) {
 		this.vehicle = vehicle;
 	}
 

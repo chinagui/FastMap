@@ -69,7 +69,7 @@ public class RdLinkLimitSelector implements ISelector {
 
 				limit.setLinkPid(id);
 				
-				limit.setVehicle(resultSet.getInt("vehicle"));
+				limit.setVehicle(resultSet.getLong("vehicle"));
 				
 				limit.setTollType(resultSet.getInt("toll_type"));
 				

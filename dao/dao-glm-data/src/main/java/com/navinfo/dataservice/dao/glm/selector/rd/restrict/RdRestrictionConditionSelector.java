@@ -53,7 +53,7 @@ public class RdRestrictionConditionSelector implements ISelector {
 
 				condition.setTimeDomain(resultSet.getString("time_domain"));
 
-				condition.setVehicle(resultSet.getInt("vehicle"));
+				condition.setVehicle(resultSet.getLong("vehicle"));
 
 				condition.setResTrailer(resultSet.getInt("res_trailer"));
 
@@ -129,7 +129,7 @@ public class RdRestrictionConditionSelector implements ISelector {
 
 				condition.setTimeDomain(resultSet.getString("time_domain"));
 
-				condition.setVehicle(resultSet.getInt("vehicle"));
+				condition.setVehicle(resultSet.getLong("vehicle"));
 
 				condition.setResTrailer(resultSet.getInt("res_trailer"));
 

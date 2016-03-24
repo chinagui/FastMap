@@ -37,12 +37,11 @@ public class RdLinkLimitOperator implements IOperator {
 
 		limit.setRowId(UuidUtils.genUuid());
 
-		StringBuilder sb = new StringBuilder(
-				"insert into rd_link_limit" +
-				"(link_pid,type,time_domain,limit_dir," +
-				"vehicle,toll_type,weather,input_time,process_flag," +
-				"u_record,row_id) " +
-				"values (:1,:2,:3,:4,:5,:6,:7,:8,:9,1,:10)");
+		StringBuilder sb = new StringBuilder("insert into rd_link_limit"
+				+ "(link_pid,type,time_domain,limit_dir,"
+				+ "vehicle,toll_type,weather,input_time,process_flag,"
+				+ "u_record,row_id) "
+				+ "values (:1,:2,:3,:4,:5,:6,:7,:8,:9,1,:10)");
 
 		PreparedStatement pstmt = null;
 
@@ -56,22 +55,22 @@ public class RdLinkLimitOperator implements IOperator {
 			pstmt.setString(3, limit.getTimeDomain());
 
 			pstmt.setInt(4, limit.getLimitDir());
-			
-			pstmt.setInt(5, limit.getVehicle());
-			
+
+			pstmt.setLong(5, limit.getVehicle());
+
 			pstmt.setInt(6, limit.getTollType());
-			
+
 			pstmt.setInt(7, limit.getWeather());
-			
+
 			pstmt.setString(8, limit.getInputTime());
-			
+
 			pstmt.setInt(9, limit.getProcessFlag());
 
 			pstmt.setString(10, limit.getRowId());
 
 			pstmt.execute();
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -80,7 +79,7 @@ public class RdLinkLimitOperator implements IOperator {
 					pstmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
@@ -108,7 +107,7 @@ public class RdLinkLimitOperator implements IOperator {
 				Object columnValue = en.getValue();
 
 				Field field = limit.getClass().getDeclaredField(column);
-				
+
 				field.setAccessible(true);
 
 				column = StringUtils.toColumnName(column);
@@ -119,15 +118,14 @@ public class RdLinkLimitOperator implements IOperator {
 
 					if (!StringUtils.isStringSame(String.valueOf(value),
 							String.valueOf(columnValue))) {
-						
-						if(columnValue==null){
+
+						if (columnValue == null) {
 							sb.append(column + "=null,");
+						} else {
+							sb.append(column + "='"
+									+ String.valueOf(columnValue) + "',");
 						}
-						else{
-							sb.append(column + "='" + String.valueOf(columnValue)
-									+ "',");
-						}
-						
+
 					}
 
 				} else if (value instanceof Double) {
@@ -148,6 +146,14 @@ public class RdLinkLimitOperator implements IOperator {
 								+ Integer.parseInt(String.valueOf(columnValue))
 								+ ",");
 					}
+				} else if (value instanceof Long) {
+
+					if (Long.parseLong(String.valueOf(value)) != Long
+							.parseLong(String.valueOf(columnValue))) {
+						sb.append(column + "="
+								+ Long.parseLong(String.valueOf(columnValue))
+								+ ",");
+					}
 
 				} else if (value instanceof JSONObject) {
 					if (!StringUtils.isStringSame(value.toString(),
@@ -158,7 +164,7 @@ public class RdLinkLimitOperator implements IOperator {
 				}
 			}
 			sb.append(" where row_id=hextoraw('" + limit.getRowId());
-			
+
 			sb.append("')");
 
 			String sql = sb.toString();
@@ -170,7 +176,7 @@ public class RdLinkLimitOperator implements IOperator {
 			pstmt.executeUpdate();
 
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -179,7 +185,7 @@ public class RdLinkLimitOperator implements IOperator {
 					pstmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
@@ -201,7 +207,7 @@ public class RdLinkLimitOperator implements IOperator {
 			pstmt.executeUpdate();
 
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -210,7 +216,7 @@ public class RdLinkLimitOperator implements IOperator {
 					pstmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
@@ -222,9 +228,9 @@ public class RdLinkLimitOperator implements IOperator {
 		limit.setRowId(UuidUtils.genUuid());
 
 		StringBuilder sb = new StringBuilder(
-				"insert into rd_link_limit(link_pid,type,limit_dir,time_domain," +
-				"vehicle,toll_type,weather,input_time,process_flag," +
-				"u_record,row_id) values (");
+				"insert into rd_link_limit(link_pid,type,limit_dir,time_domain,"
+						+ "vehicle,toll_type,weather,input_time,process_flag,"
+						+ "u_record,row_id) values (");
 
 		sb.append(limit.getLinkPid());
 
@@ -243,29 +249,29 @@ public class RdLinkLimitOperator implements IOperator {
 		} else {
 			sb.append("'" + limit.getTimeDomain() + "'");
 		}
-		
+
 		sb.append(",");
-		
+
 		sb.append(limit.getVehicle());
-		
+
 		sb.append(",");
-		
+
 		sb.append(limit.getTollType());
-		
+
 		sb.append(",");
-		
+
 		sb.append(limit.getWeather());
-		
+
 		sb.append(",");
-		
+
 		if (limit.getInputTime() == null) {
 			sb.append("null");
 		} else {
 			sb.append("'" + limit.getInputTime() + "'");
 		}
-		
+
 		sb.append(",");
-		
+
 		sb.append(limit.getProcessFlag());
 
 		sb.append(",1,'" + limit.getRowId() + "')");

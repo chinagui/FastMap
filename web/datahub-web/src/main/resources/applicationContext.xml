@@ -25,5 +25,4 @@
     </bean>
     
     <bean id="applicationContextUtil" class="com.navinfo.dataservice.api.ApplicationContextUtil"/>
-    <bean id="datalockService" class="com.navinfo.dataservice.datalock.DatalockServiceImpl"></bean>
 </beans>

@@ -15,8 +15,7 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-import com.navinfo.dataservice.commons.config.SystemConfig;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.job.AbstractJobResponse;
 import com.navinfo.dataservice.datahub.chooser.strategy.DbServerStrategy;
 import com.navinfo.dataservice.datahub.manager.DbManager;
@@ -29,8 +28,7 @@ import com.navinfo.dataservice.expcore.Exporter2OracleByFullCopy;
 import com.navinfo.dataservice.expcore.Exporter2OracleByScripts;
 import com.navinfo.dataservice.expcore.ExporterResult;
 import com.navinfo.dataservice.expcore.config.ExportConfig;
-import com.navinfo.dataservice.expcore.exception.ExportException;
-import com.navinfo.navicommons.utils.StringUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
  * @ClassName: ScriptsInterface 
@@ -139,7 +137,7 @@ public class ToolScriptsInterface {
 			}
 			JSONObject request=null;
 			JSONObject response = null;
-			String dir = SystemConfig.getSystemConfig().getValue("scripts.dir");
+			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
 			if("create_db".equals(itype)){
 				request = readJson(dir+"request"+File.separator+"create_db.json");
 				response = ToolScriptsInterface.createDb(request);

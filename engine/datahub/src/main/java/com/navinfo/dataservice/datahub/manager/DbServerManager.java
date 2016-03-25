@@ -18,7 +18,7 @@ import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
 import com.navinfo.dataservice.datahub.model.DbServer;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.utils.StringUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
  * @ClassName: DbServerManager 

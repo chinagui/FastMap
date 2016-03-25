@@ -3,7 +3,8 @@ package com.navinfo.dataservice.commons.database.oracle;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+
 import org.apache.commons.dbcp.AbandonedConfig;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.dbcp.ConnectionFactory;
@@ -134,7 +135,7 @@ public class PoolDataSource extends BasicDataSource {
     static
     {
         traceConnection =
-                Boolean.valueOf(SystemConfig.getSystemConfig().getValue("PoolDataSource.trace.enable","false"));
+                Boolean.valueOf(SystemConfigFactory.getSystemConfig().getValue("PoolDataSource.trace.enable","false"));
     }
 
 }

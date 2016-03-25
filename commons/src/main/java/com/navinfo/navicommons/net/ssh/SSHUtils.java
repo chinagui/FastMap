@@ -14,7 +14,7 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UIKeyboardInteractive;
 import com.jcraft.jsch.UserInfo;
-import com.navinfo.navicommons.config.SystemGlobals;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 
 /**
  * @author arnold
@@ -168,7 +168,7 @@ public class SSHUtils
         //System.out.println(sshExecute("192.168.3.228","root","**","unzip /home/test/testzip/GearsStudy.zip -d /home/test/testzip/"));
         //System.out.println(sshExecute("192.168.3.228","root","**"," cp -r /home/test/testzip/* /home/test/cptest/"));
         
-       String out = SSHUtils.sshExecute(SystemGlobals.getValue("dms.ftp.host"), "root","123456", "unzip /data/map-data/2010-09-14/6f941e40a79149509b49412ea3ecd5c9/20100914.zip -d /data/map-data/2010-09-14/6f941e40a79149509b49412ea3ecd5c9/");
+       String out = SSHUtils.sshExecute(SystemConfigFactory.getSystemConfig().getValue("dms.ftp.host"), "root","123456", "unzip /data/map-data/2010-09-14/6f941e40a79149509b49412ea3ecd5c9/20100914.zip -d /data/map-data/2010-09-14/6f941e40a79149509b49412ea3ecd5c9/");
         System.out.println(out);
     }
 

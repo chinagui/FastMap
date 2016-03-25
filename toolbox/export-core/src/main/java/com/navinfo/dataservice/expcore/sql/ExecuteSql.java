@@ -25,6 +25,7 @@ import com.navinfo.dataservice.expcore.sql.handler.ProgramBlockExecThreadHandler
 import com.navinfo.dataservice.expcore.sql.handler.QueryExecThreadHandler;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.oracle.ConnectionRegister;
 import com.navinfo.dataservice.commons.log.JobLogger;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
@@ -68,11 +69,11 @@ public class ExecuteSql {
 	protected void createThreadPool() {
 		int inputPoolSize = 1;
 		if(expConfig.isMultiThread4Input()){
-			inputPoolSize = SystemConfig.getSystemConfig().getIntValue("export.multiThread.inputPoolSize", 10);
+			inputPoolSize = SystemConfigFactory.getSystemConfig().getIntValue("export.multiThread.inputPoolSize", 10);
 		}
 		int outPoolSize = 1;
 		if(expConfig.isMultiThread4Output()){
-			outPoolSize = SystemConfig.getSystemConfig().getIntValue("export.multiThread.outputPoolSize", 10);
+			outPoolSize = SystemConfigFactory.getSystemConfig().getIntValue("export.multiThread.outputPoolSize", 10);
 		}
 		
 		try {

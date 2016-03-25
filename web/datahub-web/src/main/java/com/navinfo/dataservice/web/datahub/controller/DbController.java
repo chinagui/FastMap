@@ -12,12 +12,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.datahub.TestClass;
 import com.navinfo.dataservice.datahub.chooser.strategy.DbServerStrategy;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.UnifiedDb;
-import com.navinfo.navicommons.springmvc.BaseController;
-import com.navinfo.navicommons.utils.StringUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
  * @ClassName: DataHubController 

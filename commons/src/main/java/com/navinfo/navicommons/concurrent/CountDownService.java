@@ -7,7 +7,7 @@ import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.navicommons.config.SystemGlobals;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 
 /**
  * @author arnold
@@ -21,7 +21,7 @@ public class CountDownService
     private List<CountDownCommand> commands;
     private ExecutorService executorService;
     private static final transient Logger log = Logger.getLogger(CountDownService.class);
-    private static final int DEFAULT_THREAD_COUNT = Integer.parseInt(SystemGlobals.getValue("concurrent.thread.count","5"));
+    private static final int DEFAULT_THREAD_COUNT = Integer.parseInt(SystemConfigFactory.getSystemConfig().getValue("concurrent.thread.count","5"));
     private static final int MAX_THREAD_COUNT = 20;
 
     private Throwable throwable = null;

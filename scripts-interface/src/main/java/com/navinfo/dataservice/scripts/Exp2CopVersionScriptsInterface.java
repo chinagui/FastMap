@@ -13,13 +13,11 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
-import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.expcore.external.ExternalTool4Exporter;
-import com.navinfo.dataservice.expcore.external.PhysicalDeleteRow;
-import com.navinfo.dataservice.expcore.external.RemoveDuplicateRow;
 
 /** 
  * @ClassName: InitProjectScriptsInterface 
@@ -39,7 +37,7 @@ public class Exp2CopVersionScriptsInterface {
 			String targetDbId = (String)request.get("targetDbId");
 			Assert.notNull(targetDbId,"targetDbId不能为空");
 			String meshes = (String)request.get("meshes");
-			meshes = com.navinfo.navicommons.utils.StringUtils.removeBlankChar(meshes);
+			meshes = com.navinfo.dataservice.commons.util.StringUtils.removeBlankChar(meshes);
 			Assert.notNull(meshes,"meshes不能为空");
 			String extendCountStr = (String)request.get("extendCount");
 			int extendCount = StringUtils.isEmpty(extendCountStr)?0:Integer.valueOf(extendCountStr);
@@ -109,7 +107,7 @@ public class Exp2CopVersionScriptsInterface {
 		try{
 			JSONObject request=null;
 			JSONObject response = null;
-			String dir = SystemConfig.getSystemConfig().getValue("scripts.dir");
+			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
 			request = ToolScriptsInterface.readJson(dir+"request"+File.separator+"fmgdb_to_cop.json");
 			response = distribute(request);
 			ToolScriptsInterface.writeJson(response,dir+"response"+File.separator+"fmgdb_to_cop.json");

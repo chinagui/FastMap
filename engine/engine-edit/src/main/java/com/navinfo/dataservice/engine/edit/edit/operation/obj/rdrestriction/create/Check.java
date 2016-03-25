@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Set;
 
-import com.navinfo.navicommons.utils.StringUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 
 
 public class Check {

@@ -11,6 +11,7 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.log.JobLogger;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
@@ -40,7 +41,7 @@ public class ExecuteFullCopySql {
     protected void createThreadPool() throws ExportException{
 		int outPoolSize = 1;
 		if(expConfig.isMultiThread4Output()){
-			outPoolSize = SystemConfig.getSystemConfig().getIntValue("export.multiThread.outputPoolSize", 10);
+			outPoolSize = SystemConfigFactory.getSystemConfig().getIntValue("export.multiThread.outputPoolSize", 10);
 		}
         try {
             threadPoolExecutor = new VMThreadPoolExecutor(outPoolSize,

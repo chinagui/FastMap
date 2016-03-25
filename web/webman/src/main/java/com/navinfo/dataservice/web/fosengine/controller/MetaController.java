@@ -21,10 +21,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
+import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.engine.man.version.VersionSelector;
-import com.navinfo.navicommons.springmvc.BaseController;
 
 @Controller
 public class MetaController extends BaseController {

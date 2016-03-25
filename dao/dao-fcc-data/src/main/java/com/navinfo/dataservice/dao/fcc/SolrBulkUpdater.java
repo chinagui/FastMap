@@ -9,7 +9,7 @@ import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONException;
 
-import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 
 public class SolrBulkUpdater {
@@ -18,7 +18,7 @@ public class SolrBulkUpdater {
 
 	public SolrBulkUpdater(int queueSize, int threadCount) {
 
-		String address = SystemConfig.getSystemConfig().getValue(
+		String address = SystemConfigFactory.getSystemConfig().getValue(
 				PropConstant.solrAddress);
 
 		client = new ConcurrentUpdateSolrClient(address, queueSize, threadCount);

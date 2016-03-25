@@ -3,32 +3,22 @@ package com.navinfo.dataservice.datahub.manager;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import com.navinfo.dataservice.api.iface.datalock.DatalockService;
-import com.navinfo.dataservice.api.model.DbServerType;
-import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.chooser.DbServerChooser;
-import com.navinfo.dataservice.datahub.chooser.strategy.DbServerStrategy;
-import com.navinfo.dataservice.datahub.creator.DbPhysicalCreator;
-import com.navinfo.dataservice.datahub.creator.MongoDbPhysicalCreator;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
 import com.navinfo.dataservice.datahub.model.DbServer;
-import com.navinfo.dataservice.datahub.model.MongoDb;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.datahub.model.UnifiedDb;
 import com.navinfo.dataservice.datahub.model.UnifiedDbFactory;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.utils.RandomUtil;
-import com.navinfo.navicommons.utils.StringUtils;
+import com.navinfo.dataservice.commons.util.RandomUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
  * @ClassName: DbManager 
@@ -73,7 +63,7 @@ public class DbManager {
 				}
 				//寻找服务器
 				if(StringUtils.isEmpty(strategyType)){
-					strategyType = SystemConfig.getSystemConfig().getValue("dbserver.strategy.default");
+					strategyType = SystemConfigFactory.getSystemConfig().getValue("dbserver.strategy.default");
 				}
 				server = DbServerChooser.getInstance().getPriorDbServer(bizType,strategyType,strategyParamMap);
 				//写入记录

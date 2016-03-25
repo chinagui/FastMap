@@ -1,8 +1,10 @@
 package com.navinfo.dataservice.datahub;
 
 
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.navinfo.dataservice.api.ApplicationContextUtil;
 import com.navinfo.dataservice.api.RemoteServices;
-import com.navinfo.dataservice.api.iface.datalock.DatalockService;
 
 /** 
 * @ClassName: TestClass 
@@ -12,6 +14,19 @@ import com.navinfo.dataservice.api.iface.datalock.DatalockService;
 */
 public class TestClass {
 	public String test(String name)throws Exception{
-		return RemoteServices.getDatalockService().test(name);
+		return ((RemoteServices)ApplicationContextUtil.getBean("remoteServices")).getDatalockService().test(name);
+	}
+	
+	public static void main(String[] args){
+		//ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath:TestBeans.xml");  
+		  
+        //context.start();
+		String result = null;
+		try{
+			result = new TestClass().test("XXX");
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		System.out.println(result);
 	}
 }	

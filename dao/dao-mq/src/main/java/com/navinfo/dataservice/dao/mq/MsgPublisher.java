@@ -4,8 +4,10 @@ import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
 import org.springframework.amqp.rabbit.connection.Connection;
+import org.springframework.util.StringUtils;
 
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.MessageProperties;
 
 
 
@@ -18,30 +20,102 @@ import com.rabbitmq.client.Channel;
  */
 public class MsgPublisher {
 	protected static  Logger  log = Logger.getLogger(MsgPublisher.class);
-	private static class SingletonHolder{
-		private static final MsgPublisher INSTANCE = new MsgPublisher();
+	/**
+	 * 简单信息不持久化
+	 * @param name
+	 * @param msgContent
+	 * @throws Exception
+	 */
+	public static void publish2SimpleQueue(String name,String msgContent)throws Exception{
+
+		if(StringUtils.isEmpty(name)||StringUtils.isEmpty(msgContent)){
+			throw new Exception("queueName和msgContent不能为空");
+		}
+		Connection conn = null;
+		Channel channel = null;
+		try{
+			conn = MQConnector.getInstance().getConnectionFactory().createConnection();
+			channel = conn.createChannel(false);
+			channel.queueDeclare(name, false, false, false, null);
+			channel.basicPublish("", name, null, msgContent.getBytes());
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw e;
+		}finally{
+			if(channel!=null)channel.close();
+			if(conn!=null)conn.close();
+		}
 	}
-	public static final MsgPublisher getInstance(){
-		return SingletonHolder.INSTANCE;
+	/**
+	 * 任务队列会持久化
+	 * @param name
+	 * @param msgContent
+	 * @throws Exception
+	 */
+	public static void publish2WorkQueue(String name,String msgContent)throws Exception{
+		if(StringUtils.isEmpty(name)||StringUtils.isEmpty(msgContent)){
+			throw new Exception("name和msgContent不能为空");
+		}
+		Connection conn = null;
+		Channel channel = null;
+		try{
+			conn = MQConnector.getInstance().getConnectionFactory().createConnection();
+			channel = conn.createChannel(false);
+			channel.queueDeclare(name, true, false, false, null);
+			channel.basicPublish("", name, MessageProperties.PERSISTENT_TEXT_PLAIN, msgContent.getBytes());
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw e;
+		}finally{
+			if(channel!=null)channel.close();
+			if(conn!=null)conn.close();
+		}
 	}
-	public void helloWord(String content)throws Exception{
-		//Connection connection = factory.newConnection();
+	public static void publish2BCQueue(String name,String msgContent)throws Exception{
+		if(StringUtils.isEmpty(name)||StringUtils.isEmpty(msgContent)){
+			throw new Exception("name和msgContent不能为空");
+		}
+		Connection conn = null;
+		Channel channel = null;
+		try{
+			conn = MQConnector.getInstance().getConnectionFactory().createConnection();
+			channel = conn.createChannel(false);
+			channel.exchangeDeclare(name, "fanout");
+			channel.basicPublish(name, "",null, msgContent.getBytes());
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw e;
+		}finally{
+			if(channel!=null)channel.close();
+			if(conn!=null)conn.close();
+		}
+	}
+	public static void publish2RoutingQueue(String name,String msgIdentity,String msgContent)throws Exception{
+		if(StringUtils.isEmpty(name)||StringUtils.isEmpty(msgIdentity)||StringUtils.isEmpty(msgContent)){
+			throw new Exception("name、msgIdentity和msgContent不能为空");
+		}
+		Connection conn = null;
+		Channel channel = null;
+		try{
+			conn = MQConnector.getInstance().getConnectionFactory().createConnection();
+			channel = conn.createChannel(false);
+			channel.exchangeDeclare(name, "direct");
+			channel.basicPublish(name, msgIdentity,null, msgContent.getBytes());
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw e;
+		}finally{
+			if(channel!=null)channel.close();
+			if(conn!=null)conn.close();
+		}
+	}
+	public static void helloWord(String content)throws Exception{
 		Connection connection = MQConnector.getInstance().getConnectionFactory().createConnection();
-		//Channel channel = connection.createChannel(true);
 		Channel channel = connection.createChannel(false);
 		channel.queueDeclare("hello_world", false, false, false, null);
 		channel.basicPublish("", "hello_world", null, content.getBytes());
 		channel.close();
 		connection.close();
-	}
-	public void createJob(String type,JSONObject jobRequest)throws Exception{
-
-	}
-	public void runJob(long jobId,String jobType,JSONObject jobRequest)throws Exception{
-		
-	}
-	public void responseJob(long jobId,JSONObject jobResponse)throws Exception{
-		
 	}
 	public static void main(String[] args){
 		try{
@@ -54,7 +128,7 @@ public class MsgPublisher {
 						    while(true){
 								log.debug("sending msg...");
 								while(count<100000){
-									MsgPublisher.getInstance().helloWord(count+": Hello, Data Services.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa");
+									MsgPublisher.helloWord(count+": Hello, Data Services.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa");
 									count++;
 								}
 								log.debug("sent msg...");

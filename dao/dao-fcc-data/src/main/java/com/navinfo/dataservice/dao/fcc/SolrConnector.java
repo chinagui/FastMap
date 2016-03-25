@@ -3,7 +3,7 @@ package com.navinfo.dataservice.dao.fcc;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 
-import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 
 public class SolrConnector {
@@ -22,7 +22,7 @@ public class SolrConnector {
 		if (client == null) {
 			synchronized (this) {
 				if (client == null) {
-					String address = SystemConfig.getSystemConfig()
+					String address = SystemConfigFactory.getSystemConfig()
 							.getValue(PropConstant.solrAddress);
 
 					client = new HttpSolrClient(address);

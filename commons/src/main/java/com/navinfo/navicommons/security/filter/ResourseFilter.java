@@ -16,8 +16,8 @@ import javax.servlet.http.HttpSession;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.navinfo.dataservice.commons.springmvc.WebApplicationContextHolder;
 import com.navinfo.navicommons.security.manager.ResourseManager;
-import com.navinfo.navicommons.springmvc.WebApplicationContextHolder;
 
 /***
  * 

@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.expcore.config;
 
-import com.navinfo.navicommons.utils.StringUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.expcore.exception.ExportConfigValidateException;
 import com.navinfo.dataservice.expcore.exception.ExportException;
 

@@ -17,7 +17,7 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
-import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
@@ -40,7 +40,7 @@ public class DistributeCkScriptsInterface {
 			String sourceDbId = (String)request.get("sourceDbId");
 			Assert.notNull(sourceDbId,"projectId不能为空");
 			String projectIds = (String)request.get("projectIds");
-			projectIds = com.navinfo.navicommons.utils.StringUtils.removeBlankChar(projectIds);
+			projectIds = com.navinfo.dataservice.commons.util.StringUtils.removeBlankChar(projectIds);
 			Assert.notNull(projectIds,"projectIds不能为空");
 			String[] projectIdArr = projectIds.split(",");
 			String gdbVersion = "240+";
@@ -100,7 +100,7 @@ public class DistributeCkScriptsInterface {
 		try{
 			JSONObject request=null;
 			JSONObject response = null;
-			String dir = SystemConfig.getSystemConfig().getValue("scripts.dir");
+			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
 			request = ToolScriptsInterface.readJson(dir+"request"+File.separator+"distribute_ck.json");
 			response = distribute(request);
 			ToolScriptsInterface.writeJson(response,dir+"response"+File.separator+"distribute_ck.json");

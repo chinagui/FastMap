@@ -15,14 +15,10 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.datahub.exception.DataHubException;
 import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.DbServer;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
-import com.navinfo.dataservice.datahub.model.UnifiedDb;
-import com.navinfo.dataservice.datahub.model.UnifiedDbFactory;
 import com.navinfo.navicommons.database.QueryRunner;
 
 
@@ -66,7 +62,7 @@ public class GlmCache {
 			//load tables
 			manConn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
 			//1. 先确定加载哪些表
-			String ignore = SystemConfig.getSystemConfig().getValue("glm.ignore.table.prefix");
+			String ignore = SystemConfigFactory.getSystemConfig().getValue("glm.ignore.table.prefix");
 			StringBuilder loadSql = new StringBuilder();
 			loadSql.append("SELECT TABLE_NAME,EDITABLE FROM GLM_TABLE WHERE GDB_VERSION=?");
 			if(StringUtils.isNotEmpty(ignore)){

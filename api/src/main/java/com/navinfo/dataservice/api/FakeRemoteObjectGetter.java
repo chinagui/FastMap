@@ -1,11 +1,14 @@
 package com.navinfo.dataservice.api;
 
+import org.springframework.stereotype.Service;
+
 /** 
 * @ClassName: FakeRemoteObjectGetter 
 * @author Xiao Xiaowen 
 * @date 2016年3月23日 上午11:22:53 
 * @Description: TODO
 */
+@Service("remoteObjectGetter")
 public class FakeRemoteObjectGetter implements  RemoteObjectGetter {
 
 	@Override

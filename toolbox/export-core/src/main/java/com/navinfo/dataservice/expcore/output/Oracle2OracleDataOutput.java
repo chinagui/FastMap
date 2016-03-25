@@ -15,7 +15,7 @@ import org.apache.commons.lang.StringUtils;
 import com.navinfo.navicommons.database.ColumnMetaData;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.sql.DbLinkCreator;
-import com.navinfo.navicommons.utils.RandomUtil;
+import com.navinfo.dataservice.commons.util.RandomUtil;
 import com.navinfo.dataservice.expcore.ExporterResult;
 import com.navinfo.dataservice.expcore.config.ExportConfig;
 import com.navinfo.dataservice.expcore.exception.ExportException;
@@ -25,6 +25,7 @@ import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.expcore.output.AbstractDataOutput;
 import com.navinfo.dataservice.expcore.target.OracleTarget;
 import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.oracle.ConnectionRegister;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 
@@ -63,7 +64,7 @@ public class Oracle2OracleDataOutput extends AbstractDataOutput {
 
 	protected int calculateBatchSize(List<ColumnMetaData> tmdList) {
 		int columnCount = tmdList.size();
-		int batchSize = SystemConfig.getSystemConfig().getIntValue("insertBatchSize", 1000);
+		int batchSize = SystemConfigFactory.getSystemConfig().getIntValue("insertBatchSize", 1000);
 		if (columnCount > 20) {
 			batchSize = 100;
 		}

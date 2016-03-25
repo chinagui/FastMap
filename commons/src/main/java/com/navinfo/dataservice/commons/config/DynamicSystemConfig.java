@@ -1,11 +1,19 @@
 package com.navinfo.dataservice.commons.config;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
+
+import com.navinfo.dataservice.commons.exception.ConfigParseException;
 
 
 /**
@@ -14,7 +22,7 @@ import org.apache.log4j.Logger;
  * @author xiaoxiaowen4127
  *
  */
-public class DynamicSystemConfig extends Observable  {
+public class DynamicSystemConfig extends Observable implements SystemConfig {
 	private static Logger log = Logger.getLogger(DynamicSystemConfig.class);
 	private static class SingletonHolder{
 		private static final DynamicSystemConfig INSTANCE = new DynamicSystemConfig();
@@ -22,21 +30,55 @@ public class DynamicSystemConfig extends Observable  {
 	public static final DynamicSystemConfig getInstance(){
 		return SingletonHolder.INSTANCE;
 	}
+
+	private static final String defaultConfigFile = "/com/navinfo/dataservice/commons/config/SystemConfig.xml";
 	private Map<String,String> dynamicConfigMap = new ConcurrentHashMap<String,String>();
 	private DynamicSystemConfig(){
-		loadParaConfig(null);
+		loadRawConfig(defaultConfigFile);
+		loadRawConfig("/SystemConfig.xml");
+		loadDynamicConfig(null);
 	}
-	public void loadConfig(){
-		loadParaConfig(null);
+	private void loadRawConfig(String configFile){
+		//加载管理库的信息
+		InputStream is = null;
+        log.debug("parse file " + configFile);
+        try {
+            is = Thread.currentThread().getContextClassLoader().getResourceAsStream(configFile);
+            if (is == null) {
+                is = DynamicSystemConfig.class.getResourceAsStream(configFile);
+            }
+
+            SAXReader reader = new SAXReader();
+            Document document = reader.read(is);
+            Element root = document.getRootElement();
+            List<Element> elements = root.elements();
+            for (int i = 0; i < elements.size(); i++) {
+                Element element = elements.get(i);
+                String key = element.getName();
+                String value = element.getTextTrim();
+                dynamicConfigMap.put(key, value);
+            }
+        } catch (Exception e) {
+        	log.error(e.getMessage());
+            throw new ConfigParseException("读取文件" + configFile + "错误", e);
+        } finally {
+            try {
+                if (is != null)
+                    is.close();
+            } catch (IOException e) {
+            	log.error(e.getMessage(),e);
+            }
+        }
 	}
-	public void loadParaConfig(Set<String> keySet){
+	public void loadDynamicConfig(Set<String> keySet){
+		//
 	}
 	public void reloadParaConfig(Set<String> keySet ){
 		log.info("加载系统参数");
 		for (String key : keySet) {
 			log.info("key====="+key);
 		}
-		loadParaConfig(keySet);
+		loadDynamicConfig(keySet);
 		setChanged();
 		notifyObservers(keySet);
 	}
@@ -46,14 +88,9 @@ public class DynamicSystemConfig extends Observable  {
 	public void putAll(Map<String,String> map){
 		dynamicConfigMap.putAll(map);
 	}
-	public String remove(String key){
-		return dynamicConfigMap.remove(key);
-	}
+	
 	public String getValue(String key){
 		return dynamicConfigMap.get(key);
-	}
-	public Map<String,String> getAll(){
-		return dynamicConfigMap;
 	}
 	public String getValue(String key, String defaultValue) {
         String value = getValue(key);

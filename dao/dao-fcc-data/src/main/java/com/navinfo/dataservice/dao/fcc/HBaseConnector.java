@@ -2,7 +2,7 @@ package com.navinfo.dataservice.dao.fcc;
 
 import org.hbase.async.HBaseClient;
 
-import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 
 public class HBaseConnector {
@@ -21,7 +21,7 @@ public class HBaseConnector {
 		if (client == null) {
 			synchronized (this) {
 				if (client == null) {
-					String hbaseAddress = SystemConfig.getSystemConfig()
+					String hbaseAddress = SystemConfigFactory.getSystemConfig()
 							.getValue(PropConstant.hbaseAddress);
 
 					client = new HBaseClient(hbaseAddress);

@@ -9,7 +9,7 @@ import com.navinfo.dataservice.datahub.creator.DbPhysicalCreator;
 import com.navinfo.dataservice.datahub.creator.MongoDbPhysicalCreator;
 import com.navinfo.dataservice.datahub.creator.OracleSchemaPhysicalCreator;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
-import com.navinfo.navicommons.utils.StringUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
  * @ClassName: UnifiedDbFactory 

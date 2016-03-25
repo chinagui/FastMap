@@ -10,10 +10,9 @@ import org.apache.commons.lang.BooleanUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.exception.DataSourceException;
 import com.navinfo.dataservice.commons.log.JobLogger;
-import com.navinfo.navicommons.config.Config;
-import com.navinfo.navicommons.config.MavenConfigMap;
 
 /**
  * 
@@ -26,7 +25,7 @@ public class PoolDataSourceFactory {
 
 	private static Logger log = Logger.getLogger(PoolDataSourceFactory.class);
 	private Map<String, PoolDataSource> dataSourceMap = new HashMap<String, PoolDataSource>();
-	private MavenConfigMap systemConfig = SystemConfig.getSystemConfig();
+	private SystemConfig systemConfig = SystemConfigFactory.getSystemConfig();
 	private static PoolDataSourceFactory factory;
 
 	public static synchronized PoolDataSourceFactory getInstance() {
@@ -87,7 +86,7 @@ public class PoolDataSourceFactory {
 	 * @throws SQLException
 	 */
 
-	public PoolDataSource getPoolDataSource(String dataSourceKey, Config config) {
+	public PoolDataSource getPoolDataSource(String dataSourceKey, SystemConfig config) {
 		return getPoolDataSource(dataSourceKey, config, true);
 	}
 
@@ -100,7 +99,7 @@ public class PoolDataSourceFactory {
 	 * @throws SQLException
 	 */
 
-	public PoolDataSource getPoolDataSource(String dataSourceKey, Config config, boolean cache) {
+	public PoolDataSource getPoolDataSource(String dataSourceKey, SystemConfig config, boolean cache) {
 		log = JobLogger.getLogger(log);
 		PoolDataSource dataSource = dataSourceMap.get(dataSourceKey);
 		if (dataSource == null || dataSource.isClosed()) {

@@ -16,7 +16,7 @@ import com.navinfo.dataservice.expcore.sql.ExecuteFullCopySql;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.expcore.sql.assemble.AssembleFullCopySql;
 import com.navinfo.navicommons.database.sql.DbLinkCreator;
-import com.navinfo.navicommons.utils.RandomUtil;
+import com.navinfo.dataservice.commons.util.RandomUtil;
 
 /** 
  * @ClassName: FullCopy2OracleByDbLink 

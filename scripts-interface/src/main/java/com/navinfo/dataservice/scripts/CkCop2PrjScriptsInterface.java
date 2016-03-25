@@ -3,27 +3,19 @@ package com.navinfo.dataservice.scripts;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import net.sf.json.JSONObject;
 
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
-import com.navinfo.dataservice.commons.config.SystemConfig;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.expcore.external.ExternalTool4Exporter;
 import com.navinfo.dataservice.expcore.external.RemoveDuplicateRow;
-import com.navinfo.navicommons.database.QueryRunner;
 
 /** 
  * @ClassName: InitProjectScriptsInterface 
@@ -89,7 +81,7 @@ public class CkCop2PrjScriptsInterface {
 		try{
 			JSONObject request=null;
 			JSONObject response = null;
-			String dir = SystemConfig.getSystemConfig().getValue("scripts.dir");
+			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
 			request = ToolScriptsInterface.readJson(dir+"request"+File.separator+"cop_xcopy_exception.json");
 			response = distribute(request);
 			ToolScriptsInterface.writeJson(response,dir+"response"+File.separator+"cop_xcopy_exception.json");

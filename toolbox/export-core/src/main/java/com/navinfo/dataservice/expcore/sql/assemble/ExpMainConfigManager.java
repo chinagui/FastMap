@@ -13,7 +13,7 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
-import com.navinfo.navicommons.utils.StringUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.expcore.exception.ExportConfigException;
 import com.navinfo.dataservice.commons.log.JobLogger;
 

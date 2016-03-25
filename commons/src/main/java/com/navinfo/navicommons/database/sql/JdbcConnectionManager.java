@@ -9,7 +9,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import com.navinfo.navicommons.config.SystemGlobals;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 
 
 /**
@@ -26,7 +26,7 @@ public class JdbcConnectionManager implements ConnectionManager
     private static String jndi;
     static
     {
-        jndi = SystemGlobals.getValue("datasource.jndi");
+        jndi = SystemConfigFactory.getSystemConfig().getValue("datasource.jndi");
        
     }
 

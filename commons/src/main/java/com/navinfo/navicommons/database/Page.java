@@ -1,6 +1,6 @@
 package com.navinfo.navicommons.database;
 
-import com.navinfo.navicommons.config.SystemGlobals;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 
 
 /**
@@ -14,7 +14,7 @@ public class Page implements java.io.Serializable {
 	 */
 	private static final long serialVersionUID = -3167350028645121914L;
 	private int start =0;
-	private int pageSize = SystemGlobals.getIntValue("UI.pageSize",20);
+	private int pageSize = SystemConfigFactory.getSystemConfig().getIntValue("UI.pageSize",20);
 	private int totalCount = -1;
 	private Object result = null;
 	private int pageNum;

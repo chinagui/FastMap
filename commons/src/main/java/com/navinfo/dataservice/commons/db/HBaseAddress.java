@@ -8,7 +8,7 @@ import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.log4j.Logger;
 import org.hbase.async.HBaseClient;
 
-import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 
 /**
@@ -29,9 +29,9 @@ public class HBaseAddress {
 	 */
 	public static void init() throws IOException {
 
-		HBaseAddress.initHBaseClient(SystemConfig.getSystemConfig().getValue(PropConstant.hbaseAddress));
+		HBaseAddress.initHBaseClient(SystemConfigFactory.getSystemConfig().getValue(PropConstant.hbaseAddress));
 		
-		HBaseAddress.initHBaseAddress(SystemConfig.getSystemConfig().getValue(PropConstant.hbaseAddress));
+		HBaseAddress.initHBaseAddress(SystemConfigFactory.getSystemConfig().getValue(PropConstant.hbaseAddress));
 
 	}
 

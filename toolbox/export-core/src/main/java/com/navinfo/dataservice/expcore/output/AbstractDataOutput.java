@@ -14,6 +14,7 @@ import com.navinfo.navicommons.database.ColumnMetaData;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.dataservice.expcore.ExporterResult;
 import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 
 /**
@@ -81,7 +82,7 @@ public abstract class AbstractDataOutput implements DataOutput {
 
 	protected int calculateBatchSize(List<ColumnMetaData> tmdList) {
 		int columnCount = tmdList.size();
-		int batchSize = SystemConfig.getSystemConfig().getIntValue("insertBatchSize", 1000);
+		int batchSize = SystemConfigFactory.getSystemConfig().getIntValue("insertBatchSize", 1000);
 		if (columnCount > 20) {
 			batchSize = 100;
 		}

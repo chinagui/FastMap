@@ -9,10 +9,11 @@ import org.codehaus.jackson.map.SerializationConfig;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import com.navinfo.dataservice.api.model.DbServerType;
+import com.navinfo.dataservice.commons.config.KeyValueConfig;
+import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
 import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.navicommons.config.MavenConfigMap;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 /** 
@@ -70,7 +71,7 @@ public class OracleSchema extends UnifiedDb {
 			return bds;
 		}
 		String dsKey = dbServer.getIp()+":" + dbServer.getPort() + ":" + dbUserName;
-		MavenConfigMap dsConfig = new MavenConfigMap();
+		SystemConfig dsConfig = new KeyValueConfig();
 		String url = MultiDataSourceFactory.createOracleJdbcUrl(dbServer.getIp(), dbServer.getPort(), dbServer.getServiceName());
 		dsConfig.put(dsKey + ".server.type",dbServer.getType());
 		dsConfig.put(dsKey + ".jdbc.driverClassName", MultiDataSourceFactory.getDriverClassName(DbServerType.TYPE_ORACLE));

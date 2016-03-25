@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.commons.log;
 
-import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.exception.LogInitException;
 import com.navinfo.dataservice.commons.job.DSJob;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -95,7 +95,7 @@ public class JobLogger {
     }
 
     public static void writeOperateLog(Connection conn,QueryRunner runner,String taskType,String taskStatus,String userName) throws Exception{
-    	String configValue=SystemConfig.getSystemConfig().getValue("taskStatus.troggle.log.enable");
+    	String configValue=SystemConfigFactory.getSystemConfig().getValue("taskStatus.troggle.log.enable");
     	//默认是写日志的，如果配置了false则不写
     	if("false".equals(configValue)){
     		return;

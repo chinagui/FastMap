@@ -14,23 +14,11 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import net.sf.json.JSONObject;
-
-import oracle.sql.CLOB;
-import oracle.sql.STRUCT;
-
-import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.datahub.glm.GlmCache;
 import com.navinfo.dataservice.datahub.glm.GlmTable;
-import com.navinfo.navicommons.database.ColumnMetaData;
-import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.database.sql.DBUtils;
-import com.navinfo.navicommons.geo.SpatialAdapters;
-import com.navinfo.navicommons.utils.StringUtils;
 
 /** 
  * @ClassName: FillLeftDeleteLogDetail 

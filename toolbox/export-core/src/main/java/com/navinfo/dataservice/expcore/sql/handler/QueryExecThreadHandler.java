@@ -14,6 +14,7 @@ import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.expcore.output.DataOutput;
 import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.oracle.ConnectionRegister;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 
@@ -53,7 +54,7 @@ public class QueryExecThreadHandler extends ThreadHandler {
 				long t1 = System.currentTimeMillis();
 				execSql = expSQL.getSql();
 
-				int fetchSize = SystemConfig.getSystemConfig().getIntValue("selectFetchSize", 500);
+				int fetchSize = SystemConfigFactory.getSystemConfig().getIntValue("selectFetchSize", 500);
 				final String tableName = expSQL.getRetureTableName();
 //				logger.debug(" start execute:"+execSql);
 				// System.out.println(execSql + " " + tableName);

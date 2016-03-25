@@ -28,7 +28,7 @@ import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.datalock.lock.FmMesh4Lock;
 import com.navinfo.dataservice.datalock.lock.MeshLockManager;
-import com.navinfo.navicommons.utils.StringUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 
 public class FlushGdb {
 

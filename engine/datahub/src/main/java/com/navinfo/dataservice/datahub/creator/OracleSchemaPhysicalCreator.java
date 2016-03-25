@@ -8,14 +8,14 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
-import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.oracle.PoolDataSourceFactory;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
 import com.navinfo.dataservice.datahub.model.UnifiedDb;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.PackageExec;
 import com.navinfo.navicommons.database.sql.SqlExec;
-import com.navinfo.navicommons.utils.StringUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
  * @ClassName: OracleSchemaCreator 
@@ -37,7 +37,7 @@ public class OracleSchemaPhysicalCreator implements DbPhysicalCreator{
 		//表空间
 		String tablespaceName = suDb.getTablespaceName();
 		if(StringUtils.isEmpty(tablespaceName)){
-			tablespaceName=SystemConfig.getSystemConfig().getValue("datahub.oracle.defaultTablespaces", "GDB_DATA");
+			tablespaceName=SystemConfigFactory.getSystemConfig().getValue("datahub.oracle.defaultTablespaces", "GDB_DATA");
 		}
 		db.setTablespaceName(tablespaceName);
 		//用户名和密码同数据库名

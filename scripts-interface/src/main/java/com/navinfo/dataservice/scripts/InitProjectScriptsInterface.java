@@ -13,7 +13,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
-import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.dataservice.datahub.manager.DbManager;
@@ -48,7 +48,7 @@ public class InitProjectScriptsInterface {
 			String gdbVersion = "240+";
 			String projectName = (String) request.get("projectName");
 			String meshes = (String) request.get("meshes");
-			meshes = com.navinfo.navicommons.utils.StringUtils
+			meshes = com.navinfo.dataservice.commons.util.StringUtils
 					.removeBlankChar(meshes);
 			Assert.notNull(meshes, "meshes不能为空");
 
@@ -166,7 +166,7 @@ public class InitProjectScriptsInterface {
 		try {
 			JSONObject request = null;
 			JSONObject response = null;
-			String dir = SystemConfig.getSystemConfig().getValue("scripts.dir");
+			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
 			request = ToolScriptsInterface.readJson(dir + "request"
 					+ File.separator + "init_project.json");
 			response = initProject(request);

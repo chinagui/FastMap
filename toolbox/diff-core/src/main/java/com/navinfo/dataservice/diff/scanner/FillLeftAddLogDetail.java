@@ -6,14 +6,12 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-import javax.sql.DataSource;
 
 import net.sf.json.JSONObject;
 
@@ -25,15 +23,10 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.datahub.model.OracleSchema;
-import com.navinfo.dataservice.datahub.glm.GlmCache;
 import com.navinfo.dataservice.datahub.glm.GlmColumn;
 import com.navinfo.dataservice.datahub.glm.GlmTable;
-import com.navinfo.navicommons.database.ColumnMetaData;
 import com.navinfo.navicommons.database.DataBaseUtils;
-import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.SpatialAdapters;
-import com.navinfo.navicommons.utils.StringUtils;
 
 /** 
  * @ClassName: FillLeftAddLogDetail 

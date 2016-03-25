@@ -1,15 +1,8 @@
 package com.navinfo.dataservice.commons.job;
 
-import java.util.Iterator;
-import java.util.List;
-
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
-import org.dom4j.Document;
-import org.dom4j.Element;
-
-import com.navinfo.navicommons.utils.StringUtils;
 
 /** 
  * @ClassName: AbstractJobRequest 

@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.datahub.DbServerMonitor;
 import com.navinfo.dataservice.datahub.chooser.strategy.DbServerStrategyFactory;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
@@ -63,7 +64,7 @@ public class DbServerChooser implements Observer{
 		}
 	}
 	public DbServer getOnlyOneDbServer(String bizType)throws DataHubException{
-		if("true".equals(SystemConfig.getSystemConfig().getValue("dbserver.cache.enable"))){
+		if("true".equals(SystemConfigFactory.getSystemConfig().getValue("dbserver.cache.enable"))){
 			List<DbServer> serList = dbServerMap.get(bizType);
 			if(serList==null||serList.isEmpty()){
 				throw new DataHubException("db server表中未配置该use type："+bizType+",无法获取该类型的db server");
@@ -79,7 +80,7 @@ public class DbServerChooser implements Observer{
 		}
 	}
 	public DbServer getPriorDbServer(String bizType,String strategyType,Map<String,String> strategyParamMap)throws DataHubException{
-		if("true".equals(SystemConfig.getSystemConfig().getValue("dbserver.cache.enable"))){
+		if("true".equals(SystemConfigFactory.getSystemConfig().getValue("dbserver.cache.enable"))){
 			List<DbServer> serList = dbServerMap.get(bizType);
 			if(serList==null||serList.isEmpty()){
 				throw new DataHubException("db server表中未配置该use type："+bizType+",无法获取该类型的db server");

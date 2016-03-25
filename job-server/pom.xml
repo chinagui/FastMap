@@ -10,6 +10,7 @@
     <artifactId>job-server</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <modules>
+		<module>job-framework</module>
     </modules>
     <packaging>pom</packaging>
     <name>job-server</name>

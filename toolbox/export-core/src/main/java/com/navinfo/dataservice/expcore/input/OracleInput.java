@@ -19,7 +19,7 @@ import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.expcore.sql.assemble.AssembleSql;
 import com.navinfo.dataservice.expcore.sql.assemble.AssembleXmlConfigSql;
 import com.navinfo.dataservice.commons.log.JobLogger;
-import com.navinfo.navicommons.utils.StringUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
  * @ClassName: OracleInput 

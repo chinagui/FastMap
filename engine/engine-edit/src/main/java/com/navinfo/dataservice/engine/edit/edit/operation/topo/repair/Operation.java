@@ -5,9 +5,9 @@ import java.sql.Connection;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -15,6 +15,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.engine.edit.comm.util.OperateUtils;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 
 public class Operation implements IOperation {
 
@@ -66,9 +67,13 @@ public class Operation implements IOperation {
 		double elon = ecoord.getDouble(0);
 		double elat = ecoord.getDouble(1);
 		
-		boolean sNodeDepart = checkDepartSNode(slon, slat);
+		Geometry geo = GeoTranslator.transform(updateLink.getGeometry(), 0.00001, 5);
 		
-		boolean eNodeDepart = checkDepartENode(elon, elat);
+		Coordinate[] oldCoords = geo.getCoordinates();
+		
+		boolean sNodeDepart = checkDepartSNode(oldCoords[0], slon, slat);
+		
+		boolean eNodeDepart = checkDepartENode(oldCoords[oldCoords.length-1], elon, elat);
 		
 		com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Process departProcess = null;
 		
@@ -100,7 +105,7 @@ public class Operation implements IOperation {
 			
 			json.put("data", data);
 			
-			ICommand departCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Command(
+			ICommand departCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Command(
 					json, json.toString());
 			
 			departProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Process(
@@ -310,10 +315,9 @@ public class Operation implements IOperation {
 		}
 	}
 
-	private boolean checkDepartSNode(double lon, double lat) throws Exception{
-		Coordinate[] oldCoords = updateLink.getGeometry().getCoordinates();
-
-		if (lon != oldCoords[0].x || lat != oldCoords[0].y) {
+	private boolean checkDepartSNode(Coordinate oldPoint, double lon, double lat) throws Exception{
+		
+		if (lon != oldPoint.x || lat != oldPoint.y) {
 			//移动了几何，如果挂接了多条link，需要分离节点
 			
 			RdNodeSelector selector = new RdNodeSelector(conn);
@@ -328,15 +332,14 @@ public class Operation implements IOperation {
 		return false;
 	}
 	
-	private boolean checkDepartENode(double lon, double lat) throws Exception{
-		Coordinate[] oldCoords = updateLink.getGeometry().getCoordinates();
+	private boolean checkDepartENode(Coordinate oldPoint, double lon, double lat) throws Exception{
 
-		if (lon != oldCoords[oldCoords.length-1].x || lat != oldCoords[oldCoords.length-1].y) {
+		if (lon != oldPoint.x || lat != oldPoint.y) {
 			//移动了几何，如果挂接了多条link，需要分离节点
 			
 			RdNodeSelector selector = new RdNodeSelector(conn);
 			
-			int count = selector.loadRdLinkCountOnNode(updateLink.getsNodePid());
+			int count = selector.loadRdLinkCountOnNode(updateLink.geteNodePid());
 			
 			if(count>1){
 				return true;

@@ -29,8 +29,6 @@ create index idx_rd_link_geometry
 on rd_link(geometry)
 indextype is mdsys.spatial_index;   
 
-analyze table rd_link compute statistics;
-
 insert into user_sdo_geom_metadata
 values
   ('RD_NODE',
@@ -42,8 +40,6 @@ values
 create index idx_rd_node_geometry
 on rd_node(geometry)
 indextype is mdsys.spatial_index;  
-
-analyze table rd_node compute statistics;
 
 insert into user_sdo_geom_metadata
   (table_name, COLUMN_NAME, DIMINFO, SRID)

@@ -289,7 +289,7 @@ public class RdLaneConnexitySelector implements ISelector {
 			boolean isLock) throws Exception {
 		List<RdLaneConnexity> laneConns = new ArrayList<RdLaneConnexity>();
 		
-		String sql = "select a.*,b.mesh_id from rd_lane_connexity a,rd_link b where a.node_pid = in (:1,:2) and a.in_link_pid=:3 and a.u_record!=2 and a.in_link_pid = b.link_pid ";
+		String sql = "select a.*,b.mesh_id from rd_lane_connexity a,rd_link b where a.node_pid in (:1,:2) and a.in_link_pid=:3 and a.u_record!=2 and a.in_link_pid = b.link_pid ";
 		
 		if (isLock){
 			sql += " for update nowait";

@@ -18,12 +18,9 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
-import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
-import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
-import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
+import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 
 public class RdRestrictionSearch implements ISearch {
 
@@ -36,140 +33,11 @@ public class RdRestrictionSearch implements ISearch {
 	@Override
 	public IObj searchDataByPid(int pid) throws Exception {
 
-		String sql = "select * from rd_restriction c,(  "
-				+ "select listagg(a.detail_id || ',' || restric_pid || ',' || out_link_pid || ',' || flag || ',' || restric_info || ',' || type || ',' || relationship_type || ',' || decode(nvl(conds, '^^ ^^^^^'),'^^ ^^^^^', ' ', conds), '-') within group(order by 1) details  "
-				+ "from  (select  detail_id,listagg(b.row_id || '^' || b.detail_id || '^' ||  nvl(b.time_domain, ' ') || '^' || vehicle || '^' ||  res_trailer || '^' || res_weigh || '^' ||  res_axle_load || '^' || res_axle_count,  '@') within group(order by detail_id) conds    "
-				+ "from rd_restriction_condition b where u_record!=2 group by detail_id   ) b,    rd_restriction_detail a "
-				+ "where a.restric_pid=:1    and a.detail_id = b.detail_id(+) and a.u_record!=2 ) b where c.pid=:2 ";
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		RdRestriction restriction = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setInt(1, pid);
-
-			pstmt.setInt(2, pid);
-
-			resultSet = pstmt.executeQuery();
-
-			if (resultSet.next()) {
-
-				restriction = new RdRestriction();
-
-				restriction.setPid(resultSet.getInt("pid"));
-
-				restriction.setInLinkPid(resultSet.getInt("in_link_pid"));
-
-				restriction.setNodePid(resultSet.getInt("node_pid"));
-
-				restriction.setRestricInfo(resultSet.getString("restric_info"));
-
-				restriction.setKgFlag(resultSet.getInt("kg_flag"));
-
-				String detailStr = resultSet.getString("details");
-
-				List<IRow> details = new ArrayList<IRow>();
-
-				if (detailStr != null) {
-
-					String[] splits = detailStr.split("-");
-
-					for (String split : splits) {
-
-						String[] s = split.split(",");
-
-						RdRestrictionDetail detail = new RdRestrictionDetail();
-
-						detail.setPid(Integer.valueOf(s[0]));
-
-						detail.setRestricPid(Integer.valueOf(s[1]));
-
-						detail.setOutLinkPid(Integer.valueOf(s[2]));
-
-						detail.setFlag(Integer.valueOf(s[3]));
-
-						detail.setRestricInfo(Integer.valueOf(s[4]));
-
-						detail.setType(Integer.valueOf(s[5]));
-
-						detail.setRelationshipType(Integer.valueOf(s[6]));
-
-						List<IRow> conditions = new ArrayList<IRow>();
-
-						if (!" ".equals(s[7])) {
-
-							String[] conds = s[7].split("@");
-
-							for (String cond : conds) {
-
-								RdRestrictionCondition condition = new RdRestrictionCondition();
-
-								String[] ss = cond.split("\\^");
-
-								condition.setRowId(ss[0]);
-
-								condition.setDetailId(Integer.valueOf(ss[1]));
-
-								if (" ".equals(ss[2])) {
-
-									condition.setTimeDomain(ss[2]);
-								}
-
-								condition.setVehicle(Integer.valueOf(ss[3]));
-
-								condition.setResTrailer(Integer.valueOf(ss[4]));
-
-								condition.setResWeigh(Integer.valueOf(ss[5]));
-
-								condition
-										.setResAxleLoad(Integer.valueOf(ss[6]));
-
-								condition.setResAxleCount(Integer
-										.valueOf(ss[7]));
-
-								conditions.add(condition);
-
-							}
-
-						}
-
-						detail.setConditions(conditions);
-
-						details.add(detail);
-
-					}
-				}
-
-				restriction.setDetails(details);
-
-			}
-		} catch (Exception e) {
-			
-			throw new Exception(e);
-		} finally {
-			if (resultSet != null) {
-				try {
-					resultSet.close();
-				} catch (Exception e) {
-					
-				}
-			}
-
-			if (pstmt != null) {
-				try {
-					pstmt.close();
-				} catch (Exception e) {
-					
-				}
-			}
-		}
-
-		return restriction;
+		RdRestrictionSelector selector = new RdRestrictionSelector(conn);
+		
+		IObj obj = (IObj)selector.loadById(pid, false);
+		
+		return obj;
 	}
 
 	@Override

@@ -12,11 +12,11 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
-import org.navinfo.dataservice.engine.meta.MeshSelector;
-import org.navinfo.dataservice.engine.meta.PatternImageExporter;
-import org.navinfo.dataservice.engine.meta.PatternImageSelector;
-import org.navinfo.dataservice.engine.meta.PinyinConverter;
-import org.navinfo.dataservice.engine.meta.RdNameSelector;
+import org.navinfo.dataservice.engine.meta.mesh.MeshSelector;
+import org.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
+import org.navinfo.dataservice.engine.meta.patternimage.PatternImageSelector;
+import org.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
+import org.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 

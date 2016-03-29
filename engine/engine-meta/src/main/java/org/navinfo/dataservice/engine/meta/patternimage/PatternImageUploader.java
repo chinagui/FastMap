@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.patternimg;
+package org.navinfo.dataservice.engine.meta.patternimage;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
@@ -10,10 +10,10 @@ import java.util.Scanner;
 
 import net.sf.json.JSONObject;
 
-public class UploadPatternImage {
+public class PatternImageUploader {
 	private Connection conn;
 
-	public UploadPatternImage(Connection conn) {
+	public PatternImageUploader(Connection conn) {
 		this.conn = conn;
 	}
 

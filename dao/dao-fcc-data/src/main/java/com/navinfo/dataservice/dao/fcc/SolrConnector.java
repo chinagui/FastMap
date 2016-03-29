@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.dao.fcc;
 
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;

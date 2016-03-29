@@ -1,4 +1,4 @@
-package org.navinfo.dataservice.engine.meta;
+package org.navinfo.dataservice.engine.meta.rdname;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

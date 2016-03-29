@@ -23,7 +23,6 @@ import ch.hsr.geohash.GeoHash;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
-import com.navinfo.dataservice.commons.db.SolrAddress;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
@@ -46,7 +45,7 @@ public class SDFPhotoImporter {
 
 		String prefixPath = args[1];
 
-		SDFPhotoImporter.importPhoto(null, photoTab, dir, prefixPath);
+		SDFPhotoImporter.importPhoto( photoTab, dir, prefixPath);
 	}
 
 	public static void importSDFFIle(File file, String prefixPath,
@@ -211,7 +210,7 @@ public class SDFPhotoImporter {
 		return bos.getBytes();
 	}
 
-	public static boolean importPhoto(SolrAddress sa, Table photoTab,
+	public static boolean importPhoto( Table photoTab,
 			String dir, String prefixPath) throws Exception {
 
 		File file = new File(dir);

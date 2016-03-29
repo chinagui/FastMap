@@ -11,6 +11,7 @@ import org.dom4j.Element;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.jobframework.exception.JobRuntimeException;
 
 /** 
  * @ClassName: AbstractJobRequest 

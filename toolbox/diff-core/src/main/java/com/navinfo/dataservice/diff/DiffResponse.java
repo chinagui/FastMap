@@ -1,7 +1,7 @@
 package com.navinfo.dataservice.diff;
 
 import com.navinfo.dataservice.jobframework.AbstractJobResponse;
-import com.navinfo.dataservice.jobframework.JobRuntimeException;
+import com.navinfo.dataservice.jobframework.exception.JobRuntimeException;
 
 import net.sf.json.JSONObject;
 

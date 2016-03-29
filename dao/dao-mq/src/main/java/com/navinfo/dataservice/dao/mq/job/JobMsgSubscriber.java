@@ -16,7 +16,10 @@ public class JobMsgSubscriber {
 	 * @param handler
 	 * @throws Exception
 	 */
-	public static void SubscribeCreateJob(JobMsgType jobMsgType,MsgHandler handler)throws Exception{
-		MsgSubscriber.subscribeFromWorkQueue(jobMsgType.toString(), handler);
+	public static void SubscribeJob(JobMsgType jobMsgType,MsgHandler handler)throws Exception{
+		MsgSubscriber.getInstance().subscribeFromWorkQueue(jobMsgType.toString(), handler);
+	}
+	public static void cancelSubScribe(JobMsgType jobMsgType)throws Exception{
+		MsgSubscriber.getInstance().cancelSubScribe(jobMsgType.toString());
 	}
 }

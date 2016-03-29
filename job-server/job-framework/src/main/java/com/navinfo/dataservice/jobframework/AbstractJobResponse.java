@@ -5,6 +5,7 @@ import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.jobframework.exception.JobRuntimeException;
 
 /** 
  * @ClassName: AbstractJobRequest 

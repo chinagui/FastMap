@@ -6,12 +6,14 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.job.JobMsgPublisher;
+import com.navinfo.dataservice.jobframework.exception.JobException;
 
 /** 
 * @ClassName: AbstractJob 
 * @author Xiao Xiaowen 
 * @date 2016年3月25日 下午4:12:36 
-* @Description: TODO
+* @Description: 
+* 1. 必须要有一个(JobInfo jobInfo,CountDownLatch doneSignal)参数的构造函数
 */
 public abstract class AbstractJob implements Runnable {
 
@@ -19,8 +21,14 @@ public abstract class AbstractJob implements Runnable {
 	protected JobInfo jobInfo;
 	protected JobStep currentJobStep;
 	protected CountDownLatch doneSignal;
-	AbstractJob(JobInfo jobInfo,CountDownLatch doneSignal){
+	protected AbstractJob(JobInfo jobInfo,CountDownLatch doneSignal){
 		this.jobInfo=jobInfo;
+	}
+	public JobInfo getJobInfo() {
+		return jobInfo;
+	}
+	public void setJobInfo(JobInfo jobInfo) {
+		this.jobInfo = jobInfo;
 	}
 	@Override
 	public void run() {

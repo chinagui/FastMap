@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.dao.mq;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 import org.springframework.amqp.rabbit.connection.Connection;
@@ -23,7 +25,14 @@ import com.rabbitmq.client.QueueingConsumer;
  */
 public class MsgSubscriber {
 
-	protected static Logger log = Logger.getLogger(MsgSubscriber.class);
+	private static class SingletonHolder{
+		private static final MsgSubscriber INSTANCE = new MsgSubscriber();
+	}
+	public static final MsgSubscriber getInstance(){
+		return SingletonHolder.INSTANCE;
+	}
+	protected Logger log = Logger.getLogger(MsgSubscriber.class);
+	private Map<String,Channel> queueChannelMap=new ConcurrentHashMap<String,Channel>();
 	/**
 	 * 注意：同一个queueName的消息只需要订阅一次
 	 * 订阅简单消息，将自动确认消息接收
@@ -31,12 +40,32 @@ public class MsgSubscriber {
 	 * @param handler
 	 * @throws Exception
 	 */
-	public static void subscribeFromSimpleQueue(String name,MsgHandler handler)throws Exception{
-		Connection conn=null;
-		Channel channel = null;
+	private synchronized Channel createQueueChannel(String name)throws Exception{
+		if(queueChannelMap.containsKey(name)){
+			throw new Exception("已经订阅此队列，不能重复订阅");
+		}else{
+			Channel channel = null;
+			try{
+				channel = MQConnector.getInstance().createChannel();
+			}catch(Exception e){
+				throw e;
+			}finally{
+				MQConnector.getInstance().closeChannelQuietly(channel);
+			}
+			queueChannelMap.put(name, channel);
+			return channel;
+		}
+	}
+	public synchronized void cancelSubScribe(String name)throws Exception{
+		if(queueChannelMap.containsKey(name)){
+			Channel channel = queueChannelMap.get(name);
+			MQConnector.getInstance().closeChannelQuietly(channel);
+			queueChannelMap.remove(name);
+		}
+	}
+	public void subscribeFromSimpleQueue(String name,MsgHandler handler)throws Exception{
+		Channel channel = createQueueChannel(name);
 		try{
-			conn = MQConnector.getInstance().getConnectionFactory().createConnection();
-			channel = conn.createChannel(false);
 			channel.queueDeclare(name, false, false, false, null);
 			Consumer consumer = new SimpleMsgConsumer(channel,handler);
 		    channel.basicConsume(name, true, consumer);
@@ -44,8 +73,7 @@ public class MsgSubscriber {
 			log.error(e.getMessage(),e);
 			throw e;
 		}finally{
-			if(channel!=null)channel.close();
-			if(conn!=null)conn.close();
+			channel.close();
 		}
 	}
 	/**
@@ -55,13 +83,9 @@ public class MsgSubscriber {
 	 * @param handler
 	 * @throws Exception
 	 */
-	public static void subscribeFromWorkQueue(String name,final MsgHandler handler)throws Exception{
-
-		Connection conn=null;
-		Channel channel = null;
+	public void subscribeFromWorkQueue(String name,final MsgHandler handler)throws Exception{
+		Channel channel = createQueueChannel(name);
 		try{
-			conn = MQConnector.getInstance().getConnectionFactory().createConnection();
-			channel = conn.createChannel(false);
 			channel.queueDeclare(name, true, false, false, null);
 			channel.basicQos(1);
 			QueueingConsumer consumer = new QueueingConsumer(channel);
@@ -77,8 +101,7 @@ public class MsgSubscriber {
 			log.error(e.getMessage(),e);
 			throw e;
 		}finally{
-			if(channel!=null)channel.close();
-			if(conn!=null)conn.close();
+			channel.close();
 		}
 	}
 	/**
@@ -87,12 +110,9 @@ public class MsgSubscriber {
 	 * @param handler
 	 * @throws Exception
 	 */
-	public static void subscribeFromBCQueue(String name,MsgHandler handler)throws Exception{
-		Connection conn=null;
-		Channel channel = null;
+	public void subscribeFromBCQueue(String name,MsgHandler handler)throws Exception{
+		Channel channel = createQueueChannel(name);
 		try{
-			conn = MQConnector.getInstance().getConnectionFactory().createConnection();
-			channel = conn.createChannel(false);
 			channel.exchangeDeclare(name, "fanout");
 			String queueName = channel.queueDeclare().getQueue();
 			channel.queueBind(queueName, name, "");
@@ -109,8 +129,7 @@ public class MsgSubscriber {
 			log.error(e.getMessage(),e);
 			throw e;
 		}finally{
-			if(channel!=null)channel.close();
-			if(conn!=null)conn.close();
+			channel.close();
 		}
 	}
 	/**
@@ -120,15 +139,12 @@ public class MsgSubscriber {
 	 * @param handler
 	 * @throws Exception
 	 */
-	public static void subscribeFromRoutingQueue(String name,Set<String> msgIdentitySet,RoutingMsgHandler handler)throws Exception{
+	public void subscribeFromRoutingQueue(String name,Set<String> msgIdentitySet,RoutingMsgHandler handler)throws Exception{
 		if(StringUtils.isEmpty(name)||msgIdentitySet==null||msgIdentitySet.size()==0){
 			throw new Exception("name、msgIdentitySet不能为空");
 		}
-		Connection conn=null;
-		Channel channel = null;
+		Channel channel = createQueueChannel(name);
 		try{
-			conn = MQConnector.getInstance().getConnectionFactory().createConnection();
-			channel = conn.createChannel(false);
 			channel.exchangeDeclare(name, "direct");
 			String queueName = channel.queueDeclare().getQueue();
 			for(String identity:msgIdentitySet){
@@ -148,8 +164,7 @@ public class MsgSubscriber {
 			log.error(e.getMessage(),e);
 			throw e;
 		}finally{
-			if(channel!=null)channel.close();
-			if(conn!=null)conn.close();
+			channel.close();
 		}
 	}
 	public static void helloWorld()throws Exception{

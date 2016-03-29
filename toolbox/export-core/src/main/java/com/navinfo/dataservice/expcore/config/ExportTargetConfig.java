@@ -1,13 +1,13 @@
 package com.navinfo.dataservice.expcore.config;
 
 import com.navinfo.dataservice.expcore.exception.ExportConfigValidateException;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.expcore.target.TargetType;
+
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-
-import com.navinfo.dataservice.commons.log.JobLogger;
 
 public class ExportTargetConfig {
 	
@@ -40,17 +40,15 @@ public class ExportTargetConfig {
 
 	private boolean enableCreateScript = false;//子版本在插入数据之前是否创建上脚本，新建和已存在的子版本都会创建
 	
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	
 	//关于源的，关于导出过程的，关于目标的，全写到这里来
 
     public ExportTargetConfig() {
 		super();
-		log = JobLogger.getLogger(log);
 	}
     public ExportTargetConfig(String jsonConfig){
     	super();
-		log = JobLogger.getLogger(log);
     	this.parseByJsonConfig(jsonConfig);
     }
 

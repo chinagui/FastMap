@@ -1,11 +1,10 @@
 package com.navinfo.dataservice.expcore.config;
 
 import com.navinfo.dataservice.datahub.model.OracleSchema;
+
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-
-import com.navinfo.dataservice.commons.log.JobLogger;
 
 /**
  * 

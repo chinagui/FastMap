@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.expcore.config;
 
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.expcore.exception.ExportConfigValidateException;
 import com.navinfo.dataservice.expcore.exception.ExportException;
@@ -17,8 +18,6 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.Element;
-
-import com.navinfo.dataservice.commons.log.JobLogger;
 
 import net.sf.json.JSONObject;
 
@@ -78,22 +77,19 @@ public class ExportConfig {
 	protected  List<String> flexTables;
 	protected Map<String,String> flexConditions;
 	
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	
 	//关于源的，关于导出过程的，关于目标的，全写到这里来
 
     public ExportConfig() {
 		super();
-		log = JobLogger.getLogger(log);
 	}
     public ExportConfig(Document xmlConfig) throws ExportException{
     	super();
-		log = JobLogger.getLogger(log);
     	this.parseByXmlConfig(xmlConfig);
     }
     public ExportConfig(JSONObject jsonConfig) throws ExportException{
     	super();
-		log = JobLogger.getLogger(log);
     	this.parseByJsonConfig(jsonConfig);
     }
 

@@ -11,7 +11,7 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.log.JobLogger;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
@@ -26,11 +26,10 @@ import com.navinfo.dataservice.expcore.sql.handler.DMLExecThreadHandler;
  * @Description: TODO
  */
 public class ExecuteExternlToolSql {
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected VMThreadPoolExecutor threadPoolExecutor;
 	protected OracleSchema targetSchema;
 	public ExecuteExternlToolSql(OracleSchema targetSchema)throws ExportException{
-		log = JobLogger.getLogger(log);
 		this.targetSchema=targetSchema;
 		createThreadPool();
 	}

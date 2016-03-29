@@ -8,9 +8,8 @@ import net.sf.json.JSONObject;
 
 import org.dom4j.Document;
 
-import com.navinfo.dataservice.commons.job.AbstractJobRequest;
-import com.navinfo.dataservice.commons.job.JobRuntimeException;
-import com.navinfo.dataservice.commons.log.JobLogger;
+import com.navinfo.dataservice.jobframework.AbstractJobRequest;
+import com.navinfo.dataservice.jobframework.JobRuntimeException;
 
 /** 
  * @ClassName: ExternalToolConfig 
@@ -33,16 +32,13 @@ public class ExternalToolConfig  extends AbstractJobRequest{
 	
 	public ExternalToolConfig() {
 		super();
-		log = JobLogger.getLogger(log);
 	}
     public ExternalToolConfig(Document xmlConfig){
     	super();
-		log = JobLogger.getLogger(log);
     	this.parseByXmlConfig(xmlConfig);
     }
     public ExternalToolConfig(JSONObject jsonConfig){
     	super();
-		log = JobLogger.getLogger(log);
     	this.parseByJsonConfig(jsonConfig);
     }
 

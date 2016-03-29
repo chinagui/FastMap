@@ -8,10 +8,9 @@ import net.sf.json.JSONObject;
 
 import org.dom4j.Document;
 
-
-import com.navinfo.dataservice.commons.job.AbstractJobRequest;
-import com.navinfo.dataservice.commons.job.JobRuntimeException;
-import com.navinfo.dataservice.commons.log.JobLogger;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.jobframework.AbstractJobRequest;
+import com.navinfo.dataservice.jobframework.JobRuntimeException;
 
 /**
  * @author arnold
@@ -34,16 +33,16 @@ public class DiffConfig extends AbstractJobRequest
     
     public DiffConfig() {
 		super();
-		log = JobLogger.getLogger(log);
+		log = LoggerRepos.getLogger(log);
 	}
     public DiffConfig(Document xmlConfig){
     	super();
-		log = JobLogger.getLogger(log);
+		log = LoggerRepos.getLogger(log);
     	this.parseByXmlConfig(xmlConfig);
     }
     public DiffConfig(JSONObject jsonConfig){
     	super();
-		log = JobLogger.getLogger(log);
+		log = LoggerRepos.getLogger(log);
     	this.parseByJsonConfig(jsonConfig);
     }
     

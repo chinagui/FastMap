@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.exception.DataSourceException;
-import com.navinfo.dataservice.commons.log.JobLogger;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 
 /**
  * 
@@ -100,7 +100,7 @@ public class PoolDataSourceFactory {
 	 */
 
 	public PoolDataSource getPoolDataSource(String dataSourceKey, SystemConfig config, boolean cache) {
-		log = JobLogger.getLogger(log);
+		log = LoggerRepos.getLogger(log);
 		PoolDataSource dataSource = dataSourceMap.get(dataSourceKey);
 		if (dataSource == null || dataSource.isClosed()) {
 			try {

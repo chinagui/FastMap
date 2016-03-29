@@ -18,7 +18,7 @@ import com.navinfo.dataservice.expcore.source.parameter.SerializeParameters;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.expcore.sql.assemble.AssembleSql;
 import com.navinfo.dataservice.expcore.sql.assemble.AssembleXmlConfigSql;
-import com.navinfo.dataservice.commons.log.JobLogger;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
@@ -29,7 +29,7 @@ import com.navinfo.dataservice.commons.util.StringUtils;
  *  
  */
 public class OracleInput implements DataInput {
-	protected Logger log = Logger.getLogger(OracleInput.class);
+	protected Logger log = LoggerRepos.getLogger(OracleInput.class);
 	
 	//导入参数
 	protected ExportConfig expConfig;
@@ -38,7 +38,6 @@ public class OracleInput implements DataInput {
 	protected Map<Integer, List<ExpSQL>> expSqlMap;
 
 	public OracleInput(ExportConfig expConfig)throws ExportException{
-		log = JobLogger.getLogger(log);
 		this.expConfig=expConfig;
 		initSource();
 	}

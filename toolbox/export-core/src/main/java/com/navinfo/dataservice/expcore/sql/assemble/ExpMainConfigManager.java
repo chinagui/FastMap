@@ -13,9 +13,9 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.expcore.exception.ExportConfigException;
-import com.navinfo.dataservice.commons.log.JobLogger;
 
 /** 
  * @ClassName: ScriptsConfigManager 
@@ -25,10 +25,9 @@ import com.navinfo.dataservice.commons.log.JobLogger;
  *  
  */
 public class ExpMainConfigManager {
-	protected Logger log = Logger.getLogger(ExpMainConfigManager.class);
+	protected Logger log = LoggerRepos.getLogger(ExpMainConfigManager.class);
 	protected List<ExpMainConfig> confList;
 	private ExpMainConfigManager(){
-		log = JobLogger.getLogger(log);
 		parseExpMainConfig();
 	}
 	private static class SingletonHolder{

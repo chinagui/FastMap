@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.commons.log;
 
-import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-
+import com.navinfo.dataservice.commons.config.DynamicSystemConfig;
 import org.apache.log4j.*;
 import org.apache.log4j.spi.DefaultRepositorySelector;
 import org.apache.log4j.spi.RootLogger;
@@ -22,7 +21,7 @@ public class DynamicOutputLogger {
     private static DefaultRepositorySelector repositorySelector;
     private static CustomHierarchy h;
 //    private  Layout defaultLayout;
-    private static boolean enableTaskStdoutLog = SystemConfigFactory.getSystemConfig().getBooleanValue("enableStdouTasktLog");
+    private static boolean enableTaskStdoutLog = DynamicSystemConfig.getInstance().getBooleanValue("enableStdouTasktLog");
 
     static {
         h = new CustomHierarchy(new RootLogger((Level) Level.DEBUG));

@@ -1,8 +1,10 @@
-package com.navinfo.dataservice.commons.job;
+package com.navinfo.dataservice.jobframework;
 
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 
 /** 
  * @ClassName: AbstractJobRequest 
@@ -11,7 +13,7 @@ import org.apache.log4j.Logger;
  * @Description: TODO
  */
 public abstract class AbstractJobResponse {
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected int status = 0;
 	protected String msg ="";
 	public static int STATUS_FAILED=-1;

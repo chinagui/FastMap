@@ -2,9 +2,10 @@ package com.navinfo.dataservice.expcore.target;
 
 
 import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.expcore.config.ExportConfig;
 import com.navinfo.dataservice.expcore.exception.ExportException;
-import com.navinfo.dataservice.commons.log.JobLogger;
 
 /**
  * Created by IntelliJ IDEA. User: liuqing Date: 11-5-10 Time: 下午4:38
@@ -13,10 +14,9 @@ import com.navinfo.dataservice.commons.log.JobLogger;
 @Deprecated
 public abstract class AbstractExportTarget implements ExportTarget {
 
-	protected Logger log = Logger.getLogger(getClass());
+	protected Logger log = LoggerRepos.getLogger(getClass());
 
 	public AbstractExportTarget() {
-		log = JobLogger.getLogger(log);
 	}
 	
 	public void init(String gdbVerison)throws ExportException{

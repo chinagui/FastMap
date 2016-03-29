@@ -1,9 +1,9 @@
-package com.navinfo.dataservice.commons.job;
+package com.navinfo.dataservice.jobframework;
 
 /** 
- * @ClassName: JobException 
+ * @ClassName: LockException 
  * @author Xiao Xiaowen 
- * @date 2016-1-15 下午2:22:51 
+ * @date 2015-12-18 上午9:50:07 
  * @Description: TODO
  */
 public class JobException extends Exception {

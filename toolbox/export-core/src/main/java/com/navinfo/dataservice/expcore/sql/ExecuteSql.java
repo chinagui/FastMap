@@ -27,7 +27,7 @@ import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.oracle.ConnectionRegister;
-import com.navinfo.dataservice.commons.log.JobLogger;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 
@@ -38,7 +38,7 @@ import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
  */
 public class ExecuteSql {
 
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected VMThreadPoolExecutor executePoolExecutor;
 	protected VMThreadPoolExecutor queryPoolExecutor; // 查询sql执行线程，最后一步select *语句的查询线程
 	protected ExportConfig expConfig;
@@ -54,7 +54,6 @@ public class ExecuteSql {
 	 *            系统配置
 	 */
 	public ExecuteSql(ExportConfig expConfig,OracleInput input,DataOutput output) {
-		log = JobLogger.getLogger(log);
 		this.expConfig = expConfig;
 		this.input=input;
 		this.output=output;

@@ -2,12 +2,12 @@ package com.navinfo.dataservice.expcore;
 
 import org.apache.log4j.Logger;
 import com.navinfo.dataservice.expcore.sql.ExecuteSql;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.expcore.config.ExportConfig;
 import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.dataservice.expcore.exception.ExportInitException;
 import com.navinfo.dataservice.expcore.input.OracleInput;
 import com.navinfo.dataservice.expcore.output.DataOutput;
-import com.navinfo.dataservice.commons.log.JobLogger;
 import com.navinfo.navicommons.database.sql.DbLinkCreator;
 
 /**
@@ -15,14 +15,13 @@ import com.navinfo.navicommons.database.sql.DbLinkCreator;
  */
 public abstract class ExporterByScripts implements Exporter {
 
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	
 	protected ExportConfig expConfig;
 	private OracleInput input;
 	private DataOutput output;
 
 	public ExporterByScripts(ExportConfig expConfig) {
-		//log = JobLogger.getLogger(log);
 		this.expConfig=expConfig;
 	}
 

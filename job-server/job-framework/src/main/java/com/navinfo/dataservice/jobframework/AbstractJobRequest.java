@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.commons.job;
+package com.navinfo.dataservice.jobframework;
 
 import java.util.Iterator;
 import java.util.List;
@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
@@ -18,7 +19,7 @@ import com.navinfo.dataservice.commons.util.StringUtils;
  * @Description: TODO
  */
 public abstract class AbstractJobRequest {
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected String gdbVersion;
 	
 	public abstract void validate()throws JobRuntimeException;

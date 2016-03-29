@@ -1,9 +1,9 @@
 package com.navinfo.dataservice.diff;
 
-import net.sf.json.JSONObject;
+import com.navinfo.dataservice.jobframework.AbstractJobResponse;
+import com.navinfo.dataservice.jobframework.JobRuntimeException;
 
-import com.navinfo.dataservice.commons.job.AbstractJobResponse;
-import com.navinfo.dataservice.commons.job.JobRuntimeException;
+import net.sf.json.JSONObject;
 
 /** 
  * @ClassName: DiffResponse 

@@ -11,7 +11,7 @@ import com.navinfo.dataservice.diff.dataaccess.DataAccess;
 import com.navinfo.dataservice.diff.dataaccess.LocalDataAccess;
 import com.navinfo.dataservice.diff.exception.InitException;
 import com.navinfo.dataservice.diff.scanner.JavaDiffScanner;
-import com.navinfo.dataservice.commons.job.AbstractJobResponse;
+import com.navinfo.dataservice.jobframework.AbstractJobResponse;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.PackageExec;

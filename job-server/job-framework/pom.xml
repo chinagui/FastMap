@@ -20,7 +20,11 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-    </dependency>
+    </dependency>       
+    <dependency>
+         <groupId>log4j</groupId>
+         <artifactId>log4j</artifactId>
+     </dependency>
 	<dependency>
 		<groupId>net.sf.json-lib</groupId>
 		<artifactId>json-lib</artifactId>
@@ -29,6 +33,14 @@
 	<dependency>
 		<groupId>net.sf.ezmorph</groupId>
 		<artifactId>ezmorph</artifactId>
-	</dependency>
+	</dependency> 
+    <dependency>
+         <groupId>com.navinfo.dataservice</groupId>
+         <artifactId>commons</artifactId>
+     </dependency>
+    <dependency>
+         <groupId>com.navinfo.dataservice</groupId>
+         <artifactId>dao-mq</artifactId>
+     </dependency>
   </dependencies>
 </project>

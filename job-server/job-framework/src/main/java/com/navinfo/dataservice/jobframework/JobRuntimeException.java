@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.commons.job;
+package com.navinfo.dataservice.jobframework;
 
 /** 
  * @ClassName: JobRuntimeException 

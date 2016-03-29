@@ -12,11 +12,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.util.Assert;
 
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.expcore.sql.ExpXMLSQLManager;
 import com.navinfo.dataservice.expcore.sql.replacer.SqlReplacer;
-import com.navinfo.dataservice.commons.log.JobLogger;
 
 /**
  * Created by IntelliJ IDEA. User: liuqing Date: 11-5-9 Time: 下午6:25
@@ -26,7 +26,7 @@ public class AssembleXmlConfigSql implements AssembleSql {
 
 	protected static String TEMP_SQL_FIND_REGEX = "(TEMP_\\w+)|(TEMP_\\w+$) ";
 
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected String expMode;
 	protected String feature;
 	protected String condition;
@@ -42,7 +42,6 @@ public class AssembleXmlConfigSql implements AssembleSql {
 	 */
 
 	public AssembleXmlConfigSql(String expMode,String feature,String condition,Set<String> conditionParams) throws ClassNotFoundException,Exception{
-		log = JobLogger.getLogger(log);
 		this.expMode=expMode;
 		this.feature=feature;
 		this.condition=condition;

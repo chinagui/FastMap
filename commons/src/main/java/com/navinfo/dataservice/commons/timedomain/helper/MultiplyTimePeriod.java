@@ -25,6 +25,47 @@ public class MultiplyTimePeriod {
 		this.m_sGDFTimeOld = sGDFTimeOld;
 	}
 
+	public boolean parseGDFTime() {
+		if (m_sGDFTimeOld.isEmpty()) {
+			System.out
+					.println("sGDFTime in MultiplyTimePeriod.cpp is empty, please check!!!");
+			return false;
+		}
+	
+		int nB = m_sGDFTimeOld.indexOf('[');
+		int nE = m_sGDFTimeOld.lastIndexOf(']');
+		if (nB != 0 || nE != (m_sGDFTimeOld.length() - 1)) {
+			System.out
+					.println("sGDFTime in MultiplyTimePeriod.cpp is error!!! please check the input carefully");
+			return false;
+		} else {
+			int nBeg = m_sGDFTimeOld.indexOf('*');
+			int nEnd = m_sGDFTimeOld.lastIndexOf('*');
+	
+			if (TimeDecoderUtils
+					.validPairChar(
+							TimeDecoderUtils.getSubStr(m_sGDFTimeOld, 0, nBeg),
+							'[', ']')
+					&& TimeDecoderUtils.validPairChar(TimeDecoderUtils.getSubStr(
+							m_sGDFTimeOld, nEnd + 1, m_sGDFTimeOld.length()),
+							'[', ']')) {
+				m_sGDFTimeNew = m_sGDFTimeOld;
+			} else {
+				if (TimeDecoderUtils.isNeedDelete(m_sGDFTimeOld)) {
+					m_sGDFTimeNew = m_sGDFTimeOld.substring(nB + 1, nE);
+				} else {
+					m_sGDFTimeNew = m_sGDFTimeOld;
+				}
+			}
+		}
+		if (splitTimeDomain() == false) {
+			System.out
+					.println("getTimeSpan in MultiplyTimePeriod.cpp return false, please check!!!");
+			return false;
+		}
+		return true;
+	}
+
 	private boolean splitTimeDomain() {
 		if (m_sGDFTimeNew.isEmpty())
 			return false;
@@ -53,47 +94,6 @@ public class MultiplyTimePeriod {
 		TP.parseGDFTime();
 		m_vTimeSpan.add(TP);
 
-		return true;
-	}
-
-	public boolean parseGDFTime() {
-		if (m_sGDFTimeOld.isEmpty()) {
-			System.out
-					.println("sGDFTime in MultiplyTimePeriod.cpp is empty, please check!!!");
-			return false;
-		}
-
-		int nB = m_sGDFTimeOld.indexOf('[');
-		int nE = m_sGDFTimeOld.lastIndexOf(']');
-		if (nB != 0 || nE != (m_sGDFTimeOld.length() - 1)) {
-			System.out
-					.println("sGDFTime in MultiplyTimePeriod.cpp is error!!! please check the input carefully");
-			return false;
-		} else {
-			int nBeg = m_sGDFTimeOld.indexOf('*');
-			int nEnd = m_sGDFTimeOld.lastIndexOf('*');
-
-			if (TimeDecoderUtils
-					.validPairChar(
-							TimeDecoderUtils.getSubStr(m_sGDFTimeOld, 0, nBeg),
-							'[', ']')
-					&& TimeDecoderUtils.validPairChar(TimeDecoderUtils.getSubStr(
-							m_sGDFTimeOld, nEnd + 1, m_sGDFTimeOld.length()),
-							'[', ']')) {
-				m_sGDFTimeNew = m_sGDFTimeOld;
-			} else {
-				if (TimeDecoderUtils.isNeedDelete(m_sGDFTimeOld)) {
-					m_sGDFTimeNew = m_sGDFTimeOld.substring(nB + 1, nE);
-				} else {
-					m_sGDFTimeNew = m_sGDFTimeOld;
-				}
-			}
-		}
-		if (splitTimeDomain() == false) {
-			System.out
-					.println("getTimeSpan in MultiplyTimePeriod.cpp return false, please check!!!");
-			return false;
-		}
 		return true;
 	}
 
@@ -137,10 +137,10 @@ public class MultiplyTimePeriod {
 					Pair<Integer, Integer> value2 = entry2.getValue();
 
 					if (key1.equals(key2)) {
-						value1 = TimeDecoderUtils
+						Pair<Integer, Integer> value = TimeDecoderUtils
 								.getIntersection(value1, value2);
 
-						mSPair.put(key1, value1);
+						mSPair.put(key1, value);
 					}
 				}
 			}
@@ -148,12 +148,14 @@ public class MultiplyTimePeriod {
 
 		if (!mSPair.isEmpty()) {
 			if (!vvTmp.isEmpty()) {
+				boolean bflag = false;
 				for (int i = 0; i < vvTmp.size(); i++) {
 					for (int j = 0; j < vvTmp.get(i).size(); j++) {
 						List<Map<String, Pair<Integer, Integer>>> vTmp = vvTmp
 								.get(i).get(j).getTimeSpan();// TimeResult
 						for (int k = 0; k < vTmp.size(); k++) {
-
+							bflag=true;
+									
 							Set<Map.Entry<String, Pair<Integer, Integer>>> set2 = mSPair
 									.entrySet();
 							for (Iterator<Map.Entry<String, Pair<Integer, Integer>>> iter = set2
@@ -176,27 +178,32 @@ public class MultiplyTimePeriod {
 											.getValue();
 
 									if (key1.equals(key2)) {
-										value1 = TimeDecoderUtils
-												.getIntersection(value1, value2);
+										Pair<Integer, Integer> value = TimeDecoderUtils
+												.getIntersection(value2,value1);
 
-										mSPair.put(key1, value1);
+										vTmp.get(i).put(key2, value);
 									}
 								}
 							}
 
 							TR.insertTimeSpan(vTmp.get(i));
 						}
+						
+						if(!vvTmp.get(i).get(j).getWeekTime().isEmpty()){
+							TR.addWeekTime(vvTmp.get(i).get(j).getWeekTime());
+						}
 					}
+				}
+				
+				if(!bflag){
+					TR.insertTimeSpan(mSPair);
 				}
 			} else {
 				TR.insertTimeSpan(mSPair);
 			}
 		} else {
-			if (!vvTmp.isEmpty()) {
-				for (int i = 0; i < vvTmp.size(); i++) {
-
-				}
-			} else {
+			if(TR.getWeekTime().isEmpty())
+			{
 				return false;
 			}
 		}
@@ -216,22 +223,22 @@ public class MultiplyTimePeriod {
 					System.out.println("第" + i
 							+ "次计算错误 in MultiplyTimePeriod.cpp");
 					return false;
-				} else if (! m_vTimeSpan.get(i).getWeekTime().isEmpty()){
-					trResult.setWeekTime(m_vTimeSpan.get(i).getWeekTime());
-				}
+				} 
 				else if (m_vTimeSpan.get(i).getStrTimeSpan().indexOf('+') != -1) {
 					String sTmp = m_vTimeSpan.get(i).getStrTimeSpan();
 					TimeDecoder NGT = new TimeDecoder(sTmp);
 					NGT.parseGDFTime();
 					vTmp = NGT.computeTime();
 				} else {
-					trResult.setWeekTime(m_vTimeSpan.get(i).getWeekTime());
+					trResult.addWeekTime(m_vTimeSpan.get(i).getWeekTime());
+				}
+				
+				if (!vTmp.isEmpty()) {
+					vvTmp.add(vTmp);
+//					vTmp.clear();
 				}
 			}
-			if (!vTmp.isEmpty()) {
-				vvTmp.add(vTmp);
-				vTmp.clear();
-			}
+			
 		}
 		trResult.setInputTimeSpan(m_sGDFTimeOld);
 		if (computeTimeSpan(trResult, vvTmp) == false) {

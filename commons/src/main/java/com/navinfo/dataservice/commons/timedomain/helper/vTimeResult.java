@@ -6,7 +6,8 @@ import java.util.List;
 public class vTimeResult {
 
 	private List<TimeResult> m_vTimeResult= new ArrayList<TimeResult>();
-	private String sOutResult="";
+	
+	private List<String> m_vSOutResult= new ArrayList<String>();
 
 	public void setTimeResult(List<TimeResult> TimeResult) {
 		m_vTimeResult = TimeResult;
@@ -17,16 +18,26 @@ public class vTimeResult {
 	}
 
 	public String getTimeResult() {
-		String sWeekTime="";
 		for (int i = 0; i < m_vTimeResult.size(); i++) {
-			sWeekTime = m_vTimeResult.get(i).getWeekTime();
-			if (sOutResult.indexOf(sWeekTime) == -1) {
-				sOutResult += m_vTimeResult.get(i).getTimeSpanResult();
+			String sOutResultTmp="";
+			String sWeekTime = m_vTimeResult.get(i).getWeekTime();
+			if (sOutResultTmp.indexOf(sWeekTime) == -1) {
+				sOutResultTmp += m_vTimeResult.get(i).getTimeSpanResult();
 			} else {
-				sOutResult += m_vTimeResult.get(i).getTimeSpanResult()
-						.replaceFirst(sWeekTime, "");
+				StringBuffer f =new StringBuffer(m_vTimeResult.get(i).getTimeSpanResult());
+				int n = m_vTimeResult.get(i).getTimeSpanResult().indexOf(sWeekTime);
+				sOutResultTmp += f.replace(n, n+sWeekTime.length(), "");
 			}
+			
+			m_vSOutResult.add(sOutResultTmp);
 		}
-		return sOutResult;
+		
+		String sOut="";
+		for(int i = 0; i < m_vSOutResult.size(); i++)
+		{
+			sOut += m_vSOutResult.get(i);
+		}
+		
+		return sOut;
 	}
 }

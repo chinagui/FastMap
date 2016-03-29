@@ -10,7 +10,7 @@ import org.dom4j.Document;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.jobframework.AbstractJobRequest;
-import com.navinfo.dataservice.jobframework.JobRuntimeException;
+import com.navinfo.dataservice.jobframework.exception.JobRuntimeException;
 
 /**
  * @author arnold

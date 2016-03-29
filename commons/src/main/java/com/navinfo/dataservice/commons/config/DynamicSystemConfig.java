@@ -127,7 +127,5 @@ public class DynamicSystemConfig extends Observable implements SystemConfig {
     public static void main(String[] args) {
     	Map<String,String> dynamicConfigMap = new ConcurrentHashMap<String,String>();
     	dynamicConfigMap.put("kk", "");
-    	
-    	
 	}
 }

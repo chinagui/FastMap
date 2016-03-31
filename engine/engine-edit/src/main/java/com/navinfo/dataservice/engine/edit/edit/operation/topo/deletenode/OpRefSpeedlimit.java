@@ -19,7 +19,7 @@ public class OpRefSpeedlimit implements IOperation {
 
 		for( RdSpeedlimit limit : command.getLimits()){
 			
-			result.insertObject(limit, ObjStatus.DELETE);
+			result.insertObject(limit, ObjStatus.DELETE, limit.pid());
 		}
 		
 		return null;

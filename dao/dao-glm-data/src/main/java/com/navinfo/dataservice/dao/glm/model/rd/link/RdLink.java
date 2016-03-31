@@ -674,16 +674,6 @@ public class RdLink implements IObj {
 		this.setZones(zones);
 	}
 
-	public boolean isNodeOnLink(int nodePid) {
-
-		if (nodePid == this.eNodePid || nodePid == this.sNodePid) {
-			return true;
-		} else {
-			return false;
-		}
-
-	}
-
 	@Override
 	public Map<String, Object> changedFields() {
 

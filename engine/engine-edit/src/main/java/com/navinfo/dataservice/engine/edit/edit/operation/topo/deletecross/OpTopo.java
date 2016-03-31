@@ -32,7 +32,7 @@ public class OpTopo implements IOperation {
 
 		RdCross cross = command.getCross();
 
-		result.insertObject(cross, ObjStatus.DELETE);
+		result.insertObject(cross, ObjStatus.DELETE, cross.pid());
 		
 		result.setPrimaryPid(cross.getPid());
 
@@ -60,10 +60,10 @@ public class OpTopo implements IOperation {
 
 			if(targetRow != null){
 				if (forms.size()==1) {
-					result.insertObject(targetRow, ObjStatus.UPDATE);
+					result.insertObject(targetRow, ObjStatus.UPDATE, cross.pid());
 				}
 				else{
-					result.insertObject(targetRow, ObjStatus.DELETE);
+					result.insertObject(targetRow, ObjStatus.DELETE, cross.pid());
 				}
 			}
 

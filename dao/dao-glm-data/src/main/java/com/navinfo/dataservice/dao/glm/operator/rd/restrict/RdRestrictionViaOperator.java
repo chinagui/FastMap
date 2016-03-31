@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -243,11 +244,13 @@ public class RdRestrictionViaOperator implements IOperator {
 	}
 
 	// 维护经过线方向
-	public List<RdRestrictionVia> repaireViaDirect(List<RdRestrictionVia> vias,
+	public List<Entry<Integer, RdRestrictionVia>> repaireViaDirect(List<Entry<Integer, RdRestrictionVia>> vias,
 			int preSNodePid, int preENodePid, int linkPid) {
-		List<RdRestrictionVia> newVias = new ArrayList<RdRestrictionVia>();
+		List<Entry<Integer, RdRestrictionVia>> newVias = new ArrayList<Entry<Integer, RdRestrictionVia>>();
 
-		for (RdRestrictionVia v : vias) {
+		for (Entry<Integer, RdRestrictionVia> entry : vias) {
+			RdRestrictionVia v = entry.getValue();
+			
 			if (v.getLinkPid() == linkPid) {
 
 				if (preSNodePid != 0 && preENodePid != 0) {
@@ -272,7 +275,7 @@ public class RdRestrictionViaOperator implements IOperator {
 				}
 			}
 
-			newVias.add(v);
+			newVias.add(new AbstractMap.SimpleEntry(entry.getKey(), v));
 		}
 
 		return newVias;

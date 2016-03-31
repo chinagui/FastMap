@@ -150,7 +150,7 @@ public class Operation implements IOperation {
 
 		lane.setTopos(topos);
 
-		result.insertObject(lane, ObjStatus.INSERT);
+		result.insertObject(lane, ObjStatus.INSERT, lane.pid());
 
 		return null;
 	}

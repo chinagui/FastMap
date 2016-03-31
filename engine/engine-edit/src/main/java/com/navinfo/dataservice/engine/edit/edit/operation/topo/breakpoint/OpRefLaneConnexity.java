@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -35,7 +36,7 @@ public class OpRefLaneConnexity implements IOperation {
 		return null;
 	}
 
-	// 处理交限进入线
+	// 处理进入线
 	private void handleRdLaneConnexity(List<RdLaneConnexity> list)
 			throws Exception {
 
@@ -53,12 +54,12 @@ public class OpRefLaneConnexity implements IOperation {
 
 			changedFields.put("inLinkPid", inLinkPid);
 
-			result.insertObject(rr, ObjStatus.UPDATE);
+			result.insertObject(rr, ObjStatus.UPDATE, rr.pid());
 
 		}
 	}
 
-	// 处理交限退出线
+	// 处理退出线
 	private void handleRdLaneTopos(List<RdLaneTopology> list)
 			throws Exception {
 
@@ -78,25 +79,28 @@ public class OpRefLaneConnexity implements IOperation {
 						.put("outLinkPid", command.getLink2().getPid());
 			}
 
-			result.insertObject(topo, ObjStatus.UPDATE);
+			result.insertObject(topo, ObjStatus.UPDATE, topo.parentPKValue());
 		}
 
 	}
 
-	// 处理交限经过线
+	// 处理经过线
 
-	private void handleRdLaneVias(List<List<RdLaneVia>> list)
+	private void handleRdLaneVias(List<List<Entry<Integer, RdLaneVia>>> list)
 			throws Exception {
 
-		for (List<RdLaneVia> vias : list) {
+		for (List<Entry<Integer, RdLaneVia>> vias : list) {
 
-			for (RdLaneVia v : vias) {
+			for (Entry<Integer, RdLaneVia> entry : vias) {
+				
+				RdLaneVia v = entry.getValue();
+				
 				if (v.getLinkPid() != command.getLinkPid()) {
 					Map<String, Object> changedFields = v.changedFields();
 
 					changedFields.put("seqNum", v.getSeqNum() + 1);
 
-					result.insertObject(v, ObjStatus.UPDATE);
+					result.insertObject(v, ObjStatus.UPDATE, entry.getKey());
 				} else {
 
 					RdLaneVia via1 = new RdLaneVia();
@@ -120,11 +124,11 @@ public class OpRefLaneConnexity implements IOperation {
 
 					via2.setSeqNum(via2.getSeqNum() + 1);
 
-					result.insertObject(v, ObjStatus.DELETE);
+					result.insertObject(v, ObjStatus.DELETE, entry.getKey());
 
-					result.insertObject(via1, ObjStatus.INSERT);
+					result.insertObject(via1, ObjStatus.INSERT, entry.getKey());
 
-					result.insertObject(via2, ObjStatus.INSERT);
+					result.insertObject(via2, ObjStatus.INSERT, entry.getKey());
 
 				}
 			}

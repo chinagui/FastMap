@@ -103,9 +103,9 @@ public class Operation implements IOperation {
 
 			branch.setDetails(details);
 
-			result.insertObject(branch, ObjStatus.INSERT);
+			result.insertObject(branch, ObjStatus.INSERT, branch.pid());
 		} else {
-			result.insertObject(detail, ObjStatus.INSERT);
+			result.insertObject(detail, ObjStatus.INSERT, branch.pid());
 		}
 
 		return msg;

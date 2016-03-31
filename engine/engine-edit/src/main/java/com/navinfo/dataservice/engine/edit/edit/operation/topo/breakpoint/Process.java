@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -101,7 +102,7 @@ public class Process implements IProcess {
 			this.rdLinkBreakpoint = (RdLink) linkSelector.loadById(
 					command.getLinkPid(), true);
 
-			result.insertObject(rdLinkBreakpoint, ObjStatus.DELETE);
+			result.insertObject(rdLinkBreakpoint, ObjStatus.DELETE, rdLinkBreakpoint.pid());
 
 			RdNodeSelector nodeSelector = new RdNodeSelector(conn);
 
@@ -128,7 +129,7 @@ public class Process implements IProcess {
 			command.setRestrictionDetails(details);
 
 			// 获取LINK上交限经过线
-			List<List<RdRestrictionVia>> restrictVias = new RdRestrictionViaSelector(
+			List<List<Entry<Integer, RdRestrictionVia>>> restrictVias = new RdRestrictionViaSelector(
 					conn).loadRestrictionViaByLinkPid(command.getLinkPid(),
 					true);
 
@@ -148,7 +149,7 @@ public class Process implements IProcess {
 			command.setLaneTopologys(topos);
 
 			// 获取LINK上车信经过线
-			List<List<RdLaneVia>> laneVias = new RdLaneViaSelector(conn)
+			List<List<Entry<Integer, RdLaneVia>>> laneVias = new RdLaneViaSelector(conn)
 					.loadRdLaneViaByLinkPid(command.getLinkPid(), true);
 
 			command.setLaneVias(laneVias);
@@ -296,9 +297,9 @@ public class Process implements IProcess {
 
 				infectList = new ArrayList<Integer>();
 
-				for (List<RdLaneVia> listVias : command.getLaneVias()) {
-					for (RdLaneVia via : listVias) {
-						infectList.add(via.getLinkPid());
+				for (List<Entry<Integer, RdLaneVia>> listVias : command.getLaneVias()) {
+					for (Entry<Integer, RdLaneVia> entry : listVias) {
+						infectList.add(entry.getKey());
 					}
 				}
 
@@ -331,9 +332,9 @@ public class Process implements IProcess {
 
 				infectList = new ArrayList<Integer>();
 
-				for (List<RdRestrictionVia> vias : command.geListRestrictVias()) {
-					for (RdRestrictionVia via : vias) {
-						infectList.add(via.getLinkPid());
+				for (List<Entry<Integer, RdRestrictionVia>> vias : command.geListRestrictVias()) {
+					for (Entry<Integer, RdRestrictionVia> entry : vias) {
+						infectList.add(entry.getKey());
 					}
 				}
 

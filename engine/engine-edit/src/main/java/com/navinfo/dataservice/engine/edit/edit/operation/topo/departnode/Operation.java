@@ -81,7 +81,7 @@ public class Operation implements IOperation {
 
 		updateLink.fillChangeFields(updateContent);
 
-		result.insertObject(updateLink, ObjStatus.UPDATE);
+		result.insertObject(updateLink, ObjStatus.UPDATE, updateLink.pid());
 	}
 
 	private void updateNodeGeometry(Result result) throws Exception {
@@ -90,14 +90,14 @@ public class Operation implements IOperation {
 			RdNode node = OperateUtils.createNode(command.getSlon(),
 					command.getSlat());
 
-			result.insertObject(node, ObjStatus.INSERT);
+			result.insertObject(node, ObjStatus.INSERT, node.pid());
 		}
 
 		if (command.geteNodePid() > 0) {
 			RdNode node = OperateUtils.createNode(command.getElon(),
 					command.getElat());
 
-			result.insertObject(node, ObjStatus.INSERT);
+			result.insertObject(node, ObjStatus.INSERT, node.pid());
 		}
 
 	}

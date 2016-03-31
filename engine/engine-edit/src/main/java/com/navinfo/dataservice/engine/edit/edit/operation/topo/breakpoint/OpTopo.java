@@ -52,7 +52,7 @@ public class OpTopo implements IOperation {
 			
 			RdNode node = OperateUtils.createNode(command.getPoint().getX(), command.getPoint().getY());
 			
-			result.insertObject(node, ObjStatus.INSERT);
+			result.insertObject(node, ObjStatus.INSERT, node.pid());
 			
 			command.setBreakNodePid(node.getPid());
 		}
@@ -66,9 +66,9 @@ public class OpTopo implements IOperation {
 
 		command.getLink2().setsNodePid(command.getBreakNodePid());
 
-		result.insertObject(command.getLink1(), ObjStatus.INSERT);
+		result.insertObject(command.getLink1(), ObjStatus.INSERT, command.getLink1().pid());
 
-		result.insertObject(command.getLink2(), ObjStatus.INSERT);
+		result.insertObject(command.getLink2(), ObjStatus.INSERT, command.getLink2().pid());
 		
 		jaDisplayLink.add(command.getLink1().Serialize(ObjLevel.BRIEF));
 

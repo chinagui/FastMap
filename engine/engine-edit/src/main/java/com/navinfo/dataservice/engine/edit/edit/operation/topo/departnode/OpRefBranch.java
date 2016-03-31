@@ -19,7 +19,7 @@ public class OpRefBranch implements IOperation {
 
 		for( RdBranch branch : command.getBranches()){
 			
-			result.insertObject(branch, ObjStatus.DELETE);
+			result.insertObject(branch, ObjStatus.DELETE, branch.pid());
 		}
 		
 		return null;

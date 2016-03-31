@@ -38,7 +38,7 @@ public class Result implements ISerializable {
 	
 	private JSONArray checkResults = new JSONArray();
 	
-	
+	private JSONArray logs = new JSONArray();
 
 	public JSONArray getCheckResults() {
 		return checkResults;
@@ -51,26 +51,67 @@ public class Result implements ISerializable {
 	/**
 	 * 添加对象到结果列表
 	 * 
-	 * @param io
+	 * @param row
 	 *            对象
 	 * @param os
 	 *            对象状态
+	 * @param topParentPid
+	 * 			       最顶级父表的pid           
+	 * 
 	 */
-	public void insertObject(IRow io, ObjStatus os) {
+	public void insertObject(IRow row, ObjStatus os, int topParentPid) {
 
+		JSONObject json = new JSONObject();
+		
+		json.put("type", row.objType());
+		
+		if(row instanceof IObj){
+			IObj obj = (IObj)row;
+			
+			if(obj.parentTableName().equals(obj.tableName())){
+				//该表没有父
+				json.put("pid", obj.pid());
+				
+				json.put("childPid", "");
+			}
+			else{
+				//该表有父表
+				json.put("pid", topParentPid);
+				
+				json.put("childPid", obj.pid());
+			}
+		}
+		else{
+			json.put("pid", topParentPid);
+			
+			if(row.parentPKValue() == topParentPid){
+				//该表是二级子表
+				json.put("childPid", "");
+			}
+			else{
+				//该表是三级子表
+				json.put("childPid", row.parentPKValue());
+			}
+		}
+		
 		switch (os) {
 		case INSERT:
-			listAddIRow.add(io);
+			listAddIRow.add(row);
+			json.put("op", "新增");
 			break;
 		case DELETE:
-			listDelIRow.add(io);
+			listDelIRow.add(row);
+			json.put("op", "删除");
 			break;
 		case UPDATE:
-			listUpdateIRow.add(io);
+			listUpdateIRow.add(row);
+			json.put("op", "修改");
 			break;
 		default:
 			break;
 		}
+		
+		logs.add(json);
 	}
 
 	/**
@@ -116,93 +157,6 @@ public class Result implements ISerializable {
 	 * @return 操作结果信息
 	 */
 	public String getLogs() {
-
-		JSONArray array = new JSONArray();
-
-		for (IRow row : this.getAddObjects()) {
-			if (row instanceof IObj) {
-
-				IObj obj = (IObj) row;
-
-				JSONObject json = new JSONObject();
-
-				json.put("pid", obj.pid());
-
-				json.put("type", obj.objType());
-
-				json.put("op", "新增");
-
-				array.add(json);
-			}else if (row instanceof IRow){
-
-				JSONObject json = new JSONObject();
-
-				json.put("rowId", row.rowId());
-
-				json.put("type", row.objType());
-
-				json.put("op", "新增");
-
-				array.add(json);
-			}
-		}
-
-		for (IRow row : this.getDelObjects()) {
-			if (row instanceof IObj) {
-
-				IObj obj = (IObj) row;
-
-				JSONObject json = new JSONObject();
-
-				json.put("pid", obj.pid());
-
-				json.put("type", obj.objType());
-
-				json.put("op", "删除");
-
-				array.add(json);
-			}else if (row instanceof IRow){
-
-				JSONObject json = new JSONObject();
-
-				json.put("rowId", row.rowId());
-
-				json.put("type", row.objType());
-
-				json.put("op", "删除");
-
-				array.add(json);
-			}
-		}
-
-		for (IRow row : this.getUpdateObjects()) {
-			if (row instanceof IObj) {
-
-				IObj obj = (IObj) row;
-
-				JSONObject json = new JSONObject();
-
-				json.put("pid", obj.pid());
-
-				json.put("type", obj.objType());
-
-				json.put("op", "修改");
-
-				array.add(json);
-			}else if (row instanceof IRow){
-
-				JSONObject json = new JSONObject();
-
-				json.put("rowId", row.rowId());
-
-				json.put("type", row.objType());
-
-				json.put("op", "修改");
-
-				array.add(json);
-			}
-		}
-
-		return array.toString();
+		return logs.toString();
 	}
 }

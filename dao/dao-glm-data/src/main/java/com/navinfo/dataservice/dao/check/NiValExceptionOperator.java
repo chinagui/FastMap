@@ -164,7 +164,7 @@ public class NiValExceptionOperator {
 				
 				Result result = new Result();
 				
-				result.insertObject(ckexception, ObjStatus.INSERT);
+				result.insertObject(ckexception, ObjStatus.INSERT, ckexception.getExceptionId());
 				
 				LogWriter writer = new LogWriter(conn);
 				

@@ -220,8 +220,8 @@ public class RdRestrictionDetailOperator implements IOperator {
 		}
 
 		for (IRow r : detail.getConditions()) {
-			RdRestrictionDetailOperator op = new RdRestrictionDetailOperator(
-					conn, (RdRestrictionDetail) r);
+			RdRestrictionConditionOperator op = new RdRestrictionConditionOperator(
+					conn, (RdRestrictionCondition) r);
 
 			op.insertRow2Sql(stmt);
 		}

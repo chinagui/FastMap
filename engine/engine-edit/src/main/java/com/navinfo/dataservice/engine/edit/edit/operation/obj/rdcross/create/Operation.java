@@ -133,7 +133,7 @@ public class Operation implements IOperation {
 		
 		cross.setLinks(links);
 
-		result.insertObject(cross, ObjStatus.INSERT);
+		result.insertObject(cross, ObjStatus.INSERT, cross.pid());
 
 		return null;
 	}

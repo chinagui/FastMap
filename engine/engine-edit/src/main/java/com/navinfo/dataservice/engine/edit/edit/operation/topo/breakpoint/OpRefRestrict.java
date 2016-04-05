@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -53,7 +54,7 @@ public class OpRefRestrict implements IOperation {
 
 			changedFields.put("inLinkPid", inLinkPid);
 
-			result.insertObject(rr, ObjStatus.UPDATE);
+			result.insertObject(rr, ObjStatus.UPDATE, rr.pid());
 
 		}
 	}
@@ -78,25 +79,28 @@ public class OpRefRestrict implements IOperation {
 						.put("outLinkPid", command.getLink2().getPid());
 			}
 
-			result.insertObject(detail, ObjStatus.UPDATE);
+			result.insertObject(detail, ObjStatus.UPDATE, detail.parentPKValue());
 		}
 
 	}
 
 	// 处理交限经过线
 
-	private void handleRdRestrictionVias(List<List<RdRestrictionVia>> list)
+	private void handleRdRestrictionVias(List<List<Entry<Integer, RdRestrictionVia>>> list)
 			throws Exception {
 
-		for (List<RdRestrictionVia> vias : list) {
+		for (List<Entry<Integer, RdRestrictionVia>> vias : list) {
 
-			for (RdRestrictionVia v : vias) {
+			for (Entry<Integer, RdRestrictionVia> entry : vias) {
+				
+				RdRestrictionVia v = entry.getValue();
+				
 				if (v.getLinkPid() != command.getLinkPid()) {
 					Map<String, Object> changedFields = v.changedFields();
 
 					changedFields.put("seqNum", v.getSeqNum() + 1);
 
-					result.insertObject(v, ObjStatus.UPDATE);
+					result.insertObject(v, ObjStatus.UPDATE, entry.getKey());
 				} else {
 
 					RdRestrictionVia via1 = new RdRestrictionVia();
@@ -120,11 +124,11 @@ public class OpRefRestrict implements IOperation {
 
 					via2.setSeqNum(via2.getSeqNum() + 1);
 
-					result.insertObject(v, ObjStatus.DELETE);
+					result.insertObject(v, ObjStatus.DELETE, entry.getKey());
 
-					result.insertObject(via1, ObjStatus.INSERT);
+					result.insertObject(via1, ObjStatus.INSERT, entry.getKey());
 
-					result.insertObject(via2, ObjStatus.INSERT);
+					result.insertObject(via2, ObjStatus.INSERT, entry.getKey());
 
 				}
 			}

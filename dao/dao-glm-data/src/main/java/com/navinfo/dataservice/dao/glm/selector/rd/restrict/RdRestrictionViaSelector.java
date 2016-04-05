@@ -3,8 +3,10 @@ package com.navinfo.dataservice.dao.glm.selector.rd.restrict;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
@@ -162,11 +164,11 @@ public class RdRestrictionViaSelector implements ISelector {
 		return rows;
 	}
 
-	public List<List<RdRestrictionVia>> loadRestrictionViaByLinkPid(
+	public List<List<Entry<Integer, RdRestrictionVia>>> loadRestrictionViaByLinkPid(
 			int linkPid, boolean isLock) throws Exception {
-		List<List<RdRestrictionVia>> list = new ArrayList<List<RdRestrictionVia>>();
+		List<List<Entry<Integer, RdRestrictionVia>>> list = new ArrayList<List<Entry<Integer, RdRestrictionVia>>>();
 
-		List<RdRestrictionVia> listVia = new ArrayList<RdRestrictionVia>();
+		List<Entry<Integer, RdRestrictionVia>> listVia = new ArrayList<Entry<Integer, RdRestrictionVia>>();
 
 //		String sql = "select a.*, b.s_node_pid, b.e_node_pid, d.node_pid in_node_pid   from rd_restriction_via    a,    "
 //				+ "    rd_link               b,        rd_restriction        d,        "
@@ -177,7 +179,7 @@ public class RdRestrictionViaSelector implements ISelector {
 //				+ "and a.detail_id = c.detail_id)  order by a.detail_id, a.seq_num";
 		
 		
-		String sql = "select a.*, b.s_node_pid, b.e_node_pid, d.node_pid in_node_pid,f.mesh_id   from rd_restriction_via    a,    "
+		String sql = "select a.*, b.s_node_pid, b.e_node_pid, d.pid, d.node_pid in_node_pid,f.mesh_id   from rd_restriction_via    a,    "
 				+ "    rd_link               b,        rd_restriction        d,        "
 				+ "rd_restriction_detail e ,rd_link f where a.link_pid = b.link_pid   "
 				+ " and a.detail_id = e.detail_id    and e.restric_pid = d.pid  "
@@ -246,9 +248,11 @@ public class RdRestrictionViaSelector implements ISelector {
 			via.isetInNodePid(resultSet.getInt("in_node_pid"));
 			
 			via.setMesh(resultSet.getInt("mesh_id"));
+			
+			int pid = resultSet.getInt("pid");
 
 			if (!isChanged) {
-				listVia.add(via);
+				listVia.add(new AbstractMap.SimpleEntry(pid, via));
 
 			} else {
 
@@ -260,9 +264,9 @@ public class RdRestrictionViaSelector implements ISelector {
 
 				list.add(listVia);
 
-				listVia = new ArrayList<RdRestrictionVia>();
+				listVia = new ArrayList<Entry<Integer, RdRestrictionVia>>();
 
-				listVia.add(via);
+				listVia.add(new AbstractMap.SimpleEntry(pid, via));
 
 				isChanged = false;
 			}

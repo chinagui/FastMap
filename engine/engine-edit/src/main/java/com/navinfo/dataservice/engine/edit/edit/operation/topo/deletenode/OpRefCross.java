@@ -38,17 +38,17 @@ public class OpRefCross implements IOperation {
 			}
 
 			if (nodes.size() == cross.getNodes().size()) {
-				result.insertObject(cross, ObjStatus.DELETE);
+				result.insertObject(cross, ObjStatus.DELETE, cross.pid());
 			} else {
 				for (RdCrossNode node : nodes) {
-					result.insertObject(node, ObjStatus.DELETE);
+					result.insertObject(node, ObjStatus.DELETE, cross.pid());
 				}
 
 				for (IRow row : cross.getLinks()) {
 					RdCrossLink link = (RdCrossLink) row;
 
 					if (command.getLinkPids().contains(link.getLinkPid())) {
-						result.insertObject(link, ObjStatus.DELETE);
+						result.insertObject(link, ObjStatus.DELETE, cross.pid());
 						break;
 					}
 				}

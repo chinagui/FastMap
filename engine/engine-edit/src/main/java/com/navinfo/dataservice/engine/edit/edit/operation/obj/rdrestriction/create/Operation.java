@@ -183,7 +183,7 @@ public class Operation implements IOperation {
 			restrict.setRestricInfo(sb.toString());
 		}
 
-		result.insertObject(restrict, ObjStatus.INSERT);
+		result.insertObject(restrict, ObjStatus.INSERT, restrict.pid());
 
 		return null;
 	}

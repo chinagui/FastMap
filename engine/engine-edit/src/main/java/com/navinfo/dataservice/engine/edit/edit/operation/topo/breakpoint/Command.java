@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint;
 
 import java.util.List;
+import java.util.Map.Entry;
 
 import net.sf.json.JSONObject;
 
@@ -48,13 +49,13 @@ public class Command implements ICommand {
 
 	private List<RdRestrictionDetail> restrictionDetails;
 
-	private List<List<RdRestrictionVia>> listRestrictionVias;
+	private List<List<Entry<Integer, RdRestrictionVia>>> listRestrictionVias;
 
 	private List<RdLaneConnexity> laneConnextys;
 
 	private List<RdLaneTopology> laneTopologys;
 
-	private List<List<RdLaneVia>> laneVias;
+	private List<List<Entry<Integer, RdLaneVia>>> laneVias;
 
 	private List<RdSpeedlimit> speedlimits;
 
@@ -118,11 +119,11 @@ public class Command implements ICommand {
 		this.laneTopologys = laneTopologys;
 	}
 
-	public List<List<RdLaneVia>> getLaneVias() {
+	public List<List<Entry<Integer, RdLaneVia>>> getLaneVias() {
 		return laneVias;
 	}
 
-	public void setLaneVias(List<List<RdLaneVia>> laneVias) {
+	public void setLaneVias(List<List<Entry<Integer, RdLaneVia>>> laneVias) {
 		this.laneVias = laneVias;
 	}
 
@@ -159,11 +160,11 @@ public class Command implements ICommand {
 		this.restrictionDetails = restrictionDetails;
 	}
 
-	public List<List<RdRestrictionVia>> geListRestrictVias() {
+	public List<List<Entry<Integer, RdRestrictionVia>>> geListRestrictVias() {
 		return listRestrictionVias;
 	}
 
-	public void setRestrictListVias(List<List<RdRestrictionVia>> listVias) {
+	public void setRestrictListVias(List<List<Entry<Integer, RdRestrictionVia>>> listVias) {
 		this.listRestrictionVias = listVias;
 	}
 

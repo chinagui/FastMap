@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.patternimg;
+package org.navinfo.dataservice.engine.meta.patternimage;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,7 +10,7 @@ import java.sql.PreparedStatement;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 
-public class ImportPatternImage {
+public class PatternImageImporter {
 
 	private static Connection conn;
 

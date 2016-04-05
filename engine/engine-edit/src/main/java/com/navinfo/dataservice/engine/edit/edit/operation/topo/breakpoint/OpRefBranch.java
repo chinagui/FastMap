@@ -8,7 +8,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
-import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 
 public class OpRefBranch implements IOperation {
 
@@ -53,7 +52,7 @@ public class OpRefBranch implements IOperation {
 
 			changedFields.put("inLinkPid", inLinkPid);
 
-			result.insertObject(branch, ObjStatus.UPDATE);
+			result.insertObject(branch, ObjStatus.UPDATE, branch.pid());
 
 		}
 	}
@@ -78,7 +77,7 @@ public class OpRefBranch implements IOperation {
 						.put("outLinkPid", command.getLink2().getPid());
 			}
 
-			result.insertObject(branch, ObjStatus.UPDATE);
+			result.insertObject(branch, ObjStatus.UPDATE, branch.pid());
 		}
 
 	}
@@ -96,12 +95,12 @@ public class OpRefBranch implements IOperation {
 
 					changedFields.put("seqNum", v.getSeqNum() + 1);
 
-					result.insertObject(v, ObjStatus.UPDATE);
+					result.insertObject(v, ObjStatus.UPDATE, v.parentPKValue());
 				} else {
 
-					RdRestrictionVia via1 = new RdRestrictionVia();
+					RdBranchVia via1 = new RdBranchVia();
 
-					RdRestrictionVia via2 = new RdRestrictionVia();
+					RdBranchVia via2 = new RdBranchVia();
 
 					via1.copy(v);
 
@@ -120,11 +119,11 @@ public class OpRefBranch implements IOperation {
 
 					via2.setSeqNum(via2.getSeqNum() + 1);
 
-					result.insertObject(v, ObjStatus.DELETE);
+					result.insertObject(v, ObjStatus.DELETE, v.parentPKValue());
 
-					result.insertObject(via1, ObjStatus.INSERT);
+					result.insertObject(via1, ObjStatus.INSERT, via1.parentPKValue());
 
-					result.insertObject(via2, ObjStatus.INSERT);
+					result.insertObject(via2, ObjStatus.INSERT, via1.parentPKValue());
 
 				}
 			}

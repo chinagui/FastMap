@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.photo;
 
 import com.navinfo.dataservice.commons.db.HBaseAddress;
-import com.navinfo.dataservice.commons.db.SolrAddress;
 
 /**
  * 照片导入基类
@@ -19,5 +18,5 @@ public interface IPhotoImporter {
 	 *            Solr连接
 	 * @return True 成功
 	 */
-	public boolean importPhoto(HBaseAddress ha, String dir, SolrAddress sa);
+	public boolean importPhoto(HBaseAddress ha, String dir);
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.hbase.async.GetRequest;
 import org.hbase.async.KeyValue;
+import org.hbase.async.PutRequest;
 import org.hbase.async.Scanner;
 
 import com.navinfo.dataservice.commons.util.ByteUtils;
@@ -34,7 +35,7 @@ public class HBaseController {
 		return getByRowkey("tips", rowkey, null);
 	}
 
-	private ArrayList<ArrayList<KeyValue>> scan(String tableName,
+	public ArrayList<ArrayList<KeyValue>> scan(String tableName,
 			String startKey, String stopKey, String family,
 			String... qualifiers) throws Exception {
 
@@ -62,6 +63,5 @@ public class HBaseController {
 
 		return result;
 	}
-
 
 }

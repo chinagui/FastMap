@@ -25,11 +25,11 @@ public class OpTopo implements IOperation {
 		
 		result.setPrimaryPid(link.getPid());
 		
-		result.insertObject(link, ObjStatus.DELETE);
+		result.insertObject(link, ObjStatus.DELETE, link.pid());
 		
 		for(RdNode node : command.getNodes()){
 			
-			result.insertObject(node, ObjStatus.DELETE);
+			result.insertObject(node, ObjStatus.DELETE, node.pid());
 		}
 		
 		return msg;

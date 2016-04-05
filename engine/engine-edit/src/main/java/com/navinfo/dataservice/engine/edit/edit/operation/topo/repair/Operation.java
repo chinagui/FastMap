@@ -131,7 +131,7 @@ public class Operation implements IOperation {
 				
 				content.put("sNodePid", node.getPid());
 				
-				result.insertObject(node, ObjStatus.INSERT);
+				result.insertObject(node, ObjStatus.INSERT, node.pid());
 			}
 			
 			if(eNodeDepart){
@@ -140,7 +140,7 @@ public class Operation implements IOperation {
 				
 				content.put("eNodePid", node.getPid());
 				
-				result.insertObject(node, ObjStatus.INSERT);
+				result.insertObject(node, ObjStatus.INSERT, node.pid());
 			}
 			
 		} else if ((command.getInterLines().size() == 1 || command
@@ -160,7 +160,7 @@ public class Operation implements IOperation {
 				
 				sNodePid=node.getPid();
 				
-				result.insertObject(node, ObjStatus.INSERT);
+				result.insertObject(node, ObjStatus.INSERT, node.pid());
 			}
 			
 			if(eNodeDepart){
@@ -171,7 +171,7 @@ public class Operation implements IOperation {
 				
 				eNodePid = node.getPid();
 				
-				result.insertObject(node, ObjStatus.INSERT);
+				result.insertObject(node, ObjStatus.INSERT, node.pid());
 			}
 
 			this.breakLine(sNodePid, eNodePid);
@@ -191,13 +191,13 @@ public class Operation implements IOperation {
 					content.put("sNodePid", pid);
 
 					if(!sNodeDepart){ //如果是分离节点，需要保留该node，否则不保留
-						result.insertObject(snode, ObjStatus.DELETE);
+						result.insertObject(snode, ObjStatus.DELETE, snode.pid());
 					}
 				} else {
 					content.put("eNodePid", pid);
 
 					if(!eNodeDepart){ //如果是分离节点，需要保留该node，否则不保留
-						result.insertObject(enode, ObjStatus.DELETE);
+						result.insertObject(enode, ObjStatus.DELETE, enode.pid());
 					}
 				}
 			}
@@ -217,13 +217,13 @@ public class Operation implements IOperation {
 					content.put("sNodePid", pid);
 
 					if(!sNodeDepart){ //如果是分离节点，需要保留该node，否则不保留
-						result.insertObject(snode, ObjStatus.DELETE);
+						result.insertObject(snode, ObjStatus.DELETE, snode.pid());
 					}
 				} else {
 					content.put("eNodePid", pid);
 
 					if(!eNodeDepart){ //如果是分离节点，需要保留该node，否则不保留
-						result.insertObject(enode, ObjStatus.DELETE);
+						result.insertObject(enode, ObjStatus.DELETE, enode.pid());
 					}
 				}
 			}
@@ -241,7 +241,7 @@ public class Operation implements IOperation {
 					
 					sNodePid=node.getPid();
 					
-					result.insertObject(node, ObjStatus.INSERT);
+					result.insertObject(node, ObjStatus.INSERT, node.pid());
 				}
 			}
 			else{
@@ -253,7 +253,7 @@ public class Operation implements IOperation {
 					
 					eNodePid = node.getPid();
 					
-					result.insertObject(node, ObjStatus.INSERT);
+					result.insertObject(node, ObjStatus.INSERT, node.pid());
 				}
 			}
 			
@@ -265,7 +265,7 @@ public class Operation implements IOperation {
 		boolean isChanged = updateLink.fillChangeFields(content);
 
 		if (isChanged) {
-			result.insertObject(updateLink, ObjStatus.UPDATE);
+			result.insertObject(updateLink, ObjStatus.UPDATE, updateLink.pid());
 		}
 
 		return null;

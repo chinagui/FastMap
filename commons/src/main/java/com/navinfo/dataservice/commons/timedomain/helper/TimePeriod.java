@@ -12,7 +12,6 @@ public class TimePeriod {
 	private String m_sTimeSpan = "";
 
 	private List<TimePoint> m_vTP = new ArrayList<TimePoint>();
-	private List<String> m_sTPException = new ArrayList<String>(); 
 	private Map<String, Pair<Integer, Integer>> m_mSPair = new HashMap<String, Pair<Integer, Integer>>();
 	private String m_sWeekTime = "";
 
@@ -45,15 +44,54 @@ public class TimePeriod {
 					}
 				}
 			}
-		}else if(m_sTimeSpan.charAt(0) == '(' && m_sTimeSpan.charAt(m_sTimeSpan.length() - 1) == ')'){
+		}else if(m_sTimeSpan.charAt(0) == '[' && m_sTimeSpan.charAt(1) == '(' && m_sTimeSpan.endsWith("]") && m_sTimeSpan.charAt(m_sTimeSpan.length()-2) == '}'){
+			int nWeekBegin = getWeekTimePoint(m_sTimeSpan,'(', ')');
+			int nWeekEnd = getWeekTimePoint(m_sTimeSpan,'{', '}');
+
+			if(nWeekBegin == -1 || nWeekEnd == -1)
+			{
+				return false;
+			}
+
+			if( (nWeekBegin < 1 || nWeekBegin > 7) || (nWeekEnd < 1 || nWeekEnd > 7))
+			{
+				return false;
+			}
+
+			if(nWeekBegin == 1)
+			{
+				m_sWeekTime += "周日到";
+
+				if(nWeekEnd == 1)
+				{
+					m_sWeekTime = "周日";
+				}else{
+					m_sWeekTime += "周" + (nWeekEnd-1);
+				}
+
+			}else{
+				m_sWeekTime += "周" + (nWeekBegin-1) + "到";
+
+				if(nWeekEnd == 1)
+				{
+					m_sWeekTime = "周" + (nWeekBegin - 1);
+				}else{
+					nWeekEnd = (nWeekBegin - 1 + nWeekEnd - 1) % 7;
+					if(nWeekEnd == 0)
+					{
+						m_sWeekTime  += "周日";
+					}else{
+						m_sWeekTime += "周" + (nWeekEnd);
+					}
+				}
+			}
+		}
+		
+		else if(m_sTimeSpan.charAt(0) == '(' && m_sTimeSpan.charAt(m_sTimeSpan.length() - 1) == ')'){
 			if(computeWeekTime(m_sTimeSpan) == false)
 				return false;
-//		}else if (m_sTimeSpan.startsWith("[") && m_sTimeSpan.charAt(1) == '(' && m_sTimeSpan.endsWith("]") && m_sTimeSpan.charAt(m_sTimeSpan.length()-2) == '}'){
-//			if (computeContinueDayTime(m_sTimeSpan) == false)
-//				return false;
-		}else if(m_sTimeSpan.contains("){")){
-			if(computeContinueDayTime(m_sTimeSpan) == false)
-				return false;
+		}else {
+			return false;
 		}
 		return true;
 	}
@@ -143,49 +181,29 @@ public class TimePeriod {
 		return true;
 	}
 
-	private boolean computeContinueDayTime(String sIn) {
-		if (sIn.isEmpty())
-			return false;
+	private int getWeekTimePoint(String sIn, char lc, char rc)
+	{
+		int nBeg = 0;
+		int nEnd = 0;
 
-		int week = 0;
-		
-		for (int i = 0; i < sIn.length(); i++) {
-			if (sIn.charAt(i) == 't' || sIn.charAt(i) == 'T') {
-				if (sIn.length() > i) {
-					int nDig = Integer.valueOf(String.valueOf(sIn.charAt(i + 1)));
+		nBeg = m_sTimeSpan.indexOf(lc);
+		nEnd = m_sTimeSpan.indexOf(rc);
+		if(nBeg == -1 || nEnd == -1)
+		{
+			return -1;
+		}
 
-					week = nDig;
-					if (!m_sWeekTime.isEmpty()){
-						m_sWeekTime += ",";
-					}
-					if (nDig >= 2 && nDig <= 7) {
-						m_sWeekTime += "周" + (nDig - 1);
-					} else if (nDig == 1) {
-						m_sWeekTime += "周日";
-					} else if (nDig == 8) {
-						m_sWeekTime += "节假日";
-					}
-				}
-			}
-			if (sIn.charAt(i) == 'd' || sIn.charAt(i) == 'D') {
-				if (sIn.length() > i) {
-					int nDig = Integer.valueOf(String.valueOf(sIn.charAt(i + 1)));
-					if (nDig != 1){
-						nDig = (nDig + week-1)%8;
-						
-						if (nDig >= 2 && nDig <= 7) {
-							m_sWeekTime += "周" + (nDig - 1) + " ";
-						} else if (nDig == 1) {
-							m_sWeekTime += "周日";
-						} else if (nDig == 8) {
-							m_sWeekTime += "节假日";
-						}
-					}
-				}
-			}
+		String sTmp = TimeDecoderUtils.getSubStr(m_sTimeSpan, nBeg, nEnd + 1);
+		if(sTmp.isEmpty() || sTmp.length() != 4)
+		{
+			return -1;
+		}
 
+		if(sTmp.charAt(2) >= '0' && sTmp.charAt(2) <= '9')
+		{
+			return sTmp.charAt(2) - '0';
 		}
 		
-		return true;
+		return -1;
 	}
 }

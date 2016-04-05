@@ -54,7 +54,7 @@ public class Operation implements IOperation {
 		
 		limit.setLinkPid(command.getLinkPid());
 		
-		result.insertObject(limit, ObjStatus.INSERT);
+		result.insertObject(limit, ObjStatus.INSERT, limit.pid());
 		
 		return msg;
 	}

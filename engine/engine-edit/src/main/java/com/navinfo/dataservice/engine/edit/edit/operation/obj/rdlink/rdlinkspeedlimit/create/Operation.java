@@ -83,7 +83,7 @@ public class Operation implements IOperation {
 			
 			limit.setSpeedClassWork(0);
 			
-			result.insertObject(limit, ObjStatus.INSERT);
+			result.insertObject(limit, ObjStatus.INSERT, linkPid);
 		}
 
 		return null;

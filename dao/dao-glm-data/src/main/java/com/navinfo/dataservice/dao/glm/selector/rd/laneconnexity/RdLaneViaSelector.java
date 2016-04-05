@@ -3,8 +3,10 @@ package com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -158,18 +160,18 @@ public class RdLaneViaSelector implements ISelector {
 	}
 
 	
-	public List<List<RdLaneVia>> loadRdLaneViaByLinkPid(
+	public List<List<Entry<Integer, RdLaneVia>>> loadRdLaneViaByLinkPid(
 			int linkPid, boolean isLock) throws Exception {
-		List<List<RdLaneVia>> list = new ArrayList<List<RdLaneVia>>();
+		List<List<Entry<Integer, RdLaneVia>>> list = new ArrayList<List<Entry<Integer, RdLaneVia>>>();
 
-		List<RdLaneVia> listVia = new ArrayList<RdLaneVia>();
+		List<Entry<Integer, RdLaneVia>> listVia = new ArrayList<Entry<Integer, RdLaneVia>>();
 
 //		String sql = "select a.*, b.s_node_pid, b.e_node_pid, d.node_pid in_node_pid   from rd_lane_via    a,    " +
 //				"    rd_link               b,        rd_lane_connexity        d,        rd_lane_topology e " +
 //				" where a.link_pid = b.link_pid    and a.topology_id = e.topology_id    and e.connexity_pid = d.pid    and exists (select null           from rd_lane_via c          where link_pid = :1   " +
 //				"         and a.topology_id = c.topology_id)  order by a.topology_id, a.seq_num ";
 		
-		String sql = "select a.*, b.s_node_pid, b.e_node_pid, d.node_pid in_node_pid,f.mesh_id   from rd_lane_via    a,    " +
+		String sql = "select a.*, b.s_node_pid, b.e_node_pid,d.pid, d.node_pid in_node_pid,f.mesh_id   from rd_lane_via    a,    " +
 				"    rd_link               b,        rd_lane_connexity        d,        rd_lane_topology e,rd_link f " +
 				" where a.link_pid = b.link_pid    and a.topology_id = e.topology_id    and e.connexity_pid = d.pid    and exists (select null           from rd_lane_via c          where link_pid = :1   " +
 				"         and a.topology_id = c.topology_id) and d.in_link_pid = f.link_pid  order by a.topology_id, a.seq_num ";
@@ -239,9 +241,11 @@ public class RdLaneViaSelector implements ISelector {
 			via.isetInNodePid(resultSet.getInt("in_node_pid"));
 			
 			via.setMesh(resultSet.getInt("mesh_id"));
+			
+			int pid = resultSet.getInt("pid");
 
 			if (!isChanged) {
-				listVia.add(via);
+				listVia.add(new AbstractMap.SimpleEntry(pid, via));
 
 			} else {
 
@@ -253,9 +257,9 @@ public class RdLaneViaSelector implements ISelector {
 
 				list.add(listVia);
 
-				listVia = new ArrayList<RdLaneVia>();
+				listVia = new ArrayList<Entry<Integer,RdLaneVia>>();
 
-				listVia.add(via);
+				listVia.add(new AbstractMap.SimpleEntry(pid, via));
 
 				isChanged = false;
 			}

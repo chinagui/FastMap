@@ -2,9 +2,6 @@ package com.navinfo.dataservice.engine.photo;
 
 import java.util.List;
 
-import com.navinfo.dataservice.commons.db.HBaseAddress;
-import com.navinfo.dataservice.commons.db.SolrAddress;
-
 /**
  * 搜索照片库
  */

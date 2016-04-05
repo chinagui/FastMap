@@ -19,7 +19,7 @@ public class OpRefLaneConnexity implements IOperation {
 
 		for( RdLaneConnexity lane : command.getLanes()){
 			
-			result.insertObject(lane, ObjStatus.DELETE);
+			result.insertObject(lane, ObjStatus.DELETE, lane.pid());
 		}
 		
 		return null;

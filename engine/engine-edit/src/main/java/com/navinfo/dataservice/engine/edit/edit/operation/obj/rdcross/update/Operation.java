@@ -43,7 +43,7 @@ public class Operation implements IOperation {
 
 			if (ObjStatus.DELETE.toString().equals(
 					content.getString("objStatus"))) {
-				result.insertObject(cross, ObjStatus.DELETE);
+				result.insertObject(cross, ObjStatus.DELETE, cross.pid());
 
 				return null;
 			} else {
@@ -51,7 +51,7 @@ public class Operation implements IOperation {
 				boolean isChanged = cross.fillChangeFields(content);
 
 				if (isChanged) {
-					result.insertObject(cross, ObjStatus.UPDATE);
+					result.insertObject(cross, ObjStatus.UPDATE, cross.pid());
 				}
 			}
 		}
@@ -78,7 +78,7 @@ public class Operation implements IOperation {
 
 						if (ObjStatus.DELETE.toString().equals(
 								nodeJson.getString("objStatus"))) {
-							result.insertObject(node, ObjStatus.DELETE);
+							result.insertObject(node, ObjStatus.DELETE, cross.pid());
 
 							continue;
 						} else if (ObjStatus.UPDATE.toString().equals(
@@ -87,7 +87,7 @@ public class Operation implements IOperation {
 							boolean isChanged = node.fillChangeFields(nodeJson);
 
 							if (isChanged) {
-								result.insertObject(node, ObjStatus.UPDATE);
+								result.insertObject(node, ObjStatus.UPDATE, cross.pid());
 							}
 						}
 					} else {
@@ -99,7 +99,7 @@ public class Operation implements IOperation {
 						
 						node.setMesh(cross.mesh());
 
-						result.insertObject(node, ObjStatus.INSERT);
+						result.insertObject(node, ObjStatus.INSERT, cross.pid());
 
 						continue;
 					}
@@ -130,7 +130,7 @@ public class Operation implements IOperation {
 
 						if (ObjStatus.DELETE.toString().equals(
 								json.getString("objStatus"))) {
-							result.insertObject(node, ObjStatus.DELETE);
+							result.insertObject(node, ObjStatus.DELETE, cross.pid());
 
 							continue;
 						} else if (ObjStatus.UPDATE.toString().equals(
@@ -139,7 +139,7 @@ public class Operation implements IOperation {
 							boolean isChanged = node.fillChangeFields(json);
 
 							if (isChanged) {
-								result.insertObject(node, ObjStatus.UPDATE);
+								result.insertObject(node, ObjStatus.UPDATE, cross.pid());
 							}
 						}
 					} else {
@@ -151,7 +151,7 @@ public class Operation implements IOperation {
 						
 						link.setMesh(cross.mesh());
 
-						result.insertObject(link, ObjStatus.INSERT);
+						result.insertObject(link, ObjStatus.INSERT, cross.pid());
 
 						continue;
 					}
@@ -182,7 +182,7 @@ public class Operation implements IOperation {
 
 						if (ObjStatus.DELETE.toString().equals(
 								json.getString("objStatus"))) {
-							result.insertObject(name, ObjStatus.DELETE);
+							result.insertObject(name, ObjStatus.DELETE, cross.pid());
 
 							continue;
 						} else if (ObjStatus.UPDATE.toString().equals(
@@ -191,7 +191,7 @@ public class Operation implements IOperation {
 							boolean isChanged = name.fillChangeFields(json);
 
 							if (isChanged) {
-								result.insertObject(name, ObjStatus.UPDATE);
+								result.insertObject(name, ObjStatus.UPDATE, cross.pid());
 							}
 						}
 					} else {
@@ -205,7 +205,7 @@ public class Operation implements IOperation {
 						
 						name.setMesh(cross.mesh());
 
-						result.insertObject(name, ObjStatus.INSERT);
+						result.insertObject(name, ObjStatus.INSERT, cross.pid());
 
 						continue;
 					}
@@ -298,10 +298,10 @@ public class Operation implements IOperation {
 				if(needDelete && deleteRow != null){
 					
 					if(forms.size() == 1){
-						result.insertObject(deleteRow, ObjStatus.UPDATE);
+						result.insertObject(deleteRow, ObjStatus.UPDATE, cross.pid());
 					}
 					else{
-						result.insertObject(deleteRow, ObjStatus.DELETE);
+						result.insertObject(deleteRow, ObjStatus.DELETE, cross.pid());
 					}
 				}
 			}
@@ -357,7 +357,7 @@ public class Operation implements IOperation {
 					
 					form.setFormOfWay(50);
 					
-					result.insertObject(form, ObjStatus.INSERT);
+					result.insertObject(form, ObjStatus.INSERT, cross.pid());
 				}
 			}
 			

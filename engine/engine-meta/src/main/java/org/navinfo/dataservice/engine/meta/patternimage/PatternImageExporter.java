@@ -1,4 +1,4 @@
-package org.navinfo.dataservice.engine.meta;
+package org.navinfo.dataservice.engine.meta.patternimage;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;

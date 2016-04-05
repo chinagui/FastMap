@@ -73,7 +73,7 @@ public class Operation implements IOperation {
 
 			link.fillChangeFields(updateContent);
 
-			result.insertObject(link, ObjStatus.UPDATE);
+			result.insertObject(link, ObjStatus.UPDATE, link.pid());
 		}
 	}
 
@@ -91,6 +91,6 @@ public class Operation implements IOperation {
 
 		updateNode.fillChangeFields(updateContent);
 		
-		result.insertObject(updateNode, ObjStatus.UPDATE);
+		result.insertObject(updateNode, ObjStatus.UPDATE, updateNode.pid());
 	}
 }

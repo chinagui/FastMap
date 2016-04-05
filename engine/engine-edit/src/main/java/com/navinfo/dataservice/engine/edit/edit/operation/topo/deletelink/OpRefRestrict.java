@@ -19,7 +19,7 @@ public class OpRefRestrict implements IOperation {
 
 		for( RdRestriction restrict : command.getRestrictions()){
 			
-			result.insertObject(restrict, ObjStatus.DELETE);
+			result.insertObject(restrict, ObjStatus.DELETE, restrict.pid());
 		}
 		
 		return null;

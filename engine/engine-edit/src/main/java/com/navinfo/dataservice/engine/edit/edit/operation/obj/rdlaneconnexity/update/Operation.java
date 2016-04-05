@@ -41,14 +41,14 @@ public class Operation implements IOperation {
 
 			if (ObjStatus.DELETE.toString().equals(
 					content.getString("objStatus"))) {
-				result.insertObject(lane, ObjStatus.DELETE);
+				result.insertObject(lane, ObjStatus.DELETE, lane.pid());
 
 				return null;
 			} else {
 				
 				if(content.containsKey("laneInfo")){
 					if(content.getString("laneInfo").length()==0){
-						result.insertObject(lane, ObjStatus.DELETE);
+						result.insertObject(lane, ObjStatus.DELETE, lane.pid());
 
 						return null;
 					}
@@ -57,7 +57,7 @@ public class Operation implements IOperation {
 				boolean isChanged = lane.fillChangeFields(content);
 
 				if (isChanged) {
-					result.insertObject(lane, ObjStatus.UPDATE);
+					result.insertObject(lane, ObjStatus.UPDATE, lane.pid());
 				}
 			}
 		}
@@ -94,7 +94,7 @@ public class Operation implements IOperation {
 							
 							topoPids.remove(topo.getPid());
 							
-							result.insertObject(topo, ObjStatus.DELETE);
+							result.insertObject(topo, ObjStatus.DELETE, lane.pid());
 
 							continue;
 						} else if (ObjStatus.UPDATE.toString().equals(
@@ -103,7 +103,7 @@ public class Operation implements IOperation {
 							boolean isChanged = topo.fillChangeFields(json);
 
 							if (isChanged) {
-								result.insertObject(topo, ObjStatus.UPDATE);
+								result.insertObject(topo, ObjStatus.UPDATE, lane.pid());
 							}
 						}
 					} else {
@@ -118,7 +118,7 @@ public class Operation implements IOperation {
 						
 						topo.setMesh(lane.mesh());
 
-						result.insertObject(topo, ObjStatus.INSERT);
+						result.insertObject(topo, ObjStatus.INSERT, lane.pid());
 						
 						topoPids.add(topo.getPid());
 
@@ -149,7 +149,7 @@ public class Operation implements IOperation {
 
 								if (ObjStatus.DELETE.toString().equals(
 										viajson.getString("objStatus"))) {
-									result.insertObject(via, ObjStatus.DELETE);
+									result.insertObject(via, ObjStatus.DELETE, lane.pid());
 
 									continue;
 								} else if (ObjStatus.UPDATE.toString().equals(
@@ -160,7 +160,7 @@ public class Operation implements IOperation {
 
 									if (isChanged) {
 										result.insertObject(via,
-												ObjStatus.UPDATE);
+												ObjStatus.UPDATE, lane.pid());
 									}
 								}
 							} else {
@@ -172,7 +172,7 @@ public class Operation implements IOperation {
 								
 								via.setMesh(lane.mesh());
 
-								result.insertObject(via, ObjStatus.INSERT);
+								result.insertObject(via, ObjStatus.INSERT, lane.pid());
 
 								continue;
 							}
@@ -186,7 +186,7 @@ public class Operation implements IOperation {
 				
 				result.clear();
 				
-				result.insertObject(lane, ObjStatus.DELETE);
+				result.insertObject(lane, ObjStatus.DELETE, lane.pid());
 			}
 		}
 

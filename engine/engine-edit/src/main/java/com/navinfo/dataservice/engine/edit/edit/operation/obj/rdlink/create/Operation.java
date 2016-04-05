@@ -71,7 +71,7 @@ public class Operation implements IOperation {
 
 				RdNode node = OperateUtils.createNode(point.x, point.y);
 
-				result.insertObject(node, ObjStatus.INSERT);
+				result.insertObject(node, ObjStatus.INSERT, node.pid());
 
 				se.put("s", node.getPid());
 			} else {
@@ -85,7 +85,7 @@ public class Operation implements IOperation {
 
 				RdNode node = OperateUtils.createNode(point.x, point.y);
 
-				result.insertObject(node, ObjStatus.INSERT);
+				result.insertObject(node, ObjStatus.INSERT, node.pid());
 
 				se.put("e", node.getPid());
 			} else {
@@ -138,7 +138,7 @@ public class Operation implements IOperation {
 				
 				AdminUtils.SetAdminInfo4Link(link, conn);
 
-				result.insertObject(link, ObjStatus.INSERT);
+				result.insertObject(link, ObjStatus.INSERT, link.pid());
 			} else {
 
 				Iterator<String> it = meshes.iterator();
@@ -188,7 +188,7 @@ public class Operation implements IOperation {
 
 						setLinkChildren(link);
 
-						result.insertObject(link, ObjStatus.INSERT);
+						result.insertObject(link, ObjStatus.INSERT, link.pid());
 
 					}
 				}
@@ -281,7 +281,7 @@ public class Operation implements IOperation {
 
 			RdNode node = OperateUtils.createNode(x, y);
 
-			result.insertObject(node, ObjStatus.INSERT);
+			result.insertObject(node, ObjStatus.INSERT, node.pid());
 
 			se.put("s", node.getPid());
 			
@@ -321,7 +321,7 @@ public class Operation implements IOperation {
 
 					RdNode node = OperateUtils.createNode(x, y);
 
-					result.insertObject(node, ObjStatus.INSERT);
+					result.insertObject(node, ObjStatus.INSERT, node.pid());
 
 					se.put("e", node.getPid());
 					
@@ -365,7 +365,7 @@ public class Operation implements IOperation {
 
 				RdNode node = OperateUtils.createNode(x, y);
 
-				result.insertObject(node, ObjStatus.INSERT);
+				result.insertObject(node, ObjStatus.INSERT, node.pid());
 
 				se.put("e", node.getPid());
 				

@@ -2,9 +2,9 @@ package com.navinfo.dataservice.expcore;
 
 import java.util.concurrent.CountDownLatch;
 
-import com.navinfo.dataservice.jobframework.AbstractJob;
-import com.navinfo.dataservice.jobframework.JobInfo;
+import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.jobframework.exception.JobException;
+import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 
 /** 
 * @ClassName: GdbExpJob 
@@ -31,6 +31,17 @@ public class GdbExpJob extends AbstractJob {
 	@Override
 	public void execute() throws JobException {
 		// TODO Auto-generated method stub
+		startNewStep(10,"开始导出第一个库");
+		Exporter2OracleByScripts fullCoy=null;
+		try{
+			fullCoy.execute();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		startNewStep(20,"开始复制第二个库");
+
+		startNewStep(90,"开始差分");
 
 	}
 

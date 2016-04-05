@@ -40,17 +40,16 @@ public class MsgSubscriber {
 	 * @param handler
 	 * @throws Exception
 	 */
-	private synchronized Channel createQueueChannel(String name)throws Exception{
+	private synchronized Channel createQueueChannel(Connection conn,String name)throws Exception{
 		if(queueChannelMap.containsKey(name)){
 			throw new Exception("已经订阅此队列，不能重复订阅");
 		}else{
 			Channel channel = null;
 			try{
-				channel = MQConnector.getInstance().createChannel();
+				channel = conn.createChannel(false);
 			}catch(Exception e){
+				MQConnectionUtil.closeQuietly(channel);
 				throw e;
-			}finally{
-				MQConnector.getInstance().closeChannelQuietly(channel);
 			}
 			queueChannelMap.put(name, channel);
 			return channel;
@@ -59,13 +58,16 @@ public class MsgSubscriber {
 	public synchronized void cancelSubScribe(String name)throws Exception{
 		if(queueChannelMap.containsKey(name)){
 			Channel channel = queueChannelMap.get(name);
-			MQConnector.getInstance().closeChannelQuietly(channel);
+			channel.abort();
 			queueChannelMap.remove(name);
 		}
 	}
 	public void subscribeFromSimpleQueue(String name,MsgHandler handler)throws Exception{
-		Channel channel = createQueueChannel(name);
+		Connection conn = null;
+		Channel channel = null;
 		try{
+			conn = MQConnector.getInstance().getConnection();
+			channel = createQueueChannel(conn,name);
 			channel.queueDeclare(name, false, false, false, null);
 			Consumer consumer = new SimpleMsgConsumer(channel,handler);
 		    channel.basicConsume(name, true, consumer);
@@ -73,7 +75,8 @@ public class MsgSubscriber {
 			log.error(e.getMessage(),e);
 			throw e;
 		}finally{
-			channel.close();
+			MQConnectionUtil.closeQuietly(channel);
+			MQConnectionUtil.closeQuietly(conn);
 		}
 	}
 	/**
@@ -84,8 +87,11 @@ public class MsgSubscriber {
 	 * @throws Exception
 	 */
 	public void subscribeFromWorkQueue(String name,final MsgHandler handler)throws Exception{
-		Channel channel = createQueueChannel(name);
+		Connection conn = null;
+		Channel channel = null;
 		try{
+			conn = MQConnector.getInstance().getConnection();
+			channel = createQueueChannel(conn,name);
 			channel.queueDeclare(name, true, false, false, null);
 			channel.basicQos(1);
 			QueueingConsumer consumer = new QueueingConsumer(channel);
@@ -101,7 +107,8 @@ public class MsgSubscriber {
 			log.error(e.getMessage(),e);
 			throw e;
 		}finally{
-			channel.close();
+			MQConnectionUtil.closeQuietly(channel);
+			MQConnectionUtil.closeQuietly(conn);
 		}
 	}
 	/**
@@ -111,8 +118,11 @@ public class MsgSubscriber {
 	 * @throws Exception
 	 */
 	public void subscribeFromBCQueue(String name,MsgHandler handler)throws Exception{
-		Channel channel = createQueueChannel(name);
+		Connection conn = null;
+		Channel channel = null;
 		try{
+			conn = MQConnector.getInstance().getConnection();
+			channel = createQueueChannel(conn,name);
 			channel.exchangeDeclare(name, "fanout");
 			String queueName = channel.queueDeclare().getQueue();
 			channel.queueBind(queueName, name, "");
@@ -129,7 +139,8 @@ public class MsgSubscriber {
 			log.error(e.getMessage(),e);
 			throw e;
 		}finally{
-			channel.close();
+			MQConnectionUtil.closeQuietly(channel);
+			MQConnectionUtil.closeQuietly(conn);
 		}
 	}
 	/**
@@ -143,8 +154,11 @@ public class MsgSubscriber {
 		if(StringUtils.isEmpty(name)||msgIdentitySet==null||msgIdentitySet.size()==0){
 			throw new Exception("name、msgIdentitySet不能为空");
 		}
-		Channel channel = createQueueChannel(name);
+		Connection conn = null;
+		Channel channel = null;
 		try{
+			conn = MQConnector.getInstance().getConnection();
+			channel = createQueueChannel(conn,name);
 			channel.exchangeDeclare(name, "direct");
 			String queueName = channel.queueDeclare().getQueue();
 			for(String identity:msgIdentitySet){
@@ -167,20 +181,23 @@ public class MsgSubscriber {
 			channel.close();
 		}
 	}
-	public static void helloWorld()throws Exception{
+	public void helloWorld()throws Exception{
 		Connection conn=null;
 		Channel channel = null;
 		try{
-			conn = MQConnector.getInstance().getConnectionFactory().createConnection();
-			channel = conn.createChannel(false);
+			conn = MQConnector.getInstance().getConnection();
+			channel = createQueueChannel(conn,"hello_world");
 			channel.queueDeclare("hello_world", false, false, false, null);
 		    Consumer consumer = new DefaultConsumer(channel) {
 		    	
 		        @Override
 		        public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
 		            throws IOException {
-		          //String message = new String(body, "UTF-8");
-		          //log.debug(" [x] Received '" + message + "'");
+		          String message = new String(body, "UTF-8");
+		          if(Integer.valueOf(message.substring(0, message.indexOf(":")))%2000==0){
+
+			          log.debug(" [x] Received '" + message + "'");
+		          }
 		        }
 		      };
 		      channel.basicConsume("hello_world", true, consumer);
@@ -209,11 +226,33 @@ public class MsgSubscriber {
 	
 	public static void main(String[] args){
 		try{
-			//MsgSubscriber.helloWorld();
-			SimpleMsgConsumer msg1 = new SimpleMsgConsumer(null,null);
-			SimpleMsgConsumer msg2 = new SimpleMsgConsumer(null,null);
-			System.out.println(msg1);
-			System.out.println(msg2);
+			while(true){
+				final MsgSubscriber sub = new MsgSubscriber();
+				new Thread(){
+					@Override
+					public void run() {
+						try{
+							sub.helloWorld();
+						}catch(Exception e){
+							e.printStackTrace();
+						}
+					}
+					
+				}.start();
+				new Thread(){
+					@Override
+					public void run() {
+						try{
+							Thread.sleep(3000);
+							sub.cancelSubScribe("hello_world");
+							System.out.println("Over....");
+						}catch(Exception e){
+							e.printStackTrace();
+						}
+					}
+				}.start();
+				Thread.sleep(8000);
+			}
 		}catch(Exception e){
 			e.printStackTrace();
 		}

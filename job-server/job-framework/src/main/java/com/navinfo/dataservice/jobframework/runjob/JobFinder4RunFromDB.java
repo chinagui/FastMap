@@ -1,5 +1,6 @@
-package com.navinfo.dataservice.jobframework;
+package com.navinfo.dataservice.jobframework.runjob;
 
+import com.navinfo.dataservice.jobframework.JobFinder;
 
 /** 
 * @ClassName: JobFinderFromDB 
@@ -7,7 +8,7 @@ package com.navinfo.dataservice.jobframework;
 * @date 2016年3月29日 下午5:05:49 
 * @Description: TODO
 */
-public class JobFinderFromDB implements JobFinder {
+public class JobFinder4RunFromDB implements JobFinder {
 	@Override
 	public void startFinding() {
 		// TODO Auto-generated method stub

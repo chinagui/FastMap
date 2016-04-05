@@ -2,8 +2,10 @@ package com.navinfo.dataservice.jobframework.service;
 
 import java.util.List;
 
-import com.navinfo.dataservice.jobframework.JobInfo;
+import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.jobframework.exception.JobServiceException;
+
+import net.sf.json.JSONObject;
 
 /** 
 * @ClassName: JobInfoService 
@@ -13,13 +15,16 @@ import com.navinfo.dataservice.jobframework.exception.JobServiceException;
 */
 public class JobInfoService {
 
-	public List<JobInfo> getAllJobInfo()throws JobServiceException{
+	public long createJob(String jobType,JSONObject request,long projectId,long userId)throws JobServiceException{
+		return 0L;
+	}
+	public List<JobInfo> getAllJob()throws JobServiceException{
 		return null;
 	}
-	public JobInfo getJobInfoById(long jobId)throws JobServiceException{
+	public JobInfo getJobById(long jobId)throws JobServiceException{
 		return null;
 	}
-	public JobInfo getJobInfoByType(String jobType)throws JobServiceException{
+	public JobInfo getJobByType(String jobType)throws JobServiceException{
 		return null;
 	}
 }

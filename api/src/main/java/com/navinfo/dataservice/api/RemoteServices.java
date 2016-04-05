@@ -5,7 +5,7 @@ import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
 
-import com.navinfo.dataservice.api.iface.datalock.DatalockService;
+import com.navinfo.dataservice.api.datalock.iface.DatalockService;
 
 /** 
 * @ClassName: RemoteServices 

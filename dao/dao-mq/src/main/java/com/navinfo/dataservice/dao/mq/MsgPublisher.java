@@ -43,7 +43,7 @@ public class MsgPublisher {
 			throw e;
 		}finally{
 			if(channel!=null)channel.close();
-			//if(conn!=null)conn.close();
+			if(conn!=null)conn.close();
 		}
 	}
 	/**
@@ -68,7 +68,7 @@ public class MsgPublisher {
 			throw e;
 		}finally{
 			if(channel!=null)channel.close();
-			//if(conn!=null)conn.close();
+			if(conn!=null)conn.close();
 		}
 	}
 	public static void publish2BCQueue(String name,String msgContent)throws Exception{
@@ -87,7 +87,7 @@ public class MsgPublisher {
 			throw e;
 		}finally{
 			if(channel!=null)channel.close();
-			//if(conn!=null)conn.close();
+			if(conn!=null)conn.close();
 		}
 	}
 	public static void publish2RoutingQueue(String name,String msgIdentity,String msgContent)throws Exception{
@@ -106,7 +106,7 @@ public class MsgPublisher {
 			throw e;
 		}finally{
 			if(channel!=null)channel.close();
-			//if(conn!=null)conn.close();
+			if(conn!=null)conn.close();
 		}
 	}
 	public static void helloWord(String content)throws Exception{

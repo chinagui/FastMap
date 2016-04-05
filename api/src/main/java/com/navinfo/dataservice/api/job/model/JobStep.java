@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.jobframework;
+package com.navinfo.dataservice.api.job.model;
 
 import java.util.Date;
 

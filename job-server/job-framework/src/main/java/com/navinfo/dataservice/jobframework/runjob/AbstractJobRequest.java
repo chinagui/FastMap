@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.jobframework;
+package com.navinfo.dataservice.jobframework.runjob;
 
 import java.util.Iterator;
 import java.util.List;

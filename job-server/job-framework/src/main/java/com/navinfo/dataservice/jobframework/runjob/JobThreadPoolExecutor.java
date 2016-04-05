@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.jobframework;
+package com.navinfo.dataservice.jobframework.runjob;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
@@ -15,7 +15,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.config.DynamicSystemConfig;
+import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 
 /**
  * 不需要限制最大的线程数，所以取个尽可能大的数999作为MaximumPoolSize
@@ -34,11 +35,11 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor implements Observe
 
 	private Map<String,Set<String>> jobPool;//key:jobType,value:jobIdentity set
 	private JobThreadPoolExecutor(){
-		super(Integer.parseInt(DynamicSystemConfig.getInstance().getValue(POOL_SIZE_KEY))
-				,Integer.parseInt(DynamicSystemConfig.getInstance().getValue(POOL_SIZE_KEY))
+		super(Integer.parseInt(SystemConfigFactory.getSystemConfig().getValue(POOL_SIZE_KEY))
+				,Integer.parseInt(SystemConfigFactory.getSystemConfig().getValue(POOL_SIZE_KEY))
 				,3,TimeUnit.SECONDS,new LinkedBlockingQueue(),new ThreadPoolExecutor.CallerRunsPolicy());
 		jobPool = new ConcurrentHashMap<String,Set<String>>();
-		DynamicSystemConfig.getInstance().addObserver(this);
+		SystemConfigFactory.getSystemConfig().addObserver(this);
 	}
 
 	public int getCountByJobType(String jobType){
@@ -89,7 +90,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor implements Observe
 			}else{
 				set = new ConcurrentSkipListSet<String>();
 				set.add(jobInfo.getIdentity());
-				jobPool.put(jobInfo.getType(), set);
+				jobPool.put(jobInfo.getType().toString(), set);
 			}
 			AbstractJob job = JobCreateStrategy.create(
 					jobInfo,new CountDownLatch(1));
@@ -118,8 +119,8 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor implements Observe
 			if(changedKeys!=null){
 				if(changedKeys.contains(POOL_SIZE_KEY)){
 					log.info("重置线程池大小---");
-					this.setCorePoolSize(Integer.parseInt(DynamicSystemConfig.getInstance().getValue("scheduleTaskCount")));
-					this.setMaximumPoolSize(Integer.parseInt(DynamicSystemConfig.getInstance().getValue("scheduleTaskCount")));
+					this.setCorePoolSize(Integer.parseInt(SystemConfigFactory.getSystemConfig().getValue("scheduleTaskCount")));
+					this.setMaximumPoolSize(Integer.parseInt(SystemConfigFactory.getSystemConfig().getValue("scheduleTaskCount")));
 				}
 			}
 		}

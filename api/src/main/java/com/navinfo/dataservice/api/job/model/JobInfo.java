@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.jobframework;
+package com.navinfo.dataservice.api.job.model;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,7 +14,7 @@ import net.sf.json.JSONObject;
 */
 public class JobInfo {
 	private long id;
-	private String type;
+	private JobType type;
 	private Date createTime;
 	private Date beginTime;
 	private Date endTime;
@@ -25,6 +25,7 @@ public class JobInfo {
 	private long userId;
 	private String descp;
 	private List<JobStep> steps;
+	private int stepCount=0;
 	private String identity;
 	public JobInfo(long id){
 		this.projectId=0L;
@@ -43,10 +44,10 @@ public class JobInfo {
 	public void setId(long id) {
 		this.id = id;
 	}
-	public String getType() {
+	public JobType getType() {
 		return type;
 	}
-	public void setType(String type) {
+	public void setType(JobType type) {
 		this.type = type;
 	}
 	public Date getCreateTime() {
@@ -103,6 +104,12 @@ public class JobInfo {
 	public void setDescp(String descp) {
 		this.descp = descp;
 	}
+	public int getStepCount() {
+		return stepCount;
+	}
+	public void setStepCount(int stepCount) {
+		this.stepCount = stepCount;
+	}
 /* override hashCode() & equals() */
 	public int hashCode(){
 		return getIdentity().hashCode();
@@ -131,6 +138,29 @@ public class JobInfo {
 	 * @param progress
 	 * @param stepMsg
 	 */
+	public JobStep addStep(String stepMsg){
+		if(steps==null){
+			synchronized(this){
+				if(steps==null){
+					steps = new ArrayList<JobStep>();
+				}
+			}
+		}
+		JobStep step = new JobStep(id);
+		step.setStepMsg(stepMsg);
+		synchronized(this){
+			int seq = steps.size();
+			step.setStepSeq(seq);
+			steps.add(step);
+		}
+		return step;
+	}
+	/**
+	 * 线程安全
+	 * @param progress
+	 * @param stepMsg
+	 */
+	@Deprecated
 	public JobStep addStep(int progress,String stepMsg){
 		if(steps==null){
 			synchronized(this){

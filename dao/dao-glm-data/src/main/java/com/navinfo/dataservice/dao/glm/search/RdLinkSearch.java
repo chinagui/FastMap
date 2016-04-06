@@ -374,7 +374,9 @@ public class RdLinkSearch implements ISearch {
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
-				JSONObject jo = Geojson.link2Pixel(struct, px, py, z);
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
+				
+				JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
 				
 				snapshot.setG(jo.getJSONArray("coordinates"));
 

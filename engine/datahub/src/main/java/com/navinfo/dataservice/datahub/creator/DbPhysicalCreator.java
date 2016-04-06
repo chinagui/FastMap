@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.datahub.creator;
 
-import com.navinfo.dataservice.api.model.DbServerType;
+import com.navinfo.dataservice.api.datahub.model.DbServerType;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
 import com.navinfo.dataservice.datahub.model.UnifiedDb;
 

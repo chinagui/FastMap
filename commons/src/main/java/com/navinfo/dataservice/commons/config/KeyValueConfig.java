@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.commons.config;
 
 import java.util.HashMap;
+import java.util.Observer;
 
 /** 
  * 注意：非线程安全
@@ -49,6 +50,13 @@ public class KeyValueConfig implements SystemConfig {
 
 	public String put(String key,String value){
 		return maps.put(key, value);
+	}
+	
+	public void addObserver(Observer o){
+		//do nothing.
+	}
+	public void deleteObserver(Observer o){
+		//do nothing.
 	}
 	
 	public static void main(String[] args){

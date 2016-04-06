@@ -26,6 +26,11 @@ public class GeometryUtils {
 	    return s;
 	}
 	
+	public static double getDistance(Coordinate coord1, Coordinate coord2)
+	{
+	    return getDistance(coord1.y, coord1.x, coord2.y, coord2.x);
+	}
+	
 	 /**
 	  * 是否是逆时针方向
 	 * @param ring

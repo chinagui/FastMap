@@ -8,7 +8,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
-import com.navinfo.dataservice.api.model.DbServerType;
+import com.navinfo.dataservice.api.datahub.model.DbServerType;
 import com.navinfo.dataservice.commons.config.KeyValueConfig;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;

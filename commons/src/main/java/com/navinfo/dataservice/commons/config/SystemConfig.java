@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.commons.config;
 
+import java.util.Observer;
+
 public interface SystemConfig {
 
     public String getValue(String key) ;
@@ -13,4 +15,6 @@ public interface SystemConfig {
     public Boolean getBooleanValue(String key);
     
     public String put(String key, String value);
+    public void addObserver(Observer o);
+    public void deleteObserver(Observer o);
 }

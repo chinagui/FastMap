@@ -51,6 +51,9 @@
  	
 <!-- hbase address part -->
  	<hbase.address>192.168.3.156</hbase.address>
+<!-- MQ -->
+	<main.mq.uri>amqp://fos:fos@192.168.4.188:5672</main.mq.uri>
+	<main.mq.cacheSize.channel>20</main.mq.cacheSize.channel>
 
  
 </configMap>

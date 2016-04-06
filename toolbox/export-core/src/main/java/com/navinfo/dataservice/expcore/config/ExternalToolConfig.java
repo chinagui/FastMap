@@ -8,8 +8,8 @@ import net.sf.json.JSONObject;
 
 import org.dom4j.Document;
 
-import com.navinfo.dataservice.jobframework.AbstractJobRequest;
 import com.navinfo.dataservice.jobframework.exception.JobRuntimeException;
+import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
 /** 
  * @ClassName: ExternalToolConfig 

@@ -4,11 +4,11 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.model.DbServerType;
 import com.navinfo.dataservice.datahub.creator.DbPhysicalCreator;
 import com.navinfo.dataservice.datahub.creator.MongoDbPhysicalCreator;
 import com.navinfo.dataservice.datahub.creator.OracleSchemaPhysicalCreator;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
+import com.navinfo.dataservice.api.datahub.model.DbServerType;
 import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 

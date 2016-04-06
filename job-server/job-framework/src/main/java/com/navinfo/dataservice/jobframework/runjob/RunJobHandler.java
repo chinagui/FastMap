@@ -1,5 +1,6 @@
-package com.navinfo.dataservice.jobframework;
+package com.navinfo.dataservice.jobframework.runjob;
 
+import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
 
 /** 

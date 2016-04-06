@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.dao.mq.job;
 
+import com.navinfo.dataservice.api.job.model.JobMsgType;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
 import com.navinfo.dataservice.dao.mq.MsgSubscriber;
 

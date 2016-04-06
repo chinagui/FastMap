@@ -17,12 +17,13 @@ import com.navinfo.dataservice.commons.exception.ConfigParseException;
 
 
 /**
+ * 只有包内部使用
  * 支持动态修改的配置文件类
  * 加入observer列表中的对象需要谨慎，一般随系统启动到关闭都存在的对象/线程才能加入，任务类内部/短线程一般不能加入
  * @author xiaoxiaowen4127
  *
  */
-public class DynamicSystemConfig extends Observable implements SystemConfig {
+class DynamicSystemConfig extends Observable implements SystemConfig {
 	private static Logger log = Logger.getLogger(DynamicSystemConfig.class);
 	private static class SingletonHolder{
 		private static final DynamicSystemConfig INSTANCE = new DynamicSystemConfig();
@@ -60,7 +61,7 @@ public class DynamicSystemConfig extends Observable implements SystemConfig {
             }
         } catch (Exception e) {
         	log.error(e.getMessage());
-            throw new ConfigParseException("读取文件" + configFile + "错误", e);
+            //throw new ConfigParseException("读取文件" + configFile + "错误", e);
         } finally {
             try {
                 if (is != null)

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.fcc.tips.highway;
+package com.navinfo.dataservice.engine.fcc.tips.mark3d;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -18,18 +18,13 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.commons.util.DisplayUtils;
-import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
 import com.navinfo.dataservice.engine.fcc.tips.TipsImportUtils;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKTReader;
 
-public class HighwayTipsBuilder {
+public class Mark3DTipsBuilder {
 
-	private static String sql = "with tmp1 as  (select a.branch_pid,    b.arrow_code,    b.pattern_code,    b.exit_num,    c.names,    a.in_link_pid,    a.node_pid,    a.out_link_pid  from rd_branch a,    (select *    from (select b.*,        row_number() over(partition by branch_pid order by branch_type desc) ro      from rd_branch_detail b     where (b.branch_type in (0, 2) or        (b.branch_type = 1 and b.pattern_code is not null)))   where ro = 1) b,    (select b.detail_id,      listagg(b.name, ',') within group(order by seq_num) names    from rd_branch_name b   group by b.detail_id) c where a.branch_pid = b.branch_pid   and b.detail_id = c.detail_id(+)), tmp2 as  (select in_link_pid,    node_pid,     listagg(branch_pid || '-' || arrow_code || '-' || exit_num || '-' ||      names || '-' || out_link_pid || '-' || pattern_code,      '^') within group(order by out_link_pid) info  from tmp1 group by in_link_pid, node_pid) select a.*, b.direct, b.geometry link_geom, c.geometry point_geom   from tmp2 a, rd_link b, rd_node c  where a.in_link_pid = b.link_pid and a.node_pid = c.node_pid";
-	private static String type = "1407";
+	private static String sql = "with tmp1 as  (select a.branch_pid,          b.arrow_code,          b.pattern_code,          b.exit_num,          c.names,          a.in_link_pid,          a.node_pid,          a.out_link_pid     from rd_branch a,          (select *             from (select b.*,                          row_number() over(partition by branch_pid order by branch_type desc) ro                     from rd_branch_detail b                    where b.branch_type =3 and b.pattern_code != '80000000')            where ro = 1) b,          (select b.detail_id,                  listagg(b.name, ',') within group(order by seq_num) names             from rd_branch_name b            group by b.detail_id) c    where a.branch_pid = b.branch_pid      and b.detail_id = c.detail_id(+)), tmp2 as  (select in_link_pid,          node_pid,          listagg(branch_pid || '-' || arrow_code || '-' || exit_num || '-' ||                  names || '-' || out_link_pid || '-' || pattern_code,                  '^') within group(order by out_link_pid) info     from tmp1    group by in_link_pid, node_pid) select a.*, b.direct, b.geometry link_geom, c.geometry point_geom   from tmp2 a, rd_link b, rd_node c  where a.in_link_pid = b.link_pid    and a.node_pid = c.node_pid";
+	private static String type = "1403";
 
 	/**
 	 * 导入入口程序块
@@ -122,7 +117,7 @@ public class HighwayTipsBuilder {
 		String pointWkt = new String(new WKT().fromJGeometry(geom2));
 
 		double[][] point = DisplayUtils
-				.getTipsPointPos(linkWkt, pointWkt, 3);
+				.getTipsPointPos(linkWkt, pointWkt, 2);
 
 		JSONObject json = new JSONObject();
 
@@ -208,20 +203,6 @@ public class HighwayTipsBuilder {
 			
 			json.put("arw", splits[1]);
 			
-			if ("".equals(splits[2])){
-				json.put("exit", JSONNull.getInstance());
-			}else{
-				json.put("exit", splits[2]);
-			}
-			
-			String names = splits[3];
-			
-			if ("".equals(names)){
-				json.put("n_array", new int[]{});
-			}else{
-				json.put("n_array", names.split(","));
-			}
-			
 			info.add(json);
 			
 			json = new JSONObject();
@@ -229,20 +210,6 @@ public class HighwayTipsBuilder {
 			json.put("sq", sq);
 			
 			json.put("arw", splits[1]);
-			
-			if ("".equals(splits[2])){
-				json.put("exit", JSONNull.getInstance());
-			}else{
-				json.put("exit", splits[2]);
-			}
-			
-			names = splits[3];
-			
-			if ("".equals(names)){
-				json.put("n_array", new int[]{});
-			}else{
-				json.put("n_array", names.split(","));
-			}
 			
 			JSONObject out = new JSONObject();
 			

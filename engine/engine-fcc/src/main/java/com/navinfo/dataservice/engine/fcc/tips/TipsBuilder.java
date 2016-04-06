@@ -12,13 +12,14 @@ import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.db.OracleAddress;
-import com.navinfo.dataservice.commons.service.ProgressService;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.engine.fcc.tips.bridge.BridgeTipsBuilder;
 import com.navinfo.dataservice.engine.fcc.tips.connexity.RdLaneConnexityTipsBuilder;
+import com.navinfo.dataservice.engine.fcc.tips.construct.ConstructTipsBuilder;
 import com.navinfo.dataservice.engine.fcc.tips.cross.RdCrossTipsBuilder;
 import com.navinfo.dataservice.engine.fcc.tips.direct.DirectTipsBuilder;
 import com.navinfo.dataservice.engine.fcc.tips.highway.HighwayTipsBuilder;
+import com.navinfo.dataservice.engine.fcc.tips.mark3d.Mark3DTipsBuilder;
 import com.navinfo.dataservice.engine.fcc.tips.restriction.RdRestrictionTipsBuilder;
 import com.navinfo.dataservice.engine.fcc.tips.speedLimit.RdSpeedLimitTipsBuilder;
 
@@ -101,70 +102,35 @@ public class TipsBuilder {
 	 * @return True成功
 	 * @throws Exception
 	 */
-	public boolean run(OracleAddress fmgdbOA, OracleAddress pmOA, String uuid)
+	public boolean run(OracleAddress fmgdbOA, String uuid)
 			throws Exception {
 
 		Connection hbaseConn = HBaseAddress.getHBaseConnection();
-
+		
 		createTabIfNotExists(hbaseConn, "tips");
 
 		Table htab = hbaseConn.getTable(TableName.valueOf("tips"));
 		
 //		prepareAuxData(pmOA.getConn());
 
-		ProgressService progressManager = new ProgressService(pmOA.getConn(),
-				uuid);
-
-		progressManager.updateProgress("完成度:" + 10 + "%");
-//
-//		BridgeTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-//
-		progressManager.updateProgress("完成度:" + 15 + "%");
-//
-		RdLaneConnexityTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-//
-//		progressManager.updateProgress("完成度:" + 25 + "%");
-//
-//		ConstructTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-//
-		progressManager.updateProgress("完成度:" + 30 + "%");
-
-//		RdCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-
-//		progressManager.updateProgress("完成度:" + 35 + "%");
-//
-//		DirectTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-//
-//		progressManager.updateProgress("完成度:" + 40 + "%");
-//
-//		RdElectTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-//
-//		progressManager.updateProgress("完成度:" + 45 + "%");
-//
-//		ForbiCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-//
-		progressManager.updateProgress("完成度:" + 50 + "%");
-//
-		HighwayTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-//
-//		progressManager.updateProgress("完成度:" + 55 + "%");
-//
-//		LinkNameTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-//
-		progressManager.updateProgress("完成度:" + 60 + "%");
-//
-		RdRestrictionTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-//
-//		progressManager.updateProgress("完成度:" + 70 + "%");
-//
-//		RotaryTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-//
-//		progressManager.updateProgress("完成度:" + 80 + "%");
-
-		RdSpeedLimitTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-
-		progressManager.updateProgress("完成度:" + 100 + "%");
+		BridgeTipsBuilder.importTips(fmgdbOA.getConn(), htab);
 		
+		RdLaneConnexityTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+		
+		RdCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+
+		DirectTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+
+		HighwayTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+
+		RdRestrictionTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+		
+		RdSpeedLimitTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+		
+		Mark3DTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+		
+		ConstructTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+
 //		destroyAuxData(pmOA.getConn());
 
 		return false;
@@ -185,23 +151,11 @@ public class TipsBuilder {
 		
 		OracleAddress oa1 = new OracleAddress(username1,password1,port1,ip1,serviceName1);
 		
-		String username2 = "fmgdb5";
-		
-		String password2 ="fmgdb5";
-		
-		int port2 =1521;
-		
-		String ip2 = "192.168.4.131";
-		
-		String serviceName2 = "orcl";
-		
-		OracleAddress oa2 = new OracleAddress(username2,password2,port2,ip2,serviceName2);
-		
 		TipsBuilder b = new TipsBuilder();
 		
 		HBaseAddress.initHBaseAddress("192.168.3.156");
 		
-		b.run(oa1, oa2, uuid);
+		b.run(oa1, uuid);
 		
 		System.out.println("done");
 		

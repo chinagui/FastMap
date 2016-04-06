@@ -18,7 +18,6 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
-import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
 import com.navinfo.dataservice.engine.fcc.tips.TipsImportUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -29,7 +28,7 @@ import com.vividsolutions.jts.io.WKTReader;
 public class BridgeTipsBuilder {
 
 	private static final WKT wkt = new WKT();
-	
+
 	private static String sql = "with tmp1 as  "
 			+ "(select link_pid,    decode(direct, 1, s_node_pid, 2, s_node_pid, e_node_pid) "
 			+ "s_node_pid,    decode(direct, 1, e_node_pid, 2, e_node_pid, s_node_pid) e_node_pid    "
@@ -58,11 +57,12 @@ public class BridgeTipsBuilder {
 	 * @param fmgdbConn
 	 * @param htab
 	 */
-	public static void importTips(java.sql.Connection fmgdbConn, Table htab,String solrUrl)
+	public static void importTips(java.sql.Connection fmgdbConn, Table htab)
 			throws Exception {
 
-		SolrBulkUpdater solrConn = new SolrBulkUpdater(TipsImportUtils.QueueSize,TipsImportUtils.ThreadCount);
-		
+		SolrBulkUpdater solrConn = new SolrBulkUpdater(
+				TipsImportUtils.QueueSize, TipsImportUtils.ThreadCount);
+
 		Statement stmt = fmgdbConn.createStatement();
 
 		ResultSet resultSet = stmt.executeQuery(sql);
@@ -100,11 +100,7 @@ public class BridgeTipsBuilder {
 
 				JSONObject geometry = new JSONObject();
 
-//				geometry.put("g_location", Geojson.wkt2Geojson(sPointGeom));
-				
-				
-
-				geometry.put("g_guide", geometry.getJSONObject("g_location"));
+				geometry.put("g_guide", Geojson.wkt2Geojson(sPointGeom));
 
 				JSONObject deep = new JSONObject();
 
@@ -126,10 +122,8 @@ public class BridgeTipsBuilder {
 				geom = JGeometry.load(struct);
 
 				String linkWkt = new String(wkt.fromJGeometry(geom));
-				
-				geometry.put("g_location", Geojson.wkt2Geojson(linkWkt));
 
-//				deep.put("geo", Geojson.wkt2Geojson(linkWkt));
+				geometry.put("g_location", Geojson.wkt2Geojson(linkWkt));
 
 				JSONArray fArray = new JSONArray();
 
@@ -138,12 +132,8 @@ public class BridgeTipsBuilder {
 				fJson.put("id", uniqId);
 
 				fJson.put("type", 1);
-				
-				fJson.put("flag", "1|2");
 
-//				fJson.put("sOff", 0.0);
-//
-//				fJson.put("eOff", 1.0);
+				fJson.put("flag", "1|2");
 
 				fArray.add(fJson);
 
@@ -170,9 +160,12 @@ public class BridgeTipsBuilder {
 						.toString().getBytes());
 
 				puts.add(put);
-				
-				JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(rowkey, 0, date, type, deep.toString(), geometry.getJSONObject("g_location"), geometry.getJSONObject("g_guide"));
-				
+
+				JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(
+						rowkey, 0, date, type, deep.toString(),
+						geometry.getJSONObject("g_location"),
+						geometry.getJSONObject("g_guide"));
+
 				solrConn.addTips(solrIndexJson);
 
 			} else {
@@ -184,157 +177,148 @@ public class BridgeTipsBuilder {
 				List<String> listName = new ArrayList<String>();
 
 				List<Double> listLinkLength = new ArrayList<Double>();
-				
+
 				listLinkPid.add(resultSet.getInt("link_pid"));
-				
+
 				struct = (STRUCT) resultSet.getObject("link_geom");
 
 				geom = JGeometry.load(struct);
 
 				String linkWkt = new String(wkt.fromJGeometry(geom));
-				
+
 				listLinkWkt.add(linkWkt);
-				
+
 				String name = resultSet.getString("name");
-				
+
 				listName.add(name);
-				
+
 				double linkLen = resultSet.getDouble("link_len");
 
 				listLinkLength.add(linkLen);
-				
-				while(resultSet.next()){
+
+				while (resultSet.next()) {
 					isleaf = resultSet.getInt("isleaf");
 
 					listLinkPid.add(resultSet.getInt("link_pid"));
-					
+
 					struct = (STRUCT) resultSet.getObject("link_geom");
 
 					geom = JGeometry.load(struct);
 
 					linkWkt = new String(wkt.fromJGeometry(geom));
-					
+
 					listLinkWkt.add(linkWkt);
-					
+
 					name = resultSet.getString("name");
-					
+
 					listName.add(name);
-					
+
 					linkLen = resultSet.getDouble("link_len");
 
 					listLinkLength.add(linkLen);
-					
+
 					if (isleaf == 1) {
-						
+
 						struct = (STRUCT) resultSet.getObject("e_point_geom");
 
 						geom = JGeometry.load(struct);
 
 						String ePointGeom = new String(wkt.fromJGeometry(geom));
-						
+
 						JSONObject geometry = new JSONObject();
 
-//						geometry.put("g_location", Geojson.wkt2Geojson(sPointGeom));
+						geometry.put("g_guide", Geojson.wkt2Geojson(sPointGeom));
 
-						geometry.put("g_guide", geometry.getJSONObject("g_location"));
-						
 						JSONObject deep = new JSONObject();
-						
+
 						boolean isNameNull = false;
-						
-						for(String bridgeName : listName){
-							if (bridgeName == null){
+
+						for (String bridgeName : listName) {
+							if (bridgeName == null) {
 								isNameNull = true;
 								break;
-							}else{
-								if (!bridgeName.endsWith("桥") && !bridgeName.equals("交汇处")){
+							} else {
+								if (!bridgeName.endsWith("桥")
+										&& !bridgeName.equals("交汇处")) {
 									isNameNull = true;
 									break;
 								}
 							}
 						}
-						
-						if (!isNameNull){
+
+						if (!isNameNull) {
 							String tmpName = listName.get(0);
-							
-							for(int i=1;i<listName.size();i++){
-								if (!tmpName.equals(listName.get(i))){
+
+							for (int i = 1; i < listName.size(); i++) {
+								if (!tmpName.equals(listName.get(i))) {
 									isNameNull = true;
 									break;
 								}
 							}
 						}
-						
-						if (isNameNull){
+
+						if (isNameNull) {
 							deep.put("name", JSONNull.getInstance());
-						}else{
+						} else {
 							deep.put("name", listName.get(0));
 						}
 
 						deep.put("gSLoc", Geojson.wkt2Geojson(sPointGeom));
-						
+
 						deep.put("gELoc", Geojson.wkt2Geojson(ePointGeom));
-						
-//						deep.put("geo", connectLinks(listLinkWkt));
-						
-						geometry.put("g_location",connectLinks(listLinkWkt));
-						
+
+						geometry.put("g_location", connectLinks(listLinkWkt));
+
 						double sumLen = 0;
-						
-						for(double len : listLinkLength){
+
+						for (double len : listLinkLength) {
 							sumLen += len;
 						}
-						
-						if (sumLen == 0){
+
+						if (sumLen == 0) {
 							sumLen = 1;
 						}
-						
+
 						JSONArray fArray = new JSONArray();
-						
-//						double curLen = 0.0;
-						
-						for(int i=0;i<listLinkPid.size();i++){
+
+						// double curLen = 0.0;
+
+						for (int i = 0; i < listLinkPid.size(); i++) {
 							JSONObject fJson = new JSONObject();
-							
+
 							fJson.put("id", String.valueOf(listLinkPid.get(i)));
-							
+
 							fJson.put("type", 1);
-							
-//							fJson.put("sOff", curLen / sumLen);
-//							
-//							curLen += listLinkLength.get(i);
-//							
-//							fJson.put("eOff", curLen / sumLen);
-							
-							if (i ==0){
+
+							if (i == 0) {
 								fJson.put("flag", "1");
-							}else if (i == listLinkPid.size()-1){
+							} else if (i == listLinkPid.size() - 1) {
 								fJson.put("flag", "2");
-							}else{
+							} else {
 								fJson.put("flag", "0");
 							}
-							
+
 							fArray.add(fJson);
 						}
-						
+
 						deep.put("f_array", fArray);
-						
+
 						int minLinkPid = listLinkPid.get(0);
-						
-						for(int i=1;i<listLinkPid.size();i++){
-							if (minLinkPid > listLinkPid.get(i)){
+
+						for (int i = 1; i < listLinkPid.size(); i++) {
+							if (minLinkPid > listLinkPid.get(i)) {
 								minLinkPid = listLinkPid.get(i);
 							}
 						}
-						
+
 						uniqId = String.valueOf(minLinkPid);
-						
-						String rowkey = TipsImportUtils.generateRowkey(uniqId, type);
+
+						String rowkey = TipsImportUtils.generateRowkey(uniqId,
+								type);
 
 						String source = TipsImportUtils.generateSource(type);
 
 						String track = TipsImportUtils.generateTrack(date);
-
 
 						Put put = new Put(rowkey.getBytes());
 
@@ -347,25 +331,25 @@ public class BridgeTipsBuilder {
 						put.addColumn("data".getBytes(), "geometry".getBytes(),
 								geometry.toString().getBytes());
 
-						put.addColumn("data".getBytes(), "deep".getBytes(), deep.toString().getBytes());
+						put.addColumn("data".getBytes(), "deep".getBytes(),
+								deep.toString().getBytes());
 
 						puts.add(put);
-						
-						JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(rowkey, 0, date, type, deep.toString(), geometry.getJSONObject("g_location"), geometry.getJSONObject("g_guide"));
-						
+
+						JSONObject solrIndexJson = TipsImportUtils
+								.assembleSolrIndex(rowkey, 0, date, type,
+										deep.toString(),
+										geometry.getJSONObject("g_location"),
+										geometry.getJSONObject("g_guide"));
+
 						solrConn.addTips(solrIndexJson);
-						
+
 						break;
-						
-						
+
 					}
 				}
-				
-				
 
 			}
-
-			
 
 			if (num % 5000 == 0) {
 				htab.put(puts);
@@ -376,78 +360,43 @@ public class BridgeTipsBuilder {
 		}
 
 		htab.put(puts);
-		
+
 		solrConn.commit();
-		
+
 		solrConn.close();
-		
+
 	}
 
-	// 组装solr索引
-//	private static JSONObject assembleSolrIndex(String rowkey, JSONObject geom,
-//			int stage, String date, String type, String deep) throws Exception {
-//		JSONObject json = new JSONObject();
-//
-//		json.put("id", rowkey);
-//
-//		json.put("stage", stage);
-//
-//		json.put("date", date);
-//
-//		json.put("t_lifecycle", 0);
-//
-//		json.put("t_command", 0);
-//
-//		json.put("handler", 0);
-//
-//		json.put("s_sourceType", type);
-//
-//		json.put("s_sourceCode", 11);
-//
-//		JSONObject geojson = geom.getJSONObject("g_location");
-//
-//		json.put("g_location", geojson);
-//
-//		json.put("g_guide", geom.getJSONObject("g_guide"));
-//
-//		json.put("wkt",
-//				GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(geojson)));
-//		
-//		json.put("deep", deep);
-//
-//		return json;
-//	}
-	
-	private static JSONObject connectLinks(List<String> listLink) throws ParseException{
+	private static JSONObject connectLinks(List<String> listLink)
+			throws ParseException {
 		JSONObject json = new JSONObject();
-		
+
 		json.put("type", "LineString");
-		
-		Geometry geom1= new WKTReader().read(listLink.get(0));
-		
-		for(int i=1;i<listLink.size();i++){
+
+		Geometry geom1 = new WKTReader().read(listLink.get(0));
+
+		for (int i = 1; i < listLink.size(); i++) {
 			Geometry geom = new WKTReader().read(listLink.get(i));
-			
+
 			geom1 = geom1.union(geom);
 		}
-		
+
 		Coordinate[] cs = geom1.getCoordinates();
-		
+
 		List<double[]> ps = new ArrayList<double[]>();
-		
-		for(Coordinate c : cs){
+
+		for (Coordinate c : cs) {
 			double[] p = new double[2];
-			
+
 			p[0] = c.x;
-			
+
 			p[1] = c.y;
-			
+
 			ps.add(p);
 		}
-		
+
 		json.put("coordinates", ps);
-		
+
 		return json;
 	}
-
 }

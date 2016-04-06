@@ -15,11 +15,11 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 
-public class RticSearch implements ISearch {
+public class RdLinkIntRticSearch implements ISearch {
 
 	private Connection conn;
 
-	public RticSearch(Connection conn) {
+	public RdLinkIntRticSearch(Connection conn) {
 		this.conn = conn;
 	}
 
@@ -34,8 +34,8 @@ public class RticSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select a.link_pid,        a.geometry,        b.rtics   from rd_link a,        (select listagg(code || ',' || rank|| ',' ||                                rtic_dir || ',' || updown_flag,                                '-') within group(order by link_pid) rtics,                        link_pid                   from rd_link_rtic where u_record!=2                  group by link_pid) b          where a.link_pid = b.link_pid  and a.u_record != 2     and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
-
+		String sql = "with tmp1 as  (select link_pid     from rd_link    where sdo_relate(geometry, sdo_geometry(   :1    , 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2), tmp2 as (select listagg(a.code || ',' || a.rank || ',' || a.rtic_dir || ',' ||                        a.updown_flag,                        '-') within group(order by a.link_pid) rtics,               a.link_pid           from rd_link_int_rtic a, tmp1 b          where a.u_record != 2 and a.link_pid=b.link_pid          group by a.link_pid)               select a.*,b.geometry from tmp2 a , rd_link b where a.link_pid=b.link_pid ";
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -135,8 +135,8 @@ public class RticSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select a.link_pid,        a.geometry,        b.rtics   from rd_link a,        (select listagg(code || ',' || rank|| ',' ||                                rtic_dir || ',' || updown_flag,                                '-') within group(order by link_pid) rtics,                        link_pid                   from rd_link_rtic where u_record!=2                  group by link_pid) b          where a.link_pid = b.link_pid  and a.u_record != 2     and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
-
+		String sql = "with tmp1 as  (select link_pid     from rd_link    where sdo_relate(geometry, sdo_geometry(   :1    , 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2), tmp2 as (select listagg(a.code || ',' || a.rank || ',' || a.rtic_dir || ',' ||                        a.updown_flag,                        '-') within group(order by a.link_pid) rtics,               a.link_pid           from rd_link_int_rtic a, tmp1 b          where a.u_record != 2 and a.link_pid=b.link_pid          group by a.link_pid)               select a.*,b.geometry from tmp2 a , rd_link b where a.link_pid=b.link_pid ";
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;

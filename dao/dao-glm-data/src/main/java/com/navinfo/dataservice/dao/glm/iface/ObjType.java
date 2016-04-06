@@ -56,5 +56,6 @@ public enum ObjType {
 	ADLINKMESH,
 	ADNODE,
 	ADNODEMESH,
+	RWLINK,
 	CKEXCEPTION;
 }

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.dao.glm.selector.ad;
+package com.navinfo.dataservice.dao.glm.selector.ad.geo;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,7 +14,8 @@ import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
-import com.navinfo.dataservice.dao.glm.model.ad.AdFace;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 
 public class AdFaceSelector implements ISelector {
 
@@ -63,9 +64,23 @@ public class AdFaceSelector implements ISelector {
 				face.setEditFlag(resultSet.getInt("edit_flag"));
 				
 				face.setRowId(resultSet.getString("row_id"));
+				
+				// ad_face_topo
+				List<IRow> adFaceTopo = new AdFaceTopoSelector(conn).loadRowsByParentId(id, isLock);
+
+				for (IRow row : adFaceTopo) {
+					row.setMesh(face.mesh());
+				}
+
+				face.setFaceTopos(adFaceTopo);
+
+				for (IRow row : adFaceTopo) {
+					AdFaceTopo obj = (AdFaceTopo) row;
+
+					face.adFaceTopoMap.put(obj.rowId(), obj);
+				}
 
 			} else {
-				
 				throw new DataNotFoundException("数据不存在");
 			}
 		} catch (Exception e) {
@@ -153,6 +168,21 @@ public class AdFaceSelector implements ISelector {
 				face.setRowId(resultSet.getString("row_id"));
 
 				faces.add(face);
+				
+				// ad_face_topo
+				List<IRow> adFaceTopo = new AdFaceTopoSelector(conn).loadRowsByParentId(face.getPid(), isLock);
+
+				for (IRow row : adFaceTopo) {
+					row.setMesh(face.mesh());
+				}
+
+				face.setFaceTopos(adFaceTopo);
+
+				for (IRow row : adFaceTopo) {
+					AdFaceTopo obj = (AdFaceTopo) row;
+
+					face.adFaceTopoMap.put(obj.rowId(), obj);
+				}
 			}
 		} catch (Exception e) {
 			

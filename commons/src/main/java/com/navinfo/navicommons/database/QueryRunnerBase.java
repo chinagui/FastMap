@@ -156,6 +156,39 @@ public class QueryRunnerBase extends org.apache.commons.dbutils.QueryRunner {
 	}
 
 	/**
+	 * 查询个数的时候用,如果查到的结果集为空,则返回-1
+	 * 
+	 * @param conn
+	 * @param sql
+	 * @param params
+	 * @return
+	 * @throws SQLException
+	 */
+	public long queryForLong(Connection conn, String sql, Object... params)
+			throws SQLException {
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		// 如果没查询到数据,则返回的是-1
+		long num = -1L;
+		try {
+			stmt = conn.prepareStatement(sql);
+
+			this.fillStatement(stmt, params);
+			rs = this.wrap(stmt.executeQuery());
+			while (rs.next()) {
+				num = rs.getLong(1);
+			}
+
+		} catch (SQLException e) {
+			this.rethrow(e, sql, params);
+		} finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(stmt);
+		}
+		return num;
+	}
+
+	/**
 	 * 查询单条某字段的时候用
 	 * 
 	 * 如果没查询到数据,则返回的是空字符串,如果查到多个,则取最后一条的记录

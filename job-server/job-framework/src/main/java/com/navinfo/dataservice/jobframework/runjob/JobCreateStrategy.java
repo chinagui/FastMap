@@ -27,7 +27,7 @@ import com.navinfo.dataservice.jobframework.exception.JobTypeNotFoundException;
 public class JobCreateStrategy {
 	private static Logger log = LoggerRepos.getLogger(JobCreateStrategy.class);
 	public static Map<String,Class<?>> jobClassMap;
-	public static AbstractJob create(JobInfo jobInfo,CountDownLatch doneSignal)throws JobTypeNotFoundException,JobCreateException{
+	public static AbstractJob create(JobInfo jobInfo)throws JobTypeNotFoundException,JobCreateException{
 		if(jobClassMap==null){
 			loadMapping();
 		}
@@ -38,7 +38,7 @@ public class JobCreateStrategy {
 		AbstractJob job = null;
 		try{
 			Class<?>[] argtypes= new Class[]{JobInfo.class,CountDownLatch.class};
-			job = (AbstractJob)clazz.getConstructor(argtypes).newInstance(jobInfo,doneSignal);
+			job = (AbstractJob)clazz.getConstructor(argtypes).newInstance(jobInfo);
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			throw new JobCreateException(e.getMessage(),e);

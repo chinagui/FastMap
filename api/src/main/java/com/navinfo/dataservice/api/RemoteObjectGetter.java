@@ -7,6 +7,6 @@ package com.navinfo.dataservice.api;
 * @Description: TODO
 */
 public interface RemoteObjectGetter {
-	Object getRemoteObject(String name)throws RemoteServiceException;
-	Object getRemoteObject(String name,Class type)throws RemoteServiceException;
+	Object getRemoteObject(String name)throws ServiceException;
+	Object getRemoteObject(String name,Class type)throws ServiceException;
 }

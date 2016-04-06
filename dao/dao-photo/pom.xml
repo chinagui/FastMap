@@ -6,9 +6,10 @@
 		<artifactId>dao</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
+	<groupId>com.navinfo.dataservice</groupId>
 	<artifactId>dao-photo</artifactId>
-	<name>dao-photo</name>
 	<version>0.0.1-SNAPSHOT</version>
+	<name>dao-photo</name>
 	<build />
 	<dependencies>
 		<dependency>

@@ -33,6 +33,7 @@ public class MsgSubscriber {
 	}
 	protected Logger log = Logger.getLogger(MsgSubscriber.class);
 	private Map<String,Channel> queueChannelMap=new ConcurrentHashMap<String,Channel>();
+	private Map<String,Object> queueThreadLockMap=new ConcurrentHashMap<String,Object>();
 	/**
 	 * 注意：同一个queueName的消息只需要订阅一次
 	 * 订阅简单消息，将自动确认消息接收
@@ -52,6 +53,7 @@ public class MsgSubscriber {
 				throw e;
 			}
 			queueChannelMap.put(name, channel);
+			queueThreadLockMap.put(name, new Object());
 			return channel;
 		}
 	}
@@ -60,6 +62,7 @@ public class MsgSubscriber {
 			Channel channel = queueChannelMap.get(name);
 			channel.abort();
 			queueChannelMap.remove(name);
+			queueThreadLockMap.remove(name);
 		}
 	}
 	public void subscribeFromSimpleQueue(String name,MsgHandler handler)throws Exception{
@@ -86,7 +89,7 @@ public class MsgSubscriber {
 	 * @param handler
 	 * @throws Exception
 	 */
-	public void subscribeFromWorkQueue(String name,final MsgHandler handler)throws Exception{
+	public void subscribeFromWorkQueue(String name,final MsgHandler handler,SubscriberSignal signal)throws Exception{
 		Connection conn = null;
 		Channel channel = null;
 		try{
@@ -98,10 +101,21 @@ public class MsgSubscriber {
 			//设置auto acknowledgment = false
 		    channel.basicConsume(name, false, consumer);
 		    while(true){
-		    	QueueingConsumer.Delivery delivery = consumer.nextDelivery();
-		    	String message = new String(delivery.getBody(), "UTF-8");
-		    	handler.handle(message);
-		    	channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+		    	if(signal!=null&&signal.needWait()){
+//		    		Object lock = queueThreadLockMap.get(name);
+//		    		lock.wait();
+		    		log.info("信号灯为等待状态，等待5秒...");
+		    		Thread.sleep(5000);
+		    	}else{
+			    	log.info("keep consuming...");
+			    	QueueingConsumer.Delivery delivery = consumer.nextDelivery();
+			    	log.info("get delivery...");
+			    	String message = new String(delivery.getBody(), "UTF-8");
+			    	handler.handle(message);
+			    	log.info("called handler...");
+			    	channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+			    	log.info("msg acked");
+		    	}
 		    }
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
@@ -226,33 +240,35 @@ public class MsgSubscriber {
 	
 	public static void main(String[] args){
 		try{
-			while(true){
-				final MsgSubscriber sub = new MsgSubscriber();
-				new Thread(){
-					@Override
-					public void run() {
-						try{
-							sub.helloWorld();
-						}catch(Exception e){
-							e.printStackTrace();
-						}
+
+			final MsgSubscriber sub = new MsgSubscriber();
+			new Thread(){
+				@Override
+				public void run() {
+					try{
+						sub.helloWorld();
+					}catch(Exception e){
+						e.printStackTrace();
 					}
-					
-				}.start();
-				new Thread(){
-					@Override
-					public void run() {
-						try{
-							Thread.sleep(3000);
-							sub.cancelSubScribe("hello_world");
-							System.out.println("Over....");
-						}catch(Exception e){
-							e.printStackTrace();
-						}
+				}
+				
+			}.start();
+			new Thread(){
+				@Override
+				public void run() {
+					try{
+						sub.helloWorld();
+//						Thread.sleep(3000);
+//						sub.cancelSubScribe("hello_world");
+//						System.out.println("Over....");
+					}catch(Exception e){
+						e.printStackTrace();
 					}
-				}.start();
-				Thread.sleep(8000);
-			}
+				}
+			}.start();
+//			while(true){
+//				Thread.sleep(8000);
+//			}
 		}catch(Exception e){
 			e.printStackTrace();
 		}

@@ -2,6 +2,8 @@ package com.navinfo.dataservice.jobframework;
 
 import java.util.Set;
 
+import com.navinfo.dataservice.api.job.model.JobMsgType;
+
 /** 
 * @ClassName: JobFinder 
 * @author Xiao Xiaowen 
@@ -10,6 +12,6 @@ import java.util.Set;
 */
 public interface JobFinder {
 	
-	void startFinding()throws Exception;
-	void stopFinding()throws Exception;
+	void startFinding(JobMsgType jobMsgType)throws Exception;
+	void stopFinding(JobMsgType jobMsgType)throws Exception;
 }

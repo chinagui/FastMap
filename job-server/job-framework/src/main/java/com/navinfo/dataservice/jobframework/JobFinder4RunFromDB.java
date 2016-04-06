@@ -1,6 +1,7 @@
-package com.navinfo.dataservice.jobframework.runjob;
+package com.navinfo.dataservice.jobframework;
 
-import com.navinfo.dataservice.jobframework.JobFinder;
+import com.navinfo.dataservice.api.job.model.JobMsgType;
+import com.navinfo.dataservice.jobframework.runjob.JobThreadPoolExecutor;
 
 /** 
 * @ClassName: JobFinderFromDB 
@@ -10,12 +11,12 @@ import com.navinfo.dataservice.jobframework.JobFinder;
 */
 public class JobFinder4RunFromDB implements JobFinder {
 	@Override
-	public void startFinding() {
+	public void startFinding(JobMsgType jobMshType) {
 		// TODO Auto-generated method stub
 		JobThreadPoolExecutor.getInstance().getCorePoolSize();
 	}
 	@Override
-	public void stopFinding() {
+	public void stopFinding(JobMsgType jobMshType) {
 		// TODO Auto-generated method stub
 	}
 

@@ -7,6 +7,7 @@ package com.navinfo.dataservice.api.job.model;
 * @Description: TODO
 */
 public enum JobType {
+	SAMPLE("sample"),
 	GDB_EXP("gdb_exp"),
 	GDB_IMP("gdb_imp");
 	private String name;
@@ -19,5 +20,14 @@ public enum JobType {
 	@Override
 	public String toString(){
 		return name;
+	}
+	
+	public static JobType getJobType(String name){
+		for (JobType type:JobType.values()){
+			if(type.getName().equals(name)){
+				return type;
+			}
+		}
+		return null;
 	}
 }

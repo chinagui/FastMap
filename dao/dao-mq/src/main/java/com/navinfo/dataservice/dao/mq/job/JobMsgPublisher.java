@@ -2,6 +2,8 @@ package com.navinfo.dataservice.dao.mq.job;
 
 import org.springframework.util.StringUtils;
 
+import com.navinfo.dataservice.api.job.model.JobStep;
+import com.navinfo.dataservice.api.job.model.JobType;
 import com.navinfo.dataservice.dao.mq.MsgPublisher;
 
 import net.sf.json.JSONObject;
@@ -14,32 +16,34 @@ import net.sf.json.JSONObject;
 */
 public class JobMsgPublisher {
 
-	public static void createJob(String type,JSONObject jobRequest)throws Exception{
+	@Deprecated
+	public static void createJob(JobType type,JSONObject jobRequest)throws Exception{
 		if(StringUtils.isEmpty(type)||jobRequest==null){
 			throw new Exception("type和jobRequest不能为空");
 		}
 		JSONObject jobMsg = new JSONObject();
-		jobMsg.put("type", type);
+		jobMsg.put("type", type.toString());
 		jobMsg.put("request", jobRequest);
 		MsgPublisher.publish2WorkQueue("create_job", jobMsg.toString());
 	}
-	public static void runJob(long jobId,String type,JSONObject jobRequest)throws Exception{
-		if(StringUtils.isEmpty(type)||jobRequest==null){
-			throw new Exception("type和jobRequest不能为空");
+	public static void runJob(long jobId,JobType type,JSONObject jobRequest)throws Exception{
+		if(jobRequest==null){
+			throw new Exception("jobRequest不能为空");
 		}
 		JSONObject jobMsg = new JSONObject();
 		jobMsg.put("jobId", jobId);
-		jobMsg.put("type", type);
+		jobMsg.put("type", type.toString());
 		jobMsg.put("request", jobRequest);
 		MsgPublisher.publish2WorkQueue("run_job", jobMsg.toString());
 	}
-	public static void responseJob(long jobId,JSONObject jobResponse)throws Exception{
+	public static void responseJob(long jobId,JSONObject jobResponse,JobStep step)throws Exception{
 		if(jobResponse==null){
 			throw new Exception("jobResponse不能为空");
 		}
 		JSONObject jobMsg = new JSONObject();
 		jobMsg.put("jobId", jobId);
 		jobMsg.put("response", jobResponse);
+		jobMsg.put("step", JSONObject.fromObject(step));
 		MsgPublisher.publish2WorkQueue("resp_job", jobMsg.toString());
 	}
 	/**

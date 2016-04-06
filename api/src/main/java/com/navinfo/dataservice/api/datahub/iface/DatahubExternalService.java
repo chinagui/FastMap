@@ -6,6 +6,6 @@ package com.navinfo.dataservice.api.datahub.iface;
 * @date 2016年3月21日 下午5:42:36 
 * @Description: TODO
 */
-public interface DatahubService {
+public interface DatahubExternalService {
 	
 }

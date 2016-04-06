@@ -5,7 +5,6 @@ import java.util.Observer;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -56,6 +55,9 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor implements Observe
 		}
 		return count;
 	}
+	public boolean isTotalFull(){
+		return this.getTotalCount()>=this.getCorePoolSize();
+	}
 	public Map<String ,Set<String>> getJobAll(){
 		return jobPool;
 	}
@@ -92,8 +94,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor implements Observe
 				set.add(jobInfo.getIdentity());
 				jobPool.put(jobInfo.getType().toString(), set);
 			}
-			AbstractJob job = JobCreateStrategy.create(
-					jobInfo,new CountDownLatch(1));
+			AbstractJob job = JobCreateStrategy.create(jobInfo);
 			super.execute(job);
 			log.debug("开始执行job(jobIdentity:"+jobInfo.getIdentity()+")......");
 			return true;
@@ -109,6 +110,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor implements Observe
 		JobInfo jobInfo = job.getJobInfo();
 		Set<String> set = jobPool.get(jobInfo.getType());
 		set.remove(jobInfo.getIdentity());
+		
 		log.debug("removed job thread. jobIdentity:"+jobInfo.getIdentity());
 	}
 

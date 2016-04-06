@@ -5,7 +5,8 @@ import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
 
-import com.navinfo.dataservice.api.datalock.iface.DatalockService;
+import com.navinfo.dataservice.api.datalock.iface.DatalockExternalService;
+import com.navinfo.dataservice.api.job.iface.JobExternalService;
 
 /** 
 * @ClassName: RemoteServices 
@@ -26,8 +27,11 @@ public class RemoteServices {
 	public void setRemoteObjectGetter(RemoteObjectGetter remoteObjectGetter) {
 		this.remoteObjectGetter = remoteObjectGetter;
 	}
-
-	public DatalockService getDatalockService()throws RemoteServiceException{
-		return (DatalockService)remoteObjectGetter.getRemoteObject("datalockService");
+	
+	public DatalockExternalService getDatalockExternalService()throws ServiceException{
+		return (DatalockExternalService)remoteObjectGetter.getRemoteObject("datalockExternalService");
+	}
+	public JobExternalService getJobExternalService()throws ServiceException{
+		return (JobExternalService)remoteObjectGetter.getRemoteObject("jobExternalService");
 	}
 }

@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mapping>
-	<type name="gdb_exp" class="com.navinfo.dataservice.expcore.GdbExpJob" />
+	<type name="sample" class="com.navinfo.dataservice.jobframework.runjob.SampleJob" />
 </mapping>

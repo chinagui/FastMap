@@ -81,8 +81,6 @@ public class ConstructTipsBuilder {
 		while (resultSet.next()) {
 			num++;
 			
-			System.out.println(num);
-
 			int rootLinkPid = resultSet.getInt("root_link_pid");
 
 			int level = resultSet.getInt("lvl");

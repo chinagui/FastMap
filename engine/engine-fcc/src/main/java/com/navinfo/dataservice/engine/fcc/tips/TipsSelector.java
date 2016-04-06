@@ -114,7 +114,7 @@ public class TipsSelector {
 					Geojson.coord2Pixel(geo, z, px, py);
 
 					m.put("c", geo.getJSONArray("coordinates"));
-				} else if (type == 1203 || type == 1101 || type == 1407) {
+				} else if (type == 1203 || type == 1101 || type == 1407 || type == 1403) {
 
 					m.put("c", String.valueOf(deep.getDouble("agl")));
 					
@@ -287,7 +287,7 @@ public class TipsSelector {
 		Map<Integer, String> map = null;
 
 		if (type == 1201 || type == 1302 || type == 1203 || type == 1101
-				|| type == 1301 || type == 1407 || type == 1604) {
+				|| type == 1301 || type == 1407 || type == 1604 || type == 1403) {
 
 			Set<Integer> linkPids = new HashSet<Integer>();
 
@@ -302,13 +302,13 @@ public class TipsSelector {
 					}
 				}
 
-				else if (type == 1301 || type == 1407 || type == 1302) {
+				else if (type == 1301 || type == 1407 || type == 1302 || type == 1403) {
 					JSONObject f = deep.getJSONObject("in");
 
 					if (f.getInt("type") == 1) {
 						linkPids.add(Integer.valueOf(f.getString("id")));
 					}
-				} else if (type == 1604) {
+				} else if (type == 1604 || type == 1514 || type == 1501) {
 					JSONArray a = deep.getJSONArray("f_array");
 
 					for (int i = 0; i < a.size(); i++) {
@@ -419,7 +419,7 @@ public class TipsSelector {
 				}
 			}
 
-			else if (type == 1301 || type == 1407 || type == 1302) {
+			else if (type == 1301 || type == 1407 || type == 1302 || type == 1403) {
 				JSONObject f = deep.getJSONObject("in");
 
 				if (f.getInt("type") == 1) {
@@ -436,7 +436,7 @@ public class TipsSelector {
 				} else {
 					m.put("e", "无道路");
 				}
-			} else if (type == 1604) {
+			} else if (type == 1604 || type == 1514 || type == 1501) {
 				JSONArray a = deep.getJSONArray("f_array");
 
 				boolean hasLink = false;

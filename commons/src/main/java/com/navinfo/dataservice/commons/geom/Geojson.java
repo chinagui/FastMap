@@ -112,14 +112,12 @@ public class Geojson {
 		return ja;
 	}
 
-	public static JSONObject link2Pixel(STRUCT struct, double px, double py,
+	public static JSONObject link2Pixel(JSONObject geojson, double px, double py,
 			int z) throws Exception {
-
-		JSONObject geometry = spatial2Geojson(struct);
 
 		JSONArray coords = new JSONArray();
 
-		JSONArray jaCoords = geometry.getJSONArray("coordinates");
+		JSONArray jaCoords = geojson.getJSONArray("coordinates");
 
 		for (int i = 0; i < jaCoords.size(); i++) {
 			JSONArray ja = jaCoords.getJSONArray(i);
@@ -127,9 +125,38 @@ public class Geojson {
 			coords.add(lonlat2Pixel(ja.getDouble(0), ja.getDouble(1), z, px, py));
 		}
 
-		geometry.put("coordinates", coords);
+		geojson.put("coordinates", coords);
 
-		return geometry;
+		return geojson;
+	}
+
+	public static JSONObject face2Pixel(JSONObject geojson, double px, double py,
+			int z) throws Exception {
+
+		JSONArray coords = new JSONArray();
+
+		JSONArray jaCoords = geojson.getJSONArray("coordinates");
+
+		for (int i = 0; i < jaCoords.size(); i++) {
+
+			JSONArray lineCoords = new JSONArray();
+
+			JSONArray ja = jaCoords.getJSONArray(i);
+
+			for (int j = 0; j < ja.size(); j++) {
+
+				JSONArray ja2 = ja.getJSONArray(i);
+
+				lineCoords.add(lonlat2Pixel(ja2.getDouble(0), ja2.getDouble(1),
+						z, px, py));
+			}
+
+			coords.add(lineCoords);
+		}
+
+		geojson.put("coordinates", coords);
+
+		return geojson;
 	}
 
 	/**
@@ -199,7 +226,7 @@ public class Geojson {
 		JSONArray ja = geojson.getJSONArray("coordinates");
 
 		JSONArray coords = new JSONArray();
-		
+
 		switch (type) {
 		case "Point":
 			geojson.put("coordinates",
@@ -220,18 +247,18 @@ public class Geojson {
 
 		case "Polygon":
 			for (int i = 0; i < ja.size(); i++) {
-				
+
 				JSONArray line = ja.getJSONArray(i);
 
 				JSONArray newline = new JSONArray();
-				
+
 				for (int j = 0; j < line.size(); j++) {
 					JSONArray point = line.getJSONArray(j);
 
-					point.add(lonlat2Pixel(point.getDouble(0), point.getDouble(1), z, px,
-							py));
+					point.add(lonlat2Pixel(point.getDouble(0),
+							point.getDouble(1), z, px, py));
 				}
-				
+
 				coords.add(newline);
 			}
 			geojson.put("coordinates", coords);

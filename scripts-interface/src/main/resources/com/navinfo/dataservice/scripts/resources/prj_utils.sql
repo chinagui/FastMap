@@ -54,3 +54,45 @@ create index idx_sdo_ad_face on ad_face(geometry)
 indextype is mdsys.spatial_index;
 
 analyze table ad_face compute statistics;
+
+insert into user_sdo_geom_metadata
+  (table_name, COLUMN_NAME, DIMINFO, SRID)
+values
+  ('AD_LINK',
+   'GEOMETRY',
+   MDSYS.SDO_DIM_ARRAY(MDSYS.SDO_DIM_ELEMENT('XLONG', -180, 180, 0.005),
+                       MDSYS.SDO_DIM_ELEMENT('YLAT', -90, 90, 0.005)),
+   8307);
+
+create index idx_sdo_ad_link on ad_link(geometry) 
+indextype is mdsys.spatial_index;
+
+analyze table ad_link compute statistics;
+
+insert into user_sdo_geom_metadata
+  (table_name, COLUMN_NAME, DIMINFO, SRID)
+values
+  ('RW_LINK',
+   'GEOMETRY',
+   MDSYS.SDO_DIM_ARRAY(MDSYS.SDO_DIM_ELEMENT('XLONG', -180, 180, 0.005),
+                       MDSYS.SDO_DIM_ELEMENT('YLAT', -90, 90, 0.005)),
+   8307);
+
+create index idx_sdo_rw_link on rw_link(geometry) 
+indextype is mdsys.spatial_index;
+
+analyze table rw_link compute statistics;
+
+insert into user_sdo_geom_metadata
+  (table_name, COLUMN_NAME, DIMINFO, SRID)
+values
+  ('RD_GSC',
+   'GEOMETRY',
+   MDSYS.SDO_DIM_ARRAY(MDSYS.SDO_DIM_ELEMENT('XLONG', -180, 180, 0.005),
+                       MDSYS.SDO_DIM_ELEMENT('YLAT', -90, 90, 0.005)),
+   8307);
+
+create index idx_sdo_rd_gsc on rd_gsc(geometry) 
+indextype is mdsys.spatial_index;
+
+analyze table rd_gsc compute statistics;

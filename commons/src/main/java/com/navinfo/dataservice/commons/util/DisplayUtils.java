@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.commons.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -10,12 +11,16 @@ import oracle.spatial.geometry.JGeometry;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 
 public class DisplayUtils {
+	
+	private static final GeometryFactory geometryFactory = new GeometryFactory();
 
 	public static int kind2Color(int kind) {
 		if (kind == 13) {
@@ -1175,6 +1180,127 @@ public class DisplayUtils {
 		}
 
 		return direct;
+	}
+	
+	/**
+	 * 计算立交的线几何
+	 * @param linkGeo
+	 * @param startEnd
+	 * @param seqNum
+	 * @return
+	 */
+	public static LineString getGscLine(Geometry linkGeo, int startEnd, int seqNum){
+		Coordinate[] coords = linkGeo.getCoordinates();
+
+		List<Coordinate> coordList = new ArrayList<Coordinate>();
+
+		if (startEnd == 0) {
+
+			double dist = 0;
+
+			int current = seqNum;
+
+			while (dist < 20) {
+
+				if (current - 1 < 0) {
+					break;
+				}
+
+				Coordinate coord = coords[current];
+
+				Coordinate next = coords[current - 1];
+
+				coordList.add(next);
+
+				dist += GeometryUtils.getDistance(coord, next);
+
+				current--;
+			}
+
+			Collections.reverse(coordList);
+
+			dist = 0;
+
+			current = seqNum;
+
+			coordList.add(coords[seqNum]);
+
+			while (dist < 20) {
+
+				if ((current + 1) >= coords.length) {
+					break;
+				}
+
+				Coordinate coord = coords[current];
+
+				Coordinate next = coords[current + 1];
+
+				coordList.add(next);
+
+				dist += GeometryUtils.getDistance(coord, next);
+
+				current++;
+			}
+		} else if (startEnd == 1) {
+			double dist = 0;
+
+			int current = 0;
+
+			coordList.add(coords[0]);
+
+			while (dist < 20) {
+
+				if ((current + 1) >= coords.length) {
+					break;
+				}
+
+				Coordinate coord = coords[current];
+
+				Coordinate next = coords[current + 1];
+
+				coordList.add(next);
+
+				dist += GeometryUtils.getDistance(coord, next);
+
+				current++;
+			}
+		} else {
+			double dist = 0;
+
+			int current = coords.length - 1;
+
+			coordList.add(coords[current]);
+
+			while (dist < 20) {
+
+				if (current - 1 < 0) {
+					break;
+				}
+
+				Coordinate coord = coords[current];
+
+				Coordinate next = coords[current - 1];
+
+				coordList.add(next);
+
+				dist += GeometryUtils.getDistance(coord, next);
+
+				current--;
+			}
+
+			Collections.reverse(coordList);
+
+		}
+
+		Coordinate[] newCoords = new Coordinate[coordList.size()];
+
+		for (int i = 0; i < coordList.size(); i++) {
+			newCoords[i] = coordList.get(i);
+		}
+
+		LineString line = geometryFactory.createLineString(newCoords);
+		
+		return line;
 	}
 
 	public static void main(String[] args) throws Exception {

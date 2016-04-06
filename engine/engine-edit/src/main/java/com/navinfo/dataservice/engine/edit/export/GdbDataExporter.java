@@ -22,12 +22,17 @@ import oracle.sql.STRUCT;
 import org.apache.uima.pear.util.FileUtil;
 import org.sqlite.SQLiteConfig;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.DisplayUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
+import com.vividsolutions.jts.geom.Geometry;
 
 public class GdbDataExporter {
 
 	private static final WKT wkt = new WKT();
+
 	
 
 	/**
@@ -39,8 +44,10 @@ public class GdbDataExporter {
 	 */
 	private static void exportRdLine(Connection conn, String dir)
 			throws Exception {
+		System.out.println("exporting rdline");
+
 		String sql = "select a.*,        display_text.name,        styleFactors1.types,        styleFactors2.lane_types,        speedlimits.from_speed_limit,        speedlimits.to_speed_limit,        forms.forms   from rd_link a,        (select max(name1)||'/'||max(name2)||'/'||max(name3)||'/'||max(name4) name,link_pid from ( select a.link_pid, case when name_class=1 and seq_num=1 then b.name else null end as name1,  case when name_class=1 and seq_num=2 then b.name else null end as name2,  case when name_class=2 and seq_num=1 then b.name else null end as name3,    case when name_class=2 and seq_num=2 then b.name else null end as name4            from rd_link_name a, rd_name b          where a.name_groupid = b.name_groupid            and b.lang_code = 'CHI'            and a.u_record != 2) group by link_pid) display_text,        (select link_pid,                listagg(type, ',') within group(order by type) types           from (select a.link_pid, type                   from rd_link_limit a                  where type in (0, 4, 5, 6)                    and a.u_record != 2)          group by link_pid) styleFactors1,        (select link_pid,                listagg(lane_type, ',') within group(order by lane_type) lane_types           from rd_lane a          where a.u_record != 2          group by link_pid) styleFactors2,        (select link_pid, from_speed_limit, to_speed_limit           from rd_link_speedlimit a          where speed_type = 0            and a.u_record != 2) speedlimits,        (select link_pid,                listagg(form_of_way, ',') within group(order by form_of_way) forms           from rd_link_form          where u_record != 2          group by link_pid) forms  where a.link_pid = display_text.link_pid(+)    and a.link_pid = styleFactors1.link_pid(+)    and a.link_pid = styleFactors2.link_pid(+)    and a.link_pid = speedlimits.link_pid(+)    and a.link_pid = forms.link_pid(+)    and a.u_record != 2";
-		
+
 		File mkdirFile = new File(dir + "/tmp");
 
 		mkdirFile.mkdirs();
@@ -54,19 +61,19 @@ public class GdbDataExporter {
 		ResultSet resultSet = stmt.executeQuery(sql);
 
 		resultSet.setFetchSize(5000);
-		
+
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
 
 		while (resultSet.next()) {
 
 			JSONObject json = enclosingRdLine(resultSet, operateDate);
-			
+
 			int pid = json.getInt("pid");
-			
-			if (map.containsKey(pid)){
+
+			if (map.containsKey(pid)) {
 				continue;
 			}
-			
+
 			map.put(pid, 0);
 
 			out.println(json.toString());
@@ -82,6 +89,134 @@ public class GdbDataExporter {
 		FileUtil.deleteDirectory(new File(dir + "/tmp"));
 	}
 
+	private static void exportRdLine2Sqlite(Connection sqliteConn,
+			Statement stmt, Connection conn, String operateDate)
+			throws Exception {
+		// creating a LINESTRING table
+		stmt.execute("create table gdb_rdLine(pid integer primary key)");
+		stmt.execute("select addgeometrycolumn('gdb_rdLine','geometry',4326,'GEOMETRY','XY')");
+		stmt.execute("select createspatialindex('gdb_rdLine','geometry')");
+		stmt.execute("alter table gdb_rdLine add display_style text;");
+		stmt.execute("alter table gdb_rdLine add display_text text;");
+		stmt.execute("alter table gdb_rdLine add meshid text;");
+		stmt.execute("alter table gdb_rdLine add kind integer;");
+		stmt.execute("alter table gdb_rdLine add direct integer;");
+		stmt.execute("alter table gdb_rdLine add appInfo integer;");
+		stmt.execute("alter table gdb_rdLine add tollInfo integer;");
+		stmt.execute("alter table gdb_rdLine add multiDigitized integer;");
+		stmt.execute("alter table gdb_rdLine add specialTraffic integer;");
+		stmt.execute("alter table gdb_rdLine add fc integer;");
+		stmt.execute("alter table gdb_rdLine add laneNum integer;");
+		stmt.execute("alter table gdb_rdLine add laneLeft integer;");
+		stmt.execute("alter table gdb_rdLine add laneRight integer;");
+		stmt.execute("alter table gdb_rdLine add isViaduct integer;");
+		stmt.execute("alter table gdb_rdLine add paveStatus integer;");
+		stmt.execute("alter table gdb_rdLine add forms Blob;");
+		stmt.execute("alter table gdb_rdLine add styleFactors Blob;");
+		stmt.execute("alter table gdb_rdLine add speedLimit Blob;");
+		stmt.execute("alter table gdb_rdLine add op_date text;");
+		stmt.execute("alter table gdb_rdLine add op_lifecycle integer;");
+		stmt.execute("alter table gdb_rdLine add names Blob;");
+
+		String insertSql = "insert into gdb_rdLine values("
+				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
+
+		Statement stmt2 = conn.createStatement();
+
+		String sql = "select a.*,        display_text.name,        styleFactors1.types,        styleFactors2.lane_types,        speedlimits.from_speed_limit,        speedlimits.to_speed_limit,        forms.forms   from rd_link a,        (select max(name1)||'/'||max(name2)||'/'||max(name3)||'/'||max(name4) name,link_pid from ( select a.link_pid, case when name_class=1 and seq_num=1 then b.name else null end as name1,  case when name_class=1 and seq_num=2 then b.name else null end as name2,  case when name_class=2 and seq_num=1 then b.name else null end as name3,    case when name_class=2 and seq_num=2 then b.name else null end as name4            from rd_link_name a, rd_name b          where a.name_groupid = b.name_groupid            and b.lang_code = 'CHI'            and a.u_record != 2) group by link_pid) display_text,        (select link_pid,                listagg(type, ',') within group(order by type) types           from (select a.link_pid, type                   from rd_link_limit a                  where type in (0, 4, 5, 6)                    and a.u_record != 2)          group by link_pid) styleFactors1,        (select link_pid,                listagg(lane_type, ',') within group(order by lane_type) lane_types           from rd_lane a          where a.u_record != 2          group by link_pid) styleFactors2,        (select link_pid, from_speed_limit, to_speed_limit           from rd_link_speedlimit a          where speed_type = 0            and a.u_record != 2) speedlimits,        (select link_pid,                listagg(form_of_way, ',') within group(order by form_of_way) forms           from rd_link_form          where u_record != 2          group by link_pid) forms  where a.link_pid = display_text.link_pid(+)    and a.link_pid = styleFactors1.link_pid(+)    and a.link_pid = styleFactors2.link_pid(+)    and a.link_pid = speedlimits.link_pid(+)    and a.link_pid = forms.link_pid(+)    and a.u_record != 2";
+
+		ResultSet resultSet = stmt2.executeQuery(sql);
+
+		resultSet.setFetchSize(5000);
+
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+
+		int count = 0;
+
+		while (resultSet.next()) {
+
+			JSONObject json = enclosingRdLine(resultSet, operateDate);
+
+			int pid = json.getInt("pid");
+
+			if (map.containsKey(pid)) {
+				continue;
+			}
+
+			map.put(pid, 0);
+
+			prep.setInt(1, pid);
+
+			prep.setString(2, json.getString("geometry"));
+
+			prep.setString(3, json.getString("display_style"));
+
+			prep.setString(4, json.getString("display_text"));
+
+			prep.setString(5, json.getString("meshid"));
+
+			prep.setInt(6, json.getInt("kind"));
+
+			prep.setInt(7, json.getInt("direct"));
+
+			prep.setInt(8, json.getInt("appInfo"));
+
+			prep.setInt(9, json.getInt("tollInfo"));
+
+			prep.setInt(10, json.getInt("multiDigitized"));
+
+			prep.setInt(11, json.getInt("specialTraffic"));
+
+			prep.setInt(12, json.getInt("fc"));
+
+			prep.setInt(13, json.getInt("laneNum"));
+
+			prep.setInt(14, json.getInt("laneLeft"));
+
+			prep.setInt(15, json.getInt("laneRight"));
+
+			prep.setInt(16, json.getInt("isViaduct"));
+
+			prep.setInt(17, json.getInt("paveStatus"));
+
+			byte[] forms = json.getString("forms").getBytes();
+
+			prep.setBinaryStream(18, new ByteArrayInputStream(forms),
+					forms.length);
+
+			byte[] styleFactors = json.getString("styleFactors").getBytes();
+
+			prep.setBinaryStream(19, new ByteArrayInputStream(styleFactors),
+					styleFactors.length);
+
+			byte[] speedLimit = json.getString("speedLimit").getBytes();
+
+			prep.setBinaryStream(20, new ByteArrayInputStream(speedLimit),
+					speedLimit.length);
+
+			prep.setString(21, json.getString("op_date"));
+
+			prep.setInt(22, json.getInt("op_lifecycle"));
+
+			byte[] names = json.getString("names").getBytes();
+
+			prep.setBinaryStream(23, new ByteArrayInputStream(names),
+					names.length);
+
+			prep.executeUpdate();
+
+			count += 1;
+
+			if (count % 5000 == 0) {
+				sqliteConn.commit();
+			}
+		}
+
+		sqliteConn.commit();
+	}
+
 	private static JSONObject enclosingRdLine(ResultSet rs, String operateDate)
 			throws Exception {
 
@@ -94,40 +229,40 @@ public class GdbDataExporter {
 		String meshid = rs.getString("mesh_id");
 
 		json.put("meshid", meshid);
-		
+
 		JSONArray names = new JSONArray();
 
 		String name = rs.getString("name");
-		
+
 		String display_text = "";
-		
-		if( name != null){
-		
+
+		if (name != null) {
+
 			String[] sss = name.split("/");
-			
-			boolean flag1=false;
-			
-			for(String s : sss){
-				if(s!=null){
-					if(flag1){
-						display_text+="/";
+
+			boolean flag1 = false;
+
+			for (String s : sss) {
+				if (s != null) {
+					if (flag1) {
+						display_text += "/";
 					}
-					
-					display_text+=s;
-					
+
+					display_text += s;
+
 					JSONObject namejson = new JSONObject();
-					
+
 					namejson.put("name", s);
-					
+
 					names.add(namejson);
-					
-					flag1=true;
+
+					flag1 = true;
 				}
 			}
 		}
-		
+
 		json.put("names", names);
-		
+
 		json.put("display_text", display_text);
 
 		int kind = rs.getInt("kind");
@@ -254,10 +389,11 @@ public class GdbDataExporter {
 		}
 
 		json.put("styleFactors", styleFactors);
-		
-		int style = computeStyle(paveStatus, isViaduct, formsArray, styleFactors);
-		
-		json.put("display_style", kind+","+style);
+
+		int style = computeStyle(paveStatus, isViaduct, formsArray,
+				styleFactors);
+
+		json.put("display_style", kind + "," + style);
 
 		int from_speed_limit = rs.getInt("from_speed_limit");
 
@@ -277,110 +413,514 @@ public class GdbDataExporter {
 
 		return json;
 	}
-	
-	private static int computeStyle(int paveStatus, int isViaduct, JSONArray forms, JSONArray styleFactors){
-		
-		if(paveStatus == 1){
+
+	private static int computeStyle(int paveStatus, int isViaduct,
+			JSONArray forms, JSONArray styleFactors) {
+
+		if (paveStatus == 1) {
 			return 0;
 		}
-		
+
 		Set<Integer> formSet = new HashSet<Integer>();
-		
-		for(int i=0;i<forms.size();i++){
+
+		for (int i = 0; i < forms.size(); i++) {
 			JSONObject json = forms.getJSONObject(i);
-			
+
 			formSet.add(json.getInt("form"));
 		}
-		
-		if(isViaduct == 1){
-			if(formSet.contains(24)){
+
+		if (isViaduct == 1) {
+			if (formSet.contains(24)) {
 				return 1;
-			}
-			else if (formSet.contains(30)){
+			} else if (formSet.contains(30)) {
 				return 2;
 			}
 			return 3;
 		}
-		
-		if(formSet.contains(15)){
+
+		if (formSet.contains(15)) {
 			return 4;
 		}
-		
-		if(formSet.contains(16)){
+
+		if (formSet.contains(16)) {
 			return 5;
 		}
-		
-		if(formSet.contains(17)){
+
+		if (formSet.contains(17)) {
 			return 6;
 		}
-		
-		if(formSet.contains(22)){
+
+		if (formSet.contains(22)) {
 			return 7;
 		}
-		
-		if(formSet.contains(24)){
-			if(formSet.contains(30)){
+
+		if (formSet.contains(24)) {
+			if (formSet.contains(30)) {
 				return 8;
-			}
-			else{
+			} else {
 				return 9;
 			}
 		}
-		
-		if(formSet.contains(30)){
+
+		if (formSet.contains(30)) {
 			return 10;
 		}
-		
-		if(formSet.contains(31)){
+
+		if (formSet.contains(31)) {
 			return 11;
 		}
-		
-		if(formSet.contains(34)){
+
+		if (formSet.contains(34)) {
 			return 12;
 		}
-		
-		if(formSet.contains(36)){
-			if(formSet.contains(52)){
+
+		if (formSet.contains(36)) {
+			if (formSet.contains(52)) {
 				return 13;
-			}
-			else{
+			} else {
 				return 14;
 			}
 		}
-		
-		if(formSet.contains(52)){
+
+		if (formSet.contains(52)) {
 			return 15;
 		}
-		
-		if(formSet.contains(53)){
+
+		if (formSet.contains(53)) {
 			return 16;
 		}
-		
-		if(formSet.contains(60)){
+
+		if (formSet.contains(60)) {
 			return 17;
 		}
-		
+
 		Set<Integer> styleSet = new HashSet<Integer>();
-		
-		for(int i=0;i<styleFactors.size();i++){
+
+		for (int i = 0; i < styleFactors.size(); i++) {
 			JSONObject json = styleFactors.getJSONObject(i);
-			
+
 			styleSet.add(json.getInt("factor"));
 		}
-		
-		if(styleSet.contains(0)){
+
+		if (styleSet.contains(0)) {
 			return 18;
 		}
-		
-		if(styleSet.contains(6)){
+
+		if (styleSet.contains(6)) {
 			return 19;
 		}
-		
-		if(styleSet.contains(99)){
+
+		if (styleSet.contains(99)) {
 			return 20;
 		}
-		
+
 		return -1;
+	}
+
+	private static void exportBkLine2Sqlite(Connection sqliteConn,
+			Statement stmt, Connection conn, String operateDate)
+			throws Exception {
+		// creating a LINESTRING table
+		stmt.execute("create table gdb_bkLine(pid integer primary key)");
+		stmt.execute("select addgeometrycolumn('gdb_bkLine','geometry',4326,'GEOMETRY','XY')");
+		stmt.execute("select createspatialindex('gdb_bkLine','geometry')");
+		stmt.execute("alter table gdb_bkLine add display_style text;");
+		stmt.execute("alter table gdb_bkLine add display_text text;");
+		stmt.execute("alter table gdb_bkLine add meshid text;");
+		stmt.execute("alter table gdb_bkLine add kind integer;");
+		stmt.execute("alter table gdb_bkLine add op_date text;");
+		stmt.execute("alter table gdb_bkLine add op_lifecycle integer;");
+
+		String insertSql = "insert into gdb_bkLine values("
+				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?)";
+
+		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
+
+		Statement stmt2 = conn.createStatement();
+
+		String sql = "select a.link_pid,a.geometry,a.mesh_id,a.kind from rw_link a where a.scale=0 and a.u_record != 2";
+
+		ResultSet resultSet = stmt2.executeQuery(sql);
+
+		resultSet.setFetchSize(5000);
+
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+
+		int count = 0;
+
+		while (resultSet.next()) {
+
+			JSONObject json = enclosingBkLine(resultSet, operateDate);
+
+			int pid = json.getInt("pid");
+
+			if (map.containsKey(pid)) {
+				continue;
+			}
+
+			map.put(pid, 0);
+
+			prep.setInt(1, pid);
+
+			prep.setString(2, json.getString("geometry"));
+
+			prep.setString(3, json.getString("display_style"));
+
+			prep.setString(4, json.getString("display_text"));
+
+			prep.setString(5, json.getString("meshid"));
+
+			prep.setInt(6, json.getInt("kind"));
+
+			prep.setString(7, json.getString("op_date"));
+
+			prep.setInt(8, json.getInt("op_lifecycle"));
+
+			prep.executeUpdate();
+
+			count += 1;
+
+			if (count % 5000 == 0) {
+				sqliteConn.commit();
+			}
+		}
+
+		sqliteConn.commit();
+	}
+
+	private static JSONObject enclosingBkLine(ResultSet rs, String operateDate)
+			throws Exception {
+
+		JSONObject json = new JSONObject();
+
+		int pid = rs.getInt("link_pid");
+
+		json.put("pid", pid);
+
+		String meshid = rs.getString("mesh_id");
+
+		json.put("meshid", meshid);
+
+		json.put("display_text", "");
+
+		json.put("display_style", "");
+
+		int kind = rs.getInt("kind");
+
+		json.put("kind", kind);
+
+		STRUCT struct = (STRUCT) rs.getObject("geometry");
+
+		JGeometry geom = JGeometry.load(struct);
+
+		String geometry = new String(wkt.fromJGeometry(geom));
+
+		json.put("geometry", geometry);
+
+		json.put("op_date", operateDate);
+
+		json.put("op_lifecycle", 0);
+
+		return json;
+	}
+
+	private static void exportBkFace2Sqlite(Connection sqliteConn,
+			Statement stmt, Connection conn, String operateDate)
+			throws Exception {
+		// creating a LINESTRING table
+		stmt.execute("create table gdb_bkFace(pid integer primary key)");
+		stmt.execute("select addgeometrycolumn('gdb_bkFace','geometry',4326,'GEOMETRY','XY')");
+		stmt.execute("select createspatialindex('gdb_bkFace','geometry')");
+		stmt.execute("alter table gdb_bkFace add display_style text;");
+		stmt.execute("alter table gdb_bkFace add display_text text;");
+		stmt.execute("alter table gdb_bkFace add meshid text;");
+		stmt.execute("alter table gdb_bkFace add kind integer;");
+		stmt.execute("alter table gdb_bkFace add op_date text;");
+		stmt.execute("alter table gdb_bkFace add op_lifecycle integer;");
+
+		String insertSql = "insert into gdb_bkFace values("
+				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?)";
+
+		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
+
+		Statement stmt2 = conn.createStatement();
+
+		String sql = "select a.face_pid,a.geometry,a.mesh_id,a.kind from lc_face a where a.scale=0 and a.u_record != 2";
+
+		ResultSet resultSet = stmt2.executeQuery(sql);
+
+		resultSet.setFetchSize(5000);
+
+		int count = 0;
+
+		while (resultSet.next()) {
+
+			JSONObject json = enclosingBkFace(resultSet, operateDate);
+
+			int pid = json.getInt("pid");
+
+			prep.setInt(1, pid);
+
+			prep.setString(2, json.getString("geometry"));
+
+			prep.setString(3, json.getString("display_style"));
+
+			prep.setString(4, json.getString("display_text"));
+
+			prep.setString(5, json.getString("meshid"));
+
+			prep.setInt(6, json.getInt("kind"));
+
+			prep.setString(7, json.getString("op_date"));
+
+			prep.setInt(8, json.getInt("op_lifecycle"));
+
+			prep.executeUpdate();
+
+			count += 1;
+
+			if (count % 5000 == 0) {
+				sqliteConn.commit();
+			}
+		}
+
+		sqliteConn.commit();
+	}
+
+	private static JSONObject enclosingBkFace(ResultSet rs, String operateDate)
+			throws Exception {
+
+		JSONObject json = new JSONObject();
+
+		int pid = rs.getInt("face_pid");
+
+		json.put("pid", pid);
+
+		int meshid = rs.getInt("mesh_id");
+
+		json.put("meshid", String.valueOf(meshid));
+
+		json.put("display_text", "");
+
+		json.put("display_style", "");
+
+		int kind = rs.getInt("kind");
+
+		json.put("kind", kind);
+
+		STRUCT struct = (STRUCT) rs.getObject("geometry");
+
+		JGeometry geom = JGeometry.load(struct);
+
+		String geometry = new String(wkt.fromJGeometry(geom));
+
+		json.put("geometry", geometry);
+
+		json.put("op_date", operateDate);
+
+		json.put("op_lifecycle", 0);
+
+		return json;
+	}
+
+	private static void exportRdNode2Sqlite(Connection sqliteConn,
+			Statement stmt, Connection conn, String operateDate)
+			throws Exception {
+		// creating a LINESTRING table
+		stmt.execute("create table gdb_rdNode(pid integer primary key)");
+		stmt.execute("select addgeometrycolumn('gdb_rdNode','geometry',4326,'GEOMETRY','XY')");
+		stmt.execute("select createspatialindex('gdb_rdNode','geometry')");
+		stmt.execute("alter table gdb_rdNode add display_style text;");
+		stmt.execute("alter table gdb_rdNode add display_text text;");
+		stmt.execute("alter table gdb_rdNode add meshid text;");
+		stmt.execute("alter table gdb_rdNode add isMain integer;");
+		stmt.execute("alter table gdb_rdNode add op_date text;");
+		stmt.execute("alter table gdb_rdNode add op_lifecycle integer;");
+
+		String insertSql = "insert into gdb_rdNode values("
+				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?)";
+
+		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
+
+		Statement stmt2 = conn.createStatement();
+
+		String oraSql = "select b.node_pid,b.geometry,c.mesh_id,a.is_main from rd_cross_node a,rd_node b,rd_node_mesh c where c.node_pid=b.node_pid and a.node_pid=b.node_pid and a.u_record!=2 and b.u_record!=2";
+
+		ResultSet resultSet = stmt2.executeQuery(oraSql);
+
+		resultSet.setFetchSize(5000);
+
+		int count = 0;
+
+		while (resultSet.next()) {
+
+			JSONObject json = enclosingRdNode(resultSet, operateDate);
+
+			int pid = json.getInt("pid");
+
+			prep.setInt(1, pid);
+
+			prep.setString(2, json.getString("geometry"));
+
+			prep.setString(3, json.getString("display_style"));
+
+			prep.setString(4, json.getString("display_text"));
+
+			prep.setString(5, json.getString("meshid"));
+
+			prep.setInt(6, json.getInt("isMain"));
+
+			prep.setString(7, json.getString("op_date"));
+
+			prep.setInt(8, json.getInt("op_lifecycle"));
+
+			prep.executeUpdate();
+
+			count += 1;
+
+			if (count % 5000 == 0) {
+				sqliteConn.commit();
+			}
+		}
+
+		sqliteConn.commit();
+	}
+
+	private static JSONObject enclosingRdNode(ResultSet rs, String operateDate)
+			throws Exception {
+
+		JSONObject json = new JSONObject();
+
+		int pid = rs.getInt("node_pid");
+
+		json.put("pid", pid);
+
+		int isMain = rs.getInt("is_main");
+
+		json.put("isMain", isMain);
+
+		if (isMain == 0) {
+			json.put("display_style", "28864");
+		} else {
+			json.put("display_style", "12566463");
+		}
+
+		json.put("display_text", "");
+
+		String meshid = rs.getString("mesh_id");
+
+		json.put("meshid", meshid);
+
+		STRUCT struct = (STRUCT) rs.getObject("geometry");
+
+		JGeometry geom = JGeometry.load(struct);
+
+		String geometry = new String(wkt.fromJGeometry(geom));
+
+		json.put("geometry", geometry);
+
+		json.put("op_date", operateDate);
+
+		json.put("op_lifecycle", 0);
+
+		return json;
+	}
+
+	private static void exportRdLineGsc2Sqlite(Connection sqliteConn,
+			Statement stmt, Connection conn, String operateDate)
+			throws Exception {
+		// creating a LINESTRING table
+		stmt.execute("create table gdb_rdLink_gsc(uuid text primary key, gscPid integer)");
+		stmt.execute("select addgeometrycolumn('gdb_rdLink_gsc','geometry',4326,'GEOMETRY','XY')");
+		stmt.execute("select createspatialindex('gdb_rdLink_gsc','geometry')");
+		stmt.execute("alter table gdb_rdLink_gsc add display_style text;");
+		stmt.execute("alter table gdb_rdLink_gsc add display_text text;");
+		stmt.execute("alter table gdb_rdLink_gsc add meshid text;");
+		stmt.execute("alter table gdb_rdLink_gsc add z integer;");
+
+		String insertSql = "insert into gdb_rdLink_gsc values("
+				+ "?, ?, GeomFromText(?, 4326), ?, ?, ?, ?)";
+
+		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
+
+		Statement stmt2 = conn.createStatement();
+
+		String oraSql = " with tmp1 as (select pid from rd_gsc_link a where a.table_name in ('RD_LINK','RW_LINK') group by pid having count(1)>1) ,tmp2 as( select a.*, b.geometry, b.mesh_id   from rd_gsc_link a, rd_link b, tmp1 c  where a.link_pid = b.link_pid and a.pid=c.pid    and a.table_name = 'RD_LINK'), tmp3 as (  select a.*, b.geometry, b.mesh_id   from rd_gsc_link a, rw_link b, tmp1 c  where a.link_pid = b.link_pid and a.pid=c.pid    and a.table_name = 'RW_LINK')   select * from tmp2   union all   select * from tmp3";
+
+		ResultSet resultSet = stmt2.executeQuery(oraSql);
+
+		resultSet.setFetchSize(5000);
+
+		int count = 0;
+
+		while (resultSet.next()) {
+
+			JSONObject json = enclosingRdLineGsc(resultSet, operateDate);
+
+			prep.setString(1, json.getString("uuid"));
+
+			prep.setInt(2, json.getInt("gscPid"));
+
+			prep.setString(3, json.getString("geometry"));
+
+			prep.setString(4, json.getString("display_style"));
+
+			prep.setString(5, json.getString("display_text"));
+
+			prep.setString(6, json.getString("meshid"));
+
+			prep.setInt(7, json.getInt("z"));
+
+			prep.executeUpdate();
+
+			count += 1;
+
+			if (count % 5000 == 0) {
+				sqliteConn.commit();
+			}
+		}
+
+		sqliteConn.commit();
+	}
+
+	private static JSONObject enclosingRdLineGsc(ResultSet rs,
+			String operateDate) throws Exception {
+
+		JSONObject json = new JSONObject();
+
+		json.put("uuid", UuidUtils.genUuid());
+
+		json.put("gscPid", rs.getInt("pid"));
+
+		json.put("meshid", rs.getString("mesh_id"));
+
+		json.put("z", rs.getInt("zlevel"));
+
+		json.put("display_style", "");
+
+		json.put("display_text", "");
+
+		STRUCT struct = (STRUCT) rs.getObject("geometry");
+
+		Geometry geo = GeoTranslator.struct2Jts(struct);
+
+		int startEnd = rs.getInt("start_end");
+		
+		int seqNum = rs.getInt("shp_seq_num");
+
+		Geometry line = DisplayUtils.getGscLine(geo, startEnd, seqNum);
+
+		String geometry = GeoTranslator.jts2Wkt(line);
+
+		json.put("geometry", geometry);
+
+		return json;
+	}
+
+	public static void exportBaseData(Connection conn, String dir)
+			throws Exception {
+
+		exportRdLine(conn, dir);
 	}
 
 	/**
@@ -393,10 +933,13 @@ public class GdbDataExporter {
 	public static void exportBaseData2Sqlite(Connection conn, String dir)
 			throws Exception {
 
-		
-		File mkdirFile = new File(dir + "/tmp");
+		File file = new File(dir + "/tmp");
 
-		mkdirFile.mkdirs();
+		if (file.exists()) {
+			FileUtil.deleteDirectory(file);
+		}
+
+		file.mkdirs();
 
 		// load the sqlite-JDBC driver using the current class loader
 		Class.forName("org.sqlite.JDBC");
@@ -421,263 +964,37 @@ public class GdbDataExporter {
 		// using v.2.4.0 this automatically initializes SPATIAL_REF_SYS and
 		// GEOMETRY_COLUMNS
 		stmt.execute("SELECT InitSpatialMetadata()");
-		
+
 		sqliteConn.setAutoCommit(false);
 
 		String operateDate = StringUtils.getCurrentTime();
-		
+
+		System.out.println("exporting rdline");
+
 		exportRdLine2Sqlite(sqliteConn, stmt, conn, operateDate);
-		
+
+		System.out.println("exporting rdnode");
+
 		exportRdNode2Sqlite(sqliteConn, stmt, conn, operateDate);
-		
+
+		System.out.println("exporting bkline");
+
+		exportBkLine2Sqlite(sqliteConn, stmt, conn, operateDate);
+
+		System.out.println("exporting bkface");
+
+		exportBkFace2Sqlite(sqliteConn, stmt, conn, operateDate);
+
+		System.out.println("exporting rdlinegsc");
+
+		exportRdLineGsc2Sqlite(sqliteConn, stmt, conn, operateDate);
+
 		sqliteConn.close();
 
 		// 压缩文件
 		ZipUtils.zipFile(dir + "/tmp/", dir + "/" + operateDate + ".zip");
 
-		FileUtil.deleteDirectory(new File(dir + "/tmp"));
-
-	}
-	
-	private static void exportRdLine2Sqlite(Connection sqliteConn, Statement stmt, Connection conn, String operateDate) throws Exception{
-		// creating a LINESTRING table
-		stmt.execute("create table gdb_rdLine(pid integer primary key)");
-		stmt.execute("select addgeometrycolumn('gdb_rdLine','geometry',4326,'GEOMETRY','XY')");
-		stmt.execute("select createspatialindex('gdb_rdLine','geometry')");
-		stmt.execute("alter table gdb_rdLine add display_style text;");
-		stmt.execute("alter table gdb_rdLine add display_text text;");
-		stmt.execute("alter table gdb_rdLine add meshid text;");
-		stmt.execute("alter table gdb_rdLine add kind integer;");
-		stmt.execute("alter table gdb_rdLine add direct integer;");
-		stmt.execute("alter table gdb_rdLine add appInfo integer;");
-		stmt.execute("alter table gdb_rdLine add tollInfo integer;");
-		stmt.execute("alter table gdb_rdLine add multiDigitized integer;");
-		stmt.execute("alter table gdb_rdLine add specialTraffic integer;");
-		stmt.execute("alter table gdb_rdLine add fc integer;");
-		stmt.execute("alter table gdb_rdLine add laneNum integer;");
-		stmt.execute("alter table gdb_rdLine add laneLeft integer;");
-		stmt.execute("alter table gdb_rdLine add laneRight integer;");
-		stmt.execute("alter table gdb_rdLine add isViaduct integer;");
-		stmt.execute("alter table gdb_rdLine add paveStatus integer;");
-		stmt.execute("alter table gdb_rdLine add forms Blob;");
-		stmt.execute("alter table gdb_rdLine add styleFactors Blob;");
-		stmt.execute("alter table gdb_rdLine add speedLimit Blob;");
-		stmt.execute("alter table gdb_rdLine add op_date text;");
-		stmt.execute("alter table gdb_rdLine add op_lifecycle integer;");
-		stmt.execute("alter table gdb_rdLine add names Blob;");
-
-		String insertSql = "insert into gdb_rdLine values("
-				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
-
-		Statement stmt2 = conn.createStatement();
-		
-		String sql = "select a.*,        display_text.name,        styleFactors1.types,        styleFactors2.lane_types,        speedlimits.from_speed_limit,        speedlimits.to_speed_limit,        forms.forms   from rd_link a,        (select max(name1)||'/'||max(name2)||'/'||max(name3)||'/'||max(name4) name,link_pid from ( select a.link_pid, case when name_class=1 and seq_num=1 then b.name else null end as name1,  case when name_class=1 and seq_num=2 then b.name else null end as name2,  case when name_class=2 and seq_num=1 then b.name else null end as name3,    case when name_class=2 and seq_num=2 then b.name else null end as name4            from rd_link_name a, rd_name b          where a.name_groupid = b.name_groupid            and b.lang_code = 'CHI'            and a.u_record != 2) group by link_pid) display_text,        (select link_pid,                listagg(type, ',') within group(order by type) types           from (select a.link_pid, type                   from rd_link_limit a                  where type in (0, 4, 5, 6)                    and a.u_record != 2)          group by link_pid) styleFactors1,        (select link_pid,                listagg(lane_type, ',') within group(order by lane_type) lane_types           from rd_lane a          where a.u_record != 2          group by link_pid) styleFactors2,        (select link_pid, from_speed_limit, to_speed_limit           from rd_link_speedlimit a          where speed_type = 0            and a.u_record != 2) speedlimits,        (select link_pid,                listagg(form_of_way, ',') within group(order by form_of_way) forms           from rd_link_form          where u_record != 2          group by link_pid) forms  where a.link_pid = display_text.link_pid(+)    and a.link_pid = styleFactors1.link_pid(+)    and a.link_pid = styleFactors2.link_pid(+)    and a.link_pid = speedlimits.link_pid(+)    and a.link_pid = forms.link_pid(+)    and a.u_record != 2";
-		
-		ResultSet resultSet = stmt2.executeQuery(sql);
-
-		resultSet.setFetchSize(5000);
-
-		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-
-		int count = 0;
-
-		while (resultSet.next()) {
-
-			JSONObject json = enclosingRdLine(resultSet, operateDate);
-
-			int pid = json.getInt("pid");
-
-			if (map.containsKey(pid)) {
-				continue;
-			}
-
-			map.put(pid, 0);
-
-			prep.setInt(1, pid);
-
-			prep.setString(2, json.getString("geometry"));
-
-			prep.setString(3, json.getString("display_style"));
-
-			prep.setString(4, json.getString("display_text"));
-			
-			prep.setString(5, json.getString("meshid"));
-
-			prep.setInt(6, json.getInt("kind"));
-
-			prep.setInt(7, json.getInt("direct"));
-
-			prep.setInt(8, json.getInt("appInfo"));
-
-			prep.setInt(9, json.getInt("tollInfo"));
-
-			prep.setInt(10, json.getInt("multiDigitized"));
-
-			prep.setInt(11, json.getInt("specialTraffic"));
-
-			prep.setInt(12, json.getInt("fc"));
-
-			prep.setInt(13, json.getInt("laneNum"));
-
-			prep.setInt(14, json.getInt("laneLeft"));
-
-			prep.setInt(15, json.getInt("laneRight"));
-
-			prep.setInt(16, json.getInt("isViaduct"));
-
-			prep.setInt(17, json.getInt("paveStatus"));
-
-			byte[] forms = json.getString("forms").getBytes();
-
-			prep.setBinaryStream(18, new ByteArrayInputStream(forms),
-					forms.length);
-
-			byte[] styleFactors = json.getString("styleFactors").getBytes();
-
-			prep.setBinaryStream(19, new ByteArrayInputStream(styleFactors),
-					styleFactors.length);
-
-			byte[] speedLimit = json.getString("speedLimit").getBytes();
-
-			prep.setBinaryStream(20, new ByteArrayInputStream(speedLimit),
-					speedLimit.length);
-
-			prep.setString(21, json.getString("op_date"));
-
-			prep.setInt(22, json.getInt("op_lifecycle"));
-			
-			byte[] names = json.getString("names").getBytes();
-
-			prep.setBinaryStream(23, new ByteArrayInputStream(names),
-					names.length);
-
-			prep.executeUpdate();
-
-			count += 1;
-
-			if (count % 5000 == 0) {
-				sqliteConn.commit();
-			}
-		}
-
-		sqliteConn.commit();
-	}
-	
-	private static void exportRdNode2Sqlite(Connection sqliteConn, Statement stmt, Connection conn, String operateDate) throws Exception{
-		// creating a LINESTRING table
-		stmt.execute("create table gdb_rdNode(pid integer primary key)");
-		stmt.execute("select addgeometrycolumn('gdb_rdNode','geometry',4326,'GEOMETRY','XY')");
-		stmt.execute("select createspatialindex('gdb_rdNode','geometry')");
-		stmt.execute("alter table gdb_rdNode add display_style text;");
-		stmt.execute("alter table gdb_rdNode add display_text text;");
-		stmt.execute("alter table gdb_rdNode add meshid text;");
-		stmt.execute("alter table gdb_rdNode add isMain integer;");
-		stmt.execute("alter table gdb_rdNode add op_date text;");
-		stmt.execute("alter table gdb_rdNode add op_lifecycle integer;");
-
-		String insertSql = "insert into gdb_rdNode values("
-				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?)";
-
-		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
-
-		Statement stmt2 = conn.createStatement();
-		
-		String oraSql = "select b.node_pid,b.geometry,c.mesh_id,a.is_main from rd_cross_node a,rd_node b,rd_node_mesh c where c.node_pid=b.node_pid and a.node_pid=b.node_pid and a.u_record!=2 and b.u_record!=2";
-
-		ResultSet resultSet = stmt2.executeQuery(oraSql);
-
-		resultSet.setFetchSize(5000);
-
-//		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-
-		int count = 0;
-
-		while (resultSet.next()) {
-
-			JSONObject json = enclosingRdNode(resultSet, operateDate);
-
-			int pid = json.getInt("pid");
-
-//			if (map.containsKey(pid)) {
-//				continue;
-//			}
-
-//			map.put(pid, 0);
-
-			prep.setInt(1, pid);
-
-			prep.setString(2, json.getString("geometry"));
-
-			prep.setString(3, json.getString("display_style"));
-
-			prep.setString(4, "");
-
-			prep.setString(5, json.getString("meshid"));
-
-			prep.setInt(6, json.getInt("isMain"));
-
-			prep.setString(7, json.getString("op_date"));
-
-			prep.setInt(8, json.getInt("op_lifecycle"));
-
-			prep.executeUpdate();
-
-			count += 1;
-
-			if (count % 5000 == 0) {
-				sqliteConn.commit();
-			}
-		}
-
-		sqliteConn.commit();
-	}
-	
-	private static JSONObject enclosingRdNode(ResultSet rs, String operateDate)
-			throws Exception {
-
-		JSONObject json = new JSONObject();
-
-		int pid = rs.getInt("node_pid");
-
-		json.put("pid", pid);
-		
-		int isMain = rs.getInt("is_main");
-
-		json.put("isMain", isMain);
-		
-		if(isMain == 0){
-			json.put("display_style", "28864");
-		}
-		else{
-			json.put("display_style", "12566463");
-		}
-
-		String meshid = rs.getString("mesh_id");
-
-		json.put("meshid", meshid);
-
-		STRUCT struct = (STRUCT) rs.getObject("geometry");
-
-		JGeometry geom = JGeometry.load(struct);
-
-		String geometry = new String(wkt.fromJGeometry(geom));
-
-		json.put("geometry", geometry);
-
-		json.put("op_date", operateDate);
-
-		json.put("op_lifecycle", 0);
-
-		return json;
-	}
-
-	public static void exportBaseData(Connection conn, String dir)
-			throws Exception {
-
-		exportRdLine(conn, dir);
-		
+		FileUtil.deleteDirectory(file);
 
 	}
 
@@ -693,13 +1010,12 @@ public class GdbDataExporter {
 		String serviceName = "orcl";
 
 		Class.forName("oracle.jdbc.driver.OracleDriver");
-		
-		Connection conn = DriverManager.getConnection(
-				"jdbc:oracle:thin:@" + ip + ":" + port + ":"
-						+ serviceName, username, password);
 
-		 //exportBaseData(oa1, "c:/1");
+		Connection conn = DriverManager.getConnection("jdbc:oracle:thin:@" + ip
+				+ ":" + port + ":" + serviceName, username, password);
+
+		// exportBaseData(oa1, "c:/1");
 		exportBaseData2Sqlite(conn, "./");
-		 System.out.println("done");
+		System.out.println("done");
 	}
 }

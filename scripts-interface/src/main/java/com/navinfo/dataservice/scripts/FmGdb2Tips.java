@@ -32,23 +32,11 @@ public class FmGdb2Tips {
 		
 		OracleAddress oa1 = new OracleAddress(username1,password1,port1,ip1,serviceName1);
 		
-		String username2 = props.getProperty("fm_username");
-		
-		String password2 =props.getProperty("fm_username");
-		
-		int port2 = Integer.parseInt(props.getProperty("fm_port"));
-		
-		String ip2 = props.getProperty("fm_ip");
-		
-		String serviceName2 = props.getProperty("fm_service_name");
-		
-		OracleAddress oa2 = new OracleAddress(username2,password2,port2,ip2,serviceName2);
-		
 		TipsBuilder b = new TipsBuilder();
 		
 		HBaseAddress.initHBaseAddress(props.getProperty("hbase_address"));
 		
-		b.run(oa1, oa2, uuid);
+		b.run(oa1, uuid);
 		
 	}
 

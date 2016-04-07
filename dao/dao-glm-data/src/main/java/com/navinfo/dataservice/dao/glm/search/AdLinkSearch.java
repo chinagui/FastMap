@@ -6,14 +6,15 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
-
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
+
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 public class AdLinkSearch implements ISearch {
 
@@ -25,7 +26,11 @@ public class AdLinkSearch implements ISearch {
 	
 	@Override
 	public IObj searchDataByPid(int pid) throws Exception {
-		return null;
+		AdLinkSelector adLinkSelector = new AdLinkSelector(conn);
+
+		IObj adLink = (IObj) adLinkSelector.loadById(pid, false);
+
+		return adLink;
 	}
 
 

@@ -218,7 +218,4 @@ public class AdFaceTopo implements IRow {
 		return rowId;
 	}
 
-	public int getMesh() {
-		return mesh;
-	}
 }

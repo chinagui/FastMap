@@ -8,9 +8,11 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 
 public class AdFaceTopoSelector implements ISelector {
 
@@ -30,8 +32,64 @@ public class AdFaceTopoSelector implements ISelector {
 
 	@Override
 	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		AdFaceTopo adFaceTopo = new AdFaceTopo();
+
+		String sql = "SELECT a.*,b.mesh_id FROM ad_face_topo a,ad_face b WHERE a.row_id=hextoraw(:1) AND a.face_pid = b.face_pid ";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setString(1, rowId);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+
+				adFaceTopo.setFacePid(resultSet.getInt("face_pid"));
+
+				adFaceTopo.setLinkPid(resultSet.getInt("link_pid"));
+
+				adFaceTopo.setMesh(resultSet.getInt("mesh_id"));
+
+				adFaceTopo.setRowId(resultSet.getString("row_id"));
+
+				adFaceTopo.setSeqNum(resultSet.getInt("seq_num"));
+			} else {
+
+				throw new DataNotFoundException("数据不存在");
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return adFaceTopo;
 	}
 
 	@Override
@@ -58,17 +116,17 @@ public class AdFaceTopoSelector implements ISelector {
 
 			while (resultSet.next()) {
 				AdFaceTopo adFaceTopo = new AdFaceTopo();
-				
+
 				adFaceTopo.setFacePid(resultSet.getInt("face_pid"));
-				
+
 				adFaceTopo.setLinkPid(resultSet.getInt("link_pid"));
-				
+
 				adFaceTopo.setMesh(resultSet.getInt("mesh_id"));
-				
+
 				adFaceTopo.setRowId(resultSet.getString("row_id"));
-				
+
 				adFaceTopo.setSeqNum(resultSet.getInt("seq_num"));
-				
+
 				list.add(adFaceTopo);
 			}
 		} catch (Exception e) {

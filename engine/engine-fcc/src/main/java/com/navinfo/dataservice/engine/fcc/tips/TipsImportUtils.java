@@ -1,9 +1,15 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
 
 /**
  * tips导入辅助工具，如rowkey生成，source生成
@@ -109,6 +115,37 @@ public class TipsImportUtils {
 				GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(g_location)));
 		
 		json.put("deep", deep);
+
+		return json;
+	}
+	
+	public static JSONObject connectLinks(List<Geometry> geoms)
+			throws ParseException {
+		JSONObject json = new JSONObject();
+
+		json.put("type", "LineString");
+
+		Geometry geom = geoms.get(0);
+
+		for (int i = 1; i < geoms.size(); i++) {
+			geom = geom.union(geoms.get(i));
+		}
+
+		Coordinate[] cs = geom.getCoordinates();
+
+		List<double[]> ps = new ArrayList<double[]>();
+
+		for (Coordinate c : cs) {
+			double[] p = new double[2];
+
+			p[0] = c.x;
+
+			p[1] = c.y;
+
+			ps.add(p);
+		}
+
+		json.put("coordinates", ps);
 
 		return json;
 	}

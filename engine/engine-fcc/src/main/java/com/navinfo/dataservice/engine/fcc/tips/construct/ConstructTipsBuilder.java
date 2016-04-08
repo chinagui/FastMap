@@ -17,6 +17,7 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.timedomain.TimeDecoder;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
 import com.navinfo.dataservice.engine.fcc.tips.TipsImportUtils;
@@ -200,14 +201,17 @@ public class ConstructTipsBuilder {
 
 			geometry.put("g_guide", GeoTranslator.jts2Geojson(tip.sNodeGeom));
 			
-			geometry.put("g_location", connectLinks(tip.linkGeoms));
+			geometry.put("g_location", TipsImportUtils.connectLinks(tip.linkGeoms));
 
 			JSONObject deep = new JSONObject();
 
 			String time = tip.time;
 
 			if (time != null) {
-				deep.put("time", time);
+				
+				TimeDecoder decoder = new TimeDecoder();
+				
+				deep.put("time", decoder.decode(time));
 			} else {
 				deep.put("time", JSONNull.getInstance());
 			}
@@ -276,35 +280,6 @@ public class ConstructTipsBuilder {
 		}
 	}
 
-	private static JSONObject connectLinks(List<Geometry> geoms)
-			throws ParseException {
-		JSONObject json = new JSONObject();
-
-		json.put("type", "LineString");
-
-		Geometry geom = geoms.get(0);
-
-		for (int i = 1; i < geoms.size(); i++) {
-			geom = geom.union(geoms.get(i));
-		}
-
-		Coordinate[] cs = geom.getCoordinates();
-
-		List<double[]> ps = new ArrayList<double[]>();
-
-		for (Coordinate c : cs) {
-			double[] p = new double[2];
-
-			p[0] = c.x;
-
-			p[1] = c.y;
-
-			ps.add(p);
-		}
-
-		json.put("coordinates", ps);
-
-		return json;
-	}
+	
 
 }

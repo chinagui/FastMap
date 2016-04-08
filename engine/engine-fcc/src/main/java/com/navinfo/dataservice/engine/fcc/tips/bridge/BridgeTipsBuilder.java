@@ -4,20 +4,21 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
-import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
-import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
 import com.navinfo.dataservice.engine.fcc.tips.TipsImportUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -27,6 +28,24 @@ import com.vividsolutions.jts.io.WKTReader;
 
 public class BridgeTipsBuilder {
 
+	private static class Bridge {
+		public int sNodePid;
+
+		public Geometry sNodeGeom;
+
+		public Geometry eNodeGeom;
+
+		public int eNodePid;
+
+		public List<Integer> linkPids = new ArrayList<Integer>();
+
+		public List<Geometry> linkGeoms = new ArrayList<Geometry>();
+
+		public String name;
+
+		public int level;
+	}
+	
 	private static final WKT wkt = new WKT();
 
 	private static String sql = "with tmp1 as  "
@@ -47,7 +66,7 @@ public class BridgeTipsBuilder {
 			+ "  e.name_groupid = f.name_groupid  and f.LANG_CODE in ('CHI','CHT')  ) e  "
 			+ "where a.link_pid = b.link_pid  and a.s_node_pid = c.node_pid "
 			+ " and a.e_node_pid = d.node_pid  and a.link_pid = e.link_pid(+) "
-			+ "order by root_link_pid,lvl";
+			+ "order by root_link_pid,lvl desc";
 
 	private static String type = "1510";
 
@@ -77,285 +96,106 @@ public class BridgeTipsBuilder {
 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 		String date = sdf.format(new Date());
+		
+		List<Bridge> tips = new ArrayList<Bridge>();
+
+		int currentRoot = 0;
 
 		while (resultSet.next()) {
 			num++;
+			
+			int rootLinkPid = resultSet.getInt("root_link_pid");
+
+			int level = resultSet.getInt("lvl");
+
+			int sNodePid = resultSet.getInt("s_node_pid");
+
+			int eNodePid = resultSet.getInt("e_node_pid");
+
+			int linkPid = resultSet.getInt("link_pid");
+
+			int isLeaf = resultSet.getInt("isLeaf");
+
+			String name = resultSet.getString("name");
 
 			STRUCT struct = (STRUCT) resultSet.getObject("s_point_geom");
 
-			JGeometry geom = JGeometry.load(struct);
+			Geometry sNodeGeom = GeoTranslator.struct2Jts(struct);
 
-			String sPointGeom = new String(wkt.fromJGeometry(geom));
+			struct = (STRUCT) resultSet.getObject("e_point_geom");
 
-			int isleaf = resultSet.getInt("isleaf");
+			Geometry eNodeGeom = GeoTranslator.struct2Jts(struct);
 
-			if (isleaf == 1) {
-				struct = (STRUCT) resultSet.getObject("e_point_geom");
+			struct = (STRUCT) resultSet.getObject("link_geom");
 
-				geom = JGeometry.load(struct);
+			Geometry linkGeom = GeoTranslator.struct2Jts(struct);
 
-				String ePointGeom = new String(wkt.fromJGeometry(geom));
+			boolean found = false;
 
-				uniqId = resultSet.getString("link_pid");
-
-				JSONObject geometry = new JSONObject();
-
-				geometry.put("g_guide", Geojson.wkt2Geojson(sPointGeom));
-
-				JSONObject deep = new JSONObject();
-
-				String name = resultSet.getString("name");
-
-				if (name != null
-						&& (name.endsWith("桥") || name.endsWith("交汇处"))) {
-					deep.put("name", name);
-				} else {
-					deep.put("name", JSONNull.getInstance());
-				}
-
-				deep.put("gSLoc", Geojson.wkt2Geojson(sPointGeom));
-
-				deep.put("gELoc", Geojson.wkt2Geojson(ePointGeom));
-
-				struct = (STRUCT) resultSet.getObject("link_geom");
-
-				geom = JGeometry.load(struct);
-
-				String linkWkt = new String(wkt.fromJGeometry(geom));
-
-				geometry.put("g_location", Geojson.wkt2Geojson(linkWkt));
-
-				JSONArray fArray = new JSONArray();
-
-				JSONObject fJson = new JSONObject();
-
-				fJson.put("id", uniqId);
-
-				fJson.put("type", 1);
-
-				fJson.put("flag", "1|2");
-
-				fArray.add(fJson);
-
-				deep.put("f_array", fArray);
-
-				String rowkey = TipsImportUtils.generateRowkey(uniqId, type);
-
-				String source = TipsImportUtils.generateSource(type);
-
-				String track = TipsImportUtils.generateTrack(date);
-
-				Put put = new Put(rowkey.getBytes());
-
-				put.addColumn("data".getBytes(), "source".getBytes(),
-						source.getBytes());
-
-				put.addColumn("data".getBytes(), "track".getBytes(),
-						track.getBytes());
-
-				put.addColumn("data".getBytes(), "geometry".getBytes(),
-						geometry.toString().getBytes());
-
-				put.addColumn("data".getBytes(), "deep".getBytes(), deep
-						.toString().getBytes());
-
-				puts.add(put);
-
-				JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(
-						rowkey, 0, date, type, deep.toString(),
-						geometry.getJSONObject("g_location"),
-						geometry.getJSONObject("g_guide"));
-
-				solrConn.addTips(solrIndexJson);
-
+			if (rootLinkPid != currentRoot) {
+				generateTips(tips, puts, date, solrConn);
+				tips.clear();
+				currentRoot = rootLinkPid;
 			} else {
-
-				List<Integer> listLinkPid = new ArrayList<Integer>();
-
-				List<String> listLinkWkt = new ArrayList<String>();
-
-				List<String> listName = new ArrayList<String>();
-
-				List<Double> listLinkLength = new ArrayList<Double>();
-
-				listLinkPid.add(resultSet.getInt("link_pid"));
-
-				struct = (STRUCT) resultSet.getObject("link_geom");
-
-				geom = JGeometry.load(struct);
-
-				String linkWkt = new String(wkt.fromJGeometry(geom));
-
-				listLinkWkt.add(linkWkt);
-
-				String name = resultSet.getString("name");
-
-				listName.add(name);
-
-				double linkLen = resultSet.getDouble("link_len");
-
-				listLinkLength.add(linkLen);
-
-				while (resultSet.next()) {
-					isleaf = resultSet.getInt("isleaf");
-
-					listLinkPid.add(resultSet.getInt("link_pid"));
-
-					struct = (STRUCT) resultSet.getObject("link_geom");
-
-					geom = JGeometry.load(struct);
-
-					linkWkt = new String(wkt.fromJGeometry(geom));
-
-					listLinkWkt.add(linkWkt);
-
-					name = resultSet.getString("name");
-
-					listName.add(name);
-
-					linkLen = resultSet.getDouble("link_len");
-
-					listLinkLength.add(linkLen);
-
-					if (isleaf == 1) {
-
-						struct = (STRUCT) resultSet.getObject("e_point_geom");
-
-						geom = JGeometry.load(struct);
-
-						String ePointGeom = new String(wkt.fromJGeometry(geom));
-
-						JSONObject geometry = new JSONObject();
-
-						geometry.put("g_guide", Geojson.wkt2Geojson(sPointGeom));
-
-						JSONObject deep = new JSONObject();
-
-						boolean isNameNull = false;
-
-						for (String bridgeName : listName) {
-							if (bridgeName == null) {
-								isNameNull = true;
-								break;
-							} else {
-								if (!bridgeName.endsWith("桥")
-										&& !bridgeName.equals("交汇处")) {
-									isNameNull = true;
-									break;
-								}
-							}
+				if (isLeaf == 0) {
+					for (Bridge tip : tips) {
+						if (tip.level != level + 1) {
+							continue;
 						}
 
-						if (!isNameNull) {
-							String tmpName = listName.get(0);
-
-							for (int i = 1; i < listName.size(); i++) {
-								if (!tmpName.equals(listName.get(i))) {
-									isNameNull = true;
-									break;
-								}
-							}
+						if (tip.sNodePid != eNodePid) {
+							continue;
+						}
+						
+						if (!StringUtils.isStringSame(tip.name, name)) {
+							continue;
 						}
 
-						if (isNameNull) {
-							deep.put("name", JSONNull.getInstance());
-						} else {
-							deep.put("name", listName.get(0));
-						}
+						found = true;
 
-						deep.put("gSLoc", Geojson.wkt2Geojson(sPointGeom));
+						tip.sNodePid = sNodePid;
 
-						deep.put("gELoc", Geojson.wkt2Geojson(ePointGeom));
+						tip.level = level;
 
-						geometry.put("g_location", connectLinks(listLinkWkt));
+						tip.linkPids.add(linkPid);
 
-						double sumLen = 0;
+						tip.sNodeGeom = sNodeGeom;
 
-						for (double len : listLinkLength) {
-							sumLen += len;
-						}
-
-						if (sumLen == 0) {
-							sumLen = 1;
-						}
-
-						JSONArray fArray = new JSONArray();
-
-						// double curLen = 0.0;
-
-						for (int i = 0; i < listLinkPid.size(); i++) {
-							JSONObject fJson = new JSONObject();
-
-							fJson.put("id", String.valueOf(listLinkPid.get(i)));
-
-							fJson.put("type", 1);
-
-							if (i == 0) {
-								fJson.put("flag", "1");
-							} else if (i == listLinkPid.size() - 1) {
-								fJson.put("flag", "2");
-							} else {
-								fJson.put("flag", "0");
-							}
-
-							fArray.add(fJson);
-						}
-
-						deep.put("f_array", fArray);
-
-						int minLinkPid = listLinkPid.get(0);
-
-						for (int i = 1; i < listLinkPid.size(); i++) {
-							if (minLinkPid > listLinkPid.get(i)) {
-								minLinkPid = listLinkPid.get(i);
-							}
-						}
-
-						uniqId = String.valueOf(minLinkPid);
-
-						String rowkey = TipsImportUtils.generateRowkey(uniqId,
-								type);
-
-						String source = TipsImportUtils.generateSource(type);
-
-						String track = TipsImportUtils.generateTrack(date);
-
-						Put put = new Put(rowkey.getBytes());
-
-						put.addColumn("data".getBytes(), "source".getBytes(),
-								source.getBytes());
-
-						put.addColumn("data".getBytes(), "track".getBytes(),
-								track.getBytes());
-
-						put.addColumn("data".getBytes(), "geometry".getBytes(),
-								geometry.toString().getBytes());
-
-						put.addColumn("data".getBytes(), "deep".getBytes(),
-								deep.toString().getBytes());
-
-						puts.add(put);
-
-						JSONObject solrIndexJson = TipsImportUtils
-								.assembleSolrIndex(rowkey, 0, date, type,
-										deep.toString(),
-										geometry.getJSONObject("g_location"),
-										geometry.getJSONObject("g_guide"));
-
-						solrConn.addTips(solrIndexJson);
+						tip.linkGeoms.add(linkGeom);
 
 						break;
-
 					}
 				}
+			}
 
+			if (!found) {
+
+				Bridge tip = new Bridge();
+
+				tip.sNodePid = sNodePid;
+
+				tip.eNodePid = eNodePid;
+
+				tip.level = level;
+
+				tip.linkPids.add(linkPid);
+
+				tip.sNodeGeom = sNodeGeom;
+
+				tip.eNodeGeom = eNodeGeom;
+
+				tip.linkGeoms.add(linkGeom);
+
+				tip.name = name;
+
+				tips.add(tip);
 			}
 
 			if (num % 5000 == 0) {
 				htab.put(puts);
 
 				puts.clear();
-
+				
 			}
 		}
 
@@ -366,37 +206,95 @@ public class BridgeTipsBuilder {
 		solrConn.close();
 
 	}
-
-	private static JSONObject connectLinks(List<String> listLink)
-			throws ParseException {
-		JSONObject json = new JSONObject();
-
-		json.put("type", "LineString");
-
-		Geometry geom1 = new WKTReader().read(listLink.get(0));
-
-		for (int i = 1; i < listLink.size(); i++) {
-			Geometry geom = new WKTReader().read(listLink.get(i));
-
-			geom1 = geom1.union(geom);
+	private static void generateTips(List<Bridge> tips, List<Put> puts,
+			String date, SolrBulkUpdater solrConn) throws Exception {
+		if (tips.isEmpty()) {
+			return;
 		}
 
-		Coordinate[] cs = geom1.getCoordinates();
+		for (Bridge tip : tips) {
 
-		List<double[]> ps = new ArrayList<double[]>();
+			Collections.reverse(tip.linkPids);
 
-		for (Coordinate c : cs) {
-			double[] p = new double[2];
+			Collections.reverse(tip.linkGeoms);
 
-			p[0] = c.x;
+			JSONObject geometry = new JSONObject();
 
-			p[1] = c.y;
+			geometry.put("g_guide", GeoTranslator.jts2Geojson(tip.sNodeGeom));
+			
+			geometry.put("g_location", TipsImportUtils.connectLinks(tip.linkGeoms));
 
-			ps.add(p);
+			JSONObject deep = new JSONObject();
+
+			String name = tip.name;
+
+			if (name != null) {
+				deep.put("name", name);
+			} else {
+				deep.put("name", JSONNull.getInstance());
+			}
+
+			deep.put("gSLoc", GeoTranslator.jts2Geojson(tip.sNodeGeom));
+
+			deep.put("gELoc", GeoTranslator.jts2Geojson(tip.eNodeGeom));
+
+			JSONArray fArray = new JSONArray();
+
+			for (int i = 0; i < tip.linkPids.size(); i++) {
+
+				JSONObject fJson = new JSONObject();
+
+				fJson.put("id", String.valueOf(tip.linkPids.get(i)));
+
+				fJson.put("type", 1);
+
+				String flag = "0";
+
+				if (tip.linkPids.size() == 1) {
+					flag = "1|2";
+				} else if (i == 0) {
+					flag = "1";
+				} else if (i == (tip.linkPids.size() - 1)) {
+					flag = "2";
+				}
+
+				fJson.put("flag", flag);
+
+				fArray.add(fJson);
+			}
+
+			deep.put("f_array", fArray);
+
+			String rowkey = TipsImportUtils.generateRowkey(
+					String.valueOf(Collections.min(tip.linkPids)), type);
+
+			String source = TipsImportUtils.generateSource(type);
+
+			String track = TipsImportUtils.generateTrack(date);
+
+			Put put = new Put(rowkey.getBytes());
+
+			put.addColumn("data".getBytes(), "source".getBytes(),
+					source.getBytes());
+
+			put.addColumn("data".getBytes(), "track".getBytes(),
+					track.getBytes());
+
+			put.addColumn("data".getBytes(), "geometry".getBytes(), geometry
+					.toString().getBytes());
+
+			put.addColumn("data".getBytes(), "deep".getBytes(), deep.toString()
+					.getBytes());
+
+			puts.add(put);
+
+			JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(
+					rowkey, 0, date, type, deep.toString(),
+					geometry.getJSONObject("g_location"),
+					geometry.getJSONObject("g_guide"));
+
+			solrConn.addTips(solrIndexJson);
+			
 		}
-
-		json.put("coordinates", ps);
-
-		return json;
 	}
 }

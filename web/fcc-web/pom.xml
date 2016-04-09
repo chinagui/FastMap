@@ -150,6 +150,6 @@
      
   </dependencies>
   <build>
-    <finalName>fcc-web</finalName>
+    <finalName>fcc</finalName>
   </build>
 </project>

@@ -149,6 +149,6 @@
      
   </dependencies>
   <build>
-    <finalName>metadata-web</finalName>
+    <finalName>metadata</finalName>
   </build>
 </project>

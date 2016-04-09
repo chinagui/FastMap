@@ -23,7 +23,7 @@ public class PhotoController {
 	private static final Logger logger = Logger
 			.getLogger(PhotoController.class);
 
-	@RequestMapping(value = "/fcc/photo/getBySpatial")
+	@RequestMapping(value = "/photo/getBySpatial")
 	public void getVersion(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -54,7 +54,7 @@ public class PhotoController {
 
 	}
 
-	@RequestMapping(value = "/fcc/photo/getDetailByRowkey")
+	@RequestMapping(value = "/photo/getDetailByRowkey")
 	public void getDetailByRowkey(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -84,7 +84,7 @@ public class PhotoController {
 
 	}
 
-	@RequestMapping(value = "/fcc/photo/getSnapshotByRowkey")
+	@RequestMapping(value = "/photo/getSnapshotByRowkey")
 	public void getSnapshotByRowkey(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 

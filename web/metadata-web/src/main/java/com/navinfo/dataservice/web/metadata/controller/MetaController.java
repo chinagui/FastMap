@@ -30,7 +30,7 @@ import com.navinfo.dataservice.engine.man.version.VersionSelector;
 public class MetaController extends BaseController {
 	private static final Logger logger = Logger.getLogger(MetaController.class);
 
-	@RequestMapping(value = "/meta/rdname/search")
+	@RequestMapping(value = "/rdname/search")
 	public void searchRdName(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -76,7 +76,7 @@ public class MetaController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/meta/pinyin/convert")
+	@RequestMapping(value = "/pinyin/convert")
 	public void convertPinyin(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -128,7 +128,7 @@ public class MetaController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/meta/province/getByLocation")
+	@RequestMapping(value = "/province/getByLocation")
 	public void getProvinceByLocation(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -176,7 +176,7 @@ public class MetaController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/meta/patternImage/checkUpdate")
+	@RequestMapping(value = "/patternImage/checkUpdate")
 	public void checkPatternImage(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -218,7 +218,7 @@ public class MetaController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/meta/patternImage/download")
+	@RequestMapping(value = "/patternImage/download")
 	public void downloadPatternImage(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -316,7 +316,7 @@ public class MetaController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/meta/patternImage/getById")
+	@RequestMapping(value = "/patternImage/getById")
 	public void getPatternImageById(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -364,7 +364,7 @@ public class MetaController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/meta/patternImage/search")
+	@RequestMapping(value = "/patternImage/search")
 	public void searchPatternImage(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 

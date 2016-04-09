@@ -164,6 +164,6 @@
      
   </dependencies>
   <build>
-    <finalName>render-web</finalName>
+    <finalName>render</finalName>
   </build>
 </project>

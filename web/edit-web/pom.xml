@@ -141,6 +141,6 @@
      
   </dependencies>
   <build>
-    <finalName>edit-web</finalName>
+    <finalName>edit</finalName>
   </build>
 </project>

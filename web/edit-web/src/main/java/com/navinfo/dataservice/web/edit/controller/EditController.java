@@ -17,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
+import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -31,7 +32,7 @@ import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 public class EditController {
 	private static final Logger logger = Logger.getLogger(EditController.class);
 
-	@RequestMapping(value = "/editsupport/edit")
+	@RequestMapping(value = "/edit")
 	public void edit(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
@@ -115,7 +116,7 @@ public class EditController {
 		}
 	}
 
-	@RequestMapping(value = "/editsupport/getByPid")
+	@RequestMapping(value = "/getByPid")
 	public void getByPid(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -187,7 +188,7 @@ public class EditController {
 		}
 	}
 
-	@RequestMapping(value = "/editsupport/getBySpatial")
+	@RequestMapping(value = "/getBySpatial")
 	public void getBySpatial(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -218,6 +219,51 @@ public class EditController {
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(data));
+
+		} catch (Exception e) {
+
+			String logid = Log4jUtils.genLogid();
+
+			Log4jUtils.error(logger, logid, parameter, e);
+
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	@RequestMapping(value = "/applyPid")
+	public void applyPid(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String type = jsonReq.getString("type");
+
+			if(type.equals("rtic")){
+				
+				int code = PidService.getInstance().applyRticCode();
+				
+				response.getWriter().println(
+						ResponseUtils.assembleRegularResult(code));
+			
+			}
+			else{
+				throw new Exception("类型错误");
+			}
 
 		} catch (Exception e) {
 

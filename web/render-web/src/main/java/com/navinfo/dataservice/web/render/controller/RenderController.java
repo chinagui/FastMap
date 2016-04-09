@@ -29,12 +29,12 @@ import com.navinfo.dataservice.engine.photo.PhotoGetter;
 
 
 @Controller
-public class DisplayController {
+public class RenderController {
 
 	private static final Logger logger = Logger
-			.getLogger(DisplayController.class);
+			.getLogger(RenderController.class);
 
-	@RequestMapping(value = "/display/link/getByTile")
+	@RequestMapping(value = "/link/getByTile")
 	public void getLinkByTile(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -78,7 +78,7 @@ public class DisplayController {
 		}
 	}
 
-	@RequestMapping(value = "/display/obj/getByTileWithGap")
+	@RequestMapping(value = "/obj/getByTileWithGap")
 	public void getObjByTile(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -138,7 +138,7 @@ public class DisplayController {
 		}
 	}
 
-	@RequestMapping(value = "/display/tip/getByTileWithGap")
+	@RequestMapping(value = "/tip/getByTileWithGap")
 	public void getTipsByTile(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -180,7 +180,7 @@ public class DisplayController {
 		}
 	}
 
-	@RequestMapping(value = "/display/photo/getByTileWithGap")
+	@RequestMapping(value = "/photo/getByTileWithGap")
 	public void getPhotoByTile(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -216,7 +216,7 @@ public class DisplayController {
 		}
 	}
 
-	@RequestMapping(value = "/display/photo/heatmap")
+	@RequestMapping(value = "/photo/heatmap")
 	public void getPhotoHeatmap(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 

@@ -30,7 +30,7 @@ public class TipsController {
 
 	private static final Logger logger = Logger.getLogger(TipsController.class);
 
-	@RequestMapping(value = "/fcc/tip/checkUpdate")
+	@RequestMapping(value = "/tip/checkUpdate")
 	public void checkUpdate(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -60,7 +60,7 @@ public class TipsController {
 		}
 	}
 
-	@RequestMapping(value = "/fcc/tip/edit")
+	@RequestMapping(value = "/tip/edit")
 	public void edit(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
@@ -99,7 +99,7 @@ public class TipsController {
 		}
 	}
 
-	@RequestMapping(value = "/fcc/tip/export")
+	@RequestMapping(value = "/tip/export")
 	public void export(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
@@ -153,7 +153,7 @@ public class TipsController {
 		}
 	}
 
-	@RequestMapping(value = "/fcc/tip/getByRowkey")
+	@RequestMapping(value = "/tip/getByRowkey")
 	public void getByRowkey(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -182,7 +182,7 @@ public class TipsController {
 		}
 	}
 
-	@RequestMapping(value = "/fcc/tip/getBySpatial")
+	@RequestMapping(value = "/tip/getBySpatial")
 	public void getBySpatial(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -211,7 +211,7 @@ public class TipsController {
 		}
 	}
 
-	@RequestMapping(value = "/fcc/tip/getSnapshot")
+	@RequestMapping(value = "/tip/getSnapshot")
 	public void getSnapshot(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -247,7 +247,7 @@ public class TipsController {
 		}
 	}
 
-	@RequestMapping(value = "/fcc/tip/getStats")
+	@RequestMapping(value = "/tip/getStats")
 	public void getStats(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 

@@ -145,6 +145,6 @@
      
   </dependencies>
   <build>
-    <finalName>project-web</finalName>
+    <finalName>project</finalName>
   </build>
 </project>

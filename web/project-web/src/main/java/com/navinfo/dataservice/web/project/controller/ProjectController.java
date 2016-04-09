@@ -22,12 +22,12 @@ import com.navinfo.dataservice.engine.man.project.ProjectSelector;
 import com.navinfo.dataservice.engine.man.version.VersionSelector;
 
 @Controller
-public class ManController {
+public class ProjectController {
 
 	private static final Logger logger = Logger
-			.getLogger(ManController.class);
+			.getLogger(ProjectController.class);
 
-	@RequestMapping(value = "/man/version/get")
+	@RequestMapping(value = "/version/get")
 	public void getVersion(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -86,7 +86,7 @@ public class ManController {
 		}
 	}
 
-	@RequestMapping(value = "/man/project/getByUser")
+	@RequestMapping(value = "/project/getByUser")
 	public void getProjectByUser(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -128,7 +128,7 @@ public class ManController {
 		}
 	}
 
-	@RequestMapping(value = "/man/grid/getByUser")
+	@RequestMapping(value = "/grid/getByUser")
 	public void getGridByUser(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 

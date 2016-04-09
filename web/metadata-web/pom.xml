@@ -8,10 +8,10 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <groupId>com.navinfo.dataservice</groupId>
-  <artifactId>project-web</artifactId>
+  <artifactId>metadata-web</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>war</packaging>
-  <name>project-web Maven Webapp</name>
+  <name>metadata-web Maven Webapp</name>
   <url>http://maven.apache.org</url>
   <dependencies>
   
@@ -35,6 +35,10 @@
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>datahub</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>engine-meta</artifactId>
 	</dependency>
 	
 	<dependency>
@@ -145,6 +149,6 @@
      
   </dependencies>
   <build>
-    <finalName>project-web</finalName>
+    <finalName>metadata-web</finalName>
   </build>
 </project>

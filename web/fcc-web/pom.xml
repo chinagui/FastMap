@@ -8,10 +8,10 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <groupId>com.navinfo.dataservice</groupId>
-  <artifactId>project-web</artifactId>
+  <artifactId>fcc-web</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>war</packaging>
-  <name>project-web Maven Webapp</name>
+  <name>fcc-web Maven Webapp</name>
   <url>http://maven.apache.org</url>
   <dependencies>
   
@@ -34,12 +34,17 @@
 	</dependency>
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>datahub</artifactId>
+		<artifactId>engine-edit</artifactId>
 	</dependency>
 	
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>engine-man</artifactId>
+		<artifactId>engine-fcc</artifactId>
+	</dependency>
+	
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>engine-photo</artifactId>
 	</dependency>
 	
 	<dependency>
@@ -145,6 +150,6 @@
      
   </dependencies>
   <build>
-    <finalName>project-web</finalName>
+    <finalName>fcc-web</finalName>
   </build>
 </project>

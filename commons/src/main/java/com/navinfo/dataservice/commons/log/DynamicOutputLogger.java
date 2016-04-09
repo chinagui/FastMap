@@ -48,7 +48,7 @@ public class DynamicOutputLogger {
         if (enableTaskStdoutLog) {
             log.addAppender(new ConsoleAppender(defaultLayout));
         }
-        Appender appender3 = new DailyRollingFileAppender(defaultLayout, "logs/vm.log", "'.'yyyyMMdd");
+        Appender appender3 = new DailyRollingFileAppender(defaultLayout, "logs/fos.log", "'.'yyyyMMdd");
         log.addAppender(appender3);
         return log;
     }

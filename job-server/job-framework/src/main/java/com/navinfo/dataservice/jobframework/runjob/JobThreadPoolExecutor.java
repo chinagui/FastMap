@@ -81,7 +81,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor implements Observe
 		log.debug("开始将任务加入job池。jobIdentity："+jobInfo.getIdentity());
 		//
 		try{
-			Set<String> set = jobPool.get(jobInfo.getType());
+			Set<String> set = jobPool.get(jobInfo.getType().toString());
 			if(set!=null){
 				if(set.contains(jobInfo.getIdentity())){
 					log.debug("job(jobIdentity:"+jobInfo.getIdentity()+")加入执行池中失败：job已经开始执行。");
@@ -108,7 +108,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor implements Observe
 		super.afterExecute(r, t);
 		AbstractJob job = (AbstractJob) r;
 		JobInfo jobInfo = job.getJobInfo();
-		Set<String> set = jobPool.get(jobInfo.getType());
+		Set<String> set = jobPool.get(jobInfo.getType().toString());
 		set.remove(jobInfo.getIdentity());
 		
 		log.debug("removed job thread. jobIdentity:"+jobInfo.getIdentity());

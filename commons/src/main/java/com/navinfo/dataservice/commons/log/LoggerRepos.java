@@ -55,7 +55,7 @@ public class LoggerRepos {
      */
     public static Logger createLogger(String key) throws IOException{
     	log.info("create a log gine named:"+key);
-    	String output = key+"_"+DateUtils.dateToString(new Date(),DateUtils.DATE_COMPACTED_FORMAT)+".log";
+    	String output = "logs/"+key+"-"+DateUtils.dateToString(new Date(),DateUtils.DATE_COMPACTED_FORMAT)+".log";
     	Logger logger = DynamicOutputLogger.getFileLogger(key,output);
         log.debug("create task log:" + output);
         logThreadLocal.set(logger);

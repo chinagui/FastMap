@@ -1,13 +1,21 @@
 package com.navinfo.dataservice.jobframework.runjob;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.job.model.JobStep;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.job.JobMsgPublisher;
 import com.navinfo.dataservice.jobframework.exception.JobException;
+import com.navinfo.navicommons.database.QueryRunner;
+
+import net.sf.json.JSONObject;
 
 /** 
 * @ClassName: AbstractJob 
@@ -24,7 +32,7 @@ public abstract class AbstractJob implements Runnable {
 	
 	protected int stepCount = 0;
 	//protected boolean rerunnable=false;
-	protected AbstractJob(JobInfo jobInfo){
+	public AbstractJob(JobInfo jobInfo){
 		this.jobInfo=jobInfo;
 	}
 	public JobInfo getJobInfo() {
@@ -37,17 +45,63 @@ public abstract class AbstractJob implements Runnable {
 	public void run() {
 		try{
 			initLogger();
+			resetJobStatus(2);
 			volidateRequest();
 			stepCount = computeStepCount();
+			if(jobInfo.getResponse()==null){
+				jobInfo.setResponse(new JSONObject());
+			}
+			setJobStepCount(stepCount);
 			finishStep("检查、初始化任务执行环境及相关操作已完成...");
 			execute();
+			resetJobStatus(3);
 		}catch(Exception e){
-			
+			try{
+				resetJobStatus(4);
+			}catch(Exception err){
+				log.error(err.getMessage(),e);
+				log.warn("注意：job执行失败后修改任务状态出错。");
+			}
+			log.error(e.getMessage(),e);
 		}finally{
-			
+			log.info("job执行完成。");
 		}
 	}
 
+	private void resetJobStatus(int status)throws SQLException{
+		Connection conn = null;
+		try{
+			//持久化
+			QueryRunner run = new QueryRunner();
+			conn = MultiDataSourceFactory.getInstance().getManDataSource()
+					.getConnection();
+			String jobInfoSql = "UPDATE JOB_INFO SET STATUS=? WHERE JOB_ID=?";
+			run.update(conn, jobInfoSql, status, jobInfo.getId());
+		}catch(SQLException e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	private void setJobStepCount(int num)throws SQLException{
+		Connection conn = null;
+		try{
+			//持久化
+			QueryRunner run = new QueryRunner();
+			conn = MultiDataSourceFactory.getInstance().getManDataSource()
+					.getConnection();
+			String jobInfoSql = "UPDATE JOB_INFO SET STEP_COUNT=? WHERE JOB_ID=?";
+			run.update(conn, jobInfoSql, num, jobInfo.getId());
+		}catch(SQLException e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 	/**
 	 * 初始化每个任务一个日志文件的日志系统
 	 * 
@@ -67,6 +121,7 @@ public abstract class AbstractJob implements Runnable {
 			//
 			JobMsgPublisher.responseJob(jobInfo.getId(), jobInfo.getResponse(),lastFinishedStep);
 		}catch(Exception e){
+			log.error(e.getMessage(),e);
 			throw new JobException("");
 		}
 	}

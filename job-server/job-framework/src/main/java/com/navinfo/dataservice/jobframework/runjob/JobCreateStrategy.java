@@ -31,14 +31,13 @@ public class JobCreateStrategy {
 		if(jobClassMap==null){
 			loadMapping();
 		}
-		Class<?> clazz = jobClassMap.get(jobInfo.getType());
+		Class<?> clazz = jobClassMap.get(jobInfo.getType().toString());
 		if(clazz==null){
 			throw new JobTypeNotFoundException("未找到对应的任务类型");
 		}
 		AbstractJob job = null;
 		try{
-			Class<?>[] argtypes= new Class[]{JobInfo.class,CountDownLatch.class};
-			job = (AbstractJob)clazz.getConstructor(argtypes).newInstance(jobInfo);
+			job = (AbstractJob)clazz.getConstructor(JobInfo.class).newInstance(jobInfo);
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			throw new JobCreateException(e.getMessage(),e);

@@ -70,7 +70,7 @@ public class EditController {
 		}
 	}
 
-	@RequestMapping(value = "/editsupport/getByCondition")
+	@RequestMapping(value = "/getByCondition")
 	public void getByCondition(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 

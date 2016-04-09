@@ -8,3 +8,4 @@
 .mvnclasspath
 .tomcatplugin
 /WebRoot
+.myumldata

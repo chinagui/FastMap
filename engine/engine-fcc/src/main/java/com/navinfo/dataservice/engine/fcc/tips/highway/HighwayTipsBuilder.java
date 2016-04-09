@@ -122,7 +122,7 @@ public class HighwayTipsBuilder {
 		String pointWkt = new String(new WKT().fromJGeometry(geom2));
 
 		double[][] point = DisplayUtils
-				.getTipsPointPos(linkWkt, pointWkt, 2);
+				.getTipsPointPos(linkWkt, pointWkt, 3);
 
 		JSONObject json = new JSONObject();
 

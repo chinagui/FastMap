@@ -30,5 +30,8 @@ public class PidSequenceName {
 	
 	public static final String ckExceptionIdName = "SEQ_CK_EXCEPTION";
 	
+	public static final String adAdminPidName = "SEQ_AD_ADMIN";
+	
+	public static final String rticCodeName = "SEQ_RTIC_CODE";
 	
 }

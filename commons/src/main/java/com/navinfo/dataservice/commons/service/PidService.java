@@ -751,4 +751,108 @@ public class PidService {
 		return pid;
 
 	}
+	
+	/**
+	 * 申请ad_admin_pid
+	 */
+	public synchronized int applyAdAdminPid() throws Exception {
+
+		Connection conn = null;
+
+		int pid = 0;
+		try {
+			conn = pool.getConnection();
+
+			conn.setAutoCommit(false);
+
+			String pidRange = PidServiceUtils.getPidRange(conn,
+					PidSequenceName.adAdminPidName);
+
+			if (pidRange != null) {
+				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
+
+				if (prc.getPid() != -1) {
+					PidServiceUtils.updatePidRange(conn,
+							PidSequenceName.adAdminPidName, prc.getPidRange());
+
+					pid = prc.getPid();
+				} else {
+					// 剩餘範圍不足,需要從ID分配器搬運新的PID
+					pid = PidServiceUtils.transportPid(conn, 5000,
+							PidSequenceName.adAdminPidName);
+				}
+			} else {
+				// 不存在對應的序列,報錯且拋出異常
+
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.adAdminPidName);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return pid;
+
+	}
+	
+	/**
+	 * 申请rtic代码
+	 * @return
+	 * @throws Exception
+	 */
+	public synchronized int applyRticCode() throws Exception {
+
+		Connection conn = null;
+
+		int pid = 0;
+		try {
+			conn = pool.getConnection();
+
+			conn.setAutoCommit(false);
+
+			String pidRange = PidServiceUtils.getPidRange(conn,
+					PidSequenceName.rticCodeName);
+
+			if (pidRange != null) {
+				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
+
+				if (prc.getPid() != -1) {
+					PidServiceUtils.updatePidRange(conn,
+							PidSequenceName.rticCodeName, prc.getPidRange());
+
+					pid = prc.getPid();
+				} else {
+					// 剩餘範圍不足,需要從ID分配器搬運新的PID
+					pid = PidServiceUtils.transportPid(conn, 5000,
+							PidSequenceName.rticCodeName);
+				}
+			} else {
+				// 不存在對應的序列,報錯且拋出異常
+
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.rticCodeName);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return pid;
+
+	}
 }

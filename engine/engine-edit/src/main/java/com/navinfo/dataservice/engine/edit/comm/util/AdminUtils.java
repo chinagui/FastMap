@@ -6,9 +6,9 @@ import java.util.List;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.GeometryRelationUtils;
-import com.navinfo.dataservice.dao.glm.model.ad.AdFace;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.selector.ad.AdFaceSelector;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class AdminUtils {

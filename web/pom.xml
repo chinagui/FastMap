@@ -17,6 +17,7 @@
 		<module>metadata-web</module>
 		<module>render-web</module>
         <module>project-web</module>
+        <module>dropbox-web</module>
     </modules>
     <packaging>pom</packaging>
     <name>web</name>

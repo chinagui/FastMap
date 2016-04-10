@@ -440,7 +440,7 @@
 				<artifactId>ezmorph</artifactId>
 				<version>1.0.6</version>
 			</dependency>
-
+						
 			<!-- utils end -->
 			<!-- spring start -->
 			<dependency>
@@ -686,6 +686,11 @@
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
 				<artifactId>job-framework</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>engine-dropbox</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 			<!-- dataservice module start -->

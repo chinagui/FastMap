@@ -15,85 +15,120 @@ import net.sf.json.JSONArray;
 import oracle.sql.BLOB;
 
 import org.apache.uima.pear.util.FileUtil;
+import org.navinfo.dataservice.engine.meta.dao.DBConnector;
 import org.sqlite.SQLiteConfig;
 
 import com.navinfo.dataservice.commons.util.ZipUtils;
 
 public class PatternImageExporter {
 
-	private Connection conn;
-
-	public PatternImageExporter(Connection conn) {
-		this.conn = conn;
-	}
-
-	private void exportImage2Sqlite(Connection sqliteConn, String sql) throws Exception {
+	private void exportImage2Sqlite(Connection sqliteConn, String sql)
+			throws Exception {
 
 		String insertSql = "insert into meta_JVImage values("
 				+ "?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
+		Statement pstmt = null;
 
-		Statement pstmt = conn.createStatement();
+		ResultSet resultSet = null;
 
-		ResultSet resultSet = pstmt.executeQuery(sql);
+		Connection conn = null;
 
-		resultSet.setFetchSize(5000);
+		try {
 
-		int count = 0;
+			conn = DBConnector.getInstance().getConnection();
 
-		while (resultSet.next()) {
+			PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
 
-			String name = resultSet.getString("file_name");
+			pstmt = conn.createStatement();
 
-			String format = resultSet.getString("format");
+			resultSet = pstmt.executeQuery(sql);
 
-			BLOB blob = (BLOB) resultSet.getBlob("file_content");
+			resultSet.setFetchSize(5000);
 
-			InputStream is = blob.getBinaryStream();
-			int length = (int) blob.length();
-			byte[] content = new byte[length];
-			is.read(content);
-			is.close();
+			int count = 0;
 
-			String bType = resultSet.getString("b_type");
+			while (resultSet.next()) {
 
-			String mType = resultSet.getString("m_type");
+				String name = resultSet.getString("file_name");
 
-			prep.setString(1, name);
+				String format = resultSet.getString("format");
 
-			prep.setString(2, format);
+				BLOB blob = (BLOB) resultSet.getBlob("file_content");
 
-			prep.setBinaryStream(3, new ByteArrayInputStream(content),
-					content.length);
+				InputStream is = blob.getBinaryStream();
+				int length = (int) blob.length();
+				byte[] content = new byte[length];
+				is.read(content);
+				is.close();
 
-			prep.setString(4, bType);
+				String bType = resultSet.getString("b_type");
 
-			prep.setString(5, mType);
+				String mType = resultSet.getString("m_type");
 
-			prep.setInt(6, 0);
+				prep.setString(1, name);
 
-			prep.setString(7, "");
+				prep.setString(2, format);
 
-			prep.setString(8, "");
+				prep.setBinaryStream(3, new ByteArrayInputStream(content),
+						content.length);
 
-			prep.setString(9, "");
+				prep.setString(4, bType);
 
-			prep.setInt(10, 0);
+				prep.setString(5, mType);
 
-			prep.executeUpdate();
+				prep.setInt(6, 0);
 
-			count += 1;
+				prep.setString(7, "");
 
-			if (count % 5000 == 0) {
-				sqliteConn.commit();
+				prep.setString(8, "");
+
+				prep.setString(9, "");
+
+				prep.setInt(10, 0);
+
+				prep.executeUpdate();
+
+				count += 1;
+
+				if (count % 5000 == 0) {
+					sqliteConn.commit();
+				}
+			}
+
+			sqliteConn.commit();
+		} catch (Exception e) {
+
+			throw new Exception(e);
+
+		} finally {
+			if (resultSet != null) {
+				try {
+					resultSet.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+
+				}
 			}
 		}
-
-		sqliteConn.commit();
 	}
-	
-	private Connection createSqlite(String dir) throws Exception{
+
+	private Connection createSqlite(String dir) throws Exception {
 		// load the sqlite-JDBC driver using the current class loader
 		Class.forName("org.sqlite.JDBC");
 
@@ -113,76 +148,79 @@ public class PatternImageExporter {
 		sqliteConn.setAutoCommit(false);
 
 		stmt.execute("create table meta_JVImage(name text, format text, content Blob, bType text, mType text, userId integer, operateDate text, uploadDate text, downloadDate text, status integer)");
-		
+
 		return sqliteConn;
 	}
-	
-	public String export2SqliteByNames(String path, JSONArray names) throws Exception{
+
+	public String export2SqliteByNames(String path, JSONArray names)
+			throws Exception {
 		Date date = new Date();
 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 
 		String currentDate = sdf.format(date);
-		
+
 		String dir = path + "/" + currentDate;
-		
+
 		File mkdirFile = new File(dir);
 
 		mkdirFile.mkdirs();
-		
+
 		Connection sqliteConn = createSqlite(dir);
-		
+
 		String sql = "select * from sc_model_match_g where file_name in (";
-		
-		for(int i=0;i<names.size();i++){
+
+		for (int i = 0; i < names.size(); i++) {
 			String name = names.getString(i);
-			
-			if(i>0){
-				sql+=",";
+
+			if (i > 0) {
+				sql += ",";
 			}
-			
-			sql+="'"+name+"'";
+
+			sql += "'" + name + "'";
 		}
-		
-		sql+=")";
-		
+
+		sql += ")";
+
 		exportImage2Sqlite(sqliteConn, sql);
 
 		sqliteConn.close();
 
 		ZipUtils.zipFile(dir, path + "/" + currentDate + ".zip");
-		
+
 		FileUtil.deleteDirectory(new File(dir));
-		
-		return currentDate+".zip";
+
+		return currentDate + ".zip";
 	}
-	
-	public String export2SqliteByDate(String path, String date ) throws Exception{
+
+	public String export2SqliteByDate(String path, String date)
+			throws Exception {
 		Date curdate = new Date();
 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 
 		String currentDate = sdf.format(curdate);
-		
+
 		String dir = path + "/" + currentDate;
-		
+
 		File mkdirFile = new File(dir);
 
 		mkdirFile.mkdirs();
-		
+
 		Connection sqliteConn = createSqlite(dir);
-		
-		String sql = "select * from sc_model_match_g where b_type in ('2D','3D') and update_time > to_date('"+date+"','yyyymmddhh24miss')";
+
+		String sql = "select * from sc_model_match_g where b_type in ('2D','3D') and update_time > to_date('"
+				+ date + "','yyyymmddhh24miss')";
 
 		exportImage2Sqlite(sqliteConn, sql);
 
 		sqliteConn.close();
 
 		ZipUtils.zipFile(dir, path + "/" + currentDate + ".zip");
-		
+
 		FileUtil.deleteDirectory(new File(dir));
-		
-		return currentDate+".zip";
+
+		return currentDate + ".zip";
 	}
 
 	public void export2Sqlite(String path) throws Exception {
@@ -198,11 +236,11 @@ public class PatternImageExporter {
 		File mkdirFile = new File(dir);
 
 		mkdirFile.mkdirs();
-		
+
 		Connection sqliteConn = createSqlite(dir);
-		
+
 		String sql = "select * from sc_model_match_g where b_type in ('2D','3D')";
-		
+
 		exportImage2Sqlite(sqliteConn, sql);
 
 		sqliteConn.close();
@@ -214,32 +252,17 @@ public class PatternImageExporter {
 
 	public static void main(String[] args) throws Exception {
 
-		String username = "mymeta3";
-
-		String password = "mymeta3";
-
-		String ip = "192.168.4.131";
-
-		int port = 1521;
-
-		String serviceName = "orcl";
-
 		String path = "./";
 
-		Class.forName("oracle.jdbc.driver.OracleDriver");
+		PatternImageExporter exporter = new PatternImageExporter();
 
-		Connection conn = DriverManager.getConnection("jdbc:oracle:thin:@" + ip + ":"
-				+ port + ":" + serviceName, username, password);
+		// exporter.export2Sqlite(path);
 
-		PatternImageExporter exporter = new PatternImageExporter(conn);
-		
-		//exporter.export2Sqlite(path);
-		
 		JSONArray a = new JSONArray();
 		a.add("03311011");
 		a.add("03514013");
 		exporter.export2SqliteByNames(path, a);
-		
+
 		System.out.println("done");
 	}
 }

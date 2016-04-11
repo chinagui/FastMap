@@ -32,8 +32,8 @@ import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 public class EditController {
 	private static final Logger logger = Logger.getLogger(EditController.class);
 
-	@RequestMapping(value = "/edit")
-	public void edit(HttpServletRequest request, HttpServletResponse response)
+	@RequestMapping(value = "/run")
+	public void run(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");

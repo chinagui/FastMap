@@ -9,12 +9,12 @@ import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.engine.dropbox.dao.DBController;
 import com.navinfo.dataservice.engine.dropbox.util.DropboxUtil;
 
@@ -118,5 +118,20 @@ public class UploadManager {
 		
 		controller.insertChunk(jobId, chunkNo);
 		
+	}
+	
+	public String unzipByJobId(int jobId) throws Exception{
+		
+		DBController controller = new DBController();
+		
+		JSONObject uploadInfo = controller.getUploadInfo(jobId);
+
+		String fileName = uploadInfo.getString("fileName");
+
+		String filePath = uploadInfo.getString("filePath") + "/" + jobId;
+
+		ZipUtils.unzipFile(filePath + "/" + fileName, filePath);
+		
+		return filePath;
 	}
 }

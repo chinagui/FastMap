@@ -10,17 +10,9 @@ import net.sf.json.JSONObject;
 import oracle.sql.BLOB;
 
 import org.apache.commons.codec.binary.Base64;
-
-import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
-import com.navinfo.dataservice.commons.db.OracleAddress;
+import org.navinfo.dataservice.engine.meta.dao.DBConnector;
 
 public class PatternImageSelector {
-
-	private Connection conn;
-
-	public PatternImageSelector(Connection conn) {
-		this.conn = conn;
-	}
 
 	public JSONObject searchByName(String name, int pageSize, int pageNum)
 			throws Exception {
@@ -28,12 +20,16 @@ public class PatternImageSelector {
 		JSONObject result = new JSONObject();
 
 		JSONArray array = new JSONArray();
-		
+
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
-		
+
+		Connection conn = null;
+
 		try {
+
+			conn = DBConnector.getInstance().getConnection();
 
 			int total = 0;
 
@@ -90,7 +86,7 @@ public class PatternImageSelector {
 
 				array.add(json);
 			}
-			
+
 			result.put("total", total);
 
 			result.put("data", array);
@@ -98,7 +94,7 @@ public class PatternImageSelector {
 			return result;
 		} catch (Exception e) {
 
-			throw new Exception(e);
+			throw e;
 
 		} finally {
 			if (resultSet != null) {
@@ -116,11 +112,15 @@ public class PatternImageSelector {
 
 				}
 			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
 
+				}
+			}
 
 		}
-
-		
 
 	}
 
@@ -132,7 +132,12 @@ public class PatternImageSelector {
 
 		ResultSet resultSet = null;
 
+		Connection conn = null;
+
 		try {
+
+			conn = DBConnector.getInstance().getConnection();
+
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setString(1, id);
@@ -155,7 +160,7 @@ public class PatternImageSelector {
 
 		} catch (Exception e) {
 
-			throw new Exception(e);
+			throw e;
 
 		} finally {
 			if (resultSet != null) {
@@ -169,6 +174,14 @@ public class PatternImageSelector {
 			if (pstmt != null) {
 				try {
 					pstmt.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+			if (conn != null) {
+				try {
+					conn.close();
 				} catch (Exception e) {
 
 				}
@@ -193,7 +206,12 @@ public class PatternImageSelector {
 
 		ResultSet resultSet = null;
 
+		Connection conn = null;
+
 		try {
+
+			conn = DBConnector.getInstance().getConnection();
+
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setString(1, date);
@@ -206,7 +224,7 @@ public class PatternImageSelector {
 
 		} catch (Exception e) {
 
-			throw new Exception(e);
+			throw e;
 
 		} finally {
 			if (resultSet != null) {
@@ -225,6 +243,14 @@ public class PatternImageSelector {
 				}
 			}
 
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+
+				}
+			}
+
 		}
 
 		return false;
@@ -232,20 +258,7 @@ public class PatternImageSelector {
 
 	public static void main(String[] args) throws Exception {
 
-		String username1 = "mymeta3";
-
-		String password1 = "mymeta3";
-
-		int port1 = 1521;
-
-		String ip1 = "192.168.4.131";
-
-		String serviceName1 = "orcl";
-
-		OracleAddress oa1 = new OracleAddress(username1, password1, port1, ip1,
-				serviceName1);
-
-		PatternImageSelector selector = new PatternImageSelector(oa1.getConn());
+		PatternImageSelector selector = new PatternImageSelector();
 
 		System.out.println(selector.searchByName("", 1, 10));
 	}

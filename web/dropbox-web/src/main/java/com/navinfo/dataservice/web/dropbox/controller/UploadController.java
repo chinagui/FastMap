@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.web.dropbox.controller;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -12,9 +13,12 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadManager;
+import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
+import com.navinfo.dataservice.engine.photo.CollectorImport;
 
 @Controller
 public class UploadController {
@@ -129,6 +133,51 @@ public class UploadController {
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(null));
+
+		} catch (Exception e) {
+			String logid = Log4jUtils.genLogid();
+
+			Log4jUtils.error(logger, logid, parameter, e);
+
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+		}
+
+	}
+
+	@RequestMapping(value = "/import/tip")
+	public void importTips(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+
+			JSONObject json = JSONObject.fromObject(parameter);
+
+			int jobId = json.getInt("jobId");
+
+			UploadManager upload = new UploadManager();
+
+			String filePath = upload.unzipByJobId(jobId);
+
+			TipsUpload tipsUploader = new TipsUpload();
+
+			Map<String, Photo> map = tipsUploader.run(filePath + "/"
+					+ "tips.txt");
+
+			CollectorImport.importPhoto(map, filePath + "/photo");
+
+			JSONObject result = new JSONObject();
+
+			result.put("total", tipsUploader.getTotal());
+
+			result.put("failed", tipsUploader.getFailed());
+
+			result.put("reasons", tipsUploader.getReasons());
+
+			response.getWriter().println(
+					ResponseUtils.assembleRegularResult(result));
 
 		} catch (Exception e) {
 			String logid = Log4jUtils.genLogid();

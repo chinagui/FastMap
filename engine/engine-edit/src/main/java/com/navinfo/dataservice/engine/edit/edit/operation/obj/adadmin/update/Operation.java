@@ -6,7 +6,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminName;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeName;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;

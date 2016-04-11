@@ -7,6 +7,7 @@ import java.sql.Types;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.engine.dao.DBConnector;
 
 import net.sf.json.JSONObject;
 import oracle.jdbc.OraclePreparedStatement;

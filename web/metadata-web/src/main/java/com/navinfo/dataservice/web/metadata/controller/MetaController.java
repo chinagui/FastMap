@@ -36,8 +36,6 @@ public class MetaController extends BaseController {
 
 		String parameter = request.getParameter("parameter");
 
-		Connection conn = null;
-
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -47,9 +45,7 @@ public class MetaController extends BaseController {
 
 			int pageNum = jsonReq.getInt("pageNum");
 
-			conn = DBOraclePoolManager.getConnectionByName("meta");
-
-			RdNameSelector selector = new RdNameSelector(conn);
+			RdNameSelector selector = new RdNameSelector();
 
 			JSONObject result = selector.searchByName(name, pageSize, pageNum);
 
@@ -65,15 +61,6 @@ public class MetaController extends BaseController {
 			response.getWriter().println(
 					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
-		finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
 	}
 
 	@RequestMapping(value = "/pinyin/convert")
@@ -82,16 +69,12 @@ public class MetaController extends BaseController {
 
 		String parameter = request.getParameter("parameter");
 
-		Connection conn = null;
-
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			String word = jsonReq.getString("word");
 
-			conn = DBOraclePoolManager.getConnectionByName("meta");
-
-			PinyinConverter py = new PinyinConverter(conn);
+			PinyinConverter py = new PinyinConverter();
 
 			String[] result = py.convert(word);
 
@@ -117,15 +100,6 @@ public class MetaController extends BaseController {
 			response.getWriter().println(
 					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
-		finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
 	}
 
 	@RequestMapping(value = "/province/getByLocation")
@@ -134,8 +108,6 @@ public class MetaController extends BaseController {
 
 		String parameter = request.getParameter("parameter");
 
-		Connection conn = null;
-
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -143,9 +115,7 @@ public class MetaController extends BaseController {
 
 			double lat = jsonReq.getDouble("lat");
 
-			conn = DBOraclePoolManager.getConnectionByName("meta");
-
-			MeshSelector selector = new MeshSelector(conn);
+			MeshSelector selector = new MeshSelector();
 
 			JSONObject data = selector.getProvinceByLocation(lon, lat);
 
@@ -165,15 +135,6 @@ public class MetaController extends BaseController {
 			response.getWriter().println(
 					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
-		finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
 	}
 
 	@RequestMapping(value = "/patternImage/checkUpdate")
@@ -182,16 +143,12 @@ public class MetaController extends BaseController {
 
 		String parameter = request.getParameter("parameter");
 
-		Connection conn = null;
-
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			String date = jsonReq.getString("date");
 
-			conn = DBOraclePoolManager.getConnectionByName("meta");
-
-			PatternImageSelector selector = new PatternImageSelector(conn);
+			PatternImageSelector selector = new PatternImageSelector();
 
 			boolean flag = selector.checkUpdate(date);
 
@@ -207,15 +164,6 @@ public class MetaController extends BaseController {
 			response.getWriter().println(
 					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
-		finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
 	}
 
 	@RequestMapping(value = "/patternImage/download")
@@ -224,15 +172,12 @@ public class MetaController extends BaseController {
 
 		String parameter = request.getParameter("parameter");
 
-		Connection conn = null;
-
 		Connection metaConn = null;
 
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			metaConn = DBOraclePoolManager
-					.getConnectionByName("meta");
+			metaConn = DBOraclePoolManager.getConnectionByName("meta");
 
 			PatternImageExporter exporter = new PatternImageExporter(metaConn);
 
@@ -272,9 +217,7 @@ public class MetaController extends BaseController {
 
 			JSONObject json = new JSONObject();
 
-			conn = DBOraclePoolManager.getConnectionByName("man");
-
-			VersionSelector selector = new VersionSelector(conn);
+			VersionSelector selector = new VersionSelector();
 
 			String specVersion = selector.getByType(3);
 
@@ -297,15 +240,7 @@ public class MetaController extends BaseController {
 
 			response.getWriter().println(
 					ResponseUtils.assembleFailResult(e.getMessage(), logid));
-		}
-		finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+		} finally {
 			if (metaConn != null) {
 				try {
 					metaConn.close();
@@ -327,18 +262,13 @@ public class MetaController extends BaseController {
 				"POST, GET, OPTIONS, DELETE,PUT");
 
 		String parameter = request.getParameter("parameter");
-		
-		Connection conn = null;
 
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			String id = jsonReq.getString("id");
 
-			conn = DBOraclePoolManager
-					.getConnectionByName("meta");
-
-			PatternImageSelector selector = new PatternImageSelector(conn);
+			PatternImageSelector selector = new PatternImageSelector();
 
 			byte[] data = selector.getById(id);
 
@@ -353,15 +283,6 @@ public class MetaController extends BaseController {
 			response.getWriter().println(
 					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
-		finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
 	}
 
 	@RequestMapping(value = "/patternImage/search")
@@ -370,8 +291,6 @@ public class MetaController extends BaseController {
 
 		String parameter = request.getParameter("parameter");
 
-		Connection conn = null;
-				
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -381,10 +300,7 @@ public class MetaController extends BaseController {
 
 			int pageNum = jsonReq.getInt("pageNum");
 
-			conn = DBOraclePoolManager
-					.getConnectionByName("meta");
-
-			PatternImageSelector selector = new PatternImageSelector(conn);
+			PatternImageSelector selector = new PatternImageSelector();
 
 			JSONObject obj = selector.searchByName(name, pageSize, pageNum);
 
@@ -399,15 +315,6 @@ public class MetaController extends BaseController {
 
 			response.getWriter().println(
 					ResponseUtils.assembleFailResult(e.getMessage(), logid));
-		}
-		finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
 		}
 	}
 }

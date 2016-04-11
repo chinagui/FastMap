@@ -38,30 +38,15 @@
 	</dependency>
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>engine-edit</artifactId>
-	</dependency>
-	<dependency>
-		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>engine-meta</artifactId>
-	</dependency>
-	
-	<dependency>
-		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>engine-man</artifactId>
-	</dependency>
-	
-	<dependency>
-		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>engine-fcc</artifactId>
 	</dependency>
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>engine-dropbox</artifactId>
+		<artifactId>engine-photo</artifactId>
 	</dependency>
-	
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>engine-photo</artifactId>
+		<artifactId>engine-dropbox</artifactId>
 	</dependency>
 	
 	<dependency>

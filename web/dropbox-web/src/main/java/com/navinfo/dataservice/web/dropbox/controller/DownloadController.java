@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.web.dropbox.controller;
 
 import java.io.IOException;
+import java.sql.Connection;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -13,9 +14,11 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.engine.dropbox.manger.DownloadManager;
+import com.navinfo.dataservice.engine.man.version.VersionSelector;
 
 @Controller
 public class DownloadController {
@@ -152,5 +155,63 @@ public class DownloadController {
 					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 
+	}
+
+	@RequestMapping(value = "/version/get")
+	public void getVersion(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			conn = DBOraclePoolManager.getConnectionByName("man");
+
+			VersionSelector selector = new VersionSelector();
+
+			if (jsonReq.containsKey("type")) {
+
+				int type = jsonReq.getInt("type");
+
+				String version = selector.getByType(type);
+
+				JSONObject json = new JSONObject();
+
+				json.put("specVersion", version);
+
+				json.put("type", type);
+
+				response.getWriter().println(
+						ResponseUtils.assembleRegularResult(json));
+			}
+
+			else {
+				JSONArray array = selector.getList();
+
+				response.getWriter().println(
+						ResponseUtils.assembleRegularResult(array));
+
+			}
+
+		} catch (Exception e) {
+
+			String logid = Log4jUtils.genLogid();
+
+			Log4jUtils.error(logger, logid, parameter, e);
+
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 }

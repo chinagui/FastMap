@@ -34,4 +34,6 @@ public class PidSequenceName {
 	
 	public static final String rticCodeName = "SEQ_RTIC_CODE";
 	
+	public static final String adAdminNamePidName = "SEQ_AD_ADMIN_NAME";
+	
 }

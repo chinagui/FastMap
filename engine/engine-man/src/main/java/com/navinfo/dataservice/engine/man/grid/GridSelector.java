@@ -10,7 +10,6 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.db.ConfigLoader;
-import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.dataservice.engine.dao.DBConnector;
 
@@ -152,8 +151,6 @@ public class GridSelector {
 
 		ConfigLoader
 				.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
-
-		Connection conn = DBOraclePoolManager.getConnectionByName("man");
 
 		GridSelector s = new GridSelector();
 

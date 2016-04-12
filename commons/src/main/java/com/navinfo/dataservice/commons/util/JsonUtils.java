@@ -21,9 +21,9 @@ public class JsonUtils {
 							return null;
 						}
 
-//						if (JSONUtils.mayBeJSON(value.toString())) {
-//							return "\"" + value + "\"";
-//						}
+						if (JSONUtils.mayBeJSON(value.toString())) {
+							return "\"" + value + "\"";
+						}
 
 						return value;
 

@@ -3,15 +3,14 @@ package com.navinfo.dataservice.commons.service;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import net.sf.json.JSONObject;
-
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.db.ConfigLoader;
 import com.navinfo.dataservice.commons.db.DBOraclePool;
-import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.util.PidServiceUtils;
+
+import net.sf.json.JSONObject;
 
 public class PidService {
 
@@ -855,4 +854,107 @@ public class PidService {
 		return pid;
 
 	}
+	
+	/**
+	 * 申请ad_admin_name_pid
+	 */
+	public synchronized int applyAdAdminNamePid() throws Exception {
+
+		Connection conn = null;
+
+		int pid = 0;
+		try {
+			conn = pool.getConnection();
+
+			conn.setAutoCommit(false);
+
+			String pidRange = PidServiceUtils.getPidRange(conn,
+					PidSequenceName.adAdminNamePidName);
+
+			if (pidRange != null) {
+				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
+
+				if (prc.getPid() != -1) {
+					PidServiceUtils.updatePidRange(conn,
+							PidSequenceName.adAdminNamePidName, prc.getPidRange());
+
+					pid = prc.getPid();
+				} else {
+					// 剩餘範圍不足,需要從ID分配器搬運新的PID
+					pid = PidServiceUtils.transportPid(conn, 5000,
+							PidSequenceName.adAdminNamePidName);
+				}
+			} else {
+				// 不存在對應的序列,報錯且拋出異常
+
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.adAdminNamePidName);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return pid;
+
+	}
+	
+	/**
+	 * 申请applyAdAdminGroupPid
+	 */
+	public synchronized int applyAdAdminGroupPid() throws Exception {
+
+		Connection conn = null;
+
+		int pid = 0;
+		try {
+			conn = pool.getConnection();
+
+			conn.setAutoCommit(false);
+
+			String pidRange = PidServiceUtils.getPidRange(conn,
+					PidSequenceName.adAdminGroupPidName);
+
+			if (pidRange != null) {
+				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
+
+				if (prc.getPid() != -1) {
+					PidServiceUtils.updatePidRange(conn,
+							PidSequenceName.adAdminGroupPidName, prc.getPidRange());
+
+					pid = prc.getPid();
+				} else {
+					// 剩餘範圍不足,需要從ID分配器搬運新的PID
+					pid = PidServiceUtils.transportPid(conn, 5000,
+							PidSequenceName.adAdminGroupPidName);
+				}
+			} else {
+				// 不存在對應的序列,報錯且拋出異常
+
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.adAdminGroupPidName);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return pid;
+
+	}
+	
 }

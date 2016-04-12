@@ -7,13 +7,9 @@ import java.sql.ResultSet;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.engine.dao.DBConnector;
+
 public class VersionSelector {
-
-	private Connection conn;
-
-	public VersionSelector(Connection conn) {
-		this.conn = conn;
-	}
 
 	public String getByType(int type) throws Exception {
 
@@ -23,7 +19,12 @@ public class VersionSelector {
 
 		ResultSet resultSet = null;
 
+		Connection conn = null;
+
 		try {
+
+			conn = DBConnector.getInstance().getConnection();
+
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setInt(1, type);
@@ -58,8 +59,13 @@ public class VersionSelector {
 
 				}
 			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
 
-
+				}
+			}
 		}
 
 	}
@@ -74,7 +80,12 @@ public class VersionSelector {
 
 		ResultSet resultSet = null;
 
+		Connection conn = null;
+
 		try {
+
+			conn = DBConnector.getInstance().getConnection();
+			
 			pstmt = conn.prepareStatement(sql);
 
 			resultSet = pstmt.executeQuery();
@@ -114,8 +125,13 @@ public class VersionSelector {
 
 				}
 			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
 
-
+				}
+			}
 		}
 		return array;
 	}

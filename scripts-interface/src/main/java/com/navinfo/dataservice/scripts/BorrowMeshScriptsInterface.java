@@ -48,13 +48,10 @@ public class BorrowMeshScriptsInterface {
 
 			System.out.println("get dbId");
 			// 获取dbId
-			ProjectSelector prjselector = new ProjectSelector(
-					MultiDataSourceFactory.getInstance().getManDataSource()
-							.getConnection());
+			ProjectSelector prjselector = new ProjectSelector();
 			int sourceDbId = prjselector.getDbId(sourceProjectId);
 
-			prjselector = new ProjectSelector(MultiDataSourceFactory
-					.getInstance().getManDataSource().getConnection());
+			prjselector = new ProjectSelector();
 
 			int targetDbId = prjselector.getDbId(targetProjectId);
 

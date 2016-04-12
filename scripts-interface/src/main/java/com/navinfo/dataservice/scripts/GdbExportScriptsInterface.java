@@ -23,9 +23,7 @@ public class GdbExportScriptsInterface {
 			
 			String path = args[1];
 			
-			ProjectSelector prjselector = new ProjectSelector(
-					MultiDataSourceFactory.getInstance().getManDataSource()
-							.getConnection());
+			ProjectSelector prjselector = new ProjectSelector();
 			
 			int dbId = prjselector.getDbId(projectId);
 			

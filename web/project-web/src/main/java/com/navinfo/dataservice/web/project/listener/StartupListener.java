@@ -17,12 +17,12 @@ public class StartupListener implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent arg0) {
 
-		String path = arg0.getServletContext().getRealPath(
-				"/WEB-INF/classes/config.properties");
-		
-		ConfigLoader.initDBConn(path);
-		
-		System.out.println("===============CONFIG LOADED==================");
+//		String path = arg0.getServletContext().getRealPath(
+//				"/WEB-INF/classes/config.properties");
+//		
+//		ConfigLoader.initDBConn(path);
+//		
+//		System.out.println("===============CONFIG LOADED==================");
 		
 	}
 

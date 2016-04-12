@@ -47,4 +47,24 @@ public class PropConstant {
 	public static final String metaUsername = "meta_username";
 
 	public static final String metaPassword = "meta_password";
+	
+	public static final String uploadPath = "dropbox.upload.path";
+	
+	public static final String downloadFilePathTips = "dropbox.download.filepath.tips";
+	
+	public static final String downloadFilePathNds = "dropbox.download.filepath.nds";
+	
+	public static final String downloadFilePathBasedata = "dropbox.download.filepath.basedata";
+	
+	public static final String downloadFilePathPatternimg = "dropbox.download.filepath.patternimg";
+	
+	public static final String downloadUrlPathTips = "dropbox.download.urlpath.tips";
+	
+	public static final String downloadUrlPathNds = "dropbox.download.urlpath.nds";
+	
+	public static final String downloadUrlPathBasedata = "dropbox.download.urlpath.basedata";
+	
+	public static final String downloadUrlPathPatternimg = "dropbox.download.urlpath.patternimg";
+	
+	public static final String serverUrl = "dropbox.url";
 }

@@ -4,18 +4,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import com.navinfo.dataservice.commons.db.OracleAddress;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.navinfo.dataservice.engine.meta.dao.DBConnector;
+
 public class RdNameSelector {
-
-	private Connection conn;
-
-	public RdNameSelector(Connection conn) {
-		this.conn = conn;
-	}
 
 	public JSONObject searchByName(String name, int pageSize, int pageNum)
 			throws Exception {
@@ -30,7 +24,11 @@ public class RdNameSelector {
 
 		ResultSet resultSet = null;
 
+		Connection conn = null;
+
 		try {
+
+			conn = DBConnector.getInstance().getConnection();
 
 			if (name.length() == 0) {
 				result.put("total", total);
@@ -104,25 +102,21 @@ public class RdNameSelector {
 
 				}
 			}
+			
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+
+				}
+			}
 		}
 
 	}
 
 	public static void main(String[] args) throws Exception {
-		String username1 = "mymeta3";
 
-		String password1 = "mymeta3";
-
-		int port1 = 1521;
-
-		String ip1 = "192.168.4.131";
-
-		String serviceName1 = "orcl";
-
-		OracleAddress oa1 = new OracleAddress(username1, password1, port1, ip1,
-				serviceName1);
-
-		RdNameSelector selector = new RdNameSelector(oa1.getConn());
+		RdNameSelector selector = new RdNameSelector();
 
 		System.out.println(selector.searchByName("", 10, 1));
 	}

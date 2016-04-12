@@ -20,6 +20,9 @@ import org.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
@@ -166,31 +169,31 @@ public class MetaController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/patternImage/download")
-	public void downloadPatternImage(HttpServletRequest request,
+	@RequestMapping(value = "/patternImage/export")
+	public void exportPatternImage(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
-		Connection metaConn = null;
-
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			metaConn = DBOraclePoolManager.getConnectionByName("meta");
-
-			PatternImageExporter exporter = new PatternImageExporter(metaConn);
+			PatternImageExporter exporter = new PatternImageExporter();
 
 			String fileName = "";
+			
+			SystemConfig config = SystemConfigFactory.getSystemConfig();
+			
+			String url = config.getValue(PropConstant.serverUrl);
+			
+			url += config.getValue(PropConstant.downloadUrlPathPatternimg);
 
-			String url = "http://192.168.4.130:8080/download/patternimage";
-
-			String path = "";
+			String path = config.getValue(PropConstant.downloadFilePathPatternimg);
 
 			if (jsonReq.containsKey("names")) {
 				JSONArray names = jsonReq.getJSONArray("names");
 
-				path = "/root/download/patternimage/byname";
+				path += "/byname";
 
 				fileName = exporter.export2SqliteByNames(path, names);
 
@@ -198,7 +201,7 @@ public class MetaController extends BaseController {
 			} else if (jsonReq.containsKey("date")) {
 				String date = jsonReq.getString("date");
 
-				path = "/root/download/patternimage/bydate";
+				path += "/bydate";
 
 				fileName = exporter.export2SqliteByDate(path, date);
 
@@ -240,14 +243,6 @@ public class MetaController extends BaseController {
 
 			response.getWriter().println(
 					ResponseUtils.assembleFailResult(e.getMessage(), logid));
-		} finally {
-			if (metaConn != null) {
-				try {
-					metaConn.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
 		}
 	}
 
@@ -256,10 +251,6 @@ public class MetaController extends BaseController {
 			HttpServletResponse response) throws ServletException, IOException {
 
 		response.setContentType("image/jpeg;charset=GBK");
-
-		response.setHeader("Access-Control-Allow-Origin", "*");
-		response.setHeader("Access-Control-Allow-Methods",
-				"POST, GET, OPTIONS, DELETE,PUT");
 
 		String parameter = request.getParameter("parameter");
 

@@ -64,5 +64,6 @@
  	<dropbox.download.urlpath.nds>/resources/download/nds</dropbox.download.urlpath.nds>
 	<dropbox.download.urlpath.tips>/resources/download/tips</dropbox.download.urlpath.tips>
 	<dropbox.download.urlpath.basedata>/resources/download/basedata</dropbox.download.urlpath.basedata>
+	<dropbox.download.urlpath.patternimg>/resources/download/patternimg</dropbox.download.urlpath.patternimg>
  	<dropbox.url>http://192.168.4.188</dropbox.url>
 </configMap>

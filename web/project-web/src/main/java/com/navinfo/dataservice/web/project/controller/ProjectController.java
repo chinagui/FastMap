@@ -17,6 +17,7 @@ import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.engine.man.grid.GridSelector;
 import com.navinfo.dataservice.engine.man.project.ProjectSelector;
+import com.navinfo.dataservice.engine.man.version.VersionSelector;
 
 @Controller
 public class ProjectController {
@@ -24,7 +25,7 @@ public class ProjectController {
 	private static final Logger logger = Logger
 			.getLogger(ProjectController.class);
 
-	@RequestMapping(value = "/project/getByUser")
+	@RequestMapping(value = "/getByUser")
 	public void getProjectByUser(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
@@ -83,5 +84,49 @@ public class ProjectController {
 					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 	}
+	@RequestMapping(value = "/version/get")
+	public void getVersion(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
 
+		String parameter = request.getParameter("parameter");
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			VersionSelector selector = new VersionSelector();
+
+			if (jsonReq.containsKey("type")) {
+
+				int type = jsonReq.getInt("type");
+
+				String version = selector.getByType(type);
+
+				JSONObject json = new JSONObject();
+
+				json.put("specVersion", version);
+
+				json.put("type", type);
+
+				response.getWriter().println(
+						ResponseUtils.assembleRegularResult(json));
+			}
+
+			else {
+				JSONArray array = selector.getList();
+
+				response.getWriter().println(
+						ResponseUtils.assembleRegularResult(array));
+
+			}
+
+		} catch (Exception e) {
+
+			String logid = Log4jUtils.genLogid();
+
+			Log4jUtils.error(logger, logid, parameter, e);
+
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+		}
+	}
 }

@@ -21,6 +21,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class AdAdminGroup implements IObj {
@@ -30,6 +31,8 @@ public class AdAdminGroup implements IObj {
     private String rowId;
     private Map<String, Object> changedFields = new HashMap<String, Object>();
     private List<IRow> parts = new ArrayList<IRow>();
+    public Map<String, AdAdminPart> adAdminPartMap = new HashMap<String, AdAdminPart>();
+    
 	@Override
 	public String rowId() {
 		return rowId;

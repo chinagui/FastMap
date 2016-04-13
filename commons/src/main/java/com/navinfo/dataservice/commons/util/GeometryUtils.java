@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
@@ -193,6 +194,14 @@ public class GeometryUtils {
 		}
 		
 		return result;
+	}
+	
+	public static Geometry getPolygonByWKT(String wkt) throws ParseException {
+		WKTReader reader = new WKTReader();
+
+		Polygon polygon = (Polygon) reader.read(wkt);
+
+		return polygon;
 	}
 	
 	public static void main(String[] args) throws Exception{

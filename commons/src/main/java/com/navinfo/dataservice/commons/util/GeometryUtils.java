@@ -197,6 +197,7 @@ public class GeometryUtils {
 	}
 	
 	public static Geometry getPolygonByWKT(String wkt) throws ParseException {
+
 		WKTReader reader = new WKTReader();
 
 		Polygon polygon = (Polygon) reader.read(wkt);

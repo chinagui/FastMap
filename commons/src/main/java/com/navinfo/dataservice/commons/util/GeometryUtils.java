@@ -1,9 +1,11 @@
 package com.navinfo.dataservice.commons.util;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
@@ -165,13 +167,20 @@ public class GeometryUtils {
 	
 	public static Geometry getIntersectsGeo(List<Geometry> geometryList)
 	{
+		
 		Geometry geo0 = geometryList.get(0);
 		
 		Geometry geo1 = geometryList.get(1);
 		
-		Geometry result = geo0.intersection(geo1);;
+		Geometry result = geo0.intersection(geo1);
 		
-		for(int i=1;i<geometryList.size();i++)
+		//保存交点和link的关系：是否是起点、终点、形状点
+		List<Integer> userData = new ArrayList<Integer>();
+		
+		//保存交点和第一个几何的起始位置关系
+		userData.add(getStartOrEndType(geo0,result));
+		
+		for(int i=1;i<(geometryList.size() -1);i++)
 		{
 			Geometry tmp1 = geometryList.get(i);
 			
@@ -180,10 +189,14 @@ public class GeometryUtils {
 			if(tmp1.intersects(tmp2))
 			{
 				Geometry interGeo = tmp1.intersection(tmp2);
-				if(!interGeo.covers(result))
+				if(!interGeo.intersects(result))
 				{
 					result = null;
 					break;
+				}
+				else
+				{
+					userData.add(getStartOrEndType(tmp1,result));
 				}
 			}
 			else
@@ -193,7 +206,37 @@ public class GeometryUtils {
 			}
 		}
 		
+		//判断最后一个几何图形的位置关系
+		if(result != null)
+		{
+			userData.add(getStartOrEndType(geometryList.get(geometryList.size()),result));
+		}
+		
+		result.setUserData(userData);
+		
 		return result;
+	}
+	
+	/**
+	 * 获取参数二的点是否是参数1的起始或者终止点
+	 * @param compared 需要计算的点
+	 * @param standGeo 作为对比的几何
+	 * @return 1：起点 2:终点  0：形状点
+	 */
+	public static int getStartOrEndType(Geometry compared,Geometry standGeo)
+	{
+		if(compared.getBoundary().getGeometryN(0).equals(standGeo))
+		{
+			return 1;
+		}
+		else if(compared.getBoundary().getGeometryN(1).equals(standGeo))
+		{
+			return 2;
+		}
+		else
+		{
+			return 0;
+		}
 	}
 	
 	public static Geometry getPolygonByWKT(String wkt) throws ParseException {
@@ -206,14 +249,39 @@ public class GeometryUtils {
 	}
 	
 	public static void main(String[] args) throws Exception{
-		WKTReader r = new WKTReader();
+		
+		GeometryFactory geometryFactory = new GeometryFactory();
+				
+		WKTReader r = new WKTReader(geometryFactory);
 		
 		String a="LINESTRING (117.35746 39.13152, 117.35761 39.13144, 117.35788 39.13133, 117.35806 39.13128, 117.35824 39.13124, 117.35869 39.13117, 117.35908 39.13113, 117.35957 39.1311, 117.35984 39.1311, 117.36012 39.13112, 117.36057 39.13118, 117.36136 39.13142, 117.36189 39.13158, 117.36232 39.13173)";
 		
 		Geometry g=r.read(a);
 		
-		System.out.println(GeometryUtils.getLinkLength(g));
+		//System.out.println(GeometryUtils.getLinkLength(g));
 		
+		
+		String test1 = "LINESTRING (116.03956 39.86685, 116.03948 39.86591, 116.03925 39.86302)";
+		
+		String test2 = "LINESTRING (116.03794 39.86643, 116.03948 39.86591, 116.04765 39.86319)";
+		
+		String test3 = "LINESTRING (116.03948 39.86591, 116.03794 39.86643, 116.04765 39.86319)";
+		
+		Geometry g1=r.read(test1);
+		
+		Geometry g2=r.read(test2);
+		
+		Geometry g3=r.read(test3);
+		
+		List<Geometry> list = new ArrayList<>();
+		
+		list.add(g1);
+		
+		list.add(g2);
+		
+		list.add(g3);
+		
+		System.out.println(getIntersectsGeo(list));
 	}
 	
 }

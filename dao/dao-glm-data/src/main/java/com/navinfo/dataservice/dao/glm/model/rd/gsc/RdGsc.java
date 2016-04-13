@@ -17,6 +17,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class RdGsc implements IObj  {
@@ -32,6 +33,8 @@ public class RdGsc implements IObj  {
 	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	private List<IRow> links = new ArrayList<IRow>();
+	
+	public Map<String, RdGscLink> rdGscLinkMap = new HashMap<String, RdGscLink>();
 
 	public List<IRow> getLinks() {
 		return links;

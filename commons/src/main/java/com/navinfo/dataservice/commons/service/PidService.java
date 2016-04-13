@@ -957,4 +957,55 @@ public class PidService {
 
 	}
 	
+	/**
+	 * 申请applyRdGscPid
+	 */
+	public synchronized int applyRdGscPid() throws Exception {
+
+		Connection conn = null;
+
+		int pid = 0;
+		try {
+			conn = pool.getConnection();
+
+			conn.setAutoCommit(false);
+
+			String pidRange = PidServiceUtils.getPidRange(conn,
+					PidSequenceName.rdGscPidName);
+
+			if (pidRange != null) {
+				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
+
+				if (prc.getPid() != -1) {
+					PidServiceUtils.updatePidRange(conn,
+							PidSequenceName.rdGscPidName, prc.getPidRange());
+
+					pid = prc.getPid();
+				} else {
+					// 剩餘範圍不足,需要從ID分配器搬運新的PID
+					pid = PidServiceUtils.transportPid(conn, 5000,
+							PidSequenceName.rdGscPidName);
+				}
+			} else {
+				// 不存在對應的序列,報錯且拋出異常
+
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.rdGscPidName);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return pid;
+
+	}
+	
 }

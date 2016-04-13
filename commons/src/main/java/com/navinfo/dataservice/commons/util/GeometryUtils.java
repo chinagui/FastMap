@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.commons.util;
 
+import java.util.List;
+
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
@@ -158,6 +160,39 @@ public class GeometryUtils {
 		Geometry g = reader.read(wkt);
 		
 		return getLinkLength(g);
+	}
+	
+	public static Geometry getIntersectsGeo(List<Geometry> geometryList)
+	{
+		Geometry geo0 = geometryList.get(0);
+		
+		Geometry geo1 = geometryList.get(1);
+		
+		Geometry result = geo0.intersection(geo1);;
+		
+		for(int i=1;i<geometryList.size();i++)
+		{
+			Geometry tmp1 = geometryList.get(i);
+			
+			Geometry tmp2 = geometryList.get(i+1);
+			
+			if(tmp1.intersects(tmp2))
+			{
+				Geometry interGeo = tmp1.intersection(tmp2);
+				if(!interGeo.covers(result))
+				{
+					result = null;
+					break;
+				}
+			}
+			else
+			{
+				result = null;
+				break;
+			}
+		}
+		
+		return result;
 	}
 	
 	public static void main(String[] args) throws Exception{

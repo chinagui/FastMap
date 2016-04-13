@@ -59,8 +59,8 @@ public class RdSpeedlimitSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as  (select link_pid, geometry     from rd_link    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE' and u_record != 2) select a.pid,        a.direct,        a.capture_flag || '|' || a.speed_flag || '|' || a.speed_value a_val,        b.geometry link_geom,        a.geometry point_geom   from rd_speedlimit a, tmp1 b  where a.link_pid = b.link_pid and a.u_record != 2";
-
+		String sql = "with tmp1 as  (select link_pid, geometry     from rd_link    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2) select a.pid,        a.speed_type,        a.direct,        a.capture_flag,        a.speed_flag,        a.speed_value,        a.lane_speed_value,        a.speed_dependent,        b.geometry link_geom,        a.geometry point_geom   from rd_speedlimit a, tmp1 b  where a.link_pid = b.link_pid    and a.u_record != 2 and a.speed_type in (0,3,4)";
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -87,8 +87,51 @@ public class RdSpeedlimitSearch implements ISearch {
 				snapshot.setI(String.valueOf(resultSet.getInt("pid")));
 				
 				snapshot.setT(6);
-
-				jsonM.put("a",resultSet.getString("a_val"));
+				
+				int speedType = resultSet.getInt("speed_type");
+				
+				int captureFlag = resultSet.getInt("capture_flag");
+				
+				int speedFlag = resultSet.getInt("speed_flag");
+				
+				int speedValue = resultSet.getInt("speed_value");
+				
+				String laneSpeedValue = resultSet.getString("lane_speed_value");
+				
+				int speedDependent = resultSet.getInt("speed_dependent");
+				
+				jsonM.put("a", String.valueOf(speedType));
+				
+				if(speedType == 0){
+					String value = captureFlag+"|"+speedFlag+"|"+speedValue/10;
+					
+					jsonM.put("b", value);
+				}
+				else if (speedType == 3){
+					String value = speedValue/10 + "|" +speedDependent;
+					
+					jsonM.put("b", value);
+				}
+				else{
+					String[] lanes = laneSpeedValue.split("\\|");
+					
+					StringBuilder sb = new StringBuilder();
+					
+					sb.append(speedValue/10);
+					
+					for(int i=0;i<lanes.length;i++){
+						if(i==0){
+							sb.append(",");
+						}
+						
+						if(i!=0){
+							sb.append("|");
+						}
+						sb.append(Integer.valueOf(lanes[i])/10);
+					}
+					
+					jsonM.put("b", sb.toString());
+				}
 
 				STRUCT struct2 = (STRUCT) resultSet.getObject("point_geom");
 
@@ -205,13 +248,13 @@ public class RdSpeedlimitSearch implements ISearch {
 	
 	
 	public static void main(String[] args) throws Exception {
-		ConfigLoader.initDBConn("C:/Users/lilei3774/Desktop/config.properties");
+		ConfigLoader.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
 		
 		Connection conn = DBOraclePoolManager.getConnection(11);
 		
 		RdSpeedlimitSearch a = new RdSpeedlimitSearch(conn);
 		
-		System.out.println(JSONArray.fromObject(a.searchDataByTileWithGap(0, 0, 0, 0)));
+		System.out.println(JSONArray.fromObject(a.searchDataByTileWithGap(107951, 49621, 17, 20)));
 		
 	}
 }

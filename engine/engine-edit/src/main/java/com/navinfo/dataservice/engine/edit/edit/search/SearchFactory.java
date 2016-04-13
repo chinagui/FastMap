@@ -6,15 +6,16 @@ import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.search.AdFaceSearch;
 import com.navinfo.dataservice.dao.glm.search.AdLinkSearch;
+import com.navinfo.dataservice.dao.glm.search.AdNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdBranchSearch;
 import com.navinfo.dataservice.dao.glm.search.RdCrossSearch;
 import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLaneConnexitySearch;
+import com.navinfo.dataservice.dao.glm.search.RdLinkIntRticSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdRestrictionSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSpeedlimitSearch;
-import com.navinfo.dataservice.dao.glm.search.RdLinkIntRticSearch;
 import com.navinfo.dataservice.dao.glm.search.RwLinkSearch;
 
 /**
@@ -60,6 +61,8 @@ public class SearchFactory {
 			return new AdLinkSearch(conn);
 		case ADFACE:
 			return new AdFaceSearch(conn);
+		case ADNODE:
+			return new AdNodeSearch(conn); 
 		case RWLINK:
 			return new RwLinkSearch(conn);
 		default:

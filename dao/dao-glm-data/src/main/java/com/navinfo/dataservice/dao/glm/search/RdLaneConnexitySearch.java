@@ -21,6 +21,7 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.vividsolutions.jts.io.WKTReader;
 
 public class RdLaneConnexitySearch implements ISearch {
@@ -148,9 +149,8 @@ public class RdLaneConnexitySearch implements ISearch {
 	
 
 	public static void main(String[] args) throws Exception {
-		ConfigLoader.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
 		
-		Connection conn = DBOraclePoolManager.getConnection(11);
+		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
 		
 		RdLaneConnexitySearch s = new RdLaneConnexitySearch(conn);
 		

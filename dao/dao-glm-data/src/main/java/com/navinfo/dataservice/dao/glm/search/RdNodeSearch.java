@@ -4,11 +4,11 @@ import java.sql.Connection;
 import java.util.List;
 
 import com.navinfo.dataservice.commons.db.ConfigLoader;
-import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 public class RdNodeSearch implements ISearch {
 
@@ -51,7 +51,7 @@ public class RdNodeSearch implements ISearch {
 	public static void main(String[] args) throws Exception {
 		ConfigLoader.initDBConn("C:/Users/wangshishuai3966/git/FosEngine/FosEngine/src/config.properties");
 		
-		Connection conn = DBOraclePoolManager.getConnection(1);
+		Connection conn = GlmDbPoolManager.getInstance().getConnection(1);
 		
 		RdNodeSearch s = new RdNodeSearch(conn);
 		

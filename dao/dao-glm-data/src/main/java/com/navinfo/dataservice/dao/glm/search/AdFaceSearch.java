@@ -6,17 +6,16 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.navinfo.dataservice.commons.db.ConfigLoader;
-import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
+
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
-
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 public class AdFaceSearch implements ISearch {
 
@@ -104,7 +103,7 @@ public class AdFaceSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select a.face_pid,        a.geometry,   from ad_face a,          where a.u_record != 2      and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
+		String sql = "select a.face_pid,        a.geometry  from ad_face a         where a.u_record != 2      and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
 
 		PreparedStatement pstmt = null;
 
@@ -166,14 +165,17 @@ public class AdFaceSearch implements ISearch {
 	}
 
 	public static void main(String[] args) throws Exception {
-		ConfigLoader.initDBConn("D:/workspace2/DataService/web/webman/src/main/resources/config.properties");
-
-		Connection conn = DBOraclePoolManager.getConnection(1);
+		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
 
 		AdFaceSearch s = new AdFaceSearch(conn);
 
-		IObj obj = s.searchDataByPid(83804);
-
-		System.out.println(obj.Serialize(null));
+//		IObj obj = s.searchDataByPid(83804);
+//
+//		System.out.println(obj.Serialize(null));
+		
+		List<SearchSnapshot> list = s.searchDataByTileWithGap(107907, 49623, 17, 20);
+		for(SearchSnapshot a : list){
+			System.out.println(a.Serialize(null));
+		}
 	}
 }

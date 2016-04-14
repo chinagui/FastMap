@@ -46,6 +46,8 @@ public class Operation implements IOperation {
 			RdLink link = (RdLink) linkSelector.loadById(linkPid, true);
 
 			Geometry geometry = link.getGeometry();
+			
+			geometry.setUserData(linkPid);
 
 			linksGeometryList.add(geometry);
 		}
@@ -58,11 +60,16 @@ public class Operation implements IOperation {
 			//判断交点是否在矩形框内
 			Geometry spatial = GeometryUtils.getPolygonByWKT(command.getWkt());
 			
-			if(interGeometry.intersects(spatial))
+			Geometry gscGeo = interGeometry.intersection(spatial);
+			
+			if(interGeometry.intersects(spatial) && gscGeo.getNumGeometries() == 1)
 			{
 				rdGsc.setPid(PidService.getInstance().applyRdGscPid());
 				
-				rdGsc.setGeometry(interGeometry);
+				rdGsc.setGeometry(gscGeo);
+				
+				//首选需要计算出唯一的交点才能计算是否是起始点或者形状点
+				Map<Object, Integer> startEndMap = GeometryUtils.getStartOrEndType(linksGeometryList, gscGeo);
 				
 				rdGsc.setProcessFlag(1);
 				
@@ -82,8 +89,9 @@ public class Operation implements IOperation {
 					
 					rdGscLink.setLinkPid(linkPid);
 					
+					rdGscLink.setStartEnd(startEndMap.get(linkPid));
+					
 					rdGscLinks.add(rdGscLink);
-					//TODO 立交的起终点标识
 					
 				}
 				rdGsc.setLinks(rdGscLinks);
@@ -92,6 +100,7 @@ public class Operation implements IOperation {
 			}
 			else
 			{
+				return "矩形框内只能有一个交点";
 			}
 		}
 

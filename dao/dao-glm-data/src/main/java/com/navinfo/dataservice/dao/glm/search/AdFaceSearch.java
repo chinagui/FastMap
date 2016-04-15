@@ -40,7 +40,7 @@ public class AdFaceSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select a.face_pid,        a.geometry,   from ad_face a,          where a.u_record != 2      and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
+		String sql = "select a.face_pid,        a.geometry   from ad_face a          where a.u_record != 2      and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
 
 		PreparedStatement pstmt = null;
 
@@ -104,7 +104,7 @@ public class AdFaceSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select a.face_pid,        a.geometry,   from ad_face a,          where a.u_record != 2      and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
+		String sql = "select a.face_pid,        a.geometry   from ad_face a          where a.u_record != 2      and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
 
 		PreparedStatement pstmt = null;
 
@@ -168,7 +168,7 @@ public class AdFaceSearch implements ISearch {
 	public static void main(String[] args) throws Exception {
 		ConfigLoader.initDBConn("D:/workspace2/DataService/web/webman/src/main/resources/config.properties");
 
-		Connection conn = DBOraclePoolManager.getConnection(1);
+		Connection conn = DBOraclePoolManager.getConnection(11);
 
 		AdFaceSearch s = new AdFaceSearch(conn);
 

@@ -13,8 +13,6 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
-import com.navinfo.dataservice.commons.db.ConfigLoader;
-import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
@@ -22,9 +20,10 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 public class RdBranchSearch implements ISearch {
-	
+
 	private Connection conn;
 
 	public RdBranchSearch(Connection conn) {
@@ -65,61 +64,61 @@ public class RdBranchSearch implements ISearch {
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
-		
+
 		try {
 			pstmt = conn.prepareStatement(sql);
-			
+
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
 			pstmt.setString(1, wkt);
 
 			resultSet = pstmt.executeQuery();
-			
+
 			double px = MercatorProjection.tileXToPixelX(x);
-			
+
 			double py = MercatorProjection.tileYToPixelY(y);
 
 			while (resultSet.next()) {
 
 				SearchSnapshot snapshot = new SearchSnapshot();
-				
+
 				JSONObject jsonM = new JSONObject();
-				
+
 				snapshot.setT(7);
-				
+
 				JSONArray ja = new JSONArray();
-				
+
 				String[] splits = resultSet.getString("a").split("\\^");
-				
-				for(String s1: splits){
+
+				for (String s1 : splits) {
 					String[] s2 = s1.split("\\~");
-					
+
 					JSONObject j = new JSONObject();
-					
+
 					j.put("type", Integer.parseInt(s2[0]));
-					
+
 					String[] s3 = s2[1].split(",");
-					
+
 					JSONArray ja2 = new JSONArray();
-					
-					for(String s4: s3){
+
+					for (String s4 : s3) {
 						String[] s5 = s4.split("\\-");
-						
+
 						JSONObject j2 = new JSONObject();
-						
+
 						j2.put("branchPid", Integer.parseInt(s5[0]));
-						
+
 						j2.put("detailId", Integer.parseInt(s5[1]));
-						
+
 						ja2.add(j2);
 					}
-					
+
 					j.put("ids", ja2);
-					
+
 					ja.add(j);
 				}
 
-				jsonM.put("a",ja);
+				jsonM.put("a", ja);
 
 				STRUCT struct1 = (STRUCT) resultSet.getObject("link_geom");
 
@@ -134,29 +133,30 @@ public class RdBranchSearch implements ISearch {
 				String pointWkt = new String(new WKT().fromJGeometry(geom2));
 
 				int direct = DisplayUtils.getDirect(linkWkt, pointWkt);
-				
+
 				double angle = DisplayUtils.calIncloudedAngle(linkWkt, direct);
 
-				jsonM.put("c", String.valueOf((int)angle));
+				jsonM.put("c", String.valueOf((int) angle));
 
-				double[][] point = DisplayUtils
-						.getGdbPointPos(linkWkt, pointWkt, 2);
+				double[][] point = DisplayUtils.getGdbPointPos(linkWkt,
+						pointWkt, 2);
 
-				snapshot.setG(Geojson.lonlat2Pixel(point[1][0],point[1][1],z,px,py));
-				
+				snapshot.setG(Geojson.lonlat2Pixel(point[1][0], point[1][1], z,
+						px, py));
+
 				snapshot.setM(jsonM);
 
 				list.add(snapshot);
 			}
 		} catch (Exception e) {
-			
+
 			throw new SQLException(e);
 		} finally {
 			if (resultSet != null) {
 				try {
 					resultSet.close();
 				} catch (Exception e) {
-					
+
 				}
 			}
 
@@ -164,7 +164,7 @@ public class RdBranchSearch implements ISearch {
 				try {
 					pstmt.close();
 				} catch (Exception e) {
-					
+
 				}
 			}
 
@@ -172,18 +172,16 @@ public class RdBranchSearch implements ISearch {
 
 		return list;
 	}
-	
+
 	public static void main(String[] args) throws Exception {
-		ConfigLoader.initDBConn("C:/Users/wangshishuai3966/git/FosEngine/FosEngine/src/config.properties");
-		
-		Connection conn = DBOraclePoolManager.getConnection(11);
-		
+		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+
 		RdBranchSearch s = new RdBranchSearch(conn);
-		
-//		IObj obj = s.searchDataByPid(3495);
-//		
-//		System.out.println(obj.Serialize(null));
-		
-		System.out.println(s.searchDataByTileWithGap(107943,49614,17, 20));
+
+		// IObj obj = s.searchDataByPid(3495);
+		//
+		// System.out.println(obj.Serialize(null));
+
+		System.out.println(s.searchDataByTileWithGap(107943, 49614, 17, 20));
 	}
 }

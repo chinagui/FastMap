@@ -1,5 +1,11 @@
 package com.navinfo.dataservice.commons.util;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
@@ -8,6 +14,8 @@ import com.vividsolutions.jts.io.WKTReader;
 public class GeometryUtils {
 	
 	private static double EARTH_RADIUS = 6378137;
+	private static double metersPerDegree = 2.0 * Math.PI * EARTH_RADIUS / 360.0; 
+	private static double radiansPerDegree = Math.PI / 180.0; 
 	private static double rad(double d)
 	{
 	    return d * Math.PI / 180.0;
@@ -159,16 +167,144 @@ public class GeometryUtils {
 		
 		return getLinkLength(g);
 	}
-	
-	public static void main(String[] args) throws Exception{
+
+	public static Geometry getIntersectsGeo(List<Geometry> geometryList) {
+
+		Geometry geo0 = geometryList.get(0);
+
+		Geometry geo1 = geometryList.get(1);
+
+		Geometry result = GeoTranslator.transform(geo0.intersection(geo1), 1, 5);
+
+		for (int i = 1; i < (geometryList.size() - 1); i++) {
+			Geometry tmp1 = geometryList.get(i);
+
+			Geometry tmp2 = geometryList.get(i + 1);
+
+			if (tmp1.intersects(tmp2)) {
+
+				Geometry interGeo = tmp1.intersection(tmp2);
+
+				// 距离大于0代表不相交
+				if (result.distance(interGeo) > 0) {
+
+					result = null;
+
+					break;
+				}
+			} else {
+				result = null;
+				break;
+			}
+		}
+		
+		return result;
+	}
+
+	/**
+	 * 获取交点和link的关系：是否是起点、终点、形状点（1：起点 2:终点 0：形状点）
+	 * @param geometries 需要对比的几何
+	 * @param standGeo 作为对比的几何
+	 * @return Map<Integer,Integer> value:start_end 标识
+	 */
+	public static Map<Object,Integer> getStartOrEndType(List<Geometry> geometries, Geometry standGeo) 
+	{
+		Map<Object,Integer> startEndMap = new HashMap<>();
+		
+		for(Geometry compared : geometries)
+		{
+			if (compared.getBoundary().getGeometryN(0).equals(standGeo.getBoundary().getGeometryN(0))) {
+				
+				startEndMap.put(compared.getUserData(), 1);
+			} else if (compared.getBoundary().getGeometryN(1).equals(standGeo)) {
+				
+				startEndMap.put(compared.getUserData(), 2);
+			} else {
+				
+				startEndMap.put(compared.getUserData(), 0);
+			}
+		}
+		return startEndMap;
+	}
+
+	public static Geometry getPolygonByWKT(String wkt) throws ParseException {
+
+		WKTReader reader = new WKTReader();
+
+		Polygon polygon = (Polygon) reader.read(wkt);
+
+		return polygon;
+	}
+
+	public static void main(String[] args) throws Exception {
+
 		WKTReader r = new WKTReader();
-		
-		String a="LINESTRING (117.35746 39.13152, 117.35761 39.13144, 117.35788 39.13133, 117.35806 39.13128, 117.35824 39.13124, 117.35869 39.13117, 117.35908 39.13113, 117.35957 39.1311, 117.35984 39.1311, 117.36012 39.13112, 117.36057 39.13118, 117.36136 39.13142, 117.36189 39.13158, 117.36232 39.13173)";
-		
-		Geometry g=r.read(a);
-		
-		System.out.println(GeometryUtils.getLinkLength(g));
-		
+
+		String a = "LINESTRING (117.35746 39.13152, 117.35761 39.13144, 117.35788 39.13133, 117.35806 39.13128, 117.35824 39.13124, 117.35869 39.13117, 117.35908 39.13113, 117.35957 39.1311, 117.35984 39.1311, 117.36012 39.13112, 117.36057 39.13118, 117.36136 39.13142, 117.36189 39.13158, 117.36232 39.13173)";
+
+		Geometry g = r.read(a);
+
+		// System.out.println(GeometryUtils.getLinkLength(g));
+
+		String test1 = " LINESTRING (116.05539 39.87195, 116.05554 39.87162, 116.05578 39.87162, 116.05567 39.87190)";
+
+		String test2 = "LINESTRING (116.05524 39.87189, 116.05571 39.87167, 116.05580 39.87190)";
+
+		String test3 = "LINESTRING (116.04920 39.86528, 116.04987 39.86426, 116.05038 39.86348)";
+
+		Geometry g1 = r.read(test1);
+
+		Geometry g2 = r.read(test2);
+
+		Geometry g3 = r.read(test3);
+
+		List<Geometry> list = new ArrayList<>();
+
+		list.add(g1);
+
+		list.add(g2);
+
+		//list.add(g3);
+
+		System.out.println(getIntersectsGeo(list));
+		System.out.println(getIntersectsGeo(list).getUserData());
 	}
 	
+
+	public static double getCalculateArea(Geometry g) { 
+		double area =0.0;
+		Coordinate[] coordinates = g.getCoordinates();
+		List<double[]> points = new ArrayList<double[]>();
+		if (coordinates.length > 2) {  
+			for(Coordinate c :coordinates){
+				double[] point = {c.x , c.y};
+				points.add(point);
+			}
+			area = PlanarPolygonAreaMeters(points); 
+			
+		} return area;
+	} 
+	/** 
+	* @Description:TODO
+	平面多边形面积
+	* @param points double[0] longitude; 
+	double[1] latitude 
+	* @return 
+	*/ 
+	public static double PlanarPolygonAreaMeters(List<double[]> points) { 
+
+		double a = 0.0;  
+		for (int i = 0; i < points.size(); ++i) { 
+			int j = (i + 1) % points.size();  
+			double xi = points.get(i)[0] * metersPerDegree * Math.cos(points.get(i)[1] * 
+			radiansPerDegree);  
+			double yi = points.get(i)[1] * metersPerDegree;  
+			double xj = points.get(j)[0] * metersPerDegree * Math.cos(points.get(j)[1] * 
+			radiansPerDegree);  
+			double yj = points.get(j)[1] * metersPerDegree; 
+		a += xi * yj - xj * yi; 
+		}  
+		return Math.abs(a / 2.0); 
+	} 
+
 }

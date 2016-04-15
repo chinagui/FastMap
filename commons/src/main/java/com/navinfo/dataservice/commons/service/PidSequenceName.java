@@ -32,4 +32,16 @@ public class PidSequenceName {
 	
 	public static final String adAdminPidName = "SEQ_AD_ADMIN";
 	
+	public static final String rticCodeName = "SEQ_RTIC_CODE";
+	
+	public static final String adAdminNamePidName = "SEQ_AD_ADMIN_NAME";
+	
+	public static final String adAdminGroupPidName = "SEQ_AD_ADMIN_GROUP";
+	
+	public static final String rdGscPidName = "SEQ_RD_GSC_GROUP";
+	
+	public static final String adAdminNodeName = "SEQ_AD_NODE";
+	public static final String adAdminLinkName = "SEQ_AD_LINK";
+	public static final String adAdminFaceName = "SEQ_AD_FACE";
+	
 }

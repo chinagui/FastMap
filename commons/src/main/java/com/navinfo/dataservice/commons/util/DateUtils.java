@@ -10,11 +10,24 @@ public class DateUtils {
 	private static SimpleDateFormat compactedSdf=new SimpleDateFormat(DATE_COMPACTED_FORMAT);
 	private static SimpleDateFormat defaultSdf=new SimpleDateFormat(DATE_DEFAULT_FORMAT);
 	
+
+	/**
+	 * 
+	 * @param date
+	 * @return default format:"yyyy-MM-dd HH:mm:ss";
+	 *  if date == null then return null;
+	 */
+	public static String dateToString(Date date) {
+		if(date!=null){
+			return defaultSdf.format(date);
+		}
+		return null;
+	}
 	// date类型转换为String类型
 	// formatType格式为yyyy-MM-dd HH:mm:ss//yyyy年MM月dd日 HH时mm分ss秒等等
 	// date Date类型的时间
 	public static String dateToString(Date date, String formatType) {
-		if(DATE_DEFAULT_FORMAT.equals(formatType)){
+		if(StringUtils.isEmpty(formatType)||DATE_DEFAULT_FORMAT.equals(formatType)){
 			return defaultSdf.format(date);
 		}else if(DATE_COMPACTED_FORMAT.equals(formatType)){
 			return compactedSdf.format(date);
@@ -85,11 +98,12 @@ public class DateUtils {
 	
 	 public static void main(String[] args) throws ParseException, java.text.ParseException {
 	        //String s = du.numToDate(1350144260, "yyyy-MM-dd hh:mm:ss");
-	        long time = DateUtils.stringToLong("20160302154457", "yyyyMMddhhmmss");
-	        long time1 = DateUtils.stringToLong("2012-10-15 20:44:53", "yyyy-MM-dd hh:mm:ss")/1000;
-	        String date = DateUtils.longToString(1350470693,"yyyy-MM-dd hh:mm:ss" );
-	        System.out.println(time);
-	        System.out.println(time1);
-	        System.out.println(date);
+//	        long time = DateUtils.stringToLong("20160302154457", "yyyyMMddhhmmss");
+//	        long time1 = DateUtils.stringToLong("2012-10-15 20:44:53", "yyyy-MM-dd hh:mm:ss")/1000;
+//	        String date = DateUtils.longToString(1350470693,"yyyy-MM-dd hh:mm:ss" );
+//	        System.out.println(time);
+//	        System.out.println(time1);
+//	        System.out.println(date);
+		 System.out.println(DateUtils.dateToString(null));
 	 }
 }

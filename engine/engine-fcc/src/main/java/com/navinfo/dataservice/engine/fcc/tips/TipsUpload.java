@@ -28,12 +28,11 @@ import com.navinfo.dataservice.commons.util.GeometryUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.WKTReader;
 
 /**
  * 保存上传的tips数据
- * 
- * @author lilei3774
  * 
  */
 
@@ -56,6 +55,8 @@ public class TipsUpload {
 	private Map<String, JSONObject> updateTips = new HashMap<String, JSONObject>();
 
 	private Map<String, JSONObject> oldTips = new HashMap<String, JSONObject>();
+	
+	private GeometryFactory factory = new GeometryFactory();
 
 	private String currentDate;
 
@@ -66,7 +67,7 @@ public class TipsUpload {
 	private JSONArray reasons;
 
 	private WKTReader reader = new WKTReader();
-	
+
 	private SolrBulkUpdater solr;
 
 	public JSONArray getReasons() {
@@ -116,8 +117,8 @@ public class TipsUpload {
 		Map<String, Photo> photoInfo = new HashMap<String, Photo>();
 
 		List<Get> gets = loadFileContent(fileName, photoInfo);
-		
-		solr = new SolrBulkUpdater(total*2, 1);
+
+		solr = new SolrBulkUpdater(total * 2, 1);
 
 		loadOldTips(htab, gets);
 
@@ -128,7 +129,7 @@ public class TipsUpload {
 		doUpdate(puts);
 
 		solr.commit();
-		
+
 		solr.close();
 
 		htab.put(puts);
@@ -642,18 +643,57 @@ public class TipsUpload {
 
 		index.put("g_location", geojson);
 
-		String wkt = GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(geojson));
-		
-		Geometry g = reader.read(wkt);
-		
-		if(!g.isValid()){
-			throw new Exception("invalid g_location");
-		}
-
-		index.put("wkt", wkt);
-
 		index.put("deep", json.getString("deep"));
 
+		String sourceType = json.getString("s_sourceType");
+
+		if (sourceType.equals("1501")) {
+
+			JSONObject deep = JSONObject.fromObject(json.getString("deep"));
+
+			JSONObject gSLoc = deep.getJSONObject("gSLoc");
+
+			JSONObject gELoc = deep.getJSONObject("gELoc");
+
+			Geometry g1 = GeoTranslator.geojson2Jts(gSLoc);
+
+			Geometry g2 = GeoTranslator.geojson2Jts(gELoc);
+
+			Geometry g3 = g1.union(g2);
+
+			Geometry g = factory.createMultiPoint(g3.getCoordinates());
+		
+			index.put("wkt", GeoTranslator.jts2Wkt(g));
+		} else if(sourceType.equals("1501")){
+			JSONObject deep = JSONObject.fromObject(json.getString("deep"));
+			
+			JSONArray a = deep.getJSONArray("g_array");
+			
+			Geometry[] geos = new Geometry[a.size()];
+			
+			for(int i=0;i<a.size();i++){
+				JSONObject geo = a.getJSONObject(i);
+				
+				geos[i] = GeoTranslator.geojson2Jts(geo);
+			}
+			
+			Geometry g = factory.createGeometryCollection(geos);
+			
+			index.put("wkt", GeoTranslator.jts2Wkt(g));
+		}
+		else {
+
+			String wkt = GeoTranslator.jts2Wkt(GeoTranslator
+					.geojson2Jts(geojson));
+
+			Geometry g = reader.read(wkt);
+
+			if (!g.isValid()) {
+				throw new Exception("invalid g_location");
+			}
+
+			index.put("wkt", wkt);
+		}
 		return index;
 	}
 

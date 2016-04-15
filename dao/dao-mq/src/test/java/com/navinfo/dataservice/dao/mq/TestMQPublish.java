@@ -44,6 +44,6 @@ public class TestMQPublish {
 		}
 	}
 	public static void main(String[] args){
-		sendRunJobMsg();
+		sendWorkQueue();
 	}
 }

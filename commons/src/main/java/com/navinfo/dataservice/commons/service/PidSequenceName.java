@@ -1,6 +1,9 @@
 package com.navinfo.dataservice.commons.service;
 
 public class PidSequenceName {
+	public static final String adAdminNodeName = "SEQ_AD_NODE";
+	public static final String adAdminLinkName = "SEQ_AD_LINK";
+	public static final String adAdminFaceName = "SEQ_AD_FACE";
 
 	public static final String linkPidName = "SEQ_RD_LINK";
 	
@@ -39,9 +42,5 @@ public class PidSequenceName {
 	public static final String adAdminGroupPidName = "SEQ_AD_ADMIN_GROUP";
 	
 	public static final String rdGscPidName = "SEQ_RD_GSC_GROUP";
-	
-	public static final String adAdminNodeName = "SEQ_AD_NODE";
-	public static final String adAdminLinkName = "SEQ_AD_LINK";
-	public static final String adAdminFaceName = "SEQ_AD_FACE";
 	
 }

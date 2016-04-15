@@ -35,7 +35,7 @@ public class AdLink implements IObj {
 
 	private Geometry geometry;
 
-	private int length;
+	private double length;
 
 	private int scale;
 
@@ -385,11 +385,11 @@ public class AdLink implements IObj {
 		this.geometry = geometry;
 	}
 
-	public int getLength() {
+	public double getLength() {
 		return length;
 	}
 
-	public void setLength(int length) {
+	public void setLength(double length) {
 		this.length = length;
 	}
 

@@ -3,4 +3,4 @@
 .settings
 .git
 /RemoteSystemsTempFiles
-.recommenders
+.recommenders/commons/

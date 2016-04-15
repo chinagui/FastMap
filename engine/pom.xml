@@ -18,6 +18,7 @@
     <module>engine-meta</module>
     <module>engine-photo</module>
     <module>datalock</module>
+    <module>engine-dropbox</module>
     </modules>
     <packaging>pom</packaging>
     <name>engine</name>

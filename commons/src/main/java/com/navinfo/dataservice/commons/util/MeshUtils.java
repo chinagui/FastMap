@@ -27,12 +27,20 @@ enum MeshLocateRelation {
 public abstract class MeshUtils {
 
 	public static void main(String[] args) throws Exception {
-		String meshId = "595671";
-		Set<String> meshIdSet = new HashSet<String>();
-		meshIdSet.add("35672");
-		Set<String> result = MeshUtils.getNeighborMeshSet(meshIdSet, 3);
-		System.out.println(result.size());
-		System.out.println(result);
+		int[] locs = mesh2Location("595671");//116.125,39.91667--116.25,40
+		for(int l:locs){
+			System.out.println(l);
+		}
+
+		
+		
+//		System.out.println(location2Mesh(23.1*3600, 88.9*3600));
+//		String meshId = "595671";
+//		Set<String> meshIdSet = new HashSet<String>();
+//		meshIdSet.add("35672");
+//		Set<String> result = MeshUtils.getNeighborMeshSet(meshIdSet, 3);
+//		System.out.println(result.size());
+//		System.out.println(result);
 		
 //		double[] a = mesh2LocationLatLon("595671");
 		

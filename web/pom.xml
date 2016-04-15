@@ -10,8 +10,14 @@
     <artifactId>web</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <modules>
+		<module>job-web</module>
 		<module>datahub-web</module>
-		<module>webman</module>
+		<module>edit-web</module>
+		<module>fcc-web</module>
+		<module>metadata-web</module>
+		<module>render-web</module>
+        <module>project-web</module>
+        <module>dropbox-web</module>
     </modules>
     <packaging>pom</packaging>
     <name>web</name>

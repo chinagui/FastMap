@@ -1,0 +1,34 @@
+[2016-04-09 15:04:14,732]  INFO  1174[pool-4-thread-1] - SampleJob.volidateRequest(30) - 开始验证request参数...
+[2016-04-09 15:04:17,732]  INFO  4174[pool-4-thread-1] - SampleJob.volidateRequest(36) - 验证request参数完成。
+[2016-04-09 15:04:17,732]  INFO  4174[pool-4-thread-1] - SampleJob.computeStepCount(60) - 开始计算本次任务总步骤数...
+[2016-04-09 15:04:20,732]  INFO  7174[pool-4-thread-1] - SampleJob.computeStepCount(62) - 计算完成。总步骤数为3。
+[2016-04-09 15:04:20,732] DEBUG  7174[pool-4-thread-1] - MultiDataSourceFactory.getDataSource(128) - find datasource from cache,key=MAN
+[2016-04-09 15:04:20,735] ERROR  7177[pool-4-thread-1] - AbstractJob.finishStep(119) - jobResponse不能为空
+java.lang.Exception: jobResponse不能为空
+	at com.navinfo.dataservice.dao.mq.job.JobMsgPublisher.responseJob(JobMsgPublisher.java:41)
+	at com.navinfo.dataservice.jobframework.runjob.AbstractJob.finishStep(AbstractJob.java:117)
+	at com.navinfo.dataservice.jobframework.runjob.AbstractJob.run(AbstractJob.java:50)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.lang.Thread.run(Unknown Source)
+[2016-04-09 15:04:20,736] DEBUG  7178[pool-4-thread-1] - MultiDataSourceFactory.getDataSource(128) - find datasource from cache,key=MAN
+[2016-04-09 15:04:20,737] ERROR  7179[pool-4-thread-1] - AbstractJob.run(60) - 
+com.navinfo.dataservice.jobframework.exception.JobException: 
+	at com.navinfo.dataservice.jobframework.runjob.AbstractJob.finishStep(AbstractJob.java:120)
+	at com.navinfo.dataservice.jobframework.runjob.AbstractJob.run(AbstractJob.java:50)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.lang.Thread.run(Unknown Source)
+[2016-04-09 15:13:35,828] DEBUG   897[pool-4-thread-1] - MultiDataSourceFactory.getDataSource(115) - =============================DBINFO==========================
+[2016-04-09 15:13:35,829] DEBUG   898[pool-4-thread-1] - MultiDataSourceFactory.getDataSource(116) - url:jdbc:oracle:thin:@192.168.4.131:1521/orcl
+[2016-04-09 15:13:35,829] DEBUG   898[pool-4-thread-1] - MultiDataSourceFactory.getDataSource(117) - username:pm_xxw
+[2016-04-09 15:13:35,829] DEBUG   898[pool-4-thread-1] - MultiDataSourceFactory.getDataSource(118) - password:pm_xxw
+[2016-04-09 15:13:35,951]  INFO  1020[pool-4-thread-1] - SampleJob.volidateRequest(30) - 开始验证request参数...
+[2016-04-09 15:13:38,951]  INFO  4020[pool-4-thread-1] - SampleJob.volidateRequest(36) - 验证request参数完成。
+[2016-04-09 15:13:38,951]  INFO  4020[pool-4-thread-1] - SampleJob.computeStepCount(59) - 开始计算本次任务总步骤数...
+[2016-04-09 15:13:41,951]  INFO  7020[pool-4-thread-1] - SampleJob.computeStepCount(61) - 计算完成。总步骤数为3。
+[2016-04-09 15:13:41,952] DEBUG  7021[pool-4-thread-1] - MultiDataSourceFactory.getDataSource(128) - find datasource from cache,key=MAN
+[2016-04-09 15:13:42,094]  INFO  7163[pool-4-thread-1] - SampleJob.execute(46) - 开始A步骤...
+[2016-04-09 15:13:45,094]  INFO 10163[pool-4-thread-1] - SampleJob.execute(48) - A完成。
+[2016-04-09 15:13:45,096]  INFO 10165[pool-4-thread-1] - SampleJob.execute(50) - 开始B步骤...
+[2016-04-09 15:13:48,095]  INFO 13164[pool-4-thread-1] - SampleJob.execute(52) - B完成。

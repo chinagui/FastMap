@@ -6,6 +6,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -38,17 +39,17 @@ public class ResponseJobHandler implements MsgHandler {
 			String stepMsg = step.getString("stepMsg");
 			//持久化
 			QueryRunner runner = new QueryRunner();
-			String jobInfoSql = "UPDATE JOB_INFO SET RESPONSE=? WHERE JOB_ID=?";
+			conn = MultiDataSourceFactory.getInstance().getManDataSource()
+					.getConnection();
+			String jobInfoSql = "UPDATE JOB_INFO SET JOB_RESPONSE=? WHERE JOB_ID=?";
 			int count = runner.update(conn, jobInfoSql, resp.toString(),jobId);
 			String stepSql = "INSERT INTO JOB_STEP(JOB_ID,STEP_SEQ,STEP_MSG,BEGIN_TIME,END_TIME,STATUS,PROGRESS) VALUES (?,?,?,SYSDATE,SYSDATE,1,100)";
 			runner.update(conn, stepSql, jobId,stepSeq,stepMsg);
-		}catch(JSONException e){
-			log.error("任务执行反馈消息未持久化，原因是消息格式不正确。message:"+message);
-			log.error(e);
 		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 		}finally{
-			DbUtils.closeQuietly(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 

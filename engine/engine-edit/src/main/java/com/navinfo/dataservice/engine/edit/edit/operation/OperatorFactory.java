@@ -5,6 +5,17 @@ import java.sql.Connection;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminDetail;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminGroup;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminName;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminPart;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchName;
@@ -19,6 +30,8 @@ import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
@@ -42,6 +55,17 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdFaceOperator;
+import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdFaceTopoOperator;
+import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdLinkMeshOperator;
+import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdLinkOperator;
+import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdNodeMeshOperator;
+import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdNodeOperator;
+import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminDetailOperator;
+import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminGroupOperator;
+import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminNameOperator;
+import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminOperator;
+import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminPartOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchDetailOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchNameOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchOperator;
@@ -56,6 +80,8 @@ import com.navinfo.dataservice.dao.glm.operator.rd.cross.RdCrossLinkOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.cross.RdCrossNameOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.cross.RdCrossNodeOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.cross.RdCrossOperator;
+import com.navinfo.dataservice.dao.glm.operator.rd.gsc.RdGscLinkOperator;
+import com.navinfo.dataservice.dao.glm.operator.rd.gsc.RdGscOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.laneconnexity.RdLaneConnexityOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.laneconnexity.RdLaneTopologyOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.laneconnexity.RdLaneViaOperator;
@@ -199,6 +225,32 @@ public class OperatorFactory {
 			return new RdLaneTopologyOperator(conn, (RdLaneTopology) obj);
 		case RDLANEVIA:
 			return new RdLaneViaOperator(conn, (RdLaneVia) obj);
+		case RDGSC:
+			return new RdGscOperator(conn, (RdGsc) obj);
+		case RDGSCLINK:
+			return new RdGscLinkOperator(conn, (RdGscLink)obj);
+		case ADFACE:
+			return new AdFaceOperator(conn, (AdFace)obj);
+		case ADFACETOPO:
+			return new AdFaceTopoOperator(conn, (AdFaceTopo)obj);
+		case ADADMIN:
+			return new AdAdminOperator(conn, (AdAdmin)obj);
+		case ADADMINGPART:
+			return new AdAdminPartOperator(conn, (AdAdminPart)obj);
+		case ADADMINDETAIL:
+			return new AdAdminDetailOperator(conn, (AdAdminDetail)obj);
+		case ADADMINGROUP:
+			return new AdAdminGroupOperator(conn, (AdAdminGroup)obj);
+		case ADADMINGNAME:
+			return new AdAdminNameOperator(conn, (AdAdminName)obj);
+		case ADLINK:
+			return new AdLinkOperator(conn, (AdLink)obj);
+		case ADLINKMESH:
+			return new AdLinkMeshOperator(conn, (AdLinkMesh)obj);
+		case ADNODE:
+			return new AdNodeOperator(conn, (AdNode)obj);
+		case ADNODEMESH:
+			return new AdNodeMeshOperator(conn, (AdNodeMesh)obj);
 		default:
 			return null;
 		}

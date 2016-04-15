@@ -121,7 +121,7 @@ public class AdFaceSelector implements ISelector {
 
 		return null;
 	}
-
+   
 	
 	public List<AdFace> loadAdFaceByLinkGeometry(String wkt, boolean isLock)
 			throws Exception {
@@ -142,6 +142,94 @@ public class AdFaceSelector implements ISelector {
 			pstmt = this.conn.prepareStatement(sql);
 
 			pstmt.setString(1, wkt);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				
+				AdFace face = new AdFace();
+
+				face.setPid(resultSet.getInt("face_pid"));
+				
+				face.setRegionId(resultSet.getInt("region_id"));
+				
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+				face.setGeometry(GeoTranslator.struct2Jts(struct, 100000, 0));
+				
+				face.setArea(resultSet.getDouble("area"));
+				
+				face.setPerimeter(resultSet.getDouble("perimeter"));
+				
+				face.setMeshId(resultSet.getInt("mesh_id"));
+				
+				face.setEditFlag(resultSet.getInt("edit_flag"));
+				
+				face.setRowId(resultSet.getString("row_id"));
+
+				faces.add(face);
+				
+				// ad_face_topo
+				List<IRow> adFaceTopo = new AdFaceTopoSelector(conn).loadRowsByParentId(face.getPid(), isLock);
+
+				for (IRow row : adFaceTopo) {
+					row.setMesh(face.mesh());
+				}
+
+				face.setFaceTopos(adFaceTopo);
+
+				for (IRow row : adFaceTopo) {
+					AdFaceTopo obj = (AdFaceTopo) row;
+
+					face.adFaceTopoMap.put(obj.rowId(), obj);
+				}
+			}
+		} catch (Exception e) {
+			
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+		}
+
+		return faces;
+	}
+	
+	
+	public List<AdFace> loadAdFaceByLinkId(int linkPid, boolean isLock)
+			throws Exception {
+
+		List<AdFace> faces = new ArrayList<AdFace>();
+
+		String sql = "select  a.*  from ad_face a ,ad_face_topo t where a.u_record != 2  and a.face_id = t.face_pid and t.link_pid = :1 ";
+		
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
 
 			resultSet = pstmt.executeQuery();
 

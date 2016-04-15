@@ -154,5 +154,64 @@ public class AdFaceTopoSelector implements ISelector {
 
 		return list;
 	}
+	public List<AdFaceTopo> loadByLinkPid(Integer linkPid, boolean isLock) throws Exception {
+		
+		List<AdFaceTopo> adFaceTopos = new ArrayList<AdFaceTopo>();
+		String sql = "SELECT a.* FROM ad_face_topo a WHERE a.link_pid :1 ";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				AdFaceTopo adFaceTopo = new AdFaceTopo();
+				adFaceTopo.setFacePid(resultSet.getInt("face_pid"));
+
+				adFaceTopo.setLinkPid(resultSet.getInt("link_pid"));
+
+				adFaceTopo.setMesh(resultSet.getInt("mesh_id"));
+
+				adFaceTopo.setRowId(resultSet.getString("row_id"));
+
+				adFaceTopo.setSeqNum(resultSet.getInt("seq_num"));
+				adFaceTopos.add(adFaceTopo);
+			} 
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return adFaceTopos;
+	}
+
 
 }

@@ -78,10 +78,34 @@ public class TestMQSubscribe {
 			Thread.sleep(8000);
 		}
 	}
+	public static void getWorkQueueMsg2(final String threadName,final int sleepMillis) throws Exception{
+		new Thread(){
+			@Override
+			public void run(){
+				try{
+					this.setName(threadName);
+					MsgSubscriber.getInstance().subscribeFromWorkQueue("work_queue", new MsgHandler(){
+						@Override
+						public void handle(String message) {
+							log.info(message);
+							try{
+								Thread.sleep(sleepMillis);
+							}catch(Exception e){
+								e.printStackTrace();
+							}
+						}
+						
+					},null);
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+			}
+		}.start();
+	}
 	public static void main(String[] args){
 		try{
-			readWorkQueueMsg();
-//			getWorkQueueMsg();
+			getWorkQueueMsg2("foregoing thread",20000);
+			getWorkQueueMsg2("latter thread",8000);
 		}catch(Exception e){
 			e.printStackTrace();
 		}

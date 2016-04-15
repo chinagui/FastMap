@@ -7,9 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -18,6 +15,9 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class RdGsc implements IObj  {
 	private String rowId;
@@ -32,6 +32,8 @@ public class RdGsc implements IObj  {
 	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	private List<IRow> links = new ArrayList<IRow>();
+	
+	public Map<String, RdGscLink> rdGscLinkMap = new HashMap<String, RdGscLink>();
 
 	public List<IRow> getLinks() {
 		return links;
@@ -243,4 +245,12 @@ public class RdGsc implements IObj  {
 		return "pid";
 	}
 
+	public int getPid() {
+		return pid;
+	}
+
+	public void setPid(int pid) {
+		this.pid = pid;
+	}
+	
 }

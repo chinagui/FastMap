@@ -6,16 +6,12 @@ import java.sql.ResultSet;
 
 import net.sf.json.JSONObject;
 
+import org.navinfo.dataservice.engine.meta.dao.DBConnector;
+
 import com.navinfo.dataservice.commons.db.OracleAddress;
 import com.navinfo.dataservice.commons.util.MeshUtils;
 
 public class MeshSelector {
-
-	private Connection conn;
-
-	public MeshSelector(Connection conn) {
-		this.conn = conn;
-	}
 
 	public JSONObject getProvinceByLocation(double lon, double lat)
 			throws Exception {
@@ -28,7 +24,12 @@ public class MeshSelector {
 
 		ResultSet resultSet = null;
 
+		Connection conn = null;
+
 		try {
+
+			conn = DBConnector.getInstance().getConnection();
+			
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setString(1, meshId);
@@ -70,7 +71,13 @@ public class MeshSelector {
 				}
 			}
 
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
 
+				}
+			}
 		}
 
 		return null;
@@ -78,20 +85,7 @@ public class MeshSelector {
 
 	public static void main(String[] args) throws Exception {
 
-		String username1 = "mymeta3";
-
-		String password1 = "mymeta3";
-
-		int port1 = 1521;
-
-		String ip1 = "192.168.4.131";
-
-		String serviceName1 = "orcl";
-
-		OracleAddress oa1 = new OracleAddress(username1, password1, port1, ip1,
-				serviceName1);
-
-		MeshSelector selector = new MeshSelector(oa1.getConn());
+		MeshSelector selector = new MeshSelector();
 
 		System.out.println(selector.getProvinceByLocation(115.57763, 39.92789));
 	}

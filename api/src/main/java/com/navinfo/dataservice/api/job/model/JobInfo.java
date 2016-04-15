@@ -16,8 +16,7 @@ public class JobInfo {
 	private long id;
 	private JobType type;
 	private Date createTime;
-	private Date beginTime;
-	private Date endTime;
+	private Date runTime;
 	private int status;
 	private JSONObject request;
 	private JSONObject response;
@@ -28,14 +27,13 @@ public class JobInfo {
 	private int stepCount=0;
 	private String identity;
 	public JobInfo(long id){
-		this.projectId=0L;
 		this.id=id;
-		this.identity=projectId+"_"+id;
+		this.identity="job-"+id;
 	}
 	public JobInfo(long projectId,long id){
 		this.projectId=projectId;
 		this.id=id;
-		this.identity=projectId+"_"+id;
+		this.identity="job-"+id;
 	}
 /* getter & setter */
 	public long getId() {
@@ -56,17 +54,11 @@ public class JobInfo {
 	public void setCreateTime(Date createTime) {
 		this.createTime = createTime;
 	}
-	public Date getBeginTime() {
-		return beginTime;
+	public Date getRunTime() {
+		return runTime;
 	}
-	public void setBeginTime(Date beginTime) {
-		this.beginTime = beginTime;
-	}
-	public Date getEndTime() {
-		return endTime;
-	}
-	public void setEndTime(Date endTime) {
-		this.endTime = endTime;
+	public void setRunTime(Date runTime) {
+		this.runTime = runTime;
 	}
 	public int getStatus() {
 		return status;
@@ -103,6 +95,12 @@ public class JobInfo {
 	}
 	public void setDescp(String descp) {
 		this.descp = descp;
+	}
+	public List<JobStep> getSteps(){
+		return steps;
+	}
+	public void setSteps(List<JobStep> steps){
+		this.steps = steps;
 	}
 	public int getStepCount() {
 		return stepCount;

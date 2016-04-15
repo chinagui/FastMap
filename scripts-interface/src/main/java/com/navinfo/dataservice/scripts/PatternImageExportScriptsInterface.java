@@ -13,16 +13,11 @@ public class PatternImageExportScriptsInterface {
 	 */
 	public static void main(String[] args) {
 
-		Connection conn = null;
-
 		try {
 
 			String path = args[0];
 
-			conn = MultiDataSourceFactory.getInstance().getMetaDataSource()
-					.getConnection();
-
-			PatternImageExporter exporter = new PatternImageExporter(conn);
+			PatternImageExporter exporter = new PatternImageExporter();
 
 			exporter.export2Sqlite(path);
 
@@ -32,16 +27,7 @@ public class PatternImageExportScriptsInterface {
 			System.out.println("Oops, something wrong...");
 			e.printStackTrace();
 
-		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-
-				}
-			}
 		}
-
 	}
 
 }

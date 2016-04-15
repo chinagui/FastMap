@@ -14,7 +14,11 @@ import oracle.sql.STRUCT;
 
 import org.apache.log4j.Logger;
 
+import com.alibaba.druid.pool.DruidPooledConnection;
+import com.alibaba.druid.proxy.jdbc.ClobProxyImpl;
+import com.alibaba.druid.proxy.jdbc.ConnectionProxyImpl;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -28,17 +32,16 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSidewalk;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkWalkstair;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
-import com.navinfo.dataservice.commons.util.StringUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class RdLinkSelector implements ISelector {
 
 	private static Logger logger = Logger.getLogger(RdLinkSelector.class);
 
-	private Connection conn=null;
-	
-	public RdLinkSelector(){
-		
+	private Connection conn = null;
+
+	public RdLinkSelector() {
+
 	}
 
 	public RdLinkSelector(Connection conn) {
@@ -539,55 +542,50 @@ public class RdLinkSelector implements ISelector {
 				// rd_link_name
 				List<IRow> names = new RdLinkNameSelector(conn)
 						.loadRowsByParentId(rdLink.getPid(), isLock);
-				
-				for(IRow row :names){
+
+				for (IRow row : names) {
 					row.setMesh(rdLink.getMeshId());
 				}
-
 
 				rdLink.setNames(names);
 
 				// rd_link_rtic
 				List<IRow> rtics = new RdLinkRticSelector(conn)
 						.loadRowsByParentId(rdLink.getPid(), isLock);
-				
-				for(IRow row :rtics){
+
+				for (IRow row : rtics) {
 					row.setMesh(rdLink.getMeshId());
 				}
-
 
 				rdLink.setRtics(rtics);
 
 				// rd_link_sidewalk
 				List<IRow> sidewalks = new RdLinkSidewalkSelector(conn)
 						.loadRowsByParentId(rdLink.getPid(), isLock);
-				
-				for(IRow row :sidewalks){
+
+				for (IRow row : sidewalks) {
 					row.setMesh(rdLink.getMeshId());
 				}
-
 
 				rdLink.setSidewalks(sidewalks);
 
 				// rd_link_speedlimit
 				List<IRow> speedlimits = new RdLinkSpeedlimitSelector(conn)
 						.loadRowsByParentId(rdLink.getPid(), isLock);
-				
-				for(IRow row :speedlimits){
+
+				for (IRow row : speedlimits) {
 					row.setMesh(rdLink.getMeshId());
 				}
-
 
 				rdLink.setSpeedlimits(speedlimits);
 
 				// rd_link_walkstair
 				List<IRow> walkstairs = new RdLinkWalkstairSelector(conn)
 						.loadRowsByParentId(rdLink.getPid(), isLock);
-				
-				for(IRow row :walkstairs){
+
+				for (IRow row : walkstairs) {
 					row.setMesh(rdLink.getMeshId());
 				}
-
 
 				rdLink.setWalkstairs(walkstairs);
 
@@ -630,11 +628,20 @@ public class RdLinkSelector implements ISelector {
 
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		
+		if(linkPids.size()==0)
+		{
+			return map;
+		}
+		
 		StringBuilder sb = new StringBuilder(
 				"select b.link_pid, a.name   from rd_name a, rd_link_name b  where a.name_groupid = b.name_groupid    and b.name_class = 1    and b.seq_num = 1  and  b.u_record != 2  and a.lang_code = 'CHI' ");
 		
+		Clob clob = null;
+		boolean isClob=false;
+		
 		if(linkPids.size()>1000){
-			Clob clob=conn.createClob();
+			isClob=true;
+			clob=conn.createClob();
 			clob.setString(1, StringUtils.collection2String(linkPids, ","));
 			sb.append(" and b.link_pid IN (select to_number(column_value) from table(clob_to_table(?)))");
 		}else{
@@ -648,6 +655,17 @@ public class RdLinkSelector implements ISelector {
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
 
+			if(isClob){
+				
+				if(conn instanceof DruidPooledConnection){
+					ClobProxyImpl impl = (ClobProxyImpl) clob;
+					pstmt.setClob(1, impl.getRawClob());
+				}
+				else{
+					pstmt.setClob(1, clob);
+				}
+			}
+			
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {

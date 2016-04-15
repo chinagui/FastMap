@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.operator.ad.geo;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
@@ -240,5 +241,5 @@ public class AdNodeOperator implements IOperator {
 			ap.deleteRow2Sql(stmt);
 		}
 	}
-
+	
 }

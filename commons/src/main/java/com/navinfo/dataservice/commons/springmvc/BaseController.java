@@ -13,6 +13,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.navicommons.database.Page;
 
+import net.sf.json.JSONObject;
+
 /**
  * @author liuqing
  */
@@ -66,6 +68,9 @@ public class BaseController {
     }
     protected Map<String,?> success(Map<String,?> result) {
         return createModelMap(100,"success",result);
+    }
+    protected Map<String,?> success(JSONObject data) {
+        return createModelMap(100,"success",data);
     }
     protected Map<String,?> success(String msg,Page page){
     	return createModelMap(100,msg,page);

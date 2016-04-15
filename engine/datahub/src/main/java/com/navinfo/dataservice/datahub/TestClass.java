@@ -14,7 +14,7 @@ import com.navinfo.dataservice.api.RemoteServices;
 */
 public class TestClass {
 	public String test(String name)throws Exception{
-		return ((RemoteServices)ApplicationContextUtil.getBean("remoteServices")).getDatalockService().test(name);
+		return ((RemoteServices)ApplicationContextUtil.getBean("remoteServices")).getDatalockExternalService().test(name);
 	}
 	
 	public static void main(String[] args){

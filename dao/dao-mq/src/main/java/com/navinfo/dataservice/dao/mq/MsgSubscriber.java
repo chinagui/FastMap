@@ -43,19 +43,19 @@ public class MsgSubscriber {
 	 */
 	private synchronized Channel createQueueChannel(Connection conn,String name)throws Exception{
 		if(queueChannelMap.containsKey(name)){
-			throw new Exception("已经订阅此队列，不能重复订阅");
+			//throw new Exception("已经订阅此队列，不能重复订阅");
 		}else{
-			Channel channel = null;
-			try{
-				channel = conn.createChannel(false);
-			}catch(Exception e){
-				MQConnectionUtil.closeQuietly(channel);
-				throw e;
-			}
-			queueChannelMap.put(name, channel);
-			queueThreadLockMap.put(name, new Object());
-			return channel;
 		}
+		Channel channel = null;
+		try{
+			channel = conn.createChannel(false);
+		}catch(Exception e){
+			MQConnectionUtil.closeQuietly(channel);
+			throw e;
+		}
+		queueChannelMap.put(name, channel);
+		queueThreadLockMap.put(name, new Object());
+		return channel;
 	}
 	public synchronized void cancelSubScribe(String name)throws Exception{
 		if(queueChannelMap.containsKey(name)){

@@ -15,12 +15,11 @@ import com.vividsolutions.jts.io.WKTReader;
 public class GeometryUtils {
 
 	private static double EARTH_RADIUS = 6378137;
-	private static double metersPerDegree = 2.0 * Math.PI * EARTH_RADIUS / 360.0; 
-	private static double radiansPerDegree = Math.PI / 180.0; 
-	private static double rad(double d)
-	{
-	    return d * Math.PI / 180.0;
+
+	private static double rad(double d) {
+		return d * Math.PI / 180.0;
 	}
+
 	public static double getDistance(double lat1, double lng1, double lat2, double lng2) {
 		double radLat1 = rad(lat1);
 		double radLat2 = rad(lat2);
@@ -225,46 +224,6 @@ public class GeometryUtils {
 
 		return polygon;
 	}
-
-	
-
-	public static double getCalculateArea(Geometry g) { 
-		double area =0.0;
-		Coordinate[] coordinates = g.getCoordinates();
-		List<double[]> points = new ArrayList<double[]>();
-		if (coordinates.length > 2) {  
-			for(Coordinate c :coordinates){
-				double[] point = {c.x , c.y};
-				points.add(point);
-			}
-			area = PlanarPolygonAreaMeters(points); 
-			
-		} return area;
-	} 
-	/** 
-	* @Description:TODO
-	平面多边形面积
-	* @param points double[0] longitude; 
-	double[1] latitude 
-	* @return 
-	*/ 
-	public static double PlanarPolygonAreaMeters(List<double[]> points) { 
-
-		double a = 0.0;  
-		for (int i = 0; i < points.size(); ++i) { 
-			int j = (i + 1) % points.size();  
-			double xi = points.get(i)[0] * metersPerDegree * Math.cos(points.get(i)[1] * 
-			radiansPerDegree);  
-			double yi = points.get(i)[1] * metersPerDegree;  
-			double xj = points.get(j)[0] * metersPerDegree * Math.cos(points.get(j)[1] * 
-			radiansPerDegree);  
-			double yj = points.get(j)[1] * metersPerDegree; 
-		a += xi * yj - xj * yi; 
-		}  
-		return Math.abs(a / 2.0); 
-	} 
-
-	
 
 	public static void main(String[] args) throws Exception {
 

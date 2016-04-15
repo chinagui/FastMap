@@ -96,3 +96,17 @@ create index idx_sdo_rd_gsc on rd_gsc(geometry)
 indextype is mdsys.spatial_index;
 
 analyze table rd_gsc compute statistics;
+
+insert into user_sdo_geom_metadata
+  (table_name, COLUMN_NAME, DIMINFO, SRID)
+values
+  ('AD_ADMIN',
+   'GEOMETRY',
+   MDSYS.SDO_DIM_ARRAY(MDSYS.SDO_DIM_ELEMENT('XLONG', -180, 180, 0.005),
+                       MDSYS.SDO_DIM_ELEMENT('YLAT', -90, 90, 0.005)),
+   8307);
+
+create index idx_sdo_ad_admin on ad_admin(geometry) 
+indextype is mdsys.spatial_index;
+
+analyze table ad_admin compute statistics;

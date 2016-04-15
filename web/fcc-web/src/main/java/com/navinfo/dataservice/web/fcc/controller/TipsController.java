@@ -2,6 +2,7 @@ package com.navinfo.dataservice.web.fcc.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -15,15 +16,20 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
+import com.navinfo.dataservice.engine.dropbox.manger.UploadManager;
 import com.navinfo.dataservice.engine.fcc.tips.TipsExporter;
 import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
+import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
+import com.navinfo.dataservice.engine.photo.CollectorImport;
 
 @Controller
 public class TipsController {
@@ -98,9 +104,54 @@ public class TipsController {
 					ResponseUtils.assembleFailResult(e.getMessage(), logid));
 		}
 	}
+	
+	@RequestMapping(value = "/tip/import")
+	public void importTips(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+
+			JSONObject json = JSONObject.fromObject(parameter);
+
+			int jobId = json.getInt("jobId");
+
+			UploadManager upload = new UploadManager();
+
+			String filePath = upload.unzipByJobId(jobId);
+
+			TipsUpload tipsUploader = new TipsUpload();
+
+			Map<String, Photo> map = tipsUploader.run(filePath + "/"
+					+ "tips.txt");
+
+			CollectorImport.importPhoto(map, filePath + "/photo");
+
+			JSONObject result = new JSONObject();
+
+			result.put("total", tipsUploader.getTotal());
+
+			result.put("failed", tipsUploader.getFailed());
+
+			result.put("reasons", tipsUploader.getReasons());
+
+			response.getWriter().println(
+					ResponseUtils.assembleRegularResult(result));
+
+		} catch (Exception e) {
+			String logid = Log4jUtils.genLogid();
+
+			Log4jUtils.error(logger, logid, parameter, e);
+
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+		}
+
+	}
 
 	@RequestMapping(value = "/tip/export")
-	public void export(HttpServletRequest request, HttpServletResponse response)
+	public void exportTips(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
@@ -111,8 +162,11 @@ public class TipsController {
 			String day = StringUtils.getCurrentDay();
 
 			String uuid = UuidUtils.genUuid();
+			
+			String downloadFilePath = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.downloadFilePathTips);
 
-			String parentPath = "/root/download/tips/" + day + "/";
+			String parentPath = downloadFilePath + day + "/";
 
 			String filePath = parentPath + uuid + "/";
 
@@ -135,8 +189,14 @@ public class TipsController {
 			String zipFullName = parentPath + zipFileName;
 
 			ZipUtils.zipFile(filePath, zipFullName);
+			
+			String serverUrl =  SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.serverUrl);
+			
+			String downloadUrlPath = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.downloadUrlPathTips);
 
-			String url = "http://192.168.4.130:8080/download/tips/" + day + "/"
+			String url = serverUrl + downloadUrlPath + day + "/"
 					+ zipFileName;
 
 			response.getWriter().println(

@@ -18,7 +18,7 @@ public class Command implements ICommand {
 
 	private Map<Integer,Integer> linkMap = new HashMap<Integer,Integer>();
 	
-	private String wkt;
+	private JSONObject geoObject;
 
 	public int getProjectId() {
 		return projectId;
@@ -52,12 +52,12 @@ public class Command implements ICommand {
 		this.linkMap = linkMap;
 	}
 	
-	public String getWkt() {
-		return wkt;
+	public JSONObject getGeoObject() {
+		return geoObject;
 	}
 
-	public void setWkt(String wkt) {
-		this.wkt = wkt;
+	public void setGeoObject(JSONObject geoObject) {
+		this.geoObject = geoObject;
 	}
 
 	public Command(JSONObject json, String requester) {
@@ -67,7 +67,7 @@ public class Command implements ICommand {
 
 		JSONObject data = json.getJSONObject("data");
 		
-		this.wkt = data.getString("wkt");
+		this.geoObject = data.getJSONObject("wkt").getJSONObject("geometry");
 		
 		if(data.getJSONArray("linkObjs") instanceof JSONArray)
 		{

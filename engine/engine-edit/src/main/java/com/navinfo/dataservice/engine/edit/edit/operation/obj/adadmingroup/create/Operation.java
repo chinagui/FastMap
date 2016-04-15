@@ -27,7 +27,7 @@ public class Operation implements IOperation {
 	public String run(Result result) throws Exception {
 		String msg = null;
 
-		if (command.getParentType().equals("adadmingroup")) {
+		if (command.getParentType().equals("adadmin")) {
 			
 			AdAdminGroup adAdminGroup = new AdAdminGroup();
 			

@@ -171,6 +171,27 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.rdlinkspeedlimit.create.Command(
 						json, requester);
 			}
+		case ADADMIN:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.create.Command(json,
+						requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.update.Command(json,
+						requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.delete.Command(json,
+						requester);
+			}
+		case RDGSC:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.create.Command(json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.update.Command(json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Command(json, requester);
+			}
 		}
 
 		throw new Exception("不支持的操作类型");

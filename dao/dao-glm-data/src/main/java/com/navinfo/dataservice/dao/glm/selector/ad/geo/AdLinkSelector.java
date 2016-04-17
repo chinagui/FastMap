@@ -103,21 +103,6 @@ public class AdLinkSelector implements ISelector {
 					adLink.meshMap.put(mesh.rowId(), mesh);
 				}
 
-				// ad_face_topo
-				List<IRow> adFaceTopo = new AdFaceTopoSelector(conn).loadRowsByParentId(id, isLock);
-
-				for (IRow row : adFaceTopo) {
-					row.setMesh(adLink.mesh());
-				}
-
-				adLink.setFaceTopos(adFaceTopo);
-
-				for (IRow row : adFaceTopo) {
-					AdFaceTopo obj = (AdFaceTopo) row;
-
-					adLink.faceTopoMap.put(obj.rowId(), obj);
-				}
-
 				return adLink;
 			} else {
 
@@ -200,20 +185,6 @@ public class AdLinkSelector implements ISelector {
 					adLink.meshMap.put(mesh.rowId(), mesh);
 				}
 
-				// ad_face_topo
-				List<IRow> adFaceTopo = new AdFaceTopoSelector(conn).loadRowsByParentId(adLink.getPid(), isLock);
-
-				for (IRow row : adFaceTopo) {
-					row.setMesh(adLink.mesh());
-				}
-
-				adLink.setFaceTopos(adFaceTopo);
-
-				for (IRow row : adFaceTopo) {
-					AdFaceTopo obj = (AdFaceTopo) row;
-
-					adLink.faceTopoMap.put(obj.rowId(), obj);
-				}
 				}
 			}catch (Exception e) {
 

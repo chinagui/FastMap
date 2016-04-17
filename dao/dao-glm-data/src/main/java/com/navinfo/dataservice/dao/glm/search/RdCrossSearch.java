@@ -10,19 +10,18 @@ import java.util.List;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.commons.db.ConfigLoader;
-import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 
 public class RdCrossSearch implements ISearch {
-	
+
 	private Connection conn;
 
 	public RdCrossSearch(Connection conn) {
@@ -59,11 +58,11 @@ public class RdCrossSearch implements ISearch {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
 		String sql = "with tmp1 as  (select node_pid     from rd_node    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2) select  /*+ index(b) */ pid,        listagg(a.node_pid, ',') within group(order by a.node_pid) node_pids,        listagg(sdo_util.to_wktgeometry_varchar(b.geometry), ',') within group(order by a.node_pid) wkts,        listagg(a.is_main, ',') within group(order by a.node_pid) is_mains   from rd_cross_node a, rd_node b  where exists (select null from tmp1 c where a.node_pid = c.node_pid)    and a.node_pid = b.node_pid    and a.u_record != 2    and b.u_record != 2  group by a.pid";
-		
+
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
-		
+
 		WKTReader wktReader = new WKTReader();
 
 		try {
@@ -174,14 +173,13 @@ public class RdCrossSearch implements ISearch {
 	}
 
 	public static void main(String[] args) throws Exception {
-		ConfigLoader.initDBConn("C:/Users/wangshishuai3966/git/FosEngine/FosEngine/src/config.properties");
-		
-		Connection conn = DBOraclePoolManager.getConnection(11);
-		
+
+		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+
 		RdCrossSearch s = new RdCrossSearch(conn);
-		
+
 		IObj obj = s.searchDataByPid(3313);
-		
+
 		System.out.println(obj.Serialize(null));
 	}
 }

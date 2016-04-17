@@ -145,7 +145,7 @@ public class Geojson {
 
 			for (int j = 0; j < ja.size(); j++) {
 
-				JSONArray ja2 = ja.getJSONArray(i);
+				JSONArray ja2 = ja.getJSONArray(j);
 
 				lineCoords.add(lonlat2Pixel(ja2.getDouble(0), ja2.getDouble(1),
 						z, px, py));

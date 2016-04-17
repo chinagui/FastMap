@@ -16,8 +16,6 @@ import net.sf.json.JSONObject;
 
 import org.hbase.async.KeyValue;
 
-import com.navinfo.dataservice.commons.db.ConfigLoader;
-import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -26,6 +24,7 @@ import com.navinfo.dataservice.dao.fcc.HBaseController;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 /**
  * Tips查询
@@ -134,7 +133,7 @@ public class TipsSelector {
 					Geojson.coord2Pixel(gELoc, z, px, py);
 
 					m.put("d", gELoc.getJSONArray("coordinates"));
-				}else if (type == 1801){
+				}else if (type == 1801 || type == 1803){
 					JSONArray ga = deep.getJSONArray("g_array");
 					
 					JSONArray a = new JSONArray();
@@ -340,7 +339,7 @@ public class TipsSelector {
 
 		try {
 
-			oraConn = DBOraclePoolManager.getConnection(projectId);
+			oraConn = GlmDbPoolManager.getInstance().getConnection(projectId);
 
 			RdLinkSelector selector = new RdLinkSelector(oraConn);
 
@@ -566,15 +565,17 @@ public class TipsSelector {
 		// System.out.println(ja.size());
 
 		// System.out.println(checkUpdate("59567201","20151227163723"));
-		ConfigLoader
-				.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
+//		ConfigLoader
+//				.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
 		TipsSelector selector = new TipsSelector();
-		JSONArray a = JSONArray
-				.fromObject("[59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");
-		JSONArray b = new JSONArray();
-		b.add(1);
-		int type = 1101;
-		System.out.println(selector.getSnapshot(a, b, type, 11));
+		
+		System.out.println(selector.searchDataByRowkey("0212014bb47de20366413db30504af53243a00"));
+//		JSONArray a = JSONArray
+//				.fromObject("[59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");
+//		JSONArray b = new JSONArray();
+//		b.add(1);
+//		int type = 1101;
+//		System.out.println(selector.getSnapshot(a, b, type, 11));
 		// System.out.println(selector.getStats(a, b));
 
 		// JSONArray types = new JSONArray();

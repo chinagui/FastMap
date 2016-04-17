@@ -137,14 +137,14 @@ public class OpTopo implements IOperation {
 		eGeojson.put("type", "LineString");
 		eGeojson.put("coordinates", eArray);
 		AdLink  slink = new AdLink();
-		slink.setPid(PidService.getInstance().applyAdLinkPid());
 		slink.copy(adLink);
+		slink.setPid(PidService.getInstance().applyAdLinkPid());
 		slink.setGeometry(GeoTranslator.geojson2Jts(sGeojson));
 		slink.setLength(GeometryUtils.getLinkLength(GeoTranslator.transform(slink.getGeometry(), 0.00001, 5)));
 		command.setsAdLink(slink);
 		AdLink  elink = new AdLink();
-		elink.setPid(PidService.getInstance().applyAdLinkPid());
 		elink.copy(adLink);
+		elink.setPid(PidService.getInstance().applyAdLinkPid());
 		elink.setGeometry(GeoTranslator.geojson2Jts(sGeojson));
 		elink.setLength(GeometryUtils.getLinkLength(GeoTranslator.transform(elink.getGeometry(), 0.00001, 5)));
 		slink.setStartNodePid(node.getPid());

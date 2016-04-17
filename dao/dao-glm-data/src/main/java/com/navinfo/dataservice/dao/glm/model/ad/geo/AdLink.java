@@ -49,13 +49,11 @@ public class AdLink implements IObj {
 
 	private List<IRow> meshes = new ArrayList<IRow>();
 
-	private List<IRow> faceTopos = new ArrayList<IRow>();
-
 	public Map<String, AdNode> nodeMap = new HashMap<String, AdNode>();
 
 	public Map<String, AdLinkMesh> meshMap = new HashMap<String, AdLinkMesh>();
 
-	public Map<String, AdFaceTopo> faceTopoMap = new HashMap<String, AdFaceTopo>();
+	public Map<String, AdLinkMesh> adLinkMeshMap = new HashMap<String, AdLinkMesh>();
 
 	public AdLink() {
 	}
@@ -123,20 +121,6 @@ public class AdLink implements IObj {
 
 			this.meshes.add(adLinkMesh);
 		}
-
-		this.faceTopos = new ArrayList<IRow>();
-
-		for (IRow faceTopo : sourceAdLink.faceTopos) {
-
-			AdFaceTopo adFaceTopo = new AdFaceTopo();
-
-			adFaceTopo.copy(faceTopo);
-
-			adFaceTopo.setLinkPid(this.getPid());
-
-			this.faceTopos.add(adFaceTopo);
-		}
-
 	}
 
 	@Override
@@ -162,8 +146,6 @@ public class AdLink implements IObj {
 	@Override
 	public List<List<IRow>> children() {
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
-
-		children.add(this.getFaceTopos());
 
 		children.add(this.getMeshes());
 
@@ -278,24 +260,6 @@ public class AdLink implements IObj {
 						row.Unserialize(jo);
 
 						meshes.add(row);
-					}
-
-					break;
-
-				case "faceTopos":
-
-					faceTopos.clear();
-
-					ja = json.getJSONArray(key);
-
-					for (int i = 0; i < ja.size(); i++) {
-						JSONObject jo = ja.getJSONObject(i);
-
-						AdFaceTopo adFaceTopo = new AdFaceTopo();
-
-						adFaceTopo.Unserialize(jo);
-
-						faceTopos.add(adFaceTopo);
 					}
 
 					break;
@@ -423,14 +387,6 @@ public class AdLink implements IObj {
 
 	public void setMeshes(List<IRow> meshes) {
 		this.meshes = meshes;
-	}
-
-	public List<IRow> getFaceTopos() {
-		return faceTopos;
-	}
-
-	public void setFaceTopos(List<IRow> faceTopos) {
-		this.faceTopos = faceTopos;
 	}
 
 	public String getRowId() {

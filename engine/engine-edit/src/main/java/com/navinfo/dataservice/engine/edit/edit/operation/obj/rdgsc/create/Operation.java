@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.commons.util.GeometryUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -16,6 +17,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.util.GeometryTransformer;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
@@ -58,7 +60,7 @@ public class Operation implements IOperation {
 		if(interGeometry != null)
 		{
 			//判断交点是否在矩形框内
-			Geometry spatial = GeometryUtils.getPolygonByWKT(command.getWkt());
+			Geometry spatial = GeoTranslator.geojson2Jts(command.getGeoObject());
 			
 			Geometry gscGeo = interGeometry.intersection(spatial);
 			

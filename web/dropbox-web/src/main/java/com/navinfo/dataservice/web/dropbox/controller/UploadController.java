@@ -144,49 +144,4 @@ public class UploadController {
 		}
 
 	}
-
-	@RequestMapping(value = "/import/tip")
-	public void importTips(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
-
-		String parameter = request.getParameter("parameter");
-
-		try {
-
-			JSONObject json = JSONObject.fromObject(parameter);
-
-			int jobId = json.getInt("jobId");
-
-			UploadManager upload = new UploadManager();
-
-			String filePath = upload.unzipByJobId(jobId);
-
-			TipsUpload tipsUploader = new TipsUpload();
-
-			Map<String, Photo> map = tipsUploader.run(filePath + "/"
-					+ "tips.txt");
-
-			CollectorImport.importPhoto(map, filePath + "/photo");
-
-			JSONObject result = new JSONObject();
-
-			result.put("total", tipsUploader.getTotal());
-
-			result.put("failed", tipsUploader.getFailed());
-
-			result.put("reasons", tipsUploader.getReasons());
-
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(result));
-
-		} catch (Exception e) {
-			String logid = Log4jUtils.genLogid();
-
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
-		}
-
-	}
 }

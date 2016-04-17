@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
@@ -16,19 +17,20 @@ import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
-import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.AdAdminSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
-public class RdNodeSearch implements ISearch {
+public class AdAdminSearch implements ISearch {
 
 	private Connection conn;
 
-	public RdNodeSearch(Connection conn) {
+	public AdAdminSearch(Connection conn) {
 		this.conn = conn;
 	}
 	
 	@Override
 	public IObj searchDataByPid(int pid) throws Exception {
-		RdNodeSelector selector = new RdNodeSelector(conn);
+		AdAdminSelector selector = new AdAdminSelector(conn);
 		
 		IObj obj = (IObj)selector.loadById(pid, false);
 		
@@ -55,7 +57,7 @@ public class RdNodeSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as  (select node_pid, geometry     from rd_node    where sdo_relate(geometry, sdo_geometry(    :1 , 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2),  tmp2 as (      select /*+ index(a) */    b.node_pid, listagg(a.link_pid, ',') within group(order by b.node_pid) linkpids     from rd_link a, tmp1 b    where a.u_record != 2      and (a.s_node_pid=b.node_pid or a.e_node_pid=b.node_pid)    group by b.node_pid)    select a.node_pid,a.geometry,b.linkpids from tmp1 a, tmp2 b where a.node_pid = b.node_pid";
+		String sql = "select region_id, geometry     from ad_admin    where sdo_relate(geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2";
 		
 		PreparedStatement pstmt = null;
 
@@ -77,15 +79,9 @@ public class RdNodeSearch implements ISearch {
 			while (resultSet.next()) {
 				SearchSnapshot snapshot = new SearchSnapshot();
 
-				JSONObject m = new JSONObject();
+				snapshot.setT(15);
 
-				m.put("a", resultSet.getString("linkpids"));
-
-				snapshot.setM(m);
-
-				snapshot.setT(16);
-
-				snapshot.setI(resultSet.getString("node_pid"));
+				snapshot.setI(resultSet.getString("region_id"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
@@ -123,14 +119,11 @@ public class RdNodeSearch implements ISearch {
 	}
 
 	public static void main(String[] args) throws Exception {
-		ConfigLoader.initDBConn("C:/Users/wangshishuai3966/git/FosEngine/FosEngine/src/config.properties");
+		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
 		
-		Connection conn = DBOraclePoolManager.getConnection(1);
+		AdAdminSearch a = new AdAdminSearch(conn);
 		
-		RdNodeSearch s = new RdNodeSearch(conn);
+		System.out.println(JSONArray.fromObject(a.searchDataByTileWithGap(107951, 49621, 17, 20)));
 		
-		IObj obj = s.searchDataByPid(132837);
-		
-		System.out.println(obj.Serialize(null));
 	}
 }

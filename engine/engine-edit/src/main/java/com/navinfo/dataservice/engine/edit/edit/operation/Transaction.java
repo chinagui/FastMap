@@ -361,7 +361,7 @@ case ADNODE:
 			 case REPAIR: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repairadlink.Process(
 						command);
 			}
-		case ADFACE: 
+		case ADFACE:
 			switch(operType){
 			 case CREATE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Process(
 						command);

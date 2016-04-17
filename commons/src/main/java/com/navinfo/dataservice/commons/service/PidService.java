@@ -64,7 +64,7 @@ public class PidService {
 
 		jsonConnMsg.put("password",
 				config.getString(PropConstant.pidDbPassword));
-
+        System.out.println(jsonConnMsg+"-------------------------------");
 		pool = new DBOraclePool(jsonConnMsg);
 
 	}
@@ -889,6 +889,8 @@ public class PidService {
 				pid = PidServiceUtils.transportPid(conn, 5000,
 						PidSequenceName.adAdminNodeName);
 			}
+			
+			System.out.println(conn+"----------------------");
 
 		} catch (Exception e) {
 
@@ -966,7 +968,7 @@ public class PidService {
 		int pid = 0;
 		try {
 			conn = pool.getConnection();
-
+            
 			conn.setAutoCommit(false);
 
 			String pidRange = PidServiceUtils.getPidRange(conn,

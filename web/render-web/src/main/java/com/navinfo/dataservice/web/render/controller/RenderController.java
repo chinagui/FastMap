@@ -16,12 +16,10 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.navinfo.dataservice.commons.config.SystemConfig;
-import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.display.TileSelector;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
@@ -107,7 +105,7 @@ public class RenderController {
 				types.add(ObjType.valueOf(type.getString(i)));
 			}
 
-			conn = DBOraclePoolManager.getConnection(projectId);
+			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
 			
 			SearchProcess p = new SearchProcess(conn);
 

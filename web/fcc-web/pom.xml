@@ -39,6 +39,11 @@
 	
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>engine-dropbox</artifactId>
+	</dependency>
+	
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>engine-fcc</artifactId>
 	</dependency>
 	

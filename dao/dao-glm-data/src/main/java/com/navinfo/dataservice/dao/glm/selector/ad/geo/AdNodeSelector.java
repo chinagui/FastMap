@@ -3,15 +3,22 @@ package com.navinfo.dataservice.dao.glm.selector.ad.geo;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeFormSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeMeshSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeNameSelector;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 import oracle.sql.STRUCT;
@@ -110,6 +117,80 @@ public class AdNodeSelector implements ISelector {
 
 		}
 	}
+	// 加载盲端节点
+	public List<AdNode> loadEndAdNodeByLinkPid(int linkPid, boolean isLock)
+			throws Exception {
+
+		List<AdNode> nodes = new ArrayList<AdNode>();
+		String sql ="with tmp1 as  (select s_node_pid, e_node_pid from ad_link where link_pid = :1), tmp2 as  (select b.link_pid, s_node_pid     from ad_link b    where exists (select null from tmp1 a where a.s_node_pid = b.s_node_pid) and b.u_record!=2   union all   select b.link_pid, e_node_pid     from ad_link b    where exists (select null from tmp1 a where a.s_node_pid = b.e_node_pid) and b.u_record!=2) , tmp3 as  (select b.link_pid, s_node_pid as e_node_pid     from ad_link b    where exists (select null from tmp1 a where a.e_node_pid = b.s_node_pid) and b.u_record!=2   union all   select b.link_pid, e_node_pid     from ad_link b    where exists (select null from tmp1 a where a.e_node_pid = b.e_node_pid) and b.u_record!=2), tmp4 as  (select s_node_pid pid from tmp2 group by s_node_pid having count(*) = 1), tmp5 as  (select e_node_pid pid from tmp3 group by e_node_pid having count(*) = 1), tmp6 as  (select pid from tmp4 union select pid from tmp5) select *   from ad_node a  where exists (select null from tmp6 b where a.node_pid = b.pid) and a.u_record!=2";
+		
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				AdNode node = new AdNode();
+
+				node.setPid(resultSet.getInt("node_pid"));
+
+				node.setKind(resultSet.getInt("kind"));
+
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+				Geometry geometry = GeoTranslator.struct2Jts(struct);
+
+				Coordinate point = geometry.getCoordinate();
+
+				node.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(point.x,
+						point.y)));
+
+				node.setGeometry(GeoTranslator.struct2Jts(struct, 100000, 0));
+
+				node.setRowId(resultSet.getString("row_id"));
+
+				AdNodeMeshSelector mesh = new AdNodeMeshSelector(conn);
+
+				node.setMeshes(mesh.loadRowsByParentId(node.getPid(), isLock));
+
+				nodes.add(node);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return nodes;
+	}
 
 	@Override
 	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
@@ -119,6 +200,52 @@ public class AdNodeSelector implements ISelector {
 	@Override
 	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
 		return null;
+	}
+	public int loadAdLinkCountOnNode(int nodePid)
+			throws Exception {
+
+		String sql = "select count(1) count from ad_link a where a.s_node_pid=:1 or a.e_node_pid=:2";
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, nodePid);
+			
+			pstmt.setInt(2, nodePid);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+				return resultSet.getInt("count");
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+		
+		return 0;
 	}
 
 }

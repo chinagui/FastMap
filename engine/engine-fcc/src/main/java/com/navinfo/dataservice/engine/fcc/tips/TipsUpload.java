@@ -664,7 +664,7 @@ public class TipsUpload {
 			Geometry g = factory.createMultiPoint(g3.getCoordinates());
 		
 			index.put("wkt", GeoTranslator.jts2Wkt(g));
-		} else if(sourceType.equals("1501")){
+		} else if(sourceType.equals("1801") || sourceType.equals("1803")){
 			JSONObject deep = JSONObject.fromObject(json.getString("deep"));
 			
 			JSONArray a = deep.getJSONArray("g_array");
@@ -674,7 +674,7 @@ public class TipsUpload {
 			for(int i=0;i<a.size();i++){
 				JSONObject geo = a.getJSONObject(i);
 				
-				geos[i] = GeoTranslator.geojson2Jts(geo);
+				geos[i] = GeoTranslator.geojson2Jts(geo.getJSONObject("geo"));
 			}
 			
 			Geometry g = factory.createGeometryCollection(geos);

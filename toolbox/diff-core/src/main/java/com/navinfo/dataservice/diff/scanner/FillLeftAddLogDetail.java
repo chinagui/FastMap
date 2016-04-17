@@ -129,3 +129,4 @@ public class FillLeftAddLogDetail implements ResultSetHandler<String> {
 	}
 
 }
+

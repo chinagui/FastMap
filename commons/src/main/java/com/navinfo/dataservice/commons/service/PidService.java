@@ -64,7 +64,7 @@ public class PidService {
 
 		jsonConnMsg.put("password",
 				config.getString(PropConstant.pidDbPassword));
-
+        System.out.println(jsonConnMsg+"-------------------------------");
 		pool = new DBOraclePool(jsonConnMsg);
 
 	}
@@ -803,6 +803,213 @@ public class PidService {
 	}
 	
 	/**
+	 * 申请ad_admin_name_pid
+	 */
+	public synchronized int applyAdAdminNamePid() throws Exception {
+
+		Connection conn = null;
+
+		int pid = 0;
+		try {
+			conn = pool.getConnection();
+
+			conn.setAutoCommit(false);
+
+			String pidRange = PidServiceUtils.getPidRange(conn,
+					PidSequenceName.adAdminNamePidName);
+
+			if (pidRange != null) {
+				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
+
+				if (prc.getPid() != -1) {
+					PidServiceUtils.updatePidRange(conn,
+							PidSequenceName.adAdminNamePidName, prc.getPidRange());
+
+					pid = prc.getPid();
+				} else {
+					// 剩餘範圍不足,需要從ID分配器搬運新的PID
+					pid = PidServiceUtils.transportPid(conn, 5000,
+							PidSequenceName.adAdminNamePidName);
+				}
+			} else {
+				// 不存在對應的序列,報錯且拋出異常
+
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.adAdminNamePidName);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return pid;
+
+	}
+	
+	
+	/**
+	 * 申请ad_node_pid
+	 */
+	public synchronized int applyAdNodePid() throws Exception {
+
+		Connection conn = null;
+
+		int pid = 0;
+		try {
+			conn = pool.getConnection();
+
+			conn.setAutoCommit(false);
+
+			String pidRange = PidServiceUtils.getPidRange(conn,
+					PidSequenceName.adAdminNodeName);
+
+			if (pidRange != null) {
+				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
+
+				if (prc.getPid() != -1) {
+					PidServiceUtils.updatePidRange(conn,
+							PidSequenceName.adAdminNodeName, prc.getPidRange());
+
+					pid = prc.getPid();
+				} else {
+					// 剩餘範圍不足,需要從ID分配器搬運新的PID
+					pid = PidServiceUtils.transportPid(conn, 5000,
+							PidSequenceName.adAdminNodeName);
+				}
+			} else {
+				// 不存在對應的序列,報錯且拋出異常
+
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.adAdminNodeName);
+			}
+			
+			System.out.println(conn+"----------------------");
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return pid;
+
+	}
+	
+	/**
+	 * 申请ad_link_pid
+	 */
+	public synchronized int applyAdLinkPid() throws Exception {
+
+		Connection conn = null;
+
+		int pid = 0;
+		try {
+			conn = pool.getConnection();
+
+			conn.setAutoCommit(false);
+
+			String pidRange = PidServiceUtils.getPidRange(conn,
+					PidSequenceName.adAdminLinkName);
+
+			if (pidRange != null) {
+				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
+
+				if (prc.getPid() != -1) {
+					PidServiceUtils.updatePidRange(conn,
+							PidSequenceName.adAdminLinkName, prc.getPidRange());
+
+					pid = prc.getPid();
+				} else {
+					// 剩餘範圍不足,需要從ID分配器搬運新的PID
+					pid = PidServiceUtils.transportPid(conn, 5000,
+							PidSequenceName.adAdminLinkName);
+				}
+			} else {
+				// 不存在對應的序列,報錯且拋出異常
+
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.adAdminLinkName);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return pid;
+
+	}
+	
+	/**
+	 * 申请ad_face_pid
+	 */
+	public synchronized int applyAdFacePid() throws Exception {
+
+		Connection conn = null;
+
+		int pid = 0;
+		try {
+			conn = pool.getConnection();
+            
+			conn.setAutoCommit(false);
+
+			String pidRange = PidServiceUtils.getPidRange(conn,
+					PidSequenceName.adAdminFaceName);
+
+			if (pidRange != null) {
+				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
+
+				if (prc.getPid() != -1) {
+					PidServiceUtils.updatePidRange(conn,
+							PidSequenceName.adAdminFaceName, prc.getPidRange());
+
+					pid = prc.getPid();
+				} else {
+					// 剩餘範圍不足,需要從ID分配器搬運新的PID
+					pid = PidServiceUtils.transportPid(conn, 5000,
+							PidSequenceName.adAdminFaceName);
+				}
+			} else {
+				// 不存在對應的序列,報錯且拋出異常
+
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.adAdminFaceName);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return pid;
+
+	}
+	
+	/**
 	 * 申请rtic代码
 	 * @return
 	 * @throws Exception
@@ -855,56 +1062,6 @@ public class PidService {
 
 	}
 	
-	/**
-	 * 申请ad_admin_name_pid
-	 */
-	public synchronized int applyAdAdminNamePid() throws Exception {
-
-		Connection conn = null;
-
-		int pid = 0;
-		try {
-			conn = pool.getConnection();
-
-			conn.setAutoCommit(false);
-
-			String pidRange = PidServiceUtils.getPidRange(conn,
-					PidSequenceName.adAdminNamePidName);
-
-			if (pidRange != null) {
-				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
-
-				if (prc.getPid() != -1) {
-					PidServiceUtils.updatePidRange(conn,
-							PidSequenceName.adAdminNamePidName, prc.getPidRange());
-
-					pid = prc.getPid();
-				} else {
-					// 剩餘範圍不足,需要從ID分配器搬運新的PID
-					pid = PidServiceUtils.transportPid(conn, 5000,
-							PidSequenceName.adAdminNamePidName);
-				}
-			} else {
-				// 不存在對應的序列,報錯且拋出異常
-
-				pid = PidServiceUtils.transportPid(conn, 5000,
-						PidSequenceName.adAdminNamePidName);
-			}
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-			}
-		}
-
-		return pid;
-
-	}
 	
 	/**
 	 * 申请applyAdAdminGroupPid

@@ -77,7 +77,7 @@ public class DiffEngine
 			//diffScanner
 			diffScanner = new JavaDiffScanner(leftSchema);
 			changeLogFiller = new JavaChangeLogFiller(leftSchema);
-			gridCalc = new LogGridCalculatorByCrossUser(leftSchema);
+			gridCalc = new LogGridCalculatorByCrossUser(leftSchema,rightSchema.getDbUserName());
 			//diffTables
 			diffTables = new HashSet<GlmTable>();
 			Glm glm = GlmCache.getInstance().getGlm(diffConfig.getGdbVersion());
@@ -309,7 +309,7 @@ public class DiffEngine
 				@Override
 				public void run() {
 					try{
-						gridCalc.calc(table,leftAccess.accessTable(table), rightAccess.accessTable(table));
+						gridCalc.calc(table,diffConfig.getGdbVersion());
 						latch4LogMesh.countDown();
 						log.debug("填充履历图幅号完成，表名为：" + table.getName());
 					}catch(Exception e){

@@ -4,6 +4,7 @@ import java.sql.Connection;
 
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.search.AdAdminSearch;
 import com.navinfo.dataservice.dao.glm.search.AdFaceSearch;
 import com.navinfo.dataservice.dao.glm.search.AdLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.AdNodeSearch;
@@ -65,6 +66,8 @@ public class SearchFactory {
 			return new AdNodeSearch(conn); 
 		case RWLINK:
 			return new RwLinkSearch(conn);
+		case ADADMIN:
+			return new AdAdminSearch(conn);
 		default:
 			return null;
 		}

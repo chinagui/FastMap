@@ -11,7 +11,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
 /**
- * @author zhaokk
+ * @author  zhaokk 
  * 创建行政区划点基础参数类 
  */
 public class Command implements ICommand {

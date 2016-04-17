@@ -192,6 +192,27 @@ public class Transaction {
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Command(json, requester);
 			}
+		case ADNODE:
+			switch(operType){
+			 case CREATE: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command(json, requester);
+			 case UPDATE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Command(json, requester);
+			 case MOVE: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.moveadnode.Command(json, requester);
+			 case DELETE: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadnode.Command(json, requester);
+			}
+		case ADLINK:
+			switch(operType){
+			 case CREATE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.create.Command(json, requester);
+			 case UPDATE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.update.Command(json, requester);
+			 case BREAK: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command(json, requester);
+			 case DELETE: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadlink.Command(json, requester);
+			 case REPAIR: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repairadlink.Command(json, requester);
+			}
+		case ADFACE:
+			switch(operType){
+			 case CREATE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Command(json, requester);
+			 case DELETE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.delete.Command(json, requester);
+			}
+
 		}
 
 		throw new Exception("不支持的操作类型");
@@ -314,6 +335,40 @@ public class Transaction {
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Process(command);
 			}
+
+
+case ADNODE:
+			switch(operType){
+			 case CREATE: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process(
+						command);
+			 case UPDATE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Process(
+						command);
+			 case MOVE: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.moveadnode.Process(
+						command);
+			 case DELETE: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadnode.Process(
+						command);
+			}
+		case ADLINK:
+			switch(operType){
+			 case CREATE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.create.Process(
+						command);
+			 case UPDATE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.update.Process(
+						command);
+			 case BREAK: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process(
+						command);
+			 case DELETE: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadlink.Process(
+						command);
+			 case REPAIR: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repairadlink.Process(
+						command);
+			}
+		case ADFACE: 
+			switch(operType){
+			 case CREATE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Process(
+						command);
+			 case DELETE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.delete.Process(
+						command);
+			}
+			
 		}
 
 		throw new Exception("不支持的操作类型");

@@ -77,9 +77,7 @@ public class Command implements ICommand {
 
 	public Command(JSONObject json, String requester) throws Exception{
 		this.requester = requester;
-
 		this.projectId = json.getInt("projectId");
-		
 		JSONObject data = json.getJSONObject("data");
 
 		this.eNodePid = data.getInt("eNodePid");
@@ -107,7 +105,7 @@ public class Command implements ICommand {
 				
 				jo.put("lat", lat);
 				
-				jo.put("linkPid", linkPid);
+				jo.put("linkPid",linkPid);
 				
 				this.catchLinks.add(jo);
 			}

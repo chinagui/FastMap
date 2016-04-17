@@ -126,7 +126,7 @@ public class Check {
 				
 				NiValExceptionOperator check = new NiValExceptionOperator(conn);
 				
-				//获取link的中间点
+				//获取link中间点
 				Geometry geo = GeoTranslator.transform(rdLink.getGeometry(),0.00001,5);
 				
 				Coordinate[] cs = geo.getCoordinates();

@@ -54,7 +54,7 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 		String msg = null;
-		List<Geometry> geomList = null;
+		List<Geometry> geomList = new ArrayList<Geometry>();
 		List<JSONObject> seNodeList = new ArrayList<JSONObject>();
 		if (command.getCatchLinks().size() > 0) {
 			geomList = this.splitsLink(result,command.getCatchLinks(),
@@ -62,7 +62,7 @@ public class Operation implements IOperation {
 
 		} 
 		if(command.getCatchLinks().size()==0 || geomList.size()==0){
-			this.createAdNode(result, command, geomList,seNodeList);
+			this.createAdNode(result, geomList,seNodeList);
 		}
 		for (int index=0;index<geomList.size();index++) {
 			Geometry geo = geomList.get(index);
@@ -120,8 +120,7 @@ public class Operation implements IOperation {
 	 * @param link
 	 */
 	
-	private void createAdNode(Result result,Command command,List<Geometry> geomList,List<JSONObject> seNodeList) throws Exception{
-
+	private void createAdNode(Result result,List<Geometry> geomList,List<JSONObject> seNodeList) throws Exception{
 		geomList.add(GeoTranslator.geojson2Jts(command.getGeometry()));
 
 		JSONObject se = new JSONObject();

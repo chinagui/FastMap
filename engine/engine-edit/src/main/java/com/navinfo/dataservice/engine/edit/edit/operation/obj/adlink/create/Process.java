@@ -53,12 +53,6 @@ public class Process implements IProcess {
 	@Override
 	public String preCheck() throws Exception {
 		
-		check.checkDupilicateNode(command.getGeometry());
-		
-		check.checkGLM04002(conn, command.geteNodePid(), command.getsNodePid());
-		
-		check.checkGLM13002(conn, command.geteNodePid(), command.getsNodePid());
-		
 		return null;
 	}
 

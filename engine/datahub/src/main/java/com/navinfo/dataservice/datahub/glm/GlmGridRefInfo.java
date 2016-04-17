@@ -16,7 +16,7 @@ public class GlmGridRefInfo {
 	private List<String[]> refInfo;//{"第一层参考表","关联的参考表的字段，一般为主键","参考表本身参考其他表的参考字段,如果没有，则为空字符串"}
 	private String selectSqlPart;
 	private String conditionSqlPart;
-	private String meshIdTable;//
+	private boolean singleMeshId;//
 	
 	public GlmGridRefInfo(String tableName){
 		this.tableName=tableName;
@@ -76,10 +76,17 @@ public class GlmGridRefInfo {
 		return s;
 	}
 	private void generateSqlPart(){
+		//先判断是否本身为主表，主表的refInfo为空
 		if(refInfo!=null&&refInfo.size()>0){
+			//
 			int size = refInfo.size();
 			StringBuilder sb4S = new StringBuilder();
-			sb4S.append("SELECT P.ROW_ID,R1.GEOMETRY FROM ");
+			sb4S.append("SELECT P.ROW_ID,R1.GEOMETRY");
+			if(singleMeshId){
+				sb4S.append(",R1.MESH_ID FROM ");
+			}else{
+				sb4S.append(",R1.MESH_ID 0 FROM ");
+			}
 			sb4S.append(tableName+" P");
 			StringBuilder sb4C = new StringBuilder();
 			sb4C.append(" WHERE P."+gridRefCol);
@@ -96,7 +103,15 @@ public class GlmGridRefInfo {
 			this.selectSqlPart=sb4S.toString();
 			this.conditionSqlPart=sb4C.toString();
 		}else{
-			this.selectSqlPart="SELECT P.ROW_ID,P.GEOMETRY FROM "+ tableName +" P ";
+			StringBuilder sb4S = new StringBuilder();
+			sb4S.append("SELECT P.ROW_ID,P.GEOMETRY");
+			if(singleMeshId){
+				sb4S.append(",P.MESH_ID FROM ");
+			}else{
+				sb4S.append(",P.MESH_ID 0 FROM ");
+			}
+			sb4S.append(tableName+" P ");
+			this.selectSqlPart = sb4S.toString();
 			this.conditionSqlPart = " WHERE 1=1 ";
 		}
 	}

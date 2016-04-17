@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.datahub.glm;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -16,6 +18,9 @@ import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
+
+import oracle.spatial.geometry.JGeometry;
+import oracle.sql.STRUCT;
 
 
 /** 
@@ -32,6 +37,7 @@ public class GlmGridCalculator {
 	}
 	private String gdbVersion;
 	private Map<String,GlmGridRefInfo> glmGridRefInfoMap = null;//key:表名，value：表配置信息
+	private QueryRunner run = new QueryRunner();
 	private Map<String,GlmGridRefInfo> getGlmGridRefInfoMap(){
 		if(glmGridRefInfoMap==null){
 			synchronized(this){
@@ -88,8 +94,23 @@ public class GlmGridCalculator {
 	 * @param logConn：数据和履历所在库的连接
 	 * @return
 	 */
-	public Map<String,String[]> calc(String tableName,int[] opTypes,Connection logConn){
-		Map<String,String[]> grids = new HashMap<String,String[]>();
+	public Map<String,String[]> calc(String tableName,int[] opTypes,Connection logConn)throws SQLException{
+		String sql = assembleQueryGeoSql(tableName);
+		Map<String,String[]> grids = run.query(logConn, sql, new ResultSetHandler<Map<String,String[]>>(){
+
+			@Override
+			public Map<String, String[]> handle(ResultSet rs) throws SQLException {
+				Map<String,String[]> gs = new HashMap<String,String[]>();
+				while(rs.next()){
+					String rowId = rs.getString("ROW_ID");
+					JGeometry geom = JGeometry.load((STRUCT)(rs.getObject("GEOMETRY")));
+					String meshId = rs.getString("MESH_ID");
+					
+				}
+				return gs;
+			}
+			
+		});
 		return grids;
 	}
 	/**

@@ -1,50 +1,30 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 
-import org.json.JSONException;
+import org.apache.log4j.Logger;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
-import com.google.gson.JsonArray;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.commons.util.GeometryUtils;
-import com.navinfo.dataservice.commons.util.MeshUtils;
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.engine.edit.comm.util.AdminUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.OperateUtils;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
+/**
+ * @author zhaokk
+ * 创建行政区划点有关行政区划线具体操作类
+ *
+ */
 public class OpTopo implements IOperation {
-
+	protected Logger log = Logger.getLogger(this.getClass());
 	private Command command;
 
 	private Check check;
@@ -66,10 +46,11 @@ public class OpTopo implements IOperation {
 		return msg;
 	}
 
-	/**
-	 * 打断点
-	 * 
-	 * @param link
+	/* 
+	 * 行政区划点打断行政区划线
+	 * 1.打断点是行政区划线的形状点
+	 * 2.打断点不是新政区划线的形状点
+	 * @param result
 	 * @throws Exception 
 	 */
 	private void breakPoint(Result result) throws Exception {
@@ -80,8 +61,12 @@ public class OpTopo implements IOperation {
 		JSONArray ja2 = new JSONArray();
 		boolean hasFound = false;
 		result.setPrimaryPid(command.getLinkPid());
+		log.info("1 获取要打断行政区划线的信息 linkPid = "+command.getLinkPid());
 	    AdLink adLink =(AdLink)new AdLinkSelector(conn).loadById(command.getLinkPid(),true);
+	    log.info("2 删除要打断的行政区划线信息");
 	    result.insertObject(adLink, ObjStatus.DELETE, adLink.pid());
+	    
+	    log.info("3 获取要打断行政区划线的几何属性 判断打断点是否在形状点上还是在线段上");
 	    JSONObject geojson = GeoTranslator.jts2Geojson(adLink
 					.getGeometry());
 	    JSONArray jaLink = geojson.getJSONArray("coordinates");
@@ -91,7 +76,9 @@ public class OpTopo implements IOperation {
 	    			ja1.add(jaPS);
 	    		}
 	    		JSONArray jaPE = jaLink.getJSONArray(i + 1);
+	    		
 	    		if(!hasFound){
+	    			//打断点在形状点上
 		    		if(lon == jaPE.getDouble(0) && lat == jaPE.getDouble(1)){ 
 						ja1.add(new double[] { lon, lat });
 						hasFound = true;
@@ -126,30 +113,43 @@ public class OpTopo implements IOperation {
 	    
 	}
 
-    
+	/*
+	 * 行政区划点 、线生成和关系维护。
+	 * 1.生成打断点的信息
+	 * 2.根据link1 和link2的几何属性生成新的一组link
+	 * 3.维护link和点的关系 以及维护linkMesh的关系
+	 * @param AdLink 要打断的link   sArray link1的几何属性  eArray link2的几何属性 result
+	 * @throws Exception 
+	 */
 	private void  createLinksForADNode(AdLink adLink,JSONArray sArray,JSONArray eArray,Result result) throws Exception {
+		log.debug("3 生成打断点的信息");
 		AdNode node = OperateUtils.createAdNode(command.getPoint().getX(), command.getPoint().getY());
 		result.insertObject(node, ObjStatus.INSERT, node.pid());
+		log.debug("3.1 打断点的pid = "+node.pid());
 		JSONObject sGeojson = new JSONObject();
 		sGeojson.put("type", "LineString");
 		sGeojson.put("coordinates", sArray);
 		JSONObject eGeojson = new JSONObject();
 		eGeojson.put("type", "LineString");
 		eGeojson.put("coordinates", eArray);
+		log.debug("4 组装 第一条link 的信息");
 		AdLink  slink = new AdLink();
-		slink.setPid(PidService.getInstance().applyAdLinkPid());
 		slink.copy(adLink);
+		slink.setPid(PidService.getInstance().applyAdLinkPid());
 		slink.setGeometry(GeoTranslator.geojson2Jts(sGeojson));
 		slink.setLength(GeometryUtils.getLinkLength(GeoTranslator.transform(slink.getGeometry(), 0.00001, 5)));
 		command.setsAdLink(slink);
+		log.debug("4.1 生成第一条link信息 pid = "+slink.getPid());
+		log.debug("5 组装 第一条link 的信息");
 		AdLink  elink = new AdLink();
-		elink.setPid(PidService.getInstance().applyAdLinkPid());
 		elink.copy(adLink);
+		elink.setPid(PidService.getInstance().applyAdLinkPid());
 		elink.setGeometry(GeoTranslator.geojson2Jts(sGeojson));
 		elink.setLength(GeometryUtils.getLinkLength(GeoTranslator.transform(elink.getGeometry(), 0.00001, 5)));
 		slink.setStartNodePid(node.getPid());
 		elink.setEndNodePid(node.getPid());
 		command.seteAdLink(elink);
+		log.debug("6.1 生成第二条link信息 pid = "+elink.getPid());
 		result.insertObject(slink, ObjStatus.INSERT, slink.pid());
 		result.insertObject(elink, ObjStatus.INSERT, elink.pid());
 	}

@@ -157,7 +157,7 @@ public class AdFaceTopoSelector implements ISelector {
 	public List<AdFaceTopo> loadByLinkPid(Integer linkPid, boolean isLock) throws Exception {
 		
 		List<AdFaceTopo> adFaceTopos = new ArrayList<AdFaceTopo>();
-		String sql = "SELECT a.* FROM ad_face_topo a WHERE a.link_pid :1 ";
+		String sql = "SELECT a.* FROM ad_face_topo a WHERE a.link_pid =:1 ";
 
 		if (isLock) {
 			sql += " for update nowait";

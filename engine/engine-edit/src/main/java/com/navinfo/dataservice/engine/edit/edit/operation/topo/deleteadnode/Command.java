@@ -18,6 +18,10 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 
+/**
+ * @author zhaokk
+ * 删除行政区划点参数基础类 
+ */
 public class Command implements ICommand {
 	
 	private String requester;

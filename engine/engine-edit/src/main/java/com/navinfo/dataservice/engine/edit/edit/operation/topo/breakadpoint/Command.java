@@ -10,8 +10,11 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
+/**
+ * @author zhaokk
+ * 创建行政区划点基础参数类 
+ */
 public class Command implements ICommand {
-
 	private String requester;
 	private AdLink  sAdLink;
 	private AdLink  eAdLink;
@@ -69,7 +72,6 @@ public class Command implements ICommand {
 
 	public Command(JSONObject json, String requester) throws Exception{
 		this.requester = requester;
-
 		this.projectId = json.getInt("projectId");
 		this.linkPid = json.getInt("objId");
 		JSONObject data = json.getJSONObject("data");

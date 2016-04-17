@@ -27,12 +27,15 @@ enum MeshLocateRelation {
 public abstract class MeshUtils {
 
 	public static void main(String[] args) throws Exception {
-		int[] locs = mesh2Location("595671");//116.125,39.91667--116.25,40
-		for(int l:locs){
-			System.out.println(l);
-		}
+//		int[] locs = mesh2Location("595671");//116.125,39.91667--116.25,40
+//		for(int l:locs){
+//			System.out.println(l);
+//		}
+		List<String> meshes = lonlat2MeshIds(116.375,39.87867);//595663,595662
 
-		
+		for(String str:meshes){
+			System.out.println(str);
+		}
 		
 //		System.out.println(location2Mesh(23.1*3600, 88.9*3600));
 //		String meshId = "595671";
@@ -725,7 +728,7 @@ public abstract class MeshUtils {
 
 		result[0] = (int) (longsecond / 300000);
 
-		result[1] = (int) (longsecond % 300000);
+		result[1] = (int) (longsecond % 300000);//距离理想行号的距离
 
 		return result;
 	}

@@ -10,7 +10,11 @@ import com.navinfo.dataservice.diff.dataaccess.CrossSchemaDataAccess;
 import com.navinfo.dataservice.diff.dataaccess.DataAccess;
 import com.navinfo.dataservice.diff.dataaccess.LocalDataAccess;
 import com.navinfo.dataservice.diff.exception.InitException;
+import com.navinfo.dataservice.diff.scanner.ChangeLogFiller;
+import com.navinfo.dataservice.diff.scanner.JavaChangeLogFiller;
 import com.navinfo.dataservice.diff.scanner.JavaDiffScanner;
+import com.navinfo.dataservice.diff.scanner.LogGridCalculatorByCrossUser;
+import com.navinfo.dataservice.diff.scanner.LogGridCalculator;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobResponse;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -32,9 +36,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author arnold
- * @version $Id:Exp$
- * @since 12-3-8 下午4:33
+ * 左表为修改后的表，右表为修改前的表
  */
 public class DiffEngine 
 {
@@ -49,6 +51,8 @@ public class DiffEngine
 	protected VMThreadPoolExecutor logPoolExecutor;
 	protected VMThreadPoolExecutor logMeshPoolExecutor;
 	protected JavaDiffScanner diffScanner;
+	protected ChangeLogFiller changeLogFiller;
+	protected LogGridCalculator gridCalc;
 
 
 	public DiffEngine(DiffConfig diffConfig) {
@@ -72,6 +76,8 @@ public class DiffEngine
 			
 			//diffScanner
 			diffScanner = new JavaDiffScanner(leftSchema);
+			changeLogFiller = new JavaChangeLogFiller(leftSchema);
+			gridCalc = new LogGridCalculatorByCrossUser(leftSchema,rightSchema.getDbUserName());
 			//diffTables
 			diffTables = new HashSet<GlmTable>();
 			Glm glm = GlmCache.getInstance().getGlm(diffConfig.getGdbVersion());
@@ -144,7 +150,7 @@ public class DiffEngine
 			initEngine();
 			diffScan();
 			fillLogDetail();
-			calcLogMesh();
+			calcLogDetailGrid();
 			res.setStatusAndMsg(AbstractJobResponse.STATUS_SUCCESS, "Success");
 		}catch(Exception e){
 			res.setStatusAndMsg(AbstractJobResponse.STATUS_FAILED,"ERROR:"+e.getMessage());
@@ -205,7 +211,7 @@ public class DiffEngine
 				@Override
 				public void run() {
 					try{
-						diffScanner.fillLogDetail(table,leftAccess.accessTable(table), rightAccess.accessTable(table));
+						changeLogFiller.fill(table,leftAccess.accessTable(table), rightAccess.accessTable(table));
 						latch4Log.countDown();
 						log.debug("填充履历完成，表名为：" + table.getName());
 					}catch(Exception e){
@@ -271,7 +277,7 @@ public class DiffEngine
 	}
 	
 
-	protected void calcLogMesh(){
+	protected void calcLogDetailGrid(){
 		//暂时只计算RD_LINK要素，主表子填充履历时已经取到mesh_id，只需要查询子表就行
 		Set<GlmTable> caclMeshTables = new HashSet<GlmTable>();
 		for (GlmTable table : diffTables){
@@ -303,7 +309,7 @@ public class DiffEngine
 				@Override
 				public void run() {
 					try{
-						diffScanner.fillLogDetailMesh(table,leftAccess.accessTable(table), rightAccess.accessTable(table));
+						gridCalc.calc(table,diffConfig.getGdbVersion());
 						latch4LogMesh.countDown();
 						log.debug("填充履历图幅号完成，表名为：" + table.getName());
 					}catch(Exception e){

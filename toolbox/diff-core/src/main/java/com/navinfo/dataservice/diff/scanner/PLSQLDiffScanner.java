@@ -1,16 +1,9 @@
 package com.navinfo.dataservice.diff.scanner;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.datahub.glm.GlmTable;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.diff.DiffEngine;
-import com.navinfo.dataservice.datahub.glm.GlmTable;
 import com.navinfo.dataservice.diff.exception.DiffException;
 import com.navinfo.navicommons.database.QueryRunner;
 

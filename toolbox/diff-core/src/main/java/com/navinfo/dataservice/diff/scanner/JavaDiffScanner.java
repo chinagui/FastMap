@@ -1,19 +1,17 @@
 package com.navinfo.dataservice.diff.scanner;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 
 import org.apache.log4j.Logger;
-import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
-import com.navinfo.dataservice.datahub.model.OracleSchema;
-import com.navinfo.dataservice.diff.DiffEngine;
 import com.navinfo.dataservice.datahub.glm.GlmColumn;
 import com.navinfo.dataservice.datahub.glm.GlmTable;
+import com.navinfo.dataservice.datahub.model.OracleSchema;
+import com.navinfo.dataservice.diff.DiffEngine;
 import com.navinfo.dataservice.diff.exception.DiffException;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -150,133 +148,5 @@ public class JavaDiffScanner implements DiffScanner
     	}else{
     		return "L.\""+col.getName()+"\" = "+"R.\""+col.getName()+"\"";
     	}
-    }
-    
-
-    public void fillLogDetail(GlmTable table,String leftTableFullName,String rightTableFullName)
-    throws DiffException
-    {
-    	fillLeftAddLogDetail(table,leftTableFullName,rightTableFullName);
-    	fillLeftDeleteLogDetail(table,leftTableFullName,rightTableFullName);
-    	fillLeftUpdateLogDetail(table,leftTableFullName,rightTableFullName);
-    	
-    }
-    
-    private void fillLeftAddLogDetail(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
-
-        try
-        {
-        	List<String> colNames = new ArrayList<String>();
-        	for(GlmColumn col:table.getColumns()){
-        		colNames.add("L.\""+col.getName()+"\"");
-        	}
-        	StringBuilder sb = new StringBuilder();
-        	sb.append("SELECT ");
-        	sb.append(StringUtils.join(colNames,","));
-        	sb.append(" FROM ");
-        	sb.append(leftTableFullName);
-        	sb.append(" L,LOG_DETAIL D WHERE L.ROW_ID=D.TB_ROW_ID AND D.TB_NM = '");
-        	sb.append(table.getName());
-        	sb.append("' AND D.OP_TP = 1");
-        	runner.query(diffServer.getPoolDataSource(),sb.toString(),1000,new FillLeftAddLogDetail(table,diffServer),new Object[0]);
-        } catch (SQLException e){
-        	log.error(e.getMessage(),e);
-        	throw new DiffException("填充左表有右表没有的履历字段时出错：" + e.getMessage() 
-				+","+leftTableFullName
-				+","+rightTableFullName,e);
-        }
-    }
-    private void fillLeftDeleteLogDetail(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
-    	//暂时不填充
-    }
-    private void fillLeftUpdateLogDetail(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
-
-        try
-        {
-        	List<String> colNames = new ArrayList<String>();
-        	for(GlmColumn col:table.getColumns()){
-        		colNames.add("L."+col.getName());
-        	}
-        	List<String> equalCols = new ArrayList<String>();
-        	List<String> leftCols = new ArrayList<String>();
-        	List<String> rightCols = new ArrayList<String>();
-        	int colIndex=0;
-        	for(GlmColumn col:table.getColumns()){
-        		colIndex++;
-        		equalCols.add("EQUALS.EQUAL(L.\""+col.getName()+"\",R.\""+col.getName()+"\") E"+colIndex);
-        		leftCols.add("L.\""+col.getName()+"\" L"+colIndex);
-        		rightCols.add("R.\""+col.getName()+"\" R"+colIndex);
-        	}
-        	StringBuilder sb = new StringBuilder();
-        	sb.append("SELECT ");
-        	sb.append(StringUtils.join(equalCols,","));
-        	sb.append(" , ");
-        	sb.append(StringUtils.join(leftCols,","));
-        	sb.append(" , ");
-        	sb.append(StringUtils.join(rightCols,","));
-        	sb.append(" FROM ");
-        	sb.append(leftTableFullName);
-        	sb.append(" L, ");
-        	sb.append(rightTableFullName);
-        	sb.append(" R,LOG_DETAIL D WHERE L.ROW_ID=D.TB_ROW_ID AND R.ROW_ID=D.TB_ROW_ID AND D.TB_NM = '");
-        	sb.append(table.getName());
-        	sb.append("' AND D.OP_TP = 3");
-        	runner.query(diffServer.getPoolDataSource(),sb.toString(),1000,new FillLeftUpdateLogDetail(table,diffServer),new Object[0]);
-        } catch (SQLException e){
-        	log.error(e.getMessage(),e);
-        	throw new DiffException("填充左表右表都有但字段不一致的履历字段时出错：" + e.getMessage() 
-				+","+leftTableFullName
-				+","+rightTableFullName,e);
-        }
-    }
-
-    /**
-     * 填充履历的图幅号
-     * @param table
-     * @param leftTableFullName
-     * @param rightTableFullName
-     * @throws DiffException
-     */
-    public void fillLogDetailMesh(GlmTable table,String leftTableFullName,String rightTableFullName)
-    throws DiffException
-    {
-    	fillLeftAddUpdateLogMesh(table,leftTableFullName,rightTableFullName);
-    	fillLeftDeleteLogMesh(table,leftTableFullName,rightTableFullName);
-    }
-    private void fillLeftAddUpdateLogMesh(GlmTable table,String leftTableFullName,String rightTableFullName)
-    		throws DiffException{
-        try
-        {
-        	StringBuilder sb = new StringBuilder();
-        	sb.append("SELECT M.LINK_PID PID, M.MESH_ID,L.ROW_ID FROM RD_LINK M,");
-        	sb.append(leftTableFullName);
-        	sb.append(" L,LOG_DETAIL D WHERE M.LINK_PID=L.LINK_PID AND L.ROW_ID=D.TB_ROW_ID AND D.TB_NM = '");
-        	sb.append(table.getName());
-        	sb.append("' AND D.OP_TP in (1,3)");
-        	runner.query(diffServer.getPoolDataSource(),sb.toString(),1000,new FillLogMeshDetail(table,diffServer),new Object[0]);
-        } catch (SQLException e){
-        	log.error(e.getMessage(),e);
-        	throw new DiffException("填充左表有右表没有的履历字段时出错：" + e.getMessage() 
-				+","+leftTableFullName
-				+","+rightTableFullName,e);
-        }
-    }
-    private void fillLeftDeleteLogMesh(GlmTable table,String leftTableFullName,String rightTableFullName)
-    		throws DiffException{
-        try
-        {
-        	StringBuilder sb = new StringBuilder();
-        	sb.append("SELECT M.LINK_PID PID, M.MESH_ID,R.ROW_ID FROM RD_LINK M,");
-        	sb.append(rightTableFullName);
-        	sb.append(" R,LOG_DETAIL D WHERE M.LINK_PID=R.LINK_PID AND R.ROW_ID=D.TB_ROW_ID AND D.TB_NM = '");
-        	sb.append(table.getName());
-        	sb.append("' AND D.OP_TP = 2");
-        	runner.query(diffServer.getPoolDataSource(),sb.toString(),1000,new FillLogMeshDetail(table,diffServer),new Object[0]);
-        } catch (SQLException e){
-        	log.error(e.getMessage(),e);
-        	throw new DiffException("填充左表有右表没有的履历字段时出错：" + e.getMessage() 
-				+","+leftTableFullName
-				+","+rightTableFullName,e);
-        }
     }
 }

@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
@@ -38,6 +40,11 @@ import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelect
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
 
+/**
+ * @author zhaokk
+ * 行政区划点删除操作类
+ */
+
 public class Process implements IProcess {
 
 	private Command command;
@@ -47,7 +54,7 @@ public class Process implements IProcess {
 	private Connection conn;
 
 	private String postCheckMsg;
-
+	protected Logger log = Logger.getLogger(this.getClass());
 	public Process(ICommand command) throws Exception {
 		this.command = (Command) command;
 
@@ -74,7 +81,9 @@ public class Process implements IProcess {
 		return null;
 
 	}
-
+	/*
+	 * 加载行政区划点对应的行政区划线
+	 */
 	public void lockAdLink() throws Exception {
 
 		AdLinkSelector selector = new AdLinkSelector(this.conn);
@@ -87,7 +96,9 @@ public class Process implements IProcess {
 		
 		command.setLinkPids(linkPids);
 	}
-
+	/*
+	 * 加载行政区划点对应的行政区点
+	 */
 	public void lockAdNode() throws Exception {
 
 		AdNodeSelector selector = new AdNodeSelector(this.conn);
@@ -97,8 +108,9 @@ public class Process implements IProcess {
 		command.setNode(node);
 
 	}
-
-	// 锁定盲端节点
+	/*
+	 * 加载行政区划点对应的行政区盲端节点
+	 */
 	public void lockEndAdNode() throws Exception {
 
 		AdNodeSelector selector = new AdNodeSelector(this.conn);
@@ -132,7 +144,9 @@ public class Process implements IProcess {
 
 		command.setNodePids(nodePids);
 	}
-	// 锁定盲端节点
+	/*
+	 * 加载行政区划点对应的行政区划线
+	 */
 		public void lockAdFace() throws Exception {
 
 			AdFaceSelector selector = new AdFaceSelector(this.conn);
@@ -187,8 +201,10 @@ public class Process implements IProcess {
 					throw new Exception(preCheckMsg);
 				}
 				prepareData();
+				//删除行政区划点有关行政区划点、线具体操作
 				IOperation op = new OpTopo(command);
 				op.run(result);
+				//删除行政区划点有关行政区划面具体操作
 				IOperation opAdFace = new OpRefAdFace(command);
 				opAdFace.run(result);
 				recordData();

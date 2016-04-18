@@ -75,7 +75,7 @@ public class Operation implements IOperation {
 		
 		boolean eNodeDepart = checkDepartENode(oldCoords[oldCoords.length-1], elon, elat);
 		
-		com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Process departProcess = null;
+		com.navinfo.dataservice.engine.edit.edit.operation.topo.departadnode.Process departProcess = null;
 		
 		if(sNodeDepart || eNodeDepart){
 			
@@ -105,17 +105,14 @@ public class Operation implements IOperation {
 			
 			json.put("data", data);
 			
-			ICommand departCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Command(
+			ICommand departCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.departadnode.Command(
 					json, json.toString());
 			
-			departProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Process(
-					departCommand, conn);
+			departProcess =  new com.navinfo.dataservice.engine.edit.edit.operation.topo.departadnode.Process(departCommand, conn);
 	
-			//departProcess.prepareData();
+			departProcess.prepareData();
 			
-			//departProcess.processRefObj();
-			
-			//departProcess.recordData();
+			departProcess.recordData();
 			
 		}
 		

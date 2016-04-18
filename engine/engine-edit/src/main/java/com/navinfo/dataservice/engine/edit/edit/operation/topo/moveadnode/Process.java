@@ -20,6 +20,10 @@ import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
 
+/**
+ * @author zhaokk
+ * 移动行政区划点具体执行类
+ */
 public class Process implements IProcess {
 	
 	private Command command;
@@ -54,6 +58,9 @@ public class Process implements IProcess {
 		return result;
 	}
 
+ /*
+ * 移动行政区划点加载对应的行政区划线信息
+ */
 	public void lockAdLink() throws Exception {
 
 		AdLinkSelector selector = new AdLinkSelector(this.conn);
@@ -62,14 +69,21 @@ public class Process implements IProcess {
 		command.setLinks(links);
 	}
 	
+	 /*
+	 * 移动行政区划点加载对应的行政区点线信息
+	 */
+	public void lockAdNode() throws Exception {
+
+			AdNodeSelector nodeSelector = new AdNodeSelector(this.conn);
+			
+			this.updateNode = (AdNode) nodeSelector.loadById(command.getNodePid(), true);
+		}
+		
 	@Override
 	public boolean prepareData() throws Exception {
-		AdNodeSelector nodeSelector = new AdNodeSelector(this.conn);
 		
-		this.updateNode = (AdNode) nodeSelector.loadById(command.getNodePid(), true);
-		
+		lockAdNode();
 		lockAdLink();
-		
 		return false;
 	}
 

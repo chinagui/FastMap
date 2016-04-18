@@ -10,11 +10,12 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-
+/**
+ * @author zhaokk
+ * 移动行政区划点操作类 
+ */
 public class Operation implements IOperation {
 
 	private Command command;
@@ -38,7 +39,9 @@ public class Operation implements IOperation {
 		this.updateFaceGeomtry(result);
 		return null;
 	}
-
+	/*
+	 * 移动行政区划点修改对应的线的信息 
+	 */
 	private void updateLinkGeomtry(Result result) throws Exception {
 		
 		for (AdLink link : command.getLinks()) {
@@ -81,7 +84,9 @@ public class Operation implements IOperation {
 			result.insertObject(link, ObjStatus.UPDATE, link.pid());
 		}
 	}
-
+	/*
+	 * 移动行政区划点修改对应的点的信息 
+	 */
 	private void updateNodeGeometry(Result result) throws Exception {
 		JSONObject geojson = new JSONObject();
 
@@ -98,7 +103,9 @@ public class Operation implements IOperation {
 		
 		result.insertObject(updateNode, ObjStatus.UPDATE, updateNode.pid());
 	}
-	
+	/*
+	 * 移动行政区划点修改对应的面的信息 
+	 */
 	private void updateFaceGeomtry(Result result) throws Exception {
 		Geometry geomNode  = GeoTranslator.transform(updateNode.getGeometry(), 0.00001, 5);
 		double lon =geomNode.getCoordinates()[0].x;

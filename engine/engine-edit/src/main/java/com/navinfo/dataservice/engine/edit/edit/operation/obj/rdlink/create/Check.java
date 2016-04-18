@@ -34,7 +34,7 @@ public class Check {
 				Coordinate next2 = coords[i+2];
 				
 				if(current.compareTo(next)==0 || current.compareTo(next2)==0){
-					throw new Exception("一根link上不能存在坐标相同的形状点");
+					throw new Exception(" 一根link上不能存在坐标相同的形状点");
 				}
 			}
 		}

@@ -9,7 +9,10 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
-
+/**
+ * @author zhaokk
+ * 修行行政区划线参数基础类 
+ */
 public class Command implements ICommand {
 
 	private String requester;
@@ -79,9 +82,9 @@ public class Command implements ICommand {
 		JSONObject geometry = data.getJSONObject("geometry");
 		
 		this.linkGeom = GeoTranslator.jts2Geojson(GeoTranslator.geojson2Jts(geometry, 1, 5));
-		
+		//修行后挂接对应AD_LINK信息
 		this.interLines = data.getJSONArray("interLinks");
-		
+		//修行后挂接对应的AD_NODE信息
 		this.interNodes = data.getJSONArray("interNodes");
 		
 		

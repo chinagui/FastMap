@@ -5,7 +5,10 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
-
+/**
+ * @author zhaokk
+ * 修改行政区划点参数基础类 
+ */
 public class Command implements ICommand {
 
 	private String requester;

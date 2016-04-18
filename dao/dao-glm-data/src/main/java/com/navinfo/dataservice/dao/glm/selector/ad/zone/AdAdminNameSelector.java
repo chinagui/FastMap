@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.dao.glm.selector.ad.zone;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -9,8 +10,8 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 
-public class AdAdminNameSelector implements ISelector{
-	
+public class AdAdminNameSelector implements ISelector {
+
 	private static Logger logger = Logger.getLogger(AdFaceSelector.class);
 
 	private Connection conn;
@@ -32,7 +33,8 @@ public class AdAdminNameSelector implements ISelector{
 
 	@Override
 	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
-		return null;
+		List<IRow> rows = new ArrayList<IRow>();
+		return rows;
 	}
 
 }

@@ -6,16 +6,17 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import oracle.spatial.geometry.JGeometry;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.navicommons.database.QueryRunner;
-
-import oracle.spatial.geometry.JGeometry;
 
 /** 
 * @ClassName: CompGridUtil 
@@ -34,7 +35,7 @@ public class CompGridUtil {
 		}else if(type==2){
 			grids.addAll(intersectLineGrid(geo,meshIds));
 		}else if(type == 3){
-			//...
+			throw new Exception("面不能有多个图幅号");
 		}
 		return grids;
 	}
@@ -51,13 +52,14 @@ public class CompGridUtil {
 				grids.addAll(intersectLineGrid(new double[]{lines[i*2-2],lines[i*2-1],lines[i*2],lines[i*2+1]},meshId));
 			}
 		}else if(type == 3){
-			//...
+			double[] face = geo.getOrdinatesArray();
+			grids.addAll(intersectFaceGrid(face, meshId));
 		}
 		return grids;
 	}
 	/**
 	 * 传入线的几何，和所属的图幅号
-	 * @param JGeometry:
+	 * @param line:[x1,y1,x2,y2]
 	 * @param meshIds：
 	 * @return
 	 */
@@ -170,6 +172,48 @@ public class CompGridUtil {
 			throw new Exception("参数错误：rect超过图幅。");
 		}
 	}
+	
+	/**
+	 * 计算face所在图幅内相交的grid
+	 * @param face:闭合的face经纬度数组
+	 * @param meshId:face所属的图幅号
+	 * @return
+	 * @throws Exception
+	 */
+	public static Set<String> intersectFaceGrid(double[] face,String meshId)throws Exception{
+		//计算图幅内的所有grid
+		Set<String> rawGrids = mesh2Grid(meshId);
+		
+		Set<String> interGrids = new HashSet<String>();
+		//再计算line是否和每个grid矩形相交
+		int pointCount = face.length/2;
+		
+		for(int i=0; i<pointCount-1; i++){
+			
+			double[] line = new double[4];
+			
+			line[0] = face[2*i];
+			line[1] = face[2*i+1];
+			line[2] = face[2*i+2];
+			line[3] = face[2*i+3];
+			
+			Iterator<String> it = rawGrids.iterator(); 
+			while(it.hasNext()){
+				String gridId = it.next();
+				
+				double[] grid = grid2Rect(gridId);
+				if(CompGeometryUtil.intersectLineRect(line,grid)){
+					interGrids.add(gridId);
+					it.remove();
+				}
+			}
+		}
+		
+		return interGrids;
+	}
+	
+	
+	
 	/**
 	 * 根据grid号获取grid的矩形
 	 * @param gridId
@@ -313,8 +357,8 @@ public class CompGridUtil {
 	}
 	/**
 	 * 计算点所在的grid号
-	 * @param x:经度坐标，单位度
-	 * @param y：纬度坐标，单位度
+	 * @param x
+	 * @param y
 	 * @return
 	 */
 	public static String point2Grid(double x,double y){
@@ -350,6 +394,53 @@ public class CompGridUtil {
 		return id;
 	}
 	
+	/**
+	 * 计算图幅内所有的grid号
+	 * @param meshId
+	 * @return
+	 */
+	private static Set<String> mesh2Grid(String meshId){
+		
+		Set<String> grids = new HashSet<String>();
+		
+		for(int i=0;i<4;i++){
+			for(int j=0;j<4;j++){
+				grids.add(meshId + String.valueOf(i)+ j);
+			}
+		}
+		
+		return grids;
+	}
+	
+	/**
+	 * 判断grid是否被一个面包含
+	 * @param face
+	 * @param gridId
+	 * @return
+	 */
+	public static boolean gridInFace(double[] face, String gridId){
+		double[] rect = grid2Rect(gridId);
+		
+		double[] p1 = new double[]{rect[0],rect[1]};
+		double[] p2 = new double[]{rect[0],rect[3]};
+		double[] p3 = new double[]{rect[2],rect[1]};
+		double[] p4 = new double[]{rect[2],rect[3]};
+		
+		if(!CompGeometryUtil.pointInFace(p1, face)){
+			return false;
+		}
+		if(!CompGeometryUtil.pointInFace(p2, face)){
+			return false;
+		}
+		if(!CompGeometryUtil.pointInFace(p3, face)){
+			return false;
+		}
+		if(!CompGeometryUtil.pointInFace(p4, face)){
+			return false;
+		}
+		
+		return true;
+	}
 	
 /* test part*/
 	private static void t1(){

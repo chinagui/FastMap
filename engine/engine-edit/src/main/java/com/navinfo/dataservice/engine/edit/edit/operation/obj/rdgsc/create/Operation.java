@@ -17,7 +17,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.util.GeometryTransformer;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
@@ -54,12 +53,17 @@ public class Operation implements IOperation {
 			linksGeometryList.add(geometry);
 		}
 		
-		//获取交点
+		//获取交点（不考虑矩形框可能有多个交点）
 		Geometry interGeometry = GeometryUtils.getIntersectsGeo(linksGeometryList);
 		
 		if(interGeometry != null)
 		{
-			//判断交点是否在矩形框内
+			/**
+			 * 判断交点是否在矩形框内
+			 * 1.获取矩形框
+			 * 2.获取交点
+			 * 3.判断交点是否和矩形框相交，并且只有一个交点
+			 */
 			Geometry spatial = GeoTranslator.geojson2Jts(command.getGeoObject());
 			
 			Geometry gscGeo = interGeometry.intersection(spatial);

@@ -104,7 +104,11 @@ public class GlmGridCalculator {
 				while(rs.next()){
 					String rowId = rs.getString("ROW_ID");
 					JGeometry geom = JGeometry.load((STRUCT)(rs.getObject("GEOMETRY")));
-					String meshId = rs.getString("MESH_ID");
+					String[] rowGrids = null;
+					int meshId = rs.getInt("MESH_ID");
+					if(meshId>0){
+					}
+					
 					
 				}
 				return gs;

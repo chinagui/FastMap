@@ -98,7 +98,7 @@ public class Operation implements IOperation {
 			result.insertObject(node, ObjStatus.INSERT, node.pid());
 		}
 
-		if (command.geteNodePid() > 0) {
+		if ( command.geteNodePid() > 0) {
 			RdNode node = OperateUtils.createNode(command.getElon(),
 					command.getElat());
 

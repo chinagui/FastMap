@@ -9,10 +9,12 @@ import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
@@ -35,7 +37,7 @@ public class Process implements IProcess {
 	private String postCheckMsg;
 	
 	private AdNode updateNode;
-	
+	private List<AdFace> adFaces;
 	public Process(ICommand command) throws Exception {
 		
 		this.command = (Command) command;
@@ -78,6 +80,18 @@ public class Process implements IProcess {
 			
 			this.updateNode = (AdNode) nodeSelector.loadById(command.getNodePid(), true);
 		}
+	
+	 /*
+		 * 移动行政区划点加载对应的行政区点面信息
+		 */
+    public void lockAdFace() throws Exception {
+
+				AdFaceSelector faceSelector = new AdFaceSelector(this.conn);
+				
+				this.adFaces= faceSelector.loadAdFaceByNodeId(command.getNodePid(), true);
+				command.setFaces(adFaces);
+				
+	}
 		
 	@Override
 	public boolean prepareData() throws Exception {

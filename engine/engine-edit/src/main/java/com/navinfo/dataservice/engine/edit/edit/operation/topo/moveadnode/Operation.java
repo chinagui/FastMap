@@ -104,7 +104,7 @@ public class Operation implements IOperation {
 		result.insertObject(updateNode, ObjStatus.UPDATE, updateNode.pid());
 	}
 	/*
-	 * 移动行政区划点修改对应的面的信息 
+	 * 移动行政区划点修改对应的的信息 
 	 */
 	private void updateFaceGeomtry(Result result) throws Exception {
 		Geometry geomNode  = GeoTranslator.transform(updateNode.getGeometry(), 0.00001, 5);
@@ -115,6 +115,7 @@ public class Operation implements IOperation {
 			Geometry geomFace = GeoTranslator.transform(face.getGeometry(), 0.00001, 5);
 			Coordinate[] cd = geomFace.getCoordinates();
 			double[][] ps = new double[cd.length][2];
+			double [][][] adPs = new double[1][cd.length][2];			
 			for (int i = 0; i < cd.length; i++) {
 				if (cd[i].x == lon&&cd[i].y== lat){
 					cd[i].x = command.getLongitude();
@@ -126,10 +127,10 @@ public class Operation implements IOperation {
 
 				ps[i][1] = cd[i].y;
 			}
-			
+			adPs[0]  = ps;
 			JSONObject geojson = new JSONObject();
 			geojson.put("type", "Polygon");
-			geojson.put("coordinates", ps);
+			geojson.put("coordinates", adPs);
 			JSONObject updateContent = new JSONObject();
 			updateContent.put("geometry", geojson);
 			updateContent.put("length", GeometryUtils.getLinkLength((GeoTranslator.geojson2Jts(geojson, 1, 5))));

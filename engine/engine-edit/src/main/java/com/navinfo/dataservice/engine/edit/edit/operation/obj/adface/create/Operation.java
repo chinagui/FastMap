@@ -141,6 +141,9 @@ public class Operation implements IOperation {
 
 		return set;
 	}
+	/*
+	 *创建行政区划面根据几何属性来创建面
+	 */
 	public void createFaceByGeometry(Result result) throws Exception{
 		Geometry geom = GeoTranslator.geojson2Jts(command.getGeometry(), 1, 5);
 		Coordinate sPoint = geom.getCoordinates()[0];

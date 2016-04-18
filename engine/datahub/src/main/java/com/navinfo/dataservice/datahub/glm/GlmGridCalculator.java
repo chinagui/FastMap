@@ -94,8 +94,8 @@ public class GlmGridCalculator {
 	 * @param logConn：数据和履历所在库的连接
 	 * @return
 	 */
-	public Map<String,String[]> calc(String tableName,int[] opTypes,Connection logConn)throws SQLException{
-		String sql = assembleQueryGeoSql(tableName);
+	public Map<String,String[]> calc(String tableName,Integer[] logOpTypes,Connection logConn)throws SQLException{
+		String sql = assembleQueryGeoSql(tableName,logOpTypes);
 		Map<String,String[]> grids = run.query(logConn, sql, new ResultSetHandler<Map<String,String[]>>(){
 
 			@Override
@@ -103,10 +103,16 @@ public class GlmGridCalculator {
 				Map<String,String[]> gs = new HashMap<String,String[]>();
 				while(rs.next()){
 					String rowId = rs.getString("ROW_ID");
-					JGeometry geom = JGeometry.load((STRUCT)(rs.getObject("GEOMETRY")));
+					JGeometry geom = null;
+					try{
+						geom = JGeometry.load(rs.getBytes("GEOMETRY"));
+					}catch(Exception e){
+						throw new SQLException("查询的geometry可能格式错误，无法转换为object。row_id:"+rowId,e);
+					}
 					String[] rowGrids = null;
 					int meshId = rs.getInt("MESH_ID");
 					if(meshId>0){
+						
 					}
 					
 					
@@ -161,31 +167,31 @@ public class GlmGridCalculator {
 		return null;
 		
 	}
-	private String assembleQueryGeoSql(String tableName){
+	private String assembleQueryGeoSql(String tableName,Integer[] logOpTypes){
 		StringBuilder sb = new StringBuilder();
 		GlmGridRefInfo refInfo = glmGridRefInfoMap.get(tableName);
 		sb.append(refInfo.getSelectSqlPart());
 		sb.append(",LOG_DETAIL L ");
 		sb.append(refInfo.getConditionSqlPart());
-		sb.append(" AND P.ROW_ID=L.TB_ROW_ID AND L.TB_NM='"+tableName+"'");
+		sb.append(" AND P.ROW_ID=L.TB_ROW_ID AND L.TB_NM='"+tableName+"' AND L.OP_TP IN ("+StringUtils.join(logOpTypes,",")+")");
 		return sb.toString();
 	}
-	private String assembleQueryGeoSql_Dblink(String tableName,String dbLinkName){
+	private String assembleQueryGeoSql_Dblink(String tableName,Integer[] logOpTypes,String dbLinkName){
 		StringBuilder sb = new StringBuilder();
 		GlmGridRefInfo refInfo = glmGridRefInfoMap.get(tableName);
 		sb.append(refInfo.replaceSelectSqlPartByDbLink(dbLinkName));
 		sb.append(",LOG_DETAIL L ");
 		sb.append(refInfo.getConditionSqlPart());
-		sb.append(" AND P.ROW_ID=L.TB_ROW_ID AND L.TB_NM='"+tableName+"'");
+		sb.append(" AND P.ROW_ID=L.TB_ROW_ID AND L.TB_NM='"+tableName+"' AND L.OP_TP IN ("+StringUtils.join(logOpTypes,",")+")");
 		return sb.toString();
 	}
-	private String assembleQueryGeoSqlByCrossUser(String tableName,String crossUserName){
+	private String assembleQueryGeoSqlByCrossUser(String tableName,Integer[] logOpTypes,String crossUserName){
 		StringBuilder sb = new StringBuilder();
 		GlmGridRefInfo refInfo = glmGridRefInfoMap.get(tableName);
 		sb.append(refInfo.replaceSelectSqlPartByCrossUser(crossUserName));
 		sb.append(",LOG_DETAIL L ");
 		sb.append(refInfo.getConditionSqlPart());
-		sb.append(" AND P.ROW_ID=L.TB_ROW_ID AND L.TB_NM='"+tableName+"'");
+		sb.append(" AND P.ROW_ID=L.TB_ROW_ID AND L.TB_NM='"+tableName+"' AND L.OP_TP IN ("+StringUtils.join(logOpTypes,",")+")");
 		return sb.toString();
 	}
 	public static void main(String[] args){

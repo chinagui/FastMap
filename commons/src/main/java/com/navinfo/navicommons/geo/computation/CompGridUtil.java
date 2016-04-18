@@ -57,7 +57,7 @@ public class CompGridUtil {
 	}
 	/**
 	 * 传入线的几何，和所属的图幅号
-	 * @param line:[x1,y1,x2,y2]
+	 * @param JGeometry:
 	 * @param meshIds：
 	 * @return
 	 */
@@ -313,8 +313,8 @@ public class CompGridUtil {
 	}
 	/**
 	 * 计算点所在的grid号
-	 * @param x
-	 * @param y
+	 * @param x:经度坐标，单位度
+	 * @param y：纬度坐标，单位度
 	 * @return
 	 */
 	public static String point2Grid(double x,double y){

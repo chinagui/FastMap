@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.commons.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -756,6 +757,17 @@ public abstract class MeshUtils {
 		result[1] = (int) (longsecond % 450000);
 
 		return result;
+	}
+	/**
+	 * 在业务中不会出现一条link跨越图幅，所以计算link的起始点两者都属于的图幅即为link的图幅
+	 * @param line:[x1,y1,x2,y2]
+	 * @return
+	 */
+	public static String[] line2MeshId(double[] line){
+		List<String> list1 = lonlat2MeshIds(line[0],line[1]);
+		List<String> list2 = lonlat2MeshIds(line[2],line[3]);
+		list1.retainAll(list2);
+		return list1.toArray(new String[0]);
 	}
 
 	/**

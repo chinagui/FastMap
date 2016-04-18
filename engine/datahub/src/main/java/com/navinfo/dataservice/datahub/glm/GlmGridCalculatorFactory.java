@@ -22,7 +22,7 @@ public class GlmGridCalculatorFactory {
 	public static GlmGridCalculatorFactory getInstance(){
 		return SingletonHolder.INSTANCE;
 	}
-	private Map<String,GlmGridCalculator> cache = new HashMap<String,GlmGridCalculator>();
+	private Map<String,GlmGridCalculator> cache = new HashMap<String,GlmGridCalculator>();//key-gdbVersion
 	private LockInstance ins = new LockInstance();
 	public GlmGridCalculator create(String gdbVersion){
 		GlmGridCalculator calc  = cache.get(gdbVersion);

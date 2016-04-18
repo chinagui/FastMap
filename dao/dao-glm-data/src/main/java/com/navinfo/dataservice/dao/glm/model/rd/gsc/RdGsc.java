@@ -19,6 +19,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+
 public class RdGsc implements IObj  {
 	private String rowId;
 	
@@ -77,14 +78,11 @@ public class RdGsc implements IObj  {
 
 	@Override
 	public ObjStatus status() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -109,25 +107,21 @@ public class RdGsc implements IObj  {
 
 	@Override
 	public Map<String, Object> changedFields() {
-		// TODO Auto-generated method stub
 		return changedFields;
 	}
 
 	@Override
 	public String parentPKName() {
-		// TODO Auto-generated method stub
 		return "pid";
 	}
 
 	@Override
 	public int parentPKValue() {
-		// TODO Auto-generated method stub
 		return this.pid();
 	}
 
 	@Override
 	public String parentTableName() {
-		// TODO Auto-generated method stub
 		return "rd_gsc";
 	}
 
@@ -205,38 +199,32 @@ public class RdGsc implements IObj  {
 	}
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
 		return this.meshId;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		// TODO Auto-generated method stub
 		this.meshId = mesh;
 		
 	}
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public boolean Unserialize(JSONObject json) throws Exception {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public List<IRow> relatedRows() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int pid() {
-		// TODO Auto-generated method stub
 		return pid;
 	}
 

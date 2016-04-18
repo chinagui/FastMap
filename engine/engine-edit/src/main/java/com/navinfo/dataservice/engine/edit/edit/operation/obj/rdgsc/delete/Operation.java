@@ -5,6 +5,14 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 
+/**
+ * 
+* @Title: Operation.java 
+* @Description: 删除立交操作类
+* @author 张小龙   
+* @date 2016年4月18日 下午3:06:03 
+* @version V1.0
+ */
 public class Operation implements IOperation {
 
 	private Command command;

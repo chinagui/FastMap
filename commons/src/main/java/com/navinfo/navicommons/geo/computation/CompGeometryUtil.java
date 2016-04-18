@@ -89,6 +89,54 @@ public class CompGeometryUtil {
 		return rect;
 	}
 	
+	/**
+	 * 射线法判断点是否在多边形内部
+	 * @param point 待判断的点
+	 * @param face 闭合多边形顶点
+	 * @return
+	 */
+	public static boolean pointInFace(double[] point, double[] face) {
+
+		double px = point[0];
+		double py = point[1];
+
+		boolean flag = false;
+
+		int pointCount = face.length / 2;
+
+		for (int i = 0; i < pointCount-1; i++) {
+			double sx = face[2 * i];
+			double sy = face[2 * i + 1];
+			double tx = face[2 * i + 2];
+			double ty = face[2 * i + 3];
+
+			// 点与多边形顶点重合
+			if ((sx == px && sy == py) || (tx == px && ty == py)) {
+				return true;
+			}
+
+			// 判断线段两端点是否在射线两侧
+			if ((sy < py && ty >= py) || (sy >= py && ty < py)) {
+				// 线段上与射线 Y 坐标相同的点的 X 坐标
+				double x = sx + (py - sy) * (tx - sx) / (ty - sy);
+
+				// 点在多边形的边上
+				if (x == px) {
+					return true;
+				}
+
+				// 射线穿过多边形的边界
+				if (x > px) {
+					flag = !flag;
+				}
+			}
+		}
+
+		// 射线穿过多边形边界的次数为奇数时点在多边形内
+		return flag;
+
+	}
+	
 	public static void main(String[] args){
 //		double[] line1 = new double[]{0,0,30.0,30.0};
 //		double[] line2 = new double[]{15.0,15.0,30.0,15.0};

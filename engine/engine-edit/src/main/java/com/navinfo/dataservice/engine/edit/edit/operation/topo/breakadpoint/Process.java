@@ -19,6 +19,10 @@ import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
 import com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.OpRefRestrict;
 
+/**
+ * @author zhaokk
+ * 新增行政区划点具体执行类
+ */
 public class Process implements IProcess {
 
 	private Command command;
@@ -57,7 +61,7 @@ public class Process implements IProcess {
 		
 		return result;
 	}
-
+    
 	@Override
 	public boolean prepareData() throws Exception {
 		// 获取此ADLINK上行政取区划面拓扑关系
@@ -87,14 +91,13 @@ public class Process implements IProcess {
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
 			}
-
+			//创建行政区划点有关行政区划线具体操作
 			OpTopo operation = new OpTopo(command, check, conn);
-
 			msg = operation.run(result);
+			//创建行政区划点有关行政区划面具体操作类
 			OpRefAdFace opRefAdFace = new OpRefAdFace(command);
 			opRefAdFace.run(result);
 			this.recordData();
-			//this.postCheck();
 			conn.commit();
 
 		} catch (Exception e) {

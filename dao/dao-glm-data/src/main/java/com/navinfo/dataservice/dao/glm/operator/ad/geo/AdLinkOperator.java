@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchOperator;
 import com.vividsolutions.jts.geom.Geometry;
@@ -224,9 +225,8 @@ public class AdLinkOperator implements IOperator {
 
 		stmt.addBatch(sb.toString());
 
-		for (IRow r : adLink.getFaceTopos()) {
-			AdFaceTopoOperator ap = new AdFaceTopoOperator(conn, (AdFaceTopo) r);
-
+		for (IRow r : adLink.getMeshes()) {
+			AdLinkMeshOperator ap = new AdLinkMeshOperator(conn, (AdLinkMesh) r);
 			ap.insertRow2Sql(stmt);
 		}
 		
@@ -243,8 +243,8 @@ public class AdLinkOperator implements IOperator {
 
 		stmt.addBatch(sql);
 
-		for (IRow r : adLink.getFaceTopos()) {
-			AdFaceTopoOperator ap = new AdFaceTopoOperator(conn, (AdFaceTopo) r);
+		for (IRow r : adLink.getMeshes()) {
+			AdLinkMeshOperator ap = new AdLinkMeshOperator(conn, (AdLinkMesh) r);
 
 			ap.deleteRow2Sql(stmt);
 		}

@@ -10,6 +10,11 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 
+/**
+ * @author zhaokk
+ * 创建行政区划点有关行政区划面具体操作类
+ *
+ */
 public class OpRefAdFace implements IOperation {
 
 	private Command command;
@@ -31,10 +36,14 @@ public class OpRefAdFace implements IOperation {
 		return null;
 	}
 
-	// 处理面
+	/*
+	 *  @author zhaokk
+	 *  @param List
+	 *  修改AdFace 和AdLink topo 关系
+	 *  
+	 */
 	private void handleAdFaceTopo(List<AdFaceTopo> list)
 			throws Exception {
-
 		for (AdFaceTopo adFaceTopo : list) {
 			result.insertObject(adFaceTopo, ObjStatus.DELETE,adFaceTopo.getFacePid());
 			adFaceTopo.setLinkPid(command.getsAdLink().getPid());

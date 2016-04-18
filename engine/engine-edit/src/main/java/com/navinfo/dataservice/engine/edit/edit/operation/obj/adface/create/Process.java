@@ -53,7 +53,7 @@ public class Process implements IProcess {
 	@Override
 	public String preCheck() throws Exception {
 		
-		return "";
+		return null;
 	}
 
 	@Override

@@ -1,9 +1,9 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
-import java.util.Date;
 import java.util.Iterator;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 import org.apache.hadoop.hbase.TableName;
@@ -19,15 +19,16 @@ import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
 
 public class TipsReshaper {
 
-	private int cache = 5000;
+	private int cache = 10000;
 
 	private SolrBulkUpdater solr;
 
 	public TipsReshaper() {
 
-		solr = new SolrBulkUpdater(TipsImportUtils.QueueSize,
-				TipsImportUtils.ThreadCount);
+		// solr = new SolrBulkUpdater(TipsImportUtils.QueueSize,
+		// TipsImportUtils.ThreadCount);
 
+		solr = new SolrBulkUpdater(cache, 5);
 	}
 
 	public int run() throws Exception {
@@ -66,18 +67,6 @@ public class TipsReshaper {
 			JSONObject g_location = geojo.getJSONObject("g_location");
 
 			solrIndex.put("g_location", g_location);
-
-			if (g_location.getString("type").equals("Point")) {
-				JSONArray coords = g_location.getJSONArray("coordinates");
-
-				double lon = coords.getDouble(0);
-				double lat = coords.getDouble(1);
-
-				if (lon < 0.0000000001 || lat < 0.0000000001) {
-					System.out.println(rowkey + ": g_location error");
-					continue;
-				}
-			}
 
 			JSONObject g_guide = geojo.getJSONObject("g_guide");
 
@@ -123,18 +112,38 @@ public class TipsReshaper {
 			String source = new String(result.getValue("data".getBytes(),
 					"source".getBytes()));
 
-			JSONObject sourcejo = JSONObject.fromObject(new String(source));
+			JSONObject sourcejo = JSONObject.fromObject(source);
 
-			solrIndex.put("s_sourceType", sourcejo.getString("s_sourceType"));
+			String sourceType = sourcejo.getString("s_sourceType");
+
+			solrIndex.put("s_sourceType", sourceType);
 
 			solrIndex.put("s_sourceCode", sourcejo.getInt("s_sourceCode"));
 
 			// deep
-
 			String deep = new String(result.getValue("data".getBytes(),
 					"deep".getBytes()));
 
+			JSONObject deepjo = JSONObject.fromObject(deep);
+
 			solrIndex.put("deep", deep);
+
+			// feedback
+			JSONArray feedbacks = new JSONArray();
+
+			if (result.containsColumn("data".getBytes(), "feedback".getBytes())) {
+				String feedback = new String(result.getValue("data".getBytes(),
+						"feedback".getBytes()));
+				JSONObject feedbackjo = JSONObject.fromObject(feedback);
+
+				feedbacks = feedbackjo.getJSONArray("f_array");
+			}
+
+			solrIndex.put("feedback", feedbacks.toString());
+
+			// wkt
+			solrIndex.put("wkt", TipsImportUtils.generateSolrWkt(sourceType,
+					deepjo, g_location, feedbacks));
 
 			solr.addTips(solrIndex);
 
@@ -143,7 +152,6 @@ public class TipsReshaper {
 			if (count % cache == 0) {
 				System.out.println(count);
 			}
-
 		}
 
 		solr.commit();
@@ -155,7 +163,7 @@ public class TipsReshaper {
 
 	public static void main(String[] args) throws Exception {
 
-		System.out.println(new Date());
+		long s = System.currentTimeMillis();
 
 		HBaseAddress.initHBaseAddress("192.168.3.156");
 
@@ -163,6 +171,6 @@ public class TipsReshaper {
 
 		System.out.println(sa.run());
 
-		System.out.println(new Date());
+		System.out.println(System.currentTimeMillis() - s);
 	}
 }

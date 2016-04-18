@@ -7,8 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.json.JSONException;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -34,7 +32,10 @@ import com.navinfo.dataservice.engine.edit.comm.util.AdminUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.OperateUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-
+/**
+ * @author zhaokk
+ * 创建行政区划线参数基础类 
+ */
 public class Operation implements IOperation {
 
 	private Command command;
@@ -56,17 +57,23 @@ public class Operation implements IOperation {
 		String msg = null;
 		List<Geometry> geomList = new ArrayList<Geometry>();
 		List<JSONObject> seNodeList = new ArrayList<JSONObject>();
+		//如果创建行政区划线有对应的挂接AD_NODE和ADFACE
+		//执行打断线处理逻辑
 		if (command.getCatchLinks().size() > 0) {
 			geomList = this.splitsLink(result,command.getCatchLinks(),
 					command.getGeometry(),seNodeList);
 
 		} 
+		//如果创建行政区划线没有对应的挂接AD_NODE和ADFACE
+		//创建对应的ADNODE
 		if(command.getCatchLinks().size()==0 || geomList.size()==0){
 			this.createAdNode(result, geomList,seNodeList);
 		}
+		//创建行政区划线信息
 		for (int index=0;index<geomList.size();index++) {
 			Geometry geo = geomList.get(index);
 			Set<String> meshes = this.getLinkInterMesh(geo);
+			//行政区划线在图廓线内
 			if (meshes.size() == 1) {
 				AdLink link = new AdLink();
 				int meshId = Integer.parseInt(meshes.iterator().next());
@@ -80,7 +87,9 @@ public class Operation implements IOperation {
 				link.setEndNodePid(seNodeList.get(index).getInt("e"));
 				setLinkChildren(link);
 				result.insertObject(link, ObjStatus.INSERT, link.pid());
-			} else {
+			} 
+			//行政区划线在图廓线外
+			else {
 				Iterator<String> it = meshes.iterator();
 
 				while (it.hasNext()) {
@@ -117,14 +126,14 @@ public class Operation implements IOperation {
 	/**
 	 *
 	 * 
-	 * @param link
+	 * @param link创建对应的ADNODE
 	 */
 	
 	private void createAdNode(Result result,List<Geometry> geomList,List<JSONObject> seNodeList) throws Exception{
 		geomList.add(GeoTranslator.geojson2Jts(command.getGeometry()));
 
 		JSONObject se = new JSONObject();
-
+        //创建起始点信息
 		if (0 == command.getsNodePid()) {
 
 			Coordinate point = geomList.get(0).getCoordinates()[0];
@@ -137,7 +146,7 @@ public class Operation implements IOperation {
 		} else {
 			se.put("s", command.getsNodePid());
 		}
-
+		//创建终止点信息
 		if (0 == command.geteNodePid()) {
 
 			Coordinate point = geomList.get(0).getCoordinates()[geomList
@@ -151,13 +160,12 @@ public class Operation implements IOperation {
 		} else {
 			se.put("e", command.geteNodePid());
 		}
-		
 		seNodeList.add(se);
 	
 	}
 
-	/**
-	 * 维护link的子表
+	/*
+	 * 维护link的子表 AD_LINK_MESH
 	 * 
 	 * @param link
 	 */
@@ -176,7 +184,11 @@ public class Operation implements IOperation {
 		link.setMeshes(meshes);
 	}
 
-
+	/*
+	 * 根据几何属性获取图幅列表信息
+	 * 
+	 * @param link
+	 */
 	private Set<String> getLinkInterMesh(Geometry linkGeom) throws Exception {
 		Set<String> set = new HashSet<String>();
 
@@ -188,7 +200,11 @@ public class Operation implements IOperation {
 
 		return set;
 	}
-
+	/*
+	 * AD_LINK分割具体操作
+	 * 
+	 * @param JSONArray
+	 */
 	private List<Geometry> splitsLink(Result result, JSONArray catchLinks,
 			JSONObject geometry, List<JSONObject> seNodeList) throws Exception {
 
@@ -318,7 +334,11 @@ public class Operation implements IOperation {
 
 		return geoms;
 	}
-
+	/*
+	 * AD_LINK打断具体操作
+	 * 
+	 * @param JSONArray
+	 */
 	public void breakLine() throws Exception {
 		for (int i = 0; i < command.getCatchLinks().size(); i++) {
 			JSONObject json = command.getCatchLinks().getJSONObject(i);

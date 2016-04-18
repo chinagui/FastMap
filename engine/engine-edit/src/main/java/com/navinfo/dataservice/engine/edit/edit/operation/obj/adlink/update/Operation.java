@@ -31,7 +31,9 @@ public class Operation implements IOperation {
 
 		this.updateLink = updateLink;
 	}
-
+	/*
+	 * 修改RDLINK 操作
+	 */
 	@Override
 	public String run(Result result) throws Exception {
 		JSONObject content = command.getUpdateContent();
@@ -58,7 +60,9 @@ public class Operation implements IOperation {
 
 		return null;
 	}
-
+	/*
+	 * 修改对应子表RD_LINK_MESH
+	 */
 	private void saveMeshes(Result result, JSONArray forms) throws Exception {
 		for (int i = 0; i < forms.size(); i++) {
 

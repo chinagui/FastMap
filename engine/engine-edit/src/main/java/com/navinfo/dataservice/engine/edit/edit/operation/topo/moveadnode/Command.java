@@ -10,7 +10,10 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-
+/**
+ * @author zhaokk
+ * 移动行政区划点参数基础类 
+ */
 public class Command implements ICommand {
 	
 	private int nodePid;

@@ -13,7 +13,10 @@ import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
-
+/**
+ * @author zhaokk
+ * 修改行政区划线参数基础类 
+ */
 public class Process implements IProcess {
 
 	private Command command;
@@ -52,7 +55,7 @@ public class Process implements IProcess {
 	public boolean prepareData() throws Exception {
 		
 		AdLinkSelector linkSelector = new AdLinkSelector(this.conn);
-
+		//加载对应AD_LINK信息
 		this.updateLink = (AdLink)linkSelector.loadById(command.getLinkPid(),true);
 
 		return false;

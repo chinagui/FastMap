@@ -7,7 +7,10 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
-
+/**
+ * @author zhaokk
+ *新建行政区划线参数基础类 
+ */
 public class Command implements ICommand {
 
 	private String requester;
@@ -87,7 +90,7 @@ public class Command implements ICommand {
 		this.geometry = data.getJSONObject("geometry");
 		
 		this.geometry = GeoTranslator.jts2Geojson(GeoTranslator.geojson2Jts(geometry, 1, 5));
-	
+	    //获取行政区划线挂接的ADLINK 和ADNODE
 		if (data.containsKey("catchLinks")){
 			
 			this.catchLinks = new JSONArray();

@@ -13,7 +13,10 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeName;
-
+/**
+ * @author zhaokk
+ * 修改行政区划点操作基础类 
+ */
 public class Operation implements IOperation {
 
 	private Command command;

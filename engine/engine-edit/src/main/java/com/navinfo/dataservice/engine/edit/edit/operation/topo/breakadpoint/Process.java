@@ -64,10 +64,12 @@ public class Process implements IProcess {
     
 	@Override
 	public boolean prepareData() throws Exception {
-		// 获取此ADLINK上行政取区划面拓扑关系
+		    //获取此ADLINK上行政取区划面拓扑关系
 			List<AdFaceTopo> adFaceTopos= new AdFaceTopoSelector(conn)
 							.loadByLinkPid(command.getLinkPid(), true);
 			command.setAdFaceTopos(adFaceTopos);
+			List<AdFace>  adfaces = new  AdFaceSelector(conn).loadAdFaceByLinkId(command.getLinkPid(), true);
+			command.setFaces(adfaces);
 
 		return true;
 	}
@@ -95,7 +97,7 @@ public class Process implements IProcess {
 			OpTopo operation = new OpTopo(command, check, conn);
 			msg = operation.run(result);
 			//创建行政区划点有关行政区划面具体操作类
-			OpRefAdFace opRefAdFace = new OpRefAdFace(command);
+			OpRefAdFace opRefAdFace = new OpRefAdFace(command,conn);
 			opRefAdFace.run(result);
 			this.recordData();
 			conn.commit();

@@ -23,13 +23,8 @@ import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.db.OracleAddress;
 import com.navinfo.dataservice.commons.timedomain.TimeDecoder;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
-import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
 import com.navinfo.dataservice.engine.fcc.tips.TipsImportUtils;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKTReader;
 
 public class RdRestrictionTipsBuilder {
 
@@ -78,6 +73,8 @@ public class RdRestrictionTipsBuilder {
 
 			String track = TipsImportUtils.generateTrack(date);
 
+			String feedback = TipsImportUtils.generateFeedback();
+			
 			JSONObject geometry = generateGeometry(resultSet);
 
 			String deep = generateDeep(resultSet);
@@ -94,13 +91,15 @@ public class RdRestrictionTipsBuilder {
 					.toString().getBytes());
 
 			put.addColumn("data".getBytes(), "deep".getBytes(), deep.getBytes());
+			
+			put.addColumn("data".getBytes(), "feedback".getBytes(), feedback.getBytes());
 
 			puts.add(put);
 
 			JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(
 					rowkey, 0, date, type, deep.toString(),
 					geometry.getJSONObject("g_location"),
-					geometry.getJSONObject("g_guide"));
+					geometry.getJSONObject("g_guide"), "[]");
 
 			solrConn.addTips(solrIndexJson);
 

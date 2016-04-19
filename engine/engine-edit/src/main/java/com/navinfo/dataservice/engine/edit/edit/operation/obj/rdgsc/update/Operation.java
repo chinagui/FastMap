@@ -9,14 +9,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-/**
- * 
-* @Title: Operation.java 
-* @Description: 立交的修改操作 :立交修改只允许修改属性中的“处理标识”字段和立交的高度层次
-* @author 张小龙   
-* @date 2016年4月18日 下午3:04:21 
-* @version V1.0
- */
 public class Operation implements IOperation {
 
 	private Command command;
@@ -35,8 +27,7 @@ public class Operation implements IOperation {
 	public String run(Result result) throws Exception {
 
 		JSONObject content = command.getContent();
-		
-		//1.修改主表RD_GSC数据
+
 		if (content.containsKey("objStatus")) {
 
 			if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
@@ -52,8 +43,7 @@ public class Operation implements IOperation {
 				}
 			}
 		}
-		
-		//2.修改关系表RD_GSC_LINK的LINK信息（高度信息）
+
 		if (content.containsKey("linkObjs")) {
 			JSONArray links = content.getJSONArray("linkObjs");
 
@@ -68,7 +58,7 @@ public class Operation implements IOperation {
 						RdGscLink link = rdGsc.rdGscLinkMap.get(json.getString("rowId"));
 
 						if (link == null) {
-							throw new Exception("rowId=" + json.getString("rowId") + "的rd_gsc_link不存在");
+							throw new Exception("rowId=" + json.getString("rowId") + "的rd_cross_link不存在");
 						}
 
 						if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {

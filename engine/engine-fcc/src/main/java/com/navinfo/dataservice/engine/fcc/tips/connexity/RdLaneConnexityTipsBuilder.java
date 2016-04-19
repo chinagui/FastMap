@@ -69,8 +69,6 @@ public class RdLaneConnexityTipsBuilder {
 
 			String track = TipsImportUtils.generateTrack(date);
 
-			String feedback = TipsImportUtils.generateFeedback();
-			
 			JSONObject geometry = generateGeometry(resultSet);
 
 			String deep = generateDeep(resultSet);
@@ -87,12 +85,10 @@ public class RdLaneConnexityTipsBuilder {
 					geometry.toString().getBytes());
 
 			put.addColumn("data".getBytes(), "deep".getBytes(), deep.getBytes());
-			
-			put.addColumn("data".getBytes(), "feedback".getBytes(), feedback.getBytes());
 
 			puts.add(put);
 			
-			JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(rowkey, 0, date, type, deep.toString(), geometry.getJSONObject("g_location"), geometry.getJSONObject("g_guide"), "[]");
+			JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(rowkey, 0, date, type, deep.toString(), geometry.getJSONObject("g_location"), geometry.getJSONObject("g_guide"));
 
 			solrConn.addTips(solrIndexJson);
 

@@ -24,6 +24,7 @@ public class AdAdminSelector implements ISelector{
 	private Connection conn;
 
 	public AdAdminSelector(Connection conn) {
+		super();
 		this.conn = conn;
 	}
 
@@ -46,7 +47,7 @@ public class AdAdminSelector implements ISelector{
 
 			if (resultSet.next()) {
 
-				adAdmin.setPid(resultSet.getInt("region_id"));
+				adAdmin.setPid(resultSet.getInt("face_pid"));
 				
 				adAdmin.setAdminId(resultSet.getInt("admin_id"));
 				

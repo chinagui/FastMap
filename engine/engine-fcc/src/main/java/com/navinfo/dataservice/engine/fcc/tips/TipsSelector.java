@@ -134,37 +134,28 @@ public class TipsSelector {
 
 					m.put("d", gELoc.getJSONArray("coordinates"));
 				}else if (type == 1801 || type == 1803){
-					JSONArray feedbacks = JSONArray.fromObject(json.getString("feedback"));
+					JSONArray ga = deep.getJSONArray("g_array");
 					
 					JSONArray a = new JSONArray();
 					
-					for(int j=0; j<feedbacks.size();j++){
-						JSONObject feedback = feedbacks.getJSONObject(j);
+					for(int i=0;i<ga.size();i++){
+						JSONObject obj = ga.getJSONObject(i);
 						
-						if(feedback.getInt("type") == 6){
-							JSONArray content = feedback.getJSONArray("content");
-							
-							for(int i=0;i<content.size();i++){
-								JSONObject obj = content.getJSONObject(i);
-								
-								JSONObject geo = obj.getJSONObject("geo");
-								
-								String style = obj.getString("style");
-								
-								JSONObject o = new JSONObject();
-								
-								Geojson.coord2Pixel(geo, z, px, py);
-								
-								o.put("g", geo.getJSONArray("coordinates"));
-								
-								o.put("s", style);
-								
-								a.add(o);
-							}
-							
-							break;
-						}
+						JSONObject geo = obj.getJSONObject("geo");
+						
+						String style = obj.getString("style");
+						
+						JSONObject o = new JSONObject();
+						
+						Geojson.coord2Pixel(geo, z, px, py);
+						
+						o.put("g", geo.getJSONArray("coordinates"));
+						
+						o.put("s", style);
+						
+						a.add(o);
 					}
+					
 					m.put("c", a);
 				}
 

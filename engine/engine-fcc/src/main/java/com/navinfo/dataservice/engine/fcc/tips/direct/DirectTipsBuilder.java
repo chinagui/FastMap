@@ -19,6 +19,7 @@ import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.commons.timedomain.TimeDecoder;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
+import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
 import com.navinfo.dataservice.engine.fcc.tips.TipsImportUtils;
 
@@ -68,8 +69,6 @@ public class DirectTipsBuilder {
 			String source = TipsImportUtils.generateSource(type);
 
 			String track = TipsImportUtils.generateTrack(date);
-			
-			String feedback = TipsImportUtils.generateFeedback();
 
 			JSONObject geometry = generateGeometry(resultSet);
 
@@ -87,12 +86,10 @@ public class DirectTipsBuilder {
 					geometry.toString().getBytes());
 
 			put.addColumn("data".getBytes(), "deep".getBytes(), deep.getBytes());
-			
-			put.addColumn("data".getBytes(), "feedback".getBytes(), feedback.getBytes());
 
 			puts.add(put);
 			
-			JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(rowkey, 0, date, type, deep.toString(), geometry.getJSONObject("g_location"), geometry.getJSONObject("g_guide"), "[]");
+			JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(rowkey, 0, date, type, deep.toString(), geometry.getJSONObject("g_location"), geometry.getJSONObject("g_guide"));
 
 			solrConn.addTips(solrIndexJson);
 			

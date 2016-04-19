@@ -60,8 +60,6 @@ public class SolrController {
 		doc.addField("g_guide", json.getString("g_guide"));
 
 		doc.addField("deep", json.getString("deep"));
-		
-		doc.addField("feedback", json.getString("feedback"));
 
 		client.add(doc);
 

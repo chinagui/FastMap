@@ -9,7 +9,6 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.ParseException;
 
 /**
@@ -19,10 +18,10 @@ import com.vividsolutions.jts.io.ParseException;
  * 
  */
 public class TipsImportUtils {
-
-	public static int ThreadCount = 5;
-
-	public static int QueueSize = 20000;
+	
+	public static int ThreadCount=5;
+	
+	public static int QueueSize=20000;
 
 	/**
 	 * 根据类型、位置、唯一ID组合ROWKEY
@@ -58,14 +57,6 @@ public class TipsImportUtils {
 
 		return sourcejson.toString();
 	}
-	
-	public static String generateFeedback() {
-		JSONObject json = new JSONObject();
-
-		json.put("f_array", new JSONArray());
-		
-		return json.toString();
-	}
 
 	public static String generateTrack(String date) {
 
@@ -94,8 +85,8 @@ public class TipsImportUtils {
 
 	// 组装solr索引
 	public static JSONObject assembleSolrIndex(String rowkey, int stage,
-			String date, String type, String deep, JSONObject g_location,
-			JSONObject g_guide, String feedback) throws Exception {
+			String date, String type,  String deep, JSONObject g_location, JSONObject g_guide)
+			throws Exception {
 		JSONObject json = new JSONObject();
 
 		json.put("id", rowkey);
@@ -122,14 +113,12 @@ public class TipsImportUtils {
 
 		json.put("wkt",
 				GeoTranslator.jts2Wkt(GeoTranslator.geojson2Jts(g_location)));
-
+		
 		json.put("deep", deep);
-
-		json.put("feedback", feedback);
 
 		return json;
 	}
-
+	
 	public static JSONObject connectLinks(List<Geometry> geoms)
 			throws ParseException {
 		JSONObject json = new JSONObject();
@@ -159,74 +148,5 @@ public class TipsImportUtils {
 		json.put("coordinates", ps);
 
 		return json;
-	}
-
-	public static String generateSolrWkt(String sourceType, JSONObject deep,
-			JSONObject g_location, JSONArray feedbacks) throws Exception {
-		List<Geometry> geos = new ArrayList<Geometry>();
-
-		GeometryFactory factory = new GeometryFactory();
-
-		if (sourceType.equals("1501")) {
-
-			JSONObject gSLoc = deep.getJSONObject("gSLoc");
-
-			JSONObject gELoc = deep.getJSONObject("gELoc");
-
-			Geometry g1 = GeoTranslator.geojson2Jts(gSLoc);
-
-			Geometry g2 = GeoTranslator.geojson2Jts(gELoc);
-
-			Geometry g3 = g1.union(g2);
-
-			Geometry g = factory.createMultiPoint(g3.getCoordinates());
-
-			geos.add(g);
-		} else {
-
-			Geometry g = GeoTranslator.geojson2Jts(g_location);
-
-			if (!g.isValid()) {
-				throw new Exception("invalid g_location");
-			}
-
-			geos.add(g);
-		}
-
-		for (int i = 0; i < feedbacks.size(); i++) {
-			JSONObject feedback = feedbacks.getJSONObject(i);
-
-			if (feedback.getInt("type") == 6) {
-				// 草图
-				JSONArray content = feedback.getJSONArray("content");
-
-				for (int j = 0; j < content.size(); j++) {
-
-					JSONObject geo = content.getJSONObject(i);
-
-					Geometry g = GeoTranslator.geojson2Jts(geo
-							.getJSONObject("geo"));
-
-					geos.add(g);
-				}
-
-				break;
-			}
-		}
-
-		if (geos.size() == 1) {
-			return GeoTranslator.jts2Wkt(geos.get(0));
-		} else {
-			Geometry[] gArray = new Geometry[geos.size()];
-
-			for (int i = 0; i < geos.size(); i++) {
-				gArray[i] = geos.get(i);
-			}
-
-			Geometry g = factory.createGeometryCollection(gArray);
-
-			return GeoTranslator.jts2Wkt(g);
-		}
-
 	}
 }

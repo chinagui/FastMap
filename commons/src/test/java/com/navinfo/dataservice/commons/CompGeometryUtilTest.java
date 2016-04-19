@@ -3,13 +3,15 @@ package com.navinfo.dataservice.commons;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 
+import junit.framework.TestCase;
+
 /** 
 * @ClassName: CompGridUtilTest 
 * @author Xiao Xiaowen 
 * @date 2016年4月19日 上午10:11:04 
 * @Description: TODO
 */
-public class CompGeometryUtilTest {
+public class CompGeometryUtilTest extends TestCase{
 	private static void t1(){
 		try{
 			//59567003

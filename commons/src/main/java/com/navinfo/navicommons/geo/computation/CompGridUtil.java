@@ -14,6 +14,7 @@ import oracle.spatial.geometry.JGeometry;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -40,6 +41,7 @@ public class CompGridUtil {
 		return grids;
 	}
 	public static Set<String> intersectGeometryGrid(JGeometry geo,String meshId)throws Exception{
+		meshId = StringUtils.leftPad(meshId, 6, '0');
 		Set<String> grids = new HashSet<String>();
 		int type = geo.getType();
 		if(type==1){
@@ -137,7 +139,7 @@ public class CompGridUtil {
 	}
 	/**
 	 * 传入该line所属的图幅号
-	 * @param line:[x1,y1,x2,y2]:5位小数精度的坐标*3600*1000取
+	 * @param line:[x1,y1,x2,y2]
 	 * @param meshId：line所属的图幅号
 	 * @return
 	 */
@@ -429,7 +431,7 @@ public class CompGridUtil {
 		int xt = (int)(longX/(450000));
 		M6 = xt%8;
 		
-		M7 = (int)((longY%(300000))*4)/(100000);
+		M7 = (int)((longY%(300000))*4)/(300000);
 		M8 = (int)((longX%(450000))*4)/(450000);
 		
 		//double yt = y*3600/300;

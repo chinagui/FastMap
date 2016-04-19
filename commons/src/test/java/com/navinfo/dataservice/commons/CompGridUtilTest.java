@@ -1,17 +1,10 @@
 package com.navinfo.dataservice.commons;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
 import java.util.Set;
-
-import org.apache.commons.dbutils.ResultSetHandler;
-
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.navicommons.database.QueryRunner;
+import org.junit.Test;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
-
-import oracle.spatial.geometry.JGeometry;
+import junit.framework.Assert;
 
 /** 
 * @ClassName: CompGridUtilTest 
@@ -19,37 +12,49 @@ import oracle.spatial.geometry.JGeometry;
 * @date 2016年4月19日 上午10:11:04 
 * @Description: TODO
 */
-public class CompGridUtilTest {
-	private static void t1(){
-		try{
-			//59567003
-			double[] rect = CompGridUtil.grid2Rect("59567012");
-			for(double o:rect){
-				System.out.println(o);
-			}
-		}catch(Exception e){
-			e.printStackTrace();
+public class CompGridUtilTest{
+	
+	/**
+	 * 
+	 */
+	@Test
+	public void grid2Rect_0001(){
+		//59567003
+		double[] rect = CompGridUtil.grid2Rect("59567023");
+		for(double o:rect){
+			System.out.println(o);
 		}
+		Assert.assertNotNull(rect);
 	}
-	private static void t1_1(){
+	/**
+	 * 场景：
+	 * 
+	 */
+	@Test
+	public void intersectLineGrid_0001(){
 		try{
-			double[] line = new double[]{116.0625,39.9379,116.0625,39.958};
+			double[] line = new double[]{116.11024, 39.93096, 116.11037, 39.93097};
 			Set<String> res = CompGridUtil.intersectLineGrid(line, "595670");
 			for(String o:res){
 				System.out.println(o);
 			}
+			Assert.assertNotNull(res);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 	}
-	private static void t1_2(){
+	@Test
+	public void point2Grid_001(){
 		try{
-			CompGridUtil.point2Grid(116.0625, 39.9379);
+			String grid = CompGridUtil.point2Grid(116.0625, 39.9379);
+			System.out.println(grid);
+			Assert.assertEquals("59567032", grid);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 	}
-	private static void t2(){
+	@Test
+	public void point2Grid_002(){
 		try{
 			//59567003
 			String s = CompGridUtil.point2Grid(116.09375
@@ -59,10 +64,13 @@ public class CompGridUtilTest {
 			e.printStackTrace();
 		}
 	}
+
 	/**
 	 * 验证double类型的精度
 	 */
-	public static void t3(){//		double x1=15.01;
+	@Test
+	public void other_001(){
+//		double x1=15.01;
 //		double x2 = 16.01;
 //		System.out.println(x1%1);
 //		System.out.println(x2%1);
@@ -103,38 +111,5 @@ public class CompGridUtilTest {
 //				System.out.println(t);
 //			}
 //		}
-	}
-
-	private static void t0(){
-		Connection conn = null;
-		try{
-			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
-					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
-			QueryRunner runn = new QueryRunner();
-			String sql = "SELECT GEOMETRY FROM RD_link WHERE ROWNUM=1";
-			JGeometry geo = runn.query(conn, sql, new ResultSetHandler<JGeometry>(){
-
-				@Override
-				public JGeometry handle(ResultSet rs) throws SQLException {
-					rs.next();
-					try{
-						JGeometry geo = JGeometry.load(rs.getBytes("GEOMETRY"));
-						return  geo;
-					}catch(Exception e){
-						throw new SQLException(e.getMessage(),e);
-					}
-				}
-				
-			});
-			System.out.println(geo.getPoint());
-			System.out.println(geo.getOrdinatesArray());
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
-	public static void main(String[] args){
-//		t1();
-//		t1_1();
-		t3();
 	}
 }

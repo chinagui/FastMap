@@ -36,7 +36,7 @@ public class JsonObjectTest {
 		System.out.println(GeometryUtils.getLinkLength(lineString)+"----------");;
 		System.out.println(lineString.getEndPoint());
 		System.out.println(lineString.getLength());
-		Coordinate[] coordinates = geometry2.getCoordinates();
+		Coordinate[]  coordinates = geometry2.getCoordinates();
 		LinearRing ring = geoFactory.createLinearRing(geometry2.getCoordinates() );
 		
 		Polygon polygon = geoFactory.createPolygon( ring, null ); 

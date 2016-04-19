@@ -13,7 +13,7 @@ public class CompGeometryUtil {
 	 * @param line2
 	 * @return
 	 */
-	public static boolean intersectLine(double[] line1,double[] line2){
+	public static boolean intersectLine(long[] line1,long[] line2){
 		//先判断矩形是否相交
 		if(!intersectRect(line2Rect(line1),line2Rect(line2))) 
 			return false;
@@ -35,7 +35,7 @@ public class CompGeometryUtil {
 	 * @param rect2：被包含对象
 	 * @return
 	 */
-	public static boolean containsRect(double[] rect1,double[] rect2){
+	public static boolean containsRect(long[] rect1,long[] rect2){
 		//计算rect2的minx, miny,maxx,maxy都在rect1内则包含；
 		if((rect2[0]>=rect1[0]&&rect2[0]<=rect1[2])
 				&&(rect2[1]>=rect1[1]&&rect2[1]<=rect1[3])
@@ -50,7 +50,7 @@ public class CompGeometryUtil {
 	 * @param rect2
 	 * @return
 	 */
-	public static boolean intersectRect(double[] rect1,double[] rect2){
+	public static boolean intersectRect(long[] rect1,long[] rect2){
 //		if(Math.min(rect1[2],rect2[2])>Math.max(rect1[0], rect2[0])
 //				||Math.min(rect1[1], rect2[1])>Math.max(rect1[3], rect2[3])) return false;
 //		return true;
@@ -64,21 +64,21 @@ public class CompGeometryUtil {
 	 * @param rect:[minx,miny,maxx,maxy]
 	 * @return
 	 */
-	public static boolean intersectLineRect(double[] line,double[] rect){
+	public static boolean intersectLineRect(long[] line,long[] rect){
 		//先判断是否rect包含line
 		if(containsRect(rect,line2Rect(line))) return true;
 		//和矩形的四条边任意一条相交，则线和矩形相交
-		double[] rectLine=new double[]{rect[0],rect[1],rect[2],rect[1]};
+		long[] rectLine=new long[]{rect[0],rect[1],rect[2],rect[1]};
 		if(intersectLine(line,rectLine))
 			return true;
-		rectLine = new double[]{rect[2],rect[1],rect[2],rect[3]};
+		rectLine = new long[]{rect[2],rect[1],rect[2],rect[3]};
 		if(intersectLine(line,rectLine))
 			return true;
-		rectLine = new double[]{rect[2],rect[3],rect[0],rect[3]};
+		rectLine = new long[]{rect[2],rect[3],rect[0],rect[3]};
 		if(intersectLine(line,rectLine)){
 			return true;
 		}
-		rectLine = new double[]{rect[0],rect[3],rect[0],rect[1]};
+		rectLine = new long[]{rect[0],rect[3],rect[0],rect[1]};
 		if(intersectLine(line,rectLine))
 			return true;
 		return false;
@@ -88,8 +88,8 @@ public class CompGeometryUtil {
 	 * @param line：[x1,y1,x2,y2]
 	 * @return rect:[minx,miny,maxx,maxy]
 	 */
-	public static double[] line2Rect(double[] line){
-		double[] rect = new double[4];
+	public static long[] line2Rect(long[] line){
+		long[] rect = new long[4];
 		if(line[0]<line[2]){
 			rect[0]=line[0];
 			rect[2]=line[2];
@@ -153,55 +153,5 @@ public class CompGeometryUtil {
 		// 射线穿过多边形边界的次数为奇数时点在多边形内
 		return flag;
 
-	}
-	
-	public static void main(String[] args){
-		double[] rect1 = new double[]{0,0,30.0,30.0};
-		double[] rect2 = new double[]{21.0,21.0,22.0,22.0};
-		if(intersectRect(rect1,rect2)){
-			System.out.println("Yes...");
-		}else{
-			System.out.println("No...");
-		}
-//		double[] line1 = new double[]{0,0,30.0,30.0};
-//		double[] line2 = new double[]{15.0,15.0,30.0,15.0};
-//		double[] line2 = new double[]{15.00001,15.0,30.0,15.0};
-//		double[] line2 = new double[]{0,0,15.0,15.0};
-//		double[] rect = new double[]{0,0,15.0,15.0};
-//		long t1 = System.currentTimeMillis();
-//		if(intersectLineRect(line1,rect)){
-//			System.out.println("Yes!!!");
-//		}else{
-//			System.out.println("Nooooooo");
-//		}
-//		System.out.println(System.currentTimeMillis()-t1);
-
-//		double x1=15.01;
-//		double x2 = 16.01;
-//		System.out.println(x1%1);
-//		System.out.println(x2%1);
-//		double y1 = x1%1;
-//		double y2 = x2%1;
-//		if(y1==y2){
-//			System.out.println("YES!!!");
-//		}else{
-//			System.out.println("NO!!!");
-//		}
-//		System.out.println(15.01%1);
-//		System.out.println(16.01%1);
-//		System.out.println(1.01%1);
-//		System.out.println(1.0%1);
-//		System.out.println(2.0%1);
-//		System.out.println(Double.valueOf(1%1));
-//		System.out.println(5.0000000%1);
-//		long t1 = System.currentTimeMillis();
-//		double t;
-//		for(int i=0;i<1000000000;i++){
-//			t = 15.01-(int)15.01;
-//			if(i%100000000==0){
-//				System.out.println(t);
-//			}
-//		}
-//		System.out.println(System.currentTimeMillis()-t1);
 	}
 }

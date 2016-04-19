@@ -117,7 +117,7 @@ public class GlmGridCalculator {
 	 */
 	public String[] calc(String tableName,String rowId,Connection dataConn)throws SQLException{
 		String sql = assembleQueryGeoSql(tableName,rowId);
-		String[] grids = run.query(dataConn, sql, new SingleGridHandler());
+		String[] grids = run.query(dataConn, sql, new SingleRowGridHandler());
 		return grids;
 	}
 	/**
@@ -141,7 +141,7 @@ public class GlmGridCalculator {
 	 */
 	public Map<String,String[]> calc(String tableName,Integer[] logOpTypes,Connection logConn)throws SQLException{
 		String sql = assembleQueryGeoSql(tableName,logOpTypes);
-		Map<String,String[]> grids = run.query(logConn, sql, new GridsHandler());
+		Map<String,String[]> grids = run.query(logConn, sql, new MultiRowGridHandler());
 		return grids;
 	}
 	/**
@@ -161,8 +161,10 @@ public class GlmGridCalculator {
 		String sql = null;
 		if("CROSS_USER".equals(remoteType)){
 			sql = assembleQueryGeoSqlByCrossUser(tableName, logOpTypes, remoteParam);
+		}else if("DB_LINK".equals(remoteType)){
+			sql = this.assembleQueryGeoSql_Dblink(tableName, logOpTypes, remoteParam);
 		}
-		Map<String,String[]> grids = run.query(logConn, sql, new GridsHandler());
+		Map<String,String[]> grids = run.query(logConn, sql, new MultiRowGridHandler());
 		return grids;
 	}
 
@@ -219,7 +221,7 @@ public class GlmGridCalculator {
 		sb.append(" AND P.ROW_ID=L.TB_ROW_ID AND L.TB_NM='"+tableName+"' AND L.OP_TP IN ("+StringUtils.join(logOpTypes,",")+")");
 		return sb.toString();
 	}
-	class SingleGridHandler implements ResultSetHandler<String[]>{
+	class SingleRowGridHandler implements ResultSetHandler<String[]>{
 
 		@Override
 		public String[] handle(ResultSet rs) throws SQLException {
@@ -246,7 +248,7 @@ public class GlmGridCalculator {
 		}
 		
 	}
-	class GridsHandler implements ResultSetHandler<Map<String,String[]>>{
+	class MultiRowGridHandler implements ResultSetHandler<Map<String,String[]>>{
 
 		@Override
 		public Map<String, String[]> handle(ResultSet rs) throws SQLException {

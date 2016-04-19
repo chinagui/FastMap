@@ -15,7 +15,7 @@ public class CompGeometryUtilTest {
 			//59567003
 			double[] line = new double[]{116.0,39.917,116.09375,39.927};
 			double[] rect = CompGridUtil.grid2Rect("59567003");
-			if(CompGeometryUtil.intersectLineRect(line,rect)){
+			if(CompGeometryUtil.intersectLineRect(CompGridUtil.convertLatlon(line),CompGridUtil.convertLatlon(rect))){
 				System.out.println("Yes...");
 			}else{
 				System.out.println("No...");

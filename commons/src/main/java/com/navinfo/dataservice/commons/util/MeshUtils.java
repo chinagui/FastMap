@@ -13,6 +13,8 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
+import oracle.spatial.geometry.JGeometry;
+
 /**
  * Created by IntelliJ IDEA. User: liuqing Date: 2010-8-4 Time: 8:58:15
  * 地理坐标相关的工具类
@@ -759,7 +761,7 @@ public abstract class MeshUtils {
 		return result;
 	}
 	/**
-	 * 在业务中不会出现一条link跨越图幅，所以计算link的起始点两者都属于的图幅即为link的图幅
+	 * 计算线段所属图幅号，可以在图廓线上，线段不能跨越图幅
 	 * @param line:[x1,y1,x2,y2]
 	 * @return
 	 */

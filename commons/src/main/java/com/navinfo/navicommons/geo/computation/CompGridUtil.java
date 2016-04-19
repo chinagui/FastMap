@@ -49,7 +49,7 @@ public class CompGridUtil {
 			double[] lines = geo.getOrdinatesArray();
 			int pointCount = lines.length/2;
 			for(int i=1;i<pointCount;i++){
-				grids.addAll(intersectLineGrid(new double[]{lines[i*2-2],lines[i*2-1],lines[i*2],lines[i*2+1]},meshId));
+				grids.addAll(intersectLineGrid(new double[]{lines[i*2-2],lines[i*2-1],lines[i*2],lines[i*2+1]},meshId,grids));
 			}
 		}else if(type == 3){
 			double[] face = geo.getOrdinatesArray();
@@ -136,6 +136,26 @@ public class CompGridUtil {
 		return interGrids;
 	}
 	/**
+	 * 传入该line所属的图幅号
+	 * @param line:[x1,y1,x2,y2]
+	 * @param meshId：line所属的图幅号
+	 * @return
+	 */
+	public static Set<String> intersectLineGrid(double[] line,String meshId,Set<String> gridsFilter)throws Exception{
+		//计算line的外接矩形相交的grid矩形
+		String[] rawGrids = intersectRectGrid(CompGeometryUtil.line2Rect(line),meshId);
+		Set<String> interGrids = new HashSet<String>();
+		//再计算line是否和每个grid矩形相交
+		for(String gridId:rawGrids){
+			if(gridsFilter.contains(gridId)) continue;
+			double[] grid = grid2Rect(gridId);
+			if(CompGeometryUtil.intersectLineRect(line,grid)){
+				interGrids.add(gridId);
+			}
+		}
+		return interGrids;
+	}
+	/**
 	 * 计算rect所在图幅内相交的grid，rect范围超过图幅范围会抛出异常
 	 * @param rect:[minx,miny,maxx,maxy]
 	 * @param meshId:rect所属的图幅号
@@ -143,9 +163,9 @@ public class CompGridUtil {
 	 * @throws Exception
 	 */
 	public static String[] intersectRectGrid(double[] rect,String meshId)throws Exception{
-		//计算矩形左下角点所在的grid矩形
+		//计算矩形左下角点所在的grid
 		String lbGrid = point2Grid(rect[0],rect[1]);
-		//计算矩形右上角点所在的grid矩形
+		//计算矩形右上角点所在的grid
 		String rtGrid =  point2Grid(rect[2],rect[3]);
 		//判断两次算的grid所在的图幅是否和meshId一致
 		if(meshId.equals(lbGrid.substring(0,6))&&
@@ -162,6 +182,7 @@ public class CompGridUtil {
 				for(int i=lbGridM7;i<=rtGridM7;i++){
 					for(int j=lbGridM8;j<=rtGridM8;j++){
 						grids[index]=meshId+i+j;
+						index++;
 					}
 				}
 				return grids;
@@ -232,7 +253,7 @@ public class CompGridUtil {
 		double miny = ((m1 * 10 + m2) * 2400 + m5 * 300 + m7*300/4)/3600.0;
 //		double rtX = lbX+1/(8*4);
 		double maxx = minx+0.03125;
-		double maxy = miny+1/(12*4);
+		double maxy = miny+(1.0/(12*4));
 		return new double[]{minx,miny,maxx,maxy};
 	}
 
@@ -333,8 +354,6 @@ public class CompGridUtil {
 	 */
 	public static int point2Grid_M7(double y){
 		int M7;
-
-		
 		//double yt = y*3600/300;
 		double yt = y*12.0;
 		

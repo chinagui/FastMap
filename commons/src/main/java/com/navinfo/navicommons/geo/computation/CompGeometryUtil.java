@@ -29,6 +29,22 @@ public class CompGeometryUtil {
 		return true;
 	}
 	/**
+	 * 如果线段有重合，算包含
+	 * [minx,miny,maxx,maxy]
+	 * @param rect1:包含对象
+	 * @param rect2：被包含对象
+	 * @return
+	 */
+	public static boolean containsRect(double[] rect1,double[] rect2){
+		//计算rect2的minx, miny,maxx,maxy都在rect1内则包含；
+		if((rect2[0]>=rect1[0]&&rect2[0]<=rect1[2])
+				&&(rect2[1]>=rect1[1]&&rect2[1]<=rect1[3])
+				&&(rect2[2]>=rect1[0]&&rect2[2]<=rect1[2])
+				&&(rect2[3]>=rect1[1]&&rect2[3]<=rect1[3])) return true;
+		return false;
+	}
+	/**
+	 * 只边框重合不算相交
 	 * [minx,miny,maxx,maxy]
 	 * @param rect1
 	 * @param rect2
@@ -49,6 +65,8 @@ public class CompGeometryUtil {
 	 * @return
 	 */
 	public static boolean intersectLineRect(double[] line,double[] rect){
+		//先判断是否rect包含line
+		if(containsRect(rect,line2Rect(line))) return true;
 		//和矩形的四条边任意一条相交，则线和矩形相交
 		double[] rectLine=new double[]{rect[0],rect[1],rect[2],rect[1]};
 		if(intersectLine(line,rectLine))
@@ -138,6 +156,13 @@ public class CompGeometryUtil {
 	}
 	
 	public static void main(String[] args){
+		double[] rect1 = new double[]{0,0,30.0,30.0};
+		double[] rect2 = new double[]{21.0,21.0,22.0,22.0};
+		if(intersectRect(rect1,rect2)){
+			System.out.println("Yes...");
+		}else{
+			System.out.println("No...");
+		}
 //		double[] line1 = new double[]{0,0,30.0,30.0};
 //		double[] line2 = new double[]{15.0,15.0,30.0,15.0};
 //		double[] line2 = new double[]{15.00001,15.0,30.0,15.0};

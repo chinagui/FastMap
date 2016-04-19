@@ -4,7 +4,6 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -19,15 +18,6 @@ public class Command implements ICommand {
 	private String requester;
 	private AdLink  sAdLink;
 	private AdLink  eAdLink;
-	private List<AdFace> faces;
-	public List<AdFace> getFaces() {
-		return faces;
-	}
-
-	public void setFaces(List<AdFace> faces) {
-		this.faces = faces;
-	}
-
 	public AdLink getsAdLink() {
 		return sAdLink;
 	}

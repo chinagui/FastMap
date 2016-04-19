@@ -123,7 +123,7 @@ public class Operation implements IOperation {
 				//需求待定
 			}
 		}
-		 //创建
+		//创建
 		if(command.getGeometry() != null ){
 			 this.createFaceByGeometry(result);	 
 		    }
@@ -142,8 +142,7 @@ public class Operation implements IOperation {
 		return set;
 	}
 	/*
-	 * 
-	 * 创建行政区划面根据几何属性来创建面
+	 *创建行政区划面根据几何属性来创建面
 	 */
 	public void createFaceByGeometry(Result result) throws Exception{
 		Geometry geom = GeoTranslator.geojson2Jts(command.getGeometry(), 1, 5);
@@ -159,6 +158,7 @@ public class Operation implements IOperation {
 				AdLink link = new AdLink();
 				int meshId = Integer.parseInt(meshes.iterator().next());
 				link.setPid(PidService.getInstance().applyAdLinkPid());
+				result.setPrimaryPid(link.getPid());
 				link.setMesh(meshId);
 				double linkLength = GeometryUtils.getLinkLength(geom);
 				link.setLength(linkLength);
@@ -185,7 +185,6 @@ public class Operation implements IOperation {
 				 List<IRow> adFaceTopos = new ArrayList<IRow>();
 				 adFaceTopos.add(adFaceTopo);
 			     adFace.setFaceTopos(adFaceTopos);
-			     result.setPrimaryPid(adFace.getPid());
 			     result.insertObject(link, ObjStatus.INSERT, link.getPid());
 				 result.insertObject(adFace, ObjStatus.INSERT, adFace.getPid());
 			}

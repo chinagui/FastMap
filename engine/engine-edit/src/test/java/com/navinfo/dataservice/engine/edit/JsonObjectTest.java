@@ -25,7 +25,7 @@ public class JsonObjectTest {
 		System.out.println(point);
 	}
 	public static void  testLine() throws JSONException{
-		String str= "{ \"type\": \"LineString\",\"coordinates\": [ [116.17659, 39.97508], [116.16144, 39.94844],[116.20427, 39.94322], [116.17659, 39.97508] ]}";
+		String  str= "{ \"type\": \"LineString\",\"coordinates\": [ [116.17659, 39.97508], [116.16144, 39.94844],[116.20427, 39.94322], [116.17659, 39.97508] ]}";
 		JSONObject geometry = JSONObject.fromObject(str);
 		
 		Geometry geometry2=GeoTranslator.geojson2Jts(geometry, 1, 5);

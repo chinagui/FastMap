@@ -391,7 +391,7 @@ public class CompGridUtil {
 	 */
 	public static int point2Grid_M7(double y){
 		long longY = Math.round(y*3600000);
-		return (int)((longY%(300000))*4)/(100000);
+		return (int)((longY%(300000))*4)/(300000);
 	}
 	/**
 	 * 计算点所在的grid号

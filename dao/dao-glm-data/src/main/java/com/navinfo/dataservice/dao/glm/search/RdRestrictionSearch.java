@@ -13,14 +13,20 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
+import com.navinfo.dataservice.commons.db.ConfigLoader;
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
+import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
+import com.sun.tools.hat.internal.model.Snapshot;
 
 public class RdRestrictionSearch implements ISearch {
 
@@ -174,8 +180,14 @@ public class RdRestrictionSearch implements ISearch {
 				snapshot.setI(String.valueOf(resultSet.getInt("pid")));
 				
 				snapshot.setT(3);
+				
+				String b = resultSet.getString("restric_info");
+				
+				if(b.startsWith("[") && b.endsWith("]")){
+					b=b+StringUtils.PlaceHolder;
+				}
 
-				jsonM.put("b",resultSet.getString("restric_info"));
+				jsonM.put("b",b);
 
 				jsonM.put("a", "0");
 
@@ -231,6 +243,22 @@ public class RdRestrictionSearch implements ISearch {
 		return list;
 	}
 	
+	public static void main(String[] args) throws Exception {
 
+		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+
+		RdRestrictionSearch a = new RdRestrictionSearch(conn);
+		
+		List<SearchSnapshot> res = a.searchDataByTileWithGap(
+				107914, 49663, 17, 20);
+
+		List<String> array = new ArrayList<String>();
+		int i=0;
+		for(SearchSnapshot s : res){
+			System.out.println(s.Serialize(null));
+			array.add(s.Serialize(null).toString());
+		}
+		
+	}
 
 }

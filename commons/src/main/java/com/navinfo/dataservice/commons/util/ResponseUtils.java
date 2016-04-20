@@ -29,7 +29,7 @@ public class ResponseUtils {
 			map.put("data", null);
 		}
 		
-		return JSONObject.fromObject(map).toString();
+		return JSONObject.fromObject(map).toString().replace(StringUtils.PlaceHolder, "");
 	}
 	
 	

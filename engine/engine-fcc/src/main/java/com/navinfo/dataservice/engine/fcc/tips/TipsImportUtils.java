@@ -3,13 +3,16 @@ package com.navinfo.dataservice.engine.fcc.tips;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONException;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.io.ParseException;
 
 /**
@@ -131,33 +134,14 @@ public class TipsImportUtils {
 	}
 
 	public static JSONObject connectLinks(List<Geometry> geoms)
-			throws ParseException {
-		JSONObject json = new JSONObject();
-
-		json.put("type", "LineString");
-
-		Geometry geom = geoms.get(0);
-
-		for (int i = 1; i < geoms.size(); i++) {
-			geom = geom.union(geoms.get(i));
-		}
-
-		Coordinate[] cs = geom.getCoordinates();
-
-		List<double[]> ps = new ArrayList<double[]>();
-
-		for (Coordinate c : cs) {
-			double[] p = new double[2];
-
-			p[0] = c.x;
-
-			p[1] = c.y;
-
-			ps.add(p);
-		}
-
-		json.put("coordinates", ps);
-
+			throws ParseException, JSONException {
+		
+		GeometryFactory factory = new GeometryFactory();
+		
+		MultiLineString multiline = factory.createMultiLineString(geoms.toArray(new LineString[0]));
+		
+		JSONObject json = GeoTranslator.jts2Geojson(multiline);
+		
 		return json;
 	}
 

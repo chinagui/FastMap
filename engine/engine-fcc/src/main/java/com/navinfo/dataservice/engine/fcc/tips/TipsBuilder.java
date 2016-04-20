@@ -115,20 +115,20 @@ public class TipsBuilder {
 
 		BridgeTipsBuilder.importTips(fmgdbOA.getConn(), htab);
 		
-//		RdLaneConnexityTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-//		
-//		RdCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-//
-//		DirectTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-//
-//		HighwayTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-//
-//		RdRestrictionTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-//		
-//		RdSpeedLimitTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-//		
-//		Mark3DTipsBuilder.importTips(fmgdbOA.getConn(), htab);
-//		
+		RdLaneConnexityTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+		
+		RdCrossTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+
+		DirectTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+
+		HighwayTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+
+		RdRestrictionTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+		
+		RdSpeedLimitTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+		
+		Mark3DTipsBuilder.importTips(fmgdbOA.getConn(), htab);
+		
 		ConstructTipsBuilder.importTips(fmgdbOA.getConn(), htab);
 
 //		destroyAuxData(pmOA.getConn());

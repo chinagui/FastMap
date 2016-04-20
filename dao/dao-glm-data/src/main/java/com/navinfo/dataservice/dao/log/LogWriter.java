@@ -522,7 +522,7 @@ public class LogWriter {
 			ld.setOldValue(oldValue.toString());
 
 			ld.setNewValue(newValue.toString());
-
+/*
 			// 查询对象的grid，并生成LogDetailGrid
 			String[] gridIds = gridCalculator.calc(ld.getTbNm(),
 					ld.getTbRowId(), conn);
@@ -538,7 +538,7 @@ public class LogWriter {
 
 				ld.getGrids().add(grid);
 			}
-
+*/
 			logOperation.getDetails().add(ld);
 
 		}
@@ -627,7 +627,7 @@ public class LogWriter {
 						ldC.setRowId(UuidUtils.genUuid());
 
 						ldC.setTbRowId(row.rowId());
-
+/*
 						// 查询对象的grid，并生成LogDetailGrid
 						String[] grids = gridCalculator.calc(ldC.getTbNm(),
 								ldC.getTbRowId(), conn);
@@ -642,7 +642,7 @@ public class LogWriter {
 							grid.setGridType(0);
 
 							ldC.getGrids().add(grid);
-						}
+						}*/
 
 						logOperation.getDetails().add(ldC);
 					}
@@ -653,7 +653,7 @@ public class LogWriter {
 	}
 
 	public void recordLog(ICommand command, Result result) throws Exception {
-
+/*
 		for (LogDetail detail : logOperation.getDetails()) {
 			if (detail.getOpTp() == Status.INSERT
 					|| detail.getOpTp() == Status.UPDATE) {
@@ -674,7 +674,7 @@ public class LogWriter {
 				}
 			}
 		}
-
+*/
 		this.insertRow();
 
 		// 删除关联的检查结果

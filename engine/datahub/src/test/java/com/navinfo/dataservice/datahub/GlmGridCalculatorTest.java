@@ -2,6 +2,8 @@ package com.navinfo.dataservice.datahub;
 
 import java.sql.Connection;
 
+import org.junit.Test;
+
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.glm.GlmGridCalculator;
 import com.navinfo.dataservice.datahub.glm.GlmGridCalculatorFactory;
@@ -13,7 +15,9 @@ import com.navinfo.dataservice.datahub.glm.GlmGridCalculatorFactory;
 * @Description: TODO
 */
 public class GlmGridCalculatorTest {
-	private static void t1(){
+	
+	@Test
+	public void t1(){
 		Connection conn = null;
 		try{
 			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
@@ -21,7 +25,7 @@ public class GlmGridCalculatorTest {
 			GlmGridCalculator calc = GlmGridCalculatorFactory.getInstance().create("250+");
 			
 			long t1 = System.currentTimeMillis();
-			String[] grids = calc.calc("RD_LINK", "29C263F79929BA8EE050A8C08304FE8E", conn);
+			String[] grids = calc.calc("RD_RESTRICTION_CONDITION", "29C264B75E41BA8EE050A8C08304FE8E", conn);
 			System.out.println("Time consuming:"+(System.currentTimeMillis()-t1)+"ms");
 			for(String s:grids){
 				System.out.println(s);
@@ -35,13 +39,9 @@ public class GlmGridCalculatorTest {
 			e.printStackTrace();
 		}
 	}
-	public static void t2(){
+	public void t2(){
 		String str = "RD_NODE:XXX:NULL";
 		String[] arr = str.split(":");
 		System.out.println(arr.length);
-	}
-	public static void main(String[] args){
-		t1();
-		System.out.println("Over...");
 	}
 }

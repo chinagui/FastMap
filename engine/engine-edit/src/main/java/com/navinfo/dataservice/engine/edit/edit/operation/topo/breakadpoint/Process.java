@@ -68,6 +68,9 @@ public class Process implements IProcess {
 			List<AdFaceTopo> adFaceTopos= new AdFaceTopoSelector(conn)
 							.loadByLinkPid(command.getLinkPid(), true);
 			command.setAdFaceTopos(adFaceTopos);
+			List<AdFace> faces = new  AdFaceSelector(conn)
+								.loadAdFaceByLinkId(command.getLinkPid(), true);
+			command.setFaces(faces);
 
 		return true;
 	}
@@ -95,7 +98,7 @@ public class Process implements IProcess {
 			OpTopo operation = new OpTopo(command, check, conn);
 			msg = operation.run(result);
 			//创建行政区划点有关行政区划面具体操作类
-			OpRefAdFace opRefAdFace = new OpRefAdFace(command);
+			OpRefAdFace opRefAdFace = new OpRefAdFace(command,conn);
 			opRefAdFace.run(result);
 			this.recordData();
 			conn.commit();

@@ -119,9 +119,11 @@ public class Process implements IProcess {
 	@Override
 	public boolean recordData() throws Exception {
 		
+		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
+		
+		lw.generateLog(command, result);
+		
 		OperatorFactory.recordData(conn, result);
-
-		LogWriter lw = new LogWriter(conn);
 
 		lw.recordLog(command, result);
 

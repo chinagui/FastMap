@@ -144,7 +144,7 @@ public class CheckController {
 
 			NiValExceptionOperator selector = new NiValExceptionOperator(conn);
 
-			selector.updateCheckLogStatus(id, type);
+			selector.updateCheckLogStatus(id, type, projectId);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(null));

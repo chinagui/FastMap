@@ -6,14 +6,6 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 
 import net.sf.json.JSONObject;
 
-/**
- * 
-* @Title: Command.java 
-* @Description: 前台创建行政区划代表点request数据封装类
-* @author 张小龙   
-* @date 2016年4月18日 下午2:26:38 
-* @version V1.0
- */
 public class Command implements ICommand {
 
 	private String requester;
@@ -23,7 +15,7 @@ public class Command implements ICommand {
 	/**
 	 * 引导线RDLink的pid
 	 */
-	private Integer linkPid;
+	private int linkPid;
 
 	/**
 	 * 经度
@@ -35,11 +27,11 @@ public class Command implements ICommand {
 	 */
 	private double latitude;
 
-	public Integer getLinkPid() {
+	public int getLinkPid() {
 		return linkPid;
 	}
 
-	public void setLinkPid(Integer linkPid) {
+	public void setLinkPid(int linkPid) {
 		this.linkPid = linkPid;
 	}
 

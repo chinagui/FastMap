@@ -67,7 +67,7 @@ public class Command implements ICommand {
 
 		JSONObject data = json.getJSONObject("data");
 		
-		this.geoObject = data.getJSONObject("geometry");
+		this.geoObject = data.getJSONObject("wkt").getJSONObject("geometry");
 		
 		if(data.getJSONArray("linkObjs") instanceof JSONArray)
 		{

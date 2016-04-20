@@ -3,7 +3,6 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -158,7 +157,6 @@ public class Operation implements IOperation {
 				AdLink link = new AdLink();
 				int meshId = Integer.parseInt(meshes.iterator().next());
 				link.setPid(PidService.getInstance().applyAdLinkPid());
-				result.setPrimaryPid(link.getPid());
 				link.setMesh(meshId);
 				double linkLength = GeometryUtils.getLinkLength(geom);
 				link.setLength(linkLength);
@@ -185,6 +183,7 @@ public class Operation implements IOperation {
 				 List<IRow> adFaceTopos = new ArrayList<IRow>();
 				 adFaceTopos.add(adFaceTopo);
 			     adFace.setFaceTopos(adFaceTopos);
+			     result.setPrimaryPid(adFace.getPid());
 			     result.insertObject(link, ObjStatus.INSERT, link.getPid());
 				 result.insertObject(adFace, ObjStatus.INSERT, adFace.getPid());
 			}

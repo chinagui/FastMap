@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.commons.util;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -12,8 +11,6 @@ import org.apache.commons.lang.StringUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
-
-import oracle.spatial.geometry.JGeometry;
 
 /**
  * Created by IntelliJ IDEA. User: liuqing Date: 2010-8-4 Time: 8:58:15
@@ -759,17 +756,6 @@ public abstract class MeshUtils {
 		result[1] = (int) (longsecond % 450000);
 
 		return result;
-	}
-	/**
-	 * 计算线段所属图幅号，可以在图廓线上，线段不能跨越图幅
-	 * @param line:[x1,y1,x2,y2]
-	 * @return
-	 */
-	public static String[] line2MeshId(double[] line){
-		List<String> list1 = lonlat2MeshIds(line[0],line[1]);
-		List<String> list2 = lonlat2MeshIds(line[2],line[3]);
-		list1.retainAll(list2);
-		return list1.toArray(new String[0]);
 	}
 
 	/**

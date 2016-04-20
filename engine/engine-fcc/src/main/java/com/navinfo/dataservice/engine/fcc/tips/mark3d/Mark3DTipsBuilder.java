@@ -63,8 +63,6 @@ public class Mark3DTipsBuilder {
 
 			String track = TipsImportUtils.generateTrack(date);
 
-			String feedback = TipsImportUtils.generateFeedback();
-			
 			JSONObject geometry = generateGeometry(resultSet);
 
 			String deep = generateDeep(resultSet);
@@ -81,12 +79,10 @@ public class Mark3DTipsBuilder {
 					geometry.toString().getBytes());
 
 			put.addColumn("data".getBytes(), "deep".getBytes(), deep.getBytes());
-			
-			put.addColumn("data".getBytes(), "feedback".getBytes(), feedback.getBytes());
 
 			puts.add(put);
 			
-			JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(rowkey, 0, date, type, deep.toString(), geometry.getJSONObject("g_location"), geometry.getJSONObject("g_guide"), "[]");
+			JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(rowkey, 0, date, type, deep.toString(), geometry.getJSONObject("g_location"), geometry.getJSONObject("g_guide"));
 
 			solrConn.addTips(solrIndexJson);
 
@@ -174,6 +170,8 @@ public class Mark3DTipsBuilder {
 		double agl = DisplayUtils.calIncloudedAngle(linkWkt, DisplayUtils.getDirect(linkWkt,pointWkt));
 		
 		deep.put("agl", agl);
+		
+		String ptn = null;
 		
 		deep.put("ptn", JSONNull.getInstance());
 		

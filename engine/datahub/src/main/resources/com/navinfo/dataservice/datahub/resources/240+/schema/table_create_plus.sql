@@ -34,16 +34,7 @@ create table LOG_DETAIL (
     COM_STA NUMBER(1) default 0 not null
         check (COM_STA IN (0,1)) DISABLE,
     constraint FK_LOG_DETAIL_OP foreign key (OP_ID)
-         references LOG_OPERATION (OP_ID) disable,
-    constraint PK_LOG_DETAIL primary key (ROW_ID)
-);
-
-create table LOG_DETAIL_GRID (
-	ROW_ID RAW(16) NOT NULL,
-	GRID_ID NUMBER(10),
-	GRID_TYPE NUMBER(1),
-	constraint FK_LOG_DETAIL_GRID_ROWID foreign key (ROW_ID)
-        references LOG_DETAIL (ROW_ID) disable
+         references LOG_OPERATION (OP_ID) disable
 );
 
 /*==============================================================*/

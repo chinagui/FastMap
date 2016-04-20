@@ -25,6 +25,9 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
+import com.navinfo.dataservice.datahub.glm.GlmGridCalculator;
+import com.navinfo.dataservice.datahub.glm.GlmGridCalculatorFactory;
+import com.navinfo.dataservice.engine.man.project.ProjectSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
 class Status {
@@ -39,30 +42,38 @@ public class LogWriter {
 
 	private LogOperation logOperation;
 
-	public LogWriter(Connection conn) {
+	private GlmGridCalculator gridCalculator;
+
+	public LogWriter(Connection conn, int projectId) throws Exception {
 		this.conn = conn;
 
+		ProjectSelector selector = new ProjectSelector();
+
+		String gdbVersion = selector.getGdbVersion(projectId);
+
+		this.gridCalculator = GlmGridCalculatorFactory.getInstance().create(
+				gdbVersion);
 	}
 
-	public void insertRow() throws Exception {
+	private void insertRow() throws Exception {
 
 		PreparedStatement pstmt = null;
 
-		String sql="insert into log_operation (op_id, us_id, op_cmd, op_dt, op_sg) values (?,?,?,to_date(?,'yyyymmddhh24miss'),?)";
-		
+		String sql = "insert into log_operation (op_id, us_id, op_cmd, op_dt, op_sg) values (?,?,?,to_date(?,'yyyymmddhh24miss'),?)";
+
 		try {
 			pstmt = this.conn.prepareStatement(sql);
-			
+
 			pstmt.setString(1, logOperation.getOpId());
-			
+
 			pstmt.setString(2, logOperation.getUsId());
-			
+
 			pstmt.setString(3, logOperation.getOpCmd());
-			
+
 			pstmt.setString(4, logOperation.getOpDt());
-			
+
 			pstmt.setInt(5, logOperation.getOpSg());
-			
+
 			pstmt.execute();
 
 			pstmt.close();
@@ -86,7 +97,7 @@ public class LogWriter {
 		}
 	}
 
-	public void insertRow2Sql(Statement stmt) throws Exception {
+	private void insertRow2Sql(Statement stmt) throws Exception {
 
 		StringBuilder sb = new StringBuilder("insert into ");
 
@@ -125,33 +136,34 @@ public class LogWriter {
 			this.insertLogDetail2Sql(r, stmt);
 		}
 	}
-	public void insertLogDetail(LogDetail detail) throws Exception{
+
+	private void insertLogDetail(LogDetail detail) throws Exception {
 
 		PreparedStatement pstmt = null;
 
-		String sql="insert into log_detail (op_id, ob_nm, ob_pk, ob_pid, opb_tp, ob_tp, op_dt, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id,mesh_id,com_sta) values (?,?,?,?,?,?,to_date(?,'yyyymmddhh24miss'),?,?,?,?,?,?,?,?,?,?)";
-		
+		String sql = "insert into log_detail (op_id, ob_nm, ob_pk, ob_pid, opb_tp, ob_tp, op_dt, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id,com_sta) values (?,?,?,?,?,?,to_date(?,'yyyymmddhh24miss'),?,?,?,?,?,?,?,?,?)";
+
 		try {
 			pstmt = this.conn.prepareStatement(sql);
-			
+
 			pstmt.setString(1, detail.getOpId());
-			
+
 			pstmt.setString(2, detail.getObNm());
-			
+
 			pstmt.setString(3, detail.getObPk());
-			
+
 			pstmt.setInt(4, detail.getObPid());
-			
+
 			pstmt.setInt(5, detail.getOpbTp());
-			
+
 			pstmt.setInt(6, detail.getObTp());
-			
+
 			pstmt.setString(7, detail.getOpDt());
-			
+
 			pstmt.setString(8, detail.getTbNm());
-			
+
 			Clob oldclob = conn.createClob();
-			
+
 			oldclob.setString(1, detail.getOldValue());
 
 			if (oldclob instanceof com.alibaba.druid.proxy.jdbc.ClobProxyImpl) {
@@ -160,9 +172,9 @@ public class LogWriter {
 			}
 
 			pstmt.setClob(9, oldclob);
-			
+
 			Clob newclob = conn.createClob();
-			
+
 			newclob.setString(1, detail.getNewValue());
 
 			if (newclob instanceof com.alibaba.druid.proxy.jdbc.ClobProxyImpl) {
@@ -171,21 +183,57 @@ public class LogWriter {
 			}
 
 			pstmt.setClob(10, newclob);
-			
+
 			pstmt.setString(11, detail.getFdLst());
-			
+
 			pstmt.setInt(12, detail.getOpTp());
-			
+
 			pstmt.setString(13, detail.getRowId());
 
 			pstmt.setInt(14, detail.getIsCk());
-			
+
 			pstmt.setString(15, detail.getTbRowId());
-			
-			pstmt.setInt(16, detail.getMeshId());
-			
-			pstmt.setInt(17, detail.getComSta());
-			
+
+			pstmt.setInt(16, detail.getComSta());
+
+			pstmt.execute();
+
+			pstmt.close();
+
+			for (LogDetailGrid r : detail.getGrids()) {
+				this.insertLogDetailGrid(r);
+			}
+
+		} catch (Exception e) {
+			throw e;
+
+		} finally {
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+	}
+
+	private void insertLogDetailGrid(LogDetailGrid grid) throws Exception {
+
+		PreparedStatement pstmt = null;
+
+		String sql = "insert into log_detail_grid (row_id,grid_id,grid_type) values (?,?,?)";
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setString(1, grid.getRowId());
+
+			pstmt.setInt(2, grid.getGridId());
+
+			pstmt.setInt(3, grid.getGridType());
+
 			pstmt.execute();
 
 			pstmt.close();
@@ -203,18 +251,17 @@ public class LogWriter {
 			}
 
 		}
+
 	}
-	
-	public void insertLogDetail2Sql(LogDetail detail, Statement stmt)
+
+	private void insertLogDetail2Sql(LogDetail detail, Statement stmt)
 			throws Exception {
 		StringBuilder sb = new StringBuilder("insert into ");
 
 		sb.append(detail.tableName());
 
-		sb.append("(op_id, ob_nm, ob_pk, ob_pid, opb_tp, ob_tp, op_dt, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id,mesh_id,com_sta) values (");
+		sb.append("(op_id, ob_nm, ob_pk, ob_pid, opb_tp, ob_tp, op_dt, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id,com_sta) values (");
 
-		
-		
 		sb.append("'" + detail.getOpId() + "'");
 
 		if (detail.getObNm() == null) {
@@ -277,8 +324,6 @@ public class LogWriter {
 
 		sb.append(",hextoraw('" + detail.getTbRowId() + "')");
 
-		sb.append("," + detail.getMeshId());
-
 		sb.append("," + detail.getComSta());
 
 		sb.append(")");
@@ -286,16 +331,16 @@ public class LogWriter {
 		stmt.addBatch(sb.toString());
 	}
 
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
+	private void updateRow2Sql(List<String> fieldNames, Statement stmt)
 			throws Exception {
 
 	}
 
-	public void deleteRow2Sql(Statement stmt) throws Exception {
+	private void deleteRow2Sql(Statement stmt) throws Exception {
 
 	}
 
-	public void recordLog(ICommand command, Result result) throws Exception {
+	public void generateLog(ICommand command, Result result) throws Exception {
 
 		String dt = StringUtils.getCurrentTime();
 
@@ -311,6 +356,7 @@ public class LogWriter {
 
 		logOperation.setOpSg(1);
 
+		// 处理新增的对象
 		List<IRow> list = result.getAddObjects();
 
 		for (IRow r : list) {
@@ -344,8 +390,6 @@ public class LogWriter {
 			ld.setRowId(UuidUtils.genUuid());
 
 			ld.setTbRowId(r.rowId());
-
-			ld.setMeshId(r.mesh());
 
 			logOperation.getDetails().add(ld);
 
@@ -384,14 +428,13 @@ public class LogWriter {
 
 						ldC.setTbRowId(row.rowId());
 
-						ldC.setMeshId(r.mesh());
-
 						logOperation.getDetails().add(ldC);
 					}
 				}
 			}
 		}
 
+		// 处理修改的对象
 		list = result.getUpdateObjects();
 
 		for (IRow r : list) {
@@ -420,8 +463,6 @@ public class LogWriter {
 			ld.setRowId(UuidUtils.genUuid());
 
 			ld.setTbRowId(r.rowId());
-
-			ld.setMeshId(r.mesh());
 
 			Set<Entry<String, Object>> set = r.changedFields().entrySet();
 
@@ -482,13 +523,27 @@ public class LogWriter {
 
 			ld.setNewValue(newValue.toString());
 
+			// 查询对象的grid，并生成LogDetailGrid
+			String[] gridIds = gridCalculator.calc(ld.getTbNm(),
+					ld.getTbRowId(), conn);
+
+			for (String gridId : gridIds) {
+				LogDetailGrid grid = new LogDetailGrid();
+
+				grid.setGridId(Integer.valueOf(gridId));
+
+				grid.setRowId(ld.getRowId());
+
+				grid.setGridType(0);
+
+				ld.getGrids().add(grid);
+			}
+
 			logOperation.getDetails().add(ld);
 
 		}
 
 		list = result.getDelObjects();
-
-		NiValExceptionOperator operator = new NiValExceptionOperator(conn);
 
 		for (IRow r : list) {
 			LogDetail ld = new LogDetail();
@@ -510,12 +565,6 @@ public class LogWriter {
 				ld.setObTp(2);
 			}
 
-			// 删除关联的检查结果
-			if (r instanceof IObj) {
-				operator.deleteNiValException(r.tableName().toUpperCase(),
-						((IObj) r).pid());
-			}
-
 			ld.setObNm(r.parentTableName());
 
 			ld.setObPid(r.parentPKValue());
@@ -530,7 +579,21 @@ public class LogWriter {
 
 			ld.setTbRowId(r.rowId());
 
-			ld.setMeshId(r.mesh());
+			// 查询对象的grid，并生成LogDetailGrid
+			String[] gridIds = gridCalculator.calc(ld.getTbNm(),
+					ld.getTbRowId(), conn);
+
+			for (String gridId : gridIds) {
+				LogDetailGrid grid = new LogDetailGrid();
+
+				grid.setGridId(Integer.valueOf(gridId));
+
+				grid.setRowId(ld.getRowId());
+
+				grid.setGridType(0);
+
+				ld.getGrids().add(grid);
+			}
 
 			logOperation.getDetails().add(ld);
 
@@ -565,7 +628,21 @@ public class LogWriter {
 
 						ldC.setTbRowId(row.rowId());
 
-						ldC.setMeshId(r.mesh());
+						// 查询对象的grid，并生成LogDetailGrid
+						String[] grids = gridCalculator.calc(ldC.getTbNm(),
+								ldC.getTbRowId(), conn);
+
+						for (String gridId : grids) {
+							LogDetailGrid grid = new LogDetailGrid();
+
+							grid.setGridId(Integer.valueOf(gridId));
+
+							grid.setRowId(ldC.getRowId());
+
+							grid.setGridType(0);
+
+							ldC.getGrids().add(grid);
+						}
 
 						logOperation.getDetails().add(ldC);
 					}
@@ -573,7 +650,42 @@ public class LogWriter {
 			}
 
 		}
+	}
+
+	public void recordLog(ICommand command, Result result) throws Exception {
+
+		for (LogDetail detail : logOperation.getDetails()) {
+			if (detail.getOpTp() == Status.INSERT
+					|| detail.getOpTp() == Status.UPDATE) {
+				// 查询对象的grid，并生成LogDetailGrid
+				String[] grids = gridCalculator.calc(detail.getTbNm(),
+						detail.getTbRowId(), conn);
+
+				for (String gridId : grids) {
+					LogDetailGrid grid = new LogDetailGrid();
+
+					grid.setGridId(Integer.valueOf(gridId));
+
+					grid.setRowId(detail.getRowId());
+
+					grid.setGridType(1);
+
+					detail.getGrids().add(grid);
+				}
+			}
+		}
+
 		this.insertRow();
+
+		// 删除关联的检查结果
+		NiValExceptionOperator operator = new NiValExceptionOperator(conn);
+
+		for (IRow r : result.getDelObjects()) {
+			if (r instanceof IObj) {
+				operator.deleteNiValException(r.tableName().toUpperCase(),
+						((IObj) r).pid());
+			}
+		}
 	}
 
 	private static JSONObject convertObj2NewValue(IRow row) throws Exception {
@@ -598,7 +710,7 @@ public class LogWriter {
 					} else {
 						json.put(key, rowJson.get(key));
 					}
-					
+
 				} else if ("geometry".equals(key)) {
 
 					if (row.objType() == ObjType.CKEXCEPTION) {
@@ -609,7 +721,7 @@ public class LogWriter {
 								.getString("geometry")));
 					}
 				} else {
-					
+
 					Object value = rowJson.get(key);
 
 					if (value instanceof String) {

@@ -129,7 +129,7 @@ public class NiValExceptionOperator {
 	 * @param type 1例外，2确认不修改，3确认已修改
 	 * @throws Exception
 	 */
-	public void updateCheckLogStatus(String reserved, int type)
+	public void updateCheckLogStatus(String reserved, int type, int projectId)
 			throws Exception {
 
 		conn.setAutoCommit(false);
@@ -143,6 +143,14 @@ public class NiValExceptionOperator {
 			if(type==3)
 			{
 				sql="insert into ni_val_exception_history select * from ni_val_exception a where a.reserved=:1";
+				
+				pstmt = conn.prepareStatement(sql);
+				
+				pstmt.setString(1, reserved);
+				
+				pstmt.executeUpdate();
+				
+				pstmt.close();
 			}
 			else{
 				
@@ -162,26 +170,26 @@ public class NiValExceptionOperator {
 				
 				ckexception.setRowId(UuidUtils.genUuid());
 				
+				sql="insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, reserved, extended, task_id, qa_task_id, qa_status, worker, qa_worker, u_date, row_id, u_record) select "+pid+",ruleid, task_name,";
+				
+				sql += type + ",groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, mesh_id, scope_flag, province_name, map_scale, reserved, extended, task_id, qa_task_id, qa_status, worker, qa_worker, u_date, '"+ckexception.rowId()+"',1 from ni_val_exception a where a.reserved=:1";
+				
+				pstmt = conn.prepareStatement(sql);
+				
+				pstmt.setString(1, reserved);
+				
+				pstmt.executeUpdate();
+				
+				pstmt.close();
+				
 				Result result = new Result();
 				
 				result.insertObject(ckexception, ObjStatus.INSERT, ckexception.getExceptionId());
 				
-				LogWriter writer = new LogWriter(conn);
+				LogWriter writer = new LogWriter(conn, projectId);
 				
 				writer.recordLog(new Command(), result);
-				
-				sql="insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, reserved, extended, task_id, qa_task_id, qa_status, worker, qa_worker, u_date, row_id, u_record) select "+pid+",ruleid, task_name,";
-				
-				sql += type + ",groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, mesh_id, scope_flag, province_name, map_scale, reserved, extended, task_id, qa_task_id, qa_status, worker, qa_worker, u_date, '"+ckexception.rowId()+"',1 from ni_val_exception a where a.reserved=:1";
 			}
-			
-			pstmt = conn.prepareStatement(sql);
-			
-			pstmt.setString(1, reserved);
-			
-			pstmt.executeUpdate();
-			
-			pstmt.close();
 			
 			sql="delete from ni_val_exception where reserved=:1";
 			
@@ -282,7 +290,7 @@ public class NiValExceptionOperator {
 
 		//op.insertCheckLog("3213131", "POINT(116.1313 37.131)", "[RD_LINK,32131]", 13, "13");
 		
-		op.updateCheckLogStatus("5490db11c96209409ce126ac3058c292", 3);
+		op.updateCheckLogStatus("5490db11c96209409ce126ac3058c292", 3 , 11);
 		
 		//op.deleteNiValException("RD_LINK", 32131);
 		

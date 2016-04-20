@@ -158,7 +158,6 @@ public class Operation implements IOperation {
 				AdLink link = new AdLink();
 				int meshId = Integer.parseInt(meshes.iterator().next());
 				link.setPid(PidService.getInstance().applyAdLinkPid());
-				result.setPrimaryPid(link.getPid());
 				link.setMesh(meshId);
 				double linkLength = GeometryUtils.getLinkLength(geom);
 				link.setLength(linkLength);
@@ -185,6 +184,7 @@ public class Operation implements IOperation {
 				 List<IRow> adFaceTopos = new ArrayList<IRow>();
 				 adFaceTopos.add(adFaceTopo);
 			     adFace.setFaceTopos(adFaceTopos);
+			 	 result.setPrimaryPid(adFace.getPid());
 			     result.insertObject(link, ObjStatus.INSERT, link.getPid());
 				 result.insertObject(adFace, ObjStatus.INSERT, adFace.getPid());
 			}

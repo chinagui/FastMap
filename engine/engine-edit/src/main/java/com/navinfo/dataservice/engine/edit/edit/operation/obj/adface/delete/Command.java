@@ -37,7 +37,7 @@ public class Command implements ICommand {
 
 	@Override
 	public OperType getOperType() {
-		return OperType.CREATE;
+		return OperType.DELETE;
 	}
 	
 	@Override

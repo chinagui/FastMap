@@ -72,6 +72,8 @@ public class RdSpeedLimitTipsBuilder {
 			JSONObject geometry = generateGeometry(resultSet);
 
 			String deep = generateDeep(resultSet);
+			
+			String feedback = TipsImportUtils.generateFeedback();
 
 			Put put = new Put(rowkey.getBytes());
 
@@ -85,13 +87,15 @@ public class RdSpeedLimitTipsBuilder {
 					.toString().getBytes());
 
 			put.addColumn("data".getBytes(), "deep".getBytes(), deep.getBytes());
+			
+			put.addColumn("data".getBytes(), "feedback".getBytes(), feedback.getBytes());
 
 			puts.add(put);
 
 			JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(
 					rowkey, 0, date, type, deep.toString(),
 					geometry.getJSONObject("g_location"),
-					geometry.getJSONObject("g_guide"));
+					geometry.getJSONObject("g_guide"), "[]");
 
 			solrConn.addTips(solrIndexJson);
 

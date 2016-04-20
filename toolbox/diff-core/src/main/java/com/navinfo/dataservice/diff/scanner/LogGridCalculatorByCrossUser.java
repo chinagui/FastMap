@@ -45,10 +45,10 @@ public class LogGridCalculatorByCrossUser implements LogGridCalculator {
 			String flushLogGridSql = "INSERT INTO LOG_DETAIL (ROW_ID,GRID_ID,GRID_TYPE) VALUES (?,?,?)";
 			stmt = conn.prepareStatement(flushLogGridSql);
 			//计算new grid:insert+update类型的履历
-        	Map<String,String[]> newGrids = calculator.calc(table.getName(), new int[]{1,3}, conn);
+        	Map<String,String[]> newGrids = calculator.calc(table.getName(), new Integer[]{1,3}, conn);
         	flushLogGrids(newGrids,0,conn);
         	//计算old grid：update+delete类型的履历
-        	Map<String,String[]> oldGrids = calculator.calc(table.getName(), new int[]{2,3}, conn,"CROSS_USER",rightSchemaUserName);
+        	Map<String,String[]> oldGrids = calculator.calc(table.getName(), new Integer[]{2,3}, conn,"CROSS_USER",rightSchemaUserName);
         	flushLogGrids(oldGrids,1,conn);
 			
 		}catch(Exception e){

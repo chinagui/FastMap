@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.fcc.tips;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,6 @@ import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.GeometryUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.WKTReader;
 
@@ -546,7 +546,7 @@ public class TipsUpload {
 
 		JSONArray fArray = feedback.getJSONArray("f_array");
 
-		List<String> picNames = new ArrayList<String>();
+		Set<String> picNames = new HashSet<String>();
 
 		for (int i = 0; i < fArray.size(); i++) {
 			JSONObject jo = fArray.getJSONObject(i);
@@ -569,6 +569,10 @@ public class TipsUpload {
 				fArray.add(newFeedback);
 			}
 		}
+		
+		feedback.put("f_array", fArray);
+		
+		json.put("feedback", fArray);
 
 		put.addColumn("data".getBytes(), "feedback".getBytes(), feedback
 				.toString().getBytes());
@@ -639,61 +643,22 @@ public class TipsUpload {
 
 		index.put("g_guide", json.getJSONObject("g_guide"));
 
-		JSONObject geojson = json.getJSONObject("g_location");
+		JSONObject g_location = json.getJSONObject("g_location");
 
-		index.put("g_location", geojson);
+		index.put("g_location", g_location);
+		
+		JSONObject deep = json.getJSONObject("deep");
 
-		index.put("deep", json.getString("deep"));
+		index.put("deep", deep.toString());
 
 		String sourceType = json.getString("s_sourceType");
-
-		if (sourceType.equals("1501")) {
-
-			JSONObject deep = JSONObject.fromObject(json.getString("deep"));
-
-			JSONObject gSLoc = deep.getJSONObject("gSLoc");
-
-			JSONObject gELoc = deep.getJSONObject("gELoc");
-
-			Geometry g1 = GeoTranslator.geojson2Jts(gSLoc);
-
-			Geometry g2 = GeoTranslator.geojson2Jts(gELoc);
-
-			Geometry g3 = g1.union(g2);
-
-			Geometry g = factory.createMultiPoint(g3.getCoordinates());
 		
-			index.put("wkt", GeoTranslator.jts2Wkt(g));
-		} else if(sourceType.equals("1801") || sourceType.equals("1803")){
-			JSONObject deep = JSONObject.fromObject(json.getString("deep"));
-			
-			JSONArray a = deep.getJSONArray("g_array");
-			
-			Geometry[] geos = new Geometry[a.size()];
-			
-			for(int i=0;i<a.size();i++){
-				JSONObject geo = a.getJSONObject(i);
-				
-				geos[i] = GeoTranslator.geojson2Jts(geo.getJSONObject("geo"));
-			}
-			
-			Geometry g = factory.createGeometryCollection(geos);
-			
-			index.put("wkt", GeoTranslator.jts2Wkt(g));
-		}
-		else {
-
-			String wkt = GeoTranslator.jts2Wkt(GeoTranslator
-					.geojson2Jts(geojson));
-
-			Geometry g = reader.read(wkt);
-
-			if (!g.isValid()) {
-				throw new Exception("invalid g_location");
-			}
-
-			index.put("wkt", wkt);
-		}
+		JSONArray feedbacks = json.getJSONArray("feedback");
+		
+		index.put("feedback", feedbacks.toString());
+		
+		index.put("wkt", TipsImportUtils.generateSolrWkt(sourceType, deep, g_location, feedbacks));
+		
 		return index;
 	}
 

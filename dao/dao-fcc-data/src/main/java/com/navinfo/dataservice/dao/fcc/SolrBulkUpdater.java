@@ -15,7 +15,7 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 public class SolrBulkUpdater {
 
 	private ConcurrentUpdateSolrClient client;
-
+	
 	public SolrBulkUpdater(int queueSize, int threadCount) {
 
 		String address = SystemConfigFactory.getSystemConfig().getValue(
@@ -55,6 +55,8 @@ public class SolrBulkUpdater {
 		doc.addField("g_guide", json.getString("g_guide"));
 
 		doc.addField("deep", json.getString("deep"));
+		
+		doc.addField("feedback", json.getString("feedback"));
 		
 		client.add(doc);
 	}

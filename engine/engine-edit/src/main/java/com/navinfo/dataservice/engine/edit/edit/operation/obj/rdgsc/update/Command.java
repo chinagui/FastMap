@@ -62,7 +62,7 @@ public class Command implements ICommand {
 
 		this.content = json.getJSONObject("data");
 		
-		this.pid = this.content.getInt("pid");
+		this.pid = this.content.getInt("objId");
 
 	}
 

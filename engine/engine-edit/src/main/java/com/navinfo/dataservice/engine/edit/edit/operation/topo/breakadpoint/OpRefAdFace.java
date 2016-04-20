@@ -173,7 +173,7 @@ public class OpRefAdFace implements IOperation {
 		  faceTopo.setLinkPid(link.getPid());
 		  faceTopo.setFacePid(face.getPid());
 		  faceTopo.setSeqNum(seqNum);
-		  result.getAddObjects().add(faceTopo);
+		  result.insertObject(faceTopo, ObjStatus.INSERT, face.getPid());
       }
 	
 }

@@ -33,7 +33,7 @@ public class Operation implements IOperation {
 		if (content.containsKey("objStatus")) {
 
 			if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
-				result.getDelObjects().add(restrict);
+				result.insertObject(restrict, ObjStatus.DELETE, restrict.pid());
 				
 				return null;
 			} else {
@@ -41,7 +41,7 @@ public class Operation implements IOperation {
 				boolean isChanged = restrict.fillChangeFields(content);
 
 				if (isChanged) {
-					result.getUpdateObjects().add(restrict);
+					result.insertObject(restrict, ObjStatus.UPDATE, restrict.pid());
 				}
 			}
 		}
@@ -67,7 +67,7 @@ public class Operation implements IOperation {
 
 						if (ObjStatus.DELETE.toString().equals(detailJson
 								.getString("objStatus"))) {
-							result.getDelObjects().add(detail);
+							result.insertObject(detail, ObjStatus.DELETE, restrict.pid());
 							
 							continue;
 						} else if (ObjStatus.UPDATE.toString().equals(detailJson
@@ -77,7 +77,7 @@ public class Operation implements IOperation {
 									.fillChangeFields(detailJson);
 
 							if (isChanged) {
-								result.getUpdateObjects().add(detail);
+								result.insertObject(detail, ObjStatus.UPDATE, restrict.pid());
 							}
 						}
 					} else {
@@ -91,7 +91,7 @@ public class Operation implements IOperation {
 						
 						detail.setMesh(restrict.mesh());
 						
-						result.getAddObjects().add(detail);
+						result.insertObject(detail, ObjStatus.INSERT, restrict.getPid());
 						
 						continue;
 					}
@@ -122,7 +122,7 @@ public class Operation implements IOperation {
 
 							if (ObjStatus.DELETE.toString().equals(cond
 									.getString("objStatus"))) {
-								result.getDelObjects().add(condition);
+								result.insertObject(condition, ObjStatus.DELETE, restrict.pid());
 								
 							} else if (ObjStatus.UPDATE.toString().equals(cond
 									.getString("objStatus"))) {
@@ -131,7 +131,7 @@ public class Operation implements IOperation {
 										.fillChangeFields(cond);
 
 								if (isChanged) {
-									result.getUpdateObjects().add(condition);
+									result.insertObject(condition, ObjStatus.UPDATE, restrict.pid());
 								}
 							}
 						} else {
@@ -143,7 +143,7 @@ public class Operation implements IOperation {
 							
 							condition.setMesh(restrict.mesh());
 							
-							result.getAddObjects().add(condition);
+							result.insertObject(condition, ObjStatus.INSERT, restrict.pid());
 							
 						}
 					

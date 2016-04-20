@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.delete;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 
@@ -20,7 +21,7 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 
-		result.getDelObjects().add(branch);
+		result.insertObject(branch, ObjStatus.DELETE, branch.getPid());
 				
 		return null;
 	}

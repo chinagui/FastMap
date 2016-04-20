@@ -33,7 +33,7 @@ public class Operation implements IOperation {
 		if (content.containsKey("objStatus")) {
 
 			if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
-				result.getDelObjects().add(branch);
+				result.insertObject(branch, ObjStatus.DELETE, branch.pid());
 				
 				return null;
 			} else {
@@ -41,7 +41,7 @@ public class Operation implements IOperation {
 				boolean isChanged = branch.fillChangeFields(content);
 
 				if (isChanged) {
-					result.getUpdateObjects().add(branch);
+					result.insertObject(branch, ObjStatus.UPDATE, branch.pid());
 				}
 			}
 		}
@@ -67,7 +67,7 @@ public class Operation implements IOperation {
 
 						if (ObjStatus.DELETE.toString().equals(json
 								.getString("objStatus"))) {
-							result.getDelObjects().add(detail);
+							result.insertObject(detail, ObjStatus.DELETE, branch.getPid());
 							
 							continue;
 						} else if (ObjStatus.UPDATE.toString().equals(json
@@ -77,7 +77,7 @@ public class Operation implements IOperation {
 									.fillChangeFields(json);
 
 							if (isChanged) {
-								result.getUpdateObjects().add(detail);
+								result.insertObject(detail, ObjStatus.UPDATE, branch.pid());
 							}
 						}
 					} else {
@@ -91,7 +91,7 @@ public class Operation implements IOperation {
 						
 						detail.setMesh(branch.mesh());
 						
-						result.getAddObjects().add(detail);
+						result.insertObject(detail, ObjStatus.INSERT, branch.pid());
 						
 						continue;
 					}
@@ -125,7 +125,7 @@ public class Operation implements IOperation {
 
 							if (ObjStatus.DELETE.toString().equals(cond
 									.getString("objStatus"))) {
-								result.getDelObjects().add(name);
+								result.insertObject(name, ObjStatus.DELETE, branch.getPid());
 								
 							} else if (ObjStatus.UPDATE.toString().equals(cond
 									.getString("objStatus"))) {
@@ -134,7 +134,7 @@ public class Operation implements IOperation {
 										.fillChangeFields(cond);
 
 								if (isChanged) {
-									result.getUpdateObjects().add(name);
+									result.insertObject(name, ObjStatus.UPDATE, branch.pid());
 								}
 							}
 						} else {
@@ -148,7 +148,7 @@ public class Operation implements IOperation {
 							
 							name.setPid(PidService.getInstance().applyBranchNameId());
 							
-							result.getAddObjects().add(name);
+							result.insertObject(name, ObjStatus.INSERT, branch.pid());
 							
 						}
 					

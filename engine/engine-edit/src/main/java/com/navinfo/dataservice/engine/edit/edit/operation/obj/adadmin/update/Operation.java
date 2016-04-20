@@ -31,7 +31,7 @@ public class Operation implements IOperation {
 		if (content.containsKey("objStatus")) {
 
 			if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
-				result.getDelObjects().add(adAdmin);
+				result.insertObject(adAdmin, ObjStatus.DELETE, adAdmin.pid());
 
 				return null;
 			} else {
@@ -39,7 +39,7 @@ public class Operation implements IOperation {
 				boolean isChanged = adAdmin.fillChangeFields(content);
 
 				if (isChanged) {
-					result.getUpdateObjects().add(adAdmin);
+					result.insertObject(adAdmin, ObjStatus.UPDATE, adAdmin.pid());
 				}
 			}
 		}
@@ -62,7 +62,7 @@ public class Operation implements IOperation {
 						}
 
 						if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-							result.getDelObjects().add(row);
+							result.insertObject(row, ObjStatus.DELETE, adAdmin.pid());
 
 							continue;
 						} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
@@ -70,7 +70,7 @@ public class Operation implements IOperation {
 							boolean isChanged = row.fillChangeFields(json);
 
 							if (isChanged) {
-								result.getUpdateObjects().add(row);
+								result.insertObject(row, ObjStatus.UPDATE, adAdmin.pid());
 							}
 						}
 					} else {
@@ -84,7 +84,7 @@ public class Operation implements IOperation {
 
 						row.setMesh(adAdmin.mesh());
 
-						result.getAddObjects().add(row);
+						result.insertObject(row, ObjStatus.INSERT, adAdmin.pid());
 					}
 				}
 			}

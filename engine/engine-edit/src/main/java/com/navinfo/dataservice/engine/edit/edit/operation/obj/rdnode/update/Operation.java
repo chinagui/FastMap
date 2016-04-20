@@ -33,7 +33,7 @@ public class Operation implements IOperation {
 		if (content.containsKey("objStatus")) {
 
 			if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
-				result.getDelObjects().add(rdnode);
+				result.insertObject(rdnode, ObjStatus.DELETE, rdnode.pid());
 				
 				return null;
 			} else {
@@ -41,7 +41,7 @@ public class Operation implements IOperation {
 				boolean isChanged = rdnode.fillChangeFields(content);
 
 				if (isChanged) {
-					result.getUpdateObjects().add(rdnode);
+					result.insertObject(rdnode, ObjStatus.UPDATE, rdnode.pid());
 				}
 			}
 		}
@@ -67,7 +67,7 @@ public class Operation implements IOperation {
 
 						if (ObjStatus.DELETE.toString().equals(formJson
 								.getString("objStatus"))) {
-							result.getDelObjects().add(form);
+							result.insertObject(form, ObjStatus.DELETE, rdnode.pid());
 							
 							continue;
 						} else if (ObjStatus.UPDATE.toString().equals(formJson
@@ -77,7 +77,7 @@ public class Operation implements IOperation {
 									.fillChangeFields(formJson);
 
 							if (isChanged) {
-								result.getUpdateObjects().add(form);
+								result.insertObject(form, ObjStatus.UPDATE, rdnode.pid());
 							}
 						}
 					} else {
@@ -89,7 +89,7 @@ public class Operation implements IOperation {
 						
 						row.setMesh(rdnode.mesh());
 						
-						result.getAddObjects().add(row);
+						result.insertObject(row, ObjStatus.INSERT, rdnode.pid());
 					}
 				}
 			}
@@ -116,7 +116,7 @@ public class Operation implements IOperation {
 
 						if (ObjStatus.DELETE.toString().equals(meshJson
 								.getString("objStatus"))) {
-							result.getDelObjects().add(row);
+							result.insertObject(row, ObjStatus.DELETE, rdnode.pid());
 							
 							continue;
 						} else if (ObjStatus.UPDATE.toString().equals(meshJson
@@ -126,7 +126,7 @@ public class Operation implements IOperation {
 									.fillChangeFields(meshJson);
 
 							if (isChanged) {
-								result.getUpdateObjects().add(row);
+								result.insertObject(row, ObjStatus.UPDATE, rdnode.pid());
 							}
 						}
 					} else {
@@ -138,7 +138,7 @@ public class Operation implements IOperation {
 						
 						row.setMesh(rdnode.mesh());
 						
-						result.getAddObjects().add(row);
+						result.insertObject(row, ObjStatus.INSERT, rdnode.pid());
 					}
 				}
 			}
@@ -165,7 +165,7 @@ public class Operation implements IOperation {
 
 						if (ObjStatus.DELETE.toString().equals(json
 								.getString("objStatus"))) {
-							result.getDelObjects().add(row);
+							result.insertObject(row, ObjStatus.DELETE, rdnode.pid());
 							
 							continue;
 						} else if (ObjStatus.UPDATE.toString().equals(json
@@ -175,7 +175,7 @@ public class Operation implements IOperation {
 									.fillChangeFields(json);
 
 							if (isChanged) {
-								result.getUpdateObjects().add(row);
+								result.insertObject(row, ObjStatus.UPDATE, rdnode.pid());
 							}
 						}
 					} else {
@@ -189,7 +189,7 @@ public class Operation implements IOperation {
 						
 						row.setMesh(rdnode.mesh());
 						
-						result.getAddObjects().add(row);
+						result.insertObject(row, ObjStatus.INSERT, rdnode.pid());
 					}
 				}
 			}

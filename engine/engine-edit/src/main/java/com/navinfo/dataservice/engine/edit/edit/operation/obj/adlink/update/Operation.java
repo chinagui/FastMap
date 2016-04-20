@@ -8,17 +8,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkIntRtic;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimitTruck;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkRtic;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSidewalk;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkWalkstair;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
 
 public class Operation implements IOperation {
 
@@ -31,6 +20,7 @@ public class Operation implements IOperation {
 
 		this.updateLink = updateLink;
 	}
+
 	/*
 	 * 修改RDLINK 操作
 	 */
@@ -42,13 +32,14 @@ public class Operation implements IOperation {
 
 			if (ObjStatus.DELETE.toString().equals(
 					content.getString("objStatus"))) {
-				result.getDelObjects().add(updateLink);
+				result.insertObject(updateLink, ObjStatus.DELETE,
+						updateLink.pid());
 			} else {
 
 				boolean isChanged = updateLink.fillChangeFields(content);
 
 				if (isChanged) {
-					result.getUpdateObjects().add(updateLink);
+					result.insertObject(updateLink, ObjStatus.UPDATE, updateLink.pid());
 				}
 			}
 		}
@@ -60,6 +51,7 @@ public class Operation implements IOperation {
 
 		return null;
 	}
+
 	/*
 	 * 修改对应子表RD_LINK_MESH
 	 */
@@ -78,7 +70,8 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							meshJson.getString("objStatus"))) {
-						result.getDelObjects().add(mesh);
+						result.insertObject(mesh, ObjStatus.DELETE,
+								updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							meshJson.getString("objStatus"))) {
@@ -86,19 +79,19 @@ public class Operation implements IOperation {
 						boolean isChanged = mesh.fillChangeFields(meshJson);
 
 						if (isChanged) {
-							result.getUpdateObjects().add(mesh);
+							result.insertObject(mesh, ObjStatus.UPDATE, updateLink.pid());
 						}
 					}
 				} else {
 					AdLinkMesh mesh = new AdLinkMesh();
 
 					mesh.Unserialize(meshJson);
-					
+
 					mesh.setLinkPid(this.updateLink.pid());
-					
+
 					mesh.setMesh(this.updateLink.getMesh());
 
-					result.getAddObjects().add(mesh);
+					result.insertObject(mesh, ObjStatus.INSERT, updateLink.pid());
 
 				}
 			}
@@ -107,5 +100,4 @@ public class Operation implements IOperation {
 
 	}
 
-	
 }

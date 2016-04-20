@@ -44,6 +44,8 @@ public class LogWriter {
 
 	private GlmGridCalculator gridCalculator;
 
+	private String dt;
+
 	public LogWriter(Connection conn, int projectId) throws Exception {
 		this.conn = conn;
 
@@ -342,7 +344,7 @@ public class LogWriter {
 
 	public void generateLog(ICommand command, Result result) throws Exception {
 
-		String dt = StringUtils.getCurrentTime();
+		dt = StringUtils.getCurrentTime();
 
 		logOperation = new LogOperation();
 
@@ -356,86 +358,8 @@ public class LogWriter {
 
 		logOperation.setOpSg(1);
 
-		// 处理新增的对象
-		List<IRow> list = result.getAddObjects();
-
-		for (IRow r : list) {
-
-			LogDetail ld = new LogDetail();
-
-			ld.setOpId(opId);
-
-			ld.setOpDt(dt);
-
-			ld.setOpTp(Status.INSERT);
-
-			ld.setOpbTp(Status.INSERT);
-
-			ld.setObNm(r.parentTableName());
-
-			ld.setObPid(r.parentPKValue());
-
-			ld.setObPk(r.parentPKName());
-
-			ld.setObTp(1);
-
-			ld.setTbNm(r.tableName());
-
-			ld.setIsCk(0);
-
-			// ld.setNewValue(r.Serialize(ObjLevel.FULL).toString());
-
-			ld.setNewValue(convertObj2NewValue(r).toString());
-
-			ld.setRowId(UuidUtils.genUuid());
-
-			ld.setTbRowId(r.rowId());
-
-			logOperation.getDetails().add(ld);
-
-			List<List<IRow>> children = r.children();
-
-			if (children != null) {
-				for (List<IRow> list1 : children) {
-					for (IRow row : list1) {
-						LogDetail ldC = new LogDetail();
-
-						ldC.setOpId(opId);
-
-						ldC.setOpDt(dt);
-
-						ldC.setOpTp(Status.INSERT);
-
-						ldC.setOpbTp(Status.INSERT);
-
-						ldC.setObNm(row.parentTableName());
-
-						ldC.setObPid(row.parentPKValue());
-
-						ldC.setObPk(row.parentPKName());
-
-						ldC.setObTp(1);
-
-						ldC.setTbNm(row.tableName());
-
-						ldC.setIsCk(0);
-
-						// ldC.setNewValue(row.Serialize(ObjLevel.FULL).toString());
-
-						ldC.setNewValue(convertObj2NewValue(row).toString());
-
-						ldC.setRowId(UuidUtils.genUuid());
-
-						ldC.setTbRowId(row.rowId());
-
-						logOperation.getDetails().add(ldC);
-					}
-				}
-			}
-		}
-
 		// 处理修改的对象
-		list = result.getUpdateObjects();
+		List<IRow> list = result.getUpdateObjects();
 
 		for (IRow r : list) {
 			LogDetail ld = new LogDetail();
@@ -522,9 +446,9 @@ public class LogWriter {
 			ld.setOldValue(oldValue.toString());
 
 			ld.setNewValue(newValue.toString());
-/*
+
 			// 查询对象的grid，并生成LogDetailGrid
-			String[] gridIds = gridCalculator.calc(ld.getTbNm(),
+			String[] gridIds = gridCalculator.calc(ld.getTbNm().toUpperCase(),
 					ld.getTbRowId(), conn);
 
 			for (String gridId : gridIds) {
@@ -538,7 +462,7 @@ public class LogWriter {
 
 				ld.getGrids().add(grid);
 			}
-*/
+
 			logOperation.getDetails().add(ld);
 
 		}
@@ -580,7 +504,7 @@ public class LogWriter {
 			ld.setTbRowId(r.rowId());
 
 			// 查询对象的grid，并生成LogDetailGrid
-			String[] gridIds = gridCalculator.calc(ld.getTbNm(),
+			String[] gridIds = gridCalculator.calc(ld.getTbNm().toUpperCase(),
 					ld.getTbRowId(), conn);
 
 			for (String gridId : gridIds) {
@@ -627,9 +551,9 @@ public class LogWriter {
 						ldC.setRowId(UuidUtils.genUuid());
 
 						ldC.setTbRowId(row.rowId());
-/*
+
 						// 查询对象的grid，并生成LogDetailGrid
-						String[] grids = gridCalculator.calc(ldC.getTbNm(),
+						String[] grids = gridCalculator.calc(ldC.getTbNm().toUpperCase(),
 								ldC.getTbRowId(), conn);
 
 						for (String gridId : grids) {
@@ -642,7 +566,7 @@ public class LogWriter {
 							grid.setGridType(0);
 
 							ldC.getGrids().add(grid);
-						}*/
+						}
 
 						logOperation.getDetails().add(ldC);
 					}
@@ -653,12 +577,122 @@ public class LogWriter {
 	}
 
 	public void recordLog(ICommand command, Result result) throws Exception {
-/*
+		// 处理新增的对象
+		List<IRow> list = result.getAddObjects();
+
+		for (IRow r : list) {
+
+			LogDetail ld = new LogDetail();
+
+			ld.setOpId(logOperation.getOpId());
+
+			ld.setOpDt(dt);
+
+			ld.setOpTp(Status.INSERT);
+
+			ld.setOpbTp(Status.INSERT);
+
+			ld.setObNm(r.parentTableName());
+
+			ld.setObPid(r.parentPKValue());
+
+			ld.setObPk(r.parentPKName());
+
+			ld.setObTp(1);
+
+			ld.setTbNm(r.tableName());
+
+			ld.setIsCk(0);
+
+			// ld.setNewValue(r.Serialize(ObjLevel.FULL).toString());
+
+			ld.setNewValue(convertObj2NewValue(r).toString());
+
+			ld.setRowId(UuidUtils.genUuid());
+
+			ld.setTbRowId(r.rowId());
+
+			// 查询对象的grid，并生成LogDetailGrid
+			String[] grids = gridCalculator.calc(ld.getTbNm().toUpperCase(), ld.getTbRowId(),
+					conn);
+
+			for (String gridId : grids) {
+				LogDetailGrid grid = new LogDetailGrid();
+
+				grid.setGridId(Integer.valueOf(gridId));
+
+				grid.setRowId(ld.getRowId());
+
+				grid.setGridType(1);
+
+				ld.getGrids().add(grid);
+			}
+
+			logOperation.getDetails().add(ld);
+
+			List<List<IRow>> children = r.children();
+
+			if (children != null) {
+				for (List<IRow> list1 : children) {
+					for (IRow row : list1) {
+						LogDetail ldC = new LogDetail();
+
+						ldC.setOpId(logOperation.getOpId());
+
+						ldC.setOpDt(dt);
+
+						ldC.setOpTp(Status.INSERT);
+
+						ldC.setOpbTp(Status.INSERT);
+
+						ldC.setObNm(row.parentTableName());
+
+						ldC.setObPid(row.parentPKValue());
+
+						ldC.setObPk(row.parentPKName());
+
+						ldC.setObTp(1);
+
+						ldC.setTbNm(row.tableName());
+
+						ldC.setIsCk(0);
+
+						// ldC.setNewValue(row.Serialize(ObjLevel.FULL).toString());
+
+						ldC.setNewValue(convertObj2NewValue(row).toString());
+
+						ldC.setRowId(UuidUtils.genUuid());
+
+						ldC.setTbRowId(row.rowId());
+
+						// 查询对象的grid，并生成LogDetailGrid
+						grids = gridCalculator.calc(ldC.getTbNm().toUpperCase(),
+								ldC.getTbRowId(), conn);
+
+						for (String gridId : grids) {
+							LogDetailGrid grid = new LogDetailGrid();
+
+							grid.setGridId(Integer.valueOf(gridId));
+
+							grid.setRowId(ldC.getRowId());
+
+							grid.setGridType(1);
+
+							ldC.getGrids().add(grid);
+						}
+
+						logOperation.getDetails().add(ldC);
+					}
+				}
+			}
+		}
+
+		// 计算修改的对象的改后grid
 		for (LogDetail detail : logOperation.getDetails()) {
-			if (detail.getOpTp() == Status.INSERT
-					|| detail.getOpTp() == Status.UPDATE) {
+
+			if (detail.getOpTp() == Status.UPDATE) {
 				// 查询对象的grid，并生成LogDetailGrid
-				String[] grids = gridCalculator.calc(detail.getTbNm(),
+				String[] grids = gridCalculator.calc(detail.getTbNm().toUpperCase(),
 						detail.getTbRowId(), conn);
 
 				for (String gridId : grids) {
@@ -674,7 +708,7 @@ public class LogWriter {
 				}
 			}
 		}
-*/
+
 		this.insertRow();
 
 		// 删除关联的检查结果

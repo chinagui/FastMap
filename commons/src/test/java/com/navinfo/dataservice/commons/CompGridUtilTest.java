@@ -1,8 +1,10 @@
 package com.navinfo.dataservice.commons;
 
-import java.util.Set;
 
+import java.util.Set;
+import org.junit.Test;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
+import junit.framework.Assert;
 
 /** 
 * @ClassName: CompGridUtilTest 
@@ -10,37 +12,49 @@ import com.navinfo.navicommons.geo.computation.CompGridUtil;
 * @date 2016年4月19日 上午10:11:04 
 * @Description: TODO
 */
-public class CompGridUtilTest {
-	private static void t1(){
-		try{
-			//59567003
-			double[] rect = CompGridUtil.grid2Rect("59567012");
-			for(double o:rect){
-				System.out.println(o);
-			}
-		}catch(Exception e){
-			e.printStackTrace();
+public class CompGridUtilTest{
+	
+	/**
+	 * 
+	 */
+	@Test
+	public void grid2Rect_0001(){
+		//59567003
+		double[] rect = CompGridUtil.grid2Rect("59567023");
+		for(double o:rect){
+			System.out.println(o);
 		}
+		Assert.assertNotNull(rect);
 	}
-	private static void t1_1(){
+	/**
+	 * 场景：
+	 * 
+	 */
+	@Test
+	public void intersectLineGrid_0001(){
 		try{
-			double[] line = new double[]{116.0625,39.9379,116.0625,39.958};
+			double[] line = new double[]{116.11024, 39.93096, 116.11037, 39.93097};
 			Set<String> res = CompGridUtil.intersectLineGrid(line, "595670");
 			for(String o:res){
 				System.out.println(o);
 			}
+			Assert.assertNotNull(res);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 	}
-	private static void t1_2(){
+	@Test
+	public void point2Grid_001(){
 		try{
-			CompGridUtil.point2Grid(116.0625, 39.9379);
+			String grid = CompGridUtil.point2Grid(116.0625, 39.9379);
+			System.out.println(grid);
+			Assert.assertEquals("59567032", grid);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 	}
-	private static void t2(){
+	@Test
+	public void point2Grid_002(){
 		try{
 			//59567003
 			String s = CompGridUtil.point2Grid(116.09375
@@ -50,9 +64,12 @@ public class CompGridUtilTest {
 			e.printStackTrace();
 		}
 	}
-	public static void main(String[] args){
-//		t1();
-//		t1_1();
+
+	/**
+	 * 验证double类型的精度
+	 */
+	@Test
+	public void other_001(){
 //		double x1=15.01;
 //		double x2 = 16.01;
 //		System.out.println(x1%1);
@@ -67,10 +84,17 @@ public class CompGridUtilTest {
 //		System.out.println((int)(y1*100));
 //		System.out.println((int)(y2*100));
 
-		System.out.println(29*1.5);
-		System.out.println(1.7*1.5);
-		System.out.println((int)(4.015*1000));
-		
+//		System.out.println(29*1.5);
+//		System.out.println(1.7*1.5);
+//		System.out.println(4.015*1000);
+//		System.out.println((int)(4.015*1000));
+//		System.out.println(4.015-4);
+//		System.out.println(Math.floor(4014.9999999999995));
+//		System.out.println(4.115*1000);
+//		for(double i = 0.0;i<60;i++){
+//			System.out.println(i*1.5);
+//		}
+		System.out.println(1571064264264199999L/785532132132100000L);
 		
 //		System.out.println(15.01%1);
 //		System.out.println(16.01%1);

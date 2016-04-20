@@ -16,7 +16,7 @@ public class GlmGridRefInfo {
 	private List<String[]> refInfo;//{"第一层参考表","关联的参考表的字段，一般为主键","参考表本身参考其他表的参考字段,如果没有，则为空字符串"}
 	private String selectSqlPart;
 	private String conditionSqlPart;
-	private boolean singleMesh;//
+	private boolean singleMesh;//在glm模型上，是否属于唯一一个图幅，标识是参考的主表中有mesh_id字段
 	
 	public GlmGridRefInfo(String tableName){
 		this.tableName=tableName;
@@ -120,18 +120,5 @@ public class GlmGridRefInfo {
 			this.selectSqlPart = sb4S.toString();
 			this.conditionSqlPart = " WHERE 1=1 ";
 		}
-	}
-	
-	public static String parseMeshIdTable(String mainTable){
-		GlmMainTable glmMainTable = GlmMainTable.getGlmMainTable(mainTable);
-		if(glmMainTable!=null){
-			switch(glmMainTable){
-			case RD_NODE:
-				return  "RD_NODE_MESH";
-			case RD_LINK:
-				return null;
-			}
-		}
-		return null;
 	}
 }

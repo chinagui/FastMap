@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.dao.log;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class LogDetail {
 
 	private String opId;
@@ -32,14 +35,12 @@ public class LogDetail {
 
 	private String tbRowId;
 
-	private int meshId;
-
-	private int gridId;
-
 	private String comDt;
 
 	private int comSta;
 
+	private List<LogDetailGrid> grids = new ArrayList<LogDetailGrid>();
+	
 	public LogDetail() {
 
 	}
@@ -66,22 +67,6 @@ public class LogDetail {
 
 	public void setTbRowId(String tbRowId) {
 		this.tbRowId = tbRowId;
-	}
-
-	public int getMeshId() {
-		return meshId;
-	}
-
-	public void setMeshId(int meshId) {
-		this.meshId = meshId;
-	}
-
-	public int getGridId() {
-		return gridId;
-	}
-
-	public void setGridId(int gridId) {
-		this.gridId = gridId;
 	}
 
 	public String getOpId() {
@@ -198,6 +183,14 @@ public class LogDetail {
 
 	public String tableName() {
 		return "log_detail";
+	}
+
+	public List<LogDetailGrid> getGrids() {
+		return grids;
+	}
+
+	public void setGrids(List<LogDetailGrid> grids) {
+		this.grids = grids;
 	}
 
 }

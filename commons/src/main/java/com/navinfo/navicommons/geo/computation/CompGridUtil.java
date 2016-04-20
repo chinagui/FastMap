@@ -14,6 +14,7 @@ import oracle.spatial.geometry.JGeometry;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -40,6 +41,7 @@ public class CompGridUtil {
 		return grids;
 	}
 	public static Set<String> intersectGeometryGrid(JGeometry geo,String meshId)throws Exception{
+		meshId = StringUtils.leftPad(meshId, 6, '0');
 		Set<String> grids = new HashSet<String>();
 		int type = geo.getType();
 		if(type==1){
@@ -124,12 +126,12 @@ public class CompGridUtil {
 	 */
 	public static Set<String> intersectLineGrid(double[] line,String meshId)throws Exception{
 		//计算line的外接矩形相交的grid矩形
-		String[] rawGrids = intersectRectGrid(CompGeometryUtil.line2Rect(line),meshId);
+		String[] rawGrids = intersectRectGrid(line2Rect(line),meshId);
 		Set<String> interGrids = new HashSet<String>();
 		//再计算line是否和每个grid矩形相交
 		for(String gridId:rawGrids){
-			double[] grid = grid2Rect(gridId);
-			if(CompGeometryUtil.intersectLineRect(line,grid)){
+			long[] grid = convertLatlon(grid2Rect(gridId));
+			if(CompGeometryUtil.intersectLineRect(convertLatlon(line),grid)){
 				interGrids.add(gridId);
 			}
 		}
@@ -143,17 +145,51 @@ public class CompGridUtil {
 	 */
 	public static Set<String> intersectLineGrid(double[] line,String meshId,Set<String> gridsFilter)throws Exception{
 		//计算line的外接矩形相交的grid矩形
-		String[] rawGrids = intersectRectGrid(CompGeometryUtil.line2Rect(line),meshId);
+		String[] rawGrids = intersectRectGrid(line2Rect(line),meshId);
 		Set<String> interGrids = new HashSet<String>();
 		//再计算line是否和每个grid矩形相交
 		for(String gridId:rawGrids){
 			if(gridsFilter.contains(gridId)) continue;
-			double[] grid = grid2Rect(gridId);
-			if(CompGeometryUtil.intersectLineRect(line,grid)){
+			long[] gridRect = convertLatlon(grid2Rect(gridId));
+			if(CompGeometryUtil.intersectLineRect(convertLatlon(line),gridRect)){
 				interGrids.add(gridId);
 			}
 		}
 		return interGrids;
+	}
+
+	/**
+	 * 生成line的外接矩形
+	 * @param line：[x1,y1,x2,y2]
+	 * @return rect:[minx,miny,maxx,maxy]
+	 */
+	private static double[] line2Rect(double[] line){
+		double[] rect = new double[4];
+		if(line[0]<line[2]){
+			rect[0]=line[0];
+			rect[2]=line[2];
+		}else{
+			rect[0]=line[2];
+			rect[2]=line[0];
+		}
+		if(line[1]<line[3]){
+			rect[1]=line[1];
+			rect[3]=line[3];
+		}else{
+			rect[1]=line[3];
+			rect[3]=line[1];
+		}
+		return rect;
+	}
+	public static long convertLatlon(double latlon){
+		return Math.round(latlon*3600*1000);
+	}
+	public static long[] convertLatlon(double[] arr){
+		long[] longArr = new long[arr.length];
+		for(int i=0;i<arr.length;i++){
+			longArr[i]=Math.round(arr[i]*3600*1000);
+		}
+		return longArr;
 	}
 	/**
 	 * 计算rect所在图幅内相交的grid，rect范围超过图幅范围会抛出异常
@@ -222,8 +258,8 @@ public class CompGridUtil {
 			while(it.hasNext()){
 				String gridId = it.next();
 				
-				double[] grid = grid2Rect(gridId);
-				if(CompGeometryUtil.intersectLineRect(line,grid)){
+				long[] grid = convertLatlon(grid2Rect(gridId));
+				if(CompGeometryUtil.intersectLineRect(convertLatlon(line),grid)){
 					interGrids.add(gridId);
 					it.remove();
 				}
@@ -238,7 +274,7 @@ public class CompGridUtil {
 	/**
 	 * 根据grid号获取grid的矩形
 	 * @param gridId
-	 * @return [minx,miny,maxx,maxy]
+	 * @return double精度超过5位小数
 	 */
 	public static double[] grid2Rect(String gridId){
 		int m1 = Integer.valueOf(gridId.substring(0, 1));
@@ -321,6 +357,7 @@ public class CompGridUtil {
 	 * @param meshId:点所属的图幅号
 	 * @return 8位grid号码字符串
 	 */
+	@Deprecated
 	public static String point2Grid(double x,double y,String meshId){
 		if (meshId.length() < 6) {
 			int length = 6 - meshId.length();
@@ -353,12 +390,8 @@ public class CompGridUtil {
 	 * @return
 	 */
 	public static int point2Grid_M7(double y){
-		int M7;
-		//double yt = y*3600/300;
-		double yt = y*12.0;
-		
-		M7 = (int)((yt-(int)yt)*4.0);
-		return M7;
+		long longY = Math.round(y*3600000);
+		return (int)((longY%(300000))*4)/(300000);
 	}
 	/**
 	 * 计算点所在的grid号
@@ -367,20 +400,20 @@ public class CompGridUtil {
 	 * @return
 	 */
 	public static int point2Grid_M8(double x){
-		int M6;
-		int M8;
-		double xt = (x-(int)x) * 8.0;
-		M6 = (int) xt;
-		M8 = (int)((xt-M6)*4.0);
-		return M8;
+		long longX = Math.round(x*3600000);
+		return (int)((longX%(450000))*4)/(450000);
 	}
 	/**
 	 * 计算点所在的grid号
-	 * @param x
-	 * @param y
+	 * 如果正好在grid线上，取右/上的grid
+	 * @param x：单位度
+	 * @param y：单位度
 	 * @return
 	 */
 	public static String point2Grid(double x,double y){
+		//将度单位坐标转换为秒*3600，并乘1000消除小数,最后取整
+		long longX = Math.round(x*3600000);
+		long longY = Math.round(y*3600000);
 		int M1M2;
 		int M3M4;
 		int M5;
@@ -388,17 +421,27 @@ public class CompGridUtil {
 		int M7;
 		int M8;
 
-		M1M2 = (int) (y * 1.5);
-		M3M4 = ((int)x) - 60;
+		//一个四位图幅的纬度高度为2400秒
+		M1M2 = (int)(longY/(2400000));
+		M3M4 = ((int)x) - 60;//简便算法
+		
+		
+		int yt = (int)(longY/(300000));
+		M5 = yt%8;
+		int xt = (int)(longX/(450000));
+		M6 = xt%8;
+		
+		M7 = (int)((longY%(300000))*4)/(300000);
+		M8 = (int)((longX%(450000))*4)/(450000);
 		
 		//double yt = y*3600/300;
-		double yt = y*12.0;
-		M5 = ((int)yt)%8;
-		double xt = (x-(int)x) * 8.0;
-		M6 = (int) xt;
-		
-		M7 = (int)((yt-(int)yt)*4.0);
-		M8 = (int)((xt-M6)*4.0);
+//		double yt = y*12.0;
+//		M5 = ((int)yt)%8;
+//		double xt = (x-(int)x) * 8.0;
+//		M6 = (int) xt;
+//		
+//		M7 = (int)((yt-(int)yt)*4.0);
+//		M8 = (int)((xt-M6)*4.0);
 		StringBuilder builder = new StringBuilder();
 		builder.append(M1M2);
 		builder.append(M3M4);
@@ -460,42 +503,5 @@ public class CompGridUtil {
 		
 		return true;
 	}
-	
-/* test part*/
-	private static void t1(){
-		//595671:116.125 39.91667,116.25 40
-		//0.03125 0.0208s
-		System.out.println(point2Grid(116.0087,39.890));
-		System.out.println(point2Grid(116.0087,39.890,"595660"));
-	}
-	private static void t2(){
-		Connection conn = null;
-		try{
-			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
-					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
-			QueryRunner runn = new QueryRunner();
-			String sql = "SELECT GEOMETRY FROM RD_link WHERE ROWNUM=1";
-			JGeometry geo = runn.query(conn, sql, new ResultSetHandler<JGeometry>(){
 
-				@Override
-				public JGeometry handle(ResultSet rs) throws SQLException {
-					rs.next();
-					try{
-						JGeometry geo = JGeometry.load(rs.getBytes("GEOMETRY"));
-						return  geo;
-					}catch(Exception e){
-						throw new SQLException(e.getMessage(),e);
-					}
-				}
-				
-			});
-			System.out.println(geo.getPoint());
-			System.out.println(geo.getOrdinatesArray());
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
-	public static void main(String[] args){
-		t2();
-	}
 }

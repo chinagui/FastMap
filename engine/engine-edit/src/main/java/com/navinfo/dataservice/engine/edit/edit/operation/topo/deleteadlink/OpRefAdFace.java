@@ -34,9 +34,10 @@ public class OpRefAdFace implements IOperation {
 
 	// 处理面
 	private void handleAdFace(List<AdFace> list)throws Exception {
-
+		if(list != null && list.size() > 0){
 		for (AdFace adFace : list) {
 			result.insertObject(adFace, ObjStatus.DELETE,adFace.getPid());
+		 }
 		}
 	}
 

@@ -26,6 +26,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
@@ -75,7 +76,7 @@ public class Process implements IProcess {
 
 	public void lockAdLink() throws Exception {
 
-		RdLinkSelector selector = new RdLinkSelector(this.conn);
+		AdLinkSelector selector = new AdLinkSelector(this.conn);
 
 		AdLink link = (AdLink) selector.loadById(command.getLinkPid(), true);
 

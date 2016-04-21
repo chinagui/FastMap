@@ -76,7 +76,7 @@ public class Command implements ICommand {
 			for(int i = 0;i<linkAttrArray.size();i++)
 			{
 				JSONObject linkObj = linkAttrArray.getJSONObject(i);
-				linkMap.put(linkObj.getInt("pid"), linkObj.getInt("lever_index"));
+				linkMap.put(linkObj.getInt("pid"), linkObj.getInt("level_index"));
 			}
 			
 		}

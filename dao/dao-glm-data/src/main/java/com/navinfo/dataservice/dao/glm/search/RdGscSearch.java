@@ -17,6 +17,7 @@ import com.navinfo.dataservice.commons.util.DisplayUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
@@ -32,7 +33,11 @@ public class RdGscSearch implements ISearch {
 	
 	@Override
 	public IObj searchDataByPid(int pid) throws Exception {
-		return null;
+		RdGscSelector selector = new RdGscSelector(conn);
+
+		IObj obj = (IObj) selector.loadById(pid, false);
+
+		return obj;
 	}
 
 

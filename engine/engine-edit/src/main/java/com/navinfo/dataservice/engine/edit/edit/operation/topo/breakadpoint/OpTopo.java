@@ -55,8 +55,8 @@ public class OpTopo implements IOperation {
 	 */
 	private void breakPoint(Result result) throws Exception {
 		Point point = command.getPoint();
-		double lon = point.getX() * 100000;
-		double lat = point.getY() * 100000;
+		long lon = (long) (point.getX() * 100000);
+		long lat = (long) (point.getY() * 100000);
 	    JSONArray ja1 = new JSONArray();
 		JSONArray ja2 = new JSONArray();
 		boolean hasFound = false;

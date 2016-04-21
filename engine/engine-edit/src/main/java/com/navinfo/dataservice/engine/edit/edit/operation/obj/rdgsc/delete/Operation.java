@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
@@ -29,7 +30,7 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 
-		result.getDelObjects().add(rdGsc);
+		result.insertObject(rdGsc, ObjStatus.DELETE, rdGsc.pid());
 				
 		return null;
 	}

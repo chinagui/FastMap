@@ -138,6 +138,8 @@ public class NiValExceptionOperator {
 
 		try {
 			
+			Result result = null;
+			
 			String sql="";
 			
 			if(type==3)
@@ -182,13 +184,10 @@ public class NiValExceptionOperator {
 				
 				pstmt.close();
 				
-				Result result = new Result();
+				result = new Result();
 				
 				result.insertObject(ckexception, ObjStatus.INSERT, ckexception.getExceptionId());
 				
-				LogWriter writer = new LogWriter(conn, projectId);
-				
-				writer.recordLog(new Command(), result);
 			}
 			
 			sql="delete from ni_val_exception where reserved=:1";
@@ -208,6 +207,16 @@ public class NiValExceptionOperator {
 			pstmt.setString(1, reserved);
 			
 			pstmt.executeUpdate();
+			
+			if(result!=null){
+				LogWriter writer = new LogWriter(conn, projectId);
+				
+				Command command = new Command();
+				
+				writer.generateLog(command, result);
+				
+				writer.recordLog(command, result);
+			}
 			
 			conn.commit();
 			

@@ -38,7 +38,7 @@ public class Operation implements IOperation {
 
 			if (ObjStatus.DELETE.toString().equals(
 					content.getString("objStatus"))) {
-				result.getDelObjects().add(updateLink);
+				result.insertObject(updateLink, ObjStatus.DELETE, updateLink.pid());
 
 				return null;
 			} else {
@@ -46,7 +46,7 @@ public class Operation implements IOperation {
 				boolean isChanged = updateLink.fillChangeFields(content);
 
 				if (isChanged) {
-					result.getUpdateObjects().add(updateLink);
+					result.insertObject(updateLink, ObjStatus.UPDATE, updateLink.pid());
 				}
 			}
 		}
@@ -137,7 +137,7 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							formJson.getString("objStatus"))) {
-						result.getDelObjects().add(form);
+						result.insertObject(form, ObjStatus.DELETE, updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							formJson.getString("objStatus"))) {
@@ -145,7 +145,7 @@ public class Operation implements IOperation {
 						boolean isChanged = form.fillChangeFields(formJson);
 
 						if (isChanged) {
-							result.getUpdateObjects().add(form);
+							result.insertObject(form, ObjStatus.UPDATE, updateLink.pid());
 						}
 					}
 				} else {
@@ -157,7 +157,7 @@ public class Operation implements IOperation {
 					
 					form.setMesh(this.updateLink.getMeshId());
 
-					result.getAddObjects().add(form);
+					result.insertObject(form, ObjStatus.INSERT, updateLink.pid());
 
 				}
 			}
@@ -182,7 +182,7 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							limitJson.getString("objStatus"))) {
-						result.getDelObjects().add(limit);
+						result.insertObject(limit, ObjStatus.DELETE, updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							limitJson.getString("objStatus"))) {
@@ -190,7 +190,7 @@ public class Operation implements IOperation {
 						boolean isChanged = limit.fillChangeFields(limitJson);
 
 						if (isChanged) {
-							result.getUpdateObjects().add(limit);
+							result.insertObject(limit, ObjStatus.UPDATE, updateLink.pid());
 						}
 					}
 				} else {
@@ -202,7 +202,7 @@ public class Operation implements IOperation {
 					
 					limit.setMesh(this.updateLink.getMeshId());
 
-					result.getAddObjects().add(limit);
+					result.insertObject(limit, ObjStatus.INSERT, updateLink.pid());
 
 				}
 			}
@@ -227,7 +227,7 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							json.getString("objStatus"))) {
-						result.getDelObjects().add(obj);
+						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							json.getString("objStatus"))) {
@@ -235,7 +235,7 @@ public class Operation implements IOperation {
 						boolean isChanged = obj.fillChangeFields(json);
 
 						if (isChanged) {
-							result.getUpdateObjects().add(obj);
+							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
 						}
 					}
 				} else {
@@ -247,7 +247,7 @@ public class Operation implements IOperation {
 					
 					obj.setMesh(this.updateLink.getMeshId());
 
-					result.getAddObjects().add(obj);
+					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
 
 				}
 			}
@@ -273,7 +273,7 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							json.getString("objStatus"))) {
-						result.getDelObjects().add(obj);
+						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							json.getString("objStatus"))) {
@@ -281,7 +281,7 @@ public class Operation implements IOperation {
 						boolean isChanged = obj.fillChangeFields(json);
 
 						if (isChanged) {
-							result.getUpdateObjects().add(obj);
+							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
 						}
 					}
 				} else {
@@ -293,7 +293,7 @@ public class Operation implements IOperation {
 					
 					obj.setMesh(this.updateLink.getMeshId());
 
-					result.getAddObjects().add(obj);
+					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
 
 				}
 			}
@@ -318,7 +318,7 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							json.getString("objStatus"))) {
-						result.getDelObjects().add(obj);
+						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							json.getString("objStatus"))) {
@@ -326,7 +326,7 @@ public class Operation implements IOperation {
 						boolean isChanged = obj.fillChangeFields(json);
 
 						if (isChanged) {
-							result.getUpdateObjects().add(obj);
+							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
 						}
 					}
 				} else {
@@ -338,7 +338,7 @@ public class Operation implements IOperation {
 					
 					obj.setMesh(this.updateLink.getMeshId());
 
-					result.getAddObjects().add(obj);
+					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
 
 				}
 			}
@@ -364,7 +364,7 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							json.getString("objStatus"))) {
-						result.getDelObjects().add(obj);
+						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							json.getString("objStatus"))) {
@@ -372,7 +372,7 @@ public class Operation implements IOperation {
 						boolean isChanged = obj.fillChangeFields(json);
 
 						if (isChanged) {
-							result.getUpdateObjects().add(obj);
+							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
 						}
 					}
 				} else {
@@ -384,7 +384,7 @@ public class Operation implements IOperation {
 					
 					obj.setMesh(this.updateLink.getMeshId());
 
-					result.getAddObjects().add(obj);
+					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
 
 				}
 			}
@@ -409,7 +409,7 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							json.getString("objStatus"))) {
-						result.getDelObjects().add(obj);
+						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							json.getString("objStatus"))) {
@@ -417,7 +417,7 @@ public class Operation implements IOperation {
 						boolean isChanged = obj.fillChangeFields(json);
 
 						if (isChanged) {
-							result.getUpdateObjects().add(obj);
+							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
 						}
 					}
 				} else {
@@ -429,7 +429,7 @@ public class Operation implements IOperation {
 					
 					obj.setMesh(this.updateLink.getMeshId());
 
-					result.getAddObjects().add(obj);
+					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
 
 				}
 			}
@@ -454,7 +454,7 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							json.getString("objStatus"))) {
-						result.getDelObjects().add(obj);
+						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							json.getString("objStatus"))) {
@@ -462,7 +462,7 @@ public class Operation implements IOperation {
 						boolean isChanged = obj.fillChangeFields(json);
 
 						if (isChanged) {
-							result.getUpdateObjects().add(obj);
+							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
 						}
 					}
 				} else {
@@ -474,7 +474,7 @@ public class Operation implements IOperation {
 					
 					obj.setMesh(this.updateLink.getMeshId());
 
-					result.getAddObjects().add(obj);
+					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
 
 				}
 			}
@@ -499,7 +499,7 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							json.getString("objStatus"))) {
-						result.getDelObjects().add(obj);
+						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							json.getString("objStatus"))) {
@@ -507,7 +507,7 @@ public class Operation implements IOperation {
 						boolean isChanged = obj.fillChangeFields(json);
 
 						if (isChanged) {
-							result.getUpdateObjects().add(obj);
+							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
 						}
 					}
 				} else {
@@ -519,7 +519,7 @@ public class Operation implements IOperation {
 					
 					obj.setMesh(this.updateLink.getMeshId());
 
-					result.getAddObjects().add(obj);
+					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
 
 				}
 			}
@@ -544,7 +544,7 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							nameJson.getString("objStatus"))) {
-						result.getDelObjects().add(name);
+						result.insertObject(name, ObjStatus.DELETE, updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							nameJson.getString("objStatus"))) {
@@ -552,7 +552,7 @@ public class Operation implements IOperation {
 						boolean isChanged = name.fillChangeFields(nameJson);
 
 						if (isChanged) {
-							result.getUpdateObjects().add(name);
+							result.insertObject(name, ObjStatus.UPDATE, updateLink.pid());
 						}
 					}
 				} else {
@@ -564,7 +564,7 @@ public class Operation implements IOperation {
 					
 					name.setMesh(this.updateLink.getMeshId());
 					
-					result.getAddObjects().add(name);
+					result.insertObject(name, ObjStatus.INSERT, updateLink.pid());
 
 				}
 			}

@@ -231,7 +231,7 @@ public class AdNodeOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + adNode.tableName() + " set u_record=2 where link_pid=" + adNode.getPid();
+		String sql = "update " + adNode.tableName() + " set u_record=2 where node_pid=" + adNode.getPid();
 
 		stmt.addBatch(sql);
 

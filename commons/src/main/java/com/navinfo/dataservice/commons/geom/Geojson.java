@@ -246,6 +246,7 @@ public class Geojson {
 			break;
 
 		case "Polygon":
+		case "MultiLineString":
 			for (int i = 0; i < ja.size(); i++) {
 
 				JSONArray line = ja.getJSONArray(i);

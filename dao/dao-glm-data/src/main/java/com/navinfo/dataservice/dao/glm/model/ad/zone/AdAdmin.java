@@ -19,6 +19,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 
 public class AdAdmin implements IObj {
 
@@ -359,7 +360,9 @@ public class AdAdmin implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+		
+		return JSONObject.fromObject(this, jsonConfig);
 	}
 
 	@Override

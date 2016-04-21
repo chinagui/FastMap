@@ -75,13 +75,11 @@ public class RdGscLink implements IRow {
 	}
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		// TODO Auto-generated method stub
 		return JSONObject.fromObject(this,JsonUtils.getStrConfig());
 	}
 
 	@Override
 	public boolean Unserialize(JSONObject json) throws Exception {
-		// TODO Auto-generated method stub
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {
@@ -103,13 +101,11 @@ public class RdGscLink implements IRow {
 
 	@Override
 	public String rowId() {
-		// TODO Auto-generated method stub
 		return rowId;
 	}
 
 	@Override
 	public void setRowId(String rowId) {
-		// TODO Auto-generated method stub
 		this.rowId = rowId;
 		
 	}
@@ -121,25 +117,21 @@ public class RdGscLink implements IRow {
 
 	@Override
 	public ObjStatus status() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public ObjType objType() {
-		// TODO Auto-generated method stub
 		return ObjType.RDGSCLINK;
 	}
 
 	@Override
 	public void copy(IRow row) {
-		// TODO Auto-generated method stub
 		RdGscLink sourceRdGscLink = (RdGscLink) row;
 		this.setShpSeqNum(sourceRdGscLink.getShpSeqNum());
 		this.setStartEnd(sourceRdGscLink.getStartEnd());
@@ -150,19 +142,16 @@ public class RdGscLink implements IRow {
 
 	@Override
 	public Map<String, Object> changedFields() {
-		// TODO Auto-generated method stub
 		return changedFields;
 	}
 
 	@Override
 	public String parentPKName() {
-		// TODO Auto-generated method stub
 		return "pid";
 	}
 
 	@Override
 	public int parentPKValue() {
-		// TODO Auto-generated method stub
 		return this.getPid();
 	}
 
@@ -173,7 +162,6 @@ public class RdGscLink implements IRow {
 
 	@Override
 	public List<List<IRow>> children() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -232,14 +220,12 @@ public class RdGscLink implements IRow {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
 		return mesh;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
 		this.mesh = mesh;
-		// TODO Auto-generated method stub
 		
 	}
 

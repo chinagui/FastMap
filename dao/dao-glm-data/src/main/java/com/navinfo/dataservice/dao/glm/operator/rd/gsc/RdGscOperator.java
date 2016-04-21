@@ -6,11 +6,12 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
@@ -38,7 +39,7 @@ public class RdGscOperator implements IOperator {
 			stmt = conn.createStatement();
 
 			this.insertRow2Sql(stmt);
-
+			
 			stmt.executeBatch();
 
 		} catch (Exception e) {
@@ -188,8 +189,10 @@ public class RdGscOperator implements IOperator {
 		sb.append("(pid, geometry,process_flag,u_record, row_id) values (");
 
 		sb.append(gsc.pid());
-
-		sb.append("," + gsc.getGeometry());
+		
+		String wkt = GeoTranslator.jts2Wkt(gsc.getGeometry(), 0.00001, 5);
+		
+		sb.append(",sdo_geometry('" + wkt + "',8307)");
 
 		sb.append("," + gsc.getProcessFlag());
 
@@ -221,8 +224,8 @@ public class RdGscOperator implements IOperator {
 		stmt.addBatch(sql);
 
 		for (IRow r : gsc.getLinks()) {
-			RdCrossLinkOperator op = new RdCrossLinkOperator(conn,
-					(RdCrossLink) r);
+			RdGscLinkOperator op = new RdGscLinkOperator(conn,
+					(RdGscLink) r);
 
 			op.deleteRow2Sql(stmt);
 		}

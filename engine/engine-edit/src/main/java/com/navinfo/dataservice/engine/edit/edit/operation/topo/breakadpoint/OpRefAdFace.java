@@ -1,14 +1,34 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint;
 
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import oracle.net.aso.g;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.math3.analysis.function.Add;
+import org.apache.hadoop.hdfs.protocol.proto.XAttrProtos.ListXAttrsResponseProtoOrBuilder;
+import org.springframework.web.jsf.FacesContextUtils;
+
+import com.ctc.wstx.dtd.SeqContentSpec;
+import com.mongodb.client.model.geojson.GeoJsonObjectType;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.GeometryUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+
 
 /**
  * @author zhaokk
@@ -18,11 +38,14 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 public class OpRefAdFace implements IOperation {
 
 	private Command command;
-
+	
 	private Result result;
-
-	public OpRefAdFace(Command command) {
+    
+	private  Connection conn;
+	
+	public OpRefAdFace(Command command,Connection conn) {
 		this.command = command;
+		this.conn  = conn;
 
 	}
 
@@ -30,28 +53,138 @@ public class OpRefAdFace implements IOperation {
 	public String run(Result result) throws Exception {
 
 		this.result = result;
-
-		this.handleAdFaceTopo(command.getAdFaceTopos());
-		
+        if (command.getAdFaceTopos() != null &&command.getAdFaceTopos().size() > 0){
+        	this.handleAdFaceTopo();
+        }
 		return null;
 	}
 
 	/*
-	 *  @author zhaokk
 	 *  @param List
 	 *  修改AdFace 和AdLink topo 关系
 	 *  
 	 */
-	private void handleAdFaceTopo(List<AdFaceTopo> list)
+	private void handleAdFaceTopo()
 			throws Exception {
-		for (AdFaceTopo adFaceTopo : list) {
-			result.insertObject(adFaceTopo, ObjStatus.DELETE,adFaceTopo.getFacePid());
-			adFaceTopo.setLinkPid(command.getsAdLink().getPid());
-			result.insertObject(adFaceTopo, ObjStatus.INSERT,adFaceTopo.getFacePid());
-			adFaceTopo.setLinkPid(command.geteAdLink().getPid());
-			result.insertObject(adFaceTopo, ObjStatus.INSERT,adFaceTopo.getFacePid());
+		List<AdLink> links;
+		//1.获取打断点涉及的面信息
+		//2.删除打断线对应面的topo关系
+		//3.重新获取组成面的link关系，重新计算面的形状
+		for (AdFace face : command.getFaces()) {
+			links = new ArrayList<AdLink>();
+			for (IRow iRow :face.getFaceTopos()){
+				AdFaceTopo obj = (AdFaceTopo) iRow;
+				if(obj.getLinkPid()!=command.getLinkPid()){
+					links.add((AdLink)new AdLinkSelector(conn).loadById(obj.getLinkPid(), true));
+				}
+				result.insertObject(obj,ObjStatus.DELETE,face.getPid());
+			}
+			 links.add(command.geteAdLink());
+			 links.add(command.getsAdLink());
+			 this.reCaleFaceGeometry(links,face);
 		}
+		
 	}
-
+	/*
+	 *  @param List 
+	 *  按照ADFACE的形状重新维护ADFACE
+	 *  
+	 */
+	 private  void reCaleFaceGeometry(List<AdLink> links,AdFace face) throws Exception  { 
+		  if (links == null  && links.size() < 1){
+			  throw new Exception("重新维护面的形状:发现面没有组成link");
+		  }
+		  AdLink currLink = null;
+		  for(AdLink adLink : links){
+			  currLink = adLink;
+			  break;
+		  }
+		  if (currLink == null){
+			 return;
+		  }
+		  //获取当前LINK和NODE
+		  int startNodePid = currLink.getStartNodePid();
+		  int currNodePid = startNodePid;
+		  this.addLink(face, currLink,1);
+		  int index = 1;
+		  List<Geometry> list = new ArrayList<Geometry>();
+		  list.add(currLink.getGeometry());
+		  //获取下一条联通的LINK
+		  while(getNextLink(links,currNodePid,currLink)){
+			  if(currNodePid == startNodePid){
+				  break;
+			  }
+			  index++;
+			  this.addLink(face, currLink, index);
+			  list.add(currLink.getGeometry());
+		  }
+		  //线几何组成面的几何
+		  Geometry g = GeoTranslator.getCalLineToPython(list);
+		  Coordinate [] c1 =  new Coordinate[g.getCoordinates().length];
+		  //判断线组成面是否可逆
+		    if(!GeometryUtils.IsCCW(g.getCoordinates())){
+	        	for(int i = g.getCoordinates().length -1;i >= 0 ;i-- ){
+	        		c1[c1.length-i-1] = c1[0];	
+	        	}
+	        	this.reverseFaceTopo();
+	        		
+	        }
+		  //更新面的几何属性
+		 this.updateGeometry(GeoTranslator.getPolygonToPoints(c1), face) ;
+		  
+	 }
+	 
+	/*
+	 * 更新面的几何属性
+	 */
+	 private void  updateGeometry(Geometry g , AdFace face){
+		 face.setGeometry(g);
+		 result.insertObject(face, ObjStatus.UPDATE, face.getPid());
+	 }
+	 /*
+	  * 重新维护faceTopo的顺序关系
+	  */
+	 private void  reverseFaceTopo(){
+		 int newIndex = 0;
+		 for(int i = result.getAddObjects().size() -1; i >= 0 ;i--){
+			 if (result.getAddObjects().get(i) instanceof AdFaceTopo){
+				  newIndex++;
+				 ((AdFaceTopo)result.getAddObjects().get(i)).setSeqNum(newIndex);
+				
+			 }
+		 }
+	 }
+	 /*
+	  * 添加link获取下一条连接的link
+	  */
+	 private boolean getNextLink(List<AdLink> links,int currNodePid,AdLink currLink) throws Exception{
+	     int nextNodePid = 0;
+		 if(currNodePid == currLink.getStartNodePid()){
+			 nextNodePid = currLink.getStartNodePid();
+		 }else{
+			 nextNodePid = currLink.getEndNodePid();
+		 }
+		 for(AdLink link :links){
+			 if(link.getPid() == currLink.getPid()){
+				 continue;
+			 }
+			 if(link.getStartNodePid() == nextNodePid || link.getEndNodePid() == nextNodePid){
+				 currNodePid = nextNodePid;
+				 currLink = link;
+				 return true;
+			 }
+		 }
+		 return false ;
+	 }
+	 /*
+	  * 添加Link和Face的topo关系
+	  */
+    public  void addLink(AdFace face,AdLink link,int seqNum){
+		  AdFaceTopo faceTopo  = new AdFaceTopo();
+		  faceTopo.setLinkPid(link.getPid());
+		  faceTopo.setFacePid(face.getPid());
+		  faceTopo.setSeqNum(seqNum);
+		  result.insertObject(faceTopo, ObjStatus.INSERT, face.getPid());
+      }
 	
 }

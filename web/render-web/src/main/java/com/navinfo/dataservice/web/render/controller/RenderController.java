@@ -32,7 +32,7 @@ public class RenderController {
 	private static final Logger logger = Logger
 			.getLogger(RenderController.class);
 
-	@RequestMapping(value = "/link/getByTile")
+	@RequestMapping(value = "/link/getByTileWithGap")
 	public void getLinkByTile(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 

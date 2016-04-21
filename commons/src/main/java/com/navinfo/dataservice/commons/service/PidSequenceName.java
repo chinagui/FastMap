@@ -41,6 +41,6 @@ public class PidSequenceName {
 	
 	public static final String adAdminGroupPidName = "SEQ_AD_ADMIN_GROUP";
 	
-	public static final String rdGscPidName = "SEQ_RD_GSC_GROUP";
+	public static final String rdGscPidName = "SEQ_RD_GSC";
 	
 }

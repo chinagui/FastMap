@@ -204,7 +204,7 @@ public class GeometryUtils {
 		
 		for(Geometry compared : geometries)
 		{
-			if (compared.getBoundary().getGeometryN(0).equals(standGeo.getBoundary().getGeometryN(0))) {
+			if (compared.getBoundary().getGeometryN(0).equals(standGeo)) {
 				
 				startEndMap.put(compared.getUserData(), 1);
 			} else if (compared.getBoundary().getGeometryN(1).equals(standGeo)) {

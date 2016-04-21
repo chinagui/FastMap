@@ -45,7 +45,7 @@ public class Operation implements IOperation {
 
 			adAdminPart.setGroupId(command.getPid());
 
-			adAdminPart.setGroupIdDown(adadminIds.get(i));
+			adAdminPart.setRegionIdDown(adadminIds.get(i));
 
 			result.insertObject(adAdminPart, ObjStatus.INSERT, adAdminPart.getGroupId());
 		}

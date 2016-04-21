@@ -69,7 +69,7 @@ public class AdAdminPartSelector implements ISelector {
 
 				part.setGroupId(resultSet.getInt("group_id"));
 
-				part.setGroupIdDown(resultSet.getInt("region_id_down"));
+				part.setRegionIdDown(resultSet.getInt("region_id_down"));
 
 				part.setRowId(resultSet.getString("row_id"));
 

@@ -136,8 +136,6 @@ public class RdGscLink implements IRow {
 		this.setShpSeqNum(sourceRdGscLink.getShpSeqNum());
 		this.setStartEnd(sourceRdGscLink.getStartEnd());
 		this.setZlevel(sourceRdGscLink.getZlevel());
-		
-		
 	}
 
 	@Override
@@ -229,4 +227,7 @@ public class RdGscLink implements IRow {
 		
 	}
 
+	public String getRowId() {
+		return rowId;
+	}
 }

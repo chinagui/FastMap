@@ -127,5 +127,58 @@ public class AdAdminSelector implements ISelector{
 	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
 		return null;
 	}
+	
+	public AdAdmin loadByAdminId(int adadminId,boolean isLock)throws Exception 
+	{
+		AdAdmin adAdmin = new AdAdmin();
 
+		String sql = "select * from " + adAdmin.tableName() + " where admin_id =:1";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, adadminId);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+
+				adAdmin.setPid(resultSet.getInt("region_id"));
+				
+				adAdmin.setAdminId(resultSet.getInt("admin_id"));
+				
+				adAdmin.setRowId(resultSet.getString("row_id"));
+
+			} else {
+				throw new DataNotFoundException("数据不存在");
+			}
+		} catch (Exception e) {
+			
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+		}
+
+		return adAdmin;
+	}
 }

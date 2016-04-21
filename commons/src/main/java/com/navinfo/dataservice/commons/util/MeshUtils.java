@@ -188,7 +188,7 @@ public abstract class MeshUtils {
 		double rtX = second2Decimal(a[4]);
 		double rtY = second2Decimal(a[5]);
 		return "POLYGON ((" + lbX + " " + lbY + ", " + lbX + " " + rtY + ", "
-				+ rtX + " " + rtY + ", " + rtX + " " + lbY + "))";
+				+ rtX + " " + rtY + ", " + rtX + " " + lbY + "," + lbX + " " + lbY +"))";
 
 	}
 
@@ -202,7 +202,6 @@ public abstract class MeshUtils {
 	public static Geometry mesh2Jts(String meshId) throws ParseException {
 
 		String wkt = mesh2WKT(meshId);
-
 		Geometry jts = new WKTReader().read(wkt);
 
 		return jts;

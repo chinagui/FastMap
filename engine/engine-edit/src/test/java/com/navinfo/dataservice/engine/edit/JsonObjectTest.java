@@ -1,10 +1,12 @@
 package com.navinfo.dataservice.engine.edit;
 import net.sf.json.JSONObject;
 
+import org.joni.exception.JOniException;
 import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.GeometryUtils;
+import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -54,18 +56,24 @@ public class JsonObjectTest {
 	//5775044.296626
 	//[4] LINESTRING (116.17659 39.97508, 116.16144 39.94844, 116.20427 39.94322, 116.17659 39.97508)
 	//////LINESTRING (116.17659 39.97508, 116.16144 39.94844, 116.20427 39.94322, 116.17659 39.97508)
-	public static void main(String[] args) throws JSONException {
+	public static void main(String[] args) throws Exception {
 		//testPoint();
 		//testLine();
 		//double c= 6356752.3142+6378137;
 		//System.out.println(c/2);
+		lineToMesh();
+	}
+	//[2] LINESTRING (116.32947 39.83333, 116.32563 39.82893)
+	//[2] LINESTRING (116.33975 39.84509, 116.32947 39.83333)
+	private static void lineToMesh() throws Exception{
 		
-		double [] aa = {1,2,3,4};
-		System.out.println(aa[0]);
-		for(int i = 0 ;i <aa.length; i++){
-			aa[i] =9;
-		}
+		String str= "{ \"type\": \"LineString\",\"coordinates\": [ [116.32563,39.82893], [116.33975,39.84509]]}";
 		
-		System.out.println(aa[0]);
+		JSONObject geometry = JSONObject.fromObject(str);
+		Geometry geometry2=GeoTranslator.geojson2Jts(geometry, 1, 5);
+
+		Geometry geomInter = MeshUtils.linkInterMeshPolygon(geometry2,
+				MeshUtils.mesh2Jts("595662"));
+		System.out.println( geomInter);
 	}
 }

@@ -123,7 +123,7 @@ public class AdAdminOperator implements IOperator {
 
 				}
 			}
-			sb.append(" where group_id =" + admin.pid());
+			sb.append(" where region_id =" + admin.pid());
 
 			String sql = sb.toString();
 

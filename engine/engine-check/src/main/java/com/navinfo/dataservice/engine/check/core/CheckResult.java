@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.check.core;
 
-public class CheckResult {
+import com.navinfo.dataservice.engine.check.core.NiValException;
 
+public class CheckResult {
+	
 }

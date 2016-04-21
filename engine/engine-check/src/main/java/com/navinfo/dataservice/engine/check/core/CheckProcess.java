@@ -19,7 +19,6 @@ public class CheckProcess {
 	public ICommand getCommand(){
 		return this.process.getCommand();
 	}
-	public 
 	
 	
 }

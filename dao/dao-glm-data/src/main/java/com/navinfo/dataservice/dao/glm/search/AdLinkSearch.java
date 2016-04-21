@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.json.JSONObject;
+import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
@@ -149,7 +150,13 @@ public class AdLinkSearch implements ISearch {
 				snapshot.setI(String.valueOf(resultSet.getInt("link_pid")));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
+				
+				JGeometry geo = JGeometry.load(struct);
+				
+				if(geo.getType()!=2){
+					continue;
+				}
+				
 				JSONObject geojson = Geojson.spatial2Geojson(struct);
 
 				JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
@@ -188,6 +195,10 @@ public class AdLinkSearch implements ISearch {
 		
 		AdLinkSearch search = new AdLinkSearch(conn);
 		
-		search.searchDataByTileWithGap(215904, 99236, 18, 20);
+		List<SearchSnapshot> res = search.searchDataByTileWithGap(215829, 99329, 18, 20);
+		
+		for(SearchSnapshot s : res){
+			System.out.println(s.Serialize(null));
+		}
 	}
 }

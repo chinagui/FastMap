@@ -157,7 +157,7 @@ public class RdGscSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as (select a.pid   from rd_gsc a  where a.u_record != 2    and sdo_within_distance(a.geometry, sdo_geometry(    :1 , 8307), 'DISTANCE=0') =        'TRUE'),          tmp2 as( select a.pid from rd_gsc_link a,tmp1 b where a.pid = b.pid and a.table_name in ('RD_LINK','RW_LINK') group by a.pid having count(1)>1),          tmp3 as( select a.*,b.geometry from rd_gsc_link a, rd_link b,tmp2 c where a.link_pid=b.link_pid  and a.table_name ='RD_LINK'   and a.pid=c.pid), tmp4 as (   select a.*,b.geometry from rd_gsc_link a, rw_link b,tmp2 c where a.link_pid=b.link_pid  and a.table_name ='RW_LINK'   and a.pid=c.pid)      select * from (select * from tmp3   union all   select * from tmp4) order by pid";
+		String sql = "with tmp1 as (select a.pid   from rd_gsc a  where a.u_record != 2    and sdo_within_distance(a.geometry, sdo_geometry(    :1 , 8307), 'DISTANCE=0') =        'TRUE'),          tmp2 as( select a.pid from rd_gsc_link a,tmp1 b where a.pid = b.pid and a.table_name in ('RD_LINK','RW_LINK') group by a.pid having count(1)>1),          tmp3 as( select a.*,b.geometry from rd_gsc_link a, rd_link b,tmp2 c where a.link_pid=b.link_pid  and a.table_name ='RD_LINK'   and a.pid=c.pid), tmp4 as (   select a.*,b.geometry from rd_gsc_link a, rw_link b,tmp2 c where a.link_pid=b.link_pid  and a.table_name ='RW_LINK'   and a.pid=c.pid)      select * from (select * from tmp3   union all   select * from tmp4) order by pid,zlevel";
 		
 		PreparedStatement pstmt = null;
 
@@ -184,6 +184,10 @@ public class RdGscSearch implements ISearch {
 			
 			while (resultSet.next()) {
                 int pid = resultSet.getInt("pid");
+                
+                if(lastPid==0){
+                	lastPid = pid;
+                }
                 
                 if(pid != lastPid){
                 	

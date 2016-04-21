@@ -7,12 +7,14 @@ public class NiValException {
 	private String loc;
 	private String targets;
 	private int meshId;
+	private String information;
 	
-	public NiValException(String ruleId, String loc, String targets,int meshId){
+	public NiValException(String ruleId, String loc, String targets,int meshId,String information){
 		this.setRuleId(ruleId);
 		this.setLoc(loc);
 		this.setTargets(targets);
 		this.setMeshId(meshId);
+		this.setInformation(information);
 	}
 
 	public String getRuleId() {
@@ -45,6 +47,14 @@ public class NiValException {
 
 	public void setMeshId(int meshId) {
 		this.meshId = meshId;
+	}
+
+	public String getInformation() {
+		return information;
+	}
+
+	public void setInformation(String information) {
+		this.information = information;
 	}
 	
 }

@@ -17,6 +17,29 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.navinfo.dataservice.engine.check.core.NiValException;
 
 public class GLM01014 extends baseRule {
+	
+	public void preCheck(CheckCommand checkCommand){
+		for(IRow obj : checkCommand.getGlmList()){
+			if (obj instanceof RdLink){
+				RdLink rdLink = (RdLink)obj;
+				
+				Coordinate[] cs = rdLink.getGeometry().getCoordinates();
+				
+				int midP = (int)Math.round(cs.length/2);
+				
+				double x = cs[midP].x;
+				
+				double y = cs[midP].y;
+				
+				String pointWkt = "Point ("+x+" "+y+")";
+				
+				if (rdLink.getsNodePid() == rdLink.geteNodePid()){
+					this.setCheckResult(pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId());
+					return;
+					}
+				}
+			}
+	}
 
 	public void postCheck(CheckCommand checkCommand){
 		for(IRow obj : checkCommand.getGlmList()){

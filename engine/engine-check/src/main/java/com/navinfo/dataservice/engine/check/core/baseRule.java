@@ -12,7 +12,6 @@ import com.navinfo.dataservice.engine.check.core.NiValException;
 
 public class baseRule {
 	private String ruleCode;
-	private String ruleDesc;
 	private String ruleLog;
 	List<NiValException> checkResultList=new ArrayList<NiValException>();
 
@@ -22,12 +21,6 @@ public class baseRule {
 	public void setRuleCode(String ruleCode) {
 		this.ruleCode = ruleCode;
 	}
-	public String getRuleDesc() {
-		return ruleDesc;
-	}
-	public void setRuleDesc(String ruleDesc) {
-		this.ruleDesc = ruleDesc;
-	}
 	public String getRuleLog() {
 		return ruleLog;
 	}
@@ -36,14 +29,21 @@ public class baseRule {
 	}
 	
 	//通过rule对象赋值private String ruleCode;ruleDesc;ruleLog;
-	public void setRuleDes(){
+	public void setRuleDetail(CheckRule rule){
+		this.ruleCode=rule.ruleCode;
+		this.ruleLog=rule.ruleLog;
 	}
 	
 	//添加检查错误
 	public void setCheckResult(NiValException niValexception){}
 	
 	public void setCheckResult(String loc, String targets,int meshId){
-		NiValException checkResult=new NiValException(this.ruleCode, loc, targets, meshId);
+		NiValException checkResult=new NiValException(this.ruleCode, loc, targets, meshId,this.ruleLog);
+		this.checkResultList.add(checkResult);
+	}
+	
+	public void setCheckResult(String loc, String targets,int meshId,String log){
+		NiValException checkResult=new NiValException(this.ruleCode, loc, targets, meshId,log);
 		this.checkResultList.add(checkResult);
 	}
 	
@@ -52,7 +52,7 @@ public class baseRule {
 		return this.checkResultList;
 	}
 	
-	public List<NiValException> preCheck(CheckCommand checkCommand){return null;};
+	public void preCheck(CheckCommand checkCommand){};
 	
 	public void postCheck(CheckCommand checkCommand){};
 }

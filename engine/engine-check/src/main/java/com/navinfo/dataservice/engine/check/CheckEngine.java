@@ -8,8 +8,11 @@ import org.json.JSONException;
 
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.engine.check.core.CheckRule;
+import com.navinfo.dataservice.engine.check.core.CheckSuitLoader;
 import com.navinfo.dataservice.engine.check.core.NiValException;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.engine.dao.DBConnector;
 import com.navinfo.dataservice.commons.db.ConfigLoader;
 import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -31,11 +34,10 @@ public class CheckEngine {
 	}
 
 	//获取本次要执行的检查规则
-	private List<String> getRules(ObjType objType, OperType operType){
-		List<String> ruleList =new ArrayList<String>();
-		String rule="com.navinfo.dataservice.engine.check.rules.GLM01014";
-		ruleList.add(rule);
-		return ruleList;
+	private List<CheckRule> getRules(ObjType objType, OperType operType,String checkType) throws Exception{
+		String suitCode = objType.toString()+"_"+operType.toString()+"_"+checkType;
+		List<CheckRule> myCheckSuit = CheckSuitLoader.getInstance().getCheckSuit(suitCode);
+		return myCheckSuit;
 	}
 	
 	//对后检查需要保存检查结果，调用此方法将检查结果插入到Ni_val_exception中
@@ -47,30 +49,32 @@ public class CheckEngine {
 		}
 	}
 	//前检查
-	public String preCheck(){
+	public String preCheck() throws Exception{
 		//获取前检查需要执行规则列表
-		List<String> rulesList=getRules(checkCommand.getObjType(),checkCommand.getOperType());
+		List<CheckRule> rulesList=getRules(checkCommand.getObjType(),checkCommand.getOperType(),new String("PRE"));
 		
 		for (int i=0;i<rulesList.size();i++){
-			String rule=rulesList.get(i);
-			//调用规则的前检查
-			List<NiValException> checkResultList=new ArrayList<NiValException>();
-			if(checkResultList.size()!=0){
-				return "error";
+			CheckRule rule=rulesList.get(i);
+			baseRule obj = (baseRule) rule.ruleClass.newInstance();
+			obj.setRuleDetail(rule);
+			obj.preCheck(this.checkCommand);
+			if(obj.getCheckResultList().size()!=0){
+				return obj.getCheckResultList().get(0).getInformation();
 				}
 		}		
-		return "ee";
+		return null;
 	}
 	
 	//后检查
 	public void postCheck() throws Exception{
 		//获取后检查需要执行规则列表
-		List<String> rulesList=getRules(this.checkCommand.getObjType(),this.checkCommand.getOperType());
+		List<CheckRule> rulesList=getRules(this.checkCommand.getObjType(),this.checkCommand.getOperType(),new String("POST"));
 		List<NiValException> checkResultList = new ArrayList<NiValException>();
 		
 		for (int i=0;i<rulesList.size();i++){
-			String rule=rulesList.get(i);
-			baseRule obj = (baseRule) Class.forName(rule).newInstance();
+			CheckRule rule=rulesList.get(i);
+			baseRule obj = (baseRule) rule.ruleClass.newInstance();
+			obj.setRuleDetail(rule);
 			obj.postCheck(this.checkCommand);
 			//调用规则的后检查
 			checkResultList.addAll(obj.getCheckResultList());
@@ -97,8 +101,9 @@ public class CheckEngine {
 		checkCommand.setProjectId(11);
 		checkCommand.setGlmList(objList);
 		checkCommand.setOperType(OperType.UPDATE);
+		checkCommand.setObjType(link.objType());
 		CheckEngine checkEngine=new CheckEngine(checkCommand);
-		checkEngine.postCheck();		
+		System.out.println(checkEngine.preCheck());		
 	}
 	
 }

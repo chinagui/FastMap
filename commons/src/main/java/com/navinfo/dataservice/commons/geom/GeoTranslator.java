@@ -492,7 +492,7 @@ public class GeoTranslator {
 		return Math.round(Angle.toDegrees(b - a));
 	}
 	/**
-	 * 线几何按逆序组成面的几何
+	 * 线几何组成面的几何
 	 * 
 	 * @param List<Geometry> 
 	 *            线几何

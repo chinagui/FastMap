@@ -25,17 +25,10 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
-import com.sun.research.ws.wadl.Link;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LinearRing;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
+
 
 /**
  * @author zhaokk
@@ -109,12 +102,14 @@ public class OpRefAdFace implements IOperation {
 		  if (currLink == null){
 			 return;
 		  }
+		  //获取当前LINK和NODE
 		  int startNodePid = currLink.getStartNodePid();
 		  int currNodePid = startNodePid;
 		  this.addLink(face, currLink,1);
 		  int index = 1;
 		  List<Geometry> list = new ArrayList<Geometry>();
 		  list.add(currLink.getGeometry());
+		  //获取下一条联通的LINK
 		  while(getNextLink(links,currNodePid,currLink)){
 			  if(currNodePid == startNodePid){
 				  break;
@@ -123,8 +118,10 @@ public class OpRefAdFace implements IOperation {
 			  this.addLink(face, currLink, index);
 			  list.add(currLink.getGeometry());
 		  }
+		  //线几何组成面的几何
 		  Geometry g = GeoTranslator.getCalLineToPython(list);
 		  Coordinate [] c1 =  new Coordinate[g.getCoordinates().length];
+		  //判断线组成面是否可逆
 		    if(!GeometryUtils.IsCCW(g.getCoordinates())){
 	        	for(int i = g.getCoordinates().length -1;i >= 0 ;i-- ){
 	        		c1[c1.length-i-1] = c1[0];	
@@ -132,13 +129,21 @@ public class OpRefAdFace implements IOperation {
 	        	this.reverseFaceTopo();
 	        		
 	        }
+		  //更新面的几何属性
 		 this.updateGeometry(GeoTranslator.getPolygonToPoints(c1), face) ;
 		  
 	 }
 	 
+	/*
+	 * 更新面的几何属性
+	 */
 	 private void  updateGeometry(Geometry g , AdFace face){
 		 face.setGeometry(g);
+		 result.insertObject(face, ObjStatus.UPDATE, face.getPid());
 	 }
+	 /*
+	  * 重新维护faceTopo的顺序关系
+	  */
 	 private void  reverseFaceTopo(){
 		 int newIndex = 0;
 		 for(int i = result.getAddObjects().size() -1; i >= 0 ;i--){
@@ -149,6 +154,9 @@ public class OpRefAdFace implements IOperation {
 			 }
 		 }
 	 }
+	 /*
+	  * 添加link获取下一条连接的link
+	  */
 	 private boolean getNextLink(List<AdLink> links,int currNodePid,AdLink currLink) throws Exception{
 	     int nextNodePid = 0;
 		 if(currNodePid == currLink.getStartNodePid()){
@@ -168,6 +176,9 @@ public class OpRefAdFace implements IOperation {
 		 }
 		 return false ;
 	 }
+	 /*
+	  * 添加Link和Face的topo关系
+	  */
     public  void addLink(AdFace face,AdLink link,int seqNum){
 		  AdFaceTopo faceTopo  = new AdFaceTopo();
 		  faceTopo.setLinkPid(link.getPid());

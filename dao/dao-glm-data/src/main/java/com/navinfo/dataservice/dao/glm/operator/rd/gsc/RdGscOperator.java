@@ -224,8 +224,8 @@ public class RdGscOperator implements IOperator {
 		stmt.addBatch(sql);
 
 		for (IRow r : gsc.getLinks()) {
-			RdCrossLinkOperator op = new RdCrossLinkOperator(conn,
-					(RdCrossLink) r);
+			RdGscLinkOperator op = new RdGscLinkOperator(conn,
+					(RdGscLink) r);
 
 			op.deleteRow2Sql(stmt);
 		}

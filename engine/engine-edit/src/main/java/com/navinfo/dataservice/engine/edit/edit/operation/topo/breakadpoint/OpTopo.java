@@ -153,5 +153,6 @@ public class OpTopo implements IOperation {
 		result.insertObject(slink, ObjStatus.INSERT, slink.pid());
 		result.insertObject(elink, ObjStatus.INSERT, elink.pid());
 	}
+	
 
 }

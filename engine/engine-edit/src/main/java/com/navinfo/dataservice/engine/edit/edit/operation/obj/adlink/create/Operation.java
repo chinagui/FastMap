@@ -358,5 +358,10 @@ public class Operation implements IOperation {
 			}
 		}
 	}
+	
+	public void createLink(){
+		
+		
+	}
 
 }

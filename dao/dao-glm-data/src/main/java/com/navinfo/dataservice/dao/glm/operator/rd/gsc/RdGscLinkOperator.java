@@ -141,7 +141,7 @@ public class RdGscLinkOperator implements IOperator{
 
 				}
 			}
-			sb.append(" where pid=" + gscLink.getPid());
+			sb.append(" where row_id=hextoraw('" + gscLink.getRowId());
 
 			String sql = sb.toString();
 

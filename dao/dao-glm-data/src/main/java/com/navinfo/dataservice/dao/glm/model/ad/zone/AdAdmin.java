@@ -26,6 +26,10 @@ public class AdAdmin implements IObj {
 	private int adminId = 0;
 	private int extendId = 0;
 	private double adminType = 0;
+	public String getRowId() {
+		return rowId;
+	}
+
 	private   int capital = 0; 
 	
 	private String population ;

@@ -10,21 +10,6 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-/**
- * json格式:
- * {
-	"projectId"："项目ID",
-	"command"："CREATE",
-	"type"："ADADMINGROUP",
-	"pid": "pid",
-	"data"：{
-		"parentType": "adadmin/adadmingroup",
-		"downAdAdmins"：[[1653],[1231]]
-	}
-	}
- * @author Administrator
- *
- */
 public class Command implements ICommand {
 
 	private String requester;

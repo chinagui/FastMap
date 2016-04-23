@@ -10,6 +10,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 
 public class Command implements ICommand {
 
@@ -19,7 +20,15 @@ public class Command implements ICommand {
 	
 	private JSONObject geometry;
 	private List<Integer> linkPids;
-	
+	private List<AdLink> links;
+	public List<AdLink> getLinks() {
+		return links;
+	}
+
+	public void setLinks(List<AdLink> links) {
+		this.links = links;
+	}
+
 	private String linkType;
 
 	public String getLinkType() {

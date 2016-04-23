@@ -30,8 +30,8 @@ public class baseRule {
 	
 	//通过rule对象赋值private String ruleCode;ruleDesc;ruleLog;
 	public void setRuleDetail(CheckRule rule){
-		this.ruleCode=rule.ruleCode;
-		this.ruleLog=rule.ruleLog;
+		this.ruleCode=rule.getRuleCode();
+		this.ruleLog=rule.getRuleLog();
 	}
 	
 	//添加检查错误

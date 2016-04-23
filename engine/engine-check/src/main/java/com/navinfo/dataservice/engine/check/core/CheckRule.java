@@ -12,22 +12,22 @@ import java.sql.SQLException;
 public class CheckRule {
 	
 	//规则号
-	public String ruleCode;
+//	public String ruleCode;
+	private String ruleCode;
 		
 	//规则提示信息
-	public String ruleLog;
+//	public String ruleLog;
+	private String ruleLog;
 	
 	//规则等级
-	public int severity;
+//	public int severity;
+	private int severity;
 	
 	//检查规则类
-//	public String ruleClass;
-	
-	public Class ruleClass;
+//	public Class ruleClass;
+	private Class ruleClass;
 	
 	public CheckRule(String initRuleCode,String initRuleLog,int initSeverity,String initCheckClassPath) {
-
-		
 		try{
 			ruleClass = Class.forName(initCheckClassPath);
 
@@ -41,16 +41,33 @@ public class CheckRule {
         }
 		
 	}
+	
+	
+	public String getRuleCode() {
+		return ruleCode;
+	}
+	
+	public String getRuleLog() {
+		return ruleLog;
+	}
+	
+	public int getSeverity() {
+		return severity;
+	}
+	
+	public Class getRuleClass() {
+		return ruleClass;
+	}
+	
 
 	
 	public static void main(String args[]) {
 		
-		CheckRule myCheckRule = new CheckRule("1","2",2,"3");
-		System.out.println("CheckRule.ruleCode:" + myCheckRule.ruleCode);
-		System.out.println("CheckRule.ruleLog:" + myCheckRule.ruleLog);
-		System.out.println("CheckRule.severity:" + myCheckRule.severity);
-		System.out.println("CheckRule.ruleClass:" + myCheckRule.ruleClass);
-		
+		CheckRule myCheckRule = new CheckRule("GLM01014","2",2,"com.navinfo.dataservice.engine.check.rules.GLM01014");
+		System.out.println("CheckRule.ruleCode:" + myCheckRule.getRuleCode());
+		System.out.println("CheckRule.ruleLog:" + myCheckRule.getRuleLog());
+		System.out.println("CheckRule.severity:" + myCheckRule.getSeverity());
+		System.out.println("CheckRule.ruleClass:" + myCheckRule.getRuleClass());		
 	}
 	
 

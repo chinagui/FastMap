@@ -188,7 +188,24 @@ public class AdAdminGroup implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		if (objLevel == ObjLevel.FULL || objLevel == ObjLevel.HISTORY) {
+
+			JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+
+			return json;
+		}
+		else if (objLevel == ObjLevel.BRIEF) {
+			JSONObject json = new JSONObject();
+			
+			json.put("groupId", pid);
+			
+			json.put("regionIdUp", regionIdUp);
+			
+			json.put("rowId", rowId);
+
+			return json;
+		}
+		return null;
 	}
 
 	@Override

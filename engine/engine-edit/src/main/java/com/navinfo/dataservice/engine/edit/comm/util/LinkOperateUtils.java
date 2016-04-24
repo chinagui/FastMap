@@ -104,7 +104,7 @@ public class LinkOperateUtils {
 		}else{
 			node.put("s", sNodePid);
 		}
-		// 创建终止点信息
+		//创建终止点信息
 		if (0 == eNodePid) {
 			Coordinate point = g.getCoordinates()[g.getCoordinates().length - 1];
 			AdNode adNode=OperateUtils.createAdNode(point.x, point.y);

@@ -10,7 +10,7 @@ import java.util.List;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.engine.check.core.NiValException;
 
-public class baseRule {
+public abstract class baseRule {
 	private String ruleCode;
 	private String ruleLog;
 	List<NiValException> checkResultList=new ArrayList<NiValException>();
@@ -52,7 +52,7 @@ public class baseRule {
 		return this.checkResultList;
 	}
 	
-	public void preCheck(CheckCommand checkCommand){};
+	public abstract void preCheck(CheckCommand checkCommand);
 	
-	public void postCheck(CheckCommand checkCommand){};
+	public abstract void postCheck(CheckCommand checkCommand);
 }

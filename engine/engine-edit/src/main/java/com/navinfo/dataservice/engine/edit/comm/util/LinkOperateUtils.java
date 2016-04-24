@@ -71,6 +71,30 @@ public class LinkOperateUtils {
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
 	}
 	/*
+	 * 创建生成一条ADLINK
+	 * 继承原有LINK的属性
+	 * */
+	public static IRow addLinkBySourceLink(Geometry g,int sNodePid, int eNodePid,AdLink sourcelink,Result result) throws Exception{
+		AdLink link = new AdLink();
+		link.copy(sourcelink);
+		Set<String> meshes = MeshUtils.getInterMeshes(g);
+		int meshId = Integer.parseInt(meshes.iterator().next());
+		link.setMesh(meshId);
+		link.setPid(PidService.getInstance().applyAdLinkPid());
+		double linkLength = GeometryUtils.getLinkLength(g);
+		link.setLength(linkLength);
+		link.setGeometry(GeoTranslator.transform(g, 100000, 0));
+		link.setStartNodePid(sNodePid);
+		link.setEndNodePid(eNodePid);
+		setLinkChildren(link);
+		result.insertObject(link, ObjStatus.INSERT, link.pid());
+		return link;
+	}
+	
+	
+	
+	
+	/*
 	 * 维护link的子表 AD_LINK_MESH
 	 * 
 	 * @param link
@@ -109,9 +133,9 @@ public class LinkOperateUtils {
 			Coordinate point = g.getCoordinates()[g.getCoordinates().length - 1];
 			AdNode adNode=OperateUtils.createAdNode(point.x, point.y);
 			result.insertObject(adNode, ObjStatus.INSERT, adNode.pid());
-			node.put("s", adNode.getPid());
+			node.put("e", adNode.getPid());
 		}else{
-			node.put("s", sNodePid);
+			node.put("e", sNodePid);
 		}
 		return node;
 		

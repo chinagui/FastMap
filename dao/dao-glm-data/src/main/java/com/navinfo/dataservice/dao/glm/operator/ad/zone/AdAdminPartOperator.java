@@ -43,7 +43,7 @@ public class AdAdminPartOperator implements IOperator {
 
 			pstmt.setInt(1, adminPart.getGroupId());
 
-			pstmt.setInt(2, adminPart.getGroupIdDown());
+			pstmt.setInt(2, adminPart.getRegionIdDown());
 			pstmt.setInt(3, 1);
 			pstmt.setString(4, adminPart.rowId());
 			pstmt.executeUpdate();
@@ -202,7 +202,7 @@ public class AdAdminPartOperator implements IOperator {
 		sb.append("(group_id, region_id_down,u_record,row_id) values (");
 
 		sb.append(adminPart.getGroupId());
-		sb.append("," + adminPart.getGroupIdDown());
+		sb.append("," + adminPart.getRegionIdDown());
 		sb.append(",1,'" + adminPart.rowId() + "')");
 		stmt.addBatch(sb.toString());
 	}

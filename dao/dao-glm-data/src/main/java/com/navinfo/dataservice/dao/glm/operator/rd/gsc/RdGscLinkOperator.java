@@ -51,7 +51,7 @@ public class RdGscLinkOperator implements IOperator{
 
 			pstmt.setInt(4, gscLink.getShpSeqNum());
 
-			pstmt.setInt(5, gscLink.getShpSeqNum());
+			pstmt.setInt(5, gscLink.getStartEnd());
 
 			pstmt.setInt(6,1);
 
@@ -141,7 +141,9 @@ public class RdGscLinkOperator implements IOperator{
 
 				}
 			}
-			sb.append(" where pid=" + gscLink.getPid());
+			sb.append(" where row_id=hextoraw('" + gscLink.getRowId());
+			
+			sb.append("')");
 
 			String sql = sb.toString();
 

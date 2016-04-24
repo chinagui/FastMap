@@ -20,7 +20,6 @@ public class RdGscLinkSelector implements ISelector {
 	private Connection conn;
 	
 	public RdGscLinkSelector(Connection conn) {
-		super();
 		this.conn = conn;
 	}
 

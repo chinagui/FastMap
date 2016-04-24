@@ -15,6 +15,7 @@ import com.vividsolutions.jts.geom.Geometry;
 /**
  * @author zhaokk
  * 移动行政区划点操作类 
+ * 移动行政区划点 点不会打断其它的行政区划线
  */
 public class Operation implements IOperation {
 
@@ -30,11 +31,8 @@ public class Operation implements IOperation {
 
 	@Override
 	public String run(Result result) throws Exception {
-
 		result.setPrimaryPid(updateNode.getPid());
-		
 		this.updateNodeGeometry(result);
-		
 		this.updateLinkGeomtry(result);
 		this.updateFaceGeomtry(result);
 		return null;
@@ -45,7 +43,6 @@ public class Operation implements IOperation {
 	private void updateLinkGeomtry(Result result) throws Exception {
 		
 		for (AdLink link : command.getLinks()) {
-
 			Geometry geom = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
 
 			Coordinate[] cs = geom.getCoordinates();

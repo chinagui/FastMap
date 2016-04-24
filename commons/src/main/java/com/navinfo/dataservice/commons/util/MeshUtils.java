@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
@@ -188,7 +189,7 @@ public abstract class MeshUtils {
 		double rtX = second2Decimal(a[4]);
 		double rtY = second2Decimal(a[5]);
 		return "POLYGON ((" + lbX + " " + lbY + ", " + lbX + " " + rtY + ", "
-				+ rtX + " " + rtY + ", " + rtX + " " + lbY + "))";
+				+ rtX + " " + rtY + ", " + rtX + " " + lbY + "," + lbX + " " + lbY +"))";
 
 	}
 
@@ -202,7 +203,6 @@ public abstract class MeshUtils {
 	public static Geometry mesh2Jts(String meshId) throws ParseException {
 
 		String wkt = mesh2WKT(meshId);
-
 		Geometry jts = new WKTReader().read(wkt);
 
 		return jts;
@@ -994,4 +994,21 @@ public abstract class MeshUtils {
     {
         return calculateIdealColumnIndex(dLongitude);
     }
+    /***
+     * @author zhaokk
+     * @param Geometry g
+     * @return 图幅号
+     * 根据几何计算所跨图幅
+     * @throws Exception
+     */
+	public   static Set<String> getInterMeshes(Geometry g) throws Exception {
+		Set<String> set = new HashSet<String>();
+		Coordinate[] cs = g.getCoordinates();
+
+		for (Coordinate c : cs) {
+			set.add(MeshUtils.lonlat2Mesh(c.x, c.y));
+		}
+
+		return set;
+	}
 }

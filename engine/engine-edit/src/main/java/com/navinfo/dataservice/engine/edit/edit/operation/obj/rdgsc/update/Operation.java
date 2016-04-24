@@ -54,8 +54,8 @@ public class Operation implements IOperation {
 		}
 		
 		//2.修改关系表RD_GSC_LINK的LINK信息（高度信息）
-		if (content.containsKey("linkObjs")) {
-			JSONArray links = content.getJSONArray("linkObjs");
+		if (content.containsKey("links")) {
+			JSONArray links = content.getJSONArray("links");
 
 			for (int i = 0; i < links.size(); i++) {
 

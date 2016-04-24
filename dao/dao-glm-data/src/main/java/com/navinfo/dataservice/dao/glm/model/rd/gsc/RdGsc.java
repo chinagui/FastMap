@@ -211,8 +211,15 @@ public class RdGsc implements IObj  {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
+		
 		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 		
+		if (objLevel == ObjLevel.FULL || objLevel == ObjLevel.HISTORY) {
+
+			JSONObject json = JSONObject.fromObject(this, jsonConfig);
+			
+			return json;
+		}
 		return JSONObject.fromObject(this, jsonConfig);
 	}
 
@@ -242,6 +249,10 @@ public class RdGsc implements IObj  {
 
 	public void setPid(int pid) {
 		this.pid = pid;
+	}
+
+	public String getRowId() {
+		return rowId;
 	}
 	
 }

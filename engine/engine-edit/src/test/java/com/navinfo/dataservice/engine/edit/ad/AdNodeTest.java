@@ -67,7 +67,7 @@ public class AdNodeTest {
 	public static void main(String[] args) throws Exception{
 		//new AdNodeTest().createAdLinkTest();
 		//new AdNodeTest().createAdNodeTest();
-		new AdNodeTest().deleteAdLinkTest();
+		new AdNodeTest().createAdLinkTest();
 		
 	}
 }

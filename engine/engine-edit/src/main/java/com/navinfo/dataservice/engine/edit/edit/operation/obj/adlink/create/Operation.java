@@ -19,7 +19,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
- * @author zhaokk 创建行政区划线参数基础类
+ * @author zhaokk  创建行政区划线参数基础类
  */
 public class Operation implements IOperation {
 

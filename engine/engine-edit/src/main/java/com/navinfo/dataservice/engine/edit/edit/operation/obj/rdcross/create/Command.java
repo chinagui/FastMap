@@ -73,7 +73,7 @@ public class Command implements ICommand {
 
 		for (int i = 0; i < array.size(); i++) {
 
-			int pid = array.getInt(i);
+			int pid = Integer.valueOf(array.getString(i));
 
 			if (!nodePids.contains(pid)) {
 				nodePids.add(pid);
@@ -88,7 +88,7 @@ public class Command implements ICommand {
 
 		for (int i = 0; i < array.size(); i++) {
 
-			int pid = array.getInt(i);
+			int pid = Integer.valueOf(array.getString(i));
 
 			if (!linkPids.contains(pid)) {
 				linkPids.add(pid);

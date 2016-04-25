@@ -170,7 +170,6 @@ public class AdAdminTree implements IObj {
 			JSONArray array = new JSONArray();
 			
 			for (AdAdminTree tree : this.children) {
-				System.out.println(tree.regionId);
 				array.add(tree.Serialize(ObjLevel.BRIEF));
 			}
 			

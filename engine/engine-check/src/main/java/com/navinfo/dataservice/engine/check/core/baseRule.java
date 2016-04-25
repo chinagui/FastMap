@@ -13,7 +13,18 @@ import com.navinfo.dataservice.engine.check.core.NiValException;
 public abstract class baseRule {
 	private String ruleCode;
 	private String ruleLog;
+	
+	private Connection conn;
+	
 	List<NiValException> checkResultList=new ArrayList<NiValException>();
+	
+	public Connection setConn(Connection conn) {
+		return this.conn = conn;
+	}
+	
+	public Connection getConn() {
+		return conn;
+	}
 
 	public String getRuleCode() {
 		return ruleCode;
@@ -30,8 +41,8 @@ public abstract class baseRule {
 	
 	//通过rule对象赋值private String ruleCode;ruleDesc;ruleLog;
 	public void setRuleDetail(CheckRule rule){
-		this.ruleCode=rule.ruleCode;
-		this.ruleLog=rule.ruleLog;
+		this.ruleCode=rule.getRuleCode();
+		this.ruleLog=rule.getRuleLog();
 	}
 	
 	//添加检查错误
@@ -52,7 +63,7 @@ public abstract class baseRule {
 		return this.checkResultList;
 	}
 	
-	public abstract void preCheck(CheckCommand checkCommand);
+	public abstract void preCheck(CheckCommand checkCommand) throws Exception;
 	
-	public abstract void postCheck(CheckCommand checkCommand);
+	public abstract void postCheck(CheckCommand checkCommand) throws Exception;
 }

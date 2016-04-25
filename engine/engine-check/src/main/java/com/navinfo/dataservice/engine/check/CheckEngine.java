@@ -52,8 +52,11 @@ public class CheckEngine {
 		
 		for (int i=0;i<rulesList.size();i++){
 			CheckRule rule=rulesList.get(i);
-			baseRule obj = (baseRule) rule.ruleClass.newInstance();
+			baseRule obj = (baseRule) rule.getRuleClass().newInstance();
 			obj.setRuleDetail(rule);
+			
+			obj.setConn(this.conn);
+			
 			obj.preCheck(this.checkCommand);
 			if(obj.getCheckResultList().size()!=0){
 				return obj.getCheckResultList().get(0).getInformation();
@@ -70,8 +73,11 @@ public class CheckEngine {
 		
 		for (int i=0;i<rulesList.size();i++){
 			CheckRule rule=rulesList.get(i);
-			baseRule obj = (baseRule) rule.ruleClass.newInstance();
+			baseRule obj = (baseRule) rule.getRuleClass().newInstance();
 			obj.setRuleDetail(rule);
+			
+			obj.setConn(this.conn);
+			
 			obj.postCheck(this.checkCommand);
 			//调用规则的后检查
 			checkResultList.addAll(obj.getCheckResultList());

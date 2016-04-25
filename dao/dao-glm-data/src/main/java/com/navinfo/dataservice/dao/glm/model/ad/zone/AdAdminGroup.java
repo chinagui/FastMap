@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.util.StringUtils;
+
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -22,6 +24,7 @@ public class AdAdminGroup implements IObj {
 	private int meshId = 0;
 	private int pid;
     private String rowId;
+    private String type;
     private Map<String, Object> changedFields = new HashMap<String, Object>();
     private List<IRow> parts = new ArrayList<IRow>();
     public Map<String, AdAdminPart> adAdminPartMap = new HashMap<String, AdAdminPart>();
@@ -44,13 +47,19 @@ public class AdAdminGroup implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		// TODO Auto-generated method stub
 		
 	}
 
@@ -61,25 +70,20 @@ public class AdAdminGroup implements IObj {
 
 	@Override
 	public void copy(IRow row) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public Map<String, Object> changedFields() {
-		// TODO Auto-generated method stub
 		return this.changedFields;
 	}
 
 	@Override
 	public String parentPKName() {
-		// TODO Auto-generated method stub
 		return "region_id_up";
 	}
 
 	@Override
 	public int parentPKValue() {
-		// TODO Auto-generated method stub
 		return this.getRegionIdUp();
 	}
 
@@ -93,7 +97,6 @@ public class AdAdminGroup implements IObj {
 
 	@Override
 	public String parentTableName() {
-		// TODO Auto-generated method stub
 		return "ad_admin";
 	}
 
@@ -202,6 +205,11 @@ public class AdAdminGroup implements IObj {
 			json.put("regionIdUp", regionIdUp);
 			
 			json.put("rowId", rowId);
+			
+			if(!StringUtils.isEmpty("type"))
+			{
+				json.put("type", type);
+			}
 
 			return json;
 		}

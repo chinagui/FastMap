@@ -12,6 +12,6 @@ import com.navinfo.dataservice.diff.exception.DiffException;
  */
 public interface DiffScanner
 {
-	public void scan(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException;
+	public int scan(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException;
 
 }

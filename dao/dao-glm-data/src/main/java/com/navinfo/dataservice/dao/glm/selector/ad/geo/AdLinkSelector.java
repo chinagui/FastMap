@@ -11,20 +11,8 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkFormSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkIntRticSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkLimitSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkLimitTruckSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkNameSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkRticSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSidewalkSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSpeedlimitSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkWalkstairSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkZoneSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
 import oracle.sql.STRUCT;
@@ -65,9 +53,9 @@ public class AdLinkSelector implements ISelector {
 			if (resultSet.next()) {
 				adLink.setPid(id);
 
-				adLink.setStartNodePid(resultSet.getInt("s_node_pid"));
+				adLink.setsNodePid(resultSet.getInt("s_node_pid"));
 
-				adLink.setEndNodePid(resultSet.getInt("e_node_pid"));
+				adLink.seteNodePid(resultSet.getInt("e_node_pid"));
 
 				adLink.setKind(resultSet.getInt("kind"));
 				
@@ -162,8 +150,8 @@ public class AdLinkSelector implements ISelector {
 				AdLink adLink = new AdLink();
 
 				adLink.setPid(resultSet.getInt("link_pid"));
-				adLink.setStartNodePid(resultSet.getInt("s_node_pid"));
-				adLink.setEndNodePid(resultSet.getInt("e_node_pid"));
+				adLink.setsNodePid(resultSet.getInt("s_node_pid"));
+				adLink.seteNodePid(resultSet.getInt("e_node_pid"));
 	            adLink.setKind(resultSet.getInt("kind"));
 				adLink.setForm(resultSet.getInt("form"));
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");

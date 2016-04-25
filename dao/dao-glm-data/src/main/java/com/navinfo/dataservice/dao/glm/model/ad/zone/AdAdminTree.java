@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.alibaba.druid.util.StringUtils;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -20,7 +21,9 @@ public class AdAdminTree implements IObj {
 	private int regionId;
 
 	private String name;
-
+	
+	private String type;
+	
 	private AdAdminGroup group;
 
 	private AdAdminPart part;
@@ -137,6 +140,14 @@ public class AdAdminTree implements IObj {
 	@Override
 	public void setMesh(int mesh) {
 	}
+	
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
@@ -153,9 +164,12 @@ public class AdAdminTree implements IObj {
 
 			json.put("regionId", regionId);
 
-			// json.put("name", name);
-
 			json.put("name", name);
+			
+			if(!StringUtils.isEmpty(type))
+			{
+				json.put("type", type);
+			}
 			
 			if(group != null)
 			{

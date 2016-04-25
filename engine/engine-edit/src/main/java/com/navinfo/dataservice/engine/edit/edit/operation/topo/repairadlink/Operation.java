@@ -88,7 +88,7 @@ public class Operation implements IOperation {
 			data.put("linkPid", updateLink.getPid());
 			
 			if(sNodeDepart){
-				data.put("sNodePid", updateLink.getStartNodePid());
+				data.put("sNodePid", updateLink.getsNodePid());
 				
 				data.put("slon", slon);
 				
@@ -96,7 +96,7 @@ public class Operation implements IOperation {
 			}
 			
 			if(eNodeDepart){
-				data.put("eNodePid", updateLink.getEndNodePid());
+				data.put("eNodePid", updateLink.geteNodePid());
 				
 				data.put("elon", elon);
 				
@@ -143,9 +143,9 @@ public class Operation implements IOperation {
 				&& command.getInterNodes().size() == 0) {
 			//只挂接到link上
 			
-			int sNodePid = updateLink.getStartNodePid();
+			int sNodePid = updateLink.getsNodePid();
 			
-			int eNodePid = updateLink.getEndNodePid();
+			int eNodePid = updateLink.geteNodePid();
 			
 			if(sNodeDepart){ //需要新增节点
 				
@@ -182,7 +182,7 @@ public class Operation implements IOperation {
 
 				int pid = mountNode.getInt("pid");
 
-				if (nodePid == updateLink.getStartNodePid()) {
+				if (nodePid == updateLink.getsNodePid()) {
 					content.put("sNodePid", pid);
 
 					if(!sNodeDepart){ //如果是分离节点，需要保留该node，否则不保留
@@ -208,7 +208,7 @@ public class Operation implements IOperation {
 
 				int pid = mountNode.getInt("pid");
 
-				if (nodePid == updateLink.getStartNodePid()) {
+				if (nodePid == updateLink.getsNodePid()) {
 					content.put("sNodePid", pid);
 
 					if(!sNodeDepart){ //如果是分离节点，需要保留该node，否则不保留
@@ -223,9 +223,9 @@ public class Operation implements IOperation {
 				}
 			}
 			
-			int sNodePid = updateLink.getStartNodePid();
+			int sNodePid = updateLink.getsNodePid();
 			
-			int eNodePid = updateLink.getEndNodePid();
+			int eNodePid = updateLink.geteNodePid();
 			
 			if(content.containsKey("eNodePid")){
 				if(sNodeDepart){ //需要新增节点
@@ -280,7 +280,7 @@ public class Operation implements IOperation {
 			breakJson.put("projectId", command.getProjectId());
 
 			int nodePid = interLine.getInt("nodePid");
-			if (nodePid == updateLink.getStartNodePid()) {
+			if (nodePid == updateLink.getsNodePid()) {
 				data.put("breakNodePid", sNodePid);
 
 				JSONArray coord = coords.getJSONArray(0);
@@ -317,7 +317,7 @@ public class Operation implements IOperation {
 			
 			AdNodeSelector selector = new AdNodeSelector(conn);
 			
-			int count = selector.loadAdLinkCountOnNode(updateLink.getStartNodePid());
+			int count = selector.loadAdLinkCountOnNode(updateLink.getsNodePid());
 			
 			if(count>1){
 				return true;
@@ -334,7 +334,7 @@ public class Operation implements IOperation {
 			
 			AdNodeSelector selector = new AdNodeSelector(conn);
 			
-			int count = selector.loadAdLinkCountOnNode(updateLink.getEndNodePid());
+			int count = selector.loadAdLinkCountOnNode(updateLink.geteNodePid());
 			
 			if(count>1){
 				return true;

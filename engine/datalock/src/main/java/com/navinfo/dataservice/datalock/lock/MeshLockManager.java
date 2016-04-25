@@ -12,12 +12,12 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datalock.exception.LockException;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
  * @ClassName: MeshLockManager 
@@ -59,10 +59,10 @@ public class MeshLockManager {
 			Clob clobMeshes=null;
 			if(size>1000){
 				clobMeshes=conn.createClob();
-				clobMeshes.setString(1, StringUtils.collection2String(meshes, ","));
+				clobMeshes.setString(1, StringUtils.join(meshes, ","));
 				meshInClause = " MESH_ID IN (select to_number(column_value) from table(clob_to_table(?)))";
 			}else{
-				meshInClause = " MESH_ID IN ("+StringUtils.collection2String(meshes, ",")+")";
+				meshInClause = " MESH_ID IN ("+StringUtils.join(meshes, ",")+")";
 			}
 			StringBuffer sqlBuf = new StringBuffer();
 			sqlBuf.append("SELECT MESH_ID FROM MESH WHERE");
@@ -116,12 +116,12 @@ public class MeshLockManager {
 			Clob clobMeshes=null;
 			if(size>1000){
 				clobMeshes=conn.createClob();
-				clobMeshes.setString(1, StringUtils.collection2String(meshes, ","));
+				clobMeshes.setString(1, StringUtils.join(meshes, ","));
 				meshInClause = " MESH_ID IN (select to_number(column_value) from table(clob_to_table(?)))";
 				gridInClause = " TRUNC(GRID_ID/100, 0) IN (select to_number(column_value) from table(clob_to_table(?)))";
 			}else{
-				meshInClause = " MESH_ID IN ("+StringUtils.collection2String(meshes, ",")+")";
-				gridInClause = " TRUNC(GRID_ID/100, 0) IN ("+StringUtils.collection2String(meshes, ",")+")";
+				meshInClause = " MESH_ID IN ("+StringUtils.join(meshes, ",")+")";
+				gridInClause = " TRUNC(GRID_ID/100, 0) IN ("+StringUtils.join(meshes, ",")+")";
 			}
 			StringBuffer sqlBuf = new StringBuffer();
 			int updateCount=0;
@@ -259,12 +259,12 @@ public class MeshLockManager {
 			Clob clobMeshes=null;
 			if(size>1000){
 				clobMeshes=conn.createClob();
-				clobMeshes.setString(1, StringUtils.collection2String(meshes, ","));
+				clobMeshes.setString(1, StringUtils.join(meshes, ","));
 				meshInClause = " MESH_ID IN (select to_number(column_value) from table(clob_to_table(?)))";
 				gridInClause = " TRUNC(GRID_ID/100, 0) IN (select to_number(column_value) from table(clob_to_table(?)))";
 			}else{
-				meshInClause = " MESH_ID IN ("+StringUtils.collection2String(meshes, ",")+")";
-				gridInClause = " TRUNC(GRID_ID/100, 0) IN ("+StringUtils.collection2String(meshes, ",")+")";
+				meshInClause = " MESH_ID IN ("+StringUtils.join(meshes, ",")+")";
+				gridInClause = " TRUNC(GRID_ID/100, 0) IN ("+StringUtils.join(meshes, ",")+")";
 			}
 			//解锁时，归还例外
 			StringBuffer sqlBuf = new StringBuffer();
@@ -340,7 +340,7 @@ public class MeshLockManager {
 				}
 				int rentSize = rentMeshes.size();
 
-				int updateCount = run.update(conn, sql,prjId,FmMesh4Lock.TYPE_BORROW,lockSeq,StringUtils.collection2String(rentMeshes, "','"),rentPrjId);
+				int updateCount = run.update(conn, sql,prjId,FmMesh4Lock.TYPE_BORROW,lockSeq,StringUtils.join(rentMeshes, "','"),rentPrjId);
 				if(updateCount!=rentSize){
 					throw new LockException("借图幅失败：项目"+rentPrjId+"能够借出的图幅数和传入图幅数不相等。");
 				}

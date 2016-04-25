@@ -1,7 +1,5 @@
 package com.navinfo.dataservice.diff.scanner;
 
-
-import java.math.BigDecimal;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -48,7 +46,7 @@ public class FillLeftAddLogDetail implements ResultSetHandler<String> {
 	public String handle(ResultSet rs) throws SQLException {
 //		ResultSetMetaData mData = rs.getMetaData();
 //		List<ColumnMetaData> tmdList = DataBaseUtils.getTableMetaData(table.getName(), mData);
-		String updateSql = "UPDATE LOG_DETAIL SET MESH_ID=?,\"NEW\"=? WHERE TB_ROW_ID=? AND TB_NM='"+table.getName()+"'";
+		String updateSql = "UPDATE LOG_DETAIL SET \"NEW\"=? WHERE TB_ROW_ID=HEXTORAW(?) AND TB_NM='"+table.getName()+"'";
 
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -58,17 +56,12 @@ public class FillLeftAddLogDetail implements ResultSetHandler<String> {
 			int batchCount=0;
 			List<GlmColumn> cols = table.getColumns();
 			while(rs.next()){
-				BigDecimal meshId = null;
 				String tb_row_id = null;
 				JSONObject json = new JSONObject();
 			    for(GlmColumn col:cols){
 			    	String name = col.getName();
 					Object value = rs.getObject(name);
-					//获取mesh_id
-			    	if("MESH_ID".equals(name)){
-			    		meshId = (BigDecimal)value;
-			    		json.put(name, meshId);
-			    	}else if("ROW_ID".equals(name)){
+					if("ROW_ID".equals(name)){
 			    		tb_row_id = rs.getString(name);
 			    		json.put(name, tb_row_id);
 			    	}else{
@@ -99,15 +92,10 @@ public class FillLeftAddLogDetail implements ResultSetHandler<String> {
 						}
 			    	}
 			    }
-			    if(meshId!=null){
-			    	stmt.setBigDecimal(1, meshId);
-			    }else{
-			    	stmt.setNull(1, Types.INTEGER);
-			    }
 				Clob clob = conn.createClob();
 				clob.setString(1, json.toString());
-			    stmt.setClob(2, clob);
-			    stmt.setString(3, tb_row_id);
+			    stmt.setClob(1, clob);
+			    stmt.setString(2, tb_row_id);
 			    stmt.addBatch();
 			    batchCount++;
 			    if (batchCount % 1000 == 0) {

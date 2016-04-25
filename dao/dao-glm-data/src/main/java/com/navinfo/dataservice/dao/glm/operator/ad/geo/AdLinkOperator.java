@@ -17,10 +17,8 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchOperator;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -203,9 +201,9 @@ public class AdLinkOperator implements IOperator {
 
 		sb.append(adLink.getPid());
 
-		sb.append("," + adLink.getStartNodePid());
+		sb.append("," + adLink.getsNodePid());
 		
-		sb.append("," + adLink.getEndNodePid());
+		sb.append("," + adLink.geteNodePid());
 		
 		sb.append("," + adLink.getKind());
 		

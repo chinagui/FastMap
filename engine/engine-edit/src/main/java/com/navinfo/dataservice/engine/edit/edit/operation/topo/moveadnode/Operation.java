@@ -55,7 +55,7 @@ public class Operation implements IOperation {
 				ps[i][1] = cs[i].y;
 			}
 
-			if (link.getStartNodePid() == command.getNodePid()) {
+			if (link.getsNodePid() == command.getNodePid()) {
 				ps[0][0] = command.getLongitude();
 
 				ps[0][1] = command.getLatitude();

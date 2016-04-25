@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -42,22 +43,25 @@ public class LogGridCalculatorByCrossUser implements LogGridCalculator {
 		try{
 			GlmGridCalculator calculator = GlmGridCalculatorFactory.getInstance().create(gdbVerison);
 			conn = diffServer.getPoolDataSource().getConnection();
-			String flushLogGridSql = "INSERT INTO LOG_DETAIL (ROW_ID,GRID_ID,GRID_TYPE) VALUES (?,?,?)";
+			String flushLogGridSql = "INSERT INTO LOG_DETAIL_GRID (ROW_ID,GRID_ID,GRID_TYPE) VALUES (?,?,?)";
 			stmt = conn.prepareStatement(flushLogGridSql);
 			//计算new grid:insert+update类型的履历
         	Map<String,String[]> newGrids = calculator.calc(table.getName(), new Integer[]{1,3}, conn);
-        	flushLogGrids(newGrids,0,conn);
+        	flushLogGrids(newGrids,0,stmt,conn);
         	//计算old grid：update+delete类型的履历
         	Map<String,String[]> oldGrids = calculator.calc(table.getName(), new Integer[]{2,3}, conn,"CROSS_USER",rightSchemaUserName);
-        	flushLogGrids(oldGrids,1,conn);
-			
+        	flushLogGrids(oldGrids,1,stmt,conn);
+			conn.commit();
 		}catch(Exception e){
-			
+			log.error(e.getMessage(),e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+		}finally{
+			DbUtils.closeQuietly(stmt);
+			DbUtils.closeQuietly(conn);
 		}
 	}
-	private void flushLogGrids(Map<String,String[]> grids,int gridType,Connection conn)throws SQLException{
+	private void flushLogGrids(Map<String,String[]> grids,int gridType,PreparedStatement stmt,Connection conn)throws SQLException{
 		if(grids!=null){
-			PreparedStatement stmt = null;
 			int batchCount=0;
 			for(Entry<String,String[]> entry:grids.entrySet()){
 				for(String grid:entry.getValue()){
@@ -67,7 +71,14 @@ public class LogGridCalculatorByCrossUser implements LogGridCalculator {
 					stmt.addBatch();
 					batchCount++;
 				}
+			    if (batchCount % 1000 == 0) {
+					stmt.executeBatch();
+					stmt.clearBatch();
+				}
 			}
+			//剩余不到1000的执行掉
+			stmt.executeBatch();
+			stmt.clearBatch();
 		}
 	}
 }

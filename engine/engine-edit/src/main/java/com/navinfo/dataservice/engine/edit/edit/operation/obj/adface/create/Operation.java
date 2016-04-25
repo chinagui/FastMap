@@ -121,8 +121,8 @@ public class Operation implements IOperation {
 			double linkLength = GeometryUtils.getLinkLength(geom);
 			link.setLength(linkLength);
 			link.setGeometry(GeoTranslator.transform(geom, 100000, 0));
-			link.setStartNodePid(sNode.getPid());
-			link.setEndNodePid(eNode.getPid());
+			link.setsNodePid(sNode.getPid());
+			link.seteNodePid(eNode.getPid());
 			AdLinkMesh adLinkMesh = new AdLinkMesh();
 			adLinkMesh.setLinkPid(link.getPid());
 			adLinkMesh.setMeshId(meshId);
@@ -178,7 +178,7 @@ public class Operation implements IOperation {
 			return;
 		}
 		// 获取当前LINK和NODE
-		int startNodePid = currLink.getStartNodePid();
+		int startNodePid = currLink.getsNodePid();
 		int currNodePid = startNodePid;
 		this.addLink(face, currLink, 1);
 		int index = 1;

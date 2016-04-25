@@ -4,11 +4,7 @@ import java.sql.Connection;
 
 import org.apache.log4j.Logger;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.service.PidService;
-import com.navinfo.dataservice.commons.util.GeometryUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -18,6 +14,9 @@ import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.engine.edit.comm.util.LinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.OperateUtils;
 import com.vividsolutions.jts.geom.Point;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * @author zhaokk
@@ -134,11 +133,11 @@ public class OpTopo implements IOperation {
 		eGeojson.put("type", "LineString");
 		eGeojson.put("coordinates", eArray);
 		log.debug("4 组装 第一条link 的信息");
-		AdLink slink =(AdLink)LinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(sGeojson),adLink.getStartNodePid(),node.pid(), adLink,result);
+		AdLink slink =(AdLink)LinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(sGeojson),adLink.getsNodePid(),node.pid(), adLink,result);
 		command.setsAdLink(slink);
 		log.debug("4.1 生成第一条link信息 pid = "+slink.getPid());
 		log.debug("5 组装 第一条link 的信息");
-		AdLink elink =(AdLink)LinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(eGeojson),node.pid(),adLink.getEndNodePid(),adLink, result);
+		AdLink elink =(AdLink)LinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(eGeojson),node.pid(),adLink.geteNodePid(),adLink, result);
 		command.seteAdLink(elink);
 		log.debug("5.1 生成第二条link信息 pid = "+elink.getPid());
 		result.insertObject(slink, ObjStatus.INSERT, slink.pid());

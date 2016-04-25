@@ -170,36 +170,6 @@ public class StringUtils {
     public static String expandVariables(String source, Map<String, String> pro) {
         return expandVariables(source, pro, "${", "}");
     }
-
-    /**
-     * 将集合内所有元素通过连接符组成字符串
-     * @param coll
-     * @param connector
-     * @return
-     */
-	public static String collection2String(Collection<?> coll,String connector){
-		String resultStr="";
-		for(Iterator<?> i = coll.iterator();i.hasNext();){
-			resultStr+=connector+i.next();
-		}
-		if(resultStr.length()>0){
-			return resultStr.substring(connector.length());
-		}else{
-			return null;
-		}
-	}
-	public static String collection2String(Collection<?> collection,String connector,Collection<?> filters){
-		String resultStr="";
-		for(Object obj:collection){
-			if(filters.contains(obj))continue;
-			resultStr+=connector+obj;
-		}
-		if(resultStr.length()>0){
-			return resultStr.substring(connector.length());
-		}else{
-			return null;
-		}
-	}
     
 	public static void main(String[] args) {
 

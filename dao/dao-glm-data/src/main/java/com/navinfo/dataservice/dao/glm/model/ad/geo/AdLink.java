@@ -25,9 +25,9 @@ public class AdLink implements IObj {
 
 	private int pid;
 
-	private int startNodePid;
+	private int sNodePid;
 
-	private int endNodePid;
+	private int eNodePid;
 
 	private int kind;
 
@@ -95,7 +95,7 @@ public class AdLink implements IObj {
 
 		this.editFlag = sourceAdLink.getEditFlag();
 
-		this.endNodePid = sourceAdLink.getEndNodePid();
+		this.eNodePid = sourceAdLink.geteNodePid();
 
 		this.form = sourceAdLink.getForm();
 
@@ -107,7 +107,7 @@ public class AdLink implements IObj {
 
 		this.scale = sourceAdLink.getScale();
 
-		this.startNodePid = sourceAdLink.getStartNodePid();
+		this.sNodePid = sourceAdLink.getsNodePid();
 
 		this.meshes = new ArrayList<IRow>();
 
@@ -309,20 +309,20 @@ public class AdLink implements IObj {
 		this.pid = pid;
 	}
 
-	public int getStartNodePid() {
-		return startNodePid;
+	public int getsNodePid() {
+		return sNodePid;
 	}
 
-	public void setStartNodePid(int startNodePid) {
-		this.startNodePid = startNodePid;
+	public void setsNodePid(int sNodePid) {
+		this.sNodePid = sNodePid;
 	}
 
-	public int getEndNodePid() {
-		return endNodePid;
+	public int geteNodePid() {
+		return eNodePid;
 	}
 
-	public void setEndNodePid(int endNodePid) {
-		this.endNodePid = endNodePid;
+	public void seteNodePid(int eNodePid) {
+		this.eNodePid = eNodePid;
 	}
 
 	public int getKind() {

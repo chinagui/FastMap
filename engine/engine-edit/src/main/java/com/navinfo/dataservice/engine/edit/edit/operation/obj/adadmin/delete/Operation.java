@@ -21,7 +21,7 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 
-		result.insertObject(adAdmin, ObjStatus.DELETE, adAdmin.pid());;
+		result.insertObject(adAdmin, ObjStatus.DELETE, adAdmin.pid());
 				
 		return null;
 	}

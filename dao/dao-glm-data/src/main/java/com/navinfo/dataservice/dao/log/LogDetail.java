@@ -19,8 +19,6 @@ public class LogDetail {
 
 	private int obTp;
 
-	private String opDt;
-
 	private String tbNm;
 
 	private String oldValue;
@@ -37,30 +35,9 @@ public class LogDetail {
 
 	private String tbRowId;
 
-	private String comDt;
-
-	private int comSta;
-
 	private List<LogDetailGrid> grids = new ArrayList<LogDetailGrid>();
 	
 	public LogDetail() {
-		opDt = StringUtils.getCurrentTime();
-	}
-
-	public String getComDt() {
-		return comDt;
-	}
-
-	public void setComDt(String comDt) {
-		this.comDt = comDt;
-	}
-
-	public int getComSta() {
-		return comSta;
-	}
-
-	public void setComSta(int comSta) {
-		this.comSta = comSta;
 	}
 
 	public String getTbRowId() {
@@ -117,14 +94,6 @@ public class LogDetail {
 
 	public void setObTp(int obTp) {
 		this.obTp = obTp;
-	}
-
-	public String getOpDt() {
-		return opDt;
-	}
-
-	public void setOpDt(String opDt) {
-		this.opDt = opDt;
 	}
 
 	public String getTbNm() {

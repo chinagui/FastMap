@@ -1,9 +1,9 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.repair;
 
-import org.json.JSONException;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;

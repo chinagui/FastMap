@@ -3,18 +3,13 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.commons.util.GeometryUtils;
 import com.navinfo.dataservice.commons.util.MeshUtils;
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -25,16 +20,6 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
-import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.engine.edit.comm.util.AdminUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.LinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.OperateUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -121,8 +106,8 @@ public class Operation implements IOperation {
 			double linkLength = GeometryUtils.getLinkLength(geom);
 			link.setLength(linkLength);
 			link.setGeometry(GeoTranslator.transform(geom, 100000, 0));
-			link.setStartNodePid(sNode.getPid());
-			link.setEndNodePid(eNode.getPid());
+			link.setsNodePid(sNode.getPid());
+			link.seteNodePid(eNode.getPid());
 			AdLinkMesh adLinkMesh = new AdLinkMesh();
 			adLinkMesh.setLinkPid(link.getPid());
 			adLinkMesh.setMeshId(meshId);
@@ -178,7 +163,7 @@ public class Operation implements IOperation {
 			return;
 		}
 		// 获取当前LINK和NODE
-		int startNodePid = currLink.getStartNodePid();
+		int startNodePid = currLink.getsNodePid();
 		int currNodePid = startNodePid;
 		this.addLink(face, currLink, 1);
 		int index = 1;

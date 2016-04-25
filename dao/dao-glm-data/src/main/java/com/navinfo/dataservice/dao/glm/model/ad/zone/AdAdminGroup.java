@@ -210,19 +210,16 @@ public class AdAdminGroup implements IObj {
 
 	@Override
 	public boolean Unserialize(JSONObject json) throws Exception {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public List<IRow> relatedRows() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int pid() {
-		// TODO Auto-generated method stub
 		return this.getPid();
 	}
 
@@ -236,7 +233,6 @@ public class AdAdminGroup implements IObj {
 
 	@Override
 	public String primaryKey() {
-		// TODO Auto-generated method stub
 		return "region_id";
 	}
 

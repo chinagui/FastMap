@@ -8,6 +8,7 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
@@ -49,7 +50,7 @@ public class Process implements IProcess {
 	@Override
 	public boolean prepareData() throws Exception {
 
-		RdBranchSelector selector = new RdBranchSelector(this.conn);
+		AdAdminSelector selector = new AdAdminSelector(this.conn);
 
 		this.adAdmin = (AdAdmin) selector.loadById(command.getPid(),
 				true);

@@ -84,6 +84,8 @@ public class AdLinkSelector implements ISelector {
 				adLink.setScale(resultSet.getInt("scale"));
 
 				adLink.setEditFlag(resultSet.getInt("edit_flag"));
+				
+				adLink.setRowId(resultSet.getString("row_id"));
 
 				// 获取AD_LINK对应的关联数据
 
@@ -170,6 +172,7 @@ public class AdLinkSelector implements ISelector {
 				adLink.setLength(resultSet.getInt("length"));
 				adLink.setScale(resultSet.getInt("scale"));
 				adLink.setEditFlag(resultSet.getInt("edit_flag"));
+				adLink.setRowId(resultSet.getString("row_id"));
 				List<IRow> forms = new AdLinkMeshSelector(conn).loadRowsByParentId(adLink.getPid(), isLock);
 				
 				//loadRowsByParentId已经查询了mesh,是否可以不做设置

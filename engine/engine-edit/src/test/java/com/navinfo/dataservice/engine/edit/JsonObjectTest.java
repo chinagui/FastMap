@@ -1,16 +1,22 @@
 package com.navinfo.dataservice.engine.edit;
+import java.util.HashMap;
+import java.util.Map;
+
 import net.sf.json.JSONObject;
 
+import org.joni.exception.JOniException;
 import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.GeometryUtils;
+import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 public class JsonObjectTest {
@@ -54,18 +60,52 @@ public class JsonObjectTest {
 	//5775044.296626
 	//[4] LINESTRING (116.17659 39.97508, 116.16144 39.94844, 116.20427 39.94322, 116.17659 39.97508)
 	//////LINESTRING (116.17659 39.97508, 116.16144 39.94844, 116.20427 39.94322, 116.17659 39.97508)
-	public static void main(String[] args) throws JSONException {
+	public static void main(String[] args) throws Exception {
 		//testPoint();
 		//testLine();
 		//double c= 6356752.3142+6378137;
 		//System.out.println(c/2);
+		lineToMesh();
+	}
+	//[2] LINESTRING (116.32947 39.83333, 116.32563 39.82893)
+	//[2] LINESTRING (116.33975 39.84509, 116.32947 39.83333)
+	private static void lineToMesh() throws Exception{
 		
-		double [] aa = {1,2,3,4};
-		System.out.println(aa[0]);
-		for(int i = 0 ;i <aa.length; i++){
-			aa[i] =9;
+		String str= "{ \"type\": \"LineString\",\"coordinates\": [ [116.32563,39.82893], [116.33975,39.84509]]}";
+		
+		String str1= "{ \"type\": \"LineString\",\"coordinates\": [ [116.29493,39.78217], [116.28745,39.77083]]}";
+		//[2] LINESTRING (116.22284 39.75436, 116.22403 39.75000)
+		//[3] LINESTRING (116.22403 39.75000, 116.22610 39.74242, 116.23166 39.75000)
+		//[2] LINESTRING (116.23166 39.75000, 116.23442 39.75376)
+		String str2 ="{ \"type\": \"LineString\",\"coordinates\": [ [116.22284,39.75436], [ 116.22610,39.74242],[ 116.23442,39.75376]]}";
+		String str3 ="{ \"type\": \"LineString\",\"coordinates\": [ [116.22285,39.75436], [ 116.22610,39.74242],[ 116.23442,39.75376]]}";
+		JSONObject geometry = JSONObject.fromObject(str2);
+		JSONObject geometry11 = JSONObject.fromObject(str3);
+		Geometry geometry2=GeoTranslator.geojson2Jts(geometry, 1, 5);
+		
+		Geometry geometry3=GeoTranslator.geojson2Jts(geometry11, 1, 5);
+        System.out.println(geometry2.getCoordinates());
+        for (Coordinate coordinate : geometry2.getCoordinates()){
+        	System.out.println(coordinate);
+        }
+		Geometry geomInter = MeshUtils.linkInterMeshPolygon(geometry2,
+				MeshUtils.mesh2Jts("595651"));
+		geomInter.getGeometryType();
+		System.out.println( geometry2.getGeometryType());
+		
+		 //for (Coordinate c :geomInter.getCoordinates()){
+			 	//new GeometryFactory().createLineString( }
+		System.out.println(geomInter.getDimension());
+		System.out.println(geomInter.getCoordinates().length);
+		System.out.println( geomInter.getGeometryN(0));
+		System.out.println(geomInter.getBoundaryDimension());
+		System.out.println(geomInter.getNumGeometries());
+		System.out.println( geometry2.getCoordinates()[0]);
+		
+		Map<Coordinate ,Integer > maps = new HashMap<Coordinate , Integer  >();
+		maps.put(geometry2.getCoordinates()[0], 1111);
+		if(maps.containsKey(geometry3.getCoordinates()[0])){
+			System.out.println("lllll");
 		}
-		
-		System.out.println(aa[0]);
 	}
 }

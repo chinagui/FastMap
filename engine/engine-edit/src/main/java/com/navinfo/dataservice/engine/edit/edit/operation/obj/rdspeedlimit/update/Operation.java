@@ -28,7 +28,7 @@ public class Operation implements IOperation {
 		if (content.containsKey("objStatus")) {
 
 			if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
-				result.getDelObjects().add(limit);
+				result.insertObject(limit, ObjStatus.DELETE, limit.pid());
 				
 				return null;
 			} else {
@@ -36,7 +36,7 @@ public class Operation implements IOperation {
 				boolean isChanged = limit.fillChangeFields(content);
 
 				if (isChanged) {
-					result.getUpdateObjects().add(limit);
+					result.insertObject(limit, ObjStatus.UPDATE, limit.pid());
 				}
 			}
 		}

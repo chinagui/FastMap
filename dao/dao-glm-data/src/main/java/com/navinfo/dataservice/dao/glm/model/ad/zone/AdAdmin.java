@@ -9,7 +9,6 @@ import java.util.Map;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
-import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -19,12 +18,17 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 
 public class AdAdmin implements IObj {
 
 	private int adminId = 0;
 	private int extendId = 0;
 	private double adminType = 0;
+	public String getRowId() {
+		return rowId;
+	}
+
 	private   int capital = 0; 
 	
 	private String population ;
@@ -359,7 +363,9 @@ public class AdAdmin implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+		
+		return JSONObject.fromObject(this, jsonConfig);
 	}
 
 	@Override

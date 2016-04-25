@@ -35,6 +35,22 @@ public class AdNodeTest {
 		}
 		
 	}
+	public  void deleteAdLinkTest() {
+		//fm 1151854524
+		//100031210
+		//[3] LINESTRING (116.22633 39.79070, 116.22590 39.77897, 116.22275 39.76482)
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"ADLINK\",\"projectId\":11,\"objId\":4107915 }";
+		log.info(parameter);
+		Transaction t = new Transaction(parameter);;
+		try {
+			String msg = t.run();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
 	
 	public  void createFaceTest() {
 		String parameter = "{\"command\":\"CREATE\",\"type\":\"ADFACE\",\"projectId\":11," +
@@ -50,7 +66,9 @@ public class AdNodeTest {
 	}
 	public static void main(String[] args) throws Exception{
 		//new AdNodeTest().createAdLinkTest();
-		new AdNodeTest().createAdNodeTest();
+		//new AdNodeTest().createAdNodeTest();
+		// DruidPooledConnection 168报错
+		new AdNodeTest().createAdLinkTest();
 		
 	}
 }

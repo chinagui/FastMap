@@ -51,23 +51,30 @@ public class OperateUtils {
 
 		return node;
 	}
-	
+
+	/**
+	 * @author zhaokk
+	 * 创建行政区划点公共方法
+	 * 1.如果行政区划点在图廓线上 ，生成多个Node对应图幅信息
+	 */
 	public static AdNode createAdNode(double x, double y) throws Exception {
 
 		AdNode node = new AdNode();
-
+		 //申请pid
 		node.setPid(PidService.getInstance().applyAdNodePid());
-
+		//获取点的几何信息
 		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y),100000,0));
-
-		node.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(x, y)));
-		
-		AdNodeMesh nodeMesh = new AdNodeMesh();
-		nodeMesh.setNodePid(node.getPid());
-		nodeMesh.setMeshId(node.mesh());
-		List<IRow> nodeMeshs = new ArrayList<IRow>();
-		nodeMeshs.add(nodeMesh);
-		node.setMeshes(nodeMeshs);
+		//维护Node图幅信息
+		List<String> meshes = MeshUtils.lonlat2MeshIds(x, y);
+		for (String mesh :meshes){
+			AdNodeMesh nodeMesh = new AdNodeMesh();
+			node.setMesh(Integer.parseInt(mesh));
+			nodeMesh.setNodePid(node.getPid());
+			nodeMesh.setMeshId(node.mesh());
+			List<IRow> nodeMeshs = new ArrayList<IRow>();
+			nodeMeshs.add(nodeMesh);
+			node.setMeshes(nodeMeshs);
+		}
 		return node;
 	}
 	

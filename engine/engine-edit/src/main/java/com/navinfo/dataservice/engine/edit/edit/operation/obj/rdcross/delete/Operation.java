@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.delete;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 
@@ -20,7 +21,7 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 
-		result.getDelObjects().add(cross);
+		result.insertObject(cross, ObjStatus.DELETE, cross.getPid());
 				
 		return null;
 	}

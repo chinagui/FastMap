@@ -70,6 +70,8 @@ public class AdNodeSelector implements ISelector {
 				adNode.setGeometry(geometry);
 
 				adNode.setEditFlag(resultSet.getInt("edit_flag"));
+				
+				adNode.setRowId(resultSet.getString("row_id"));
 
 				// 获取AD_Node对应的关联数据
 
@@ -144,6 +146,8 @@ public class AdNodeSelector implements ISelector {
 				AdNode node = new AdNode();
 
 				node.setPid(resultSet.getInt("node_pid"));
+				
+				node.setRowId(resultSet.getString("row_id"));
 
 				node.setKind(resultSet.getInt("kind"));
 

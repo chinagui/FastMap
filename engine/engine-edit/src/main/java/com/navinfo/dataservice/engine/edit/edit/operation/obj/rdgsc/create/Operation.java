@@ -64,13 +64,15 @@ public class Operation implements IOperation {
 			 * 2.获取交点
 			 * 3.判断交点是否和矩形框相交，并且只有一个交点
 			 */
-			Geometry spatial = GeoTranslator.geojson2Jts(command.getGeoObject());
+			Geometry spatial = GeoTranslator.transform(GeoTranslator.geojson2Jts(command.getGeoObject()), 100000, 0);
 			
 			Geometry gscGeo = interGeometry.intersection(spatial);
 			
 			if(interGeometry.intersects(spatial) && gscGeo.getNumGeometries() == 1)
 			{
 				rdGsc.setPid(PidService.getInstance().applyRdGscPid());
+				
+				result.setPrimaryPid(rdGsc.getPid());
 				
 				rdGsc.setGeometry(gscGeo);
 				

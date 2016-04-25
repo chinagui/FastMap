@@ -13,7 +13,8 @@ import java.util.regex.Pattern;
  */
 public class StringUtils {
 
-
+	public static String PlaceHolder = "$$$";
+	
     public static boolean isNotEmpty(String[] values) {
         return values != null && values.length > 0;
     }

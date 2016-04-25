@@ -18,7 +18,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
+import net.sf.json.JsonConfig;
 
 public class RdGsc implements IObj  {
 	private String rowId;
@@ -83,6 +83,7 @@ public class RdGsc implements IObj  {
 
 	@Override
 	public void setStatus(ObjStatus os) {
+		
 	}
 
 	@Override
@@ -210,7 +211,16 @@ public class RdGsc implements IObj  {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		return null;
+		
+		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+		
+		if (objLevel == ObjLevel.FULL || objLevel == ObjLevel.HISTORY) {
+
+			JSONObject json = JSONObject.fromObject(this, jsonConfig);
+			
+			return json;
+		}
+		return JSONObject.fromObject(this, jsonConfig);
 	}
 
 	@Override
@@ -239,6 +249,10 @@ public class RdGsc implements IObj  {
 
 	public void setPid(int pid) {
 		this.pid = pid;
+	}
+
+	public String getRowId() {
+		return rowId;
 	}
 	
 }

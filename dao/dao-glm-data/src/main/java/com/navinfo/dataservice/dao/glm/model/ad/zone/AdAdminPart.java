@@ -1,30 +1,24 @@
 package com.navinfo.dataservice.dao.glm.model.ad.zone;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
-import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class AdAdminPart implements IRow {
 
 	private int groupId;
-	private int groupIdDown;
+	private int regionIdDown;
 	private int meshId = 0;
     private String rowId;
     public String getRowId() {
@@ -56,7 +50,6 @@ public class AdAdminPart implements IRow {
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		// TODO Auto-generated method stub
 		
 	}
 
@@ -67,7 +60,6 @@ public class AdAdminPart implements IRow {
 
 	@Override
 	public void copy(IRow row) {
-		// TODO Auto-generated method stub
 		
 	}
 
@@ -97,12 +89,12 @@ public class AdAdminPart implements IRow {
 		this.groupId = groupId;
 	}
 
-	public int getGroupIdDown() {
-		return groupIdDown;
+	public int getRegionIdDown() {
+		return regionIdDown;
 	}
 
-	public void setGroupIdDown(int groupIdDown) {
-		this.groupIdDown = groupIdDown;
+	public void setRegionIdDown(int regionIdDown) {
+		this.regionIdDown = regionIdDown;
 	}
 
 	@Override
@@ -191,7 +183,24 @@ public class AdAdminPart implements IRow {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		if (objLevel == ObjLevel.FULL || objLevel == ObjLevel.HISTORY) {
+
+			JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+
+			return json;
+		}
+		else if (objLevel == ObjLevel.BRIEF) {
+			JSONObject json = new JSONObject();
+
+			json.put("groupId", groupId);
+			
+			json.put("regionIdDown", regionIdDown);
+			
+			json.put("rowId", rowId);
+
+			return json;
+		}
+		return null;
 	}
 
 	@Override

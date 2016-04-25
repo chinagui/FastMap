@@ -56,7 +56,7 @@ public class Result implements ISerializable {
 	 * @param os
 	 *            对象状态
 	 * @param topParentPid
-	 * 			       最顶级父表的pid           
+	 * 			       最顶级父表的pid,用来给前台做定位用          
 	 * 
 	 */
 	public void insertObject(IRow row, ObjStatus os, int topParentPid) {

@@ -229,12 +229,12 @@ public class Operation implements IOperation {
 		if(nodePidArray.size() == 1 && cross.getType() == 1){
 			cross.changedFields().put("type", 0);
 			
-			result.getUpdateObjects().add(cross);
+			result.insertObject(cross, ObjStatus.UPDATE, cross.pid());
 		}
 		else if(nodePidArray.size() > 1 && cross.getType() == 0){
 			cross.changedFields().put("type", 1);
 			
-			result.getUpdateObjects().add(cross);
+			result.insertObject(cross, ObjStatus.UPDATE, cross.pid());
 		}
 		
 		for(IRow row : cross.getNodes()){
@@ -244,7 +244,7 @@ public class Operation implements IOperation {
 			
 			int index = nodePidArray.indexOf(nodePid);
 			if( index == -1){
-				result.getDelObjects().add(node);
+				result.insertObject(node, ObjStatus.DELETE, cross.pid());
 			}
 			else{
 				nodePidArray.remove(index);
@@ -262,7 +262,7 @@ public class Operation implements IOperation {
 			
 			node.setMesh(cross.mesh());
 			
-			result.getAddObjects().add(node);
+			result.insertObject(node, ObjStatus.INSERT, cross.pid());
 		}
 		
 		RdLinkFormSelector selector = new RdLinkFormSelector(conn);
@@ -274,7 +274,7 @@ public class Operation implements IOperation {
 			
 			int index = linkPidArray.indexOf(linkPid);
 			if( index == -1){
-				result.getDelObjects().add(crosslink);
+				result.insertObject(crosslink, ObjStatus.DELETE, cross.pid());
 				
 				//维护道路形态
 				List<IRow> forms = selector.loadRowsByParentId(linkPid, true);
@@ -321,7 +321,7 @@ public class Operation implements IOperation {
 			
 			link.setMesh(cross.mesh());
 			
-			result.getAddObjects().add(link);
+			result.insertObject(link, ObjStatus.INSERT, cross.pid());
 			
 			//维护道路形态
 			List<IRow> forms = selector.loadRowsByParentId(linkPid, true);
@@ -346,7 +346,7 @@ public class Operation implements IOperation {
 			
 			if(needAdd){
 				if(editRow != null){
-					result.getUpdateObjects().add(editRow);
+					result.insertObject(editRow, ObjStatus.UPDATE, linkPid);
 				}
 				else{
 					RdLinkForm form = new RdLinkForm();

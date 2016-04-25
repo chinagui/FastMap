@@ -1,19 +1,21 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint;
 
+import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
+import com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Operation;
 
 /**
- * @author zhaokk
- * 创建行政区划点有关行政区划面具体操作类
- *
+ * @author zhaokk 创建行政区划点有关行政区划面具体操作类
+ * 
  */
 public class OpRefAdFace implements IOperation {
 
@@ -21,8 +23,11 @@ public class OpRefAdFace implements IOperation {
 
 	private Result result;
 
-	public OpRefAdFace(Command command) {
+	private Connection conn;
+
+	public OpRefAdFace(Command command, Connection conn) {
 		this.command = command;
+		this.conn = conn;
 
 	}
 
@@ -30,28 +35,38 @@ public class OpRefAdFace implements IOperation {
 	public String run(Result result) throws Exception {
 
 		this.result = result;
-
-		this.handleAdFaceTopo(command.getAdFaceTopos());
-		
+		if (command.getAdFaceTopos() != null
+				&& command.getAdFaceTopos().size() > 0) {
+			this.handleAdFaceTopo();
+		}
 		return null;
 	}
 
 	/*
-	 *  @author zhaokk
-	 *  @param List
-	 *  修改AdFace 和AdLink topo 关系
-	 *  
+	 * @param List 修改AdFace 和AdLink topo 关系
 	 */
-	private void handleAdFaceTopo(List<AdFaceTopo> list)
-			throws Exception {
-		for (AdFaceTopo adFaceTopo : list) {
-			result.insertObject(adFaceTopo, ObjStatus.DELETE,adFaceTopo.getFacePid());
-			adFaceTopo.setLinkPid(command.getsAdLink().getPid());
-			result.insertObject(adFaceTopo, ObjStatus.INSERT,adFaceTopo.getFacePid());
-			adFaceTopo.setLinkPid(command.geteAdLink().getPid());
-			result.insertObject(adFaceTopo, ObjStatus.INSERT,adFaceTopo.getFacePid());
+	private void handleAdFaceTopo() throws Exception {
+		List<AdLink> links;
+		// 1.获取打断点涉及的面信息
+		// 2.删除打断线对应面的topo关系
+		// 3.重新获取组成面的link关系，重新计算面的形状
+		for (AdFace face : command.getFaces()) {
+			links = new ArrayList<AdLink>();
+			for (IRow iRow : face.getFaceTopos()) {
+				AdFaceTopo obj = (AdFaceTopo) iRow;
+				if (obj.getLinkPid() != command.getLinkPid()) {
+					links.add((AdLink) new AdLinkSelector(conn).loadById(
+							obj.getLinkPid(), true));
+				}
+				result.insertObject(obj, ObjStatus.DELETE, face.getPid());
+			}
+			links.add(command.geteAdLink());
+			links.add(command.getsAdLink());
+			com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Operation opFace = new Operation(
+					result);
+			opFace.reCaleFaceGeometry(links, face);
 		}
+
 	}
 
-	
 }

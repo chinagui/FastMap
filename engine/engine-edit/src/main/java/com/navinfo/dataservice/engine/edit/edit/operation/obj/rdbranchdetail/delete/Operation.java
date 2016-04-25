@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranchdetail.delete;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
@@ -32,9 +33,9 @@ public class Operation implements IOperation {
 				&& branch.getRealimages().size() == 0
 				&& branch.getSchematics().size() == 0) {
 
-			result.getDelObjects().add(branch);
+			result.insertObject(branch, ObjStatus.DELETE, branch.getPid());
 		} else {
-			result.getDelObjects().add(detail);
+			result.insertObject(detail, ObjStatus.DELETE, branch.getPid());
 		}
 
 		return null;

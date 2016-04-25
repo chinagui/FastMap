@@ -15,6 +15,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
+import com.navinfo.dataservice.engine.edit.comm.util.LinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.OperateUtils;
 import com.vividsolutions.jts.geom.Point;
 
@@ -55,8 +56,8 @@ public class OpTopo implements IOperation {
 	 */
 	private void breakPoint(Result result) throws Exception {
 		Point point = command.getPoint();
-		double lon = point.getX() * 100000;
-		double lat = point.getY() * 100000;
+		long lon = (long) (point.getX() * 100000);
+		long lat = (long) (point.getY() * 100000);
 	    JSONArray ja1 = new JSONArray();
 		JSONArray ja2 = new JSONArray();
 		boolean hasFound = false;
@@ -133,25 +134,16 @@ public class OpTopo implements IOperation {
 		eGeojson.put("type", "LineString");
 		eGeojson.put("coordinates", eArray);
 		log.debug("4 组装 第一条link 的信息");
-		AdLink  slink = new AdLink();
-		slink.copy(adLink);
-		slink.setPid(PidService.getInstance().applyAdLinkPid());
-		slink.setGeometry(GeoTranslator.geojson2Jts(sGeojson));
-		slink.setLength(GeometryUtils.getLinkLength(GeoTranslator.transform(slink.getGeometry(), 0.00001, 5)));
+		AdLink slink =(AdLink)LinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(sGeojson),adLink.getStartNodePid(),node.pid(), adLink,result);
 		command.setsAdLink(slink);
 		log.debug("4.1 生成第一条link信息 pid = "+slink.getPid());
 		log.debug("5 组装 第一条link 的信息");
-		AdLink  elink = new AdLink();
-		elink.copy(adLink);
-		elink.setPid(PidService.getInstance().applyAdLinkPid());
-		elink.setGeometry(GeoTranslator.geojson2Jts(sGeojson));
-		elink.setLength(GeometryUtils.getLinkLength(GeoTranslator.transform(elink.getGeometry(), 0.00001, 5)));
-		slink.setStartNodePid(node.getPid());
-		elink.setEndNodePid(node.getPid());
+		AdLink elink =(AdLink)LinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(eGeojson),node.pid(),adLink.getEndNodePid(),adLink, result);
 		command.seteAdLink(elink);
-		log.debug("6.1 生成第二条link信息 pid = "+elink.getPid());
+		log.debug("5.1 生成第二条link信息 pid = "+elink.getPid());
 		result.insertObject(slink, ObjStatus.INSERT, slink.pid());
 		result.insertObject(elink, ObjStatus.INSERT, elink.pid());
 	}
+	
 
 }

@@ -115,7 +115,7 @@ public class Operation implements IOperation {
 			
 			if(needAdd){
 				if(editRow != null){
-					result.getUpdateObjects().add(editRow);
+					result.insertObject(editRow, ObjStatus.UPDATE, linkPid);
 				}
 				else{
 					RdLinkForm form = new RdLinkForm();
@@ -126,7 +126,7 @@ public class Operation implements IOperation {
 					
 					form.setLinkPid(linkPid);
 					
-					result.getAddObjects().add(form);
+					result.insertObject(form, ObjStatus.INSERT, cross.pid());
 				}
 			}
 		}

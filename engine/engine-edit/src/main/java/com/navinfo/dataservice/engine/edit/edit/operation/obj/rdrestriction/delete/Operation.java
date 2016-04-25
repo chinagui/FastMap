@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdrestriction.delete;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 
@@ -20,7 +21,7 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 
-		result.getDelObjects().add(restrict);
+		result.insertObject(restrict, ObjStatus.DELETE, restrict.pid());
 
 		return null;
 	}

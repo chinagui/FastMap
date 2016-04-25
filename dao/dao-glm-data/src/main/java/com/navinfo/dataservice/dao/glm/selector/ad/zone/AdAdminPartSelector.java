@@ -69,7 +69,7 @@ public class AdAdminPartSelector implements ISelector {
 
 				part.setGroupId(resultSet.getInt("group_id"));
 
-				part.setGroupIdDown(resultSet.getInt("region_id_down"));
+				part.setRegionIdDown(resultSet.getInt("region_id_down"));
 
 				part.setRowId(resultSet.getString("row_id"));
 
@@ -99,6 +99,64 @@ public class AdAdminPartSelector implements ISelector {
 		}
 
 		return rows;
+	}
+	
+	public AdAdminPart loadByRegionId(int id, boolean isLock) throws Exception {
+		AdAdminPart part = null;
+
+		String sql = "select * from " + part.tableName() + " where region_id_down =:1";
+		
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, id);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+				
+				part = new AdAdminPart();
+
+				part.setGroupId(resultSet.getInt("group_id"));
+
+				part.setRegionIdDown(resultSet.getInt("region_id_down"));
+
+				part.setRowId(resultSet.getString("row_id"));
+
+			} else {
+			}
+		} catch (Exception e) {
+			
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+		}
+
+		return part;
 	}
 
 }

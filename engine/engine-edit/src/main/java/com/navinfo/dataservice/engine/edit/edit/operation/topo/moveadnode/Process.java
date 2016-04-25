@@ -127,7 +127,6 @@ public class Process implements IProcess {
 			this.recordData();
 
 			this.postCheck();
-
 			conn.commit();
 
 		} catch (Exception e) {

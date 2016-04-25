@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.commons.geom;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
@@ -7,6 +10,7 @@ import oracle.spatial.util.GeometryExceptionWithContext;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.json.JSONException;
 import org.json.JSONStringer;
 import org.json.JSONWriter;
@@ -19,6 +23,7 @@ import org.mapfish.geo.MfGeometry;
 
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
+import com.navinfo.dataservice.commons.util.GeometryUtils;
 import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -486,4 +491,43 @@ public class GeoTranslator {
 		
 		return Math.round(Angle.toDegrees(b - a));
 	}
+	/**
+	 * 线几何组成面的几何
+	 * 
+	 * @param List<Geometry> 
+	 *            线几何
+	 * @return 面几何
+	 */
+	 public  static Geometry getCalLineToPython(List<Geometry>  gList) throws Exception{
+		  Coordinate[] c = null;
+		  List<Coordinate> list = new ArrayList<Coordinate>();
+		  for(Geometry g : gList){
+			  c = (Coordinate[])ArrayUtils.addAll(c,g.getCoordinates());
+		  }   
+		  for(int i = 0 ; i < c.length-1;i++){
+	        	
+	        	 if(!list.contains(c[i])){
+	        		 list.add(c[i]);
+	        	 }
+	        }
+	      list.add(c[c.length-1]);
+	      Coordinate[] c1 = new Coordinate[list.size()];
+	      for(int i = 0  ; i < list.size();  i++){
+	        	c1[i] = list.get(i);
+	       }
+	      return geoFactory.createPolygon(c1);
+	  
+	 }
+	 
+	 /**
+		 * 线几何按逆序组成面的几何
+		 * 
+		 * @param List<Geometry> 
+		 *            线几何
+		 * @return 面几何
+		 */
+		 public  static Geometry getPolygonToPoints(Coordinate[] c) throws Exception{
+			 return geoFactory.createPolygon(c);
+		  
+		 }
 }

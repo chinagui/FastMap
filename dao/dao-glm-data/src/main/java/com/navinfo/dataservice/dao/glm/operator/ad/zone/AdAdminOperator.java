@@ -6,11 +6,12 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
@@ -19,8 +20,6 @@ import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminDetail;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminGroup;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminName;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminPart;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.operator.rd.gsc.RdGscLinkOperator;
 
 public class AdAdminOperator implements IOperator {
@@ -28,10 +27,12 @@ public class AdAdminOperator implements IOperator {
 
 	private Connection conn;
 	private AdAdmin admin;
+
 	public AdAdminOperator(Connection conn, AdAdmin admin) {
 		this.conn = conn;
 		this.admin = admin;
 	}
+
 	@Override
 	public void insertRow() throws Exception {
 		Statement stmt = null;
@@ -44,7 +45,7 @@ public class AdAdminOperator implements IOperator {
 			stmt.executeBatch();
 
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -53,7 +54,7 @@ public class AdAdminOperator implements IOperator {
 					stmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
@@ -61,8 +62,7 @@ public class AdAdminOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + admin.tableName()
-				+ " set u_record=3,");
+		StringBuilder sb = new StringBuilder("update " + admin.tableName() + " set u_record=3,");
 
 		PreparedStatement pstmt = null;
 
@@ -80,7 +80,7 @@ public class AdAdminOperator implements IOperator {
 				Object columnValue = en.getValue();
 
 				Field field = admin.getClass().getDeclaredField(column);
-				
+
 				field.setAccessible(true);
 
 				column = StringUtils.toColumnName(column);
@@ -91,34 +91,29 @@ public class AdAdminOperator implements IOperator {
 
 					if (!StringUtils.isStringSame(String.valueOf(value),
 							String.valueOf(columnValue))) {
-						
-						if(columnValue==null){
+
+						if (columnValue == null) {
 							sb.append(column + "=null,");
+						} else {
+							sb.append(column + "='" + String.valueOf(columnValue) + "',");
 						}
-						else{
-							sb.append(column + "='" + String.valueOf(columnValue)
-									+ "',");
-						}
-						
+
 					}
 
 				} else if (value instanceof Double) {
 
 					if (Double.parseDouble(String.valueOf(value)) != Double
 							.parseDouble(String.valueOf(columnValue))) {
-						sb.append(column
-								+ "="
-								+ Double.parseDouble(String
-										.valueOf(columnValue)) + ",");
+						sb.append(column + "=" + Double.parseDouble(String.valueOf(columnValue))
+								+ ",");
 					}
 
 				} else if (value instanceof Integer) {
 
 					if (Integer.parseInt(String.valueOf(value)) != Integer
 							.parseInt(String.valueOf(columnValue))) {
-						sb.append(column + "="
-								+ Integer.parseInt(String.valueOf(columnValue))
-								+ ",");
+						sb.append(
+								column + "=" + Integer.parseInt(String.valueOf(columnValue)) + ",");
 					}
 
 				}
@@ -134,7 +129,7 @@ public class AdAdminOperator implements IOperator {
 			pstmt.executeUpdate();
 
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -143,11 +138,10 @@ public class AdAdminOperator implements IOperator {
 					pstmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
-		
 
 	}
 
@@ -163,7 +157,7 @@ public class AdAdminOperator implements IOperator {
 			stmt.executeBatch();
 
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -172,11 +166,11 @@ public class AdAdminOperator implements IOperator {
 					stmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
-		
+
 	}
 
 	@Override
@@ -187,23 +181,23 @@ public class AdAdminOperator implements IOperator {
 
 		sb.append(admin.tableName());
 
-		sb.append("(region_id, admin_id,extend_id,admin_type," +
-				"capital,population,geometry,link_pid,name_groupId,side," +
-				"road_flag,pmesh_id,jis_code,mesh_id,edit_flag,memo,u_record,row_id) values (");
+		sb.append("(region_id, admin_id,extend_id,admin_type,"
+				+ "capital,population,geometry,link_pid,name_groupId,side,"
+				+ "road_flag,pmesh_id,jis_code,mesh_id,edit_flag,memo,u_record,row_id) values (");
 
 		sb.append(admin.pid());
+		System.out.println(admin.pid());
 		sb.append("," + admin.getAdminId());
 		sb.append("," + admin.getExtendId());
-		sb.append("," + admin.getAdminId());
 		sb.append("," + admin.getAdminType());
-		sb.append("," + admin.getCapital());
 		sb.append("," + admin.getCapital());
 		if (admin.getPopulation() == null) {
 			sb.append(",null");
 		} else {
 			sb.append(",'" + admin.getPopulation() + "'");
 		}
-		sb.append("," + admin.getGeometry());
+		String wkt = GeoTranslator.jts2Wkt(admin.getGeometry(), 0.00001, 5);
+		sb.append(",sdo_geometry('" + wkt + "',8307)");
 		sb.append("," + admin.getLinkPid());
 		sb.append("," + admin.getNameGroupId());
 		sb.append("," + admin.getSide());
@@ -215,30 +209,28 @@ public class AdAdminOperator implements IOperator {
 		if (admin.getMemo() == null) {
 			sb.append(",null");
 		} else {
-			sb.append(",'" + admin.getMemo()+ "'");
+			sb.append(",'" + admin.getMemo() + "'");
 		}
 		sb.append(",1,'" + admin.rowId() + "')");
 		stmt.addBatch(sb.toString());
-		for(IRow row :admin.getGroups()){
-			AdAdminGroupOperator op = new AdAdminGroupOperator(conn, (AdAdminGroup)row);
+		for (IRow row : admin.getGroups()) {
+			AdAdminGroupOperator op = new AdAdminGroupOperator(conn, (AdAdminGroup) row);
 			op.insertRow2Sql(stmt);
 		}
-		for (IRow row :admin.getNames()){
-			AdAdminNameOperator  op = new AdAdminNameOperator(conn, (AdAdminName)row);
+		for (IRow row : admin.getNames()) {
+			AdAdminNameOperator op = new AdAdminNameOperator(conn, (AdAdminName) row);
 			op.insertRow2Sql(stmt);
 		}
-		for (IRow row :admin.getDetails()){
-			AdAdminDetailOperator  op = new AdAdminDetailOperator(conn, (AdAdminDetail)row);
+		for (IRow row : admin.getDetails()) {
+			AdAdminDetailOperator op = new AdAdminDetailOperator(conn, (AdAdminDetail) row);
 			op.insertRow2Sql(stmt);
 		}
-			
+
 	}
 
 	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
-			throws Exception {
-		StringBuilder sb = new StringBuilder("update " + admin.tableName()
-				+ " set u_record=3,");
+	public void updateRow2Sql(List<String> fieldNames, Statement stmt) throws Exception {
+		StringBuilder sb = new StringBuilder("update " + admin.tableName() + " set u_record=3,");
 
 		for (int i = 0; i < fieldNames.size(); i++) {
 
@@ -270,23 +262,21 @@ public class AdAdminOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + admin.tableName()
-				+ " set u_record=2 where group_id=" + admin.pid();
+		String sql = "update " + admin.tableName() + " set u_record=2 where group_id="
+				+ admin.pid();
 		stmt.addBatch(sql);
-		for(IRow row :admin.getGroups()){
-			AdAdminGroupOperator op = new AdAdminGroupOperator(conn, (AdAdminGroup)row);
+		for (IRow row : admin.getGroups()) {
+			AdAdminGroupOperator op = new AdAdminGroupOperator(conn, (AdAdminGroup) row);
 			op.deleteRow2Sql(stmt);
 		}
-		for (IRow row :admin.getNames()){
-			AdAdminNameOperator  op = new AdAdminNameOperator(conn, (AdAdminName)row);
+		for (IRow row : admin.getNames()) {
+			AdAdminNameOperator op = new AdAdminNameOperator(conn, (AdAdminName) row);
 			op.deleteRow2Sql(stmt);
 		}
-		for (IRow row :admin.getDetails()){
-			AdAdminDetailOperator  op = new AdAdminDetailOperator(conn, (AdAdminDetail)row);
+		for (IRow row : admin.getDetails()) {
+			AdAdminDetailOperator op = new AdAdminDetailOperator(conn, (AdAdminDetail) row);
 			op.deleteRow2Sql(stmt);
 		}
-
-		
 
 	}
 

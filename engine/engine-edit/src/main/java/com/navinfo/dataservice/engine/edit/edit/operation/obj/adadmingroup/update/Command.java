@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.update;
 
+import net.sf.json.JSONObject;
+
 import org.json.JSONArray;
 
 import com.google.gson.Gson;
@@ -8,8 +10,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminTree;
-
-import net.sf.json.JSONObject;
 
 public class Command implements ICommand {
 

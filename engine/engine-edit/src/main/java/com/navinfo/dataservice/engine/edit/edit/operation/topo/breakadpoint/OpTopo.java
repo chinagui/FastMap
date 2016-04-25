@@ -2,6 +2,9 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint;
 
 import java.sql.Connection;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -14,9 +17,6 @@ import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.engine.edit.comm.util.LinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.OperateUtils;
 import com.vividsolutions.jts.geom.Point;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * @author zhaokk

@@ -23,8 +23,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
 import com.navinfo.dataservice.engine.edit.comm.util.AdminUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.OperateUtils;
 import com.vividsolutions.jts.geom.Coordinate;

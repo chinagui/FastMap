@@ -262,7 +262,7 @@ public class AdAdminOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + admin.tableName() + " set u_record=2 where group_id="
+		String sql = "update " + admin.tableName() + " set u_record=2 where region_id="
 				+ admin.pid();
 		stmt.addBatch(sql);
 		for (IRow row : admin.getGroups()) {

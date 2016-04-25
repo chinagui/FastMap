@@ -12,13 +12,13 @@ import java.util.Set;
 
 import oracle.sql.STRUCT;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.druid.proxy.jdbc.ClobProxyImpl;
 import com.alibaba.druid.proxy.jdbc.ConnectionProxyImpl;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -642,10 +642,10 @@ public class RdLinkSelector implements ISelector {
 		if(linkPids.size()>1000){
 			isClob=true;
 			clob=conn.createClob();
-			clob.setString(1, StringUtils.collection2String(linkPids, ","));
+			clob.setString(1, StringUtils.join(linkPids, ","));
 			sb.append(" and b.link_pid IN (select to_number(column_value) from table(clob_to_table(?)))");
 		}else{
-			sb.append(" and b.link_pid IN ("+StringUtils.collection2String(linkPids, ",")+")");
+			sb.append(" and b.link_pid IN ("+StringUtils.join(linkPids, ",")+")");
 		}
 
 		PreparedStatement pstmt = null;

@@ -46,15 +46,13 @@ public class FlushGdb {
 	}
 
 	private static StringBuilder logDetailQuery = new StringBuilder(
-			" where com_sta = 0 ");
+			"SELECT * FROM LOG_DETAIL where com_sta = 0 ");
 
 	private static Connection sourceConn;
 
 	private static Connection destConn;
 
 	private static Properties props;
-
-	private static List<Integer> grids = new ArrayList<Integer>();
 
 	private static long stopTime = 0;
 
@@ -149,8 +147,9 @@ public class FlushGdb {
 
 			Scanner scanner = new Scanner(new FileInputStream(args[1]));
 
+			List<Integer> meshes = new ArrayList<Integer>();
 			while (scanner.hasNextLine()) {
-				grids.add(Integer.parseInt(scanner.nextLine()));
+				meshes.add(Integer.parseInt(scanner.nextLine()));
 			}
 
 			int userId = Integer.valueOf(args[2]);
@@ -158,11 +157,11 @@ public class FlushGdb {
 			logDetailQuery.append(" and op_dt <= to_date('" + stopTime
 					+ "','yyyymmddhh24miss')");
 
-			int meshSize = grids.size();
+			int meshSize = meshes.size();
 
 			Set<Integer> setMesh = new HashSet<Integer>();
 
-			for (int m : grids) {
+			for (int m : meshes) {
 				setMesh.add(m);
 			}
 
@@ -177,7 +176,7 @@ public class FlushGdb {
 
 			for (int i = 0; i < meshSize; i++) {
 
-				logDetailQuery.append(grids.get(i));
+				logDetailQuery.append(meshes.get(i));
 				if (i < (meshSize - 1)) {
 					logDetailQuery.append(",");
 				}
@@ -187,7 +186,7 @@ public class FlushGdb {
 
 			init();
 
-			flushData(flushResult);
+			flushData(flushResult,"SELECT * FROM LOG_DETAIL "+logDetailQuery.toString());
 
 			moveLog(flushResult);
 
@@ -295,6 +294,7 @@ public class FlushGdb {
 	public static FlushResult flush(String[] args) {
 
 		FlushResult flushResult = new FlushResult();
+		Scanner scanner = null;
 		String tempTable = null;
 
 		try {
@@ -305,35 +305,22 @@ public class FlushGdb {
 
 			String stopTime = props.getProperty("stopTime");
 
-			Scanner scanner = new Scanner(new FileInputStream(args[1]));
+			scanner = new Scanner(new FileInputStream(args[1]));
 
+			List<Integer> grids = new ArrayList<Integer>();
 			while (scanner.hasNextLine()) {
 				grids.add(Integer.parseInt(scanner.nextLine()));
 			}
 
 			tempTable = createTempTable();
+			
 			prepareAndLockLog(tempTable,stopTime,grids);
 
-			logDetailQuery.append(" and op_dt <= to_date('" + stopTime
-					+ "','yyyymmddhh24miss')");
-
-			int meshSize = grids.size();
-
-			logDetailQuery.append(" and mesh_id in (");
-
-			for (int i = 0; i < meshSize; i++) {
-
-				logDetailQuery.append(grids.get(i));
-				if (i < (meshSize - 1)) {
-					logDetailQuery.append(",");
-				}
-			}
-
-			logDetailQuery.append(") order by op_dt ");
+			String logQuerySql = "SELECT L.* FROM LOG_DETAIL L,"+tempTable+" T WHERE L.OP_ID=T.OP_ID";
 
 			init();
 
-			flushData(flushResult);
+			flushData(flushResult,logQuerySql);
 
 			moveLog(flushResult);
 
@@ -352,6 +339,7 @@ public class FlushGdb {
 				unlockPreparedLog(tempTable);
 			}
 		}finally{
+			if(scanner!=null)scanner.close();
 			dropTempTable(tempTable);
 		}
 
@@ -397,7 +385,7 @@ public class FlushGdb {
 
 			init();
 
-			flushData(flushResult);
+			flushData(flushResult,logDetailQuery.toString());
 
 			moveLog(flushResult);
 

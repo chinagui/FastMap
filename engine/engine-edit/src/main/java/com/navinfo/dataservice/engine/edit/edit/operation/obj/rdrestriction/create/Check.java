@@ -6,14 +6,14 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Set;
 
-import com.navinfo.dataservice.commons.util.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
 
 public class Check {
 
 	public void checkGLM01017(Connection conn, Set<Integer> linkPids) throws Exception{
 		
-		String sql = "select link_pid from rd_link where kind in (11,13) and link_pid in ("+StringUtils.collection2String(linkPids, ",")+") and rownum=1";
+		String sql = "select link_pid from rd_link where kind in (11,13) and link_pid in ("+StringUtils.join(linkPids, ",")+") and rownum=1";
 		
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 

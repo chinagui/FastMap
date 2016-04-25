@@ -39,7 +39,11 @@ import com.navinfo.dataservice.engine.edit.comm.util.LinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.OperateUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-
+/**
+ * 
+ * @author zhaokk
+ * 行政区划面有关操作
+ */
 public class Operation implements IOperation {
 
 	private Command command;
@@ -47,9 +51,11 @@ public class Operation implements IOperation {
 	private Connection conn;
 	private Result result;
 	private AdFace face;
+
 	public Operation(Result result) {
-		this.result =result;
+		this.result = result;
 	}
+
 	public Operation(Command command, Check check, Connection conn) {
 		this.command = command;
 
@@ -57,8 +63,6 @@ public class Operation implements IOperation {
 
 		this.conn = conn;
 	}
-	
-	
 
 	@Override
 	public String run(Result result) throws Exception {
@@ -69,7 +73,7 @@ public class Operation implements IOperation {
 			if (command.getLinkType().equals(ObjType.ADLINK.toString())) {
 				this.createFace();
 				this.reCaleFaceGeometry(command.getLinks(), face);
-				
+
 			}
 			// RDLINK
 			if (command.getLinkType().equals(ObjType.RDLINK.toString())) {
@@ -94,6 +98,7 @@ public class Operation implements IOperation {
 
 		return set;
 	}
+	
 
 	/*
 	 * 创建行政区划面根据几何属性来创建面
@@ -154,14 +159,13 @@ public class Operation implements IOperation {
 		faceTopo.setSeqNum(seqNum);
 		result.insertObject(faceTopo, ObjStatus.INSERT, face.getPid());
 	}
-	 
 
 	/*
 	 * @param List 按照ADFACE的形状重新维护ADFACE
 	 */
 	@SuppressWarnings("null")
-	public void reCaleFaceGeometry(List<AdLink> links, AdFace face
-			) throws Exception {
+	public void reCaleFaceGeometry(List<AdLink> links, AdFace face)
+			throws Exception {
 		if (links == null && links.size() < 1) {
 			throw new Exception("重新维护面的形状:发现面没有组成link");
 		}
@@ -214,15 +218,16 @@ public class Operation implements IOperation {
 		face.setPerimeter(GeometryUtils.getLinkLength(g));
 		result.insertObject(face, ObjStatus.UPDATE, face.getPid());
 	}
-	
+
 	/*
 	 * 更新面的几何属性
 	 */
 	private void createFace() throws Exception {
 		AdFace face = new AdFace();
 		face.setPid(PidService.getInstance().applyAdFacePid());
-		this.face =face;
+		this.face = face;
 	}
+
 	/*
 	 * 重新维护faceTopo的顺序关系
 	 */

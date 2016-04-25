@@ -67,7 +67,8 @@ public class AdNodeTest {
 	public static void main(String[] args) throws Exception{
 		//new AdNodeTest().createAdLinkTest();
 		//new AdNodeTest().createAdNodeTest();
-		new AdNodeTest().deleteAdLinkTest();
+		// DruidPooledConnection 168报错
+		new AdNodeTest().createAdLinkTest();
 		
 	}
 }

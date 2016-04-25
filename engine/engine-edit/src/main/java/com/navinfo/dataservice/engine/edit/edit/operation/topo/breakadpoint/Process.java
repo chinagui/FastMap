@@ -35,6 +35,7 @@ public class Process implements IProcess {
 	
 	private Check check = new Check();
 	
+	private Boolean commitFlag = true;
 	public Process(ICommand command) throws Exception {
 		this.command = (Command) command;
 
@@ -48,6 +49,7 @@ public class Process implements IProcess {
 		this.command = (Command) command;
 		this.result = new Result();
 		this.conn = conn;
+		this.commitFlag =false;
 
 	}
 	@Override
@@ -101,7 +103,9 @@ public class Process implements IProcess {
 			OpRefAdFace opRefAdFace = new OpRefAdFace(command,conn);
 			opRefAdFace.run(result);
 			this.recordData();
-			conn.commit();
+			if(commitFlag){
+				   conn.commit();
+			}
 
 		} catch (Exception e) {
 			

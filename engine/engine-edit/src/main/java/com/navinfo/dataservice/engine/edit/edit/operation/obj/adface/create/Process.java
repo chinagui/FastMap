@@ -57,6 +57,7 @@ public class Process implements IProcess {
 			AdLink link =(AdLink)adLinkSelector.loadById(linkPid, true);
 			adLinks.add(link);
 		}
+		command.setLinks(adLinks);
 		return false;
 	}
 

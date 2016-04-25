@@ -69,8 +69,10 @@ public class RdLinkIntRticSearch implements ISearch {
 					String updownFlag = splits[3];
 
 					String rankStr = rank2String(Integer.valueOf(rank));
+					
+					String updownStr = updownFlag2String(Integer.valueOf(updownFlag));
 
-					String info = rankStr + code + updownFlag;
+					String info = rankStr + code + updownStr;
 
 					if (dir.equals("1")) {
 						m.put("a", info);
@@ -176,8 +178,10 @@ public class RdLinkIntRticSearch implements ISearch {
 					String updownFlag = splits[3];
 
 					String rankStr = rank2String(Integer.valueOf(rank));
+					
+					String updownStr = updownFlag2String(Integer.valueOf(updownFlag));
 
-					String info = rankStr + code + updownFlag;
+					String info = rankStr + code + updownStr;
 
 					if (dir.equals("1")) {
 						m.put("a", info);
@@ -229,6 +233,17 @@ public class RdLinkIntRticSearch implements ISearch {
 		}
 
 		return list;
+	}
+	
+	private String updownFlag2String(int updownFlag){
+		switch (updownFlag){
+		case 0:
+			return "上";
+		case 1:
+			return "下";
+		}
+		
+		return "";
 	}
 
 	private String rank2String(int rank) {

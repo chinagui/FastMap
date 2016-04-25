@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.create;
+package com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.update;
 
 import java.sql.Connection;
 import java.util.List;

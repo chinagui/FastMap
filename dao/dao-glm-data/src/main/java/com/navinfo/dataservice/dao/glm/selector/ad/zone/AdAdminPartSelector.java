@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminPart;
@@ -103,7 +102,7 @@ public class AdAdminPartSelector implements ISelector {
 	}
 	
 	public AdAdminPart loadByRegionId(int id, boolean isLock) throws Exception {
-		AdAdminPart part = new AdAdminPart();
+		AdAdminPart part = null;
 
 		String sql = "select * from " + part.tableName() + " where region_id_down =:1";
 		
@@ -123,6 +122,8 @@ public class AdAdminPartSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
+				
+				part = new AdAdminPart();
 
 				part.setGroupId(resultSet.getInt("group_id"));
 

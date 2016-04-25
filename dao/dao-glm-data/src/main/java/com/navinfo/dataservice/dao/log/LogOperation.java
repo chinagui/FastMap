@@ -20,7 +20,11 @@ public class LogOperation {
 	private List<LogDetail> details = new ArrayList<LogDetail>();
 
 	public LogOperation(String opId, String opCmd, int opSg){
-		opDt = StringUtils.getCurrentTime();
+		this.opId = opId;
+		
+		this.opCmd = opCmd;
+		
+		this.opDt = StringUtils.getCurrentTime();
 	}
 
 	public String getOpId() {

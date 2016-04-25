@@ -1,11 +1,13 @@
 package com.navinfo.dataservice.diff.scanner;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 
 import org.apache.log4j.Logger;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.datahub.glm.GlmColumn;
@@ -35,10 +37,22 @@ public class JavaDiffScanner implements DiffScanner
 
 
     @Override
-    public void scan(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
-    	scanLeftAddData(table,leftTableFullName,rightTableFullName);
-    	scanRightAddData(table,leftTableFullName,rightTableFullName);
-    	scanUpdateData(table,leftTableFullName,rightTableFullName);
+    public int scan(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
+    	Connection conn = null;
+    	try{
+        	conn = diffServer.getPoolDataSource().getConnection();
+        	int ca = scanLeftAddData(conn,table,leftTableFullName,rightTableFullName);
+        	int cd = scanRightAddData(conn,table,leftTableFullName,rightTableFullName);
+        	int cu = scanUpdateData(conn,table,leftTableFullName,rightTableFullName);
+        	conn.commit();
+        	return ca+cd+cu;
+    	}catch(Exception e){
+    		log.error(e.getMessage(),e);
+    		DbUtils.rollbackAndCloseQuietly(conn);
+    		throw new DiffException(e.getMessage(),e);
+    	}finally{
+    		DbUtils.closeQuietly(conn);
+    	}
     }
     
     //数据源在差分库
@@ -49,20 +63,20 @@ public class JavaDiffScanner implements DiffScanner
      * @param leftTable  左表
      * @param rightTable 右表
      */
-    public void scanLeftAddData(GlmTable table,String leftTableFullName,String rightTableFullName)
+    public int scanLeftAddData(Connection conn,GlmTable table,String leftTableFullName,String rightTableFullName)
     		throws DiffException
     {
         try
         {
         	StringBuilder sb = new StringBuilder();
-        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, OP_DT, TB_NM, OP_TP, TB_ROW_ID)\n SELECT SYS_GUID(),'DIFF_JOB_ID',SYSDATE,'");
+        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, OP_DT, TB_NM, OP_TP, TB_ROW_ID)\n SELECT S.S_GUID,S.S_GUID,SYSDATE,'");
         	sb.append(table.getName());
         	sb.append("',1,ROW_ID FROM ");
         	sb.append(leftTableFullName);
-        	sb.append(" L WHERE NOT EXISTS \n (SELECT 1 FROM ");
+        	sb.append(" L,(SELECT SYS_GUID() S_GUID FROM DUAL) S WHERE NOT EXISTS \n (SELECT 1 FROM ");
         	sb.append(rightTableFullName);
         	sb.append(" R WHERE L.ROW_ID=R.ROW_ID)");
-        	runner.execute(diffServer.getPoolDataSource(), sb.toString());
+        	return runner.update(conn,sb.toString());
         } catch (SQLException e){
         	log.error(e.getMessage(),e);
         	throw new DiffException("扫描左表有右表没有的数据时出错：" + e.getMessage() 
@@ -77,20 +91,20 @@ public class JavaDiffScanner implements DiffScanner
      * @param leftTable  左表
      * @param rightTable 右表
      */
-    public void scanRightAddData(GlmTable table,String leftTableFullName,String rightTableFullName)
+    public int scanRightAddData(Connection conn,GlmTable table,String leftTableFullName,String rightTableFullName)
     		throws DiffException
     {
         try
         {
         	StringBuilder sb = new StringBuilder();
-        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, OP_DT, TB_NM, OP_TP, TB_ROW_ID)\n SELECT SYS_GUID(),'DIFF_JOB_ID',SYSDATE,'");
+        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, OP_DT, TB_NM, OP_TP, TB_ROW_ID)\n SELECT S.S_GUID,S.S_GUID,SYSDATE,'");
         	sb.append(table.getName());
         	sb.append("',2,ROW_ID FROM ");
         	sb.append(rightTableFullName);
-        	sb.append(" R WHERE NOT EXISTS \n (SELECT 1 FROM ");
+        	sb.append(" R,(SELECT SYS_GUID() S_GUID FROM DUAL) S WHERE NOT EXISTS \n (SELECT 1 FROM ");
         	sb.append(leftTableFullName);
         	sb.append(" L WHERE L.ROW_ID=R.ROW_ID)");
-        	runner.execute(diffServer.getPoolDataSource(), sb.toString());
+        	return runner.update(conn,sb.toString());
         } catch (SQLException e){
         	log.error(e.getMessage(),e);
         	throw new DiffException("扫描左表没有右表有的数据时出错：" + e.getMessage() 
@@ -105,7 +119,7 @@ public class JavaDiffScanner implements DiffScanner
      * @param leftTable  左表
      * @param rightTable 右表
      */
-    public void scanUpdateData(GlmTable table,String leftTableFullName,String rightTableFullName)
+    public int scanUpdateData(Connection conn,GlmTable table,String leftTableFullName,String rightTableFullName)
     throws DiffException
     {
         try
@@ -120,19 +134,19 @@ public class JavaDiffScanner implements DiffScanner
         		}
         	}
         	StringBuilder sb = new StringBuilder();
-        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, OP_DT, TB_NM, OP_TP, TB_ROW_ID)\n SELECT SYS_GUID(),'DIFF_JOB_ID',SYSDATE,'");
+        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, OP_DT, TB_NM, OP_TP, TB_ROW_ID)\n SELECT S.S_GUID,S.S_GUID,SYSDATE,'");
         	sb.append(table.getName());
         	sb.append("',3,L.ROW_ID FROM ");
         	sb.append(leftTableFullName);
         	sb.append(" L, ");
         	sb.append(rightTableFullName);
-        	sb.append(" R WHERE ");
+        	sb.append(" R,(SELECT SYS_GUID() S_GUID FROM DUAL) S WHERE ");
         	sb.append(StringUtils.join(pkConditions," AND "));
         	sb.append(" AND NOT (");
         	sb.append(StringUtils.join(conditions," AND "));
         	sb.append(")");
         	
-        	runner.execute(diffServer.getPoolDataSource(), sb.toString());
+        	return runner.update(conn,sb.toString());
         } catch (SQLException e){
         	log.error(e.getMessage(),e);
         	throw new DiffException("扫描左表有右表没有的数据时出错：" + e.getMessage() 

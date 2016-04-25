@@ -4,7 +4,7 @@ declare
 begin
   for a in (select table_name
               from user_tab_cols a
-             where column_name = 'ROW_ID' and a.TABLE_NAME in (SELECT TABLE_NAME FROM USER_TABLES)
+             where column_name = 'ROW_ID' and a.TABLE_NAME in (SELECT TABLE_NAME FROM USER_TABLES) AND A.TABLE_NAME NOT IN('LOG_DETAIL','LOG_DETAIL_GRID')
             ) loop
   	
     execute immediate 'create unique index idx_' || v_cnt ||

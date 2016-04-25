@@ -65,7 +65,27 @@ public class JavaChangeLogFiller implements ChangeLogFiller {
         }
     }
     private void fillLeftDeleteLogDetail(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
-    	//暂时不填充
+        try
+        {
+        	List<String> colNames = new ArrayList<String>();
+        	for(GlmColumn col:table.getColumns()){
+        		colNames.add("R.\""+col.getName()+"\"");
+        	}
+        	StringBuilder sb = new StringBuilder();
+        	sb.append("SELECT ");
+        	sb.append(StringUtils.join(colNames,","));
+        	sb.append(" FROM ");
+        	sb.append(rightTableFullName);
+        	sb.append(" R,LOG_DETAIL D WHERE R.ROW_ID=D.TB_ROW_ID AND D.TB_NM = '");
+        	sb.append(table.getName());
+        	sb.append("' AND D.OP_TP = 2");
+        	runner.query(diffServer.getPoolDataSource(),sb.toString(),1000,new FillLeftDeleteLogDetail(table,diffServer),new Object[0]);
+        } catch (SQLException e){
+        	log.error(e.getMessage(),e);
+        	throw new DiffException("填充左表没有右表有的履历字段时出错：" + e.getMessage() 
+				+","+leftTableFullName
+				+","+rightTableFullName,e);
+        }
     }
     private void fillLeftUpdateLogDetail(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
 

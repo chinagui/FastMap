@@ -5,12 +5,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -20,11 +18,10 @@ import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.JGeometryUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.database.sql.RunnableSQL;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 
 import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
+import oracle.spatial.util.WKT;
 
 
 /** 
@@ -113,11 +110,11 @@ public class GlmGridCalculator {
 	 * @param tableName
 	 * @param rowIds
 	 * @param dataConn：数据所在库的连接
-	 * @return:key-value:key-rowId,value-grid号码字符串数组
+	 * @return: key-value:key-rowId,value-grid号码字符串数组
 	 */
 	public String[] calc(String tableName,String rowId,Connection dataConn)throws SQLException{
 		String sql = assembleQueryGeoSql(tableName,rowId);
-		String[] grids = run.query(dataConn, sql, new SingleRowGridHandler());
+		String[] grids = run.query(dataConn, sql, new SingleRowGridHandler(tableName));
 		return grids;
 	}
 	/**
@@ -135,13 +132,13 @@ public class GlmGridCalculator {
 	 * 给定履历表的过滤条件，通过履历表查询grid号码
 	 * 数据和履历在同一个库
 	 * @param tableName
-	 * @param filterSql:除了默认的L.TB_NM=tableName,自定义添加的其他过滤条件SQL子句，字段前的L.需要加上
+	 * @param logOpTypes:履历的OP_TP类型
 	 * @param logConn：数据和履历所在库的连接
-	 * @return
+	 * @return key:log_detail.row_id,value:对应的记录所属的grid
 	 */
 	public Map<String,String[]> calc(String tableName,Integer[] logOpTypes,Connection logConn)throws SQLException{
 		String sql = assembleQueryGeoSql(tableName,logOpTypes);
-		Map<String,String[]> grids = run.query(logConn, sql, new MultiRowGridHandler());
+		Map<String,String[]> grids = run.query(logConn, sql, new MultiRowGridHandler(tableName));
 		return grids;
 	}
 	/**
@@ -164,7 +161,7 @@ public class GlmGridCalculator {
 		}else if("DB_LINK".equals(remoteType)){
 			sql = this.assembleQueryGeoSql_Dblink(tableName, logOpTypes, remoteParam);
 		}
-		Map<String,String[]> grids = run.query(logConn, sql, new MultiRowGridHandler());
+		Map<String,String[]> grids = run.query(logConn, sql, new MultiRowGridHandler(tableName));
 		return grids;
 	}
 
@@ -176,61 +173,44 @@ public class GlmGridCalculator {
 	private String assembleQueryGeoSql(String tableName,String rowId){
 		StringBuilder sb = new StringBuilder();
 		GlmGridRefInfo refInfo = getGlmGridRefInfoMap().get(tableName);
-		sb.append(refInfo.getSelectSqlPart());
-		sb.append(refInfo.getConditionSqlPart());
+		sb.append(refInfo.getEditQuerySql());
 		sb.append(" AND P.ROW_ID = HEXTORAW('");
 		sb.append(rowId);
 		sb.append("')");
 		return sb.toString();
 		
 	}
-	/**
-	 * 
-	 * @param type:rowid/log
-	 * @return
-	 */
-	private String assembleQueryGeoSql(String tableName,Set<String> rowIds){
-		//...
-		return null;
-		
-	}
 	private String assembleQueryGeoSql(String tableName,Integer[] logOpTypes){
 		StringBuilder sb = new StringBuilder();
 		GlmGridRefInfo refInfo = getGlmGridRefInfoMap().get(tableName);
-		sb.append(refInfo.getSelectSqlPart());
-		sb.append(",LOG_DETAIL L ");
-		sb.append(refInfo.getConditionSqlPart());
-		sb.append(" AND P.ROW_ID=L.TB_ROW_ID AND L.TB_NM='"+tableName+"' AND L.OP_TP IN ("+StringUtils.join(logOpTypes,",")+")");
+		sb.append(refInfo.getDiffQuerySql());
+		sb.append(" AND L.OP_TP IN ("+StringUtils.join(logOpTypes,",")+")");
 		return sb.toString();
 	}
 	private String assembleQueryGeoSql_Dblink(String tableName,Integer[] logOpTypes,String dbLinkName){
 		StringBuilder sb = new StringBuilder();
 		GlmGridRefInfo refInfo = getGlmGridRefInfoMap().get(tableName);
-		sb.append(refInfo.replaceSelectSqlPartByDbLink(dbLinkName));
-		sb.append(",LOG_DETAIL L ");
-		sb.append(refInfo.getConditionSqlPart());
-		sb.append(" AND P.ROW_ID=L.TB_ROW_ID AND L.TB_NM='"+tableName+"' AND L.OP_TP IN ("+StringUtils.join(logOpTypes,",")+")");
+		sb.append(refInfo.replaceDiffSqlByDbLink(dbLinkName));
+		sb.append(" AND L.OP_TP IN ("+StringUtils.join(logOpTypes,",")+")");
 		return sb.toString();
 	}
 	private String assembleQueryGeoSqlByCrossUser(String tableName,Integer[] logOpTypes,String crossUserName){
 		StringBuilder sb = new StringBuilder();
 		GlmGridRefInfo refInfo = getGlmGridRefInfoMap().get(tableName);
-		sb.append(refInfo.replaceSelectSqlPartByCrossUser(crossUserName));
-		sb.append(",LOG_DETAIL L ");
-		sb.append(refInfo.getConditionSqlPart());
-		sb.append(" AND P.ROW_ID=L.TB_ROW_ID AND L.TB_NM='"+tableName+"' AND L.OP_TP IN ("+StringUtils.join(logOpTypes,",")+")");
+		sb.append(refInfo.replaceDiffSqlByCrossUser(crossUserName));
+		sb.append(" AND L.OP_TP IN ("+StringUtils.join(logOpTypes,",")+")");
 		return sb.toString();
 	}
-	class SingleRowGridHandler implements ResultSetHandler<String[]>{
+	class SingleRowGridHandler4Ck implements ResultSetHandler<String[]>{
 
 		@Override
 		public String[] handle(ResultSet rs) throws SQLException {
+			WKT wkt = new WKT();
 			while(rs.next()){
 				String rowId = null;
 				try{
 					rowId = rs.getString("ROW_ID");
-					JGeometry geo = null;
-					geo = JGeometry.load(rs.getBytes("GEOMETRY"));
+					JGeometry geo = wkt.toJGeometry(rs.getBytes("GEOMETRY"));
 					Set<String> rowGrids = null;
 					int meshId = rs.getInt("MESH_ID");
 					if(meshId>0){
@@ -248,28 +228,108 @@ public class GlmGridCalculator {
 		}
 		
 	}
+	class SingleRowGridHandler implements ResultSetHandler<String[]>{
+		
+		private String tableName;
+		public SingleRowGridHandler(String tableName){
+			this.tableName=tableName;
+		}
+
+		@Override
+		public String[] handle(ResultSet rs) throws SQLException {
+			if("CK_EXCEPTION".equals(tableName)){
+				WKT wkt = new WKT();
+				while(rs.next()){
+					String rowId = null;
+					try{
+						rowId = rs.getString("ROW_ID");
+						JGeometry geo = wkt.toJGeometry(rs.getBytes("GEOMETRY"));
+						Set<String> rowGrids = null;
+						int meshId = rs.getInt("MESH_ID");
+						if(meshId>0){
+							rowGrids = CompGridUtil.intersectGeometryGrid(geo, String.valueOf(meshId));
+						}else{
+							String[] meshes = JGeometryUtil.geo2MeshIds(geo);
+							rowGrids = CompGridUtil.intersectGeometryGrid(geo, meshes);
+						}
+						return rowGrids.toArray(new String[0]);
+					}catch(Exception e){
+						throw new SQLException("查询的geometry可能格式错误，无法转换为object。row_id:"+rowId,e);
+					}
+				}
+			}else{
+				while(rs.next()){
+					String rowId = null;
+					try{
+						rowId = rs.getString("ROW_ID");
+						JGeometry geo = null;
+						geo = JGeometry.load(rs.getBytes("GEOMETRY"));
+						Set<String> rowGrids = null;
+						int meshId = rs.getInt("MESH_ID");
+						if(meshId>0){
+							rowGrids = CompGridUtil.intersectGeometryGrid(geo, String.valueOf(meshId));
+						}else{
+							String[] meshes = JGeometryUtil.geo2MeshIds(geo);
+							rowGrids = CompGridUtil.intersectGeometryGrid(geo, meshes);
+						}
+						return rowGrids.toArray(new String[0]);
+					}catch(Exception e){
+						throw new SQLException("查询的geometry可能格式错误，无法转换为object。row_id:"+rowId,e);
+					}
+				}
+			}
+			return null;
+		}
+		
+	}
 	class MultiRowGridHandler implements ResultSetHandler<Map<String,String[]>>{
+		private String tableName;
+		public MultiRowGridHandler(String tableName){
+			this.tableName=tableName;
+		}
 
 		@Override
 		public Map<String, String[]> handle(ResultSet rs) throws SQLException {
 			Map<String,String[]> gs = new HashMap<String,String[]>();
-			while(rs.next()){
-				String rowId = null;
-				try{
-					rowId = rs.getString("ROW_ID");
-					JGeometry geo = null;
-					geo = JGeometry.load(rs.getBytes("GEOMETRY"));
-					Set<String> rowGrids = null;
-					int meshId = rs.getInt("MESH_ID");
-					if(meshId>0){
-						rowGrids = CompGridUtil.intersectGeometryGrid(geo, String.valueOf(meshId));
-					}else{
-						String[] meshes = JGeometryUtil.geo2MeshIds(geo);
-						rowGrids = CompGridUtil.intersectGeometryGrid(geo, meshes);
+			if("CK_EXCEPTION".equals(tableName)){
+				WKT wkt = new WKT();
+				while(rs.next()){
+					String rowId = null;
+					try{
+						rowId = rs.getString("ROW_ID");
+						JGeometry geo = wkt.toJGeometry(rs.getBytes("GEOMETRY"));
+						Set<String> rowGrids = null;
+						int meshId = rs.getInt("MESH_ID");
+						if(meshId>0){
+							rowGrids = CompGridUtil.intersectGeometryGrid(geo, String.valueOf(meshId));
+						}else{
+							String[] meshes = JGeometryUtil.geo2MeshIds(geo);
+							rowGrids = CompGridUtil.intersectGeometryGrid(geo, meshes);
+						}
+						gs.put(rowId, rowGrids.toArray(new String[0]));
+					}catch(Exception e){
+						throw new SQLException("查询的geometry可能格式错误，无法转换为object。row_id:"+rowId,e);
 					}
-					gs.put(rowId, rowGrids.toArray(new String[0]));
-				}catch(Exception e){
-					throw new SQLException("查询的geometry可能格式错误，无法转换为object。row_id:"+rowId,e);
+				}
+			}else{
+				while(rs.next()){
+					String rowId = null;
+					try{
+						rowId = rs.getString("ROW_ID");
+						JGeometry geo = null;
+						geo = JGeometry.load(rs.getBytes("GEOMETRY"));
+						Set<String> rowGrids = null;
+						int meshId = rs.getInt("MESH_ID");
+						if(meshId>0){
+							rowGrids = CompGridUtil.intersectGeometryGrid(geo, String.valueOf(meshId));
+						}else{
+							String[] meshes = JGeometryUtil.geo2MeshIds(geo);
+							rowGrids = CompGridUtil.intersectGeometryGrid(geo, meshes);
+						}
+						gs.put(rowId, rowGrids.toArray(new String[0]));
+					}catch(Exception e){
+						throw new SQLException("查询的geometry可能格式错误，无法转换为object。row_id:"+rowId,e);
+					}
 				}
 			}
 			return gs;

@@ -27,9 +27,9 @@ public class PLSQLDiffScanner implements DiffScanner
 
 
     @Override
-    public void scan(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
-    	scanLeftAddData(table,leftTableFullName,rightTableFullName);
-    	scanRightAddData(table,leftTableFullName,rightTableFullName);
+    public int scan(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
+    	return scanLeftAddData(table,leftTableFullName,rightTableFullName)+
+    	scanRightAddData(table,leftTableFullName,rightTableFullName)+
     	scanUpdateData(table,leftTableFullName,rightTableFullName);
     }
     
@@ -41,9 +41,10 @@ public class PLSQLDiffScanner implements DiffScanner
      * @param leftTable  左表
      * @param rightTable 右表
      */
-    public void scanLeftAddData(GlmTable table,String leftTableFullName,String rightTableFullName)
+    public int scanLeftAddData(GlmTable table,String leftTableFullName,String rightTableFullName)
     		throws DiffException
     {
+    	return 0;
     }
 
     /**
@@ -52,9 +53,10 @@ public class PLSQLDiffScanner implements DiffScanner
      * @param leftTable  左表
      * @param rightTable 右表
      */
-    public void scanRightAddData(GlmTable table,String leftTableFullName,String rightTableFullName)
+    public int scanRightAddData(GlmTable table,String leftTableFullName,String rightTableFullName)
     		throws DiffException
     {
+    	return 0;
         
     }
 
@@ -64,9 +66,10 @@ public class PLSQLDiffScanner implements DiffScanner
      * @param leftTable  左表
      * @param rightTable 右表
      */
-    public void scanUpdateData(GlmTable table,String leftTableFullName,String rightTableFullName)
+    public int scanUpdateData(GlmTable table,String leftTableFullName,String rightTableFullName)
     throws DiffException
     {
+    	return 0;
     }
 
     public void fillLogDetail(GlmTable table,String leftTableFullName,String rightTableFullName)

@@ -16,8 +16,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
 
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
@@ -26,9 +29,11 @@ import oracle.sql.STRUCT;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.datalock.exception.LockException;
 import com.navinfo.dataservice.datalock.lock.FmMesh4Lock;
 import com.navinfo.dataservice.datalock.lock.MeshLockManager;
-import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.navicommons.database.QueryRunner;
+//import com.navinfo.dataservice.commons.util.StringUtils;
 
 public class FlushGdb {
 
@@ -49,7 +54,7 @@ public class FlushGdb {
 
 	private static Properties props;
 
-	private static List<Integer> meshes = new ArrayList<Integer>();
+	private static List<Integer> grids = new ArrayList<Integer>();
 
 	private static long stopTime = 0;
 
@@ -145,7 +150,7 @@ public class FlushGdb {
 			Scanner scanner = new Scanner(new FileInputStream(args[1]));
 
 			while (scanner.hasNextLine()) {
-				meshes.add(Integer.parseInt(scanner.nextLine()));
+				grids.add(Integer.parseInt(scanner.nextLine()));
 			}
 
 			int userId = Integer.valueOf(args[2]);
@@ -153,11 +158,11 @@ public class FlushGdb {
 			logDetailQuery.append(" and op_dt <= to_date('" + stopTime
 					+ "','yyyymmddhh24miss')");
 
-			int meshSize = meshes.size();
+			int meshSize = grids.size();
 
 			Set<Integer> setMesh = new HashSet<Integer>();
 
-			for (int m : meshes) {
+			for (int m : grids) {
 				setMesh.add(m);
 			}
 
@@ -172,7 +177,7 @@ public class FlushGdb {
 
 			for (int i = 0; i < meshSize; i++) {
 
-				logDetailQuery.append(meshes.get(i));
+				logDetailQuery.append(grids.get(i));
 				if (i < (meshSize - 1)) {
 					logDetailQuery.append(",");
 				}
@@ -206,10 +211,91 @@ public class FlushGdb {
 		return flushResult;
 
 	}
+	private static String createTempTable()throws SQLException{
+		QueryRunner run = new QueryRunner();
+		StringBuilder sb = new StringBuilder();
+		String tempTable = "TEMP_LOG_OP_"+new Random().nextInt(1000000);
+		sb.append("CREATE TABLE ");
+		sb.append(tempTable);
+		sb.append("(OP_ID VARCHAR2(32))");
+		run.execute(sourceConn, sb.toString());
+		return tempTable;
+	}
+	private static void dropTempTable(String tempTable){
+		//
+	}
+	private static int prepareLog(String stopTime,List<Integer> grids,String tempTable)throws SQLException{
+		QueryRunner run = new QueryRunner();
+		StringBuilder sb = new StringBuilder();
+		sb.append("INSERT INTO ");
+		sb.append(tempTable);
+		sb.append(" SELECT T.OP_ID FROM LOG_DETAIL T,LOG_DETAIL_GRID P WHERE T.ROW_ID=P.ROW_ID AND COM_STA = 0 AND T.OP_DT<=TO_DATE('");
+		sb.append(stopTime+ "','yyyymmddhh24miss') AND P.GRID_ID IN (");
+		sb.append(StringUtils.join(grids, ","));
+		sb.append(")");
+		return run.update(sourceConn, sb.toString());
+	}
+	private static int extendLogByRowId(String tempTable)throws SQLException{
+		QueryRunner run = new QueryRunner();
+		StringBuilder sb = new StringBuilder();
+		sb.append("MERGE INTO ");
+		sb.append(tempTable);
+		sb.append(" T USING (SELECT L.OP_ID FROM LOG_DETAIL L WHERE EXISTS (SELECT 1 FROM LOG_DETAIL L1,");
+		sb.append(tempTable);
+		sb.append(" T1 WHERE L1.OP_ID=T1.OP_ID AND L1.ROW_ID=L.ROW_ID)) P ON (T.OP_ID=P.OP_ID) WHEN NOT MATCHED THEN INSERT VALUES (P.OP_ID)");
+		int result = run.update(sourceConn, sb.toString());
+		if(result>0){
+			return result+extendLogByRowId(tempTable);
+		}
+		return result;
+	}
+	private static void lockPreparedLog(String tempTable,int rowCount)throws LockException,SQLException{
+		QueryRunner run = new QueryRunner();
+		StringBuilder sb = new StringBuilder();
+		sb.append("UPDATE LOG_OPERATION L SET L.LOCK_STATUS=1 WHERE EXISTS (SELECT 1 FROM ");
+		sb.append(tempTable);
+		sb.append(" T WHERE L.OP_ID=T.OP_ID) AND L.LOCK_STATUS=0");
+		int result = run.update(sourceConn, sb.toString());
+		if(result<rowCount){
+			throw new LockException("部分履历已经被其他回库操作锁定,请稍候再试。");
+		}
+	}
+	private static void unlockPreparedLog(String tempTable){
+		try{
+			QueryRunner run = new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			sb.append("UPDATE LOG_OPERATION L SET L.LOCK_STATUS=0 WHERE EXISTS (SELECT 1 FROM ");
+			sb.append(tempTable);
+			sb.append(" T WHERE L.OP_ID=T.OP_ID)");
+			run.update(sourceConn, sb.toString());
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	private static String prepareAndLockLog(String tempTable,String stopTime,List<Integer> grids)throws LockException{
+		//
+		//Set<String> logOp
+		try{
+			int logOperationCount = 0;
+			//2.select by conditions
+			logOperationCount+=prepareLog(stopTime,grids,tempTable);
+			//3.
+			logOperationCount+=extendLogByRowId(tempTable);
+			lockPreparedLog(tempTable,logOperationCount);
+			sourceConn.commit();
+			return tempTable;
+		}catch(LockException e){
+			throw e;
+		}
+		catch(SQLException e){
+			throw new LockException("锁定要准备回库的履历时出现错误:"+e.getMessage(),e);
+		}
+	}
 
 	public static FlushResult flush(String[] args) {
 
 		FlushResult flushResult = new FlushResult();
+		String tempTable = null;
 
 		try {
 
@@ -217,24 +303,27 @@ public class FlushGdb {
 
 			props.load(new FileInputStream(args[0]));
 
-			stopTime = Long.parseLong(props.getProperty("stopTime"));
+			String stopTime = props.getProperty("stopTime");
 
 			Scanner scanner = new Scanner(new FileInputStream(args[1]));
 
 			while (scanner.hasNextLine()) {
-				meshes.add(Integer.parseInt(scanner.nextLine()));
+				grids.add(Integer.parseInt(scanner.nextLine()));
 			}
+
+			tempTable = createTempTable();
+			prepareAndLockLog(tempTable,stopTime,grids);
 
 			logDetailQuery.append(" and op_dt <= to_date('" + stopTime
 					+ "','yyyymmddhh24miss')");
 
-			int meshSize = meshes.size();
+			int meshSize = grids.size();
 
 			logDetailQuery.append(" and mesh_id in (");
 
 			for (int i = 0; i < meshSize; i++) {
 
-				logDetailQuery.append(meshes.get(i));
+				logDetailQuery.append(grids.get(i));
 				if (i < (meshSize - 1)) {
 					logDetailQuery.append(",");
 				}
@@ -259,6 +348,11 @@ public class FlushGdb {
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
+			if(StringUtils.isNotEmpty(tempTable)){
+				unlockPreparedLog(tempTable);
+			}
+		}finally{
+			dropTempTable(tempTable);
 		}
 
 		return flushResult;
@@ -343,12 +437,11 @@ public class FlushGdb {
 		destConn.setAutoCommit(false);
 	}
 
-	private static void flushData(FlushResult flushResult) throws Exception {
+	private static void flushData(FlushResult flushResult,String logQuerySql) throws Exception {
 
 		Statement sourceStmt = sourceConn.createStatement();
 
-		ResultSet rs = sourceStmt.executeQuery("select * from log_detail "
-				+ logDetailQuery.toString());
+		ResultSet rs = sourceStmt.executeQuery(logQuerySql);
 
 		rs.setFetchSize(1000);
 
@@ -421,10 +514,10 @@ public class FlushGdb {
 		Clob clob=null;
 		if(logDetails.size()>1000){
 			clob=sourceConn.createClob();
-			clob.setString(1, StringUtils.collection2String(logDetails, ","));
+			clob.setString(1, StringUtils.join(logDetails, ","));
 			moveSql+= " row_id IN (select column_value from table(clob_to_table(?)))";
 		}else{
-			moveSql+= " row_id IN ("+StringUtils.collection2String(logDetails, ",")+")";
+			moveSql+= " row_id IN ("+StringUtils.join(logDetails, ",")+")";
 		}
 		
 		int logMoved = stmt.executeUpdate(moveSql);
@@ -446,10 +539,10 @@ public class FlushGdb {
 		Clob clob=null;
 		if(logDetails.size()>1000){
 			clob=sourceConn.createClob();
-			clob.setString(1, StringUtils.collection2String(logDetails, ","));
+			clob.setString(1, StringUtils.join(logDetails, ","));
 			sql+= " row_id IN (select column_value from table(clob_to_table(?)))";
 		}else{
-			sql+= " row_id IN ("+StringUtils.collection2String(logDetails, ",")+")";
+			sql+= " row_id IN ("+StringUtils.join(logDetails, ",")+")";
 		}
 
 		stmt.execute(sql);

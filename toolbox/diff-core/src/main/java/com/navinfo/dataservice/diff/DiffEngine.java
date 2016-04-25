@@ -17,16 +17,15 @@ import com.navinfo.dataservice.diff.scanner.LogGridCalculatorByCrossUser;
 import com.navinfo.dataservice.diff.scanner.LogGridCalculator;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobResponse;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
-import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.PackageExec;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.exception.ThreadExecuteException;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,9 +46,10 @@ public class DiffEngine
 	private DataAccess leftAccess;
 	private DataAccess rightAccess;
 	private Set<GlmTable> diffTables;
+	private Set<GlmTable> logTables;
 	protected VMThreadPoolExecutor diffPoolExecutor;
 	protected VMThreadPoolExecutor logPoolExecutor;
-	protected VMThreadPoolExecutor logMeshPoolExecutor;
+	protected VMThreadPoolExecutor logGridPoolExecutor;
 	protected JavaDiffScanner diffScanner;
 	protected ChangeLogFiller changeLogFiller;
 	protected LogGridCalculator gridCalc;
@@ -68,7 +68,7 @@ public class DiffEngine
 			OracleSchema rightSchema = (OracleSchema)dbMan.getDbById(diffConfig.getRightDbId());
 			//安装EQUALS
 			installPcks(leftSchema);
-			//grantPrivilege(leftSchema);//datahub创建时统一都赋上了跨用户访问权限
+			//datahub创建时统一都赋上了跨用户访问权限
 			
 			//data access
 			leftAccess = new LocalDataAccess(leftSchema);
@@ -100,6 +100,7 @@ public class DiffEngine
 				}
 			}
 			log.debug("需要差分的表的个数为：" + diffTables.size());
+			logTables = Collections.synchronizedSet(new HashSet<GlmTable>());
 			
 			initPoolExecutor();
 		}catch(Exception e){
@@ -128,29 +129,16 @@ public class DiffEngine
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	private void grantPrivilege(OracleSchema schema)throws InitException{
-		Connection conn= null;
-		try{
-			OracleSchema superSchema = (OracleSchema)schema.getSuperDb();
-			String sql = "GRANT SELECT ANY TABLE TO "+schema.getDbUserName();
-			QueryRunner runner = new QueryRunner();
-			conn = superSchema.getDriverManagerDataSource().getConnection();
-			runner.execute(conn, sql);
-		}catch(Exception e){
-			log.error(e.getMessage(),e);
-			throw new InitException("安装差分需要的包是发生错误:"+e.getMessage(),e);
-		}finally{
-			DbUtils.closeQuietly(conn);
-		}
-	}
 
 	public DiffResponse execute() {
 		DiffResponse res = new DiffResponse();
 		try {
 			initEngine();
 			diffScan();
-			fillLogDetail();
-			calcLogDetailGrid();
+			if(logTables.size()>0){
+				fillLogDetail();
+				calcLogDetailGrid();
+			}
 			res.setStatusAndMsg(AbstractJobResponse.STATUS_SUCCESS, "Success");
 		}catch(Exception e){
 			res.setStatusAndMsg(AbstractJobResponse.STATUS_FAILED,"ERROR:"+e.getMessage());
@@ -173,18 +161,7 @@ public class DiffEngine
 		long t = System.currentTimeMillis();
 		for (final GlmTable table : diffTables) {
 			log.debug("添加差分线程，表名为：" + table.getName());
-			diffPoolExecutor.execute(new Runnable() {
-				@Override
-				public void run() {
-					try{
-						diffScanner.scan(table,leftAccess.accessTable(table), rightAccess.accessTable(table));
-						latch.countDown();
-						log.debug("差分完成，表名为：" + table.getName());
-					}catch(Exception e){
-						throw new ThreadExecuteException("表名："+table.getName()+"差分失败。",e);
-					}
-				}
-			});
+			diffPoolExecutor.execute(new DiffScannerThread(table,latch,logTables));
 		}
 		try {
 			log.debug("等待各差分任务执行完成");
@@ -200,12 +177,12 @@ public class DiffEngine
 	}
 
 	protected void fillLogDetail() {
-		final CountDownLatch latch4Log = new CountDownLatch(diffTables.size());
+		final CountDownLatch latch4Log = new CountDownLatch(logTables.size());
 		logPoolExecutor.addDoneSignal(latch4Log);
 		// 
 		log.debug("开始填充履历详细改前改后值");
 		long t = System.currentTimeMillis();
-		for (final GlmTable table : diffTables) {
+		for (final GlmTable table : logTables) {
 			log.debug("添加填充履历执行线程，表名为：" + table.getName());
 			logPoolExecutor.execute(new Runnable() {
 				@Override
@@ -278,40 +255,31 @@ public class DiffEngine
 	
 
 	protected void calcLogDetailGrid(){
-		//暂时只计算RD_LINK要素，主表子填充履历时已经取到mesh_id，只需要查询子表就行
-		Set<GlmTable> caclMeshTables = new HashSet<GlmTable>();
-		for (GlmTable table : diffTables){
-			if(table.getName().startsWith("RD_LINK_")){
-				caclMeshTables.add(table);
-			}else{
-				log.debug("暂时过滤填充履历图幅号，表名："+table.getName());
-			}
-		}
 		//初始线程池
 		int poolSize = 10;
 		try {
-			logMeshPoolExecutor = new VMThreadPoolExecutor(poolSize, poolSize, 3,
+			logGridPoolExecutor = new VMThreadPoolExecutor(poolSize, poolSize, 3,
 					TimeUnit.SECONDS, new LinkedBlockingQueue(),
 					new ThreadPoolExecutor.CallerRunsPolicy());
 		} catch (Exception e) {
-			throw new ServiceException("初始化计算履历图幅号的线程池错误:" + e.getMessage(), e);
+			throw new ServiceException("初始化计算履历grid号的线程池错误:" + e.getMessage(), e);
 		}
 		
 		//计算
-		final CountDownLatch latch4LogMesh = new CountDownLatch(caclMeshTables.size());
-		logMeshPoolExecutor.addDoneSignal(latch4LogMesh);
+		final CountDownLatch latch4LogGrid = new CountDownLatch(logTables.size());
+		logGridPoolExecutor.addDoneSignal(latch4LogGrid);
 		// 
-		log.debug("开始填充履历图幅号");
+		log.debug("开始填充履历grid号");
 		long t = System.currentTimeMillis();
-		for (final GlmTable table : caclMeshTables) {
-			log.debug("添加填充履历图幅号执行线程，表名为：" + table.getName());
-			logMeshPoolExecutor.execute(new Runnable() {
+		for (final GlmTable table : logTables) {
+			log.debug("添加填充履历grid号执行线程，表名为：" + table.getName());
+			logGridPoolExecutor.execute(new Runnable() {
 				@Override
 				public void run() {
 					try{
 						gridCalc.calc(table,diffConfig.getGdbVersion());
-						latch4LogMesh.countDown();
-						log.debug("填充履历图幅号完成，表名为：" + table.getName());
+						latch4LogGrid.countDown();
+						log.debug("填充履历grid号完成，表名为：" + table.getName());
 					}catch(Exception e){
 						throw new ThreadExecuteException("表名："+table.getName()+"差分失败。",e);
 					}
@@ -319,29 +287,51 @@ public class DiffEngine
 			});
 		}
 		try {
-			log.debug("等待各计算履历图幅号任务执行完成");
-			latch4LogMesh.await();
+			log.debug("等待各计算履历grid号任务执行完成");
+			latch4LogGrid.await();
 		} catch (InterruptedException e) {
 			log.warn("线程被打断");
 		}
 		if (logPoolExecutor.getExceptions().size() > 0)
-			throw new ServiceException("计算履历图幅号时发生异常", logPoolExecutor
+			throw new ServiceException("计算履历grid号时发生异常", logPoolExecutor
 					.getExceptions().get(0));
-		log.debug("各计算履历图幅号任务执行完成,用时：" + (System.currentTimeMillis() - t) + "ms");
+		log.debug("各计算履历grid号任务执行完成,用时：" + (System.currentTimeMillis() - t) + "ms");
 		//关闭线程池
-		log.debug("关闭计算履历图幅号的线程池");
-		if (logMeshPoolExecutor != null && !logMeshPoolExecutor.isShutdown()) {
-			logMeshPoolExecutor.shutdownNow();
+		log.debug("关闭计算履历grid号的线程池");
+		if (logGridPoolExecutor != null && !logGridPoolExecutor.isShutdown()) {
+			logGridPoolExecutor.shutdownNow();
 			try {
-				while (!logMeshPoolExecutor.isTerminated()) {
-					log.debug("等待线程结束：线程数为" + logMeshPoolExecutor.getActiveCount());
+				while (!logGridPoolExecutor.isTerminated()) {
+					log.debug("等待线程结束：线程数为" + logGridPoolExecutor.getActiveCount());
 					Thread.sleep(2000);
 				}
 			} catch (InterruptedException e) {
-				log.error("关闭计算履历图幅号的线程池");
-				throw new ServiceException("关闭计算履历图幅号的线程池", e);
+				log.error("关闭计算履历grid号的线程池");
+				throw new ServiceException("关闭计算履历grid号的线程池", e);
 			}
 		}
 	}
-
+	class DiffScannerThread implements Runnable{
+		GlmTable table = null;
+		CountDownLatch latch = null;
+		Set<GlmTable> logTables = null;
+		DiffScannerThread(GlmTable table,CountDownLatch latch,Set<GlmTable> logTables){
+			this.table=table;
+			this.latch=latch;
+			this.logTables=logTables;
+		}
+		@Override
+		public void run() {
+			try{
+				int logCount = diffScanner.scan(table,leftAccess.accessTable(table), rightAccess.accessTable(table));
+				if(logCount>0){
+					logTables.add(table);
+				}
+				latch.countDown();
+				log.debug("差分完成，表名为：" + table.getName());
+			}catch(Exception e){
+				throw new ThreadExecuteException("表名："+table.getName()+"差分失败。",e);
+			}
+		}
+	}
 }

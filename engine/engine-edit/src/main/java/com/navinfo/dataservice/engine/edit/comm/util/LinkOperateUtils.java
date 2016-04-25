@@ -6,14 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.commons.util.GeometryUtils;
 import com.navinfo.dataservice.commons.util.MeshUtils;
-
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -22,7 +18,9 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.MultiLineString;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * @author zhaokk LINK 公共方法
@@ -35,17 +33,17 @@ public class LinkOperateUtils {
 	public static boolean getNextLink(List<AdLink> links, int currNodePid,
 			AdLink currLink) throws Exception {
 		int nextNodePid = 0;
-		if (currNodePid == currLink.getStartNodePid()) {
-			nextNodePid = currLink.getStartNodePid();
+		if (currNodePid == currLink.getsNodePid()) {
+			nextNodePid = currLink.getsNodePid();
 		} else {
-			nextNodePid = currLink.getEndNodePid();
+			nextNodePid = currLink.geteNodePid();
 		}
 		for (AdLink link : links) {
 			if (link.getPid() == currLink.getPid()) {
 				continue;
 			}
-			if (link.getStartNodePid() == nextNodePid
-					|| link.getEndNodePid() == nextNodePid) {
+			if (link.getsNodePid() == nextNodePid
+					|| link.geteNodePid() == nextNodePid) {
 				currNodePid = nextNodePid;
 				currLink = link;
 				return true;
@@ -65,8 +63,8 @@ public class LinkOperateUtils {
 		double linkLength = GeometryUtils.getLinkLength(g);
 		link.setLength(linkLength);
 		link.setGeometry(GeoTranslator.transform(g, 100000, 0));
-		link.setStartNodePid(sNodePid);
-		link.setEndNodePid(eNodePid);
+		link.setsNodePid(sNodePid);
+		link.seteNodePid(eNodePid);
 		setLinkChildren(link);
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
 	}
@@ -84,8 +82,8 @@ public class LinkOperateUtils {
 		double linkLength = GeometryUtils.getLinkLength(g);
 		link.setLength(linkLength);
 		link.setGeometry(GeoTranslator.transform(g, 100000, 0));
-		link.setStartNodePid(sNodePid);
-		link.setEndNodePid(eNodePid);
+		link.setsNodePid(sNodePid);
+		link.seteNodePid(eNodePid);
 		setLinkChildren(link);
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
 		return link;

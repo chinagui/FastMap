@@ -8,12 +8,8 @@ import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdNodeSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
 
@@ -66,9 +62,9 @@ public class Process implements IProcess {
 		
 		AdNodeSelector nodeSelector = new AdNodeSelector(conn);
 		
-		this.snode = (AdNode) nodeSelector.loadById(updateLink.getStartNodePid(), true);
+		this.snode = (AdNode) nodeSelector.loadById(updateLink.geteNodePid(), true);
 		
-		this.enode = (AdNode) nodeSelector.loadById(updateLink.getEndNodePid(), true);
+		this.enode = (AdNode) nodeSelector.loadById(updateLink.getsNodePid(), true);
 		
 		return false;
 	}

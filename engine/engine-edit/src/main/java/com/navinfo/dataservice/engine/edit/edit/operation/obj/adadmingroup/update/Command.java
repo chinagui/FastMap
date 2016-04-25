@@ -1,41 +1,25 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.update;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.json.JSONArray;
 
+import com.google.gson.Gson;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminTree;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-/**
- * json格式:
- * {
-	"projectId"："项目ID",
-	"command"："CREATE",
-	"type"："ADADMINGROUP",
-	"pid": "pid",
-	"data"：{
-		"parentType": "adadmin/adadmingroup",
-		"downAdAdmins"：[[1653],[1231]]
-	}
-	}
- * @author Administrator
- *
- */
 public class Command implements ICommand {
 
 	private String requester;
 
 	private int projectId;
-	
-	private List<Integer> adAdminIds;
 
-	private Integer pid;
-	
-	private String parentType;
+	private JSONObject content;
+
+	private JSONArray groupTree;
 
 	public int getProjectId() {
 		return projectId;
@@ -45,14 +29,22 @@ public class Command implements ICommand {
 		this.projectId = projectId;
 	}
 
+	public JSONObject getContent() {
+		return content;
+	}
+
+	public void setContent(JSONObject content) {
+		this.content = content;
+	}
+
 	@Override
 	public OperType getOperType() {
-		return OperType.CREATE;
+		return OperType.UPDATE;
 	}
 
 	@Override
 	public ObjType getObjType() {
-		return ObjType.RDBRANCH;
+		return ObjType.RDRESTRICTION;
 	}
 
 	@Override
@@ -60,61 +52,35 @@ public class Command implements ICommand {
 		return requester;
 	}
 
-	public List<Integer> getAdAdminIds() {
-		return adAdminIds;
-	}
-
-	public void setAdAdminIds(List<Integer> adAdminIds) {
-		this.adAdminIds = adAdminIds;
-	}
-	
-	public Integer getPid() {
-		return pid;
-	}
-
-	public void setPid(Integer pid) {
-		this.pid = pid;
-	}
-
-	public String getParentType() {
-		return parentType;
-	}
-
-	public void setParentType(String parentType) {
-		this.parentType = parentType;
-	}
-
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 
 		this.projectId = json.getInt("projectId");
 
-		JSONObject data = json.getJSONObject("data");
-		
-		parentType = data.getString("parentType");
-		
-		pid = data.getInt("pid");
+		this.content = json.getJSONObject("data");
 
-		if (data.containsKey("downAdAdmins")) {
+		//groupTree = content.getJSONArray("groupTree");
 
-			this.adAdminIds = new ArrayList<Integer>();
-
-			JSONArray array = data.getJSONArray("downAdAdmins");
-
-			for (int i = 0; i < array.size(); i++) {
-				JSONObject jo = array.getJSONObject(i);
-
-				int adadminId = jo.getInt("adadminId");
-				
-				if(!adAdminIds.contains(adadminId))
-				{
-					adAdminIds.add(adadminId);
-				}
-			}
-		}
+		//parseJson2Bean(groupTree.getJSONObject(0).toString());
 
 	}
-	
-	public static void main(String[] args) {
+
+	private static  AdAdminTree parseJson2Bean(String jsonArray) {
+		AdAdminTree tree = null;
+
+		Gson gson = new Gson();
+		tree = gson.fromJson(jsonArray, AdAdminTree.class);
+
+		return tree;
+	}
+
+	public static void main(String[] args) throws Exception {
+		String jsonArray = "[{\"regionId\":1273,\"name\":\"中国大陆\",\"group\":{\"groupId\":248,"
+				+ "\"regionIdUp\":1273,\"rowId\":\"2D71EFCB1966DCE7E050A8C083040693\"},"
+				+ "\"children\":[{\"regionId\":163,\"name\":\"北京市\",\"group\":{\"groupId\":40,"
+				+ "\"regionIdUp\":163,\"rowId\":\"2D71EFCB16D7DCE7E050A8C083040693\"},\"part\":{\"groupId\":248,\"regionIdDown\":163,\"rowId\":\"2D71EFCB56BEDCE7E050A8C083040693\"},\"children\":[{\"regionId\":580,\"name\":\"北京市\",\"group\":{\"groupId\":114,\"regionIdUp\":580,\"rowId\":\"2D71EFCB1711DCE7E050A8C083040693\"},\"part\":{\"groupId\":40,\"regionIdDown\":580,\"rowId\":\"2D71EFCB642CDCE7E050A8C083040693\"},\"children\":[{\"regionId\":1421,\"name\":\"北京市区\",\"group\":{\"groupId\":286,\"regionIdUp\":1421,\"rowId\":\"2D71EFCB179FDCE7E050A8C083040693\"},\"part\":{\"groupId\":114,\"regionIdDown\":1421,\"rowId\":\"2D71EFCB679CDCE7E050A8C083040693\"}}]}]}]}]";
+		JSONArray array = new JSONArray(jsonArray);
+		AdAdminTree tree = parseJson2Bean(array.get(0).toString());
+		System.out.println(tree.Serialize(ObjLevel.BRIEF));
 	}
 }

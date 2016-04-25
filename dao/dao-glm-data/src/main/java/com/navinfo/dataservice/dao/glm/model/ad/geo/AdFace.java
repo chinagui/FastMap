@@ -223,6 +223,10 @@ public class AdFace implements IObj {
 		return rowId;
 	}
 
+	public String getRowId() {
+		return rowId;
+	}
+
 	@Override
 	public void setRowId(String rowId) {
 

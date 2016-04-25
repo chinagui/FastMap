@@ -1,9 +1,13 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create;
 
+import io.netty.util.internal.MpscLinkedQueueNode;
+
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -41,12 +45,13 @@ public class Operation implements IOperation {
 		this.result = result;
 	}
 
-	public Operation(Command command, Check check, Connection conn) {
+	public Operation(Command command, Check check, Connection conn,Result result) {
 		this.command = command;
 
 		this.check = check;
 
 		this.conn = conn;
+		this.result = result;
 	}
 
 	@Override
@@ -114,7 +119,12 @@ public class Operation implements IOperation {
 			List<IRow> adLinkMeshs = new ArrayList<IRow>();
 			adLinkMeshs.add(adLinkMesh);
 			link.setMeshes(adLinkMeshs);
-			AdFace adFace = new AdFace();
+			result.insertObject(link, ObjStatus.INSERT, link.getPid());
+			this.createFace();
+			List<AdLink> links = new ArrayList<AdLink>();
+			links.add(link);
+			this.reCaleFaceGeometry(links, face);
+			/*AdFace adFace = new AdFace();
 			adFace.setPid(PidService.getInstance().applyAdFacePid());
 			adFace.setArea(GeometryUtils.getCalculateArea(geom));
 			adFace.setMeshId(meshId);
@@ -130,19 +140,24 @@ public class Operation implements IOperation {
 			adFace.setFaceTopos(adFaceTopos);
 			result.setPrimaryPid(adFace.getPid());
 			result.insertObject(link, ObjStatus.INSERT, link.getPid());
-			result.insertObject(adFace, ObjStatus.INSERT, adFace.getPid());
+			result.insertObject(adFace, ObjStatus.INSERT, adFace.getPid());*/
 		}
 	}
 
 	/*
 	 * 添加Link和FaceTopo关系
 	 */
-	public void addLink(AdFace face, AdLink link, int seqNum) {
-		AdFaceTopo faceTopo = new AdFaceTopo();
-		faceTopo.setLinkPid(link.getPid());
-		faceTopo.setFacePid(face.getPid());
-		faceTopo.setSeqNum(seqNum);
-		result.insertObject(faceTopo, ObjStatus.INSERT, face.getPid());
+	public void addLink( Map<AdLink,Integer> map) {
+		List<IRow> adFaceTopos = new ArrayList<IRow>();
+		for (AdLink  link :map.keySet()){
+			AdFaceTopo faceTopo = new AdFaceTopo();
+			faceTopo.setLinkPid(link.getPid());
+			faceTopo.setFacePid(face.getPid());
+			faceTopo.setSeqNum(map.get(link));
+			adFaceTopos.add(faceTopo);
+		}
+		this.face.setFaceTopos(adFaceTopos);
+		//result.insertObject(face, ObjStatus.INSERT, face.getPid());
 	}
 
 	/*
@@ -165,7 +180,8 @@ public class Operation implements IOperation {
 		// 获取当前LINK和NODE
 		int startNodePid = currLink.getsNodePid();
 		int currNodePid = startNodePid;
-		this.addLink(face, currLink, 1);
+		Map<AdLink, Integer> map = new HashMap<AdLink, Integer>();
+		map.put(currLink, 1);
 		int index = 1;
 		List<Geometry> list = new ArrayList<Geometry>();
 		list.add(currLink.getGeometry());
@@ -175,19 +191,22 @@ public class Operation implements IOperation {
 				break;
 			}
 			index++;
-			this.addLink(face, currLink, index);
+			map.put(currLink, index);
 			list.add(currLink.getGeometry());
 		}
 		// 线几何组成面的几何
+		this.addLink(map);
 		Geometry g = GeoTranslator.getCalLineToPython(list);
 		Coordinate[] c1 = new Coordinate[g.getCoordinates().length];
 		// 判断线组成面是否可逆
 		if (!GeometryUtils.IsCCW(g.getCoordinates())) {
 			for (int i = g.getCoordinates().length - 1; i >= 0; i--) {
-				c1[c1.length - i - 1] = c1[0];
+				c1[c1.length - i - 1] = g.getCoordinates()[i];
 			}
 			this.reverseFaceTopo();
 
+		}else{
+			c1 = g.getCoordinates();
 		}
 		// 更新面的几何属性
 		this.updateGeometry(GeoTranslator.getPolygonToPoints(c1), face);
@@ -201,7 +220,7 @@ public class Operation implements IOperation {
 		face.setGeometry(g);
 		face.setArea(GeometryUtils.getCalculateArea(g));
 		face.setPerimeter(GeometryUtils.getLinkLength(g));
-		result.insertObject(face, ObjStatus.UPDATE, face.getPid());
+		result.insertObject(face, ObjStatus.INSERT, face.getPid());
 	}
 
 	/*

@@ -61,6 +61,8 @@ public class Result implements ISerializable {
 	 */
 	public void insertObject(IRow row, ObjStatus os, int topParentPid) {
 
+		row.setStatus(os);
+		
 		JSONObject json = new JSONObject();
 		
 		json.put("type", row.objType());

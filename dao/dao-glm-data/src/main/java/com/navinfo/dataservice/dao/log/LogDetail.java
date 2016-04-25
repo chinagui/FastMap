@@ -3,6 +3,8 @@ package com.navinfo.dataservice.dao.log;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
+
 public class LogDetail {
 
 	private String opId;
@@ -42,7 +44,7 @@ public class LogDetail {
 	private List<LogDetailGrid> grids = new ArrayList<LogDetailGrid>();
 	
 	public LogDetail() {
-
+		opDt = StringUtils.getCurrentTime();
 	}
 
 	public String getComDt() {

@@ -63,7 +63,7 @@ public class LogWriter {
 
 		PreparedStatement pstmt = null;
 
-		String sql = "insert into log_operation (op_id, us_id, op_cmd, op_dt, op_sg) values (?,?,?,to_date(?,'yyyymmddhh24miss'),?)";
+		String sql = "insert into log_operation (op_id, us_id, op_cmd, op_dt, op_sg, com_sta, lock_sta) values (?,?,?,to_date(?,'yyyymmddhh24miss'),?,?,?)";
 
 		try {
 
@@ -79,6 +79,10 @@ public class LogWriter {
 				pstmt.setString(4, logOperation.getOpDt());
 
 				pstmt.setInt(5, logOperation.getOpSg());
+				
+				pstmt.setInt(6, logOperation.getComSta());
+
+				pstmt.setInt(7, logOperation.getLockSta());
 
 				pstmt.execute();
 
@@ -103,52 +107,52 @@ public class LogWriter {
 		}
 	}
 
-	private void insertRow2Sql(Statement stmt, LogOperation logOperation)
-			throws Exception {
-
-		StringBuilder sb = new StringBuilder("insert into ");
-
-		sb.append(logOperation.tableName());
-
-		sb.append("(op_id, us_id, op_cmd, op_dt, op_sg) values (");
-
-		sb.append("'" + logOperation.getOpId() + "'");
-
-		if (logOperation.getUsId() == null) {
-			sb.append(",null");
-		} else {
-			sb.append(",'" + logOperation.getUsId() + "'");
-		}
-
-		if (logOperation.getOpCmd() == null) {
-			sb.append(",null");
-		} else {
-			sb.append(",'" + logOperation.getOpCmd() + "'");
-		}
-
-		if (logOperation.getOpDt() == null) {
-			sb.append(",null");
-		} else {
-			sb.append(",to_date('" + logOperation.getOpDt()
-					+ "','yyyymmddhh24miss')");
-		}
-
-		sb.append("," + logOperation.getOpSg());
-
-		sb.append(")");
-
-		stmt.addBatch(sb.toString());
-
-		for (LogDetail r : logOperation.getDetails()) {
-			this.insertLogDetail2Sql(r, stmt);
-		}
-	}
+//	private void insertRow2Sql(Statement stmt, LogOperation logOperation)
+//			throws Exception {
+//
+//		StringBuilder sb = new StringBuilder("insert into ");
+//
+//		sb.append(logOperation.tableName());
+//
+//		sb.append("(op_id, us_id, op_cmd, op_dt, op_sg) values (");
+//
+//		sb.append("'" + logOperation.getOpId() + "'");
+//
+//		if (logOperation.getUsId() == null) {
+//			sb.append(",null");
+//		} else {
+//			sb.append(",'" + logOperation.getUsId() + "'");
+//		}
+//
+//		if (logOperation.getOpCmd() == null) {
+//			sb.append(",null");
+//		} else {
+//			sb.append(",'" + logOperation.getOpCmd() + "'");
+//		}
+//
+//		if (logOperation.getOpDt() == null) {
+//			sb.append(",null");
+//		} else {
+//			sb.append(",to_date('" + logOperation.getOpDt()
+//					+ "','yyyymmddhh24miss')");
+//		}
+//
+//		sb.append("," + logOperation.getOpSg());
+//
+//		sb.append(")");
+//
+//		stmt.addBatch(sb.toString());
+//
+//		for (LogDetail r : logOperation.getDetails()) {
+//			this.insertLogDetail2Sql(r, stmt);
+//		}
+//	}
 
 	private void insertLogDetail(LogDetail detail) throws Exception {
 
 		PreparedStatement pstmt = null;
 
-		String sql = "insert into log_detail (op_id, ob_nm, ob_pk, ob_pid, opb_tp, ob_tp, op_dt, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id,com_sta) values (?,?,?,?,?,?,to_date(?,'yyyymmddhh24miss'),?,?,?,?,?,?,?,?,?)";
+		String sql = "insert into log_detail (op_id, ob_nm, ob_pk, ob_pid, opb_tp, ob_tp, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 		try {
 			pstmt = this.conn.prepareStatement(sql);
@@ -165,9 +169,7 @@ public class LogWriter {
 
 			pstmt.setInt(6, detail.getObTp());
 
-			pstmt.setString(7, detail.getOpDt());
-
-			pstmt.setString(8, detail.getTbNm());
+			pstmt.setString(7, detail.getTbNm());
 
 			Clob oldclob = conn.createClob();
 
@@ -178,7 +180,7 @@ public class LogWriter {
 				oldclob = impl.getRawClob(); // 获取原生的这个 Clob
 			}
 
-			pstmt.setClob(9, oldclob);
+			pstmt.setClob(8, oldclob);
 
 			Clob newclob = conn.createClob();
 
@@ -189,19 +191,17 @@ public class LogWriter {
 				newclob = impl.getRawClob(); // 获取原生的这个 Clob
 			}
 
-			pstmt.setClob(10, newclob);
+			pstmt.setClob(9, newclob);
 
-			pstmt.setString(11, detail.getFdLst());
+			pstmt.setString(10, detail.getFdLst());
 
-			pstmt.setInt(12, detail.getOpTp());
+			pstmt.setInt(11, detail.getOpTp());
 
-			pstmt.setString(13, detail.getRowId());
+			pstmt.setString(12, detail.getRowId());
 
-			pstmt.setInt(14, detail.getIsCk());
+			pstmt.setInt(13, detail.getIsCk());
 
-			pstmt.setString(15, detail.getTbRowId());
-
-			pstmt.setInt(16, detail.getComSta());
+			pstmt.setString(14, detail.getTbRowId());
 
 			pstmt.execute();
 
@@ -230,12 +230,12 @@ public class LogWriter {
 
 		PreparedStatement pstmt = null;
 
-		String sql = "insert into log_detail_grid (row_id,grid_id,grid_type) values (?,?,?)";
+		String sql = "insert into log_detail_grid (log_row_id,grid_id,grid_type) values (?,?,?)";
 
 		try {
 			pstmt = this.conn.prepareStatement(sql);
 
-			pstmt.setString(1, grid.getRowId());
+			pstmt.setString(1, grid.getLogRowId());
 
 			pstmt.setInt(2, grid.getGridId());
 
@@ -267,7 +267,7 @@ public class LogWriter {
 
 		sb.append(detail.tableName());
 
-		sb.append("(op_id, ob_nm, ob_pk, ob_pid, opb_tp, ob_tp, op_dt, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id,com_sta) values (");
+		sb.append("(op_id, ob_nm, ob_pk, ob_pid, opb_tp, ob_tp, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id) values (");
 
 		sb.append("'" + detail.getOpId() + "'");
 
@@ -288,12 +288,6 @@ public class LogWriter {
 		sb.append("," + detail.getOpbTp());
 
 		sb.append("," + detail.getObTp());
-
-		if (detail.getOpDt() == null) {
-			sb.append(",null");
-		} else {
-			sb.append(",to_date('" + detail.getOpDt() + "','yyyymmddhh24miss')");
-		}
 
 		if (detail.getTbNm() == null) {
 			sb.append(",null");
@@ -330,8 +324,6 @@ public class LogWriter {
 		sb.append("," + detail.getIsCk());
 
 		sb.append(",hextoraw('" + detail.getTbRowId() + "')");
-
-		sb.append("," + detail.getComSta());
 
 		sb.append(")");
 
@@ -480,7 +472,7 @@ public class LogWriter {
 
 				grid.setGridId(Integer.valueOf(gridId));
 
-				grid.setRowId(ld.getRowId());
+				grid.setLogRowId(ld.getRowId());
 
 				grid.setGridType(0);
 
@@ -532,7 +524,7 @@ public class LogWriter {
 
 				grid.setGridId(Integer.valueOf(gridId));
 
-				grid.setRowId(ld.getRowId());
+				grid.setLogRowId(ld.getRowId());
 
 				grid.setGridType(0);
 
@@ -577,7 +569,7 @@ public class LogWriter {
 
 							grid.setGridId(Integer.valueOf(gridId));
 
-							grid.setRowId(ldC.getRowId());
+							grid.setLogRowId(ldC.getRowId());
 
 							grid.setGridType(0);
 
@@ -643,7 +635,7 @@ public class LogWriter {
 
 				grid.setGridId(Integer.valueOf(gridId));
 
-				grid.setRowId(ld.getRowId());
+				grid.setLogRowId(ld.getRowId());
 
 				grid.setGridType(1);
 
@@ -691,7 +683,7 @@ public class LogWriter {
 
 							grid.setGridId(Integer.valueOf(gridId));
 
-							grid.setRowId(ldC.getRowId());
+							grid.setLogRowId(ldC.getRowId());
 
 							grid.setGridType(1);
 
@@ -732,7 +724,7 @@ public class LogWriter {
 
 						grid.setGridId(Integer.valueOf(gridId));
 
-						grid.setRowId(detail.getRowId());
+						grid.setLogRowId(detail.getRowId());
 
 						grid.setGridType(1);
 

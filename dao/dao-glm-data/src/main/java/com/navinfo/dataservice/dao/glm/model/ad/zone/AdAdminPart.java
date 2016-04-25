@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.util.StringUtils;
+
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -21,6 +23,7 @@ public class AdAdminPart implements IRow {
 	private int regionIdDown;
 	private int meshId = 0;
     private String rowId;
+    private String type;
     public String getRowId() {
 		return rowId;
 	}
@@ -35,6 +38,14 @@ public class AdAdminPart implements IRow {
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
 		
+	}
+	
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	@Override
@@ -197,6 +208,11 @@ public class AdAdminPart implements IRow {
 			json.put("regionIdDown", regionIdDown);
 			
 			json.put("rowId", rowId);
+			
+			if(!StringUtils.isEmpty("type"))
+			{
+				json.put("type", type);
+			}
 
 			return json;
 		}
@@ -205,7 +221,6 @@ public class AdAdminPart implements IRow {
 
 	@Override
 	public boolean Unserialize(JSONObject json) throws Exception {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

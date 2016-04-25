@@ -119,14 +119,14 @@ public class CheckSuitLoader {
 		
 		for(int i=0;i<myCheckSuit.size();i++){
 			   System.out.println("CheckSuit.ruleCode:" + i + ":" + myCheckSuit.get(i));
-			   myCheckSuit.get(i).ruleClass.newInstance();
+			   myCheckSuit.get(i).getRuleClass().newInstance();
 			  }
 		
 		ArrayList<CheckRule> myCheckSuit_1 = CheckSuitLoader.getInstance().getCheckSuit(suitCode);
 		
 		for(int i=0;i<myCheckSuit_1.size();i++){
 			   System.out.println("CheckSuit.ruleCode:" + i + ":" + myCheckSuit_1.get(i));
-			   myCheckSuit.get(i).ruleClass.newInstance();
+			   myCheckSuit.get(i).getRuleClass().newInstance();
 			  }
 
 

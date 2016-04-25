@@ -115,12 +115,12 @@ public class CheckRuleLoader {
 		
 		CheckRule myCheckRule = CheckRuleLoader.getInstance().getCheckRule(ruleCode);
 		
-		System.out.println("CheckRule.ruleCode:" + myCheckRule.ruleCode);
-		System.out.println("CheckRule.ruleLog:" + myCheckRule.ruleLog);
-		System.out.println("CheckRule.severity:" + myCheckRule.severity);
-		System.out.println("CheckRule.ruleClass:" + myCheckRule.ruleClass);
+		System.out.println("CheckRule.ruleCode:" + myCheckRule.getRuleCode());
+		System.out.println("CheckRule.ruleLog:" + myCheckRule.getRuleLog());
+		System.out.println("CheckRule.severity:" + myCheckRule.getSeverity());
+		System.out.println("CheckRule.ruleClass:" + myCheckRule.getRuleClass());
 		
-		myCheckRule.ruleClass.newInstance();
+		myCheckRule.getRuleClass().newInstance();
 	}
 	
 	

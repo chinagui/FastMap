@@ -12,18 +12,36 @@ import java.sql.SQLException;
 public class CheckRule {
 	
 	//规则号
-	public String ruleCode;
-		
+//	public String ruleCode;
+	private String ruleCode; 
 	//规则提示信息
-	public String ruleLog;
+//	public String ruleLog;
+	private String ruleLog;
 	
 	//规则等级
-	public int severity;
-	
+//	public int severity;
+	private int severity;
 	//检查规则类
 //	public String ruleClass;
 	
-	public Class ruleClass;
+//	public Class ruleClass;
+	private Class ruleClass;
+	
+	public String getRuleCode(){
+		return ruleCode;
+	}
+	
+	public String getRuleLog(){
+		return ruleLog;
+	}
+	
+	public int getSeverity(){
+		return severity;
+	}
+	
+	public Class getRuleClass(){
+		return ruleClass;
+	}
 	
 	public CheckRule(String initRuleCode,String initRuleLog,int initSeverity,String initCheckClassPath) {
 

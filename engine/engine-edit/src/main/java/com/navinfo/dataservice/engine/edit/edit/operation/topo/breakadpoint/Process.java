@@ -3,21 +3,16 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint;
 import java.sql.Connection;
 import java.util.List;
 
-import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
-import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
-import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdFaceTopoOperator;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceTopoSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
-import com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.OpRefRestrict;
 
 /**
  * @author zhaokk
@@ -41,7 +36,7 @@ public class Process implements IProcess {
 
 		this.result = new Result();
 
-		this.conn = DBOraclePoolManager.getConnection(this.command
+		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
 				.getProjectId());
 
 	}

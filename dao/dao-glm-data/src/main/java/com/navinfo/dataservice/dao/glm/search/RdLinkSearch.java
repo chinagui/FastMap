@@ -11,13 +11,13 @@ import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
 import com.navinfo.dataservice.commons.db.ConfigLoader;
-import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 public class RdLinkSearch implements ISearch {
 
@@ -208,7 +208,7 @@ public class RdLinkSearch implements ISearch {
 	public static void main(String[] args) throws Exception {
 		ConfigLoader.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
 		
-		Connection conn = DBOraclePoolManager.getConnection(11);
+		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
 		
 		RdLinkSearch a = new RdLinkSearch(conn);
 		

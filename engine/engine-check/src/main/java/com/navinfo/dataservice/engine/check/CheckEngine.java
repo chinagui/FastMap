@@ -4,17 +4,9 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONException;
-
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.engine.check.core.CheckRule;
-import com.navinfo.dataservice.engine.check.core.CheckSuitLoader;
-import com.navinfo.dataservice.engine.check.core.NiValException;
-import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.dao.DBConnector;
 import com.navinfo.dataservice.commons.db.ConfigLoader;
-import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
@@ -22,6 +14,11 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
+import com.navinfo.dataservice.engine.check.core.CheckRule;
+import com.navinfo.dataservice.engine.check.core.CheckSuitLoader;
+import com.navinfo.dataservice.engine.check.core.NiValException;
+import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class CheckEngine {
@@ -30,7 +27,7 @@ public class CheckEngine {
 
 	public CheckEngine(CheckCommand checkCommand) throws Exception{
 		this.checkCommand=checkCommand;
-		this.conn = DBOraclePoolManager.getConnection(this.checkCommand.getProjectId());
+		this.conn = GlmDbPoolManager.getInstance().getConnection(this.checkCommand.getProjectId());
 	}
 
 	//获取本次要执行的检查规则
@@ -55,8 +52,11 @@ public class CheckEngine {
 		
 		for (int i=0;i<rulesList.size();i++){
 			CheckRule rule=rulesList.get(i);
-			baseRule obj = (baseRule) rule.ruleClass.newInstance();
+			baseRule obj = (baseRule) rule.getRuleClass().newInstance();
 			obj.setRuleDetail(rule);
+			
+			obj.setConn(this.conn);
+			
 			obj.preCheck(this.checkCommand);
 			if(obj.getCheckResultList().size()!=0){
 				return obj.getCheckResultList().get(0).getInformation();
@@ -73,8 +73,11 @@ public class CheckEngine {
 		
 		for (int i=0;i<rulesList.size();i++){
 			CheckRule rule=rulesList.get(i);
-			baseRule obj = (baseRule) rule.ruleClass.newInstance();
+			baseRule obj = (baseRule) rule.getRuleClass().newInstance();
 			obj.setRuleDetail(rule);
+			
+			obj.setConn(this.conn);
+			
 			obj.postCheck(this.checkCommand);
 			//调用规则的后检查
 			checkResultList.addAll(obj.getCheckResultList());

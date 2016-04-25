@@ -10,8 +10,6 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
-import com.navinfo.dataservice.commons.db.ConfigLoader;
-import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;

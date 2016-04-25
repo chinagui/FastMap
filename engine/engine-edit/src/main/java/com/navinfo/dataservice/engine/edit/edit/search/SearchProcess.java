@@ -3,12 +3,6 @@ package com.navinfo.dataservice.engine.edit.edit.search;
 import java.sql.Connection;
 import java.util.List;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-import net.sf.json.processors.JsonValueProcessor;
-import net.sf.json.util.JSONUtils;
-
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
@@ -17,9 +11,16 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.AdAdminTreeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+import net.sf.json.processors.JsonValueProcessor;
+import net.sf.json.util.JSONUtils;
 
 /**
  * 查询进程
@@ -225,7 +226,17 @@ public class SearchProcess {
 					
 					array.add(row.Serialize(ObjLevel.FULL));
 				}
+			case ADADMINGROUP:
+				if(condition.containsKey("projectId"))
+				{
+					AdAdminTreeSelector adAdminTreeSelector = new AdAdminTreeSelector(conn);
+					
+					int projectId = condition.getInt("projectId");
+					
+					IRow row = adAdminTreeSelector.loadRowsByProjectId(projectId,false);
 
+					array.add(row.Serialize(ObjLevel.BRIEF));
+				}
 				break;
 			}
 

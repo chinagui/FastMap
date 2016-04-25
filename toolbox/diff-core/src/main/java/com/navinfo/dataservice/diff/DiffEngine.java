@@ -14,6 +14,7 @@ import com.navinfo.dataservice.diff.scanner.ChangeLogFiller;
 import com.navinfo.dataservice.diff.scanner.JavaChangeLogFiller;
 import com.navinfo.dataservice.diff.scanner.JavaDiffScanner;
 import com.navinfo.dataservice.diff.scanner.LogGridCalculatorByCrossUser;
+import com.navinfo.dataservice.diff.scanner.LogOperationGenerator;
 import com.navinfo.dataservice.diff.scanner.LogGridCalculator;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobResponse;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
@@ -51,6 +52,7 @@ public class DiffEngine
 	protected VMThreadPoolExecutor logPoolExecutor;
 	protected VMThreadPoolExecutor logGridPoolExecutor;
 	protected JavaDiffScanner diffScanner;
+	protected LogOperationGenerator logOpGen;
 	protected ChangeLogFiller changeLogFiller;
 	protected LogGridCalculator gridCalc;
 
@@ -76,6 +78,7 @@ public class DiffEngine
 			
 			//diffScanner
 			diffScanner = new JavaDiffScanner(leftSchema);
+			logOpGen = new LogOperationGenerator(leftSchema);
 			changeLogFiller = new JavaChangeLogFiller(leftSchema);
 			gridCalc = new LogGridCalculatorByCrossUser(leftSchema,rightSchema.getDbUserName());
 			//diffTables
@@ -135,6 +138,7 @@ public class DiffEngine
 		try {
 			initEngine();
 			diffScan();
+			logOpGen.generate();
 			if(logTables.size()>0){
 				fillLogDetail();
 				calcLogDetailGrid();

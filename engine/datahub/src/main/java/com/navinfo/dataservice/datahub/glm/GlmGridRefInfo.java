@@ -81,9 +81,20 @@ public class GlmGridRefInfo {
 		}
 		return s;
 	}
+	private void generateSqlForSpecial(){
+		editQuerySql = "SELECT P.ROW_ID,R1.GEOMETRY,0 MESH_ID FROM "+tableName+" P,RD_CROSS_NODE R2,RD_NODE R1"
+				+ " WHERE P.PID=R2.PID AND R2.NODE_PID=R1.NODE_PID AND R2.IS_MAIN=1";
+		diffQuerySql = "SELECT L.ROW_ID,R1.GEOMETRY,0 MESH_ID FROM "+tableName+" P,RD_CROSS_NODE R2,RD_NODE R1,LOG_DETAIL L"
+				+ " WHERE P.PID=R2.PID AND R2.NODE_PID=R1.NODE_PID AND R2.IS_MAIN=1 AND P.ROW_ID=L.TB_ROW_ID AND L.TB_NM = '"+tableName+"' ";
+	}
 	private void generateSql(){
-		StringBuilder sb4E = new StringBuilder();
-		StringBuilder sb4D = new StringBuilder();
+		if(tableName.equals("RD_CROSS")||
+				tableName.equals("RD_CROSS_NAME")){
+			generateSqlForSpecial();
+			return;
+		}
+		StringBuilder sb4E = new StringBuilder();//edit查询grid使用sql
+		StringBuilder sb4D = new StringBuilder();//diff查询grid使用sql
 		//先判断是否本身为主表，主表的refInfo为空
 		if(refInfo!=null&&refInfo.size()>0){
 			int size = refInfo.size();

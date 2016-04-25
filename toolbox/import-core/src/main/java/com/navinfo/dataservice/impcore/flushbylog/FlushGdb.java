@@ -216,7 +216,7 @@ public class FlushGdb {
 		String tempTable = "TEMP_LOG_OP_"+new Random().nextInt(1000000);
 		sb.append("CREATE TABLE ");
 		sb.append(tempTable);
-		sb.append("(OP_ID VARCHAR2(32))");
+		sb.append("(OP_ID RAW(16),OP_DT TIMESTAMP)");
 		run.execute(sourceConn, sb.toString());
 		return tempTable;
 	}
@@ -228,10 +228,16 @@ public class FlushGdb {
 		StringBuilder sb = new StringBuilder();
 		sb.append("INSERT INTO ");
 		sb.append(tempTable);
-		sb.append(" SELECT T.OP_ID FROM LOG_DETAIL T,LOG_DETAIL_GRID P WHERE T.ROW_ID=P.ROW_ID AND COM_STA = 0 AND T.OP_DT<=TO_DATE('");
-		sb.append(stopTime+ "','yyyymmddhh24miss') AND P.GRID_ID IN (");
-		sb.append(StringUtils.join(grids, ","));
-		sb.append(")");
+		sb.append(" SELECT DISTINCT P.OP_ID,P.OP_DT FROM LOG_OPERATION P,LOG_DETAIL L,LOG_DETAIL_GRID T WHERE P.OP_ID=L.OP_ID AND L.ROW_ID=T.LOG_ROW_ID AND P.COM_STA = 0");
+		if(StringUtils.isNotEmpty(stopTime)){
+			sb.append(" AND P.OP_DT<=TO_DATE('");
+			sb.append(stopTime+ "','yyyymmddhh24miss')"); 
+		}
+		if(grids!=null&&grids.size()>0){
+			sb.append(" AND T.GRID_ID IN (");
+			sb.append(StringUtils.join(grids, ","));
+			sb.append(")");
+		}
 		return run.update(sourceConn, sb.toString());
 	}
 	private static int extendLogByRowId(String tempTable)throws SQLException{
@@ -239,9 +245,9 @@ public class FlushGdb {
 		StringBuilder sb = new StringBuilder();
 		sb.append("MERGE INTO ");
 		sb.append(tempTable);
-		sb.append(" T USING (SELECT L.OP_ID FROM LOG_DETAIL L WHERE EXISTS (SELECT 1 FROM LOG_DETAIL L1,");
+		sb.append(" T USING (SELECT P.OP_ID,P.OP_DT FROM LOG_OPERATION P,LOG_DETAIL L WHERE EXISTS (SELECT 1 FROM LOG_DETAIL L1,");
 		sb.append(tempTable);
-		sb.append(" T1 WHERE L1.OP_ID=T1.OP_ID AND L1.ROW_ID=L.ROW_ID)) P ON (T.OP_ID=P.OP_ID) WHEN NOT MATCHED THEN INSERT VALUES (P.OP_ID)");
+		sb.append(" T1 WHERE L1.OP_ID=T1.OP_ID AND L1.ROW_ID=L.ROW_ID AND P.OP_DT<=T1.OP_DT) AND P.OP_ID=L.OP_ID AND P.COM_STA=0) TP ON (T.OP_ID=TP.OP_ID) WHEN NOT MATCHED THEN INSERT VALUES (TP.OP_ID,TP.OP_DT)");
 		int result = run.update(sourceConn, sb.toString());
 		if(result>0){
 			return result+extendLogByRowId(tempTable);
@@ -251,9 +257,9 @@ public class FlushGdb {
 	private static void lockPreparedLog(String tempTable,int rowCount)throws LockException,SQLException{
 		QueryRunner run = new QueryRunner();
 		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE LOG_OPERATION L SET L.LOCK_STATUS=1 WHERE EXISTS (SELECT 1 FROM ");
+		sb.append("UPDATE LOG_OPERATION L SET L.LOCK_STA=1 WHERE EXISTS (SELECT 1 FROM ");
 		sb.append(tempTable);
-		sb.append(" T WHERE L.OP_ID=T.OP_ID) AND L.LOCK_STATUS=0");
+		sb.append(" T WHERE L.OP_ID=T.OP_ID) AND L.LOCK_STA=0");
 		int result = run.update(sourceConn, sb.toString());
 		if(result<rowCount){
 			throw new LockException("部分履历已经被其他回库操作锁定,请稍候再试。");
@@ -263,7 +269,7 @@ public class FlushGdb {
 		try{
 			QueryRunner run = new QueryRunner();
 			StringBuilder sb = new StringBuilder();
-			sb.append("UPDATE LOG_OPERATION L SET L.LOCK_STATUS=0 WHERE EXISTS (SELECT 1 FROM ");
+			sb.append("UPDATE LOG_OPERATION L SET L.LOCK_STA=0 WHERE EXISTS (SELECT 1 FROM ");
 			sb.append(tempTable);
 			sb.append(" T WHERE L.OP_ID=T.OP_ID)");
 			run.update(sourceConn, sb.toString());
@@ -312,19 +318,22 @@ public class FlushGdb {
 				grids.add(Integer.parseInt(scanner.nextLine()));
 			}
 
+			init();
+
 			tempTable = createTempTable();
 			
 			prepareAndLockLog(tempTable,stopTime,grids);
 
 			String logQuerySql = "SELECT L.* FROM LOG_DETAIL L,"+tempTable+" T WHERE L.OP_ID=T.OP_ID";
 
-			init();
+			if(flushData(flushResult,logQuerySql)){
 
-			flushData(flushResult,logQuerySql);
+				moveLog(flushResult);
 
-			moveLog(flushResult);
-
-			updateLogDetailCk();
+				updateLogCommitStatus(tempTable);
+			}else{
+				throw new Exception("刷数据失败。");
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -389,7 +398,7 @@ public class FlushGdb {
 
 			moveLog(flushResult);
 
-			updateLogDetailCk();
+			updateLogCommitStatus();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -425,7 +434,7 @@ public class FlushGdb {
 		destConn.setAutoCommit(false);
 	}
 
-	private static void flushData(FlushResult flushResult,String logQuerySql) throws Exception {
+	private static boolean flushData(FlushResult flushResult,String logQuerySql) throws Exception {
 
 		Statement sourceStmt = sourceConn.createStatement();
 
@@ -473,10 +482,13 @@ public class FlushGdb {
 			}
 
 		}
-
+		if(flushResult.getFailedTotal()>0){
+			return false;
+		}
+		return true;
 	}
 
-	private static void moveLog(FlushResult flushResult) throws Exception {
+	private static void moveLog(FlushResult flushResult, String tempTable) throws Exception {
 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyymmdd");
 
@@ -495,22 +507,19 @@ public class FlushGdb {
 		Statement stmt = sourceConn.createStatement();
 
 		stmt.execute(sqlCreateDblink);
-
-		String moveSql = "insert into log_detail@" + dbLinkName
-				+ " select * from log_detail where";
-
-		Clob clob=null;
-		if(logDetails.size()>1000){
-			clob=sourceConn.createClob();
-			clob.setString(1, StringUtils.join(logDetails, ","));
-			moveSql+= " row_id IN (select column_value from table(clob_to_table(?)))";
-		}else{
-			moveSql+= " row_id IN ("+StringUtils.join(logDetails, ",")+")";
-		}
 		
-		int logMoved = stmt.executeUpdate(moveSql);
+		String moveSql = "INSERT INTO LOG_OPERATION@"+dbLinkName
+				+"(OP_ID,US_ID,OP_CMD,OP_DT) SELECT L.OP_ID,L.US_ID,L.OP_CMD,L.OP_DT FROM LOG_OPERATION L,"+tempTable+" T WHERE L.OP_ID=T.OP_ID";
+		flushResult.setLogOpMoved(stmt.executeUpdate(moveSql));
+		
+		moveSql = "insert into log_detail@" + dbLinkName
+				+ " select l.* from log_detail l,"+tempTable+" t where l.op_id=t.op_id";
+		flushResult.setLogDetailMoved(stmt.executeUpdate(moveSql));
+		
+		moveSql = "INSERT INTO LOG_DETAIL_GRID@"+dbLinkName
+				+" SELECT L.* FROM ";
 
-		flushResult.setLogMoved(logMoved);
+		
 
 		String sqlDropDblink = "drop database link " + dbLinkName;
 
@@ -518,21 +527,11 @@ public class FlushGdb {
 
 	}
 
-	private static void updateLogDetailCk() throws Exception {
+	private static void updateLogCommitStatus(String tempTable) throws Exception {
 
 		Statement stmt = sourceConn.createStatement();
 
-		String sql = "update log_detail set com_dt = sysdate,com_sta=1 where";
-		
-		Clob clob=null;
-		if(logDetails.size()>1000){
-			clob=sourceConn.createClob();
-			clob.setString(1, StringUtils.join(logDetails, ","));
-			sql+= " row_id IN (select column_value from table(clob_to_table(?)))";
-		}else{
-			sql+= " row_id IN ("+StringUtils.join(logDetails, ",")+")";
-		}
-
+		String sql = "update LOG_OPERATION set com_dt = sysdate,com_sta=1,LOCK_STA=0 where OP_ID IN (SELECT OP_ID FROM "+tempTable+")";
 		stmt.execute(sql);
 
 		stmt.close();

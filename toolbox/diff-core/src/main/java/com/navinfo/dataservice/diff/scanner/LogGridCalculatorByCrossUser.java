@@ -43,7 +43,7 @@ public class LogGridCalculatorByCrossUser implements LogGridCalculator {
 		try{
 			GlmGridCalculator calculator = GlmGridCalculatorFactory.getInstance().create(gdbVerison);
 			conn = diffServer.getPoolDataSource().getConnection();
-			String flushLogGridSql = "INSERT INTO LOG_DETAIL_GRID (ROW_ID,GRID_ID,GRID_TYPE) VALUES (?,?,?)";
+			String flushLogGridSql = "INSERT INTO LOG_DETAIL_GRID (LOG_ROW_ID,GRID_ID,GRID_TYPE) VALUES (?,?,?)";
 			stmt = conn.prepareStatement(flushLogGridSql);
 			//计算new grid:insert+update类型的履历
         	Map<String,String[]> newGrids = calculator.calc(table.getName(), new Integer[]{1,3}, conn);

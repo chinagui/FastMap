@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.rd.gsc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -19,11 +20,11 @@ import com.vividsolutions.jts.geom.Geometry;
 import oracle.sql.STRUCT;
 
 public class RdGscSelector implements ISelector {
-	
+
 	private static Logger logger = Logger.getLogger(RdCrossSelector.class);
 
 	private Connection conn;
-	
+
 	public RdGscSelector(Connection conn) {
 		this.conn = conn;
 	}
@@ -60,26 +61,25 @@ public class RdGscSelector implements ISelector {
 				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
 
 				rdGsc.setGeometry(geometry);
-				
-				List<IRow> links = new RdGscLinkSelector(conn)
-						.loadRowsByParentId(id, isLock);
-				
+
+				List<IRow> links = new RdGscLinkSelector(conn).loadRowsByParentId(id, isLock);
+
 				rdGsc.setLinks(links);
-				
+
 				for (IRow row : rdGsc.getLinks()) {
 					RdGscLink obj = (RdGscLink) row;
 
 					rdGsc.rdGscLinkMap.put(obj.rowId(), obj);
 				}
-				
+
 				rdGsc.setRowId(resultSet.getString("row_id"));
 
 			} else {
-				
+
 				throw new DataNotFoundException("数据不存在");
 			}
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -88,7 +88,7 @@ public class RdGscSelector implements ISelector {
 					resultSet.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 			try {
@@ -96,7 +96,7 @@ public class RdGscSelector implements ISelector {
 					pstmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
@@ -114,4 +114,73 @@ public class RdGscSelector implements ISelector {
 		return null;
 	}
 
+	public List<RdGsc> loadRdGscLinkByLinkPid(int linkPid, boolean isLock) throws Exception {
+		List<RdGsc> rdGscList = new ArrayList<RdGsc>();
+
+		String sql = "SELECT a.* FROM rd_gsc a,rd_gsc_link b WHERE a.pid = b.pid AND b.link_pid = :1";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				RdGsc rdGsc = new RdGsc();
+
+				rdGsc.setPid(resultSet.getInt("pid"));
+
+				rdGsc.setProcessFlag(resultSet.getInt("PROCESS_FLAG"));
+
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
+
+				rdGsc.setGeometry(geometry);
+				
+				List<IRow> links = new RdGscLinkSelector(conn)
+						.loadRowsByParentId(rdGsc.getPid(), isLock);
+				
+				rdGsc.setLinks(links);
+				
+				for (IRow row : rdGsc.getLinks()) {
+					RdGscLink obj = (RdGscLink) row;
+
+					rdGsc.rdGscLinkMap.put(obj.rowId(), obj);
+				}
+				
+				rdGsc.setRowId(resultSet.getString("row_id"));
+				
+				rdGscList.add(rdGsc);
+			} 
+				
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			try {
+				resultSet.close();
+			} catch (Exception e) {
+
+			}
+
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+
+			}
+		}
+
+		return rdGscList;
+	}
 }

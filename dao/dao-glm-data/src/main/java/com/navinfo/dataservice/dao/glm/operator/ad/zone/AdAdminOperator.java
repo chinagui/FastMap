@@ -12,6 +12,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
@@ -21,6 +22,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminDetail;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminGroup;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminName;
 import com.navinfo.dataservice.dao.glm.operator.rd.gsc.RdGscLinkOperator;
+import com.vividsolutions.jts.geom.Geometry;
 
 public class AdAdminOperator implements IOperator {
 	private static Logger logger = Logger.getLogger(RdGscLinkOperator.class);
@@ -116,6 +118,16 @@ public class AdAdminOperator implements IOperator {
 								column + "=" + Integer.parseInt(String.valueOf(columnValue)) + ",");
 					}
 
+				} else if (value instanceof Geometry) {
+					// 先降级转WKT
+
+					String oldWkt = GeoTranslator.jts2Wkt((Geometry) value, 0.00001, 5);
+
+					String newWkt = Geojson.geojson2Wkt(columnValue.toString());
+
+					if (!StringUtils.isStringSame(oldWkt, newWkt)) {
+						sb.append("geometry=sdo_geometry('" + String.valueOf(newWkt) + "',8307),");
+					}
 				}
 			}
 			sb.append(" where region_id =" + admin.pid());

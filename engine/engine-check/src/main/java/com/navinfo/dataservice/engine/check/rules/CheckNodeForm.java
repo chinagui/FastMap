@@ -14,77 +14,69 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.engine.check.CheckEngine;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
 
 /** 
- * @ClassName: CheckSideNode
+ * @ClassName: CheckNodeForm
  * @author songdongyan
- * @date 下午3:02:10
- * @Description: CheckSideNode.java
+ * @date 上午11:25:08
+ * @Description: CheckNodeForm.java
  */
-public class CheckSideNode extends baseRule {
-	
-	private String ruleLog = "盲端不允许创建路口";
+public class CheckNodeForm extends baseRule {
 	
 	public void preCheck(CheckCommand checkCommand) throws Exception {
-//		this.conn = DBOraclePoolManager.getConnection(checkCommand.getProjectId());
-		
-		String sql = "select count(1) count from rd_link where e_node_pid=:1 or s_node_pid=:2";
-
-		PreparedStatement pstmt = getConn().prepareStatement(sql);
-		
-		for(IRow obj : checkCommand.getGlmList()){
+		String s = "";
+		List<IRow> objList = checkCommand.getGlmList();
+		for(int i=0; i<objList.size(); i++){
+			IRow obj = objList.get(i);
 			if (obj instanceof RdNode){
 				RdNode rdNode = (RdNode)obj;
-				
-				int nodePid = rdNode.getPid();
-				
-				pstmt.setInt(1, nodePid);
-
-				pstmt.setInt(2, nodePid);
-
-				ResultSet resultSet = pstmt.executeQuery();
-
-				boolean flag = false;
-
-				if (resultSet.next()) {
-
-					int count = resultSet.getInt("count");
-
-					if (count <= 1) {
-						flag = true;
-					}
+				int pid = rdNode.getPid();
+				s += pid;
+				if (i != objList.size()-1){
+					s += ",";
 				}
-
-				resultSet.close();
-
-				if (flag) {		
-					Coordinate myCoordinate = rdNode.getGeometry().getCoordinate();
-					double x = myCoordinate.x;
-					double y = myCoordinate.y;
-					String pointWkt = "Point ("+x+" "+y+")";
-					
-					this.setCheckResult(pointWkt, "[RD_NODE,"+nodePid+"]", rdNode.mesh());
-					return;
-
-				}
-				
 			}
 		}
+
+		String sql = "select count(1) count from rd_node_form where node_pid in ("+s+") and form_of_way=15";
 		
+		PreparedStatement pstmt = getConn().prepareStatement(sql);
+
+		ResultSet resultSet = pstmt.executeQuery();
+
+		boolean flag = false;
+
+		if (resultSet.next()) {
+
+			int count = resultSet.getInt("count");
+
+			if (count > 0) {
+				flag = true;
+			}
+		}
+
+		resultSet.close();
+
 		pstmt.close();
+
+		if (flag) {
+			
+			this.setCheckResult("", "", 0);
+			return;
+
+		}
+		
 		
 	}
 
-	
-	public void postCheck(CheckCommand checkCommand) {
+	public void postCheck(CheckCommand checkCommand) throws Exception {
 		
 	}
-
 	
-	public static void main(String[] args) throws Exception{
+	
+	public static void main(String[] args) throws Exception {
 		
 		RdNode node = new RdNode();
 		node.setPid(430174);
@@ -108,5 +100,6 @@ public class CheckSideNode extends baseRule {
 		checkCommand.setObjType(ObjType.RDCROSS);
 		CheckEngine checkEngine=new CheckEngine(checkCommand);
 		System.out.println(checkEngine.preCheck());
+		
 	}
 }

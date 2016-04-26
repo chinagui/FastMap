@@ -254,8 +254,23 @@ public class AdAdminName implements IObj {
 
 	@Override
 	public boolean Unserialize(JSONObject json) throws Exception {
-		// TODO Auto-generated method stub
-		return false;
+		Iterator keys = json.keys();
+
+		while (keys.hasNext()) {
+
+			String key = (String) keys.next();
+
+			if (!"objStatus".equals(key)) {
+
+				Field f = this.getClass().getDeclaredField(key);
+
+				f.setAccessible(true);
+
+				f.set(this, json.get(key));
+			}
+
+		}
+		return true;
 	}
 
 	@Override

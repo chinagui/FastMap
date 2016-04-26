@@ -35,10 +35,16 @@ public class AdAdminName implements IObj {
 	private int meshId = 0;
     private String rowId;
     private Map<String, Object> changedFields = new HashMap<String, Object>();
+    
 	@Override
 	public String rowId() {
 		return rowId;
 	}
+	
+	public String getRowId() {
+		return rowId;
+	}
+
 
 	@Override
 	public void setRowId(String rowId) {
@@ -249,7 +255,13 @@ public class AdAdminName implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("name");
+		}
+
+		return json;
 	}
 
 	@Override

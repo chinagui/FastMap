@@ -216,7 +216,7 @@ public class AdFaceSelector implements ISelector {
 
 		List<AdFace> faces = new ArrayList<AdFace>();
 
-		String sql = "select  a.*  from ad_face a ,ad_face_topo t where a.u_record != 2  and a.face_id = t.face_pid and t.link_pid = :1 ";
+		String sql = "select  a.*  from ad_face a ,ad_face_topo t where a.u_record != 2  and a.face_pid = t.face_pid and t.link_pid = :1 ";
 		
 		if (isLock) {
 			sql += " for update nowait";

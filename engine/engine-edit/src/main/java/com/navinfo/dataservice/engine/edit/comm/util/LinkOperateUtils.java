@@ -66,6 +66,7 @@ public class LinkOperateUtils {
 		link.setsNodePid(sNodePid);
 		link.seteNodePid(eNodePid);
 		setLinkChildren(link);
+		result.setPrimaryPid(link.pid());
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
 	}
 	/*

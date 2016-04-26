@@ -199,7 +199,7 @@ public class AdAdminOperator implements IOperator {
 		String wkt = GeoTranslator.jts2Wkt(admin.getGeometry(), 0.00001, 5);
 		sb.append(",sdo_geometry('" + wkt + "',8307)");
 		sb.append("," + admin.getLinkPid());
-		sb.append("," + admin.getNameGroupId());
+		sb.append("," + admin.getNameGroupid());
 		sb.append("," + admin.getSide());
 		sb.append("," + admin.getRoadFlag());
 		sb.append("," + admin.getpMeshId());

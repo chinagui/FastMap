@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
@@ -20,6 +21,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
@@ -189,11 +191,11 @@ public class Process implements IProcess {
 	}
 
 	public void lockRdGsc() throws Exception {
-		
+
 		RdGscSelector selector = new RdGscSelector(this.conn);
-		
+
 		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(command.getLinkPid(), true);
-		
+
 		command.setRdGscs(rdGscList);
 	}
 
@@ -238,7 +240,17 @@ public class Process implements IProcess {
 
 		lockRdGsc();
 
+		lockAdAdmin();
+
 		return true;
+	}
+
+	private void lockAdAdmin() throws Exception {
+		AdAdminSelector selector = new AdAdminSelector(this.conn);
+
+		List<AdAdmin> adAdminList = selector.loadRowsByLinkId(command.getLinkPid(), true);
+
+		command.setAdAdmins(adAdminList);
 	}
 
 	@Override
@@ -271,9 +283,12 @@ public class Process implements IProcess {
 
 				IOperation opRefSpeedlimit = new OpRefSpeedlimit(command);
 				opRefSpeedlimit.run(result);
-				
+
 				IOperation opRefRdGsc = new OpRefRdGsc(command);
 				opRefRdGsc.run(result);
+
+				IOperation opRefAdAdmin = new OpRefAdAdmin(command);
+				opRefAdAdmin.run(result);
 
 				recordData();
 

@@ -77,7 +77,7 @@ public class AdAdminSelector implements ISelector{
 				adAdmin.setRowId(resultSet.getString("row_id"));
 				
 				// ad_admin_name
-				List<IRow> adAdminNameList = new AdAdminNameSelector(conn).loadRowsByParentId(adAdmin.getNameGroupid(), isLock);
+				List<IRow> adAdminNameList = new AdAdminNameSelector(conn).loadRowsByParentId(adAdmin.getRegionId(), isLock);
 
 				for (IRow row : adAdminNameList) {
 					row.setMesh(adAdmin.mesh());

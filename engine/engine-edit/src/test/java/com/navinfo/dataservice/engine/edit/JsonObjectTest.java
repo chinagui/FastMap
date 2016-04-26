@@ -86,10 +86,10 @@ public class JsonObjectTest {
 		JSONObject geometry = JSONObject.fromObject(str2);
 		JSONObject geometry11 = JSONObject.fromObject(str3);
 		JSONObject geometry111 = JSONObject.fromObject(str4);
-		Geometry geometry2=GeoTranslator.geojson2Jts(geometry, 1, 5);
-		
-		Geometry geometry3=GeoTranslator.geojson2Jts(geometry11, 1, 5);
 		Geometry geometry4=GeoTranslator.geojson2Jts(geometry111, 1, 5);
+		Geometry geometry2=GeoTranslator.geojson2Jts(geometry, 1, 5);
+		System.out.println("kkkkk"+geoFactory.createPolygon(geometry4.getCoordinates()));;
+		Geometry geometry3=GeoTranslator.geojson2Jts(geometry11, 1, 5);
         System.out.println(geometry2.getCoordinates());
         for (Coordinate coordinate : geometry2.getCoordinates()){
         	System.out.println(coordinate);

@@ -121,6 +121,8 @@ public class Operation implements IOperation {
 			link.setMeshes(adLinkMeshs);
 			result.insertObject(link, ObjStatus.INSERT, link.getPid());
 			this.createFace();
+			this.face.setMeshId(meshId);
+			this.face.setMesh(meshId);
 			List<AdLink> links = new ArrayList<AdLink>();
 			links.add(link);
 			this.reCaleFaceGeometry(links, face);
@@ -157,7 +159,6 @@ public class Operation implements IOperation {
 			adFaceTopos.add(faceTopo);
 		}
 		this.face.setFaceTopos(adFaceTopos);
-		//result.insertObject(face, ObjStatus.INSERT, face.getPid());
 	}
 
 	/*
@@ -216,7 +217,7 @@ public class Operation implements IOperation {
 	/*
 	 * 更新面的几何属性
 	 */
-	private void updateGeometry(Geometry g, AdFace face) {
+	private void updateGeometry(Geometry g, AdFace face) throws Exception {
 		face.setGeometry(g);
 		face.setArea(GeometryUtils.getCalculateArea(g));
 		face.setPerimeter(GeometryUtils.getLinkLength(g));

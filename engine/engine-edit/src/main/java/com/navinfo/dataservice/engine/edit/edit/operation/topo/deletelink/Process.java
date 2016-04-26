@@ -8,14 +8,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
@@ -23,6 +22,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
@@ -31,6 +31,8 @@ import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelect
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
+
+import net.sf.json.JSONObject;
 
 public class Process implements IProcess {
 
@@ -47,8 +49,7 @@ public class Process implements IProcess {
 
 		this.result = new Result();
 
-		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
-				.getProjectId());
+		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command.getProjectId());
 
 	}
 
@@ -66,44 +67,52 @@ public class Process implements IProcess {
 
 	public String preCheck() throws Exception {
 
-//		PreparedStatement stmt = null;
-//
-//		ResultSet resultSet = null;
-//
-//		try {
-//			// 检查link是否作为交线、分歧、车信的退出线或者经过线
-//			String sql = "select a.detail_id, '交限' type   from rd_restriction_detail a  where a.out_link_pid = :1 union all (select b.link_pid, '交限' type from rd_restriction_via b where b.link_pid = :2)  union all (select c.topo_id,'车信' type from rd_lane_topo_detail c where c.out_link_pid = :3)  union all (select d.link_pid,'车信' type from rd_lane_via d where d.link_pid = :4)  union all (select e.branch_pid, '分歧' type from rd_branch e where e.out_link_pid = :5)  union all (select f.branch_pid, '分歧' type from rd_branch_via f where f.link_pid=:6) ";
-//			
-//			stmt = conn.prepareStatement(sql);
-//
-//			stmt.setInt(1, command.getLinkPid());
-//
-//			stmt.setInt(2, command.getLinkPid());
-//			
-//			stmt.setInt(3, command.getLinkPid());
-//			
-//			stmt.setInt(4, command.getLinkPid());
-//			
-//			stmt.setInt(5, command.getLinkPid());
-//			
-//			stmt.setInt(6, command.getLinkPid());
-//
-//			resultSet = stmt.executeQuery();
-//
-//			if (resultSet.next()) {
-//				String type = resultSet.getString("type");
-//				
-//				return "此link上存在"+type+"关系信息，删除该Link会对应删除此组关系";
-//			} else {
-//				return null;
-//			}
-//		} catch (Exception e) {
-//			
-//			throw e;
-//		} finally {
-//			releaseResource(stmt, resultSet);
-//		}
-		
+		// PreparedStatement stmt = null;
+		//
+		// ResultSet resultSet = null;
+		//
+		// try {
+		// // 检查link是否作为交线、分歧、车信的退出线或者经过线
+		// String sql = "select a.detail_id, '交限' type from
+		// rd_restriction_detail a where a.out_link_pid = :1 union all (select
+		// b.link_pid, '交限' type from rd_restriction_via b where b.link_pid =
+		// :2) union all (select c.topo_id,'车信' type from rd_lane_topo_detail c
+		// where c.out_link_pid = :3) union all (select d.link_pid,'车信' type
+		// from rd_lane_via d where d.link_pid = :4) union all (select
+		// e.branch_pid, '分歧' type from rd_branch e where e.out_link_pid = :5)
+		// union all (select f.branch_pid, '分歧' type from rd_branch_via f where
+		// f.link_pid=:6) ";
+		//
+		// stmt = conn.prepareStatement(sql);
+		//
+		// stmt.setInt(1, command.getLinkPid());
+		//
+		// stmt.setInt(2, command.getLinkPid());
+		//
+		// stmt.setInt(3, command.getLinkPid());
+		//
+		// stmt.setInt(4, command.getLinkPid());
+		//
+		// stmt.setInt(5, command.getLinkPid());
+		//
+		// stmt.setInt(6, command.getLinkPid());
+		//
+		// resultSet = stmt.executeQuery();
+		//
+		// if (resultSet.next()) {
+		// String type = resultSet.getString("type");
+		//
+		// return "此link上存在"+type+"关系信息，删除该Link会对应删除此组关系";
+		// } else {
+		// return null;
+		// }
+		// } catch (Exception e) {
+		//
+		// throw e;
+		// } finally {
+		// releaseResource(stmt, resultSet);
+		// }
+
 		return null;
 	}
 
@@ -121,17 +130,16 @@ public class Process implements IProcess {
 
 		RdNodeSelector selector = new RdNodeSelector(this.conn);
 
-		List<RdNode> nodes = selector.loadEndRdNodeByLinkPid(command.getLinkPid(),
-				false);
-		
+		List<RdNode> nodes = selector.loadEndRdNodeByLinkPid(command.getLinkPid(), false);
+
 		List<Integer> nodePids = new ArrayList<Integer>();
-		
-		for(RdNode node : nodes){
+
+		for (RdNode node : nodes) {
 			nodePids.add(node.getPid());
 		}
 
 		command.setNodes(nodes);
-		
+
 		command.setNodePids(nodePids);
 	}
 
@@ -146,44 +154,55 @@ public class Process implements IProcess {
 
 		command.setRestrictions(restrictions);
 	}
-	
+
 	public void lockRdLaneConnexity() throws Exception {
-		
+
 		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(this.conn);
-		
-		List<RdLaneConnexity> lanes  = selector.loadRdLaneConnexityByLinkPid(command.getLinkPid(), true);
-		
+
+		List<RdLaneConnexity> lanes = selector.loadRdLaneConnexityByLinkPid(command.getLinkPid(),
+				true);
+
 		command.setLanes(lanes);
 	}
-	
+
 	public void lockRdBranch() throws Exception {
-		
+
 		RdBranchSelector selector = new RdBranchSelector(this.conn);
-		
+
 		List<RdBranch> branches = selector.loadRdBranchByInLinkPid(command.getLinkPid(), true);
-		
+
 		command.setBranches(branches);
 	}
-	
+
 	public void lockRdCross() throws Exception {
-		
+
 		RdCrossSelector selector = new RdCrossSelector(this.conn);
-		
+
 		List<Integer> linkPids = new ArrayList<Integer>();
-		
+
 		linkPids.add(command.getLinkPid());
-		
-		List<RdCross> crosses = selector.loadRdCrossByNodeOrLink(command.getNodePids(), linkPids, true);
-		
+
+		List<RdCross> crosses = selector.loadRdCrossByNodeOrLink(command.getNodePids(), linkPids,
+				true);
+
 		command.setCrosses(crosses);
 	}
-	
+
+	public void lockRdGsc() throws Exception {
+		
+		RdGscSelector selector = new RdGscSelector(this.conn);
+		
+		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(command.getLinkPid(), true);
+		
+		command.setRdGscs(rdGscList);
+	}
+
 	public void lockRdSpeedlimits() throws Exception {
-		
+
 		RdSpeedlimitSelector selector = new RdSpeedlimitSelector(this.conn);
-		
+
 		List<RdSpeedlimit> limits = selector.loadSpeedlimitByLinkPid(command.getLinkPid(), true);
-		
+
 		command.setLimits(limits);
 	}
 
@@ -208,14 +227,16 @@ public class Process implements IProcess {
 		lockRdNode();
 
 		lockRdRestriction();
-		
+
 		lockRdLaneConnexity();
-		
+
 		lockRdBranch();
-		
+
 		lockRdCross();
-		
+
 		lockRdSpeedlimits();
+
+		lockRdGsc();
 
 		return true;
 	}
@@ -230,78 +251,78 @@ public class Process implements IProcess {
 				if (preCheckMsg != null) {
 					throw new Exception(preCheckMsg);
 				}
-				
+
 				prepareData();
-				
+
 				IOperation op = new OpTopo(command);
 				op.run(result);
-				
+
 				IOperation opRefRestrict = new OpRefRestrict(command);
 				opRefRestrict.run(result);
-				
+
 				IOperation opRefBranch = new OpRefBranch(command);
 				opRefBranch.run(result);
-				
+
 				IOperation opRefCross = new OpRefCross(command);
 				opRefCross.run(result);
-				
+
 				IOperation opRefLaneConnexity = new OpRefLaneConnexity(command);
 				opRefLaneConnexity.run(result);
-				
+
 				IOperation opRefSpeedlimit = new OpRefSpeedlimit(command);
 				opRefSpeedlimit.run(result);
 				
+				IOperation opRefRdGsc = new OpRefRdGsc(command);
+				opRefRdGsc.run(result);
+
 				recordData();
-				
+
 				postCheck();
-				
+
 				conn.commit();
-			}else{
-				Map<String,List<Integer>> infects = new HashMap<String,List<Integer>>();
-				
+			} else {
+				Map<String, List<Integer>> infects = new HashMap<String, List<Integer>>();
+
 				List<Integer> infectList = new ArrayList<Integer>();
-				
+
 				infectList = new ArrayList<Integer>();
-				
-				for(RdBranch branch: command.getBranches()){
+
+				for (RdBranch branch : command.getBranches()) {
 					infectList.add(branch.getPid());
 				}
-				
+
 				infects.put("RDBRANCH", infectList);
-				
+
 				infectList = new ArrayList<Integer>();
-				
-				for(RdLaneConnexity laneConn: command.getLanes()){
+
+				for (RdLaneConnexity laneConn : command.getLanes()) {
 					infectList.add(laneConn.getPid());
 				}
-				
+
 				infects.put("RDLANECONNEXITY", infectList);
-				
+
 				infectList = new ArrayList<Integer>();
-				
-				for(RdSpeedlimit limit : command.getLimits()){
+
+				for (RdSpeedlimit limit : command.getLimits()) {
 					infectList.add(limit.getPid());
 				}
-				
+
 				infects.put("RDSPEEDLIMIT", infectList);
-				
+
 				infectList = new ArrayList<Integer>();
-				
-				for(RdRestriction res: command.getRestrictions()){
+
+				for (RdRestriction res : command.getRestrictions()) {
 					infectList.add(res.getPid());
 				}
-				
+
 				infects.put("RDRESTRICTION", infectList);
-				
+
 				infectList = new ArrayList<Integer>();
-				
-				
-				
+
 				return JSONObject.fromObject(infects).toString();
 			}
 
 		} catch (Exception e) {
-			
 
 			conn.rollback();
 
@@ -310,7 +331,7 @@ public class Process implements IProcess {
 			try {
 				conn.close();
 			} catch (Exception e) {
-				
+
 			}
 		}
 
@@ -319,11 +340,11 @@ public class Process implements IProcess {
 
 	@Override
 	public boolean recordData() throws Exception {
-		
+
 		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
-		
+
 		lw.generateLog(command, result);
-		
+
 		OperatorFactory.recordData(conn, result);
 
 		lw.recordLog(command, result);
@@ -335,13 +356,13 @@ public class Process implements IProcess {
 		try {
 			resultSet.close();
 		} catch (Exception e) {
-			
+
 		}
 
 		try {
 			pstmt.close();
 		} catch (Exception e) {
-			
+
 		}
 	}
 

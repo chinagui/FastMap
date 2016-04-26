@@ -8,6 +8,7 @@ import java.util.List;
 import com.navinfo.dataservice.commons.db.ConfigLoader;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.engine.check.CheckEngine;
@@ -97,14 +98,14 @@ public class CheckSideNode extends baseRule {
 		List<IRow> objList = new ArrayList<IRow>();
 		objList.add(node);
 		
-//		ConfigLoader.initDBConn("D:/workfiles/0_svn/fastmap-hithub/web/edit-web/target/classes/config.properties");
-		ConfigLoader.initDBConn("E:/Users/songdongyan/java/DataService/DataService/web/edit-web/target/classes/config.properties");
+		//ConfigLoader.initDBConn("E:/Users/songdongyan/java/DataService/DataService/web/edit-web/target/classes/config.properties");
 		//检查调用
 		CheckCommand checkCommand=new CheckCommand();
 		checkCommand.setProjectId(12);
 		checkCommand.setGlmList(objList);
 		checkCommand.setOperType(OperType.CREATE);
-		checkCommand.setObjType(node.objType());
+//		checkCommand.setObjType(node.objType());
+		checkCommand.setObjType(ObjType.RDCROSS);
 		CheckEngine checkEngine=new CheckEngine(checkCommand);
 		System.out.println(checkEngine.preCheck());
 	}

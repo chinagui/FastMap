@@ -23,10 +23,19 @@ public class AdNodeTest {
 		Transaction t = new Transaction(parameter);;
 		String msg = t.run();
 	}
+	//"{"command":"UPDATE","type":"ADNODE","projectId":11,"data":{"kind":"12","pid":100021403,"objStatus":"UPDATE"}}"
+	public void updateAdNodeTest() throws Exception{
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"ADNODE\",\"projectId\":11,\"data\":{\"kind\":\"3\",\"pid\":100021717,\"objStatus\":\"UPDATE\"}}";
+		log.info(parameter);
+		Transaction t = new Transaction(parameter);;
+		String msg = t.run();
+	}
+
 
 	public static void main(String[] args) throws Exception{
 		//new AdNodeTest().createAdNodeTest();
-		new AdNodeTest().deleteAdNodeTest();
+		//new AdNodeTest().deleteAdNodeTest();
+		new AdNodeTest().updateAdNodeTest();
 
 		
 	}

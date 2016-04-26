@@ -94,7 +94,7 @@ public class AdNodeSelector implements ISelector {
 				return adNode;
 			} else {
 
-				throw new Exception("对应AD_LINK不存在!");
+				throw new Exception("对应AD_NODE不存在!");
 			}
 		} catch (Exception e) {
 

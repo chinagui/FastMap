@@ -48,6 +48,8 @@ public class AdAdminSelector implements ISelector{
 
 				adAdmin.setPid(resultSet.getInt("region_id"));
 				
+				adAdmin.setRegionId(resultSet.getInt("region_id"));
+				
 				adAdmin.setAdminId(resultSet.getInt("admin_id"));
 				
 				adAdmin.setExtendId(resultSet.getInt("extend_id"));
@@ -64,7 +66,7 @@ public class AdAdminSelector implements ISelector{
 				
 				adAdmin.setLinkPid(resultSet.getInt("link_pid"));
 				
-				adAdmin.setNameGroupId(resultSet.getInt("name_groupid"));
+				adAdmin.setNameGroupid(resultSet.getInt("name_groupid"));
 				
 				adAdmin.setSide(resultSet.getInt("side"));
 				
@@ -75,7 +77,7 @@ public class AdAdminSelector implements ISelector{
 				adAdmin.setRowId(resultSet.getString("row_id"));
 				
 				// ad_admin_name
-				List<IRow> adAdminNameList = new AdAdminNameSelector(conn).loadRowsByParentId(adAdmin.getNameGroupId(), isLock);
+				List<IRow> adAdminNameList = new AdAdminNameSelector(conn).loadRowsByParentId(adAdmin.getNameGroupid(), isLock);
 
 				for (IRow row : adAdminNameList) {
 					row.setMesh(adAdmin.mesh());

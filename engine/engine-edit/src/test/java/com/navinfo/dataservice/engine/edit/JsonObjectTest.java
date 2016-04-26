@@ -79,17 +79,24 @@ public class JsonObjectTest {
 		//[2] LINESTRING (116.23166 39.75000, 116.23442 39.75376)
 		String str2 ="{ \"type\": \"LineString\",\"coordinates\": [ [116.22284,39.75436], [ 116.22610,39.74242],[ 116.23442,39.75376]]}";
 		String str3 ="{ \"type\": \"LineString\",\"coordinates\": [ [116.22285,39.75436], [ 116.22610,39.74242],[ 116.23442,39.75376]]}";
+		//POLYGON ((115.85776 40.00000, 115.86218 40.00000, 115.85937 40.00290, 115.85776 40.00000))
+		// POLYGON ((115.86218 40.00000, 115.85776 40.00000, 115.85664 39.99797, 115.86471 39.99739, 115.86218 40.00000))
+		//POINT (115.85937 40.00290)   115.85664 39.99797, 115.86471 39.99739
+		String str4 = "{ \"type\": \"LineString\",\"coordinates\": [ [115.85937,40.00290], [115.85664,39.99797],[115.86471,39.99739],[115.85937,40.00290]]}";
 		JSONObject geometry = JSONObject.fromObject(str2);
 		JSONObject geometry11 = JSONObject.fromObject(str3);
+		JSONObject geometry111 = JSONObject.fromObject(str4);
 		Geometry geometry2=GeoTranslator.geojson2Jts(geometry, 1, 5);
 		
 		Geometry geometry3=GeoTranslator.geojson2Jts(geometry11, 1, 5);
+		Geometry geometry4=GeoTranslator.geojson2Jts(geometry111, 1, 5);
         System.out.println(geometry2.getCoordinates());
         for (Coordinate coordinate : geometry2.getCoordinates()){
         	System.out.println(coordinate);
         }
-		Geometry geomInter = MeshUtils.linkInterMeshPolygon(geometry2,
-				MeshUtils.mesh2Jts("595651"));
+		Geometry geomInter = MeshUtils.linkInterMeshPolygon(geometry4,
+				MeshUtils.mesh2Jts("605506"));
+		System.out.println(geomInter+"--------------------------");
 		geomInter.getGeometryType();
 		System.out.println( geometry2.getGeometryType());
 		

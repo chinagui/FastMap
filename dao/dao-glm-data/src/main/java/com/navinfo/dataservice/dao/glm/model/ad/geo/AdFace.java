@@ -36,7 +36,7 @@ public class AdFace implements IObj {
 
 	private int meshId;
 
-	private int editFlag;
+	private int editFlag = 1;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -220,6 +220,10 @@ public class AdFace implements IObj {
 	@Override
 	public String rowId() {
 
+		return rowId;
+	}
+
+	public String getRowId() {
 		return rowId;
 	}
 

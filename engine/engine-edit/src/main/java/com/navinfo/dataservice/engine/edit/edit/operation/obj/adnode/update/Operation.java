@@ -3,16 +3,11 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeName;
 /**
  * @author zhaokk
  * 修改行政区划点操作基础类 

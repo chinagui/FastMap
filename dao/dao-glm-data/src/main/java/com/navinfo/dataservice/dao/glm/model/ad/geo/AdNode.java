@@ -29,13 +29,13 @@ public class AdNode implements IObj {
 
 	private String rowId;
 
-	private int kind;
+	private int kind = 1;
 
 	private int form;
 
 	private Geometry geometry;
 
-	private int editFlag;
+	private int editFlag = 1;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 

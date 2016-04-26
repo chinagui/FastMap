@@ -66,6 +66,7 @@ public class LinkOperateUtils {
 		link.setsNodePid(sNodePid);
 		link.seteNodePid(eNodePid);
 		setLinkChildren(link);
+		result.setPrimaryPid(link.pid());
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
 	}
 	/*
@@ -133,7 +134,7 @@ public class LinkOperateUtils {
 			result.insertObject(adNode, ObjStatus.INSERT, adNode.pid());
 			node.put("e", adNode.getPid());
 		}else{
-			node.put("e", sNodePid);
+			node.put("e", eNodePid);
 		}
 		return node;
 		

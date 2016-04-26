@@ -2,7 +2,6 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.departadnode;
 
 import java.sql.Connection;
 
-import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
@@ -10,6 +9,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
 
 public class Process implements IProcess {
@@ -31,7 +31,7 @@ public class Process implements IProcess {
 
 		this.result = new Result();
 
-		this.conn = DBOraclePoolManager.getConnection(this.command
+		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
 				.getProjectId());
 
 	}

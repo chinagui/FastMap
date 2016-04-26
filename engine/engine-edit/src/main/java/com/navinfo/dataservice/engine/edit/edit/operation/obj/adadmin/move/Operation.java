@@ -1,12 +1,12 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.move;
 
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
-
-import net.sf.json.JSONObject;
 
 /**
  * 
@@ -52,7 +52,7 @@ public class Operation implements IOperation {
 
 		updateContent.put("geometry", geojson);
 
-		updateContent.put("linkPid", moveAdmin.getLinkPid());
+		updateContent.put("linkPid", command.getLinkPid());
 		
 		updateContent.put("meshId", Integer.parseInt(meshId));
 

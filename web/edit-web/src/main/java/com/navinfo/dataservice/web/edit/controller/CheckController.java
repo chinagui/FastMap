@@ -14,11 +14,11 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 @Controller
 public class CheckController {
@@ -45,7 +45,7 @@ public class CheckController {
 
 			int pageNum = jsonReq.getInt("pageNum");
 
-			conn = DBOraclePoolManager.getConnection(projectId);
+			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 
@@ -92,7 +92,7 @@ public class CheckController {
 
 			JSONArray meshes = jsonReq.getJSONArray("meshes");
 
-			conn = DBOraclePoolManager.getConnection(projectId);
+			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 
@@ -140,7 +140,7 @@ public class CheckController {
 
 			int type = jsonReq.getInt("type");
 			
-			conn = DBOraclePoolManager.getConnection(projectId);
+			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
 
 			NiValExceptionOperator selector = new NiValExceptionOperator(conn);
 

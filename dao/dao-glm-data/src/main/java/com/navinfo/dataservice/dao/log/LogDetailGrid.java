@@ -2,18 +2,18 @@ package com.navinfo.dataservice.dao.log;
 
 public class LogDetailGrid {
 
-	private String rowId;
+	private String logRowId;
 	
 	private int gridId;
 	
 	private int gridType;
 
-	public String getRowId() {
-		return rowId;
+	public String getLogRowId() {
+		return logRowId;
 	}
 
-	public void setRowId(String rowId) {
-		this.rowId = rowId;
+	public void setLogRowId(String logRowId) {
+		this.logRowId = logRowId;
 	}
 
 	public int getGridId() {

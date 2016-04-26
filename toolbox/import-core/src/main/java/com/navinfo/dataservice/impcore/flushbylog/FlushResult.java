@@ -21,7 +21,9 @@ public class FlushResult {
 
 	private int insertFailed;
 
-	private int logMoved;
+	private int logOpMoved;
+	private int logDetailMoved;
+	private int logDetailGridMoved;
 
 	private List<String> insertFailedList = new ArrayList<String>();
 
@@ -29,12 +31,28 @@ public class FlushResult {
 
 	private List<String> deleteFailedList = new ArrayList<String>();
 
-	public int getLogMoved() {
-		return logMoved;
+	public int getLogOpMoved() {
+		return logOpMoved;
 	}
 
-	public void setLogMoved(int logMoved) {
-		this.logMoved = logMoved;
+	public void setLogOpMoved(int logOpMoved) {
+		this.logOpMoved = logOpMoved;
+	}
+
+	public int getLogDetailMoved() {
+		return logDetailMoved;
+	}
+
+	public void setLogDetailMoved(int logDetailMoved) {
+		this.logDetailMoved = logDetailMoved;
+	}
+
+	public int getLogDetailGridMoved() {
+		return logDetailGridMoved;
+	}
+
+	public void setLogDetailGridMoved(int logDetailGridMoved) {
+		this.logDetailGridMoved = logDetailGridMoved;
 	}
 
 	public void addInsertFailedRowId(String rowId) {
@@ -194,6 +212,8 @@ public class FlushResult {
 			System.out.println("RowIds:" + this.getDeleteFailedList());
 		}
 
-		System.out.println("Log moved:" + this.getLogMoved());
+		System.out.println("Log op moved:" + this.getLogOpMoved());
+		System.out.println("Log detail moved:" + this.getLogDetailMoved());
+		System.out.println("Log detail grid moved:" + this.getLogDetailGridMoved());
 	}
 }

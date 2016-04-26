@@ -35,7 +35,6 @@ public class JavaDiffScanner implements DiffScanner
         runner = new QueryRunner();
     }
 
-
     @Override
     public int scan(GlmTable table,String leftTableFullName,String rightTableFullName)throws DiffException{
     	Connection conn = null;

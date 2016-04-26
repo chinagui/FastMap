@@ -21,7 +21,7 @@ public class AdFaceTopo implements IRow {
 
 	private int linkPid;
 
-	private int seqNum;
+	private int seqNum = 1;
 
 	private String rowId;
 

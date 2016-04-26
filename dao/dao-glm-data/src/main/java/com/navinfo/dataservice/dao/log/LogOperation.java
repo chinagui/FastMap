@@ -16,6 +16,12 @@ public class LogOperation {
 	private String opDt;
 
 	private int opSg;
+	
+	private int comSta;
+	
+	private String comDt;
+	
+	private int lockSta;
 
 	private List<LogDetail> details = new ArrayList<LogDetail>();
 
@@ -25,6 +31,30 @@ public class LogOperation {
 		this.opCmd = opCmd;
 		
 		this.opDt = StringUtils.getCurrentTime();
+	}
+
+	public int getComSta() {
+		return comSta;
+	}
+
+	public void setComSta(int comSta) {
+		this.comSta = comSta;
+	}
+
+	public String getComDt() {
+		return comDt;
+	}
+
+	public void setComDt(String comDt) {
+		this.comDt = comDt;
+	}
+
+	public int getLockSta() {
+		return lockSta;
+	}
+
+	public void setLockSta(int lockSta) {
+		this.lockSta = lockSta;
 	}
 
 	public String getOpId() {

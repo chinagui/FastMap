@@ -16,6 +16,9 @@ import org.apache.log4j.Logger;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.druid.proxy.jdbc.ConnectionProxyImpl;
+import com.navinfo.dataservice.commons.database.oracle.MyDriverManagerConnectionWrapper;
+import com.navinfo.dataservice.commons.database.oracle.MyPoolGuardConnectionWrapper;
+import com.navinfo.dataservice.commons.database.oracle.MyPoolableConnection;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -122,6 +125,17 @@ public class RdLinkOperator implements IOperator {
 				ConnectionProxyImpl impl = (ConnectionProxyImpl)((DruidPooledConnection)conn).getConnection();
 				
 				struct = JGeometry.store (geom, impl.getRawObject());  
+			}
+			else if(conn instanceof MyDriverManagerConnectionWrapper){
+				Connection originConn = ((MyDriverManagerConnectionWrapper) conn).getDelegate();
+				struct = JGeometry.store (geom, originConn);
+			}
+			else if (conn instanceof MyPoolGuardConnectionWrapper){
+				Connection originConn = ((MyPoolGuardConnectionWrapper) conn).getDelegate();
+				if (originConn instanceof MyPoolableConnection) {
+					originConn = ((MyPoolableConnection) originConn).getDelegate();
+				}
+				struct = JGeometry.store (geom, originConn); 
 			}
 			else{
 				struct = JGeometry.store (geom, conn);  

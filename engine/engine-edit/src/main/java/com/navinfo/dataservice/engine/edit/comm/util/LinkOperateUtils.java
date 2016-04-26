@@ -133,7 +133,7 @@ public class LinkOperateUtils {
 			result.insertObject(adNode, ObjStatus.INSERT, adNode.pid());
 			node.put("e", adNode.getPid());
 		}else{
-			node.put("e", sNodePid);
+			node.put("e", eNodePid);
 		}
 		return node;
 		

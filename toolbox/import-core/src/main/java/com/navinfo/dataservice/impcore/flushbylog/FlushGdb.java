@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.impcore.flushbylog;
 
 import java.io.FileInputStream;
-import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -33,7 +32,6 @@ import com.navinfo.dataservice.datalock.exception.LockException;
 import com.navinfo.dataservice.datalock.lock.FmMesh4Lock;
 import com.navinfo.dataservice.datalock.lock.MeshLockManager;
 import com.navinfo.navicommons.database.QueryRunner;
-//import com.navinfo.dataservice.commons.util.StringUtils;
 
 public class FlushGdb {
 
@@ -84,29 +82,29 @@ public class FlushGdb {
 		return result;
 	}
 
-	public static FlushResult fmgdb2gdbg(String[] args) {
-
-		FlushResult result = new FlushResult();
-		try {
-			result = flushNoMesh(args);
-
-			sourceConn.commit();
-
-			destConn.commit();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			try {
-				sourceConn.rollback();
-
-				destConn.rollback();
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-		}
-
-		return result;
-	}
+//	public static FlushResult fmgdb2gdbg(String[] args) {
+//
+//		FlushResult result = new FlushResult();
+//		try {
+//			result = flushNoMesh(args);
+//
+//			sourceConn.commit();
+//
+//			destConn.commit();
+//
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			try {
+//				sourceConn.rollback();
+//
+//				destConn.rollback();
+//			} catch (Exception e1) {
+//				e1.printStackTrace();
+//			}
+//		}
+//
+//		return result;
+//	}
 
 	public static FlushResult prjMeshCommit(String[] args) {
 
@@ -135,7 +133,7 @@ public class FlushGdb {
 	public static FlushResult prjMeshReturnHistory(String[] args) {
 
 		FlushResult flushResult = new FlushResult();
-
+		Scanner scanner = null;
 		try {
 			Class.forName("oracle.jdbc.driver.OracleDriver");
 
@@ -145,7 +143,7 @@ public class FlushGdb {
 
 			stopTime = Long.parseLong(props.getProperty("stopTime"));
 
-			Scanner scanner = new Scanner(new FileInputStream(args[1]));
+			scanner = new Scanner(new FileInputStream(args[1]));
 
 			List<Integer> meshes = new ArrayList<Integer>();
 			while (scanner.hasNextLine()) {
@@ -188,7 +186,7 @@ public class FlushGdb {
 
 			flushData(flushResult,"SELECT * FROM LOG_DETAIL "+logDetailQuery.toString());
 
-			moveLog(flushResult);
+			//moveLog(flushResult);
 
 			sourceConn.commit();
 
@@ -204,6 +202,10 @@ public class FlushGdb {
 				destConn.rollback();
 			} catch (Exception e1) {
 				e1.printStackTrace();
+			}
+		}finally{
+			if(scanner!=null){
+				scanner.close();
 			}
 		}
 
@@ -328,7 +330,7 @@ public class FlushGdb {
 
 			if(flushData(flushResult,logQuerySql)){
 
-				moveLog(flushResult);
+				moveLog(flushResult,tempTable);
 
 				updateLogCommitStatus(tempTable);
 			}else{
@@ -353,66 +355,6 @@ public class FlushGdb {
 		}
 
 		return flushResult;
-	}
-
-	public static FlushResult flushNoMesh(String[] args) {
-
-		FlushResult flushResult = new FlushResult();
-
-		try {
-
-			props = new Properties();
-
-			props.load(new FileInputStream(args[0]));
-
-			stopTime = Long.parseLong(props.getProperty("stopTime"));
-
-			// Scanner scanner = new Scanner(new FileInputStream(args[1]));
-
-			// while (scanner.hasNextLine()) {
-			// meshes.add(Integer.parseInt(scanner.nextLine()));
-			// }
-
-			logDetailQuery.append(" and op_dt <= to_date('" + stopTime
-					+ "','yyyymmddhh24miss')");
-
-			// int meshSize = meshes.size();
-			//
-			// logDetailQuery.append(" and mesh_id in (");
-			//
-			// for (int i = 0; i < meshSize; i++) {
-			//
-			// logDetailQuery.append(meshes.get(i));
-			// if (i < (meshSize - 1)) {
-			// logDetailQuery.append(",");
-			// }
-			// }
-
-			// logDetailQuery.append(") order by op_dt ");
-
-			logDetailQuery.append(" order by op_dt ");
-
-			init();
-
-			flushData(flushResult,logDetailQuery.toString());
-
-			moveLog(flushResult);
-
-			updateLogCommitStatus();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			try {
-				sourceConn.rollback();
-
-				destConn.rollback();
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-		}
-
-		return flushResult;
-
 	}
 
 	private static void init() throws SQLException {
@@ -517,9 +459,8 @@ public class FlushGdb {
 		flushResult.setLogDetailMoved(stmt.executeUpdate(moveSql));
 		
 		moveSql = "INSERT INTO LOG_DETAIL_GRID@"+dbLinkName
-				+" SELECT L.* FROM ";
-
-		
+				+" SELECT P.* FROM LOG_DETAIL_GRID P,LOG_DETAIL L,"+tempTable+" T WHERE L.OP_ID=T.OP_ID AND L.ROW_ID=P.LOG_ROW_ID";
+		flushResult.setLogDetailGridMoved(stmt.executeUpdate(moveSql));		
 
 		String sqlDropDblink = "drop database link " + dbLinkName;
 

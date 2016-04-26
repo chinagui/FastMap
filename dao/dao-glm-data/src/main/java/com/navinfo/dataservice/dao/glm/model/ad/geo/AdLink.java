@@ -29,9 +29,9 @@ public class AdLink implements IObj {
 
 	private int eNodePid;
 
-	private int kind;
+	private int kind = 1;
 
-	private int form;
+	private int form = 1;
 
 	private Geometry geometry;
 
@@ -39,7 +39,7 @@ public class AdLink implements IObj {
 
 	private int scale;
 
-	private int editFlag;
+	private int editFlag = 1;
 
 	private String rowId;
 

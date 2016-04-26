@@ -10,9 +10,10 @@ public class Fmgdb2gdbg {
 	 */
 	public static void main(String[] args) {
 
-		FlushResult result = FlushGdb.fmgdb2gdbg(args);
-		
-		result.print();
+//		FlushResult result = FlushGdb.fmgdb2gdbg(args);
+//		
+//		result.print();
+		System.out.println("This scripts had been discarded...");
 	}
 
 }

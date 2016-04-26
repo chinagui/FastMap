@@ -40,9 +40,24 @@ public class AdLinkTest {
 		}
 		
 	}
+	//打断一条LINK
+	public  void breakAdLinkTest() {
+		String parameter = "{\"command\":\"BREAK\",\"projectId\":11,\"objId\":100031444,\"data\":{\"longitude\":116.4736,\"latitude\":40.01449},\"type\":\"ADLINK\"}";
+		log.info(parameter);
+		System.out.println(parameter+"-------------------");
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
 	public static void main(String[] args) throws Exception{
 		//new AdLinkTest().createAdLinkTest();
-		new AdLinkTest().deleteAdLinkTest();
+		//new AdLinkTest().deleteAdLinkTest();
+		new AdLinkTest().breakAdLinkTest();
 		
 	}
 }

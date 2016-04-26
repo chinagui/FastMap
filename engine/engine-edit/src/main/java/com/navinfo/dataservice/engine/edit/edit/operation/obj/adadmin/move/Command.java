@@ -39,7 +39,7 @@ public class Command implements ICommand {
 		
 		this.linkPid = data.getInt("linkPid");
 		
-		this.pid = data.getInt("pid");
+		this.pid = json.getInt("objId");
 	}
 
 	@Override

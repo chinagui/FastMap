@@ -107,6 +107,7 @@ public class Operation implements IOperation {
 		Geometry geomNode  = GeoTranslator.transform(updateNode.getGeometry(), 0.00001, 5);
 		double lon =geomNode.getCoordinates()[0].x;
 		double lat =geomNode.getCoordinates()[0].y;
+		if(command.getFaces() != null && command.getFaces().size() > 0){
 		for (AdFace face : command.getFaces()) {
 		
 			Geometry geomFace = GeoTranslator.transform(face.getGeometry(), 0.00001, 5);
@@ -134,6 +135,7 @@ public class Operation implements IOperation {
 			updateContent.put("area", GeometryUtils.getCalculateArea((GeoTranslator.geojson2Jts(geojson, 1, 5))));
 			face.fillChangeFields(updateContent);
 			result.insertObject(face, ObjStatus.UPDATE, face.pid());
+		}
 		}
 	}
 }

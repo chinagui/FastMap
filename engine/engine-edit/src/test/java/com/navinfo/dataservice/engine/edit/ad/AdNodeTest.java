@@ -30,12 +30,19 @@ public class AdNodeTest {
 		Transaction t = new Transaction(parameter);;
 		String msg = t.run();
 	}
+	public void moveAdNodeTest() throws Exception{
+		String parameter = "{\"command\":\"MOVE\",\"projectId\":11,\"objId\":100021744,\"data\":{\"longitude\":116.4741861820221,\"latitude\":40.01400009432636},\"type\":\"ADNODE\"}";
+		log.info(parameter);
+		Transaction t = new Transaction(parameter);;
+		String msg = t.run();
+	}
 
-
+    
 	public static void main(String[] args) throws Exception{
 		//new AdNodeTest().createAdNodeTest();
 		//new AdNodeTest().deleteAdNodeTest();
-		new AdNodeTest().updateAdNodeTest();
+		//new AdNodeTest().updateAdNodeTest();
+		new AdNodeTest().moveAdNodeTest();
 
 		
 	}

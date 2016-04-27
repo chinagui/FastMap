@@ -5,12 +5,18 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.navinfo.dataservice.commons.db.ConfigLoader;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.engine.check.CheckEngine;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -26,21 +32,25 @@ import com.vividsolutions.jts.geom.Point;
 public class CheckNodeForm extends baseRule {
 	
 	public void preCheck(CheckCommand checkCommand) throws Exception {
-		String s = "";
-		List<IRow> objList = checkCommand.getGlmList();
-		for(int i=0; i<objList.size(); i++){
-			IRow obj = objList.get(i);
-			if (obj instanceof RdNode){
-				RdNode rdNode = (RdNode)obj;
-				int pid = rdNode.getPid();
-				s += pid;
-				if (i != objList.size()-1){
-					s += ",";
+
+		List<Integer> nodePids = new ArrayList<Integer>();
+		
+		for(IRow obj:checkCommand.getGlmList()){
+			if(obj instanceof RdCross ){
+				RdCross rdCross = (RdCross)obj;
+						
+				for(IRow deObj:rdCross.getNodes()){
+					if(deObj instanceof RdCrossNode){
+						RdCrossNode rdCrossNode = (RdCrossNode)deObj;
+						nodePids.add(rdCrossNode.getPid());
+					}
 				}
 			}
+					
 		}
+		
 
-		String sql = "select count(1) count from rd_node_form where node_pid in ("+s+") and form_of_way=15";
+		String sql = "select count(1) count from rd_node_form where node_pid in ("+StringUtils.join(nodePids,",")+") and form_of_way=15";
 		
 		PreparedStatement pstmt = getConn().prepareStatement(sql);
 
@@ -77,21 +87,30 @@ public class CheckNodeForm extends baseRule {
 	
 	
 	public static void main(String[] args) throws Exception {
+		RdCross rdCross = new RdCross();
+		List<IRow> rdCrossNodes = new ArrayList<IRow>();
 		
-		RdNode node = new RdNode();
-		node.setPid(430174);
+		RdCrossNode rdCrossNode1 = new RdCrossNode();
+		rdCrossNode1.setNodePid(503216);
+		rdCrossNodes.add(rdCrossNode1);
 		
-		Coordinate coord = new Coordinate(109.013388, 32.715519);
-		GeometryFactory geometryFactory = new GeometryFactory();
-        Point point = geometryFactory.createPoint( coord );
-        
-        node.setGeometry(point);
+		RdCrossNode rdCrossNode2 = new RdCrossNode();
+		rdCrossNode2.setNodePid(503294);
+		rdCrossNodes.add(rdCrossNode2);
+		
+		RdCrossNode rdCrossNode3 = new RdCrossNode();
+		rdCrossNode3.setNodePid(505591);
+		rdCrossNodes.add(rdCrossNode3);
+		
+		RdCrossNode rdCrossNode4 = new RdCrossNode();
+		rdCrossNode4.setNodePid(507090);
+		rdCrossNodes.add(rdCrossNode4);
+		
+		rdCross.setNodes(rdCrossNodes);
 		
 		List<IRow> objList = new ArrayList<IRow>();
-		objList.add(node);
-		
-		//ConfigLoader.initDBConn("E:/Users/songdongyan/java/DataService/DataService/web/edit-web/target/classes/config.properties");
-		//检查调用
+		objList.add(rdCross);
+
 		CheckCommand checkCommand=new CheckCommand();
 		checkCommand.setProjectId(12);
 		checkCommand.setGlmList(objList);

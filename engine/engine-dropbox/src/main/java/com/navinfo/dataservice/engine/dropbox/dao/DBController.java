@@ -3,23 +3,21 @@ package com.navinfo.dataservice.engine.dropbox.dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Types;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.engine.dao.DBConnector;
 
 import net.sf.json.JSONObject;
-import oracle.jdbc.OraclePreparedStatement;
 
 public class DBController {
 
-	public int addUploadRecord(String fileName, String md5, int fileSize,
-			int chunkSize) throws Exception {
+	public int addUploadRecord(String fileName, String md5, int fileSize, int chunkSize)
+			throws Exception {
 
 		Connection conn = null;
 
-		OraclePreparedStatement pstmt = null;
+		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 
@@ -27,33 +25,43 @@ public class DBController {
 
 			conn = DBConnector.getInstance().getConnection();
 
-			String sql = "insert into dropbox_upload(job_id,file_name,file_path,md5,file_size,chunk_size) values(seq_upload.nextval,:1,:2,:3,:4,:5) returning job_id into :6";
+			String autoIncreateSql = "select seq_upload.nextval from dual";
 
-			pstmt = (OraclePreparedStatement) conn.prepareStatement(sql);
-
-			pstmt.setString(1, fileName);
+			PreparedStatement pst = conn.prepareStatement(autoIncreateSql);
 			
-			String uploadPath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath);
+			ResultSet rs = pst.executeQuery();
+			
+			int autoId = -1;
+			
+			if(rs.next())
+			{
+				autoId = rs.getInt(1);
+			}
 
-			pstmt.setString(2, uploadPath);
+			String sql = "insert into dropbox_upload(job_id,file_name,file_path,md5,file_size,chunk_size) values(:1,:2,:3,:4,:5,:6)";
 
-			pstmt.setString(3, md5);
+			pstmt = conn.prepareStatement(sql);
+			
+			pstmt.setInt(1, autoId);
 
-			pstmt.setInt(4, fileSize);
+			pstmt.setString(2, fileName);
 
-			pstmt.setInt(5, chunkSize);
+			String uploadPath = SystemConfigFactory.getSystemConfig()
+					.getValue(PropConstant.uploadPath);
 
-			pstmt.registerReturnParameter(6, Types.INTEGER);
+			pstmt.setString(3, uploadPath);
+
+			pstmt.setString(4, md5);
+
+			pstmt.setInt(5, fileSize);
+
+			pstmt.setInt(6, chunkSize);
 
 			pstmt.executeUpdate();
-
-			resultSet = pstmt.getResultSet();
-
-			resultSet.next();
-
-			int jobId = resultSet.getInt("job_id");
-
-			return jobId;
+			
+			conn.commit();
+			
+			return autoId;
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -310,5 +318,4 @@ public class DBController {
 			}
 		}
 	}
-
 }

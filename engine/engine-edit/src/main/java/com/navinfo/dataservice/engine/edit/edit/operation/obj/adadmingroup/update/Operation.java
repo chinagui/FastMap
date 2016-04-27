@@ -56,6 +56,7 @@ public class Operation implements IOperation {
 	/**
 	 * 循环遍历树中的节点状态，根据状态调用对应的处理方式
 	 * 前台操作：判断目标节点（父节点）的group对象是否为null，为null时则给目标节点group的groupid赋值0，并打上新增标识；
+	 * 判断目标节点（父节点）的group对象是否为null，为null时则给目标节点group的groupid赋值0，并打上新增标识；
 	 * 更新拖拽节点的part对象的groupid为目标节点的group的groupid，如果拖拽节点的part对象没有状态，则把状态打上修改标识；
 	 * @param tree
 	 * @param result

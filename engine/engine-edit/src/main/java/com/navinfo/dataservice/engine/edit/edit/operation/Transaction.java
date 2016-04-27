@@ -71,17 +71,20 @@ public class Transaction {
 		case RDLINK:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.create.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.create.Command(
+						json, requester);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.update.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.update.Command(
+						json, requester);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deletelink.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deletelink.Command(
+						json, requester);
 			case BREAK:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Command(
+						json, requester);
 			case REPAIR:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.Command(
+						json, requester);
 			// case DEPART:
 			// return new
 			// com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Command(
@@ -90,80 +93,83 @@ public class Transaction {
 		case RDNODE:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Command(
+						json, requester);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdnode.update.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdnode.update.Command(
+						json, requester);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deletenode.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deletenode.Command(
+						json, requester);
 			case MOVE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.movenode.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.movenode.Command(
+						json, requester);
 			}
 		case RDRESTRICTION:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdrestriction.create.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdrestriction.create.Command(
+						json, requester);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdrestriction.update.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdrestriction.update.Command(
+						json, requester);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdrestriction.delete.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdrestriction.delete.Command(
+						json, requester);
 			}
 		case RDCROSS:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.create.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.create.Command(
+						json, requester);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.update.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.update.Command(
+						json, requester);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.delete.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.delete.Command(
+						json, requester);
 			}
 		case RDBRANCH:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.create.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.create.Command(
+						json, requester);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.update.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.update.Command(
+						json, requester);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.delete.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.delete.Command(
+						json, requester);
 			}
 		case RDBRANCHDETAIL:
 			switch (operType) {
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranchdetail.delete.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranchdetail.delete.Command(
+						json, requester);
 			}
 		case RDLANECONNEXITY:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlaneconnexity.create.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlaneconnexity.create.Command(
+						json, requester);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlaneconnexity.update.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlaneconnexity.update.Command(
+						json, requester);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlaneconnexity.delete.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlaneconnexity.delete.Command(
+						json, requester);
 			}
 		case RDSPEEDLIMIT:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdspeedlimit.create.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdspeedlimit.create.Command(
+						json, requester);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdspeedlimit.update.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdspeedlimit.update.Command(
+						json, requester);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdspeedlimit.delete.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdspeedlimit.delete.Command(
+						json, requester);
 			}
 		case RDLINKSPEEDLIMIT:
 			switch (operType) {
@@ -174,43 +180,83 @@ public class Transaction {
 		case ADADMIN:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.create.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.create.Command(
+						json, requester);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.update.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.update.Command(
+						json, requester);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.delete.Command(json,
-						requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.delete.Command(
+						json, requester);
+			case MOVE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.move.Command(
+						json, requester);
 			}
 		case RDGSC:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.create.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.create.Command(
+						json, requester);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.update.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.update.Command(
+						json, requester);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Command(
+						json, requester);
 			}
 		case ADNODE:
-			switch(operType){
-			 case CREATE: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command(json, requester);
-			 case UPDATE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Command(json, requester);
-			 case MOVE: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.moveadnode.Command(json, requester);
-			 case DELETE: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadnode.Command(json, requester);
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command(
+						json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Command(
+						json, requester);
+			case MOVE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.moveadnode.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadnode.Command(
+						json, requester);
 			}
 		case ADLINK:
-			switch(operType){
-			 case CREATE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.create.Command(json, requester);
-			 case UPDATE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.update.Command(json, requester);
-			 case BREAK: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command(json, requester);
-			 case DELETE: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadlink.Command(json, requester);
-			 case REPAIR: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repairadlink.Command(json, requester);
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.create.Command(
+						json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.update.Command(
+						json, requester);
+			case BREAK:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadlink.Command(
+						json, requester);
+			case REPAIR:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repairadlink.Command(
+						json, requester);
 			}
 		case ADFACE:
-			switch(operType){
-			 case CREATE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Command(json, requester);
-			 case DELETE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.delete.Command(json, requester);
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.delete.Command(
+						json, requester);
+			}
+		case ADADMINGROUP:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.create.Command(
+						json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.update.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.delete.Command(
+						json, requester);
 			}
 
 		}
@@ -232,15 +278,20 @@ public class Transaction {
 		case RDLINK:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.create.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.create.Process(
+						command);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.update.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.update.Process(
+						command);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deletelink.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deletelink.Process(
+						command);
 			case BREAK:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Process(
+						command);
 			case REPAIR:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.Process(
+						command);
 			// case DEPART:
 			// return new
 			// com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Process(
@@ -249,40 +300,53 @@ public class Transaction {
 		case RDNODE:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Process(
+						command);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdnode.update.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdnode.update.Process(
+						command);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deletenode.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deletenode.Process(
+						command);
 			case MOVE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.movenode.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.movenode.Process(
+						command);
 			}
 		case RDRESTRICTION:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdrestriction.create.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdrestriction.create.Process(
+						command);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdrestriction.update.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdrestriction.update.Process(
+						command);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdrestriction.delete.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdrestriction.delete.Process(
+						command);
 			}
 		case RDCROSS:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.create.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.create.Process(
+						command);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.update.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.update.Process(
+						command);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.delete.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.delete.Process(
+						command);
 			}
 		case RDBRANCH:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.create.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.create.Process(
+						command);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.update.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.update.Process(
+						command);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.delete.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.delete.Process(
+						command);
 			}
 		case RDBRANCHDETAIL:
 			switch (operType) {
@@ -305,11 +369,14 @@ public class Transaction {
 		case RDSPEEDLIMIT:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdspeedlimit.create.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdspeedlimit.create.Process(
+						command);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdspeedlimit.update.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdspeedlimit.update.Process(
+						command);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdspeedlimit.delete.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdspeedlimit.delete.Process(
+						command);
 			}
 		case RDLINKSPEEDLIMIT:
 			switch (operType) {
@@ -320,58 +387,87 @@ public class Transaction {
 		case ADADMIN:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.create.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.create.Process(
+						command);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.update.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.update.Process(
+						command);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.delete.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.delete.Process(
+						command);
+			case MOVE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.move.Process(
+						command);
 			}
 		case RDGSC:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.create.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.create.Process(
+						command);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.update.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.update.Process(
+						command);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Process(command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Process(
+						command);
 			}
-
-
-case ADNODE:
-			switch(operType){
-			 case CREATE: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process(
+		case ADNODE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process(
 						command);
-			 case UPDATE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Process(
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Process(
 						command);
-			 case MOVE: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.moveadnode.Process(
+			case MOVE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.moveadnode.Process(
 						command);
-			 case DELETE: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadnode.Process(
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadnode.Process(
 						command);
 			}
 		case ADLINK:
-			switch(operType){
-			 case CREATE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.create.Process(
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.create.Process(
 						command);
-			 case UPDATE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.update.Process(
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.update.Process(
 						command);
-			 case BREAK: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process(
+			case BREAK:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process(
 						command);
-			 case DELETE: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadlink.Process(
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadlink.Process(
 						command);
-			 case REPAIR: return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repairadlink.Process(
+			case REPAIR:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repairadlink.Process(
 						command);
 			}
 		case ADFACE:
-			switch(operType){
-			 case CREATE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Process(
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Process(
 						command);
-			 case DELETE: return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.delete.Process(
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.delete.Process(
 						command);
 			}
-			
+		case ADADMINGROUP:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.create.Process(
+						command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.create.Process(
+						command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.delete.Process(
+						command);
+			}
 		}
-
 		throw new Exception("不支持的操作类型");
+
 	}
 
 	public Result createResult() {

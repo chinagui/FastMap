@@ -14,15 +14,19 @@ import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
@@ -185,6 +189,23 @@ public class Process implements IProcess {
 
 		command.setLimits(limits);
 	}
+	
+	public void lockRdGsc() throws Exception {
+
+		RdGscSelector selector = new RdGscSelector(this.conn);
+
+		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPids(command.getLinkPids(), true);
+
+		command.setRdGscs(rdGscList);
+	}
+	
+	private void lockAdAdmin() throws Exception {
+		AdAdminSelector selector = new AdAdminSelector(this.conn);
+
+		List<AdAdmin> adAdminList = selector.loadRowsByLinkPids(command.getLinkPids(), true);
+
+		command.setAdAdmins(adAdminList);
+	}
 
 	@Override
 	public boolean prepareData() throws Exception {
@@ -217,6 +238,10 @@ public class Process implements IProcess {
 		lockRdCross();
 
 		lockRdSpeedlimits();
+		
+		lockRdGsc();
+		
+		lockAdAdmin();
 
 		return true;
 	}
@@ -251,6 +276,11 @@ public class Process implements IProcess {
 				IOperation opRefSpeedlimit = new OpRefSpeedlimit(command);
 				opRefSpeedlimit.run(result);
 				
+				IOperation opRefRdGsc = new OpRefRdGsc(command);
+				opRefRdGsc.run(result);
+
+				IOperation opRefAdAdmin = new OpRefAdAdmin(command);
+				opRefAdAdmin.run(result);
 				
 				recordData();
 				postCheck();

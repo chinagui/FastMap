@@ -43,7 +43,13 @@ public class Operation implements IOperation {
 
 		return null;
 	}
-
+	
+	/**
+	 * 循环遍历树中的节点状态，根据状态调用对应的处理方式
+	 * @param tree
+	 * @param result
+	 * @throws Exception
+	 */
 	private void handleAdAdminTree(AdAdminTree tree, Result result) throws Exception {
 
 		AdAdminGroup group = tree.getGroup();
@@ -61,7 +67,9 @@ public class Operation implements IOperation {
 		} else {
 			groupId = PidService.getInstance().applyAdAdminGroupPid();
 		}
-
+		
+		//在循环遍历过程中，给ObjType赋值的的树中的节点需要进行修改,删除中删除某一个group需要将其下的所有子层级的
+		//group和part打上删除标识，前台保证，后台做检查？
 		if (group != null && group.getObjType() != null) {
 			groupType = group.getObjType().toUpperCase();
 
@@ -70,6 +78,7 @@ public class Operation implements IOperation {
 			}
 		}
 
+		//在循环遍历过程中，给ObjType赋值的的树中的节点需要进行修改
 		if (part != null && part.getObjType() != null) {
 			partType = part.getObjType().toUpperCase();
 

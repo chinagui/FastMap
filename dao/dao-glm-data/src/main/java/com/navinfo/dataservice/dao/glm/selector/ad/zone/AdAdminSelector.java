@@ -185,6 +185,13 @@ public class AdAdminSelector implements ISelector{
 		return adAdmin;
 	}
 	
+	/**
+	 * 根据引导LinkPid查询行政区划代表点
+	 * @param id
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
 	public List<AdAdmin> loadRowsByLinkId(int id, boolean isLock) throws Exception {
 		
 		List<AdAdmin> adAdminList = new ArrayList<AdAdmin>();

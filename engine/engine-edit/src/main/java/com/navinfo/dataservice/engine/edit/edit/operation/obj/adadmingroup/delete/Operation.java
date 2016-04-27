@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.update;
+package com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.delete;
 
 import java.sql.Connection;
 import java.util.List;
@@ -33,22 +33,13 @@ public class Operation implements IOperation {
 
 		JSONObject content = command.getContent();
 
-		JSONArray array = new JSONArray(content.get("groupTree"));
+		JSONArray array = new JSONArray(content.getJSONArray("groupTree").toString());
 
 		Gson gson = new Gson();
 
 		AdAdminTree tree = gson.fromJson(array.getJSONObject(0).toString(), AdAdminTree.class);
 
-		if (content.containsKey("objStatus")) {
-
-			if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
-
-				return null;
-			} else {
-
-				handleAdAdminTree(tree, result);
-			}
-		}
+		handleAdAdminTree(tree, result);
 
 		return null;
 	}
@@ -74,24 +65,16 @@ public class Operation implements IOperation {
 		if (group != null && group.getObjType() != null) {
 			groupType = group.getObjType().toUpperCase();
 
-			if (ObjStatus.INSERT.toString().equals(groupType)) {
-				result.insertObject(group, ObjStatus.INSERT, groupId);
-			}
-
-			if (ObjStatus.UPDATE.toString().equals(groupType)) {
-				result.insertObject(group, ObjStatus.UPDATE, groupId);
+			if (ObjStatus.DELETE.toString().equals(groupType)) {
+				result.insertObject(group, ObjStatus.DELETE, groupId);
 			}
 		}
 
 		if (part != null && part.getObjType() != null) {
 			partType = part.getObjType().toUpperCase();
 
-			if (ObjStatus.INSERT.toString().equals(partType)) {
-				result.insertObject(part, ObjStatus.INSERT, groupId);
-			}
-
-			if (ObjStatus.UPDATE.toString().equals(partType)) {
-				result.insertObject(part, ObjStatus.UPDATE, groupId);
+			if (ObjStatus.DELETE.toString().equals(partType)) {
+				result.insertObject(part, ObjStatus.DELETE, groupId);
 			}
 		}
 

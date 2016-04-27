@@ -13,6 +13,12 @@ public class PropConstant {
 	public static final String pmPassword = "pm_password";
 
 	public static final String hbaseAddress = "hbase.address";
+	
+	public static final String tipsTableName = "hbase.tablename.tips";
+	
+	public static final String photoTableName = "hbase.tablename.photo";
+	
+	public static final String linkTileTableName = "hbase.tablename.linktile";
 
 	public static final String solrAddress = "solr.address";
 

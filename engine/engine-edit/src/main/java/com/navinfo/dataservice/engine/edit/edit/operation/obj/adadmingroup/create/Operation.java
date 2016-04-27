@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.update;
+package com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.create;
 
 import java.sql.Connection;
 import java.util.List;
@@ -42,10 +42,8 @@ public class Operation implements IOperation {
 		if (content.containsKey("objStatus")) {
 
 			if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
-
 				return null;
 			} else {
-
 				handleAdAdminTree(tree, result);
 			}
 		}
@@ -75,11 +73,13 @@ public class Operation implements IOperation {
 			groupType = group.getObjType().toUpperCase();
 
 			if (ObjStatus.INSERT.toString().equals(groupType)) {
-				result.insertObject(group, ObjStatus.INSERT, groupId);
+				result.insertObject(group, ObjStatus.INSERT,
+						groupId);
 			}
-
+			
 			if (ObjStatus.UPDATE.toString().equals(groupType)) {
-				result.insertObject(group, ObjStatus.UPDATE, groupId);
+				result.insertObject(group, ObjStatus.UPDATE,
+						groupId);
 			}
 		}
 
@@ -87,11 +87,13 @@ public class Operation implements IOperation {
 			partType = part.getObjType().toUpperCase();
 
 			if (ObjStatus.INSERT.toString().equals(partType)) {
-				result.insertObject(part, ObjStatus.INSERT, groupId);
+				result.insertObject(part, ObjStatus.INSERT,
+						groupId);
 			}
 
 			if (ObjStatus.UPDATE.toString().equals(partType)) {
-				result.insertObject(part, ObjStatus.UPDATE, groupId);
+				result.insertObject(part, ObjStatus.UPDATE,
+						groupId);
 			}
 		}
 

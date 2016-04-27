@@ -23,7 +23,7 @@ public class AdAdminPart implements IRow {
 	private int regionIdDown;
 	private int meshId = 0;
     private String rowId;
-    private String type;
+    private String objType;
     public String getRowId() {
 		return rowId;
 	}
@@ -40,12 +40,12 @@ public class AdAdminPart implements IRow {
 		
 	}
 	
-	public String getType() {
-		return type;
+	public String getObjType() {
+		return objType;
 	}
 
-	public void setType(String type) {
-		this.type = type;
+	public void setObjType(String objType) {
+		this.objType = objType;
 	}
 
 	@Override
@@ -209,9 +209,9 @@ public class AdAdminPart implements IRow {
 			
 			json.put("rowId", rowId);
 			
-			if(!StringUtils.isEmpty("type"))
+			if(!StringUtils.isEmpty(objType))
 			{
-				json.put("type", type);
+				json.put("objType", objType);
 			}
 
 			return json;

@@ -175,7 +175,7 @@ public class AdLinkSelector implements ISelector {
 
 					adLink.meshMap.put(mesh.rowId(), mesh);
 				}
-
+				links.add(adLink);
 				}
 			}catch (Exception e) {
 

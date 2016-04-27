@@ -19,6 +19,7 @@ import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
+import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.db.OracleAddress;
 import com.navinfo.dataservice.commons.timedomain.TimeDecoder;
@@ -271,7 +272,7 @@ public class RdRestrictionTipsBuilder {
 		
 		Connection hbaseConn = HBaseAddress.getHBaseConnection();
 
-		Table htab = hbaseConn.getTable(TableName.valueOf("tips"));
+		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 		
 		RdRestrictionTipsBuilder.importTips(oa1.getConn(), htab);
 	}

@@ -343,7 +343,7 @@ public class LogWriter {
 		boolean flag = false;
 		if (r.objType() == ObjType.RDNODE || r.objType() == ObjType.RDLINK
 				|| r.objType() == ObjType.ADLINK
-				|| r.objType() == ObjType.ADNODE) {
+				|| r.objType() == ObjType.ADNODE|| r.objType() == ObjType.ADFACE) {
 
 			if (r.status() == ObjStatus.INSERT
 					|| r.status() == ObjStatus.DELETE) {

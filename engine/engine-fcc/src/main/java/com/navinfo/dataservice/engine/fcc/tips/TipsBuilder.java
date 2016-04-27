@@ -10,9 +10,11 @@ import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Table;
 
+import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.db.OracleAddress;
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.engine.fcc.tips.bridge.BridgeTipsBuilder;
 import com.navinfo.dataservice.engine.fcc.tips.connexity.RdLaneConnexityTipsBuilder;
 import com.navinfo.dataservice.engine.fcc.tips.construct.ConstructTipsBuilder;
@@ -107,9 +109,9 @@ public class TipsBuilder {
 
 		Connection hbaseConn = HBaseAddress.getHBaseConnection();
 		
-		createTabIfNotExists(hbaseConn, "tips");
+		createTabIfNotExists(hbaseConn, HBaseConstant.tipTab);
 
-		Table htab = hbaseConn.getTable(TableName.valueOf("tips"));
+		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 		
 //		prepareAuxData(pmOA.getConn());
 

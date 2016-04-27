@@ -55,7 +55,7 @@ public class Operation implements IOperation {
 		updateContent.put("linkPid", command.getLinkPid());
 		
 		updateContent.put("meshId", Integer.parseInt(meshId));
-
+		
 		moveAdmin.setLinkPid(command.getLinkPid());
 
 		moveAdmin.fillChangeFields(updateContent);

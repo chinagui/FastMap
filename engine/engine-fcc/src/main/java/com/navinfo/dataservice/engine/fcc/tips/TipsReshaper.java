@@ -13,6 +13,7 @@ import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 
+import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
@@ -35,7 +36,7 @@ public class TipsReshaper {
 
 		Connection hbaseConn = HBaseAddress.getHBaseConnection();
 
-		Table htab = hbaseConn.getTable(TableName.valueOf("tips"));
+		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
 		Scan scan = new Scan();
 

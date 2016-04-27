@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.ad.zone;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -48,6 +49,8 @@ public class AdAdminSelector implements ISelector{
 
 				adAdmin.setPid(resultSet.getInt("region_id"));
 				
+				adAdmin.setRegionId(resultSet.getInt("region_id"));
+				
 				adAdmin.setAdminId(resultSet.getInt("admin_id"));
 				
 				adAdmin.setExtendId(resultSet.getInt("extend_id"));
@@ -64,7 +67,7 @@ public class AdAdminSelector implements ISelector{
 				
 				adAdmin.setLinkPid(resultSet.getInt("link_pid"));
 				
-				adAdmin.setNameGroupId(resultSet.getInt("name_groupid"));
+				adAdmin.setNameGroupid(resultSet.getInt("name_groupid"));
 				
 				adAdmin.setSide(resultSet.getInt("side"));
 				
@@ -75,7 +78,7 @@ public class AdAdminSelector implements ISelector{
 				adAdmin.setRowId(resultSet.getString("row_id"));
 				
 				// ad_admin_name
-				List<IRow> adAdminNameList = new AdAdminNameSelector(conn).loadRowsByParentId(adAdmin.getNameGroupId(), isLock);
+				List<IRow> adAdminNameList = new AdAdminNameSelector(conn).loadRowsByParentId(adAdmin.getRegionId(), isLock);
 
 				for (IRow row : adAdminNameList) {
 					row.setMesh(adAdmin.mesh());
@@ -181,4 +184,92 @@ public class AdAdminSelector implements ISelector{
 
 		return adAdmin;
 	}
+	
+	/**
+	 * 根据引导LinkPid查询行政区划代表点
+	 * @param id
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<AdAdmin> loadRowsByLinkId(int id, boolean isLock) throws Exception {
+		
+		List<AdAdmin> adAdminList = new ArrayList<AdAdmin>();
+
+		String sql = "SELECT * FROM ad_admin WHERE link_pid = :1";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, id);
+
+			resultSet = pstmt.executeQuery();
+			
+			while (resultSet.next()) {
+				AdAdmin adAdmin = new AdAdmin();
+				
+				adAdmin.setPid(resultSet.getInt("region_id"));
+				
+				adAdmin.setRegionId(resultSet.getInt("region_id"));
+				
+				adAdmin.setLinkPid(resultSet.getInt("link_pid"));
+				
+				adAdmin.setNameGroupid(resultSet.getInt("name_groupid"));
+				
+				adAdmin.setSide(resultSet.getInt("side"));
+				
+				adAdmin.setMeshId(resultSet.getInt("MESH_ID"));
+				
+				adAdmin.setEditFlag(resultSet.getInt("edit_flag"));
+				
+				adAdmin.setRowId(resultSet.getString("row_id"));
+				
+				// ad_admin_name
+				List<IRow> adAdminNameList = new AdAdminNameSelector(conn).loadRowsByParentId(adAdmin.getRegionId(), isLock);
+
+				for (IRow row : adAdminNameList) {
+					row.setMesh(adAdmin.mesh());
+				}
+
+				adAdmin.setNames(adAdminNameList);
+
+				for (IRow row : adAdminNameList) {
+					AdAdminName obj = (AdAdminName) row;
+
+					adAdmin.adAdminNameMap.put(obj.rowId(), obj);
+				}
+			}
+		} catch (Exception e) {
+			
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+		}
+		return adAdminList;
+	}
+	
 }

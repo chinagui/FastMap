@@ -49,7 +49,7 @@ public class TipsExporter {
 		String stopRowkey = GeoHash.geoHashStringWithCharacterPrecision(mbr[3],
 				mbr[2], 12);
 
-		Scanner scanner = HBaseAddress.getHBaseClient().newScanner("tips");
+		Scanner scanner = HBaseAddress.getHBaseClient().newScanner(HBaseConstant.tipTab);
 
 		scanner.setStartKey(startRowkey);
 
@@ -197,7 +197,7 @@ public class TipsExporter {
 		
 		Connection hbaseConn = HBaseAddress.getHBaseConnection();
 
-		Table htab = hbaseConn.getTable(TableName.valueOf("tips"));
+		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 		
 		Result[] results = htab.get(gets);
 		

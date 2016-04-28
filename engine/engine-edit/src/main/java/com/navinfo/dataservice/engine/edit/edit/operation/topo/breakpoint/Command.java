@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
@@ -67,6 +68,8 @@ public class Command implements ICommand {
 	private List<List<RdBranchVia>> branchVias;
 	
 	private List<RdGsc> rdGscs;
+	
+	private List<AdAdmin> adAdmins;
 
 	private boolean isCheckInfect = false;
 
@@ -193,6 +196,14 @@ public class Command implements ICommand {
 
 	public void seteNode(RdNode eNode) {
 		this.eNode = eNode;
+	}
+
+	public List<AdAdmin> getAdAdmins() {
+		return adAdmins;
+	}
+
+	public void setAdAdmins(List<AdAdmin> adAdmins) {
+		this.adAdmins = adAdmins;
 	}
 
 	public Command(JSONObject json, String requester) {

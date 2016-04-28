@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
@@ -28,6 +29,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchViaSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
@@ -183,6 +185,13 @@ public class Process implements IProcess {
 			List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(command.getLinkPid(), true);
 
 			command.setRdGscs(rdGscList);
+			
+			//获取由该link作为关联link的行政区划代表点
+			AdAdminSelector adSelector = new AdAdminSelector(this.conn);
+
+			List<AdAdmin> adAdminList = adSelector.loadRowsByLinkId(command.getLinkPid(), true);
+
+			command.setAdAdmins(adAdminList);
 
 			return true;
 
@@ -215,6 +224,8 @@ public class Process implements IProcess {
 			opRefSpeedlimit.run(result);
 			OpRefRdGsc opRefRdGsc = new OpRefRdGsc(command);
 			opRefRdGsc.run(result);
+			OpRefAdAdmin opRefAdAdmin = new OpRefAdAdmin(command);
+			opRefAdAdmin.run(result);
 			this.recordData();
 			this.postCheck();
 			// conn.commit();
@@ -252,6 +263,8 @@ public class Process implements IProcess {
 				opRefSpeedlimit.run(result);
 				OpRefRdGsc opRefRdGsc = new OpRefRdGsc(command);
 				opRefRdGsc.run(result);
+				OpRefAdAdmin opRefAdAdmin = new OpRefAdAdmin(command);
+				opRefAdAdmin.run(result);
 				this.recordData();
 				this.postCheck();
 				conn.commit();
@@ -349,6 +362,14 @@ public class Process implements IProcess {
 				}
 				
 				infects.put("RDGSC", infectList);
+				
+				infectList = new ArrayList<Integer>();
+
+				for (AdAdmin adAdmin : command.getAdAdmins()) {
+					infectList.add(adAdmin.getPid());
+				}
+				
+				infects.put("ADADMIN", infectList);
 
 				msg = JSONObject.fromObject(infects).toString();
 

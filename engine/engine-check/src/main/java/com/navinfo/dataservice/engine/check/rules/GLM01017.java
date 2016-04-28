@@ -77,25 +77,17 @@ public class GLM01017 extends baseRule{
 	
 	public static void main(String[] args) throws Exception{
 		List<IRow> details = new ArrayList<IRow>();
-		RdRestrictionDetail rdRestrictionDetail1 = new RdRestrictionDetail();
-		rdRestrictionDetail1.setOutLinkPid(18667201);
-		rdRestrictionDetail1.setPid(14144);
-		rdRestrictionDetail1.setRestricPid(11958);
-		rdRestrictionDetail1.setOutNodePid(176425);
-		details.add(rdRestrictionDetail1);
-		
-		RdRestrictionDetail rdRestrictionDetail2 = new RdRestrictionDetail();
-		rdRestrictionDetail2.setOutLinkPid(86755886);
-		rdRestrictionDetail2.setPid(14677);
-		rdRestrictionDetail2.setRestricPid(11958);
-		rdRestrictionDetail2.setOutNodePid(176425);
-		details.add(rdRestrictionDetail2);
+		RdRestrictionDetail rdRestrictionDetail = new RdRestrictionDetail();
+		rdRestrictionDetail.setOutLinkPid(197951);
+		rdRestrictionDetail.setPid(14076);
+		rdRestrictionDetail.setRestricPid(11883);
+		details.add(rdRestrictionDetail);
 		
 		RdRestriction rdRestriction = new RdRestriction();
-		rdRestriction.setInLinkPid(199135);
+		rdRestriction.setInLinkPid(197954);
 		rdRestriction.setDetails(details);
-		rdRestriction.setNodePid(176425);
-		rdRestriction.setPid(11958);
+		rdRestriction.setNodePid(175447);
+		rdRestriction.setPid(11883);
 		
 		List<IRow> objList = new ArrayList<IRow>();
 		objList.add(rdRestriction);

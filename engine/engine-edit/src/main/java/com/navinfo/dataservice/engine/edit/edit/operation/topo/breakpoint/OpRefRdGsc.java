@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -26,7 +28,12 @@ public class OpRefRdGsc implements IOperation {
 
 		this.result = result;
 		
-		this.handleRdGsc(command.getRdGscs());
+		List<RdGsc> rdGscList = command.getRdGscs();
+		
+		if(CollectionUtils.isNotEmpty(rdGscList))
+		{
+			this.handleRdGsc(rdGscList);
+		}
 
 		return null;
 	}
@@ -56,7 +63,6 @@ public class OpRefRdGsc implements IOperation {
 						result.insertObject(rdGscLink, ObjStatus.UPDATE, rr.pid());
 					}
 				}
-				
 			}
 		}
 	}

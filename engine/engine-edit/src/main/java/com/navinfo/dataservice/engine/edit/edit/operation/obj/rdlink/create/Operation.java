@@ -23,8 +23,8 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
-import com.navinfo.dataservice.engine.edit.comm.util.AdminUtils;
-import com.navinfo.dataservice.engine.edit.comm.util.OperateUtils;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.AdminOperateUtils;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -67,7 +67,7 @@ public class Operation implements IOperation {
 
 				Coordinate point = geomList.get(0).getCoordinates()[0];
 
-				RdNode node = OperateUtils.createNode(point.x, point.y);
+				RdNode node = NodeOperateUtils.createNode(point.x, point.y);
 
 				result.insertObject(node, ObjStatus.INSERT, node.pid());
 
@@ -81,7 +81,7 @@ public class Operation implements IOperation {
 				Coordinate point = geomList.get(0).getCoordinates()[geomList
 						.get(0).getCoordinates().length - 1];
 
-				RdNode node = OperateUtils.createNode(point.x, point.y);
+				RdNode node = NodeOperateUtils.createNode(point.x, point.y);
 
 				result.insertObject(node, ObjStatus.INSERT, node.pid());
 
@@ -134,7 +134,7 @@ public class Operation implements IOperation {
 
 				link.setLaneNum(command.getLaneNum());
 				
-				AdminUtils.SetAdminInfo4Link(link, conn);
+				AdminOperateUtils.SetAdminInfo4Link(link, conn);
 
 				result.insertObject(link, ObjStatus.INSERT, link.pid());
 			} else {
@@ -182,7 +182,7 @@ public class Operation implements IOperation {
 
 						link.setLaneNum(command.getLaneNum());
 						
-						AdminUtils.SetAdminInfo4Link(link, conn);
+						AdminOperateUtils.SetAdminInfo4Link(link, conn);
 
 						setLinkChildren(link);
 
@@ -277,7 +277,7 @@ public class Operation implements IOperation {
 
 			double y = coordinates.getJSONArray(0).getDouble(1);
 
-			RdNode node = OperateUtils.createNode(x, y);
+			RdNode node = NodeOperateUtils.createNode(x, y);
 
 			result.insertObject(node, ObjStatus.INSERT, node.pid());
 
@@ -317,7 +317,7 @@ public class Operation implements IOperation {
 					double y = catchLinks
 							.getJSONObject(p).getDouble("lat");
 
-					RdNode node = OperateUtils.createNode(x, y);
+					RdNode node = NodeOperateUtils.createNode(x, y);
 
 					result.insertObject(node, ObjStatus.INSERT, node.pid());
 
@@ -361,7 +361,7 @@ public class Operation implements IOperation {
 
 				double y = tmpCs.getJSONArray(tmpCs.size() -1).getDouble(1);
 
-				RdNode node = OperateUtils.createNode(x, y);
+				RdNode node = NodeOperateUtils.createNode(x, y);
 
 				result.insertObject(node, ObjStatus.INSERT, node.pid());
 

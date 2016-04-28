@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.comm.util;
+package com.navinfo.dataservice.engine.edit.comm.util.operate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -121,7 +121,7 @@ public class LinkOperateUtils {
 		JSONObject node = new JSONObject();
 		if (0 == sNodePid) {
 			Coordinate point = g.getCoordinates()[0];
-			AdNode adNode =OperateUtils.createAdNode(point.x, point.y);
+			AdNode adNode =NodeOperateUtils.createAdNode(point.x, point.y);
 			result.insertObject(adNode, ObjStatus.INSERT, adNode.pid());
 			node.put("s", adNode.getPid());
 		}else{
@@ -130,7 +130,7 @@ public class LinkOperateUtils {
 		//创建终止点信息
 		if (0 == eNodePid) {
 			Coordinate point = g.getCoordinates()[g.getCoordinates().length - 1];
-			AdNode adNode=OperateUtils.createAdNode(point.x, point.y);
+			AdNode adNode=NodeOperateUtils.createAdNode(point.x, point.y);
 			result.insertObject(adNode, ObjStatus.INSERT, adNode.pid());
 			node.put("e", adNode.getPid());
 		}else{
@@ -175,7 +175,7 @@ public class LinkOperateUtils {
 
 			double y = coordinates.getJSONArray(0).getDouble(1);
 
-			AdNode node = OperateUtils.createAdNode(x, y);
+			AdNode node = NodeOperateUtils.createAdNode(x, y);
 			result.insertObject(node, ObjStatus.INSERT, node.pid());
 			se.put("s", node.getPid());
 
@@ -209,7 +209,7 @@ public class LinkOperateUtils {
 
 					double y = catchLinks.getJSONObject(p).getDouble("lat");
 
-					AdNode node = OperateUtils.createAdNode(x, y);
+					AdNode node = NodeOperateUtils.createAdNode(x, y);
 
 					result.insertObject(node, ObjStatus.INSERT, node.pid());
 
@@ -246,7 +246,7 @@ public class LinkOperateUtils {
 
 				double y = tmpCs.getJSONArray(tmpCs.size() - 1).getDouble(1);
 
-				AdNode node = OperateUtils.createAdNode(x, y);
+				AdNode node = NodeOperateUtils.createAdNode(x, y);
 
 				result.insertObject(node, ObjStatus.INSERT, node.pid());
 

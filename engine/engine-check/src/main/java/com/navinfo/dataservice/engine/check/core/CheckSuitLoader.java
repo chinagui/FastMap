@@ -67,12 +67,8 @@ public class CheckSuitLoader {
 							String RULE_CODE = resultSet.getString("RULE_CODE");
 							
 							CheckRule myCheckRule = CheckRuleLoader.getInstance().getCheckRule(RULE_CODE);
-							
-							if(myCheckRule != null){
-								checkRuleList.add(myCheckRule);
-							}
 
-							
+							checkRuleList.add(myCheckRule);
 							
 							
 						}

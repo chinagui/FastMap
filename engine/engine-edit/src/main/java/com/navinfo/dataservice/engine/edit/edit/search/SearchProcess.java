@@ -18,6 +18,7 @@ import com.navinfo.dataservice.dao.glm.selector.ad.zone.AdAdminTreeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.engine.edit.edit.search.rd.utils.RdLinkSearchUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -211,6 +212,15 @@ public class SearchProcess {
 
 					List<RdLink> links = selector.loadByNodePid(nodePid, false);
 
+					for (RdLink link : links) {
+						array.add(link.Serialize(ObjLevel.BRIEF));
+					}
+				}
+				if (condition.containsKey("nodePidDir")){
+					int cruuentNodePidDir = condition.getInt("nodePidDir");
+					int cuurentLinkPid =  condition.getInt("linkPid");
+					RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(conn);
+					List<RdLink>links = searchUtils.getNextTrackLinks(cuurentLinkPid, cruuentNodePidDir);
 					for (RdLink link : links) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}

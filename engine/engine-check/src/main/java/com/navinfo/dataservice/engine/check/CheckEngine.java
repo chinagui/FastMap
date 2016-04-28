@@ -97,7 +97,7 @@ public class CheckEngine {
 		List<IRow> objList=new ArrayList<IRow>();
 		objList.add(link);
 		
-		ConfigLoader.initDBConn("D:/workfiles/0_svn/fastmap-hithub/web/edit-web/target/classes/config.properties");
+		//ConfigLoader.initDBConn("D:/workfiles/0_svn/fastmap-hithub/web/edit-web/target/classes/config.properties");
 		
 		//检查调用
 		CheckCommand checkCommand=new CheckCommand();

@@ -18,6 +18,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
@@ -29,6 +30,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchViaSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneTopologySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneViaSelector;
@@ -65,8 +67,7 @@ public class Process implements IProcess {
 
 		this.result = new Result();
 
-		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
-				.getProjectId());
+		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command.getProjectId());
 
 		this.jaDisplayLink = new JSONArray();
 	}
@@ -99,20 +100,17 @@ public class Process implements IProcess {
 		try {
 			RdLinkSelector linkSelector = new RdLinkSelector(this.conn);
 
-			this.rdLinkBreakpoint = (RdLink) linkSelector.loadById(
-					command.getLinkPid(), true);
+			this.rdLinkBreakpoint = (RdLink) linkSelector.loadById(command.getLinkPid(), true);
 
 			result.insertObject(rdLinkBreakpoint, ObjStatus.DELETE, rdLinkBreakpoint.pid());
 
 			RdNodeSelector nodeSelector = new RdNodeSelector(conn);
 
-			RdNode sNode = (RdNode) nodeSelector.loadById(
-					rdLinkBreakpoint.getsNodePid(), true);
+			RdNode sNode = (RdNode) nodeSelector.loadById(rdLinkBreakpoint.getsNodePid(), true);
 
 			command.setsNode(sNode);
 
-			RdNode eNode = (RdNode) nodeSelector.loadById(
-					rdLinkBreakpoint.geteNodePid(), true);
+			RdNode eNode = (RdNode) nodeSelector.loadById(rdLinkBreakpoint.geteNodePid(), true);
 
 			command.seteNode(eNode);
 
@@ -123,22 +121,20 @@ public class Process implements IProcess {
 			command.setRestrictions(restrictions);
 
 			// 获取此LINK上交限退出线
-			List<RdRestrictionDetail> details = new RdRestrictionDetailSelector(
-					conn).loadDetailsByLinkPid(command.getLinkPid(), true);
+			List<RdRestrictionDetail> details = new RdRestrictionDetailSelector(conn)
+					.loadDetailsByLinkPid(command.getLinkPid(), true);
 
 			command.setRestrictionDetails(details);
 
 			// 获取LINK上交限经过线
 			List<List<Entry<Integer, RdRestrictionVia>>> restrictVias = new RdRestrictionViaSelector(
-					conn).loadRestrictionViaByLinkPid(command.getLinkPid(),
-					true);
+					conn).loadRestrictionViaByLinkPid(command.getLinkPid(), true);
 
 			command.setRestrictListVias(restrictVias);
 
 			// 获取此LINK上车信进入线
-			List<RdLaneConnexity> laneConnexitys = new RdLaneConnexitySelector(
-					conn).loadRdLaneConnexityByLinkPid(command.getLinkPid(),
-					true);
+			List<RdLaneConnexity> laneConnexitys = new RdLaneConnexitySelector(conn)
+					.loadRdLaneConnexityByLinkPid(command.getLinkPid(), true);
 
 			command.setLaneConnexitys(laneConnexitys);
 
@@ -181,6 +177,13 @@ public class Process implements IProcess {
 
 			command.setBranchVias(branchVias);
 
+			// 获取由该link组成的立交（RDGSC）
+			RdGscSelector selector = new RdGscSelector(this.conn);
+
+			List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(command.getLinkPid(), true);
+
+			command.setRdGscs(rdGscList);
+
 			return true;
 
 		} catch (SQLException e) {
@@ -200,18 +203,18 @@ public class Process implements IProcess {
 				throw new Exception(preCheckMsg);
 			}
 			IOperation operation = null;
-			operation = new OpTopo(command, conn, this.rdLinkBreakpoint,
-					jaDisplayLink);
+			operation = new OpTopo(command, conn, this.rdLinkBreakpoint, jaDisplayLink);
 			msg = operation.run(result);
 			OpRefRestrict opRefRestrict = new OpRefRestrict(command);
 			opRefRestrict.run(result);
 			OpRefBranch opRefBranch = new OpRefBranch(command);
 			opRefBranch.run(result);
-			OpRefLaneConnexity opRefLaneConnexity = new OpRefLaneConnexity(
-					command);
+			OpRefLaneConnexity opRefLaneConnexity = new OpRefLaneConnexity(command);
 			opRefLaneConnexity.run(result);
 			OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(command);
 			opRefSpeedlimit.run(result);
+			OpRefRdGsc opRefRdGsc = new OpRefRdGsc(command);
+			opRefRdGsc.run(result);
 			this.recordData();
 			this.postCheck();
 			// conn.commit();
@@ -237,18 +240,18 @@ public class Process implements IProcess {
 					throw new Exception(preCheckMsg);
 				}
 				IOperation operation = null;
-				operation = new OpTopo(command, conn, this.rdLinkBreakpoint,
-						jaDisplayLink);
+				operation = new OpTopo(command, conn, this.rdLinkBreakpoint, jaDisplayLink);
 				msg = operation.run(result);
 				OpRefRestrict opRefRestrict = new OpRefRestrict(command);
 				opRefRestrict.run(result);
 				OpRefBranch opRefBranch = new OpRefBranch(command);
 				opRefBranch.run(result);
-				OpRefLaneConnexity opRefLaneConnexity = new OpRefLaneConnexity(
-						command);
+				OpRefLaneConnexity opRefLaneConnexity = new OpRefLaneConnexity(command);
 				opRefLaneConnexity.run(result);
 				OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(command);
 				opRefSpeedlimit.run(result);
+				OpRefRdGsc opRefRdGsc = new OpRefRdGsc(command);
+				opRefRdGsc.run(result);
 				this.recordData();
 				this.postCheck();
 				conn.commit();
@@ -323,8 +326,7 @@ public class Process implements IProcess {
 
 				infectList = new ArrayList<Integer>();
 
-				for (RdRestrictionDetail detail : command
-						.getRestrictionDetails()) {
+				for (RdRestrictionDetail detail : command.getRestrictionDetails()) {
 					infectList.add(detail.getPid());
 				}
 
@@ -339,6 +341,14 @@ public class Process implements IProcess {
 				}
 
 				infects.put("RDRESTRICTIONVIA", infectList);
+
+				infectList = new ArrayList<Integer>();
+
+				for (RdGsc rdGsc : command.getRdGscs()) {
+					infectList.add(rdGsc.getPid());
+				}
+				
+				infects.put("RDGSC", infectList);
 
 				msg = JSONObject.fromObject(infects).toString();
 
@@ -362,11 +372,11 @@ public class Process implements IProcess {
 
 	@Override
 	public boolean recordData() throws Exception {
-		
+
 		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
-		
+
 		lw.generateLog(command, result);
-		
+
 		OperatorFactory.recordData(conn, result);
 
 		lw.recordLog(command, result);

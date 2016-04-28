@@ -3,13 +3,12 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint;
 import java.util.List;
 import java.util.Map.Entry;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
@@ -22,6 +21,8 @@ import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
+
+import net.sf.json.JSONObject;
 
 public class Command implements ICommand {
 
@@ -64,6 +65,8 @@ public class Command implements ICommand {
 	private List<RdBranch> outBranchs;
 
 	private List<List<RdBranchVia>> branchVias;
+	
+	private List<RdGsc> rdGscs;
 
 	private boolean isCheckInfect = false;
 
@@ -263,5 +266,12 @@ public class Command implements ICommand {
 		this.breakNodePid = breakNodePid;
 	}
 
+	public List<RdGsc> getRdGscs() {
+		return rdGscs;
+	}
 
+	public void setRdGscs(List<RdGsc> rdGscs) {
+		this.rdGscs = rdGscs;
+	}
+	
 }

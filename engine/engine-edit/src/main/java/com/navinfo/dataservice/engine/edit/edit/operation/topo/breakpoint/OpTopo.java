@@ -14,7 +14,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
-import com.navinfo.dataservice.engine.edit.comm.util.OperateUtils;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.vividsolutions.jts.geom.Point;
 
 public class OpTopo implements IOperation {
@@ -49,7 +49,7 @@ public class OpTopo implements IOperation {
 		
 		if (command.getBreakNodePid() == 0){
 			
-			RdNode node = OperateUtils.createNode(command.getPoint().getX(), command.getPoint().getY());
+			RdNode node = NodeOperateUtils.createNode(command.getPoint().getX(), command.getPoint().getY());
 			
 			result.insertObject(node, ObjStatus.INSERT, node.pid());
 			

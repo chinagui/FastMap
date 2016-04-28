@@ -72,7 +72,7 @@ public class JsonObjectTest {
 		AdLink adLink =(AdLink)new AdLinkSelector(conn).loadById(100031444,true);
 		JSONObject geojson = GeoTranslator.jts2Geojson(adLink
 				.getGeometry());
-		
+		System.out.println(adLink.getGeometry()+"----------------");
 		JSONArray jaLink = geojson.getJSONArray("coordinates");
 		System.out.println(jaLink);
 		double aa = 11647260;
@@ -88,7 +88,7 @@ public class JsonObjectTest {
 			}
 			System.out.println(jaPS.getDouble(1)+"------------------");
 		}
-		Double lon1 =116.47441148757935;
+		Double lon1 =116.4744126222222;
 		Double lat1 =40.01449311733887;
 		double lng = Math.round(lon1*100000)/100000.0;
 		double lat = Math.round(lat1*100000)/100000.0;

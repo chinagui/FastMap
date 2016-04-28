@@ -248,9 +248,9 @@ public class Process implements IProcess {
 	private void lockAdAdmin() throws Exception {
 		AdAdminSelector selector = new AdAdminSelector(this.conn);
 
-		List<AdAdmin> adAdminList = selector.loadRowsByLinkId(command.getLinkPid(), true);
+		//List<AdAdmin> adAdminList = selector.loadRowsByLinkId(command.getLinkPid(), true);
 
-		command.setAdAdmins(adAdminList);
+		//command.setAdAdmins(adAdminList);
 	}
 
 	@Override

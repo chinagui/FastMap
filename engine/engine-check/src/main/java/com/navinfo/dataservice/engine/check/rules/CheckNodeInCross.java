@@ -5,10 +5,14 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.engine.check.CheckEngine;
 import com.navinfo.dataservice.engine.check.core.baseRule;
@@ -25,21 +29,23 @@ import com.vividsolutions.jts.geom.Point;
 public class CheckNodeInCross extends baseRule {
 	
 	public void preCheck(CheckCommand checkCommand) throws Exception {
-		String s = "";
-		List<IRow> objList = checkCommand.getGlmList();
-		for(int i=0; i<objList.size(); i++){
-			IRow obj = objList.get(i);
-			if (obj instanceof RdNode){
-				RdNode rdNode = (RdNode)obj;
-				int pid = rdNode.getPid();
-				s += pid;
-				if (i != objList.size()-1){
-					s += ",";
+		List<Integer> nodePids = new ArrayList<Integer>();
+		
+		for(IRow obj:checkCommand.getGlmList()){
+			if(obj instanceof RdCross ){
+				RdCross rdCross = (RdCross)obj;
+						
+				for(IRow deObj:rdCross.getNodes()){
+					if(deObj instanceof RdCrossNode){
+						RdCrossNode rdCrossNode = (RdCrossNode)deObj;
+						nodePids.add(rdCrossNode.getPid());
+					}
 				}
 			}
+					
 		}
 
-		String sql = "select count(1) count from rd_cross_node a where a.node_pid in ("+s+") and a.u_record!=2 and exists (select null from rd_cross c where c.pid=a.pid and c.kg_flag=0 and c.u_record!=2)";
+		String sql = "select count(1) count from rd_cross_node a where a.node_pid in ("+StringUtils.join(nodePids,",")+") and a.u_record!=2 and exists (select null from rd_cross c where c.pid=a.pid and c.kg_flag=0 and c.u_record!=2)";
 		
 		PreparedStatement pstmt = getConn().prepareStatement(sql);
 
@@ -74,29 +80,5 @@ public class CheckNodeInCross extends baseRule {
 		
 	}
 	
-	public static void main(String[] args) throws Exception {
-		RdNode node = new RdNode();
-		node.setPid(430174);
-		
-		Coordinate coord = new Coordinate(109.013388, 32.715519);
-		GeometryFactory geometryFactory = new GeometryFactory();
-        Point point = geometryFactory.createPoint( coord );
-        
-        node.setGeometry(point);
-		
-		List<IRow> objList = new ArrayList<IRow>();
-		objList.add(node);
-		
-		//检查调用
-		CheckCommand checkCommand=new CheckCommand();
-		checkCommand.setProjectId(12);
-		checkCommand.setGlmList(objList);
-		checkCommand.setOperType(OperType.CREATE);
-//		checkCommand.setObjType(node.objType());
-		checkCommand.setObjType(ObjType.RDCROSS);
-		
-		CheckEngine checkEngine=new CheckEngine(checkCommand);
-		System.out.println(checkEngine.preCheck());
-		
-	}
+
 }

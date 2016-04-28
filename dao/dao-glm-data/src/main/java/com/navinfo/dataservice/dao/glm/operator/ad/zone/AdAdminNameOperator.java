@@ -271,7 +271,7 @@ public class AdAdminNameOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + adminName.tableName()
-				+ " set u_record=2 where group_id=" + adminName.getPid();
+				+ " set u_record=2 where name_id=" + adminName.getPid();
 
 		stmt.addBatch(sql);
 

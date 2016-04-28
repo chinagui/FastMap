@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.update;
+package com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.delete;
 
 import net.sf.json.JSONObject;
 
@@ -56,7 +56,5 @@ public class Command implements ICommand {
 		this.projectId = json.getInt("projectId");
 
 		this.content = json.getJSONObject("data");
-		
-		
 	}
 }

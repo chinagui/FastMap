@@ -8,7 +8,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
-import com.navinfo.dataservice.engine.edit.comm.util.OperateUtils;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -87,14 +87,14 @@ public class Operation implements IOperation {
 	private void updateNodeGeometry(Result result) throws Exception {
 
 		if (command.getsNodePid() > 0) {
-			RdNode node = OperateUtils.createNode(command.getSlon(),
+			RdNode node = NodeOperateUtils.createNode(command.getSlon(),
 					command.getSlat());
 
 			result.insertObject(node, ObjStatus.INSERT, node.pid());
 		}
 
 		if (command.geteNodePid() > 0) {
-			RdNode node = OperateUtils.createNode(command.getElon(),
+			RdNode node = NodeOperateUtils.createNode(command.getElon(),
 					command.getElat());
 
 			result.insertObject(node, ObjStatus.INSERT, node.pid());

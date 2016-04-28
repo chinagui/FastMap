@@ -13,8 +13,8 @@ import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.engine.edit.comm.util.GeometryTypeName;
-import com.navinfo.dataservice.engine.edit.comm.util.LinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.LinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.comm.util.type.GeometryTypeName;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 

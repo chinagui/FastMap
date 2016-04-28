@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.comm.util;
+package com.navinfo.dataservice.engine.edit.comm.util.type;
 
 public class GeometryTypeName {
 

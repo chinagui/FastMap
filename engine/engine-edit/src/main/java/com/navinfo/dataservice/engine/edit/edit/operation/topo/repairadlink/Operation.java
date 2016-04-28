@@ -13,7 +13,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdNodeSelector;
-import com.navinfo.dataservice.engine.edit.comm.util.OperateUtils;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -122,7 +122,7 @@ public class Operation implements IOperation {
 			
 			if(sNodeDepart){ //需要新增节点
 				
-				AdNode node = OperateUtils.createAdNode(slon, slat);
+				AdNode node = NodeOperateUtils.createAdNode(slon, slat);
 				
 				content.put("sNodePid", node.getPid());
 				
@@ -131,7 +131,7 @@ public class Operation implements IOperation {
 			
 			if(eNodeDepart){
 				
-				AdNode node = OperateUtils.createAdNode(elon, elat);
+				AdNode node = NodeOperateUtils.createAdNode(elon, elat);
 				
 				content.put("eNodePid", node.getPid());
 				
@@ -149,7 +149,7 @@ public class Operation implements IOperation {
 			
 			if(sNodeDepart){ //需要新增节点
 				
-				AdNode node = OperateUtils.createAdNode(slon, slat);
+				AdNode node = NodeOperateUtils.createAdNode(slon, slat);
 				
 				content.put("sNodePid", node.getPid());
 				
@@ -160,7 +160,7 @@ public class Operation implements IOperation {
 			
 			if(eNodeDepart){
 				
-				AdNode node = OperateUtils.createAdNode(slon, slat);
+				AdNode node = NodeOperateUtils.createAdNode(slon, slat);
 				
 				content.put("eNodePid", node.getPid());
 				
@@ -230,7 +230,7 @@ public class Operation implements IOperation {
 			if(content.containsKey("eNodePid")){
 				if(sNodeDepart){ //需要新增节点
 					
-					AdNode node = OperateUtils.createAdNode(slon, slat);
+					AdNode node = NodeOperateUtils.createAdNode(slon, slat);
 					
 					content.put("sNodePid", node.getPid());
 					
@@ -242,7 +242,7 @@ public class Operation implements IOperation {
 			else{
 				if(eNodeDepart){
 					
-					AdNode node = OperateUtils.createAdNode(elon, elat);
+					AdNode node = NodeOperateUtils.createAdNode(elon, elat);
 					
 					content.put("eNodePid", node.getPid());
 					

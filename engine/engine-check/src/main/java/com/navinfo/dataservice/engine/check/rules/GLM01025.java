@@ -1,0 +1,153 @@
+package com.navinfo.dataservice.engine.check.rules;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.check.CheckCommand;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.engine.check.CheckEngine;
+import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONObject;
+
+/** 
+ * @ClassName: GLM01025
+ * @author songdongyan
+ * @date 下午2:32:17
+ * @Description:link的起点应该与该link的第一个形状点坐标一致，否则报err；link的终点应该与该link的最后一个形状点坐标一致，否则报err；
+ */
+public class GLM01025 extends baseRule {
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.engine.check.core.baseRule#preCheck(com.navinfo.dataservice.dao.check.CheckCommand)
+	 */
+	@Override
+	public void preCheck(CheckCommand checkCommand) throws Exception {
+		// TODO Auto-generated method stub
+
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.engine.check.core.baseRule#postCheck(com.navinfo.dataservice.dao.check.CheckCommand)
+	 */
+	@Override
+	public void postCheck(CheckCommand checkCommand) throws Exception {
+		
+		String sql = "select a.node_pid from rd_node a where a.node_pid = :1 and a.geometry.sdo_point.x = :2 and a.geometry.sdo_point.y = :3 union all select a.node_pid from rd_node a where a.node_pid = :4 and a.geometry.sdo_point.x = :5 and a.geometry.sdo_point.y = :6 ";
+		PreparedStatement pstmt = getConn().prepareStatement(sql);
+
+		List<IRow> objList = checkCommand.getGlmList();
+		
+		for(int i=0; i<objList.size(); i++){
+			IRow obj = objList.get(i);
+			if (obj instanceof RdLink){
+				RdLink rdLink = (RdLink)obj;
+				Geometry geo =rdLink.getGeometry();
+				
+				Coordinate[] coords = geo.getCoordinates();
+				
+				double sx,sy,ex,ey;
+				//逆方向
+				if (rdLink.getDirect() == 3){
+					sx = coords[coords.length-1].x;
+					sy = coords[coords.length-1].y;
+					ex = coords[0].x;
+					ey = coords[0].y;
+				}
+				//顺方向
+				else{
+					ex = coords[coords.length-1].x;
+					ey = coords[coords.length-1].y;
+					sx = coords[0].x;
+					sy = coords[0].y;
+				}
+				
+				pstmt.setInt(1, rdLink.getsNodePid());
+				
+				pstmt.setDouble(2, sx);
+				
+				pstmt.setDouble(3, sy);
+				
+				pstmt.setInt(4, rdLink.geteNodePid());
+				
+				pstmt.setDouble(5, ex);
+				
+				pstmt.setDouble(6, ey);
+				
+				ResultSet resultSet = pstmt.executeQuery();
+				
+				boolean hasEnode=false;
+				boolean hasSnode=false;
+				
+				while (resultSet.next()){
+					int nodePid = resultSet.getInt("node_pid");
+					
+					if(nodePid == rdLink.getsNodePid()){
+						hasSnode=true;
+					}
+					else if(nodePid == rdLink.geteNodePid()){
+						hasEnode=true;
+					}
+				}
+				
+				resultSet.close();
+				
+				if(!hasEnode || !hasSnode){
+					
+					//获取link的中间点
+//					Geometry geo1 = GeoTranslator.transform(rdLink.getGeometry(),0.00001,5);
+//					
+//					Coordinate[] cs = geo1.getCoordinates();
+					
+					int midP = (int)Math.round(coords.length/2);
+					
+					double x = coords[midP].x;
+					
+					double y = coords[midP].y;
+					
+					String pointWkt = "Point ("+x+" "+y+")";
+					
+					this.setCheckResult(pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId());
+					return;	
+				}
+				
+
+			}
+			
+			pstmt.close();
+		}
+
+	}
+	
+	
+	public static void main(String[] args) throws Exception{
+		RdLink link=new RdLink();
+		String str= "{ \"type\": \"LineString\",\"coordinates\": [ [116.17659, 39.97508], [116.16144, 39.94844],[116.20427, 39.94322],[116.20427, 39.94322], [116.17659, 39.97508] ]}";
+		JSONObject geometry = JSONObject.fromObject(str);
+		Geometry geometry2=GeoTranslator.geojson2Jts(geometry, 1, 5);
+		link.setGeometry(geometry2);
+		link.setPid(1);
+		link.setsNodePid(2);
+		link.seteNodePid(2);
+		List<IRow> objList=new ArrayList<IRow>();
+		objList.add(link);
+		
+		//检查调用
+		CheckCommand checkCommand=new CheckCommand();
+		checkCommand.setProjectId(11);
+		checkCommand.setGlmList(objList);
+		checkCommand.setOperType(OperType.CREATE);
+		checkCommand.setObjType(link.objType());
+		CheckEngine checkEngine=new CheckEngine(checkCommand);
+		checkEngine.postCheck();
+		//System.out.println(checkEngine.preCheck());		
+	}
+
+}

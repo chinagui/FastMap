@@ -708,8 +708,8 @@ public class RdLinkSelector implements ISelector {
 				"select rl.* from rd_link rl ");
 		sb.append(" where ((rl.s_node_pid = :1 and rl.direct = 2) ");
 		sb.append(" or (rl.e_node_pid = :2 and direct = 3)");
-		sb.append(" or ((rl.s_node_pid = :3) or ");
-		sb.append(" (rl.e_node_pid = :4) and direct = 0)) and rl.link_pid <> :5");
+		sb.append(" or ((rl.s_node_pid = :3 or rl.e_node_pid =:4) and direct =1)");
+		sb.append(") and rl.link_pid <> :5");
 
 		if (isLock) {
 			sb.append(" for update nowait");

@@ -14,8 +14,8 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
-import com.navinfo.dataservice.engine.edit.comm.util.LinkOperateUtils;
-import com.navinfo.dataservice.engine.edit.comm.util.OperateUtils;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.LinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.vividsolutions.jts.geom.Point;
 
 /**
@@ -123,7 +123,7 @@ public class OpTopo implements IOperation {
 	 */
 	private void  createLinksForADNode(AdLink adLink,JSONArray sArray,JSONArray eArray,Result result) throws Exception {
 		log.debug("3 生成打断点的信息");
-		AdNode node = OperateUtils.createAdNode(command.getPoint().getX(), command.getPoint().getY());
+		AdNode node = NodeOperateUtils.createAdNode(command.getPoint().getX(), command.getPoint().getY());
 		result.insertObject(node, ObjStatus.INSERT, node.pid());
 		log.debug("3.1 打断点的pid = "+node.pid());
 		JSONObject sGeojson = new JSONObject();

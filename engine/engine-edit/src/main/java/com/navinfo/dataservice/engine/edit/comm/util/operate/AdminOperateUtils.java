@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.comm.util;
+package com.navinfo.dataservice.engine.edit.comm.util.operate;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -11,7 +11,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
-public class AdminUtils {
+public class AdminOperateUtils {
 
 	public static void SetAdminInfo4Link(RdLink link, Connection conn)
 			throws Exception {

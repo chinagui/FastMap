@@ -248,9 +248,9 @@ public class Process implements IProcess {
 	private void lockAdAdmin() throws Exception {
 		AdAdminSelector selector = new AdAdminSelector(this.conn);
 
-		//List<AdAdmin> adAdminList = selector.loadRowsByLinkId(command.getLinkPid(), true);
+		List<AdAdmin> adAdminList = selector.loadRowsByLinkId(command.getLinkPid(), true);
 
-		//command.setAdAdmins(adAdminList);
+		command.setAdAdmins(adAdminList);
 	}
 
 	@Override
@@ -284,8 +284,21 @@ public class Process implements IProcess {
 				IOperation opRefSpeedlimit = new OpRefSpeedlimit(command);
 				opRefSpeedlimit.run(result);
 
-				IOperation opRefRdGsc = new OpRefRdGsc(command);
-				opRefRdGsc.run(result);
+				// IOperation opRefRdGsc = new OpRefRdGsc(command);
+				// opRefRdGsc.run(result);
+
+				// 删除link对立交的影响
+				for (RdGsc rdGsc : command.getRdGscs()) {
+					JSONObject data = new JSONObject();
+					// 立交的pid
+					data.put("objId", rdGsc.pid());
+
+					ICommand updatecommand = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Command(
+							data, command.getRequester());
+					com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Process process = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Process(
+							updatecommand, result, conn);
+					process.innerRun();
+				}
 
 				IOperation opRefAdAdmin = new OpRefAdAdmin(command);
 				opRefAdAdmin.run(result);
@@ -333,6 +346,20 @@ public class Process implements IProcess {
 				infects.put("RDRESTRICTION", infectList);
 
 				infectList = new ArrayList<Integer>();
+
+				for (RdGsc rdGsc : command.getRdGscs()) {
+					infectList.add(rdGsc.getPid());
+				}
+
+				infects.put("RDGSC", infectList);
+
+				infectList = new ArrayList<Integer>();
+
+				for (AdAdmin adAdmin : command.getAdAdmins()) {
+					infectList.add(adAdmin.getPid());
+				}
+
+				infects.put("ADADMIN", infectList);
 
 				return JSONObject.fromObject(infects).toString();
 			}

@@ -33,11 +33,9 @@ public class Operation implements IOperation {
 
 		JSONObject content = command.getContent();
 
-		JSONArray array = new JSONArray(content.getJSONArray("groupTree").toString());
-
 		Gson gson = new Gson();
 
-		AdAdminTree tree = gson.fromJson(array.getJSONObject(0).toString(), AdAdminTree.class);
+		AdAdminTree tree = gson.fromJson(content.get("groupTree").toString(), AdAdminTree.class);
 
 		handleAdAdminTree(tree, result);
 
@@ -62,8 +60,8 @@ public class Operation implements IOperation {
 
 		int groupId = 0;
 
-		if (group != null && group.getPid() != 0) {
-			groupId = group.getPid();
+		if (group != null && group.getGroupId() != 0) {
+			groupId = group.getGroupId();
 		} else {
 			groupId = PidService.getInstance().applyAdAdminGroupPid();
 		}

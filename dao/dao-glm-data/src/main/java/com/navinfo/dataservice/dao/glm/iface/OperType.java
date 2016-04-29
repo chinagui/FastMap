@@ -11,4 +11,5 @@ public enum OperType {
 	REPAIR,
 	DEPART,
 	MOVE,
+	UPDOWNDEPART,
 }

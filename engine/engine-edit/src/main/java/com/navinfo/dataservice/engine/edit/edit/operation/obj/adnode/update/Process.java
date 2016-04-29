@@ -33,6 +33,14 @@ public class Process implements IProcess {
 				.getProjectId());
 
 	}
+	public Process(ICommand command,Result result,Connection conn) throws Exception {
+		this.command = (Command) command;
+
+		this.result = result;
+
+		this.conn = conn;
+
+	}
 
 	@Override
 	public ICommand getCommand() {
@@ -102,7 +110,32 @@ public class Process implements IProcess {
 
 		return msg;
 	}
+	public String innerRun() throws Exception {
+		String msg;
+		try {
+			this.prepareData();
 
+			String preCheckMsg = this.preCheck();
+
+			if (preCheckMsg != null) {
+				throw new Exception(preCheckMsg);
+			}
+
+			IOperation operation = new Operation(command, this.adnode);
+
+			msg = operation.run(result);
+
+			this.postCheck();
+
+		} catch (Exception e) {
+
+			conn.rollback();
+
+			throw e;
+		}
+
+		return msg;
+	}
 	@Override
 	public void postCheck() throws Exception {
 

@@ -115,7 +115,7 @@ public class Process implements IProcess {
 				throw new Exception(preCheckMsg);
 			}
 
-			IOperation operation = new Operation(command,updateNode);
+			IOperation operation = new Operation(command,updateNode,conn);
 
 			operation.run(result);
 

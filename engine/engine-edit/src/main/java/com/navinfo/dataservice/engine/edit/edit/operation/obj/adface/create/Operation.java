@@ -1,7 +1,5 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create;
 
-import io.netty.util.internal.MpscLinkedQueueNode;
-
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;

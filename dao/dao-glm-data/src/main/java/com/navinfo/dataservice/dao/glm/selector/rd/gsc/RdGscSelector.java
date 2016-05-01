@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -148,8 +150,7 @@ public class RdGscSelector implements ISelector {
 
 				rdGsc.setGeometry(geometry);
 
-				List<IRow> links = new RdGscLinkSelector(conn).loadRowsByParentId(rdGsc.getPid(),
-						isLock);
+				List<IRow> links = new RdGscLinkSelector(conn).loadRowsByParentId(rdGsc.getPid(), isLock);
 
 				rdGsc.setLinks(links);
 
@@ -184,25 +185,32 @@ public class RdGscSelector implements ISelector {
 		return rdGscList;
 	}
 
-	public List<RdGsc> loadRdGscLinkByLinkPids(List<Integer> linkPids, boolean isLock)
-			throws Exception {
+	/**
+	 * 根据组成立交的Link PID查询立交
+	 * 
+	 * @param linkPids
+	 * @param isLock
+	 * @return 立交对象集合
+	 * @throws Exception
+	 */
+	public List<RdGsc> loadRdGscLinkByLinkPids(List<Integer> linkPids, boolean isLock) throws Exception {
 		List<RdGsc> rdgscs = new ArrayList<RdGsc>();
 
 		if (linkPids.size() == 0) {
 			return rdgscs;
 		}
 
-		String s = "";
-		for (int i = 0; i < linkPids.size(); i++) {
-			if (i > 0) {
-				s += ",";
-			}
+		// 去重操作
+		Set<Integer> linkPidsSet = new HashSet<Integer>(linkPids);
 
-			s += linkPids.get(i);
+		StringBuffer s = new StringBuffer("");
+		for (Integer pid : linkPidsSet) {
+			s.append(pid + ",");
 		}
+		s.deleteCharAt(s.lastIndexOf(","));
 
-		String sql = "SELECT a.* FROM rd_gsc a,rd_gsc_link b WHERE a.pid = b.pid AND b.link_pid in ("
-				+ s + ") and a.u_record!=2";
+		String sql = "SELECT a.* FROM rd_gsc a,rd_gsc_link b WHERE a.pid = b.pid AND b.link_pid in (" + s.toString()
+				+ ") and a.u_record!=2";
 
 		if (isLock) {
 			sql = sql + " for update nowait";
@@ -230,8 +238,7 @@ public class RdGscSelector implements ISelector {
 
 				rdGsc.setGeometry(geometry);
 
-				List<IRow> links = new RdGscLinkSelector(conn).loadRowsByParentId(rdGsc.getPid(),
-						isLock);
+				List<IRow> links = new RdGscLinkSelector(conn).loadRowsByParentId(rdGsc.getPid(), isLock);
 
 				rdGsc.setLinks(links);
 

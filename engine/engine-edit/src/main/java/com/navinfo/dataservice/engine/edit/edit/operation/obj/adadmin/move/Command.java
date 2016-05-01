@@ -5,8 +5,9 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 
-public class Command implements ICommand {
+public class Command extends AbstractCommand   implements ICommand {
 	
 	private int pid;
 	
@@ -16,16 +17,11 @@ public class Command implements ICommand {
 	
 	private String requester;
 	
-	private int projectId;
-	
 	/**
 	 * 引导线RDLink的pid
 	 */
 	private int linkPid;
 
-	public int getProjectId() {
-		return projectId;
-	}
 	
 	public Command(JSONObject json,String requester){
 		
@@ -35,7 +31,7 @@ public class Command implements ICommand {
 		
 		this.latitude = Math.round(data.getDouble("latitude")*100000)/100000.0;
 		
-		this.projectId = json.getInt("projectId");
+		this.setProjectId(json.getInt("projectId"));
 		
 		this.linkPid = data.getInt("linkPid");
 		

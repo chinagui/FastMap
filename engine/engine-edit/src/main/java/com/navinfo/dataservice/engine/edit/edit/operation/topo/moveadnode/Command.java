@@ -4,16 +4,16 @@ import java.util.List;
 
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 /**
  * @author zhaokk
  * 移动行政区划点参数基础类 
  */
-public class Command implements ICommand {
+public class Command extends AbstractCommand {
 	
 	private int nodePid;
 	
@@ -22,8 +22,6 @@ public class Command implements ICommand {
 	private double latitude;
 	
 	private String requester;
-	
-	private int projectId;
 	
 	private List<AdLink> links;
 	private List<AdFace> faces;
@@ -43,10 +41,6 @@ public class Command implements ICommand {
 	public void setFaces(List<AdFace> faces) {
 		this.faces = faces;
 	}
-
-	public int getProjectId() {
-		return projectId;
-	}
 	
 	public Command(JSONObject json,String requester){
 		
@@ -56,7 +50,7 @@ public class Command implements ICommand {
 		
 		this.latitude = Math.round(json.getJSONObject("data").getDouble("latitude")*100000)/100000.0;
 		
-		this.projectId = json.getInt("projectId");
+		this.setProjectId(json.getInt("projectId"));
 	}
 
 	@Override

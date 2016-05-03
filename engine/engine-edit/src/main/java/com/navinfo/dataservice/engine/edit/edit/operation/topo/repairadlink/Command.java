@@ -6,14 +6,14 @@ import net.sf.json.JSONObject;
 import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 /**
  * @author zhaokk
  * 修行行政区划线参数基础类 
  */
-public class Command implements ICommand {
+public class Command extends AbstractCommand {
 
 	private String requester;
 	
@@ -24,8 +24,6 @@ public class Command implements ICommand {
 	private JSONArray interLines;
 	
 	private JSONArray interNodes;
-	
-	private int projectId;
 
 	public int getLinkPid() {
 		return linkPid;
@@ -60,20 +58,12 @@ public class Command implements ICommand {
 		
 		return ObjType.ADLINK;
 	}
-	
-	public int getProjectId() {
-		return projectId;
-	}
-
-	public void setProjectId(int projectId) {
-		this.projectId = projectId;
-	}
 
 	public Command(JSONObject json,String requester) throws JSONException{
 		
 		this.requester = requester;
 		
-		this.projectId = json.getInt("projectId");
+		this.setProjectId(json.getInt("projectId"));
 		
 		this.linkPid = json.getInt("objId");
 		

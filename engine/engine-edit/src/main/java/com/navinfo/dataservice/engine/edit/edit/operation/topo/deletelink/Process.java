@@ -307,21 +307,21 @@ public class Process extends AbstractProcess<Command> {
 				}
 				prepareData();
 				IOperation op = new OpTopo(this.getCommand());
-				op.run(result);
+				op.run(this.getResult());
 				IOperation opRefRestrict = new OpRefRestrict(this.getCommand());
-				opRefRestrict.run(result);
+				opRefRestrict.run(this.getResult());
 				IOperation opRefBranch = new OpRefBranch(this.getCommand());
-				opRefBranch.run(result);
+				opRefBranch.run(this.getResult());
 				IOperation opRefCross = new OpRefCross(this.getCommand());
-				opRefCross.run(result);
+				opRefCross.run(this.getResult());
 				IOperation opRefLaneConnexity = new OpRefLaneConnexity(this.getCommand());
-				opRefLaneConnexity.run(result);
+				opRefLaneConnexity.run(this.getResult());
 				IOperation opRefSpeedlimit = new OpRefSpeedlimit(this.getCommand());
-				opRefSpeedlimit.run(result);
+				opRefSpeedlimit.run(this.getResult());
 				IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand(),this.getConn());
-				opRefRdGsc.run(result);
+				opRefRdGsc.run(this.getResult());
 				IOperation opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
-				opRefAdAdmin.run(result);
+				opRefAdAdmin.run(this.getResult());
 				
 				recordData();
 

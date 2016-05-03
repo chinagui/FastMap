@@ -168,7 +168,7 @@ public class Operation implements IOperation {
 				result.insertObject(node, ObjStatus.INSERT, node.pid());
 			}
 
-			this.breakLine(sNodePid, eNodePid);
+			this.breakLine(sNodePid, eNodePid,result);
 
 		} else if (command.getInterLines().size() == 0
 				&& (command.getInterNodes().size() == 1 || command
@@ -251,7 +251,7 @@ public class Operation implements IOperation {
 				}
 			}
 			
-			this.breakLine(sNodePid, eNodePid);
+			this.breakLine(sNodePid, eNodePid,result);
 		} else {
 			// 错误请求
 		}
@@ -265,7 +265,7 @@ public class Operation implements IOperation {
 		return null;
 	}
 
-	public void breakLine(int sNodePid, int eNodePid) throws Exception {
+	public void breakLine(int sNodePid, int eNodePid,Result result) throws Exception {
 
 		JSONArray coords = command.getLinkGeom().getJSONArray("coordinates");
 
@@ -304,8 +304,8 @@ public class Operation implements IOperation {
 			com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command(
 					breakJson, breakJson.toString());
 			com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process(
-					breakCommand, conn);
-			breakProcess.run();
+					breakCommand,result, conn);
+			breakProcess.innerRun();
 		}
 	}
 

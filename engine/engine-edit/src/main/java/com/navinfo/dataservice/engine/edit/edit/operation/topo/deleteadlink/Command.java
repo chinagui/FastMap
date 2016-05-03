@@ -10,8 +10,9 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 
-public class Command implements ICommand {
+public class Command extends AbstractCommand{
 	
 	private String requester;
 
@@ -49,7 +50,6 @@ public class Command implements ICommand {
 		this.faces = faces;
 	}
 
-	private int projectId;
 	
 	private boolean isCheckInfect = false;
 	
@@ -57,13 +57,6 @@ public class Command implements ICommand {
 		return isCheckInfect;
 	}
 	
-	public int getProjectId() {
-		return projectId;
-	}
-
-	public void setProjectId(int projectId) {
-		this.projectId = projectId;
-	}
 	public List<Integer> getNodePids() {
 		return nodePids;
 	}
@@ -76,7 +69,7 @@ public class Command implements ICommand {
 		
 		this.linkPid = json.getInt("objId");
 		
-		this.projectId = json.getInt("projectId");
+		this.setProjectId(json.getInt("projectId"));
 		
 		if (json.containsKey("infect") && json.getInt("infect") == 1){
 			this.isCheckInfect = true;

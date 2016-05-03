@@ -10,6 +10,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
 import com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.delete.Operation;
@@ -27,7 +28,7 @@ public class Process extends AbstractProcess<Command>{
 
 	private RdCross cross;
 
-	public Process(Command command) throws Exception {
+	public Process(AbstractCommand command) throws Exception {
 		super(command);
 //		this.command = (Command) command;
 //

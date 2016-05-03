@@ -3,11 +3,12 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.update;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 
 public class Process extends AbstractProcess<Command> {
 
-	public Process(Command command) throws Exception {
+	public Process(AbstractCommand command) throws Exception {
 		super(command);
 		// TODO Auto-generated constructor stub
 	}

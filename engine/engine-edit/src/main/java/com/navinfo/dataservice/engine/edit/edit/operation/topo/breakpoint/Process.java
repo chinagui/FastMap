@@ -44,6 +44,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionViaSele
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -57,13 +58,13 @@ public class Process extends AbstractProcess<Command> {
 
 	private Check check = new Check();
 
-	public Process(Command command) throws Exception {
+	public Process(AbstractCommand command) throws Exception {
 		super(command);
 
 		this.jaDisplayLink = new JSONArray();
 	}
 
-	public Process(Command command, Connection conn) throws Exception {
+	public Process(AbstractCommand command, Connection conn) throws Exception {
 		super(command);
 
 		this.setConn(conn);

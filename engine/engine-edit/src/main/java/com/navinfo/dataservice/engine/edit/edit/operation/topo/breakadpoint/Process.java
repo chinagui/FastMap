@@ -9,6 +9,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceTopoSelector;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 
 /**
@@ -19,7 +20,7 @@ public class Process extends AbstractProcess<Command> {
 	
 	private Check check = new Check();
 	private Boolean commitFlag = true;
-	public Process(Command command) throws Exception {
+	public Process(AbstractCommand command) throws Exception {
 		super(command);
 	}
 	public Process(Command command,Result result,Connection conn) throws Exception {

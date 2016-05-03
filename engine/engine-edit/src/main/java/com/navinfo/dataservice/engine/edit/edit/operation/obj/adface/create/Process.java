@@ -8,6 +8,7 @@ import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 
 public class Process extends AbstractProcess<Command> implements IProcess {
@@ -16,7 +17,7 @@ public class Process extends AbstractProcess<Command> implements IProcess {
 	 * @param command
 	 * @throws Exception
 	 */
-	public Process(Command command) throws Exception {
+	public Process(AbstractCommand command) throws Exception {
 		super(command);
 		// TODO Auto-generated constructor stub
 	}

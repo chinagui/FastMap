@@ -87,7 +87,7 @@ public class RenderController {
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			JSONArray type = jsonReq.getJSONArray("type");
+			JSONArray type = jsonReq.getJSONArray("types");
 
 			int projectId = jsonReq.getInt("projectId");
 

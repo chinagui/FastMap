@@ -10,8 +10,9 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 
-public class Command implements ICommand {
+public class Command extends AbstractCommand {
 
 	private int linkPid;
 
@@ -34,12 +35,6 @@ public class Command implements ICommand {
 	private List<RdLaneConnexity> lanes;
 
 	private List<RdBranch> branches;
-
-	private int projectId;
-
-	public int getProjectId() {
-		return projectId;
-	}
 
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
@@ -64,7 +59,7 @@ public class Command implements ICommand {
 			this.elat = Math.round(data.getDouble("elat") * 100000) / 100000.0;
 		}
 
-		this.projectId = json.getInt("projectId");
+		this.setProjectId(json.getInt("projectId"));
 	}
 
 	public int getLinkPid() {

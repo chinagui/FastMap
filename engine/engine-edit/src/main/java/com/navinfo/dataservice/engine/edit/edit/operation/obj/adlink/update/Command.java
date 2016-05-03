@@ -5,15 +5,17 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 /**
  * @author zhaokk
  *新建行政区划线参数基础类 
  */
-public class Command implements ICommand {
+public class Command extends AbstractCommand  {
 
 	private String requester;
 
-	private int projectId;
+//	private int projectId;
 	
 	private int linkPid;
 	
@@ -29,9 +31,9 @@ public class Command implements ICommand {
 	}
 
 
-	public int getProjectId() {
-		return projectId;
-	}
+//	public int getProjectId() {
+//		return projectId;
+//	}
 
 
 	public JSONObject getUpdateContent() {
@@ -57,7 +59,8 @@ public class Command implements ICommand {
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 
-		this.projectId = json.getInt("projectId");
+//		this.projectId = json.getInt("projectId");
+		this.setProjectId(json.getInt("projectId"));
 		
 		this.updateContent = json.getJSONObject("data");
 		

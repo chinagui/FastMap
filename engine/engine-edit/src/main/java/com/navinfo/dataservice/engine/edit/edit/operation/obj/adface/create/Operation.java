@@ -94,11 +94,8 @@ public class Operation implements IOperation {
 	public void createFaceByGeometry(Result result) throws Exception {
 		Geometry geom = GeoTranslator.geojson2Jts(command.getGeometry(), 1, 5);
 		Coordinate sPoint = geom.getCoordinates()[0];
-		AdNode sNode = NodeOperateUtils.createAdNode(sPoint.x, sPoint.y);
-		result.insertObject(sNode, ObjStatus.INSERT, sNode.pid());
-		Coordinate ePoint = geom.getCoordinates()[geom.getCoordinates().length - 1];
-		AdNode eNode = NodeOperateUtils.createAdNode(ePoint.x, ePoint.y);
-		result.insertObject(eNode, ObjStatus.INSERT, eNode.pid());
+		AdNode Node = NodeOperateUtils.createAdNode(sPoint.x, sPoint.y);
+		result.insertObject(Node, ObjStatus.INSERT, Node.pid());
 		Set<String> meshes = new HashSet<String>();
 		meshes = this.getLinkInterMesh(geom);
 		if (meshes.size() == 1) {
@@ -109,8 +106,8 @@ public class Operation implements IOperation {
 			double linkLength = GeometryUtils.getLinkLength(geom);
 			link.setLength(linkLength);
 			link.setGeometry(GeoTranslator.transform(geom, 100000, 0));
-			link.setsNodePid(sNode.getPid());
-			link.seteNodePid(eNode.getPid());
+			link.setsNodePid(Node.getPid());
+			link.seteNodePid(Node.getPid());
 			AdLinkMesh adLinkMesh = new AdLinkMesh();
 			adLinkMesh.setLinkPid(link.getPid());
 			adLinkMesh.setMeshId(meshId);
@@ -124,23 +121,6 @@ public class Operation implements IOperation {
 			List<AdLink> links = new ArrayList<AdLink>();
 			links.add(link);
 			this.reCaleFaceGeometry(links, face);
-			/*AdFace adFace = new AdFace();
-			adFace.setPid(PidService.getInstance().applyAdFacePid());
-			adFace.setArea(GeometryUtils.getCalculateArea(geom));
-			adFace.setMeshId(meshId);
-			adFace.setGeometry(GeoTranslator.transform(geom, 100000, 0));
-			adFace.setPerimeter(GeometryUtils.getLinkLength(geom));
-			AdFaceTopo adFaceTopo = new AdFaceTopo();
-			adFaceTopo.setFacePid(adFace.getPid());
-			adFaceTopo.setMesh(meshId);
-			adFaceTopo.setSeqNum(1);
-			adFaceTopo.setLinkPid(link.getPid());
-			List<IRow> adFaceTopos = new ArrayList<IRow>();
-			adFaceTopos.add(adFaceTopo);
-			adFace.setFaceTopos(adFaceTopos);
-			result.setPrimaryPid(adFace.getPid());
-			result.insertObject(link, ObjStatus.INSERT, link.getPid());
-			result.insertObject(adFace, ObjStatus.INSERT, adFace.getPid());*/
 		}
 	}
 

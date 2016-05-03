@@ -201,33 +201,6 @@ public class GlmGridCalculator {
 		sb.append(" AND L.OP_TP IN ("+StringUtils.join(logOpTypes,",")+")");
 		return sb.toString();
 	}
-	class SingleRowGridHandler4Ck implements ResultSetHandler<String[]>{
-
-		@Override
-		public String[] handle(ResultSet rs) throws SQLException {
-			WKT wkt = new WKT();
-			while(rs.next()){
-				String rowId = null;
-				try{
-					rowId = rs.getString("ROW_ID");
-					JGeometry geo = wkt.toJGeometry(rs.getBytes("GEOMETRY"));
-					Set<String> rowGrids = null;
-					int meshId = rs.getInt("MESH_ID");
-					if(meshId>0){
-						rowGrids = CompGridUtil.intersectGeometryGrid(geo, String.valueOf(meshId));
-					}else{
-						String[] meshes = JGeometryUtil.geo2MeshIds(geo);
-						rowGrids = CompGridUtil.intersectGeometryGrid(geo, meshes);
-					}
-					return rowGrids.toArray(new String[0]);
-				}catch(Exception e){
-					throw new SQLException("查询的geometry可能格式错误，无法转换为object。row_id:"+rowId,e);
-				}
-			}
-			return null;
-		}
-		
-	}
 	class SingleRowGridHandler implements ResultSetHandler<String[]>{
 		
 		private String tableName;

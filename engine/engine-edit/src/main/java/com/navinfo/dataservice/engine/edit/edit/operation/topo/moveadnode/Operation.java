@@ -1,11 +1,13 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.moveadnode;
 
 import java.sql.Connection;
+import java.util.Set;
 
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.GeometryUtils;
+import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -13,6 +15,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.LinkOperateUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 /**
@@ -48,42 +51,21 @@ public class Operation implements IOperation {
 	private void updateLinkGeomtry(Result result) throws Exception {
 		
 		for (AdLink link : command.getLinks()) {
-			Geometry geom = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
+			 Geometry geo=LinkOperateUtils.caleLinkGeomertyForMvNode(link,updateNode.pid(),command.getLongitude(),command.getLatitude());
+			 Set<String> meshes = MeshUtils.getInterMeshes(geo);
+			 //修改线的几何属性
+			 if (meshes.size() == 1){	 
+			 }else{
+				 
+			 }
+			 
 
-			Coordinate[] cs = geom.getCoordinates();
-
-			double[][] ps = new double[cs.length][2];
-
-			for (int i = 0; i < cs.length; i++) {
-				ps[i][0] = cs[i].x;
-
-				ps[i][1] = cs[i].y;
-			}
-
-			if (link.getsNodePid() == command.getNodePid()) {
-				ps[0][0] = command.getLongitude();
-
-				ps[0][1] = command.getLatitude();
-			} else {
-				ps[ps.length - 1][0] = command.getLongitude();
-
-				ps[ps.length - 1][1] = command.getLatitude();
-			}
-
-			JSONObject geojson = new JSONObject();
-
-			geojson.put("type", "LineString");
-
-			geojson.put("coordinates", ps);
-
-			JSONObject updateContent = new JSONObject();
-
-			updateContent.put("geometry", geojson);
+			/*updateContent.put("geometry", geojson);
 			updateContent.put("length", GeometryUtils.getLinkLength((GeoTranslator.geojson2Jts(geojson, 1, 5))));
 
 			link.fillChangeFields(updateContent);
 			
-			result.insertObject(link, ObjStatus.UPDATE, link.pid());
+			result.insertObject(link, ObjStatus.UPDATE, link.pid());*/
 		}
 	}
 	/*
@@ -103,11 +85,12 @@ public class Operation implements IOperation {
 		//移动点的新几何
 		data.put("geometry", geojson);
 		data.put("pid", updateNode.pid());
+		data.put("objStatus", ObjStatus.UPDATE);
 		updateNodeJson.put("data", data);
 		
 		//组装打断线的参数
 		//保证是同一个连接
-		ICommand updatecommand = new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Command(
+		com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Command updatecommand = new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Command(
 				updateNodeJson, command.getRequester());
 		com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Process process = new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Process(
 				updatecommand,result,conn);
@@ -148,7 +131,8 @@ public class Operation implements IOperation {
 			updateContent.put("area", GeometryUtils.getCalculateArea((GeoTranslator.geojson2Jts(geojson, 1, 5))));
 			face.fillChangeFields(updateContent);
 			result.insertObject(face, ObjStatus.UPDATE, face.pid());
-		}
+			}
 		}
 	}
+	
 }

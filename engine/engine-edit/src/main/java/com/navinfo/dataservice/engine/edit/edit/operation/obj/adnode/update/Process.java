@@ -10,106 +10,62 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdNodeSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
+import com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Command;
+import com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Operation;
 
-public class Process implements IProcess {
+public class Process extends AbstractProcess<Command> {
 
-	private Command command;
-
-	private Result result;
-
-	private Connection conn;
-
-	private String postCheckMsg;
+//	private Command command;
+//
+//	private Result result;
+//
+//	private Connection conn;
+//
+//	private String postCheckMsg;
 
 	private AdNode adnode;
 
-	public Process(ICommand command) throws Exception {
-		this.command = (Command) command;
-
-		this.result = new Result();
-
-		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
-				.getProjectId());
-
-	}
-	public Process(ICommand command,Result result,Connection conn) throws Exception {
-		this.command = (Command) command;
-
-		this.result = result;
-
-		this.conn = conn;
+	public Process(Command command) throws Exception {
+		super(command);
+		
+//		this.command = (Command) command;
+//
+//		this.result = new Result();
+//
+//		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
+//				.getProjectId());
 
 	}
+	
+	public Process(Command command,Result result,Connection conn) throws Exception {
+		super(command);
+//		this.setCommand(command);
+		this.setResult(result);
+		this.setConn(conn);
 
-	@Override
-	public ICommand getCommand() {
-
-		return command;
 	}
 
 	@Override
-	public Result getResult() {
+	public IOperation createOperation() {
+		// TODO Auto-generated method stub
+		return new Operation(this.getCommand(),this.adnode);
 
-		return result;
 	}
-
+	
 	@Override
 	public boolean prepareData() throws Exception {
 
-		AdNodeSelector selector = new AdNodeSelector(this.conn);
+		AdNodeSelector selector = new AdNodeSelector(this.getConn());
 
-		this.adnode = (AdNode) selector.loadById(command.getPid(),
+		this.adnode = (AdNode) selector.loadById(this.getCommand().getPid(),
 				true);
 
 		return true;
 	}
-
-	@Override
-	public String preCheck() throws Exception {
-
-		return null;
-	}
-
-	@Override
-	public String run() throws Exception {
-		String msg;
-		try {
-			conn.setAutoCommit(false);
-
-			this.prepareData();
-
-			String preCheckMsg = this.preCheck();
-
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
-
-			IOperation operation = new Operation(command, this.adnode);
-
-			msg = operation.run(result);
-
-			this.recordData();
-
-			this.postCheck();
-
-			conn.commit();
-
-		} catch (Exception e) {
-
-			conn.rollback();
-
-			throw e;
-		} finally {
-			try {
-				conn.close();
-			} catch (Exception e) {
-
-			}
-		}
-
-		return msg;
-	}
+	
+	
 	public String innerRun() throws Exception {
 		String msg;
 		try {
@@ -121,44 +77,106 @@ public class Process implements IProcess {
 				throw new Exception(preCheckMsg);
 			}
 
-			IOperation operation = new Operation(command, this.adnode);
+			IOperation operation = new Operation(this.getCommand(), this.adnode);
 
-			msg = operation.run(result);
+			msg = operation.run(this.getResult());
 
 			this.postCheck();
 
 		} catch (Exception e) {
 
-			conn.rollback();
+			this.getConn().rollback();
 
 			throw e;
 		}
 
 		return msg;
 	}
-	@Override
-	public void postCheck() throws Exception {
+	
+//	@Override
+//	public ICommand getCommand() {
+//
+//		return command;
+//	}
+//
+//	@Override
+//	public Result getResult() {
+//
+//		return result;
+//	}
 
-	}
 
-	@Override
-	public String getPostCheck() throws Exception {
 
-		return postCheckMsg;
-	}
+//	@Override
+//	public String preCheck() throws Exception {
+//
+//		return null;
+//	}
 
-	@Override
-	public boolean recordData() throws Exception {
-		
-		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
-		
-		lw.generateLog(command, result);
-		
-		OperatorFactory.recordData(conn, result);
+//	@Override
+//	public String run() throws Exception {
+//		String msg;
+//		try {
+//			conn.setAutoCommit(false);
+//
+//			this.prepareData();
+//
+//			String preCheckMsg = this.preCheck();
+//
+//			if (preCheckMsg != null) {
+//				throw new Exception(preCheckMsg);
+//			}
+//
+//			IOperation operation = new Operation(command, this.adnode);
+//
+//			msg = operation.run(result);
+//
+//			this.recordData();
+//
+//			this.postCheck();
+//
+//			conn.commit();
+//
+//		} catch (Exception e) {
+//
+//			conn.rollback();
+//
+//			throw e;
+//		} finally {
+//			try {
+//				conn.close();
+//			} catch (Exception e) {
+//
+//			}
+//		}
+//
+//		return msg;
+//	}
+//	
 
-		lw.recordLog(command, result);
-
-		return true;
-	}
+//	@Override
+//	public void postCheck() throws Exception {
+//
+//	}
+//
+//	@Override
+//	public String getPostCheck() throws Exception {
+//
+//		return postCheckMsg;
+//	}
+//
+//	@Override
+//	public boolean recordData() throws Exception {
+//		
+//		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
+//		
+//		lw.generateLog(command, result);
+//		
+//		OperatorFactory.recordData(conn, result);
+//
+//		lw.recordLog(command, result);
+//
+//		return true;
+//	}
 
 }

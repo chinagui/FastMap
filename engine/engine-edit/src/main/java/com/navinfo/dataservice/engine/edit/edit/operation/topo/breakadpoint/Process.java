@@ -17,7 +17,6 @@ import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 public class Process extends AbstractProcess<Command> {
 	
 	private Check check = new Check();
-	
 	private Boolean commitFlag = true;
 	public Process(Command command) throws Exception {
 		super(command);
@@ -25,11 +24,8 @@ public class Process extends AbstractProcess<Command> {
 	public Process(Command command,Connection conn) throws Exception {
 		super(command);
 		this.setConn(conn);
-		this.commitFlag =false;
 
 	}
-	
-	@Override
 	public boolean prepareData() throws Exception {
 		// 获取此ADLINK上行政取区划面拓扑关系
 			List<AdFaceTopo> adFaceTopos= new AdFaceTopoSelector(this.getConn())
@@ -42,7 +38,6 @@ public class Process extends AbstractProcess<Command> {
 		return true;
 	}
 
-	@Override
 	public String run() throws Exception {
 		String msg;
 		try {
@@ -66,8 +61,8 @@ public class Process extends AbstractProcess<Command> {
 				this.getConn().commit();
 			}
 
+
 		} catch (Exception e) {
-			
 			this.getConn().rollback();
 
 			throw e;
@@ -81,13 +76,39 @@ public class Process extends AbstractProcess<Command> {
 
 		return msg;
 	}
+	public String innerRun() throws Exception {
+		String msg;
+		try {
 
+			this.prepareData();
+
+			String preCheckMsg = this.preCheck();
+
+			if (preCheckMsg != null) {
+				throw new Exception(preCheckMsg);
+			}
+			//创建行政区划点有关行政区划线具体操作
+			OpTopo operation = new OpTopo(this.getCommand(), check, conn);
+			msg = operation.run(result);
+			//创建行政区划点有关行政区划面具体操作类
+			OpRefAdFace opRefAdFace = new OpRefAdFace(command,conn);
+			opRefAdFace.run(result);
+			this.recordData();
+		} catch (Exception e) {
+			
+			conn.rollback();
+
+			throw e;
+		} 
+
+		return msg;
+	}
 	@Override
 	public void postCheck() throws Exception {
 		
 		check.postCheck(this.getConn(), this.getResult());
 	}
-	@Override
+
 	public IOperation createOperation() {
 		// TODO Auto-generated method stub
 		return null;

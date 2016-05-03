@@ -7,16 +7,23 @@ import com.navinfo.dataservice.engine.check.core.NiValException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.check.CheckCommand;
-import com.navinfo.dataservice.engine.check.core.NiValException;
 
 public abstract class baseRule {
 	private String ruleCode;
 	private String ruleLog;
 	
 	private Connection conn;
-	
+	private static Logger log = Logger.getLogger(baseRule.class);
 	List<NiValException> checkResultList=new ArrayList<NiValException>();
+	
+	public baseRule(){
+		this.log = LoggerRepos.getLogger(this.log);
+		log.info("exe "+this.getClass());
+	}
 	
 	public Connection setConn(Connection conn) {
 		return this.conn = conn;

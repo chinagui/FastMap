@@ -107,7 +107,7 @@ public class Operation implements IOperation {
 		
 		//组装打断线的参数
 		//保证是同一个连接
-		ICommand updatecommand = new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Command(
+		com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Command updatecommand = new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Command(
 				updateNodeJson, command.getRequester());
 		com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Process process = new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Process(
 				updatecommand,result,conn);

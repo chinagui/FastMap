@@ -74,8 +74,6 @@ public class Process implements IProcess {
 			msg = operation.run(result);
 
 			this.recordData();
-			
-			operation.breakLine();
 
 			this.postCheck();
 

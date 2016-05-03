@@ -29,9 +29,16 @@ public class Process implements IProcess {
 
 		this.result = new Result();
 
-		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
-				.getProjectId());
+		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command.getProjectId());
 
+	}
+
+	public Process(ICommand command, Result result, Connection conn) throws Exception {
+		this.command = (Command) command;
+
+		this.result = result;
+
+		this.conn = conn;
 	}
 
 	@Override
@@ -51,7 +58,7 @@ public class Process implements IProcess {
 
 		RdGscSelector selector = new RdGscSelector(this.conn);
 
-		this.rdGsc = (RdGsc) selector.loadById(command.getPid(),true);
+		this.rdGsc = (RdGsc) selector.loadById(command.getPid(), true);
 
 		return true;
 	}
@@ -102,6 +109,33 @@ public class Process implements IProcess {
 		return msg;
 	}
 
+	public String innerRun() throws Exception {
+		String msg;
+		try {
+			this.prepareData();
+
+			String preCheckMsg = this.preCheck();
+
+			if (preCheckMsg != null) {
+				throw new Exception(preCheckMsg);
+			}
+
+			IOperation operation = new Operation(command, this.rdGsc);
+
+			msg = operation.run(result);
+
+			this.postCheck();
+
+		} catch (Exception e) {
+
+			conn.rollback();
+
+			throw e;
+		}
+
+		return msg;
+	}
+
 	@Override
 	public void postCheck() throws Exception {
 
@@ -115,11 +149,11 @@ public class Process implements IProcess {
 
 	@Override
 	public boolean recordData() throws Exception {
-		
+
 		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
-		
+
 		lw.generateLog(command, result);
-		
+
 		OperatorFactory.recordData(conn, result);
 
 		lw.recordLog(command, result);

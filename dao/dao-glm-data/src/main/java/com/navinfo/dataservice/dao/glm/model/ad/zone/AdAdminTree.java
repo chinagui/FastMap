@@ -21,9 +21,9 @@ public class AdAdminTree implements IObj {
 	private int regionId;
 
 	private String name;
-	
+
 	private String type;
-	
+
 	private AdAdminGroup group;
 
 	private AdAdminPart part;
@@ -140,7 +140,7 @@ public class AdAdminTree implements IObj {
 	@Override
 	public void setMesh(int mesh) {
 	}
-	
+
 	public String getType() {
 		return type;
 	}
@@ -158,40 +158,33 @@ public class AdAdminTree implements IObj {
 			JSONObject json = JSONObject.fromObject(this, jsonConfig);
 
 			return json;
-		}
-		else if (objLevel == ObjLevel.BRIEF) {
+		} else if (objLevel == ObjLevel.BRIEF) {
 			JSONObject json = new JSONObject();
 
 			json.put("regionId", regionId);
 
 			json.put("name", name);
-			
-			if(!StringUtils.isEmpty(type))
-			{
+
+			if (!StringUtils.isEmpty(type)) {
 				json.put("type", type);
 			}
-			
-			if(group != null)
-			{
+
+			if (group != null) {
 				json.put("group", group.Serialize(ObjLevel.BRIEF));
 			}
-			
-			if(part != null)
-			{
+
+			if (part != null) {
 				json.put("part", part.Serialize(ObjLevel.BRIEF));
 			}
-			
+
 			JSONArray array = new JSONArray();
-			
+
 			for (AdAdminTree tree : this.children) {
 				array.add(tree.Serialize(ObjLevel.BRIEF));
 			}
-			
-			if(!array.isEmpty())
-			{
-				json.put("children", array);
-			}
-			
+
+			json.put("children", array);
+
 			return json;
 		}
 		return JSONObject.fromObject(this, jsonConfig);

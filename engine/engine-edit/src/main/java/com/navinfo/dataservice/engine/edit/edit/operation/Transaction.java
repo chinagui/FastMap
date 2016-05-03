@@ -459,7 +459,7 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.create.Process(
 						command);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.create.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.update.Process(
 						command);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.delete.Process(

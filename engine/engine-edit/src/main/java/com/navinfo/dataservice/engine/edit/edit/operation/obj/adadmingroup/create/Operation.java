@@ -3,8 +3,6 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.crea
 import java.sql.Connection;
 import java.util.List;
 
-import org.json.JSONArray;
-
 import com.google.gson.Gson;
 import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -33,28 +31,22 @@ public class Operation implements IOperation {
 
 		JSONObject content = command.getContent();
 
-		JSONArray array = new JSONArray(content.get("groupTree"));
-
 		Gson gson = new Gson();
-		
-		//解析前台传递的树型json为AdAdminTree对象
-		AdAdminTree tree = gson.fromJson(array.getJSONObject(0).toString(), AdAdminTree.class);
 
-		if (content.containsKey("objStatus")) {
+		// 解析前台传递的树型json为AdAdminTree对象
+		AdAdminTree tree = gson.fromJson(content.get("groupTree").toString(), AdAdminTree.class);
 
-			if (ObjStatus.INSERT.toString().equals(content.getString("objStatus"))) {
-				handleAdAdminTree(tree, result);
-			}
-		}
+		handleAdAdminTree(tree, result);
 
 		return null;
 	}
-	
+
 	/**
 	 * 循环遍历树中的节点状态，根据状态调用对应的处理方式
 	 * 前台逻辑：如果父节点没有group对象，需要给父节点创建group对象并给groupid赋值0还要打上新增标识;
-   	 * 新增的叶节点的regionid为地图上选择的代表点的regionid，name为选择代表点的name（无名称时赋值无），
-   	 * group对象为null，part对象的groupid为父节点的group的groupid，rowId为空，添加新增标识；
+	 * 新增的叶节点的regionid为地图上选择的代表点的regionid，name为选择代表点的name（无名称时赋值无），
+	 * group对象为null，part对象的groupid为父节点的group的groupid，rowId为空，添加新增标识；
+	 * 
 	 * @param tree
 	 * @param result
 	 * @throws Exception
@@ -70,41 +62,41 @@ public class Operation implements IOperation {
 		String partType = null;
 
 		int groupId = 0;
-		
-		//当在没有子节点的节点添加层级的时候，需要新增ad_admin_group,pid前台传递的是默认值0，后台需要申请重新赋值
-		if (group != null && group.getPid() != 0) {
-			groupId = group.getPid();
+
+		// 当在没有子节点的节点添加层级的时候，需要新增ad_admin_group,pid前台传递的是默认值0，后台需要申请重新赋值
+		if (group != null && group.getGroupId() != 0) {
+			groupId = group.getGroupId();
 		} else {
 			groupId = PidService.getInstance().applyAdAdminGroupPid();
 		}
-		
-		//在循环遍历过程中，给ObjType赋值的的树中的节点需要进行修改
+
+		// 在循环遍历过程中，给ObjType赋值的的树中的节点需要进行修改
 		if (group != null && group.getObjType() != null) {
 			groupType = group.getObjType().toUpperCase();
 
 			if (ObjStatus.INSERT.toString().equals(groupType)) {
-				result.insertObject(group, ObjStatus.INSERT,
-						groupId);
+				group.setRegionIdUp(tree.getRegionId());
+				result.insertObject(group, ObjStatus.INSERT, groupId);
 			}
-			
+
 			if (ObjStatus.UPDATE.toString().equals(groupType)) {
-				result.insertObject(group, ObjStatus.UPDATE,
-						groupId);
+				group.setRegionIdUp(tree.getRegionId());
+				result.insertObject(group, ObjStatus.UPDATE, groupId);
 			}
 		}
-		
-		//在循环遍历过程中，给ObjType赋值的的树中的节点需要进行修改
+
+		// 在循环遍历过程中，给ObjType赋值的的树中的节点需要进行修改
 		if (part != null && part.getObjType() != null) {
 			partType = part.getObjType().toUpperCase();
 
 			if (ObjStatus.INSERT.toString().equals(partType)) {
-				result.insertObject(part, ObjStatus.INSERT,
-						groupId);
+				part.setRegionIdDown(tree.getRegionId());
+				result.insertObject(part, ObjStatus.INSERT, groupId);
 			}
 
 			if (ObjStatus.UPDATE.toString().equals(partType)) {
-				result.insertObject(part, ObjStatus.UPDATE,
-						groupId);
+				part.setRegionIdDown(tree.getRegionId());
+				result.insertObject(part, ObjStatus.UPDATE, groupId);
 			}
 		}
 

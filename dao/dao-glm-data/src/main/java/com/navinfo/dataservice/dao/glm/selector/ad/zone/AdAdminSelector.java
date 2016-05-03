@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -78,8 +79,8 @@ public class AdAdminSelector implements ISelector {
 				adAdmin.setRowId(resultSet.getString("row_id"));
 
 				// ad_admin_name
-				List<IRow> adAdminNameList = new AdAdminNameSelector(conn)
-						.loadRowsByParentId(adAdmin.getRegionId(), isLock);
+				List<IRow> adAdminNameList = new AdAdminNameSelector(conn).loadRowsByParentId(adAdmin.getRegionId(),
+						isLock);
 
 				for (IRow row : adAdminNameList) {
 					row.setMesh(adAdmin.mesh());
@@ -234,8 +235,8 @@ public class AdAdminSelector implements ISelector {
 				adAdmin.setRowId(resultSet.getString("row_id"));
 
 				// ad_admin_name
-				List<IRow> adAdminNameList = new AdAdminNameSelector(conn)
-						.loadRowsByParentId(adAdmin.getRegionId(), isLock);
+				List<IRow> adAdminNameList = new AdAdminNameSelector(conn).loadRowsByParentId(adAdmin.getRegionId(),
+						isLock);
 
 				for (IRow row : adAdminNameList) {
 					row.setMesh(adAdmin.mesh());
@@ -274,24 +275,31 @@ public class AdAdminSelector implements ISelector {
 		return adAdminList;
 	}
 
-	public List<AdAdmin> loadRowsByLinkPids(List<Integer> linkPids, boolean isLock)
-			throws Exception {
+	/**
+	 * 根据行政区划代表点引导Link pid查询代表点对象
+	 * 
+	 * @param linkPids
+	 * @param isLock
+	 * @return 代表点对象集合
+	 * @throws Exception
+	 */
+	public List<AdAdmin> loadRowsByLinkPids(List<Integer> linkPids, boolean isLock) throws Exception {
 		List<AdAdmin> adAdminList = new ArrayList<AdAdmin>();
 
 		if (linkPids.size() == 0) {
 			return adAdminList;
 		}
 
-		String s = "";
-		for (int i = 0; i < linkPids.size(); i++) {
-			if (i > 0) {
-				s += ",";
-			}
+		// 去重操作
+		HashSet<Integer> linkPidsSet = new HashSet<Integer>(linkPids);
 
-			s += linkPids.get(i);
+		StringBuffer s = new StringBuffer("");
+		for (Integer pid : linkPidsSet) {
+			s.append(pid + ",");
 		}
+		s.deleteCharAt(s.lastIndexOf(","));
 
-		String sql = "SELECT * FROM ad_admin WHERE link_pid in (" + s + ") and u_record!=2";
+		String sql = "SELECT * FROM ad_admin WHERE link_pid in (" + s.toString() + ") and u_record!=2";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -326,8 +334,8 @@ public class AdAdminSelector implements ISelector {
 				adAdmin.setRowId(resultSet.getString("row_id"));
 
 				// ad_admin_name
-				List<IRow> adAdminNameList = new AdAdminNameSelector(conn)
-						.loadRowsByParentId(adAdmin.getRegionId(), isLock);
+				List<IRow> adAdminNameList = new AdAdminNameSelector(conn).loadRowsByParentId(adAdmin.getRegionId(),
+						isLock);
 
 				for (IRow row : adAdminNameList) {
 					row.setMesh(adAdmin.mesh());

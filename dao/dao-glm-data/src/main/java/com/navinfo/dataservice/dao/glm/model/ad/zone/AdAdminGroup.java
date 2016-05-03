@@ -20,6 +20,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class AdAdminGroup implements IObj {
+	private int groupId;
 	private int regionIdUp;
 	private int meshId = 0;
 	private int pid;
@@ -29,6 +30,14 @@ public class AdAdminGroup implements IObj {
     private List<IRow> parts = new ArrayList<IRow>();
     public Map<String, AdAdminPart> adAdminPartMap = new HashMap<String, AdAdminPart>();
     
+	public int getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(int groupId) {
+		this.groupId = groupId;
+	}
+
 	@Override
 	public String rowId() {
 		return rowId;

@@ -145,9 +145,19 @@ public class GLM01025 extends baseRule {
 		checkCommand.setGlmList(objList);
 		checkCommand.setOperType(OperType.CREATE);
 		checkCommand.setObjType(link.objType());
+		
 		CheckEngine checkEngine=new CheckEngine(checkCommand);
 		checkEngine.postCheck();
-		//System.out.println(checkEngine.preCheck());		
+		
+//		Connection conn = GlmDbPoolManager.getInstance().getConnection(checkCommand.getProjectId());
+//		GLM01025 glm=new GLM01025();
+//		glm.setConn(conn);
+//		glm.postCheck(checkCommand);	
+//		List<NiValException> checkResultList=glm.getCheckResultList();
+//		for(NiValException ni:checkResultList){
+//			System.out.println(ni.getRuleId());
+//			System.out.println(ni.getLoc());
+//		}
 	}
 
 }

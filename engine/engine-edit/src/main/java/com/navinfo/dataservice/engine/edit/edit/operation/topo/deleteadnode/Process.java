@@ -20,6 +20,7 @@ import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdNodeSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
 
 /**
@@ -27,67 +28,40 @@ import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
  * 行政区划点删除操作类
  */
 
-public class Process implements IProcess {
+public class Process extends AbstractProcess<Command> {
+	
+	public Process(Command command) throws Exception {
+		super(command);
+		// TODO Auto-generated constructor stub
+	}
 
-	private Command command;
-
-	private Result result;
-
-	private Connection conn;
-
-	private String postCheckMsg;
 	protected Logger log = Logger.getLogger(this.getClass());
-	public Process(ICommand command) throws Exception {
-		this.command = (Command) command;
-
-		this.result = new Result();
-
-		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
-				.getProjectId());
-
-	}
-
-	@Override
-	public ICommand getCommand() {
-
-		return command;
-	}
-
-	@Override
-	public Result getResult() {
-
-		return result;
-	}
-
-	public String preCheck() throws Exception {
-		return null;
-
-	}
+	
 	/*
 	 * 加载行政区划点对应的行政区划线
 	 */
 	public void lockAdLink() throws Exception {
 
-		AdLinkSelector selector = new AdLinkSelector(this.conn);
-		List<AdLink> links = selector.loadByNodePid(command.getNodePid(), true);
+		AdLinkSelector selector = new AdLinkSelector(this.getConn());
+		List<AdLink> links = selector.loadByNodePid(this.getCommand().getNodePid(), true);
 		List<Integer> linkPids = new ArrayList<Integer>();
 		for(AdLink link : links){
 			linkPids.add(link.getPid());
 		}
-		command.setLinks(links);
+		this.getCommand().setLinks(links);
 		
-		command.setLinkPids(linkPids);
+		this.getCommand().setLinkPids(linkPids);
 	}
 	/*
 	 * 加载行政区划点对应的行政区点
 	 */
 	public void lockAdNode() throws Exception {
 
-		AdNodeSelector selector = new AdNodeSelector(this.conn);
+		AdNodeSelector selector = new AdNodeSelector(this.getConn());
 
-		AdNode node = (AdNode) selector.loadById(command.getNodePid(), true);
+		AdNode node = (AdNode) selector.loadById(this.getCommand().getNodePid(), true);
 
-		command.setNode(node);
+		this.getCommand().setNode(node);
 
 	}
 	/*
@@ -95,15 +69,15 @@ public class Process implements IProcess {
 	 */
 	public void lockEndAdNode() throws Exception {
 
-		AdNodeSelector selector = new AdNodeSelector(this.conn);
+		AdNodeSelector selector = new AdNodeSelector(this.getConn());
 
 		List<Integer> nodePids = new ArrayList<Integer>();
 		
-		nodePids.add(command.getNodePid());
+		nodePids.add(this.getCommand().getNodePid());
 
 		List<AdNode> nodes = new ArrayList<AdNode>();
 
-		for (Integer linkPid: command.getLinkPids()) {
+		for (Integer linkPid: this.getCommand().getLinkPids()) {
 
 			List<AdNode> list = selector.loadEndAdNodeByLinkPid(linkPid,
 					true);
@@ -122,20 +96,20 @@ public class Process implements IProcess {
 
 		}
 
-		command.setNodes(nodes);
+		this.getCommand().setNodes(nodes);
 
-		command.setNodePids(nodePids);
+		this.getCommand().setNodePids(nodePids);
 	}
 	/*
 	 * 加载行政区划点对应的行政区划线
 	 */
 		public void lockAdFace() throws Exception {
 
-			AdFaceSelector selector = new AdFaceSelector(this.conn);
+			AdFaceSelector selector = new AdFaceSelector(this.getConn());
 
 			List<AdFace> faces = new ArrayList<AdFace>();
 
-			for (Integer linkPid: command.getLinkPids()) {
+			for (Integer linkPid: this.getCommand().getLinkPids()) {
 
 				List<AdFace> list = selector.loadAdFaceByLinkId(linkPid,
 						true);
@@ -145,7 +119,7 @@ public class Process implements IProcess {
 					
 				}
 			}
-			command.setFaces(faces);
+			this.getCommand().setFaces(faces);
 		}
 
 	@Override
@@ -161,7 +135,7 @@ public class Process implements IProcess {
 		// 获取该adnode对象
 		lockAdNode();
 
-		if (command.getNode() == null) {
+		if (this.getCommand().getNode() == null) {
 
 			throw new Exception("指定删除的RDNODE不存在！");
 		}
@@ -177,30 +151,30 @@ public class Process implements IProcess {
 	public String run() throws Exception {
 
 		try {
-				conn.setAutoCommit(false);
+			this.getConn().setAutoCommit(false);
 				String preCheckMsg = this.preCheck();
 				if (preCheckMsg != null) {
 					throw new Exception(preCheckMsg);
 				}
 				prepareData();
 				//删除行政区划点有关行政区划点、线具体操作
-				IOperation op = new OpTopo(command);
-				op.run(result);
+				IOperation op = new OpTopo(this.getCommand());
+				op.run(this.getResult());
 				//删除行政区划点有关行政区划面具体操作
-				IOperation opAdFace = new OpRefAdFace(command);
-				opAdFace.run(result);
+				IOperation opAdFace = new OpRefAdFace(this.getCommand());
+				opAdFace.run(this.getResult());
 				recordData();
 				postCheck();
-				conn.commit();
+				this.getConn().commit();
 
 		} catch (Exception e) {
 
-			conn.rollback();
+			this.getConn().rollback();
 
 			throw e;
 		} finally {
 			try {
-				conn.close();
+				this.getConn().close();
 			} catch (Exception e) {
 
 			}
@@ -212,13 +186,13 @@ public class Process implements IProcess {
 	@Override
 	public boolean recordData() throws Exception {
 		
-		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
+		LogWriter lw = new LogWriter(this.getConn(), this.getCommand().getProjectId());
 		
-		lw.generateLog(command, result);
+		lw.generateLog(this.getCommand(), this.getResult());
 		
-		OperatorFactory.recordData(conn, result);
+		OperatorFactory.recordData(this.getConn(), this.getResult());
 
-		lw.recordLog(command, result);
+		lw.recordLog(this.getCommand(), this.getResult());
 
 		return true;
 	}
@@ -236,17 +210,10 @@ public class Process implements IProcess {
 
 		}
 	}
-
 	@Override
-	public void postCheck() {
-
-		// 对数据进行检查、检查结果存储在数据库，并存储在临时变量postCheckMsg中
-	}
-
-	@Override
-	public String getPostCheck() throws Exception {
-
-		return postCheckMsg;
+	public IOperation createOperation() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

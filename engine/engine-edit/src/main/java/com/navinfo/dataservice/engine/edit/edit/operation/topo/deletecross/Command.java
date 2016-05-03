@@ -11,14 +11,15 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 
-public class Command implements ICommand {
+public class Command extends AbstractCommand {
 	
 	private String requester;
 
 	private int pid;
 	
-	private int projectId;
+//	private int projectId;
 	
 	private RdCross cross;
 	
@@ -68,20 +69,21 @@ public class Command implements ICommand {
 		this.pid = pid;
 	}
 
-	public int getProjectId() {
-		return projectId;
-	}
-
-	public void setProjectId(int projectId) {
-		this.projectId = projectId;
-	}
+//	public int getProjectId() {
+//		return projectId;
+//	}
+//
+//	public void setProjectId(int projectId) {
+//		this.projectId = projectId;
+//	}
 
 	public Command(JSONObject json,String requester) {
 		this.requester = requester;
 		
 		this.pid = json.getInt("objId");
 		
-		this.projectId = json.getInt("projectId");
+//		this.projectId = json.getInt("projectId");
+		this.setProjectId(json.getInt("projectId"));
 	}
 
 

@@ -28,6 +28,7 @@ public class CheckEngine {
 	public CheckEngine(CheckCommand checkCommand) throws Exception{
 		this.checkCommand=checkCommand;
 		this.conn = GlmDbPoolManager.getInstance().getConnection(this.checkCommand.getProjectId());
+		this.conn.setAutoCommit(true);
 	}
 
 	//获取本次要执行的检查规则
@@ -97,16 +98,25 @@ public class CheckEngine {
 		List<IRow> objList=new ArrayList<IRow>();
 		objList.add(link);
 		
-		//ConfigLoader.initDBConn("D:/workfiles/0_svn/fastmap-hithub/web/edit-web/target/classes/config.properties");
-		
 		//检查调用
 		CheckCommand checkCommand=new CheckCommand();
 		checkCommand.setProjectId(11);
 		checkCommand.setGlmList(objList);
-		checkCommand.setOperType(OperType.UPDATE);
+		checkCommand.setOperType(OperType.CREATE);
 		checkCommand.setObjType(link.objType());
+		
 		CheckEngine checkEngine=new CheckEngine(checkCommand);
-		System.out.println(checkEngine.preCheck());		
+		checkEngine.postCheck();
+		
+//		Connection conn = GlmDbPoolManager.getInstance().getConnection(checkCommand.getProjectId());
+//		GLM01025 glm=new GLM01025();
+//		glm.setConn(conn);
+//		glm.postCheck(checkCommand);	
+//		List<NiValException> checkResultList=glm.getCheckResultList();
+//		for(NiValException ni:checkResultList){
+//			System.out.println(ni.getRuleId());
+//			System.out.println(ni.getLoc());
+//		}
 	}
 	
 }

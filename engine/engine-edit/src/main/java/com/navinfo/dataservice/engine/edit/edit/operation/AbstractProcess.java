@@ -7,6 +7,7 @@ import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
+import com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.update.Command;
 
 /** 
  * @ClassName: Abstractprocess
@@ -18,11 +19,22 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	private T command;
 	private Result result;
 	private Connection conn;	
+	
 	/**
 	 * @return the conn
 	 */
 	public Connection getConn() {
 		return conn;
+	}
+	
+	public void setCommand(Command command) {
+		this.command = (T)command;
+		
+	}
+	
+	
+	public void setConn(Connection conn) {
+		this.conn = conn;
 	}
 
 	private String postCheckMsg;
@@ -49,6 +61,10 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	@Override
 	public Result getResult() {
 		return result;
+	}
+	
+	public void setResult(Result result) {
+		this.result = result;
 	}
 
 	/* (non-Javadoc)

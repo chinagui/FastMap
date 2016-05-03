@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+<files>
+    <file name="exp-rd.xml"/>
+    <file name="exp-rw.xml"/>
+    <file name="exp-ad.xml"/>
+    <file name="exp-lc.xml"/>
+    <file name="exp-lu.xml"/>
+    <file name="exp-cm.xml"/>
+    <file name="exp-zone.xml"/>
+    <file name="exp-ix.xml"/>
+    <file name="exp-hw.xml"/>
+    <file name="exp-adas.xml"/>
+    <file name="exp-pt.xml"/>
+    <file name="exp-m_para.xml"/>
+    <file name="exp-ck_excep.xml"/>
+    <file name="exp-log.xml"/>
+</files> -->
+<sqls>
+    <import file="exp-rd.xml"/>
+    <import file="exp-rw.xml"/>
+    <import file="exp-ad.xml"/>
+    <import file="exp-lc.xml"/>
+    <import file="exp-lu.xml"/>
+    <import file="exp-cm.xml"/>
+    <import file="exp-zone.xml"/>
+    <import file="exp-ix.xml"/>
+    <import file="exp-hw.xml"/>
+    <import file="exp-adas.xml"/>
+    <import file="exp-pt.xml"/>
+    <import file="exp-m_para.xml"/>
+    <import file="exp-ck.xml"/>
+    <import file="exp-log.xml"/>
+</sqls>

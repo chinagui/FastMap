@@ -27,11 +27,10 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		return conn;
 	}
 	
-	public void setCommand(Command command) {
-		this.command = (T)command;
+	public void setCommand(T command) {
+		this.command = command;
 		
 	}
-	
 	
 	public void setConn(Connection conn) {
 		this.conn = conn;

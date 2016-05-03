@@ -60,7 +60,7 @@ public class Operation implements IOperation {
 		// 创建行政区划线信息
 		this.createAdLinks(map,result);
 		//挂接的线被打断的操作
-		this.breakLine();
+		this.breakLine(result);
         
 		return msg;
 	}
@@ -172,7 +172,7 @@ public class Operation implements IOperation {
 	 * 1.循环挂接的线
 	 * 2.如果有被打断操作执行打断功能
 	 */
-	public void breakLine() throws Exception {
+	public void breakLine(Result result) throws Exception {
 		for (int i = 0; i < command.getCatchLinks().size(); i++) {
 			JSONObject json = command.getCatchLinks().getJSONObject(i);
 			
@@ -193,7 +193,7 @@ public class Operation implements IOperation {
 				ICommand breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command(
 						breakJson, breakJson.toString());
 				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process(
-						breakCommand, conn);
+						breakCommand,result, conn);
 				breakProcess.run();
 			}
 		}

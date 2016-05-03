@@ -4,12 +4,12 @@ import java.util.List;
 
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 
-public class Command implements ICommand {
+public class Command extends AbstractCommand {
 	
 	private int nodePid;
 	
@@ -18,8 +18,6 @@ public class Command implements ICommand {
 	private double latitude;
 	
 	private String requester;
-	
-	private int projectId;
 	
 	private List<RdLink> links;
 	
@@ -30,10 +28,6 @@ public class Command implements ICommand {
 	public void setLinks(List<RdLink> links) {
 		this.links = links;
 	}
-
-	public int getProjectId() {
-		return projectId;
-	}
 	
 	public Command(JSONObject json,String requester){
 		
@@ -43,7 +37,7 @@ public class Command implements ICommand {
 		
 		this.latitude = Math.round(json.getJSONObject("data").getDouble("latitude")*100000)/100000.0;
 		
-		this.projectId = json.getInt("projectId");
+		this.setProjectId(json.getInt("projectId"));
 	}
 
 	@Override

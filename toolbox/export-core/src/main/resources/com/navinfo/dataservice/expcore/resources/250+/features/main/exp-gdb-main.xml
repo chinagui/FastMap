@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls>
+    <import file="exp-rd.xml"/>
+    <import file="exp-rw.xml"/>
+    <import file="exp-ad.xml"/>
+    <import file="exp-lc.xml"/>
+    <import file="exp-lu.xml"/>
+    <import file="exp-cm.xml"/>
+    <import file="exp-zone.xml"/>
+    <import file="exp-ix.xml"/>
+    <import file="exp-hw.xml"/>
+    <import file="exp-adas.xml"/>
+    <import file="exp-pt.xml"/>
+    <import file="exp-ck_excep.xml"/>
+    <import file="exp-m_para.xml"/>
+</sqls>

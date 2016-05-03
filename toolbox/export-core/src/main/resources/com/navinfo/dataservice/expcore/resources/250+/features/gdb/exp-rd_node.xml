@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2010-08-24
+-->
+<sqls>
+    <!--//////////////////////////////////////////提取RD_NODE和NODE相关属性表//////////////////////////////////-->
+    <feature name="RD_NODE">
+        <step value="58">
+            <!--根据link补node-->
+            <sql><![CDATA[INSERT /*+ append */
+							INTO TEMP_RD_NODE
+						    (PID)
+						    (SELECT L.S_NODE_PID
+						       FROM TEMP_FILTER_RD_LINK T, RD_LINK L
+						      WHERE T.PID = L.LINK_PID
+						     UNION ALL
+						     SELECT L.E_NODE_PID
+						       FROM TEMP_FILTER_RD_LINK T, RD_LINK L
+						      WHERE T.PID = L.LINK_PID);
+						 ]]></sql>
+			<!--根据link补node-->
+            <sql><![CDATA[INSERT /*+ append */
+							INTO TEMP_RD_NODE
+						    (PID)
+						    (SELECT PID
+						       FROM TEMP_FILTER_RD_NODE);
+						 ]]></sql>
+        </step>
+        <step value="61">
+            <sql><![CDATA[TRUNCATE TABLE TEMP_FILTER_RD_NODE;]]></sql>
+        </step>
+        <step value="64">
+            <!--RD_NODE去重-->
+            <sql><![CDATA[
+                         INSERT/*+ append */ INTO TEMP_FILTER_RD_NODE(PID)(SELECT DISTINCT PID FROM TEMP_RD_NODE);
+                         ]]></sql>
+        </step>
+        <step value="100">
+            <!--
+                查询返回RD_NODE相关信息：
+                1.RD_NODE
+                2.RD_NODE_NAME
+                3.RD_NODE_FORM
+                4.RD_NODE_MESH
+            -->
+            <sql><![CDATA[SELECT  P.* FROM RD_NODE P,TEMP_FILTER_RD_NODE T WHERE P.NODE_PID=T.PID; ]]></sql>
+<!--             <sql><![CDATA[SELECT /*+ index(P PK_RD_NODE) */ P.* FROM RD_NODE P,TEMP_FILTER_RD_NODE T WHERE P.NODE_PID=T.PID; ]]></sql> -->
+            <sql><![CDATA[SELECT P.* FROM RD_NODE_FORM P,TEMP_FILTER_RD_NODE T WHERE P.NODE_PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_NODE_NAME P,TEMP_FILTER_RD_NODE T WHERE P.NODE_PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_NODE_MESH P,TEMP_FILTER_RD_NODE T WHERE P.NODE_PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM ADAS_RDNODE_SLOPE_DTM P,TEMP_FILTER_RD_NODE T WHERE P.NODE_PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM ADAS_RDNODE_INFO_DTM P,TEMP_FILTER_RD_NODE T WHERE P.NODE_PID=T.PID; ]]></sql>
+        </step>
+		<step value="101">
+            <!--
+               	删除RD_NODE相关信息：
+                1.RD_NODE
+                2.RD_NODE_NAME
+                3.RD_NODE_FORM
+                4.RD_NODE_MESH
+            -->
+            <sql><![CDATA[DELETE FROM RD_NODE P WHERE P.NODE_PID IN (SELECT PID FROM TEMP_FILTER_RD_NODE); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_NODE_FORM P WHERE P.NODE_PID IN (SELECT PID FROM TEMP_FILTER_RD_NODE); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_NODE_NAME P WHERE P.NODE_PID IN (SELECT PID FROM TEMP_FILTER_RD_NODE); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_NODE_MESH P WHERE P.NODE_PID IN (SELECT PID FROM TEMP_FILTER_RD_NODE); ]]></sql>
+            <sql><![CDATA[DELETE FROM ADAS_RDNODE_SLOPE_DTM P WHERE P.NODE_PID IN (SELECT PID FROM TEMP_FILTER_RD_NODE); ]]></sql>
+            <sql><![CDATA[DELETE FROM ADAS_RDNODE_INFO_DTM P WHERE P.NODE_PID IN (SELECT PID FROM TEMP_FILTER_RD_NODE); ]]></sql>
+        </step>
+    </feature>
+</sqls>

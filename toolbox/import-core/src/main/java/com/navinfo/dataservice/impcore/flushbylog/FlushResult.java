@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FlushResult {
-
+	
+	private String resultMsg;
+	
 	private int total;
 
 	private int updateTotal;
@@ -30,6 +32,14 @@ public class FlushResult {
 	private List<String> updateFailedList = new ArrayList<String>();
 
 	private List<String> deleteFailedList = new ArrayList<String>();
+
+	public String getResultMsg() {
+		return resultMsg;
+	}
+
+	public void setResultMsg(String resultMsg) {
+		this.resultMsg = resultMsg;
+	}
 
 	public int getLogOpMoved() {
 		return logOpMoved;
@@ -184,6 +194,7 @@ public class FlushResult {
 	}
 
 	public void print() {
+		System.out.println("Flush Status:"+this.getResultMsg());
 		System.out.println("Total:" + this.getTotal());
 
 		System.out.println("Insert total:" + this.getInsertTotal());

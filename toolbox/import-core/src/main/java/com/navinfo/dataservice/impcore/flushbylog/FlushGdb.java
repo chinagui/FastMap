@@ -106,6 +106,11 @@ public class FlushGdb {
 //		return result;
 //	}
 
+	/**
+	 * 履历刷库，传入截止时间和grids参数
+	 * @param args
+	 * @return
+	 */
 	public static FlushResult prjMeshCommit(String[] args) {
 
 		FlushResult result = new FlushResult();
@@ -333,7 +338,9 @@ public class FlushGdb {
 				moveLog(flushResult,tempTable);
 
 				updateLogCommitStatus(tempTable);
+				flushResult.setResultMsg("Success");
 			}else{
+				flushResult.setResultMsg("Fail");
 				throw new Exception("刷数据失败。");
 			}
 

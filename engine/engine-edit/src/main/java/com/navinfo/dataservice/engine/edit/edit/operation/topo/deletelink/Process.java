@@ -54,6 +54,11 @@ public class Process implements IProcess {
 		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command.getProjectId());
 
 	}
+	public Process(ICommand command,Result result ,Connection conn){
+		this.command   = (Command) command;
+		this.result  = result;
+		this.conn  = conn;
+	}
 
 	@Override
 	public ICommand getCommand() {
@@ -284,25 +289,12 @@ public class Process implements IProcess {
 				IOperation opRefSpeedlimit = new OpRefSpeedlimit(command);
 				opRefSpeedlimit.run(result);
 
-				// IOperation opRefRdGsc = new OpRefRdGsc(command);
-				// opRefRdGsc.run(result);
-
-				// 删除link对立交的影响
-				for (RdGsc rdGsc : command.getRdGscs()) {
-					JSONObject data = new JSONObject();
-					// 立交的pid
-					data.put("objId", rdGsc.pid());
-
-					ICommand updatecommand = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Command(
-							data, command.getRequester());
-					com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Process process = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Process(
-							updatecommand, result, conn);
-					process.innerRun();
-				}
-
+				IOperation opRefRdGsc = new OpRefRdGsc(command,conn);
+				opRefRdGsc.run(result);
+				
 				IOperation opRefAdAdmin = new OpRefAdAdmin(command);
 				opRefAdAdmin.run(result);
-
+				
 				recordData();
 
 				postCheck();
@@ -377,6 +369,43 @@ public class Process implements IProcess {
 			}
 		}
 
+		return null;
+	}
+	public String innerRun() throws Exception {
+
+		try {
+				String preCheckMsg = this.preCheck();
+				if (preCheckMsg != null) {
+					throw new Exception(preCheckMsg);
+				}
+				prepareData();
+				IOperation op = new OpTopo(command);
+				op.run(result);
+				IOperation opRefRestrict = new OpRefRestrict(command);
+				opRefRestrict.run(result);
+				IOperation opRefBranch = new OpRefBranch(command);
+				opRefBranch.run(result);
+				IOperation opRefCross = new OpRefCross(command);
+				opRefCross.run(result);
+				IOperation opRefLaneConnexity = new OpRefLaneConnexity(command);
+				opRefLaneConnexity.run(result);
+				IOperation opRefSpeedlimit = new OpRefSpeedlimit(command);
+				opRefSpeedlimit.run(result);
+				IOperation opRefRdGsc = new OpRefRdGsc(command,conn);
+				opRefRdGsc.run(result);
+				IOperation opRefAdAdmin = new OpRefAdAdmin(command);
+				opRefAdAdmin.run(result);
+				
+				recordData();
+
+				postCheck();
+			
+		} catch (Exception e) {
+
+			conn.rollback();
+
+			throw e;
+		} 
 		return null;
 	}
 

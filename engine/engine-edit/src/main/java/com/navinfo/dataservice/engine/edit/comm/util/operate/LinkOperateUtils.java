@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.json.JSONException;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.commons.util.GeometryUtils;
@@ -257,4 +259,35 @@ public class LinkOperateUtils {
 		return maps;
 
 	}
+	/*
+	 * 根据移动link端点重新生成link的几何
+	 */
+	public static  Geometry caleLinkGeomertyForMvNode(AdLink link,int nodePid,double lon,double lat) throws JSONException{
+		Geometry geom = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
+		Coordinate[] cs = geom.getCoordinates();
+		double[][] ps = new double[cs.length][2];
+
+		for (int i = 0; i < cs.length; i++) {
+			ps[i][0] = cs[i].x;
+
+			ps[i][1] = cs[i].y;
+		}
+
+		if (link.getsNodePid() == nodePid) {
+			ps[0][0] = lon;
+
+			ps[0][1] = lat;
+		} else {
+			ps[ps.length - 1][0] = lon;
+
+			ps[ps.length - 1][1] = lat;
+		}
+		JSONObject geojson = new JSONObject();
+
+		geojson.put("type", "LineString");
+
+		geojson.put("coordinates", ps);
+		return (GeoTranslator.geojson2Jts(geojson, 1, 5));
+	}
+
 }

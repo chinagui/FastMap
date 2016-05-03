@@ -284,25 +284,12 @@ public class Process implements IProcess {
 				IOperation opRefSpeedlimit = new OpRefSpeedlimit(command);
 				opRefSpeedlimit.run(result);
 
-				// IOperation opRefRdGsc = new OpRefRdGsc(command);
-				// opRefRdGsc.run(result);
-
-				// 删除link对立交的影响
-				for (RdGsc rdGsc : command.getRdGscs()) {
-					JSONObject data = new JSONObject();
-					// 立交的pid
-					data.put("objId", rdGsc.pid());
-
-					ICommand updatecommand = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Command(
-							data, command.getRequester());
-					com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Process process = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Process(
-							updatecommand, result, conn);
-					process.innerRun();
-				}
-
+				IOperation opRefRdGsc = new OpRefRdGsc(command,conn);
+				opRefRdGsc.run(result);
+				
 				IOperation opRefAdAdmin = new OpRefAdAdmin(command);
 				opRefAdAdmin.run(result);
-
+				
 				recordData();
 
 				postCheck();

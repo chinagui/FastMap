@@ -4,10 +4,12 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.commons.db.ConfigLoader;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -24,10 +26,13 @@ import com.vividsolutions.jts.geom.Geometry;
 public class CheckEngine {
 	private CheckCommand checkCommand = null;
 	private Connection conn;
+	private static Logger log = Logger.getLogger(CheckEngine.class);
 
 	public CheckEngine(CheckCommand checkCommand) throws Exception{
+		this.log = LoggerRepos.getLogger(this.log);
 		this.checkCommand=checkCommand;
 		this.conn = GlmDbPoolManager.getInstance().getConnection(this.checkCommand.getProjectId());
+		this.conn.setAutoCommit(true);
 	}
 
 	//获取本次要执行的检查规则
@@ -47,42 +52,42 @@ public class CheckEngine {
 	}
 	//前检查
 	public String preCheck() throws Exception{
+		log.info("start preCheck");
 		//获取前检查需要执行规则列表
-		List<CheckRule> rulesList=getRules(checkCommand.getObjType(),checkCommand.getOperType(),new String("PRE"));
-		
+		List<CheckRule> rulesList=getRules(checkCommand.getObjType(),checkCommand.getOperType(),new String("PRE"));		
 		for (int i=0;i<rulesList.size();i++){
 			CheckRule rule=rulesList.get(i);
 			baseRule obj = (baseRule) rule.getRuleClass().newInstance();
 			obj.setRuleDetail(rule);
-			
 			obj.setConn(this.conn);
-			
+			//调用规则的前检查
 			obj.preCheck(this.checkCommand);
 			if(obj.getCheckResultList().size()!=0){
+				log.info("end preCheck");
 				return obj.getCheckResultList().get(0).getInformation();
 				}
-		}		
+		}
+		log.info("end preCheck");
 		return null;
 	}
 	
 	//后检查
 	public void postCheck() throws Exception{
+		log.info("start postCheck");
 		//获取后检查需要执行规则列表
 		List<CheckRule> rulesList=getRules(this.checkCommand.getObjType(),this.checkCommand.getOperType(),new String("POST"));
 		List<NiValException> checkResultList = new ArrayList<NiValException>();
-		
 		for (int i=0;i<rulesList.size();i++){
 			CheckRule rule=rulesList.get(i);
 			baseRule obj = (baseRule) rule.getRuleClass().newInstance();
 			obj.setRuleDetail(rule);
-			
 			obj.setConn(this.conn);
-			
-			obj.postCheck(this.checkCommand);
 			//调用规则的后检查
+			obj.postCheck(this.checkCommand);
 			checkResultList.addAll(obj.getCheckResultList());
 		}
 		saveCheckResult(checkResultList);
+		log.info("end postCheck");
 	}
 	
 	public static void main(String[] args) throws Exception{
@@ -97,16 +102,25 @@ public class CheckEngine {
 		List<IRow> objList=new ArrayList<IRow>();
 		objList.add(link);
 		
-		//ConfigLoader.initDBConn("D:/workfiles/0_svn/fastmap-hithub/web/edit-web/target/classes/config.properties");
-		
 		//检查调用
 		CheckCommand checkCommand=new CheckCommand();
 		checkCommand.setProjectId(11);
 		checkCommand.setGlmList(objList);
-		checkCommand.setOperType(OperType.UPDATE);
+		checkCommand.setOperType(OperType.CREATE);
 		checkCommand.setObjType(link.objType());
+		
 		CheckEngine checkEngine=new CheckEngine(checkCommand);
-		System.out.println(checkEngine.preCheck());		
+		checkEngine.postCheck();
+		
+//		Connection conn = GlmDbPoolManager.getInstance().getConnection(checkCommand.getProjectId());
+//		GLM01025 glm=new GLM01025();
+//		glm.setConn(conn);
+//		glm.postCheck(checkCommand);	
+//		List<NiValException> checkResultList=glm.getCheckResultList();
+//		for(NiValException ni:checkResultList){
+//			System.out.println(ni.getRuleId());
+//			System.out.println(ni.getLoc());
+//		}
 	}
 	
 }

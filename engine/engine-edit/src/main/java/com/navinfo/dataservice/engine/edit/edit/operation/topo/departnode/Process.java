@@ -3,9 +3,7 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode;
 import java.sql.Connection;
 import java.util.List;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
@@ -15,94 +13,68 @@ import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
-import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
-import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 
-public class Process implements IProcess {
-
-	private Command command;
-
-	private Result result;
-
-	private Connection conn;
-
-	private String postCheckMsg;
+public class Process extends AbstractProcess<Command> {
 
 	private RdLink updateLink;
 
 	private Check check = new Check();
-
-	public Process(ICommand command) throws Exception {
-		this.command = (Command) command;
-
-		this.result = new Result();
-
-		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
-				.getProjectId());
-
+	
+	public Process(Command command) throws Exception {
+		super(command);
+		// TODO Auto-generated constructor stub
 	}
 	
-	public Process(ICommand command, Connection conn)  {
-		this.command = (Command) command;
+	public Process(Command command, Connection conn) throws Exception  {
+		super(command);
+		this.setCommand((Command) command); 
 
-		this.result = new Result();
+		this.setResult(new Result());
 
-		this.conn = conn;
-	}
-
-	@Override
-	public ICommand getCommand() {
-
-		return command;
-	}
-
-	@Override
-	public Result getResult() {
-
-		return result;
+		this.setConn(conn);
 	}
 
 	// 锁定进入线为该link的交限
 	public void lockRdRestriction() throws Exception {
-		RdRestrictionSelector restriction = new RdRestrictionSelector(this.conn);
+		RdRestrictionSelector restriction = new RdRestrictionSelector(this.getConn());
 
 		List<RdRestriction> restrictions = restriction
-				.loadRdRestrictionByLinkNode(command.getLinkPid(),
-						command.getsNodePid(), command.geteNodePid(), true);
+				.loadRdRestrictionByLinkNode(this.getCommand().getLinkPid(),
+						this.getCommand().getsNodePid(), this.getCommand().geteNodePid(), true);
 
-		command.setRestrictions(restrictions);
+		this.getCommand().setRestrictions(restrictions);
 	}
 
 	public void lockRdLaneConnexity() throws Exception {
 
 		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(
-				this.conn);
+				this.getConn());
 
 		List<RdLaneConnexity> lanes = selector.loadRdLaneConnexityByLinkNode(
-				command.getLinkPid(), command.getsNodePid(),
-				command.geteNodePid(), true);
+				this.getCommand().getLinkPid(), this.getCommand().getsNodePid(),
+				this.getCommand().geteNodePid(), true);
 
-		command.setLanes(lanes);
+		this.getCommand().setLanes(lanes);
 	}
 
 	public void lockRdBranch() throws Exception {
 
-		RdBranchSelector selector = new RdBranchSelector(this.conn);
+		RdBranchSelector selector = new RdBranchSelector(this.getConn());
 
 		List<RdBranch> branches = selector.loadRdBranchByLinkNode(
-				command.getLinkPid(), command.getsNodePid(),
-				command.geteNodePid(), true);
+				this.getCommand().getLinkPid(), this.getCommand().getsNodePid(),
+				this.getCommand().geteNodePid(), true);
 
-		command.setBranches(branches);
+		this.getCommand().setBranches(branches);
 	}
 
 	@Override
 	public boolean prepareData() throws Exception {
 
-		RdLinkSelector linkSelector = new RdLinkSelector(this.conn);
+		RdLinkSelector linkSelector = new RdLinkSelector(this.getConn());
 
-		this.updateLink = (RdLink) linkSelector.loadById(command.getLinkPid(),
+		this.updateLink = (RdLink) linkSelector.loadById(this.getCommand().getLinkPid(),
 				true);
 
 		lockRdRestriction();
@@ -117,11 +89,11 @@ public class Process implements IProcess {
 	@Override
 	public String preCheck() throws Exception {
 
-		check.checkIsCrossNode(conn, command.getsNodePid());
+		check.checkIsCrossNode(this.getConn(), this.getCommand().getsNodePid());
 
-		check.checkIsCrossNode(conn, command.geteNodePid());
+		check.checkIsCrossNode(this.getConn(), this.getCommand().geteNodePid());
 
-		check.checkIsVia(conn, command.getLinkPid());
+		check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
 
 		return null;
 	}
@@ -129,7 +101,7 @@ public class Process implements IProcess {
 	@Override
 	public String run() throws Exception {
 		try {
-			conn.setAutoCommit(false);
+			this.getConn().setAutoCommit(false);
 
 			String preCheckMsg = this.preCheck();
 
@@ -139,9 +111,9 @@ public class Process implements IProcess {
 				throw new Exception(preCheckMsg);
 			}
 
-			IOperation operation = new Operation(command, updateLink, check);
+			IOperation operation = createOperation();
 
-			operation.run(result);
+			operation.run(this.getResult());
 
 			processRefObj();
 
@@ -149,16 +121,16 @@ public class Process implements IProcess {
 
 			this.postCheck();
 
-			conn.commit();
+			this.getConn().commit();
 
 		} catch (Exception e) {
 
-			conn.rollback();
+			this.getConn().rollback();
 
 			throw e;
 		} finally {
 			try {
-				conn.close();
+				this.getConn().close();
 			} catch (Exception e) {
 
 			}
@@ -168,40 +140,20 @@ public class Process implements IProcess {
 	}
 
 	public void processRefObj() throws Exception {
-		IOperation opRefRestrict = new OpRefRestrict(command);
-		opRefRestrict.run(result);
+		IOperation opRefRestrict = new OpRefRestrict(this.getCommand());
+		opRefRestrict.run(this.getResult());
 
-		IOperation opRefBranch = new OpRefBranch(command);
-		opRefBranch.run(result);
+		IOperation opRefBranch = new OpRefBranch(this.getCommand());
+		opRefBranch.run(this.getResult());
 
-		IOperation opRefLaneConnexity = new OpRefLaneConnexity(command);
-		opRefLaneConnexity.run(result);
+		IOperation opRefLaneConnexity = new OpRefLaneConnexity(this.getCommand());
+		opRefLaneConnexity.run(this.getResult());
 	}
 
 	@Override
-	public void postCheck() throws Exception {
+	public IOperation createOperation() {
 		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public String getPostCheck() throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean recordData() throws Exception {
-		
-		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
-		
-		lw.generateLog(command, result);
-		
-		OperatorFactory.recordData(conn, result);
-
-		lw.recordLog(command, result);
-
-		return true;
+		return new Operation(this.getCommand(), updateLink, check);
 	}
 
 }

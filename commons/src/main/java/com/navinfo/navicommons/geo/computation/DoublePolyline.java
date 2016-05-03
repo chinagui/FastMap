@@ -10,27 +10,47 @@ import java.util.List;
 * @Description: TODO
 */
 public class DoublePolyline {
-	private DoublePoint[] points;
+	private int lineSize = 0;
+	private DoublePoint spoint;
+	private DoublePoint epoint;
+	private DoubleLine[] lines;
 	public DoublePolyline(DoublePoint[] points){
-		this.points=points;
+		lineSize = points.length-1;
+		spoint = points[0];
+		epoint = points[lineSize];
+		lines = new DoubleLine[lineSize];
+		for(int i=0;i<lineSize;i++){
+			lines[i]=new DoubleLine(points[i],points[i+1]);
+		}
 	}
-	
-	public DoublePoint getsPoint() {
-		return points[0];
+	public DoublePolyline(DoubleLine[] lines){
+		lineSize = lines.length;
+		this.spoint=lines[0].getSpoint();
+		this.epoint=lines[lineSize-1].getEpoint();
+		this.lines=lines;
 	}
-	public void setsPoint(DoublePoint sPoint) {
-		this.points[0] = sPoint;
+	public int getLineSize() {
+		return lineSize;
 	}
-	public DoublePoint getePoint() {
-		return points[points.length-1];
+	public void setLineSize(int lineSize) {
+		this.lineSize = lineSize;
 	}
-	public void setePoint(DoublePoint ePoint) {
-		this.points[points.length-1] = ePoint;
+	public DoublePoint getSpoint() {
+		return spoint;
 	}
-	public DoublePoint[] getPoints() {
-		return points;
+	public void setSpoint(DoublePoint spoint) {
+		this.spoint = spoint;
 	}
-	public void setPoints(DoublePoint[] points) {
-		this.points = points;
+	public DoublePoint getEpoint() {
+		return epoint;
+	}
+	public void setEpoint(DoublePoint epoint) {
+		this.epoint = epoint;
+	}
+	public DoubleLine[] getLines() {
+		return lines;
+	}
+	public void setLines(DoubleLine[] lines) {
+		this.lines = lines;
 	}
 }

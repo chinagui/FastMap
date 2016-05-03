@@ -7,20 +7,33 @@ package com.navinfo.navicommons.geo.computation;
 * @Description: TODO
 */
 public class DoubleLine {
-	private DoublePoint[] points;
-	public DoubleLine(DoublePoint sPoint,DoublePoint ePoint){
-		this.points=new DoublePoint[]{sPoint,ePoint};
+	private DoublePoint spoint;
+	private DoublePoint epoint;
+	public DoubleLine(DoublePoint spoint,DoublePoint epoint){
+		this.spoint=spoint;
+		this.epoint=epoint;
 	}
-	public DoublePoint getsPoint() {
-		return points[0];
+	public DoublePoint getSpoint() {
+		return spoint;
 	}
-	public void setsPoint(DoublePoint sPoint) {
-		this.points[0] = sPoint;
+	public void setSpoint(DoublePoint spoint) {
+		this.spoint = spoint;
 	}
-	public DoublePoint getePoint() {
-		return points[1];
+	public DoublePoint getEpoint() {
+		return epoint;
 	}
-	public void setePoint(DoublePoint ePoint) {
-		this.points[1] = ePoint;
+	public void setEpoint(DoublePoint epoint) {
+		this.epoint = epoint;
+	}
+	/**
+	 * 计算线段的斜率，如果垂直X轴，那么返回-1；
+	 * @return 
+	 */
+	public double getSlope(){
+		if(epoint.getX()==spoint.getX()){
+			return -1;
+		}else{
+			return (epoint.getY()-spoint.getY())/(epoint.getX()-spoint.getX());
+		}
 	}
 }

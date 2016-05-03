@@ -40,7 +40,7 @@ public class CheckRuleLoader {
 			synchronized(this) {
 				if (!map.containsKey(ruleCode)) {
 					
-					String sql = "select RULE_CODE, RULE_LOG, SEVERITY, RULE_CLASS from CK_RULE where RULE_CODE = ?";
+					String sql = "select RULE_CODE, RULE_LOG, SEVERITY, RULE_CLASS from CK_RULE where RULE_CODE = ? AND RULE_STATUS='E'";
 					
 					PreparedStatement pstmt = null;
 

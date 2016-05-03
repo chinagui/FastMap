@@ -105,7 +105,7 @@ public class Process extends AbstractProcess<Command> {
 
 			// 获取LINK上交限经过线
 			List<List<Entry<Integer, RdRestrictionVia>>> restrictVias = new RdRestrictionViaSelector(
-					conn).loadRestrictionViaByLinkPid(this.getCommand().getLinkPid(), true);
+					this.getConn()).loadRestrictionViaByLinkPid(this.getCommand().getLinkPid(), true);
 
 			this.getCommand().setRestrictListVias(restrictVias);
 

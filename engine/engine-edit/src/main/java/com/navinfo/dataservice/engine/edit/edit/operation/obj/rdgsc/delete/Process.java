@@ -2,111 +2,36 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete;
 
 import java.sql.Connection;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
-import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
-import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 
-public class Process implements IProcess {
-
-	private Command command;
-
-	private Result result;
-
-	private Connection conn;
-
-	private String postCheckMsg;
+public class Process extends AbstractProcess<Command> {
 
 	private RdGsc rdGsc;
 
-	public Process(ICommand command) throws Exception {
-		this.command = (Command) command;
-
-		this.result = new Result();
-
-		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command.getProjectId());
-
+	public Process(Command command) throws Exception {
+		super(command);
 	}
 
-	public Process(ICommand command, Result result, Connection conn) throws Exception {
-		this.command = (Command) command;
+	public Process(Command command, Result result, Connection conn) throws Exception {
+		super(command);
 
-		this.result = result;
+		this.setResult(result);
 
-		this.conn = conn;
-	}
-
-	@Override
-	public ICommand getCommand() {
-
-		return command;
-	}
-
-	@Override
-	public Result getResult() {
-
-		return result;
+		this.setConn(conn);
 	}
 
 	@Override
 	public boolean prepareData() throws Exception {
 
-		RdGscSelector selector = new RdGscSelector(this.conn);
+		RdGscSelector selector = new RdGscSelector(this.getConn());
 
-		this.rdGsc = (RdGsc) selector.loadById(command.getPid(), true);
+		this.rdGsc = (RdGsc) selector.loadById(this.getCommand().getPid(), true);
 
 		return true;
-	}
-
-	@Override
-	public String preCheck() throws Exception {
-
-		return null;
-	}
-
-	@Override
-	public String run() throws Exception {
-		String msg;
-		try {
-			conn.setAutoCommit(false);
-
-			this.prepareData();
-
-			String preCheckMsg = this.preCheck();
-
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
-
-			IOperation operation = new Operation(command, this.rdGsc);
-
-			msg = operation.run(result);
-
-			this.recordData();
-
-			this.postCheck();
-
-			conn.commit();
-
-		} catch (Exception e) {
-
-			conn.rollback();
-
-			throw e;
-		} finally {
-			try {
-				conn.close();
-			} catch (Exception e) {
-
-			}
-		}
-
-		return msg;
 	}
 
 	public String innerRun() throws Exception {
@@ -120,15 +45,15 @@ public class Process implements IProcess {
 				throw new Exception(preCheckMsg);
 			}
 
-			IOperation operation = new Operation(command, this.rdGsc);
+			IOperation operation = new Operation(this.getCommand(), this.rdGsc);
 
-			msg = operation.run(result);
+			msg = operation.run(this.getResult());
 
 			this.postCheck();
 
 		} catch (Exception e) {
 
-			conn.rollback();
+			this.getConn().rollback();
 
 			throw e;
 		}
@@ -137,28 +62,9 @@ public class Process implements IProcess {
 	}
 
 	@Override
-	public void postCheck() throws Exception {
-
-	}
-
-	@Override
-	public String getPostCheck() throws Exception {
-
-		return postCheckMsg;
-	}
-
-	@Override
-	public boolean recordData() throws Exception {
-
-		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
-
-		lw.generateLog(command, result);
-
-		OperatorFactory.recordData(conn, result);
-
-		lw.recordLog(command, result);
-
-		return true;
+	public IOperation createOperation() {
+		// TODO Auto-generated method stub
+		return  new Operation(this.getCommand(), this.rdGsc);
 	}
 
 }

@@ -3,12 +3,12 @@ import java.util.List;
 
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
@@ -17,7 +17,7 @@ import com.vividsolutions.jts.geom.Point;
  * @author  zhaokk 
  * 创建行政区划点基础参数类 
  */
-public class Command implements ICommand {
+public class Command extends AbstractCommand {
 	private String requester;
 	private AdLink  sAdLink;
 	private AdLink  eAdLink;
@@ -55,17 +55,9 @@ public class Command implements ICommand {
 	}
 
 	private GeometryFactory geometryFactory = new GeometryFactory();
-	private int projectId;
 	private Point point;
 	private int linkPid;
 	private List<AdFaceTopo> adFaceTopos;
-	public int getProjectId() {
-		return projectId;
-	}
-
-	public void setProjectId(int projectId) {
-		this.projectId = projectId;
-	}
 
 	@Override
 	public OperType getOperType() {
@@ -84,7 +76,7 @@ public class Command implements ICommand {
 
 	public Command(JSONObject json, String requester) throws Exception{
 		this.requester = requester;
-		this.projectId = json.getInt("projectId");
+		this.setProjectId(json.getInt("projectId"));
 		this.linkPid = json.getInt("objId");
 		JSONObject data = json.getJSONObject("data");
 		double lng = Math.round(data.getDouble("longitude")*100000)/100000.0;

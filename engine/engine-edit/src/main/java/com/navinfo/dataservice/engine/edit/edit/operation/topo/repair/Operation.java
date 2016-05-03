@@ -105,7 +105,7 @@ public class Operation implements IOperation {
 			
 			json.put("data", data);
 			
-			ICommand departCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Command(
+			com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Command departCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Command(
 					json, json.toString());
 			
 			departProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Process(

@@ -6,7 +6,6 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -105,7 +104,7 @@ public class Operation implements IOperation {
 			
 			json.put("data", data);
 			
-			ICommand departCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.departadnode.Command(
+			com.navinfo.dataservice.engine.edit.edit.operation.topo.departadnode.Command departCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.departadnode.Command(
 					json, json.toString());
 			
 			departProcess =  new com.navinfo.dataservice.engine.edit.edit.operation.topo.departadnode.Process(departCommand, conn);
@@ -302,7 +301,7 @@ public class Operation implements IOperation {
 				data.put("latitude", lat);
 			}
 			breakJson.put("data", data);
-			ICommand breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command(
+			com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command(
 					breakJson, breakJson.toString());
 			com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process(
 					breakCommand, conn);

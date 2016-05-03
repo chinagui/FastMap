@@ -2,7 +2,6 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.deletelink;
 
 import java.sql.Connection;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
@@ -30,7 +29,7 @@ public class OpRefRdGsc implements IOperation {
 			// 立交的pid
 			data.put("objId", rdGsc.pid());
 
-			ICommand updatecommand = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Command(
+			com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Command updatecommand = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Command(
 					data, command.getRequester());
 			com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Process process = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Process(
 					updatecommand, result, conn);

@@ -28,54 +28,58 @@ import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneTopologyS
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionDetailSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
+import com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.create.Operation;
+import com.navinfo.dataservice.engine.edit.edit.operation.topo.deletecross.Command;
 
-public class Process implements IProcess {
+public class Process extends AbstractProcess<Command> {
 
 	private static Logger logger = Logger.getLogger(Process.class);
 
-	private Command command;
+//	private Command command;
+//
+//	private Result result;
+//
+//	private Connection conn;
+//
+//	private String postCheckMsg;
 
-	private Result result;
-
-	private Connection conn;
-
-	private String postCheckMsg;
-
-	public Process(ICommand command) throws Exception {
-		this.command = (Command) command;
-
-		this.result = new Result();
-
-		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
-				.getProjectId());
+	public Process(Command command) throws Exception {
+		super(command);
+//		this.command = (Command) command;
+//
+//		this.result = new Result();
+//
+//		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
+//				.getProjectId());
 
 	}
 
-	@Override
-	public ICommand getCommand() {
-
-		return command;
-	}
-
-	@Override
-	public Result getResult() {
-
-		return result;
-	}
-
-	public String preCheck() throws Exception {
-
-		return null;
-	}
+//	@Override
+//	public ICommand getCommand() {
+//
+//		return command;
+//	}
+//
+//	@Override
+//	public Result getResult() {
+//
+//		return result;
+//	}
+//
+//	public String preCheck() throws Exception {
+//
+//		return null;
+//	}
 
 	public void lockRdCross() throws Exception {
 		// 获取该cross对象
-		RdCrossSelector selector = new RdCrossSelector(this.conn);
+		RdCrossSelector selector = new RdCrossSelector(this.getConn());
 
-		RdCross cross = (RdCross) selector.loadById(command.getPid(), true);
+		RdCross cross = (RdCross) selector.loadById(this.getCommand().getPid(), true);
 
-		command.setCross(cross);
+		this.getCommand().setCross(cross);
 	}
 
 	public void lockRdRestriction() throws Exception {
@@ -91,9 +95,9 @@ public class Process implements IProcess {
 		ResultSet resultSet = null;
 
 		try {
-			pstmt = conn.prepareStatement(sql);
+			pstmt = getConn().prepareStatement(sql);
 
-			pstmt.setInt(1, command.getPid());
+			pstmt.setInt(1, this.getCommand().getPid());
 
 			resultSet = pstmt.executeQuery();
 
@@ -113,7 +117,7 @@ public class Process implements IProcess {
 				restrict.setRowId(resultSet.getString("row_id"));
 
 				RdRestrictionDetailSelector detail = new RdRestrictionDetailSelector(
-						conn);
+						getConn());
 
 				restrict.setDetails(detail.loadRowsByParentId(
 						restrict.getPid(), true));
@@ -121,7 +125,7 @@ public class Process implements IProcess {
 				result.add(restrict);
 			}
 			
-			command.setRestricts(result);
+			this.getCommand().setRestricts(result);
 		} catch (Exception e) {
 			
 			throw e;
@@ -153,9 +157,9 @@ public class Process implements IProcess {
 		ResultSet resultSet = null;
 
 		try {
-			pstmt = conn.prepareStatement(sql);
+			pstmt = getConn().prepareStatement(sql);
 
-			pstmt.setInt(1, command.getPid());
+			pstmt.setInt(1, this.getCommand().getPid());
 
 			resultSet = pstmt.executeQuery();
 
@@ -185,14 +189,14 @@ public class Process implements IProcess {
 				laneConn.setSrcFlag(resultSet.getInt("src_flag"));
 				
 				RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(
-						conn);
+						getConn());
 
 				laneConn.setTopos(topoSelector.loadRowsByParentId(laneConn.getPid(), true));
 				
 				result.add(laneConn);
 			}
 			
-			command.setLanes(result);
+			this.getCommand().setLanes(result);
 		} catch (Exception e) {
 			
 			throw e;
@@ -224,9 +228,9 @@ public class Process implements IProcess {
 		ResultSet resultSet = null;
 
 		try {
-			pstmt = conn.prepareStatement(sql);
+			pstmt = getConn().prepareStatement(sql);
 
-			pstmt.setInt(1, command.getPid());
+			pstmt.setInt(1, this.getCommand().getPid());
 
 			resultSet = pstmt.executeQuery();
 
@@ -248,46 +252,46 @@ public class Process implements IProcess {
 				branch.setRowId(resultSet.getString("row_id"));
 
 				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
-						conn);
+						getConn());
 
 				branch.setDetails(detailSelector.loadRowsByParentId(branch.getPid(), true));
 
 				RdSignboardSelector signboardSelector = new RdSignboardSelector(
-						conn);
+						getConn());
 
 				branch.setSignboards(signboardSelector.loadRowsByParentId(branch.getPid(), true));
 
 				RdSignasrealSelector signasrealSelector = new RdSignasrealSelector(
-						conn);
+						getConn());
 
 				branch.setSignasreals(signasrealSelector.loadRowsByParentId(branch.getPid(),
 						true));
 
 				RdSeriesbranchSelector seriesbranchSelector = new RdSeriesbranchSelector(
-						conn);
+						getConn());
 
 				branch.setSeriesbranches(seriesbranchSelector
 						.loadRowsByParentId(branch.getPid(), true));
 
 				RdBranchRealimageSelector realimageSelector = new RdBranchRealimageSelector(
-						conn);
+						getConn());
 
 				branch.setRealimages(realimageSelector.loadRowsByParentId(branch.getPid(),
 						true));
 
 				RdBranchSchematicSelector schematicSelector = new RdBranchSchematicSelector(
-						conn);
+						getConn());
 
 				branch.setSchematics(schematicSelector.loadRowsByParentId(branch.getPid(),
 						true));
 
-				RdBranchViaSelector viaSelector = new RdBranchViaSelector(conn);
+				RdBranchViaSelector viaSelector = new RdBranchViaSelector(getConn());
 
 				branch.setVias(viaSelector.loadRowsByParentId(branch.getPid(), true));
 
 			}
 			
-			command.setBranches(result);
+			this.getCommand().setBranches(result);
 		} catch (Exception e) {
 			
 			throw e;
@@ -318,7 +322,7 @@ public class Process implements IProcess {
 		
 		lockRdCross();
 
-		if (command.getCross() == null) {
+		if (this.getCommand().getCross() == null) {
 
 			throw new Exception("指定删除的路口不存在！");
 		}
@@ -336,7 +340,7 @@ public class Process implements IProcess {
 	public String run() throws Exception {
 
 		try {
-			conn.setAutoCommit(false);
+			getConn().setAutoCommit(false);
 
 			String preCheckMsg = this.preCheck();
 
@@ -346,36 +350,36 @@ public class Process implements IProcess {
 
 			prepareData();
 
-			IOperation op = new OpTopo(command, conn);
+			IOperation op = new OpTopo(this.getCommand(), getConn());
 
-			op.run(result);
+			op.run(this.getResult());
 
-			IOperation opRefRestrict = new OpRefRdRestriction(command);
+			IOperation opRefRestrict = new OpRefRdRestriction(this.getCommand());
 
-			opRefRestrict.run(result);
+			opRefRestrict.run(this.getResult());
 			
-			IOperation opRefLaneConnexity = new OpRefRdLaneConnexity(command);
+			IOperation opRefLaneConnexity = new OpRefRdLaneConnexity(this.getCommand());
 
-			opRefLaneConnexity.run(result);
+			opRefLaneConnexity.run(this.getResult());
 			
-			IOperation opRefBranch = new OpRefRdBranch(command);
+			IOperation opRefBranch = new OpRefRdBranch(this.getCommand());
 
-			opRefBranch.run(result);
+			opRefBranch.run(this.getResult());
 
 			recordData();
 
 			postCheck();
 
-			conn.commit();
+			getConn().commit();
 
 		} catch (Exception e) {
 
-			conn.rollback();
+			getConn().rollback();
 
 			throw e;
 		} finally {
 			try {
-				conn.close();
+				getConn().close();
 			} catch (Exception e) {
 
 			}
@@ -383,20 +387,20 @@ public class Process implements IProcess {
 
 		return null;
 	}
-
-	@Override
-	public boolean recordData() throws Exception {
-		
-		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
-		
-		lw.generateLog(command, result);
-		
-		OperatorFactory.recordData(conn, result);
-
-		lw.recordLog(command, result);
-
-		return true;
-	}
+//
+//	@Override
+//	public boolean recordData() throws Exception {
+//		
+//		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
+//		
+//		lw.generateLog(command, result);
+//		
+//		OperatorFactory.recordData(conn, result);
+//
+//		lw.recordLog(command, result);
+//
+//		return true;
+//	}
 
 	private void releaseResource(PreparedStatement pstmt, ResultSet resultSet) {
 		try {
@@ -412,16 +416,24 @@ public class Process implements IProcess {
 		}
 	}
 
-	@Override
-	public void postCheck() {
+@Override
+public IOperation createOperation() {
+	// TODO Auto-generated method stub
+	return null;
+}
+	
 
-		// 对数据进行检查、检查结果存储在数据库，并存储在临时变量postCheckMsg中
-	}
 
-	@Override
-	public String getPostCheck() throws Exception {
-
-		return postCheckMsg;
-	}
+//	@Override
+//	public void postCheck() {
+//
+//		// 对数据进行检查、检查结果存储在数据库，并存储在临时变量postCheckMsg中
+//	}
+//
+//	@Override
+//	public String getPostCheck() throws Exception {
+//
+//		return postCheckMsg;
+//	}
 
 }

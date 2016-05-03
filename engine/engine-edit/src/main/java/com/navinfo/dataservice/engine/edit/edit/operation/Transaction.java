@@ -32,7 +32,7 @@ public class Transaction {
 	/**
 	 * 命令对象
 	 */
-	private ICommand command;
+	private AbstractCommand command;
 
 	/**
 	 * 操作进程对象
@@ -60,7 +60,7 @@ public class Transaction {
 	 * 
 	 * @return 命令
 	 */
-	private ICommand createCommand() throws Exception {
+	private AbstractCommand createCommand() throws Exception {
 		JSONObject json = JSONObject.fromObject(requester);
 
 		operType = Enum.valueOf(OperType.class, json.getString("command"));

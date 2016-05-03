@@ -1,124 +1,34 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.delete;
 
-import java.sql.Connection;
-
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
-import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
-import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 
-public class Process implements IProcess {
+public class Process extends AbstractProcess<Command> implements IProcess {
 
-	private Command command;
-
-	private Result result;
-
-	private Connection conn;
-	
-	private String postCheckMsg;
-	
 	private Check check = new Check();
-	
-	public Process(ICommand command) throws Exception {
-		this.command = (Command) command;
-
-		this.result = new Result();
-
-		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
-				.getProjectId());
-
+	/**
+	 * @param command
+	 * @throws Exception
+	 */
+	public Process(Command command) throws Exception {
+		super(command);
+		// TODO Auto-generated constructor stub
 	}
-	
-	@Override
-	public ICommand getCommand() {
-		
-		return command;
-	}
-
-	@Override
-	public Result getResult() {
-		
-		return result;
-	}
-
-	@Override
-	public boolean prepareData() throws Exception {
-		
-		return false;
-	}
-
-	@Override
-	public String preCheck() throws Exception {
-		
-		return null;
-	}
-
-	@Override
-	public String run() throws Exception {
-		String msg;
-		try {
-			conn.setAutoCommit(false);
-
-			this.prepareData();
-
-			String preCheckMsg = this.preCheck();
-
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
-
-			Operation operation = new Operation(command, check, conn);
-
-			msg = operation.run(result);
-
-			this.recordData();
-
-			this.postCheck();
-
-			conn.commit();
-
-		} catch (Exception e) {
-			
-			conn.rollback();
-
-			throw e;
-		} finally {
-			try {
-				conn.close();
-			} catch (Exception e) {
-				
-			}
-		}
-
-		return msg;
-	}
-
 	@Override
 	public void postCheck() throws Exception {
 		
-		check.postCheck(conn, result);
+		check.postCheck(this.getConn(), this.getResult());
 	}
 
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess#createOperation()
+	 */
 	@Override
-	public String getPostCheck() throws Exception {
-		
-		return postCheckMsg;
+	public IOperation createOperation() {
+		return new Operation(this.getCommand(), check, this.getConn());
 	}
 
-	@Override
-	public boolean recordData() throws Exception {
-		
-		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
-		
-		lw.generateLog(command, result);
-		
-		OperatorFactory.recordData(conn, result);
-
-		lw.recordLog(command, result);
-
-		return true;
-	}
 
 }

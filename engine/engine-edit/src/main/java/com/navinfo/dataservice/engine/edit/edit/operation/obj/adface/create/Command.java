@@ -10,13 +10,12 @@ import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 
-public class Command implements ICommand {
+public class Command extends AbstractCommand implements ICommand {
 
 	private String requester;
 
-	private int projectId;
-	
 	private JSONObject geometry;
 	private List<Integer> linkPids;
 	private List<AdLink> links;
@@ -54,14 +53,6 @@ public class Command implements ICommand {
 		this.geometry = geometry;
 	}
 
-	public int getProjectId() {
-		return projectId;
-	}
-
-	public void setProjectId(int projectId) {
-		this.projectId = projectId;
-	}
-
 	@Override
 	public OperType getOperType() {
 		return OperType.CREATE;
@@ -80,7 +71,7 @@ public class Command implements ICommand {
 	public Command(JSONObject json, String requester) throws Exception{
 		this.requester = requester;
 
-		this.projectId = json.getInt("projectId");
+		this.setProjectId(json.getInt("projectId"));
 		JSONObject data = json.getJSONObject("data");
 		if (data.containsKey("geometry")){
 			this.geometry = data.getJSONObject("geometry");

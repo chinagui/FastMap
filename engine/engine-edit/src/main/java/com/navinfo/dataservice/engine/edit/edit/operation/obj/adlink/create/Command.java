@@ -7,16 +7,16 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Geometry;
 /**
  * @author zhaokk
  *新建行政区划线参数基础类 
  */
-public class Command implements ICommand {
+public class Command extends AbstractCommand  {
 
 	private String requester;
 
-	private int projectId;
 	
 	private Geometry geometry;
 	
@@ -50,13 +50,6 @@ public class Command implements ICommand {
 		this.sNodePid = sNodePid;
 	}
 
-	public int getProjectId() {
-		return projectId;
-	}
-
-	public void setProjectId(int projectId) {
-		this.projectId = projectId;
-	}
 
 	@Override
 	public OperType getOperType() {
@@ -81,7 +74,7 @@ public class Command implements ICommand {
 
 	public Command(JSONObject json, String requester) throws Exception{
 		this.requester = requester;
-		this.projectId = json.getInt("projectId");
+		this.setProjectId(json.getInt("projectId"));
 		JSONObject data = json.getJSONObject("data");
 
 		this.eNodePid = data.getInt("eNodePid");

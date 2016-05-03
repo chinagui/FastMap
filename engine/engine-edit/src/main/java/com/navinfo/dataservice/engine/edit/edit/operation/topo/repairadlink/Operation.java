@@ -168,7 +168,7 @@ public class Operation implements IOperation {
 				result.insertObject(node, ObjStatus.INSERT, node.pid());
 			}
 
-			this.breakLine(sNodePid, eNodePid,result);
+			this.breakLine(sNodePid , eNodePid,result);
 
 		} else if (command.getInterLines().size() == 0
 				&& (command.getInterNodes().size() == 1 || command

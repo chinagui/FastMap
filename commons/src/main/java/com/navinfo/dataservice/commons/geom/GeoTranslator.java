@@ -120,7 +120,7 @@ public class GeoTranslator {
 		Geometry line = new WKTReader().read(sb.toString());
 
 		Geometry point = new WKTReader().read(sb2.toString());
-
+        System.out.println(line.distance(point)+"--------------");
 		if (line.distance(point) <= 1) {
 			flag = true;
 		}

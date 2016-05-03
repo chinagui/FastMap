@@ -10,12 +10,13 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 
 /**
  * @author zhaokk
  * 删除行政区划点参数基础类 
  */
-public class Command implements ICommand {
+public class Command extends AbstractCommand {
 	
 	private String requester;
 
@@ -52,15 +53,6 @@ public class Command implements ICommand {
 		this.faces = faces;
 	}
 
-	private int projectId;
-	
-	public int getProjectId() {
-		return projectId;
-	}
-
-	public void setProjectId(int projectId) {
-		this.projectId = projectId;
-	}
 	public List<AdLink> getLinks() {
 		return links;
 	}
@@ -130,7 +122,7 @@ public class Command implements ICommand {
 		
 		this.nodePid = json.getInt("objId");
 		
-		this.projectId = json.getInt("projectId");
+		this.setProjectId(json.getInt("projectId"));
 		
 	}
 

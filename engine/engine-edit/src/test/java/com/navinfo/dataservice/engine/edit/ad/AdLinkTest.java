@@ -11,7 +11,7 @@ public class AdLinkTest {
 	//初始化系统参数
     public AdLinkTest(){
     	ConfigLoader
-		.initDBConn("H:/GitHub/DataService/web/edit-web/src/main/resources/config.properties");
+		.initDBConn("F:/Fm_projects_Src/FOS/dataservice/web/edit-web/src/main/resources/config.properties");
     }
 	protected Logger log = Logger.getLogger(this.getClass());
 	//创建一条link

@@ -110,6 +110,7 @@ public class OracleSchemaPhysicalCreator implements DbPhysicalCreator{
 		Connection conn = null;
 		try{
 			conn = db.getDriverManagerDataSource().getConnection();
+			// gdb
 			String schemaCreateFile = "/com/navinfo/dataservice/datahub/resources/"
 					+ gdbVersion + "/schema/table_create_gdb.sql";
 			SqlExec sqlExec = new SqlExec(conn);
@@ -117,18 +118,14 @@ public class OracleSchemaPhysicalCreator implements DbPhysicalCreator{
 			String indexFile = "/com/navinfo/dataservice/datahub/resources/"
 					+ gdbVersion + "/schema/index.sql";
 			sqlExec.execute(indexFile);
-			if(gdbVersion.endsWith("+")){
-				String addColumnFile = "/com/navinfo/dataservice/datahub/resources/"
-						+ gdbVersion + "/schema/add_columns_plus.pck";
-				PackageExec packageExec = new PackageExec(conn);
-				packageExec.execute(addColumnFile);
-				String plusFile = "/com/navinfo/dataservice/datahub/resources/"
-						+ gdbVersion + "/schema/table_create_plus.sql";
-				sqlExec.execute(plusFile);
-				String indexPlus = "/com/navinfo/dataservice/datahub/resources/"
-						+ gdbVersion + "/schema/index+.pck";
-				packageExec.execute(indexPlus);
-			}
+			//gdb+
+			PackageExec packageExec = new PackageExec(conn);
+			String plusFile = "/com/navinfo/dataservice/datahub/resources/"
+					+ gdbVersion + "/schema/table_create_plus.sql";
+			sqlExec.execute(plusFile);
+			String indexPlus = "/com/navinfo/dataservice/datahub/resources/"
+					+ gdbVersion + "/schema/index+.pck";
+			packageExec.execute(indexPlus);
 		}catch(Exception e){
 			log.error("给目标库安装GDB模型时出错。原因为："+e.getMessage(),e);
 			throw new DataHubException("给目标库安装GDB模型时出错。原因为："+e.getMessage(),e);

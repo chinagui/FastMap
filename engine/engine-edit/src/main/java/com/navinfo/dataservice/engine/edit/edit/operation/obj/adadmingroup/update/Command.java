@@ -19,8 +19,6 @@ public class Command implements ICommand {
 
 	private JSONObject content;
 
-	private JSONArray groupTree;
-
 	public int getProjectId() {
 		return projectId;
 	}
@@ -58,29 +56,7 @@ public class Command implements ICommand {
 		this.projectId = json.getInt("projectId");
 
 		this.content = json.getJSONObject("data");
-
-		//groupTree = content.getJSONArray("groupTree");
-
-		//parseJson2Bean(groupTree.getJSONObject(0).toString());
-
-	}
-
-	private static  AdAdminTree parseJson2Bean(String jsonArray) {
-		AdAdminTree tree = null;
-
-		Gson gson = new Gson();
-		tree = gson.fromJson(jsonArray, AdAdminTree.class);
-
-		return tree;
-	}
-
-	public static void main(String[] args) throws Exception {
-		String jsonArray = "[{\"regionId\":1273,\"name\":\"中国大陆\",\"group\":{\"groupId\":248,"
-				+ "\"regionIdUp\":1273,\"rowId\":\"2D71EFCB1966DCE7E050A8C083040693\"},"
-				+ "\"children\":[{\"regionId\":163,\"name\":\"北京市\",\"group\":{\"groupId\":40,"
-				+ "\"regionIdUp\":163,\"rowId\":\"2D71EFCB16D7DCE7E050A8C083040693\"},\"part\":{\"groupId\":248,\"regionIdDown\":163,\"rowId\":\"2D71EFCB56BEDCE7E050A8C083040693\"},\"children\":[{\"regionId\":580,\"name\":\"北京市\",\"group\":{\"groupId\":114,\"regionIdUp\":580,\"rowId\":\"2D71EFCB1711DCE7E050A8C083040693\"},\"part\":{\"groupId\":40,\"regionIdDown\":580,\"rowId\":\"2D71EFCB642CDCE7E050A8C083040693\"},\"children\":[{\"regionId\":1421,\"name\":\"北京市区\",\"group\":{\"groupId\":286,\"regionIdUp\":1421,\"rowId\":\"2D71EFCB179FDCE7E050A8C083040693\"},\"part\":{\"groupId\":114,\"regionIdDown\":1421,\"rowId\":\"2D71EFCB679CDCE7E050A8C083040693\"}}]}]}]}]";
-		JSONArray array = new JSONArray(jsonArray);
-		AdAdminTree tree = parseJson2Bean(array.get(0).toString());
-		System.out.println(tree.Serialize(ObjLevel.BRIEF));
+		
+		
 	}
 }

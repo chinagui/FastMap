@@ -35,13 +35,13 @@ public class AdAdmin implements IObj {
 	private Geometry geometry;
 	
 	private int linkPid = 0;
-	private int nameGroupId = 0;
+	private int nameGroupid = 0;
 	private int side = 0;
 	private int pid;
 	private int roadFlag =0 ;
 	
 	private int pMeshId = 0;
-	
+	private int regionId;
 	private int jisCode = 0;
 	private int meshId = 0;
     public int getMeshId() {
@@ -84,6 +84,14 @@ public class AdAdmin implements IObj {
 	@Override
 	public String tableName() {
 		return "ad_admin";
+	}
+	
+	public int getRegionId() {
+		return regionId;
+	}
+
+	public void setRegionId(int regionId) {
+		this.regionId = regionId;
 	}
 
 	@Override
@@ -188,13 +196,13 @@ public class AdAdmin implements IObj {
 	public void setLinkPid(int linkPid) {
 		this.linkPid = linkPid;
 	}
-
-	public int getNameGroupId() {
-		return nameGroupId;
+	
+	public int getNameGroupid() {
+		return nameGroupid;
 	}
 
-	public void setNameGroupId(int nameGroupId) {
-		this.nameGroupId = nameGroupId;
+	public void setNameGroupid(int nameGroupid) {
+		this.nameGroupid = nameGroupid;
 	}
 
 	public int getSide() {

@@ -20,15 +20,24 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class AdAdminGroup implements IObj {
+	private int groupId;
 	private int regionIdUp;
 	private int meshId = 0;
 	private int pid;
     private String rowId;
-    private String type;
+    private String objType;
     private Map<String, Object> changedFields = new HashMap<String, Object>();
     private List<IRow> parts = new ArrayList<IRow>();
     public Map<String, AdAdminPart> adAdminPartMap = new HashMap<String, AdAdminPart>();
     
+	public int getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(int groupId) {
+		this.groupId = groupId;
+	}
+
 	@Override
 	public String rowId() {
 		return rowId;
@@ -49,13 +58,13 @@ public class AdAdminGroup implements IObj {
 	public ObjStatus status() {
 		return null;
 	}
-	
-	public String getType() {
-		return type;
+
+	public String getObjType() {
+		return objType;
 	}
 
-	public void setType(String type) {
-		this.type = type;
+	public void setObjType(String objType) {
+		this.objType = objType;
 	}
 
 	@Override
@@ -206,9 +215,9 @@ public class AdAdminGroup implements IObj {
 			
 			json.put("rowId", rowId);
 			
-			if(!StringUtils.isEmpty("type"))
+			if(!StringUtils.isEmpty(objType))
 			{
-				json.put("type", type);
+				json.put("objType", objType);
 			}
 
 			return json;

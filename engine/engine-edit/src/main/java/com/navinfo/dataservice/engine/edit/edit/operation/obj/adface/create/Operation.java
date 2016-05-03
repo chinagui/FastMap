@@ -24,8 +24,8 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
-import com.navinfo.dataservice.engine.edit.comm.util.LinkOperateUtils;
-import com.navinfo.dataservice.engine.edit.comm.util.OperateUtils;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.LinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 /**
@@ -96,10 +96,10 @@ public class Operation implements IOperation {
 	public void createFaceByGeometry(Result result) throws Exception {
 		Geometry geom = GeoTranslator.geojson2Jts(command.getGeometry(), 1, 5);
 		Coordinate sPoint = geom.getCoordinates()[0];
-		AdNode sNode = OperateUtils.createAdNode(sPoint.x, sPoint.y);
+		AdNode sNode = NodeOperateUtils.createAdNode(sPoint.x, sPoint.y);
 		result.insertObject(sNode, ObjStatus.INSERT, sNode.pid());
 		Coordinate ePoint = geom.getCoordinates()[geom.getCoordinates().length - 1];
-		AdNode eNode = OperateUtils.createAdNode(ePoint.x, ePoint.y);
+		AdNode eNode = NodeOperateUtils.createAdNode(ePoint.x, ePoint.y);
 		result.insertObject(eNode, ObjStatus.INSERT, eNode.pid());
 		Set<String> meshes = new HashSet<String>();
 		meshes = this.getLinkInterMesh(geom);
@@ -121,6 +121,8 @@ public class Operation implements IOperation {
 			link.setMeshes(adLinkMeshs);
 			result.insertObject(link, ObjStatus.INSERT, link.getPid());
 			this.createFace();
+			this.face.setMeshId(meshId);
+			this.face.setMesh(meshId);
 			List<AdLink> links = new ArrayList<AdLink>();
 			links.add(link);
 			this.reCaleFaceGeometry(links, face);
@@ -157,7 +159,6 @@ public class Operation implements IOperation {
 			adFaceTopos.add(faceTopo);
 		}
 		this.face.setFaceTopos(adFaceTopos);
-		//result.insertObject(face, ObjStatus.INSERT, face.getPid());
 	}
 
 	/*
@@ -216,7 +217,7 @@ public class Operation implements IOperation {
 	/*
 	 * 更新面的几何属性
 	 */
-	private void updateGeometry(Geometry g, AdFace face) {
+	private void updateGeometry(Geometry g, AdFace face) throws Exception {
 		face.setGeometry(g);
 		face.setArea(GeometryUtils.getCalculateArea(g));
 		face.setPerimeter(GeometryUtils.getLinkLength(g));

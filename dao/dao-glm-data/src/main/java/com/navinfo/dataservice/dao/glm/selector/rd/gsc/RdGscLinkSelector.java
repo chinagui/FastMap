@@ -14,11 +14,11 @@ import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 
 public class RdGscLinkSelector implements ISelector {
-	
+
 	private static Logger logger = Logger.getLogger(RdCrossSelector.class);
 
 	private Connection conn;
-	
+
 	public RdGscLinkSelector(Connection conn) {
 		this.conn = conn;
 	}
@@ -63,13 +63,13 @@ public class RdGscLinkSelector implements ISelector {
 				link.setPid(resultSet.getInt("pid"));
 
 				link.setZlevel(resultSet.getInt("zlevel"));
-				
+
 				link.setLinkPid(resultSet.getInt("link_pid"));
-				
+
 				link.setTableName(resultSet.getString("table_name"));
-				
+
 				link.setShpSeqNum(resultSet.getInt("shp_seq_num"));
-				
+
 				link.setStartEnd(resultSet.getInt("start_end"));
 
 				link.setRowId(resultSet.getString("row_id"));
@@ -77,7 +77,7 @@ public class RdGscLinkSelector implements ISelector {
 				rows.add(link);
 			}
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -86,7 +86,7 @@ public class RdGscLinkSelector implements ISelector {
 					resultSet.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 			try {
@@ -94,12 +94,11 @@ public class RdGscLinkSelector implements ISelector {
 					pstmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
 
 		return rows;
 	}
-
 }

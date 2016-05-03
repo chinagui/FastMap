@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.comm.util;
+package com.navinfo.dataservice.engine.edit.comm.util.operate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
 
-public class OperateUtils {
+public class NodeOperateUtils {
 	
 	public static RdNode createNode(double x, double y) throws Exception {
 

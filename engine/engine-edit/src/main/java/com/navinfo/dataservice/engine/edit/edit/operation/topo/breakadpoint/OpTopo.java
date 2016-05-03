@@ -14,8 +14,8 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
-import com.navinfo.dataservice.engine.edit.comm.util.LinkOperateUtils;
-import com.navinfo.dataservice.engine.edit.comm.util.OperateUtils;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.LinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.vividsolutions.jts.geom.Point;
 
 /**
@@ -123,7 +123,7 @@ public class OpTopo implements IOperation {
 	 */
 	private void  createLinksForADNode(AdLink adLink,JSONArray sArray,JSONArray eArray,Result result) throws Exception {
 		log.debug("3 生成打断点的信息");
-		AdNode node = OperateUtils.createAdNode(command.getPoint().getX(), command.getPoint().getY());
+		AdNode node = NodeOperateUtils.createAdNode(command.getPoint().getX(), command.getPoint().getY());
 		result.insertObject(node, ObjStatus.INSERT, node.pid());
 		log.debug("3.1 打断点的pid = "+node.pid());
 		JSONObject sGeojson = new JSONObject();
@@ -133,15 +133,13 @@ public class OpTopo implements IOperation {
 		eGeojson.put("type", "LineString");
 		eGeojson.put("coordinates", eArray);
 		log.debug("4 组装 第一条link 的信息");
-		AdLink slink =(AdLink)LinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(sGeojson),adLink.getsNodePid(),node.pid(), adLink,result);
+		AdLink slink =(AdLink)LinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(sGeojson,0.00001,5),adLink.getsNodePid(),node.pid(), adLink,result);
 		command.setsAdLink(slink);
 		log.debug("4.1 生成第一条link信息 pid = "+slink.getPid());
 		log.debug("5 组装 第一条link 的信息");
-		AdLink elink =(AdLink)LinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(eGeojson),node.pid(),adLink.geteNodePid(),adLink, result);
+		AdLink elink =(AdLink)LinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(eGeojson,0.00001,5),node.pid(),adLink.geteNodePid(),adLink, result);
 		command.seteAdLink(elink);
 		log.debug("5.1 生成第二条link信息 pid = "+elink.getPid());
-		result.insertObject(slink, ObjStatus.INSERT, slink.pid());
-		result.insertObject(elink, ObjStatus.INSERT, elink.pid());
 	}
 	
 

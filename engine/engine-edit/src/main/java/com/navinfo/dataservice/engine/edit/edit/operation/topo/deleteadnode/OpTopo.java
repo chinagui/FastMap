@@ -31,6 +31,7 @@ public class OpTopo implements IOperation {
 		
 		String msg = null;
 		log.info("1.删除行政区划点对应的点关系");
+		result.insertObject(command.getNode(), ObjStatus.DELETE, command.getNode().pid());
 		for(AdNode node : command.getNodes()){
 			
 			result.insertObject(node, ObjStatus.DELETE, node.pid());

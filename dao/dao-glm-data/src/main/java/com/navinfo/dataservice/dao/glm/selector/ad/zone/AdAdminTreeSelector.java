@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
@@ -117,7 +116,7 @@ public class AdAdminTreeSelector implements ISelector {
 		String sql = "SELECT tmp.group_id,CASE WHEN c.name IS NULL THEN '无' ELSE c.name END AS NAME FROM (SELECT b.GROUP_ID,a.REGION_ID "
 				+ "FROM AD_ADMIN A, AD_ADMIN_GROUP b " + "WHERE "
 				+ "A.REGION_ID = :1 " + "AND A.REGION_ID = b.REGION_ID_UP "
-				+ "AND A.U_RECORD != :2)tmp " + "Left join AD_ADMIN_NAME c "
+				+ "AND b.U_RECORD != :2)tmp " + "Left join AD_ADMIN_NAME c "
 				+ "on tmp.region_id = c.region_id " + "AND c.LANG_CODE = 'CHI' "
 				+ "AND c.NAME_CLASS = 1";
 

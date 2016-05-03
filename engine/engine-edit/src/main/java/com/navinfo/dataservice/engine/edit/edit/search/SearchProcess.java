@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.edit.search;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -9,12 +10,15 @@ import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.AdAdminTreeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.engine.edit.edit.search.rd.utils.RdLinkSearchUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -212,6 +216,15 @@ public class SearchProcess {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
 				}
+				if (condition.containsKey("nodePidDir")){
+					int cruuentNodePidDir = condition.getInt("nodePidDir");
+					int cuurentLinkPid =  condition.getInt("linkPid");
+					RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(conn);
+					List<RdLink>links = searchUtils.getNextTrackLinks(cuurentLinkPid, cruuentNodePidDir);
+					for (RdLink link : links) {
+						array.add(link.Serialize(ObjLevel.BRIEF));
+					}
+				}
 
 				break;
 				
@@ -237,6 +250,17 @@ public class SearchProcess {
 
 					array.add(row.Serialize(ObjLevel.BRIEF));
 				}
+			case ADLINK:
+				if (condition.containsKey("nodePid"))
+			{
+				int nodePid = condition.getInt("nodePid");
+				AdLinkSelector selector  = new AdLinkSelector(this.conn);
+				List<AdLink> adLinks   =selector.loadByNodePid(nodePid, true);
+				for (AdLink link : adLinks) {
+					array.add(link.Serialize(ObjLevel.BRIEF));
+				}
+			}
+			
 				break;
 			}
 

@@ -36,7 +36,7 @@ public class AdAdminNameOperator implements IOperator {
 		String sql = "insert into " + adminName.tableName()
 				+ " (name_id, region_id,name_groupid,lang_code,name_class,name," +
 				"phonetic,src_flag,u_record,row_id) values "
-				+ "(?,?,?,?)";
+				+ "(?,?,?,?,?,?,?,?,?,?)";
 
 		PreparedStatement pstmt = null;
 
@@ -51,9 +51,9 @@ public class AdAdminNameOperator implements IOperator {
 			pstmt.setInt(5, adminName.getNameClass());
 			pstmt.setString(6, adminName.getName());
 			pstmt.setString(7, adminName.getPhonetic());
-			pstmt.setInt(7, adminName.getSrcFlag());
-			pstmt.setInt(8, 1);
-			pstmt.setString(9, adminName.rowId());
+			pstmt.setInt(8, adminName.getSrcFlag());
+			pstmt.setInt(9, 1);
+			pstmt.setString(10, adminName.rowId());
 			pstmt.executeUpdate();
 
 		} catch (Exception e) {
@@ -271,7 +271,7 @@ public class AdAdminNameOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + adminName.tableName()
-				+ " set u_record=2 where group_id=" + adminName.getPid();
+				+ " set u_record=2 where name_id=" + adminName.getPid();
 
 		stmt.addBatch(sql);
 

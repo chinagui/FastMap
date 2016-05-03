@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.engine.edit;
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.joni.exception.JOniException;
@@ -10,7 +12,10 @@ import org.json.JSONException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.GeometryUtils;
 import com.navinfo.dataservice.commons.util.MeshUtils;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -21,6 +26,7 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 public class JsonObjectTest {
 	private static final GeometryFactory geoFactory = new GeometryFactory();
+	
 	public static void  testPoint() throws JSONException{
 		double lng = 115.98240 ;
 		double lat =39.93789;
@@ -60,12 +66,48 @@ public class JsonObjectTest {
 	//5775044.296626
 	//[4] LINESTRING (116.17659 39.97508, 116.16144 39.94844, 116.20427 39.94322, 116.17659 39.97508)
 	//////LINESTRING (116.17659 39.97508, 116.16144 39.94844, 116.20427 39.94322, 116.17659 39.97508)
+	
+	public static void  point() throws Exception{
+		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+		AdLink adLink =(AdLink)new AdLinkSelector(conn).loadById(100031444,true);
+		JSONObject geojson = GeoTranslator.jts2Geojson(adLink
+				.getGeometry());
+		System.out.println(adLink.getGeometry()+"----------------");
+		JSONArray jaLink = geojson.getJSONArray("coordinates");
+		System.out.println(jaLink);
+		double aa = 11647260;
+		double bb = 4001457;
+		for (int i = 0; i < jaLink.size() - 1; i++) {
+
+			JSONArray jaPS = jaLink.getJSONArray(i);
+			System.out.println(jaPS.getDouble(0)+"------------------");
+			if(jaPS.getDouble(0) ==aa){
+				System.out.println("kkkk");
+			}if(jaPS.getDouble(1) ==bb){
+				System.out.println("kkkkkkk");
+			}
+			System.out.println(jaPS.getDouble(1)+"------------------");
+		}
+		Double lon1 =116.4744126222222;
+		Double lat1 =40.01449311733887;
+		double lng = Math.round(lon1*100000)/100000.0;
+		double lat = Math.round(lat1*100000)/100000.0;
+		System.out.println(lng);
+		System.out.println(lat);
+		Coordinate coord = new Coordinate(lng, lat);
+		Point  point =geoFactory.createPoint(coord);
+		long lon2 = (long) (point.getX() * 100000);
+		long lat2 = (long) (point.getY() * 100000);
+		System.out.println(lon2);
+		System.out.println(lat2);
+	}
 	public static void main(String[] args) throws Exception {
 		//testPoint();
 		//testLine();
 		//double c= 6356752.3142+6378137;
 		//System.out.println(c/2);
-		lineToMesh();
+		//lineToMesh();
+		point();
 	}
 	//[2] LINESTRING (116.32947 39.83333, 116.32563 39.82893)
 	//[2] LINESTRING (116.33975 39.84509, 116.32947 39.83333)
@@ -86,10 +128,10 @@ public class JsonObjectTest {
 		JSONObject geometry = JSONObject.fromObject(str2);
 		JSONObject geometry11 = JSONObject.fromObject(str3);
 		JSONObject geometry111 = JSONObject.fromObject(str4);
-		Geometry geometry2=GeoTranslator.geojson2Jts(geometry, 1, 5);
-		
-		Geometry geometry3=GeoTranslator.geojson2Jts(geometry11, 1, 5);
 		Geometry geometry4=GeoTranslator.geojson2Jts(geometry111, 1, 5);
+		Geometry geometry2=GeoTranslator.geojson2Jts(geometry, 1, 5);
+		System.out.println("kkkkk"+geoFactory.createPolygon(geometry4.getCoordinates()));;
+		Geometry geometry3=GeoTranslator.geojson2Jts(geometry11, 1, 5);
         System.out.println(geometry2.getCoordinates());
         for (Coordinate coordinate : geometry2.getCoordinates()){
         	System.out.println(coordinate);

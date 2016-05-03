@@ -1,9 +1,12 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.moveadnode;
 
+import java.sql.Connection;
+
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.GeometryUtils;
+import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -22,11 +25,13 @@ public class Operation implements IOperation {
 	private Command command;
 
 	private AdNode updateNode;
+	
+	private Connection conn;
 
-	public Operation(Command command, AdNode updateNode) {
+	public Operation(Command command, AdNode updateNode,Connection conn) {
 		this.command = command;
-
 		this.updateNode = updateNode;
+		this.conn  = conn;
 	}
 
 	@Override
@@ -85,20 +90,28 @@ public class Operation implements IOperation {
 	 * 移动行政区划点修改对应的点的信息 
 	 */
 	private void updateNodeGeometry(Result result) throws Exception {
+		
+	    //计算点的几何形状
 		JSONObject geojson = new JSONObject();
-
 		geojson.put("type", "Point");
-
 		geojson.put("coordinates", new double[] { command.getLongitude(),
 				command.getLatitude() });
-
-		JSONObject updateContent = new JSONObject();
-
-		updateContent.put("geometry", geojson);
-
-		updateNode.fillChangeFields(updateContent);
+		JSONObject updateNodeJson = new JSONObject();
+	    //要移动点的project_id
+		updateNodeJson.put("projectId", command.getProjectId());
+		JSONObject data = new JSONObject();
+		//移动点的新几何
+		data.put("geometry", geojson);
+		data.put("pid", updateNode.pid());
+		updateNodeJson.put("data", data);
 		
-		result.insertObject(updateNode, ObjStatus.UPDATE, updateNode.pid());
+		//组装打断线的参数
+		//保证是同一个连接
+		ICommand updatecommand = new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Command(
+				updateNodeJson, command.getRequester());
+		com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Process process = new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Process(
+				updatecommand,result,conn);
+		process.innerRun();
 	}
 	/*
 	 * 移动行政区划点修改对应的的信息 
@@ -107,6 +120,7 @@ public class Operation implements IOperation {
 		Geometry geomNode  = GeoTranslator.transform(updateNode.getGeometry(), 0.00001, 5);
 		double lon =geomNode.getCoordinates()[0].x;
 		double lat =geomNode.getCoordinates()[0].y;
+		if(command.getFaces() != null && command.getFaces().size() > 0){
 		for (AdFace face : command.getFaces()) {
 		
 			Geometry geomFace = GeoTranslator.transform(face.getGeometry(), 0.00001, 5);
@@ -134,6 +148,7 @@ public class Operation implements IOperation {
 			updateContent.put("area", GeometryUtils.getCalculateArea((GeoTranslator.geojson2Jts(geojson, 1, 5))));
 			face.fillChangeFields(updateContent);
 			result.insertObject(face, ObjStatus.UPDATE, face.pid());
+		}
 		}
 	}
 }

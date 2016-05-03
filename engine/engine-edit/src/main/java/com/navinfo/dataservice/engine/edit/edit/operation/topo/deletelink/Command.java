@@ -7,8 +7,10 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
@@ -37,6 +39,10 @@ public class Command implements ICommand {
 	
 	private List<RdSpeedlimit> limits;
 	
+	private List<RdGsc> rdGscs;
+	
+	private List<AdAdmin> adAdmins;
+	
 	private int projectId;
 	
 	private boolean isCheckInfect = false;
@@ -45,6 +51,14 @@ public class Command implements ICommand {
 		return isCheckInfect;
 	}
 	
+	public List<AdAdmin> getAdAdmins() {
+		return adAdmins;
+	}
+
+	public void setAdAdmins(List<AdAdmin> adAdmins) {
+		this.adAdmins = adAdmins;
+	}
+
 	public int getProjectId() {
 		return projectId;
 	}
@@ -155,4 +169,12 @@ public class Command implements ICommand {
 		return requester;
 	}
 
+	public List<RdGsc> getRdGscs() {
+		return rdGscs;
+	}
+
+	public void setRdGscs(List<RdGsc> rdGscs) {
+		this.rdGscs = rdGscs;
+	}
+	
 }

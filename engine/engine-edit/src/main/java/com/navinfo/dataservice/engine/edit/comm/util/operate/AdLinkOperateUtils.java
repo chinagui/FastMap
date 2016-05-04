@@ -27,7 +27,7 @@ import net.sf.json.JSONObject;
 /**
  * @author zhaokk LINK 公共方法
  */
-public class LinkOperateUtils {
+public class AdLinkOperateUtils {
 
 	/*
 	 * 添加link获取下一条连接的link

@@ -15,7 +15,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
-import com.navinfo.dataservice.engine.edit.comm.util.operate.LinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.AdLinkOperateUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 /**
@@ -51,7 +51,7 @@ public class Operation implements IOperation {
 	private void updateLinkGeomtry(Result result) throws Exception {
 		
 		for (AdLink link : command.getLinks()) {
-			 Geometry geo=LinkOperateUtils.caleLinkGeomertyForMvNode(link,updateNode.pid(),command.getLongitude(),command.getLatitude());
+			 Geometry geo=AdLinkOperateUtils.caleLinkGeomertyForMvNode(link,updateNode.pid(),command.getLongitude(),command.getLatitude());
 			 Set<String> meshes = MeshUtils.getInterMeshes(geo);
 			 //修改线的几何属性
 			 if (meshes.size() == 1){	 
@@ -90,7 +90,7 @@ public class Operation implements IOperation {
 		
 		//组装打断线的参数
 		//保证是同一个连接
-		ICommand updatecommand = new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Command(
+		com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Command updatecommand = new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Command(
 				updateNodeJson, command.getRequester());
 		com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Process process = new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Process(
 				updatecommand,result,conn);

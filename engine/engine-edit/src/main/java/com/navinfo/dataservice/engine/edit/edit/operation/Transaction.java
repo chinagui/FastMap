@@ -272,7 +272,7 @@ public class Transaction {
 	 * @return 操作进程
 	 * @throws Exception
 	 */
-	private IProcess createProcess(ICommand command) throws Exception {
+	private IProcess createProcess(AbstractCommand command) throws Exception {
 
 		switch (objType) {
 		case RDLINK:

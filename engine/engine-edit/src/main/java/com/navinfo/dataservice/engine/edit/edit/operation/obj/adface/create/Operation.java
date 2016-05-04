@@ -22,7 +22,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
-import com.navinfo.dataservice.engine.edit.comm.util.operate.LinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.AdLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -165,7 +165,7 @@ public class Operation implements IOperation {
 		List<Geometry> list = new ArrayList<Geometry>();
 		list.add(currLink.getGeometry());
 		// 获取下一条联通的LINK
-		while (LinkOperateUtils.getNextLink(links, currNodePid, currLink)) {
+		while (AdLinkOperateUtils.getNextLink(links, currNodePid, currLink)) {
 			if (currNodePid == startNodePid) {
 				break;
 			}

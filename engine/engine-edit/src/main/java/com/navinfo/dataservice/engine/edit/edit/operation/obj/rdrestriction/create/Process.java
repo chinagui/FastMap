@@ -1,130 +1,34 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdrestriction.create;
 
-import java.sql.Connection;
-
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IProcess;
-import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
-import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 
-public class Process implements IProcess {
-
-	private Command command;
-
-	private Result result;
-
-	private Connection conn;
-
-	private String postCheckMsg;
+public class Process extends AbstractProcess<Command> {
 	
+	public Process(AbstractCommand command) throws Exception {
+		super(command);
+		// TODO Auto-generated constructor stub
+	}
+
 	private Check check = new Check();
-
-	public Process(ICommand command) throws Exception {
-		this.command = (Command) command;
-
-		this.result = new Result();
-
-		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
-				.getProjectId());
-
-	}
-
-	@Override
-	public ICommand getCommand() {
-
-		return command;
-	}
-
-	@Override
-	public Result getResult() {
-
-		return result;
-	}
-
-	@Override
-	public boolean prepareData() throws Exception {
-
-		return false;
-	}
 
 	@Override
 	public String preCheck() throws Exception {
 
-		check.checkNoSameRelation(conn, command.getInLinkPid(), command.getNodePid());
+		check.checkNoSameRelation(this.getConn(), this.getCommand().getInLinkPid(), this.getCommand().getNodePid());
 		
-		check.checkGLM08004(conn, command.getInLinkPid(), command.getOutLinkPids());
+		check.checkGLM08004(this.getConn(), this.getCommand().getInLinkPid(), this.getCommand().getOutLinkPids());
 		
 		return null;
 	}
 
 	@Override
-	public String run() throws Exception {
-		String msg;
-		try {
-			conn.setAutoCommit(false);
-
-			this.prepareData();
-
-			String preCheckMsg = this.preCheck();
-
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
-
-			IOperation operation = new Operation(command, conn, check);
-
-			msg = operation.run(result);
-
-			this.recordData();
-
-			this.postCheck();
-
-			conn.commit();
-
-		} catch (Exception e) {
-
-			conn.rollback();
-
-			throw e;
-		} finally {
-			try {
-				conn.close();
-			} catch (Exception e) {
-
-			}
-		}
-
-		return msg;
+	public IOperation createOperation() {
+		// TODO Auto-generated method stub
+		return new Operation(this.getCommand(), this.getConn(), check);
 	}
 
-	@Override
-	public void postCheck() throws Exception {
-//		JSONArray array = new CkExceptionOperator(conn).check(result.getPrimaryPid(), ObjType.RDRESTRICTION);
-//		
-//		result.setCheckResults(array);
-	}
-
-	@Override
-	public String getPostCheck() throws Exception {
-
-		return postCheckMsg;
-	}
-
-	@Override
-	public boolean recordData() throws Exception {
-		
-		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
-		
-		lw.generateLog(command, result);
-		
-		OperatorFactory.recordData(conn, result);
-
-		lw.recordLog(command, result);
-
-		return true;
-	}
+	
 	
 }

@@ -16,8 +16,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 
-public class Command implements ICommand {
+public class Command extends AbstractCommand {
 	
 	private String requester;
 
@@ -43,8 +44,6 @@ public class Command implements ICommand {
 	
 	private List<AdAdmin> adAdmins;
 	
-	private int projectId;
-	
 	private boolean isCheckInfect = false;
 	
 	public boolean isCheckInfect() {
@@ -57,14 +56,6 @@ public class Command implements ICommand {
 
 	public void setAdAdmins(List<AdAdmin> adAdmins) {
 		this.adAdmins = adAdmins;
-	}
-
-	public int getProjectId() {
-		return projectId;
-	}
-
-	public void setProjectId(int projectId) {
-		this.projectId = projectId;
 	}
 
 	public RdLink getLink() {
@@ -112,8 +103,7 @@ public class Command implements ICommand {
 		
 		this.linkPid = json.getInt("objId");
 		
-		this.projectId = json.getInt("projectId");
-		
+		this.setProjectId(json.getInt("projectId"));
 		if (json.containsKey("infect") && json.getInt("infect") == 1){
 			this.isCheckInfect = true;
 		}

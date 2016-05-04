@@ -4,7 +4,8 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
-public class Command implements ICommand {
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
+public class Command extends AbstractCommand {
 
 	private int linkPid;
 
@@ -21,12 +22,6 @@ public class Command implements ICommand {
 	private double elon;
 
 	private double elat;
-
-	private int projectId;
-
-	public int getProjectId() {
-		return projectId;
-	}
 
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
@@ -51,7 +46,7 @@ public class Command implements ICommand {
 			this.elat = Math.round(data.getDouble("elat") * 100000) / 100000.0;
 		}
 
-		this.projectId = json.getInt("projectId");
+		this.setProjectId(json.getInt("projectId"));
 	}
 
 	public int getLinkPid() {

@@ -19,13 +19,14 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
 import net.sf.json.JSONObject;
 
-public class Command implements ICommand {
+public class Command extends AbstractCommand {
 
 	private GeometryFactory geometryFactory = new GeometryFactory();
 
@@ -42,8 +43,6 @@ public class Command implements ICommand {
 	private RdNode sNode;
 
 	private RdNode eNode;
-
-	private int projectId;
 
 	private int breakNodePid;//在以已存在的node通过移动位置来打断LINK的记录
 
@@ -133,14 +132,6 @@ public class Command implements ICommand {
 		this.laneVias = laneVias;
 	}
 
-	public int getProjectId() {
-		return projectId;
-	}
-
-	public void setProjectId(int projectId) {
-		this.projectId = projectId;
-	}
-
 	public void setLink1(RdLink link1) {
 		this.link1 = link1;
 	}
@@ -217,7 +208,7 @@ public class Command implements ICommand {
 
 		double lat = Math.round(data.getDouble("latitude")*100000)/100000.0;
 
-		this.projectId = json.getInt("projectId");
+		this.setProjectId(json.getInt("projectId"));
 
 		if (data.containsKey("breakNodePid")) {
 			this.breakNodePid = data.getInt("breakNodePid");

@@ -5,12 +5,13 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 
-public class Command implements ICommand {
+public class Command extends AbstractCommand {
 
 	private String requester;
 
-	private int projectId;
+//	private int projectId;
 
 	private JSONObject content;
 	
@@ -24,13 +25,13 @@ public class Command implements ICommand {
 		this.pid = pid;
 	}
 
-	public int getProjectId() {
-		return projectId;
-	}
-
-	public void setProjectId(int projectId) {
-		this.projectId = projectId;
-	}
+//	public int getProjectId() {
+//		return projectId;
+//	}
+//
+//	public void setProjectId(int projectId) {
+//		this.projectId = projectId;
+//	}
 
 	public JSONObject getContent() {
 		return content;
@@ -58,7 +59,8 @@ public class Command implements ICommand {
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 
-		this.projectId = json.getInt("projectId");
+//		this.projectId = json.getInt("projectId");
+		this.setProjectId(json.getInt("projectId"));
 
 		this.content = json.getJSONObject("data");
 		

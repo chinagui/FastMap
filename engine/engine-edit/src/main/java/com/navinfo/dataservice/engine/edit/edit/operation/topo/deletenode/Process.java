@@ -34,50 +34,23 @@ import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelecto
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
 
-public class Process implements IProcess {
+public class Process extends AbstractProcess<Command> {
 
-	private Command command;
 
-	private Result result;
-
-	private Connection conn;
-
-	private String postCheckMsg;
-
-	public Process(ICommand command) throws Exception {
-		this.command = (Command) command;
-
-		this.result = new Result();
-
-		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
-				.getProjectId());
-
-	}
-
-	@Override
-	public ICommand getCommand() {
-
-		return command;
-	}
-
-	@Override
-	public Result getResult() {
-
-		return result;
-	}
-
-	public String preCheck() throws Exception {
-		return null;
-
+	public Process(AbstractCommand command) throws Exception {
+		super(command);
+		// TODO Auto-generated constructor stub
 	}
 
 	public void lockRdLink() throws Exception {
 
-		RdLinkSelector selector = new RdLinkSelector(this.conn);
+		RdLinkSelector selector = new RdLinkSelector(this.getConn());
 
-		List<RdLink> links = selector.loadByNodePid(command.getNodePid(), true);
+		List<RdLink> links = selector.loadByNodePid(this.getCommand().getNodePid(), true);
 		
 		List<Integer> linkPids = new ArrayList<Integer>();
 		
@@ -85,33 +58,33 @@ public class Process implements IProcess {
 			linkPids.add(link.getPid());
 		}
 
-		command.setLinks(links);
+		this.getCommand().setLinks(links);
 		
-		command.setLinkPids(linkPids);
+		this.getCommand().setLinkPids(linkPids);
 	}
 
 	public void lockRdNode() throws Exception {
 
-		RdNodeSelector selector = new RdNodeSelector(this.conn);
+		RdNodeSelector selector = new RdNodeSelector(this.getConn());
 
-		RdNode node = (RdNode) selector.loadById(command.getNodePid(), true);
+		RdNode node = (RdNode) selector.loadById(this.getCommand().getNodePid(), true);
 
-		command.setNode(node);
+		this.getCommand().setNode(node);
 
 	}
 
 	// 锁定盲端节点
 	public void lockEndRdNode() throws Exception {
 
-		RdNodeSelector selector = new RdNodeSelector(this.conn);
+		RdNodeSelector selector = new RdNodeSelector(this.getConn());
 
 		List<Integer> nodePids = new ArrayList<Integer>();
 		
-		nodePids.add(command.getNodePid());
+		nodePids.add(this.getCommand().getNodePid());
 
 		List<RdNode> nodes = new ArrayList<RdNode>();
 
-		for (Integer linkPid: command.getLinkPids()) {
+		for (Integer linkPid: this.getCommand().getLinkPids()) {
 
 			List<RdNode> list = selector.loadEndRdNodeByLinkPid(linkPid,
 					true);
@@ -130,81 +103,81 @@ public class Process implements IProcess {
 
 		}
 		
-		nodes.add(command.getNode());
+		nodes.add(this.getCommand().getNode());
 
-		command.setNodes(nodes);
+		this.getCommand().setNodes(nodes);
 
-		command.setNodePids(nodePids);
+		this.getCommand().setNodePids(nodePids);
 	}
 
 	// 锁定进入线为该link的交限
 	public void lockRdRestriction() throws Exception {
 		// 获取进入线为该link的交限
 
-		RdRestrictionSelector restriction = new RdRestrictionSelector(this.conn);
+		RdRestrictionSelector restriction = new RdRestrictionSelector(this.getConn());
 
 		List<RdRestriction> restrictions = restriction
-				.loadRdRestrictionByNodePid(command.getNodePid(), true);
+				.loadRdRestrictionByNodePid(this.getCommand().getNodePid(), true);
 
-		command.setRestrictions(restrictions);
+		this.getCommand().setRestrictions(restrictions);
 	}
 
 	public void lockRdLaneConnexity() throws Exception {
 
 		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(
-				this.conn);
+				this.getConn());
 
 		List<RdLaneConnexity> lanes = selector.loadRdLaneConnexityByNodePid(
-				command.getNodePid(), true);
+				this.getCommand().getNodePid(), true);
 
-		command.setLanes(lanes);
+		this.getCommand().setLanes(lanes);
 	}
 
 	public void lockRdBranch() throws Exception {
 
-		RdBranchSelector selector = new RdBranchSelector(this.conn);
+		RdBranchSelector selector = new RdBranchSelector(this.getConn());
 
 		List<RdBranch> branches = selector.loadRdBranchByNodePid(
-				command.getNodePid(), true);
+				this.getCommand().getNodePid(), true);
 
-		command.setBranches(branches);
+		this.getCommand().setBranches(branches);
 	}
 
 	public void lockRdCross() throws Exception {
 
-		RdCrossSelector selector = new RdCrossSelector(this.conn);
+		RdCrossSelector selector = new RdCrossSelector(this.getConn());
 
 		List<RdCross> crosses = selector.loadRdCrossByNodeOrLink(
-				command.getNodePids(), command.getLinkPids(), true);
+				this.getCommand().getNodePids(), this.getCommand().getLinkPids(), true);
 
-		command.setCrosses(crosses);
+		this.getCommand().setCrosses(crosses);
 	}
 
 	public void lockRdSpeedlimits() throws Exception {
 
-		RdSpeedlimitSelector selector = new RdSpeedlimitSelector(this.conn);
+		RdSpeedlimitSelector selector = new RdSpeedlimitSelector(this.getConn());
 
 		List<RdSpeedlimit> limits = selector.loadSpeedlimitByLinkPids(
-				command.getLinkPids(), true);
+				this.getCommand().getLinkPids(), true);
 
-		command.setLimits(limits);
+		this.getCommand().setLimits(limits);
 	}
 	
 	public void lockRdGsc() throws Exception {
 
-		RdGscSelector selector = new RdGscSelector(this.conn);
+		RdGscSelector selector = new RdGscSelector(this.getConn());
 
-		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPids(command.getLinkPids(), true);
+		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPids(this.getCommand().getLinkPids(), true);
 
-		command.setRdGscs(rdGscList);
+		this.getCommand().setRdGscs(rdGscList);
 	}
 	
 	private void lockAdAdmin() throws Exception {
-		AdAdminSelector selector = new AdAdminSelector(this.conn);
+		AdAdminSelector selector = new AdAdminSelector(this.getConn());
 
-		List<AdAdmin> adAdminList = selector.loadRowsByLinkPids(command.getLinkPids(), true);
+		List<AdAdmin> adAdminList = selector.loadRowsByLinkPids(this.getCommand().getLinkPids(), true);
 
-		command.setAdAdmins(adAdminList);
+		this.getCommand().setAdAdmins(adAdminList);
 	}
 
 	@Override
@@ -220,7 +193,7 @@ public class Process implements IProcess {
 		// 获取该rdnode对象
 		lockRdNode();
 
-		if (command.getNode() == null) {
+		if (this.getCommand().getNode() == null) {
 
 			throw new Exception("指定删除的RDNODE不存在！");
 		}
@@ -250,41 +223,41 @@ public class Process implements IProcess {
 	public String run() throws Exception {
 
 		try {
-			if (!command.isCheckInfect()) {
-				conn.setAutoCommit(false);
+			if (!this.getCommand().isCheckInfect()) {
+				getConn().setAutoCommit(false);
 				String preCheckMsg = this.preCheck();
 				if (preCheckMsg != null) {
 					throw new Exception(preCheckMsg);
 				}
 				prepareData();
 				
-				IOperation op = new OpTopo(command);
-				op.run(result);
+				IOperation op = new OpTopo(this.getCommand());
+				op.run(this.getResult());
 				
-				IOperation opRefRestrict = new OpRefRestrict(command);
-				opRefRestrict.run(result);
+				IOperation opRefRestrict = new OpRefRestrict(this.getCommand());
+				opRefRestrict.run(this.getResult());
 				
-				IOperation opRefBranch = new OpRefBranch(command);
-				opRefBranch.run(result);
+				IOperation opRefBranch = new OpRefBranch(this.getCommand());
+				opRefBranch.run(this.getResult());
 				
-				IOperation opRefCross = new OpRefCross(command);
-				opRefCross.run(result);
+				IOperation opRefCross = new OpRefCross(this.getCommand());
+				opRefCross.run(this.getResult());
 				
-				IOperation opRefLaneConnexity = new OpRefLaneConnexity(command);
-				opRefLaneConnexity.run(result);
+				IOperation opRefLaneConnexity = new OpRefLaneConnexity(this.getCommand());
+				opRefLaneConnexity.run(this.getResult());
 				
-				IOperation opRefSpeedlimit = new OpRefSpeedlimit(command);
-				opRefSpeedlimit.run(result);
+				IOperation opRefSpeedlimit = new OpRefSpeedlimit(this.getCommand());
+				opRefSpeedlimit.run(this.getResult());
 				
-				IOperation opRefRdGsc = new OpRefRdGsc(command);
-				opRefRdGsc.run(result);
+				IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand());
+				opRefRdGsc.run(this.getResult());
 
-				IOperation opRefAdAdmin = new OpRefAdAdmin(command);
-				opRefAdAdmin.run(result);
+				IOperation opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
+				opRefAdAdmin.run(this.getResult());
 				
 				recordData();
 				postCheck();
-				conn.commit();
+				getConn().commit();
 			} else {
 				Map<String, List<Integer>> infects = new HashMap<String, List<Integer>>();
 
@@ -292,7 +265,7 @@ public class Process implements IProcess {
 
 				infectList = new ArrayList<Integer>();
 
-				for (RdBranch branch : command.getBranches()) {
+				for (RdBranch branch : this.getCommand().getBranches()) {
 					infectList.add(branch.getPid());
 				}
 
@@ -300,7 +273,7 @@ public class Process implements IProcess {
 
 				infectList = new ArrayList<Integer>();
 
-				for (RdLaneConnexity laneConn : command.getLanes()) {
+				for (RdLaneConnexity laneConn : this.getCommand().getLanes()) {
 					infectList.add(laneConn.getPid());
 				}
 
@@ -308,7 +281,7 @@ public class Process implements IProcess {
 
 				infectList = new ArrayList<Integer>();
 
-				for (RdSpeedlimit limit : command.getLimits()) {
+				for (RdSpeedlimit limit : this.getCommand().getLimits()) {
 					infectList.add(limit.getPid());
 				}
 
@@ -316,7 +289,7 @@ public class Process implements IProcess {
 
 				infectList = new ArrayList<Integer>();
 
-				for (RdRestriction res : command.getRestrictions()) {
+				for (RdRestriction res : this.getCommand().getRestrictions()) {
 					infectList.add(res.getPid());
 				}
 
@@ -329,32 +302,18 @@ public class Process implements IProcess {
 
 		} catch (Exception e) {
 
-			conn.rollback();
+			getConn().rollback();
 
 			throw e;
 		} finally {
 			try {
-				conn.close();
+				getConn().close();
 			} catch (Exception e) {
 
 			}
 		}
 
 		return null;
-	}
-
-	@Override
-	public boolean recordData() throws Exception {
-		
-		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
-		
-		lw.generateLog(command, result);
-		
-		OperatorFactory.recordData(conn, result);
-
-		lw.recordLog(command, result);
-
-		return true;
 	}
 
 	private void releaseResource(PreparedStatement pstmt, ResultSet resultSet) {
@@ -372,15 +331,9 @@ public class Process implements IProcess {
 	}
 
 	@Override
-	public void postCheck() {
-
-		// 对数据进行检查、检查结果存储在数据库，并存储在临时变量postCheckMsg中
-	}
-
-	@Override
-	public String getPostCheck() throws Exception {
-
-		return postCheckMsg;
+	public IOperation createOperation() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

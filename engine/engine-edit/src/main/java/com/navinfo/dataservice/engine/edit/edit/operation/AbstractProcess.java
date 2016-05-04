@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.edit.edit.operation;
 
 import java.sql.Connection;
 
+import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -38,8 +39,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
 	private String postCheckMsg;
 	
-	public AbstractProcess(T command) throws Exception {
-		this.command =  command;
+	public AbstractProcess(AbstractCommand command) throws Exception {
+		this.command = (T)command;
 		this.result = new Result();
 		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
 				.getProjectId());

@@ -1,62 +1,26 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.create;
 
-import java.sql.Connection;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
-import com.navinfo.dataservice.dao.glm.iface.IProcess;
-import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
-import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
-
-public class Process implements IProcess {
-
-	private Command command;
-
-	private Result result;
-
-	private Connection conn;
+public class Process extends AbstractProcess<Command> {
 	
-	private String postCheckMsg;
-	
+	public Process(AbstractCommand command) throws Exception {
+		super(command);
+		// TODO Auto-generated constructor stub
+	}
+
 	private Check check = new Check();
-	
-	public Process(ICommand command) throws Exception {
-		this.command = (Command) command;
-
-		this.result = new Result();
-
-		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
-				.getProjectId());
-
-	}
-	
-	@Override
-	public ICommand getCommand() {
-		
-		return command;
-	}
-
-	@Override
-	public Result getResult() {
-		
-		return result;
-	}
-
-	@Override
-	public boolean prepareData() throws Exception {
-		
-		return false;
-	}
 
 	@Override
 	public String preCheck() throws Exception {
 		
-		check.checkDupilicateNode(command.getGeometry());
+		check.checkDupilicateNode(this.getCommand().getGeometry());
 		
-		check.checkGLM04002(conn, command.geteNodePid(), command.getsNodePid());
+		check.checkGLM04002(this.getConn(), this.getCommand().geteNodePid(), this.getCommand().getsNodePid());
 		
-		check.checkGLM13002(conn, command.geteNodePid(), command.getsNodePid());
+		check.checkGLM13002(this.getConn(), this.getCommand().geteNodePid(), this.getCommand().getsNodePid());
 		
 		return null;
 	}
@@ -65,7 +29,7 @@ public class Process implements IProcess {
 	public String run() throws Exception {
 		String msg;
 		try {
-			conn.setAutoCommit(false);
+			this.getConn().setAutoCommit(false);
 
 			this.prepareData();
 
@@ -75,9 +39,9 @@ public class Process implements IProcess {
 				throw new Exception(preCheckMsg);
 			}
 
-			Operation operation = new Operation(command, check, conn);
+			Operation operation = (Operation)createOperation();
 
-			msg = operation.run(result);
+			msg = operation.run(this.getResult());
 
 			this.recordData();
 			
@@ -85,16 +49,16 @@ public class Process implements IProcess {
 
 			this.postCheck();
 
-			conn.commit();
+			this.getConn().commit();
 
 		} catch (Exception e) {
 			
-			conn.rollback();
+			this.getConn().rollback();
 
 			throw e;
 		} finally {
 			try {
-				conn.close();
+				this.getConn().close();
 			} catch (Exception e) {
 				
 			}
@@ -106,27 +70,13 @@ public class Process implements IProcess {
 	@Override
 	public void postCheck() throws Exception {
 		
-		check.postCheck(conn, result);
+		check.postCheck(this.getConn(), this.getResult());
 	}
 
 	@Override
-	public String getPostCheck() throws Exception {
-		
-		return postCheckMsg;
+	public IOperation createOperation() {
+		// TODO Auto-generated method stub
+		return new Operation(this.getCommand(), check, this.getConn());
 	}
-
-	@Override
-	public boolean recordData() throws Exception {
-		
-		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
-		
-		lw.generateLog(command, result);
-		
-		OperatorFactory.recordData(conn, result);
-
-		lw.recordLog(command, result);
-
-		return true;
-	}
-
+	
 }

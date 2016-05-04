@@ -13,7 +13,7 @@ import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.engine.edit.comm.util.operate.LinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.AdLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.type.GeometryTypeName;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -44,7 +44,7 @@ public class Operation implements IOperation {
 		// 如果创建行政区划线有对应的挂接AD_NODE和ADFACE
 		// 执行挂接线处理逻辑
 		if (command.getCatchLinks().size() > 0) {
-			map = LinkOperateUtils.splitLink(command.getGeometry(),
+			map = AdLinkOperateUtils.splitLink(command.getGeometry(),
 					command.getsNodePid(), command.geteNodePid(),
 					command.getCatchLinks(), result);
 
@@ -53,7 +53,7 @@ public class Operation implements IOperation {
 		// 创建对应的ADNODE
 		if (command.getCatchLinks().size() == 0) {
 			JSONObject se = new JSONObject();
-			se = LinkOperateUtils.createAdNodeForLink(command.getGeometry(),
+			se = AdLinkOperateUtils.createAdNodeForLink(command.getGeometry(),
 					command.getsNodePid(), command.geteNodePid(), result);
 			map.put(command.getGeometry(), se);
 		}
@@ -108,9 +108,9 @@ public class Operation implements IOperation {
 	private void createAdLinkWithNoMesh(Geometry g, int sNodePid, int eNodePid,
 			Result result) throws Exception {
 		if (g != null) {
-			JSONObject node = LinkOperateUtils.createAdNodeForLink(g, sNodePid,
+			JSONObject node = AdLinkOperateUtils.createAdNodeForLink(g, sNodePid,
 					eNodePid, result);
-			LinkOperateUtils.addLink(g, (int) node.get("s"),
+			AdLinkOperateUtils.addLink(g, (int) node.get("s"),
 					(int) node.get("e"), result);
 		}
 	}
@@ -154,7 +154,7 @@ public class Operation implements IOperation {
 			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
 		}
 		//创建线对应的点
-		JSONObject node = LinkOperateUtils.createAdNodeForLink(
+		JSONObject node = AdLinkOperateUtils.createAdNodeForLink(
 				g, sNodePid, eNodePid, result);
 		if (!maps.containsValue(node.get("s"))) {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
@@ -163,7 +163,7 @@ public class Operation implements IOperation {
 			maps.put(g.getCoordinates()[0], (int) node.get("e"));
 		}
 		//创建线
-		LinkOperateUtils.addLink(g, (int) node.get("s"),
+		AdLinkOperateUtils.addLink(g, (int) node.get("s"),
 				(int) node.get("e"), result);
 	}
 
@@ -190,7 +190,7 @@ public class Operation implements IOperation {
 				breakJson.put("data", data);
 				//组装打断线的参数
 				//保证是同一个连接
-				ICommand breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command(
+				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command(
 						breakJson, breakJson.toString());
 				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process(
 						breakCommand,result, conn);

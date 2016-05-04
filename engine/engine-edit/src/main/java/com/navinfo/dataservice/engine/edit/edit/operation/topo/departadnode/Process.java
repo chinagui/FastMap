@@ -2,65 +2,36 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.departadnode;
 
 import java.sql.Connection;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
-import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
-import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
+import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 
-public class Process implements IProcess {
-
-	private Command command;
-
-	private Result result;
-
-	private Connection conn;
-
-	private String postCheckMsg;
+public class Process extends AbstractProcess<Command> {
 
 	private AdLink updateLink;
 
 	private Check check = new Check();
 
-	public Process(ICommand command) throws Exception {
-		this.command = (Command) command;
-
-		this.result = new Result();
-
-		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
-				.getProjectId());
+	public Process(Command command) throws Exception {
+		super(command);
 
 	}
 	
-	public Process(ICommand command, Connection conn)  {
-		this.command = (Command) command;
-
-		this.result = new Result();
-
-		this.conn = conn;
+	public Process(Command command, Connection conn) throws Exception  {
+		super(command);
+		this.setCommand(command);
+		this.setResult(new Result());
+		this.setConn(conn);
 	}
 
-	@Override
-	public ICommand getCommand() {
-
-		return command;
-	}
-
-	@Override
-	public Result getResult() {
-
-		return result;
-	}
 
 	@Override
 	public boolean prepareData() throws Exception {
 
-		AdLinkSelector linkSelector = new AdLinkSelector(this.conn);
-		this.updateLink = (AdLink) linkSelector.loadById(command.getLinkPid(),true);
+		AdLinkSelector linkSelector = new AdLinkSelector(this.getConn());
+		this.updateLink = (AdLink) linkSelector.loadById(this.getCommand().getLinkPid(),true);
 
 		return true;
 	}
@@ -68,78 +39,19 @@ public class Process implements IProcess {
 	@Override
 	public String preCheck() throws Exception {
 
-		check.checkIsCrossNode(conn, command.getsNodePid());
+		check.checkIsCrossNode(this.getConn(), this.getCommand().getsNodePid());
 
-		check.checkIsCrossNode(conn, command.geteNodePid());
+		check.checkIsCrossNode(this.getConn(), this.getCommand().geteNodePid());
 
-		check.checkIsVia(conn, command.getLinkPid());
-
-		return null;
-	}
-
-	@Override
-	public String run() throws Exception {
-		try {
-			conn.setAutoCommit(false);
-
-			String preCheckMsg = this.preCheck();
-
-			this.prepareData();
-
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
-
-			IOperation operation = new Operation(command, updateLink, check);
-
-			operation.run(result);
-
-			this.recordData();
-
-			this.postCheck();
-
-			conn.commit();
-
-		} catch (Exception e) {
-
-			conn.rollback();
-
-			throw e;
-		} finally {
-			try {
-				conn.close();
-			} catch (Exception e) {
-
-			}
-		}
+		check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
 
 		return null;
 	}
 
 	@Override
-	public void postCheck() throws Exception {
+	public IOperation createOperation() {
 		// TODO Auto-generated method stub
-
+		return new Operation(this.getCommand(), updateLink, check);
 	}
-
-	@Override
-	public String getPostCheck() throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean recordData() throws Exception {
-		
-		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
-		
-		lw.generateLog(command, result);
-		
-		OperatorFactory.recordData(conn, result);
-
-		lw.recordLog(command, result);
-
-		return true;
-	}
-
+	
 }

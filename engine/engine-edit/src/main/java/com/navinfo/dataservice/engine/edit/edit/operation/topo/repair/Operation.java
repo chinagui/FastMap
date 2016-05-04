@@ -105,7 +105,7 @@ public class Operation implements IOperation {
 			
 			json.put("data", data);
 			
-			ICommand departCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Command(
+			com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Command departCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Command(
 					json, json.toString());
 			
 			departProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Process(
@@ -307,7 +307,7 @@ public class Operation implements IOperation {
 				data.put("latitude", lat);
 			}
 			breakJson.put("data", data);
-			ICommand breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Command(
+			com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Command(
 					breakJson, breakJson.toString());
 			com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Process(
 					breakCommand, conn);

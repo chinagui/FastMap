@@ -38,6 +38,7 @@ public class CheckEngine {
 	//获取本次要执行的检查规则
 	private List<CheckRule> getRules(ObjType objType, OperType operType,String checkType) throws Exception{
 		String suitCode = objType.toString()+"_"+operType.toString()+"_"+checkType;
+		log.info(suitCode);
 		List<CheckRule> myCheckSuit = CheckSuitLoader.getInstance().getCheckSuit(suitCode);
 		return myCheckSuit;
 	}

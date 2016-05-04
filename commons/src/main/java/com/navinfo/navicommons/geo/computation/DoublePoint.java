@@ -32,6 +32,9 @@ public class DoublePoint {
 	public DoublePoint clone(){
 		return new DoublePoint(this.x,this.y);
 	}
+	public String toString(){
+		return x+" "+y;
+	}
 	public int hashCode(){
 		return (x+" "+y).hashCode();
 	}

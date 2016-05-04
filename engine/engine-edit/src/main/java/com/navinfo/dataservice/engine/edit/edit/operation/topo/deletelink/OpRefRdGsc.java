@@ -28,6 +28,7 @@ public class OpRefRdGsc implements IOperation {
 			JSONObject data = new JSONObject();
 			// 立交的pid
 			data.put("objId", rdGsc.pid());
+			data.put("projectId",command.getProjectId());
 
 			com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Command updatecommand = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Command(
 					data, command.getRequester());

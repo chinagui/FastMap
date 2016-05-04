@@ -2,7 +2,6 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.moveadnode;
 
 import java.util.List;
 
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
@@ -21,7 +20,6 @@ public class Process extends AbstractProcess<Command> {
 	
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
-		// TODO Auto-generated constructor stub
 	}
 
 	private AdNode updateNode;
@@ -69,9 +67,8 @@ public class Process extends AbstractProcess<Command> {
 	}
 
 	@Override
-	public IOperation createOperation() {
-		// TODO Auto-generated method stub
-		return new Operation(this.getCommand(),updateNode,this.getConn());
+	public String exeOperation() throws Exception {
+		return new Operation(this.getCommand(),updateNode,this.getConn()).run(this.getResult());
 	}
 
 }

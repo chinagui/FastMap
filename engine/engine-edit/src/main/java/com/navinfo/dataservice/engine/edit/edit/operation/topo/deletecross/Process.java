@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.deletecross;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -8,10 +7,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IProcess;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
@@ -26,53 +22,13 @@ import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdSignboardSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneTopologySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionDetailSelector;
-import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
-import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
-import com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.create.Operation;
-import com.navinfo.dataservice.engine.edit.edit.operation.topo.deletecross.Command;
 
 public class Process extends AbstractProcess<Command> {
 
-	private static Logger logger = Logger.getLogger(Process.class);
-
-//	private Command command;
-//
-//	private Result result;
-//
-//	private Connection conn;
-//
-//	private String postCheckMsg;
-
 	public Process(Command command) throws Exception {
 		super(command);
-//		this.command = (Command) command;
-//
-//		this.result = new Result();
-//
-//		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
-//				.getProjectId());
-
 	}
-
-//	@Override
-//	public ICommand getCommand() {
-//
-//		return command;
-//	}
-//
-//	@Override
-//	public Result getResult() {
-//
-//		return result;
-//	}
-//
-//	public String preCheck() throws Exception {
-//
-//		return null;
-//	}
-
 	public void lockRdCross() throws Exception {
 		// 获取该cross对象
 		RdCrossSelector selector = new RdCrossSelector(this.getConn());
@@ -336,104 +292,24 @@ public class Process extends AbstractProcess<Command> {
 		return true;
 	}
 
-	@Override
-	public String run() throws Exception {
-
-		try {
-			getConn().setAutoCommit(false);
-
-			String preCheckMsg = this.preCheck();
-
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
-
-			prepareData();
-
-			IOperation op = new OpTopo(this.getCommand(), getConn());
-
-			op.run(this.getResult());
-
-			IOperation opRefRestrict = new OpRefRdRestriction(this.getCommand());
-
-			opRefRestrict.run(this.getResult());
-			
-			IOperation opRefLaneConnexity = new OpRefRdLaneConnexity(this.getCommand());
-
-			opRefLaneConnexity.run(this.getResult());
-			
-			IOperation opRefBranch = new OpRefRdBranch(this.getCommand());
-
-			opRefBranch.run(this.getResult());
-
-			recordData();
-
-			postCheck();
-
-			getConn().commit();
-
-		} catch (Exception e) {
-
-			getConn().rollback();
-
-			throw e;
-		} finally {
-			try {
-				getConn().close();
-			} catch (Exception e) {
-
-			}
-		}
-
-		return null;
-	}
-//
-//	@Override
-//	public boolean recordData() throws Exception {
-//		
-//		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
-//		
-//		lw.generateLog(command, result);
-//		
-//		OperatorFactory.recordData(conn, result);
-//
-//		lw.recordLog(command, result);
-//
-//		return true;
-//	}
-
-	private void releaseResource(PreparedStatement pstmt, ResultSet resultSet) {
-		try {
-			resultSet.close();
-		} catch (Exception e) {
-
-		}
-
-		try {
-			pstmt.close();
-		} catch (Exception e) {
-
-		}
-	}
-
 @Override
-public IOperation createOperation() {
-	// TODO Auto-generated method stub
-	return null;
-}
+public String exeOperation() throws Exception {
+	IOperation op = new OpTopo(this.getCommand(), getConn());
+
+	op.run(this.getResult());
+
+	IOperation opRefRestrict = new OpRefRdRestriction(this.getCommand());
+
+	opRefRestrict.run(this.getResult());
 	
+	IOperation opRefLaneConnexity = new OpRefRdLaneConnexity(this.getCommand());
 
+	opRefLaneConnexity.run(this.getResult());
+	
+	IOperation opRefBranch = new OpRefRdBranch(this.getCommand());
 
-//	@Override
-//	public void postCheck() {
-//
-//		// 对数据进行检查、检查结果存储在数据库，并存储在临时变量postCheckMsg中
-//	}
-//
-//	@Override
-//	public String getPostCheck() throws Exception {
-//
-//		return postCheckMsg;
-//	}
+	return opRefBranch.run(this.getResult());
+
+}
 
 }

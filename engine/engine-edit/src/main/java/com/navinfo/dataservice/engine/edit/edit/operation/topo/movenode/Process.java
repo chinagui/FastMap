@@ -3,7 +3,6 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.movenode;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
@@ -48,9 +47,8 @@ public class Process extends AbstractProcess<Command> {
 	}
 
 	@Override
-	public IOperation createOperation() {
-		// TODO Auto-generated method stub
-		return new Operation(this.getCommand(),updateNode);
+	public String exeOperation() throws Exception {
+		return new Operation(this.getCommand(),updateNode).run(this.getResult());
 	}
 
 }

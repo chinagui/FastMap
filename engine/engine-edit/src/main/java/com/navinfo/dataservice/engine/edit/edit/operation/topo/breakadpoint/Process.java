@@ -3,7 +3,6 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint;
 import java.sql.Connection;
 import java.util.List;
 
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
@@ -40,42 +39,7 @@ public class Process extends AbstractProcess<Command> {
 		return true;
 	}
 
-	public String run() throws Exception {
-		String msg;
-		try {
-			this.getConn().setAutoCommit(false);
-
-			this.prepareData();
-
-			String preCheckMsg = this.preCheck();
-
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
-			//创建行政区划点有关行政区划线具体操作
-			OpTopo operation = new OpTopo(this.getCommand(), check, this.getConn());
-			msg = operation.run(this.getResult());
-			//创建行政区划点有关行政区划面具体操作类
-			OpRefAdFace opRefAdFace = new OpRefAdFace(this.getCommand(),this.getConn());
-			opRefAdFace.run(this.getResult());
-			this.recordData();
-			this.getConn().commit();
-
-
-		} catch (Exception e) {
-			this.getConn().rollback();
-
-			throw e;
-		} finally {
-			try {
-				this.getConn().close();
-			} catch (Exception e) {
-				
-			}
-		}
-
-		return msg;
-	}
+	
 	public String innerRun() throws Exception {
 		String msg;
 		try {
@@ -105,13 +69,18 @@ public class Process extends AbstractProcess<Command> {
 	}
 	@Override
 	public void postCheck() throws Exception {
-		
+		super.postCheck();
 		check.postCheck(this.getConn(), this.getResult());
 	}
-
-	public IOperation createOperation() {
-		// TODO Auto-generated method stub
-		return null;
+	@Override
+	public String exeOperation() throws Exception {
+		//创建行政区划点有关行政区划线具体操作
+		OpTopo operation = new OpTopo(this.getCommand(), check, this.getConn());
+		String msg = operation.run(this.getResult());
+		//创建行政区划点有关行政区划面具体操作类
+		OpRefAdFace opRefAdFace = new OpRefAdFace(this.getCommand(),this.getConn());
+		opRefAdFace.run(this.getResult());
+		return msg;
 	}
 
 }

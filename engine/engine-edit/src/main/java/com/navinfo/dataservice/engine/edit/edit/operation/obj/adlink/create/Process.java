@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.create;
 
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 
@@ -19,9 +18,9 @@ public class Process extends AbstractProcess<Command>{
 	 * @see com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess#createOperation()
 	 */
 	@Override
-	public IOperation createOperation() {
+	public String exeOperation() throws Exception {
 		// TODO Auto-generated method stub
-		return new Operation(this.getCommand(), check, this.getConn());
+		return new Operation(this.getCommand(), check, this.getConn()).run(this.getResult());
 	}
 
 }

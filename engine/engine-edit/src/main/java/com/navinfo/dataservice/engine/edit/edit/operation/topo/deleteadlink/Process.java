@@ -1,35 +1,18 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadlink;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IProcess;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdNodeSelector;
-import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
-import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
-import com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadlink.Command;
 
 public class Process extends AbstractProcess<Command> {
-//
-//	private Command command;
-//
-//	private Result result;
-//
-//	private Connection conn;
-//
-//	private String postCheckMsg;
 
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
@@ -94,73 +77,9 @@ public class Process extends AbstractProcess<Command> {
 	}
 	
 	@Override
-	public IOperation createOperation() {
+	public String exeOperation() throws Exception {
 		// TODO Auto-generated method stub
-		return new OpRefAdFace(this.getCommand());
+		return new OpRefAdFace(this.getCommand()).run(this.getResult());
 	}
-//
-//	@Override
-//	public String run() throws Exception {
-//
-//		try {
-//			if (!command.isCheckInfect()) {
-//				conn.setAutoCommit(false);
-//				String preCheckMsg = this.preCheck();
-//				if (preCheckMsg != null) {
-//					throw new Exception(preCheckMsg);
-//				}
-//				prepareData();
-//				IOperation op = new OpTopo(command);
-//				op.run(result);
-//				IOperation opRefAdface = new OpRefAdFace(command);
-//				opRefAdface.run(result);
-//				recordData();
-//				
-//				postCheck();
-//				
-//				conn.commit();
-//			}
-//		} catch (Exception e) {
-//			
-//
-//			conn.rollback();
-//
-//			throw e;
-//		} finally {
-//			try {
-//				conn.close();
-//			} catch (Exception e) {
-//				
-//			}
-//		}
-//
-//		return null;
-//	}
-//
-//	@Override
-//	public boolean recordData() throws Exception {
-//		
-//		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
-//		
-//		lw.generateLog(command, result);
-//		
-//		OperatorFactory.recordData(conn, result);
-//
-//		lw.recordLog(command, result);
-//
-//		return true;
-//	}
-//
-//	@Override
-//	public void postCheck() {
-//
-//		// 对数据进行检查、检查结果存储在数据库，并存储在临时变量postCheckMsg中
-//	}
-//
-//	@Override
-//	public String getPostCheck() throws Exception {
-//
-//		return postCheckMsg;
-//	}
 
 }

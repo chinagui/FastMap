@@ -3,7 +3,6 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
@@ -42,9 +41,9 @@ public class Process extends AbstractProcess<Command> implements IProcess {
 	 * @see com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess#createOperation()
 	 */
 	@Override
-	public IOperation createOperation() {
+	public String exeOperation() throws Exception {
 		// TODO Auto-generated method stub
-		return new Operation(this.getCommand(), this.check, this.getConn(),this.getResult());
+		return new Operation(this.getCommand(), this.check, this.getConn(),this.getResult()).run(this.getResult());
 	}
 
 	

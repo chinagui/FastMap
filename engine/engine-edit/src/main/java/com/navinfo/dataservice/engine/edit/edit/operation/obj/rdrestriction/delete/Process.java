@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdrestriction.delete;
 
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
@@ -27,9 +26,9 @@ public class Process extends AbstractProcess<Command> {
 	}
 
 	@Override
-	public IOperation createOperation() {
+	public String exeOperation() throws Exception {
 		// TODO Auto-generated method stub
-		return new Operation(this.getCommand(), this.restrict);
+		return new Operation(this.getCommand(), this.restrict).run(this.getResult());
 	}
 	
 

@@ -63,9 +63,9 @@ public class Process extends AbstractProcess<Command> {
 	}
 
 	@Override
-	public IOperation createOperation() {
+	public String exeOperation() throws Exception {
 		// TODO Auto-generated method stub
-		return  new Operation(this.getCommand(), this.rdGsc);
+		return  new Operation(this.getCommand(), this.rdGsc).run(this.getResult());
 	}
 
 }

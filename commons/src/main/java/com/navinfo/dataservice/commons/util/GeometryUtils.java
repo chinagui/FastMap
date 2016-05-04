@@ -231,37 +231,39 @@ public class GeometryUtils {
 	}
 
 	public static void main(String[] args) throws Exception {
+		
+		System.out.println(metersPerDegree);
 
-		WKTReader r = new WKTReader();
-
-		String a = "LINESTRING (117.35746 39.13152, 117.35761 39.13144, 117.35788 39.13133, 117.35806 39.13128, 117.35824 39.13124, 117.35869 39.13117, 117.35908 39.13113, 117.35957 39.1311, 117.35984 39.1311, 117.36012 39.13112, 117.36057 39.13118, 117.36136 39.13142, 117.36189 39.13158, 117.36232 39.13173)";
-
-		Geometry g = r.read(a);
-
-		// System.out.println(GeometryUtils.getLinkLength(g));
-
-		String test1 = " LINESTRING (116.05539 39.87195, 116.05554 39.87162, 116.05578 39.87162, 116.05567 39.87190)";
-
-		String test2 = "LINESTRING (116.05524 39.87189, 116.05571 39.87167, 116.05580 39.87190)";
-
-		String test3 = "LINESTRING (116.04920 39.86528, 116.04987 39.86426, 116.05038 39.86348)";
-
-		Geometry g1 = r.read(test1);
-
-		Geometry g2 = r.read(test2);
-
-		Geometry g3 = r.read(test3);
-
-		List<Geometry> list = new ArrayList<>();
-
-		list.add(g1);
-
-		list.add(g2);
-
-		//list.add(g3);
-
-		System.out.println(getIntersectsGeo(list));
-		System.out.println(getIntersectsGeo(list).getUserData());
+//		WKTReader r = new WKTReader();
+//
+//		String a = "LINESTRING (117.35746 39.13152, 117.35761 39.13144, 117.35788 39.13133, 117.35806 39.13128, 117.35824 39.13124, 117.35869 39.13117, 117.35908 39.13113, 117.35957 39.1311, 117.35984 39.1311, 117.36012 39.13112, 117.36057 39.13118, 117.36136 39.13142, 117.36189 39.13158, 117.36232 39.13173)";
+//
+//		Geometry g = r.read(a);
+//
+//		// System.out.println(GeometryUtils.getLinkLength(g));
+//
+//		String test1 = " LINESTRING (116.05539 39.87195, 116.05554 39.87162, 116.05578 39.87162, 116.05567 39.87190)";
+//
+//		String test2 = "LINESTRING (116.05524 39.87189, 116.05571 39.87167, 116.05580 39.87190)";
+//
+//		String test3 = "LINESTRING (116.04920 39.86528, 116.04987 39.86426, 116.05038 39.86348)";
+//
+//		Geometry g1 = r.read(test1);
+//
+//		Geometry g2 = r.read(test2);
+//
+//		Geometry g3 = r.read(test3);
+//
+//		List<Geometry> list = new ArrayList<>();
+//
+//		list.add(g1);
+//
+//		list.add(g2);
+//
+//		//list.add(g3);
+//
+//		System.out.println(getIntersectsGeo(list));
+//		System.out.println(getIntersectsGeo(list).getUserData());
 	}
 	public static double getCalculateArea(Geometry g) { 
 		double area =0.0;

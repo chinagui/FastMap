@@ -1,7 +1,11 @@
 package com.navinfo.navicommons.geo.computation;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
 
 /** 
 * @ClassName: DoublePolyline 
@@ -52,5 +56,33 @@ public class DoublePolyline {
 	}
 	public void setLines(DoubleLine[] lines) {
 		this.lines = lines;
+	}
+	public DoubleLine getFirstLine(){
+		if(lines!=null&&lineSize>0){
+			return lines[0];
+		}
+		return null;
+	}
+	public DoubleLine getLastLine(){
+		if(lines!=null&&lineSize>0){
+			return lines[lineSize-1];
+		}
+		return null;
+	}
+	public void reverse(){
+		epoint = spoint;
+		List<DoubleLine> ls = Arrays.asList(lines);
+		Collections.reverse(ls);
+		lines = ls.toArray(new DoubleLine[0]);
+		for(DoubleLine line:lines){
+			line.reverse();
+		}
+		spoint = lines[0].getSpoint();
+	}
+	public String toString(){
+		StringBuilder s = new StringBuilder("[");
+		s.append(StringUtils.join(lines));
+		s.append("]");
+		return s.toString();
 	}
 }

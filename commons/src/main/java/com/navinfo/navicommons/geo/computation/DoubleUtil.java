@@ -7,6 +7,7 @@ package com.navinfo.navicommons.geo.computation;
 * @Description: TODO
 */
 public class DoubleUtil {
+	public static double INFINITY = 9999999999999999.0;
 	public static double keep5Decimal(Double num){
 		return (double)(Math.round(num*100000)/100000.0);
 	} 

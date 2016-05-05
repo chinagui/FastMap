@@ -2,10 +2,13 @@ package com.navinfo.dataservice.commons;
 
 import org.junit.Test;
 
+import com.navinfo.dataservice.commons.util.JtsGeometryUtil;
 import com.navinfo.navicommons.geo.computation.CompLineUtil;
 import com.navinfo.navicommons.geo.computation.DoubleLine;
 import com.navinfo.navicommons.geo.computation.DoublePoint;
 import com.navinfo.navicommons.geo.computation.DoublePolyline;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.Point;
 
 import junit.framework.Assert;
 
@@ -33,7 +36,7 @@ public class CompLineUtilTest {
 	 * 水平line
 	 */
 	@Test
-	public void t_000_00(){
+	public void offset_00(){
 		DoublePolyline polyline1 = new DoublePolyline(new DoublePoint[]{
 				new DoublePoint(130.0,40.0),new DoublePoint(130.5,40.0)
 		});
@@ -49,7 +52,7 @@ public class CompLineUtilTest {
 	 * 垂直线
 	 */
 	@Test
-	public void t_000_01(){
+	public void offset_01(){
 		DoublePolyline polyline1 = new DoublePolyline(new DoublePoint[]{
 				new DoublePoint(130.0,40.0),new DoublePoint(130.0,40.5)
 		});
@@ -66,7 +69,7 @@ public class CompLineUtilTest {
 	 * 水平线+垂直线
 	 */
 	@Test
-	public void t_000_02(){
+	public void offset_02(){
 		DoublePolyline polyline1 = new DoublePolyline(new DoublePoint[]{
 				new DoublePoint(131.0,42.0),new DoublePoint(132.0,42.0),new DoublePoint(132.0,43.0)
 		});
@@ -79,7 +82,7 @@ public class CompLineUtilTest {
 		Assert.assertTrue(true);
 	}
 	@Test
-	public void t_001_01(){
+	public void offset_03(){
 		DoublePolyline polyline1 = new DoublePolyline(new DoublePoint[]{
 				new DoublePoint(130.0,40.0),new DoublePoint(130.5,40.5),new DoublePoint(131.0,40.5)
 		});
@@ -96,5 +99,52 @@ public class CompLineUtilTest {
 			System.out.println(line);
 		}
 		Assert.assertTrue(true);
+	}
+	@Test
+	public void offset_04(){
+		try{
+			String ls1 = "LINESTRING(130.0 40.0,130.5 40.5,131.0 40.5)";
+			String ls2 = "LINESTRING(131.0 40.5,130.5 41.0,130.5 41.5,131.0 42.0)";
+			String ls3 = "LINESTRING(132.0 43.0,132.0 42.0,131.0 42.0)";
+			Point startPoint = (Point)JtsGeometryUtil.read("POINT(130.0 40.0)");
+			LineString[] lines = new LineString[]{
+					(LineString)JtsGeometryUtil.read(ls1)
+					,(LineString)JtsGeometryUtil.read(ls2)
+					,(LineString)JtsGeometryUtil.read(ls3)
+			};
+			LineString[] results = CompLineUtil.offset(startPoint,lines, 12000);
+			for(LineString ls:results){
+				System.out.println(ls.toText());
+			}
+
+			Assert.assertTrue(true);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * 测试有相交的情况
+	 */
+	@Test
+	public void offset_05(){
+		try{
+			String ls1 = "LINESTRING(131.0 42.0,132.0 42.0,132.0 43.0)";
+			String ls2 = "LINESTRING(132.0 43.0,132.0 44.0,131.0 44.0,131.0 43.0,132.0 43.0)";
+			String ls3 = "LINESTRING(132.0 43.0,133.0 43.0)";
+			Point startPoint = (Point)JtsGeometryUtil.read("POINT(131.0 42.0)");
+			LineString[] lines = new LineString[]{
+					(LineString)JtsGeometryUtil.read(ls1)
+					,(LineString)JtsGeometryUtil.read(ls2)
+					,(LineString)JtsGeometryUtil.read(ls3)
+			};
+			LineString[] results = CompLineUtil.offset(startPoint,lines, 12000);
+			for(LineString ls:results){
+				System.out.println(ls.toText());
+			}
+
+			Assert.assertTrue(true);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 }

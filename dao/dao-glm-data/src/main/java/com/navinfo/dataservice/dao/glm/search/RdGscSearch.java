@@ -18,6 +18,7 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
@@ -98,7 +99,7 @@ public class RdGscSearch implements ISearch {
 
 				Geometry geo = GeoTranslator.struct2Jts(struct);
 
-				Geometry line = DisplayUtils.getGscLine(geo, startEnd, seqNum);
+				Geometry line = DisplayUtils.getGscLine4Web(geo, startEnd, seqNum);
 				
 				JSONObject geojson = GeoTranslator.jts2Geojson(line);
 				
@@ -215,10 +216,10 @@ public class RdGscSearch implements ISearch {
                 int startEnd = resultSet.getInt("start_end");
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
+				
 				Geometry geo = GeoTranslator.struct2Jts(struct);
 
-				Geometry line = DisplayUtils.getGscLine(geo, startEnd, seqNum);
+				Geometry line = DisplayUtils.getGscLine4Web(geo, startEnd, seqNum);
 				
 				JSONObject geojson = GeoTranslator.jts2Geojson(line);
 				
@@ -265,5 +266,13 @@ public class RdGscSearch implements ISearch {
 
 		return list;
 	}
-
+	public static void main(String[] args) throws Exception {
+		
+		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+		
+		RdGscSearch s = new RdGscSearch(conn);
+		
+		s.searchDataByTileWithGap(107934, 49638, 17, 9);
+		
+	}
 }

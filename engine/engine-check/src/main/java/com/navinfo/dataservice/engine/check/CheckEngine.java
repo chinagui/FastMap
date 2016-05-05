@@ -55,7 +55,7 @@ public class CheckEngine {
 	public String preCheck() throws Exception{
 		log.info("start preCheck");
 		//获取前检查需要执行规则列表
-		List<CheckRule> rulesList=getRules(checkCommand.getObjType(),checkCommand.getOperType(),new String("PRE"));		
+		List<CheckRule> rulesList=getRules(checkCommand.getObjType(),checkCommand.getOperType(),"PRE");		
 		for (int i=0;i<rulesList.size();i++){
 			CheckRule rule=rulesList.get(i);
 			baseRule obj = (baseRule) rule.getRuleClass().newInstance();
@@ -76,7 +76,7 @@ public class CheckEngine {
 	public void postCheck() throws Exception{
 		log.info("start postCheck");
 		//获取后检查需要执行规则列表
-		List<CheckRule> rulesList=getRules(this.checkCommand.getObjType(),this.checkCommand.getOperType(),new String("POST"));
+		List<CheckRule> rulesList=getRules(this.checkCommand.getObjType(),this.checkCommand.getOperType(),"POST");
 		List<NiValException> checkResultList = new ArrayList<NiValException>();
 		for (int i=0;i<rulesList.size();i++){
 			CheckRule rule=rulesList.get(i);

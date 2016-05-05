@@ -8,9 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
@@ -30,13 +30,8 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
-import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
-import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
-
-import net.sf.json.JSONObject;
 
 public class Process extends AbstractProcess<Command> {
 
@@ -44,7 +39,9 @@ public class Process extends AbstractProcess<Command> {
 		super(command);
 
 	}
-	public Process(AbstractCommand command,Result result ,Connection conn) throws Exception{
+
+	public Process(AbstractCommand command, Result result, Connection conn)
+			throws Exception {
 		super(command);
 		this.setResult(result);
 		this.setConn(conn);
@@ -54,7 +51,8 @@ public class Process extends AbstractProcess<Command> {
 
 		RdLinkSelector selector = new RdLinkSelector(this.getConn());
 
-		RdLink link = (RdLink) selector.loadById(this.getCommand().getLinkPid(), true);
+		RdLink link = (RdLink) selector.loadById(
+				this.getCommand().getLinkPid(), true);
 
 		this.getCommand().setLink(link);
 	}
@@ -64,7 +62,8 @@ public class Process extends AbstractProcess<Command> {
 
 		RdNodeSelector selector = new RdNodeSelector(this.getConn());
 
-		List<RdNode> nodes = selector.loadEndRdNodeByLinkPid(this.getCommand().getLinkPid(), false);
+		List<RdNode> nodes = selector.loadEndRdNodeByLinkPid(this.getCommand()
+				.getLinkPid(), false);
 
 		List<Integer> nodePids = new ArrayList<Integer>();
 
@@ -81,20 +80,39 @@ public class Process extends AbstractProcess<Command> {
 	public void lockRdRestriction() throws Exception {
 		// 获取进入线为该link的交限
 
-		RdRestrictionSelector restriction = new RdRestrictionSelector(this.getConn());
+		RdRestrictionSelector restriction = new RdRestrictionSelector(
+				this.getConn());
 
 		List<RdRestriction> restrictions = restriction
-				.loadRdRestrictionByLinkPid(this.getCommand().getLinkPid(), true);
+				.loadRdRestrictionByLinkPid(this.getCommand().getLinkPid(),
+						true);
+
+		// 获取退出线为该link，并且只有一根退出线的交限
+
+		List<RdRestriction> restrictions2 = restriction
+				.loadRdRestrictionByOutLinkPid(this.getCommand().getLinkPid(),
+						true);
+
+		restrictions.addAll(restrictions2);
 
 		this.getCommand().setRestrictions(restrictions);
 	}
 
 	public void lockRdLaneConnexity() throws Exception {
 
-		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(this.getConn());
+		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(
+				this.getConn());
 
-		List<RdLaneConnexity> lanes = selector.loadRdLaneConnexityByLinkPid(this.getCommand().getLinkPid(),
-				true);
+		List<RdLaneConnexity> lanes = selector.loadRdLaneConnexityByLinkPid(
+				this.getCommand().getLinkPid(), true);
+
+		// 获取退出线为该link，并且只有一根退出线的车信
+
+		List<RdLaneConnexity> lanes2 = selector
+				.loadRdLaneConnexityByOutLinkPid(
+						this.getCommand().getLinkPid(), true);
+
+		lanes.addAll(lanes2);
 
 		this.getCommand().setLanes(lanes);
 	}
@@ -103,7 +121,15 @@ public class Process extends AbstractProcess<Command> {
 
 		RdBranchSelector selector = new RdBranchSelector(this.getConn());
 
-		List<RdBranch> branches = selector.loadRdBranchByInLinkPid(this.getCommand().getLinkPid(), true);
+		List<RdBranch> branches = selector.loadRdBranchByInLinkPid(this
+				.getCommand().getLinkPid(), true);
+
+		// 获取退出线为该link，并且只有一根退出线的车信
+
+		List<RdBranch> branches2 = selector.loadRdBranchByOutLinkPid(this
+				.getCommand().getLinkPid(), true);
+
+		branches.addAll(branches2);
 
 		this.getCommand().setBranches(branches);
 	}
@@ -116,8 +142,8 @@ public class Process extends AbstractProcess<Command> {
 
 		linkPids.add(this.getCommand().getLinkPid());
 
-		List<RdCross> crosses = selector.loadRdCrossByNodeOrLink(this.getCommand().getNodePids(), linkPids,
-				true);
+		List<RdCross> crosses = selector.loadRdCrossByNodeOrLink(this
+				.getCommand().getNodePids(), linkPids, true);
 
 		this.getCommand().setCrosses(crosses);
 	}
@@ -126,7 +152,8 @@ public class Process extends AbstractProcess<Command> {
 
 		RdGscSelector selector = new RdGscSelector(this.getConn());
 
-		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(this.getCommand().getLinkPid(), true);
+		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(this
+				.getCommand().getLinkPid(), true);
 
 		this.getCommand().setRdGscs(rdGscList);
 	}
@@ -135,7 +162,8 @@ public class Process extends AbstractProcess<Command> {
 
 		RdSpeedlimitSelector selector = new RdSpeedlimitSelector(this.getConn());
 
-		List<RdSpeedlimit> limits = selector.loadSpeedlimitByLinkPid(this.getCommand().getLinkPid(), true);
+		List<RdSpeedlimit> limits = selector.loadSpeedlimitByLinkPid(this
+				.getCommand().getLinkPid(), true);
 
 		this.getCommand().setLimits(limits);
 	}
@@ -180,7 +208,8 @@ public class Process extends AbstractProcess<Command> {
 	private void lockAdAdmin() throws Exception {
 		AdAdminSelector selector = new AdAdminSelector(this.getConn());
 
-		List<AdAdmin> adAdminList = selector.loadRowsByLinkId(this.getCommand().getLinkPid(), true);
+		List<AdAdmin> adAdminList = selector.loadRowsByLinkId(this.getCommand()
+				.getLinkPid(), true);
 
 		this.getCommand().setAdAdmins(adAdminList);
 	}
@@ -210,18 +239,21 @@ public class Process extends AbstractProcess<Command> {
 				IOperation opRefCross = new OpRefCross(this.getCommand());
 				opRefCross.run(this.getResult());
 
-				IOperation opRefLaneConnexity = new OpRefLaneConnexity(this.getCommand());
+				IOperation opRefLaneConnexity = new OpRefLaneConnexity(
+						this.getCommand());
 				opRefLaneConnexity.run(this.getResult());
 
-				IOperation opRefSpeedlimit = new OpRefSpeedlimit(this.getCommand());
+				IOperation opRefSpeedlimit = new OpRefSpeedlimit(
+						this.getCommand());
 				opRefSpeedlimit.run(this.getResult());
 
-				IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand(),this.getConn());
+				IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand(),
+						this.getConn());
 				opRefRdGsc.run(this.getResult());
-				
+
 				IOperation opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
 				opRefAdAdmin.run(this.getResult());
-				
+
 				recordData();
 
 				postCheck();
@@ -298,41 +330,44 @@ public class Process extends AbstractProcess<Command> {
 
 		return null;
 	}
+
 	public String innerRun() throws Exception {
 
 		try {
-				String preCheckMsg = this.preCheck();
-				if (preCheckMsg != null) {
-					throw new Exception(preCheckMsg);
-				}
-				prepareData();
-				IOperation op = new OpTopo(this.getCommand());
-				op.run(this.getResult());
-				IOperation opRefRestrict = new OpRefRestrict(this.getCommand());
-				opRefRestrict.run(this.getResult());
-				IOperation opRefBranch = new OpRefBranch(this.getCommand());
-				opRefBranch.run(this.getResult());
-				IOperation opRefCross = new OpRefCross(this.getCommand());
-				opRefCross.run(this.getResult());
-				IOperation opRefLaneConnexity = new OpRefLaneConnexity(this.getCommand());
-				opRefLaneConnexity.run(this.getResult());
-				IOperation opRefSpeedlimit = new OpRefSpeedlimit(this.getCommand());
-				opRefSpeedlimit.run(this.getResult());
-				IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand(),this.getConn());
-				opRefRdGsc.run(this.getResult());
-				IOperation opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
-				opRefAdAdmin.run(this.getResult());
-				
-				recordData();
+			String preCheckMsg = this.preCheck();
+			if (preCheckMsg != null) {
+				throw new Exception(preCheckMsg);
+			}
+			prepareData();
+			IOperation op = new OpTopo(this.getCommand());
+			op.run(this.getResult());
+			IOperation opRefRestrict = new OpRefRestrict(this.getCommand());
+			opRefRestrict.run(this.getResult());
+			IOperation opRefBranch = new OpRefBranch(this.getCommand());
+			opRefBranch.run(this.getResult());
+			IOperation opRefCross = new OpRefCross(this.getCommand());
+			opRefCross.run(this.getResult());
+			IOperation opRefLaneConnexity = new OpRefLaneConnexity(
+					this.getCommand());
+			opRefLaneConnexity.run(this.getResult());
+			IOperation opRefSpeedlimit = new OpRefSpeedlimit(this.getCommand());
+			opRefSpeedlimit.run(this.getResult());
+			IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand(),
+					this.getConn());
+			opRefRdGsc.run(this.getResult());
+			IOperation opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
+			opRefAdAdmin.run(this.getResult());
 
-				postCheck();
-			
+			recordData();
+
+			postCheck();
+
 		} catch (Exception e) {
 
 			this.getConn().rollback();
 
 			throw e;
-		} 
+		}
 		return null;
 	}
 
@@ -349,6 +384,7 @@ public class Process extends AbstractProcess<Command> {
 
 		}
 	}
+
 	@Override
 	public String exeOperation() {
 		// TODO Auto-generated method stub

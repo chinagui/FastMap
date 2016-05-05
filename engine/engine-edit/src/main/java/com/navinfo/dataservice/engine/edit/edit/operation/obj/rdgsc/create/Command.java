@@ -55,12 +55,12 @@ public class Command extends AbstractCommand {
 	public void setGeoObject(JSONObject geoObject) {
 		this.geoObject = geoObject;
 	}
-	
+
 	public void createGlmList() throws Exception {
 		// TODO Auto-generated method stub
 		
 	}
-	
+
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 

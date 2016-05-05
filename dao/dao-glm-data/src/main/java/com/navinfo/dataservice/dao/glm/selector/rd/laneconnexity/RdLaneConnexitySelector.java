@@ -189,7 +189,124 @@ public class RdLaneConnexitySelector implements ISelector {
 				
 				laneConn.setSrcFlag(resultSet.getInt("src_flag"));
 				
+				int meshId = resultSet.getInt("mesh_id");
+				laneConn.setMesh(meshId);
+				
+				RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(
+						conn);
+
+				laneConn.setTopos(topoSelector.loadRowsByParentId(laneConn.pid(), isLock));
+				
+				for(IRow row : laneConn.getTopos()){
+					row.setMesh(meshId);
+					
+					RdLaneTopology topo = (RdLaneTopology)row;
+					
+					laneConn.topologyMap.put(topo.getPid(), topo);
+					
+					for(IRow row2 : topo.getVias()){
+						row2.setMesh(meshId);
+						
+						RdLaneVia via = (RdLaneVia)row2;
+						
+						laneConn.viaMap.put(via.getRowId(), via);
+					}
+				}
+				
+				laneConns.add(laneConn);
+			}
+		} catch (Exception e) {
+			
+			throw e;
+		} finally {
+			try {
+				resultSet.close();
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+				
+			}
+		}
+		
+		return laneConns;
+	}
+	
+	public List<RdLaneConnexity> loadRdLaneConnexityByOutLinkPid(int linkPid,boolean isLock) throws Exception
+	{
+		List<RdLaneConnexity> laneConns = new ArrayList<RdLaneConnexity>();
+		
+		String sql = "select a.*, b.mesh_id   from rd_lane_connexity a, rd_link b  where a.pid in (  select b.CONNEXITY_PID from rd_lane_topology b where b.CONNEXITY_PID in (    select CONNEXITY_PID from rd_lane_topology where u_record!=2 and out_link_pid=:1 )     group by b.CONNEXITY_PID having count(1)=1) and     a.u_record != 2    and a.in_link_pid = b.link_pid";
+		
+		if (isLock){
+			sql += " for update nowait";
+		}
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdLaneConnexity laneConn = new RdLaneConnexity();
+				
+				laneConn.setPid(resultSet.getInt("pid"));
+				
+				laneConn.setRowId(resultSet.getString("row_id"));
+				
+				laneConn.setInLinkPid(resultSet.getInt("in_link_pid"));
+				
+				laneConn.setNodePid(resultSet.getInt("node_pid"));
+				
+				laneConn.setLaneInfo(resultSet.getString("lane_info"));
+				
+				laneConn.setConflictFlag(resultSet.getInt("conflict_flag"));
+				
+				laneConn.setKgFlag(resultSet.getInt("kg_flag"));
+				
+				laneConn.setLaneNum(resultSet.getInt("lane_num"));
+				
+				laneConn.setLeftExtend(resultSet.getInt("left_extend"));
+				
+				laneConn.setRightExtend(resultSet.getInt("right_extend"));
+				
+				laneConn.setSrcFlag(resultSet.getInt("src_flag"));
+				
 				laneConn.setMesh(resultSet.getInt("mesh_id"));
+				
+				int meshId = resultSet.getInt("mesh_id");
+				
+				laneConn.setMesh(meshId);
+				
+				RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(
+						conn);
+
+				laneConn.setTopos(topoSelector.loadRowsByParentId(laneConn.pid(), isLock));
+				
+				for(IRow row : laneConn.getTopos()){
+					row.setMesh(meshId);
+					
+					RdLaneTopology topo = (RdLaneTopology)row;
+					
+					laneConn.topologyMap.put(topo.getPid(), topo);
+					
+					for(IRow row2 : topo.getVias()){
+						row2.setMesh(meshId);
+						
+						RdLaneVia via = (RdLaneVia)row2;
+						
+						laneConn.viaMap.put(via.getRowId(), via);
+					}
+				}
 				
 				laneConns.add(laneConn);
 			}

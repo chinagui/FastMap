@@ -50,6 +50,11 @@ public class Command extends AbstractCommand {
 		this.geoObject = geoObject;
 	}
 
+	public void createGlmList() throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 

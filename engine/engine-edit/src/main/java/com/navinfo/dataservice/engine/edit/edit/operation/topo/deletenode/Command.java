@@ -175,6 +175,11 @@ public class Command extends AbstractCommand {
 		this.adAdmins = adAdmins;
 	}
 
+	public void createGlmList() throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
 	public Command(JSONObject json,String requester) {
 		this.requester = requester;
 		

@@ -202,8 +202,8 @@ public class CompLineUtil {
 			for(DoublePolyline polyline:leftResults){
 				polyline.reverse();
 			}
-			List<DoublePolyline> resultsList = new ArrayList(Arrays.asList(leftResults));
-			resultsList.addAll(Arrays.asList(rightResults));
+			List<DoublePolyline> resultsList = new ArrayList(Arrays.asList(rightResults));
+			resultsList.addAll(Arrays.asList(leftResults));
 			return resultsList.toArray(new DoublePolyline[0]);
 		}
 		return null;

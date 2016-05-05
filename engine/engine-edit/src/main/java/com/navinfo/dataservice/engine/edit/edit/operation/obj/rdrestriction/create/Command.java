@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdrestriction.cre
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -68,7 +69,12 @@ public class Command extends AbstractCommand {
 	public String getRequester() {
 		return requester;
 	}
-
+	
+	public void createGlmList() throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 
@@ -93,11 +99,13 @@ public class Command extends AbstractCommand {
 					outLinkPids.add(pid);
 				}
 			}
-		} else {
-
+		}
+		
+		restricInfos = new ArrayList<Integer>();
+		
+		if(data.containsKey("infos"))
+		{
 			JSONArray array = data.getJSONArray("infos");
-
-			restricInfos = new ArrayList<Integer>();
 
 			for (int i = 0; i < array.size(); i++) {
 
@@ -107,5 +115,5 @@ public class Command extends AbstractCommand {
 			}
 		}
 	}
-
+	
 }

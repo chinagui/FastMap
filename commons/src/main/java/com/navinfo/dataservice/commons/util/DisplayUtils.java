@@ -1238,7 +1238,21 @@ public class DisplayUtils {
 		return result;
 	}
 	
-	public static LineString getGscLine4Web(Geometry linkGeo, int startEnd, int seqNum) throws Exception{
+	public static LineString getGscLine4Web(Geometry linkGeo, int startEnd, int seqNum, int z) throws Exception{
+		
+		double offset = 10;
+		
+		switch(z){
+		case 16:
+		case 17:
+			offset = 8; break;
+		case 18:
+			offset = 5; break;
+		case 19:
+			offset = 4; break;
+		case 20:
+			offset = 3; break;
+		}
 		
 		double[][] linkMerArray = convertLinkToMerArray(linkGeo);
 		
@@ -1254,7 +1268,7 @@ public class DisplayUtils {
 			{
 				Coordinate next = new Coordinate(linkMerArray[seqNum-1][0],linkMerArray[seqNum-1][1]);
 				
-				Coordinate result = getPointOnLinkByDistance(coord, next, 2);
+				Coordinate result = getPointOnLinkByDistance(coord, next, offset);
 				
 				coordList.add(result);
 			}
@@ -1263,9 +1277,9 @@ public class DisplayUtils {
 			
 			if ((seqNum + 1) < coords.length) {
 				
-				Coordinate next = coords[seqNum + 1];
+				Coordinate next = new Coordinate(linkMerArray[seqNum+1][0],linkMerArray[seqNum+1][1]);
 				
-				Coordinate result = getPointOnLinkByDistance(coord, next, 2);
+				Coordinate result = getPointOnLinkByDistance(coord, next, offset);
 				
 				coordList.add(result);
 			}
@@ -1275,9 +1289,9 @@ public class DisplayUtils {
 
 			if ((seqNum + 1) < coords.length) {
 
-				Coordinate next = coords[seqNum + 1];
-
-				Coordinate result = getPointOnLinkByDistance(coord, next, 2);
+				Coordinate next = new Coordinate(linkMerArray[seqNum+1][0],linkMerArray[seqNum+1][1]);
+				
+				Coordinate result = getPointOnLinkByDistance(coord, next, offset);
 				
 				coordList.add(result);
 			}
@@ -1287,9 +1301,9 @@ public class DisplayUtils {
 
 			if (seqNum - 1 >= 0){
 
-				Coordinate next = coords[seqNum - 1];
-
-				Coordinate result = getPointOnLinkByDistance(coord, next, 2);
+				Coordinate next = new Coordinate(linkMerArray[seqNum-1][0],linkMerArray[seqNum-1][1]);
+				
+				Coordinate result = getPointOnLinkByDistance(coord, next, offset);
 				
 				coordList.add(result);
 			}

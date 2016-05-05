@@ -99,7 +99,7 @@ public class RdGscSearch implements ISearch {
 
 				Geometry geo = GeoTranslator.struct2Jts(struct);
 
-				Geometry line = DisplayUtils.getGscLine4Web(geo, startEnd, seqNum);
+				Geometry line = DisplayUtils.getGscLine4Web(geo, startEnd, seqNum, 18);
 				
 				JSONObject geojson = GeoTranslator.jts2Geojson(line);
 				
@@ -219,7 +219,7 @@ public class RdGscSearch implements ISearch {
 				
 				Geometry geo = GeoTranslator.struct2Jts(struct);
 
-				Geometry line = DisplayUtils.getGscLine4Web(geo, startEnd, seqNum);
+				Geometry line = DisplayUtils.getGscLine4Web(geo, startEnd, seqNum, z);
 				
 				JSONObject geojson = GeoTranslator.jts2Geojson(line);
 				
@@ -272,7 +272,14 @@ public class RdGscSearch implements ISearch {
 		
 		RdGscSearch s = new RdGscSearch(conn);
 		
-		s.searchDataByTileWithGap(107934, 49638, 17, 9);
+		List<SearchSnapshot> list = s.searchDataByTileWithGap(431792, 198505, 19, 0);
 		
+		for(SearchSnapshot snap : list){
+			System.out.println(snap.Serialize(null));
+		}
+		
+//		System.out.println(MercatorProjection.longitudeToTileX(116.48821, (byte)19));
+//		
+//		System.out.println(MercatorProjection.latitudeToTileY(39.98898, (byte)19));
 	}
 }

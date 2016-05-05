@@ -43,7 +43,7 @@ public class MyGeometryConvertor {
 			Coordinate[] coArr = new Coordinate[polyline.getLineSize()+1];
 			coArr[0]=convert(polyline.getSpoint());
 			for(int i=0;i<polyline.getLineSize();i++){
-				coArr[i+1]=convert(polyline.getEpoint());
+				coArr[i+1]=convert(polyline.getLines()[i].getEpoint());
 			}
 			return JtsGeometryUtil.createLineString(coArr);
 		}

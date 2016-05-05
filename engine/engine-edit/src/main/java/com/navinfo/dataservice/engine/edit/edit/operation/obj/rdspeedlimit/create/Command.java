@@ -65,6 +65,11 @@ public class Command extends AbstractCommand {
 		this.longitude = longitude;
 	}
 
+	public void createGlmList() throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 

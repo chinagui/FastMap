@@ -220,6 +220,14 @@ public class DisplayUtils {
 
 		Geometry geom = reader.read(linkWkt);
 
+		return convertLinkToMerArray(geom);
+
+	}
+
+	// 转换线经纬度wkt为以米为单位的二维数组
+	public static double[][] convertLinkToMerArray(Geometry geom)
+			throws Exception {
+
 		Coordinate[] cs = geom.getCoordinates();
 
 		double[][] linkMerArray = new double[cs.length][2];
@@ -240,7 +248,7 @@ public class DisplayUtils {
 		return linkMerArray;
 
 	}
-
+	
 	// 转换点经纬度wkt为以米为单位的数组
 	private static double[] convertPointToMerArray(String pointWkt)
 			throws Exception {
@@ -1180,6 +1188,136 @@ public class DisplayUtils {
 		}
 
 		return direct;
+	}
+	
+	/**
+	 * 计算在线上的距离端点距离为dist的点的坐标
+	 * @param coord 墨卡托坐标
+	 * @param next 墨卡托坐标
+	 * @param dist 要获取的点距离coord点的距离（米）
+	 * @return 经纬度坐标
+	 */
+	private static Coordinate getPointOnLinkByDistance(Coordinate coord, Coordinate next, double dist){
+		Coordinate result = new Coordinate();
+		
+		double distance = Math.sqrt(Math.pow(next.x - coord.x,
+				2) + Math.pow(next.y - coord.y, 2));
+
+		
+		if (coord.x != next.x) {
+			double k = (coord.y - next.y)
+					/ (coord.x - next.x);
+
+			double c = coord.y - k * coord.x;
+
+			result.x = coord.x
+					+ (dist / distance)
+					* (next.x - coord.x);
+
+			result.y = k * result.x + c;
+		} else {
+			// 与x轴垂直
+			
+			result.x = coord.x;
+
+			if (coord.y < next.y) {
+				result.y = coord.y + dist;
+			} else {
+				result.y  = coord.y - dist;
+			}
+		}
+		
+		// 转换墨卡托坐标为经纬度坐标返回
+
+		result.x = MercatorProjection
+				.metersXToLongitude(result.x);
+
+		result.y = MercatorProjection
+				.metersYToLatitude(result.y);
+		
+		return result;
+	}
+	
+	public static LineString getGscLine4Web(Geometry linkGeo, int startEnd, int seqNum, int z) throws Exception{
+		
+		double offset = 10;
+		
+		switch(z){
+		case 16:
+		case 17:
+			offset = 8; break;
+		case 18:
+			offset = 5; break;
+		case 19:
+			offset = 4; break;
+		case 20:
+			offset = 3; break;
+		}
+		
+		double[][] linkMerArray = convertLinkToMerArray(linkGeo);
+		
+		Coordinate[] coords = linkGeo.getCoordinates();
+
+		List<Coordinate> coordList = new ArrayList<Coordinate>();
+		
+		Coordinate coord = new Coordinate(linkMerArray[seqNum][0],linkMerArray[seqNum][1]); 
+		
+		if (startEnd == 0) {
+			
+			if (seqNum - 1 >= 0)
+			{
+				Coordinate next = new Coordinate(linkMerArray[seqNum-1][0],linkMerArray[seqNum-1][1]);
+				
+				Coordinate result = getPointOnLinkByDistance(coord, next, offset);
+				
+				coordList.add(result);
+			}
+			
+			coordList.add(coords[seqNum]);
+			
+			if ((seqNum + 1) < coords.length) {
+				
+				Coordinate next = new Coordinate(linkMerArray[seqNum+1][0],linkMerArray[seqNum+1][1]);
+				
+				Coordinate result = getPointOnLinkByDistance(coord, next, offset);
+				
+				coordList.add(result);
+			}
+		}else if (startEnd == 1) {
+
+			coordList.add(coords[seqNum]);
+
+			if ((seqNum + 1) < coords.length) {
+
+				Coordinate next = new Coordinate(linkMerArray[seqNum+1][0],linkMerArray[seqNum+1][1]);
+				
+				Coordinate result = getPointOnLinkByDistance(coord, next, offset);
+				
+				coordList.add(result);
+			}
+		} else {
+
+			coordList.add(coords[seqNum]);
+
+			if (seqNum - 1 >= 0){
+
+				Coordinate next = new Coordinate(linkMerArray[seqNum-1][0],linkMerArray[seqNum-1][1]);
+				
+				Coordinate result = getPointOnLinkByDistance(coord, next, offset);
+				
+				coordList.add(result);
+			}
+		}
+
+		Coordinate[] newCoords = new Coordinate[coordList.size()];
+
+		for (int i = 0; i < coordList.size(); i++) {
+			newCoords[i] = coordList.get(i);
+		}
+
+		LineString line = geometryFactory.createLineString(newCoords);
+		
+		return line;
 	}
 	
 	/**

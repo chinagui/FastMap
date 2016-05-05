@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.update;
 
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
@@ -27,9 +26,8 @@ public class Process extends AbstractProcess<Command> {
 	}
 
 	@Override
-	public IOperation createOperation() {
-		// TODO Auto-generated method stub
-		return new Operation(this.getCommand(), updateLink);
+	public String exeOperation() throws Exception {
+		return new Operation(this.getCommand(), updateLink).run(this.getResult());
 	}
 
 

@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.repair;
 
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
@@ -39,7 +38,7 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String preCheck() throws Exception {
-		
+		super.preCheck();
 		check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
 		
 		check.checkShapePointDistance(this.getCommand().getLinkGeom());
@@ -48,9 +47,8 @@ public class Process extends AbstractProcess<Command> {
 	}
 
 	@Override
-	public IOperation createOperation() {
-		// TODO Auto-generated method stub
-		return new Operation(this.getConn(), this.getCommand(),updateLink,snode,enode,check);
+	public String exeOperation() throws Exception {
+		return new Operation(this.getConn(), this.getCommand(),updateLink,snode,enode,check).run(this.getResult());
 	}
 
 }

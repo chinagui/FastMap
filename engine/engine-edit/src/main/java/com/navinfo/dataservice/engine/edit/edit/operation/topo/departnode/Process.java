@@ -23,15 +23,10 @@ public class Process extends AbstractProcess<Command> {
 	
 	public Process(Command command) throws Exception {
 		super(command);
-		// TODO Auto-generated constructor stub
 	}
 	
 	public Process(Command command, Connection conn) throws Exception  {
-		super(command);
-		this.setCommand((Command) command); 
-
-		this.setResult(new Result());
-
+		this(command);
 		this.setConn(conn);
 	}
 
@@ -88,7 +83,7 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String preCheck() throws Exception {
-
+		super.preCheck();
 		check.checkIsCrossNode(this.getConn(), this.getCommand().getsNodePid());
 
 		check.checkIsCrossNode(this.getConn(), this.getCommand().geteNodePid());
@@ -98,46 +93,6 @@ public class Process extends AbstractProcess<Command> {
 		return null;
 	}
 
-	@Override
-	public String run() throws Exception {
-		try {
-			this.getConn().setAutoCommit(false);
-
-			String preCheckMsg = this.preCheck();
-
-			this.prepareData();
-
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
-
-			IOperation operation = createOperation();
-
-			operation.run(this.getResult());
-
-			processRefObj();
-
-			this.recordData();
-
-			this.postCheck();
-
-			this.getConn().commit();
-
-		} catch (Exception e) {
-
-			this.getConn().rollback();
-
-			throw e;
-		} finally {
-			try {
-				this.getConn().close();
-			} catch (Exception e) {
-
-			}
-		}
-
-		return null;
-	}
 
 	public void processRefObj() throws Exception {
 		IOperation opRefRestrict = new OpRefRestrict(this.getCommand());
@@ -151,9 +106,12 @@ public class Process extends AbstractProcess<Command> {
 	}
 
 	@Override
-	public IOperation createOperation() {
-		// TODO Auto-generated method stub
-		return new Operation(this.getCommand(), updateLink, check);
+	public String exeOperation() throws Exception {
+		Operation operation = new Operation(this.getCommand(), updateLink, check);
+		String msg = operation.run(this.getResult());
+		processRefObj();
+		return msg;
+		
 	}
 
 }

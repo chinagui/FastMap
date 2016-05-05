@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.move;
 
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.AdAdminSelector;
@@ -32,8 +31,8 @@ public class Process extends  AbstractProcess<Command>   implements IProcess {
 	 * @see com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess#createOperation()
 	 */
 	@Override
-	public IOperation createOperation() {
-		return new Operation(this.getCommand(),moveAdmin);
+	public String exeOperation() throws Exception {
+		return new Operation(this.getCommand(),moveAdmin).run(this.getResult());
 	}
 
 }

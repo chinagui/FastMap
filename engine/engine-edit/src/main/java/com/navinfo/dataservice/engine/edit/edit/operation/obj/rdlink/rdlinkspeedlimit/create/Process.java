@@ -3,7 +3,6 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.rdlinkspee
 import java.util.ArrayList;
 import java.util.List;
 
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
@@ -15,7 +14,6 @@ public class Process extends AbstractProcess<Command> {
 	
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
-		// TODO Auto-generated constructor stub
 	}
 
 	private RdSpeedlimit rdSpeedlimit;
@@ -45,9 +43,8 @@ public class Process extends AbstractProcess<Command> {
 	}
 
 	@Override
-	public IOperation createOperation() {
-		// TODO Auto-generated method stub
-		return new Operation(this.getCommand(),rdSpeedlimit,rdLinks);
+	public String exeOperation() throws Exception {
+		return new Operation(this.getCommand(),rdSpeedlimit,rdLinks).run(this.getResult());
 	}
 	
 

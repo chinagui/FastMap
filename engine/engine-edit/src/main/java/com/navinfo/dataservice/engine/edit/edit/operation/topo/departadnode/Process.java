@@ -2,7 +2,6 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.departadnode;
 
 import java.sql.Connection;
 
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
@@ -49,9 +48,9 @@ public class Process extends AbstractProcess<Command> {
 	}
 
 	@Override
-	public IOperation createOperation() {
+	public String exeOperation() throws Exception {
 		// TODO Auto-generated method stub
-		return new Operation(this.getCommand(), updateLink, check);
+		return new Operation(this.getCommand(), updateLink, check).run(this.getResult());
 	}
 	
 }

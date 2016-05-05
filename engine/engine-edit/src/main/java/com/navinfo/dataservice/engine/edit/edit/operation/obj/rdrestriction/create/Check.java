@@ -65,7 +65,7 @@ public class Check {
 	
 	public void checkNoSameRelation(Connection conn, int linkPid, int nodePid) throws Exception{
 		
-		String sql = "select pid from rd_restriction where in_link_pid=:1 and node_pid=:2";
+		String sql = "select pid from rd_restriction where in_link_pid=:1 and node_pid=:2 and u_record != 2";
 		
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 

@@ -392,7 +392,7 @@ public class Process extends AbstractProcess<Command> {
 	}
 
 	@Override
-	public IOperation createOperation() {
+	public String exeOperation() {
 		// TODO Auto-generated method stub
 		return null;
 	}

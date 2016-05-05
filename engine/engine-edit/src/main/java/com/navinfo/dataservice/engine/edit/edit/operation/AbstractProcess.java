@@ -2,12 +2,15 @@ package com.navinfo.dataservice.engine.edit.edit.operation;
 
 import java.sql.Connection;
 
+import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
+import com.navinfo.dataservice.engine.check.CheckEngine;
 import com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.update.Command;
 
 /** 
@@ -20,6 +23,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	private T command;
 	private Result result;
 	private Connection conn;	
+	private CheckCommand checkCommand=new CheckCommand();
+	private CheckEngine checkEngine=null;
 	
 	/**
 	 * @return the conn
@@ -44,7 +49,16 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		this.result = new Result();
 		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
 				.getProjectId());
-
+		//初始化检查参数
+		this.initCheckCommand();
+	}
+	
+	//初始化检查参数
+	public void initCheckCommand() throws Exception{
+		this.checkCommand.setObjType(this.command.getObjType());
+		this.checkCommand.setOperType(this.command.getOperType());
+		this.checkCommand.setProjectId(this.command.getProjectId());
+		this.checkEngine=new CheckEngine(checkCommand);
 	}
 
 	/* (non-Javadoc)
@@ -81,9 +95,9 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	@Override
 	public String preCheck() throws Exception {
 		// TODO Auto-generated method stub
-		return null;
+		return checkEngine.preCheck();
 	}
-	public abstract IOperation createOperation();
+	public abstract String exeOperation() throws Exception;
 	/* (non-Javadoc)
 	 * @see com.navinfo.dataservice.dao.glm.iface.IProcess#run()
 	 */
@@ -101,9 +115,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 				throw new Exception(preCheckMsg);
 			}
 
-			IOperation operation = createOperation();//new Operation(command, conn);
-
-			msg = operation.run(result);
+			msg =  exeOperation();//new Operation(command, conn);
 
 			this.recordData();
 
@@ -133,6 +145,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	@Override
 	public void postCheck() throws Exception {
 		// TODO Auto-generated method stub
+		this.checkEngine.postCheck();
 
 	}
 
@@ -154,6 +167,14 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		OperatorFactory.recordData(conn, result);
 		lw.recordLog(command, result);
 		return true;
+	}
+
+	public CheckCommand getCheckCommand() {
+		return checkCommand;
+	}
+
+	public void setCheckCommand(CheckCommand checkCommand) {
+		this.checkCommand = checkCommand;
 	}
 
 }

@@ -3,7 +3,6 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranchdetail.de
 import java.sql.Connection;
 
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
@@ -71,9 +70,9 @@ public class Process extends AbstractProcess<Command> {
 	}
 
 	@Override
-	public IOperation createOperation() {
+	public String exeOperation() throws Exception {
 		// TODO Auto-generated method stub
-		return new Operation(this.getCommand(),this.detail,this.branch);
+		return new Operation(this.getCommand(),this.detail,this.branch).run(this.getResult());
 	}
 //	@Override
 //	public String preCheck() throws Exception {

@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadnode;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -8,10 +7,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IProcess;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
@@ -19,7 +15,6 @@ import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdNodeSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
@@ -158,12 +153,7 @@ public class Process extends AbstractProcess<Command> {
 					throw new Exception(preCheckMsg);
 				}
 				prepareData();
-				//删除行政区划点有关行政区划点、线具体操作
-				IOperation op = new OpTopo(this.getCommand());
-				op.run(this.getResult());
-				//删除行政区划点有关行政区划面具体操作
-				IOperation opAdFace = new OpRefAdFace(this.getCommand());
-				opAdFace.run(this.getResult());
+				
 				recordData();
 				postCheck();
 				this.getConn().commit();
@@ -212,9 +202,13 @@ public class Process extends AbstractProcess<Command> {
 		}
 	}
 	@Override
-	public IOperation createOperation() {
-		// TODO Auto-generated method stub
-		return null;
+	public String exeOperation() throws Exception {
+		//删除行政区划点有关行政区划点、线具体操作
+		IOperation op = new OpTopo(this.getCommand());
+		op.run(this.getResult());
+		//删除行政区划点有关行政区划面具体操作
+		IOperation opAdFace = new OpRefAdFace(this.getCommand());
+		return opAdFace.run(this.getResult());
 	}
 
 }

@@ -1,9 +1,11 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
@@ -276,9 +278,17 @@ public class Command extends AbstractCommand {
 		this.rdGscs = rdGscs;
 	}
 
-	public void createGlmList() throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
+//	public void createGlmList() throws Exception {
+//		// TODO Auto-generated method stub
+//		List<IRow> glmList=new ArrayList<IRow>();		
+//		
+//		RdLink linkObj=new RdLink();
+//		RdNode node=new RdNode();
+//		linkObj.setPid(this.linkPid);
+//		glmList.add(linkObj);
+//		node.setGeometry(point);
+//		glmList.add(node);
+//		this.setGlmList(glmList);
+//	}
 	
 }

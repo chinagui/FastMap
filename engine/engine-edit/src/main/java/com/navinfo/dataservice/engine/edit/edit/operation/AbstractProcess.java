@@ -61,8 +61,9 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		this.checkCommand.setObjType(this.command.getObjType());
 		this.checkCommand.setOperType(this.command.getOperType());
 		this.checkCommand.setProjectId(this.command.getProjectId());
-		this.checkCommand.setGlmList(this.command.getGlmList());
+		//this.checkCommand.setGlmList(this.command.getGlmList());
 		this.checkEngine=new CheckEngine(checkCommand);
+		checkEngine.setConn(this.conn);
 	}
 
 	/* (non-Javadoc)
@@ -99,8 +100,19 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	@Override
 	public String preCheck() throws Exception {
 		// TODO Auto-generated method stub
+		createPreCheckGlmList();
 		return checkEngine.preCheck();
 	}
+	
+	//构造前检查参数。前检查，如果command中的构造不满足前检查参数需求，则需重写该方法，具体可参考createPostCheckGlmList
+	public void createPreCheckGlmList(){
+		List<IRow> resultList=new ArrayList<IRow>();
+		Result resultObj=this.getResult();
+		if(resultObj.getAddObjects().size()>0){resultList.addAll(resultObj.getAddObjects());}
+		if(resultObj.getUpdateObjects().size()>0){resultList.addAll(resultObj.getUpdateObjects());}
+		if(resultObj.getDelObjects().size()>0){resultList.addAll(resultObj.getDelObjects());}
+		this.checkCommand.setGlmList(resultList);
+	} 
 	
 	public abstract String exeOperation() throws Exception;
 	/* (non-Javadoc)
@@ -114,13 +126,13 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
 			this.prepareData();
 
+			msg =  exeOperation();//new Operation(command, conn);
+			
 			String preCheckMsg = this.preCheck();
 
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
 			}
-
-			msg =  exeOperation();//new Operation(command, conn);
 
 			this.recordData();
 
@@ -154,7 +166,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		this.checkEngine.postCheck();
 
 	}
-	
+	//构造后检查参数
 	public void createPostCheckGlmList(){
 		List<IRow> resultList=new ArrayList<IRow>();
 		Result resultObj=this.getResult();

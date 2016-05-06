@@ -1,14 +1,18 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 
@@ -36,7 +40,7 @@ public class Command extends AbstractCommand {
 
 	private List<RdBranch> branches;
 
-	public Command(JSONObject json, String requester) {
+	public Command(JSONObject json, String requester) throws Exception {
 		this.requester = requester;
 
 		JSONObject data = json.getJSONObject("data");
@@ -60,6 +64,7 @@ public class Command extends AbstractCommand {
 		}
 
 		this.setProjectId(json.getInt("projectId"));
+		//createGlmList();
 	}
 
 	public int getLinkPid() {
@@ -129,9 +134,19 @@ public class Command extends AbstractCommand {
 		return ObjType.RDLINK;
 	}
 
-	public void createGlmList() throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
+//	public void createGlmList() throws Exception {
+//		// TODO Auto-generated method stub
+//		List<IRow> glmList=new ArrayList<IRow>();		
+//		
+//		RdLink linkObj=new RdLink();
+//		RdNode eNode=new RdNode();
+//		RdNode sNode=new RdNode();
+//		linkObj.setPid(this.linkPid);
+//		glmList.add(linkObj);
+//		if(this.sNodePid!=-1){sNode.setPid(this.sNodePid);glmList.add(sNode);}
+//		if(this.eNodePid!=-1){eNode.setPid(this.eNodePid);glmList.add(eNode);}	
+//		
+//		this.setGlmList(glmList);
+//	}
 
 }

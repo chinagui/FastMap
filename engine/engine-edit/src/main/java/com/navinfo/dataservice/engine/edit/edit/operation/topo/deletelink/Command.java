@@ -111,7 +111,7 @@ public class Command extends AbstractCommand {
 			this.isCheckInfect = true;
 		}
 		//构造检查参数
-		this.createGlmList();
+		//this.createGlmList();
 		
 	}
 
@@ -172,12 +172,12 @@ public class Command extends AbstractCommand {
 		this.rdGscs = rdGscs;
 	}
 
-	public void createGlmList() throws Exception {
-		RdLink rdLinkObj=new RdLink();
-		rdLinkObj.setPid(this.linkPid);
-		List<IRow> glmList=new ArrayList<IRow>();
-		glmList.add(rdLinkObj);
-		this.setGlmList(glmList);
-	}
+//	public void createGlmList() throws Exception {
+//		RdLink rdLinkObj=new RdLink();
+//		rdLinkObj.setPid(this.linkPid);
+//		List<IRow> glmList=new ArrayList<IRow>();
+//		glmList.add(rdLinkObj);
+//		this.setGlmList(glmList);
+//	}
 	
 }

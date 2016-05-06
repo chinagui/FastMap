@@ -7,17 +7,11 @@ package com.navinfo.navicommons.geo.computation;
 * @Description: TODO
 */
 public class DoubleUtil {
+	public static double INFINITY = 9999999999999999.0;
 	public static double keep5Decimal(Double num){
 		return (double)(Math.round(num*100000)/100000.0);
 	} 
 	public static boolean equals(double num1,double num2){
-		if(Double.isNaN(num1)||Double.isNaN(num2)){
-			if(Double.isNaN(num1)&&Double.isNaN(num2)){
-				return true;
-			}else{
-				return false;
-			}
-		}
 		if(Math.round(num1*100000)==Math.round(num2*100000)) return true;
 		return false;
 	}
@@ -31,12 +25,6 @@ public class DoubleUtil {
 			System.out.println("No...");
 		}
 		System.out.println(keep5Decimal(1.23456666)-keep5Decimal(1.23456777));
-
-		if(equals(Double.NaN,0.0)){
-			System.out.println("XXXXXXXXXX");
-		}else{
-			System.out.println("YYY");
-		}
 		
 	}
 }

@@ -92,9 +92,4 @@ public class Command extends AbstractCommand {
 		return ObjType.ADLINK;
 	}
 
-	public void createGlmList() throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
-
 }

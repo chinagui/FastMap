@@ -24,7 +24,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;
 
 public class Operation implements IOperation {
-	
+
 	private Check check;
 
 	private Command command;
@@ -52,17 +52,17 @@ public class Operation implements IOperation {
 		this.command = command;
 
 		this.conn = conn;
-		
+
 		this.check = check;
 	}
 
 	@Override
 	public String run(Result result) throws Exception {
-		
+
 		int meshId = new RdLinkSelector(conn).loadById(command.getInLinkPid(), true).mesh();
 
 		RdRestriction restrict = new RdRestriction();
-		
+
 		restrict.setMesh(meshId);
 
 		restrict.setPid(PidService.getInstance().applyRestrictionPid());
@@ -75,34 +75,30 @@ public class Operation implements IOperation {
 
 		List<Integer> outLinkPids = command.getOutLinkPids();
 
-		this.calViaLinks(command.getInLinkPid(), command.getNodePid(),
-				outLinkPids);
-		
-		
+		this.calViaLinks(command.getInLinkPid(), command.getNodePid(), outLinkPids);
+
 		Set<Integer> pids = new HashSet<Integer>();
-		
+
 		pids.add(command.getInLinkPid());
-		
-		for(Integer pid:outLinkPids){
+
+		for (Integer pid : outLinkPids) {
 			pids.add(pid);
-			
+
 			List<Integer> viaLinkPids = viaLinkPidMap.get(pid);
-			
-			for(Integer viapid:viaLinkPids){
+
+			for (Integer viapid : viaLinkPids) {
 				pids.add(viapid);
 			}
 		}
-		
+
 		check.checkGLM01017(conn, pids);
 
 		List<IRow> details = new ArrayList<IRow>();
 
-		List<Integer> restricInfos = new ArrayList<Integer>();
-
-		for (int outLinkPid:outLinkPids) {
+		for (int outLinkPid : outLinkPids) {
 
 			RdRestrictionDetail detail = new RdRestrictionDetail();
-			
+
 			detail.setMesh(meshId);
 
 			detail.setPid(PidService.getInstance().applyRestrictionDetailPid());
@@ -111,30 +107,23 @@ public class Operation implements IOperation {
 
 			detail.setOutLinkPid(outLinkPid);
 
-			LineSegment outLinkSegment = outLinkSegmentMap.get(detail
-					.getOutLinkPid());
+			LineSegment outLinkSegment = outLinkSegmentMap.get(detail.getOutLinkPid());
 
-			double angle = AngleCalculator.getAngle(inLinkSegment,
-					outLinkSegment);
+			double angle = AngleCalculator.getAngle(inLinkSegment, outLinkSegment);
 
 			int restricInfo = this.calRestricInfo(angle);
 
 			detail.setRestricInfo(restricInfo);
-			
+
 			detail.setRelationshipType(relationTypeMap.get(detail.getOutLinkPid()));
-			
-			if(detail.getRelationshipType()==1){
+
+			if (detail.getRelationshipType() == 1) {
 				check.checkGLM26017(conn, command.getNodePid());
-				
+
 				check.checkGLM08033(conn, command.getInLinkPid(), outLinkPid);
 			}
 
-			if (!restricInfos.contains(restricInfo)) {
-				restricInfos.add(restricInfo);
-			}
-
-			List<Integer> viaLinkPids = viaLinkPidMap.get(detail
-					.getOutLinkPid());
+			List<Integer> viaLinkPids = viaLinkPidMap.get(detail.getOutLinkPid());
 
 			int seqNum = 1;
 
@@ -143,7 +132,7 @@ public class Operation implements IOperation {
 			for (Integer viaLinkPid : viaLinkPids) {
 
 				RdRestrictionVia via = new RdRestrictionVia();
-				
+
 				via.setMesh(meshId);
 
 				via.setDetailId(detail.getPid());
@@ -165,21 +154,25 @@ public class Operation implements IOperation {
 
 		restrict.setDetails(details);
 
+		/**
+		 * 组装前台传递的交限信息
+		 */
+		List<Integer> restricInfos = command.getRestricInfos();
+
 		if (restricInfos.size() > 0) {
 			StringBuilder sb = new StringBuilder();
-			
 			for (Integer restricInfo : restricInfos) {
 				sb.append("[");
-				
+
 				sb.append(restricInfo);
-				
+
 				sb.append("]");
-				
+
 				sb.append(",");
 			}
-			
-			sb.deleteCharAt(sb.length()-1);
-			
+
+			sb.deleteCharAt(sb.length() - 1);
+
 			restrict.setRestricInfo(sb.toString());
 		}
 
@@ -226,8 +219,8 @@ public class Operation implements IOperation {
 
 				sb.append(",");
 			}
-			
-			sb.deleteCharAt(sb.length()-1);
+
+			sb.deleteCharAt(sb.length() - 1);
 
 			pstmt.setString(3, sb.toString());
 
@@ -287,13 +280,13 @@ public class Operation implements IOperation {
 
 					for (String s : splits) {
 						if (!s.equals("")) {
-							
+
 							int viaPid = Integer.valueOf(s);
-							
-							if(viaPid == outLinkPid || viaPid == inLinkPid ){
+
+							if (viaPid == outLinkPid || viaPid == inLinkPid) {
 								continue;
 							}
-							
+
 							viaLinks.add(viaPid);
 						}
 					}

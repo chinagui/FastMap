@@ -1,14 +1,11 @@
 package com.navinfo.dataservice.engine.edit.edit.operation;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.log.LogWriter;
@@ -61,7 +58,6 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		this.checkCommand.setObjType(this.command.getObjType());
 		this.checkCommand.setOperType(this.command.getOperType());
 		this.checkCommand.setProjectId(this.command.getProjectId());
-		this.checkCommand.setGlmList(this.command.getGlmList());
 		this.checkEngine=new CheckEngine(checkCommand);
 	}
 
@@ -101,7 +97,6 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		// TODO Auto-generated method stub
 		return checkEngine.preCheck();
 	}
-	
 	public abstract String exeOperation() throws Exception;
 	/* (non-Javadoc)
 	 * @see com.navinfo.dataservice.dao.glm.iface.IProcess#run()
@@ -150,18 +145,9 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	@Override
 	public void postCheck() throws Exception {
 		// TODO Auto-generated method stub
-		this.createPostCheckGlmList();
 		this.checkEngine.postCheck();
 
 	}
-	
-	public void createPostCheckGlmList(){
-		List<IRow> resultList=new ArrayList<IRow>();
-		Result resultObj=this.getResult();
-		if(resultObj.getAddObjects().size()>0){resultList.addAll(resultObj.getAddObjects());}
-		if(resultObj.getUpdateObjects().size()>0){resultList.addAll(resultObj.getUpdateObjects());}
-		this.checkCommand.setGlmList(resultList);
-	} 
 
 	/* (non-Javadoc)
 	 * @see com.navinfo.dataservice.dao.glm.iface.IProcess#getPostCheck()

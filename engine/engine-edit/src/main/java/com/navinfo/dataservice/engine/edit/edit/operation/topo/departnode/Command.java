@@ -129,9 +129,4 @@ public class Command extends AbstractCommand {
 		return ObjType.RDLINK;
 	}
 
-	public void createGlmList() throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
-
 }

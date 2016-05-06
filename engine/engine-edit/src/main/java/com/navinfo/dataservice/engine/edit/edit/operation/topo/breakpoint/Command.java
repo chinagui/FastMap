@@ -275,10 +275,5 @@ public class Command extends AbstractCommand {
 	public void setRdGscs(List<RdGsc> rdGscs) {
 		this.rdGscs = rdGscs;
 	}
-
-	public void createGlmList() throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
 	
 }

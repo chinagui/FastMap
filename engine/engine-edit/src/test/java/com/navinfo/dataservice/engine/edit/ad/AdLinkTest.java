@@ -7,12 +7,17 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.db.ConfigLoader;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
+import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 import com.navinfo.dataservice.engine.edit.edit.search.rd.utils.RdLinkSearchUtils;
+
+import net.sf.json.JSONObject;
 
 /**
  * @author zhaokk
@@ -25,7 +30,7 @@ public class AdLinkTest {
     public AdLinkTest() throws Exception{
     	 this.conn = GlmDbPoolManager.getInstance().getConnection(11);
     	 ConfigLoader
-		.initDBConn("H:/GitHub/DataService/web/edit-web/src/main/resources/config.properties");
+		.initDBConn("D:/ws_new/DataService/web/edit-web/src/main/resources/config.properties");
     }
 	protected Logger log = Logger.getLogger(this.getClass());
 	//创建一条link
@@ -82,8 +87,42 @@ public class AdLinkTest {
 		}
 	}
 	
+	public void testSearchAdLink()
+	{
+		String parameter = "{\"projectId\":11,\"type\":\"ADLINK\",\"pid\":100031492}";
+		
+		Connection conn;
+			try {
+				conn = GlmDbPoolManager.getInstance().getConnection(11);
+				
+				JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+				SearchProcess p = new SearchProcess(conn);
+
+				System.out.println(p.searchDataByPid(ObjType.ADLINK, 100031492).Serialize(ObjLevel.FULL));
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+	}
+	
+	public void testSearchAdNode()
+	{
+		Connection conn;
+			try {
+				conn = GlmDbPoolManager.getInstance().getConnection(11);
+				
+				SearchProcess p = new SearchProcess(conn);
+
+				System.out.println(p.searchDataByPid(ObjType.ADNODE, 100021766).Serialize(ObjLevel.FULL));
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+	}
+	
 	public static void main(String[] args) throws Exception{
-		new AdLinkTest().TrackRdLink();
+		new AdLinkTest().testSearchAdNode();
 		//new AdLinkTest().deleteAdLinkTest();
 		//new AdLinkTest().breakAdLinkTest();
 		

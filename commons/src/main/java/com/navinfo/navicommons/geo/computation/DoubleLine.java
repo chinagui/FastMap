@@ -31,7 +31,7 @@ public class DoubleLine {
 	 */
 	public double getSlope(){
 		if(epoint.getX()==spoint.getX()){
-			return Double.NaN;
+			return DoubleUtil.INFINITY;
 		}else{
 			return (epoint.getY()-spoint.getY())/(epoint.getX()-spoint.getX());
 		}

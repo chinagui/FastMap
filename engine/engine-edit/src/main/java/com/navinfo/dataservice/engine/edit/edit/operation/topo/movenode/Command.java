@@ -70,11 +70,6 @@ public class Command extends AbstractCommand {
 		return latitude;
 	}
 
-	public void createGlmList() throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
-
 
 	
 }

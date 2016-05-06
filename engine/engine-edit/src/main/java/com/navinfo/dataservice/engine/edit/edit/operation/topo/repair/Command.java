@@ -56,11 +56,6 @@ public class Command extends AbstractCommand {
 		return ObjType.RDLINK;
 	}
 	
-	public void createGlmList() throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
-
 	public Command(JSONObject json,String requester) throws JSONException{
 		
 		this.requester = requester;

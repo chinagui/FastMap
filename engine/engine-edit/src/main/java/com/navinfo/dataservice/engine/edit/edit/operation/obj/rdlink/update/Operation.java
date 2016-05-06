@@ -123,11 +123,6 @@ public class Operation implements IOperation {
 	}
 
 	private void saveForms(Result result, JSONArray forms) throws Exception {
-		
-		int deleteCount = 0;
-		
-		int insertCount = 0;
-		
 		for (int i = 0; i < forms.size(); i++) {
 
 			JSONObject formJson = forms.getJSONObject(i);
@@ -143,8 +138,6 @@ public class Operation implements IOperation {
 					if (ObjStatus.DELETE.toString().equals(
 							formJson.getString("objStatus"))) {
 						result.insertObject(form, ObjStatus.DELETE, updateLink.pid());
-						
-						deleteCount++;
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							formJson.getString("objStatus"))) {
@@ -166,22 +159,9 @@ public class Operation implements IOperation {
 
 					result.insertObject(form, ObjStatus.INSERT, updateLink.pid());
 
-					insertCount++;
 				}
 			}
 
-		}
-		
-		if(insertCount==0 && deleteCount==updateLink.getForms().size()){
-			//rd_link_form被清空时，自动添加一条
-			
-			RdLinkForm form = new RdLinkForm();
-			
-			form.setLinkPid(this.updateLink.getPid());
-			
-			form.setMesh(this.updateLink.getMeshId());
-			
-			result.insertObject(form, ObjStatus.INSERT, this.updateLink.pid());
 		}
 
 	}

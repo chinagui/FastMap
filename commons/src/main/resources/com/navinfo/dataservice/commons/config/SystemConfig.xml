@@ -7,8 +7,8 @@
 	<MAN.jdbc.url>jdbc:oracle:thin:@192.168.4.131:1521/orcl</MAN.jdbc.url>
 	<MAN.dataSource.validationQuery>select 1 from dual</MAN.dataSource.validationQuery>
 	
-	<MAN.jdbc.username>fm_man</MAN.jdbc.username>
-	<MAN.jdbc.password>fm_man</MAN.jdbc.password>
+	<MAN.jdbc.username>pm_xxw</MAN.jdbc.username>
+	<MAN.jdbc.password>pm_xxw</MAN.jdbc.password>
 	<MAN.dataSource.initialSize>2</MAN.dataSource.initialSize>
 	<MAN.dataSource.maxActive>25</MAN.dataSource.maxActive>
 	<MAN.dataSource.maxIdle>10</MAN.dataSource.maxIdle>

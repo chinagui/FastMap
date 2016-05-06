@@ -103,9 +103,4 @@ public class Command extends AbstractCommand {
 		this.point = point;
 	}
 
-	public void createGlmList() throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
-
 }

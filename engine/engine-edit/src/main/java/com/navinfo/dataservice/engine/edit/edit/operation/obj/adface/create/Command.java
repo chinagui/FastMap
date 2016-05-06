@@ -68,11 +68,6 @@ public class Command extends AbstractCommand implements ICommand {
 		return requester;
 	}
 
-	public void createGlmList() throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
-
 	public Command(JSONObject json, String requester) throws Exception{
 		this.requester = requester;
 

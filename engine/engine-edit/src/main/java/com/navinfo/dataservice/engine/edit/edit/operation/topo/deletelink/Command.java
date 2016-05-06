@@ -1,13 +1,10 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.deletelink;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
@@ -101,7 +98,7 @@ public class Command extends AbstractCommand {
 		this.restrictions = restrictions;
 	}
 
-	public Command(JSONObject json,String requester) throws Exception {
+	public Command(JSONObject json,String requester) {
 		this.requester = requester;
 		
 		this.linkPid = json.getInt("objId");
@@ -110,8 +107,6 @@ public class Command extends AbstractCommand {
 		if (json.containsKey("infect") && json.getInt("infect") == 1){
 			this.isCheckInfect = true;
 		}
-		//构造检查参数
-		this.createGlmList();
 		
 	}
 
@@ -170,14 +165,6 @@ public class Command extends AbstractCommand {
 
 	public void setRdGscs(List<RdGsc> rdGscs) {
 		this.rdGscs = rdGscs;
-	}
-
-	public void createGlmList() throws Exception {
-		RdLink rdLinkObj=new RdLink();
-		rdLinkObj.setPid(this.linkPid);
-		List<IRow> glmList=new ArrayList<IRow>();
-		glmList.add(rdLinkObj);
-		this.setGlmList(glmList);
 	}
 	
 }

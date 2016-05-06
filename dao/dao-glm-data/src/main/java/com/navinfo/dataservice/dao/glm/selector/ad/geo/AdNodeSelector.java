@@ -39,7 +39,7 @@ public class AdNodeSelector implements ISelector {
 		AdNode adNode = new AdNode();
 
 		StringBuilder sb = new StringBuilder(
-				"SELECT a.*,b.mesh_id FROM ad_node a,ad_node_mesh b WHERE a.node_pid = b.node_pid AND a.node_pid = :1");
+				"select * from " + adNode.tableName() + " WHERE node_pid = :1");
 
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -77,11 +77,6 @@ public class AdNodeSelector implements ISelector {
 
 				// ad_node_mesh
 				List<IRow> forms = new AdNodeMeshSelector(conn).loadRowsByParentId(id, isLock);
-
-				// loadRowsByParentId已经查询了mesh,是否可以不做设置
-				for (IRow row : forms) {
-					row.setMesh(adNode.getMeshId());
-				}
 
 				adNode.setMeshes(forms);
 

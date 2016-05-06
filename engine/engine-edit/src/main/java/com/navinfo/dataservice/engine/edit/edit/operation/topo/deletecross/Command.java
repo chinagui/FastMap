@@ -104,9 +104,4 @@ public class Command extends AbstractCommand {
 		return requester;
 	}
 
-	public void createGlmList() throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
-
 }

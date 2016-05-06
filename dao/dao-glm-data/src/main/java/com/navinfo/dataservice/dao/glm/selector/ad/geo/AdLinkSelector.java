@@ -33,7 +33,7 @@ public class AdLinkSelector implements ISelector {
 		AdLink adLink = new AdLink();
 
 		StringBuilder sb = new StringBuilder(
-				"SELECT a.*,b.mesh_id FROM ad_link a,ad_link_mesh b WHERE a.link_pid = :1 AND a.link_pid = b.link_pid");
+				 "select * from " + adLink.tableName() + " WHERE link_pid = :1");
 
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -76,15 +76,9 @@ public class AdLinkSelector implements ISelector {
 				adLink.setRowId(resultSet.getString("row_id"));
 
 				// 获取AD_LINK对应的关联数据
-
 				// ad_link_mesh
 				List<IRow> forms = new AdLinkMeshSelector(conn).loadRowsByParentId(id, isLock);
 				
-				//loadRowsByParentId已经查询了mesh,是否可以不做设置
-				for (IRow row : forms) {
-					row.setMesh(adLink.getMesh());
-				}
-
 				adLink.setMeshes(forms);
 
 				for (IRow row : adLink.getMeshes()) {

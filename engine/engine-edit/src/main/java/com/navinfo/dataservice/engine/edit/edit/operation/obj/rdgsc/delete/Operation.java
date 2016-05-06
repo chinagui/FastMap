@@ -15,12 +15,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
  */
 public class Operation implements IOperation {
 
-	private Command command;
-
 	private RdGsc rdGsc;
 
 	public Operation(Command command, RdGsc rdGsc) {
-		this.command = command;
 
 		this.rdGsc = rdGsc;
 

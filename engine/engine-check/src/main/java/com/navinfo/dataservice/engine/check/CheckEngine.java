@@ -51,70 +51,44 @@ public class CheckEngine {
 			check.insertCheckLog(checkResultList.get(i).getRuleId(), checkResultList.get(i).getLoc(), checkResultList.get(i).getTargets(), checkResultList.get(i).getMeshId(), "TEST");
 		}
 	}
-	
-	private void isValidConn() throws Exception{
-		if (this.conn.isClosed()){
-			this.conn = GlmDbPoolManager.getInstance().getConnection(this.checkCommand.getProjectId());
-			this.conn.setAutoCommit(true);}		
-	}
-	
 	//前检查
 	public String preCheck() throws Exception{
-		try{
-			log.info("start preCheck");
-			isValidConn();
-			//获取前检查需要执行规则列表
-			List<CheckRule> rulesList=getRules(checkCommand.getObjType(),checkCommand.getOperType(),"PRE");		
-			for (int i=0;i<rulesList.size();i++){
-				CheckRule rule=rulesList.get(i);
-				baseRule obj = (baseRule) rule.getRuleClass().newInstance();
-				obj.setRuleDetail(rule);
-				obj.setConn(this.conn);
-				//调用规则的前检查
-				obj.preCheck(this.checkCommand);
-				if(obj.getCheckResultList().size()!=0){
-					log.info("end preCheck");
-					return obj.getCheckResultList().get(0).getInformation();
-					}
-			}
-			log.info("end preCheck");
-			return null;}
-		finally {
-			try {
-				this.conn.close();
-			} catch (Exception e) {
-				
-			}
+		log.info("start preCheck");
+		//获取前检查需要执行规则列表
+		List<CheckRule> rulesList=getRules(checkCommand.getObjType(),checkCommand.getOperType(),new String("PRE"));		
+		for (int i=0;i<rulesList.size();i++){
+			CheckRule rule=rulesList.get(i);
+			baseRule obj = (baseRule) rule.getRuleClass().newInstance();
+			obj.setRuleDetail(rule);
+			obj.setConn(this.conn);
+			//调用规则的前检查
+			obj.preCheck(this.checkCommand);
+			if(obj.getCheckResultList().size()!=0){
+				log.info("end preCheck");
+				return obj.getCheckResultList().get(0).getInformation();
+				}
 		}
+		log.info("end preCheck");
+		return null;
 	}
 	
 	//后检查
 	public void postCheck() throws Exception{
-		try{
-			log.info("start postCheck");
-			isValidConn();
-			//获取后检查需要执行规则列表
-			List<CheckRule> rulesList=getRules(this.checkCommand.getObjType(),this.checkCommand.getOperType(),"POST");
-			List<NiValException> checkResultList = new ArrayList<NiValException>();
-			for (int i=0;i<rulesList.size();i++){
-				CheckRule rule=rulesList.get(i);
-				baseRule obj = (baseRule) rule.getRuleClass().newInstance();
-				obj.setRuleDetail(rule);
-				obj.setConn(this.conn);
-				//调用规则的后检查
-				obj.postCheck(this.checkCommand);
-				checkResultList.addAll(obj.getCheckResultList());
-			}
-			saveCheckResult(checkResultList);
-			log.info("end postCheck");
+		log.info("start postCheck");
+		//获取后检查需要执行规则列表
+		List<CheckRule> rulesList=getRules(this.checkCommand.getObjType(),this.checkCommand.getOperType(),new String("POST"));
+		List<NiValException> checkResultList = new ArrayList<NiValException>();
+		for (int i=0;i<rulesList.size();i++){
+			CheckRule rule=rulesList.get(i);
+			baseRule obj = (baseRule) rule.getRuleClass().newInstance();
+			obj.setRuleDetail(rule);
+			obj.setConn(this.conn);
+			//调用规则的后检查
+			obj.postCheck(this.checkCommand);
+			checkResultList.addAll(obj.getCheckResultList());
 		}
-		finally {
-			try {
-				this.conn.close();
-			} catch (Exception e) {
-				
-			}
-		}
+		saveCheckResult(checkResultList);
+		log.info("end postCheck");
 	}
 	
 	public static void main(String[] args) throws Exception{

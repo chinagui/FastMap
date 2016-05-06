@@ -69,6 +69,31 @@ public class AdAdminTest {
 		}
 	}
 	
+	public static void testUpdateAdadmin() {
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"ADADMIN\",\"projectId\":11,\"data\":{\"population\":2,\"pid\":3538,\"objStatus\":\"UPDATE\"}}";
+		try {
+			Transaction t = new Transaction(parameter);
+
+			String msg = t.run();
+
+			String log = t.getLogs();
+
+			JSONObject json = new JSONObject();
+
+			json.put("result", msg);
+
+			json.put("log", log);
+
+			json.put("check", t.getCheckLog());
+
+			json.put("pid", t.getPid());
+
+			System.out.println(ResponseUtils.assembleRegularResult(json));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void testSearch()
 	{
 		String paratmeter = "{\"projectId\":11,\"type\":\"ADADMIN\",\"pid\":100000137}";

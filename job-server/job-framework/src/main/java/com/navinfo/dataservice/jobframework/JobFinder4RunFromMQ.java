@@ -39,15 +39,6 @@ public class JobFinder4RunFromMQ implements JobFinder {
 		JobMsgSubscriber.cancelSubScribe(jobMshType);
 	}
 	
-	public static void main(String[] args){
-		try{
-			log.info("Starting Server...");
-			JobFinder finder = new JobFinder4RunFromMQ();
-			finder.startFinding(JobMsgType.MSG_RUN_JOB);
-		}catch(Exception e){
-			System.out.println(e.getMessage());
-			e.printStackTrace();
-		}
-	}
+
 
 }

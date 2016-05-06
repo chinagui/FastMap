@@ -65,7 +65,7 @@ public class ConfigLoader {
 			PidService.getInstance();
 
 			// hbase初始化
-			//HBaseAddress.init();
+			HBaseAddress.init();
 
 		} catch (Exception e) {
 			logger.fatal(LoggerConstant.fatal, e);

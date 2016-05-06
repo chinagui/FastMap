@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadlink;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
@@ -19,7 +20,6 @@ public class Process extends AbstractProcess<Command> {
 
 	}
 
-
 	public void lockAdLink() throws Exception {
 
 		AdLinkSelector selector = new AdLinkSelector(this.getConn());
@@ -34,25 +34,24 @@ public class Process extends AbstractProcess<Command> {
 
 		AdNodeSelector selector = new AdNodeSelector(this.getConn());
 
-		List<AdNode> nodes = selector.loadEndAdNodeByLinkPid(this.getCommand().getLinkPid(),
-				false);
-		
+		List<AdNode> nodes = selector.loadEndAdNodeByLinkPid(this.getCommand().getLinkPid(), false);
+
 		List<Integer> nodePids = new ArrayList<Integer>();
-		
-		for(AdNode node : nodes){
+
+		for (AdNode node : nodes) {
 			nodePids.add(node.getPid());
 		}
 		this.getCommand().setNodes(nodes);
-		
+
 		this.getCommand().setNodePids(nodePids);
 	}
-	
+
 	// 锁定盲端节点
-			public void lockAdFace() throws Exception {
-				AdFaceSelector selector = new AdFaceSelector(this.getConn());
-				List<AdFace> faces = selector.loadAdFaceByLinkId(this.getCommand().getLinkPid(),true);
-				this.getCommand().setFaces(faces);
-			}
+	public void lockAdFace() throws Exception {
+		AdFaceSelector selector = new AdFaceSelector(this.getConn());
+		List<AdFace> faces = selector.loadAdFaceByLinkId(this.getCommand().getLinkPid(), true);
+		this.getCommand().setFaces(faces);
+	}
 
 	@Override
 	public boolean prepareData() throws Exception {
@@ -75,11 +74,15 @@ public class Process extends AbstractProcess<Command> {
 		lockAdNode();
 		return true;
 	}
-	
+
 	@Override
 	public String exeOperation() throws Exception {
-		// TODO Auto-generated method stub
-		return new OpRefAdFace(this.getCommand()).run(this.getResult());
+		// 删除行政区划线有关行政区划点、线具体操作
+		IOperation op = new OpTopo(this.getCommand());
+		op.run(this.getResult());
+		// 删除行政区划线有关行政区划面具体操作
+		IOperation opAdFace = new OpRefAdFace(this.getCommand());
+		return opAdFace.run(this.getResult());
 	}
 
 }

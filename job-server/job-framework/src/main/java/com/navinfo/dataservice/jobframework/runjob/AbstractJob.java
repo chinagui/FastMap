@@ -22,7 +22,7 @@ import net.sf.json.JSONObject;
 * @author Xiao Xiaowen 
 * @date 2016年3月25日 下午4:12:36 
 * @Description: 
-* 1. 必须要有一个(JobInfo jobInfo,CountDownLatch doneSignal)参数的构造函数
+* 
 */
 public abstract class AbstractJob implements Runnable {
 

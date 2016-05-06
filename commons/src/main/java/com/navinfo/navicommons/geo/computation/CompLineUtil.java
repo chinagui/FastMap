@@ -175,26 +175,42 @@ public class CompLineUtil {
 					rightCurFirstLine.setSpoint(rightMidNode);
 				}
 			}
-			//reverse right polylines
-			List<DoublePolyline> ls = Arrays.asList(rightResults);
+			//reverse left polylines
+			List<DoublePolyline> ls = Arrays.asList(leftResults);
 			Collections.reverse(ls);
-			rightResults = ls.toArray(new DoublePolyline[0]);
-			for(DoublePolyline polyline:rightResults){
+			leftResults = ls.toArray(new DoublePolyline[0]);
+			for(DoublePolyline polyline:leftResults){
 				polyline.reverse();
 			}
-			List<DoublePolyline> resultsList = new ArrayList(Arrays.asList(leftResults));
-			resultsList.addAll(Arrays.asList(rightResults));
+			List<DoublePolyline> resultsList = new ArrayList(Arrays.asList(rightResults));
+			resultsList.addAll(Arrays.asList(leftResults));
 			return resultsList.toArray(new DoublePolyline[0]);
 		}
 		return null;
 	}
-	public static LineString[] offset(LineString[] lines,double distance){
+	public static LineString[] separate(Point startPoint,LineString[] lines,double distance){
 		if(lines!=null&&lines.length>0){
-			DoublePolyline[] polylines = new DoublePolyline[lines.length];
-			for(int i=0;i<lines.length;i++){
+			int length =lines.length;
+			DoublePolyline[] polylines = new DoublePolyline[length];
+			DoublePoint start = MyGeometryConvertor.convert(startPoint.getCoordinate());//保留起点
+			DoublePoint end = null;
+			DoublePoint curStart = start;
+			for(int i=0;i<length;i++){
 				polylines[i]=MyGeometryConvertor.convert(lines[i]);
+				if(!curStart.equals(polylines[i].getSpoint())){
+					polylines[i].reverse();
+				}
+				curStart = polylines[i].getEpoint();
 			}
+			end = polylines[length-1].getEpoint();//得到终点
+			//获取右左偏移平行线
 			DoublePolyline[] rawResults = offset(polylines,distance);
+			//构造闭环
+			rawResults[0].extend(start, false);
+			rawResults[length-1].extend(end, true);
+			rawResults[length].extend(end, false);
+			rawResults[2*length-1].extend(start, true);
+			//转换
 			LineString[] results = new LineString[rawResults.length];
 			for(int j=0;j<rawResults.length;j++){
 				results[j]=MyGeometryConvertor.convert(rawResults[j]);

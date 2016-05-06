@@ -14,42 +14,25 @@ import org.apache.commons.lang.StringUtils;
 * @Description: TODO
 */
 public class DoublePolyline {
-	private int lineSize = 0;
-	private DoublePoint spoint;
-	private DoublePoint epoint;
 	private DoubleLine[] lines;
 	public DoublePolyline(DoublePoint[] points){
-		lineSize = points.length-1;
-		spoint = points[0];
-		epoint = points[lineSize];
+		int lineSize = points.length-1;
 		lines = new DoubleLine[lineSize];
 		for(int i=0;i<lineSize;i++){
 			lines[i]=new DoubleLine(points[i],points[i+1]);
 		}
 	}
 	public DoublePolyline(DoubleLine[] lines){
-		lineSize = lines.length;
-		this.spoint=lines[0].getSpoint();
-		this.epoint=lines[lineSize-1].getEpoint();
 		this.lines=lines;
 	}
 	public int getLineSize() {
-		return lineSize;
-	}
-	public void setLineSize(int lineSize) {
-		this.lineSize = lineSize;
+		return lines==null?0:lines.length;
 	}
 	public DoublePoint getSpoint() {
-		return spoint;
-	}
-	public void setSpoint(DoublePoint spoint) {
-		this.spoint = spoint;
+		return (lines==null||lines.length==0)?null:lines[0].getSpoint();
 	}
 	public DoublePoint getEpoint() {
-		return epoint;
-	}
-	public void setEpoint(DoublePoint epoint) {
-		this.epoint = epoint;
+		return (lines==null||lines.length==0)?null:lines[lines.length-1].getEpoint();
 	}
 	public DoubleLine[] getLines() {
 		return lines;
@@ -58,31 +41,58 @@ public class DoublePolyline {
 		this.lines = lines;
 	}
 	public DoubleLine getFirstLine(){
-		if(lines!=null&&lineSize>0){
-			return lines[0];
+		if(lines==null||lines.length==0){
+			return null;
 		}
-		return null;
+		return lines[0];
 	}
 	public DoubleLine getLastLine(){
-		if(lines!=null&&lineSize>0){
-			return lines[lineSize-1];
+		if(lines==null||lines.length==0){
+			return null;
 		}
-		return null;
+		return lines[lines.length-1];
 	}
 	public void reverse(){
-		epoint = spoint;
 		List<DoubleLine> ls = Arrays.asList(lines);
 		Collections.reverse(ls);
 		lines = ls.toArray(new DoubleLine[0]);
 		for(DoubleLine line:lines){
 			line.reverse();
 		}
-		spoint = lines[0].getSpoint();
+	}
+	public boolean extend(DoublePoint point,boolean isTail){
+		if(point==null||lines==null||lines.length==0) return false;
+		DoubleLine[] newLines = new DoubleLine[lines.length+1];
+		int moveIndex=0;
+		DoubleLine extendLine = null;
+		if(isTail){
+			moveIndex = 0;
+			extendLine = new DoubleLine(this.getEpoint(),point);
+			newLines[lines.length]=extendLine;
+		}else{
+			moveIndex = 1;
+			extendLine = new DoubleLine(point,this.getSpoint());
+			newLines[0] = extendLine;
+		}
+		//数组直接赋值
+		int i = 0;
+		for(DoubleLine line:lines){
+			newLines[i+moveIndex]=line;
+			i++;
+		}
+		lines = newLines;
+		return true;
 	}
 	public String toString(){
 		StringBuilder s = new StringBuilder("[");
 		s.append(StringUtils.join(lines));
 		s.append("]");
 		return s.toString();
+	}
+	public static void main(String[] args){
+		Double[] a = new Double[]{new Double(0.0),new Double(1.0)};
+		Double[] b = new Double[]{new Double(5.0),new Double(6.0),new Double(7.0)};
+		a = b;
+		System.out.println(a.length);
 	}
 }

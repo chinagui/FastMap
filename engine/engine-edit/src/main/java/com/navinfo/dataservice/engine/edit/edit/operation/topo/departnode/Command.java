@@ -133,7 +133,6 @@ public class Command extends AbstractCommand {
 	public ObjType getObjType() {
 		return ObjType.RDLINK;
 	}
-
 //	public void createGlmList() throws Exception {
 //		// TODO Auto-generated method stub
 //		List<IRow> glmList=new ArrayList<IRow>();		

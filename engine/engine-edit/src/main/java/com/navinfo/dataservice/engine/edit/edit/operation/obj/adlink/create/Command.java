@@ -72,11 +72,6 @@ public class Command extends AbstractCommand  {
 		return catchLinks;
 	}
 
-	public void createGlmList() throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
-
 	public Command(JSONObject json, String requester) throws Exception{
 		this.requester = requester;
 		this.setProjectId(json.getInt("projectId"));

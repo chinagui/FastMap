@@ -44,14 +44,12 @@ public class DoublePolyline {
 	}
 	public void setSpoint(DoublePoint spoint) {
 		this.spoint = spoint;
-		this.getFirstLine().setSpoint(spoint);
 	}
 	public DoublePoint getEpoint() {
 		return epoint;
 	}
 	public void setEpoint(DoublePoint epoint) {
 		this.epoint = epoint;
-		this.getLastLine().setEpoint(epoint);
 	}
 	public DoubleLine[] getLines() {
 		return lines;

@@ -1,14 +1,11 @@
 package com.navinfo.dataservice.engine.edit.edit.operation;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.log.LogWriter;
@@ -103,7 +100,6 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		createPreCheckGlmList();
 		return checkEngine.preCheck();
 	}
-	
 	//构造前检查参数。前检查，如果command中的构造不满足前检查参数需求，则需重写该方法，具体可参考createPostCheckGlmList
 	public void createPreCheckGlmList(){
 		List<IRow> resultList=new ArrayList<IRow>();
@@ -133,7 +129,6 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
 			}
-
 			this.recordData();
 
 			this.postCheck();
@@ -162,7 +157,6 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	@Override
 	public void postCheck() throws Exception {
 		// TODO Auto-generated method stub
-		this.createPostCheckGlmList();
 		this.checkEngine.postCheck();
 
 	}

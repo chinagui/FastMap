@@ -79,10 +79,5 @@ public class Command extends AbstractCommand   implements ICommand {
 	public void setLinkPid(int linkPid) {
 		this.linkPid = linkPid;
 	}
-
-	public void createGlmList() throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
 	
 }

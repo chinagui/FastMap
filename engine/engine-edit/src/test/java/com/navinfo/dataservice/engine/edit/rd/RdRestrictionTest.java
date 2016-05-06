@@ -11,7 +11,7 @@ public class RdRestrictionTest {
 	}
 
 	public static void testAddRestriction() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDRESTRICTION\",\"projectId\":11,\"data\":{\"inLinkPid\":582732,\"nodePid\":462677,\"outLinkPids\":[582735,582735,582735,582735,582735,582735,582735]}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDRESTRICTION\",\"projectId\":11,\"data\":{\"inLinkPid\":577220,\"nodePid\":462669,\"outLinkPids\":[582725],\"infos\":[1,2]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -22,7 +22,7 @@ public class RdRestrictionTest {
 	}
 	
 	public static void testDeleteRestriction() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDRESTRICTION\",\"projectId\":11,\"objId\":100000116}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDRESTRICTION\",\"projectId\":11,\"objId\": 100000133}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

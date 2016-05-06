@@ -3,13 +3,12 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdrestriction.cre
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class Command extends AbstractCommand {
 
@@ -21,7 +20,7 @@ public class Command extends AbstractCommand {
 
 	private List<Integer> outLinkPids;
 
-	private List<Integer> restricInfos;
+	private String restricInfos;
 
 	public int getInLinkPid() {
 		return inLinkPid;
@@ -46,12 +45,12 @@ public class Command extends AbstractCommand {
 	public void setOutLinkPids(List<Integer> outLinkPids) {
 		this.outLinkPids = outLinkPids;
 	}
-
-	public List<Integer> getRestricInfos() {
+	
+	public String getRestricInfos() {
 		return restricInfos;
 	}
 
-	public void setRestricInfos(List<Integer> restricInfos) {
+	public void setRestricInfos(String restricInfos) {
 		this.restricInfos = restricInfos;
 	}
 
@@ -101,18 +100,9 @@ public class Command extends AbstractCommand {
 			}
 		}
 		
-		restricInfos = new ArrayList<Integer>();
-		
 		if(data.containsKey("infos"))
 		{
-			JSONArray array = data.getJSONArray("infos");
-
-			for (int i = 0; i < array.size(); i++) {
-
-				int info = array.getInt(i);
-
-				restricInfos.add(info);
-			}
+			restricInfos = data.getString("infos");
 		}
 	}
 	

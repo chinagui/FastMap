@@ -1,14 +1,18 @@
 package com.navinfo.dataservice.engine.edit.rdgsc;
 
-import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.navinfo.dataservice.commons.db.ConfigLoader;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class RdGscTest {
@@ -23,7 +27,7 @@ public class RdGscTest {
 	}
 
 	public static void testCreate() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDGSC\",\"projectId\":11,\"data\":{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[116.3964195549488,39.90916838843326],[116.3964195549488,39.90920542201831],[116.3964933156967,39.90920542201831],[116.3964933156967,39.90916838843326],[116.3964195549488,39.90916838843326]]]},\"linkObjs\":[{\"pid\":\"100002361\",\"level_index\":0},{\"pid\":\"100002362\",\"level_index\":1}]}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDGSC\",\"projectId\":11,\"data\":{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[116.50103,39.99649],[116.50031,39.99654],[116.50133,39.99572],[116.50053,39.9958],[116.50103,39.99649]]]},\"linkObjs\":[{\"pid\":\"100002820\",\"level_index\":0},{\"pid\":\"100002819\",\"level_index\":1}]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -32,96 +36,41 @@ public class RdGscTest {
 			e.printStackTrace();
 		}
 	}
-
-	public static void testUpdateAdadmin() {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"ADADMIN\",\"projectId\":11,\"data\":{\"population\":2,\"pid\":3538,\"objStatus\":\"UPDATE\"}}";
+	
+	public static void testDelete()
+	{
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDGSC\",\"projectId\":11,\"objId\":100002503}";
+		Transaction t = new Transaction(parameter);
 		try {
-			Transaction t = new Transaction(parameter);
-
 			String msg = t.run();
-
-			String log = t.getLogs();
-
-			JSONObject json = new JSONObject();
-
-			json.put("result", msg);
-
-			json.put("log", log);
-
-			json.put("check", t.getCheckLog());
-
-			json.put("pid", t.getPid());
-
-			System.out.println(ResponseUtils.assembleRegularResult(json));
+			System.out.println(msg);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-
-	public static void testSearch() {
-		int pid = 100002452;
+	public static void testSearch() throws Exception {
 		String parameter = "{\"projectId\":11,\"type\":\"RDGSC\",\"pid\":100002452}";
-		Transaction t = new Transaction(parameter);
-		try {
-			String msg = t.run();
-			System.out.println(msg);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+		JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-	public static void searchAdminGroupLevel() {
-		Connection conn;
-		try {
-			conn = GlmDbPoolManager.getInstance().getConnection(11);
+		String objType = jsonReq.getString("type");
 
-			String parameter = "{\"projectId\":11,\"type\":\"ADADMINGROUP\"}";
+		int projectId = jsonReq.getInt("projectId");
 
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+		int pid = jsonReq.getInt("pid");
 
-			SearchProcess p = new SearchProcess(conn);
+		SearchProcess p = new SearchProcess(
+				GlmDbPoolManager.getInstance().getConnection(projectId));
 
-			System.out.println(p.searchDataByCondition(ObjType.ADADMINGROUP, jsonReq));
+		IObj obj = p.searchDataByPid(ObjType.valueOf(objType), pid);
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-
-	public static void deleteAdminGroupLevel() {
-		Connection conn;
-		try {
-			conn = GlmDbPoolManager.getInstance().getConnection(11);
-
-			String parameter = "{\"command\": \"DELETE\",\"type\": \"ADADMINGROUP\",\"projectId\": 11,\"data\": {\"groupTree\": [{\"regionId\": 1273,\"name\": \"中国大陆\",\"group\": {\"groupId\": 248,\"regionIdUp\": 1273,\"rowId\": \"2D71EFCB1966DCE7E050A8C083040693\"},\"children\": [{\"regionId\": 163,\"name\": \"北京市\",\"group\": {\"groupId\": 40,\"regionIdUp\": 163,\"rowId\": \"2D71EFCB16D7DCE7E050A8C083040693\"},\"part\": {\"groupId\": 248,\"regionIdDown\": 163,\"rowId\": \"2D71EFCB56BEDCE7E050A8C083040693\"},\"children\": [{\"regionId\": 580,\"name\": \"北京市\",\"group\": {\"groupId\": 114,\"regionIdUp\": 580,\"rowId\": \"2D71EFCB1711DCE7E050A8C083040693\"},\"part\": {\"groupId\": 40,\"regionIdDown\": 580,\"rowId\": \"2D71EFCB642CDCE7E050A8C083040693\"},\"children\": [{\"regionId\": 1421,\"name\": \"北京市区\",\"objType\": \"delete\",\"group\": {\"groupId\": 286,\"regionIdUp\": 1421,\"rowId\": \"2D71EFCB179FDCE7E050A8C083040693\"},\"part\": {\"groupId\": 114,\"regionIdDown\": 1421,\"objType\": \"delete\",\"rowId\": \"2D71EFCB679CDCE7E050A8C083040693\"}}]}]}]}]}}";
-
-			Transaction t = new Transaction(parameter);
-			try {
-				String msg = t.run();
-				System.out.println(msg);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
-			String parameter2 = "{\"projectId\":11,\"type\":\"ADADMINGROUP\"}";
-
-			JSONObject jsonReq2 = JSONObject.fromObject(parameter2);
-
-			SearchProcess p = new SearchProcess(conn);
-
-			System.out.println(p.searchDataByCondition(ObjType.ADADMINGROUP, jsonReq2));
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
+		System.out.println(ResponseUtils.assembleRegularResult(obj.Serialize(ObjLevel.FULL)));
 	}
 
 	public static void main(String[] args) {
 		try {
 			testCreate();
-			//testSearch();
+			// testSearch();
+			// testDelete();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

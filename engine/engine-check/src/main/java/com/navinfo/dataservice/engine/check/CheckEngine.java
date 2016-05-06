@@ -26,13 +26,21 @@ import com.vividsolutions.jts.geom.Geometry;
 public class CheckEngine {
 	private CheckCommand checkCommand = null;
 	private Connection conn;
+	public Connection getConn() {
+		return conn;
+	}
+
+	public void setConn(Connection conn) {
+		this.conn = conn;
+	}
+
 	private static Logger log = Logger.getLogger(CheckEngine.class);
 
 	public CheckEngine(CheckCommand checkCommand) throws Exception{
 		this.log = LoggerRepos.getLogger(this.log);
 		this.checkCommand=checkCommand;
-		this.conn = GlmDbPoolManager.getInstance().getConnection(this.checkCommand.getProjectId());
-		this.conn.setAutoCommit(true);
+		//this.conn = GlmDbPoolManager.getInstance().getConnection(this.checkCommand.getProjectId());
+		//this.conn.setAutoCommit(true);
 	}
 
 	//获取本次要执行的检查规则
@@ -51,22 +59,36 @@ public class CheckEngine {
 			check.insertCheckLog(checkResultList.get(i).getRuleId(), checkResultList.get(i).getLoc(), checkResultList.get(i).getTargets(), checkResultList.get(i).getMeshId(), "TEST");
 		}
 	}
+	
+//	private void isValidConn() throws Exception{
+//		if (this.conn.isClosed()){
+//			this.conn = GlmDbPoolManager.getInstance().getConnection(this.checkCommand.getProjectId());
+//			this.conn.setAutoCommit(true);}		
+//	}
+	
 	//前检查
 	public String preCheck() throws Exception{
 		log.info("start preCheck");
+		//isValidConn();
 		//获取前检查需要执行规则列表
-		List<CheckRule> rulesList=getRules(checkCommand.getObjType(),checkCommand.getOperType(),new String("PRE"));		
+		List<CheckRule> rulesList=getRules(checkCommand.getObjType(),checkCommand.getOperType(),"PRE");		
 		for (int i=0;i<rulesList.size();i++){
 			CheckRule rule=rulesList.get(i);
 			baseRule obj = (baseRule) rule.getRuleClass().newInstance();
 			obj.setRuleDetail(rule);
 			obj.setConn(this.conn);
+			try{
 			//调用规则的前检查
-			obj.preCheck(this.checkCommand);
-			if(obj.getCheckResultList().size()!=0){
-				log.info("end preCheck");
-				return obj.getCheckResultList().get(0).getInformation();
-				}
+				obj.preCheck(this.checkCommand);
+				
+				if(obj.getCheckResultList().size()!=0){
+					log.info("end preCheck");
+					return obj.getCheckResultList().get(0).getInformation();
+					}
+			}catch(Exception e) {
+				log.error(e);
+				return null;
+			}
 		}
 		log.info("end preCheck");
 		return null;
@@ -75,8 +97,9 @@ public class CheckEngine {
 	//后检查
 	public void postCheck() throws Exception{
 		log.info("start postCheck");
+		//isValidConn();
 		//获取后检查需要执行规则列表
-		List<CheckRule> rulesList=getRules(this.checkCommand.getObjType(),this.checkCommand.getOperType(),new String("POST"));
+		List<CheckRule> rulesList=getRules(this.checkCommand.getObjType(),this.checkCommand.getOperType(),"POST");
 		List<NiValException> checkResultList = new ArrayList<NiValException>();
 		for (int i=0;i<rulesList.size();i++){
 			CheckRule rule=rulesList.get(i);
@@ -84,7 +107,11 @@ public class CheckEngine {
 			obj.setRuleDetail(rule);
 			obj.setConn(this.conn);
 			//调用规则的后检查
-			obj.postCheck(this.checkCommand);
+			try{
+				obj.postCheck(this.checkCommand);
+			}catch(Exception e) {
+				log.error(e);
+			}
 			checkResultList.addAll(obj.getCheckResultList());
 		}
 		saveCheckResult(checkResultList);

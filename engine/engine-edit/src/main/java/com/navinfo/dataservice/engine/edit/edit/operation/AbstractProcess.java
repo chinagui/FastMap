@@ -1,11 +1,14 @@
 package com.navinfo.dataservice.engine.edit.edit.operation;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.log.LogWriter;
@@ -58,7 +61,9 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		this.checkCommand.setObjType(this.command.getObjType());
 		this.checkCommand.setOperType(this.command.getOperType());
 		this.checkCommand.setProjectId(this.command.getProjectId());
+		//this.checkCommand.setGlmList(this.command.getGlmList());
 		this.checkEngine=new CheckEngine(checkCommand);
+		checkEngine.setConn(this.conn);
 	}
 
 	/* (non-Javadoc)
@@ -95,8 +100,19 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	@Override
 	public String preCheck() throws Exception {
 		// TODO Auto-generated method stub
+		createPreCheckGlmList();
 		return checkEngine.preCheck();
 	}
+	//构造前检查参数。前检查，如果command中的构造不满足前检查参数需求，则需重写该方法，具体可参考createPostCheckGlmList
+	public void createPreCheckGlmList(){
+		List<IRow> resultList=new ArrayList<IRow>();
+		Result resultObj=this.getResult();
+		if(resultObj.getAddObjects().size()>0){resultList.addAll(resultObj.getAddObjects());}
+		if(resultObj.getUpdateObjects().size()>0){resultList.addAll(resultObj.getUpdateObjects());}
+		if(resultObj.getDelObjects().size()>0){resultList.addAll(resultObj.getDelObjects());}
+		this.checkCommand.setGlmList(resultList);
+	} 
+	
 	public abstract String exeOperation() throws Exception;
 	/* (non-Javadoc)
 	 * @see com.navinfo.dataservice.dao.glm.iface.IProcess#run()
@@ -109,14 +125,13 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
 			this.prepareData();
 
+			msg =  exeOperation();//new Operation(command, conn);
+			
 			String preCheckMsg = this.preCheck();
 
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
 			}
-
-			msg =  exeOperation();//new Operation(command, conn);
-
 			this.recordData();
 
 			this.postCheck();
@@ -148,6 +163,14 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		this.checkEngine.postCheck();
 
 	}
+	//构造后检查参数
+	public void createPostCheckGlmList(){
+		List<IRow> resultList=new ArrayList<IRow>();
+		Result resultObj=this.getResult();
+		if(resultObj.getAddObjects().size()>0){resultList.addAll(resultObj.getAddObjects());}
+		if(resultObj.getUpdateObjects().size()>0){resultList.addAll(resultObj.getUpdateObjects());}
+		this.checkCommand.setGlmList(resultList);
+	} 
 
 	/* (non-Javadoc)
 	 * @see com.navinfo.dataservice.dao.glm.iface.IProcess#getPostCheck()

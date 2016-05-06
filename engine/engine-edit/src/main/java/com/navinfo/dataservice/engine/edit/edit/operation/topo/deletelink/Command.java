@@ -107,6 +107,8 @@ public class Command extends AbstractCommand {
 		if (json.containsKey("infect") && json.getInt("infect") == 1){
 			this.isCheckInfect = true;
 		}
+		//构造检查参数
+		//this.createGlmList();
 		
 	}
 
@@ -166,5 +168,13 @@ public class Command extends AbstractCommand {
 	public void setRdGscs(List<RdGsc> rdGscs) {
 		this.rdGscs = rdGscs;
 	}
+
+//	public void createGlmList() throws Exception {
+//		RdLink rdLinkObj=new RdLink();
+//		rdLinkObj.setPid(this.linkPid);
+//		List<IRow> glmList=new ArrayList<IRow>();
+//		glmList.add(rdLinkObj);
+//		this.setGlmList(glmList);
+//	}
 	
 }

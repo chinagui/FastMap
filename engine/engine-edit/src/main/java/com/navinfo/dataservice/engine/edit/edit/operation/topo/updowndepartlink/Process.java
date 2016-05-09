@@ -35,8 +35,8 @@ public class Process extends AbstractProcess<Command> {
 	}
 	@Override
 	public boolean prepareData() throws Exception {
-		// TODO Auto-generated method stub
-		return false;
+		lockRdLinks();
+		return true;
 	}
 
 	@Override

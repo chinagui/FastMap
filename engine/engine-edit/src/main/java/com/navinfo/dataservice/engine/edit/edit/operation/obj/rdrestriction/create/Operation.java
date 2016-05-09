@@ -95,15 +95,23 @@ public class Operation implements IOperation {
 
 		List<IRow> details = new ArrayList<IRow>();
 
+		String[] infArray = command.getRestricInfos().split(",");
+
+		List<Integer> infoList = new ArrayList<>();
+
+		for (String info : infArray) {
+			if (info.contains("[")) {
+				// 理论值带[]
+				infoList.add(Integer.parseInt(info.substring(1, 2)));
+			} else {
+				// 实际值不带
+				infoList.add(Integer.parseInt(info));
+			}
+		}
+
 		for (int outLinkPid : outLinkPids) {
 
 			RdRestrictionDetail detail = new RdRestrictionDetail();
-
-			detail.setMesh(meshId);
-
-			detail.setPid(PidService.getInstance().applyRestrictionDetailPid());
-
-			detail.setRestricPid(restrict.getPid());
 
 			detail.setOutLinkPid(outLinkPid);
 
@@ -113,68 +121,78 @@ public class Operation implements IOperation {
 
 			int restricInfo = this.calRestricInfo(angle);
 
-			detail.setRestricInfo(restricInfo);
+			if (infoList.contains(restricInfo)) {
+				detail.setMesh(meshId);
 
-			detail.setRelationshipType(relationTypeMap.get(detail.getOutLinkPid()));
+				detail.setPid(PidService.getInstance().applyRestrictionDetailPid());
 
-			if (detail.getRelationshipType() == 1) {
-				check.checkGLM26017(conn, command.getNodePid());
+				detail.setRestricPid(restrict.getPid());
 
-				check.checkGLM08033(conn, command.getInLinkPid(), outLinkPid);
+				detail.setRestricInfo(restricInfo);
+
+				detail.setRelationshipType(relationTypeMap.get(detail.getOutLinkPid()));
+
+				if (detail.getRelationshipType() == 1) {
+					check.checkGLM26017(conn, command.getNodePid());
+
+					check.checkGLM08033(conn, command.getInLinkPid(), outLinkPid);
+				}
+
+				List<Integer> viaLinkPids = viaLinkPidMap.get(detail.getOutLinkPid());
+
+				int seqNum = 1;
+
+				List<IRow> vias = new ArrayList<IRow>();
+
+				for (Integer viaLinkPid : viaLinkPids) {
+
+					RdRestrictionVia via = new RdRestrictionVia();
+
+					via.setMesh(meshId);
+
+					via.setDetailId(detail.getPid());
+
+					via.setSeqNum(seqNum);
+
+					via.setLinkPid(viaLinkPid);
+
+					vias.add(via);
+
+					seqNum++;
+				}
+
+				detail.setVias(vias);
+
+				details.add(detail);
+
+				infoList.remove(infoList.indexOf(restricInfo));
 			}
 
-			List<Integer> viaLinkPids = viaLinkPidMap.get(detail.getOutLinkPid());
+		}
 
-			int seqNum = 1;
+		for (Integer info : infoList) {
+			RdRestrictionDetail detail = new RdRestrictionDetail();
 
-			List<IRow> vias = new ArrayList<IRow>();
+			detail.setOutLinkPid(0);
 
-			for (Integer viaLinkPid : viaLinkPids) {
+			detail.setMesh(meshId);
 
-				RdRestrictionVia via = new RdRestrictionVia();
+			detail.setPid(PidService.getInstance().applyRestrictionDetailPid());
 
-				via.setMesh(meshId);
+			detail.setRestricPid(restrict.getPid());
 
-				via.setDetailId(detail.getPid());
-
-				via.setSeqNum(seqNum);
-
-				via.setLinkPid(viaLinkPid);
-
-				vias.add(via);
-
-				seqNum++;
+			detail.setRestricInfo(info);
+			
+			if(command.getOutLinkPids().size()>0)
+			{
+				detail.setRelationshipType(relationTypeMap.get(command.getOutLinkPids().get(0)));
 			}
-
-			detail.setVias(vias);
 
 			details.add(detail);
-
 		}
-
 		restrict.setDetails(details);
 
-		/**
-		 * 组装前台传递的交限信息
-		 */
-		List<Integer> restricInfos = command.getRestricInfos();
-
-		if (restricInfos.size() > 0) {
-			StringBuilder sb = new StringBuilder();
-			for (Integer restricInfo : restricInfos) {
-				sb.append("[");
-
-				sb.append(restricInfo);
-
-				sb.append("]");
-
-				sb.append(",");
-			}
-
-			sb.deleteCharAt(sb.length() - 1);
-
-			restrict.setRestricInfo(sb.toString());
-		}
+		restrict.setRestricInfo(command.getRestricInfos());
 
 		result.insertObject(restrict, ObjStatus.INSERT, restrict.pid());
 

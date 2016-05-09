@@ -59,7 +59,7 @@ public class Operation implements IOperation {
 			
 			node.setNodePid(nodePid);
 			
-			if(i == 0 && nodePids.size() > 1){
+			if(i == 0){
 				node.setIsMain(1);
 			}
 			

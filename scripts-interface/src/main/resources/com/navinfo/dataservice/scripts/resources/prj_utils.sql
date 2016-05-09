@@ -42,6 +42,20 @@ on rd_node(geometry)
 indextype is mdsys.spatial_index;  
 
 insert into user_sdo_geom_metadata
+values
+  ('AD_NODE',
+   'GEOMETRY',
+   mdsys.sdo_dim_array(SDO_DIM_ELEMENT('XLONG', -180, 180, 0.005),
+                       SDO_DIM_ELEMENT('XLAT', -90, 90, 0.005)),
+   8307);
+   
+create index idx_ad_node_geometry
+on ad_node(geometry)
+indextype is mdsys.spatial_index; 
+
+analyze table ad_node compute statistics;
+
+insert into user_sdo_geom_metadata
   (table_name, COLUMN_NAME, DIMINFO, SRID)
 values
   ('AD_FACE',

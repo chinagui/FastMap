@@ -1,9 +1,11 @@
 package com.navinfo.dataservice.commons.util;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -170,9 +172,19 @@ public class StringUtils {
     public static String expandVariables(String source, Map<String, String> pro) {
         return expandVariables(source, pro, "${", "}");
     }
-    
+    public static String getInteStr(List<Integer> integers ){
+    	if (integers != null && integers.size() > 0){
+    		return integers.toString().replace("[", "").replace("]", "");
+    	}return "";
+    	
+    }
 	public static void main(String[] args) {
 
-		System.out.println(StringUtils.getCurrentTime());
+		List<Integer> integers =  new ArrayList<Integer>();
+		integers.add(1);
+		integers.add(2);
+		integers.add(3);
+		System.out.println(integers);
+		System.out.println(integers.toString().replace("[", "").replace("]", ""));
 	}
 }

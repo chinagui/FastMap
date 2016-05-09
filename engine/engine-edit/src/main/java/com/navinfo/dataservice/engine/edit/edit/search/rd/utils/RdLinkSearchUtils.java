@@ -37,7 +37,8 @@ public class RdLinkSearchUtils {
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 		List<RdLink> tracks = new ArrayList<RdLink>();
 		//添加当前选中的link
-		tracks.add((RdLink) linkSelector.loadById(cuurentLinkPid, true));
+		RdLink fristLink = (RdLink) linkSelector.loadById(cuurentLinkPid, true);
+		tracks.add(fristLink);
 		//查找当前link联通的links
 		List<RdLink> nextLinks = linkSelector.loadTrackLink(cuurentLinkPid,
 				cruuentNodePidDir, true);

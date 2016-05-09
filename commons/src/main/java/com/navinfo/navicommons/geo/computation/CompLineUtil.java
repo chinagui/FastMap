@@ -219,4 +219,51 @@ public class CompLineUtil {
 		}
 		return null;
 	}
+	public static boolean isRightSide(DoubleLine startLine,DoubleLine endLine,DoubleLine adjacentLine){
+		return true;
+	}
+	public static boolean isRightSide(LineString startLine,LineString endLine,LineString adjacentLine)throws Exception{
+		//先判断起点
+		DoublePoint start = null;
+		DoublePoint mid = null;
+		DoublePoint end = null;
+		DoublePoint adj = null;
+		DoublePoint startPoint1 = MyGeometryConvertor.convert(startLine.getCoordinateN(0));
+		DoublePoint startPoint2 = MyGeometryConvertor.convert(endLine.getCoordinateN(0));
+		DoublePoint endPoint2 = MyGeometryConvertor.convert(endLine.getCoordinateN(endLine.getNumPoints() - 1));
+		if(startPoint1.equals(startPoint2)){
+			start = MyGeometryConvertor.convert(startLine.getCoordinateN(1));
+			mid = startPoint1;
+			end = MyGeometryConvertor.convert(endLine.getCoordinateN(1));
+		}else if(startPoint1.equals(endPoint2)){
+			start = MyGeometryConvertor.convert(startLine.getCoordinateN(1));
+			mid = startPoint1;
+			end = MyGeometryConvertor.convert(endLine.getCoordinateN(endLine.getNumPoints() - 2));
+		}else{
+			DoublePoint endPoint1 = MyGeometryConvertor.convert(startLine.getCoordinateN(startLine.getNumPoints() - 1));
+			if(endPoint1.equals(startPoint2)){
+				start = MyGeometryConvertor.convert(startLine.getCoordinateN(startLine.getNumPoints() - 2));
+				mid = endPoint1;
+				end = MyGeometryConvertor.convert(endLine.getCoordinateN(1));
+			}else if(endPoint1.equals(endPoint2)){
+				start = MyGeometryConvertor.convert(startLine.getCoordinateN(startLine.getNumPoints() - 2));
+				mid = endPoint1;
+				end = MyGeometryConvertor.convert(endLine.getCoordinateN(endLine.getNumPoints() - 2));
+			}else{
+				throw new Exception("起始线和终点线不相连，无法判断。");
+			}
+		}
+		DoublePoint adjStart = MyGeometryConvertor.convert(adjacentLine.getCoordinateN(0));
+		if(adjStart.equals(mid)){
+			adj = MyGeometryConvertor.convert(adjacentLine.getCoordinateN(1));
+		}else{
+			DoublePoint adjEnd = MyGeometryConvertor.convert(adjacentLine.getCoordinateN(adjacentLine.getNumPoints() - 1));
+			if(adjEnd.equals(mid)){
+				adj = MyGeometryConvertor.convert(adjacentLine.getCoordinateN(adjacentLine.getNumPoints() - 2));
+			}else{
+				throw new Exception("挂接线和起始线和终点线连接点不相连，无法判断。");
+			}
+		}
+		return isRightSide(new DoubleLine(start,mid),new DoubleLine(mid,end),new DoubleLine(mid,adj));
+	}
 }

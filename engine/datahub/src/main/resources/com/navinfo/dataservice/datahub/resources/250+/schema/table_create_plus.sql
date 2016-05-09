@@ -1,3 +1,43 @@
+/* view to table */
+
+/*==============================================================*/
+/* Table: RD_NAME                                               */
+/*==============================================================*/
+create table RD_NAME 
+(
+   NAME_ID              NUMBER(10)           not null,
+   NAME_GROUPID         NUMBER(10)           not null,
+   LANG_CODE            VARCHAR2(3)          not null,
+   NAME                 VARCHAR2(500)        not null,
+   TYPE                 VARCHAR2(100),
+   BASE                 VARCHAR2(100),
+   PREFIX               VARCHAR2(100),
+   INFIX                VARCHAR2(100),
+   SUFFIX               VARCHAR2(100),
+   NAME_PHONETIC        VARCHAR2(1000),
+   TYPE_PHONETIC        VARCHAR2(1000),
+   BASE_PHONETIC        VARCHAR2(1000),
+   PREFIX_PHONETIC      VARCHAR2(1000),
+   INFIX_PHONETIC       VARCHAR2(1000),
+   SUFFIX_PHONETIC      VARCHAR2(1000),
+   SRC_FLAG             NUMBER(2)           
+check (SRC_FLAG in (0,1,2,3)) disable ,
+   ROAD_TYPE            NUMBER(1)            not null
+check (ROAD_TYPE in (0,1,2,3,4)) disable ,
+   ADMIN_ID             NUMBER(6)            not null,
+   CODE_TYPE            NUMBER(1)            not null
+check (CODE_TYPE in (0,1,2,3,4,5,6,7)) disable ,
+   VOICE_FILE           VARCHAR2(100),
+   SRC_RESUME           VARCHAR2(1000),
+   PA_REGION_ID         NUMBER(10),
+   SPLIT_FLAG           NUMBER(2)      default 0
+check (SPLIT_FLAG in (0,1,2)) disable ,
+   MEMO                 VARCHAR2(200),
+   ROUTE_ID             NUMBER(10),
+   U_RECORD             NUMBER(2),
+   U_FIELDS             VARCHAR2(1000),
+   constraint PK_RD_NAME primary key (NAME_ID)
+);
 /* GDB+ log part */
 create table LOG_OPERATION (
     OP_ID RAW(16) NOT NULL,

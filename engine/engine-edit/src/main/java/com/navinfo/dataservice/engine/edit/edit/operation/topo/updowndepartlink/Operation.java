@@ -420,7 +420,7 @@ public class Operation implements IOperation {
 	}
 
 	// 获取联通线的起点和终点
-	// 0 起点 1 终点
+	// 0 起点  1 终点
 	// 根据联通线的第一条link和第二条link算出起点Node
 	// 根据联通线最后一条link和倒数第二条link算出终点Node
 	private RdNode getStartAndEndNode(List<RdLink> links, int flag)

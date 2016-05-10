@@ -48,7 +48,7 @@ public class AdLinkTest {
 	}
 	//删除一条LINK
 	public  void deleteAdLinkTest() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"ADLINK\",\"projectId\":11,\"objId\":\"100031376\" }";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"ADLINK\",\"projectId\":11,\"objId\":100031492}";
 		log.info(parameter);
 		System.out.println(parameter+"-------------------");
 		Transaction t = new Transaction(parameter);
@@ -122,6 +122,7 @@ public class AdLinkTest {
 	}
 	
 	public static void main(String[] args) throws Exception{
+		new AdLinkTest().deleteAdLinkTest();
 		new AdLinkTest().TrackRdLink();
 		//new AdLinkTest().deleteAdLinkTest();
 		//new AdLinkTest().breakAdLinkTest();

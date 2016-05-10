@@ -197,6 +197,8 @@ public class Operation implements IOperation {
 	 */
 	private void updateGeometry(Geometry g, AdFace face) throws Exception {
 		face.setGeometry(g);
+		//缩放计算面积和周长
+		g = GeoTranslator.transform(g, 0.00001, 5);
 		face.setArea(GeometryUtils.getCalculateArea(g));
 		face.setPerimeter(GeometryUtils.getLinkLength(g));
 		result.insertObject(face, ObjStatus.INSERT, face.getPid());

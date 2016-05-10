@@ -32,13 +32,11 @@ public class AdAdminTreeSelector implements ISelector {
 	}
 
 	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock)
-			throws Exception {
+	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
 		return null;
 	}
 
-	public IRow loadRowsByProjectId(int projectId, boolean isLock)
-			throws Exception {
+	public IRow loadRowsByProjectId(int projectId, boolean isLock) throws Exception {
 		AdAdminTree result = new AdAdminTree();
 
 		AdAdminSelector adAdminSelector = new AdAdminSelector(conn);
@@ -48,7 +46,7 @@ public class AdAdminTreeSelector implements ISelector {
 
 		int topRegionId = topAdmin.getPid();
 
-		result = getAdAdminTreeById(topRegionId, isLock);
+		result = getAdAdminTreeById(topRegionId, isLock, 0);
 
 		// 项目库ID+0000 对应的行政区划代表点AdAdminId
 
@@ -58,15 +56,14 @@ public class AdAdminTreeSelector implements ISelector {
 
 		int regionId = adAdmin.getPid();
 
-		AdAdminTree beiJinTree = getAdAdminTreeById(regionId, isLock);
+		AdAdminTree beiJinTree = getAdAdminTreeById(regionId, isLock, 0);
 
 		result.getChildren().add(beiJinTree);
 
-		List<Integer> regionIdList = getChildRegion(
-				beiJinTree.getGroup().getPid(), isLock);
+		List<Integer> regionIdList = getChildRegion(beiJinTree.getGroup().getPid(), isLock);
 
 		for (Integer childRegionId : regionIdList) {
-			AdAdminTree childTree = loadRowsByRegionId(childRegionId, isLock);
+			AdAdminTree childTree = loadRowsByRegionId(childRegionId, isLock, 0);
 
 			result.getChildren().get(0).getChildren().add(childTree);
 
@@ -82,18 +79,23 @@ public class AdAdminTreeSelector implements ISelector {
 	 * @param isLock
 	 * @return
 	 */
-	private AdAdminTree loadRowsByRegionId(int regionId, boolean isLock) {
-		AdAdminTree tree = getAdAdminTreeById(regionId, isLock);
+	private AdAdminTree loadRowsByRegionId(int regionId, boolean isLock, int groupId) {
+		AdAdminTree tree = getAdAdminTreeById(regionId, isLock, groupId);
 
 		if (tree == null) {
 			return null;
 		}
+		
+		if(tree.getGroup() == null)
+		{
+			return tree;
+		}
+		int group_id = tree.getGroup().getPid();
 
-		List<Integer> regionIdList = getChildRegion(tree.getGroup().getPid(),
-				isLock);
+		List<Integer> regionIdList = getChildRegion(group_id, isLock);
 
 		for (Integer childRegionId : regionIdList) {
-			AdAdminTree childTree = loadRowsByRegionId(childRegionId, isLock);
+			AdAdminTree childTree = loadRowsByRegionId(childRegionId, isLock, group_id);
 			if (childTree != null) {
 				tree.getChildren().add(childTree);
 			}
@@ -107,18 +109,18 @@ public class AdAdminTreeSelector implements ISelector {
 	 * 
 	 * @param regionId
 	 * @param isLock
+	 * @param groupId
 	 * @return
 	 */
-	private AdAdminTree getAdAdminTreeById(int regionId, boolean isLock) {
+	private AdAdminTree getAdAdminTreeById(int regionId, boolean isLock, int groupId) {
 
 		AdAdminTree result = null;
 
 		String sql = "SELECT tmp.group_id,CASE WHEN c.name IS NULL THEN '无' ELSE c.name END AS NAME FROM (SELECT b.GROUP_ID,a.REGION_ID "
-				+ "FROM AD_ADMIN A, AD_ADMIN_GROUP b " + "WHERE "
-				+ "A.REGION_ID = :1 " + "AND A.REGION_ID = b.REGION_ID_UP "
-				+ "AND b.U_RECORD != :2)tmp " + "Left join AD_ADMIN_NAME c "
-				+ "on tmp.region_id = c.region_id " + "AND c.LANG_CODE = 'CHI' "
-				+ "AND c.NAME_CLASS = 1";
+				+ "FROM AD_ADMIN A, AD_ADMIN_GROUP b " + "WHERE " + "A.REGION_ID = :1 "
+				+ "AND A.REGION_ID = b.REGION_ID_UP " + "AND b.U_RECORD != :2)tmp "
+				+ "Left join AD_ADMIN_NAME c " + "on tmp.region_id = c.region_id "
+				+ "AND c.LANG_CODE = 'CHI' " + "AND c.NAME_CLASS = 1";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -138,13 +140,11 @@ public class AdAdminTreeSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
-				int groupId = resultSet.getInt("group_id");
+				int group_id = resultSet.getInt("group_id");
 
-				AdAdminGroupSelector groupSelector = new AdAdminGroupSelector(
-						conn);
+				AdAdminGroupSelector groupSelector = new AdAdminGroupSelector(conn);
 
-				AdAdminGroup group = (AdAdminGroup) groupSelector
-						.loadById(groupId, isLock);
+				AdAdminGroup group = (AdAdminGroup) groupSelector.loadById(group_id, isLock);
 
 				if (group == null) {
 					return result;
@@ -158,14 +158,51 @@ public class AdAdminTreeSelector implements ISelector {
 
 				result.setRegionId(regionId);
 
-				AdAdminPartSelector partSelector = new AdAdminPartSelector(
-						conn);
+				AdAdminPartSelector partSelector = new AdAdminPartSelector(conn);
 
-				AdAdminPart part = partSelector.loadByRegionId(regionId,
-						isLock);
+				AdAdminPart part = partSelector.loadByRegionId(regionId, isLock);
 
 				if (part != null) {
 					result.setPart(part);
+				}
+			} else {
+				String sql2 = "SELECT tmp.group_id,CASE WHEN c.name IS NULL THEN '无' ELSE c.name END AS NAME FROM (SELECT b.GROUP_ID,a.REGION_ID "
+						+ "FROM AD_ADMIN A, AD_ADMIN_PART b " + "WHERE " + "A.REGION_ID = :1 "
+						+ "AND A.REGION_ID = b.REGION_ID_DOWN and b.group_id = :2 "
+						+ "AND b.U_RECORD != :3)tmp " + "Left join AD_ADMIN_NAME c "
+						+ "on tmp.region_id = c.region_id " + "AND c.LANG_CODE = 'CHI' "
+						+ "AND c.NAME_CLASS = 1";
+				PreparedStatement pstmt2 = null;
+
+				ResultSet resultSet2 = null;
+				
+				pstmt2 = this.conn.prepareStatement(sql2);
+
+				pstmt2.setInt(1, regionId);
+
+				pstmt2.setInt(2, groupId);
+
+				pstmt2.setInt(3, 2);
+
+				resultSet2 = pstmt2.executeQuery();
+
+				if (resultSet2.next()) {
+
+					result = new AdAdminTree();
+
+					result.setGroup(null);
+
+					result.setName(resultSet2.getString("name"));
+
+					result.setRegionId(regionId);
+
+					AdAdminPartSelector partSelector = new AdAdminPartSelector(conn);
+
+					AdAdminPart part = partSelector.loadByRegionId(regionId, isLock);
+
+					if (part != null) {
+						result.setPart(part);
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -187,7 +224,7 @@ public class AdAdminTreeSelector implements ISelector {
 	private List<Integer> getChildRegion(int groupId, boolean isLock) {
 		List<Integer> result = new ArrayList<>();
 
-		String sql = "select region_id_down from ad_admin_part where group_id=:1 and u_record!=:2";
+		String sql = "SELECT a.REGION_ID_DOWN FROM AD_ADMIN_PART a,Ad_admin b WHERE a.GROUP_ID = :1 AND a.region_id_down = b.region_id AND a.U_RECORD != :2 AND b.ADMIN_TYPE <= 4.0 ";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -207,8 +244,12 @@ public class AdAdminTreeSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
+				Integer regionIdDown = resultSet.getInt("region_id_down");
 
-				result.add(resultSet.getInt("region_id_down"));
+				if (!result.contains(regionIdDown)) {
+					result.add(resultSet.getInt("region_id_down"));
+				}
+
 			}
 		} catch (Exception e) {
 		} finally {

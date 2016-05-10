@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.engine.dao.DBConnector;
@@ -31,6 +32,7 @@ public class CheckSuitLoader {
 	 * 存放各个检查suit的key为suitCode(feature_operation_operationType拼接而成)， value为[ruleCode]
 	 */
 	private Map<String, ArrayList<CheckRule>> map = new HashMap<String, ArrayList<CheckRule>>();
+	private Map<String, List<VariableName>> mapVariables = new HashMap<String, List<VariableName>>();
 	
 	
 	public ArrayList<CheckRule> getCheckSuit(String suitCode) throws Exception {
@@ -50,6 +52,7 @@ public class CheckSuitLoader {
 					Connection conn = null;
 					
 					ArrayList<CheckRule> checkRuleList = new ArrayList<CheckRule>();
+					List<VariableName> variablesList=new ArrayList<VariableName>();
 					
 					try {
 
@@ -70,14 +73,14 @@ public class CheckSuitLoader {
 							
 							if(myCheckRule != null){
 								checkRuleList.add(myCheckRule);
-							}
-
-							
-							
+								variablesList.removeAll(myCheckRule.getVariables());
+								variablesList.addAll(myCheckRule.getVariables());
+							}	
 							
 						}
 						
 						map.put(suitCode,checkRuleList);
+						mapVariables.put(suitCode, variablesList);
 					} catch (Exception e) {
 
 						throw new Exception(e);
@@ -112,6 +115,10 @@ public class CheckSuitLoader {
 		}
 
 		return map.get(suitCode);
+	}
+	
+	public List<VariableName> getCheckSuitVariables(String suitCode){
+		return mapVariables.get(suitCode);
 	}
 	
 	

@@ -44,16 +44,7 @@ begin
                         a.table_name || '(' || a.column_name || ')';
     end if;
   end loop;
-   
-end;
-/
-
-begin
-  for a in (select a.table_name,a.constraint_name
-              from user_constraints a
-             where a.constraint_type = 'R'
-            ) loop
-    execute immediate 'alter table ' || a.table_name || ' disable constraint ' || a.constraint_name ;
-  end loop;
+  
+  
 end;
 /

@@ -161,14 +161,19 @@ public class GeometryUtils {
 
 		return getLinkLength(g);
 	}
-
+	
+	/**
+	 * 获取空间多条线的交点几何（立交和平交都适用，可能有多个交点）
+	 * @param geometryList
+	 * @return
+	 */
 	public static Geometry getIntersectsGeo(List<Geometry> geometryList) {
 
 		Geometry geo0 = geometryList.get(0);
 
 		Geometry geo1 = geometryList.get(1);
 
-		Geometry result = GeoTranslator.transform(geo0.intersection(geo1), 1, 5);
+		Geometry result = GeoTranslator.transform(geo0.intersection(geo1), 1, 0);
 
 		for (int i = 1; i < (geometryList.size() - 1); i++) {
 			Geometry tmp1 = geometryList.get(i);

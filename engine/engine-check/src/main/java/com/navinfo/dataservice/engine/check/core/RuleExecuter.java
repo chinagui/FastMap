@@ -75,6 +75,9 @@ public class RuleExecuter {
 		}else{return exeJavaRule(rule);}
 	}
 	
+	/*
+	 * 执行java写的检查规则
+	 */
 	private List<NiValException> exeJavaRule(CheckRule rule) throws Exception{
 		baseRule obj = (baseRule) rule.getRuleClass().newInstance();
 		obj.setRuleDetail(rule);
@@ -88,6 +91,9 @@ public class RuleExecuter {
 		return obj.getCheckResultList();
 	}
 	
+	/*
+	 * 执行sql语句写的检查规则
+	 */
 	private List<NiValException> exeSqlRule(CheckRule rule) throws Exception{
 		String sql=rule.getAccessorName();
 		List<String> sqlList=new ArrayList<String>();

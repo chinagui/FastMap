@@ -128,8 +128,12 @@ public class CheckEngine {
 		RuleExecuter ruleExecuterObj=new RuleExecuter(this.checkCommand,this.myCheckSuitVariables,this.conn);
 		for (int i=0;i<rulesList.size();i++){
 			CheckRule rule=rulesList.get(i);
-			List<NiValException> resultTmp=ruleExecuterObj.exeRule(rule);
-			if(resultTmp.size()>0){checkResultList.addAll(resultTmp);}
+			try{
+				List<NiValException> resultTmp=ruleExecuterObj.exeRule(rule);
+				if(resultTmp.size()>0){checkResultList.addAll(resultTmp);}}
+			catch(Exception e){
+				log.error(e);
+			}
 		}
 		saveCheckResult(checkResultList);
 		log.info("end postCheck");

@@ -30,7 +30,7 @@ public class AdLinkTest {
     public AdLinkTest() throws Exception{
     	 this.conn = GlmDbPoolManager.getInstance().getConnection(11);
     	 ConfigLoader
-		.initDBConn("D:/ws_new/DataService/web/edit-web/src/main/resources/config.properties");
+		.initDBConn("H:/GitHub/DataService/web/edit-web/src/main/resources/config.properties");
     }
 	protected Logger log = Logger.getLogger(this.getClass());
 	//创建一条link
@@ -48,7 +48,7 @@ public class AdLinkTest {
 	}
 	//删除一条LINK
 	public  void deleteAdLinkTest() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"ADLINK\",\"projectId\":11,\"objId\":\"100031376\" }";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"ADLINK\",\"projectId\":11,\"objId\":100031492}";
 		log.info(parameter);
 		System.out.println(parameter+"-------------------");
 		Transaction t = new Transaction(parameter);
@@ -122,7 +122,8 @@ public class AdLinkTest {
 	}
 	
 	public static void main(String[] args) throws Exception{
-		new AdLinkTest().testSearchAdNode();
+		new AdLinkTest().deleteAdLinkTest();
+		new AdLinkTest().TrackRdLink();
 		//new AdLinkTest().deleteAdLinkTest();
 		//new AdLinkTest().breakAdLinkTest();
 		

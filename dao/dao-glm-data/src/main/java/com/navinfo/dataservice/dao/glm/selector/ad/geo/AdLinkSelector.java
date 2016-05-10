@@ -67,7 +67,7 @@ public class AdLinkSelector implements ISelector {
 
 				adLink.setGeometry(geometry);
 
-				adLink.setLength(resultSet.getInt("length"));
+				adLink.setLength(resultSet.getDouble("length"));
 
 				adLink.setScale(resultSet.getInt("scale"));
 

@@ -43,9 +43,8 @@ public class InitProjectScriptsInterface {
 			int projectId = Integer.valueOf(projectIdStr);
 			String dbName = (String) request.get("dbName");
 			Assert.notNull(dbName, "dbName不能为空");
-			// String gdbVersion = (String)request.get("gdbVersion");
-			// Assert.notNull(gdbVersion,"gdbVersion不能为空");
-			String gdbVersion = "240+";
+			String gdbVersion = (String)request.get("gdbVersion");
+			Assert.notNull(gdbVersion,"gdbVersion不能为空");
 			String projectName = (String) request.get("projectName");
 			String meshes = (String) request.get("meshes");
 			meshes = com.navinfo.dataservice.commons.util.StringUtils

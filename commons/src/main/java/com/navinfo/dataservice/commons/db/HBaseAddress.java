@@ -92,6 +92,17 @@ public class HBaseAddress {
 	 * @return
 	 */
 	public static Connection getHBaseConnection() {
+		if(conn==null){		
+			synchronized(HBaseAddress.class){		
+				if(conn==null){		
+					try{		
+						init();		
+					}catch(Exception e){		
+						logger.error(e.getMessage(),e);		
+					}		
+				}		
+			}		
+		}
 		return conn;
 	}
 

@@ -142,7 +142,10 @@ class checkResultDatabaseOperator extends DatabaseOperator{
 			
 			String targets=resultSet.getString(2);
 			int meshId=resultSet.getInt(3);
-			String log=resultSet.getString(4);	
+			String log=rule.getRuleLog();
+			try{
+				log=resultSet.getString(4);
+			}catch(Exception e){}
 			
 			NiValException checkResult=new NiValException(rule.getRuleCode(), pointWkt, targets, meshId,log);
 			resultList.add(checkResult);

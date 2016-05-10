@@ -62,7 +62,7 @@ public class CheckEngine {
 //		int initSeverity=1;
 //		String initCheckClassPath=null;
 //		String accessorType="SQL";
-//		String accessorName="select r.geometry,'[RD_LINK,'||r.link_pid||']',R.MESH_ID,'' from rd_link r where r.kind in (10,11,15) and r.link_pid=RDLINK_PID";
+//		String accessorName="select r.geometry,'[RD_LINK,'||r.link_pid||']',R.MESH_ID from rd_link r where r.kind in (10,11,15) and r.link_pid=RDLINK_PID";
 //		String variables="RDLINK_PID";
 //		CheckRule rule=new CheckRule(initRuleCode,initRuleLog,initSeverity,initCheckClassPath,accessorType,accessorName,variables);
 //		
@@ -80,7 +80,7 @@ public class CheckEngine {
 		if (checkResultList==null || checkResultList.size()==0) {return;}
 		for(int i=0;i<checkResultList.size();i++){
 			NiValExceptionOperator check = new NiValExceptionOperator(this.conn);
-			check.insertCheckLog(checkResultList.get(i).getRuleId(), checkResultList.get(i).getLoc(), checkResultList.get(i).getTargets(), checkResultList.get(i).getMeshId(), "TEST");
+			check.insertCheckLog(checkResultList.get(i).getRuleId(), checkResultList.get(i).getLoc(), checkResultList.get(i).getTargets(), checkResultList.get(i).getMeshId(),checkResultList.get(i).getInformation(), "TEST");
 		}
 	}
 	

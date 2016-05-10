@@ -20,11 +20,11 @@ import com.navinfo.dataservice.engine.dropbox.util.DropboxUtil;
 
 public class UploadManager {
 
-	public String checkChunk(int jobId) throws Exception {
+	public List<Integer> checkChunk(int jobId) throws Exception {
 
 		DBController controller = new DBController();
 
-		String chunkList = controller.getChunkList(jobId);
+		List<Integer> chunkList = controller.getChunkList(jobId);
 
 		return chunkList;
 	}

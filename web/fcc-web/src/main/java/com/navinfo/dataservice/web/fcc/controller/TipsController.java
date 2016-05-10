@@ -166,7 +166,7 @@ public class TipsController {
 			String downloadFilePath = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.downloadFilePathTips);
 
-			String parentPath = downloadFilePath + day + "/";
+			String parentPath = downloadFilePath +File.separator+ day + "/";
 
 			String filePath = parentPath + uuid + "/";
 
@@ -196,7 +196,7 @@ public class TipsController {
 			String downloadUrlPath = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.downloadUrlPathTips);
 
-			String url = serverUrl + downloadUrlPath + day + "/"
+			String url = serverUrl + downloadUrlPath +File.separator+ day + "/"
 					+ zipFileName;
 
 			response.getWriter().println(

@@ -220,6 +220,7 @@ public class CompLineUtil {
 		return null;
 	}
 	public static boolean isRightSide(DoubleLine startLine,DoubleLine endLine,DoubleLine adjacentLine){
+		
 		return true;
 	}
 	public static boolean isRightSide(LineString startLine,LineString endLine,LineString adjacentLine)throws Exception{

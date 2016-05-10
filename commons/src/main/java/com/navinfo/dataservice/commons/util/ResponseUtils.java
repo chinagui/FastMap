@@ -54,7 +54,7 @@ public class ResponseUtils {
 	
 	
 	public static void main(String[] at){
-		System.out.println(assembleRegularResult(null));
+		System.out.println(assembleFailResult(null,"99"));
 	}
 	
 	

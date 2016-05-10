@@ -47,7 +47,9 @@ public class CheckEngine {
 		//this.conn.setAutoCommit(true);
 	}
 
-	//获取本次要执行的检查规则
+	/*
+	 * 获取本次要执行的检查规则
+	 */
 	private List<CheckRule> getRules(ObjType objType, OperType operType,String checkType) throws Exception{
 		String suitCode = objType.toString()+"_"+operType.toString()+"_"+checkType;
 		log.info(suitCode);
@@ -75,7 +77,9 @@ public class CheckEngine {
 //		return myCheckSuit;
 //	}
 	
-	//对后检查需要保存检查结果，调用此方法将检查结果插入到Ni_val_exception中
+	/*
+	 * 对后检查需要保存检查结果，调用此方法将检查结果插入到Ni_val_exception中
+	 */
 	private void saveCheckResult(List<NiValException> checkResultList) throws Exception{
 		if (checkResultList==null || checkResultList.size()==0) {return;}
 		for(int i=0;i<checkResultList.size();i++){
@@ -90,7 +94,9 @@ public class CheckEngine {
 //			this.conn.setAutoCommit(true);}		
 //	}
 	
-	//前检查
+	/*
+	 * 前检查
+	 */
 	public String preCheck() throws Exception{
 		log.info("start preCheck");
 		//isValidConn();
@@ -118,7 +124,9 @@ public class CheckEngine {
 		return null;
 	}
 	
-	//后检查
+	/*
+	 * 后检查
+	 */
 	public void postCheck() throws Exception{
 		log.info("start postCheck");
 		//isValidConn();

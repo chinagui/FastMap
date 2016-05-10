@@ -41,7 +41,10 @@ public class RuleExecuter {
 		createVariablesValues();
 	}
 	
-	//根据数据确定变量的values
+	/*
+	 * 根据数据确定变量的values
+	 * 随后执行sql语句的时候会通过变量替换values，形成可执行sql
+	 */
 	private void createVariablesValues(){
 		for(int i=0;i<dataList.size();i++){
 			for(int j=0;j<checkSuitVariables.size();j++){

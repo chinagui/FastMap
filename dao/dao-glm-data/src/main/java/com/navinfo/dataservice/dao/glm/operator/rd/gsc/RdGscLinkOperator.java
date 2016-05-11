@@ -224,7 +224,7 @@ public class RdGscLinkOperator implements IOperator{
 		if (gscLink.tableName() == null) {
 			sb.append(",null");
 		} else {
-			sb.append(",'" + new RdLink().tableName() + "'");
+			sb.append(",'" + gscLink.getTableName() + "'");
 		}
 		sb.append("," + gscLink.getShpSeqNum());
 		sb.append("," + gscLink.getStartEnd());

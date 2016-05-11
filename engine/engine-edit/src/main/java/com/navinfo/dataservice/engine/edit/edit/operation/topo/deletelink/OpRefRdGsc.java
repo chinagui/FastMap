@@ -1,42 +1,27 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.deletelink;
 
-import java.sql.Connection;
-
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 
-import net.sf.json.JSONObject;
-
 public class OpRefRdGsc implements IOperation {
-
-	private Command command;
 	
-	private Connection conn;
+	private Command command;
 
-	public OpRefRdGsc(Command command,Connection conn) {
+	public OpRefRdGsc(Command command) {
 		this.command = command;
-		
-		this.conn = conn;
-	}
 
+	}
+	
 	@Override
 	public String run(Result result) throws Exception {
 
-		// 删除link对立交的影响
-		for (RdGsc rdGsc : command.getRdGscs()) {
-			JSONObject data = new JSONObject();
-			// 立交的pid
-			data.put("objId", rdGsc.pid());
-			data.put("projectId",command.getProjectId());
-
-			com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Command updatecommand = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Command(
-					data, command.getRequester());
-			com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Process process = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.delete.Process(
-					updatecommand, result, conn);
-			process.innerRun();
+		for( RdGsc rdGsc : command.getRdGscs()){
+			
+			result.insertObject(rdGsc, ObjStatus.DELETE, rdGsc.pid());
 		}
-
+		
 		return null;
 	}
 

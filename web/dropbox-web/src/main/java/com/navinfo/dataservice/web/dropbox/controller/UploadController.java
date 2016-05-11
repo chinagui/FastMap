@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.web.dropbox.controller;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -76,7 +75,7 @@ public class UploadController {
 
 			UploadManager upload = new UploadManager();
 
-			List<Integer> chunkList = upload.checkChunk(jobId);
+			String chunkList = upload.checkChunk(jobId);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(chunkList));

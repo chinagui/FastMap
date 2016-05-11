@@ -3,14 +3,9 @@ package com.navinfo.dataservice.engine.dropbox.dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.dao.DBConnector;
 
 import net.sf.json.JSONObject;
@@ -68,7 +63,6 @@ public class DBController {
 			
 			return autoId;
 		} catch (Exception e) {
-			if(conn!=null)conn.rollback();
 			throw e;
 		} finally {
 			if (resultSet != null) {
@@ -136,10 +130,8 @@ public class DBController {
 			} else {
 				throw new Exception("不存在对应的jobid:" + jobId);
 			}
-			conn.commit();
 
 		} catch (Exception e) {
-			if(conn!=null)conn.rollback();
 			throw e;
 		} finally {
 			if (resultSet != null) {
@@ -176,9 +168,7 @@ public class DBController {
 			if (rows == 0) {
 				throw new Exception("不存在对应的jobid:" + jobId);
 			}
-			conn.commit();
 		} catch (Exception e) {
-			if(conn!=null)conn.rollback();
 			throw e;
 		} finally {
 			if (resultSet != null) {
@@ -268,10 +258,8 @@ public class DBController {
 			pstmt.setInt(2, chunkNo);
 
 			pstmt.executeUpdate();
-			conn.commit();
 
 		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
 			throw e;
 		} finally {
 			if (resultSet != null) {
@@ -286,7 +274,7 @@ public class DBController {
 		}
 	}
 
-	public List<Integer> getChunkList(int jobId) throws Exception {
+	public String getChunkList(int jobId) throws Exception {
 		Connection conn = null;
 
 		PreparedStatement pstmt = null;
@@ -296,9 +284,9 @@ public class DBController {
 		try {
 			conn = DBConnector.getInstance().getConnection();
 
-			List<Integer> results = new ArrayList<Integer>();
+			StringBuilder sb = new StringBuilder("[");
 
-			String sql = "select distinct chunk_no from dropbox_upload_chunk where job_id = :1 order by chunk_no";
+			String sql = "select listagg(chunk_no,',') within group(order by chunk_no) nos from (select distinct chunk_no from dropbox_upload_chunk where job_id = :1)";
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -306,13 +294,15 @@ public class DBController {
 
 			resultSet = pstmt.executeQuery();
 
-			while (resultSet.next()) {
-				results.add(resultSet.getInt(1));
+			if (resultSet.next()) {
+				sb.append(resultSet.getString(1));
 			}
+
+			sb.append("]");
 
 			conn.close();
 
-			return results;
+			return sb.toString();
 
 		} catch (Exception e) {
 			throw e;

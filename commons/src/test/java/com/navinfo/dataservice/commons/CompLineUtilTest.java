@@ -32,19 +32,91 @@ public class CompLineUtilTest {
 				,new DoubleLine(new DoublePoint(130.48922,41.0),new DoublePoint(130.48922,41.5)));
 		System.out.println(p);
 	}
-	
+	/**
+	 * 水平line
+	 */
 	@Test
-	public void isRightSide_001(){
-		DoubleLine line1 = new DoubleLine(new DoublePoint(0.0,0.0),
-				new DoublePoint(1.0,0.0));
-		DoubleLine line2 = new DoubleLine(new DoublePoint(1.0,0.0),
-				new DoublePoint(2.0,1.0));
-		DoubleLine lineAdj = new DoubleLine(new DoublePoint(1.0,0.0),
-				new DoublePoint(2.0,1.1));
-		if(CompLineUtil.isRightSide(line1,line2,lineAdj)){
-			System.out.println("YESSSSS...");
-		}else{
-			System.out.println("NOOOOOO...");
+	public void t_000_00(){
+		DoublePolyline polyline1 = new DoublePolyline(new DoublePoint[]{
+				new DoublePoint(130.0,40.0),new DoublePoint(130.5,40.0)
+		});
+
+		DoublePolyline[] polylines = new DoublePolyline[]{polyline1};
+		DoublePolyline[] results = CompLineUtil.offset(polylines, 1200);
+		for(DoublePolyline line:results){
+			System.out.println(line);
 		}
+		Assert.assertTrue(true);
+	}
+	/**
+	 * 垂直线
+	 */
+	@Test
+	public void t_000_01(){
+		DoublePolyline polyline1 = new DoublePolyline(new DoublePoint[]{
+				new DoublePoint(130.0,40.0),new DoublePoint(130.0,40.5)
+		});
+
+		DoublePolyline[] polylines = new DoublePolyline[]{polyline1};
+		DoublePolyline[] results = CompLineUtil.offset(polylines, 1200);
+		for(DoublePolyline line:results){
+			System.out.println(line);
+		}
+		Assert.assertTrue(true);
+	}
+
+	/**
+	 * 水平线+垂直线
+	 */
+	@Test
+	public void t_000_02(){
+		DoublePolyline polyline1 = new DoublePolyline(new DoublePoint[]{
+				new DoublePoint(131.0,42.0),new DoublePoint(132.0,42.0),new DoublePoint(132.0,43.0)
+		});
+
+		DoublePolyline[] polylines = new DoublePolyline[]{polyline1};
+		DoublePolyline[] results = CompLineUtil.offset(polylines, 1200);
+		for(DoublePolyline line:results){
+			System.out.println(line);
+		}
+		Assert.assertTrue(true);
+	}
+	@Test
+	public void t_001_01(){
+		DoublePolyline polyline1 = new DoublePolyline(new DoublePoint[]{
+				new DoublePoint(130.0,40.0),new DoublePoint(130.5,40.5),new DoublePoint(131.0,40.5)
+		});
+		DoublePolyline polyline2 = new DoublePolyline(new DoublePoint[]{
+				new DoublePoint(131.0,40.5),new DoublePoint(130.5,41.0),new DoublePoint(130.5,41.5),new DoublePoint(131.0,42.0)
+		});
+		DoublePolyline polyline3 = new DoublePolyline(new DoublePoint[]{
+				new DoublePoint(131.0,42.0),new DoublePoint(132.0,42.0),new DoublePoint(132.0,43.0)
+		});
+
+		DoublePolyline[] polylines = new DoublePolyline[]{polyline1,polyline2,polyline3};
+		DoublePolyline[] results = CompLineUtil.offset(polylines, 1200);
+		for(DoublePolyline line:results){
+			System.out.println(line);
+		}
+		Assert.assertTrue(true);
+	}
+	@Test
+	public void separate_01(){
+		try{
+			LineString ls1=(LineString)JtsGeometryUtil.read("LINESTRING(130.0 40.0,130.5 40.5,131.0 40.5)");
+			LineString ls2=(LineString)JtsGeometryUtil.read("LINESTRING(131.0 40.5,130.5 41.0,130.5 41.5,131.0 42.0)");
+			LineString ls3=(LineString)JtsGeometryUtil.read("LINESTRING(132.0 43.0,132.0 42.0,131.0 42.0)");
+			Point startPoint = (Point)JtsGeometryUtil.read("POINT(130.0 40.0)");
+			LineString[] lines = new LineString[]{
+					ls1,ls2,ls3
+			};
+			LineString[] results = CompLineUtil.separate(startPoint, lines, 12000);
+			for(LineString l:results){
+				System.out.println(l.toText());
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		Assert.assertTrue(true);
 	}
 }

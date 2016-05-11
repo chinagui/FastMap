@@ -46,7 +46,7 @@ public class AdAdminNameOperator implements IOperator {
 			pstmt.setInt(1, adminName.getPid());
 
 			pstmt.setInt(2, adminName.getRegionId());
-			pstmt.setInt(3, adminName.getNameGroupId());
+			pstmt.setInt(3, adminName.getNameGroupid());
 			pstmt.setString(4, adminName.getLangCode());
 			pstmt.setInt(5, adminName.getNameClass());
 			pstmt.setString(6, adminName.getName());
@@ -101,6 +101,11 @@ public class AdAdminNameOperator implements IOperator {
 				column = StringUtils.toColumnName(column);
 
 				Object value = field.get(adminName);
+				
+				if(column.equalsIgnoreCase("pid"))
+				{
+					column = "name_id";
+				}
 
 				if (value instanceof String || value == null) {
 
@@ -212,7 +217,7 @@ public class AdAdminNameOperator implements IOperator {
 
 		sb.append(adminName.getPid());
 		sb.append("," + adminName.getRegionId());
-		sb.append("," + adminName.getNameGroupId());
+		sb.append("," + adminName.getNameGroupid());
 		if (adminName.getLangCode() == null) {
 			sb.append(",null");
 		} else {

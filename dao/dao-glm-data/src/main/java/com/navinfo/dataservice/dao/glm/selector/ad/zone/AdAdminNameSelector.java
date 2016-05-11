@@ -45,7 +45,7 @@ public class AdAdminNameSelector implements ISelector {
 
 				adAdminName.setPid(resultSet.getInt("name_id"));
 
-				adAdminName.setNameGroupId(resultSet.getInt("name_groupid"));
+				adAdminName.setNameGroupid(resultSet.getInt("name_groupid"));
 
 				adAdminName.setRegionId(resultSet.getInt("region_id"));
 
@@ -127,7 +127,7 @@ public class AdAdminNameSelector implements ISelector {
 
 				adAdminName.setPid(resultSet.getInt("name_id"));
 
-				adAdminName.setNameGroupId(resultSet.getInt("name_groupid"));
+				adAdminName.setNameGroupid(resultSet.getInt("name_groupid"));
 
 				adAdminName.setRegionId(resultSet.getInt("region_id"));
 
@@ -219,7 +219,7 @@ public class AdAdminNameSelector implements ISelector {
 
 				adAdminName.setPid(resultSet.getInt("name_id"));
 
-				adAdminName.setNameGroupId(resultSet.getInt("name_groupid"));
+				adAdminName.setNameGroupid(resultSet.getInt("name_groupid"));
 
 				adAdminName.setRegionId(resultSet.getInt("region_id"));
 

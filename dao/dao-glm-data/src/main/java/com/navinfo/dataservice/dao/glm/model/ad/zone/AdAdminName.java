@@ -23,10 +23,11 @@ import com.vividsolutions.jts.geom.Geometry;
 
 public class AdAdminName implements IObj {
 	private int regionId ;
-	private int nameGroupId = 1;
+	private int nameGroupid = 1;
 	private String langCode;
 	private   int nameClass = 1; 
 	private  int pid;
+	
 	private String name ;
 	private String phonetic;
 	
@@ -45,7 +46,6 @@ public class AdAdminName implements IObj {
 		return rowId;
 	}
 
-
 	@Override
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
@@ -63,13 +63,13 @@ public class AdAdminName implements IObj {
 	public void setRegionId(int regionId) {
 		this.regionId = regionId;
 	}
-
-	public int getNameGroupId() {
-		return nameGroupId;
+	
+	public int getNameGroupid() {
+		return nameGroupid;
 	}
 
-	public void setNameGroupId(int nameGroupId) {
-		this.nameGroupId = nameGroupId;
+	public void setNameGroupid(int nameGroupid) {
+		this.nameGroupid = nameGroupid;
 	}
 
 	public String getLangCode() {

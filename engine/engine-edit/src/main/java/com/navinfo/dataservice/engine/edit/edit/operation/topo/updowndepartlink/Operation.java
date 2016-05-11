@@ -22,7 +22,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.RdLinkOperateUtils;
-import com.navinfo.navicommons.geo.computation.CompLineUtil;
+import com.navinfo.navicommons.geo.computation.CompPolylineUtil;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -90,7 +90,7 @@ public class Operation implements IOperation {
 		Point sPoint = new GeometryFactory().createPoint(this.getStartAndEndNode(links, 0).getGeometry().getCoordinate());
         RdNode snode = this.getStartAndEndNode(links, 0);
         RdNode eNode  =this.getStartAndEndNode(links, 1);
-		LineString[] lines = CompLineUtil.separate(sPoint,
+		LineString[] lines = CompPolylineUtil.separate(sPoint,
 				(LineString[]) lineStrings.toArray(), command.getDistance());
 		
 		// 生成分离后左线

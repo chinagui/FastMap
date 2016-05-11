@@ -45,12 +45,13 @@ public class ResponseUtils {
 		
 		json.put("errcode", -1);
 		
-		json.put("errmsg", errmsg);
+		json.put("errmsg", errmsg==null?"":errmsg);
 		
 		json.put("errid", errid);
 		
 		return json.toString();
 	}
+	
 	
 	
 	public static void main(String[] at){

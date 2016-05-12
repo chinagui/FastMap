@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.navinfo.dataservice.commons.util.JtsGeometryUtil;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 
@@ -113,13 +115,18 @@ public class CompPolylineUtil {
 		}
 		return null;
 	}
-	
-	public static boolean isRightSide(LineString startLine,LineString endLine,LineString adjacentLine)throws Exception{
+	/**
+	 * 首尾相连的两条线，获取连接点mid，起始线离mid最近的形状点为start，终点线离mid最近的形状点为end
+	 * @param startLine
+	 * @param endLine
+	 * @return [start,mid,end]
+	 * @throws Exception
+	 */
+	private static DoublePoint[] getStartMidEnd(LineString startLine,LineString endLine)throws Exception{
 		//先判断起点
 		DoublePoint start = null;
 		DoublePoint mid = null;
 		DoublePoint end = null;
-		DoublePoint adj = null;
 		DoublePoint startPoint1 = MyGeometryConvertor.convert(startLine.getCoordinateN(0));
 		DoublePoint startPoint2 = MyGeometryConvertor.convert(endLine.getCoordinateN(0));
 		DoublePoint endPoint2 = MyGeometryConvertor.convert(endLine.getCoordinateN(endLine.getNumPoints() - 1));
@@ -145,6 +152,16 @@ public class CompPolylineUtil {
 				throw new Exception("起始线和终点线不相连，无法判断。");
 			}
 		}
+		return new DoublePoint[]{start,mid,end};
+	}
+	
+	public static boolean isRightSide(LineString startLine,LineString endLine,LineString adjacentLine)throws Exception{
+		//获取中点连接线start，mid，end
+		DoublePoint[] connector = getStartMidEnd(startLine,endLine);
+		DoublePoint start = connector[0];
+		DoublePoint mid = connector[1];
+		DoublePoint end = connector[2];
+		DoublePoint adj = null;
 		DoublePoint adjStart = MyGeometryConvertor.convert(adjacentLine.getCoordinateN(0));
 		if(adjStart.equals(mid)){
 			adj = MyGeometryConvertor.convert(adjacentLine.getCoordinateN(1));
@@ -157,5 +174,68 @@ public class CompPolylineUtil {
 			}
 		}
 		return CompLineUtil.isRightSide(new DoubleLine(start,mid),new DoubleLine(mid,end),new DoubleLine(mid,adj));
+	}
+
+	/**
+	 * 舍弃targetLine不在指定side的所有形状点
+	 * 注意：此方法忽略了很多特殊情况，只针对上下线分离时修改挂接link形状时使用
+	 * @param startLine
+	 * @param endLine
+	 * @param targetLine：切割的目标线
+	 * @param fromPoint:targetLine从这点开始判断是否在指定side
+	 * @param isRightSide
+	 * @return
+	 * @throws Exception
+	 */
+	public static LineString cut(LineString startLine,LineString endLine,LineString targetLine,Point fromPoint,boolean isRightSide)throws Exception{
+		//获取中点连接线start，mid，end
+		DoublePoint[] connector = getStartMidEnd(startLine,endLine);
+		DoublePoint start = connector[0];
+		DoublePoint mid = connector[1];
+		DoublePoint end = connector[2];
+		DoublePoint fromP = MyGeometryConvertor.convert(fromPoint.getCoordinate());
+		DoublePoint tarStart = MyGeometryConvertor.convert(targetLine.getCoordinateN(0));
+		Coordinate[] coors = targetLine.getCoordinates();
+		DoubleLine sLine = new DoubleLine(start,mid);
+		DoubleLine eLine = new DoubleLine(mid,end);
+		int fromIndex = 0;
+		int endIndex = coors.length-1;
+		if(tarStart.equals(fromP)){//targetLine的画线方向是从fromPoint往外画的
+			for(;fromIndex<coors.length;fromIndex++){
+				DoublePoint temp = MyGeometryConvertor.convert(coors[fromIndex]);
+				if(temp.equals(mid)){//如果有重合点，直接取此点作为切割起始点
+					break;
+				}
+				DoubleLine adjLine = new DoubleLine(mid,temp);
+				if(!(isRightSide&&CompLineUtil.isRightSide(sLine,eLine,adjLine))){
+					break;
+				}
+			}
+		}else{//targetLine的画线方向是从外向fromPoint画的
+			for(;endIndex>=0;endIndex--){
+				DoublePoint temp = MyGeometryConvertor.convert(coors[endIndex]);
+				if(temp.equals(mid)){//如果有重合点，直接取此点作为切割起始点
+					break;
+				}
+				DoubleLine adjLine = new DoubleLine(mid,temp);
+				if(!(isRightSide&&CompLineUtil.isRightSide(sLine,eLine,adjLine))){
+					break;
+				}
+			}
+		}
+		Coordinate[] newCoors = new Coordinate[endIndex-fromIndex+1];
+		int i = 0;
+		for(;fromIndex<=endIndex;fromIndex++){
+			newCoors[i]=coors[fromIndex];
+		}
+		return JtsGeometryUtil.createLineString(newCoors);
+	}
+	
+	public static void main(String[] args){
+		String[] a1 = new String[]{"AA","BB","CC","DD"};
+		String[] a2 = Arrays.copyOfRange(a1, 0, 1);
+		for(String s:a2){
+			System.out.println(s);
+		}
 	}
 }

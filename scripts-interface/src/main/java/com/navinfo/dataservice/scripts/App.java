@@ -36,13 +36,6 @@ public class App
     			
     		});
     		System.out.println((System.currentTimeMillis()-t1)/1000);
-    		
-    		
-    		
-    		
-    		
-    		
-    		
     	}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 		}finally{

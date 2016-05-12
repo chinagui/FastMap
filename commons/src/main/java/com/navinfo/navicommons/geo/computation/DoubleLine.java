@@ -41,6 +41,16 @@ public class DoubleLine {
 		epoint=spoint;
 		spoint=temp;
 	}
+	public double getDeltaX(){
+		return epoint.getX()-spoint.getX();
+	}
+	public double getDeltaY(){
+		return epoint.getY()-spoint.getY();
+	}
+	public DoublePoint pan2OriginPoint(){
+		return new DoublePoint(getDeltaX(),getDeltaY());
+	}
+	
 	public String toString(){
 		return "("+spoint+","+epoint+")";
 	}

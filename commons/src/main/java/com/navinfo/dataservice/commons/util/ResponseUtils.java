@@ -45,7 +45,7 @@ public class ResponseUtils {
 		
 		json.put("errcode", -1);
 		
-		json.put("errmsg", errmsg);
+		json.put("errmsg", errmsg==null?"":errmsg);
 		
 		json.put("errid", errid);
 		
@@ -53,8 +53,9 @@ public class ResponseUtils {
 	}
 	
 	
+	
 	public static void main(String[] at){
-		System.out.println(assembleRegularResult(null));
+		System.out.println(assembleFailResult(null,"99"));
 	}
 	
 	

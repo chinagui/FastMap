@@ -291,14 +291,144 @@ public class BridgeTipsBuilder {
 			put.addColumn("data".getBytes(), "feedback".getBytes(), feedback.getBytes());
 
 			puts.add(put);
+			if(solrConn!=null){
+				JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(
+						rowkey, 0, date, type, deep.toString(),
+						geometry.getJSONObject("g_location"),
+						geometry.getJSONObject("g_guide"), "[]");
 
-			JSONObject solrIndexJson = TipsImportUtils.assembleSolrIndex(
-					rowkey, 0, date, type, deep.toString(),
-					geometry.getJSONObject("g_location"),
-					geometry.getJSONObject("g_guide"), "[]");
-
-			solrConn.addTips(solrIndexJson);
+				solrConn.addTips(solrIndexJson);
+			}
 			
 		}
+	}
+	/**
+	 * 导入入口程序块:不写入solr
+	 * 
+	 * @param fmgdbConn
+	 * @param htab
+	 */
+	public static void importTipsNoIndex(java.sql.Connection fmgdbConn, Table htab)
+			throws Exception {
+
+		Statement stmt = fmgdbConn.createStatement();
+
+		ResultSet resultSet = stmt.executeQuery(sql);
+
+		resultSet.setFetchSize(5000);
+
+		List<Put> puts = new ArrayList<Put>();
+
+		int num = 0;
+
+		String uniqId = null;
+
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+		String date = sdf.format(new Date());
+		
+		List<Bridge> tips = new ArrayList<Bridge>();
+
+		int currentRoot = 0;
+
+		while (resultSet.next()) {
+			num++;
+			
+			int rootLinkPid = resultSet.getInt("root_link_pid");
+
+			int level = resultSet.getInt("lvl");
+
+			int sNodePid = resultSet.getInt("s_node_pid");
+
+			int eNodePid = resultSet.getInt("e_node_pid");
+
+			int linkPid = resultSet.getInt("link_pid");
+
+			int isLeaf = resultSet.getInt("isLeaf");
+
+			String name = resultSet.getString("name");
+
+			STRUCT struct = (STRUCT) resultSet.getObject("s_point_geom");
+
+			Geometry sNodeGeom = GeoTranslator.struct2Jts(struct);
+
+			struct = (STRUCT) resultSet.getObject("e_point_geom");
+
+			Geometry eNodeGeom = GeoTranslator.struct2Jts(struct);
+
+			struct = (STRUCT) resultSet.getObject("link_geom");
+
+			Geometry linkGeom = GeoTranslator.struct2Jts(struct);
+
+			boolean found = false;
+
+			if (rootLinkPid != currentRoot) {
+				generateTips(tips, puts, date, null);
+				tips.clear();
+				currentRoot = rootLinkPid;
+			} else {
+				if (isLeaf == 0) {
+					for (Bridge tip : tips) {
+						if (tip.level != level + 1) {
+							continue;
+						}
+
+						if (tip.sNodePid != eNodePid) {
+							continue;
+						}
+						
+						if (!StringUtils.isStringSame(tip.name, name)) {
+							continue;
+						}
+
+						found = true;
+
+						tip.sNodePid = sNodePid;
+
+						tip.level = level;
+
+						tip.linkPids.add(linkPid);
+
+						tip.sNodeGeom = sNodeGeom;
+
+						tip.linkGeoms.add(linkGeom);
+
+						break;
+					}
+				}
+			}
+
+			if (!found) {
+
+				Bridge tip = new Bridge();
+
+				tip.sNodePid = sNodePid;
+
+				tip.eNodePid = eNodePid;
+
+				tip.level = level;
+
+				tip.linkPids.add(linkPid);
+
+				tip.sNodeGeom = sNodeGeom;
+
+				tip.eNodeGeom = eNodeGeom;
+
+				tip.linkGeoms.add(linkGeom);
+
+				tip.name = name;
+
+				tips.add(tip);
+			}
+
+			if (num % 5000 == 0) {
+				htab.put(puts);
+
+				puts.clear();
+				
+			}
+		}
+
+		htab.put(puts);
+
 	}
 }

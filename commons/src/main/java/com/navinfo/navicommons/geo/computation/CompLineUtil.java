@@ -1,14 +1,6 @@
 package com.navinfo.navicommons.geo.computation;
 
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import com.navinfo.dataservice.commons.util.GeometryUtils;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Point;
 
 /** 
 * @ClassName: CompLineUitl 
@@ -122,101 +114,50 @@ public class CompLineUtil {
 			return new DoubleLine[]{leftLine};
 		}
 	}
-	public static DoublePolyline offset(DoublePolyline polyline,double distance){
-		
-		return null;
+	public static boolean isRightSide(DoubleLine startLine,DoubleLine endLine,DoubleLine adjacentLine){
+		if(angleAnticlockwise(startLine,endLine)>=angleAnticlockwise(startLine,adjacentLine)) return true;
+		return false;
 	}
 	/**
-	 * 
-	 * @param polylines：首尾相连的polyline组成的线串
-	 * @param distance
+	 * 计算point是否在有向线段line的右侧（包含在线上情况）
+	 * 算法：line由p0p1组成，point为p2，构造(p2 - p0) 和 (p1 - p0)向量，判断
+	 * @param line
+	 * @param point
 	 * @return
 	 */
-	public static DoublePolyline[] offset(DoublePolyline[] polylines,double distance){
-		if(polylines!=null&&polylines.length>0){
-			int linesLen = polylines.length;
-			DoublePolyline[] leftResults = new DoublePolyline[linesLen];
-			DoublePolyline[] rightResults = new DoublePolyline[linesLen];
-			//先遍历polylines
-			for(int i=0;i<linesLen;i++){
-				DoublePolyline polyline = polylines[i];
-				int lineLen = polyline.getLineSize();
-				DoubleLine[] leftLines= new DoubleLine[lineLen];
-				DoubleLine[] rightLines= new DoubleLine[lineLen];
-				//每条polyline有若干line组成，遍历lines
-				for(int j=0;j<lineLen;j++){
-					DoubleLine line = polyline.getLines()[j];
-					DoubleLine[] offSets = offset(line,distance,true);
-					leftLines[j]=offSets[0];
-					rightLines[j]=offSets[1];
-					//从第二条line开始，计算与前一条line的交点
-					if(j>0){
-						DoublePoint leftMidPoint = LineExtIntersect(leftLines[j-1],leftLines[j]);
-						leftLines[j-1].setEpoint(leftMidPoint);
-						leftLines[j].setSpoint(leftMidPoint);
-						DoublePoint rightMidPoint = LineExtIntersect(rightLines[j-1],rightLines[j]);
-						rightLines[j-1].setEpoint(rightMidPoint);
-						rightLines[j].setSpoint(rightMidPoint);
-					}
-				}
-				leftResults[i]=new DoublePolyline(leftLines);
-				rightResults[i]=new DoublePolyline(rightLines);
-				//从第二条polyline开始，计算前一条polyline的最后一条line与当前polyline的第一条line的交点
-				if(i>0){
-					DoubleLine leftPreLastLine = leftResults[i-1].getLastLine();
-					DoubleLine leftCurFirstLine = leftResults[i].getFirstLine();
-					DoublePoint leftMidNode = LineExtIntersect(leftPreLastLine,leftCurFirstLine);
-					leftPreLastLine.setEpoint(leftMidNode);
-					leftCurFirstLine.setSpoint(leftMidNode);
-					DoubleLine rightPreLastLine = rightResults[i-1].getLastLine();
-					DoubleLine rightCurFirstLine = rightResults[i].getFirstLine();
-					DoublePoint rightMidNode = LineExtIntersect(rightPreLastLine,rightCurFirstLine);
-					rightPreLastLine.setEpoint(rightMidNode);
-					rightCurFirstLine.setSpoint(rightMidNode);
-				}
-			}
-			//reverse left polylines
-			List<DoublePolyline> ls = Arrays.asList(leftResults);
-			Collections.reverse(ls);
-			leftResults = ls.toArray(new DoublePolyline[0]);
-			for(DoublePolyline polyline:leftResults){
-				polyline.reverse();
-			}
-			List<DoublePolyline> resultsList = new ArrayList(Arrays.asList(rightResults));
-			resultsList.addAll(Arrays.asList(leftResults));
-			return resultsList.toArray(new DoublePolyline[0]);
+	public static boolean isRightSide(DoubleLine line,DoublePoint point){
+		DoublePoint p20 = CompPointUtil.minus(point, line.getSpoint());
+		DoublePoint p10 = CompPointUtil.minus(line.getEpoint(), line.getSpoint());
+		double crossValue = CompPointUtil.cross(p20, p10);
+		if(crossValue>=0){
+			return true;
 		}
-		return null;
+		return false;
 	}
-	public static LineString[] separate(Point startPoint,LineString[] lines,double distance){
-		if(lines!=null&&lines.length>0){
-			int length =lines.length;
-			DoublePolyline[] polylines = new DoublePolyline[length];
-			DoublePoint start = MyGeometryConvertor.convert(startPoint.getCoordinate());//保留起点
-			DoublePoint end = null;
-			DoublePoint curStart = start;
-			for(int i=0;i<length;i++){
-				polylines[i]=MyGeometryConvertor.convert(lines[i]);
-				if(!curStart.equals(polylines[i].getSpoint())){
-					polylines[i].reverse();
-				}
-				curStart = polylines[i].getEpoint();
-			}
-			end = polylines[length-1].getEpoint();//得到终点
-			//获取右左偏移平行线
-			DoublePolyline[] rawResults = offset(polylines,distance);
-			//构造闭环
-			rawResults[0].extend(start, false);
-			rawResults[length-1].extend(end, true);
-			rawResults[length].extend(end, false);
-			rawResults[2*length-1].extend(start, true);
-			//转换
-			LineString[] results = new LineString[rawResults.length];
-			for(int j=0;j<rawResults.length;j++){
-				results[j]=MyGeometryConvertor.convert(rawResults[j]);
-			}
-			return results;
+	/**
+	 * 两条线段间夹角，0~PI
+	 * @param line1
+	 * @param line2
+	 * @return
+	 */
+	public static double angleNoDirection(DoubleLine line1,DoubleLine line2){
+		DoublePoint p1 = line1.pan2OriginPoint();
+		DoublePoint p2 = line2.pan2OriginPoint();
+		return CompPointUtil.angle(p1, p2);
+	}
+	/**
+	 * 有向线段line1到line2逆时针方向的角度
+	 * @param line1
+	 * @param line2
+	 * @return
+	 */
+	public static double angleAnticlockwise(DoubleLine line1,DoubleLine line2){
+		DoublePoint p1 = line1.pan2OriginPoint();
+		DoublePoint p2 = line2.pan2OriginPoint();
+		if(isRightSide(line1, p2)){
+			return Math.PI-CompPointUtil.angle(p1, p2);
+		}else{
+			return Math.PI+CompPointUtil.angle(p1, p2);
 		}
-		return null;
 	}
 }

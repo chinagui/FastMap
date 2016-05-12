@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.text.StyledEditorKit.BoldAction;
-
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -15,7 +13,6 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkIntRtic;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
@@ -25,8 +22,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.RdLinkOperateUtils;
-import com.navinfo.navicommons.geo.computation.CompLineUtil;
-import com.sun.research.ws.wadl.Link;
+import com.navinfo.navicommons.geo.computation.CompPolylineUtil;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -53,10 +49,10 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 
-		// 1.创建分离后生成links
-		this.createDepartLinks(result);
-		// 2.删除soucelinks
+		// 1.删除soucelinks
 		this.deleteLinks(result);
+		// 2.创建分离后生成links
+		this.createDepartLinks(result);
 		return null;
 	}
 
@@ -82,23 +78,21 @@ public class Operation implements IOperation {
 	 */
 	private void createDepartLinks(Result result) throws Exception {
 		List<RdLink> links = command.getLinks();
-		LineString[] lineStrings = new LineString[links.size()];
+		List<LineString> lineStrings = new ArrayList<LineString>();
 		// 组装LineString
-		
-		for (int i = 0; i < links.size(); i++) {
-			lineStrings[i] = (new GeometryFactory().createLineString(GeoTranslator.transform(links
-					.get(i).getGeometry(),0.00001,5).getCoordinates()));
+		for (RdLink link : links) {
+			lineStrings.add((new GeometryFactory().createLineString(link
+					.getGeometry().getCoordinates())));
 		}
 		// 调用分离后生成的上下线
 		// 生成的线按照顺序存放在List<LineString> 前一半是左线 后一半是右线
-		// 传入起点和终点Point
-		Point sPoint = new GeometryFactory().createPoint(this
-				.getStartAndEndNode(links, 0).getGeometry().getCoordinate());
-		RdNode snode = this.getStartAndEndNode(links, 0);
-		RdNode eNode = this.getStartAndEndNode(links, 1);
-		LineString[] lines = CompLineUtil.separate(sPoint, lineStrings,
-				command.getDistance());
-
+		//传入起点和终点Point
+		Point sPoint = new GeometryFactory().createPoint(this.getStartAndEndNode(links, 0).getGeometry().getCoordinate());
+        RdNode snode = this.getStartAndEndNode(links, 0);
+        RdNode eNode  =this.getStartAndEndNode(links, 1);
+		LineString[] lines = CompPolylineUtil.separate(sPoint,
+				(LineString[]) lineStrings.toArray(), command.getDistance());
+		
 		// 生成分离后左线
 		Map<Geometry, RdNode> map = new HashMap<Geometry, RdNode>();
 		map.put(snode.getGeometry(), snode);
@@ -108,39 +102,22 @@ public class Operation implements IOperation {
 		for (int i = 0; i < command.getLinkPids().size(); i++) {
 			RdLink departLink = new RdLink();
 			departLink.setGeometry(lines[i]);
-			RdLink currentLink = command.getLinks().get(i);
-			RdLink nextLink = null;
-			if (i == command.getLinkPids().size() - 1) {
-				nextLink = currentLink;
-			}else{
-				nextLink = command.getLinks().get(i+1);
-			}
-			
-			downLists.addAll(this.createUpRdLink(departLink, result,
-					currentLink, nextLink, map));
+			downLists.addAll(this.createUpRdLink(departLink, result, command
+					.getLinks().get(i), map));
 		}// 生成分离后右线
 		for (int i = command.getLinkPids().size(); i < lines.length; i++) {
 			RdLink departLink = new RdLink();
 			departLink.setGeometry(lines[i]);
-			RdLink currentLink = command.getLinks().get(
-					i - command.getLinkPids().size());
-			RdLink nextLink = null;
-			if (i == lines.length - 1) {
-				nextLink = currentLink;
-			}else{
-				nextLink= command.getLinks().get(
-						i - command.getLinkPids().size()+1);
-			}
-			upLists.addAll(this.createDownRdLink(departLink, result,
-					currentLink, nextLink, map));
+			upLists.addAll(this.createDownRdLink(departLink, result, command
+					.getLinks().get(i - command.getLinkPids().size()), map));
 		}
 		// 属性维护
 		this.RelationLink(upLists, result, 0);
 		this.RelationLink(downLists, result, 1);
 
-	}
-	// 上下线属性维护
-	// upDownFlag 新生成线标志0上线(左线) 1下线(右线)
+	}// 上下线属性维护
+		// upDownFlag 新生成线标志0上线(左线) 1下线(右线)
+
 	private void RelationLink(List<RdLink> links, Result result, int upDownFlag) {
 
 		for (RdLink link : links) {
@@ -203,7 +180,7 @@ public class Operation implements IOperation {
 	// RTIC方向值由程序根据制作RTIC时的方向与划线方向的关系自动计算，其余信息继承原link；
 	// 单方向道路变上下线分离，将单方向道路上的RTIC信息赋值给与该单方向道路通行方向相同的一侧道路上。
 	private void relationRticForLink(RdLink link, int upDownFlag) {
-		// 道路:LINK 与 RTIC 关系表（车导客户用）
+		//道路:LINK 与 RTIC 关系表（车导客户用）
 		for (IRow row : link.getRtics()) {
 			RdLinkRtic linkRtic = (RdLinkRtic) row;
 			if (link.getDirect() == 1) {
@@ -226,9 +203,9 @@ public class Operation implements IOperation {
 				}
 			}
 		}
-
-		// 道路:LINK 与 RTIC 关系表（互联网客户用）
-		for (IRow row : link.getIntRtics()) {
+		
+		//道路:LINK 与 RTIC 关系表（互联网客户用）
+		for (IRow row :link.getIntRtics()) {
 			RdLinkIntRtic linkRtic = (RdLinkIntRtic) row;
 			if (link.getDirect() == 1) {
 				if (upDownFlag == 0) {
@@ -250,67 +227,60 @@ public class Operation implements IOperation {
 				}
 			}
 		}
-
+		
 	}
-	/*
-	 * @param departLink 分离后生成的link
-	 * @param result    
-	 * @param sourceLink 分离前对应原始link
-	 * @param sourceNextLink 分离前对应原始link下一条link
-	 * @param map
-	 * @return  返回生成上(左边)对应links
-	 * @throws Exception
-	 */
+
 	private List<RdLink> createUpRdLink(RdLink departLink, Result result,
-			RdLink sourceLink, RdLink sourceNextLink, Map<Geometry, RdNode> map)
-			throws Exception {
+			RdLink sourceLink, Map<Geometry, RdNode> map) throws Exception {
 		RdLinkSelector nodeSelector = new RdLinkSelector(conn);
 		// 查找分离前link起始点上挂接的link
-		List<RdLink> slinks = nodeSelector.loadByDepartNodePid(
-				sourceLink.getsNodePid(), sourceLink.getPid(),
-				sourceNextLink.getPid(), true);
-		List<RdLink> elinks = nodeSelector.loadByDepartNodePid(
-				sourceLink.geteNodePid(), sourceLink.getPid(),
-				sourceNextLink.getPid(), true);
+		List<RdLink> slinks = nodeSelector.loadByNodePid(
+				sourceLink.geteNodePid(), true);
+		List<RdLink> elinks = nodeSelector.loadByNodePid(
+				sourceLink.getsNodePid(), true);
 		RdNode sNode = null;
 		RdNode eNode = null;
-		// 如果对应起点没有挂接的link
-		//对于上(左)线需要生成新的node
+		// 如果对应起点上
 		if (slinks.size() <= 0) {
-			sNode = this.getNodeByDepartGeo(departLink, 1,map ,result);
+			if (map.containsKey(departLink.getGeometry().getCoordinates()[0])) {
+				sNode = map.get(departLink.getGeometry().getCoordinates()[0]);
+			} else {
+				Coordinate[] coordinates = departLink.getGeometry()
+						.getCoordinates();
+				sNode = NodeOperateUtils.createNode(coordinates[0].x,
+						coordinates[0].y);
+				map.put(sNode.getGeometry(), eNode);
+				result.insertObject(sNode, ObjStatus.INSERT, sNode.getPid());
+			}
+		} else {
+			// 判断slink是否至少有一条link在原有link的右边
+
 		}
-		//如果对应起点有挂接的link
-		//且没有下线挂接的link 需要修改原有node的属性
-		//如果至少有一条下挂的link对于上(左)线需要生成新的node
-		else {
-			sNode= this.getDepartRdlinkNode(slinks, departLink, sourceLink, sourceNextLink, 1,1, map, result);
-		}
-		// 如果对应终点没有挂接的link
-		//对于上(左)线需要生成新的node
 		if (elinks.size() <= 0) {
-			eNode = this.getNodeByDepartGeo(departLink, 0, map, result);
-		} 
-		//如果对应终点有挂接的link
-		//且没有下线挂接的link 需要修改原有node的属性
-		//如果至少有一条下挂的link对于上(左)线需要生成新的node
-		else {
-			eNode = this.getDepartRdlinkNode(elinks, departLink, sourceLink, sourceNextLink,0,1, map, result);
+			if (map.containsKey(departLink.getGeometry().getCoordinates()[departLink
+					.getGeometry().getCoordinates().length - 1])) {
+				sNode = map
+						.get(departLink.getGeometry().getCoordinates()[departLink
+								.getGeometry().getCoordinates().length - 1]);
+			} else {
+				Coordinate[] coordinates = departLink.getGeometry()
+						.getCoordinates();
+				eNode = NodeOperateUtils.createNode(
+						coordinates[coordinates.length - 1].x,
+						coordinates[coordinates.length - 1].y);
+				map.put(eNode.getGeometry(), eNode);
+			}
+			result.insertObject(eNode, ObjStatus.INSERT, eNode.getPid());
+		} else {
+			// 判断slink是否至少有一条link在原有link的右边
+
 		}
 		return RdLinkOperateUtils.addRdLink(sNode, eNode, departLink,
 				sourceLink, result);
 	}
-	/*
-	 * @param departLink 分离后生成的link
-	 * @param result    
-	 * @param sourceLink 分离前对应原始link
-	 * @param sourceNextLink 分离前对应原始link下一条link
-	 * @param map
-	 * @return  返回生成下(右边)对应links
-	 * @throws Exception
-	 */
+
 	private List<RdLink> createDownRdLink(RdLink departLink, Result result,
-			RdLink sourceLink, RdLink sourceNextLink, Map<Geometry, RdNode> map)
-			throws Exception {
+			RdLink sourceLink, Map<Geometry, RdNode> map) throws Exception {
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 
 		// 查找分离前link起始点上挂接的link
@@ -323,89 +293,23 @@ public class Operation implements IOperation {
 		// 如果对应起点上
 		if (slinks.size() <= 0) {
 			sNode = this.updateAdNodeForTrack(departLink,
-					sourceLink.getsNodePid(), conn, result, 1);
+					sourceLink.geteNodePid(), conn, result, 0);
 
 		} else {
-			sNode = this.getDepartRdlinkNode(slinks, departLink, sourceLink, sourceNextLink, 1, 0, map, result);
+			// 判断slink是否至少有一条link在原有link的右边
+
 		}
 		if (elinks.size() <= 0) {
 			eNode = this.updateAdNodeForTrack(departLink,
-					sourceLink.geteNodePid(), conn, result, 0);
+					sourceLink.geteNodePid(), conn, result, 1);
 		} else {
-			eNode=  this.getDepartRdlinkNode(elinks, departLink, sourceLink, sourceNextLink, 0, 0, map, result);
+			// 判断slink是否至少有一条link在原有link的右边
+
 		}
 		return RdLinkOperateUtils.addRdLink(sNode, eNode, departLink,
 				sourceLink, result);
 	}
-	/*
-	 * @param links 当前sourceLink 起点或终点挂接的link
-	 * @param departLink 分离后的link
-	 * @param sourceLink 分立前对应的link
-	 * @param sourceNextLink 分离前对应link的下一条link
-	 * @param flag 生成node按照线几何起始和终点node 1 起点  0 终点
-	 * @param flagUpDown 生成上(左)下(右)线标志 1上 0下
-	 * @param map   存放已经生成的adnode 
-	 * @param result 
-	 * @return 返回新生成的AdNode
-	 * @throws Exception
-	 */
-	private RdNode getDepartRdlinkNode(List<RdLink> links,RdLink departLink,RdLink sourceLink,RdLink sourceNextLink,int flag,int flagUpDown,Map<Geometry, RdNode> map,Result result) throws Exception{
-		List<Boolean> flagBooleans = new ArrayList<Boolean>();
-		RdNode node = null;
-		for (RdLink link : links) {
-			flagBooleans.add(this.isRightSide(sourceLink, sourceNextLink, link));
-		}
-		if (flagBooleans.contains(true)){
-			if(flagUpDown == 1){
-				node =this.getNodeByDepartGeo(departLink, flag,map, result); 
-			}else{
-				node = this.updateAdNodeForTrack(departLink,
-					sourceLink.getsNodePid(), conn, result, 1);
-			}
-
-		}
-		if (!flagBooleans.contains(true)){
-			if(flagUpDown == 1){
-				node = this.updateAdNodeForTrack(departLink,
-						sourceLink.getsNodePid(), conn, result, 1);
-			}else{
-				node =this.getNodeByDepartGeo(departLink, flag,map, result);
-			}
-		}
-
-		return node;
-	}
-	/*
-	 * 根据分离后的几何属性生成新的node
-	 * @param departLink 分离后的link
-	 * @param map 已经生成的node
-	 * @param result
-	 * @return
-	 * @throws Exception
-	 */
-	private RdNode getNodeByDepartGeo(RdLink departLink,int flag,Map<Geometry, RdNode> map,Result result) throws Exception{
-		RdNode node = null;
-		Geometry geometry =null;
-		Coordinate coordinate = null;
-		if(flag == 1){
-			coordinate = departLink.getGeometry().getCoordinates()[0];
-		}else{
-			coordinate = departLink.getGeometry().getCoordinates()[ departLink.getGeometry().getCoordinates().length-1];
-		}
-		geometry = new GeometryFactory().createPoint(coordinate);
-		if (map.containsKey(geometry)) {
-			node = map.get(geometry);
-		} else {
-			node = NodeOperateUtils.createNode(coordinate.x,coordinate.y);
-			map.put(node.getGeometry(), node);
-			result.insertObject(node, ObjStatus.INSERT, node.getPid());
-		}
-		return node;
-	}
-
-	// 更新分离后要移动node的几何属性
-	//flag ==1 根据分离后线几何属性的最后点属性更新node的几何属性
-	//flag ==0根据分离后线几何属性的开始点属性更新node的几何属性
+    //更新分离后要移动node的几何属性
 	private RdNode updateAdNodeForTrack(RdLink link, int nodePid,
 			Connection conn, Result result, int flag) throws Exception {
 		JSONObject updateContent = new JSONObject();
@@ -425,44 +329,39 @@ public class Operation implements IOperation {
 		result.insertObject(node, ObjStatus.UPDATE, node.getPid());
 		return node;
 	}
-
-	// 获取联通线的起点和终点
+	//获取联通线的起点和终点
 	// 0 起点  1 终点
 	// 根据联通线的第一条link和第二条link算出起点Node
 	// 根据联通线最后一条link和倒数第二条link算出终点Node
-	private RdNode getStartAndEndNode(List<RdLink> links, int flag)
-			throws Exception {
-		RdLink fristLink = null;
+	private RdNode getStartAndEndNode(List<RdLink> links,int flag) throws Exception{
+		RdLink fristLink  = null;
 		RdLink secondLink = null;
 		RdNode node = null;
-		if (flag == 0) {
-			fristLink = links.get(0);
-			secondLink = links.get(1);
+		if( flag == 0){
+			 fristLink = links.get(0);
+			 secondLink = links.get(1);
 		}
-		if (flag == 1) {
-			fristLink = links.get(links.size() - 1);
-			secondLink = links.get(links.size() - 2);
+		if (flag == 1){
+			fristLink  = links.get(links.size()-1);
+			secondLink = links.get(links.size()-2);
 		}
 		List<Integer> nodes = new ArrayList<Integer>();
 		nodes.add(secondLink.getsNodePid());
 		nodes.add(secondLink.geteNodePid());
-		if (nodes.contains(fristLink.getsNodePid())) {
-			IRow row = new RdNodeSelector(conn).loadById(
-					fristLink.geteNodePid(), true);
-			node = (RdNode) row;
+			if(nodes.contains(fristLink.getsNodePid())){
+				IRow row =new RdNodeSelector(conn).loadById(fristLink.geteNodePid(), true);
+				node = (RdNode)row;
+			}
+			if(nodes.contains(fristLink.geteNodePid())){
+				IRow row = new RdNodeSelector(conn).loadById(fristLink.getsNodePid(), true);
+				node = (RdNode)row;
+				
+			}
+			return node;
 		}
-		if (nodes.contains(fristLink.geteNodePid())) {
-			IRow row = new RdNodeSelector(conn).loadById(
-					fristLink.getsNodePid(), true);
-			node = (RdNode) row;
-
-		}
-		return node;
-	}
-
-	private boolean isRightSide(RdLink startLine, RdLink endLine,
-			RdLink adjacentLine) {
+	private boolean isLeftDriect(RdLink fristLink,RdLink secondLink){
 		return true;
 	}
-
+	
+	
 }

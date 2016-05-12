@@ -2,7 +2,6 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.create;
 
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,8 +16,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 
 /**
  * 新增立交操作类
@@ -41,12 +41,8 @@ public class Operation implements IOperation {
 	public String run(Result result) throws Exception {
 
 		RdGsc rdGsc = new RdGsc();
-		
-		//link的pid和层级的映射关系
+
 		Map<Integer, Integer> linkMap = command.getLinkMap();
-		
-		//link对象的map集合
-		Map<Integer,RdLink> linkObjMap = new HashMap<>();
 
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 		
@@ -58,9 +54,7 @@ public class Operation implements IOperation {
 			Geometry geometry = link.getGeometry();
 			
 			geometry.setUserData(linkPid);
-			
-			linkObjMap.put(link.getPid(), link);
-			
+
 			linksGeometryList.add(geometry);
 		}
 		
@@ -105,33 +99,11 @@ public class Operation implements IOperation {
 					
 					rdGscLink.setPid(rdGsc.getPid());
 					
-					rdGscLink.setTableName("RD_LINK");
-					
 					rdGscLink.setZlevel(zlevel);
 					
 					rdGscLink.setLinkPid(linkPid);
 					
-					int startEndFlag = startEndMap.get(linkPid);
-					
-					rdGscLink.setStartEnd(startEndFlag);
-					
-					//计算SHP_SEQ_NUM
-					RdLink linkObj = linkObjMap.get(linkPid);
-					
-					Coordinate[] linkCoor = linkObj.getGeometry().getCoordinates();
-					
-					if(startEndFlag == 1)
-					{
-						rdGscLink.setShpSeqNum(0);
-					}
-					else if(startEndFlag == 2)
-					{
-						rdGscLink.setShpSeqNum(linkCoor.length - 1);
-					}
-					else
-					{
-						rdGscLink.setShpSeqNum(calcShpSeqNum(gscGeo,linkCoor));;
-					}
+					rdGscLink.setStartEnd(startEndMap.get(linkPid));
 					
 					rdGscLinks.add(rdGscLink);
 					
@@ -147,26 +119,6 @@ public class Operation implements IOperation {
 		}
 
 		return null;
-	}
-
-	private int calcShpSeqNum(Geometry gscGeo, Coordinate[] linkCoors) {
-		
-		int result = 1;
-		
-		Coordinate gscCoor = gscGeo.getCoordinate();
-		
-		for(int i = 0;i<linkCoors.length;i++)
-		{
-			Coordinate linkCoor = linkCoors[i];
-			
-			if(gscCoor.x == linkCoor.x && gscCoor.y == linkCoor.y)
-			{
-				result = i;
-				break;
-			}
-		}
-		
-		return result;
 	}
 
 }

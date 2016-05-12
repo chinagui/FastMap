@@ -84,11 +84,11 @@ public class Command extends AbstractCommand {
 		this.nodePid = data.getInt("nodePid");
 
 		this.inLinkPid = data.getInt("inLinkPid");
-		
-		outLinkPids = new ArrayList<Integer>();
-		
+
 		if (data.containsKey("outLinkPids")) {
 			JSONArray array = data.getJSONArray("outLinkPids");
+
+			outLinkPids = new ArrayList<Integer>();
 
 			for (int i = 0; i < array.size(); i++) {
 

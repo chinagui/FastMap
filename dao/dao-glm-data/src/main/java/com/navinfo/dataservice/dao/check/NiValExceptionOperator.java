@@ -77,58 +77,6 @@ public class NiValExceptionOperator {
 
 	}
 	
-	public void insertCheckLog(String ruleId, String loc, String targets,
-			int meshId, String log,String worker) throws Exception {
-
-		String sql = "merge into ni_val_exception a using ( select * from ( select :1 as RESERVED from dual) where RESERVED not in ( select RESERVED          from ni_val_exception          where RESERVED is not null        union all        select RESERVED          from ck_exception          where RESERVED is not null          )) b on (a.RESERVED = b.reserved) when not matched then   insert     (RESERVED, ruleid, information, location, targets, mesh_id, worker, row_id, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, :10, sysdate, sysdate)";
-		PreparedStatement pstmt = conn.prepareStatement(sql);
-
-		try {
-			String md5 = this.generateMd5(ruleId,log, targets, null);
-
-			pstmt.setString(1, md5);
-			
-			pstmt.setString(2, md5);
-
-			pstmt.setString(3, ruleId);
-
-			pstmt.setString(4, log);
-
-			pstmt.setString(5, loc);
-
-			pstmt.setString(6, targets);
-
-			pstmt.setInt(7, meshId);
-
-			pstmt.setString(8, worker);
-			
-			pstmt.setString(9, UuidUtils.genUuid());
-			
-			pstmt.setInt(10, 1);
-			
-			int res =pstmt.executeUpdate();
-			
-			if(res>0){
-				
-				CkResultObjectOperator op = new CkResultObjectOperator(conn);
-				
-				op.insertCkResultObject(md5, targets);
-			}
-			
-		} catch (Exception e) {
-			throw e;
-		} finally {
-
-			try {
-				pstmt.close();
-			} catch (Exception e) {
-
-			}
-
-		}
-
-	}
-	
 	public void deleteNiValException(String tableName, int pid)
 			throws Exception {
 		

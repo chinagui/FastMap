@@ -16,20 +16,16 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.check.core.CheckRule;
 import com.navinfo.dataservice.engine.check.core.CheckSuitLoader;
 import com.navinfo.dataservice.engine.check.core.NiValException;
-import com.navinfo.dataservice.engine.check.core.RuleExecuter;
-import com.navinfo.dataservice.engine.check.core.VariableName;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class CheckEngine {
 	private CheckCommand checkCommand = null;
 	private Connection conn;
-	private List<VariableName> myCheckSuitVariables=new ArrayList<VariableName>();
 	public Connection getConn() {
 		return conn;
 	}
@@ -47,44 +43,20 @@ public class CheckEngine {
 		//this.conn.setAutoCommit(true);
 	}
 
-	/*
-	 * 获取本次要执行的检查规则
-	 */
+	//获取本次要执行的检查规则
 	private List<CheckRule> getRules(ObjType objType, OperType operType,String checkType) throws Exception{
 		String suitCode = objType.toString()+"_"+operType.toString()+"_"+checkType;
 		log.info(suitCode);
 		List<CheckRule> myCheckSuit = CheckSuitLoader.getInstance().getCheckSuit(suitCode);
-		this.myCheckSuitVariables=CheckSuitLoader.getInstance().getCheckSuitVariables(suitCode);
 		return myCheckSuit;
 	}
 	
-//	private List<CheckRule> getRulesTest(ObjType objType, OperType operType,String checkType) throws Exception{
-//		String initRuleCode="test2";
-//		String initRuleLog="testsql";
-//		int initSeverity=1;
-//		String initCheckClassPath=null;
-//		String accessorType="SQL";
-//		String accessorName="select r.geometry,'[RD_LINK,'||r.link_pid||']',R.MESH_ID from rd_link r where r.kind in (10,11,15) and r.link_pid=RDLINK_PID";
-//		String variables="RDLINK_PID";
-//		CheckRule rule=new CheckRule(initRuleCode,initRuleLog,initSeverity,initCheckClassPath,accessorType,accessorName,variables);
-//		
-//		CheckRule rule2=new CheckRule("GLM56004test2","GLM56004test2",1,"com.navinfo.dataservice.engine.check.rules.GLM56004",null,null,null);
-//		
-//		List<CheckRule> myCheckSuit = new ArrayList<CheckRule>();
-//		myCheckSuit.add(rule);
-//		myCheckSuit.add(rule2);
-//		this.myCheckSuitVariables.addAll(rule.getVariables());
-//		return myCheckSuit;
-//	}
-	
-	/*
-	 * 对后检查需要保存检查结果，调用此方法将检查结果插入到Ni_val_exception中
-	 */
+	//对后检查需要保存检查结果，调用此方法将检查结果插入到Ni_val_exception中
 	private void saveCheckResult(List<NiValException> checkResultList) throws Exception{
 		if (checkResultList==null || checkResultList.size()==0) {return;}
 		for(int i=0;i<checkResultList.size();i++){
 			NiValExceptionOperator check = new NiValExceptionOperator(this.conn);
-			check.insertCheckLog(checkResultList.get(i).getRuleId(), checkResultList.get(i).getLoc(), checkResultList.get(i).getTargets(), checkResultList.get(i).getMeshId(),checkResultList.get(i).getInformation(), "TEST");
+			check.insertCheckLog(checkResultList.get(i).getRuleId(), checkResultList.get(i).getLoc(), checkResultList.get(i).getTargets(), checkResultList.get(i).getMeshId(), "TEST");
 		}
 	}
 	
@@ -94,9 +66,7 @@ public class CheckEngine {
 //			this.conn.setAutoCommit(true);}		
 //	}
 	
-	/*
-	 * 前检查
-	 */
+	//前检查
 	public String preCheck() throws Exception{
 		log.info("start preCheck");
 		//isValidConn();
@@ -124,24 +94,25 @@ public class CheckEngine {
 		return null;
 	}
 	
-	/*
-	 * 后检查
-	 */
+	//后检查
 	public void postCheck() throws Exception{
 		log.info("start postCheck");
 		//isValidConn();
 		//获取后检查需要执行规则列表
 		List<CheckRule> rulesList=getRules(this.checkCommand.getObjType(),this.checkCommand.getOperType(),"POST");
 		List<NiValException> checkResultList = new ArrayList<NiValException>();
-		RuleExecuter ruleExecuterObj=new RuleExecuter(this.checkCommand,this.myCheckSuitVariables,this.conn);
 		for (int i=0;i<rulesList.size();i++){
 			CheckRule rule=rulesList.get(i);
+			baseRule obj = (baseRule) rule.getRuleClass().newInstance();
+			obj.setRuleDetail(rule);
+			obj.setConn(this.conn);
+			//调用规则的后检查
 			try{
-				List<NiValException> resultTmp=ruleExecuterObj.exeRule(rule);
-				if(resultTmp.size()>0){checkResultList.addAll(resultTmp);}}
-			catch(Exception e){
+				obj.postCheck(this.checkCommand);
+			}catch(Exception e) {
 				log.error(e);
 			}
+			checkResultList.addAll(obj.getCheckResultList());
 		}
 		saveCheckResult(checkResultList);
 		log.info("end postCheck");
@@ -153,16 +124,9 @@ public class CheckEngine {
 		JSONObject geometry = JSONObject.fromObject(str);
 		Geometry geometry2=GeoTranslator.geojson2Jts(geometry, 1, 5);
 		link.setGeometry(geometry2);
-		link.setPid(13474047);
+		link.setPid(1);
 		link.setsNodePid(2);
 		link.seteNodePid(2);
-		
-		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
-		
-		RdLinkSelector linkSelector = new RdLinkSelector(conn);
-
-		link = (RdLink) linkSelector.loadById(13474047,false);
-		
 		List<IRow> objList=new ArrayList<IRow>();
 		objList.add(link);
 		
@@ -174,11 +138,9 @@ public class CheckEngine {
 		checkCommand.setObjType(link.objType());
 		
 		CheckEngine checkEngine=new CheckEngine(checkCommand);
-		checkEngine.setConn(conn);
 		checkEngine.postCheck();
-		conn.commit();
 		
-//		
+//		Connection conn = GlmDbPoolManager.getInstance().getConnection(checkCommand.getProjectId());
 //		GLM01025 glm=new GLM01025();
 //		glm.setConn(conn);
 //		glm.postCheck(checkCommand);	

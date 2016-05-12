@@ -15,7 +15,6 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 
 
 public class RdGscLinkOperator implements IOperator{
@@ -224,7 +223,7 @@ public class RdGscLinkOperator implements IOperator{
 		if (gscLink.tableName() == null) {
 			sb.append(",null");
 		} else {
-			sb.append(",'" + new RdLink().tableName() + "'");
+			sb.append(",'" + gscLink.tableName() + "'");
 		}
 		sb.append("," + gscLink.getShpSeqNum());
 		sb.append("," + gscLink.getStartEnd());

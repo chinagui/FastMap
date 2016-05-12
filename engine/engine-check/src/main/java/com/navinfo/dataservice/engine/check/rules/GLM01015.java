@@ -41,6 +41,8 @@ public class GLM01015 extends baseRule {
 		for(IRow obj : checkCommand.getGlmList()){
 			if (obj instanceof RdLink){
 				RdLink rdLink = (RdLink)obj;				
+				String pointWkt = GeoHelper.getMidPointByLine(rdLink.getGeometry());
+				
 				StringBuilder sb = new StringBuilder();
 		        sb.append("select a.link_pid from rd_link a where a.link_pid = ");
 		        sb.append(rdLink.getPid());
@@ -52,8 +54,6 @@ public class GLM01015 extends baseRule {
 				resultList=getObj.exeSelect(this.getConn(), sql);
 				
 				if (resultList.size()>0){
-					Geometry pointGeo=GeoHelper.getPointFromGeo(rdLink.getGeometry());
-					String pointWkt = GeoTranslator.jts2Wkt(pointGeo, 0.00001, 5);
 					this.setCheckResult(pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId());
 					}
 				}

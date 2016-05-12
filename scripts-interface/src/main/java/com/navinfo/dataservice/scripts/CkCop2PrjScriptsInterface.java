@@ -18,7 +18,7 @@ import com.navinfo.dataservice.expcore.external.ExternalTool4Exporter;
 import com.navinfo.dataservice.expcore.external.RemoveDuplicateRow;
 
 /** 
- * @ClassName: CkCop2PrjScriptsInterface 
+ * @ClassName: InitProjectScriptsInterface 
  * @author Xiao Xiaowen 
  * @date 2016-1-15 下午3:40:32 
  * @Description: TODO

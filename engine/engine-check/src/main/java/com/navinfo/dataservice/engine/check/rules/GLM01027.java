@@ -39,13 +39,12 @@ public class GLM01027 extends baseRule {
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		for(IRow obj : checkCommand.getGlmList()){
 			if (obj instanceof RdLink){
-				RdLink rdLink = (RdLink)obj;
+				RdLink rdLink = (RdLink)obj;				
+				String pointWkt = GeoHelper.getMidPointByLine(rdLink.getGeometry());
 				
 				int pointCount = rdLink.getGeometry().getCoordinates().length;
 				
 				if(pointCount >= 490){
-					Geometry pointGeo=GeoHelper.getPointFromGeo(rdLink.getGeometry());
-					String pointWkt = GeoTranslator.jts2Wkt(pointGeo, 0.00001, 5);
 					this.setCheckResult(pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId());
 					}
 				}

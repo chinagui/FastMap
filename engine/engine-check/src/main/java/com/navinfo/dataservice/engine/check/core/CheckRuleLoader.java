@@ -40,7 +40,7 @@ public class CheckRuleLoader {
 			synchronized(this) {
 				if (!map.containsKey(ruleCode)) {
 					
-					String sql = "select RULE_CODE, RULE_LOG, SEVERITY, RULE_CLASS,ACCESSOR_TYPE,ACCESSOR_NAME,VARIABLES from CK_RULE where RULE_CODE = ? AND RULE_STATUS='E'";
+					String sql = "select RULE_CODE, RULE_LOG, SEVERITY, RULE_CLASS from CK_RULE where RULE_CODE = ? AND RULE_STATUS='E'";
 					
 					PreparedStatement pstmt = null;
 
@@ -60,15 +60,14 @@ public class CheckRuleLoader {
 						if (resultSet.next()) {
 
 							String RULE_CODE = resultSet.getString("RULE_CODE");
-							String RULE_LOG = resultSet.getString("RULE_LOG");	
-							int SEVERITY = resultSet.getInt("SEVERITY");							
-							String CLASS = resultSet.getString("RULE_CLASS");
-							//ACCESSOR_TYPE,ACCESSOR_NAME,VARIABLES
-							String ACCESSOR_TYPE = resultSet.getString("ACCESSOR_TYPE");							
-							String ACCESSOR_NAME = resultSet.getString("ACCESSOR_NAME");
-							String VARIABLES = resultSet.getString("VARIABLES");
+							
+							String RULE_LOG = resultSet.getString("RULE_LOG");
 	
-							CheckRule myCheckRule = new CheckRule(RULE_CODE,RULE_LOG,SEVERITY,CLASS,ACCESSOR_TYPE,ACCESSOR_NAME,VARIABLES);
+							int SEVERITY = resultSet.getInt("SEVERITY");
+							
+							String CLASS = resultSet.getString("RULE_CLASS");
+	
+							CheckRule myCheckRule = new CheckRule(RULE_CODE,RULE_LOG,SEVERITY,CLASS);
 							
 							map.put(ruleCode,myCheckRule);
 					

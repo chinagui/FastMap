@@ -101,4 +101,74 @@ public class RdGscLinkSelector implements ISelector {
 
 		return rows;
 	}
+	
+	public List<IRow> loadRowsByParentIdAndLinkId(int parentId,int linkId, boolean isLock) throws Exception {
+		List<IRow> rows = new ArrayList<IRow>();
+
+		String sql = "select * from rd_gsc_link where pid=:1 and u_record!=:2 and link_pid = :3";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, parentId);
+
+			pstmt.setInt(2, 2);
+			
+			pstmt.setInt(3, linkId);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				RdGscLink link = new RdGscLink();
+
+				link.setPid(resultSet.getInt("pid"));
+
+				link.setZlevel(resultSet.getInt("zlevel"));
+
+				link.setLinkPid(resultSet.getInt("link_pid"));
+
+				link.setTableName(resultSet.getString("table_name"));
+
+				link.setShpSeqNum(resultSet.getInt("shp_seq_num"));
+
+				link.setStartEnd(resultSet.getInt("start_end"));
+
+				link.setRowId(resultSet.getString("row_id"));
+
+				rows.add(link);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return rows;
+	}
 }

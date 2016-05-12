@@ -150,7 +150,8 @@ public class RdGscSelector implements ISelector {
 
 				rdGsc.setGeometry(geometry);
 
-				List<IRow> links = new RdGscLinkSelector(conn).loadRowsByParentId(rdGsc.getPid(), isLock);
+				List<IRow> links = new RdGscLinkSelector(conn).loadRowsByParentId(rdGsc.getPid(),
+						isLock);
 
 				rdGsc.setLinks(links);
 
@@ -193,7 +194,8 @@ public class RdGscSelector implements ISelector {
 	 * @return 立交对象集合
 	 * @throws Exception
 	 */
-	public List<RdGsc> loadRdGscLinkByLinkPids(List<Integer> linkPids, boolean isLock) throws Exception {
+	public List<RdGsc> loadRdGscLinkByLinkPids(List<Integer> linkPids, boolean isLock)
+			throws Exception {
 		List<RdGsc> rdgscs = new ArrayList<RdGsc>();
 
 		if (linkPids.size() == 0) {
@@ -209,8 +211,8 @@ public class RdGscSelector implements ISelector {
 		}
 		s.deleteCharAt(s.lastIndexOf(","));
 
-		String sql = "SELECT a.* FROM rd_gsc a,rd_gsc_link b WHERE a.pid = b.pid AND b.link_pid in (" + s.toString()
-				+ ") and a.u_record!=2";
+		String sql = "SELECT a.* FROM rd_gsc a,rd_gsc_link b WHERE a.pid = b.pid AND b.link_pid in ("
+				+ s.toString() + ") and a.u_record!=2";
 
 		if (isLock) {
 			sql = sql + " for update nowait";
@@ -238,7 +240,8 @@ public class RdGscSelector implements ISelector {
 
 				rdGsc.setGeometry(geometry);
 
-				List<IRow> links = new RdGscLinkSelector(conn).loadRowsByParentId(rdGsc.getPid(), isLock);
+				List<IRow> links = new RdGscLinkSelector(conn).loadRowsByParentId(rdGsc.getPid(),
+						isLock);
 
 				rdGsc.setLinks(links);
 
@@ -269,5 +272,75 @@ public class RdGscSelector implements ISelector {
 		}
 
 		return rdgscs;
+	}
+
+	public List<RdGsc> onlyLoadRdGscLinkByLinkPid(int linkPid, boolean isLock) throws Exception {
+		List<RdGsc> rdGscList = new ArrayList<RdGsc>();
+
+		String sql = "SELECT a.* FROM rd_gsc a,rd_gsc_link b WHERE a.pid = b.pid AND b.link_pid = :1 and a.u_record!=2";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				RdGsc rdGsc = new RdGsc();
+
+				rdGsc.setPid(resultSet.getInt("pid"));
+
+				rdGsc.setProcessFlag(resultSet.getInt("PROCESS_FLAG"));
+
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
+
+				rdGsc.setGeometry(geometry);
+
+				List<IRow> links = new RdGscLinkSelector(conn)
+						.loadRowsByParentIdAndLinkId(rdGsc.getPid(), linkPid, isLock);
+
+				rdGsc.setLinks(links);
+
+				for (IRow row : rdGsc.getLinks()) {
+					RdGscLink obj = (RdGscLink) row;
+
+					rdGsc.rdGscLinkMap.put(obj.rowId(), obj);
+				}
+
+				rdGsc.setRowId(resultSet.getString("row_id"));
+
+				rdGscList.add(rdGsc);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			try {
+				resultSet.close();
+			} catch (Exception e) {
+
+			}
+
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+
+			}
+		}
+
+		return rdGscList;
 	}
 }

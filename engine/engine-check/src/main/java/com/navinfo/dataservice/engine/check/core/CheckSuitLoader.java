@@ -73,8 +73,9 @@ public class CheckSuitLoader {
 							
 							if(myCheckRule != null){
 								checkRuleList.add(myCheckRule);
-								variablesList.removeAll(myCheckRule.getVariables());
-								variablesList.addAll(myCheckRule.getVariables());
+								if(myCheckRule.getVariables()!=null && myCheckRule.getVariables().size()>0){
+									variablesList.removeAll(myCheckRule.getVariables());
+									variablesList.addAll(myCheckRule.getVariables());}
 							}	
 							
 						}

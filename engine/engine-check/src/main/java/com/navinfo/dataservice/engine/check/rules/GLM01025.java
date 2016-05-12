@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.check.CheckEngine;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -106,13 +107,16 @@ public class GLM01025 extends baseRule {
 //					
 //					Coordinate[] cs = geo1.getCoordinates();
 					
-					int midP = (int)Math.round(coords.length/2);
-					
-					double x = coords[midP].x;
-					
-					double y = coords[midP].y;
-					
-					String pointWkt = "Point ("+x+" "+y+")";
+					Geometry pointGeo=GeoHelper.getPointFromGeo(rdLink.getGeometry());
+					String pointWkt = GeoTranslator.jts2Wkt(pointGeo, 0.00001, 5);
+//					
+//					int midP = (int)Math.round(coords.length/2);
+//					
+//					double x = coords[midP].x;
+//					
+//					double y = coords[midP].y;
+//					
+//					String pointWkt = "Point ("+x+" "+y+")";
 					
 					this.setCheckResult(pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId());
 					return;	

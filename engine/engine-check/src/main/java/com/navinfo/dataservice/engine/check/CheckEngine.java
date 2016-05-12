@@ -46,6 +46,14 @@ public class CheckEngine {
 		//this.conn = GlmDbPoolManager.getInstance().getConnection(this.checkCommand.getProjectId());
 		//this.conn.setAutoCommit(true);
 	}
+	
+	public CheckEngine(CheckCommand checkCommand,Connection conn) throws Exception{
+		this.log = LoggerRepos.getLogger(this.log);
+		this.checkCommand=checkCommand;
+		this.conn=conn;
+		//this.conn = GlmDbPoolManager.getInstance().getConnection(this.checkCommand.getProjectId());
+		//this.conn.setAutoCommit(true);
+	}
 
 	/*
 	 * 获取本次要执行的检查规则
@@ -116,7 +124,7 @@ public class CheckEngine {
 					return obj.getCheckResultList().get(0).getInformation();
 					}
 			}catch(Exception e) {
-				log.error(e);
+				log.error("error preCheck",e);
 				return null;
 			}
 		}
@@ -140,7 +148,7 @@ public class CheckEngine {
 				List<NiValException> resultTmp=ruleExecuterObj.exeRule(rule);
 				if(resultTmp.size()>0){checkResultList.addAll(resultTmp);}}
 			catch(Exception e){
-				log.error(e);
+				log.error("error postCheck",e);
 			}
 		}
 		saveCheckResult(checkResultList);
@@ -173,8 +181,7 @@ public class CheckEngine {
 		checkCommand.setOperType(OperType.CREATE);
 		checkCommand.setObjType(link.objType());
 		
-		CheckEngine checkEngine=new CheckEngine(checkCommand);
-		checkEngine.setConn(conn);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
 		checkEngine.postCheck();
 		conn.commit();
 		

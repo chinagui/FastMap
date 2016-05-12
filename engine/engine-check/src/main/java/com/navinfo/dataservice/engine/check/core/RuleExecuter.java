@@ -89,7 +89,7 @@ public class RuleExecuter {
 		try{
 			obj.postCheck(this.checkCommand);
 		}catch(Exception e) {
-			log.error(e);
+			log.error("error exejavacheck",e);
 		}
 		return obj.getCheckResultList();
 	}

@@ -43,7 +43,7 @@ private static final String configPath = "H:/GitHub/DataService/web/edit-web/src
 	
 	public void departRdLink()
 	{
-		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"distance\":50,\"projectId\":11,\"data\":{\"linkPids\":[100002627,100002629]}}";
+		String parameter =  "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"distance\":50,\"projectId\":11,\"data\":{\"linkPids\":[100002627,100002629]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

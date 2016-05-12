@@ -252,8 +252,7 @@ public class Process extends AbstractProcess<Command> {
 						this.getCommand());
 				opRefSpeedlimit.run(this.getResult());
 
-				IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand(),
-						this.getConn());
+				IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand());
 				opRefRdGsc.run(this.getResult());
 
 				IOperation opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
@@ -357,8 +356,7 @@ public class Process extends AbstractProcess<Command> {
 			opRefLaneConnexity.run(this.getResult());
 			IOperation opRefSpeedlimit = new OpRefSpeedlimit(this.getCommand());
 			opRefSpeedlimit.run(this.getResult());
-			IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand(),
-					this.getConn());
+			IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand());
 			opRefRdGsc.run(this.getResult());
 			IOperation opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
 			opRefAdAdmin.run(this.getResult());

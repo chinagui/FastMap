@@ -1,10 +1,22 @@
 package com.navinfo.dataservice.commons;
 
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Set;
+
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import junit.framework.Assert;
+import oracle.spatial.geometry.JGeometry;
 
 /** 
 * @ClassName: CompGridUtilTest 
@@ -13,6 +25,22 @@ import junit.framework.Assert;
 * @Description: TODO
 */
 public class CompGridUtilTest{
+	private Connection conn = null;
+	private QueryRunner run = null;
+	@Before
+	public void prepare(){
+		try{
+			run = new QueryRunner();
+			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_prjgdb250_bj01", "fm_prjgdb250_bj01").getConnection();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	@After
+	public void after(){
+		DbUtils.closeQuietly(conn);
+	}
 	
 	/**
 	 * 
@@ -43,6 +71,10 @@ public class CompGridUtilTest{
 			e.printStackTrace();
 		}
 	}
+	/**
+	 * [116.53116 39.91667],在595664和595674的图廓线上
+	 * 这条图廓线是四舍五入
+	 */
 	@Test
 	public void point2Grid_001(){
 		try{
@@ -60,6 +92,43 @@ public class CompGridUtilTest{
 			String s = CompGridUtil.point2Grid(116.09375
 					,39.916667);
 			System.out.println(s);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	@Test
+	public void intersectRectGrid_001(){
+		try{
+			CompGridUtil.intersectRectGrid(new double[]{116.5018, 39.99997, 116.50183, 40.0}, "595674");
+			System.out.println("Yes...");
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	@Test
+	public void intersectGeometryGrid_001(){
+		try{
+			//59567003
+			String sql = "SELECT P.ROW_ID,R1.GEOMETRY,R1.MESH_ID FROM RD_LINK_FORM P,RD_LINK R1 WHERE P.LINK_PID=R1.LINK_PID AND P.ROW_ID = HEXTORAW('326515AC8C0924B4E050A8C08304598C') ";
+			JGeometry jg = run.query(conn, sql, new ResultSetHandler<JGeometry>(){
+
+				@Override
+				public JGeometry handle(ResultSet rs) throws SQLException {
+					if(rs.next()){
+						try{
+							return JGeometry.load(rs.getBytes("GEOMETRY"));
+						}catch(Exception e){
+							e.printStackTrace();
+						}
+					}
+					return null;
+				}
+				
+			});
+			Set<String> results = CompGridUtil.intersectGeometryGrid(jg,"595674");
+			for(String s:results){
+				System.out.println(s);
+			}
 		}catch(Exception e){
 			e.printStackTrace();
 		}

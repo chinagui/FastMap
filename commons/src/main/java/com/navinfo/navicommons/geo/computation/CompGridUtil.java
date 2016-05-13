@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -17,6 +18,7 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /** 
@@ -46,7 +48,7 @@ public class CompGridUtil {
 		int type = geo.getType();
 		if(type==1){
 			double[] point = geo.getPoint();
-			grids.add(point2Grid(point[0],point[1]));
+			grids.addAll(Arrays.asList(point2Grids(point[0],point[1])));
 		}else if(type==2){
 			double[] lines = geo.getOrdinatesArray();
 			int pointCount = lines.length/2;
@@ -200,12 +202,12 @@ public class CompGridUtil {
 	 */
 	public static String[] intersectRectGrid(double[] rect,String meshId)throws Exception{
 		//计算矩形左下角点所在的grid
-		String lbGrid = point2Grid(rect[0],rect[1]);
-		//计算矩形右上角点所在的grid
-		String rtGrid =  point2Grid(rect[2],rect[3]);
 		//判断两次算的grid所在的图幅是否和meshId一致
-		if(meshId.equals(lbGrid.substring(0,6))&&
-				meshId.equals(rtGrid.substring(0,6))){
+		String sameMesh = MeshUtils.sameMesh(rect[0],rect[1], rect[2],rect[3]);
+		if(sameMesh!=null){
+			String lbGrid = point2Grid(rect[0],rect[1],sameMesh);
+			//计算矩形右上角点所在的grid
+			String rtGrid =  point2Grid(rect[2],rect[3],sameMesh);
 			//算法是左下grid的第7位和右上grid的第7位数字之间及左下grid的第8位和右上grid的第8位数字之间都相交
 			int lbGridM7 = Integer.valueOf(lbGrid.substring(6, 7));
 			int lbGridM8 = Integer.valueOf(lbGrid.substring(7, 8));
@@ -347,41 +349,8 @@ public class CompGridUtil {
 			}
 			return grids;
 		}else{
-			return new String[]{point2Grid(x,y)};
+			return point2Grids(x,y);
 		}
-	}
-	/**
-	 * 计算点所属的grid号
-	 * @param x
-	 * @param y
-	 * @param meshId:点所属的图幅号
-	 * @return 8位grid号码字符串
-	 */
-	@Deprecated
-	public static String point2Grid(double x,double y,String meshId){
-		if (meshId.length() < 6) {
-			int length = 6 - meshId.length();
-			for (int i = 0; i < length; i++) {
-				meshId = "0" + meshId;
-			}
-		}
-		int m1 = Integer.valueOf(meshId.substring(0, 1));
-		int m2 = Integer.valueOf(meshId.substring(1, 2));
-		int m3 = Integer.valueOf(meshId.substring(2, 3));
-		int m4 = Integer.valueOf(meshId.substring(3, 4));
-		int m5 = Integer.valueOf(meshId.substring(4, 5));
-		int m6 = Integer.valueOf(meshId.substring(5, 6));
-		int lbX = (m3 * 10 + m4) * 3600 + m6 * 450 + 60 * 3600;
-		int lbY = (m1 * 10 + m2) * 2400 + m5 * 300;
-		
-		int m7 = (int)((y*3600-lbY)/75);
-		int m8 = (int)((x*3600-lbX)/112.5);
-		
-		StringBuffer sb = new StringBuffer();
-		sb.append(meshId);
-		sb.append(m7);
-		sb.append(m8);
-		return sb.toString();
 	}
 	/**
 	 * 计算点所在的grid号
@@ -404,8 +373,25 @@ public class CompGridUtil {
 		return (int)((longX%(450000))*4)/(450000);
 	}
 	/**
+	 * 可以优化
+	 * @param x
+	 * @param y
+	 * @param meshId
+	 * @return
+	 */
+	public static String point2Grid(double x,double y,String meshId){
+		meshId = StringUtils.leftPad(meshId, 6, '0');
+		String[] grids = point2Grids(x,y);
+		for(String s:grids){
+			if(s.startsWith(meshId)){
+				return s;
+			}
+		}
+		return null;
+	}
+	/**
 	 * 计算点所在的grid号
-	 * 如果正好在grid线上，取右/上的grid
+	 * 如果正好在图幅线上，取右/上的grid
 	 * @param x：单位度
 	 * @param y：单位度
 	 * @return
@@ -434,14 +420,6 @@ public class CompGridUtil {
 		M7 = (int)((longY%(300000))*4)/(300000);
 		M8 = (int)((longX%(450000))*4)/(450000);
 		
-		//double yt = y*3600/300;
-//		double yt = y*12.0;
-//		M5 = ((int)yt)%8;
-//		double xt = (x-(int)x) * 8.0;
-//		M6 = (int) xt;
-//		
-//		M7 = (int)((yt-(int)yt)*4.0);
-//		M8 = (int)((xt-M6)*4.0);
 		StringBuilder builder = new StringBuilder();
 		builder.append(M1M2);
 		builder.append(M3M4);
@@ -454,6 +432,111 @@ public class CompGridUtil {
 			id = "0" + id;
 		}
 		return id;
+	}
+	/**
+	 * 计算grid过程中依赖的计算图幅是自己实现的，暂未测试
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public static String[] point2Grids2(double x,double y){
+		//将度单位坐标转换为秒*3600，并乘1000消除小数,最后取整
+		long longX = Math.round(x*3600000);
+		long longY = Math.round(y*3600000);
+		int M1M2;
+		int M3M4;
+		int M5;
+		int M5_bak = -999;
+		int M6;
+		int M6_bak = -999;
+		int M7=0;
+		int M7_bak=0;
+		int M8=0;
+		int M8_bak=0;
+
+		//一个四位图幅的纬度高度为2400秒
+		M1M2 = (int)(longY/(2400000));
+		M3M4 = ((int)x) - 60;//简便算法
+		
+		//
+		
+		int yt = (int)(longY/(300000));
+		M5 = yt%8;
+		//判断在图幅线上的情况
+		if((longY%300000)<=12){//距离理想行号下图廓线距离
+			if(yt%3==2){
+				//处于图廓线上
+				M5_bak = M5-1;
+			}
+			/**
+			if(yt%3==0){//0.0,0.25,...
+				//不变
+			}else if(yt%3==1){//0.08333,0.33333,...
+				//不变
+			}else if(yt%3==2){//0.16667,0.41667,...
+				//处于图廓线上
+				M5_bak = M5-1;
+			}*/
+		}else if((300000-(longY%300000))<=12){//距离理想行号上图廓线距离
+			/**
+			if(yt%3==0){//0.0,0.25,...
+				//处于图廓线上
+				M5_bak = M5+1;
+			}else if(yt%3==1){//0.08333,0.33333,...
+				//不变
+			}else if(yt%3==2){//0.16667,0.41667,...
+				//处于图廓线上
+				M5_bak = M5+1;
+			}
+			 */
+			if(yt%3==0){
+				//处于图廓线上
+				M5_bak = M5+1;
+				M7 = 3;
+				M7_bak = 0;
+			}
+		}
+		int xt = (int)(longX/(450000));
+		M6 = xt%8;
+		//经度坐标没有四舍五入，所以理论上只有=0和大于12的情况
+		if((longX%450000)<=12){
+			M6_bak = M6-1;
+			M8 = 0;
+			M8_bak = 3;
+		}
+		
+		String[] meshes = null;
+		if(M5_bak>-999&&M6_bak>-999){//图廓点，4个图幅,4个grid号
+			meshes = new String[4];
+			//第一个grid
+			meshes[0] = String.valueOf(M1M2)+M3M4+M5+M6+M7+M8;
+			//...
+			meshes[1] = "";
+		}else if(M5_bak>-999){
+			
+		}else if(M6_bak>-999){
+			
+		}else{
+			M7 = (int)((longY%(300000))*4)/(300000);
+			M8 = (int)((longX%(450000))*4)/(450000);
+		}
+		
+		return meshes;
+	}
+	/**
+	 * 计算点所在的grid号，依赖的图幅号来自NM
+	 * 如果正好在grid线上，取右/上的grid
+	 * @param x：单位度
+	 * @param y：单位度
+	 * @return
+	 */
+	public static String[] point2Grids(double x,double y){
+		List<String> meshes = MeshUtils.lonlat2MeshIds(x,y);
+		if(meshes.size()>1){
+			return point2Grid(x,y,meshes.toArray(new String[0]));
+		}else{
+			return new String[]{meshes.get(0)+point2Grid_M7(y)+point2Grid_M8(x)};
+		}
 	}
 	
 	/**

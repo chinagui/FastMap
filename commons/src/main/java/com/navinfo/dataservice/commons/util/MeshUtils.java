@@ -35,10 +35,14 @@ public abstract class MeshUtils {
 //		for(int l:locs){
 //			System.out.println(l);
 //		}
-		List<String> meshes = lonlat2MeshIds(116.375,39.87867);//595663,595662
-
-		for(String str:meshes){
-			System.out.println(str);
+//		List<String> meshes = lonlat2MeshIds(116.375,39.87867);//595663,595662
+//
+//		for(String str:meshes){
+//			System.out.println(str);
+//		}
+		int[] results = mesh2Location("595664");
+		for(int r:results){
+			System.out.println(r/3600.0);
 		}
 		
 //		System.out.println(location2Mesh(23.1*3600, 88.9*3600));
@@ -1010,5 +1014,16 @@ public abstract class MeshUtils {
 		}
 
 		return set;
+	}
+	
+	public static String sameMesh(double x1,double y1,double x2,double y2){
+		List<String> s1 = lonlat2MeshIds(x1,y1);
+		List<String> s2 = lonlat2MeshIds(x2,y2);
+		for(String s:s1){
+			if(s2.contains(s)){
+				return s;
+			}
+		}
+		return null;
 	}
 }

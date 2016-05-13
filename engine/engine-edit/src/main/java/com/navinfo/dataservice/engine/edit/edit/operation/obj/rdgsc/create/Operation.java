@@ -35,10 +35,14 @@ public class Operation implements IOperation {
 	private Command command;
 
 	private Connection conn;
+	
+	private Check check;
 
-	public Operation(Command command, Connection conn) {
+	public Operation(Command command, Check check,Connection conn) {
 		this.command = command;
-
+		
+		this.check = check;
+		
 		this.conn = conn;
 	}
 
@@ -80,7 +84,13 @@ public class Operation implements IOperation {
 					.transform(GeoTranslator.geojson2Jts(command.getGeoObject()), 100000, 0);
 
 			Geometry gscGeo = interGeometry.intersection(spatial);
-
+			
+			boolean flag = check.checkIsHasGsc(gscGeo,command.getLinkMap(),this.conn);
+			
+			if(flag)
+			{
+				throw new Exception("同一点位不能重复创建立交");
+			}
 			if (gscGeo != null && gscGeo.getNumGeometries() == 1) {
 				rdGsc.setPid(PidService.getInstance().applyRdGscPid());
 

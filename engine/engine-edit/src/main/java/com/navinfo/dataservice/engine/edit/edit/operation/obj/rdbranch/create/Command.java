@@ -20,6 +20,8 @@ public class Command extends AbstractCommand {
 
 	private int outLinkPid;
 	
+	private int branchType = 0;
+	
 	private RdBranch branch;
 
 	public RdBranch getBranch() {
@@ -61,10 +63,18 @@ public class Command extends AbstractCommand {
 //	public void setProjectId(int projectId) {
 //		this.projectId = projectId;
 //	}
-
+	
 	@Override
 	public OperType getOperType() {
 		return OperType.CREATE;
+	}
+
+	public int getBranchType() {
+		return branchType;
+	}
+
+	public void setBranchType(int branchType) {
+		this.branchType = branchType;
 	}
 
 	@Override
@@ -90,6 +100,11 @@ public class Command extends AbstractCommand {
 		this.nodePid = data.getInt("nodePid");
 
 		this.outLinkPid = data.getInt("outLinkPid");
+		
+		if(data.containsKey("branchType"))
+		{
+			this.branchType = data.getInt("branchType");
+		}
 	}
 
 }

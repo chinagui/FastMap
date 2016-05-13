@@ -158,7 +158,7 @@ public class RdGscSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as (select a.pid   from rd_gsc a  where a.u_record != 2    and sdo_within_distance(a.geometry, sdo_geometry(    :1 , 8307), 'DISTANCE=0') =        'TRUE'),          tmp2 as( select a.pid from rd_gsc_link a,tmp1 b where a.pid = b.pid and a.table_name in ('RD_LINK','RW_LINK') group by a.pid having count(1)>1),          tmp3 as( select a.*,b.geometry from rd_gsc_link a, rd_link b,tmp2 c where a.link_pid=b.link_pid  and a.table_name ='RD_LINK'   and a.pid=c.pid), tmp4 as (   select a.*,b.geometry from rd_gsc_link a, rw_link b,tmp2 c where a.link_pid=b.link_pid  and a.table_name ='RW_LINK'   and a.pid=c.pid)      select * from (select * from tmp3   union all   select * from tmp4) order by pid,zlevel";
+		String sql = "with tmp1 as (select a.pid   from rd_gsc a  where a.u_record != 2    and sdo_within_distance(a.geometry, sdo_geometry(    :1 , 8307), 'DISTANCE=0') =        'TRUE'),          tmp2 as( select a.pid from rd_gsc_link a,tmp1 b where a.pid = b.pid and a.table_name in ('RD_LINK','RW_LINK') group by a.pid having count(1)>1),          tmp3 as( select a.*,b.geometry from rd_gsc_link a, rd_link b,tmp2 c where a.link_pid=b.link_pid  and a.table_name ='RD_LINK'   and a.pid=c.pid), tmp4 as (   select a.*,b.geometry from rd_gsc_link a, rw_link b,tmp2 c where a.link_pid=b.link_pid  and a.table_name ='RW_LINK'   and a.pid=c.pid)      select tmp.*,A.Geometry AS gsc_geo from (select * from tmp3   union all   select * from tmp4) tmp,RD_GSC A WHERE tmp.pid = a.pid order by tmp.PID, tmp.ZLEVEL";
 		
 		PreparedStatement pstmt = null;
 
@@ -180,6 +180,8 @@ public class RdGscSearch implements ISearch {
 			int lastPid = 0;
 			
 			SearchSnapshot snapshot = new SearchSnapshot();
+			
+			JSONObject m = new JSONObject();
 			
 			JSONArray g = new JSONArray();
 			
@@ -217,11 +219,17 @@ public class RdGscSearch implements ISearch {
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 				
+				STRUCT structGsc = (STRUCT) resultSet.getObject("gsc_geo");
+				
 				Geometry geo = GeoTranslator.struct2Jts(struct);
+				
+				Geometry geoGsc = GeoTranslator.struct2Jts(structGsc);
 
 				Geometry line = DisplayUtils.getGscLine4Web(geo, startEnd, seqNum, z);
 				
 				JSONObject geojson = GeoTranslator.jts2Geojson(line);
+				
+				JSONObject geojsonGsc = GeoTranslator.jts2Geojson(geoGsc);
 				
 				JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
 				
@@ -232,6 +240,10 @@ public class RdGscSearch implements ISearch {
 				obj.put("z", zlevel);
 				
 				obj.put("i", linkPid);
+				
+				m.put("a", geojsonGsc.getJSONArray("coordinates"));
+				
+				snapshot.setM(m);
 				
 				g.add(obj);
 				
@@ -272,7 +284,7 @@ public class RdGscSearch implements ISearch {
 		
 		RdGscSearch s = new RdGscSearch(conn);
 		
-		List<SearchSnapshot> list = s.searchDataByTileWithGap(431792, 198505, 19, 0);
+		List<SearchSnapshot> list = s.searchDataByTileWithGap(215885, 99231, 18, 80);
 		
 		for(SearchSnapshot snap : list){
 			System.out.println(snap.Serialize(null));

@@ -107,7 +107,7 @@ public class Command extends AbstractCommand {
 		if (json.containsKey("infect") && json.getInt("infect") == 1){
 			this.isCheckInfect = true;
 		}
-		//¹¹Ôì¼ì²é²ÎÊı
+		//æ„é€ æ£€æŸ¥å‚æ•°
 		//this.createGlmList();
 		
 	}

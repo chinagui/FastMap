@@ -159,6 +159,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	@Override
 	public void postCheck() throws Exception {
 		// TODO Auto-generated method stub
+		this.createPostCheckGlmList();
 		this.checkEngine.postCheck();
 
 	}

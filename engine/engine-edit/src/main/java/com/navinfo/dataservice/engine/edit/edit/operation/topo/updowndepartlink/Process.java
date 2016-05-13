@@ -6,7 +6,7 @@ import com.navinfo.dataservice.engine.edit.edit.operation.topo.updowndepartlink.
 
 /**
  * @author zhaokk
- * 行政区划点删除操作类
+ * 制作上下线分离
  */
 
 public class Process extends AbstractProcess<Command> {
@@ -35,8 +35,8 @@ public class Process extends AbstractProcess<Command> {
 	}
 	@Override
 	public boolean prepareData() throws Exception {
-		// TODO Auto-generated method stub
-		return false;
+		lockRdLinks();
+		return true;
 	}
 
 	@Override

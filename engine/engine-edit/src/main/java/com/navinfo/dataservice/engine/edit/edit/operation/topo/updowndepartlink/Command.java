@@ -5,13 +5,8 @@ import java.util.List;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 
@@ -77,12 +72,13 @@ public class Command extends AbstractCommand {
 	
 	public Command(JSONObject json,String requester) {
 		this.requester = requester;
+		this.setProjectId(json.getInt("projectId"));
 		//移动距离
 		this.distance = json.getInt("distance");
 		//获取要上下线分离的linkPids
 		JSONObject data = json.getJSONObject("data");
 		JSONArray array = data.getJSONArray("linkPids");
-
+     
 		linkPids = new ArrayList<Integer>();
 
 		for (int i = 0; i < array.size(); i++) {

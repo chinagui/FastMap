@@ -99,6 +99,11 @@ public class TipsSelector {
 				m.put("a", json.getString("stage"));
 
 				m.put("b", json.getString("t_lifecycle"));
+				
+				JSONObject g_guide = JSONObject.fromObject(json
+						.getString("g_guide"));
+				
+				m.put("h", g_guide.getJSONArray("coordinates"));
 
 				JSONObject deep = JSONObject.fromObject(json.getString("deep"));
 

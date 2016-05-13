@@ -48,7 +48,7 @@ public class RdGscLinkOperator implements IOperator{
 
 			pstmt.setInt(2, gscLink.getLinkPid());
 
-			pstmt.setString(3, gscLink.getTableName());
+			pstmt.setString(3, gscLink.getTableName().toUpperCase());
 
 			pstmt.setInt(4, gscLink.getShpSeqNum());
 
@@ -224,7 +224,7 @@ public class RdGscLinkOperator implements IOperator{
 		if (gscLink.tableName() == null) {
 			sb.append(",null");
 		} else {
-			sb.append(",'" + new RdLink().tableName() + "'");
+			sb.append(",'" + gscLink.getTableName().toUpperCase() + "'");
 		}
 		sb.append("," + gscLink.getShpSeqNum());
 		sb.append("," + gscLink.getStartEnd());

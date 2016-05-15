@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.photo;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,6 +24,12 @@ public class CollectorImport {
 	public static void importPhoto(Map<String,Photo> map,String dir) throws Exception{
 		
 		if (map.size()==0){
+			return;
+		}
+		
+		File file = new File(dir);
+
+		if (!file.exists()) {
 			return;
 		}
 		

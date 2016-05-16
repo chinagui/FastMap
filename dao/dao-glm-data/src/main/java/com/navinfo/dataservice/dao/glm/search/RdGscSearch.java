@@ -241,6 +241,8 @@ public class RdGscSearch implements ISearch {
 				
 				obj.put("i", linkPid);
 				
+				Geojson.point2Pixel(geojsonGsc, z, px, py);
+				
 				m.put("a", geojsonGsc.getJSONArray("coordinates"));
 				
 				snapshot.setM(m);

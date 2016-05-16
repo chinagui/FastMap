@@ -270,7 +270,10 @@ public class RdSpeedlimit implements IObj {
 		if (objLevel == ObjLevel.FULL) {
 			speedValue /= 10;
 			
-			laneSpeedValue = StringUtils.laneSpeedValue2KM(laneSpeedValue);
+			if(laneSpeedValue != null)
+			{
+				laneSpeedValue = StringUtils.laneSpeedValue2KM(laneSpeedValue);
+			}
 		}
 
 		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);

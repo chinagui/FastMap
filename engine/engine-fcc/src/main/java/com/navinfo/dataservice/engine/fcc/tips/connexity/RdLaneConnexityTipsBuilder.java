@@ -16,6 +16,7 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
@@ -247,70 +248,73 @@ public class RdLaneConnexityTipsBuilder {
 		
 		Map<Integer,JSONArray> map = parseLaneinfo(laneNum,topos);
 		
-		String[] splitsLaneInfo = resultSet.getString("lane_info").split(",");
-		
-		for(int i=0;i<splitsLaneInfo.length;i++){
+		String laneInfo = resultSet.getString("lane_info");
+		if(StringUtils.isNotEmpty(laneInfo)){
+			String[] splitsLaneInfo = laneInfo.split(",");
 			
-			JSONObject infoJson = new JSONObject();
-			
-			JSONObject oarrayJson = new JSONObject();
-			
-			infoJson.put("sq", i + 1);
-			
-			oarrayJson.put("sq", i + 1);
-			
-			if (splitsLaneInfo[i].indexOf("[")>=0){
-				infoJson.put("ext", 1);
-				oarrayJson.put("ext", 1);
-			}else{
-				infoJson.put("ext", 0);
-				oarrayJson.put("ext", 0);
+			for(int i=0;i<splitsLaneInfo.length;i++){
+				
+				JSONObject infoJson = new JSONObject();
+				
+				JSONObject oarrayJson = new JSONObject();
+				
+				infoJson.put("sq", i + 1);
+				
+				oarrayJson.put("sq", i + 1);
+				
+				if (splitsLaneInfo[i].indexOf("[")>=0){
+					infoJson.put("ext", 1);
+					oarrayJson.put("ext", 1);
+				}else{
+					infoJson.put("ext", 0);
+					oarrayJson.put("ext", 0);
+				}
+				
+				String laneinfo = splitsLaneInfo[i];
+				
+				if (laneinfo.indexOf("[")>=0){
+					laneinfo = laneinfo.replace("[", "").replace("]", "");
+				}
+				
+				if (laneinfo.indexOf("<")>0){
+					infoJson.put("arwG", laneinfo.substring(0, laneinfo.indexOf("<")));
+					
+					infoJson.put("arwB", laneinfo.substring(laneinfo.indexOf("<") + 1, laneinfo.indexOf(">")));
+				}else{
+					infoJson.put("arwG", laneinfo);
+					
+					infoJson.put("arwB", JSONNull.getInstance());
+				}
+				
+				info.add(infoJson);
+				
+				JSONArray mapArray = map.get(i+1);
+				
+				JSONArray d_array = new JSONArray();
+				
+				for(int j=0;j<mapArray.size();j++){
+					JSONObject dJson = new JSONObject();
+					
+					JSONObject outJson = new JSONObject();
+					
+					outJson.put("id", mapArray.getJSONObject(j).getString("outLinkPid"));
+					
+					outJson.put("type", 1);
+					
+					dJson.put("out", new JSONObject[]{outJson});
+					
+					dJson.put("arw", mapArray.getJSONObject(j).getString("reachDir"));
+					
+					dJson.put("vt", mapArray.getJSONObject(j).getString("isBus"));
+					
+					d_array.add(dJson);
+				}
+				
+				oarrayJson.put("d_array", d_array);
+				
+				o_array.add(oarrayJson);
+				
 			}
-			
-			String laneinfo = splitsLaneInfo[i];
-			
-			if (laneinfo.indexOf("[")>=0){
-				laneinfo = laneinfo.replace("[", "").replace("]", "");
-			}
-			
-			if (laneinfo.indexOf("<")>0){
-				infoJson.put("arwG", laneinfo.substring(0, laneinfo.indexOf("<")));
-				
-				infoJson.put("arwB", laneinfo.substring(laneinfo.indexOf("<") + 1, laneinfo.indexOf(">")));
-			}else{
-				infoJson.put("arwG", laneinfo);
-				
-				infoJson.put("arwB", JSONNull.getInstance());
-			}
-			
-			info.add(infoJson);
-			
-			JSONArray mapArray = map.get(i+1);
-			
-			JSONArray d_array = new JSONArray();
-			
-			for(int j=0;j<mapArray.size();j++){
-				JSONObject dJson = new JSONObject();
-				
-				JSONObject outJson = new JSONObject();
-				
-				outJson.put("id", mapArray.getJSONObject(j).getString("outLinkPid"));
-				
-				outJson.put("type", 1);
-				
-				dJson.put("out", new JSONObject[]{outJson});
-				
-				dJson.put("arw", mapArray.getJSONObject(j).getString("reachDir"));
-				
-				dJson.put("vt", mapArray.getJSONObject(j).getString("isBus"));
-				
-				d_array.add(dJson);
-			}
-			
-			oarrayJson.put("d_array", d_array);
-			
-			o_array.add(oarrayJson);
-			
 		}
 		
 		deep.put("info", info);

@@ -9,10 +9,10 @@ package com.navinfo.navicommons.geo.computation;
 public class CompPointUtil {
 	
 	public static DoublePoint plus(DoublePoint point1,DoublePoint point2){
-		return new DoublePoint((point1.getX()+point1.getX()),(point1.getY()+point2.getY()));
+		return new DoublePoint((point1.getX()+point2.getX()),(point1.getY()+point2.getY()));
 	}
 	public static DoublePoint minus(DoublePoint point1,DoublePoint point2){
-		return new DoublePoint((point1.getX()-point1.getX()),(point1.getY()-point2.getY()));
+		return new DoublePoint((point1.getX()-point2.getX()),(point1.getY()-point2.getY()));
 	}
 	/**
 	 * 计算坐标（0,0）到point的向量的模（长度）
@@ -47,7 +47,7 @@ public class CompPointUtil {
 	 * @return
 	 */
 	public static double cross(DoublePoint point1,DoublePoint point2){
-		return (point1.getX()*point2.getY())-(point1.getY()-point2.getX());
+		return (point1.getX()*point2.getY())-(point1.getY()*point2.getX());
 	}
 	
 }

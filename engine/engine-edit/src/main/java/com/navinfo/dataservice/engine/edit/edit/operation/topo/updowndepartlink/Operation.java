@@ -77,7 +77,7 @@ public class Operation implements IOperation {
 					.get(i).getGeometry(),0.00001,5).getCoordinates()));
 		}
 		// 调用分离后生成的上下线
-		// 生成的线按照顺序存放在List<LineString> 前一半是左线 后一半是右线
+		// 生成的线按照顺序存放在List<LineString> 前一半是右线 后一半是左线
 		// 传入起点和终点Point
 		Point sPoint = JtsGeometryUtil.createPoint(GeoTranslator.transform(this
 				.getStartAndEndNode(links, 0).getGeometry(),0.00001,5).getCoordinate());
@@ -93,7 +93,7 @@ public class Operation implements IOperation {
 		List<RdLink> upLists = new ArrayList<RdLink>();
 		List<RdLink> downLists = new ArrayList<RdLink>();
 		for (int i = 0; i < command.getLinkPids().size(); i++) {
-			RdLink departLink = new RdLink();
+			RdLink departLink = new RdLink();		
 			departLink.setGeometry(lines[i]);
 			RdLink currentLink = command.getLinks().get(i);
 			RdLink nextLink = null;
@@ -127,13 +127,11 @@ public class Operation implements IOperation {
 
 	}
 	/**
-	 * @param startLine
-	 * @param endLine
-	 * @param sourceLink
-	 * @param sourceNextLink
-	 * @param snode
-	 * @param enode
-	 * @param map
+	 * 维护挂接的线
+	 * @param lines 上下线分离后的线
+	 * @param snode 起始点
+	 * @param enode 终止点
+	 * @param map   
 	 * @param result
 	 * @throws Exception
 	 */
@@ -146,10 +144,10 @@ public class Operation implements IOperation {
 			RdLink currentLink = command.getLinks().get(i);
 			RdLink nextLink = command.getLinks().get(i+1);
 			if(currentLink.getsNodePid() == snode.getPid()){
-				currentPoint =JtsGeometryUtil.createPoint(currentLink.getGeometry().getCoordinates()[currentLink.getGeometry().getCoordinates().length-1]);
+				currentPoint =JtsGeometryUtil.createPoint(GeoTranslator.transform(currentLink.getGeometry(), 0.00001, 5).getCoordinates()[GeoTranslator.transform(currentLink.getGeometry(), 0.00001, 5).getCoordinates().length-1]);
 				currentPid = currentLink.geteNodePid();
 			}else{
-				currentPoint =JtsGeometryUtil.createPoint(currentLink.getGeometry().getCoordinates()[0]);
+				currentPoint =JtsGeometryUtil.createPoint(GeoTranslator.transform(currentLink.getGeometry(), 0.00001, 5).getCoordinates()[0]);
 				currentPid = currentLink.getsNodePid();
 			}
 			List<RdLink> links = nodeSelector.loadByDepartNodePid(
@@ -158,19 +156,21 @@ public class Operation implements IOperation {
 			for(RdLink link :links){
 				LineString targetLine=null;
 				if(CompPolylineUtil.isRightSide(JtsGeometryUtil.createLineString(currentLink.getGeometry().getCoordinates()), JtsGeometryUtil.createLineString(nextLink.getGeometry().getCoordinates()), JtsGeometryUtil.createLineString(link.getGeometry().getCoordinates()))){
-					targetLine = CompPolylineUtil.cut(lines[i], lines[i+1],JtsGeometryUtil.createLineString(link.getGeometry().getCoordinates()),currentPoint,true );
+					targetLine = CompPolylineUtil.cut(lines[i], lines[i+1],JtsGeometryUtil.createLineString(GeoTranslator.transform(link.getGeometry(), 0.00001, 5).getCoordinates()),currentPoint,true );
 				}else{
-					targetLine =CompPolylineUtil.cut(lines[lines.length-i], lines[lines.length-i-1],JtsGeometryUtil.createLineString(link.getGeometry().getCoordinates()),currentPoint,false );
+					targetLine =CompPolylineUtil.cut(lines[lines.length-i], lines[lines.length-i-1],JtsGeometryUtil.createLineString(GeoTranslator.transform(link.getGeometry(), 0.00001, 5).getCoordinates()),currentPoint,false );
 				}
-				this.updateadjacentLine(targetLine,link,currentPid,map,result);
+				if (targetLine != null){
+					this.updateadjacentLine(targetLine,link,currentPid,map,result);
+				}
 			}
 			
 		}
 	}
 
 	/**
-	 * 
-	 * @param targetLine
+	 * 更新挂接线信息
+	 * @param targetLine 挂接线分离后几何
 	 * @param link
 	 * @param currentPid
 	 * @param map
@@ -415,6 +415,9 @@ public class Operation implements IOperation {
 		RdNode node = null;
 		for (RdLink link : links) {
 			flagBooleans.add(this.isRightSide(sourceLink, sourceNextLink, link));
+		}
+		if(flagBooleans.contains(true)&&flagBooleans.contains(false)){
+			
 		}
 		if (flagBooleans.contains(true)){
 			if(flagUpDown == 1){

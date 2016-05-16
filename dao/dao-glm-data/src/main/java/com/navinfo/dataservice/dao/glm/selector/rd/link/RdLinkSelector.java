@@ -56,7 +56,7 @@ public class RdLinkSelector implements ISelector {
 		RdLink rdLink = new RdLink();
 
 		StringBuilder sb = new StringBuilder(
-				"select * from rd_link where link_pid = :1 ");
+				"select * from rd_link where link_pid = :1 and u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -711,8 +711,8 @@ public class RdLinkSelector implements ISelector {
 		if((link.getsNodePid() == nodePidDir && link.getDirect() == 2)
 				||(link.geteNodePid() == nodePidDir && link.getDirect() == 3)
 				||(link.geteNodePid() == nodePidDir && link.getDirect() == 1)){
-			sb.append(" where ((rl.s_node_pid = :1 and rl.direct = 3) ");
-			sb.append(" or (rl.e_node_pid = :2 and direct = 2)");
+			sb.append(" where ((rl.e_node_pid = :1 and rl.direct = 3) ");
+			sb.append(" or (rl.s_node_pid = :2 and direct = 2)");
 		}
 		if((link.geteNodePid() == nodePidDir && link.getDirect() == 2)
 				||(link.getsNodePid() == nodePidDir && link.getDirect() == 3)

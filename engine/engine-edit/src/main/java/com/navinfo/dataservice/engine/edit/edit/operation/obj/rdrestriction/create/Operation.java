@@ -165,31 +165,10 @@ public class Operation implements IOperation {
 
 				details.add(detail);
 
-				infoList.remove(infoList.indexOf(restricInfo));
 			}
 
 		}
 
-		for (Integer info : infoList) {
-			RdRestrictionDetail detail = new RdRestrictionDetail();
-
-			detail.setOutLinkPid(0);
-
-			detail.setMesh(meshId);
-
-			detail.setPid(PidService.getInstance().applyRestrictionDetailPid());
-
-			detail.setRestricPid(restrict.getPid());
-
-			detail.setRestricInfo(info);
-			
-			if(command.getOutLinkPids().size()>0)
-			{
-				detail.setRelationshipType(relationTypeMap.get(command.getOutLinkPids().get(0)));
-			}
-
-			details.add(detail);
-		}
 		restrict.setDetails(details);
 
 		restrict.setRestricInfo(command.getRestricInfos());

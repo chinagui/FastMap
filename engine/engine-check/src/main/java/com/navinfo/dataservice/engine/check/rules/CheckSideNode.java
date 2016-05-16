@@ -38,7 +38,7 @@ public class CheckSideNode extends baseRule {
 				for(IRow deObj:rdCross.getNodes()){
 					if(deObj instanceof RdCrossNode){
 						RdCrossNode rdCrossNode = (RdCrossNode)deObj;
-						nodePids.add(rdCrossNode.getPid());
+						nodePids.add(rdCrossNode.getNodePid());
 					}
 				}
 			}

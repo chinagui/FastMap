@@ -127,6 +127,20 @@ public class AngleCalculator {
 			return Math.round(a2-a1+360);
 		}
 	}
+	/**
+	 * 以link1为正北方向，计算link2和link1的夹角
+	 * @param link1
+	 * @param link2
+	 * @return
+	 */
+	public static double getnMinAngle(LineSegment link1, LineSegment link2){
+		
+		double a1 = getAngle(new LngLatPoint(link1.p0.x, link1.p0.y),new LngLatPoint(link1.p1.x, link1.p1.y));
+		
+		double a2 = getAngle(new LngLatPoint(link2.p0.x, link2.p0.y),new LngLatPoint(link2.p1.x, link2.p1.y));
+		
+		return Math.abs(a2-a1);
+	}
 	
 	/**
 	 * 计算大地距离的辅助类

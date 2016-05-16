@@ -152,7 +152,7 @@ public class Operation implements IOperation {
 
 				result.insertObject(rdGsc, ObjStatus.INSERT, rdGsc.pid());
 			} else {
-				return "矩形框内有且只有一个交点";
+				throw new Exception("矩形框内有且只能有一个交点");
 			}
 		}
 

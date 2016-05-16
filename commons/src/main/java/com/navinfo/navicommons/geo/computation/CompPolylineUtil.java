@@ -200,6 +200,9 @@ public class CompPolylineUtil {
 		DoubleLine eLine = new DoubleLine(mid,end);
 		int fromIndex = 0;
 		int endIndex = coors.length-1;
+		//endIndex-fromIndex+1为截取剩下的长度
+		//+1是增加start和end中间点作为截取剩下的线的一个端点
+		Coordinate[] newCoors = null;
 		if(tarStart.equals(fromP)){//targetLine的画线方向是从fromPoint往外画的
 			for(;fromIndex<coors.length;fromIndex++){
 				DoublePoint temp = MyGeometryConvertor.convert(coors[fromIndex]);
@@ -207,9 +210,16 @@ public class CompPolylineUtil {
 					break;
 				}
 				DoubleLine adjLine = new DoubleLine(mid,temp);
-				if(!(isRightSide&&CompLineUtil.isRightSide(sLine,eLine,adjLine))){
+				if(isRightSide==CompLineUtil.isRightSide(sLine,eLine,adjLine)){
 					break;
 				}
+			}
+			newCoors = new Coordinate[endIndex-fromIndex+1+1];
+			newCoors[0]=MyGeometryConvertor.convert(mid);
+			int i = 1;
+			for(;fromIndex<=endIndex;fromIndex++){
+				newCoors[i]=coors[fromIndex];
+				i++;
 			}
 		}else{//targetLine的画线方向是从外向fromPoint画的
 			for(;endIndex>=0;endIndex--){
@@ -218,15 +228,17 @@ public class CompPolylineUtil {
 					break;
 				}
 				DoubleLine adjLine = new DoubleLine(mid,temp);
-				if(!(isRightSide&&CompLineUtil.isRightSide(sLine,eLine,adjLine))){
+				if(isRightSide==CompLineUtil.isRightSide(sLine,eLine,adjLine)){
 					break;
 				}
 			}
-		}
-		Coordinate[] newCoors = new Coordinate[endIndex-fromIndex+1];
-		int i = 0;
-		for(;fromIndex<=endIndex;fromIndex++){
-			newCoors[i]=coors[fromIndex];
+			newCoors = new Coordinate[endIndex-fromIndex+1+1];
+			int i = 0;
+			for(;fromIndex<=endIndex;fromIndex++){
+				newCoors[i]=coors[fromIndex];
+				i++;
+			}
+			newCoors[i]=MyGeometryConvertor.convert(mid);
 		}
 		return JtsGeometryUtil.createLineString(newCoors);
 	}

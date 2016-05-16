@@ -29,7 +29,7 @@ public class LogOperationGenerator {
     	Connection conn = null;
     	try{
     		conn = diffServer.getPoolDataSource().getConnection();
-    		String sql = "INSERT INTO (OP_ID,OP_DT) SELECT OP_ID,SYSDATE OP_DT FROM LOG_DETAIL";
+    		String sql = "INSERT INTO LOG_OPERATION(OP_ID,OP_DT) SELECT OP_ID,SYSDATE OP_DT FROM LOG_DETAIL";
     		int count = runner.update(conn, sql);
     		conn.commit();
     		return count;

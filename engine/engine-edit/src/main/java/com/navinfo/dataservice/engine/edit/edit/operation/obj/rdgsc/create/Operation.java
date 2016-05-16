@@ -53,6 +53,11 @@ public class Operation implements IOperation {
 
 		// link的pid和层级的映射关系
 		Map<Integer, Integer> linkMap = command.getLinkMap();
+		
+		if(linkMap.size() <2)
+		{
+			throw new Exception("立交线少于两条");
+		}
 
 		// link对象的map集合
 		Map<Integer, RdLink> linkObjMap = new HashMap<>();
@@ -147,7 +152,7 @@ public class Operation implements IOperation {
 
 				result.insertObject(rdGsc, ObjStatus.INSERT, rdGsc.pid());
 			} else {
-				return "矩形框内有且只有一个交点";
+				throw new Exception("矩形框内有且只能有一个交点");
 			}
 		}
 

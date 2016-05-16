@@ -13,6 +13,7 @@ import net.sf.json.JsonConfig;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -268,6 +269,8 @@ public class RdSpeedlimit implements IObj {
 
 		if (objLevel == ObjLevel.FULL) {
 			speedValue /= 10;
+			
+			laneSpeedValue = StringUtils.laneSpeedValue2KM(laneSpeedValue);
 		}
 
 		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
@@ -303,7 +306,12 @@ public class RdSpeedlimit implements IObj {
 					int value = json.getInt(key);
 
 					f.set(this, value * 10);
-				} else {
+				}else if ("laneSpeedValue".equals(key)){
+					String value = json.getString(key);
+					
+					f.set(this, StringUtils.laneSpeedValue2M(value));
+				}
+				else {
 					f.set(this, json.get(key));
 				}
 			}
@@ -421,7 +429,15 @@ public class RdSpeedlimit implements IObj {
 							if (!newValue.equals(oldValue)) {
 								changedFields.put(key, json.getInt(key) * 10);
 							}
-						} else {
+						}else if(key.equals("laneSpeedValue")){
+							
+							newValue = StringUtils.laneSpeedValue2M(json.getString(key));
+							
+							if (!newValue.equals(oldValue)) {
+								changedFields.put(key, newValue);
+							}
+						}
+						else {
 							Object value = json.get(key);
 							
 							if(value instanceof String){

@@ -17,6 +17,8 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.engine.edit.comm.util.type.GeometryTypeName;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
+
 import net.sf.json.JSONObject;
 
 /**
@@ -52,11 +54,11 @@ public class RdLinkOperateUtils {
 	 * */
 	public static IRow addLinkByNoResult(RdNode sNode,RdNode eNode,RdLink link,RdLink sourceLink) throws Exception{
 		//继承原有link信息
-		link.copy(sourceLink);
-		//获取pid
+		Geometry geometry = link.getGeometry();
 		link.setPid(PidService.getInstance().applyLinkPid());
+		link.copy(sourceLink);
 		//计算Geometry
-		link.setGeometry(GeoTranslator.transform(link.getGeometry(), 100000, 0));
+		link.setGeometry(GeoTranslator.transform(geometry, 100000, 0));
 		double linkLength = GeometryUtils.getLinkLength(link.getGeometry());
 		link.setLength(linkLength);
 		link.setOriginLinkPid(link.getPid());

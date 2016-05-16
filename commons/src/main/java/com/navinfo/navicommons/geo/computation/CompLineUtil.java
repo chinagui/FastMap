@@ -154,7 +154,7 @@ public class CompLineUtil {
 	public static double angleAnticlockwise(DoubleLine line1,DoubleLine line2){
 		DoublePoint p1 = line1.pan2OriginPoint();
 		DoublePoint p2 = line2.pan2OriginPoint();
-		if(isRightSide(line1, p2)){
+		if(isRightSide(line1, line2.getEpoint())){
 			return Math.PI-CompPointUtil.angle(p1, p2);
 		}else{
 			return Math.PI+CompPointUtil.angle(p1, p2);

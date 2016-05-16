@@ -102,24 +102,25 @@ create table NI_VAL_EXCEPTION_HISTORY  (
    TARGETS              CLOB,
    ADDITION_INFO        CLOB,
    DEL_FLAG             NUMBER(1)                      default 0 not null
-       check (DEL_FLAG in (0,1)) disable,
+       check (DEL_FLAG in (0,1)),
    CREATED              DATE,
    UPDATED              DATE,
    MESH_ID              NUMBER(6),
    SCOPE_FLAG           NUMBER(2)                      default 1 not null
-       check (SCOPE_FLAG in (1,2,3)) disable,
+       check (SCOPE_FLAG in (1,2,3)),
    PROVINCE_NAME        VARCHAR2(60),
    MAP_SCALE            NUMBER(2)                      default 0 not null
-       check (MAP_SCALE in (0,1,2,3)) disable,
-   RESERVED             VARCHAR2(32),
+       check (MAP_SCALE in (0,1,2,3)),
+   RESERVED             VARCHAR2(1000),
    EXTENDED             VARCHAR2(1000),
    TASK_ID              VARCHAR2(500),
    QA_TASK_ID           VARCHAR2(500),
    QA_STATUS            NUMBER(2)                      default 2 not null
-       check (QA_STATUS in (1,2))disable,
+       check (QA_STATUS in (1,2)),
    WORKER               VARCHAR2(500),
    QA_WORKER            VARCHAR2(500),
    LOG_TYPE             NUMBER(5)                      default 0 not null,
+   U_RECORD NUMBER(2) default 0 not null check (U_RECORD in (0,1,2,3)),
    U_DATE           	VARCHAR2(14),
    ROW_ID           	RAW(16)
 );
@@ -130,3 +131,9 @@ create table CK_RESULT_OBJECT (
 	PID NUMBER(10) default 0 not null
 );
 create index IX_CK_RESULT_OBJECT_01 on CK_RESULT_OBJECT (PID);
+
+-- RD_TOLLGATE_MAPPING,RD_TOLLGATE_FEE,CK_EXCEPTION,NI_VAL_EXCEPTION
+ALTER TABLE RD_TOLLGATE_MAPPING ADD (U_RECORD NUMBER(2) default 0 not null check (U_RECORD in (0,1,2,3)),U_DATE VARCHAR2(14),ROW_ID RAW(16));
+ALTER TABLE RD_TOLLGATE_FEE ADD (U_RECORD NUMBER(2) default 0 not null check (U_RECORD in (0,1,2,3)),U_DATE VARCHAR2(14),ROW_ID RAW(16));
+ALTER TABLE CK_EXCEPTION ADD (U_RECORD NUMBER(2) default 0 not null check (U_RECORD in (0,1,2,3)),U_DATE VARCHAR2(14),ROW_ID RAW(16));
+ALTER TABLE NI_VAL_EXCEPTION ADD (U_RECORD NUMBER(2) default 0 not null check (U_RECORD in (0,1,2,3)),U_DATE VARCHAR2(14),ROW_ID RAW(16));

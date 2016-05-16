@@ -58,6 +58,11 @@ public class FlushGdb {
 
 	private static List<String> logDetails = new ArrayList<String>();
 
+	/**
+	 * 检查结果入项目库
+	 * @param args
+	 * @return
+	 */
 	public static FlushResult copXcopyHistory(String[] args) {
 		FlushResult result = new FlushResult();
 
@@ -135,6 +140,11 @@ public class FlushGdb {
 		return result;
 	}
 
+	/**
+	 * 项目还履历
+	 * @param args
+	 * @return
+	 */
 	public static FlushResult prjMeshReturnHistory(String[] args) {
 
 		FlushResult flushResult = new FlushResult();

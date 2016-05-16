@@ -106,4 +106,58 @@ public class CompPolylineUtilTest {
 		}
 		Assert.assertTrue(true);
 	}
+	/**
+	 * 情景：
+	 * 右侧切割
+	 */
+	@Test
+	public void cut_001(){
+		try{
+
+			LineString ls1=(LineString)JtsGeometryUtil.read("LINESTRING (116.02564 39.76918, 116.02563 39.76873, 116.02605 39.76872)");
+			LineString ls2=(LineString)JtsGeometryUtil.read("LINESTRING (116.02605 39.76872, 116.0264 39.76876)");
+			LineString ls3=(LineString)JtsGeometryUtil.read("LINESTRING (116.02601 39.76917, 116.02603 39.76889,116.02607 39.76876,116.02624 39.76863)");
+			Point fromPoint = (Point)JtsGeometryUtil.read("POINT (116.02601 39.76917)");
+			LineString result = CompPolylineUtil.cut(ls1, ls2, ls3, fromPoint, true);
+			System.out.println(result.toText());
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * 情景：
+	 * 左侧切割
+	 */
+	@Test
+	public void cut_002(){
+		try{
+
+			LineString ls1=(LineString)JtsGeometryUtil.read("LINESTRING (116.02564 39.76918, 116.02563 39.76873, 116.02605 39.76872)");
+			LineString ls2=(LineString)JtsGeometryUtil.read("LINESTRING (116.02605 39.76872, 116.0264 39.76876)");
+			LineString ls3=(LineString)JtsGeometryUtil.read("LINESTRING (116.02601 39.76917, 116.02603 39.76889,116.02607 39.76876,116.02624 39.76863)");
+			Point fromPoint = (Point)JtsGeometryUtil.read("POINT (116.02624 39.76863)");
+			LineString result = CompPolylineUtil.cut(ls1, ls2, ls3, fromPoint, false);
+			System.out.println(result.toText());
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * 情景：
+	 * 上下线分离后的线超过了targetLine，此时返回空
+	 */
+	@Test
+	public void cut_003(){
+		try{
+
+			LineString ls1=(LineString)JtsGeometryUtil.read("LINESTRING (116.02564 39.76918, 116.02563 39.76873, 116.02605 39.76872)");
+			LineString ls2=(LineString)JtsGeometryUtil.read("LINESTRING (116.02605 39.76872, 116.0264 39.76876)");
+			LineString ls3=(LineString)JtsGeometryUtil.read("LINESTRING (116.02601 39.76917, 116.02603 39.76889)");
+			Point fromPoint = (Point)JtsGeometryUtil.read("POINT (116.02601 39.76917)");
+			LineString result = CompPolylineUtil.cut(ls1, ls2, ls3, fromPoint, true);
+			System.out.println(result.toText());
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 }

@@ -201,7 +201,7 @@ public class DropboxUtil {
 		
 		String filePath = config.getValue(PropConstant.downloadFilePathBasedata);
 		
-		String urlPath = config.getValue(PropConstant.downloadFilePathBasedata);
+		String urlPath = config.getValue(PropConstant.downloadUrlPathBasedata);
 		
 		for (Map.Entry<String, String> entry : map.entrySet()) {  
 		

@@ -56,7 +56,7 @@ public class RdLinkSelector implements ISelector {
 		RdLink rdLink = new RdLink();
 
 		StringBuilder sb = new StringBuilder(
-				"select * from rd_link where link_pid = :1 ");
+				"select * from rd_link where link_pid = :1 and u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");

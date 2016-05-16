@@ -180,8 +180,6 @@ public class AdFaceTopoSelector implements ISelector {
 
 				adFaceTopo.setLinkPid(resultSet.getInt("link_pid"));
 
-				adFaceTopo.setMesh(resultSet.getInt("mesh_id"));
-
 				adFaceTopo.setRowId(resultSet.getString("row_id"));
 
 				adFaceTopo.setSeqNum(resultSet.getInt("seq_num"));

@@ -178,13 +178,53 @@ public class StringUtils {
     	}return "";
     	
     }
+    
+    public static String laneSpeedValue2KM(String laneSpeedValue){
+    	
+    	String[] values = laneSpeedValue.split("\\|");
+    	
+    	StringBuilder sb = new StringBuilder();
+    	
+    	for(int i=0;i<values.length;i++){
+    		if(i!=0)
+    		{
+    			sb.append("|");
+    		}
+    		
+    		sb.append(Integer.valueOf(values[i])/10);
+    	}
+    	
+    	return sb.toString();
+    }
+    
+    public static String laneSpeedValue2M(String laneSpeedValue){
+    	
+    	String[] values = laneSpeedValue.split("\\|");
+    	
+    	StringBuilder sb = new StringBuilder();
+    	
+    	for(int i=0;i<values.length;i++){
+    		if(i!=0)
+    		{
+    			sb.append("|");
+    		}
+    		
+    		sb.append(Integer.valueOf(values[i])*10);
+    	}
+    	
+    	return sb.toString();
+    }
+    
 	public static void main(String[] args) {
 
-		List<Integer> integers =  new ArrayList<Integer>();
-		integers.add(1);
-		integers.add(2);
-		integers.add(3);
-		System.out.println(integers);
-		System.out.println(integers.toString().replace("[", "").replace("]", ""));
+//		List<Integer> integers =  new ArrayList<Integer>();
+//		integers.add(1);
+//		integers.add(2);
+//		integers.add(3);
+//		System.out.println(integers);
+//		System.out.println(integers.toString().replace("[", "").replace("]", ""));
+		
+		String a = "20|30|120";
+		System.out.println(laneSpeedValue2M(a));
 	}
 }

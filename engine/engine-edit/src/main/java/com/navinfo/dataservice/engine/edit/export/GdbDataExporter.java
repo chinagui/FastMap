@@ -369,9 +369,7 @@ public class GdbDataExporter {
 
 				boolean flag = false;
 
-				if (bin.length() < 12) {
-					flag = true;
-				} else {
+				if (bin.length() >= 12) {
 					String p = bin.substring(len - 12, len - 11);
 
 					if ("1".equals(p)) {

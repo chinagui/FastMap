@@ -79,8 +79,8 @@ public class AdLinkTest {
 		//2.LINESTRING (116.20111 39.84551, 116.20133 39.84551, 116.20156 39.84551) pid 100002629 s  100018780 e  100018782
 		//3.LINESTRING (116.20111 39.84551, 116.20133 39.84536, 116.20166 39.84544) pid 100002637 s  100018780 e 100018787
 		//4. LINESTRING (116.20111 39.84551, 116.20081 39.84565, 116.20083 39.84554) pid 100002641 s  100018780    e 100018791
-		int cuurentLinkPid = 100002627 ;
-		int cruuentNodePidDir = 100018780;
+		int cuurentLinkPid = 100003385 ;
+		int cruuentNodePidDir = 100019726;
 		List<RdLink> links  =new RdLinkSearchUtils(conn).getNextTrackLinks(cuurentLinkPid, cruuentNodePidDir);
 		for(RdLink rdLink:links){
 			System.out.println(rdLink.getPid());
@@ -122,7 +122,7 @@ public class AdLinkTest {
 	}
 	
 	public static void main(String[] args) throws Exception{
-		new AdLinkTest().deleteAdLinkTest();
+		//new AdLinkTest().deleteAdLinkTest();
 		new AdLinkTest().TrackRdLink();
 		//new AdLinkTest().deleteAdLinkTest();
 		//new AdLinkTest().breakAdLinkTest();

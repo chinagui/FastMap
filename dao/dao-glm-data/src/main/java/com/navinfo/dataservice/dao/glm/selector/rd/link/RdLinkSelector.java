@@ -711,8 +711,8 @@ public class RdLinkSelector implements ISelector {
 		if((link.getsNodePid() == nodePidDir && link.getDirect() == 2)
 				||(link.geteNodePid() == nodePidDir && link.getDirect() == 3)
 				||(link.geteNodePid() == nodePidDir && link.getDirect() == 1)){
-			sb.append(" where ((rl.s_node_pid = :1 and rl.direct = 3) ");
-			sb.append(" or (rl.e_node_pid = :2 and direct = 2)");
+			sb.append(" where ((rl.e_node_pid = :1 and rl.direct = 3) ");
+			sb.append(" or (rl.s_node_pid = :2 and direct = 2)");
 		}
 		if((link.geteNodePid() == nodePidDir && link.getDirect() == 2)
 				||(link.getsNodePid() == nodePidDir && link.getDirect() == 3)

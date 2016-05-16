@@ -56,10 +56,10 @@ public class RdLinkSearchUtils {
 				//获取联通links直线的几何
 				LineSegment nextLinklineSegment = getLineSegment(ad, cruuentNodePidDir);
 				//计算当前线直线和联通直线夹角 选出当前线延长线夹角最小
-				double minAngle = AngleCalculator.getAngle(
+				double minAngle = AngleCalculator.getnMinAngle(
 						currentLinklineSegment, nextLinklineSegment);
 				if (map.size() > 0) {
-					if (map.keySet().iterator().next() < minAngle) {
+					if (map.keySet().iterator().next() > minAngle) {
 						map.clear();
 						map.put(minAngle, ad);
 					}

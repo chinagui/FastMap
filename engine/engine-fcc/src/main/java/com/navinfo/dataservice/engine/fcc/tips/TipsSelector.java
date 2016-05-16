@@ -497,17 +497,17 @@ public class TipsSelector {
 					}
 				}
 				
-				if(type == 1514){
-					String name = m.getString("e");
-					
-					String time = deep.getString("time");
-					
-					if(time!=null && !time.isEmpty()){
-						name+="("+time+")";
-						
-						m.put("e", name);
-					}
-				}
+//				if(type == 1514){
+//					String name = m.getString("e");
+//					
+//					String time = deep.getString("time");
+//					
+//					if(time!=null && !time.isEmpty()){
+//						name+="("+time+")";
+//						
+//						m.put("e", name);
+//					}
+//				}
 			} else if (type == 1704 || type == 1510) {
 
 				String name = deep.getString("name");

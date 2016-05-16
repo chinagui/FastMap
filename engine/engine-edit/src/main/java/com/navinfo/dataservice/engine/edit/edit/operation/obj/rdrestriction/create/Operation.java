@@ -95,20 +95,6 @@ public class Operation implements IOperation {
 
 		List<IRow> details = new ArrayList<IRow>();
 
-		String[] infArray = command.getRestricInfos().split(",");
-
-		List<Integer> infoList = new ArrayList<>();
-
-		for (String info : infArray) {
-			if (info.contains("[")) {
-				// 理论值带[]
-				infoList.add(Integer.parseInt(info.substring(1, 2)));
-			} else {
-				// 实际值不带
-				infoList.add(Integer.parseInt(info));
-			}
-		}
-
 		for (int outLinkPid : outLinkPids) {
 
 			RdRestrictionDetail detail = new RdRestrictionDetail();
@@ -121,51 +107,48 @@ public class Operation implements IOperation {
 
 			int restricInfo = this.calRestricInfo(angle);
 
-			if (infoList.contains(restricInfo)) {
-				detail.setMesh(meshId);
+			detail.setMesh(meshId);
 
-				detail.setPid(PidService.getInstance().applyRestrictionDetailPid());
+			detail.setPid(PidService.getInstance().applyRestrictionDetailPid());
 
-				detail.setRestricPid(restrict.getPid());
+			detail.setRestricPid(restrict.getPid());
 
-				detail.setRestricInfo(restricInfo);
+			detail.setRestricInfo(restricInfo);
 
-				detail.setRelationshipType(relationTypeMap.get(detail.getOutLinkPid()));
+			detail.setRelationshipType(relationTypeMap.get(detail.getOutLinkPid()));
 
-				if (detail.getRelationshipType() == 1) {
-					check.checkGLM26017(conn, command.getNodePid());
+			if (detail.getRelationshipType() == 1) {
+				check.checkGLM26017(conn, command.getNodePid());
 
-					check.checkGLM08033(conn, command.getInLinkPid(), outLinkPid);
-				}
-
-				List<Integer> viaLinkPids = viaLinkPidMap.get(detail.getOutLinkPid());
-
-				int seqNum = 1;
-
-				List<IRow> vias = new ArrayList<IRow>();
-
-				for (Integer viaLinkPid : viaLinkPids) {
-
-					RdRestrictionVia via = new RdRestrictionVia();
-
-					via.setMesh(meshId);
-
-					via.setDetailId(detail.getPid());
-
-					via.setSeqNum(seqNum);
-
-					via.setLinkPid(viaLinkPid);
-
-					vias.add(via);
-
-					seqNum++;
-				}
-
-				detail.setVias(vias);
-
-				details.add(detail);
-
+				check.checkGLM08033(conn, command.getInLinkPid(), outLinkPid);
 			}
+
+			List<Integer> viaLinkPids = viaLinkPidMap.get(detail.getOutLinkPid());
+
+			int seqNum = 1;
+
+			List<IRow> vias = new ArrayList<IRow>();
+
+			for (Integer viaLinkPid : viaLinkPids) {
+
+				RdRestrictionVia via = new RdRestrictionVia();
+
+				via.setMesh(meshId);
+
+				via.setDetailId(detail.getPid());
+
+				via.setSeqNum(seqNum);
+
+				via.setLinkPid(viaLinkPid);
+
+				vias.add(via);
+
+				seqNum++;
+			}
+
+			detail.setVias(vias);
+
+			details.add(detail);
 
 		}
 
@@ -186,8 +169,7 @@ public class Operation implements IOperation {
 	 * @param outLinkPids
 	 * @throws Exception
 	 */
-	private void calViaLinks(int inLinkPid, int nodePid, List<Integer> outLinkPids)
-			throws Exception {
+	private void calViaLinks(int inLinkPid, int nodePid, List<Integer> outLinkPids) throws Exception {
 
 		outLinkSegmentMap = new HashMap<Integer, LineSegment>();
 
@@ -232,13 +214,11 @@ public class Operation implements IOperation {
 
 					String[] splits = inNode1.split(",");
 
-					Coordinate p1 = new Coordinate(Double.valueOf(splits[0]),
-							Double.valueOf(splits[1]));
+					Coordinate p1 = new Coordinate(Double.valueOf(splits[0]), Double.valueOf(splits[1]));
 
 					splits = inNode2.split(",");
 
-					Coordinate p2 = new Coordinate(Double.valueOf(splits[0]),
-							Double.valueOf(splits[1]));
+					Coordinate p2 = new Coordinate(Double.valueOf(splits[0]), Double.valueOf(splits[1]));
 
 					inLinkSegment = new LineSegment(p1, p2);
 				}
@@ -255,13 +235,11 @@ public class Operation implements IOperation {
 
 				String[] splits = outNode1.split(",");
 
-				Coordinate p1 = new Coordinate(Double.valueOf(splits[0]),
-						Double.valueOf(splits[1]));
+				Coordinate p1 = new Coordinate(Double.valueOf(splits[0]), Double.valueOf(splits[1]));
 
 				splits = outNode2.split(",");
 
-				Coordinate p2 = new Coordinate(Double.valueOf(splits[0]),
-						Double.valueOf(splits[1]));
+				Coordinate p2 = new Coordinate(Double.valueOf(splits[0]), Double.valueOf(splits[1]));
 
 				LineSegment line = new LineSegment(p1, p2);
 

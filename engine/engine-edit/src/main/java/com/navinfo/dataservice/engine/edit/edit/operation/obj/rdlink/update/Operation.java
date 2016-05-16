@@ -139,7 +139,12 @@ public class Operation implements IOperation {
 
 					RdLinkForm form = updateLink.formMap.get(formJson
 							.getString("rowId"));
-
+					if(form == null)
+					{
+						throw new Exception("rowId为"+formJson
+								.getString("rowId")+"的RdLinkForm不存在");
+					}
+					
 					if (ObjStatus.DELETE.toString().equals(
 							formJson.getString("objStatus"))) {
 						result.insertObject(form, ObjStatus.DELETE, updateLink.pid());

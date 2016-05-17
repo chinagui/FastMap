@@ -150,18 +150,17 @@ public class Operation implements IOperation {
 					nextLink.getPid(), true);
 			for(RdLink link :links){
 				LineString targetLine=null;
-				System.out.println(currentLink.getGeometry().getCoordinates());
-				System.out.println(nextLink.getGeometry().getCoordinates());
-				System.out.println(link.getGeometry().getCoordinates());
-				System.out.println(i+"------------------i");
+		
 				if(CompPolylineUtil.isRightSide(JtsGeometryUtil.createLineString(currentLink.getGeometry().getCoordinates()), JtsGeometryUtil.createLineString(nextLink.getGeometry().getCoordinates()), JtsGeometryUtil.createLineString(link.getGeometry().getCoordinates()))){
 					
 					targetLine = CompPolylineUtil.cut(lines[i], lines[i+1],JtsGeometryUtil.createLineString(GeoTranslator.transform(link.getGeometry(), 0.00001, 5).getCoordinates()),currentPoint,true );
 				}else{
 					targetLine =CompPolylineUtil.cut(lines[lines.length-i], lines[lines.length-i-1],JtsGeometryUtil.createLineString(GeoTranslator.transform(link.getGeometry(), 0.00001, 5).getCoordinates()),currentPoint,false );
 				}
-				if (targetLine != null){
+				if (targetLine.getCoordinate() != null){
+					
 					this.updateadjacentLine(targetLine,link,currentPid,map,result);
+					
 				}
 			}
 			

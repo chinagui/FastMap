@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.json.JSONArray;
 import oracle.sql.STRUCT;
 
 import org.apache.commons.lang.StringUtils;
@@ -17,11 +18,10 @@ import org.apache.log4j.Logger;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.druid.proxy.jdbc.ClobProxyImpl;
-import com.alibaba.druid.proxy.jdbc.ConnectionProxyImpl;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.GeometryUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkIntRtic;
@@ -33,6 +33,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSidewalk;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkWalkstair;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class RdLinkSelector implements ISelector {
@@ -1421,5 +1422,70 @@ public class RdLinkSelector implements ISelector {
 		return links;
 
 	}
+	
+	public JSONArray loadGeomtryByLinkPids(List<Integer> linkPids) throws Exception{ 
+		
+		StringBuilder sb = new StringBuilder(
+				"select geometry,e_node_pid,s_node_pid from rd_link where link_pid in ( "+com.navinfo.dataservice.commons.util.StringUtils.getInteStr(linkPids)+")");
 
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+
+			List<Geometry> geos = new ArrayList<Geometry>();
+			
+			while(resultSet.next()) {
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+				Geometry geometry = GeoTranslator.struct2Jts(struct);
+				
+				geos.add(geometry);
+			}
+			
+			if(geos.size()>0){
+				return GeometryUtils.connectLinks(geos).getJSONArray("coordinates");
+			}
+			else{
+				throw new Exception("未找到link");
+			}
+		}catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+		
+	}
+	
+//	public static void main(String[] args) throws Exception {
+//		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+//		
+//		RdLinkSelector se = new RdLinkSelector(conn);
+//		List<Integer> s = new ArrayList<Integer>();
+//		
+//		s.add(13474060);
+//		s.add(13474059);
+//		JSONArray a = se.loadGeomtryByLinkPids(s);
+//		System.out.println(a);
+//	}
 }

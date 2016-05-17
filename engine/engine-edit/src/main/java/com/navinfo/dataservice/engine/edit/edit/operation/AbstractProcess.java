@@ -62,7 +62,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		this.checkCommand.setOperType(this.command.getOperType());
 		this.checkCommand.setProjectId(this.command.getProjectId());
 		//this.checkCommand.setGlmList(this.command.getGlmList());
-		this.checkEngine=new CheckEngine(checkCommand,this.conn);
+		this.checkEngine=new CheckEngine(checkCommand,this.conn,this.command.getProjectId());
 	}
 
 	/* (non-Javadoc)

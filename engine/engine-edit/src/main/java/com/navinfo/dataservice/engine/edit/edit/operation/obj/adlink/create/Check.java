@@ -117,14 +117,14 @@ public class Check {
 		throw new Exception(msg);
 	}
 	
-	public void postCheck(Connection conn,Result result) throws Exception
+	public void postCheck(Connection conn,Result result,int projectId) throws Exception
 	{
 		
 		for(IRow obj : result.getAddObjects()){
 			if (obj instanceof RdLink){
 				RdLink rdLink = (RdLink)obj;
 				
-				NiValExceptionOperator check = new NiValExceptionOperator(conn);
+				NiValExceptionOperator check = new NiValExceptionOperator(conn,projectId);
 				
 				//获取link的中间点
 				Geometry geo = GeoTranslator.transform(rdLink.getGeometry(),0.00001,5);

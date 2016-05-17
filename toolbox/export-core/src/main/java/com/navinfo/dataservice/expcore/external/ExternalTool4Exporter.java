@@ -17,15 +17,14 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.datahub.glm.Glm;
 import com.navinfo.dataservice.datahub.glm.GlmCache;
-import com.navinfo.dataservice.datahub.glm.GlmColumn;
 import com.navinfo.dataservice.datahub.glm.GlmGridCalculator;
 import com.navinfo.dataservice.datahub.glm.GlmGridCalculatorFactory;
 import com.navinfo.dataservice.datahub.glm.GlmTable;
+import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DbLinkCreator;
-import com.ctc.wstx.util.StringUtil;
 import com.navinfo.dataservice.commons.util.RandomUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 
@@ -197,6 +196,7 @@ public class ExternalTool4Exporter {
 								stmt.clearBatch();
 							}
 						}
+						break;//只取第一个要素计算grid
 					}
 				}
 			}
@@ -222,12 +222,14 @@ public class ExternalTool4Exporter {
 			cr.create(dbLinkName, false, targetSchema.getDriverManagerDataSource(), srcSchema.getDbUserName(), srcSchema.getDbUserPasswd(), srcSchema.getDbServer().getIp(), String.valueOf(srcSchema.getDbServer().getPort()), srcSchema.getDbServer().getServiceName());
 			
 			QueryRunner runner = new QueryRunner();
-			String sql = "INSERT INTO NI_VAL_EXCEPTION SELECT T.* FROM NI_VAL_EXCEPTION T,NI_VAL_EXCEPTION_GRID G WHERE T.RESERVED=G.CK_RESULT_ID AND G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(grids,",")+")";
+			String sql = "INSERT INTO NI_VAL_EXCEPTION SELECT "+getSelectColumnString(conn,"NI_VAL_EXCEPTION")+" FROM NI_VAL_EXCEPTION@"+dbLinkName+" T WHERE EXISTS (SELECT 1 FROM NI_VAL_EXCEPTION_GRID@"+dbLinkName+" G WHERE T.RESERVED=G.CK_RESULT_ID AND G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(grids,",")+"))";
 			runner.execute(conn, sql);
-			sql = "INSERT INTO CK_RESULT_OBJECT SELECT T.* FROM CK_RESULT_OBJECT T,NI_VAL_EXCEPTION_GRID G WHERE T.CK_RESULT_ID=G.CK_RESULT_ID AND G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(grids,",")+")";
+			sql = "INSERT INTO CK_RESULT_OBJECT SELECT "+getSelectColumnString(conn,"CK_RESULT_OBJECT")+" FROM CK_RESULT_OBJECT@"+dbLinkName+" T WHERE EXISTS (SELECT 1 FROM NI_VAL_EXCEPTION_GRID@"+dbLinkName+" G WHERE T.CK_RESULT_ID=G.CK_RESULT_ID AND G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(grids,",")+"))";
 			runner.execute(conn, sql);
-			sql = "INSERT INTO NI_VAL_EXCEPTION_GRID SELECT T.* FROM NI_VAL_EXCEPTION_GRID T WHERE T.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(grids,",")+")";
+			sql = "INSERT INTO NI_VAL_EXCEPTION_GRID SELECT "+getSelectColumnString(conn,"NI_VAL_EXCEPTION_GRID")+" FROM NI_VAL_EXCEPTION_GRID@"+dbLinkName+" T WHERE T.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(grids,",")+")";
 			runner.execute(conn, sql);
+			//删除dblink
+			cr.drop(dbLinkName, false, targetSchema.getDriverManagerDataSource());
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -235,6 +237,30 @@ public class ExternalTool4Exporter {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	private static String getSelectColumnString(Connection conn, String tableName) throws SQLException {
+		String sql = "select COLUMN_NAME from USER_TAB_COLUMNS where table_name = ? ORDER BY COLUMN_ID";
+		QueryRunner runner = new QueryRunner();
+		return runner.query(conn, sql, new ResultSetHandler<String>() {
+			StringBuilder builder = new StringBuilder();
+
+			@Override
+			public String handle(ResultSet rs) throws SQLException {
+				int i = 0;
+				while (rs.next()) {
+					if (i > 0) {
+						builder.append(",");
+					}
+					builder.append("\"");
+					builder.append(rs.getString(1));
+					builder.append("\"");
+					i++;
+
+				}
+				return builder.toString();
+			}
+		}, tableName);
+
 	}
 	
 	public static void removeDupRecord(String gdbVersion,OracleSchema schema,Set<String> tables)throws Exception{
@@ -262,7 +288,7 @@ public class ExternalTool4Exporter {
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("打开主键时出现错误，原因："+e.getMessage(),e);
+			throw new Exception("去重过程中出错，原因："+e.getMessage(),e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -278,16 +304,23 @@ public class ExternalTool4Exporter {
 			
 		}catch (Exception e) {
 			log.error(e.getMessage(), e);
-			throw new Exception("打开主键时出现错误，原因："+e.getMessage(),e);
+			throw new Exception("物理删除行记录时出现错误，原因："+e.getMessage(),e);
 		}
 	}
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		try{
+			OracleSchema sourceDb = (OracleSchema)new DbManager().getDbById(Integer.valueOf(28));
+			OracleSchema tarDb = (OracleSchema)new DbManager().getDbById(Integer.valueOf(9));
+			selectLogGrids(sourceDb,tarDb,new String[]{"59567100"});
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 		// TODO Auto-generated method stub
-		String str = "[RD_CROSS,559665];[RD_LINK,334978]";
-		System.out.println(str.substring(1, str.length()-1));
+//		String str = "[RD_CROSS,559665];[RD_LINK,334978]";
+//		System.out.println(str.substring(1, str.length()-1));
 //		Matcher matcher = Pattern.compile("\\[(.*?)\\]",Pattern.DOTALL).matcher(str);
 //		if(matcher.find()){
 //			System.out.println("Count:"+matcher.groupCount());

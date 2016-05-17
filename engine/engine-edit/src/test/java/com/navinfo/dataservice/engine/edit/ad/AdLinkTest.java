@@ -64,7 +64,8 @@ public class AdLinkTest {
 	public  void breakAdLinkTest() {
 		//{"command":"BREAK","projectId":11,"objId":100031682,"data":{"longitude":116.4677675266779,"latitude":40.01207106100581},"type":"ADLINK"}
 		//"{"command":"BREAK","projectId":11,"objId":100031679,"data":{"longitude":116.46851064297599,"latitude":40.01208957670038},"type":"ADLINK"}"
-		String parameter = "{\"command\":\"BREAK\",\"projectId\":11,\"objId\":100031679,\"data\":{\"longitude\":116.46851064297599,\"latitude\":40.01208957670038},\"type\":\"ADLINK\"}";
+		//{"command":"BREAK","projectId":11,"objId":100031676,"data":{"longitude":116.47621786669173,"latitude":40.01248730218289},"type":"ADLINK"}
+		String parameter = "{\"command\":\"BREAK\",\"projectId\":11,\"objId\":100031676,\"data\":{\"longitude\":116.47621786669173,\"latitude\":40.01248730218289},\"type\":\"ADLINK\"}";
 		String parameter1 = "{\"command\":\"BREAK\",\"projectId\":11,\"objId\":100031682,\"data\":{\"longitude\":116.4677675266779,\"latitude\":40.01207106100581},\"type\":\"ADLINK\"}";
 		
 		log.info(parameter);

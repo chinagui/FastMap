@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.edit.comm.util.operate;
 
+import io.netty.util.internal.MpscLinkedQueueNode;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +20,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -32,13 +35,14 @@ public class AdLinkOperateUtils {
 	/*
 	 * 添加link获取下一条连接的link
 	 */
-	public static boolean getNextLink(List<AdLink> links, int currNodePid,
-			AdLink currLink) throws Exception {
+	public static boolean getNextLink(List<AdLink> links, Map<Integer, AdLink> map) throws Exception {
 		int nextNodePid = 0;
+		int currNodePid = map.keySet().iterator().next();
+		AdLink currLink = map.get(map.keySet().iterator().next());
 		if (currNodePid == currLink.getsNodePid()) {
-			nextNodePid = currLink.getsNodePid();
-		} else {
 			nextNodePid = currLink.geteNodePid();
+		} else {
+			nextNodePid = currLink.getsNodePid();
 		}
 		for (AdLink link : links) {
 			if (link.getPid() == currLink.getPid()) {
@@ -46,8 +50,8 @@ public class AdLinkOperateUtils {
 			}
 			if (link.getsNodePid() == nextNodePid
 					|| link.geteNodePid() == nextNodePid) {
-				currNodePid = nextNodePid;
-				currLink = link;
+				map.clear();
+				map.put(nextNodePid, link);
 				return true;
 			}
 		}

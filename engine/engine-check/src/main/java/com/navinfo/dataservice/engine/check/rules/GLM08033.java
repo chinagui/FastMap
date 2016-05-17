@@ -17,7 +17,7 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
  * @ClassName: GLM08033
  * @author songdongyan
  * @date 下午3:33:54
- * @Description: GLM08033.java
+ * @Description: GLM08033	交限	错误的交限进入线或退出线		路口交限的进入线和退出线不能为交叉口link	路口交限的进入线或退出线为交叉口link	1
  */
 public class GLM08033 extends baseRule {
 
@@ -32,18 +32,27 @@ public class GLM08033 extends baseRule {
 		for(IRow obj:checkCommand.getGlmList()){
 			if(obj instanceof RdRestriction ){
 				RdRestriction rdRestriction = (RdRestriction)obj;
-				linkPids.add(rdRestriction.getInLinkPid());
-								
+				List<Integer> linkPidsTmp = new ArrayList<Integer>();
+				boolean isCrossRelate=false;				
 				for(IRow deObj:rdRestriction.getDetails()){
 					if(deObj instanceof RdRestrictionDetail){
 						RdRestrictionDetail rdRestrictionDetail = (RdRestrictionDetail)deObj;
-						linkPids.add(rdRestrictionDetail.getOutLinkPid());
+						if(rdRestrictionDetail.getRelationshipType()==1){
+							isCrossRelate=true;
+							linkPidsTmp.add(rdRestrictionDetail.getOutLinkPid());
+						}
 					}
 				}
-			}
-							
+				if(isCrossRelate){
+					linkPidsTmp.add(rdRestriction.getInLinkPid());
+					linkPids.addAll(linkPidsTmp);
+					linkPidsTmp=new ArrayList<Integer>(); 
+					}
+			}							
 		}
-		String sql = "select link_pid from rd_cross_link where link_pid in ("+StringUtils.join(linkPids, ",")+")";
+		//为0说明没有符合条件的路口交限，不进行后续查询
+		if(linkPids.size()==0){return;}
+		String sql = "select link_pid from rd_link_form where FORM_OF_WAY = 50 and link_pid in ("+StringUtils.join(linkPids, ",")+")";
 				
 		PreparedStatement pstmt = getConn().prepareStatement(sql);
 

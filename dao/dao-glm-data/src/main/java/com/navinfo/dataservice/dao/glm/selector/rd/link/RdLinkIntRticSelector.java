@@ -40,7 +40,7 @@ public class RdLinkIntRticSelector implements ISelector {
 			throws Exception {
 
 		StringBuilder sb = new StringBuilder(
-				"select * from rd_link_int_rtic where link_pid =:1 ");
+				"select * from rd_link_int_rtic where link_pid =:1 and u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");

@@ -320,5 +320,44 @@ public class GeometryUtils {
 		}
 		return Math.abs(a / 2.0);
 	}
+	
+	public static JSONObject connectLinks(List<Geometry> geoms)
+			throws ParseException {
+		JSONObject json = new JSONObject();
 
+		json.put("type", "LineString");
+
+		Geometry geom = geoms.get(0);
+
+		for (int i = 1; i < geoms.size(); i++) {
+			geom = geom.union(geoms.get(i));
+		}
+
+		Coordinate[] cs = geom.getCoordinates();
+
+		List<double[]> ps = new ArrayList<double[]>();
+
+		Coordinate last = null;
+		
+		for (Coordinate c : cs) {
+			
+			if(c.equals(last)){
+				continue;
+			}
+			
+			last = c;
+			
+			double[] p = new double[2];
+
+			p[0] = c.x;
+
+			p[1] = c.y;
+
+			ps.add(p);
+		}
+
+		json.put("coordinates", ps);
+
+		return json;
+	}
 }

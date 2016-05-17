@@ -161,6 +161,15 @@ public final class MercatorProjection {
 	public static double pixelXToLongitude(double pixelX, byte zoom) {
 		return 360 * ((pixelX / ((long) Tile.TILE_SIZE << zoom)) - 0.5);
 	}
+	
+	public static double pixelXToLongitude(int x, double pixelX, byte zoom) {
+		// 获取左下角X像素坐标
+		double pixXMin = tileXToPixelX(x);
+
+		pixXMin = pixXMin + pixelX;
+
+		return pixelXToLongitude(pixXMin, zoom);
+	}
 
 	/**
 	 * Convert a pixel X coordinate to the tile X number.
@@ -211,6 +220,15 @@ public final class MercatorProjection {
 	public static double pixelYToLatitude(double pixelY, byte zoom) {
 		double y = 0.5 - (pixelY / ((long) Tile.TILE_SIZE << zoom));
 		return 90 - 360 * Math.atan(Math.exp(-y * 2 * Math.PI)) / Math.PI;
+	}
+	
+	public static double pixelYToLatitude(int y, double pixelY, byte zoom) {
+		// 获取左下角Y像素坐标
+		double pixYMin = tileYToPixelY(y);
+
+		pixYMin = pixYMin + pixelY;
+
+		return pixelYToLatitude(pixYMin, zoom);
 	}
 
 	/**
@@ -350,7 +368,7 @@ public final class MercatorProjection {
 
 		return sb.toString();
 	}
-
+	
 	public static String getWktWithGap(int x, int y, int z, int gap) {
 		StringBuilder sb = new StringBuilder("POLYGON ((");
 
@@ -426,7 +444,11 @@ public final class MercatorProjection {
 	}
 	
 	public static void main(String[] args) {
-
+		
+		System.out.println(pixelXToLongitude(863554, 54, (byte)20));
+		
+		System.out.println(pixelYToLatitude(396899, 109, (byte)20));
+		
 		System.out.println(tile2Wkt(107943, 49613, (byte) 17));
 		
 		System.out.println(getWktWithGap(107943, 49613, 17,2));

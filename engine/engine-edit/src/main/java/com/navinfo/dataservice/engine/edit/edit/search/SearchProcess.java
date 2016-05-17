@@ -18,6 +18,7 @@ import com.navinfo.dataservice.dao.glm.selector.ad.zone.AdAdminTreeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.search.rd.utils.RdLinkSearchUtils;
 
 import net.sf.json.JSONArray;
@@ -216,7 +217,7 @@ public class SearchProcess {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
 				}
-				if (condition.containsKey("nodePidDir")){
+				else if (condition.containsKey("nodePidDir")){
 					int cruuentNodePidDir = condition.getInt("nodePidDir");
 					int cuurentLinkPid =  condition.getInt("linkPid");
 					RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(conn);
@@ -224,6 +225,23 @@ public class SearchProcess {
 					for (RdLink link : links) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
+				}
+				else if (condition.containsKey("linkPids")){
+					JSONArray linkPids = condition.getJSONArray("linkPids");
+					
+					List<Integer> pids = new ArrayList<Integer>();
+					
+					for(int i=0;i<linkPids.size();i++){
+						int pid = linkPids.getInt(i);
+						
+						if(!pids.contains(pid)){
+							pids.add(pid);
+						}
+					}
+					
+					RdLinkSelector selector = new RdLinkSelector(this.conn);
+					
+					array = selector.loadGeomtryByLinkPids(pids);
 				}
 
 				break;
@@ -274,40 +292,15 @@ public class SearchProcess {
 
 		}
 	}
-
-	public List<RdLink> searchLinkByNodePid(int nodePid) throws Exception {
-		try {
-
-			RdLinkSelector selector = new RdLinkSelector(this.conn);
-
-			List<RdLink> links = selector.loadByNodePid(nodePid, false);
-
-			return links;
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-
-		}
-	}
-
-	public RdCross searchCrossByNodePid(int nodePid) throws Exception {
-		try {
-
-			RdCrossSelector selector = new RdCrossSelector(this.conn);
-
-			RdCross cross = selector.loadCrossByNodePid(nodePid, false);
-
-			return cross;
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-		}
-	}
-
+//	public static void main(String[] args) throws Exception {
+//		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+//		SearchProcess p = new SearchProcess(conn);
+//		
+//		JSONObject condition = new JSONObject();
+//		JSONArray pid = new JSONArray();
+//		pid.add(13474060);
+//		pid.add(13474059);
+//		condition.put("linkPids", pid);
+//		System.out.println(p.searchDataByCondition(ObjType.RDLINK, condition));
+//	}
 }

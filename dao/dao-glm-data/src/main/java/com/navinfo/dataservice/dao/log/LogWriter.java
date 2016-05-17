@@ -708,7 +708,9 @@ public class LogWriter {
 			}
 		}
 
-		operations.add(geoLogOperation);
+		if(geoLogOperation.getDetails().size()>0){
+			operations.add(geoLogOperation);
+		}
 
 		// 计算修改的对象的改后grid
 		for (LogOperation op : operations) {

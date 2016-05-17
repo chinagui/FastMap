@@ -105,6 +105,11 @@ public class GlmGridCalculator {
 	public GlmGridRefInfo getGlmGridRefInfo(String tableName){
 		return getGlmGridRefInfoMap().get(tableName);
 	}
+	public String[] calc(String tableName,String pidColName,long pid,Connection dataConn)throws SQLException{
+		String sql = assembleQueryGeoSql(tableName,pidColName,pid);
+		String[] grids = run.query(dataConn, sql, new SingleRowGridHandler(tableName));
+		return grids;
+	}
 	/**
 	 * 给定表的row_id查询所属grid
 	 * @param tableName
@@ -177,6 +182,22 @@ public class GlmGridCalculator {
 		sb.append(" AND P.ROW_ID = HEXTORAW('");
 		sb.append(rowId);
 		sb.append("')");
+		return sb.toString();
+		
+	}
+
+	/**
+	 * 
+	 * @param type:rowid/log
+	 * @return
+	 */
+	private String assembleQueryGeoSql(String tableName,String pidColName,long pid){
+		StringBuilder sb = new StringBuilder();
+		GlmGridRefInfo refInfo = getGlmGridRefInfoMap().get(tableName);
+		sb.append(refInfo.getEditQuerySql());
+		sb.append(" AND P.");
+		sb.append(pidColName);
+		sb.append(" = "+pid);
 		return sb.toString();
 		
 	}

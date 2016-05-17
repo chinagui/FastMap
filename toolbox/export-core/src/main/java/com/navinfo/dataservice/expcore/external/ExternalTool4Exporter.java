@@ -185,17 +185,8 @@ public class ExternalTool4Exporter {
 					log.debug(subValue);
 					for(String table:subValue.split("\\];\\[")){
 						String[] arr = table.split(",");
-						GlmTable glmTable = glm.getEditTables().get(arr[0]);
-						String pidColName = null;
-						for(GlmColumn c:glmTable.getPks()){
-							if(c.getName().contains("ID")&&c.getDataType().equals(GlmColumn.TYPE_NUMBER)){
-								pidColName = c.getName();
-								break;
-							}
-						}
-						String getRowIdSql = "SELECT ROW_ID FROM "+glmTable.getName()+ " WHERE "+pidColName+"=?";
-						String rowid = runner.queryForString(conn, getRowIdSql, Integer.valueOf(arr[1]));
-						String[] grids = calculator.calc(glmTable.getName(), rowid, conn);
+						String pidColName = glm.getTablePidColName(arr[0]);
+						String[] grids = calculator.calc(arr[0], pidColName,Long.valueOf(arr[1]), conn);
 						for(String grid:grids){
 							stmt.setString(1, entry.getKey());
 							stmt.setLong(2, Long.valueOf(grid));

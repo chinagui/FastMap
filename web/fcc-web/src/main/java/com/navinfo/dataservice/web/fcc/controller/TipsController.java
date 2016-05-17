@@ -182,7 +182,7 @@ public class TipsController {
 
 			JSONArray grids = jsonReq.getJSONArray("grids");
 
-			op.export(grids, date, filePath, uuid + ".txt");
+			op.export(grids, date, filePath, "tips.txt");
 
 			String zipFileName = uuid + ".zip";
 

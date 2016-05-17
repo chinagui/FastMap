@@ -126,6 +126,24 @@ public class CompPolylineUtilTest {
 	}
 	/**
 	 * 情景：
+	 * 右侧切割
+	 */
+	@Test
+	public void cut_001_01(){
+		try{
+
+			LineString ls1=(LineString)JtsGeometryUtil.read("LINESTRING (116.02564 39.76918, 116.02564 39.769, 116.02603 39.76899)");
+			LineString ls2=(LineString)JtsGeometryUtil.read("LINESTRING (116.02603 39.76899, 116.02637 39.76903)");
+			LineString ls3=(LineString)JtsGeometryUtil.read("LINESTRING (116.02601 39.76917, 116.02603 39.76889)");
+			Point fromPoint = (Point)JtsGeometryUtil.read("POINT (116.02601 39.76917)");
+			LineString result = CompPolylineUtil.cut(ls1, ls2, ls3, fromPoint, true);
+			System.out.println(result.toText());
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * 情景：
 	 * 左侧切割
 	 */
 	@Test

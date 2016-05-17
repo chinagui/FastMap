@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
@@ -26,7 +27,7 @@ public class AssembleFullCopySql{
 	public AssembleFullCopySql() {
 	}
 
-	public List<ExpSQL> assemble(String dbLinkName, OracleSchema sourceSchema, OracleSchema targetSchema, String gdbVersion,List<String> specificTables,List<String> excludedTables) throws Exception {
+	public List<ExpSQL> assemble(String dbLinkName, OracleSchema sourceSchema, OracleSchema targetSchema, String gdbVersion,List<String> specificTables,List<String> excludedTables,Map<String,String> tableRenames) throws Exception {
 		try {
 			List<String> tables = null;
 			if(specificTables!=null){
@@ -43,7 +44,7 @@ public class AssembleFullCopySql{
 			
 
 			// 自动构造所有表复制的sql
-			List<ExpSQL> expSQLs = assembleFastCopySql(dbLinkName, sourceSchema,tables);
+			List<ExpSQL> expSQLs = assembleFastCopySql(dbLinkName, sourceSchema,tables,tableRenames);
 			return expSQLs;
 
 		} catch (Exception e) {
@@ -62,7 +63,7 @@ public class AssembleFullCopySql{
 	 * @throws java.sql.SQLException
 	 */
 	protected List<ExpSQL> assembleFastCopySql(final String dbLinkName, OracleSchema sourceSchema,
-			List<String> tables) throws Exception {
+			List<String> tables,Map<String,String> tableRenames) throws Exception {
 		Connection conn=null;
 		List<ExpSQL> expSQLs = new ArrayList<ExpSQL>();
 		try {
@@ -74,7 +75,7 @@ public class AssembleFullCopySql{
 				// expSQL.setSql("create table " + tableName +
 				// " as select * from " +
 				// tableName + "@" + dbLinkName);
-				expSQL.setSql("INSERT /*+ append */ INTO " + tableName + " select "+columnSelect+" from " + tableName + "@" + dbLinkName);
+				expSQL.setSql("INSERT /*+ append */ INTO " + tableRenames.get(tableName) + " select "+columnSelect+" from " + tableName + "@" + dbLinkName);
 				expSQLs.add(expSQL);
 			}
 		} catch (Exception e) {

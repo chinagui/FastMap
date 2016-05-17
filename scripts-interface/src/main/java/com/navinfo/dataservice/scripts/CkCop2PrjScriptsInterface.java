@@ -12,6 +12,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.springframework.util.Assert;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.expcore.external.ExternalTool4Exporter;
@@ -34,6 +35,11 @@ public class CkCop2PrjScriptsInterface {
 			Assert.notNull(sourceDbId,"sourceDbId不能为空");
 			String targetDbId = (String)request.get("targetDbId");
 			Assert.notNull(targetDbId,"targetDbId不能为空");
+			String gdbVersion = (String)request.get("gdbVersion");
+			Assert.notNull(gdbVersion,"gdbVersion不能为空");
+			String grids = (String)request.get("grids");
+			grids = StringUtils.removeBlankChar(grids);
+			Assert.notNull(grids,"grids不能为空");
 			
 			//先批md5值
 			OracleSchema sourceDb = (OracleSchema)new DbManager().getDbById(Integer.valueOf(sourceDbId));
@@ -42,23 +48,17 @@ public class CkCop2PrjScriptsInterface {
 			//generate ck_result_object
 			ExternalTool4Exporter.generateCkResultObject(sourceDb);
 			response.put("ck_result_object", "success");
-			
-			
-			String gdbVersion = "240+";
-			JSONObject expRequest = new JSONObject();
-			expRequest.put("exportMode", "full_copy");
-			expRequest.put("specificTables", "NI_VAL_EXCEPTION,CK_RESULT_OBJECT");
-			expRequest.put("dataIntegrity", "false");
-			expRequest.put("sourceDbId", sourceDbId);
-			expRequest.put("gdbVersion", gdbVersion);
-			expRequest.put("targetDbId", targetDbId);
-			//
-			JSONObject expResponse = ToolScriptsInterface.exportData(expRequest);
-			response.put("exp", expResponse);
+			//generate ni_val_exception_grid
+			ExternalTool4Exporter.generateCkResultGrid(sourceDb,gdbVersion);
+			response.put("ni_val_exception_grid", "success");
+
+			OracleSchema targetDb = (OracleSchema)new DbManager().getDbById(Integer.valueOf(targetDbId));
+			//将在grids范围导出到目标
+			ExternalTool4Exporter.selectLogGrids(sourceDb,targetDb,grids.split(","));
+			response.put("exp", "success");
 			//去重
 			List<String> tables = new ArrayList<String>();
 			tables.add("NI_VAL_EXCEPTION");
-			OracleSchema targetDb = (OracleSchema)new DbManager().getDbById(Integer.valueOf(targetDbId));
 			RemoveDuplicateRow.removeDup(tables, targetDb);
 			response.put("removeDup", "success");
 
@@ -81,7 +81,8 @@ public class CkCop2PrjScriptsInterface {
 		try{
 			JSONObject request=null;
 			JSONObject response = null;
-			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
+//			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
+			String dir = "F:\\Fm_Projects_Doc\\scripts\\";
 			request = ToolScriptsInterface.readJson(dir+"request"+File.separator+"cop_xcopy_exception.json");
 			response = distribute(request);
 			ToolScriptsInterface.writeJson(response,dir+"response"+File.separator+"cop_xcopy_exception.json");

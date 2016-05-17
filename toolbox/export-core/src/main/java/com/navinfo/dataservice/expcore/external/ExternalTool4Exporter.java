@@ -17,10 +17,16 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.datahub.glm.Glm;
 import com.navinfo.dataservice.datahub.glm.GlmCache;
+import com.navinfo.dataservice.datahub.glm.GlmColumn;
+import com.navinfo.dataservice.datahub.glm.GlmGridCalculator;
+import com.navinfo.dataservice.datahub.glm.GlmGridCalculatorFactory;
 import com.navinfo.dataservice.datahub.glm.GlmTable;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.DbLinkCreator;
+import com.ctc.wstx.util.StringUtil;
+import com.navinfo.dataservice.commons.util.RandomUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 
 
@@ -142,6 +148,104 @@ public class ExternalTool4Exporter {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	/**
+	 * 计算并更新NI_VAL_EXCEPTION表的子表NI_VAL_EXCEPTION_GRID
+	 * @param schema
+	 * @throws SQLException
+	 */
+	public static void generateCkResultGrid(OracleSchema schema,String gdbVersion)throws SQLException{
+		Connection conn=null;
+		PreparedStatement stmt = null;
+		try{
+			log.debug("开始计算并更新NI_VAL_EXCEPTION_GRID表");
+			conn = schema.getDriverManagerDataSource().getConnection();
+			String sql = "SELECT RESERVED,TARGETS FROM NI_VAL_EXCEPTION";
+			String insertSql = "INSERT INTO NI_VAL_EXCEPTION_GRID (CK_RESULT_ID,GRID_ID) VALUES (?,?)";
+			QueryRunner runner = new QueryRunner();
+			Map<String,String> rows = runner.query(conn, sql, new ResultSetHandler<Map<String,String>>(){
+
+				@Override
+				public Map<String,String> handle(ResultSet rs) throws SQLException {
+					Map<String,String> rows= new HashMap<String,String>();
+					while(rs.next()){
+						rows.put(rs.getString("RESERVED"),DataBaseUtils.clob2String((CLOB)rs.getClob("TARGETS")));
+					}
+					return rows;
+				}
+				
+			});
+			Glm glm = GlmCache.getInstance().getGlm(gdbVersion);
+			GlmGridCalculator calculator = GlmGridCalculatorFactory.getInstance().create(gdbVersion);
+			int count=0;
+			stmt = conn.prepareStatement(insertSql);
+			for(Map.Entry<String, String> entry:rows.entrySet()){
+				String value = StringUtils.removeBlankChar(entry.getValue());
+				if(value!=null&&value.length()>2){
+					String subValue = value.substring(1, value.length()-1);
+					log.debug(subValue);
+					for(String table:subValue.split("\\];\\[")){
+						String[] arr = table.split(",");
+						GlmTable glmTable = glm.getEditTables().get(arr[0]);
+						String pidColName = null;
+						for(GlmColumn c:glmTable.getPks()){
+							if(c.getName().contains("ID")&&c.getDataType().equals(GlmColumn.TYPE_NUMBER)){
+								pidColName = c.getName();
+								break;
+							}
+						}
+						String getRowIdSql = "SELECT ROW_ID FROM "+glmTable.getName()+ " WHERE "+pidColName+"=?";
+						String rowid = runner.queryForString(conn, getRowIdSql, Integer.valueOf(arr[1]));
+						String[] grids = calculator.calc(glmTable.getName(), rowid, conn);
+						for(String grid:grids){
+							stmt.setString(1, entry.getKey());
+							stmt.setLong(2, Long.valueOf(grid));
+							stmt.addBatch();
+						    count++;
+						    if (count % 1000 == 0) {
+								stmt.executeBatch();
+								stmt.clearBatch();
+							}
+						}
+					}
+				}
+			}
+			//剩余不到1000的执行掉
+			stmt.executeBatch();
+			stmt.clearBatch();
+			log.debug("开始计算并更新NI_VAL_EXCEPTION_GRID表完毕，共写入了"+count+"条记录");
+		}catch (SQLException e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new SQLException("开始计算并更新NI_VAL_EXCEPTION_GRID表时出现错误，原因："+e.getMessage(),e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	public static void selectLogGrids(OracleSchema srcSchema,OracleSchema targetSchema,String[] grids)throws Exception{
+		Connection conn=null;
+		try{
+			conn = targetSchema.getDriverManagerDataSource().getConnection();
+			//create db link
+			DbLinkCreator cr = new DbLinkCreator();
+			String dbLinkName = targetSchema.getDbUserName()+"_"+RandomUtil.nextNumberStr(4);
+			cr.create(dbLinkName, false, targetSchema.getDriverManagerDataSource(), srcSchema.getDbUserName(), srcSchema.getDbUserPasswd(), srcSchema.getDbServer().getIp(), String.valueOf(srcSchema.getDbServer().getPort()), srcSchema.getDbServer().getServiceName());
+			
+			QueryRunner runner = new QueryRunner();
+			String sql = "INSERT INTO NI_VAL_EXCEPTION SELECT T.* FROM NI_VAL_EXCEPTION T,NI_VAL_EXCEPTION_GRID G WHERE T.RESERVED=G.CK_RESULT_ID AND G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(grids,",")+")";
+			runner.execute(conn, sql);
+			sql = "INSERT INTO CK_RESULT_OBJECT SELECT T.* FROM CK_RESULT_OBJECT T,NI_VAL_EXCEPTION_GRID G WHERE T.CK_RESULT_ID=G.CK_RESULT_ID AND G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(grids,",")+")";
+			runner.execute(conn, sql);
+			sql = "INSERT INTO NI_VAL_EXCEPTION_GRID SELECT T.* FROM NI_VAL_EXCEPTION_GRID T WHERE T.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(grids,",")+")";
+			runner.execute(conn, sql);
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("搬检查结果错误，原因："+e.getMessage(),e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
 	public static void removeDupRecord(String gdbVersion,OracleSchema schema,Set<String> tables)throws Exception{
 		Connection conn=null;
 		try{

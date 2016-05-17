@@ -59,7 +59,7 @@ public class FlushGdb {
 	private static List<String> logDetails = new ArrayList<String>();
 
 	/**
-	 * 检查结果入项目库
+	 * 批处理结果入项目库
 	 * @param args
 	 * @return
 	 */
@@ -67,7 +67,7 @@ public class FlushGdb {
 		FlushResult result = new FlushResult();
 
 		try {
-			result = flush(args);
+			result = flushByGrids(args);
 
 			sourceConn.commit();
 
@@ -87,29 +87,29 @@ public class FlushGdb {
 		return result;
 	}
 
-//	public static FlushResult fmgdb2gdbg(String[] args) {
-//
-//		FlushResult result = new FlushResult();
-//		try {
-//			result = flushNoMesh(args);
-//
-//			sourceConn.commit();
-//
-//			destConn.commit();
-//
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			try {
-//				sourceConn.rollback();
-//
-//				destConn.rollback();
-//			} catch (Exception e1) {
-//				e1.printStackTrace();
-//			}
-//		}
-//
-//		return result;
-//	}
+	public static FlushResult fmgdb2gdbg(String[] args) {
+
+		FlushResult result = new FlushResult();
+		try {
+			result = flushAll(args);
+
+			sourceConn.commit();
+
+			destConn.commit();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			try {
+				sourceConn.rollback();
+
+				destConn.rollback();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		}
+
+		return result;
+	}
 
 	/**
 	 * 履历刷库，传入截止时间和grids参数
@@ -120,7 +120,7 @@ public class FlushGdb {
 
 		FlushResult result = new FlushResult();
 		try {
-			result = flush(args);
+			result = flushByGrids(args);
 
 			sourceConn.commit();
 
@@ -313,8 +313,27 @@ public class FlushGdb {
 			throw new LockException("锁定要准备回库的履历时出现错误:"+e.getMessage(),e);
 		}
 	}
+	private static String prepareAndLockLog(String tempTable,String stopTime)throws LockException{
+		//
+		//Set<String> logOp
+		try{
+			int logOperationCount = 0;
+			//select by conditions
+			logOperationCount+=prepareLog(stopTime,null,tempTable);
+			//全部回只是少了一步扩履历步骤
+			//锁定
+			lockPreparedLog(tempTable,logOperationCount);
+			sourceConn.commit();
+			return tempTable;
+		}catch(LockException e){
+			throw e;
+		}
+		catch(SQLException e){
+			throw new LockException("锁定要准备回库的履历时出现错误:"+e.getMessage(),e);
+		}
+	}
 
-	public static FlushResult flush(String[] args) {
+	public static FlushResult flushByGrids(String[] args) {
 
 		FlushResult flushResult = new FlushResult();
 		Scanner scanner = null;
@@ -341,7 +360,7 @@ public class FlushGdb {
 			
 			prepareAndLockLog(tempTable,stopTime,grids);
 
-			String logQuerySql = "SELECT L.* FROM LOG_DETAIL L,"+tempTable+" T WHERE L.OP_ID=T.OP_ID";
+			String logQuerySql = "SELECT L.* FROM LOG_DETAIL L,"+tempTable+" T WHERE L.OP_ID=T.OP_ID ORDER BY T.OP_DT";
 
 			if(flushData(flushResult,logQuerySql)){
 
@@ -368,6 +387,54 @@ public class FlushGdb {
 			}
 		}finally{
 			if(scanner!=null)scanner.close();
+			dropTempTable(tempTable);
+		}
+
+		return flushResult;
+	}
+
+	public static FlushResult flushAll(String[] args) {
+
+		FlushResult flushResult = new FlushResult();
+		String tempTable = null;
+		try {
+
+			props = new Properties();
+
+			props.load(new FileInputStream(args[0]));
+
+			String stopTime = props.getProperty("stopTime");
+
+			init();
+			tempTable = createTempTable();
+			prepareAndLockLog(tempTable,stopTime);
+
+			String logQuerySql = "SELECT L.* FROM LOG_DETAIL L,"+tempTable+" T WHERE L.OP_ID=T.OP_ID ORDER BY T.OP_DT";
+
+			if(flushData(flushResult,logQuerySql)){
+
+				moveLog(flushResult,tempTable);
+
+				updateLogCommitStatus(tempTable);
+				flushResult.setResultMsg("Success");
+			}else{
+				flushResult.setResultMsg("Fail");
+				throw new Exception("刷数据失败。");
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			try {
+				sourceConn.rollback();
+
+				destConn.rollback();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+			if(StringUtils.isNotEmpty(tempTable)){
+				unlockPreparedLog(tempTable);
+			}
+		}finally{
 			dropTempTable(tempTable);
 		}
 

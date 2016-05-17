@@ -133,7 +133,6 @@ public class OpTopo implements IOperation {
 			else{
 				ja2.add(jaPS);
 			}
-
 			if (i == jaLink.size() - 2) {
 				ja2.add(jaPE);
 			}

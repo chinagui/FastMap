@@ -104,10 +104,10 @@ public class OpTopo implements IOperation {
 	    		if (i == jaLink.size() - 2) {
 					ja2.add(jaPE);
 				}
-	    		if (!hasFound) {
-	    			throw new Exception("打断的点不在打断LINK上");
-	    		}
-	    }
+	    		
+	    }if (!hasFound) {
+			throw new Exception("打断的点不在打断LINK上");
+		}
 	    	
 	    this.createLinksForADNode(adLink,ja1,ja2,result);
 	    

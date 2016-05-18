@@ -3,8 +3,10 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.updowndepartlink
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.text.StyledEditorKit.BoldAction;
 
@@ -102,7 +104,7 @@ public class Operation implements IOperation {
 			}else{
 				nextLink = command.getLinks().get(i+1);
 			}
-			downLists.addAll(this.createUpRdLink(departLink, result,
+			downLists.addAll(this.createDownRdLink(departLink, result,
 					currentLink, nextLink, map));
 			
 		}// 生成分离后左线
@@ -116,10 +118,13 @@ public class Operation implements IOperation {
 			}else{
 				nextLink = command.getLinks().get(lines.length-i);
 			}
-			upLists.addAll(this.createDownRdLink(departLink, result,
+			upLists.addAll(this.createUpRdLink(departLink, result,
 					currentLink, nextLink, map));
 		}
-		this.createAdjacentLines(lines,snode,eNode,map,result);
+		//维护挂接线信息
+		this.updateAdjacentLines(lines,map,result);
+		//创建内部生成线
+		this.createInnerLines(lines,map,result);
 		// 属性维护
 		
 		this.RelationLink(upLists, result, 0);
@@ -127,15 +132,67 @@ public class Operation implements IOperation {
 
 	}
 	/**
+	 * 
+	 * @param lines
+	 * @param map
+	 * @param result
+	 * @throws Exception
+	 */
+	private void createInnerLines(LineString[] lines,
+			Map<Geometry, RdNode> map, Result result) throws Exception {
+		RdLinkSelector nodeSelector = new RdLinkSelector(conn);
+		int currentPid = 0;
+		Set<Boolean> flagBooleans =new HashSet<Boolean>();
+		for(int i =0;i < command.getLinkPids().size() -1 ;i++){
+			RdLink currentLink = command.getLinks().get(i);
+			RdLink nextLink = command.getLinks().get(i+1);
+			currentPid = this.getIntersectPid(currentLink, nextLink);
+			List<RdLink> links = nodeSelector.loadByDepartNodePid(
+					currentPid, currentLink.getPid(),
+					nextLink.getPid(), true);
+		    for(RdLink link :links){
+		    	if(flagBooleans.size() > 1){
+		    		break;
+		    	}
+		    	flagBooleans.add(CompPolylineUtil.isRightSide(JtsGeometryUtil.createLineString(currentLink.getGeometry().getCoordinates()), JtsGeometryUtil.createLineString(nextLink.getGeometry().getCoordinates()), JtsGeometryUtil.createLineString(link.getGeometry().getCoordinates())));
+		    }
+		   if (flagBooleans.size() >1 ){
+			   this.createInnerLine(lines[i],lines[lines.length-i],map,result);
+		   }
+		}
+		
+	}
+	/***
+	 * 
+	 * @param lineUpString
+	 * @param lineDownString
+	 * @param map
+	 * @param result
+	 * @throws Exception 
+	 */
+
+	private void createInnerLine(LineString lineDownString, LineString lineUpString,
+			Map<Geometry, RdNode> map, Result result) throws Exception {
+		Coordinate[] coordinates = new Coordinate[2];
+		Coordinate sCoordinate = lineDownString.getCoordinates()[lineDownString.getCoordinates().length-1];
+		Coordinate eCoordinate = lineUpString.getCoordinates()[0];
+		RdNode sNode = map.get(JtsGeometryUtil.createPoint(sCoordinate));
+		RdNode eNode = map.get(JtsGeometryUtil.createPoint(eCoordinate));
+		RdLink innerLink =  new RdLink();
+		innerLink.setGeometry(JtsGeometryUtil.createLineString(coordinates));
+		RdLinkOperateUtils.addRdLink(sNode, eNode, innerLink,
+				innerLink, result);
+		
+	}
+
+	/**
 	 * 维护挂接的线
 	 * @param lines 上下线分离后的线
-	 * @param snode 起始点
-	 * @param enode 终止点
 	 * @param map   
 	 * @param result
 	 * @throws Exception
 	 */
-	private void createAdjacentLines(LineString[] lines,RdNode snode,RdNode enode, Map<Geometry, RdNode> map,Result result ) throws Exception {
+	private void updateAdjacentLines(LineString[] lines, Map<Geometry, RdNode> map,Result result ) throws Exception {
 		RdLinkSelector nodeSelector = new RdLinkSelector(conn);
 		Point currentPoint =null;
 		int currentPid = 0;
@@ -324,37 +381,27 @@ public class Operation implements IOperation {
 	private List<RdLink> createUpRdLink(RdLink departLink, Result result,
 			RdLink sourceLink, RdLink sourceNextLink, Map<Geometry, RdNode> map)
 			throws Exception {
-		RdLinkSelector nodeSelector = new RdLinkSelector(conn);
+		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 		// 查找分离前link起始点上挂接的link
-		List<RdLink> slinks = nodeSelector.loadByDepartNodePid(
-				sourceLink.getsNodePid(), sourceLink.getPid(),
-				sourceNextLink.getPid(), true);
-		List<RdLink> elinks = nodeSelector.loadByDepartNodePid(
-				sourceLink.geteNodePid(), sourceLink.getPid(),
-				sourceNextLink.getPid(), true);
 		RdNode sNode = null;
 		RdNode eNode = null;
+		if(sourceLink.getPid() == sourceNextLink.getPid()){
+			return this.createEndRdLink(departLink, result, sourceLink, sourceNextLink, map);
+		}
+		List<RdLink> links = linkSelector.loadByDepartNodePid
+				(this.getIntersectPid(sourceLink, sourceNextLink), sourceLink.getPid(), sourceNextLink.getPid(), true);
 		// 如果对应起点没有挂接的link
 		//对于上(左)线需要生成新的node
-		if (slinks.size() <= 0) {
+		if (links.size() <= 0) {
 			sNode = this.getNodeByDepartGeo(departLink, 1,map ,result);
+			eNode = this.getNodeByDepartGeo(departLink, 0, map, result);
 		}
 		//如果对应起点有挂接的link
 		//且没有下线挂接的link 需要修改原有node的属性
 		//如果至少有一条下挂的link对于上(左)线需要生成新的node
 		else {
-			sNode= this.getDepartRdlinkNode(slinks, departLink, sourceLink, sourceNextLink, 1,1, map, result);
-		}
-		// 如果对应终点没有挂接的link
-		//对于上(左)线需要生成新的node
-		if (elinks.size() <= 0) {
-			eNode = this.getNodeByDepartGeo(departLink, 0, map, result);
-		} 
-		//如果对应终点有挂接的link
-		//且没有下线挂接的link 需要修改原有node的属性
-		//如果至少有一条下挂的link对于上(左)线需要生成新的node
-		else {
-			eNode = this.getDepartRdlinkNode(elinks, departLink, sourceLink, sourceNextLink,0,1, map, result);
+			sNode = this.getDepartRdlinkNode(links, departLink, sourceLink, sourceNextLink, 1,1, map, result);
+			eNode = this.getDepartRdlinkNode(links, departLink, sourceLink, sourceNextLink,0,1, map, result);
 		}
 		return RdLinkOperateUtils.addRdLink(sNode, eNode, departLink,
 				sourceLink, result);
@@ -374,28 +421,48 @@ public class Operation implements IOperation {
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 
 		// 查找分离前link起始点上挂接的link
-		List<RdLink> slinks = linkSelector.loadByNodePid(
-				sourceLink.geteNodePid(), true);
-		List<RdLink> elinks = linkSelector.loadByNodePid(
-				sourceLink.getsNodePid(), true);
 		RdNode sNode = null;
 		RdNode eNode = null;
+		if(sourceLink.getPid() == sourceNextLink.getPid()){
+			return this.createEndRdLink(departLink, result, sourceLink, sourceNextLink, map);
+		}
+		List<RdLink> links = linkSelector.loadByDepartNodePid
+				(this.getIntersectPid(sourceLink, sourceNextLink), sourceLink.getPid(), sourceNextLink.getPid(), true);
 		// 如果对应起点上
-		if (slinks.size() <= 0) {
+		if (links.size() <= 0) {
 			sNode = this.updateAdNodeForTrack(departLink,
 					sourceLink.getsNodePid(),map, result, 1);
-
-		} else {
-			sNode = this.getDepartRdlinkNode(slinks, departLink, sourceLink, sourceNextLink, 1, 0, map, result);
-		}
-		if (elinks.size() <= 0) {
 			eNode = this.updateAdNodeForTrack(departLink,
 					sourceLink.geteNodePid(),map, result, 0);
+
 		} else {
-			eNode=  this.getDepartRdlinkNode(elinks, departLink, sourceLink, sourceNextLink, 0, 0, map, result);
+			sNode = this.getDepartRdlinkNode(links, departLink, sourceLink, sourceNextLink, 1, 0, map, result);
+			eNode=  this.getDepartRdlinkNode(links, departLink, sourceLink, sourceNextLink, 0, 0, map, result);
 		}
 		return RdLinkOperateUtils.addRdLink(sNode, eNode, departLink,
 				sourceLink, result);
+	}
+	/**
+	 * 
+	 * @param departLink
+	 * @param result
+	 * @param sourceLink
+	 * @param sourceNextLink
+	 * @param map
+	 * @return
+	 * @throws Exception
+	 */
+	private List<RdLink> createEndRdLink(RdLink departLink, Result result,
+			RdLink sourceLink, RdLink sourceNextLink, Map<Geometry, RdNode> map) throws Exception{
+		RdNode sNode = null;
+		RdNode eNode = null;
+			sNode = map.get(JtsGeometryUtil.createPoint(departLink.getGeometry()
+					.getCoordinates()[0]));
+			eNode = map.get(JtsGeometryUtil.createPoint(departLink.getGeometry()
+					.getCoordinates()[departLink.getGeometry()
+					.getCoordinates().length - 1]));
+			return RdLinkOperateUtils.addRdLink(sNode, eNode, departLink,
+					sourceLink, result);
 	}
 	/*
 	 * @param links 当前sourceLink 起点或终点挂接的link
@@ -412,25 +479,23 @@ public class Operation implements IOperation {
 	private RdNode getDepartRdlinkNode(List<RdLink> links,RdLink departLink,RdLink sourceLink,RdLink sourceNextLink,int flag,int flagUpDown,Map<Geometry, RdNode> map,Result result) throws Exception{
 		List<Boolean> flagBooleans = new ArrayList<Boolean>();
 		RdNode node = null;
+		int currentPid = this.getIntersectPid(sourceLink, sourceNextLink);
 		for (RdLink link : links) {
 			flagBooleans.add(this.isRightSide(sourceLink, sourceNextLink, link));
-		}
-		if(flagBooleans.contains(true)&&flagBooleans.contains(false)){
-			
 		}
 		if (flagBooleans.contains(true)){
 			if(flagUpDown == 1){
 				node =this.getNodeByDepartGeo(departLink, flag,map, result); 
 			}else{
 				node = this.updateAdNodeForTrack(departLink,
-					sourceLink.getsNodePid(), map,result, 1);
+						currentPid, map,result, 1);
 			}
 
 		}
 		if (!flagBooleans.contains(true)){
 			if(flagUpDown == 1){
 				node = this.updateAdNodeForTrack(departLink,
-						sourceLink.getsNodePid(),map, result, 1);
+						currentPid,map, result, 1);
 			}else{
 				node =this.getNodeByDepartGeo(departLink, flag,map, result);
 			}
@@ -477,12 +542,18 @@ public class Operation implements IOperation {
 		if (flag == 1) {
 			geometry = JtsGeometryUtil.createPoint(link.getGeometry()
 					.getCoordinates()[0]);
+			if(map.containsKey(geometry)){
+				return map.get(geometry);
+			}
 			updateContent.put("geometry", GeoTranslator.jts2Geojson(
 					geometry));
 		} else {
 			geometry = JtsGeometryUtil.createPoint(link.getGeometry()
 					.getCoordinates()[link.getGeometry()
 					.getCoordinates().length - 1]);
+			if(map.containsKey(geometry)){
+				return map.get(geometry);
+			}
 			updateContent.put("geometry", GeoTranslator.jts2Geojson(geometry));
 		}
 		if(!map.containsKey(geometry)){
@@ -547,6 +618,12 @@ public class Operation implements IOperation {
 		return CompPolylineUtil.isRightSide(JtsGeometryUtil.createLineString(startLine.getGeometry().getCoordinates()), JtsGeometryUtil.createLineString(endLine.getGeometry().getCoordinates()), 
 	JtsGeometryUtil.createLineString(startLine.getGeometry().getCoordinates()));
 	}
+	/**
+	 *  获取两个link相交的pid
+	 * @param fristLink
+	 * @param secondLink
+	 * @return
+	 */
 	private int getIntersectPid (RdLink fristLink,RdLink secondLink){
 		if(fristLink.getsNodePid()  == secondLink.getsNodePid()||fristLink.getsNodePid()  == secondLink.geteNodePid()){
 			return fristLink.getsNodePid();
@@ -555,7 +632,12 @@ public class Operation implements IOperation {
 		}
 		
 	}
-	
+	/**
+	 * 获取两个link相交的Poit
+	 * @param fristLink
+	 * @param secondLink
+	 * @return
+	 */
 	private Point getIntersectPoint (RdLink fristLink,RdLink secondLink){
 		if(fristLink.getsNodePid()  == secondLink.getsNodePid()||fristLink.getsNodePid()  == secondLink.geteNodePid()){
 			return JtsGeometryUtil.createPoint(GeoTranslator.transform(fristLink.getGeometry(), 0.00001, 5).getCoordinates()[0]);

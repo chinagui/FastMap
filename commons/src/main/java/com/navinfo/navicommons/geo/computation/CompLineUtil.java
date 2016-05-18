@@ -62,7 +62,7 @@ public class CompLineUtil {
 				y=(k1*b2-k2*b1)/(k1-k2);
 			}
 			
-			return new DoublePoint(DoubleUtil.keep5Decimal(x),DoubleUtil.keep5Decimal(y));
+			return new DoublePoint(DoubleUtil.keepSpecDecimal(x),DoubleUtil.keepSpecDecimal(y));
 
 		}
 	}
@@ -104,11 +104,11 @@ public class CompLineUtil {
 			deltaX = degreeDist*(-(e.getY()-s.getY())/lineEucLength);
 			deltaY = degreeDist*(e.getX()-s.getX())/lineEucLength;
 		}
-		DoubleLine leftLine = new DoubleLine(new DoublePoint(DoubleUtil.keep5Decimal(s.getX()+deltaX),DoubleUtil.keep5Decimal(s.getY()+deltaY))
-				,new DoublePoint(DoubleUtil.keep5Decimal(e.getX()+deltaX),DoubleUtil.keep5Decimal(e.getY()+deltaY)));
+		DoubleLine leftLine = new DoubleLine(new DoublePoint(DoubleUtil.keepSpecDecimal(s.getX()+deltaX),DoubleUtil.keepSpecDecimal(s.getY()+deltaY))
+				,new DoublePoint(DoubleUtil.keepSpecDecimal(e.getX()+deltaX),DoubleUtil.keepSpecDecimal(e.getY()+deltaY)));
 		if(isTwoWay){
-			DoubleLine rightLine = new DoubleLine(new DoublePoint(DoubleUtil.keep5Decimal(s.getX()-deltaX),DoubleUtil.keep5Decimal(s.getY()-deltaY))
-					,new DoublePoint(DoubleUtil.keep5Decimal(e.getX()-deltaX),DoubleUtil.keep5Decimal(e.getY()-deltaY)));
+			DoubleLine rightLine = new DoubleLine(new DoublePoint(DoubleUtil.keepSpecDecimal(s.getX()-deltaX),DoubleUtil.keepSpecDecimal(s.getY()-deltaY))
+					,new DoublePoint(DoubleUtil.keepSpecDecimal(e.getX()-deltaX),DoubleUtil.keepSpecDecimal(e.getY()-deltaY)));
 			return new DoubleLine[]{leftLine,rightLine};
 		}else{
 			return new DoubleLine[]{leftLine};

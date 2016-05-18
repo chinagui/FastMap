@@ -15,6 +15,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.check.core.CheckRule;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.engine.check.graph.ChainLoader;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class Test {
@@ -50,9 +51,9 @@ public class Test {
 	}
 	
 	public static CheckRule getRule(){
-		String ruleCode="GLM01197";
+		String ruleCode="GLM01205";
 		String ruleLog="log";
-		String ruleClass="com.navinfo.dataservice.engine.check.rules.GLM01197";
+		String ruleClass="com.navinfo.dataservice.engine.check.rules.GLM01205";
 		
 		CheckRule rule=new CheckRule(ruleCode,ruleLog,1,ruleClass,null,null,null);
 		return rule;
@@ -72,7 +73,7 @@ public class Test {
 		
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 
-		link = (RdLink) linkSelector.loadById(233335,false);
+		link = (RdLink) linkSelector.loadById(226110,false);
 		
 		List<IRow> objList=new ArrayList<IRow>();
 		objList.add(link);
@@ -85,7 +86,9 @@ public class Test {
 		checkCommand.setObjType(link.objType());
 		
 		CheckRule rule=getRule();
+		ChainLoader loader=new ChainLoader();
 		baseRule obj = (baseRule) rule.getRuleClass().newInstance();
+		obj.setLoader(loader);
 		obj.setRuleDetail(rule);
 		obj.setConn(conn);
 		//调用规则的后检查
@@ -95,7 +98,7 @@ public class Test {
 	
 	public static void main(String[] args) throws Exception{
 		System.out.println("start");
-		exeCheckEngine();
-		
+		//exeCheckEngine();
+		exeCheckRule();
 	}
 }

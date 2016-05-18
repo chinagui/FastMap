@@ -45,5 +45,16 @@ public class SearchFilter {
 		}
 		return resultSet;		
 	}
+	
+	public HashSetRdLinkAndPid getRdLinksBySql(String sql) throws Exception{
+		RdLinkSelector rdLinkSelector=new RdLinkSelector(this.conn);
+		List<RdLink> links=rdLinkSelector.loadBySql(sql, false);
+		HashSetRdLinkAndPid resultSet=new HashSetRdLinkAndPid();
+		for(int i=0;i<links.size();i++){
+			resultSet.add(links.get(i));
+		}
+		return resultSet;		
+	}
+
 
 }

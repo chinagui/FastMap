@@ -44,8 +44,9 @@ public class Test {
 		checkCommand.setGlmList(objList);
 		checkCommand.setOperType(OperType.CREATE);
 		checkCommand.setObjType(link.objType());
+		int projectid=11;
 		
-		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn,projectid);
 		checkEngine.postCheck();
 		conn.commit();
 	}

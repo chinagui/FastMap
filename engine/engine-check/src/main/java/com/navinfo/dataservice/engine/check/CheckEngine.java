@@ -69,24 +69,29 @@ public class CheckEngine {
 		return myCheckSuit;
 	}
 	
-//	private List<CheckRule> getRulesTest(ObjType objType, OperType operType,String checkType) throws Exception{
-//		String initRuleCode="test2";
-//		String initRuleLog="testsql";
-//		int initSeverity=1;
-//		String initCheckClassPath=null;
-//		String accessorType="SQL";
-//		String accessorName="select r.geometry,'[RD_LINK,'||r.link_pid||']',R.MESH_ID from rd_link r where r.kind in (10,11,15) and r.link_pid=RDLINK_PID";
-//		String variables="RDLINK_PID";
-//		CheckRule rule=new CheckRule(initRuleCode,initRuleLog,initSeverity,initCheckClassPath,accessorType,accessorName,variables);
-//		
-//		CheckRule rule2=new CheckRule("GLM56004test2","GLM56004test2",1,"com.navinfo.dataservice.engine.check.rules.GLM56004",null,null,null);
-//		
-//		List<CheckRule> myCheckSuit = new ArrayList<CheckRule>();
-//		myCheckSuit.add(rule);
-//		myCheckSuit.add(rule2);
-//		this.myCheckSuitVariables.addAll(rule.getVariables());
-//		return myCheckSuit;
-//	}
+	private List<CheckRule> getRulesTest(ObjType objType, OperType operType,String checkType) throws Exception{
+		String initRuleCode="test2";
+		String initRuleLog="testsql";
+		int initSeverity=1;
+		String initCheckClassPath=null;
+		String accessorType="SQL";
+		String accessorName="select r.geometry,'[RD_LINK,'||r.link_pid||']',R.MESH_ID from rd_link r where r.kind in (10,11,15) and r.link_pid=RDLINK_PID";
+		String variables="RDLINK_PID";
+		CheckRule rule=new CheckRule(initRuleCode,initRuleLog,initSeverity,initCheckClassPath,accessorType,accessorName,variables);
+		
+		String ruleCode="GLM01197";
+		String ruleLog="log";
+		String ruleClass="com.navinfo.dataservice.engine.check.rules.GLM01197";
+		
+		CheckRule rule2=new CheckRule(ruleCode,ruleLog,1,ruleClass,null,null,null);
+		CheckRule rule3=new CheckRule(ruleCode,ruleLog,1,ruleClass,null,null,null);
+		List<CheckRule> myCheckSuit = new ArrayList<CheckRule>();
+		//myCheckSuit.add(rule);
+		myCheckSuit.add(rule2);
+		myCheckSuit.add(rule3);
+		this.myCheckSuitVariables.addAll(rule.getVariables());
+		return myCheckSuit;
+	}
 	
 	/*
 	 * 对后检查需要保存检查结果，调用此方法将检查结果插入到Ni_val_exception中

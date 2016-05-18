@@ -1,5 +1,9 @@
 package com.navinfo.dataservice.engine.check.core;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.engine.check.helper.GeoHelper;
+import com.vividsolutions.jts.geom.Geometry;
+
 
 public class NiValException {
 	//String ruleId, String loc, String targets,int meshId, String worker
@@ -12,6 +16,17 @@ public class NiValException {
 	public NiValException(String ruleId, String loc, String targets,int meshId,String information){
 		this.setRuleId(ruleId);
 		this.setLoc(loc);
+		this.setTargets(targets);
+		this.setMeshId(meshId);
+		this.setInformation(information);
+	}
+	
+	public NiValException(String ruleId, Geometry geo, String targets,int meshId,String information) throws Exception{
+		Geometry pointGeo=GeoHelper.getPointFromGeo(geo);
+		String pointWkt = GeoTranslator.jts2Wkt(pointGeo, 0.00001, 5);
+		
+		this.setRuleId(ruleId);
+		this.setLoc(pointWkt);
 		this.setTargets(targets);
 		this.setMeshId(meshId);
 		this.setInformation(information);

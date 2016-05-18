@@ -570,9 +570,21 @@ public class Operation implements IOperation {
 	// 根据联通线最后一条link和倒数第二条link算出终点Node
 	private RdNode getStartAndEndNode(List<RdLink> links, int flag)
 			throws Exception {
+		RdNodeSelector nodeSelector = new RdNodeSelector(conn);
 		RdLink fristLink = null;
 		RdLink secondLink = null;
 		RdNode node = null;
+		if(links.size() ==1){
+			if(flag == 0){
+				IRow row = nodeSelector.loadById(
+						links.get(0).getsNodePid(), true);
+				return (RdNode) row;
+			}else{
+				IRow row = nodeSelector.loadById(
+						links.get(0).geteNodePid(), true);
+				return (RdNode) row;
+			}
+		}
 		if (flag == 0) {
 			fristLink = links.get(0);
 			secondLink = links.get(1);
@@ -585,12 +597,12 @@ public class Operation implements IOperation {
 		nodes.add(secondLink.getsNodePid());
 		nodes.add(secondLink.geteNodePid());
 		if (nodes.contains(fristLink.getsNodePid())) {
-			IRow row = new RdNodeSelector(conn).loadById(
+			IRow row = nodeSelector.loadById(
 					fristLink.geteNodePid(), true);
 			node = (RdNode) row;
 		}
 		if (nodes.contains(fristLink.geteNodePid())) {
-			IRow row = new RdNodeSelector(conn).loadById(
+			IRow row = nodeSelector.loadById(
 					fristLink.getsNodePid(), true);
 			node = (RdNode) row;
 

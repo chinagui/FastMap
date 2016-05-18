@@ -46,4 +46,14 @@ public class Glm {
 			}
 		}
 	}
+	public String getTablePidColName(String tableName){
+		GlmTable glmTable = editTables.get(tableName);
+		if(glmTable==null) return null;
+		for(GlmColumn c:glmTable.getPks()){
+			if(c.getName().contains("ID")&&c.getDataType().equals(GlmColumn.TYPE_NUMBER)){
+				return c.getName();
+			}
+		}
+		return null;
+	}
 }

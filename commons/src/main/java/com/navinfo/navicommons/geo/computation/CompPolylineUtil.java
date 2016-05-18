@@ -214,6 +214,9 @@ public class CompPolylineUtil {
 					break;
 				}
 			}
+			if(fromIndex>endIndex){
+				return JtsGeometryUtil.createLineString(new Coordinate[0]);
+			}
 			newCoors = new Coordinate[endIndex-fromIndex+1+1];
 			newCoors[0]=MyGeometryConvertor.convert(mid);
 			int i = 1;
@@ -232,6 +235,9 @@ public class CompPolylineUtil {
 					break;
 				}
 			}
+			if(endIndex<0){
+				return JtsGeometryUtil.createLineString(new Coordinate[0]);
+			}
 			newCoors = new Coordinate[endIndex-fromIndex+1+1];
 			int i = 0;
 			for(;fromIndex<=endIndex;fromIndex++){
@@ -244,10 +250,12 @@ public class CompPolylineUtil {
 	}
 	
 	public static void main(String[] args){
-		String[] a1 = new String[]{"AA","BB","CC","DD"};
-		String[] a2 = Arrays.copyOfRange(a1, 0, 1);
-		for(String s:a2){
-			System.out.println(s);
-		}
+//		String[] a1 = new String[]{"AA","BB","CC","DD"};
+//		String[] a2 = Arrays.copyOfRange(a1, 0, 1);
+//		for(String s:a2){
+//			System.out.println(s);
+//		}
+		LineString l = JtsGeometryUtil.createLineString(new Coordinate[0]);
+		System.out.println(l.toText());
 	}
 }

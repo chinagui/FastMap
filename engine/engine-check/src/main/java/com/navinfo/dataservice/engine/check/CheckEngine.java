@@ -30,6 +30,8 @@ public class CheckEngine {
 	private CheckCommand checkCommand = null;
 	private Connection conn;
 	private List<VariableName> myCheckSuitVariables=new ArrayList<VariableName>();
+	private int projectId;
+	
 	public Connection getConn() {
 		return conn;
 	}
@@ -47,10 +49,11 @@ public class CheckEngine {
 		//this.conn.setAutoCommit(true);
 	}
 	
-	public CheckEngine(CheckCommand checkCommand,Connection conn) throws Exception{
+	public CheckEngine(CheckCommand checkCommand,Connection conn,int projectId) throws Exception{
 		this.log = LoggerRepos.getLogger(this.log);
 		this.checkCommand=checkCommand;
 		this.conn=conn;
+		this.projectId=projectId;
 		//this.conn = GlmDbPoolManager.getInstance().getConnection(this.checkCommand.getProjectId());
 		//this.conn.setAutoCommit(true);
 	}
@@ -95,8 +98,11 @@ public class CheckEngine {
 	 */
 	private void saveCheckResult(List<NiValException> checkResultList) throws Exception{
 		if (checkResultList==null || checkResultList.size()==0) {return;}
+		
+		NiValExceptionOperator check = new NiValExceptionOperator(this.conn, this.projectId);
+		
 		for(int i=0;i<checkResultList.size();i++){
-			NiValExceptionOperator check = new NiValExceptionOperator(this.conn);
+			
 			check.insertCheckLog(checkResultList.get(i).getRuleId(), checkResultList.get(i).getLoc(), checkResultList.get(i).getTargets(), checkResultList.get(i).getMeshId(),checkResultList.get(i).getInformation(), "TEST");
 		}
 	}
@@ -186,7 +192,7 @@ public class CheckEngine {
 		checkCommand.setOperType(OperType.CREATE);
 		checkCommand.setObjType(link.objType());
 		
-		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn,11);
 		checkEngine.postCheck();
 		conn.commit();
 		

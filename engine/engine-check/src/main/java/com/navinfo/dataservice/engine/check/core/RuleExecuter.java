@@ -14,13 +14,11 @@ import oracle.sql.STRUCT;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.check.CheckEngine;
+import com.navinfo.dataservice.engine.check.graph.ChainLoader;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Point;
 
 public class RuleExecuter {
 	
@@ -29,6 +27,7 @@ public class RuleExecuter {
 	private List<VariableName> checkSuitVariables=new ArrayList<VariableName>();
 	private Connection conn;
 	private Map<VariableName,List<String>> variablesValueMap=new HashMap<VariableName,List<String>>();
+	private ChainLoader loader=new ChainLoader();
 	
 	private static Logger log = Logger.getLogger(CheckEngine.class);
 
@@ -37,7 +36,7 @@ public class RuleExecuter {
 		this.checkCommand=checkCommand;
 		this.setDataList(checkCommand.getGlmList());
 		this.checkSuitVariables=checkSuitVariables;
-		this.conn=conn;
+		this.conn=conn;		
 		createVariablesValues();
 	}
 	
@@ -83,6 +82,7 @@ public class RuleExecuter {
 	 */
 	private List<NiValException> exeJavaRule(CheckRule rule) throws Exception{
 		baseRule obj = (baseRule) rule.getRuleClass().newInstance();
+		obj.setLoader(loader);
 		obj.setRuleDetail(rule);
 		obj.setConn(this.conn);
 		//调用规则的后检查

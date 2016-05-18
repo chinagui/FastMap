@@ -89,7 +89,7 @@ public class Operation implements IOperation {
 		// 用户自己选择了退出线的需要计算经过线
 		this.calViaLinks(inLinkPid, inNodePid, outLinkPids);
 
-		// 检查
+		//检查
 		Set<Integer> pids = new HashSet<Integer>();
 		pids.add(command.getInLinkPid());
 		for (Integer pid : outLinkPids) {
@@ -120,10 +120,13 @@ public class Operation implements IOperation {
 			}
 		}
 		
-		System.out.println(1);
-		
 		//删除某一交限方向的多个退出link，选取正北或者正南方向夹角最小的
 		deleteMultLinkOnSameDir(outLinkPids, infoList);
+		
+		if(CollectionUtils.isEmpty(outLinkPids))
+		{
+			throw new Exception("未计算出退出线，请手动指定退出线");
+		}
 		
 		details.addAll(createDetail(restrict, outLinkPids, infoList));
 
@@ -206,6 +209,11 @@ public class Operation implements IOperation {
 			if (CollectionUtils.isNotEmpty(iRows)) {
 				for (RdLink link : iRows) {
 					outLinkList.add(link.getPid());
+				}
+				//剔除进入线，防止进入线和退出线是一条线
+				if(outLinkList.contains(command.getInLinkPid()))
+				{
+					outLinkList.remove(outLinkList.indexOf(command.getInLinkPid()));
 				}
 			}
 		} catch (Exception e) {

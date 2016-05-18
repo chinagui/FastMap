@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.rdgsc;
+package com.navinfo.dataservice.engine.edit.xiaolong.rd;
 
 import com.navinfo.dataservice.commons.db.ConfigLoader;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
@@ -23,7 +23,7 @@ public class RdGscTest {
 	}
 
 	public static void testCreate() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDGSC\",\"projectId\":11,\"data\":{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[116.50103,39.99649],[116.50031,39.99654],[116.50133,39.99572],[116.50053,39.9958],[116.50103,39.99649]]]},\"linkObjs\":[{\"pid\":\"100002820\",\"level_index\":0},{\"pid\":\"100002819\",\"level_index\":1}]}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDGSC\",\"projectId\":11,\"data\":{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[116.46834969520569,40.028041639054926],[116.46834969520569,40.02857563725303],[116.46884322166441,40.02857563725303],[116.46884322166441,40.028041639054926],[116.46834969520569,40.028041639054926]]]},\"linkObjs\":[{\"pid\":\"100004083\",\"level_index\":0},{\"pid\":\"100004084\",\"level_index\":1}]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -32,10 +32,9 @@ public class RdGscTest {
 			e.printStackTrace();
 		}
 	}
-	
-	public static void testDelete()
-	{
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDGSC\",\"projectId\":11,\"objId\":100002503}";
+
+	public static void testDelete() {
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDGSC\",\"projectId\":11,\"objId\":100002634}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -44,6 +43,7 @@ public class RdGscTest {
 			e.printStackTrace();
 		}
 	}
+
 	public static void testSearch() throws Exception {
 		String parameter = "{\"projectId\":11,\"type\":\"RDGSC\",\"pid\":100002452}";
 		JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -62,11 +62,22 @@ public class RdGscTest {
 		System.out.println(ResponseUtils.assembleRegularResult(obj.Serialize(ObjLevel.FULL)));
 	}
 
+	public static void testUpdate()
+	{
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDGSC\",\"projectId\":11,\"data\":{\"processFlag\":2,\"pid\":100002767,\"objStatus\":\"UPDATE\",\"objId\":13}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	public static void main(String[] args) {
 		try {
 			testCreate();
 			// testSearch();
-			// testDelete();
+			//testDelete();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

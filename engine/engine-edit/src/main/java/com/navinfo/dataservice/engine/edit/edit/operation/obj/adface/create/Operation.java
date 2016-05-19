@@ -271,6 +271,7 @@ public class Operation implements IOperation {
 	private void createFace() throws Exception {
 		AdFace face = new AdFace();
 		face.setPid(PidService.getInstance().applyAdFacePid());
+		result.setPrimaryPid(face.getPid());
 		this.face = face;
 	}
 

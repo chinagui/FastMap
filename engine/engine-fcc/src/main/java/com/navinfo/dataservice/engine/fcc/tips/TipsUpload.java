@@ -546,14 +546,27 @@ public class TipsUpload {
 		}
 
 		JSONArray fArray = feedback.getJSONArray("f_array");
+		
+		JSONArray newFArray=new JSONArray();
+		
+		JSONObject graph = null;
 
 		Set<String> picNames = new HashSet<String>();
 
 		for (int i = 0; i < fArray.size(); i++) {
 			JSONObject jo = fArray.getJSONObject(i);
 
-			if (jo.getInt("type") == 1) {
+			int type = jo.getInt("type");
+			
+			if (type == 1) {
 				picNames.add(jo.getString("content"));
+			}
+			
+			if(type == 6){
+				graph = jo;
+			}
+			else{
+				newFArray.add(jo);
 			}
 		}
 
@@ -562,18 +575,26 @@ public class TipsUpload {
 		for (int i = 0; i < newFeedbacks.size(); i++) {
 			JSONObject newFeedback = newFeedbacks.getJSONObject(i);
 
-			if (newFeedback.getInt("type") == 1) {
+			int type = newFeedback.getInt("type");
+			if ( type == 1) {
 				if (!picNames.contains(newFeedback.getString("content"))) {
-					fArray.add(newFeedback);
+					newFArray.add(newFeedback);
 				}
-			} else {
-				fArray.add(newFeedback);
+			} else if (type == 6){
+				graph = newFeedback;
+			}
+			else {
+				newFArray.add(newFeedback);
 			}
 		}
 		
-		feedback.put("f_array", fArray);
+		if(graph != null){
+			newFArray.add(graph);
+		}
 		
-		json.put("feedback", fArray);
+		feedback.put("f_array", newFArray);
+		
+		json.put("feedback", newFArray);
 
 		put.addColumn("data".getBytes(), "feedback".getBytes(), feedback
 				.toString().getBytes());
@@ -750,6 +771,6 @@ public class TipsUpload {
 
 		TipsUpload a = new TipsUpload();
 
-		a.run("C:/1.txt");
+		a.run("C:/test.txt");
 	}
 }

@@ -126,7 +126,7 @@ public class Operation implements IOperation {
 		//创建内部生成线
 		this.createInnerLines(lines,map,result);
 		// 属性维护
-		
+		result.setPrimaryPid(upLists.get(0).getPid());
 		this.RelationLink(upLists, result, 0);
 		this.RelationLink(downLists, result, 1);
 
@@ -282,13 +282,8 @@ public class Operation implements IOperation {
 			// 15对点-线-线关系的维护
 			// 16 对点线关系的维护
 			// 17对线点线关系（车信，交限，分歧，语音引导，顺行）信息的维护
-			// 18.逆方向
-			if (upDownFlag == 0) {
-				link.setDirect(3);
-			} else {
-				link.setDirect(2);
-			}
-			
+			// 18.方向
+			link.setDirect(2);		
 			result.insertObject(link, ObjStatus.INSERT, link.getPid());
 		}
 	}

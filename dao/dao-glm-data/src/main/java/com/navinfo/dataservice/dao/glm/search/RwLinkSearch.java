@@ -109,7 +109,7 @@ public class RwLinkSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select a.link_pid,        b.name,        a.geometry   from rw_link a,        (select /*+ index(b) */          b.link_pid, c.name           from rw_link_name b, rd_name c          where b.name_groupid = c.name_groupid            and c.lang_code = 'CHI'            and b.u_record != 2) b  where a.u_record != 2    and a.link_pid = b.link_pid(+)    and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
+		String sql = "select a.link_pid, a.color,       b.name,        a.geometry   from rw_link a,        (select /*+ index(b) */          b.link_pid, c.name           from rw_link_name b, rd_name c          where b.name_groupid = c.name_groupid            and c.lang_code = 'CHI'            and b.u_record != 2) b  where a.u_record != 2    and a.link_pid = b.link_pid(+)    and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
 		
 		PreparedStatement pstmt = null;
 
@@ -134,6 +134,8 @@ public class RwLinkSearch implements ISearch {
                 JSONObject m = new JSONObject();
                 
                 m.put("a", resultSet.getString("name"));
+                
+                m.put("b", resultSet.getString("color"));
                 
                 snapshot.setM(m);
                 

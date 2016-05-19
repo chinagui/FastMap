@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.check.core;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 
@@ -11,6 +12,7 @@ public class VariablesFactory {
 		if(data instanceof RdLink){return String.valueOf(((RdLink) data).getPid());}
 		if(data instanceof RdRestriction){return String.valueOf(((RdRestriction) data).getInLinkPid());}
 		if(data instanceof RdRestrictionDetail){return String.valueOf(((RdRestrictionDetail) data).getOutLinkPid());}
+		if(data instanceof RdLinkForm){return String.valueOf(((RdLinkForm) data).getLinkPid());}
 		return null;
 	}
 

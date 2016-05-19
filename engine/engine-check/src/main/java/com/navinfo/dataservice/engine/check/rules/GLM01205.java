@@ -40,7 +40,7 @@ public class GLM01205 extends baseRule {
 					if(form.getFormOfWay()==33){isHuandao=true;}
 				}
 				if(!isHuandao){continue;}
-				//一条特环岛link链上的link不重复检查
+				//一条环岛link链上的link不重复检查
 				if(linkPidList.contains(rdLink.getPid())){continue;}
 				
 				//获取rdLink对应的链

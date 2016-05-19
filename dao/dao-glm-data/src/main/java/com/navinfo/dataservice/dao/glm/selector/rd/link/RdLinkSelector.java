@@ -968,7 +968,7 @@ public class RdLinkSelector implements ISelector {
 			sb.append(" or (rl.e_node_pid = :2 and direct = 3)");
 		}
 		sb.append(" or ((rl.s_node_pid = :3 or rl.e_node_pid =:4) and direct =1)");
-		sb.append(") and rl.link_pid <> :5");
+		sb.append(") and rl.link_pid <> :5 and rl.u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -1672,7 +1672,7 @@ public class RdLinkSelector implements ISelector {
 	public JSONArray loadGeomtryByLinkPids(List<Integer> linkPids) throws Exception{ 
 		
 		StringBuilder sb = new StringBuilder(
-				"select geometry,e_node_pid,s_node_pid from rd_link where link_pid in ( "+com.navinfo.dataservice.commons.util.StringUtils.getInteStr(linkPids)+")");
+				"select geometry,e_node_pid,s_node_pid from rd_link where link_pid in ( "+com.navinfo.dataservice.commons.util.StringUtils.getInteStr(linkPids)+") and  u_record !=2");
 
 		PreparedStatement pstmt = null;
 

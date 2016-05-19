@@ -94,12 +94,9 @@ public class Command extends AbstractCommand  {
 				double lon = Math.round(jo.getDouble("lon")*100000)/100000.0;
 				
 				double lat = Math.round(jo.getDouble("lat")*100000)/100000.0;
-				double linkPid = jo.getInt("linkPid");
 				jo.put("lon",lon);
 				
 				jo.put("lat", lat);
-				
-				jo.put("linkPid",linkPid);
 				
 				this.catchLinks.add(jo);
 			}

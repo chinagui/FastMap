@@ -51,7 +51,7 @@ public class Operation implements IOperation {
 		}
 		// 如果创建行政区划线没有对应的挂接AD_NODE和ADFACE
 		// 创建对应的ADNODE
-		if (command.getCatchLinks().size() == 0) {
+		if (command.getCatchLinks().size() == 0||map.size() == 0) {
 			JSONObject se = new JSONObject();
 			se = AdLinkOperateUtils.createAdNodeForLink(command.getGeometry(),
 					command.getsNodePid(), command.geteNodePid(), result);

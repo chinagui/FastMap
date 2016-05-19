@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.ad;
+package com.navinfo.dataservice.engine.edit.xiaolong.ad;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,24 +16,24 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class AdNodeTest {
-	private static final String configPath = "H:/GitHub/zhaokk/DataService/web/edit-web/src/main/resources/config.properties";
+
 	public AdNodeTest() {
-		ConfigLoader.initDBConn(configPath);
+		ConfigLoader.initDBConn(
+				"D:/ws_new/DataService/web/edit-web/src/main/resources/config.properties");
 	}
 
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	public void createAdNodeTest() throws Exception {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"ADNODE\",\"projectId\":11,\"objId\":100031211,\"data\":{\"longitude\":116.22590,\"latitude\":39.77897}}";
+		String parameter = "{\"command\":\"BREAK\",\"projectId\":11,\"objId\":100031585,\"data\":{\"longitude\":116.47493102897037,\"latitude\":40.01395406127133},\"type\":\"ADLINK\"}";
 		Transaction t = new Transaction(parameter);
 		;
 		String msg = t.run();
 	}
-//100022085
+
 	public void deleteAdNodeTest() throws Exception {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"ADNODE\",\"projectId\":11,\"objId\":100022085}}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"ADNODE\",\"projectId\":11,\"objId\":100021877}";
 		Transaction t = new Transaction(parameter);
-		;
 		String msg = t.run();
 	}
 
@@ -47,7 +47,7 @@ public class AdNodeTest {
 	}
 
 	public void moveAdNodeTest() throws Exception {
-		String parameter = "{\"command\":\"MOVE\",\"projectId\":11,\"objId\":100021744,\"data\":{\"longitude\":116.4741861820221,\"latitude\":40.01400009432636},\"type\":\"ADNODE\"}";
+		String parameter = "{\"command\":\"MOVE\",\"projectId\":11,\"objId\":100021744,\"data\":{\"longitude\":116.4743861820221,\"latitude\":40.02400009432636},\"type\":\"ADNODE\"}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);
 		;
@@ -90,9 +90,9 @@ public class AdNodeTest {
 
 	public static void main(String[] args) throws Exception {
 		// new AdNodeTest().createAdNodeTest();
-		new AdNodeTest().deleteAdNodeTest();
+		// new AdNodeTest().deleteAdNodeTest();
 		// new AdNodeTest().updateAdNodeTest();
-		//new AdNodeTest().moveAdNodeTest();
+		new AdNodeTest().createAdNodeTest();
 
 	}
 }

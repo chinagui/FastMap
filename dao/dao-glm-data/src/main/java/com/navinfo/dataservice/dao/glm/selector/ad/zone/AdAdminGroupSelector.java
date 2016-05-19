@@ -35,7 +35,7 @@ public class AdAdminGroupSelector implements ISelector {
 	public IRow loadById(int id, boolean isLock) throws Exception {
 		AdAdminGroup group = new AdAdminGroup();
 
-		String sql = "select * from " + group.tableName() + " where group_id =:1";
+		String sql = "select * from " + group.tableName() + " where group_id =:1 and  u_record !=2";
 
 		PreparedStatement pstmt = null;
 

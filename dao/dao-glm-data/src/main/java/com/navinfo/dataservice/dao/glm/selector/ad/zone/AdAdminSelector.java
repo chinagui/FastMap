@@ -33,7 +33,7 @@ public class AdAdminSelector implements ISelector {
 	public IRow loadById(int id, boolean isLock) throws Exception {
 		AdAdmin adAdmin = new AdAdmin();
 
-		String sql = "select * from " + adAdmin.tableName() + " where region_id =:1";
+		String sql = "select * from " + adAdmin.tableName() + " where region_id =:1 and  u_record !=2";
 
 		PreparedStatement pstmt = null;
 
@@ -136,7 +136,7 @@ public class AdAdminSelector implements ISelector {
 	public AdAdmin loadByAdminId(int adadminId, boolean isLock) throws Exception {
 		AdAdmin adAdmin = new AdAdmin();
 
-		String sql = "select * from " + adAdmin.tableName() + " where admin_id =:1";
+		String sql = "select * from " + adAdmin.tableName() + " where admin_id =:1 and  u_record !=2";
 
 		PreparedStatement pstmt = null;
 

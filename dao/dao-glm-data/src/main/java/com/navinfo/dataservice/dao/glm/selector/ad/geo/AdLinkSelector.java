@@ -33,7 +33,7 @@ public class AdLinkSelector implements ISelector {
 		AdLink adLink = new AdLink();
 
 		StringBuilder sb = new StringBuilder(
-				 "select * from " + adLink.tableName() + " WHERE link_pid = :1");
+				 "select * from " + adLink.tableName() + " WHERE link_pid = :1 and  u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");

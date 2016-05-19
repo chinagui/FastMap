@@ -10,6 +10,7 @@ import java.util.Set;
 
 import net.sf.json.JSONObject;
 
+import com.alibaba.druid.util.StringUtils;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.commons.util.GeometryUtils;
@@ -235,6 +236,11 @@ public class Operation implements IOperation {
 		face.setGeometry(g);
 		//缩放计算面积和周长
 		g = GeoTranslator.transform(g, 0.00001, 5);
+		String meshId = MeshUtils.getInterMeshes(g).iterator().next();
+		if(!StringUtils.isEmpty(meshId))
+		{
+			face.setMeshId(Integer.parseInt(meshId));
+		}
 		face.setArea(GeometryUtils.getCalculateArea(g));
 		face.setPerimeter(GeometryUtils.getLinkLength(g));
 		result.insertObject(face, ObjStatus.INSERT, face.getPid());
@@ -247,6 +253,11 @@ public class Operation implements IOperation {
 		
 		JSONObject updateContent = new JSONObject();
 		g = GeoTranslator.transform(g, 0.00001, 5);
+		String meshId = MeshUtils.getInterMeshes(g).iterator().next();
+		if(!StringUtils.isEmpty(meshId))
+		{
+			updateContent.put("mesh", Integer.parseInt(meshId));
+		}
 		updateContent.put("geometry", GeoTranslator.jts2Geojson(g));
 		updateContent.put("area", GeometryUtils.getCalculateArea(g));
 		updateContent.put("perimeter", GeometryUtils.getLinkLength(g));

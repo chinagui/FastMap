@@ -112,7 +112,6 @@ public class Result implements ISerializable {
 		default:
 			break;
 		}
-		System.out.println(json);
 		logs.add(json);
 	}
 

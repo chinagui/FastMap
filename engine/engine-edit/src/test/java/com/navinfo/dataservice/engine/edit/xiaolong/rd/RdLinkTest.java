@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.rd;
+package com.navinfo.dataservice.engine.edit.xiaolong.rd;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -12,7 +12,7 @@ import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.rd.utils.RdLinkSearchUtils;
 
 public class RdLinkTest {
-private static final String configPath = "H:/GitHub/zhaokk/DataService/web/edit-web/src/main/resources/config.properties";
+private static final String configPath = "D:/ws_new/DataService/web/edit-web/src/main/resources/config.properties";
 	private Connection conn;
 	static 
 	{
@@ -77,7 +77,7 @@ private static final String configPath = "H:/GitHub/zhaokk/DataService/web/edit-
 	}
 	public void departRdLink()
 	{
-		String line  = "[100003803]";
+		String line  = "[100003385,100003386,100003387,100003389,100003397]";
 		String parameter =  "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"distance\":20,\"projectId\":11,\"data\":{\"linkPids\":"+line+"}}";
 		Transaction t = new Transaction(parameter);
 		try {
@@ -105,11 +105,22 @@ private static final String configPath = "H:/GitHub/zhaokk/DataService/web/edit-
 			System.out.println(link.getPid());
 		}
 	}
+	
+	private static void testAddLinkIn2Mesh()
+	{
+		String parameter = "{\"command\":\"CREATE\",\"projectId\":11,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.70726 ,40.09797],[116.70878,40.06482]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public static void main(String[] args) {
 		try {
-			new RdLinkTest().departRdLink();
-			//new RdLinkTest().testAddRdLink();
-			//new RdLinkTest().testLoadTractLink();
+			testAddLinkIn2Mesh();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

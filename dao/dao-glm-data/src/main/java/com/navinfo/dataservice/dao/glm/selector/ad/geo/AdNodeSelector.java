@@ -39,7 +39,7 @@ public class AdNodeSelector implements ISelector {
 		AdNode adNode = new AdNode();
 
 		StringBuilder sb = new StringBuilder(
-				"select * from " + adNode.tableName() + " WHERE node_pid = :1");
+				"select * from " + adNode.tableName() + " WHERE node_pid = :1 and  u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");

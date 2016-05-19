@@ -32,7 +32,7 @@ public class AdFaceSelector implements ISelector {
 
 		AdFace face = new AdFace();
 
-		String sql = "select * from " + face.tableName() + " where face_pid=:1";
+		String sql = "select * from " + face.tableName() + " where face_pid=:1 and  u_record !=2";
 
 		PreparedStatement pstmt = null;
 

@@ -26,7 +26,7 @@ public class DoubleLine {
 		this.epoint = epoint;
 	}
 	/**
-	 * 计算线段的斜率，如果垂直X轴，那么返回-1；
+	 * 计算线段的斜率，如果垂直X轴，那么返回DoubleUtil.INFINITY；
 	 * @return 
 	 */
 	public double getSlope(){
@@ -47,6 +47,10 @@ public class DoubleLine {
 	public double getDeltaY(){
 		return epoint.getY()-spoint.getY();
 	}
+	/**
+	 * 将line平移到原点生成一个向量
+	 * @return
+	 */
 	public DoublePoint pan2OriginPoint(){
 		return new DoublePoint(getDeltaX(),getDeltaY());
 	}

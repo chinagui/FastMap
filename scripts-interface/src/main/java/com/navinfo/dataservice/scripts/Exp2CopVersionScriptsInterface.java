@@ -37,6 +37,8 @@ public class Exp2CopVersionScriptsInterface {
 			String targetDbId = (String)request.get("targetDbId");
 			Assert.notNull(targetDbId,"targetDbId不能为空");
 			String meshes = (String)request.get("meshes");
+			String gdbVersion = (String)request.get("gdbVersion");
+			Assert.notNull(gdbVersion,"gdbVersion不能为空");
 			meshes = com.navinfo.dataservice.commons.util.StringUtils.removeBlankChar(meshes);
 			Assert.notNull(meshes,"meshes不能为空");
 			String extendCountStr = (String)request.get("extendCount");
@@ -73,7 +75,6 @@ public class Exp2CopVersionScriptsInterface {
 			conn.commit();
 			response.put("m_mesh_type", "success");
 			//export data
-			String gdbVersion = "240+";
 			JSONObject expRequest = new JSONObject();
 			expRequest.put("exportMode", "copy");
 			expRequest.put("feature", "gdb");

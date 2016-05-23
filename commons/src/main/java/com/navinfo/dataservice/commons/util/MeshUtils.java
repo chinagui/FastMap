@@ -31,6 +31,8 @@ enum MeshLocateRelation {
 public abstract class MeshUtils {
 
 	public static void main(String[] args) throws Exception {
+		List<String> results = lonlat2MeshIds(76.01,30.33333);
+		System.out.println(StringUtils.join(results,","));
 //		int[] locs = mesh2Location("595671");//116.125,39.91667--116.25,40
 //		for(int l:locs){
 //			System.out.println(l);
@@ -40,10 +42,11 @@ public abstract class MeshUtils {
 //		for(String str:meshes){
 //			System.out.println(str);
 //		}
-		int[] results = mesh2Location("595664");
-		for(int r:results){
-			System.out.println(r/3600.0);
-		}
+//		int[] results = mesh2Location("595664");
+//		for(int r:results){
+//			System.out.println(r/3600.0);
+//		}
+//		System.out.println(String.format("%02d",9));
 		
 //		System.out.println(location2Mesh(23.1*3600, 88.9*3600));
 //		String meshId = "595671";
@@ -399,16 +402,7 @@ public abstract class MeshUtils {
 		M3M4 = J1 - 60;
 		M5 = (int) ((W - M1M2 / 1.5) * 12.0);
 		M6 = (int) (J2 * 8.0);
-		StringBuilder builder = new StringBuilder();
-		builder.append(M1M2);
-		builder.append(M3M4);
-		builder.append(M5);
-		builder.append(M6);
-		String meshId = builder.toString();
-		if (meshId.length() == 5) {
-			meshId = "0" + meshId;
-		}
-		return meshId;
+		return String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
 	}
 
 	/**
@@ -436,16 +430,7 @@ public abstract class MeshUtils {
 		M3M4 = J1 - 60;
 		M5 = (int) ((W - M1M2 / 1.5) * 12.0);
 		M6 = (int) (J2 * 8.0);
-		StringBuilder builder = new StringBuilder();
-		builder.append(M1M2);
-		builder.append(M3M4);
-		builder.append(M5);
-		builder.append(M6);
-		String meshId = builder.toString();
-		if (meshId.length() == 5) {
-			meshId = "0" + meshId;
-		}
-		return meshId;
+		return String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
 	}
 
 	/**
@@ -980,12 +965,7 @@ public abstract class MeshUtils {
         int M6 = colInx % 8;
 
         //连接以上数字,组成图幅号
-        String sMeshId = String.format("%d%d%d%d", M1M2, M3M4, M5, M6);
-
-        while (sMeshId.length() < 6)
-        {
-            sMeshId = "0" + sMeshId;
-        }
+        String sMeshId = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
 
         return sMeshId;
     }

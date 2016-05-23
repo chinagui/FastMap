@@ -34,7 +34,7 @@ public class CompGridUtil {
 		int type = geo.getType();
 		if(type==1){
 			double[] point = geo.getPoint();
-			CollectionUtils.addAll(grids, point2Grid(point[0],point[1],meshIds));
+			CollectionUtils.addAll(grids, point2Grids(point[0],point[1],meshIds));
 		}else if(type==2){
 			grids.addAll(intersectLineGrid(geo,meshIds));
 		}else if(type == 3){
@@ -271,7 +271,11 @@ public class CompGridUtil {
 		return interGrids;
 	}
 	
-	
+	public static double[] grid2Rect(int gridId){
+		String gridIdStr = String.valueOf(gridId);
+		gridIdStr = StringUtils.leftPad(gridIdStr, 8, '0');
+		return grid2Rect(gridIdStr);
+	}
 	
 	/**
 	 * 根据grid号获取grid的矩形
@@ -302,7 +306,7 @@ public class CompGridUtil {
 	 * @param meshId:点所属的图幅号
 	 * @return 8位grid号码字符串
 	 */
-	public static String[] point2Grid(double x,double y,String[] meshIds){
+	public static String[] point2Grids(double x,double y,String[] meshIds){
 		String[] grids = null;
 		if(meshIds!=null&&meshIds.length>1){
 			if(meshIds.length==2){
@@ -349,7 +353,7 @@ public class CompGridUtil {
 			}
 			return grids;
 		}else{
-			return point2Grids(x,y);
+			return new String[]{meshIds[0]+point2Grid_M7(y)+point2Grid_M8(x)};
 		}
 	}
 	/**
@@ -389,50 +393,7 @@ public class CompGridUtil {
 		}
 		return null;
 	}
-	/**
-	 * 计算点所在的grid号
-	 * 如果正好在图幅线上，取右/上的grid
-	 * @param x：单位度
-	 * @param y：单位度
-	 * @return
-	 */
-	public static String point2Grid(double x,double y){
-		//将度单位坐标转换为秒*3600，并乘1000消除小数,最后取整
-		long longX = Math.round(x*3600000);
-		long longY = Math.round(y*3600000);
-		int M1M2;
-		int M3M4;
-		int M5;
-		int M6;
-		int M7;
-		int M8;
 
-		//一个四位图幅的纬度高度为2400秒
-		M1M2 = (int)(longY/(2400000));
-		M3M4 = ((int)x) - 60;//简便算法
-		
-		
-		int yt = (int)(longY/(300000));
-		M5 = yt%8;
-		int xt = (int)(longX/(450000));
-		M6 = xt%8;
-		
-		M7 = (int)((longY%(300000))*4)/(300000);
-		M8 = (int)((longX%(450000))*4)/(450000);
-		
-		StringBuilder builder = new StringBuilder();
-		builder.append(M1M2);
-		builder.append(M3M4);
-		builder.append(M5);
-		builder.append(M6);
-		builder.append(M7);
-		builder.append(M8);
-		String id = builder.toString();
-		if (id.length() == 7) {
-			id = "0" + id;
-		}
-		return id;
-	}
 	/**
 	 * 计算grid过程中依赖的计算图幅是自己实现的，暂未测试
 	 * @param x
@@ -444,7 +405,9 @@ public class CompGridUtil {
 		long longX = Math.round(x*3600000);
 		long longY = Math.round(y*3600000);
 		int M1M2;
+		int M1M2_bak;
 		int M3M4;
+		int M3M4_bak;
 		int M5;
 		int M5_bak = -999;
 		int M6;
@@ -457,6 +420,9 @@ public class CompGridUtil {
 		//一个四位图幅的纬度高度为2400秒
 		M1M2 = (int)(longY/(2400000));
 		M3M4 = ((int)x) - 60;//简便算法
+		//
+		M1M2_bak=M1M2;
+		M3M4_bak=M3M4;
 		
 		//
 		
@@ -465,8 +431,14 @@ public class CompGridUtil {
 		//判断在图幅线上的情况
 		if((longY%300000)<=12){//距离理想行号下图廓线距离
 			if(yt%3==2){
-				//处于图廓线上
+				//处于横轴图廓线上
 				M5_bak = M5-1;
+				if(M5_bak<0){
+					M1M2_bak--;
+					M5_bak=7;
+				}
+				M7 = 0;
+				M7_bak = 3;
 			}
 			/**
 			if(yt%3==0){//0.0,0.25,...
@@ -492,35 +464,49 @@ public class CompGridUtil {
 			if(yt%3==0){
 				//处于图廓线上
 				M5_bak = M5+1;
+				if(M5_bak>7){
+					M1M2_bak++;
+					M5_bak=0;
+				}
 				M7 = 3;
 				M7_bak = 0;
 			}
+		}else{//不在图廓线上
+			M7 = (int)((longY%(300000))*4)/(300000);
 		}
 		int xt = (int)(longX/(450000));
 		M6 = xt%8;
 		//经度坐标没有四舍五入，所以理论上只有=0和大于12的情况
 		if((longX%450000)<=12){
 			M6_bak = M6-1;
+			if(M6_bak<0){
+				M3M4_bak--;
+				M6_bak=7;
+			}
 			M8 = 0;
 			M8_bak = 3;
+		}else{
+			M8 = (int)((longX%(450000))*4)/(450000);
 		}
 		
 		String[] meshes = null;
 		if(M5_bak>-999&&M6_bak>-999){//图廓点，4个图幅,4个grid号
 			meshes = new String[4];
-			//第一个grid
-			meshes[0] = String.valueOf(M1M2)+M3M4+M5+M6+M7+M8;
-			//...
-			meshes[1] = "";
+			meshes[0] = String.format("%02d%02d%d%d%d%d", M1M2, M3M4, M5, M6,M7,M8);
+			meshes[1] = String.format("%02d%02d%d%d%d%d", M1M2, M3M4_bak, M5, M6_bak,M7,M8_bak);
+			meshes[2] = String.format("%02d%02d%d%d%d%d", M1M2_bak, M3M4, M5_bak, M6,M7_bak,M8);
+			meshes[3] = String.format("%02d%02d%d%d%d%d", M1M2_bak, M3M4_bak, M5_bak, M6_bak,M7_bak,M8_bak);
 		}else if(M5_bak>-999){
-			
+			meshes = new String[2];
+			meshes[0] = String.format("%02d%02d%d%d%d%d", M1M2, M3M4, M5, M6,M7,M8);
+			meshes[1] = String.format("%02d%02d%d%d%d%d", M1M2_bak, M3M4, M5_bak, M6,M7_bak,M8);
 		}else if(M6_bak>-999){
-			
+			meshes = new String[2];
+			meshes[0] = String.format("%02d%02d%d%d%d%d", M1M2, M3M4, M5, M6,M7,M8);
+			meshes[1] = String.format("%02d%02d%d%d%d%d", M1M2, M3M4_bak, M5, M6_bak,M7,M8_bak);
 		}else{
-			M7 = (int)((longY%(300000))*4)/(300000);
-			M8 = (int)((longX%(450000))*4)/(450000);
+			meshes = new String[]{String.format("%02d%02d%d%d%d%d", M1M2, M3M4, M5, M6,M7,M8)};
 		}
-		
 		return meshes;
 	}
 	/**
@@ -532,11 +518,7 @@ public class CompGridUtil {
 	 */
 	public static String[] point2Grids(double x,double y){
 		List<String> meshes = MeshUtils.lonlat2MeshIds(x,y);
-		if(meshes.size()>1){
-			return point2Grid(x,y,meshes.toArray(new String[0]));
-		}else{
-			return new String[]{meshes.get(0)+point2Grid_M7(y)+point2Grid_M8(x)};
-		}
+		return point2Grids(x,y,meshes.toArray(new String[0]));
 	}
 	
 	/**

@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import com.navinfo.dataservice.commons.util.JtsGeometryUtil;
+import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
@@ -215,7 +215,7 @@ public class CompPolylineUtil {
 				}
 			}
 			if(fromIndex>endIndex){
-				return JtsGeometryUtil.createLineString(new Coordinate[0]);
+				return JtsGeometryFactory.createLineString(new Coordinate[0]);
 			}
 			newCoors = new Coordinate[endIndex-fromIndex+1+1];
 			newCoors[0]=MyGeometryConvertor.convert(mid);
@@ -236,7 +236,7 @@ public class CompPolylineUtil {
 				}
 			}
 			if(endIndex<0){
-				return JtsGeometryUtil.createLineString(new Coordinate[0]);
+				return JtsGeometryFactory.createLineString(new Coordinate[0]);
 			}
 			newCoors = new Coordinate[endIndex-fromIndex+1+1];
 			int i = 0;
@@ -246,7 +246,7 @@ public class CompPolylineUtil {
 			}
 			newCoors[i]=MyGeometryConvertor.convert(mid);
 		}
-		return JtsGeometryUtil.createLineString(newCoors);
+		return JtsGeometryFactory.createLineString(newCoors);
 	}
 	
 	public static void main(String[] args){
@@ -255,7 +255,7 @@ public class CompPolylineUtil {
 //		for(String s:a2){
 //			System.out.println(s);
 //		}
-		LineString l = JtsGeometryUtil.createLineString(new Coordinate[0]);
+		LineString l = JtsGeometryFactory.createLineString(new Coordinate[0]);
 		System.out.println(l.toText());
 	}
 }

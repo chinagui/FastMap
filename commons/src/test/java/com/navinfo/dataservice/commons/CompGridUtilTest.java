@@ -137,7 +137,7 @@ public class CompGridUtilTest{
 		List<String[]> results = new LinkedList<String[]>();
 		long t1 = System.currentTimeMillis();
 		for(int k=0;k<20000000;k+=2){
-			results.add(CompGridUtil.point2Grids2(xyArr[k],xyArr[k+1]));
+			results.add(CompGridUtil.point2GridsUsingNM(xyArr[k],xyArr[k+1]));
 			if(k%1000000==0){
 				System.out.println(k);
 			}
@@ -176,9 +176,9 @@ public class CompGridUtilTest{
 		double[] p = new double[]{116.00596,40.33333};
 		List<String> r0 = MeshUtils.lonlat2MeshIds(p[0],p[1]);
 		System.out.println(StringUtils.join(r0,","));
-		String[] r1 = CompGridUtil.point2Grids(p[0],p[1]);
+		String[] r1 = CompGridUtil.point2GridsUsingNM(p[0],p[1]);
 		System.out.println(StringUtils.join(r1,","));
-		String[] r2 = CompGridUtil.point2Grids2(p[0],p[1]);
+		String[] r2 = CompGridUtil.point2Grids(p[0],p[1]);
 		System.out.println(StringUtils.join(r2,","));
 		
 	}
@@ -187,15 +187,15 @@ public class CompGridUtilTest{
 		double[] p = new double[]{69.62119,34.33333};
 		List<String> r0 = MeshUtils.lonlat2MeshIds(p[0],p[1]);
 		System.out.println(StringUtils.join(r0,","));
-		String[] r1 = CompGridUtil.point2Grids(p[0],p[1]);
+		String[] r1 = CompGridUtil.point2GridsUsingNM(p[0],p[1]);
 		System.out.println(StringUtils.join(r1,","));
-		String[] r2 = CompGridUtil.point2Grids2(p[0],p[1]);
+		String[] r2 = CompGridUtil.point2Grids(p[0],p[1]);
 		System.out.println(StringUtils.join(r2,","));
 		
 	}
 
 	/**
-	 * 验证double类型的精度
+	 * 生成图幅线
 	 */
 	@Test
 	public void other_001(){
@@ -213,46 +213,5 @@ public class CompGridUtilTest{
 			initLat=DoubleUtil.keepSpecDecimal(sLat+j/12.0);
 			System.out.println(String.format("%s%s%s%s%s%s%s%s%s", "LINESTRING (",String.valueOf(sLon)," ",String.valueOf(initLat),",",String.valueOf(eLon)," ",String.valueOf(initLat),")"));
 		}
-//		double x1=15.01;
-//		double x2 = 16.01;
-//		System.out.println(x1%1);
-//		System.out.println(x2%1);
-//		double y1 = x1%1;
-//		double y2 = x2%1;
-//		if(y1==y2){
-//			System.out.println("YES!!!");
-//		}else{
-//			System.out.println("NO!!!");
-//		}
-//		System.out.println((int)(y1*100));
-//		System.out.println((int)(y2*100));
-
-//		System.out.println(29*1.5);
-//		System.out.println(1.7*1.5);
-//		System.out.println(4.015*1000);
-//		System.out.println((int)(4.015*1000));
-//		System.out.println(4.015-4);
-//		System.out.println(Math.floor(4014.9999999999995));
-//		System.out.println(4.115*1000);
-//		for(double i = 0.0;i<60;i++){
-//			System.out.println(i*1.5);
-//		}
-//		System.out.println(1571064264264199999L/785532132132100000L);
-		
-//		System.out.println(15.01%1);
-//		System.out.println(16.01%1);
-//		System.out.println(1.01%1);
-//		System.out.println(1.0%1);
-//		System.out.println(2.0%1);
-//		System.out.println(Double.valueOf(1%1));
-//		System.out.println(5.0000000%1);
-//		long t1 = System.currentTimeMillis();
-//		double t;
-//		for(int i=0;i<1000000000;i++){
-//			t = 15.01-(int)15.01;
-//			if(i%100000000==0){
-//				System.out.println(t);
-//			}
-//		}
 	}
 }

@@ -20,8 +20,8 @@ import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
-import com.navinfo.dataservice.engine.edit.edit.display.TileSelector;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
+import com.navinfo.dataservice.engine.fcc.tile.TileSelector;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
 import com.navinfo.dataservice.engine.photo.PhotoGetter;
 
@@ -49,7 +49,7 @@ public class RenderController {
 
 			int projectId = jsonReq.getInt("projectId");
 
-			List<String> list = TileSelector.getTiles(x, y, z, projectId);
+			List<String> list = TileSelector.getRdLinkTiles(x, y, z, projectId);
 
 			if (list != null && list.size() > 0) {
 

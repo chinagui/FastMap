@@ -8,6 +8,7 @@ import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.graph.HashSetRdLinkAndPid;
 
@@ -31,6 +32,8 @@ public class GLM01205 extends baseRule {
 		for(IRow obj : checkCommand.getGlmList()){
 			if (obj instanceof RdLink){
 				RdLink rdLink = (RdLink)obj;
+				//一条环岛link链上的link不重复检查
+				if(linkPidList.contains(rdLink.getPid())){continue;}
 				//非环岛link不查此规则
 				List<IRow> forms=rdLink.getForms();
 				if(forms.size()==0){continue;}
@@ -40,28 +43,49 @@ public class GLM01205 extends baseRule {
 					if(form.getFormOfWay()==33){isHuandao=true;}
 				}
 				if(!isHuandao){continue;}
+				
+				checkWithRdLink(rdLink,linkPidList);
+			}else if (obj instanceof RdLinkForm){
+				RdLinkForm rdLinkForm = (RdLinkForm)obj;
+				int linkPid=rdLinkForm.getLinkPid();
 				//一条环岛link链上的link不重复检查
-				if(linkPidList.contains(rdLink.getPid())){continue;}
-				
-				//获取rdLink对应的链
-				HashSetRdLinkAndPid huandaoChain=getLoader().loadHandaoChain(getConn(), rdLink);
-				
-				linkPidList.removeAll(huandaoChain.getRdLinkPidSet());
-				linkPidList.addAll(huandaoChain.getRdLinkPidSet());
-				
-				int fc=rdLink.getFunctionClass();
-				Iterator<RdLink> huandaoIterator=huandaoChain.iterator();
-				String target="";
-				boolean isError=false;
-				while(huandaoIterator.hasNext()){
-					RdLink linkObj=huandaoIterator.next();
-					if(!target.isEmpty()){target=target+";";}
-					target=target+"[RD_LINK,"+linkObj.getPid()+"]";
-					if(fc!=linkObj.getFunctionClass()){isError=true;}
+				if(linkPidList.contains(linkPid)){continue;}
+				RdLinkSelector rdSelector=new RdLinkSelector(getConn());
+				RdLink rdLink=(RdLink) rdSelector.loadById(linkPid, false);
+				//非环岛link不查此规则
+				List<IRow> forms=rdLink.getForms();
+				if(forms.size()==0){continue;}
+				boolean isHuandao=false;
+				for(int i=0;i<forms.size();i++){
+					RdLinkForm form=(RdLinkForm) forms.get(i);
+					if(form.getFormOfWay()==33){isHuandao=true;}
 				}
-				if(isError){this.setCheckResult(rdLink.getGeometry(), target, rdLink.getMeshId());}
+				if(!isHuandao){continue;}
+				
+				checkWithRdLink(rdLink,linkPidList);
 			}
 		}
 	}
+	
+	private void checkWithRdLink(RdLink rdLink,List<Integer> linkPidList) throws Exception{		
+		//获取rdLink对应的链
+		HashSetRdLinkAndPid huandaoChain=getLoader().loadHandaoChain(getConn(), rdLink);
+		
+		linkPidList.removeAll(huandaoChain.getRdLinkPidSet());
+		linkPidList.addAll(huandaoChain.getRdLinkPidSet());
+		
+		int fc=rdLink.getFunctionClass();
+		Iterator<RdLink> huandaoIterator=huandaoChain.iterator();
+		String target="";
+		boolean isError=false;
+		while(huandaoIterator.hasNext()){
+			RdLink linkObj=huandaoIterator.next();
+			if(!target.isEmpty()){target=target+";";}
+			target=target+"[RD_LINK,"+linkObj.getPid()+"]";
+			if(fc!=linkObj.getFunctionClass()){isError=true;}
+		}
+		if(isError){this.setCheckResult(rdLink.getGeometry(), target, rdLink.getMeshId());}
+	}
+	
 
 }

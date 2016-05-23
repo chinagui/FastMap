@@ -2,6 +2,8 @@ package com.navinfo.dataservice.commons.util;
 
 import java.util.List;
 
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
+
 import net.sf.json.JSONArray;
 import ch.hsr.geohash.GeoHash;
 import ch.hsr.geohash.WGS84Point;
@@ -71,7 +73,7 @@ public class GridUtils {
 	 */
 	public static String grid2Wkt(String gridId) {
 
-		double[] loc = grid2Location(gridId);
+		double[] loc = CompGridUtil.grid2Rect(gridId);
 
 		double lbX = loc[0];
 		double lbY = loc[1];
@@ -98,9 +100,9 @@ public class GridUtils {
 		double maxLat = -90;
 
 		for (int i = 0; i < grids.size(); i++) {
-			String grid = grids.getString(i);
+			int gridId = grids.getInt(i);
 
-			double[] loc = GridUtils.grid2Location(grid);
+			double[] loc = CompGridUtil.grid2Rect(gridId);
 
 			if (loc[0] < minLon) {
 				minLon = loc[0];

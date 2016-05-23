@@ -681,6 +681,8 @@ public class TipsUpload {
 		
 		index.put("wkt", TipsImportUtils.generateSolrWkt(sourceType, deep, g_location, feedbacks));
 		
+		index.put("s_reliability", 100);
+		
 		return index;
 	}
 

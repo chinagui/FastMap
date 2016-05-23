@@ -28,32 +28,36 @@ public class GLM01197 extends baseRule {
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		List<Integer> linkPidList=new ArrayList<Integer>();
 		for(IRow obj : checkCommand.getGlmList()){
+			//只有主表rdlink的修改才引起该检查项
 			if (obj instanceof RdLink){
 				RdLink rdLink = (RdLink)obj;
-				//非特殊交通类型link不查此规则
-				if(rdLink.getSpecialTraffic()==0){continue;}
 				//一条特殊交通类型链上的link不重复检查
 				if(linkPidList.contains(rdLink.getPid())){continue;}
-				
-				//获取rdLink对应的特殊交通类型链
-				HashSetRdLinkAndPid specTrafficChain=getLoader().loadSpecTrafficChain(getConn(), rdLink);
-				
-				linkPidList.removeAll(specTrafficChain.getRdLinkPidSet());
-				linkPidList.addAll(specTrafficChain.getRdLinkPidSet());
-				
-				int fc=rdLink.getFunctionClass();
-				Iterator<RdLink> specIterator=specTrafficChain.iterator();
-				String target="";
-				boolean isError=false;
-				while(specIterator.hasNext()){
-					RdLink linkObj=specIterator.next();
-					if(!target.isEmpty()){target=target+";";}
-					target=target+"[RD_LINK,"+linkObj.getPid()+"]";
-					if(fc!=linkObj.getFunctionClass()){isError=true;}
-				}
-				if(isError){this.setCheckResult(rdLink.getGeometry(), target, rdLink.getMeshId());}
+				//非特殊交通类型link不查此规则
+				if(rdLink.getSpecialTraffic()==0){continue;}				
+				checkWithRdLink(rdLink,linkPidList);
 			}
 		}
+	}
+	
+	private void checkWithRdLink(RdLink rdLink,List<Integer> linkPidList) throws Exception{
+		//获取rdLink对应的特殊交通类型链
+		HashSetRdLinkAndPid specTrafficChain=getLoader().loadSpecTrafficChain(getConn(), rdLink);
+		
+		linkPidList.removeAll(specTrafficChain.getRdLinkPidSet());
+		linkPidList.addAll(specTrafficChain.getRdLinkPidSet());
+		
+		int fc=rdLink.getFunctionClass();
+		Iterator<RdLink> specIterator=specTrafficChain.iterator();
+		String target="";
+		boolean isError=false;
+		while(specIterator.hasNext()){
+			RdLink linkObj=specIterator.next();
+			if(!target.isEmpty()){target=target+";";}
+			target=target+"[RD_LINK,"+linkObj.getPid()+"]";
+			if(fc!=linkObj.getFunctionClass()){isError=true;}
+		}
+		if(isError){this.setCheckResult(rdLink.getGeometry(), target, rdLink.getMeshId());}		
 	}
 
 }

@@ -81,8 +81,8 @@ public class CkCop2PrjScriptsInterface {
 		try{
 			JSONObject request=null;
 			JSONObject response = null;
-//			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
-			String dir = "F:\\Fm_Projects_Doc\\scripts\\";
+			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
+//			String dir = "F:\\Fm_Projects_Doc\\scripts\\";
 			request = ToolScriptsInterface.readJson(dir+"request"+File.separator+"cop_xcopy_exception.json");
 			response = distribute(request);
 			ToolScriptsInterface.writeJson(response,dir+"response"+File.separator+"cop_xcopy_exception.json");

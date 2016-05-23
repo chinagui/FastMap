@@ -4,17 +4,28 @@ package com.navinfo.dataservice.commons;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
+import com.navinfo.navicommons.geo.computation.DoubleUtil;
+
 import junit.framework.Assert;
 import oracle.spatial.geometry.JGeometry;
 
@@ -30,9 +41,9 @@ public class CompGridUtilTest{
 	@Before
 	public void prepare(){
 		try{
-			run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
-					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_prjgdb250_bj01", "fm_prjgdb250_bj01").getConnection();
+			//run = new QueryRunner();
+			//conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
+			//		"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_prjgdb250_bj01", "fm_prjgdb250_bj01").getConnection();
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -67,31 +78,6 @@ public class CompGridUtilTest{
 				System.out.println(o);
 			}
 			Assert.assertNotNull(res);
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
-	/**
-	 * [116.53116 39.91667],在595664和595674的图廓线上
-	 * 这条图廓线是四舍五入
-	 */
-	@Test
-	public void point2Grid_001(){
-		try{
-			String grid = CompGridUtil.point2Grid(116.0625, 39.9379);
-			System.out.println(grid);
-			Assert.assertEquals("59567032", grid);
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
-	@Test
-	public void point2Grid_002(){
-		try{
-			//59567003
-			String s = CompGridUtil.point2Grid(116.09375
-					,39.916667);
-			System.out.println(s);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -133,12 +119,100 @@ public class CompGridUtilTest{
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * 
+	 */
+	@Test
+	public void compare_001(){
+		double[] xyArr = new double[20000000];
+		for(int i=0;i<10000;i++){
+			double lat = 0.1+i*0.00501;
+			for(int j=0;j<1000;j++){
+				xyArr[i*2000+(2*j)]=60.1+j*0.08001;
+				xyArr[i*2000+(2*j+1)]=lat;
+			}
+		}
+
+		List<String[]> results = new LinkedList<String[]>();
+		long t1 = System.currentTimeMillis();
+		for(int k=0;k<20000000;k+=2){
+			results.add(CompGridUtil.point2Grids2(xyArr[k],xyArr[k+1]));
+			if(k%1000000==0){
+				System.out.println(k);
+			}
+		}
+		System.out.println("time consumed:"+(System.currentTimeMillis()-t1)+"ms.");
+		List<String[]> results2 = new LinkedList<String[]>();
+		long t2 = System.currentTimeMillis();
+		for(int k=0;k<20000000;k+=2){
+			results2.add( CompGridUtil.point2Grids(xyArr[k],xyArr[k+1]));
+			if(k%1000000==0){
+				System.out.println(k);
+			}
+		}
+		System.out.println("time consumed:"+(System.currentTimeMillis()-t2)+"ms.");
+		Iterator<String[]> it = results.iterator();
+		Iterator<String[]> it2 = results2.iterator();
+		for(int k = 0;k<10000000;k++){
+			String[] grids = it.next();
+			int size = grids.length;
+			String[] grids2 = it2.next();
+			List<String> grids2Set = Arrays.asList(grids2);
+			if(grids2.length!=size){
+				System.out.println(xyArr[2*k]+" "+xyArr[2*k+1]+":"+StringUtils.join(grids,",")+"|"+StringUtils.join(grids2,","));
+				continue;
+			}
+			for(String s:grids){
+				if(!grids2Set.contains(s)){
+					System.out.println(xyArr[2*k]+" "+xyArr[2*k+1]+":"+StringUtils.join(grids,",")+"|"+StringUtils.join(grids2,","));
+					break;
+				}
+			}
+		}
+	}
+	@Test
+	public void compare_002(){
+		double[] p = new double[]{116.00596,40.33333};
+		List<String> r0 = MeshUtils.lonlat2MeshIds(p[0],p[1]);
+		System.out.println(StringUtils.join(r0,","));
+		String[] r1 = CompGridUtil.point2Grids(p[0],p[1]);
+		System.out.println(StringUtils.join(r1,","));
+		String[] r2 = CompGridUtil.point2Grids2(p[0],p[1]);
+		System.out.println(StringUtils.join(r2,","));
+		
+	}
+	@Test
+	public void compare_003(){
+		double[] p = new double[]{69.62119,34.33333};
+		List<String> r0 = MeshUtils.lonlat2MeshIds(p[0],p[1]);
+		System.out.println(StringUtils.join(r0,","));
+		String[] r1 = CompGridUtil.point2Grids(p[0],p[1]);
+		System.out.println(StringUtils.join(r1,","));
+		String[] r2 = CompGridUtil.point2Grids2(p[0],p[1]);
+		System.out.println(StringUtils.join(r2,","));
+		
+	}
 
 	/**
 	 * 验证double类型的精度
 	 */
 	@Test
 	public void other_001(){
+		double sLon = 116.0;
+		double eLon = 120.0;
+		double sLat = 36.0;
+		double eLat = 40.0;
+		double initLon = sLon;
+		for(int i=0;i<=32;i++){//lon
+			initLon=DoubleUtil.keepSpecDecimal(sLon+i/8.0);
+			System.out.println(String.format("%s%s%s%s%s%s%s%s%s", "LINESTRING (",String.valueOf(initLon)," ",String.valueOf(sLat),",",String.valueOf(initLon)," ",String.valueOf(eLat),")"));
+		}
+		double initLat = sLat;
+		for(int j=0;j<=48;j++){//lat递增
+			initLat=DoubleUtil.keepSpecDecimal(sLat+j/12.0);
+			System.out.println(String.format("%s%s%s%s%s%s%s%s%s", "LINESTRING (",String.valueOf(sLon)," ",String.valueOf(initLat),",",String.valueOf(eLon)," ",String.valueOf(initLat),")"));
+		}
 //		double x1=15.01;
 //		double x2 = 16.01;
 //		System.out.println(x1%1);
@@ -163,7 +237,7 @@ public class CompGridUtilTest{
 //		for(double i = 0.0;i<60;i++){
 //			System.out.println(i*1.5);
 //		}
-		System.out.println(1571064264264199999L/785532132132100000L);
+//		System.out.println(1571064264264199999L/785532132132100000L);
 		
 //		System.out.println(15.01%1);
 //		System.out.println(16.01%1);

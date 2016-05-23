@@ -55,7 +55,7 @@ public class AdAdminSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select region_id, geometry     from ad_admin    where sdo_relate(geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2";
+		String sql = "select region_id, geometry,admin_type    from ad_admin    where sdo_relate(geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2";
 		
 		PreparedStatement pstmt = null;
 
@@ -80,6 +80,12 @@ public class AdAdminSearch implements ISearch {
 				snapshot.setT(15);
 
 				snapshot.setI(resultSet.getString("region_id"));
+				
+				JSONObject m = new JSONObject();
+
+				m.put("c", resultSet.getInt("admin_type"));
+				
+				snapshot.setM(m);
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 

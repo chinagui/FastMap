@@ -8,7 +8,7 @@ package com.navinfo.navicommons.geo.computation;
 */
 public class DoubleUtil {
 	public static double INFINITY = 9999999999999999.0;
-	public static double keep5Decimal(Double num){
+	public static double keepSpecDecimal(Double num){
 		return (double)(Math.round(num*100000)/100000.0);
 	} 
 	public static boolean equals(double num1,double num2){
@@ -17,14 +17,14 @@ public class DoubleUtil {
 	}
 	
 	public static void main(String[] args){
-		System.out.println(keep5Decimal(1.23456666));
-		System.out.println(keep5Decimal(1.23456777));
-		if(keep5Decimal(1.23456666)==keep5Decimal(1.23456777)){
+		System.out.println(keepSpecDecimal(1.23456666));
+		System.out.println(keepSpecDecimal(1.23456777));
+		if(keepSpecDecimal(1.23456666)==keepSpecDecimal(1.23456777)){
 			System.out.println("YES...");
 		}else{
 			System.out.println("No...");
 		}
-		System.out.println(keep5Decimal(1.23456666)-keep5Decimal(1.23456777));
+		System.out.println(keepSpecDecimal(1.23456666)-keepSpecDecimal(1.23456777));
 		
 	}
 }

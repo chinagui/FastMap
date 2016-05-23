@@ -1,5 +1,12 @@
 package com.navinfo.navicommons.geo.computation;
 
+import com.vividsolutions.jts.geom.LinearRing;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.vividsolutions.jts.geom.LineString;
+
 /** 
 * @ClassName: CompGeometryUtil 
 * @author Xiao Xiaowen 
@@ -153,5 +160,16 @@ public class CompGeometryUtil {
 		// 射线穿过多边形边界的次数为奇数时点在多边形内
 		return flag;
 
+	}
+	/**
+	 * 图廓线打断多边形
+	 * @param lines:组成闭合简单多边形的多条lineString,如果只有一条，则该条线的首尾coordinate必须equal
+	 * @param meshes：这些lineString跨越的图幅号
+	 * @return：map，key:图幅号，value：该图幅号内的多边形的所有边linestring
+	 */
+	public static Map<String,LineString[]> cut(LineString[] lines,String[] meshes){
+		Map<String,LineString[]> result = new HashMap<String,LineString[]>();
+		
+		return null;
 	}
 }

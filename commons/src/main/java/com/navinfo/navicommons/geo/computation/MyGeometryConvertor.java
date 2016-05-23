@@ -3,6 +3,8 @@ package com.navinfo.navicommons.geo.computation;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.Polygon;
 
 /** 
 * @ClassName: MyGeometryConvertor 
@@ -48,5 +50,21 @@ public class MyGeometryConvertor {
 			return JtsGeometryFactory.createLineString(coArr);
 		}
 		return null;
+	}
+	/**
+	 * 
+	 * @param rect:[minx,miny,maxx,maxy]
+	 * @return jts polygon
+	 */
+	public static Polygon convert(double[] rect) {
+		Coordinate[] coArr = new Coordinate[5];
+		Coordinate startend = new Coordinate(rect[0],rect[1]);
+		coArr[0]=startend;
+		coArr[1]=new Coordinate(rect[2],rect[1]);
+		coArr[2]=new Coordinate(rect[2],rect[3]);
+		coArr[3]=new Coordinate(rect[0],rect[3]);
+		coArr[4]=startend;
+		LinearRing shell = JtsGeometryFactory.createLinearRing(coArr);
+		return JtsGeometryFactory.createPolygon(shell, null);
 	}
 }

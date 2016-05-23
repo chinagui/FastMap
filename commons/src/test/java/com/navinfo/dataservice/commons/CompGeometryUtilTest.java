@@ -8,7 +8,6 @@ import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
 
-import junit.framework.TestCase;
 
 /** 
 * @ClassName: CompGridUtilTest 
@@ -39,7 +38,9 @@ public class CompGeometryUtilTest{
 			Polygon p1 = (Polygon)JtsGeometryFactory.read("Polygon ((118.01369349658568808 37.6084294790892244, 118.09926057332071991 37.65289740873105728, 118.160909293960529 37.64380169584977409, 118.20335595407318863 37.56362467119253523, 118.15855114617649235 37.61348265291216109, 118.15619299839245571 37.56160340166336198, 118.09454427775264662 37.56092964515363519, 118.07062592165742387 37.59798625318849474, 118.05310825240457007 37.55823461911473515, 118.04300190475871091 37.59832313144335814, 118.02784238328990796 37.55722398435015208, 118.01369349658568808 37.6084294790892244))");
 			Polygon p2 = (Polygon)JtsGeometryFactory.read("POLYGON((118.0 37.58333,118.125 37.58333,118.125 37.66666,118.0 37.66666,118.0 37.58333))");
 			Geometry result = p1.intersection(p2);
+			System.out.println(result.getGeometryType());
 			System.out.println(result.getNumGeometries());
+			System.out.println(result.getGeometryN(0).toText());
 			System.out.println(result.toText());
 		}catch(Exception e){
 			e.printStackTrace();
@@ -52,7 +53,9 @@ public class CompGeometryUtilTest{
 			Polygon p1 = (Polygon)JtsGeometryFactory.read("Polygon ((118.01369349658568808 37.6084294790892244, 118.09926057332071991 37.65289740873105728, 118.160909293960529 37.64380169584977409, 118.20335595407318863 37.56362467119253523, 118.15855114617649235 37.61348265291216109, 118.15619299839245571 37.56160340166336198, 118.09454427775264662 37.56092964515363519, 118.07062592165742387 37.59798625318849474, 118.05310825240457007 37.55823461911473515, 118.04300190475871091 37.59832313144335814, 118.02784238328990796 37.55722398435015208, 118.01369349658568808 37.6084294790892244))");
 			Polygon p2 = (Polygon)JtsGeometryFactory.read("POLYGON((118.0 37.5,118.125 37.5,118.125 37.58333,118.0 37.58333,118.0 37.5))");
 			Geometry result = p1.intersection(p2);
+			System.out.println(result.getGeometryType());
 			System.out.println(result.getNumGeometries());
+			System.out.println(result.getGeometryN(0).toText());
 			System.out.println(result.toText());
 		}catch(Exception e){
 			e.printStackTrace();

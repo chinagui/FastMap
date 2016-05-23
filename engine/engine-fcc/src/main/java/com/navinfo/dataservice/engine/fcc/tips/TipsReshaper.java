@@ -3,7 +3,6 @@ package com.navinfo.dataservice.engine.fcc.tips;
 import java.util.Iterator;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 import org.apache.hadoop.hbase.TableName;
@@ -25,9 +24,6 @@ public class TipsReshaper {
 	private SolrBulkUpdater solr;
 
 	public TipsReshaper() {
-
-		// solr = new SolrBulkUpdater(TipsImportUtils.QueueSize,
-		// TipsImportUtils.ThreadCount);
 
 		solr = new SolrBulkUpdater(cache, 5);
 	}
@@ -120,6 +116,8 @@ public class TipsReshaper {
 			solrIndex.put("s_sourceType", sourceType);
 
 			solrIndex.put("s_sourceCode", sourcejo.getInt("s_sourceCode"));
+			
+			solrIndex.put("s_reliability", sourcejo.getInt("s_reliability"));
 
 			// deep
 			String deep = new String(result.getValue("data".getBytes(),
@@ -145,7 +143,7 @@ public class TipsReshaper {
 			// wkt
 			solrIndex.put("wkt", TipsImportUtils.generateSolrWkt(sourceType,
 					deepjo, g_location, feedbacks));
-
+			
 			solr.addTips(solrIndex);
 
 			count += 1;

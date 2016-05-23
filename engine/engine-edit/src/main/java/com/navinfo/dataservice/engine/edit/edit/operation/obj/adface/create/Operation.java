@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.json.JSONObject;
+
+import com.alibaba.druid.util.StringUtils;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.commons.util.GeometryUtils;
@@ -38,8 +41,13 @@ public class Operation implements IOperation {
 	private Connection conn;
 	private Result result;
 	private AdFace face;
+	private boolean updateFlag =true;
 
 	public Operation(Result result) {
+		this.result = result;
+	}
+	public Operation(Result result,AdFace face) {
+		this.face  = face;
 		this.result = result;
 	}
 
@@ -50,6 +58,7 @@ public class Operation implements IOperation {
 
 		this.conn = conn;
 		this.result = result;
+		this.updateFlag =false;
 	}
 
 	@Override
@@ -60,7 +69,7 @@ public class Operation implements IOperation {
 			// ADLINK
 			if (command.getLinkType().equals(ObjType.ADLINK.toString())) {
 				this.createFace();
-				this.reCaleFaceGeometry(command.getLinks(), face);
+				this.reCaleFaceGeometry(command.getLinks());
 
 			}
 			// RDLINK
@@ -120,7 +129,7 @@ public class Operation implements IOperation {
 			this.face.setMesh(meshId);
 			List<AdLink> links = new ArrayList<AdLink>();
 			links.add(link);
-			this.reCaleFaceGeometry(links, face);
+			this.reCaleFaceGeometry(links);
 		}
 	}
 
@@ -138,12 +147,30 @@ public class Operation implements IOperation {
 		}
 		this.face.setFaceTopos(adFaceTopos);
 	}
+	
+	
+	/*
+	 * 添加Link和FaceTopo关系
+	 */
+	public void createFaceTop( Map<AdLink,Integer> map) {
+		List<IRow> adFaceTopos = new ArrayList<IRow>();
+		for (AdLink  link :map.keySet()){
+			AdFaceTopo faceTopo = new AdFaceTopo();
+			faceTopo.setLinkPid(link.getPid());
+			faceTopo.setFacePid(face.getPid());
+			faceTopo.setSeqNum(map.get(link));
+			adFaceTopos.add(faceTopo);
+			result.insertObject(faceTopo, ObjStatus.INSERT, face.getPid());
+		}
+		
+	}
+	
 
 	/*
 	 * @param List 按照ADFACE的形状重新维护ADFACE
 	 */
 	@SuppressWarnings("null")
-	public void reCaleFaceGeometry(List<AdLink> links, AdFace face)
+	public void reCaleFaceGeometry(List<AdLink> links)
 			throws Exception {
 		if (links == null && links.size() < 1) {
 			throw new Exception("重新维护面的形状:发现面没有组成link");
@@ -164,17 +191,23 @@ public class Operation implements IOperation {
 		int index = 1;
 		List<Geometry> list = new ArrayList<Geometry>();
 		list.add(currLink.getGeometry());
+		Map<Integer, AdLink> currLinkAndPidMap = new HashMap<Integer, AdLink>();
+		currLinkAndPidMap.put(currNodePid, currLink);
 		// 获取下一条联通的LINK
-		while (AdLinkOperateUtils.getNextLink(links, currNodePid, currLink)) {
-			if (currNodePid == startNodePid) {
+		while (AdLinkOperateUtils.getNextLink(links, currLinkAndPidMap)) {
+			if (currLinkAndPidMap.keySet().iterator().next() == startNodePid) {
 				break;
 			}
 			index++;
-			map.put(currLink, index);
-			list.add(currLink.getGeometry());
+			map.put(currLinkAndPidMap.get(currLinkAndPidMap.keySet().iterator().next()), index);
+			list.add(currLinkAndPidMap.get(currLinkAndPidMap.keySet().iterator().next()).getGeometry());
+
 		}
 		// 线几何组成面的几何
-		this.addLink(map);
+		if(this.updateFlag){
+			this.createFaceTop(map);
+		}else{
+			this.addLink(map);}
 		Geometry g = GeoTranslator.getCalLineToPython(list);
 		Coordinate[] c1 = new Coordinate[g.getCoordinates().length];
 		// 判断线组成面是否可逆
@@ -188,21 +221,49 @@ public class Operation implements IOperation {
 			c1 = g.getCoordinates();
 		}
 		// 更新面的几何属性
-		this.updateGeometry(GeoTranslator.getPolygonToPoints(c1), face);
+		if(this.updateFlag){
+			this.updateGeometry(GeoTranslator.getPolygonToPoints(c1), this.face);
+		}else{
+			this.createFaceGeometry(GeoTranslator.getPolygonToPoints(c1), this.face);
+		}
 
 	}
 
 	/*
 	 * 更新面的几何属性
 	 */
-	private void updateGeometry(Geometry g, AdFace face) throws Exception {
+	private void createFaceGeometry(Geometry g, AdFace face) throws Exception {
 		face.setGeometry(g);
 		//缩放计算面积和周长
 		g = GeoTranslator.transform(g, 0.00001, 5);
+		String meshId = MeshUtils.getInterMeshes(g).iterator().next();
+		if(!StringUtils.isEmpty(meshId))
+		{
+			face.setMeshId(Integer.parseInt(meshId));
+		}
 		face.setArea(GeometryUtils.getCalculateArea(g));
 		face.setPerimeter(GeometryUtils.getLinkLength(g));
 		result.insertObject(face, ObjStatus.INSERT, face.getPid());
 	}
+	
+	/*
+	 * 更新面的几何属性
+	 */
+	private void updateGeometry(Geometry g, AdFace face) throws Exception {
+		
+		JSONObject updateContent = new JSONObject();
+		g = GeoTranslator.transform(g, 0.00001, 5);
+		String meshId = MeshUtils.getInterMeshes(g).iterator().next();
+		if(!StringUtils.isEmpty(meshId))
+		{
+			updateContent.put("mesh", Integer.parseInt(meshId));
+		}
+		updateContent.put("geometry", GeoTranslator.jts2Geojson(g));
+		updateContent.put("area", GeometryUtils.getCalculateArea(g));
+		updateContent.put("perimeter", GeometryUtils.getLinkLength(g));
+		result.insertObject(face, ObjStatus.UPDATE, face.getPid());
+	}
+	
 
 	/*
 	 * 更新面的几何属性
@@ -210,6 +271,7 @@ public class Operation implements IOperation {
 	private void createFace() throws Exception {
 		AdFace face = new AdFace();
 		face.setPid(PidService.getInstance().applyAdFacePid());
+		result.setPrimaryPid(face.getPid());
 		this.face = face;
 	}
 

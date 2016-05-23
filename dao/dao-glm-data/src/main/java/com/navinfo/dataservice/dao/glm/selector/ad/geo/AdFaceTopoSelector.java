@@ -34,7 +34,7 @@ public class AdFaceTopoSelector implements ISelector {
 	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
 		AdFaceTopo adFaceTopo = new AdFaceTopo();
 
-		String sql = "SELECT a.*,b.mesh_id FROM ad_face_topo a,ad_face b WHERE a.row_id=hextoraw(:1) AND a.face_pid = b.face_pid ";
+		String sql = "SELECT a.*,b.mesh_id FROM ad_face_topo a,ad_face b WHERE a.row_id=hextoraw(:1) AND a.face_pid = b.face_pid and a.u_record !=2 ";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -95,7 +95,7 @@ public class AdFaceTopoSelector implements ISelector {
 	@Override
 	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
 		StringBuilder sb = new StringBuilder(
-				"SELECT a.*,b.mesh_id FROM ad_face_topo a,ad_face b WHERE a.face_pid=:1 AND a.face_pid = b.face_pid");
+				"SELECT a.*,b.mesh_id FROM ad_face_topo a,ad_face b WHERE a.face_pid=:1 AND a.face_pid = b.face_pid and  a.u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -157,7 +157,7 @@ public class AdFaceTopoSelector implements ISelector {
 	public List<AdFaceTopo> loadByLinkPid(Integer linkPid, boolean isLock) throws Exception {
 		
 		List<AdFaceTopo> adFaceTopos = new ArrayList<AdFaceTopo>();
-		String sql = "SELECT a.* FROM ad_face_topo a WHERE a.link_pid =:1 ";
+		String sql = "SELECT a.* FROM ad_face_topo a WHERE a.link_pid =:1 and  a.u_record !=2 ";
 
 		if (isLock) {
 			sql += " for update nowait";

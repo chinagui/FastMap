@@ -181,8 +181,6 @@ public class RdGscSearch implements ISearch {
 			
 			SearchSnapshot snapshot = new SearchSnapshot();
 			
-			JSONObject m = new JSONObject();
-			
 			JSONArray g = new JSONArray();
 			
 			while (resultSet.next()) {
@@ -242,6 +240,8 @@ public class RdGscSearch implements ISearch {
 				obj.put("i", linkPid);
 				
 				Geojson.point2Pixel(geojsonGsc, z, px, py);
+				
+				JSONObject m = new JSONObject();
 				
 				m.put("a", geojsonGsc.getJSONArray("coordinates"));
 				

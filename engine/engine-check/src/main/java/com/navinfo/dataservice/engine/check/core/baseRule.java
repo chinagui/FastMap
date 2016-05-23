@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.check.core;
 import java.sql.Connection;
 
 import com.navinfo.dataservice.engine.check.core.NiValException;
+import com.navinfo.dataservice.engine.check.graph.ChainLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,10 +12,12 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.check.CheckCommand;
+import com.vividsolutions.jts.geom.Geometry;
 
 public abstract class baseRule {
 	private String ruleCode;
 	private String ruleLog;
+	private ChainLoader loader;
 	
 	private Connection conn;
 	private static Logger log = Logger.getLogger(baseRule.class);
@@ -60,7 +63,17 @@ public abstract class baseRule {
 		this.checkResultList.add(checkResult);
 	}
 	
+	public void setCheckResult(Geometry loc, String targets,int meshId) throws Exception{
+		NiValException checkResult=new NiValException(this.ruleCode, loc, targets, meshId,this.ruleLog);
+		this.checkResultList.add(checkResult);
+	}
+	
 	public void setCheckResult(String loc, String targets,int meshId,String log){
+		NiValException checkResult=new NiValException(this.ruleCode, loc, targets, meshId,log);
+		this.checkResultList.add(checkResult);
+	}
+	
+	public void setCheckResult(Geometry loc, String targets,int meshId,String log) throws Exception{
 		NiValException checkResult=new NiValException(this.ruleCode, loc, targets, meshId,log);
 		this.checkResultList.add(checkResult);
 	}
@@ -73,4 +86,12 @@ public abstract class baseRule {
 	public abstract void preCheck(CheckCommand checkCommand) throws Exception;
 	
 	public abstract void postCheck(CheckCommand checkCommand) throws Exception;
+
+	public ChainLoader getLoader() {
+		return loader;
+	}
+
+	public void setLoader(ChainLoader loader) {
+		this.loader = loader;
+	}
 }

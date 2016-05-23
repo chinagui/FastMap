@@ -64,8 +64,8 @@ public class OpRefAdFace implements IOperation {
 			links.add(command.geteAdLink());
 			links.add(command.getsAdLink());
 			com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Operation opFace = new Operation(
-					result);
-			opFace.reCaleFaceGeometry(links, face);
+					result,face);
+			opFace.reCaleFaceGeometry(links);
 		}
 
 	}

@@ -16,10 +16,9 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class AdNodeTest {
-
+	private static final String configPath = "H:/GitHub/zhaokk/DataService/web/edit-web/src/main/resources/config.properties";
 	public AdNodeTest() {
-		ConfigLoader.initDBConn(
-				"H:/GitHub/DataService/web/edit-web/src/main/resources/config.properties");
+		ConfigLoader.initDBConn(configPath);
 	}
 
 	protected Logger log = Logger.getLogger(this.getClass());
@@ -30,9 +29,9 @@ public class AdNodeTest {
 		;
 		String msg = t.run();
 	}
-
+//100022085
 	public void deleteAdNodeTest() throws Exception {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"ADNODE\",\"projectId\":11,\"objId\":100021717}}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"ADNODE\",\"projectId\":11,\"objId\":100022085}}";
 		Transaction t = new Transaction(parameter);
 		;
 		String msg = t.run();
@@ -91,9 +90,9 @@ public class AdNodeTest {
 
 	public static void main(String[] args) throws Exception {
 		// new AdNodeTest().createAdNodeTest();
-		// new AdNodeTest().deleteAdNodeTest();
+		new AdNodeTest().deleteAdNodeTest();
 		// new AdNodeTest().updateAdNodeTest();
-		new AdNodeTest().moveAdNodeTest();
+		//new AdNodeTest().moveAdNodeTest();
 
 	}
 }

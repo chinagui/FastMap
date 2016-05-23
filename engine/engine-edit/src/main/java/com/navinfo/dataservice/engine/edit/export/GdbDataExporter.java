@@ -601,11 +601,11 @@ public class GdbDataExporter {
 
 		json.put("display_text", "");
 
-		json.put("display_style", "");
-
 		int kind = rs.getInt("kind");
 
 		json.put("kind", kind);
+		
+		json.put("display_style", kind+",23");
 
 		STRUCT struct = (STRUCT) rs.getObject("geometry");
 

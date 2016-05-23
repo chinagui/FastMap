@@ -39,7 +39,7 @@ public class CheckController {
 
 			int projectId = jsonReq.getInt("projectId");
 
-			JSONArray meshes = jsonReq.getJSONArray("meshes");
+			JSONArray grids = jsonReq.getJSONArray("grids");
 
 			int pageSize = jsonReq.getInt("pageSize");
 
@@ -49,8 +49,7 @@ public class CheckController {
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 
-			JSONArray result = selector.queryException(meshes, pageSize,
-					pageNum);
+			JSONArray result = selector.loadByGrid(grids, pageSize, pageNum);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(result));
@@ -90,13 +89,13 @@ public class CheckController {
 
 			int projectId = jsonReq.getInt("projectId");
 
-			JSONArray meshes = jsonReq.getJSONArray("meshes");
+			JSONArray grids = jsonReq.getJSONArray("grids");
 
 			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 
-			int result = selector.queryExceptionCount(meshes);
+			int result = selector.loadCountByGrid(grids);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(result));
@@ -142,9 +141,9 @@ public class CheckController {
 			
 			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
 
-			NiValExceptionOperator selector = new NiValExceptionOperator(conn);
+			NiValExceptionOperator selector = new NiValExceptionOperator(conn,projectId);
 
-			selector.updateCheckLogStatus(id, type, projectId);
+			selector.updateCheckLogStatus(id, type);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(null));

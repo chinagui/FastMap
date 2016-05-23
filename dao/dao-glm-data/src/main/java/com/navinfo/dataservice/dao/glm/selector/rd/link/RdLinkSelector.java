@@ -625,6 +625,252 @@ public class RdLinkSelector implements ISelector {
 		return links;
 
 	}
+	
+	public List<RdLink> loadBySql(String sql, boolean isLock)
+			throws Exception {
+
+		List<RdLink> links = new ArrayList<RdLink>();
+
+		StringBuilder sb = new StringBuilder(sql);
+
+		if (isLock) {
+			sb.append(" for update nowait");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdLink rdLink = new RdLink();
+
+				rdLink.setPid(resultSet.getInt("link_pid"));
+
+				rdLink.setDirect(resultSet.getInt("direct"));
+
+				rdLink.seteNodePid(resultSet.getInt("e_node_pid"));
+
+				rdLink.setFunctionClass(resultSet.getInt("function_class"));
+
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
+
+				rdLink.setGeometry(geometry);
+
+				rdLink.setKind(resultSet.getInt("kind"));
+
+				rdLink.setLaneLeft(resultSet.getInt("lane_left"));
+
+				rdLink.setLaneNum(resultSet.getInt("lane_num"));
+
+				rdLink.setLaneRight(resultSet.getInt("lane_right"));
+
+				rdLink.setMultiDigitized(resultSet.getInt("multi_digitized"));
+
+				rdLink.setsNodePid(resultSet.getInt("s_node_pid"));
+
+				rdLink.setRowId(resultSet.getString("row_id"));
+
+				rdLink.setAppInfo(resultSet.getInt("app_info"));
+
+				rdLink.setTollInfo(resultSet.getInt("toll_info"));
+
+				rdLink.setRouteAdopt(resultSet.getInt("route_adopt"));
+
+				rdLink.setDevelopState(resultSet.getInt("develop_state"));
+
+				rdLink.setImiCode(resultSet.getInt("imi_code"));
+
+				rdLink.setSpecialTraffic(resultSet.getInt("special_traffic"));
+
+				rdLink.setUrban(resultSet.getInt("urban"));
+
+				rdLink.setPaveStatus(resultSet.getInt("pave_status"));
+
+				rdLink.setLaneWidthLeft(resultSet.getInt("lane_width_left"));
+
+				rdLink.setLaneWidthRight(resultSet.getInt("lane_width_right"));
+
+				rdLink.setLaneClass(resultSet.getInt("lane_class"));
+
+				rdLink.setWidth(resultSet.getInt("width"));
+
+				rdLink.setIsViaduct(resultSet.getInt("is_viaduct"));
+
+				rdLink.setLeftRegionId(resultSet.getInt("left_region_id"));
+
+				rdLink.setRightRegionId(resultSet.getInt("right_region_id"));
+
+				rdLink.setLength(resultSet.getDouble("length"));
+
+				rdLink.setMeshId(resultSet.getInt("mesh_id"));
+
+				rdLink.setOnewayMark(resultSet.getInt("oneway_mark"));
+
+				rdLink.setStreetLight(resultSet.getInt("street_light"));
+
+				rdLink.setParkingLot(resultSet.getInt("parking_lot"));
+
+				rdLink.setAdasFlag(resultSet.getInt("adas_flag"));
+
+				rdLink.setSidewalkFlag(resultSet.getInt("sidewalk_flag"));
+
+				rdLink.setWalkstairFlag(resultSet.getInt("walkstair_flag"));
+
+				rdLink.setDiciType(resultSet.getInt("dici_type"));
+
+				rdLink.setWalkFlag(resultSet.getInt("walk_flag"));
+
+				rdLink.setDifGroupid(resultSet.getString("dif_groupid"));
+
+				rdLink.setSrcFlag(resultSet.getInt("src_flag"));
+
+				rdLink.setDigitalLevel(resultSet.getInt("digital_level"));
+
+				rdLink.setEditFlag(resultSet.getInt("edit_flag"));
+
+				rdLink.setTruckFlag(resultSet.getInt("truck_flag"));
+
+				rdLink.setOriginLinkPid(resultSet.getInt("origin_link_pid"));
+
+				rdLink.setCenterDivider(resultSet.getInt("center_divider"));
+
+				rdLink.setParkingFlag(resultSet.getInt("parking_flag"));
+
+				rdLink.setMemo(resultSet.getString("memo"));
+
+				// 获取LINK对应的关联数据
+
+				// rd_link_form
+				List<IRow> forms = new RdLinkFormSelector(conn)
+						.loadRowsByParentId(rdLink.getPid(), isLock);
+
+				for (IRow row : forms) {
+					row.setMesh(rdLink.getMeshId());
+				}
+
+				rdLink.setForms(forms);
+
+				// rd_link_int_rtic
+				List<IRow> intRtics = new RdLinkIntRticSelector(conn)
+						.loadRowsByParentId(rdLink.getPid(), isLock);
+
+				for (IRow row : intRtics) {
+					row.setMesh(rdLink.getMeshId());
+				}
+
+				rdLink.setIntRtics(intRtics);
+
+				// rd_link_limit
+				List<IRow> limits = new RdLinkLimitSelector(conn)
+						.loadRowsByParentId(rdLink.getPid(), isLock);
+
+				for (IRow row : limits) {
+					row.setMesh(rdLink.getMeshId());
+				}
+
+				rdLink.setLimits(limits);
+
+				// rd_link_limit_truck
+				List<IRow> trucks = new RdLinkLimitTruckSelector(conn)
+						.loadRowsByParentId(rdLink.getPid(), isLock);
+
+				for (IRow row : trucks) {
+					row.setMesh(rdLink.getMeshId());
+				}
+
+				rdLink.setLimitTrucks(trucks);
+
+				// rd_link_name
+				List<IRow> names = new RdLinkNameSelector(conn)
+						.loadRowsByParentId(rdLink.getPid(), isLock);
+
+				for (IRow row : names) {
+					row.setMesh(rdLink.getMeshId());
+				}
+
+				rdLink.setNames(names);
+
+				// rd_link_rtic
+				List<IRow> rtics = new RdLinkRticSelector(conn)
+						.loadRowsByParentId(rdLink.getPid(), isLock);
+
+				for (IRow row : rtics) {
+					row.setMesh(rdLink.getMeshId());
+				}
+
+				rdLink.setRtics(rtics);
+
+				// rd_link_sidewalk
+				List<IRow> sidewalks = new RdLinkSidewalkSelector(conn)
+						.loadRowsByParentId(rdLink.getPid(), isLock);
+
+				for (IRow row : sidewalks) {
+					row.setMesh(rdLink.getMeshId());
+				}
+
+				rdLink.setSidewalks(sidewalks);
+
+				// rd_link_speedlimit
+				List<IRow> speedlimits = new RdLinkSpeedlimitSelector(conn)
+						.loadRowsByParentId(rdLink.getPid(), isLock);
+
+				for (IRow row : speedlimits) {
+					row.setMesh(rdLink.getMeshId());
+				}
+
+				rdLink.setSpeedlimits(speedlimits);
+
+				// rd_link_walkstair
+				List<IRow> walkstairs = new RdLinkWalkstairSelector(conn)
+						.loadRowsByParentId(rdLink.getPid(), isLock);
+
+				for (IRow row : walkstairs) {
+					row.setMesh(rdLink.getMeshId());
+				}
+
+				rdLink.setWalkstairs(walkstairs);
+
+				// rd_link_zone
+				List<IRow> zones = new RdLinkZoneSelector(conn)
+						.loadRowsByParentId(rdLink.getPid(), isLock);
+
+				rdLink.setZones(zones);
+
+				links.add(rdLink);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return links;
+
+	}
 
 	public Map<Integer, String> loadNameByLinkPids(Set<Integer> linkPids) throws Exception{
 
@@ -722,7 +968,7 @@ public class RdLinkSelector implements ISelector {
 			sb.append(" or (rl.e_node_pid = :2 and direct = 3)");
 		}
 		sb.append(" or ((rl.s_node_pid = :3 or rl.e_node_pid =:4) and direct =1)");
-		sb.append(") and rl.link_pid <> :5");
+		sb.append(") and rl.link_pid <> :5 and rl.u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -1426,7 +1672,7 @@ public class RdLinkSelector implements ISelector {
 	public JSONArray loadGeomtryByLinkPids(List<Integer> linkPids) throws Exception{ 
 		
 		StringBuilder sb = new StringBuilder(
-				"select geometry,e_node_pid,s_node_pid from rd_link where link_pid in ( "+com.navinfo.dataservice.commons.util.StringUtils.getInteStr(linkPids)+")");
+				"select geometry,e_node_pid,s_node_pid from rd_link where link_pid in ( "+com.navinfo.dataservice.commons.util.StringUtils.getInteStr(linkPids)+") and  u_record !=2");
 
 		PreparedStatement pstmt = null;
 

@@ -504,13 +504,13 @@ public class GeoTranslator {
 		  for(Geometry g : gList){
 			  c = (Coordinate[])ArrayUtils.addAll(c,g.getCoordinates());
 		  }   
-		  for(int i = 0 ; i < c.length-1;i++){
+		  for(int i = 0 ; i < c.length;i++){
 	        	
 	        	 if(!list.contains(c[i])){
 	        		 list.add(c[i]);
 	        	 }
 	        }
-	      list.add(c[c.length-1]);
+	      list.add(c[0]);
 	      Coordinate[] c1 = new Coordinate[list.size()];
 	      for(int i = 0  ; i < list.size();  i++){
 	        	c1[i] = list.get(i);

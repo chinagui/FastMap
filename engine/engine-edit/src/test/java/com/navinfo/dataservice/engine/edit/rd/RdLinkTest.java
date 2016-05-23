@@ -77,7 +77,7 @@ private static final String configPath = "H:/GitHub/zhaokk/DataService/web/edit-
 	}
 	public void departRdLink()
 	{
-		String line  = "[100003385,100003386,100003387,100003389,100003397]";
+		String line  = "[100003803]";
 		String parameter =  "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"distance\":20,\"projectId\":11,\"data\":{\"linkPids\":"+line+"}}";
 		Transaction t = new Transaction(parameter);
 		try {

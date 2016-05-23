@@ -81,7 +81,7 @@ public class Operation implements IOperation {
 		// 获取交点（不考虑矩形框可能有多个交点）
 		Geometry interGeometry = GeometryUtils.getIntersectsGeo(linksGeometryList);
 
-		if (interGeometry != null) {
+		if (interGeometry != null && !interGeometry.isEmpty()) {
 			/**
 			 * 判断交点是否在矩形框内 1.获取矩形框 2.获取交点 3.判断交点是否和矩形框相交，并且只有一个交点
 			 */
@@ -155,6 +155,10 @@ public class Operation implements IOperation {
 				throw new Exception("矩形框内有且只能有一个交点");
 			}
 		}
+		else
+		{
+			throw new Exception("组成Link没有交点");
+		}
 
 		return null;
 	}
@@ -168,7 +172,7 @@ public class Operation implements IOperation {
 	 */
 	private void handleOtherGscLink(int linkPid, Result result, Coordinate[] linkCoor) throws Exception {
 		RdGscSelector selector = new RdGscSelector(conn);
-		System.out.println();
+		
 		List<RdGsc> rdGscList = selector.onlyLoadRdGscLinkByLinkPid(linkPid, false);
 		
 		for(RdGsc gsc : rdGscList)
@@ -201,8 +205,10 @@ public class Operation implements IOperation {
 
 	private Coordinate[] updateLinkGeo(RdLink linkObj, Geometry gscGeo, Result result) throws Exception {
 		
+		//link的几何
 		JSONObject geojson = GeoTranslator.jts2Geojson(linkObj.getGeometry());
-
+		
+		//立交点的坐标
 		double lon = gscGeo.getCoordinate().x;
 
 		double lat = gscGeo.getCoordinate().y;
@@ -222,11 +228,14 @@ public class Operation implements IOperation {
 			}
 			JSONArray jaPE = jaLink.getJSONArray(i + 1);
 			if (!hasFound) {
-				// 打断点和形状点重合
+				// 交点和形状点重合
 				if (lon == jaPE.getDouble(0) && lat == jaPE.getDouble(1)) {
 					hasFound = true;
+					if (i == jaLink.size() - 2) {
+						ja1.add(jaPE);
+					}
 				}
-				// 打断点在线段上
+				// 交点在线段上
 				else if (GeoTranslator.isIntersection(
 						new double[] { jaPS.getDouble(0), jaPS.getDouble(1) },
 						new double[] { jaPE.getDouble(0), jaPE.getDouble(1) },
@@ -260,6 +269,7 @@ public class Operation implements IOperation {
 
 		JSONObject updateContent = new JSONObject();
 		
+		//新的link的几何
 		JSONObject geoJson = GeoTranslator.jts2Geojson(GeoTranslator.geojson2Jts(geojson1), 0.00001, 5);
 		
 		updateContent.put("geometry", geoJson);
@@ -274,6 +284,12 @@ public class Operation implements IOperation {
 		return GeoTranslator.geojson2Jts(geoJson,100000,0).getCoordinates();
 	}
 
+	/**
+	 * 计算点在link上的形状点序号
+	 * @param gscGeo 点
+	 * @param linkCoors lin的形状点数组
+	 * @return int类型序号
+	 */
 	private int calcShpSeqNum(Geometry gscGeo, Coordinate[] linkCoors) {
 
 		int result = 1;

@@ -84,19 +84,20 @@ public class TileBuilder {
 
 			int mod = Integer.parseInt(value.toString());
 
-//			String sql = "select a.link_pid,a.kind,sdo_util.to_wktgeometry(geometry) geometry,direct,name from rd_link_beijing a, (select b.link_pid,c.name from  rd_link_name b,rd_name c where b.name_groupid = c.name_groupid and b.name_class=1 and b.seq_num =1 and c.lang_code='CHI' ) b where a.link_pid = b.link_pid(+) and mod(a.link_pid,280)="
-//					+ mod;
-			
+			// String sql =
+			// "select a.link_pid,a.kind,sdo_util.to_wktgeometry(geometry) geometry,direct,name from rd_link_beijing a, (select b.link_pid,c.name from  rd_link_name b,rd_name c where b.name_groupid = c.name_groupid and b.name_class=1 and b.seq_num =1 and c.lang_code='CHI' ) b where a.link_pid = b.link_pid(+) and mod(a.link_pid,280)="
+			// + mod;
+
 			String sql = null;
-			
-			if (!"1".equals(context.getConfiguration().get("isgdb"))){
-				sql = "select a.link_pid,a.kind,sdo_util.to_wktgeometry(geometry) geometry,direct,name from rd_link a, (select b.link_pid,c.name from  rd_link_name b,rd_name c where b.name_groupid = c.name_groupid and b.name_class=1 and b.seq_num =1 and c.lang_code='CHI' ) b where a.link_pid = b.link_pid(+) and mod(a.link_pid,50)="
+
+			if (!"1".equals(context.getConfiguration().get("isgdb"))) {
+				sql = "select a.link_pid,        a.kind,        a.s_node_pid,        a.e_node_pid,        sdo_util.to_wktgeometry(geometry) geometry,        direct,        name,        c.limits,        d.forms   from rd_link a,        (select b.link_pid, c.name           from rd_link_name b, rd_name c          where b.name_groupid = c.name_groupid            and b.name_class = 1            and b.seq_num = 1            and c.lang_code = 'CHI') b,(select    t1.link_pid, listagg(t1.type, ';') within group(order by t1.link_pid) limits     from rd_link_limit t1    where t1.u_record != 2    group by t1.link_pid) c,    (select     a.link_pid,    listagg(a.form_of_way, ';') within group(order by a.link_pid) forms     from rd_link_form a    where a.u_record != 2    group by a.link_pid) d      where a.link_pid = b.link_pid(+)        and a.link_pid = c.link_pid(+)        and a.link_pid=d.link_pid(+) and mod(a.link_pid,50)="
 						+ mod;
-			}else{
-				sql = "select a.link_pid,a.kind,sdo_util.to_wktgeometry(geometry) geometry,direct,name from rd_link a, (select b.link_pid,c.name from  rd_link_name b,rd_name c where b.name_groupid = c.name_groupid and b.name_class=1 and b.seq_num =1 and c.lang_code='CHI' ) b where a.link_pid = b.link_pid(+) and mod(a.link_pid,280)="
+			} else {
+				sql = "select a.link_pid,        a.kind,        a.s_node_pid,        a.e_node_pid,        sdo_util.to_wktgeometry(geometry) geometry,        direct,        name,        c.limits,        d.forms   from rd_link a,        (select b.link_pid, c.name           from rd_link_name b, rd_name c          where b.name_groupid = c.name_groupid            and b.name_class = 1            and b.seq_num = 1            and c.lang_code = 'CHI') b,(select    t1.link_pid, listagg(t1.type, ';') within group(order by t1.link_pid) limits     from rd_link_limit t1    where t1.u_record != 2    group by t1.link_pid) c,    (select     a.link_pid,    listagg(a.form_of_way, ';') within group(order by a.link_pid) forms     from rd_link_form a    where a.u_record != 2    group by a.link_pid) d      where a.link_pid = b.link_pid(+)        and a.link_pid = c.link_pid(+)        and a.link_pid=d.link_pid(+) and mod(a.link_pid,280)="
 						+ mod;
 			}
-			
+
 			try {
 
 				Class.forName("oracle.jdbc.driver.OracleDriver");
@@ -112,11 +113,11 @@ public class TileBuilder {
 
 				int maxDegree = Integer.parseInt(context.getConfiguration()
 						.get("maxDegree"));
-				
+
 				int minDegree = Integer.parseInt(context.getConfiguration()
 						.get("minDegree"));
-				
-				minDegree = minDegree>=7?minDegree:7;
+
+				minDegree = minDegree >= 7 ? minDegree : 7;
 
 				int port = Integer.parseInt(context.getConfiguration().get(
 						"port"));
@@ -145,17 +146,23 @@ public class TileBuilder {
 					int direct = rs.getInt("direct");
 
 					String name = rs.getString("name");
+					
+					String forms= rs.getString("forms");
+					
+					String limits = rs.getString("limits");
+					
+					int sNodePid = rs.getInt("s_node_pid");
+					
+					int eNodePid = rs.getInt("e_node_pid");
 
-					int color = kind2Color(kind);
-
-					for (byte degree = (byte) minDegree; degree <= (byte)maxDegree; degree++) {
+					for (byte degree = (byte) minDegree; degree <= (byte) maxDegree; degree++) {
 
 						if (degree <= 7) {
 							if (kind <= 1) {
 								try {
 									writeLine(geomStr, linkPid, context,
 											keyText, valueText, degree, kind,
-											direct, name, color);
+											direct, name,sNodePid,eNodePid,forms,limits);
 								} catch (Exception e) {
 									e.printStackTrace();
 									throw new InterruptedException("错误："
@@ -167,7 +174,7 @@ public class TileBuilder {
 								try {
 									writeLine(geomStr, linkPid, context,
 											keyText, valueText, degree, kind,
-											direct, name, color);
+											direct, name,sNodePid,eNodePid,forms,limits);
 								} catch (Exception e) {
 									e.printStackTrace();
 									throw new InterruptedException("错误："
@@ -179,7 +186,7 @@ public class TileBuilder {
 								try {
 									writeLine(geomStr, linkPid, context,
 											keyText, valueText, degree, kind,
-											direct, name, color);
+											direct, name,sNodePid,eNodePid,forms,limits);
 								} catch (Exception e) {
 									e.printStackTrace();
 									throw new InterruptedException("错误："
@@ -191,7 +198,7 @@ public class TileBuilder {
 								try {
 									writeLine(geomStr, linkPid, context,
 											keyText, valueText, degree, kind,
-											direct, name, color);
+											direct, name,sNodePid,eNodePid,forms,limits);
 								} catch (Exception e) {
 									e.printStackTrace();
 									throw new InterruptedException("错误："
@@ -201,8 +208,7 @@ public class TileBuilder {
 						} else {
 							try {
 								writeLine(geomStr, linkPid, context, keyText,
-										valueText, degree, kind, direct, name,
-										color);
+										valueText, degree, kind, direct, name,sNodePid,eNodePid,forms,limits);
 							} catch (Exception e) {
 								e.printStackTrace();
 								throw new InterruptedException("错误："
@@ -229,7 +235,7 @@ public class TileBuilder {
 
 		public void writeLine(String wktLine, int linkPid, Context context,
 				Text keyText, Text valueText, byte degree, int kind,
-				int direct, String name, int color) throws Exception {
+				int direct, String name,int sNodePid,int eNodePid,String forms,String limits) throws Exception {
 
 			// for (byte degree = 8; degree <= 12; degree++) {
 			Set<String> set = new HashSet<String>();
@@ -446,13 +452,19 @@ public class TileBuilder {
 
 					JSONObject jsonM = new JSONObject();
 
-					jsonM.put("a", String.valueOf(color));
+					jsonM.put("a", String.valueOf(kind));
 
 					jsonM.put("b", name != null ? name : JSONNull.getInstance());
 
-					jsonM.put("c", String.valueOf(kind));
+					jsonM.put("c", limits != null ? limits : JSONNull.getInstance());
 
 					jsonM.put("d", String.valueOf(direct));
+					
+					jsonM.put("e", String.valueOf(sNodePid));
+					
+					jsonM.put("f", String.valueOf(eNodePid));
+					
+					jsonM.put("h", forms!= null ? forms : JSONNull.getInstance());
 
 					tile.setM(jsonM);
 
@@ -531,14 +543,19 @@ public class TileBuilder {
 
 						JSONObject jsonM = new JSONObject();
 
-						jsonM.put("a", String.valueOf(color));
+						jsonM.put("a", String.valueOf(kind));
 
-						jsonM.put("b",
-								name != null ? name : JSONNull.getInstance());
+						jsonM.put("b", name != null ? name : JSONNull.getInstance());
 
-						jsonM.put("c", String.valueOf(kind));
+						jsonM.put("c", limits != null ? limits : JSONNull.getInstance());
 
 						jsonM.put("d", String.valueOf(direct));
+						
+						jsonM.put("e", String.valueOf(sNodePid));
+						
+						jsonM.put("f", String.valueOf(eNodePid));
+						
+						jsonM.put("h", forms!= null ? forms : JSONNull.getInstance());
 
 						tile.setM(jsonM);
 
@@ -934,8 +951,8 @@ public class TileBuilder {
 
 		conf.set("maxDegree", props.getProperty("max.degree"));
 
-		String tabName = "linkTile_"+props.getProperty("tab.name");
-		
+		String tabName = "linkTile_" + props.getProperty("tab.name");
+
 		createHBaseTab(conf, tabName);
 
 		FileSystem fs = FileSystem.get(conf);
@@ -968,18 +985,19 @@ public class TileBuilder {
 
 		Job job = Job.getInstance(conf, "split link");
 
-//		int linkNum = getLinkNum(job);
-//
-//		int tileNum = 10290067;
+		// int linkNum = getLinkNum(job);
+		//
+		// int tileNum = 10290067;
 
-//		ProgressThread pt = new ProgressThread(job, linkNum, tileNum, args[0],
-//				null);
-//
-//		Thread thread = new Thread(pt);
-//
-//		thread.setDaemon(true);
-//
-//		thread.start();
+		// ProgressThread pt = new ProgressThread(job, linkNum, tileNum,
+		// args[0],
+		// null);
+		//
+		// Thread thread = new Thread(pt);
+		//
+		// thread.setDaemon(true);
+		//
+		// thread.start();
 
 		job.setJarByClass(TileBuilder.class);
 
@@ -999,15 +1017,14 @@ public class TileBuilder {
 
 		FileInputFormat.addInputPath(job, new Path(tmpDir));
 
-		TableMapReduceUtil.initTableReducerJob(tabName, TileReducer.class,
-				job);
+		TableMapReduceUtil.initTableReducerJob(tabName, TileReducer.class, job);
 		job.waitForCompletion(true);
 
-//		thread.interrupt();
+		// thread.interrupt();
 
-//		Thread.sleep(10000);
+		// Thread.sleep(10000);
 
-//		fillProgress(null, args[0], linkNum, tileNum);
+		// fillProgress(null, args[0], linkNum, tileNum);
 
 	}
 
@@ -1066,10 +1083,10 @@ public class TileBuilder {
 				.createConnection(conf);
 
 		Admin admin = conn.getAdmin();
-		
+
 		TableName tableName = TableName.valueOf(tabName);
-		
-		if (admin.tableExists(tableName)){
+
+		if (admin.tableExists(tableName)) {
 			admin.disableTable(tableName);
 			admin.deleteTable(tableName);
 		}

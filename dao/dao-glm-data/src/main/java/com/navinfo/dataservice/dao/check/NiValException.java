@@ -48,7 +48,7 @@ public class NiValException implements IObj {
 
 	private int meshId;
 
-	private int scopeFlag=1;
+	private int scopeFlag = 1;
 
 	private String provinceName;
 
@@ -62,15 +62,13 @@ public class NiValException implements IObj {
 
 	private String qaTaskId;
 
-	private int qaStatus=2;
+	private int qaStatus = 2;
 
 	private String worker;
 
 	private String qaWorker;
 
 	private int logType;
-	
-	private String rowId;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -79,8 +77,7 @@ public class NiValException implements IObj {
 	}
 
 	@Override
-	public JSONObject Serialize(ObjLevel objLevel) throws Exception{
-
+	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
 
 		if (objLevel == ObjLevel.FULL || objLevel == ObjLevel.HISTORY) {
 			JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
@@ -97,7 +94,7 @@ public class NiValException implements IObj {
 			return json;
 		}
 		return null;
-	
+
 	}
 
 	@Override
@@ -319,105 +316,101 @@ public class NiValException implements IObj {
 	}
 
 	@Override
-	public String rowId() {
-		
-		return rowId;
-	}
-
-	@Override
-	public void setRowId(String rowId) {
-		
-		this.rowId=rowId;
-	}
-
-	@Override
 	public String tableName() {
-		
+
 		return "ni_val_exception";
 	}
 
 	@Override
 	public ObjStatus status() {
-		
+
 		return null;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		
-		
+
 	}
 
 	@Override
 	public ObjType objType() {
-		
+
 		return null;
 	}
 
 	@Override
 	public void copy(IRow row) {
-		
-		
+
 	}
 
 	@Override
 	public String parentPKName() {
-		
+
 		return "val_exception_id";
 	}
 
 	@Override
 	public int parentPKValue() {
-		
+
 		return valExceptionId;
 	}
 
 	@Override
 	public String parentTableName() {
-		
+
 		return "ni_val_exception";
 	}
 
 	@Override
 	public List<List<IRow>> children() {
-		
+
 		return null;
 	}
 
 	@Override
 	public boolean fillChangeFields(JSONObject json) throws Exception {
-		
+
 		return false;
 	}
 
 	@Override
 	public int mesh() {
-		
+
 		return this.meshId;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.meshId=mesh;
-		
+		this.meshId = mesh;
+
 	}
 
 	@Override
 	public List<IRow> relatedRows() {
-		
+
 		return null;
 	}
 
 	@Override
 	public int pid() {
-		
 		return this.valExceptionId;
 	}
 
 	@Override
 	public String primaryKey() {
-		// TODO Auto-generated method stub
 		return "val_exception_id";
 	}
-	
+
+	@Override
+	public String rowId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setRowId(String rowId) {
+		// TODO Auto-generated method stub
+
+	}
+
 }

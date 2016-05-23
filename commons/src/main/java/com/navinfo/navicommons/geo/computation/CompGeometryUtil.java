@@ -1,10 +1,13 @@
 package com.navinfo.navicommons.geo.computation;
 
 import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.Point;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import com.navinfo.navicommons.exception.GeoComputationException;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineString;
 
 /** 
@@ -167,7 +170,24 @@ public class CompGeometryUtil {
 	 * @param meshes：这些lineString跨越的图幅号
 	 * @return：map，key:图幅号，value：该图幅号内的多边形的所有边linestring
 	 */
-	public static Map<String,LineString[]> cut(LineString[] lines,String[] meshes){
+	public static Map<String,LineString[]> cut(LineString[] lines,String[] meshes)throws GeoComputationException{
+		//check parameters
+		if(lines==null||lines.length==0){
+			throw new GeoComputationException("未传入有效的线。");
+		}
+		Point start = null;
+		Point end = null;
+		if(lines.length==1){
+			start = lines[0].getStartPoint();
+			end = lines[0].getEndPoint();
+		}else{
+			start = lines[0].getStartPoint();
+			end = lines[lines.length-1].getEndPoint();
+		}
+		if(!MyGeometryConvertor.convert(start.getCoordinate()).equals(MyGeometryConvertor.convert(end.getCoordinate()))){
+			throw new GeoComputationException("传入的线首尾不相连，无法构造成面。");
+		}
+		//
 		Map<String,LineString[]> result = new HashMap<String,LineString[]>();
 		
 		return null;

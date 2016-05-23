@@ -1,6 +1,6 @@
 package com.navinfo.navicommons.geo.computation;
 
-import com.navinfo.dataservice.commons.util.JtsGeometryUtil;
+import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineString;
 
@@ -45,7 +45,7 @@ public class MyGeometryConvertor {
 			for(int i=0;i<polyline.getLineSize();i++){
 				coArr[i+1]=convert(polyline.getLines()[i].getEpoint());
 			}
-			return JtsGeometryUtil.createLineString(coArr);
+			return JtsGeometryFactory.createLineString(coArr);
 		}
 		return null;
 	}

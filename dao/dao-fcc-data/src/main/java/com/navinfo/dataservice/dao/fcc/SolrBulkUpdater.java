@@ -58,6 +58,8 @@ public class SolrBulkUpdater {
 		
 		doc.addField("feedback", json.getString("feedback"));
 		
+		doc.addField("s_reliability", json.getInt("s_reliability"));
+		
 		client.add(doc);
 	}
 	

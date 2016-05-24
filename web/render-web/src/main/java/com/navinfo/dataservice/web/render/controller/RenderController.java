@@ -32,50 +32,6 @@ public class RenderController {
 	private static final Logger logger = Logger
 			.getLogger(RenderController.class);
 
-	@RequestMapping(value = "/link/getByTileWithGap")
-	public void getLinkByTile(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
-
-		String parameter = request.getParameter("parameter");
-
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-
-			int x = jsonReq.getInt("x");
-
-			int y = jsonReq.getInt("y");
-
-			int z = jsonReq.getInt("z");
-
-			int projectId = jsonReq.getInt("projectId");
-
-			List<String> list = TileSelector.getRdLinkTiles(x, y, z, projectId);
-
-			if (list != null && list.size() > 0) {
-
-				JSONObject json = new JSONObject();
-
-				json.put("RDLINK", list.get(0));
-
-				response.getWriter().println(
-						ResponseUtils.assembleRegularResult(json));
-			} else {
-				response.getWriter().println(
-						ResponseUtils.assembleRegularResult(null));
-			}
-
-		} catch (Exception e) {
-
-			String logid = Log4jUtils.genLogid();
-
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
-
-		}
-	}
-
 	@RequestMapping(value = "/obj/getByTileWithGap")
 	public void getObjByTile(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
@@ -97,19 +53,32 @@ public class RenderController {
 
 			int z = jsonReq.getInt("z");
 
-			int gap = jsonReq.getInt("gap");
+			int gap = 0;
+			
+			if(jsonReq.containsKey("gap")){
+				gap = jsonReq.getInt("gap");
+			}
 
 			List<ObjType> types = new ArrayList<ObjType>();
 
 			for (int i = 0; i < type.size(); i++) {
 				types.add(ObjType.valueOf(type.getString(i)));
 			}
-
-			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
 			
-			SearchProcess p = new SearchProcess(conn);
-
-			JSONObject data = p.searchDataByTileWithGap(types, x, y, z, gap);
+			JSONObject data = null;
+			
+			if(z<=16){
+				
+				data = TileSelector.getByTiles(types, x, y, z, projectId);
+				
+			}
+			else{
+				conn = GlmDbPoolManager.getInstance().getConnection(projectId);
+				
+				SearchProcess p = new SearchProcess(conn);
+	
+				data = p.searchDataByTileWithGap(types, x, y, z, gap);
+			}
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(data));

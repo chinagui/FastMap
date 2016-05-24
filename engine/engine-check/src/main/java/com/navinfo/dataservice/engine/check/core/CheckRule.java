@@ -69,7 +69,7 @@ public class CheckRule {
 			
 			if(variables==null || variables.isEmpty()){this.variables=null;}
 			else{
-				List<String> variableTmp=java.util.Arrays.asList(variables);
+				List<String> variableTmp=java.util.Arrays.asList(variables.split(","));
 				for(int i=0;i<variableTmp.size();i++)
 					{this.variables.add(Enum.valueOf(VariableName.class, variableTmp.get(i)));}}
 		}catch (ArrayIndexOutOfBoundsException e) {

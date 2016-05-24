@@ -30,5 +30,19 @@ public class DBConnector {
 		}
 		return dataSource.getConnection();
 	}
+	
+	private DataSource metaDataSource;
+
+	public Connection getMetaConnection() throws SQLException {
+		if (metaDataSource == null) {
+			synchronized (this) {
+				if (metaDataSource == null) {
+					metaDataSource = MultiDataSourceFactory.getInstance()
+							.getMetaDataSource();
+				}
+			}
+		}
+		return metaDataSource.getConnection();
+	}
 
 }

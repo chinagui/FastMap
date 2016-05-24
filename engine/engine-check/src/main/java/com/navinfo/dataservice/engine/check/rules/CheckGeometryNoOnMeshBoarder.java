@@ -1,11 +1,11 @@
 package com.navinfo.dataservice.engine.check.rules;
 
 
-import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 //点限速点位不能在图框线上
 

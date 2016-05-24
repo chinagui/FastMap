@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.commons.util;
+package com.navinfo.navicommons.geo.computation;
 
 import java.util.ArrayList;
 import java.util.HashMap;

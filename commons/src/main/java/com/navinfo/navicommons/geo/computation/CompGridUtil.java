@@ -18,7 +18,6 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /** 

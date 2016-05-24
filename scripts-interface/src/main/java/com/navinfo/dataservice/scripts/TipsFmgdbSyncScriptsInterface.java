@@ -15,12 +15,12 @@ import org.springframework.util.Assert;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.PackageExec;
 import com.navinfo.navicommons.database.sql.SqlExec;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 /**
  * @ClassName: InitProjectScriptsInterface

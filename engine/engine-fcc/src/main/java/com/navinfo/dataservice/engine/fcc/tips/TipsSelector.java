@@ -19,12 +19,12 @@ import org.hbase.async.KeyValue;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.GridUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseController;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
+import com.navinfo.navicommons.geo.computation.GridUtils;
 
 /**
  * Tips查询

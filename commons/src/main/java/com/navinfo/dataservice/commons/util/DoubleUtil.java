@@ -1,4 +1,4 @@
-package com.navinfo.navicommons.geo.computation;
+package com.navinfo.dataservice.commons.util;
 
 /** 
 * @ClassName: DoubleUtil 

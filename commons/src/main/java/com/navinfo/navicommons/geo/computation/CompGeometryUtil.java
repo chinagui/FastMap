@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
-import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.navicommons.exception.GeoComputationException;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineString;

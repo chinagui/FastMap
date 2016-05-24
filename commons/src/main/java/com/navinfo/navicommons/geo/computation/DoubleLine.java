@@ -1,5 +1,7 @@
 package com.navinfo.navicommons.geo.computation;
 
+import com.navinfo.dataservice.commons.util.DoubleUtil;
+
 /** 
 * @ClassName: Line 
 * @author Xiao Xiaowen 

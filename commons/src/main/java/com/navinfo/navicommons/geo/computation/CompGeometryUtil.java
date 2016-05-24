@@ -1,12 +1,16 @@
 package com.navinfo.navicommons.geo.computation;
 
 import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -175,33 +179,74 @@ public class CompGeometryUtil {
 	 * 图廓线打断多边形
 	 * @param lines:组成闭合简单多边形的多条lineString,如果只有一条，则该条线的首尾coordinate必须equal
 	 * @param meshes：这些lineString跨越的图幅号
-	 * @return：map，key:图幅号，value：length=3的数组，
+	 * @return：map，key:图幅号，value：所有集合的set，通过geometry.gettype可以区分点线面，
 	 * [0]为该图幅号内的所有多边形multipolygon；
 	 * [1]为该图幅号内所有线multilinestring，包含图廓线；
 	 * [2]为该图幅号内所有点multipoint，包含图廓点。
 	 */
-	public static Map<String,Geometry[]> cut(Polygon polygon,String[] meshes)throws GeoComputationException{
+	public static Map<String,Set<Geometry>> cut(Polygon polygon,String[] meshes)throws GeoComputationException{
 		
-		//
-		Map<String,Geometry[]> result = new HashMap<String,Geometry[]>();
+		Map<String,Set<Geometry>> result = new HashMap<String,Set<Geometry>>();
 		for(String meshId:meshes){
 			result.put(meshId, cut(polygon,meshId));
 		}
 		return null;
 	}
-	private static Geometry[] cut(Polygon polygon,String mesh)throws GeoComputationException{
-		Geometry[] result = new Geometry[3];
+	public static Set<Geometry> cut(Polygon polygon,String mesh)throws GeoComputationException{
+		Set<Geometry> result = new HashSet<Geometry>();
+		//找到需要生成的面
 		Polygon meshPolygon = MyGeometryConvertor.convert(MeshUtils.mesh2Rect(mesh));
-		
 		Geometry sub = polygon.intersection(meshPolygon);
+		Set<Polygon> polygonSet = new HashSet<Polygon>();
 		int geoNum = sub.getNumGeometries();
-		if(geoNum==1){
-			MultiPolygon mg = JtsGeometryFactory.createMultiPolygon(new Polygon[]{(Polygon)sub});
-			result[0]=mg;
-		}else{
-			result[0]=sub;
+		for(int i=0;i<geoNum;i++){
+			polygonSet.add((Polygon)sub.getGeometryN(i));
 		}
+		result.addAll(polygonSet);
 		//找到需要生成的线
-		return null;
+		Set<LineString> lineSet = new HashSet<LineString>();
+		for(Polygon p:polygonSet){
+			lineSet.addAll(parseLine(p,mesh));
+		}
+		result.addAll(lineSet);
+		//找到需要生成的点
+		Set<Point> pointSet = new HashSet<Point>();
+		for(LineString line:lineSet){
+			pointSet.add(line.getStartPoint());
+			pointSet.add(line.getEndPoint());
+		}
+		result.addAll(pointSet);
+		return result;
+	}
+	/**
+	 * 多边形只能和图廓线相交，不能超越图幅范围
+	 * @param polygon:多边形，无hole
+	 * @param mesh：多边形所属图幅号
+	 * @return 被图幅边框打断后生成的lineString数组
+	 * @throws GeoComputationException
+	 */
+	public static Set<LineString> parseLine(Polygon polygon,String mesh)throws GeoComputationException{
+		Coordinate[] cos = polygon.getExteriorRing().getCoordinates();
+		Set<LineString> resultSet = new HashSet<LineString>();
+		int startIndex = 0;
+		for(int i=1;i<cos.length;i++){
+			/**
+			 * 两种情况：
+			 * 1. 当起点在图廓线上，则要么下一个点也在border上，这时直接组成一条线，要么下一个点不在border上，那么要直到找到下一个在border上的点才组成一条线
+			 * 2. 当起点不在图廓线上，则找到下一个点在border上，线就被打断了，直接生成一条线
+			 * 所以不管起点是在不在图廓线上，只要下一个点在图廓线上，那么线就会打断
+			 */
+			if(MeshUtils.locateMeshBorder(cos[i].x, cos[i].y, mesh)//被打断的情况
+					||(i==(cos.length-1)))//最后一个点了，和前面的组成线
+			{
+				Coordinate[] sub = new Coordinate[i-startIndex+1];
+				for(int j=0;j<=(i-startIndex);j++){
+					sub[j]=cos[startIndex+j];
+				}
+				resultSet.add(JtsGeometryFactory.createLineString(sub));
+				startIndex = i;
+			}
+		}
+		return resultSet;
 	}
 }

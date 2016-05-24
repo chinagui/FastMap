@@ -5,11 +5,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.navicommons.geo.computation.DoubleUtil;
+import com.navinfo.navicommons.geo.computation.MeshLocation;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
@@ -20,6 +22,7 @@ import oracle.spatial.geometry.JGeometry;
 /**
  * Created by IntelliJ IDEA. User: liuqing Date: 2010-8-4 Time: 8:58:15
  * 地理坐标相关的工具类
+ * 注意：方法中传入图幅号和GRID号参数，如果类型是number型，则可以传5位图幅或者7位grid号，String类型的必须传入之前图幅补齐至6位，grid号补齐至8位
  */
 
 enum MeshLocateRelation {
@@ -1030,5 +1033,37 @@ public abstract class MeshUtils {
 			}
 		}
 		return null;
+	}
+	public static boolean locateMeshBorder(double x,double y,String mesh){
+		MeshLocation loc = meshLocate(x,y,mesh);
+		if(loc==MeshLocation.Inside||loc==MeshLocation.Outside){
+			return false;
+		}
+		return true;
+	}
+	public static MeshLocation meshLocate(double x,double y,String mesh){
+		double[] rect = mesh2Rect(mesh);
+		if(x<rect[0]||x>rect[2]||y<rect[1]||y>rect[2]){
+			return MeshLocation.Outside;
+		}
+		if(x==rect[0]&&y==rect[1]){
+			return MeshLocation.LeftBottom;
+		}else if(x==rect[2]&&y==rect[1]){
+			return MeshLocation.RightBottom;
+		}else if(x==rect[2]&&y==rect[3]){
+			return MeshLocation.RightTop;
+		}else if(x==rect[0]&&y==rect[3]){
+			return MeshLocation.LeftTop;
+		}else if(x==rect[0]){
+			return MeshLocation.Left;
+		}else if(y==rect[1]){
+			return MeshLocation.Bottom;
+		}else if(x==rect[2]){
+			return MeshLocation.Right;
+		}else if(y==rect[3]){
+			return MeshLocation.Top;
+		}else{
+			return MeshLocation.Inside;
+		}
 	}
 }

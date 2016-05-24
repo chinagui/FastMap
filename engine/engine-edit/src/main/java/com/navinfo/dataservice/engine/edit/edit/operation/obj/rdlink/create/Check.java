@@ -6,8 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -18,9 +16,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 public class Check {
 
-	public void checkDupilicateNode(JSONObject geometry) throws Exception{
-		
-		Geometry geo = GeoTranslator.geojson2Jts(geometry);
+	public void checkDupilicateNode(Geometry geo) throws Exception{
 		
 		Coordinate[] coords = geo.getCoordinates();
 		

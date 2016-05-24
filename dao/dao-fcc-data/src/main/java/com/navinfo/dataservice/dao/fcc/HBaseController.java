@@ -11,7 +11,7 @@ import com.navinfo.dataservice.commons.util.ByteUtils;
 
 public class HBaseController {
 
-	private ArrayList<KeyValue> getByRowkey(String tableName, String rowkey,
+	public ArrayList<KeyValue> getByRowkey(String tableName, String rowkey,
 			String famliy, String... qualifiers) throws Exception {
 
 		final GetRequest get = new GetRequest(tableName, rowkey);

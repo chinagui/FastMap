@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.edit.display;
+package com.navinfo.dataservice.engine.fcc.tile;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;

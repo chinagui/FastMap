@@ -395,12 +395,12 @@ public class CompGridUtil {
 	}
 
 	/**
-	 * 计算grid过程中依赖的计算图幅是自己实现的，暂未测试
+	 * 计算grid过程中依赖的计算图幅是自己实现的
 	 * @param x
 	 * @param y
 	 * @return
 	 */
-	public static String[] point2Grids2(double x,double y){
+	public static String[] point2Grids(double x,double y){
 		//将度单位坐标转换为秒*3600，并乘1000消除小数,最后取整
 		long longX = Math.round(x*3600000);
 		long longY = Math.round(y*3600000);
@@ -516,7 +516,8 @@ public class CompGridUtil {
 	 * @param y：单位度
 	 * @return
 	 */
-	public static String[] point2Grids(double x,double y){
+	@Deprecated
+	public static String[] point2GridsUsingNM(double x,double y){
 		List<String> meshes = MeshUtils.lonlat2MeshIds(x,y);
 		return point2Grids(x,y,meshes.toArray(new String[0]));
 	}

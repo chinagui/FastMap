@@ -16,7 +16,7 @@ import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.JGeometryUtil;
-import com.navinfo.dataservice.commons.util.JtsGeometryUtil;
+import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -75,13 +75,13 @@ public class Operation implements IOperation {
 		// 组装LineString
 		
 		for (int i = 0; i < links.size(); i++) {
-			lineStrings[i] = (JtsGeometryUtil.createLineString(GeoTranslator.transform(links
+			lineStrings[i] = (JtsGeometryFactory.createLineString(GeoTranslator.transform(links
 					.get(i).getGeometry(),0.00001,5).getCoordinates()));
 		}
 		// 调用分离后生成的上下线
 		// 生成的线按照顺序存放在List<LineString> 前一半是右线 后一半是左线
 		// 传入起点和终点Point
-		Point sPoint = JtsGeometryUtil.createPoint(GeoTranslator.transform(this
+		Point sPoint = JtsGeometryFactory.createPoint(GeoTranslator.transform(this
 				.getStartAndEndNode(links, 0).getGeometry(),0.00001,5).getCoordinate());
 		RdNode snode = this.getStartAndEndNode(links, 0);
 		RdNode eNode = this.getStartAndEndNode(links, 1);
@@ -154,7 +154,7 @@ public class Operation implements IOperation {
 		    	if(flagBooleans.size() > 1){
 		    		break;
 		    	}
-		    	flagBooleans.add(CompPolylineUtil.isRightSide(JtsGeometryUtil.createLineString(currentLink.getGeometry().getCoordinates()), JtsGeometryUtil.createLineString(nextLink.getGeometry().getCoordinates()), JtsGeometryUtil.createLineString(link.getGeometry().getCoordinates())));
+		    	flagBooleans.add(CompPolylineUtil.isRightSide(JtsGeometryFactory.createLineString(currentLink.getGeometry().getCoordinates()), JtsGeometryFactory.createLineString(nextLink.getGeometry().getCoordinates()), JtsGeometryFactory.createLineString(link.getGeometry().getCoordinates())));
 		    }
 		   if (flagBooleans.size() >1 ){
 			   this.createInnerLine(lines[i],lines[lines.length-i],map,result);
@@ -176,10 +176,10 @@ public class Operation implements IOperation {
 		Coordinate[] coordinates = new Coordinate[2];
 		Coordinate sCoordinate = lineDownString.getCoordinates()[lineDownString.getCoordinates().length-1];
 		Coordinate eCoordinate = lineUpString.getCoordinates()[0];
-		RdNode sNode = map.get(JtsGeometryUtil.createPoint(sCoordinate));
-		RdNode eNode = map.get(JtsGeometryUtil.createPoint(eCoordinate));
+		RdNode sNode = map.get(JtsGeometryFactory.createPoint(sCoordinate));
+		RdNode eNode = map.get(JtsGeometryFactory.createPoint(eCoordinate));
 		RdLink innerLink =  new RdLink();
-		innerLink.setGeometry(JtsGeometryUtil.createLineString(coordinates));
+		innerLink.setGeometry(JtsGeometryFactory.createLineString(coordinates));
 		RdLinkOperateUtils.addRdLink(sNode, eNode, innerLink,
 				innerLink, result);
 		
@@ -208,11 +208,11 @@ public class Operation implements IOperation {
 			for(RdLink link :links){
 				LineString targetLine=null;
 		
-				if(CompPolylineUtil.isRightSide(JtsGeometryUtil.createLineString(currentLink.getGeometry().getCoordinates()), JtsGeometryUtil.createLineString(nextLink.getGeometry().getCoordinates()), JtsGeometryUtil.createLineString(link.getGeometry().getCoordinates()))){
+				if(CompPolylineUtil.isRightSide(JtsGeometryFactory.createLineString(currentLink.getGeometry().getCoordinates()), JtsGeometryFactory.createLineString(nextLink.getGeometry().getCoordinates()), JtsGeometryFactory.createLineString(link.getGeometry().getCoordinates()))){
 					
-					targetLine = CompPolylineUtil.cut(lines[i], lines[i+1],JtsGeometryUtil.createLineString(GeoTranslator.transform(link.getGeometry(), 0.00001, 5).getCoordinates()),currentPoint,true );
+					targetLine = CompPolylineUtil.cut(lines[i], lines[i+1],JtsGeometryFactory.createLineString(GeoTranslator.transform(link.getGeometry(), 0.00001, 5).getCoordinates()),currentPoint,true );
 				}else{
-					targetLine =CompPolylineUtil.cut(lines[lines.length-i], lines[lines.length-i-1],JtsGeometryUtil.createLineString(GeoTranslator.transform(link.getGeometry(), 0.00001, 5).getCoordinates()),currentPoint,false );
+					targetLine =CompPolylineUtil.cut(lines[lines.length-i], lines[lines.length-i-1],JtsGeometryFactory.createLineString(GeoTranslator.transform(link.getGeometry(), 0.00001, 5).getCoordinates()),currentPoint,false );
 				}
 				if (targetLine.getCoordinate() != null){
 					
@@ -239,10 +239,10 @@ public class Operation implements IOperation {
 		updateContent.put("geometry", GeoTranslator.jts2Geojson(targetLine));
 		link.fillChangeFields(updateContent);
 		Point point =null;
-		if(map.containsKey(JtsGeometryUtil.createPoint(targetLine.getCoordinates()[0]))){
-			point = JtsGeometryUtil.createPoint(targetLine.getCoordinates()[0]);
+		if(map.containsKey(JtsGeometryFactory.createPoint(targetLine.getCoordinates()[0]))){
+			point = JtsGeometryFactory.createPoint(targetLine.getCoordinates()[0]);
 		}else{
-			point = JtsGeometryUtil.createPoint(targetLine.getCoordinates()[targetLine.getCoordinates().length-1]);
+			point = JtsGeometryFactory.createPoint(targetLine.getCoordinates()[targetLine.getCoordinates().length-1]);
 		}
 		if(currentPid == link.getsNodePid()){
 			updateContent.put("sNodePid",map.get(point).getPid());
@@ -451,9 +451,9 @@ public class Operation implements IOperation {
 			RdLink sourceLink, RdLink sourceNextLink, Map<Geometry, RdNode> map) throws Exception{
 		RdNode sNode = null;
 		RdNode eNode = null;
-			sNode = map.get(JtsGeometryUtil.createPoint(departLink.getGeometry()
+			sNode = map.get(JtsGeometryFactory.createPoint(departLink.getGeometry()
 					.getCoordinates()[0]));
-			eNode = map.get(JtsGeometryUtil.createPoint(departLink.getGeometry()
+			eNode = map.get(JtsGeometryFactory.createPoint(departLink.getGeometry()
 					.getCoordinates()[departLink.getGeometry()
 					.getCoordinates().length - 1]));
 			return RdLinkOperateUtils.addRdLink(sNode, eNode, departLink,
@@ -515,7 +515,7 @@ public class Operation implements IOperation {
 		}else{
 			coordinate = departLink.getGeometry().getCoordinates()[ departLink.getGeometry().getCoordinates().length-1];
 		}
-		geometry = JtsGeometryUtil.createPoint(coordinate);
+		geometry = JtsGeometryFactory.createPoint(coordinate);
 		if (map.containsKey(geometry)) {
 			node = map.get(geometry);
 		} else {
@@ -535,7 +535,7 @@ public class Operation implements IOperation {
 		RdNode node = (RdNode) nodeSelector.loadById(nodePid, true);
 		Geometry geometry = null;
 		if (flag == 1) {
-			geometry = JtsGeometryUtil.createPoint(link.getGeometry()
+			geometry = JtsGeometryFactory.createPoint(link.getGeometry()
 					.getCoordinates()[0]);
 			if(map.containsKey(geometry)){
 				return map.get(geometry);
@@ -543,7 +543,7 @@ public class Operation implements IOperation {
 			updateContent.put("geometry", GeoTranslator.jts2Geojson(
 					geometry));
 		} else {
-			geometry = JtsGeometryUtil.createPoint(link.getGeometry()
+			geometry = JtsGeometryFactory.createPoint(link.getGeometry()
 					.getCoordinates()[link.getGeometry()
 					.getCoordinates().length - 1]);
 			if(map.containsKey(geometry)){
@@ -622,8 +622,8 @@ public class Operation implements IOperation {
 	 */
 	private boolean isRightSide(RdLink startLine, RdLink endLine,
 			RdLink adjacentLine) throws Exception {
-		return CompPolylineUtil.isRightSide(JtsGeometryUtil.createLineString(startLine.getGeometry().getCoordinates()), JtsGeometryUtil.createLineString(endLine.getGeometry().getCoordinates()), 
-	JtsGeometryUtil.createLineString(startLine.getGeometry().getCoordinates()));
+		return CompPolylineUtil.isRightSide(JtsGeometryFactory.createLineString(startLine.getGeometry().getCoordinates()), JtsGeometryFactory.createLineString(endLine.getGeometry().getCoordinates()), 
+	JtsGeometryFactory.createLineString(startLine.getGeometry().getCoordinates()));
 	}
 	/**
 	 *  获取两个link相交的pid
@@ -647,9 +647,9 @@ public class Operation implements IOperation {
 	 */
 	private Point getIntersectPoint (RdLink fristLink,RdLink secondLink){
 		if(fristLink.getsNodePid()  == secondLink.getsNodePid()||fristLink.getsNodePid()  == secondLink.geteNodePid()){
-			return JtsGeometryUtil.createPoint(GeoTranslator.transform(fristLink.getGeometry(), 0.00001, 5).getCoordinates()[0]);
+			return JtsGeometryFactory.createPoint(GeoTranslator.transform(fristLink.getGeometry(), 0.00001, 5).getCoordinates()[0]);
 		}else{
-			return JtsGeometryUtil.createPoint(GeoTranslator.transform(fristLink.getGeometry(), 0.00001, 5).getCoordinates()[GeoTranslator.transform(fristLink.getGeometry(), 0.00001, 5).getCoordinates().length-1]);
+			return JtsGeometryFactory.createPoint(GeoTranslator.transform(fristLink.getGeometry(), 0.00001, 5).getCoordinates()[GeoTranslator.transform(fristLink.getGeometry(), 0.00001, 5).getCoordinates().length-1]);
 		}
 		
 	}

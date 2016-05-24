@@ -1,11 +1,21 @@
 package com.navinfo.navicommons.geo.computation;
 
 import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
+import com.navinfo.dataservice.commons.util.MeshUtils;
+import com.navinfo.navicommons.exception.GeoComputationException;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.Geometry;
 
 /** 
 * @ClassName: CompGeometryUtil 
@@ -165,11 +175,33 @@ public class CompGeometryUtil {
 	 * 图廓线打断多边形
 	 * @param lines:组成闭合简单多边形的多条lineString,如果只有一条，则该条线的首尾coordinate必须equal
 	 * @param meshes：这些lineString跨越的图幅号
-	 * @return：map，key:图幅号，value：该图幅号内的多边形的所有边linestring
+	 * @return：map，key:图幅号，value：length=3的数组，
+	 * [0]为该图幅号内的所有多边形multipolygon；
+	 * [1]为该图幅号内所有线multilinestring，包含图廓线；
+	 * [2]为该图幅号内所有点multipoint，包含图廓点。
 	 */
-	public static Map<String,LineString[]> cut(LineString[] lines,String[] meshes){
-		Map<String,LineString[]> result = new HashMap<String,LineString[]>();
+	public static Map<String,Geometry[]> cut(Polygon polygon,String[] meshes)throws GeoComputationException{
 		
+		//
+		Map<String,Geometry[]> result = new HashMap<String,Geometry[]>();
+		for(String meshId:meshes){
+			result.put(meshId, cut(polygon,meshId));
+		}
+		return null;
+	}
+	private static Geometry[] cut(Polygon polygon,String mesh)throws GeoComputationException{
+		Geometry[] result = new Geometry[3];
+		Polygon meshPolygon = MyGeometryConvertor.convert(MeshUtils.mesh2Rect(mesh));
+		
+		Geometry sub = polygon.intersection(meshPolygon);
+		int geoNum = sub.getNumGeometries();
+		if(geoNum==1){
+			MultiPolygon mg = JtsGeometryFactory.createMultiPolygon(new Polygon[]{(Polygon)sub});
+			result[0]=mg;
+		}else{
+			result[0]=sub;
+		}
+		//找到需要生成的线
 		return null;
 	}
 }

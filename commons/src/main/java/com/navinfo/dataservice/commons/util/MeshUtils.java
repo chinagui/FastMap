@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.navinfo.navicommons.geo.computation.DoubleUtil;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
@@ -31,8 +32,10 @@ enum MeshLocateRelation {
 public abstract class MeshUtils {
 
 	public static void main(String[] args) throws Exception {
-		List<String> results = lonlat2MeshIds(76.01,30.33333);
-		System.out.println(StringUtils.join(results,","));
+		System.out.println(""+second2Decimal(300.0));
+//		List<String> results = lonlat2MeshIds(76.01,30.33333);
+//		System.out.println(StringUtils.join(results,","));
+		
 //		int[] locs = mesh2Location("595671");//116.125,39.91667--116.25,40
 //		for(int l:locs){
 //			System.out.println(l);
@@ -132,6 +135,28 @@ public abstract class MeshUtils {
 		 * // System.out.println(m); ; System.out.println(second2Decimal(m)); ;
 		 * } String wkt = mesh2WKT("595651"); System.out.println(wkt);
 		 */
+	}
+	
+	/**
+	 * 
+	 * @param meshId
+	 * @return rect:[minx,miny,maxx,maxy]
+	 */
+	public static double[] mesh2Rect(String meshId){
+		meshId = StringUtils.leftPad(meshId, 6, '0');
+		int m12 = Integer.valueOf(meshId.substring(0, 2));
+		int m34 = Integer.valueOf(meshId.substring(2, 4));
+		int m5 = Integer.valueOf(meshId.substring(4, 5));
+		int m6 = Integer.valueOf(meshId.substring(5, 6));
+		double[] rect = new double[4];
+		rect[0]=(m34+60)+DoubleUtil.keepSpecDecimal(m6/8.0);
+		rect[2]=(m34+60)+DoubleUtil.keepSpecDecimal((m6+1)/8.0);
+		//纬度拉伸1.5之后成为m12，则还原时除以1.5
+		int intLat = m12/3;
+		int modLat = m12%3;
+		rect[1]=intLat*2+DoubleUtil.keepSpecDecimal((modLat*8+m5)/12.0);
+		rect[3]=intLat*2+DoubleUtil.keepSpecDecimal((modLat*8+m5+1)/12.0);
+		return rect;
 	}
 
 	/**

@@ -129,6 +129,8 @@ public class TipsImportUtils {
 		json.put("deep", deep);
 
 		json.put("feedback", feedback);
+		
+		json.put("s_reliability", 100);
 
 		return json;
 	}

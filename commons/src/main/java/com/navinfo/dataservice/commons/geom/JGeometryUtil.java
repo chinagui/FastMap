@@ -2,7 +2,7 @@ package com.navinfo.dataservice.commons.geom;
 
 import java.util.List;
 
-import com.navinfo.dataservice.commons.util.MeshUtils;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 import oracle.spatial.geometry.JGeometry;
 

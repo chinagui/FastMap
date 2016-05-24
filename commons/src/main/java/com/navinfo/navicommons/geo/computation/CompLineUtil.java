@@ -1,6 +1,6 @@
 package com.navinfo.navicommons.geo.computation;
 
-import com.navinfo.dataservice.commons.util.GeometryUtils;
+import com.navinfo.dataservice.commons.util.DoubleUtil;
 
 /** 
 * @ClassName: CompLineUitl 

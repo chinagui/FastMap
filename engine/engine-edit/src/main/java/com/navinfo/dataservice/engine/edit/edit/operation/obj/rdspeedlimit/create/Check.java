@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdspeedlimit.create;
 
-import com.navinfo.dataservice.commons.util.MeshUtils;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 public class Check {
 

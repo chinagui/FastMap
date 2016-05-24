@@ -19,7 +19,6 @@ import org.apache.log4j.Logger;
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.druid.proxy.jdbc.ClobProxyImpl;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.util.GeometryUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -34,6 +33,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkWalkstair;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class RdLinkSelector implements ISelector {

@@ -1,8 +1,8 @@
-package com.navinfo.dataservice.commons.util;
+package com.navinfo.navicommons.geo.computation;
 
 import java.util.List;
 
-import com.navinfo.navicommons.geo.computation.CompGridUtil;
+import com.navinfo.dataservice.commons.util.UuidUtils;
 
 import net.sf.json.JSONArray;
 import ch.hsr.geohash.GeoHash;

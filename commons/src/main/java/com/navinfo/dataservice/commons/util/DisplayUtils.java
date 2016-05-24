@@ -9,6 +9,8 @@ import java.util.Set;
 import oracle.spatial.geometry.JGeometry;
 
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;

@@ -14,10 +14,10 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.expcore.external.ExternalTool4Exporter;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 /** 
  * @ClassName: InitProjectScriptsInterface 

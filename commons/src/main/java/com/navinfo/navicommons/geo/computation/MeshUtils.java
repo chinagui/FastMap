@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.commons.util;
+package com.navinfo.navicommons.geo.computation;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,8 +10,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.navinfo.navicommons.geo.computation.DoubleUtil;
-import com.navinfo.navicommons.geo.computation.MeshLocation;
+import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;

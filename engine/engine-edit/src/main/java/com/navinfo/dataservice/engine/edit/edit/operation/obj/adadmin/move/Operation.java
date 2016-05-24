@@ -2,11 +2,11 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.move;
 
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 /**
  * 

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.navicommons.exception.GeoComputationException;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -197,7 +198,14 @@ public class CompGeometryUtil {
 		Geometry sub = polygon.intersection(meshPolygon);//sub 可能是polygon，也可能是multipolygon
 		int geoNum = sub.getNumGeometries();
 		for(int i=0;i<geoNum;i++){
-			result.add(parseLine((Polygon)sub.getGeometryN(i),mesh));
+			Polygon p = (Polygon)sub.getGeometryN(i);
+			//不需要再四舍五入，和图幅多边形intersection，不会产生超过5位精度的形状点
+//			//保留指定精度
+//			for(Coordinate co:p.getCoordinates()){
+//				co.x=DoubleUtil.keepSpecDecimal(co.x);
+//				co.y = DoubleUtil.keepSpecDecimal(co.y);
+//			}
+			result.add(parseLine(p,mesh));
 		}
 		return result;
 	}
@@ -239,8 +247,7 @@ public class CompGeometryUtil {
 	/**
 	 * 计算一个闭合线是否是顺时针方向
 	 * 算法：
-	 * 按坐标顺序，每相邻两条边计算，第二条边在第一条边的顺时针方向的数量多，则是顺时针方向
-	 * 第二条边在第一条边的逆时针方向数量多，则是逆时针方向
+	 * 找到一个凸点，按照线坐标方向，凸点前一个形状点组成第一条line，如果凸点下一个形状点在line的顺时针方向，则是顺时针，否则为逆时针
 	 * @param line:线需要闭合，不闭合会抛异常
 	 * @return
 	 * @throws GeoComputationException
@@ -249,30 +256,37 @@ public class CompGeometryUtil {
 		if(!line.isClosed()){
 			throw new GeoComputationException("线不闭合。");
 		}
+		Polygon bbox = (Polygon)line.getEnvelope();
+		//minx,miny,maxx,maxy任意一个
+		Coordinate minCo = bbox.getExteriorRing().getCoordinateN(0);
+		Coordinate maxCo = bbox.getExteriorRing().getCoordinateN(2);
+		double minx = minCo.x;
+		double miny = minCo.y;
+		double maxx = maxCo.x;
+		double maxy = maxCo.y;
 		Coordinate[] cos = line.getCoordinates();
-		int clockNum = 0;
-		int anticlockNum = 0;
-		//
-		if(CompLineUtil.isRightSide(new DoubleLine(MyGeometryConvertor.convert(cos[cos.length-2])
-				,MyGeometryConvertor.convert(cos[0])), MyGeometryConvertor.convert(cos[1]))){
-			clockNum++;
-		}else{
-			anticlockNum++;
-		}
-		for(int i=2;i<cos.length;i++){
-			DoubleLine dl = new DoubleLine(MyGeometryConvertor.convert(cos[i-2]),
-					MyGeometryConvertor.convert(cos[i-1]));
-			DoublePoint dp = MyGeometryConvertor.convert(cos[i]);
-			if(CompLineUtil.isRightSide(dl,dp)){
-				clockNum++;
-			}else{
-				anticlockNum++;
+		int pointSize = cos.length-1;
+		for(int i=0;i<pointSize;i++){
+			if(DoubleUtil.equals(cos[0].x, minx)
+			||DoubleUtil.equals(cos[0].x, maxx)
+			||DoubleUtil.equals(cos[0].y, miny)
+			||DoubleUtil.equals(cos[0].y, maxy)){
+				Coordinate preCo = null;
+				if(i==0){
+					preCo = cos[cos.length-2];
+				}else{
+					preCo = cos[i-1];
+				}
+				if(CompLineUtil.isRightSide(new DoubleLine(MyGeometryConvertor.convert(preCo)
+						,MyGeometryConvertor.convert(cos[i]))
+						,MyGeometryConvertor.convert(cos[i+1]))){
+					return true;
+				}else{
+					return false;
+				}
+				
 			}
 		}
-		if(clockNum>anticlockNum){
-			return true;
-		}else{
-			return false;
-		}
+		return false;
 	}
 }

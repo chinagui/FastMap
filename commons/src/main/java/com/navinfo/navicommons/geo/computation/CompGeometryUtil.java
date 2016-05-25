@@ -188,7 +188,7 @@ public class CompGeometryUtil {
 		for(String meshId:meshes){
 			result.put(meshId, cut(polygon,meshId));
 		}
-		return null;
+		return result;
 	}
 	public static Set<LineString[]> cut(Polygon polygon,String mesh)throws GeoComputationException{
 		Set<LineString[]> result = new HashSet<LineString[]>();
@@ -209,7 +209,11 @@ public class CompGeometryUtil {
 	 * @throws GeoComputationException
 	 */
 	public static LineString[] parseLine(Polygon polygon,String mesh)throws GeoComputationException{
-		Coordinate[] cos = polygon.getExteriorRing().getCoordinates();
+		LineString line = polygon.getExteriorRing();
+		if(isClockwise(line)){
+			line = (LineString)line.reverse();
+		}
+		Coordinate[] cos = line.getCoordinates();
 		List<LineString> resultList = new LinkedList<LineString>();
 		int startIndex = 0;
 		for(int i=1;i<cos.length;i++){
@@ -231,5 +235,36 @@ public class CompGeometryUtil {
 			}
 		}
 		return resultList.toArray(new LineString[0]);
+	}
+	
+	public static boolean isClockwise(LineString line)throws GeoComputationException{
+		if(!line.isClosed()){
+			throw new GeoComputationException("线不闭合。");
+		}
+		Coordinate[] cos = line.getCoordinates();
+		int clockNum = 0;
+		int anticlockNum = 0;
+		//
+		if(CompLineUtil.isRightSide(new DoubleLine(MyGeometryConvertor.convert(cos[cos.length-2])
+				,MyGeometryConvertor.convert(cos[0])), MyGeometryConvertor.convert(cos[1]))){
+			clockNum++;
+		}else{
+			anticlockNum++;
+		}
+		for(int i=2;i<cos.length;i++){
+			DoubleLine dl = new DoubleLine(MyGeometryConvertor.convert(cos[i-2]),
+					MyGeometryConvertor.convert(cos[i-1]));
+			DoublePoint dp = MyGeometryConvertor.convert(cos[i]);
+			if(CompLineUtil.isRightSide(dl,dp)){
+				clockNum++;
+			}else{
+				anticlockNum++;
+			}
+		}
+		if(clockNum>anticlockNum){
+			return true;
+		}else{
+			return false;
+		}
 	}
 }

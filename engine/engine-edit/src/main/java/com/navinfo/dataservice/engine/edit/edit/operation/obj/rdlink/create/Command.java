@@ -7,12 +7,13 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
+import com.vividsolutions.jts.geom.Geometry;
 
 public class Command extends AbstractCommand{
 
 	private String requester;
 	
-	private JSONObject geometry;
+	private Geometry geometry;
 	
 	private int eNodePid;
 	
@@ -56,14 +57,6 @@ public class Command extends AbstractCommand{
 		this.sNodePid = sNodePid;
 	}
 
-	public JSONObject getGeometry() {
-		return geometry;
-	}
-
-	public void setGeometry(JSONObject geometry) {
-		this.geometry = geometry;
-	}
-
 	@Override
 	public OperType getOperType() {
 		return OperType.CREATE;
@@ -78,9 +71,15 @@ public class Command extends AbstractCommand{
 	public String getRequester() {
 		return requester;
 	}
-	
-	
-	
+
+	public Geometry getGeometry() {
+		return geometry;
+	}
+
+	public void setGeometry(Geometry geometry) {
+		this.geometry = geometry;
+	}
+
 	public JSONArray getCatchLinks() {
 		return catchLinks;
 	}
@@ -96,9 +95,7 @@ public class Command extends AbstractCommand{
 		
 		this.sNodePid = data.getInt("sNodePid");
 		
-		this.geometry = data.getJSONObject("geometry");
-		
-		this.geometry = GeoTranslator.jts2Geojson(GeoTranslator.geojson2Jts(geometry, 1, 5));
+		this.geometry = GeoTranslator.geojson2Jts(data.getJSONObject("geometry"), 1, 5);
 		
 		if(data.containsKey("kind")){
 			this.kind= data.getInt("kind");

@@ -12,13 +12,13 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeName;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 

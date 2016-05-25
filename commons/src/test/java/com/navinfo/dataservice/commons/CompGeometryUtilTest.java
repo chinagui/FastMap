@@ -62,4 +62,22 @@ public class CompGeometryUtilTest{
 		}
 		
 	}
+	/**
+	 * 在图幅内，和图廓线只有一个交点的情况
+	 */
+	@Test
+	public void intersect_003(){
+		try{
+			Polygon p1 = (Polygon)JtsGeometryFactory.read("Polygon ((118.02 37.56,118.07 37.5,118.11 37.56,118.02 37.56))");
+			Polygon p2 = (Polygon)JtsGeometryFactory.read("POLYGON((118.0 37.5,118.125 37.5,118.125 37.58333,118.0 37.58333,118.0 37.5))");
+			Geometry result = p1.intersection(p2);
+			System.out.println(result.getGeometryType());
+			System.out.println(result.getNumGeometries());
+			System.out.println(result.getGeometryN(0).toText());
+			System.out.println(result.toText());
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+	}
 }

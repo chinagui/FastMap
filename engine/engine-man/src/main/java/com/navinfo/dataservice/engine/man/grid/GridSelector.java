@@ -10,8 +10,8 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.db.ConfigLoader;
-import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.dataservice.engine.dao.DBConnector;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 public class GridSelector {
 

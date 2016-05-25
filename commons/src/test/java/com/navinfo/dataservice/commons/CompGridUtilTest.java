@@ -21,10 +21,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.commons.util.MeshUtils;
+import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
-import com.navinfo.navicommons.geo.computation.DoubleUtil;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 import junit.framework.Assert;
 import oracle.spatial.geometry.JGeometry;

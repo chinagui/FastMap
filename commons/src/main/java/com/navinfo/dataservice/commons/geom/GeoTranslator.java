@@ -23,7 +23,7 @@ import org.mapfish.geo.MfGeometry;
 
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
-import com.navinfo.dataservice.commons.util.GeometryUtils;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;

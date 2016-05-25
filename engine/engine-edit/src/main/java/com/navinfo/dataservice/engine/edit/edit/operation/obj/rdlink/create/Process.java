@@ -32,10 +32,8 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
-		// TODO Auto-generated method stub
 		Operation operation = new Operation(this.getCommand(), check, this.getConn());
 		String msg = operation.run(this.getResult());
-		operation.breakLine();
 		return msg;
 	}
 	

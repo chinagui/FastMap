@@ -9,7 +9,7 @@ import net.sf.json.JSONObject;
 import org.navinfo.dataservice.engine.meta.dao.DBConnector;
 
 import com.navinfo.dataservice.commons.db.OracleAddress;
-import com.navinfo.dataservice.commons.util.MeshUtils;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 public class MeshSelector {
 

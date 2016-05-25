@@ -25,8 +25,8 @@ import ch.hsr.geohash.GeoHash;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.util.FileUtils;
-import com.navinfo.dataservice.commons.util.GridUtils;
 import com.navinfo.dataservice.dao.fcc.SolrController;
+import com.navinfo.navicommons.geo.computation.GridUtils;
 
 public class TipsExporter {
 

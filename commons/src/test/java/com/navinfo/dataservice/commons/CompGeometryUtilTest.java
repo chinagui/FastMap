@@ -1,11 +1,15 @@
 package com.navinfo.dataservice.commons;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.junit.Test;
 
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
 
 
@@ -75,6 +79,30 @@ public class CompGeometryUtilTest{
 			System.out.println(result.getNumGeometries());
 			System.out.println(result.getGeometryN(0).toText());
 			System.out.println(result.toText());
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+	}
+	/**
+	 * 多边形被图幅打断，跨越4个图幅
+	 */
+	@Test
+	public void cut_001(){
+		try{
+			Polygon p = (Polygon)JtsGeometryFactory.read("Polygon ((118.0137 37.60843, 118.09926 37.6529, 118.16091 37.6438, 118.20336 37.56362, 118.15855 37.61348, 118.15619 37.5616, 118.09454 37.56093, 118.07063 37.59799, 118.05311 37.55823, 118.043 37.59832, 118.02784 37.55722, 118.0137 37.60843))");
+			String[] meshes = new String[]{"565820","565821","565831","565830"};
+			Map<String,Set<LineString[]>> result = CompGeometryUtil.cut(p, meshes);
+			int c = 1;
+			for(String key:result.keySet()){
+				//System.out.println(key+":");
+				for(LineString[] lss:result.get(key)){
+					for(LineString ls:lss){
+						System.out.println(ls.toText()+"\t"+c++);
+					}
+					//System.out.print("\n");
+				}
+			}
 		}catch(Exception e){
 			e.printStackTrace();
 		}

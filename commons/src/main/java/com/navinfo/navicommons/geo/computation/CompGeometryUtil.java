@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.navicommons.exception.GeoComputationException;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -188,7 +189,7 @@ public class CompGeometryUtil {
 		for(String meshId:meshes){
 			result.put(meshId, cut(polygon,meshId));
 		}
-		return null;
+		return result;
 	}
 	public static Set<LineString[]> cut(Polygon polygon,String mesh)throws GeoComputationException{
 		Set<LineString[]> result = new HashSet<LineString[]>();
@@ -197,7 +198,14 @@ public class CompGeometryUtil {
 		Geometry sub = polygon.intersection(meshPolygon);//sub 可能是polygon，也可能是multipolygon
 		int geoNum = sub.getNumGeometries();
 		for(int i=0;i<geoNum;i++){
-			result.add(parseLine((Polygon)sub.getGeometryN(i),mesh));
+			Polygon p = (Polygon)sub.getGeometryN(i);
+			//不需要再四舍五入，和图幅多边形intersection，不会产生超过5位精度的形状点
+//			//保留指定精度
+//			for(Coordinate co:p.getCoordinates()){
+//				co.x=DoubleUtil.keepSpecDecimal(co.x);
+//				co.y = DoubleUtil.keepSpecDecimal(co.y);
+//			}
+			result.add(parseLine(p,mesh));
 		}
 		return result;
 	}
@@ -209,7 +217,11 @@ public class CompGeometryUtil {
 	 * @throws GeoComputationException
 	 */
 	public static LineString[] parseLine(Polygon polygon,String mesh)throws GeoComputationException{
-		Coordinate[] cos = polygon.getExteriorRing().getCoordinates();
+		LineString line = polygon.getExteriorRing();
+		if(isClockwise(line)){
+			line = (LineString)line.reverse();
+		}
+		Coordinate[] cos = line.getCoordinates();
 		List<LineString> resultList = new LinkedList<LineString>();
 		int startIndex = 0;
 		for(int i=1;i<cos.length;i++){
@@ -231,5 +243,50 @@ public class CompGeometryUtil {
 			}
 		}
 		return resultList.toArray(new LineString[0]);
+	}
+	/**
+	 * 计算一个闭合线是否是顺时针方向
+	 * 算法：
+	 * 找到一个凸点，按照线坐标方向，凸点前一个形状点组成第一条line，如果凸点下一个形状点在line的顺时针方向，则是顺时针，否则为逆时针
+	 * @param line:线需要闭合，不闭合会抛异常
+	 * @return
+	 * @throws GeoComputationException
+	 */
+	public static boolean isClockwise(LineString line)throws GeoComputationException{
+		if(!line.isClosed()){
+			throw new GeoComputationException("线不闭合。");
+		}
+		Polygon bbox = (Polygon)line.getEnvelope();
+		//minx,miny,maxx,maxy任意一个
+		Coordinate minCo = bbox.getExteriorRing().getCoordinateN(0);
+		Coordinate maxCo = bbox.getExteriorRing().getCoordinateN(2);
+		double minx = minCo.x;
+		double miny = minCo.y;
+		double maxx = maxCo.x;
+		double maxy = maxCo.y;
+		Coordinate[] cos = line.getCoordinates();
+		int pointSize = cos.length-1;
+		for(int i=0;i<pointSize;i++){
+			if(DoubleUtil.equals(cos[0].x, minx)
+			||DoubleUtil.equals(cos[0].x, maxx)
+			||DoubleUtil.equals(cos[0].y, miny)
+			||DoubleUtil.equals(cos[0].y, maxy)){
+				Coordinate preCo = null;
+				if(i==0){
+					preCo = cos[cos.length-2];
+				}else{
+					preCo = cos[i-1];
+				}
+				if(CompLineUtil.isRightSide(new DoubleLine(MyGeometryConvertor.convert(preCo)
+						,MyGeometryConvertor.convert(cos[i]))
+						,MyGeometryConvertor.convert(cos[i+1]))){
+					return true;
+				}else{
+					return false;
+				}
+				
+			}
+		}
+		return false;
 	}
 }

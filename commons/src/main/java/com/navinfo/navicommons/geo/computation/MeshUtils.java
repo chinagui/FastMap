@@ -35,6 +35,8 @@ public abstract class MeshUtils {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println(""+second2Decimal(300.0));
+		List<String> results = lonlat2MeshIds(118.0743,37.5432);
+		System.out.println(StringUtils.join(results,","));
 //		List<String> results = lonlat2MeshIds(76.01,30.33333);
 //		System.out.println(StringUtils.join(results,","));
 		

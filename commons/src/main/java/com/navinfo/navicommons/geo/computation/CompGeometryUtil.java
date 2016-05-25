@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -178,43 +179,26 @@ public class CompGeometryUtil {
 	 * 图廓线打断多边形
 	 * @param lines:组成闭合简单多边形的多条lineString,如果只有一条，则该条线的首尾coordinate必须equal
 	 * @param meshes：这些lineString跨越的图幅号
-	 * @return：map，key:图幅号，value：所有集合的set，通过geometry.gettype可以区分点线面，
-	 * [0]为该图幅号内的所有多边形multipolygon；
-	 * [1]为该图幅号内所有线multilinestring，包含图廓线；
-	 * [2]为该图幅号内所有点multipoint，包含图廓点。
+	 * @return：map，key:图幅号，value：所有切割后生成线数组（每个数组能够组成一个一个面且是逆时针方向）的集合
+	 * 注意：不同图幅内部lineString有重复，即图廓线会属于两个图幅
 	 */
-	public static Map<String,Set<Geometry>> cut(Polygon polygon,String[] meshes)throws GeoComputationException{
+	public static Map<String,Set<LineString[]>> cut(Polygon polygon,String[] meshes)throws GeoComputationException{
 		
-		Map<String,Set<Geometry>> result = new HashMap<String,Set<Geometry>>();
+		Map<String,Set<LineString[]>> result = new HashMap<String,Set<LineString[]>>();
 		for(String meshId:meshes){
 			result.put(meshId, cut(polygon,meshId));
 		}
 		return null;
 	}
-	public static Set<Geometry> cut(Polygon polygon,String mesh)throws GeoComputationException{
-		Set<Geometry> result = new HashSet<Geometry>();
+	public static Set<LineString[]> cut(Polygon polygon,String mesh)throws GeoComputationException{
+		Set<LineString[]> result = new HashSet<LineString[]>();
 		//找到需要生成的面
 		Polygon meshPolygon = MyGeometryConvertor.convert(MeshUtils.mesh2Rect(mesh));
-		Geometry sub = polygon.intersection(meshPolygon);
-		Set<Polygon> polygonSet = new HashSet<Polygon>();
+		Geometry sub = polygon.intersection(meshPolygon);//sub 可能是polygon，也可能是multipolygon
 		int geoNum = sub.getNumGeometries();
 		for(int i=0;i<geoNum;i++){
-			polygonSet.add((Polygon)sub.getGeometryN(i));
+			result.add(parseLine((Polygon)sub.getGeometryN(i),mesh));
 		}
-		result.addAll(polygonSet);
-		//找到需要生成的线
-		Set<LineString> lineSet = new HashSet<LineString>();
-		for(Polygon p:polygonSet){
-			lineSet.addAll(parseLine(p,mesh));
-		}
-		result.addAll(lineSet);
-		//找到需要生成的点
-		Set<Point> pointSet = new HashSet<Point>();
-		for(LineString line:lineSet){
-			pointSet.add(line.getStartPoint());
-			pointSet.add(line.getEndPoint());
-		}
-		result.addAll(pointSet);
 		return result;
 	}
 	/**
@@ -224,9 +208,9 @@ public class CompGeometryUtil {
 	 * @return 被图幅边框打断后生成的lineString数组
 	 * @throws GeoComputationException
 	 */
-	public static Set<LineString> parseLine(Polygon polygon,String mesh)throws GeoComputationException{
+	public static LineString[] parseLine(Polygon polygon,String mesh)throws GeoComputationException{
 		Coordinate[] cos = polygon.getExteriorRing().getCoordinates();
-		Set<LineString> resultSet = new HashSet<LineString>();
+		List<LineString> resultList = new LinkedList<LineString>();
 		int startIndex = 0;
 		for(int i=1;i<cos.length;i++){
 			/**
@@ -242,10 +226,10 @@ public class CompGeometryUtil {
 				for(int j=0;j<=(i-startIndex);j++){
 					sub[j]=cos[startIndex+j];
 				}
-				resultSet.add(JtsGeometryFactory.createLineString(sub));
+				resultList.add(JtsGeometryFactory.createLineString(sub));
 				startIndex = i;
 			}
 		}
-		return resultSet;
+		return resultList.toArray(new LineString[0]);
 	}
 }

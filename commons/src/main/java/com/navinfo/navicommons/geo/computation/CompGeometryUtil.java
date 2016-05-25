@@ -236,7 +236,15 @@ public class CompGeometryUtil {
 		}
 		return resultList.toArray(new LineString[0]);
 	}
-	
+	/**
+	 * 计算一个闭合线是否是顺时针方向
+	 * 算法：
+	 * 按坐标顺序，每相邻两条边计算，第二条边在第一条边的顺时针方向的数量多，则是顺时针方向
+	 * 第二条边在第一条边的逆时针方向数量多，则是逆时针方向
+	 * @param line:线需要闭合，不闭合会抛异常
+	 * @return
+	 * @throws GeoComputationException
+	 */
 	public static boolean isClockwise(LineString line)throws GeoComputationException{
 		if(!line.isClosed()){
 			throw new GeoComputationException("线不闭合。");

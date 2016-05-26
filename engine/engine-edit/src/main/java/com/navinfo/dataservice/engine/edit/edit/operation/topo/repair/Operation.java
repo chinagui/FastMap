@@ -263,7 +263,7 @@ public class Operation implements IOperation {
 		} else {
 			// 错误请求
 		}
-		System.out.println();
+		
 		Geometry g = GeoTranslator.geojson2Jts(command.getLinkGeom());
 
 		Set<String> meshes = MeshUtils.getInterMeshes(g);

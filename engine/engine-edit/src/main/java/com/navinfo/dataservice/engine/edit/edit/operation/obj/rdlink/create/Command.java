@@ -95,7 +95,20 @@ public class Command extends AbstractCommand{
 		
 		this.sNodePid = data.getInt("sNodePid");
 		
-		this.geometry = GeoTranslator.geojson2Jts(data.getJSONObject("geometry"), 1, 5);
+		try {
+			this.geometry = GeoTranslator.geojson2Jts(data.getJSONObject("geometry"), 1, 5);
+		} catch (Exception e) {
+			String msg = e.getLocalizedMessage();
+			if(msg.contains("found 1 - must be 0 or >= 2"))
+			{
+				throw new Exception("线至少包含两个点");
+			}
+			else
+			{
+				throw new Exception(msg);
+			}
+		}
+		
 		
 		if(data.containsKey("kind")){
 			this.kind= data.getInt("kind");

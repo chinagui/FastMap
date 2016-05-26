@@ -33,7 +33,10 @@ public class Command extends AbstractCommand   implements ICommand {
 		
 		this.setProjectId(json.getInt("projectId"));
 		
-		this.linkPid = data.getInt("linkPid");
+		if(data.containsKey("linkPid"))
+		{
+			this.linkPid = data.getInt("linkPid");
+		}
 		
 		this.pid = json.getInt("objId");
 	}

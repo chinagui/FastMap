@@ -39,7 +39,12 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 		String msg = null;
-
+		
+		if(command.getGeometry().getCoordinates().length<2)
+		{
+			throw new Exception("线至少包含两个点");
+		}
+		
 		Map<Geometry, JSONObject> map = new HashMap<Geometry, JSONObject>();
 
 		if (command.getCatchLinks().size() > 0) {

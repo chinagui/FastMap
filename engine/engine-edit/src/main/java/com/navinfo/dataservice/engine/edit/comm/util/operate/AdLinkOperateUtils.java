@@ -75,6 +75,27 @@ public class AdLinkOperateUtils {
 		result.setPrimaryPid(link.pid());
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
 	}
+	
+	
+	/*
+	 * 创建生成一条ADLINK返回
+	 * */
+	public static AdLink getAddLink(Geometry g,int sNodePid, int eNodePid,Result result) throws Exception{
+		AdLink link = new AdLink();
+		Set<String> meshes = MeshUtils.getInterMeshes(g);
+		int meshId = Integer.parseInt(meshes.iterator().next());
+		link.setMesh(meshId);
+		link.setPid(PidService.getInstance().applyAdLinkPid());
+		double linkLength = GeometryUtils.getLinkLength(g);
+		link.setLength(linkLength);
+		link.setGeometry(GeoTranslator.transform(g, 100000, 0));
+		link.setsNodePid(sNodePid);
+		link.seteNodePid(eNodePid);
+		setLinkChildren(link);
+		result.setPrimaryPid(link.pid());
+		result.insertObject(link, ObjStatus.INSERT, link.pid());
+		return link;
+	}
 	/*
 	 * 创建生成一条ADLINK
 	 * 继承原有LINK的属性

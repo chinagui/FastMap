@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,6 +14,8 @@ import net.sf.json.JSONObject;
 import com.alibaba.druid.util.StringUtils;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.service.PidService;
+import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -21,14 +24,16 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.AdLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.Polygon;
 /**
  * 
  * @author zhaokk
@@ -68,13 +73,18 @@ public class Operation implements IOperation {
 		if (command.getLinkPids() != null) {
 			// ADLINK
 			if (command.getLinkType().equals(ObjType.ADLINK.toString())) {
-				this.createFace();
-				this.reCaleFaceGeometry(command.getLinks());
+			
 
 			}
 			// RDLINK
 			if (command.getLinkType().equals(ObjType.RDLINK.toString())) {
-				// 需求待定
+			   //根据RDLINK生成ADLINK
+				Map<Coordinate,Integer> maps = new HashMap<Coordinate, Integer>();
+				List<AdLink> adLinks = new ArrayList<AdLink>();
+				for(IObj obj:command.getLinks()){
+					RdLink link = (RdLink)obj;
+					adLinks.add(this.createLinkOfFace( GeoTranslator.transform(link.getGeometry(), 0.00001, 5), maps));
+				}
 			}
 		}
 		// 创建
@@ -108,31 +118,65 @@ public class Operation implements IOperation {
 		Set<String> meshes = new HashSet<String>();
 		meshes = this.getLinkInterMesh(geom);
 		if (meshes.size() == 1) {
-			AdLink link = new AdLink();
 			int meshId = Integer.parseInt(meshes.iterator().next());
-			link.setPid(PidService.getInstance().applyAdLinkPid());
-			link.setMesh(meshId);
-			double linkLength = GeometryUtils.getLinkLength(geom);
-			link.setLength(linkLength);
-			link.setGeometry(GeoTranslator.transform(geom, 100000, 0));
-			link.setsNodePid(Node.getPid());
-			link.seteNodePid(Node.getPid());
-			AdLinkMesh adLinkMesh = new AdLinkMesh();
-			adLinkMesh.setLinkPid(link.getPid());
-			adLinkMesh.setMeshId(meshId);
-			List<IRow> adLinkMeshs = new ArrayList<IRow>();
-			adLinkMeshs.add(adLinkMesh);
-			link.setMeshes(adLinkMeshs);
-			result.insertObject(link, ObjStatus.INSERT, link.getPid());
 			this.createFace();
 			this.face.setMeshId(meshId);
 			this.face.setMesh(meshId);
 			List<AdLink> links = new ArrayList<AdLink>();
-			links.add(link);
+			links.add(AdLinkOperateUtils.getAddLink(geom, Node.getPid(), Node.getPid(), result));
 			this.reCaleFaceGeometry(links);
+		}else{
+			Iterator<String> it = meshes.iterator();
+			Map<Coordinate,Integer> mapNode = new HashMap<Coordinate, Integer>();
+			Map<LineString,AdLink> mapLink = new HashMap<LineString, AdLink>();
+			while(it.hasNext()){
+				String meshIdStr = it.next();
+				Map<String,Set<LineString[]>> map= this.cut(JtsGeometryFactory.createPolygon(geom.getCoordinates()), meshIdStr);
+				Set<LineString[]> set =map.get(meshIdStr);
+				while(set.iterator().hasNext()){
+					LineString[] lineStrings = set.iterator().next();
+					List<AdLink> links = new ArrayList<AdLink>();
+					for (LineString lineString:lineStrings){
+						AdLink adLink = null;
+						if(mapLink.containsKey(lineString)){
+							adLink = mapLink.get(lineString);
+						}else{
+							adLink = this.createLinkOfFace(lineString, mapNode);
+							mapLink.put(lineString, adLink);
+						}
+						links.add(adLink);
+					}
+					this.createFace();
+					this.reCaleFaceGeometry(links);
+				}
+				
+				
+			}
 		}
-	}
 
+	}
+    private Map<String,Set<LineString[]>> cut(Polygon polygon,String mesh){
+    	return null;
+    }
+    private AdLink createLinkOfFace(Geometry g,Map<Coordinate, Integer> maps) throws Exception {
+    	int sNodePid =  0 ;
+    	int eNodePid =  0 ;
+    	if(maps.containsKey(g.getCoordinates()[0])){
+    		sNodePid= maps.get(g.getCoordinates()[0]);
+    	}
+    	if(maps.containsKey(g.getCoordinates()[g.getCoordinates().length-1])){
+    		eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length-1]);
+    	}
+		JSONObject node = AdLinkOperateUtils.createAdNodeForLink(
+				g, sNodePid, eNodePid, result);
+		if (!maps.containsValue(node.get("s"))) {
+			maps.put(g.getCoordinates()[0], (int) node.get("s"));
+		}
+		if (!maps.containsValue(node.get("e"))) {
+			maps.put(g.getCoordinates()[0], (int) node.get("e"));
+		}
+    	return AdLinkOperateUtils.getAddLink(g, sNodePid, eNodePid, result);
+    }
 	/*
 	 * 添加Link和FaceTopo关系
 	 */

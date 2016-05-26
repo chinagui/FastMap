@@ -72,7 +72,7 @@ public class Operation implements IOperation {
 	/*
 	 * 创建RDLINK 不跨图幅生成线
 	 */
-	private void createRdLinkWithNoMesh(Geometry g, int sNodePid, int eNodePid, Result result) throws Exception {
+	private RdLink createRdLinkWithNoMesh(Geometry g, int sNodePid, int eNodePid, Result result) throws Exception {
 		if (g != null) {
 			JSONObject node = RdLinkOperateUtils.createRdNodeForLink(g, sNodePid, eNodePid, result);
 			RdLink link = RdLinkOperateUtils.addLink(g, (int) node.get("s"), (int) node.get("e"), result);
@@ -82,9 +82,11 @@ public class Operation implements IOperation {
 			link.setLaneNum(command.getLaneNum());
 			
 			AdminOperateUtils.SetAdminInfo4Link(link, conn);
-
-			result.insertObject(link, ObjStatus.INSERT, link.pid());
+			
+			return link;
 		}
+		
+		return null;
 	}
 
 	/*
@@ -92,15 +94,23 @@ public class Operation implements IOperation {
 	 * 跨图幅需要生成和图廓线的交点
 	 */
 
-	private void createRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result) throws Exception {
+	private void createRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result, String meshId) throws Exception {
 		if (g != null) {
 
 			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
-				this.calRdLinkWithMesh(g, maps, result);
+				RdLink link = this.calRdLinkWithMesh(g, maps, result);
+				
+				link.setMeshId(Integer.parseInt(meshId));
+				
+				result.insertObject(link, ObjStatus.INSERT, link.pid());
 			}
 			if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
 				for (int i = 0; i < g.getNumGeometries(); i++) {
-					this.calRdLinkWithMesh(g.getGeometryN(i), maps, result);
+					RdLink link = this.calRdLinkWithMesh(g.getGeometryN(i), maps, result);
+					
+					link.setMeshId(Integer.parseInt(meshId));
+					
+					result.insertObject(link, ObjStatus.INSERT, link.pid());
 				}
 
 			}
@@ -110,7 +120,7 @@ public class Operation implements IOperation {
 	/*
 	 * 创建RDLINK 针对跨图幅创建图廓点不能重复
 	 */
-	private void calRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result) throws Exception {
+	private RdLink calRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result) throws Exception {
 		// 定义创建RDLINK的起始Pid 默认为0
 		int sNodePid = 0;
 		int eNodePid = 0;
@@ -139,7 +149,7 @@ public class Operation implements IOperation {
 		
 		AdminOperateUtils.SetAdminInfo4Link(link, conn);
 
-		result.insertObject(link, ObjStatus.INSERT, link.pid());
+		return link;
 	}
 
 	/*
@@ -152,7 +162,11 @@ public class Operation implements IOperation {
 			Set<String> meshes = MeshUtils.getInterMeshes(g);
 			// 不跨图幅
 			if (meshes.size() == 1) {
-				this.createRdLinkWithNoMesh(g, (int) map.get(g).get("s"), (int) map.get(g).get("e"), result);
+				RdLink link = this.createRdLinkWithNoMesh(g, (int) map.get(g).get("s"), (int) map.get(g).get("e"), result);
+				
+				link.setMeshId(Integer.parseInt(meshes.iterator().next()));
+				
+				result.insertObject(link, ObjStatus.INSERT, link.pid());
 			}
 			// 跨图幅
 			else {
@@ -164,7 +178,7 @@ public class Operation implements IOperation {
 					String meshIdStr = it.next();
 					Geometry geomInter = MeshUtils.linkInterMeshPolygon(g, MeshUtils.mesh2Jts(meshIdStr));
 					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					this.createRdLinkWithMesh(geomInter, maps, result);
+					this.createRdLinkWithMesh(geomInter, maps, result,meshIdStr);
 				}
 			}
 

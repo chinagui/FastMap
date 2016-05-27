@@ -105,7 +105,7 @@ public class GLM01212 extends baseRule {
 		DatabaseOperator getObj=new DatabaseOperator();
 		List<Object> resultList=new ArrayList<Object>();
 		resultList=getObj.exeSelect(getConn(), sql);
-		if(Integer.valueOf((String)resultList.get(0))>1){
+		if(resultList.size()>0 && Integer.valueOf((String)resultList.get(0))>1){
 			String target=chainPidSet.toString().replace(" ", "").
 			replace("[", "[RD_LINK%").replace(",", "];[RD_LINK,").replace("%", ",");
 			this.setCheckResult(rdLink.getGeometry(), target, rdLink.getMeshId());

@@ -34,7 +34,7 @@ public class GLM01197 extends baseRule {
 				//一条特殊交通类型链上的link不重复检查
 				if(linkPidList.contains(rdLink.getPid())){continue;}
 				//非特殊交通类型link不查此规则
-				if(rdLink.getSpecialTraffic()==0){continue;}				
+				if(rdLink.getSpecialTraffic()==0){linkPidList.add(rdLink.getPid());continue;}				
 				checkWithRdLink(rdLink,linkPidList);
 			}
 		}

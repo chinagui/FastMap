@@ -59,8 +59,10 @@ public class RuleExecuter {
 		Set<String> variablevalue=new HashSet<String>();
 		switch (variable) {
 			case RDLINK_PID:
-				{variablevalue=VariablesFactory.getRdLinkPid(data);break;}
-				}
+			{variablevalue=VariablesFactory.getRdLinkPid(data);break;}
+			case RDNODE_PID:
+			{variablevalue=VariablesFactory.getRdNodePid(data);break;}
+			}
 		if(!variablesValueMap.containsKey(variable)){
 			variablesValueMap.put(variable, new HashSet<String>());}
 		variablesValueMap.get(variable).addAll(variablevalue);
@@ -109,6 +111,11 @@ public class RuleExecuter {
 		//将sql语句中的参数进行替换，形成可执行的sql语句
 		for(int i=0;i<variableList.size();i++){
 			Set<String> variableValueList=variablesValueMap.get(variableList.get(i));
+			if(variableValueList.size()==0){
+				sqlListTmp=new ArrayList<String>();
+				sqlList=new ArrayList<String>();
+				break;
+			}
 			if(sqlListTmp.size()!=0){sqlList=sqlListTmp;sqlListTmp=new ArrayList<String>();}
 			for(int m=0;m<sqlList.size();m++){
 				Iterator<String> varIterator=variableValueList.iterator();

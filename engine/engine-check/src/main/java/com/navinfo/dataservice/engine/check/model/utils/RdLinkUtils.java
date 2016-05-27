@@ -20,5 +20,32 @@ public class RdLinkUtils {
 		
 		return imiCodeChi;
 	}
+	
+	/*
+	 * 将KIND转成汉字
+	 */
+	public static String kindToChi(int kind){
+		String kindChi="";
+		
+		switch(kind){
+		case 0:kindChi="作业中";break;
+		case 1:kindChi="高速道路";break;
+		case 2:kindChi="城市高速";break;
+		case 3:kindChi="国道";break;
+		case 4:kindChi="省道";break;
+		case 5:kindChi="预留";break;
+		case 6:kindChi="县道";break;
+		case 7:kindChi="乡镇村道路";break;
+		
+		case 8:kindChi="其它道路";break;
+		case 9:kindChi="非引导道路";break;
+		case 10:kindChi="步行道路";break;
+		case 11:kindChi="人渡";break;
+		case 13:kindChi="轮渡";break;
+		case 15:kindChi="10级路(障碍物)";break;
+		}
+		
+		return kindChi;
+	}
 
 }

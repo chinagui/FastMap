@@ -4,7 +4,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
-import com.navinfo.dataservice.diff.config.DiffConfig;
+import com.navinfo.dataservice.diff.config.DiffJobRequest;
 import com.navinfo.dataservice.diff.exception.DiffException;
 
 /**
@@ -15,9 +15,9 @@ import com.navinfo.dataservice.diff.exception.DiffException;
 public class DataAccessBuilder
 {
 	protected Logger log = Logger.getLogger(this.getClass());
-    private DiffConfig diffConfig;
+    private DiffJobRequest diffConfig;
 
-    public DataAccessBuilder(DiffConfig diffConfig)
+    public DataAccessBuilder(DiffJobRequest diffConfig)
     {
         this.diffConfig = diffConfig;
     }

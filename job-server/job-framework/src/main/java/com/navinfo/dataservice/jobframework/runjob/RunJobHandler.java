@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.jobframework.runjob;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
-import com.navinfo.dataservice.api.job.model.JobType;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
 
 import net.sf.json.JSONObject;
@@ -22,7 +21,7 @@ public class RunJobHandler implements MsgHandler {
 		//解析message生成jobInfo
 		JSONObject jo = JSONObject.fromObject(message);
 		long jobId = jo.getLong("jobId");
-		JobType type = JobType.getJobType(jo.getString("type"));
+		String type = jo.getString("type");
 		JSONObject request = JSONObject.fromObject(jo.get("request"));
 		JobInfo jobInfo = new JobInfo(jobId);
 		jobInfo.setType(type);

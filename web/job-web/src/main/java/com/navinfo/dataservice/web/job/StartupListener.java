@@ -5,7 +5,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 
 import com.navinfo.dataservice.api.job.model.JobMsgType;
 import com.navinfo.dataservice.jobframework.JobFinder;
-import com.navinfo.dataservice.jobframework.JobFinder4RunFromMQ;
+import com.navinfo.dataservice.jobframework.JobFinderFromMQ;
 
 /** 
 * @ClassName: StartupListener 
@@ -18,7 +18,7 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		if(event.getApplicationContext().getParent() == null){
 			try{
-				JobFinder finder = new JobFinder4RunFromMQ();
+				JobFinder finder = new JobFinderFromMQ();
 				finder.startFinding(JobMsgType.MSG_RESPONSE_JOB);
 			}catch(Exception e){
 				System.out.println(e.getMessage());

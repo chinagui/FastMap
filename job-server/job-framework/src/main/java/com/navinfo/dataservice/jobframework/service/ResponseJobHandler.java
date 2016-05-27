@@ -32,8 +32,10 @@ public class ResponseJobHandler implements MsgHandler {
 			//解析message生成jobInfo
 			JSONObject o = JSONObject.fromObject(message);
 			long jobId = o.getLong("jobId");
+			int status = o.getInt("status");
 			JSONObject resp = o.getJSONObject("response");
 			
+			int stepCount = o.getInt("stepCount");
 			JSONObject step = o.getJSONObject("step");
 			int stepSeq = step.getInt("stepSeq");
 			String stepMsg = step.getString("stepMsg");
@@ -41,8 +43,8 @@ public class ResponseJobHandler implements MsgHandler {
 			QueryRunner runner = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getManDataSource()
 					.getConnection();
-			String jobInfoSql = "UPDATE JOB_INFO SET JOB_RESPONSE=? WHERE JOB_ID=?";
-			int count = runner.update(conn, jobInfoSql, resp.toString(),jobId);
+			String jobInfoSql = "UPDATE JOB_INFO SET STATUS=?, JOB_RESPONSE=? WHERE JOB_ID=?";
+			int count = runner.update(conn, jobInfoSql,status, resp.toString(),jobId);
 			String stepSql = "INSERT INTO JOB_STEP(JOB_ID,STEP_SEQ,STEP_MSG,BEGIN_TIME,END_TIME,STATUS,PROGRESS) VALUES (?,?,?,SYSDATE,SYSDATE,1,100)";
 			runner.update(conn, stepSql, jobId,stepSeq,stepMsg);
 		}catch(Exception e){

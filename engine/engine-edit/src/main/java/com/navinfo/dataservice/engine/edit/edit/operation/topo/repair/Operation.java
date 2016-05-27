@@ -6,11 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -24,6 +20,9 @@ import com.navinfo.dataservice.engine.edit.comm.util.type.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -279,7 +278,7 @@ public class Operation implements IOperation {
 				String meshIdStr = it.next();
 				Geometry geomInter = MeshUtils.linkInterMeshPolygon(g, MeshUtils.mesh2Jts(meshIdStr));
 				geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-				this.createRdLinkWithMesh(geomInter, maps, result);
+				this.createRdLinkWithMesh(geomInter, maps, result,meshIdStr);
 			}
 			//删掉原始link
 			result.insertObject(updateLink, ObjStatus.DELETE, updateLink.pid());
@@ -302,15 +301,23 @@ public class Operation implements IOperation {
 	 * 创建RDLINK针对跨图幅有两种情况 1.跨图幅和图幅交集是LineString 2.跨图幅和图幅交集是MultineString
 	 * 跨图幅需要生成和图廓线的交点
 	 */
-	private void createRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result) throws Exception {
+	private void createRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result, String meshId) throws Exception {
 		if (g != null) {
 
 			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
-				this.calRdLinkWithMesh(g, maps, result);
+				RdLink link = this.calRdLinkWithMesh(g, maps, result);
+				
+				link.setMeshId(Integer.parseInt(meshId));
+				
+				result.insertObject(link, ObjStatus.INSERT, link.pid());
 			}
 			if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
 				for (int i = 0; i < g.getNumGeometries(); i++) {
-					this.calRdLinkWithMesh(g.getGeometryN(i), maps, result);
+					RdLink link = this.calRdLinkWithMesh(g.getGeometryN(i), maps, result);
+					
+					link.setMeshId(Integer.parseInt(meshId));
+					
+					result.insertObject(link, ObjStatus.INSERT, link.pid());
 				}
 
 			}
@@ -320,7 +327,7 @@ public class Operation implements IOperation {
 	/*
 	 * 创建RDLINK 针对跨图幅创建图廓点不能重复
 	 */
-	private void calRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result) throws Exception {
+	private RdLink calRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result) throws Exception {
 		// 定义创建RDLINK的起始Pid 默认为0
 		int sNodePid = 0;
 		int eNodePid = 0;
@@ -349,7 +356,7 @@ public class Operation implements IOperation {
 		
 		AdminOperateUtils.SetAdminInfo4Link(link, conn);
 
-		result.insertObject(link, ObjStatus.INSERT, link.pid());
+		return link;
 	}
 	
 	public void breakLine(int sNodePid, int eNodePid) throws Exception {

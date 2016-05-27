@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.create;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
@@ -10,7 +12,9 @@ import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class Command extends AbstractCommand{
-
+	
+	protected Logger log = Logger.getLogger(this.getClass());
+	
 	private String requester;
 	
 	private Geometry geometry;
@@ -99,6 +103,9 @@ public class Command extends AbstractCommand{
 			this.geometry = GeoTranslator.geojson2Jts(data.getJSONObject("geometry"), 1, 5);
 		} catch (Exception e) {
 			String msg = e.getLocalizedMessage();
+			
+			log.error(e.getMessage(),e);
+			
 			if(msg.contains("found 1 - must be 0 or >= 2"))
 			{
 				throw new Exception("线至少包含两个点");

@@ -9,7 +9,7 @@ import com.navinfo.dataservice.jobframework.runjob.JobThreadPoolExecutor;
 * @date 2016年3月29日 下午5:05:49 
 * @Description: TODO
 */
-public class JobFinder4RunFromDB implements JobFinder {
+public class JobFinderFromDB implements JobFinder {
 	@Override
 	public void startFinding(JobMsgType jobMshType) {
 		// TODO Auto-generated method stub

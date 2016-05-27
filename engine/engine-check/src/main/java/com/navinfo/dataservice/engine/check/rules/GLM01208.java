@@ -37,13 +37,13 @@ public class GLM01208 extends baseRule {
 				if(linkPidList.contains(rdLink.getPid())){continue;}
 				//非环岛link不查此规则
 				List<IRow> forms=rdLink.getForms();
-				if(forms.size()==0){continue;}
+				if(forms.size()==0){linkPidList.add(rdLink.getPid());continue;}
 				boolean isHuandao=false;
 				for(int i=0;i<forms.size();i++){
 					RdLinkForm form=(RdLinkForm) forms.get(i);
 					if(form.getFormOfWay()==33){isHuandao=true;}
 				}
-				if(!isHuandao){continue;}
+				if(!isHuandao){linkPidList.add(rdLink.getPid());continue;}
 				
 				checkWithRdLink(rdLink,linkPidList);
 			}else if (obj instanceof RdLinkForm){
@@ -55,13 +55,13 @@ public class GLM01208 extends baseRule {
 				RdLink rdLink=(RdLink) rdSelector.loadById(linkPid, false);
 				//非环岛link不查此规则
 				List<IRow> forms=rdLink.getForms();
-				if(forms.size()==0){continue;}
+				if(forms.size()==0){linkPidList.add(linkPid);continue;}
 				boolean isHuandao=false;
 				for(int i=0;i<forms.size();i++){
 					RdLinkForm form=(RdLinkForm) forms.get(i);
 					if(form.getFormOfWay()==33){isHuandao=true;}
 				}
-				if(!isHuandao){continue;}
+				if(!isHuandao){linkPidList.add(linkPid);continue;}
 				
 				checkWithRdLink(rdLink,linkPidList);
 			}

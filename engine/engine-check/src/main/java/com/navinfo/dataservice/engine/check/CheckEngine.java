@@ -159,7 +159,7 @@ public class CheckEngine {
 				List<NiValException> resultTmp=ruleExecuterObj.exeRule(rule);
 				if(resultTmp.size()>0){checkResultList.addAll(resultTmp);}}
 			catch(Exception e){
-				log.error("error postCheck",e);
+				log.error("error postCheck"+rule.getRuleCode(),e);
 			}
 		}
 		saveCheckResult(checkResultList);

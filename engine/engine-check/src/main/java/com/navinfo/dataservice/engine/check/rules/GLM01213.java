@@ -1,23 +1,25 @@
 package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.graph.HashSetRdLinkAndPid;
+import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
 /*
- * GLM01205	Link信息	大陆环岛检查	形态	一组含“环岛”属性的link组成的link链上的所有link，道路功能等级必须相同。	环岛的功能等级不同
+ * GLM01213	Link信息	大陆环岛检查	形态	一组含“环岛”属性的link组成的link链上的所有link，限速来源必须相同。	环岛的限速来源不同
  */
-public class GLM01205 extends baseRule {
+public class GLM01213 extends baseRule {
 
-	public GLM01205() {
+	public GLM01213() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -63,6 +65,25 @@ public class GLM01205 extends baseRule {
 				if(!isHuandao){linkPidList.add(linkPid);continue;}
 				
 				checkWithRdLink(rdLink,linkPidList);
+			}else if (obj instanceof RdLinkSpeedlimit){
+				RdLinkSpeedlimit rdLinkSpeedlimit = (RdLinkSpeedlimit)obj;
+				int linkPid=rdLinkSpeedlimit.getLinkPid();
+				
+				//一条环岛link链上的link不重复检查
+				if(linkPidList.contains(linkPid)){continue;}
+				RdLinkSelector rdSelector=new RdLinkSelector(getConn());
+				RdLink rdLink=(RdLink) rdSelector.loadById(linkPid, false);
+				//非环岛link不查此规则
+				List<IRow> forms=rdLink.getForms();
+				if(forms.size()==0){linkPidList.add(linkPid);continue;}
+				boolean isHuandao=false;
+				for(int i=0;i<forms.size();i++){
+					RdLinkForm form=(RdLinkForm) forms.get(i);
+					if(form.getFormOfWay()==33){isHuandao=true;}
+				}
+				if(!isHuandao){linkPidList.add(linkPid);continue;}
+				
+				checkWithRdLink(rdLink,linkPidList);
 			}
 		}
 	}
@@ -74,17 +95,21 @@ public class GLM01205 extends baseRule {
 		linkPidList.removeAll(huandaoChain.getRdLinkPidSet());
 		linkPidList.addAll(huandaoChain.getRdLinkPidSet());
 		
-		int fc=rdLink.getFunctionClass();
-		Iterator<RdLink> huandaoIterator=huandaoChain.iterator();
-		String target="";
-		boolean isError=false;
-		while(huandaoIterator.hasNext()){
-			RdLink linkObj=huandaoIterator.next();
-			if(!target.isEmpty()){target=target+";";}
-			target=target+"[RD_LINK,"+linkObj.getPid()+"]";
-			if(fc!=linkObj.getFunctionClass()){isError=true;}
+		Set<Integer> chainPidSet=huandaoChain.getRdLinkPidSet();
+		String pidStr=chainPidSet.toString().replace("[", "").replace("]", "");
+		String sql="SELECT L.SPEED_TYPE"
+				+ "  FROM RD_LINK_SPEEDLIMIT L"
+				+ " WHERE L.LINK_PID IN ("+pidStr+")"
+				+ " GROUP BY L.SPEED_TYPE"
+				+ " HAVING COUNT(DISTINCT DECODE(L.FROM_LIMIT_SRC,0,L.TO_LIMIT_SRC,L.FROM_LIMIT_SRC)) > 1";
+		DatabaseOperator getObj=new DatabaseOperator();
+		List<Object> resultList=new ArrayList<Object>();
+		resultList=getObj.exeSelect(getConn(), sql);
+		if(Integer.valueOf((String)resultList.get(0))>1){
+			String target=chainPidSet.toString().replace(" ", "").
+			replace("[", "[RD_LINK%").replace(",", "];[RD_LINK,").replace("%", ",");
+			this.setCheckResult(rdLink.getGeometry(), target, rdLink.getMeshId());
 		}
-		if(isError){this.setCheckResult(rdLink.getGeometry(), target, rdLink.getMeshId());}
 	}
 	
 

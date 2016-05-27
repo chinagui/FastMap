@@ -13,11 +13,11 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.graph.HashSetRdLinkAndPid;
 
 /*
- * GLM01205	Link信息	大陆环岛检查	形态	一组含“环岛”属性的link组成的link链上的所有link，道路功能等级必须相同。	环岛的功能等级不同
+ * GLM01204	Link信息	大陆环岛检查	形态	一组含“环岛”属性的link组成的link链上的所有link，道路种别必须相同。	环岛的种别不同
  */
-public class GLM01205 extends baseRule {
+public class GLM01204 extends baseRule {
 
-	public GLM01205() {
+	public GLM01204() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -74,7 +74,7 @@ public class GLM01205 extends baseRule {
 		linkPidList.removeAll(huandaoChain.getRdLinkPidSet());
 		linkPidList.addAll(huandaoChain.getRdLinkPidSet());
 		
-		int fc=rdLink.getFunctionClass();
+		int kind=rdLink.getKind();
 		Iterator<RdLink> huandaoIterator=huandaoChain.iterator();
 		String target="";
 		boolean isError=false;
@@ -82,7 +82,7 @@ public class GLM01205 extends baseRule {
 			RdLink linkObj=huandaoIterator.next();
 			if(!target.isEmpty()){target=target+";";}
 			target=target+"[RD_LINK,"+linkObj.getPid()+"]";
-			if(fc!=linkObj.getFunctionClass()){isError=true;}
+			if(kind!=linkObj.getKind()){isError=true;}
 		}
 		if(isError){this.setCheckResult(rdLink.getGeometry(), target, rdLink.getMeshId());}
 	}

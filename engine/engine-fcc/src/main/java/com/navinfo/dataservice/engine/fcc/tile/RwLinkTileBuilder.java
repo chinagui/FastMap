@@ -295,7 +295,7 @@ public class RwLinkTileBuilder {
 
 					Tile tile = new Tile();
 
-					tile.setT(4);
+					tile.setT(14);
 
 					tile.setI(String.valueOf(linkPid));
 
@@ -386,7 +386,7 @@ public class RwLinkTileBuilder {
 
 						Tile tile = new Tile();
 
-						tile.setT(4);
+						tile.setT(14);
 
 						tile.setI(String.valueOf(linkPid));
 

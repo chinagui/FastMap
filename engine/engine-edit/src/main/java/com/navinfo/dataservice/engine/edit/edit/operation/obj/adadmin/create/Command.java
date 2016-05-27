@@ -80,7 +80,10 @@ public class Command extends AbstractCommand implements ICommand {
 
 		JSONObject data = json.getJSONObject("data");
 
-		this.linkPid = data.getInt("linkPid");
+		if(data.containsKey("linkPid") && !data.get("linkPid").equals("null"))
+		{
+			this.linkPid = data.getInt("linkPid");
+		}
 
 		this.longitude = data.getDouble("longitude");
 

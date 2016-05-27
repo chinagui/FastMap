@@ -301,19 +301,13 @@ public class RdLinkOperateUtils {
 	}
 	
 	/*
-	 * 创建生成一条RDLINK
+	 * 创建生成一条RDLINK,未赋值图幅号
 	 * */
 	public static RdLink addLink(Geometry geo,int sNodePid, int eNodePid,Result result) throws Exception{
 		RdLink link = new RdLink();
-
+		
 		Set<String> meshes = MeshUtils.getInterMeshes(geo);
 		
-		int meshId = Integer.parseInt(meshes.iterator().next());
-
-		link.setMesh(meshId);
-
-		link.setMeshId(meshId);
-
 		link.setPid(PidService.getInstance().applyLinkPid());
 
 		result.setPrimaryPid(link.getPid());

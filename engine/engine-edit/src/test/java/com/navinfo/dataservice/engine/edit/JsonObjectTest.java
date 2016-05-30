@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.engine.edit;
 import java.sql.Connection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -107,7 +109,7 @@ public class JsonObjectTest {
 		//double c= 6356752.3142+6378137;
 		//System.out.println(c/2);
 		//lineToMesh();
-		point();
+		lineToMesh();
 	}
 	//[2] LINESTRING (116.32947 39.83333, 116.32563 39.82893)
 	//[2] LINESTRING (116.33975 39.84509, 116.32947 39.83333)
@@ -124,37 +126,26 @@ public class JsonObjectTest {
 		//POLYGON ((115.85776 40.00000, 115.86218 40.00000, 115.85937 40.00290, 115.85776 40.00000))
 		// POLYGON ((115.86218 40.00000, 115.85776 40.00000, 115.85664 39.99797, 115.86471 39.99739, 115.86218 40.00000))
 		//POINT (115.85937 40.00290)   115.85664 39.99797, 115.86471 39.99739
-		String str4 = "{ \"type\": \"LineString\",\"coordinates\": [ [115.85937,40.00290], [115.85664,39.99797],[115.86471,39.99739],[115.85937,40.00290]]}";
+		String str4 = "{ \"type\": \"LineString\",\"coordinates\": [ [116.24505,40.00000], [116.24217,40.00000]]}";
 		JSONObject geometry = JSONObject.fromObject(str2);
 		JSONObject geometry11 = JSONObject.fromObject(str3);
 		JSONObject geometry111 = JSONObject.fromObject(str4);
 		Geometry geometry4=GeoTranslator.geojson2Jts(geometry111, 1, 5);
 		Geometry geometry2=GeoTranslator.geojson2Jts(geometry, 1, 5);
-		System.out.println("kkkkk"+geoFactory.createPolygon(geometry4.getCoordinates()));;
-		Geometry geometry3=GeoTranslator.geojson2Jts(geometry11, 1, 5);
-        System.out.println(geometry2.getCoordinates());
-        for (Coordinate coordinate : geometry2.getCoordinates()){
-        	System.out.println(coordinate);
-        }
-		Geometry geomInter = MeshUtils.linkInterMeshPolygon(geometry4,
-				MeshUtils.mesh2Jts("605506"));
-		System.out.println(geomInter+"--------------------------");
-		geomInter.getGeometryType();
-		System.out.println( geometry2.getGeometryType());
+		//POINT (116.25000 40.00000)
 		
-		 //for (Coordinate c :geomInter.getCoordinates()){
-			 	//new GeometryFactory().createLineString( }
-		System.out.println(geomInter.getDimension());
-		System.out.println(geomInter.getCoordinates().length);
-		System.out.println( geomInter.getGeometryN(0));
-		System.out.println(geomInter.getBoundaryDimension());
-		System.out.println(geomInter.getNumGeometries());
-		System.out.println( geometry2.getCoordinates()[0]);
-		
-		Map<Coordinate ,Integer > maps = new HashMap<Coordinate , Integer  >();
-		maps.put(geometry2.getCoordinates()[0], 1111);
-		if(maps.containsKey(geometry3.getCoordinates()[0])){
-			System.out.println("lllll");
+		System.out.println(MeshUtils.getInterMeshes(geometry4)+"---------------------");
+	}
+	// LINESTRING (116.24505 40.00000, 116.24217 40.00000)
+	private static Set<String> getLinkInterMesh(Geometry linkGeom) throws Exception {
+		Set<String> set = new HashSet<String>();
+
+		Coordinate[] cs = linkGeom.getCoordinates();
+
+		for (Coordinate c : cs) {
+			set.add(MeshUtils.lonlat2Mesh(c.x, c.y));
 		}
+
+		return set;
 	}
 }

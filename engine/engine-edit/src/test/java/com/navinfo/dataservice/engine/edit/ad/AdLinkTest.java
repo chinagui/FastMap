@@ -131,7 +131,7 @@ public class AdLinkTest {
 		//new AdLinkTest().deleteAdLinkTest();
 		//new AdLinkTest().TrackRdLink();
 		//new AdLinkTest().deleteAdLinkTest();
-		new AdLinkTest().breakAdLinkTest();
+		new AdLinkTest().createAdLinkTest();
 		
 	}
 }

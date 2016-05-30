@@ -25,7 +25,6 @@ public abstract class baseRule {
 	
 	public baseRule(){
 		this.log = LoggerRepos.getLogger(this.log);
-		log.info("exe "+this.getClass());
 	}
 	
 	public Connection setConn(Connection conn) {

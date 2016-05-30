@@ -88,7 +88,7 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 
-		// link的pid和层级的映射关系
+		// link的pid和层级的映射关系:key-》zlevel value:link_pid
 		Map<Integer, Integer> linkMap = command.getLinkMap();
 
 		// 立交组成线分两种：1.一条link组成线 2.多条link组成线
@@ -199,7 +199,7 @@ public class Operation implements IOperation {
 			} else if (startEndFlag == 2) {
 				rdGscLink.setShpSeqNum(linkCoor.length - 1);
 			} else {
-				List<Integer> shpSeqNumList = calcShpSeqNum(gscGeo, linkCoor);
+				List<Integer> shpSeqNumList = RdGscOperateUtils.calcShpSeqNum(gscGeo, linkCoor);
 
 				// 自相交情况
 				if (isSelfGsc) {
@@ -240,67 +240,12 @@ public class Operation implements IOperation {
 
 			List<IRow> gscLinkList = gsc.getLinks();
 
-			boolean flag = checkIsSelfInter(gscLinkList);
+			boolean flag = RdGscOperateUtils.checkIsSelfInter(gscLinkList);
 
 			// 处理对于立交的影响
-			handleInterEffect(flag, gsc, linkCoor, result);
+			RdGscOperateUtils.handleInterEffect(flag, gsc, linkCoor, result);
 		}
 
-	}
-
-	/**
-	 * 更新新建的立交对组成线上已有的立交的影响
-	 * 
-	 * @param flag
-	 * @param gsc
-	 * @param linkCoor
-	 * @param result
-	 * @throws Exception
-	 */
-	private void handleInterEffect(boolean flag, RdGsc gsc, Coordinate[] linkCoor, Result result) throws Exception {
-		for (IRow gscLink : gsc.getLinks()) {
-
-			RdGscLink link = (RdGscLink) gscLink;
-
-			List<Integer> shpSeqNumList = calcShpSeqNum(gsc.getGeometry(), linkCoor);
-
-			JSONObject updateContent = new JSONObject();
-
-			if (flag) {
-				// 自相交立交组成线
-				updateContent.put("shpSeqNum", shpSeqNumList.get(link.getZlevel()));
-			} else {
-				updateContent.put("shpSeqNum", shpSeqNumList.get(0));
-			}
-
-			boolean changed = link.fillChangeFields(updateContent);
-			if (changed) {
-				result.insertObject(link, ObjStatus.UPDATE, gsc.getPid());
-			}
-		}
-	}
-
-	/**
-	 * 检查是否是自相交
-	 * 
-	 * @param gscLinkList
-	 *            立交组成线
-	 * @return
-	 */
-	private boolean checkIsSelfInter(List<IRow> gscLinkList) {
-		boolean flag = false;
-
-		if (gscLinkList.size() == 2) {
-			RdGscLink link1 = (RdGscLink) gscLinkList.get(0);
-
-			RdGscLink link2 = (RdGscLink) gscLinkList.get(0);
-
-			if (link1.getLinkPid() == link2.getLinkPid()) {
-				flag = true;
-			}
-		}
-
-		return flag;
 	}
 
 	/**
@@ -347,31 +292,6 @@ public class Operation implements IOperation {
 		}
 
 		return GeoTranslator.geojson2Jts(geoJson, 100000, 0).getCoordinates();
-	}
-
-	/**
-	 * 计算点在link上的形状点序号
-	 * 
-	 * @param gscGeo
-	 *            点
-	 * @param linkCoors
-	 *            lin的形状点数组
-	 * @return int类型序号
-	 */
-	private List<Integer> calcShpSeqNum(Geometry gscGeo, Coordinate[] linkCoors) {
-
-		List<Integer> shpSeqNum = new ArrayList<>();
-
-		Coordinate gscCoor = gscGeo.getCoordinate();
-		for (int i = 0; i < linkCoors.length; i++) {
-			Coordinate linkCoor = linkCoors[i];
-
-			if (gscCoor.x == linkCoor.x && gscCoor.y == linkCoor.y) {
-				shpSeqNum.add(i);
-			}
-		}
-
-		return shpSeqNum;
 	}
 
 }

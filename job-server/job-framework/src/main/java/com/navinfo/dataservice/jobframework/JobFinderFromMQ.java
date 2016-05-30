@@ -16,8 +16,8 @@ import com.navinfo.dataservice.jobframework.service.ResponseJobHandler;
 * @date 2016年3月29日 下午5:01:03 
 * @Description: TODO
 */
-public class JobFinder4RunFromMQ implements JobFinder {
-	protected static Logger log = LoggerRepos.getLogger(JobFinder4RunFromMQ.class);
+public class JobFinderFromMQ implements JobFinder {
+	protected static Logger log = LoggerRepos.getLogger(JobFinderFromMQ.class);
 	@Override
 	public void startFinding(JobMsgType jobMsgType) throws Exception{
 		log.info("Starting find JobMsgType:"+jobMsgType.toString());

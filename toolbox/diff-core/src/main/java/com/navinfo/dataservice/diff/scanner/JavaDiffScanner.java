@@ -13,7 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.datahub.glm.GlmColumn;
 import com.navinfo.dataservice.datahub.glm.GlmTable;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
-import com.navinfo.dataservice.diff.DiffEngine;
+import com.navinfo.dataservice.diff.DiffJob;
 import com.navinfo.dataservice.diff.exception.DiffException;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -25,7 +25,7 @@ import com.navinfo.navicommons.database.QueryRunner;
 public class JavaDiffScanner implements DiffScanner 
 {
 	protected static  Logger log = Logger
-		.getLogger(DiffEngine.class);
+		.getLogger(DiffJob.class);
     protected OracleSchema diffServer;
     protected QueryRunner runner;
     

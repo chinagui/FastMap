@@ -3,7 +3,6 @@ package com.navinfo.dataservice.dao.mq.job;
 import org.springframework.util.StringUtils;
 
 import com.navinfo.dataservice.api.job.model.JobStep;
-import com.navinfo.dataservice.api.job.model.JobType;
 import com.navinfo.dataservice.dao.mq.MsgPublisher;
 
 import net.sf.json.JSONObject;
@@ -16,49 +15,51 @@ import net.sf.json.JSONObject;
 */
 public class JobMsgPublisher {
 
-	@Deprecated
-	public static void createJob(JobType type,JSONObject jobRequest)throws Exception{
+	/**
+	 * 返回创建job的唯一标识
+	 * @param type
+	 * @param jobRequest
+	 * @return
+	 * @throws Exception
+	 */
+	public static String createJob(String type,JSONObject jobRequest)throws Exception{
 		if(StringUtils.isEmpty(type)||jobRequest==null){
-			throw new Exception("type和jobRequest不能为空");
+			throw new Exception("typeName和jobRequest不能为空");
 		}
 		JSONObject jobMsg = new JSONObject();
 		jobMsg.put("type", type.toString());
 		jobMsg.put("request", jobRequest);
+		jobMsg.put("identity", "");
 		MsgPublisher.publish2WorkQueue("create_job", jobMsg.toString());
+		return "";
 	}
-	public static void runJob(long jobId,JobType type,JSONObject jobRequest)throws Exception{
+	public static void runJob(long jobId,String type,JSONObject jobRequest)throws Exception{
 		if(jobRequest==null){
 			throw new Exception("jobRequest不能为空");
 		}
 		JSONObject jobMsg = new JSONObject();
 		jobMsg.put("jobId", jobId);
-		jobMsg.put("type", type.toString());
+		jobMsg.put("type", type);
 		jobMsg.put("request", jobRequest);
 		MsgPublisher.publish2WorkQueue("run_job", jobMsg.toString());
 	}
-	public static void responseJob(long jobId,JSONObject jobResponse,JobStep step)throws Exception{
-		if(jobResponse==null){
-			throw new Exception("jobResponse不能为空");
-		}
-		JSONObject jobMsg = new JSONObject();
-		jobMsg.put("jobId", jobId);
-		jobMsg.put("response", jobResponse);
-		jobMsg.put("step", JSONObject.fromObject(step));
-		MsgPublisher.publish2WorkQueue("resp_job", jobMsg.toString());
-	}
+
 	/**
-	 * 用于job web Server 持久化好job结束信息后，向应用web服务器发送消息
+	 * 用于job web Server 持久化job执行过程中的反馈
 	 * @param jobId
 	 * @param jobResponse
 	 * @throws Exception
 	 */
-	public static void endJob(long jobId,JSONObject jobResponse)throws Exception{
+	public static void responseJob(long jobId,int status,int stepCount,JSONObject jobResponse,JobStep step)throws Exception{
 		if(jobResponse==null){
 			throw new Exception("jobResponse不能为空");
 		}
 		JSONObject jobMsg = new JSONObject();
 		jobMsg.put("jobId", jobId);
 		jobMsg.put("response", jobResponse);
+		jobMsg.put("status", status);
+		jobMsg.put("stepCount", stepCount);
+		jobMsg.put("step", JSONObject.fromObject(step));
 		MsgPublisher.publish2WorkQueue("resp_job", jobMsg.toString());
 	}
 }

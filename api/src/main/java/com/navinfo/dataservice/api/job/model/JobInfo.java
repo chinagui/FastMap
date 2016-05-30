@@ -14,9 +14,10 @@ import net.sf.json.JSONObject;
 */
 public class JobInfo {
 	private long id;
-	private JobType type;
+	private String type;
 	private Date createTime;
-	private Date runTime;
+	private Date beginTime;
+	private Date endTime;
 	private int status;
 	private JSONObject request;
 	private JSONObject response;
@@ -42,10 +43,10 @@ public class JobInfo {
 	public void setId(long id) {
 		this.id = id;
 	}
-	public JobType getType() {
+	public String getType() {
 		return type;
 	}
-	public void setType(JobType type) {
+	public void setType(String type) {
 		this.type = type;
 	}
 	public Date getCreateTime() {
@@ -54,11 +55,17 @@ public class JobInfo {
 	public void setCreateTime(Date createTime) {
 		this.createTime = createTime;
 	}
-	public Date getRunTime() {
-		return runTime;
+	public Date getBeginTime() {
+		return beginTime;
 	}
-	public void setRunTime(Date runTime) {
-		this.runTime = runTime;
+	public void setBeginTime(Date beginTime) {
+		this.beginTime = beginTime;
+	}
+	public Date getEndTime() {
+		return endTime;
+	}
+	public void setEndTime(Date endTime) {
+		this.endTime = endTime;
 	}
 	public int getStatus() {
 		return status;

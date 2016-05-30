@@ -33,5 +33,10 @@ public class DatalockExternalServiceImpl implements DatalockExternalService {
 		// TODO Auto-generated method stub
 		return "Hello..."+name;
 	}
+	
+	@Override
+	public String help(){
+		return "";
+	}
 
 }

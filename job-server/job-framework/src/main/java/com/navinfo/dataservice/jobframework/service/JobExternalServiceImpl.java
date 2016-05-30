@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import com.navinfo.dataservice.api.ServiceException;
 import com.navinfo.dataservice.api.job.iface.JobExternalService;
 import com.navinfo.dataservice.api.job.model.JobInfo;
-import com.navinfo.dataservice.api.job.model.JobType;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.job.JobMsgPublisher;
@@ -28,7 +27,7 @@ import net.sf.json.JSONObject;
 public class JobExternalServiceImpl implements JobExternalService{
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 
-	public long createJob(JobType jobType,JSONObject request,long projectId,long userId,String descp)throws ServiceException{
+	public long createJob(String jobType,JSONObject request,long projectId,long userId,String descp)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
@@ -38,7 +37,7 @@ public class JobExternalServiceImpl implements JobExternalService{
 			long jobId = run.queryForLong(conn, "SELECT JOB_ID_SEQ.NEXTVAL FROM DUAL");
 			String jobInfoSql = "INSERT INTO JOB_INFO(JOB_ID,JOB_TYPE,CREATE_TIME,STATUS,JOB_REQUEST,PROJECT_ID,USER_ID,DESCP)"
 					+ " VALUES (?,?,SYSDATE,0,?,?,?,?)";
-			run.update(conn, jobInfoSql, jobId,jobType.toString(),request.toString(),projectId,userId,descp);
+			run.update(conn, jobInfoSql, jobId,jobType,request.toString(),projectId,userId,descp);
 			//发送run_job消息
 			JobMsgPublisher.runJob(jobId, jobType, request);
 			//
@@ -58,6 +57,11 @@ public class JobExternalServiceImpl implements JobExternalService{
 		return null;
 	}
 	public JobInfo getJobByType(String jobType)throws ServiceException{
+		return null;
+	}
+	@Override
+	public String help() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 }

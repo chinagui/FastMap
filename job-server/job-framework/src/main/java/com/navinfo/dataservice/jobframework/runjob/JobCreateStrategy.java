@@ -44,6 +44,11 @@ public class JobCreateStrategy {
 		}
 		return job;
 	}
+	public static AbstractJob createAsSubJob(JobInfo jobInfo,AbstractJob parent)throws JobTypeNotFoundException,JobCreateException{
+		AbstractJob job = create(jobInfo);
+		job.setParent(parent);
+		return job;
+	}
 	private static void loadMapping(){
 		String mappingFile = "/com/navinfo/dataservice/jobframework/job-class.xml";
 		jobClassMap = new HashMap<String,Class<?>>();

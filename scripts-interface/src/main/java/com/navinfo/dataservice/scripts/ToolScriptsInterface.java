@@ -3,31 +3,24 @@ package com.navinfo.dataservice.scripts;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 import net.sf.json.JSONObject;
 
-import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 
+import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.datahub.chooser.strategy.DbServerStrategy;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.UnifiedDb;
-import com.navinfo.dataservice.diff.DiffEngine;
-import com.navinfo.dataservice.diff.DiffResponse;
-import com.navinfo.dataservice.diff.config.DiffConfig;
+import com.navinfo.dataservice.diff.DiffJob;
 import com.navinfo.dataservice.expcore.Exporter;
 import com.navinfo.dataservice.expcore.Exporter2OracleByFullCopy;
 import com.navinfo.dataservice.expcore.Exporter2OracleByScripts;
 import com.navinfo.dataservice.expcore.ExporterResult;
 import com.navinfo.dataservice.expcore.config.ExportConfig;
-import com.navinfo.dataservice.jobframework.runjob.AbstractJobResponse;
 import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
@@ -82,16 +75,14 @@ public class ToolScriptsInterface {
 		return response;
 	}
 	public static JSONObject diff(JSONObject request)throws Exception{
-		DiffConfig diffConfig = new DiffConfig(request);
+		JobInfo jobInfo = new JobInfo(0,0);
+		jobInfo.setType("diff");
+		jobInfo.setRequest(request);
 		//
-		DiffEngine diffEngine = new DiffEngine(diffConfig);
+		DiffJob job = new DiffJob(jobInfo);
 		
-		DiffResponse res = diffEngine.execute();
-		if(res.getStatus()!=AbstractJobResponse.STATUS_SUCCESS){
-			throw new Exception("差分过程出错。");
-		}
-		JSONObject response = res.generateJson();
-		return response;
+		job.run();
+		return job.getJobInfo().getResponse();
 	}
 	
 	public static JSONObject readJson(String fileName)throws Exception{

@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.diff;
 
-import com.navinfo.dataservice.diff.config.DiffConfig;
+import com.navinfo.dataservice.diff.config.DiffJobRequest;
 import com.navinfo.dataservice.datahub.glm.Glm;
 import com.navinfo.dataservice.datahub.glm.GlmCache;
 import com.navinfo.dataservice.datahub.glm.GlmTable;
@@ -16,7 +16,9 @@ import com.navinfo.dataservice.diff.scanner.JavaDiffScanner;
 import com.navinfo.dataservice.diff.scanner.LogGridCalculatorByCrossUser;
 import com.navinfo.dataservice.diff.scanner.LogOperationGenerator;
 import com.navinfo.dataservice.diff.scanner.LogGridCalculator;
-import com.navinfo.dataservice.jobframework.runjob.AbstractJobResponse;
+import com.navinfo.dataservice.jobframework.exception.JobException;
+import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
+import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.navicommons.database.sql.PackageExec;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -38,12 +40,12 @@ import java.util.concurrent.TimeUnit;
 /**
  * 左表为修改后的表，右表为修改前的表
  */
-public class DiffEngine 
+public class DiffJob extends AbstractJob
 {
 	private  Logger log = Logger
-			.getLogger(DiffEngine.class);
+			.getLogger(DiffJob.class);
 
-	private DiffConfig diffConfig;
+	private DiffJobRequest diffConfig;
 	private DataAccess leftAccess;
 	private DataAccess rightAccess;
 	private Set<GlmTable> diffTables;
@@ -57,11 +59,36 @@ public class DiffEngine
 	protected LogGridCalculator gridCalc;
 
 
-	public DiffEngine(DiffConfig diffConfig) {
-		this.diffConfig = diffConfig;
+	public DiffJob(JobInfo jobInfo) {
+		super(jobInfo);
 	}
 
-	public void initEngine()throws InitException{
+	@Override
+	public void volidateRequest() throws JobException {
+		//to do
+	}
+	
+	@Override
+	public void execute() {
+		try {
+			init();
+			response("差分初始化完成。",null);
+			diffScan();
+			response("字段差分完成。",null);
+			logOpGen.generate();
+			if(logTables.size()>0){
+				fillLogDetail();
+				calcLogDetailGrid();
+			}
+			response("完整履历填充完成。",null);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+		}finally {
+			shutDownPoolExecutor();
+		}
+	}
+
+	public void init()throws InitException{
 		//glmcache中没发现表的主键，使用row_id做主键
 		try{
 			//shcema
@@ -132,27 +159,6 @@ public class DiffEngine
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
-	public DiffResponse execute() {
-		DiffResponse res = new DiffResponse();
-		try {
-			initEngine();
-			diffScan();
-			logOpGen.generate();
-			if(logTables.size()>0){
-				fillLogDetail();
-				calcLogDetailGrid();
-			}
-			res.setStatusAndMsg(AbstractJobResponse.STATUS_SUCCESS, "Success");
-		}catch(Exception e){
-			res.setStatusAndMsg(AbstractJobResponse.STATUS_FAILED,"ERROR:"+e.getMessage());
-			log.error(e.getMessage(), e);
-		}finally {
-			shutDownPoolExecutor();
-		}
-		return res;
-	}
-
 
 	/**
 	 * 执行差分扫描

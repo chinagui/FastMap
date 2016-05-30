@@ -1,21 +1,18 @@
 package com.navinfo.navicommons.geo.computation;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.MultiPoint;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class GeometryUtils {
@@ -36,8 +33,8 @@ public class GeometryUtils {
 		double radLat2 = rad(lat2);
 		double a = radLat1 - radLat2;
 		double b = rad(lng1) - rad(lng2);
-		double s = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a / 2), 2)
-				+ Math.cos(radLat1) * Math.cos(radLat2) * Math.pow(Math.sin(b / 2), 2)));
+		double s = 2 * Math.asin(Math.sqrt(
+				Math.pow(Math.sin(a / 2), 2) + Math.cos(radLat1) * Math.cos(radLat2) * Math.pow(Math.sin(b / 2), 2)));
 		s = s * EARTH_RADIUS;
 		s = Math.round(s * 10000) / 10000.0;
 		return s;
@@ -45,6 +42,34 @@ public class GeometryUtils {
 
 	public static double getDistance(Coordinate coord1, Coordinate coord2) {
 		return getDistance(coord1.y, coord1.x, coord2.y, coord2.x);
+	}
+
+	/**
+	 * 通过两个点生成一个线段
+	 * 
+	 * @param p1
+	 *            点1
+	 * @param p2
+	 *            点2
+	 * @return line的Geo
+	 * @throws Exception
+	 */
+	public static Geometry getLineFromPoint(double[] p1, double[] p2) throws Exception {
+		StringBuilder sb = new StringBuilder("LINESTRING (" + p1[0]);
+
+		sb.append(" " + p1[1]);
+
+		sb.append(",");
+
+		sb.append(p2[0]);
+
+		sb.append(" " + p2[1]);
+
+		sb.append(")");
+
+		Geometry line = new WKTReader().read(sb.toString());
+
+		return line;
 	}
 
 	/**
@@ -167,12 +192,64 @@ public class GeometryUtils {
 
 		return getLinkLength(g);
 	}
+	
+	/**
+	 * 获取自相交线的交点
+	 * @param geometryList 自相交线的线段几何的集合
+	 * @return 自相交线的交点
+	 * @throws Exception
+	 */
+	public static Geometry getIntersectGeoBySingleLine(List<Geometry> geometryList) throws Exception {
+		
+		StringBuilder sb = new StringBuilder("MULTIPOINT (");
+		
+		for (int i = 0; i < geometryList.size(); i++) {
+			
+			Geometry tmp1 = geometryList.get(i);
+			
+			Geometry tmp2 = null;
+			
+			if(i == (geometryList.size() -1 ))
+			{
+				tmp2 = geometryList.get(0);
+			}
+			else
+			{
+				tmp2 = geometryList.get(i + 1);
+			}
+			if (tmp1.intersects(tmp2)) {
+
+				Geometry interGeo = tmp1.intersection(tmp2);
+				
+				if(!tmp1.getBoundary().contains(interGeo) && !tmp2.getBoundary().contains(interGeo))
+				{
+					Coordinate coor = interGeo.getCoordinate();
+					
+					sb.append(coor.x+" ");
+					
+					sb.append(coor.y+",");
+				}
+			} else {
+				break;
+			}
+		}
+		
+		if(sb.toString().contains(","))
+		{
+			sb.deleteCharAt(sb.lastIndexOf(","));
+		}
+		
+		sb.append(")");
+		
+		return getMulPointByWKT(sb.toString());
+	}
 
 	/**
 	 * 获取空间多条线的交点几何（立交和平交都适用，可能有多个交点）
 	 * 
 	 * @param geometryList
-	 * @return
+	 *            线的几何的集合
+	 * @return 多条线的交点几何
 	 */
 	public static Geometry getIntersectsGeo(List<Geometry> geometryList) {
 
@@ -208,6 +285,40 @@ public class GeometryUtils {
 	}
 
 	/**
+	 * 获取一条link自相交的点 （可能有多个点）
+	 * 
+	 * @param geometry
+	 * @return
+	 * @throws Exception
+	 */
+	public static Geometry getInterPointFromSelf(Geometry geometry) throws Exception {
+		
+		Coordinate coorArray[] = geometry.getCoordinates();
+
+		List<Geometry> geometryList = new ArrayList<>();
+
+		for (int i = 0; i < coorArray.length - 1; i++) {
+			Coordinate coor1 = coorArray[i];
+
+			Coordinate coor2 = coorArray[i + 1];
+
+			double p1[] = { coor1.x, coor1.y };
+
+			double p2[] = { coor2.x, coor2.y };
+
+			Geometry line = getLineFromPoint(p1, p2);
+
+			geometryList.add(line);
+		}
+
+		Geometry geo = getIntersectGeoBySingleLine(geometryList);
+		
+		geo = GeoTranslator.transform(geo, 1, 0);
+
+		return geo;
+	}
+
+	/**
 	 * 获取交点和link的关系：是否是起点、终点、形状点（1：起点 2:终点 0：形状点）
 	 * 
 	 * @param geometries
@@ -217,8 +328,7 @@ public class GeometryUtils {
 	 * @return Map<Integer,Integer> value:start_end 标识
 	 * @throws JSONException
 	 */
-	public static Integer getStartOrEndType(Geometry compared, Geometry standGeo)
-			throws JSONException {
+	public static Integer getStartOrEndType(Geometry compared, Geometry standGeo) throws JSONException {
 		int flag = 0;
 		if (compared.getBoundary().getGeometryN(0).equals(standGeo)) {
 
@@ -239,6 +349,20 @@ public class GeometryUtils {
 		Polygon polygon = (Polygon) reader.read(wkt);
 
 		return polygon;
+	}
+
+	/**
+	 * create multiPoint by wkt
+	 * 
+	 * @return
+	 */
+	public static MultiPoint getMulPointByWKT(String wkt) throws ParseException {
+
+		WKTReader reader = new WKTReader();
+
+		MultiPoint mpoint = (MultiPoint) reader.read(wkt);
+
+		return mpoint;
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -310,19 +434,16 @@ public class GeometryUtils {
 		double a = 0.0;
 		for (int i = 0; i < points.size(); ++i) {
 			int j = (i + 1) % points.size();
-			double xi = points.get(i)[0] * metersPerDegree
-					* Math.cos(points.get(i)[1] * radiansPerDegree);
+			double xi = points.get(i)[0] * metersPerDegree * Math.cos(points.get(i)[1] * radiansPerDegree);
 			double yi = points.get(i)[1] * metersPerDegree;
-			double xj = points.get(j)[0] * metersPerDegree
-					* Math.cos(points.get(j)[1] * radiansPerDegree);
+			double xj = points.get(j)[0] * metersPerDegree * Math.cos(points.get(j)[1] * radiansPerDegree);
 			double yj = points.get(j)[1] * metersPerDegree;
 			a += xi * yj - xj * yi;
 		}
 		return Math.abs(a / 2.0);
 	}
-	
-	public static JSONObject connectLinks(List<Geometry> geoms)
-			throws ParseException {
+
+	public static JSONObject connectLinks(List<Geometry> geoms) throws ParseException {
 		JSONObject json = new JSONObject();
 
 		json.put("type", "LineString");
@@ -338,15 +459,15 @@ public class GeometryUtils {
 		List<double[]> ps = new ArrayList<double[]>();
 
 		Coordinate last = null;
-		
+
 		for (Coordinate c : cs) {
-			
-			if(c.equals(last)){
+
+			if (c.equals(last)) {
 				continue;
 			}
-			
+
 			last = c;
-			
+
 			double[] p = new double[2];
 
 			p[0] = c.x;

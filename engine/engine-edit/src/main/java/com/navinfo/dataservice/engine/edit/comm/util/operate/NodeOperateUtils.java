@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.edit.comm.util.operate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -22,9 +24,30 @@ public class NodeOperateUtils {
 		node.setPid(PidService.getInstance().applyNodePid());
 
 		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y),100000,0));
+		
+		List<String> meshIds = MeshUtils.lonlat2MeshIds(x, y);
+		
+		if(CollectionUtils.isNotEmpty(meshIds))
+		{
+			node.setMesh(Integer.parseInt(meshIds.get(0)));
+			
+			List<IRow> meshes = new ArrayList<IRow>();
+			
+			for(String meshId : meshIds)
+			{
+				RdNodeMesh mesh = new RdNodeMesh();
+				
+				mesh.setNodePid(node.getPid());
 
-		node.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(x, y)));
-
+				mesh.setMeshId(Integer.parseInt(meshId));
+				
+				meshes.add(mesh);
+			}
+			
+			node.setMeshes(meshes);
+			
+		}
+		
 		RdNodeForm form = new RdNodeForm();
 
 		form.setNodePid(node.getPid());
@@ -36,18 +59,6 @@ public class NodeOperateUtils {
 		forms.add(form);
 
 		node.setForms(forms);
-
-		RdNodeMesh mesh = new RdNodeMesh();
-		
-		mesh.setNodePid(node.getPid());
-
-		mesh.setMeshId(node.mesh());
-
-		List<IRow> meshes = new ArrayList<IRow>();
-
-		meshes.add(mesh);
-
-		node.setMeshes(meshes);
 
 		return node;
 	}

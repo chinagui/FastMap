@@ -3,23 +3,20 @@ package com.navinfo.dataservice.engine.edit.xiaolong.ad;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.commons.db.ConfigLoader;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 public class AdNodeTest {
 
 	public AdNodeTest() {
-		ConfigLoader.initDBConn(
-				"D:/ws_new/DataService/web/edit-web/src/main/resources/config.properties");
 	}
 
 	protected Logger log = Logger.getLogger(this.getClass());

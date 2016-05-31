@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.datahub.chooser.strategy.DbServerStrategy;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.UnifiedDb;
@@ -21,7 +22,6 @@ import com.navinfo.dataservice.expcore.Exporter2OracleByFullCopy;
 import com.navinfo.dataservice.expcore.Exporter2OracleByScripts;
 import com.navinfo.dataservice.expcore.ExporterResult;
 import com.navinfo.dataservice.expcore.config.ExportConfig;
-import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
  * @ClassName: ScriptsInterface 

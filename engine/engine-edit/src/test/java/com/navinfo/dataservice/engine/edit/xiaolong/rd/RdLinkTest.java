@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.navinfo.dataservice.commons.db.ConfigLoader;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
@@ -12,12 +11,7 @@ import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.rd.utils.RdLinkSearchUtils;
 
 public class RdLinkTest {
-private static final String configPath = "D:/ws_new/DataService/web/edit-web/src/main/resources/config.properties";
 	private Connection conn;
-	static 
-	{
-		ConfigLoader.initDBConn(configPath);
-	}
 	public RdLinkTest() throws Exception {
 		this.conn = GlmDbPoolManager.getInstance().getConnection(11);
 	}

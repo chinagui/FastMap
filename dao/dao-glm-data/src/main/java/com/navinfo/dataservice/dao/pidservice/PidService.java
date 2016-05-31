@@ -1,20 +1,9 @@
-package com.navinfo.dataservice.commons.service;
+package com.navinfo.dataservice.dao.pidservice;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.apache.log4j.Logger;
-
-import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.db.ConfigLoader;
-import com.navinfo.dataservice.commons.db.DBOraclePool;
-import com.navinfo.dataservice.commons.util.PidServiceUtils;
-
-import net.sf.json.JSONObject;
-
 public class PidService {
-
-	private static Logger logger = Logger.getLogger(PidService.class);
 
 	public static class PidRangeCombine {
 
@@ -45,30 +34,6 @@ public class PidService {
 	 */
 	private static PidService pidService = null;
 
-	private DBOraclePool pool;
-
-	private PidService() throws Exception {
-		JSONObject config = ConfigLoader.getConfig();
-
-		JSONObject jsonConnMsg = new JSONObject();
-
-		jsonConnMsg.put("ip", config.getString(PropConstant.pidDbIp));
-
-		jsonConnMsg.put("port", config.getInt(PropConstant.pidDbPort));
-
-		jsonConnMsg.put("serviceName",
-				config.getString(PropConstant.pidDbServiceName));
-
-		jsonConnMsg.put("username",
-				config.getString(PropConstant.pidDbUsername));
-
-		jsonConnMsg.put("password",
-				config.getString(PropConstant.pidDbPassword));
-        System.out.println(jsonConnMsg+"-------------------------------");
-		pool = new DBOraclePool(jsonConnMsg);
-
-	}
-
 	public synchronized static PidService getInstance() throws Exception {
 		if (pidService == null) {
 			pidService = new PidService();
@@ -85,7 +50,7 @@ public class PidService {
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -136,7 +101,7 @@ public class PidService {
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -186,7 +151,7 @@ public class PidService {
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -225,7 +190,7 @@ public class PidService {
 		return pid;
 
 	}
-	
+
 	/**
 	 * 申請rd_restriction_detail pid
 	 */
@@ -235,7 +200,7 @@ public class PidService {
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -247,7 +212,8 @@ public class PidService {
 
 				if (prc.getPid() != -1) {
 					PidServiceUtils.updatePidRange(conn,
-							PidSequenceName.restrictDetailPidName, prc.getPidRange());
+							PidSequenceName.restrictDetailPidName,
+							prc.getPidRange());
 
 					pid = prc.getPid();
 				} else {
@@ -275,7 +241,7 @@ public class PidService {
 		return pid;
 
 	}
-	
+
 	/**
 	 * 申請node_name_id
 	 */
@@ -285,7 +251,7 @@ public class PidService {
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -325,6 +291,7 @@ public class PidService {
 		return pid;
 
 	}
+
 	/**
 	 * 申請rdspeedlimit pid
 	 */
@@ -334,7 +301,7 @@ public class PidService {
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -346,7 +313,8 @@ public class PidService {
 
 				if (prc.getPid() != -1) {
 					PidServiceUtils.updatePidRange(conn,
-							PidSequenceName.speedLimitPidName, prc.getPidRange());
+							PidSequenceName.speedLimitPidName,
+							prc.getPidRange());
 
 					pid = prc.getPid();
 				} else {
@@ -374,14 +342,14 @@ public class PidService {
 		return pid;
 
 	}
-	
+
 	public synchronized int applyLaneConnexityPid() throws Exception {
 
 		Connection conn = null;
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -393,7 +361,8 @@ public class PidService {
 
 				if (prc.getPid() != -1) {
 					PidServiceUtils.updatePidRange(conn,
-							PidSequenceName.laneConnexityPidName, prc.getPidRange());
+							PidSequenceName.laneConnexityPidName,
+							prc.getPidRange());
 
 					pid = prc.getPid();
 				} else {
@@ -421,14 +390,14 @@ public class PidService {
 		return pid;
 
 	}
-	
+
 	public synchronized int applyLaneTopologyPid() throws Exception {
 
 		Connection conn = null;
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -440,7 +409,8 @@ public class PidService {
 
 				if (prc.getPid() != -1) {
 					PidServiceUtils.updatePidRange(conn,
-							PidSequenceName.laneTopologyPidName, prc.getPidRange());
+							PidSequenceName.laneTopologyPidName,
+							prc.getPidRange());
 
 					pid = prc.getPid();
 				} else {
@@ -468,14 +438,14 @@ public class PidService {
 		return pid;
 
 	}
-	
+
 	public synchronized int applyRdCrossPid() throws Exception {
 
 		Connection conn = null;
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -515,14 +485,14 @@ public class PidService {
 		return pid;
 
 	}
-	
+
 	public synchronized int applyRdCrossNameId() throws Exception {
 
 		Connection conn = null;
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -562,14 +532,14 @@ public class PidService {
 		return pid;
 
 	}
-	
+
 	public synchronized int applyBranchPid() throws Exception {
 
 		Connection conn = null;
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -609,14 +579,14 @@ public class PidService {
 		return pid;
 
 	}
-	
+
 	public synchronized int applyBranchDetailId() throws Exception {
 
 		Connection conn = null;
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -628,7 +598,8 @@ public class PidService {
 
 				if (prc.getPid() != -1) {
 					PidServiceUtils.updatePidRange(conn,
-							PidSequenceName.branchDetailIdName, prc.getPidRange());
+							PidSequenceName.branchDetailIdName,
+							prc.getPidRange());
 
 					pid = prc.getPid();
 				} else {
@@ -656,14 +627,14 @@ public class PidService {
 		return pid;
 
 	}
-	
+
 	public synchronized int applyBranchNameId() throws Exception {
 
 		Connection conn = null;
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -674,8 +645,10 @@ public class PidService {
 				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
 
 				if (prc.getPid() != -1) {
-					PidServiceUtils.updatePidRange(conn,
-							PidSequenceName.branchNameIdName, prc.getPidRange());
+					PidServiceUtils
+							.updatePidRange(conn,
+									PidSequenceName.branchNameIdName,
+									prc.getPidRange());
 
 					pid = prc.getPid();
 				} else {
@@ -703,14 +676,14 @@ public class PidService {
 		return pid;
 
 	}
-	
+
 	public synchronized int applyCkExceptionId() throws Exception {
 
 		Connection conn = null;
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -722,7 +695,8 @@ public class PidService {
 
 				if (prc.getPid() != -1) {
 					PidServiceUtils.updatePidRange(conn,
-							PidSequenceName.ckExceptionIdName, prc.getPidRange());
+							PidSequenceName.ckExceptionIdName,
+							prc.getPidRange());
 
 					pid = prc.getPid();
 				} else {
@@ -750,7 +724,7 @@ public class PidService {
 		return pid;
 
 	}
-	
+
 	/**
 	 * 申请ad_admin_pid
 	 */
@@ -760,7 +734,7 @@ public class PidService {
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -801,7 +775,7 @@ public class PidService {
 		return pid;
 
 	}
-	
+
 	/**
 	 * 申请ad_admin_name_pid
 	 */
@@ -811,7 +785,7 @@ public class PidService {
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -823,7 +797,8 @@ public class PidService {
 
 				if (prc.getPid() != -1) {
 					PidServiceUtils.updatePidRange(conn,
-							PidSequenceName.adAdminNamePidName, prc.getPidRange());
+							PidSequenceName.adAdminNamePidName,
+							prc.getPidRange());
 
 					pid = prc.getPid();
 				} else {
@@ -852,8 +827,7 @@ public class PidService {
 		return pid;
 
 	}
-	
-	
+
 	/**
 	 * 申请ad_node_pid
 	 */
@@ -863,7 +837,7 @@ public class PidService {
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -889,8 +863,8 @@ public class PidService {
 				pid = PidServiceUtils.transportPid(conn, 5000,
 						PidSequenceName.adAdminNodeName);
 			}
-			
-			System.out.println(conn+"----------------------");
+
+			System.out.println(conn + "----------------------");
 
 		} catch (Exception e) {
 
@@ -906,7 +880,7 @@ public class PidService {
 		return pid;
 
 	}
-	
+
 	/**
 	 * 申请ad_link_pid
 	 */
@@ -916,7 +890,7 @@ public class PidService {
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -957,7 +931,7 @@ public class PidService {
 		return pid;
 
 	}
-	
+
 	/**
 	 * 申请ad_face_pid
 	 */
@@ -967,8 +941,8 @@ public class PidService {
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
-            
+			conn = PidServicePool.getInstance().getConnection();
+
 			conn.setAutoCommit(false);
 
 			String pidRange = PidServiceUtils.getPidRange(conn,
@@ -1008,9 +982,10 @@ public class PidService {
 		return pid;
 
 	}
-	
+
 	/**
 	 * 申请rtic代码
+	 * 
 	 * @return
 	 * @throws Exception
 	 */
@@ -1020,7 +995,7 @@ public class PidService {
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -1061,8 +1036,7 @@ public class PidService {
 		return pid;
 
 	}
-	
-	
+
 	/**
 	 * 申请applyAdAdminGroupPid
 	 */
@@ -1072,7 +1046,7 @@ public class PidService {
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -1084,7 +1058,8 @@ public class PidService {
 
 				if (prc.getPid() != -1) {
 					PidServiceUtils.updatePidRange(conn,
-							PidSequenceName.adAdminGroupPidName, prc.getPidRange());
+							PidSequenceName.adAdminGroupPidName,
+							prc.getPidRange());
 
 					pid = prc.getPid();
 				} else {
@@ -1113,7 +1088,7 @@ public class PidService {
 		return pid;
 
 	}
-	
+
 	/**
 	 * 申请applyRdGscPid
 	 */
@@ -1123,7 +1098,7 @@ public class PidService {
 
 		int pid = 0;
 		try {
-			conn = pool.getConnection();
+			conn = PidServicePool.getInstance().getConnection();
 
 			conn.setAutoCommit(false);
 
@@ -1164,5 +1139,5 @@ public class PidService {
 		return pid;
 
 	}
-	
+
 }

@@ -4,14 +4,13 @@ import java.security.MessageDigest;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
-import com.navinfo.dataservice.commons.db.ConfigLoader;
-import com.navinfo.dataservice.commons.db.OracleAddress;
-import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.log.LogWriter;
+import com.navinfo.dataservice.dao.pidservice.PidService;
+import com.navinfo.dataservice.dao.pool.OracleAddress;
 import com.navinfo.dataservice.datahub.glm.Glm;
 import com.navinfo.dataservice.datahub.glm.GlmCache;
 import com.navinfo.dataservice.datahub.glm.GlmGridCalculator;
@@ -439,9 +438,6 @@ public class NiValExceptionOperator {
 	}
 
 	public static void main(String[] args) throws Exception {
-
-		ConfigLoader
-				.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
 
 		String username1 = "fm_prjgdb_bj02";
 

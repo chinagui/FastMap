@@ -11,10 +11,9 @@ import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
-import com.navinfo.dataservice.commons.db.HBaseAddress;
-import com.navinfo.dataservice.commons.db.OracleAddress;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
+import com.navinfo.dataservice.dao.pool.OracleAddress;
 import com.navinfo.dataservice.engine.fcc.tips.bridge.BridgeTipsBuilder;
 import com.navinfo.dataservice.engine.fcc.tips.connexity.RdLaneConnexityTipsBuilder;
 import com.navinfo.dataservice.engine.fcc.tips.construct.ConstructTipsBuilder;
@@ -107,7 +106,7 @@ public class TipsBuilder {
 	public boolean run(OracleAddress fmgdbOA, String uuid)
 			throws Exception {
 
-		Connection hbaseConn = HBaseAddress.getHBaseConnection();
+		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 		
 		createTabIfNotExists(hbaseConn, HBaseConstant.tipTab);
 
@@ -154,8 +153,6 @@ public class TipsBuilder {
 		OracleAddress oa1 = new OracleAddress(username1,password1,port1,ip1,serviceName1);
 		
 		TipsBuilder b = new TipsBuilder();
-		
-		HBaseAddress.initHBaseAddress("192.168.3.156");
 		
 		b.run(oa1, uuid);
 		

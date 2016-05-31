@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.commons.service;
+package com.navinfo.dataservice.dao.pidservice;
 
 public class PidSequenceName {
 	public static final String adAdminNodeName = "SEQ_AD_NODE";

@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
@@ -9,6 +10,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkFormSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.graph.HashSetRdLinkAndPid;
@@ -52,8 +54,14 @@ public class GLM01211 extends baseRule {
 				int linkPid=rdLinkForm.getLinkPid();
 				//一条环岛link链上的link不重复检查
 				if(linkPidList.contains(linkPid)){continue;}
+				
+				//rdlinkform有新增或者修改环岛记录的才进行检查，其他情况的即使原来有环岛link也不需要触发检查
+				if(rdLinkForm.getFormOfWay()!=33){continue;}
+				
 				RdLinkSelector rdSelector=new RdLinkSelector(getConn());
-				RdLink rdLink=(RdLink) rdSelector.loadById(linkPid, false);
+				RdLink rdLink=(RdLink) rdSelector.loadByIdOnlyRdLink(linkPid, false);
+				
+				/*
 				//非环岛link不查此规则
 				List<IRow> forms=rdLink.getForms();
 				if(forms.size()==0){linkPidList.add(linkPid);continue;}
@@ -62,7 +70,7 @@ public class GLM01211 extends baseRule {
 					RdLinkForm form=(RdLinkForm) forms.get(i);
 					if(form.getFormOfWay()==33){isHuandao=true;}
 				}
-				if(!isHuandao){linkPidList.add(linkPid);continue;}
+				if(!isHuandao){linkPidList.add(linkPid);continue;}*/
 				
 				checkWithRdLink(rdLink,linkPidList);
 			}else if (obj instanceof RdLinkSpeedlimit){
@@ -71,10 +79,17 @@ public class GLM01211 extends baseRule {
 				
 				//一条环岛link链上的link不重复检查
 				if(linkPidList.contains(linkPid)){continue;}
+				
+				Map<String, Object> changedFields = rdLinkSpeedlimit.changedFields();
+				if(changedFields!=null && !changedFields.containsKey("speedClass")){continue;}
+				
 				RdLinkSelector rdSelector=new RdLinkSelector(getConn());
-				RdLink rdLink=(RdLink) rdSelector.loadById(linkPid, false);
+				RdLink rdLink=(RdLink) rdSelector.loadByIdOnlyRdLink(linkPid, false);
+				
+				RdLinkFormSelector rdFormSelector=new RdLinkFormSelector(getConn());
 				//非环岛link不查此规则
-				List<IRow> forms=rdLink.getForms();
+				List<IRow> forms=rdFormSelector.loadRowsByParentId(linkPid, false);
+				rdLink.setForms(forms);
 				if(forms.size()==0){linkPidList.add(linkPid);continue;}
 				boolean isHuandao=false;
 				for(int i=0;i<forms.size();i++){

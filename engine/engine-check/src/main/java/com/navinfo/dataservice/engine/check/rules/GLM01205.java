@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.check.rules;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -34,6 +35,10 @@ public class GLM01205 extends baseRule {
 				RdLink rdLink = (RdLink)obj;
 				//一条环岛link链上的link不重复检查
 				if(linkPidList.contains(rdLink.getPid())){continue;}
+				
+				Map<String, Object> changedFields = rdLink.changedFields();
+				if(changedFields!=null && !changedFields.containsKey("functionClass")){continue;}
+				
 				//非环岛link不查此规则
 				List<IRow> forms=rdLink.getForms();
 				if(forms.size()==0){linkPidList.add(rdLink.getPid());continue;}
@@ -50,8 +55,13 @@ public class GLM01205 extends baseRule {
 				int linkPid=rdLinkForm.getLinkPid();
 				//一条环岛link链上的link不重复检查
 				if(linkPidList.contains(linkPid)){continue;}
+				
+				//rdlinkform有新增或者修改环岛记录的才进行检查，其他情况的即使原来有环岛link也不需要触发检查
+				if(rdLinkForm.getFormOfWay()!=33){continue;}
+				
 				RdLinkSelector rdSelector=new RdLinkSelector(getConn());
-				RdLink rdLink=(RdLink) rdSelector.loadById(linkPid, false);
+				RdLink rdLink=(RdLink) rdSelector.loadByIdOnlyRdLink(linkPid, false);
+				/*
 				//非环岛link不查此规则
 				List<IRow> forms=rdLink.getForms();
 				if(forms.size()==0){linkPidList.add(linkPid);continue;}
@@ -60,7 +70,7 @@ public class GLM01205 extends baseRule {
 					RdLinkForm form=(RdLinkForm) forms.get(i);
 					if(form.getFormOfWay()==33){isHuandao=true;}
 				}
-				if(!isHuandao){linkPidList.add(linkPid);continue;}
+				if(!isHuandao){linkPidList.add(linkPid);continue;}*/
 				
 				checkWithRdLink(rdLink,linkPidList);
 			}

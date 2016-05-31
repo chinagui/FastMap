@@ -4,6 +4,7 @@ import io.netty.util.internal.MpscLinkedQueueNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,18 +63,49 @@ public class AdLinkOperateUtils {
 	 * */
 	public static void addLink(Geometry g,int sNodePid, int eNodePid,Result result) throws Exception{
 		AdLink link = new AdLink();
-		Set<String> meshes = MeshUtils.getInterMeshes(g);
-		int meshId = Integer.parseInt(meshes.iterator().next());
-		link.setMesh(meshId);
+		Set<String> meshes = MeshUtils.getLinkMeshes(g);
 		link.setPid(PidService.getInstance().applyAdLinkPid());
+		if(meshes.size() ==2){
+			link.setKind(0);
+		}
+		Iterator<String> it = meshes.iterator();
+		while(it.hasNext()){
+			link.setMesh(Integer.parseInt(it.next()));
+			setLinkChildren(link);
+		}
 		double linkLength = GeometryUtils.getLinkLength(g);
 		link.setLength(linkLength);
 		link.setGeometry(GeoTranslator.transform(g, 100000, 0));
 		link.setsNodePid(sNodePid);
 		link.seteNodePid(eNodePid);
-		setLinkChildren(link);
 		result.setPrimaryPid(link.pid());
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
+	}
+	
+	
+	/*
+	 * 创建生成一条ADLINK返回
+	 * */
+	public static AdLink getAddLink(Geometry g,int sNodePid, int eNodePid,Result result) throws Exception{
+		AdLink link = new AdLink();
+		Set<String> meshes = MeshUtils.getLinkMeshes(g);
+		link.setPid(PidService.getInstance().applyAdLinkPid());
+		if(meshes.size() ==2){
+			link.setKind(0);
+		}
+		Iterator<String> it = meshes.iterator();
+		while(it.hasNext()){
+			link.setMesh(Integer.parseInt(it.next()));
+			setLinkChildren(link);
+		}
+		double linkLength = GeometryUtils.getLinkLength(g);
+		link.setLength(linkLength);
+		link.setGeometry(GeoTranslator.transform(g, 100000, 0));
+		link.setsNodePid(sNodePid);
+		link.seteNodePid(eNodePid);
+		result.setPrimaryPid(link.pid());
+		result.insertObject(link, ObjStatus.INSERT, link.pid());
+		return link;
 	}
 	/*
 	 * 创建生成一条ADLINK
@@ -82,16 +114,21 @@ public class AdLinkOperateUtils {
 	public static IRow addLinkBySourceLink(Geometry g,int sNodePid, int eNodePid,AdLink sourcelink,Result result) throws Exception{
 		AdLink link = new AdLink();
 		link.copy(sourcelink);
-		Set<String> meshes = MeshUtils.getInterMeshes(g);
-		int meshId = Integer.parseInt(meshes.iterator().next());
-		link.setMesh(meshId);
+		Set<String> meshes = MeshUtils.getLinkMeshes(g);
 		link.setPid(PidService.getInstance().applyAdLinkPid());
+		if(meshes.size() ==2){
+			link.setKind(0);
+		}
+		Iterator<String> it = meshes.iterator();
+		while(it.hasNext()){
+			link.setMesh(Integer.parseInt(it.next()));
+			setLinkChildren(link);
+		}
 		double linkLength = GeometryUtils.getLinkLength(g);
 		link.setLength(linkLength);
 		link.setGeometry(GeoTranslator.transform(g, 100000, 0));
 		link.setsNodePid(sNodePid);
 		link.seteNodePid(eNodePid);
-		setLinkChildren(link);
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
 		return link;
 	}

@@ -1024,7 +1024,60 @@ public abstract class MeshUtils {
 
 		return set;
 	}
-	
+	/***
+     * @author zhaokk
+     * @param Geometry g
+     * @return 图幅号
+     * 根据几何计算所跨图幅
+     * @throws Exception
+     */
+	public   static Set<String> getLinkMeshes(Geometry g) throws Exception {
+		Set<String> set = new HashSet<String>();
+		Coordinate[] cs = g.getCoordinates();
+		if(g.getCoordinates().length ==2){
+			if(isPointAtMeshBorder(cs[0].x, cs[0].y)&&isPointAtMeshBorder(cs[1].x, cs[1].y)){
+				for(String meshStr: MeshUtils.lonlat2MeshIds(cs[0].x, cs[0].y)){
+					set.add(meshStr);
+				}
+			}else{
+				for(Coordinate c:cs){
+					if(isPointAtMeshBorder(c.x, c.y)){
+					  set.add(lonlat2Mesh(c.x, c.y));
+					  return set;
+					}
+				}
+				
+			}
+		}else{
+			for(Coordinate c:cs){
+				if(isPointAtMeshBorder(c.x, c.y)){
+				  set.add(lonlat2Mesh(c.x, c.y));
+				  return set;
+				}
+			}
+		}
+
+		return set;
+	}
+	/***
+     * @author zhaokk
+     * @param Geometry g
+     * @return 图幅号
+     * 判断是否图廓线
+     * @throws Exception
+     */
+	public   static boolean isMeshLine(Geometry g) throws Exception {
+		Coordinate[] cs = g.getCoordinates();
+		if(g.getCoordinates().length ==2){
+			if(isPointAtMeshBorder(cs[0].x, cs[0].y)&&isPointAtMeshBorder(cs[1].x, cs[1].y)){
+				if(cs[0].x == cs[1].x || cs[0].y == cs[1].y){
+					return true;
+				}
+			}
+		
+	 }
+		return false;
+	}
 	public static String sameMesh(double x1,double y1,double x2,double y2){
 		List<String> s1 = lonlat2MeshIds(x1,y1);
 		List<String> s2 = lonlat2MeshIds(x2,y2);

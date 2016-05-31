@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.check.rules;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -33,6 +34,11 @@ public class GLM01197 extends baseRule {
 				RdLink rdLink = (RdLink)obj;
 				//一条特殊交通类型链上的link不重复检查
 				if(linkPidList.contains(rdLink.getPid())){continue;}
+				
+				Map<String, Object> changedFields = rdLink.changedFields();
+				if(changedFields!=null && !changedFields.containsKey("specialTraffic")
+						&& !changedFields.containsKey("functionClass")){continue;}
+				
 				//非特殊交通类型link不查此规则
 				if(rdLink.getSpecialTraffic()==0){linkPidList.add(rdLink.getPid());continue;}				
 				checkWithRdLink(rdLink,linkPidList);

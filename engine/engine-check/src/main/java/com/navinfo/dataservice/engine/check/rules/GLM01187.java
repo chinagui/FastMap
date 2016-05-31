@@ -40,19 +40,28 @@ public class GLM01187 extends baseRule {
 				RdLink rdLink = (RdLink)obj;
 
 				if(linkPidList.contains(rdLink.getPid())){continue;}
-				RdLinkFormSelector rdFormSelector=new RdLinkFormSelector(getConn());
-				List<IRow> rdLinkFormList=rdFormSelector.loadRowsByParentId(rdLink.getPid(), false);
 				
-				checkWithRdLink(rdLink,rdLinkFormList,linkPidList);
+				Map<String, Object> changedFields = rdLink.changedFields();
+				if(changedFields!=null && !changedFields.containsKey("specialTraffic")
+						&& !changedFields.containsKey("multiDigitized") && !changedFields.containsKey("imiCode")
+						&& !changedFields.containsKey("isViaduct")){continue;}
+				
+				/*RdLinkFormSelector rdFormSelector=new RdLinkFormSelector(getConn());
+				List<IRow> rdLinkFormList=rdFormSelector.loadRowsByParentId(rdLink.getPid(), false);
+				*/
+				checkWithRdLink(rdLink,rdLink.getForms(),linkPidList);
 			}else if (obj instanceof RdLinkForm){
 				RdLinkForm rdLinkForm = (RdLinkForm)obj;
 				int linkPid=rdLinkForm.getLinkPid();
 				
 				if(linkPidList.contains(linkPid)){continue;}
 				RdLinkSelector rdSelector=new RdLinkSelector(getConn());
-				RdLink rdLink=(RdLink) rdSelector.loadById(linkPid, false);
+				RdLink rdLink=(RdLink) rdSelector.loadByIdOnlyRdLink(linkPid, false);
 				
-				checkWithRdLink(rdLink,rdLink.getForms(),linkPidList);
+				RdLinkFormSelector rdFormSelector=new RdLinkFormSelector(getConn());
+				List<IRow> rdLinkFormList=rdFormSelector.loadRowsByParentId(rdLink.getPid(), false);
+				
+				checkWithRdLink(rdLink,rdLinkFormList,linkPidList);
 			}
 		}
 	}

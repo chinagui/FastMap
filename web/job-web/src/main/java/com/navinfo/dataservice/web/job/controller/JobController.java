@@ -48,7 +48,6 @@ public class JobController extends BaseController {
 		try{
 			String jobType = URLDecode(request.getParameter("jobType"));
 			JSONObject jobRequest = JSONObject.fromObject(URLDecode(request.getParameter("request")));
-			String projectId = URLDecode(request.getParameter("projectId"));
 			String userId = URLDecode(request.getParameter("userId"));
 			String descp = URLDecode(request.getParameter("descp"));
 			if(StringUtils.isEmpty(jobType)){
@@ -57,7 +56,7 @@ public class JobController extends BaseController {
 			if(jobRequest==null){
 				throw new IllegalArgumentException("request参数不能为空。");
 			}
-			long jobId = service.create(jobType, jobRequest, Long.valueOf(projectId), Long.valueOf(userId), descp);
+			long jobId = service.create(jobType, jobRequest, Long.valueOf(userId), descp);
 			Map<String,Object> data = new HashMap<String,Object>();
 			data.put("jobId", jobId);
 			return new ModelAndView("jsonView", success("job已创建。",data));

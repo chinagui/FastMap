@@ -35,7 +35,7 @@ public class JobService {
 		return "Hello, Job Service!";
 	}
 	
-	public long create(String jobType,JSONObject request,long projectId,long userId,String descp)throws ServiceException{
+	public long create(String jobType,JSONObject request,long userId,String descp)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
@@ -43,9 +43,9 @@ public class JobService {
 			conn = MultiDataSourceFactory.getInstance().getManDataSource()
 					.getConnection();
 			long jobId = run.queryForLong(conn, "SELECT JOB_ID_SEQ.NEXTVAL FROM DUAL");
-			String jobInfoSql = "INSERT INTO JOB_INFO(JOB_ID,JOB_TYPE,CREATE_TIME,STATUS,JOB_REQUEST,PROJECT_ID,USER_ID,DESCP)"
-					+ " VALUES (?,?,SYSDATE,1,?,?,?,?)";
-			run.update(conn, jobInfoSql, jobId,jobType,request.toString(),projectId,userId,descp);
+			String jobInfoSql = "INSERT INTO JOB_INFO(JOB_ID,JOB_TYPE,CREATE_TIME,STATUS,JOB_REQUEST,USER_ID,DESCP)"
+					+ " VALUES (?,?,SYSDATE,1,?,?,?)";
+			run.update(conn, jobInfoSql, jobId,jobType,request.toString(),userId,descp);
 			//发送run_job消息
 			JobMsgPublisher.runJob(jobId, jobType, request);
 			//

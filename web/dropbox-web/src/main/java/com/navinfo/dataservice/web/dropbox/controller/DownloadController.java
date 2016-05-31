@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.web.dropbox.controller;
 
 import java.io.IOException;
-import java.sql.Connection;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -14,11 +13,9 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.navinfo.dataservice.commons.db.DBOraclePoolManager;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.engine.dropbox.manger.DownloadManager;
-import com.navinfo.dataservice.engine.man.version.VersionSelector;
 
 @Controller
 public class DownloadController {

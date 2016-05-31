@@ -13,8 +13,8 @@ import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
-import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
 
 public class TipsReshaper {
@@ -30,7 +30,7 @@ public class TipsReshaper {
 
 	public int run() throws Exception {
 
-		Connection hbaseConn = HBaseAddress.getHBaseConnection();
+		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
 		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
@@ -163,8 +163,6 @@ public class TipsReshaper {
 	public static void main(String[] args) throws Exception {
 
 		long s = System.currentTimeMillis();
-
-		HBaseAddress.initHBaseAddress("192.168.3.156");
 
 		TipsReshaper sa = new TipsReshaper();
 

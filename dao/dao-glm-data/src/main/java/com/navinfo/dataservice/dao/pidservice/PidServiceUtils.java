@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.commons.util;
+package com.navinfo.dataservice.dao.pidservice;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -9,7 +9,7 @@ import java.sql.Types;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.commons.service.PidService.PidRangeCombine;
+import com.navinfo.dataservice.dao.pidservice.PidService.PidRangeCombine;
 
 public class PidServiceUtils {
 	

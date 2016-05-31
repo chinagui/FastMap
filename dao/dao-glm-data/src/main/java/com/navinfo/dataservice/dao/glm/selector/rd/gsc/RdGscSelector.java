@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import oracle.sql.STRUCT;
+
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
@@ -18,8 +20,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.vividsolutions.jts.geom.Geometry;
-
-import oracle.sql.STRUCT;
 
 public class RdGscSelector implements ISelector {
 

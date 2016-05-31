@@ -74,6 +74,10 @@ public class MultiDataSourceFactory {
 		return getDataSource(PoolDataSource.META_KEY);
 	}
 	
+	public synchronized BasicDataSource getPidDataSource() {
+		return getDataSource(PoolDataSource.PID_KEY);
+	}
+	
 	/**
 	 * 从配置中读取的数据库连接，均做cache
 	 * @param dataSourceKey

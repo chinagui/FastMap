@@ -13,7 +13,6 @@ import net.sf.json.JSONObject;
 
 import com.alibaba.druid.util.StringUtils;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -27,6 +26,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.AdLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.navinfo.navicommons.exception.GeoComputationException;

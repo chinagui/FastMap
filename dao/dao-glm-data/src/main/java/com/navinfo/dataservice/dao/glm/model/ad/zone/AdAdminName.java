@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.dao.glm.model.ad.zone;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -10,16 +9,12 @@ import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.vividsolutions.jts.geom.Geometry;
 
 public class AdAdminName implements IObj {
 	private int regionId ;

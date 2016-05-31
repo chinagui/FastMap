@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
-import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -21,6 +20,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;
 

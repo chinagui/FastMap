@@ -2,20 +2,14 @@ package com.navinfo.dataservice.engine.edit.xiaolong.ad;
 
 import java.sql.Connection;
 
-import com.navinfo.dataservice.commons.db.ConfigLoader;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 
-import net.sf.json.JSONObject;
-
 public class AdAdminGroupTest {
-	private static final String configPath = "D:/ws_new/DataService/web/edit-web/src/main/resources/config.properties";
-
-	static {
-		ConfigLoader.initDBConn(configPath);
-	}
 	
 	public static void searchAdminGroupLevel() {
 		Connection conn;

@@ -3,12 +3,12 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.update;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminName;
+import com.navinfo.dataservice.dao.pidservice.PidService;
 
 public class Operation implements IOperation {
 

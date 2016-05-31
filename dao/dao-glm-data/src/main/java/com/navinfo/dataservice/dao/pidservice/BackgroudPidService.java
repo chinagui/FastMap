@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.commons.service;
+package com.navinfo.dataservice.dao.pidservice;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;

@@ -6,13 +6,13 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
+import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 public class NodeOperateUtils {

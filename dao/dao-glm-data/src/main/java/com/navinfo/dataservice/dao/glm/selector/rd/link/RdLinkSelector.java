@@ -32,7 +32,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSidewalk;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkWalkstair;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 

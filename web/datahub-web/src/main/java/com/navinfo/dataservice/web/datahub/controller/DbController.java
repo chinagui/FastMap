@@ -34,7 +34,7 @@ public class DbController extends BaseController {
 		String result = "";
 		try{
 			TestClass tc = new TestClass();
-			result = tc.test("XXX!!!");
+			result = tc.hello("");
 		}catch(Exception e){
 			result = "调用内部服务出错";
 			log.error(e.getMessage(),e);

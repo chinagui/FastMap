@@ -18,6 +18,7 @@ public class TestClass {
 		return ((RemoteServices)ApplicationContextUtil.getBean("remoteServices")).getDatalockExternalService().test(name);
 	}
 	public String hello(String name)throws Exception{
+		
 		JobExternalService service = (JobExternalService)ApplicationContextUtil.getBean("jobExternalService");
 		return service.help();
 	}

@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit;
 import java.sql.Connection;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -16,6 +17,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -134,7 +136,7 @@ public class JsonObjectTest {
 		Geometry geometry2=GeoTranslator.geojson2Jts(geometry, 1, 5);
 		//POINT (116.25000 40.00000)
 		
-		System.out.println(MeshUtils.getInterMeshes(geometry4)+"---------------------");
+		System.out.println(CompGeometryUtil.geo2MeshesWithoutBreak(geometry4)+"---------------------");
 	}
 	// LINESTRING (116.24505 40.00000, 116.24217 40.00000)
 	private static Set<String> getLinkInterMesh(Geometry linkGeom) throws Exception {
@@ -143,7 +145,7 @@ public class JsonObjectTest {
 		Coordinate[] cs = linkGeom.getCoordinates();
 
 		for (Coordinate c : cs) {
-			set.add(MeshUtils.lonlat2Mesh(c.x, c.y));
+			set.addAll(Arrays.asList(MeshUtils.point2Meshes(c.x, c.y)));
 		}
 
 		return set;

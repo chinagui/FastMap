@@ -127,42 +127,6 @@ public class GridUtils {
 	}
 
 	/**
-	 * 获取经纬度所在网格号，根据左上原则
-	 * 
-	 * @param x
-	 *            经度
-	 * @param y
-	 *            纬度
-	 * @return 网格号
-	 */
-	public static String location2Grid(double x, double y) {
-		String meshId = MeshUtils.location2Mesh(MeshUtils.decimal2Second(x),
-				MeshUtils.decimal2Second(y));
-
-		double[] data = MeshUtils.mesh2LocationLatLon(meshId);
-
-		double cX = data[2];
-
-		double cY = data[3];
-
-		if (x <= cX) {
-			if (y >= cY) {
-				meshId += "01";
-			} else {
-				meshId += "03";
-			}
-		} else {
-			if (y >= cY) {
-				meshId += "02";
-			} else {
-				meshId += "04";
-			}
-		}
-
-		return meshId;
-	}
-
-	/**
 	 * 求出一系列grids外包矩形的geohash
 	 * 
 	 * @param grids
@@ -212,30 +176,6 @@ public class GridUtils {
 		return new String[] { startRowkey, stopRowkey };
 	}
 
-	/**
-	 * 判断特定点是否在网格数组中
-	 * 
-	 * @param lon
-	 * @param lat
-	 * @param grids
-	 * @return
-	 */
-	public static boolean isInGrids(double lon, double lat, JSONArray grids) {
-		boolean flag = false;
-
-		String grid = location2Grid(lon, lat);
-
-		for (int i = 0; i < grids.size(); i++) {
-			String g = grids.getString(i);
-			if (grid.equals(g)) {
-				flag = true;
-
-				break;
-			}
-		}
-
-		return flag;
-	}
 
 	/**
 	 * geohash转换成经纬度

@@ -15,7 +15,7 @@ public class MeshSelector {
 	public JSONObject getProvinceByLocation(double lon, double lat)
 			throws Exception {
 
-		String meshId = MeshUtils.lonlat2Mesh(lon, lat);
+		String meshId = MeshUtils.point2Meshes(lon, lat)[0];
 
 		String sql = "select admincode,province from cp_meshlist where mesh = :1";
 

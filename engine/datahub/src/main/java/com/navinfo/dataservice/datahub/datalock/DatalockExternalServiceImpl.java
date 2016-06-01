@@ -5,7 +5,7 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.ServiceException;
-import com.navinfo.dataservice.api.datalock.iface.DatalockExternalService;
+import com.navinfo.dataservice.api.datahub.iface.DatalockExternalService;
 
 /** 
 * @ClassName: DataLockService 

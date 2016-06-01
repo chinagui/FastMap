@@ -551,8 +551,8 @@ public abstract class MeshUtils {
 		return false;
 	}
 	public static String[] sameMesh(double x1,double y1,double x2,double y2){
-		List<String> s1 = Arrays.asList(point2Meshes(x1,y1));
-		List<String> s2 = Arrays.asList(point2Meshes(x2,y2));
+		List<String> s1 = new ArrayList<String>(Arrays.asList(point2Meshes(x1,y1)));
+		List<String> s2 = new ArrayList<String>(Arrays.asList(point2Meshes(x2,y2)));
 		s1.retainAll(s2);
 		return s1.toArray(new String[0]);
 	}

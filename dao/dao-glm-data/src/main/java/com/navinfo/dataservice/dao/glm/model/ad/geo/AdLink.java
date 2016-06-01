@@ -216,12 +216,11 @@ public class AdLink implements IObj {
 
 	@Override
 	public int mesh() {
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
 	}
 
 	@Override

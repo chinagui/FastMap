@@ -83,9 +83,8 @@ public class NodeOperateUtils {
 		List<String> meshes = MeshUtils.lonlat2MeshIds(x, y);
 		for (String mesh :meshes){
 			AdNodeMesh nodeMesh = new AdNodeMesh();
-			node.setMesh(Integer.parseInt(mesh));
 			nodeMesh.setNodePid(node.getPid());
-			nodeMesh.setMeshId(node.mesh());
+			nodeMesh.setMeshId(Integer.parseInt(mesh));
 			List<IRow> nodeMeshs = new ArrayList<IRow>();
 			nodeMeshs.add(nodeMesh);
 			node.setMeshes(nodeMeshs);

@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.engine.edit.comm.util.operate;
 
-import io.netty.util.internal.MpscLinkedQueueNode;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +18,6 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -70,8 +69,7 @@ public class AdLinkOperateUtils {
 		}
 		Iterator<String> it = meshes.iterator();
 		while(it.hasNext()){
-			link.setMesh(Integer.parseInt(it.next()));
-			setLinkChildren(link);
+			setLinkChildren(link,Integer.parseInt(it.next()));
 		}
 		double linkLength = GeometryUtils.getLinkLength(g);
 		link.setLength(linkLength);
@@ -97,7 +95,7 @@ public class AdLinkOperateUtils {
 		Iterator<String> it = meshes.iterator();
 		while(it.hasNext()){
 			link.setMesh(Integer.parseInt(it.next()));
-			setLinkChildren(link);
+			setLinkChildren(link,Integer.parseInt(it.next()));
 		}
 		double linkLength = GeometryUtils.getLinkLength(g);
 		link.setLength(linkLength);
@@ -123,7 +121,7 @@ public class AdLinkOperateUtils {
 		Iterator<String> it = meshes.iterator();
 		while(it.hasNext()){
 			link.setMesh(Integer.parseInt(it.next()));
-			setLinkChildren(link);
+			setLinkChildren(link,Integer.parseInt(it.next()));
 		}
 		double linkLength = GeometryUtils.getLinkLength(g);
 		link.setLength(linkLength);
@@ -142,13 +140,13 @@ public class AdLinkOperateUtils {
 	 * 
 	 * @param link
 	 */
-	private static void setLinkChildren(AdLink link) {
+	private static void setLinkChildren(AdLink link,int meshId) {
 
 		AdLinkMesh mesh = new AdLinkMesh();
 
 		mesh.setLinkPid(link.getPid());
 
-		mesh.setMesh(link.mesh());
+		mesh.setMesh(meshId);
 
 		List<IRow> meshes = new ArrayList<IRow>();
 

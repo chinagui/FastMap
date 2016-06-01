@@ -25,15 +25,9 @@ public class NodeOperateUtils {
 
 		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y),100000,0));
 		
-		List<String> meshIds = MeshUtils.lonlat2MeshIds(x, y);
-		
-		if(CollectionUtils.isNotEmpty(meshIds))
-		{
-			node.setMesh(Integer.parseInt(meshIds.get(0)));
-			
 			List<IRow> meshes = new ArrayList<IRow>();
 			
-			for(String meshId : meshIds)
+			for(String meshId : MeshUtils.point2Meshes(x, y))
 			{
 				RdNodeMesh mesh = new RdNodeMesh();
 				
@@ -46,7 +40,6 @@ public class NodeOperateUtils {
 			
 			node.setMeshes(meshes);
 			
-		}
 		
 		RdNodeForm form = new RdNodeForm();
 
@@ -80,8 +73,7 @@ public class NodeOperateUtils {
 		if(MeshUtils.isPointAtMeshBorder(x,y)){
 			node.setForm(1);
 		}
-		List<String> meshes = MeshUtils.lonlat2MeshIds(x, y);
-		for (String mesh :meshes){
+		for (String mesh :MeshUtils.point2Meshes(x, y)){
 			AdNodeMesh nodeMesh = new AdNodeMesh();
 			nodeMesh.setNodePid(node.getPid());
 			nodeMesh.setMeshId(Integer.parseInt(mesh));

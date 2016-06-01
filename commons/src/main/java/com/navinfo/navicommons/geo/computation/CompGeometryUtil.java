@@ -335,4 +335,12 @@ public class CompGeometryUtil {
 		}
 		return null;
 	}
+	public static Set<String> geoToMeshesWithoutBreak(Geometry geo){
+		Set<String> set = new HashSet<String>();
+		for(String str:geo2MeshesWithoutBreak(geo)){
+			set.add(str);
+		}
+		return set;
+		
+	}
 }

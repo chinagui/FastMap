@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.AdminOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.RdLinkOperateUtils;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -265,7 +266,7 @@ public class Operation implements IOperation {
 		
 		Geometry g = GeoTranslator.geojson2Jts(command.getLinkGeom());
 
-		Set<String> meshes = MeshUtils.getInterMeshes(g);
+		Set<String> meshes =  CompGeometryUtil.geoToMeshesWithoutBreak(g);
 
 		// 跨图幅
 		if (meshes.size() > 1) {

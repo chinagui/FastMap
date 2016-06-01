@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.edit.comm.util.operate;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -26,7 +25,7 @@ public class NodeOperateUtils {
 
 		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y),100000,0));
 		
-		List<String> meshIds = Arrays.asList(MeshUtils.point2Meshes(x, y));
+		List<String> meshIds = MeshUtils.lonlat2MeshIds(x, y);
 		
 		if(CollectionUtils.isNotEmpty(meshIds))
 		{
@@ -77,12 +76,15 @@ public class NodeOperateUtils {
 		//获取点的几何信息
 		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y),100000,0));
 		//维护Node图幅信息
-		List<String> meshes = Arrays.asList(MeshUtils.point2Meshes(x, y));
+		//判断是否图廓点
+		if(MeshUtils.isPointAtMeshBorder(x,y)){
+			node.setForm(1);
+		}
+		List<String> meshes = MeshUtils.lonlat2MeshIds(x, y);
 		for (String mesh :meshes){
 			AdNodeMesh nodeMesh = new AdNodeMesh();
-			node.setMesh(Integer.parseInt(mesh));
 			nodeMesh.setNodePid(node.getPid());
-			nodeMesh.setMeshId(node.mesh());
+			nodeMesh.setMeshId(Integer.parseInt(mesh));
 			List<IRow> nodeMeshs = new ArrayList<IRow>();
 			nodeMeshs.add(nodeMesh);
 			node.setMeshes(nodeMeshs);

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.datalock.exception;
+package com.navinfo.dataservice.datahub.exception;
 
 /** 
  * @ClassName: LockException 

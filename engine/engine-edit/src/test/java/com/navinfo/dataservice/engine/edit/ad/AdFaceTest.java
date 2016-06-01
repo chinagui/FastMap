@@ -16,7 +16,7 @@ public class AdFaceTest {
 	protected Logger log = Logger.getLogger(this.getClass());
 	public  void createFaceTest() {
 		String parameter = "{\"command\":\"CREATE\",\"type\":\"ADFACE\",\"projectId\":11," +
-				"\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.49993538856506,39.89978075765668],[116.50024786591528,39.8997653248759],[116.4998871088028,39.89965832416705],[116.49993538856506,39.89978075765668]]}}}";
+				"\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[115.25151327252388,39.416733182082986],[115.25143951177597,39.4165850242258],[115.25185123085974,39.416572591384295],[115.25151327252388,39.416733182082986]]}}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);;
 		try {

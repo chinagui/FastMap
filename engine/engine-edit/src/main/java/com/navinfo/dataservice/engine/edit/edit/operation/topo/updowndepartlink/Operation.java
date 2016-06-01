@@ -15,7 +15,6 @@ import org.apache.log4j.Logger;
 import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.geom.JGeometryUtil;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -33,6 +32,7 @@ import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.RdLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompLineUtil;
 import com.navinfo.navicommons.geo.computation.CompPolylineUtil;
+import com.navinfo.navicommons.geo.computation.JGeometryUtil;
 import com.sun.research.ws.wadl.Link;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;

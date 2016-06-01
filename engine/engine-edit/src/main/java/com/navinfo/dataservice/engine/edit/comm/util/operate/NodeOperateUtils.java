@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.comm.util.operate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -25,7 +26,7 @@ public class NodeOperateUtils {
 
 		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y),100000,0));
 		
-		List<String> meshIds = MeshUtils.lonlat2MeshIds(x, y);
+		List<String> meshIds = Arrays.asList(MeshUtils.point2Meshes(x, y));
 		
 		if(CollectionUtils.isNotEmpty(meshIds))
 		{
@@ -76,7 +77,7 @@ public class NodeOperateUtils {
 		//获取点的几何信息
 		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y),100000,0));
 		//维护Node图幅信息
-		List<String> meshes = MeshUtils.lonlat2MeshIds(x, y);
+		List<String> meshes = Arrays.asList(MeshUtils.point2Meshes(x, y));
 		for (String mesh :meshes){
 			AdNodeMesh nodeMesh = new AdNodeMesh();
 			node.setMesh(Integer.parseInt(mesh));

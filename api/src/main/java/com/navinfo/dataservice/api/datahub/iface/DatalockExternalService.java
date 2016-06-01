@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.api.datalock.iface;
+package com.navinfo.dataservice.api.datahub.iface;
 
 import java.util.Set;
 

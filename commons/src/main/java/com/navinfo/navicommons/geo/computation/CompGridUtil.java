@@ -202,11 +202,11 @@ public class CompGridUtil {
 	public static String[] intersectRectGrid(double[] rect,String meshId)throws Exception{
 		//计算矩形左下角点所在的grid
 		//判断两次算的grid所在的图幅是否和meshId一致
-		String sameMesh = MeshUtils.sameMesh(rect[0],rect[1], rect[2],rect[3]);
-		if(sameMesh!=null){
-			String lbGrid = point2Grid(rect[0],rect[1],sameMesh);
+		String[] sameMesh = MeshUtils.sameMesh(rect[0],rect[1], rect[2],rect[3]);
+		if(sameMesh!=null&&sameMesh.length>0){
+			String lbGrid = point2Grid(rect[0],rect[1],meshId);
 			//计算矩形右上角点所在的grid
-			String rtGrid =  point2Grid(rect[2],rect[3],sameMesh);
+			String rtGrid =  point2Grid(rect[2],rect[3],meshId);
 			//算法是左下grid的第7位和右上grid的第7位数字之间及左下grid的第8位和右上grid的第8位数字之间都相交
 			int lbGridM7 = Integer.valueOf(lbGrid.substring(6, 7));
 			int lbGridM8 = Integer.valueOf(lbGrid.substring(7, 8));
@@ -394,7 +394,8 @@ public class CompGridUtil {
 	}
 
 	/**
-	 * 计算grid过程中依赖的计算图幅是自己实现的
+	 * 参考MeshUtils.point2Meshes(double x,double y)方法
+	 * 
 	 * @param x
 	 * @param y
 	 * @return
@@ -507,18 +508,6 @@ public class CompGridUtil {
 			meshes = new String[]{String.format("%02d%02d%d%d%d%d", M1M2, M3M4, M5, M6,M7,M8)};
 		}
 		return meshes;
-	}
-	/**
-	 * 计算点所在的grid号，依赖的图幅号来自NM
-	 * 如果正好在grid线上，取右/上的grid
-	 * @param x：单位度
-	 * @param y：单位度
-	 * @return
-	 */
-	@Deprecated
-	public static String[] point2GridsUsingNM(double x,double y){
-		List<String> meshes = MeshUtils.lonlat2MeshIds(x,y);
-		return point2Grids(x,y,meshes.toArray(new String[0]));
 	}
 	
 	/**

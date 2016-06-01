@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.pidservice.PidService;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -62,7 +63,7 @@ public class AdLinkOperateUtils {
 	 * */
 	public static void addLink(Geometry g,int sNodePid, int eNodePid,Result result) throws Exception{
 		AdLink link = new AdLink();
-		Set<String> meshes = MeshUtils.getLinkMeshes(g);
+		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
 		link.setPid(PidService.getInstance().applyAdLinkPid());
 		if(meshes.size() ==2){
 			link.setKind(0);
@@ -86,7 +87,7 @@ public class AdLinkOperateUtils {
 	 * */
 	public static AdLink getAddLink(Geometry g,int sNodePid, int eNodePid,Result result) throws Exception{
 		AdLink link = new AdLink();
-		Set<String> meshes = MeshUtils.getLinkMeshes(g);
+		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
 		link.setPid(PidService.getInstance().applyAdLinkPid());
 		//判断是否假象线
 		if(MeshUtils.isMeshLine(g)){
@@ -113,7 +114,7 @@ public class AdLinkOperateUtils {
 	public static IRow addLinkBySourceLink(Geometry g,int sNodePid, int eNodePid,AdLink sourcelink,Result result) throws Exception{
 		AdLink link = new AdLink();
 		link.copy(sourcelink);
-		Set<String> meshes = MeshUtils.getLinkMeshes(g);
+		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
 		link.setPid(PidService.getInstance().applyAdLinkPid());
 		if(meshes.size() ==2){
 			link.setKind(0);

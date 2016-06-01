@@ -202,7 +202,7 @@ public class Operation implements IOperation {
 		Coordinate sPoint = geom.getCoordinates()[0];
 		// 获取几何形状跨越图幅号
 		Set<String> meshes = new HashSet<String>();
-		meshes = MeshUtils.getLinkMeshes(geom);
+		meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geom);
 		// 如果不跨图幅
 		if (meshes.size() == 1) {
 			// 生成起始node
@@ -348,7 +348,7 @@ public class Operation implements IOperation {
 		face.setGeometry(g);
 		// 缩放计算面积和周长
 		g = GeoTranslator.transform(g, 0.00001, 5);
-		String meshId = MeshUtils.getLinkMeshes(g).iterator().next();
+		String meshId =  CompGeometryUtil.geoToMeshesWithoutBreak(g).iterator().next();
 		if (!StringUtils.isEmpty(meshId)) {
 			face.setMeshId(Integer.parseInt(meshId));
 		}
@@ -364,7 +364,7 @@ public class Operation implements IOperation {
 
 		JSONObject updateContent = new JSONObject();
 		g = GeoTranslator.transform(g, 0.00001, 5);
-		String meshId = MeshUtils.getLinkMeshes(g).iterator().next();
+		String meshId =  CompGeometryUtil.geoToMeshesWithoutBreak(g).iterator().next();
 		if (!StringUtils.isEmpty(meshId)) {
 			updateContent.put("mesh", Integer.parseInt(meshId));
 		}

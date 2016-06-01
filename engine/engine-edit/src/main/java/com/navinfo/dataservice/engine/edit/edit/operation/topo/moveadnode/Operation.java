@@ -10,6 +10,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -87,7 +88,7 @@ public class Operation implements IOperation {
 			
 			updateContent.put("length", GeometryUtils.getLinkLength(geo));
 			
-			Set<String> meshes = MeshUtils.getInterMeshes(geo);
+			Set<String> meshes =  CompGeometryUtil.geoToMeshesWithoutBreak(geom);
 			// 修改线的几何属性
 			if (meshes.size() == 1) {
 			} else {

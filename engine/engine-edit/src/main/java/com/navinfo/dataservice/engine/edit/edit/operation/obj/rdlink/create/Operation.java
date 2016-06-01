@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.AdminOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.RdLinkOperateUtils;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -159,7 +160,7 @@ public class Operation implements IOperation {
 	public void createRdLinks(Map<Geometry, JSONObject> map, Result result) throws Exception {
 
 		for (Geometry g : map.keySet()) {
-			Set<String> meshes = MeshUtils.getInterMeshes(g);
+			Set<String> meshes =  CompGeometryUtil.geoToMeshesWithoutBreak(g);
 			// 不跨图幅
 			if (meshes.size() == 1) {
 				RdLink link = this.createRdLinkWithNoMesh(g, (int) map.get(g).get("s"), (int) map.get(g).get("e"), result);

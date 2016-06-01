@@ -69,8 +69,7 @@ public class AdLinkOperateUtils {
 		}
 		Iterator<String> it = meshes.iterator();
 		while(it.hasNext()){
-			link.setMesh(Integer.parseInt(it.next()));
-			setLinkChildren(link);
+			setLinkChildren(link,Integer.parseInt(it.next()));
 		}
 		double linkLength = GeometryUtils.getLinkLength(g);
 		link.setLength(linkLength);
@@ -96,7 +95,7 @@ public class AdLinkOperateUtils {
 		Iterator<String> it = meshes.iterator();
 		while(it.hasNext()){
 			link.setMesh(Integer.parseInt(it.next()));
-			setLinkChildren(link);
+			setLinkChildren(link,Integer.parseInt(it.next()));
 		}
 		double linkLength = GeometryUtils.getLinkLength(g);
 		link.setLength(linkLength);
@@ -122,7 +121,7 @@ public class AdLinkOperateUtils {
 		Iterator<String> it = meshes.iterator();
 		while(it.hasNext()){
 			link.setMesh(Integer.parseInt(it.next()));
-			setLinkChildren(link);
+			setLinkChildren(link,Integer.parseInt(it.next()));
 		}
 		double linkLength = GeometryUtils.getLinkLength(g);
 		link.setLength(linkLength);
@@ -141,13 +140,13 @@ public class AdLinkOperateUtils {
 	 * 
 	 * @param link
 	 */
-	private static void setLinkChildren(AdLink link) {
+	private static void setLinkChildren(AdLink link,int meshId) {
 
 		AdLinkMesh mesh = new AdLinkMesh();
 
 		mesh.setLinkPid(link.getPid());
 
-		mesh.setMesh(link.mesh());
+		mesh.setMesh(meshId);
 
 		List<IRow> meshes = new ArrayList<IRow>();
 

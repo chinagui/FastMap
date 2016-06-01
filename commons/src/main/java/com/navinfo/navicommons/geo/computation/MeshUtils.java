@@ -525,8 +525,8 @@ public abstract class MeshUtils {
 	public static String[] line2MeshId(double[] line){
 		String[] meshes1 = point2Meshes(line[0],line[1]);
 		String[] meshes2 = point2Meshes(line[2],line[3]);
-		List<String> list1 = Arrays.asList(meshes1);
-		List<String> list2 = Arrays.asList(meshes2);
+		List<String> list1 = new ArrayList<String>(Arrays.asList(meshes1));
+		List<String> list2 = new ArrayList<String>(Arrays.asList(meshes2));
 		list1.retainAll(list2);
 		return list1.toArray(new String[0]);
 	}

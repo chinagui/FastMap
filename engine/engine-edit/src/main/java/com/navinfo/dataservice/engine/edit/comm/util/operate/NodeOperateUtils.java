@@ -76,6 +76,10 @@ public class NodeOperateUtils {
 		//获取点的几何信息
 		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y),100000,0));
 		//维护Node图幅信息
+		//判断是否图廓点
+		if(MeshUtils.isPointAtMeshBorder(x,y)){
+			node.setForm(1);
+		}
 		List<String> meshes = MeshUtils.lonlat2MeshIds(x, y);
 		for (String mesh :meshes){
 			AdNodeMesh nodeMesh = new AdNodeMesh();

@@ -73,7 +73,7 @@ public class Operation implements IOperation {
 			throws Exception {
 
 		for (Geometry g : map.keySet()) {
-			Set<String> meshes = MeshUtils.getInterMeshes(g);
+			Set<String> meshes = MeshUtils.getLinkMeshes(g);
 			//不跨图幅
 			if (meshes.size() == 1) {
 				this.createAdLinkWithNoMesh(g, (int) map.get(g).get("s"),

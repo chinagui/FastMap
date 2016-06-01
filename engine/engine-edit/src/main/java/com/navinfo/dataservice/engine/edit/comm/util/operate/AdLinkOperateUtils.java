@@ -90,7 +90,8 @@ public class AdLinkOperateUtils {
 		AdLink link = new AdLink();
 		Set<String> meshes = MeshUtils.getLinkMeshes(g);
 		link.setPid(PidService.getInstance().applyAdLinkPid());
-		if(meshes.size() ==2){
+		//判断是否假象线
+		if(MeshUtils.isMeshLine(g)){
 			link.setKind(0);
 		}
 		Iterator<String> it = meshes.iterator();

@@ -55,7 +55,7 @@ public class Operation implements IOperation {
 		}
 		if(meshIds.length == 1)
 		{
-			adAdmin.setMesh(Integer.parseInt(meshIds[0]));
+			adAdmin.setMeshId(Integer.parseInt(meshIds[0]));
 		}
 
 		adAdmin.setPid(PidService.getInstance().applyAdAdminPid());

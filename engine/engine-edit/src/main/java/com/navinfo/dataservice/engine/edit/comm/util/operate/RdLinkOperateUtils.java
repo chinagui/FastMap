@@ -312,7 +312,7 @@ public class RdLinkOperateUtils {
 		}
 		else
 		{
-			link.setMesh(Integer.parseInt(meshes.iterator().next()));
+			link.setMeshId(Integer.parseInt(meshes.iterator().next()));
 		}
 		
 		link.setPid(PidService.getInstance().applyLinkPid());

@@ -306,19 +306,11 @@ public class Operation implements IOperation {
 		if (g != null) {
 
 			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
-				RdLink link = this.calRdLinkWithMesh(g, maps, result);
-				
-				link.setMeshId(Integer.parseInt(meshId));
-				
-				result.insertObject(link, ObjStatus.INSERT, link.pid());
+				calRdLinkWithMesh(g, maps, result);
 			}
 			if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
 				for (int i = 0; i < g.getNumGeometries(); i++) {
-					RdLink link = this.calRdLinkWithMesh(g.getGeometryN(i), maps, result);
-					
-					link.setMeshId(Integer.parseInt(meshId));
-					
-					result.insertObject(link, ObjStatus.INSERT, link.pid());
+					calRdLinkWithMesh(g.getGeometryN(i), maps, result);
 				}
 
 			}
@@ -328,7 +320,7 @@ public class Operation implements IOperation {
 	/*
 	 * 创建RDLINK 针对跨图幅创建图廓点不能重复
 	 */
-	private RdLink calRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result) throws Exception {
+	private void calRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result) throws Exception {
 		// 定义创建RDLINK的起始Pid 默认为0
 		int sNodePid = 0;
 		int eNodePid = 0;
@@ -356,8 +348,8 @@ public class Operation implements IOperation {
 		link.setLaneNum(updateLink.getLaneNum());
 		
 		AdminOperateUtils.SetAdminInfo4Link(link, conn);
-
-		return link;
+		
+		result.insertObject(link, ObjStatus.INSERT, link.pid());
 	}
 	
 	public void breakLine(int sNodePid, int eNodePid) throws Exception {

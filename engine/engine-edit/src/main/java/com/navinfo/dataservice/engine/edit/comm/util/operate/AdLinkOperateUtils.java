@@ -95,7 +95,6 @@ public class AdLinkOperateUtils {
 		}
 		Iterator<String> it = meshes.iterator();
 		while(it.hasNext()){
-			link.setMesh(Integer.parseInt(it.next()));
 			setLinkChildren(link,Integer.parseInt(it.next()));
 		}
 		double linkLength = GeometryUtils.getLinkLength(g);
@@ -121,7 +120,6 @@ public class AdLinkOperateUtils {
 		}
 		Iterator<String> it = meshes.iterator();
 		while(it.hasNext()){
-			link.setMesh(Integer.parseInt(it.next()));
 			setLinkChildren(link,Integer.parseInt(it.next()));
 		}
 		double linkLength = GeometryUtils.getLinkLength(g);

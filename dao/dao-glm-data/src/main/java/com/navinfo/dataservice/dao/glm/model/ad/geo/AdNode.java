@@ -25,8 +25,6 @@ public class AdNode implements IObj {
 
 	private int pid;
 
-	private int meshId;
-
 	private String rowId;
 
 	private int kind = 1;
@@ -85,8 +83,6 @@ public class AdNode implements IObj {
 		this.form = sourceAdNode.getForm();
 
 		this.geometry = sourceAdNode.getGeometry();
-
-		this.meshId = sourceAdNode.getMeshId();
 
 		this.rowId = sourceAdNode.getRowId();
 
@@ -199,12 +195,11 @@ public class AdNode implements IObj {
 
 	@Override
 	public int mesh() {
-		return meshId;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.meshId = mesh;
 	}
 
 	@Override
@@ -289,15 +284,6 @@ public class AdNode implements IObj {
 	public void setPid(int pid) {
 		this.pid = pid;
 	}
-
-	public int getMeshId() {
-		return meshId;
-	}
-
-	public void setMeshId(int meshId) {
-		this.meshId = meshId;
-	}
-
 	public String getRowId() {
 		return rowId;
 	}

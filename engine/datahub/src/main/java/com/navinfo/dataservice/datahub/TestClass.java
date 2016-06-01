@@ -4,7 +4,6 @@ package com.navinfo.dataservice.datahub;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.api.ApplicationContextUtil;
-import com.navinfo.dataservice.api.RemoteServices;
 import com.navinfo.dataservice.api.job.iface.JobExternalService;
 
 /** 
@@ -14,10 +13,8 @@ import com.navinfo.dataservice.api.job.iface.JobExternalService;
 * @Description: TODO
 */
 public class TestClass {
-	public String test(String name)throws Exception{
-		return ((RemoteServices)ApplicationContextUtil.getBean("remoteServices")).getDatalockExternalService().test(name);
-	}
-	public String hello(String name)throws Exception{
+	public String help()throws Exception{
+		
 		JobExternalService service = (JobExternalService)ApplicationContextUtil.getBean("jobExternalService");
 		return service.help();
 	}
@@ -28,7 +25,7 @@ public class TestClass {
         //context.start();
 		String result = null;
 		try{
-			result = new TestClass().test("XXX");
+			result = new TestClass().help();
 		}catch(Exception e){
 			e.printStackTrace();
 		}

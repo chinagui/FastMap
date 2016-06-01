@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.datalock.lock;
+package com.navinfo.dataservice.datahub.datalock;
 
 import java.sql.Clob;
 import java.sql.Connection;
@@ -16,7 +16,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.datalock.exception.LockException;
+import com.navinfo.dataservice.datahub.exception.LockException;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /** 

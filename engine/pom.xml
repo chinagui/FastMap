@@ -17,7 +17,6 @@
     <module>engine-man</module>
     <module>engine-meta</module>
     <module>engine-photo</module>
-    <module>datalock</module>
     <module>engine-dropbox</module>
     <module>engine-check</module>
     </modules>

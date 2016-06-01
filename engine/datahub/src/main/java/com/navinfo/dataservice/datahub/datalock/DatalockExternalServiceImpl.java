@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.datalock;
+package com.navinfo.dataservice.datahub.datalock;
 
 import java.util.Set;
 

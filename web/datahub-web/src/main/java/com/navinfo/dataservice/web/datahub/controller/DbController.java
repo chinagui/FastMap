@@ -29,12 +29,13 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 public class DbController extends BaseController {
 	protected Logger log = Logger.getLogger(this.getClass());
 	
-	@RequestMapping(value = "/db/hello/")
+	@RequestMapping(value = "/db/help/")
 	public ModelAndView test(HttpServletRequest request){
 		String result = "";
 		try{
 			TestClass tc = new TestClass();
-			result = tc.hello("");
+			
+			result = tc.help();
 		}catch(Exception e){
 			result = "调用内部服务出错";
 			log.error(e.getMessage(),e);

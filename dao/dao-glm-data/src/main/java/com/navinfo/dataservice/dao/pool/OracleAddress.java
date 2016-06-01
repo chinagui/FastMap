@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.commons.db;
+package com.navinfo.dataservice.dao.pool;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

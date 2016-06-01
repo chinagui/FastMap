@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import oracle.sql.STRUCT;
+
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
@@ -16,8 +18,6 @@ import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminName;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
-
-import oracle.sql.STRUCT;
 
 public class AdAdminSelector implements ISelector {
 

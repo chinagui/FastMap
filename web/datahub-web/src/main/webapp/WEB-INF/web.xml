@@ -29,7 +29,7 @@
 		<init-param>
 			<param-name>contextConfigLocation</param-name>
 			<param-value>
-	               classpath:applicationContext.xml
+	               classpath:applicationContext.xml,classpath:dubbo-consumer-job.xml
 	           </param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>

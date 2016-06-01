@@ -4,20 +4,17 @@ package com.navinfo.dataservice.engine.edit.ad;
 import java.sql.Connection;
 import java.util.List;
 
+import net.sf.json.JSONObject;
+
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.commons.db.ConfigLoader;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 import com.navinfo.dataservice.engine.edit.edit.search.rd.utils.RdLinkSearchUtils;
-
-import net.sf.json.JSONObject;
 
 /**
  * @author zhaokk
@@ -26,12 +23,9 @@ import net.sf.json.JSONObject;
 public class AdLinkTest {
 	
 	//初始化系统参数
-	private static final String configPath = "H:/GitHub/zhaokk/DataService/web/edit-web/src/main/resources/config.properties";
 	private Connection conn;
     public AdLinkTest() throws Exception{
     	 this.conn = GlmDbPoolManager.getInstance().getConnection(11);
-    	 ConfigLoader
-		.initDBConn(configPath);
     }
 	protected Logger log = Logger.getLogger(this.getClass());
 	//创建一条link

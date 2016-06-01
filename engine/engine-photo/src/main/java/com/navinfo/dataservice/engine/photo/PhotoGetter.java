@@ -8,7 +8,6 @@ import net.sf.json.JSONObject;
 
 import org.hbase.async.KeyValue;
 
-import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.FileUtils;

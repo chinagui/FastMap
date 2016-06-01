@@ -2,7 +2,6 @@ package com.navinfo.dataservice.scripts;
 
 import java.sql.Connection;
 
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.manager.DbManager;
 import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.engine.edit.export.GdbDataExporter;

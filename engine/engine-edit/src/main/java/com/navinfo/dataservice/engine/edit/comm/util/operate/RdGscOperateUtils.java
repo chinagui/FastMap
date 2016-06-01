@@ -196,4 +196,69 @@ public class RdGscOperateUtils {
 			}
 		}
 	}
+	
+	/**
+	 * 计算打断点在立交组成link上的位置
+	 * @param geojson 组成link的几何
+	 * @param gscGeo 立交几何
+	 * @param breakPoint 打断点几何
+	 * @return 打断点在立交组成link上的位置
+	 * @throws Exception
+	 */
+	public static int calCoordinateBySelfInter(JSONObject geojson, Geometry gscGeo,Geometry breakPoint) throws Exception {
+
+		System.out.println();
+		int result = -1;
+
+		// 立交点的坐标
+		double lon = gscGeo.getCoordinate().x;
+
+		double lat = gscGeo.getCoordinate().y;
+
+		double breakLon = breakPoint.getCoordinate().x;
+
+		double breakLat = breakPoint.getCoordinate().y;
+
+		JSONArray jaLink = geojson.getJSONArray("coordinates");
+
+		boolean hasFisrtFound = false;
+
+		boolean hasSecondFound = false;
+
+		for (int i = 0; i < jaLink.size() - 1; i++) {
+
+			JSONArray jaPS = jaLink.getJSONArray(i);
+
+			if (jaPS.getDouble(0) == lon && jaPS.getDouble(1) == lat) {
+				if (hasFisrtFound) {
+					hasSecondFound = true;
+				} else {
+					hasFisrtFound = true;
+				}
+			}
+
+			JSONArray jaPE = jaLink.getJSONArray(i + 1);
+
+			// 判断点是否在线段上
+			boolean isIntersection = GeoTranslator.isIntersection(new double[] { jaPS.getDouble(0), jaPS.getDouble(1) },
+					new double[] { jaPE.getDouble(0), jaPE.getDouble(1) }, new double[] { breakLon, breakLat });
+
+			if (isIntersection) {
+				if (!hasFisrtFound) {
+					result = 1;
+				}
+				if (hasFisrtFound && !hasSecondFound) {
+					result = 2;
+				}
+				if (hasSecondFound) {
+					result = 3;
+				}
+				return result;
+			} else {
+				// 打断点不在线上
+			}
+		}
+
+		return result;
+	}
 }

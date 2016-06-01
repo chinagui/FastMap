@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.datalock.lock;
+package com.navinfo.dataservice.datahub.datalock;
 
 /** 
  * @ClassName: FmMesh4Lock 

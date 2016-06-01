@@ -28,9 +28,9 @@ import oracle.sql.STRUCT;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.datalock.exception.LockException;
-import com.navinfo.dataservice.datalock.lock.FmMesh4Lock;
-import com.navinfo.dataservice.datalock.lock.MeshLockManager;
+import com.navinfo.dataservice.datahub.datalock.FmMesh4Lock;
+import com.navinfo.dataservice.datahub.datalock.MeshLockManager;
+import com.navinfo.dataservice.datahub.exception.LockException;
 import com.navinfo.navicommons.database.QueryRunner;
 
 public class FlushGdb {

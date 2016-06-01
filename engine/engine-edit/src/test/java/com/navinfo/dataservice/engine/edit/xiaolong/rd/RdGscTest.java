@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.xiaolong.rd;
 
-import com.navinfo.dataservice.commons.db.ConfigLoader;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -9,15 +10,7 @@ import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 
-import net.sf.json.JSONObject;
-
 public class RdGscTest {
-
-	private static final String configPath = "D:/ws_new/DataService/web/edit-web/src/main/resources/config.properties";
-
-	static {
-		ConfigLoader.initDBConn(configPath);
-	}
 
 	public RdGscTest() throws Exception {
 	}

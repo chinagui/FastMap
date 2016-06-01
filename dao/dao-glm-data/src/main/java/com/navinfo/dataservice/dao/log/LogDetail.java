@@ -3,8 +3,6 @@ package com.navinfo.dataservice.dao.log;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.navinfo.dataservice.commons.util.StringUtils;
-
 public class LogDetail {
 
 	private String opId;

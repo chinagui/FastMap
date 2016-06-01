@@ -1,12 +1,13 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.move;
 
-import net.sf.json.JSONObject;
-
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
-import com.navinfo.navicommons.geo.computation.MeshUtils;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+
+import net.sf.json.JSONObject;
 
 /**
  * 
@@ -39,23 +40,29 @@ public class Operation implements IOperation {
 	}
 
 	private void updateAdminGeometry(Result result) throws Exception {
-		// 根据经纬度计算图幅ID
-		String meshId = MeshUtils.lonlat2Mesh(command.getLongitude(), command.getLatitude());
-
+		
 		JSONObject geojson = new JSONObject();
 
 		geojson.put("type", "Point");
 
 		geojson.put("coordinates", new double[] { command.getLongitude(), command.getLatitude() });
-
+		
 		JSONObject updateContent = new JSONObject();
+		
+		// 根据经纬度计算图幅ID
+		String meshIds[] = CompGeometryUtil.geo2MeshesWithoutBreak(GeoTranslator.geojson2Jts(geojson, 1, 5));
 
+		if (meshIds.length > 1) {
+			throw new Exception("不能在图幅线上创建行政区划代表点");
+		}
+		if (meshIds.length == 1) {
+			updateContent.put("meshId", Integer.parseInt(meshIds[0]));
+		}
+		
 		updateContent.put("geometry", geojson);
 
 		updateContent.put("linkPid", command.getLinkPid());
-		
-		updateContent.put("meshId", Integer.parseInt(meshId));
-		
+
 		moveAdmin.setLinkPid(command.getLinkPid());
 
 		moveAdmin.fillChangeFields(updateContent);

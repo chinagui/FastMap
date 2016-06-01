@@ -126,7 +126,10 @@ public class Operation implements IOperation {
 		}
 		
 		//删除某一交限方向的多个退出link，选取正北或者正南方向夹角最小的
-		deleteMultLinkOnSameDir(outLinkPids, infoList);
+		if(CollectionUtils.isEmpty(outLinkPids))
+		{
+			deleteMultLinkOnSameDir(outLinkPids, infoList);
+		}
 		
 		//根据方向确定完真实的退出线，没有提示手动指定
 		if(CollectionUtils.isEmpty(outLinkPids))

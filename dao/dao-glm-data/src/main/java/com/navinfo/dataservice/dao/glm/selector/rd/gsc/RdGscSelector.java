@@ -117,7 +117,7 @@ public class RdGscSelector implements ISelector {
 	}
 	
 	/**
-	 * 根据linkPid和组成link的表名称查询立交
+	 * 根据linkPid和组成link的表名称查询立交,返回的是立交下的所有组成线
 	 * @param linkPid link的pid
 	 * @param tableName 组成link的表名称
 	 * @param isLock
@@ -196,7 +196,7 @@ public class RdGscSelector implements ISelector {
 	}
 
 	/**
-	 * 根据linkPid和组成link的表名称查询立交
+	 * 根据linkPid和组成link的表名称查询立交，返回立交下的所有组成线
 	 * @param linkPids link的pids
 	 * @param tableName 组成link的表名称
 	 * @param isLock
@@ -283,10 +283,18 @@ public class RdGscSelector implements ISelector {
 		return rdgscs;
 	}
 
-	public List<RdGsc> onlyLoadRdGscLinkByLinkPid(int linkPid, boolean isLock) throws Exception {
+	/**
+	 * 根据立交组成线返回立交，返回的立交中的组成线只有传入的立交组成线
+	 * @param linkPid
+	 * @param tableName
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdGsc> onlyLoadRdGscLinkByLinkPid(int linkPid, String tableName,boolean isLock) throws Exception {
 		List<RdGsc> rdGscList = new ArrayList<RdGsc>();
 
-		String sql = "SELECT a.* FROM rd_gsc a,rd_gsc_link b WHERE a.pid = b.pid AND b.link_pid = :1 and a.u_record!=2";
+		String sql = "SELECT a.* FROM rd_gsc a,rd_gsc_link b WHERE a.pid = b.pid AND b.link_pid = :1 and a.u_record!=2 and b.table_name = :2";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -300,6 +308,8 @@ public class RdGscSelector implements ISelector {
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setInt(1, linkPid);
+			
+			pstmt.setString(2, tableName);
 
 			resultSet = pstmt.executeQuery();
 

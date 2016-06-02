@@ -8,10 +8,10 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <groupId>com.navinfo.dataservice</groupId>
-  <artifactId>project-web</artifactId>
+  <artifactId>man-web</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>war</packaging>
-  <name>project-web Maven Webapp</name>
+  <name>man-web Maven Webapp</name>
   <url>http://maven.apache.org</url>
   <dependencies>
   
@@ -145,6 +145,6 @@
      
   </dependencies>
   <build>
-    <finalName>project</finalName>
+    <finalName>man</finalName>
   </build>
 </project>

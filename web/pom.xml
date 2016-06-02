@@ -16,7 +16,7 @@
 		<module>fcc-web</module>
 		<module>metadata-web</module>
 		<module>render-web</module>
-        <module>project-web</module>
+        <module>man-web</module>
         <module>dropbox-web</module>
     </modules>
     <packaging>pom</packaging>

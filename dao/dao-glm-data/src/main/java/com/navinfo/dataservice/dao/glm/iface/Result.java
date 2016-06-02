@@ -112,7 +112,9 @@ public class Result implements ISerializable {
 		default:
 			break;
 		}
+		System.out.println(json);
 		logs.add(json);
+	
 	}
 
 	/**
@@ -158,6 +160,8 @@ public class Result implements ISerializable {
 	 * @return 操作结果信息
 	 */
 	public String getLogs() {
+		System.out.println(logs.toString());
 		return logs.toString();
+		
 	}
 }

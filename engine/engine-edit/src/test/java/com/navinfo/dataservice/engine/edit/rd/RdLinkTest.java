@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
@@ -71,8 +73,8 @@ public class RdLinkTest {
 	}
 	public void departRdLink()
 	{
-		String line  = "[100003803]";
-		String parameter =  "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"distance\":20,\"projectId\":11,\"data\":{\"linkPids\":"+line+"}}";
+		String line  = "[20465744,20465745,14226884]";
+		String parameter =  "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"distance\":25.3,\"projectId\":11,\"data\":{\"linkPids\":"+line+"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -93,14 +95,20 @@ public class RdLinkTest {
 		
 	}
 	private void testLoadTractLink() throws Exception{
+		List<Integer> pids = new ArrayList<Integer>();
+		pids.add(20465744);
+		pids.add(20465745);
+		pids.add(14226884);
+		System.out.println(pids);
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
-		List<RdLink> nextLinks = linkSelector.loadTrackLink(100003389,100019730,true);
-		for(RdLink link:nextLinks){
-			System.out.println(link.getPid());
+		List<RdLink> links =linkSelector.loadByPids(pids, true);
+		for(RdLink r:links){
+			System.out.println(r.getPid());
 		}
 	}
 	public static void main(String[] args) {
 		try {
+			
 			new RdLinkTest().departRdLink();
 			//new RdLinkTest().testAddRdLink();
 			//new RdLinkTest().testLoadTractLink();

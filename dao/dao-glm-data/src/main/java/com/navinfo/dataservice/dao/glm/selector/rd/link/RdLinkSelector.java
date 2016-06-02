@@ -1330,6 +1330,7 @@ public class RdLinkSelector implements ISelector {
 
 		StringBuilder sb = new StringBuilder(
 				"select * from rd_link where link_pid in ( "+com.navinfo.dataservice.commons.util.StringUtils.getInteStr(pids)+") and u_record!=2");
+		sb.append(" order by instr('"+com.navinfo.dataservice.commons.util.StringUtils.getInteStr(pids)+"',link_pid)");
 
 		if (isLock) {
 			sb.append(" for update nowait");

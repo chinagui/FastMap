@@ -71,14 +71,16 @@ public class NodeOperateUtils {
 		if (MeshUtils.isPointAtMeshBorder(x, y)) {
 			node.setForm(1);
 		}
+		List<IRow> nodeMeshs = new ArrayList<IRow>();
+
 		for (String mesh : MeshUtils.point2Meshes(x, y)) {
+
 			AdNodeMesh nodeMesh = new AdNodeMesh();
 			nodeMesh.setNodePid(node.getPid());
 			nodeMesh.setMeshId(Integer.parseInt(mesh));
-			List<IRow> nodeMeshs = new ArrayList<IRow>();
 			nodeMeshs.add(nodeMesh);
-			node.setMeshes(nodeMeshs);
 		}
+		node.setMeshes(nodeMeshs);
 		return node;
 	}
 

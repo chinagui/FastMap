@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.web.project.controller;
+package com.navinfo.dataservice.web.man.controller;
 
 import java.io.IOException;
 
@@ -20,10 +20,10 @@ import com.navinfo.dataservice.engine.man.project.ProjectSelector;
 import com.navinfo.dataservice.engine.man.version.VersionSelector;
 
 @Controller
-public class ProjectController {
+public class ManController {
 
 	private static final Logger logger = Logger
-			.getLogger(ProjectController.class);
+			.getLogger(ManController.class);
 
 	@RequestMapping(value = "/getByUser")
 	public void getProjectByUser(HttpServletRequest request,

@@ -301,13 +301,14 @@ public class Operation implements IOperation {
 
 	// link的限制类型为单行限制、穿行限制、车辆限制时，上下线分离后新link自动删除对应限制类型下的道路限制信息子表
 	private void relationLimitForLink(RdLink link) {
+		List<RdLinkLimit> limits = new ArrayList<RdLinkLimit>();
 		for (IRow row : link.getLimits()) {
 			RdLinkLimit limit = (RdLinkLimit) row;
 			if (limit.getType() == 1 || limit.getType() == 2
 					|| limit.getType() == 3) {
-				link.getLimits().remove(limit);
+				limits.add(limit);
 			}
-		}
+		}link.getLimits().removeAll(limits);
 	}
 
 	// 如果双方向道路变上下线分离，则将上行方向的RTIC信息作为“上行”赋到分离后通行方向与上行方向相同的link上；
@@ -316,28 +317,31 @@ public class Operation implements IOperation {
 	// 单方向道路变上下线分离，将单方向道路上的RTIC信息赋值给与该单方向道路通行方向相同的一侧道路上。
 	private void relationRticForLink(RdLink link, int upDownFlag) {
 		// 道路:LINK 与 RTIC 关系表（车导客户用）
+		List<RdLinkRtic> linkRtics = new ArrayList<RdLinkRtic>();
+		List<RdLinkIntRtic> linkIntRtics = new ArrayList<RdLinkIntRtic>();
 		for (IRow row : link.getRtics()) {
 			RdLinkRtic linkRtic = (RdLinkRtic) row;
 			if (link.getDirect() == 1) {
 				if (upDownFlag == 0) {
 					if (linkRtic.getUpdownFlag() == 0) {
-						link.getRtics().remove(linkRtic);
+						linkRtics.add(linkRtic);
 					}
 					linkRtic.setRticDir(2);
 				} else {
 					if (linkRtic.getUpdownFlag() == 1) {
-						link.getRtics().remove(linkRtic);
+						linkRtics.add(linkRtic);
 					}
 					linkRtic.setRticDir(3);
 
 				}
 			}
 			if (upDownFlag == 0) {
-				if (link.getDirect() == 2 && link.getDirect() == 3) {
-					link.getRtics().clear();
+				if (link.getDirect() == 2 || link.getDirect() == 3) {
+					linkRtics.add(linkRtic);
 				}
 			}
 		}
+		link.getRtics().removeAll(linkRtics);
 
 		// 道路:LINK 与 RTIC 关系表（互联网客户用）
 		for (IRow row : link.getIntRtics()) {
@@ -345,23 +349,23 @@ public class Operation implements IOperation {
 			if (link.getDirect() == 1) {
 				if (upDownFlag == 0) {
 					if (linkRtic.getUpdownFlag() == 0) {
-						link.getRtics().remove(linkRtic);
+						linkIntRtics.add(linkRtic);
 					}
 					linkRtic.setRticDir(2);
 				} else {
 					if (linkRtic.getUpdownFlag() == 1) {
-						link.getRtics().remove(linkRtic);
+						linkIntRtics.add(linkRtic);
 					}
 					linkRtic.setRticDir(3);
 
 				}
 			}
 			if (upDownFlag == 0) {
-				if (link.getDirect() == 2 && link.getDirect() == 3) {
-					link.getRtics().clear();
+				if (link.getDirect() == 2 || link.getDirect() == 3) {
+					linkIntRtics.add(linkRtic);
 				}
 			}
-		}
+		}link.getIntRtics().removeAll(linkIntRtics);
 
 	}
 	/*
@@ -483,14 +487,14 @@ public class Operation implements IOperation {
 				node =this.getNodeByDepartGeo(departLink, flag,map, result); 
 			}else{
 				node = this.updateAdNodeForTrack(departLink,
-						currentPid, map,result, 1);
+						currentPid, map,result, flag);
 			}
 
 		}
 		if (!flagBooleans.contains(true)){
 			if(flagUpDown == 1){
 				node = this.updateAdNodeForTrack(departLink,
-						currentPid,map, result, 1);
+						currentPid,map, result, flag);
 			}else{
 				node =this.getNodeByDepartGeo(departLink, flag,map, result);
 			}

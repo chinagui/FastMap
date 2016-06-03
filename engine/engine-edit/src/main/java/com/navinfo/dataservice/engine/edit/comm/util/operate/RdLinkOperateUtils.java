@@ -5,23 +5,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
-import com.navinfo.dataservice.engine.edit.comm.util.type.GeometryTypeName;
+import com.navinfo.dataservice.dao.pidservice.PidService;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -195,7 +194,7 @@ public class RdLinkOperateUtils {
 	public static List<RdLink> addRdLink(RdNode sNode,RdNode eNode,RdLink link,RdLink sourceLink, Result result)
 			throws Exception {
 			List<RdLink> links = new ArrayList<RdLink>();
-			Set<String> meshes = MeshUtils.getInterMeshes(link.getGeometry());
+			Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(link.getGeometry());
 			//不跨图幅
 			if (meshes.size() == 1) {
 				if(sourceLink != null && sourceLink.getPid() != 0){
@@ -223,7 +222,6 @@ public class RdLinkOperateUtils {
 	private static void createRdLinkWithMesh(Geometry g,
 			Map<Coordinate, Integer> maps, RdLink sourceLink,Result result,List<RdLink> links) throws Exception {
 		if (g != null) {
-			
 			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
 				calRdLinkWithMesh(g, maps,sourceLink,result,links);
 			}
@@ -306,7 +304,16 @@ public class RdLinkOperateUtils {
 	public static RdLink addLink(Geometry geo,int sNodePid, int eNodePid,Result result) throws Exception{
 		RdLink link = new RdLink();
 		
-		Set<String> meshes = MeshUtils.getInterMeshes(geo);
+		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geo);
+		
+		if(meshes.size()>1)
+		{
+			throw new Exception("创建RDLINK失败：对应多个图幅");
+		}
+		else
+		{
+			link.setMeshId(Integer.parseInt(meshes.iterator().next()));
+		}
 		
 		link.setPid(PidService.getInstance().applyLinkPid());
 

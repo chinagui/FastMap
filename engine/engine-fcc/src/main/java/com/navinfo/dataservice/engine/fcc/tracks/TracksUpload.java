@@ -17,10 +17,10 @@ import org.apache.hadoop.hbase.client.Table;
 
 import ch.hsr.geohash.GeoHash;
 
-import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 
 /**
  * 保存上传的tips数据
@@ -42,7 +42,7 @@ public class TracksUpload {
 
 		operateTime = StringUtils.getCurrentTime();
 
-		Connection hbaseConn = HBaseAddress.getHBaseConnection();
+		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
 		Table htab = hbaseConn.getTable(TableName.valueOf("tracks"));
 
@@ -206,7 +206,6 @@ public class TracksUpload {
 	}
 
 	public static void main(String[] args) throws Exception {
-		HBaseAddress.initHBaseAddress("192.168.3.156");
 
 		TracksUpload a = new TracksUpload();
 

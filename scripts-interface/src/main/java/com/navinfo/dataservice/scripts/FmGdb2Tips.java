@@ -3,9 +3,8 @@ package com.navinfo.dataservice.scripts;
 import java.io.FileInputStream;
 import java.util.Properties;
 
-import com.navinfo.dataservice.commons.db.HBaseAddress;
-import com.navinfo.dataservice.commons.db.OracleAddress;
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.navinfo.dataservice.dao.pool.OracleAddress;
 import com.navinfo.dataservice.engine.fcc.tips.TipsBuilder;
 
 
@@ -33,8 +32,6 @@ public class FmGdb2Tips {
 		OracleAddress oa1 = new OracleAddress(username1,password1,port1,ip1,serviceName1);
 		
 		TipsBuilder b = new TipsBuilder();
-		
-		HBaseAddress.initHBaseAddress(props.getProperty("hbase_address"));
 		
 		b.run(oa1, uuid);
 		

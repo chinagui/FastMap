@@ -2,69 +2,71 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.create;
 
 import java.sql.Connection;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
-import com.navinfo.navicommons.geo.computation.MeshUtils;
+import com.navinfo.dataservice.dao.pidservice.PidService;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+
+import net.sf.json.JSONObject;
 
 /**
  * 
-* @Title: Operation.java 
-* @Description: 新增行政区划代表点操作类
-* @author 张小龙   
-* @date 2016年4月18日 下午2:31:50 
-* @version V1.0
+ * @Title: Operation.java
+ * @Description: 新增行政区划代表点操作类
+ * @author 张小龙
+ * @date 2016年4月18日 下午2:31:50
+ * @version V1.0
  */
 public class Operation implements IOperation {
 
 	private Command command;
 
 	private Connection conn;
-	
-	public Operation(Command command,Connection conn) {
+
+	public Operation(Command command, Connection conn) {
 		this.command = command;
-		
+
 		this.conn = conn;
 
 	}
-	
+
 	@Override
 	public String run(Result result) throws Exception {
 		
-		//根据经纬度计算图幅ID
-		String meshId = MeshUtils.lonlat2Mesh(command.getLongitude(), command.getLatitude());
+		AdAdmin adAdmin = new AdAdmin();
 		
 		String msg = null;
 		
-		AdAdmin adAdmin = new AdAdmin();
-		
-		if(meshId != null)
-		{
-			adAdmin.setMesh(Integer.parseInt(meshId));
-		}
-		
-		adAdmin.setPid(PidService.getInstance().applyAdAdminPid());
-		
-		result.setPrimaryPid(adAdmin.getPid());
-		
-		//构造几何对象
+		// 构造几何对象
 		JSONObject geoPoint = new JSONObject();
 
 		geoPoint.put("type", "Point");
 
-		geoPoint.put("coordinates", new double[] { command.getLongitude(),
-				command.getLatitude() });
+		geoPoint.put("coordinates", new double[] { command.getLongitude(), command.getLatitude() });
 		
+		// 根据经纬度计算图幅ID
+		String meshIds[] = CompGeometryUtil.geo2MeshesWithoutBreak(GeoTranslator.geojson2Jts(geoPoint, 1, 5));
+
+		if (meshIds.length >1) {
+			throw new Exception("不能在图幅线上创建行政区划代表点");
+		}
+		if(meshIds.length == 1)
+		{
+			adAdmin.setMeshId(Integer.parseInt(meshIds[0]));
+		}
+
+		adAdmin.setPid(PidService.getInstance().applyAdAdminPid());
+
+		result.setPrimaryPid(adAdmin.getPid());
+
 		adAdmin.setGeometry(GeoTranslator.geojson2Jts(geoPoint, 100000, 0));
-		
+
 		result.insertObject(adAdmin, ObjStatus.INSERT, adAdmin.pid());
-		
+
 		return msg;
 	}
-	
+
 }

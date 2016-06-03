@@ -28,10 +28,13 @@ public class SamplebJob extends AbstractJob {
 		try{
 			JobInfo subJobInfo1 = new JobInfo(jobInfo.getProjectId(),jobInfo.getId());
 			subJobInfo1.setType("samplea");
-			AbstractJob subJob1 = new SampleaJob(subJobInfo1, ((SamplebJobRequest)request).getSampleaJobRequest1());
+			AbstractJob subJob1 = JobCreateStrategy.createAsSubJob(jobInfo, parent);
+			
 			subJob1.run();
 			jobInfo.getResponse().put("subJob1", subJob1.getJobInfo().getResponse());
 			log.info("Sub Job 1 完成。");
+			subJob1.getJobInfo().getResponse();
+			
 			log.info("B步骤开始...");
 			sleepp(3);
 			response("B步骤",null);

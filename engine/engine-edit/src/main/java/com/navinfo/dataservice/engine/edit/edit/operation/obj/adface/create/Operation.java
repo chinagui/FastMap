@@ -13,7 +13,6 @@ import net.sf.json.JSONObject;
 
 import com.alibaba.druid.util.StringUtils;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -27,6 +26,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.AdLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.navinfo.navicommons.exception.GeoComputationException;
@@ -202,16 +202,13 @@ public class Operation implements IOperation {
 		Coordinate sPoint = geom.getCoordinates()[0];
 		// 获取几何形状跨越图幅号
 		Set<String> meshes = new HashSet<String>();
-		meshes = MeshUtils.getInterMeshes(geom);
+		meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geom);
 		// 如果不跨图幅
 		if (meshes.size() == 1) {
 			// 生成起始node
 			AdNode Node = NodeOperateUtils.createAdNode(sPoint.x, sPoint.y);
 			result.insertObject(Node, ObjStatus.INSERT, Node.pid());
-			int meshId = Integer.parseInt(meshes.iterator().next());
 			this.createFace();
-			this.face.setMeshId(meshId);
-			this.face.setMesh(meshId);
 			List<AdLink> links = new ArrayList<AdLink>();
 			links.add(AdLinkOperateUtils.getAddLink(geom, Node.getPid(),
 					Node.getPid(), result));
@@ -351,7 +348,7 @@ public class Operation implements IOperation {
 		face.setGeometry(g);
 		// 缩放计算面积和周长
 		g = GeoTranslator.transform(g, 0.00001, 5);
-		String meshId = MeshUtils.getInterMeshes(g).iterator().next();
+		String meshId =  CompGeometryUtil.geoToMeshesWithoutBreak(g).iterator().next();
 		if (!StringUtils.isEmpty(meshId)) {
 			face.setMeshId(Integer.parseInt(meshId));
 		}
@@ -367,7 +364,7 @@ public class Operation implements IOperation {
 
 		JSONObject updateContent = new JSONObject();
 		g = GeoTranslator.transform(g, 0.00001, 5);
-		String meshId = MeshUtils.getInterMeshes(g).iterator().next();
+		String meshId =  CompGeometryUtil.geoToMeshesWithoutBreak(g).iterator().next();
 		if (!StringUtils.isEmpty(meshId)) {
 			updateContent.put("mesh", Integer.parseInt(meshId));
 		}

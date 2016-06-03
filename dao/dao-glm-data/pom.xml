@@ -49,5 +49,10 @@
  		<groupId>com.navinfo.dataservice</groupId>
  		<artifactId>engine-man</artifactId>
  	</dependency>
+ 	<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+	</dependency>
+ 	
   </dependencies>
 </project>

@@ -1,5 +1,10 @@
 package com.navinfo.dataservice.dao.photo;
 
+import java.io.IOException;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.hbase.async.HBaseClient;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
@@ -29,5 +34,24 @@ public class HBaseConnector {
 		}
 		return client;
 	}
+	
+	private Connection connection;
+	
+	public Connection getConnection() throws IOException {
+		if (connection == null) {
+			synchronized (this) {
+				if (connection == null) {
+					String hbaseAddress = SystemConfigFactory.getSystemConfig()
+							.getValue(PropConstant.hbaseAddress);
 
+					Configuration conf = new Configuration();
+
+					conf.set("hbase.zookeeper.quorum", hbaseAddress);
+
+					connection = ConnectionFactory.createConnection(conf);
+				}
+			}
+		}
+		return connection;
+	}
 }

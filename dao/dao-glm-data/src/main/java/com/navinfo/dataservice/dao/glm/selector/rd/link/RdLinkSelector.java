@@ -32,7 +32,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSidewalk;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkWalkstair;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -1331,6 +1330,7 @@ public class RdLinkSelector implements ISelector {
 
 		StringBuilder sb = new StringBuilder(
 				"select * from rd_link where link_pid in ( "+com.navinfo.dataservice.commons.util.StringUtils.getInteStr(pids)+") and u_record!=2");
+		sb.append(" order by instr('"+com.navinfo.dataservice.commons.util.StringUtils.getInteStr(pids)+"',link_pid)");
 
 		if (isLock) {
 			sb.append(" for update nowait");

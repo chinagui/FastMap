@@ -62,6 +62,6 @@ public class JobExternalServiceImpl implements JobExternalService{
 	@Override
 	public String help() {
 		// TODO Auto-generated method stub
-		return null;
+		return "Hello,Job External Service.";
 	}
 }

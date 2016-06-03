@@ -13,7 +13,6 @@ import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
-import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -23,6 +22,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;
 
@@ -126,7 +126,10 @@ public class Operation implements IOperation {
 		}
 		
 		//删除某一交限方向的多个退出link，选取正北或者正南方向夹角最小的
-		deleteMultLinkOnSameDir(outLinkPids, infoList);
+		if(CollectionUtils.isEmpty(outLinkPids))
+		{
+			deleteMultLinkOnSameDir(outLinkPids, infoList);
+		}
 		
 		//根据方向确定完真实的退出线，没有提示手动指定
 		if(CollectionUtils.isEmpty(outLinkPids))

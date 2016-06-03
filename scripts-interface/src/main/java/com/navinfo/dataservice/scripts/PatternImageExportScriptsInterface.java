@@ -1,10 +1,6 @@
 package com.navinfo.dataservice.scripts;
 
-import java.sql.Connection;
-
 import org.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
-
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 
 public class PatternImageExportScriptsInterface {
 

@@ -15,10 +15,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.commons.geom.JGeometryUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
+import com.navinfo.navicommons.geo.computation.JGeometryUtil;
 
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
@@ -323,6 +323,7 @@ public class GlmGridCalculator {
 						}
 						gs.put(rowId, rowGrids.toArray(new String[0]));
 					}catch(Exception e){
+						log.error(e.getMessage());
 						throw new SQLException("查询的geometry可能格式错误，无法转换为object。row_id:"+rowId,e);
 					}
 				}

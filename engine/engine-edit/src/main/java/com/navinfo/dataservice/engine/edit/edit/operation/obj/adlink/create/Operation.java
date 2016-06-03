@@ -13,7 +13,8 @@ import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.AdLinkOperateUtils;
-import com.navinfo.dataservice.engine.edit.comm.util.type.GeometryTypeName;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -73,7 +74,7 @@ public class Operation implements IOperation {
 			throws Exception {
 
 		for (Geometry g : map.keySet()) {
-			Set<String> meshes = MeshUtils.getInterMeshes(g);
+			Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
 			//不跨图幅
 			if (meshes.size() == 1) {
 				this.createAdLinkWithNoMesh(g, (int) map.get(g).get("s"),

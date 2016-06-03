@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.engine.edit.comm.util.operate;
 
-import io.netty.util.internal.MpscLinkedQueueNode;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,14 +12,14 @@ import java.util.Set;
 import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.service.PidService;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.pidservice.PidService;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -63,15 +63,14 @@ public class AdLinkOperateUtils {
 	 * */
 	public static void addLink(Geometry g,int sNodePid, int eNodePid,Result result) throws Exception{
 		AdLink link = new AdLink();
-		Set<String> meshes = MeshUtils.getLinkMeshes(g);
+		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
 		link.setPid(PidService.getInstance().applyAdLinkPid());
 		if(meshes.size() ==2){
 			link.setKind(0);
 		}
 		Iterator<String> it = meshes.iterator();
 		while(it.hasNext()){
-			link.setMesh(Integer.parseInt(it.next()));
-			setLinkChildren(link);
+			setLinkChildren(link,Integer.parseInt(it.next()));
 		}
 		double linkLength = GeometryUtils.getLinkLength(g);
 		link.setLength(linkLength);
@@ -88,15 +87,15 @@ public class AdLinkOperateUtils {
 	 * */
 	public static AdLink getAddLink(Geometry g,int sNodePid, int eNodePid,Result result) throws Exception{
 		AdLink link = new AdLink();
-		Set<String> meshes = MeshUtils.getLinkMeshes(g);
+		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
 		link.setPid(PidService.getInstance().applyAdLinkPid());
-		if(meshes.size() ==2){
+		//判断是否假象线
+		if(MeshUtils.isMeshLine(g)){
 			link.setKind(0);
 		}
 		Iterator<String> it = meshes.iterator();
 		while(it.hasNext()){
-			link.setMesh(Integer.parseInt(it.next()));
-			setLinkChildren(link);
+			setLinkChildren(link,Integer.parseInt(it.next()));
 		}
 		double linkLength = GeometryUtils.getLinkLength(g);
 		link.setLength(linkLength);
@@ -114,15 +113,14 @@ public class AdLinkOperateUtils {
 	public static IRow addLinkBySourceLink(Geometry g,int sNodePid, int eNodePid,AdLink sourcelink,Result result) throws Exception{
 		AdLink link = new AdLink();
 		link.copy(sourcelink);
-		Set<String> meshes = MeshUtils.getLinkMeshes(g);
+		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
 		link.setPid(PidService.getInstance().applyAdLinkPid());
 		if(meshes.size() ==2){
 			link.setKind(0);
 		}
 		Iterator<String> it = meshes.iterator();
 		while(it.hasNext()){
-			link.setMesh(Integer.parseInt(it.next()));
-			setLinkChildren(link);
+			setLinkChildren(link,Integer.parseInt(it.next()));
 		}
 		double linkLength = GeometryUtils.getLinkLength(g);
 		link.setLength(linkLength);
@@ -141,13 +139,13 @@ public class AdLinkOperateUtils {
 	 * 
 	 * @param link
 	 */
-	private static void setLinkChildren(AdLink link) {
+	private static void setLinkChildren(AdLink link,int meshId) {
 
 		AdLinkMesh mesh = new AdLinkMesh();
 
 		mesh.setLinkPid(link.getPid());
 
-		mesh.setMesh(link.mesh());
+		mesh.setMesh(meshId);
 
 		List<IRow> meshes = new ArrayList<IRow>();
 

@@ -289,4 +289,58 @@ public class CompGeometryUtil {
 		}
 		return false;
 	}
+	/**
+	 * 根据几何计算所属图幅号
+	 * 点：可能属于1,2,4图幅
+	 * 线：根据业务规则，如果形状点是图廓点，那么计算出来的图幅需要和至少一个形状点计算出来的图幅相交，才能算是所属图幅
+	 *    也就是图廓点计算的图幅，如果只有本身所属，那么不能算为线的图幅，比如线有两个点，一个在图幅内，一个在图廓线上，那么最后计算所属图幅只有一个
+	 *    再比如线有两个点，两个点在一个图幅的左下交点和右下角点，那么算出来是两个点所属图幅的交集，只有中间两个图幅
+	 *    如果两个点在图幅的左下角点，右上角点，那么计算出来的只有一个图幅
+	 * 面：同线
+	 * 只实现了Point，LineString，Polygon三种类型
+	 * @param geo
+	 * @return
+	 */
+	public static String[] geo2MeshesWithoutBreak(Geometry geo){
+		if(geo!=null){
+			if(geo.getGeometryType().equals(GeometryTypeName.POINT)){
+				return MeshUtils.point2Meshes(((Point)geo).getX(), ((Point)geo).getY());
+			}else if(geo.getGeometryType().equals(GeometryTypeName.LINESTRING)
+					||geo.getGeometryType().equals(GeometryTypeName.POLYGON)){
+				Coordinate[] cs = geo.getCoordinates();
+				int checkLength=cs.length;
+				//判断是否闭合，如果是闭合去除最后一个闭合点
+				if(cs[0].equals(cs[cs.length-1])){
+					checkLength--;
+				}
+				Set<String> coreMeshes = new HashSet<String>();
+				Set<String> noCoreMeshes = new HashSet<String>();
+				for(int i=0;i<checkLength;i++){
+					Coordinate c = cs[i];
+					String[] result = MeshUtils.point2Meshes(c.x, c.y);
+					if(result.length==1){
+						coreMeshes.add(result[0]);
+					}else{
+						for(String mesh:result){
+							if(noCoreMeshes.contains(mesh)){
+								coreMeshes.add(mesh);
+							}else{
+								noCoreMeshes.add(mesh);
+							}
+						}
+					}
+				}
+				return coreMeshes.toArray(new String[0]);
+			}
+		}
+		return null;
+	}
+	public static Set<String> geoToMeshesWithoutBreak(Geometry geo){
+		Set<String> set = new HashSet<String>();
+		for(String str:geo2MeshesWithoutBreak(geo)){
+			set.add(str);
+		}
+		return set;
+		
+	}
 }

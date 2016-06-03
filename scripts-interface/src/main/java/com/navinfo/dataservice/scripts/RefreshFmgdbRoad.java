@@ -3,8 +3,6 @@ package com.navinfo.dataservice.scripts;
 import java.io.File;
 import java.util.Iterator;
 
-import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;

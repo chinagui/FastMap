@@ -13,12 +13,6 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
-import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeFormSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeMeshSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeNameSelector;
-import com.navinfo.navicommons.geo.computation.MeshUtils;
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 import oracle.sql.STRUCT;
@@ -147,13 +141,6 @@ public class AdNodeSelector implements ISelector {
 				node.setKind(resultSet.getInt("kind"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
-				Geometry geometry = GeoTranslator.struct2Jts(struct);
-
-				Coordinate point = geometry.getCoordinate();
-
-				node.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(point.x,
-						point.y)));
 
 				node.setGeometry(GeoTranslator.struct2Jts(struct, 100000, 0));
 

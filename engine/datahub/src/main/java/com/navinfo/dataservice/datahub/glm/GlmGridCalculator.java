@@ -17,7 +17,6 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.JGeometryUtil;
 
 import oracle.spatial.geometry.JGeometry;
@@ -241,10 +240,10 @@ public class GlmGridCalculator {
 						Set<String> rowGrids = null;
 						int meshId = rs.getInt("MESH_ID");
 						if(meshId>0){
-							rowGrids = CompGridUtil.intersectGeometryGrid(geo, String.valueOf(meshId));
+							rowGrids = JGeometryUtil.intersectGeometryGrid(geo, String.valueOf(meshId));
 						}else{
 							String[] meshes = JGeometryUtil.geo2MeshIds(geo);
-							rowGrids = CompGridUtil.intersectGeometryGrid(geo, meshes);
+							rowGrids = JGeometryUtil.intersectGeometryGrid(geo, meshes);
 						}
 						return rowGrids.toArray(new String[0]);
 					}catch(Exception e){
@@ -261,10 +260,10 @@ public class GlmGridCalculator {
 						Set<String> rowGrids = null;
 						int meshId = rs.getInt("MESH_ID");
 						if(meshId>0){
-							rowGrids = CompGridUtil.intersectGeometryGrid(geo, String.valueOf(meshId));
+							rowGrids = JGeometryUtil.intersectGeometryGrid(geo, String.valueOf(meshId));
 						}else{
 							String[] meshes = JGeometryUtil.geo2MeshIds(geo);
-							rowGrids = CompGridUtil.intersectGeometryGrid(geo, meshes);
+							rowGrids = JGeometryUtil.intersectGeometryGrid(geo, meshes);
 						}
 						return rowGrids.toArray(new String[0]);
 					}catch(Exception e){
@@ -296,10 +295,10 @@ public class GlmGridCalculator {
 						Set<String> rowGrids = null;
 						int meshId = rs.getInt("MESH_ID");
 						if(meshId>0){
-							rowGrids = CompGridUtil.intersectGeometryGrid(geo, String.valueOf(meshId));
+							rowGrids = JGeometryUtil.intersectGeometryGrid(geo, String.valueOf(meshId));
 						}else{
 							String[] meshes = JGeometryUtil.geo2MeshIds(geo);
-							rowGrids = CompGridUtil.intersectGeometryGrid(geo, meshes);
+							rowGrids = JGeometryUtil.intersectGeometryGrid(geo, meshes);
 						}
 						gs.put(rowId, rowGrids.toArray(new String[0]));
 					}catch(Exception e){
@@ -316,10 +315,10 @@ public class GlmGridCalculator {
 						Set<String> rowGrids = null;
 						int meshId = rs.getInt("MESH_ID");
 						if(meshId>0){
-							rowGrids = CompGridUtil.intersectGeometryGrid(geo, String.valueOf(meshId));
+							rowGrids = JGeometryUtil.intersectGeometryGrid(geo, String.valueOf(meshId));
 						}else{
 							String[] meshes = JGeometryUtil.geo2MeshIds(geo);
-							rowGrids = CompGridUtil.intersectGeometryGrid(geo, meshes);
+							rowGrids = JGeometryUtil.intersectGeometryGrid(geo, meshes);
 						}
 						gs.put(rowId, rowGrids.toArray(new String[0]));
 					}catch(Exception e){

@@ -88,11 +88,11 @@ public class CompPolylineUtil {
 		if(lines!=null&&lines.length>0){
 			int length =lines.length;
 			DoublePolyline[] polylines = new DoublePolyline[length];
-			DoublePoint start = MyGeometryConvertor.convert(startPoint.getCoordinate());//保留起点
+			DoublePoint start = JtsGeometryConvertor.convert(startPoint.getCoordinate());//保留起点
 			DoublePoint end = null;
 			DoublePoint curStart = start;
 			for(int i=0;i<length;i++){
-				polylines[i]=MyGeometryConvertor.convert(lines[i]);
+				polylines[i]=JtsGeometryConvertor.convert(lines[i]);
 				if(!curStart.equals(polylines[i].getSpoint())){
 					polylines[i].reverse();
 				}
@@ -109,7 +109,7 @@ public class CompPolylineUtil {
 			//转换
 			LineString[] results = new LineString[rawResults.length];
 			for(int j=0;j<rawResults.length;j++){
-				results[j]=MyGeometryConvertor.convert(rawResults[j]);
+				results[j]=JtsGeometryConvertor.convert(rawResults[j]);
 			}
 			return results;
 		}
@@ -127,27 +127,27 @@ public class CompPolylineUtil {
 		DoublePoint start = null;
 		DoublePoint mid = null;
 		DoublePoint end = null;
-		DoublePoint startPoint1 = MyGeometryConvertor.convert(startLine.getCoordinateN(0));
-		DoublePoint startPoint2 = MyGeometryConvertor.convert(endLine.getCoordinateN(0));
-		DoublePoint endPoint2 = MyGeometryConvertor.convert(endLine.getCoordinateN(endLine.getNumPoints() - 1));
+		DoublePoint startPoint1 = JtsGeometryConvertor.convert(startLine.getCoordinateN(0));
+		DoublePoint startPoint2 = JtsGeometryConvertor.convert(endLine.getCoordinateN(0));
+		DoublePoint endPoint2 = JtsGeometryConvertor.convert(endLine.getCoordinateN(endLine.getNumPoints() - 1));
 		if(startPoint1.equals(startPoint2)){
-			start = MyGeometryConvertor.convert(startLine.getCoordinateN(1));
+			start = JtsGeometryConvertor.convert(startLine.getCoordinateN(1));
 			mid = startPoint1;
-			end = MyGeometryConvertor.convert(endLine.getCoordinateN(1));
+			end = JtsGeometryConvertor.convert(endLine.getCoordinateN(1));
 		}else if(startPoint1.equals(endPoint2)){
-			start = MyGeometryConvertor.convert(startLine.getCoordinateN(1));
+			start = JtsGeometryConvertor.convert(startLine.getCoordinateN(1));
 			mid = startPoint1;
-			end = MyGeometryConvertor.convert(endLine.getCoordinateN(endLine.getNumPoints() - 2));
+			end = JtsGeometryConvertor.convert(endLine.getCoordinateN(endLine.getNumPoints() - 2));
 		}else{
-			DoublePoint endPoint1 = MyGeometryConvertor.convert(startLine.getCoordinateN(startLine.getNumPoints() - 1));
+			DoublePoint endPoint1 = JtsGeometryConvertor.convert(startLine.getCoordinateN(startLine.getNumPoints() - 1));
 			if(endPoint1.equals(startPoint2)){
-				start = MyGeometryConvertor.convert(startLine.getCoordinateN(startLine.getNumPoints() - 2));
+				start = JtsGeometryConvertor.convert(startLine.getCoordinateN(startLine.getNumPoints() - 2));
 				mid = endPoint1;
-				end = MyGeometryConvertor.convert(endLine.getCoordinateN(1));
+				end = JtsGeometryConvertor.convert(endLine.getCoordinateN(1));
 			}else if(endPoint1.equals(endPoint2)){
-				start = MyGeometryConvertor.convert(startLine.getCoordinateN(startLine.getNumPoints() - 2));
+				start = JtsGeometryConvertor.convert(startLine.getCoordinateN(startLine.getNumPoints() - 2));
 				mid = endPoint1;
-				end = MyGeometryConvertor.convert(endLine.getCoordinateN(endLine.getNumPoints() - 2));
+				end = JtsGeometryConvertor.convert(endLine.getCoordinateN(endLine.getNumPoints() - 2));
 			}else{
 				throw new Exception("起始线和终点线不相连，无法判断。");
 			}
@@ -162,13 +162,13 @@ public class CompPolylineUtil {
 		DoublePoint mid = connector[1];
 		DoublePoint end = connector[2];
 		DoublePoint adj = null;
-		DoublePoint adjStart = MyGeometryConvertor.convert(adjacentLine.getCoordinateN(0));
+		DoublePoint adjStart = JtsGeometryConvertor.convert(adjacentLine.getCoordinateN(0));
 		if(adjStart.equals(mid)){
-			adj = MyGeometryConvertor.convert(adjacentLine.getCoordinateN(1));
+			adj = JtsGeometryConvertor.convert(adjacentLine.getCoordinateN(1));
 		}else{
-			DoublePoint adjEnd = MyGeometryConvertor.convert(adjacentLine.getCoordinateN(adjacentLine.getNumPoints() - 1));
+			DoublePoint adjEnd = JtsGeometryConvertor.convert(adjacentLine.getCoordinateN(adjacentLine.getNumPoints() - 1));
 			if(adjEnd.equals(mid)){
-				adj = MyGeometryConvertor.convert(adjacentLine.getCoordinateN(adjacentLine.getNumPoints() - 2));
+				adj = JtsGeometryConvertor.convert(adjacentLine.getCoordinateN(adjacentLine.getNumPoints() - 2));
 			}else{
 				throw new Exception("挂接线和起始线和终点线连接点不相连，无法判断。");
 			}
@@ -193,8 +193,8 @@ public class CompPolylineUtil {
 		DoublePoint start = connector[0];
 		DoublePoint mid = connector[1];
 		DoublePoint end = connector[2];
-		DoublePoint fromP = MyGeometryConvertor.convert(fromPoint.getCoordinate());
-		DoublePoint tarStart = MyGeometryConvertor.convert(targetLine.getCoordinateN(0));
+		DoublePoint fromP = JtsGeometryConvertor.convert(fromPoint.getCoordinate());
+		DoublePoint tarStart = JtsGeometryConvertor.convert(targetLine.getCoordinateN(0));
 		Coordinate[] coors = targetLine.getCoordinates();
 		DoubleLine sLine = new DoubleLine(start,mid);
 		DoubleLine eLine = new DoubleLine(mid,end);
@@ -205,7 +205,7 @@ public class CompPolylineUtil {
 		Coordinate[] newCoors = null;
 		if(tarStart.equals(fromP)){//targetLine的画线方向是从fromPoint往外画的
 			for(;fromIndex<coors.length;fromIndex++){
-				DoublePoint temp = MyGeometryConvertor.convert(coors[fromIndex]);
+				DoublePoint temp = JtsGeometryConvertor.convert(coors[fromIndex]);
 				if(temp.equals(mid)){//如果有重合点，直接取此点作为切割起始点
 					break;
 				}
@@ -218,7 +218,7 @@ public class CompPolylineUtil {
 				return JtsGeometryFactory.createLineString(new Coordinate[0]);
 			}
 			newCoors = new Coordinate[endIndex-fromIndex+1+1];
-			newCoors[0]=MyGeometryConvertor.convert(mid);
+			newCoors[0]=JtsGeometryConvertor.convert(mid);
 			int i = 1;
 			for(;fromIndex<=endIndex;fromIndex++){
 				newCoors[i]=coors[fromIndex];
@@ -226,7 +226,7 @@ public class CompPolylineUtil {
 			}
 		}else{//targetLine的画线方向是从外向fromPoint画的
 			for(;endIndex>=0;endIndex--){
-				DoublePoint temp = MyGeometryConvertor.convert(coors[endIndex]);
+				DoublePoint temp = JtsGeometryConvertor.convert(coors[endIndex]);
 				if(temp.equals(mid)){//如果有重合点，直接取此点作为切割起始点
 					break;
 				}
@@ -244,7 +244,7 @@ public class CompPolylineUtil {
 				newCoors[i]=coors[fromIndex];
 				i++;
 			}
-			newCoors[i]=MyGeometryConvertor.convert(mid);
+			newCoors[i]=JtsGeometryConvertor.convert(mid);
 		}
 		return JtsGeometryFactory.createLineString(newCoors);
 	}

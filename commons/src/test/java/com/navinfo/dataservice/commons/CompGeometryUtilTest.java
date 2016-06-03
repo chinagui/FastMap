@@ -7,7 +7,6 @@ import org.junit.Test;
 
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
-import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
@@ -21,21 +20,6 @@ import com.vividsolutions.jts.geom.Polygon;
 */
 public class CompGeometryUtilTest{
 	
-	@Test
-	public void t1(){
-		try{
-			//59567003
-			double[] line = new double[]{116.0,39.917,116.09375,39.927};
-			double[] rect = CompGridUtil.grid2Rect("59567003");
-			if(CompGeometryUtil.intersectLineRect(CompGridUtil.convertLatlon(line),CompGridUtil.convertLatlon(rect))){
-				System.out.println("Yes...");
-			}else{
-				System.out.println("No...");
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
 	@Test
 	public void intersect_001(){
 		try{

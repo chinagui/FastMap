@@ -1,19 +1,16 @@
 package com.navinfo.navicommons.geo.computation;
 
-import com.vividsolutions.jts.geom.LinearRing;
-import com.vividsolutions.jts.geom.MultiLineString;
-import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
@@ -29,105 +26,6 @@ import com.vividsolutions.jts.geom.Geometry;
 * @Description: TODO
 */
 public class CompGeometryUtil {
-	/**
-	 * [x1,y1,x2,y2]
-	 * @param line1
-	 * @param line2
-	 * @return
-	 */
-	public static boolean intersectLine(long[] line1,long[] line2){
-		//先判断矩形是否相交
-		if(!intersectRect(line2Rect(line1),line2Rect(line2))) 
-			return false;
-		//再判断叉积
-		//如果两线段相交，则两线段必然相互跨立对方。
-		//若P1P2跨立Q1Q2 ，则矢量 ( P1 - Q1 ) 和( P2 - Q1 )位于矢量( Q2 - Q1 ) 的两侧，即( P1 - Q1 ) × ( Q2 - Q1 ) * ( P2 - Q1 ) × ( Q2 - Q1 ) < 0。上式可改写成( P1 - Q1 ) × ( Q2 - Q1 ) * ( Q2 - Q1 ) × ( P2 - Q1 ) > 0。当 ( P1 - Q1 ) × ( Q2 - Q1 ) = 0 时，说明 ( P1 - Q1 ) 和 ( Q2 - Q1 )共线，但是因为已经通过快速排斥试验，所以 P1 一定在线段 Q1Q2上；同理，( Q2 - Q1 ) ×(P2 - Q1 ) = 0 说明 P2 一定在线段 Q1Q2上。所以判断P1P2跨立Q1Q2的依据是：( P1 - Q1 ) × ( Q2 - Q1 ) * ( Q2 - Q1 ) × ( P2 - Q1 ) >= 0。
-		//同理判断Q1Q2跨立P1P2的依据是：( Q1 - P1 ) × ( P2 - P1 ) * ( P2 - P1 ) × ( Q2 - P1 ) >= 0。
-		if(((line1[0]-line2[0])*(line2[3]-line2[1])-(line2[2]-line2[0])*(line1[1]-line2[1]))
-				*((line2[2]-line2[0])*(line1[3]-line2[1])-(line1[2]-line2[0])*(line2[3]-line2[1]))<0
-		   ||((line2[0]-line1[0])*(line1[3]-line1[1])-(line1[2]-line1[0])*(line2[1]-line1[1]))
-			*((line1[2]-line1[0])*(line2[3]-line1[1])-(line2[2]-line1[0])*(line1[3]-line1[1]))<0)
-			return false;
-		return true;
-	}
-	/**
-	 * 如果线段有重合，算包含
-	 * [minx,miny,maxx,maxy]
-	 * @param rect1:包含对象
-	 * @param rect2：被包含对象
-	 * @return
-	 */
-	public static boolean containsRect(long[] rect1,long[] rect2){
-		//计算rect2的minx, miny,maxx,maxy都在rect1内则包含；
-		if((rect2[0]>=rect1[0]&&rect2[0]<=rect1[2])
-				&&(rect2[1]>=rect1[1]&&rect2[1]<=rect1[3])
-				&&(rect2[2]>=rect1[0]&&rect2[2]<=rect1[2])
-				&&(rect2[3]>=rect1[1]&&rect2[3]<=rect1[3])) return true;
-		return false;
-	}
-	/**
-	 * 只边框重合不算相交
-	 * [minx,miny,maxx,maxy]
-	 * @param rect1
-	 * @param rect2
-	 * @return
-	 */
-	public static boolean intersectRect(long[] rect1,long[] rect2){
-//		if(Math.min(rect1[2],rect2[2])>Math.max(rect1[0], rect2[0])
-//				||Math.min(rect1[1], rect2[1])>Math.max(rect1[3], rect2[3])) return false;
-//		return true;
-		//采用中心点长度算法
-		return ( Math.abs((rect1[0]+rect1[2])-(rect2[0]+rect2[2]))<(rect1[2]-rect1[0]+rect2[2]-rect2[0])
-		        && Math.abs((rect1[1]+rect1[3])-(rect2[1]+rect2[3]))<(rect1[3]-rect1[1]+rect2[3]-rect1[1]) );
-	}
-	/**
-	 * 
-	 * @param line:[x1,y1,x2,y2]
-	 * @param rect:[minx,miny,maxx,maxy]
-	 * @return
-	 */
-	public static boolean intersectLineRect(long[] line,long[] rect){
-		//先判断是否rect包含line
-		if(containsRect(rect,line2Rect(line))) return true;
-		//和矩形的四条边任意一条相交，则线和矩形相交
-		long[] rectLine=new long[]{rect[0],rect[1],rect[2],rect[1]};
-		if(intersectLine(line,rectLine))
-			return true;
-		rectLine = new long[]{rect[2],rect[1],rect[2],rect[3]};
-		if(intersectLine(line,rectLine))
-			return true;
-		rectLine = new long[]{rect[2],rect[3],rect[0],rect[3]};
-		if(intersectLine(line,rectLine)){
-			return true;
-		}
-		rectLine = new long[]{rect[0],rect[3],rect[0],rect[1]};
-		if(intersectLine(line,rectLine))
-			return true;
-		return false;
-	}
-	/**
-	 * 生成line的外接矩形
-	 * @param line：[x1,y1,x2,y2]
-	 * @return rect:[minx,miny,maxx,maxy]
-	 */
-	public static long[] line2Rect(long[] line){
-		long[] rect = new long[4];
-		if(line[0]<line[2]){
-			rect[0]=line[0];
-			rect[2]=line[2];
-		}else{
-			rect[0]=line[2];
-			rect[2]=line[0];
-		}
-		if(line[1]<line[3]){
-			rect[1]=line[1];
-			rect[3]=line[3];
-		}else{
-			rect[1]=line[3];
-			rect[3]=line[1];
-		}
-		return rect;
-	}
 	
 	/**
 	 * 射线法判断点是否在多边形内部
@@ -194,7 +92,7 @@ public class CompGeometryUtil {
 	public static Set<LineString[]> cut(Polygon polygon,String mesh)throws GeoComputationException{
 		Set<LineString[]> result = new HashSet<LineString[]>();
 		//找到需要生成的面
-		Polygon meshPolygon = MyGeometryConvertor.convert(MeshUtils.mesh2Rect(mesh));
+		Polygon meshPolygon = JtsGeometryConvertor.convert(MeshUtils.mesh2Rect(mesh));
 		Geometry sub = polygon.intersection(meshPolygon);//sub 可能是polygon，也可能是multipolygon
 		int geoNum = sub.getNumGeometries();
 		for(int i=0;i<geoNum;i++){
@@ -277,9 +175,9 @@ public class CompGeometryUtil {
 				}else{
 					preCo = cos[i-1];
 				}
-				if(CompLineUtil.isRightSide(new DoubleLine(MyGeometryConvertor.convert(preCo)
-						,MyGeometryConvertor.convert(cos[i]))
-						,MyGeometryConvertor.convert(cos[i+1]))){
+				if(CompLineUtil.isRightSide(new DoubleLine(JtsGeometryConvertor.convert(preCo)
+						,JtsGeometryConvertor.convert(cos[i]))
+						,JtsGeometryConvertor.convert(cos[i+1]))){
 					return true;
 				}else{
 					return false;
@@ -307,30 +205,12 @@ public class CompGeometryUtil {
 				return MeshUtils.point2Meshes(((Point)geo).getX(), ((Point)geo).getY());
 			}else if(geo.getGeometryType().equals(GeometryTypeName.LINESTRING)
 					||geo.getGeometryType().equals(GeometryTypeName.POLYGON)){
+				Set<String> meshes = new HashSet<String>();
 				Coordinate[] cs = geo.getCoordinates();
-				int checkLength=cs.length;
-				//判断是否闭合，如果是闭合去除最后一个闭合点
-				if(cs[0].equals(cs[cs.length-1])){
-					checkLength--;
+				for(int i=1;i<cs.length;i++){
+					CollectionUtils.addAll(meshes, MeshUtils.line2Meshes(cs[i-1].x, cs[i-1].y, cs[i].x, cs[i].y));
 				}
-				Set<String> coreMeshes = new HashSet<String>();
-				Set<String> noCoreMeshes = new HashSet<String>();
-				for(int i=0;i<checkLength;i++){
-					Coordinate c = cs[i];
-					String[] result = MeshUtils.point2Meshes(c.x, c.y);
-					if(result.length==1){
-						coreMeshes.add(result[0]);
-					}else{
-						for(String mesh:result){
-							if(noCoreMeshes.contains(mesh)){
-								coreMeshes.add(mesh);
-							}else{
-								noCoreMeshes.add(mesh);
-							}
-						}
-					}
-				}
-				return coreMeshes.toArray(new String[0]);
+				return meshes.toArray(new String[0]);
 			}
 		}
 		return null;

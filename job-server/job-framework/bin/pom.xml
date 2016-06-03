@@ -1,0 +1,50 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+	<groupId>com.navinfo.dataservice</groupId>
+	<artifactId>job-server</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>job-framework</artifactId>
+  <packaging>jar</packaging>
+
+  <name>job-framework</name>
+  <url>http://maven.apache.org</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>       
+    <dependency>
+         <groupId>log4j</groupId>
+         <artifactId>log4j</artifactId>
+     </dependency>
+	<dependency>
+		<groupId>net.sf.json-lib</groupId>
+		<artifactId>json-lib</artifactId>
+		<classifier>jdk15</classifier>
+	</dependency>
+	<dependency>
+		<groupId>net.sf.ezmorph</groupId>
+		<artifactId>ezmorph</artifactId>
+	</dependency>
+    <dependency>
+         <groupId>com.navinfo.dataservice</groupId>
+         <artifactId>api</artifactId>
+     </dependency> 
+    <dependency>
+         <groupId>com.navinfo.dataservice</groupId>
+         <artifactId>commons</artifactId>
+     </dependency>
+    <dependency>
+         <groupId>com.navinfo.dataservice</groupId>
+         <artifactId>dao-mq</artifactId>
+     </dependency>
+  </dependencies>
+</project>

@@ -1,25 +1,17 @@
 package com.navinfo.navicommons.geo.computation;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
-import com.mysql.fabric.xmlrpc.base.Array;
 import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
-import oracle.spatial.geometry.JGeometry;
 
 /**
  * Created by IntelliJ IDEA. User: liuqing Date: 2010-8-4 Time: 8:58:15
@@ -136,6 +128,198 @@ public abstract class MeshUtils {
 		 */
 	}
 	
+
+	/**
+	 * 2016.5重新实现Java版，By Xiao Xiaowen
+	 * @param x
+	 * @param y
+	 * @return 图幅数组，且有顺序，按顺序为左下，右下，右上，左上
+	 */
+	public static String[] point2Meshes(double x,double y){
+		//将度单位坐标转换为秒*3600，并乘1000消除小数,最后取整
+		long longX = Math.round(x*3600000);
+		long longY = Math.round(y*3600000);
+		int M1M2;
+		int M1M2_bak;
+		int M3M4;
+		int M3M4_bak;
+		int M5;
+		int M5_bak = -999;
+		int M6;
+		int M6_bak = -999;
+
+
+		//一个四位图幅的纬度高度为2400秒
+		M1M2 = (int)(longY/(2400000));
+		M3M4 = ((int)x) - 60;//简便算法
+		//
+		M1M2_bak=M1M2;
+		M3M4_bak=M3M4;
+		
+		//
+		
+		int yt = (int)(longY/(300000));
+		M5 = yt%8;
+		//判断在图幅线上的情况
+		if((longY%300000)<=12){//距离理想行号下图廓线距离
+			if(yt%3==2){
+				//处于横轴图廓线上
+				M5_bak = M5-1;
+				if(M5_bak<0){
+					M1M2_bak--;
+					M5_bak=7;
+				}
+			}
+			/**
+			if(yt%3==0){//0.0,0.25,...
+				//不变
+			}else if(yt%3==1){//0.08333,0.33333,...
+				//不变
+			}else if(yt%3==2){//0.16667,0.41667,...
+				//处于图廓线上
+				M5_bak = M5-1;
+			}*/
+		}else if((300000-(longY%300000))<=12){//距离理想行号上图廓线距离
+			/**
+			if(yt%3==0){//0.0,0.25,...
+				//处于图廓线上
+				M5_bak = M5+1;
+			}else if(yt%3==1){//0.08333,0.33333,...
+				//不变
+			}else if(yt%3==2){//0.16667,0.41667,...
+				//处于图廓线上
+				M5_bak = M5+1;
+			}
+			 */
+			if(yt%3==0){
+				//处于图廓线上
+				M5_bak = M5+1;
+				if(M5_bak>7){
+					M1M2_bak++;
+					M5_bak=0;
+				}
+			}
+		}
+		int xt = (int)(longX/(450000));
+		M6 = xt%8;
+		//经度坐标没有四舍五入，所以理论上只有=0和大于12的情况
+		if((longX%450000)<=12){
+			M6_bak = M6-1;
+			if(M6_bak<0){
+				M3M4_bak--;
+				M6_bak=7;
+			}
+		}
+		
+		String[] meshes = null;
+		if(M5_bak>-999&&M6_bak>-999){//图廓点，4个图幅,4个grid号
+			meshes = new String[4];
+			if(M1M2_bak<M1M2||M5_bak<M5){
+				if(M3M4_bak<M3M4||M6_bak<M6){
+					meshes[0] = String.format("%02d%02d%d%d", M1M2_bak, M3M4_bak, M5_bak, M6_bak);
+					meshes[1] = String.format("%02d%02d%d%d", M1M2_bak, M3M4, M5_bak, M6);
+					meshes[2] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
+					meshes[3] = String.format("%02d%02d%d%d", M1M2, M3M4_bak, M5, M6_bak);
+				}else{
+					meshes[0] = String.format("%02d%02d%d%d", M1M2_bak, M3M4, M5_bak, M6);
+					meshes[1] = String.format("%02d%02d%d%d", M1M2_bak, M3M4_bak, M5_bak, M6_bak);
+					meshes[2] = String.format("%02d%02d%d%d", M1M2, M3M4_bak, M5, M6_bak);
+					meshes[3] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
+				}
+			}else{
+				if(M3M4_bak<M3M4||M6_bak<M6){
+					meshes[0] = String.format("%02d%02d%d%d", M1M2, M3M4_bak, M5, M6_bak);
+					meshes[1] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
+					meshes[2] = String.format("%02d%02d%d%d", M1M2_bak, M3M4, M5_bak, M6);
+					meshes[3] = String.format("%02d%02d%d%d", M1M2_bak, M3M4_bak, M5_bak, M6_bak);
+				}else{
+					meshes[0] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
+					meshes[1] = String.format("%02d%02d%d%d", M1M2, M3M4_bak, M5, M6_bak);
+					meshes[2] = String.format("%02d%02d%d%d", M1M2_bak, M3M4_bak, M5_bak, M6_bak);
+					meshes[3] = String.format("%02d%02d%d%d", M1M2_bak, M3M4, M5_bak, M6);
+				}
+			}
+		}else if(M5_bak>-999){
+			meshes = new String[2];
+			if(M1M2_bak<M1M2||M5_bak<M5){
+				meshes[0] = String.format("%02d%02d%d%d", M1M2_bak, M3M4, M5_bak, M6);
+				meshes[1] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
+			}else{
+				meshes[0] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
+				meshes[1] = String.format("%02d%02d%d%d", M1M2_bak, M3M4, M5_bak, M6);
+			}
+		}else if(M6_bak>-999){
+			meshes = new String[2];
+			if(M3M4_bak<M3M4||M6_bak<M6){
+				meshes[0] = String.format("%02d%02d%d%d", M1M2, M3M4_bak, M5, M6_bak);
+				meshes[1] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
+			}else{
+				meshes[0] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
+				meshes[1] = String.format("%02d%02d%d%d", M1M2, M3M4_bak, M5, M6_bak);
+			}
+		}else{
+			meshes = new String[]{String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6)};
+		}
+		return meshes;
+	}
+	/**
+	 * 计算线段所属图幅号，可以在图廓线上
+	 * 计算原则：1.只要有任意一点在图幅内部,2.两点都在图幅的边线上
+	 * @param line:[x1,y1,x2,y2]
+	 * @return
+	 */
+	public static String[] line2Meshes(double x1,double y1,double x2,double y2){
+		Set<String> meshes = new HashSet<String>();
+		double[] rect = MyGeoConvertor.lineArr2RectArr(new double[]{x1,y1,x2,y2});
+		String[] rectMeshes = rect2Meshes(rect[0],rect[1],rect[2],rect[3]);
+		LongLine line = new LongLine(new LongPoint(MyGeoConvertor.degree2Millisec(x1),MyGeoConvertor.degree2Millisec(y1))
+				,new LongPoint(MyGeoConvertor.degree2Millisec(x2),MyGeoConvertor.degree2Millisec(y2)));
+		for(String mesh:rectMeshes){
+			double[] meshRect = mesh2Rect(mesh);
+			LongRect longRect = MyGeoConvertor.rectArr2Rect(MyGeoConvertor.degree2Millisec(meshRect));
+			if(LongLineUtil.intersectant(line, longRect)){
+				meshes.add(mesh);
+			}
+		}
+		return meshes.toArray(new String[0]);
+	}
+	/**
+	 * 给定坐标范围（度），计算范围内包含的图幅
+	 * 两个点都在同一图幅的图廓线上，会计算属于这个图幅
+	 * 
+	 * @param lbX
+	 *            左下经度 
+	 * @param lbY
+	 *            左下维度 
+	 * @param rtX
+	 *            右上经度 
+	 * @param rtY
+	 *            右上维度 
+	 * @return
+	 */
+	public static String[] rect2Meshes(double lbX, double lbY, double rtX,
+			double rtY) {
+		// 计算左下坐标位于图幅
+		String lbMesh = null;
+		String[] lbMeshes = point2Meshes(lbX,lbY);
+		if(lbMeshes.length==1){
+			lbMesh = lbMeshes[0];
+		}else if(lbMeshes.length==2){
+			lbMesh = lbMeshes[1];
+		}else{
+			lbMesh= lbMeshes[2];
+		}
+		// 计算右上坐标位于图幅
+		String rtMesh = point2Meshes(rtX, rtY)[0];
+		if (lbMesh.equals(rtMesh)) {
+			return new String[] { lbMesh };
+		} else {
+			// 跨多个图幅
+			return MeshUtils.getBetweenMeshes(lbMesh,rtMesh);
+
+		}
+	}
+	
 	/**
 	 * 
 	 * @param meshId
@@ -247,42 +431,6 @@ public abstract class MeshUtils {
 
 	}
 
-	/**
-	 * 给定坐标范围（秒），计算范围内包含的图幅
-	 * 两个点都在同一图幅的图廓线上，会返回
-	 * 
-	 * @param lbX
-	 *            左下经度 (秒)
-	 * @param lbY
-	 *            左下维度 (秒)
-	 * @param rtX
-	 *            右上经度 (秒)
-	 * @param rtY
-	 *            右上维度 (秒)
-	 * @return
-	 */
-	public static String[] area2Meshes(double lbX, double lbY, double rtX,
-			double rtY) {
-		// 计算左下坐标位于图幅
-		String lbMesh = null;
-		String[] lbMeshes = point2Meshes(lbX,lbY);
-		if(lbMeshes.length==1){
-			lbMesh = lbMeshes[0];
-		}else if(lbMeshes.length==2){
-			lbMesh = lbMeshes[1];
-		}else{
-			lbMesh= lbMeshes[2];
-		}
-		// 计算右上坐标位于图幅
-		String rtMesh = point2Meshes(rtX, rtY)[0];
-		if (lbMesh.equals(rtMesh)) {
-			return new String[] { lbMesh };
-		} else {
-			// 跨多个图幅
-			return getBetweenMeshes(lbMesh,rtMesh);
-
-		}
-	}
 
 	/**
 	 * 暂未实现
@@ -299,12 +447,34 @@ public abstract class MeshUtils {
 			return new String[] { lbMesh };
 		} else {
 			// 计算横纵向跨多少个图幅
-			int hSize = 0;
-			int vSize = 0;
+			int lbM12=Integer.valueOf(lbMesh.substring(0, 2));
+			int lbM34=Integer.valueOf(lbMesh.substring(2, 4));
+			int lbM5=Integer.valueOf(lbMesh.substring(4, 5));
+			int lbM6=Integer.valueOf(lbMesh.substring(5, 6));
+			int rtM12=Integer.valueOf(rtMesh.substring(0, 2));
+			int rtM34=Integer.valueOf(rtMesh.substring(2, 4));
+			int rtM5=Integer.valueOf(rtMesh.substring(4, 5));
+			int rtM6=Integer.valueOf(rtMesh.substring(5, 6));
+			int hSize = (rtM34-lbM34)*8+(rtM6-lbM6)+1;
+			int vSize = (rtM12-lbM12)*8+(rtM5-lbM5)+1;
 			int meshSize = hSize * vSize; // 图幅数
 			// 从左下角开始计算图幅
 			String allMesh[] = new String[meshSize];
-			//...
+			//
+			int targetM12=0;
+			int targetM34=0;
+			int targetM5=0;
+			int targetM6=0;
+			for(int v=0;v<vSize;v++){
+				targetM12=lbM12+((lbM5+v)/8);
+				targetM5=(lbM5+v)%8;
+				for(int h=0;h<hSize;h++){
+					targetM34 = lbM34+((lbM6+h)/8);
+					targetM6 = (lbM6+h)%8;
+					allMesh[v*hSize+h]=String.format("%02d%02d%d%d", targetM12, targetM34, targetM5, targetM6);
+				}
+			}
+			
 			return allMesh;
 
 		}
@@ -517,20 +687,6 @@ public abstract class MeshUtils {
 		return false;
 	}
 
-	/**
-	 * 计算线段所属图幅号，可以在图廓线上，线段不能跨越图幅
-	 * @param line:[x1,y1,x2,y2]
-	 * @return
-	 */
-	public static String[] line2MeshId(double[] line){
-		String[] meshes1 = point2Meshes(line[0],line[1]);
-		String[] meshes2 = point2Meshes(line[2],line[3]);
-		List<String> list1 = new ArrayList<String>(Arrays.asList(meshes1));
-		List<String> list2 = new ArrayList<String>(Arrays.asList(meshes2));
-		list1.retainAll(list2);
-		return list1.toArray(new String[0]);
-	}
-
 	/***
      * @author zhaokk
      * @param Geometry g
@@ -549,12 +705,6 @@ public abstract class MeshUtils {
 		
 	 }
 		return false;
-	}
-	public static String[] sameMesh(double x1,double y1,double x2,double y2){
-		List<String> s1 = new ArrayList<String>(Arrays.asList(point2Meshes(x1,y1)));
-		List<String> s2 = new ArrayList<String>(Arrays.asList(point2Meshes(x2,y2)));
-		s1.retainAll(s2);
-		return s1.toArray(new String[0]);
 	}
 	public static boolean locateMeshBorder(double x,double y,String mesh){
 		MeshLocation loc = meshLocate(x,y,mesh);
@@ -587,138 +737,5 @@ public abstract class MeshUtils {
 		}else{
 			return MeshLocation.Inside;
 		}
-	}
-	/**
-	 * 2016.5重新实现Java版，By Xiao Xiaowen
-	 * @param x
-	 * @param y
-	 * @return 图幅数组，且有顺序，按顺序为左下，右下，右上，左上
-	 */
-	public static String[] point2Meshes(double x,double y){
-		//将度单位坐标转换为秒*3600，并乘1000消除小数,最后取整
-		long longX = Math.round(x*3600000);
-		long longY = Math.round(y*3600000);
-		int M1M2;
-		int M1M2_bak;
-		int M3M4;
-		int M3M4_bak;
-		int M5;
-		int M5_bak = -999;
-		int M6;
-		int M6_bak = -999;
-
-
-		//一个四位图幅的纬度高度为2400秒
-		M1M2 = (int)(longY/(2400000));
-		M3M4 = ((int)x) - 60;//简便算法
-		//
-		M1M2_bak=M1M2;
-		M3M4_bak=M3M4;
-		
-		//
-		
-		int yt = (int)(longY/(300000));
-		M5 = yt%8;
-		//判断在图幅线上的情况
-		if((longY%300000)<=12){//距离理想行号下图廓线距离
-			if(yt%3==2){
-				//处于横轴图廓线上
-				M5_bak = M5-1;
-				if(M5_bak<0){
-					M1M2_bak--;
-					M5_bak=7;
-				}
-			}
-			/**
-			if(yt%3==0){//0.0,0.25,...
-				//不变
-			}else if(yt%3==1){//0.08333,0.33333,...
-				//不变
-			}else if(yt%3==2){//0.16667,0.41667,...
-				//处于图廓线上
-				M5_bak = M5-1;
-			}*/
-		}else if((300000-(longY%300000))<=12){//距离理想行号上图廓线距离
-			/**
-			if(yt%3==0){//0.0,0.25,...
-				//处于图廓线上
-				M5_bak = M5+1;
-			}else if(yt%3==1){//0.08333,0.33333,...
-				//不变
-			}else if(yt%3==2){//0.16667,0.41667,...
-				//处于图廓线上
-				M5_bak = M5+1;
-			}
-			 */
-			if(yt%3==0){
-				//处于图廓线上
-				M5_bak = M5+1;
-				if(M5_bak>7){
-					M1M2_bak++;
-					M5_bak=0;
-				}
-			}
-		}
-		int xt = (int)(longX/(450000));
-		M6 = xt%8;
-		//经度坐标没有四舍五入，所以理论上只有=0和大于12的情况
-		if((longX%450000)<=12){
-			M6_bak = M6-1;
-			if(M6_bak<0){
-				M3M4_bak--;
-				M6_bak=7;
-			}
-		}
-		
-		String[] meshes = null;
-		if(M5_bak>-999&&M6_bak>-999){//图廓点，4个图幅,4个grid号
-			meshes = new String[4];
-			if(M1M2_bak<M1M2||M5_bak<M5){
-				if(M3M4_bak<M3M4||M6_bak<M6){
-					meshes[0] = String.format("%02d%02d%d%d", M1M2_bak, M3M4_bak, M5_bak, M6_bak);
-					meshes[1] = String.format("%02d%02d%d%d", M1M2_bak, M3M4, M5_bak, M6);
-					meshes[2] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
-					meshes[3] = String.format("%02d%02d%d%d", M1M2, M3M4_bak, M5, M6_bak);
-				}else{
-					meshes[0] = String.format("%02d%02d%d%d", M1M2_bak, M3M4, M5_bak, M6);
-					meshes[1] = String.format("%02d%02d%d%d", M1M2_bak, M3M4_bak, M5_bak, M6_bak);
-					meshes[2] = String.format("%02d%02d%d%d", M1M2, M3M4_bak, M5, M6_bak);
-					meshes[3] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
-				}
-			}else{
-				if(M3M4_bak<M3M4||M6_bak<M6){
-					meshes[0] = String.format("%02d%02d%d%d", M1M2, M3M4_bak, M5, M6_bak);
-					meshes[1] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
-					meshes[2] = String.format("%02d%02d%d%d", M1M2_bak, M3M4, M5_bak, M6);
-					meshes[3] = String.format("%02d%02d%d%d", M1M2_bak, M3M4_bak, M5_bak, M6_bak);
-				}else{
-					meshes[0] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
-					meshes[1] = String.format("%02d%02d%d%d", M1M2, M3M4_bak, M5, M6_bak);
-					meshes[2] = String.format("%02d%02d%d%d", M1M2_bak, M3M4_bak, M5_bak, M6_bak);
-					meshes[3] = String.format("%02d%02d%d%d", M1M2_bak, M3M4, M5_bak, M6);
-				}
-			}
-		}else if(M5_bak>-999){
-			meshes = new String[2];
-			if(M1M2_bak<M1M2||M5_bak<M5){
-				meshes[0] = String.format("%02d%02d%d%d", M1M2_bak, M3M4, M5_bak, M6);
-				meshes[1] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
-			}else{
-				meshes[0] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
-				meshes[1] = String.format("%02d%02d%d%d", M1M2_bak, M3M4, M5_bak, M6);
-			}
-		}else if(M6_bak>-999){
-			meshes = new String[2];
-			if(M3M4_bak<M3M4||M6_bak<M6){
-				meshes[0] = String.format("%02d%02d%d%d", M1M2, M3M4_bak, M5, M6_bak);
-				meshes[1] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
-			}else{
-				meshes[0] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
-				meshes[1] = String.format("%02d%02d%d%d", M1M2, M3M4_bak, M5, M6_bak);
-			}
-		}else{
-			meshes = new String[]{String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6)};
-		}
-		return meshes;
 	}
 }

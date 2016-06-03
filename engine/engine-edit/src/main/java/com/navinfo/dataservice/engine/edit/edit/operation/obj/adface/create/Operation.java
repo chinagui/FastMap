@@ -106,7 +106,7 @@ public class Operation implements IOperation {
 	 *            传入要创建面的几何
 	 * @throws Exception
 	 */
-	private void createFaceByAdLink(List<IObj> objList) throws Exception {
+	public  void createFaceByAdLink(List<IObj> objList) throws Exception {
 		List<Geometry> list = new ArrayList<Geometry>();
 		Set<String> meshes = new HashSet<String>();
 		List<AdLink> adLinks = new ArrayList<AdLink>();

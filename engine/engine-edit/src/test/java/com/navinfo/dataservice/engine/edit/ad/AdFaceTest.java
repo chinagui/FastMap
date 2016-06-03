@@ -19,8 +19,20 @@ public class AdFaceTest {
 		}
 		
 	}
+	public  void createFaceByAdLInkTest() {
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"ADFACE\",\"linkType\":\"ADLINK\",\"projectId\":11," +
+				"\"data\":{\"linkPids\":[100032563,100032561,100032562]}}";
+		log.info(parameter);
+		Transaction t = new Transaction(parameter);;
+		try {
+			String msg = t.run();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
 	public static void main(String[] args) throws Exception{
-		new AdFaceTest().createFaceTest();
+		new AdFaceTest().createFaceByAdLInkTest();
 		
 	}
 }

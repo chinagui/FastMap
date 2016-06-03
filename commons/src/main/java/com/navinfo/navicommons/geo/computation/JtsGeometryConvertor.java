@@ -12,7 +12,7 @@ import com.vividsolutions.jts.geom.Polygon;
 * @date 2016年5月3日 下午6:17:26 
 * @Description: TODO
 */
-public class MyGeometryConvertor {
+public class JtsGeometryConvertor {
 	
 	public static Coordinate convert(DoublePoint point){
 		if(point!=null){

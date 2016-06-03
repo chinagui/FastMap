@@ -24,6 +24,7 @@ import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
+import com.navinfo.navicommons.geo.computation.JGeometryUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 import junit.framework.Assert;
@@ -111,7 +112,7 @@ public class CompGridUtilTest{
 				}
 				
 			});
-			Set<String> results = CompGridUtil.intersectGeometryGrid(jg,"595674");
+			Set<String> results = JGeometryUtil.intersectGeometryGrid(jg,"595674");
 			for(String s:results){
 				System.out.println(s);
 			}

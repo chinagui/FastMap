@@ -1,8 +1,5 @@
 package com.navinfo.navicommons.geo.computation;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,15 +7,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
-import oracle.spatial.geometry.JGeometry;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.dataservice.commons.util.DoubleUtil;
 
 /** 
 * @ClassName: CompGridUtil 
@@ -28,97 +19,6 @@ import com.navinfo.navicommons.database.QueryRunner;
 */
 public class CompGridUtil {
 
-	public static Set<String> intersectGeometryGrid(JGeometry geo,String[] meshIds)throws Exception{
-		Set<String> grids = new HashSet<String>();
-		int type = geo.getType();
-		if(type==1){
-			double[] point = geo.getPoint();
-			CollectionUtils.addAll(grids, point2Grids(point[0],point[1],meshIds));
-		}else if(type==2){
-			grids.addAll(intersectLineGrid(geo,meshIds));
-		}else if(type == 3){
-			throw new Exception("面不能有多个图幅号");
-		}
-		return grids;
-	}
-	public static Set<String> intersectGeometryGrid(JGeometry geo,String meshId)throws Exception{
-		meshId = StringUtils.leftPad(meshId, 6, '0');
-		Set<String> grids = new HashSet<String>();
-		int type = geo.getType();
-		if(type==1){
-			double[] point = geo.getPoint();
-			grids.addAll(Arrays.asList(point2Grids(point[0],point[1])));
-		}else if(type==2){
-			double[] lines = geo.getOrdinatesArray();
-			int pointCount = lines.length/2;
-			for(int i=1;i<pointCount;i++){
-				grids.addAll(intersectLineGrid(new double[]{lines[i*2-2],lines[i*2-1],lines[i*2],lines[i*2+1]},meshId,grids));
-			}
-		}else if(type == 3){
-			double[] face = geo.getOrdinatesArray();
-			grids.addAll(intersectFaceGrid(face, meshId));
-		}
-		return grids;
-	}
-	/**
-	 * 传入线的几何，和所属的图幅号
-	 * @param line:[x1,y1,x2,y2]
-	 * @param meshIds：
-	 * @return
-	 */
-	private static Set<String> intersectLineGrid(JGeometry line,String[] meshIds)throws Exception{
-		if(meshIds!=null&&meshIds.length>0){
-			if(meshIds.length==1){
-				return intersectGeometryGrid(line,meshIds[0]);
-			}else if(meshIds.length==2){
-				//
-				Set<String> grids = new HashSet<String>();
-				double[] points = line.getOrdinatesArray();
-				int m5_0 = Integer.valueOf(meshIds[0].substring(4, 5));
-				int m6_0 = Integer.valueOf(meshIds[0].substring(5, 6));
-				int m5_1 = Integer.valueOf(meshIds[1].substring(4, 5));
-				int m6_1 = Integer.valueOf(meshIds[1].substring(5, 6));
-				if(m5_0==m5_1){
-					int m7_s = point2Grid_M7(points[1]);
-					int m7_e = point2Grid_M7(points[points.length-1]);
-					int m7_min = m7_s>m7_e?m7_e:m7_s;
-					int m7_max = m7_s>m7_e?m7_s:m7_e;
-					if(Integer.valueOf(meshIds[0])<Integer.valueOf(meshIds[1])){
-						for(int i = m7_min;i<=m7_max;i++){
-							grids.add(meshIds[0]+i+"3");
-							grids.add(meshIds[1]+i+"0");
-						}
-					}else{
-						for(int i = m7_min;i<=m7_max;i++){
-							grids.add(meshIds[0]+i+"0");
-							grids.add(meshIds[1]+i+"3");
-						}
-					}
-				}else if(m6_0==m6_1){
-					int m8_s = point2Grid_M8(points[0]);
-					int m8_e = point2Grid_M8(points[points.length-2]);
-					int m8_min = m8_s>m8_e?m8_e:m8_s;
-					int m8_max = m8_s>m8_e?m8_s:m8_e;
-					if(Integer.valueOf(meshIds[0])<Integer.valueOf(meshIds[1])){
-						for(int i = m8_min;i<=m8_max;i++){
-							grids.add(meshIds[0]+"3"+i);
-							grids.add(meshIds[1]+"0"+i);
-						}
-					}else{
-						for(int i = m8_min;i<=m8_max;i++){
-							grids.add(meshIds[0]+"0"+i);
-							grids.add(meshIds[1]+"3"+i);
-						}
-					}
-				}
-				return grids;
-			}else{
-				throw new Exception("");
-			}
-		}else{
-			throw new Exception("");
-		}
-	}
 	/**
 	 * 传入该line所属的图幅号
 	 * @param line:[x1,y1,x2,y2]
@@ -127,12 +27,13 @@ public class CompGridUtil {
 	 */
 	public static Set<String> intersectLineGrid(double[] line,String meshId)throws Exception{
 		//计算line的外接矩形相交的grid矩形
-		String[] rawGrids = intersectRectGrid(line2Rect(line),meshId);
+		String[] rawGrids = intersectRectGrid(MyGeoConvertor.lineArr2RectArr(line),meshId);
 		Set<String> interGrids = new HashSet<String>();
 		//再计算line是否和每个grid矩形相交
 		for(String gridId:rawGrids){
-			long[] grid = convertLatlon(grid2Rect(gridId));
-			if(CompGeometryUtil.intersectLineRect(convertLatlon(line),grid)){
+			long[] grid = MyGeoConvertor.degree2Millisec(grid2Rect(gridId));
+			if(LongLineUtil.intersectant(MyGeoConvertor.lineArr2Line(MyGeoConvertor.degree2Millisec(line))
+					,MyGeoConvertor.rectArr2Rect(grid))){
 				interGrids.add(gridId);
 			}
 		}
@@ -146,52 +47,20 @@ public class CompGridUtil {
 	 */
 	public static Set<String> intersectLineGrid(double[] line,String meshId,Set<String> gridsFilter)throws Exception{
 		//计算line的外接矩形相交的grid矩形
-		String[] rawGrids = intersectRectGrid(line2Rect(line),meshId);
+		String[] rawGrids = intersectRectGrid(MyGeoConvertor.lineArr2RectArr(line),meshId);
 		Set<String> interGrids = new HashSet<String>();
 		//再计算line是否和每个grid矩形相交
 		for(String gridId:rawGrids){
 			if(gridsFilter.contains(gridId)) continue;
-			long[] gridRect = convertLatlon(grid2Rect(gridId));
-			if(CompGeometryUtil.intersectLineRect(convertLatlon(line),gridRect)){
+			long[] gridRect = MyGeoConvertor.degree2Millisec(grid2Rect(gridId));
+			if(LongLineUtil.intersectant(MyGeoConvertor.lineArr2Line(MyGeoConvertor.degree2Millisec(line))
+					,MyGeoConvertor.rectArr2Rect(gridRect))){
 				interGrids.add(gridId);
 			}
 		}
 		return interGrids;
 	}
 
-	/**
-	 * 生成line的外接矩形
-	 * @param line：[x1,y1,x2,y2]
-	 * @return rect:[minx,miny,maxx,maxy]
-	 */
-	private static double[] line2Rect(double[] line){
-		double[] rect = new double[4];
-		if(line[0]<line[2]){
-			rect[0]=line[0];
-			rect[2]=line[2];
-		}else{
-			rect[0]=line[2];
-			rect[2]=line[0];
-		}
-		if(line[1]<line[3]){
-			rect[1]=line[1];
-			rect[3]=line[3];
-		}else{
-			rect[1]=line[3];
-			rect[3]=line[1];
-		}
-		return rect;
-	}
-	public static long convertLatlon(double latlon){
-		return Math.round(latlon*3600*1000);
-	}
-	public static long[] convertLatlon(double[] arr){
-		long[] longArr = new long[arr.length];
-		for(int i=0;i<arr.length;i++){
-			longArr[i]=Math.round(arr[i]*3600*1000);
-		}
-		return longArr;
-	}
 	/**
 	 * 计算rect所在图幅内相交的grid，rect范围超过图幅范围会抛出异常
 	 * @param rect:[minx,miny,maxx,maxy]
@@ -202,8 +71,9 @@ public class CompGridUtil {
 	public static String[] intersectRectGrid(double[] rect,String meshId)throws Exception{
 		//计算矩形左下角点所在的grid
 		//判断两次算的grid所在的图幅是否和meshId一致
-		String[] sameMesh = MeshUtils.sameMesh(rect[0],rect[1], rect[2],rect[3]);
-		if(sameMesh!=null&&sameMesh.length>0){
+		List<String> meshes1 = Arrays.asList(MeshUtils.point2Meshes(rect[0],rect[1]));
+		List<String> meshes2 = Arrays.asList(MeshUtils.point2Meshes(rect[2],rect[3]));
+		if(meshes1.contains(meshId)&&meshes2.contains(meshId)){
 			String lbGrid = point2Grid(rect[0],rect[1],meshId);
 			//计算矩形右上角点所在的grid
 			String rtGrid =  point2Grid(rect[2],rect[3],meshId);
@@ -259,8 +129,9 @@ public class CompGridUtil {
 			while(it.hasNext()){
 				String gridId = it.next();
 				
-				long[] grid = convertLatlon(grid2Rect(gridId));
-				if(CompGeometryUtil.intersectLineRect(convertLatlon(line),grid)){
+				long[] grid = MyGeoConvertor.degree2Millisec((grid2Rect(gridId)));
+				if(LongLineUtil.intersectant(MyGeoConvertor.lineArr2Line(MyGeoConvertor.degree2Millisec(line))
+						,MyGeoConvertor.rectArr2Rect(grid))){
 					interGrids.add(gridId);
 					it.remove();
 				}
@@ -295,7 +166,10 @@ public class CompGridUtil {
 //		double rtX = lbX+1/(8*4);
 		double maxx = minx+0.03125;
 		double maxy = miny+(1.0/(12*4));
-		return new double[]{minx,miny,maxx,maxy};
+		return new double[]{DoubleUtil.keepSpecDecimal(minx)
+				,DoubleUtil.keepSpecDecimal(miny)
+				,DoubleUtil.keepSpecDecimal(maxx)
+				,DoubleUtil.keepSpecDecimal(maxy)};
 	}
 
 	/**

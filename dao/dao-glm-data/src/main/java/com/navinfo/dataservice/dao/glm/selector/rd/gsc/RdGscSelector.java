@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -400,6 +401,56 @@ public class RdGscSelector implements ISelector {
 
 				rdGsc.setRowId(resultSet.getString("row_id"));
 
+				rdGscList.add(rdGsc);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			try {
+				resultSet.close();
+			} catch (Exception e) {
+
+			}
+
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+
+			}
+		}
+
+		return rdGscList;
+	}
+	
+	/*
+	 * 仅加载rd_gsc表，其他子表若有需要，请单独加载
+	 */
+	public List<RdGsc> loadBySql(String sql, boolean isLock)
+			throws Exception {
+
+		List<RdGsc> rdGscList = new ArrayList<RdGsc>();
+		StringBuilder sb = new StringBuilder(sql);
+		if (isLock) {
+			sb.append(" for update nowait");
+		}
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdGsc rdGsc = new RdGsc();
+				rdGsc.setPid(resultSet.getInt("pid"));
+				rdGsc.setProcessFlag(resultSet.getInt("PROCESS_FLAG"));
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
+				rdGsc.setGeometry(geometry);
+				rdGsc.setRowId(resultSet.getString("row_id"));
 				rdGscList.add(rdGsc);
 			}
 

@@ -20,6 +20,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -327,6 +328,104 @@ public class AdLinkOperateUtils {
 
 		geojson.put("coordinates", ps);
 		return (GeoTranslator.geojson2Jts(geojson, 1, 5));
+	}
+	/*
+	 * 创建行政区划线 针对跨图幅有两种情况 
+	 * 1.跨图幅和图幅交集是LineString 
+	 * 2.跨图幅和图幅交集是MultineString
+	 * 3.跨图幅需要生成和图廓线的交点
+	 */
+
+	public static void createAdLinkWithMesh(Geometry g,
+			Map<Coordinate, Integer> maps, Result result) throws Exception {
+		if (g != null) {
+			
+			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
+				AdLinkOperateUtils.calAdLinkWithMesh(g, maps,result);
+			}
+			if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
+				for (int i = 0; i < g.getNumGeometries(); i++) {
+					AdLinkOperateUtils.calAdLinkWithMesh(g.getGeometryN(i), maps,result);
+				}
+
+			}
+		}
+	}
+	public static List<AdLink> getCreateAdLinksWithMesh(Geometry g,
+			Map<Coordinate, Integer> maps, Result result) throws Exception {
+		List<AdLink> links = new ArrayList<AdLink>();
+		if (g != null) {
+			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
+				links.add(AdLinkOperateUtils.getCalAdLinkWithMesh(g, maps,result));
+			}
+			if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
+				for (int i = 0; i < g.getNumGeometries(); i++) {
+					links.add(AdLinkOperateUtils.getCalAdLinkWithMesh(g.getGeometryN(i), maps,result));
+				}
+
+			}
+		}
+		return links;
+	}
+	
+	/*
+	 * 创建行政区划线 针对跨图幅创建图廓点不能重复
+	 */
+	public static void calAdLinkWithMesh(Geometry g,Map<Coordinate, Integer> maps,
+			Result result) throws Exception {
+		//定义创建行政区划线的起始Pid 默认为0
+		int sNodePid = 0;
+		int eNodePid = 0;
+		//判断新创建的线起点对应的pid是否存在，如果存在取出赋值
+		if (maps.containsKey(g.getCoordinates()[0])) {
+			sNodePid = maps.get(g.getCoordinates()[0]);
+		}
+		//判断新创建的线终始点对应的pid是否存在，如果存在取出赋值
+		if (maps.containsKey(g.getCoordinates()[g.getCoordinates().length - 1])) {
+			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
+		}
+		//创建线对应的点
+		JSONObject node = AdLinkOperateUtils.createAdNodeForLink(
+				g, sNodePid, eNodePid, result);
+		if (!maps.containsValue(node.get("s"))) {
+			maps.put(g.getCoordinates()[0], (int) node.get("s"));
+		}
+		if (!maps.containsValue(node.get("e"))) {
+			maps.put(g.getCoordinates()[0], (int) node.get("e"));
+		}
+		//创建线
+		AdLinkOperateUtils.addLink(g, (int) node.get("s"),
+				(int) node.get("e"), result);
+	}
+	
+	/*
+	 * 创建行政区划线 针对跨图幅创建图廓点不能重复
+	 */
+	public static AdLink getCalAdLinkWithMesh(Geometry g,Map<Coordinate, Integer> maps,
+			Result result) throws Exception {
+		//定义创建行政区划线的起始Pid 默认为0
+		int sNodePid = 0;
+		int eNodePid = 0;
+		//判断新创建的线起点对应的pid是否存在，如果存在取出赋值
+		if (maps.containsKey(g.getCoordinates()[0])) {
+			sNodePid = maps.get(g.getCoordinates()[0]);
+		}
+		//判断新创建的线终始点对应的pid是否存在，如果存在取出赋值
+		if (maps.containsKey(g.getCoordinates()[g.getCoordinates().length - 1])) {
+			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
+		}
+		//创建线对应的点
+		JSONObject node = AdLinkOperateUtils.createAdNodeForLink(
+				g, sNodePid, eNodePid, result);
+		if (!maps.containsValue(node.get("s"))) {
+			maps.put(g.getCoordinates()[0], (int) node.get("s"));
+		}
+		if (!maps.containsValue(node.get("e"))) {
+			maps.put(g.getCoordinates()[0], (int) node.get("e"));
+		}
+		//创建线
+		return AdLinkOperateUtils.getAddLink(g, (int) node.get("s"),
+				(int) node.get("e"), result);
 	}
 
 }

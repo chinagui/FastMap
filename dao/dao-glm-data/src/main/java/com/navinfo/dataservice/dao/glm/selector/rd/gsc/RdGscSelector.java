@@ -8,8 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import oracle.sql.STRUCT;
-
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
@@ -18,8 +16,11 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.vividsolutions.jts.geom.Geometry;
+
+import oracle.sql.STRUCT;
 
 public class RdGscSelector implements ISelector {
 
@@ -115,11 +116,19 @@ public class RdGscSelector implements ISelector {
 	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
 		return null;
 	}
-
-	public List<RdGsc> loadRdGscLinkByLinkPid(int linkPid, boolean isLock) throws Exception {
+	
+	/**
+	 * 根据linkPid和组成link的表名称查询立交,返回的是立交下的所有组成线
+	 * @param linkPid link的pid
+	 * @param tableName 组成link的表名称
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdGsc> loadRdGscLinkByLinkPid(int linkPid, String tableName,boolean isLock) throws Exception {
 		List<RdGsc> rdGscList = new ArrayList<RdGsc>();
 
-		String sql = "SELECT a.* FROM rd_gsc a,rd_gsc_link b WHERE a.pid = b.pid AND b.link_pid = :1 and a.u_record!=2";
+		String sql = "SELECT a.* FROM rd_gsc a,rd_gsc_link b WHERE a.pid = b.pid AND b.link_pid = :1 and a.u_record!=2 and b.table_name = :2";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -133,6 +142,8 @@ public class RdGscSelector implements ISelector {
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setInt(1, linkPid);
+			
+			pstmt.setString(1, tableName);
 
 			resultSet = pstmt.executeQuery();
 
@@ -186,14 +197,14 @@ public class RdGscSelector implements ISelector {
 	}
 
 	/**
-	 * 根据组成立交的Link PID查询立交
-	 * 
-	 * @param linkPids
+	 * 根据linkPid和组成link的表名称查询立交，返回立交下的所有组成线
+	 * @param linkPids link的pids
+	 * @param tableName 组成link的表名称
 	 * @param isLock
-	 * @return 立交对象集合
+	 * @return
 	 * @throws Exception
 	 */
-	public List<RdGsc> loadRdGscLinkByLinkPids(List<Integer> linkPids, boolean isLock) throws Exception {
+	public List<RdGsc> loadRdGscLinkByLinkPids(List<Integer> linkPids, String tableName,boolean isLock) throws Exception {
 		List<RdGsc> rdgscs = new ArrayList<RdGsc>();
 
 		if (linkPids.size() == 0) {
@@ -210,7 +221,7 @@ public class RdGscSelector implements ISelector {
 		s.deleteCharAt(s.lastIndexOf(","));
 
 		String sql = "SELECT a.* FROM rd_gsc a,rd_gsc_link b WHERE a.pid = b.pid AND b.link_pid in (" + s.toString()
-				+ ") and a.u_record!=2";
+				+ ") and a.u_record!=2 and b.table_name = :1";
 
 		if (isLock) {
 			sql = sql + " for update nowait";
@@ -222,6 +233,8 @@ public class RdGscSelector implements ISelector {
 
 		try {
 			pstmt = conn.prepareStatement(sql);
+			
+			pstmt.setString(1, tableName);
 
 			resultSet = pstmt.executeQuery();
 
@@ -271,10 +284,18 @@ public class RdGscSelector implements ISelector {
 		return rdgscs;
 	}
 
-	public List<RdGsc> onlyLoadRdGscLinkByLinkPid(int linkPid, boolean isLock) throws Exception {
+	/**
+	 * 根据立交组成线返回立交，返回的立交中的组成线只有传入的立交组成线
+	 * @param linkPid
+	 * @param tableName
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdGsc> onlyLoadRdGscLinkByLinkPid(int linkPid, String tableName,boolean isLock) throws Exception {
 		List<RdGsc> rdGscList = new ArrayList<RdGsc>();
 
-		String sql = "SELECT a.* FROM rd_gsc a,rd_gsc_link b WHERE a.pid = b.pid AND b.link_pid = :1 and a.u_record!=2";
+		String sql = "SELECT a.* FROM rd_gsc a,rd_gsc_link b WHERE a.pid = b.pid AND b.link_pid = :1 and a.u_record!=2 and b.table_name = :2";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -288,6 +309,8 @@ public class RdGscSelector implements ISelector {
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setInt(1, linkPid);
+			
+			pstmt.setString(2, tableName);
 
 			resultSet = pstmt.executeQuery();
 
@@ -400,6 +423,56 @@ public class RdGscSelector implements ISelector {
 
 				rdGsc.setRowId(resultSet.getString("row_id"));
 
+				rdGscList.add(rdGsc);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			try {
+				resultSet.close();
+			} catch (Exception e) {
+
+			}
+
+			try {
+				pstmt.close();
+			} catch (Exception e) {
+
+			}
+		}
+
+		return rdGscList;
+	}
+	
+	/*
+	 * 仅加载rd_gsc表，其他子表若有需要，请单独加载
+	 */
+	public List<RdGsc> loadBySql(String sql, boolean isLock)
+			throws Exception {
+
+		List<RdGsc> rdGscList = new ArrayList<RdGsc>();
+		StringBuilder sb = new StringBuilder(sql);
+		if (isLock) {
+			sb.append(" for update nowait");
+		}
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdGsc rdGsc = new RdGsc();
+				rdGsc.setPid(resultSet.getInt("pid"));
+				rdGsc.setProcessFlag(resultSet.getInt("PROCESS_FLAG"));
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
+				rdGsc.setGeometry(geometry);
+				rdGsc.setRowId(resultSet.getString("row_id"));
 				rdGscList.add(rdGsc);
 			}
 

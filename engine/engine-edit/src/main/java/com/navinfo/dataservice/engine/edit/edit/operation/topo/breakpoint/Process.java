@@ -99,8 +99,8 @@ public class Process extends AbstractProcess<Command> {
 			this.getCommand().setRestrictionDetails(details);
 
 			// 获取LINK上交限经过线
-			List<List<Entry<Integer, RdRestrictionVia>>> restrictVias = new RdRestrictionViaSelector(
-					this.getConn()).loadRestrictionViaByLinkPid(this.getCommand().getLinkPid(), true);
+			List<List<Entry<Integer, RdRestrictionVia>>> restrictVias = new RdRestrictionViaSelector(this.getConn())
+					.loadRestrictionViaByLinkPid(this.getCommand().getLinkPid(), true);
 
 			this.getCommand().setRestrictListVias(restrictVias);
 
@@ -152,11 +152,11 @@ public class Process extends AbstractProcess<Command> {
 			// 获取由该link组成的立交（RDGSC）
 			RdGscSelector selector = new RdGscSelector(this.getConn());
 
-			List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(this.getCommand().getLinkPid(), true);
+			List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(this.getCommand().getLinkPid(), "RD_LINK", true);
 
 			this.getCommand().setRdGscs(rdGscList);
-			
-			//获取由该link作为关联link的行政区划代表点
+
+			// 获取由该link作为关联link的行政区划代表点
 			AdAdminSelector adSelector = new AdAdminSelector(this.getConn());
 
 			List<AdAdmin> adAdminList = adSelector.loadRowsByLinkId(this.getCommand().getLinkPid(), true);
@@ -192,7 +192,7 @@ public class Process extends AbstractProcess<Command> {
 			opRefLaneConnexity.run(this.getResult());
 			OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(this.getCommand());
 			opRefSpeedlimit.run(this.getResult());
-			OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand(),this.getConn());
+			OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand(), this.getConn());
 			opRefRdGsc.run(this.getResult());
 			OpRefAdAdmin opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
 			opRefAdAdmin.run(this.getResult());
@@ -231,7 +231,7 @@ public class Process extends AbstractProcess<Command> {
 				opRefLaneConnexity.run(this.getResult());
 				OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(this.getCommand());
 				opRefSpeedlimit.run(this.getResult());
-				OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand(),this.getConn());
+				OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand(), this.getConn());
 				opRefRdGsc.run(this.getResult());
 				OpRefAdAdmin opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
 				opRefAdAdmin.run(this.getResult());
@@ -330,15 +330,15 @@ public class Process extends AbstractProcess<Command> {
 				for (RdGsc rdGsc : this.getCommand().getRdGscs()) {
 					infectList.add(rdGsc.getPid());
 				}
-				
+
 				infects.put("RDGSC", infectList);
-				
+
 				infectList = new ArrayList<Integer>();
 
 				for (AdAdmin adAdmin : this.getCommand().getAdAdmins()) {
 					infectList.add(adAdmin.getPid());
 				}
-				
+
 				infects.put("ADADMIN", infectList);
 
 				msg = JSONObject.fromObject(infects).toString();

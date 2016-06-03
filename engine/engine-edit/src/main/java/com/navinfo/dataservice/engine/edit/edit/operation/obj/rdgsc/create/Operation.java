@@ -234,7 +234,8 @@ public class Operation implements IOperation {
 
 		RdGscSelector selector = new RdGscSelector(conn);
 
-		List<RdGsc> rdGscList = selector.onlyLoadRdGscLinkByLinkPid(linkPid, false);
+		//TODO 其他类型待第五迭代和web讨论类型参数
+		List<RdGsc> rdGscList = selector.onlyLoadRdGscLinkByLinkPid(linkPid, "RD_LINK",true);
 
 		for (RdGsc gsc : rdGscList) {
 

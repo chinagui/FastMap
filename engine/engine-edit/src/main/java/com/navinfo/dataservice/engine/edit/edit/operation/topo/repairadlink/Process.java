@@ -2,18 +2,14 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.repairadlink;
 
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdFaceOperator;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdNodeSelector;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 
 public class Process extends AbstractProcess<Command> {
-	
-	private AdLink updateLink;
-	
-	private AdNode snode;
-	
-	private AdNode enode;
 	
 	private Check check = new Check();
 	
@@ -26,14 +22,9 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public boolean prepareData() throws Exception {
 		
-		this.updateLink = (AdLink) new AdLinkSelector(this.getConn()).loadById(this.getCommand().getLinkPid(), true);
+		this.getCommand().setUpdateLink((AdLink) new AdLinkSelector(this.getConn()).loadById(this.getCommand().getLinkPid(), true));
 		
-		AdNodeSelector nodeSelector = new AdNodeSelector(this.getConn());
-		
-		this.snode = (AdNode) nodeSelector.loadById(updateLink.geteNodePid(), true);
-		
-		this.enode = (AdNode) nodeSelector.loadById(updateLink.getsNodePid(), true);
-		
+		this.getCommand().setFaces(new AdFaceSelector(this.getConn()).loadAdFaceByLinkId(this.getCommand().getLinkPid(), true));
 		return false;
 	}
 
@@ -50,7 +41,7 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public String exeOperation() throws Exception {
 		// TODO Auto-generated method stub
-		return new Operation(this.getConn(), this.getCommand(),updateLink,snode,enode,check).run(this.getResult());
+		return new Operation(this.getConn(), this.getCommand()).run(this.getResult());
 	}
 
 }

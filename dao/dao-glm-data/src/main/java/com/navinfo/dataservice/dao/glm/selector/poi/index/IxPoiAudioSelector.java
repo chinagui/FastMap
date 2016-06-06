@@ -13,6 +13,11 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAudio;
 
+/**
+ * POI音频查询
+ * @author luyao
+ *
+ */
 public class IxPoiAudioSelector implements ISelector {
 
 	private static Logger logger = Logger.getLogger(IxPoiAudioSelector.class);

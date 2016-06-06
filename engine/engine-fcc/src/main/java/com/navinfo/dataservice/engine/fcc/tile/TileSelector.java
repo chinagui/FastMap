@@ -75,6 +75,36 @@ public class TileSelector {
 		return listResult;
 	}
 	
+	/**
+	 * 获取瓦片内的行政区划线数据
+	 * 
+	 * @param x
+	 *            瓦片x
+	 * @param y
+	 *            瓦片y
+	 * @param z
+	 *            瓦片等级
+	 * @return 瓦片数据列表
+	 * @throws Exception
+	 */
+	public static List<String> getAdLinkTiles(int x, int y, int z, int projectId) throws Exception {
+
+		List<String> listResult = new ArrayList<String>();
+
+		String key = String.format("%02d", z) + String.format("%08d", x)
+				+ String.format("%07d", y);
+
+		HBaseController control = new HBaseController();
+		
+		ArrayList<KeyValue> list = control.getByRowkey("adlinkTile_"+projectId, key, null);
+
+		for (KeyValue kv : list) {
+			listResult.add(new String(kv.value()));
+		}
+
+		return listResult;
+	}
+	
 	public static JSONObject getByTiles(List<ObjType> types, int x, int y, int z, int projectId) throws Exception{
 		
 		JSONObject data = new JSONObject();
@@ -87,6 +117,8 @@ public class TileSelector {
 			case RWLINK:
 				data.put("RWLINK", getRwLinkTiles(x, y, z, projectId));
 				break;
+			case ADLINK:
+				data.put("ADLINK", getAdLinkTiles(x, y, z, projectId));
 			}
 		}
 		

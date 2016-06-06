@@ -11,13 +11,13 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
-import com.navinfo.dataservice.api.ServiceException;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.job.model.JobStep;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.job.JobMsgPublisher;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONObject;
 
@@ -69,8 +69,8 @@ public class JobService {
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getManDataSource()
 					.getConnection();
-			String jobInfoSql = "SELECT T.JOB_ID,T.JOB_TYPE,T.CREATE_TIME,T.RUN_TIME,T.STATUS,T.JOB_REQUEST,T.JOB_RESPONSE,T.PROJECT_ID,T.USER_ID,T.DESCP,T.STEP_COUNT"
-					+ ",S.STEP_SEQ,S.STEP_MSG,S.BEGIN_TIME,S.END_TIME,S.STATUS AS STEP_STATUS FROM JOB_INFO T,JOB_STEP S WHERE T.JOB_ID=S.JOB_ID(+) AND T.JOB_ID=?";
+			String jobInfoSql = "SELECT T.JOB_ID,T.JOB_TYPE,T.CREATE_TIME,T.BEGIN_TIME,T.END_TIME,T.STEP_COUNT,T.STATUS,T.JOB_REQUEST,T.JOB_RESPONSE,T.JOB_GUID,T.USER_ID,T.DESCP"
+					+ ",S.STEP_SEQ,S.STEP_MSG,S.BEGIN_TIME,S.END_TIME,S.STATUS AS STEP_STATUS FROM JOB_INFO T,JOB_STEP S WHERE T.JOB_ID=S.JOB_ID(+) AND T.JOB_ID=? ORDER BY S.STEP_SEQ";
 			jobInfo = run.query(conn, jobInfoSql, new ResultSetHandler<JobInfo>(){
 
 				@Override
@@ -78,7 +78,8 @@ public class JobService {
 					JobInfo jobInfo = null;
 					if(rs.next()){
 						long id = rs.getLong("JOB_ID");
-						jobInfo = new JobInfo(id);
+						String guid = rs.getString("JOB_GUID");
+						jobInfo = new JobInfo(id,guid);
 						jobInfo.setType(rs.getString("JOB_TYPE"));
 						jobInfo.setCreateTime(rs.getTimestamp("CREATE_TIME"));
 						jobInfo.setBeginTime(rs.getTimestamp("BEGIN_TIME"));
@@ -86,7 +87,6 @@ public class JobService {
 						jobInfo.setStatus(rs.getInt("STATUS"));
 						jobInfo.setRequest(JSONObject.fromObject(rs.getString("JOB_REQUEST")));
 						jobInfo.setResponse(JSONObject.fromObject(rs.getString("JOB_RESPONSE")));
-						jobInfo.setProjectId(rs.getLong("PROJECT_ID"));
 						jobInfo.setUserId(rs.getLong("USER_ID"));
 						jobInfo.setDescp(rs.getString("DESCP"));
 						jobInfo.setStepCount(rs.getInt("STEP_COUNT"));

@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,17 +18,6 @@ public class StringUtils {
 
 	public static String PlaceHolder = "$$$";
 	
-    public static boolean isNotEmpty(String[] values) {
-        return values != null && values.length > 0;
-    }
-
-    public static boolean isNotEmpty(String value) {
-        return value != null && value.trim().length() > 0;
-    }
-    public static boolean isEmpty(String value) {
-        return value == null || value.trim().length() < 1;
-    }
-
     public static boolean toBoolean(String flag) {
         boolean view = false;
         if (org.apache.commons.lang.StringUtils.isNotBlank(flag)) {

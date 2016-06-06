@@ -2,5 +2,6 @@
 .project
 .settings
 .git
+.classpath
 /RemoteSystemsTempFiles
 .recommenders/

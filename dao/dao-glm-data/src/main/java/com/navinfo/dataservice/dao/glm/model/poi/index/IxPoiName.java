@@ -14,6 +14,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminPart;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -50,10 +51,12 @@ public class IxPoiName implements IObj {
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
-	private List<IRow> nameToneList = new ArrayList<IRow>();
+	private List<IRow> nameTones = new ArrayList<IRow>();
 
-	public Map<String, AdAdminPart> nameToneMap = new HashMap<String, AdAdminPart>();
-	
+	private List<IRow> nameFlags = new ArrayList<IRow>();
+
+	public Map<String, AdAdminPart> nameFlagMap = new HashMap<String, AdAdminPart>();
+
 	public int getPid() {
 		return pid;
 	}
@@ -138,12 +141,20 @@ public class IxPoiName implements IObj {
 		return rowId;
 	}
 
-	public List<IRow> getNameToneList() {
-		return nameToneList;
+	public List<IRow> getNameTones() {
+		return nameTones;
 	}
 
-	public void setNameToneList(List<IRow> nameToneList) {
-		this.nameToneList = nameToneList;
+	public void setNameTones(List<IRow> nameTones) {
+		this.nameTones = nameTones;
+	}
+
+	public List<IRow> getNameFlags() {
+		return nameFlags;
+	}
+
+	public void setNameFlags(List<IRow> nameFlags) {
+		this.nameFlags = nameFlags;
 	}
 
 	@Override
@@ -215,7 +226,8 @@ public class IxPoiName implements IObj {
 	@Override
 	public List<List<IRow>> children() {
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
-		children.add(this.nameToneList);
+		children.add(this.nameTones);
+		children.add(this.nameFlags);
 		return children;
 	}
 
@@ -227,8 +239,45 @@ public class IxPoiName implements IObj {
 		while (keys.hasNext()) {
 			String key = (String) keys.next();
 
+			JSONArray ja = null;
+
 			if (json.get(key) instanceof JSONArray) {
-				continue;
+				switch (key) {
+				case "nameTones":
+					nameTones.clear();
+
+					ja = json.getJSONArray(key);
+
+					for (int i = 0; i < ja.size(); i++) {
+						JSONObject jo = ja.getJSONObject(i);
+
+						RdBranchDetail row = new RdBranchDetail();
+
+						row.Unserialize(jo);
+
+						nameTones.add(row);
+					}
+
+					break;
+				case "nameFlags":
+					nameFlags.clear();
+
+					ja = json.getJSONArray(key);
+
+					for (int i = 0; i < ja.size(); i++) {
+						JSONObject jo = ja.getJSONObject(i);
+
+						RdBranchDetail row = new RdBranchDetail();
+
+						row.Unserialize(jo);
+
+						nameFlags.add(row);
+					}
+
+					break;
+				default:
+					break;
+				}
 			} else {
 				if (!"objStatus".equals(key)) {
 
@@ -263,11 +312,14 @@ public class IxPoiName implements IObj {
 			}
 		}
 
-		if (changedFields.size() > 0) {
-			return true;
-		} else {
-			return false;
-		}
+	if(changedFields.size()>0)
+
+	{
+		return true;
+	}else
+	{
+		return false;
+	}
 	}
 
 	@Override

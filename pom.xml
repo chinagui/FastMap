@@ -12,6 +12,7 @@
 		<module>toolbox</module>
 		<module>web</module>
 		<module>scripts-interface</module>
+		<module>code-generator</module>
     <module>api</module>
   </modules>
 
@@ -37,15 +38,7 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-idea-plugin</artifactId>
-				<version>3.0</version>
-                <configuration>
-                    <downloadSources>true</downloadSources>
-                    <dependenciesAsLibraries>true</dependenciesAsLibraries>
-                </configuration>
-            </plugin>
+            
 			<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-eclipse-plugin</artifactId>

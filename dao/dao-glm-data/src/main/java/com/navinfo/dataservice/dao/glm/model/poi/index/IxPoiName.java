@@ -13,7 +13,6 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminPart;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
 
 import net.sf.json.JSONArray;
@@ -55,7 +54,9 @@ public class IxPoiName implements IObj {
 
 	private List<IRow> nameFlags = new ArrayList<IRow>();
 
-	public Map<String, AdAdminPart> nameFlagMap = new HashMap<String, AdAdminPart>();
+	public Map<String, IxPoiNameFlag> nameFlagMap = new HashMap<String, IxPoiNameFlag>();
+	
+	public Map<String, IxPoiNameTone> nameToneMap = new HashMap<String, IxPoiNameTone>();
 
 	public int getPid() {
 		return pid;

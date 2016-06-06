@@ -20,12 +20,12 @@ import com.navinfo.dataservice.engine.man.project.ProjectSelector;
 import com.navinfo.dataservice.engine.man.version.VersionSelector;
 
 @Controller
-public class UserController {
+public class PlanController {
 
 	private static final Logger logger = Logger
-			.getLogger(UserController.class);
+			.getLogger(PlanController.class);
 
-	@RequestMapping(value = "/user/login")
+	@RequestMapping(value = "/city/listByWkt")
 	public void getProjectByUser(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 

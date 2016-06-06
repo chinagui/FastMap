@@ -42,6 +42,12 @@ public class GLM01221 extends baseRule {
 				RdLink rdLink = (RdLink)obj;
 
 				if(linkPidList.contains(rdLink.getPid())){continue;}
+				
+				Map<String, Object> changedFields = rdLink.changedFields();
+				if(changedFields!=null && !changedFields.containsKey("kind") && !changedFields.containsKey("specialTraffic")
+						&& !changedFields.containsKey("multiDigitized") && !changedFields.containsKey("imiCode")
+						&& !changedFields.containsKey("isViaduct")){continue;}
+				
 				RdLinkFormSelector rdFormSelector=new RdLinkFormSelector(getConn());
 				List<IRow> rdLinkFormList=rdFormSelector.loadRowsByParentId(rdLink.getPid(), false);
 				
@@ -52,7 +58,7 @@ public class GLM01221 extends baseRule {
 				
 				if(linkPidList.contains(linkPid)){continue;}
 				RdLinkSelector rdSelector=new RdLinkSelector(getConn());
-				RdLink rdLink=(RdLink) rdSelector.loadById(linkPid, false);
+				RdLink rdLink=(RdLink) rdSelector.loadByIdOnlyRdLink(linkPid, false);
 				
 				checkWithRdLink(rdLink,rdLink.getForms(),linkPidList);
 			}

@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import com.navinfo.dataservice.api.ServiceException;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.job.model.JobStep;
-import com.navinfo.dataservice.api.job.model.JobType;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.job.JobMsgPublisher;
@@ -36,7 +35,7 @@ public class JobService {
 		return "Hello, Job Service!";
 	}
 	
-	public long create(JobType jobType,JSONObject request,long projectId,long userId,String descp)throws ServiceException{
+	public long create(String jobType,JSONObject request,long userId,String descp)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
@@ -44,9 +43,9 @@ public class JobService {
 			conn = MultiDataSourceFactory.getInstance().getManDataSource()
 					.getConnection();
 			long jobId = run.queryForLong(conn, "SELECT JOB_ID_SEQ.NEXTVAL FROM DUAL");
-			String jobInfoSql = "INSERT INTO JOB_INFO(JOB_ID,JOB_TYPE,CREATE_TIME,STATUS,JOB_REQUEST,PROJECT_ID,USER_ID,DESCP)"
-					+ " VALUES (?,?,SYSDATE,1,?,?,?,?)";
-			run.update(conn, jobInfoSql, jobId,jobType.toString(),request.toString(),projectId,userId,descp);
+			String jobInfoSql = "INSERT INTO JOB_INFO(JOB_ID,JOB_TYPE,CREATE_TIME,STATUS,JOB_REQUEST,USER_ID,DESCP)"
+					+ " VALUES (?,?,SYSDATE,1,?,?,?)";
+			run.update(conn, jobInfoSql, jobId,jobType,request.toString(),userId,descp);
 			//发送run_job消息
 			JobMsgPublisher.runJob(jobId, jobType, request);
 			//
@@ -80,9 +79,10 @@ public class JobService {
 					if(rs.next()){
 						long id = rs.getLong("JOB_ID");
 						jobInfo = new JobInfo(id);
-						jobInfo.setType(JobType.getJobType(rs.getString("JOB_TYPE")));
+						jobInfo.setType(rs.getString("JOB_TYPE"));
 						jobInfo.setCreateTime(rs.getTimestamp("CREATE_TIME"));
-						jobInfo.setRunTime(rs.getTimestamp("RUN_TIME"));
+						jobInfo.setBeginTime(rs.getTimestamp("BEGIN_TIME"));
+						jobInfo.setEndTime(rs.getTimestamp("END_TIME"));
 						jobInfo.setStatus(rs.getInt("STATUS"));
 						jobInfo.setRequest(JSONObject.fromObject(rs.getString("JOB_REQUEST")));
 						jobInfo.setResponse(JSONObject.fromObject(rs.getString("JOB_RESPONSE")));

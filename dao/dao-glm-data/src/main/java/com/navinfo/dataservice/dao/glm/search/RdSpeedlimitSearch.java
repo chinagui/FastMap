@@ -12,7 +12,6 @@ import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
-import com.navinfo.dataservice.commons.db.ConfigLoader;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
@@ -258,8 +257,6 @@ public class RdSpeedlimitSearch implements ISearch {
 	}
 
 	public static void main(String[] args) throws Exception {
-		ConfigLoader
-				.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
 
 		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
 

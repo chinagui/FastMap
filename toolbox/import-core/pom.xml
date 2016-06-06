@@ -27,7 +27,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>datalock</artifactId>
+			<artifactId>datahub</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.json-lib</groupId>

@@ -2,15 +2,14 @@ package com.navinfo.dataservice.engine.edit.xiaolong.rd;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
-import com.navinfo.dataservice.commons.db.ConfigLoader;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -19,15 +18,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 
-import net.sf.json.JSONObject;
-
 public class RdSpeedLimitTest {
-
-	private static final String configPath = "D:/ws_new/DataService/web/edit-web/src/main/resources/config.properties";
-
-	static {
-		ConfigLoader.initDBConn(configPath);
-	}
 
 	public static void testSpeed() throws Exception {
 

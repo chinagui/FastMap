@@ -20,11 +20,11 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
-import com.navinfo.dataservice.commons.db.HBaseAddress;
-import com.navinfo.dataservice.commons.db.OracleAddress;
 import com.navinfo.dataservice.commons.timedomain.TimeDecoder;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
+import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
+import com.navinfo.dataservice.dao.pool.OracleAddress;
 import com.navinfo.dataservice.engine.fcc.tips.TipsImportUtils;
 
 public class RdRestrictionTipsBuilder {
@@ -256,7 +256,6 @@ public class RdRestrictionTipsBuilder {
 	}
 
 	public static void main(String[] args) throws Exception {
-		HBaseAddress.initHBaseAddress("192.168.3.156");
 		
 		String username1 = "fm_gdb02";
 		
@@ -270,7 +269,7 @@ public class RdRestrictionTipsBuilder {
 		
 		OracleAddress oa1 = new OracleAddress(username1,password1,port1,ip1,serviceName1);
 		
-		Connection hbaseConn = HBaseAddress.getHBaseConnection();
+		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
 		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 		

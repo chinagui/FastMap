@@ -77,9 +77,13 @@ public class RuleExecuter {
 	}
 	
 	public List<NiValException> exeRule(CheckRule rule) throws Exception{
-		if(rule.getAccessorType()==AccessorType.SQL){
-			return exeSqlRule(rule);
-		}else{return exeJavaRule(rule);}
+		try{
+			log.info("start exe "+rule.getRuleCode());
+			if(rule.getAccessorType()==AccessorType.SQL){
+				return exeSqlRule(rule);
+			}else{return exeJavaRule(rule);}}
+		finally{
+			log.info("end exe "+rule.getRuleCode());}
 	}
 	
 	/*
@@ -111,7 +115,7 @@ public class RuleExecuter {
 		//将sql语句中的参数进行替换，形成可执行的sql语句
 		for(int i=0;i<variableList.size();i++){
 			Set<String> variableValueList=variablesValueMap.get(variableList.get(i));
-			if(variableValueList.size()==0){
+			if(variableValueList==null || variableValueList.size()==0){
 				sqlListTmp=new ArrayList<String>();
 				sqlList=new ArrayList<String>();
 				break;

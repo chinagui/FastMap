@@ -38,7 +38,7 @@ public class SearchFilter {
 	
 	public HashSetRdLinkAndPid getRdLinksByNodePid(int nodePid) throws Exception{
 		RdLinkSelector rdLinkSelector=new RdLinkSelector(this.conn);
-		List<RdLink> links=rdLinkSelector.loadByNodePid(nodePid, false);
+		List<RdLink> links=rdLinkSelector.loadByNodePidOnlyRdLink(nodePid, false);
 		HashSetRdLinkAndPid resultSet=new HashSetRdLinkAndPid();
 		for(int i=0;i<links.size();i++){
 			resultSet.add(links.get(i));

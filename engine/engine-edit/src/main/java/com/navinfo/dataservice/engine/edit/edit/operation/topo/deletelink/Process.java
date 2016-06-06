@@ -8,9 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
@@ -30,11 +28,8 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
-import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
-import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
 
 import net.sf.json.JSONObject;
 
@@ -158,7 +153,7 @@ public class Process extends AbstractProcess<Command> {
 		RdGscSelector selector = new RdGscSelector(this.getConn());
 
 		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(this
-				.getCommand().getLinkPid(), true);
+				.getCommand().getLinkPid(),"RD_LINK", true);
 
 		this.getCommand().setRdGscs(rdGscList);
 	}

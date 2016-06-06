@@ -22,8 +22,8 @@ import org.apache.hadoop.hbase.client.Table;
 import ch.hsr.geohash.GeoHash;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
-import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.photo.Photo;
+import com.navinfo.dataservice.dao.photo.HBaseConnector;
 import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
 import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
@@ -36,9 +36,7 @@ public class SDFPhotoImporter {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		HBaseAddress.initHBaseAddress("192.168.3.156");
-
-		Table photoTab = HBaseAddress.getHBaseConnection().getTable(
+		Table photoTab = HBaseConnector.getInstance().getConnection().getTable(
 				TableName.valueOf(HBaseConstant.photoTab));
 
 		String dir = args[0];
@@ -220,7 +218,7 @@ public class SDFPhotoImporter {
 		for (File f : files) {
 			if (f.getName().endsWith(".txt")) {
 				SDFPhotoImporter.importSDFFIle(f, prefixPath,
-						HBaseAddress.getHBaseConnection(), photoTab);
+						HBaseConnector.getInstance().getConnection(), photoTab);
 			}
 		}
 

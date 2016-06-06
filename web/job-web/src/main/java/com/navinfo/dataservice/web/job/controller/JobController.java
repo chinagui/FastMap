@@ -13,7 +13,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.job.model.JobStep;
-import com.navinfo.dataservice.api.job.model.JobType;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -49,7 +48,6 @@ public class JobController extends BaseController {
 		try{
 			String jobType = URLDecode(request.getParameter("jobType"));
 			JSONObject jobRequest = JSONObject.fromObject(URLDecode(request.getParameter("request")));
-			String projectId = URLDecode(request.getParameter("projectId"));
 			String userId = URLDecode(request.getParameter("userId"));
 			String descp = URLDecode(request.getParameter("descp"));
 			if(StringUtils.isEmpty(jobType)){
@@ -58,7 +56,7 @@ public class JobController extends BaseController {
 			if(jobRequest==null){
 				throw new IllegalArgumentException("request参数不能为空。");
 			}
-			long jobId = service.create(JobType.getJobType(jobType), jobRequest, Long.valueOf(projectId), Long.valueOf(userId), descp);
+			long jobId = service.create(jobType, jobRequest, Long.valueOf(userId), descp);
 			Map<String,Object> data = new HashMap<String,Object>();
 			data.put("jobId", jobId);
 			return new ModelAndView("jsonView", success("job已创建。",data));
@@ -78,7 +76,8 @@ public class JobController extends BaseController {
 			Map<String,Object> data = new HashMap<String,Object>();
 			data.put("jobId", jobInfo.getId());
 			data.put("createTime", DateUtils.dateToString(jobInfo.getCreateTime()));
-			data.put("runTime", DateUtils.dateToString(jobInfo.getRunTime()));
+			data.put("beginTime", DateUtils.dateToString(jobInfo.getBeginTime()));
+			data.put("endTime", DateUtils.dateToString(jobInfo.getEndTime()));
 			data.put("status", jobInfo.getStatus());
 			data.put("stepCount", jobInfo.getStepCount());
 			if(jobInfo.getStepListSize()>0){

@@ -56,4 +56,7 @@ public class JtsGeometryFactory {
 	public static Geometry read(String wkt) throws ParseException{
 		return reader.read(wkt);
 	}
+    public static Polygon createPolygon(Coordinate[] coordinates){
+    	return factory.createPolygon(coordinates);
+    }
 }

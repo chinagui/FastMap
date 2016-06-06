@@ -8,14 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
@@ -42,13 +36,13 @@ import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionDetailS
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionViaSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
-import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
-import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Point;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class Process extends AbstractProcess<Command> {
 
@@ -105,8 +99,8 @@ public class Process extends AbstractProcess<Command> {
 			this.getCommand().setRestrictionDetails(details);
 
 			// 获取LINK上交限经过线
-			List<List<Entry<Integer, RdRestrictionVia>>> restrictVias = new RdRestrictionViaSelector(
-					this.getConn()).loadRestrictionViaByLinkPid(this.getCommand().getLinkPid(), true);
+			List<List<Entry<Integer, RdRestrictionVia>>> restrictVias = new RdRestrictionViaSelector(this.getConn())
+					.loadRestrictionViaByLinkPid(this.getCommand().getLinkPid(), true);
 
 			this.getCommand().setRestrictListVias(restrictVias);
 
@@ -158,11 +152,11 @@ public class Process extends AbstractProcess<Command> {
 			// 获取由该link组成的立交（RDGSC）
 			RdGscSelector selector = new RdGscSelector(this.getConn());
 
-			List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(this.getCommand().getLinkPid(), true);
+			List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(this.getCommand().getLinkPid(), "RD_LINK", true);
 
 			this.getCommand().setRdGscs(rdGscList);
-			
-			//获取由该link作为关联link的行政区划代表点
+
+			// 获取由该link作为关联link的行政区划代表点
 			AdAdminSelector adSelector = new AdAdminSelector(this.getConn());
 
 			List<AdAdmin> adAdminList = adSelector.loadRowsByLinkId(this.getCommand().getLinkPid(), true);
@@ -198,7 +192,7 @@ public class Process extends AbstractProcess<Command> {
 			opRefLaneConnexity.run(this.getResult());
 			OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(this.getCommand());
 			opRefSpeedlimit.run(this.getResult());
-			OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand());
+			OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand(), this.getConn());
 			opRefRdGsc.run(this.getResult());
 			OpRefAdAdmin opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
 			opRefAdAdmin.run(this.getResult());
@@ -237,7 +231,7 @@ public class Process extends AbstractProcess<Command> {
 				opRefLaneConnexity.run(this.getResult());
 				OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(this.getCommand());
 				opRefSpeedlimit.run(this.getResult());
-				OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand());
+				OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand(), this.getConn());
 				opRefRdGsc.run(this.getResult());
 				OpRefAdAdmin opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
 				opRefAdAdmin.run(this.getResult());
@@ -336,15 +330,15 @@ public class Process extends AbstractProcess<Command> {
 				for (RdGsc rdGsc : this.getCommand().getRdGscs()) {
 					infectList.add(rdGsc.getPid());
 				}
-				
+
 				infects.put("RDGSC", infectList);
-				
+
 				infectList = new ArrayList<Integer>();
 
 				for (AdAdmin adAdmin : this.getCommand().getAdAdmins()) {
 					infectList.add(adAdmin.getPid());
 				}
-				
+
 				infects.put("ADADMIN", infectList);
 
 				msg = JSONObject.fromObject(infects).toString();

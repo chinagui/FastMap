@@ -50,8 +50,7 @@ public class GLM01025 extends baseRule {
 			IRow obj = objList.get(i);
 			if (obj instanceof RdLink){
 				RdLink rdLink = (RdLink)obj;
-				Geometry geo =rdLink.getGeometry();
-				
+				Geometry geo =rdLink.getGeometry();				
 				Coordinate[] coords = geo.getCoordinates();
 				
 				double sx,sy,ex,ey;
@@ -70,16 +69,11 @@ public class GLM01025 extends baseRule {
 					sy = coords[0].y;
 				}
 				
-				pstmt.setInt(1, rdLink.getsNodePid());
-				
-				pstmt.setDouble(2, sx);
-				
-				pstmt.setDouble(3, sy);
-				
-				pstmt.setInt(4, rdLink.geteNodePid());
-				
-				pstmt.setDouble(5, ex);
-				
+				pstmt.setInt(1, rdLink.getsNodePid());				
+				pstmt.setDouble(2, sx);				
+				pstmt.setDouble(3, sy);				
+				pstmt.setInt(4, rdLink.geteNodePid());				
+				pstmt.setDouble(5, ex);				
 				pstmt.setDouble(6, ey);
 				
 				ResultSet resultSet = pstmt.executeQuery();
@@ -101,33 +95,12 @@ public class GLM01025 extends baseRule {
 				resultSet.close();
 				
 				if(!hasEnode || !hasSnode){
-					
-					//获取link的中间点
-//					Geometry geo1 = GeoTranslator.transform(rdLink.getGeometry(),0.00001,5);
-//					
-//					Coordinate[] cs = geo1.getCoordinates();
-					
-					Geometry pointGeo=GeoHelper.getPointFromGeo(rdLink.getGeometry());
-					String pointWkt = GeoTranslator.jts2Wkt(pointGeo, 0.00001, 5);
-//					
-//					int midP = (int)Math.round(coords.length/2);
-//					
-//					double x = coords[midP].x;
-//					
-//					double y = coords[midP].y;
-//					
-//					String pointWkt = "Point ("+x+" "+y+")";
-					
-					this.setCheckResult(pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId());
+					this.setCheckResult(rdLink.getGeometry(), "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId());
 					return;	
 				}
-				
-
 			}
-			
 			pstmt.close();
 		}
-
 	}
 	
 	

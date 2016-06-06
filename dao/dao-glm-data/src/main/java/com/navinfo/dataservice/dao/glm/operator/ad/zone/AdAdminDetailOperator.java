@@ -6,8 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -15,7 +15,6 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminDetail;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.operator.rd.gsc.RdGscLinkOperator;
 
 public class AdAdminDetailOperator implements IOperator {

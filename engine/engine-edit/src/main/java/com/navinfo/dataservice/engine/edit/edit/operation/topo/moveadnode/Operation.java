@@ -1,15 +1,27 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.moveadnode;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.AdLinkOperateUtils;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -25,7 +37,7 @@ public class Operation implements IOperation {
 	private Command command;
 
 	private AdNode updateNode;
-
+    private Map<Integer, List<AdLink>> map;
 	private Connection conn;
 
 	public Operation(Command command, AdNode updateNode, Connection conn) {
@@ -47,7 +59,7 @@ public class Operation implements IOperation {
 	 * 移动行政区划点修改对应的线的信息
 	 */
 	private void updateLinkGeomtry(Result result) throws Exception {
-
+		Map<Integer, List<AdLink>> map = new HashMap<Integer, List<AdLink>>();
 		for (AdLink link : command.getLinks()) {
 			int nodePid = updateNode.pid();
 			
@@ -75,28 +87,46 @@ public class Operation implements IOperation {
 				ps[ps.length - 1][1] = lat;
 			}
 			JSONObject geojson = new JSONObject();
-
 			geojson.put("type", "LineString");
-
 			geojson.put("coordinates", ps);
-			
-			JSONObject updateContent = new JSONObject();
-			updateContent.put("geometry", geojson);
-			
 			Geometry geo = GeoTranslator.geojson2Jts(geojson, 1, 5);
-			
-			updateContent.put("length", GeometryUtils.getLinkLength(geo));
-			
-			Set<String> meshes = MeshUtils.getInterMeshes(geo);
+			Set<String> meshes =  CompGeometryUtil.geoToMeshesWithoutBreak(geom);
 			// 修改线的几何属性
+			// 如果没有跨图幅只是修改线的几何
+			List<AdLink> links = new ArrayList<AdLink>();
 			if (meshes.size() == 1) {
-			} else {
+				JSONObject updateContent = new JSONObject();
+				updateContent.put("geometry", geojson);
+				updateContent.put("length", GeometryUtils.getLinkLength(geo));
+				link.fillChangeFields(updateContent);
+				link.setGeometry(geo);
+				links.add(link);
+				map.put(link.getPid(), links);
+				result.insertObject(link, ObjStatus.UPDATE, link.pid());
+			//如果跨图幅就需要打断生成新的link
+			}else{
+				Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
+				maps.put(link.getGeometry().getCoordinates()[0], link.getsNodePid());
+				maps.put(link.getGeometry().getCoordinates()[link.getGeometry().getCoordinates().length-1], link.geteNodePid());
+				Iterator<String> it = meshes.iterator();
+				while (it.hasNext()) {
+					String meshIdStr = it.next();
+					Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo,
+							MeshUtils.mesh2Jts(meshIdStr));
+					geomInter = GeoTranslator.geojson2Jts(
+							GeoTranslator.jts2Geojson(geomInter), 1, 5);
+					links.addAll(AdLinkOperateUtils.getCreateAdLinksWithMesh(geomInter, maps,result));
+
+				}
+				map.put(link.getPid(), links);
+				result.insertObject(link, ObjStatus.DELETE, link.pid());
 			}
 
-			link.fillChangeFields(updateContent);
+			
 
-			result.insertObject(link, ObjStatus.UPDATE, link.pid());
+			
 		}
+		this.map= map;
 	}
 
 	/*
@@ -126,46 +156,48 @@ public class Operation implements IOperation {
 				updatecommand, result, conn);
 		process.innerRun();
 	}
-
-	/*
-	 * 移动行政区划点修改对应的的信息
-	 */
+/**
+ * 移动Adnode 修改行政区划面信息
+ * @param result
+ * @throws Exception
+ */
 	private void updateFaceGeomtry(Result result) throws Exception {
-		Geometry geomNode = GeoTranslator.transform(updateNode.getGeometry(), 0.00001, 5);
-		double lon = geomNode.getCoordinates()[0].x;
-		double lat = geomNode.getCoordinates()[0].y;
 		if (command.getFaces() != null && command.getFaces().size() > 0) {
+			
 			for (AdFace face : command.getFaces()) {
-
-				Geometry geomFace = GeoTranslator.transform(face.getGeometry(), 0.00001, 5);
-				Coordinate[] cd = geomFace.getCoordinates();
-				double[][] ps = new double[cd.length][2];
-				double[][][] adPs = new double[1][cd.length][2];
-				for (int i = 0; i < cd.length; i++) {
-					if (cd[i].x == lon && cd[i].y == lat) {
-						cd[i].x = command.getLongitude();
-						cd[i].y = command.getLongitude();
-					}
+				boolean flag = false;
+				List<AdLink> links = new ArrayList<AdLink>();
+				for (IRow iRow : face.getFaceTopos()) {
+					AdFaceTopo obj = (AdFaceTopo) iRow;
+				    if(this.map.containsKey(obj.getLinkPid())){
+				    	if(this.map.get(obj.getLinkPid()).size() > 1){
+				    		flag =true;
+						}
+				    	links.addAll(this.map.get(obj.getLinkPid()));
+				    }else{
+				    	links.add((AdLink) new AdLinkSelector(conn).loadById(
+							obj.getLinkPid(), true));
+				    }
+					
+					result.insertObject(obj, ObjStatus.DELETE, face.getPid());
+					
 				}
-				for (int i = 0; i < cd.length; i++) {
-					ps[i][0] = cd[i].x;
-
-					ps[i][1] = cd[i].y;
+				if(flag){
+					//如果跨图幅需要重新生成面并且删除原有面信息
+					com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Operation(result);
+					List<IObj> objs = new ArrayList<IObj>();
+					objs.addAll(links);
+					opFace.createFaceByAdLink(objs);
+					result.insertObject(face, ObjStatus.DELETE, face.getPid());
 				}
-				adPs[0] = ps;
-				JSONObject geojson = new JSONObject();
-				geojson.put("type", "Polygon");
-				geojson.put("coordinates", adPs);
-				JSONObject updateContent = new JSONObject();
-				updateContent.put("geometry", geojson);
-				updateContent.put("length",
-						GeometryUtils.getLinkLength((GeoTranslator.geojson2Jts(geojson, 1, 5))));
-				updateContent.put("area",
-						GeometryUtils.getCalculateArea((GeoTranslator.geojson2Jts(geojson, 1, 5))));
-				face.fillChangeFields(updateContent);
-				result.insertObject(face, ObjStatus.UPDATE, face.pid());
-			}
+				else{
+					//如果不跨图幅只需要维护面的行政几何
+					com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Operation(result,face);
+					opFace.reCaleFaceGeometry(links);
+				}
+				
 		}
 	}
 
+ }
 }

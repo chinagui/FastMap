@@ -12,7 +12,6 @@ import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 
 public class AdFaceTopoSelector implements ISelector {
 

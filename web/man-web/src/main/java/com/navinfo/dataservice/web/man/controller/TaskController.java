@@ -13,6 +13,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.database.Page;
 
@@ -40,7 +42,13 @@ public class TaskController extends BaseController {
 	 */
 	@RequestMapping(value = "/task/create")
 	public ModelAndView create(HttpServletRequest request){
-		try{	
+		try{
+			String token = request.getParameter("access_token");
+			if (StringUtils.isEmpty(token)){
+				throw new IllegalArgumentException("access_token参数不能为空。");
+			}
+			//验证token是否有效，无效直接报异常
+			AccessToken tokenObj=AccessTokenFactory.validate(token);
 			String parameter = request.getParameter("parameter");
 			if (StringUtils.isEmpty(parameter)){
 				throw new IllegalArgumentException("parameter参数不能为空。");
@@ -49,7 +57,7 @@ public class TaskController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			service.create(dataJson);			
+			service.create(tokenObj.getUserId(),dataJson);			
 			return new ModelAndView("jsonView", success("创建成功"));
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);

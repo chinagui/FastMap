@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
@@ -47,6 +46,11 @@ public class JobCreateStrategy {
 	public static AbstractJob createAsSubJob(JobInfo jobInfo,AbstractJob parent)throws JobTypeNotFoundException,JobCreateException{
 		AbstractJob job = create(jobInfo);
 		job.setParent(parent);
+		return job;
+	}
+	public static AbstractJob createAsMethod(JobInfo jobInfo)throws JobTypeNotFoundException,JobCreateException{
+		AbstractJob job = create(jobInfo);
+		job.setRunAsMethod(true);
 		return job;
 	}
 	private static void loadMapping(){

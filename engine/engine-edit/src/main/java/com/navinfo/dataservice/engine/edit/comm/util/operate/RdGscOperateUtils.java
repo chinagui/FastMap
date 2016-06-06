@@ -155,7 +155,7 @@ public class RdGscOperateUtils {
 		if (gscLinkList.size() == 2) {
 			RdGscLink link1 = (RdGscLink) gscLinkList.get(0);
 
-			RdGscLink link2 = (RdGscLink) gscLinkList.get(0);
+			RdGscLink link2 = (RdGscLink) gscLinkList.get(1);
 
 			if (link1.getLinkPid() == link2.getLinkPid()) {
 				flag = true;
@@ -207,7 +207,6 @@ public class RdGscOperateUtils {
 	 */
 	public static int calCoordinateBySelfInter(JSONObject geojson, Geometry gscGeo,Geometry breakPoint) throws Exception {
 
-		System.out.println();
 		int result = -1;
 
 		// 立交点的坐标

@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -22,7 +23,6 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.oracle.MyDriverManagerDataSource;
-import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 
 

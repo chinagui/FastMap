@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.expcore.exception.ExportConfigException;
 
 /** 

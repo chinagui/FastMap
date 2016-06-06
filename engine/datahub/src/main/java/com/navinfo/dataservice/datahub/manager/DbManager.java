@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
@@ -18,7 +19,6 @@ import com.navinfo.dataservice.datahub.model.UnifiedDb;
 import com.navinfo.dataservice.datahub.model.UnifiedDbFactory;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.dataservice.commons.util.RandomUtil;
-import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
  * @ClassName: DbManager 

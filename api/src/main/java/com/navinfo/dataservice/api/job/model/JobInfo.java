@@ -21,20 +21,16 @@ public class JobInfo {
 	private int status;
 	private JSONObject request;
 	private JSONObject response;
-	private long projectId;
 	private long userId;
 	private String descp;
 	private List<JobStep> steps;
 	private int stepCount=0;
+	private String guid;
 	private String identity;
-	public JobInfo(long id){
+	public JobInfo(long id,String guid){
 		this.id=id;
-		this.identity="job-"+id;
-	}
-	public JobInfo(long projectId,long id){
-		this.projectId=projectId;
-		this.id=id;
-		this.identity="job-"+id;
+		this.guid=guid;
+		this.identity=id+"-"+guid;
 	}
 /* getter & setter */
 	public long getId() {
@@ -85,11 +81,11 @@ public class JobInfo {
 	public void setResponse(JSONObject response) {
 		this.response = response;
 	}
-	public long getProjectId() {
-		return projectId;
+	public String getGuid() {
+		return guid;
 	}
-	public void setProjectId(long projectId) {
-		this.projectId = projectId;
+	public void setGuid(String guid) {
+		this.guid = guid;
 	}
 	public long getUserId() {
 		return userId;
@@ -115,6 +111,9 @@ public class JobInfo {
 	public void setStepCount(int stepCount) {
 		this.stepCount = stepCount;
 	}
+	public String getIdentity() {
+		return identity;
+	}
 /* override hashCode() & equals() */
 	public int hashCode(){
 		return getIdentity().hashCode();
@@ -129,9 +128,6 @@ public class JobInfo {
 		}
 	}
 /* methods */
-	public String getIdentity(){
-		return identity;
-	}
 	public int getStepListSize(){
 		if(steps==null){
 			return -1;

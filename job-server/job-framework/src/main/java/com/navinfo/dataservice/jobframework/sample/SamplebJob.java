@@ -26,7 +26,7 @@ public class SamplebJob extends AbstractJob {
 	@Override
 	public void execute() throws JobException {
 		try{
-			JobInfo subJobInfo1 = new JobInfo(jobInfo.getProjectId(),jobInfo.getId());
+			JobInfo subJobInfo1 = new JobInfo(jobInfo.getId(),jobInfo.getGuid());
 			subJobInfo1.setType("samplea");
 			AbstractJob subJob1 = JobCreateStrategy.createAsSubJob(jobInfo, parent);
 			

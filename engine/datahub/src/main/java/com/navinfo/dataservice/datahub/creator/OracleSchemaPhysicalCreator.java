@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
@@ -15,7 +16,6 @@ import com.navinfo.dataservice.datahub.model.UnifiedDb;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.PackageExec;
 import com.navinfo.navicommons.database.sql.SqlExec;
-import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
  * @ClassName: OracleSchemaCreator 

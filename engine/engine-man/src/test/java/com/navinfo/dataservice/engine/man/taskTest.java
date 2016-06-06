@@ -1,8 +1,9 @@
 package com.navinfo.dataservice.engine.man;
 
+import org.apache.commons.lang.StringUtils;
+
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 
 public class taskTest {

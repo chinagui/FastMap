@@ -3,7 +3,6 @@ package com.navinfo.dataservice.api.datahub.iface;
 import java.util.Set;
 
 import com.navinfo.dataservice.api.ExternalService;
-import com.navinfo.dataservice.api.ServiceException;
 
 /** 
 * @ClassName: IDatalockService 
@@ -12,6 +11,6 @@ import com.navinfo.dataservice.api.ServiceException;
 * @Description: TODO
 */
 public interface DatalockExternalService extends ExternalService{
-	Set<Integer> query(int prjId,Set<Integer> meshes)throws ServiceException;
-	String test(String name)throws ServiceException;
+	Set<Integer> query(int prjId,Set<Integer> meshes)throws Exception;
+	String test(String name)throws Exception;
 }

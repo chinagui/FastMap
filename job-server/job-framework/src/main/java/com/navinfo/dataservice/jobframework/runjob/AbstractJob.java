@@ -28,6 +28,7 @@ public abstract class AbstractJob implements Runnable {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected JobInfo jobInfo;
 	
+	protected boolean runAsMethod = false;//供脚本等不需要作为独立job线程执行的情形使用
 	//protected boolean rerunnable=false;
 	
 	protected AbstractJob parent=null;
@@ -75,6 +76,7 @@ public abstract class AbstractJob implements Runnable {
 	 * @throws IOException
 	 */
 	private void initLogger() throws IOException {
+		if(runAsMethod) return;//如果作为方法执行，不需要初始化独立日志
 		if(parent==null){
 			log.debug("初始化job日志,将日志对象Logger 放入ThreadLocal对象中：" + jobInfo.getId());
 			log = LoggerRepos.createLogger(jobInfo.getIdentity());
@@ -95,7 +97,6 @@ public abstract class AbstractJob implements Runnable {
 		log.info("验证request参数完成。");
 	};
 	public abstract void execute()throws JobException;
-	//public abstract void computeRerunnable()throws JobException;
 	
 	/**
 	 * 第一次反馈消息，接收消息方会设置job状态为执行中，并写入总步骤数
@@ -103,13 +104,15 @@ public abstract class AbstractJob implements Runnable {
 	 * @throws JobException
 	 */
 	public void response(String stepMsg,Map<String,Object> data)throws JobException{
-		try{
-			//data添加到本job
-			if(data!=null){
-				for(String key:data.keySet()){
-					jobInfo.getResponse().put(key, data.get(key));
-				}
+		log.debug("resp:"+stepMsg+","+JSONObject.fromObject(data).toString());
+		//data添加到jobInfo
+		if(data!=null){
+			for(String key:data.keySet()){
+				jobInfo.getResponse().put(key, data.get(key));
 			}
+		}
+		if(runAsMethod)return;//如果作为方法执行，不需要反馈
+		try{
 			//step如果有parent需要添加到parent
 			if(parent==null){
 				JobStep step = jobInfo.addStep(stepMsg);
@@ -135,6 +138,12 @@ public abstract class AbstractJob implements Runnable {
 	}
 	public void setJobInfo(JobInfo jobInfo) {
 		this.jobInfo = jobInfo;
+	}
+	public boolean isRunAsMethod() {
+		return runAsMethod;
+	}
+	public void setRunAsMethod(boolean runAsMethod) {
+		this.runAsMethod = runAsMethod;
 	}
 	public AbstractJob getParent(){
 		return parent;

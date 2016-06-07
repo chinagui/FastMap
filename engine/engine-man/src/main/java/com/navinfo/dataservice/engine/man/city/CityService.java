@@ -9,13 +9,14 @@ import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.engine.dao.DBConnector;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -42,8 +43,7 @@ public class CityService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();	
+			conn = DBConnector.getInstance().getManConnection();
 			City  bean = (City)JSONObject.toBean(json, City.class);	
 			
 			String createSql = "insert into CITY (CITY_ID, CITY_NAME, PROVINCE_NAME, GEOMETRY, REGION_ID, PLAN_STATUS) values(?,?,?,?,?,?)";			
@@ -64,8 +64,7 @@ public class CityService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();	
+			conn = DBConnector.getInstance().getManConnection();	
 			JSONObject obj = JSONObject.fromObject(json);	
 			City  bean = (City)JSONObject.toBean(obj, City.class);	
 			
@@ -113,8 +112,7 @@ public class CityService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();	
+			conn = DBConnector.getInstance().getManConnection();	
 			JSONObject obj = JSONObject.fromObject(json);	
 			City  bean = (City)JSONObject.toBean(obj, City.class);	
 			
@@ -162,8 +160,7 @@ public class CityService {
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();	
+			conn = DBConnector.getInstance().getManConnection();	
 			JSONObject obj = JSONObject.fromObject(json);	
 			City  bean = (City)JSONObject.toBean(obj, City.class);
 			
@@ -232,8 +229,7 @@ public class CityService {
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();	
+			conn = DBConnector.getInstance().getManConnection();
 					
 			JSONObject jsonReq = JSONObject.fromObject(json);
 			final String wkt= jsonReq.getString("wkt");
@@ -292,8 +288,7 @@ public class CityService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();	
+			conn = DBConnector.getInstance().getManConnection();
 			JSONObject obj = JSONObject.fromObject(json);	
 			City  bean = (City)JSONObject.toBean(obj, City.class);	
 			

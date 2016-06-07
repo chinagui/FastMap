@@ -6,6 +6,9 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
@@ -60,7 +63,7 @@ import oracle.sql.STRUCT;
  * POI基础信息表 selector
  * 
  * @author zhangxiaolong
- *
+ * 
  */
 public class IxPoiSelector implements ISelector {
 
@@ -74,8 +77,8 @@ public class IxPoiSelector implements ISelector {
 	public IRow loadById(int id, boolean isLock) throws Exception {
 		IxPoi ixPoi = new IxPoi();
 
-		StringBuilder sb = new StringBuilder(
-				"select * from " + ixPoi.tableName() + " WHERE pid = :1 and  u_record !=2");
+		StringBuilder sb = new StringBuilder("select * from "
+				+ ixPoi.tableName() + " WHERE pid = :1 and  u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -110,9 +113,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_ADDRESS
-				IxPoiAddressSelector ixPoiAddressSelector = new IxPoiAddressSelector(conn);
+				IxPoiAddressSelector ixPoiAddressSelector = new IxPoiAddressSelector(
+						conn);
 
-				ixPoi.setAddresses(ixPoiAddressSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setAddresses(ixPoiAddressSelector.loadRowsByParentId(id,
+						isLock));
 
 				for (IRow row : ixPoi.getAddresses()) {
 
@@ -122,9 +127,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_CONTACT
-				IxPoiContactSelector ixPoiContactSelector = new IxPoiContactSelector(conn);
+				IxPoiContactSelector ixPoiContactSelector = new IxPoiContactSelector(
+						conn);
 
-				ixPoi.setContacts(ixPoiContactSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setContacts(ixPoiContactSelector.loadRowsByParentId(id,
+						isLock));
 
 				for (IRow row : ixPoi.getContacts()) {
 					IxPoiContact obj = (IxPoiContact) row;
@@ -133,7 +140,8 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_FLAG
-				IxPoiFlagSelector ixPoiFlagSelector = new IxPoiFlagSelector(conn);
+				IxPoiFlagSelector ixPoiFlagSelector = new IxPoiFlagSelector(
+						conn);
 
 				ixPoi.setFlags(ixPoiFlagSelector.loadRowsByParentId(id, isLock));
 
@@ -144,9 +152,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_ENTRYIMAGE
-				IxPoiEntryImageSelector ixPoiEntryImageSelector = new IxPoiEntryImageSelector(conn);
+				IxPoiEntryImageSelector ixPoiEntryImageSelector = new IxPoiEntryImageSelector(
+						conn);
 
-				ixPoi.setEntryImages(ixPoiEntryImageSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setEntryImages(ixPoiEntryImageSelector
+						.loadRowsByParentId(id, isLock));
 
 				for (IRow row : ixPoi.getFlags()) {
 					IxPoiEntryimage obj = (IxPoiEntryimage) row;
@@ -155,7 +165,8 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_ICON
-				IxPoiIconSelector ixPoiIconSelector = new IxPoiIconSelector(conn);
+				IxPoiIconSelector ixPoiIconSelector = new IxPoiIconSelector(
+						conn);
 
 				ixPoi.setIcons(ixPoiIconSelector.loadRowsByParentId(id, isLock));
 
@@ -166,9 +177,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_PHOTO*
-				IxPoiPhotoSelector ixPoiPhotoSelector = new IxPoiPhotoSelector(conn);
+				IxPoiPhotoSelector ixPoiPhotoSelector = new IxPoiPhotoSelector(
+						conn);
 
-				ixPoi.setPhotoes(ixPoiPhotoSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setPhotoes(ixPoiPhotoSelector.loadRowsByParentId(id,
+						isLock));
 
 				for (IRow row : ixPoi.getPhotoes()) {
 					IxPoiPhoto obj = (IxPoiPhoto) row;
@@ -177,9 +190,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_AUDIO*
-				IxPoiAudioSelector ixPoiAudioSelector = new IxPoiAudioSelector(conn);
+				IxPoiAudioSelector ixPoiAudioSelector = new IxPoiAudioSelector(
+						conn);
 
-				ixPoi.setAudioes(ixPoiAudioSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setAudioes(ixPoiAudioSelector.loadRowsByParentId(id,
+						isLock));
 
 				for (IRow row : ixPoi.getAudioes()) {
 					IxPoiAudio obj = (IxPoiAudio) row;
@@ -188,9 +203,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_VIDEO*
-				IxPoiVideoSelector ixPoiVideoSelector = new IxPoiVideoSelector(conn);
+				IxPoiVideoSelector ixPoiVideoSelector = new IxPoiVideoSelector(
+						conn);
 
-				ixPoi.setVideoes(ixPoiVideoSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setVideoes(ixPoiVideoSelector.loadRowsByParentId(id,
+						isLock));
 
 				for (IRow row : ixPoi.getVideoes()) {
 					IxPoiVideo obj = (IxPoiVideo) row;
@@ -199,9 +216,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_PARENT
-				IxPoiParentSelector ixPoiParentSelector = new IxPoiParentSelector(conn);
+				IxPoiParentSelector ixPoiParentSelector = new IxPoiParentSelector(
+						conn);
 
-				ixPoi.setParents(ixPoiParentSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setParents(ixPoiParentSelector.loadRowsByParentId(id,
+						isLock));
 
 				for (IRow row : ixPoi.getParents()) {
 					IxPoiParent obj = (IxPoiParent) row;
@@ -210,9 +229,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_PARKING
-				IxPoiParkingSelector ixPoiParkingSelector = new IxPoiParkingSelector(conn);
+				IxPoiParkingSelector ixPoiParkingSelector = new IxPoiParkingSelector(
+						conn);
 
-				ixPoi.setParkings(ixPoiParkingSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setParkings(ixPoiParkingSelector.loadRowsByParentId(id,
+						isLock));
 
 				for (IRow row : ixPoi.getParkings()) {
 					IxPoiParking obj = (IxPoiParking) row;
@@ -221,9 +242,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_TOURROUTE
-				IxPoiTourrouteSelector ixPoiTourrouteSelector = new IxPoiTourrouteSelector(conn);
+				IxPoiTourrouteSelector ixPoiTourrouteSelector = new IxPoiTourrouteSelector(
+						conn);
 
-				ixPoi.setTourroutes(ixPoiTourrouteSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setTourroutes(ixPoiTourrouteSelector.loadRowsByParentId(
+						id, isLock));
 
 				for (IRow row : ixPoi.getTourroutes()) {
 					IxPoiTourroute obj = (IxPoiTourroute) row;
@@ -232,9 +255,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_EVENT
-				IxPoiEventSelector ixPoiEventSelector = new IxPoiEventSelector(conn);
+				IxPoiEventSelector ixPoiEventSelector = new IxPoiEventSelector(
+						conn);
 
-				ixPoi.setEvents(ixPoiEventSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setEvents(ixPoiEventSelector.loadRowsByParentId(id,
+						isLock));
 
 				for (IRow row : ixPoi.getEvents()) {
 					IxPoiEvent obj = (IxPoiEvent) row;
@@ -243,9 +268,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_DETAIL
-				IxPoiDetailSelector ixPoiDetailSelector = new IxPoiDetailSelector(conn);
+				IxPoiDetailSelector ixPoiDetailSelector = new IxPoiDetailSelector(
+						conn);
 
-				ixPoi.setDetails(ixPoiDetailSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setDetails(ixPoiDetailSelector.loadRowsByParentId(id,
+						isLock));
 
 				for (IRow row : ixPoi.getDetails()) {
 					IxPoiDetail obj = (IxPoiDetail) row;
@@ -254,9 +281,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_BUSINESSTIME
-				IxPoiBusinessTimeSelector ixPoiBusinessTimeSelector = new IxPoiBusinessTimeSelector(conn);
+				IxPoiBusinessTimeSelector ixPoiBusinessTimeSelector = new IxPoiBusinessTimeSelector(
+						conn);
 
-				ixPoi.setBusinesstimes(ixPoiBusinessTimeSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setBusinesstimes(ixPoiBusinessTimeSelector
+						.loadRowsByParentId(id, isLock));
 
 				for (IRow row : ixPoi.getBusinesstimes()) {
 					IxPoiBusinessTime obj = (IxPoiBusinessTime) row;
@@ -265,9 +294,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_CHARGINGSTATION
-				IxPoiChargingStationSelector ixPoiChargingStationSelector = new IxPoiChargingStationSelector(conn);
+				IxPoiChargingStationSelector ixPoiChargingStationSelector = new IxPoiChargingStationSelector(
+						conn);
 
-				ixPoi.setChargingstations(ixPoiChargingStationSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setChargingstations(ixPoiChargingStationSelector
+						.loadRowsByParentId(id, isLock));
 
 				for (IRow row : ixPoi.getChargingstations()) {
 					IxPoiChargingStation obj = (IxPoiChargingStation) row;
@@ -276,9 +307,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_CHARGINGPLOT
-				IxPoiChargingPlotSelector ixPoiChargingPlotSelector = new IxPoiChargingPlotSelector(conn);
+				IxPoiChargingPlotSelector ixPoiChargingPlotSelector = new IxPoiChargingPlotSelector(
+						conn);
 
-				ixPoi.setChargingplots(ixPoiChargingPlotSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setChargingplots(ixPoiChargingPlotSelector
+						.loadRowsByParentId(id, isLock));
 
 				for (IRow row : ixPoi.getChargingplots()) {
 					IxPoiChargingPlot obj = (IxPoiChargingPlot) row;
@@ -287,9 +320,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_CHARGINGPLOT_PH
-				IxPoiChargingPlotPhSelector ixPoiChargingPlotPhSelector = new IxPoiChargingPlotPhSelector(conn);
+				IxPoiChargingPlotPhSelector ixPoiChargingPlotPhSelector = new IxPoiChargingPlotPhSelector(
+						conn);
 
-				ixPoi.setChargingplotPhs(ixPoiChargingPlotPhSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setChargingplotPhs(ixPoiChargingPlotPhSelector
+						.loadRowsByParentId(id, isLock));
 
 				for (IRow row : ixPoi.getChargingplotPhs()) {
 					IxPoiChargingPlotPh obj = (IxPoiChargingPlotPh) row;
@@ -298,9 +333,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_BUILDING
-				IxPoiBuildingSelector ixPoiBuildingSelector = new IxPoiBuildingSelector(conn);
+				IxPoiBuildingSelector ixPoiBuildingSelector = new IxPoiBuildingSelector(
+						conn);
 
-				ixPoi.setBuildings(ixPoiBuildingSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setBuildings(ixPoiBuildingSelector.loadRowsByParentId(id,
+						isLock));
 
 				for (IRow row : ixPoi.getBuildings()) {
 					IxPoiBuilding obj = (IxPoiBuilding) row;
@@ -309,9 +346,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_ADVERTISEMENT
-				IxPoiAdvertisementSelector ixPoiAdvertisementSelector = new IxPoiAdvertisementSelector(conn);
+				IxPoiAdvertisementSelector ixPoiAdvertisementSelector = new IxPoiAdvertisementSelector(
+						conn);
 
-				ixPoi.setAdvertisements(ixPoiAdvertisementSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setAdvertisements(ixPoiAdvertisementSelector
+						.loadRowsByParentId(id, isLock));
 
 				for (IRow row : ixPoi.getAdvertisements()) {
 					IxPoiAdvertisement obj = (IxPoiAdvertisement) row;
@@ -320,9 +359,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_GASSTATION
-				IxPoiGasstationSelector ixPoiGasstationSelector = new IxPoiGasstationSelector(conn);
+				IxPoiGasstationSelector ixPoiGasstationSelector = new IxPoiGasstationSelector(
+						conn);
 
-				ixPoi.setGasstations(ixPoiGasstationSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setGasstations(ixPoiGasstationSelector
+						.loadRowsByParentId(id, isLock));
 
 				for (IRow row : ixPoi.getGasstations()) {
 					IxPoiGasstation obj = (IxPoiGasstation) row;
@@ -331,9 +372,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_INTRODUCTION
-				IxPoiIntroductionSelector ixPoiIntroductionSelector = new IxPoiIntroductionSelector(conn);
+				IxPoiIntroductionSelector ixPoiIntroductionSelector = new IxPoiIntroductionSelector(
+						conn);
 
-				ixPoi.setIntroductions(ixPoiIntroductionSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setIntroductions(ixPoiIntroductionSelector
+						.loadRowsByParentId(id, isLock));
 
 				for (IRow row : ixPoi.getIntroductions()) {
 					IxPoiIntroduction obj = (IxPoiIntroduction) row;
@@ -342,9 +385,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_ATTRACTION
-				IxPoiAttractionSelector ixPoiAttractionSelector = new IxPoiAttractionSelector(conn);
+				IxPoiAttractionSelector ixPoiAttractionSelector = new IxPoiAttractionSelector(
+						conn);
 
-				ixPoi.setAttractions(ixPoiAttractionSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setAttractions(ixPoiAttractionSelector
+						.loadRowsByParentId(id, isLock));
 
 				for (IRow row : ixPoi.getAttractions()) {
 					IxPoiAttraction obj = (IxPoiAttraction) row;
@@ -353,9 +398,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_HOTEL
-				IxPoiHotelSelector ixPoiHotelSelector = new IxPoiHotelSelector(conn);
+				IxPoiHotelSelector ixPoiHotelSelector = new IxPoiHotelSelector(
+						conn);
 
-				ixPoi.setHotels(ixPoiHotelSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setHotels(ixPoiHotelSelector.loadRowsByParentId(id,
+						isLock));
 
 				for (IRow row : ixPoi.getHotels()) {
 					IxPoiHotel obj = (IxPoiHotel) row;
@@ -364,9 +411,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_RESTAURANT
-				IxPoiRestaurantSelector ixPoiRestaurantSelector = new IxPoiRestaurantSelector(conn);
+				IxPoiRestaurantSelector ixPoiRestaurantSelector = new IxPoiRestaurantSelector(
+						conn);
 
-				ixPoi.setRestaurants(ixPoiRestaurantSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setRestaurants(ixPoiRestaurantSelector
+						.loadRowsByParentId(id, isLock));
 
 				for (IRow row : ixPoi.getRestaurants()) {
 					IxPoiRestaurant obj = (IxPoiRestaurant) row;
@@ -375,9 +424,11 @@ public class IxPoiSelector implements ISelector {
 				}
 
 				// 设置子表IX_POI_CARRENTAL
-				IxPoiCarrentalSelector ixPoiCarrentalSelector = new IxPoiCarrentalSelector(conn);
+				IxPoiCarrentalSelector ixPoiCarrentalSelector = new IxPoiCarrentalSelector(
+						conn);
 
-				ixPoi.setCarrentals(ixPoiCarrentalSelector.loadRowsByParentId(id, isLock));
+				ixPoi.setCarrentals(ixPoiCarrentalSelector.loadRowsByParentId(
+						id, isLock));
 
 				for (IRow row : ixPoi.getCarrentals()) {
 					IxPoiCarrental obj = (IxPoiCarrental) row;
@@ -420,19 +471,34 @@ public class IxPoiSelector implements ISelector {
 	}
 
 	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
+	public List<IRow> loadRowsByParentId(int id, boolean isLock)
+			throws Exception {
 		return null;
 	}
-    public List<IRow> loadPids(boolean isLock)throws Exception{
-    	
-     List<IRow> rows = new ArrayList<IRow>();
-		
 
-		StringBuilder sb = new StringBuilder(
-				"select ip.pid, ipn.name,ip.geometry,ip.collect_time,ip.ip.u_record from ix_poi ip ,ix_poi_name ipn  WHERE ip.pid =ip.poi_pid and lang_code = 'CHI' and name_class =1 ");
+	public JSONObject loadPids(boolean isLock,int pageSize, int pageNum) throws Exception {
 
+		JSONObject result = new JSONObject();
+
+		JSONArray array = new JSONArray();
+
+		int total = 0;
+		int startRow = pageNum * pageSize + 1;
+
+		int endRow = (pageNum + 1) * pageSize;
+		StringBuilder buffer = new StringBuilder();
+        buffer.append(" SELECT * ");
+        buffer.append(" FROM (SELECT c.*, ROWNUM rn ");
+        buffer.append(" FROM (SELECT COUNT (1) OVER (PARTITION BY 1) total,");
+        buffer.append(" ip.pid,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
+        buffer.append(" FROM ix_poi ip, ix_poi_name ipn ");
+        buffer.append(" WHERE     ip.pid = ipn.poi_pid ");
+        buffer.append(" AND lang_code = 'CHI'");
+        buffer.append(" AND name_class = 1) c ");
+        buffer.append(" WHERE ROWNUM <= :1) ");
+        buffer.append("  WHERE rn >= :2) ");
 		if (isLock) {
-			sb.append(" for update nowait");
+			buffer.append(" for update nowait");
 		}
 
 		PreparedStatement pstmt = null;
@@ -440,23 +506,31 @@ public class IxPoiSelector implements ISelector {
 		ResultSet resultSet = null;
 
 		try {
-			pstmt = conn.prepareStatement(sb.toString());
+			pstmt = conn.prepareStatement(buffer.toString());
+			pstmt.setInt(1, endRow);
 
-
+			pstmt.setInt(2, startRow);
 			resultSet = pstmt.executeQuery();
 
-			while(resultSet.next()) {
-				IxPoi ixPoi = new IxPoi();
-				IxPoiName name = new IxPoiName();
+			while (resultSet.next()) {
+				if (total == 0) {
+					total = resultSet.getInt("total");
+				}
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
-				ixPoi.setPid(resultSet.getInt("pid"));
-				name.setName(resultSet.getString("name"));
-				ixPoi.setGeometry(geometry);
-				ixPoi.setCollectTime(resultSet.getString("collect_time"));
-				ixPoi.getNames().add(name);
-				ixPoi.setuRecord(resultSet.getInt("u_record"));
-			} return rows;
+				Geometry geometry = GeoTranslator.struct2Jts(struct, 1, 0);
+				JSONObject json = new JSONObject();
+				json.put("pid", resultSet.getInt("pid"));
+				json.put("name", resultSet.getString("name"));
+				json.put("geometry", GeoTranslator.jts2Geojson(geometry));
+				json.put("uRecord", resultSet.getInt("u_record"));
+				json.put("collectTime", resultSet.getString("collect_time"));
+				array.add(json);
+			}
+			result.put("total", total);
+
+			result.put("rows", array);
+
+			return result;
 		} catch (Exception e) {
 
 			throw e;
@@ -479,7 +553,8 @@ public class IxPoiSelector implements ISelector {
 			}
 
 		}
-    }
+	}
+
 	/**
 	 * 设置属性
 	 * 

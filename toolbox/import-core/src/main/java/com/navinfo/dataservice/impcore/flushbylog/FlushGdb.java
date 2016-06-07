@@ -19,16 +19,15 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
-
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.navinfo.dataservice.api.edit.iface.DatalockApi;
 import com.navinfo.dataservice.api.edit.model.FmMesh4Lock;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.impcore.exception.LockException;

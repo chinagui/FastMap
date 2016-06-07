@@ -7,13 +7,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.engine.dao.DBConnector;
@@ -23,9 +25,6 @@ import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
-
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
 
 /** 
 * @ClassName:  CityService 
@@ -246,7 +245,7 @@ public class CityService {
 					while(rs.next()){
 						try {
 							if (GeometryUtils.IsIntersectPolygon(wkt,rs.getObject("geometry"))){
-								HashMap map = new HashMap();
+								HashMap<String,Object> map = new HashMap<String,Object>();
 								map.put("cityId", rs.getInt("CITY_ID"));
 								map.put("cityName", rs.getString("CITY_NAME"));
 								STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");

@@ -161,7 +161,7 @@ public class IxPoiSearch implements ISearch {
 			haveParentOrChild="3";
 		}	
 		
-		return isParentOrChild;
+		return haveParentOrChild;
 	}
 
 	public static void main(String[] args) throws Exception {

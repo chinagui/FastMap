@@ -31,11 +31,11 @@
      </dependency>
      <dependency>
 	     <groupId>com.navinfo.dataservice</groupId>
-		 <artifactId>api</artifactId>
+		 <artifactId>commons</artifactId>
 	 </dependency>
      <dependency>
 	     <groupId>com.navinfo.dataservice</groupId>
-		 <artifactId>commons</artifactId>
+		 <artifactId>api-job</artifactId>
 	 </dependency>
      <dependency>
 	     <groupId>com.rabbitmq</groupId>

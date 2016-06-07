@@ -127,7 +127,7 @@ public class IxPoiPhotoSelector implements ISelector {
 
 				photo.setPoiPid(resultSet.getInt("poi_pid"));
 
-				photo.setPhotoId(resultSet.getInt("videphoto_id"));				
+				photo.setPhotoId(resultSet.getInt("photo_id"));				
 				
 				photo.setStatus(resultSet.getString("status"));
 					

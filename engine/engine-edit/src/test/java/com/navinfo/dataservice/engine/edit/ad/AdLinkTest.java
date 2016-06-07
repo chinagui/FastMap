@@ -107,6 +107,23 @@ public class AdLinkTest {
 			}
 	}
 	
+	
+	
+	public void tesRepairtAdLink()
+	{
+		String parameter = "{\"command\":\"REPAIR\",\"projectId\":11,\"objId\":100032727,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.62528,39.25022],[116.62528,39.25006],[116.62535838820631,39.25011395094421],[116.62544,39.25017],[116.62528,39.25022]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"ADLINK\"}";
+		
+		log.info(parameter);
+		System.out.println(parameter+"-------------------");
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+
 	public void testSearchAdNode()
 	{
 		Connection conn;
@@ -125,15 +142,7 @@ public class AdLinkTest {
 	public static void main(String[] args) throws Exception{
 		//new AdLinkTest().deleteAdLinkTest();
 		//new AdLinkTest().TrackRdLink();
-		//new AdLinkTest().deleteAdLinkTest();
-		new AdLinkTest().createAdLinkTest();
-		List<String> list1 = new ArrayList<String>();
-		List<String> list2 = new ArrayList<String>();
-		list1.add("AA");
-		list2.add("AA");
-		list2.add("BB");
-		list1.retainAll(list2);
-		System.out.println(list1);
+		new AdLinkTest().tesRepairtAdLink();
 		
 	}
 }

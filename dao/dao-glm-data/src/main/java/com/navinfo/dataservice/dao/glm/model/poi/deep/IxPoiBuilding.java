@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.dao.glm.model.poi.index;
+package com.navinfo.dataservice.dao.glm.model.poi.deep;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -9,62 +9,122 @@ import java.util.Map;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.vividsolutions.jts.geom.Geometry;
+/**
+ * 索引:POI 深度信息(建筑物和租户的楼层信息)
+ * @author zhaokk
+ *
+ */
+public class IxPoiBuilding implements IRow {
 
-public class IXPoiParent implements IObj {
-	
-	private String rowId;
-	
+	private int poiPid =0;
+	private String  floorUsed;//大厦或租户可用的楼层
+	private String  floorEmpty;//大厦或租户空缺的楼层 
 	private int mesh;
-	
-	private int pid;
-	
-	private int parentPoiPid;
-	
-	private int tenantFlag;
-	
-	private String memo;
-	
-	private Map<String, Object> changedFields = new HashMap<String, Object>();
-	
-	private List<IRow> poiChildrens = new ArrayList<IRow>();
-	
-	public Map<String, IXPoiChildren> poiChildrenMap = new HashMap<String, IXPoiChildren>();
-
-	public IXPoiParent() {
-
-	}
-	
-	
-	public int getPid() {
-		return pid;
+	private String rowId;
+	public int getPoiPid() {
+		return poiPid;
 	}
 
-	public void setPid(int Pid) {
-		this.pid = Pid;
+	public void setPoiPid(int poiPid) {
+		this.poiPid = poiPid;
 	}
 
-	public int getParentPoiPid() {
-		return parentPoiPid;
+	public String getFloorUsed() {
+		return floorUsed;
 	}
 
-	public void setParentPoiPid(int parentPoiPid) {
-		this.parentPoiPid = parentPoiPid;
+	public void setFloorUsed(String floorUsed) {
+		this.floorUsed = floorUsed;
 	}
 
-	public int getTenantFlag() {
-		return tenantFlag;
+	public String getFloorEmpty() {
+		return floorEmpty;
 	}
 
-	public void setTenantFlag(int tenantFlag) {
-		this.tenantFlag = tenantFlag;
+	public void setFloorEmpty(String floorEmpty) {
+		this.floorEmpty = floorEmpty;
 	}
+
+	public String getRowId() {
+		return rowId;
+	}
+    private String memo;
+    private Map<String, Object> changedFields = new HashMap<String, Object>();   
+	@Override
+	public String rowId() {
+		return rowId;
+	}
+
+	@Override
+	public void setRowId(String rowId) {
+		this.rowId = rowId;
+		
+	}
+
+	@Override
+	public String tableName() {
+		return "ix_poi_building";
+	}
+	
+
+	@Override
+	public ObjStatus status() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setStatus(ObjStatus os) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public ObjType objType() {
+		return ObjType.IXPOIBUILDING;
+	}
+
+	@Override
+	public void copy(IRow row) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Map<String, Object> changedFields() {
+		// TODO Auto-generated method stub
+		return this.changedFields;
+	}
+
+	@Override
+	public String parentPKName() {
+		// TODO Auto-generated method stub
+		return "pid";
+	}
+
+	@Override
+	public int parentPKValue() {
+		// TODO Auto-generated method stub
+		return this.getPoiPid();
+	}
+
+	@Override
+	public String parentTableName() {
+		// TODO Auto-generated method stub
+		return "ix_poi";
+	}
+
 
 	public String getMemo() {
 		return memo;
@@ -74,92 +134,21 @@ public class IXPoiParent implements IObj {
 		this.memo = memo;
 	}
 
-	public List<IRow> getPoiChildrens() {
-		return poiChildrens;
-	}
-
-	public void setPoiChildrens(List<IRow> poiChildrens) {
-		this.poiChildrens = poiChildrens;
-	}
-
-	public Map<String, IXPoiChildren> getPoiChildrenMap() {
-		return poiChildrenMap;
-	}
-
-	public void setPoiChildrenMap(Map<String, IXPoiChildren> poiChildrenMap) {
-		this.poiChildrenMap = poiChildrenMap;
-	}
-
-	
-	@Override
-	public String rowId() {
-		return rowId;
-	}
-
-	@Override
-	public void setRowId(String rowId) {
-		this.rowId = rowId;
-	}
-
-	@Override
-	public String tableName() {
-
-		return "ix_poi_parent";
-	}
-
-	@Override
-	public ObjStatus status() {
-		
-		return null;
-	}
-
-	@Override
-	public void setStatus(ObjStatus os) {
-		
-	}
-
-	@Override
-	public ObjType objType() {
-		return ObjType.IXPOIPARENT;
-	}
-
-	@Override
-	public void copy(IRow row) {
-		
-	}
-
-	@Override
-	public Map<String, Object> changedFields() {
+	public Map<String, Object> getChangedFields() {
 		return changedFields;
 	}
 
-	@Override
-	public String parentPKName() {
-		return "group_id";
-	}
-
-	@Override
-	public int parentPKValue() {
-		return this.getPid();
-	}
-
-	@Override
-	public String parentTableName() {
-		return "ix_poi_parent";
+	public void setChangedFields(Map<String, Object> changedFields) {
+		this.changedFields = changedFields;
 	}
 
 	@Override
 	public List<List<IRow>> children() {
-		List<List<IRow>> children = new ArrayList<List<IRow>>();
-		
-		children.add(this.getPoiChildrens());
-		
-		return children;
+		return null;
 	}
 
 	@Override
 	public boolean fillChangeFields(JSONObject json) throws Exception {
-		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {
@@ -168,59 +157,52 @@ public class IXPoiParent implements IObj {
 			if (json.get(key) instanceof JSONArray) {
 				continue;
 			} else {
-				if (!"objStatus".equals(key)) {
-
+				if ( !"objStatus".equals(key)) {
+					
 					Field field = this.getClass().getDeclaredField(key);
-
+					
 					field.setAccessible(true);
-
+					
 					Object objValue = field.get(this);
-
+					
 					String oldValue = null;
-
-					if (objValue == null) {
+					
+					if (objValue == null){
 						oldValue = "null";
-					} else {
+					}else{
 						oldValue = String.valueOf(objValue);
 					}
-
+					
 					String newValue = json.getString(key);
-
-					if (!newValue.equals(oldValue)) {
+					
+					if (!newValue.equals(oldValue)){
 						Object value = json.get(key);
-
-						if (value instanceof String) {
+						
+						if(value instanceof String){
 							changedFields.put(key, newValue.replace("'", "''"));
-						} else {
+						}
+						else{
 							changedFields.put(key, value);
 						}
 
 					}
 
+					
 				}
 			}
 		}
-
-		if (changedFields.size() > 0) {
+		
+		if (changedFields.size() >0){
 			return true;
-		} else {
+		}else{
 			return false;
 		}
-	}
 
-	@Override
-	public int mesh() {
-		return mesh;
-	}
-
-	@Override
-	public void setMesh(int mesh) {
-		this.mesh = mesh;
 	}
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		return JSONObject.fromObject(this, JsonUtils.getStrConfig());		
+		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
 	}
 
 	@Override
@@ -239,6 +221,7 @@ public class IXPoiParent implements IObj {
 				f.setAccessible(true);
 
 				f.set(this, json.get(key));
+
 			}
 
 		}
@@ -246,19 +229,16 @@ public class IXPoiParent implements IObj {
 	}
 
 	@Override
-	public List<IRow> relatedRows() {
+	public int mesh() {
+		// TODO Auto-generated method stub
+		return this.mesh;
+	}
+
+	@Override
+	public void setMesh(int mesh) {
+		this.mesh = mesh;
 		
-		return null;
 	}
 
-	@Override
-	public int pid() {
-		return this.getPid();
-	}
-
-	@Override
-	public String primaryKey() {
-		return "group_id";
-	}
 
 }

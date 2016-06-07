@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.dao.glm.model.poi.index;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -10,55 +11,65 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
-public class IXPoiVideo implements IRow {
 
+/**
+ * POI父子关系父表
+ * @author luyao
+ *
+ */
+public class IxPoiParent implements IObj {
+	
 	private String rowId;
 	
 	private int mesh;
 	
-	private int poiPid;
+	private int pid;
 	
-	private int videoId;
+	private int parentPoiPid;
 	
-	private String status;
+	private int tenantFlag;
 	
 	private String memo;
 	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
+	private List<IRow> poiChildrens = new ArrayList<IRow>();
 	
-	public IXPoiVideo() {
-	}
+	public Map<String, IxPoiChildren> poiChildrenMap = new HashMap<String, IxPoiChildren>();
 
-	
-	public int getPoiPid() {
-		return poiPid;
-	}
+	public IxPoiParent() {
 
-	public void setPoiPid(int poiPid) {
-		this.poiPid = poiPid;
 	}
 	
 	
-	public int getVideoId() {
-		return videoId;
+	public int getPid() {
+		return pid;
 	}
 
-	public void setVideoId(int videoId) {
-		this.videoId = videoId;
+	public void setPid(int Pid) {
+		this.pid = Pid;
 	}
 
-	public String getStatus() {
-		return status;
+	public int getParentPoiPid() {
+		return parentPoiPid;
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
+	public void setParentPoiPid(int parentPoiPid) {
+		this.parentPoiPid = parentPoiPid;
+	}
+
+	public int getTenantFlag() {
+		return tenantFlag;
+	}
+
+	public void setTenantFlag(int tenantFlag) {
+		this.tenantFlag = tenantFlag;
 	}
 
 	public String getMemo() {
@@ -69,38 +80,25 @@ public class IXPoiVideo implements IRow {
 		this.memo = memo;
 	}
 
-
-
-	@Override
-	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+	public List<IRow> getPoiChildrens() {
+		return poiChildrens;
 	}
 
-	@Override
-	public boolean Unserialize(JSONObject json) throws Exception {
-		@SuppressWarnings("rawtypes")
-		Iterator keys = json.keys();
-
-		while (keys.hasNext()) {
-
-			String key = (String) keys.next();
-
-			if (!"objStatus".equals(key)) {
-
-				Field f = this.getClass().getDeclaredField(key);
-
-				f.setAccessible(true);
-
-				f.set(this, json.get(key));
-			}
-
-		}
-		return true;
+	public void setPoiChildrens(List<IRow> poiChildrens) {
+		this.poiChildrens = poiChildrens;
 	}
 
+	public Map<String, IxPoiChildren> getPoiChildrenMap() {
+		return poiChildrenMap;
+	}
+
+	public void setPoiChildrenMap(Map<String, IxPoiChildren> poiChildrenMap) {
+		this.poiChildrenMap = poiChildrenMap;
+	}
+
+	
 	@Override
 	public String rowId() {
-
 		return rowId;
 	}
 
@@ -111,28 +109,29 @@ public class IXPoiVideo implements IRow {
 
 	@Override
 	public String tableName() {
-		return "ix_poi_video";
+
+		return "ix_poi_parent";
 	}
 
 	@Override
 	public ObjStatus status() {
+		
 		return null;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+		
 	}
 
 	@Override
 	public ObjType objType() {
-		return ObjType.IXPOIVIDEO;
+		return ObjType.IXPOIPARENT;
 	}
 
 	@Override
 	public void copy(IRow row) {
 		
-
 	}
 
 	@Override
@@ -142,22 +141,26 @@ public class IXPoiVideo implements IRow {
 
 	@Override
 	public String parentPKName() {
-		return "poi_pid";
+		return "group_id";
 	}
 
 	@Override
 	public int parentPKValue() {
-		return this.getPoiPid();
+		return this.getPid();
 	}
 
 	@Override
 	public String parentTableName() {
-		return "ix_poi";
+		return "ix_poi_parent";
 	}
 
 	@Override
 	public List<List<IRow>> children() {
-		return null;
+		List<List<IRow>> children = new ArrayList<List<IRow>>();
+		
+		children.add(this.getPoiChildrens());
+		
+		return children;
 	}
 
 	@Override
@@ -219,6 +222,49 @@ public class IXPoiVideo implements IRow {
 	@Override
 	public void setMesh(int mesh) {
 		this.mesh = mesh;
+	}
+
+	@Override
+	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
+		return JSONObject.fromObject(this, JsonUtils.getStrConfig());		
+	}
+
+	@Override
+	public boolean Unserialize(JSONObject json) throws Exception {
+		@SuppressWarnings("rawtypes")
+		Iterator keys = json.keys();
+
+		while (keys.hasNext()) {
+
+			String key = (String) keys.next();
+
+			if (!"objStatus".equals(key)) {
+
+				Field f = this.getClass().getDeclaredField(key);
+
+				f.setAccessible(true);
+
+				f.set(this, json.get(key));
+			}
+
+		}
+		return true;
+	}
+
+	@Override
+	public List<IRow> relatedRows() {
+		
+		return null;
+	}
+
+	@Override
+	public int pid() {
+		return this.getPid();
+	}
+
+	@Override
+	public String primaryKey() {
+		return "group_id";
 	}
 
 }

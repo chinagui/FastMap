@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.dao.glm.model.poi.index;
+package com.navinfo.dataservice.dao.glm.model.poi.deep;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -6,44 +6,113 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.geom.Geojson;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.vividsolutions.jts.geom.Geometry;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-
 /**
- * POI图标(3DICON)表
- * @author zhangxiaolong
+ * 索引:POI 深度信息(重大事件类)
+ * @author zhaokk
  *
  */
-public class IxPoiIcon implements IObj {
-	
+public class IxPoiEvent implements IObj {
+
 	private int pid;
+	private String eventName  ;//事件名称
+	private String evenNameEng  ;//事件名称英文名称 
+	private String evnetKind;//事件类型 
+	private String evnetKindEng;//英文事件类型  
 	
-	private int poiPid;
+	private String evnetDesc;//事件描述 
+	private String evnetDEscEng;//英文事件描述 
 	
-	private String iconName;
+	private String startDate;//事件开始日期
+	private String endDate ;//事件结束日期
 	
-	private Geometry geometry;
-	
-	private String manageCode;
-	
-	private String clientFlag;
-	
+	private String detailTime;//事件详细时间 
+	private String detailTimeEng;//事件详细时间 英文
+	private String city ;//所属城市
+	private String poiPid  ;//关联 POI
+	private String photoName ;//照片名称 
 	private String memo;
-	
+	private String reserved;//预留字段
+	private int mesh;
 	private String rowId;
 	
-	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
+
+	public int getMesh() {
+		return mesh;
+	}
+
+	
+	public String getRowId() {
+		return rowId;
+	}
+ 
+    private Map<String, Object> changedFields = new HashMap<String, Object>();   
+	@Override
+	public String rowId() {
+		return rowId;
+	}
+
+	@Override
+	public void setRowId(String rowId) {
+		this.rowId = rowId;
+		
+	}
+
+	@Override
+	public String tableName() {
+		return "ix_poi_event";
+	}
+	
+
+	
+
+	
+
+	public String getPoiPid() {
+		return poiPid;
+	}
+
+
+	public void setPoiPid(String poiPid) {
+		this.poiPid = poiPid;
+	}
+
+
+	public String getMemo() {
+		return memo;
+	}
+
+
+	public void setMemo(String memo) {
+		this.memo = memo;
+	}
+
+
+	public String getReserved() {
+		return reserved;
+	}
+
+
+	public void setReserved(String reserved) {
+		this.reserved = reserved;
+	}
+
+
+	@Override
+	public ObjStatus status() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	public int getPid() {
 		return pid;
 	}
@@ -52,109 +121,56 @@ public class IxPoiIcon implements IObj {
 		this.pid = pid;
 	}
 
-	public int getPoiPid() {
-		return poiPid;
-	}
+	
 
-	public void setPoiPid(int poiPid) {
-		this.poiPid = poiPid;
-	}
-
-	public String getIconName() {
-		return iconName;
-	}
-
-	public void setIconName(String iconName) {
-		this.iconName = iconName;
-	}
-
-	public Geometry getGeometry() {
-		return geometry;
-	}
-
-	public void setGeometry(Geometry geometry) {
-		this.geometry = geometry;
-	}
-
-	public String getManageCode() {
-		return manageCode;
-	}
-
-	public void setManageCode(String manageCode) {
-		this.manageCode = manageCode;
-	}
-
-	public String getClientFlag() {
-		return clientFlag;
-	}
-
-	public void setClientFlag(String clientFlag) {
-		this.clientFlag = clientFlag;
-	}
-
-	public String getMemo() {
-		return memo;
-	}
-
-	public void setMemo(String memo) {
-		this.memo = memo;
-	}
-
-	public String getRowId() {
-		return rowId;
-	}
-
-	@Override
-	public String rowId() {
-		return this.rowId;
-	}
-
-	@Override
-	public void setRowId(String rowId) {
-		this.rowId = rowId;
-	}
-
-	@Override
-	public String tableName() {
-		return "ix_poi_icon";
-	}
-
-	@Override
-	public ObjStatus status() {
-		return null;
-	}
-
+	
 	@Override
 	public void setStatus(ObjStatus os) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public ObjType objType() {
-		return ObjType.IXPOIICON;
+		return ObjType.IXPOIEVENT;
 	}
 
 	@Override
 	public void copy(IRow row) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public Map<String, Object> changedFields() {
+		// TODO Auto-generated method stub
 		return this.changedFields;
 	}
 
 	@Override
 	public String parentPKName() {
-		return "rel_id";
+		// TODO Auto-generated method stub
+		return "event_id";
 	}
 
 	@Override
 	public int parentPKValue() {
-		return this.pid;
+		// TODO Auto-generated method stub
+		return this.getPid();
 	}
 
 	@Override
 	public String parentTableName() {
-		return "ix_poi";
+		// TODO Auto-generated method stub
+		return "ix_poi_event";
+	}
+
+	public Map<String, Object> getChangedFields() {
+		return changedFields;
+	}
+
+	public void setChangedFields(Map<String, Object> changedFields) {
+		this.changedFields = changedFields;
 	}
 
 	@Override
@@ -164,7 +180,6 @@ public class IxPoiIcon implements IObj {
 
 	@Override
 	public boolean fillChangeFields(JSONObject json) throws Exception {
-		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {
@@ -172,19 +187,7 @@ public class IxPoiIcon implements IObj {
 
 			if (json.get(key) instanceof JSONArray) {
 				continue;
-			}  else if ("geometry".equals(key)) {
-				
-				JSONObject geojson = json.getJSONObject(key);
-				
-				String wkt = Geojson.geojson2Wkt(geojson.toString());
-				
-				String oldwkt = GeoTranslator.jts2Wkt(geometry, 0.00001, 5);
-				
-				if(!wkt.equals(oldwkt))
-				{
-					changedFields.put(key, json.getJSONObject(key));
-				}
-			}  else {
+			} else {
 				if ( !"objStatus".equals(key)) {
 					
 					Field field = this.getClass().getDeclaredField(key);
@@ -225,25 +228,12 @@ public class IxPoiIcon implements IObj {
 		}else{
 			return false;
 		}
-	}
 
-	@Override
-	public int mesh() {
-		return 0;
-	}
-
-	@Override
-	public void setMesh(int mesh) {
 	}
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-
-		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
-		
-		JSONObject json = JSONObject.fromObject(this, jsonConfig);
-
-		return json;
+		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
 	}
 
 	@Override
@@ -262,6 +252,7 @@ public class IxPoiIcon implements IObj {
 				f.setAccessible(true);
 
 				f.set(this, json.get(key));
+
 			}
 
 		}
@@ -269,18 +260,33 @@ public class IxPoiIcon implements IObj {
 	}
 
 	@Override
+	public int mesh() {
+		// TODO Auto-generated method stub
+		return this.mesh;
+	}
+
+	@Override
+	public void setMesh(int mesh) {
+		this.mesh = mesh;
+		
+	}
+
+	@Override
 	public List<IRow> relatedRows() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int pid() {
-		return this.pid;
+		// TODO Auto-generated method stub
+		return this.getPid();
 	}
 
 	@Override
 	public String primaryKey() {
-		return "rel_id";
+		return "event_id";
 	}
+
 
 }

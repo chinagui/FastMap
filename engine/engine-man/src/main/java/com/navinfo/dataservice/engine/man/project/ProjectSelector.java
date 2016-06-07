@@ -24,7 +24,7 @@ public class ProjectSelector {
 
 		try {
 
-			conn = DBConnector.getInstance().getConnection();
+			conn = DBConnector.getInstance().getManConnection();
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -90,7 +90,7 @@ public class ProjectSelector {
 
 		try {
 
-			conn = DBConnector.getInstance().getConnection();
+			conn = DBConnector.getInstance().getManConnection();
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -150,7 +150,7 @@ public class ProjectSelector {
 
 		try {
 
-			conn = DBConnector.getInstance().getConnection();
+			conn = DBConnector.getInstance().getManConnection();
 
 			pstmt = conn.prepareStatement(sql);
 

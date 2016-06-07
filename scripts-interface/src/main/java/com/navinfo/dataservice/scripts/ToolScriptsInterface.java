@@ -9,19 +9,22 @@ import java.util.Map;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.datahub.chooser.strategy.DbServerStrategy;
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.UnifiedDb;
+import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.diff.DiffJob;
 import com.navinfo.dataservice.expcore.Exporter;
 import com.navinfo.dataservice.expcore.Exporter2OracleByFullCopy;
 import com.navinfo.dataservice.expcore.Exporter2OracleByScripts;
 import com.navinfo.dataservice.expcore.ExporterResult;
 import com.navinfo.dataservice.expcore.config.ExportConfig;
+import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
+import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 
 /** 
  * @ClassName: ScriptsInterface 
@@ -43,16 +46,15 @@ public class ToolScriptsInterface {
 		String refDbName = (String)request.get("refName");
 		String refDbType = (String)request.get("refType");
 
-		DbManager man = new DbManager();
-		UnifiedDb db = null;
+		DbInfo db = null;
 		if(StringUtils.isEmpty(refDbName)||StringUtils.isEmpty(refDbType)){
-			db = man.createDb(name,type, descp,gdbVersion);
+			//db = DbService.getInstance().createDb(name,type, descp,gdbVersion);
 		}else{
 			String strategyType = DbServerStrategy.USE_REF_DB;
 			Map<String,String> strategyParam = new HashMap<String,String>();
 			strategyParam.put("refDbName", refDbName);
 			strategyParam.put("refDbType", refDbType);
-			db = man.createDb(name,type, descp,strategyType,strategyParam,gdbVersion);
+			//db = man.createDb(name,type, descp,strategyType,strategyParam,gdbVersion);
 		}
 		
 		response.put("dbId", String.valueOf(db.getDbId()));
@@ -75,12 +77,10 @@ public class ToolScriptsInterface {
 		return response;
 	}
 	public static JSONObject diff(JSONObject request)throws Exception{
-		JobInfo jobInfo = new JobInfo(0,0);
+		JobInfo jobInfo = new JobInfo(0,UuidUtils.genUuid());
 		jobInfo.setType("diff");
 		jobInfo.setRequest(request);
-		//
-		DiffJob job = new DiffJob(jobInfo);
-		
+		AbstractJob job = JobCreateStrategy.createAsMethod(jobInfo);
 		job.run();
 		return job.getJobInfo().getResponse();
 	}

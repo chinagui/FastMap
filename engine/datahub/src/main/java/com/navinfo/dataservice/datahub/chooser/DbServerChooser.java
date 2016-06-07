@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.datahub.chooser;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
@@ -11,13 +10,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.commons.config.SystemConfig;
+import com.navinfo.dataservice.api.datahub.model.DbServer;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.datahub.DbServerMonitor;
 import com.navinfo.dataservice.datahub.chooser.strategy.DbServerStrategyFactory;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
-import com.navinfo.dataservice.datahub.manager.DbServerManager;
-import com.navinfo.dataservice.datahub.model.DbServer;
+import com.navinfo.dataservice.datahub.service.DbServerService;
 
 /** 
  * @ClassName: DbChooser 
@@ -33,10 +31,10 @@ public class DbServerChooser implements Observer{
 	public static final DbServerChooser getInstance(){
 		return SingletonHolder.INSTANCE;
 	}
-	private DbServerManager dbServerMan;
+	private DbServerService dbServerMan;
 	private Map<String,List<DbServer>> dbServerMap=new ConcurrentHashMap<String,List<DbServer>>();//key:the use type of a dbserver
 	private DbServerChooser(){
-		dbServerMan = new DbServerManager();
+		dbServerMan = new DbServerService();
 		DbServerMonitor.getInstance().addObserver(this);
 	}
 	private synchronized void loadDbServers(){

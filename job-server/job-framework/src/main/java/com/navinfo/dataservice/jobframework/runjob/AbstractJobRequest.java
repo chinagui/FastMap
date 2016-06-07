@@ -8,10 +8,10 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.exception.JobRuntimeException;
 
@@ -64,6 +64,7 @@ public abstract class AbstractJobRequest {
 		try{
 			String methodName = "set"+(char)(attName.charAt(0)-32)+attName.substring(1, attName.length());
 			Class[] argtypes = null;//默认String
+			
 			if(attValue instanceof String){
 				argtypes = new Class[]{String.class};
 			}else if(attValue instanceof Integer){
@@ -74,6 +75,8 @@ public abstract class AbstractJobRequest {
 				//if(((JSONArray) attValue).get(index))
 				argtypes= new Class[]{List.class};
 				
+			}else if(attValue instanceof JSONObject){
+				//sub job
 			}
 			Method method = this.getClass().getMethod(methodName, argtypes);
 			method.invoke(this, attValue);

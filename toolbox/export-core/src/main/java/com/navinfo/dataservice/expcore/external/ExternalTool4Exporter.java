@@ -20,11 +20,11 @@ import com.navinfo.dataservice.datahub.glm.GlmCache;
 import com.navinfo.dataservice.datahub.glm.GlmGridCalculator;
 import com.navinfo.dataservice.datahub.glm.GlmGridCalculatorFactory;
 import com.navinfo.dataservice.datahub.glm.GlmTable;
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DbLinkCreator;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.util.RandomUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 
@@ -40,10 +40,10 @@ public class ExternalTool4Exporter {
 
 	//进一步可以做多线程
 	
-	public static void turnOnPkConstrain(OracleSchema schema,Set<String> tables)throws Exception{
+	public static void turnOnPkConstrain(DbInfo db,Set<String> tables)throws Exception{
 		Connection conn=null;
 		try{
-			conn = schema.getDriverManagerDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getDataSource(db.getConnectParam()).getConnection();
 			DataBaseUtils.turnOnPkConstraint(conn, tables);
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -53,10 +53,10 @@ public class ExternalTool4Exporter {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public static void turnOffPkConstrain(OracleSchema schema,Set<String> tables)throws Exception{
+	public static void turnOffPkConstrain(DbInfo db,Set<String> tables)throws Exception{
 		Connection conn=null;
 		try{
-			conn = schema.getDriverManagerDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getDataSource(db.getConnectParam()).getConnection();
 			DataBaseUtils.turnOffPkConstraint(conn, tables);
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -71,11 +71,11 @@ public class ExternalTool4Exporter {
 	 * @param schema
 	 * @throws SQLException
 	 */
-	public static void generateCkMd5(OracleSchema schema)throws SQLException{
+	public static void generateCkMd5(DbInfo db)throws SQLException{
 		Connection conn=null;
 		try{
 			log.debug("开始计算并更新NI_VAL_EXCEPTION表的MD5值");
-			conn = schema.getDriverManagerDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getDataSource(db.getConnectParam()).getConnection();
 			String sql = "UPDATE NI_VAL_EXCEPTION A SET A.RESERVED = LOWER(UTL_RAW.CAST_TO_RAW(DBMS_OBFUSCATION_TOOLKIT.MD5(INPUT_STRING =>RULEID||INFORMATION||TARGETS||NVL(ADDITION_INFO,'null'))))";
 			QueryRunner runner = new QueryRunner();
 			int count = runner.update(conn, sql);
@@ -93,12 +93,12 @@ public class ExternalTool4Exporter {
 	 * @param schema
 	 * @throws SQLException
 	 */
-	public static void generateCkResultObject(OracleSchema schema)throws SQLException{
+	public static void generateCkResultObject(DbInfo db)throws SQLException{
 		Connection conn=null;
 		PreparedStatement stmt = null;
 		try{
 			log.debug("开始计算并更新CK_RESULT_OBJECT表");
-			conn = schema.getDriverManagerDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getDataSource(db.getConnectParam()).getConnection();
 			String sql = "SELECT RESERVED,TARGETS FROM NI_VAL_EXCEPTION";
 			String insertSql = "INSERT INTO CK_RESULT_OBJECT(CK_RESULT_ID,TABLE_NAME,PID)VALUES(?,?,?)";
 			QueryRunner runner = new QueryRunner();
@@ -152,12 +152,12 @@ public class ExternalTool4Exporter {
 	 * @param schema
 	 * @throws SQLException
 	 */
-	public static void generateCkResultGrid(OracleSchema schema,String gdbVersion)throws SQLException{
+	public static void generateCkResultGrid(DbInfo db,String gdbVersion)throws SQLException{
 		Connection conn=null;
 		PreparedStatement stmt = null;
 		try{
 			log.debug("开始计算并更新NI_VAL_EXCEPTION_GRID表");
-			conn = schema.getDriverManagerDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getDataSource(db.getConnectParam()).getConnection();
 			String sql = "SELECT RESERVED,TARGETS FROM NI_VAL_EXCEPTION";
 			String insertSql = "INSERT INTO NI_VAL_EXCEPTION_GRID (CK_RESULT_ID,GRID_ID) VALUES (?,?)";
 			QueryRunner runner = new QueryRunner();
@@ -212,14 +212,14 @@ public class ExternalTool4Exporter {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public static void selectLogGrids(OracleSchema srcSchema,OracleSchema targetSchema,String[] grids)throws Exception{
+	public static void selectLogGrids(DbInfo srcDb,DbInfo targetDb,String[] grids)throws Exception{
 		Connection conn=null;
 		try{
-			conn = targetSchema.getDriverManagerDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getDataSource(targetDb.getConnectParam()).getConnection();
 			//create db link
 			DbLinkCreator cr = new DbLinkCreator();
-			String dbLinkName = targetSchema.getDbUserName()+"_"+RandomUtil.nextNumberStr(4);
-			cr.create(dbLinkName, false, targetSchema.getDriverManagerDataSource(), srcSchema.getDbUserName(), srcSchema.getDbUserPasswd(), srcSchema.getDbServer().getIp(), String.valueOf(srcSchema.getDbServer().getPort()), srcSchema.getDbServer().getServiceName());
+			String dbLinkName = targetDb.getDbUserName()+"_"+RandomUtil.nextNumberStr(4);
+			cr.create(dbLinkName, false, MultiDataSourceFactory.getInstance().getDataSource(targetDb.getConnectParam()), srcDb.getDbUserName(), srcDb.getDbUserPasswd(), srcDb.getDbServer().getIp(), String.valueOf(srcDb.getDbServer().getPort()), srcDb.getDbName());
 			
 			QueryRunner runner = new QueryRunner();
 			String sql = "INSERT INTO NI_VAL_EXCEPTION SELECT "+getSelectColumnString(conn,"NI_VAL_EXCEPTION")+" FROM NI_VAL_EXCEPTION@"+dbLinkName+" T WHERE EXISTS (SELECT 1 FROM NI_VAL_EXCEPTION_GRID@"+dbLinkName+" G WHERE T.RESERVED=G.CK_RESULT_ID AND G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(grids,",")+"))";
@@ -229,7 +229,7 @@ public class ExternalTool4Exporter {
 			sql = "INSERT INTO NI_VAL_EXCEPTION_GRID SELECT "+getSelectColumnString(conn,"NI_VAL_EXCEPTION_GRID")+" FROM NI_VAL_EXCEPTION_GRID@"+dbLinkName+" T WHERE T.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(grids,",")+")";
 			runner.execute(conn, sql);
 			//删除dblink
-			cr.drop(dbLinkName, false, targetSchema.getDriverManagerDataSource());
+			cr.drop(dbLinkName, false, MultiDataSourceFactory.getInstance().getDataSource(targetDb.getConnectParam()));
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -263,10 +263,10 @@ public class ExternalTool4Exporter {
 
 	}
 	
-	public static void removeDupRecord(String gdbVersion,OracleSchema schema,Set<String> tables)throws Exception{
+	public static void removeDupRecord(String gdbVersion,DbInfo db,Set<String> tables)throws Exception{
 		Connection conn=null;
 		try{
-			conn = schema.getDriverManagerDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getDataSource(db.getConnectParam()).getConnection();
 			if(tables==null||tables.size()==0){
 				return ;
 			}
@@ -294,13 +294,13 @@ public class ExternalTool4Exporter {
 		}
 	}
 	
-	public static void physicalDeleteRow(String gdbVersion,OracleSchema schema,Set<String> tables)throws Exception{
+	public static void physicalDeleteRow(String gdbVersion,DbInfo db,Set<String> tables)throws Exception{
 		try{
 			if(tables==null||tables.size()==0){
 				Glm glm = GlmCache.getInstance().getGlm(gdbVersion);
 				tables = glm.getEditTables().keySet();
 			}
-			PhysicalDeleteRow.doDelete(tables, schema);
+			PhysicalDeleteRow.doDelete(tables, db);
 			
 		}catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -312,9 +312,6 @@ public class ExternalTool4Exporter {
 	 */
 	public static void main(String[] args) {
 		try{
-			OracleSchema sourceDb = (OracleSchema)new DbManager().getDbById(Integer.valueOf(28));
-			OracleSchema tarDb = (OracleSchema)new DbManager().getDbById(Integer.valueOf(9));
-			selectLogGrids(sourceDb,tarDb,new String[]{"59567100"});
 		}catch(Exception e){
 			e.printStackTrace();
 		}

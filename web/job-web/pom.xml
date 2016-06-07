@@ -136,7 +136,7 @@
     
     <dependency>
       <groupId>com.navinfo.dataservice</groupId>
-      <artifactId>api</artifactId>
+      <artifactId>api-job</artifactId>
     </dependency>
     
     <dependency>

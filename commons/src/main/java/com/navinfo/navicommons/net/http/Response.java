@@ -2,7 +2,7 @@ package com.navinfo.navicommons.net.http;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.exception.ServiceRtException;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
@@ -48,9 +48,9 @@ public class Response {
 	}
 
 	public  Response markException(Exception e) {
-		if(e instanceof ServiceException)
+		if(e instanceof ServiceRtException)
         {
-            ServiceException serviceException = (ServiceException)e;
+			ServiceRtException serviceException = (ServiceRtException)e;
             if(serviceException.getErrorCode() > 0)
                 this.setCode(serviceException.getErrorCode());
             else

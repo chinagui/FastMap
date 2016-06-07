@@ -21,9 +21,10 @@ public class RunJobHandler implements MsgHandler {
 		//解析message生成jobInfo
 		JSONObject jo = JSONObject.fromObject(message);
 		long jobId = jo.getLong("jobId");
+		String jobGuid = jo.getString("jobGuid");
 		String type = jo.getString("type");
 		JSONObject request = JSONObject.fromObject(jo.get("request"));
-		JobInfo jobInfo = new JobInfo(jobId);
+		JobInfo jobInfo = new JobInfo(jobId,jobGuid);
 		jobInfo.setType(type);
 		jobInfo.setRequest(request);
 		//添加到任务线程池

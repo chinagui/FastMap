@@ -7,8 +7,9 @@ import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -20,7 +21,7 @@ import com.navinfo.navicommons.database.QueryRunner;
  */
 public class RemoveDuplicateRow {
 	protected static Logger log = Logger.getLogger(RemoveDuplicateRow.class);
-	public static void removeDup(List<String> tables,OracleSchema schema)throws Exception{
+	public static void removeDup(List<String> tables,DbInfo db)throws Exception{
 		if(tables!=null&&tables.size()>0){
 			List<ExpSQL> expSQLs = new ArrayList<ExpSQL>();
 			for(String name:tables){
@@ -34,7 +35,7 @@ public class RemoveDuplicateRow {
 			if(expSQLs.size()==1){
 				Connection conn = null;
 				try{
-					conn = schema.getDriverManagerDataSource().getConnection();
+					conn = MultiDataSourceFactory.getInstance().getDataSource(db.getConnectParam()).getConnection();
 					QueryRunner runner = new QueryRunner();
 					runner.execute(conn, expSQLs.get(0).getSql());
 				}catch(Exception e){
@@ -45,7 +46,7 @@ public class RemoveDuplicateRow {
 					DbUtils.commitAndCloseQuietly(conn);
 				}
 			}else if(expSQLs.size()>1){
-				ExecuteExternlToolSql executor = new ExecuteExternlToolSql(schema);
+				ExecuteExternlToolSql executor = new ExecuteExternlToolSql(db);
 				ThreadLocalContext ctx = new ThreadLocalContext(log);
 				executor.execute(expSQLs, ctx);
 			}

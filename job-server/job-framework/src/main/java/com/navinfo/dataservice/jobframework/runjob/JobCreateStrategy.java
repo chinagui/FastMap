@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
@@ -27,17 +26,19 @@ import com.navinfo.dataservice.jobframework.exception.JobTypeNotFoundException;
 public class JobCreateStrategy {
 	private static Logger log = LoggerRepos.getLogger(JobCreateStrategy.class);
 	public static Map<String,Class<?>> jobClassMap;
+	public static Map<String,Class<?>> requestClassMap;
 	public static AbstractJob create(JobInfo jobInfo)throws JobTypeNotFoundException,JobCreateException{
 		if(jobClassMap==null){
 			loadMapping();
 		}
-		Class<?> clazz = jobClassMap.get(jobInfo.getType().toString());
+		Class<?> clazz = jobClassMap.get(jobInfo.getType());
 		if(clazz==null){
-			throw new JobTypeNotFoundException("未找到对应的任务类型");
+			throw new JobTypeNotFoundException("未找到对应的任务类型的class类名");
 		}
 		AbstractJob job = null;
 		try{
 			job = (AbstractJob)clazz.getConstructor(JobInfo.class).newInstance(jobInfo);
+			job.setRequest(createJobRequest(jobInfo));
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			throw new JobCreateException(e.getMessage(),e);
@@ -48,6 +49,30 @@ public class JobCreateStrategy {
 		AbstractJob job = create(jobInfo);
 		job.setParent(parent);
 		return job;
+	}
+	public static AbstractJob createAsMethod(JobInfo jobInfo)throws JobTypeNotFoundException,JobCreateException{
+		AbstractJob job = create(jobInfo);
+		job.setRunAsMethod(true);
+		return job;
+	}
+	
+	public static AbstractJobRequest createJobRequest(JobInfo jobInfo)throws JobTypeNotFoundException,JobCreateException{
+		if(jobClassMap==null){
+			loadMapping();
+		}
+		Class<?> clazz = requestClassMap.get(jobInfo.getType().toString());
+		if(clazz==null){
+			throw new JobTypeNotFoundException("未找到对应的任务类型的reques类名");
+		}
+		AbstractJobRequest req = null;
+		try{
+			req = (AbstractJobRequest)clazz.getConstructor().newInstance();
+			req.parseByJsonConfig(jobInfo.getRequest());
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw new JobCreateException(e.getMessage(),e);
+		}
+		return req;
 	}
 	private static void loadMapping(){
 		String mappingFile = "/com/navinfo/dataservice/jobframework/job-class.xml";
@@ -69,7 +94,9 @@ public class JobCreateStrategy {
                 Element element = elements.get(i);
                 String name = element.attributeValue("name");
                 String className = element.attributeValue("class");
+                String requestClassName = element.attributeValue("request");
                 jobClassMap.put(name, Class.forName(className));
+                requestClassMap.put(name, Class.forName(requestClassName));
             }
         } catch (Exception e) {
         	log.error(e.getMessage());

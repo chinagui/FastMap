@@ -5,7 +5,6 @@ import java.sql.Connection;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -13,26 +12,26 @@ import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.commons.util.Log4jUtils;
-import com.navinfo.dataservice.commons.util.ResponseUtils;
+import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 @Controller
-public class CheckController {
+public class CheckController extends BaseController {
 	private static final Logger logger = Logger
 			.getLogger(CheckController.class);
 
 	@RequestMapping(value = "/check/get")
-	public void getCheck(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView getCheck(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
-		Connection conn = null; 
-		
+		Connection conn = null;
+
 		try {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -49,26 +48,20 @@ public class CheckController {
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 
-			JSONArray result = selector.loadByGrid(grids, pageSize, pageNum);
+			JSONArray data = selector.loadByGrid(grids, pageSize, pageNum);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(result));
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
-		}
-		finally{
-			if(conn!=null){
-				try{
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
 					conn.close();
-				}
-				catch(Exception e){
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -76,13 +69,13 @@ public class CheckController {
 	}
 
 	@RequestMapping(value = "/check/count")
-	public void getCheckCount(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView getCheckCount(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
-		Connection conn = null; 
-		
+		Connection conn = null;
+
 		try {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -95,26 +88,20 @@ public class CheckController {
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 
-			int result = selector.loadCountByGrid(grids);
+			int data = selector.loadCountByGrid(grids);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(result));
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
-		}
-		finally{
-			if(conn!=null){
-				try{
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
 					conn.close();
-				}
-				catch(Exception e){
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -122,13 +109,13 @@ public class CheckController {
 	}
 
 	@RequestMapping(value = "/check/update")
-	public void updateCheck(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView updateCheck(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
 		Connection conn = null;
-		
+
 		try {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -138,31 +125,26 @@ public class CheckController {
 			String id = jsonReq.getString("id");
 
 			int type = jsonReq.getInt("type");
-			
+
 			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
 
-			NiValExceptionOperator selector = new NiValExceptionOperator(conn,projectId);
+			NiValExceptionOperator selector = new NiValExceptionOperator(conn,
+					projectId);
 
 			selector.updateCheckLogStatus(id, type);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(null));
+			return new ModelAndView("jsonView", success());
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
-		}
-		finally{
-			if(conn!=null){
-				try{
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
 					conn.close();
-				}
-				catch(Exception e){
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}

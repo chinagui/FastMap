@@ -6,14 +6,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.json.JSONArray;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.navicommons.database.Page;
-
-import net.sf.json.JSONObject;
 
 /**
  * @author liuqing
@@ -50,38 +51,39 @@ public class BaseController {
 
 
     protected Map<String,?> exception(Exception e) {
-        return exception(e.getMessage());
+    	String msg=e.getMessage();
+    	if(StringUtils.isEmpty(msg)){
+    		return exception(e.getClass()+"");}
+    	else{return exception(msg);}
     }
     protected Map<String,?> exception(String msg) {
-        return createModelMap(1,msg,null);
+        return createModelMap(-1,msg,null);
     }
 
     // 验证不通过的
     protected Map<String,?> fail(String msg) {
+        return createModelMap(-1,msg,null);
+    }
+    
+    protected Map<String,?> success() {
+        return createModelMap(0,"success",null);
+    }
+    
+    protected Map<String,?> success(String msg) {
         return createModelMap(0,msg,null);
     }
-    protected Map<String,?> success(String msg) {
-        return createModelMap(100,msg,null);
+    
+    protected Map<String,?> success(String msg, Object result) {
+        return createModelMap(0,msg,result);
     }
-    protected Map<String,?> success(String msg,Map<String,?> result) {
-        return createModelMap(100,msg,result);
+    protected Map<String,?> success(Object result) {
+        return createModelMap(0,"success",result);
     }
-    protected Map<String,?> success(Map<String,?> result) {
-        return createModelMap(100,"success",result);
-    }
-    protected Map<String,?> success(JSONObject data) {
-        return createModelMap(100,"success",data);
-    }
-    protected Map<String,?> success(String msg,Page page){
-    	return createModelMap(100,msg,page);
-    }
-    protected Map<String,?> success(Page page){
-    	return createModelMap(100,"success",page);
-    }
+    
     private Map<String,?> createModelMap(int code,String msg,Object data){
     	Map<String,Object> result = new HashMap<String,Object>();
-    	result.put("code", code);
-    	result.put("msg", msg);
+    	result.put("errcode", code);
+    	result.put("errmsg", msg);
     	result.put("data", data);
     	return result;
     }

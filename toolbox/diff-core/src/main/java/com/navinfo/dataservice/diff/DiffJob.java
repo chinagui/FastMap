@@ -22,6 +22,7 @@ import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.navicommons.database.sql.PackageExec;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.exception.ServiceRtException;
 import com.navinfo.navicommons.exception.ThreadExecuteException;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -180,7 +181,7 @@ public class DiffJob extends AbstractJob
 			log.warn("线程被打断");
 		}
 		if (diffPoolExecutor.getExceptions().size() > 0)
-			throw new ServiceException("执行差分时发生异常"+diffPoolExecutor
+			throw new ServiceRtException("执行差分时发生异常"+diffPoolExecutor
 					.getExceptions().get(0).getMessage(), diffPoolExecutor
 					.getExceptions().get(0));
 		log.debug("所有表差分完成,用时：" + (System.currentTimeMillis() - t) + "ms");
@@ -214,7 +215,7 @@ public class DiffJob extends AbstractJob
 			log.warn("线程被打断");
 		}
 		if (logPoolExecutor.getExceptions().size() > 0)
-			throw new ServiceException("执行生成履历时发生异常", logPoolExecutor
+			throw new ServiceRtException("执行生成履历时发生异常", logPoolExecutor
 					.getExceptions().get(0));
 		log.debug("各生成履历任务执行完成,用时：" + (System.currentTimeMillis() - t) + "ms");
 	}
@@ -231,7 +232,7 @@ public class DiffJob extends AbstractJob
 					TimeUnit.SECONDS, new LinkedBlockingQueue(),
 					new ThreadPoolExecutor.CallerRunsPolicy());
 		} catch (Exception e) {
-			throw new ServiceException("初始化线程池错误:" + e.getMessage(), e);
+			throw new ServiceRtException("初始化线程池错误:" + e.getMessage(), e);
 		}
 	}
 
@@ -246,7 +247,7 @@ public class DiffJob extends AbstractJob
 				}
 			} catch (InterruptedException e) {
 				log.error("关闭线程池失败");
-				throw new ServiceException("关闭线程池失败", e);
+				throw new ServiceRtException("关闭线程池失败", e);
 			}
 		}
 		if (logPoolExecutor != null && !logPoolExecutor.isShutdown()) {
@@ -258,7 +259,7 @@ public class DiffJob extends AbstractJob
 				}
 			} catch (InterruptedException e) {
 				log.error("关闭线程池失败");
-				throw new ServiceException("关闭线程池失败", e);
+				throw new ServiceRtException("关闭线程池失败", e);
 			}
 		}
 	}
@@ -272,7 +273,7 @@ public class DiffJob extends AbstractJob
 					TimeUnit.SECONDS, new LinkedBlockingQueue(),
 					new ThreadPoolExecutor.CallerRunsPolicy());
 		} catch (Exception e) {
-			throw new ServiceException("初始化计算履历grid号的线程池错误:" + e.getMessage(), e);
+			throw new ServiceRtException("初始化计算履历grid号的线程池错误:" + e.getMessage(), e);
 		}
 		
 		//计算
@@ -303,7 +304,7 @@ public class DiffJob extends AbstractJob
 			log.warn("线程被打断");
 		}
 		if (logPoolExecutor.getExceptions().size() > 0)
-			throw new ServiceException("计算履历grid号时发生异常", logPoolExecutor
+			throw new ServiceRtException("计算履历grid号时发生异常", logPoolExecutor
 					.getExceptions().get(0));
 		log.debug("各计算履历grid号任务执行完成,用时：" + (System.currentTimeMillis() - t) + "ms");
 		//关闭线程池
@@ -317,7 +318,7 @@ public class DiffJob extends AbstractJob
 				}
 			} catch (InterruptedException e) {
 				log.error("关闭计算履历grid号的线程池");
-				throw new ServiceException("关闭计算履历grid号的线程池", e);
+				throw new ServiceRtException("关闭计算履历grid号的线程池", e);
 			}
 		}
 	}

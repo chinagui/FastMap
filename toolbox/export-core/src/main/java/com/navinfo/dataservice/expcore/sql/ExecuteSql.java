@@ -15,7 +15,6 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.navicommons.exception.DMSException;
 import com.navinfo.dataservice.expcore.config.ExportConfig;
 import com.navinfo.dataservice.expcore.input.OracleInput;
 import com.navinfo.dataservice.expcore.output.DataOutput;
@@ -23,6 +22,7 @@ import com.navinfo.dataservice.expcore.sql.handler.DDLExecThreadHandler;
 import com.navinfo.dataservice.expcore.sql.handler.DMLExecThreadHandler;
 import com.navinfo.dataservice.expcore.sql.handler.ProgramBlockExecThreadHandler;
 import com.navinfo.dataservice.expcore.sql.handler.QueryExecThreadHandler;
+import com.navinfo.navicommons.exception.ThreadExecuteException;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
@@ -90,7 +90,7 @@ public class ExecuteSql {
 					new LinkedBlockingQueue(),
 					new ThreadPoolExecutor.CallerRunsPolicy());
 		} catch (Exception e) {
-			throw new DMSException("初始化线程池错误", e);
+			throw new ThreadExecuteException("初始化线程池错误", e);
 		}
 	}
 

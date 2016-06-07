@@ -13,9 +13,10 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.expcore.external.ExternalTool4Exporter;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 
@@ -45,8 +46,8 @@ public class Exp2CopVersionScriptsInterface {
 			int extendCount = StringUtils.isEmpty(extendCountStr)?0:Integer.valueOf(extendCountStr);
 
 			String allMeshesStr = null;
-			OracleSchema schema = (OracleSchema)new DbManager().getDbById(Integer.valueOf(targetDbId));
-			conn = schema.getDriverManagerDataSource().getConnection();
+			DbInfo db = DbService.getInstance().getDbById(Integer.valueOf(targetDbId));
+			conn = MultiDataSourceFactory.getInstance().getDataSource(db.getConnectParam()).getConnection();
 			//计算扩圈，写m_mesh_type
 			String sqlMesh = "INSERT INTO M_MESH_TYPE(MESH_ID,\"TYPE\")VALUES(?,?)";
 			stmt = conn.prepareStatement(sqlMesh);
@@ -87,7 +88,7 @@ public class Exp2CopVersionScriptsInterface {
 			JSONObject expResponse = ToolScriptsInterface.exportData(expRequest);
 			response.put("export_data", expResponse);
 			//逻辑删除数据
-			ExternalTool4Exporter.physicalDeleteRow(gdbVersion, schema, null);
+			ExternalTool4Exporter.physicalDeleteRow(gdbVersion, db, null);
 			response.put("physical_delete", "success");
 			response.put("msg", "执行成功");
 		}catch(Exception e){

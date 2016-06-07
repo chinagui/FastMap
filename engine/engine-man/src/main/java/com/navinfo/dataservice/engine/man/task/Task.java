@@ -1,5 +1,17 @@
 package com.navinfo.dataservice.engine.man.task;
 
+import java.lang.reflect.Field;
+import java.sql.Timestamp;
+import java.util.Iterator;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.util.JSONUtils;
+
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.vividsolutions.jts.geom.Geometry;
+
+
 /** 
 * @ClassName:  Task 
 * @author code generator
@@ -10,27 +22,26 @@ public class Task  {
 	private Integer taskId ;
 	private Integer cityId ;
 	private Integer createUserId ;
-	private Object createDate ;
+	private Timestamp createDate ;
 	private Integer status ;
 	private String descp ;
-	private Object collectPlanStartDate ;
-	private Object collectPlanEndDate ;
-	private Object dayEditPlanStartDate ;
-	private Object dayEditPlanEndDate ;
-	private Object bMonthEditPlanStartDate ;
-	private Object bMonthEditPlanEndDate ;
-	private Object cMonthEditPlanStartDate ;
-	private Object cMonthEditPlanEndDate ;
-	private Object dayProducePlanStartDate ;
-	private Object dayProducePlanEndDate ;
-	private Object monthProducePlanStartDate ;
-	private Object monthProducePlanEndDate ;
+	private Timestamp collectPlanStartDate ;
+	private Timestamp collectPlanEndDate ;
+	private Timestamp dayEditPlanStartDate ;
+	private Timestamp dayEditPlanEndDate ;
+	private Timestamp bMonthEditPlanStartDate ;
+	private Timestamp bMonthEditPlanEndDate ;
+	private Timestamp cMonthEditPlanStartDate ;
+	private Timestamp cMonthEditPlanEndDate ;
+	private Timestamp dayProducePlanStartDate ;
+	private Timestamp dayProducePlanEndDate ;
+	private Timestamp monthProducePlanStartDate ;
+	private Timestamp monthProducePlanEndDate ;
 	private Integer latest ;
 	
 	public Task (){
 	}
-	
-	public Task (Integer taskId ,Integer cityId,Integer createUserId,Object createDate,Integer status,String descp,Object collectPlanStartDate,Object collectPlanEndDate,Object dayEditPlanStartDate,Object dayEditPlanEndDate,Object bMonthEditPlanStartDate,Object bMonthEditPlanEndDate,Object cMonthEditPlanStartDate,Object cMonthEditPlanEndDate,Object dayProducePlanStartDate,Object dayProducePlanEndDate,Object monthProducePlanStartDate,Object monthProducePlanEndDate,Integer latest){
+	public Task (Integer taskId ,Integer cityId,Integer createUserId,Timestamp createDate,Integer status,String descp,Timestamp collectPlanStartDate,Timestamp collectPlanEndDate,Timestamp dayEditPlanStartDate,Timestamp dayEditPlanEndDate,Timestamp bMonthEditPlanStartDate,Timestamp bMonthEditPlanEndDate,Timestamp cMonthEditPlanStartDate,Timestamp cMonthEditPlanEndDate,Timestamp dayProducePlanStartDate,Timestamp dayProducePlanEndDate,Timestamp monthProducePlanStartDate,Timestamp monthProducePlanEndDate,Integer latest){
 		this.taskId=taskId ;
 		this.cityId=cityId ;
 		this.createUserId=createUserId ;
@@ -51,6 +62,7 @@ public class Task  {
 		this.monthProducePlanEndDate=monthProducePlanEndDate ;
 		this.latest=latest ;
 	}
+	
 	public Integer getTaskId() {
 		return taskId;
 	}
@@ -72,7 +84,7 @@ public class Task  {
 	public Object getCreateDate() {
 		return createDate;
 	}
-	public void setCreateDate(Object createDate) {
+	public void setCreateDate(Timestamp createDate) {
 		this.createDate = createDate;
 	}
 	public Integer getStatus() {
@@ -87,76 +99,77 @@ public class Task  {
 	public void setDescp(String descp) {
 		this.descp = descp;
 	}
-	public Object getCollectPlanStartDate() {
+	public Timestamp getCollectPlanStartDate() {
 		return collectPlanStartDate;
 	}
-	public void setCollectPlanStartDate(Object collectPlanStartDate) {
-		this.collectPlanStartDate = collectPlanStartDate;
+	
+	public void setCollectPlanStartDate(Timestamp collectPlanStartDate) {
+		this.collectPlanStartDate = collectPlanStartDate;//String.valueOf(collectPlanStartDate);
 	}
-	public Object getCollectPlanEndDate() {
+	public Timestamp getCollectPlanEndDate() {
 		return collectPlanEndDate;
 	}
-	public void setCollectPlanEndDate(Object collectPlanEndDate) {
+	public void setCollectPlanEndDate(Timestamp collectPlanEndDate) {
 		this.collectPlanEndDate = collectPlanEndDate;
 	}
-	public Object getDayEditPlanStartDate() {
+	public Timestamp getDayEditPlanStartDate() {
 		return dayEditPlanStartDate;
 	}
-	public void setDayEditPlanStartDate(Object dayEditPlanStartDate) {
+	public void setDayEditPlanStartDate(Timestamp dayEditPlanStartDate) {
 		this.dayEditPlanStartDate = dayEditPlanStartDate;
 	}
-	public Object getDayEditPlanEndDate() {
+	public Timestamp getDayEditPlanEndDate() {
 		return dayEditPlanEndDate;
 	}
-	public void setDayEditPlanEndDate(Object dayEditPlanEndDate) {
+	public void setDayEditPlanEndDate(Timestamp dayEditPlanEndDate) {
 		this.dayEditPlanEndDate = dayEditPlanEndDate;
 	}
-	public Object getBMonthEditPlanStartDate() {
+	public Timestamp getBMonthEditPlanStartDate() {
 		return bMonthEditPlanStartDate;
 	}
-	public void setBMonthEditPlanStartDate(Object bMonthEditPlanStartDate) {
-		this.bMonthEditPlanStartDate = bMonthEditPlanStartDate;
+	public void setBMonthEditPlanStartDate(Timestamp bMonthEditPlanStartDate) {
+		this.bMonthEditPlanStartDate =bMonthEditPlanStartDate;
 	}
-	public Object getBMonthEditPlanEndDate() {
+	public Timestamp getBMonthEditPlanEndDate() {
 		return bMonthEditPlanEndDate;
 	}
-	public void setBMonthEditPlanEndDate(Object bMonthEditPlanEndDate) {
+	public void setBMonthEditPlanEndDate(Timestamp bMonthEditPlanEndDate) {
 		this.bMonthEditPlanEndDate = bMonthEditPlanEndDate;
 	}
-	public Object getCMonthEditPlanStartDate() {
+	public Timestamp getCMonthEditPlanStartDate() {
 		return cMonthEditPlanStartDate;
 	}
-	public void setCMonthEditPlanStartDate(Object cMonthEditPlanStartDate) {
+	public void setCMonthEditPlanStartDate(Timestamp cMonthEditPlanStartDate) {
 		this.cMonthEditPlanStartDate = cMonthEditPlanStartDate;
 	}
-	public Object getCMonthEditPlanEndDate() {
+	public Timestamp getCMonthEditPlanEndDate() {
 		return cMonthEditPlanEndDate;
 	}
-	public void setCMonthEditPlanEndDate(Object cMonthEditPlanEndDate) {
+	public void setCMonthEditPlanEndDate(Timestamp cMonthEditPlanEndDate) {
 		this.cMonthEditPlanEndDate = cMonthEditPlanEndDate;
 	}
-	public Object getDayProducePlanStartDate() {
+	public Timestamp getDayProducePlanStartDate() {
 		return dayProducePlanStartDate;
 	}
-	public void setDayProducePlanStartDate(Object dayProducePlanStartDate) {
+	public void setDayProducePlanStartDate(Timestamp dayProducePlanStartDate) {
 		this.dayProducePlanStartDate = dayProducePlanStartDate;
 	}
-	public Object getDayProducePlanEndDate() {
+	public Timestamp getDayProducePlanEndDate() {
 		return dayProducePlanEndDate;
 	}
-	public void setDayProducePlanEndDate(Object dayProducePlanEndDate) {
+	public void setDayProducePlanEndDate(Timestamp dayProducePlanEndDate) {
 		this.dayProducePlanEndDate = dayProducePlanEndDate;
 	}
-	public Object getMonthProducePlanStartDate() {
+	public Timestamp getMonthProducePlanStartDate() {
 		return monthProducePlanStartDate;
 	}
-	public void setMonthProducePlanStartDate(Object monthProducePlanStartDate) {
+	public void setMonthProducePlanStartDate(Timestamp monthProducePlanStartDate) {
 		this.monthProducePlanStartDate = monthProducePlanStartDate;
 	}
-	public Object getMonthProducePlanEndDate() {
+	public Timestamp getMonthProducePlanEndDate() {
 		return monthProducePlanEndDate;
 	}
-	public void setMonthProducePlanEndDate(Object monthProducePlanEndDate) {
+	public void setMonthProducePlanEndDate(Timestamp monthProducePlanEndDate) {
 		this.monthProducePlanEndDate = monthProducePlanEndDate;
 	}
 	public Integer getLatest() {

@@ -52,7 +52,7 @@ public class GlmGridCalculator {
 		Connection conn = null;
 		Map<String,GlmGridRefInfo> infoMap = null;
 		try{
-			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			QueryRunner runner = new QueryRunner();
 			String sql = "SELECT TABLE_NAME,REF_COL_NAME,REF_INFO,SINGLE_MESH FROM GLM_GRID_MAP WHERE GDB_VERSION = ?";
 			infoMap = runner.query(conn, sql, new ResultSetHandler<Map<String,GlmGridRefInfo>>(){

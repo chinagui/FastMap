@@ -17,10 +17,10 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
+import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.expcore.external.RemoveDuplicateRow;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -53,7 +53,7 @@ public class DistributeCkScriptsInterface {
 			expRequest.put("gdbVersion", gdbVersion);
 			//
 			QueryRunner runner = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			String sql = "SELECT P.PROJECT_ID,P.DB_ID,M.MESH_ID FROM PROJECT_INFO P,PROJECT_MESH M WHERE P.PROJECT_ID=M.PROJECT_ID AND P.PROJECT_ID=?";
 			for(String prjIdStr:projectIdArr){
 				String[] strs= runner.query(conn, sql, new ResultSetHandler<String[]>() {
@@ -75,7 +75,7 @@ public class DistributeCkScriptsInterface {
 				//去重
 				List<String> tables = new ArrayList<String>();
 				tables.add("NI_VAL_EXCEPTION");
-				OracleSchema targetDb = (OracleSchema)new DbManager().getDbById(Integer.valueOf(strs[0]));
+				DbInfo targetDb = DbService.getInstance().getDbById(Integer.valueOf(strs[0]));
 				RemoveDuplicateRow.removeDup(tables, targetDb);
 				response.put("removeDup_"+prjIdStr, "success");
 				

@@ -30,14 +30,11 @@ import net.sf.json.JSONObject;
 @Controller
 public class JobController extends BaseController {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
-	
-	@Resource(name="jobService")
-	private JobService service;
 
 	@RequestMapping(value = "/hello")
 	public ModelAndView hello(HttpServletRequest request){
 		try{
-			return new ModelAndView("jsonView", success(service.hello()));
+			return new ModelAndView("jsonView", success("Hello, Job Service."));
 		}catch(Exception e){
 			log.error("内部错误，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
@@ -56,7 +53,7 @@ public class JobController extends BaseController {
 			if(jobRequest==null){
 				throw new IllegalArgumentException("request参数不能为空。");
 			}
-			long jobId = service.create(jobType, jobRequest, Long.valueOf(userId), descp);
+			long jobId = JobService.getInstance().create(jobType, jobRequest, Long.valueOf(userId), descp);
 			Map<String,Object> data = new HashMap<String,Object>();
 			data.put("jobId", jobId);
 			return new ModelAndView("jsonView", success("job已创建。",data));
@@ -72,7 +69,7 @@ public class JobController extends BaseController {
 			if(StringUtils.isEmpty(jobId)){
 				throw new IllegalArgumentException("jobId参数不能为空。");
 			}
-			JobInfo jobInfo = service.getJobById(Long.valueOf(jobId));
+			JobInfo jobInfo = JobService.getInstance().getJobById(Long.valueOf(jobId));
 			Map<String,Object> data = new HashMap<String,Object>();
 			data.put("jobId", jobInfo.getId());
 			data.put("createTime", DateUtils.dateToString(jobInfo.getCreateTime()));

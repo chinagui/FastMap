@@ -24,13 +24,140 @@ public class IxPoiEvent implements IObj {
 
 	private int pid;
 	private String eventName  ;//事件名称
-	private String evenNameEng  ;//事件名称英文名称 
-	private String evnetKind;//事件类型 
-	private String evnetKindEng;//英文事件类型  
+	private String eventNameEng  ;//事件名称英文名称 
+	private String eventKind;//事件类型 
+	private String eventKindEng;//英文事件类型  
 	
-	private String evnetDesc;//事件描述 
-	private String evnetDEscEng;//英文事件描述 
+	private String eventDesc;//事件描述 
+	private String eventDescEng;//英文事件描述 
 	
+	public String getEventName() {
+		return eventName;
+	}
+
+
+	public void setEventName(String eventName) {
+		this.eventName = eventName;
+	}
+
+
+
+
+
+
+
+
+	public String getEventNameEng() {
+		return eventNameEng;
+	}
+
+
+	public void setEventNameEng(String eventNameEng) {
+		this.eventNameEng = eventNameEng;
+	}
+
+
+	public String getEventKind() {
+		return eventKind;
+	}
+
+
+	public void setEventKind(String eventKind) {
+		this.eventKind = eventKind;
+	}
+
+
+	public String getEventKindEng() {
+		return eventKindEng;
+	}
+
+
+	public void setEventKindEng(String eventKindEng) {
+		this.eventKindEng = eventKindEng;
+	}
+
+
+	public String getEventDesc() {
+		return eventDesc;
+	}
+
+
+	public void setEventDesc(String eventDesc) {
+		this.eventDesc = eventDesc;
+	}
+
+
+
+
+	public String getEventDescEng() {
+		return eventDescEng;
+	}
+
+
+	public void setEventDescEng(String eventDescEng) {
+		this.eventDescEng = eventDescEng;
+	}
+
+
+	public String getStartDate() {
+		return startDate;
+	}
+
+
+	public void setStartDate(String startDate) {
+		this.startDate = startDate;
+	}
+
+
+	public String getEndDate() {
+		return endDate;
+	}
+
+
+	public void setEndDate(String endDate) {
+		this.endDate = endDate;
+	}
+
+
+	public String getDetailTime() {
+		return detailTime;
+	}
+
+
+	public void setDetailTime(String detailTime) {
+		this.detailTime = detailTime;
+	}
+
+
+	public String getDetailTimeEng() {
+		return detailTimeEng;
+	}
+
+
+	public void setDetailTimeEng(String detailTimeEng) {
+		this.detailTimeEng = detailTimeEng;
+	}
+
+
+	public String getCity() {
+		return city;
+	}
+
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+
+	public String getPhotoName() {
+		return photoName;
+	}
+
+
+	public void setPhotoName(String photoName) {
+		this.photoName = photoName;
+	}
+
 	private String startDate;//事件开始日期
 	private String endDate ;//事件结束日期
 	

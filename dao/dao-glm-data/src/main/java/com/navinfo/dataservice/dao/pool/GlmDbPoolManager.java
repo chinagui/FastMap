@@ -6,8 +6,6 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.engine.man.project.ProjectSelector;
 
 /**
@@ -48,11 +46,11 @@ public class GlmDbPoolManager {
 
 					int dbId = selector.getDbId(projectId);
 
-					DbManager manager = new DbManager();
-
-					OracleSchema db = (OracleSchema) manager.getDbById(dbId);
-
-					map.put(str, db.getPoolDataSource());
+//					DbManager manager = new DbManager();
+//
+//					OracleSchema db = (OracleSchema) manager.getDbById(dbId);
+//
+//					map.put(str, db.getPoolDataSource());
 				}
 			}
 		}

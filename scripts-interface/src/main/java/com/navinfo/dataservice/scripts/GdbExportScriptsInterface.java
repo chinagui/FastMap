@@ -2,8 +2,9 @@ package com.navinfo.dataservice.scripts;
 
 import java.sql.Connection;
 
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.engine.edit.export.GdbDataExporter;
 import com.navinfo.dataservice.engine.man.project.ProjectSelector;
 
@@ -26,11 +27,9 @@ public class GdbExportScriptsInterface {
 			
 			int dbId = prjselector.getDbId(projectId);
 			
-			DbManager dbMan = new DbManager();
+			DbInfo db = DbService.getInstance().getDbById(dbId);
 			
-			OracleSchema db = (OracleSchema)dbMan.getDbById(dbId);
-			
-			conn = db.getPoolDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getDataSource(db.getConnectParam()).getConnection();
 			
 			GdbDataExporter.exportBaseData2Sqlite(conn, path);
 			

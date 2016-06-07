@@ -3,11 +3,28 @@ package com.navinfo.dataservice.dao.glm.selector.poi.index;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiAdvertisement;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiAttraction;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiBuilding;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiBusinessTime;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiCarrental;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingPlot;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingPlotPh;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingStation;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiDetail;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiEvent;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiGasstation;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiHotel;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiIntroduction;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiRestaurant;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiTourroute;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAudio;
@@ -16,10 +33,25 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEntryimage;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiFlag;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiIcon;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameFlag;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiAdvertisementSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiAttractionSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiBuildingSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiBusinessTimeSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiCarrentalSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiChargingPlotPhSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiChargingPlotSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiChargingStationSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDetailSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiEventSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiGasstationSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiHotelSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiIntroductionSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiParkingSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiRestaurantSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiTourrouteSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
 import oracle.sql.STRUCT;
@@ -99,7 +131,7 @@ public class IxPoiSelector implements ISelector {
 
 					ixPoi.contactMap.put(obj.getRowId(), obj);
 				}
-				
+
 				// 设置子表IX_POI_FLAG
 				IxPoiFlagSelector ixPoiFlagSelector = new IxPoiFlagSelector(conn);
 
@@ -110,7 +142,7 @@ public class IxPoiSelector implements ISelector {
 
 					ixPoi.flagMap.put(obj.getRowId(), obj);
 				}
-				
+
 				// 设置子表IX_POI_ENTRYIMAGE
 				IxPoiEntryImageSelector ixPoiEntryImageSelector = new IxPoiEntryImageSelector(conn);
 
@@ -121,7 +153,7 @@ public class IxPoiSelector implements ISelector {
 
 					ixPoi.entryImageMap.put(obj.getRowId(), obj);
 				}
-				
+
 				// 设置子表IX_POI_ICON
 				IxPoiIconSelector ixPoiIconSelector = new IxPoiIconSelector(conn);
 
@@ -132,7 +164,7 @@ public class IxPoiSelector implements ISelector {
 
 					ixPoi.iconMap.put(obj.getRowId(), obj);
 				}
-				
+
 				// 设置子表IX_POI_PHOTO*
 				IxPoiPhotoSelector ixPoiPhotoSelector = new IxPoiPhotoSelector(conn);
 
@@ -143,7 +175,7 @@ public class IxPoiSelector implements ISelector {
 
 					ixPoi.photoMap.put(obj.getRowId(), obj);
 				}
-				
+
 				// 设置子表IX_POI_AUDIO*
 				IxPoiAudioSelector ixPoiAudioSelector = new IxPoiAudioSelector(conn);
 
@@ -154,7 +186,7 @@ public class IxPoiSelector implements ISelector {
 
 					ixPoi.audioMap.put(obj.getRowId(), obj);
 				}
-				
+
 				// 设置子表IX_POI_VIDEO*
 				IxPoiVideoSelector ixPoiVideoSelector = new IxPoiVideoSelector(conn);
 
@@ -165,7 +197,7 @@ public class IxPoiSelector implements ISelector {
 
 					ixPoi.videoMap.put(obj.getRowId(), obj);
 				}
-				
+
 				// 设置子表IX_POI_PARENT
 				IxPoiParentSelector ixPoiParentSelector = new IxPoiParentSelector(conn);
 
@@ -177,10 +209,186 @@ public class IxPoiSelector implements ISelector {
 					ixPoi.parentMap.put(obj.getRowId(), obj);
 				}
 
+				// 设置子表IX_POI_PARKING
+				IxPoiParkingSelector ixPoiParkingSelector = new IxPoiParkingSelector(conn);
+
+				ixPoi.setParkings(ixPoiParkingSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : ixPoi.getParkings()) {
+					IxPoiParking obj = (IxPoiParking) row;
+
+					ixPoi.parkingMap.put(obj.getRowId(), obj);
+				}
+
+				// 设置子表IX_POI_TOURROUTE
+				IxPoiTourrouteSelector ixPoiTourrouteSelector = new IxPoiTourrouteSelector(conn);
+
+				ixPoi.setTourroutes(ixPoiTourrouteSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : ixPoi.getTourroutes()) {
+					IxPoiTourroute obj = (IxPoiTourroute) row;
+
+					ixPoi.tourrouteMap.put(obj.getRowId(), obj);
+				}
+
+				// 设置子表IX_POI_EVENT
+				IxPoiEventSelector ixPoiEventSelector = new IxPoiEventSelector(conn);
+
+				ixPoi.setEvents(ixPoiEventSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : ixPoi.getEvents()) {
+					IxPoiEvent obj = (IxPoiEvent) row;
+
+					ixPoi.eventMap.put(obj.getRowId(), obj);
+				}
+
+				// 设置子表IX_POI_DETAIL
+				IxPoiDetailSelector ixPoiDetailSelector = new IxPoiDetailSelector(conn);
+
+				ixPoi.setDetails(ixPoiDetailSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : ixPoi.getDetails()) {
+					IxPoiDetail obj = (IxPoiDetail) row;
+
+					ixPoi.detailMap.put(obj.getRowId(), obj);
+				}
+
+				// 设置子表IX_POI_BUSINESSTIME
+				IxPoiBusinessTimeSelector ixPoiBusinessTimeSelector = new IxPoiBusinessTimeSelector(conn);
+
+				ixPoi.setBusinesstimes(ixPoiBusinessTimeSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : ixPoi.getBusinesstimes()) {
+					IxPoiBusinessTime obj = (IxPoiBusinessTime) row;
+
+					ixPoi.businesstimeMap.put(obj.getRowId(), obj);
+				}
+
+				// 设置子表IX_POI_CHARGINGSTATION
+				IxPoiChargingStationSelector ixPoiChargingStationSelector = new IxPoiChargingStationSelector(conn);
+
+				ixPoi.setChargingstations(ixPoiChargingStationSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : ixPoi.getChargingstations()) {
+					IxPoiChargingStation obj = (IxPoiChargingStation) row;
+
+					ixPoi.chargingstationMap.put(obj.getRowId(), obj);
+				}
+
+				// 设置子表IX_POI_CHARGINGPLOT
+				IxPoiChargingPlotSelector ixPoiChargingPlotSelector = new IxPoiChargingPlotSelector(conn);
+
+				ixPoi.setChargingplots(ixPoiChargingPlotSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : ixPoi.getChargingplots()) {
+					IxPoiChargingPlot obj = (IxPoiChargingPlot) row;
+
+					ixPoi.chargingplotMap.put(obj.getRowId(), obj);
+				}
+
+				// 设置子表IX_POI_CHARGINGPLOT_PH
+				IxPoiChargingPlotPhSelector ixPoiChargingPlotPhSelector = new IxPoiChargingPlotPhSelector(conn);
+
+				ixPoi.setChargingplotPhs(ixPoiChargingPlotPhSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : ixPoi.getChargingplotPhs()) {
+					IxPoiChargingPlotPh obj = (IxPoiChargingPlotPh) row;
+
+					ixPoi.chargingplotPhMap.put(obj.getRowId(), obj);
+				}
+
+				// 设置子表IX_POI_BUILDING
+				IxPoiBuildingSelector ixPoiBuildingSelector = new IxPoiBuildingSelector(conn);
+
+				ixPoi.setBuildings(ixPoiBuildingSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : ixPoi.getBuildings()) {
+					IxPoiBuilding obj = (IxPoiBuilding) row;
+
+					ixPoi.buildingMap.put(obj.getRowId(), obj);
+				}
+
+				// 设置子表IX_POI_ADVERTISEMENT
+				IxPoiAdvertisementSelector ixPoiAdvertisementSelector = new IxPoiAdvertisementSelector(conn);
+
+				ixPoi.setAdvertisements(ixPoiAdvertisementSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : ixPoi.getAdvertisements()) {
+					IxPoiAdvertisement obj = (IxPoiAdvertisement) row;
+
+					ixPoi.advertisementMap.put(obj.getRowId(), obj);
+				}
+
+				// 设置子表IX_POI_GASSTATION
+				IxPoiGasstationSelector ixPoiGasstationSelector = new IxPoiGasstationSelector(conn);
+
+				ixPoi.setGasstations(ixPoiGasstationSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : ixPoi.getGasstations()) {
+					IxPoiGasstation obj = (IxPoiGasstation) row;
+
+					ixPoi.gasstationMap.put(obj.getRowId(), obj);
+				}
+
+				// 设置子表IX_POI_INTRODUCTION
+				IxPoiIntroductionSelector ixPoiIntroductionSelector = new IxPoiIntroductionSelector(conn);
+
+				ixPoi.setIntroductions(ixPoiIntroductionSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : ixPoi.getIntroductions()) {
+					IxPoiIntroduction obj = (IxPoiIntroduction) row;
+
+					ixPoi.introductionMap.put(obj.getRowId(), obj);
+				}
+
+				// 设置子表IX_POI_ATTRACTION
+				IxPoiAttractionSelector ixPoiAttractionSelector = new IxPoiAttractionSelector(conn);
+
+				ixPoi.setAttractions(ixPoiAttractionSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : ixPoi.getAttractions()) {
+					IxPoiAttraction obj = (IxPoiAttraction) row;
+
+					ixPoi.attractionMap.put(obj.getRowId(), obj);
+				}
+
+				// 设置子表IX_POI_HOTEL
+				IxPoiHotelSelector ixPoiHotelSelector = new IxPoiHotelSelector(conn);
+
+				ixPoi.setHotels(ixPoiHotelSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : ixPoi.getHotels()) {
+					IxPoiHotel obj = (IxPoiHotel) row;
+
+					ixPoi.hotelMap.put(obj.getRowId(), obj);
+				}
+
+				// 设置子表IX_POI_RESTAURANT
+				IxPoiRestaurantSelector ixPoiRestaurantSelector = new IxPoiRestaurantSelector(conn);
+
+				ixPoi.setRestaurants(ixPoiRestaurantSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : ixPoi.getRestaurants()) {
+					IxPoiRestaurant obj = (IxPoiRestaurant) row;
+
+					ixPoi.restaurantMap.put(obj.getRowId(), obj);
+				}
+
+				// 设置子表IX_POI_CARRENTAL
+				IxPoiCarrentalSelector ixPoiCarrentalSelector = new IxPoiCarrentalSelector(conn);
+
+				ixPoi.setCarrentals(ixPoiCarrentalSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : ixPoi.getCarrentals()) {
+					IxPoiCarrental obj = (IxPoiCarrental) row;
+
+					ixPoi.carrentalMap.put(obj.getRowId(), obj);
+				}
+
 				return ixPoi;
 			} else {
 
-				throw new Exception("对应IX_POI_ICON不存在!");
+				throw new Exception("对应IX_POI对象不存在!");
 			}
 		} catch (Exception e) {
 
@@ -215,7 +423,63 @@ public class IxPoiSelector implements ISelector {
 	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
 		return null;
 	}
+    public List<IRow> loadPids(boolean isLock)throws Exception{
+    	
+     List<IRow> rows = new ArrayList<IRow>();
+		
 
+		StringBuilder sb = new StringBuilder(
+				"select ip.pid, ipn.name,ip.geometry,ip.collect_time,ip.ip.u_record from ix_poi ip ,ix_poi_name ipn  WHERE ip.pid =ip.poi_pid and lang_code = 'CHI' and name_class =1 ");
+
+		if (isLock) {
+			sb.append(" for update nowait");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+
+			resultSet = pstmt.executeQuery();
+
+			while(resultSet.next()) {
+				IxPoi ixPoi = new IxPoi();
+				IxPoiName name = new IxPoiName();
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
+				ixPoi.setPid(resultSet.getInt("pid"));
+				name.setName(resultSet.getString("name"));
+				ixPoi.setGeometry(geometry);
+				ixPoi.setCollectTime(resultSet.getString("collect_time"));
+				ixPoi.getNames().add(name);
+				ixPoi.setuRecord(resultSet.getInt("u_record"));
+			} return rows;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+    }
 	/**
 	 * 设置属性
 	 * 

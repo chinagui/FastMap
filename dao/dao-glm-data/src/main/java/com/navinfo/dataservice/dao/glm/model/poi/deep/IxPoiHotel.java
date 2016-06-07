@@ -32,7 +32,7 @@ public class IxPoiHotel implements IObj {
 	private String roomType;//客房类型 
 	private String roomPrice;//客房价格 
 	private int breakfast = 0 ;//早餐价格
-	private int service;//附属服务
+	private String service;//附属服务
 	private int parking = 0;//停车服务
 	private String longDescription;//酒店介绍
 	private String longDescriptionEng;//酒店英文介绍
@@ -101,11 +101,11 @@ public class IxPoiHotel implements IObj {
 		this.breakfast = breakfast;
 	}
 
-	public int getService() {
+	public String getService() {
 		return service;
 	}
 
-	public void setService(int service) {
+	public void setService(String service) {
 		this.service = service;
 	}
 

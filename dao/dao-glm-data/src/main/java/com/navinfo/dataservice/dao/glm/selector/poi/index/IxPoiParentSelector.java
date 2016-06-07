@@ -37,7 +37,7 @@ public class IxPoiParentSelector implements ISelector{
 		IxPoiParent poiParent = new IxPoiParent();
 
 		StringBuilder sb = new StringBuilder(
-				 "select * from " + poiParent.tableName() + " WHERE link_pid = :1 and  u_record !=2");
+				 "select * from " + poiParent.tableName() + " WHERE group_id = :1 and  u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -56,8 +56,6 @@ public class IxPoiParentSelector implements ISelector{
 
 			if (resultSet.next()) {
 				poiParent.setPid(id);
-
-				poiParent.setPid(resultSet.getInt("group_id"));
 
 				poiParent.setParentPoiPid(resultSet.getInt("parent_poi_pid"));
 

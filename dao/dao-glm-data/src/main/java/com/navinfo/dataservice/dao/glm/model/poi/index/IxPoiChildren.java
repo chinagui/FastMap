@@ -90,6 +90,10 @@ public class IxPoiChildren implements IRow {
 		return true;
 	}
 
+	public String getRowId() {
+		return rowId;
+	}
+	
 	@Override
 	public String rowId() {
 		return rowId;

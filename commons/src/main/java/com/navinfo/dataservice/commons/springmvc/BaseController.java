@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.json.JSONArray;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
@@ -62,23 +64,22 @@ public class BaseController {
     protected Map<String,?> fail(String msg) {
         return createModelMap(-1,msg,null);
     }
+    
+    protected Map<String,?> success() {
+        return createModelMap(0,"success",null);
+    }
+    
     protected Map<String,?> success(String msg) {
         return createModelMap(0,msg,null);
     }
     
-    protected Map<String,?> success(String msg,Map<String,?> result) {
+    protected Map<String,?> success(String msg, Object result) {
         return createModelMap(0,msg,result);
     }
-    protected Map<String,?> success(Map<String,?> result) {
+    protected Map<String,?> success(Object result) {
         return createModelMap(0,"success",result);
     }
     
-    protected Map<String,?> success(String msg,Page page){
-    	return createModelMap(0,msg,page);
-    }
-    protected Map<String,?> success(Page page){
-    	return createModelMap(0,"success",page);
-    }
     private Map<String,?> createModelMap(int code,String msg,Object data){
     	Map<String,Object> result = new HashMap<String,Object>();
     	result.put("errcode", code);

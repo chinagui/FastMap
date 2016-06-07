@@ -28,9 +28,9 @@ import oracle.sql.STRUCT;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.datahub.datalock.FmMesh4Lock;
-import com.navinfo.dataservice.datahub.datalock.MeshLockManager;
 import com.navinfo.dataservice.datahub.exception.LockException;
+import com.navinfo.dataservice.engine.edit.datalock.FmMesh4Lock;
+import com.navinfo.dataservice.engine.edit.datalock.MeshLockManager;
 import com.navinfo.navicommons.database.QueryRunner;
 
 public class FlushGdb {
@@ -181,7 +181,7 @@ public class FlushGdb {
 			int prjId = Integer.parseInt(props.getProperty("project_id"));
 
 			MeshLockManager man = new MeshLockManager(MultiDataSourceFactory
-					.getInstance().getManDataSource());
+					.getInstance().getSysDataSource());
 
 			man.lock(prjId, userId, setMesh, FmMesh4Lock.TYPE_GIVE_BACK);
 

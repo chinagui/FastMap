@@ -24,10 +24,10 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.datahub.glm.GlmCache;
 import com.navinfo.dataservice.datahub.glm.GlmColumn;
 import com.navinfo.dataservice.datahub.glm.GlmTable;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.navicommons.database.ColumnMetaData;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;

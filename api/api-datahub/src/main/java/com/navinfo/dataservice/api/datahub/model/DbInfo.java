@@ -24,7 +24,6 @@ public class DbInfo {
 	protected Date createTime;
 	protected String descp;
 	protected DbServer dbServer;
-	private String key;
 	public DbInfo(int dbId,String dbName,String bizType,String gdbVersion
 			,DbServer dbServer,int dbStatus){
 		this.dbId=dbId;
@@ -33,7 +32,6 @@ public class DbInfo {
 		this.dbServer=dbServer;
 		this.gdbVersion=gdbVersion;
 		this.dbStatus=dbStatus;
-		this.key=dbServer.getIp()+":"+dbServer.getPort()+"/"+dbName;
 	}
 	public DbInfo(int dbId,String dbName,String dbUserName,String dbUserPasswd,int dbRole,String tablespaceName,String bizType
 			,DbServer dbServer,String gdbVersion,int dbStatus,Date createTime,String descp){
@@ -49,7 +47,6 @@ public class DbInfo {
 		this.dbStatus=dbStatus;
 		this.createTime=createTime;
 		this.descp=descp;
-		this.key=dbServer.getIp()+":"+dbServer.getPort()+"/"+dbName;
 	}
 	
 	public boolean isSuperDb(){
@@ -67,7 +64,6 @@ public class DbInfo {
 		map.put("serverIp", dbServer.getIp());
 		map.put("serverPort", dbServer.getPort());
 		map.put("serverType", dbServer.getType());
-		map.put("key", key);
 		map.put("bizType", bizType);
 		return map;
 	}
@@ -142,8 +138,5 @@ public class DbInfo {
 	}
 	public void setDbServer(DbServer dbServer) {
 		this.dbServer = dbServer;
-	}
-	public String getKey() {
-		return key;
 	}
 }

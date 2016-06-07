@@ -49,8 +49,6 @@ public class MultiDataSourceFactory {
 			CollectionUtils.addAll(noCacheBizType, types.split(","));
 		}
 	}
-	public static final String TYPE_ORACLE = "ORACLE";
-	public static final String TYPE_MYSQL = "MYSQL";
 
 	/**
 	 * DriverManagerDataSource不做缓存,不托管，没有连接池
@@ -60,9 +58,9 @@ public class MultiDataSourceFactory {
 	 */
 	public DriverManagerDataSource getDriverManagerDataSource(String serverType,String driverClassName,String url,String username,String pwd){
 		DriverManagerDataSource dataSource = null;
-		if(TYPE_ORACLE.equals(serverType)){
+		if(DbConnectConfig.TYPE_ORACLE.equals(serverType)){
 			dataSource = new MyDriverManagerDataSource();
-		}else if(TYPE_MYSQL.equals(serverType)){
+		}else if(DbConnectConfig.TYPE_MYSQL.equals(serverType)){
 			dataSource = new DriverManagerDataSource();
 		}else{
 			throw new DataSourceException("不支持的数据库类型，找不到相应的DriverManagerDataSource");
@@ -73,7 +71,15 @@ public class MultiDataSourceFactory {
 		dataSource.setPassword(pwd);
 		return dataSource;
 	}
-   
+    /**
+	 * 获取连接到管理库的数据库连接池
+	 * 
+	 * @return
+	 * @throws SQLException
+	 */
+	public synchronized BasicDataSource getSysDataSource() {
+		return getDataSource(PoolDataSource.SYS_KEY,systemConfig,true);
+	}
 	/**
 	 * 从配置中读取的数据库连接，均做cache
 	 * @param dataSourceKey
@@ -82,7 +88,7 @@ public class MultiDataSourceFactory {
 	 */
 	public BasicDataSource getDataSourceByKey(String dataSourceKey) {
 
-		return getDataSource(dataSourceKey, systemConfig,true);
+		return dataSourceMap.get(dataSourceKey);
 	}
 
 
@@ -95,19 +101,19 @@ public class MultiDataSourceFactory {
 	 * @throws SQLException
 	 */
 
-	public BasicDataSource getDataSource(Map<String,Object> connParam) throws SQLException{
-		String key = (String)connParam.get("key");
+	public BasicDataSource getDataSource(DbConnectConfig connConfig) throws SQLException{
+		String key = connConfig.getKey();
 		BasicDataSource dataSource = dataSourceMap.get(key);
 		if (dataSource == null || dataSource.isClosed()) {
 			try {
-				String serverType = (String)connParam.get("serverType");
+				String serverType = connConfig.getServerType();
 				String driveClassName = getDriverClassName(serverType);
-				String ip = (String)connParam.get("serverIp");
-				Integer port = (Integer)connParam.get("serverPort");
-				String dbName = (String)connParam.get("dbName");
+				String ip = connConfig.getServerIp();
+				Integer port = connConfig.getServerPort();
+				String dbName = connConfig.getDbName();
 				String url = createJdbcUrl(serverType,ip,port,dbName);
-				String username = (String)connParam.get("dbUserName");
-				String password = (String)connParam.get("dbUserPasswd");
+				String username = connConfig.getUserName();
+				String password = connConfig.getUserPasswd();
 				int initialSize = SystemConfigFactory.getSystemConfig().getIntValue(PoolDataSource.SYS_KEY + ".dataSource.initialSize", 2);
 				int maxActive = SystemConfigFactory.getSystemConfig().getIntValue(PoolDataSource.SYS_KEY + ".dataSource.maxActive", 25);
 				log.debug("=============================DBINFO==========================");
@@ -117,7 +123,7 @@ public class MultiDataSourceFactory {
 				String validationQuery = getValidationQuery(serverType);
 				dataSource = createDBCPPoolDataSource(serverType,driveClassName, url, username, password, initialSize, maxActive,validationQuery);
 				//根据配置的业务类型 库来缓存
-				String bizType = (String)connParam.get("bizType");
+				String bizType = connConfig.getBizType();
 				if (StringUtils.isNotEmpty(bizType)&&(!noCacheBizType.contains(bizType))){
 					dataSourceMap.put(key, dataSource);
 				}
@@ -159,9 +165,19 @@ public class MultiDataSourceFactory {
 				log.debug("username:"+username);
 				log.debug("password:"+password);
 				String validationQuery = config.getValue(dSeKey+"dataSource.validationQuery");
-				dataSource = createDBCPPoolDataSource(serverType,driveClassName, url, username, password, initialSize, maxActive,validationQuery);
-				if (cache)
-					dataSourceMap.put(dataSourceKey, dataSource);
+				BasicDataSource newdataSource = createDBCPPoolDataSource(serverType,driveClassName, url, username, password, initialSize, maxActive,validationQuery);
+				if (cache){
+					synchronized(this){
+						dataSource = dataSourceMap.get(dataSourceKey);
+						if(dataSource==null||dataSource.isClosed()){
+							dataSource = newdataSource;
+							dataSourceMap.put(dataSourceKey, newdataSource);
+						}else{
+							newdataSource.close();
+							newdataSource = null;
+						}
+					}
+				}
 			} catch (Exception e) {
 				throw new DataSourceException(e);
 			}
@@ -200,9 +216,9 @@ public class MultiDataSourceFactory {
 			int maxActive,String validationQuery)
 			throws SQLException {
 		BasicDataSource bds = null;
-		if(TYPE_ORACLE.equals(serverType)){
+		if(DbConnectConfig.TYPE_ORACLE.equals(serverType)){
 			bds = new PoolDataSource();
-		}else if(TYPE_MYSQL.equals(serverType)){
+		}else if(DbConnectConfig.TYPE_MYSQL.equals(serverType)){
 			bds = new BasicDataSource();
 		}else{
 			throw new DataSourceException("不支持的数据库类型，找不到相应的DriverManagerDataSource");
@@ -304,18 +320,18 @@ public class MultiDataSourceFactory {
 	}
 
 	public static String getDriverClassName(String serverType){
-		if(TYPE_ORACLE.equals(serverType)){
+		if(DbConnectConfig.TYPE_ORACLE.equals(serverType)){
 			return "oracle.jdbc.driver.OracleDriver";
-		}else if(TYPE_MYSQL.equals(serverType)){
+		}else if(DbConnectConfig.TYPE_MYSQL.equals(serverType)){
 			return "com.mysql.jdbc.Driver";
 		}else{
 			throw new DataSourceException("不支持的数据库类型，找不到相应的jdbc.Driver");
 		}
 	}
 	public static String getValidationQuery(String serverType){
-		if(TYPE_ORACLE.equals(serverType)){
+		if(DbConnectConfig.TYPE_ORACLE.equals(serverType)){
 			return "select sysdate from dual";
-		}else if(TYPE_MYSQL.equals(serverType)){
+		}else if(DbConnectConfig.TYPE_MYSQL.equals(serverType)){
 			return "select 1";
 		}else{
 			throw new DataSourceException("不支持的数据库类型，找不到相应的jdbc.Driver");
@@ -329,9 +345,9 @@ public class MultiDataSourceFactory {
 	 * @return
 	 */
 	public static String createJdbcUrl(String serverType,String host,Integer port,String name){
-		if(TYPE_ORACLE.equals(serverType)){
+		if(DbConnectConfig.TYPE_ORACLE.equals(serverType)){
 			return createOracleJdbcUrl(host,port,name);
-		}else if(TYPE_MYSQL.equals(serverType)){
+		}else if(DbConnectConfig.TYPE_MYSQL.equals(serverType)){
 			return createMysqlJdbcUrl(host,port,name);
 		}else{
 			throw new DataSourceException("不支持的数据库类型，无法生成相应的URL");
@@ -360,14 +376,28 @@ public class MultiDataSourceFactory {
 		return "jdbc:mysql://"+host+":"+port+"/"+"dbName";
 
 	}
+	public static DbConnectConfig createConnectConfig(Map<String,Object> connParam){
+		String bizType=(String)connParam.get("bizType");
+		String dbName=(String)connParam.get("dbName");
+		String userName = (String)connParam.get("dbUserName");
+		String userPasswd=(String)connParam.get("dbUserPasswd");
+		String serverIp=(String)connParam.get("serverIp");
+		int serverPort=(Integer)connParam.get("serverPort");
+		String serverType=(String)connParam.get("serverType");
+		String key=serverIp+":"+serverPort+"/"+dbName;
+		return new DbConnectConfig(bizType,dbName,userName,userPasswd
+				,serverIp,serverPort,serverType,key);
+	}
 
 	public void closeDataSource(String key) {
 		BasicDataSource bds = dataSourceMap.get(key);
 		if (bds != null && !bds.isClosed()) {
+			synchronized(this){
+				dataSourceMap.remove(key);
+			}
 			try {
 				log.debug("关闭连接池. url:"+bds.getUrl()+",username:"+bds.getUsername());
 				bds.close();
-				dataSourceMap.remove(key);
 				bds = null;
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);
@@ -377,9 +407,6 @@ public class MultiDataSourceFactory {
 	
 	
 	public static void main(String[] args) throws SQLException {
-	}
-	public BasicDataSource getSysDataSource() {
-		return getDataSourceByKey(PoolDataSource.SYS_KEY);
 	}
 
 }

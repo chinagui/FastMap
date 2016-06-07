@@ -5,6 +5,7 @@ import java.sql.Connection;
 import javax.sql.DataSource;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.service.DbService;
 
@@ -37,8 +38,9 @@ public class PidServicePool {
 			synchronized (this) {
 				if (dataSource == null) {
 					DbInfo db = DbService.getInstance().getOnlyDbByType("pidCenter");
+					DbConnectConfig connConfig = MultiDataSourceFactory.createConnectConfig(db.getConnectParam());
 					dataSource = MultiDataSourceFactory.getInstance()
-							.getDataSource(db.getConnectParam());
+							.getDataSource(connConfig);
 
 				}
 			}

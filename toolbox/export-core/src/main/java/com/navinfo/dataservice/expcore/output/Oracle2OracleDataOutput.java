@@ -20,12 +20,14 @@ import com.navinfo.dataservice.expcore.ExporterResult;
 import com.navinfo.dataservice.expcore.config.ExportConfig;
 import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
+import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.expcore.output.AbstractDataOutput;
 import com.navinfo.dataservice.expcore.target.OracleTarget;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.database.oracle.ConnectionRegister;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 
@@ -44,18 +46,20 @@ public class Oracle2OracleDataOutput extends AbstractDataOutput {
 		initTarget();
 	}
 	public void initTarget()throws ExportException{
+		DbInfo db =  null;
 		OracleSchema schema = null;
 		try{
-			schema = (OracleSchema)new DbManager().getDbById(expConfig.getTargetDbId());
+			db = DbService.getInstance().getDbById(expConfig.getTargetDbId());
 		}catch(DataHubException e){
 			throw new ExportException("初始化导出目标时从datahub中获取库出现错误："+e.getMessage(),e);
 		}
-		if(schema==null){
+		if(db!=null){
+			schema = new OracleSchema(
+					MultiDataSourceFactory.createConnectConfig(db.getConnectParam()));
+		}else{
 			throw new ExportException("导出参数错误，目标库的id不能为空");
 		}
 		this.target=new OracleTarget(schema);
-
-		expResult.setNewTargetDbId(target.getSchema().getDbId());
 	}
 	public void releaseTarget(){
 		target.release(expConfig.isDestroyTarget());

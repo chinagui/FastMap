@@ -5,8 +5,9 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import com.navinfo.dataservice.api.datahub.iface.DatahubApiService;
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 
@@ -27,15 +28,17 @@ public class DBConnector {
 		if (manDataSource == null) {
 			synchronized (this) {
 				if (manDataSource == null) {
-					DatahubApiService datahub = (DatahubApiService)ApplicationContextUtil.getBean("datahubApiService");
+					DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApiService");
 					DbInfo manDb = null;
+					DbConnectConfig connConfig = null;
 					try{
 						manDb = datahub.getOnlyDbByType("fmManRoad");
+						connConfig = MultiDataSourceFactory.createConnectConfig(manDb.getConnectParam());
 					}catch(Exception e){
 						throw new SQLException("从datahub获取元数据信息失败："+e.getMessage(),e);
 					}
 					manDataSource = MultiDataSourceFactory.getInstance()
-							.getDataSource(manDb.getConnectParam());
+							.getDataSource(connConfig);
 				}
 			}
 		}
@@ -47,15 +50,17 @@ public class DBConnector {
 		if (metaDataSource == null) {
 			synchronized (this) {
 				if (metaDataSource == null) {
-					DatahubApiService datahub = (DatahubApiService)ApplicationContextUtil.getBean("datahubApiService");
+					DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApiService");
 					DbInfo metaDb = null;
+					DbConnectConfig connConfig = null;
 					try{
 						metaDb = datahub.getOnlyDbByType("metaRoad");
+						connConfig = MultiDataSourceFactory.createConnectConfig(metaDb.getConnectParam());
 					}catch(Exception e){
 						throw new SQLException("从datahub获取元数据信息失败："+e.getMessage(),e);
 					}
 					metaDataSource = MultiDataSourceFactory.getInstance()
-							.getDataSource(metaDb.getConnectParam());
+							.getDataSource(connConfig);
 				}
 			}
 		}

@@ -29,6 +29,7 @@
          <groupId>log4j</groupId>
          <artifactId>log4j</artifactId>
      </dependency>
+    
      <dependency>
 	     <groupId>com.navinfo.dataservice</groupId>
 		 <artifactId>commons</artifactId>

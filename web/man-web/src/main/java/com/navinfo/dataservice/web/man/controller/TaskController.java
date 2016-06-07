@@ -43,12 +43,7 @@ public class TaskController extends BaseController {
 	@RequestMapping(value = "/task/create")
 	public ModelAndView create(HttpServletRequest request){
 		try{
-			String token = request.getParameter("access_token");
-			if (StringUtils.isEmpty(token)){
-				throw new IllegalArgumentException("access_token参数不能为空。");
-			}
-			//验证token是否有效，无效直接报异常
-			AccessToken tokenObj=AccessTokenFactory.validate(token);
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			String parameter = request.getParameter("parameter");
 			if (StringUtils.isEmpty(parameter)){
 				throw new IllegalArgumentException("parameter参数不能为空。");

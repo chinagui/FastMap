@@ -10,10 +10,10 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 */
 public class AccessToken {
 	private long userId;
-	private int expireSecond;
+	private long expireSecond;
 	private long lastestActiveSecond;
 	private String tokenString;
-	AccessToken(long userId,int expireSecond,TokenGenerateLock lock){
+	AccessToken(long userId,long expireSecond,TokenGenerateLock lock){
 		this.userId=userId;
 		this.expireSecond=expireSecond;
 	}
@@ -23,7 +23,7 @@ public class AccessToken {
 	public void setUserId(long userId) {
 		this.userId = userId;
 	}
-	public int getExpireSecond() {
+	public long getExpireSecond() {
 		return expireSecond;
 	}
 	public void setExpireSecond(int expireSecond) {

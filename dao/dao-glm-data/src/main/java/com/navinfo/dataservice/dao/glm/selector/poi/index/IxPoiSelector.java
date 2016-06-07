@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.poi.index;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -422,7 +423,63 @@ public class IxPoiSelector implements ISelector {
 	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
 		return null;
 	}
+    public List<IRow> loadPids(boolean isLock)throws Exception{
+    	
+     List<IRow> rows = new ArrayList<IRow>();
+		
 
+		StringBuilder sb = new StringBuilder(
+				"select ip.pid, ipn.name,ip.geometry,ip.collect_time,ip.ip.u_record from ix_poi ip ,ix_poi_name ipn  WHERE ip.pid =ip.poi_pid and lang_code = 'CHI' and name_class =1 ");
+
+		if (isLock) {
+			sb.append(" for update nowait");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+
+			resultSet = pstmt.executeQuery();
+
+			while(resultSet.next()) {
+				IxPoi ixPoi = new IxPoi();
+				IxPoiName name = new IxPoiName();
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
+				ixPoi.setPid(resultSet.getInt("pid"));
+				name.setName(resultSet.getString("name"));
+				ixPoi.setGeometry(geometry);
+				ixPoi.setCollectTime(resultSet.getString("collect_time"));
+				ixPoi.getNames().add(name);
+				ixPoi.setuRecord(resultSet.getInt("u_record"));
+			} return rows;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+    }
 	/**
 	 * 设置属性
 	 * 

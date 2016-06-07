@@ -138,6 +138,8 @@ public class IxPoi implements IObj {
 	private double oldYGuide;
 
 	private String rowId;
+	
+	private int uRecord;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -831,6 +833,14 @@ public class IxPoi implements IObj {
 
 	public String getRowId() {
 		return rowId;
+	}
+
+	public int getuRecord() {
+		return uRecord;
+	}
+
+	public void setuRecord(int uRecord) {
+		this.uRecord = uRecord;
 	}
 
 	@Override

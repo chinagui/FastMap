@@ -37,7 +37,6 @@ public class IxPoiVideo implements IRow {
 	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
-	
 	public IxPoiVideo() {
 	}
 
@@ -75,8 +74,6 @@ public class IxPoiVideo implements IRow {
 		this.memo = memo;
 	}
 
-
-
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
 		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
@@ -109,6 +106,11 @@ public class IxPoiVideo implements IRow {
 
 		return rowId;
 	}
+	
+	public String getRowId() {
+		return rowId;
+	}
+
 
 	@Override
 	public void setRowId(String rowId) {

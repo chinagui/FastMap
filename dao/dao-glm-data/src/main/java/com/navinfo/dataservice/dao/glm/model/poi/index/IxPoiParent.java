@@ -47,7 +47,6 @@ public class IxPoiParent implements IObj {
 
 	}
 	
-	
 	public int getPid() {
 		return pid;
 	}
@@ -95,10 +94,13 @@ public class IxPoiParent implements IObj {
 	public void setPoiChildrenMap(Map<String, IxPoiChildren> poiChildrenMap) {
 		this.poiChildrenMap = poiChildrenMap;
 	}
-
 	
 	@Override
 	public String rowId() {
+		return rowId;
+	}
+	
+	public String getRowId() {
 		return rowId;
 	}
 

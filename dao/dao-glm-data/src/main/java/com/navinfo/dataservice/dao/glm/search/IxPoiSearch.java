@@ -9,15 +9,18 @@ import java.util.List;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
+import com.vividsolutions.jts.geom.Geometry;
 
-public class IxPoiSearch  implements ISearch {
-	
+public class IxPoiSearch implements ISearch {
+
 	private Connection conn;
 
 	public IxPoiSearch(Connection conn) {
@@ -27,7 +30,7 @@ public class IxPoiSearch  implements ISearch {
 
 	@Override
 	public IObj searchDataByPid(int pid) throws Exception {
-		
+
 		IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
 
 		IObj ixPoi = (IObj) ixPoiSelector.loadById(pid, false);
@@ -53,8 +56,8 @@ public class IxPoiSearch  implements ISearch {
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
 			int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
-
-		String sql = "select pid, geometry  from ix_poi  where sdo_relate(geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2";
+		
+		String sql="select pid,x_guide,y_guide,geometry, (select count(1) from ix_poi_parent p where p.parent_poi_pid = i.pid) parentCount,  (select count(1) from ix_poi_children c where c.child_poi_pid = i.pid) childCount from ix_poi i where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =    'true'  and u_record != 2";
 		
 		PreparedStatement pstmt = null;
 
@@ -76,7 +79,31 @@ public class IxPoiSearch  implements ISearch {
 			while (resultSet.next()) {
 				SearchSnapshot snapshot = new SearchSnapshot();
 
-				snapshot.setT(15);
+				int parentCount=resultSet.getInt("parentCount");
+				
+				int childCount=resultSet.getInt("childCount");
+				
+				String haveParentOrChild= GetParentOrChild( parentCount, childCount);				
+				
+				JSONObject m = new JSONObject();
+
+				m.put("a", haveParentOrChild);
+				
+				Double xGuide = resultSet.getDouble("x_guide");
+
+				Double yGuide = resultSet.getDouble("y_guide");
+
+				Geometry guidePoint = GeoTranslator.point2Jts(xGuide, yGuide);
+
+				JSONObject guidejson = GeoTranslator.jts2Geojson(guidePoint);
+
+				Geojson.point2Pixel(guidejson, z, px, py);
+
+				m.put("c", guidejson.getJSONArray("coordinates"));
+
+				snapshot.setM(m);
+				
+				snapshot.setT(21);
 
 				snapshot.setI(resultSet.getString("pid"));
 
@@ -114,5 +141,33 @@ public class IxPoiSearch  implements ISearch {
 
 		return list;
 	}
+	
+	private String GetParentOrChild(int parentCount,int childCount)
+	{
+		String haveParentOrChild="0";
+		
+		if(parentCount>0)
+		{
+			haveParentOrChild="1";
+		}
+		
+		if(childCount>0)
+		{
+			haveParentOrChild="2";
+		}
+		
+		if(parentCount>0||childCount>0)
+		{
+			haveParentOrChild="3";
+		}	
+		
+		return isParentOrChild;
+	}
 
+	public static void main(String[] args) throws Exception {
+		
+		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+		new IxPoiSearch(conn).searchDataByTileWithGap(215890,99229,18,
+					80);
+	}
 }

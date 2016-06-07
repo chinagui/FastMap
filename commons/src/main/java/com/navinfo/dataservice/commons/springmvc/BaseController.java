@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -50,7 +51,10 @@ public class BaseController {
 
 
     protected Map<String,?> exception(Exception e) {
-        return exception(e.getMessage());
+    	String msg=e.getMessage();
+    	if(StringUtils.isEmpty(msg)){
+    		return exception(e.getClass()+"");}
+    	else{return exception(msg);}
     }
     protected Map<String,?> exception(String msg) {
         return createModelMap(-1,msg,null);

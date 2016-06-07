@@ -187,8 +187,34 @@ public class IxPoiNameSelector implements ISelector {
 
 				IxPoiName ixPoiName = new IxPoiName();
 
+				//设置主表name属性
 				setAttr(ixPoiName, resultSet);
+				
+				// 设置子表ix_poi_name_tone
+				IxPoiNameToneSelector poiNameToneSelector = new IxPoiNameToneSelector(conn);
 
+				ixPoiName.setNameTones(poiNameToneSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : ixPoiName.getNameTones()) {
+
+					IxPoiNameTone obj = (IxPoiNameTone) row;
+
+					ixPoiName.nameToneMap.put(obj.getRowId(), obj);
+				}
+				
+				// 设置子表ix_poi_name_flag
+				IxPoiNameFlagSelector poiNameFlagSelector = new IxPoiNameFlagSelector(conn);
+
+				ixPoiName.setNameFlags(poiNameFlagSelector.loadRowsByParentId(id, isLock));
+
+				for (IRow row : ixPoiName.getNameFlags()) {
+
+					IxPoiNameFlag obj = (IxPoiNameFlag) row;
+
+					ixPoiName.nameFlagMap.put(obj.getRowId(), obj);
+				}
+				
+				
 				rows.add(ixPoiName);
 			}
 		} catch (Exception e) {

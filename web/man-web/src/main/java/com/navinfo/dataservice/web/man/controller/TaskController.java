@@ -52,7 +52,8 @@ public class TaskController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			service.create(tokenObj.getUserId(),dataJson);
+			long userId=tokenObj.getUserId();
+			service.create(userId,dataJson);
 			return new ModelAndView("jsonView", success("创建成功"));
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);
@@ -61,12 +62,18 @@ public class TaskController extends BaseController {
 	}
 	@RequestMapping(value = "/task/update")
 	public ModelAndView update(HttpServletRequest request){
-		try{			
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
-			if(dataJson==null){
-				throw new IllegalArgumentException("param参数不能为空。");
+		try{
+			String token = request.getParameter("access_token");
+			if (StringUtils.isEmpty(token)){
+				throw new IllegalArgumentException("access_token参数不能为空。");
 			}
-			service.update(dataJson);			
+			//验证token是否有效，无效直接报异常
+			AccessToken tokenObj=AccessTokenFactory.validate(token);
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			service.update(dataJson);					
 			return new ModelAndView("jsonView", success("修改成功"));
 		}catch(Exception e){
 			log.error("修改失败，原因："+e.getMessage(), e);
@@ -92,16 +99,15 @@ public class TaskController extends BaseController {
 	@RequestMapping(value = "/task/list")
 	public ModelAndView list(HttpServletRequest request){
 		try{			
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
-			if(dataJson==null){
-				throw new IllegalArgumentException("param参数不能为空。");
-			}
+			JSONObject condition = JSONObject.fromObject(URLDecode(request.getParameter("condition")));			
+			JSONObject order = JSONObject.fromObject(URLDecode(request.getParameter("order")));	
+			
 			int curPageNum= 1;//默认为第一页
-			String curPage= request.getParameter("page");
+			String curPage= request.getParameter("pageNum");
 			if (StringUtils.isNotEmpty(curPage)){
 				curPageNum = Integer.parseInt(curPage);
 			}
-			Page data = service.list(dataJson,curPageNum);			
+			Page data = service.list(condition,order,curPageNum);			
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);
@@ -112,11 +118,11 @@ public class TaskController extends BaseController {
 	@RequestMapping(value = "/task/query")
 	public ModelAndView query(HttpServletRequest request){
 		try{
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
-			if(dataJson==null){
-				throw new IllegalArgumentException("param参数不能为空。");
+			String taskId = request.getParameter("taskId");			
+			if(StringUtils.isEmpty(taskId)){
+				throw new IllegalArgumentException("taskId参数不能为空。");
 			}
-			HashMap data = service.query(dataJson);			
+			HashMap data = service.query(Integer.valueOf(taskId));			
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("获取明细失败，原因："+e.getMessage(), e);

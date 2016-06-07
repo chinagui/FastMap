@@ -31,14 +31,14 @@ public class IxPoiChargingPlot implements IRow {
 	private int   groupId =1;//充电桩分组号
 	private int   count = 1;//组内充电桩数 
 	private int  acdc = 0 ;//交直流电充电
-	private int   plugType = 9 ;//插座类型 
+	private String   plugType = "9" ;//插座类型 
 	private String  power; //充电功率 
 	private String voltage;//充电电压 
 	private String current ;//充电电流
 	private int mode = 0;//充电模式
 	private int plugNum = 1;//单个充电桩插数量
 	private String prices;//充电价格
-	private int openType =1;//开放状态
+	private String openType ="1";//开放状态
 	private int  availableState =0 ;//可用状态
 	private String manufacturer;//设备生产商
 	private String  factoryNum;//出厂编号
@@ -47,7 +47,7 @@ public class IxPoiChargingPlot implements IRow {
 	private String parkingNum;//电动车泊位号码
 	private int floor = 1 ;//楼层
 	private int locationType = 0 ;//充电桩位置类型
-	private int payment =4 ;//支付方式
+	private String payment ="4" ;//支付方式
 	private String memo;
 	private int mesh;
 	private String rowId;
@@ -111,11 +111,11 @@ public class IxPoiChargingPlot implements IRow {
 		this.acdc = acdc;
 	}
 
-	public int getPlugType() {
+	public String getPlugType() {
 		return plugType;
 	}
 
-	public void setPlugType(int plugType) {
+	public void setPlugType(String plugType) {
 		this.plugType = plugType;
 	}
 
@@ -167,11 +167,11 @@ public class IxPoiChargingPlot implements IRow {
 		this.prices = prices;
 	}
 
-	public int getOpenType() {
+	public String getOpenType() {
 		return openType;
 	}
 
-	public void setOpenType(int openType) {
+	public void setOpenType(String openType) {
 		this.openType = openType;
 	}
 
@@ -239,11 +239,11 @@ public class IxPoiChargingPlot implements IRow {
 		this.locationType = locationType;
 	}
 
-	public int getPayment() {
+	public String getPayment() {
 		return payment;
 	}
 
-	public void setPayment(int payment) {
+	public void setPayment(String payment) {
 		this.payment = payment;
 	}
 

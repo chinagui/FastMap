@@ -31,7 +31,7 @@ public class IxPoiParking implements IObj {
 	private int poiPid =0;
 	private String  parkingType;//停车场类型  
 	private String  tollStd ;//收费标准
-	private String   tollDesc;//收费描述
+	private String   tollDes;//收费描述
 	private String   tollWay;//收费方式
 	private String  payment;//支付方式 
 	private String  remark;//收费备注 
@@ -45,7 +45,162 @@ public class IxPoiParking implements IObj {
 	private int  vehicle = 0;//停放车辆类型 
 	private String memo;// 备注信息
 	private String photoName;//全景照片
-	private String aveSpecialPlace ;//是否存在特殊类型停车位
+	private int certificate = 0; //入口凭证
+	public String getParkingType() {
+		return parkingType;
+	}
+
+	public void setParkingType(String parkingType) {
+		this.parkingType = parkingType;
+	}
+
+	public String getTollStd() {
+		return tollStd;
+	}
+
+	public void setTollStd(String tollStd) {
+		this.tollStd = tollStd;
+	}
+
+	public String getTollDes() {
+		return tollDes;
+	}
+
+	public void setTollDes(String tollDes) {
+		this.tollDes = tollDes;
+	}
+
+	public String getTollWay() {
+		return tollWay;
+	}
+
+	public void setTollWay(String tollWay) {
+		this.tollWay = tollWay;
+	}
+
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+
+	public String getSource() {
+		return source;
+	}
+
+	public void setSource(String source) {
+		this.source = source;
+	}
+
+	public String getOpenTime() {
+		return openTime;
+	}
+
+	public void setOpenTime(String openTime) {
+		this.openTime = openTime;
+	}
+
+	public int getTotalNum() {
+		return totalNum;
+	}
+
+	public void setTotalNum(int totalNum) {
+		this.totalNum = totalNum;
+	}
+
+	public String getWorkTime() {
+		return workTime;
+	}
+
+	public void setWorkTime(String workTime) {
+		this.workTime = workTime;
+	}
+
+	public double getResHigh() {
+		return resHigh;
+	}
+
+	public void setResHigh(double resHigh) {
+		this.resHigh = resHigh;
+	}
+
+	public double getResWidth() {
+		return resWidth;
+	}
+
+	public void setResWidth(double resWidth) {
+		this.resWidth = resWidth;
+	}
+
+	public double getResWeigh() {
+		return resWeigh;
+	}
+
+	public void setResWeigh(double resWeigh) {
+		this.resWeigh = resWeigh;
+	}
+
+	public int getVehicle() {
+		return vehicle;
+	}
+
+	public void setVehicle(int vehicle) {
+		this.vehicle = vehicle;
+	}
+
+	
+
+	public int getWomenNum() {
+		return womenNum;
+	}
+
+	public void setWomenNum(int womenNum) {
+		this.womenNum = womenNum;
+	}
+
+	public int getHandicapNum() {
+		return handicapNum;
+	}
+
+	public void setHandicapNum(int handicapNum) {
+		this.handicapNum = handicapNum;
+	}
+
+	public int getMiniNum() {
+		return miniNum;
+	}
+
+	public void setMiniNum(int miniNum) {
+		this.miniNum = miniNum;
+	}
+
+	public int getVipNum() {
+		return vipNum;
+	}
+
+	public void setVipNum(int vipNum) {
+		this.vipNum = vipNum;
+	}
+
+	public int getCertificate() {
+		return certificate;
+	}
+
+	public void setCertificate(int certificate) {
+		this.certificate = certificate;
+	}
+
+	public String getHaveSpecialplace() {
+		return haveSpecialplace;
+	}
+
+	public void setHaveSpecialplace(String haveSpecialplace) {
+		this.haveSpecialplace = haveSpecialplace;
+	}
+
+	private String haveSpecialplace ;//是否存在特殊类型停车位
 	private int womenNum = 0;//女士停车位数量
 	private int handicapNum = 0;//残障停车位数量
 	private int miniNum = 0;//迷你停车位数量

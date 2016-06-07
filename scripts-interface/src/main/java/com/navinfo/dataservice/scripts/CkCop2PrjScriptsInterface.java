@@ -13,6 +13,8 @@ import org.springframework.util.Assert;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.expcore.external.ExternalTool4Exporter;
@@ -43,23 +45,27 @@ public class CkCop2PrjScriptsInterface {
 			
 			//先批md5值
 			DbInfo sourceDb = DbService.getInstance().getDbById(Integer.valueOf(sourceDbId));
-			ExternalTool4Exporter.generateCkMd5(sourceDb);
+			OracleSchema sourceSchema = new OracleSchema(
+					MultiDataSourceFactory.createConnectConfig(sourceDb.getConnectParam()));
+			ExternalTool4Exporter.generateCkMd5(sourceSchema);
 			response.put("md5", "success");
 			//generate ck_result_object
-			ExternalTool4Exporter.generateCkResultObject(sourceDb);
+			ExternalTool4Exporter.generateCkResultObject(sourceSchema);
 			response.put("ck_result_object", "success");
 			//generate ni_val_exception_grid
-			ExternalTool4Exporter.generateCkResultGrid(sourceDb,gdbVersion);
+			ExternalTool4Exporter.generateCkResultGrid(sourceSchema,gdbVersion);
 			response.put("ni_val_exception_grid", "success");
 
 			DbInfo targetDb = DbService.getInstance().getDbById(Integer.valueOf(targetDbId));
+			OracleSchema targetSchema = new OracleSchema(
+					MultiDataSourceFactory.createConnectConfig(targetDb.getConnectParam()));
 			//将在grids范围导出到目标
-			ExternalTool4Exporter.selectLogGrids(sourceDb,targetDb,grids.split(","));
+			ExternalTool4Exporter.selectLogGrids(sourceSchema,targetSchema,grids.split(","));
 			response.put("exp", "success");
 			//去重
 			List<String> tables = new ArrayList<String>();
 			tables.add("NI_VAL_EXCEPTION");
-			RemoveDuplicateRow.removeDup(tables, targetDb);
+			RemoveDuplicateRow.removeDup(tables, targetSchema);
 			response.put("removeDup", "success");
 
 			response.put("msg", "success");

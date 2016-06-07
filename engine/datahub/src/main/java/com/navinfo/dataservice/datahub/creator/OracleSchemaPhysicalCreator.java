@@ -11,6 +11,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
 import com.navinfo.dataservice.datahub.service.DbService;
@@ -110,7 +111,8 @@ public class OracleSchemaPhysicalCreator implements DbPhysicalCreator{
 	public void installGdbModel(DbInfo db,String gdbVersion)throws DataHubException{
 		Connection conn = null;
 		try{
-			conn = MultiDataSourceFactory.getInstance().getDataSource(db.getConnectParam()).getConnection();
+			DbConnectConfig connConfig = MultiDataSourceFactory.createConnectConfig(db.getConnectParam());
+			conn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
 			// gdb
 			String schemaCreateFile = "/com/navinfo/dataservice/datahub/resources/"
 					+ gdbVersion + "/schema/table_create_gdb.sql";

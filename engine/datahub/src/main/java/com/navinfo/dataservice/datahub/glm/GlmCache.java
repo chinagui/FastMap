@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -96,7 +97,8 @@ public class GlmCache {
 				tableSql.append(StringUtils.join(names.keySet(),"','"));
 				tableSql.append("') ORDER BY T.TABLE_NAME,C.COLUMN_ID");
 				DbInfo db = DbService.getInstance().getOnlyDbByType("nationRoad");
-				conn = MultiDataSourceFactory.getInstance().getDataSource(db.getConnectParam()).getConnection();
+				DbConnectConfig connConfig = MultiDataSourceFactory.createConnectConfig(db.getConnectParam());
+				conn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
 				Map<String,GlmTable> tables = runner.query(conn, tableSql.toString(), new ResultSetHandler<Map<String,GlmTable>>(){
 					@Override
 					public Map<String,GlmTable> handle(ResultSet rs)throws SQLException{

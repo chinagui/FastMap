@@ -9,7 +9,9 @@ import java.util.Set;
 * @Description: TODO
 *  
 */
-public interface DatalockApiService {
+public interface DatalockApi {
 	Set<Integer> query(int prjId,Set<Integer> meshes)throws Exception;
-	String test(String name)throws Exception;
+	int lock(int prjId, int userId, Set<Integer> meshes,int lockType)throws Exception;
+	int unlock(int prjId,int lockSeq,int lockType)throws Exception;
+	void unlock(int prjId, Set<Integer> meshes,int lockType)throws Exception;
 }

@@ -9,7 +9,7 @@ import com.navinfo.dataservice.api.datahub.model.DbInfo;
 * @Description: TODO
 *  
 */
-public interface DatahubApiService {
+public interface DatahubApi {
 	public DbInfo getSuperDb(DbInfo db)throws Exception;
 	public DbInfo getOnlyDbByType(String bizType)throws Exception;
 }

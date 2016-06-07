@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.datalock;
+package com.navinfo.dataservice.api.edit.model;
 
 /** 
  * @ClassName: FmMesh4Lock 

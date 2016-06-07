@@ -8,8 +8,7 @@ import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -22,7 +21,7 @@ import com.navinfo.navicommons.database.QueryRunner;
  */
 public class PhysicalDeleteRow {
 	protected static Logger log = Logger.getLogger(PhysicalDeleteRow.class);
-	public static void doDelete(Set<String> tables,DbInfo db)throws Exception{
+	public static void doDelete(Set<String> tables,OracleSchema schema)throws Exception{
 		if(tables!=null&&tables.size()>0){
 			List<ExpSQL> expSQLs = new ArrayList<ExpSQL>();
 			for(String name:tables){
@@ -33,7 +32,7 @@ public class PhysicalDeleteRow {
 			if(expSQLs.size()==1){
 				Connection conn = null;
 				try{
-					conn = MultiDataSourceFactory.getInstance().getDataSource(db.getConnectParam()).getConnection();
+					conn = schema.getDriverManagerDataSource().getConnection();
 					QueryRunner runner = new QueryRunner();
 					runner.execute(conn, expSQLs.get(0).getSql());
 				}catch(Exception e){
@@ -44,7 +43,7 @@ public class PhysicalDeleteRow {
 					DbUtils.commitAndCloseQuietly(conn);
 				}
 			}else if(expSQLs.size()>1){
-				ExecuteExternlToolSql executor = new ExecuteExternlToolSql(db);
+				ExecuteExternlToolSql executor = new ExecuteExternlToolSql(schema);
 				ThreadLocalContext ctx = new ThreadLocalContext(log);
 				executor.execute(expSQLs, ctx);
 			}

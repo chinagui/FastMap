@@ -23,10 +23,6 @@ public class SampleaJob extends AbstractJob {
 		super(jobInfo);
 	}
 
-	public SampleaJob(JobInfo jobInfo,AbstractJobRequest request) {
-		super(jobInfo,request);
-	}
-
 	@Override
 	public void execute() throws JobException {
 		log.info("开始A步骤...");

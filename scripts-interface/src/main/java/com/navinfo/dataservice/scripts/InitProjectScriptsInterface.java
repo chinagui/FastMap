@@ -13,10 +13,10 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
+import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.PackageExec;
 import com.navinfo.navicommons.database.sql.SqlExec;
@@ -63,7 +63,7 @@ public class InitProjectScriptsInterface {
 			// fm_man写记录
 			String prjDbId = createDbResponse.getString("dbId");
 			QueryRunner runner = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();
 
 			// fm_man中写project记录
@@ -136,9 +136,9 @@ public class InitProjectScriptsInterface {
 			response.put("export_data", expResponse);
 
 			// 创建索引、包等等
-			OracleSchema schema = (OracleSchema) new DbManager()
+			DbInfo db = DbService.getInstance()
 					.getDbById(Integer.valueOf(prjDbId));
-			tarConn = schema.getDriverManagerDataSource().getConnection();
+			tarConn = MultiDataSourceFactory.getInstance().getDataSource(db.getConnectParam()).getConnection();
 			String sqlFile = "/com/navinfo/dataservice/scripts/resources/prj_utils.sql";
 			SqlExec sqlExec = new SqlExec(tarConn);
 			sqlExec.executeIgnoreError(sqlFile);

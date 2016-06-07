@@ -3,8 +3,8 @@ package com.navinfo.dataservice.datahub.chooser.strategy;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.api.datahub.model.DbServer;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
-import com.navinfo.dataservice.datahub.model.DbServer;
 
 /** 
  * @ClassName: DbServerStrategy 

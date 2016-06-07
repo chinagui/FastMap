@@ -1,8 +1,7 @@
 package com.navinfo.dataservice.datahub.creator;
 
-import com.navinfo.dataservice.api.datahub.model.DbServerType;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
-import com.navinfo.dataservice.datahub.model.UnifiedDb;
 
 /** 
  * @ClassName: DbCreator 
@@ -11,6 +10,6 @@ import com.navinfo.dataservice.datahub.model.UnifiedDb;
  * @Description: TODO
  */
 public interface DbPhysicalCreator {
-	public void create(UnifiedDb db)throws DataHubException;
-	public void installGdbModel(UnifiedDb db,String gdbVersion)throws DataHubException;
+	public void create(DbInfo db)throws DataHubException;
+	public void installGdbModel(DbInfo db,String gdbVersion)throws DataHubException;
 }

@@ -11,10 +11,10 @@ import net.sf.json.JSONObject;
 import org.apache.commons.dbutils.DbUtils;
 import org.springframework.util.Assert;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
+import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.expcore.external.ExternalTool4Exporter;
 import com.navinfo.dataservice.expcore.external.RemoveDuplicateRow;
 
@@ -42,7 +42,7 @@ public class CkCop2PrjScriptsInterface {
 			Assert.notNull(grids,"grids不能为空");
 			
 			//先批md5值
-			OracleSchema sourceDb = (OracleSchema)new DbManager().getDbById(Integer.valueOf(sourceDbId));
+			DbInfo sourceDb = DbService.getInstance().getDbById(Integer.valueOf(sourceDbId));
 			ExternalTool4Exporter.generateCkMd5(sourceDb);
 			response.put("md5", "success");
 			//generate ck_result_object
@@ -52,7 +52,7 @@ public class CkCop2PrjScriptsInterface {
 			ExternalTool4Exporter.generateCkResultGrid(sourceDb,gdbVersion);
 			response.put("ni_val_exception_grid", "success");
 
-			OracleSchema targetDb = (OracleSchema)new DbManager().getDbById(Integer.valueOf(targetDbId));
+			DbInfo targetDb = DbService.getInstance().getDbById(Integer.valueOf(targetDbId));
 			//将在grids范围导出到目标
 			ExternalTool4Exporter.selectLogGrids(sourceDb,targetDb,grids.split(","));
 			response.put("exp", "success");

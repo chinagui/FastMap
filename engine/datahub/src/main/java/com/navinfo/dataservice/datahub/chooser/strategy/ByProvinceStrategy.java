@@ -15,10 +15,10 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 import org.springframework.util.StringUtils;
 
+import com.navinfo.dataservice.api.datahub.model.DbServer;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.DbServerMonitor;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
-import com.navinfo.dataservice.datahub.model.DbServer;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /** 
@@ -52,9 +52,9 @@ public class ByProvinceStrategy extends DbServerStrategy implements Observer{
 		//以后可以实现从serverProvinceMap中取
 		Connection conn = null;
 		try{
-			String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.server_type,s.service_name,p.province_code FROM unified_db_server s,db_server_province p WHERE s.server_id=p.DB_SERVER_ID and s.use_type like ? and p.province_code=?";
+			String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.server_type,p.province_code FROM unified_db_server s,db_server_province p WHERE s.server_id=p.DB_SERVER_ID and s.use_type like ? and p.province_code=?";
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			DbServer db = run.query(conn, sql,new ResultSetHandler<DbServer>(){
 
 				@Override
@@ -64,8 +64,7 @@ public class ByProvinceStrategy extends DbServerStrategy implements Observer{
 						String ip = rs.getString("SERVER_IP");
 						int port = rs.getInt("SERVER_PORT");
 						String type = rs.getString("SERVER_TYPE");
-						String sname = rs.getString("SERVICE_NAME");
-						inDb = new DbServer(type,ip,port,sname);
+						inDb = new DbServer(type,ip,port);
 						inDb.setSid(rs.getInt("SERVER_ID"));
 					}
 					return inDb;

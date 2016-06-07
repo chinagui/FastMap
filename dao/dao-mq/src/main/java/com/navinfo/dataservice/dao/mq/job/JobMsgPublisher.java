@@ -22,18 +22,18 @@ public class JobMsgPublisher {
 	 * @return
 	 * @throws Exception
 	 */
-	public static String createJob(String type,JSONObject jobRequest)throws Exception{
+	public static String createJob(String guid,String type,JSONObject jobRequest)throws Exception{
 		if(StringUtils.isEmpty(type)||jobRequest==null){
 			throw new Exception("typeName和jobRequest不能为空");
 		}
 		JSONObject jobMsg = new JSONObject();
-		jobMsg.put("type", type.toString());
+		jobMsg.put("guid", guid);
+		jobMsg.put("type", type);
 		jobMsg.put("request", jobRequest);
-		jobMsg.put("identity", "");
 		MsgPublisher.publish2WorkQueue("create_job", jobMsg.toString());
 		return "";
 	}
-	public static void runJob(long jobId,String type,JSONObject jobRequest)throws Exception{
+	public static void runJob(long jobId,String jobGuid,String type,JSONObject jobRequest)throws Exception{
 		if(jobRequest==null){
 			throw new Exception("jobRequest不能为空");
 		}
@@ -59,6 +59,22 @@ public class JobMsgPublisher {
 		jobMsg.put("response", jobResponse);
 		jobMsg.put("status", status);
 		jobMsg.put("stepCount", stepCount);
+		jobMsg.put("step", JSONObject.fromObject(step));
+		MsgPublisher.publish2WorkQueue("resp_job", jobMsg.toString());
+	}
+
+	/**
+	 * 用于job web Server 持久化job执行过程中的反馈
+	 * @param jobId
+	 * @param jobResponse
+	 * @throws Exception
+	 */
+	public static void responseJob(long jobId,JobStep step)throws Exception{
+		if(step==null){
+			throw new Exception("step不能为空");
+		}
+		JSONObject jobMsg = new JSONObject();
+		jobMsg.put("jobId", jobId);
 		jobMsg.put("step", JSONObject.fromObject(step));
 		MsgPublisher.publish2WorkQueue("resp_job", jobMsg.toString());
 	}

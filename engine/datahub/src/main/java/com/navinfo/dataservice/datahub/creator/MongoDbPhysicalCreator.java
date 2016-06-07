@@ -1,7 +1,7 @@
 package com.navinfo.dataservice.datahub.creator;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
-import com.navinfo.dataservice.datahub.model.UnifiedDb;
 
 /** 
  * @ClassName: MongoDbPhysicalCreator 
@@ -15,7 +15,7 @@ public class MongoDbPhysicalCreator implements DbPhysicalCreator {
 	 * @see com.navinfo.dataservice.datahub.creator.DbPhysicalCreator#create(com.navinfo.dataservice.datahub.model.UnifiedDb, java.lang.String)
 	 */
 	@Override
-	public void create(UnifiedDb db) throws DataHubException {
+	public void create(DbInfo db) throws DataHubException {
 		// do nothing
 
 	}
@@ -24,7 +24,7 @@ public class MongoDbPhysicalCreator implements DbPhysicalCreator {
 	 * @see com.navinfo.dataservice.datahub.creator.DbPhysicalCreator#installGdbModel(com.navinfo.dataservice.datahub.model.UnifiedDb, java.lang.String)
 	 */
 	@Override
-	public void installGdbModel(UnifiedDb db, String gdbVersion)
+	public void installGdbModel(DbInfo db, String gdbVersion)
 			throws DataHubException {
 		// do nothing
 	}

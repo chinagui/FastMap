@@ -4,7 +4,9 @@ import java.sql.Connection;
 
 import javax.sql.DataSource;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.datahub.service.DbService;
 
 /**
  * oracle连接池管理器
@@ -34,9 +36,9 @@ public class PidServicePool {
 		if (dataSource == null) {
 			synchronized (this) {
 				if (dataSource == null) {
-
+					DbInfo db = DbService.getInstance().getOnlyDbByType("pidCenter");
 					dataSource = MultiDataSourceFactory.getInstance()
-							.getPidDataSource();
+							.getDataSource(db.getConnectParam());
 
 				}
 			}

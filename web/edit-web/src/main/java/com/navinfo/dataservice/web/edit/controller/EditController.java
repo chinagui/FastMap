@@ -21,6 +21,8 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
@@ -245,6 +247,47 @@ public class EditController extends BaseController {
 
 			logger.error(e.getMessage(), e);
 
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	@RequestMapping(value = "/poi/base/list")
+	public ModelAndView getPoiList(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+			JSONArray array = new JSONArray();
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			int projectId = jsonReq.getInt("projectId");
+			//项目管理（放开）
+			//subtaskId
+			//int subtaskId = jsonReq.getInt("subtaskId");
+			//int type      = jsonReq.getInt("type");
+			//int pageNum      = jsonReq.getInt("pageNum");
+			//int pageSize      = jsonReq.getInt("pageSize");
+			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
+
+			IxPoiSelector selector = new IxPoiSelector(conn);
+			for(IRow row :selector.loadPids(true)){
+				array.add(row.Serialize(ObjLevel.FULL));
+			}
+
+
+			return new ModelAndView("jsonView", success(array));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
 			if (conn != null) {

@@ -12,20 +12,21 @@ import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.commons.util.Log4jUtils;
+import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.engine.photo.PhotoGetter;
 
 @Controller
-public class PhotoController {
+public class PhotoController extends BaseController {
 
 	private static final Logger logger = Logger
 			.getLogger(PhotoController.class);
 
 	@RequestMapping(value = "/photo/getBySpatial")
-	public void getVersion(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView getBySpatial(HttpServletRequest request
+			) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -38,25 +39,21 @@ public class PhotoController {
 			PhotoGetter getter = new PhotoGetter();
 
 			JSONArray array = getter.getPhotoBySpatial(wkt);
-
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(array));
+			
+			return new ModelAndView("jsonView", success(array));
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 
 	}
 
 	@RequestMapping(value = "/photo/getDetailByRowkey")
-	public void getDetailByRowkey(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView getDetailByRowkey(HttpServletRequest request
+			) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -67,19 +64,15 @@ public class PhotoController {
 
 			PhotoGetter getter = new PhotoGetter();
 
-			JSONObject photo = getter.getPhotoDetailByRowkey(uuid);
+			JSONObject data = getter.getPhotoDetailByRowkey(uuid);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(photo));
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 
 	}
@@ -111,12 +104,10 @@ public class PhotoController {
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
-
-			Log4jUtils.error(logger, logid, parameter, e);
+			logger.error(e.getMessage(), e);
 
 			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage()));
 		}
 
 	}

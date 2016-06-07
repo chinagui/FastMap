@@ -1,16 +1,12 @@
 package com.navinfo.dataservice.engine.man.task;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
@@ -18,18 +14,12 @@ import org.springframework.stereotype.Service;
 import com.navinfo.dataservice.engine.dao.DBConnector;
 import com.navinfo.dataservice.engine.man.city.CityOperation;
 import com.navinfo.dataservice.engine.man.task.Task;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.Page;
-import com.navinfo.navicommons.geo.computation.GeometryUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import net.sf.json.util.JSONUtils;
 
 /** 
 * @ClassName:  TaskService 
@@ -49,7 +39,7 @@ public class TaskService {
 				return;
 			}			
 			JSONArray taskArray=json.getJSONArray("tasks");
-			conn = DBConnector.getInstance().getConnection();
+			conn = DBConnector.getInstance().getManConnection();
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
 				Task bean = TaskOperation.jsonToBean(taskJson);	
@@ -74,7 +64,7 @@ public class TaskService {
 			
 			JSONArray taskArray=json.getJSONArray("tasks");
 			
-			conn = DBConnector.getInstance().getConnection();
+			conn = DBConnector.getInstance().getManConnection();
 			
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
@@ -94,7 +84,7 @@ public class TaskService {
 	public List<HashMap> list(JSONObject conditionJson,JSONObject orderJson)throws Exception{
 		Connection conn = null;
 		try{
-			conn = DBConnector.getInstance().getConnection();	
+			conn = DBConnector.getInstance().getManConnection();	
 					
 			JSONObject obj = JSONObject.fromObject(conditionJson);
 			
@@ -140,7 +130,7 @@ public class TaskService {
 	public Page list(JSONObject conditionJson,JSONObject orderJson,int currentPageNum)throws Exception{
 		Connection conn = null;
 		try{
-			conn = DBConnector.getInstance().getConnection();	
+			conn = DBConnector.getInstance().getManConnection();	
 					
 			JSONObject obj = JSONObject.fromObject(conditionJson);
 			
@@ -189,8 +179,7 @@ public class TaskService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();	
+			conn = DBConnector.getInstance().getManConnection();	
 			JSONObject obj = JSONObject.fromObject(json);	
 			Task  bean = (Task)JSONObject.toBean(obj, Task.class);	
 			
@@ -290,7 +279,7 @@ public class TaskService {
 	public HashMap query(int taskId) throws Exception {
 		Connection conn = null;
 		try{
-			conn = DBConnector.getInstance().getConnection();	
+			conn = DBConnector.getInstance().getManConnection();	
 			String selectSql = "select * from task where taskId= "+taskId;
 			List<HashMap> taskList=TaskOperation.selectTaskBySql(conn, selectSql, null);
 			return taskList.get(0);

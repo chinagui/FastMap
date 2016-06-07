@@ -11,8 +11,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
-import com.navinfo.dataservice.engine.dao.DBConnector;
 import com.navinfo.dataservice.engine.man.city.CityOperation;
+import com.navinfo.dataservice.engine.man.dao.DBConnector;
 import com.navinfo.dataservice.engine.man.task.Task;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;

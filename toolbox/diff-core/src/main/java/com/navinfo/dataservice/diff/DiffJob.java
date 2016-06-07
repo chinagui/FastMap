@@ -19,6 +19,7 @@ import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.navicommons.database.sql.PackageExec;
@@ -95,9 +96,11 @@ public class DiffJob extends AbstractJob
 		try{
 			//shcema
 			DbInfo leftDb = DbService.getInstance().getDbById(diffConfig.getLeftDbId());
-			OracleSchema leftSchema = new OracleSchema(leftDb.getConnectParam());
+			OracleSchema leftSchema = new OracleSchema(
+					MultiDataSourceFactory.createConnectConfig(leftDb.getConnectParam()));
 			DbInfo rightDb = DbService.getInstance().getDbById(diffConfig.getRightDbId());
-			OracleSchema rightSchema = new OracleSchema(rightDb.getConnectParam());
+			OracleSchema rightSchema = new OracleSchema(
+					MultiDataSourceFactory.createConnectConfig(rightDb.getConnectParam()));
 			//安装EQUALS
 			installPcks(leftSchema);
 			//datahub创建时统一都赋上了跨用户访问权限
@@ -110,7 +113,7 @@ public class DiffJob extends AbstractJob
 			diffScanner = new JavaDiffScanner(leftSchema);
 			logOpGen = new LogOperationGenerator(leftSchema);
 			changeLogFiller = new JavaChangeLogFiller(leftSchema);
-			gridCalc = new LogGridCalculatorByCrossUser(leftSchema,(String)rightSchema.getConnParamByKey("dbUserName"));
+			gridCalc = new LogGridCalculatorByCrossUser(leftSchema,rightSchema.getConnConfig().getUserName());
 			//diffTables
 			diffTables = new HashSet<GlmTable>();
 			Glm glm = GlmCache.getInstance().getGlm(diffConfig.getGdbVersion());

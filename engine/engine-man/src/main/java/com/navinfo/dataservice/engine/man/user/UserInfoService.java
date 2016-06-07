@@ -38,7 +38,7 @@ public class UserInfoService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();	
 			UserInfo  bean = (UserInfo)JSONObject.toBean(json, UserInfo.class);	
 			
@@ -60,7 +60,7 @@ public class UserInfoService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();	
 			JSONObject obj = JSONObject.fromObject(json);	
 			UserInfo  bean = (UserInfo)JSONObject.toBean(obj, UserInfo.class);	
@@ -121,7 +121,7 @@ public class UserInfoService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();	
 			JSONObject obj = JSONObject.fromObject(json);	
 			UserInfo  bean = (UserInfo)JSONObject.toBean(obj, UserInfo.class);	
@@ -182,7 +182,7 @@ public class UserInfoService {
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();	
 			JSONObject obj = JSONObject.fromObject(json);	
 			UserInfo  bean = (UserInfo)JSONObject.toBean(obj, UserInfo.class);
@@ -267,7 +267,7 @@ public class UserInfoService {
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();	
 					
 			JSONObject obj = JSONObject.fromObject(json);	
@@ -349,7 +349,7 @@ public class UserInfoService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();	
 			JSONObject obj = JSONObject.fromObject(json);	
 			UserInfo  bean = (UserInfo)JSONObject.toBean(obj, UserInfo.class);	

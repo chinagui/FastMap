@@ -30,6 +30,6 @@ public class CrossSchemaDataAccess implements DataAccess
     @Override
     public String accessTable(GlmTable table)
     {
-    	return schema.getConnParamByKey("dbUserName").toString()+"."+table.getName();
+    	return schema.getConnConfig().getUserName()+"."+table.getName();
     }
 }

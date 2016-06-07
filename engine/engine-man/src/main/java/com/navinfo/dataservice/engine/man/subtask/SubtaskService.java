@@ -46,7 +46,7 @@ public class SubtaskService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getConnection();	
+			conn = DBConnector.getInstance().getManConnection();	
 			
 			JSONArray gridIds = json.getJSONArray("gridIds");
 			String geometry = json.getString("geometry");
@@ -98,7 +98,8 @@ public class SubtaskService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getConnection();
+			conn = DBConnector.getInstance().getManConnection();
+			
 			JSONObject obj = JSONObject.fromObject(json);	
 			Subtask  bean = (Subtask)JSONObject.toBean(obj, Subtask.class);	
 			
@@ -182,7 +183,8 @@ public class SubtaskService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getConnection();	
+			conn = DBConnector.getInstance().getManConnection();
+			
 			JSONObject obj = JSONObject.fromObject(json);	
 			Subtask  bean = (Subtask)JSONObject.toBean(obj, Subtask.class);	
 			
@@ -266,7 +268,8 @@ public class SubtaskService {
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getConnection();	
+			conn = DBConnector.getInstance().getManConnection();
+			
 			JSONObject obj = JSONObject.fromObject(json);	
 			Subtask  bean = (Subtask)JSONObject.toBean(obj, Subtask.class);
 			
@@ -380,7 +383,7 @@ public class SubtaskService {
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getConnection();	
+			conn = DBConnector.getInstance().getManConnection();	
 					
 			JSONObject obj = JSONObject.fromObject(json);	
 			Subtask  bean = (Subtask)JSONObject.toBean(obj, Subtask.class);	
@@ -491,7 +494,8 @@ public class SubtaskService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getConnection();	
+			conn = DBConnector.getInstance().getManConnection();
+			
 			JSONObject obj = JSONObject.fromObject(json);	
 			Subtask  bean = (Subtask)JSONObject.toBean(obj, Subtask.class);	
 			

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.man.user.controller;
+package com.navinfo.dataservice.web.man.controller;
 
 import java.util.HashMap;
 import java.util.List;
@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.beans.factory.annotation.Autowired; 
 import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.engine.man.user.model.UserInfo;
+import com.navinfo.dataservice.engine.man.user.UserInfo;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.engine.man.user.service.UserInfoService;
+import org.apache.commons.lang.StringUtils;
+import com.navinfo.dataservice.engine.man.user.UserInfoService;
 import com.navinfo.navicommons.database.Page;
 
 import net.sf.json.JSONObject;

@@ -16,12 +16,20 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 */
 public class OracleSchema {
 	private Logger log = Logger.getLogger(OracleSchema.class);
-	public OracleSchema(Map<String,Object> connParam){
-		connConfig = MultiDataSourceFactory.createConnectConfig(connParam);
+	public OracleSchema(DbConnectConfig connConfig){
+		this.connConfig = connConfig;
 	}
 	protected DbConnectConfig connConfig;
 	protected DriverManagerDataSource dds;
 	protected BasicDataSource bds;
+
+	public DbConnectConfig getConnConfig() {
+		return connConfig;
+	}
+
+	public void setConnConfig(DbConnectConfig connConfig) {
+		this.connConfig = connConfig;
+	}
 	public synchronized DriverManagerDataSource getDriverManagerDataSource() throws SQLException{
 		if(dds!=null){
 			return dds;

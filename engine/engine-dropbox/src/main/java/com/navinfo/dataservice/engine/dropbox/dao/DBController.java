@@ -11,7 +11,6 @@ import org.apache.commons.dbutils.DbUtils;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.engine.dao.DBConnector;
 
 import net.sf.json.JSONObject;
 

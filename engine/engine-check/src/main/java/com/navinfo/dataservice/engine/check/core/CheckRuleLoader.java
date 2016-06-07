@@ -6,8 +6,7 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
-import com.navinfo.dataservice.engine.dao.DBConnector;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 
 
 
@@ -50,7 +49,7 @@ public class CheckRuleLoader {
 					
 					try {
 
-						conn = DBConnector.getInstance().getConnection();
+						conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 
 						pstmt = conn.prepareStatement(sql);
 						pstmt.setString(1,ruleCode);

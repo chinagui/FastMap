@@ -3,6 +3,7 @@ package com.navinfo.dataservice.diff.dataaccess;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.diff.config.DiffJobRequest;
@@ -39,7 +40,8 @@ public class DataAccessBuilder
         OracleSchema rightSchema = null;
         try{
         	DbInfo db = DbService.getInstance().getDbById(diffConfig.getRightDbId());
-        	rightSchema = new OracleSchema(db.getConnectParam());
+        	rightSchema = new OracleSchema(
+        			MultiDataSourceFactory.createConnectConfig(db.getConnectParam()));
         }catch(Exception e){
         	log.error("datahub中未获取右库的连接方式出错。"+e.getMessage(),e);
         	throw new DiffException("datahub中未获取右库的连接方式出错。"+e.getMessage(),e);

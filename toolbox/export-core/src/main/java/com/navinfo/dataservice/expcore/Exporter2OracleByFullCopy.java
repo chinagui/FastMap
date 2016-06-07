@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
@@ -47,8 +49,9 @@ public class Exporter2OracleByFullCopy implements Exporter {
 		try{
 			//get source&target schema
 			try{
+				DbInfo srcDb = DbService.getInstance().getDbById(expConfig.getSourceDbId());
 				sourceSchema = new OracleSchema(
-						DbService.getInstance().getDbById(expConfig.getSourceDbId()).getConnectParam());
+						MultiDataSourceFactory.createConnectConfig(srcDb.getConnectParam()));
 			}catch(DataHubException e){
 				throw new ExportException("初始化导出源时从datahub查询源库出现错误："+e.getMessage(),e);
 			}
@@ -57,18 +60,19 @@ public class Exporter2OracleByFullCopy implements Exporter {
 			}
 
 			try{
+				DbInfo targetDb = DbService.getInstance().getDbById(expConfig.getTargetDbId());
 				targetSchema = new OracleSchema(
-						DbService.getInstance().getDbById(expConfig.getTargetDbId()).getConnectParam());
+						MultiDataSourceFactory.createConnectConfig(targetDb.getConnectParam()));
 			}catch(DataHubException e){
-				throw new ExportException("初始化目标库时从datahub查询源库出现错误："+e.getMessage(),e);
+				throw new ExportException("初始化目标库时从datahub查询目标库出现错误："+e.getMessage(),e);
 			}
 			if(targetSchema==null){
 				throw new ExportException("导出参数错误，目标库的dbId不能为空");
 			}
 			//create db link
 			DbLinkCreator cr = new DbLinkCreator();
-			dbLinkName = targetSchema.getDbUserName()+"_"+RandomUtil.nextNumberStr(4);
-			cr.create(dbLinkName, false, targetSchema.getDriverManagerDataSource(), sourceSchema.getDbUserName(), sourceSchema.getDbUserPasswd(), sourceSchema.getDbServer().getIp(), String.valueOf(sourceSchema.getDbServer().getPort()), sourceSchema.getDbServer().getServiceName());
+			dbLinkName = targetSchema.getConnConfig().getUserName()+"_"+RandomUtil.nextNumberStr(4);
+			cr.create(dbLinkName, false, targetSchema.getDriverManagerDataSource(), sourceSchema.getConnConfig().getUserName(), sourceSchema.getConnConfig().getUserPasswd(), sourceSchema.getConnConfig().getServerIp(), String.valueOf(sourceSchema.getConnConfig().getServerPort()), sourceSchema.getConnConfig().getDbName());
 			
 			//
 			AssembleFullCopySql assemble = new AssembleFullCopySql();

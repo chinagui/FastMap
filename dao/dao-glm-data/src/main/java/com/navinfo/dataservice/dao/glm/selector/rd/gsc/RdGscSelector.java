@@ -143,7 +143,7 @@ public class RdGscSelector implements ISelector {
 
 			pstmt.setInt(1, linkPid);
 			
-			pstmt.setString(1, tableName);
+			pstmt.setString(2, tableName);
 
 			resultSet = pstmt.executeQuery();
 

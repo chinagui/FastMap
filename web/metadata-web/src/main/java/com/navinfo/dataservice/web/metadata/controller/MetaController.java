@@ -2,7 +2,6 @@ package com.navinfo.dataservice.web.metadata.controller;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -19,12 +18,12 @@ import org.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import org.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
-import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.engine.man.version.VersionSelector;
 
@@ -33,8 +32,8 @@ public class MetaController extends BaseController {
 	private static final Logger logger = Logger.getLogger(MetaController.class);
 
 	@RequestMapping(value = "/rdname/search")
-	public void searchRdName(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView searchRdName(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -49,25 +48,21 @@ public class MetaController extends BaseController {
 
 			RdNameSelector selector = new RdNameSelector();
 
-			JSONObject result = selector.searchByName(name, pageSize, pageNum);
+			JSONObject data = selector.searchByName(name, pageSize, pageNum);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(result));
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 
 	@RequestMapping(value = "/pinyin/convert")
-	public void convertPinyin(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView convertPinyin(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -87,26 +82,22 @@ public class MetaController extends BaseController {
 
 				json.put("phonetic", result[1]);
 
-				response.getWriter().println(
-						ResponseUtils.assembleRegularResult(json));
+				return new ModelAndView("jsonView", success(json));
 			} else {
 				throw new Exception("转拼音失败");
 			}
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 
 	@RequestMapping(value = "/province/getByLocation")
-	public void getProvinceByLocation(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView getProvinceByLocation(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -122,26 +113,22 @@ public class MetaController extends BaseController {
 			JSONObject data = selector.getProvinceByLocation(lon, lat);
 
 			if (data != null) {
-				response.getWriter().println(
-						ResponseUtils.assembleRegularResult(data));
+				return new ModelAndView("jsonView", success(data));
 			} else {
 				throw new Exception("不在中国省市范围内");
 			}
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 
 	@RequestMapping(value = "/patternImage/checkUpdate")
-	public void checkPatternImage(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView checkPatternImage(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -154,23 +141,19 @@ public class MetaController extends BaseController {
 
 			boolean flag = selector.checkUpdate(date);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(flag));
+			return new ModelAndView("jsonView", success(flag));
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 
 	@RequestMapping(value = "/patternImage/export")
-	public void exportPatternImage(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView exportPatternImage(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -180,14 +163,15 @@ public class MetaController extends BaseController {
 			PatternImageExporter exporter = new PatternImageExporter();
 
 			String fileName = "";
-			
+
 			SystemConfig config = SystemConfigFactory.getSystemConfig();
-			
+
 			String url = config.getValue(PropConstant.serverUrl);
-			
+
 			url += config.getValue(PropConstant.downloadUrlPathPatternimg);
 
-			String path = config.getValue(PropConstant.downloadFilePathPatternimg);
+			String path = config
+					.getValue(PropConstant.downloadFilePathPatternimg);
 
 			if (jsonReq.containsKey("names")) {
 				JSONArray names = jsonReq.getJSONArray("names");
@@ -231,17 +215,13 @@ public class MetaController extends BaseController {
 
 			json.put("specVersion", specVersion);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(json));
+			return new ModelAndView("jsonView", success(json));
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 
@@ -266,18 +246,16 @@ public class MetaController extends BaseController {
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
-
-			Log4jUtils.error(logger, logid, parameter, e);
+			logger.error(e.getMessage(), e);
 
 			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage()));
 		}
 	}
 
 	@RequestMapping(value = "/patternImage/search")
-	public void searchPatternImage(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView searchPatternImage(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -292,19 +270,15 @@ public class MetaController extends BaseController {
 
 			PatternImageSelector selector = new PatternImageSelector();
 
-			JSONObject obj = selector.searchByName(name, pageSize, pageNum);
+			JSONObject data = selector.searchByName(name, pageSize, pageNum);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(obj));
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 }

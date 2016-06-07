@@ -34,7 +34,7 @@ public class IxPoiIcon implements IObj {
 	
 	private Geometry geometry;
 	
-	private int manageCode;
+	private String manageCode;
 	
 	private String clientFlag;
 	
@@ -76,11 +76,11 @@ public class IxPoiIcon implements IObj {
 		this.geometry = geometry;
 	}
 
-	public int getManageCode() {
+	public String getManageCode() {
 		return manageCode;
 	}
 
-	public void setManageCode(int manageCode) {
+	public void setManageCode(String manageCode) {
 		this.manageCode = manageCode;
 	}
 

@@ -334,6 +334,7 @@ public class Operation implements IOperation {
 		// 更新面的几何属性
 		if (this.updateFlag) {
 			this.updateGeometry(GeoTranslator.getPolygonToPoints(c1), this.face);
+			
 		} else {
 			this.createFaceGeometry(GeoTranslator.getPolygonToPoints(c1),
 					this.face);
@@ -364,6 +365,7 @@ public class Operation implements IOperation {
 
 		JSONObject updateContent = new JSONObject();
 		g = GeoTranslator.transform(g, 0.00001, 5);
+
 		String meshId =  CompGeometryUtil.geoToMeshesWithoutBreak(g).iterator().next();
 		if (!StringUtils.isEmpty(meshId)) {
 			updateContent.put("mesh", Integer.parseInt(meshId));

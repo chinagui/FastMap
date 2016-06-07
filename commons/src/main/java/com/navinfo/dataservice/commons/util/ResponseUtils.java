@@ -39,7 +39,7 @@ public class ResponseUtils {
 	 * @param errmsg
 	 * @return
 	 */
-	public static String assembleFailResult(String errmsg, String errid){
+	public static String assembleFailResult(String errmsg){
 		
 		JSONObject json = new JSONObject();
 		
@@ -47,16 +47,7 @@ public class ResponseUtils {
 		
 		json.put("errmsg", errmsg==null?"":errmsg);
 		
-		json.put("errid", errid);
-		
 		return json.toString();
 	}
-	
-	
-	
-	public static void main(String[] at){
-		System.out.println(assembleFailResult(null,"99"));
-	}
-	
 	
 }

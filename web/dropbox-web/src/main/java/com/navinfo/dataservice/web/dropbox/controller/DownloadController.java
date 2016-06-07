@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -12,19 +11,18 @@ import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.commons.util.Log4jUtils;
-import com.navinfo.dataservice.commons.util.ResponseUtils;
+import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.engine.dropbox.manger.DownloadManager;
 
 @Controller
-public class DownloadController {
+public class DownloadController extends BaseController {
 	private static final Logger logger = Logger
 			.getLogger(DownloadController.class);
 
 	@RequestMapping(value = "/download/prjbasedata")
-	public void getBasedata(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView getBasedata(HttpServletRequest request) {
 
 		String parameter = request.getParameter("parameter");
 
@@ -38,23 +36,20 @@ public class DownloadController {
 
 			JSONObject data = manager.getBasedata(prjId);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(data));
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
-			String logid = Log4jUtils.genLogid();
 
-			Log4jUtils.error(logger, logid, parameter, e);
+			logger.error(e.getMessage(), e);
 
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 
 	}
 
 	@RequestMapping(value = "/download/fmgdblist")
-	public void getBasedataList(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView getBasedataList(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		try {
 
@@ -62,23 +57,20 @@ public class DownloadController {
 
 			JSONArray data = manager.getBasedataList();
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(data));
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
-			String logid = Log4jUtils.genLogid();
 
-			Log4jUtils.error(logger, logid, null, e);
+			logger.error(e.getMessage(), e);
 
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 
 	}
 
 	@RequestMapping(value = "/download/fmndslist")
-	public void getNdsList(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView getNdsList(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		try {
 
@@ -86,22 +78,19 @@ public class DownloadController {
 
 			JSONArray data = manager.getNdsList();
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(data));
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
-			String logid = Log4jUtils.genLogid();
 
-			Log4jUtils.error(logger, logid, null, e);
+			logger.error(e.getMessage(), e);
 
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 
 	}
 
 	@RequestMapping(value = "/download/fmnds")
-	public void getNds(HttpServletRequest request, HttpServletResponse response)
+	public ModelAndView getNds(HttpServletRequest request)
 			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
@@ -116,23 +105,20 @@ public class DownloadController {
 
 			JSONObject data = manager.getNds(id);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(data));
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
-			String logid = Log4jUtils.genLogid();
 
-			Log4jUtils.error(logger, logid, null, e);
+			logger.error(e.getMessage(), e);
 
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 
 	}
 
 	@RequestMapping(value = "/download/patternimage")
-	public void getPatternimg(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView getPatternimg(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		try {
 
@@ -140,16 +126,13 @@ public class DownloadController {
 
 			JSONObject data = manager.getPatternimg();
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(data));
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
-			String logid = Log4jUtils.genLogid();
 
-			Log4jUtils.error(logger, logid, null, e);
+			logger.error(e.getMessage(), e);
 
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 
 	}

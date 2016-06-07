@@ -15,6 +15,7 @@ import org.springframework.util.Assert;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -138,7 +139,8 @@ public class InitProjectScriptsInterface {
 			// 创建索引、包等等
 			DbInfo db = DbService.getInstance()
 					.getDbById(Integer.valueOf(prjDbId));
-			tarConn = MultiDataSourceFactory.getInstance().getDataSource(db.getConnectParam()).getConnection();
+			DbConnectConfig connConfig = MultiDataSourceFactory.createConnectConfig(db.getConnectParam());
+			tarConn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
 			String sqlFile = "/com/navinfo/dataservice/scripts/resources/prj_utils.sql";
 			SqlExec sqlExec = new SqlExec(tarConn);
 			sqlExec.executeIgnoreError(sqlFile);

@@ -3,6 +3,7 @@ package com.navinfo.dataservice.scripts;
 import java.sql.Connection;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.engine.edit.export.GdbDataExporter;
@@ -28,8 +29,8 @@ public class GdbExportScriptsInterface {
 			int dbId = prjselector.getDbId(projectId);
 			
 			DbInfo db = DbService.getInstance().getDbById(dbId);
-			
-			conn = MultiDataSourceFactory.getInstance().getDataSource(db.getConnectParam()).getConnection();
+			DbConnectConfig connConfig = MultiDataSourceFactory.createConnectConfig(db.getConnectParam()); 
+			conn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
 			
 			GdbDataExporter.exportBaseData2Sqlite(conn, path);
 			

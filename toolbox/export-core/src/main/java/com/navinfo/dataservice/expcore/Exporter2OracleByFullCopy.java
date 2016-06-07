@@ -5,10 +5,10 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
+import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.expcore.config.ExportConfig;
 import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.dataservice.expcore.exception.ExportInitException;
@@ -47,7 +47,8 @@ public class Exporter2OracleByFullCopy implements Exporter {
 		try{
 			//get source&target schema
 			try{
-				sourceSchema = (OracleSchema)new DbManager().getDbById(expConfig.getSourceDbId());
+				sourceSchema = new OracleSchema(
+						DbService.getInstance().getDbById(expConfig.getSourceDbId()).getConnectParam());
 			}catch(DataHubException e){
 				throw new ExportException("初始化导出源时从datahub查询源库出现错误："+e.getMessage(),e);
 			}
@@ -56,7 +57,8 @@ public class Exporter2OracleByFullCopy implements Exporter {
 			}
 
 			try{
-				targetSchema = (OracleSchema)new DbManager().getDbById(expConfig.getTargetDbId());
+				targetSchema = new OracleSchema(
+						DbService.getInstance().getDbById(expConfig.getTargetDbId()).getConnectParam());
 			}catch(DataHubException e){
 				throw new ExportException("初始化目标库时从datahub查询源库出现错误："+e.getMessage(),e);
 			}

@@ -15,6 +15,7 @@ import org.springframework.util.Assert;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.expcore.external.ExternalTool4Exporter;
@@ -47,7 +48,8 @@ public class Exp2CopVersionScriptsInterface {
 
 			String allMeshesStr = null;
 			DbInfo db = DbService.getInstance().getDbById(Integer.valueOf(targetDbId));
-			conn = MultiDataSourceFactory.getInstance().getDataSource(db.getConnectParam()).getConnection();
+			DbConnectConfig connConfig = MultiDataSourceFactory.createConnectConfig(db.getConnectParam()); 
+			conn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
 			//计算扩圈，写m_mesh_type
 			String sqlMesh = "INSERT INTO M_MESH_TYPE(MESH_ID,\"TYPE\")VALUES(?,?)";
 			stmt = conn.prepareStatement(sqlMesh);

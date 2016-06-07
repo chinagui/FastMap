@@ -5,8 +5,9 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import com.navinfo.dataservice.api.datahub.iface.DatahubApiService;
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 
@@ -26,15 +27,17 @@ public class DBConnector {
 		if (dataSource == null) {
 			synchronized (this) {
 				if (dataSource == null) {
-					DatahubApiService datahub = (DatahubApiService)ApplicationContextUtil.getBean("datahubApiService");
+					DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApiService");
 					DbInfo metaDb = null;
+					DbConnectConfig connConfig = null;
 					try{
 						metaDb = datahub.getOnlyDbByType("metaRoad");
+						connConfig = MultiDataSourceFactory.createConnectConfig(metaDb.getConnectParam());
 					}catch(Exception e){
 						throw new SQLException("从datahub获取元数据信息失败："+e.getMessage(),e);
 					}
 					dataSource = MultiDataSourceFactory.getInstance()
-							.getDataSource(metaDb.getConnectParam());
+							.getDataSource(connConfig);
 				}
 			}
 		}

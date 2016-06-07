@@ -5,7 +5,7 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import com.navinfo.dataservice.api.datahub.iface.DatahubApiService;
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -40,7 +40,7 @@ public class DBConnector {
 		if (metaDataSource == null) {
 			synchronized (this) {
 				if (metaDataSource == null) {
-					DatahubApiService datahub = (DatahubApiService)ApplicationContextUtil.getBean("datahubApiService");
+					DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApiService");
 					DbInfo metaDb = null;
 					try{
 						metaDb = datahub.getOnlyDbByType("metaRoad");

@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
+import com.navinfo.dataservice.engine.dao.DBConnector;
 import com.navinfo.dataservice.engine.man.subtask.Subtask;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -45,8 +46,7 @@ public class SubtaskService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();	
+			conn = DBConnector.getInstance().getConnection();	
 			
 			JSONArray gridIds = json.getJSONArray("gridIds");
 			String geometry = json.getString("geometry");
@@ -98,8 +98,7 @@ public class SubtaskService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();	
+			conn = DBConnector.getInstance().getConnection();
 			JSONObject obj = JSONObject.fromObject(json);	
 			Subtask  bean = (Subtask)JSONObject.toBean(obj, Subtask.class);	
 			
@@ -183,8 +182,7 @@ public class SubtaskService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();	
+			conn = DBConnector.getInstance().getConnection();	
 			JSONObject obj = JSONObject.fromObject(json);	
 			Subtask  bean = (Subtask)JSONObject.toBean(obj, Subtask.class);	
 			
@@ -268,8 +266,7 @@ public class SubtaskService {
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();	
+			conn = DBConnector.getInstance().getConnection();	
 			JSONObject obj = JSONObject.fromObject(json);	
 			Subtask  bean = (Subtask)JSONObject.toBean(obj, Subtask.class);
 			
@@ -383,8 +380,7 @@ public class SubtaskService {
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();	
+			conn = DBConnector.getInstance().getConnection();	
 					
 			JSONObject obj = JSONObject.fromObject(json);	
 			Subtask  bean = (Subtask)JSONObject.toBean(obj, Subtask.class);	
@@ -495,8 +491,7 @@ public class SubtaskService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();	
+			conn = DBConnector.getInstance().getConnection();	
 			JSONObject obj = JSONObject.fromObject(json);	
 			Subtask  bean = (Subtask)JSONObject.toBean(obj, Subtask.class);	
 			

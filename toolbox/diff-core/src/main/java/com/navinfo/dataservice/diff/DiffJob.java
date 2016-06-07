@@ -4,8 +4,7 @@ import com.navinfo.dataservice.diff.config.DiffJobRequest;
 import com.navinfo.dataservice.datahub.glm.Glm;
 import com.navinfo.dataservice.datahub.glm.GlmCache;
 import com.navinfo.dataservice.datahub.glm.GlmTable;
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
+import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.diff.dataaccess.CrossSchemaDataAccess;
 import com.navinfo.dataservice.diff.dataaccess.DataAccess;
 import com.navinfo.dataservice.diff.dataaccess.LocalDataAccess;
@@ -18,7 +17,9 @@ import com.navinfo.dataservice.diff.scanner.LogOperationGenerator;
 import com.navinfo.dataservice.diff.scanner.LogGridCalculator;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.navicommons.database.sql.PackageExec;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -93,9 +94,10 @@ public class DiffJob extends AbstractJob
 		//glmcache中没发现表的主键，使用row_id做主键
 		try{
 			//shcema
-			DbManager dbMan = new DbManager();
-			OracleSchema leftSchema = (OracleSchema)dbMan.getDbById(diffConfig.getLeftDbId());
-			OracleSchema rightSchema = (OracleSchema)dbMan.getDbById(diffConfig.getRightDbId());
+			DbInfo leftDb = DbService.getInstance().getDbById(diffConfig.getLeftDbId());
+			OracleSchema leftSchema = new OracleSchema(leftDb.getConnectParam());
+			DbInfo rightDb = DbService.getInstance().getDbById(diffConfig.getRightDbId());
+			OracleSchema rightSchema = new OracleSchema(rightDb.getConnectParam());
 			//安装EQUALS
 			installPcks(leftSchema);
 			//datahub创建时统一都赋上了跨用户访问权限
@@ -108,7 +110,7 @@ public class DiffJob extends AbstractJob
 			diffScanner = new JavaDiffScanner(leftSchema);
 			logOpGen = new LogOperationGenerator(leftSchema);
 			changeLogFiller = new JavaChangeLogFiller(leftSchema);
-			gridCalc = new LogGridCalculatorByCrossUser(leftSchema,rightSchema.getDbUserName());
+			gridCalc = new LogGridCalculatorByCrossUser(leftSchema,(String)rightSchema.getConnParamByKey("dbUserName"));
 			//diffTables
 			diffTables = new HashSet<GlmTable>();
 			Glm glm = GlmCache.getInstance().getGlm(diffConfig.getGdbVersion());

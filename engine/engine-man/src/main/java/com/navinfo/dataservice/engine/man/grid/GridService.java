@@ -1,26 +1,17 @@
 package com.navinfo.dataservice.engine.man.grid;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.engine.dao.DBConnector;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 public class GridService {
 	private GridService(){}
@@ -43,8 +34,7 @@ public class GridService {
 		QueryRunner queryRunner = new QueryRunner();
 		Connection conn = null;
 		try{
-			OracleSchema schema = (OracleSchema)new DbManager().getOnlyDbByType("fmMan");//TODO:
-			conn = schema.getDriverManagerDataSource().getConnection();
+			conn = DBConnector.getInstance().getManConnection();	
 			ResultSetHandler<MultiValueMap> rsh = new ResultSetHandler<MultiValueMap>(){
 
 				@Override
@@ -89,12 +79,6 @@ public class GridService {
 			}
 		}
 		return whereClaus;
-	}
-	public static void main(String[] args) throws Exception {
-
-		GridService s = new GridService();
-
-		System.out.println(s.getByUser(4408, 11));
 	}
 	
 }

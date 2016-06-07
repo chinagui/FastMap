@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import com.navinfo.dataservice.api.edit.iface.GridSelectorApiService;
+import com.navinfo.dataservice.api.edit.iface.GridServiceApi;
 
 /*
  * @author mayunfei
@@ -14,7 +14,7 @@ import com.navinfo.dataservice.api.edit.iface.GridSelectorApiService;
  * GridSelector 对外暴露的api实现类:所有GridSelector需要对外部项目暴露的接口，需要在这里进行包装实现；
  */
 @Service("gridSelector")
-public class GridSelectorApiServiceImpl implements GridSelectorApiService {
+public class GridServiceApiImpl implements GridServiceApi {
 	
 	
 	/* 

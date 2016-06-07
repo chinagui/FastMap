@@ -4,12 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
-
-
-
 import com.navinfo.dataservice.api.datahub.iface.DbManagerApiService;
-import com.navinfo.dataservice.api.edit.iface.GridSelectorApiService;
+import com.navinfo.dataservice.api.edit.iface.GridServiceApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.jobframework.exception.JobException;
@@ -37,7 +33,7 @@ public class CommitDay2MonthRoadJob extends AbstractJob {
 	public void execute() throws JobException {
 		CommitDay2MonthRoadJobRequest req = (CommitDay2MonthRoadJobRequest)this.getRequest();
 		List<Integer> gridList = req.getGridList();
-		GridSelectorApiService gridSelectorApiSvr = (GridSelectorApiService) ApplicationContextUtil.getBean("gridSelector");
+		GridServiceApi gridSelectorApiSvr = (GridServiceApi) ApplicationContextUtil.getBean("gridSelector");
 		try{
 			//获取大区和grid的映射关系
 			Map regionGridMapping = gridSelectorApiSvr.queryRegionGridMapping(gridList);
@@ -48,7 +44,7 @@ public class CommitDay2MonthRoadJob extends AbstractJob {
 				//在大区日库中根据grid列表获取履历，并刷新对应的月库
 				//根据大区id获取对应的大区日库、大区月库
 				DbManagerApiService dbManApiSvr = (DbManagerApiService) ApplicationContextUtil.getBean("dbManagerApiService");
-				regionDbDaily = dbManApiSvr.getOnlyDbByName(dbName);
+//				regionDbDaily = dbManApiSvr.getOnlyDbByName(dbName);
 			}
 			
 		}catch(Exception e){

@@ -10,8 +10,11 @@ public class AccessTokenFactory {
 	public static AccessToken generate(long userId,int expireSecond){
 		return null;
 	}
+	//FIXME 这里需要后续实现具体的解析逻辑
 	public static AccessToken parse(String tokenString){
-		return null;
+		long userId=2;
+		long expireSecond=864000000L;
+		return new AccessToken(userId,expireSecond,new TokenGenerateLock());
 	}
 	/**
 	 * 验证通过，会刷新token最后一次活跃时间，否则爆出异常

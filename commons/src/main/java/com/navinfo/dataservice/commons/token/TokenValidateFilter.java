@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.commons.token;
 
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -22,6 +24,7 @@ public class TokenValidateFilter implements Filter {
 	public void init(FilterConfig filterConfig) throws ServletException {
 		//获取本filter不过滤的url
 		this.excludeUrlPattern = filterConfig.getInitParameter("exclude-url-pattern"); 
+		
 
 	}
 
@@ -30,12 +33,14 @@ public class TokenValidateFilter implements Filter {
 			throws IOException, ServletException {
 		try{
 			HttpServletRequest httpRequest = (HttpServletRequest)request;
-			String servletPath = httpRequest.getServletPath();
-			System.out.print(servletPath );
-			System.out.print(excludeUrlPattern );
-			String tokenString = request.getParameter("token");
-			AccessToken token = AccessTokenFactory.validate(tokenString);
-			request.setAttribute("token", token);
+			String requestUri = httpRequest.getRequestURI();
+			Pattern p = Pattern.compile(this.excludeUrlPattern);
+	        Matcher m = p.matcher(requestUri);
+	        if (!m.find()){//只有请求的uri需要进行token验证的，才进行token验证
+	        	String tokenString = request.getParameter("access_token");
+				AccessToken token = AccessTokenFactory.validate(tokenString);
+				request.setAttribute("token", token);
+	        }			
 			chain.doFilter(request, response);
 		}catch(TokenExpiredException te){
 			throw new ServletException("Token已过期");

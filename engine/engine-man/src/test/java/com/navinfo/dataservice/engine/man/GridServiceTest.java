@@ -18,7 +18,7 @@ import com.navinfo.dataservice.engine.man.grid.GridService;
  * 2016年6月6日
  * 描述：engine-manGridSelectorTest.java
  */
-public class GridSelectorTest {
+public class GridServiceTest {
 
 	@Before
 	public void setUp() throws Exception {
@@ -26,11 +26,11 @@ public class GridSelectorTest {
 
 	@Test
 	public void testQueryRegionGridMapping() throws Exception {
-		GridService selector = new GridService();
+		GridService selector = GridService.getInstance();
 		List<Integer> gridList = new ArrayList<Integer>();
 		gridList.add(39550711);
 		gridList.add(3502401);
-		MultiValueMap regionGridMapping = (selector.queryRegionGridMapping(gridList));
+		MultiValueMap regionGridMapping = (MultiValueMap) (selector.queryRegionGridMapping(gridList));
 		Assert.assertNotNull(regionGridMapping);
 		Assert.assertTrue(regionGridMapping.containsValue(39550711));
 	}

@@ -53,35 +53,39 @@ public class BaseController {
         return exception(e.getMessage());
     }
     protected Map<String,?> exception(String msg) {
-        return createModelMap(1,msg,null);
+        return createModelMap(-1,msg,null);
     }
 
     // 验证不通过的
     protected Map<String,?> fail(String msg) {
-        return createModelMap(0,msg,null);
+        return createModelMap(-1,msg,null);
     }
     protected Map<String,?> success(String msg) {
-        return createModelMap(100,msg,null);
+        return createModelMap(0,msg,null);
     }
+    protected Map<String,?> success() {
+        return createModelMap(0,"success",null);
+    }
+    
     protected Map<String,?> success(String msg,Map<String,?> result) {
-        return createModelMap(100,msg,result);
+        return createModelMap(0,msg,result);
     }
     protected Map<String,?> success(Map<String,?> result) {
-        return createModelMap(100,"success",result);
+        return createModelMap(0,"success",result);
     }
     protected Map<String,?> success(JSONObject data) {
-        return createModelMap(100,"success",data);
+        return createModelMap(0,"success",data);
     }
     protected Map<String,?> success(String msg,Page page){
-    	return createModelMap(100,msg,page);
+    	return createModelMap(0,msg,page);
     }
     protected Map<String,?> success(Page page){
-    	return createModelMap(100,"success",page);
+    	return createModelMap(0,"success",page);
     }
     private Map<String,?> createModelMap(int code,String msg,Object data){
     	Map<String,Object> result = new HashMap<String,Object>();
-    	result.put("code", code);
-    	result.put("msg", msg);
+    	result.put("errcode", code);
+    	result.put("errmsg", msg);
     	result.put("data", data);
     	return result;
     }

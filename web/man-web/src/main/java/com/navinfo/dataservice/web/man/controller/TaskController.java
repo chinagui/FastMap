@@ -57,7 +57,7 @@ public class TaskController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			service.create(tokenObj.getUserId(),dataJson);			
+			service.create(tokenObj.getUserId(),dataJson);
 			return new ModelAndView("jsonView", success("创建成功"));
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);

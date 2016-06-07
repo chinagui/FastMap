@@ -19,7 +19,8 @@ import com.navinfo.dataservice.commons.database.oracle.MyPoolingDataSource;
 import com.navinfo.navicommons.database.TraceConnection;
 
 public class PoolDataSource extends BasicDataSource {
-
+	public static final String SYS_KEY = "SYS";
+	
 	public static final String MAN_KEY = "MAN";
 	
 	public static final String META_KEY = "META";

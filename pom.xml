@@ -38,6 +38,7 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+			<!--
            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-idea-plugin</artifactId>
@@ -47,6 +48,7 @@
 		                   <dependenciesAsLibraries>true</dependenciesAsLibraries>
 		            </configuration>
 		      </plugin>      
+			  -->
 					<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-eclipse-plugin</artifactId>

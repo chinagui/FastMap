@@ -174,7 +174,8 @@ public class DbManager {
 		Connection conn = null;
 		try{
 			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND D.BIZ_TYPE=? AND D.DB_ROLE=0";
-			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
+			log.debug(sql);
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
 			db = run.query(conn,sql, new DbResultSetHandler(true),bizType);
 			

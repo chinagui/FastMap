@@ -1,14 +1,27 @@
 ﻿<configMap>
 
 <!-- common part -->
+	<!--SYS数据库的连接 -->
+	<SYS.server.type>ORACLE</SYS.server.type>
+	<SYS.jdbc.driverClassName>oracle.jdbc.driver.OracleDriver</SYS.jdbc.driverClassName>
+	<SYS.jdbc.url>jdbc:oracle:thin:@192.168.4.131:1521/orcl</SYS.jdbc.url>
+	<SYS.dataSource.validationQuery>select 1 from dual</SYS.dataSource.validationQuery>
+	
+	<SYS.jdbc.username>fm_sys_sp5</SYS.jdbc.username>
+	<SYS.jdbc.password>fm_sys_sp5</SYS.jdbc.password>
+	<SYS.dataSource.initialSize>2</SYS.dataSource.initialSize>
+	<SYS.dataSource.maxActive>25</SYS.dataSource.maxActive>
+	<SYS.dataSource.maxIdle>10</SYS.dataSource.maxIdle>
+	<SYS.dataSource.minIdle>2</SYS.dataSource.minIdle>
+	<SYS.dataSource.maxWait>1000</SYS.dataSource.maxWait>
 	<!--管理数据库的连接 -->
 	<MAN.server.type>ORACLE</MAN.server.type>
 	<MAN.jdbc.driverClassName>oracle.jdbc.driver.OracleDriver</MAN.jdbc.driverClassName>
 	<MAN.jdbc.url>jdbc:oracle:thin:@192.168.4.131:1521/orcl</MAN.jdbc.url>
 	<MAN.dataSource.validationQuery>select 1 from dual</MAN.dataSource.validationQuery>
 	
-	<MAN.jdbc.username>fm_man_sp401</MAN.jdbc.username>
-	<MAN.jdbc.password>fm_man_sp401</MAN.jdbc.password>
+	<MAN.jdbc.username>fm_man_sp5</MAN.jdbc.username>
+	<MAN.jdbc.password>fm_man_sp5</MAN.jdbc.password>
 	<MAN.dataSource.initialSize>2</MAN.dataSource.initialSize>
 	<MAN.dataSource.maxActive>25</MAN.dataSource.maxActive>
 	<MAN.dataSource.maxIdle>10</MAN.dataSource.maxIdle>

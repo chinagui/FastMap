@@ -12,10 +12,9 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.apache.log4j.Logger;
 import org.springframework.util.StringUtils;
 
-
+import com.navinfo.dataservice.api.datahub.model.DbServer;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
-import com.navinfo.dataservice.datahub.model.DbServer;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /** 
@@ -51,7 +50,7 @@ public class RandomStrategy extends DbServerStrategy {
 		try{
 			String count_sql = "SELECT count(1) as c_num from db_server where biz_type like ?";
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			int c_num = run.queryForInt(conn, count_sql, "%"+bizType+"%");
 			DbServer db = null;
 			if(c_num>0){
@@ -59,7 +58,7 @@ public class RandomStrategy extends DbServerStrategy {
 //				String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.server_type FROM unified_db_server s where s.USE_TYPE like ? limit ?,1";
 				int index = RandomUtils.nextInt(c_num);
 				index++;
-				String sql = "SELECT * FROM (SELECT s.server_id,s.SERVER_IP,s.server_port,s.service_name,s.server_type,ROWNUM AS RN FROM db_server s where s.biz_type like ?) WHERE RN=?";
+				String sql = "SELECT * FROM (SELECT s.server_id,s.SERVER_IP,s.server_port,s.server_type,ROWNUM AS RN FROM db_server s where s.biz_type like ?) WHERE RN=?";
 
 				db = run.query(conn, sql,new ResultSetHandler<DbServer>(){
 
@@ -70,8 +69,7 @@ public class RandomStrategy extends DbServerStrategy {
 							String ip = rs.getString("SERVER_IP");
 							int port = rs.getInt("SERVER_PORT");
 							String type = rs.getString("SERVER_TYPE");
-							String sname = rs.getString("SERVICE_NAME");
-							inDb = new DbServer(type,ip,port,sname);
+							inDb = new DbServer(type,ip,port);
 							inDb.setSid(rs.getInt("SERVER_ID"));
 						}
 						return inDb;

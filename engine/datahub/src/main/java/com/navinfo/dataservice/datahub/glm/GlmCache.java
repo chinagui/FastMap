@@ -15,10 +15,10 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
+import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.navicommons.database.QueryRunner;
 
 
@@ -60,7 +60,7 @@ public class GlmCache {
 		try{
 			QueryRunner runner = new QueryRunner();
 			//load tables
-			manConn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
+			manConn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			//1. 先确定加载哪些表
 			String ignore = SystemConfigFactory.getSystemConfig().getValue("glm.ignore.table.prefix");
 			StringBuilder loadSql = new StringBuilder();
@@ -95,8 +95,8 @@ public class GlmCache {
 				tableSql.append(" AND T.TABLE_NAME IN ('");
 				tableSql.append(StringUtils.join(names.keySet(),"','"));
 				tableSql.append("') ORDER BY T.TABLE_NAME,C.COLUMN_ID");
-				OracleSchema schema = (OracleSchema)new DbManager().getOnlyDbByType("nationRoad");
-				conn = schema.getDriverManagerDataSource().getConnection();
+				DbInfo db = DbService.getInstance().getOnlyDbByType("nationRoad");
+				conn = MultiDataSourceFactory.getInstance().getDataSource(db.getConnectParam()).getConnection();
 				Map<String,GlmTable> tables = runner.query(conn, tableSql.toString(), new ResultSetHandler<Map<String,GlmTable>>(){
 					@Override
 					public Map<String,GlmTable> handle(ResultSet rs)throws SQLException{

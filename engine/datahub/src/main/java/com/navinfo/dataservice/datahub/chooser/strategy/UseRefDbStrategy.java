@@ -11,9 +11,9 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 import org.springframework.util.StringUtils;
 
+import com.navinfo.dataservice.api.datahub.model.DbServer;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
-import com.navinfo.dataservice.datahub.model.DbServer;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /** 
@@ -53,9 +53,9 @@ public class UseRefDbStrategy extends DbServerStrategy{
 		}
 		Connection conn = null;
 		try{
-			String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.service_name,s.server_type FROM db_server s,db_hub d WHERE s.server_id=d.SERVER_ID and s.biz_type like ? and d.db_name=? and d.biz_type=?";
+			String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.server_type FROM db_server s,db_hub d WHERE s.server_id=d.SERVER_ID and s.biz_type like ? and d.db_name=? and d.biz_type=?";
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			DbServer db = run.query(conn, sql,new ResultSetHandler<DbServer>(){
 
 				@Override
@@ -65,8 +65,7 @@ public class UseRefDbStrategy extends DbServerStrategy{
 						String ip = rs.getString("SERVER_IP");
 						int port = rs.getInt("SERVER_PORT");
 						String type = rs.getString("SERVER_TYPE");
-						String sname = rs.getString("SERVICE_NAME");
-						inDb = new DbServer(type,ip,port,sname);
+						inDb = new DbServer(type,ip,port);
 						inDb.setSid(rs.getInt("SERVER_ID"));
 					}
 					return inDb;

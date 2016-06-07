@@ -39,11 +39,6 @@ public abstract class AbstractJob implements Runnable {
 	
 	public AbstractJob(JobInfo jobInfo){
 		this.jobInfo=jobInfo;
-		request = new SamplebJobRequest(jobInfo.getRequest());
-	}
-	public AbstractJob(JobInfo jobInfo,AbstractJobRequest request){
-		this.jobInfo=jobInfo;
-		this.request=request;
 	}
 	
 	@Override
@@ -86,15 +81,13 @@ public abstract class AbstractJob implements Runnable {
 	}
 	
 	public void volidateRequest()throws JobException{
-
 		log.info("开始验证request参数...");
 		try{
 			request.validate();
-			Thread.sleep(1000);
+			log.info("验证request参数完成。");
 		}catch(Exception e){
 			throw new JobException(e.getMessage(),e);
 		}
-		log.info("验证request参数完成。");
 	};
 	public abstract void execute()throws JobException;
 	
@@ -124,6 +117,7 @@ public abstract class AbstractJob implements Runnable {
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			throw new JobException("");
+			
 		}
 	}
 	private void response(String stepMsg,int status)throws JobException{

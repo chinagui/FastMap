@@ -63,6 +63,7 @@ public abstract class AbstractJobRequest {
 		try{
 			String methodName = "set"+(char)(attName.charAt(0)-32)+attName.substring(1, attName.length());
 			Class[] argtypes = null;//默认String
+			
 			if(attValue instanceof String){
 				argtypes = new Class[]{String.class};
 			}else if(attValue instanceof Integer){
@@ -73,6 +74,8 @@ public abstract class AbstractJobRequest {
 				//if(((JSONArray) attValue).get(index))
 				argtypes= new Class[]{List.class};
 				
+			}else if(attValue instanceof JSONObject){
+				//sub job
 			}
 			Method method = this.getClass().getMethod(methodName, argtypes);
 			method.invoke(this, attValue);

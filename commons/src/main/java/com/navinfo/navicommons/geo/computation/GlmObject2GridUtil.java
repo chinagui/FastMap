@@ -19,7 +19,7 @@ public class GlmObject2GridUtil {
 	public static void test1(){
 		Connection conn = null;
 		try{
-			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			QueryRunner runner = new QueryRunner();
 			String sql = "S";
 			runner.query(conn, sql, new ResultSetHandler<String>(){

@@ -24,7 +24,7 @@ public class DBConnector {
 			synchronized (this) {
 				if (dataSource == null) {
 					dataSource = MultiDataSourceFactory.getInstance()
-							.getManDataSource();
+							.getSysDataSource();
 				}
 			}
 		}

@@ -19,7 +19,7 @@ public class taskTest {
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}
 		TaskService service = new TaskService();
-		service.create(dataJson);			
+		service.create(1,dataJson);			
 	}
 	
 	public static void main(String[] agr) throws Exception{

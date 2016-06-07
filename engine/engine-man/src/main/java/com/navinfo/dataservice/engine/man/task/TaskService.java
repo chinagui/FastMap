@@ -33,7 +33,7 @@ public class TaskService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
 	
-	public void create(JSONObject json) throws Exception{
+	public void create(long userId,JSONObject json) throws Exception{
 		Connection conn = null;
 		try{
 			if(!json.containsKey("tasks")){
@@ -56,7 +56,7 @@ public class TaskService {
 						+ "C_MONTH_EDIT_PLAN_START_DATE, C_MONTH_EDIT_PLAN_END_DATE, DAY_PRODUCE_PLAN_START_DATE, "
 						+ "DAY_PRODUCE_PLAN_END_DATE, MONTH_PRODUCE_PLAN_START_DATE, MONTH_PRODUCE_PLAN_END_DATE, "
 						+ "LATEST) "
-						+ "values(TASK_SEQ.NEXTVAL,"+bean.getCityId()+","+bean.getCreateUserId()+","+ bean.getCreateDate()
+						+ "values(TASK_SEQ.NEXTVAL,"+bean.getCityId()+","+userId+","+ bean.getCreateDate()
 						+",1,'"+  bean.getDescp()+"',"+ bean.getCollectPlanStartDate()
 						+","+ bean.getCollectPlanEndDate()+","+ bean.getDayEditPlanStartDate()
 						+","+ bean.getDayEditPlanEndDate()+","+  bean.getBMonthEditPlanStartDate()

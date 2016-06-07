@@ -275,17 +275,12 @@ public class EditController extends BaseController {
 			//subtaskId
 			//int subtaskId = jsonReq.getInt("subtaskId");
 			//int type      = jsonReq.getInt("type");
-			//int pageNum      = jsonReq.getInt("pageNum");
-			//int pageSize      = jsonReq.getInt("pageSize");
+			int pageNum      = jsonReq.getInt("pageNum");
+			int pageSize      = jsonReq.getInt("pageSize");
 			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
-
 			IxPoiSelector selector = new IxPoiSelector(conn);
-			for(IRow row :selector.loadPids(true)){
-				array.add(row.Serialize(ObjLevel.FULL));
-			}
-
-
-			return new ModelAndView("jsonView", success(array));
+			JSONObject jsonObject = selector.loadPids(false, pageSize, pageNum);
+			return new ModelAndView("jsonView", success(jsonObject));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));

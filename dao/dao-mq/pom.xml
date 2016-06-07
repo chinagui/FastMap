@@ -47,5 +47,9 @@
 		<groupId>org.springframework.amqp</groupId>
 		<artifactId>spring-rabbit</artifactId>
 	 </dependency>
+	  <dependency>
+	     <groupId>com.navinfo.dataservice</groupId>
+		 <artifactId>api-job</artifactId>
+	 </dependency>
   </dependencies>
 </project>

@@ -11,7 +11,7 @@ import org.apache.commons.collections.map.MultiValueMap;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.navinfo.dataservice.engine.man.grid.GridSelector;
+import com.navinfo.dataservice.engine.man.grid.GridService;
 
 /*
  * @author mayunfei
@@ -26,7 +26,7 @@ public class GridSelectorTest {
 
 	@Test
 	public void testQueryRegionGridMapping() throws Exception {
-		GridSelector selector = new GridSelector();
+		GridService selector = new GridService();
 		List<Integer> gridList = new ArrayList<Integer>();
 		gridList.add(39550711);
 		gridList.add(3502401);

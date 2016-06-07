@@ -22,7 +22,7 @@ public class GridSelectorApiServiceImpl implements GridSelectorApiService {
 	 */
 	@Override
 	public Map queryRegionGridMapping(List<Integer> gridList) throws Exception {
-		return GridSelector.getInstance().queryRegionGridMapping(gridList);
+		return GridService.getInstance().queryRegionGridMapping(gridList);
 	}
 
 }

@@ -8,6 +8,7 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 
 /** 
 * @ClassName: TokenValidateFilter 
@@ -16,10 +17,11 @@ import javax.servlet.ServletResponse;
 * @Description: TODO
 */
 public class TokenValidateFilter implements Filter {
-
+	private String excludeUrlPattern;
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
-		// TODO Auto-generated method stub
+		//获取本filter不过滤的url
+		this.excludeUrlPattern = filterConfig.getInitParameter("exclude-url-pattern"); 
 
 	}
 
@@ -27,6 +29,10 @@ public class TokenValidateFilter implements Filter {
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
 		try{
+			HttpServletRequest httpRequest = (HttpServletRequest)request;
+			String servletPath = httpRequest.getServletPath();
+			System.out.print(servletPath );
+			System.out.print(excludeUrlPattern );
 			String tokenString = request.getParameter("token");
 			AccessToken token = AccessTokenFactory.validate(tokenString);
 			request.setAttribute("token", token);

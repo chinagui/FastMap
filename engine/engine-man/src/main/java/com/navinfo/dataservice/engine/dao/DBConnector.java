@@ -8,6 +8,7 @@ import javax.sql.DataSource;
 import com.navinfo.dataservice.api.datahub.iface.DatahubApiService;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.database.oracle.PoolDataSource;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 
 public class DBConnector {
@@ -26,8 +27,7 @@ public class DBConnector {
 		if (dataSource == null) {
 			synchronized (this) {
 				if (dataSource == null) {
-					dataSource = MultiDataSourceFactory.getInstance()
-							.getSysDataSource();
+					dataSource = MultiDataSourceFactory.getInstance().getDataSourceByKey(PoolDataSource.SYS_KEY);
 				}
 			}
 		}

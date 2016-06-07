@@ -73,13 +73,7 @@ public class MultiDataSourceFactory {
 		dataSource.setPassword(pwd);
 		return dataSource;
 	}
-    /**
-	 * 获取连接到管理库的数据库连接池
-	 * 
-	 * @return
-	 * @throws SQLException
-	 */
-	}
+   
 	/**
 	 * 从配置中读取的数据库连接，均做cache
 	 * @param dataSourceKey
@@ -383,6 +377,9 @@ public class MultiDataSourceFactory {
 	
 	
 	public static void main(String[] args) throws SQLException {
+	}
+	public BasicDataSource getSysDataSource() {
+		return getDataSourceByKey(PoolDataSource.SYS_KEY);
 	}
 
 }

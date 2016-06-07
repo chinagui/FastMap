@@ -188,7 +188,7 @@ public class ${modelClassName}Service {
 				public List<HashMap> handle(ResultSet rs) throws SQLException {
 					List<HashMap> list = new ArrayList<HashMap>();
 					while(rs.next()){
-						HashMap<String,?> map = new HashMap<String,?>();
+						HashMap<String,Object> map = new HashMap<String,Object>();
 						<#list columns as column>
 						map.put("${column.camelName}", rs.get${column.sqlType?cap_first}("${column.name}"));
 						</#list>

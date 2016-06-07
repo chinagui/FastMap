@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.engine.dao.DBConnector;
+import com.navinfo.dataservice.engine.man.dao.DBConnector;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -33,7 +33,6 @@ import oracle.sql.STRUCT;
 * @date 2016-06-06 08:19:11 
 * @Description: TODO
 */
-@Service
 public class CityService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
@@ -190,7 +189,7 @@ public class CityService {
 				selectSql+=" and PLAN_STATUS=? ";
 				values.add(bean.getPlanStatus());
 			};
-			ResultSetHandler rsHandler = new ResultSetHandler<Page>(){
+			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
 				public Page handle(ResultSet rs) throws SQLException {
 					List list = new ArrayList();
 		            Page page = new Page(currentPageNum);

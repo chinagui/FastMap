@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.dao;
+package com.navinfo.dataservice.engine.man.dao;
 
 import java.sql.Connection;
 import java.sql.SQLException;

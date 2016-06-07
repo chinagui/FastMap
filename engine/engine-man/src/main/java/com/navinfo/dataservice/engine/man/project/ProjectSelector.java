@@ -4,10 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import com.navinfo.dataservice.engine.man.dao.DBConnector;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
-import com.navinfo.dataservice.engine.dao.DBConnector;
 
 public class ProjectSelector {
 

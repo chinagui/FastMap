@@ -10,7 +10,6 @@ import org.springframework.util.Assert;
 
 import com.navinfo.dataservice.api.edit.model.FmMesh4Lock;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.edit.datalock.MeshLockManager;
 import com.navinfo.dataservice.engine.man.project.ProjectSelector;

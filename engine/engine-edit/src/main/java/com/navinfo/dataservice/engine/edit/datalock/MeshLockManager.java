@@ -20,7 +20,7 @@ import com.navinfo.dataservice.api.edit.iface.DatalockApi;
 import com.navinfo.dataservice.api.edit.model.FmMesh4Lock;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.exception.LockException;
-import com.navinfo.dataservice.engine.edit.datasource.EditDataSource;
+import com.navinfo.dataservice.engine.edit.datasource.DbConnector;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /** 
@@ -66,7 +66,7 @@ public class MeshLockManager{
     	Connection conn = null;
     	try{
 			QueryRunner run = new QueryRunner();
-			conn = EditDataSource.getInstance().getManDataSource().getConnection();
+			conn = DbConnector.getInstance().getManDataSource().getConnection();
 			//当size超过1000时，才转clob，提高效率
 			String meshInClause = null;
 			Clob clobMeshes=null;
@@ -121,7 +121,7 @@ public class MeshLockManager{
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = EditDataSource.getInstance().getManDataSource().getConnection();
+			conn = DbConnector.getInstance().getManDataSource().getConnection();
 			int lockSeq = run.queryForInt(conn, "SELECT MESHES_LOCK_SEQ.NEXTVAL FROM DUAL");
 			//当size超过1000时，才转clob，提高效率
 			String meshInClause = null;
@@ -226,7 +226,7 @@ public class MeshLockManager{
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = EditDataSource.getInstance().getManDataSource().getConnection();
+			conn = DbConnector.getInstance().getManDataSource().getConnection();
 			//解锁时，归还例外
 			String sql = null;
 			if(lockType==FmMesh4Lock.TYPE_GIVE_BACK){
@@ -265,7 +265,7 @@ public class MeshLockManager{
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = EditDataSource.getInstance().getManDataSource().getConnection();
+			conn = DbConnector.getInstance().getManDataSource().getConnection();
 			//当size超过1000时，才转clob，提高效率
 			String meshInClause = null;
 			String gridInClause = null;
@@ -342,7 +342,7 @@ public class MeshLockManager{
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = EditDataSource.getInstance().getManDataSource().getConnection();
+			conn = DbConnector.getInstance().getManDataSource().getConnection();
 			int lockSeq = run.queryForInt(conn, "SELECT MESHES_LOCK_SEQ.NEXTVAL FROM DUAL");
 			String sql = "UPDATE MESH SET HANDLE_PROJECT_ID=?,LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE" +
 					" WHERE MESH_ID IN (select to_number(column_value) from table(clob_to_table(?))) AND LOCK_STATUS=0 AND HANDLE_PROJECT_ID = ?";

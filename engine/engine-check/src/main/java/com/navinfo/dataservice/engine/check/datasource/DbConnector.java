@@ -1,6 +1,5 @@
-package com.navinfo.dataservice.engine.edit.datasource;
+package com.navinfo.dataservice.engine.check.datasource;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
@@ -18,15 +17,16 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 * @Description: TODO
 *  
 */
-public class EditDataSource {
+public class DbConnector {
 	private static class SingletonHolder {
-		private static final EditDataSource INSTANCE = new EditDataSource();
+		private static final DbConnector INSTANCE = new DbConnector();
 	}
 
-	public static final EditDataSource getInstance() {
+	public static final DbConnector getInstance() {
 		return SingletonHolder.INSTANCE;
 	}
 	private DataSource manDataSource;
+	private DataSource metaDataSource;
 	public DataSource getManDataSource() throws SQLException {
 		if (manDataSource == null) {
 			synchronized (this) {
@@ -46,5 +46,26 @@ public class EditDataSource {
 			}
 		}
 		return manDataSource;
+	}
+
+	public DataSource getMetaDataSource() throws SQLException {
+		if (metaDataSource == null) {
+			synchronized (this) {
+				if (metaDataSource == null) {
+					DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApiService");
+					DbInfo metaDb = null;
+					DbConnectConfig connConfig = null;
+					try{
+						metaDb = datahub.getOnlyDbByType("metaRoad");
+						connConfig = MultiDataSourceFactory.createConnectConfig(metaDb.getConnectParam());
+					}catch(Exception e){
+						throw new SQLException("从datahub获取元数据信息失败："+e.getMessage(),e);
+					}
+					metaDataSource = MultiDataSourceFactory.getInstance()
+							.getDataSource(connConfig);
+				}
+			}
+		}
+		return metaDataSource;
 	}
 }

@@ -130,7 +130,7 @@ public class Operation implements IOperation {
 				//要打断线的pid
 				breakJson.put("objId", json.getInt("linkPid"));
 				//要打断线的project_id
-				breakJson.put("projectId", command.getProjectId());
+				breakJson.put("subTaskId", command.getSubTaskId());
 				JSONObject data = new JSONObject();
 				//要打断点的pid和经纬度
 				data.put("breakNodePid", json.getInt("breakNode"));

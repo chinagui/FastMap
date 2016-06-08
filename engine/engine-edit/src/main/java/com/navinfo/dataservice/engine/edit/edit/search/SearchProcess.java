@@ -258,13 +258,13 @@ public class SearchProcess {
 					array.add(row.Serialize(ObjLevel.FULL));
 				}
 			case ADADMINGROUP:
-				if(condition.containsKey("projectId"))
+				if(condition.containsKey("subTaskId"))
 				{
 					AdAdminTreeSelector adAdminTreeSelector = new AdAdminTreeSelector(conn);
 					
-					int projectId = condition.getInt("projectId");
+					int subTaskId = condition.getInt("subTaskId");
 					
-					IRow row = adAdminTreeSelector.loadRowsByProjectId(projectId,false);
+					IRow row = adAdminTreeSelector.loadRowsByProjectId(subTaskId,false);
 
 					array.add(row.Serialize(ObjLevel.BRIEF));
 				}

@@ -3,6 +3,9 @@ package com.navinfo.dataservice.engine.man.task;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +16,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -90,46 +94,48 @@ public class TaskOperation {
 	/*
 	 * 根据sql语句查询task
 	 */
-	public static Page selectTaskBySql(Connection conn,String selectSql,List<Object> values,final int currentPageNum) throws Exception{
+	public static Page selectTaskBySql(Connection conn,String selectSql,List<Object> values,final int currentPageNum,final int pageSize) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
 				public Page handle(ResultSet rs) throws SQLException {
 					List<HashMap> list = new ArrayList<HashMap>();
 				    Page page = new Page(currentPageNum);
+				    page.setPageSize(pageSize);
 					while(rs.next()){
 						HashMap map = new HashMap();
 						map.put("taskId", rs.getInt("TASK_ID"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
-						map.put("createDate", rs.getObject("CREATE_DATE"));
+						map.put("createDate", DateUtils.dateToString(rs.getTimestamp("CREATE_DATE")));
 						map.put("status", rs.getInt("STATUS"));
 						map.put("descp", rs.getString("DESCP"));
-						map.put("collectPlanStartDate", rs.getObject("COLLECT_PLAN_START_DATE"));
-						map.put("collectPlanEndDate", rs.getObject("COLLECT_PLAN_END_DATE"));
-						map.put("dayEditPlanStartDate", rs.getObject("DAY_EDIT_PLAN_START_DATE"));
-						map.put("dayEditPlanEndDate", rs.getObject("DAY_EDIT_PLAN_END_DATE"));
-						map.put("bMonthEditPlanStartDate", rs.getObject("B_MONTH_EDIT_PLAN_START_DATE"));
-						map.put("bMonthEditPlanEndDate", rs.getObject("B_MONTH_EDIT_PLAN_END_DATE"));
-						map.put("cMonthEditPlanStartDate", rs.getObject("C_MONTH_EDIT_PLAN_START_DATE"));
-						map.put("cMonthEditPlanEndDate", rs.getObject("C_MONTH_EDIT_PLAN_END_DATE"));
-						map.put("dayProducePlanStartDate", rs.getObject("DAY_PRODUCE_PLAN_START_DATE"));
-						map.put("dayProducePlanEndDate", rs.getObject("DAY_PRODUCE_PLAN_END_DATE"));
-						map.put("monthProducePlanStartDate", rs.getObject("MONTH_PRODUCE_PLAN_START_DATE"));
-						map.put("monthProducePlanEndDate", rs.getObject("MONTH_PRODUCE_PLAN_END_DATE"));
+						map.put("collectPlanStartDate", DateUtils.dateToString(rs.getTimestamp("COLLECT_PLAN_START_DATE")));
+						map.put("collectPlanEndDate", DateUtils.dateToString(rs.getTimestamp("COLLECT_PLAN_END_DATE")));
+						map.put("dayEditPlanStartDate", DateUtils.dateToString(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE")));
+						map.put("dayEditPlanEndDate", DateUtils.dateToString(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE")));
+						map.put("bMonthEditPlanStartDate", DateUtils.dateToString(rs.getTimestamp("B_MONTH_EDIT_PLAN_START_DATE")));
+						map.put("bMonthEditPlanEndDate", DateUtils.dateToString(rs.getTimestamp("B_MONTH_EDIT_PLAN_END_DATE")));
+						map.put("cMonthEditPlanStartDate", DateUtils.dateToString(rs.getTimestamp("C_MONTH_EDIT_PLAN_START_DATE")));
+						map.put("cMonthEditPlanEndDate", DateUtils.dateToString(rs.getTimestamp("C_MONTH_EDIT_PLAN_END_DATE")));
+						map.put("dayProducePlanStartDate", DateUtils.dateToString(rs.getTimestamp("DAY_PRODUCE_PLAN_START_DATE")));
+						map.put("dayProducePlanEndDate", DateUtils.dateToString(rs.getTimestamp("DAY_PRODUCE_PLAN_END_DATE")));
+						map.put("monthProducePlanStartDate", DateUtils.dateToString(rs.getTimestamp("MONTH_PRODUCE_PLAN_START_DATE")));
+						map.put("monthProducePlanEndDate", DateUtils.dateToString(rs.getTimestamp("MONTH_PRODUCE_PLAN_END_DATE")));
 						map.put("latest", rs.getInt("LATEST"));
 						list.add(map);
 					}
+					//page.setTotalCount(list.size());
 					page.setResult(list);
 					return page;
 				}
 	    		
 	    	}		;
 	    	if (null==values || values.size()==0){
-	    		return run.query(currentPageNum, 20, conn, selectSql, rsHandler
+	    		return run.query(currentPageNum, pageSize, conn, selectSql, rsHandler
 						);
 	    	}
-	    	return run.query(currentPageNum, 20, conn, selectSql, rsHandler,values.toArray()
+	    	return run.query(currentPageNum, pageSize, conn, selectSql, rsHandler,values.toArray()
 					);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

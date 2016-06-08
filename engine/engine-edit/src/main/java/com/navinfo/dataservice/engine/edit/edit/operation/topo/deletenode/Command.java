@@ -180,7 +180,7 @@ public class Command extends AbstractCommand {
 		
 		this.nodePid = json.getInt("objId");
 		
-		this.setProjectId(json.getInt("projectId"));
+		this.setSubTaskId(json.getInt("subTaskId"));
 		
 		if (json.containsKey("infect") && json.getInt("infect") == 1){
 			this.isCheckInfect = true;

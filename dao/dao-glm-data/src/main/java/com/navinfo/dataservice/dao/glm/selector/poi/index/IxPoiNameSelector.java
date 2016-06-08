@@ -273,4 +273,26 @@ public class IxPoiNameSelector implements ISelector {
 
 		obj.setRowId(resultSet.getString("row_id"));
 	}
+	
+	/**
+	 * add by wangdongbin
+	 * for android download
+	 * @param id
+	 * @return
+	 * @throws Exception
+	 */
+	public List<IRow> loadByIdForAndroid(int id) throws Exception{
+		List<IRow> rows = new ArrayList<IRow>();
+		IxPoiName ixPoiName = new IxPoiName();
+		String sql = "SELECT name FROM " + ixPoiName.tableName() + " where poi_pid=:1 AND name_class=1 AND name_type=2 AND lang_code='CHI' AND u_record!=2";
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		pstmt.setInt(1, id);
+		ResultSet resultSet = pstmt.executeQuery();
+		if (resultSet.next()){
+			ixPoiName.setName(resultSet.getString("name"));
+		}
+		rows.add(ixPoiName);
+		return rows;
+	}
+	
 }

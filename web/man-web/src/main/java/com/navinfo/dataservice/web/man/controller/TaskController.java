@@ -60,6 +60,9 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	/*
+	 * 规划管理页面--任务管理--修改任务页面
+	 */
 	@RequestMapping(value = "/task/update")
 	public ModelAndView update(HttpServletRequest request){
 		try{
@@ -80,7 +83,9 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	
+	/*
+	 * 规划管理页面--任务管理--关闭任务
+	 */
 	@RequestMapping(value = "/task/close")
 	public ModelAndView delete(HttpServletRequest request){
 		try{			
@@ -95,7 +100,9 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	
+	/*
+	 * 规划管理页面--任务管理--查看任务页面
+	 */
 	@RequestMapping(value = "/task/list")
 	public ModelAndView list(HttpServletRequest request){
 		try{			
@@ -114,8 +121,10 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	
-	@RequestMapping(value = "/task/query")
+	/*
+	 *  20160607 by zhangxiaoyi 删除，此次生产管理平台的设计中不涉及该接口的使用
+	 */
+	/*@RequestMapping(value = "/task/query")
 	public ModelAndView query(HttpServletRequest request){
 		try{
 			String taskId = request.getParameter("taskId");			
@@ -128,5 +137,5 @@ public class TaskController extends BaseController {
 			log.error("获取明细失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
-	}
+	}*/
 }

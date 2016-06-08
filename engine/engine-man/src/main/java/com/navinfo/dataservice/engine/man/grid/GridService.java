@@ -10,7 +10,7 @@ import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
-import com.navinfo.dataservice.engine.dao.DBConnector;
+import com.navinfo.dataservice.engine.man.dao.DBConnector;
 import com.navinfo.navicommons.database.QueryRunner;
 
 public class GridService {

@@ -4,12 +4,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAudio;
 
 /**
  * POI地址表selector
@@ -85,7 +87,59 @@ public class IxPoiAddressSelector implements ISelector {
 
 	@Override
 	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
-		return null;
+		List<IRow> rows = new ArrayList<IRow>();
+
+		String sql = "select * from ix_poi_address where poi_pid=:1 and u_record!=:2";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, id);
+
+			pstmt.setInt(2, 2);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				IxPoiAddress ixPoiAddress = new IxPoiAddress();
+
+				setAttr(ixPoiAddress, resultSet);
+
+				rows.add(ixPoiAddress);
+			}
+		} catch (Exception e) {
+			
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+		}
+
+		return rows;
 	}
 
 	private void setAttr(IxPoiAddress ixPoiAddress,ResultSet resultSet) throws SQLException

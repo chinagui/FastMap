@@ -146,6 +146,12 @@ public class JobService {
 		}
 	}
 	public String hello()throws Exception{
-		return DBConnector.getInstance().getManConnection().getSchema();
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			return "conn:"+conn.toString();
+		}finally{
+			DbUtils.closeQuietly(conn);
+		}
 	}
 }

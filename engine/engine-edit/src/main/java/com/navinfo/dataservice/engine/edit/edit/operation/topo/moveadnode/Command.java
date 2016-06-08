@@ -50,7 +50,7 @@ public class Command extends AbstractCommand {
 		
 		this.latitude = Math.round(json.getJSONObject("data").getDouble("latitude")*100000)/100000.0;
 		
-		this.setSubTaskId(json.getInt("subTaskId"));
+		this.setDbId(json.getInt("dbId"));
 	}
 
 	@Override

@@ -46,7 +46,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	public AbstractProcess(AbstractCommand command) throws Exception {
 		this.command = (T) command;
 		this.result = new Result();
-		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command.getSubTaskId());
+		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command.getDbId());
 		// 初始化检查参数
 		this.initCheckCommand();
 	}
@@ -55,9 +55,9 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	public void initCheckCommand() throws Exception {
 		this.checkCommand.setObjType(this.command.getObjType());
 		this.checkCommand.setOperType(this.command.getOperType());
-		this.checkCommand.setProjectId(this.command.getSubTaskId());
+		this.checkCommand.setProjectId(this.command.getDbId());
 		// this.checkCommand.setGlmList(this.command.getGlmList());
-		this.checkEngine = new CheckEngine(checkCommand, this.conn, this.command.getSubTaskId());
+		this.checkEngine = new CheckEngine(checkCommand, this.conn, this.command.getDbId());
 	}
 
 	/*
@@ -209,7 +209,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	 */
 	@Override
 	public boolean recordData() throws Exception {
-		LogWriter lw = new LogWriter(conn, this.command.getSubTaskId());
+		LogWriter lw = new LogWriter(conn, this.command.getDbId());
 		lw.generateLog(command, result);
 		OperatorFactory.recordData(conn, result);
 		lw.recordLog(command, result);

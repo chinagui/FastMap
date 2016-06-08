@@ -1,7 +1,5 @@
 package com.navinfo.dataservice.engine.edit.xiaolong.rd;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -10,13 +8,15 @@ import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 
+import net.sf.json.JSONObject;
+
 public class RdGscTest {
 
 	public RdGscTest() throws Exception {
 	}
 
 	public static void testCreate() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDGSC\",\"projectId\":11,\"data\":{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[116.46834969520569,40.028041639054926],[116.46834969520569,40.02857563725303],[116.46884322166441,40.02857563725303],[116.46884322166441,40.028041639054926],[116.46834969520569,40.028041639054926]]]},\"linkObjs\":[{\"pid\":\"100004083\",\"level_index\":0},{\"pid\":\"100004084\",\"level_index\":1}]}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDGSC\",\"projectId\":11,\"data\":{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[116.47444367408751,40.01334272476942],[116.47444367408751,40.013465982043655],[116.47467970848083,40.013465982043655],[116.47469970848083,40.01334272476942],[116.47444367408751,40.01334272476942]]]},\"linkObjs\":[{\"pid\":\"100005111\",\"level_index\":0},{\"pid\":\"100005111\",\"level_index\":1}]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -27,7 +27,7 @@ public class RdGscTest {
 	}
 
 	public static void testDelete() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDGSC\",\"projectId\":11,\"objId\":100002634}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDGSC\",\"projectId\":11,\"objId\":  100002844}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

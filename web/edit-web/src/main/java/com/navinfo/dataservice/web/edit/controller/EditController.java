@@ -78,11 +78,11 @@ public class EditController extends BaseController {
 
 			String objType = jsonReq.getString("type");
 
-			int subTaskId = jsonReq.getInt("subTaskId");
+			int dbId = jsonReq.getInt("dbId");
 
 			JSONObject data = jsonReq.getJSONObject("data");
 
-			conn = GlmDbPoolManager.getInstance().getConnection(subTaskId);
+			conn = GlmDbPoolManager.getInstance().getConnection(dbId);
 
 			SearchProcess p = new SearchProcess(conn);
 
@@ -120,9 +120,9 @@ public class EditController extends BaseController {
 
 			String objType = jsonReq.getString("type");
 
-			int subTaskId = jsonReq.getInt("subTaskId");
+			int dbId = jsonReq.getInt("dbId");
 
-			conn = GlmDbPoolManager.getInstance().getConnection(subTaskId);
+			conn = GlmDbPoolManager.getInstance().getConnection(dbId);
 
 			if (jsonReq.containsKey("detailId")) {
 				int detailId = jsonReq.getInt("detailId");
@@ -187,7 +187,7 @@ public class EditController extends BaseController {
 
 			JSONArray type = jsonReq.getJSONArray("type");
 
-			int subTaskId = jsonReq.getInt("subTaskId");
+			int dbId = jsonReq.getInt("dbId");
 
 			List<ObjType> types = new ArrayList<ObjType>();
 
@@ -195,7 +195,7 @@ public class EditController extends BaseController {
 				types.add(ObjType.valueOf(type.getString(i)));
 			}
 
-			conn = GlmDbPoolManager.getInstance().getConnection(subTaskId);
+			conn = GlmDbPoolManager.getInstance().getConnection(dbId);
 
 			SearchProcess p = new SearchProcess(conn);
 
@@ -268,14 +268,14 @@ public class EditController extends BaseController {
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			int subTaskId = jsonReq.getInt("subTaskId");
+			int dbId = jsonReq.getInt("dbId");
 			//项目管理（放开）
 			//subtaskId
 			//int subtaskId = jsonReq.getInt("subtaskId");
 			//int type      = jsonReq.getInt("type");
 			int pageNum      = jsonReq.getInt("pageNum");
 			int pageSize      = jsonReq.getInt("pageSize");
-			conn = GlmDbPoolManager.getInstance().getConnection(subTaskId);
+			conn = GlmDbPoolManager.getInstance().getConnection(dbId);
 			IxPoiSelector selector = new IxPoiSelector(conn);
 			JSONObject jsonObject = selector.loadPids(false, pageSize, pageNum);
 			return new ModelAndView("jsonView", success(jsonObject));

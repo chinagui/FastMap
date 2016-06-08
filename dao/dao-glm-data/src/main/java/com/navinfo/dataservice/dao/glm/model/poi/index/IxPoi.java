@@ -45,100 +45,148 @@ import net.sf.json.JsonConfig;
  */
 public class IxPoi implements IObj {
 
-	private int pid;
+	//POI号码
+	private int pid ;
 
+	//种别代码
 	private String kindCode;
 
+	//显示坐标
 	private Geometry geometry;
 
-	private double xGuide;
+	//引导X坐标
+	private double xGuide = 0;
 
-	private double yGuide;
+	//引导Y坐标
+	private double yGuide = 0;
 
-	private int linkPid;
+	//引导LINK
+	private int linkPid = 0;
 
-	private int side;
+	//位置关系
+	private int side = 0;
 
-	private int nameGroupid;
+	//引导LINK名称
+	private int nameGroupid = 0;
 
-	private int roadFlag;
+	//道路标志
+	private int roadFlag = 0;
 
-	private int pmeshId;
+	//永久图幅号
+	private int pmeshId = 0;
 
-	private int adminReal;
+	//真实城市
+	private int adminReal = 0;
 
-	private int importance;
-
+	//重要度
+	private int importance = 0;
+	
+	//连锁品牌
 	private String chain;
 
+	//机场代码
 	private String airportCode;
 
-	private int accessFlag;
+	//出入口标识
+	private int accessFlag = 0;
+	
+	//全天营业
+	private int open24h = 0;
 
-	private int open24h;
-
+	//详细图幅
 	private String meshId5k;
 
-	private int meshId;
+	//MESH_ID
+	private int meshId = 0;
 
-	private int regionId;
+	//区划号码
+	private int regionId = 0;
 
+	//邮政编码
 	private String postCode;
-
+	
+	//差分产品ID
 	private String difGroupid;
 
-	private int editFlag;
+	//编辑标识
+	private int editFlag = 1;
 
+	//预留信息
 	private String reserved;
 
-	private int state;
+	//记录状态
+	private int state = 0;
 
+	//字段状态
 	private String fieldState;
 
+	//标记
 	private String label;
 
-	private int type;
+	//POI类型
+	private int type = 0;
 
-	private int addressFlag;
+	//地址标志
+	private int addressFlag = 0;
 
+	//提取优先级
 	private String exPriority;
 
+	//作业季标识
 	private String editionFlag;
 
+	//备注信息
 	private String poiMemo;
 
+	//OLD乡镇
 	private String oldBlockcode;
 
+	//OLD名称
 	private String oldName;
 
+	//OLD地址
 	private String oldAddress;
 
+	//OLD种别
 	private String oldKind;
 
+	//POI编号
 	private String poiNum;
 
+	//外业LOG
 	private String log;
 
-	private int taskId;
+	//任务编号
+	private int taskId = 0;
 
+	//数据采集版本
 	private String dataVersion;
 
-	private int fieldTaskId;
+	//外业任务编号
+	private int fieldTaskId = 0;
+	
+	//验证标识
+	private int verifiedFlag = 9;
 
-	private int verifiedFlag;
-
+	//采集更新时间
 	private String collectTime;
 
-	private int geoAdjustFlag;
+	//几何调整标识
+	private int geoAdjustFlag = 9;
 
-	private int fullAttrFlag;
+	//精编标识
+	private int fullAttrFlag = 9;
 
-	private double oldXGuide;
+	//外业采集 引导X坐标
+	private double oldXGuide = 0;
 
-	private double oldYGuide;
+	//外业采集 引导Y坐标
+	private double oldYGuide = 0;
 
+	//行记录ID
 	private String rowId;
 	
+	//更新记录*
 	private int uRecord;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
@@ -175,6 +223,10 @@ public class IxPoi implements IObj {
 
 	public Map<String, IxPoiParent> parentMap = new HashMap<String, IxPoiParent>();
 
+	private List<IRow> children = new ArrayList<IRow>();
+
+	public Map<String, IxPoiChildren> childrenMap = new HashMap<String, IxPoiChildren>();
+	
 	private List<IRow> photoes = new ArrayList<IRow>();
 
 	public Map<String, IxPoiPhoto> photoMap = new HashMap<String, IxPoiPhoto>();
@@ -841,6 +893,14 @@ public class IxPoi implements IObj {
 
 	public void setuRecord(int uRecord) {
 		this.uRecord = uRecord;
+	}
+	
+	public List<IRow> getChildren() {
+		return children;
+	}
+
+	public void setChildren(List<IRow> children) {
+		this.children = children;
 	}
 
 	@Override

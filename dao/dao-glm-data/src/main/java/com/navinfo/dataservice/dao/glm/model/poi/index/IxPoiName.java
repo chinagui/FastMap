@@ -28,23 +28,23 @@ public class IxPoiName implements IObj {
 
 	private int pid;
 
-	private int poiPid;
+	private int poiPid;//POI号码
 
-	private int nameGroupid;
+	private int nameGroupid=1;//名称组号
 
-	private String langCode;
+	private String langCode;//语言代码
 
-	private int nameClass;
+	private int nameClass=1;//名称分类
 
-	private int nameType;
+	private int nameType=1;//名称内容
 
-	private String name;
+	private String name;//名称内容
 
-	private String namePhonetic;
+	private String namePhonetic;//名称发音
 
-	private String keywords;
+	private String keywords;//关键字
 
-	private String nidePid;
+	private String nidePid;//现有PID
 
 	private String rowId;
 

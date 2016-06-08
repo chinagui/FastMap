@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.engine.man.city.CityOperation;
 import com.navinfo.dataservice.engine.man.task.Task;
+import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -42,7 +43,7 @@ public class TaskService {
 			conn = DBConnector.getInstance().getManConnection();
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
-				Task bean = TaskOperation.jsonToBean(taskJson);	
+				Task bean = (Task) JsonOperation.jsonToBean(taskJson,Task.class);
 				bean.setCreateUserId((int) userId);
 				TaskOperation.insertTask(conn, bean);
 				TaskOperation.updateLatest(conn,bean.getCityId());
@@ -68,7 +69,7 @@ public class TaskService {
 			
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
-				Task bean=TaskOperation.jsonToBean(taskJson);
+				Task bean=(Task) JsonOperation.jsonToBean(taskJson,Task.class);
 				TaskOperation.updateTask(conn, bean);				
 			}
 			

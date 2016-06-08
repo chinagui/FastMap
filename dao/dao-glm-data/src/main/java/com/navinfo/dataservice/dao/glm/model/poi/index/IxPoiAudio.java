@@ -22,11 +22,11 @@ import net.sf.json.JSONObject;
  */
 public class IxPoiAudio implements IRow {
 	
-	private int poiPid;
+	private int poiPid;//POI号码
 	
-	private int audioId;
+	private int audioId;//音频号码
 	
-	private String status;
+	private String status;//状态信息
 	
 	private String memo;
 	

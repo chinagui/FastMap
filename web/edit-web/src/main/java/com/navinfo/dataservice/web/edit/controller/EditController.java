@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -21,12 +22,9 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 @Controller
 public class EditController extends BaseController {
@@ -82,7 +80,11 @@ public class EditController extends BaseController {
 
 			JSONObject data = jsonReq.getJSONObject("data");
 
+<<<<<<< HEAD
 			conn = GlmDbPoolManager.getInstance().getConnection(dbId);
+=======
+			conn = DBConnector.getInstance().getConnectionById(subTaskId);
+>>>>>>> 632c6fcfc364a08a906f01961bcd0dc02d89be4b
 
 			SearchProcess p = new SearchProcess(conn);
 
@@ -122,7 +124,11 @@ public class EditController extends BaseController {
 
 			int dbId = jsonReq.getInt("dbId");
 
+<<<<<<< HEAD
 			conn = GlmDbPoolManager.getInstance().getConnection(dbId);
+=======
+			conn = DBConnector.getInstance().getConnectionById(subTaskId);
+>>>>>>> 632c6fcfc364a08a906f01961bcd0dc02d89be4b
 
 			if (jsonReq.containsKey("detailId")) {
 				int detailId = jsonReq.getInt("detailId");
@@ -195,7 +201,11 @@ public class EditController extends BaseController {
 				types.add(ObjType.valueOf(type.getString(i)));
 			}
 
+<<<<<<< HEAD
 			conn = GlmDbPoolManager.getInstance().getConnection(dbId);
+=======
+			conn = DBConnector.getInstance().getConnectionById(subTaskId);
+>>>>>>> 632c6fcfc364a08a906f01961bcd0dc02d89be4b
 
 			SearchProcess p = new SearchProcess(conn);
 
@@ -275,7 +285,11 @@ public class EditController extends BaseController {
 			//int type      = jsonReq.getInt("type");
 			int pageNum      = jsonReq.getInt("pageNum");
 			int pageSize      = jsonReq.getInt("pageSize");
+<<<<<<< HEAD
 			conn = GlmDbPoolManager.getInstance().getConnection(dbId);
+=======
+			conn = DBConnector.getInstance().getConnectionById(subTaskId);
+>>>>>>> 632c6fcfc364a08a906f01961bcd0dc02d89be4b
 			IxPoiSelector selector = new IxPoiSelector(conn);
 			JSONObject jsonObject = selector.loadPids(false, pageSize, pageNum);
 			return new ModelAndView("jsonView", success(jsonObject));

@@ -12,7 +12,7 @@ import com.navinfo.dataservice.engine.man.region.RegionService;
 public class ManApiImpl implements ManApi{
 
 	@Override
-	public int getDailyRegionDbId(int regionId) throws Exception {
+	public int getDailyDbByRegion(int regionId) throws Exception {
 		
 		JSONObject json = new JSONObject();
 		
@@ -26,7 +26,7 @@ public class ManApiImpl implements ManApi{
 	}
 
 	@Override
-	public int getMonthlyRegionDbId(int regionId) throws Exception {
+	public int getMonthlyDbByRegion(int regionId) throws Exception {
 		JSONObject json = new JSONObject();
 		
 		json.put("regionId", regionId);

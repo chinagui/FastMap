@@ -27,13 +27,13 @@ public class IxPoiVideo implements IRow {
 	
 	private int mesh;
 	
-	private int poiPid;
+	private int poiPid;//POI号码
 	
-	private int videoId;
+	private int videoId;//视频号码
 	
-	private String status;
+	private String status;//状态信息
 	
-	private String memo;
+	private String memo;//备注信息
 	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	

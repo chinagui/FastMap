@@ -24,17 +24,17 @@ public class IxPoiNameTone implements IRow {
 	
 	private int nameId;
 	
-	private String toneA;
+	private String toneA;//带音调拼音一
 	
-	private String toneB;
+	private String toneB;//带音调拼音二
 	
-	private String lhA;
+	private String lhA;//LH拼音一
 	
-	private String lhB;
+	private String lhB;//LH拼音二
 	
-	private String jyutp;
+	private String jyutp;//粤语拼音
 	
-	private String memo;
+	private String memo;//备注信息
 	
 	private String rowId;
 	

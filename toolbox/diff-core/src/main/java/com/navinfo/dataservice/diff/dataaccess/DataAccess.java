@@ -3,7 +3,7 @@ package com.navinfo.dataservice.diff.dataaccess;
 
 import java.util.List;
 
-import com.navinfo.dataservice.datahub.glm.GlmTable;
+import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 
 /**
  * @author arnold

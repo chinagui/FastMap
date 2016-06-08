@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.navinfo.dataservice.api.datahub.iface.DbManagerApiService;
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.edit.iface.GridServiceApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -43,7 +43,7 @@ public class CommitDay2MonthRoadJob extends AbstractJob {
 				List<Integer> gridListOfRegion = (List<Integer>) regionGridMapping.get(regionId);
 				//在大区日库中根据grid列表获取履历，并刷新对应的月库
 				//根据大区id获取对应的大区日库、大区月库
-				DbManagerApiService dbManApiSvr = (DbManagerApiService) ApplicationContextUtil.getBean("dbManagerApiService");
+				DatahubApi datahub = (DatahubApi) ApplicationContextUtil.getBean("datahubApi");
 //				regionDbDaily = dbManApiSvr.getOnlyDbByName(dbName);
 			}
 			

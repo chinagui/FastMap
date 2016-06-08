@@ -1,7 +1,5 @@
 package com.navinfo.dataservice.web.man.controller;
 
-import java.util.HashMap;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -14,7 +12,6 @@ import org.springframework.web.servlet.ModelAndView;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
-import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.database.Page;
 
@@ -60,15 +57,12 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	/*
+	 * 规划管理页面--任务管理--修改任务页面
+	 */
 	@RequestMapping(value = "/task/update")
 	public ModelAndView update(HttpServletRequest request){
 		try{
-			String token = request.getParameter("access_token");
-			if (StringUtils.isEmpty(token)){
-				throw new IllegalArgumentException("access_token参数不能为空。");
-			}
-			//验证token是否有效，无效直接报异常
-			AccessToken tokenObj=AccessTokenFactory.validate(token);
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
@@ -80,7 +74,9 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	
+	/*
+	 * 规划管理页面--任务管理--关闭任务
+	 */
 	@RequestMapping(value = "/task/close")
 	public ModelAndView delete(HttpServletRequest request){
 		try{			
@@ -95,7 +91,9 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	
+	/*
+	 * 规划管理页面--任务管理--查看任务页面
+	 */
 	@RequestMapping(value = "/task/list")
 	public ModelAndView list(HttpServletRequest request){
 		try{			
@@ -114,8 +112,10 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	
-	@RequestMapping(value = "/task/query")
+	/*
+	 *  20160607 by zhangxiaoyi 删除，此次生产管理平台的设计中不涉及该接口的使用
+	 */
+	/*@RequestMapping(value = "/task/query")
 	public ModelAndView query(HttpServletRequest request){
 		try{
 			String taskId = request.getParameter("taskId");			
@@ -128,5 +128,5 @@ public class TaskController extends BaseController {
 			log.error("获取明细失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
-	}
+	}*/
 }

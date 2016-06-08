@@ -76,7 +76,7 @@ public class Command extends AbstractCommand implements ICommand {
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 
-		this.setProjectId(json.getInt("projectId"));
+		this.setSubTaskId(json.getInt("subTaskId"));
 
 		JSONObject data = json.getJSONObject("data");
 

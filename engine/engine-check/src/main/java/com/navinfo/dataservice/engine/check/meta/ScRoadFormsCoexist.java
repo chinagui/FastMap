@@ -13,7 +13,8 @@ import java.util.Set;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 
-import com.navinfo.dataservice.engine.check.datasource.DbConnector;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+
 
 
 public class ScRoadFormsCoexist{
@@ -30,7 +31,7 @@ public class ScRoadFormsCoexist{
 			if(!formMap.isEmpty()){return formMap;}
 			Connection conn = null;
 			try{
-				conn=DbConnector.getInstance().getMetaDataSource().getConnection();
+				conn=DBConnector.getInstance().getMetaConnection();
 				String sql = "SELECT MAIN_FORM_OF_WAY,FORM_OF_WAYS,MULTI_DIGITIZED,IMI_CODE,SPECIAL_TRAFFIC,IS_VIADUCT"
 						+ " FROM SC_ROAD_FORMS_COEXIST";
 				QueryRunner runner = new QueryRunner();

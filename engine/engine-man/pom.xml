@@ -29,6 +29,11 @@
 		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>commons</artifactId>
 	</dependency>
+	
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>biz-commons</artifactId>
+	</dependency>
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>api-datahub</artifactId>

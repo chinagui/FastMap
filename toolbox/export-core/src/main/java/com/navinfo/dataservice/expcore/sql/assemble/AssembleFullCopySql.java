@@ -14,10 +14,10 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.bizcommons.glm.Glm;
+import com.navinfo.dataservice.bizcommons.glm.GlmCache;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
-import com.navinfo.dataservice.datahub.glm.Glm;
-import com.navinfo.dataservice.datahub.glm.GlmCache;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 
 

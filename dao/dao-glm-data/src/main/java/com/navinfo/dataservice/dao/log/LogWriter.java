@@ -14,6 +14,8 @@ import java.util.Set;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculator;
+import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculatorFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -27,8 +29,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
-import com.navinfo.dataservice.datahub.glm.GlmGridCalculator;
-import com.navinfo.dataservice.datahub.glm.GlmGridCalculatorFactory;
 import com.navinfo.dataservice.engine.man.project.ProjectSelector;
 import com.vividsolutions.jts.geom.Geometry;
 

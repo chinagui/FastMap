@@ -16,15 +16,17 @@ import com.navinfo.dataservice.api.datahub.model.DbInfo;
 public class DatahubApiImpl implements DatahubApi {
 
 	@Override
+	public DbInfo getDbById(int dbId)throws Exception{
+		return DbService.getInstance().getDbById(dbId);
+	}
+	@Override
 	public DbInfo getSuperDb(DbInfo db) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		return DbService.getInstance().getSuperDb(db);
 	}
 
 	@Override
 	public DbInfo getOnlyDbByType(String bizType) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		return DbService.getInstance().getOnlyDbByType(bizType);
 	}
 
 }

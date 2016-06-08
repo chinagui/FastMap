@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.datahub.glm;
+package com.navinfo.dataservice.bizcommons.glm;
 
 /** 
  * @ClassName: GlmColumn 

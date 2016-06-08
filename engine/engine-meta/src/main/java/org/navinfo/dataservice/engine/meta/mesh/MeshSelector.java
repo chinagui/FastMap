@@ -6,8 +6,7 @@ import java.sql.ResultSet;
 
 import net.sf.json.JSONObject;
 
-import org.navinfo.dataservice.engine.meta.dao.DBConnector;
-
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 public class MeshSelector {
@@ -27,7 +26,7 @@ public class MeshSelector {
 
 		try {
 
-			conn = DBConnector.getInstance().getConnection();
+			conn = DBConnector.getInstance().getMetaConnection();
 			
 			pstmt = conn.prepareStatement(sql);
 

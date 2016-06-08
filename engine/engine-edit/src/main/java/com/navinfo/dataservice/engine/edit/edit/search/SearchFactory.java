@@ -8,6 +8,7 @@ import com.navinfo.dataservice.dao.glm.search.AdAdminSearch;
 import com.navinfo.dataservice.dao.glm.search.AdFaceSearch;
 import com.navinfo.dataservice.dao.glm.search.AdLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.AdNodeSearch;
+import com.navinfo.dataservice.dao.glm.search.IxPoiSearch;
 import com.navinfo.dataservice.dao.glm.search.RdBranchSearch;
 import com.navinfo.dataservice.dao.glm.search.RdCrossSearch;
 import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
@@ -68,6 +69,8 @@ public class SearchFactory {
 			return new RwLinkSearch(conn);
 		case ADADMIN:
 			return new AdAdminSearch(conn);
+		case IXPOI:
+			return new IxPoiSearch(conn);
 		default:
 			return null;
 		}

@@ -4,6 +4,10 @@ import java.security.MessageDigest;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
+import com.navinfo.dataservice.bizcommons.glm.Glm;
+import com.navinfo.dataservice.bizcommons.glm.GlmCache;
+import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculator;
+import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculatorFactory;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -11,10 +15,6 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.dao.pool.OracleAddress;
-import com.navinfo.dataservice.datahub.glm.Glm;
-import com.navinfo.dataservice.datahub.glm.GlmCache;
-import com.navinfo.dataservice.datahub.glm.GlmGridCalculator;
-import com.navinfo.dataservice.datahub.glm.GlmGridCalculatorFactory;
 import com.navinfo.dataservice.engine.man.project.ProjectSelector;
 
 public class NiValExceptionOperator {

@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.diff.scanner;
 
-import com.navinfo.dataservice.datahub.glm.GlmTable;
+import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.diff.exception.DiffException;
 
 /** 

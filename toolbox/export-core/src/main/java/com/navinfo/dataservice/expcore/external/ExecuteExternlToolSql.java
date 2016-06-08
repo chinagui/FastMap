@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
@@ -29,8 +30,8 @@ import com.navinfo.dataservice.expcore.sql.handler.DMLExecThreadHandler;
 public class ExecuteExternlToolSql {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected VMThreadPoolExecutor threadPoolExecutor;
-	protected DbInfo targetDb;
-	public ExecuteExternlToolSql(DbInfo targetDb)throws ExportException{
+	protected OracleSchema targetDb;
+	public ExecuteExternlToolSql(OracleSchema targetDb)throws ExportException{
 		this.targetDb=targetDb;
 		createThreadPool();
 	}
@@ -50,7 +51,7 @@ public class ExecuteExternlToolSql {
     }	
     public void execute(List<ExpSQL> sqlList, ThreadLocalContext ctx) throws Exception {
 		try {
-			DataSource dataSource = MultiDataSourceFactory.getInstance().getDataSource(targetDb.getConnectParam());
+			DataSource dataSource = targetDb.getPoolDataSource();
 			if (threadPoolExecutor.isShutdown())
 				return;
 			int theadCount = 0;

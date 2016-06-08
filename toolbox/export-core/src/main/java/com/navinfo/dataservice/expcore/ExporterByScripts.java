@@ -8,7 +8,6 @@ import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.dataservice.expcore.exception.ExportInitException;
 import com.navinfo.dataservice.expcore.input.OracleInput;
 import com.navinfo.dataservice.expcore.output.DataOutput;
-import com.navinfo.navicommons.database.sql.DbLinkCreator;
 
 /**
  * User: Xiao Xiaowen  数据导出的入口，给定参数，实现导出功能

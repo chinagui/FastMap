@@ -135,7 +135,7 @@ public class ${modelClassName}Service {
 				values.add(bean.get${column.camelName?cap_first}());
 			};
 			</#list>
-			ResultSetHandler rsHandler = new ResultSetHandler<Page>(){
+			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
 				public Page handle(ResultSet rs) throws SQLException {
 					List list = new ArrayList();
 		            Page page = new Page(currentPageNum);
@@ -188,7 +188,7 @@ public class ${modelClassName}Service {
 				public List<HashMap> handle(ResultSet rs) throws SQLException {
 					List<HashMap> list = new ArrayList<HashMap>();
 					while(rs.next()){
-						HashMap map = new HashMap();
+						HashMap<String,Object> map = new HashMap<String,Object>();
 						<#list columns as column>
 						map.put("${column.camelName}", rs.get${column.sqlType?cap_first}("${column.name}"));
 						</#list>

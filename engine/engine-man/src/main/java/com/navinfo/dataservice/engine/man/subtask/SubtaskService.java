@@ -9,25 +9,18 @@ import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.navicommons.exception.ServiceException;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKTReader;
-import com.navinfo.dataservice.engine.dao.DBConnector;
-import com.navinfo.dataservice.engine.man.subtask.Subtask;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.engine.man.dao.DBConnector;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.Page;
 //import com.navinfo.dataservice.commons.util.StringUtils;
 import org.apache.commons.lang.StringUtils;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -37,7 +30,6 @@ import net.sf.json.JSONObject;
 * @date 2016-06-06 07:40:14 
 * @Description: TODO
 */
-@Service
 public class SubtaskService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
@@ -346,6 +338,7 @@ public class SubtaskService {
 			};
 			
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
+
 				public Page handle(ResultSet rs) throws SQLException {
 					List list = new ArrayList();
 		            Page page = new Page(currentPageNum);

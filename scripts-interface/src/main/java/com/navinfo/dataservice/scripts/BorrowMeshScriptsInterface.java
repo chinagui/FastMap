@@ -8,10 +8,9 @@ import net.sf.json.JSONObject;
 
 import org.springframework.util.Assert;
 
+import com.navinfo.dataservice.api.edit.model.FmMesh4Lock;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.engine.edit.datalock.FmMesh4Lock;
 import com.navinfo.dataservice.engine.edit.datalock.MeshLockManager;
 import com.navinfo.dataservice.engine.man.project.ProjectSelector;
 
@@ -57,9 +56,7 @@ public class BorrowMeshScriptsInterface {
 
 			// 加锁
 			System.out.println("locking");
-			MeshLockManager man = new MeshLockManager(MultiDataSourceFactory
-					.getInstance().getSysDataSource());
-			man.lock(targetProjectId, userId, meshSet, FmMesh4Lock.TYPE_BORROW);
+			MeshLockManager.getInstance().lock(targetProjectId, userId, meshSet, FmMesh4Lock.TYPE_BORROW);
 			response.put("lock_mesh", "success");
 
 			System.out.println("locked");
@@ -93,7 +90,7 @@ public class BorrowMeshScriptsInterface {
 
 			System.out.println("exported");
 			// 解锁
-			man.unlock(targetProjectId, meshSet, FmMesh4Lock.TYPE_BORROW);
+			MeshLockManager.getInstance().unlock(targetProjectId, meshSet, FmMesh4Lock.TYPE_BORROW);
 			response.put("unlock_mesh", "success");
 
 			System.out.println("unlocked");

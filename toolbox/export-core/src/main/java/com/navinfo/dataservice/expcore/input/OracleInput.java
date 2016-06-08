@@ -11,13 +11,15 @@ import com.navinfo.dataservice.expcore.config.ExportConfig;
 import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.dataservice.expcore.exception.ExportInputException;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
+import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.expcore.source.OracleSource;
 import com.navinfo.dataservice.expcore.source.parameter.SerializeParameters;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.expcore.sql.assemble.AssembleSql;
 import com.navinfo.dataservice.expcore.sql.assemble.AssembleXmlConfigSql;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
 
@@ -44,7 +46,9 @@ public class OracleInput implements DataInput {
 	public void initSource()throws ExportException{
 		OracleSchema schema = null;
 		try{
-			schema = (OracleSchema)new DbManager().getDbById(expConfig.getSourceDbId());
+			DbInfo db = DbService.getInstance().getDbById(expConfig.getSourceDbId());
+			schema = new OracleSchema(
+					MultiDataSourceFactory.createConnectConfig(db.getConnectParam()));
 		}catch(DataHubException e){
 			throw new ExportException("初始化导出源时从datahub查询源库出现错误："+e.getMessage(),e);
 		}

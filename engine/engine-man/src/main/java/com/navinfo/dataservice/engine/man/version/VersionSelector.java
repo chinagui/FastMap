@@ -8,7 +8,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.engine.dao.DBConnector;
+import com.navinfo.dataservice.engine.man.dao.DBConnector;
 
 public class VersionSelector {
 

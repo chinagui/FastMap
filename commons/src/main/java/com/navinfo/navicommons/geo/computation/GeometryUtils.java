@@ -14,6 +14,7 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
 import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 public class GeometryUtils {
 	private static double EARTH_RADIUS = 6378137;
@@ -480,5 +481,24 @@ public class GeometryUtils {
 		json.put("coordinates", ps);
 
 		return json;
+	}
+	/**
+	 * @Description:TODO 两个面是否相交
+	 * @param String scrWkt,Geometry geom         
+	 * @return boolean
+	 * @throws ParseException 
+	 */
+	public static boolean IsIntersectPolygon(String scrWkt,Object obj) throws ParseException{
+		
+		Geometry srcGeom=GeometryUtils.getPolygonByWKT(scrWkt);
+		STRUCT struct = (STRUCT) obj;
+		Geometry Geom = null;
+		try {
+			Geom = GeoTranslator.struct2Jts(struct, 100000, 0);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return srcGeom.intersects(Geom);
 	}
 }

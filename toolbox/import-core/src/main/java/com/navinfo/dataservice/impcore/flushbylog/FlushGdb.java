@@ -19,18 +19,18 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
-
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import org.apache.commons.lang.StringUtils;
+
+import com.navinfo.dataservice.api.edit.iface.DatalockApi;
+import com.navinfo.dataservice.api.edit.model.FmMesh4Lock;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.datahub.exception.LockException;
-import com.navinfo.dataservice.engine.edit.datalock.FmMesh4Lock;
-import com.navinfo.dataservice.engine.edit.datalock.MeshLockManager;
+import com.navinfo.dataservice.impcore.exception.LockException;
 import com.navinfo.navicommons.database.QueryRunner;
 
 public class FlushGdb {
@@ -179,11 +179,9 @@ public class FlushGdb {
 			}
 
 			int prjId = Integer.parseInt(props.getProperty("project_id"));
-
-			MeshLockManager man = new MeshLockManager(MultiDataSourceFactory
-					.getInstance().getSysDataSource());
-
-			man.lock(prjId, userId, setMesh, FmMesh4Lock.TYPE_GIVE_BACK);
+			
+			DatalockApi datalock = (DatalockApi)ApplicationContextUtil.getBean("datalockApi");
+			datalock.lock(prjId, userId, setMesh, FmMesh4Lock.TYPE_GIVE_BACK);
 
 			logDetailQuery.append(" and mesh_id in (");
 
@@ -207,7 +205,7 @@ public class FlushGdb {
 
 			destConn.commit();
 
-			man.unlock(prjId, setMesh, FmMesh4Lock.TYPE_GIVE_BACK);
+			datalock.unlock(prjId, setMesh, FmMesh4Lock.TYPE_GIVE_BACK);
 
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -38,6 +38,7 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+			<!--
            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-idea-plugin</artifactId>
@@ -47,6 +48,7 @@
 		                   <dependenciesAsLibraries>true</dependenciesAsLibraries>
 		            </configuration>
 		      </plugin>      
+			  -->
 					<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-eclipse-plugin</artifactId>
@@ -760,6 +762,11 @@
 				<artifactId>engine-dropbox</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
+            <dependency>
+                <groupId>com.navinfo.dataservice</groupId>
+                <artifactId>engine-statics</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
 			<!-- dataservice module start -->
 			<dependency>
                 <groupId>org.apache.maven</groupId>

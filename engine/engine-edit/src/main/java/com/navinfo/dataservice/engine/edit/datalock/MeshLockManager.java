@@ -14,9 +14,13 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
 
+import com.navinfo.dataservice.api.edit.iface.DatalockApi;
+import com.navinfo.dataservice.api.edit.model.FmMesh4Lock;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.exception.LockException;
+import com.navinfo.dataservice.engine.edit.datasource.DbConnector;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /** 
@@ -27,14 +31,23 @@ import com.navinfo.navicommons.database.QueryRunner;
  * 检查、批处理、借入和归还操作之前，申请锁；操作完成后解锁
  * 项目号取值要小于Integer.MAX_VALUE:2147483647
  */
-public class MeshLockManager {
+public class MeshLockManager{
 	protected Logger log = Logger.getLogger(this.getClass());
-	private DataSource manDataSource;
 	
-	public MeshLockManager(DataSource manDataSource){
-		this.manDataSource=manDataSource;
+	private volatile static MeshLockManager instance;
+	
+	public static MeshLockManager getInstance(){
+		if(instance==null){
+			synchronized(MeshLockManager.class){
+				if(instance==null){
+					instance = new MeshLockManager();
+				}
+			}
+		}
+		return instance;
 	}
-
+	private MeshLockManager(){}
+	
 	/**
 	 * 返回状态为锁定或者已借出的图幅Set，否则返回null
 	 * @param prjId
@@ -53,7 +66,7 @@ public class MeshLockManager {
     	Connection conn = null;
     	try{
 			QueryRunner run = new QueryRunner();
-			conn = manDataSource.getConnection();
+			conn = DbConnector.getInstance().getManDataSource().getConnection();
 			//当size超过1000时，才转clob，提高效率
 			String meshInClause = null;
 			Clob clobMeshes=null;
@@ -108,7 +121,7 @@ public class MeshLockManager {
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = manDataSource.getConnection();
+			conn = DbConnector.getInstance().getManDataSource().getConnection();
 			int lockSeq = run.queryForInt(conn, "SELECT MESHES_LOCK_SEQ.NEXTVAL FROM DUAL");
 			//当size超过1000时，才转clob，提高效率
 			String meshInClause = null;
@@ -213,7 +226,7 @@ public class MeshLockManager {
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = manDataSource.getConnection();
+			conn = DbConnector.getInstance().getManDataSource().getConnection();
 			//解锁时，归还例外
 			String sql = null;
 			if(lockType==FmMesh4Lock.TYPE_GIVE_BACK){
@@ -252,7 +265,7 @@ public class MeshLockManager {
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = manDataSource.getConnection();
+			conn = DbConnector.getInstance().getManDataSource().getConnection();
 			//当size超过1000时，才转clob，提高效率
 			String meshInClause = null;
 			String gridInClause = null;
@@ -329,7 +342,7 @@ public class MeshLockManager {
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = manDataSource.getConnection();
+			conn = DbConnector.getInstance().getManDataSource().getConnection();
 			int lockSeq = run.queryForInt(conn, "SELECT MESHES_LOCK_SEQ.NEXTVAL FROM DUAL");
 			String sql = "UPDATE MESH SET HANDLE_PROJECT_ID=?,LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE" +
 					" WHERE MESH_ID IN (select to_number(column_value) from table(clob_to_table(?))) AND LOCK_STATUS=0 AND HANDLE_PROJECT_ID = ?";
@@ -381,21 +394,9 @@ public class MeshLockManager {
 //		System.out.println(System.currentTimeMillis()-t1);
 //		System.out.println(Integer.MAX_VALUE);
 //		System.out.println(Long.MAX_VALUE);
-			MeshLockManager man = new MeshLockManager(MultiDataSourceFactory.getInstance().getSysDataSource());
-			Set<Integer> meshes = new HashSet<Integer>();
 //			for(int i=0;i<1001;i++){
 //				meshes.add(100000+i);
 //			}
-			meshes.add(605713);
-			int result = 0;
-			man.query(12,meshes);
-			//man.lock(11, 4396, meshes, FmMesh4Lock.TYPE_BORROW);
-			//man.unlock(11, meshes, FmMesh4Lock.TYPE_BORROW);
-			
-			//man.lock(11, 4396, meshes, FmMesh4Lock.TYPE_GIVE_BACK);
-			man.unlock(11, meshes, FmMesh4Lock.TYPE_GIVE_BACK);
-			
-			System.out.println(man.query(11, meshes));
 			System.out.println("over.");
 		}catch(Exception e){
 			e.printStackTrace();

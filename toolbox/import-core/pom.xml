@@ -27,7 +27,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>datahub</artifactId>
+			<artifactId>api-edit</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.json-lib</groupId>

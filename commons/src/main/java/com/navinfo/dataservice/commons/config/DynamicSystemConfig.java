@@ -23,6 +23,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.oracle.MyDriverManagerDataSource;
+import com.navinfo.dataservice.commons.database.oracle.PoolDataSource;
 import com.navinfo.navicommons.database.QueryRunner;
 
 

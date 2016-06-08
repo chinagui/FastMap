@@ -25,6 +25,6 @@
         </constructor-arg>
     </bean>
     
-    <bean id="applicationContextUtil" class="com.navinfo.dataservice.api.ApplicationContextUtil"/>
+    <bean id="applicationContextUtil" class="com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil"/>
     <bean id="startupListener" class="com.navinfo.dataservice.web.job.StartupListener"/>
 </beans>

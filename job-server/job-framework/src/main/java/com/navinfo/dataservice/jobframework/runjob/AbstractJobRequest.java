@@ -10,8 +10,6 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.dom4j.Document;
-import org.dom4j.Element;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.jobframework.exception.JobException;
@@ -46,8 +44,11 @@ public abstract class AbstractJobRequest {
 		}
 		for(Iterator it = json.keys();it.hasNext();){
 			String attName = (String)it.next();
-			String attValue = (String)json.get(attName);
-			if(StringUtils.isEmpty(attName)||StringUtils.isEmpty(attValue)){
+			Object attValue = json.get(attName);
+			if(attValue==null||
+			   StringUtils.isEmpty(attName)||
+			   (attValue instanceof String && StringUtils.isEmpty((String)attValue))
+			   ){
 				log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。");
 				continue;
 			}

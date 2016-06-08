@@ -467,7 +467,7 @@ public class IxPoiSelector implements ISelector {
         buffer.append(" AND lang_code = 'CHI'");
         buffer.append(" AND name_class = 1) c ");
         buffer.append(" WHERE ROWNUM <= :1) ");
-        buffer.append("  WHERE rn >= :2) ");
+        buffer.append("  WHERE rn >= :2 ");
 		if (isLock) {
 			buffer.append(" for update nowait");
 		}
@@ -475,7 +475,7 @@ public class IxPoiSelector implements ISelector {
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
-
+		
 		try {
 			pstmt = conn.prepareStatement(buffer.toString());
 			pstmt.setInt(1, endRow);

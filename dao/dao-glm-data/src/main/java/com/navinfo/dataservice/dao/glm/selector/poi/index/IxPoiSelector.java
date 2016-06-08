@@ -3,11 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.poi.index;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -27,7 +23,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiHotel;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiIntroduction;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiRestaurant;
-import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiTourroute;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAudio;
@@ -54,9 +49,10 @@ import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiHotelSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiIntroductionSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiParkingSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiRestaurantSelector;
-import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiTourrouteSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
 /**
@@ -158,7 +154,7 @@ public class IxPoiSelector implements ISelector {
 				ixPoi.setEntryImages(ixPoiEntryImageSelector
 						.loadRowsByParentId(id, isLock));
 
-				for (IRow row : ixPoi.getFlags()) {
+				for (IRow row : ixPoi.getEntryImages()) {
 					IxPoiEntryimage obj = (IxPoiEntryimage) row;
 
 					ixPoi.entryImageMap.put(obj.getRowId(), obj);
@@ -239,32 +235,6 @@ public class IxPoiSelector implements ISelector {
 					IxPoiParking obj = (IxPoiParking) row;
 
 					ixPoi.parkingMap.put(obj.getRowId(), obj);
-				}
-
-				// 设置子表IX_POI_TOURROUTE
-				IxPoiTourrouteSelector ixPoiTourrouteSelector = new IxPoiTourrouteSelector(
-						conn);
-
-				ixPoi.setTourroutes(ixPoiTourrouteSelector.loadRowsByParentId(
-						id, isLock));
-
-				for (IRow row : ixPoi.getTourroutes()) {
-					IxPoiTourroute obj = (IxPoiTourroute) row;
-
-					ixPoi.tourrouteMap.put(obj.getRowId(), obj);
-				}
-
-				// 设置子表IX_POI_EVENT
-				IxPoiEventSelector ixPoiEventSelector = new IxPoiEventSelector(
-						conn);
-
-				ixPoi.setEvents(ixPoiEventSelector.loadRowsByParentId(id,
-						isLock));
-
-				for (IRow row : ixPoi.getEvents()) {
-					IxPoiEvent obj = (IxPoiEvent) row;
-
-					ixPoi.eventMap.put(obj.getRowId(), obj);
 				}
 
 				// 设置子表IX_POI_DETAIL
@@ -490,7 +460,8 @@ public class IxPoiSelector implements ISelector {
         buffer.append(" SELECT * ");
         buffer.append(" FROM (SELECT c.*, ROWNUM rn ");
         buffer.append(" FROM (SELECT COUNT (1) OVER (PARTITION BY 1) total,");
-        buffer.append(" ip.pid,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
+        //TODO 0 as freshness_vefication
+        buffer.append(" ip.pid,ip.kind_code, 0 as freshness_vefication,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
         buffer.append(" FROM ix_poi ip, ix_poi_name ipn ");
         buffer.append(" WHERE     ip.pid = ipn.poi_pid ");
         buffer.append(" AND lang_code = 'CHI'");
@@ -520,6 +491,8 @@ public class IxPoiSelector implements ISelector {
 				Geometry geometry = GeoTranslator.struct2Jts(struct, 1, 0);
 				JSONObject json = new JSONObject();
 				json.put("pid", resultSet.getInt("pid"));
+				json.put("kindCode", resultSet.getString("kind_code"));
+				json.put("freshnessVefication", resultSet.getInt("freshness_vefication"));
 				json.put("name", resultSet.getString("name"));
 				json.put("geometry", GeoTranslator.jts2Geojson(geometry));
 				json.put("uRecord", resultSet.getInt("u_record"));

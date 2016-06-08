@@ -1,10 +1,10 @@
-package com.navinfo.dataservice.datahub;
+package com.navinfo.dataservice.bizcommons;
 
 import java.sql.Connection;
 
+import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculator;
+import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculatorFactory;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.datahub.glm.GlmGridCalculator;
-import com.navinfo.dataservice.datahub.glm.GlmGridCalculatorFactory;
 
 /** 
 * @ClassName: GlmGridCalculatorTest 

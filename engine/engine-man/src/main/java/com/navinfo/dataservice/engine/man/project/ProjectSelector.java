@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import com.navinfo.dataservice.engine.man.dao.DBConnector;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;

@@ -2,7 +2,7 @@ package com.navinfo.dataservice.diff.dataaccess;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.datahub.glm.GlmTable;
+import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 
 
 /**

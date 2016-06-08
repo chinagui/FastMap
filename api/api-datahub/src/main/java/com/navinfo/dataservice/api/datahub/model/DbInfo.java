@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.api.datahub.model;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +12,7 @@ import java.util.Map;
 * @Description: TODO
 *  
 */
-public class DbInfo {
+public class DbInfo implements Serializable{
 	protected int dbId;
 	protected String dbName;
 	protected String dbUserName;

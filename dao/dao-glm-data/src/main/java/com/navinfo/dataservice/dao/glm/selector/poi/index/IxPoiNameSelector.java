@@ -164,7 +164,7 @@ public class IxPoiNameSelector implements ISelector {
 	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
 		List<IRow> rows = new ArrayList<IRow>();
 
-		String sql = "select * from ix_poi_name_flag where name_id=:1 and u_record!=:2";
+		String sql = "select * from ix_poi_name where poi_pid=:1 and u_record!=:2";
 
 		if (isLock) {
 			sql += " for update nowait";

@@ -1,11 +1,10 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranchdetail.delete;
 
-import net.sf.json.JSONObject;
-
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
+
+import net.sf.json.JSONObject;
 
 public class Command extends AbstractCommand {
 
@@ -50,7 +49,7 @@ public class Command extends AbstractCommand {
 		this.requester = requester;
 
 //		this.projectId = json.getInt("projectId");
-		this.setSubTaskId(json.getInt("subTaskId"));
+		this.setDbId(json.getInt("dbId"));
 
 		this.pid = json.getInt("objId");
 		

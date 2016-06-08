@@ -207,7 +207,7 @@ public class Command extends AbstractCommand {
 
 		double lat = Math.round(data.getDouble("latitude")*100000)/100000.0;
 
-		this.setSubTaskId(json.getInt("subTaskId"));
+		this.setDbId(json.getInt("dbId"));
 
 		if (data.containsKey("breakNodePid")) {
 			this.breakNodePid = data.getInt("breakNodePid");

@@ -74,7 +74,9 @@ public class Command extends AbstractCommand  {
 
 	public Command(JSONObject json, String requester) throws Exception{
 		this.requester = requester;
-		this.setSubTaskId(json.getInt("subTaskId"));
+		
+		this.setDbId(json.getInt("dbId"));
+		
 		JSONObject data = json.getJSONObject("data");
 
 		this.eNodePid = data.getInt("eNodePid");

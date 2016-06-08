@@ -1,21 +1,11 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranchdetail.delete;
 
-import java.sql.Connection;
-
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
-import com.navinfo.dataservice.dao.glm.iface.IProcess;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchDetailSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
-import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
-import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
-import com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranchdetail.delete.Command;
-import com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranchdetail.delete.Operation;
 
 public class Process extends AbstractProcess<Command> {
 

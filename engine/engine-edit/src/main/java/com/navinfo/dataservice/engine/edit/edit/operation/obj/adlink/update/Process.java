@@ -2,19 +2,13 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.update;
 
 import java.sql.Connection;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
-import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
-import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
 import com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.create.Check;
-import com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.update.Operation;
 /**
  * @author zhaokk
  * 修改行政区划线参数基础类 

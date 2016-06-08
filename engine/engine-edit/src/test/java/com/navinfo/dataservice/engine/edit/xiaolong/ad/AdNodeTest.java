@@ -3,21 +3,18 @@ package com.navinfo.dataservice.engine.edit.xiaolong.ad;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 
-public class AdNodeTest {
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
-	public AdNodeTest() {
-	}
+public class AdNodeTest {
 
 	protected Logger log = Logger.getLogger(this.getClass());
 
@@ -75,7 +72,7 @@ public class AdNodeTest {
 
 		try {
 			SearchProcess p = new SearchProcess(
-					GlmDbPoolManager.getInstance().getConnection(projectId));
+					DBConnector.getInstance().getConnectionById(11));
 			JSONObject data = p.searchDataByTileWithGap(types, x, y, z, gap);
 
 			System.out.println(ResponseUtils.assembleRegularResult(data));

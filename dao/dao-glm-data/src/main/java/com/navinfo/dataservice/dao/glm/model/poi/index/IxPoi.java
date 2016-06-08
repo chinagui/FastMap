@@ -223,6 +223,10 @@ public class IxPoi implements IObj {
 
 	public Map<String, IxPoiParent> parentMap = new HashMap<String, IxPoiParent>();
 
+	private List<IRow> children = new ArrayList<IRow>();
+
+	public Map<String, IxPoiChildren> childrenMap = new HashMap<String, IxPoiChildren>();
+	
 	private List<IRow> photoes = new ArrayList<IRow>();
 
 	public Map<String, IxPoiPhoto> photoMap = new HashMap<String, IxPoiPhoto>();
@@ -889,6 +893,14 @@ public class IxPoi implements IObj {
 
 	public void setuRecord(int uRecord) {
 		this.uRecord = uRecord;
+	}
+	
+	public List<IRow> getChildren() {
+		return children;
+	}
+
+	public void setChildren(List<IRow> children) {
+		this.children = children;
 	}
 
 	@Override

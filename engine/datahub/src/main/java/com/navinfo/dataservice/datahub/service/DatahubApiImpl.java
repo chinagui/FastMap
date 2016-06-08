@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 
 /** 
@@ -30,17 +29,4 @@ public class DatahubApiImpl implements DatahubApi {
 	public DbInfo getOnlyDbByType(String bizType) throws Exception {
 		return DbService.getInstance().getOnlyDbByType(bizType);
 	}
-	@Override
-	public DbInfo getDailyDbByRegionId(int regionId) throws Exception {
-		ManApi man = (ManApi)ApplicationContextUtil.getBean("manApi");
-		int dbId = man.getDailyRegionDbId(regionId);
-		return DbService.getInstance().getDbById(dbId);
-	}
-	@Override
-	public DbInfo getMonthlyDbByRegionId(int regionId) throws Exception {
-		ManApi man = (ManApi)ApplicationContextUtil.getBean("manApi");
-		int dbId = man.getMonthlyRegionDbId(regionId);
-		return DbService.getInstance().getDbById(dbId);
-	}
-
 }

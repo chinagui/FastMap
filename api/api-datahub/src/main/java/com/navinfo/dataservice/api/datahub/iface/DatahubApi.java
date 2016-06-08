@@ -10,8 +10,6 @@ import com.navinfo.dataservice.api.datahub.model.DbInfo;
 *  
 */
 public interface DatahubApi {
-	DbInfo getDailyDbByRegionId(int regionId)throws Exception;
-	DbInfo getMonthlyDbByRegionId(int regionId)throws Exception;
 	DbInfo getDbById(int dbId)throws Exception;
 	DbInfo getSuperDb(DbInfo db)throws Exception;
 	DbInfo getOnlyDbByType(String bizType)throws Exception;

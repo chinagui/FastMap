@@ -14,10 +14,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 @Controller
 public class CheckController extends BaseController {
@@ -44,7 +44,7 @@ public class CheckController extends BaseController {
 
 			int pageNum = jsonReq.getInt("pageNum");
 
-			conn = GlmDbPoolManager.getInstance().getConnection(subTaskId);
+			conn = DBConnector.getInstance().getConnectionById(subTaskId);
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 
@@ -84,7 +84,7 @@ public class CheckController extends BaseController {
 
 			JSONArray grids = jsonReq.getJSONArray("grids");
 
-			conn = GlmDbPoolManager.getInstance().getConnection(subTaskId);
+			conn = DBConnector.getInstance().getConnectionById(subTaskId);
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 
@@ -126,7 +126,7 @@ public class CheckController extends BaseController {
 
 			int type = jsonReq.getInt("type");
 
-			conn = GlmDbPoolManager.getInstance().getConnection(subTaskId);
+			conn = DBConnector.getInstance().getConnectionById(subTaskId);
 
 			NiValExceptionOperator selector = new NiValExceptionOperator(conn,
 					subTaskId);

@@ -16,7 +16,6 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 
@@ -172,14 +171,14 @@ public class RdCrossSearch implements ISearch {
 		return list;
 	}
 
-	public static void main(String[] args) throws Exception {
-
-		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
-
-		RdCrossSearch s = new RdCrossSearch(conn);
-
-		IObj obj = s.searchDataByPid(3313);
-
-		System.out.println(obj.Serialize(null));
-	}
+//	public static void main(String[] args) throws Exception {
+//
+//		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+//
+//		RdCrossSearch s = new RdCrossSearch(conn);
+//
+//		IObj obj = s.searchDataByPid(3313);
+//
+//		System.out.println(obj.Serialize(null));
+//	}
 }

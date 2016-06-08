@@ -18,7 +18,6 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
@@ -280,20 +279,20 @@ public class RdGscSearch implements ISearch {
 
 		return list;
 	}
-	public static void main(String[] args) throws Exception {
-		
-		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
-		
-		RdGscSearch s = new RdGscSearch(conn);
-		
-		List<SearchSnapshot> list = s.searchDataByTileWithGap(215885, 99231, 18, 80);
-		
-		for(SearchSnapshot snap : list){
-			System.out.println(snap.Serialize(null));
-		}
-		
-//		System.out.println(MercatorProjection.longitudeToTileX(116.48821, (byte)19));
+//	public static void main(String[] args) throws Exception {
 //		
-//		System.out.println(MercatorProjection.latitudeToTileY(39.98898, (byte)19));
-	}
+//		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+//		
+//		RdGscSearch s = new RdGscSearch(conn);
+//		
+//		List<SearchSnapshot> list = s.searchDataByTileWithGap(215885, 99231, 18, 80);
+//		
+//		for(SearchSnapshot snap : list){
+//			System.out.println(snap.Serialize(null));
+//		}
+//		
+////		System.out.println(MercatorProjection.longitudeToTileX(116.48821, (byte)19));
+////		
+////		System.out.println(MercatorProjection.latitudeToTileY(39.98898, (byte)19));
+//	}
 }

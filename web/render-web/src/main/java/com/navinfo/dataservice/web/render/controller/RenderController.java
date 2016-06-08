@@ -16,9 +16,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 import com.navinfo.dataservice.engine.fcc.tile.TileSelector;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
@@ -70,7 +70,7 @@ public class RenderController extends BaseController {
 				data = TileSelector.getByTiles(types, x, y, z, projectId);
 
 			} else {
-				conn = GlmDbPoolManager.getInstance().getConnection(projectId);
+				conn = DBConnector.getInstance().getConnectionById(projectId);
 
 				SearchProcess p = new SearchProcess(conn);
 

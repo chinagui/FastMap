@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.job.model.JobStep;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.UuidUtils;
@@ -143,5 +144,8 @@ public class JobService {
 			}
 			return jobInfo;
 		}
+	}
+	public String hello()throws Exception{
+		return DBConnector.getInstance().getManConnection().getSchema();
 	}
 }

@@ -32,18 +32,12 @@ import net.sf.json.JSONObject;
 public class SubtaskController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	@Autowired 
-	private SubtaskService service;
+	private SubtaskService service = new SubtaskService();
 
 	
 	@RequestMapping(value = "/subtask/create")
 	public ModelAndView create(HttpServletRequest request){
 		try{	
-			String token = request.getParameter("access_token");
-			if (StringUtils.isEmpty(token)){
-				throw new IllegalArgumentException("access_token参数不能为空。");
-			}
-			//验证token是否有效，无效直接报异常
-			AccessToken tokenObj=AccessTokenFactory.validate(token);
 
 			String parameter = request.getParameter("parameter");
 			if (StringUtils.isEmpty(parameter)){
@@ -67,18 +61,14 @@ public class SubtaskController extends BaseController {
 	public ModelAndView listByWkt(HttpServletRequest request){
 		try{		
 			
-			String token = request.getParameter("access_token");
-			if (StringUtils.isEmpty(token)){
-				throw new IllegalArgumentException("access_token参数不能为空。");
-			}
-			//验证token是否有效，无效直接报异常
-			AccessToken tokenObj=AccessTokenFactory.validate(token);
 			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
-			List<HashMap> data = service.listByWkt(dataJson);			
+			
+			List<HashMap> data = service.listByWkt(dataJson);
+			
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("修改失败，原因："+e.getMessage(), e);
@@ -90,12 +80,6 @@ public class SubtaskController extends BaseController {
 	public ModelAndView listByBlock(HttpServletRequest request){
 		try{		
 			
-			String token = request.getParameter("access_token");
-			if (StringUtils.isEmpty(token)){
-				throw new IllegalArgumentException("access_token参数不能为空。");
-			}
-			//验证token是否有效，无效直接报异常
-			AccessToken tokenObj=AccessTokenFactory.validate(token);
 			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
 			if(dataJson==null){
@@ -117,12 +101,6 @@ public class SubtaskController extends BaseController {
 	@RequestMapping(value = "/subtask/listByUser")
 	public ModelAndView listByUser(HttpServletRequest request){
 		try{	
-			String token = request.getParameter("access_token");
-			if (StringUtils.isEmpty(token)){
-				throw new IllegalArgumentException("access_token参数不能为空。");
-			}
-			//验证token是否有效，无效直接报异常
-			AccessToken tokenObj=AccessTokenFactory.validate(token);
 
 			String parameter = request.getParameter("parameter");
 			if (StringUtils.isEmpty(parameter)){
@@ -169,19 +147,31 @@ public class SubtaskController extends BaseController {
 	public ModelAndView query(HttpServletRequest request){
 		try{
 			
-			String token = request.getParameter("access_token");
-			if (StringUtils.isEmpty(token)){
-				throw new IllegalArgumentException("access_token参数不能为空。");
-			}
-			//验证token是否有效，无效直接报异常
-			AccessToken tokenObj=AccessTokenFactory.validate(token);
-			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
 			HashMap data = service.query(dataJson);			
 			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("获取明细失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	
+	@RequestMapping(value = "/update")
+	public ModelAndView update(HttpServletRequest request){
+		try{
+			
+			
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
+			if(dataJson==null){
+				throw new IllegalArgumentException("param参数不能为空。");
+			}
+			service.update(dataJson);			
+			return new ModelAndView("jsonView", success("修改成功"));
+			
 		}catch(Exception e){
 			log.error("获取明细失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

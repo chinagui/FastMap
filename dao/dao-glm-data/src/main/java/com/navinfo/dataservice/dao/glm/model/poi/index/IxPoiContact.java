@@ -22,15 +22,15 @@ import net.sf.json.JSONObject;
  */
 public class IxPoiContact implements IRow {
 	
-	private int poiPid;
+	private int poiPid;//POI号码
 	
-	private int contactType;
+	private int contactType=1;//联系方式类型
 	
-	private String contact;
+	private String contact;//联系方式
 	
-	private int contactDepart;
+	private int contactDepart=0;//联系服务部门
 	
-	private int priority;
+	private int priority=1;//优先选择
 	
 	private String rowId;
 	

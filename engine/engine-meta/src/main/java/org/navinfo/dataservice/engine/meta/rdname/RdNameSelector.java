@@ -4,10 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import org.navinfo.dataservice.engine.meta.dao.DBConnector;
 
 public class RdNameSelector {
 
@@ -28,7 +29,7 @@ public class RdNameSelector {
 
 		try {
 
-			conn = DBConnector.getInstance().getConnection();
+			conn = DBConnector.getInstance().getMetaConnection();
 
 			if (name.length() == 0) {
 				result.put("total", total);

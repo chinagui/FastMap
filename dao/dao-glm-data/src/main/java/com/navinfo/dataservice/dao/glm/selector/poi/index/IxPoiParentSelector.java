@@ -188,5 +188,65 @@ public class IxPoiParentSelector implements ISelector{
 
 		return rows;
 	}
+	
+	/**
+	 * add by wangdongbin
+	 * for android download
+	 * @param id
+	 * @return IxPoiParent
+	 * @throws Exception
+	 */
+	public List<IRow> loadByIdForAndroid(int id)throws Exception{
+		List<IRow> rows = new ArrayList<IRow>();
+		IxPoiParent poiParent = new IxPoiParent();
+		IxPoiChildren poiCheildre = new IxPoiChildren();
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			//直接进行联结查询，对结果进行判断
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT p.parent_poi_pid,c.relation_type");
+			sb.append(" FROM "+poiParent.tableName()+" p");
+			sb.append(" ,"+poiCheildre.tableName()+" c");
+			sb.append(" WHERE p.group_id=c.group_id");
+			sb.append(" AND c.child_poi_pid = :1");
+			sb.append(" AND c.u_record !=2");
+			sb.append(" ORDER BY p.parent_poi_pid ASC");
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setInt(1, id);
+			resultSet = pstmt.executeQuery();
+			int parentPoiPid  = 0;
+			resultSet.next();
+			parentPoiPid = resultSet.getInt("parent_poi_pid");
+			while(resultSet.next()){
+				if (resultSet.getInt("relation_type")==2){
+					parentPoiPid = resultSet.getInt("parent_poi_pid");
+					break;
+				}
+			}
+			poiParent.setParentPoiPid(parentPoiPid);
+			rows.add(poiParent);
+		}catch(Exception e){
+			throw e;
+		}finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+		}
+		return rows;
+	}
 
 }

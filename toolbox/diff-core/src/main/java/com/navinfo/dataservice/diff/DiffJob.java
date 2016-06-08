@@ -1,9 +1,6 @@
 package com.navinfo.dataservice.diff;
 
 import com.navinfo.dataservice.diff.config.DiffJobRequest;
-import com.navinfo.dataservice.datahub.glm.Glm;
-import com.navinfo.dataservice.datahub.glm.GlmCache;
-import com.navinfo.dataservice.datahub.glm.GlmTable;
 import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.diff.dataaccess.CrossSchemaDataAccess;
 import com.navinfo.dataservice.diff.dataaccess.DataAccess;
@@ -19,6 +16,9 @@ import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.bizcommons.glm.Glm;
+import com.navinfo.dataservice.bizcommons.glm.GlmCache;
+import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;

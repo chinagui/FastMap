@@ -24,7 +24,7 @@ public class IxPoiNameFlag implements IRow {
 	
 	private int nameId;
 	
-	private String flagCode;
+	private String flagCode;//标识代码
 	
 	private String rowId;
 	

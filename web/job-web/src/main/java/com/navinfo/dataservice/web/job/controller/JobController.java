@@ -34,7 +34,7 @@ public class JobController extends BaseController {
 	@RequestMapping(value = "/hello")
 	public ModelAndView hello(HttpServletRequest request){
 		try{
-			return new ModelAndView("jsonView", success("Hello, Job Service."));
+			return new ModelAndView("jsonView", success(JobService.getInstance().hello()));
 		}catch(Exception e){
 			log.error("内部错误，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

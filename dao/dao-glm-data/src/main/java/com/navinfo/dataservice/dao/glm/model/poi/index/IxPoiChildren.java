@@ -27,11 +27,11 @@ public class IxPoiChildren implements IRow {
 	
 	private int mesh;
 	
-	private int groupId=0;
+	private int groupId;//POI组号码
 	
-	private int childPoiPid=0;
+	private int childPoiPid;//子POI号码
 	
-	private int relationType=0;	
+	private int relationType=0;	//关系类型
 	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	

@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.engine.man.dao.DBConnector;

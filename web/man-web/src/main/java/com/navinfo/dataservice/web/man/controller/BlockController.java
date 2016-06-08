@@ -2,38 +2,34 @@ package com.navinfo.dataservice.web.man.controller;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.beans.factory.annotation.Autowired; 
 import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.engine.man.city.City;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
-import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.engine.man.city.CityService;
+import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.navicommons.database.Page;
 
 import net.sf.json.JSONObject;
 
 /** 
-* @ClassName: CityController 
+* @ClassName: BlockController 
 * @author code generator 
 * @date 2016年4月6日 下午6:25:24 
 * @Description: TODO
 */
 @Controller
-public class CityController extends BaseController {
+public class BlockController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	@Autowired 
-	private CityService service;
+	private BlockService service;
 
 	
 	@RequestMapping(value = "/create")
@@ -82,27 +78,45 @@ public class CityController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	@RequestMapping(value = "/city/listByWkt")
-	public ModelAndView queryListByWkt(HttpServletRequest request){
+	/**
+	 * 根据输入的几何，查询跟几何相关的并且符合规划状态的Block，返回block信息列表。
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/block/listByWkt")
+	public ModelAndView listByWkt(HttpServletRequest request){
 		try{			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			List<HashMap> data = service.queryListByWkt(dataJson);			
+			if(!(dataJson.containsKey("wkt")) || !(dataJson.containsKey("planningStatus"))){
+				throw new IllegalArgumentException("wkt、planningStatus参数是必须的。");
+			}
+			String wkt= dataJson.getString("wkt");
+			String  planningStatus = dataJson.getString("planningStatus");
+			if(StringUtils.isEmpty(wkt) || StringUtils.isEmpty(planningStatus)){
+				throw new IllegalArgumentException("wkt、planningStatus参数值不能为空");
+			}
+			List<HashMap> data = service.listByWkt(dataJson);			
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
-			log.error("获取城市列表失败，原因："+e.getMessage(), e);
+			log.error("获取block列表失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
 	
-	@RequestMapping(value = "query")
+	/**
+	 * 查询Block详细信息
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/block/query")
 	public ModelAndView query(HttpServletRequest request){
 		try{
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
 			if(dataJson==null){
-				throw new IllegalArgumentException("param参数不能为空。");
+				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			HashMap data = service.query(dataJson);			
 			return new ModelAndView("jsonView", success(data));

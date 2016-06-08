@@ -490,7 +490,8 @@ public class IxPoiSelector implements ISelector {
         buffer.append(" SELECT * ");
         buffer.append(" FROM (SELECT c.*, ROWNUM rn ");
         buffer.append(" FROM (SELECT COUNT (1) OVER (PARTITION BY 1) total,");
-        buffer.append(" ip.pid,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
+        //TODO 0 as freshness_vefication
+        buffer.append(" ip.pid,ip.kind_code, 0 as freshness_vefication,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
         buffer.append(" FROM ix_poi ip, ix_poi_name ipn ");
         buffer.append(" WHERE     ip.pid = ipn.poi_pid ");
         buffer.append(" AND lang_code = 'CHI'");
@@ -520,6 +521,8 @@ public class IxPoiSelector implements ISelector {
 				Geometry geometry = GeoTranslator.struct2Jts(struct, 1, 0);
 				JSONObject json = new JSONObject();
 				json.put("pid", resultSet.getInt("pid"));
+				json.put("kindCode", resultSet.getString("kind_code"));
+				json.put("freshnessVefication", resultSet.getInt("freshness_vefication"));
 				json.put("name", resultSet.getString("name"));
 				json.put("geometry", GeoTranslator.jts2Geojson(geometry));
 				json.put("uRecord", resultSet.getInt("u_record"));

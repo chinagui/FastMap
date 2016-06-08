@@ -31,11 +31,11 @@ public class IxPoiParent implements IObj {
 	
 	private int pid;
 	
-	private int parentPoiPid;
+	private int parentPoiPid;//父POI号码
 	
-	private int tenantFlag;
+	private int tenantFlag=0;//有无租户
 	
-	private String memo;
+	private String memo;//备注信息
 	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	

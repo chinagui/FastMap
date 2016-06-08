@@ -17,25 +17,25 @@ import net.sf.json.JSONObject;
 
 public class IxPoiEntryimage implements IRow {
 
-	private int poiPid;
+	private int poiPid;//POI号码
 
-	private String imageCode;
+	private String imageCode;//概略图号码
 
-	private int xPixelR4;
+	private int xPixelR4=0;//R4像素坐标X
 
-	private int yPixelR4;
+	private int yPixelR4=0;//R4像素坐标Y
 
-	private int xPixelR5;
+	private int xPixelR5=0;//R5像素坐标X
 
-	private int yPixelR5;
+	private int yPixelR5=0;//R5像素坐标Y
 	
-	private int xPixel35;
+	private int xPixel35=0;//35像素坐标X
 
-	private int yPixel35;
+	private int yPixel35=0;//35像素坐标Y
 	
 	private String memo;
 	
-	private int mainPoiPid;
+	private int mainPoiPid=0;//主点POI号码
 	
 	private String rowId;
 	

@@ -28,15 +28,15 @@ public class IxPoiIcon implements IObj {
 	
 	private int pid;
 	
-	private int poiPid;
+	private int poiPid;//POI号码
 	
-	private String iconName;
+	private String iconName;//图标文件名
 	
-	private Geometry geometry;
+	private Geometry geometry;//ICON坐标
 	
-	private String manageCode;
+	private String manageCode;//管理号
 	
-	private String clientFlag;
+	private String clientFlag;//客户标识
 	
 	private String memo;
 	

@@ -1,19 +1,9 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.create;
 
-import java.sql.Connection;
-
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
-import com.navinfo.dataservice.dao.glm.iface.IProcess;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
-import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
-import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
-import com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.create.Operation;
-import com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.create.Command;
 
 public class Process extends AbstractProcess<Command> {
 

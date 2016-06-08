@@ -1,17 +1,7 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.create;
 
-import java.sql.Connection;
-
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
-import com.navinfo.dataservice.dao.glm.iface.IProcess;
-import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
-import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
-import com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.create.Command;
-import com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.create.Operation;
 
 public class Process extends AbstractProcess<Command> {
 

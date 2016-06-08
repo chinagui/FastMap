@@ -1,8 +1,6 @@
 package com.navinfo.dataservice.engine.edit.edit.operation;
 
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
-import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.iface.OperType;
 
 /** 
  * @ClassName: AbstractCommand

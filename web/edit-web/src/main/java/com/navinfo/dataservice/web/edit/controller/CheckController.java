@@ -36,7 +36,7 @@ public class CheckController extends BaseController {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			int projectId = jsonReq.getInt("projectId");
+			int subTaskId = jsonReq.getInt("subTaskId");
 
 			JSONArray grids = jsonReq.getJSONArray("grids");
 
@@ -44,7 +44,7 @@ public class CheckController extends BaseController {
 
 			int pageNum = jsonReq.getInt("pageNum");
 
-			conn = DBConnector.getInstance().getConnectionById(projectId);
+			conn = DBConnector.getInstance().getConnectionById(subTaskId);
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 
@@ -80,11 +80,11 @@ public class CheckController extends BaseController {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			int projectId = jsonReq.getInt("projectId");
+			int subTaskId = jsonReq.getInt("subTaskId");
 
 			JSONArray grids = jsonReq.getJSONArray("grids");
 
-			conn = DBConnector.getInstance().getConnectionById(projectId);
+			conn = DBConnector.getInstance().getConnectionById(subTaskId);
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 
@@ -120,16 +120,16 @@ public class CheckController extends BaseController {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			int projectId = jsonReq.getInt("projectId");
+			int subTaskId = jsonReq.getInt("subTaskId");
 
 			String id = jsonReq.getString("id");
 
 			int type = jsonReq.getInt("type");
 
-			conn = DBConnector.getInstance().getConnectionById(projectId);
+			conn = DBConnector.getInstance().getConnectionById(subTaskId);
 
 			NiValExceptionOperator selector = new NiValExceptionOperator(conn,
-					projectId);
+					subTaskId);
 
 			selector.updateCheckLogStatus(id, type);
 

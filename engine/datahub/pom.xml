@@ -32,7 +32,7 @@
 	</dependency>
 		<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>api-job</artifactId>
+		<artifactId>api-man</artifactId>
 	</dependency>
 	
 	<dependency>

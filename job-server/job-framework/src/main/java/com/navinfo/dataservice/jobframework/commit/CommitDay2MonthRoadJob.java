@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.Set;
 
 import com.navinfo.dataservice.api.datahub.iface.DbManagerApiService;
-import com.navinfo.dataservice.api.edit.iface.GridServiceApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.api.man.ManApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
@@ -33,7 +33,7 @@ public class CommitDay2MonthRoadJob extends AbstractJob {
 	public void execute() throws JobException {
 		CommitDay2MonthRoadJobRequest req = (CommitDay2MonthRoadJobRequest)this.getRequest();
 		List<Integer> gridList = req.getGridList();
-		GridServiceApi gridSelectorApiSvr = (GridServiceApi) ApplicationContextUtil.getBean("gridSelector");
+		ManApi gridSelectorApiSvr = (ManApi) ApplicationContextUtil.getBean("gridSelector");
 		try{
 			//获取大区和grid的映射关系
 			Map regionGridMapping = gridSelectorApiSvr.queryRegionGridMapping(gridList);

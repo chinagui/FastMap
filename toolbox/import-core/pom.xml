@@ -27,7 +27,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>api-edit</artifactId>
+			<artifactId>api-man</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>job-framework</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.json-lib</groupId>

@@ -1,20 +1,20 @@
-package com.navinfo.dataservice.engine.man.grid;
+package com.navinfo.dataservice.engine.man.service;
 
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import com.navinfo.dataservice.api.edit.iface.GridServiceApi;
-
+import com.navinfo.dataservice.engine.man.grid.GridService;
+import com.navinfo.dataservice.api.man.iface.ManApi;
 /*
  * @author mayunfei
  * 2016年6月7日
  * 描述：engine-manGridSelectorApiServiceImpl.java
  * GridSelector 对外暴露的api实现类:所有GridSelector需要对外部项目暴露的接口，需要在这里进行包装实现；
  */
-@Service("gridSelector")
-public class GridServiceApiImpl implements GridServiceApi {
+@Service("manApi")
+public class ManApiImpl implements ManApi {
 	
 	
 	/* 

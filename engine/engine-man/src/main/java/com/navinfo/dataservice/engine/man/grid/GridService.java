@@ -30,7 +30,7 @@ public class GridService {
 	 * 
 	 */
 	public Map queryRegionGridMapping(List<Integer> gridList) throws Exception{
-		String sql = "select grid_id,region_id from grid where 1=1  ";
+		String sql = "select grid_id,region_id,daily_db_id,mongthly_db_id from grid g,region r where g.region_id=r.region_id ";
 		QueryRunner queryRunner = new QueryRunner();
 		Connection conn = null;
 		try{
@@ -44,13 +44,15 @@ public class GridService {
 						while(rs.next()){
 							int gridId = rs.getInt("grid_id");
 							int regionId = rs.getInt("region_id");
+							int regionDailyDbId = rs.getInt("daily_db_id");
+							int regionMongthlyDbId = rs.getInt("mongthly_db_id");
 							mvMap.put(regionId, gridId);
 						}
 						return mvMap;
 					}
 					return null;
 				}};
-			StringBuffer InClause = buildInClause("grid_id",gridList);
+			StringBuffer InClause = buildInClause("g.grid_id",gridList);
 			sql=sql+InClause;
 			if(InClause!=null){
 				return queryRunner.query(conn, sql, rsh);

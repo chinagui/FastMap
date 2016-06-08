@@ -75,7 +75,6 @@ public class ${modelClassName}Service {
 			</#list>				
 			run.update(conn, 
 					   updateSql, 
-					   <#list columns as column><#if column?is_first>bean.get${column.camelName?cap_first}() <#else>,bean.get${column.camelName?cap_first}()</#if></#list>,
 					   values.toArray()
 					   );
 		}catch(Exception e){

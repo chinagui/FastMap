@@ -35,7 +35,7 @@
 	</dependency>
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>api-edit</artifactId>
+		<artifactId>api-man</artifactId>
 	</dependency>
   </dependencies>
 </project>

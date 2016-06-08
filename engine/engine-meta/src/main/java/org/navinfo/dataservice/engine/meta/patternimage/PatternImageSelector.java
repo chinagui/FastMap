@@ -10,7 +10,8 @@ import net.sf.json.JSONObject;
 import oracle.sql.BLOB;
 
 import org.apache.commons.codec.binary.Base64;
-import org.navinfo.dataservice.engine.meta.dao.DBConnector;
+
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 
 public class PatternImageSelector {
 
@@ -29,7 +30,7 @@ public class PatternImageSelector {
 
 		try {
 
-			conn = DBConnector.getInstance().getConnection();
+			conn = DBConnector.getInstance().getMetaConnection();
 
 			int total = 0;
 
@@ -136,7 +137,7 @@ public class PatternImageSelector {
 
 		try {
 
-			conn = DBConnector.getInstance().getConnection();
+			conn = DBConnector.getInstance().getMetaConnection();
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -210,7 +211,7 @@ public class PatternImageSelector {
 
 		try {
 
-			conn = DBConnector.getInstance().getConnection();
+			conn = DBConnector.getInstance().getMetaConnection();
 
 			pstmt = conn.prepareStatement(sql);
 

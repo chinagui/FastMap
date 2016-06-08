@@ -9,12 +9,12 @@ import java.util.Map.Entry;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculator;
+import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculatorFactory;
+import com.navinfo.dataservice.bizcommons.glm.GlmGridRefInfo;
+import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.datahub.glm.GlmGridCalculator;
-import com.navinfo.dataservice.datahub.glm.GlmGridCalculatorFactory;
-import com.navinfo.dataservice.datahub.glm.GlmGridRefInfo;
-import com.navinfo.dataservice.datahub.glm.GlmTable;
 import com.navinfo.dataservice.diff.exception.DiffException;
 import com.navinfo.navicommons.database.QueryRunner;
 

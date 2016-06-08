@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
@@ -16,7 +15,6 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 public class RdLinkSearch implements ISearch {
 
@@ -204,13 +202,13 @@ public class RdLinkSearch implements ISearch {
 
 		return list;
 	}
-	public static void main(String[] args) throws Exception {
-		
-		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
-		
-		RdLinkSearch a = new RdLinkSearch(conn);
-		
-		System.out.println(JSONArray.fromObject(a.searchDataByTileWithGap(107951, 49621, 17, 20)));
-		
-	}
+//	public static void main(String[] args) throws Exception {
+//		
+//		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+//		
+//		RdLinkSearch a = new RdLinkSearch(conn);
+//		
+//		System.out.println(JSONArray.fromObject(a.searchDataByTileWithGap(107951, 49621, 17, 20)));
+//		
+//	}
 }

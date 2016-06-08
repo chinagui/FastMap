@@ -16,16 +16,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 
@@ -83,7 +82,7 @@ public class EditController extends BaseController {
 
 			JSONObject data = jsonReq.getJSONObject("data");
 
-			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
+			conn = DBConnector.getInstance().getConnectionById(projectId);
 
 			SearchProcess p = new SearchProcess(conn);
 
@@ -123,7 +122,7 @@ public class EditController extends BaseController {
 
 			int projectId = jsonReq.getInt("projectId");
 
-			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
+			conn = DBConnector.getInstance().getConnectionById(projectId);
 
 			if (jsonReq.containsKey("detailId")) {
 				int detailId = jsonReq.getInt("detailId");
@@ -196,7 +195,7 @@ public class EditController extends BaseController {
 				types.add(ObjType.valueOf(type.getString(i)));
 			}
 
-			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
+			conn = DBConnector.getInstance().getConnectionById(projectId);
 
 			SearchProcess p = new SearchProcess(conn);
 
@@ -277,7 +276,7 @@ public class EditController extends BaseController {
 			//int type      = jsonReq.getInt("type");
 			int pageNum      = jsonReq.getInt("pageNum");
 			int pageSize      = jsonReq.getInt("pageSize");
-			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
+			conn = DBConnector.getInstance().getConnectionById(projectId);
 			IxPoiSelector selector = new IxPoiSelector(conn);
 			JSONObject jsonObject = selector.loadPids(false, pageSize, pageNum);
 			return new ModelAndView("jsonView", success(jsonObject));

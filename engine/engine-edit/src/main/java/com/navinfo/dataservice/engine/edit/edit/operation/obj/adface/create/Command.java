@@ -72,7 +72,7 @@ public class Command extends AbstractCommand implements ICommand {
 	public Command(JSONObject json, String requester) throws Exception{
 		this.requester = requester;
 
-		this.setProjectId(json.getInt("projectId"));
+		this.setSubTaskId(json.getInt("subTaskId"));
 		JSONObject data = json.getJSONObject("data");
 		if (data.containsKey("geometry")){
 			this.geometry = data.getJSONObject("geometry");

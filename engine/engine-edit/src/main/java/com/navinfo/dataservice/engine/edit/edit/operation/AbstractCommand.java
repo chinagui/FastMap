@@ -11,11 +11,14 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
  * @Description: AbstractCommand.java
  */
 public abstract class AbstractCommand implements ICommand {
-	private int projectId;
-	public int getProjectId() {
-		return projectId;
+	private int subTaskId;
+
+	public int getSubTaskId() {
+		return subTaskId;
 	}
-	public void setProjectId(int projectId) {
-		this.projectId = projectId;
+
+	public void setSubTaskId(int subTaskId) {
+		this.subTaskId = subTaskId;
 	}
+	
 }

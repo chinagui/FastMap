@@ -13,7 +13,7 @@ public class AdAdminGroupTest {
 	public static void searchAdminGroupLevel() {
 		Connection conn;
 		try {
-			conn = GlmDbPoolManager.getInstance().getConnection(11);
+			conn = DBConnector.getInstance().getConnectionById(11);
 
 			String parameter = "{\"projectId\":11,\"type\":\"ADADMINGROUP\"}";
 
@@ -32,7 +32,7 @@ public class AdAdminGroupTest {
 	public static void deleteAdminGroupLevel() {
 		Connection conn;
 		try {
-			conn = GlmDbPoolManager.getInstance().getConnection(11);
+			conn = DBConnector.getInstance().getConnectionById(11);
 
 			String parameter = "{\"command\": \"DELETE\",\"type\": \"ADADMINGROUP\",\"projectId\": 11,\"data\": {\"groupTree\": [{\"regionId\": 1273,\"name\": \"中国大陆\",\"group\": {\"groupId\": 248,\"regionIdUp\": 1273,\"rowId\": \"2D71EFCB1966DCE7E050A8C083040693\"},\"children\": [{\"regionId\": 163,\"name\": \"北京市\",\"group\": {\"groupId\": 40,\"regionIdUp\": 163,\"rowId\": \"2D71EFCB16D7DCE7E050A8C083040693\"},\"part\": {\"groupId\": 248,\"regionIdDown\": 163,\"rowId\": \"2D71EFCB56BEDCE7E050A8C083040693\"},\"children\": [{\"regionId\": 580,\"name\": \"北京市\",\"group\": {\"groupId\": 114,\"regionIdUp\": 580,\"rowId\": \"2D71EFCB1711DCE7E050A8C083040693\"},\"part\": {\"groupId\": 40,\"regionIdDown\": 580,\"rowId\": \"2D71EFCB642CDCE7E050A8C083040693\"},\"children\": [{\"regionId\": 1421,\"name\": \"北京市区\",\"objType\": \"delete\",\"group\": {\"groupId\": 286,\"regionIdUp\": 1421,\"rowId\": \"2D71EFCB179FDCE7E050A8C083040693\"},\"part\": {\"groupId\": 114,\"regionIdDown\": 1421,\"objType\": \"delete\",\"rowId\": \"2D71EFCB679CDCE7E050A8C083040693\"}}]}]}]}]}}";
 

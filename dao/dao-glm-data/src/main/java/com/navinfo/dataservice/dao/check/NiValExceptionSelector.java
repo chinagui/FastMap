@@ -9,9 +9,9 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 public class NiValExceptionSelector {
 
@@ -392,7 +392,7 @@ public class NiValExceptionSelector {
 
 
 		NiValExceptionSelector selector = new NiValExceptionSelector(
-				GlmDbPoolManager.getInstance().getConnection(11));
+				DBConnector.getInstance().getConnectionById(11));
 
 		JSONArray grids = new JSONArray();
 

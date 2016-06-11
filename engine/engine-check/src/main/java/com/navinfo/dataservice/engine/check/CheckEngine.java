@@ -4,10 +4,11 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import net.sf.json.JSONObject;
 
+import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.check.CheckCommand;
@@ -17,7 +18,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.check.core.CheckRule;
 import com.navinfo.dataservice.engine.check.core.CheckSuitLoader;
 import com.navinfo.dataservice.engine.check.core.NiValException;
@@ -176,7 +176,7 @@ public class CheckEngine {
 		link.setsNodePid(2);
 		link.seteNodePid(2);
 		
-		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
 		
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 

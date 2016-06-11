@@ -13,6 +13,7 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
@@ -22,7 +23,6 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 public class RdRestrictionSearch implements ISearch {
 
@@ -241,7 +241,7 @@ public class RdRestrictionSearch implements ISearch {
 	
 	public static void main(String[] args) throws Exception {
 
-		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
 
 		RdRestrictionSearch a = new RdRestrictionSearch(conn);
 		

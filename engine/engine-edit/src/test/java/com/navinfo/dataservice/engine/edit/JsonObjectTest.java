@@ -72,7 +72,7 @@ public class JsonObjectTest {
 	//////LINESTRING (116.17659 39.97508, 116.16144 39.94844, 116.20427 39.94322, 116.17659 39.97508)
 	
 	public static void  point() throws Exception{
-		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
 		AdLink adLink =(AdLink)new AdLinkSelector(conn).loadById(100031444,true);
 		JSONObject geojson = GeoTranslator.jts2Geojson(adLink
 				.getGeometry());

@@ -20,6 +20,7 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 public class RdBranchSearch implements ISearch {
 
@@ -172,15 +173,15 @@ public class RdBranchSearch implements ISearch {
 		return list;
 	}
 
-//	public static void main(String[] args) throws Exception {
-//		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
-//
-//		RdBranchSearch s = new RdBranchSearch(conn);
-//
-//		// IObj obj = s.searchDataByPid(3495);
-//		//
-//		// System.out.println(obj.Serialize(null));
-//
-//		System.out.println(s.searchDataByTileWithGap(107943, 49614, 17, 20));
-//	}
+	public static void main(String[] args) throws Exception {
+		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+
+		RdBranchSearch s = new RdBranchSearch(conn);
+
+		// IObj obj = s.searchDataByPid(3495);
+		//
+		// System.out.println(obj.Serialize(null));
+
+		System.out.println(s.searchDataByTileWithGap(107943, 49614, 17, 20));
+	}
 }

@@ -75,9 +75,8 @@ public class Command extends AbstractCommand {
 	}
 
 	public Command(JSONObject json, String requester) throws Exception{
-		
 		this.requester = requester;
-		this.setDbId(json.getInt("dbId"));
+		this.setSubTaskId(json.getInt("subTaskId"));
 		this.linkPid = json.getInt("objId");
 		JSONObject data = json.getJSONObject("data");
 		double lng = Math.round(data.getDouble("longitude")*100000)/100000.0;

@@ -11,6 +11,7 @@ import oracle.sql.STRUCT;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 public class NiValExceptionSelector {
 
@@ -387,18 +388,18 @@ public class NiValExceptionSelector {
 		return 0;
 	}
 	
-//	public static void main(String[] args) throws Exception {
-//
-//
-//		NiValExceptionSelector selector = new NiValExceptionSelector(
-//				GlmDbPoolManager.getInstance().getConnection(11));
-//
-//		JSONArray grids = new JSONArray();
-//
-//		grids.add(60560303);
-//
-//		System.out.println(selector.loadCountByGrid(grids));
-//		
-//		System.out.println(selector.loadByGrid(grids, 10, 1));
-//	}
+	public static void main(String[] args) throws Exception {
+
+
+		NiValExceptionSelector selector = new NiValExceptionSelector(
+				GlmDbPoolManager.getInstance().getConnection(11));
+
+		JSONArray grids = new JSONArray();
+
+		grids.add(60560303);
+
+		System.out.println(selector.loadCountByGrid(grids));
+		
+		System.out.println(selector.loadByGrid(grids, 10, 1));
+	}
 }

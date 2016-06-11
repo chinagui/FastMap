@@ -146,7 +146,7 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public boolean recordData() throws Exception {
 		
-		LogWriter lw = new LogWriter(this.getConn(), this.getCommand().getDbId());
+		LogWriter lw = new LogWriter(this.getConn(), this.getCommand().getProjectId());
 		
 		lw.generateLog(this.getCommand(), this.getResult());
 		

@@ -16,7 +16,6 @@ import net.sf.json.JSONObject;
 
 import org.hbase.async.KeyValue;
 
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -24,6 +23,7 @@ import com.navinfo.dataservice.dao.fcc.HBaseController;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 
 /**
@@ -308,7 +308,7 @@ public class TipsSelector {
 	 * @throws Exception
 	 */
 	public JSONArray getSnapshot(JSONArray grids, JSONArray stages, int type,
-			int dbId) throws Exception {
+			int projectId) throws Exception {
 		JSONArray jsonData = new JSONArray();
 
 		String wkt = GridUtils.grids2Wkt(grids);
@@ -353,7 +353,7 @@ public class TipsSelector {
 
 		try {
 
-			oraConn = DBConnector.getInstance().getConnectionById(dbId);
+			oraConn = GlmDbPoolManager.getInstance().getConnection(projectId);
 
 			RdLinkSelector selector = new RdLinkSelector(oraConn);
 

@@ -179,7 +179,7 @@ public class Operation implements IOperation {
 			if (json.containsKey("breakNode")) {
 				JSONObject breakJson = new JSONObject();
 				breakJson.put("objId", json.getInt("linkPid"));
-				breakJson.put("subTaskId", command.getDbId());
+				breakJson.put("subTaskId", command.getSubTaskId());
 				JSONObject data = new JSONObject();
 				data.put("breakNodePid", json.getInt("breakNode"));
 				data.put("longitude", json.getDouble("lon"));

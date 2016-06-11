@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
@@ -18,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 public class RdSpeedlimitSearch implements ISearch {
 
@@ -254,14 +256,14 @@ public class RdSpeedlimitSearch implements ISearch {
 		return selector.trackSpeedLimitLink(linkPid, direct);
 	}
 
-//	public static void main(String[] args) throws Exception {
-//
-//		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
-//
-//		RdSpeedlimitSearch a = new RdSpeedlimitSearch(conn);
-//
-//		System.out.println(JSONArray.fromObject(a.searchDataByTileWithGap(
-//				107951, 49621, 17, 20)));
-//
-//	}
+	public static void main(String[] args) throws Exception {
+
+		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+
+		RdSpeedlimitSearch a = new RdSpeedlimitSearch(conn);
+
+		System.out.println(JSONArray.fromObject(a.searchDataByTileWithGap(
+				107951, 49621, 17, 20)));
+
+	}
 }

@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 public class Command extends AbstractCommand {
 
@@ -64,7 +65,7 @@ public class Command extends AbstractCommand {
 		this.requester = requester;
 
 //		this.projectId = json.getInt("projectId");
-		this.setDbId(json.getInt("dbId"));
+		this.setSubTaskId(json.getInt("subTaskId"));
 
 		JSONObject data = json.getJSONObject("data");
 

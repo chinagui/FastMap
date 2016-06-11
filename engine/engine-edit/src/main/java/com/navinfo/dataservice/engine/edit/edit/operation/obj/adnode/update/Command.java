@@ -63,7 +63,7 @@ public class Command extends AbstractCommand {
 		this.requester = requester;
 
 //		this.projectId = json.getInt("projectId");
-		this.setDbId(json.getInt("dbId"));
+		this.setSubTaskId(json.getInt("subTaskId"));
 
 		this.content = json.getJSONObject("data");
 		

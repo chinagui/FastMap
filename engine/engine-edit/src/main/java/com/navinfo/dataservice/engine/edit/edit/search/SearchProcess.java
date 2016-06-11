@@ -18,6 +18,7 @@ import com.navinfo.dataservice.dao.glm.selector.ad.zone.AdAdminTreeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.search.rd.utils.RdLinkSearchUtils;
 
 import net.sf.json.JSONArray;
@@ -257,13 +258,13 @@ public class SearchProcess {
 					array.add(row.Serialize(ObjLevel.FULL));
 				}
 			case ADADMINGROUP:
-				if(condition.containsKey("subTaskId"))
+				if(condition.containsKey("projectId"))
 				{
 					AdAdminTreeSelector adAdminTreeSelector = new AdAdminTreeSelector(conn);
 					
-					int subTaskId = condition.getInt("subTaskId");
+					int projectId = condition.getInt("projectId");
 					
-					IRow row = adAdminTreeSelector.loadRowsByProjectId(subTaskId,false);
+					IRow row = adAdminTreeSelector.loadRowsByProjectId(projectId,false);
 
 					array.add(row.Serialize(ObjLevel.BRIEF));
 				}

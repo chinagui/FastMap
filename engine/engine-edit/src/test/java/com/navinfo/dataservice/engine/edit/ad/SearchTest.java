@@ -6,10 +6,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.operator.rd.link.RdLinkOperator;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineSegment;
 
@@ -17,7 +23,7 @@ public class SearchTest {
 	private Connection conn;
 	private RdLinkSelector linkSelector;
 	public SearchTest() throws Exception{
-		this.conn = DBConnector.getInstance().getConnectionById(11);
+		this.conn = GlmDbPoolManager.getInstance().getConnection(11);
 		 linkSelector = new RdLinkSelector(conn);
 	}
 	public List<RdLink> getNextTrackLinks(int cuurentLinkPid,int cruuentNodePidDir) throws Exception{

@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.vividsolutions.jts.io.WKTReader;
 
 public class RdLaneConnexitySearch implements ISearch {
@@ -145,17 +146,17 @@ public class RdLaneConnexitySearch implements ISearch {
 	}
 	
 
-//	public static void main(String[] args) throws Exception {
-//		
-//		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
-//		
-//		RdLaneConnexitySearch s = new RdLaneConnexitySearch(conn);
-//		
-//		List<SearchSnapshot> ss = s.searchDataByTileWithGap(107939,49614,17, 1);
-//		
-//		for(SearchSnapshot n : ss){
-//			System.out.println(n.Serialize(null));
-//		}
-//	}
+	public static void main(String[] args) throws Exception {
+		
+		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+		
+		RdLaneConnexitySearch s = new RdLaneConnexitySearch(conn);
+		
+		List<SearchSnapshot> ss = s.searchDataByTileWithGap(107939,49614,17, 1);
+		
+		for(SearchSnapshot n : ss){
+			System.out.println(n.Serialize(null));
+		}
+	}
 
 }

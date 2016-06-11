@@ -14,10 +14,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 @Controller
 public class CheckController extends BaseController {
@@ -36,7 +36,7 @@ public class CheckController extends BaseController {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			int dbId = jsonReq.getInt("dbId");
+			int subTaskId = jsonReq.getInt("subTaskId");
 
 			JSONArray grids = jsonReq.getJSONArray("grids");
 
@@ -44,7 +44,7 @@ public class CheckController extends BaseController {
 
 			int pageNum = jsonReq.getInt("pageNum");
 
-			conn = DBConnector.getInstance().getConnectionById(dbId);
+			conn = GlmDbPoolManager.getInstance().getConnection(subTaskId);
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 
@@ -80,11 +80,11 @@ public class CheckController extends BaseController {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			int dbId = jsonReq.getInt("dbId");
+			int subTaskId = jsonReq.getInt("subTaskId");
 
 			JSONArray grids = jsonReq.getJSONArray("grids");
 
-			conn = DBConnector.getInstance().getConnectionById(dbId);
+			conn = GlmDbPoolManager.getInstance().getConnection(subTaskId);
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 
@@ -120,16 +120,16 @@ public class CheckController extends BaseController {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			int dbId = jsonReq.getInt("dbId");
+			int subTaskId = jsonReq.getInt("subTaskId");
 
 			String id = jsonReq.getString("id");
 
 			int type = jsonReq.getInt("type");
 
-			conn = DBConnector.getInstance().getConnectionById(dbId);
+			conn = GlmDbPoolManager.getInstance().getConnection(subTaskId);
 
 			NiValExceptionOperator selector = new NiValExceptionOperator(conn,
-					dbId);
+					subTaskId);
 
 			selector.updateCheckLogStatus(id, type);
 

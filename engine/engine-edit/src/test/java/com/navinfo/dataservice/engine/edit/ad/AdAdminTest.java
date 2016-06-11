@@ -1,14 +1,14 @@
 package com.navinfo.dataservice.engine.edit.ad;
 
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
-
-import net.sf.json.JSONObject;
 
 public class AdAdminTest {
 
@@ -101,7 +101,7 @@ public class AdAdminTest {
 			
 			int pid = jsonReq.getInt("pid");
 			
-			SearchProcess p = new SearchProcess(DBConnector.getInstance().getConnectionById(11));
+			SearchProcess p = new SearchProcess(GlmDbPoolManager.getInstance().getConnection(projectId));
 			
 			IObj obj = p.searchDataByPid(ObjType.valueOf(objType), pid);
 			

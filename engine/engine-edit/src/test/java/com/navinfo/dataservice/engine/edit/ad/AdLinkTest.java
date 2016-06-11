@@ -2,19 +2,20 @@ package com.navinfo.dataservice.engine.edit.ad;
 
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
+
+import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 import com.navinfo.dataservice.engine.edit.edit.search.rd.utils.RdLinkSearchUtils;
-
-import net.sf.json.JSONObject;
 
 /**
  * @author zhaokk
@@ -25,7 +26,7 @@ public class AdLinkTest {
 	//初始化系统参数
 	private Connection conn;
     public AdLinkTest() throws Exception{
-    	 this.conn = DBConnector.getInstance().getConnectionById(11);
+    	 this.conn = GlmDbPoolManager.getInstance().getConnection(11);
     }
 	protected Logger log = Logger.getLogger(this.getClass());
 	//创建一条link
@@ -93,7 +94,7 @@ public class AdLinkTest {
 		
 		Connection conn;
 			try {
-				conn = DBConnector.getInstance().getConnectionById(11);
+				conn = GlmDbPoolManager.getInstance().getConnection(11);
 				
 				JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -127,7 +128,7 @@ public class AdLinkTest {
 	{
 		Connection conn;
 			try {
-				conn = DBConnector.getInstance().getConnectionById(11);
+				conn = GlmDbPoolManager.getInstance().getConnection(11);
 				
 				SearchProcess p = new SearchProcess(conn);
 

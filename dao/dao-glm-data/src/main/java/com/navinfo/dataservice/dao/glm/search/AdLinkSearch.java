@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 public class AdLinkSearch implements ISearch {
 
@@ -191,15 +192,15 @@ public class AdLinkSearch implements ISearch {
 		return list;
 	}
 
-//	public static void main(String[] args) throws Exception {
-//		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
-//		
-//		AdLinkSearch search = new AdLinkSearch(conn);
-//		
-//		List<SearchSnapshot> res = search.searchDataByTileWithGap(215829, 99329, 18, 20);
-//		
-//		for(SearchSnapshot s : res){
-//			System.out.println(s.Serialize(null));
-//		}
-//	}
+	public static void main(String[] args) throws Exception {
+		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+		
+		AdLinkSearch search = new AdLinkSearch(conn);
+		
+		List<SearchSnapshot> res = search.searchDataByTileWithGap(215829, 99329, 18, 20);
+		
+		for(SearchSnapshot s : res){
+			System.out.println(s.Serialize(null));
+		}
+	}
 }

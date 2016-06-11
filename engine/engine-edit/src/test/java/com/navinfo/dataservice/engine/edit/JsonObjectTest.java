@@ -1,16 +1,22 @@
 package com.navinfo.dataservice.engine.edit;
 import java.sql.Connection;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.joni.exception.JOniException;
 import org.json.JSONException;
 
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
+import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -19,11 +25,9 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 public class JsonObjectTest {
 	private static final GeometryFactory geoFactory = new GeometryFactory();
 	
@@ -68,7 +72,7 @@ public class JsonObjectTest {
 	//////LINESTRING (116.17659 39.97508, 116.16144 39.94844, 116.20427 39.94322, 116.17659 39.97508)
 	
 	public static void  point() throws Exception{
-		Connection conn = DBConnector.getInstance().getConnectionById(11);
+		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
 		AdLink adLink =(AdLink)new AdLinkSelector(conn).loadById(100031444,true);
 		JSONObject geojson = GeoTranslator.jts2Geojson(adLink
 				.getGeometry());

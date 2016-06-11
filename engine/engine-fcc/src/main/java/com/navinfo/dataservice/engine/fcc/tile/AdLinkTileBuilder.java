@@ -14,7 +14,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 import org.apache.hadoop.conf.Configuration;
@@ -717,6 +716,56 @@ public class AdLinkTileBuilder {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	public static void run(Configuration conf) throws Exception{
+
+		String tabName = "ADLINK_" + conf.get("dbId");
+
+		createHBaseTab(conf, tabName);
+
+		FileSystem fs = FileSystem.get(conf);
+
+		String tmpDir = "/" + String.valueOf(new Date().getTime()) + "/";
+
+		fs.mkdirs(new Path(tmpDir));
+
+		int numTask = 5;
+
+		for (int i = 0; i < numTask; i++) {
+
+			OutputStream out = fs.create(new Path(tmpDir + i));
+
+			out.write(String.valueOf(i).getBytes());
+
+			out.flush();
+
+			out.close();
+		}
+
+		Job job = Job.getInstance(conf, "split adlink");
+
+		job.setJarByClass(AdLinkTileBuilder.class);
+
+		job.setNumReduceTasks(numTask);
+
+		job.setMapOutputKeyClass(Text.class);
+
+		job.setMapOutputValueClass(Text.class);
+
+		job.setPartitionerClass(TilePartitioner.class);
+
+		job.setMapperClass(TileMapper.class);
+
+		job.setMapOutputKeyClass(Text.class);
+
+		job.setMapOutputValueClass(Text.class);
+
+		FileInputFormat.addInputPath(job, new Path(tmpDir));
+
+		TableMapReduceUtil.initTableReducerJob(tabName, TileReducer.class, job);
+		job.waitForCompletion(true);
+
 	}
 
 	/**

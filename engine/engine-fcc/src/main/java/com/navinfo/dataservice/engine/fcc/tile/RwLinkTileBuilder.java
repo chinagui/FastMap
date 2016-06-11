@@ -42,7 +42,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
-
 /**
  * 构建瓦片类
  */
@@ -721,6 +720,56 @@ public class RwLinkTileBuilder {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	public static void run(Configuration conf) throws Exception{
+
+		String tabName = "RWLINK_" + conf.get("dbId");
+
+		createHBaseTab(conf, tabName);
+
+		FileSystem fs = FileSystem.get(conf);
+
+		String tmpDir = "/" + String.valueOf(new Date().getTime()) + "/";
+
+		fs.mkdirs(new Path(tmpDir));
+
+		int numTask = 5;
+
+		for (int i = 0; i < numTask; i++) {
+
+			OutputStream out = fs.create(new Path(tmpDir + i));
+
+			out.write(String.valueOf(i).getBytes());
+
+			out.flush();
+
+			out.close();
+		}
+
+		Job job = Job.getInstance(conf, "split rwlink");
+
+		job.setJarByClass(RwLinkTileBuilder.class);
+
+		job.setNumReduceTasks(numTask);
+
+		job.setMapOutputKeyClass(Text.class);
+
+		job.setMapOutputValueClass(Text.class);
+
+		job.setPartitionerClass(TilePartitioner.class);
+
+		job.setMapperClass(TileMapper.class);
+
+		job.setMapOutputKeyClass(Text.class);
+
+		job.setMapOutputValueClass(Text.class);
+
+		FileInputFormat.addInputPath(job, new Path(tmpDir));
+
+		TableMapReduceUtil.initTableReducerJob(tabName, TileReducer.class, job);
+		job.waitForCompletion(true);
+
 	}
 
 	/**

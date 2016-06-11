@@ -13,7 +13,7 @@ import com.navinfo.dataservice.engine.edit.edit.search.rd.utils.RdLinkSearchUtil
 public class RdLinkTest {
 	private Connection conn;
 	public RdLinkTest() throws Exception {
-		this.conn = GlmDbPoolManager.getInstance().getConnection(11);
+		this.conn = DBConnector.getInstance().getConnectionById(11);
 	}
 	
 	public void testDelete() {

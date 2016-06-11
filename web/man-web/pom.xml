@@ -44,7 +44,6 @@
 		<artifactId>datahub</artifactId>
 	</dependency>
 	
-	<!-- µÚÈı·½jar -->
 	<dependency>
 	    <groupId>javax.servlet</groupId>
 	    <artifactId>servlet-api</artifactId>

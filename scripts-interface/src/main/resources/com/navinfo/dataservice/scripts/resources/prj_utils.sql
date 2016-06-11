@@ -151,7 +151,7 @@ values
                        MDSYS.SDO_DIM_ELEMENT('YLAT', -90, 90, 0.005)),
    8307);
 
-create index idx_sdo_ad_admin on ix_poi(geometry) 
+create index idx_sdo_ix_poi on ix_poi(geometry) 
 indextype is mdsys.spatial_index;
 
 analyze table ix_poi compute statistics;
@@ -166,7 +166,7 @@ values
                        MDSYS.SDO_DIM_ELEMENT('YLAT', -90, 90, 0.005)),
    8307);
 
-create index idx_sdo_ad_admin on zone_face(geometry) 
+create index idx_sdo_zone_face on zone_face(geometry) 
 indextype is mdsys.spatial_index;
 
 analyze table zone_face compute statistics;
@@ -181,7 +181,7 @@ values
                        MDSYS.SDO_DIM_ELEMENT('YLAT', -90, 90, 0.005)),
    8307);
 
-create index idx_sdo_ad_admin on zone_link(geometry) 
+create index idx_sdo_zone_link on zone_link(geometry) 
 indextype is mdsys.spatial_index;
 
 analyze table zone_link compute statistics;
@@ -196,7 +196,7 @@ values
                        MDSYS.SDO_DIM_ELEMENT('YLAT', -90, 90, 0.005)),
    8307);
 
-create index idx_sdo_ad_admin on zone_node(geometry) 
+create index idx_sdo_zone_node on zone_node(geometry) 
 indextype is mdsys.spatial_index;
 
 analyze table zone_node compute statistics;

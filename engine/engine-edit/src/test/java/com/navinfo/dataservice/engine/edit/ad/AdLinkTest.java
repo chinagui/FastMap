@@ -26,7 +26,7 @@ public class AdLinkTest {
 	//初始化系统参数
 	private Connection conn;
     public AdLinkTest() throws Exception{
-    	 this.conn = GlmDbPoolManager.getInstance().getConnection(11);
+    	 this.conn = DBConnector.getInstance().getConnectionById(11);
     }
 	protected Logger log = Logger.getLogger(this.getClass());
 	//创建一条link
@@ -94,7 +94,7 @@ public class AdLinkTest {
 		
 		Connection conn;
 			try {
-				conn = GlmDbPoolManager.getInstance().getConnection(11);
+				conn = DBConnector.getInstance().getConnectionById(11);
 				
 				JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -128,7 +128,7 @@ public class AdLinkTest {
 	{
 		Connection conn;
 			try {
-				conn = GlmDbPoolManager.getInstance().getConnection(11);
+				conn = DBConnector.getInstance().getConnectionById(11);
 				
 				SearchProcess p = new SearchProcess(conn);
 

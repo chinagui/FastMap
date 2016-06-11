@@ -22,9 +22,9 @@ public class RdSpeedLimitTest {
 
 	public static void testSpeed() throws Exception {
 
-		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
 
-		Connection conn2 = GlmDbPoolManager.getInstance().getConnection(11);
+		Connection conn2 = DBConnector.getInstance().getConnectionById(11);
 		try {
 
 			FileWriter fw = null;

@@ -23,7 +23,7 @@ public class SearchTest {
 	private Connection conn;
 	private RdLinkSelector linkSelector;
 	public SearchTest() throws Exception{
-		this.conn = GlmDbPoolManager.getInstance().getConnection(11);
+		this.conn = DBConnector.getInstance().getConnectionById(11);
 		 linkSelector = new RdLinkSelector(conn);
 	}
 	public List<RdLink> getNextTrackLinks(int cuurentLinkPid,int cruuentNodePidDir) throws Exception{

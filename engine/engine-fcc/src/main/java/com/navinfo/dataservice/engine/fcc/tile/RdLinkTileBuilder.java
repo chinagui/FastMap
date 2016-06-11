@@ -90,13 +90,13 @@ public class RdLinkTileBuilder {
 
 			String sql = null;
 
-			if (!"1".equals(context.getConfiguration().get("isgdb"))) {
+//			if (!"1".equals(context.getConfiguration().get("isgdb"))) {
 				sql = "select a.link_pid,        a.kind,        a.s_node_pid,        a.e_node_pid,        sdo_util.to_wktgeometry(geometry) geometry,        direct,        name,        c.limits,        d.forms   from rd_link a,        (select b.link_pid, c.name           from rd_link_name b, rd_name c          where b.name_groupid = c.name_groupid            and b.name_class = 1            and b.seq_num = 1            and c.lang_code = 'CHI') b,(select    t1.link_pid, listagg(t1.type, ';') within group(order by t1.link_pid) limits     from rd_link_limit t1    where t1.u_record != 2    group by t1.link_pid) c,    (select     a.link_pid,    listagg(a.form_of_way, ';') within group(order by a.link_pid) forms     from rd_link_form a    where a.u_record != 2    group by a.link_pid) d      where a.link_pid = b.link_pid(+)        and a.link_pid = c.link_pid(+)        and a.link_pid=d.link_pid(+) and a.u_record!=2 and mod(a.link_pid,50)="
 						+ mod;
-			} else {
-				sql = "select a.link_pid,        a.kind,        a.s_node_pid,        a.e_node_pid,        sdo_util.to_wktgeometry(geometry) geometry,        direct,        name,        c.limits,        d.forms   from rd_link a,        (select b.link_pid, c.name           from rd_link_name b, rd_name c          where b.name_groupid = c.name_groupid            and b.name_class = 1            and b.seq_num = 1            and c.lang_code = 'CHI') b,(select    t1.link_pid, listagg(t1.type, ';') within group(order by t1.link_pid) limits     from rd_link_limit t1    where t1.u_record != 2    group by t1.link_pid) c,    (select     a.link_pid,    listagg(a.form_of_way, ';') within group(order by a.link_pid) forms     from rd_link_form a    where a.u_record != 2    group by a.link_pid) d      where a.link_pid = b.link_pid(+)        and a.link_pid = c.link_pid(+)        and a.link_pid=d.link_pid(+) and a.u_record!=2 and mod(a.link_pid,280)="
-						+ mod;
-			}
+//			} else {
+//				sql = "select a.link_pid,        a.kind,        a.s_node_pid,        a.e_node_pid,        sdo_util.to_wktgeometry(geometry) geometry,        direct,        name,        c.limits,        d.forms   from rd_link a,        (select b.link_pid, c.name           from rd_link_name b, rd_name c          where b.name_groupid = c.name_groupid            and b.name_class = 1            and b.seq_num = 1            and c.lang_code = 'CHI') b,(select    t1.link_pid, listagg(t1.type, ';') within group(order by t1.link_pid) limits     from rd_link_limit t1    where t1.u_record != 2    group by t1.link_pid) c,    (select     a.link_pid,    listagg(a.form_of_way, ';') within group(order by a.link_pid) forms     from rd_link_form a    where a.u_record != 2    group by a.link_pid) d      where a.link_pid = b.link_pid(+)        and a.link_pid = c.link_pid(+)        and a.link_pid=d.link_pid(+) and a.u_record!=2 and mod(a.link_pid,280)="
+//						+ mod;
+//			}
 
 			try {
 
@@ -893,6 +893,56 @@ public class RdLinkTileBuilder {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	public static void run(Configuration conf) throws Exception{
+
+		String tabName = "RDLINK_" + conf.get("dbId");
+		
+		createHBaseTab(conf, tabName);
+
+		FileSystem fs = FileSystem.get(conf);
+
+		String tmpDir = "/" + String.valueOf(new Date().getTime()) + "/";
+
+		fs.mkdirs(new Path(tmpDir));
+
+		int numTask = 50;
+
+		for (int i = 0; i < numTask; i++) {
+
+			OutputStream out = fs.create(new Path(tmpDir + i));
+
+			out.write(String.valueOf(i).getBytes());
+
+			out.flush();
+
+			out.close();
+		}
+
+		Job job = Job.getInstance(conf, "split rdlink");
+
+		job.setJarByClass(RdLinkTileBuilder.class);
+
+		job.setNumReduceTasks(numTask);
+
+		job.setMapOutputKeyClass(Text.class);
+
+		job.setMapOutputValueClass(Text.class);
+
+		job.setPartitionerClass(TilePartitioner.class);
+
+		job.setMapperClass(TileMapper.class);
+
+		job.setMapOutputKeyClass(Text.class);
+
+		job.setMapOutputValueClass(Text.class);
+
+		FileInputFormat.addInputPath(job, new Path(tmpDir));
+
+		TableMapReduceUtil.initTableReducerJob(tabName, TileReducer.class, job);
+		job.waitForCompletion(true);
+
 	}
 
 	/**

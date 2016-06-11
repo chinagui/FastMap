@@ -15,19 +15,26 @@
   <url>http://maven.apache.org</url>
   <dependencies>
   
-	<dependency>
-	    <groupId>javax.servlet</groupId>
-	    <artifactId>servlet-api</artifactId>
-	    <scope>provided</scope>
+  	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>engine-man</artifactId>
 	</dependency>
-	
-    <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>javax.servlet-api</artifactId>
-        <version>3.1.0</version>
-        <scope>provided</scope>
-    </dependency>
-	
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>biz-commons</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>api-datahub</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>api-edit</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>api-man</artifactId>
+	</dependency>
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>commons</artifactId>
@@ -37,15 +44,18 @@
 		<artifactId>datahub</artifactId>
 	</dependency>
 	
+	<!-- 第三方jar -->
 	<dependency>
-		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>engine-man</artifactId>
+	    <groupId>javax.servlet</groupId>
+	    <artifactId>servlet-api</artifactId>
+	    <scope>provided</scope>
 	</dependency>
-	
-	<dependency>
-		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>commons</artifactId>
-	</dependency>
+    <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>3.1.0</version>
+        <scope>provided</scope>
+    </dependency>
 	
     <dependency>
         <groupId>log4j</groupId>
@@ -93,7 +103,6 @@
         <groupId>cglib</groupId>
         <artifactId>cglib</artifactId>
     </dependency>
-
 	<dependency>
 		<groupId>com.fasterxml.jackson.core</groupId>
 		<artifactId>jackson-core</artifactId>

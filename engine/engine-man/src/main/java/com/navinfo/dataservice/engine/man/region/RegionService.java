@@ -317,5 +317,4 @@ public class RegionService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
 }

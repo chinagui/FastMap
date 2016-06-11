@@ -1,10 +1,6 @@
 package com.navinfo.dataservice.web.man.controller;
 
-import java.util.HashMap;
-
 import javax.servlet.http.HttpServletRequest;
-
-import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -19,6 +15,8 @@ import com.navinfo.dataservice.engine.man.region.Region;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.navicommons.database.Page;
 
+import net.sf.json.JSONObject;
+
 /** 
 * @ClassName: RegionController 
 * @author code generator 
@@ -32,7 +30,7 @@ public class RegionController extends BaseController {
 	private RegionService service;
 
 	
-	@RequestMapping(value = "/create")
+	@RequestMapping(value = "/region/create")
 	public ModelAndView create(HttpServletRequest request){
 		try{	
 			String parameter = request.getParameter("param");
@@ -50,7 +48,7 @@ public class RegionController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	@RequestMapping(value = "/update")
+	@RequestMapping(value = "/region/update")
 	public ModelAndView update(HttpServletRequest request){
 		try{			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
@@ -64,7 +62,7 @@ public class RegionController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	@RequestMapping(value = "/delete")
+	@RequestMapping(value = "/region/delete")
 	public ModelAndView delete(HttpServletRequest request){
 		try{			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
@@ -78,7 +76,7 @@ public class RegionController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	@RequestMapping(value = "/list")
+	@RequestMapping(value = "/region/list")
 	public ModelAndView list(HttpServletRequest request){
 		try{			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
@@ -98,7 +96,7 @@ public class RegionController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/query")
+	@RequestMapping(value = "/region/query")
 	public ModelAndView query(HttpServletRequest request){
 		try{
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			

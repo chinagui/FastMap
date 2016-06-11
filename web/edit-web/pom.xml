@@ -49,6 +49,11 @@
 		<artifactId>commons</artifactId>
 	</dependency>
 	
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>biz-commons</artifactId>
+	</dependency>
+	
     <dependency>
         <groupId>log4j</groupId>
         <artifactId>log4j</artifactId>

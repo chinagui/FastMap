@@ -11,6 +11,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -28,6 +29,7 @@ import net.sf.json.JSONObject;
 * @date 2016-06-06 08:19:11 
 * @Description: TODO
 */
+@Service
 public class CityService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 

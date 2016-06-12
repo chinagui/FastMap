@@ -10,6 +10,7 @@ import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.RegionDbInfo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.impcore.flushbylog.LogFlusher;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 
@@ -35,6 +36,7 @@ public class CommitDay2MonthRoadJob extends AbstractJob {
 	public void execute() throws JobException {
 		CommitDay2MonthRoadJobRequest req = (CommitDay2MonthRoadJobRequest)this.getRequest();
 		List<Integer> gridList = req.getGridList();
+		String stopTime = req.getStopTime();
 		ManApi gridSelectorApiSvr = (ManApi) ApplicationContextUtil.getBean("manApi");
 		try{
 			//获取大区和grid的映射关系
@@ -48,8 +50,9 @@ public class CommitDay2MonthRoadJob extends AbstractJob {
 				ManApi manApi =  (ManApi) ApplicationContextUtil.getBean("manApi");
 				RegionDbInfo regionDbInfo = manApi.queryByRegionId(regionId);
 				DatahubApi databhubApi = (DatahubApi) ApplicationContextUtil.getBean("datahubApi");
-				DbInfo regionDailyDb = databhubApi.getDbById(regionDbInfo.getDailyDbId());
+				DbInfo dailyDb = databhubApi.getDbById(regionDbInfo.getDailyDbId());
 				DbInfo monthlyDb = databhubApi.getDbById(regionDbInfo.getMonthlyDbId());
+				LogFlusher logFlusher= new LogFlusher(dailyDb, monthlyDb, gridListOfRegion, null);
 				
 				
 			}

@@ -30,17 +30,5 @@ public class DatahubApiImpl implements DatahubApi {
 	public DbInfo getOnlyDbByType(String bizType) throws Exception {
 		return DbService.getInstance().getOnlyDbByType(bizType);
 	}
-	@Override
-	public DbInfo getDailyDbByRegionId(int regionId) throws Exception {
-		ManApi man = (ManApi)ApplicationContextUtil.getBean("manApi");
-		int dbId = man.getDailyRegionDbId(regionId);
-		return DbService.getInstance().getDbById(dbId);
-	}
-	@Override
-	public DbInfo getMonthlyDbByRegionId(int regionId) throws Exception {
-		ManApi man = (ManApi)ApplicationContextUtil.getBean("manApi");
-		int dbId = man.getMonthlyRegionDbId(regionId);
-		return DbService.getInstance().getDbById(dbId);
-	}
 
 }

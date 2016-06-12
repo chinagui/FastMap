@@ -16,7 +16,14 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
  */
 public class CommitDay2MonthRoadJobRequest extends AbstractJobRequest {
 	private List<Integer> gridList;
+	private String stopTime;//format:yyyymmddhh24miss
 	
+	public String getStopTime() {
+		return stopTime;
+	}
+	public void setStopTime(String stopTime) {
+		this.stopTime = stopTime;
+	}
 	public List<Integer> getGridList() {
 		return gridList;
 	}
@@ -30,13 +37,11 @@ public class CommitDay2MonthRoadJobRequest extends AbstractJobRequest {
 	}
 	@Override
 	public int getStepCount() throws JobException {
-		// TODO Auto-generated method stub
-		return 0;
+		return 1;
 	}
 
 	@Override
 	public void validate() throws JobException {
-		
 
 	}
 

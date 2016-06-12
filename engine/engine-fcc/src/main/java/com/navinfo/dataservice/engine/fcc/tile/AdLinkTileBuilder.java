@@ -824,7 +824,7 @@ public class AdLinkTileBuilder {
 
 		conf.set("maxDegree", props.getProperty("max.degree"));
 
-		String tabName = "adlinkTile_" + props.getProperty("tab.name");
+		String tabName = "ADLINK_" + props.getProperty("tab.name");
 
 		createHBaseTab(conf, tabName);
 

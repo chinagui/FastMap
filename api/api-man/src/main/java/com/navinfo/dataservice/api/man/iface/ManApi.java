@@ -5,6 +5,9 @@ import java.util.List;
 
 import java.util.Map;
 
+import com.navinfo.dataservice.api.man.model.RegionDbInfo;
+
+
 /*
  * @author mayunfei
  * 2016年6月7日
@@ -12,5 +15,6 @@ import java.util.Map;
  */
 public interface ManApi{
 	public Map queryRegionGridMapping(List<Integer> gridList) throws Exception;
+	public RegionDbInfo queryByRegionId(Integer regionId) throws Exception ;
 }
 

@@ -7,10 +7,10 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.bizcommons.glm.GlmColumn;
+import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.datahub.glm.GlmColumn;
-import com.navinfo.dataservice.datahub.glm.GlmTable;
 import com.navinfo.dataservice.diff.exception.DiffException;
 import com.navinfo.navicommons.database.QueryRunner;
 

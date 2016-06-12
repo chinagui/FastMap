@@ -22,13 +22,13 @@ import net.sf.json.JSONObject;
  */
 public class IxPoiPhoto implements IRow {
 	
-	private int poiPid;
+	private int poiPid;//POI号码
 	
-	private int photoId;
+	private int photoId=0;//照片号码
 	
-	private String status;
+	private String status;//状态信息
 	
-	private String memo;
+	private String memo;//备注信息
 	
 	private String rowId;
 	

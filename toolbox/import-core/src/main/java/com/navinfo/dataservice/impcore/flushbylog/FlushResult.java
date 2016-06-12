@@ -15,7 +15,7 @@ public class FlushResult {
 
 	private int insertTotal;
 
-	private int failedTotal;
+	private int failedTotal=0;
 
 	private int updateFailed;
 
@@ -26,6 +26,7 @@ public class FlushResult {
 	private int logOpMoved;
 	private int logDetailMoved;
 	private int logDetailGridMoved;
+	private boolean isSuccess;
 
 	private List<String> insertFailedList = new ArrayList<String>();
 
@@ -191,6 +192,10 @@ public class FlushResult {
 
 	public void setInsertFailed(int insertFailed) {
 		this.insertFailed = insertFailed;
+	}
+	
+	public boolean isSuccess() {
+		return getFailedTotal()>0;
 	}
 
 	public void print() {

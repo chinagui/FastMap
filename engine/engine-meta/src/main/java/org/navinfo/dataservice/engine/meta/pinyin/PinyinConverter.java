@@ -4,7 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import org.navinfo.dataservice.engine.meta.dao.DBConnector;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+
 
 public class PinyinConverter {
 
@@ -22,7 +23,7 @@ public class PinyinConverter {
 
 		try {
 
-			conn = DBConnector.getInstance().getConnection();
+			conn = DBConnector.getInstance().getMetaConnection();
 
 			pstmt = conn.prepareStatement(sql);
 

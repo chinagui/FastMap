@@ -15,9 +15,9 @@ import net.sf.json.JSONArray;
 import oracle.sql.BLOB;
 
 import org.apache.uima.pear.util.FileUtil;
-import org.navinfo.dataservice.engine.meta.dao.DBConnector;
 import org.sqlite.SQLiteConfig;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 
 public class PatternImageExporter {
@@ -36,7 +36,7 @@ public class PatternImageExporter {
 
 		try {
 
-			conn = DBConnector.getInstance().getConnection();
+			conn = DBConnector.getInstance().getMetaConnection();
 
 			PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
 

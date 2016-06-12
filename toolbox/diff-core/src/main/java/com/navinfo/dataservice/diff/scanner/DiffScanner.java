@@ -2,7 +2,7 @@ package com.navinfo.dataservice.diff.scanner;
 
 import java.util.List;
 
-import com.navinfo.dataservice.datahub.glm.GlmTable;
+import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.diff.exception.DiffException;
 
 /**

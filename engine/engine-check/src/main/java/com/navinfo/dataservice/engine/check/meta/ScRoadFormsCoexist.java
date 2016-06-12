@@ -13,7 +13,9 @@ import java.util.Set;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 
-import com.navinfo.dataservice.engine.dao.DBConnector;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+
+
 
 public class ScRoadFormsCoexist{
 	

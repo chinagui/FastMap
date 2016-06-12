@@ -8,9 +8,10 @@ import java.sql.Types;
 import java.util.Date;
 import java.util.Scanner;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+
 import net.sf.json.JSONObject;
 
-import org.navinfo.dataservice.engine.meta.dao.DBConnector;
 
 public class PatternImageUploader {
 
@@ -25,7 +26,7 @@ public class PatternImageUploader {
 		Connection conn = null;
 
 		try {
-			conn = DBConnector.getInstance().getConnection();
+			conn = DBConnector.getInstance().getMetaConnection();
 
 			pstmt = conn.prepareStatement(sql);
 

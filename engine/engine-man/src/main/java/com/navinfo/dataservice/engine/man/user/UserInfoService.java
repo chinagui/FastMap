@@ -7,18 +7,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import net.sf.json.JSONObject;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.stereotype.Service;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.engine.dao.DBConnector;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
+
+import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  UserInfoService 
@@ -26,7 +25,6 @@ import com.navinfo.navicommons.database.QueryRunner;
 * @date 2016-06-06 11:31:13 
 * @Description: TODO
 */
-@Service
 public class UserInfoService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
@@ -59,7 +57,7 @@ public class UserInfoService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();		
+			conn = DBConnector.getInstance().getManConnection();
 			JSONObject obj = JSONObject.fromObject(json);	
 			UserInfo  bean = (UserInfo)JSONObject.toBean(obj, UserInfo.class);	
 			
@@ -119,7 +117,7 @@ public class UserInfoService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();	
+			conn = DBConnector.getInstance().getManConnection();
 			JSONObject obj = JSONObject.fromObject(json);	
 			UserInfo  bean = (UserInfo)JSONObject.toBean(obj, UserInfo.class);	
 			
@@ -179,7 +177,7 @@ public class UserInfoService {
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();		
+			conn = DBConnector.getInstance().getManConnection();
 			JSONObject obj = JSONObject.fromObject(json);	
 			UserInfo  bean = (UserInfo)JSONObject.toBean(obj, UserInfo.class);
 			
@@ -221,7 +219,7 @@ public class UserInfoService {
 				selectSql+=" and USER_ICON=? ";
 				values.add(bean.getUserIcon());
 			};
-			ResultSetHandler rsHandler = new ResultSetHandler<Page>(){
+			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
 				public Page handle(ResultSet rs) throws SQLException {
 					List list = new ArrayList();
 		            Page page = new Page(currentPageNum);
@@ -344,7 +342,7 @@ public class UserInfoService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();		
+			conn = DBConnector.getInstance().getManConnection();
 			JSONObject obj = JSONObject.fromObject(json);	
 			UserInfo  bean = (UserInfo)JSONObject.toBean(obj, UserInfo.class);	
 			

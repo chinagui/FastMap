@@ -25,97 +25,97 @@ public class IxPoiAddress implements IObj {
 
 	private int pid;
 	
-	private int poiPid;
+	private int poiPid;//POI号码
 	
-	private int nameGroupid;
+	private int nameGroupid=1;//名称组号
 	
-	private String langCode;
+	private String langCode;//语言代码
 	
-	private int srcFlag;
+	private int srcFlag=0;//名称来源
 	
-	private String fullName;
+	private String fullName;//地址全称
 	
-	private String rodeName;
+	private String rodeName;//地址道路名
 	
-	private String addrname;
+	private String addrname;//地址门牌号
 	
-	private String province;
+	private String province;//省名
 	
-	private String city;
+	private String city;//市名
 	
-	private String county;
+	private String county;//区县名
 	
-	private String town;
+	private String town;//乡镇街道办
 	
-	private String place;
+	private String place;//地名小区名
 	
-	private String street;
+	private String street;//街巷名
 	
-	private String landmark;
+	private String landmark;//标志物名
 	
-	private String prefix;
+	private String prefix;//前缀
 	
-	private String housesum;
+	private String housesum;//门牌号
 	
-	private String type;
+	private String type;//类型名
 	
-	private String subnum;
+	private String subnum;//子号
 	
-	private String surfix;
+	private String surfix;//后缀
 	
-	private String estab;
+	private String estab;//附属设施名
 	
-	private String building;
+	private String building;//楼栋号
 	
-	private String floor;
+	private String floor;//楼层
 	
-	private String unit;
+	private String unit;//楼门号
 	
-	private String room;
+	private String room;//房间号
 	
-	private String addons;
+	private String addons;//附加信息
 	
-	private String fullnamePhonetic;
+	private String fullnamePhonetic;//地址全称发音
 	
-	private String roadnamePhonetic;
+	private String roadnamePhonetic;//地址道路名发音
 	
-	private String addrnamePhonetic;
+	private String addrnamePhonetic;//地址门牌号发音
 	
-	private String provPhonetic;
+	private String provPhonetic;//省名发音
 	
-	private String cityPhonetic;
+	private String cityPhonetic;//市名发音
 	
-	private String countyPhonetic;
+	private String countyPhonetic;//区县名发音
 	
-	private String townPhonetic;
+	private String townPhonetic;//乡镇街道办发音
 	
-	private String streetPhonetic;
+	private String streetPhonetic;//街巷名发音
 	
-	private String placePhonetic;
+	private String placePhonetic;//地名小区名发音
 	
-	private String landmarkPhonetic;
+	private String landmarkPhonetic;//标志物名发音
 	
-	private String prefixPhonetic;
+	private String prefixPhonetic;//前缀名发音
 	
-	private String housenumPhonetic;
+	private String housenumPhonetic;//门牌号发音
 	
-	private String typePhonetic;
+	private String typePhonetic;//类型名发音
 	
-	private String subsumPhonetic;
+	private String subsumPhonetic;//子号发音
 	
-	private String surfixPhonetic;
+	private String surfixPhonetic;//后缀名发音
 	
-	private String estabPhonetic;
+	private String estabPhonetic;//附属设施名发音
 	
-	private String buildingPhonetic;
+	private String buildingPhonetic;//楼栋号发音
 	
-	private String floorPhonetic;
+	private String floorPhonetic;//楼层发音
 	
-	private String unitPhonetic;
+	private String unitPhonetic;//楼门号发音
 	
-	private String roomPhonetic;
+	private String roomPhonetic;//房间号发音
 	
-	private String addonsPhonetic;
+	private String addonsPhonetic;//附加信息发音
 	
 	private String rowId;
 	

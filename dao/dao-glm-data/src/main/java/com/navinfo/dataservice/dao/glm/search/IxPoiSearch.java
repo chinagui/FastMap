@@ -57,7 +57,7 @@ public class IxPoiSearch implements ISearch {
 			int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 		
-		String sql="select pid,x_guide,y_guide,geometry,p.status, (select count(1) from ix_poi_parent p where p.parent_poi_pid = i.pid) parentCount,  (select count(1) from ix_poi_children c where c.child_poi_pid = i.pid) childCount from ix_poi i,poi_edit_status p where i.row_id = p.row_id and  sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =    'true'  and u_record != 2";
+		String sql="select pid,x_guide,y_guide,geometry,p.status, (select count(1) from ix_poi_parent p where p.parent_poi_pid = i.pid) parentCount,  (select count(1) from ix_poi_children c where c.child_poi_pid = i.pid) childCount from ix_poi i,poi_edit_status p where i.row_id = p.row_id and  sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =    'TRUE'  and u_record != 2";
 		
 		PreparedStatement pstmt = null;
 

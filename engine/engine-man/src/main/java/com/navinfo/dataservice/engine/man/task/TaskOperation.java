@@ -3,7 +3,6 @@ package com.navinfo.dataservice.engine.man.task;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,16 +12,9 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.commons.json.DateJsonValueProcessor;
-import com.navinfo.dataservice.commons.json.TimestampMorpher;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.engine.man.city.CityOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
-
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-import net.sf.json.util.JSONUtils;
 
 public class TaskOperation {
 	private static Logger log = LoggerRepos.getLogger(TaskOperation.class);
@@ -30,22 +22,6 @@ public class TaskOperation {
 	public TaskOperation() {
 		// TODO Auto-generated constructor stub
 	}
-	
-	public static Task jsonToBean(JSONObject json){
-		String[] formats={"yyyy-MM-dd HH:mm:ss","yyyy-MM-dd"};  
-		JSONUtils.getMorpherRegistry().registerMorpher(new TimestampMorpher(formats));  
-		JSONObject taskJson=JSONObject.fromObject(json); 
-		
-		Task  bean = (Task)JSONObject.toBean(taskJson, Task.class);
-		return bean;
-		}
-	
-	public static String beanToJson(Task s){  
-	    JsonConfig config=new JsonConfig();  
-	    config.registerJsonValueProcessor(Timestamp.class, new DateJsonValueProcessor("yyyy-MM-dd HH:mm:ss"));  
-	    JSONObject json=JSONObject.fromObject(s,config);  
-	    return json.toString();
-	    } 
 	
 	/*
 	 * task的latest字段，修改成无效，0

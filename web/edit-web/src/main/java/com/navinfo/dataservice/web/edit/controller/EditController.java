@@ -16,16 +16,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 
@@ -79,11 +78,11 @@ public class EditController extends BaseController {
 
 			String objType = jsonReq.getString("type");
 
-			int projectId = jsonReq.getInt("projectId");
+			int dbId = jsonReq.getInt("dbId");
 
 			JSONObject data = jsonReq.getJSONObject("data");
 
-			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
+			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			SearchProcess p = new SearchProcess(conn);
 
@@ -121,9 +120,9 @@ public class EditController extends BaseController {
 
 			String objType = jsonReq.getString("type");
 
-			int projectId = jsonReq.getInt("projectId");
+			int dbId = jsonReq.getInt("dbId");
 
-			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
+			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			if (jsonReq.containsKey("detailId")) {
 				int detailId = jsonReq.getInt("detailId");
@@ -188,7 +187,7 @@ public class EditController extends BaseController {
 
 			JSONArray type = jsonReq.getJSONArray("type");
 
-			int projectId = jsonReq.getInt("projectId");
+			int dbId = jsonReq.getInt("dbId");
 
 			List<ObjType> types = new ArrayList<ObjType>();
 
@@ -196,7 +195,7 @@ public class EditController extends BaseController {
 				types.add(ObjType.valueOf(type.getString(i)));
 			}
 
-			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
+			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			SearchProcess p = new SearchProcess(conn);
 
@@ -258,6 +257,7 @@ public class EditController extends BaseController {
 			}
 		}
 	}
+
 	@RequestMapping(value = "/poi/base/list")
 	public ModelAndView getPoiList(HttpServletRequest request)
 			throws ServletException, IOException {
@@ -267,17 +267,16 @@ public class EditController extends BaseController {
 		Connection conn = null;
 
 		try {
-			JSONArray array = new JSONArray();
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			int projectId = jsonReq.getInt("projectId");
-			//项目管理（放开）
-			//subtaskId
-			//int subtaskId = jsonReq.getInt("subtaskId");
-			//int type      = jsonReq.getInt("type");
-			int pageNum      = jsonReq.getInt("pageNum");
-			int pageSize      = jsonReq.getInt("pageSize");
-			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
+			int dbId = jsonReq.getInt("dbId");
+			// 项目管理（放开）
+			// subtaskId
+			// int subtaskId = jsonReq.getInt("subtaskId");
+			// int type = jsonReq.getInt("type");
+			int pageNum = jsonReq.getInt("pageNum");
+			int pageSize = jsonReq.getInt("pageSize");
+			conn = DBConnector.getInstance().getConnectionById(dbId);
 			IxPoiSelector selector = new IxPoiSelector(conn);
 			JSONObject jsonObject = selector.loadPids(false, pageSize, pageNum);
 			return new ModelAndView("jsonView", success(jsonObject));

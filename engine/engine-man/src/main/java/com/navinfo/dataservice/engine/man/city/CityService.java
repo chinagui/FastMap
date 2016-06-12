@@ -7,9 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -17,14 +14,14 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
+
+import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  CityService 
@@ -32,6 +29,7 @@ import com.vividsolutions.jts.io.ParseException;
 * @date 2016-06-06 08:19:11 
 * @Description: TODO
 */
+@Service
 public class CityService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
@@ -229,14 +227,10 @@ public class CityService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 					
-			JSONObject jsonReq = JSONObject.fromObject(json);
-			final String wkt= jsonReq.getString("wkt");
-			int planningStatus = jsonReq.getInt("planningStatus");
+			final String wkt= json.getString("wkt");
+			int planningStatus = json.getInt("planningStatus");
 			
-			String selectSql = "select CITY_ID,CITY_NAME,GEOMETRY  from CITY where 1=1 ";
-			List<Object> values=new ArrayList();
-			selectSql+=" and PLAN_STATUS=? ";
-			values.add(planningStatus);
+			String selectSql = "select t.CITY_ID,t.CITY_NAME, t.geometry.get_wkt() as geometry from CITY t where t.PLAN_STATUS="+planningStatus;
 		
 			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
 				public List<HashMap> handle(ResultSet rs) throws SQLException {
@@ -247,9 +241,7 @@ public class CityService {
 								HashMap<String,Object> map = new HashMap<String,Object>();
 								map.put("cityId", rs.getInt("CITY_ID"));
 								map.put("cityName", rs.getString("CITY_NAME"));
-								STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-								Geometry Geom = GeoTranslator.struct2Jts(struct, 100000, 0);
-								map.put("geometry", GeoTranslator.jts2Wkt(Geom));
+								map.put("geometry", rs.getObject("geometry"));
 								list.add(map);
 							}
 						} catch (ParseException e) {
@@ -265,12 +257,7 @@ public class CityService {
 				}
 	    		
 	    	}		;
-	    	if (values.size()==0){
-	    		return run.query(conn, selectSql, rsHandler
-						);
-	    	}
-	    	return run.query(conn, selectSql, rsHandler,values.toArray()
-					);
+	    	return run.query(conn, selectSql, rsHandler);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

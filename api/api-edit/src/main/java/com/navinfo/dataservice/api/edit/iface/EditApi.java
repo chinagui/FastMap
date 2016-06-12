@@ -7,6 +7,6 @@ package com.navinfo.dataservice.api.edit.iface;
 * @Description: TODO
 *  
 */
-public class EditApi {
-
+public interface EditApi {
+	
 }

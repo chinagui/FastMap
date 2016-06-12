@@ -76,15 +76,20 @@ public class TaskController extends BaseController {
 	}
 	/*
 	 * 规划管理页面--任务管理--关闭任务
+	 * 关闭按钮：
+	 * 1.选中需要关闭的任务，点击“关闭任务”按钮，后台判断该任务是否可以关闭
+	 * 【关闭原则：判断该city下面的所有block均关闭且所有的月编区域作业子任务均关闭，则可以关闭任务】：
+	 * (1)如果可以关闭，页面弹出提示框
+	 * (2)不可以关闭，页面弹出提示框
 	 */
 	@RequestMapping(value = "/task/close")
-	public ModelAndView delete(HttpServletRequest request){
+	public ModelAndView close(HttpServletRequest request){
 		try{			
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
-			service.delete(dataJson);			
+			service.close(dataJson);			
 			return new ModelAndView("jsonView", success("删除成功"));
 		}catch(Exception e){
 			log.error("删除失败，原因："+e.getMessage(), e);

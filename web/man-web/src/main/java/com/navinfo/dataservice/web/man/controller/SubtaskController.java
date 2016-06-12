@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -31,7 +31,7 @@ import net.sf.json.JSONObject;
 @Controller
 public class SubtaskController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	@Autowired 
+//	@Autowired 
 	private SubtaskService service = new SubtaskService();
 
 	
@@ -61,8 +61,12 @@ public class SubtaskController extends BaseController {
 	public ModelAndView listByWkt(HttpServletRequest request){
 		try{		
 			
-			
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("param参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
@@ -80,16 +84,27 @@ public class SubtaskController extends BaseController {
 	public ModelAndView listByBlock(HttpServletRequest request){
 		try{		
 			
-			
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("param参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
 			
 			int curPageNum= 1;//默认为第一页
-			curPageNum = dataJson.getInt("pageNum");
+			if(dataJson.containsKey("pageNum")){
+				curPageNum = dataJson.getInt("pageNum");
+			}
 			
-			Page data = service.listByBlock(dataJson,curPageNum);	
+			int pageSize = 20;//默认页容量为10
+			if(dataJson.containsKey("pageSize")){
+				pageSize = dataJson.getInt("pageSize");
+			}
+			
+			Page data = service.listByBlock(dataJson,curPageNum,pageSize);	
 			
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
@@ -113,10 +128,17 @@ public class SubtaskController extends BaseController {
 			}
 			
 			int curPageNum= 1;//默认为第一页
-			curPageNum = dataJson.getInt("pageNum");
+			if(dataJson.containsKey("pageNum")){
+				curPageNum = dataJson.getInt("pageNum");
+			}
+			
+			int pageSize = 20;//默认页容量为10
+			if(dataJson.containsKey("pageSize")){
+				pageSize = dataJson.getInt("pageSize");
+			}
 			
 			
-			Page data = service.listByUser(dataJson,curPageNum);	
+			Page data = service.listByUser(dataJson,curPageNum,pageSize);	
 			
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
@@ -127,7 +149,7 @@ public class SubtaskController extends BaseController {
 	
 	
 	
-	@RequestMapping(value = "/delete")
+	@RequestMapping(value = "/subtask/delete")
 	public ModelAndView delete(HttpServletRequest request){
 		try{			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
@@ -143,15 +165,22 @@ public class SubtaskController extends BaseController {
 	}
 
 	
-	@RequestMapping(value = "/query")
+	@RequestMapping(value = "/subtask/query")
 	public ModelAndView query(HttpServletRequest request){
 		try{
 			
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("param参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
-			HashMap data = service.query(dataJson);			
+			
+			HashMap data = service.query(dataJson);		
+			
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("获取明细失败，原因："+e.getMessage(), e);
@@ -160,7 +189,7 @@ public class SubtaskController extends BaseController {
 	}
 	
 	
-	@RequestMapping(value = "/update")
+	@RequestMapping(value = "/subtask/update")
 	public ModelAndView update(HttpServletRequest request){
 		try{
 			

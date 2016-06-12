@@ -18,7 +18,7 @@ import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.engine.man.dao.DBConnector;
+
 import com.navinfo.dataservice.engine.man.task.Task;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -107,11 +107,14 @@ public class SubtaskService {
 			String type = "(";
 			for (int i = 0;i<types.size();i++){
 				type += types.getInt(i);
+				if(i < types.size()-1){
+					type += ",";
+				}
 			}
 			
 			type += ")";
 			
-			String querySql = "select subtask_id, TO_CHAR(s.geometry.get_wkt()) as geometry form subtask where type in" + type 
+			String querySql = "select s.subtask_id, TO_CHAR(s.geometry.get_wkt()) as geometry,s.descp from subtask s where type in" + type 
 			+ " and stage =" + stage 
 			+ " and SDO_GEOM.RELATE(geometry, 'ANYINTERACT', " + "sdo_geometry(" +  "'" + wkt + "',8307)" + ", 0.000005) ='TRUE'";
 		
@@ -271,39 +274,35 @@ public class SubtaskService {
 		}
 	}
 	
-	public Page listByBlock(JSONObject json,final int currentPageNum)throws ServiceException{
+	public Page listByBlock(JSONObject json,final int currentPageNum,final int pageSize)throws ServiceException{
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
+
+			int blockId = json.getInt("blockId");
 			
-			int pageSize = 20;//默认页容量为10
-			pageSize = json.getInt("pageSize");
-					
-			json.remove("pageNum");
-			json.remove("pageSize");
-				
-			Subtask bean = (Subtask)JSONObject.toBean(json, Subtask.class);
+			String selectSql = "select s.SUBTASK_ID,"
+					+ "s.STAGE,"
+					+ "s.TYPE,"
+					+ "TO_CHAR(s.PLAN_START_DATE) AS PLAN_START_DATE,"
+					+ "TO_CHAR(s.PLAN_END_DATE) AS PLAN_END_DATE,"
+					+ "s.DESCP,"
+					+ "TO_CHAR(s.GEOMETRY.get_wkt()) AS GEOMETRY "
+					+ "from SUBTASK s "
+					+ "where s.BLOCK_ID = " + blockId;
 
-			String selectSql = "select SUBTASK_ID,STAGE,TYPE,PLAN_START_DATE,PLAN_END_DATE,DESCP,TO_CHAR(GEOMETRY.get_wkt()) AS GEOMETRY from SUBTASK where 1=1 ";
-			
-			List<Object> values = new ArrayList();
-
-			if (bean!=null&&bean.getBlockId()!=null && StringUtils.isNotEmpty(bean.getBlockId().toString())){
-				selectSql+=" and BLOCK_ID=? ";
-				values.add(bean.getBlockId());
-			};
-
-			if (bean!=null&&bean.getStage()!=null && StringUtils.isNotEmpty(bean.getStage().toString())){
-				selectSql+=" and STAGE=? ";
-				values.add(bean.getStage());
-			};
+			if(json.containsKey("stage")){
+				int stage = json.getInt("stage");
+				selectSql = selectSql + "and s.STAGE = " + stage;
+			}
 			
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
 
 				public Page handle(ResultSet rs) throws SQLException {
 					List list = new ArrayList();
 		            Page page = new Page(currentPageNum);
+		            page.setPageSize(pageSize);
 					while(rs.next()){
 						HashMap map = new HashMap();
 						page.setTotalCount(rs.getInt(QueryRunner.TOTAL_RECORD_NUM));
@@ -322,11 +321,8 @@ public class SubtaskService {
 	    		
 	    	}	;
 	    	
-			if (values.size()==0){
-	    		return run.query(currentPageNum, pageSize, conn, selectSql, rsHandler);
-	    	}
-			
-	    	return run.query(currentPageNum, pageSize, conn, selectSql, rsHandler,values.toArray());
+	    	return run.query(currentPageNum, pageSize, conn, selectSql, rsHandler);
+
 	    	
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -340,7 +336,7 @@ public class SubtaskService {
 	
 	
 	
-	public Page listByUser(JSONObject json,final int currentPageNum)throws ServiceException{
+	public Page listByUser(JSONObject json,final int currentPageNum,final int pageSize)throws ServiceException{
 		Connection conn = null;
 		try{
 			
@@ -349,14 +345,6 @@ public class SubtaskService {
 					
 			int userId = json.getInt("userId");
 			int snapshot = json.getInt("snapshot");
-			
-			int pageSize = 20;//默认页容量为10
-
-			pageSize = json.getInt("pageSize"); 
-			
-			int stage = json.getInt("stage");
-			int type = json.getInt("type");
-			int status = json.getInt("status");
 
 			String selectSql;
 			
@@ -365,12 +353,27 @@ public class SubtaskService {
 			}else{
 				selectSql = "select * from SUBTASK where 1=1 ";
 			}
-
 			
+			if(json.containsKey("stage")){
+				int stage = json.getInt("stage");
+				selectSql = selectSql +"";
+			}
+			
+			if(json.containsKey("type")){
+				int type = json.getInt("type");
+				selectSql = selectSql +"";
+			}
+			
+			if(json.containsKey("status")){
+				int status = json.getInt("status");
+				selectSql = selectSql +"";
+			}
+		
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
 				public Page handle(ResultSet rs) throws SQLException {
 					List list = new ArrayList();
 		            Page page = new Page(currentPageNum);
+		            page.setPageSize(pageSize);
 					while(rs.next()){
 						HashMap map = new HashMap();
 						page.setTotalCount(rs.getInt(QueryRunner.TOTAL_RECORD_NUM));
@@ -409,15 +412,15 @@ public class SubtaskService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			
-			String selectSql = "select SUBTASK_ID,"
-					+ "STAGE,"
-					+ "TYPE,"
-					+ "PLAN_START_DATE,"
-					+ "PLAN_END_DATE,"
-					+ "DESCP,"
-					+ "TO_CHAR(GEOMETRY.get_wkt()) AS GEOMETRY "
-					+ "from SUBTASK "
-					+ "where SUBTASK_ID="
+			String selectSql = "select s.SUBTASK_ID,"
+					+ "s.STAGE,"
+					+ "s.TYPE,"
+					+ "TO_CHAR(s.PLAN_START_DATE) AS PLAN_START_DATE,"
+					+ "TO_CHAR(s.PLAN_END_DATE) AS PLAN_END_DATE,"
+					+ "s.DESCP,"
+					+ "TO_CHAR(s.GEOMETRY.get_wkt()) AS GEOMETRY "
+					+ "from SUBTASK s "
+					+ "where s.SUBTASK_ID="
 					+ json.getInt("subtaskId");
 			
 			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>(){
@@ -430,6 +433,8 @@ public class SubtaskService {
 						map.put("type", rs.getInt("TYPE"));
 						map.put("planStartDate", rs.getObject("PLAN_START_DATE"));
 						map.put("planEndDate", rs.getObject("PLAN_END_DATE"));
+//						map.put("planStartDate", rs.getString("PLAN_START_DATE"));
+//						map.put("planEndDate", rs.getString("PLAN_END_DATE"));
 						map.put("descp", rs.getString("DESCP"));
 						return map;
 					}

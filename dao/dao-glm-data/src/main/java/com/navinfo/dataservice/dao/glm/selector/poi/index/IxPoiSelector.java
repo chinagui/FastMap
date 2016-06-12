@@ -175,10 +175,10 @@ public class IxPoiSelector implements ISelector {
 				IxPoiPhotoSelector ixPoiPhotoSelector = new IxPoiPhotoSelector(
 						conn);
 
-				ixPoi.setPhotoes(ixPoiPhotoSelector.loadRowsByParentId(id,
+				ixPoi.setPhotos(ixPoiPhotoSelector.loadRowsByParentId(id,
 						isLock));
 
-				for (IRow row : ixPoi.getPhotoes()) {
+				for (IRow row : ixPoi.getPhotos()) {
 					IxPoiPhoto obj = (IxPoiPhoto) row;
 
 					ixPoi.photoMap.put(obj.getRowId(), obj);

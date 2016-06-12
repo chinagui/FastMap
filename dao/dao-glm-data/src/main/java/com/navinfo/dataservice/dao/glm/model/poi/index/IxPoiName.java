@@ -28,23 +28,23 @@ public class IxPoiName implements IObj {
 
 	private int pid;
 
-	private int poiPid;//POI号码
+	private int poiPid;// POI号码
 
-	private int nameGroupid=1;//名称组号
+	private int nameGroupid = 1;// 名称组号
 
-	private String langCode;//语言代码
+	private String langCode;// 语言代码
 
-	private int nameClass=1;//名称分类
+	private int nameClass = 1;// 名称分类
 
-	private int nameType=1;//名称内容
+	private int nameType = 1;// 名称内容
 
-	private String name;//名称内容
+	private String name;// 名称内容
 
-	private String namePhonetic;//名称发音
+	private String namePhonetic;// 名称发音
 
-	private String keywords;//关键字
+	private String keywords;// 关键字
 
-	private String nidePid;//现有PID
+	private String nidePid;// 现有PID
 
 	private String rowId;
 
@@ -55,7 +55,7 @@ public class IxPoiName implements IObj {
 	private List<IRow> nameFlags = new ArrayList<IRow>();
 
 	public Map<String, IxPoiNameFlag> nameFlagMap = new HashMap<String, IxPoiNameFlag>();
-	
+
 	public Map<String, IxPoiNameTone> nameToneMap = new HashMap<String, IxPoiNameTone>();
 
 	public int getPid() {
@@ -240,10 +240,84 @@ public class IxPoiName implements IObj {
 		while (keys.hasNext()) {
 			String key = (String) keys.next();
 
+			if (json.get(key) instanceof JSONArray) {
+				continue;
+			} else {
+				if (!"objStatus".equals(key)) {
+
+					Field field = this.getClass().getDeclaredField(key);
+
+					field.setAccessible(true);
+
+					Object objValue = field.get(this);
+
+					String oldValue = null;
+
+					if (objValue == null) {
+						oldValue = "null";
+					} else {
+						oldValue = String.valueOf(objValue);
+					}
+
+					String newValue = json.getString(key);
+
+					if (!newValue.equals(oldValue)) {
+						Object value = json.get(key);
+
+						if (value instanceof String) {
+							changedFields.put(key, newValue.replace("'", "''"));
+						} else {
+							changedFields.put(key, value);
+						}
+
+					}
+
+				}
+			}
+		}
+
+		if (changedFields.size() > 0)
+
+		{
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public int mesh() {
+		return this.mesh();
+	}
+
+	@Override
+	public void setMesh(int mesh) {
+	}
+
+	@Override
+	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
+		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("name");
+		}
+
+		return json;
+	}
+
+	@Override
+	public boolean Unserialize(JSONObject json) throws Exception {
+		Iterator keys = json.keys();
+
+		while (keys.hasNext()) {
+			String key = (String) keys.next();
+
 			JSONArray ja = null;
 
 			if (json.get(key) instanceof JSONArray) {
+
 				switch (key) {
+
 				case "nameTones":
 					nameTones.clear();
 
@@ -279,88 +353,18 @@ public class IxPoiName implements IObj {
 				default:
 					break;
 				}
+
 			} else {
+
 				if (!"objStatus".equals(key)) {
+					Field f = this.getClass().getDeclaredField(key);
 
-					Field field = this.getClass().getDeclaredField(key);
+					f.setAccessible(true);
 
-					field.setAccessible(true);
-
-					Object objValue = field.get(this);
-
-					String oldValue = null;
-
-					if (objValue == null) {
-						oldValue = "null";
-					} else {
-						oldValue = String.valueOf(objValue);
-					}
-
-					String newValue = json.getString(key);
-
-					if (!newValue.equals(oldValue)) {
-						Object value = json.get(key);
-
-						if (value instanceof String) {
-							changedFields.put(key, newValue.replace("'", "''"));
-						} else {
-							changedFields.put(key, value);
-						}
-
-					}
+					f.set(this, json.get(key));
 
 				}
 			}
-		}
-
-	if(changedFields.size()>0)
-
-	{
-		return true;
-	}else
-	{
-		return false;
-	}
-	}
-
-	@Override
-	public int mesh() {
-		return this.mesh();
-	}
-
-	@Override
-	public void setMesh(int mesh) {
-	}
-
-	@Override
-	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
-
-		if (objLevel == ObjLevel.HISTORY) {
-			json.remove("name");
-		}
-
-		return json;
-	}
-
-	@Override
-	public boolean Unserialize(JSONObject json) throws Exception {
-		@SuppressWarnings("rawtypes")
-		Iterator keys = json.keys();
-
-		while (keys.hasNext()) {
-
-			String key = (String) keys.next();
-
-			if (!"objStatus".equals(key)) {
-
-				Field f = this.getClass().getDeclaredField(key);
-
-				f.setAccessible(true);
-
-				f.set(this, json.get(key));
-			}
-
 		}
 		return true;
 	}

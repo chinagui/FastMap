@@ -1,19 +1,9 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.update;
 
-import java.sql.Connection;
-
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
-import com.navinfo.dataservice.dao.glm.iface.IProcess;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
-import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
-import com.navinfo.dataservice.engine.edit.edit.operation.OperatorFactory;
-import com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.update.Operation;
-import com.navinfo.dataservice.engine.edit.edit.operation.obj.rdcross.update.Command;
 
 public class Process extends AbstractProcess<Command> {
 
@@ -127,7 +117,7 @@ public class Process extends AbstractProcess<Command> {
 //	@Override
 //	public boolean recordData() throws Exception {
 //		
-//		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
+//		LogWriter lw = new LogWriter(conn, this.command.getDbId());
 //		
 //		lw.generateLog(command, result);
 //		

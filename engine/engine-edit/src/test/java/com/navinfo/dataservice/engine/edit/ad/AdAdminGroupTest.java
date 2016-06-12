@@ -2,12 +2,12 @@ package com.navinfo.dataservice.engine.edit.ad;
 
 import java.sql.Connection;
 
-import net.sf.json.JSONObject;
-
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
+
+import net.sf.json.JSONObject;
 
 public class AdAdminGroupTest {
 	public static void searchAdminGroupLevel() {

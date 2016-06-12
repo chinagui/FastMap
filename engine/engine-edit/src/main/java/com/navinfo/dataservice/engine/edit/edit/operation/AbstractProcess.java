@@ -4,17 +4,13 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.check.CheckCommand;
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.check.CheckEngine;
-import com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.update.Command;
 
 /** 
  * @ClassName: Abstractprocess
@@ -50,8 +46,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	public AbstractProcess(AbstractCommand command) throws Exception {
 		this.command = (T)command;
 		this.result = new Result();
-		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
-				.getProjectId());
+		this.conn = DBConnector.getInstance().getConnectionById(this.command
+				.getDbId());
 		//初始化检查参数
 		this.initCheckCommand();
 	}
@@ -60,9 +56,9 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	public void initCheckCommand() throws Exception{
 		this.checkCommand.setObjType(this.command.getObjType());
 		this.checkCommand.setOperType(this.command.getOperType());
-		this.checkCommand.setProjectId(this.command.getProjectId());
+		this.checkCommand.setProjectId(this.command.getDbId());
 		//this.checkCommand.setGlmList(this.command.getGlmList());
-		this.checkEngine=new CheckEngine(checkCommand,this.conn,this.command.getProjectId());
+		this.checkEngine=new CheckEngine(checkCommand,this.conn,this.command.getDbId());
 	}
 
 	/* (non-Javadoc)
@@ -185,7 +181,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	 */
 	@Override
 	public boolean recordData() throws Exception {
-		LogWriter lw = new LogWriter(conn, this.command.getProjectId());
+		LogWriter lw = new LogWriter(conn, this.command.getDbId());
 		lw.generateLog(command, result);
 		OperatorFactory.recordData(conn, result);
 		lw.recordLog(command, result);

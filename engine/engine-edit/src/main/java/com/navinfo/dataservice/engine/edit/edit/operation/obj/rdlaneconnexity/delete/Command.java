@@ -38,7 +38,7 @@ public class Command extends AbstractCommand {
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 
-		this.setProjectId(json.getInt("projectId"));
+		this.setDbId(json.getInt("subTaskId"));
 
 		this.pid = json.getInt("objId");
 		

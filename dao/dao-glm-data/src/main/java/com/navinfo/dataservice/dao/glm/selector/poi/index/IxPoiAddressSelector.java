@@ -11,7 +11,6 @@ import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAudio;
 
 /**
  * POI地址表selector

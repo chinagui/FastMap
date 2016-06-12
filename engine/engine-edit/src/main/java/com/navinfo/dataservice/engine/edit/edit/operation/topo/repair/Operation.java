@@ -88,7 +88,7 @@ public class Operation implements IOperation {
 
 			JSONObject json = new JSONObject();
 
-			json.put("projectId", command.getProjectId());
+			json.put("subTaskId", command.getDbId());
 
 			JSONObject data = new JSONObject();
 
@@ -363,7 +363,7 @@ public class Operation implements IOperation {
 			JSONObject data = new JSONObject();
 
 			breakJson.put("objId", interLine.getInt("pid"));
-			breakJson.put("projectId", command.getProjectId());
+			breakJson.put("subTaskId", command.getDbId());
 
 			int nodePid = interLine.getInt("nodePid");
 			if (nodePid == updateLink.getsNodePid()) {

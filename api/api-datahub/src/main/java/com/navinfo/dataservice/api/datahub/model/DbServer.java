@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.api.datahub.model;
 
+import java.io.Serializable;
 import java.util.Set;
 
 /** 
@@ -8,7 +9,7 @@ import java.util.Set;
  * @Description: TODO
  *  
  */
-public class DbServer {
+public class DbServer implements Serializable{
 	private int sid;
 	protected String type=DbServerType.TYPE_NONE;
 	private String ip;

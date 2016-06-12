@@ -12,10 +12,8 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.datahub.model.DbServer;
-import com.navinfo.dataservice.api.job.iface.JobApiService;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.RandomUtil;
 import com.navinfo.dataservice.datahub.chooser.DbServerChooser;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
@@ -274,10 +272,5 @@ public class DbService {
 			return db;
 		}
 		
-	}
-	
-	public String help(){
-		JobApiService jobService = (JobApiService)ApplicationContextUtil.getBean("jobApiService");
-		return jobService.help();
 	}
 }

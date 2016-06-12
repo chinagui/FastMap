@@ -12,6 +12,7 @@ import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
@@ -19,7 +20,6 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 public class RdSpeedlimitSearch implements ISearch {
 
@@ -258,7 +258,7 @@ public class RdSpeedlimitSearch implements ISearch {
 
 	public static void main(String[] args) throws Exception {
 
-		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
 
 		RdSpeedlimitSearch a = new RdSpeedlimitSearch(conn);
 

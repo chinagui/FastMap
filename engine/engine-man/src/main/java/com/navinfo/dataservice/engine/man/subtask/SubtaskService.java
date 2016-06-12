@@ -34,6 +34,7 @@ import net.sf.json.JSONObject;
 * @date 2016-06-06 07:40:14 
 * @Description: TODO
 */
+@Service
 public class SubtaskService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 

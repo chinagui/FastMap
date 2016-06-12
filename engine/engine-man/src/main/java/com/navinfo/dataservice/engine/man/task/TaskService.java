@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.engine.man.city.CityOperation;
 import com.navinfo.dataservice.engine.man.task.Task;
+import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -42,7 +43,7 @@ public class TaskService {
 			conn = DBConnector.getInstance().getManConnection();
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
-				Task bean = TaskOperation.jsonToBean(taskJson);	
+				Task bean = (Task) JsonOperation.jsonToBean(taskJson,Task.class);
 				bean.setCreateUserId((int) userId);
 				TaskOperation.insertTask(conn, bean);
 				TaskOperation.updateLatest(conn,bean.getCityId());
@@ -68,7 +69,7 @@ public class TaskService {
 			
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
-				Task bean=TaskOperation.jsonToBean(taskJson);
+				Task bean=(Task) JsonOperation.jsonToBean(taskJson,Task.class);
 				TaskOperation.updateTask(conn, bean);				
 			}
 			
@@ -127,7 +128,7 @@ public class TaskService {
 		}
 	}
 	
-	public Page list(JSONObject conditionJson,JSONObject orderJson,int currentPageNum)throws Exception{
+	public Page list(JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();	
@@ -135,7 +136,7 @@ public class TaskService {
 			JSONObject obj = JSONObject.fromObject(conditionJson);
 			
 			String selectSql = "select * from task where LATEST=1 ";
-			if(null!=conditionJson){
+			if(null!=conditionJson && !conditionJson.isEmpty()){
 				Iterator keys = conditionJson.keys();
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
@@ -145,8 +146,8 @@ public class TaskService {
 					if ("status".equals(key)) {selectSql+=" and status="+conditionJson.getInt(key);}					
 					}
 				}
-			if(null!=orderJson){
-				Iterator keys = conditionJson.keys();
+			if(null!=orderJson && !orderJson.isEmpty()){
+				Iterator keys = orderJson.keys();
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
 					if ("collectPlanStartDate".equals(key)) {selectSql+=" order by COLLECT_PLAN_START_DATE";break;}
@@ -163,7 +164,7 @@ public class TaskService {
 					if ("monthProducePlanStartDate".equals(key)) {selectSql+=" order by MONTH_PRODUCE_PLAN_END_DATE";break;}
 					}
 			}
-			return TaskOperation.selectTaskBySql(conn, selectSql, null,currentPageNum);
+			return TaskOperation.selectTaskBySql(conn, selectSql, null,currentPageNum,pageSize);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

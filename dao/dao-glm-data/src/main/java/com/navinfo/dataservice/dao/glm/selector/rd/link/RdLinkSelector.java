@@ -1937,7 +1937,7 @@ public class RdLinkSelector implements ISelector {
 	}
 	
 //	public static void main(String[] args) throws Exception {
-//		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+//		Connection conn = DBConnector.getInstance().getConnectionById(11);
 //		
 //		RdLinkSelector se = new RdLinkSelector(conn);
 //		List<Integer> s = new ArrayList<Integer>();

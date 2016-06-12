@@ -4,10 +4,7 @@ import java.sql.Connection;
 
 import javax.sql.DataSource;
 
-import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.commons.database.DbConnectConfig;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.datahub.service.DbService;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 
 /**
  * oracle连接池管理器
@@ -22,8 +19,6 @@ public class PidServicePool {
 		return SingletonHolder.INSTANCE;
 	}
 
-	private DataSource dataSource;
-
 	/**
 	 * 通過項目ID獲取數據庫連接
 	 * 
@@ -33,19 +28,6 @@ public class PidServicePool {
 	 * @throws Exception
 	 */
 	public Connection getConnection() throws Exception {
-
-		if (dataSource == null) {
-			synchronized (this) {
-				if (dataSource == null) {
-					DbInfo db = DbService.getInstance().getOnlyDbByType("pidCenter");
-					DbConnectConfig connConfig = MultiDataSourceFactory.createConnectConfig(db.getConnectParam());
-					dataSource = MultiDataSourceFactory.getInstance()
-							.getDataSource(connConfig);
-
-				}
-			}
-		}
-
-		return dataSource.getConnection();
+		return DBConnector.getInstance().getPidConnection();
 	}
 }

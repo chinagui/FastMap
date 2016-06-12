@@ -10,13 +10,13 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.AdAdminSelector;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 public class AdAdminSearch implements ISearch {
 
@@ -123,7 +123,7 @@ public class AdAdminSearch implements ISearch {
 	}
 
 	public static void main(String[] args) throws Exception {
-		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
 		
 		AdAdminSearch a = new AdAdminSearch(conn);
 		

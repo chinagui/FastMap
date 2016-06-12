@@ -308,7 +308,7 @@ public class TipsSelector {
 	 * @throws Exception
 	 */
 	public JSONArray getSnapshot(JSONArray grids, JSONArray stages, int type,
-			int projectId) throws Exception {
+			int dbId) throws Exception {
 		JSONArray jsonData = new JSONArray();
 
 		String wkt = GridUtils.grids2Wkt(grids);
@@ -353,7 +353,7 @@ public class TipsSelector {
 
 		try {
 
-			oraConn = DBConnector.getInstance().getConnectionById(projectId);;
+			oraConn = DBConnector.getInstance().getConnectionById(dbId);;
 
 			RdLinkSelector selector = new RdLinkSelector(oraConn);
 

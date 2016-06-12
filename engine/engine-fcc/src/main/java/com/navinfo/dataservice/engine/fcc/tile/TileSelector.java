@@ -27,7 +27,7 @@ public class TileSelector {
 	 * @return 瓦片数据列表
 	 * @throws Exception
 	 */
-	public static List<String> getRdLinkTiles(int x, int y, int z, int projectId) throws Exception {
+	public static List<String> getRdLinkTiles(int x, int y, int z, int dbId) throws Exception {
 
 		List<String> listResult = new ArrayList<String>();
 
@@ -36,7 +36,7 @@ public class TileSelector {
 
 		HBaseController control = new HBaseController();
 		
-		ArrayList<KeyValue> list = control.getByRowkey("linkTile_"+projectId, key, null);
+		ArrayList<KeyValue> list = control.getByRowkey("RDLINK_"+dbId, key, null);
 
 		for (KeyValue kv : list) {
 			listResult.add(new String(kv.value()));
@@ -57,7 +57,7 @@ public class TileSelector {
 	 * @return 瓦片数据列表
 	 * @throws Exception
 	 */
-	public static List<String> getRwLinkTiles(int x, int y, int z, int projectId) throws Exception {
+	public static List<String> getRwLinkTiles(int x, int y, int z, int dbId) throws Exception {
 
 		List<String> listResult = new ArrayList<String>();
 
@@ -66,7 +66,7 @@ public class TileSelector {
 
 		HBaseController control = new HBaseController();
 		
-		ArrayList<KeyValue> list = control.getByRowkey("rwlinkTile_"+projectId, key, null);
+		ArrayList<KeyValue> list = control.getByRowkey("RWLINK_"+dbId, key, null);
 
 		for (KeyValue kv : list) {
 			listResult.add(new String(kv.value()));
@@ -87,7 +87,7 @@ public class TileSelector {
 	 * @return 瓦片数据列表
 	 * @throws Exception
 	 */
-	public static List<String> getAdLinkTiles(int x, int y, int z, int projectId) throws Exception {
+	public static List<String> getAdLinkTiles(int x, int y, int z, int dbId) throws Exception {
 
 		List<String> listResult = new ArrayList<String>();
 
@@ -96,7 +96,7 @@ public class TileSelector {
 
 		HBaseController control = new HBaseController();
 		
-		ArrayList<KeyValue> list = control.getByRowkey("adlinkTile_"+projectId, key, null);
+		ArrayList<KeyValue> list = control.getByRowkey("ADLINK_"+dbId, key, null);
 
 		for (KeyValue kv : list) {
 			listResult.add(new String(kv.value()));
@@ -105,20 +105,20 @@ public class TileSelector {
 		return listResult;
 	}
 	
-	public static JSONObject getByTiles(List<ObjType> types, int x, int y, int z, int projectId) throws Exception{
+	public static JSONObject getByTiles(List<ObjType> types, int x, int y, int z, int dbId) throws Exception{
 		
 		JSONObject data = new JSONObject();
 		
 		for(ObjType type : types){
 			switch(type){
 			case RDLINK:
-				data.put("RDLINK", getRdLinkTiles(x, y, z, projectId));
+				data.put("RDLINK", getRdLinkTiles(x, y, z, dbId));
 				break;
 			case RWLINK:
-				data.put("RWLINK", getRwLinkTiles(x, y, z, projectId));
+				data.put("RWLINK", getRwLinkTiles(x, y, z, dbId));
 				break;
 			case ADLINK:
-				data.put("ADLINK", getAdLinkTiles(x, y, z, projectId));
+				data.put("ADLINK", getAdLinkTiles(x, y, z, dbId));
 			}
 		}
 		

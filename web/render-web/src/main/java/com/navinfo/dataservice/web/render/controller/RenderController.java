@@ -43,7 +43,7 @@ public class RenderController extends BaseController {
 
 			JSONArray type = jsonReq.getJSONArray("types");
 
-			int projectId = jsonReq.getInt("projectId");
+			int dbId = jsonReq.getInt("dbId");
 
 			int x = jsonReq.getInt("x");
 
@@ -67,10 +67,10 @@ public class RenderController extends BaseController {
 
 			if (z <= 16) {
 
-				data = TileSelector.getByTiles(types, x, y, z, projectId);
+				data = TileSelector.getByTiles(types, x, y, z, dbId);
 
 			} else {
-				conn = DBConnector.getInstance().getConnectionById(projectId);
+				conn = DBConnector.getInstance().getConnectionById(dbId);
 
 				SearchProcess p = new SearchProcess(conn);
 

@@ -6,6 +6,7 @@ import net.sf.json.JSONObject;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.jobframework.commit.CommitDay2MonthRoadJobRequest;
 
@@ -18,6 +19,8 @@ public class CommitDay2MonthRoadJobRequestTest {
 
 	@Before
 	public void setUp() throws Exception {
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(  
+                new String[] { "applicationContext.xml" }); 
 	}
 
 	@Test

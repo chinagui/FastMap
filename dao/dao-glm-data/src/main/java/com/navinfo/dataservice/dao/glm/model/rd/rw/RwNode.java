@@ -44,7 +44,7 @@ public class RwNode implements IObj {
 
 	private List<IRow> meshs = new ArrayList<>();
 
-	public Map<String, RwLinkName> meshMap = new HashMap<>();
+	public Map<String, RwNodeMesh> meshMap = new HashMap<>();
 
 	public int getPid() {
 		return pid;

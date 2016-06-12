@@ -83,7 +83,7 @@ public class TaskController extends BaseController {
 	 * (2)不可以关闭，页面弹出提示框
 	 */
 	@RequestMapping(value = "/task/close")
-	public ModelAndView delete(HttpServletRequest request){
+	public ModelAndView close(HttpServletRequest request){
 		try{			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
 			if(dataJson==null){

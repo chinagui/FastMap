@@ -188,6 +188,48 @@ public class IxPoi implements IObj {
 	
 	//更新记录*
 	private int uRecord;
+	//POI等级
+	
+	private String level = "A";
+	//运动场馆
+	private String sportsVenue;
+	//内部标示
+	private int indoor = 0;
+	//VIP表示
+	private String vipFlag;
+			
+
+	public String getLevel() {
+		return level;
+	}
+
+	public void setLevel(String level) {
+		this.level = level;
+	}
+
+	public String getSportsVenue() {
+		return sportsVenue;
+	}
+
+	public void setSportsVenue(String sportsVenue) {
+		this.sportsVenue = sportsVenue;
+	}
+
+	public int getIndoor() {
+		return indoor;
+	}
+
+	public void setIndoor(int indoor) {
+		this.indoor = indoor;
+	}
+
+	public String getVipFlag() {
+		return vipFlag;
+	}
+
+	public void setVipFlag(String vipFlag) {
+		this.vipFlag = vipFlag;
+	}
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -219,7 +261,7 @@ public class IxPoi implements IObj {
 
 	public Map<String, IxPoiName> nameMap = new HashMap<String, IxPoiName>();
 
-	private List<IRow> parents = new ArrayList<IRow>();
+	private List<IRow> parent = new ArrayList<IRow>();
 
 	public Map<String, IxPoiParent> parentMap = new HashMap<String, IxPoiParent>();
 
@@ -731,12 +773,12 @@ public class IxPoi implements IObj {
 		this.names = names;
 	}
 
-	public List<IRow> getParents() {
-		return parents;
+	public List<IRow> getParent() {
+		return parent;
 	}
 
-	public void setParents(List<IRow> parents) {
-		this.parents = parents;
+	public void setParent(List<IRow> parent) {
+		this.parent = parent;
 	}
 
 	public List<IRow> getPhotoes() {
@@ -967,7 +1009,7 @@ public class IxPoi implements IObj {
 		children.add(this.getFlags());
 		children.add(this.getIcons());
 		children.add(this.getNames());
-		children.add(this.getParents());
+		children.add(this.getParent());
 		children.add(this.getPhotoes());
 		children.add(this.getVideoes());
 		
@@ -1190,9 +1232,9 @@ public class IxPoi implements IObj {
 					}
 
 					break;
-				case "parents":
+				case "parent":
 
-					parents.clear();
+					parent.clear();
 
 					ja = json.getJSONArray(key);
 
@@ -1203,7 +1245,7 @@ public class IxPoi implements IObj {
 
 						row.Unserialize(jo);
 
-						parents.add(row);
+						parent.add(row);
 					}
 
 					break;

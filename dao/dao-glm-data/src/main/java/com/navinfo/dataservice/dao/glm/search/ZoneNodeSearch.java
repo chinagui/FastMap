@@ -9,33 +9,35 @@ import java.util.List;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
-import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
-import com.vividsolutions.jts.geom.Geometry;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneNodeSelector;
 
-public class IxPoiSearch implements ISearch {
 
+/**
+ * 
+ * @author luyao
+ *
+ */
+public class ZoneNodeSearch implements ISearch {
+	
 	private Connection conn;
 
-	public IxPoiSearch(Connection conn) {
+	public ZoneNodeSearch(Connection conn) {
 		super();
 		this.conn = conn;
 	}
-
+	
 	@Override
 	public IObj searchDataByPid(int pid) throws Exception {
+		ZoneNodeSelector zoneNodeSelector = new ZoneNodeSelector(conn);
 
-		IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
+		IObj node = (IObj) zoneNodeSelector.loadById(pid, false);
 
-		IObj ixPoi = (IObj) ixPoiSelector.loadById(pid, false);
-
-		return ixPoi;
+		return node;
 	}
 
 	@Override
@@ -56,8 +58,8 @@ public class IxPoiSearch implements ISearch {
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
 			int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
-		
-		String sql="select pid,x_guide,y_guide,geometry,p.status, (select count(1) from ix_poi_parent p where p.parent_poi_pid = i.pid) parentCount,  (select count(1) from ix_poi_children c where c.child_poi_pid = i.pid) childCount from ix_poi i,poi_edit_status p where i.row_id = p.row_id and  sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =    'TRUE'  and u_record != 2";
+
+		String sql = "with tmp1 as  (select node_pid, geometry     from zone_node    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2), tmp2 as  (select /*+ index(a) */    b.node_pid,    listagg(a.link_pid, ',') within group(order by b.node_pid) linkpids     from zone_link a, tmp1 b    where a.u_record != 2      and (a.s_node_pid = b.node_pid or a.e_node_pid = b.node_pid)    group by b.node_pid) select a.node_pid, a.geometry, b.linkpids   from tmp1 a, tmp2 b  where a.node_pid = b.node_pid";
 		
 		PreparedStatement pstmt = null;
 
@@ -79,35 +81,15 @@ public class IxPoiSearch implements ISearch {
 			while (resultSet.next()) {
 				SearchSnapshot snapshot = new SearchSnapshot();
 
-				int parentCount=resultSet.getInt("parentCount");
-				
-				int childCount=resultSet.getInt("childCount");
-				
-				String haveParentOrChild= GetParentOrChild( parentCount, childCount);	
-				int status = resultSet.getInt("status");
-				
 				JSONObject m = new JSONObject();
 
-				m.put("a", haveParentOrChild);
-				m.put("b", status);
-				
-				Double xGuide = resultSet.getDouble("x_guide");
-
-				Double yGuide = resultSet.getDouble("y_guide");
-
-				Geometry guidePoint = GeoTranslator.point2Jts(xGuide, yGuide);
-
-				JSONObject guidejson = GeoTranslator.jts2Geojson(guidePoint);
-
-				Geojson.point2Pixel(guidejson, z, px, py);
-
-				m.put("c", guidejson.getJSONArray("coordinates"));
+				m.put("a", resultSet.getString("linkpids"));
 
 				snapshot.setM(m);
-				
-				snapshot.setT(21);
 
-				snapshot.setI(resultSet.getString("pid"));
+				snapshot.setT(20);
+
+				snapshot.setI(resultSet.getString("node_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
@@ -143,33 +125,5 @@ public class IxPoiSearch implements ISearch {
 
 		return list;
 	}
-	
-	private String GetParentOrChild(int parentCount,int childCount)
-	{
-		String haveParentOrChild="0";
-		
-		if(parentCount>0)
-		{
-			haveParentOrChild="1";
-		}
-		
-		if(childCount>0)
-		{
-			haveParentOrChild="2";
-		}
-		
-		if(parentCount>0||childCount>0)
-		{
-			haveParentOrChild="3";
-		}	
-		
-		return haveParentOrChild;
-	}
 
-	public static void main(String[] args) throws Exception {
-		
-		Connection conn = DBConnector.getInstance().getConnectionById(11);
-		new IxPoiSearch(conn).searchDataByTileWithGap(215890,99229,18,
-					80);
-	}
 }

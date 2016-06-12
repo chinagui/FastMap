@@ -153,11 +153,11 @@ public class IxPoiAddressSelector implements ISelector {
 		
 		ixPoiAddress.setSrcFlag(resultSet.getInt("src_flag"));
 		
-		ixPoiAddress.setFullName(resultSet.getString("fullname"));
+		ixPoiAddress.setFullname(resultSet.getString("fullname"));
 		
 		ixPoiAddress.setFullnamePhonetic(resultSet.getString("fullname_phonetic"));
 		
-		ixPoiAddress.setRodeName(resultSet.getString("roadname"));
+		ixPoiAddress.setRodename(resultSet.getString("roadname"));
 		
 		ixPoiAddress.setRoadnamePhonetic(resultSet.getString("roadname_phonetic"));
 		

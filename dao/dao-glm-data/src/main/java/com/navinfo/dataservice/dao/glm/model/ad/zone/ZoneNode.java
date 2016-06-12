@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.dao.glm.model.poi.index;
+package com.navinfo.dataservice.dao.glm.model.ad.zone;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -9,21 +9,24 @@ import java.util.Map;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 
-import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.vividsolutions.jts.geom.Geometry;
 
 
 /**
- * POI父子关系父表
+ * ZoneNode表
  * @author luyao
  *
  */
-public class IxPoiParent implements IObj {
+public class ZoneNode implements IObj {
 	
 	private String rowId;
 	
@@ -31,101 +34,148 @@ public class IxPoiParent implements IObj {
 	
 	private int pid;
 	
-	private int parentPoiPid;//父POI号码
+	private int kind=1;//种别
 	
-	private int tenantFlag=0;//有无租户
+	private int form=0;//形态
 	
-	private String memo;//备注信息
+	private Geometry geometry;
+
+	private int editFlag = 1;//编辑标识
 	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
-	private List<IRow> poiChildrens = new ArrayList<IRow>();
+	private List<IRow> meshes = new ArrayList<IRow>();
+
+	public Map<String, ZoneNodeMesh> meshMap = new HashMap<String, ZoneNodeMesh>();
 	
-	public Map<String, IxPoiChildren> poiChildrenMap = new HashMap<String, IxPoiChildren>();
-
-	public IxPoiParent() {
-
-	}
+	public ZoneNode() {
+	}	
 	
 	public int getPid() {
 		return pid;
 	}
 
-	public void setPid(int Pid) {
-		this.pid = Pid;
+	public void setPid(int pid) {
+		this.pid = pid;
 	}
 
-	public int getParentPoiPid() {
-		return parentPoiPid;
+
+
+	public int getKind() {
+		return kind;
 	}
 
-	public void setParentPoiPid(int parentPoiPid) {
-		this.parentPoiPid = parentPoiPid;
+
+
+	public void setKind(int kind) {
+		this.kind = kind;
 	}
 
-	public int getTenantFlag() {
-		return tenantFlag;
+
+
+	public int getForm() {
+		return form;
 	}
 
-	public void setTenantFlag(int tenantFlag) {
-		this.tenantFlag = tenantFlag;
+
+
+	public void setForm(int form) {
+		this.form = form;
 	}
 
-	public String getMemo() {
-		return memo;
+
+
+	public Geometry getGeometry() {
+		return geometry;
 	}
 
-	public void setMemo(String memo) {
-		this.memo = memo;
+
+
+	public void setGeometry(Geometry geometry) {
+		this.geometry = geometry;
 	}
 
-	public List<IRow> getPoiChildrens() {
-		return poiChildrens;
+
+
+	public int getEditFlag() {
+		return editFlag;
 	}
 
-	public void setPoiChildrens(List<IRow> poiChildrens) {
-		this.poiChildrens = poiChildrens;
+
+
+	public void setEditFlag(int editFlag) {
+		this.editFlag = editFlag;
 	}
-	
-	@Override
-	public String rowId() {
+
+
+
+	public Map<String, Object> getChangedFields() {
+		return changedFields;
+	}
+
+
+
+	public void setChangedFields(Map<String, Object> changedFields) {
+		this.changedFields = changedFields;
+	}
+
+
+
+	public List<IRow> getMeshes() {
+		return meshes;
+	}
+
+
+
+	public void setMeshes(List<IRow> meshes) {
+		this.meshes = meshes;
+	}
+
+
+
+	public String getRowId() {
 		return rowId;
 	}
-	
-	public String getRowId() {
+
+
+
+	@Override
+	public String rowId() {
 		return rowId;
 	}
 
 	@Override
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
+
 	}
 
 	@Override
 	public String tableName() {
-
-		return "ix_poi_parent";
+		return "zone_node";
 	}
 
 	@Override
 	public ObjStatus status() {
-		
+		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		
+		// TODO Auto-generated method stub
+
 	}
 
 	@Override
 	public ObjType objType() {
-		return ObjType.IXPOIPARENT;
+		return ObjType.ZONENODE;
 	}
 
 	@Override
 	public void copy(IRow row) {
-		
+		// TODO Auto-generated method stub
+
 	}
 
 	@Override
@@ -135,7 +185,7 @@ public class IxPoiParent implements IObj {
 
 	@Override
 	public String parentPKName() {
-		return "group_id";
+		return "node_pid";
 	}
 
 	@Override
@@ -145,15 +195,15 @@ public class IxPoiParent implements IObj {
 
 	@Override
 	public String parentTableName() {
-		return "ix_poi_parent";
+		return "zone_node";
 	}
 
 	@Override
 	public List<List<IRow>> children() {
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
-		
-		children.add(this.getPoiChildrens());
-		
+
+		children.add(this.getMeshes());
+
 		return children;
 	}
 
@@ -167,6 +217,17 @@ public class IxPoiParent implements IObj {
 
 			if (json.get(key) instanceof JSONArray) {
 				continue;
+			} else if ("geometry".equals(key)) {
+
+				JSONObject geojson = json.getJSONObject(key);
+
+				String wkt = Geojson.geojson2Wkt(geojson.toString());
+
+				String oldwkt = GeoTranslator.jts2Wkt(geometry, 0.00001, 5);
+
+				if (!wkt.equals(oldwkt)) {
+					changedFields.put(key, json.getJSONObject(key));
+				}
 			} else {
 				if (!"objStatus".equals(key)) {
 
@@ -194,9 +255,7 @@ public class IxPoiParent implements IObj {
 						} else {
 							changedFields.put(key, value);
 						}
-
 					}
-
 				}
 			}
 		}
@@ -210,17 +269,22 @@ public class IxPoiParent implements IObj {
 
 	@Override
 	public int mesh() {
-		return mesh;
+		
+		return this.mesh;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
+		this.mesh=mesh;
 	}
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		return JSONObject.fromObject(this, JsonUtils.getStrConfig());		
+		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+
+		JSONObject json = JSONObject.fromObject(this, jsonConfig);
+
+		return json;
 	}
 
 	@Override
@@ -229,25 +293,54 @@ public class IxPoiParent implements IObj {
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {
-
 			String key = (String) keys.next();
 
-			if (!"objStatus".equals(key)) {
+			JSONArray ja = null;
 
+			if (json.get(key) instanceof JSONArray) {
+
+				switch (key) {
+				case "meshes":
+
+					meshes.clear();
+
+					ja = json.getJSONArray(key);
+
+					for (int i = 0; i < ja.size(); i++) {
+						JSONObject jo = ja.getJSONObject(i);
+
+						ZoneNodeMesh row = new ZoneNodeMesh();
+
+						row.Unserialize(jo);
+
+						meshes.add(row);
+					}
+					break;
+				default:
+					break;
+				}
+
+			} else if ("geometry".equals(key)) {
+
+				Geometry jts = GeoTranslator.geojson2Jts(json.getJSONObject(key), 100000, 0);
+
+				this.setGeometry(jts);
+
+			} else {
 				Field f = this.getClass().getDeclaredField(key);
 
 				f.setAccessible(true);
 
 				f.set(this, json.get(key));
 			}
-
 		}
+
 		return true;
 	}
 
 	@Override
 	public List<IRow> relatedRows() {
-		
+		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -258,7 +351,7 @@ public class IxPoiParent implements IObj {
 
 	@Override
 	public String primaryKey() {
-		return "group_id";
+		return "node_pid";
 	}
 
 }

@@ -25,6 +25,6 @@
             </bean>
         </constructor-arg>
     </bean>
-
+	<bean id="applicationContextUtil" class="com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil"/>
 
 </beans>

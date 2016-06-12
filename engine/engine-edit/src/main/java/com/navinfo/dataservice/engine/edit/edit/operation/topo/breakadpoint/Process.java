@@ -70,7 +70,7 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public void postCheck() throws Exception {
 		super.postCheck();
-		check.postCheck(this.getConn(), this.getResult(),this.getCommand().getProjectId());
+		check.postCheck(this.getConn(), this.getResult(),this.getCommand().getDbId());
 	}
 	@Override
 	public String exeOperation() throws Exception {

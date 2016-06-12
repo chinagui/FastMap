@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.diff.config;
+package com.navinfo.dataservice.diff;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;

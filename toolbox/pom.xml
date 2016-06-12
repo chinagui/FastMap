@@ -13,6 +13,7 @@
 		<module>diff-core</module>
 		<module>export-core</module>
 		<module>import-core</module>
+		<module>job-datahub</module>
     </modules>
     <packaging>pom</packaging>
     <name>toolbox</name>

@@ -161,7 +161,19 @@
         <groupId>org.springframework</groupId>
         <artifactId>spring-webmvc</artifactId>
     </dependency>
-     
+    <dependency>
+	    <groupId>org.apache.zookeeper</groupId>
+	    <artifactId>zookeeper</artifactId>
+	    <type>pom</type>
+	</dependency>
+	<dependency>
+	    <groupId>com.github.sgroschupf</groupId>
+	    <artifactId>zkclient</artifactId>
+	</dependency>
+    <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>dubbo</artifactId>
+    </dependency>
   </dependencies>
   <build>
     <finalName>render</finalName>

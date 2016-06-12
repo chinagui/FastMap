@@ -43,7 +43,7 @@
 	</dependency>
 	<dependency>
  		<groupId>com.navinfo.dataservice</groupId>
- 		<artifactId>datahub</artifactId>
+ 		<artifactId>api-datahub</artifactId>
 	</dependency>
  	<dependency>
  		<groupId>com.navinfo.dataservice</groupId>

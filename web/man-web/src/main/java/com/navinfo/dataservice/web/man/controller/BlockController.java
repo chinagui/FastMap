@@ -31,7 +31,7 @@ public class BlockController extends BaseController {
 	private BlockService service;
 
 	
-	@RequestMapping(value = "/create")
+	@RequestMapping(value = "/block/create")
 	public ModelAndView create(HttpServletRequest request){
 		try{	
 			String parameter = request.getParameter("param");
@@ -49,7 +49,7 @@ public class BlockController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	@RequestMapping(value = "/update")
+	@RequestMapping(value = "/block/update")
 	public ModelAndView update(HttpServletRequest request){
 		try{			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
@@ -63,7 +63,7 @@ public class BlockController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	@RequestMapping(value = "/delete")
+	@RequestMapping(value = "/block/delete")
 	public ModelAndView delete(HttpServletRequest request){
 		try{			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
@@ -121,6 +121,34 @@ public class BlockController extends BaseController {
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("获取明细失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * 根据用户组和作业阶段，返回属于该用户组的，有该作业阶段的子任务的Block。
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/block/listByGroup")
+	public ModelAndView listByGroup(HttpServletRequest request){
+		try{			
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!(dataJson.containsKey("wkt")) || !(dataJson.containsKey("planningStatus"))){
+				throw new IllegalArgumentException("wkt、planningStatus参数是必须的。");
+			}
+			String wkt= dataJson.getString("wkt");
+			String  planningStatus = dataJson.getString("planningStatus");
+			if(StringUtils.isEmpty(wkt) || StringUtils.isEmpty(planningStatus)){
+				throw new IllegalArgumentException("wkt、planningStatus参数值不能为空");
+			}
+			List<HashMap> data = service.listByWkt(dataJson);			
+			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("获取block列表失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}

@@ -188,6 +188,48 @@ public class IxPoi implements IObj {
 	
 	//更新记录*
 	private int uRecord;
+	//POI等级
+	
+	private String level = "A";
+	//运动场馆
+	private String sportsVenue;
+	//内部标示
+	private int indoor = 0;
+	//VIP表示
+	private String vipFlag;
+			
+
+	public String getLevel() {
+		return level;
+	}
+
+	public void setLevel(String level) {
+		this.level = level;
+	}
+
+	public String getSportsVenue() {
+		return sportsVenue;
+	}
+
+	public void setSportsVenue(String sportsVenue) {
+		this.sportsVenue = sportsVenue;
+	}
+
+	public int getIndoor() {
+		return indoor;
+	}
+
+	public void setIndoor(int indoor) {
+		this.indoor = indoor;
+	}
+
+	public String getVipFlag() {
+		return vipFlag;
+	}
+
+	public void setVipFlag(String vipFlag) {
+		this.vipFlag = vipFlag;
+	}
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 

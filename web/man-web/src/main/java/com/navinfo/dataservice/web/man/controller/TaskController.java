@@ -105,7 +105,12 @@ public class TaskController extends BaseController {
 			if (StringUtils.isNotEmpty(curPage)){
 				curPageNum = Integer.parseInt(curPage);
 			}
-			Page data = service.list(condition,order,curPageNum);			
+			int curPageSize= 20;//默认为20条记录/页
+			String curSize= request.getParameter("pageSize");
+			if (StringUtils.isNotEmpty(curSize)){
+				curPageSize = Integer.parseInt(curSize);
+			}
+			Page data = service.list(condition,order,curPageNum,curPageSize);			
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);

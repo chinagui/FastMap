@@ -8,8 +8,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 
 public class DatabaseOperator {
 
@@ -41,7 +40,7 @@ public class DatabaseOperator {
 	
 	public static void main(String[] args) throws Exception{
 		String sql="select a.link_pid from rd_link a";
-		Connection conn=GlmDbPoolManager.getInstance().getConnection(11);
+		Connection conn=DBConnector.getInstance().getConnectionById(11);
 		DatabaseOperator getObj=new DatabaseOperator();
 		List<Object> resultList=new ArrayList<Object>();
 		resultList=getObj.exeSelect(conn, sql);

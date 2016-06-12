@@ -46,7 +46,7 @@ public class Command extends AbstractCommand {
 			this.elat = Math.round(data.getDouble("elat") * 100000) / 100000.0;
 		}
 
-		this.setSubTaskId(json.getInt("subTaskId"));
+		this.setDbId(json.getInt("subTaskId"));
 	}
 
 	public int getLinkPid() {

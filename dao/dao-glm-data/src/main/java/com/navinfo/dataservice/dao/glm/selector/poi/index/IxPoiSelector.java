@@ -5,6 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
@@ -17,7 +21,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingPlot;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingPlotPh;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingStation;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiDetail;
-import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiEvent;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiGasstation;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiHotel;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiIntroduction;
@@ -43,17 +46,12 @@ import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiChargingPlotPhSele
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiChargingPlotSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiChargingStationSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDetailSelector;
-import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiEventSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiGasstationSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiHotelSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiIntroductionSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiParkingSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiRestaurantSelector;
 import com.vividsolutions.jts.geom.Geometry;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
 
 /**
  * POI基础信息表 selector

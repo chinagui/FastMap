@@ -38,4 +38,7 @@ public class JobApiServiceImpl implements JobApiService{
 		// TODO Auto-generated method stub
 		return "Hello,Job External Service.";
 	}
+	public static void main(String[] args){
+		
+	}
 }

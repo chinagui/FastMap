@@ -1,23 +1,23 @@
 package com.navinfo.dataservice.engine.check.rules;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.sql.Connection;
 
+import net.sf.json.JSONObject;
+
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.check.CheckEngine;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.vividsolutions.jts.geom.Geometry;
-
-import net.sf.json.JSONObject;
 
 /** 
  * @ClassName: GLM02257
@@ -259,7 +259,7 @@ public class GLM02257 extends baseRule {
 		List<IRow> objList=new ArrayList<IRow>();
 		objList.add(link);
 		
-		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
 		
 		//检查调用
 		CheckCommand checkCommand=new CheckCommand();

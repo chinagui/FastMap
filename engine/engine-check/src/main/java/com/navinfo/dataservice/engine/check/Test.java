@@ -6,13 +6,13 @@ import java.util.List;
 
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.check.core.CheckRule;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.graph.ChainLoader;
@@ -29,7 +29,7 @@ public class Test {
 		link.setsNodePid(2);
 		link.seteNodePid(2);
 		
-		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
 		
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 
@@ -70,7 +70,7 @@ public class Test {
 		link.setsNodePid(2);
 		link.seteNodePid(2);
 		
-		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
 		
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 

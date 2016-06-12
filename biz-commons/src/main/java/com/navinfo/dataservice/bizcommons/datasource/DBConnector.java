@@ -26,6 +26,7 @@ public class DBConnector {
 	private DataSource manDataSource;
 	private DataSource metaDataSource;
 	private DataSource mkDataSource;
+	private DataSource pidDataSource;
 
 	// 大区库连接池
 	private Map<String, DataSource> dataSourceMap = new HashMap<String, DataSource>();
@@ -101,6 +102,30 @@ public class DBConnector {
 		}
 		return mkDataSource.getConnection();
 	}
+	
+	public Connection getPidConnection() throws SQLException {
+		if (pidDataSource == null) {
+			synchronized (this) {
+				if (pidDataSource == null) {
+					DatahubApi datahub = (DatahubApi) ApplicationContextUtil
+							.getBean("datahubApi");
+					DbInfo metaDb = null;
+					DbConnectConfig connConfig = null;
+					try {
+						metaDb = datahub.getOnlyDbByType("pidCenter");
+						connConfig = MultiDataSourceFactory
+								.createConnectConfig(metaDb.getConnectParam());
+					} catch (Exception e) {
+						throw new SQLException("从datahub获取元数据信息失败："
+								+ e.getMessage(), e);
+					}
+					pidDataSource = MultiDataSourceFactory.getInstance()
+							.getDataSource(connConfig);
+				}
+			}
+		}
+		return pidDataSource.getConnection();
+	}
 
 	public Connection getConnectionById(int dbId) throws Exception {
 
@@ -131,5 +156,6 @@ public class DBConnector {
 
 		return dataSourceMap.get(str).getConnection();
 	}
+	
 	
 }

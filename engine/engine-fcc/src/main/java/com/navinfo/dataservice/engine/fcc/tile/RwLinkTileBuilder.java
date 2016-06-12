@@ -828,7 +828,7 @@ public class RwLinkTileBuilder {
 
 		conf.set("maxDegree", props.getProperty("max.degree"));
 
-		String tabName = "rwlinkTile_" + props.getProperty("tab.name");
+		String tabName = "RWLINK_" + props.getProperty("tab.name");
 
 		createHBaseTab(conf, tabName);
 

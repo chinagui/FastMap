@@ -1001,7 +1001,7 @@ public class RdLinkTileBuilder {
 
 		conf.set("maxDegree", props.getProperty("max.degree"));
 
-		String tabName = "linkTile_" + props.getProperty("tab.name");
+		String tabName = "RDLINK_" + props.getProperty("tab.name");
 
 		createHBaseTab(conf, tabName);
 

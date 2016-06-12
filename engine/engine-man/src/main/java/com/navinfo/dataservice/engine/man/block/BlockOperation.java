@@ -11,8 +11,12 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;
+
+import oracle.sql.CLOB;
 
 public class BlockOperation {
 	private static Logger log = LoggerRepos.getLogger(BlockOperation.class);
@@ -28,10 +32,17 @@ public class BlockOperation {
 				public List<HashMap> handle(ResultSet rs) throws SQLException {
 					List<HashMap> list = new ArrayList<HashMap>();
 					while(rs.next()){
-						HashMap<String, Integer> map = new HashMap<String, Integer>();
+						HashMap map = new HashMap<String, Integer>();
 						map.put("blockId", rs.getInt("BLOCK_ID"));
 						map.put("blockName", rs.getInt("BLOCK_NAME"));
-						map.put("geometry", rs.getInt("GEOMETRY"));
+						CLOB clob = (CLOB)rs.getObject("geometry");
+						String clobStr = DataBaseUtils.clob2String(clob);
+						try {
+							map.put("geometry",Geojson.wkt2Geojson(clobStr));
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 						list.add(map);
 					}
 					return list;

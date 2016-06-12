@@ -14,12 +14,15 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONObject;
+import oracle.sql.CLOB;
 
 /** 
 * @ClassName:  BlockService 
@@ -212,7 +215,7 @@ public class BlockService {
 			
 			conn =  DBConnector.getInstance().getManConnection();	
 			
-			String selectSql ="select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY, from BLOCK t where PLAN_STATUS="+json.getInt("planningStatus");
+			String selectSql ="select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY from BLOCK t where PLAN_STATUS="+json.getInt("planningStatus");
 					
 			if (StringUtils.isNotEmpty(json.getString("snapshot"))){
 				if ("1".equals(json.getString("snapshot"))){
@@ -255,14 +258,21 @@ public class BlockService {
 						map.put("blockId", rs.getInt("BLOCK_ID"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("blockName", rs.getString("BLOCK_NAME"));
-						map.put("geometry", rs.getObject("GEOMETRY"));
+						CLOB clob = (CLOB)rs.getObject("GEOMETRY");
+						String clobStr = DataBaseUtils.clob2String(clob);
+						try {
+							map.put("geometry", Geojson.wkt2Geojson(clobStr));
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 						map.put("planStatus", rs.getInt("PLAN_STATUS"));
 						return map;
 					}
 					return null;
 				}
 	    		
-	    	}		;				
+	    	};			
 			return run.query(conn, 
 					   selectSql,
 					   rsHandler, 

@@ -149,7 +149,7 @@ public class IxPoiHotelSelector implements ISelector {
 		ixPoiHotel.setService(resultSet.getString("service"));
 		ixPoiHotel.setParking(resultSet.getInt("parking"));
 		ixPoiHotel.setLongDescription(resultSet.getString("long_description"));
-		ixPoiHotel.setLongDescriptionEng(resultSet.getString("long_descrip_eng"));
+		ixPoiHotel.setLongDescripEng(resultSet.getString("long_descrip_eng"));
 		ixPoiHotel.setOpenHour(resultSet.getString("open_hour"));
 		ixPoiHotel.setOpenHourEng(resultSet.getString("open_hour_eng"));
 		ixPoiHotel.setTelephone(resultSet.getString("telephone"));

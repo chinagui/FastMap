@@ -29,7 +29,7 @@ public class IxPoiRestaurant implements IObj {
 	private int avgCost = 0 ;//人均消费
 	private int parking = 0;//停车服务
 	private String longDescription;//餐饮描述 
-	private String longDescriptionEng;//餐饮描述 英文
+	private String longDescripEng;//餐饮描述 英文
 	private String  openHour;//营业时间 
 	private String  openHourEng;//英文版的详细营业时间的文字描述
 	private String telephone ;//电话  
@@ -49,18 +49,13 @@ public class IxPoiRestaurant implements IObj {
 		this.creditCard = creditCard;
 	}
 
-	
-
-	public String getLongDescriptionEng() {
-		return longDescriptionEng;
+	public String getLongDescripEng() {
+		return longDescripEng;
 	}
 
-	public void setLongDescriptionEng(String longDescriptionEng) {
-		this.longDescriptionEng = longDescriptionEng;
+	public void setLongDescripEng(String longDescripEng) {
+		this.longDescripEng = longDescripEng;
 	}
-
-
-	
 
 	public int getMesh() {
 		return mesh;

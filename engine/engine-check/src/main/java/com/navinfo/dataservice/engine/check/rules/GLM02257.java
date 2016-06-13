@@ -244,35 +244,34 @@ public class GLM02257 extends baseRule {
 
 	}
 	
-	 public static void main(String[] args) throws Exception{
-	 RdLink link=new RdLink();
-	 String str=
-	 "{ \"type\": \"LineString\",\"coordinates\": [ [116.17659, 39.97508], [116.16144, 39.94844],[116.20427, 39.94322],[116.20427, 39.94322], [116.17659, 39.97508] ]}";
-	 JSONObject geometry = JSONObject.fromObject(str);
-	 Geometry geometry2=GeoTranslator.geojson2Jts(geometry, 1, 5);
-	 link.setGeometry(geometry2);
-	 // link.setPid(262558);
-	 // link.setsNodePid(173460);
-	 // link.seteNodePid(173462);
-	 link.setPid(12962846);
-	 link.setsNodePid(532307);
-	 link.seteNodePid(11048003);
-	 List<IRow> objList=new ArrayList<IRow>();
-	 objList.add(link);
-	
-	 Connection conn = DBConnector.getInstance().getConnectionById(11);
-	
-	 //检查调用
-	 CheckCommand checkCommand=new CheckCommand();
-	 checkCommand.setProjectId(11);
-	 checkCommand.setGlmList(objList);
-	 checkCommand.setOperType(OperType.UPDATE);
-	 checkCommand.setObjType(link.objType());
-	
-	 CheckEngine checkEngine=new CheckEngine(checkCommand,conn,11);
-	 checkEngine.postCheck();
-	
-	 }
+	public static void main(String[] args) throws Exception{
+		RdLink link=new RdLink();
+		String str= "{ \"type\": \"LineString\",\"coordinates\": [ [116.17659, 39.97508], [116.16144, 39.94844],[116.20427, 39.94322],[116.20427, 39.94322], [116.17659, 39.97508] ]}";
+		JSONObject geometry = JSONObject.fromObject(str);
+		Geometry geometry2=GeoTranslator.geojson2Jts(geometry, 1, 5);
+		link.setGeometry(geometry2);
+//		link.setPid(262558);
+//		link.setsNodePid(173460);
+//		link.seteNodePid(173462);
+		link.setPid(12962846);
+		link.setsNodePid(532307);
+		link.seteNodePid(11048003);
+		List<IRow> objList=new ArrayList<IRow>();
+		objList.add(link);
+		
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
+		
+		//检查调用
+		CheckCommand checkCommand=new CheckCommand();
+		checkCommand.setProjectId(11);
+		checkCommand.setGlmList(objList);
+		checkCommand.setOperType(OperType.UPDATE);
+		checkCommand.setObjType(link.objType());
+		
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn,11);
+		checkEngine.postCheck();
+		
+	}
 
 }
 

@@ -9,6 +9,7 @@ import java.util.List;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -163,14 +164,14 @@ public class AdFaceSearch implements ISearch {
 		return list;
 	}
 
-//	public static void main(String[] args) throws Exception {
-//
-//		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
-//
-//		AdFaceSearch s = new AdFaceSearch(conn);
-//
-//		IObj obj = s.searchDataByPid(83804);
-//
-//		System.out.println(obj.Serialize(null));
-//	}
+	public static void main(String[] args) throws Exception {
+
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
+
+		AdFaceSearch s = new AdFaceSearch(conn);
+
+		IObj obj = s.searchDataByPid(83804);
+
+		System.out.println(obj.Serialize(null));
+	}
 }

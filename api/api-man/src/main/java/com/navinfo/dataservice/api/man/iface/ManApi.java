@@ -5,8 +5,7 @@ package com.navinfo.dataservice.api.man.iface;
  *
  */
 public interface ManApi {
-	public int getDailyDbByRegion(int regionId) throws Exception;
+	public int getDailyRegionDbId(int regionId) throws Exception;
 	
-	public int getMonthlyDbByRegion(int regionId) throws Exception;
-	
+	public int getMonthlyRegionDbId(int regionId) throws Exception;
 }

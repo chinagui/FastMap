@@ -9,6 +9,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 
@@ -387,18 +388,18 @@ public class NiValExceptionSelector {
 		return 0;
 	}
 	
-//	public static void main(String[] args) throws Exception {
-//
-//
-//		NiValExceptionSelector selector = new NiValExceptionSelector(
-//				GlmDbPoolManager.getInstance().getConnection(11));
-//
-//		JSONArray grids = new JSONArray();
-//
-//		grids.add(60560303);
-//
-//		System.out.println(selector.loadCountByGrid(grids));
-//		
-//		System.out.println(selector.loadByGrid(grids, 10, 1));
-//	}
+	public static void main(String[] args) throws Exception {
+
+
+		NiValExceptionSelector selector = new NiValExceptionSelector(
+				DBConnector.getInstance().getConnectionById(11));
+
+		JSONArray grids = new JSONArray();
+
+		grids.add(60560303);
+
+		System.out.println(selector.loadCountByGrid(grids));
+		
+		System.out.println(selector.loadByGrid(grids, 10, 1));
+	}
 }

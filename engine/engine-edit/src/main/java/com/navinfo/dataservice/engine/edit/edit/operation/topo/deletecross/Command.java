@@ -83,7 +83,7 @@ public class Command extends AbstractCommand {
 		this.pid = json.getInt("objId");
 		
 //		this.projectId = json.getInt("projectId");
-		this.setSubTaskId(json.getInt("subTaskId"));
+		this.setDbId(json.getInt("subTaskId"));
 	}
 
 

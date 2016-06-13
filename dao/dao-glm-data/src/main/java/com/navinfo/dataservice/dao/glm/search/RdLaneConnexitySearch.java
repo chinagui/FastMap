@@ -12,6 +12,7 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
@@ -145,17 +146,17 @@ public class RdLaneConnexitySearch implements ISearch {
 	}
 	
 
-//	public static void main(String[] args) throws Exception {
-//		
-//		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
-//		
-//		RdLaneConnexitySearch s = new RdLaneConnexitySearch(conn);
-//		
-//		List<SearchSnapshot> ss = s.searchDataByTileWithGap(107939,49614,17, 1);
-//		
-//		for(SearchSnapshot n : ss){
-//			System.out.println(n.Serialize(null));
-//		}
-//	}
+	public static void main(String[] args) throws Exception {
+		
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
+		
+		RdLaneConnexitySearch s = new RdLaneConnexitySearch(conn);
+		
+		List<SearchSnapshot> ss = s.searchDataByTileWithGap(107939,49614,17, 1);
+		
+		for(SearchSnapshot n : ss){
+			System.out.println(n.Serialize(null));
+		}
+	}
 
 }

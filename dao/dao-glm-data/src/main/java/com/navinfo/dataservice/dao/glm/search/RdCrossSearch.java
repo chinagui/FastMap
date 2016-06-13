@@ -10,6 +10,7 @@ import java.util.List;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -171,14 +172,14 @@ public class RdCrossSearch implements ISearch {
 		return list;
 	}
 
-//	public static void main(String[] args) throws Exception {
-//
-//		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
-//
-//		RdCrossSearch s = new RdCrossSearch(conn);
-//
-//		IObj obj = s.searchDataByPid(3313);
-//
-//		System.out.println(obj.Serialize(null));
-//	}
+	public static void main(String[] args) throws Exception {
+
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
+
+		RdCrossSearch s = new RdCrossSearch(conn);
+
+		IObj obj = s.searchDataByPid(3313);
+
+		System.out.println(obj.Serialize(null));
+	}
 }

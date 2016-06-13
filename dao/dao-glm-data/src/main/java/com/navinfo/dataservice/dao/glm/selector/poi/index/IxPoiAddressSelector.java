@@ -11,7 +11,6 @@ import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAudio;
 
 /**
  * POI地址表selector
@@ -154,11 +153,11 @@ public class IxPoiAddressSelector implements ISelector {
 		
 		ixPoiAddress.setSrcFlag(resultSet.getInt("src_flag"));
 		
-		ixPoiAddress.setFullName(resultSet.getString("fullname"));
+		ixPoiAddress.setFullname(resultSet.getString("fullname"));
 		
 		ixPoiAddress.setFullnamePhonetic(resultSet.getString("fullname_phonetic"));
 		
-		ixPoiAddress.setRodeName(resultSet.getString("roadname"));
+		ixPoiAddress.setRodename(resultSet.getString("roadname"));
 		
 		ixPoiAddress.setRoadnamePhonetic(resultSet.getString("roadname_phonetic"));
 		

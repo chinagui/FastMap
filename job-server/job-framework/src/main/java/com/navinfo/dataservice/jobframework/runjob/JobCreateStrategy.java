@@ -77,6 +77,7 @@ public class JobCreateStrategy {
 	private static void loadMapping(){
 		String mappingFile = "/com/navinfo/dataservice/jobframework/job-class.xml";
 		jobClassMap = new HashMap<String,Class<?>>();
+		requestClassMap = new HashMap<String,Class<?>>();
 		//加载管理库的信息
 		InputStream is = null;
         log.debug("parse file " + mappingFile);
@@ -99,7 +100,7 @@ public class JobCreateStrategy {
                 requestClassMap.put(name, Class.forName(requestClassName));
             }
         } catch (Exception e) {
-        	log.error(e.getMessage());
+        	log.error(e.getMessage(),e);
             throw new ConfigParseException("读取job和类映射文件" + mappingFile + "错误", e);
         } finally {
             try {

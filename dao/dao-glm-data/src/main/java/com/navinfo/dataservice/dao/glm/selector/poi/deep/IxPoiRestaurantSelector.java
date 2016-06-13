@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiRestaurant;
@@ -141,7 +142,7 @@ public class IxPoiRestaurantSelector implements ISelector {
 		ixPoiRestaurant.setAvgCost(resultSet.getInt("avg_cost"));
 		ixPoiRestaurant.setParking(resultSet.getInt("parking"));
 		ixPoiRestaurant.setLongDescription(resultSet.getString("long_description"));
-		ixPoiRestaurant.setLongDescriptionEng(resultSet.getString("long_description_eng"));
+		ixPoiRestaurant.setLongDescripEng(resultSet.getString("long_descrip_eng"));
 		ixPoiRestaurant.setOpenHour(resultSet.getString("open_hour"));
 		ixPoiRestaurant.setOpenHourEng(resultSet.getString("open_hour_eng"));
 		ixPoiRestaurant.setTelephone(resultSet.getString("telephone"));

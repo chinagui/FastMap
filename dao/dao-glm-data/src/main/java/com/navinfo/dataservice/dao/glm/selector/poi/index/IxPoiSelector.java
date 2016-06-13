@@ -5,6 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
@@ -17,7 +21,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingPlot;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingPlotPh;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingStation;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiDetail;
-import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiEvent;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiGasstation;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiHotel;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiIntroduction;
@@ -26,6 +29,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAudio;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEntryimage;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiFlag;
@@ -43,17 +47,12 @@ import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiChargingPlotPhSele
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiChargingPlotSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiChargingStationSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDetailSelector;
-import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiEventSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiGasstationSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiHotelSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiIntroductionSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiParkingSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiRestaurantSelector;
 import com.vividsolutions.jts.geom.Geometry;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
 
 /**
  * POI基础信息表 selector
@@ -176,10 +175,10 @@ public class IxPoiSelector implements ISelector {
 				IxPoiPhotoSelector ixPoiPhotoSelector = new IxPoiPhotoSelector(
 						conn);
 
-				ixPoi.setPhotoes(ixPoiPhotoSelector.loadRowsByParentId(id,
+				ixPoi.setPhotos(ixPoiPhotoSelector.loadRowsByParentId(id,
 						isLock));
 
-				for (IRow row : ixPoi.getPhotoes()) {
+				for (IRow row : ixPoi.getPhotos()) {
 					IxPoiPhoto obj = (IxPoiPhoto) row;
 
 					ixPoi.photoMap.put(obj.getRowId(), obj);
@@ -215,13 +214,30 @@ public class IxPoiSelector implements ISelector {
 				IxPoiParentSelector ixPoiParentSelector = new IxPoiParentSelector(
 						conn);
 
-				ixPoi.setParents(ixPoiParentSelector.loadRowsByParentId(id,
+				ixPoi.setParent(ixPoiParentSelector.loadParentRowsByPoiId(id,
+						isLock));
+				
+				int groupId = 0;
+				
+				for (IRow row : ixPoi.getParent()) {
+					IxPoiParent obj = (IxPoiParent) row;
+					
+					groupId = obj.getPid();
+					
+					ixPoi.parentMap.put(obj.getRowId(), obj);
+				}
+				
+				// 设置子表IX_POI_CHILDREN
+				IxPoiChildrenSelector ixPoiChildrenSelector = new IxPoiChildrenSelector(
+						conn);
+				
+				ixPoi.setChildren(ixPoiChildrenSelector.loadRowsByParentId(groupId,
 						isLock));
 
-				for (IRow row : ixPoi.getParents()) {
-					IxPoiParent obj = (IxPoiParent) row;
+				for (IRow row : ixPoi.getChildren()) {
+					IxPoiChildren obj = (IxPoiChildren) row;
 
-					ixPoi.parentMap.put(obj.getRowId(), obj);
+					ixPoi.childrenMap.put(obj.getRowId(), obj);
 				}
 
 				// 设置子表IX_POI_PARKING

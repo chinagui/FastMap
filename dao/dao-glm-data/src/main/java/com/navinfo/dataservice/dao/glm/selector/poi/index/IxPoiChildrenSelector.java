@@ -161,5 +161,68 @@ public class IxPoiChildrenSelector implements ISelector {
 
 		return rows;
 	}
+	
+	public List<IRow> loadRowsByPoiId(int id, boolean isLock)
+			throws Exception {
+		List<IRow> rows = new ArrayList<IRow>();
+
+		String sql = "select * from ix_poi_children where child_poi_pid=:1 and u_record!=:2";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, id);
+
+			pstmt.setInt(2, 2);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				IxPoiChildren poiChildren = new IxPoiChildren();
+				
+				poiChildren.setGroupId (resultSet.getInt("group_id"));
+
+				poiChildren.setChildPoiPid(resultSet.getInt("child_poi_pid"));
+				
+				poiChildren.setRelationType(resultSet.getInt("relation_type"));
+
+				poiChildren.setRowId(resultSet.getString("row_id"));
+
+				rows.add(poiChildren);
+			}
+		} catch (Exception e) {
+			
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+		}
+
+		return rows;
+	}
 
 }

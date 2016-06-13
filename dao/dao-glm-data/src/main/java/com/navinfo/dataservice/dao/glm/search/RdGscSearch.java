@@ -10,6 +10,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
@@ -279,20 +280,20 @@ public class RdGscSearch implements ISearch {
 
 		return list;
 	}
-//	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws Exception {
+		
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
+		
+		RdGscSearch s = new RdGscSearch(conn);
+		
+		List<SearchSnapshot> list = s.searchDataByTileWithGap(215885, 99231, 18, 80);
+		
+		for(SearchSnapshot snap : list){
+			System.out.println(snap.Serialize(null));
+		}
+		
+//		System.out.println(MercatorProjection.longitudeToTileX(116.48821, (byte)19));
 //		
-//		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
-//		
-//		RdGscSearch s = new RdGscSearch(conn);
-//		
-//		List<SearchSnapshot> list = s.searchDataByTileWithGap(215885, 99231, 18, 80);
-//		
-//		for(SearchSnapshot snap : list){
-//			System.out.println(snap.Serialize(null));
-//		}
-//		
-////		System.out.println(MercatorProjection.longitudeToTileX(116.48821, (byte)19));
-////		
-////		System.out.println(MercatorProjection.latitudeToTileY(39.98898, (byte)19));
-//	}
+//		System.out.println(MercatorProjection.latitudeToTileY(39.98898, (byte)19));
+	}
 }

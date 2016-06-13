@@ -28,7 +28,6 @@ import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 
-
 @Controller
 public class EditController extends BaseController {
 	private static final Logger logger = Logger.getLogger(EditController.class);
@@ -79,11 +78,11 @@ public class EditController extends BaseController {
 
 			String objType = jsonReq.getString("type");
 
-			int subTaskId = jsonReq.getInt("subTaskId");
+			int dbId = jsonReq.getInt("dbId");
 
 			JSONObject data = jsonReq.getJSONObject("data");
 
-			conn = DBConnector.getInstance().getConnectionById(subTaskId);
+			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			SearchProcess p = new SearchProcess(conn);
 
@@ -121,9 +120,9 @@ public class EditController extends BaseController {
 
 			String objType = jsonReq.getString("type");
 
-			int subTaskId = jsonReq.getInt("subTaskId");
+			int dbId = jsonReq.getInt("dbId");
 
-			conn = DBConnector.getInstance().getConnectionById(subTaskId);
+			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			if (jsonReq.containsKey("detailId")) {
 				int detailId = jsonReq.getInt("detailId");
@@ -188,7 +187,7 @@ public class EditController extends BaseController {
 
 			JSONArray type = jsonReq.getJSONArray("type");
 
-			int subTaskId = jsonReq.getInt("subTaskId");
+			int dbId = jsonReq.getInt("dbId");
 
 			List<ObjType> types = new ArrayList<ObjType>();
 
@@ -196,7 +195,7 @@ public class EditController extends BaseController {
 				types.add(ObjType.valueOf(type.getString(i)));
 			}
 
-			conn = DBConnector.getInstance().getConnectionById(subTaskId);
+			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			SearchProcess p = new SearchProcess(conn);
 
@@ -258,6 +257,7 @@ public class EditController extends BaseController {
 			}
 		}
 	}
+
 	@RequestMapping(value = "/poi/base/list")
 	public ModelAndView getPoiList(HttpServletRequest request)
 			throws ServletException, IOException {
@@ -269,14 +269,14 @@ public class EditController extends BaseController {
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			int subTaskId = jsonReq.getInt("subTaskId");
-			//项目管理（放开）
-			//subtaskId
-			//int subtaskId = jsonReq.getInt("subtaskId");
-			//int type      = jsonReq.getInt("type");
-			int pageNum      = jsonReq.getInt("pageNum");
-			int pageSize      = jsonReq.getInt("pageSize");
-			conn = DBConnector.getInstance().getConnectionById(subTaskId);
+			int dbId = jsonReq.getInt("dbId");
+			// 项目管理（放开）
+			// subtaskId
+			// int subtaskId = jsonReq.getInt("subtaskId");
+			// int type = jsonReq.getInt("type");
+			int pageNum = jsonReq.getInt("pageNum");
+			int pageSize = jsonReq.getInt("pageSize");
+			conn = DBConnector.getInstance().getConnectionById(dbId);
 			IxPoiSelector selector = new IxPoiSelector(conn);
 			JSONObject jsonObject = selector.loadPids(false, pageSize, pageNum);
 			return new ModelAndView("jsonView", success(jsonObject));

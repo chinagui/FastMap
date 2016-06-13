@@ -2,24 +2,19 @@ package com.navinfo.dataservice.web.man.controller;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.beans.factory.annotation.Autowired; 
 import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.engine.man.city.City;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.man.city.CityService;
-import com.navinfo.navicommons.database.Page;
 
 import net.sf.json.JSONObject;
 
@@ -36,7 +31,7 @@ public class CityController extends BaseController {
 	private CityService service;
 
 	
-	@RequestMapping(value = "/create")
+	@RequestMapping(value = "/city/create")
 	public ModelAndView create(HttpServletRequest request){
 		try{	
 			String parameter = request.getParameter("param");
@@ -54,7 +49,7 @@ public class CityController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	@RequestMapping(value = "/update")
+	@RequestMapping(value = "/city/update")
 	public ModelAndView update(HttpServletRequest request){
 		try{			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
@@ -68,7 +63,7 @@ public class CityController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	@RequestMapping(value = "/delete")
+	@RequestMapping(value = "/city/delete")
 	public ModelAndView delete(HttpServletRequest request){
 		try{			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
@@ -97,7 +92,7 @@ public class CityController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "query")
+	@RequestMapping(value = "/city/query")
 	public ModelAndView query(HttpServletRequest request){
 		try{
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			

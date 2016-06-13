@@ -265,12 +265,12 @@ public class TipsController extends BaseController {
 
 			JSONArray stage = jsonReq.getJSONArray("stage");
 
-			int projectId = jsonReq.getInt("projectId");
+			int dbId = jsonReq.getInt("dbId");
 
 			TipsSelector selector = new TipsSelector();
 
 			JSONArray array = selector.getSnapshot(grids, stage, type,
-					projectId);
+					dbId);
 
 			return new ModelAndView("jsonView", success(array));
 

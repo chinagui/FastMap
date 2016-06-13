@@ -11,19 +11,20 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.engine.man.dao.DBConnector;
+import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 
 import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
+import oracle.sql.CLOB;
 
 /** 
 * @ClassName:  CityService 
@@ -31,6 +32,7 @@ import oracle.sql.STRUCT;
 * @date 2016-06-06 08:19:11 
 * @Description: TODO
 */
+@Service
 public class CityService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
@@ -238,11 +240,13 @@ public class CityService {
 					List<HashMap> list = new ArrayList<HashMap>();
 					while(rs.next()){
 						try {
-							if (GeometryUtils.IsIntersectPolygon(wkt,rs.getObject("geometry"))){
+							CLOB clob = (CLOB)rs.getObject("geometry");
+							String clobStr = DataBaseUtils.clob2String(clob);
+							if (GeometryUtils.IsIntersectPolygon(wkt,clobStr)){
 								HashMap<String,Object> map = new HashMap<String,Object>();
 								map.put("cityId", rs.getInt("CITY_ID"));
 								map.put("cityName", rs.getString("CITY_NAME"));
-								map.put("geometry", rs.getObject("geometry"));
+								map.put("geometry", Geojson.wkt2Geojson(clobStr));
 								list.add(map);
 							}
 						} catch (ParseException e) {

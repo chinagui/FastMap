@@ -4,6 +4,12 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+import net.sf.json.processors.JsonValueProcessor;
+import net.sf.json.util.JSONUtils;
+
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
@@ -18,14 +24,7 @@ import com.navinfo.dataservice.dao.glm.selector.ad.zone.AdAdminTreeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.search.rd.utils.RdLinkSearchUtils;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-import net.sf.json.processors.JsonValueProcessor;
-import net.sf.json.util.JSONUtils;
 
 /**
  * 查询进程
@@ -258,13 +257,13 @@ public class SearchProcess {
 					array.add(row.Serialize(ObjLevel.FULL));
 				}
 			case ADADMINGROUP:
-				if(condition.containsKey("subTaskId"))
+				if(condition.containsKey("projectId"))
 				{
 					AdAdminTreeSelector adAdminTreeSelector = new AdAdminTreeSelector(conn);
 					
-					int subTaskId = condition.getInt("subTaskId");
+					int projectId = condition.getInt("projectId");
 					
-					IRow row = adAdminTreeSelector.loadRowsByProjectId(subTaskId,false);
+					IRow row = adAdminTreeSelector.loadRowsByProjectId(projectId,false);
 
 					array.add(row.Serialize(ObjLevel.BRIEF));
 				}
@@ -293,7 +292,7 @@ public class SearchProcess {
 		}
 	}
 //	public static void main(String[] args) throws Exception {
-//		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+//		Connection conn = DBConnector.getInstance().getConnectionById(11);
 //		SearchProcess p = new SearchProcess(conn);
 //		
 //		JSONObject condition = new JSONObject();

@@ -166,7 +166,7 @@ values
                        MDSYS.SDO_DIM_ELEMENT('YLAT', -90, 90, 0.005)),
    8307);
 
-create index idx_sdo_zone_face on zone_face(geometry)
+create index idx_sdo_zone_face on zone_face(geometry) 
 indextype is mdsys.spatial_index;
 
 analyze table zone_face compute statistics;

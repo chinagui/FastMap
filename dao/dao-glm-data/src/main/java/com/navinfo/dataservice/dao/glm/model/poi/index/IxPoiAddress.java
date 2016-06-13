@@ -6,15 +6,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * POI地址表
@@ -33,9 +33,9 @@ public class IxPoiAddress implements IObj {
 	
 	private int srcFlag=0;//名称来源
 	
-	private String fullName;//地址全称
+	private String fullname;//地址全称
 	
-	private String rodeName;//地址道路名
+	private String rodename;//地址道路名
 	
 	private String addrname;//地址门牌号
 	
@@ -161,20 +161,20 @@ public class IxPoiAddress implements IObj {
 		this.srcFlag = srcFlag;
 	}
 
-	public String getFullName() {
-		return fullName;
+	public String getFullname() {
+		return fullname;
 	}
 
-	public void setFullName(String fullName) {
-		this.fullName = fullName;
+	public void setFullname(String fullname) {
+		this.fullname = fullname;
 	}
 
-	public String getRodeName() {
-		return rodeName;
+	public String getRodename() {
+		return rodename;
 	}
 
-	public void setRodeName(String rodeName) {
-		this.rodeName = rodeName;
+	public void setRodename(String rodename) {
+		this.rodename = rodename;
 	}
 
 	public String getAddrname() {

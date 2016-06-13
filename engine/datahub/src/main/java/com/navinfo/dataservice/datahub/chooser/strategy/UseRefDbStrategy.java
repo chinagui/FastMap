@@ -48,12 +48,13 @@ public class UseRefDbStrategy extends DbServerStrategy{
 			throws DataHubException {
 		if(params==null
 				||StringUtils.isEmpty(params.get("refDbName"))
+				||StringUtils.isEmpty(params.get("refUserName"))
 				||StringUtils.isEmpty(params.get("refBizType"))){
 			throw new DataHubException("必须传入参考库的名称和类型，否则无法选择服务器。");
 		}
 		Connection conn = null;
 		try{
-			String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.server_type FROM db_server s,db_hub d WHERE s.server_id=d.SERVER_ID and s.biz_type like ? and d.db_name=? and d.biz_type=?";
+			String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.server_type FROM db_server s,db_hub d WHERE s.server_id=d.SERVER_ID and s.biz_type like ? and d.db_name=? and d.db_user_name=? and d.biz_type=?";
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			DbServer db = run.query(conn, sql,new ResultSetHandler<DbServer>(){
@@ -71,7 +72,7 @@ public class UseRefDbStrategy extends DbServerStrategy{
 					return inDb;
 				}
 				
-			}, "%"+bizType+"%", params.get("refDbName"),params.get("refBizType"));
+			}, "%"+bizType+"%", params.get("refDbName"),params.get("refUserName"),params.get("refBizType"));
 			return db;
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

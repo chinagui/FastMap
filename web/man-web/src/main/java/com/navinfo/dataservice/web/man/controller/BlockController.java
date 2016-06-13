@@ -16,7 +16,6 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /** 
@@ -138,10 +137,15 @@ public class BlockController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			if(!(dataJson.containsKey("groupIds")) || !(dataJson.containsKey("stage"))){
-				throw new IllegalArgumentException("groupIds、stage参数是必须的。");
+			if(!(dataJson.containsKey("wkt")) || !(dataJson.containsKey("planningStatus"))){
+				throw new IllegalArgumentException("wkt、planningStatus参数是必须的。");
 			}
-			List<HashMap> data = service.listByGroup(dataJson);			
+			String wkt= dataJson.getString("wkt");
+			String  planningStatus = dataJson.getString("planningStatus");
+			if(StringUtils.isEmpty(wkt) || StringUtils.isEmpty(planningStatus)){
+				throw new IllegalArgumentException("wkt、planningStatus参数值不能为空");
+			}
+			List<HashMap> data = service.listByWkt(dataJson);			
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("获取block列表失败，原因："+e.getMessage(), e);

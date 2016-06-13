@@ -30,7 +30,7 @@ public class CreateDbJob extends AbstractJob {
 		DbInfo db = null;
 		try{
 			db = DbService.getInstance().createDb(
-					req.getDbName(), req.getUserName(),req.getBizType(),req.getDescp()
+					req.getDbName(), req.getUserName(),req.getUserPasswd(),req.getBizType(),req.getDescp()
 					,req.getGdbVersion(),req.getRefDbName(),req.getRefUserName(),req.getRefBizType());
 			Map<String,Object> data = new HashMap<String,Object>();
 			data.put("outDbId", db.getDbId());

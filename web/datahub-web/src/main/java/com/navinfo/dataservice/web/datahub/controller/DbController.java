@@ -42,6 +42,8 @@ public class DbController extends BaseController {
 			Assert.notNull(dbName, "dbName不能为空");
 			String userName = URLDecode(request.getParameter("userName"));
 			Assert.notNull(userName, "userName不能为空");
+			String userPasswd = URLDecode(request.getParameter("userPasswd"));
+			Assert.notNull(userPasswd, "userPasswd不能为空");
 			String type = URLDecode(request.getParameter("bizType"));
 			Assert.notNull(type, "type不能为空");
 			String descp = URLDecode(request.getParameter("descp"));
@@ -53,7 +55,7 @@ public class DbController extends BaseController {
 			//省份代码，使用按省份分配策略
 			//String provCode = URLDecode(request.getParameter("provcode"));
 			
-			DbInfo db = DbService.getInstance().createDb(dbName,userName,type, descp,gdbVersion,refDbName,refUserName,refType);
+			DbInfo db = DbService.getInstance().createDb(dbName,userName,userPasswd,type, descp,gdbVersion,refDbName,refUserName,refType);
 
 			return new ModelAndView("jsonView", success(db.getConnectParam()));
 		}catch(Exception e){

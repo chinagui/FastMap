@@ -139,7 +139,7 @@ public class DownloadOperation {
 			jsonObj.put("guide", guide);
 			
 			IxPoiAddress address = (IxPoiAddress)poi.getAddresses().get(0);
-			jsonObj.put("address", address.getFullName());
+			jsonObj.put("address", address.getFullname());
 			jsonObj.put("postCode", poi.getPostCode());
 			
 			int open24H = poi.getOpen24h();

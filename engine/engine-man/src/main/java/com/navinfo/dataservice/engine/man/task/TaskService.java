@@ -176,7 +176,7 @@ public class TaskService {
 	}
 	
 	
-	public HashMap<String,String> close(JSONObject json)throws Exception{
+	public List<List<String>> close(JSONObject json)throws Exception{
 		Connection conn = null;
 		try{
 			//持久化
@@ -198,25 +198,20 @@ public class TaskService {
 					+ "   AND ST.STATUS <> 0";
 			List<List<String>> checkResult=DbOperation.exeSelectBySql(conn, checkSql, null);
 			JSONArray closeTask=new JSONArray();
-			List<Integer> newTask=new ArrayList<Integer>();
+			List newTask=new ArrayList();
 			newTask=JSONArray.toList(taskIds);
-			HashMap<String,String> checkMap=new HashMap<String,String>();
 			if(checkResult.size()>0){
-				List<Integer> errorTask=new ArrayList<Integer>();
+				List errorTask=new ArrayList();
 				for(int i=0;i<checkResult.size();i++){
-					String taskIdTmp=checkResult.get(i).get(0);
-					errorTask.add(Integer.valueOf(taskIdTmp));
-					if(!checkMap.containsKey(taskIdTmp)){checkMap.put(taskIdTmp, "");}
-					checkMap.put(taskIdTmp, checkMap.get(taskIdTmp)+checkResult.get(i).get(1));
+					errorTask.add(checkResult.get(i).get(0));
 				}
 				newTask.removeAll(errorTask);				
 			}
-			if(newTask.size()>0){
-				String updateSql="UPDATE TASK SET STATUS=0 "
-						+ "WHERE TASK_ID IN ("+newTask.toString().replace("[", "").
-						replace("]", "").replace("\"", "")+")";
-				DbOperation.exeUpdateOrInsertBySql(conn, updateSql);}
-	    	return checkMap;
+			String updateSql="UPDATE TASK SET STATUS=0 "
+					+ "WHERE TASK_ID IN ("+newTask.toString().replace("[", "").
+					replace("]", "").replace("\"", "")+")";
+			DbOperation.exeUpdateOrInsertBySql(conn, updateSql);
+	    	return checkResult;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

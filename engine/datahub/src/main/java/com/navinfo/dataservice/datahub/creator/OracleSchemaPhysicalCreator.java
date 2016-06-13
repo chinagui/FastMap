@@ -42,8 +42,10 @@ public class OracleSchemaPhysicalCreator implements DbPhysicalCreator{
 			tablespaceName=SystemConfigFactory.getSystemConfig().getValue("datahub.oracle.defaultTablespaces", "USERS");
 		}
 		db.setTablespaceName(tablespaceName);
-		//
-		String dbUserName = db.getDbUserName();
+		//用户名和密码同数据库名
+		String dbUserName = db.getDbName();
+		db.setDbUserName(dbUserName);
+		db.setDbUserPasswd(dbUserName);
 		db.setDbRole(0);
 		
 		Connection conn = null;
@@ -121,12 +123,12 @@ public class OracleSchemaPhysicalCreator implements DbPhysicalCreator{
 			sqlExec.execute(indexFile);
 			//gdb+
 			PackageExec packageExec = new PackageExec(conn);
-			String indexPlus = "/com/navinfo/dataservice/datahub/resources/"
-					+ gdbVersion + "/schema/index+.pck";
-			packageExec.execute(indexPlus);
 			String plusFile = "/com/navinfo/dataservice/datahub/resources/"
 					+ gdbVersion + "/schema/table_create_plus.sql";
 			sqlExec.execute(plusFile);
+			String indexPlus = "/com/navinfo/dataservice/datahub/resources/"
+					+ gdbVersion + "/schema/index+.pck";
+			packageExec.execute(indexPlus);
 		}catch(Exception e){
 			log.error("给目标库安装GDB模型时出错。原因为："+e.getMessage(),e);
 			throw new DataHubException("给目标库安装GDB模型时出错。原因为："+e.getMessage(),e);

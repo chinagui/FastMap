@@ -6607,10 +6607,6 @@ create table IX_POI  (
        check (FULL_ATTR_FLAG in (0,1,9)),
    OLD_X_GUIDE          NUMBER(10,5)                   default 0 not null,
    OLD_Y_GUIDE          NUMBER(10,5)                   default 0 not null,
-   "LEVEL"                NUMBER(2)                      DEFAULT 0 NOT NULL,
-   SPORTS_VENUE         VARCHAR2(3),
-   INDOOR               NUMBER(1)                      DEFAULT 0 NOT NULL,
-   VIP_FLAG             VARCHAR2(10),
    U_RECORD             NUMBER(2)                      default 0 not null
        check (U_RECORD in (0,1,2,3)),
    U_FIELDS             VARCHAR2(1000),
@@ -10936,16 +10932,6 @@ comment on column IX_POI_VIDEO.U_RECORD is
 
 comment on column IX_POI_VIDEO.U_FIELDS is
 '记录更新的英文字段名,多个之间采用半角''|''分隔';
-/*==============================================================*/
-/* Table: IX_POSTCODE                                           */
-/*==============================================================*/
-CREATE TABLE IX_POI_OPERATE_REF (
-	PID NUMBER(10) NOT NULL,
-	FRESH_VERIFIED NUMBER(1) DEFAULT 0 NOT NULL
-	  CHECK(FRESH_VERIFIED IN (0,1)),
-	RAW_FIELDS VARCHAR2(30),
-	constraint PK_IX_POI_OPERATE_REF primary key (PID)
-);
 
 /*==============================================================*/
 /* Table: IX_POSTCODE                                           */
@@ -13048,8 +13034,7 @@ create table NI_VAL_EXCEPTION  (
        check (QA_STATUS in (1,2)),
    WORKER               VARCHAR2(500),
    QA_WORKER            VARCHAR2(500),
-   LOG_TYPE             NUMBER(5)                      default 0 not null,
-   MD5_CODE             VARCHAR2(32)
+   LOG_TYPE             NUMBER(5)                      default 0 not null
 );
 
 comment on column NI_VAL_EXCEPTION.RULEID is

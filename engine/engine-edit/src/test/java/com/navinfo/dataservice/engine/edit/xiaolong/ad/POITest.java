@@ -39,7 +39,7 @@ public class POITest {
 	{
 		Connection conn = null;
 		try{
-			conn = DBConnector.getInstance().getManConnection();
+			conn = DBConnector.getInstance().getConnectionById(8);
 
 			SearchProcess p = new SearchProcess(conn);
 			

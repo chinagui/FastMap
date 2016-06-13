@@ -188,6 +188,71 @@ public class IxPoiParentSelector implements ISelector{
 		return rows;
 	}
 	
+	public List<IRow> loadParentRowsByPoiId(int id, boolean isLock)
+			throws Exception {
+		List<IRow> rows = new ArrayList<IRow>();
+
+		String sql = "SELECT * FROM IX_POI_PARENT WHERE group_id IN (SELECT group_id FROM IX_POI_CHILDREN WHERE CHILD_POI_PID = :1 AND U_RECORD != :2)";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, id);
+
+			pstmt.setInt(2, 2);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				IxPoiParent poiParent = new IxPoiParent();
+
+				poiParent.setPid(resultSet.getInt("group_id"));
+
+				poiParent.setParentPoiPid(resultSet.getInt("parent_poi_pid"));
+
+				poiParent.setTenantFlag(resultSet.getInt("tenant_flag"));
+				
+				poiParent.setMemo (resultSet.getString("memo"));
+				
+				poiParent.setRowId(resultSet.getString("row_id"));
+				
+				rows.add(poiParent);
+			}
+		} catch (Exception e) {
+			
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+		}
+
+		return rows;
+	}
+	
 	/**
 	 * add by wangdongbin
 	 * for android download

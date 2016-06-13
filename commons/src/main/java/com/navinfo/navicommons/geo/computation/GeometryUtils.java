@@ -1,11 +1,13 @@
 package com.navinfo.navicommons.geo.computation;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.navicommons.database.DataBaseUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.MultiPoint;
@@ -14,6 +16,8 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
 import net.sf.json.JSONObject;
+import oracle.spatial.geometry.JGeometry;
+import oracle.sql.CLOB;
 import oracle.sql.STRUCT;
 
 public class GeometryUtils {
@@ -488,17 +492,10 @@ public class GeometryUtils {
 	 * @return boolean
 	 * @throws ParseException 
 	 */
-	public static boolean IsIntersectPolygon(String scrWkt,Object obj) throws ParseException{
+	public static boolean IsIntersectPolygon(String scrWkt,String clobStr) throws ParseException{
 		
 		Geometry srcGeom=GeometryUtils.getPolygonByWKT(scrWkt);
-		STRUCT struct = (STRUCT) obj;
-		Geometry Geom = null;
-		try {
-			Geom = GeoTranslator.struct2Jts(struct, 100000, 0);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Geometry Geom=GeometryUtils.getPolygonByWKT(clobStr);
 		return srcGeom.intersects(Geom);
 	}
 }

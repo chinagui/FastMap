@@ -22,7 +22,7 @@ public class CommitDay2MonthRoadJobRequestTest {
 
 	@Test
 	public void test() {
-		String param = "{\"gridSet\":[123,3435,343]}";
+		String param = "{\"gridSet\":[23432,4343243,3434]}";
 		JSONObject json=JSONObject.fromObject(param);
 		CommitDay2MonthRoadJobRequest request = new CommitDay2MonthRoadJobRequest();
 		request.parseByJsonConfig(json);

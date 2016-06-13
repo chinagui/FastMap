@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.engine.man.region;
 
-import java.io.Serializable;
+import com.navinfo.dataservice.api.man.model.IRegion;
 
 
 /** 
@@ -9,7 +9,7 @@ import java.io.Serializable;
 * @date 2016-06-08 02:32:17 
 * @Description: TODO
 */
-public class Region implements Serializable {
+public class Region implements IRegion {
 	private Integer regionId ;
 	private String regionName ;
 	private Integer dailyDbId ;

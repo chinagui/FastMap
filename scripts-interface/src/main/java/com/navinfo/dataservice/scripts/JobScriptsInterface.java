@@ -8,9 +8,11 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
@@ -89,6 +91,9 @@ public class JobScriptsInterface {
 			JSONObject response = null;
 			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
 			request = readJson(dir+"request"+File.separator+irequest);
+			//初始化context
+			initContext();
+			//执行job
 			response = execute(itype,request);
 			writeJson(response,dir+"response"+File.separator+iresponse);
 			System.out.println(response);
@@ -98,5 +103,11 @@ public class JobScriptsInterface {
 			System.out.println("Oops, something wrong...");
 			e.printStackTrace();
 		}
+	}
+	public static void initContext(){
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(  
+                new String[] { "dubbo-consumer-4scripts.xml" }); 
+		context.start();
+		new ApplicationContextUtil().setApplicationContext(context);
 	}
 }

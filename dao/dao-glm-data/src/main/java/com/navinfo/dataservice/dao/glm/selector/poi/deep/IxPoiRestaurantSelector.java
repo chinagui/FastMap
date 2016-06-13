@@ -89,7 +89,7 @@ public class IxPoiRestaurantSelector implements ISelector {
 		
 
 		StringBuilder sb = new StringBuilder(
-				"select * from ix_poi_restaurant WHERE restaurant_id  = :1 and  u_record !=2");
+				"select * from ix_poi_restaurant WHERE poi_pid  = :1 and  u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -142,7 +142,7 @@ public class IxPoiRestaurantSelector implements ISelector {
 		ixPoiRestaurant.setAvgCost(resultSet.getInt("avg_cost"));
 		ixPoiRestaurant.setParking(resultSet.getInt("parking"));
 		ixPoiRestaurant.setLongDescription(resultSet.getString("long_description"));
-		ixPoiRestaurant.setLongDescriptionEng(resultSet.getString("long_description_eng"));
+		ixPoiRestaurant.setLongDescripEng(resultSet.getString("long_descrip_eng"));
 		ixPoiRestaurant.setOpenHour(resultSet.getString("open_hour"));
 		ixPoiRestaurant.setOpenHourEng(resultSet.getString("open_hour_eng"));
 		ixPoiRestaurant.setTelephone(resultSet.getString("telephone"));

@@ -1,11 +1,9 @@
 package com.navinfo.dataservice.api.man.iface;
 
 import java.util.List;
-
-
 import java.util.Map;
 
-import com.navinfo.dataservice.api.man.model.RegionDbInfo;
+import com.navinfo.dataservice.api.man.model.IRegion;
 
 
 /*
@@ -15,6 +13,6 @@ import com.navinfo.dataservice.api.man.model.RegionDbInfo;
  */
 public interface ManApi{
 	public Map queryRegionGridMapping(List<Integer> gridList) throws Exception;
-	public RegionDbInfo queryByRegionId(Integer regionId) throws Exception ;
+	public IRegion queryByRegionId(Integer regionId) throws Exception ;
 }
 

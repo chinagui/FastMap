@@ -8,14 +8,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
-import com.navinfo.dataservice.datahub.chooser.strategy.DbServerStrategy;
 import com.navinfo.dataservice.datahub.service.DbService;
 
 /** 
@@ -39,35 +38,24 @@ public class DbController extends BaseController {
 	@RequestMapping(value = "/db/create/")
 	public ModelAndView createDb(HttpServletRequest request){
 		try{
-			String userName = URLDecode(request.getParameter("userName"));
 			String dbName = URLDecode(request.getParameter("dbName"));
-			String dbType = URLDecode(request.getParameter("type"));
+			Assert.notNull(dbName, "dbName不能为空");
+			String userName = URLDecode(request.getParameter("userName"));
+			Assert.notNull(userName, "userName不能为空");
+			String userPasswd = URLDecode(request.getParameter("userPasswd"));
+			Assert.notNull(userPasswd, "userPasswd不能为空");
+			String type = URLDecode(request.getParameter("bizType"));
+			Assert.notNull(type, "type不能为空");
 			String descp = URLDecode(request.getParameter("descp"));
-			String strategyType = null;
+			String gdbVersion = URLDecode(request.getParameter("gdbVersion"));
 			//参考db，使用参考策略
-			String refDbName = URLDecode(request.getParameter("refname"));
-			String refDbType = URLDecode(request.getParameter("reftype"));
+			String refDbName = URLDecode(request.getParameter("refDbName"));
+			String refUserName = URLDecode(request.getParameter("refUserName"));
+			String refType = URLDecode(request.getParameter("refBizType"));
 			//省份代码，使用按省份分配策略
-			String provCode = URLDecode(request.getParameter("provcode"));
-			if(StringUtils.isEmpty(dbName)){
-				throw new IllegalArgumentException("name参数不能为空。");
-			}
-			if(StringUtils.isEmpty(dbType)){
-				throw new IllegalArgumentException("type参数不能为空。");
-			}
-			Map<String,String> strategyParam = new HashMap<String,String>();
-			if(StringUtils.isNotEmpty(refDbName)&&StringUtils.isNotEmpty(refDbType)){
-				strategyType = DbServerStrategy.USE_REF_DB;
-				strategyParam.put("refDbName", refDbName);
-				strategyParam.put("refDbType", refDbType);
-			}else if(StringUtils.isNotEmpty(provCode)){
-				strategyType = DbServerStrategy.BY_PROVINCE;
-				strategyParam.put("provinceCode", provCode);
-			}else{
-				//strategyType = DbServerStrategy.RANDOM;
-				strategyParam = null;
-			}
-			DbInfo db = DbService.getInstance().createDb(userName,dbName, dbType, descp,strategyType,strategyParam);
+			//String provCode = URLDecode(request.getParameter("provcode"));
+			
+			DbInfo db = DbService.getInstance().createDb(dbName,userName,userPasswd,type, descp,gdbVersion,refDbName,refUserName,refType);
 
 			return new ModelAndView("jsonView", success(db.getConnectParam()));
 		}catch(Exception e){
@@ -121,7 +109,7 @@ public class DbController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	@RequestMapping(value = "/datahub/getonlybytype/")
+	@RequestMapping(value = "/db/getonlybytype/")
 	public ModelAndView getOnlyDbByType(HttpServletRequest request){
 		try{
 			String dbType = URLDecode(request.getParameter("type"));

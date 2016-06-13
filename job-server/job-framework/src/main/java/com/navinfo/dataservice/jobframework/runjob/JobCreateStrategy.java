@@ -100,7 +100,7 @@ public class JobCreateStrategy {
                 requestClassMap.put(name, Class.forName(requestClassName));
             }
         } catch (Exception e) {
-        	log.error(e.getMessage());
+        	log.error(e.getMessage(),e);
             throw new ConfigParseException("读取job和类映射文件" + mappingFile + "错误", e);
         } finally {
             try {

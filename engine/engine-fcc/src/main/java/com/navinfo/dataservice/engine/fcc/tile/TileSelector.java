@@ -1,19 +1,23 @@
 package com.navinfo.dataservice.engine.fcc.tile;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.json.JSONObject;
 
 import org.hbase.async.KeyValue;
+import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.dao.fcc.HBaseController;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 /**
  * 瓦片的查询类
  */
-public class TileSelector {
+public class TileSelector extends BaseController {
 
 	/**
 	 * 获取某瓦片内的数据
@@ -127,6 +131,14 @@ public class TileSelector {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		System.out.println(getRdLinkTiles(53966, 24852, 16, 11));
+		TileSelector s = new TileSelector();
+//		JSONObject data = new JSONObject();
+//		data.put("RDLINK",getRdLinkTiles(53974, 24809, 16, 8));
+		
+		Map<String, List<String>> map = new HashMap<String,List<String>>();
+		
+		map.put("RDLINK",getRdLinkTiles(53974, 24809, 16, 8));
+		
+		System.out.println(new ModelAndView("jsonView", s.success(map)));
 	}
 }

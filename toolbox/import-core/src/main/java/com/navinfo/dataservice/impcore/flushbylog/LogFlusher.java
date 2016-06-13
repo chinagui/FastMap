@@ -65,14 +65,14 @@ public class LogFlusher {
 		this.log = log;
 	}
 	public FlushResult perform() throws Exception{
-		FlushResult result= new FlushResult();
+		FlushResult flushResult= new FlushResult();
 		try{
 			initConnections();//创建源、目标库的connection
 			closeAutoCommit();//关闭autoCommit，手工控制数据库事务
 			createTempTable();
 			createFailueLogTempTable();
 			prepareAndLockLog();
-			FlushResult flushResult = flushData();
+			flushResult = flushData();
 			recordFailLog2Temptable(flushResult);
 			//修改全部履历的提交状态为“已提交”
 			moveLog(flushResult, tempTable);
@@ -80,18 +80,33 @@ public class LogFlusher {
 			commitAndCloseConnections();
 		}catch(Exception e){
 			this.log.warn("exception accured", e);
-			rollbackAndCloseConnections();
+			flushResult.setResultMsg(e.getMessage());
+			rollbackConnections();
+			this.unlockPreparedLog();
 		}finally{
 			this.closeConnections();
 		}
-		return result;
+		return flushResult;
+	}
+	private  void unlockPreparedLog(){
+		try{
+			QueryRunner run = new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			sb.append("UPDATE LOG_OPERATION L SET L.LOCK_STA=0 WHERE EXISTS (SELECT 1 FROM ");
+			sb.append(tempTable);
+			sb.append(" T WHERE L.OP_ID=T.OP_ID)");
+			run.update(this.sourceDbConn, sb.toString());
+			this.sourceDbConn.commit();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 	private String getFeatureFilter(){
 		if (this.featureType.equals(FEATURE_ROAD)){
-			return " LOG_DETAIL.OB_NW !=\'IX_POI\'";
+			return " L.OB_NM !=\'IX_POI\'";
 		}
 		if (this.featureType.equals(FEATURE_POI)){
-			return " LOG_DETAIL.OB_NW =\'IX_POI\'";
+			return " L.OB_NM =\'IX_POI\'";
 		}
 		return " 1=1";
 	}
@@ -173,8 +188,9 @@ public class LogFlusher {
 	}
 	private FlushResult flushData() throws Exception {
 		String logQuerySql = "SELECT L.* FROM LOG_DETAIL L," + tempTable
-				+ " T WHERE L.OP_ID=T.OP_ID ORDER BY T.OP_DT"
-				+ " and "+this.getFeatureFilter()
+				+ " T WHERE L.OP_ID=T.OP_ID "
+				+ " AND "+this.getFeatureFilter()
+				+ " ORDER BY T.OP_DT"
 				;
 		this.log.debug(logQuerySql);
 		Statement sourceStmt = this.sourceDbConn.createStatement();
@@ -335,9 +351,17 @@ public class LogFlusher {
 		DbUtils.commitAndClose(this.sourceDbConn);
 		DbUtils.commitAndClose(this.targetDbConn);
 	}
-	private void rollbackAndCloseConnections() {
-		DbUtils.rollbackAndCloseQuietly(this.sourceDbConn);
-		DbUtils.rollbackAndCloseQuietly(this.targetDbConn);
+	private void rollbackConnections() {
+		try {
+			DbUtils.rollback(this.sourceDbConn);
+		} catch (SQLException e) {
+			this.log.warn("exception catched when rollback sourceDbConn ");
+		}
+		try {
+			DbUtils.rollback(this.targetDbConn);
+		} catch (SQLException e) {
+			this.log.warn("exception catched when rollback targetDbConn ");
+		}
 	}
 	/**
 	 * 将源、目标库的数据库连接设置autoCommit=False；

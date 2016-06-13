@@ -6607,15 +6607,15 @@ create table IX_POI  (
        check (FULL_ATTR_FLAG in (0,1,9)),
    OLD_X_GUIDE          NUMBER(10,5)                   default 0 not null,
    OLD_Y_GUIDE          NUMBER(10,5)                   default 0 not null,
-   "LEVEL"                NUMBER(2)                      DEFAULT 0 NOT NULL,
-   SPORTS_VENUE         VARCHAR2(3),
-   INDOOR               NUMBER(1)                      DEFAULT 0 NOT NULL,
-   VIP_FLAG             VARCHAR2(10),
    U_RECORD             NUMBER(2)                      default 0 not null
        check (U_RECORD in (0,1,2,3)),
    U_FIELDS             VARCHAR2(1000),
    U_DATE               VARCHAR2(14),
    ROW_ID               RAW(16),
+   "LEVEL"                NUMBER(2)                      DEFAULT 0 NOT NULL,
+   SPORTS_VENUE         VARCHAR2(3),
+   INDOOR               NUMBER(1)                      DEFAULT 0 NOT NULL,
+   VIP_FLAG             VARCHAR2(10),
    constraint PK_IX_POI primary key (PID)
 );
 

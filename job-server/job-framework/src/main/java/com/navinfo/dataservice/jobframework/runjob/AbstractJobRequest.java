@@ -69,26 +69,36 @@ public abstract class AbstractJobRequest {
 				argtypes = new Class[]{String.class};
 			}else if(attValue instanceof Integer){
 				argtypes= new Class[]{Integer.class};
+			}else if(attValue instanceof Double){
+				argtypes = new Class[]{Double.class};
 			}else if(attValue instanceof Boolean){
 				argtypes= new Class[]{Boolean.class};
 			}else if(attValue instanceof JSONArray){
-				//if(((JSONArray) attValue).get(index))
 				argtypes= new Class[]{List.class};
-				
 			}else if(attValue instanceof JSONObject){
 				//sub job
+				argtypes= new Class[]{AbstractJobRequest.class};
+				String subType = ((JSONObject) attValue).getString("type");
+				JSONObject subRequest = ((JSONObject) attValue).getJSONObject("request");
+				attValue = JobCreateStrategy.createJobRequest(subType,subRequest);
 			}
 			Method method = this.getClass().getMethod(methodName, argtypes);
 			method.invoke(this, attValue);
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
-			throw new JobRuntimeException("Request解析过程中未找到方法,原因为:"+e.getMessage(),e);
+			throw new JobRuntimeException("Request解析过程中可能未找到方法,原因为:"+e.getMessage(),e);
 		}
 	}
 	
 	public static void main(String[] args){
 		JSONObject json = new JSONObject();
 		json.put("para1", "param1");
+		json.put("para2", null);
+		json.put("para3", 1);
+		json.put("para4", 1.1);
+		json.put("para5", true);
+		json.put("para6", new JSONArray());
+		json.put("para7", 1L);
 		JSONObject subJson1 = new JSONObject();
 		json.put("subObject1", subJson1);
 		for(Iterator it = json.keys();it.hasNext();){

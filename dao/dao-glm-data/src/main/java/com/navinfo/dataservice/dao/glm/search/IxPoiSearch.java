@@ -39,26 +39,29 @@ public class IxPoiSearch implements ISearch {
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataBySpatial(String wkt)
-			throws Exception {
+	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByCondition(String condition)
-			throws Exception {
+	public List<SearchSnapshot> searchDataByCondition(String condition) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
-			int gap) throws Exception {
+	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
-		
-		String sql="select pid,x_guide,y_guide,geometry,p.status, (select count(1) from ix_poi_parent p where p.parent_poi_pid = i.pid) parentCount,  (select count(1) from ix_poi_children c where c.child_poi_pid = i.pid) childCount from ix_poi i,poi_edit_status p where i.row_id = p.row_id and  sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =    'TRUE'  and u_record != 2";
-		
+
+		String sql = "select pid,x_guide,y_guide,geometry,"
+				+ " (SELECT PS.STATUS FROM POI_EDIT_STATUS PS WHERE I.ROW_ID = PS.ROW_ID)"
+				+ " STATUS, (SELECT COUNT(1) FROM IX_POI_PARENT P WHERE group_id in "
+				+ " (SELECT group_id FROM IX_POI_CHILDREN WHERE CHILD_POI_PID = I.PID)) "
+				+ " PARENTCOUNT,  (SELECT COUNT(1) FROM IX_POI_CHILDREN P WHERE group_id in (SELECT group_id FROM IX_POI_PARENT WHERE parent_poi_pid = I.PID)) CHILDCOUNT from ix_poi i "
+				+ " where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =    'TRUE'  "
+				+ " and u_record != 2";
+
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -66,7 +69,11 @@ public class IxPoiSearch implements ISearch {
 		try {
 			pstmt = conn.prepareStatement(sql);
 
+			System.out.println(sql);
+
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+
+			System.out.println(wkt);
 
 			pstmt.setString(1, wkt);
 
@@ -79,18 +86,18 @@ public class IxPoiSearch implements ISearch {
 			while (resultSet.next()) {
 				SearchSnapshot snapshot = new SearchSnapshot();
 
-				int parentCount=resultSet.getInt("parentCount");
-				
-				int childCount=resultSet.getInt("childCount");
-				
-				String haveParentOrChild= GetParentOrChild( parentCount, childCount);	
+				int parentCount = resultSet.getInt("parentCount");
+
+				int childCount = resultSet.getInt("childCount");
+
+				String haveParentOrChild = GetParentOrChild(parentCount, childCount);
 				int status = resultSet.getInt("status");
-				
+
 				JSONObject m = new JSONObject();
 
 				m.put("a", haveParentOrChild);
 				m.put("b", status);
-				
+
 				Double xGuide = resultSet.getDouble("x_guide");
 
 				Double yGuide = resultSet.getDouble("y_guide");
@@ -104,7 +111,7 @@ public class IxPoiSearch implements ISearch {
 				m.put("c", guidejson.getJSONArray("coordinates"));
 
 				snapshot.setM(m);
-				
+
 				snapshot.setT(21);
 
 				snapshot.setI(resultSet.getString("pid"));
@@ -143,33 +150,28 @@ public class IxPoiSearch implements ISearch {
 
 		return list;
 	}
-	
-	private String GetParentOrChild(int parentCount,int childCount)
-	{
-		String haveParentOrChild="0";
-		
-		if(parentCount>0)
-		{
-			haveParentOrChild="1";
+
+	private String GetParentOrChild(int parentCount, int childCount) {
+		String haveParentOrChild = "0";
+
+		if (parentCount > 0) {
+			haveParentOrChild = "1";
 		}
-		
-		if(childCount>0)
-		{
-			haveParentOrChild="2";
+
+		if (childCount > 0) {
+			haveParentOrChild = "2";
 		}
-		
-		if(parentCount>0||childCount>0)
-		{
-			haveParentOrChild="3";
-		}	
-		
+
+		if (parentCount > 0 || childCount > 0) {
+			haveParentOrChild = "3";
+		}
+
 		return haveParentOrChild;
 	}
 
 	public static void main(String[] args) throws Exception {
-		
+
 		Connection conn = DBConnector.getInstance().getConnectionById(11);
-		new IxPoiSearch(conn).searchDataByTileWithGap(215890,99229,18,
-					80);
+		new IxPoiSearch(conn).searchDataByTileWithGap(215890, 99229, 18, 80);
 	}
 }

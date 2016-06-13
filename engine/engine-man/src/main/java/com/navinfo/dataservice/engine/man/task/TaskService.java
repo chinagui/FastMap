@@ -3,8 +3,10 @@ package com.navinfo.dataservice.engine.man.task;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
@@ -174,7 +176,7 @@ public class TaskService {
 	}
 	
 	
-	public void close(JSONObject json)throws Exception{
+	public List<List<String>> close(JSONObject json)throws Exception{
 		Connection conn = null;
 		try{
 			//持久化
@@ -196,9 +198,20 @@ public class TaskService {
 					+ "   AND ST.STATUS <> 0";
 			List<List<String>> checkResult=DbOperation.exeSelectBySql(conn, checkSql, null);
 			JSONArray closeTask=new JSONArray();
+			List newTask=new ArrayList();
+			newTask=JSONArray.toList(taskIds);
 			if(checkResult.size()>0){
+				List errorTask=new ArrayList();
+				for(int i=0;i<checkResult.size();i++){
+					errorTask.add(checkResult.get(i).get(0));
+				}
+				newTask.removeAll(errorTask);				
 			}
-	    	
+			String updateSql="UPDATE TASK SET STATUS=0 "
+					+ "WHERE TASK_ID IN ("+newTask.toString().replace("[", "").
+					replace("]", "").replace("\"", "")+")";
+			DbOperation.exeUpdateOrInsertBySql(conn, updateSql);
+	    	return checkResult;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

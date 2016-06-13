@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.web.man.controller;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -89,8 +91,8 @@ public class TaskController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
-			service.close(dataJson);			
-			return new ModelAndView("jsonView", success("删除成功"));
+			List<List<String>> errorTask=service.close(dataJson);			
+			return new ModelAndView("jsonView", success("删除成功",errorTask));
 		}catch(Exception e){
 			log.error("删除失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

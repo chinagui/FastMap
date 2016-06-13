@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.engine.man.city.CityOperation;
-import com.navinfo.dataservice.engine.man.common.DbOperation;
+//import com.navinfo.dataservice.engine.man.common.DbOperation;
 import com.navinfo.dataservice.engine.man.task.Task;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -194,10 +194,10 @@ public class TaskService {
 					+ " WHERE ST.TASK_ID IN ("+taskIdStr+")"
 					+ "   AND ST.STAGE = 2"
 					+ "   AND ST.STATUS <> 0";
-			List<List<String>> checkResult=DbOperation.exeSelectBySql(conn, checkSql, null);
-			JSONArray closeTask=new JSONArray();
-			if(checkResult.size()>0){
-			}
+//			List<List<String>> checkResult=DbOperation.exeSelectBySql(conn, checkSql, null);
+//			JSONArray closeTask=new JSONArray();
+//			if(checkResult.size()>0){
+//			}
 	    	
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

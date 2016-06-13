@@ -3,8 +3,10 @@ package com.navinfo.dataservice.engine.man.task;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
@@ -12,7 +14,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.engine.man.city.CityOperation;
-//import com.navinfo.dataservice.engine.man.common.DbOperation;
+import com.navinfo.dataservice.engine.man.common.DbOperation;
 import com.navinfo.dataservice.engine.man.task.Task;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -174,7 +176,7 @@ public class TaskService {
 	}
 	
 	
-	public void close(JSONObject json)throws Exception{
+	public HashMap<String,String> close(JSONObject json)throws Exception{
 		Connection conn = null;
 		try{
 			//持久化
@@ -194,11 +196,27 @@ public class TaskService {
 					+ " WHERE ST.TASK_ID IN ("+taskIdStr+")"
 					+ "   AND ST.STAGE = 2"
 					+ "   AND ST.STATUS <> 0";
-//			List<List<String>> checkResult=DbOperation.exeSelectBySql(conn, checkSql, null);
-//			JSONArray closeTask=new JSONArray();
-//			if(checkResult.size()>0){
-//			}
-	    	
+			List<List<String>> checkResult=DbOperation.exeSelectBySql(conn, checkSql, null);
+			JSONArray closeTask=new JSONArray();
+			List<Integer> newTask=new ArrayList<Integer>();
+			newTask=JSONArray.toList(taskIds);
+			HashMap<String,String> checkMap=new HashMap<String,String>();
+			if(checkResult.size()>0){
+				List<Integer> errorTask=new ArrayList<Integer>();
+				for(int i=0;i<checkResult.size();i++){
+					String taskIdTmp=checkResult.get(i).get(0);
+					errorTask.add(Integer.valueOf(taskIdTmp));
+					if(!checkMap.containsKey(taskIdTmp)){checkMap.put(taskIdTmp, "");}
+					checkMap.put(taskIdTmp, checkMap.get(taskIdTmp)+checkResult.get(i).get(1));
+				}
+				newTask.removeAll(errorTask);				
+			}
+			if(newTask.size()>0){
+				String updateSql="UPDATE TASK SET STATUS=0 "
+						+ "WHERE TASK_ID IN ("+newTask.toString().replace("[", "").
+						replace("]", "").replace("\"", "")+")";
+				DbOperation.exeUpdateOrInsertBySql(conn, updateSql);}
+	    	return checkMap;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

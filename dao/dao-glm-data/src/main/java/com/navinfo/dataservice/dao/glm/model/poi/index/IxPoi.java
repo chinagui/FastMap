@@ -261,7 +261,7 @@ public class IxPoi implements IObj {
 
 	public Map<String, IxPoiName> nameMap = new HashMap<String, IxPoiName>();
 
-	private List<IRow> parent = new ArrayList<IRow>();
+	private List<IRow> parents = new ArrayList<IRow>();
 
 	public Map<String, IxPoiParent> parentMap = new HashMap<String, IxPoiParent>();
 
@@ -269,7 +269,7 @@ public class IxPoi implements IObj {
 
 	public Map<String, IxPoiChildren> childrenMap = new HashMap<String, IxPoiChildren>();
 	
-	private List<IRow> photoes = new ArrayList<IRow>();
+	private List<IRow> photos = new ArrayList<IRow>();
 
 	public Map<String, IxPoiPhoto> photoMap = new HashMap<String, IxPoiPhoto>();
 
@@ -773,20 +773,20 @@ public class IxPoi implements IObj {
 		this.names = names;
 	}
 
-	public List<IRow> getParent() {
-		return parent;
+	public List<IRow> getParents() {
+		return parents;
 	}
 
-	public void setParent(List<IRow> parent) {
-		this.parent = parent;
+	public void setParents(List<IRow> parents) {
+		this.parents = parents;
 	}
 
-	public List<IRow> getPhotoes() {
-		return photoes;
+	public List<IRow> getPhotos() {
+		return photos;
 	}
 
-	public void setPhotoes(List<IRow> photoes) {
-		this.photoes = photoes;
+	public void setPhotos(List<IRow> photos) {
+		this.photos = photos;
 	}
 
 	public List<IRow> getVideoes() {
@@ -1009,8 +1009,8 @@ public class IxPoi implements IObj {
 		children.add(this.getFlags());
 		children.add(this.getIcons());
 		children.add(this.getNames());
-		children.add(this.getParent());
-		children.add(this.getPhotoes());
+		children.add(this.getParents());
+		children.add(this.getPhotos());
 		children.add(this.getVideoes());
 		
 		//deep
@@ -1232,9 +1232,9 @@ public class IxPoi implements IObj {
 					}
 
 					break;
-				case "parent":
+				case "parents":
 
-					parent.clear();
+					parents.clear();
 
 					ja = json.getJSONArray(key);
 
@@ -1245,13 +1245,13 @@ public class IxPoi implements IObj {
 
 						row.Unserialize(jo);
 
-						parent.add(row);
+						parents.add(row);
 					}
 
 					break;
-				case "photoes":
+				case "photos":
 
-					photoes.clear();
+					photos.clear();
 
 					ja = json.getJSONArray(key);
 
@@ -1262,7 +1262,7 @@ public class IxPoi implements IObj {
 
 						row.Unserialize(jo);
 
-						photoes.add(row);
+						photos.add(row);
 					}
 
 					break;

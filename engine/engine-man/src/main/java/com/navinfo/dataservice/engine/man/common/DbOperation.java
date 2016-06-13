@@ -41,7 +41,7 @@ public class DbOperation {
 					int columnCount=rs.getMetaData().getColumnCount();
 					while(rs.next()){
 						List<String> listTmp=new ArrayList<String>();
-						for(int i=0;i<columnCount;i++){
+						for(int i=1;i<=columnCount;i++){
 							listTmp.add(rs.getString(i));
 						}
 						list.add(listTmp);
@@ -72,7 +72,7 @@ public class DbOperation {
 					boolean hasColumnName=true;
 					while(rs.next()){
 						HashMap map = new HashMap();
-						for(int i=0;i<columnCount;i++){
+						for(int i=1;i<=columnCount;i++){
 							if(!hasColumnName){columnNameList.add(rs.getMetaData().getColumnName(i));}
 							map.put(columnNameList.get(i), rs.getString(i));
 						}

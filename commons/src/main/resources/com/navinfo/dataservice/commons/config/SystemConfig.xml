@@ -20,8 +20,8 @@
 	<META.jdbc.url>jdbc:oracle:thin:@192.168.4.131:1521/orcl</META.jdbc.url>
 	<META.dataSource.validationQuery>select 1 from dual</META.dataSource.validationQuery>
 	
-	<META.jdbc.username>mymeta3</META.jdbc.username>
-	<META.jdbc.password>mymeta3</META.jdbc.password>
+	<META.jdbc.username>fm_meta_sp5</META.jdbc.username>
+	<META.jdbc.password>fm_meta_sp5</META.jdbc.password>
 	<META.dataSource.initialSize>2</META.dataSource.initialSize>
 	<META.dataSource.maxActive>25</META.dataSource.maxActive>
 	<META.dataSource.maxIdle>10</META.dataSource.maxIdle>

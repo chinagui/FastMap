@@ -214,12 +214,12 @@ public class IxPoiSelector implements ISelector {
 				IxPoiParentSelector ixPoiParentSelector = new IxPoiParentSelector(
 						conn);
 
-				ixPoi.setParent(ixPoiParentSelector.loadParentRowsByPoiId(id,
+				ixPoi.setParents(ixPoiParentSelector.loadParentRowsByPoiId(id,
 						isLock));
 				
 				int groupId = 0;
 				
-				for (IRow row : ixPoi.getParent()) {
+				for (IRow row : ixPoi.getParents()) {
 					IxPoiParent obj = (IxPoiParent) row;
 					
 					groupId = obj.getPid();

@@ -164,7 +164,8 @@ public class TaskService {
 					if ("monthProducePlanStartDate".equals(key)) {selectSql+=" order by MONTH_PRODUCE_PLAN_END_DATE";break;}
 					}
 			}
-			return TaskOperation.selectTaskBySql(conn, selectSql, null,currentPageNum,pageSize);
+//			return TaskOperation.selectTaskBySql(conn, selectSql, null,currentPageNum,pageSize);
+			return null;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.springframework.util.StringUtils;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.engine.man.region.Region;
@@ -57,7 +58,7 @@ public class GridService {
 				}};
 			StringBuffer InClause = buildInClause("g.grid_id",gridList);
 			sql=sql+InClause;
-			if(InClause!=null){
+			if(StringUtils.isEmpty(InClause)){
 				return queryRunner.query(conn, sql, rsh);
 			}else{
 				return queryRunner.query(conn, sql, gridList.toArray(), rsh);

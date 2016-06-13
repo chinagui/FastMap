@@ -18,15 +18,14 @@ public class CommitDay2MonthRoadJobRequestTest {
 
 	@Before
 	public void setUp() throws Exception {
-		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(  
-                new String[] { "applicationContext.xml" }); 
 	}
 
 	@Test
 	public void test() {
 		String param = "{\"gridSet\":[123,3435,343]}";
 		JSONObject json=JSONObject.fromObject(param);
-		CommitDay2MonthRoadJobRequest request = new CommitDay2MonthRoadJobRequest(json);
+		CommitDay2MonthRoadJobRequest request = new CommitDay2MonthRoadJobRequest();
+		request.parseByJsonConfig(json);
 		Assert.assertTrue(request.getGridList().size()==3);
 	}
 

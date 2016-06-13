@@ -77,6 +77,7 @@ public class JobCreateStrategy {
 	private static void loadMapping(){
 		String mappingFile = "/com/navinfo/dataservice/jobframework/job-class.xml";
 		jobClassMap = new HashMap<String,Class<?>>();
+		requestClassMap = new HashMap<String,Class<?>>();
 		//加载管理库的信息
 		InputStream is = null;
         log.debug("parse file " + mappingFile);

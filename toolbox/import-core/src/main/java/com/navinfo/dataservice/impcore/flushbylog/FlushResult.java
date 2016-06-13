@@ -27,6 +27,7 @@ public class FlushResult {
 	private int logDetailMoved;
 	private int logDetailGridMoved;
 	private boolean isSuccess;
+	private List<List<String>> failedLog=new ArrayList<List<String>>();
 
 	private List<String> insertFailedList = new ArrayList<String>();
 
@@ -34,6 +35,15 @@ public class FlushResult {
 
 	private List<String> deleteFailedList = new ArrayList<String>();
 
+	public void insertFailedLog(String opId,String rowId){
+		List<String> row = new ArrayList<String>();
+		row.add(opId);
+		row.add(rowId);
+		failedLog.add(row);
+	}
+	public List<List<String>> getFailedLog() {
+		return failedLog;
+	}
 	public String getResultMsg() {
 		return resultMsg;
 	}
@@ -197,7 +207,7 @@ public class FlushResult {
 	public boolean isSuccess() {
 		return getFailedTotal()>0;
 	}
-
+	
 	public void print() {
 		System.out.println("Flush Status:"+this.getResultMsg());
 		System.out.println("Total:" + this.getTotal());

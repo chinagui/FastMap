@@ -1,15 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mapping>
-	<type name="samplea"
-	 class="com.navinfo.dataservice.jobframework.sample.SampleaJob"
-	 request="com.navinfo.dataservice.jobframework.sample.SampeaJobRequest"
-	 />
-	<type name="sampleb"
-	 class="com.navinfo.dataservice.jobframework.sample.SamplebJob"
-	 request="com.navinfo.dataservice.jobframework.sample.SampebJobRequest"
-	 />
-	<type name="diff" 
-		class="com.navinfo.dataservice.diff.DiffJob"
-	 	request="com.navinfo.dataservice.diff.DiffJobRequest"
+	<type name="commitDay2MonthRoadJob" 
+		class="com.navinfo.dataservice.impcore.commit.CommitDay2MonthRoadJob"
+	 	request="com.navinfo.dataservice.impcore.commit.CommitDay2MonthRoadJobRequest"
 	/>
 </mapping>

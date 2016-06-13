@@ -20,8 +20,10 @@ import oracle.sql.STRUCT;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.impcore.exception.LockException;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -32,6 +34,10 @@ import com.navinfo.navicommons.database.QueryRunner;
  * 描述：import-coreLogFlusher.java
  */
 public class LogFlusher {
+	public static final String FEATURE_ALL="ALL";
+	public static final String FEATURE_POI="POI";
+	public static final String FEATURE_ROAD="ROAD";
+	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private static WKT wktUtil = new WKT();
 	private DbInfo sourceDbInfo;
 	private DbInfo targetDbInfo;
@@ -40,45 +46,54 @@ public class LogFlusher {
 	private List<Integer> grids;
 	private String stopTime;//履历生成的截止时间；yyyymmddhh24miss
 	private String tempTable;
+	private String tempFailLogTable;//刷履历失败的日志记录临时表
+	private String featureType = "ALL";
 	
 	
 	
 	public LogFlusher(DbInfo sourceDbInfo, DbInfo targetDbInfo,
-			List<Integer> grids, String stopTime) {
+			List<Integer> grids, String stopTime,String featureType) {
 		super();
 		this.sourceDbInfo = sourceDbInfo;
 		this.targetDbInfo = targetDbInfo;
 		this.grids = grids;
 		this.stopTime = stopTime;
-		
+		this.featureType=featureType;
 	}
 	
-	
+	public void setLog(Logger log) {
+		this.log = log;
+	}
 	public FlushResult perform() throws Exception{
 		FlushResult result= new FlushResult();
 		try{
 			initConnections();//创建源、目标库的connection
 			closeAutoCommit();//关闭autoCommit，手工控制数据库事务
 			createTempTable();
+			createFailueLogTempTable();
 			prepareAndLockLog();
-			String logQuerySql = "SELECT L.* FROM LOG_DETAIL L," + tempTable
-					+ " T WHERE L.OP_ID=T.OP_ID ORDER BY T.OP_DT";
-			FlushResult flushResult = flushData(logQuerySql);
-			if (flushResult.isSuccess()) {
-				moveLog(flushResult, tempTable);
-				updateLogCommitStatus(tempTable);
-				flushResult.setResultMsg("Success");
-			} else {
-				flushResult.setResultMsg("Fail");
-				throw new Exception("刷数据失败。");
-			}
+			FlushResult flushResult = flushData();
+			recordFailLog2Temptable(flushResult);
+			//修改全部履历的提交状态为“已提交”
+			moveLog(flushResult, tempTable);
+			updateLogCommitStatus(tempTable);
 			commitAndCloseConnections();
 		}catch(Exception e){
+			this.log.warn("exception accured", e);
 			rollbackAndCloseConnections();
 		}finally{
 			this.closeConnections();
 		}
 		return result;
+	}
+	private String getFeatureFilter(){
+		if (this.featureType.equals(FEATURE_ROAD)){
+			return " LOG_DETAIL.OB_NW !=\'IX_POI\'";
+		}
+		if (this.featureType.equals(FEATURE_POI)){
+			return " LOG_DETAIL.OB_NW =\'IX_POI\'";
+		}
+		return " 1=1";
 	}
 	private void initConnections() throws Exception{
 		this.sourceDbConn = createConnection(this.sourceDbInfo);
@@ -101,8 +116,11 @@ public class LogFlusher {
 		run.execute(this.sourceDbConn, sql);
 	}
 	//FIXME:这里使用create，drop等ddl语句会导致事务提交，需要将相关的ddl语句进行提前或者滞后处理；
+	/*
+	      将成功的operation相关的履历搬移到目标库；
+	 */
 	private  void moveLog(FlushResult flushResult, String tempTable) throws Exception {
-
+		
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyymmdd");
 
 		String dbLinkName = "dblink_" + sdf.format(new Date());
@@ -121,25 +139,44 @@ public class LogFlusher {
 
 		stmt.execute(sqlCreateDblink);
 		
-		String moveSql = "INSERT INTO LOG_OPERATION@"+dbLinkName
-				+"(OP_ID,US_ID,OP_CMD,OP_DT) SELECT L.OP_ID,L.US_ID,L.OP_CMD,L.OP_DT FROM LOG_OPERATION L,"+tempTable+" T WHERE L.OP_ID=T.OP_ID";
-		flushResult.setLogOpMoved(stmt.executeUpdate(moveSql));
-		
-		moveSql = "insert into log_detail@" + dbLinkName
-				+ " select l.* from log_detail l,"+tempTable+" t where l.op_id=t.op_id";
+		String moveSql = "insert into log_detail@" + dbLinkName
+				+ " select l.* from log_detail l,"+tempTable+" t where l.op_id=t.op_id"
+				+" AND NOT EXITS(SELECT 1 FROM "+this.tempFailLogTable+" f WHERE f.row_id=l.row_Id)";
 		flushResult.setLogDetailMoved(stmt.executeUpdate(moveSql));
 		
 		moveSql = "INSERT INTO LOG_DETAIL_GRID@"+dbLinkName
-				+" SELECT P.* FROM LOG_DETAIL_GRID P,LOG_DETAIL L,"+tempTable+" T WHERE L.OP_ID=T.OP_ID AND L.ROW_ID=P.LOG_ROW_ID";
-		flushResult.setLogDetailGridMoved(stmt.executeUpdate(moveSql));		
-
+				+" SELECT P.* FROM LOG_DETAIL_GRID P,LOG_DETAIL L,"+tempTable+" T WHERE L.OP_ID=T.OP_ID AND L.ROW_ID=P.LOG_ROW_ID"
+				+" AND NOT EXITS(SELECT 1 FROM "+this.tempFailLogTable+" f WHERE f.row_id=l.row_Id)";
+		flushResult.setLogDetailGridMoved(stmt.executeUpdate(moveSql));	
+		
+		moveSql = "INSERT INTO LOG_OPERATION@"+dbLinkName
+				+"(OP_ID,US_ID,OP_CMD,OP_DT) SELECT L.OP_ID,L.US_ID,L.OP_CMD,L.OP_DT FROM LOG_OPERATION L,"+tempTable+" T,LOG_DETAIL D WHERE L.OP_ID=T.OP_ID  AND L.OP_ID=D.OP_ID";
+		flushResult.setLogOpMoved(stmt.executeUpdate(moveSql));
+		
 		String sqlDropDblink = "drop database link " + dbLinkName;
 
 		stmt.execute(sqlDropDblink);
 
 	}
-	private FlushResult flushData(String logQuerySql) throws Exception {
-
+	
+	private void recordFailLog2Temptable(FlushResult flushResult) throws Exception{
+		if (flushResult.isSuccess()) return ;
+		QueryRunner run = new QueryRunner();
+		String sql = "insert into "+this.tempFailLogTable+"values(?,?)";
+		String[] rows = (String[]) flushResult.getFailedLog().toArray();
+		String[][] batchParams = new String[rows.length][2];
+		for (int i=0;i<flushResult.getFailedLog().size();i++){
+			List<String> row = flushResult.getFailedLog().get(i);
+			batchParams[i]=(String[]) row.toArray();
+		}
+		run.batch(this.sourceDbConn, sql, batchParams);
+	}
+	private FlushResult flushData() throws Exception {
+		String logQuerySql = "SELECT L.* FROM LOG_DETAIL L," + tempTable
+				+ " T WHERE L.OP_ID=T.OP_ID ORDER BY T.OP_DT"
+				+ " and "+this.getFeatureFilter()
+				;
+		this.log.debug(logQuerySql);
 		Statement sourceStmt = this.sourceDbConn.createStatement();
 
 		ResultSet rs = sourceStmt.executeQuery(logQuerySql);
@@ -154,6 +191,7 @@ public class LogFlusher {
 				int op_tp = rs.getInt("op_tp");
 
 				String rowId = rs.getString("row_id");
+				String opId = rs.getString("op_id");
 
 				if (op_tp == 1) {// 新增
 
@@ -163,6 +201,8 @@ public class LogFlusher {
 						flushResult.addInsertFailed();
 
 						flushResult.addInsertFailedRowId(rowId);
+						flushResult.insertFailedLog(opId, rowId);
+						
 					}
 
 				} else if (op_tp == 3) { // 修改
@@ -173,6 +213,7 @@ public class LogFlusher {
 						flushResult.addUpdateFailed();
 
 						flushResult.addUpdateFailedRowId(rowId);
+						flushResult.insertFailedLog(opId, rowId);
 					}
 
 				} else if (op_tp == 2) { // 删除
@@ -183,6 +224,7 @@ public class LogFlusher {
 						flushResult.addDeleteFailed();
 
 						flushResult.addDeleteFailedRowId(rowId);
+						flushResult.insertFailedLog(opId, rowId);
 					}
 				}
 
@@ -215,6 +257,8 @@ public class LogFlusher {
 			sb.append(StringUtils.join(grids, ","));
 			sb.append(")");
 		}
+		sb.append(" and "+this.getFeatureFilter());
+		this.log.debug(sb);
 		return run.update(this.sourceDbConn, sb.toString());
 	}
 	private  void prepareAndLockLog()throws LockException{
@@ -236,6 +280,7 @@ public class LogFlusher {
 		sb.append("UPDATE LOG_OPERATION L SET L.LOCK_STA=1 WHERE EXISTS (SELECT 1 FROM ");
 		sb.append(tempTable);
 		sb.append(" T WHERE L.OP_ID=T.OP_ID) AND L.LOCK_STA=0");
+		this.log.debug(sb);
 		int result = run.update(this.sourceDbConn, sb.toString());
 		if(result<rowCount){
 			throw new LockException("部分履历已经被其他回库操作锁定,请稍候再试。");
@@ -270,8 +315,21 @@ public class LogFlusher {
 		this.setTempTable(tempTable);
 		
 	}
+	private void createFailueLogTempTable()throws Exception{
+		QueryRunner run = new QueryRunner();
+		StringBuilder sb = new StringBuilder();
+		String tempTable = "TEMP_FAIL_LOG_"+new Random().nextInt(1000000);
+		sb.append("CREATE TABLE ");
+		sb.append(tempTable);
+		sb.append("(OP_ID RAW(16),ROW_ID RAW(16))");
+		run.execute(this.sourceDbConn, sb.toString());
+		this.setTempFailLogTable(tempTable);
+	}
 	private void setTempTable(String tempTable) {
 		this.tempTable = tempTable;
+	}
+	private void setTempFailLogTable(String tempTable) {
+		this.tempFailLogTable = tempTable;
 	}
 	private void commitAndCloseConnections() throws SQLException {
 		DbUtils.commitAndClose(this.sourceDbConn);
@@ -351,7 +409,7 @@ public class LogFlusher {
 			it = json.keys();
 
 			tmpPos = 0;
-
+			this.log.debug(sb);
 			pstmt = this.targetDbConn.prepareStatement(sb.toString());
 
 			while (it.hasNext()) {
@@ -467,7 +525,7 @@ public class LogFlusher {
 			it = json.keys();
 
 			tmpPos = 0;
-
+			this.log.debug(sb);
 			pstmt = this.targetDbConn.prepareStatement(sb.toString());
 
 			while (it.hasNext()) {
@@ -532,7 +590,7 @@ public class LogFlusher {
 			String sql = "update " + rs.getString("tb_nm")
 					+ " set u_record = 2 where row_id =hextoraw('"
 					+ rs.getString("tb_row_id") + "')";
-
+			this.log.debug(sql);
 			pstmt = this.targetDbConn.prepareStatement(sql);
 
 			int result = pstmt.executeUpdate();

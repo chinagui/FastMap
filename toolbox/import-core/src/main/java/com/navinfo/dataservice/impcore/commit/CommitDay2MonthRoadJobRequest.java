@@ -30,6 +30,10 @@ public class CommitDay2MonthRoadJobRequest extends AbstractJobRequest {
 	public void setGridSet(List<Integer> gridSet) {
 		this.gridList = gridSet;
 	}
+	public CommitDay2MonthRoadJobRequest() {
+		super();
+		log = LoggerRepos.getLogger(log);
+	}
 	public CommitDay2MonthRoadJobRequest(JSONObject jsonConfig) {
 		super();
 		log = LoggerRepos.getLogger(log);

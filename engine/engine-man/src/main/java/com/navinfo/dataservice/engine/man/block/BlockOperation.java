@@ -62,4 +62,37 @@ public class BlockOperation {
 		}
 	}
 	
+	public static List<HashMap> queryBlockByGroup(Connection conn,String selectSql,List<Object> values) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
+				public List<HashMap> handle(ResultSet rs) throws SQLException {
+					List<HashMap> list = new ArrayList<HashMap>();
+					while(rs.next()){
+						HashMap map = new HashMap<String, Integer>();
+						System.out.println(rs.getInt("BLOCK_ID"));
+						map.put("blockId", rs.getInt("BLOCK_ID"));
+						map.put("planStartDate", rs.getDate("planStartDate"));
+						map.put("planEndDate", rs.getDate("planEndDate"));
+						map.put("descp", rs.getString("DESCP"));
+		
+						list.add(map);
+					}
+					return list;
+				}
+	    		
+	    	}		;
+	    	if (null==values || values.size()==0){
+	    		return run.query(conn, selectSql, rsHandler
+						);
+	    	}
+	    	return run.query(conn, selectSql, rsHandler,values.toArray()
+					);			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
 }

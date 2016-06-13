@@ -6,6 +6,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.text.Format;
+import java.text.SimpleDateFormat;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -16,170 +18,189 @@ import org.springframework.stereotype.Service;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtilsEx;
+import com.navinfo.dataservice.engine.man.block.Block;
+import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.CLOB;
 
-/** 
-* @ClassName:  BlockService 
-* @author code generator
-* @date 2016-06-08 01:32:00 
-* @Description: TODO
-*/
+/**
+ * @ClassName: BlockService
+ * @author code generator
+ * @date 2016-06-08 01:32:00
+ * @Description: TODO
+ */
 @Service
 public class BlockService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
-	
-	public void create(JSONObject json)throws ServiceException{
+	public void create(JSONObject json) throws ServiceException {
 		Connection conn = null;
-		try{
-			//持久化
+		try {
+			// 持久化
 			QueryRunner run = new QueryRunner();
-			conn =  DBConnector.getInstance().getManConnection();	
-			Block  bean = (Block)JSONObject.toBean(json, Block.class);	
-			
-			String createSql = "insert into BLOCK (BLOCK_ID, CITY_ID, BLOCK_NAME, GEOMETRY, PLAN_STATUS) values(?,?,?,?,?)";			
-			run.update(conn, 
-					   createSql, 
-					   bean.getBlockId() , bean.getCityId(), bean.getBlockName(), bean.getGeometry(), bean.getPlanStatus()
-					   );
-		}catch(Exception e){
+			conn = DBConnector.getInstance().getManConnection();
+			Block bean = (Block) JSONObject.toBean(json, Block.class);
+
+			String createSql = "insert into BLOCK (BLOCK_ID, CITY_ID, BLOCK_NAME, GEOMETRY, PLAN_STATUS) values(?,?,?,?,?)";
+			run.update(conn, createSql, bean.getBlockId(), bean.getCityId(), bean.getBlockName(), bean.getGeometry(),
+					bean.getPlanStatus());
+		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("创建失败，原因为:"+e.getMessage(),e);
-		}finally{
+			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
+		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public void update(JSONObject json)throws ServiceException{
+
+	public void update(JSONObject json) throws ServiceException {
 		Connection conn = null;
-		try{
-			//持久化
+		try {
+			// 持久化
 			QueryRunner run = new QueryRunner();
-			conn =  DBConnector.getInstance().getManConnection();	
-			JSONObject obj = JSONObject.fromObject(json);	
-			Block  bean = (Block)JSONObject.toBean(obj, Block.class);	
-			
+			conn = DBConnector.getInstance().getManConnection();
+			JSONObject obj = JSONObject.fromObject(json);
+			Block bean = (Block) JSONObject.toBean(obj, Block.class);
+
 			String updateSql = "update BLOCK set BLOCK_ID=?, CITY_ID=?, BLOCK_NAME=?, GEOMETRY=?, PLAN_STATUS=? where 1=1 BLOCK_ID=? and CITY_ID=? and BLOCK_NAME=? and GEOMETRY=? and PLAN_STATUS=?";
-			List<Object> values=new ArrayList<Object>();
-			if (bean!=null&&bean.getBlockId()!=null && StringUtils.isNotEmpty(bean.getBlockId().toString())){
-				updateSql+=" and BLOCK_ID=? ";
+			List<Object> values = new ArrayList<Object>();
+			if (bean != null && bean.getBlockId() != null && StringUtils.isNotEmpty(bean.getBlockId().toString())) {
+				updateSql += " and BLOCK_ID=? ";
 				values.add(bean.getBlockId());
-			};
-			if (bean!=null&&bean.getCityId()!=null && StringUtils.isNotEmpty(bean.getCityId().toString())){
-				updateSql+=" and CITY_ID=? ";
+			}
+			;
+			if (bean != null && bean.getCityId() != null && StringUtils.isNotEmpty(bean.getCityId().toString())) {
+				updateSql += " and CITY_ID=? ";
 				values.add(bean.getCityId());
-			};
-			if (bean!=null&&bean.getBlockName()!=null && StringUtils.isNotEmpty(bean.getBlockName().toString())){
-				updateSql+=" and BLOCK_NAME=? ";
+			}
+			;
+			if (bean != null && bean.getBlockName() != null && StringUtils.isNotEmpty(bean.getBlockName().toString())) {
+				updateSql += " and BLOCK_NAME=? ";
 				values.add(bean.getBlockName());
-			};
-			if (bean!=null&&bean.getGeometry()!=null && StringUtils.isNotEmpty(bean.getGeometry().toString())){
-				updateSql+=" and GEOMETRY=? ";
+			}
+			;
+			if (bean != null && bean.getGeometry() != null && StringUtils.isNotEmpty(bean.getGeometry().toString())) {
+				updateSql += " and GEOMETRY=? ";
 				values.add(bean.getGeometry());
-			};
-			if (bean!=null&&bean.getPlanStatus()!=null && StringUtils.isNotEmpty(bean.getPlanStatus().toString())){
-				updateSql+=" and PLAN_STATUS=? ";
+			}
+			;
+			if (bean != null && bean.getPlanStatus() != null
+					&& StringUtils.isNotEmpty(bean.getPlanStatus().toString())) {
+				updateSql += " and PLAN_STATUS=? ";
 				values.add(bean.getPlanStatus());
-			};
-			run.update(conn, 
-					   updateSql, 
-					   bean.getBlockId() ,bean.getCityId(),bean.getBlockName(),bean.getGeometry(),bean.getPlanStatus(),
-					   values.toArray()
-					   );
-		}catch(Exception e){
+			}
+			;
+			run.update(conn, updateSql, bean.getBlockId(), bean.getCityId(), bean.getBlockName(), bean.getGeometry(),
+					bean.getPlanStatus(), values.toArray());
+		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("修改失败，原因为:"+e.getMessage(),e);
-		}finally{
+			throw new ServiceException("修改失败，原因为:" + e.getMessage(), e);
+		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public void delete(JSONObject json)throws ServiceException{
+
+	public void delete(JSONObject json) throws ServiceException {
 		Connection conn = null;
-		try{
-			//持久化
+		try {
+			// 持久化
 			QueryRunner run = new QueryRunner();
-			conn =  DBConnector.getInstance().getManConnection();	
-			JSONObject obj = JSONObject.fromObject(json);	
-			Block  bean = (Block)JSONObject.toBean(obj, Block.class);	
-			
+			conn = DBConnector.getInstance().getManConnection();
+			JSONObject obj = JSONObject.fromObject(json);
+			Block bean = (Block) JSONObject.toBean(obj, Block.class);
+
 			String deleteSql = "delete from  BLOCK where 1=1 ";
-			List<Object> values=new ArrayList<Object>();
-			if (bean!=null&&bean.getBlockId()!=null && StringUtils.isNotEmpty(bean.getBlockId().toString())){
-				deleteSql+=" and BLOCK_ID=? ";
+			List<Object> values = new ArrayList<Object>();
+			if (bean != null && bean.getBlockId() != null && StringUtils.isNotEmpty(bean.getBlockId().toString())) {
+				deleteSql += " and BLOCK_ID=? ";
 				values.add(bean.getBlockId());
-			};
-			if (bean!=null&&bean.getCityId()!=null && StringUtils.isNotEmpty(bean.getCityId().toString())){
-				deleteSql+=" and CITY_ID=? ";
+			}
+			;
+			if (bean != null && bean.getCityId() != null && StringUtils.isNotEmpty(bean.getCityId().toString())) {
+				deleteSql += " and CITY_ID=? ";
 				values.add(bean.getCityId());
-			};
-			if (bean!=null&&bean.getBlockName()!=null && StringUtils.isNotEmpty(bean.getBlockName().toString())){
-				deleteSql+=" and BLOCK_NAME=? ";
+			}
+			;
+			if (bean != null && bean.getBlockName() != null && StringUtils.isNotEmpty(bean.getBlockName().toString())) {
+				deleteSql += " and BLOCK_NAME=? ";
 				values.add(bean.getBlockName());
-			};
-			if (bean!=null&&bean.getGeometry()!=null && StringUtils.isNotEmpty(bean.getGeometry().toString())){
-				deleteSql+=" and GEOMETRY=? ";
+			}
+			;
+			if (bean != null && bean.getGeometry() != null && StringUtils.isNotEmpty(bean.getGeometry().toString())) {
+				deleteSql += " and GEOMETRY=? ";
 				values.add(bean.getGeometry());
-			};
-			if (bean!=null&&bean.getPlanStatus()!=null && StringUtils.isNotEmpty(bean.getPlanStatus().toString())){
-				deleteSql+=" and PLAN_STATUS=? ";
+			}
+			;
+			if (bean != null && bean.getPlanStatus() != null
+					&& StringUtils.isNotEmpty(bean.getPlanStatus().toString())) {
+				deleteSql += " and PLAN_STATUS=? ";
 				values.add(bean.getPlanStatus());
-			};
-			if (values.size()==0){
-	    		run.update(conn, deleteSql);
-	    	}else{
-	    		run.update(conn, deleteSql,values.toArray());
-	    	}
-	    	
-		}catch(Exception e){
+			}
+			;
+			if (values.size() == 0) {
+				run.update(conn, deleteSql);
+			} else {
+				run.update(conn, deleteSql, values.toArray());
+			}
+
+		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("删除失败，原因为:"+e.getMessage(),e);
-		}finally{
+			throw new ServiceException("删除失败，原因为:" + e.getMessage(), e);
+		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public Page list(JSONObject json ,final int currentPageNum)throws ServiceException{
+
+	public Page list(JSONObject json, final int currentPageNum) throws ServiceException {
 		Connection conn = null;
-		try{
+		try {
 			QueryRunner run = new QueryRunner();
-			conn =  DBConnector.getInstance().getManConnection();		
-			JSONObject obj = JSONObject.fromObject(json);	
-			Block  bean = (Block)JSONObject.toBean(obj, Block.class);
-			
+			conn = DBConnector.getInstance().getManConnection();
+			JSONObject obj = JSONObject.fromObject(json);
+			Block bean = (Block) JSONObject.toBean(obj, Block.class);
+
 			String selectSql = "select * from BLOCK where 1=1 ";
-			List<Object> values=new ArrayList<Object>();
-			if (bean!=null&&bean.getBlockId()!=null && StringUtils.isNotEmpty(bean.getBlockId().toString())){
-				selectSql+=" and BLOCK_ID=? ";
+			List<Object> values = new ArrayList<Object>();
+			if (bean != null && bean.getBlockId() != null && StringUtils.isNotEmpty(bean.getBlockId().toString())) {
+				selectSql += " and BLOCK_ID=? ";
 				values.add(bean.getBlockId());
-			};
-			if (bean!=null&&bean.getCityId()!=null && StringUtils.isNotEmpty(bean.getCityId().toString())){
-				selectSql+=" and CITY_ID=? ";
+			}
+			;
+			if (bean != null && bean.getCityId() != null && StringUtils.isNotEmpty(bean.getCityId().toString())) {
+				selectSql += " and CITY_ID=? ";
 				values.add(bean.getCityId());
-			};
-			if (bean!=null&&bean.getBlockName()!=null && StringUtils.isNotEmpty(bean.getBlockName().toString())){
-				selectSql+=" and BLOCK_NAME=? ";
+			}
+			;
+			if (bean != null && bean.getBlockName() != null && StringUtils.isNotEmpty(bean.getBlockName().toString())) {
+				selectSql += " and BLOCK_NAME=? ";
 				values.add(bean.getBlockName());
-			};
-			if (bean!=null&&bean.getGeometry()!=null && StringUtils.isNotEmpty(bean.getGeometry().toString())){
-				selectSql+=" and GEOMETRY=? ";
+			}
+			;
+			if (bean != null && bean.getGeometry() != null && StringUtils.isNotEmpty(bean.getGeometry().toString())) {
+				selectSql += " and GEOMETRY=? ";
 				values.add(bean.getGeometry());
-			};
-			if (bean!=null&&bean.getPlanStatus()!=null && StringUtils.isNotEmpty(bean.getPlanStatus().toString())){
-				selectSql+=" and PLAN_STATUS=? ";
+			}
+			;
+			if (bean != null && bean.getPlanStatus() != null
+					&& StringUtils.isNotEmpty(bean.getPlanStatus().toString())) {
+				selectSql += " and PLAN_STATUS=? ";
 				values.add(bean.getPlanStatus());
-			};
-			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
+			}
+			;
+			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
 				public Page handle(ResultSet rs) throws SQLException {
 					List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
-		            Page page = new Page(currentPageNum);
-					while(rs.next()){
+					Page page = new Page(currentPageNum);
+					while (rs.next()) {
 						HashMap<String, Object> map = new HashMap<String, Object>();
 						page.setTotalCount(rs.getInt(QueryRunner.TOTAL_RECORD_NUM));
 						map.put("blockId", rs.getInt("BLOCK_ID"));
@@ -192,73 +213,75 @@ public class BlockService {
 					page.setResult(list);
 					return page;
 				}
-	    		
-	    	}	;
-			if (values.size()==0){
-	    		return run.query(currentPageNum, 20, conn, selectSql, rsHandler
-						);
-	    	}
-	    	return run.query(currentPageNum, 20, conn, selectSql, rsHandler,values.toArray()
-					);
-		}catch(Exception e){
+
+			};
+			if (values.size() == 0) {
+				return run.query(currentPageNum, 20, conn, selectSql, rsHandler);
+			}
+			return run.query(currentPageNum, 20, conn, selectSql, rsHandler, values.toArray());
+		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("查询列表失败，原因为:"+e.getMessage(),e);
-		}finally{
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-		
+
 	}
-	public List<HashMap> listByWkt(JSONObject json)throws ServiceException{
+
+	public List<HashMap> listByWkt(JSONObject json) throws ServiceException {
 		Connection conn = null;
-		try{
-			
-			conn =  DBConnector.getInstance().getManConnection();	
-			
-			String selectSql ="select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY from BLOCK t where PLAN_STATUS="+json.getInt("planningStatus");
-					
-			if (StringUtils.isNotEmpty(json.getString("snapshot"))){
-				if ("1".equals(json.getString("snapshot"))){
-					selectSql="select t.BLOCK_ID,t.BLOCK_NAME, from BLOCK t where PLAN_STATUS="+json.getInt("planningStatus");
-				}	
-			};
-			if (!json.containsKey("relation") || ("intersect".equals(json.getString("relation")))){
-				selectSql+=" and SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
-			}else{
-				if ("within".equals(json.getString("relation"))){
-					selectSql+=" and sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE'";
+		try {
+
+			conn = DBConnector.getInstance().getManConnection();
+
+			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY from BLOCK t where PLAN_STATUS="
+					+ json.getInt("planningStatus");
+
+			if (StringUtils.isNotEmpty(json.getString("snapshot"))) {
+				if ("1".equals(json.getString("snapshot"))) {
+					selectSql = "select t.BLOCK_ID,t.BLOCK_NAME, from BLOCK t where PLAN_STATUS="
+							+ json.getInt("planningStatus");
 				}
 			}
-			List<Object> list=new ArrayList<Object>();
+			;
+			if (!json.containsKey("relation") || ("intersect".equals(json.getString("relation")))) {
+				selectSql += " and SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
+			} else {
+				if ("within".equals(json.getString("relation"))) {
+					selectSql += " and sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE'";
+				}
+			}
+			List<Object> list = new ArrayList<Object>();
 			list.add(json.getString("wkt"));
-			return BlockOperation.queryBlockBySql(conn, selectSql,list);
-		}catch(Exception e){
+			return BlockOperation.queryBlockBySql(conn, selectSql, list);
+		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("查询列表失败，原因为:"+e.getMessage(),e);
-		}finally{
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	
-	public HashMap<?, ?> query(JSONObject json)throws ServiceException{
+
+	public HashMap<?, ?> query(JSONObject json) throws ServiceException {
 		Connection conn = null;
-		try{
-			//持久化
+		try {
+			// 持久化
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();	
-			JSONObject obj = JSONObject.fromObject(json);	
-			Block  bean = (Block)JSONObject.toBean(obj, Block.class);	
-			
+			conn = DBConnector.getInstance().getManConnection();
+			JSONObject obj = JSONObject.fromObject(json);
+			Block bean = (Block) JSONObject.toBean(obj, Block.class);
+
 			String selectSql = "select t.BLOCK_ID,t.CITY_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY,t.PLAN_STATUS from BLOCK t where t.BLOCK_ID=?";
-			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>(){
+			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
 				public HashMap<String, Object> handle(ResultSet rs) throws SQLException {
-					while(rs.next()){
+					while (rs.next()) {
 						HashMap<String, Object> map = new HashMap<String, Object>();
 						map.put("blockId", rs.getInt("BLOCK_ID"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("blockName", rs.getString("BLOCK_NAME"));
-						CLOB clob = (CLOB)rs.getObject("GEOMETRY");
+						CLOB clob = (CLOB) rs.getObject("GEOMETRY");
 						String clobStr = DataBaseUtils.clob2String(clob);
 						try {
 							map.put("geometry", Geojson.wkt2Geojson(clobStr));
@@ -271,19 +294,56 @@ public class BlockService {
 					}
 					return null;
 				}
-	    		
-	    	};			
-			return run.query(conn, 
-					   selectSql,
-					   rsHandler, 
-					   bean.getBlockId());
-		}catch(Exception e){
+
+			};
+			return run.query(conn, selectSql, rsHandler, bean.getBlockId());
+		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("查询明细失败，原因为:"+e.getMessage(),e);
-		}finally{
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	
+
+	public List<HashMap> listByGroup(JSONObject json) throws ServiceException {
+		Connection conn = null;
+		try {
+
+			conn = DBConnector.getInstance().getManConnection();
+
+			String selectSql = null;
+			int stage = json.getInt("stage");
+
+			JSONArray groupIds = json.getJSONArray("groupIds");
+			String groups = ((groupIds.toString()).replace('[', '(')).replace(']', ')');
+
+			Format format = new SimpleDateFormat("yyyyMMdd");
+			String time = format.format(DateUtilsEx.getCurDate());
+
+			if (0 == stage) {
+				selectSql = "select t.BLOCK_ID,t.COLLECT_PLAN_START_DATE as planStartDate,t.COLLECT_PLAN_END_DATE as planEndDate,t.DESCP from block_man t where t.COLLECT_PLAN_END_DATE>=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.COLLECT_PLAN_START_DATE <=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') "
+						+ "and t.COLLECT_GROUP_ID in " + groups;
+			} else if (1 == stage) {
+				selectSql = "select t.BLOCK_ID,t.DAY_EDIT_PLAN_START_DATE as planStartDate,t.DAY_EDIT_PLAN_END_DATE as planEndDate,t.DESCP from block_man t where t.DAY_EDIT_PLAN_END_DATE>=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.DAY_EDIT_PLAN_START_DATE <=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.DAY_EDIT_GROUP_ID in "
+						+ groups;
+			} else {
+				selectSql = "select t.BLOCK_ID,t.MONTH_EDIT_PLAN_START_DATE as planStartDate,t.MONTH_EDIT_PLAN_END_DATE as planEndDate,t.DESCP from block_man t where t.MONTH_EDIT_PLAN_END_DATE>=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.MONTH_EDIT_PLAN_START_DATE <=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.MONTH_EDIT_GROUP_ID in "
+						+ groups;
+			}
+
+			List<Object> list = new ArrayList<Object>();
+			list.add(time);
+			list.add(time);
+
+			return BlockOperation.queryBlockByGroup(conn, selectSql, list);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
 }

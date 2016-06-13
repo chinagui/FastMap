@@ -214,12 +214,12 @@ public class IxPoiSelector implements ISelector {
 				IxPoiParentSelector ixPoiParentSelector = new IxPoiParentSelector(
 						conn);
 
-				ixPoi.setParents(ixPoiParentSelector.loadParentRowsByPoiId(id,
+				ixPoi.setParent(ixPoiParentSelector.loadParentRowsByPoiId(id,
 						isLock));
 				
 				int groupId = 0;
 				
-				for (IRow row : ixPoi.getParents()) {
+				for (IRow row : ixPoi.getParent()) {
 					IxPoiParent obj = (IxPoiParent) row;
 					
 					groupId = obj.getPid();
@@ -481,7 +481,6 @@ public class IxPoiSelector implements ISelector {
         buffer.append(" FROM ix_poi ip, ix_poi_name ipn ");
         buffer.append(" WHERE     ip.pid = ipn.poi_pid ");
         buffer.append(" AND lang_code = 'CHI'");
-        buffer.append(" AND ipn.name_type = 2 ");
         buffer.append(" AND name_class = 1) c ");
         buffer.append(" WHERE ROWNUM <= :1) ");
         buffer.append("  WHERE rn >= :2 ");

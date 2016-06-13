@@ -84,8 +84,8 @@ public class TaskController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
-			service.delete(dataJson);			
-			return new ModelAndView("jsonView", success("删除成功"));
+			List<List<String>> errorTask=service.close(dataJson);			
+			return new ModelAndView("jsonView", success("删除成功",errorTask));
 		}catch(Exception e){
 			log.error("删除失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

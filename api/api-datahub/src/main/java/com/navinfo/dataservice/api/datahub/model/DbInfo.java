@@ -25,12 +25,10 @@ public class DbInfo implements Serializable{
 	protected Date createTime;
 	protected String descp;
 	protected DbServer dbServer;
-	public DbInfo(int dbId,String dbName,String dbUserName,String dbUserPasswd,String bizType,String gdbVersion
+	public DbInfo(int dbId,String dbName,String bizType,String gdbVersion
 			,DbServer dbServer,int dbStatus){
 		this.dbId=dbId;
 		this.dbName=dbName;
-		this.dbUserName=dbUserName;
-		this.dbUserPasswd=dbUserPasswd;
 		this.bizType=bizType;
 		this.dbServer=dbServer;
 		this.gdbVersion=gdbVersion;

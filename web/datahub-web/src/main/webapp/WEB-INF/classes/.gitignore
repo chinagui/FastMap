@@ -1,1 +1,3 @@
-/com/
+/applicationContext.xml
+/dubbo-provider-datahub.xml
+/log4j.properties

@@ -10936,16 +10936,6 @@ comment on column IX_POI_VIDEO.U_RECORD is
 
 comment on column IX_POI_VIDEO.U_FIELDS is
 '记录更新的英文字段名,多个之间采用半角''|''分隔';
-/*==============================================================*/
-/* Table: IX_POSTCODE                                           */
-/*==============================================================*/
-CREATE TABLE IX_POI_OPERATE_REF (
-	PID NUMBER(10) NOT NULL,
-	FRESH_VERIFIED NUMBER(1) DEFAULT 0 NOT NULL
-	  CHECK(FRESH_VERIFIED IN (0,1)),
-	RAW_FIELDS VARCHAR2(30),
-	constraint PK_IX_POI_OPERATE_REF primary key (PID)
-);
 
 /*==============================================================*/
 /* Table: IX_POSTCODE                                           */
@@ -13048,8 +13038,7 @@ create table NI_VAL_EXCEPTION  (
        check (QA_STATUS in (1,2)),
    WORKER               VARCHAR2(500),
    QA_WORKER            VARCHAR2(500),
-   LOG_TYPE             NUMBER(5)                      default 0 not null,
-   MD5_CODE             VARCHAR2(32)
+   LOG_TYPE             NUMBER(5)                      default 0 not null
 );
 
 comment on column NI_VAL_EXCEPTION.RULEID is

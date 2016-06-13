@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.web.man.controller;
 
-import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -92,8 +91,8 @@ public class TaskController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
-			HashMap<String,String> errorTask=service.close(dataJson);			
-			return new ModelAndView("jsonView", success(errorTask));
+			List<List<String>> errorTask=service.close(dataJson);			
+			return new ModelAndView("jsonView", success("删除成功",errorTask));
 		}catch(Exception e){
 			log.error("删除失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
@@ -104,26 +103,22 @@ public class TaskController extends BaseController {
 	 */
 	@RequestMapping(value = "/task/list")
 	public ModelAndView list(HttpServletRequest request){
-		try{	
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
-			
-			
-
-			JSONObject condition = dataJson.getJSONObject("condition");			
-			JSONObject order = dataJson.getJSONObject("order");	
+		try{			
+			JSONObject condition = JSONObject.fromObject(URLDecode(request.getParameter("condition")));			
+			JSONObject order = JSONObject.fromObject(URLDecode(request.getParameter("order")));	
 			
 			int curPageNum= 1;//默认为第一页
-			String curPage= dataJson.getString("pageNum");
+			String curPage= request.getParameter("pageNum");
 			if (StringUtils.isNotEmpty(curPage)){
 				curPageNum = Integer.parseInt(curPage);
 			}
 			int curPageSize= 20;//默认为20条记录/页
-			String curSize= dataJson.getString("pageSize");
+			String curSize= request.getParameter("pageSize");
 			if (StringUtils.isNotEmpty(curSize)){
 				curPageSize = Integer.parseInt(curSize);
 			}
 			Page data = service.list(condition,order,curPageNum,curPageSize);			
-			return new ModelAndView("jsonView", success(data.getResult()));
+			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

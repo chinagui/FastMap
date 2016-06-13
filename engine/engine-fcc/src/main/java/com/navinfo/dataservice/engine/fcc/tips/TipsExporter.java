@@ -119,6 +119,25 @@ public class TipsExporter {
 			}
 
 			json.put("deep", deepjson);
+			
+			if(deepjson.containsKey("in")){
+				JSONObject in = deepjson.getJSONObject("in");
+				
+				json.put("relatedLinkId", in.getString("id"));
+			}
+			else if (deepjson.containsKey("f")){
+				
+				JSONObject f = deepjson.getJSONObject("f");
+				json.put("relatedLinkId", f.getString("id"));
+			}
+			else if (deepjson.containsKey("out")){
+				
+				JSONObject out = deepjson.getJSONObject("out");
+				json.put("relatedLinkId", out.getString("id"));
+			}
+			else{
+				json.put("relatedLinkId", JSONNull.getInstance());
+			}
 
 			String geometry = new String(result.getValue("data".getBytes(),
 					"geometry".getBytes()));
@@ -127,7 +146,7 @@ public class TipsExporter {
 
 			String source = new String(result.getValue("data".getBytes(),
 					"source".getBytes()));
-
+			
 			json.putAll(JSONObject.fromObject(source));
 
 			String track = new String(result.getValue("data".getBytes(),

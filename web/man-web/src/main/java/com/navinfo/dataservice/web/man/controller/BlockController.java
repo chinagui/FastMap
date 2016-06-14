@@ -67,17 +67,30 @@ public class BlockController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	@RequestMapping(value = "/block/delete")
-	public ModelAndView delete(HttpServletRequest request){
+	
+	/**
+	 * 根据几何范围，查询范围内的可出品的block并返回
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/block/listByProduce/")
+	public ModelAndView listByProduce(HttpServletRequest request){
 		try{			
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
 			if(dataJson==null){
-				throw new IllegalArgumentException("param参数不能为空。");
+				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			service.delete(dataJson);			
-			return new ModelAndView("jsonView", success("删除成功"));
+			if(!(dataJson.containsKey("wkt"))){
+				throw new IllegalArgumentException("wkt参数是必须的。");
+			}
+			String wkt= dataJson.getString("wkt");
+			if(StringUtils.isEmpty(wkt)){
+				throw new IllegalArgumentException("wkt参数值不能为空");
+			}
+			List<HashMap> data = service.listByProduce(wkt);			
+			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
-			log.error("删除失败，原因："+e.getMessage(), e);
+			log.error("获取block列表失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}

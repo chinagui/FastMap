@@ -40,87 +40,42 @@ import com.navinfo.navicommons.geo.computation.MeshUtils;
  * @date 2016-1-15 下午3:40:32
  * @Description: TODO
  */
-public class InitRegionDbScriptsInterface {
+public class InitDesgdbScriptsInterface {
 
 	public static JSONObject execute(JSONObject request) throws Exception{
 		JSONObject response = new JSONObject();
 		try {
 			String fmgdbId = (String) request.get("fmgdbId");
 			Assert.notNull(fmgdbId, "fmgdbId不能为空");
-			String fmMetaId = (String) request.get("fmMetaId");
-			Assert.notNull(fmMetaId, "fmMetaId不能为空");
-			String userNamePrefix = (String) request.get("userNamePrefix");
-			Assert.notNull(userNamePrefix, "userNamePrefix不能为空");
 			String gdbVersion = (String) request.get("gdbVersion");
 			Assert.notNull(gdbVersion, "gdbVersion不能为空");
 			
 			//
-			List<Grid> grids =GridService.getInstance().list();
-			//得到图幅号
-			Map<Integer,Set<String>> regionGridMap = new HashMap<Integer,Set<String>>();
-			for(Grid g:grids){
-				Integer rid=g.getRegionId();
-				String gid = String.valueOf(g.getGridId());
-				Set<String> set =regionGridMap.get(rid);
-				if(set==null){
-					set = new HashSet<String>();
-					regionGridMap.put(rid, set);
-				}
-				regionGridMap.get(rid).add(gid.substring(0, gid.length()-2));
-			}
-			for(Integer key:regionGridMap.keySet()){
-				Set<String> meshes = regionGridMap.get(key);
-				//创建日db
+			String[] names = new String[]{"desgdb_d_p","desgdb_d_rp","desgdb_m"};
+			for(String name:names){
+				//创建db
 				JobInfo info1 = new JobInfo(0, "");
 				info1.setType("createDb");
 				JSONObject req1 = new JSONObject();
 				req1.put("dbName", "orcl");
-				req1.put("userName", userNamePrefix+"_d_"+key);
-				req1.put("userPasswd", userNamePrefix+"_d_"+key);
-				req1.put("bizType", "regionRoad");
-				req1.put("descp", "region db");
+				req1.put("userName", name);
+				req1.put("userPasswd", name);
+				req1.put("bizType", "desRoad");
+				req1.put("descp", "des db");
 				req1.put("gdbVersion", "250+");
 				info1.setRequest(req1);
 				AbstractJob job1 = JobCreateStrategy.createAsMethod(info1);
 				job1.run();
 				int dbDay = job1.getJobInfo().getResponse().getInt("outDbId");
-				response.put("region_"+key+"_day", dbDay);
+				response.put(name, dbDay);
 				JobInfo info2 = new JobInfo(0,"");
-				info2.setType("gdbExport");
+				info2.setType("gdbFullCopy");
 				JSONObject req2 = new JSONObject();
 				req2.put("sourceDbId", fmgdbId);
-				req2.put("condition", ExportConfig.CONDITION_BY_MESH);
-				req2.put("conditionParams", JSONArray.fromObject(meshes));
-				req2.put("feature", ExportConfig.FEATURE_GDB);
-				req2.put("dataIntegrity", false);
 				req2.put("targetDbId", dbDay);
 				info2.setRequest(req2);
 				AbstractJob job2 = JobCreateStrategy.createAsMethod(info2);
 				job2.run();
-				//创建月db
-				JobInfo info3 = new JobInfo(0, "");
-				info3.setType("createDb");
-				JSONObject req3 = new JSONObject();
-				req3.put("dbName", "orcl");
-				req3.put("userName", userNamePrefix+"_m_"+key);
-				req3.put("userPasswd", userNamePrefix+"_m_"+key);
-				req3.put("bizType", "regionRoad");
-				req3.put("descp", "region db");
-				req3.put("gdbVersion", "250+");
-				info3.setRequest(req3);
-				AbstractJob job3 = JobCreateStrategy.createAsMethod(info3);
-				job3.run();
-				int dbMonth = job3.getJobInfo().getResponse().getInt("outDbId");
-				response.put("region_"+key+"_month", dbMonth);
-				JobInfo info4 = new JobInfo(0,"");
-				info4.setType("gdbFullCopy");
-				JSONObject req4 = new JSONObject();
-				req4.put("sourceDbId", fmgdbId);
-				req4.put("targetDbId", dbDay);
-				info4.setRequest(req4);
-				AbstractJob job4 = JobCreateStrategy.createAsMethod(info4);
-				job4.run();
-				response.put("region_"+key, "success");
 			}
 			response.put("msg", "执行成功");
 		} catch (Exception e) {

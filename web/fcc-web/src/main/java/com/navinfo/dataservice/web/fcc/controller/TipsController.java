@@ -14,11 +14,13 @@ import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.photo.Photo;
+import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -32,13 +34,13 @@ import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
 
 @Controller
-public class TipsController {
+public class TipsController extends BaseController {
 
 	private static final Logger logger = Logger.getLogger(TipsController.class);
 
 	@RequestMapping(value = "/tip/checkUpdate")
-	public void checkUpdate(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView checkUpdate(HttpServletRequest request
+			) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -50,24 +52,20 @@ public class TipsController {
 			String date = jsonReq.getString("date");
 
 			TipsSelector selector = new TipsSelector();
-
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(selector.checkUpdate(
-							grid, date)));
+			
+			return new ModelAndView("jsonView", success(selector.checkUpdate(
+					grid, date)));
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 
 	@RequestMapping(value = "/tip/edit")
-	public void edit(HttpServletRequest request, HttpServletResponse response)
+	public ModelAndView edit(HttpServletRequest request )
 			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
@@ -91,23 +89,19 @@ public class TipsController {
 
 			op.update(rowkey, stage, handler, pid);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(null));
+			return new ModelAndView("jsonView", success());
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 	
 	@RequestMapping(value = "/tip/import")
-	public void importTips(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView importTips(HttpServletRequest request
+			) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -136,22 +130,19 @@ public class TipsController {
 
 			result.put("reasons", tipsUploader.getReasons());
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(result));
+			return new ModelAndView("jsonView", success(result));
 
 		} catch (Exception e) {
-			String logid = Log4jUtils.genLogid();
 
-			Log4jUtils.error(logger, logid, parameter, e);
+			logger.error(e.getMessage(), e);
 
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 
 	}
 
 	@RequestMapping(value = "/tip/export")
-	public void exportTips(HttpServletRequest request, HttpServletResponse response)
+	public ModelAndView exportTips(HttpServletRequest request )
 			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
@@ -182,7 +173,7 @@ public class TipsController {
 
 			JSONArray grids = jsonReq.getJSONArray("grids");
 
-			op.export(grids, date, filePath, uuid + ".txt");
+			op.export(grids, date, filePath, "tips.txt");
 
 			String zipFileName = uuid + ".zip";
 
@@ -199,23 +190,19 @@ public class TipsController {
 			String url = serverUrl + downloadUrlPath +File.separator+ day + "/"
 					+ zipFileName;
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(url));
+			return new ModelAndView("jsonView", success(url));
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 
 	@RequestMapping(value = "/tip/getByRowkey")
-	public void getByRowkey(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView getByRowkey(HttpServletRequest request
+			) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -228,23 +215,19 @@ public class TipsController {
 
 			JSONObject data = selector.searchDataByRowkey(rowkey);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(data));
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 
 	@RequestMapping(value = "/tip/getBySpatial")
-	public void getBySpatial(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView getBySpatial(HttpServletRequest request
+			) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -257,23 +240,19 @@ public class TipsController {
 
 			JSONArray array = selector.searchDataBySpatial(wkt);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(array));
+			return new ModelAndView("jsonView", success(array));
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 
 	@RequestMapping(value = "/tip/getSnapshot")
-	public void getSnapshot(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView getSnapshot(HttpServletRequest request
+			) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -286,30 +265,26 @@ public class TipsController {
 
 			JSONArray stage = jsonReq.getJSONArray("stage");
 
-			int projectId = jsonReq.getInt("projectId");
+			int dbId = jsonReq.getInt("dbId");
 
 			TipsSelector selector = new TipsSelector();
 
 			JSONArray array = selector.getSnapshot(grids, stage, type,
-					projectId);
+					dbId);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(array));
+			return new ModelAndView("jsonView", success(array));
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 
 	@RequestMapping(value = "/tip/getStats")
-	public void getStats(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView getStats(HttpServletRequest request
+			) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -322,19 +297,15 @@ public class TipsController {
 
 			TipsSelector selector = new TipsSelector();
 
-			JSONObject jo = selector.getStats(grids, stages);
+			JSONObject data = selector.getStats(grids, stages);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(jo));
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 }

@@ -1,11 +1,8 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
@@ -210,7 +207,7 @@ public class Command extends AbstractCommand {
 
 		double lat = Math.round(data.getDouble("latitude")*100000)/100000.0;
 
-		this.setProjectId(json.getInt("projectId"));
+		this.setDbId(json.getInt("subTaskId"));
 
 		if (data.containsKey("breakNodePid")) {
 			this.breakNodePid = data.getInt("breakNodePid");

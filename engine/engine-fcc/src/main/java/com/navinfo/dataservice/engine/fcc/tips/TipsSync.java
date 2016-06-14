@@ -1,31 +1,31 @@
 package com.navinfo.dataservice.engine.fcc.tips;		
  		
- import java.io.IOException;		
- 		
- import javax.sql.DataSource;		
- 		
- import org.apache.commons.dbutils.DbUtils;		
- import org.apache.hadoop.hbase.HColumnDescriptor;		
- import org.apache.hadoop.hbase.HTableDescriptor;		
- import org.apache.hadoop.hbase.TableName;		
- import org.apache.hadoop.hbase.client.Admin;		
- import org.apache.hadoop.hbase.client.Connection;		
- import org.apache.hadoop.hbase.client.Table;		
- import org.apache.log4j.Logger;		
- 		
- import com.navinfo.dataservice.commons.constant.HBaseConstant;		
- import com.navinfo.dataservice.commons.db.HBaseAddress;		
- import com.navinfo.dataservice.commons.log.LoggerRepos;		
- import com.navinfo.dataservice.dao.fcc.HBaseController;		
- import com.navinfo.dataservice.engine.fcc.tips.bridge.BridgeTipsBuilder;		
- import com.navinfo.dataservice.engine.fcc.tips.connexity.RdLaneConnexityTipsBuilder;		
- import com.navinfo.dataservice.engine.fcc.tips.construct.ConstructTipsBuilder;		
- import com.navinfo.dataservice.engine.fcc.tips.cross.RdCrossTipsBuilder;		
- import com.navinfo.dataservice.engine.fcc.tips.direct.DirectTipsBuilder;		
- import com.navinfo.dataservice.engine.fcc.tips.highway.HighwayTipsBuilder;		
- import com.navinfo.dataservice.engine.fcc.tips.mark3d.Mark3DTipsBuilder;		
- import com.navinfo.dataservice.engine.fcc.tips.restriction.RdRestrictionTipsBuilder;		
- import com.navinfo.dataservice.engine.fcc.tips.speedLimit.RdSpeedLimitTipsBuilder;		
+ import java.io.IOException;
+
+import javax.sql.DataSource;
+
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.Table;
+import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.dao.fcc.HBaseConnector;
+import com.navinfo.dataservice.dao.fcc.HBaseController;
+import com.navinfo.dataservice.engine.fcc.tips.bridge.BridgeTipsBuilder;
+import com.navinfo.dataservice.engine.fcc.tips.connexity.RdLaneConnexityTipsBuilder;
+import com.navinfo.dataservice.engine.fcc.tips.construct.ConstructTipsBuilder;
+import com.navinfo.dataservice.engine.fcc.tips.cross.RdCrossTipsBuilder;
+import com.navinfo.dataservice.engine.fcc.tips.direct.DirectTipsBuilder;
+import com.navinfo.dataservice.engine.fcc.tips.highway.HighwayTipsBuilder;
+import com.navinfo.dataservice.engine.fcc.tips.mark3d.Mark3DTipsBuilder;
+import com.navinfo.dataservice.engine.fcc.tips.restriction.RdRestrictionTipsBuilder;
+import com.navinfo.dataservice.engine.fcc.tips.speedLimit.RdSpeedLimitTipsBuilder;
  		
  /**		
   * Tips同步		
@@ -39,7 +39,7 @@ public class TipsSync {
 		Connection hbaseConn = null;		
 		try{		
 			//1. 		
-			hbaseConn = HBaseAddress.getHBaseConnection();		
+			hbaseConn = HBaseConnector.getInstance().getConnection();		
 					
 			createOrCleanTable(hbaseConn, "temp_tips4sync");		
 			

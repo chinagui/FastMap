@@ -7,13 +7,13 @@ import java.sql.ResultSet;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.engine.dao.DBConnector;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 
 public class VersionSelector {
 
 	public String getByType(int type) throws Exception {
 
-		String sql = "select type, version from  VERSION where type=:1";
+		String sql = "select type, version from app_data_version where type=:1";
 
 		PreparedStatement pstmt = null;
 
@@ -23,7 +23,8 @@ public class VersionSelector {
 
 		try {
 
-			conn = DBConnector.getInstance().getConnection();
+//			conn = DBConnector.getInstance().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -84,7 +85,8 @@ public class VersionSelector {
 
 		try {
 
-			conn = DBConnector.getInstance().getConnection();
+//			conn = DBConnector.getInstance().getManConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			
 			pstmt = conn.prepareStatement(sql);
 

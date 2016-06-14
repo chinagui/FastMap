@@ -64,7 +64,7 @@ public class Command extends AbstractCommand {
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 
-		this.setProjectId(json.getInt("projectId"));
+		this.setDbId(json.getInt("subTaskId"));
 		JSONObject data = json.getJSONObject("data");
 		
 		this.geoObject = data.getJSONObject("geometry");
@@ -76,7 +76,7 @@ public class Command extends AbstractCommand {
 			for(int i = 0;i<linkAttrArray.size();i++)
 			{
 				JSONObject linkObj = linkAttrArray.getJSONObject(i);
-				linkMap.put(linkObj.getInt("pid"), linkObj.getInt("level_index"));
+				linkMap.put(linkObj.getInt("level_index"),linkObj.getInt("pid"));
 			}
 			
 		}

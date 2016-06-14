@@ -31,9 +31,12 @@ public class Command extends AbstractCommand   implements ICommand {
 		
 		this.latitude = Math.round(data.getDouble("latitude")*100000)/100000.0;
 		
-		this.setProjectId(json.getInt("projectId"));
+		this.setDbId(json.getInt("subTaskId"));
 		
-		this.linkPid = data.getInt("linkPid");
+		if(data.containsKey("linkPid") && !data.get("linkPid").equals("null"))
+		{
+			this.linkPid = data.getInt("linkPid");
+		}
 		
 		this.pid = json.getInt("objId");
 	}

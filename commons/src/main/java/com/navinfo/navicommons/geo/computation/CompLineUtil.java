@@ -1,6 +1,6 @@
 package com.navinfo.navicommons.geo.computation;
 
-import com.navinfo.dataservice.commons.util.GeometryUtils;
+import com.navinfo.dataservice.commons.util.DoubleUtil;
 
 /** 
 * @ClassName: CompLineUitl 
@@ -12,6 +12,12 @@ public class CompLineUtil {
 	public static double getEucLength(DoublePoint point1,DoublePoint point2){
 		return Math.sqrt(Math.pow((point2.getX()-point1.getX()), 2)+Math.pow((point2.getY()-point1.getY()), 2));
 	}
+	/**
+	 * 获取两条线段或者线段延长线的交点
+	 * @param line1
+	 * @param line2
+	 * @return
+	 */
 	public static DoublePoint LineExtIntersect(DoubleLine line1,DoubleLine line2){
 		double k1 = line1.getSlope();
 		double k2 = line2.getSlope();
@@ -62,7 +68,7 @@ public class CompLineUtil {
 				y=(k1*b2-k2*b1)/(k1-k2);
 			}
 			
-			return new DoublePoint(DoubleUtil.keep5Decimal(x),DoubleUtil.keep5Decimal(y));
+			return new DoublePoint(DoubleUtil.keepSpecDecimal(x),DoubleUtil.keepSpecDecimal(y));
 
 		}
 	}
@@ -104,11 +110,11 @@ public class CompLineUtil {
 			deltaX = degreeDist*(-(e.getY()-s.getY())/lineEucLength);
 			deltaY = degreeDist*(e.getX()-s.getX())/lineEucLength;
 		}
-		DoubleLine leftLine = new DoubleLine(new DoublePoint(DoubleUtil.keep5Decimal(s.getX()+deltaX),DoubleUtil.keep5Decimal(s.getY()+deltaY))
-				,new DoublePoint(DoubleUtil.keep5Decimal(e.getX()+deltaX),DoubleUtil.keep5Decimal(e.getY()+deltaY)));
+		DoubleLine leftLine = new DoubleLine(new DoublePoint(DoubleUtil.keepSpecDecimal(s.getX()+deltaX),DoubleUtil.keepSpecDecimal(s.getY()+deltaY))
+				,new DoublePoint(DoubleUtil.keepSpecDecimal(e.getX()+deltaX),DoubleUtil.keepSpecDecimal(e.getY()+deltaY)));
 		if(isTwoWay){
-			DoubleLine rightLine = new DoubleLine(new DoublePoint(DoubleUtil.keep5Decimal(s.getX()-deltaX),DoubleUtil.keep5Decimal(s.getY()-deltaY))
-					,new DoublePoint(DoubleUtil.keep5Decimal(e.getX()-deltaX),DoubleUtil.keep5Decimal(e.getY()-deltaY)));
+			DoubleLine rightLine = new DoubleLine(new DoublePoint(DoubleUtil.keepSpecDecimal(s.getX()-deltaX),DoubleUtil.keepSpecDecimal(s.getY()-deltaY))
+					,new DoublePoint(DoubleUtil.keepSpecDecimal(e.getX()-deltaX),DoubleUtil.keepSpecDecimal(e.getY()-deltaY)));
 			return new DoubleLine[]{leftLine,rightLine};
 		}else{
 			return new DoubleLine[]{leftLine};
@@ -159,5 +165,9 @@ public class CompLineUtil {
 		}else{
 			return Math.PI+CompPointUtil.angle(p1, p2);
 		}
+	}
+	public static boolean intersectant(DoubleLine l1,DoubleLine l2){
+		return LongLineUtil.intersectant(MyGeoConvertor.degree2Millisec(l1)
+				,MyGeoConvertor.degree2Millisec(l2));
 	}
 }

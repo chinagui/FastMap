@@ -12,7 +12,6 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
-import com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Operation;
 
 /**
  * @author zhaokk 创建行政区划点有关行政区划面具体操作类
@@ -63,9 +62,10 @@ public class OpRefAdFace implements IOperation {
 			}
 			links.add(command.geteAdLink());
 			links.add(command.getsAdLink());
-			com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Operation opFace = new Operation(
-					result);
-			opFace.reCaleFaceGeometry(links, face);
+			com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Operation opFace =
+					new com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Operation(
+					result,face);
+			opFace.reCaleFaceGeometry(links);
 		}
 
 	}

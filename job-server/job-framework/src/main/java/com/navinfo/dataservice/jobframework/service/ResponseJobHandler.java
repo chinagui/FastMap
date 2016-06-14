@@ -29,22 +29,27 @@ public class ResponseJobHandler implements MsgHandler {
 	public void handle(String message) {
 		Connection conn = null;
 		try{
+			//持久化
+			QueryRunner runner = new QueryRunner();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
+					.getConnection();
 			//解析message生成jobInfo
 			JSONObject o = JSONObject.fromObject(message);
 			long jobId = o.getLong("jobId");
-			JSONObject resp = o.getJSONObject("response");
-			
-			JSONObject step = o.getJSONObject("step");
-			int stepSeq = step.getInt("stepSeq");
-			String stepMsg = step.getString("stepMsg");
-			//持久化
-			QueryRunner runner = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();
-			String jobInfoSql = "UPDATE JOB_INFO SET JOB_RESPONSE=? WHERE JOB_ID=?";
-			int count = runner.update(conn, jobInfoSql, resp.toString(),jobId);
-			String stepSql = "INSERT INTO JOB_STEP(JOB_ID,STEP_SEQ,STEP_MSG,BEGIN_TIME,END_TIME,STATUS,PROGRESS) VALUES (?,?,?,SYSDATE,SYSDATE,1,100)";
-			runner.update(conn, stepSql, jobId,stepSeq,stepMsg);
+			if(o.get("status")!=null&&o.get("stepCount")!=null&&o.get("response")!=null){
+				int status = o.getInt("status");
+				JSONObject resp = o.getJSONObject("response");
+				int stepCount = o.getInt("stepCount");
+				String jobInfoSql = "UPDATE JOB_INFO SET STEP_COUNT=?, STATUS=?, JOB_RESPONSE=? WHERE JOB_ID=?";
+				runner.update(conn, jobInfoSql,stepCount,status,resp.toString(),jobId);
+			}
+			if(o.get("step")!=null){
+				JSONObject step = o.getJSONObject("step");
+				int stepSeq = step.getInt("stepSeq");
+				String stepMsg = step.getString("stepMsg");
+				String stepSql = "INSERT INTO JOB_STEP(JOB_ID,STEP_SEQ,STEP_MSG,END_TIME,STATUS,PROGRESS) VALUES (?,?,?,SYSDATE,1,100)";
+				runner.update(conn, stepSql, jobId,stepSeq,stepMsg);
+			}
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -53,4 +58,12 @@ public class ResponseJobHandler implements MsgHandler {
 		}
 	}
 
+	public static void main(String[] args){
+		try{
+			JSONObject o = JSONObject.fromObject("{}");
+			Object type = o.get("type");
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 }

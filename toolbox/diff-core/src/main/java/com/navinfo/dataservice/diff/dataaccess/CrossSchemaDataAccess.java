@@ -1,7 +1,7 @@
 package com.navinfo.dataservice.diff.dataaccess;
 
-import com.navinfo.dataservice.datahub.glm.GlmTable;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
+import com.navinfo.dataservice.bizcommons.glm.GlmTable;
+import com.navinfo.dataservice.commons.database.OracleSchema;
 
 import java.util.List;
 
@@ -30,6 +30,6 @@ public class CrossSchemaDataAccess implements DataAccess
     @Override
     public String accessTable(GlmTable table)
     {
-    	return schema.getDbUserName()+"."+table.getName();
+    	return schema.getConnConfig().getUserName()+"."+table.getName();
     }
 }

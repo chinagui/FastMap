@@ -3,7 +3,6 @@ package com.navinfo.dataservice.engine.fcc.tips;
 import java.util.Iterator;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 import org.apache.hadoop.hbase.TableName;
@@ -14,8 +13,8 @@ import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
-import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
 
 public class TipsReshaper {
@@ -26,15 +25,12 @@ public class TipsReshaper {
 
 	public TipsReshaper() {
 
-		// solr = new SolrBulkUpdater(TipsImportUtils.QueueSize,
-		// TipsImportUtils.ThreadCount);
-
 		solr = new SolrBulkUpdater(cache, 5);
 	}
 
 	public int run() throws Exception {
 
-		Connection hbaseConn = HBaseAddress.getHBaseConnection();
+		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
 		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
@@ -120,6 +116,8 @@ public class TipsReshaper {
 			solrIndex.put("s_sourceType", sourceType);
 
 			solrIndex.put("s_sourceCode", sourcejo.getInt("s_sourceCode"));
+			
+			solrIndex.put("s_reliability", sourcejo.getInt("s_reliability"));
 
 			// deep
 			String deep = new String(result.getValue("data".getBytes(),
@@ -145,7 +143,7 @@ public class TipsReshaper {
 			// wkt
 			solrIndex.put("wkt", TipsImportUtils.generateSolrWkt(sourceType,
 					deepjo, g_location, feedbacks));
-
+			
 			solr.addTips(solrIndex);
 
 			count += 1;
@@ -165,8 +163,6 @@ public class TipsReshaper {
 	public static void main(String[] args) throws Exception {
 
 		long s = System.currentTimeMillis();
-
-		HBaseAddress.initHBaseAddress("192.168.3.156");
 
 		TipsReshaper sa = new TipsReshaper();
 

@@ -3,13 +3,6 @@ package com.navinfo.dataservice.commons.geom;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.util.GeometryExceptionWithContext;
-import oracle.spatial.util.WKT;
-import oracle.sql.STRUCT;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.json.JSONException;
 import org.json.JSONStringer;
@@ -22,8 +15,7 @@ import org.mapfish.geo.MfGeoJSONWriter;
 import org.mapfish.geo.MfGeometry;
 
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
-import com.navinfo.dataservice.commons.util.DisplayUtils;
-import com.navinfo.dataservice.commons.util.GeometryUtils;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -35,6 +27,13 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import com.vividsolutions.jts.precision.GeometryPrecisionReducer;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.spatial.geometry.JGeometry;
+import oracle.spatial.util.GeometryExceptionWithContext;
+import oracle.spatial.util.WKT;
+import oracle.sql.STRUCT;
 
 /**
  * 几何的转换类
@@ -82,7 +81,8 @@ public class GeoTranslator {
 
 	private static final MfGeoJSONReader mfreader = new MfGeoJSONReader(
 			mfFactory);
-
+	
+	
 	/**
 	 * 点p0是否在点p1和p2的线上
 	 * 
@@ -99,35 +99,61 @@ public class GeoTranslator {
 			throws Exception {
 		boolean flag = false;
 
-		StringBuilder sb = new StringBuilder("LINESTRING (" + p1[0]);
-
-		sb.append(" " + p1[1]);
-
-		sb.append(",");
-
-		sb.append(p2[0]);
-
-		sb.append(" " + p2[1]);
-
-		sb.append(")");
-
 		StringBuilder sb2 = new StringBuilder("Point (" + p0[0]);
 
 		sb2.append(" " + p0[1]);
 
 		sb2.append(")");
 
-		Geometry line = new WKTReader().read(sb.toString());
+		Geometry line = GeometryUtils.getLineFromPoint(p1,p2);
 
 		Geometry point = new WKTReader().read(sb2.toString());
-        System.out.println(line.distance(point)+"--------------");
+		
 		if (line.distance(point) <= 1) {
 			flag = true;
 		}
 
 		return flag;
 	}
+	
+	/**
+	 * 点p0是否在点p1和p2的线上，不包含端点
+	 * 
+	 * @param p1
+	 *            线起点
+	 * @param p2
+	 *            线终点
+	 * @param p0
+	 *            点
+	 * @return True 在线上； False 不在线上
+	 * @throws Exception
+	 */
+	public static boolean isIntersectionInLine(double[] p1, double[] p2, double[] p0)
+			throws Exception {
+		boolean flag = false;
+		
+		if(p1 == p0 || p2 == p0)
+		{
+			return flag;
+		}
+		
+		StringBuilder sb2 = new StringBuilder("Point (" + p0[0]);
 
+		sb2.append(" " + p0[1]);
+
+		sb2.append(")");
+
+		Geometry line = GeometryUtils.getLineFromPoint(p1,p2);
+
+		Geometry point = new WKTReader().read(sb2.toString());
+		
+		if (line.distance(point) <= 1) {
+			flag = true;
+		}
+
+		return flag;
+	}
+	
 	/**
 	 * 点p0是否在点p1和p2的线上(墨卡托坐标)
 	 * 
@@ -504,13 +530,13 @@ public class GeoTranslator {
 		  for(Geometry g : gList){
 			  c = (Coordinate[])ArrayUtils.addAll(c,g.getCoordinates());
 		  }   
-		  for(int i = 0 ; i < c.length-1;i++){
+		  for(int i = 0 ; i < c.length;i++){
 	        	
 	        	 if(!list.contains(c[i])){
 	        		 list.add(c[i]);
 	        	 }
 	        }
-	      list.add(c[c.length-1]);
+	      list.add(c[0]);
 	      Coordinate[] c1 = new Coordinate[list.size()];
 	      for(int i = 0  ; i < list.size();  i++){
 	        	c1[i] = list.get(i);

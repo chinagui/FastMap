@@ -1,5 +1,7 @@
 package com.navinfo.navicommons.geo.computation;
 
+import com.navinfo.dataservice.commons.util.DoubleUtil;
+
 /** 
 * @ClassName: Line 
 * @author Xiao Xiaowen 
@@ -26,7 +28,7 @@ public class DoubleLine {
 		this.epoint = epoint;
 	}
 	/**
-	 * 计算线段的斜率，如果垂直X轴，那么返回-1；
+	 * 计算线段的斜率，如果垂直X轴，那么返回DoubleUtil.INFINITY；
 	 * @return 
 	 */
 	public double getSlope(){
@@ -47,8 +49,26 @@ public class DoubleLine {
 	public double getDeltaY(){
 		return epoint.getY()-spoint.getY();
 	}
+	/**
+	 * 将line平移到原点生成一个向量
+	 * @return
+	 */
 	public DoublePoint pan2OriginPoint(){
 		return new DoublePoint(getDeltaX(),getDeltaY());
+	}
+
+
+	public double getMinX(){
+		return spoint.getX()<epoint.getX()?spoint.getX():epoint.getX();
+	}
+	public double getMaxX(){
+		return spoint.getX()<epoint.getX()?epoint.getX():spoint.getX();
+	}
+	public double getMinY(){
+		return spoint.getY()<epoint.getY()?spoint.getY():epoint.getY();
+	}
+	public double getMaxY(){
+		return spoint.getY()<epoint.getY()?epoint.getY():spoint.getY();
 	}
 	
 	public String toString(){

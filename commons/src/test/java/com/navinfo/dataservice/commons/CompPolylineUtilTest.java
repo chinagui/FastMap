@@ -2,7 +2,7 @@ package com.navinfo.dataservice.commons;
 
 import org.junit.Test;
 
-import com.navinfo.dataservice.commons.util.JtsGeometryUtil;
+import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.navicommons.geo.computation.CompPolylineUtil;
 import com.navinfo.navicommons.geo.computation.DoubleLine;
 import com.navinfo.navicommons.geo.computation.DoublePoint;
@@ -90,10 +90,10 @@ public class CompPolylineUtilTest {
 	@Test
 	public void separate_01(){
 		try{
-			LineString ls1=(LineString)JtsGeometryUtil.read("LINESTRING(130.0 40.0,130.5 40.5,131.0 40.5)");
-			LineString ls2=(LineString)JtsGeometryUtil.read("LINESTRING(131.0 40.5,130.5 41.0,130.5 41.5,131.0 42.0)");
-			LineString ls3=(LineString)JtsGeometryUtil.read("LINESTRING(132.0 43.0,132.0 42.0,131.0 42.0)");
-			Point startPoint = (Point)JtsGeometryUtil.read("POINT(130.0 40.0)");
+			LineString ls1=(LineString)JtsGeometryFactory.read("LINESTRING(130.0 40.0,130.5 40.5,131.0 40.5)");
+			LineString ls2=(LineString)JtsGeometryFactory.read("LINESTRING(131.0 40.5,130.5 41.0,130.5 41.5,131.0 42.0)");
+			LineString ls3=(LineString)JtsGeometryFactory.read("LINESTRING(132.0 43.0,132.0 42.0,131.0 42.0)");
+			Point startPoint = (Point)JtsGeometryFactory.read("POINT(130.0 40.0)");
 			LineString[] lines = new LineString[]{
 					ls1,ls2,ls3
 			};
@@ -114,10 +114,10 @@ public class CompPolylineUtilTest {
 	public void cut_001(){
 		try{
 
-			LineString ls1=(LineString)JtsGeometryUtil.read("LINESTRING (116.02564 39.76918, 116.02563 39.76873, 116.02605 39.76872)");
-			LineString ls2=(LineString)JtsGeometryUtil.read("LINESTRING (116.02605 39.76872, 116.0264 39.76876)");
-			LineString ls3=(LineString)JtsGeometryUtil.read("LINESTRING (116.02601 39.76917, 116.02603 39.76889,116.02607 39.76876,116.02624 39.76863)");
-			Point fromPoint = (Point)JtsGeometryUtil.read("POINT (116.02601 39.76917)");
+			LineString ls1=(LineString)JtsGeometryFactory.read("LINESTRING (116.02564 39.76918, 116.02563 39.76873, 116.02605 39.76872)");
+			LineString ls2=(LineString)JtsGeometryFactory.read("LINESTRING (116.02605 39.76872, 116.0264 39.76876)");
+			LineString ls3=(LineString)JtsGeometryFactory.read("LINESTRING (116.02601 39.76917, 116.02603 39.76889,116.02607 39.76876,116.02624 39.76863)");
+			Point fromPoint = (Point)JtsGeometryFactory.read("POINT (116.02601 39.76917)");
 			LineString result = CompPolylineUtil.cut(ls1, ls2, ls3, fromPoint, true);
 			System.out.println(result.toText());
 		}catch(Exception e){
@@ -132,10 +132,10 @@ public class CompPolylineUtilTest {
 	public void cut_001_01(){
 		try{
 
-			LineString ls1=(LineString)JtsGeometryUtil.read("LINESTRING (116.02564 39.76918, 116.02564 39.769, 116.02603 39.76899)");
-			LineString ls2=(LineString)JtsGeometryUtil.read("LINESTRING (116.02603 39.76899, 116.02637 39.76903)");
-			LineString ls3=(LineString)JtsGeometryUtil.read("LINESTRING (116.02601 39.76917, 116.02603 39.76889)");
-			Point fromPoint = (Point)JtsGeometryUtil.read("POINT (116.02601 39.76917)");
+			LineString ls1=(LineString)JtsGeometryFactory.read("LINESTRING (116.02564 39.76918, 116.02564 39.769, 116.02603 39.76899)");
+			LineString ls2=(LineString)JtsGeometryFactory.read("LINESTRING (116.02603 39.76899, 116.02637 39.76903)");
+			LineString ls3=(LineString)JtsGeometryFactory.read("LINESTRING (116.02601 39.76917, 116.02603 39.76889)");
+			Point fromPoint = (Point)JtsGeometryFactory.read("POINT (116.02601 39.76917)");
 			LineString result = CompPolylineUtil.cut(ls1, ls2, ls3, fromPoint, true);
 			System.out.println(result.toText());
 		}catch(Exception e){
@@ -150,10 +150,10 @@ public class CompPolylineUtilTest {
 	public void cut_002(){
 		try{
 
-			LineString ls1=(LineString)JtsGeometryUtil.read("LINESTRING (116.02564 39.76918, 116.02563 39.76873, 116.02605 39.76872)");
-			LineString ls2=(LineString)JtsGeometryUtil.read("LINESTRING (116.02605 39.76872, 116.0264 39.76876)");
-			LineString ls3=(LineString)JtsGeometryUtil.read("LINESTRING (116.02601 39.76917, 116.02603 39.76889,116.02607 39.76876,116.02624 39.76863)");
-			Point fromPoint = (Point)JtsGeometryUtil.read("POINT (116.02624 39.76863)");
+			LineString ls1=(LineString)JtsGeometryFactory.read("LINESTRING (116.02564 39.76918, 116.02563 39.76873, 116.02605 39.76872)");
+			LineString ls2=(LineString)JtsGeometryFactory.read("LINESTRING (116.02605 39.76872, 116.0264 39.76876)");
+			LineString ls3=(LineString)JtsGeometryFactory.read("LINESTRING (116.02601 39.76917, 116.02603 39.76889,116.02607 39.76876,116.02624 39.76863)");
+			Point fromPoint = (Point)JtsGeometryFactory.read("POINT (116.02624 39.76863)");
 			LineString result = CompPolylineUtil.cut(ls1, ls2, ls3, fromPoint, false);
 			System.out.println(result.toText());
 		}catch(Exception e){
@@ -168,10 +168,10 @@ public class CompPolylineUtilTest {
 	public void cut_003(){
 		try{
 
-			LineString ls1=(LineString)JtsGeometryUtil.read("LINESTRING (116.02564 39.76918, 116.02563 39.76873, 116.02605 39.76872)");
-			LineString ls2=(LineString)JtsGeometryUtil.read("LINESTRING (116.02605 39.76872, 116.0264 39.76876)");
-			LineString ls3=(LineString)JtsGeometryUtil.read("LINESTRING (116.02601 39.76917, 116.02603 39.76889)");
-			Point fromPoint = (Point)JtsGeometryUtil.read("POINT (116.02601 39.76917)");
+			LineString ls1=(LineString)JtsGeometryFactory.read("LINESTRING (116.02564 39.76918, 116.02563 39.76873, 116.02605 39.76872)");
+			LineString ls2=(LineString)JtsGeometryFactory.read("LINESTRING (116.02605 39.76872, 116.0264 39.76876)");
+			LineString ls3=(LineString)JtsGeometryFactory.read("LINESTRING (116.02601 39.76917, 116.02603 39.76889)");
+			Point fromPoint = (Point)JtsGeometryFactory.read("POINT (116.02601 39.76917)");
 			LineString result = CompPolylineUtil.cut(ls1, ls2, ls3, fromPoint, true);
 			System.out.println(result.toText());
 		}catch(Exception e){

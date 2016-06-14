@@ -2,7 +2,7 @@ package com.navinfo.dataservice.commons;
 
 import org.junit.Test;
 
-import com.navinfo.dataservice.commons.util.JtsGeometryUtil;
+import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.navicommons.geo.computation.CompLineUtil;
 import com.navinfo.navicommons.geo.computation.DoubleLine;
 import com.navinfo.navicommons.geo.computation.DoublePoint;

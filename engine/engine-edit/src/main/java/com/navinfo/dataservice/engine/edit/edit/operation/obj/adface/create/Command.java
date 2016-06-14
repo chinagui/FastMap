@@ -7,6 +7,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
@@ -18,12 +19,12 @@ public class Command extends AbstractCommand implements ICommand {
 
 	private JSONObject geometry;
 	private List<Integer> linkPids;
-	private List<AdLink> links;
-	public List<AdLink> getLinks() {
+	private List<IObj> links;
+	public List<IObj> getLinks() {
 		return links;
 	}
 
-	public void setLinks(List<AdLink> links) {
+	public void setLinks(List<IObj> links) {
 		this.links = links;
 	}
 
@@ -71,7 +72,7 @@ public class Command extends AbstractCommand implements ICommand {
 	public Command(JSONObject json, String requester) throws Exception{
 		this.requester = requester;
 
-		this.setProjectId(json.getInt("projectId"));
+		this.setDbId(json.getInt("subTaskId"));
 		JSONObject data = json.getJSONObject("data");
 		if (data.containsKey("geometry")){
 			this.geometry = data.getJSONObject("geometry");

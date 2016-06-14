@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.repairadlink;
 
+import java.util.List;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -8,6 +10,8 @@ import org.json.JSONException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 /**
  * @author zhaokk
@@ -23,7 +27,27 @@ public class Command extends AbstractCommand {
 	
 	private JSONArray interLines;
 	
+	private AdLink updateLink;
+	
+	public AdLink getUpdateLink() {
+		return updateLink;
+	}
+
+	public void setUpdateLink(AdLink updateLink) {
+		this.updateLink = updateLink;
+	}
+
+	public List<AdFace> getFaces() {
+		return faces;
+	}
+
+	public void setFaces(List<AdFace> faces) {
+		this.faces = faces;
+	}
+
 	private JSONArray interNodes;
+	
+	private List<AdFace> faces;
 
 	public int getLinkPid() {
 		return linkPid;
@@ -63,7 +87,7 @@ public class Command extends AbstractCommand {
 		
 		this.requester = requester;
 		
-		this.setProjectId(json.getInt("projectId"));
+		this.setDbId(json.getInt("subTaskId"));
 		
 		this.linkPid = json.getInt("objId");
 		

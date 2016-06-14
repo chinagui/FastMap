@@ -1,25 +1,20 @@
 package com.navinfo.dataservice.commons.util;
 
-import java.util.Date;
 import java.util.UUID;
 
-/**
- * uuid的帮助类
- */
+/** 
+* @ClassName: UuidUtils 
+* @author Xiao Xiaowen 
+* @date 2016年6月6日 下午2:45:52 
+* @Description: TODO
+*/
 public class UuidUtils {
-
 	/**
-	 * 生成一个uuid
+	 * 生成一个uuid,去除连字符，32位字符
 	 * 
 	 * @return
 	 */
 	public static String genUuid() {
-		String s = UUID.randomUUID().toString().toUpperCase();
-
-		return s.substring(0, 8) + s.substring(9, 13) + s.substring(14, 18)
-				+ s.substring(19, 23) + s.substring(24);
+		return UUID.randomUUID().toString().replaceAll("-", "");
 	}
-
-
-
 }

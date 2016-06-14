@@ -5,10 +5,9 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.commons.db.ConfigLoader;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 
@@ -16,12 +15,6 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class AdNodeTest {
-
-	public AdNodeTest() {
-		ConfigLoader.initDBConn(
-				"H:/GitHub/DataService/web/edit-web/src/main/resources/config.properties");
-	}
-
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	public void createAdNodeTest() throws Exception {
@@ -30,9 +23,9 @@ public class AdNodeTest {
 		;
 		String msg = t.run();
 	}
-
+//100022085
 	public void deleteAdNodeTest() throws Exception {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"ADNODE\",\"projectId\":11,\"objId\":100021717}}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"ADNODE\",\"projectId\":11,\"objId\":100022085}}";
 		Transaction t = new Transaction(parameter);
 		;
 		String msg = t.run();
@@ -79,7 +72,7 @@ public class AdNodeTest {
 
 		try {
 			SearchProcess p = new SearchProcess(
-					GlmDbPoolManager.getInstance().getConnection(projectId));
+					DBConnector.getInstance().getConnectionById(projectId));
 			JSONObject data = p.searchDataByTileWithGap(types, x, y, z, gap);
 
 			System.out.println(ResponseUtils.assembleRegularResult(data));
@@ -91,9 +84,9 @@ public class AdNodeTest {
 
 	public static void main(String[] args) throws Exception {
 		// new AdNodeTest().createAdNodeTest();
-		// new AdNodeTest().deleteAdNodeTest();
+		new AdNodeTest().deleteAdNodeTest();
 		// new AdNodeTest().updateAdNodeTest();
-		new AdNodeTest().moveAdNodeTest();
+		//new AdNodeTest().moveAdNodeTest();
 
 	}
 }

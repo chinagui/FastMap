@@ -15,81 +15,37 @@ import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.commons.util.Log4jUtils;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
-import com.navinfo.dataservice.engine.edit.edit.display.TileSelector;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
+import com.navinfo.dataservice.engine.fcc.tile.TileSelector;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
 import com.navinfo.dataservice.engine.photo.PhotoGetter;
 
-
 @Controller
-public class RenderController {
+public class RenderController extends BaseController {
 
 	private static final Logger logger = Logger
 			.getLogger(RenderController.class);
 
-	@RequestMapping(value = "/link/getByTileWithGap")
-	public void getLinkByTile(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
-
-		String parameter = request.getParameter("parameter");
-
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-
-			int x = jsonReq.getInt("x");
-
-			int y = jsonReq.getInt("y");
-
-			int z = jsonReq.getInt("z");
-
-			int projectId = jsonReq.getInt("projectId");
-
-			List<String> list = TileSelector.getTiles(x, y, z, projectId);
-
-			if (list != null && list.size() > 0) {
-
-				JSONObject json = new JSONObject();
-
-				json.put("RDLINK", list.get(0));
-
-				response.getWriter().println(
-						ResponseUtils.assembleRegularResult(json));
-			} else {
-				response.getWriter().println(
-						ResponseUtils.assembleRegularResult(null));
-			}
-
-		} catch (Exception e) {
-
-			String logid = Log4jUtils.genLogid();
-
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
-
-		}
-	}
-
 	@RequestMapping(value = "/obj/getByTileWithGap")
-	public void getObjByTile(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public void getObjByTile(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
 		Connection conn = null;
-		
+
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			JSONArray type = jsonReq.getJSONArray("types");
 
-			int projectId = jsonReq.getInt("projectId");
+			int dbId = jsonReq.getInt("dbId");
 
 			int x = jsonReq.getInt("x");
 
@@ -97,7 +53,11 @@ public class RenderController {
 
 			int z = jsonReq.getInt("z");
 
-			int gap = jsonReq.getInt("gap");
+			int gap = 0;
+
+			if (jsonReq.containsKey("gap")) {
+				gap = jsonReq.getInt("gap");
+			}
 
 			List<ObjType> types = new ArrayList<ObjType>();
 
@@ -105,31 +65,71 @@ public class RenderController {
 				types.add(ObjType.valueOf(type.getString(i)));
 			}
 
-			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
+			JSONObject data = null;
+
+			if (z <= 16) {
+				
+				List<ObjType> tileTypes = new ArrayList<ObjType>();
+				
+				List<ObjType> gdbTypes = new ArrayList<ObjType>();
+				
+				for (ObjType t : types){
+					if(t == ObjType.RDLINK || t == ObjType.ADLINK || t == ObjType.RWLINK){
+						tileTypes.add(t);
+					}
+					else{
+						gdbTypes.add(t);
+					}
+				}
+				
+				if(!gdbTypes.isEmpty()){
+					
+					conn = DBConnector.getInstance().getConnectionById(dbId);
+
+					SearchProcess p = new SearchProcess(conn);
+
+					JSONObject jo = p.searchDataByTileWithGap(gdbTypes, x, y, z, gap);
+					
+					if(data == null){
+						data = new JSONObject();
+					}
+						
+					data.putAll(jo);
+				}
+				
+				if(!tileTypes.isEmpty()){
+					JSONObject jo = TileSelector.getByTiles(tileTypes, x, y, z, dbId);
+					
+					if(data == null){
+						data = new JSONObject();
+					}
+					
+					data.putAll(jo);
+				}
+				
+			} else {
+				conn = DBConnector.getInstance().getConnectionById(dbId);
+
+				SearchProcess p = new SearchProcess(conn);
+
+				data = p.searchDataByTileWithGap(types, x, y, z, gap);
+				
+			}
 			
-			SearchProcess p = new SearchProcess(conn);
-
-			JSONObject data = p.searchDataByTileWithGap(types, x, y, z, gap);
-
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(data));
-
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
-
-			Log4jUtils.error(logger, logid, parameter, e);
+			logger.error(e.getMessage(), e);
 
 			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+					ResponseUtils.assembleFailResult(e.getMessage()));
 
-		}
-		finally{
-			if(conn!=null){
-				try{
+		} finally {
+			if (conn != null) {
+				try {
 					conn.close();
-				}
-				catch(Exception e){
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -137,8 +137,8 @@ public class RenderController {
 	}
 
 	@RequestMapping(value = "/tip/getByTileWithGap")
-	public void getTipsByTile(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView getTipsByTile(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -164,23 +164,19 @@ public class RenderController {
 			JSONArray array = selector.searchDataByTileWithGap(x, y, z, gap,
 					types);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(array));
+			return new ModelAndView("jsonView", success(array));
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 
 	@RequestMapping(value = "/photo/getByTileWithGap")
-	public void getPhotoByTile(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView getPhotoByTile(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -195,28 +191,24 @@ public class RenderController {
 			int z = jsonReq.getInt("z");
 
 			int gap = jsonReq.getInt("gap");
-			
+
 			PhotoGetter getter = new PhotoGetter();
 
 			JSONArray array = getter.getPhotoByTileWithGap(x, y, z, gap);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(array));
+			return new ModelAndView("jsonView", success(array));
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 
 	@RequestMapping(value = "/photo/heatmap")
-	public void getPhotoHeatmap(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView getPhotoHeatmap(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -233,23 +225,19 @@ public class RenderController {
 			double maxLat = jsonReq.getDouble("maxLat");
 
 			int zoom = jsonReq.getInt("zoom");
-			
+
 			PhotoGetter getter = new PhotoGetter();
 
 			JSONArray array = getter.getPhotoTile(minLon, minLat, maxLon,
 					maxLat, zoom);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(array));
+			return new ModelAndView("jsonView", success(array));
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 

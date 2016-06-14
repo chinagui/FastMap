@@ -2,9 +2,11 @@ package com.navinfo.dataservice.diff.dataaccess;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
-import com.navinfo.dataservice.diff.config.DiffConfig;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.database.OracleSchema;
+import com.navinfo.dataservice.datahub.service.DbService;
+import com.navinfo.dataservice.diff.DiffJobRequest;
 import com.navinfo.dataservice.diff.exception.DiffException;
 
 /**
@@ -15,9 +17,9 @@ import com.navinfo.dataservice.diff.exception.DiffException;
 public class DataAccessBuilder
 {
 	protected Logger log = Logger.getLogger(this.getClass());
-    private DiffConfig diffConfig;
+    private DiffJobRequest diffConfig;
 
-    public DataAccessBuilder(DiffConfig diffConfig)
+    public DataAccessBuilder(DiffJobRequest diffConfig)
     {
         this.diffConfig = diffConfig;
     }
@@ -37,8 +39,9 @@ public class DataAccessBuilder
         //如果都不是oracle，则需要一天差分服务器
         OracleSchema rightSchema = null;
         try{
-        	rightSchema = 
-        	        (OracleSchema)new DbManager().getDbById(diffConfig.getRightDbId());
+        	DbInfo db = DbService.getInstance().getDbById(diffConfig.getRightDbId());
+        	rightSchema = new OracleSchema(
+        			MultiDataSourceFactory.createConnectConfig(db.getConnectParam()));
         }catch(Exception e){
         	log.error("datahub中未获取右库的连接方式出错。"+e.getMessage(),e);
         	throw new DiffException("datahub中未获取右库的连接方式出错。"+e.getMessage(),e);

@@ -11,8 +11,8 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.datahub.glm.GlmTable;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
+import com.navinfo.dataservice.bizcommons.glm.GlmTable;
+import com.navinfo.dataservice.commons.database.OracleSchema;
 
 /** 
  * @ClassName: FillLeftAddLogDetail 

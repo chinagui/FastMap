@@ -31,16 +31,6 @@ public class PropConstant {
 	public static final String pidManagerUsername = "pid_manager_username";
 
 	public static final String pidManagerPassword = "pid_manager_password";
-
-	public static final String pidDbIp = "pid_db_ip";
-
-	public static final String pidDbPort = "pid_db_port";
-
-	public static final String pidDbServiceName = "pid_db_service_name";
-
-	public static final String pidDbUsername = "pid_db_username";
-
-	public static final String pidDbPassword = "pid_db_password";
 	
 	public static final String oracleDriver = "oracle.jdbc.driver.OracleDriver";
 	
@@ -72,5 +62,11 @@ public class PropConstant {
 	
 	public static final String downloadUrlPathPatternimg = "dropbox.download.urlpath.patternimg";
 	
+	public static final String downloadFilePathPoi = "editsupport.poi.download.filepath.poi";
+	
+	public static final String downloadUrlPathPoi = "editsupport.poi.download.urlpath.poi";
+	
 	public static final String serverUrl = "dropbox.url";
+	
+	public static final String gdbVersion = "gdb.version";
 }

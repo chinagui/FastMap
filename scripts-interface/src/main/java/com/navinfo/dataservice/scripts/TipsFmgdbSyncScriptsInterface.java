@@ -2,25 +2,12 @@ package com.navinfo.dataservice.scripts;
 
 import java.io.File;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.util.HashSet;
-import java.util.Set;
 
 import net.sf.json.JSONObject;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.util.Assert;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.commons.util.MeshUtils;
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
-import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.database.sql.PackageExec;
-import com.navinfo.navicommons.database.sql.SqlExec;
 
 /**
  * @ClassName: InitProjectScriptsInterface

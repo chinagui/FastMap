@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import oracle.sql.STRUCT;
+
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -14,8 +16,6 @@ import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.vividsolutions.jts.geom.Geometry;
-
-import oracle.sql.STRUCT;
 
 public class AdLinkSelector implements ISelector {
 
@@ -33,7 +33,7 @@ public class AdLinkSelector implements ISelector {
 		AdLink adLink = new AdLink();
 
 		StringBuilder sb = new StringBuilder(
-				 "select * from " + adLink.tableName() + " WHERE link_pid = :1");
+				 "select * from " + adLink.tableName() + " WHERE link_pid = :1 and  u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");

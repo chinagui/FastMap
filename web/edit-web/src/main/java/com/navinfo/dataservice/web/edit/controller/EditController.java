@@ -7,7 +7,6 @@ import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -15,25 +14,26 @@ import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.commons.service.PidService;
-import com.navinfo.dataservice.commons.util.Log4jUtils;
-import com.navinfo.dataservice.commons.util.ResponseUtils;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
+import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 
 @Controller
-public class EditController {
+public class EditController extends BaseController {
 	private static final Logger logger = Logger.getLogger(EditController.class);
 
 	@RequestMapping(value = "/run")
-	public void run(HttpServletRequest request, HttpServletResponse response)
+	public ModelAndView run(HttpServletRequest request)
 			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
@@ -56,23 +56,18 @@ public class EditController {
 
 			json.put("pid", t.getPid());
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(json));
-
+			return new ModelAndView("jsonView", success(json));
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 
 	@RequestMapping(value = "/getByCondition")
-	public void getByCondition(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView getByCondition(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -83,28 +78,24 @@ public class EditController {
 
 			String objType = jsonReq.getString("type");
 
-			int projectId = jsonReq.getInt("projectId");
+			int dbId = jsonReq.getInt("dbId");
 
 			JSONObject data = jsonReq.getJSONObject("data");
 
-			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
+			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			SearchProcess p = new SearchProcess(conn);
 
 			JSONArray array = p.searchDataByCondition(ObjType.valueOf(objType),
 					data);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(array));
+			return new ModelAndView("jsonView", success(array));
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
 			if (conn != null) {
 				try {
@@ -117,8 +108,8 @@ public class EditController {
 	}
 
 	@RequestMapping(value = "/getByPid")
-	public void getByPid(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView getByPid(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -129,9 +120,9 @@ public class EditController {
 
 			String objType = jsonReq.getString("type");
 
-			int projectId = jsonReq.getInt("projectId");
+			int dbId = jsonReq.getInt("dbId");
 
-			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
+			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			if (jsonReq.containsKey("detailId")) {
 				int detailId = jsonReq.getInt("detailId");
@@ -142,13 +133,11 @@ public class EditController {
 
 				if (row != null) {
 
-					response.getWriter().println(
-							ResponseUtils.assembleRegularResult(row
-									.Serialize(ObjLevel.FULL)));
+					return new ModelAndView("jsonView",
+							success(row.Serialize(ObjLevel.FULL)));
 
 				} else {
-					response.getWriter().println(
-							ResponseUtils.assembleRegularResult(null));
+					return new ModelAndView("jsonView", success());
 				}
 
 			} else {
@@ -160,23 +149,18 @@ public class EditController {
 
 				if (obj != null) {
 
-					response.getWriter().println(
-							ResponseUtils.assembleRegularResult(obj
-									.Serialize(ObjLevel.FULL)));
+					return new ModelAndView("jsonView",
+							success(obj.Serialize(ObjLevel.FULL)));
 
 				} else {
-					response.getWriter().println(
-							ResponseUtils.assembleRegularResult(null));
+					return new ModelAndView("jsonView", success());
 				}
 			}
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
 			if (conn != null) {
 				try {
@@ -189,8 +173,8 @@ public class EditController {
 	}
 
 	@RequestMapping(value = "/getBySpatial")
-	public void getBySpatial(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView getBySpatial(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -203,7 +187,7 @@ public class EditController {
 
 			JSONArray type = jsonReq.getJSONArray("type");
 
-			int projectId = jsonReq.getInt("projectId");
+			int dbId = jsonReq.getInt("dbId");
 
 			List<ObjType> types = new ArrayList<ObjType>();
 
@@ -211,24 +195,19 @@ public class EditController {
 				types.add(ObjType.valueOf(type.getString(i)));
 			}
 
-			conn = GlmDbPoolManager.getInstance().getConnection(projectId);
+			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			SearchProcess p = new SearchProcess(conn);
 
 			JSONObject data = p.searchDataBySpatial(types, wkt);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(data));
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
-
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
 			if (conn != null) {
 				try {
@@ -239,10 +218,10 @@ public class EditController {
 			}
 		}
 	}
-	
+
 	@RequestMapping(value = "/applyPid")
-	public void applyPid(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	public ModelAndView applyPid(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -253,27 +232,57 @@ public class EditController {
 
 			String type = jsonReq.getString("type");
 
-			if(type.equals("rtic")){
-				
+			if (type.equals("rtic")) {
+
 				int code = PidService.getInstance().applyRticCode();
-				
-				response.getWriter().println(
-						ResponseUtils.assembleRegularResult(code));
-			
-			}
-			else{
+
+				return new ModelAndView("jsonView", success(code));
+
+			} else {
 				throw new Exception("类型错误");
 			}
 
 		} catch (Exception e) {
 
-			String logid = Log4jUtils.genLogid();
+			logger.error(e.getMessage(), e);
 
-			Log4jUtils.error(logger, logid, parameter, e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage(), logid));
+	@RequestMapping(value = "/poi/base/list")
+	public ModelAndView getPoiList(HttpServletRequest request)
+			throws ServletException, IOException {
 
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			int dbId = jsonReq.getInt("dbId");
+			// 项目管理（放开）
+			// subtaskId
+			// int subtaskId = jsonReq.getInt("subtaskId");
+			// int type = jsonReq.getInt("type");
+			int pageNum = jsonReq.getInt("pageNum");
+			int pageSize = jsonReq.getInt("pageSize");
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			IxPoiSelector selector = new IxPoiSelector(conn);
+			JSONObject jsonObject = selector.loadPids(false, pageSize, pageNum);
+			return new ModelAndView("jsonView", success(jsonObject));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
 			if (conn != null) {
 				try {

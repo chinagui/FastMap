@@ -7,8 +7,8 @@ import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.navicommons.database.QueryRunner;
 

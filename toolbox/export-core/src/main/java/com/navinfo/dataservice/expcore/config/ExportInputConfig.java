@@ -1,8 +1,8 @@
 package com.navinfo.dataservice.expcore.config;
 
 import com.navinfo.dataservice.expcore.exception.ExportConfigValidateException;
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
 import com.navinfo.dataservice.expcore.target.TargetType;
 
 import java.util.Set;

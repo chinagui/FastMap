@@ -10,13 +10,13 @@ import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 public class AdLinkSearch implements ISearch {
 
@@ -115,7 +115,7 @@ public class AdLinkSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select a.link_pid,        a.geometry,        a.s_node_pid,        a.e_node_pid   from ad_link a          where a.u_record != 2      and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
+		String sql = "select a.link_pid,        a.geometry,        a.kind,  a.s_node_pid,        a.e_node_pid   from ad_link a          where a.u_record != 2      and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
 
 		PreparedStatement pstmt = null;
 
@@ -142,6 +142,8 @@ public class AdLinkSearch implements ISearch {
 				m.put("a", resultSet.getString("s_node_pid"));
 
 				m.put("b", resultSet.getString("e_node_pid"));
+				
+				m.put("c", resultSet.getInt("kind"));
 
 				snapshot.setM(m);
 
@@ -191,7 +193,7 @@ public class AdLinkSearch implements ISearch {
 	}
 
 	public static void main(String[] args) throws Exception {
-		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
 		
 		AdLinkSearch search = new AdLinkSearch(conn);
 		

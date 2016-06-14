@@ -27,7 +27,7 @@ import com.navinfo.navicommons.database.QueryRunner;
  * 
  */
 public class ConnectionRegister {
-	private static Logger log = Logger.getLogger(PoolDataSourceFactory.class);
+	private static Logger log = Logger.getLogger(ConnectionRegister.class);
 
 	private static ThreadLocal<String> taskThreadLocal = new ThreadLocal<String>();
 

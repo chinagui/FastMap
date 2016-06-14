@@ -9,6 +9,8 @@ import java.util.Set;
 import oracle.spatial.geometry.JGeometry;
 
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -657,76 +659,6 @@ public class DisplayUtils {
 		psOutLink[3] = MercatorProjection.latitudeToMetersY(psOutLink[3]);
 	}
 
-	/*************************************************************************/
-
-	// 求跨图幅的LINK，被图幅边界打断后的WKT列表
-	public static List<String> getSplitLinkByMeshs(String wkt)
-			throws ParseException {
-
-		WKTReader reader = new WKTReader();
-
-		WKTWriter writer = new WKTWriter();
-
-		Geometry geomLink = reader.read(wkt);
-
-		Geometry geomBound = geomLink.getBoundary();
-
-		double minLon = 180, minLat = 90, maxLon = 0, maxLat = 0;
-
-		Coordinate[] csBound = geomBound.getCoordinates();
-
-		for (Coordinate c : csBound) {
-			if (minLon > c.x) {
-				minLon = c.x;
-			}
-
-			if (minLat > c.y) {
-				minLat = c.y;
-			}
-
-			if (maxLon < c.x) {
-				maxLon = c.x;
-			}
-
-			if (maxLat < c.y) {
-				maxLat = c.y;
-			}
-		}
-
-		// String[] meshs = MeshUtils.area2Meshes(minLon, minLat, maxLon,
-		// maxLat);
-
-		Set<String> meshs = new HashSet<String>();
-
-		meshs.add(MeshUtils.lonlat2Mesh(minLon, minLat));
-
-		meshs.add(MeshUtils.lonlat2Mesh(maxLon, minLat));
-
-		meshs.add(MeshUtils.lonlat2Mesh(maxLon, maxLat));
-
-		meshs.add(MeshUtils.lonlat2Mesh(minLon, maxLat));
-
-		if (meshs.size() > 1) {
-
-			List<String> list = new ArrayList<String>();
-
-			for (String mesh : meshs) {
-
-				String meshWkt = MeshUtils.mesh2WKT(mesh);
-
-				Geometry geomMesh = reader.read(meshWkt);
-
-				Geometry geomInter = geomMesh.intersection(geomLink);
-
-				list.add(writer.write(geomInter));
-			}
-
-			return list;
-		} else {
-			return null;
-		}
-
-	}
 
 	/**********************************************************************************/
 

@@ -13,11 +13,14 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.util.MeshUtils;
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.database.OracleSchema;
+import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.expcore.external.ExternalTool4Exporter;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 /** 
  * @ClassName: InitProjectScriptsInterface 
@@ -37,13 +40,19 @@ public class Exp2CopVersionScriptsInterface {
 			String targetDbId = (String)request.get("targetDbId");
 			Assert.notNull(targetDbId,"targetDbId不能为空");
 			String meshes = (String)request.get("meshes");
+			String gdbVersion = (String)request.get("gdbVersion");
+			Assert.notNull(gdbVersion,"gdbVersion不能为空");
 			meshes = com.navinfo.dataservice.commons.util.StringUtils.removeBlankChar(meshes);
 			Assert.notNull(meshes,"meshes不能为空");
 			String extendCountStr = (String)request.get("extendCount");
 			int extendCount = StringUtils.isEmpty(extendCountStr)?0:Integer.valueOf(extendCountStr);
 
 			String allMeshesStr = null;
-			OracleSchema schema = (OracleSchema)new DbManager().getDbById(Integer.valueOf(targetDbId));
+			DbInfo db = DbService.getInstance().getDbById(Integer.valueOf(targetDbId));
+			OracleSchema schema = new OracleSchema(
+					MultiDataSourceFactory.createConnectConfig(db.getConnectParam()));
+			DbConnectConfig connConfig = MultiDataSourceFactory.createConnectConfig(db.getConnectParam()); 
+			
 			conn = schema.getDriverManagerDataSource().getConnection();
 			//计算扩圈，写m_mesh_type
 			String sqlMesh = "INSERT INTO M_MESH_TYPE(MESH_ID,\"TYPE\")VALUES(?,?)";
@@ -73,7 +82,6 @@ public class Exp2CopVersionScriptsInterface {
 			conn.commit();
 			response.put("m_mesh_type", "success");
 			//export data
-			String gdbVersion = "240+";
 			JSONObject expRequest = new JSONObject();
 			expRequest.put("exportMode", "copy");
 			expRequest.put("feature", "gdb");

@@ -6,18 +6,16 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
-import com.navinfo.dataservice.datahub.TestClass;
-import com.navinfo.dataservice.datahub.chooser.strategy.DbServerStrategy;
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.UnifiedDb;
-import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.datahub.service.DbService;
 
 /** 
  * @ClassName: DataHubController 
@@ -28,19 +26,7 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 @Controller
 public class DbController extends BaseController {
 	protected Logger log = Logger.getLogger(this.getClass());
-	
-	@RequestMapping(value = "/db/hello/")
-	public ModelAndView test(HttpServletRequest request){
-		String result = "";
-		try{
-			TestClass tc = new TestClass();
-			result = tc.test("XXX!!!");
-		}catch(Exception e){
-			result = "调用内部服务出错";
-			log.error(e.getMessage(),e);
-		}
-		return new ModelAndView("jsonView", "data", result);
-	}
+
 	@RequestMapping(value = "/db/get/")
 	public ModelAndView getDb(HttpServletRequest request){
 		return new ModelAndView("jsonView", "data", "Hello,Datahub.");
@@ -52,35 +38,24 @@ public class DbController extends BaseController {
 	@RequestMapping(value = "/db/create/")
 	public ModelAndView createDb(HttpServletRequest request){
 		try{
-			String dbName = URLDecode(request.getParameter("name"));
-			String dbType = URLDecode(request.getParameter("type"));
+			String dbName = URLDecode(request.getParameter("dbName"));
+			Assert.notNull(dbName, "dbName不能为空");
+			String userName = URLDecode(request.getParameter("userName"));
+			Assert.notNull(userName, "userName不能为空");
+			String userPasswd = URLDecode(request.getParameter("userPasswd"));
+			Assert.notNull(userPasswd, "userPasswd不能为空");
+			String type = URLDecode(request.getParameter("bizType"));
+			Assert.notNull(type, "type不能为空");
 			String descp = URLDecode(request.getParameter("descp"));
-			String strategyType = null;
+			String gdbVersion = URLDecode(request.getParameter("gdbVersion"));
 			//参考db，使用参考策略
-			String refDbName = URLDecode(request.getParameter("refname"));
-			String refDbType = URLDecode(request.getParameter("reftype"));
+			String refDbName = URLDecode(request.getParameter("refDbName"));
+			String refUserName = URLDecode(request.getParameter("refUserName"));
+			String refType = URLDecode(request.getParameter("refBizType"));
 			//省份代码，使用按省份分配策略
-			String provCode = URLDecode(request.getParameter("provcode"));
-			if(StringUtils.isEmpty(dbName)){
-				throw new IllegalArgumentException("name参数不能为空。");
-			}
-			if(StringUtils.isEmpty(dbType)){
-				throw new IllegalArgumentException("type参数不能为空。");
-			}
-			Map<String,String> strategyParam = new HashMap<String,String>();
-			if(StringUtils.isNotEmpty(refDbName)&&StringUtils.isNotEmpty(refDbType)){
-				strategyType = DbServerStrategy.USE_REF_DB;
-				strategyParam.put("refDbName", refDbName);
-				strategyParam.put("refDbType", refDbType);
-			}else if(StringUtils.isNotEmpty(provCode)){
-				strategyType = DbServerStrategy.BY_PROVINCE;
-				strategyParam.put("provinceCode", provCode);
-			}else{
-				//strategyType = DbServerStrategy.RANDOM;
-				strategyParam = null;
-			}
-			DbManager dbMan = new DbManager();
-			UnifiedDb db = dbMan.createDb(dbName, dbType, descp,strategyType,strategyParam);
+			//String provCode = URLDecode(request.getParameter("provcode"));
+			
+			DbInfo db = DbService.getInstance().createDb(dbName,userName,userPasswd,type, descp,gdbVersion,refDbName,refUserName,refType);
 
 			return new ModelAndView("jsonView", success(db.getConnectParam()));
 		}catch(Exception e){
@@ -99,8 +74,7 @@ public class DbController extends BaseController {
 			if(StringUtils.isEmpty(dbType)){
 				throw new IllegalArgumentException("type参数不能为空。");
 			}
-			DbManager dbMan = new DbManager();
-			UnifiedDb db = dbMan.getDbByName(dbName, dbType);
+			DbInfo db = DbService.getInstance().getDbByName(dbName, dbType);
 			return new ModelAndView("jsonView", success(db.getConnectParam()));
 		}catch(Exception e){
 			log.error("获取db失败，原因："+e.getMessage(), e);
@@ -114,8 +88,7 @@ public class DbController extends BaseController {
 			if(StringUtils.isEmpty(dbId)){
 				throw new IllegalArgumentException("id参数不能为空。");
 			}
-			DbManager dbMan = new DbManager();
-			UnifiedDb db = dbMan.getDbById(Integer.parseInt(dbId));
+			DbInfo db = DbService.getInstance().getDbById(Integer.parseInt(dbId));
 			return new ModelAndView("jsonView", success(db.getConnectParam()));
 		}catch(Exception e){
 			log.error("获取db失败，原因："+e.getMessage(), e);
@@ -129,23 +102,21 @@ public class DbController extends BaseController {
 			if(StringUtils.isEmpty(dbName)){
 				throw new IllegalArgumentException("name参数不能为空。");
 			}
-			DbManager dbMan = new DbManager();
-			UnifiedDb db = dbMan.getOnlyDbByName(dbName);
+			DbInfo db = DbService.getInstance().getOnlyDbByName(dbName);
 			return new ModelAndView("jsonView", success(db.getConnectParam()));
 		}catch(Exception e){
 			log.error("获取db失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	@RequestMapping(value = "/datahub/getonlybytype/")
+	@RequestMapping(value = "/db/getonlybytype/")
 	public ModelAndView getOnlyDbByType(HttpServletRequest request){
 		try{
 			String dbType = URLDecode(request.getParameter("type"));
 			if(StringUtils.isEmpty(dbType)){
 				throw new IllegalArgumentException("type参数不能为空。");
 			}
-			DbManager dbMan = new DbManager();
-			UnifiedDb db = dbMan.getOnlyDbByType(dbType);
+			DbInfo db = DbService.getInstance().getOnlyDbByType(dbType);
 			return new ModelAndView("jsonView", success(db.getConnectParam()));
 		}catch(Exception e){
 			log.error("获取db失败，原因："+e.getMessage(), e);

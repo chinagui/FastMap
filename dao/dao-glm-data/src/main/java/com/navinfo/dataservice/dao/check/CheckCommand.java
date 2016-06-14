@@ -3,9 +3,9 @@ package com.navinfo.dataservice.dao.check;
 import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 
 //检查引擎的参数类，调用者将参数输入里面，然后传给检查引擎
 public class CheckCommand implements ICommand {

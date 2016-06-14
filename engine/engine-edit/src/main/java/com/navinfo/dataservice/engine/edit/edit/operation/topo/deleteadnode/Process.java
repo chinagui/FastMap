@@ -142,42 +142,11 @@ public class Process extends AbstractProcess<Command> {
 		lockAdFace();
 		return true;
 	}
-
-	@Override
-	public String run() throws Exception {
-
-		try {
-			this.getConn().setAutoCommit(false);
-				String preCheckMsg = this.preCheck();
-				if (preCheckMsg != null) {
-					throw new Exception(preCheckMsg);
-				}
-				prepareData();
-				
-				recordData();
-				postCheck();
-				this.getConn().commit();
-
-		} catch (Exception e) {
-
-			this.getConn().rollback();
-
-			throw e;
-		} finally {
-			try {
-				this.getConn().close();
-			} catch (Exception e) {
-
-			}
-		}
-
-		return null;
-	}
-
+	
 	@Override
 	public boolean recordData() throws Exception {
 		
-		LogWriter lw = new LogWriter(this.getConn(), this.getCommand().getProjectId());
+		LogWriter lw = new LogWriter(this.getConn(), this.getCommand().getDbId());
 		
 		lw.generateLog(this.getCommand(), this.getResult());
 		

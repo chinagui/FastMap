@@ -10,6 +10,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
@@ -18,7 +19,6 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
@@ -181,8 +181,6 @@ public class RdGscSearch implements ISearch {
 			
 			SearchSnapshot snapshot = new SearchSnapshot();
 			
-			JSONObject m = new JSONObject();
-			
 			JSONArray g = new JSONArray();
 			
 			while (resultSet.next()) {
@@ -243,6 +241,8 @@ public class RdGscSearch implements ISearch {
 				
 				Geojson.point2Pixel(geojsonGsc, z, px, py);
 				
+				JSONObject m = new JSONObject();
+				
 				m.put("a", geojsonGsc.getJSONArray("coordinates"));
 				
 				snapshot.setM(m);
@@ -282,7 +282,7 @@ public class RdGscSearch implements ISearch {
 	}
 	public static void main(String[] args) throws Exception {
 		
-		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
 		
 		RdGscSearch s = new RdGscSearch(conn);
 		

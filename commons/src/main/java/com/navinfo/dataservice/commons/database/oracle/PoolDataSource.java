@@ -20,10 +20,7 @@ import com.navinfo.navicommons.database.TraceConnection;
 
 public class PoolDataSource extends BasicDataSource {
 
-	public static final String MAN_KEY = "MAN";
-	
-	public static final String META_KEY = "META";
-
+	public static final String SYS_KEY = "SYS";
 	private static Logger log = Logger.getLogger(PoolDataSource.class);
     private static boolean traceConnection;
 

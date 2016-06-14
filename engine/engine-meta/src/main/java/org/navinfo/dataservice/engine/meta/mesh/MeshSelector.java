@@ -6,17 +6,15 @@ import java.sql.ResultSet;
 
 import net.sf.json.JSONObject;
 
-import org.navinfo.dataservice.engine.meta.dao.DBConnector;
-
-import com.navinfo.dataservice.commons.db.OracleAddress;
-import com.navinfo.dataservice.commons.util.MeshUtils;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 public class MeshSelector {
 
 	public JSONObject getProvinceByLocation(double lon, double lat)
 			throws Exception {
 
-		String meshId = MeshUtils.lonlat2Mesh(lon, lat);
+		String meshId = MeshUtils.point2Meshes(lon, lat)[0];
 
 		String sql = "select admincode,province from cp_meshlist where mesh = :1";
 
@@ -28,7 +26,7 @@ public class MeshSelector {
 
 		try {
 
-			conn = DBConnector.getInstance().getConnection();
+			conn = DBConnector.getInstance().getMetaConnection();
 			
 			pstmt = conn.prepareStatement(sql);
 

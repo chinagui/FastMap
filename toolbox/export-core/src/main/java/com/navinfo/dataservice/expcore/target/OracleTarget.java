@@ -1,13 +1,8 @@
 package com.navinfo.dataservice.expcore.target;
 
-import java.sql.Connection;
-
-import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.expcore.exception.ExportException;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
-import com.navinfo.navicommons.database.sql.SqlExec;
+import com.navinfo.dataservice.commons.database.OracleSchema;
 
 /** 
  * @ClassName: OracleTarget 

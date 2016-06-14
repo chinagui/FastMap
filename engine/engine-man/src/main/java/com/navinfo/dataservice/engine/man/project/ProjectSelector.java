@@ -4,10 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
-import com.navinfo.dataservice.engine.dao.DBConnector;
 
 public class ProjectSelector {
 
@@ -24,7 +24,7 @@ public class ProjectSelector {
 
 		try {
 
-			conn = DBConnector.getInstance().getConnection();
+			conn = DBConnector.getInstance().getManConnection();
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -90,7 +90,7 @@ public class ProjectSelector {
 
 		try {
 
-			conn = DBConnector.getInstance().getConnection();
+			conn = DBConnector.getInstance().getManConnection();
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -150,7 +150,7 @@ public class ProjectSelector {
 
 		try {
 
-			conn = DBConnector.getInstance().getConnection();
+			conn = DBConnector.getInstance().getManConnection();
 
 			pstmt = conn.prepareStatement(sql);
 

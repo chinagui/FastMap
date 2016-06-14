@@ -1,12 +1,22 @@
 package com.navinfo.dataservice.scripts;
 
 import java.sql.Connection;
+import java.util.List;
 
+import javax.sql.DataSource;
+
+import net.sf.json.JSONObject;
+
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.datahub.service.DatahubApiImpl;
 import com.navinfo.dataservice.engine.edit.export.GdbDataExporter;
-import com.navinfo.dataservice.engine.man.project.ProjectSelector;
+import com.navinfo.dataservice.engine.man.region.Region;
+import com.navinfo.dataservice.engine.man.region.RegionService;
 
 public class GdbExportScriptsInterface {
 
@@ -15,43 +25,49 @@ public class GdbExportScriptsInterface {
 	 */
 	public static void main(String[] args) {
 		
-		Connection conn = null;
-		
 		try {
+			
+			String path = args[0];
+			
+			ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(  
+	                new String[] { "dubbo-consumer-4scripts.xml" }); 
+			context.start();
+			new ApplicationContextUtil().setApplicationContext(context);
+			
+			RegionService s = new RegionService();
+			
+			List<Region> list = s.list(new JSONObject());
+			
+			for(Region region : list){
+				
+				DatahubApiImpl datahub = new DatahubApiImpl();
+				
+				DbInfo dbinfo = datahub.getDbById(region.getMonthlyDbId());
+				
+				DbConnectConfig connConfig = MultiDataSourceFactory
+						.createConnectConfig(dbinfo.getConnectParam());
+				
+				DataSource datasource = MultiDataSourceFactory.getInstance()
+				.getDataSource(connConfig);
+				
+				Connection conn = datasource.getConnection();
+				
+				if(!path.endsWith("/")){
+					path += "/";
+				}
+				
+				path += region.getRegionId();
+				
+				GdbDataExporter.exportBaseData2Sqlite(conn, path);
+			}
 
-			int projectId = Integer.valueOf(args[0]);
-			
-			String path = args[1];
-			
-			ProjectSelector prjselector = new ProjectSelector();
-			
-			int dbId = prjselector.getDbId(projectId);
-			
-			DbManager dbMan = new DbManager();
-			
-			OracleSchema db = (OracleSchema)dbMan.getDbById(dbId);
-			
-			conn = db.getPoolDataSource().getConnection();
-			
-			GdbDataExporter.exportBaseData2Sqlite(conn, path);
-			
 			System.out.println("Over.");
 			System.exit(0);
 		} catch (Exception e) {
 			System.out.println("Oops, something wrong...");
 			e.printStackTrace();
 			
-		}finally{
-			if(conn != null){
-				try{
-					conn.close();
-				}
-				catch(Exception e){
-					
-				}
-			}
 		}
-
 	}
 
 }

@@ -21,11 +21,11 @@ import org.apache.hadoop.hbase.client.Table;
 import ch.hsr.geohash.GeoHash;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
-import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.FileUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
+import com.navinfo.dataservice.dao.photo.HBaseConnector;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 
@@ -46,7 +46,7 @@ public class PoiPhotoImporter {
 		Map<String, Photo> mapInfo = loadPhotoInfo(unzipFolder
 				+ "/Datum_Point.json");
 
-		Table photoTab = HBaseAddress.getHBaseConnection().getTable(
+		Table photoTab = HBaseConnector.getInstance().getConnection().getTable(
 				TableName.valueOf(HBaseConstant.photoTab));
 
 		List<Put> puts = new ArrayList<Put>();
@@ -171,7 +171,6 @@ public class PoiPhotoImporter {
 	}
 	
 	public static void main(String[] args) throws Exception{
-		HBaseAddress.initHBaseAddress("192.168.3.156");
 		
 		String file = "C:/1/IncrementalData_3438_4667_20160110112024.zip";
 		

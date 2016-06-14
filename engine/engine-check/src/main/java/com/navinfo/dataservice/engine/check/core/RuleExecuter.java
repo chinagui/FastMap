@@ -4,8 +4,11 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -14,13 +17,11 @@ import oracle.sql.STRUCT;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.check.CheckEngine;
+import com.navinfo.dataservice.engine.check.graph.ChainLoader;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Point;
 
 public class RuleExecuter {
 	
@@ -28,7 +29,8 @@ public class RuleExecuter {
 	private List<IRow> dataList=new ArrayList<IRow>();
 	private List<VariableName> checkSuitVariables=new ArrayList<VariableName>();
 	private Connection conn;
-	private Map<VariableName,List<String>> variablesValueMap=new HashMap<VariableName,List<String>>();
+	private Map<VariableName,Set<String>> variablesValueMap=new HashMap<VariableName,Set<String>>();
+	private ChainLoader loader=new ChainLoader();
 	
 	private static Logger log = Logger.getLogger(CheckEngine.class);
 
@@ -37,7 +39,7 @@ public class RuleExecuter {
 		this.checkCommand=checkCommand;
 		this.setDataList(checkCommand.getGlmList());
 		this.checkSuitVariables=checkSuitVariables;
-		this.conn=conn;
+		this.conn=conn;		
 		createVariablesValues();
 	}
 	
@@ -54,14 +56,16 @@ public class RuleExecuter {
 	}
 	
 	private void createVariableFactory(IRow data,VariableName variable){
-		String variablevalue=null;
+		Set<String> variablevalue=new HashSet<String>();
 		switch (variable) {
 			case RDLINK_PID:
-				{variablevalue=VariablesFactory.getRdLinkPid(data);break;}
-				}
+			{variablevalue=VariablesFactory.getRdLinkPid(data);break;}
+			case RDNODE_PID:
+			{variablevalue=VariablesFactory.getRdNodePid(data);break;}
+			}
 		if(!variablesValueMap.containsKey(variable)){
-			variablesValueMap.put(variable, new ArrayList<String>());}
-		variablesValueMap.get(variable).add(variablevalue);
+			variablesValueMap.put(variable, new HashSet<String>());}
+		variablesValueMap.get(variable).addAll(variablevalue);
 	}
 
 	public List<IRow> getDataList() {
@@ -73,9 +77,13 @@ public class RuleExecuter {
 	}
 	
 	public List<NiValException> exeRule(CheckRule rule) throws Exception{
-		if(rule.getAccessorType()==AccessorType.SQL){
-			return exeSqlRule(rule);
-		}else{return exeJavaRule(rule);}
+		try{
+			log.info("start exe "+rule.getRuleCode());
+			if(rule.getAccessorType()==AccessorType.SQL){
+				return exeSqlRule(rule);
+			}else{return exeJavaRule(rule);}}
+		finally{
+			log.info("end exe "+rule.getRuleCode());}
 	}
 	
 	/*
@@ -83,6 +91,7 @@ public class RuleExecuter {
 	 */
 	private List<NiValException> exeJavaRule(CheckRule rule) throws Exception{
 		baseRule obj = (baseRule) rule.getRuleClass().newInstance();
+		obj.setLoader(loader);
 		obj.setRuleDetail(rule);
 		obj.setConn(this.conn);
 		//调用规则的后检查
@@ -105,11 +114,17 @@ public class RuleExecuter {
 		List<VariableName> variableList=rule.getVariables();
 		//将sql语句中的参数进行替换，形成可执行的sql语句
 		for(int i=0;i<variableList.size();i++){
-			List<String> variableValueList=variablesValueMap.get(variableList.get(i));
+			Set<String> variableValueList=variablesValueMap.get(variableList.get(i));
+			if(variableValueList==null || variableValueList.size()==0){
+				sqlListTmp=new ArrayList<String>();
+				sqlList=new ArrayList<String>();
+				break;
+			}
 			if(sqlListTmp.size()!=0){sqlList=sqlListTmp;sqlListTmp=new ArrayList<String>();}
 			for(int m=0;m<sqlList.size();m++){
-				for(int j=0;j<variableValueList.size();j++){
-					sqlListTmp.add(sqlList.get(m).replaceAll(variableList.get(i).toString(), variableValueList.get(j)));
+				Iterator<String> varIterator=variableValueList.iterator();
+				while(varIterator.hasNext()){
+					sqlListTmp.add(sqlList.get(m).replaceAll(variableList.get(i).toString(), varIterator.next()));
 				}
 			}
 		}

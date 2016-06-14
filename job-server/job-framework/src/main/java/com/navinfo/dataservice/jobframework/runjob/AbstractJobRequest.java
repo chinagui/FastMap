@@ -1,16 +1,18 @@
 package com.navinfo.dataservice.jobframework.runjob;
 
+import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.dom4j.Document;
-import org.dom4j.Element;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.exception.JobRuntimeException;
 
 /** 
@@ -23,11 +25,11 @@ public abstract class AbstractJobRequest {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected String gdbVersion;
 	
-	public abstract void validate()throws JobRuntimeException;
+	public abstract int getStepCount()throws JobException;
 	
-	public abstract void setAttrValue(String attName,String attValue)throws JobRuntimeException;
+	public abstract void validate()throws JobException;
 	
-
+	
 	public String getGdbVersion() {
 		return gdbVersion;
 	}
@@ -36,36 +38,72 @@ public abstract class AbstractJobRequest {
 		this.gdbVersion = gdbVersion;
 	}
 
-	public void parseByXmlConfig(Document rootDoc) throws JobRuntimeException{
-		if(rootDoc==null) {
-			log.warn("注意：未传入的解析xml对象，导出的config未被初始化");
-		}
-		List<Element> attrsList = rootDoc.getRootElement().elements();
-		for(Element attrs: attrsList){
-			List<Element> attrList = attrs.elements();
-			for(Element att:attrList){
-				String attName = att.attributeValue("name");
-				String attValue = att.attributeValue("value");
-				if(StringUtils.isEmpty(attName)||StringUtils.isEmpty(attValue)){
-					log.warn("注意：导出配置的xml中存在name或者value为空的attr node，已经被忽略。");
-					continue;
-				}
-				setAttrValue(attName,attValue);
-			}
-		}
-	}
 	public void parseByJsonConfig(JSONObject json)throws JobRuntimeException{
 		if(json==null) {
-			log.warn("注意：未传入的解析json对象，导出的config未被初始化");
+			log.warn("注意：未传入的解析json对象，request未被初始化");
 		}
 		for(Iterator it = json.keys();it.hasNext();){
 			String attName = (String)it.next();
-			String attValue = (String)json.get(attName);
-			if(StringUtils.isEmpty(attName)||StringUtils.isEmpty(attValue)){
-				log.warn("注意：导出配置的json中存在name或者value为空的属性，已经被忽略。");
+			Object attValue = json.get(attName);
+			if(attValue==null||
+			   StringUtils.isEmpty(attName)||
+			   (attValue instanceof String && StringUtils.isEmpty((String)attValue))
+			   ){
+				log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。");
 				continue;
 			}
 			setAttrValue(attName,attValue);
+		}
+	}
+
+	public void setAttrValue(String attName,Object attValue)throws JobRuntimeException{
+		if(StringUtils.isEmpty(attName)||attValue==null||(attValue instanceof JSONNull)){
+			log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。");
+			return;
+		}
+		try{
+			String methodName = "set"+(char)(attName.charAt(0)-32)+attName.substring(1, attName.length());
+			Class[] argtypes = null;//默认String
+			
+			if(attValue instanceof String){
+				argtypes = new Class[]{String.class};
+			}else if(attValue instanceof Integer){
+				argtypes= new Class[]{Integer.class};
+			}else if(attValue instanceof Double){
+				argtypes = new Class[]{Double.class};
+			}else if(attValue instanceof Boolean){
+				argtypes= new Class[]{Boolean.class};
+			}else if(attValue instanceof JSONArray){
+				argtypes= new Class[]{List.class};
+			}else if(attValue instanceof JSONObject){
+				//sub job
+				argtypes= new Class[]{AbstractJobRequest.class};
+				String subType = ((JSONObject) attValue).getString("type");
+				JSONObject subRequest = ((JSONObject) attValue).getJSONObject("request");
+				attValue = JobCreateStrategy.createJobRequest(subType,subRequest);
+			}
+			Method method = this.getClass().getMethod(methodName, argtypes);
+			method.invoke(this, attValue);
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw new JobRuntimeException("Request解析过程中可能未找到方法,原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	public static void main(String[] args){
+		JSONObject json = new JSONObject();
+		json.put("para1", "param1");
+		json.put("para2", null);
+		json.put("para3", 1);
+		json.put("para4", 1.1);
+		json.put("para5", true);
+		json.put("para6", new JSONArray());
+		json.put("para7", 1L);
+		JSONObject subJson1 = new JSONObject();
+		json.put("subObject1", subJson1);
+		for(Iterator it = json.keys();it.hasNext();){
+			String attName = (String)it.next();
+			System.out.println(json.get(attName).getClass().getSimpleName());
 		}
 	}
 }

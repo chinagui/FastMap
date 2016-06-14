@@ -4,22 +4,16 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.navinfo.dataservice.commons.db.ConfigLoader;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.rd.utils.RdLinkSearchUtils;
 
 public class RdLinkTest {
-private static final String configPath = "H:/GitHub/zhaokk/DataService/web/edit-web/src/main/resources/config.properties";
 	private Connection conn;
-	static 
-	{
-		ConfigLoader.initDBConn(configPath);
-	}
 	public RdLinkTest() throws Exception {
-		this.conn = GlmDbPoolManager.getInstance().getConnection(11);
+		this.conn = DBConnector.getInstance().getConnectionById(11);
 	}
 	
 	public void testDelete() {
@@ -77,8 +71,8 @@ private static final String configPath = "H:/GitHub/zhaokk/DataService/web/edit-
 	}
 	public void departRdLink()
 	{
-		String line  = "[100003385,100003386,100003387,100003389,100003397]";
-		String parameter =  "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"distance\":20,\"projectId\":11,\"data\":{\"linkPids\":"+line+"}}";
+		String line  = "[20465744,20465745,14226884]";
+		String parameter =  "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"distance\":25.3,\"projectId\":11,\"data\":{\"linkPids\":"+line+"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -99,14 +93,20 @@ private static final String configPath = "H:/GitHub/zhaokk/DataService/web/edit-
 		
 	}
 	private void testLoadTractLink() throws Exception{
+		List<Integer> pids = new ArrayList<Integer>();
+		pids.add(20465744);
+		pids.add(20465745);
+		pids.add(14226884);
+		System.out.println(pids);
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
-		List<RdLink> nextLinks = linkSelector.loadTrackLink(100003389,100019730,true);
-		for(RdLink link:nextLinks){
-			System.out.println(link.getPid());
+		List<RdLink> links =linkSelector.loadByPids(pids, true);
+		for(RdLink r:links){
+			System.out.println(r.getPid());
 		}
 	}
 	public static void main(String[] args) {
 		try {
+			
 			new RdLinkTest().departRdLink();
 			//new RdLinkTest().testAddRdLink();
 			//new RdLinkTest().testLoadTractLink();

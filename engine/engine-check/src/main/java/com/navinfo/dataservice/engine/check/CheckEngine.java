@@ -4,10 +4,11 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import net.sf.json.JSONObject;
 
+import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.check.CheckCommand;
@@ -17,7 +18,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.check.core.CheckRule;
 import com.navinfo.dataservice.engine.check.core.CheckSuitLoader;
 import com.navinfo.dataservice.engine.check.core.NiValException;
@@ -30,6 +30,8 @@ public class CheckEngine {
 	private CheckCommand checkCommand = null;
 	private Connection conn;
 	private List<VariableName> myCheckSuitVariables=new ArrayList<VariableName>();
+	private int projectId;
+	
 	public Connection getConn() {
 		return conn;
 	}
@@ -47,10 +49,11 @@ public class CheckEngine {
 		//this.conn.setAutoCommit(true);
 	}
 	
-	public CheckEngine(CheckCommand checkCommand,Connection conn) throws Exception{
+	public CheckEngine(CheckCommand checkCommand,Connection conn,int projectId) throws Exception{
 		this.log = LoggerRepos.getLogger(this.log);
 		this.checkCommand=checkCommand;
 		this.conn=conn;
+		this.projectId=projectId;
 		//this.conn = GlmDbPoolManager.getInstance().getConnection(this.checkCommand.getProjectId());
 		//this.conn.setAutoCommit(true);
 	}
@@ -66,32 +69,40 @@ public class CheckEngine {
 		return myCheckSuit;
 	}
 	
-//	private List<CheckRule> getRulesTest(ObjType objType, OperType operType,String checkType) throws Exception{
-//		String initRuleCode="test2";
-//		String initRuleLog="testsql";
-//		int initSeverity=1;
-//		String initCheckClassPath=null;
-//		String accessorType="SQL";
-//		String accessorName="select r.geometry,'[RD_LINK,'||r.link_pid||']',R.MESH_ID from rd_link r where r.kind in (10,11,15) and r.link_pid=RDLINK_PID";
-//		String variables="RDLINK_PID";
-//		CheckRule rule=new CheckRule(initRuleCode,initRuleLog,initSeverity,initCheckClassPath,accessorType,accessorName,variables);
-//		
-//		CheckRule rule2=new CheckRule("GLM56004test2","GLM56004test2",1,"com.navinfo.dataservice.engine.check.rules.GLM56004",null,null,null);
-//		
-//		List<CheckRule> myCheckSuit = new ArrayList<CheckRule>();
-//		myCheckSuit.add(rule);
-//		myCheckSuit.add(rule2);
-//		this.myCheckSuitVariables.addAll(rule.getVariables());
-//		return myCheckSuit;
-//	}
+	private List<CheckRule> getRulesTest(ObjType objType, OperType operType,String checkType) throws Exception{
+		String initRuleCode="test2";
+		String initRuleLog="testsql";
+		int initSeverity=1;
+		String initCheckClassPath=null;
+		String accessorType="SQL";
+		String accessorName="select r.geometry,'[RD_LINK,'||r.link_pid||']',R.MESH_ID from rd_link r where r.kind in (10,11,15) and r.link_pid=RDLINK_PID";
+		String variables="RDLINK_PID";
+		CheckRule rule=new CheckRule(initRuleCode,initRuleLog,initSeverity,initCheckClassPath,accessorType,accessorName,variables);
+		
+		String ruleCode="GLM01197";
+		String ruleLog="log";
+		String ruleClass="com.navinfo.dataservice.engine.check.rules.GLM01197";
+		
+		CheckRule rule2=new CheckRule(ruleCode,ruleLog,1,ruleClass,null,null,null);
+		CheckRule rule3=new CheckRule(ruleCode,ruleLog,1,ruleClass,null,null,null);
+		List<CheckRule> myCheckSuit = new ArrayList<CheckRule>();
+		//myCheckSuit.add(rule);
+		myCheckSuit.add(rule2);
+		myCheckSuit.add(rule3);
+		this.myCheckSuitVariables.addAll(rule.getVariables());
+		return myCheckSuit;
+	}
 	
 	/*
 	 * 对后检查需要保存检查结果，调用此方法将检查结果插入到Ni_val_exception中
 	 */
 	private void saveCheckResult(List<NiValException> checkResultList) throws Exception{
 		if (checkResultList==null || checkResultList.size()==0) {return;}
+		
+		NiValExceptionOperator check = new NiValExceptionOperator(this.conn, this.projectId);
+		
 		for(int i=0;i<checkResultList.size();i++){
-			NiValExceptionOperator check = new NiValExceptionOperator(this.conn);
+			
 			check.insertCheckLog(checkResultList.get(i).getRuleId(), checkResultList.get(i).getLoc(), checkResultList.get(i).getTargets(), checkResultList.get(i).getMeshId(),checkResultList.get(i).getInformation(), "TEST");
 		}
 	}
@@ -148,7 +159,7 @@ public class CheckEngine {
 				List<NiValException> resultTmp=ruleExecuterObj.exeRule(rule);
 				if(resultTmp.size()>0){checkResultList.addAll(resultTmp);}}
 			catch(Exception e){
-				log.error("error postCheck",e);
+				log.error("error postCheck"+rule.getRuleCode(),e);
 			}
 		}
 		saveCheckResult(checkResultList);
@@ -165,7 +176,7 @@ public class CheckEngine {
 		link.setsNodePid(2);
 		link.seteNodePid(2);
 		
-		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
 		
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 
@@ -181,7 +192,7 @@ public class CheckEngine {
 		checkCommand.setOperType(OperType.CREATE);
 		checkCommand.setObjType(link.objType());
 		
-		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn,11);
 		checkEngine.postCheck();
 		conn.commit();
 		

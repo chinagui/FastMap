@@ -12,15 +12,12 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeName;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
 
 public class RdNodeSelector implements ISelector {
 
@@ -57,13 +54,6 @@ public class RdNodeSelector implements ISelector {
 				node.setKind(resultSet.getInt("kind"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
-				Geometry geometry = GeoTranslator.struct2Jts(struct);
-
-				Coordinate point = geometry.getCoordinate();
-
-				node.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(point.x,
-						point.y)));
 
 				node.setGeometry(GeoTranslator.struct2Jts(struct, 100000, 0));
 
@@ -203,13 +193,6 @@ public class RdNodeSelector implements ISelector {
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
-				Geometry geometry = GeoTranslator.struct2Jts(struct);
-
-				Coordinate point = geometry.getCoordinate();
-
-				node.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(point.x,
-						point.y)));
-
 				node.setGeometry(GeoTranslator.struct2Jts(struct, 100000, 0));
 
 				node.setAdasFlag(resultSet.getInt("adas_flag"));
@@ -311,13 +294,6 @@ public class RdNodeSelector implements ISelector {
 				node.setKind(resultSet.getInt("kind"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
-				Geometry geometry = GeoTranslator.struct2Jts(struct);
-
-				Coordinate point = geometry.getCoordinate();
-
-				node.setMesh(Integer.parseInt(MeshUtils.lonlat2Mesh(point.x,
-						point.y)));
 
 				node.setGeometry(GeoTranslator.struct2Jts(struct, 100000, 0));
 

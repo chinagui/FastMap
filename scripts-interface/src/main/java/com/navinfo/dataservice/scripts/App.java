@@ -21,7 +21,7 @@ public class App
     	Connection conn = null;
     	try{
         	QueryRunner runner = new QueryRunner();
-    		conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
+    		conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
     		String sql = "select row_id from log_detail t,log_detail_grid p where t.op_id=p.op_id and p.grid_id in (2,4)";
     		long t1 = System.currentTimeMillis();
     		runner.query(conn, sql, new ResultSetHandler<String>(){

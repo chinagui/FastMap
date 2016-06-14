@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.navinfo.dataservice.engine.dao.DBConnector;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 
 
 /** 
@@ -56,7 +56,7 @@ public class CheckSuitLoader {
 					
 					try {
 
-						conn = DBConnector.getInstance().getConnection();
+						conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 
 						pstmt = conn.prepareStatement(sql);
 						pstmt.setString(1,paras[0]);

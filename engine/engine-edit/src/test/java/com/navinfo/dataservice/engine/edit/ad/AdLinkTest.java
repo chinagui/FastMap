@@ -6,13 +6,10 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.commons.db.ConfigLoader;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 import com.navinfo.dataservice.engine.edit.edit.search.rd.utils.RdLinkSearchUtils;
@@ -26,18 +23,15 @@ import net.sf.json.JSONObject;
 public class AdLinkTest {
 	
 	//初始化系统参数
-	private static final String configPath = "H:/GitHub/zhaokk/DataService/web/edit-web/src/main/resources/config.properties";
 	private Connection conn;
     public AdLinkTest() throws Exception{
-    	 this.conn = GlmDbPoolManager.getInstance().getConnection(11);
-    	 ConfigLoader
-		.initDBConn(configPath);
+    	 this.conn = DBConnector.getInstance().getConnectionById(11);
     }
 	protected Logger log = Logger.getLogger(this.getClass());
 	//创建一条link
 	public  void createAdLinkTest() {
 		String parameter = "{\"command\":\"CREATE\",\"type\":\"ADLINK\",\"projectId\":11," +
-		"\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.22633 ,39.79070],[116.22590 ,39.77897],[116.22275 ,39.76482]]},\"catchLinks\":[]}}";
+		"\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[117.37423092126846,38.91671492709221],[117.37430199980734,38.91657301643589]]},\"catchLinks\":[]}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);;
 		try {
@@ -64,7 +58,8 @@ public class AdLinkTest {
 	public  void breakAdLinkTest() {
 		//{"command":"BREAK","projectId":11,"objId":100031682,"data":{"longitude":116.4677675266779,"latitude":40.01207106100581},"type":"ADLINK"}
 		//"{"command":"BREAK","projectId":11,"objId":100031679,"data":{"longitude":116.46851064297599,"latitude":40.01208957670038},"type":"ADLINK"}"
-		String parameter = "{\"command\":\"BREAK\",\"projectId\":11,\"objId\":100031679,\"data\":{\"longitude\":116.46851064297599,\"latitude\":40.01208957670038},\"type\":\"ADLINK\"}";
+		//{"command":"BREAK","projectId":11,"objId":100031676,"data":{"longitude":116.47621786669173,"latitude":40.01248730218289},"type":"ADLINK"}
+		String parameter = "{\"command\":\"BREAK\",\"projectId\":11,\"objId\":100031676,\"data\":{\"longitude\":116.47621786669173,\"latitude\":40.01248730218289},\"type\":\"ADLINK\"}";
 		String parameter1 = "{\"command\":\"BREAK\",\"projectId\":11,\"objId\":100031682,\"data\":{\"longitude\":116.4677675266779,\"latitude\":40.01207106100581},\"type\":\"ADLINK\"}";
 		
 		log.info(parameter);
@@ -98,7 +93,7 @@ public class AdLinkTest {
 		
 		Connection conn;
 			try {
-				conn = GlmDbPoolManager.getInstance().getConnection(11);
+				conn = DBConnector.getInstance().getConnectionById(11);
 				
 				JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -111,11 +106,28 @@ public class AdLinkTest {
 			}
 	}
 	
+	
+	
+	public void tesRepairtAdLink()
+	{
+		String parameter = "{\"command\":\"REPAIR\",\"projectId\":11,\"objId\":100032727,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.62528,39.25022],[116.62528,39.25006],[116.62535838820631,39.25011395094421],[116.62544,39.25017],[116.62528,39.25022]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"ADLINK\"}";
+		
+		log.info(parameter);
+		System.out.println(parameter+"-------------------");
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+
 	public void testSearchAdNode()
 	{
 		Connection conn;
 			try {
-				conn = GlmDbPoolManager.getInstance().getConnection(11);
+				conn = DBConnector.getInstance().getConnectionById(11);
 				
 				SearchProcess p = new SearchProcess(conn);
 
@@ -129,8 +141,7 @@ public class AdLinkTest {
 	public static void main(String[] args) throws Exception{
 		//new AdLinkTest().deleteAdLinkTest();
 		//new AdLinkTest().TrackRdLink();
-		//new AdLinkTest().deleteAdLinkTest();
-		new AdLinkTest().breakAdLinkTest();
+		new AdLinkTest().tesRepairtAdLink();
 		
 	}
 }

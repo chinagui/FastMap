@@ -6,12 +6,14 @@
     <version>0.0.1-SNAPSHOT</version>
     <modules>
 		<module>commons</module>
+		<module>biz-commons</module>
 		<module>dao</module>
 		<module>engine</module>
 		<module>job-server</module>
 		<module>toolbox</module>
 		<module>web</module>
 		<module>scripts-interface</module>
+		<module>code-generator</module>
     <module>api</module>
   </modules>
 
@@ -37,16 +39,18 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
-            <plugin>
+			<!--
+           <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-idea-plugin</artifactId>
-				<version>3.0</version>
-                <configuration>
-                    <downloadSources>true</downloadSources>
-                    <dependenciesAsLibraries>true</dependenciesAsLibraries>
-                </configuration>
-            </plugin>
-			<plugin>
+								<version>3.0</version>
+		            <configuration>
+		                   <downloadSources>true</downloadSources>
+		                   <dependenciesAsLibraries>true</dependenciesAsLibraries>
+		            </configuration>
+		      </plugin>      
+			  -->
+					<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-eclipse-plugin</artifactId>
 				<version>2.10</version>
@@ -394,6 +398,17 @@
 				<version>1.1.0</version>
 			</dependency>
 
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-math3</artifactId>
+                <version>3.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.directory.studio</groupId>
+                <artifactId>org.apache.commons.codec</artifactId>
+                <version>1.8</version>
+            </dependency>
 			<dependency>
 				<groupId>org.apache.hbase</groupId>
 				<artifactId>hbase-server</artifactId>
@@ -516,7 +531,32 @@
                 <version>1.5.3</version>
             </dependency>
 			<!-- spring end -->
+		<!-- dubbo part start -->
+			<dependency>
+				<groupId>org.apache.zookeeper</groupId>
+				<artifactId>zookeeper</artifactId>
+				<version>3.4.8</version>
+				<type>pom</type>
+			</dependency>
 			
+			<dependency>
+				<groupId>com.github.sgroschupf</groupId>
+				<artifactId>zkclient</artifactId>
+				<version>0.1</version>
+			</dependency>
+			<dependency>
+				<groupId>com.alibaba</groupId>
+				<artifactId>dubbo</artifactId>
+				<version>2.4.9</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.springframework</groupId>
+						<artifactId>spring</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+		<!-- dubbo part end -->
+		
 		<!-- for test begin -->
             <dependency>
                 <groupId>p6spy</groupId>
@@ -603,6 +643,11 @@
 			</dependency>
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>biz-commons</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
 				<artifactId>export-core</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
@@ -656,15 +701,16 @@
 				<artifactId>diff-core</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
+			
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
-				<artifactId>datalock</artifactId>
+				<artifactId>import-core</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 			
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
-				<artifactId>import-core</artifactId>
+				<artifactId>job-datahub</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 			
@@ -675,7 +721,42 @@
 			</dependency>
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
-				<artifactId>api</artifactId>
+				<artifactId>api-datahub</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>api-dropbox</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>api-edit</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>api-fcc</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>api-job</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>api-man</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>api-metadata</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>api-render</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 			<dependency>
@@ -693,6 +774,11 @@
 				<artifactId>engine-dropbox</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
+            <dependency>
+                <groupId>com.navinfo.dataservice</groupId>
+                <artifactId>engine-statics</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
 			<!-- dataservice module start -->
 			<dependency>
                 <groupId>org.apache.maven</groupId>

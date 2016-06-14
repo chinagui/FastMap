@@ -10,8 +10,8 @@ import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.engine.dao.DBConnector;
 
 import net.sf.json.JSONObject;
 
@@ -28,7 +28,7 @@ public class DBController {
 
 		try {
 
-			conn = DBConnector.getInstance().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 
 			String autoIncreateSql = "select seq_upload.nextval from dual";
 
@@ -92,7 +92,7 @@ public class DBController {
 		ResultSet resultSet = null;
 
 		try {
-			conn = DBConnector.getInstance().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 
 			String sql = "select progress,trunc(chunk_size/file_size*100) split from dropbox_upload where job_id = :1";
 
@@ -163,7 +163,7 @@ public class DBController {
 		ResultSet resultSet = null;
 
 		try {
-			conn = DBConnector.getInstance().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 
 			String sql = "update dropbox_upload set end_date = sysdate where job_id = :1";
 
@@ -202,7 +202,7 @@ public class DBController {
 		ResultSet resultSet = null;
 
 		try {
-			conn = DBConnector.getInstance().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 
 			JSONObject json = new JSONObject();
 
@@ -257,7 +257,7 @@ public class DBController {
 		ResultSet resultSet = null;
 
 		try {
-			conn = DBConnector.getInstance().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 
 			String sql = "insert into dropbox_upload_chunk(job_id,chunk_no) values (:1,:2)";
 
@@ -294,7 +294,7 @@ public class DBController {
 		ResultSet resultSet = null;
 
 		try {
-			conn = DBConnector.getInstance().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 
 			List<Integer> results = new ArrayList<Integer>();
 

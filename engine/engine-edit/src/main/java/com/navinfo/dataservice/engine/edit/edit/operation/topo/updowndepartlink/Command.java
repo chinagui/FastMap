@@ -72,7 +72,7 @@ public class Command extends AbstractCommand {
 	
 	public Command(JSONObject json,String requester) {
 		this.requester = requester;
-		this.setProjectId(json.getInt("projectId"));
+		this.setDbId(json.getInt("subTaskId"));
 		//移动距离
 		this.distance = json.getInt("distance");
 		//获取要上下线分离的linkPids

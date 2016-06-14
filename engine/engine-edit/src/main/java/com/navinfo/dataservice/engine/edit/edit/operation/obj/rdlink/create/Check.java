@@ -6,8 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -18,9 +16,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 public class Check {
 
-	public void checkDupilicateNode(JSONObject geometry) throws Exception{
-		
-		Geometry geo = GeoTranslator.geojson2Jts(geometry);
+	public void checkDupilicateNode(Geometry geo) throws Exception{
 		
 		Coordinate[] coords = geo.getCoordinates();
 		
@@ -117,14 +113,14 @@ public class Check {
 		throw new Exception(msg);
 	}
 	
-	public void postCheck(Connection conn,Result result) throws Exception
+	public void postCheck(Connection conn,Result result,int projectId) throws Exception
 	{
 		
 		for(IRow obj : result.getAddObjects()){
 			if (obj instanceof RdLink){
 				RdLink rdLink = (RdLink)obj;
 				
-				NiValExceptionOperator check = new NiValExceptionOperator(conn);
+				NiValExceptionOperator check = new NiValExceptionOperator(conn,projectId);
 				
 				//获取link的中间点
 				Geometry geo = GeoTranslator.transform(rdLink.getGeometry(),0.00001,5);

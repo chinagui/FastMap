@@ -3,10 +3,10 @@ package com.navinfo.dataservice.engine.fcc.tips;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONException;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.vividsolutions.jts.geom.Geometry;
@@ -129,6 +129,8 @@ public class TipsImportUtils {
 		json.put("deep", deep);
 
 		json.put("feedback", feedback);
+		
+		json.put("s_reliability", 100);
 
 		return json;
 	}

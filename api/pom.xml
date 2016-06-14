@@ -1,41 +1,26 @@
-<?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.navinfo.dataservice</groupId>
-    <artifactId>dataservice</artifactId>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>dataservice</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+    </parent>
+	<groupId>com.navinfo.dataservice</groupId>
+    <artifactId>api</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-  </parent>
-  <groupId>com.navinfo.dataservice</groupId>
-  <artifactId>api</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>api</name>
-  <url>http://maven.apache.org</url>
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
-	<dependency>
-		<groupId>net.sf.json-lib</groupId>
-		<artifactId>json-lib</artifactId>
-		<classifier>jdk15</classifier>
-	</dependency>
-	<dependency>
-		<groupId>net.sf.ezmorph</groupId>
-		<artifactId>ezmorph</artifactId>
-	</dependency>
-	<dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-core</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-context-support</artifactId>
-    </dependency>
-  </dependencies>
+    <modules>
+		<module>api-datahub</module>
+		<module>api-dropbox</module>
+		<module>api-edit</module>
+		<module>api-fcc</module>
+		<module>api-job</module>
+		<module>api-man</module>
+		<module>api-metadata</module>
+		<module>api-render</module>
+    </modules>
+    <packaging>pom</packaging>
+    <name>api</name>
+    <url>http://dms.navinfo.com/dev</url>
+
 </project>

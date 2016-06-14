@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mapping>
-	<type name="sample" class="com.navinfo.dataservice.jobframework.runjob.SampleJob" />
+	<type name="createDb" 
+		class="com.navinfo.dataservice.job.datahub.CreateDbJob"
+	 	request="com.navinfo.dataservice.job.datahub.CreateDbJobRequest">
+	</type>
+	<type name="commitDay2MonthRoadJob" 
+		class="com.navinfo.dataservice.impcore.commit.CommitDay2MonthRoadJob"
+	 	request="com.navinfo.dataservice.impcore.commit.CommitDay2MonthRoadJobRequest"
+	/>
+	<type name="diff" 
+		class="com.navinfo.dataservice.diff.DiffJob"
+	 	request="com.navinfo.dataservice.diff.DiffJobRequest"
+	/>
 </mapping>

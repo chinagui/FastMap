@@ -1,7 +1,7 @@
 package com.navinfo.navicommons.geo.computation;
 
 /** 
-* @ClassName: Point 
+* @ClassName: LongPoint 
 * @author Xiao Xiaowen 
 * @date 2016年4月11日 下午7:47:19 
 * @Description: TODO
@@ -12,10 +12,6 @@ public class LongPoint {
 	public LongPoint(long x,long y){
 		this.x=x;
 		this.y=y;
-	}
-	public LongPoint(double x,double y){
-		this.x=Math.round(x*100000);
-		this.y=Math.round(y*100000);
 	}
 	public long getX() {
 		return x;
@@ -28,6 +24,25 @@ public class LongPoint {
 	}
 	public void setY(long y) {
 		this.y = y;
+	}
+	public LongPoint clone(){
+		return new LongPoint(this.x,this.y);
+	}
+	public String toString(){
+		return x+" "+y;
+	}
+	public int hashCode(){
+		return (x+" "+y).hashCode();
+	}
+	public boolean equals(Object anObject){
+		if(anObject==null)return false;
+		if(anObject instanceof LongPoint
+				&&this.getX()==((LongPoint) anObject).getX()
+				&&this.getY()==((LongPoint) anObject).getY()){
+			return true;
+		}else{
+			return false;
+		}
 	}
 	
 }

@@ -12,7 +12,7 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
-import com.navinfo.dataservice.commons.db.ConfigLoader;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
@@ -20,7 +20,6 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 import com.vividsolutions.jts.io.WKTReader;
 
 public class RdLaneConnexitySearch implements ISearch {
@@ -148,9 +147,8 @@ public class RdLaneConnexitySearch implements ISearch {
 	
 
 	public static void main(String[] args) throws Exception {
-		ConfigLoader.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
 		
-		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
 		
 		RdLaneConnexitySearch s = new RdLaneConnexitySearch(conn);
 		

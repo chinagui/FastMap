@@ -2,6 +2,7 @@ package com.navinfo.navicommons.geo.computation;
 
 
 /** 
+ * 平面上一个点，也是一个向量
  * x,y如果超过5位小数精度，需要四舍五入只保留5位小数，请使用DoubleUtil.keep5Decimal()
 * @ClassName: Point 
 * @author Xiao Xiaowen 

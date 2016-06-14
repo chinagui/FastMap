@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -22,7 +23,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.oracle.MyDriverManagerDataSource;
-import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.commons.database.oracle.PoolDataSource;
 import com.navinfo.navicommons.database.QueryRunner;
 
 
@@ -87,10 +88,10 @@ class DynamicSystemConfig extends Observable implements SystemConfig {
 		try{
 			QueryRunner runner = new QueryRunner();
 			DriverManagerDataSource dataSource = new MyDriverManagerDataSource();
-			String driveClassName = dynamicConfigMap.get("MAN.jdbc.driverClassName");
-			String url = dynamicConfigMap.get("MAN.jdbc.url");
-			String username = dynamicConfigMap.get("MAN.jdbc.username");
-			String pwd = dynamicConfigMap.get("MAN.jdbc.password");
+			String driveClassName = dynamicConfigMap.get("SYS.jdbc.driverClassName");
+			String url = dynamicConfigMap.get("SYS.jdbc.url");
+			String username = dynamicConfigMap.get("SYS.jdbc.username");
+			String pwd = dynamicConfigMap.get("SYS.jdbc.password");
 			dataSource.setDriverClassName(driveClassName);
 			dataSource.setUrl(url);
 			dataSource.setUsername(username);
@@ -128,7 +129,7 @@ class DynamicSystemConfig extends Observable implements SystemConfig {
 		Connection conn = null;
 		try{
 			QueryRunner runner = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			String sql = "SELECT CONF_KEY,CONF_VALUE FROM SYS_CONFIG WHERE CONF_KEY IN (?) APP_TYPE=?";
 			//...
 		}catch (Exception e){

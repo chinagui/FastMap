@@ -10,7 +10,7 @@ public class Process extends AbstractProcess<Command> {
 		// TODO Auto-generated constructor stub
 	}
 
-	private Check check = new Check();
+	private Check check = new Check(this.getConn());
 
 	@Override
 	public String exeOperation() throws Exception {

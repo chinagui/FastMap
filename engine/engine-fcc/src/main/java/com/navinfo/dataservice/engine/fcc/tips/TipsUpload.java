@@ -23,14 +23,12 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
-import com.navinfo.dataservice.commons.db.HBaseAddress;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
-import com.navinfo.dataservice.commons.util.GeometryUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.dao.fcc.SolrBulkUpdater;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.io.WKTReader;
+import com.navinfo.dataservice.dao.fcc.HBaseConnector;
+import com.navinfo.dataservice.dao.fcc.SolrController;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 
 /**
  * 保存上传的tips数据
@@ -56,8 +54,6 @@ public class TipsUpload {
 	private Map<String, JSONObject> updateTips = new HashMap<String, JSONObject>();
 
 	private Map<String, JSONObject> oldTips = new HashMap<String, JSONObject>();
-	
-	private GeometryFactory factory = new GeometryFactory();
 
 	private String currentDate;
 
@@ -67,9 +63,7 @@ public class TipsUpload {
 
 	private JSONArray reasons;
 
-	private WKTReader reader = new WKTReader();
-
-	private SolrBulkUpdater solr;
+	private SolrController solr;
 
 	public JSONArray getReasons() {
 		return reasons;
@@ -111,15 +105,16 @@ public class TipsUpload {
 
 		currentDate = StringUtils.getCurrentTime();
 
-		Connection hbaseConn = HBaseAddress.getHBaseConnection();
+		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
-		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+		Table htab = hbaseConn
+				.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
 		Map<String, Photo> photoInfo = new HashMap<String, Photo>();
 
 		List<Get> gets = loadFileContent(fileName, photoInfo);
 
-		solr = new SolrBulkUpdater(total * 2, 1);
+		solr = new SolrController();
 
 		loadOldTips(htab, gets);
 
@@ -128,10 +123,6 @@ public class TipsUpload {
 		doInsert(puts);
 
 		doUpdate(puts);
-
-		solr.commit();
-
-		solr.close();
 
 		htab.put(puts);
 
@@ -547,13 +538,25 @@ public class TipsUpload {
 
 		JSONArray fArray = feedback.getJSONArray("f_array");
 
+		JSONArray newFArray = new JSONArray();
+
+		JSONObject graph = null;
+
 		Set<String> picNames = new HashSet<String>();
 
 		for (int i = 0; i < fArray.size(); i++) {
 			JSONObject jo = fArray.getJSONObject(i);
 
-			if (jo.getInt("type") == 1) {
+			int type = jo.getInt("type");
+
+			if (type == 1) {
 				picNames.add(jo.getString("content"));
+			}
+
+			if (type == 6) {
+				graph = jo;
+			} else {
+				newFArray.add(jo);
 			}
 		}
 
@@ -562,18 +565,25 @@ public class TipsUpload {
 		for (int i = 0; i < newFeedbacks.size(); i++) {
 			JSONObject newFeedback = newFeedbacks.getJSONObject(i);
 
-			if (newFeedback.getInt("type") == 1) {
+			int type = newFeedback.getInt("type");
+			if (type == 1) {
 				if (!picNames.contains(newFeedback.getString("content"))) {
-					fArray.add(newFeedback);
+					newFArray.add(newFeedback);
 				}
+			} else if (type == 6) {
+				graph = newFeedback;
 			} else {
-				fArray.add(newFeedback);
+				newFArray.add(newFeedback);
 			}
 		}
-		
-		feedback.put("f_array", fArray);
-		
-		json.put("feedback", fArray);
+
+		if (graph != null) {
+			newFArray.add(graph);
+		}
+
+		feedback.put("f_array", newFArray);
+
+		json.put("feedback", newFArray);
 
 		put.addColumn("data".getBytes(), "feedback".getBytes(), feedback
 				.toString().getBytes());
@@ -647,19 +657,22 @@ public class TipsUpload {
 		JSONObject g_location = json.getJSONObject("g_location");
 
 		index.put("g_location", g_location);
-		
+
 		JSONObject deep = json.getJSONObject("deep");
 
 		index.put("deep", deep.toString());
 
 		String sourceType = json.getString("s_sourceType");
-		
+
 		JSONArray feedbacks = json.getJSONArray("feedback");
-		
+
 		index.put("feedback", feedbacks.toString());
-		
-		index.put("wkt", TipsImportUtils.generateSolrWkt(sourceType, deep, g_location, feedbacks));
-		
+
+		index.put("wkt", TipsImportUtils.generateSolrWkt(sourceType, deep,
+				g_location, feedbacks));
+
+		index.put("s_reliability", 100);
+
 		return index;
 	}
 
@@ -746,10 +759,9 @@ public class TipsUpload {
 	}
 
 	public static void main(String[] args) throws Exception {
-		HBaseAddress.initHBaseAddress("192.168.3.156");
 
 		TipsUpload a = new TipsUpload();
 
-		a.run("C:/1.txt");
+		a.run("C:/4.txt");
 	}
 }

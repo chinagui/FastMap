@@ -13,14 +13,15 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.commons.util.MeshUtils;
-import com.navinfo.dataservice.datahub.manager.DbManager;
-import com.navinfo.dataservice.datahub.model.OracleSchema;
+import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.PackageExec;
 import com.navinfo.navicommons.database.sql.SqlExec;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 /**
  * @ClassName: InitProjectScriptsInterface
@@ -43,8 +44,8 @@ public class InitProjectScriptsInterface {
 			int projectId = Integer.valueOf(projectIdStr);
 			String dbName = (String) request.get("dbName");
 			Assert.notNull(dbName, "dbName不能为空");
-			String gdbVersion = (String)request.get("gdbVersion");
-			Assert.notNull(gdbVersion,"gdbVersion不能为空");
+			String gdbVersion = (String) request.get("gdbVersion");
+			Assert.notNull(gdbVersion, "gdbVersion不能为空");
 			String projectName = (String) request.get("projectName");
 			String meshes = (String) request.get("meshes");
 			meshes = com.navinfo.dataservice.commons.util.StringUtils
@@ -63,7 +64,7 @@ public class InitProjectScriptsInterface {
 			// fm_man写记录
 			String prjDbId = createDbResponse.getString("dbId");
 			QueryRunner runner = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();
 
 			// fm_man中写project记录
@@ -95,15 +96,17 @@ public class InitProjectScriptsInterface {
 			stmt.executeBatch();
 			stmt.clearBatch();
 			stmt.close();
-			
+
 			// project_grid
 			String sqlGrid = "INSERT INTO PROJECT_GRID(PROJECT_ID,GRID_ID) VALUES(?,?)";
 			stmt = conn.prepareStatement(sqlGrid);
 			for (String mesh : coreMeshes) {
-				for (int i = 1; i < 5; i++) {
-					stmt.setInt(1, projectId);
-					stmt.setInt(2, Integer.valueOf(mesh+"0"+i));
-					stmt.addBatch();
+				for (int i = 0; i < 4; i++) {
+					for (int j = 0; j < 4; j++) {
+						stmt.setInt(1, projectId);
+						stmt.setInt(2, Integer.valueOf(mesh + i + j));
+						stmt.addBatch();
+					}
 				}
 			}
 			stmt.executeBatch();
@@ -112,11 +115,11 @@ public class InitProjectScriptsInterface {
 			// mesh表
 			String uSql = "UPDATE MESH SET PROJECT_ID=?,HANDLE_PROJECT_ID=? WHERE MESH_ID IN (SELECT MESH_ID FROM PROJECT_MESH WHERE PROJECT_ID=? AND MESH_TYPE=1)";
 			runner.update(conn, uSql, projectId, projectId, projectId);
-			
-			//grid表
+
+			// grid表
 			String gSql = "UPDATE GRID A SET A.PROJECT_ID=?,A.HANDLE_PROJECT_ID=? WHERE EXISTS(SELECT NULL FROM PROJECT_GRID B WHERE A.GRID_ID=B.GRID_ID AND B.PROJECT_ID=?)";
 			runner.update(conn, gSql, projectId, projectId, projectId);
-			
+
 			conn.commit();
 			response.put("init_fm_man", "success");
 			// export data
@@ -133,9 +136,11 @@ public class InitProjectScriptsInterface {
 					.exportData(expRequest);
 			response.put("export_data", expResponse);
 
-			//创建索引、包等等
-			OracleSchema schema = (OracleSchema)new DbManager().getDbById(Integer.valueOf(prjDbId));
-			tarConn = schema.getDriverManagerDataSource().getConnection();
+			// 创建索引、包等等
+			DbInfo db = DbService.getInstance()
+					.getDbById(Integer.valueOf(prjDbId));
+			DbConnectConfig connConfig = MultiDataSourceFactory.createConnectConfig(db.getConnectParam());
+			tarConn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
 			String sqlFile = "/com/navinfo/dataservice/scripts/resources/prj_utils.sql";
 			SqlExec sqlExec = new SqlExec(tarConn);
 			sqlExec.executeIgnoreError(sqlFile);
@@ -165,7 +170,8 @@ public class InitProjectScriptsInterface {
 		try {
 			JSONObject request = null;
 			JSONObject response = null;
-			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
+			String dir = SystemConfigFactory.getSystemConfig().getValue(
+					"scripts.dir");
 			request = ToolScriptsInterface.readJson(dir + "request"
 					+ File.separator + "init_project.json");
 			response = initProject(request);

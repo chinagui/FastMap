@@ -9,14 +9,13 @@ import java.util.List;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
-import com.navinfo.dataservice.commons.db.ConfigLoader;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
-import com.navinfo.dataservice.dao.pool.GlmDbPoolManager;
 
 public class AdFaceSearch implements ISearch {
 
@@ -166,9 +165,8 @@ public class AdFaceSearch implements ISearch {
 	}
 
 	public static void main(String[] args) throws Exception {
-		ConfigLoader.initDBConn("D:/workspace2/DataService/web/webman/src/main/resources/config.properties");
 
-		Connection conn = GlmDbPoolManager.getInstance().getConnection(11);
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
 
 		AdFaceSearch s = new AdFaceSearch(conn);
 

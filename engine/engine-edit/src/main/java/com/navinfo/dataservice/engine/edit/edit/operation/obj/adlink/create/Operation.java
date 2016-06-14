@@ -9,12 +9,14 @@ import java.util.Set;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.util.MeshUtils;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.AdLinkOperateUtils;
-import com.navinfo.dataservice.engine.edit.comm.util.type.GeometryTypeName;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.RdLinkOperateUtils;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.GeometryTypeName;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -51,7 +53,7 @@ public class Operation implements IOperation {
 		}
 		// 如果创建行政区划线没有对应的挂接AD_NODE和ADFACE
 		// 创建对应的ADNODE
-		if (command.getCatchLinks().size() == 0) {
+		if (command.getCatchLinks().size() == 0||map.size() == 0) {
 			JSONObject se = new JSONObject();
 			se = AdLinkOperateUtils.createAdNodeForLink(command.getGeometry(),
 					command.getsNodePid(), command.geteNodePid(), result);
@@ -73,7 +75,7 @@ public class Operation implements IOperation {
 			throws Exception {
 
 		for (Geometry g : map.keySet()) {
-			Set<String> meshes = MeshUtils.getInterMeshes(g);
+			Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
 			//不跨图幅
 			if (meshes.size() == 1) {
 				this.createAdLinkWithNoMesh(g, (int) map.get(g).get("s"),
@@ -92,7 +94,7 @@ public class Operation implements IOperation {
 							MeshUtils.mesh2Jts(meshIdStr));
 					geomInter = GeoTranslator.geojson2Jts(
 							GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					this.createAdLinkWithMesh(geomInter, maps,result);
+					AdLinkOperateUtils.createAdLinkWithMesh(geomInter, maps,result);
 
 				}
 			}
@@ -114,59 +116,6 @@ public class Operation implements IOperation {
 					(int) node.get("e"), result);
 		}
 	}
-
-	/*
-	 * 创建行政区划线 针对跨图幅有两种情况 
-	 * 1.跨图幅和图幅交集是LineString 
-	 * 2.跨图幅和图幅交集是MultineString
-	 * 3.跨图幅需要生成和图廓线的交点
-	 */
-
-	private void createAdLinkWithMesh(Geometry g,
-			Map<Coordinate, Integer> maps, Result result) throws Exception {
-		if (g != null) {
-			
-			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
-				this.calAdLinkWithMesh(g, maps,result);
-			}
-			if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
-				for (int i = 0; i < g.getNumGeometries(); i++) {
-					this.calAdLinkWithMesh(g.getGeometryN(i), maps,result);
-				}
-
-			}
-		}
-	}
-	/*
-	 * 创建行政区划线 针对跨图幅创建图廓点不能重复
-	 */
-	private void calAdLinkWithMesh(Geometry g,Map<Coordinate, Integer> maps,
-			Result result) throws Exception {
-		//定义创建行政区划线的起始Pid 默认为0
-		int sNodePid = 0;
-		int eNodePid = 0;
-		//判断新创建的线起点对应的pid是否存在，如果存在取出赋值
-		if (maps.containsKey(g.getCoordinates()[0])) {
-			sNodePid = maps.get(g.getCoordinates()[0]);
-		}
-		//判断新创建的线终始点对应的pid是否存在，如果存在取出赋值
-		if (maps.containsKey(g.getCoordinates()[g.getCoordinates().length - 1])) {
-			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
-		}
-		//创建线对应的点
-		JSONObject node = AdLinkOperateUtils.createAdNodeForLink(
-				g, sNodePid, eNodePid, result);
-		if (!maps.containsValue(node.get("s"))) {
-			maps.put(g.getCoordinates()[0], (int) node.get("s"));
-		}
-		if (!maps.containsValue(node.get("e"))) {
-			maps.put(g.getCoordinates()[0], (int) node.get("e"));
-		}
-		//创建线
-		AdLinkOperateUtils.addLink(g, (int) node.get("s"),
-				(int) node.get("e"), result);
-	}
-
 	/*
 	 * AD_LINK打断具体操作
 	 * 1.循环挂接的线
@@ -181,7 +130,7 @@ public class Operation implements IOperation {
 				//要打断线的pid
 				breakJson.put("objId", json.getInt("linkPid"));
 				//要打断线的project_id
-				breakJson.put("projectId", command.getProjectId());
+				breakJson.put("subTaskId", command.getDbId());
 				JSONObject data = new JSONObject();
 				//要打断点的pid和经纬度
 				data.put("breakNodePid", json.getInt("breakNode"));

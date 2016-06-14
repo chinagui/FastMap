@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
@@ -18,6 +17,8 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobTypeNotFoundException;
 
+import net.sf.json.JSONObject;
+
 /** 
 * @ClassName: JobCreateStrategy 
 * @author Xiao Xiaowen 
@@ -27,26 +28,58 @@ import com.navinfo.dataservice.jobframework.exception.JobTypeNotFoundException;
 public class JobCreateStrategy {
 	private static Logger log = LoggerRepos.getLogger(JobCreateStrategy.class);
 	public static Map<String,Class<?>> jobClassMap;
+	public static Map<String,Class<?>> requestClassMap;
 	public static AbstractJob create(JobInfo jobInfo)throws JobTypeNotFoundException,JobCreateException{
 		if(jobClassMap==null){
 			loadMapping();
 		}
-		Class<?> clazz = jobClassMap.get(jobInfo.getType().toString());
+		Class<?> clazz = jobClassMap.get(jobInfo.getType());
 		if(clazz==null){
-			throw new JobTypeNotFoundException("未找到对应的任务类型");
+			throw new JobTypeNotFoundException("未找到对应的任务类型的class类名");
 		}
 		AbstractJob job = null;
 		try{
 			job = (AbstractJob)clazz.getConstructor(JobInfo.class).newInstance(jobInfo);
+			job.setRequest(createJobRequest(jobInfo.getType(),jobInfo.getRequest()));
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			throw new JobCreateException(e.getMessage(),e);
 		}
 		return job;
 	}
+	public static AbstractJob createAsSubJob(JobInfo jobInfo,AbstractJob parent)throws JobTypeNotFoundException,JobCreateException{
+		AbstractJob job = create(jobInfo);
+		job.setParent(parent);
+		return job;
+	}
+	public static AbstractJob createAsMethod(JobInfo jobInfo)throws JobTypeNotFoundException,JobCreateException{
+		AbstractJob job = create(jobInfo);
+		job.setRunAsMethod(true);
+		return job;
+	}
+	
+	public static AbstractJobRequest createJobRequest(String jobType,JSONObject request)throws JobTypeNotFoundException,JobCreateException{
+		if(jobClassMap==null){
+			loadMapping();
+		}
+		Class<?> clazz = requestClassMap.get(jobType);
+		if(clazz==null){
+			throw new JobTypeNotFoundException("未找到对应的任务类型的reques类名");
+		}
+		AbstractJobRequest req = null;
+		try{
+			req = (AbstractJobRequest)clazz.getConstructor().newInstance();
+			req.parseByJsonConfig(request);
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw new JobCreateException(e.getMessage(),e);
+		}
+		return req;
+	}
 	private static void loadMapping(){
 		String mappingFile = "/com/navinfo/dataservice/jobframework/job-class.xml";
 		jobClassMap = new HashMap<String,Class<?>>();
+		requestClassMap = new HashMap<String,Class<?>>();
 		//加载管理库的信息
 		InputStream is = null;
         log.debug("parse file " + mappingFile);
@@ -64,10 +97,12 @@ public class JobCreateStrategy {
                 Element element = elements.get(i);
                 String name = element.attributeValue("name");
                 String className = element.attributeValue("class");
+                String requestClassName = element.attributeValue("request");
                 jobClassMap.put(name, Class.forName(className));
+                requestClassMap.put(name, Class.forName(requestClassName));
             }
         } catch (Exception e) {
-        	log.error(e.getMessage());
+        	log.error(e.getMessage(),e);
             throw new ConfigParseException("读取job和类映射文件" + mappingFile + "错误", e);
         } finally {
             try {

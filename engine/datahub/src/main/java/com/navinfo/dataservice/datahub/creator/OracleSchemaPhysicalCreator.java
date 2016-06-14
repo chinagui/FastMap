@@ -5,17 +5,19 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.database.oracle.PoolDataSourceFactory;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
-import com.navinfo.dataservice.datahub.model.UnifiedDb;
+import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.PackageExec;
 import com.navinfo.navicommons.database.sql.SqlExec;
-import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
  * @ClassName: OracleSchemaCreator 
@@ -26,24 +28,22 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 public class OracleSchemaPhysicalCreator implements DbPhysicalCreator{
 	protected Logger log = Logger.getLogger(this.getClass());
 	
-	public void create(UnifiedDb db)throws DataHubException{
+	public void create(DbInfo db)throws DataHubException{
 		//超级用户
 		if(db.isSuperDb()){
 			throw new DataHubException("超级用户不能被创建。");
 		}
-		UnifiedDb suDb = db.getSuperDb();
+		DbInfo suDb = DbService.getInstance().getSuperDb(db);
 		String suUserName = suDb.getDbUserName();
 		String suUserPasswd = suDb.getDbUserPasswd();
 		//表空间
 		String tablespaceName = suDb.getTablespaceName();
 		if(StringUtils.isEmpty(tablespaceName)){
-			tablespaceName=SystemConfigFactory.getSystemConfig().getValue("datahub.oracle.defaultTablespaces", "GDB_DATA");
+			tablespaceName=SystemConfigFactory.getSystemConfig().getValue("datahub.oracle.defaultTablespaces", "USERS");
 		}
 		db.setTablespaceName(tablespaceName);
-		//用户名和密码同数据库名
-		String dbUserName = db.getDbName();
-		db.setDbUserName(dbUserName);
-		db.setDbUserPasswd(dbUserName);
+		//
+		String dbUserName = db.getDbUserName();
 		db.setDbRole(0);
 		
 		Connection conn = null;
@@ -55,7 +55,7 @@ public class OracleSchemaPhysicalCreator implements DbPhysicalCreator{
 //			conProps.put("internal_logon", "sysdba");
 			DriverManagerDataSource dataSource = new DriverManagerDataSource();
 			dataSource.setDriverClassName("oracle.jdbc.driver.OracleDriver");
-			String url = PoolDataSourceFactory.createUrl(suDb.getDbServer().getIp(), suDb.getDbServer().getPort(), suDb.getDbServer().getServiceName());
+			String url = MultiDataSourceFactory.createOracleJdbcUrl(suDb.getDbServer().getIp(), suDb.getDbServer().getPort(), suDb.getDbName());
 			dataSource.setUrl(url);
 			/*
 			 * dataSource.setUsername(sysName);
@@ -106,10 +106,11 @@ public class OracleSchemaPhysicalCreator implements DbPhysicalCreator{
 			DbUtils.closeQuietly(conn);
 		}	
 	}
-	public void installGdbModel(UnifiedDb db,String gdbVersion)throws DataHubException{
+	public void installGdbModel(DbInfo db,String gdbVersion)throws DataHubException{
 		Connection conn = null;
 		try{
-			conn = db.getDriverManagerDataSource().getConnection();
+			DbConnectConfig connConfig = MultiDataSourceFactory.createConnectConfig(db.getConnectParam());
+			conn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
 			// gdb
 			String schemaCreateFile = "/com/navinfo/dataservice/datahub/resources/"
 					+ gdbVersion + "/schema/table_create_gdb.sql";
@@ -120,12 +121,12 @@ public class OracleSchemaPhysicalCreator implements DbPhysicalCreator{
 			sqlExec.execute(indexFile);
 			//gdb+
 			PackageExec packageExec = new PackageExec(conn);
-			String plusFile = "/com/navinfo/dataservice/datahub/resources/"
-					+ gdbVersion + "/schema/table_create_plus.sql";
-			sqlExec.execute(plusFile);
 			String indexPlus = "/com/navinfo/dataservice/datahub/resources/"
 					+ gdbVersion + "/schema/index+.pck";
 			packageExec.execute(indexPlus);
+			String plusFile = "/com/navinfo/dataservice/datahub/resources/"
+					+ gdbVersion + "/schema/table_create_plus.sql";
+			sqlExec.execute(plusFile);
 		}catch(Exception e){
 			log.error("给目标库安装GDB模型时出错。原因为："+e.getMessage(),e);
 			throw new DataHubException("给目标库安装GDB模型时出错。原因为："+e.getMessage(),e);

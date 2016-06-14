@@ -36,7 +36,8 @@ public class IxPoiGasstation implements IObj {
 	private String photoName;//全景照片
 	private int mesh;
 	private String rowId;
-	
+	private int uRecord=0;
+	private String uDate;
 
 	public int getMesh() {
 		return mesh;
@@ -85,9 +86,22 @@ public class IxPoiGasstation implements IObj {
 		this.pid = pid;
 	}
 
-	
+	public int getuRecord() {
+		return uRecord;
+	}
 
-	
+	public void setuRecord(int uRecord) {
+		this.uRecord = uRecord;
+	}
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
+	}
+
 	@Override
 	public void setStatus(ObjStatus os) {
 		// TODO Auto-generated method stub

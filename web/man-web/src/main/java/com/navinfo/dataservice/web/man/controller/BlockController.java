@@ -17,7 +17,6 @@ import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /** 
@@ -53,14 +52,19 @@ public class BlockController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	/**
+	 * 批量修改Block信息
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(value = "/block/update")
 	public ModelAndView update(HttpServletRequest request){
 		try{			
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
 			if(dataJson==null){
-				throw new IllegalArgumentException("param参数不能为空。");
+				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			service.update(dataJson);			
+			service.batchUpdate(dataJson);			
 			return new ModelAndView("jsonView", success("修改成功"));
 		}catch(Exception e){
 			log.error("修改失败，原因："+e.getMessage(), e);

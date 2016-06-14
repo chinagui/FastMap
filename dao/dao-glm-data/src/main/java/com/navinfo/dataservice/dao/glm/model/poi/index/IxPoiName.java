@@ -47,7 +47,11 @@ public class IxPoiName implements IObj {
 	private String nidePid;// 现有PID
 
 	private String rowId;
-
+	
+	private int uRecord=0;
+	
+	private String uDate;
+	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	private List<IRow> nameTones = new ArrayList<IRow>();
@@ -140,6 +144,22 @@ public class IxPoiName implements IObj {
 
 	public String getRowId() {
 		return rowId;
+	}
+
+	public int getuRecord() {
+		return uRecord;
+	}
+
+	public void setuRecord(int uRecord) {
+		this.uRecord = uRecord;
+	}
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
 	}
 
 	public List<IRow> getNameTones() {

@@ -119,6 +119,10 @@ public class IxPoiAddress implements IObj {
 	
 	private String rowId;
 	
+	private int uRecord=0;
+	
+	private String uDate;
+	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	public int getPid() {
@@ -509,6 +513,22 @@ public class IxPoiAddress implements IObj {
 	@Override
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
+	}
+
+	public int getuRecord() {
+		return uRecord;
+	}
+
+	public void setuRecord(int uRecord) {
+		this.uRecord = uRecord;
+	}
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
 	}
 
 	@Override

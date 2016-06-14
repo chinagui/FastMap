@@ -94,6 +94,59 @@ public class TaskOperation {
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}
 	}
+	
+	/*
+	 * 根据sql语句查询task
+	 */
+	public static Page selectTaskBySql2(Connection conn,String selectSql,List<Object> values,final int currentPageNum,final int pageSize) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
+				public Page handle(ResultSet rs) throws SQLException {
+					List<Task> list = new ArrayList<Task>();
+				    Page page = new Page(currentPageNum);
+				    page.setPageSize(pageSize);
+					while(rs.next()){
+						Task map = new Task();
+						map.setTaskId(rs.getInt("TASK_ID"));
+						map.setCityId(rs.getInt("CITY_ID"));
+						map.setCreateUserId(rs.getInt("CREATE_USER_ID"));
+						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
+						map.setStatus(rs.getInt("STATUS"));
+						map.setDescp(rs.getString("DESCP"));
+						map.setCollectPlanStartDate(rs.getTimestamp("COLLECT_PLAN_START_DATE"));
+						map.setCollectPlanEndDate(rs.getTimestamp("COLLECT_PLAN_END_DATE"));
+						map.setDayEditPlanStartDate(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE"));
+						map.setDayEditPlanEndDate(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE"));
+						map.setBMonthEditPlanStartDate(rs.getTimestamp("B_MONTH_EDIT_PLAN_START_DATE"));
+						map.setBMonthEditPlanEndDate(rs.getTimestamp("B_MONTH_EDIT_PLAN_END_DATE"));
+						map.setCMonthEditPlanStartDate(rs.getTimestamp("C_MONTH_EDIT_PLAN_START_DATE"));
+						map.setCMonthEditPlanEndDate(rs.getTimestamp("C_MONTH_EDIT_PLAN_END_DATE"));
+						map.setDayEditPlanStartDate(rs.getTimestamp("DAY_PRODUCE_PLAN_START_DATE"));
+						map.setDayEditPlanEndDate(rs.getTimestamp("DAY_PRODUCE_PLAN_END_DATE"));
+						map.setMonthProducePlanStartDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_START_DATE"));
+						map.setMonthProducePlanEndDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_END_DATE"));
+						map.setLatest(rs.getInt("LATEST"));
+						list.add(map);
+					}
+					//page.setTotalCount(list.size());
+					page.setResult(list);
+					return page;
+				}
+	    		
+	    	}		;
+	    	if (null==values || values.size()==0){
+	    		return run.query(currentPageNum, pageSize, conn, selectSql, rsHandler
+						);
+	    	}
+	    	return run.query(currentPageNum, pageSize, conn, selectSql, rsHandler,values.toArray()
+					);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+	}
 		
 	public static void insertTask(Connection conn,Task bean) throws Exception{
 		try{

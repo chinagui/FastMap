@@ -106,13 +106,13 @@ public class CityService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public void delete(JSONObject json)throws ServiceException{
+	public void delete(City bean2)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();	
-			JSONObject obj = JSONObject.fromObject(json);	
+			JSONObject obj = JSONObject.fromObject(bean2);	
 			City  bean = (City)JSONObject.toBean(obj, City.class);	
 			
 			String deleteSql = "delete from  CITY where 1=1 ";

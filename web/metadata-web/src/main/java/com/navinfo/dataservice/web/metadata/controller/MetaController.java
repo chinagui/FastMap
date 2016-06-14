@@ -312,7 +312,7 @@ public class MetaController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/meta/queryChain/")
+	@RequestMapping(value = "/meta/queryChain")
 	public ModelAndView queryChain(HttpServletRequest request)
 			throws ServletException, IOException {
 		
@@ -337,7 +337,7 @@ public class MetaController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/meta/chainLevel/")
+	@RequestMapping(value = "/meta/chainLevel")
 	public ModelAndView queryChainLevel(HttpServletRequest request)
 			throws ServletException, IOException {
 		
@@ -364,7 +364,7 @@ public class MetaController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/meta/queryFocus/")
+	@RequestMapping(value = "/meta/queryFocus")
 	public ModelAndView queryFocus(HttpServletRequest request)
 			throws ServletException, IOException {
 

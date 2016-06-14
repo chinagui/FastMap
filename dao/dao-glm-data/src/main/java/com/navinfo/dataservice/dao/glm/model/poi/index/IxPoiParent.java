@@ -37,6 +37,12 @@ public class IxPoiParent implements IObj {
 	
 	private String memo;//备注信息
 	
+	private int groupId=0; // POI组号码
+	
+	private int uRecord=0;
+	
+	private String uDate;
+	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
 	private List<IRow> poiChildrens = new ArrayList<IRow>();
@@ -99,6 +105,30 @@ public class IxPoiParent implements IObj {
 	@Override
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
+	}
+
+	public int getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(int groupId) {
+		this.groupId = groupId;
+	}
+
+	public int getuRecord() {
+		return uRecord;
+	}
+
+	public void setuRecord(int uRecord) {
+		this.uRecord = uRecord;
+	}
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
 	}
 
 	@Override

@@ -79,4 +79,12 @@ public class DbServer implements Serializable{
 			return false;
 		}
 	}
+
+	@Override
+	public String toString() {
+		return "DbServer [sid=" + sid + ", type=" + type + ", ip=" + ip
+				+ ", port=" + port + ", bizType=" + bizType + ", descp="
+				+ descp + ", identity=" + identity + "]";
+	}
+	
 }

@@ -10,7 +10,9 @@ import junit.framework.Assert;
 import org.apache.commons.collections.map.MultiValueMap;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 
 /*
@@ -21,7 +23,11 @@ import com.navinfo.dataservice.engine.man.grid.GridService;
 public class GridServiceTest {
 
 	@Before
-	public void setUp() throws Exception {
+	public void before(){
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(  
+                new String[] { "dubbo-consumer-datahub-test.xml"}); 
+		context.start();
+		new ApplicationContextUtil().setApplicationContext(context);
 	}
 
 	@Test

@@ -103,7 +103,8 @@ public class RegionController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
-			Region data = service.query(dataJson);			
+			Region bean = (Region) JSONObject.toBean(dataJson, Region.class);
+			Region data = service.query(bean);			
 			return new ModelAndView("jsonView", success(JSONObject.fromObject(data)));
 		}catch(Exception e){
 			log.error("获取明细失败，原因："+e.getMessage(), e);

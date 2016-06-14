@@ -7,7 +7,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 public class FocusSelectorTest {
 	
@@ -19,12 +18,40 @@ public class FocusSelectorTest {
 		new ApplicationContextUtil().setApplicationContext(context);
 	}
 	
-	@Test
 	public void testLoadPoiNum() {
 		try {
 			FocusSelector selector = new FocusSelector();
 
 			JSONArray jsonObject = selector.getPoiNum();
+
+			System.out.println(jsonObject);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+	
+	public void testGetChain()
+	{
+		try {
+			ChainSelector selector = new ChainSelector();
+
+			JSONArray jsonObject = selector.getChainByKindCode("210204");
+
+			System.out.println(jsonObject);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+	 
+	@Test
+	public void testGetLevelByChain()
+	{
+		try {
+			ChainSelector selector = new ChainSelector();
+
+			String jsonObject = selector.getLevelByChain("3347", "110101");
 
 			System.out.println(jsonObject);
 		} catch (Exception e) {

@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.man.region;
 
+import com.navinfo.dataservice.api.man.model.IRegion;
+
 
 /** 
 * @ClassName:  Region 
@@ -7,7 +9,7 @@ package com.navinfo.dataservice.engine.man.region;
 * @date 2016-06-08 02:32:17 
 * @Description: TODO
 */
-public class Region  {
+public class Region implements IRegion {
 	private Integer regionId ;
 	private String regionName ;
 	private Integer dailyDbId ;
@@ -63,9 +65,6 @@ public class Region  {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((regionId == null) ? 0 : regionId.hashCode());
-		result = prime * result + ((regionName == null) ? 0 : regionName.hashCode());
-		result = prime * result + ((dailyDbId == null) ? 0 : dailyDbId.hashCode());
-		result = prime * result + ((monthlyDbId == null) ? 0 : monthlyDbId.hashCode());
 		return result;
 	}
 
@@ -86,21 +85,6 @@ public class Region  {
 			if (other.regionId != null)
 				return false;
 		} else if (!regionId.equals(other.regionId))
-			return false;
-		if (regionName == null) {
-			if (other.regionName != null)
-				return false;
-		} else if (!regionName.equals(other.regionName))
-			return false;
-		if (dailyDbId == null) {
-			if (other.dailyDbId != null)
-				return false;
-		} else if (!dailyDbId.equals(other.dailyDbId))
-			return false;
-		if (monthlyDbId == null) {
-			if (other.monthlyDbId != null)
-				return false;
-		} else if (!monthlyDbId.equals(other.monthlyDbId))
 			return false;
 		return true;
 	}

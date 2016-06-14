@@ -332,11 +332,8 @@ public class FlushGdb {
 	}
 
 	public static FlushResult flushByGrids(String[] args) {
-
 		FlushResult flushResult = new FlushResult();
 		Scanner scanner = null;
-		String tempTable = null;
-
 		try {
 
 			props = new Properties();
@@ -351,25 +348,8 @@ public class FlushGdb {
 			while (scanner.hasNextLine()) {
 				grids.add(Integer.parseInt(scanner.nextLine()));
 			}
-
-			init();
-
-			tempTable = createTempTable();
+			flushResult= exeFlushByGrids(grids,stopTime);
 			
-			prepareAndLockLog(tempTable,stopTime,grids);
-
-			String logQuerySql = "SELECT L.* FROM LOG_DETAIL L,"+tempTable+" T WHERE L.OP_ID=T.OP_ID ORDER BY T.OP_DT";
-
-			if(flushData(flushResult,logQuerySql)){
-
-				moveLog(flushResult,tempTable);
-
-				updateLogCommitStatus(tempTable);
-				flushResult.setResultMsg("Success");
-			}else{
-				flushResult.setResultMsg("Fail");
-				throw new Exception("刷数据失败。");
-			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -380,15 +360,42 @@ public class FlushGdb {
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
-			if(StringUtils.isNotEmpty(tempTable)){
-				unlockPreparedLog(tempTable);
-			}
+			
 		}finally{
 			if(scanner!=null)scanner.close();
-			dropTempTable(tempTable);
+			
 		}
 
 		return flushResult;
+	}
+	
+	private static FlushResult exeFlushByGrids(List<Integer> grids,String stopTime ) throws Exception{
+		FlushResult flushResult = new FlushResult();
+		String tempTable = null;
+		try {
+			init();
+			tempTable= createTempTable();
+			prepareAndLockLog(tempTable, stopTime, grids);
+			String logQuerySql = "SELECT L.* FROM LOG_DETAIL L," + tempTable
+					+ " T WHERE L.OP_ID=T.OP_ID ORDER BY T.OP_DT";
+			if (flushData(flushResult, logQuerySql)) {
+				moveLog(flushResult, tempTable);
+				updateLogCommitStatus(tempTable);
+				flushResult.setResultMsg("Success");
+			} else {
+				flushResult.setResultMsg("Fail");
+				throw new Exception("刷数据失败。");
+			}
+		} catch (Exception e) {
+			if(StringUtils.isNotEmpty(tempTable)){
+				unlockPreparedLog(tempTable);
+			}
+			throw e ;
+		}finally{
+			dropTempTable(tempTable);
+		}
+		return flushResult;
+		
 	}
 
 	public static FlushResult flushAll(String[] args) {
@@ -403,7 +410,7 @@ public class FlushGdb {
 
 			String stopTime = props.getProperty("stopTime");
 
-			init();
+			init();//初始化源数据库、目标数据库的连接
 			tempTable = createTempTable();
 			prepareAndLockLog(tempTable,stopTime);
 

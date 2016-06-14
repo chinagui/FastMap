@@ -18,7 +18,7 @@ import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.Page;
-import com.navinfo.dataservice.commons.util.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
 import net.sf.json.JSONObject;
 
@@ -33,14 +33,12 @@ public class ${modelClassName}Service {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
 	
-	public void create(JSONObject json)throws ServiceException{
+	public void create(${modelClassName}  bean)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();	
-			${modelClassName}  bean = (${modelClassName})JSONObject.toBean(json, ${modelClassName}.class);	
+			conn = DBConnector.getInstance().getManConnection();	
 			
 			String createSql = "insert into ${tableName} (<#list columns as column><#if column?is_first>${column.name}<#else>, ${column.name}</#if></#list>) values(<#list columns as column><#if column?is_first>?<#else>,?</#if></#list>)";			
 			run.update(conn, 
@@ -55,18 +53,15 @@ public class ${modelClassName}Service {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public void update(JSONObject json)throws ServiceException{
+	public void update(${modelClassName} bean)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();	
-			JSONObject obj = JSONObject.fromObject(json);	
-			${modelClassName}  bean = (${modelClassName})JSONObject.toBean(obj, ${modelClassName}.class);	
+			conn = DBConnector.getInstance().getManConnection();
 			
-			String updateSql = "update ${tableName} set <#list columns as column><#if column?is_first>${column.name}=?<#else>, ${column.name}=?</#if></#list> where 1=1 <#list columns as column><#if column?is_first>${column.name}=?<#else> and ${column.name}=?</#if></#list>";
-			List<Object> values=new ArrayList();
+			String updateSql = "update ${tableName} set <#list columns as column><#if column?is_first>${column.name}=?<#else>, ${column.name}=?</#if></#list> where 1=1 ";
+			List<Object> values=new ArrayList<Object>();
 			<#list columns as column>
 			if (bean!=null&&bean.get${column.camelName?cap_first}()!=null && StringUtils.isNotEmpty(bean.get${column.camelName?cap_first}().toString())){
 				updateSql+=" and ${column.name}=? ";
@@ -75,7 +70,7 @@ public class ${modelClassName}Service {
 			</#list>				
 			run.update(conn, 
 					   updateSql, 
-					   <#list columns as column><#if column?is_first>bean.get${column.camelName?cap_first}() <#else>,bean.get${column.camelName?cap_first}()</#if></#list>,
+					   values.toArray(),
 					   values.toArray()
 					   );
 		}catch(Exception e){
@@ -86,18 +81,15 @@ public class ${modelClassName}Service {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public void delete(JSONObject json)throws ServiceException{
+	public void delete(${modelClassName} bean)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();	
-			JSONObject obj = JSONObject.fromObject(json);	
-			${modelClassName}  bean = (${modelClassName})JSONObject.toBean(obj, ${modelClassName}.class);	
+			conn = DBConnector.getInstance().getManConnection();
 			
 			String deleteSql = "delete from  ${tableName} where 1=1 ";
-			List<Object> values=new ArrayList();
+			List<Object> values=new ArrayList<Object>();
 			<#list columns as column>
 			if (bean!=null&&bean.get${column.camelName?cap_first}()!=null && StringUtils.isNotEmpty(bean.get${column.camelName?cap_first}().toString())){
 				deleteSql+=" and ${column.name}=? ";
@@ -118,17 +110,14 @@ public class ${modelClassName}Service {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public Page list(JSONObject json ,final int currentPageNum)throws ServiceException{
+	public Page list(${modelClassName} bean ,final int currentPageNum)throws ServiceException{
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();	
-			JSONObject obj = JSONObject.fromObject(json);	
-			${modelClassName}  bean = (${modelClassName})JSONObject.toBean(obj, ${modelClassName}.class);
+			conn = DBConnector.getInstance().getManConnection();
 			
 			String selectSql = "select * from ${tableName} where 1=1 ";
-			List<Object> values=new ArrayList();
+			List<Object> values=new ArrayList<Object>();
 			<#list columns as column>
 			if (bean!=null&&bean.get${column.camelName?cap_first}()!=null && StringUtils.isNotEmpty(bean.get${column.camelName?cap_first}().toString())){
 				selectSql+=" and ${column.name}=? ";
@@ -137,15 +126,15 @@ public class ${modelClassName}Service {
 			</#list>
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
 				public Page handle(ResultSet rs) throws SQLException {
-					List list = new ArrayList();
+					List<${modelClassName}> list = new ArrayList<${modelClassName}>();
 		            Page page = new Page(currentPageNum);
 					while(rs.next()){
-						HashMap map = new HashMap();
+						${modelClassName} model = new ${modelClassName}();
 						page.setTotalCount(rs.getInt(QueryRunner.TOTAL_RECORD_NUM));
 						<#list columns as column>
-						map.put("${column.camelName}", rs.get${column.sqlType?cap_first}("${column.name}"));
+						model.set${column.camelName?cap_first}(rs.get${column.sqlType?cap_first}("${column.name}"));
 						</#list>
-						list.add(map);
+						list.add(model);
 					}
 					page.setResult(list);
 					return page;
@@ -167,32 +156,29 @@ public class ${modelClassName}Service {
 		}
 		
 	}
-	public List<HashMap> list(JSONObject json)throws ServiceException{
+	public List<${modelClassName}> list(${modelClassName} bean)throws ServiceException{
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();	
+			conn = DBConnector.getInstance().getManConnection();	
 					
-			JSONObject obj = JSONObject.fromObject(json);	
-			${modelClassName}  bean = (${modelClassName})JSONObject.toBean(obj, ${modelClassName}.class);	
 			String selectSql = "select * from ${tableName} where 1=1 ";
-			List<Object> values=new ArrayList();
+			List<Object> values=new ArrayList<Object>();
 			<#list columns as column>
 			if (bean!=null&&bean.get${column.camelName?cap_first}()!=null && StringUtils.isNotEmpty(bean.get${column.camelName?cap_first}().toString())){
 				selectSql+=" and ${column.name}=? ";
 				values.add(bean.get${column.camelName?cap_first}());
 			};
 			</#list>
-			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
-				public List<HashMap> handle(ResultSet rs) throws SQLException {
-					List<HashMap> list = new ArrayList<HashMap>();
+			ResultSetHandler<List<${modelClassName}>> rsHandler = new ResultSetHandler<List<${modelClassName}>>(){
+				public List<${modelClassName}> handle(ResultSet rs) throws SQLException {
+					List<${modelClassName}> list = new ArrayList<${modelClassName}>();
 					while(rs.next()){
-						HashMap<String,Object> map = new HashMap<String,Object>();
+						${modelClassName} model = new ${modelClassName}();
 						<#list columns as column>
-						map.put("${column.camelName}", rs.get${column.sqlType?cap_first}("${column.name}"));
+						model.set${column.camelName?cap_first}(rs.get${column.sqlType?cap_first}("${column.name}"));
 						</#list>
-						list.add(map);
+						list.add(model);
 					}
 					return list;
 				}
@@ -212,34 +198,41 @@ public class ${modelClassName}Service {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public HashMap query(JSONObject json)throws ServiceException{
+	public ${modelClassName} query(${modelClassName} bean)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = MultiDataSourceFactory.getInstance().getManDataSource()
-					.getConnection();	
-			JSONObject obj = JSONObject.fromObject(json);	
-			${modelClassName}  bean = (${modelClassName})JSONObject.toBean(obj, ${modelClassName}.class);	
+			conn = DBConnector.getInstance().getManConnection();	
 			
-			String selectSql = "select * from ${tableName} where <#list columns as column><#if column?is_first>${column.name}=?<#else> and ${column.name}=?</#if></#list>";
-			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>(){
-				public HashMap handle(ResultSet rs) throws SQLException {
+			String selectSql = "select * from ${tableName} where 1=1 ";
+			List<Object> values=new ArrayList<Object>();
+			<#list columns as column>
+			if (bean!=null&&bean.get${column.camelName?cap_first}()!=null && StringUtils.isNotEmpty(bean.get${column.camelName?cap_first}().toString())){
+				selectSql+=" and ${column.name}=? ";
+				values.add(bean.get${column.camelName?cap_first}());
+			};
+			</#list>
+			selectSql+=" and rownum=1";
+			ResultSetHandler<${modelClassName}> rsHandler = new ResultSetHandler<${modelClassName}>(){
+				public ${modelClassName} handle(ResultSet rs) throws SQLException {
 					while(rs.next()){
-						HashMap map = new HashMap();
+						${modelClassName} model = new ${modelClassName}();
 						<#list columns as column>
-						map.put("${column.camelName}", rs.get${column.sqlType?cap_first}("${column.name}"));
+						model.set${column.camelName?cap_first}(rs.get${column.sqlType?cap_first}("${column.name}"));
 						</#list>
-						return map;
+						return model;
 					}
 					return null;
 				}
 	    		
 	    	}		;				
-			return run.query(conn, 
-					   selectSql,
-					   rsHandler, 
-					   <#list modelAttrs as modelAttr>bean.get${modelAttr}()<#sep>, </#list>);
+			if (values.size()==0){
+	    		return run.query(conn, selectSql, rsHandler
+						);
+	    	}
+	    	return run.query(conn, selectSql, rsHandler,values.toArray()
+					);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

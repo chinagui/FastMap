@@ -10,25 +10,15 @@ import java.util.Set;
  *  
  */
 public class ExpMainConfig {
-	Set<String> expMode;//copy,delete,cut
 	Set<String> feature;//all,poi,link,face,pt,...
 	Set<String> condition;//full,by-mesh,by-area,...
 	String replacerClassName;
 	String mainScript;
 	
-	public ExpMainConfig(Set<String> expMode,Set<String> feature,Set<String> condition,String mainScript){
-		this.expMode=expMode;
+	public ExpMainConfig(Set<String> feature,Set<String> condition,String mainScript){
 		this.feature=feature;
 		this.condition=condition;
 		this.mainScript=mainScript;
-	}
-
-	public Set<String> getExpMode() {
-		return expMode;
-	}
-
-	public void setExpMode(Set<String> expMode) {
-		this.expMode = expMode;
 	}
 
 	public Set<String> getFeature() {

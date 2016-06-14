@@ -197,6 +197,8 @@ public class IxPoi implements IObj {
 	private int indoor = 0;
 	//VIP表示
 	private String vipFlag;
+	// 更新时间
+	private String uDate;
 			
 
 	public String getLevel() {
@@ -229,6 +231,14 @@ public class IxPoi implements IObj {
 
 	public void setVipFlag(String vipFlag) {
 		this.vipFlag = vipFlag;
+	}
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
 	}
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();

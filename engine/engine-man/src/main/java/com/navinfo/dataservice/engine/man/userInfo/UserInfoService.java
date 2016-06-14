@@ -443,7 +443,7 @@ public class UserInfoService {
 		if (StringUtils.equals(bean.getUserPassword(), pwdInDb)){
 			//将device信息写入到数据库user_device中；
 			UserDevice device = new UserDevice();
-			String devicePlatform;
+			String devicePlatform = bean.getDevicePlatform();
 			device.setDevicePlatform(devicePlatform);
 			//生成AccessToken信息返回
 		}else{//如果传入的用户密码和数据库中的不匹配，则报错

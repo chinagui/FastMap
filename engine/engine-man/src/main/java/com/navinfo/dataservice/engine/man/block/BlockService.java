@@ -1,13 +1,14 @@
 package com.navinfo.dataservice.engine.man.block;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.text.Format;
-import java.text.SimpleDateFormat;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -19,8 +20,6 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
-import com.navinfo.dataservice.engine.man.block.Block;
-import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -40,17 +39,35 @@ import oracle.sql.CLOB;
 public class BlockService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
-	public void create(JSONObject json) throws ServiceException {
+	public void batchOpen(long userId,JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
 			// 鎸佷箙鍖�
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			Block bean = (Block) JSONObject.toBean(json, Block.class);
+			JSONArray blockArray=json.getJSONArray("blocks");
+			
+			Date date = new Date(new java.util.Date().getTime());
 
-			String createSql = "insert into BLOCK (BLOCK_ID, CITY_ID, BLOCK_NAME, GEOMETRY, PLAN_STATUS) values(?,?,?,?,?)";
-			run.update(conn, createSql, bean.getBlockId(), bean.getCityId(), bean.getBlockName(), bean.getGeometry(),
-					bean.getPlanStatus());
+			String createSql = "insert into block_man (BLOCK_MAN_ID, CREATE_USER_ID, CREATE_DATE,BLOCK_ID,COLLECT_GROUP_ID, COLLECT_PLAN_START_DATE,"
+					+ "COLLECT_PLAN_END_DATE,DAY_EDIT_GROUP_ID,DAY_EDIT_PLAN_START_DATE,DAY_EDIT_PLAN_END_DATE,MONTH_EDIT_GROUP_ID,"
+					+ "MONTH_EDIT_PLAN_START_DATE,MONTH_EDIT_PLAN_END_DATE,DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,"
+					+ "MONTH_PRODUCE_PLAN_START_DATE,MONTH_PRODUCE_PLAN_END_DATE) "
+					+ "values(BLOCK_MAN_SEQ.NEXTVAL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			
+			Object[][] param = new Object[blockArray.size()][];
+			for (int i = 0; i < blockArray.size(); i++) {
+	               JSONObject block = blockArray.getJSONObject(i);
+	               Object[] obj = new Object[]{userId,date,block.getInt("blockId"),block.getInt("collectGroupId"),block.getString("collectPlanStartDate"),
+	            		   block.getString("collectPlanEndDate"),block.getInt("DayEditGroupId"),block.getString("DayEditPlanStartDate"),
+	            		   block.getString("DayEditPlanEndDate"),block.getInt("MonthEditGroupId"),block.getString("MonthEditPlanStartDate"),
+	            		   block.getString("MonthEditPlanEndDate"),block.getString("DayProducePlanStartDate"),block.getString("DayProducePlanEndDate")
+	            		   ,block.getString("MonthProducePlanStartDate"),block.getString("MonthProducePlanEndDate")};
+	               param[i]=obj;                   
+	            }
+			
+			run.batch(conn,createSql, param);
+			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

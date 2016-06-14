@@ -14,6 +14,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 
 import net.sf.json.JSONArray;
@@ -43,7 +44,9 @@ public class BlockController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			service.create(dataJson);			
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
+			service.batchOpen(userId,dataJson);			
 			return new ModelAndView("jsonView", success("创建成功"));
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);

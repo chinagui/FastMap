@@ -27,7 +27,7 @@ public class ChainSelector {
 	 */
 	public JSONArray getChainByKindCode(String kindCode) throws Exception {
 
-		String sql = "select a.chain_name, a.chain_code from sc_point_chain_code a, sc_point_kind_new b where a.chain_code = b.r_kind and b.poikind = :1";
+		String sql = "select a.chain_name, a.chain_code from sc_point_chain_code a, sc_point_kind_new b where a.chain_code = b.r_kind and b.poikind = ?";
 
 		QueryRunner run = new QueryRunner();
 		
@@ -67,20 +67,12 @@ public class ChainSelector {
 	public String getLevelByChain(String chain,String kindCode) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append("select a.\"LEVEL\" from sc_fm_control a,sc_point_kind_new b where a.kind_code = b.poikind");
-		
-		if(chain != null)
-		{
-			sb.append(" and b.r_kind = "+chain);
-		}
-		if(kindCode != null)
-		{
-			sb.append(" and a.kind_code = "+kindCode);
-		}
+		sb.append("select a.\"LEVEL\" from sc_fm_control a,sc_point_kind_new b where "
+				+ "a.kind_code = b.poikind and b.r_kind = ? and a.kind_code = ?");
 
 		QueryRunner run = new QueryRunner();
 		
-		Connection conn = DBConnector.getInstance().getManConnection();
+		Connection conn = DBConnector.getInstance().getMetaConnection();
 		
 		ResultSetHandler<String> handler = new ResultSetHandler<String>() {
 			
@@ -102,6 +94,6 @@ public class ChainSelector {
 			}
 		};
 		
-		return run.query(conn,sb.toString(), handler);
+		return run.query(conn,sb.toString(), handler,chain,kindCode);
 	}
 }

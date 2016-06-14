@@ -7,12 +7,17 @@ import java.sql.SQLException;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.exception.ServiceException;
 
 public class KindCodeSelector {
+	private Logger log = LoggerRepos.getLogger(this.getClass());
 
 	/**
 	 * 用SC_POINT_POICODE_NEW的 CLASS_CODE去重，id与code均为CLASS_CODE，name为CLASS_NAME
@@ -194,10 +199,11 @@ public class KindCodeSelector {
 		builder.append(" SELECT chain,kind_code,\"LEVEL\",\"EXTEND\" ");
 		builder.append(" FROM sc_fm_control ");
 		builder.append(" WHERE kind_code = :1");
+		 Connection conn = DBConnector.getInstance().getMetaConnection();
 		try{
 			QueryRunner runner = new QueryRunner();
 		    return runner.query(DBConnector.getInstance().getMetaConnection(),builder.toString(), new ResultSetHandler<JSONObject>(){
-		    	JSONObject  jsonObject =null;
+		    	JSONObject  jsonObject = new JSONObject();
 		    	@Override
 				public JSONObject handle(ResultSet rs) throws SQLException {
 					if(rs.next()){
@@ -205,18 +211,16 @@ public class KindCodeSelector {
 						jsonObject.put("kindId", rs.getString("kind_code"));
 						jsonObject.put("extend", rs.getString("extend"));
 		
-					}else{
-						try {
-							throw new Exception("对应KIND_CODE数据不存在不存在!");
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
 					}
 					return jsonObject;
 				}
 			},kindCode);
-		}catch (Exception e) {
-			throw e;
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 

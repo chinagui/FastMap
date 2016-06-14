@@ -1139,5 +1139,56 @@ public class PidService {
 		return pid;
 
 	}
+	
+	/**
+	 * 申请PoiPid
+	 */
+	public synchronized int applyPoiPid() throws Exception {
+
+		Connection conn = null;
+
+		int pid = 0;
+		try {
+			conn = PidServicePool.getInstance().getConnection();
+
+			conn.setAutoCommit(false);
+
+			String pidRange = PidServiceUtils.getPidRange(conn,
+					PidSequenceName.poiPidName);
+
+			if (pidRange != null) {
+				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
+
+				if (prc.getPid() != -1) {
+					PidServiceUtils.updatePidRange(conn,
+							PidSequenceName.poiPidName, prc.getPidRange());
+
+					pid = prc.getPid();
+				} else {
+					// 剩餘範圍不足,需要從ID分配器搬運新的PID
+					pid = PidServiceUtils.transportPid(conn, 5000,
+							PidSequenceName.poiPidName);
+				}
+			} else {
+				// 不存在對應的序列,報錯且拋出異常
+
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.poiPidName);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return pid;
+
+	}
 
 }

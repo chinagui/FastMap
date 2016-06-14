@@ -46,7 +46,7 @@ public class DbService {
 	
 	protected String mainSql = "SELECT D.DB_ID,D.DB_NAME,D.DB_USER_NAME,D.DB_USER_PASSWD,D.DB_ROLE,D.BIZ_TYPE,D.TABLESPACE_NAME,D.GDB_VERSION,D.DB_STATUS,D.CREATE_TIME,D.DESCP,S.SERVER_ID,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT FROM DB_HUB D,DB_SERVER S ";
 
-	public DbInfo createDb(String dbName,String userName,String bizType,String descp,String gdbVersion,String refDbName,String refUserName,String refDbType)throws DataHubException{
+	public DbInfo createDb(String dbName,String userName,String userPasswd,String bizType,String descp,String gdbVersion,String refDbName,String refUserName,String refDbType)throws DataHubException{
 		String strategyType = null;
 		Map<String,String> strategyParam = new HashMap<String,String>();
 		if(StringUtils.isNotEmpty(refDbName)&&StringUtils.isNotEmpty(refDbType)){
@@ -65,10 +65,10 @@ public class DbService {
 			log.debug("使用随机策略创建新库。");
 		}
 		
-		return createDb(dbName,userName,bizType,descp, gdbVersion, strategyType, strategyParam);
+		return createDb(dbName,userName,userPasswd,bizType,descp, gdbVersion, strategyType, strategyParam);
 	}
 	
-	private DbInfo createDb(String dbName,String userName,String bizType,String descp,String gdbVersion,String strategyType,Map<String,String> strategyParamMap)throws DataHubException{
+	private DbInfo createDb(String dbName,String userName,String userPasswd,String bizType,String descp,String gdbVersion,String strategyType,Map<String,String> strategyParamMap)throws DataHubException{
 		DbInfo db = null;
 		Connection conn = null;
 		int dbId = 0;
@@ -95,12 +95,12 @@ public class DbService {
 				//写入记录
 				String insSql = "insert into db_hub(db_id,db_name,db_user_name,db_user_passwd,db_role,biz_type,gdb_version,server_id,db_status,create_time,descp)" +
 						"values(DB_SEQ.nextval,?,?,?,0,?,?,?,1,sysdate,?)";
-				run.update(conn, insSql, dbName,dbName,dbName,bizType,gdbVersion,server.getSid(),descp);
+				run.update(conn, insSql, dbName,userName,userName,bizType,gdbVersion,server.getSid(),descp);
 				conn.commit();
 			}
 			dbId = run.queryForInt(conn, "SELECT DB_SEQ.CURRVAL FROM DUAL");
 			//由工厂去创建
-			db = DbFactory.getInstance().create(dbId,dbName, bizType, gdbVersion, server);
+			db = DbFactory.getInstance().create(dbId,dbName,userName,userPasswd, bizType, gdbVersion, server);
 			//创建完成，更新db状态
 			String updateSql = "UPDATE DB_HUB SET TABLESPACE_NAME=?,DB_STATUS=2 WHERE DB_ID=?";
 			run.update(conn, updateSql,db.getTablespaceName(),db.getDbId());

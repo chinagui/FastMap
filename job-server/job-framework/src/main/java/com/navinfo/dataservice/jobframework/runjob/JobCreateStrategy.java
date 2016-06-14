@@ -17,6 +17,8 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobTypeNotFoundException;
 
+import net.sf.json.JSONObject;
+
 /** 
 * @ClassName: JobCreateStrategy 
 * @author Xiao Xiaowen 
@@ -38,7 +40,7 @@ public class JobCreateStrategy {
 		AbstractJob job = null;
 		try{
 			job = (AbstractJob)clazz.getConstructor(JobInfo.class).newInstance(jobInfo);
-			job.setRequest(createJobRequest(jobInfo));
+			job.setRequest(createJobRequest(jobInfo.getType(),jobInfo.getRequest()));
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			throw new JobCreateException(e.getMessage(),e);
@@ -56,18 +58,18 @@ public class JobCreateStrategy {
 		return job;
 	}
 	
-	public static AbstractJobRequest createJobRequest(JobInfo jobInfo)throws JobTypeNotFoundException,JobCreateException{
+	public static AbstractJobRequest createJobRequest(String jobType,JSONObject request)throws JobTypeNotFoundException,JobCreateException{
 		if(jobClassMap==null){
 			loadMapping();
 		}
-		Class<?> clazz = requestClassMap.get(jobInfo.getType().toString());
+		Class<?> clazz = requestClassMap.get(jobType);
 		if(clazz==null){
 			throw new JobTypeNotFoundException("未找到对应的任务类型的reques类名");
 		}
 		AbstractJobRequest req = null;
 		try{
 			req = (AbstractJobRequest)clazz.getConstructor().newInstance();
-			req.parseByJsonConfig(jobInfo.getRequest());
+			req.parseByJsonConfig(request);
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			throw new JobCreateException(e.getMessage(),e);

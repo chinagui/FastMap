@@ -12,12 +12,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.beans.factory.annotation.Autowired; 
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.database.Page;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /** 
@@ -53,6 +55,7 @@ public class TaskController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			long userId=tokenObj.getUserId();
+			//long userId=3;
 			service.create(userId,dataJson);
 			return new ModelAndView("jsonView", success("创建成功"));
 		}catch(Exception e){
@@ -92,7 +95,8 @@ public class TaskController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
-			HashMap<String,String> errorTask=service.close(dataJson);			
+			JSONArray taskIds=dataJson.getJSONArray("taskIds");
+			HashMap<String,String> errorTask=service.close(JSONArray.toList(taskIds));			
 			return new ModelAndView("jsonView", success(errorTask));
 		}catch(Exception e){
 			log.error("删除失败，原因："+e.getMessage(), e);
@@ -102,6 +106,7 @@ public class TaskController extends BaseController {
 	/*
 	 * 规划管理页面--任务管理--查看任务页面
 	 */
+	@SuppressWarnings("rawtypes")
 	@RequestMapping(value = "/task/list")
 	public ModelAndView list(HttpServletRequest request){
 		try{	
@@ -123,7 +128,8 @@ public class TaskController extends BaseController {
 				curPageSize = Integer.parseInt(curSize);
 			}
 			Page data = service.list(condition,order,curPageNum,curPageSize);			
-			return new ModelAndView("jsonView", success(data.getResult()));
+			return new ModelAndView("jsonView", success(JsonOperation.beanToJsonList((List)data.getResult())));
+			//return new ModelAndView("jsonView", success(data.getResult()));
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

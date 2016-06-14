@@ -35,7 +35,12 @@ import net.sf.json.JSONObject;
 public class TaskService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
-	
+	/**
+	 * 根据用户id，与tasks的json对象批量创建task
+	 * @param userId
+	 * @param json
+	 * @throws Exception
+	 */
 	public void create(long userId,JSONObject json) throws Exception{
 		Connection conn = null;
 		try{
@@ -48,9 +53,7 @@ public class TaskService {
 				JSONObject taskJson = taskArray.getJSONObject(i);
 				Task bean = (Task) JsonOperation.jsonToBean(taskJson,Task.class);
 				bean.setCreateUserId((int) userId);
-				TaskOperation.insertTask(conn, bean);
-				TaskOperation.updateLatest(conn,bean.getCityId());
-				CityOperation.updatePlanStatus(conn,bean.getCityId(),1);
+				createWithBean(conn,bean);
 			}			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -58,6 +61,23 @@ public class TaskService {
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	/**
+	 * 根据task对象生成task数据，并修改相关表状态
+	 * @param conn
+	 * @param bean
+	 * @throws Exception
+	 */
+	public void createWithBean(Connection conn,Task bean) throws Exception{
+		try{
+			TaskOperation.updateLatest(conn,bean.getCityId());
+			TaskOperation.insertTask(conn, bean);
+			CityOperation.updatePlanStatus(conn,bean.getCityId(),1);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}
 	}
 	
@@ -74,8 +94,7 @@ public class TaskService {
 				JSONObject taskJson = taskArray.getJSONObject(i);
 				Task bean=(Task) JsonOperation.jsonToBean(taskJson,Task.class);
 				TaskOperation.updateTask(conn, bean);				
-			}
-			
+			}			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -119,7 +138,7 @@ public class TaskService {
 					if ("monthProducePlanStartDate".equals(key)) {selectSql+=" order by MONTH_PRODUCE_PLAN_END_DATE";break;}
 					}
 			}
-			return TaskOperation.selectTaskBySql(conn, selectSql, null,currentPageNum,pageSize);
+			return TaskOperation.selectTaskBySql2(conn, selectSql, null,currentPageNum,pageSize);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -130,14 +149,14 @@ public class TaskService {
 	}
 	
 	
-	public HashMap<String,String> close(JSONObject json)throws Exception{
+	public HashMap<String,String> close(List<Integer> taskidList)throws Exception{
 		Connection conn = null;
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();	
-			JSONArray taskIds=json.getJSONArray("taskIds");
-			String taskIdStr=taskIds.toString().replace("[", "").replace("]", "").replace("\"", "");
+			
+			String taskIdStr=taskidList.toString().replace("[", "").replace("]", "").replace("\"", "");
 			//判断任务是否可关闭
 			String checkSql="SELECT T.TASK_ID, '有未关闭的BLOCK，任务无法关闭'"
 					+ "  FROM TASK T, BLOCK B"
@@ -153,7 +172,7 @@ public class TaskService {
 			List<List<String>> checkResult=DbOperation.exeSelectBySql(conn, checkSql, null);
 			JSONArray closeTask=new JSONArray();
 			List<Integer> newTask=new ArrayList<Integer>();
-			newTask=JSONArray.toList(taskIds);
+			newTask.addAll(taskidList);
 			HashMap<String,String> checkMap=new HashMap<String,String>();
 			if(checkResult.size()>0){
 				List<Integer> errorTask=new ArrayList<Integer>();

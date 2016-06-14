@@ -1,15 +1,6 @@
 package com.navinfo.dataservice.engine.man.task;
 
-import java.lang.reflect.Field;
 import java.sql.Timestamp;
-import java.util.Iterator;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.util.JSONUtils;
-
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.vividsolutions.jts.geom.Geometry;
 
 
 /** 
@@ -18,7 +9,7 @@ import com.vividsolutions.jts.geom.Geometry;
 * @date 2016-06-06 06:12:30 
 * @Description: TODO
 */
-public class Task  {
+public class Task{
 	private Integer taskId ;
 	private Integer cityId ;
 	private Integer createUserId ;
@@ -81,7 +72,7 @@ public class Task  {
 	public void setCreateUserId(Integer createUserId) {
 		this.createUserId = createUserId;
 	}
-	public Object getCreateDate() {
+	public Timestamp getCreateDate() {
 		return createDate;
 	}
 	public void setCreateDate(Timestamp createDate) {
@@ -325,8 +316,5 @@ public class Task  {
 		} else if (!latest.equals(other.latest))
 			return false;
 		return true;
-	}
-	
-	
-	
+	}	
 }

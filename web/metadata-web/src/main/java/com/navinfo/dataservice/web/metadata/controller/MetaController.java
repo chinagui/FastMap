@@ -11,8 +11,9 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
-import org.navinfo.dataservice.engine.meta.PoiCode.KindCodeSelector;
+
 import org.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
+import org.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
 import org.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import org.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
 import org.navinfo.dataservice.engine.meta.patternimage.PatternImageSelector;
@@ -370,9 +371,9 @@ public class MetaController extends BaseController {
 
 			String kindId = jsonReq.getString("kindCode");
 
-			ScPointAdminArea selector = new ScPointAdminArea();
+			KindCodeSelector selector = new KindCodeSelector();
 
-			JSONArray data = selector.searchFoodType(kindId);
+			JSONObject data = selector.searchkindLevel(kindId);
 
 			return new ModelAndView("jsonView", success(data));
 

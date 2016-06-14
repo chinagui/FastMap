@@ -37,8 +37,8 @@ public class DbFactory {
 		return new DbInfo(dbId,dbName,dbUserName,dbUserPasswd,dbRole,tablespaceName,bizType
 				,dbServer,gdbVersion,dbStatus,createTime,descp);
 	}
-	public DbInfo create(int dbId,String dbName,String bizType,String gdbVersion,DbServer dbServer)throws DataHubException{
-		DbInfo db = new DbInfo(dbId,dbName,bizType,gdbVersion,dbServer,1);;
+	public DbInfo create(int dbId,String dbName,String userName,String userPasswd,String bizType,String gdbVersion,DbServer dbServer)throws DataHubException{
+		DbInfo db = new DbInfo(dbId,dbName,userName,userPasswd,bizType,gdbVersion,dbServer,1);;
 		DbPhysicalCreator physicalCreator = null;
 		if(DbServerType.TYPE_MONGODB.equals(dbServer.getType())){
 			physicalCreator = new MongoDbPhysicalCreator();

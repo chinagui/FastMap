@@ -25,10 +25,12 @@ public class DbInfo implements Serializable{
 	protected Date createTime;
 	protected String descp;
 	protected DbServer dbServer;
-	public DbInfo(int dbId,String dbName,String bizType,String gdbVersion
+	public DbInfo(int dbId,String dbName,String dbUserName,String dbUserPasswd,String bizType,String gdbVersion
 			,DbServer dbServer,int dbStatus){
 		this.dbId=dbId;
 		this.dbName=dbName;
+		this.dbUserName=dbUserName;
+		this.dbUserPasswd=dbUserPasswd;
 		this.bizType=bizType;
 		this.dbServer=dbServer;
 		this.gdbVersion=gdbVersion;
@@ -140,4 +142,15 @@ public class DbInfo implements Serializable{
 	public void setDbServer(DbServer dbServer) {
 		this.dbServer = dbServer;
 	}
+	@Override
+	public String toString() {
+		return "DbInfo [dbId=" + dbId + ", dbName=" + dbName + ", dbUserName="
+				+ dbUserName + ", dbUserPasswd=" + dbUserPasswd + ", dbRole="
+				+ dbRole + ", tablespaceName=" + tablespaceName + ", bizType="
+				+ bizType + ", gdbVersion=" + gdbVersion + ", dbStatus="
+				+ dbStatus + ", createTime=" + createTime + ", descp=" + descp
+				+ ", dbServer=" + dbServer + "]";
+	}
+	
+	
 }

@@ -9,14 +9,12 @@ import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.man.task.Task;
@@ -101,10 +99,6 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	
-	
-	public List<HashMap> listByWkt(JSONObject json)throws ServiceException{
-		
 		Connection conn = null;
 		try{
 			//持久化
@@ -144,8 +138,6 @@ public class SubtaskService {
 				}
 	    		
 	    	};
-	    	return run.query(conn, querySql, rsHandler);
-			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -203,8 +195,6 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	
-	
 	public void delete(JSONObject json)throws ServiceException{
 		Connection conn = null;
 		try{
@@ -507,9 +497,10 @@ public class SubtaskService {
 				}
 	    		
 	    	};		
-	    	
-			return run.query(conn, selectSql,rsHandler);
-			
+			return run.query(conn, 
+					   selectSql,
+					   rsHandler, 
+					   bean.getSubtaskId(), bean.getBlockId(), bean.getTaskId(), bean.getGeometry(), bean.getStage(), bean.getType(), bean.getCreateUserId(), bean.getCreateDate(), bean.getExeUserId(), bean.getStatus(), bean.getPlanStartDate(), bean.getPlanEndDate(), bean.getStartDate(), bean.getEndDate(), bean.getDescp());
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

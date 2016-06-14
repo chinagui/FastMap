@@ -281,16 +281,11 @@ public class RegionService {
 		}
 	}
 
-	public Region query(JSONObject json) throws ServiceException {
+	public Region query(Region bean ) throws ServiceException {
 		Connection conn = null;
 		try {
-			// 持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			
-			JSONObject obj = JSONObject.fromObject(json);
-			Region bean = (Region) JSONObject.toBean(obj, Region.class);
-
 			String selectSql = "select * from Region where REGION_ID=?";
 			ResultSetHandler<Region> rsHandler = new ResultSetHandler<Region>() {
 				public Region handle(ResultSet rs) throws SQLException {

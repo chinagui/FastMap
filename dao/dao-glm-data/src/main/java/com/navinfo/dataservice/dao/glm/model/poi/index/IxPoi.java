@@ -269,7 +269,7 @@ public class IxPoi implements IObj {
 
 	public Map<String, IxPoiChildren> childrenMap = new HashMap<String, IxPoiChildren>();
 	
-	private List<IRow> photoes = new ArrayList<IRow>();
+	private List<IRow> photos = new ArrayList<IRow>();
 
 	public Map<String, IxPoiPhoto> photoMap = new HashMap<String, IxPoiPhoto>();
 
@@ -781,12 +781,12 @@ public class IxPoi implements IObj {
 		this.parents = parents;
 	}
 
-	public List<IRow> getPhotoes() {
-		return photoes;
+	public List<IRow> getPhotos() {
+		return photos;
 	}
 
-	public void setPhotoes(List<IRow> photoes) {
-		this.photoes = photoes;
+	public void setPhotos(List<IRow> photos) {
+		this.photos = photos;
 	}
 
 	public List<IRow> getVideoes() {
@@ -1010,7 +1010,7 @@ public class IxPoi implements IObj {
 		children.add(this.getIcons());
 		children.add(this.getNames());
 		children.add(this.getParents());
-		children.add(this.getPhotoes());
+		children.add(this.getPhotos());
 		children.add(this.getVideoes());
 		
 		//deep
@@ -1249,9 +1249,9 @@ public class IxPoi implements IObj {
 					}
 
 					break;
-				case "photoes":
+				case "photos":
 
-					photoes.clear();
+					photos.clear();
 
 					ja = json.getJSONArray(key);
 
@@ -1262,7 +1262,7 @@ public class IxPoi implements IObj {
 
 						row.Unserialize(jo);
 
-						photoes.add(row);
+						photos.add(row);
 					}
 
 					break;

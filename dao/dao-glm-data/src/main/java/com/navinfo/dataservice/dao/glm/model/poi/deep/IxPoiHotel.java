@@ -35,7 +35,7 @@ public class IxPoiHotel implements IObj {
 	private String service;//附属服务
 	private int parking = 0;//停车服务
 	private String longDescription;//酒店介绍
-	private String longDescriptionEng;//酒店英文介绍
+	private String longDescripEng;//酒店英文介绍
 	private String  openHour;//营业时间 
 	public String getCreditCard() {
 		return creditCard;
@@ -109,13 +109,15 @@ public class IxPoiHotel implements IObj {
 		this.service = service;
 	}
 
-	public String getLongDescriptionEng() {
-		return longDescriptionEng;
+	public String getLongDescripEng() {
+		return longDescripEng;
 	}
 
-	public void setLongDescriptionEng(String longDescriptionEng) {
-		this.longDescriptionEng = longDescriptionEng;
+	public void setLongDescripEng(String longDescripEng) {
+		this.longDescripEng = longDescripEng;
 	}
+
+
 
 	private String  openHourEng;//英文版的详细营业时间的文字描述
 	private String telephone ;//电话  

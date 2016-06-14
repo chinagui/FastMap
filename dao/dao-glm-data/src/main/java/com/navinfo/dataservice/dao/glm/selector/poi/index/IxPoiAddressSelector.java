@@ -153,11 +153,11 @@ public class IxPoiAddressSelector implements ISelector {
 		
 		ixPoiAddress.setSrcFlag(resultSet.getInt("src_flag"));
 		
-		ixPoiAddress.setFullName(resultSet.getString("fullname"));
+		ixPoiAddress.setFullname(resultSet.getString("fullname"));
 		
 		ixPoiAddress.setFullnamePhonetic(resultSet.getString("fullname_phonetic"));
 		
-		ixPoiAddress.setRodeName(resultSet.getString("roadname"));
+		ixPoiAddress.setRodename(resultSet.getString("roadname"));
 		
 		ixPoiAddress.setRoadnamePhonetic(resultSet.getString("roadname_phonetic"));
 		
@@ -238,5 +238,26 @@ public class IxPoiAddressSelector implements ISelector {
 		ixPoiAddress.setAddonsPhonetic(resultSet.getString("addons_phonetic"));
 		
 		ixPoiAddress.setRowId(resultSet.getString("row_id"));
+	}
+	
+	/**
+	 * add by wangdongbin
+	 * for android download
+	 * @param id
+	 * @return IxPoiAddress
+	 * @throws Exception
+	 */
+	public List<IRow> loadByIdForAndroid(int id)throws Exception{
+		List<IRow> rows = new ArrayList<IRow>();
+		IxPoiAddress ixPoiAddress = new IxPoiAddress();
+		String sql = "SELECT fullname FROM " + ixPoiAddress.tableName() + " where poi_pid=:1 AND name_groupid=1 AND lang_code='CHI' AND u_record!=2";
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		pstmt.setInt(1, id);
+		ResultSet resultSet = pstmt.executeQuery();
+		if (resultSet.next()){
+			ixPoiAddress.setFullname(resultSet.getString("fullname"));
+		}
+		rows.add(ixPoiAddress);
+		return rows;
 	}
 }

@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 import com.navinfo.dataservice.engine.fcc.tile.TileSelector;
@@ -31,7 +33,7 @@ public class RenderController extends BaseController {
 			.getLogger(RenderController.class);
 
 	@RequestMapping(value = "/obj/getByTileWithGap")
-	public ModelAndView getObjByTile(HttpServletRequest request)
+	public void getObjByTile(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
@@ -66,24 +68,63 @@ public class RenderController extends BaseController {
 			JSONObject data = null;
 
 			if (z <= 16) {
+				
+				List<ObjType> tileTypes = new ArrayList<ObjType>();
+				
+				List<ObjType> gdbTypes = new ArrayList<ObjType>();
+				
+				for (ObjType t : types){
+					if(t == ObjType.RDLINK || t == ObjType.ADLINK || t == ObjType.RWLINK){
+						tileTypes.add(t);
+					}
+					else{
+						gdbTypes.add(t);
+					}
+				}
+				
+				if(!gdbTypes.isEmpty()){
+					
+					conn = DBConnector.getInstance().getConnectionById(dbId);
 
-				data = TileSelector.getByTiles(types, x, y, z, dbId);
+					SearchProcess p = new SearchProcess(conn);
 
+					JSONObject jo = p.searchDataByTileWithGap(gdbTypes, x, y, z, gap);
+					
+					if(data == null){
+						data = new JSONObject();
+					}
+						
+					data.putAll(jo);
+				}
+				
+				if(!tileTypes.isEmpty()){
+					JSONObject jo = TileSelector.getByTiles(tileTypes, x, y, z, dbId);
+					
+					if(data == null){
+						data = new JSONObject();
+					}
+					
+					data.putAll(jo);
+				}
+				
 			} else {
 				conn = DBConnector.getInstance().getConnectionById(dbId);
 
 				SearchProcess p = new SearchProcess(conn);
 
 				data = p.searchDataByTileWithGap(types, x, y, z, gap);
+				
 			}
-
-			return new ModelAndView("jsonView", success(data));
-
+			
+			response.getWriter().println(
+					ResponseUtils.assembleRegularResult(data));
 		} catch (Exception e) {
 
 			logger.error(e.getMessage(), e);
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage()));
+
 		} finally {
 			if (conn != null) {
 				try {

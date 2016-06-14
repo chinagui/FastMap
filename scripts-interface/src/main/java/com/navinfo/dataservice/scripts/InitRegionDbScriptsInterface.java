@@ -45,7 +45,8 @@ public class InitRegionDbScriptsInterface {
 			Assert.notNull(userNamePrefix, "userNamePrefix不能为空");
 			String gdbVersion = (String) request.get("gdbVersion");
 			Assert.notNull(gdbVersion, "gdbVersion不能为空");
-
+			
+			
 			// create_db
 //			JSONObject createDbRequest = new JSONObject();
 //			createDbRequest.put("name", dbName);

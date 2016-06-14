@@ -43,4 +43,6 @@ public class PidSequenceName {
 	
 	public static final String rdGscPidName = "SEQ_RD_GSC";
 	
+	public static final String poiPidName = "SEQ_POI";
+	
 }

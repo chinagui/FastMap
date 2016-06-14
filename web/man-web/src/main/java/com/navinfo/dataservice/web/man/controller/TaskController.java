@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.web.man.controller;
 
+import java.util.HashMap;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -76,21 +79,16 @@ public class TaskController extends BaseController {
 	}
 	/*
 	 * 规划管理页面--任务管理--关闭任务
-	 * 关闭按钮：
-	 * 1.选中需要关闭的任务，点击“关闭任务”按钮，后台判断该任务是否可以关闭
-	 * 【关闭原则：判断该city下面的所有block均关闭且所有的月编区域作业子任务均关闭，则可以关闭任务】：
-	 * (1)如果可以关闭，页面弹出提示框
-	 * (2)不可以关闭，页面弹出提示框
 	 */
 	@RequestMapping(value = "/task/close")
 	public ModelAndView delete(HttpServletRequest request){
 		try{			
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
-			service.close(dataJson);			
-			return new ModelAndView("jsonView", success("删除成功"));
+			HashMap<String,String> errorTask=service.close(dataJson);			
+			return new ModelAndView("jsonView", success(errorTask));
 		}catch(Exception e){
 			log.error("删除失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
@@ -101,22 +99,26 @@ public class TaskController extends BaseController {
 	 */
 	@RequestMapping(value = "/task/list")
 	public ModelAndView list(HttpServletRequest request){
-		try{			
-			JSONObject condition = JSONObject.fromObject(URLDecode(request.getParameter("condition")));			
-			JSONObject order = JSONObject.fromObject(URLDecode(request.getParameter("order")));	
+		try{	
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
+			
+			
+
+			JSONObject condition = dataJson.getJSONObject("condition");			
+			JSONObject order = dataJson.getJSONObject("order");	
 			
 			int curPageNum= 1;//默认为第一页
-			String curPage= request.getParameter("pageNum");
+			String curPage= dataJson.getString("pageNum");
 			if (StringUtils.isNotEmpty(curPage)){
 				curPageNum = Integer.parseInt(curPage);
 			}
 			int curPageSize= 20;//默认为20条记录/页
-			String curSize= request.getParameter("pageSize");
+			String curSize= dataJson.getString("pageSize");
 			if (StringUtils.isNotEmpty(curSize)){
 				curPageSize = Integer.parseInt(curSize);
 			}
 			Page data = service.list(condition,order,curPageNum,curPageSize);			
-			return new ModelAndView("jsonView", success(data));
+			return new ModelAndView("jsonView", success(data.getResult()));
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

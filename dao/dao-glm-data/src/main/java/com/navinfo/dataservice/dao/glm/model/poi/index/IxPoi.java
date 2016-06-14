@@ -199,7 +199,9 @@ public class IxPoi implements IObj {
 	private String vipFlag;
 	// 更新时间
 	private String uDate;
-			
+	
+	//POI状态：1：待作业,2：已作业,3：已提交
+	private int status;
 
 	public String getLevel() {
 		return level;
@@ -207,6 +209,14 @@ public class IxPoi implements IObj {
 
 	public void setLevel(String level) {
 		this.level = level;
+	}
+	
+	public int getStatus() {
+		return status;
+	}
+
+	public void setStatus(int status) {
+		this.status = status;
 	}
 
 	public String getSportsVenue() {

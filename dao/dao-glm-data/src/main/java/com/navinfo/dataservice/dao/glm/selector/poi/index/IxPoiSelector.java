@@ -106,7 +106,14 @@ public class IxPoiSelector implements ISelector {
 
 					ixPoi.nameMap.put(obj.getRowId(), obj);
 				}
-
+				
+				//设置POI_EDIT_STATUS
+				IxPoiEditStatusSelector ixPoiEditStatusSelector = new IxPoiEditStatusSelector(conn);
+				
+				int status = ixPoiEditStatusSelector.loadStatusByRowId(ixPoi.getRowId(), isLock);
+				
+				ixPoi.setStatus(status);
+				
 				// 设置子表IX_POI_ADDRESS
 				IxPoiAddressSelector ixPoiAddressSelector = new IxPoiAddressSelector(
 						conn);

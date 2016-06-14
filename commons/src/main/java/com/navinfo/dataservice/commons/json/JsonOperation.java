@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.commons.json;
 
 import java.sql.Timestamp;
+import java.util.List;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 import net.sf.json.util.JSONUtils;
@@ -32,4 +34,12 @@ public class JsonOperation {
 	    JSONObject json=JSONObject.fromObject(bean,config);  
 	    return json;
 	    } 
+	
+	public static JSONArray beanToJsonList(List beanList){
+		JSONArray resultList=new JSONArray();
+		for(int i=0;i<beanList.size();i++){
+			resultList.add(beanToJson(beanList.get(i)));
+		}
+		return resultList;
+	}
 }

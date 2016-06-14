@@ -4,6 +4,8 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
+import net.sf.json.JSONNull;
+import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 import net.sf.json.processors.JsonValueProcessor;
 
@@ -25,7 +27,7 @@ public class DateJsonValueProcessor implements JsonValueProcessor{
         return process(value);  
     }  
     private Object process(Object value){
-    	if(null==value){return value;}
+    	if(null==value){return "";}
         return dateFormat.format((Timestamp)value);
     }  
 

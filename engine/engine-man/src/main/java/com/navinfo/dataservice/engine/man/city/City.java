@@ -1,10 +1,7 @@
 package com.navinfo.dataservice.engine.man.city;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.io.Serializable;
 
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  City 
@@ -12,7 +9,7 @@ import net.sf.json.JSONObject;
 * @date 2016-06-06 08:19:12 
 * @Description: TODO
 */
-public class City  {
+public class City  implements Serializable{
 	private Integer cityId ;
 	private String cityName ;
 	private String provinceName ;

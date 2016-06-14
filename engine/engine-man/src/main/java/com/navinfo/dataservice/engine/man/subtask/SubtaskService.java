@@ -160,7 +160,6 @@ public class SubtaskService {
 			};
 			run.update(conn, 
 					   updateSql, 
-					   bean.getSubtaskId() ,bean.getBlockId(),bean.getTaskId(),bean.getGeometry(),bean.getStage(),bean.getType(),bean.getCreateUserId(),bean.getCreateDate(),bean.getExeUserId(),bean.getStatus(),bean.getPlanStartDate(),bean.getPlanEndDate(),bean.getStartDate(),bean.getEndDate(),bean.getDescp(),
 					   values.toArray()
 					   );
 		}catch(Exception e){
@@ -482,7 +481,7 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public HashMap query(JSONObject json)throws ServiceException{
+	public Subtask query(JSONObject json)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
@@ -493,26 +492,26 @@ public class SubtaskService {
 			Subtask  bean = (Subtask)JSONObject.toBean(obj, Subtask.class);	
 			
 			String selectSql = "select * from SUBTASK where SUBTASK_ID=? and BLOCK_ID=? and TASK_ID=? and GEOMETRY=? and STAGE=? and TYPE=? and CREATE_USER_ID=? and CREATE_DATE=? and EXE_USER_ID=? and STATUS=? and PLAN_START_DATE=? and PLAN_END_DATE=? and START_DATE=? and END_DATE=? and DESCP=?";
-			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>(){
-				public HashMap handle(ResultSet rs) throws SQLException {
+			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>(){
+				public Subtask handle(ResultSet rs) throws SQLException {
 					while(rs.next()){
-						HashMap map = new HashMap();
-						map.put("subtaskId", rs.getInt("SUBTASK_ID"));
-						map.put("blockId", rs.getInt("BLOCK_ID"));
-						map.put("taskId", rs.getInt("TASK_ID"));
-						map.put("geometry", rs.getObject("GEOMETRY"));
-						map.put("stage", rs.getInt("STAGE"));
-						map.put("type", rs.getInt("TYPE"));
-						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
-						map.put("createDate", rs.getObject("CREATE_DATE"));
-						map.put("exeUserId", rs.getInt("EXE_USER_ID"));
-						map.put("status", rs.getInt("STATUS"));
-						map.put("planStartDate", rs.getObject("PLAN_START_DATE"));
-						map.put("planEndDate", rs.getObject("PLAN_END_DATE"));
-						map.put("startDate", rs.getObject("START_DATE"));
-						map.put("endDate", rs.getObject("END_DATE"));
-						map.put("descp", rs.getString("DESCP"));
-						return map;
+						Subtask subTask = new Subtask();
+						subTask.setSubtaskId(rs.getInt("SUBTASK_ID"));
+						subTask.setBlockId( rs.getInt("BLOCK_ID"));
+						subTask.setTaskId( rs.getInt("TASK_ID"));
+						subTask.setGeometry( rs.getObject("GEOMETRY"));
+						subTask.setStage( rs.getInt("STAGE"));
+						subTask.setType( rs.getInt("TYPE"));
+						subTask.setCreateUserId( rs.getInt("CREATE_USER_ID"));
+						subTask.setCreateDate( rs.getObject("CREATE_DATE"));
+						subTask.setExeUserId( rs.getInt("EXE_USER_ID"));
+						subTask.setStatus( rs.getInt("STATUS"));
+						subTask.setPlanStartDate( rs.getObject("PLAN_START_DATE"));
+						subTask.setPlanEndDate( rs.getObject("PLAN_END_DATE"));
+						subTask.setStartDate( rs.getObject("START_DATE"));
+						subTask.setEndDate( rs.getObject("END_DATE"));
+						subTask.setDescp( rs.getString("DESCP"));
+						return subTask;
 					}
 					return null;
 				}

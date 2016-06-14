@@ -10,3 +10,4 @@
 .tomcatplugin
 .springBeans
 .mymetadata
+/src/main/webapp/WEB-INF/classes

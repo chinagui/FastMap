@@ -75,7 +75,6 @@ public class ${modelClassName}Service {
 			</#list>				
 			run.update(conn, 
 					   updateSql, 
-					   <#list columns as column><#if column?is_first>bean.get${column.camelName?cap_first}() <#else>,bean.get${column.camelName?cap_first}()</#if></#list>,
 					   values.toArray()
 					   );
 		}catch(Exception e){
@@ -118,14 +117,12 @@ public class ${modelClassName}Service {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public Page list(JSONObject json ,final int currentPageNum)throws ServiceException{
+	public Page list(${modelClassName} bean ,final int currentPageNum)throws ServiceException{
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getManDataSource()
 					.getConnection();	
-			JSONObject obj = JSONObject.fromObject(json);	
-			${modelClassName}  bean = (${modelClassName})JSONObject.toBean(obj, ${modelClassName}.class);
 			
 			String selectSql = "select * from ${tableName} where 1=1 ";
 			List<Object> values=new ArrayList();
@@ -140,10 +137,10 @@ public class ${modelClassName}Service {
 					List list = new ArrayList();
 		            Page page = new Page(currentPageNum);
 					while(rs.next()){
-						HashMap map = new HashMap();
+						${modelClassName} model = new ${modelClassName};
 						page.setTotalCount(rs.getInt(QueryRunner.TOTAL_RECORD_NUM));
 						<#list columns as column>
-						map.put("${column.camelName}", rs.get${column.sqlType?cap_first}("${column.name}"));
+						model.set${column.camelName?cap_first}(rs.get${column.sqlType?cap_first}("${column.name}"));
 						</#list>
 						list.add(map);
 					}

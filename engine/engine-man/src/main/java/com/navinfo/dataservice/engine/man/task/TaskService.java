@@ -3,10 +3,8 @@ package com.navinfo.dataservice.engine.man.task;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
@@ -14,7 +12,6 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.engine.man.city.CityOperation;
-import com.navinfo.dataservice.engine.man.common.DbOperation;
 import com.navinfo.dataservice.engine.man.task.Task;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -88,7 +85,9 @@ public class TaskService {
 	public Page list(JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
 		Connection conn = null;
 		try{
-			conn = DBConnector.getInstance().getManConnection();
+			conn = DBConnector.getInstance().getManConnection();	
+					
+			JSONObject obj = JSONObject.fromObject(conditionJson);
 			
 			String selectSql = "select * from task where LATEST=1 ";
 			if(null!=conditionJson && !conditionJson.isEmpty()){
@@ -119,7 +118,8 @@ public class TaskService {
 					if ("monthProducePlanStartDate".equals(key)) {selectSql+=" order by MONTH_PRODUCE_PLAN_END_DATE";break;}
 					}
 			}
-			return TaskOperation.selectTaskBySql(conn, selectSql, null,currentPageNum,pageSize);
+//			return TaskOperation.selectTaskBySql(conn, selectSql, null,currentPageNum,pageSize);
+			return null;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

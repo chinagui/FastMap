@@ -99,6 +99,9 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	
+	public List<HashMap> listByWkt(JSONObject json)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
@@ -138,6 +141,10 @@ public class SubtaskService {
 				}
 	    		
 	    	};
+	    	
+	    	
+	    	return run.query(conn, querySql, rsHandler);
+	    	
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -195,92 +202,7 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public void delete(JSONObject json)throws ServiceException{
-		Connection conn = null;
-		try{
-			//持久化
-			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();
-			
-			JSONObject obj = JSONObject.fromObject(json);	
-			Subtask  bean = (Subtask)JSONObject.toBean(obj, Subtask.class);	
-			
-			String deleteSql = "delete from  SUBTASK where 1=1 ";
-			List<Object> values=new ArrayList();
-			if (bean!=null&&bean.getSubtaskId()!=null && StringUtils.isNotEmpty(bean.getSubtaskId().toString())){
-				deleteSql+=" and SUBTASK_ID=? ";
-				values.add(bean.getSubtaskId());
-			};
-			if (bean!=null&&bean.getBlockId()!=null && StringUtils.isNotEmpty(bean.getBlockId().toString())){
-				deleteSql+=" and BLOCK_ID=? ";
-				values.add(bean.getBlockId());
-			};
-			if (bean!=null&&bean.getTaskId()!=null && StringUtils.isNotEmpty(bean.getTaskId().toString())){
-				deleteSql+=" and TASK_ID=? ";
-				values.add(bean.getTaskId());
-			};
-			if (bean!=null&&bean.getGeometry()!=null && StringUtils.isNotEmpty(bean.getGeometry().toString())){
-				deleteSql+=" and GEOMETRY=? ";
-				values.add(bean.getGeometry());
-			};
-			if (bean!=null&&bean.getStage()!=null && StringUtils.isNotEmpty(bean.getStage().toString())){
-				deleteSql+=" and STAGE=? ";
-				values.add(bean.getStage());
-			};
-			if (bean!=null&&bean.getType()!=null && StringUtils.isNotEmpty(bean.getType().toString())){
-				deleteSql+=" and TYPE=? ";
-				values.add(bean.getType());
-			};
-			if (bean!=null&&bean.getCreateUserId()!=null && StringUtils.isNotEmpty(bean.getCreateUserId().toString())){
-				deleteSql+=" and CREATE_USER_ID=? ";
-				values.add(bean.getCreateUserId());
-			};
-			if (bean!=null&&bean.getCreateDate()!=null && StringUtils.isNotEmpty(bean.getCreateDate().toString())){
-				deleteSql+=" and CREATE_DATE=? ";
-				values.add(bean.getCreateDate());
-			};
-			if (bean!=null&&bean.getExeUserId()!=null && StringUtils.isNotEmpty(bean.getExeUserId().toString())){
-				deleteSql+=" and EXE_USER_ID=? ";
-				values.add(bean.getExeUserId());
-			};
-			if (bean!=null&&bean.getStatus()!=null && StringUtils.isNotEmpty(bean.getStatus().toString())){
-				deleteSql+=" and STATUS=? ";
-				values.add(bean.getStatus());
-			};
-			if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
-				deleteSql+=" and PLAN_START_DATE=? ";
-				values.add(bean.getPlanStartDate());
-			};
-			if (bean!=null&&bean.getPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
-				deleteSql+=" and PLAN_END_DATE=? ";
-				values.add(bean.getPlanEndDate());
-			};
-			if (bean!=null&&bean.getStartDate()!=null && StringUtils.isNotEmpty(bean.getStartDate().toString())){
-				deleteSql+=" and START_DATE=? ";
-				values.add(bean.getStartDate());
-			};
-			if (bean!=null&&bean.getEndDate()!=null && StringUtils.isNotEmpty(bean.getEndDate().toString())){
-				deleteSql+=" and END_DATE=? ";
-				values.add(bean.getEndDate());
-			};
-			if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp().toString())){
-				deleteSql+=" and DESCP=? ";
-				values.add(bean.getDescp());
-			};
-			if (values.size()==0){
-	    		run.update(conn, deleteSql);
-	    	}else{
-	    		run.update(conn, deleteSql,values.toArray());
-	    	}
-	    	
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("删除失败，原因为:"+e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
+
 	
 	public List<Subtask> listByBlock(Subtask bean)throws ServiceException{
 		Connection conn = null;
@@ -497,10 +419,7 @@ public class SubtaskService {
 				}
 	    		
 	    	};		
-			return run.query(conn, 
-					   selectSql,
-					   rsHandler, 
-					   bean.getSubtaskId(), bean.getBlockId(), bean.getTaskId(), bean.getGeometry(), bean.getStage(), bean.getType(), bean.getCreateUserId(), bean.getCreateDate(), bean.getExeUserId(), bean.getStatus(), bean.getPlanStartDate(), bean.getPlanEndDate(), bean.getStartDate(), bean.getEndDate(), bean.getDescp());
+			return run.query(conn, selectSql,rsHandler);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

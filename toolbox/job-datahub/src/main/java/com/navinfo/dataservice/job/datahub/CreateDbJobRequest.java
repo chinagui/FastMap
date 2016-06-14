@@ -14,6 +14,7 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 public class CreateDbJobRequest extends AbstractJobRequest {
 	protected String dbName;
 	protected String userName;
+	protected String userPasswd;
 	protected String bizType;
 	protected String descp;
 	protected String gdbVersion;
@@ -35,6 +36,14 @@ public class CreateDbJobRequest extends AbstractJobRequest {
 
 	public void setUserName(String userName) {
 		this.userName = userName;
+	}
+
+	public String getUserPasswd() {
+		return userPasswd;
+	}
+
+	public void setUserPasswd(String userPasswd) {
+		this.userPasswd = userPasswd;
 	}
 
 	public String getBizType() {

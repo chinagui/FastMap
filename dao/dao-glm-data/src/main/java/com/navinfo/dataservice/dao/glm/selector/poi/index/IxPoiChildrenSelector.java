@@ -12,6 +12,8 @@ import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildrenForAndroid;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 
 /**
  * POI父子关系子表 查询
@@ -225,4 +227,60 @@ public class IxPoiChildrenSelector implements ISelector {
 		return rows;
 	}
 
+	/**
+	 * add by wangdongbin
+	 * for android download
+	 * @param id
+	 * @return IxPoiAddress
+	 * @throws Exception
+	 */
+	public List<IRow> loadByIdForAndroid(int id)throws Exception{
+		List<IRow> rows = new ArrayList<IRow>();
+		IxPoiParent poiParent = new IxPoiParent();
+		IxPoiChildrenForAndroid poiCheildre = new IxPoiChildrenForAndroid();
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			//直接进行联结查询，对结果进行判断
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT c.child_poi_pid,c.relation_type,c.row_id,");
+			sb.append("(select poi_num from ix_poi where pid=c.child_poi_pid) poi_num");
+			sb.append(" FROM "+poiParent.tableName()+" p");
+			sb.append(" ,"+poiCheildre.tableName()+" c");
+			sb.append(" WHERE p.group_id=c.group_id");
+			sb.append(" AND p.parent_poi_pid = :1");
+			sb.append(" AND c.u_record !=2");
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setInt(1, id);
+			resultSet = pstmt.executeQuery();
+			while(resultSet.next()){
+				poiCheildre.setRelationType(resultSet.getInt("relation_type"));
+				poiCheildre.setChildPoiPid(resultSet.getInt("child_poi_pid"));
+				poiCheildre.setPoiNum(resultSet.getString("poi_num"));
+				poiCheildre.setRowId(resultSet.getString("row_id"));
+				rows.add(poiCheildre);
+			}
+		}catch(Exception e){
+			throw e;
+		}finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+		}		
+		return rows;
+	}
+	
 }

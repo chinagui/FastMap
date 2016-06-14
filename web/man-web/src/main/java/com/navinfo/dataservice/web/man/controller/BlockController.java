@@ -32,16 +32,16 @@ public class BlockController extends BaseController {
 	private BlockService service;
 
 	
-	@RequestMapping(value = "/block/create")
+	@RequestMapping(value = "/block/open/")
 	public ModelAndView create(HttpServletRequest request){
 		try{	
-			String parameter = request.getParameter("param");
+			String parameter = request.getParameter("parameter");
 			if (StringUtils.isEmpty(parameter)){
-				throw new IllegalArgumentException("param参数不能为空。");
+				throw new IllegalArgumentException("parameter参数不能为空。");
 			}		
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
 			if(dataJson==null){
-				throw new IllegalArgumentException("param参数不能为空。");
+				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			service.create(dataJson);			
 			return new ModelAndView("jsonView", success("创建成功"));

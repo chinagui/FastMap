@@ -20,8 +20,8 @@
 	<META.jdbc.url>jdbc:oracle:thin:@192.168.4.131:1521/orcl</META.jdbc.url>
 	<META.dataSource.validationQuery>select 1 from dual</META.dataSource.validationQuery>
 	
-	<META.jdbc.username>mymeta3</META.jdbc.username>
-	<META.jdbc.password>mymeta3</META.jdbc.password>
+	<META.jdbc.username>fm_meta_sp5</META.jdbc.username>
+	<META.jdbc.password>fm_meta_sp5</META.jdbc.password>
 	<META.dataSource.initialSize>2</META.dataSource.initialSize>
 	<META.dataSource.maxActive>25</META.dataSource.maxActive>
 	<META.dataSource.maxIdle>10</META.dataSource.maxIdle>
@@ -70,14 +70,14 @@
 	<main.mq.cacheSize.channel>20</main.mq.cacheSize.channel>
 
 <!-- Dropbox -->
-	<dropbox.upload.path>/data/resources_sp4/upload</dropbox.upload.path>
-	<dropbox.download.filepath.nds>/data/resources_sp4/download/nds</dropbox.download.filepath.nds>
-	<dropbox.download.filepath.tips>/data/resources_sp4/download/tips</dropbox.download.filepath.tips>
-	<dropbox.download.filepath.basedata>/data/resources_sp4/download/basedata</dropbox.download.filepath.basedata>
- 	<dropbox.download.filepath.patternimg>/data/resources_sp4/download/patternimg</dropbox.download.filepath.patternimg>
- 	<dropbox.download.urlpath.nds>/resources_sp4/download/nds</dropbox.download.urlpath.nds>
-	<dropbox.download.urlpath.tips>/resources_sp4/download/tips</dropbox.download.urlpath.tips>
-	<dropbox.download.urlpath.basedata>/resources_sp4/download/basedata</dropbox.download.urlpath.basedata>
-	<dropbox.download.urlpath.patternimg>/resources_sp4/download/patternimg</dropbox.download.urlpath.patternimg>
+	<dropbox.upload.path>/data/resources/upload</dropbox.upload.path>
+	<dropbox.download.filepath.nds>/data/resources/download/nds</dropbox.download.filepath.nds>
+	<dropbox.download.filepath.tips>/data/resources/download/tips</dropbox.download.filepath.tips>
+	<dropbox.download.filepath.basedata>/data/resources/download/basedata</dropbox.download.filepath.basedata>
+ 	<dropbox.download.filepath.patternimg>/data/resources/download/patternimg</dropbox.download.filepath.patternimg>
+ 	<dropbox.download.urlpath.nds>/resources/download/nds</dropbox.download.urlpath.nds>
+	<dropbox.download.urlpath.tips>/resources/download/tips</dropbox.download.urlpath.tips>
+	<dropbox.download.urlpath.basedata>/resources/download/basedata</dropbox.download.urlpath.basedata>
+	<dropbox.download.urlpath.patternimg>/resources/download/patternimg</dropbox.download.urlpath.patternimg>
  	<dropbox.url>http://192.168.4.188</dropbox.url>
 </configMap>

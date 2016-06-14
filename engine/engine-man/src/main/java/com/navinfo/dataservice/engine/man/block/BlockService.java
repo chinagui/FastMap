@@ -43,7 +43,7 @@ public class BlockService {
 	public void create(JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
-			// 持久化
+			// 鎸佷箙鍖�
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			Block bean = (Block) JSONObject.toBean(json, Block.class);
@@ -54,7 +54,7 @@ public class BlockService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
+			throw new ServiceException("鍒涘缓澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -63,7 +63,7 @@ public class BlockService {
 	public void update(JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
-			// 持久化
+			// 鎸佷箙鍖�
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			JSONObject obj = JSONObject.fromObject(json);
@@ -102,7 +102,7 @@ public class BlockService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("修改失败，原因为:" + e.getMessage(), e);
+			throw new ServiceException("淇敼澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -111,7 +111,7 @@ public class BlockService {
 	public void delete(JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
-			// 持久化
+			// 鎸佷箙鍖�
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			JSONObject obj = JSONObject.fromObject(json);
@@ -154,7 +154,7 @@ public class BlockService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("删除失败，原因为:" + e.getMessage(), e);
+			throw new ServiceException("鍒犻櫎澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -222,7 +222,7 @@ public class BlockService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+			throw new ServiceException("鏌ヨ鍒楄〃澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -258,7 +258,7 @@ public class BlockService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+			throw new ServiceException("鏌ヨ鍒楄〃澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -267,7 +267,7 @@ public class BlockService {
 	public HashMap<?, ?> query(JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
-			// 持久化
+			// 鎸佷箙鍖�
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			JSONObject obj = JSONObject.fromObject(json);
@@ -300,7 +300,7 @@ public class BlockService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+			throw new ServiceException("鏌ヨ鏄庣粏澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -340,7 +340,7 @@ public class BlockService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+			throw new ServiceException("鏌ヨ鍒楄〃澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}

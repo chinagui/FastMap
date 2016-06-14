@@ -82,52 +82,6 @@ public class TaskService {
 		}
 	}
 	
-	public List<HashMap> list(JSONObject conditionJson,JSONObject orderJson)throws Exception{
-		Connection conn = null;
-		try{
-			conn = DBConnector.getInstance().getManConnection();	
-					
-			JSONObject obj = JSONObject.fromObject(conditionJson);
-			
-			String selectSql = "select * from task where LATEST=1 ";
-			if(null!=conditionJson){
-				Iterator keys = conditionJson.keys();
-				while (keys.hasNext()) {
-					String key = (String) keys.next();
-					if ("cityId".equals(key)) {selectSql+=" and city_id="+conditionJson.getInt(key);}
-					if ("createUserId".equals(key)) {selectSql+=" and create_user_id="+conditionJson.getInt(key);}
-					if ("descp".equals(key)) {selectSql+=" and descp="+conditionJson.getString(key);}
-					if ("status".equals(key)) {selectSql+=" and status="+conditionJson.getInt(key);}					
-					}
-				}
-			if(null!=orderJson){
-				Iterator keys = conditionJson.keys();
-				while (keys.hasNext()) {
-					String key = (String) keys.next();
-					if ("collectPlanStartDate".equals(key)) {selectSql+=" order by COLLECT_PLAN_START_DATE";break;}
-					if ("collectPlanEndDate".equals(key)) {selectSql+=" order by COLLECT_PLAN_END_DATE";break;}
-					if ("dayEditPlanStartDate".equals(key)) {selectSql+=" order by DAY_EDIT_PLAN_START_DATE";break;}
-					if ("dayEditPlanEndDate".equals(key)) {selectSql+=" order by DAY_EDIT_PLAN_END_DATE";break;}
-					if ("bMonthEditPlanStartDate".equals(key)) {selectSql+=" order by B_MONTH_EDIT_PLAN_START_DATE";break;}
-					if ("bMonthEditPlanEndDate".equals(key)) {selectSql+=" order by B_MONTH_EDIT_PLAN_END_DATE";break;}
-					if ("cMonthEditPlanStartDate".equals(key)) {selectSql+=" order by C_MONTH_EDIT_PLAN_START_DATE";break;}
-					if ("cMonthEditPlanEndDate".equals(key)) {selectSql+=" order by C_MONTH_EDIT_PLAN_END_DATE";break;}	
-					if ("dayProducePlanStartDate".equals(key)) {selectSql+=" order by DAY_PRODUCE_PLAN_START_DATE";break;}
-					if ("dayProducePlanEndDate".equals(key)) {selectSql+=" order by DAY_PRODUCE_PLAN_END_DATE";break;}
-					if ("monthProducePlanStartDate".equals(key)) {selectSql+=" order by MONTH_PRODUCE_PLAN_START_DATE";break;}
-					if ("monthProducePlanStartDate".equals(key)) {selectSql+=" order by MONTH_PRODUCE_PLAN_END_DATE";break;}
-					}
-			}
-			return TaskOperation.selectTaskBySql(conn, selectSql, null);
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new Exception("查询列表失败，原因为:"+e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
-	
 	public Page list(JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
 		Connection conn = null;
 		try{
@@ -143,7 +97,7 @@ public class TaskService {
 					if ("cityId".equals(key)) {selectSql+=" and city_id="+conditionJson.getInt(key);}
 					if ("createUserId".equals(key)) {selectSql+=" and create_user_id="+conditionJson.getInt(key);}
 					if ("descp".equals(key)) {selectSql+=" and descp="+conditionJson.getString(key);}
-					if ("status".equals(key)) {selectSql+=" and status="+conditionJson.getInt(key);}					
+					if ("status".equals(key)) {selectSql+=" and status="+conditionJson.getInt(key);}
 					}
 				}
 			if(null!=orderJson && !orderJson.isEmpty()){
@@ -176,7 +130,7 @@ public class TaskService {
 	}
 	
 	
-	public List<List<String>> close(JSONObject json)throws Exception{
+	public HashMap<String,String> close(JSONObject json)throws Exception{
 		Connection conn = null;
 		try{
 			//持久化
@@ -198,20 +152,25 @@ public class TaskService {
 					+ "   AND ST.STATUS <> 0";
 			List<List<String>> checkResult=DbOperation.exeSelectBySql(conn, checkSql, null);
 			JSONArray closeTask=new JSONArray();
-			List newTask=new ArrayList();
+			List<Integer> newTask=new ArrayList<Integer>();
 			newTask=JSONArray.toList(taskIds);
+			HashMap<String,String> checkMap=new HashMap<String,String>();
 			if(checkResult.size()>0){
-				List errorTask=new ArrayList();
+				List<Integer> errorTask=new ArrayList<Integer>();
 				for(int i=0;i<checkResult.size();i++){
-					errorTask.add(checkResult.get(i).get(0));
+					String taskIdTmp=checkResult.get(i).get(0);
+					errorTask.add(Integer.valueOf(taskIdTmp));
+					if(!checkMap.containsKey(taskIdTmp)){checkMap.put(taskIdTmp, "");}
+					checkMap.put(taskIdTmp, checkMap.get(taskIdTmp)+checkResult.get(i).get(1));
 				}
 				newTask.removeAll(errorTask);				
 			}
-			String updateSql="UPDATE TASK SET STATUS=0 "
-					+ "WHERE TASK_ID IN ("+newTask.toString().replace("[", "").
-					replace("]", "").replace("\"", "")+")";
-			DbOperation.exeUpdateOrInsertBySql(conn, updateSql);
-	    	return checkResult;
+			if(newTask.size()>0){
+				String updateSql="UPDATE TASK SET STATUS=0 "
+						+ "WHERE TASK_ID IN ("+newTask.toString().replace("[", "").
+						replace("]", "").replace("\"", "")+")";
+				DbOperation.exeUpdateOrInsertBySql(conn, updateSql);}
+	    	return checkMap;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -219,22 +178,5 @@ public class TaskService {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-	}
-
-	public HashMap query(int taskId) throws Exception {
-		Connection conn = null;
-		try{
-			conn = DBConnector.getInstance().getManConnection();	
-			String selectSql = "select * from task where taskId= "+taskId;
-			List<HashMap> taskList=TaskOperation.selectTaskBySql(conn, selectSql, null);
-			return taskList.get(0);
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new Exception("查询列表失败，原因为:"+e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
-	
+	}	
 }

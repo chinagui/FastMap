@@ -13,7 +13,7 @@ public class VersionSelector {
 
 	public String getByType(int type) throws Exception {
 
-		String sql = "select type, version from  VERSION where type=:1";
+		String sql = "select type, version from app_data_version where type=:1";
 
 		PreparedStatement pstmt = null;
 

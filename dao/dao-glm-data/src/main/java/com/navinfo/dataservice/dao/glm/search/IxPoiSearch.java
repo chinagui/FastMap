@@ -56,9 +56,9 @@ public class IxPoiSearch implements ISearch {
 
 		String sql = "select pid,x_guide,y_guide,geometry,"
 				+ " (SELECT PS.STATUS FROM POI_EDIT_STATUS PS WHERE I.ROW_ID = PS.ROW_ID)"
-				+ " STATUS, (select count(1) from ix_poi_parent p where p.parent_poi_pid ="
-				+ " i.pid) parentCount,  (select count(1) from ix_poi_children c "
-				+ " where c.child_poi_pid = i.pid) childCount from ix_poi i "
+				+ " STATUS, (SELECT COUNT(1) FROM IX_POI_PARENT P WHERE group_id in "
+				+ " (SELECT group_id FROM IX_POI_CHILDREN WHERE CHILD_POI_PID = I.PID)) "
+				+ " PARENTCOUNT,  (SELECT COUNT(1) FROM IX_POI_CHILDREN P WHERE group_id in (SELECT group_id FROM IX_POI_PARENT WHERE parent_poi_pid = I.PID)) CHILDCOUNT from ix_poi i "
 				+ " where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =    'TRUE'  "
 				+ " and u_record != 2";
 
@@ -68,6 +68,8 @@ public class IxPoiSearch implements ISearch {
 
 		try {
 			pstmt = conn.prepareStatement(sql);
+
+			System.out.println(sql);
 
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 

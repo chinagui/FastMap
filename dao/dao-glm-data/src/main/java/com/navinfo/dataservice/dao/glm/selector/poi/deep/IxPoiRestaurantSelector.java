@@ -89,7 +89,7 @@ public class IxPoiRestaurantSelector implements ISelector {
 		
 
 		StringBuilder sb = new StringBuilder(
-				"select * from ix_poi_restaurant WHERE restaurant_id  = :1 and  u_record !=2");
+				"select * from ix_poi_restaurant WHERE poi_pid  = :1 and  u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");

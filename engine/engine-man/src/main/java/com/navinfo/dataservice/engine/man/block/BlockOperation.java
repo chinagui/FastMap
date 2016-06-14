@@ -58,7 +58,7 @@ public class BlockOperation {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+			throw new Exception("鏌ヨ澶辫触锛屽師鍥犱负:"+e.getMessage(),e);
 		}
 	}
 	
@@ -91,7 +91,7 @@ public class BlockOperation {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+			throw new Exception("鏌ヨ澶辫触锛屽師鍥犱负:"+e.getMessage(),e);
 		}
 	}
 	

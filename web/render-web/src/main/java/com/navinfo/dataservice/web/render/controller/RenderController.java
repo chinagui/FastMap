@@ -68,8 +68,44 @@ public class RenderController extends BaseController {
 			JSONObject data = null;
 
 			if (z <= 16) {
+				
+				List<ObjType> tileTypes = new ArrayList<ObjType>();
+				
+				List<ObjType> gdbTypes = new ArrayList<ObjType>();
+				
+				for (ObjType t : types){
+					if(t == ObjType.RDLINK || t == ObjType.ADLINK || t == ObjType.RWLINK){
+						tileTypes.add(t);
+					}
+					else{
+						gdbTypes.add(t);
+					}
+				}
+				
+				if(!gdbTypes.isEmpty()){
+					
+					conn = DBConnector.getInstance().getConnectionById(dbId);
 
-				data = TileSelector.getByTiles(types, x, y, z, dbId);
+					SearchProcess p = new SearchProcess(conn);
+
+					JSONObject jo = p.searchDataByTileWithGap(gdbTypes, x, y, z, gap);
+					
+					if(data == null){
+						data = new JSONObject();
+					}
+						
+					data.putAll(jo);
+				}
+				
+				if(!tileTypes.isEmpty()){
+					JSONObject jo = TileSelector.getByTiles(tileTypes, x, y, z, dbId);
+					
+					if(data == null){
+						data = new JSONObject();
+					}
+					
+					data.putAll(jo);
+				}
 				
 			} else {
 				conn = DBConnector.getInstance().getConnectionById(dbId);

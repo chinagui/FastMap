@@ -45,55 +45,6 @@ public class TaskOperation {
 	/*
 	 * 根据sql语句查询task
 	 */
-	public static List<HashMap> selectTaskBySql(Connection conn,String selectSql,List<Object> values) throws Exception{
-		try{
-			QueryRunner run = new QueryRunner();
-			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
-				public List<HashMap> handle(ResultSet rs) throws SQLException {
-					List<HashMap> list = new ArrayList<HashMap>();
-					while(rs.next()){
-						HashMap map = new HashMap();
-						map.put("taskId", rs.getInt("TASK_ID"));
-						map.put("cityId", rs.getInt("CITY_ID"));
-						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
-						map.put("createDate", rs.getObject("CREATE_DATE"));
-						map.put("status", rs.getInt("STATUS"));
-						map.put("descp", rs.getString("DESCP"));
-						map.put("collectPlanStartDate", rs.getObject("COLLECT_PLAN_START_DATE"));
-						map.put("collectPlanEndDate", rs.getObject("COLLECT_PLAN_END_DATE"));
-						map.put("dayEditPlanStartDate", rs.getObject("DAY_EDIT_PLAN_START_DATE"));
-						map.put("dayEditPlanEndDate", rs.getObject("DAY_EDIT_PLAN_END_DATE"));
-						map.put("bMonthEditPlanStartDate", rs.getObject("B_MONTH_EDIT_PLAN_START_DATE"));
-						map.put("bMonthEditPlanEndDate", rs.getObject("B_MONTH_EDIT_PLAN_END_DATE"));
-						map.put("cMonthEditPlanStartDate", rs.getObject("C_MONTH_EDIT_PLAN_START_DATE"));
-						map.put("cMonthEditPlanEndDate", rs.getObject("C_MONTH_EDIT_PLAN_END_DATE"));
-						map.put("dayProducePlanStartDate", rs.getObject("DAY_PRODUCE_PLAN_START_DATE"));
-						map.put("dayProducePlanEndDate", rs.getObject("DAY_PRODUCE_PLAN_END_DATE"));
-						map.put("monthProducePlanStartDate", rs.getObject("MONTH_PRODUCE_PLAN_START_DATE"));
-						map.put("monthProducePlanEndDate", rs.getObject("MONTH_PRODUCE_PLAN_END_DATE"));
-						map.put("latest", rs.getInt("LATEST"));
-						list.add(map);
-					}
-					return list;
-				}
-	    		
-	    	}		;
-	    	if (null==values || values.size()==0){
-	    		return run.query(conn, selectSql, rsHandler
-						);
-	    	}
-	    	return run.query(conn, selectSql, rsHandler,values.toArray()
-					);			
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
-		}
-	}
-	
-	/*
-	 * 根据sql语句查询task
-	 */
 	public static Page selectTaskBySql(Connection conn,String selectSql,List<Object> values,final int currentPageNum,final int pageSize) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();

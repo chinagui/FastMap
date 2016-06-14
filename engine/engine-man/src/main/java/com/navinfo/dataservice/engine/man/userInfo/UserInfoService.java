@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.Base64Utils;
+import com.navinfo.dataservice.engine.man.userDevice.UserDevice;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -427,6 +429,27 @@ public class UserInfoService {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	public void login(UserInfo bean) throws ServiceException {
+		/*查询用户是否存在*/
+		UserInfo command = new UserInfo();
+		command.setUserNickName(bean.getUserNickName());
+		UserInfo user = this.query(command);
+		if (user==null) 
+			throw new ServiceException("用户不存在，登录id"+bean.getUserNickName());
+		/*查询密码是否匹配*/
+		String pwdInDb = user.getUserPassword();
+		//输入的密码是经过base64加密的，所以库中需要保证也是经过base64加密的数据
+		if (StringUtils.equals(bean.getUserPassword(), pwdInDb)){
+			//将device信息写入到数据库user_device中；
+			UserDevice device = new UserDevice();
+			String devicePlatform;
+			device.setDevicePlatform(devicePlatform);
+			//生成AccessToken信息返回
+		}else{//如果传入的用户密码和数据库中的不匹配，则报错
+			throw new ServiceException("密码不正确");
+		}
+		
 	}
 	
 }

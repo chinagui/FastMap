@@ -104,8 +104,8 @@ public class CityController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
-			City  bean = (City)JSONObject.toBean(obj, City.class);	
-			HashMap data = service.query(dataJson);			
+			City  bean = (City)JSONObject.toBean(dataJson, City.class);	
+			City  data = service.query(bean);			
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("获取明细失败，原因："+e.getMessage(), e);

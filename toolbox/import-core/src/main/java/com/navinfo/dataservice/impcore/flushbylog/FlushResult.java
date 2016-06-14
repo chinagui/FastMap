@@ -27,7 +27,7 @@ public class FlushResult {
 	private int logDetailMoved;
 	private int logDetailGridMoved;
 	private boolean isSuccess;
-	private List<List<String>> failedLog=new ArrayList<List<String>>();
+	private List<List> failedLog=new ArrayList<List>();
 
 	private List<String> insertFailedList = new ArrayList<String>();
 
@@ -41,7 +41,7 @@ public class FlushResult {
 		row.add(rowId);
 		failedLog.add(row);
 	}
-	public List<List<String>> getFailedLog() {
+	public List<List> getFailedLog() {
 		return failedLog;
 	}
 	public String getResultMsg() {

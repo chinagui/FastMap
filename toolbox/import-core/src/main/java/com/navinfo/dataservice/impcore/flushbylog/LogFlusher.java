@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.NaviListUtils;
 import com.navinfo.dataservice.impcore.exception.LockException;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -156,12 +157,13 @@ public class LogFlusher {
 		
 		String moveSql = "insert into log_detail@" + dbLinkName
 				+ " select l.* from log_detail l,"+tempTable+" t where l.op_id=t.op_id"
-				+" AND NOT EXITS(SELECT 1 FROM "+this.tempFailLogTable+" f WHERE f.row_id=l.row_Id)";
+				+" AND NOT EXISTS(SELECT 1 FROM "+this.tempFailLogTable+" f WHERE f.row_id=l.row_Id)";
+		log.debug(moveSql);
 		flushResult.setLogDetailMoved(stmt.executeUpdate(moveSql));
 		
 		moveSql = "INSERT INTO LOG_DETAIL_GRID@"+dbLinkName
 				+" SELECT P.* FROM LOG_DETAIL_GRID P,LOG_DETAIL L,"+tempTable+" T WHERE L.OP_ID=T.OP_ID AND L.ROW_ID=P.LOG_ROW_ID"
-				+" AND NOT EXITS(SELECT 1 FROM "+this.tempFailLogTable+" f WHERE f.row_id=l.row_Id)";
+				+" AND NOT EXISTS(SELECT 1 FROM "+this.tempFailLogTable+" f WHERE f.row_id=l.row_Id)";
 		flushResult.setLogDetailGridMoved(stmt.executeUpdate(moveSql));	
 		
 		moveSql = "INSERT INTO LOG_OPERATION@"+dbLinkName
@@ -177,13 +179,8 @@ public class LogFlusher {
 	private void recordFailLog2Temptable(FlushResult flushResult) throws Exception{
 		if (flushResult.isSuccess()) return ;
 		QueryRunner run = new QueryRunner();
-		String sql = "insert into "+this.tempFailLogTable+"values(?,?)";
-		String[] rows = (String[]) flushResult.getFailedLog().toArray();
-		String[][] batchParams = new String[rows.length][2];
-		for (int i=0;i<flushResult.getFailedLog().size();i++){
-			List<String> row = flushResult.getFailedLog().get(i);
-			batchParams[i]=(String[]) row.toArray();
-		}
+		String sql = "insert into "+this.tempFailLogTable+" values(?,?)";
+		Object[][] batchParams = NaviListUtils.toArrayMatrix(flushResult.getFailedLog());
 		run.batch(this.sourceDbConn, sql, batchParams);
 	}
 	private FlushResult flushData() throws Exception {

@@ -28,9 +28,30 @@ public class UserInfoController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	@Autowired 
 	private UserInfoService service;
-
 	
-	@RequestMapping(value = "/userInfo/create")
+	@RequestMapping(value = "/user/login")
+	public ModelAndView login(HttpServletRequest request){
+		try{	
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			UserInfo  bean = new UserInfo();
+			bean.setUserNickName(dataJson.getString("name"));
+			bean.setUserPassword(dataJson.getString("password"));
+			bean.setDevicePlatform(dataJson.getString("devicePlatform"));
+			service.login(bean)	;		
+			return new ModelAndView("jsonView", success("创建成功"));
+		}catch(Exception e){
+			log.error("创建失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	@RequestMapping(value = "/user/create")
 	public ModelAndView create(HttpServletRequest request){
 		try{	
 			String parameter = request.getParameter("parameter");
@@ -49,7 +70,7 @@ public class UserInfoController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	@RequestMapping(value = "/userInfo/update")
+	@RequestMapping(value = "/user/update")
 	public ModelAndView update(HttpServletRequest request){
 		try{			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
@@ -64,7 +85,7 @@ public class UserInfoController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	@RequestMapping(value = "/userInfo/delete")
+	@RequestMapping(value = "/user/delete")
 	public ModelAndView delete(HttpServletRequest request){
 		try{			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
@@ -79,7 +100,7 @@ public class UserInfoController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	@RequestMapping(value = "/userInfo/list")
+	@RequestMapping(value = "/user/list")
 	public ModelAndView list(HttpServletRequest request){
 		try{			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
@@ -100,7 +121,7 @@ public class UserInfoController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/userInfo/query")
+	@RequestMapping(value = "/user/query")
 	public ModelAndView query(HttpServletRequest request){
 		try{
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			

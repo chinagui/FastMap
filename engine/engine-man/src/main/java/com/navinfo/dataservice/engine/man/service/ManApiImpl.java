@@ -35,5 +35,10 @@ public class ManApiImpl implements ManApi {
 		return new RegionService().query(region);
 		
 	}
+	@Override
+	public Map queryRegionGridMappingOfSubtasks(List<Integer> taskList)
+			throws Exception {
+		return GridService.getInstance().queryRegionGridMappingOfSubtasks(taskList);
+	}
 }
 

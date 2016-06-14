@@ -12,23 +12,26 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
  * @author mayunfei
  * 2016年6月6日
  * 描述：job-frameworkCommitDay2MonthRoad.java
- * 道路数据从日大区库落入月大区库
+ * POI数据从日大区库落入月大区库
  */
-public class CommitDay2MonthRoadJob extends AbstractCommitDay2MonthJob {
-	public CommitDay2MonthRoadJob(JobInfo jobInfo) {
+public class CommitDay2MonthPoiJob extends AbstractCommitDay2MonthJob {
+
+	public CommitDay2MonthPoiJob(JobInfo jobInfo) {
 		super(jobInfo);
 	}
+
 	@Override
 	public IDay2MonthCommand createDay2MonthCommand() {
-		return new CommitDay2MonthRoadCommand(this.request);
+		return new CommitDay2MonthPoiCommand(this.request);
 	}
-	
-
-	
-	public class CommitDay2MonthRoadCommand implements IDay2MonthCommand{
+	@Override
+	public void afterFlush(){
+		//TODO:实现落入月库的poi数据的处理：批处理、检查生成精编作业项，从而可以进行精编作业。
+	}
+	public class CommitDay2MonthPoiCommand implements IDay2MonthCommand{
 		AbstractJobRequest req;
 		
-		public CommitDay2MonthRoadCommand(AbstractJobRequest req) {
+		public CommitDay2MonthPoiCommand(AbstractJobRequest req) {
 			super();
 			this.req = req;
 		}
@@ -36,12 +39,12 @@ public class CommitDay2MonthRoadJob extends AbstractCommitDay2MonthJob {
 		@Override
 		public Map queryRegionGridMapping() throws Exception {
 			ManApi gridSelectorApiSvr = (ManApi) ApplicationContextUtil.getBean("manApi");
-			return gridSelectorApiSvr.queryRegionGridMapping(((CommitDay2MonthRoadJobRequest )req).getGridList());
+			return gridSelectorApiSvr.queryRegionGridMappingOfSubtasks(((CommitDay2MonthPoiJobRequest )req).getTaskId());
 		}
 
 		@Override
 		public String getStopTime() {
-			return ((CommitDay2MonthRoadJobRequest )req).getStopTime();
+			return ((CommitDay2MonthPoiJobRequest )req).getStopTime();
 		}
 
 		@Override
@@ -50,11 +53,6 @@ public class CommitDay2MonthRoadJob extends AbstractCommitDay2MonthJob {
 		}
 		
 	}
-
-
-
-
-	
 	
 
 }

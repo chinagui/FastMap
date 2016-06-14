@@ -103,15 +103,12 @@ public class CityService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public void delete(JSONObject json)throws ServiceException{
+	public void delete(City  bean)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();	
-			JSONObject obj = JSONObject.fromObject(json);	
-			City  bean = (City)JSONObject.toBean(obj, City.class);	
-			
 			String deleteSql = "delete from  CITY where 1=1 ";
 			List<Object> values=new ArrayList();
 			if (bean!=null&&bean.getCityId()!=null && StringUtils.isNotEmpty(bean.getCityId().toString())){
@@ -221,28 +218,25 @@ public class CityService {
 		}
 		
 	}
-	public List<HashMap> queryListByWkt(JSONObject json)throws ServiceException{
+	public List<City> queryListByWkt(final String wkt,int planningStatus)throws ServiceException{
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 					
-			final String wkt= json.getString("wkt");
-			int planningStatus = json.getInt("planningStatus");
-			
 			String selectSql = "select t.CITY_ID,t.CITY_NAME, t.geometry.get_wkt() as geometry from CITY t where t.PLAN_STATUS="+planningStatus;
 		
-			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
-				public List<HashMap> handle(ResultSet rs) throws SQLException {
-					List<HashMap> list = new ArrayList<HashMap>();
+			ResultSetHandler<List<City>> rsHandler = new ResultSetHandler<List<City>>(){
+				public List<City> handle(ResultSet rs) throws SQLException {
+					List<City> list = new ArrayList<City>();
 					while(rs.next()){
 						try {
-							if (GeometryUtils.IsIntersectPolygon(wkt,rs.getObject("geometry"))){
-								HashMap<String,Object> map = new HashMap<String,Object>();
-								map.put("cityId", rs.getInt("CITY_ID"));
-								map.put("cityName", rs.getString("CITY_NAME"));
-								map.put("geometry", rs.getObject("geometry"));
-								list.add(map);
+							if (GeometryUtils.IsIntersectPolygon(wkt,rs.getString("geometry"))){
+								City model = new City();
+								model.setCityId(rs.getInt("CITY_ID"));
+								model.setCityName(rs.getString("CITY_NAME"));
+								model.setGeometry(rs.getObject("geometry"));
+								list.add(model);
 							}
 						} catch (ParseException e) {
 							// TODO Auto-generated catch block
@@ -268,27 +262,25 @@ public class CityService {
 	}
 	
 	
-	public HashMap query(JSONObject json)throws ServiceException{
+	public City query(City  bean)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			JSONObject obj = JSONObject.fromObject(json);	
-			City  bean = (City)JSONObject.toBean(obj, City.class);	
 			
 			String selectSql = "select * from CITY where CITY_ID=? and CITY_NAME=? and PROVINCE_NAME=? and GEOMETRY=? and REGION_ID=? and PLAN_STATUS=?";
-			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>(){
-				public HashMap handle(ResultSet rs) throws SQLException {
+			ResultSetHandler<City> rsHandler = new ResultSetHandler<City>(){
+				public City handle(ResultSet rs) throws SQLException {
 					while(rs.next()){
-						HashMap map = new HashMap();
-						map.put("cityId", rs.getInt("CITY_ID"));
-						map.put("cityName", rs.getString("CITY_NAME"));
-						map.put("provinceName", rs.getString("PROVINCE_NAME"));
-						map.put("geometry", rs.getObject("GEOMETRY"));
-						map.put("regionId", rs.getInt("REGION_ID"));
-						map.put("planStatus", rs.getInt("PLAN_STATUS"));
-						return map;
+						City model = new City();
+						model.setCityId(rs.getInt("CITY_ID"));
+						model.setCityName(rs.getString("CITY_NAME"));
+						model.setProvinceName(rs.getString("PROVINCE_NAME"));
+						model.setGeometry(rs.getObject("GEOMETRY"));
+						model.setRegionId(rs.getInt("REGION_ID"));
+						model.setPlanStatus( rs.getInt("PLAN_STATUS"));
+						return model;
 					}
 					return null;
 				}

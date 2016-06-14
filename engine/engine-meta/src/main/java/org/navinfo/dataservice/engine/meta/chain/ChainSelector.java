@@ -6,10 +6,10 @@ import java.sql.SQLException;
 
 import org.apache.commons.dbutils.ResultSetHandler;
 
-import com.alibaba.dubbo.common.json.JSONArray;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.navicommons.database.QueryRunner;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -87,7 +87,18 @@ public class ChainSelector {
 			@Override
 			public String handle(ResultSet rs) throws SQLException {
 				
-				return rs.getString("LEVEL");
+				if(rs.next())
+				{
+					return rs.getString("LEVEL");
+				}
+				else
+				{
+				    try {
+						throw new Exception("根据chain获取level失败");
+					} catch (Exception e) {
+					}
+				}
+				return null;
 			}
 		};
 		

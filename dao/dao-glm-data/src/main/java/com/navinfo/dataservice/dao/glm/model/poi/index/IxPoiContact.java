@@ -34,6 +34,10 @@ public class IxPoiContact implements IRow {
 	
 	private String rowId;
 	
+	private int uRecord=0;
+	
+	private String uDate;
+	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
 	public int getPoiPid() {
@@ -78,6 +82,22 @@ public class IxPoiContact implements IRow {
 
 	public String getRowId() {
 		return rowId;
+	}
+	
+	public int getuRecord() {
+		return uRecord;
+	}
+
+	public void setuRecord(int uRecord) {
+		this.uRecord = uRecord;
+	}
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
 	}
 
 	@Override

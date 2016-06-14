@@ -14,7 +14,12 @@ import com.navinfo.navicommons.database.QueryRunner;
  *
  */
 public class ScPointAdminArea {
-
+	/**
+	 * 根据省份获取电话列表
+	 * @param name
+	 * @return JSONArray
+	 * @throws Exception
+	 */
 	public JSONArray searchByProvince(String name)
 			throws Exception {
 	    StringBuilder builder = new StringBuilder();
@@ -41,7 +46,12 @@ public class ScPointAdminArea {
 			}
 		},name);
 	}
-	
+	/**
+	 * 电话长度查询
+	 * @param name
+	 * @return String
+	 * @throws Exception
+	 */
 	
 	public String searchTelLength(String code)
 			throws Exception {
@@ -61,7 +71,12 @@ public class ScPointAdminArea {
 		},code);
 	}
 	
-
+	/**
+	 * 查询foodType
+	 * @param kindId
+	 * @returnJ SONArray
+	 * @throws Exception
+	 */
 	public JSONArray searchFoodType(String kindId)
 			throws Exception {
 
@@ -85,39 +100,6 @@ public class ScPointAdminArea {
 				return array;
 			}
 		},kindId);
-	}
-	
-	public JSONObject searchkindLevel(String kindCode)
-			throws Exception {
-
-	    StringBuilder builder = new StringBuilder();
-		builder.append(" SELECT chain,KIND_CODE,\"LEVEL\",\"EXTEND\" ");
-		builder.append(" FROM sc_fm_control ");
-		builder.append(" WHERE kind_code = :1");
-		try{
-			QueryRunner runner = new QueryRunner();
-		    return runner.query(DBConnector.getInstance().getMetaConnection(),builder.toString(), new ResultSetHandler<JSONObject>(){
-		    	JSONObject  jsonObject =null;
-		    	@Override
-				public JSONObject handle(ResultSet rs) throws SQLException {
-					if(rs.next()){
-						jsonObject.put("chainFlag", rs.getInt("chain"));
-						jsonObject.put("kindId", rs.getString("kind_code"));
-						jsonObject.put("extend", rs.getString("extend"));
-		
-					}else{
-						try {
-							throw new Exception("对应KIND_CODE数据不存在不存在!");
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-					return jsonObject;
-				}
-			},kindCode);
-		}catch (Exception e) {
-			throw e;
-		}
 	}
 	
 }

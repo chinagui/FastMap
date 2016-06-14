@@ -36,6 +36,7 @@ public class KindCodeSelector {
 		sb.append(" FROM sc_point_poicode_new t ");
 
 		ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
+			@Override
 			public JSONArray handle(ResultSet resultSet) throws SQLException {
 
 				JSONArray array = new JSONArray();
@@ -88,6 +89,7 @@ public class KindCodeSelector {
 		sb.append(" FROM sc_point_poicode_new t " + " WHERE t.class_code=? ");
 
 		ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
+			@Override
 			public JSONArray handle(ResultSet resultSet) throws SQLException {
 				JSONArray array = new JSONArray();
 
@@ -151,6 +153,7 @@ public class KindCodeSelector {
 		}
 
 		ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
+			@Override
 			public JSONArray handle(ResultSet resultSet) throws SQLException {
 
 				JSONArray array = new JSONArray();
@@ -175,6 +178,46 @@ public class KindCodeSelector {
 		};
 
 		return run.query(conn, sb.toString(), rsHandler, topId, mediumId);
+	}
+	
+	/**
+	 * 根据kindCode获取level
+	 * @auth zhaokk
+	 * @param kindCode
+	 * @return JSONObject
+	 * @throws Exception
+	 */
+	public JSONObject searchkindLevel(String kindCode)
+			throws Exception {
+
+	    StringBuilder builder = new StringBuilder();
+		builder.append(" SELECT chain,kind_code,\"LEVEL\",\"EXTEND\" ");
+		builder.append(" FROM sc_fm_control ");
+		builder.append(" WHERE kind_code = :1");
+		try{
+			QueryRunner runner = new QueryRunner();
+		    return runner.query(DBConnector.getInstance().getMetaConnection(),builder.toString(), new ResultSetHandler<JSONObject>(){
+		    	JSONObject  jsonObject =null;
+		    	@Override
+				public JSONObject handle(ResultSet rs) throws SQLException {
+					if(rs.next()){
+						jsonObject.put("chainFlag", rs.getInt("chain"));
+						jsonObject.put("kindId", rs.getString("kind_code"));
+						jsonObject.put("extend", rs.getString("extend"));
+		
+					}else{
+						try {
+							throw new Exception("对应KIND_CODE数据不存在不存在!");
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+					return jsonObject;
+				}
+			},kindCode);
+		}catch (Exception e) {
+			throw e;
+		}
 	}
 
 }

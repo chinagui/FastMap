@@ -11,6 +11,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
+import org.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
 import org.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import org.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
 import org.navinfo.dataservice.engine.meta.patternimage.PatternImageSelector;
@@ -271,6 +272,107 @@ public class MetaController extends BaseController {
 			PatternImageSelector selector = new PatternImageSelector();
 
 			JSONObject data = selector.searchByName(name, pageSize, pageNum);
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	
+	@RequestMapping(value = "/meta/queryTelByProvince")
+	public ModelAndView searchTelByProvince(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String name = jsonReq.getString("province");
+
+			ScPointAdminArea selector = new ScPointAdminArea();
+
+			JSONArray data = selector.searchByProvince(name);
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	@RequestMapping(value = "/meta/queryTelLength")
+	public ModelAndView searchTelLength(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String code = jsonReq.getString("code");
+
+			ScPointAdminArea selector = new ScPointAdminArea();
+
+			String data = selector.searchTelLength(code);
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	@RequestMapping(value = "/meta/queryFoodType")
+	public ModelAndView searchFoodType(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String kindId = jsonReq.getString("kindId");
+
+			ScPointAdminArea selector = new ScPointAdminArea();
+
+			JSONArray data = selector.searchFoodType(kindId);
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	
+	@RequestMapping(value = "/meta/kindLevel")
+	public ModelAndView searchKindLevel(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String kindId = jsonReq.getString("kindCode");
+
+			ScPointAdminArea selector = new ScPointAdminArea();
+
+			JSONArray data = selector.searchFoodType(kindId);
 
 			return new ModelAndView("jsonView", success(data));
 

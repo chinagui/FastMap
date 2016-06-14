@@ -17,6 +17,7 @@ public class ExportConfig {
 	public final static String FEATURE_LINK="link";
 	public final static String FEATURE_FACE="face";
 	public final static String FEATURE_CK="ck";
+	public final static String FEATURE_GDB="gdb";
 
 	public static final String DATA_INTEGRITY = "dataIntegrity";
 	public static final String DATA_NOT_INTEGRITY = "dataNotIntegrity";

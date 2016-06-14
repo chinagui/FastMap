@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.man.grid;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +12,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.springframework.util.StringUtils;
 
+import com.navinfo.dataservice.api.man.model.Grid;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -24,6 +26,18 @@ public class GridService {
 		return SingletonHolder.INSTANCE;
 	}
 	
+	public List<Grid> list()throws Exception{
+		String sql = "SELECT GRID_ID,REGION_ID,CITY_ID,BLOCK_ID FROM GRID";
+		QueryRunner run = new QueryRunner();
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			List<Grid> results = run.query(conn, sql, new GridResultSetHandler());
+			return results;
+		}finally{
+			DbUtils.closeQuietly(conn);
+		}
+	}
 	/**
 	 * @param gridList  <br/>
 	 * <b>注意：如果参数gridList太长，会导致oracle sql太长而出现异常；</b>
@@ -87,4 +101,21 @@ public class GridService {
 		return whereClaus;
 	}
 	
+	class GridResultSetHandler implements ResultSetHandler<List<Grid>>{
+
+		@Override
+		public List<Grid> handle(ResultSet rs) throws SQLException {
+			List<Grid> results = new ArrayList<Grid>();
+			if(rs.next()){
+				Grid g = new Grid();
+				g.setGridId(rs.getInt("GRID_ID"));
+				g.setRegionId(rs.getInt("REGION_ID"));
+				g.setCityId(rs.getInt("CITY_ID"));
+				g.setBlockId(rs.getInt("BLOCK_ID"));
+				results.add(g);
+			}
+			return results;
+		}
+		
+	}
 }

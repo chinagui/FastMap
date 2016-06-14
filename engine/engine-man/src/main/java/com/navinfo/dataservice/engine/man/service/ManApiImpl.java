@@ -8,6 +8,7 @@ import net.sf.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Grid;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
@@ -34,5 +35,10 @@ public class ManApiImpl implements ManApi {
 		return new RegionService().query(region);
 		
 	}
+	@Override
+	public List<Grid> listGrids() throws Exception {
+		return GridService.getInstance().list();
+	}
+	
 }
 

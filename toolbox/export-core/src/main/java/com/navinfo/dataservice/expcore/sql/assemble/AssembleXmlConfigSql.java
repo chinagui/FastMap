@@ -27,7 +27,6 @@ public class AssembleXmlConfigSql implements AssembleSql {
 	protected static String TEMP_SQL_FIND_REGEX = "(TEMP_\\w+)|(TEMP_\\w+$) ";
 
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
-	protected String expMode;
 	protected String feature;
 	protected String condition;
 	protected List<String> conditionParams;
@@ -41,12 +40,11 @@ public class AssembleXmlConfigSql implements AssembleSql {
 	 * @throws Exception
 	 */
 
-	public AssembleXmlConfigSql(String expMode,String feature,String condition,List<String> conditionParams) throws ClassNotFoundException,Exception{
-		this.expMode=expMode;
+	public AssembleXmlConfigSql(String feature,String condition,List<String> conditionParams) throws ClassNotFoundException,Exception{
 		this.feature=feature;
 		this.condition=condition;
 		this.conditionParams=conditionParams;
-		ExpMainConfig expMainConf=ExpMainConfigManager.getInstance().getExpMainConfig(expMode, feature, condition);
+		ExpMainConfig expMainConf=ExpMainConfigManager.getInstance().getExpMainConfig(feature, condition);
 		log.info(expMainConf.getReplacerClassName());
 		Class repClass = Class.forName(expMainConf.getReplacerClassName());
 		this.mainFile=expMainConf.getMainScript();

@@ -140,6 +140,7 @@ public class DBConnector {
 								.getBean("datahubApi");
 
 						DbInfo db = datahub.getDbById(dbId);
+						System.out.println(db.toString());
 
 						DbConnectConfig connConfig = MultiDataSourceFactory
 								.createConnectConfig(db.getConnectParam());

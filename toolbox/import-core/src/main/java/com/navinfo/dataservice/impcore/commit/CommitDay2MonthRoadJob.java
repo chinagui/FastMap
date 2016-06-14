@@ -6,11 +6,11 @@ import java.util.Map;
 import java.util.Set;
 
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.IRegion;
+import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.datahub.model.DbInfo;
 import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
 import com.navinfo.dataservice.impcore.flushbylog.LogFlusher;
 import com.navinfo.dataservice.jobframework.exception.JobException;
@@ -52,7 +52,7 @@ public class CommitDay2MonthRoadJob extends AbstractJob {
 				//在大区日库中根据grid列表获取履历，并刷新对应的月库
 				//根据大区id获取对应的大区日库、大区月库
 				ManApi manApi =  (ManApi) ApplicationContextUtil.getBean("manApi");
-				IRegion regionDbInfo = manApi.queryByRegionId(regionId);
+				Region regionDbInfo = manApi.queryByRegionId(regionId);
 				DatahubApi databhubApi = (DatahubApi) ApplicationContextUtil.getBean("datahubApi");
 				DbInfo dailyDb = databhubApi.getDbById(regionDbInfo.getDailyDbId());
 				DbInfo monthlyDb = databhubApi.getDbById(regionDbInfo.getMonthlyDbId());

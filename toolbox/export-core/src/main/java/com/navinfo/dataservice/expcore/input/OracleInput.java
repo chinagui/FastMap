@@ -3,24 +3,18 @@ package com.navinfo.dataservice.expcore.input;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.dataservice.expcore.exception.ExportInputException;
-import com.navinfo.dataservice.datahub.exception.DataHubException;
-import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.expcore.source.OracleSource;
 import com.navinfo.dataservice.expcore.source.parameter.SerializeParameters;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.expcore.sql.assemble.AssembleSql;
 import com.navinfo.dataservice.expcore.sql.assemble.AssembleXmlConfigSql;
-import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
  * @ClassName: OracleInput 
@@ -41,8 +35,7 @@ public class OracleInput implements DataInput {
 	// 排序后且格式化的可以立即执行的导出sql
 	protected Map<Integer, List<ExpSQL>> expSqlMap;
 
-	public OracleInput(OracleSchema sourceSchema,String exportMode,String feature,String condition,List<String> conditionParams,String gdbVersion)throws ExportException{
-		this.exportMode=exportMode;
+	public OracleInput(OracleSchema sourceSchema,String feature,String condition,List<String> conditionParams,String gdbVersion)throws ExportException{
 		this.feature=feature;
 		this.condition=condition;
 		this.conditionParams=conditionParams;
@@ -87,7 +80,7 @@ public class OracleInput implements DataInput {
 	 */
 	@Override
 	public void loadScripts() throws ExportInputException, Exception {
-		AssembleSql as = new AssembleXmlConfigSql(exportMode,feature,condition,conditionParams);
+		AssembleSql as = new AssembleXmlConfigSql(feature,condition,conditionParams);
 		expSqlMap = as.assemble(gdbVersion, source.getTempSuffix());
 
 	}

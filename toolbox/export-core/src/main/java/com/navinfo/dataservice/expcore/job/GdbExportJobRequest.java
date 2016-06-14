@@ -15,16 +15,15 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 *  
 */
 public class GdbExportJobRequest extends AbstractJobRequest {
-	protected String exportMode;
 	protected int sourceDbId;
 	protected String condition;
 	protected List<String> conditionParams;
 	protected String feature;
-	protected boolean truncateData;
-	protected boolean destroyTarget;
+//	protected boolean truncateData;
+//	protected boolean destroyTarget;
 	protected int targetDbId;
-	protected boolean multiThread4Input;
-	protected boolean multiThread4Output;
+	protected boolean multiThread4Input=true;
+	protected boolean multiThread4Output=true;
 	protected boolean dataIntegrity;
 	protected Map<String,String> tableReNames;
 	protected List<String> checkExistTables;
@@ -37,33 +36,12 @@ public class GdbExportJobRequest extends AbstractJobRequest {
 
 	@Override
 	public int getStepCount() throws JobException {
-		if(ExportConfig.MODE_COPY.equals(exportMode)){
-			return 0;
-		}else if(ExportConfig.MODE_FULL_COPY.equals(exportMode)){
-			return 0;
-		}else if(ExportConfig.MODE_FLEXIBLE.equals(exportMode)){
-			return 0;
-		}
-		return 0;
+		return 3;
 	}
 
 	@Override
 	public void validate() throws JobException {
-		if(ExportConfig.MODE_COPY.equals(exportMode)){
-			
-		}else if(ExportConfig.MODE_FULL_COPY.equals(exportMode)){
-			
-		}else if(ExportConfig.MODE_FLEXIBLE.equals(exportMode)){
-			
-		}
-	}
-
-	public String getExportMode() {
-		return exportMode;
-	}
-
-	public void setExportMode(String exportMode) {
-		this.exportMode = exportMode;
+		
 	}
 
 	public int getSourceDbId() {
@@ -97,23 +75,7 @@ public class GdbExportJobRequest extends AbstractJobRequest {
 	public void setFeature(String feature) {
 		this.feature = feature;
 	}
-
-	public boolean isTruncateData() {
-		return truncateData;
-	}
-
-	public void setTruncateData(boolean truncateData) {
-		this.truncateData = truncateData;
-	}
-
-	public boolean isDestroyTarget() {
-		return destroyTarget;
-	}
-
-	public void setDestroyTarget(boolean destroyTarget) {
-		this.destroyTarget = destroyTarget;
-	}
-
+	
 	public int getTargetDbId() {
 		return targetDbId;
 	}

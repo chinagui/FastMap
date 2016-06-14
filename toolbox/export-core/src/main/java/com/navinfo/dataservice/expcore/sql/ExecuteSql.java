@@ -15,7 +15,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.expcore.config.ExportConfig;
+import com.navinfo.dataservice.expcore.ExportConfig;
 import com.navinfo.dataservice.expcore.input.OracleInput;
 import com.navinfo.dataservice.expcore.output.DataOutput;
 import com.navinfo.dataservice.expcore.sql.handler.DDLExecThreadHandler;
@@ -41,9 +41,12 @@ public class ExecuteSql {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected VMThreadPoolExecutor executePoolExecutor;
 	protected VMThreadPoolExecutor queryPoolExecutor; // 查询sql执行线程，最后一步select *语句的查询线程
-	protected ExportConfig expConfig;
 	protected OracleInput input; 
 	protected DataOutput output;
+	protected String exportMode;
+	protected boolean dataIntegrity;
+	protected boolean multiThread4Input;
+	protected boolean multiThread4Output;
 
 	/**
 	 * @param exportSource
@@ -53,10 +56,14 @@ public class ExecuteSql {
 	 * @param config
 	 *            系统配置
 	 */
-	public ExecuteSql(ExportConfig expConfig,OracleInput input,DataOutput output) {
-		this.expConfig = expConfig;
+	public ExecuteSql(OracleInput input,DataOutput output
+			,String exportMode,boolean dataIntegrity, boolean multiThread4Input,boolean multiThread4Output) {
 		this.input=input;
 		this.output=output;
+		this.exportMode=exportMode;
+		this.dataIntegrity=dataIntegrity;
+		this.multiThread4Input=multiThread4Input;
+		this.multiThread4Output=multiThread4Output;
 		createThreadPool();
 	}
 
@@ -67,11 +74,11 @@ public class ExecuteSql {
 	 */
 	protected void createThreadPool() {
 		int inputPoolSize = 1;
-		if(expConfig.isMultiThread4Input()){
+		if(multiThread4Input){
 			inputPoolSize = SystemConfigFactory.getSystemConfig().getIntValue("export.multiThread.inputPoolSize", 10);
 		}
 		int outPoolSize = 1;
-		if(expConfig.isMultiThread4Output()){
+		if(multiThread4Output){
 			outPoolSize = SystemConfigFactory.getSystemConfig().getIntValue("export.multiThread.outputPoolSize", 10);
 		}
 		
@@ -117,10 +124,10 @@ public class ExecuteSql {
 				
 				// 100 输出数据
 				// 101 删除数据
-				if(expConfig.getExportMode().equals(ExportConfig.MODE_COPY)){
+				if(exportMode.equals(ExportConfig.MODE_COPY)){
 					// step 大于100不执行
 					if (step > 100) continue;
-				}else if (expConfig.getExportMode().equals(ExportConfig.MODE_DELETE)) {
+				}else if (exportMode.equals(ExportConfig.MODE_DELETE)) {
 					// 101 删除数据
 					if (step == 100) continue;
 				} 
@@ -161,7 +168,7 @@ public class ExecuteSql {
 	private List<ExpSQL> filterSql(List<ExpSQL> sqlList) {
 		List<ExpSQL> filterSqlList = new ArrayList<ExpSQL>();
 		for (ExpSQL expSQL : sqlList) {
-			if (expConfig.isDataIntegrity()) {
+			if (dataIntegrity) {
 
 				// 毛边导出
 				if (expSQL.getSqlType() == null

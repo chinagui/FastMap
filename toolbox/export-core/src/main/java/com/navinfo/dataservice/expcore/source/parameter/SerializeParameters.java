@@ -16,7 +16,7 @@ import oracle.sql.STRUCT;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 
-import com.navinfo.dataservice.expcore.config.ExportConfig;
+import com.navinfo.dataservice.expcore.ExportConfig;
 import com.navinfo.dataservice.commons.database.oracle.MyDriverManagerConnectionWrapper;
 import com.navinfo.dataservice.commons.database.oracle.MyPoolGuardConnectionWrapper;
 import com.navinfo.dataservice.commons.database.oracle.MyPoolableConnection;
@@ -33,7 +33,7 @@ public class SerializeParameters {
 	 * @param params
 	 * @param suffix
 	 */
-	public void serialize(DataSource ds, Map<String,Set<String>> params, String suffix,String versionCode) throws Exception {
+	public void serialize(DataSource ds, Map<String,List<String>> params, String suffix,String versionCode) throws Exception {
 		if (params == null || params.isEmpty())
 			return;
 		Connection conn = null;
@@ -62,7 +62,7 @@ public class SerializeParameters {
 			runner.update(conn, sql2);
 			boolean needCreateSpatialIndex=false;
 			for (String key:params.keySet()) {
-				Set<String> paramSet = params.get(key);
+				List<String> paramSet = params.get(key);
 				if (paramSet == null || paramSet.isEmpty())
 					continue;
 				if(key.equals(ExportConfig.CONDITION_BY_MESH)){

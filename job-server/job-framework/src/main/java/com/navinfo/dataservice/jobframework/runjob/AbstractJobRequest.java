@@ -1,8 +1,10 @@
 package com.navinfo.dataservice.jobframework.runjob;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
@@ -74,7 +76,34 @@ public abstract class AbstractJobRequest {
 			}else if(attValue instanceof Boolean){
 				argtypes= new Class[]{Boolean.class};
 			}else if(attValue instanceof JSONArray){
-				argtypes= new Class[]{List.class};
+				JSONArray attArr = (JSONArray)attValue;
+				if(attArr.size()>0){
+					Object subObj = attArr.get(0);
+					if(subObj instanceof String
+							||subObj instanceof Integer
+							||subObj instanceof Double
+							||subObj instanceof Boolean
+							){
+						argtypes= new Class[]{List.class};
+					}else if(subObj instanceof JSONObject){
+						argtypes= new Class[]{Map.class};
+						Map newAttValue = new HashMap();
+						for(Object o:attArr){
+							JSONObject jo = (JSONObject)o;
+							Object key = jo.get("key");
+							Object value = jo.get("value");
+							if(key!=null&&value!=null){
+								newAttValue.put(key, value);
+							}
+						}
+						attValue=newAttValue;
+					}else{
+						throw new Exception(attName+"为数组类型，其内部格式为不支持的json结构");
+					}
+				}else{
+					return;
+				}
+				
 			}else if(attValue instanceof JSONObject){
 				//sub job
 				argtypes= new Class[]{AbstractJobRequest.class};

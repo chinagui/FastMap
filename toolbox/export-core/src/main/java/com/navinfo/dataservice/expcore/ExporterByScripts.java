@@ -47,7 +47,7 @@ public abstract class ExporterByScripts implements Exporter {
 			input.loadScripts();
 			output = initDataOutput(result);
 			//有瑕疵，现在还不能确定source是不是应该只有oracle
-			ExecuteSql exportSqlExecutor=new ExecuteSql(expConfig,input,output);
+			ExecuteSql exportSqlExecutor=new ExecuteSql(input,output);
 			exportSqlExecutor.execute();
 			//...
 			result.setStatus(ExporterResult.STATUS_SUCCESS);

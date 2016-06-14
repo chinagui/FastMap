@@ -1,19 +1,26 @@
 package org.navinfo.dataservice.engine.meta.area;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.log4j.Logger;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.exception.ServiceException;
 /**
  * 区域信息查询
  * @author zhaokk
  *
  */
 public class ScPointAdminArea {
+	private Logger log = LoggerRepos.getLogger(this.getClass());
 	/**
 	 * 根据省份获取电话列表
 	 * @param name
@@ -29,22 +36,31 @@ public class ScPointAdminArea {
 		builder.append(" adminareacode, areacode,phonenum_len");
 		builder.append(" FROM sc_point_adminarea ");
 		builder.append(" WHERE province = :1");
-		QueryRunner runner = new QueryRunner();
-	    return runner.query(DBConnector.getInstance().getMetaConnection(),builder.toString(), new ResultSetHandler<JSONArray>(){
-			@Override
-			public JSONArray handle(ResultSet rs) throws SQLException {
-				JSONArray array  = new JSONArray();
-				while(rs.next()){
-					JSONObject  jsonObject = new JSONObject();
-					jsonObject.put("city", rs.getString("city"));
-					jsonObject.put("cityCode", rs.getString("adminareacode"));
-					jsonObject.put("code", rs.getString("areacode"));
-					jsonObject.put("telLength", rs.getString("phonenum_len"));
-					array.add(jsonObject);
+		Connection conn = DBConnector.getInstance().getMetaConnection();
+		try{
+			QueryRunner runner = new QueryRunner();
+		    return runner.query(DBConnector.getInstance().getMetaConnection(),builder.toString(), new ResultSetHandler<JSONArray>(){
+				@Override
+				public JSONArray handle(ResultSet rs) throws SQLException {
+					JSONArray array  = new JSONArray();
+					while(rs.next()){
+						JSONObject  jsonObject = new JSONObject();
+						jsonObject.put("city", rs.getString("city"));
+						jsonObject.put("cityCode", rs.getString("adminareacode"));
+						jsonObject.put("code", rs.getString("areacode"));
+						jsonObject.put("telLength", rs.getString("phonenum_len"));
+						array.add(jsonObject);
+					}
+					return array;
 				}
-				return array;
-			}
-		},name);
+			},name);
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 	/**
 	 * 电话长度查询
@@ -59,18 +75,27 @@ public class ScPointAdminArea {
 		builder.append(" SELECT phonenum_len ");
 		builder.append(" FROM sc_point_adminarea ");
 		builder.append(" WHERE areacode = :1");
-		QueryRunner runner = new QueryRunner();
-	    return runner.query(DBConnector.getInstance().getMetaConnection(),builder.toString(), new ResultSetHandler<String>(){
-			@Override
-			public String handle(ResultSet rs) throws SQLException {
-				if(rs.next()){
-					return rs.getString("phonenum_len");
+		Connection conn = DBConnector.getInstance().getMetaConnection();
+		try{
+			QueryRunner runner = new QueryRunner();
+		
+		    return runner.query(conn,builder.toString(), new ResultSetHandler<String>(){
+				@Override
+				public String handle(ResultSet rs) throws SQLException {
+					if(rs.next()){
+						return rs.getString("phonenum_len");
+					}
+					return "";
 				}
-				return "";
-			}
-		},code);
-	}
-	
+			},code);
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+}
 	/**
 	 * 查询foodType
 	 * @param kindId
@@ -83,9 +108,11 @@ public class ScPointAdminArea {
 	    StringBuilder builder = new StringBuilder();
 		builder.append(" SELECT poikind,foodtype,type,foodtypename ");
 		builder.append(" FROM sc_point_foodtype ");
-		builder.append(" WHERE kind_id = :1");
+		builder.append(" WHERE poikind = :1");
+		Connection conn = DBConnector.getInstance().getMetaConnection();
+		try{
 		QueryRunner runner = new QueryRunner();
-	    return runner.query(DBConnector.getInstance().getMetaConnection(),builder.toString(), new ResultSetHandler<JSONArray>(){
+	    return runner.query(conn,builder.toString(), new ResultSetHandler<JSONArray>(){
 			@Override
 			public JSONArray handle(ResultSet rs) throws SQLException {
 				JSONArray  array = new JSONArray();
@@ -100,6 +127,12 @@ public class ScPointAdminArea {
 				return array;
 			}
 		},kindId);
+	}catch (Exception e) {
+		DbUtils.rollbackAndCloseQuietly(conn);
+		log.error(e.getMessage(), e);
+		throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+	} finally {
+		DbUtils.commitAndCloseQuietly(conn);
 	}
-	
+  }
 }

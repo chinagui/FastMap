@@ -24,7 +24,7 @@ public class FocusSelector {
 
 		QueryRunner run = new QueryRunner();
 
-		Connection conn = DBConnector.getInstance().getManConnection();
+		Connection conn = DBConnector.getInstance().getMetaConnection();
 
 		ResultSetHandler<JSONArray> handler = new ResultSetHandler<JSONArray>() {
 

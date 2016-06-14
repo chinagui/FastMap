@@ -96,7 +96,7 @@ public abstract class AbstractJob implements Runnable {
 	 * @param stepMsg
 	 * @throws JobException
 	 */
-	public void response(String stepMsg,Map<String,Object> data)throws JobException{
+	public void response(String stepMsg,Map<String,?> data)throws JobException{
 		log.debug("resp:"+stepMsg+","+JSONObject.fromObject(data).toString());
 		//data添加到jobInfo
 		if(data!=null){

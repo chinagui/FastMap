@@ -9,9 +9,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
-import com.navinfo.dataservice.engine.man.region.Region;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.navicommons.database.Page;
 
@@ -103,7 +103,8 @@ public class RegionController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
-			Region data = service.query(dataJson);			
+			Region bean = (Region) JSONObject.toBean(dataJson, Region.class);
+			Region data = service.query(bean);			
 			return new ModelAndView("jsonView", success(JSONObject.fromObject(data)));
 		}catch(Exception e){
 			log.error("获取明细失败，原因："+e.getMessage(), e);

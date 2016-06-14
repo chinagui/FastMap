@@ -56,6 +56,10 @@
      </dependency>
      <dependency>
          <groupId>com.navinfo.dataservice</groupId>
+         <artifactId>api-man</artifactId>
+     </dependency>
+     <dependency>
+         <groupId>com.navinfo.dataservice</groupId>
          <artifactId>api-datahub</artifactId>
      </dependency>
      

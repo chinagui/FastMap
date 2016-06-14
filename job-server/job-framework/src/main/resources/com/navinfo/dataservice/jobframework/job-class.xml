@@ -2,7 +2,11 @@
 <mapping>
 	<type name="createDb" 
 		class="com.navinfo.dataservice.job.datahub.CreateDbJob"
-	 	request="com.navinfo.dataservice.job.datahub.CreateDbJobRequest"
+	 	request="com.navinfo.dataservice.job.datahub.CreateDbJobRequest">
+	</type>
+	<type name="commitDay2MonthRoadJob" 
+		class="com.navinfo.dataservice.impcore.commit.CommitDay2MonthRoadJob"
+	 	request="com.navinfo.dataservice.impcore.commit.CommitDay2MonthRoadJobRequest"
 	/>
 	<type name="diff" 
 		class="com.navinfo.dataservice.diff.DiffJob"

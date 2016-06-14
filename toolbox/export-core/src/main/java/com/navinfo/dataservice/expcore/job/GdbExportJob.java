@@ -19,8 +19,9 @@ public class GdbExportJob extends AbstractJob {
 
 	@Override
 	public void execute() throws JobException {
-		// TODO Auto-generated method stub
-
+		//1. 导出源预处理
+		
+		OracleInput input = new OracleInput()
 	}
 
 }

@@ -23,24 +23,16 @@ public class DatahubApiImpl implements DatahubApi {
 	}
 	@Override
 	public DbInfo getSuperDb(DbInfo db) throws Exception {
-		return DbService.getInstance().getSuperDb(db);
+		if(db instanceof DbInfo){
+			return DbService.getInstance().getSuperDb((DbInfo)db);
+		}else{
+			throw new Exception("未知的dbinfo类");
+		}
 	}
 
 	@Override
 	public DbInfo getOnlyDbByType(String bizType) throws Exception {
 		return DbService.getInstance().getOnlyDbByType(bizType);
-	}
-	@Override
-	public DbInfo getDailyDbByRegionId(int regionId) throws Exception {
-		ManApi man = (ManApi)ApplicationContextUtil.getBean("manApi");
-		int dbId = man.getDailyRegionDbId(regionId);
-		return DbService.getInstance().getDbById(dbId);
-	}
-	@Override
-	public DbInfo getMonthlyDbByRegionId(int regionId) throws Exception {
-		ManApi man = (ManApi)ApplicationContextUtil.getBean("manApi");
-		int dbId = man.getMonthlyRegionDbId(regionId);
-		return DbService.getInstance().getDbById(dbId);
 	}
 
 }

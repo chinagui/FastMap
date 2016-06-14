@@ -60,7 +60,7 @@ public class DBConnector {
 			synchronized (this) {
 				if (metaDataSource == null) {
 					DatahubApi datahub = (DatahubApi) ApplicationContextUtil
-							.getBean("datahubApiService");
+							.getBean("datahubApi");
 					DbInfo metaDb = null;
 					DbConnectConfig connConfig = null;
 					try {

@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+
 /** 
 * @ClassName: DbInfo 
 * @author Xiao Xiaowen 
@@ -142,4 +143,15 @@ public class DbInfo implements Serializable{
 	public void setDbServer(DbServer dbServer) {
 		this.dbServer = dbServer;
 	}
+	@Override
+	public String toString() {
+		return "DbInfo [dbId=" + dbId + ", dbName=" + dbName + ", dbUserName="
+				+ dbUserName + ", dbUserPasswd=" + dbUserPasswd + ", dbRole="
+				+ dbRole + ", tablespaceName=" + tablespaceName + ", bizType="
+				+ bizType + ", gdbVersion=" + gdbVersion + ", dbStatus="
+				+ dbStatus + ", createTime=" + createTime + ", descp=" + descp
+				+ ", dbServer=" + dbServer + "]";
+	}
+	
+	
 }

@@ -16,6 +16,9 @@ import org.springframework.stereotype.Service;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.engine.man.task.Task;
+import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.Page;
 //import com.navinfo.dataservice.commons.util.StringUtils;
@@ -34,34 +37,44 @@ public class SubtaskService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
 	
-	public void create(JSONObject json)throws ServiceException{
+	public void create(Subtask bean,long userId,JSONArray gridIds,String wkt)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();	
-			
-			JSONArray gridIds = json.getJSONArray("gridIds");
-			String geometry = json.getString("geometry");
-			
-			json.remove("gridIds");
 
-			json.remove("geometry");
-			
-			Subtask  bean = (Subtask)JSONObject.toBean(json, Subtask.class);
-			
 			String querySql = "select SUBTASK_SEQ.NEXTVAL as subTaskId from dual";
 			
 			int subTaskId = Integer.valueOf(run.query(conn,querySql,new MapHandler()).get("subTaskId").toString()); 
 			
-			String createSql = "insert into SUBTASK (SUBTASK_ID, BLOCK_ID, TASK_ID, GEOMETRY, STAGE, TYPE, CREATE_USER_ID, CREATE_DATE, EXE_USER_ID, STATUS, PLAN_START_DATE, PLAN_END_DATE, START_DATE, END_DATE, DESCP) "
-					+ "values(" + subTaskId + ","+bean.getBlockId()+","+bean.getTaskId()+","+ "sdo_geometry(" +  "'" + geometry + "',8307)" 
-					+","+ bean.getStage()+","+ bean.getType()
-					+","+ bean.getCreateUserId()+","+  bean.getCreateDate()
-					+","+ bean.getExeUserId()+","+  "1"
-					+",to_date('" + bean.getPlanStartDate() + "','yyyymmdd')" + ",to_date('" + bean.getPlanEndDate() + "','yyyymmdd')"
-					+","+  bean.getStartDate()+","+ bean.getEndDate()
-					+","+ bean.getDescp()+")";			
+			String createSql = "insert into SUBTASK "
+					+ "(SUBTASK_ID"
+					+ ", BLOCK_ID"
+					+ ", TASK_ID"
+					+ ", GEOMETRY"
+					+ ", STAGE"
+					+ ", TYPE"
+					+ ", CREATE_USER_ID"
+					+ ", EXE_USER_ID"
+					+ ", CREATE_DATE"
+					+ ", STATUS"
+					+ ", PLAN_START_DATE"
+					+ ", PLAN_END_DATE"
+					+ ", DESCP) "
+					+ "values(" + subTaskId 
+					+ "," + bean.getBlockId()
+					+ "," + bean.getTaskId()
+					+ "," + "sdo_geometry(" +  "'" + wkt + "',8307)" 
+					+ "," + bean.getStage()
+					+ "," + bean.getType()
+					+ "," + userId 
+					+ "," + bean.getExeUserId()
+					+ ", sysdate"
+					+ ","+  "1"
+					+ ",to_date('" + bean.getPlanStartDate() + "','yyyymmdd')" 
+					+ ",to_date('" + bean.getPlanEndDate() + "','yyyymmdd')"
+					+ ",'"+ bean.getDescp()+"')";			
 			run.update(conn,createSql);
 			
 			String createMappingSql = "insert into SUBTASK_GRID_MAPPING (SUBTASK_ID, GRID_ID) VALUES (?,?)";	
@@ -86,83 +99,101 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	
+	public List<HashMap> listByWkt(JSONObject json)throws ServiceException{
+		Connection conn = null;
+		try{
+			//持久化
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();	
+			
+			JSONArray types = json.getJSONArray("types");
+			int stage = json.getInt("stage");
+
+			String wkt = json.getString("wkt");
+			
+			String type = "(";
+			for (int i = 0;i<types.size();i++){
+				type += types.getInt(i);
+				if(i < types.size()-1){
+					type += ",";
+				}
+			}
+			
+			type += ")";
+			
+			String querySql = "select s.subtask_id, TO_CHAR(s.geometry.get_wkt()) as geometry,s.descp from subtask s where type in" + type 
+			+ " and stage =" + stage 
+			+ " and SDO_GEOM.RELATE(geometry, 'ANYINTERACT', " + "sdo_geometry(" +  "'" + wkt + "',8307)" + ", 0.000005) ='TRUE'";
+		
+			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
+				public List<HashMap> handle(ResultSet rs) throws SQLException {
+					List<HashMap> list = new ArrayList<HashMap>();
+					while(rs.next()){
+						HashMap map = new HashMap();
+						map.put("subtaskId", rs.getInt("SUBTASK_ID"));
+						map.put("geometry", rs.getObject("GEOMETRY"));
+						map.put("descp", rs.getString("DESCP"));
+						list.add(map);
+					}
+					return list;
+				}
+	    		
+	    	};
+	    	
+	    	
+	    	return run.query(conn, querySql, rsHandler);
+	    	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("创建失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
 	public void update(JSONObject json)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();
+			conn = DBConnector.getInstance().getManConnection();	
 			
-			JSONObject obj = JSONObject.fromObject(json);	
-			Subtask  bean = (Subtask)JSONObject.toBean(obj, Subtask.class);	
+			if(!json.containsKey("subtasks")){return;}
 			
-			String updateSql = "update SUBTASK set SUBTASK_ID=?, BLOCK_ID=?, TASK_ID=?, GEOMETRY=?, STAGE=?, TYPE=?, CREATE_USER_ID=?, CREATE_DATE=?, EXE_USER_ID=?, STATUS=?, PLAN_START_DATE=?, PLAN_END_DATE=?, START_DATE=?, END_DATE=?, DESCP=? where 1=1 SUBTASK_ID=? and BLOCK_ID=? and TASK_ID=? and GEOMETRY=? and STAGE=? and TYPE=? and CREATE_USER_ID=? and CREATE_DATE=? and EXE_USER_ID=? and STATUS=? and PLAN_START_DATE=? and PLAN_END_DATE=? and START_DATE=? and END_DATE=? and DESCP=?";
-			List<Object> values=new ArrayList();
-			if (bean!=null&&bean.getSubtaskId()!=null && StringUtils.isNotEmpty(bean.getSubtaskId().toString())){
-				updateSql+=" and SUBTASK_ID=? ";
-				values.add(bean.getSubtaskId());
-			};
-			if (bean!=null&&bean.getBlockId()!=null && StringUtils.isNotEmpty(bean.getBlockId().toString())){
-				updateSql+=" and BLOCK_ID=? ";
-				values.add(bean.getBlockId());
-			};
-			if (bean!=null&&bean.getTaskId()!=null && StringUtils.isNotEmpty(bean.getTaskId().toString())){
-				updateSql+=" and TASK_ID=? ";
-				values.add(bean.getTaskId());
-			};
-			if (bean!=null&&bean.getGeometry()!=null && StringUtils.isNotEmpty(bean.getGeometry().toString())){
-				updateSql+=" and GEOMETRY=? ";
-				values.add(bean.getGeometry());
-			};
-			if (bean!=null&&bean.getStage()!=null && StringUtils.isNotEmpty(bean.getStage().toString())){
-				updateSql+=" and STAGE=? ";
-				values.add(bean.getStage());
-			};
-			if (bean!=null&&bean.getType()!=null && StringUtils.isNotEmpty(bean.getType().toString())){
-				updateSql+=" and TYPE=? ";
-				values.add(bean.getType());
-			};
-			if (bean!=null&&bean.getCreateUserId()!=null && StringUtils.isNotEmpty(bean.getCreateUserId().toString())){
-				updateSql+=" and CREATE_USER_ID=? ";
-				values.add(bean.getCreateUserId());
-			};
-			if (bean!=null&&bean.getCreateDate()!=null && StringUtils.isNotEmpty(bean.getCreateDate().toString())){
-				updateSql+=" and CREATE_DATE=? ";
-				values.add(bean.getCreateDate());
-			};
-			if (bean!=null&&bean.getExeUserId()!=null && StringUtils.isNotEmpty(bean.getExeUserId().toString())){
-				updateSql+=" and EXE_USER_ID=? ";
-				values.add(bean.getExeUserId());
-			};
-			if (bean!=null&&bean.getStatus()!=null && StringUtils.isNotEmpty(bean.getStatus().toString())){
-				updateSql+=" and STATUS=? ";
-				values.add(bean.getStatus());
-			};
-			if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
-				updateSql+=" and PLAN_START_DATE=? ";
-				values.add(bean.getPlanStartDate());
-			};
-			if (bean!=null&&bean.getPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
-				updateSql+=" and PLAN_END_DATE=? ";
-				values.add(bean.getPlanEndDate());
-			};
-			if (bean!=null&&bean.getStartDate()!=null && StringUtils.isNotEmpty(bean.getStartDate().toString())){
-				updateSql+=" and START_DATE=? ";
-				values.add(bean.getStartDate());
-			};
-			if (bean!=null&&bean.getEndDate()!=null && StringUtils.isNotEmpty(bean.getEndDate().toString())){
-				updateSql+=" and END_DATE=? ";
-				values.add(bean.getEndDate());
-			};
-			if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp().toString())){
-				updateSql+=" and DESCP=? ";
-				values.add(bean.getDescp());
-			};
-			run.update(conn, 
-					   updateSql, 
-					   bean.getSubtaskId() ,bean.getBlockId(),bean.getTaskId(),bean.getGeometry(),bean.getStage(),bean.getType(),bean.getCreateUserId(),bean.getCreateDate(),bean.getExeUserId(),bean.getStatus(),bean.getPlanStartDate(),bean.getPlanEndDate(),bean.getStartDate(),bean.getEndDate(),bean.getDescp(),
-					   values.toArray()
-					   );
+			JSONArray subtaskArray=json.getJSONArray("subtasks");
+			
+			String updateSql = "update SUBTASK set "
+					+ "EXE_USER_ID=? "
+					+ ", PLAN_START_DATE= ?"
+					+ ", PLAN_END_DATE=?"
+					+ ", DESCP=? "
+					+ " where SUBTASK_ID=?";	
+			
+			
+			Object[][] inParam = new Object[subtaskArray.size()][];
+			
+            for (int i = 0; i < subtaskArray.size(); i++)
+            {
+            	JSONObject subtaskJson = subtaskArray.getJSONObject(i);
+            	Object[] temp = new Object[5];
+            	temp[0] = subtaskJson.getInt("exeUserId");
+            	temp[1] = "to_date('" + subtaskJson.getString("planStartDate") +"','yyyymmdd')" ;
+            	temp[2] = "to_date('" + subtaskJson.getString("planEndDate") +"','yyyymmdd')";
+            	temp[3] = subtaskJson.getString("descp");
+            	temp[4] = subtaskJson.getInt("subtaskId");
+            	inParam[i] = temp;
+            	
+            }
+            
+            for(int i = 0 ; i< inParam.length; i++){
+            	run.update(conn,updateSql, inParam[i]);
+            }
+            
+//			run.batch(conn,updateSql, inParam);
+			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -171,198 +202,49 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public void delete(JSONObject json)throws ServiceException{
-		Connection conn = null;
-		try{
-			//持久化
-			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();
-			
-			JSONObject obj = JSONObject.fromObject(json);	
-			Subtask  bean = (Subtask)JSONObject.toBean(obj, Subtask.class);	
-			
-			String deleteSql = "delete from  SUBTASK where 1=1 ";
-			List<Object> values=new ArrayList();
-			if (bean!=null&&bean.getSubtaskId()!=null && StringUtils.isNotEmpty(bean.getSubtaskId().toString())){
-				deleteSql+=" and SUBTASK_ID=? ";
-				values.add(bean.getSubtaskId());
-			};
-			if (bean!=null&&bean.getBlockId()!=null && StringUtils.isNotEmpty(bean.getBlockId().toString())){
-				deleteSql+=" and BLOCK_ID=? ";
-				values.add(bean.getBlockId());
-			};
-			if (bean!=null&&bean.getTaskId()!=null && StringUtils.isNotEmpty(bean.getTaskId().toString())){
-				deleteSql+=" and TASK_ID=? ";
-				values.add(bean.getTaskId());
-			};
-			if (bean!=null&&bean.getGeometry()!=null && StringUtils.isNotEmpty(bean.getGeometry().toString())){
-				deleteSql+=" and GEOMETRY=? ";
-				values.add(bean.getGeometry());
-			};
-			if (bean!=null&&bean.getStage()!=null && StringUtils.isNotEmpty(bean.getStage().toString())){
-				deleteSql+=" and STAGE=? ";
-				values.add(bean.getStage());
-			};
-			if (bean!=null&&bean.getType()!=null && StringUtils.isNotEmpty(bean.getType().toString())){
-				deleteSql+=" and TYPE=? ";
-				values.add(bean.getType());
-			};
-			if (bean!=null&&bean.getCreateUserId()!=null && StringUtils.isNotEmpty(bean.getCreateUserId().toString())){
-				deleteSql+=" and CREATE_USER_ID=? ";
-				values.add(bean.getCreateUserId());
-			};
-			if (bean!=null&&bean.getCreateDate()!=null && StringUtils.isNotEmpty(bean.getCreateDate().toString())){
-				deleteSql+=" and CREATE_DATE=? ";
-				values.add(bean.getCreateDate());
-			};
-			if (bean!=null&&bean.getExeUserId()!=null && StringUtils.isNotEmpty(bean.getExeUserId().toString())){
-				deleteSql+=" and EXE_USER_ID=? ";
-				values.add(bean.getExeUserId());
-			};
-			if (bean!=null&&bean.getStatus()!=null && StringUtils.isNotEmpty(bean.getStatus().toString())){
-				deleteSql+=" and STATUS=? ";
-				values.add(bean.getStatus());
-			};
-			if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
-				deleteSql+=" and PLAN_START_DATE=? ";
-				values.add(bean.getPlanStartDate());
-			};
-			if (bean!=null&&bean.getPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
-				deleteSql+=" and PLAN_END_DATE=? ";
-				values.add(bean.getPlanEndDate());
-			};
-			if (bean!=null&&bean.getStartDate()!=null && StringUtils.isNotEmpty(bean.getStartDate().toString())){
-				deleteSql+=" and START_DATE=? ";
-				values.add(bean.getStartDate());
-			};
-			if (bean!=null&&bean.getEndDate()!=null && StringUtils.isNotEmpty(bean.getEndDate().toString())){
-				deleteSql+=" and END_DATE=? ";
-				values.add(bean.getEndDate());
-			};
-			if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp().toString())){
-				deleteSql+=" and DESCP=? ";
-				values.add(bean.getDescp());
-			};
-			if (values.size()==0){
-	    		run.update(conn, deleteSql);
-	    	}else{
-	    		run.update(conn, deleteSql,values.toArray());
-	    	}
-	    	
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("删除失败，原因为:"+e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
-	public Page list(JSONObject json ,final int currentPageNum)throws ServiceException{
+
+	
+	public List<Subtask> listByBlock(Subtask bean)throws ServiceException{
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			
-			JSONObject obj = JSONObject.fromObject(json);	
-			Subtask  bean = (Subtask)JSONObject.toBean(obj, Subtask.class);
+			String selectSql = "select s.SUBTASK_ID,"
+					+ "s.STAGE,"
+					+ "s.TYPE,"
+					+ "s.PLAN_START_DATE,"
+					+ "s.PLAN_END_DATE,"
+					+ "s.DESCP,"
+					+ "TO_CHAR(s.GEOMETRY.get_wkt()) AS GEOMETRY "
+					+ "from SUBTASK s "
+					+ "where s.BLOCK_ID = " + bean.getBlockId()
+					+ " and s.STAGE = " + bean.getStage();
 			
-			String selectSql = "select * from SUBTASK where 1=1 ";
-			List<Object> values=new ArrayList();
-			if (bean!=null&&bean.getSubtaskId()!=null && StringUtils.isNotEmpty(bean.getSubtaskId().toString())){
-				selectSql+=" and SUBTASK_ID=? ";
-				values.add(bean.getSubtaskId());
-			};
-			if (bean!=null&&bean.getBlockId()!=null && StringUtils.isNotEmpty(bean.getBlockId().toString())){
-				selectSql+=" and BLOCK_ID=? ";
-				values.add(bean.getBlockId());
-			};
-			if (bean!=null&&bean.getTaskId()!=null && StringUtils.isNotEmpty(bean.getTaskId().toString())){
-				selectSql+=" and TASK_ID=? ";
-				values.add(bean.getTaskId());
-			};
-			if (bean!=null&&bean.getGeometry()!=null && StringUtils.isNotEmpty(bean.getGeometry().toString())){
-				selectSql+=" and GEOMETRY=? ";
-				values.add(bean.getGeometry());
-			};
-			if (bean!=null&&bean.getStage()!=null && StringUtils.isNotEmpty(bean.getStage().toString())){
-				selectSql+=" and STAGE=? ";
-				values.add(bean.getStage());
-			};
-			if (bean!=null&&bean.getType()!=null && StringUtils.isNotEmpty(bean.getType().toString())){
-				selectSql+=" and TYPE=? ";
-				values.add(bean.getType());
-			};
-			if (bean!=null&&bean.getCreateUserId()!=null && StringUtils.isNotEmpty(bean.getCreateUserId().toString())){
-				selectSql+=" and CREATE_USER_ID=? ";
-				values.add(bean.getCreateUserId());
-			};
-			if (bean!=null&&bean.getCreateDate()!=null && StringUtils.isNotEmpty(bean.getCreateDate().toString())){
-				selectSql+=" and CREATE_DATE=? ";
-				values.add(bean.getCreateDate());
-			};
-			if (bean!=null&&bean.getExeUserId()!=null && StringUtils.isNotEmpty(bean.getExeUserId().toString())){
-				selectSql+=" and EXE_USER_ID=? ";
-				values.add(bean.getExeUserId());
-			};
-			if (bean!=null&&bean.getStatus()!=null && StringUtils.isNotEmpty(bean.getStatus().toString())){
-				selectSql+=" and STATUS=? ";
-				values.add(bean.getStatus());
-			};
-			if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
-				selectSql+=" and PLAN_START_DATE=? ";
-				values.add(bean.getPlanStartDate());
-			};
-			if (bean!=null&&bean.getPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
-				selectSql+=" and PLAN_END_DATE=? ";
-				values.add(bean.getPlanEndDate());
-			};
-			if (bean!=null&&bean.getStartDate()!=null && StringUtils.isNotEmpty(bean.getStartDate().toString())){
-				selectSql+=" and START_DATE=? ";
-				values.add(bean.getStartDate());
-			};
-			if (bean!=null&&bean.getEndDate()!=null && StringUtils.isNotEmpty(bean.getEndDate().toString())){
-				selectSql+=" and END_DATE=? ";
-				values.add(bean.getEndDate());
-			};
-			if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp().toString())){
-				selectSql+=" and DESCP=? ";
-				values.add(bean.getDescp());
-			};
-			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
-				public Page handle(ResultSet rs) throws SQLException {
-					List list = new ArrayList();
-		            Page page = new Page(currentPageNum);
+			ResultSetHandler<List<Subtask>> rsHandler = new ResultSetHandler<List<Subtask>>(){
+
+				public List<Subtask> handle(ResultSet rs) throws SQLException {
+					List<Subtask> list = new ArrayList();
 					while(rs.next()){
-						HashMap map = new HashMap();
-						page.setTotalCount(rs.getInt(QueryRunner.TOTAL_RECORD_NUM));
-						map.put("subtaskId", rs.getInt("SUBTASK_ID"));
-						map.put("blockId", rs.getInt("BLOCK_ID"));
-						map.put("taskId", rs.getInt("TASK_ID"));
-						map.put("geometry", rs.getObject("GEOMETRY"));
-						map.put("stage", rs.getInt("STAGE"));
-						map.put("type", rs.getInt("TYPE"));
-						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
-						map.put("createDate", rs.getObject("CREATE_DATE"));
-						map.put("exeUserId", rs.getInt("EXE_USER_ID"));
-						map.put("status", rs.getInt("STATUS"));
-						map.put("planStartDate", rs.getObject("PLAN_START_DATE"));
-						map.put("planEndDate", rs.getObject("PLAN_END_DATE"));
-						map.put("startDate", rs.getObject("START_DATE"));
-						map.put("endDate", rs.getObject("END_DATE"));
-						map.put("descp", rs.getString("DESCP"));
-						list.add(map);
+						Subtask subtask = new Subtask();
+						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
+						subtask.setGeometry(rs.getObject("GEOMETRY"));
+						subtask.setStage(rs.getInt("STAGE"));
+						subtask.setType(rs.getInt("TYPE"));
+						subtask.setPlanStartDate(DateUtils.dateToString(rs.getTimestamp("PLAN_START_DATE")));	
+						subtask.setPlanEndDate(DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
+						subtask.setDescp(rs.getString("DESCP"));
+						list.add(subtask);
 					}
-					page.setResult(list);
-					return page;
+
+					return list;
 				}
 	    		
 	    	}	;
-			if (values.size()==0){
-	    		return run.query(currentPageNum, 20, conn, selectSql, rsHandler
-						);
-	    	}
-	    	return run.query(currentPageNum, 20, conn, selectSql, rsHandler,values.toArray()
-					);
+	    	
+	    	return run.query(conn, selectSql, rsHandler);
+
+	    	
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -372,108 +254,126 @@ public class SubtaskService {
 		}
 		
 	}
-	public List<HashMap> list(JSONObject json)throws ServiceException{
+	
+	
+	
+	public Page listByUser(JSONObject json,final int currentPageNum,final int pageSize)throws ServiceException{
 		Connection conn = null;
 		try{
+			
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();	
 					
-			JSONObject obj = JSONObject.fromObject(json);	
-			Subtask  bean = (Subtask)JSONObject.toBean(obj, Subtask.class);	
-			String selectSql = "select * from SUBTASK where 1=1 ";
-			List<Object> values=new ArrayList();
-			if (bean!=null&&bean.getSubtaskId()!=null && StringUtils.isNotEmpty(bean.getSubtaskId().toString())){
-				selectSql+=" and SUBTASK_ID=? ";
-				values.add(bean.getSubtaskId());
-			};
-			if (bean!=null&&bean.getBlockId()!=null && StringUtils.isNotEmpty(bean.getBlockId().toString())){
-				selectSql+=" and BLOCK_ID=? ";
-				values.add(bean.getBlockId());
-			};
-			if (bean!=null&&bean.getTaskId()!=null && StringUtils.isNotEmpty(bean.getTaskId().toString())){
-				selectSql+=" and TASK_ID=? ";
-				values.add(bean.getTaskId());
-			};
-			if (bean!=null&&bean.getGeometry()!=null && StringUtils.isNotEmpty(bean.getGeometry().toString())){
-				selectSql+=" and GEOMETRY=? ";
-				values.add(bean.getGeometry());
-			};
-			if (bean!=null&&bean.getStage()!=null && StringUtils.isNotEmpty(bean.getStage().toString())){
-				selectSql+=" and STAGE=? ";
-				values.add(bean.getStage());
-			};
-			if (bean!=null&&bean.getType()!=null && StringUtils.isNotEmpty(bean.getType().toString())){
-				selectSql+=" and TYPE=? ";
-				values.add(bean.getType());
-			};
-			if (bean!=null&&bean.getCreateUserId()!=null && StringUtils.isNotEmpty(bean.getCreateUserId().toString())){
-				selectSql+=" and CREATE_USER_ID=? ";
-				values.add(bean.getCreateUserId());
-			};
-			if (bean!=null&&bean.getCreateDate()!=null && StringUtils.isNotEmpty(bean.getCreateDate().toString())){
-				selectSql+=" and CREATE_DATE=? ";
-				values.add(bean.getCreateDate());
-			};
-			if (bean!=null&&bean.getExeUserId()!=null && StringUtils.isNotEmpty(bean.getExeUserId().toString())){
-				selectSql+=" and EXE_USER_ID=? ";
-				values.add(bean.getExeUserId());
-			};
-			if (bean!=null&&bean.getStatus()!=null && StringUtils.isNotEmpty(bean.getStatus().toString())){
-				selectSql+=" and STATUS=? ";
-				values.add(bean.getStatus());
-			};
-			if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
-				selectSql+=" and PLAN_START_DATE=? ";
-				values.add(bean.getPlanStartDate());
-			};
-			if (bean!=null&&bean.getPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
-				selectSql+=" and PLAN_END_DATE=? ";
-				values.add(bean.getPlanEndDate());
-			};
-			if (bean!=null&&bean.getStartDate()!=null && StringUtils.isNotEmpty(bean.getStartDate().toString())){
-				selectSql+=" and START_DATE=? ";
-				values.add(bean.getStartDate());
-			};
-			if (bean!=null&&bean.getEndDate()!=null && StringUtils.isNotEmpty(bean.getEndDate().toString())){
-				selectSql+=" and END_DATE=? ";
-				values.add(bean.getEndDate());
-			};
-			if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp().toString())){
-				selectSql+=" and DESCP=? ";
-				values.add(bean.getDescp());
-			};
-			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
-				public List<HashMap> handle(ResultSet rs) throws SQLException {
-					List<HashMap> list = new ArrayList<HashMap>();
+			int userId = json.getInt("userId");
+			int snapshot = json.getInt("snapshot");
+
+			String selectSql = "select st.SUBTASK_ID"
+					+ ",st.DESCP"
+					+ ",st.PLAN_START_DATE"
+					+ ",st.PLAN_END_DATE"
+					+ ",st.STAGE"
+					+ ",st.TYPE"
+					+ ",st.STATUS"
+					+ ",r.DAILY_DB_ID"
+					+ ",r.MONTHLY_DB_ID";
+			
+			String cellsExtra = ",TO_CHAR(st.GEOMETRY.get_wkt()) AS GEOMETRY"
+					+ ",listagg(sgm.GRID_ID, ',') within group(order by st.SUBTASK_ID) as GRID_ID ";
+			
+			String fromSql = " from subtask st"
+						+ ",task t"
+						+ ",city c"
+						+ ",region r";
+			String fromExtra = ",subtask_grid_mapping sgm ";
+			
+			String conditionSql = " where st.task_id = t.task_id "
+					+ "and t.city_id = c.city_id "
+					+ "and c.region_id = r.region_id "
+					+ "and st.EXE_USER_ID = " + userId + " ";
+			
+			String conditionExtra = " and st.subtask_id = sgm.subtask_id ";
+			
+			String groupBySql = " group by st.SUBTASK_ID"
+					+ ",st.DESCP"
+					+ ",st.PLAN_START_DATE"
+					+ ",st.PLAN_END_DATE"
+					+ ",st.STAGE"
+					+ ",st.TYPE"
+					+ ",st.STATUS"
+					+ ",r.DAILY_DB_ID"
+					+ ",r.MONTHLY_DB_ID";
+			String groupByExtra = ",TO_CHAR(st.GEOMETRY.get_wkt())";
+			
+			if(json.containsKey("stage")){
+				int stage = json.getInt("stage");
+				conditionSql = conditionSql + " and st.STAGE = " + stage;
+			}
+			
+			if(json.containsKey("type")){
+				int type = json.getInt("type");
+				conditionSql = conditionSql + " and st.TYPE = " + type;
+			}
+			
+			if(json.containsKey("status")){
+				int status = json.getInt("status");
+				conditionSql = conditionSql + " and st.STATUS = " + status;
+			}
+			
+			if(0 == snapshot){
+				selectSql = selectSql + cellsExtra + fromSql + fromExtra + conditionSql + conditionExtra + groupBySql + groupByExtra;
+			}else{
+				selectSql = selectSql + fromSql + conditionSql + groupBySql;
+			}
+					
+			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
+				public Page handle(ResultSet rs) throws SQLException {
+					List list = new ArrayList();
+		            Page page = new Page(currentPageNum);
+		            page.setPageSize(pageSize);
 					while(rs.next()){
 						HashMap map = new HashMap();
+						page.setTotalCount(rs.getInt(QueryRunner.TOTAL_RECORD_NUM));
 						map.put("subtaskId", rs.getInt("SUBTASK_ID"));
-						map.put("blockId", rs.getInt("BLOCK_ID"));
-						map.put("taskId", rs.getInt("TASK_ID"));
-						map.put("geometry", rs.getObject("GEOMETRY"));
 						map.put("stage", rs.getInt("STAGE"));
 						map.put("type", rs.getInt("TYPE"));
-						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
-						map.put("createDate", rs.getObject("CREATE_DATE"));
-						map.put("exeUserId", rs.getInt("EXE_USER_ID"));
-						map.put("status", rs.getInt("STATUS"));
-						map.put("planStartDate", rs.getObject("PLAN_START_DATE"));
-						map.put("planEndDate", rs.getObject("PLAN_END_DATE"));
-						map.put("startDate", rs.getObject("START_DATE"));
-						map.put("endDate", rs.getObject("END_DATE"));
+						
+						map.put("planStartDate", DateUtils.dateToString(rs.getTimestamp("PLAN_START_DATE")));	
+						map.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
+						
 						map.put("descp", rs.getString("DESCP"));
+						map.put("status", rs.getInt("STATUS"));
+						
+						try{
+							if(rs.findColumn("GEOMETRY") > 0){
+								map.put("geometry", rs.getObject("GEOMETRY"));
+							}
+							if(rs.findColumn("GRID_ID") > 0){
+								String gridIds = rs.getString("GRID_ID");
+								String[] gridIdList = gridIds.split(",");
+								map.put("gridIds", gridIdList);
+							}
+						}
+						catch (SQLException e) {
+					        int a = 1;
+					    }
+						
+						if(1 == rs.getInt("STAGE")){
+							map.put("dbId", rs.getString("DAILY_DB_ID"));
+						}else if(2 == rs.getInt("STAGE")){
+							map.put("dbId", rs.getString("MONTHLY_DB_ID"));
+						}
 						list.add(map);
+						
 					}
-					return list;
+					page.setResult(list);
+					return page;
 				}
 	    		
-	    	}		;
-	    	if (values.size()==0){
-	    		return run.query(conn, selectSql, rsHandler
-						);
-	    	}
-	    	return run.query(conn, selectSql, rsHandler,values.toArray()
-					);
+	    	};
+
+	    	return run.query(currentPageNum,pageSize,conn, selectSql, rsHandler);
+
+
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -482,46 +382,44 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public HashMap query(JSONObject json)throws ServiceException{
+	
+	
+	public Subtask query(Subtask bean)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			
-			JSONObject obj = JSONObject.fromObject(json);	
-			Subtask  bean = (Subtask)JSONObject.toBean(obj, Subtask.class);	
+			String selectSql = "select s.SUBTASK_ID,"
+					+ "s.STAGE,"
+					+ "s.TYPE,"
+					+ "s.PLAN_START_DATE,"
+					+ "s.PLAN_END_DATE,"
+					+ "s.DESCP,"
+					+ "TO_CHAR(s.GEOMETRY.get_wkt()) AS GEOMETRY "
+					+ "from SUBTASK s "
+					+ "where s.SUBTASK_ID="
+					+ bean.getSubtaskId();
 			
-			String selectSql = "select * from SUBTASK where SUBTASK_ID=? and BLOCK_ID=? and TASK_ID=? and GEOMETRY=? and STAGE=? and TYPE=? and CREATE_USER_ID=? and CREATE_DATE=? and EXE_USER_ID=? and STATUS=? and PLAN_START_DATE=? and PLAN_END_DATE=? and START_DATE=? and END_DATE=? and DESCP=?";
-			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>(){
-				public HashMap handle(ResultSet rs) throws SQLException {
+			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>(){
+				public Subtask handle(ResultSet rs) throws SQLException {
 					while(rs.next()){
-						HashMap map = new HashMap();
-						map.put("subtaskId", rs.getInt("SUBTASK_ID"));
-						map.put("blockId", rs.getInt("BLOCK_ID"));
-						map.put("taskId", rs.getInt("TASK_ID"));
-						map.put("geometry", rs.getObject("GEOMETRY"));
-						map.put("stage", rs.getInt("STAGE"));
-						map.put("type", rs.getInt("TYPE"));
-						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
-						map.put("createDate", rs.getObject("CREATE_DATE"));
-						map.put("exeUserId", rs.getInt("EXE_USER_ID"));
-						map.put("status", rs.getInt("STATUS"));
-						map.put("planStartDate", rs.getObject("PLAN_START_DATE"));
-						map.put("planEndDate", rs.getObject("PLAN_END_DATE"));
-						map.put("startDate", rs.getObject("START_DATE"));
-						map.put("endDate", rs.getObject("END_DATE"));
-						map.put("descp", rs.getString("DESCP"));
-						return map;
+						Subtask subtask = new Subtask();
+						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
+						subtask.setGeometry(rs.getObject("GEOMETRY"));
+						subtask.setStage(rs.getInt("STAGE"));
+						subtask.setType(rs.getInt("TYPE"));
+						subtask.setPlanStartDate(DateUtils.dateToString(rs.getTimestamp("PLAN_START_DATE")));	
+						subtask.setPlanEndDate(DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
+						subtask.setDescp(rs.getString("DESCP"));
+						return subtask;
 					}
 					return null;
 				}
 	    		
-	    	}		;				
-			return run.query(conn, 
-					   selectSql,
-					   rsHandler, 
-					   bean.getSubtaskId(), bean.getBlockId(), bean.getTaskId(), bean.getGeometry(), bean.getStage(), bean.getType(), bean.getCreateUserId(), bean.getCreateDate(), bean.getExeUserId(), bean.getStatus(), bean.getPlanStartDate(), bean.getPlanEndDate(), bean.getStartDate(), bean.getEndDate(), bean.getDescp());
+	    	};		
+			return run.query(conn, selectSql,rsHandler);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -530,5 +428,43 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	public void close(JSONArray subtaskArray)throws ServiceException{
+		Connection conn = null;
+		try{
+			//持久化
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();	
+
+			String subtaskStr = "(";
+			
+			for(int i =0; i<subtaskArray.size(); i++){
+				subtaskStr += subtaskArray.getInt(i);
+				if(i < (subtaskArray.size()- 1)){
+					subtaskStr += ",";
+				}
+			}
+			
+			subtaskStr += ")";
+			
+			
+			String updateSql = "update SUBTASK "
+					+ "set STATUS=3 "
+					+ "where SUBTASK_ID in"
+					+ subtaskStr;	
+			
+
+			run.update(conn,updateSql);
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("修改失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
 	
 }

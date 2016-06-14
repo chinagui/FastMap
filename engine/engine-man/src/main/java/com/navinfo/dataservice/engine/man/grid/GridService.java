@@ -9,7 +9,9 @@ import java.util.Map;
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.springframework.util.StringUtils;
 
+import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -25,12 +27,12 @@ public class GridService {
 	/**
 	 * @param gridList  <br/>
 	 * <b>注意：如果参数gridList太长，会导致oracle sql太长而出现异常；</b>
-	 * @return 根据给定的gridlist，查询获取regioin和grid的映射；<br/>
+	 * @return 根据给定的gridlist，查询获取regioin和grid的映射；key:RegionId；value：grid列表<br/>
 	 * @throws Exception 
 	 * 
 	 */
 	public Map queryRegionGridMapping(List<Integer> gridList) throws Exception{
-		String sql = "select grid_id,region_id from grid where 1=1  ";
+		String sql = "select grid_id,r.* from grid g,region r where g.region_id=r.region_id ";
 		QueryRunner queryRunner = new QueryRunner();
 		Connection conn = null;
 		try{
@@ -44,15 +46,19 @@ public class GridService {
 						while(rs.next()){
 							int gridId = rs.getInt("grid_id");
 							int regionId = rs.getInt("region_id");
+//							int regionDailyDbId = rs.getInt("daily_db_id");
+//							int regionMongthlyDbId = rs.getInt("mongthly_db_id");
+//							String regionName = rs.getString("regionName");
+//							Region region = new Region(Integer.valueOf(regionId),regionName,Integer.valueOf(regionDailyDbId),Integer.valueOf(regionMongthlyDbId));
 							mvMap.put(regionId, gridId);
 						}
 						return mvMap;
 					}
 					return null;
 				}};
-			StringBuffer InClause = buildInClause("grid_id",gridList);
+			StringBuffer InClause = buildInClause("g.grid_id",gridList);
 			sql=sql+InClause;
-			if(InClause!=null){
+			if(StringUtils.isEmpty(InClause)){
 				return queryRunner.query(conn, sql, rsh);
 			}else{
 				return queryRunner.query(conn, sql, gridList.toArray(), rsh);

@@ -11,6 +11,11 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
+
+import org.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
+import org.navinfo.dataservice.engine.meta.chain.ChainSelector;
+import org.navinfo.dataservice.engine.meta.chain.FocusSelector;
+import org.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
 import org.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import org.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
 import org.navinfo.dataservice.engine.meta.patternimage.PatternImageSelector;
@@ -281,4 +286,250 @@ public class MetaController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
+
+	@RequestMapping(value = "/meta/queryTelByProvince")
+	public ModelAndView searchTelByProvince(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String name = jsonReq.getString("province");
+
+			ScPointAdminArea selector = new ScPointAdminArea();
+
+			JSONArray data = selector.searchByProvince(name);
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	@RequestMapping(value = "/meta/queryChain")
+	public ModelAndView queryChain(HttpServletRequest request)
+			throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String kindCode = jsonReq.getString("kindCode");
+
+			ChainSelector selector = new ChainSelector();
+
+			JSONArray data = selector.getChainByKindCode(kindCode);
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	@RequestMapping(value = "/meta/chainLevel")
+	public ModelAndView queryChainLevel(HttpServletRequest request)
+			throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String kindCode = jsonReq.getString("kindCode");
+			
+			String chainCode = jsonReq.getString("chainCode");
+
+			ChainSelector selector = new ChainSelector();
+
+			String data = selector.getLevelByChain(chainCode, kindCode);
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	@RequestMapping(value = "/meta/queryFocus")
+	public ModelAndView queryFocus(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		try {
+
+			FocusSelector selector = new FocusSelector();
+
+			JSONArray data = selector.getPoiNum();
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	@RequestMapping(value = "/meta/queryTelLength")
+	public ModelAndView searchTelLength(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String code = jsonReq.getString("code");
+
+			ScPointAdminArea selector = new ScPointAdminArea();
+
+			String data = selector.searchTelLength(code);
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+
+	@RequestMapping(value = "/meta/queryFoodType")
+	public ModelAndView searchFoodType(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String kindId = jsonReq.getString("kindId");
+
+			ScPointAdminArea selector = new ScPointAdminArea();
+
+			JSONArray data = selector.searchFoodType(kindId);
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+
+	@RequestMapping(value = "/meta/kindLevel")
+	public ModelAndView searchKindLevel(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String kindId = jsonReq.getString("kindCode");
+
+			KindCodeSelector selector = new KindCodeSelector();
+
+			JSONObject data = selector.searchkindLevel(kindId);
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+
+	@RequestMapping(value = "/queryTopKind")
+	public ModelAndView QueryTopKind(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		try {
+			KindCodeSelector selector = new KindCodeSelector();
+
+			JSONArray data = selector.queryTopKindInfo();
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+
+	@RequestMapping(value = "/queryMediumKind")
+	public ModelAndView queryMediumKind(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String topId = jsonReq.getString("topId");
+
+			KindCodeSelector selector = new KindCodeSelector();
+
+			JSONArray data = selector.queryMediumKindInfo(topId);
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+
+	@RequestMapping(value = "/queryKind")
+	public ModelAndView queryKind(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String topId = jsonReq.getString("topId");
+
+			String mediumId = jsonReq.getString("mediumId");
+
+			int region = jsonReq.getInt("region");
+
+			KindCodeSelector selector = new KindCodeSelector();
+
+			JSONArray data = selector.queryKindInfo(topId, mediumId, region);
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+
 }

@@ -13,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.Page;
@@ -281,16 +282,11 @@ public class RegionService {
 		}
 	}
 
-	public Region query(JSONObject json) throws ServiceException {
+	public Region query(Region bean ) throws ServiceException {
 		Connection conn = null;
 		try {
-			// 持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			
-			JSONObject obj = JSONObject.fromObject(json);
-			Region bean = (Region) JSONObject.toBean(obj, Region.class);
-
 			String selectSql = "select * from Region where REGION_ID=?";
 			ResultSetHandler<Region> rsHandler = new ResultSetHandler<Region>() {
 				public Region handle(ResultSet rs) throws SQLException {

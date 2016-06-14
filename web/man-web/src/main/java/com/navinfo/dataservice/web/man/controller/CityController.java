@@ -14,6 +14,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.engine.man.city.City;
 import com.navinfo.dataservice.engine.man.city.CityService;
 
 import net.sf.json.JSONObject;
@@ -70,7 +71,9 @@ public class CityController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
-			service.delete(dataJson);			
+			JSONObject obj = JSONObject.fromObject(dataJson);	
+			City  bean = (City)JSONObject.toBean(obj, City.class);	
+			service.delete(bean);			
 			return new ModelAndView("jsonView", success("删除成功"));
 		}catch(Exception e){
 			log.error("删除失败，原因："+e.getMessage(), e);
@@ -84,6 +87,8 @@ public class CityController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
+			final String wkt= dataJson.getString("wkt");
+			int planningStatus = dataJson.getInt("planningStatus");
 			List<HashMap> data = service.queryListByWkt(dataJson);			
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
@@ -99,6 +104,8 @@ public class CityController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
+			JSONObject obj = null;
+			City  bean = (City)JSONObject.toBean(obj, City.class);	
 			HashMap data = service.query(dataJson);			
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){

@@ -9,7 +9,11 @@ import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.dataservice.expcore.input.OracleInput;
 import com.navinfo.dataservice.expcore.output.DataOutput;
 import com.navinfo.dataservice.expcore.output.Oracle2OracleDataOutput;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
+import com.navinfo.dataservice.datahub.exception.DataHubException;
+import com.navinfo.dataservice.datahub.service.DbService;
 
 /** 
  * @ClassName: Exporter2OracleByScripts 
@@ -41,6 +45,8 @@ public class Exporter2OracleByScripts extends ExporterByScripts {
 	public OracleInput initDataInput(ExporterResult result)
 			throws ExportException {
 		OracleInput input = new OracleInput(expConfig);
+
+		input.initSource();
 		return input;
 	}
 
@@ -53,6 +59,17 @@ public class Exporter2OracleByScripts extends ExporterByScripts {
 		if(ExportConfig.MODE_DELETE.equals(expConfig.getExportMode())){
 			//删除数据不需要output
 			return null;
+		}
+		try{
+			db = DbService.getInstance().getDbById(expConfig.getTargetDbId());
+		}catch(DataHubException e){
+			throw new ExportException("初始化导出目标时从datahub中获取库出现错误："+e.getMessage(),e);
+		}
+		if(db!=null){
+			schema = new OracleSchema(
+					MultiDataSourceFactory.createConnectConfig(db.getConnectParam()));
+		}else{
+			throw new ExportException("导出参数错误，目标库的id不能为空");
 		}
 		ThreadLocalContext ctx = new ThreadLocalContext(log);
 		Oracle2OracleDataOutput output = new Oracle2OracleDataOutput(expConfig,result,ctx);

@@ -21,7 +21,6 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
 import com.navinfo.navicommons.database.DataBaseUtils;
-import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
@@ -59,10 +58,10 @@ public class BlockService {
 			for (int i = 0; i < blockArray.size(); i++) {
 	               JSONObject block = blockArray.getJSONObject(i);
 	               Object[] obj = new Object[]{userId,date,block.getInt("blockId"),block.getInt("collectGroupId"),block.getString("collectPlanStartDate"),
-	            		   block.getString("collectPlanEndDate"),block.getInt("DayEditGroupId"),block.getString("DayEditPlanStartDate"),
-	            		   block.getString("DayEditPlanEndDate"),block.getInt("MonthEditGroupId"),block.getString("MonthEditPlanStartDate"),
-	            		   block.getString("MonthEditPlanEndDate"),block.getString("DayProducePlanStartDate"),block.getString("DayProducePlanEndDate")
-	            		   ,block.getString("MonthProducePlanStartDate"),block.getString("MonthProducePlanEndDate")};
+	            		   block.getString("collectPlanEndDate"),block.getInt("dayEditGroupId"),block.getString("dayEditPlanStartDate"),
+	            		   block.getString("dayEditPlanEndDate"),block.getInt("monthEditGroupId"),block.getString("monthEditPlanStartDate"),
+	            		   block.getString("monthEditPlanEndDate"),block.getString("dayProducePlanStartDate"),block.getString("dayProducePlanEndDate")
+	            		   ,block.getString("monthProducePlanStartDate"),block.getString("monthProducePlanEndDate")};
 	               param[i]=obj;                   
 	            }
 			
@@ -77,49 +76,36 @@ public class BlockService {
 		}
 	}
 
-	public void update(JSONObject json) throws ServiceException {
+	public void batchUpdate(JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
 			// 鎸佷箙鍖�
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			JSONObject obj = JSONObject.fromObject(json);
-			Block bean = (Block) JSONObject.toBean(obj, Block.class);
+			JSONArray blockArray=json.getJSONArray("blocks");
 
-			String updateSql = "update BLOCK set BLOCK_ID=?, CITY_ID=?, BLOCK_NAME=?, GEOMETRY=?, PLAN_STATUS=? where 1=1 BLOCK_ID=? and CITY_ID=? and BLOCK_NAME=? and GEOMETRY=? and PLAN_STATUS=?";
-			List<Object> values = new ArrayList<Object>();
-			if (bean != null && bean.getBlockId() != null && StringUtils.isNotEmpty(bean.getBlockId().toString())) {
-				updateSql += " and BLOCK_ID=? ";
-				values.add(bean.getBlockId());
-			}
-			;
-			if (bean != null && bean.getCityId() != null && StringUtils.isNotEmpty(bean.getCityId().toString())) {
-				updateSql += " and CITY_ID=? ";
-				values.add(bean.getCityId());
-			}
-			;
-			if (bean != null && bean.getBlockName() != null && StringUtils.isNotEmpty(bean.getBlockName().toString())) {
-				updateSql += " and BLOCK_NAME=? ";
-				values.add(bean.getBlockName());
-			}
-			;
-			if (bean != null && bean.getGeometry() != null && StringUtils.isNotEmpty(bean.getGeometry().toString())) {
-				updateSql += " and GEOMETRY=? ";
-				values.add(bean.getGeometry());
-			}
-			;
-			if (bean != null && bean.getPlanStatus() != null
-					&& StringUtils.isNotEmpty(bean.getPlanStatus().toString())) {
-				updateSql += " and PLAN_STATUS=? ";
-				values.add(bean.getPlanStatus());
-			}
-			;
-			run.update(conn, updateSql, bean.getBlockId(), bean.getCityId(), bean.getBlockName(), bean.getGeometry(),
-					bean.getPlanStatus(), values.toArray());
+			String createSql = "update block_man set COLLECT_GROUP_ID=?, COLLECT_PLAN_START_DATE=?,"
+					+ "COLLECT_PLAN_END_DATE=?,DAY_EDIT_GROUP_ID=?,DAY_EDIT_PLAN_START_DATE=?,DAY_EDIT_PLAN_END_DAT=?,MONTH_EDIT_GROUP_ID=?,"
+					+ "MONTH_EDIT_PLAN_START_DATE=?,MONTH_EDIT_PLAN_END_DATE=?,DAY_PRODUCE_PLAN_START_DATE=?,DAY_PRODUCE_PLAN_END_DATE=?,"
+					+ "MONTH_PRODUCE_PLAN_START_DATE=?,MONTH_PRODUCE_PLAN_END_DATE=? where BLOCK_ID=?";
+			
+			Object[][] param = new Object[blockArray.size()][];
+			for (int i = 0; i < blockArray.size(); i++) {
+	               JSONObject block = blockArray.getJSONObject(i);
+	               BlockMan  bean = (BlockMan)JSONObject.toBean(block, BlockMan.class);	
+	               Object[] obj = new Object[]{bean.getCollectGroupId(),bean.getCollectPlanStartDate(),bean.getCollectPlanEndDate(),
+	            		   bean.getDayEditGroupId(),bean.getDayEditPlanStartDate(),bean.getDayEditPlanEndDate(),bean.getMonthEditGroupId(),
+	            		   bean.getMonthEditPlanStartDate(),bean.getMonthEditPlanEndDate(),bean.getDayProducePlanStartDate(),bean.getDayProducePlanEndDate(),
+	            		   bean.getMonthProducePlanStartDate(),bean.getMonthProducePlanStartDate(),bean.getBlockId()};
+	               param[i]=obj;                   
+	            }
+			
+			run.batch(conn,createSql, param);
+			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("淇敼澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
+			throw new ServiceException("鍒涘缓澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}

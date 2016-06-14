@@ -16,6 +16,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /** 
@@ -31,16 +32,16 @@ public class BlockController extends BaseController {
 	private BlockService service;
 
 	
-	@RequestMapping(value = "/block/create")
+	@RequestMapping(value = "/block/open/")
 	public ModelAndView create(HttpServletRequest request){
 		try{	
-			String parameter = request.getParameter("param");
+			String parameter = request.getParameter("parameter");
 			if (StringUtils.isEmpty(parameter)){
-				throw new IllegalArgumentException("param参数不能为空。");
+				throw new IllegalArgumentException("parameter参数不能为空。");
 			}		
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
 			if(dataJson==null){
-				throw new IllegalArgumentException("param参数不能为空。");
+				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			service.create(dataJson);			
 			return new ModelAndView("jsonView", success("创建成功"));
@@ -137,15 +138,10 @@ public class BlockController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			if(!(dataJson.containsKey("wkt")) || !(dataJson.containsKey("planningStatus"))){
-				throw new IllegalArgumentException("wkt、planningStatus参数是必须的。");
+			if(!(dataJson.containsKey("groupIds")) || !(dataJson.containsKey("stage"))){
+				throw new IllegalArgumentException("groupIds、stage参数是必须的。");
 			}
-			String wkt= dataJson.getString("wkt");
-			String  planningStatus = dataJson.getString("planningStatus");
-			if(StringUtils.isEmpty(wkt) || StringUtils.isEmpty(planningStatus)){
-				throw new IllegalArgumentException("wkt、planningStatus参数值不能为空");
-			}
-			List<HashMap> data = service.listByWkt(dataJson);			
+			List<HashMap> data = service.listByGroup(dataJson);			
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("获取block列表失败，原因："+e.getMessage(), e);

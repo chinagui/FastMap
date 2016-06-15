@@ -15,6 +15,7 @@ import com.navinfo.dataservice.api.man.model.BlockMan;
 */
 public class Subtask  {
 	private Integer subtaskId ;
+	private String name;
 	private Integer blockId ;
 	private Integer taskId ;
 	private String geometry ;
@@ -39,6 +40,7 @@ public class Subtask  {
 	}
 	
 	public Subtask (Integer subtaskId ,
+			String name,
 			Integer blockId,
 			Integer taskId,
 			String geometry,
@@ -59,6 +61,7 @@ public class Subtask  {
 			String[] gridIds,
 			Integer dbId){
 		this.subtaskId=subtaskId ;
+		this.name = name;
 		this.blockId=blockId ;
 		this.taskId=taskId ;
 		this.geometry=geometry ;
@@ -78,6 +81,12 @@ public class Subtask  {
 		this.blockMan=blockMan ;
 		this.gridIds = gridIds;
 		this.dbId = dbId;
+	}
+	public String getName(){
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
 	}
 	public int getDbId(){
 		return dbId;

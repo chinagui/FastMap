@@ -53,6 +53,7 @@ public class SubtaskService {
 			//插入subtask
 			String createSql = "insert into SUBTASK "
 					+ "(SUBTASK_ID"
+					+ ", NAME"
 					+ ", BLOCK_ID"
 					+ ", TASK_ID"
 					+ ", GEOMETRY"
@@ -66,6 +67,7 @@ public class SubtaskService {
 					+ ", PLAN_END_DATE"
 					+ ", DESCP) "
 					+ "values(" + subTaskId 
+					+ "," + bean.getName()
 					+ "," + bean.getBlockId()
 					+ "," + bean.getTaskId()
 					+ "," + "sdo_geometry(" +  "'" + bean.getGeometry() + "',8307)" 
@@ -363,7 +365,8 @@ public class SubtaskService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();	
 
-			String selectSql = "select st.SUBTASK_ID"
+			String selectSql = "select st.SUBTASK_ID "
+					+ ",st.NAME"
 					+ ",st.DESCP"
 					+ ",st.PLAN_START_DATE"
 					+ ",st.PLAN_END_DATE"
@@ -424,7 +427,7 @@ public class SubtaskService {
 					while(rs.next()){
 						Subtask subtask = new Subtask();
 						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
-//						subtask.setGeometry(rs.getString("GEOMETRY"));
+						subtask.setName(rs.getString("NAME"));
 						subtask.setStage(rs.getInt("STAGE"));
 						subtask.setType(rs.getInt("TYPE"));
 						subtask.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));	

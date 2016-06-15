@@ -256,6 +256,7 @@ public class SubtaskController extends BaseController {
 				HashMap<String, Object> subtask = new HashMap<String, Object>();
 				page.setTotalCount(subtaskList.size());
 				subtask.put("subtaskId", subtaskList.get(i).getSubtaskId());
+				subtask.put("name", subtaskList.get(i).getName());
 				subtask.put("stage", subtaskList.get(i).getStage());
 				subtask.put("type", subtaskList.get(i).getType());
 				subtask.put("planStartDate", DateUtils.dateToString(subtaskList.get(i).getPlanStartDate()));

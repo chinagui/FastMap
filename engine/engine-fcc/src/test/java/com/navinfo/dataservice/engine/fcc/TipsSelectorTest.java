@@ -29,7 +29,7 @@ public class TipsSelectorTest {
 	
 	
     //根据瓦片扩圈获取Tips数据
-	@Test
+	//@Test
 	public void testSearchDataByTileWithGap() {
 		JSONArray types = new JSONArray();
 		types.add(1301);

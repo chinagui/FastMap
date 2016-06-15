@@ -104,6 +104,18 @@ public class TipsReshaper {
 			int handler = lastTrack.getInt("handler");
 
 			solrIndex.put("handler", handler);
+			
+			int t_cStatus = lastTrack.getInt("t_cStatus");
+
+			solrIndex.put("t_cStatus", t_cStatus);
+			
+			int t_dStatus = lastTrack.getInt("t_dStatus");
+
+			solrIndex.put("t_dStatus", t_dStatus);
+			
+			int t_mStatus = lastTrack.getInt("t_mStatus");
+
+			solrIndex.put("t_mStatus", t_mStatus);
 
 			// source
 			String source = new String(result.getValue("data".getBytes(),

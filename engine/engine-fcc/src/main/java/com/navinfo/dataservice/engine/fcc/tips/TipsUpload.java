@@ -59,7 +59,7 @@ public class TipsUpload {
 
 	private int total;
 
-	private int failed;
+	private int failed;  //记录导入错误的条数
 
 	private JSONArray reasons;
 
@@ -325,25 +325,30 @@ public class TipsUpload {
 				JSONObject json = en.getValue();
 
 				Put put = null;
-
+				
+				
+				//old有则更新
 				if (oldTips.containsKey(rowkey)) {
 
 					JSONObject oldTip = oldTips.get(rowkey);
-
+					
+					//对比采集时间
 					int res = canUpdate(oldTip, json.getString("t_operateDate"));
 					if (res < 0) {
 						failed += 1;
-
+						//-1表示old已删除
 						if (res == -1) {
 							reasons.add(newReasonObject(rowkey,
 									ErrorType.Deleted));
-						} else {
+						} 
+						//else =-2表示当前采集时间较旧
+						else {
 							reasons.add(newReasonObject(rowkey,
 									ErrorType.InvalidDate));
 						}
 						continue;
 					}
-
+					
 					put = updatePut(rowkey, json, oldTip);
 
 				} else {
@@ -369,9 +374,10 @@ public class TipsUpload {
 	private Put insertPut(String rowkey, JSONObject json) {
 
 		Put put = new Put(rowkey.getBytes());
-
+		
 		JSONObject jsonTrack = generateTrackJson(3, json.getInt("t_handler"),
-				json.getInt("t_command"), null, json.getString("t_operateDate"));
+				json.getInt("t_command"), null, json.getString("t_operateDate"),
+				json.getInt("t_cStatus"),json.getInt("t_dStatus"),json.getInt("t_mStatus"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
@@ -487,8 +493,8 @@ public class TipsUpload {
 
 		JSONObject jsonTrack = generateTrackJson(lifecycle,
 				json.getInt("t_handler"), json.getInt("t_command"),
-				oldTip.getJSONArray("t_trackInfo"),
-				json.getString("t_operateDate"));
+				oldTip.getJSONArray("t_trackInfo"),json.getString("t_operateDate"),
+				json.getInt("t_cStatus"),json.getInt("t_dStatus"),json.getInt("t_mStatus"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
@@ -597,11 +603,15 @@ public class TipsUpload {
 	 * @param lifecycle
 	 * @param handler
 	 * @param oldTrackInfo
+	 * @param t_cStatus 
+	 * @param t_dStatus 
+	 * @param t_mStatus
 	 * @return
 	 */
 	private JSONObject generateTrackJson(int lifecycle, int handler,
-			int command, JSONArray oldTrackInfo, String t_operateDate) {
-
+			int command, JSONArray oldTrackInfo, String t_operateDate, 
+			int t_cStatus, int t_dStatus, int t_mStatus) {
+		
 		JSONObject jsonTrack = new JSONObject();
 
 		jsonTrack.put("t_lifecycle", lifecycle);
@@ -617,6 +627,12 @@ public class TipsUpload {
 		jsonTrackInfo.put("date", t_operateDate);
 
 		jsonTrackInfo.put("handler", handler);
+		
+		jsonTrackInfo.put("t_cStatus", t_cStatus);
+		
+		jsonTrackInfo.put("t_dStatus", t_dStatus);
+		
+		jsonTrackInfo.put("t_mStatus", t_mStatus);
 
 		if (null == oldTrackInfo) {
 
@@ -630,6 +646,7 @@ public class TipsUpload {
 		return jsonTrack;
 	}
 
+	
 	private JSONObject generateSolrIndex(JSONObject json) throws Exception {
 
 		JSONObject index = new JSONObject();
@@ -647,6 +664,12 @@ public class TipsUpload {
 		index.put("t_command", json.getInt("t_command"));
 
 		index.put("handler", json.getInt("t_handler"));
+		
+		index.put("t_cStatus", json.getInt("t_cStatus"));
+		
+		index.put("t_dStatus", json.getInt("t_dStatus"));
+		
+		index.put("t_mStatus", json.getInt("t_mStatus"));
 
 		index.put("s_sourceType", json.getString("s_sourceType"));
 
@@ -735,6 +758,8 @@ public class TipsUpload {
 
 		int lastStage = lastTrack.getInt("stage");
 
+		//lifecycle:0（无） 1（删除）2（修改）3（新增） ;
+		//stage:0 初始化；1 外业采集；2 内业日编；3 内业月编 ；4 GDB增量
 		if (lifecycle == 1 && lastStage == 4) {
 
 			return -1;
@@ -762,6 +787,6 @@ public class TipsUpload {
 
 		TipsUpload a = new TipsUpload();
 
-		a.run("C:/4.txt");
+		a.run("D:/4.txt");
 	}
 }

@@ -22,14 +22,15 @@ public class StatMain {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String flag = "dp";// String.valueOf(args[0]);
+		// String flag = "dp";
+		String flag = String.valueOf(args[0]);
 		if (flag == null) {
 			System.exit(0);
 		} else {
 			if (flag.equalsIgnoreCase(flag_daily_poi)) {
-				new PoiDailyMain(db_name,stat_date).runStat();
-			}else if(flag.equalsIgnoreCase(flag_collect_poi)){
-				new PoiCollectMain(db_name,stat_date).runStat();
+				new PoiDailyMain(db_name, stat_date).runStat();
+			} else if (flag.equalsIgnoreCase(flag_collect_poi)) {
+				new PoiCollectMain(db_name, stat_date).runStat();
 			}
 		}
 

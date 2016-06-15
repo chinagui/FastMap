@@ -59,7 +59,7 @@ public class TipsSelector {
 	}
 
 	/**
-	 * 范围查询Tips
+	 * 范围瓦片查询Tips
 	 * 
 	 * @throws Exception
 	 */
@@ -117,15 +117,21 @@ public class TipsSelector {
 
 					m.put("c", geo.getJSONArray("coordinates"));
 				} else if (type == 1203 || type == 1101 || type == 1407
-						|| type == 1403) {
+						|| type == 1403 || type == 1401 || type == 1402
+						|| type == 1405 || type == 1406 || type == 1409
+						|| type == 1105 || type == 1109 || type == 1107
+						|| type ==1110 ) {
 
 					m.put("c", String.valueOf(deep.getDouble("agl")));
 
 					if (type == 1203) {
 						m.put("d", String.valueOf(deep.get("dr")));
 					}
+					if (type == 1105) {
+						m.put("d", String.valueOf(deep.get("tp")));
+					}
 
-				} else if (type == 1510 || type == 1514 || type == 1501) {
+				} else if (type == 1510 || type == 1514 || type == 1501 || type == 1515) {
 
 					JSONObject gSLoc = deep.getJSONObject("gSLoc");
 
@@ -138,7 +144,7 @@ public class TipsSelector {
 					Geojson.coord2Pixel(gELoc, z, px, py);
 
 					m.put("d", gELoc.getJSONArray("coordinates"));
-				}else if (type == 1801 || type == 1803){
+				}else if (type == 1801 || type == 1803 || type ==  1806){
 					JSONArray feedbacks = JSONArray.fromObject(json.getString("feedback"));
 					
 					JSONArray a = new JSONArray();
@@ -322,8 +328,6 @@ public class TipsSelector {
 
 		//根据tip类型不同，查询关联对象的pid(这里是关联link)，用于e字段结果
 		for (JSONObject json : tips) {
-			
-			System.out.println("++++++++++++++:"+json);
 			
 			JSONObject deep = JSONObject.fromObject(json.getString("deep"));
 
@@ -511,7 +515,7 @@ public class TipsSelector {
 						m.put("e", "无名路");
 					}
 				}
-				//不需要加时间段
+				//1515和1514确认了不需要加时间段
 		/*		if(type == 1515){
 					String name = m.getString("e");
 					

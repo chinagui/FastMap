@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.man.subtask;
 
+import com.navinfo.dataservice.engine.man.block.Block;
+import com.navinfo.dataservice.engine.man.task.Task;
 
 /** 
 * @ClassName:  Subtask 
@@ -23,11 +25,13 @@ public class Subtask  {
 	private Object startDate ;
 	private Object endDate ;
 	private String descp ;
+	private Block block;
+	private Task task;
 	
 	public Subtask (){
 	}
 	
-	public Subtask (Integer subtaskId ,Integer blockId,Integer taskId,Object geometry,Integer stage,Integer type,Integer createUserId,Object createDate,Integer exeUserId,Integer status,Object planStartDate,Object planEndDate,Object startDate,Object endDate,String descp){
+	public Subtask (Integer subtaskId ,Integer blockId,Integer taskId,Object geometry,Integer stage,Integer type,Integer createUserId,Object createDate,Integer exeUserId,Integer status,Object planStartDate,Object planEndDate,Object startDate,Object endDate,String descp,Block block,Task task){
 		this.subtaskId=subtaskId ;
 		this.blockId=blockId ;
 		this.taskId=taskId ;
@@ -43,6 +47,20 @@ public class Subtask  {
 		this.startDate=startDate ;
 		this.endDate=endDate ;
 		this.descp=descp ;
+		this.block=block ;
+		this.task=task ;
+	}
+	public Block getBlock(){
+		return block;
+	}
+	public void setBlock(Block block) {
+		this.block = block;
+	}
+	public Task getTask(){
+		return task;
+	}
+	public void setTask(Task task) {
+		this.task = task;
 	}
 	public Integer getSubtaskId() {
 		return subtaskId;

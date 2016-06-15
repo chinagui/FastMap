@@ -45,6 +45,9 @@ public class SubtaskController extends BaseController {
 	@Autowired
 	private SubtaskService service;
 
+	/*
+	 * 创建一个子任务。
+	 */
 	@RequestMapping(value = "/subtask/create")
 	public ModelAndView create(HttpServletRequest request){
 		try{	
@@ -61,16 +64,18 @@ public class SubtaskController extends BaseController {
 			}
 			
 			long userId = tokenObj.getUserId();
-			
+			//根据gridIds获取wkt
 			JSONArray gridIds = dataJson.getJSONArray("gridIds");
-
-			dataJson.remove("gridIds");
-
 			String wkt = GridUtils.grids2Wkt(gridIds);
+			ArrayList<Integer> gridIdList = (ArrayList<Integer>)JSONArray.toList(dataJson.getJSONArray("gridIds"),int.class);
+			
+			dataJson.remove("gridIds");
 			
 			Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
+			bean.setCreateUserId((int)userId);
+			bean.setGeometry(wkt);
 			
-			service.create(bean,userId,gridIds,wkt);	
+			service.create(bean,gridIdList);	
 			
 			return new ModelAndView("jsonView", success("创建成功"));
 		}catch(Exception e){
@@ -79,6 +84,10 @@ public class SubtaskController extends BaseController {
 		}
 	}
 	
+	
+	/*
+	 * 根据几何范围,任务类型，作业阶段查询任务列表
+	 */
 	@RequestMapping(value = "/subtask/listByWkt")
 	public ModelAndView listByWkt(HttpServletRequest request){
 		try{	
@@ -94,17 +103,34 @@ public class SubtaskController extends BaseController {
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
 			
-			List<HashMap> data = service.listByWkt(dataJson);
+			//获取几何范围,任务类型，作业阶段
+			ArrayList<Integer> types = (ArrayList<Integer>)JSONArray.toList(dataJson.getJSONArray("types"),int.class);
+			int stage = dataJson.getInt("stage");
+			String wkt = dataJson.getString("wkt");
 			
-			return new ModelAndView("jsonView", success(data));
+			List<Subtask> subtaskList = service.listByWkt(wkt,types,stage);
+			
+			//根据需要的返回字段拼装结果
+			List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+
+			for(int i=0;i<subtaskList.size();i++){
+				HashMap<String, Object> subtask = new HashMap<String, Object>();
+				subtask.put("subtaskId", subtaskList.get(i).getSubtaskId());
+				subtask.put("geometry", subtaskList.get(i).getGeometry());
+				subtask.put("descp", subtaskList.get(i).getDescp());
+				list.add(subtask);
+			}
+	
+			return new ModelAndView("jsonView", success(list));
+			
 		}catch(Exception e){
 			log.error("查询失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
 	
-	@RequestMapping(value = "/subtask/listByBlock")
-	public ModelAndView listByBlock(HttpServletRequest request){
+	@RequestMapping(value = "/subtask/list")
+	public ModelAndView list(HttpServletRequest request){
 		try{		
 			
 			String parameter = request.getParameter("parameter");
@@ -129,9 +155,15 @@ public class SubtaskController extends BaseController {
 				dataJson.remove("pageSize");
 			}
 			
+			List<String> sortby = new ArrayList<String>();
+			if(dataJson.containsKey("sortBy")){
+				sortby = (ArrayList<String>)JSONArray.toList(dataJson.getJSONArray("sortBy"),String.class);
+				dataJson.remove("sortBy");
+			}
+
 			Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
 			
-			List<Subtask> subtaskList = service.listByBlock(bean);
+			List<Subtask> subtaskList = service.list(bean,sortby);
 			
 			List<HashMap<String, Object>> list = new ArrayList();
 			
@@ -148,6 +180,31 @@ public class SubtaskController extends BaseController {
 				subtask.put("planStartDate", subtaskList.get(i).getPlanStartDate());
 				subtask.put("planEndDate", subtaskList.get(i).getPlanEndDate());
 				subtask.put("descp", subtaskList.get(i).getDescp());
+				if (StringUtils.isNotEmpty(subtaskList.get(i).getBlock().toString())){
+					subtask.put("blockId", subtaskList.get(i).getBlock().getBlockId());
+					subtask.put("blockName", subtaskList.get(i).getBlock().getBlockName());
+					if(0 == bean.getStage()){
+						
+					}else if(1 == bean.getStage()){
+						
+					}else if(2 == bean.getStage()){
+						
+					}
+				}
+				if (StringUtils.isNotEmpty(subtaskList.get(i).getTask().toString())){
+					subtask.put("taskId", subtaskList.get(i).getTask().getTaskId());
+					subtask.put("taskDescp", subtaskList.get(i).getTask().getDescp());
+					if(0 == bean.getStage()){
+						subtask.put("TaskCollectPlanStartDate", subtaskList.get(i).getTask().getCollectPlanStartDate());
+						subtask.put("TaskCollectPlanEndDate", subtaskList.get(i).getTask().getCollectPlanEndDate());
+					}else if(1 == bean.getStage()){
+						subtask.put("TaskDayEditPlanStartDate", subtaskList.get(i).getTask().getDayEditPlanStartDate());
+						subtask.put("TaskDayEditPlanEndDate", subtaskList.get(i).getTask().getDayEditPlanEndDate());
+					}else if(2 == bean.getStage()){
+						subtask.put("TaskCMonthEditPlanStartDate", subtaskList.get(i).getTask().getCMonthEditPlanStartDate());
+						subtask.put("TaskCMonthEditPlanEndDate", subtaskList.get(i).getTask().getCMonthEditPlanEndDate());
+					}
+				}
 				list.add(subtask);
 			}
 	
@@ -155,8 +212,6 @@ public class SubtaskController extends BaseController {
             page.setResult(list);
             
             return new ModelAndView("jsonView", success(page));
-			
-//			return new ModelAndView("jsonView", success(data));
 			
 		}catch(Exception e){
 			log.error("查询失败，原因："+e.getMessage(), e);
@@ -199,7 +254,9 @@ public class SubtaskController extends BaseController {
 	}
 	
 
-	
+	/*
+	 * 根据subtaskId查询一个任务的详细信息。
+	 */
 	@RequestMapping(value = "/subtask/query")
 	public ModelAndView query(HttpServletRequest request){
 		try{
@@ -207,7 +264,7 @@ public class SubtaskController extends BaseController {
 			String parameter = request.getParameter("parameter");
 			if (StringUtils.isEmpty(parameter)){
 				throw new IllegalArgumentException("param参数不能为空。");
-			}		
+			}										
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
 
 			if(dataJson==null){
@@ -218,6 +275,7 @@ public class SubtaskController extends BaseController {
 			
 			Subtask subtask = service.query(bean);	
 			
+			//根据需要的返回字段拼装结果
 			HashMap<String, Object> data = new HashMap<String, Object>();
 
 			data.put("subtaskId", subtask.getSubtaskId());
@@ -229,13 +287,16 @@ public class SubtaskController extends BaseController {
 			data.put("descp", subtask.getDescp());
 
 			return new ModelAndView("jsonView", success(data));
+			
 		}catch(Exception e){
 			log.error("获取明细失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
 	
-	
+	/*
+	 * 批量修改子任务详细信息。
+	 */
 	@RequestMapping(value = "/subtask/update")
 	public ModelAndView update(HttpServletRequest request){
 		try{
@@ -250,7 +311,19 @@ public class SubtaskController extends BaseController {
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
 			
-			service.update(dataJson);			
+			if(!dataJson.containsKey("subtasks")){
+				return new ModelAndView("jsonView", success("修改成功"));
+			}
+			
+			JSONArray subtaskArray=dataJson.getJSONArray("subtasks");
+			List<Subtask> subtaskList = new ArrayList<Subtask>();
+			for(int i = 0;i<subtaskArray.size();i++){
+				Subtask subtask = (Subtask)JSONObject.toBean(subtaskArray.getJSONObject(i), Subtask.class);
+				subtaskList.add(subtask);
+			}
+			
+			service.update(subtaskList);
+			
 			return new ModelAndView("jsonView", success("修改成功"));
 			
 		}catch(Exception e){
@@ -259,7 +332,9 @@ public class SubtaskController extends BaseController {
 		}
 	}
 	
-	
+	/*
+	 * 关闭多个子任务。
+	 */
 	@RequestMapping(value = "/subtask/close")
 	public ModelAndView close(HttpServletRequest request){
 		try{		
@@ -278,7 +353,15 @@ public class SubtaskController extends BaseController {
 				return new ModelAndView("jsonView", success("关闭成功"));
 			}
 			
-			JSONArray subtaskArray = dataJson.getJSONArray("subtaskIds");
+			JSONArray subtaskIds = dataJson.getJSONArray("subtaskIds");
+			
+			List<Subtask> subtaskArray = new ArrayList<Subtask>();
+			
+			for(int i = 0;i<subtaskIds.size();i++){
+				Subtask subtask = new Subtask();
+				subtask.setSubtaskId(subtaskIds.getInt(i));
+				subtaskArray.add(subtask);
+			}
 			
 			service.close(subtaskArray);
 			

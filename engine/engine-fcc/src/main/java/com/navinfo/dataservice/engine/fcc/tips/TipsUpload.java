@@ -788,5 +788,6 @@ public class TipsUpload {
 		TipsUpload a = new TipsUpload();
 
 		a.run("D:/4.txt");
+		System.out.println("成功");
 	}
 }

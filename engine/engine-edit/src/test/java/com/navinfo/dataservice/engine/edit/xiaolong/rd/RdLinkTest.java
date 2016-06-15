@@ -4,13 +4,24 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.rd.utils.RdLinkSearchUtils;
+import com.navinfo.dataservice.engine.edit.xiaolong.InitApplication;
 
-public class RdLinkTest {
+public class RdLinkTest extends InitApplication{
+	
+	@Override
+	@Before
+	public void init() {
+		initContext();
+	}
+	
 	private Connection conn;
 	public RdLinkTest() throws Exception {
 		this.conn = DBConnector.getInstance().getConnectionById(11);
@@ -27,6 +38,7 @@ public class RdLinkTest {
 		}
 	}
 	
+	@Test
 	public void testAddRdLink()
 	{
 		String linea= "[[116.02564,39.76918], [116.02601,39.76917]]";
@@ -55,6 +67,7 @@ public class RdLinkTest {
 		}
 	}
 	
+	@Test
 	public void TrackRdLink() throws Exception{
 		//创建起始link LINESTRING (116.20091 39.84598, 116.20095 39.84568, 116.20111 39.84551)
 		// PID 100002627 s 100018779 e 100018780
@@ -69,6 +82,8 @@ public class RdLinkTest {
 			System.out.println(rdLink.getPid());
 		}
 	}
+	
+	@Test
 	public void departRdLink()
 	{
 		String line  = "[100003385,100003386,100003387,100003389,100003397]";
@@ -81,6 +96,8 @@ public class RdLinkTest {
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
 	public void testSet(){
 		List<Boolean> booleans = new ArrayList<Boolean>();
 		booleans.add(false);
@@ -92,7 +109,9 @@ public class RdLinkTest {
 		}
 		
 	}
-	private void testLoadTractLink() throws Exception{
+	
+	@Test
+	public void testLoadTractLink() throws Exception{
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 		List<RdLink> nextLinks = linkSelector.loadTrackLink(100003389,100019730,true);
 		for(RdLink link:nextLinks){
@@ -100,21 +119,14 @@ public class RdLinkTest {
 		}
 	}
 	
-	private static void testAddLinkIn2Mesh()
+	@Test
+	public void testAddLinkIn2Mesh()
 	{
 		String parameter = "{\"command\":\"CREATE\",\"projectId\":11,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.70726 ,40.09797],[116.70878,40.06482]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
 			System.out.println(msg);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public static void main(String[] args) {
-		try {
-			testAddLinkIn2Mesh();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

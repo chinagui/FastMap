@@ -89,7 +89,7 @@ public class CityController extends BaseController {
 			}
 			final String wkt= dataJson.getString("wkt");
 			int planningStatus = dataJson.getInt("planningStatus");
-			List<City> data = service.queryListByWkt(wkt,planningStatus);			
+			List<HashMap> data = service.queryListByWkt(dataJson);			
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("获取城市列表失败，原因："+e.getMessage(), e);
@@ -104,6 +104,7 @@ public class CityController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
+			JSONObject obj = null;
 			City  bean = (City)JSONObject.toBean(obj, City.class);	
 			HashMap data = service.query(dataJson);			
 			return new ModelAndView("jsonView", success(data));

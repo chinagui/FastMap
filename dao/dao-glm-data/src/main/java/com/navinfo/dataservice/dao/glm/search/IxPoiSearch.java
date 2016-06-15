@@ -58,7 +58,8 @@ public class IxPoiSearch implements ISearch {
 				+ " (SELECT PS.STATUS FROM POI_EDIT_STATUS PS WHERE I.ROW_ID = PS.ROW_ID)"
 				+ " STATUS, (SELECT COUNT(1) FROM IX_POI_PARENT P WHERE group_id in "
 				+ " (SELECT group_id FROM IX_POI_CHILDREN WHERE CHILD_POI_PID = I.PID)) "
-				+ " PARENTCOUNT,  (SELECT COUNT(1) FROM IX_POI_CHILDREN P WHERE group_id in (SELECT group_id FROM IX_POI_PARENT WHERE parent_poi_pid = I.PID)) CHILDCOUNT from ix_poi i "
+				+ " PARENTCOUNT,  (SELECT COUNT(1) FROM IX_POI_CHILDREN P WHERE group_id in (SELECT group_id FROM IX_POI_PARENT WHERE parent_poi_pid = I.PID)) CHILDCOUNT"
+				+ ",(SELECT NAME FROM ix_poi_name WHERE POI_PID = I.PID AND LANG_CODE='CHI' AND NAME_CLASS=1 AND NAME_TYPE=2) NAME from ix_poi i "
 				+ " where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =    'TRUE'  "
 				+ " and u_record != 2";
 
@@ -97,6 +98,8 @@ public class IxPoiSearch implements ISearch {
 
 				m.put("a", haveParentOrChild);
 				m.put("b", status);
+				
+				m.put("e", resultSet.getString("name"));
 
 				Double xGuide = resultSet.getDouble("x_guide");
 

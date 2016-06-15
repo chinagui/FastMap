@@ -1,8 +1,7 @@
 package com.navinfo.dataservice.expcore.sql.replacer;
 
 
-import java.util.Set;
-
+import java.util.List;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 
 /**
@@ -18,6 +17,5 @@ public interface SqlReplacer {
      * @param statmentArgs
      * @return
      */
-    public ExpSQL replaceByTempTable(ExpSQL expSQL, String condition,Set<String> conditionParams);
-//    public ExpSQL replace(ExpSQL expSQL, Map<String, StatmentArgs> statmentArgs);
+    public ExpSQL replaceByTempTable(ExpSQL expSQL, String condition);
 }

@@ -3,25 +3,18 @@ package com.navinfo.dataservice.expcore.input;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.expcore.config.ExportConfig;
 import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.dataservice.expcore.exception.ExportInputException;
-import com.navinfo.dataservice.datahub.exception.DataHubException;
-import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.expcore.source.OracleSource;
 import com.navinfo.dataservice.expcore.source.parameter.SerializeParameters;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.expcore.sql.assemble.AssembleSql;
 import com.navinfo.dataservice.expcore.sql.assemble.AssembleXmlConfigSql;
-import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
  * @ClassName: OracleInput 
@@ -33,30 +26,24 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 public class OracleInput implements DataInput {
 	protected Logger log = LoggerRepos.getLogger(OracleInput.class);
 	
-	//导入参数
-	protected ExportConfig expConfig;
 	protected OracleSource source;
+	protected String exportMode;
+	protected String feature;
+	protected String condition;
+	protected List<String> conditionParams;
+	protected String gdbVersion;
 	// 排序后且格式化的可以立即执行的导出sql
 	protected Map<Integer, List<ExpSQL>> expSqlMap;
 
-	public OracleInput(ExportConfig expConfig)throws ExportException{
-		this.expConfig=expConfig;
-		initSource();
+	public OracleInput(OracleSchema sourceSchema,String feature,String condition,List<String> conditionParams,String gdbVersion)throws ExportException{
+		this.feature=feature;
+		this.condition=condition;
+		this.conditionParams=conditionParams;
+		this.gdbVersion=gdbVersion;
+		source = new OracleSource(sourceSchema);
 	}
 	public void initSource()throws ExportException{
-		OracleSchema schema = null;
-		try{
-			DbInfo db = DbService.getInstance().getDbById(expConfig.getSourceDbId());
-			schema = new OracleSchema(
-					MultiDataSourceFactory.createConnectConfig(db.getConnectParam()));
-		}catch(DataHubException e){
-			throw new ExportException("初始化导出源时从datahub查询源库出现错误："+e.getMessage(),e);
-		}
-		if(schema==null){
-			throw new ExportException("导出参数错误，源的dbId不能为空");
-		}
-		this.source=new OracleSource(schema);
-		source.init(expConfig.getGdbVersion());
+		source.init(gdbVersion);
 	}
 	public void releaseSource(){
 		source.release();
@@ -66,8 +53,6 @@ public class OracleInput implements DataInput {
 	public Map<Integer, List<ExpSQL>> getExpSqlMap() {
 		return expSqlMap;
 	}
-	
-	
 	
 	public void setExpSqlMap(Map<Integer, List<ExpSQL>> expSqlMap) {
 		this.expSqlMap = expSqlMap;
@@ -95,22 +80,22 @@ public class OracleInput implements DataInput {
 	 */
 	@Override
 	public void loadScripts() throws ExportInputException, Exception {
-		AssembleSql as = new AssembleXmlConfigSql(expConfig.getExportMode(),expConfig.getFeature(),expConfig.getCondition(),expConfig.getConditionParams());
-		expSqlMap = as.assemble(expConfig.getGdbVersion(), source.getTempSuffix());
+		AssembleSql as = new AssembleXmlConfigSql(feature,condition,conditionParams);
+		expSqlMap = as.assemble(gdbVersion, source.getTempSuffix());
 
 	}
 	public void serializeParameters()throws ExportException{
 		try{
 			//serializeParameters
 			log.info("序列化导出参数到数据库临时表中");
-			Map<String,Set<String>> params = new HashMap<String,Set<String>>();
-			params.put(expConfig.getCondition(), expConfig.getConditionParams());
+			Map<String,List<String>> params = new HashMap<String,List<String>>();
+			params.put(condition, conditionParams);
 
 			SerializeParameters serializeParameters = new SerializeParameters();
 			serializeParameters.serialize(
 					source.getSchema().getPoolDataSource(),
 					params,
-					source.getTempSuffix(),expConfig.getGdbVersion());
+					source.getTempSuffix(),gdbVersion);
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			throw new ExportException("序列化导出参数到数据库临时表中时发生错误。",e);

@@ -42,26 +42,22 @@ public class ExpMainConfigManager {
 			Document rootDoc=getXMLDocument();
 			List<Element> elements = rootDoc.getRootElement().elements();
 			for(Element element: elements){
-				String expMode=element.attributeValue("exp-mode");
 				String feature = element.attributeValue("feature");
 				String condition = element.attributeValue("condition");
 				String mainScript = element.attributeValue("main-script");
 				String replacer = element.attributeValue("replacer");
-				if(StringUtils.isEmpty(expMode)
-						||StringUtils.isEmpty(feature)
+				if(StringUtils.isEmpty(feature)
 						||StringUtils.isEmpty(condition)
 						||StringUtils.isEmpty(mainScript)){
 					log.warn("EXPORT-WARN:导出脚本配置文件ExpScriptsConfig.xm中存在exp-mode、feature、condition或者mainScript属性为空，该配置无效，已忽略。");
 					continue;
 				}
-				Set<String> expModeSet = new HashSet<String>();
-				CollectionUtils.addAll(expModeSet,expMode.split(","));
 				Set<String> expFeatureSet = new HashSet<String>();
 				CollectionUtils.addAll(expFeatureSet, feature.split(","));
 				Set<String> expConditionSet = new HashSet<String>();
 				CollectionUtils.addAll(expConditionSet, condition.split(","));
 						
-				ExpMainConfig conf = new ExpMainConfig(expModeSet,expFeatureSet,expConditionSet,mainScript);
+				ExpMainConfig conf = new ExpMainConfig(expFeatureSet,expConditionSet,mainScript);
 				conf.setReplacerClassName(StringUtils.isEmpty(replacer)?"com.navinfo.dataservice.expcore.sql.replacer.DefauleSqlReplacer":replacer);
 				confList.add(conf);
 			}
@@ -92,10 +88,9 @@ public class ExpMainConfigManager {
         }
 
     }
-    public ExpMainConfig getExpMainConfig(String expMode,String feature,String condition){
+    public ExpMainConfig getExpMainConfig(String feature,String condition){
     	for(ExpMainConfig conf:confList){
-    		if(conf.getExpMode().contains(expMode)
-    				&&conf.getFeature().contains(feature)
+    		if(conf.getFeature().contains(feature)
     				&&conf.getCondition().contains(condition)){
     			return conf;
     		}

@@ -384,9 +384,8 @@ public class MultiDataSourceFactory {
 		String serverIp=(String)connParam.get("serverIp");
 		int serverPort=(Integer)connParam.get("serverPort");
 		String serverType=(String)connParam.get("serverType");
-		String key=serverIp+":"+serverPort+"/"+dbName;
 		return new DbConnectConfig(bizType,dbName,userName,userPasswd
-				,serverIp,serverPort,serverType,key);
+				,serverIp,serverPort,serverType);
 	}
 
 	public void closeDataSource(String key) {

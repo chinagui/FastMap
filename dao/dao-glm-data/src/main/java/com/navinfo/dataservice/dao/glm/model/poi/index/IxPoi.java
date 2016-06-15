@@ -197,7 +197,11 @@ public class IxPoi implements IObj {
 	private int indoor = 0;
 	//VIP表示
 	private String vipFlag;
-			
+	// 更新时间
+	private String uDate;
+	
+	//POI状态：1：待作业,2：已作业,3：已提交
+	private int status;
 
 	public String getLevel() {
 		return level;
@@ -205,6 +209,14 @@ public class IxPoi implements IObj {
 
 	public void setLevel(String level) {
 		this.level = level;
+	}
+	
+	public int getStatus() {
+		return status;
+	}
+
+	public void setStatus(int status) {
+		this.status = status;
 	}
 
 	public String getSportsVenue() {
@@ -229,6 +241,14 @@ public class IxPoi implements IObj {
 
 	public void setVipFlag(String vipFlag) {
 		this.vipFlag = vipFlag;
+	}
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
 	}
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();

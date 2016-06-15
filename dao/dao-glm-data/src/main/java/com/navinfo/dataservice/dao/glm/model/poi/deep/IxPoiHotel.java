@@ -37,6 +37,9 @@ public class IxPoiHotel implements IObj {
 	private String longDescription;//酒店介绍
 	private String longDescripEng;//酒店英文介绍
 	private String  openHour;//营业时间 
+	private int uRecord=0;
+	private String uDate;
+	
 	public String getCreditCard() {
 		return creditCard;
 	}
@@ -177,9 +180,22 @@ public class IxPoiHotel implements IObj {
 		this.pid = pid;
 	}
 
-	
+	public int getuRecord() {
+		return uRecord;
+	}
 
-	
+	public void setuRecord(int uRecord) {
+		this.uRecord = uRecord;
+	}
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
+	}
+
 	@Override
 	public void setStatus(ObjStatus os) {
 		// TODO Auto-generated method stub

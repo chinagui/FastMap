@@ -4,10 +4,14 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONArray;
 
@@ -18,30 +22,41 @@ import net.sf.json.JSONArray;
  *
  */
 public class FocusSelector {
+	
+	private Logger log = LoggerRepos.getLogger(this.getClass());
+	
 	public JSONArray getPoiNum() throws Exception {
-
-		String sql = "select distinct poi_num from sc_point_focus where type=2";
-
-		QueryRunner run = new QueryRunner();
 
 		Connection conn = DBConnector.getInstance().getMetaConnection();
 
-		ResultSetHandler<JSONArray> handler = new ResultSetHandler<JSONArray>() {
+		try {
+			String sql = "select distinct poi_num from sc_point_focus where type=2";
 
-			@Override
-			public JSONArray handle(ResultSet rs) throws SQLException {
+			QueryRunner run = new QueryRunner();
 
-				JSONArray array = new JSONArray();
+			ResultSetHandler<JSONArray> handler = new ResultSetHandler<JSONArray>() {
 
-				while (rs.next()) {
-					int poiNum = rs.getInt("POI_NUM");
-					
-					array.add(poiNum);
+				@Override
+				public JSONArray handle(ResultSet rs) throws SQLException {
+
+					JSONArray array = new JSONArray();
+
+					while (rs.next()) {
+						int poiNum = rs.getInt("POI_NUM");
+
+						array.add(poiNum);
+					}
+					return array;
 				}
-				return array;
-			}
-		};
+			};
 
-		return run.query(conn, sql, handler);
+			return run.query(conn, sql, handler);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 }

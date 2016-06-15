@@ -41,6 +41,9 @@ public class IxPoiParking implements IObj {
 	private String memo;// 备注信息
 	private String photoName;//全景照片
 	private int certificate = 0; //入口凭证
+	private int uRecord=0;
+	private String uDate;
+	
 	public String getParkingType() {
 		return parkingType;
 	}
@@ -336,6 +339,22 @@ public class IxPoiParking implements IObj {
 
 	public void setPhotoName(String photoName) {
 		this.photoName = photoName;
+	}
+
+	public int getuRecord() {
+		return uRecord;
+	}
+
+	public void setuRecord(int uRecord) {
+		this.uRecord = uRecord;
+	}
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
 	}
 
 	@Override

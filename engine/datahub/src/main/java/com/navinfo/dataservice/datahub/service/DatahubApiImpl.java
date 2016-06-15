@@ -23,7 +23,11 @@ public class DatahubApiImpl implements DatahubApi {
 	}
 	@Override
 	public DbInfo getSuperDb(DbInfo db) throws Exception {
-		return DbService.getInstance().getSuperDb(db);
+		if(db instanceof DbInfo){
+			return DbService.getInstance().getSuperDb((DbInfo)db);
+		}else{
+			throw new Exception("未知的dbinfo类");
+		}
 	}
 
 	@Override

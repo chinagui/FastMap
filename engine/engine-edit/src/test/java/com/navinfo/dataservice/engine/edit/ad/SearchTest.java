@@ -6,20 +6,33 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.engine.edit.xiaolong.InitApplication;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineSegment;
 
-public class SearchTest {
+public class SearchTest extends InitApplication{
+	
+	@Override
+	@Before
+	public void init() {
+		initContext();
+	}
+	
 	private Connection conn;
 	private RdLinkSelector linkSelector;
 	public SearchTest() throws Exception{
 		this.conn = DBConnector.getInstance().getConnectionById(11);
 		 linkSelector = new RdLinkSelector(conn);
 	}
+	
+	@Test
 	public List<RdLink> getNextTrackLinks(int cuurentLinkPid,int cruuentNodePidDir) throws Exception{
 		List<RdLink> tracks = new ArrayList<RdLink>();
 		tracks.add((RdLink) linkSelector.loadById(cuurentLinkPid, true));
@@ -67,9 +80,5 @@ public class SearchTest {
 		}
 		return tracks;
 	}
-	public static void main(String[] args) throws Exception {
-		while(true){
-			System.out.println();
-		}
-	}
+
 }

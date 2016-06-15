@@ -40,6 +40,8 @@ public class IxPoiRestaurant implements IObj {
 	private int  travelguideFlag  = 0;//是 否 属 于travel  guide所需 POI
 	private int mesh;
 	private String rowId;
+	private int uRecord=0;
+	private String uDate;
 	
 	public String getCreditCard() {
 		return creditCard;
@@ -104,6 +106,22 @@ public class IxPoiRestaurant implements IObj {
 
 	public void setAvgCost(int avgCost) {
 		this.avgCost = avgCost;
+	}
+
+	public int getuRecord() {
+		return uRecord;
+	}
+
+	public void setuRecord(int uRecord) {
+		this.uRecord = uRecord;
+	}
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
 	}
 
 	@Override

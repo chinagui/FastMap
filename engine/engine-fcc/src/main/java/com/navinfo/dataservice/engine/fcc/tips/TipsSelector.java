@@ -205,6 +205,7 @@ public class TipsSelector {
 			HBaseController controller = new HBaseController();
 
 			ArrayList<KeyValue> list = controller.getTipsByRowkey(rowkey);
+			
 
 			json.put("rowkey", rowkey);
 
@@ -319,10 +320,14 @@ public class TipsSelector {
 
 		Set<Integer> linkPids = new HashSet<Integer>();
 
+		//根据tip类型不同，查询关联对象的pid(这里是关联link)，用于e字段结果
 		for (JSONObject json : tips) {
+			
+			System.out.println("++++++++++++++:"+json);
+			
 			JSONObject deep = JSONObject.fromObject(json.getString("deep"));
 
-			if (type == 1201 || type == 1203 || type == 1101) {
+			if (type == 1201 || type == 1203 || type == 1101 || type == 1109) {
 				JSONObject f = deep.getJSONObject("f");
 
 				if (f.getInt("type") == 1) {
@@ -331,13 +336,21 @@ public class TipsSelector {
 			}
 
 			else if (type == 1301 || type == 1407 || type == 1302
-					|| type == 1403) {
+					|| type == 1403|| type == 1401 || type == 1402
+					|| type == 1405|| type == 1406 || type == 1409 
+					|| type == 1105 || type == 1107 || type == 1703) {
 				JSONObject f = deep.getJSONObject("in");
 
 				if (f.getInt("type") == 1) {
 					linkPids.add(Integer.valueOf(f.getString("id")));
 				}
-			} else if (type == 1604 || type == 1514) {
+			}else if (type == 1110) {
+				JSONObject f = deep.getJSONObject("out");
+
+				if (f.getInt("type") == 1) {
+					linkPids.add(Integer.valueOf(f.getString("id")));
+				}
+			} else if (type == 1604 || type == 1514||type==1515) {
 				JSONArray a = deep.getJSONArray("f_array");
 
 				for (int i = 0; i < a.size(); i++) {
@@ -356,7 +369,8 @@ public class TipsSelector {
 			oraConn = DBConnector.getInstance().getConnectionById(dbId);;
 
 			RdLinkSelector selector = new RdLinkSelector(oraConn);
-
+			
+			//关联link的道路名 map<linkPid, name>
 			map = selector.loadNameByLinkPids(linkPids);
 
 		} catch (Exception e) {
@@ -394,7 +408,8 @@ public class TipsSelector {
 			m.put("f", DateUtils.stringToLong(operateDate, "yyyyMMddHHmmss"));
 
 			JSONObject deep = JSONObject.fromObject(json.getString("deep"));
-
+			
+			//e字段的返回结果，不同类型不同s
 			if (type == 1201 || type == 1203 || type == 1101) {
 				JSONObject f = deep.getJSONObject("f");
 
@@ -465,7 +480,7 @@ public class TipsSelector {
 				} else {
 					m.put("e", "无道路");
 				}
-			} else if (type == 1604 || type == 1514) {
+			} else if (type == 1604 || type == 1514 || type == 1515) {
 				JSONArray a = deep.getJSONArray("f_array");
 
 				boolean hasLink = false;
@@ -496,18 +511,18 @@ public class TipsSelector {
 						m.put("e", "无名路");
 					}
 				}
-				
-//				if(type == 1514){
-//					String name = m.getString("e");
-//					
-//					String time = deep.getString("time");
-//					
-//					if(time!=null && !time.isEmpty()){
-//						name+="("+time+")";
-//						
-//						m.put("e", name);
-//					}
-//				}
+				//不需要加时间段
+		/*		if(type == 1515){
+					String name = m.getString("e");
+					
+					String time = deep.getString("time");
+					
+					if(time!=null && !time.isEmpty()){
+						name+="("+time+")";
+						
+						m.put("e", name);
+					}
+				}*/
 			} else if (type == 1704 || type == 1510) {
 
 				String name = deep.getString("name");
@@ -539,7 +554,14 @@ public class TipsSelector {
 				m.put("e", "上下线分离");
 			} else if (type == 1801){
 				m.put("e", "立交");
+			}else if(type==1806){
+				m.put("e", "草图");
+			}else if(type==1205){
+				m.put("e", "SA");
+			}else if(type==1206){
+				m.put("e", "PA");
 			}
+
 			
 
 			if (!m.containsKey("e")) {
@@ -583,13 +605,15 @@ public class TipsSelector {
 //				.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
 		TipsSelector selector = new TipsSelector();
 		
-		System.out.println(selector.searchDataByRowkey("0212014bb47de20366413db30504af53243a00"));
-//		JSONArray a = JSONArray
-//				.fromObject("[59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");
-//		JSONArray b = new JSONArray();
-//		b.add(1);
-//		int type = 1101;
-//		System.out.println(selector.getSnapshot(a, b, type, 11));
+//		System.out.println(selector.searchDataByRowkey("0212014bb47de20366413db30504af53243a00"));
+		JSONArray grid = JSONArray
+				.fromObject("[59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");
+		System.out.println(grid);
+		JSONArray stage = new JSONArray();
+		stage.add(1);
+		int type = 1101;
+		int projectId=11;
+		System.out.println(selector.getSnapshot(grid, stage, type, projectId));
 		// System.out.println(selector.getStats(a, b));
 
 		// JSONArray types = new JSONArray();

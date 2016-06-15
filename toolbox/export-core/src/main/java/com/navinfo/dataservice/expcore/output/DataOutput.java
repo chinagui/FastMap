@@ -12,8 +12,7 @@ import com.navinfo.dataservice.expcore.exception.ExportException;
  */
 public interface DataOutput {
 
-	public void initTarget() throws ExportException;
-	public void releaseTarget();
+	public void releaseTarget(boolean destroyTarget);
 	
     /**
      * @param resultSet

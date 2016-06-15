@@ -15,8 +15,16 @@
 	</properties>
 	<dependencies>
 		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>job-framework</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.json-lib</groupId>
@@ -24,33 +32,57 @@
 			<classifier>jdk15</classifier>
 		</dependency>
 		<dependency>
+			<groupId>net.sf.ezmorph</groupId>
+			<artifactId>ezmorph</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>api-job</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>commons</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>biz-commons</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>net.sf.ezmorph</groupId>
-			<artifactId>ezmorph</artifactId>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>dao-mq</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.xerial</groupId>
-			<artifactId>sqlite-jdbc</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.uima</groupId>
-			<artifactId>uimaj-core</artifactId>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>api-edit</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>api-datahub</artifactId>
 		</dependency>
+		
+	
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>api-man</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>api-statics</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.zookeeper</groupId>
+			<artifactId>zookeeper</artifactId>
+			<type>pom</type>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.sgroschupf</groupId>
+			<artifactId>zkclient</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo</artifactId>
 		</dependency>
 	</dependencies>
 </project>

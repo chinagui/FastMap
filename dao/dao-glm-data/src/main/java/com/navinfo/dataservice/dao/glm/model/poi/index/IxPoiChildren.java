@@ -33,6 +33,10 @@ public class IxPoiChildren implements IRow {
 	
 	private int relationType=0;	//关系类型
 	
+	private int uRecord=0;
+	
+	private String uDate;
+	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
 	public IxPoiChildren() {
@@ -62,6 +66,22 @@ public class IxPoiChildren implements IRow {
 		this.relationType = relationType;
 	}
 	
+	public int getuRecord() {
+		return uRecord;
+	}
+
+	public void setuRecord(int uRecord) {
+		this.uRecord = uRecord;
+	}
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
+	}
+
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
 		return JSONObject.fromObject(this, JsonUtils.getStrConfig());		

@@ -2,16 +2,27 @@ package com.navinfo.dataservice.engine.edit.xiaolong.ad;
 
 import java.sql.Connection;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
+import com.navinfo.dataservice.engine.edit.xiaolong.InitApplication;
 
 import net.sf.json.JSONObject;
 
-public class AdAdminGroupTest {
+public class AdAdminGroupTest extends InitApplication {
 	
-	public static void searchAdminGroupLevel() {
+	@Override
+	@Before
+	public void init() {
+		initContext();
+	}
+	
+	@Test
+	public void searchAdminGroupLevel() {
 		Connection conn;
 		try {
 			conn = DBConnector.getInstance().getConnectionById(11);
@@ -30,7 +41,8 @@ public class AdAdminGroupTest {
 
 	}
 
-	public static void deleteAdminGroupLevel() {
+	@Test
+	public void deleteAdminGroupLevel() {
 		Connection conn;
 		try {
 			conn = DBConnector.getInstance().getConnectionById(11);
@@ -57,9 +69,5 @@ public class AdAdminGroupTest {
 			e.printStackTrace();
 		}
 
-	}
-	
-	public static void main(String[] args) {
-		searchAdminGroupLevel();
 	}
 }

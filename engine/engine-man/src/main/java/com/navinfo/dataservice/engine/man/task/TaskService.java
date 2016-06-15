@@ -15,8 +15,8 @@ import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.engine.man.city.CityOperation;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
-import com.navinfo.dataservice.engine.man.task.Task;
 import com.navinfo.dataservice.commons.json.JsonOperation;
+import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;

@@ -1,9 +1,21 @@
 package com.navinfo.dataservice.engine.edit.xiaolong.rd;
 
-import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
+import org.junit.Before;
+import org.junit.Test;
 
-public class RdBranchTest {
-	public static void testAdd3dBranch()
+import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
+import com.navinfo.dataservice.engine.edit.xiaolong.InitApplication;
+
+public class RdBranchTest extends InitApplication{
+	
+	@Override
+	@Before
+	public void init() {
+		initContext();
+	}
+	
+	@Test
+	public void testAdd3dBranch()
 	{
 		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDBRANCH\",\"projectId\":11,\"data\":{\"branchType\":3,\"inLinkPid\":88026344,\"nodePid\":74186157,\"outLinkPid\":88026344}}";
 		Transaction t = new Transaction(parameter);
@@ -13,9 +25,5 @@ public class RdBranchTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-	
-	public static void main(String[] args) {
-		testAdd3dBranch();
 	}
 }

@@ -4,13 +4,24 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.rd.utils.RdLinkSearchUtils;
+import com.navinfo.dataservice.engine.edit.xiaolong.InitApplication;
 
-public class RdLinkTest {
+public class RdLinkTest extends InitApplication{
+	
+	@Override
+	@Before
+	public void init() {
+		initContext();
+	}
+	
 	private Connection conn;
 	public RdLinkTest() throws Exception {
 		this.conn = DBConnector.getInstance().getConnectionById(11);
@@ -27,6 +38,7 @@ public class RdLinkTest {
 		}
 	}
 	
+	@Test
 	public void testAddRdLink()
 	{
 		String linea= "[[116.02564,39.76918], [116.02601,39.76917]]";
@@ -55,6 +67,7 @@ public class RdLinkTest {
 		}
 	}
 	
+	@Test
 	public void TrackRdLink() throws Exception{
 		//创建起始link LINESTRING (116.20091 39.84598, 116.20095 39.84568, 116.20111 39.84551)
 		// PID 100002627 s 100018779 e 100018780
@@ -69,6 +82,8 @@ public class RdLinkTest {
 			System.out.println(rdLink.getPid());
 		}
 	}
+	
+	@Test
 	public void departRdLink()
 	{
 		String line  = "[20465744,20465745,14226884]";
@@ -81,6 +96,8 @@ public class RdLinkTest {
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
 	public void testSet(){
 		List<Boolean> booleans = new ArrayList<Boolean>();
 		booleans.add(false);
@@ -92,7 +109,9 @@ public class RdLinkTest {
 		}
 		
 	}
-	private void testLoadTractLink() throws Exception{
+	
+	@Test
+	public void testLoadTractLink() throws Exception{
 		List<Integer> pids = new ArrayList<Integer>();
 		pids.add(20465744);
 		pids.add(20465745);
@@ -102,16 +121,6 @@ public class RdLinkTest {
 		List<RdLink> links =linkSelector.loadByPids(pids, true);
 		for(RdLink r:links){
 			System.out.println(r.getPid());
-		}
-	}
-	public static void main(String[] args) {
-		try {
-			
-			new RdLinkTest().departRdLink();
-			//new RdLinkTest().testAddRdLink();
-			//new RdLinkTest().testLoadTractLink();
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 }

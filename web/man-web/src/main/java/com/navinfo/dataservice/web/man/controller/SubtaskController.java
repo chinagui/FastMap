@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
@@ -64,7 +66,8 @@ public class SubtaskController extends BaseController {
 			
 			dataJson.remove("gridIds");
 			
-			Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
+//			Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
+			Subtask bean = (Subtask) JsonOperation.jsonToBean(dataJson,Subtask.class);
 			bean.setCreateUserId((int)userId);
 			bean.setGeometry(wkt);
 			

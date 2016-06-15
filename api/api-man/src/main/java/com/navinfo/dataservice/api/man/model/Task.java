@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 */
 public class Task{
 	private Integer taskId ;
+	private String name;
 	private Integer cityId ;
 	private Integer createUserId ;
 	private Timestamp createDate ;
@@ -32,8 +33,9 @@ public class Task{
 	
 	public Task (){
 	}
-	public Task (Integer taskId ,Integer cityId,Integer createUserId,Timestamp createDate,Integer status,String descp,Timestamp collectPlanStartDate,Timestamp collectPlanEndDate,Timestamp dayEditPlanStartDate,Timestamp dayEditPlanEndDate,Timestamp bMonthEditPlanStartDate,Timestamp bMonthEditPlanEndDate,Timestamp cMonthEditPlanStartDate,Timestamp cMonthEditPlanEndDate,Timestamp dayProducePlanStartDate,Timestamp dayProducePlanEndDate,Timestamp monthProducePlanStartDate,Timestamp monthProducePlanEndDate,Integer latest){
+	public Task (Integer taskId ,String name,Integer cityId,Integer createUserId,Timestamp createDate,Integer status,String descp,Timestamp collectPlanStartDate,Timestamp collectPlanEndDate,Timestamp dayEditPlanStartDate,Timestamp dayEditPlanEndDate,Timestamp bMonthEditPlanStartDate,Timestamp bMonthEditPlanEndDate,Timestamp cMonthEditPlanStartDate,Timestamp cMonthEditPlanEndDate,Timestamp dayProducePlanStartDate,Timestamp dayProducePlanEndDate,Timestamp monthProducePlanStartDate,Timestamp monthProducePlanEndDate,Integer latest){
 		this.taskId=taskId ;
+		this.name=name;
 		this.cityId=cityId ;
 		this.createUserId=createUserId ;
 		this.createDate=createDate ;
@@ -316,5 +318,11 @@ public class Task{
 		} else if (!latest.equals(other.latest))
 			return false;
 		return true;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
 	}	
 }

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.statics.poiCollect;
+package com.navinfo.dataservice.engine.statics.roadcollect;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -26,7 +26,7 @@ import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.vividsolutions.jts.geom.Geometry;
 
-public class PoiCollectStat implements Runnable {
+public class RoadCollectStat implements Runnable {
 	private Connection conn;
 	private Logger log;
 	private CountDownLatch latch;
@@ -34,7 +34,7 @@ public class PoiCollectStat implements Runnable {
 	private String col_name;
 	private String stat_date;
 
-	public PoiCollectStat(CountDownLatch cdl, int db_id, String db_name, String col_name, String stat_date) {
+	public RoadCollectStat(CountDownLatch cdl, int db_id, String db_name, String col_name, String stat_date) {
 		this.latch = cdl;
 		this.db_name = db_name;
 		this.col_name = col_name;

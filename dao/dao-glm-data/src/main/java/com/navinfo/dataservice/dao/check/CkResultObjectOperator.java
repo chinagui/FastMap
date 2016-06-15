@@ -14,7 +14,7 @@ public class CkResultObjectOperator {
 	public void insertCkResultObject(String checkId, String targets)
 			throws Exception {
 
-		String sql = "insert into ck_result_object (ck_result_id,table_name,pid) values (?,?,?)";
+		String sql = "insert into ck_result_object (ck_md5_code,table_name,pid) values (?,?,?)";
 
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 

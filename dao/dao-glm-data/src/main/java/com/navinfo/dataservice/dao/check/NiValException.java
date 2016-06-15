@@ -70,6 +70,8 @@ public class NiValException implements IObj {
 
 	private int logType;
 
+	private String md5Code;
+	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	public NiValException() {
@@ -411,6 +413,14 @@ public class NiValException implements IObj {
 	public void setRowId(String rowId) {
 		// TODO Auto-generated method stub
 
+	}
+
+	public String getMd5Code() {
+		return md5Code;
+	}
+
+	public void setMd5Code(String md5Code) {
+		this.md5Code = md5Code;
 	}
 
 }

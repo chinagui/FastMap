@@ -1,8 +1,6 @@
-package com.navinfo.dataservice.engine.man.layer;
+package com.navinfo.dataservice.api.man.model;
 
 import java.sql.Timestamp;
-
-import com.vividsolutions.jts.geom.Geometry;
 
 /** 
 * @ClassName:  CustomisedLayer 

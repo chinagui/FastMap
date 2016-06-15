@@ -1,7 +1,11 @@
-package com.navinfo.dataservice.engine.man.subtask;
+package com.navinfo.dataservice.api.man.model;
 
-import com.navinfo.dataservice.engine.man.block.Block;
-import com.navinfo.dataservice.engine.man.task.Task;
+import java.sql.Timestamp;
+
+import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.api.man.model.Block;
+import com.navinfo.dataservice.api.man.model.BlockMan;
+
 
 /** 
 * @ClassName:  Subtask 
@@ -13,25 +17,47 @@ public class Subtask  {
 	private Integer subtaskId ;
 	private Integer blockId ;
 	private Integer taskId ;
-	private Object geometry ;
+	private String geometry ;
 	private Integer stage ;
 	private Integer type ;
 	private Integer createUserId ;
-	private Object createDate ;
+	private Timestamp createDate ;
 	private Integer exeUserId ;
 	private Integer status ;
-	private Object planStartDate ;
-	private Object planEndDate ;
-	private Object startDate ;
-	private Object endDate ;
+	private Timestamp planStartDate ;
+	private Timestamp planEndDate ;
+	private Timestamp startDate ;
+	private Timestamp endDate ;
 	private String descp ;
 	private Block block;
 	private Task task;
+	private BlockMan blockMan;
+	private String[] gridIds;
+	private Integer dbId ;
 	
 	public Subtask (){
 	}
 	
-	public Subtask (Integer subtaskId ,Integer blockId,Integer taskId,Object geometry,Integer stage,Integer type,Integer createUserId,Object createDate,Integer exeUserId,Integer status,Object planStartDate,Object planEndDate,Object startDate,Object endDate,String descp,Block block,Task task){
+	public Subtask (Integer subtaskId ,
+			Integer blockId,
+			Integer taskId,
+			String geometry,
+			Integer stage,
+			Integer type,
+			Integer createUserId,
+			Timestamp createDate,
+			Integer exeUserId,
+			Integer status,
+			Timestamp planStartDate,
+			Timestamp planEndDate,
+			Timestamp startDate,
+			Timestamp endDate,
+			String descp,
+			Block block,
+			Task task,
+			BlockMan blockMan,
+			String[] gridIds,
+			Integer dbId){
 		this.subtaskId=subtaskId ;
 		this.blockId=blockId ;
 		this.taskId=taskId ;
@@ -49,12 +75,33 @@ public class Subtask  {
 		this.descp=descp ;
 		this.block=block ;
 		this.task=task ;
+		this.blockMan=blockMan ;
+		this.gridIds = gridIds;
+		this.dbId = dbId;
+	}
+	public int getDbId(){
+		return dbId;
+	}
+	public void setDbId(int dbId) {
+		this.dbId = dbId;
+	}
+	public String[] getGridIds(){
+		return gridIds;
+	}
+	public void setGridIds(String[] gridIds) {
+		this.gridIds = gridIds;
 	}
 	public Block getBlock(){
 		return block;
 	}
-	public void setBlock(Block block) {
-		this.block = block;
+	public void setBlock(Block block2) {
+		this.block = block2;
+	}
+	public BlockMan getBlockMan(){
+		return blockMan;
+	}
+	public void setBlockMan(BlockMan blockMan) {
+		this.blockMan = blockMan;
 	}
 	public Task getTask(){
 		return task;
@@ -80,10 +127,10 @@ public class Subtask  {
 	public void setTaskId(Integer taskId) {
 		this.taskId = taskId;
 	}
-	public Object getGeometry() {
+	public String getGeometry() {
 		return geometry;
 	}
-	public void setGeometry(Object geometry) {
+	public void setGeometry(String geometry) {
 		this.geometry = geometry;
 	}
 	public Integer getStage() {
@@ -104,10 +151,10 @@ public class Subtask  {
 	public void setCreateUserId(Integer createUserId) {
 		this.createUserId = createUserId;
 	}
-	public Object getCreateDate() {
+	public Timestamp getCreateDate() {
 		return createDate;
 	}
-	public void setCreateDate(Object createDate) {
+	public void setCreateDate(Timestamp createDate) {
 		this.createDate = createDate;
 	}
 	public Integer getExeUserId() {
@@ -122,28 +169,28 @@ public class Subtask  {
 	public void setStatus(Integer status) {
 		this.status = status;
 	}
-	public Object getPlanStartDate() {
+	public Timestamp getPlanStartDate() {
 		return planStartDate;
 	}
-	public void setPlanStartDate(Object planStartDate) {
+	public void setPlanStartDate(Timestamp planStartDate) {
 		this.planStartDate = planStartDate;
 	}
-	public Object getPlanEndDate() {
+	public Timestamp getPlanEndDate() {
 		return planEndDate;
 	}
-	public void setPlanEndDate(Object planEndDate) {
+	public void setPlanEndDate(Timestamp planEndDate) {
 		this.planEndDate = planEndDate;
 	}
-	public Object getStartDate() {
+	public Timestamp getStartDate() {
 		return startDate;
 	}
-	public void setStartDate(Object startDate) {
+	public void setStartDate(Timestamp startDate) {
 		this.startDate = startDate;
 	}
-	public Object getEndDate() {
+	public Timestamp getEndDate() {
 		return endDate;
 	}
-	public void setEndDate(Object endDate) {
+	public void setEndDate(Timestamp endDate) {
 		this.endDate = endDate;
 	}
 	public String getDescp() {

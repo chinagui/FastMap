@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -13,20 +12,17 @@ import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.navinfo.dataservice.api.man.model.Block;
+import com.navinfo.dataservice.api.man.model.BlockMan;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.engine.man.block.Block;
-import com.navinfo.dataservice.engine.man.task.Task;
-import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.database.Page;
-//import com.navinfo.dataservice.commons.util.StringUtils;
 import org.apache.commons.lang.StringUtils;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+
 
 /** 
 * @ClassName:  SubtaskService 
@@ -141,7 +137,7 @@ public class SubtaskService {
 					while(rs.next()){
 						Subtask subtask = new Subtask();
 						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
-						subtask.setGeometry(rs.getObject("GEOMETRY"));
+						subtask.setGeometry(rs.getString("GEOMETRY"));
 						subtask.setDescp(rs.getString("DESCP"));
 						list.add(subtask);
 					}
@@ -186,7 +182,7 @@ public class SubtaskService {
 	}
 
 	
-	public List<Subtask> list(Subtask bean,List<String> sortby)throws ServiceException{
+	public List<Subtask> list(Subtask bean,List<String> sortby,long pageSize,long curPageNum)throws ServiceException{
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
@@ -199,9 +195,9 @@ public class SubtaskService {
 					+ ",s.PLAN_END_DATE"
 					+ ",s.DESCP"
 					+ ",TO_CHAR(s.GEOMETRY.get_wkt()) AS GEOMETRY "
-					+ ",(case when s.block_id is not null and s.block_id = b.block_id then b.block_id else null end) AS block_id"
+					+ ",(case when s.block_id is not null and s.block_id = b.block_id then b.block_id else -1 end) AS block_id"
 					+ ",(case when s.block_id is not null and s.block_id = b.block_id then b.block_name else null end) AS block_name"
-					+ ",(case when s.task_id is not null and s.task_id = t.task_id then t.task_id else null end) AS task_id"
+					+ ",(case when s.task_id is not null and s.task_id = t.task_id then t.task_id else -1 end) AS task_id"
 					+ ",(case when s.task_id is not null and s.task_id = t.task_id then t.descp else null end) AS task_descp";
 			//0采集，1日编，2月编，
 			if(0 == bean.getStage()){
@@ -249,54 +245,93 @@ public class SubtaskService {
 			ResultSetHandler<List<Subtask>> rsHandler = new ResultSetHandler<List<Subtask>>(){
 
 				public List<Subtask> handle(ResultSet rs) throws SQLException {
-					List<Subtask> list = new ArrayList();
+					List<Subtask> list = new ArrayList<Subtask>();
 					while(rs.next()){
 						Subtask subtask = new Subtask();
 						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
-						subtask.setGeometry(rs.getObject("GEOMETRY"));
+						subtask.setGeometry(rs.getString("GEOMETRY"));
 						subtask.setStage(rs.getInt("STAGE"));
 						subtask.setType(rs.getInt("TYPE"));
-						subtask.setPlanStartDate(DateUtils.dateToString(rs.getTimestamp("PLAN_START_DATE")));	
-						subtask.setPlanEndDate(DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
+						subtask.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));	
+						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						subtask.setDescp(rs.getString("DESCP"));
-						
-						Block block  = new Block();
-						block.setBlockId(rs.getInt("block_id"));
-						block.setBlockName(rs.getString("block_name"));
-						subtask.setBlock(block);
-						
-						Task task = new Task();
-						task.setTaskId(rs.getInt("task_id"));
-						task.setDescp(rs.getString("task_descp"));
-						try{
-							if(rs.findColumn("COLLECT_PLAN_START_DATE_t") > 0){
-								task.setCollectPlanStartDate(rs.getTimestamp("COLLECT_PLAN_START_DATE_t"));
-								task.setCollectPlanStartDate(rs.getTimestamp("COLLECT_PLAN_END_DATE_t"));
+						//与block关联，返回block信息。
+						if(rs.getInt("block_id") > 0){
+							//block
+							Block block  = new Block();
+							block.setBlockId(rs.getInt("block_id"));
+							block.setBlockName(rs.getString("block_name"));
+							subtask.setBlock(block);
+							//blockMan
+							BlockMan blockMan = new BlockMan();
+							try{
+								if(rs.findColumn("COLLECT_PLAN_START_DATE_b") > 0){
+									blockMan.setCollectPlanStartDate(DateUtils.dateToString(rs.getTimestamp("COLLECT_PLAN_START_DATE_b")));
+									blockMan.setCollectPlanStartDate(DateUtils.dateToString(rs.getTimestamp("COLLECT_PLAN_END_DATE_b")));
+								}
 							}
-						}
-						catch (SQLException e) {
-					        int a = 1;
-					    }
-						try{
-							if(rs.findColumn("COLLECT_PLAN_START_DATE_t") > 0){
-								task.setDayEditPlanStartDate(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE_t"));
-								task.setDayEditPlanStartDate(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE_t"));
+							catch (SQLException e) {
+						        int a = 1;
+						    }
+							try{
+								if(rs.findColumn("COLLECT_PLAN_START_DATE_b") > 0){
+									blockMan.setDayEditPlanStartDate(DateUtils.dateToString(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE_b")));
+									blockMan.setDayEditPlanStartDate(DateUtils.dateToString(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE_b")));
+								}
 							}
-						}
-						catch (SQLException e) {
-					        int a = 1;
-					    }
-						try{
-							if(rs.findColumn("COLLECT_PLAN_START_DATE_t") > 0){
-								task.setCMonthEditPlanStartDate(rs.getTimestamp("C_MONTH_EDIT_PLAN_START_DATE_t"));
-								task.setCMonthEditPlanStartDate(rs.getTimestamp("C_MONTH_EDIT_PLAN_END_DATE_t"));
+							catch (SQLException e) {
+						        int a = 1;
+						    }
+							try{
+								if(rs.findColumn("COLLECT_PLAN_START_DATE_b") > 0){
+									blockMan.setMonthEditPlanStartDate(DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE_b")));
+									blockMan.setMonthEditPlanStartDate(DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE_b")));
+								}
 							}
+							catch (SQLException e) {
+						        int a = 1;
+						    }
+							subtask.setBlockMan(blockMan);
 						}
-						catch (SQLException e) {
-					        int a = 1;
-					    }
 						
-						subtask.setTask(task);
+						//与task关联，返回block信息。
+						if(rs.getInt("task_id") > 0){
+							//task
+							Task task = new Task();
+							task.setTaskId(rs.getInt("task_id"));
+							task.setDescp(rs.getString("task_descp"));
+							
+							try{
+								if(rs.findColumn("COLLECT_PLAN_START_DATE_t") > 0){
+									task.setCollectPlanStartDate(rs.getTimestamp("COLLECT_PLAN_START_DATE_t"));
+									task.setCollectPlanStartDate(rs.getTimestamp("COLLECT_PLAN_END_DATE_t"));
+								}
+							}
+							catch (SQLException e) {
+						        int a = 1;
+						    }
+							try{
+								if(rs.findColumn("COLLECT_PLAN_START_DATE_t") > 0){
+									task.setDayEditPlanStartDate(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE_t"));
+									task.setDayEditPlanStartDate(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE_t"));
+								}
+							}
+							catch (SQLException e) {
+						        int a = 1;
+						    }
+							try{
+								if(rs.findColumn("COLLECT_PLAN_START_DATE_t") > 0){
+									task.setCMonthEditPlanStartDate(rs.getTimestamp("C_MONTH_EDIT_PLAN_START_DATE_t"));
+									task.setCMonthEditPlanStartDate(rs.getTimestamp("C_MONTH_EDIT_PLAN_END_DATE_t"));
+								}
+							}
+							catch (SQLException e) {
+						        int a = 1;
+						    }
+							
+							subtask.setTask(task);
+							
+						}
 						
 						list.add(subtask);
 					}
@@ -306,7 +341,7 @@ public class SubtaskService {
 	    		
 	    	}	;
 	    	
-	    	return run.query(conn, selectSql, rsHandler);
+	    	return run.query(curPageNum,pageSize,conn, selectSql, rsHandler);
 
 	    	
 		}catch(Exception e){
@@ -321,15 +356,12 @@ public class SubtaskService {
 	
 	
 	
-	public Page listByUser(JSONObject json,final int currentPageNum,final int pageSize)throws ServiceException{
+	public List<Subtask> listByUser(Subtask bean,int snapshot,final int currentPageNum,final int pageSize)throws ServiceException{
 		Connection conn = null;
 		try{
 			
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();	
-					
-			int userId = json.getInt("userId");
-			int snapshot = json.getInt("snapshot");
 
 			String selectSql = "select st.SUBTASK_ID"
 					+ ",st.DESCP"
@@ -353,7 +385,7 @@ public class SubtaskService {
 			String conditionSql = " where st.task_id = t.task_id "
 					+ "and t.city_id = c.city_id "
 					+ "and c.region_id = r.region_id "
-					+ "and st.EXE_USER_ID = " + userId + " ";
+					+ "and st.EXE_USER_ID = " + bean.getExeUserId() + " ";
 			
 			String conditionExtra = " and st.subtask_id = sgm.subtask_id ";
 			
@@ -368,19 +400,16 @@ public class SubtaskService {
 					+ ",r.MONTHLY_DB_ID";
 			String groupByExtra = ",TO_CHAR(st.GEOMETRY.get_wkt())";
 			
-			if(json.containsKey("stage")){
-				int stage = json.getInt("stage");
-				conditionSql = conditionSql + " and st.STAGE = " + stage;
+			if(bean.getStage()!= null){
+				conditionSql = conditionSql + " and st.STAGE = " + bean.getStage();
 			}
 			
-			if(json.containsKey("type")){
-				int type = json.getInt("type");
-				conditionSql = conditionSql + " and st.TYPE = " + type;
+			if(bean.getType()!= null){
+				conditionSql = conditionSql + " and st.TYPE = " + bean.getType();
 			}
 			
-			if(json.containsKey("status")){
-				int status = json.getInt("status");
-				conditionSql = conditionSql + " and st.STATUS = " + status;
+			if(bean.getStatus()!= null){
+				conditionSql = conditionSql + " and st.STATUS = " + bean.getStatus();
 			}
 			
 			if(0 == snapshot){
@@ -389,32 +418,28 @@ public class SubtaskService {
 				selectSql = selectSql + fromSql + conditionSql + groupBySql;
 			}
 					
-			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
-				public Page handle(ResultSet rs) throws SQLException {
-					List list = new ArrayList();
-		            Page page = new Page(currentPageNum);
-		            page.setPageSize(pageSize);
+			ResultSetHandler<List<Subtask>> rsHandler =  new ResultSetHandler<List<Subtask>>(){
+				public List<Subtask> handle(ResultSet rs) throws SQLException {
+					List<Subtask> list = new ArrayList<Subtask>();
 					while(rs.next()){
-						HashMap map = new HashMap();
-						page.setTotalCount(rs.getInt(QueryRunner.TOTAL_RECORD_NUM));
-						map.put("subtaskId", rs.getInt("SUBTASK_ID"));
-						map.put("stage", rs.getInt("STAGE"));
-						map.put("type", rs.getInt("TYPE"));
-						
-						map.put("planStartDate", DateUtils.dateToString(rs.getTimestamp("PLAN_START_DATE")));	
-						map.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
-						
-						map.put("descp", rs.getString("DESCP"));
-						map.put("status", rs.getInt("STATUS"));
+						Subtask subtask = new Subtask();
+						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
+//						subtask.setGeometry(rs.getString("GEOMETRY"));
+						subtask.setStage(rs.getInt("STAGE"));
+						subtask.setType(rs.getInt("TYPE"));
+						subtask.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));	
+						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
+						subtask.setDescp(rs.getString("DESCP"));
+						subtask.setStatus(rs.getInt("STATUS"));
 						
 						try{
 							if(rs.findColumn("GEOMETRY") > 0){
-								map.put("geometry", rs.getObject("GEOMETRY"));
+								subtask.setGeometry(rs.getString("GEOMETRY"));
 							}
 							if(rs.findColumn("GRID_ID") > 0){
 								String gridIds = rs.getString("GRID_ID");
 								String[] gridIdList = gridIds.split(",");
-								map.put("gridIds", gridIdList);
+								subtask.setGridIds(gridIdList);
 							}
 						}
 						catch (SQLException e) {
@@ -422,20 +447,19 @@ public class SubtaskService {
 					    }
 						
 						if(1 == rs.getInt("STAGE")){
-							map.put("dbId", rs.getString("DAILY_DB_ID"));
+							subtask.setDbId(rs.getInt("DAILY_DB_ID"));
 						}else if(2 == rs.getInt("STAGE")){
-							map.put("dbId", rs.getString("MONTHLY_DB_ID"));
+							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
 						}
-						list.add(map);
+						list.add(subtask);
 						
 					}
-					page.setResult(list);
-					return page;
+					return list;
 				}
 	    		
 	    	};
 
-	    	return run.query(currentPageNum,pageSize,conn, selectSql, rsHandler);
+	    	return run.query(pageSize,currentPageNum,conn, selectSql, rsHandler);
 
 
 		}catch(Exception e){
@@ -474,11 +498,11 @@ public class SubtaskService {
 					while(rs.next()){
 						Subtask subtask = new Subtask();
 						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
-						subtask.setGeometry(rs.getObject("GEOMETRY"));
+						subtask.setGeometry(rs.getString("GEOMETRY"));
 						subtask.setStage(rs.getInt("STAGE"));
 						subtask.setType(rs.getInt("TYPE"));
-						subtask.setPlanStartDate(DateUtils.dateToString(rs.getTimestamp("PLAN_START_DATE")));	
-						subtask.setPlanEndDate(DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
+						subtask.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));	
+						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						subtask.setDescp(rs.getString("DESCP"));
 						return subtask;
 					}

@@ -18,6 +18,7 @@
 		<module>render-web</module>
         <module>man-web</module>
         <module>dropbox-web</module>
+        <module>statics-web</module>
     </modules>
     <packaging>pom</packaging>
     <name>web</name>

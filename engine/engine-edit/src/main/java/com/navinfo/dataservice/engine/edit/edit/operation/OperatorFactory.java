@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminDetail;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminGroup;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminName;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminPart;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchName;
@@ -66,6 +67,7 @@ import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminGroupOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminNameOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminPartOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchDetailOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchNameOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchOperator;
@@ -251,6 +253,8 @@ public class OperatorFactory {
 			return new AdNodeOperator(conn, (AdNode)obj);
 		case ADNODEMESH:
 			return new AdNodeMeshOperator(conn, (AdNodeMesh)obj);
+		case IXPOI:
+			return new IxPoiOperator(conn, (IxPoi)obj);
 		default:
 			return null;
 		}

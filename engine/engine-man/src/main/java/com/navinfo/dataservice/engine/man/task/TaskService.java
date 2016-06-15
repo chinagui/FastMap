@@ -116,7 +116,8 @@ public class TaskService {
 					String key = (String) keys.next();
 					if ("cityId".equals(key)) {selectSql+=" and city_id="+conditionJson.getInt(key);}
 					if ("createUserId".equals(key)) {selectSql+=" and create_user_id="+conditionJson.getInt(key);}
-					if ("descp".equals(key)) {selectSql+=" and descp="+conditionJson.getString(key);}
+					if ("descp".equals(key)) {selectSql+=" and descp='"+conditionJson.getString(key)+"'";}
+					if ("name".equals(key)) {selectSql+=" and name='"+conditionJson.getString(key)+"'";}
 					if ("status".equals(key)) {selectSql+=" and status="+conditionJson.getInt(key);}
 					}
 				}

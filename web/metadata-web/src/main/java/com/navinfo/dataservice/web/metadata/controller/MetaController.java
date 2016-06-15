@@ -13,6 +13,8 @@ import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 
 import org.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
+import org.navinfo.dataservice.engine.meta.chain.ChainSelector;
+import org.navinfo.dataservice.engine.meta.chain.FocusSelector;
 import org.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
 import org.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import org.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
@@ -309,7 +311,79 @@ public class MetaController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
+	
+	@RequestMapping(value = "/meta/queryChain")
+	public ModelAndView queryChain(HttpServletRequest request)
+			throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
+			String kindCode = jsonReq.getString("kindCode");
+
+			ChainSelector selector = new ChainSelector();
+
+			JSONArray data = selector.getChainByKindCode(kindCode);
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	@RequestMapping(value = "/meta/chainLevel")
+	public ModelAndView queryChainLevel(HttpServletRequest request)
+			throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String kindCode = jsonReq.getString("kindCode");
+			
+			String chainCode = jsonReq.getString("chainCode");
+
+			ChainSelector selector = new ChainSelector();
+
+			String data = selector.getLevelByChain(chainCode, kindCode);
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	@RequestMapping(value = "/meta/queryFocus")
+	public ModelAndView queryFocus(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		try {
+
+			FocusSelector selector = new FocusSelector();
+
+			JSONArray data = selector.getPoiNum();
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
 	@RequestMapping(value = "/meta/queryTelLength")
 	public ModelAndView searchTelLength(HttpServletRequest request)
 			throws ServletException, IOException {

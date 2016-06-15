@@ -175,7 +175,7 @@ public class DownloadOperation {
 				if (linkman == 0) {
 					contact.put("linkman", new ArrayList<IRow>());
 				} else {
-					String linkmanStr = Integer.toString(linkman);
+					String linkmanStr = Integer.toBinaryString(linkman);
 					String retStr = "";
 					for (int i=0;i<linkmanStr.length();i++) {
 						char linkmanChar = linkmanStr.charAt(linkmanStr.length()-1-i);

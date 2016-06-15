@@ -31,7 +31,7 @@ public class IxPoiParking implements IObj {
 	private String  payment;//支付方式 
 	private String  remark;//收费备注 
 	private String  source;//信息获取源 
-	private String openTime;//开放时间 
+	private String openTiime;//开放时间 
 	private int totalNum = 0 ;//车位数量 
 	private String workTime;//制作时间
 	private double resHigh = 0;//限高
@@ -41,6 +41,9 @@ public class IxPoiParking implements IObj {
 	private String memo;// 备注信息
 	private String photoName;//全景照片
 	private int certificate = 0; //入口凭证
+	private int uRecord=0;
+	private String uDate;
+	
 	public String getParkingType() {
 		return parkingType;
 	}
@@ -89,12 +92,14 @@ public class IxPoiParking implements IObj {
 		this.source = source;
 	}
 
-	public String getOpenTime() {
-		return openTime;
+
+
+	public String getOpenTiime() {
+		return openTiime;
 	}
 
-	public void setOpenTime(String openTime) {
-		this.openTime = openTime;
+	public void setOpenTiime(String openTiime) {
+		this.openTiime = openTiime;
 	}
 
 	public int getTotalNum() {
@@ -334,6 +339,22 @@ public class IxPoiParking implements IObj {
 
 	public void setPhotoName(String photoName) {
 		this.photoName = photoName;
+	}
+
+	public int getuRecord() {
+		return uRecord;
+	}
+
+	public void setuRecord(int uRecord) {
+		this.uRecord = uRecord;
+	}
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
 	}
 
 	@Override

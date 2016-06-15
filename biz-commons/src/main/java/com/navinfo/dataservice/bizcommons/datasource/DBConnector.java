@@ -60,7 +60,7 @@ public class DBConnector {
 			synchronized (this) {
 				if (metaDataSource == null) {
 					DatahubApi datahub = (DatahubApi) ApplicationContextUtil
-							.getBean("datahubApiService");
+							.getBean("datahubApi");
 					DbInfo metaDb = null;
 					DbConnectConfig connConfig = null;
 					try {
@@ -140,6 +140,7 @@ public class DBConnector {
 								.getBean("datahubApi");
 
 						DbInfo db = datahub.getDbById(dbId);
+						System.out.println(db.toString());
 
 						DbConnectConfig connConfig = MultiDataSourceFactory
 								.createConnectConfig(db.getConnectParam());

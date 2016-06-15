@@ -67,4 +67,6 @@ public class PropConstant {
 	public static final String downloadUrlPathPoi = "editsupport.poi.download.urlpath.poi";
 	
 	public static final String serverUrl = "dropbox.url";
+	
+	public static final String gdbVersion = "gdb.version";
 }

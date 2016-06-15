@@ -27,13 +27,12 @@ import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 public abstract class AbstractDataOutput implements DataOutput {
 	protected Logger log = Logger.getLogger(this.getClass());
 
-
+	protected List<String> checkExistTables;
+	protected String whenExist;
 	protected Map<String,String> tableReNames;
 	protected ThreadLocalContext ctx;
-	protected ExporterResult expResult;
 
-	public AbstractDataOutput(ExporterResult expResult,ThreadLocalContext ctx) {
-		this.expResult=expResult;
+	public AbstractDataOutput(ThreadLocalContext ctx) {
 		this.ctx = ctx;
 		log = ctx.getLog();
 	}
@@ -87,6 +86,36 @@ public abstract class AbstractDataOutput implements DataOutput {
 			batchSize = 100;
 		}
 		return batchSize;
+	}
+
+
+	public List<String> getCheckExistTables() {
+		return checkExistTables;
+	}
+
+
+	public void setCheckExistTables(List<String> checkExistTables) {
+		this.checkExistTables = checkExistTables;
+	}
+
+
+	public Map<String, String> getTableReNames() {
+		return tableReNames;
+	}
+
+
+	public void setTableReNames(Map<String, String> tableReNames) {
+		this.tableReNames = tableReNames;
+	}
+
+
+	public String getWhenExist() {
+		return whenExist;
+	}
+
+
+	public void setWhenExist(String whenExist) {
+		this.whenExist = whenExist;
 	}
 
 }

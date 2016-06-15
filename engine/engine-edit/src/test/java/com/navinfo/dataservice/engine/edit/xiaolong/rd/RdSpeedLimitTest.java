@@ -8,6 +8,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
@@ -15,12 +18,20 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
+import com.navinfo.dataservice.engine.edit.xiaolong.InitApplication;
 
 import net.sf.json.JSONObject;
 
-public class RdSpeedLimitTest {
-
-	public static void testSpeed() throws Exception {
+public class RdSpeedLimitTest extends InitApplication{
+	
+	@Override
+	@Before
+	public void init() {
+		initContext();
+	}
+	
+	@Test
+	public void testSpeed() throws Exception {
 
 		Connection conn = DBConnector.getInstance().getConnectionById(11);
 
@@ -57,7 +68,8 @@ public class RdSpeedLimitTest {
 		}
 	}
 	
-	public static void testSearch()
+	@Test
+	public void testSearch()
 	{
 		String parameter = "{\"projectId\":11,\"type\":\"RDSPEEDLIMIT\",\"pid\":20177}";
 		JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -82,16 +94,9 @@ public class RdSpeedLimitTest {
 		
 	}
 	
-	public static void testUpdate()
+	@Test
+	public void testUpdate()
 	{
 		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDSPEEDLIMIT\",\"projectId\":11,\"data\":{\"speedValue\":\"62\",\"pid\":20178,\"objStatus\":\"UPDATE\"}}";
-	}
-	
-	public static void main(String[] args) {
-		try {
-			testSearch();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 }

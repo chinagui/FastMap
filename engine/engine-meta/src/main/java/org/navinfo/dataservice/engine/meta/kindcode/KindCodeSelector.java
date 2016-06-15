@@ -7,12 +7,17 @@ import java.sql.SQLException;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.exception.ServiceException;
 
 public class KindCodeSelector {
+	private Logger log = LoggerRepos.getLogger(this.getClass());
 
 	/**
 	 * 用SC_POINT_POICODE_NEW的 CLASS_CODE去重，id与code均为CLASS_CODE，name为CLASS_NAME
@@ -23,46 +28,55 @@ public class KindCodeSelector {
 	 */
 	public JSONArray queryTopKindInfo() throws Exception {
 
-		Connection conn = null;
-
-		QueryRunner run = new QueryRunner();
-
-		conn = DBConnector.getInstance().getMetaConnection();
-
 		StringBuilder sb = new StringBuilder();
 
 		sb.append(" SELECT DISTINCT t.class_code, t.class_name, t.class_code id ");
 
 		sb.append(" FROM sc_point_poicode_new t ");
 
-		ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
-			@Override
-			public JSONArray handle(ResultSet resultSet) throws SQLException {
+		Connection conn = null;
+		try {
 
-				JSONArray array = new JSONArray();
+			QueryRunner run = new QueryRunner();
 
-				while (resultSet.next()) {
-					String id = resultSet.getString("id");
+			conn = DBConnector.getInstance().getMetaConnection();
 
-					String code = resultSet.getString("class_code");
+			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
+				@Override
+				public JSONArray handle(ResultSet resultSet)
+						throws SQLException {
 
-					String name = resultSet.getString("class_name");
+					JSONArray array = new JSONArray();
 
-					JSONObject json = new JSONObject();
+					while (resultSet.next()) {
+						String id = resultSet.getString("id");
 
-					json.put("id", id);
+						String code = resultSet.getString("class_code");
 
-					json.put("code", code);
+						String name = resultSet.getString("class_name");
 
-					json.put("name", name);
+						JSONObject json = new JSONObject();
 
-					array.add(json);
+						json.put("id", id);
+
+						json.put("code", code);
+
+						json.put("name", name);
+
+						array.add(json);
+					}
+					return array;
 				}
-				return array;
-			}
-		};
+			};
 
-		return run.query(conn, sb.toString(), rsHandler);
+			return run.query(conn, sb.toString(), rsHandler);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 
 	/**
@@ -74,11 +88,6 @@ public class KindCodeSelector {
 	 * @throws Exception
 	 */
 	public JSONArray queryMediumKindInfo(final String topId) throws Exception {
-		Connection conn = null;
-
-		QueryRunner run = new QueryRunner();
-
-		conn = DBConnector.getInstance().getMetaConnection();
 
 		StringBuilder sb = new StringBuilder();
 
@@ -88,35 +97,49 @@ public class KindCodeSelector {
 
 		sb.append(" FROM sc_point_poicode_new t " + " WHERE t.class_code=? ");
 
-		ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
-			@Override
-			public JSONArray handle(ResultSet resultSet) throws SQLException {
-				JSONArray array = new JSONArray();
+		Connection conn = null;
+		try {
+			QueryRunner run = new QueryRunner();
 
-				while (resultSet.next()) {
-					String id = resultSet.getString("id");
+			conn = DBConnector.getInstance().getMetaConnection();
 
-					String code = resultSet.getString("sub_class_code");
+			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
+				@Override
+				public JSONArray handle(ResultSet resultSet)
+						throws SQLException {
+					JSONArray array = new JSONArray();
 
-					String name = resultSet.getString("sub_class_name");
+					while (resultSet.next()) {
+						String id = resultSet.getString("id");
 
-					JSONObject json = new JSONObject();
+						String code = resultSet.getString("sub_class_code");
 
-					json.put("topId", topId);
+						String name = resultSet.getString("sub_class_name");
 
-					json.put("id", id);
+						JSONObject json = new JSONObject();
 
-					json.put("code", code);
+						json.put("topId", topId);
 
-					json.put("name", name);
+						json.put("id", id);
 
-					array.add(json);
+						json.put("code", code);
+
+						json.put("name", name);
+
+						array.add(json);
+					}
+					return array;
 				}
-				return array;
-			}
-		};
+			};
 
-		return run.query(conn, sb.toString(), rsHandler, topId);
+			return run.query(conn, sb.toString(), rsHandler, topId);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 
 	/**
@@ -132,12 +155,6 @@ public class KindCodeSelector {
 	public JSONArray queryKindInfo(String topId, String mediumId, int region)
 			throws Exception {
 
-		Connection conn = null;
-
-		QueryRunner run = new QueryRunner();
-
-		conn = DBConnector.getInstance().getMetaConnection();
-
 		StringBuilder sb = new StringBuilder();
 
 		sb.append(" SELECT t.kind_code,t.kind_name from SC_POINT_POICODE_NEW t");
@@ -152,71 +169,88 @@ public class KindCodeSelector {
 			sb.append(" and (t.mhm_des='DHM' or t.mhm_des='HM') ");
 		}
 
-		ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
-			@Override
-			public JSONArray handle(ResultSet resultSet) throws SQLException {
+		Connection conn = null;
+		try {
+			QueryRunner run = new QueryRunner();
 
-				JSONArray array = new JSONArray();
+			conn = DBConnector.getInstance().getMetaConnection();
 
-				while (resultSet.next()) {
-					String kindCode = resultSet.getString("kind_code");
+			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
+				@Override
+				public JSONArray handle(ResultSet resultSet)
+						throws SQLException {
 
-					String kindName = resultSet.getString("kind_name");
+					JSONArray array = new JSONArray();
 
-					JSONObject json = new JSONObject();
+					while (resultSet.next()) {
+						String kindCode = resultSet.getString("kind_code");
 
-					json.put("kindCode", kindCode);
+						String kindName = resultSet.getString("kind_name");
 
-					json.put("kindName", kindName);
+						JSONObject json = new JSONObject();
 
-					json.put("extend", "");
+						json.put("kindCode", kindCode);
 
-					array.add(json);
+						json.put("kindName", kindName);
+
+						json.put("extend", "");
+
+						array.add(json);
+					}
+					return array;
 				}
-				return array;
-			}
-		};
+			};
 
-		return run.query(conn, sb.toString(), rsHandler, topId, mediumId);
+			return run.query(conn, sb.toString(), rsHandler, topId, mediumId);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
-	
+
 	/**
 	 * 根据kindCode获取level
+	 * 
 	 * @auth zhaokk
 	 * @param kindCode
 	 * @return JSONObject
 	 * @throws Exception
 	 */
-	public JSONObject searchkindLevel(String kindCode)
-			throws Exception {
+	public JSONObject searchkindLevel(String kindCode) throws Exception {
 
-	    StringBuilder builder = new StringBuilder();
+		StringBuilder builder = new StringBuilder();
 		builder.append(" SELECT chain,kind_code,\"LEVEL\",\"EXTEND\" ");
 		builder.append(" FROM sc_fm_control ");
 		builder.append(" WHERE kind_code = :1");
-		try{
+		Connection conn = DBConnector.getInstance().getMetaConnection();
+		try {
 			QueryRunner runner = new QueryRunner();
-		    return runner.query(DBConnector.getInstance().getMetaConnection(),builder.toString(), new ResultSetHandler<JSONObject>(){
-		    	JSONObject  jsonObject =null;
-		    	@Override
-				public JSONObject handle(ResultSet rs) throws SQLException {
-					if(rs.next()){
-						jsonObject.put("chainFlag", rs.getInt("chain"));
-						jsonObject.put("kindId", rs.getString("kind_code"));
-						jsonObject.put("extend", rs.getString("extend"));
-		
-					}else{
-						try {
-							throw new Exception("对应KIND_CODE数据不存在不存在!");
-						} catch (Exception e) {
-							e.printStackTrace();
+			return runner.query(DBConnector.getInstance().getMetaConnection(),
+					builder.toString(), new ResultSetHandler<JSONObject>() {
+						JSONObject jsonObject = new JSONObject();
+
+						@Override
+						public JSONObject handle(ResultSet rs)
+								throws SQLException {
+							if (rs.next()) {
+								jsonObject.put("chainFlag", rs.getInt("chain"));
+								jsonObject.put("kindId",
+										rs.getString("kind_code"));
+								jsonObject.put("extend", rs.getString("extend"));
+
+							}
+							return jsonObject;
 						}
-					}
-					return jsonObject;
-				}
-			},kindCode);
-		}catch (Exception e) {
-			throw e;
+					}, kindCode);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 

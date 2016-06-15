@@ -15,10 +15,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.navinfo.dataservice.api.man.model.Layer;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
-import com.navinfo.dataservice.engine.man.layer.Layer;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -39,12 +39,10 @@ public class LayerService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
 	
-	public void create(long userId,JSONObject json)throws Exception{
+	public void create(long userId,String wkt)throws Exception{
 		Connection conn = null;
 		try{
-			conn = DBConnector.getInstance().getManConnection();
-			String wkt=json.getString("wkt");
-			
+			conn = DBConnector.getInstance().getManConnection();			
 			String createSql = "insert into customised_layer (LAYER_ID, GEOMETRY, CREATE_USER_ID, CREATE_DATE) "
 					+ "values(customised_layer_seq.nextval,sdo_geometry('"+wkt+"',8307),"+userId+",sysdate)";			
 			DbOperation.exeUpdateOrInsertBySql(conn, createSql);
@@ -56,13 +54,10 @@ public class LayerService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public void update(JSONObject json)throws Exception{
+	public void update(String layerId,String wkt)throws Exception{
 		Connection conn = null;
 		try{
-			conn = DBConnector.getInstance().getManConnection();
-			String layerId=json.getString("layerId");
-			String wkt=json.getString("wkt");
-			
+			conn = DBConnector.getInstance().getManConnection();			
 			String updateSql = "update customised_layer set GEOMETRY=sdo_geometry('"+wkt+"',8307) where LAYER_ID="+layerId;			
 			DbOperation.exeUpdateOrInsertBySql(conn, updateSql);
 		}catch(Exception e){
@@ -74,12 +69,10 @@ public class LayerService {
 		}
 	}
 	
-	public void delete(JSONObject json)throws Exception{
+	public void delete(String layerId)throws Exception{
 		Connection conn = null;
 		try{
-			conn = DBConnector.getInstance().getManConnection();
-			String layerId=json.getString("layerId");
-			
+			conn = DBConnector.getInstance().getManConnection();			
 			String updateSql = "delete from customised_layer where LAYER_ID="+layerId;			
 			DbOperation.exeUpdateOrInsertBySql(conn, updateSql);	    	
 		}catch(Exception e){

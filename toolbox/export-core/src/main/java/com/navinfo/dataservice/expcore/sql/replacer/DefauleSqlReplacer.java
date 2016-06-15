@@ -1,9 +1,8 @@
 package com.navinfo.dataservice.expcore.sql.replacer;
 
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
@@ -20,7 +19,7 @@ public class DefauleSqlReplacer implements SqlReplacer {
 	 * @param statmentArgsMap
 	 * @return
 	 */
-	public ExpSQL replaceByTempTable(ExpSQL expSQL, String condition,Set<String> conditionParams) {
+	public ExpSQL replaceByTempTable(ExpSQL expSQL, String condition) {
 		String sql = expSQL.getSql();
 		Map<String, String> replacedVars = new HashMap<String, String>();
 

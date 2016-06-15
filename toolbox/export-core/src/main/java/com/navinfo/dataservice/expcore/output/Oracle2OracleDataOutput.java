@@ -3,9 +3,9 @@ package com.navinfo.dataservice.expcore.output;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -14,19 +14,11 @@ import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.navicommons.database.ColumnMetaData;
 import com.navinfo.navicommons.database.DataBaseUtils;
-import com.navinfo.navicommons.database.sql.DbLinkCreator;
-import com.navinfo.dataservice.commons.util.RandomUtil;
-import com.navinfo.dataservice.expcore.ExporterResult;
-import com.navinfo.dataservice.expcore.config.ExportConfig;
+import com.navinfo.dataservice.expcore.ExportConfig;
 import com.navinfo.dataservice.expcore.exception.ExportException;
-import com.navinfo.dataservice.datahub.exception.DataHubException;
-import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.expcore.output.AbstractDataOutput;
 import com.navinfo.dataservice.expcore.target.OracleTarget;
-import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.database.oracle.ConnectionRegister;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
@@ -36,33 +28,18 @@ import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
  * 数据导出到sqlite
  */
 public class Oracle2OracleDataOutput extends AbstractDataOutput {
-	protected ExportConfig expConfig;
 	protected OracleTarget target;
 
-	public Oracle2OracleDataOutput(ExportConfig expConfig,ExporterResult expResult, ThreadLocalContext ctx) throws ExportException{
-		super(expResult,ctx);
-		this.expConfig=expConfig;
-		this.tableReNames=expConfig.getTableReNames();
-		initTarget();
+	public Oracle2OracleDataOutput(OracleSchema targetSchema,List<String> checkExistTables,String whenExist, Map<String,String> tableReNames,ThreadLocalContext ctx) throws ExportException{
+		super(ctx);
+		this.checkExistTables=checkExistTables;
+		this.whenExist=whenExist;
+		this.tableReNames=tableReNames;
+		this.target=new OracleTarget(targetSchema);
 	}
-	public void initTarget()throws ExportException{
-		DbInfo db =  null;
-		OracleSchema schema = null;
-		try{
-			db = DbService.getInstance().getDbById(expConfig.getTargetDbId());
-		}catch(DataHubException e){
-			throw new ExportException("初始化导出目标时从datahub中获取库出现错误："+e.getMessage(),e);
-		}
-		if(db!=null){
-			schema = new OracleSchema(
-					MultiDataSourceFactory.createConnectConfig(db.getConnectParam()));
-		}else{
-			throw new ExportException("导出参数错误，目标库的id不能为空");
-		}
-		this.target=new OracleTarget(schema);
-	}
-	public void releaseTarget(){
-		target.release(expConfig.isDestroyTarget());
+
+	public void releaseTarget(boolean destroyTarget){
+		target.release(destroyTarget);
 		target=null;
 	}
 
@@ -79,10 +56,10 @@ public class Oracle2OracleDataOutput extends AbstractDataOutput {
 			String tableName,
 			String reNameTo,
 			List<ColumnMetaData> tmdList) throws Exception{
-		if(expConfig.getCheckExistTables()!=null&&expConfig.getCheckExistTables().contains(tableName)){
-			if(ExportConfig.WHEN_EXIST_IGNORE.equals(expConfig.getWhenExist())){
+		if(checkExistTables!=null&&checkExistTables.contains(tableName)){
+			if(ExportConfig.WHEN_EXIST_IGNORE.equals(whenExist)){
 				this.doMergeOnlyInsert(rs, tableName, reNameTo, tmdList);
-			}else if(ExportConfig.WHEN_EXIST_OVERWRITE.equals(expConfig.getWhenExist())){
+			}else if(ExportConfig.WHEN_EXIST_OVERWRITE.equals(whenExist)){
 				this.doMergeFull(rs, tableName, reNameTo, tmdList);
 			}else{
 				throw new Exception("导出参数中配置了检查是否已存在的表(checkExistTables)，但未配置已存在如何操作(whenExist)。");

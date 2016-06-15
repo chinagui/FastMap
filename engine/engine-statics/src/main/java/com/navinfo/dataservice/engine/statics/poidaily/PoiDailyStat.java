@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.statics.poiDaily;
+package com.navinfo.dataservice.engine.statics.poidaily;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

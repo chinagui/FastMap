@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.statics.poiDaily;
+package com.navinfo.dataservice.engine.statics.poidaily;
 
 import java.util.Iterator;
 import java.util.List;
@@ -71,7 +71,7 @@ public class PoiDailyMain {
 			// 初始化 datahub环境
 			StatInit.initDatahubDb();
 			// 获得 大区库的db_id
-			List<Integer> ListDbId = OracleDao.getDbId();
+			List<Integer> ListDbId = OracleDao.getDbIdDaily();
 
 			int dbid_cnt = ListDbId.size();
 			Iterator<Integer> iter = ListDbId.iterator();

@@ -261,9 +261,18 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.delete.Command(
 						json, requester);
 			}
-
+		case IXPOI:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.create.Command(
+						json, requester);
+			case MOVE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.move.Command(
+						json, requester);
+			
 		}
-
+		
+		}	
 		throw new Exception("不支持的操作类型");
 	}
 
@@ -468,6 +477,15 @@ public class Transaction {
 						command);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmingroup.delete.Process(
+						command);
+			}
+		case IXPOI:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.create.Process(
+						command);
+			case MOVE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.move.Process(
 						command);
 			}
 		}

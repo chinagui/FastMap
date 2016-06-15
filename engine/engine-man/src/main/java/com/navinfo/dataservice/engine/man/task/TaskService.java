@@ -152,8 +152,6 @@ public class TaskService {
 	public HashMap<String,String> close(List<Integer> taskidList)throws Exception{
 		Connection conn = null;
 		try{
-			//持久化
-			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();	
 			
 			String taskIdStr=taskidList.toString().replace("[", "").replace("]", "").replace("\"", "");

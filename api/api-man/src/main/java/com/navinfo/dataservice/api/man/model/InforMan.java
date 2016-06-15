@@ -2,71 +2,72 @@ package com.navinfo.dataservice.api.man.model;
 
 import java.sql.Timestamp;
 
-
 /** 
-* @ClassName:  Task 
+* @ClassName:  InforMan 
 * @author code generator
-* @date 2016-06-06 06:12:30 
+* @date 2016-06-15 02:27:03 
 * @Description: TODO
 */
-public class Task{
-	private Integer taskId ;
-	private String name;
-	private Integer cityId ;
+public class InforMan  {
+	private String inforId ;
+	private Integer inforStatus ;
+	private String descp ;
 	private Integer createUserId ;
 	private Timestamp createDate ;
-	private Integer status ;
-	private String descp ;
 	private Timestamp collectPlanStartDate ;
 	private Timestamp collectPlanEndDate ;
+	private Integer collectGroupId ;
 	private Timestamp dayEditPlanStartDate ;
 	private Timestamp dayEditPlanEndDate ;
-	private Timestamp bMonthEditPlanStartDate ;
-	private Timestamp bMonthEditPlanEndDate ;
-	private Timestamp cMonthEditPlanStartDate ;
-	private Timestamp cMonthEditPlanEndDate ;
+	private Integer dayEditGroupId ;
+	private Timestamp monthEditPlanStartDate ;
+	private Timestamp monthEditPlanEndDate ;
+	private Integer monthEditGroupId ;
 	private Timestamp dayProducePlanStartDate ;
 	private Timestamp dayProducePlanEndDate ;
 	private Timestamp monthProducePlanStartDate ;
 	private Timestamp monthProducePlanEndDate ;
-	private Integer latest ;
 	
-	public Task (){
+	public InforMan (){
 	}
-	public Task (Integer taskId ,String name,Integer cityId,Integer createUserId,Timestamp createDate,Integer status,String descp,Timestamp collectPlanStartDate,Timestamp collectPlanEndDate,Timestamp dayEditPlanStartDate,Timestamp dayEditPlanEndDate,Timestamp bMonthEditPlanStartDate,Timestamp bMonthEditPlanEndDate,Timestamp cMonthEditPlanStartDate,Timestamp cMonthEditPlanEndDate,Timestamp dayProducePlanStartDate,Timestamp dayProducePlanEndDate,Timestamp monthProducePlanStartDate,Timestamp monthProducePlanEndDate,Integer latest){
-		this.taskId=taskId ;
-		this.name=name;
-		this.cityId=cityId ;
+	
+	public InforMan (String inforId ,Integer inforStatus,String descp,Integer createUserId,Timestamp createDate,Timestamp collectPlanStartDate,Timestamp collectPlanEndDate,Integer collectGroupId,Timestamp dayEditPlanStartDate,Timestamp dayEditPlanEndDate,Integer dayEditGroupId,Timestamp monthEditPlanStartDate,Timestamp monthEditPlanEndDate,Integer monthEditGroupId,Timestamp dayProducePlanStartDate,Timestamp dayProducePlanEndDate,Timestamp monthProducePlanStartDate,Timestamp monthProducePlanEndDate){
+		this.inforId=inforId ;
+		this.inforStatus=inforStatus ;
+		this.descp=descp ;
 		this.createUserId=createUserId ;
 		this.createDate=createDate ;
-		this.status=status ;
-		this.descp=descp ;
 		this.collectPlanStartDate=collectPlanStartDate ;
 		this.collectPlanEndDate=collectPlanEndDate ;
+		this.collectGroupId=collectGroupId ;
 		this.dayEditPlanStartDate=dayEditPlanStartDate ;
 		this.dayEditPlanEndDate=dayEditPlanEndDate ;
-		this.bMonthEditPlanStartDate=bMonthEditPlanStartDate ;
-		this.bMonthEditPlanEndDate=bMonthEditPlanEndDate ;
-		this.cMonthEditPlanStartDate=cMonthEditPlanStartDate ;
-		this.cMonthEditPlanEndDate=cMonthEditPlanEndDate ;
+		this.dayEditGroupId=dayEditGroupId ;
+		this.monthEditPlanStartDate=monthEditPlanStartDate ;
+		this.monthEditPlanEndDate=monthEditPlanEndDate ;
+		this.monthEditGroupId=monthEditGroupId ;
 		this.dayProducePlanStartDate=dayProducePlanStartDate ;
 		this.dayProducePlanEndDate=dayProducePlanEndDate ;
 		this.monthProducePlanStartDate=monthProducePlanStartDate ;
 		this.monthProducePlanEndDate=monthProducePlanEndDate ;
-		this.latest=latest ;
 	}
-	
-	public Integer getTaskId() {
-		return taskId;
+	public String getInforId() {
+		return inforId;
 	}
-	public void setTaskId(Integer taskId) {
-		this.taskId = taskId;
+	public void setInforId(String inforId) {
+		this.inforId = inforId;
 	}
-	public Integer getCityId() {
-		return cityId;
+	public Integer getInforStatus() {
+		return inforStatus;
 	}
-	public void setCityId(Integer cityId) {
-		this.cityId = cityId;
+	public void setInforStatus(Integer inforStatus) {
+		this.inforStatus = inforStatus;
+	}
+	public String getDescp() {
+		return descp;
+	}
+	public void setDescp(String descp) {
+		this.descp = descp;
 	}
 	public Integer getCreateUserId() {
 		return createUserId;
@@ -80,30 +81,23 @@ public class Task{
 	public void setCreateDate(Timestamp createDate) {
 		this.createDate = createDate;
 	}
-	public Integer getStatus() {
-		return status;
-	}
-	public void setStatus(Integer status) {
-		this.status = status;
-	}
-	public String getDescp() {
-		return descp;
-	}
-	public void setDescp(String descp) {
-		this.descp = descp;
-	}
 	public Timestamp getCollectPlanStartDate() {
 		return collectPlanStartDate;
 	}
-	
 	public void setCollectPlanStartDate(Timestamp collectPlanStartDate) {
-		this.collectPlanStartDate = collectPlanStartDate;//String.valueOf(collectPlanStartDate);
+		this.collectPlanStartDate = collectPlanStartDate;
 	}
 	public Timestamp getCollectPlanEndDate() {
 		return collectPlanEndDate;
 	}
 	public void setCollectPlanEndDate(Timestamp collectPlanEndDate) {
 		this.collectPlanEndDate = collectPlanEndDate;
+	}
+	public Integer getCollectGroupId() {
+		return collectGroupId;
+	}
+	public void setCollectGroupId(Integer collectGroupId) {
+		this.collectGroupId = collectGroupId;
 	}
 	public Timestamp getDayEditPlanStartDate() {
 		return dayEditPlanStartDate;
@@ -117,29 +111,29 @@ public class Task{
 	public void setDayEditPlanEndDate(Timestamp dayEditPlanEndDate) {
 		this.dayEditPlanEndDate = dayEditPlanEndDate;
 	}
-	public Timestamp getBMonthEditPlanStartDate() {
-		return bMonthEditPlanStartDate;
+	public Integer getDayEditGroupId() {
+		return dayEditGroupId;
 	}
-	public void setBMonthEditPlanStartDate(Timestamp bMonthEditPlanStartDate) {
-		this.bMonthEditPlanStartDate =bMonthEditPlanStartDate;
+	public void setDayEditGroupId(Integer dayEditGroupId) {
+		this.dayEditGroupId = dayEditGroupId;
 	}
-	public Timestamp getBMonthEditPlanEndDate() {
-		return bMonthEditPlanEndDate;
+	public Timestamp getMonthEditPlanStartDate() {
+		return monthEditPlanStartDate;
 	}
-	public void setBMonthEditPlanEndDate(Timestamp bMonthEditPlanEndDate) {
-		this.bMonthEditPlanEndDate = bMonthEditPlanEndDate;
+	public void setMonthEditPlanStartDate(Timestamp monthEditPlanStartDate) {
+		this.monthEditPlanStartDate = monthEditPlanStartDate;
 	}
-	public Timestamp getCMonthEditPlanStartDate() {
-		return cMonthEditPlanStartDate;
+	public Timestamp getMonthEditPlanEndDate() {
+		return monthEditPlanEndDate;
 	}
-	public void setCMonthEditPlanStartDate(Timestamp cMonthEditPlanStartDate) {
-		this.cMonthEditPlanStartDate = cMonthEditPlanStartDate;
+	public void setMonthEditPlanEndDate(Timestamp monthEditPlanEndDate) {
+		this.monthEditPlanEndDate = monthEditPlanEndDate;
 	}
-	public Timestamp getCMonthEditPlanEndDate() {
-		return cMonthEditPlanEndDate;
+	public Integer getMonthEditGroupId() {
+		return monthEditGroupId;
 	}
-	public void setCMonthEditPlanEndDate(Timestamp cMonthEditPlanEndDate) {
-		this.cMonthEditPlanEndDate = cMonthEditPlanEndDate;
+	public void setMonthEditGroupId(Integer monthEditGroupId) {
+		this.monthEditGroupId = monthEditGroupId;
 	}
 	public Timestamp getDayProducePlanStartDate() {
 		return dayProducePlanStartDate;
@@ -165,18 +159,12 @@ public class Task{
 	public void setMonthProducePlanEndDate(Timestamp monthProducePlanEndDate) {
 		this.monthProducePlanEndDate = monthProducePlanEndDate;
 	}
-	public Integer getLatest() {
-		return latest;
-	}
-	public void setLatest(Integer latest) {
-		this.latest = latest;
-	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return "Task [taskId=" + taskId +",cityId="+cityId+",createUserId="+createUserId+",createDate="+createDate+",status="+status+",descp="+descp+",collectPlanStartDate="+collectPlanStartDate+",collectPlanEndDate="+collectPlanEndDate+",dayEditPlanStartDate="+dayEditPlanStartDate+",dayEditPlanEndDate="+dayEditPlanEndDate+",bMonthEditPlanStartDate="+bMonthEditPlanStartDate+",bMonthEditPlanEndDate="+bMonthEditPlanEndDate+",cMonthEditPlanStartDate="+cMonthEditPlanStartDate+",cMonthEditPlanEndDate="+cMonthEditPlanEndDate+",dayProducePlanStartDate="+dayProducePlanStartDate+",dayProducePlanEndDate="+dayProducePlanEndDate+",monthProducePlanStartDate="+monthProducePlanStartDate+",monthProducePlanEndDate="+monthProducePlanEndDate+",latest="+latest+"]";
+		return "InforMan [inforId=" + inforId +",inforStatus="+inforStatus+",descp="+descp+",createUserId="+createUserId+",createDate="+createDate+",collectPlanStartDate="+collectPlanStartDate+",collectPlanEndDate="+collectPlanEndDate+",collectGroupId="+collectGroupId+",dayEditPlanStartDate="+dayEditPlanStartDate+",dayEditPlanEndDate="+dayEditPlanEndDate+",dayEditGroupId="+dayEditGroupId+",monthEditPlanStartDate="+monthEditPlanStartDate+",monthEditPlanEndDate="+monthEditPlanEndDate+",monthEditGroupId="+monthEditGroupId+",dayProducePlanStartDate="+dayProducePlanStartDate+",dayProducePlanEndDate="+dayProducePlanEndDate+",monthProducePlanStartDate="+monthProducePlanStartDate+",monthProducePlanEndDate="+monthProducePlanEndDate+"]";
 	}
 
 
@@ -187,25 +175,24 @@ public class Task{
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((taskId == null) ? 0 : taskId.hashCode());
-		result = prime * result + ((cityId == null) ? 0 : cityId.hashCode());
+		result = prime * result + ((inforId == null) ? 0 : inforId.hashCode());
+		result = prime * result + ((inforStatus == null) ? 0 : inforStatus.hashCode());
+		result = prime * result + ((descp == null) ? 0 : descp.hashCode());
 		result = prime * result + ((createUserId == null) ? 0 : createUserId.hashCode());
 		result = prime * result + ((createDate == null) ? 0 : createDate.hashCode());
-		result = prime * result + ((status == null) ? 0 : status.hashCode());
-		result = prime * result + ((descp == null) ? 0 : descp.hashCode());
 		result = prime * result + ((collectPlanStartDate == null) ? 0 : collectPlanStartDate.hashCode());
 		result = prime * result + ((collectPlanEndDate == null) ? 0 : collectPlanEndDate.hashCode());
+		result = prime * result + ((collectGroupId == null) ? 0 : collectGroupId.hashCode());
 		result = prime * result + ((dayEditPlanStartDate == null) ? 0 : dayEditPlanStartDate.hashCode());
 		result = prime * result + ((dayEditPlanEndDate == null) ? 0 : dayEditPlanEndDate.hashCode());
-		result = prime * result + ((bMonthEditPlanStartDate == null) ? 0 : bMonthEditPlanStartDate.hashCode());
-		result = prime * result + ((bMonthEditPlanEndDate == null) ? 0 : bMonthEditPlanEndDate.hashCode());
-		result = prime * result + ((cMonthEditPlanStartDate == null) ? 0 : cMonthEditPlanStartDate.hashCode());
-		result = prime * result + ((cMonthEditPlanEndDate == null) ? 0 : cMonthEditPlanEndDate.hashCode());
+		result = prime * result + ((dayEditGroupId == null) ? 0 : dayEditGroupId.hashCode());
+		result = prime * result + ((monthEditPlanStartDate == null) ? 0 : monthEditPlanStartDate.hashCode());
+		result = prime * result + ((monthEditPlanEndDate == null) ? 0 : monthEditPlanEndDate.hashCode());
+		result = prime * result + ((monthEditGroupId == null) ? 0 : monthEditGroupId.hashCode());
 		result = prime * result + ((dayProducePlanStartDate == null) ? 0 : dayProducePlanStartDate.hashCode());
 		result = prime * result + ((dayProducePlanEndDate == null) ? 0 : dayProducePlanEndDate.hashCode());
 		result = prime * result + ((monthProducePlanStartDate == null) ? 0 : monthProducePlanStartDate.hashCode());
 		result = prime * result + ((monthProducePlanEndDate == null) ? 0 : monthProducePlanEndDate.hashCode());
-		result = prime * result + ((latest == null) ? 0 : latest.hashCode());
 		return result;
 	}
 
@@ -221,16 +208,21 @@ public class Task{
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Task other = (Task) obj;
-		if (taskId == null) {
-			if (other.taskId != null)
+		InforMan other = (InforMan) obj;
+		if (inforId == null) {
+			if (other.inforId != null)
 				return false;
-		} else if (!taskId.equals(other.taskId))
+		} else if (!inforId.equals(other.inforId))
 			return false;
-		if (cityId == null) {
-			if (other.cityId != null)
+		if (inforStatus == null) {
+			if (other.inforStatus != null)
 				return false;
-		} else if (!cityId.equals(other.cityId))
+		} else if (!inforStatus.equals(other.inforStatus))
+			return false;
+		if (descp == null) {
+			if (other.descp != null)
+				return false;
+		} else if (!descp.equals(other.descp))
 			return false;
 		if (createUserId == null) {
 			if (other.createUserId != null)
@@ -242,16 +234,6 @@ public class Task{
 				return false;
 		} else if (!createDate.equals(other.createDate))
 			return false;
-		if (status == null) {
-			if (other.status != null)
-				return false;
-		} else if (!status.equals(other.status))
-			return false;
-		if (descp == null) {
-			if (other.descp != null)
-				return false;
-		} else if (!descp.equals(other.descp))
-			return false;
 		if (collectPlanStartDate == null) {
 			if (other.collectPlanStartDate != null)
 				return false;
@@ -261,6 +243,11 @@ public class Task{
 			if (other.collectPlanEndDate != null)
 				return false;
 		} else if (!collectPlanEndDate.equals(other.collectPlanEndDate))
+			return false;
+		if (collectGroupId == null) {
+			if (other.collectGroupId != null)
+				return false;
+		} else if (!collectGroupId.equals(other.collectGroupId))
 			return false;
 		if (dayEditPlanStartDate == null) {
 			if (other.dayEditPlanStartDate != null)
@@ -272,25 +259,25 @@ public class Task{
 				return false;
 		} else if (!dayEditPlanEndDate.equals(other.dayEditPlanEndDate))
 			return false;
-		if (bMonthEditPlanStartDate == null) {
-			if (other.bMonthEditPlanStartDate != null)
+		if (dayEditGroupId == null) {
+			if (other.dayEditGroupId != null)
 				return false;
-		} else if (!bMonthEditPlanStartDate.equals(other.bMonthEditPlanStartDate))
+		} else if (!dayEditGroupId.equals(other.dayEditGroupId))
 			return false;
-		if (bMonthEditPlanEndDate == null) {
-			if (other.bMonthEditPlanEndDate != null)
+		if (monthEditPlanStartDate == null) {
+			if (other.monthEditPlanStartDate != null)
 				return false;
-		} else if (!bMonthEditPlanEndDate.equals(other.bMonthEditPlanEndDate))
+		} else if (!monthEditPlanStartDate.equals(other.monthEditPlanStartDate))
 			return false;
-		if (cMonthEditPlanStartDate == null) {
-			if (other.cMonthEditPlanStartDate != null)
+		if (monthEditPlanEndDate == null) {
+			if (other.monthEditPlanEndDate != null)
 				return false;
-		} else if (!cMonthEditPlanStartDate.equals(other.cMonthEditPlanStartDate))
+		} else if (!monthEditPlanEndDate.equals(other.monthEditPlanEndDate))
 			return false;
-		if (cMonthEditPlanEndDate == null) {
-			if (other.cMonthEditPlanEndDate != null)
+		if (monthEditGroupId == null) {
+			if (other.monthEditGroupId != null)
 				return false;
-		} else if (!cMonthEditPlanEndDate.equals(other.cMonthEditPlanEndDate))
+		} else if (!monthEditGroupId.equals(other.monthEditGroupId))
 			return false;
 		if (dayProducePlanStartDate == null) {
 			if (other.dayProducePlanStartDate != null)
@@ -312,17 +299,9 @@ public class Task{
 				return false;
 		} else if (!monthProducePlanEndDate.equals(other.monthProducePlanEndDate))
 			return false;
-		if (latest == null) {
-			if (other.latest != null)
-				return false;
-		} else if (!latest.equals(other.latest))
-			return false;
 		return true;
 	}
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}	
+	
+	
+	
 }

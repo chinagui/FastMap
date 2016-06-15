@@ -233,7 +233,7 @@ public class DownloadOperation {
 				parkings.put("tollStd", parking.getTollStd());
 				parkings.put("tollDes", parking.getTollDes());
 				parkings.put("tollWay", parking.getTollWay());
-				parkings.put("openTime", parking.getOpenTime());
+				parkings.put("openTime", parking.getOpenTiime());
 				parkings.put("totalNum", parking.getTotalNum());
 				parkings.put("payment", parking.getPayment());
 				parkings.put("remark", parking.getRemark());

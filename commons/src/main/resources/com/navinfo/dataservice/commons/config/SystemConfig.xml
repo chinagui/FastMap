@@ -58,11 +58,11 @@
     <exclude.table.columns>NI_VAL_EXCEPTION:MESH_ID</exclude.table.columns>
     
 <!-- solr address part -->
- 	<solr.address>http://192.168.4.130:8081/solr/tips_sprint4/</solr.address>
+ 	<solr.address>http://192.168.4.130:8081/solr/tips_sprint5/</solr.address>
  	
 <!-- hbase address part -->
  	<hbase.address>192.168.3.156</hbase.address>
- 	<hbase.tablename.tips>tips_sprint4</hbase.tablename.tips>
+ 	<hbase.tablename.tips>tips_sprint5</hbase.tablename.tips>
  	<hbase.tablename.photo>photo</hbase.tablename.photo>
  	<hbase.tablename.linktile>link_tile</hbase.tablename.linktile>
 <!-- MQ -->

@@ -160,6 +160,7 @@ public class InitRegionDbScriptsInterface {
 			conn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
 			String sqlFile = "/com/navinfo/dataservice/scripts/resources/prj_utils.sql";
 			SqlExec sqlExec = new SqlExec(conn);
+			sqlFile = "/com/navinfo/dataservice/scripts/resources/init_edit_tables.sql";
 			sqlExec.executeIgnoreError(sqlFile);
 			String pckFile = "/com/navinfo/dataservice/scripts/resources/prj_utils.pck";
 			PackageExec packageExec = new PackageExec(conn);

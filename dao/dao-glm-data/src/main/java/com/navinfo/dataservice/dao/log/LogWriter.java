@@ -53,7 +53,7 @@ public class LogWriter {
 
 		ProjectSelector selector = new ProjectSelector();
 
-		String gdbVersion = selector.getGdbVersion(projectId);
+		String gdbVersion = selector.getGdbVersion();
 
 		this.gridCalculator = GlmGridCalculatorFactory.getInstance().create(
 				gdbVersion);

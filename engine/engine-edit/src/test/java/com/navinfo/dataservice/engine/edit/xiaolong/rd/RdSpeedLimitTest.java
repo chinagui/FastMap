@@ -17,8 +17,8 @@ import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
-import com.navinfo.dataservice.engine.edit.xiaolong.InitApplication;
 
 import net.sf.json.JSONObject;
 

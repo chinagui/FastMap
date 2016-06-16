@@ -74,7 +74,7 @@ public class DbService {
 		int dbId = 0;
 		QueryRunner run = new QueryRunner();
 		try{
-			String checkSql = "select count(1) from db_hub where db_status>0 and db_name=? and biz_type=?";
+			String checkSql = "select count(1) from db_hub where db_status>0 and db_name=? and db_user_name=? and biz_type=?";
 			DbServer server = null;
 			synchronized(DbService.class){
 				conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
@@ -82,7 +82,7 @@ public class DbService {
 					userName="RD_" + RandomUtil.nextString(10);
 				}else{
 					//验证同类型是否已经存在
-					int count = run.queryForInt(conn, checkSql, userName,bizType);
+					int count = run.queryForInt(conn, checkSql,dbName, userName,bizType);
 					if(count>0){
 						throw new DataHubException("数据库已经存在，不能重复创建。");
 					}

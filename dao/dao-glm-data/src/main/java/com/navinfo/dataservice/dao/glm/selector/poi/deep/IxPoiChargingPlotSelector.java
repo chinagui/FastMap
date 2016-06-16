@@ -113,6 +113,7 @@ public class IxPoiChargingPlotSelector implements ISelector {
 		chargingPlot.setLocationType(resultSet.getInt("location_type"));
 		chargingPlot.setPayment(resultSet.getString("payment"));
 		chargingPlot.setRowId(resultSet.getString("rowId"));
+		chargingPlot.setuDate(resultSet.getString("u_date"));
 
 	}
 	

@@ -8,6 +8,8 @@ import com.navinfo.dataservice.bizcommons.glm.Glm;
 import com.navinfo.dataservice.bizcommons.glm.GlmCache;
 import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculator;
 import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculatorFactory;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -39,10 +41,11 @@ public class NiValExceptionOperator {
 		this.conn = conn;
 
 		this.projectId = projectId;
+		this.gdbVersion=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 
-		ProjectSelector selector = new ProjectSelector();
+		//ProjectSelector selector = new ProjectSelector();
 
-		this.gdbVersion = selector.getGdbVersion(projectId);
+		//this.gdbVersion = selector.getGdbVersion(projectId);
 	}
 
 	public void insertCheckLogGrid(String md5, String targets) throws Exception {

@@ -3,8 +3,8 @@ package com.navinfo.dataservice.engine.edit.xiaolong.rd;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
-import com.navinfo.dataservice.engine.edit.xiaolong.InitApplication;
 
 public class RdCrossTest extends InitApplication{
 	

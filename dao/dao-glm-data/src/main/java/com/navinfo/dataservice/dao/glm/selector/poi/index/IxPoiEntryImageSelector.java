@@ -161,5 +161,7 @@ public class IxPoiEntryImageSelector implements ISelector {
 		ixPoiEntryimage.setMainPoiPid(resultSet.getInt("main_poi_pid"));
 		
 		ixPoiEntryimage.setRowId(resultSet.getString("row_id"));
+		
+		ixPoiEntryimage.setuDate(resultSet.getString("u_date"));
 	}
 }

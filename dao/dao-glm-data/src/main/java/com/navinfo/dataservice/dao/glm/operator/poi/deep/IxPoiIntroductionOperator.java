@@ -39,7 +39,8 @@ public class IxPoiIntroductionOperator implements IOperator {
 	private Connection conn;
 	private IxPoiIntroduction ixPoiIntroduction;
 
-	public IxPoiIntroductionOperator(Connection conn, IxPoiIntroduction ixPoiIntroduction) {
+	public IxPoiIntroductionOperator(Connection conn,
+			IxPoiIntroduction ixPoiIntroduction) {
 		this.conn = conn;
 		this.ixPoiIntroduction = ixPoiIntroduction;
 	}
@@ -74,14 +75,16 @@ public class IxPoiIntroductionOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiIntroduction.tableName()
-				+ " set u_record=3,");
+		StringBuilder sb = new StringBuilder("update "
+				+ ixPoiIntroduction.tableName() + " set u_record=3,u_date="
+				+ StringUtils.getCurrentTime() + ",");
 
 		PreparedStatement pstmt = null;
 
 		try {
 
-			Set<Entry<String, Object>> set = ixPoiIntroduction.changedFields().entrySet();
+			Set<Entry<String, Object>> set = ixPoiIntroduction.changedFields()
+					.entrySet();
 
 			Iterator<Entry<String, Object>> it = set.iterator();
 
@@ -94,7 +97,8 @@ public class IxPoiIntroductionOperator implements IOperator {
 
 				Object columnValue = en.getValue();
 
-				Field field = ixPoiIntroduction.getClass().getDeclaredField(column);
+				Field field = ixPoiIntroduction.getClass().getDeclaredField(
+						column);
 
 				field.setAccessible(true);
 
@@ -139,7 +143,7 @@ public class IxPoiIntroductionOperator implements IOperator {
 						isChanged = true;
 					}
 
-				} 
+				}
 			}
 			sb.append(" where introduction_id=" + ixPoiIntroduction.getPid());
 
@@ -204,16 +208,17 @@ public class IxPoiIntroductionOperator implements IOperator {
 		ixPoiIntroduction.setRowId(UuidUtils.genUuid());
 		StringBuilder sb = new StringBuilder("insert into ");
 		sb.append(ixPoiIntroduction.tableName());
-		sb.append("(introduction_id, poi_pid, introduction, introduction_eng, website,neighbor, neighbor_eng, traffic, traffic_eng, u_record, row_id) values (");
+		sb.append("(introduction_id, poi_pid, introduction, introduction_eng, website,neighbor, neighbor_eng, traffic, traffic_eng, u_date,u_record, row_id) values (");
 		sb.append(ixPoiIntroduction.getPid());
 		sb.append("," + ixPoiIntroduction.getPoiPid());
-		sb.append(",'" + ixPoiIntroduction.getIntroduction()+"'");
-		sb.append(",'" + ixPoiIntroduction.getIntroductionEng()+"'");
-		sb.append(",'" + ixPoiIntroduction.getWebsite()+"'");
-		sb.append(",'" + ixPoiIntroduction.getNeighbor()+"'");
-		sb.append(",'" + ixPoiIntroduction.getNeighborEng()+"'");
-		sb.append(",'" + ixPoiIntroduction.getTraffic()+"'");
-		sb.append(",'" + ixPoiIntroduction.getTrafficEng()+"'");
+		sb.append(",'" + ixPoiIntroduction.getIntroduction() + "'");
+		sb.append(",'" + ixPoiIntroduction.getIntroductionEng() + "'");
+		sb.append(",'" + ixPoiIntroduction.getWebsite() + "'");
+		sb.append(",'" + ixPoiIntroduction.getNeighbor() + "'");
+		sb.append(",'" + ixPoiIntroduction.getNeighborEng() + "'");
+		sb.append(",'" + ixPoiIntroduction.getTraffic() + "'");
+		sb.append(",'" + ixPoiIntroduction.getTrafficEng() + "'");
+		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiIntroduction.rowId() + "')");
 		stmt.addBatch(sb.toString());
 	}
@@ -226,7 +231,9 @@ public class IxPoiIntroductionOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiIntroduction.tableName() + " set u_record=2 where introduction_id =" + ixPoiIntroduction.getPid();
+		String sql = "update " + ixPoiIntroduction.tableName()
+				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where introduction_id ="
+				+ ixPoiIntroduction.getPid();
 		stmt.addBatch(sql);
 	}
 

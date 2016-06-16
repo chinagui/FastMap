@@ -53,7 +53,8 @@ public class PoiCollectStat implements Runnable {
 		try {
 			QueryRunner run = new QueryRunner();
 
-			String sql = "select ip.row_id, pes.is_upload, ip.geometry from ix_poi ip, poi_edit_status pes where ip.row_id = pes.row_id and rownum<100";
+			String sql = "select ip.row_id, pes.is_upload, ip.geometry from ix_poi ip, poi_edit_status pes where ip.row_id = pes.row_id";
+//			String sql = "select ip.row_id, pes.is_upload, ip.geometry from ix_poi ip, poi_edit_status pes where ip.row_id = pes.row_id and rownum<100";
 			return run.query(conn, sql, new ResultSetHandler<JSONArray>() {
 
 				@Override

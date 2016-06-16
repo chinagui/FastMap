@@ -145,5 +145,7 @@ public class IxPoiNameFlagSelector implements ISelector {
 		obj.setFlagCode(resultSet.getString("flag_code"));
 
 		obj.setRowId(resultSet.getString("row_id"));
+		
+		obj.setuDate(resultSet.getString("u_date"));
 	}
 }

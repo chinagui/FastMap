@@ -106,10 +106,7 @@ public class IxPoiOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		Date sysDate = new Date();
-		SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
-		String dateStr = df.format(sysDate);
-		StringBuilder sb = new StringBuilder("update " + ixPoi.tableName() + " set u_record=3,u_date='" + dateStr +"',");
+		StringBuilder sb = new StringBuilder("update " + ixPoi.tableName() + " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
 
 		PreparedStatement pstmt = null;
 
@@ -235,7 +232,6 @@ public class IxPoiOperator implements IOperator {
 
 	@Override
 	public void insertRow2Sql(Statement stmt) throws Exception {
-		ixPoi.setRowId(UuidUtils.genUuid());
 
 		StringBuilder sb = new StringBuilder("insert into ");
 
@@ -248,7 +244,7 @@ public class IxPoiOperator implements IOperator {
 				+ "LABEL, TYPE, ADDRESS_FLAG, EX_PRIORITY, EDITION_FLAG, POI_MEMO, "
 				+ "OLD_BLOCKCODE, OLD_NAME, OLD_ADDRESS, OLD_KIND, POI_NUM, LOG, TASK_ID, "
 				+ "DATA_VERSION, FIELD_TASK_ID, VERIFIED_FLAG, COLLECT_TIME, "
-				+ "GEO_ADJUST_FLAG, FULL_ATTR_FLAG, OLD_X_GUIDE, OLD_Y_GUIDE, U_RECORD, " + "ROW_ID) values (");
+				+ "GEO_ADJUST_FLAG, FULL_ATTR_FLAG, OLD_X_GUIDE, OLD_Y_GUIDE,U_DATE,U_RECORD, " + "ROW_ID) values (");
 
 		sb.append(ixPoi.getPid());
 
@@ -343,6 +339,8 @@ public class IxPoiOperator implements IOperator {
 		sb.append("," + ixPoi.getOldXGuide());
 
 		sb.append("," + ixPoi.getOldYGuide());
+		
+		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
 
 		sb.append(",1,'" + ixPoi.rowId() + "')");
 
@@ -525,7 +523,7 @@ public class IxPoiOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoi.tableName() + " set u_record=2 where pid=" + ixPoi.getPid();
+		String sql = "update " + ixPoi.tableName() + " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where pid=" + ixPoi.getPid();
 
 		stmt.addBatch(sql);
 
@@ -697,5 +695,37 @@ public class IxPoiOperator implements IOperator {
 			op.deleteRow2Sql(stmt);
 		}
 	}
+	/**
+	 * poi操作修改poi状态为已作业，限度信息为0
+	 * zhaokk
+	 * @param row
+	 * @throws Exception
+	 */
+	public void  upatePoiStatus() throws Exception{
+		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
+		sb.append(" USING (SELECT '"+ixPoi.getRowId()+"' as a, 2 as b,0 as c FROM dual) T2 ");
+		sb.append(" ON ( T1.row_id=T2.a) ");
+		sb.append(" WHEN MATCHED THEN ");
+		sb.append(" UPDATE SET T1.status = 2,T1.fresh_verified= 0 ");
+		sb.append(" WHEN NOT MATCHED THEN ");
+		sb.append(" INSERT (T1.row_id,T1.status,T1.fresh_verified) VALUES(T2.a,T2.b,T2.c)");
+		PreparedStatement pstmt = null;
+		try {
+				pstmt = conn.prepareStatement(sb.toString());
+				pstmt.executeUpdate();
+		} catch (Exception e) {
+			throw e;
 
+		} finally {
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+	
+	}
 }

@@ -150,6 +150,8 @@ public class IxPoiChargingStationSelector implements ISelector {
 		chargingStation.setParkingInfo(resultSet.getString("parking_info"));
 		chargingStation.setAvailableState(resultSet.getInt("available_state"));
 		chargingStation.setRowId(resultSet.getString("row_id"));
+		chargingStation.setuDate(resultSet.getString("u_date"));
+
 	}
 	
 }

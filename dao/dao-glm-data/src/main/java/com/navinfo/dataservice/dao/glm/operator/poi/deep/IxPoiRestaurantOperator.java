@@ -46,7 +46,8 @@ public class IxPoiRestaurantOperator implements IOperator {
 	private Connection conn;
 	private IxPoiRestaurant ixPoiRestaurant;
 
-	public IxPoiRestaurantOperator(Connection conn, IxPoiRestaurant ixPoiRestaurant) {
+	public IxPoiRestaurantOperator(Connection conn,
+			IxPoiRestaurant ixPoiRestaurant) {
 		this.conn = conn;
 		this.ixPoiRestaurant = ixPoiRestaurant;
 	}
@@ -81,14 +82,16 @@ public class IxPoiRestaurantOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiRestaurant.tableName()
-				+ " set u_record=3,");
+		StringBuilder sb = new StringBuilder("update "
+				+ ixPoiRestaurant.tableName() + " set u_record=3,u_date="
+				+ StringUtils.getCurrentTime() + ",");
 
 		PreparedStatement pstmt = null;
 
 		try {
 
-			Set<Entry<String, Object>> set = ixPoiRestaurant.changedFields().entrySet();
+			Set<Entry<String, Object>> set = ixPoiRestaurant.changedFields()
+					.entrySet();
 
 			Iterator<Entry<String, Object>> it = set.iterator();
 
@@ -101,7 +104,8 @@ public class IxPoiRestaurantOperator implements IOperator {
 
 				Object columnValue = en.getValue();
 
-				Field field = ixPoiRestaurant.getClass().getDeclaredField(column);
+				Field field = ixPoiRestaurant.getClass().getDeclaredField(
+						column);
 
 				field.setAccessible(true);
 
@@ -146,7 +150,7 @@ public class IxPoiRestaurantOperator implements IOperator {
 						isChanged = true;
 					}
 
-				} 
+				}
 			}
 			sb.append(" where restaurant_id    =" + ixPoiRestaurant.getPid());
 
@@ -211,23 +215,24 @@ public class IxPoiRestaurantOperator implements IOperator {
 		ixPoiRestaurant.setRowId(UuidUtils.genUuid());
 		StringBuilder sb = new StringBuilder("insert into ");
 		sb.append(ixPoiRestaurant.tableName());
-		sb.append("(restaurant_id, poi_pid, food_type, credit_card, avg_cost, parking, long_description, long_descrip_eng, open_hour, open_hour_eng, telephone, address, city, photo_name, travelguide_flag, u_record, row_id) values (");
+		sb.append("(restaurant_id, poi_pid, food_type, credit_card, avg_cost, parking, long_description, long_descrip_eng, open_hour, open_hour_eng, telephone, address, city, photo_name, travelguide_flag, u_date,u_record, row_id) values (");
 		sb.append(ixPoiRestaurant.getPid());
 		sb.append("," + ixPoiRestaurant.getPoiPid());
-		sb.append(",'" + ixPoiRestaurant.getCreditCard()+"'");
-		sb.append(",'" + ixPoiRestaurant.getFoodType()+"'");
-		sb.append(",'" + ixPoiRestaurant.getCreditCard()+"'");
+		sb.append(",'" + ixPoiRestaurant.getCreditCard() + "'");
+		sb.append(",'" + ixPoiRestaurant.getFoodType() + "'");
+		sb.append(",'" + ixPoiRestaurant.getCreditCard() + "'");
 		sb.append("," + ixPoiRestaurant.getAvgCost());
 		sb.append("," + ixPoiRestaurant.getParking());
-		sb.append(",'" + ixPoiRestaurant.getLongDescription()+"'");
-		sb.append(",'" + ixPoiRestaurant.getLongDescripEng()+"'");
-		sb.append(",'" + ixPoiRestaurant.getOpenHour()+"'");
-		sb.append(",'" + ixPoiRestaurant.getOpenHourEng()+"'");
-		sb.append(",'" + ixPoiRestaurant.getTelephone()+"'");
-		sb.append(",'" + ixPoiRestaurant.getAddress()+"'");
-		sb.append(",'" + ixPoiRestaurant.getCity()+"'");
-		sb.append(",'" + ixPoiRestaurant.getPhotoName()+"'");
+		sb.append(",'" + ixPoiRestaurant.getLongDescription() + "'");
+		sb.append(",'" + ixPoiRestaurant.getLongDescripEng() + "'");
+		sb.append(",'" + ixPoiRestaurant.getOpenHour() + "'");
+		sb.append(",'" + ixPoiRestaurant.getOpenHourEng() + "'");
+		sb.append(",'" + ixPoiRestaurant.getTelephone() + "'");
+		sb.append(",'" + ixPoiRestaurant.getAddress() + "'");
+		sb.append(",'" + ixPoiRestaurant.getCity() + "'");
+		sb.append(",'" + ixPoiRestaurant.getPhotoName() + "'");
 		sb.append("," + ixPoiRestaurant.getTravelguideFlag());
+		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiRestaurant.rowId() + "')");
 		stmt.addBatch(sb.toString());
 	}
@@ -240,7 +245,9 @@ public class IxPoiRestaurantOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiRestaurant.tableName() + " set u_record=2 where   restaurant_id      =" + ixPoiRestaurant.getPid();
+		String sql = "update " + ixPoiRestaurant.tableName()
+				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where   restaurant_id      ="
+				+ ixPoiRestaurant.getPid();
 		stmt.addBatch(sql);
 	}
 

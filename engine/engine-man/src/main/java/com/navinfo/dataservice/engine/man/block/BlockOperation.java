@@ -10,8 +10,10 @@ import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -167,6 +169,79 @@ public class BlockOperation {
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+
+	/**
+	 * @param conn
+	 * @param blockIdList
+	 * @return
+	 * 根据BlockId列表获取其中所有可关闭的block blockIdList
+	 * @throws Exception 
+	 */
+	public static List<Integer> getBlockListReadyToClose(Connection conn, List<Integer> blockIdList) throws Exception {
+		// TODO Auto-generated method stub
+
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			String BlockIds = "(";
+			BlockIds += StringUtils.join(blockIdList.toArray(),",") + ")";
+			
+			String selectSql = "select distinct b.block_id "
+					+ "from subtask st"
+					+ ", block b "
+					+ " where st.block_id = b.block_id"
+					+ " and st.status = 0"
+					+ " and b.plan_status = 1"
+					+ " and b.block_id in " + BlockIds;
+			
+			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>(){
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> list = new ArrayList<Integer>();
+					while(rs.next()){
+						list.add(rs.getInt("block_id"));
+					}
+					return list;
+				}
+	    		
+	    	};
+	    	
+	    	List<Integer> blockList = run.query(conn, selectSql,rsHandler);
+	    	return blockList;
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+
+	/**
+	 * @param conn
+	 * @param blockList
+	 * @throws Exception 
+	 */
+	public static void closeBlockByBlockIdList(Connection conn, List<Integer> blockList) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+			if(!blockList.isEmpty()){
+				String BlockIds = "(";
+				BlockIds += StringUtils.join(blockList.toArray(),",") + ")";
+				
+				String updateSql = "update block"
+						+ " set plan_status = 2"
+						+ " where block_id in " + BlockIds;
+		    	
+		    	run.update(conn, updateSql);
+			}
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("更新失败，原因为:"+e.getMessage(),e);
 		}
 	}
 	

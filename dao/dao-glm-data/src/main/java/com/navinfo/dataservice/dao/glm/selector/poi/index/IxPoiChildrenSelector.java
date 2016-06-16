@@ -70,6 +70,8 @@ public class IxPoiChildrenSelector implements ISelector {
 				poiChildren.setRelationType(resultSet.getInt("relation_type"));
 
 				poiChildren.setRowId(resultSet.getString("row_id"));
+				
+				poiChildren.setuDate(resultSet.getString("u_date"));
 			} else {
 				
 				throw new DataNotFoundException("数据不存在");

@@ -67,6 +67,8 @@ public class IxPoiNameToneSelector implements ISelector {
 				ixPoiNameTone.setMemo(resultSet.getString("memo"));
 
 				ixPoiNameTone.setRowId(resultSet.getString("row_id"));
+				
+				ixPoiNameTone.setuDate(resultSet.getString("u_date"));
 			} else {
 				throw new DataNotFoundException("数据不存在");
 			}
@@ -137,6 +139,8 @@ public class IxPoiNameToneSelector implements ISelector {
 				ixPoiNameTone.setMemo(resultSet.getString("memo"));
 
 				ixPoiNameTone.setRowId(resultSet.getString("row_id"));
+				
+				ixPoiNameTone.setuDate(resultSet.getString("u_date"));
 
 				rows.add(ixPoiNameTone);
 			}

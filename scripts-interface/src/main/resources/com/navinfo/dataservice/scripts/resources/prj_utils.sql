@@ -107,7 +107,7 @@ values
                        MDSYS.SDO_DIM_ELEMENT('YLAT', -90, 90, 0.005)),
    8307);
 
-create index idx_sdo_rw_link on rw_node(geometry) 
+create index idx_sdo_rw_node on rw_node(geometry) 
 indextype is mdsys.spatial_index;
 
 analyze table rw_node compute statistics;

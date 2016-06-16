@@ -151,5 +151,7 @@ public class IxPoiContactSelector implements ISelector {
 		ixPoiContact.setPriority(resultSet.getInt("priority"));
 
 		ixPoiContact.setRowId(resultSet.getString("row_id"));
+		
+		ixPoiContact.setuDate(resultSet.getString("u_date"));
 	}
 }

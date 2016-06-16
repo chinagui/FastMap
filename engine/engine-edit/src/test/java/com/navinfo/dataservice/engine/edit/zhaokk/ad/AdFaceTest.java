@@ -1,12 +1,12 @@
-package com.navinfo.dataservice.engine.edit.ad;
+package com.navinfo.dataservice.engine.edit.zhaokk.ad;
 
 
 import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
-import com.navinfo.dataservice.engine.edit.xiaolong.InitApplication;
 
 public class AdFaceTest extends InitApplication {
 	

@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEntryimage;
 
 /**
  * POI入口概略图表操作类
+ * 
  * @author zhangxiaolong
  *
  */
@@ -59,7 +60,7 @@ public class IxPoiEntryImageOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiEntryimage.tableName() + " set u_record=3,");
+		StringBuilder sb = new StringBuilder("update " + ixPoiEntryimage.tableName() + " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
 
 		PreparedStatement pstmt = null;
 
@@ -178,7 +179,7 @@ public class IxPoiEntryImageOperator implements IOperator {
 		sb.append(ixPoiEntryimage.tableName());
 
 		sb.append(
-				"(POI_PID, IMAGE_CODE, X_PIXEL_R4, Y_PIXEL_R4, X_PIXEL_R5, Y_PIXEL_R5, X_PIXEL_35, Y_PIXEL_35, MEMO, MAIN_POI_PID, U_RECORD, ROW_ID) values (");
+				"(POI_PID, IMAGE_CODE, X_PIXEL_R4, Y_PIXEL_R4, X_PIXEL_R5, Y_PIXEL_R5, X_PIXEL_35, Y_PIXEL_35, MEMO, MAIN_POI_PID, U_DATE,U_RECORD, ROW_ID) values (");
 
 		sb.append(ixPoiEntryimage.getPoiPid());
 
@@ -199,6 +200,8 @@ public class IxPoiEntryImageOperator implements IOperator {
 		sb.append(",'" + ixPoiEntryimage.getMemo() + "'");
 
 		sb.append("," + ixPoiEntryimage.getMainPoiPid());
+		
+		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
 
 		sb.append(",1,'" + ixPoiEntryimage.rowId() + "')");
 
@@ -212,8 +215,8 @@ public class IxPoiEntryImageOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiEntryimage.tableName() + " set u_record=2 where poi_pid="
-				+ ixPoiEntryimage.getPoiPid();
+		String sql = "update " + ixPoiEntryimage.tableName() + " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where row_id=hextoraw('"
+				+ ixPoiEntryimage.rowId() + "')";
 
 		stmt.addBatch(sql);
 	}

@@ -159,7 +159,7 @@ public class IxPoiParkingSelector implements ISelector {
 		ixPoiParking.setHaveSpecialplace("have_specialplace");
 		ixPoiParking.setCertificate(resultSet.getInt("certificate"));
 		ixPoiParking.setRowId(resultSet.getString("row_id"));
-
+		ixPoiParking.setuDate(resultSet.getString("u_date"));
 	}
 	
 }

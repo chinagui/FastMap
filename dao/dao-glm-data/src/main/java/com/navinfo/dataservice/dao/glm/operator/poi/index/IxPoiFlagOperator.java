@@ -196,8 +196,8 @@ public class IxPoiFlagOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiFlag.tableName() + " set u_record=2 where poi_pid="
-				+ ixPoiFlag.getPoiPid();
+		String sql = "update " + ixPoiFlag.tableName() + " set u_record=2 where row_id=hextoraw('"
+				+ ixPoiFlag.rowId() + "')";
 
 		stmt.addBatch(sql);
 	}

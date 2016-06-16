@@ -14,15 +14,10 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
-import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.engine.man.task.Task;
-import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import oracle.sql.CLOB;
 
 public class BlockOperation {

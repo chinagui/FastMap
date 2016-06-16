@@ -3,12 +3,16 @@ package com.navinfo.dataservice.jobframework.test;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.bizcommons.glm.Glm;
+import com.navinfo.dataservice.bizcommons.glm.GlmCache;
+import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.jobframework.service.JobService;
 
@@ -50,5 +54,20 @@ public class JobServiceTest {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+	}
+	@Test
+	public void hello_003(){
+		Glm glm = GlmCache.getInstance().getGlm("250+");
+		Map<String,GlmTable> tables = glm.getEditTables();
+		
+		for(String name:tables.keySet()){
+			System.out.println("INSERT INTO GLM_TABLE VALUES(GLM_TABLE_SEQ.NEXTVAL,'"+name+"',NULL,0,0,'240+');");
+//			GlmTable table = tables.get(name);
+//			List<GlmColumn> cols = table.getColumns();
+//			for(GlmColumn col:cols){
+//				System.out.println("--"+col.getName()+":"+col.getDataType()+":"+col.isPk());
+//			}
+		}
+		System.out.println("Over.");
 	}
 }

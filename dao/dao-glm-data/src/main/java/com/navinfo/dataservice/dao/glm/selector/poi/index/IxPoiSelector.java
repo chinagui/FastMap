@@ -35,6 +35,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEntryimage;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiFlag;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiIcon;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiOperateRef;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
@@ -297,6 +298,18 @@ public class IxPoiSelector implements ISelector {
 					IxPoiChargingStation obj = (IxPoiChargingStation) row;
 
 					ixPoi.chargingstationMap.put(obj.getRowId(), obj);
+				}
+				// 设置子表IX_POI_BUSINESSTIME
+				IxPoiOperateRefSelector IxPoiOperateRefSelector = new IxPoiOperateRefSelector(
+						conn);
+
+				ixPoi.setBusinesstimes(IxPoiOperateRefSelector
+						.loadRowsByParentId(id, isLock));
+
+				for (IRow row : ixPoi.getOperateRefs()) {
+					IxPoiOperateRef obj = (IxPoiOperateRef) row;
+
+					ixPoi.operateRefMap.put(obj.getRowId(), obj);
 				}
 
 				// 设置子表IX_POI_CHARGINGPLOT

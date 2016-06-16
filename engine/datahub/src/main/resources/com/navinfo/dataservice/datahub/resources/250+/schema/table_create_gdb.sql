@@ -11,6 +11,7 @@
 --drop index IDX_RAW_COMMIT;
 
 --drop index IDX_RAW_TASK;
+-- temp modify:ix_poi,ni_val_exception,add ix_poi_operate_ref,ix_poi_photo
 
 /*==============================================================*/
 /* Table: ACH_GDB_INFO                                          */
@@ -6612,7 +6613,7 @@ create table IX_POI  (
    U_FIELDS             VARCHAR2(1000),
    U_DATE               VARCHAR2(14),
    ROW_ID               RAW(16),
-   "LEVEL"                NUMBER(2)                      DEFAULT 0 NOT NULL,
+   "LEVEL"                VARCHAR2(2)                      DEFAULT 'C',
    SPORTS_VENUE         VARCHAR2(3),
    INDOOR               NUMBER(1)                      DEFAULT 0 NOT NULL,
    VIP_FLAG             VARCHAR2(10),
@@ -10764,7 +10765,7 @@ comment on column IX_POI_PARKING.U_FIELDS is
 /*==============================================================*/
 create table IX_POI_PHOTO  (
    POI_PID              NUMBER(10)                      not null,
-   PHOTO_ID             NUMBER(10)                     default 0 not null,
+   PHOTO_ID             VARCHAR2(32),
    STATUS               VARCHAR2(100),
    MEMO                 VARCHAR2(500),
    U_RECORD             NUMBER(2)                      default 0 not null
@@ -10940,11 +10941,12 @@ comment on column IX_POI_VIDEO.U_FIELDS is
 /* Table: IX_POSTCODE                                           */
 /*==============================================================*/
 CREATE TABLE IX_POI_OPERATE_REF (
-	PID NUMBER(10) NOT NULL,
+	POI_PID NUMBER(10) NOT NULL,
 	FRESH_VERIFIED NUMBER(1) DEFAULT 0 NOT NULL
 	  CHECK(FRESH_VERIFIED IN (0,1)),
 	RAW_FIELDS VARCHAR2(30),
-	constraint PK_IX_POI_OPERATE_REF primary key (PID)
+	constraint IXPOI_OPEREF foreign key (POI_PID)
+         references IX_POI (PID)
 );
 
 /*==============================================================*/

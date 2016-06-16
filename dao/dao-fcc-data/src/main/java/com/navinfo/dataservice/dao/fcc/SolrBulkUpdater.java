@@ -35,7 +35,7 @@ public class SolrBulkUpdater {
 		doc.addField("wkt", json.getString("wkt"));
 
 		doc.addField("stage", json.getInt("stage"));
-
+		
 		doc.addField("t_operateDate", json.getString("t_operateDate"));
 
 		doc.addField("t_date", json.getString("t_date"));
@@ -45,7 +45,13 @@ public class SolrBulkUpdater {
 		doc.addField("t_command", json.getInt("t_command"));
 
 		doc.addField("handler", json.getInt("handler"));
-
+		
+		doc.addField("t_cStatus", json.getInt("t_cStatus"));
+		
+		doc.addField("t_dStatus", json.getInt("t_dStatus"));
+		
+		doc.addField("t_mStatus", json.getInt("t_mStatus"));
+		
 		doc.addField("s_sourceCode", json.getInt("s_sourceCode"));
 
 		doc.addField("s_sourceType", json.getString("s_sourceType"));

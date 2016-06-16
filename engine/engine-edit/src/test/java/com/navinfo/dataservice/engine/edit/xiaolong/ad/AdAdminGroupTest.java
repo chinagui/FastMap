@@ -7,9 +7,9 @@ import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
-import com.navinfo.dataservice.engine.edit.xiaolong.InitApplication;
 
 import net.sf.json.JSONObject;
 

@@ -67,6 +67,11 @@
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>job-framework</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>job-datahub</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>net.sf.json-lib</groupId>

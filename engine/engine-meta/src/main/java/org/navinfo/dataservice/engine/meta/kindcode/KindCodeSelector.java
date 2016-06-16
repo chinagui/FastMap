@@ -212,6 +212,87 @@ public class KindCodeSelector {
 	}
 
 	/**
+	 * 通过region（1：港澳，0：大陆）信息获取KindCode信息
+	 * 
+	 * @param topId
+	 *            大分类
+	 * @param mediumId
+	 *            中分类
+	 * @return kindCode、kindName、extend
+	 * @throws Exception
+	 */
+	public JSONArray queryKindInfo(int region) throws Exception {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append(" SELECT t.kind_code ,t.kind_name,t.sub_class_code,");
+		sb.append(" (select f.\"LEVEL\" from SC_FM_CONTROL f where f.kind_code = t.kind_code) \"level\", ");
+		sb.append(" (select f.extend from SC_FM_CONTROL f where f.kind_code = t.kind_code) extend, ");
+		sb.append(" (select f.parent from SC_FM_CONTROL f where f.kind_code = t.kind_code) parent, ");
+		sb.append(" (select f.chain from SC_FM_CONTROL f where f.kind_code = t.kind_code) chain, ");
+		sb.append(" (select f.disp_onlink from SC_FM_CONTROL f where f.kind_code = t.kind_code) disp_onlink ");
+
+		sb.append(" from SC_POINT_POICODE_NEW t ");
+		if (region == 0) {
+			sb.append(" where (t.mhm_des='DHM' or t.mhm_des='D') ");
+		}
+
+		if (region == 1) {
+			sb.append(" where (t.mhm_des='DHM' or t.mhm_des='HM') ");
+		}
+
+		Connection conn = null;
+		try {
+			QueryRunner run = new QueryRunner();
+
+			conn = DBConnector.getInstance().getMetaConnection();
+
+			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
+				@Override
+				public JSONArray handle(ResultSet resultSet)
+						throws SQLException {
+
+					JSONArray array = new JSONArray();
+
+					while (resultSet.next()) {
+						String kindCode = resultSet.getString("kind_code");
+						String id = kindCode;
+						String kindName = resultSet.getString("kind_name");
+						String mediumId = resultSet.getString("sub_class_code");
+						String level = resultSet.getString("level");
+						int extend = resultSet.getInt("extend");
+						int parent = resultSet.getInt("parent");
+						int chainFlag = resultSet.getInt("chain");
+						int dispOnlink = resultSet.getInt("disp_onlink");
+
+						JSONObject json = new JSONObject();
+
+						json.put("kindCode", kindCode);
+						json.put("id", id);
+						json.put("kindName", kindName);
+						json.put("mediumId", mediumId);
+						json.put("level", level);
+						json.put("extend", extend);
+						json.put("parent", parent);
+						json.put("chainFlag", chainFlag);
+						json.put("dispOnlink", dispOnlink);
+
+						array.add(json);
+					}
+					return array;
+				}
+			};
+
+			return run.query(conn, sb.toString(), rsHandler);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
 	 * 根据kindCode获取level
 	 * 
 	 * @auth zhaokk

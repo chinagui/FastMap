@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.ad;
+package com.navinfo.dataservice.engine.edit.zhaokk.rd;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.engine.edit.xiaolong.InitApplication;
+import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineSegment;
 

@@ -43,7 +43,7 @@ public class CheckSuitLoader {
 					//切分suitCode为FEATURE OPERATION OPERATION_TYPE
 					String[] paras = suitCode.split("_");
 					
-					String sql = "select RULE_CODE from CK_SUIT where FEATURE = ? AND OPERATION = ? AND OPERATION_TYPE = ?";
+					String sql = "select RULE_CODE from CK_SUITE where FEATURE = ? AND OPERATION = ? AND OPERATION_TYPE = ?";
 					
 					PreparedStatement pstmt = null;
 

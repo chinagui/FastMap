@@ -64,6 +64,8 @@ public class IxPoiParentSelector implements ISelector{
 				
 				poiParent.setRowId(resultSet.getString("row_id"));
 				
+				poiParent.setuDate(resultSet.getString("u_date"));
+
 				// 获取IX_POI_PARENT对应的关联数据
 				// ix_poi_children
 				List<IRow> poiChildrens = new IxPoiChildrenSelector(conn).loadRowsByParentId(poiParent.getPid(), isLock);
@@ -148,6 +150,8 @@ public class IxPoiParentSelector implements ISelector{
 				
 				poiParent.setRowId(resultSet.getString("row_id"));
 				
+				poiParent.setuDate(resultSet.getString("u_date"));
+				
 				// 获取IX_POI_PARENT对应的关联数据
 				// ix_poi_children
 				List<IRow> poiChildrens = new IxPoiChildrenSelector(conn).loadRowsByParentId(poiParent.getPid(), isLock);
@@ -224,6 +228,8 @@ public class IxPoiParentSelector implements ISelector{
 				poiParent.setMemo (resultSet.getString("memo"));
 				
 				poiParent.setRowId(resultSet.getString("row_id"));
+				
+				poiParent.setuDate(resultSet.getString("u_date"));
 				
 				rows.add(poiParent);
 			}

@@ -67,6 +67,8 @@ public class IxPoiPhotoSelector implements ISelector {
 				photo.setMemo(resultSet.getString("memo"));	
 
 				photo.setRowId(resultSet.getString("row_id"));
+				
+				photo.setuDate(resultSet.getString("u_date"));
 			} else {
 				
 				throw new DataNotFoundException("数据不存在");
@@ -134,6 +136,8 @@ public class IxPoiPhotoSelector implements ISelector {
 				photo.setMemo(resultSet.getString("memo"));	
 
 				photo.setRowId(resultSet.getString("row_id"));
+				
+				photo.setuDate(resultSet.getString("u_date"));
 
 				rows.add(photo);
 			}

@@ -44,6 +44,10 @@
 		<artifactId>api-man</artifactId>
 	</dependency>
 	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>api-statics</artifactId>
+	</dependency>
+	<dependency>
 		   <groupId>org.apache.zookeeper</groupId>
 		   <artifactId>zookeeper</artifactId>
 		   <type>pom</type>

@@ -37,8 +37,7 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class IxPoiParkingOperator implements IOperator {
 
-	private static Logger logger = Logger
-			.getLogger(IxPoiParkingOperator.class);
+	private static Logger logger = Logger.getLogger(IxPoiParkingOperator.class);
 
 	private Connection conn;
 	private IxPoiParking ixPoiParking;
@@ -78,14 +77,16 @@ public class IxPoiParkingOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiParking.tableName()
-				+ " set u_record=3,");
+		StringBuilder sb = new StringBuilder("update "
+				+ ixPoiParking.tableName() + " set u_record=3,u_date="
+				+ StringUtils.getCurrentTime() + ",");
 
 		PreparedStatement pstmt = null;
 
 		try {
 
-			Set<Entry<String, Object>> set = ixPoiParking.changedFields().entrySet();
+			Set<Entry<String, Object>> set = ixPoiParking.changedFields()
+					.entrySet();
 
 			Iterator<Entry<String, Object>> it = set.iterator();
 
@@ -143,7 +144,7 @@ public class IxPoiParkingOperator implements IOperator {
 						isChanged = true;
 					}
 
-				} 
+				}
 			}
 			sb.append(" where parking_id   =" + ixPoiParking.getPid());
 
@@ -208,30 +209,31 @@ public class IxPoiParkingOperator implements IOperator {
 		ixPoiParking.setRowId(UuidUtils.genUuid());
 		StringBuilder sb = new StringBuilder("insert into ");
 		sb.append(ixPoiParking.tableName());
-		sb.append("(parking_id, poi_pid, parking_type, toll_std, toll_des, toll_way, payment, remark, source, open_tiime, total_num, work_time, res_high, res_width, res_weigh, certificate, vehicle, photo_name, have_specialplace, women_num,  handicap_num, mini_num, vip_num, u_record, row_id) values (");
+		sb.append("(parking_id, poi_pid, parking_type, toll_std, toll_des, toll_way, payment, remark, source, open_tiime, total_num, work_time, res_high, res_width, res_weigh, certificate, vehicle, photo_name, have_specialplace, women_num,  handicap_num, mini_num, vip_num, u_date,u_record, row_id) values (");
 		sb.append(ixPoiParking.getPid());
 		sb.append("," + ixPoiParking.getPoiPid());
-		sb.append(",'" + ixPoiParking.getParkingType()+"'");
-		sb.append(",'" + ixPoiParking.getTollStd()+"'");
-		sb.append(",'" + ixPoiParking.getTollDes()+"'");
-		sb.append(",'" + ixPoiParking.getTollWay()+"'");
-		sb.append(",'" + ixPoiParking.getPayment()+"'");
-		sb.append(",'" + ixPoiParking.getRemark()+"'");
-		sb.append(",'" + ixPoiParking.getSource()+"'");
-		sb.append(",'" + ixPoiParking.getOpenTiime()+"'");
+		sb.append(",'" + ixPoiParking.getParkingType() + "'");
+		sb.append(",'" + ixPoiParking.getTollStd() + "'");
+		sb.append(",'" + ixPoiParking.getTollDes() + "'");
+		sb.append(",'" + ixPoiParking.getTollWay() + "'");
+		sb.append(",'" + ixPoiParking.getPayment() + "'");
+		sb.append(",'" + ixPoiParking.getRemark() + "'");
+		sb.append(",'" + ixPoiParking.getSource() + "'");
+		sb.append(",'" + ixPoiParking.getOpenTiime() + "'");
 		sb.append("," + ixPoiParking.getTotalNum());
-		sb.append(",'" + ixPoiParking.getWorkTime()+"'");
+		sb.append(",'" + ixPoiParking.getWorkTime() + "'");
 		sb.append("," + ixPoiParking.getResHigh());
 		sb.append("," + ixPoiParking.getResWidth());
 		sb.append("," + ixPoiParking.getResWeigh());
 		sb.append("," + ixPoiParking.getCertificate());
 		sb.append("," + ixPoiParking.getVehicle());
-		sb.append(",'" + ixPoiParking.getPhotoName()+"'");
-		sb.append(",'" + ixPoiParking.getHaveSpecialplace()+"'");
-		sb.append(",'" + ixPoiParking.getWomenNum()+"'");
-		sb.append(",'" + ixPoiParking.getHandicapNum()+"'");
-		sb.append(",'" + ixPoiParking.getMiniNum()+"'");
-		sb.append(",'" + ixPoiParking.getVipNum()+"'");
+		sb.append(",'" + ixPoiParking.getPhotoName() + "'");
+		sb.append(",'" + ixPoiParking.getHaveSpecialplace() + "'");
+		sb.append(",'" + ixPoiParking.getWomenNum() + "'");
+		sb.append(",'" + ixPoiParking.getHandicapNum() + "'");
+		sb.append(",'" + ixPoiParking.getMiniNum() + "'");
+		sb.append(",'" + ixPoiParking.getVipNum() + "'");
+		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiParking.rowId() + "')");
 		stmt.addBatch(sb.toString());
 	}
@@ -244,7 +246,9 @@ public class IxPoiParkingOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiParking.tableName() + " set u_record=2 where parking_id   =" + ixPoiParking.getPid();
+		String sql = "update " + ixPoiParking.tableName()
+				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where parking_id   ="
+				+ ixPoiParking.getPid();
 		stmt.addBatch(sql);
 	}
 

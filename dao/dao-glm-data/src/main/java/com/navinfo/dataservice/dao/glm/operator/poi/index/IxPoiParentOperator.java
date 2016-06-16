@@ -70,7 +70,7 @@ public class IxPoiParentOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 		StringBuilder sb = new StringBuilder("update "
-				+ ixPoiParent.tableName() + " set u_record=3,");
+				+ ixPoiParent.tableName() + " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
 
 		PreparedStatement pstmt = null;
 
@@ -193,7 +193,7 @@ public class IxPoiParentOperator implements IOperator {
 
 		sb.append(ixPoiParent.tableName());
 
-		sb.append("(group_id, parentPoiPid, tenantFlag, memo, row_id, u_record) values (");
+		sb.append("(group_id, parentPoiPid, tenantFlag, memo, row_id,u_date,u_record) values (");
 
 		sb.append(ixPoiParent.getPid());
 
@@ -204,6 +204,8 @@ public class IxPoiParentOperator implements IOperator {
 		sb.append(",'" + ixPoiParent.getMemo() + "'");
 
 		sb.append(",'" + ixPoiParent.getRowId() + "'");
+		
+		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
 
 		sb.append(",'1')");
 
@@ -228,7 +230,7 @@ public class IxPoiParentOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiParent.tableName()
-				+ " set u_record=2 where group_id=" + ixPoiParent.getPid();
+				+ " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where group_id=" + ixPoiParent.getPid();
 
 		stmt.addBatch(sql);
 

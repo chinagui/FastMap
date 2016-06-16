@@ -17,28 +17,31 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 public class IxPoiEntryimage implements IRow {
 
-	private int poiPid;//POI号码
+	private int poiPid;// POI号码
 
-	private String imageCode;//概略图号码
+	private String imageCode;// 概略图号码
 
-	private int xPixelR4=0;//R4像素坐标X
+	private int xPixelR4 = 0;// R4像素坐标X
 
-	private int yPixelR4=0;//R4像素坐标Y
+	private int yPixelR4 = 0;// R4像素坐标Y
 
-	private int xPixelR5=0;//R5像素坐标X
+	private int xPixelR5 = 0;// R5像素坐标X
 
-	private int yPixelR5=0;//R5像素坐标Y
-	
-	private int xPixel35=0;//35像素坐标X
+	private int yPixelR5 = 0;// R5像素坐标Y
 
-	private int yPixel35=0;//35像素坐标Y
-	
+	private int xPixel35 = 0;// 35像素坐标X
+
+	private int yPixel35 = 0;// 35像素坐标Y
+
 	private String memo;
-	
-	private int mainPoiPid=0;//主点POI号码
-	
+
+	private int mainPoiPid = 0;// 主点POI号码
+
 	private String rowId;
-	
+
+	// 更新时间
+	private String uDate;
+
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	public int getPoiPid() {
@@ -51,6 +54,14 @@ public class IxPoiEntryimage implements IRow {
 
 	public String getImageCode() {
 		return imageCode;
+	}
+	
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
 	}
 
 	public void setImageCode(String imageCode) {

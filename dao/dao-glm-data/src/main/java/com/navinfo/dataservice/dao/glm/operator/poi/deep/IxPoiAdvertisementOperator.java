@@ -40,7 +40,8 @@ public class IxPoiAdvertisementOperator implements IOperator {
 	private Connection conn;
 	private IxPoiAdvertisement ixPoiAdvertisement;
 
-	public IxPoiAdvertisementOperator(Connection conn, IxPoiAdvertisement ixPoiAdvertisement) {
+	public IxPoiAdvertisementOperator(Connection conn,
+			IxPoiAdvertisement ixPoiAdvertisement) {
 		this.conn = conn;
 		this.ixPoiAdvertisement = ixPoiAdvertisement;
 	}
@@ -75,14 +76,16 @@ public class IxPoiAdvertisementOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiAdvertisement.tableName()
-				+ " set u_record=3,");
+		StringBuilder sb = new StringBuilder("update "
+				+ ixPoiAdvertisement.tableName() + " set u_record=3,u_date="
+				+ StringUtils.getCurrentTime() + ",");
 
 		PreparedStatement pstmt = null;
 
 		try {
 
-			Set<Entry<String, Object>> set = ixPoiAdvertisement.changedFields().entrySet();
+			Set<Entry<String, Object>> set = ixPoiAdvertisement.changedFields()
+					.entrySet();
 
 			Iterator<Entry<String, Object>> it = set.iterator();
 
@@ -95,7 +98,8 @@ public class IxPoiAdvertisementOperator implements IOperator {
 
 				Object columnValue = en.getValue();
 
-				Field field = ixPoiAdvertisement.getClass().getDeclaredField(column);
+				Field field = ixPoiAdvertisement.getClass().getDeclaredField(
+						column);
 
 				field.setAccessible(true);
 
@@ -140,7 +144,7 @@ public class IxPoiAdvertisementOperator implements IOperator {
 						isChanged = true;
 					}
 
-				} 
+				}
 			}
 			sb.append(" where advertise_id=" + ixPoiAdvertisement.getPid());
 
@@ -205,14 +209,15 @@ public class IxPoiAdvertisementOperator implements IOperator {
 		ixPoiAdvertisement.setRowId(UuidUtils.genUuid());
 		StringBuilder sb = new StringBuilder("insert into ");
 		sb.append(ixPoiAdvertisement.tableName());
-		sb.append("(advertise_id, poi_pid, label_text, type, priority,start_time, end_time, u_record,row_id) values (");
+		sb.append("(advertise_id, poi_pid, label_text, type, priority,start_time, end_time,u_date, u_record,row_id) values (");
 		sb.append(ixPoiAdvertisement.getPid());
 		sb.append("," + ixPoiAdvertisement.getPoiPid());
-		sb.append(",'"  + ixPoiAdvertisement.getLableText()+"'" );
-		sb.append(",'" + ixPoiAdvertisement.getType()+"'" );
-		sb.append( ","+ ixPoiAdvertisement.getPriority());
-		sb.append(",'" + ixPoiAdvertisement.getStartTime()+"'" );
-		sb.append(",'" + ixPoiAdvertisement.getEndTime()+"'" );
+		sb.append(",'" + ixPoiAdvertisement.getLableText() + "'");
+		sb.append(",'" + ixPoiAdvertisement.getType() + "'");
+		sb.append("," + ixPoiAdvertisement.getPriority());
+		sb.append(",'" + ixPoiAdvertisement.getStartTime() + "'");
+		sb.append(",'" + ixPoiAdvertisement.getEndTime() + "'");
+		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiAdvertisement.rowId() + "')");
 		stmt.addBatch(sb.toString());
 	}
@@ -225,7 +230,9 @@ public class IxPoiAdvertisementOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiAdvertisement.tableName() + " set u_record=2 where advertise_id   =" + ixPoiAdvertisement.getPid();
+		String sql = "update " + ixPoiAdvertisement.tableName()
+				+ " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where advertise_id   ="
+				+ ixPoiAdvertisement.getPid();
 		stmt.addBatch(sql);
 	}
 

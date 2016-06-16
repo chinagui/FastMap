@@ -276,9 +276,11 @@ public class EditController extends BaseController {
 			// int type = jsonReq.getInt("type");
 			int pageNum = jsonReq.getInt("pageNum");
 			int pageSize = jsonReq.getInt("pageSize");
+			int pid = jsonReq.getInt("pid");
+			String pidName = jsonReq.getString("pidName");
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			IxPoiSelector selector = new IxPoiSelector(conn);
-			JSONObject jsonObject = selector.loadPids(false, pageSize, pageNum);
+			JSONObject jsonObject = selector.loadPids(false,pid,pidName,pageSize, pageNum);
 			return new ModelAndView("jsonView", success(jsonObject));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

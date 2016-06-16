@@ -75,6 +75,8 @@ public class IxPoiIconSelector implements ISelector {
 				icon.setMemo(resultSet.getString("memo"));
 				
 				icon.setRowId(resultSet.getString("row_id"));
+				
+				icon.setuDate(resultSet.getString("u_date"));
 
 				return icon;
 			} else {
@@ -147,6 +149,8 @@ public class IxPoiIconSelector implements ISelector {
 				icon.setMemo(resultSet.getString("memo"));
 				
 				icon.setRowId(resultSet.getString("row_id"));
+				
+				icon.setuDate(resultSet.getString("u_date"));
 
 			} else {
 				
@@ -225,6 +229,9 @@ public class IxPoiIconSelector implements ISelector {
 				icon.setMemo(resultSet.getString("memo"));
 				
 				icon.setRowId(resultSet.getString("row_id"));
+				
+				icon.setuDate(resultSet.getString("u_date"));
+
 
 				rows.add(icon);
 			}

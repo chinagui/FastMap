@@ -25,6 +25,7 @@ import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.JtsGeometryConvertor;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
@@ -55,8 +56,8 @@ public class RoadCollectStat implements Runnable {
 	public List<Document> getRdlink() throws ServiceException {
 		try {
 			QueryRunner run = new QueryRunner();
-
-			String sql = "select rl.mesh_id, rl.geometry from rd_link rl where rownum < 100";
+			//String sql = "select rl.mesh_id, rl.geometry from rd_link rl where  mesh_id=595646 and link_pid=261067";
+			String sql = "select rl.mesh_id, rl.geometry from rd_link rl ";
 			return run.query(conn, sql, new ResultSetHandler<List<Document>>() {
 
 				@Override
@@ -67,7 +68,6 @@ public class RoadCollectStat implements Runnable {
 						try {
 							STRUCT struct = (STRUCT) rs.getObject("geometry");
 							Geometry linkGeo = GeoTranslator.struct2Jts(struct);
-
 							int mesh_id = rs.getInt("mesh_id");
 							// 根据 mesh_id 获得16个grid
 							Set<String> grids = CompGridUtil.mesh2Grid(String.valueOf(mesh_id));
@@ -78,20 +78,19 @@ public class RoadCollectStat implements Runnable {
 								Polygon gridPolygon = JtsGeometryConvertor.convert(loc);
 
 								// 根据 rd_link 获得的link计算在grid中相交的长度。
-								Geometry ls = linkGeo.intersection(gridPolygon);
-								double lineLength = ls.getLength();
+								double gridLineLength = GeometryUtils.getLinkLength(linkGeo.intersection(gridPolygon));
 
 								if (map.containsKey(grid_id)) {
-									map.put(grid_id, map.get(grid_id) + lineLength);
+									map.put(grid_id, map.get(grid_id) + gridLineLength);
 								} else {
-									map.put(grid_id, lineLength);
+									map.put(grid_id, gridLineLength);
 								}
 							}
 						} catch (Exception e1) {
 							e1.printStackTrace();
 						}
 					}
-					
+
 					List<Document> json_list = new ArrayList<Document>();
 					for (Entry<String, Double> entry : map.entrySet()) {
 						Document json = new Document();
@@ -106,7 +105,6 @@ public class RoadCollectStat implements Runnable {
 						json.put("road", road);
 						json_list.add(json);
 					}
-
 					return json_list;
 				}
 			}
@@ -124,6 +122,7 @@ public class RoadCollectStat implements Runnable {
 		log.info("-- begin do sub_task");
 		try {
 			log.info("-- begin do sub_task" + conn);
+
 			new MongoDao(db_name).insertMany(col_name, getRdlink());
 		} catch (Exception e) {
 			e.printStackTrace();

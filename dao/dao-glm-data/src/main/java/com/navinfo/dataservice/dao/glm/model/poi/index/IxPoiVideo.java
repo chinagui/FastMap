@@ -15,32 +15,34 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
-
 /**
  * POI视频表
+ * 
  * @author luyao
  *
  */
 public class IxPoiVideo implements IRow {
 
 	private String rowId;
-	
+
 	private int mesh;
-	
-	private int poiPid;//POI号码
-	
-	private int videoId;//视频号码
-	
-	private String status;//状态信息
-	
-	private String memo;//备注信息
-	
+
+	private int poiPid;// POI号码
+
+	private int videoId;// 视频号码
+
+	private String status;// 状态信息
+
+	private String memo;// 备注信息
+
+	// 更新时间
+	private String uDate;
+
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
-	
+
 	public IxPoiVideo() {
 	}
 
-	
 	public int getPoiPid() {
 		return poiPid;
 	}
@@ -48,8 +50,7 @@ public class IxPoiVideo implements IRow {
 	public void setPoiPid(int poiPid) {
 		this.poiPid = poiPid;
 	}
-	
-	
+
 	public int getVideoId() {
 		return videoId;
 	}
@@ -60,6 +61,14 @@ public class IxPoiVideo implements IRow {
 
 	public String getStatus() {
 		return status;
+	}
+	
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
 	}
 
 	public void setStatus(String status) {
@@ -106,11 +115,10 @@ public class IxPoiVideo implements IRow {
 
 		return rowId;
 	}
-	
+
 	public String getRowId() {
 		return rowId;
 	}
-
 
 	@Override
 	public void setRowId(String rowId) {
@@ -139,7 +147,6 @@ public class IxPoiVideo implements IRow {
 
 	@Override
 	public void copy(IRow row) {
-		
 
 	}
 

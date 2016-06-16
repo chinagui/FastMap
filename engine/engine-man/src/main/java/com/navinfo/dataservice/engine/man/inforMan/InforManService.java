@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.man.inforMan;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,18 +28,18 @@ public class InforManService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
 	
-	public void create(JSONObject json)throws Exception{
+	public void create(JSONObject json,long userId)throws Exception{
 		Connection conn = null;
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();	
 			InforMan  bean = (InforMan)JSONObject.toBean(json, InforMan.class);	
-			
+			Date date = new Date(new java.util.Date().getTime());
 			String createSql = "insert into infor_man (INFOR_ID, INFOR_STATUS, DESCP, CREATE_USER_ID, CREATE_DATE, COLLECT_PLAN_START_DATE, COLLECT_PLAN_END_DATE, COLLECT_GROUP_ID, DAY_EDIT_PLAN_START_DATE, DAY_EDIT_PLAN_END_DATE, DAY_EDIT_GROUP_ID, MONTH_EDIT_PLAN_START_DATE, MONTH_EDIT_PLAN_END_DATE, MONTH_EDIT_GROUP_ID, DAY_PRODUCE_PLAN_START_DATE, DAY_PRODUCE_PLAN_END_DATE, MONTH_PRODUCE_PLAN_START_DATE, MONTH_PRODUCE_PLAN_END_DATE) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";			
 			run.update(conn, 
 					   createSql, 
-					   bean.getInforId() , bean.getInforStatus(), bean.getDescp(), bean.getCreateUserId(), bean.getCreateDate(), bean.getCollectPlanStartDate(), bean.getCollectPlanEndDate(), bean.getCollectGroupId(), bean.getDayEditPlanStartDate(), bean.getDayEditPlanEndDate(), bean.getDayEditGroupId(), bean.getMonthEditPlanStartDate(), bean.getMonthEditPlanEndDate(), bean.getMonthEditGroupId(), bean.getDayProducePlanStartDate(), bean.getDayProducePlanEndDate(), bean.getMonthProducePlanStartDate(), bean.getMonthProducePlanEndDate()
+					   bean.getInforId() , 1, bean.getDescp(), userId, date, bean.getCollectPlanStartDate(), bean.getCollectPlanEndDate(), bean.getCollectGroupId(), bean.getDayEditPlanStartDate(), bean.getDayEditPlanEndDate(), bean.getDayEditGroupId(), bean.getMonthEditPlanStartDate(), bean.getMonthEditPlanEndDate(), bean.getMonthEditGroupId(), bean.getDayProducePlanStartDate(), bean.getDayProducePlanEndDate(), bean.getMonthProducePlanStartDate(), bean.getMonthProducePlanEndDate()
 					   );
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -71,14 +72,6 @@ public class InforManService {
 				updateSql+=" and DESCP=? ";
 				values.add(bean.getDescp());
 			};
-			if (bean!=null&&bean.getCreateUserId()!=null && StringUtils.isNotEmpty(bean.getCreateUserId().toString())){
-				updateSql+=" and CREATE_USER_ID=? ";
-				values.add(bean.getCreateUserId());
-			};
-			if (bean!=null&&bean.getCreateDate()!=null && StringUtils.isNotEmpty(bean.getCreateDate().toString())){
-				updateSql+=" and CREATE_DATE=? ";
-				values.add(bean.getCreateDate());
-			};
 			if (bean!=null&&bean.getCollectPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanStartDate().toString())){
 				updateSql+=" and COLLECT_PLAN_START_DATE=? ";
 				values.add(bean.getCollectPlanStartDate());
@@ -86,10 +79,6 @@ public class InforManService {
 			if (bean!=null&&bean.getCollectPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanEndDate().toString())){
 				updateSql+=" and COLLECT_PLAN_END_DATE=? ";
 				values.add(bean.getCollectPlanEndDate());
-			};
-			if (bean!=null&&bean.getCollectGroupId()!=null && StringUtils.isNotEmpty(bean.getCollectGroupId().toString())){
-				updateSql+=" and COLLECT_GROUP_ID=? ";
-				values.add(bean.getCollectGroupId());
 			};
 			if (bean!=null&&bean.getDayEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanStartDate().toString())){
 				updateSql+=" and DAY_EDIT_PLAN_START_DATE=? ";
@@ -99,10 +88,6 @@ public class InforManService {
 				updateSql+=" and DAY_EDIT_PLAN_END_DATE=? ";
 				values.add(bean.getDayEditPlanEndDate());
 			};
-			if (bean!=null&&bean.getDayEditGroupId()!=null && StringUtils.isNotEmpty(bean.getDayEditGroupId().toString())){
-				updateSql+=" and DAY_EDIT_GROUP_ID=? ";
-				values.add(bean.getDayEditGroupId());
-			};
 			if (bean!=null&&bean.getMonthEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanStartDate().toString())){
 				updateSql+=" and MONTH_EDIT_PLAN_START_DATE=? ";
 				values.add(bean.getMonthEditPlanStartDate());
@@ -110,10 +95,6 @@ public class InforManService {
 			if (bean!=null&&bean.getMonthEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanEndDate().toString())){
 				updateSql+=" and MONTH_EDIT_PLAN_END_DATE=? ";
 				values.add(bean.getMonthEditPlanEndDate());
-			};
-			if (bean!=null&&bean.getMonthEditGroupId()!=null && StringUtils.isNotEmpty(bean.getMonthEditGroupId().toString())){
-				updateSql+=" and MONTH_EDIT_GROUP_ID=? ";
-				values.add(bean.getMonthEditGroupId());
 			};
 			if (bean!=null&&bean.getDayProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getDayProducePlanStartDate().toString())){
 				updateSql+=" and DAY_PRODUCE_PLAN_START_DATE=? ";
@@ -133,7 +114,7 @@ public class InforManService {
 			};
 			run.update(conn, 
 					   updateSql, 
-					   bean.getInforId() ,bean.getInforStatus(),bean.getDescp(),bean.getCreateUserId(),bean.getCreateDate(),bean.getCollectPlanStartDate(),bean.getCollectPlanEndDate(),bean.getCollectGroupId(),bean.getDayEditPlanStartDate(),bean.getDayEditPlanEndDate(),bean.getDayEditGroupId(),bean.getMonthEditPlanStartDate(),bean.getMonthEditPlanEndDate(),bean.getMonthEditGroupId(),bean.getDayProducePlanStartDate(),bean.getDayProducePlanEndDate(),bean.getMonthProducePlanStartDate(),bean.getMonthProducePlanEndDate(),
+					   bean.getInforId() ,bean.getInforStatus(),bean.getDescp(),bean.getCollectPlanStartDate(),bean.getCollectPlanEndDate(),bean.getDayEditPlanStartDate(),bean.getDayEditPlanEndDate(),bean.getMonthEditPlanStartDate(),bean.getMonthEditPlanEndDate(),bean.getDayProducePlanStartDate(),bean.getDayProducePlanEndDate(),bean.getMonthProducePlanStartDate(),bean.getMonthProducePlanEndDate(),
 					   values.toArray()
 					   );
 		}catch(Exception e){

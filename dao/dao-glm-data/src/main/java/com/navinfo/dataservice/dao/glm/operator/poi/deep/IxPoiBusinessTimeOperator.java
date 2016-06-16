@@ -39,7 +39,8 @@ public class IxPoiBusinessTimeOperator implements IOperator {
 	private Connection conn;
 	private IxPoiBusinessTime ixPoiBusinessTime;
 
-	public IxPoiBusinessTimeOperator(Connection conn, IxPoiBusinessTime ixPoiBusinessTime) {
+	public IxPoiBusinessTimeOperator(Connection conn,
+			IxPoiBusinessTime ixPoiBusinessTime) {
 		this.conn = conn;
 		this.ixPoiBusinessTime = ixPoiBusinessTime;
 	}
@@ -74,14 +75,16 @@ public class IxPoiBusinessTimeOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiBusinessTime.tableName()
-				+ " set u_record=3,");
+		StringBuilder sb = new StringBuilder("update "
+				+ ixPoiBusinessTime.tableName() + " set u_record=3,u_date="
+				+ StringUtils.getCurrentTime() + ",");
 
 		PreparedStatement pstmt = null;
 
 		try {
 
-			Set<Entry<String, Object>> set = ixPoiBusinessTime.changedFields().entrySet();
+			Set<Entry<String, Object>> set = ixPoiBusinessTime.changedFields()
+					.entrySet();
 
 			Iterator<Entry<String, Object>> it = set.iterator();
 
@@ -94,7 +97,8 @@ public class IxPoiBusinessTimeOperator implements IOperator {
 
 				Object columnValue = en.getValue();
 
-				Field field = ixPoiBusinessTime.getClass().getDeclaredField(column);
+				Field field = ixPoiBusinessTime.getClass().getDeclaredField(
+						column);
 
 				field.setAccessible(true);
 
@@ -139,9 +143,10 @@ public class IxPoiBusinessTimeOperator implements IOperator {
 						isChanged = true;
 					}
 
-				} 
+				}
 			}
-			sb.append(" where row_id=hextoraw('" + ixPoiBusinessTime.getRowId() + "')");
+			sb.append(" where row_id=hextoraw('" + ixPoiBusinessTime.getRowId()
+					+ "')");
 
 			String sql = sb.toString();
 
@@ -204,21 +209,22 @@ public class IxPoiBusinessTimeOperator implements IOperator {
 		ixPoiBusinessTime.setRowId(UuidUtils.genUuid());
 		StringBuilder sb = new StringBuilder("insert into ");
 		sb.append(ixPoiBusinessTime.tableName());
-		sb.append("(poi_pid, mon_srt, mon_end, week_in_year_srt, week_in_year_end, week_in_month_srt, week_in_month_end, valid_week, day_srt, day_end, time_srt, time_dur, reserved, memo, u_record, row_id) values (");
+		sb.append("(poi_pid, mon_srt, mon_end, week_in_year_srt, week_in_year_end, week_in_month_srt, week_in_month_end, valid_week, day_srt, day_end, time_srt, time_dur, reserved, memo, u_date,u_record, row_id) values (");
 		sb.append(ixPoiBusinessTime.getPoiPid());
-		sb.append(",'" + ixPoiBusinessTime.getMonSrt()+"'");
-		sb.append(",'"  + ixPoiBusinessTime.getMonEnd()+"'");
-		sb.append(",'"  + ixPoiBusinessTime.getWeekInYearSrt()+"'");
-		sb.append(",'"  + ixPoiBusinessTime.getWeekInYearEnd()+"'");
-		sb.append(",'"  + ixPoiBusinessTime.getWeekInMonthSrt()+"'");
-		sb.append(",'"  + ixPoiBusinessTime.getWeekInMonthEnd()+"'");
-		sb.append(",'"  + ixPoiBusinessTime.getVaildWeek()+"'");
-		sb.append(",'"  + ixPoiBusinessTime.getDaySrt()+"'");
-		sb.append(",'"  + ixPoiBusinessTime.getDayEnd()+"'");
-		sb.append(",'"  + ixPoiBusinessTime.getTimeSrt()+"'");
-		sb.append(",'"  + ixPoiBusinessTime.getTimeDue()+"'");
-		sb.append(",'"  + ixPoiBusinessTime.getReserved()+"'");
-		sb.append(",'"  + ixPoiBusinessTime.getMemo()+"'");
+		sb.append(",'" + ixPoiBusinessTime.getMonSrt() + "'");
+		sb.append(",'" + ixPoiBusinessTime.getMonEnd() + "'");
+		sb.append(",'" + ixPoiBusinessTime.getWeekInYearSrt() + "'");
+		sb.append(",'" + ixPoiBusinessTime.getWeekInYearEnd() + "'");
+		sb.append(",'" + ixPoiBusinessTime.getWeekInMonthSrt() + "'");
+		sb.append(",'" + ixPoiBusinessTime.getWeekInMonthEnd() + "'");
+		sb.append(",'" + ixPoiBusinessTime.getVaildWeek() + "'");
+		sb.append(",'" + ixPoiBusinessTime.getDaySrt() + "'");
+		sb.append(",'" + ixPoiBusinessTime.getDayEnd() + "'");
+		sb.append(",'" + ixPoiBusinessTime.getTimeSrt() + "'");
+		sb.append(",'" + ixPoiBusinessTime.getTimeDue() + "'");
+		sb.append(",'" + ixPoiBusinessTime.getReserved() + "'");
+		sb.append(",'" + ixPoiBusinessTime.getMemo() + "'");
+		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiBusinessTime.rowId() + "')");
 		stmt.addBatch(sb.toString());
 	}
@@ -231,9 +237,10 @@ public class IxPoiBusinessTimeOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		
-		String sql = "update " + ixPoiBusinessTime.tableName() + " set u_record=2 where row_id=hextoraw('" + ixPoiBusinessTime.rowId()
-				+ "')";
+
+		String sql = "update " + ixPoiBusinessTime.tableName()
+				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where row_id=hextoraw('"
+				+ ixPoiBusinessTime.rowId() + "')";
 		stmt.addBatch(sql);
 	}
 

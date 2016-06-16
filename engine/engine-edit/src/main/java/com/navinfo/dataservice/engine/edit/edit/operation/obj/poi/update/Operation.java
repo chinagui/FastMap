@@ -1,7 +1,4 @@
-package com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.updata;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+package com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.update;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -31,6 +28,9 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
 import com.navinfo.dataservice.dao.pidservice.PidService;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -111,7 +111,7 @@ public class Operation implements IOperation {
 		updataIxPoiRestaurant(result, content);
 
 		updataIxPoiCarrental(result, content);
-
+		
 		return null;
 	}
 
@@ -393,10 +393,10 @@ public class Operation implements IOperation {
 
 	private void updataIxPoiIcon(Result result, JSONObject content)
 			throws Exception {
-		if (!content.containsKey("flags")) {
+		if (!content.containsKey("icons")) {
 			return;
 		}
-		JSONArray subObj = content.getJSONArray("flags");
+		JSONArray subObj = content.getJSONArray("icons");
 
 		for (int i = 0; i < subObj.size(); i++) {
 

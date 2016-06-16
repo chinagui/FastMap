@@ -269,7 +269,12 @@ public class Transaction {
 			case MOVE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.move.Command(
 						json, requester);
-			
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.update.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.delete.Command(
+						json, requester);
 		}
 		
 		}	
@@ -486,6 +491,12 @@ public class Transaction {
 						command);
 			case MOVE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.move.Process(
+						command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.update.Process(
+						command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.delete.Process(
 						command);
 			}
 		}

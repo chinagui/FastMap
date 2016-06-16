@@ -496,7 +496,7 @@ public class IxPoiSelector implements ISelector {
         	buffer.append("AND ip.pid = "+pid+"");
         }else{
         	if(StringUtils.isNotBlank(pidName)){
-        		buffer.append("AND ipn.name like %'"+pidName+"%'");
+        		buffer.append("AND ipn.name like %'"+pidName+"'%");
         	}
         }
         

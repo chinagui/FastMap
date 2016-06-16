@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEntryimage;
 
 /**
  * POI入口概略图表操作类
+ * 
  * @author zhangxiaolong
  *
  */
@@ -212,8 +213,8 @@ public class IxPoiEntryImageOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiEntryimage.tableName() + " set u_record=2 where poi_pid="
-				+ ixPoiEntryimage.getPoiPid();
+		String sql = "update " + ixPoiEntryimage.tableName() + " set u_record=2 where row_id=hextoraw('"
+				+ ixPoiEntryimage.rowId() + "')";
 
 		stmt.addBatch(sql);
 	}

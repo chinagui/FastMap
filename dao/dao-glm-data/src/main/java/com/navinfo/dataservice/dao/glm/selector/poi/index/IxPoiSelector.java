@@ -478,9 +478,9 @@ public class IxPoiSelector implements ISelector {
 		JSONArray array = new JSONArray();
 
 		int total = 0;
-		int startRow = pageNum * pageSize + 1;
+		int startRow = (pageNum-1) * pageSize + 1;
 
-		int endRow = (pageNum + 1) * pageSize;
+		int endRow = pageNum * pageSize;
 		StringBuilder buffer = new StringBuilder();
         buffer.append(" SELECT * ");
         buffer.append(" FROM (SELECT c.*, ROWNUM rn ");
@@ -509,7 +509,6 @@ public class IxPoiSelector implements ISelector {
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
-		
 		try {
 			pstmt = conn.prepareStatement(buffer.toString());
 			pstmt.setInt(1, endRow);

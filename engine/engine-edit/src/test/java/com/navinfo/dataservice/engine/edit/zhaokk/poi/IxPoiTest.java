@@ -44,10 +44,10 @@ public class IxPoiTest extends InitApplication{
 	}
 	@Test
 	public void queryPoi() throws Exception{
-		int pageNum = 0;
-		int pageSize = 10;
+		int pageNum = 22351;
+		int pageSize = 20;
 		int pid = 0;
-		String pidName = "电";
+		String pidName = "";
 		Connection conn = DBConnector.getInstance().getConnectionById(42);
 		IxPoiSelector  ixPoiSelector  = new IxPoiSelector(conn);
 		JSONObject jsonObject = ixPoiSelector.loadPids(false,pid,pidName,pageSize, pageNum);

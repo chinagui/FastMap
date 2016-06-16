@@ -21,7 +21,6 @@ public class IxPoiTest extends InitApplication{
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
-			System.out.println(msg);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

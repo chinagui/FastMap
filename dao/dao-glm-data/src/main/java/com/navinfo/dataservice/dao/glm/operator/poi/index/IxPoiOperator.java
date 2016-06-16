@@ -230,7 +230,6 @@ public class IxPoiOperator implements IOperator {
 
 	@Override
 	public void insertRow2Sql(Statement stmt) throws Exception {
-		ixPoi.setRowId(UuidUtils.genUuid());
 
 		StringBuilder sb = new StringBuilder("insert into ");
 

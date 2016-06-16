@@ -510,17 +510,13 @@ public class MetaController extends BaseController {
 		String parameter = request.getParameter("parameter");
 
 		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-
-			String topId = jsonReq.getString("topId");
-
-			String mediumId = jsonReq.getString("mediumId");
+			JSONObject jsonReq = JSONObject.fromObject(parameter);	
 
 			int region = jsonReq.getInt("region");
 
 			KindCodeSelector selector = new KindCodeSelector();
 
-			JSONArray data = selector.queryKindInfo(topId, mediumId, region);
+			JSONArray data = selector.queryKindInfo(region);
 
 			return new ModelAndView("jsonView", success(data));
 

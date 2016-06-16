@@ -659,7 +659,7 @@ public class IxPoiSelector implements ISelector {
 		ixPoi.setOldAddress(resultSet.getString("old_address"));
 
 		ixPoi.setOldKind(resultSet.getString("old_kind"));
-
+		
 		ixPoi.setPoiNum(resultSet.getString("poi_num"));
 
 		ixPoi.setLog(resultSet.getString("log"));
@@ -683,5 +683,8 @@ public class IxPoiSelector implements ISelector {
 		ixPoi.setOldYGuide(resultSet.getDouble("old_y_guide"));
 
 		ixPoi.setRowId(resultSet.getString("row_id"));
+		
+		ixPoi.setuDate(resultSet.getString("u_date"));
+
 	}
 }

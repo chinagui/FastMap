@@ -64,6 +64,7 @@ public class IxPoiOperateRefSelector implements ISelector {
 				ixPoiOperateRef.setFreshVerified(resultSet.getInt("fresh_verified"));
 				ixPoiOperateRef.setRawFileds(resultSet.getString(""));
 				ixPoiOperateRef.setRowId(resultSet.getString("raw_fileds"));
+				ixPoiOperateRef.setuDate(resultSet.getString("u_date"));
 			} else {
 				
 				throw new DataNotFoundException("数据不存在");
@@ -126,6 +127,7 @@ public class IxPoiOperateRefSelector implements ISelector {
 				ixPoiOperateRef.setFreshVerified(resultSet.getInt("fresh_verified"));
 				ixPoiOperateRef.setRawFileds(resultSet.getString("raw_fileds"));
 				ixPoiOperateRef.setRowId(resultSet.getString("row_id"));
+				ixPoiOperateRef.setuDate(resultSet.getString("u_date"));
 				rows.add(ixPoiOperateRef);
 			}
 		} catch (Exception e) {

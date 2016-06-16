@@ -105,6 +105,8 @@ public class IxPoiEventSelector implements ISelector {
 		event.setReserved(resultSet.getString("reserved"));
 		event.setMemo(resultSet.getString("memo"));
 		event.setRowId(resultSet.getString("row_id"));
+		event.setuDate(resultSet.getString("u_date"));
+
 	}
 	
 }

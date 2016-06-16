@@ -143,6 +143,7 @@ public class IxPoiAdvertisementSelector implements ISelector {
 		advertisement.setPriority(resultSet.getInt("priority"));
 		advertisement.setStartTime(resultSet.getString("start_time"));
 		advertisement.setEndTime(resultSet.getString("end_time"));
+		advertisement.setuDate(resultSet.getString("u_date"));
 		advertisement.setRowId(resultSet.getString("row_id"));
 	}
 	

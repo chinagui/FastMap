@@ -94,7 +94,7 @@ public class IxPoiBuildingSelector implements ISelector {
 		ixPoiBuilding.setFloorEmpty(resultSet.getString("floor_empty"));
 		ixPoiBuilding.setMemo(resultSet.getString("memo"));
 		ixPoiBuilding.setRowId(resultSet.getString("row_id"));
-
+		ixPoiBuilding.setuDate(resultSet.getString("u_date"));
 	}
 	
 }

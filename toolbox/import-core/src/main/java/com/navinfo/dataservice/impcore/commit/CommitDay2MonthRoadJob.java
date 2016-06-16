@@ -2,6 +2,7 @@ package com.navinfo.dataservice.impcore.commit;
 
 import java.util.Map;
 
+import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -47,6 +48,11 @@ public class CommitDay2MonthRoadJob extends AbstractCommitDay2MonthJob {
 		@Override
 		public String getFlushFeatureType() {
 			return LogFlusher.FEATURE_ROAD;
+		}
+
+		@Override
+		public int getLockType() {
+			return FmEditLock.TYPE_DAY2MON;
 		}
 		
 	}

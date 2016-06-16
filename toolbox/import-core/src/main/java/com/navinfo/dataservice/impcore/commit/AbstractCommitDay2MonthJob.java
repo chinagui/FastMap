@@ -55,12 +55,22 @@ public abstract class AbstractCommitDay2MonthJob extends AbstractJob{
 				//在大区日库中根据grid列表获取履历，并刷新对应的月库
 				//根据大区id获取对应的大区日库、大区月库
 				ManApi manApi =  (ManApi) ApplicationContextUtil.getBean("manApi");
-				IRegion regionDbInfo = manApi.queryByRegionId(regionId);
+				IRegion regionInfo = manApi.queryByRegionId(regionId);
+				if (regionInfo==null){
+					this.log.warn("根据regionId："+regionId+",没有得到大区库数据");
+					continue;
+				}
 				DatahubApi databhubApi = (DatahubApi) ApplicationContextUtil.getBean("datahubApi");
-				DbInfo dailyDb = databhubApi.getDbById(regionDbInfo.getDailyDbId());
-				DbInfo monthlyDb = databhubApi.getDbById(regionDbInfo.getMonthlyDbId());
+				DbInfo dailyDb = databhubApi.getDbById(regionInfo.getDailyDbId());
+				DbInfo monthlyDb = databhubApi.getDbById(regionInfo.getMonthlyDbId());
 				this.log.info("开始进行日落月（源库:"+dailyDb+",目标库："+monthlyDb+")");
-				LogFlusher logFlusher= new LogFlusher(dailyDb, monthlyDb, gridListOfRegion, command.getStopTime(),command.getFlushFeatureType());
+				LogFlusher logFlusher= new LogFlusher(regionInfo.getRegionId(),
+													dailyDb, 
+													monthlyDb, 
+													gridListOfRegion, 
+													command.getStopTime(),
+													command.getFlushFeatureType(),
+													command.getLockType());
 				logFlusher.setLog(this.log);
 				FlushResult result= logFlusher.perform();
 				jobResponse.put(regionId.toString(), result);

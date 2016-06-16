@@ -8,6 +8,10 @@
 		class="com.navinfo.dataservice.impcore.commit.CommitDay2MonthRoadJob"
 	 	request="com.navinfo.dataservice.impcore.commit.CommitDay2MonthRoadJobRequest"
 	/>
+	<type name="commitDay2MonthPoiJob" 
+		class="com.navinfo.dataservice.impcore.commit.CommitDay2MonthPoiJob"
+	 	request="com.navinfo.dataservice.impcore.commit.CommitDay2MonthPoiJobRequest"
+	/>
 	<type name="diff" 
 		class="com.navinfo.dataservice.diff.DiffJob"
 	 	request="com.navinfo.dataservice.diff.DiffJobRequest"

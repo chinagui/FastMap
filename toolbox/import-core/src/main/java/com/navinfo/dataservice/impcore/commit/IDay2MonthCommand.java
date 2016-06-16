@@ -11,5 +11,6 @@ public interface IDay2MonthCommand {
 	public Map queryRegionGridMapping() throws Exception;
 	public String getStopTime();
 	public String getFlushFeatureType();
+	public int getLockType();
 }
 

@@ -25,6 +25,8 @@ public class DbInfo implements Serializable{
 	protected Date createTime;
 	protected String descp;
 	protected DbServer dbServer;
+	public DbInfo(){
+	}
 	public DbInfo(int dbId,String dbName,String dbUserName,String dbUserPasswd,String bizType,String gdbVersion
 			,DbServer dbServer,int dbStatus){
 		this.dbId=dbId;

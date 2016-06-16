@@ -9,6 +9,6 @@ import net.sf.json.JSONObject;
 * @Description: TODO
 */
 public interface JobApiService {
-	long createJob(String jobType,JSONObject request,long projectId,long userId,String descp)throws Exception;
+	long createJob(String jobType,JSONObject request,long userId,String descp)throws Exception;
 	String help();
 }

@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.man.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.sf.json.JSONObject;
 
@@ -40,5 +41,10 @@ public class ManApiImpl implements ManApi {
 			throws Exception {
 		return GridService.getInstance().queryRegionGridMappingOfSubtasks(taskList);
 	}
+	@Override
+	public Set<Integer> queryGrid(int limit) throws Exception {
+		return GridService.getInstance().queryGrid(limit);
+	}
+	
 }
 

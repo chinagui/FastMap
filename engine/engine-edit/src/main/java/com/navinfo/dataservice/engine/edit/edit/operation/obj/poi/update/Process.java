@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.updata;
+package com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.update;
 
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;

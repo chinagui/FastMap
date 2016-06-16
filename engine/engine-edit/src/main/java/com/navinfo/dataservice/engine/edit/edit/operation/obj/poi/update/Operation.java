@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.updata;
+package com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.update;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;

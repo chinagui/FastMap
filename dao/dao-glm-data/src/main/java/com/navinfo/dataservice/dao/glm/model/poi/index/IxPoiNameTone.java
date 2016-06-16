@@ -17,31 +17,43 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 /**
  * POI名称语音语调表
+ * 
  * @author zhangxiaolong
  *
  */
 public class IxPoiNameTone implements IRow {
-	
+
 	private int nameId;
-	
-	private String toneA;//带音调拼音一
-	
-	private String toneB;//带音调拼音二
-	
-	private String lhA;//LH拼音一
-	
-	private String lhB;//LH拼音二
-	
-	private String jyutp;//粤语拼音
-	
-	private String memo;//备注信息
-	
+
+	private String toneA;// 带音调拼音一
+
+	private String toneB;// 带音调拼音二
+
+	private String lhA;// LH拼音一
+
+	private String lhB;// LH拼音二
+
+	private String jyutp;// 粤语拼音
+
+	private String memo;// 备注信息
+
 	private String rowId;
-	
+
+	// 更新时间
+	private String uDate;
+
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
-	
+
 	public int getNameId() {
 		return nameId;
+	}
+	
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
 	}
 
 	public void setNameId(int nameId) {

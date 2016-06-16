@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.xiaolong.rd;
+package com.navinfo.dataservice.engine.edit.zhaokk.ad;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -86,8 +86,8 @@ public class RdLinkTest extends InitApplication{
 	@Test
 	public void departRdLink()
 	{
-		String line  = "[100003385,100003386,100003387,100003389,100003397]";
-		String parameter =  "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"distance\":20,\"projectId\":11,\"data\":{\"linkPids\":"+line+"}}";
+		String line  = "[20465744,20465745,14226884]";
+		String parameter =  "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"distance\":25.3,\"projectId\":11,\"data\":{\"linkPids\":"+line+"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -112,23 +112,15 @@ public class RdLinkTest extends InitApplication{
 	
 	@Test
 	public void testLoadTractLink() throws Exception{
+		List<Integer> pids = new ArrayList<Integer>();
+		pids.add(20465744);
+		pids.add(20465745);
+		pids.add(14226884);
+		System.out.println(pids);
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
-		List<RdLink> nextLinks = linkSelector.loadTrackLink(100003389,100019730,true);
-		for(RdLink link:nextLinks){
-			System.out.println(link.getPid());
-		}
-	}
-	
-	@Test
-	public void testAddLinkIn2Mesh()
-	{
-		String parameter = "{\"command\":\"CREATE\",\"projectId\":11,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.70726 ,40.09797],[116.70878,40.06482]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
-		Transaction t = new Transaction(parameter);
-		try {
-			String msg = t.run();
-			System.out.println(msg);
-		} catch (Exception e) {
-			e.printStackTrace();
+		List<RdLink> links =linkSelector.loadByPids(pids, true);
+		for(RdLink r:links){
+			System.out.println(r.getPid());
 		}
 	}
 }

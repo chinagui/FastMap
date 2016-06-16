@@ -4,8 +4,8 @@ package com.navinfo.dataservice.engine.edit.xiaolong.ad;
 import org.apache.log4j.Logger;
 import org.junit.Before;
 
+import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
-import com.navinfo.dataservice.engine.edit.xiaolong.InitApplication;
 
 public class AdFaceTest extends InitApplication{
 	

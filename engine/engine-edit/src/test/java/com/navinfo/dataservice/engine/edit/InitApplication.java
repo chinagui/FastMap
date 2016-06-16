@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.xiaolong;
+package com.navinfo.dataservice.engine.edit;
 
 import org.junit.Before;
 import org.springframework.context.support.ClassPathXmlApplicationContext;

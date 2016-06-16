@@ -57,5 +57,11 @@ public class PidSequenceName {
 	
 	public static final String poiHotelIdName = "SEQ_POI_HOTEL";
 	
-	public static final String poiFoodIdName = "SEQ_POI_Food";
+	public static final String poiFoodIdName = "SEQ_POI_FOOD";
+	
+	public static final String poiIconIdName = "SEQ_POI_ICON";
+	
+	public static final String poiAttractionIdName = "SEQ_POI_ATTRACTION";
+	
+	public static final String poiRestaurantIdName = "SEQ_POI_RESTAURANT";
 }

@@ -16,7 +16,7 @@ public class MongoDao {
 	}
 
 	public MongoDatabase getDatabase() {
-		
+
 		return md;
 
 	}

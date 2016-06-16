@@ -9,7 +9,6 @@ import org.bson.Document;
 
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.JtsGeometryConvertor;
-import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Polygon;
 
 public class test {
@@ -34,7 +33,6 @@ public class test {
 			String gridId = allGrids.get(i).toString();
 			double[] loc =CompGridUtil.grid2Rect(gridId);
 			Polygon gridPolygon = JtsGeometryConvertor.convert(loc);
-			gridPolygon
 		}
 		
 		

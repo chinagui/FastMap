@@ -493,10 +493,10 @@ public class IxPoiSelector implements ISelector {
         buffer.append(" AND ipn.name_type = 2 ");
         buffer.append(" AND name_class = 1"); 
         if( pid != 0){
-        	buffer.append("AND ip.pid = "+pid+"");
+        	buffer.append(" AND ip.pid = "+pid+"");
         }else{
         	if(StringUtils.isNotBlank(pidName)){
-        		buffer.append("AND ipn.name like %'"+pidName+"'%");
+        		buffer.append(" AND ipn.name like '%"+pidName+"%'");
         	}
         }
         
@@ -506,7 +506,6 @@ public class IxPoiSelector implements ISelector {
 		if (isLock) {
 			buffer.append(" for update nowait");
 		}
-
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;

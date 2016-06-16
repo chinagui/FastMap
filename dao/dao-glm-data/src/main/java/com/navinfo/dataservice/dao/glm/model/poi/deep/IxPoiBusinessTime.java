@@ -14,27 +14,40 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+
 /**
  * 索引:POI 深度信息(开放或营业时间)
+ * 
  * @author zhaokk
  *
  */
 public class IxPoiBusinessTime implements IRow {
 
-	private int poiPid =0;
-	private String  monSrt;//营业开始月份
-	private String  monEnd;//营业结束月份
-	private String weekInYearSrt;//一年中的起始周
-	private String weekInYearEnd;//一年中的结束周
-	private String weekInMonthSrt;//指定月份的营业起始周
-	private String weekInMonthEnd;//指定月份的营业结束周
-	private String vaildWeek;//周营业日 
-	private String daySrt;//月营业起始日
-	private String dayEnd;//月营业结束日
-	private String timeSrt;//营业开始日期
-	private String timeDue;//营业时长
-	private String reserved;//预留字段
+	private int poiPid = 0;
+	private String monSrt;// 营业开始月份
+	private String monEnd;// 营业结束月份
+	private String weekInYearSrt;// 一年中的起始周
+	private String weekInYearEnd;// 一年中的结束周
+	private String weekInMonthSrt;// 指定月份的营业起始周
+	private String weekInMonthEnd;// 指定月份的营业结束周
+	private String vaildWeek;// 周营业日
+	private String daySrt;// 月营业起始日
+	private String dayEnd;// 月营业结束日
+	private String timeSrt;// 营业开始日期
+	private String timeDue;// 营业时长
+	private String reserved;// 预留字段
 	private int mesh;
+	// 更新时间
+	private String uDate;
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
+	}
+
 	public String getMonSrt() {
 		return monSrt;
 	}
@@ -134,7 +147,9 @@ public class IxPoiBusinessTime implements IRow {
 	public int getMesh() {
 		return mesh;
 	}
+
 	private String rowId;
+
 	public int getPoiPid() {
 		return poiPid;
 	}
@@ -143,12 +158,13 @@ public class IxPoiBusinessTime implements IRow {
 		this.poiPid = poiPid;
 	}
 
-
 	public String getRowId() {
 		return rowId;
 	}
-    private String memo;
-    private Map<String, Object> changedFields = new HashMap<String, Object>();   
+
+	private String memo;
+	private Map<String, Object> changedFields = new HashMap<String, Object>();
+
 	@Override
 	public String rowId() {
 		return rowId;
@@ -157,14 +173,13 @@ public class IxPoiBusinessTime implements IRow {
 	@Override
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
-		
+
 	}
 
 	@Override
 	public String tableName() {
 		return "ix_poi_businesstime";
 	}
-	
 
 	@Override
 	public ObjStatus status() {
@@ -175,7 +190,7 @@ public class IxPoiBusinessTime implements IRow {
 	@Override
 	public void setStatus(ObjStatus os) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -186,7 +201,7 @@ public class IxPoiBusinessTime implements IRow {
 	@Override
 	public void copy(IRow row) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -212,7 +227,6 @@ public class IxPoiBusinessTime implements IRow {
 		// TODO Auto-generated method stub
 		return "ix_poi";
 	}
-
 
 	public String getMemo() {
 		return memo;
@@ -245,44 +259,42 @@ public class IxPoiBusinessTime implements IRow {
 			if (json.get(key) instanceof JSONArray) {
 				continue;
 			} else {
-				if ( !"objStatus".equals(key)) {
-					
+				if (!"objStatus".equals(key)) {
+
 					Field field = this.getClass().getDeclaredField(key);
-					
+
 					field.setAccessible(true);
-					
+
 					Object objValue = field.get(this);
-					
+
 					String oldValue = null;
-					
-					if (objValue == null){
+
+					if (objValue == null) {
 						oldValue = "null";
-					}else{
+					} else {
 						oldValue = String.valueOf(objValue);
 					}
-					
+
 					String newValue = json.getString(key);
-					
-					if (!newValue.equals(oldValue)){
+
+					if (!newValue.equals(oldValue)) {
 						Object value = json.get(key);
-						
-						if(value instanceof String){
+
+						if (value instanceof String) {
 							changedFields.put(key, newValue.replace("'", "''"));
-						}
-						else{
+						} else {
 							changedFields.put(key, value);
 						}
 
 					}
 
-					
 				}
 			}
 		}
-		
-		if (changedFields.size() >0){
+
+		if (changedFields.size() > 0) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 
@@ -325,8 +337,7 @@ public class IxPoiBusinessTime implements IRow {
 	@Override
 	public void setMesh(int mesh) {
 		this.mesh = mesh;
-		
-	}
 
+	}
 
 }

@@ -15,31 +15,34 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+
 /**
  * 索引:POI 深度信息(景点类)
+ * 
  * @author zhaokk
  *
  */
 public class IxPoiAttraction implements IObj {
 
 	private int pid;
-	private int poiPid =0;
-	private int  sightLevel = 0;//景点等级
-	private String  longDescription  ;//景点介绍
-	private String   longDescripEng;//景点英文介绍
-	private String   ticketPrice ;//票价
-	private String  ticketPriceEng ;//英文版票价介绍
-	private String  openHour;//营业时间 
-	private String  openHourEng;//英文版的详细营业时间的文字描述
-	private String telephone ;//电话  
-	private String address ;//地址
-	private String city;//所属城市 
-	private String photoName;//照片名称
-	private int parking = 0;//停车服务
-	private int  travelguideFlag  = 0;//是 否 属 于travel  guide所需 POI
+	private int poiPid = 0;
+	private int sightLevel = 0;// 景点等级
+	private String longDescription;// 景点介绍
+	private String longDescripEng;// 景点英文介绍
+	private String ticketPrice;// 票价
+	private String ticketPriceEng;// 英文版票价介绍
+	private String openHour;// 营业时间
+	private String openHourEng;// 英文版的详细营业时间的文字描述
+	private String telephone;// 电话
+	private String address;// 地址
+	private String city;// 所属城市
+	private String photoName;// 照片名称
+	private int parking = 0;// 停车服务
+	private int travelguideFlag = 0;// 是 否 属 于travel guide所需 POI
 	private int mesh;
 	private String rowId;
-	
+	// 更新时间
+	private String uDate;
 
 	public int getMesh() {
 		return mesh;
@@ -48,15 +51,25 @@ public class IxPoiAttraction implements IObj {
 	public int getPoiPid() {
 		return poiPid;
 	}
+	
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
+	}
 
 	public void setPoiPid(int poiPid) {
 		this.poiPid = poiPid;
 	}
+
 	public String getRowId() {
 		return rowId;
 	}
- 
-    private Map<String, Object> changedFields = new HashMap<String, Object>();   
+
+	private Map<String, Object> changedFields = new HashMap<String, Object>();
+
 	@Override
 	public String rowId() {
 		return rowId;
@@ -65,14 +78,13 @@ public class IxPoiAttraction implements IObj {
 	@Override
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
-		
+
 	}
 
 	@Override
 	public String tableName() {
 		return "ix_poi_attraction";
 	}
-	
 
 	@Override
 	public ObjStatus status() {
@@ -88,13 +100,10 @@ public class IxPoiAttraction implements IObj {
 		this.pid = pid;
 	}
 
-	
-
-	
 	@Override
 	public void setStatus(ObjStatus os) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -105,7 +114,7 @@ public class IxPoiAttraction implements IObj {
 	@Override
 	public void copy(IRow row) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -144,11 +153,6 @@ public class IxPoiAttraction implements IObj {
 	public List<List<IRow>> children() {
 		return null;
 	}
-
-	
-
-	
-
 
 	public int getSightLevel() {
 		return sightLevel;
@@ -264,44 +268,42 @@ public class IxPoiAttraction implements IObj {
 			if (json.get(key) instanceof JSONArray) {
 				continue;
 			} else {
-				if ( !"objStatus".equals(key)) {
-					
+				if (!"objStatus".equals(key)) {
+
 					Field field = this.getClass().getDeclaredField(key);
-					
+
 					field.setAccessible(true);
-					
+
 					Object objValue = field.get(this);
-					
+
 					String oldValue = null;
-					
-					if (objValue == null){
+
+					if (objValue == null) {
 						oldValue = "null";
-					}else{
+					} else {
 						oldValue = String.valueOf(objValue);
 					}
-					
+
 					String newValue = json.getString(key);
-					
-					if (!newValue.equals(oldValue)){
+
+					if (!newValue.equals(oldValue)) {
 						Object value = json.get(key);
-						
-						if(value instanceof String){
+
+						if (value instanceof String) {
 							changedFields.put(key, newValue.replace("'", "''"));
-						}
-						else{
+						} else {
 							changedFields.put(key, value);
 						}
 
 					}
 
-					
 				}
 			}
 		}
-		
-		if (changedFields.size() >0){
+
+		if (changedFields.size() > 0) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 
@@ -344,7 +346,7 @@ public class IxPoiAttraction implements IObj {
 	@Override
 	public void setMesh(int mesh) {
 		this.mesh = mesh;
-		
+
 	}
 
 	@Override
@@ -363,6 +365,5 @@ public class IxPoiAttraction implements IObj {
 	public String primaryKey() {
 		return "attraction_id";
 	}
-
 
 }

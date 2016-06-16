@@ -21,35 +21,47 @@ import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * POI图标(3DICON)表
+ * 
  * @author zhangxiaolong
  *
  */
 public class IxPoiIcon implements IObj {
-	
+
 	private int pid;
-	
-	private int poiPid;//POI号码
-	
-	private String iconName;//图标文件名
-	
-	private Geometry geometry;//ICON坐标
-	
-	private String manageCode;//管理号
-	
-	private String clientFlag;//客户标识
-	
+
+	private int poiPid;// POI号码
+
+	private String iconName;// 图标文件名
+
+	private Geometry geometry;// ICON坐标
+
+	private String manageCode;// 管理号
+
+	private String clientFlag;// 客户标识
+
 	private String memo;
-	
+
 	private String rowId;
-	
+
+	// 更新时间
+	private String uDate;
+
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
-	
+
 	public int getPid() {
 		return pid;
 	}
 
 	public void setPid(int pid) {
 		this.pid = pid;
+	}
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
 	}
 
 	public int getPoiPid() {
@@ -172,57 +184,54 @@ public class IxPoiIcon implements IObj {
 
 			if (json.get(key) instanceof JSONArray) {
 				continue;
-			}  else if ("geometry".equals(key)) {
-				
+			} else if ("geometry".equals(key)) {
+
 				JSONObject geojson = json.getJSONObject(key);
-				
+
 				String wkt = Geojson.geojson2Wkt(geojson.toString());
-				
+
 				String oldwkt = GeoTranslator.jts2Wkt(geometry, 0.00001, 5);
-				
-				if(!wkt.equals(oldwkt))
-				{
+
+				if (!wkt.equals(oldwkt)) {
 					changedFields.put(key, json.getJSONObject(key));
 				}
-			}  else {
-				if ( !"objStatus".equals(key)) {
-					
+			} else {
+				if (!"objStatus".equals(key)) {
+
 					Field field = this.getClass().getDeclaredField(key);
-					
+
 					field.setAccessible(true);
-					
+
 					Object objValue = field.get(this);
-					
+
 					String oldValue = null;
-					
-					if (objValue == null){
+
+					if (objValue == null) {
 						oldValue = "null";
-					}else{
+					} else {
 						oldValue = String.valueOf(objValue);
 					}
-					
+
 					String newValue = json.getString(key);
-					
-					if (!newValue.equals(oldValue)){
+
+					if (!newValue.equals(oldValue)) {
 						Object value = json.get(key);
-						
-						if(value instanceof String){
+
+						if (value instanceof String) {
 							changedFields.put(key, newValue.replace("'", "''"));
-						}
-						else{
+						} else {
 							changedFields.put(key, value);
 						}
 
 					}
 
-					
 				}
 			}
 		}
-		
-		if (changedFields.size() >0){
+
+		if (changedFields.size() > 0) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
@@ -240,7 +249,7 @@ public class IxPoiIcon implements IObj {
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
 
 		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
-		
+
 		JSONObject json = JSONObject.fromObject(this, jsonConfig);
 
 		return json;

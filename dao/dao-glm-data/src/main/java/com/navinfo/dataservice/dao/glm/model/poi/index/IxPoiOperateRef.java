@@ -17,23 +17,38 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 /**
  * POI作业参考信息表
+ * 
  * @author 赵凯凯
  *
  */
 public class IxPoiOperateRef implements IRow {
-	
+
 	private int poiPid;
-	 
-	private int freshVerified =0;//鲜度验证
+
+	// 更新时间
+	private String uDate;
+
+	private int freshVerified = 0;// 鲜度验证
+
 	public String getRowId() {
 		return this.rowId();
 	}
 
-	private String rawFileds;//后期遗留字段
-	
+	private String rawFileds;// 后期遗留字段
+
 	public int getFreshVerified() {
 		return freshVerified;
 	}
+	
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
+	}
+
+
 
 	public void setFreshVerified(int freshVerified) {
 		this.freshVerified = freshVerified;
@@ -48,9 +63,9 @@ public class IxPoiOperateRef implements IRow {
 	}
 
 	private String rowId;
-	
+
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
-	
+
 	public int getPoiPid() {
 		return poiPid;
 	}
@@ -58,6 +73,7 @@ public class IxPoiOperateRef implements IRow {
 	public void setPoiPid(int poiPid) {
 		this.poiPid = poiPid;
 	}
+
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
 		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());

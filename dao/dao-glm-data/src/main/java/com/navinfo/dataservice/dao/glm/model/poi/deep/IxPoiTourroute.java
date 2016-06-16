@@ -15,45 +15,56 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+
 /**
- * 索引:POI 深度信息(旅游线路类) 
+ * 索引:POI 深度信息(旅游线路类)
+ * 
  * @author zhaokk
  *
  */
 public class IxPoiTourroute implements IObj {
 
 	private int pid;
-	private String tourName  ;//旅游路线名称 
-	private String tourNameEng  ;//旅游路线英文名称 
-	private String tourIntr ;//路线介绍 
-	private String tourIntrEng;//路线英文介绍 
-	private String tourType;//路线种类
-	private String tourTypeEng;//英文版路线种类 
-	private double  tourX  = 0;//路线引导点 X 坐标 
-	private double  tourY  = 0;//路线引导点 Y 坐标 
-	private double tourLen   ;//路线总长度  
-	private String trailTime  ;//路线耗时
-	private String visitTime  ;//游览耗时 
-	private String poiPid  ;//途径 POI 
+	private String tourName;// 旅游路线名称
+	private String tourNameEng;// 旅游路线英文名称
+	private String tourIntr;// 路线介绍
+	private String tourIntrEng;// 路线英文介绍
+	private String tourType;// 路线种类
+	private String tourTypeEng;// 英文版路线种类
+	private double tourX = 0;// 路线引导点 X 坐标
+	private double tourY = 0;// 路线引导点 Y 坐标
+	private double tourLen;// 路线总长度
+	private String trailTime;// 路线耗时
+	private String visitTime;// 游览耗时
+	private String poiPid;// 途径 POI
 	private String memo;
-	private String reserved;//预留字段
-	
-	private int  travelguideFlag  = 0;//是 否 属 于travel  guide所需 POI
+	private String reserved;// 预留字段
+
+	private int travelguideFlag = 0;// 是 否 属 于travel guide所需 POI
 	private int mesh;
 	private String rowId;
-	
-	
+
+	// 更新时间
+	private String uDate;
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
+	}
 
 	public int getMesh() {
 		return mesh;
 	}
 
-	
 	public String getRowId() {
 		return rowId;
 	}
- 
-    private Map<String, Object> changedFields = new HashMap<String, Object>();   
+
+	private Map<String, Object> changedFields = new HashMap<String, Object>();
+
 	@Override
 	public String rowId() {
 		return rowId;
@@ -62,156 +73,125 @@ public class IxPoiTourroute implements IObj {
 	@Override
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
-		
+
 	}
 
 	@Override
 	public String tableName() {
 		return "ix_poi_tourroute";
 	}
-	
-
-	
 
 	public String getTourName() {
 		return tourName;
 	}
 
-
 	public void setTourName(String tourName) {
 		this.tourName = tourName;
 	}
-
 
 	public String getTourNameEng() {
 		return tourNameEng;
 	}
 
-
 	public void setTourNameEng(String tourNameEng) {
 		this.tourNameEng = tourNameEng;
 	}
-
 
 	public String getTourIntr() {
 		return tourIntr;
 	}
 
-
 	public void setTourIntr(String tourIntr) {
 		this.tourIntr = tourIntr;
 	}
-
 
 	public String getTourIntrEng() {
 		return tourIntrEng;
 	}
 
-
 	public void setTourIntrEng(String tourIntrEng) {
 		this.tourIntrEng = tourIntrEng;
 	}
-
 
 	public String getTourType() {
 		return tourType;
 	}
 
-
 	public void setTourType(String tourType) {
 		this.tourType = tourType;
 	}
-
 
 	public String getTourTypeEng() {
 		return tourTypeEng;
 	}
 
-
 	public void setTourTypeEng(String tourTypeEng) {
 		this.tourTypeEng = tourTypeEng;
 	}
-
 
 	public double getTourX() {
 		return tourX;
 	}
 
-
 	public void setTourX(double tourX) {
 		this.tourX = tourX;
 	}
-
 
 	public double getTourY() {
 		return tourY;
 	}
 
-
 	public void setTourY(double tourY) {
 		this.tourY = tourY;
 	}
-
 
 	public double getTourLen() {
 		return tourLen;
 	}
 
-
 	public void setTourLen(double tourLen) {
 		this.tourLen = tourLen;
 	}
-
 
 	public String getTrailTime() {
 		return trailTime;
 	}
 
-
 	public void setTrailTime(String trailTime) {
 		this.trailTime = trailTime;
 	}
-
 
 	public String getVisitTime() {
 		return visitTime;
 	}
 
-
 	public void setVisitTime(String visitTime) {
 		this.visitTime = visitTime;
 	}
-
 
 	public String getPoiPid() {
 		return poiPid;
 	}
 
-
 	public void setPoiPid(String poiPid) {
 		this.poiPid = poiPid;
 	}
-
 
 	public String getMemo() {
 		return memo;
 	}
 
-
 	public void setMemo(String memo) {
 		this.memo = memo;
 	}
-
 
 	public String getReserved() {
 		return reserved;
 	}
 
-
 	public void setReserved(String reserved) {
 		this.reserved = reserved;
 	}
-
 
 	@Override
 	public ObjStatus status() {
@@ -227,13 +207,10 @@ public class IxPoiTourroute implements IObj {
 		this.pid = pid;
 	}
 
-	
-
-	
 	@Override
 	public void setStatus(ObjStatus os) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -244,7 +221,7 @@ public class IxPoiTourroute implements IObj {
 	@Override
 	public void copy(IRow row) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -283,6 +260,7 @@ public class IxPoiTourroute implements IObj {
 	public List<List<IRow>> children() {
 		return null;
 	}
+
 	public int getTravelguideFlag() {
 		return travelguideFlag;
 	}
@@ -301,44 +279,42 @@ public class IxPoiTourroute implements IObj {
 			if (json.get(key) instanceof JSONArray) {
 				continue;
 			} else {
-				if ( !"objStatus".equals(key)) {
-					
+				if (!"objStatus".equals(key)) {
+
 					Field field = this.getClass().getDeclaredField(key);
-					
+
 					field.setAccessible(true);
-					
+
 					Object objValue = field.get(this);
-					
+
 					String oldValue = null;
-					
-					if (objValue == null){
+
+					if (objValue == null) {
 						oldValue = "null";
-					}else{
+					} else {
 						oldValue = String.valueOf(objValue);
 					}
-					
+
 					String newValue = json.getString(key);
-					
-					if (!newValue.equals(oldValue)){
+
+					if (!newValue.equals(oldValue)) {
 						Object value = json.get(key);
-						
-						if(value instanceof String){
+
+						if (value instanceof String) {
 							changedFields.put(key, newValue.replace("'", "''"));
-						}
-						else{
+						} else {
 							changedFields.put(key, value);
 						}
 
 					}
 
-					
 				}
 			}
 		}
-		
-		if (changedFields.size() >0){
+
+		if (changedFields.size() > 0) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 
@@ -381,7 +357,7 @@ public class IxPoiTourroute implements IObj {
 	@Override
 	public void setMesh(int mesh) {
 		this.mesh = mesh;
-		
+
 	}
 
 	@Override
@@ -400,6 +376,5 @@ public class IxPoiTourroute implements IObj {
 	public String primaryKey() {
 		return "tour_id";
 	}
-
 
 }

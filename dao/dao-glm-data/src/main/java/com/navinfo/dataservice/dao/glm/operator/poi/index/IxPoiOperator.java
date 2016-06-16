@@ -104,7 +104,7 @@ public class IxPoiOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoi.tableName() + " set u_record=3,");
+		StringBuilder sb = new StringBuilder("update " + ixPoi.tableName() + " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
 
 		PreparedStatement pstmt = null;
 

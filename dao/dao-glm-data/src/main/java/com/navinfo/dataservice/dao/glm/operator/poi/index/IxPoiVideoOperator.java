@@ -64,7 +64,7 @@ public class IxPoiVideoOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiVideo.tableName() + " set u_record=3,");
+		StringBuilder sb = new StringBuilder("update " + ixPoiVideo.tableName() + " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
 
 		PreparedStatement pstmt = null;
 

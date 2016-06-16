@@ -60,7 +60,7 @@ public class IxPoiEntryImageOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiEntryimage.tableName() + " set u_record=3,");
+		StringBuilder sb = new StringBuilder("update " + ixPoiEntryimage.tableName() + " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
 
 		PreparedStatement pstmt = null;
 

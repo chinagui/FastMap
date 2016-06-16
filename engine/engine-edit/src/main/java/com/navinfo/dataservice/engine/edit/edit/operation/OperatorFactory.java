@@ -259,10 +259,10 @@ public class OperatorFactory {
 			return new AdNodeMeshOperator(conn, (AdNodeMesh)obj);
 		case IXPOI:
 			IxPoi poi = (IxPoi)obj;
-			IxPoiOperator ixPoiOperator = new IxPoiOperator(conn, poi);
 			if(StringUtils.isBlank(obj.rowId())){
-				obj.setRowId(UuidUtils.genUuid());
+				poi.setRowId(UuidUtils.genUuid());
 			}
+			IxPoiOperator ixPoiOperator = new IxPoiOperator(conn, poi);
 			ixPoiOperator.upatePoiStatus();
 			return ixPoiOperator;
 		default:

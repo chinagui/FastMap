@@ -4,20 +4,31 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.navinfo.dataservice.api.man.model.Grid;
-import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 
+import net.sf.json.JSONObject;
+
+@Service
 public class GridService {
+	private Logger log = LoggerRepos.getLogger(this.getClass());
+	
 	private GridService(){}
 	private static class SingletonHolder{
 		private static final GridService INSTANCE =new GridService();
@@ -27,7 +38,7 @@ public class GridService {
 	}
 	
 	public List<Grid> list()throws Exception{
-		String sql = "SELECT GRID_ID,REGION_ID,CITY_ID,BLOCK_ID FROM GRID WHERE REGION_ID IS NOT NULL";
+		String sql = "SELECT GRID_ID,REGION_ID,CITY_ID,BLOCK_ID FROM GRID";
 		QueryRunner run = new QueryRunner();
 		Connection conn = null;
 		try{
@@ -106,7 +117,7 @@ public class GridService {
 		@Override
 		public List<Grid> handle(ResultSet rs) throws SQLException {
 			List<Grid> results = new ArrayList<Grid>();
-			while(rs.next()){
+			if(rs.next()){
 				Grid g = new Grid();
 				g.setGridId(rs.getInt("GRID_ID"));
 				g.setRegionId(rs.getInt("REGION_ID"));
@@ -117,5 +128,28 @@ public class GridService {
 			return results;
 		}
 		
+	}
+	
+	public List<HashMap> quryListByAlloc(JSONObject json) throws ServiceException {
+		Connection conn = null;
+		try {
+
+			conn = DBConnector.getInstance().getManConnection();
+			//根据输入的几何wkt，计算几何包含的gird，目前只有方法，小文在实现中。。。
+			List<?> grids=(List<?>) CompGeometryUtil.geo2GridsWithoutBreak(GeometryUtils.getMulPointByWKT(json.getString("wkt")));
+
+			String selectSql = "select t.grid_id,s.status from subtask_grid_mapping t,subtask s where t.subtask_id=s.subtask_id "
+					+ "and s.stage="+json.getInt("stage")+"and s.type="+json.getInt("type");
+			StringBuffer InClause = buildInClause("t..grid_id",grids);
+			String sql=selectSql+InClause;
+	
+			return GridOperation.queryGirdBySql(conn, sql,grids);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询grid失败:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 }

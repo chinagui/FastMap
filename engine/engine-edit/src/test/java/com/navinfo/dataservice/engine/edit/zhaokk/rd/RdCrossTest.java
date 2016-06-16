@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.xiaolong.rd;
+package com.navinfo.dataservice.engine.edit.zhaokk.rd;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -25,5 +25,4 @@ public class RdCrossTest extends InitApplication{
 			e.printStackTrace();
 		}
 	}
-	
 }

@@ -1,10 +1,10 @@
-package com.navinfo.dataservice.engine.edit.rd;
+package com.navinfo.dataservice.engine.edit.zhaokk.ad;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
-import com.navinfo.dataservice.engine.edit.xiaolong.InitApplication;
 
 public class RdRestrictionTest extends InitApplication{
 	

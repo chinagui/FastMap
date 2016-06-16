@@ -41,7 +41,8 @@ public class IxPoiGasstationOperator implements IOperator {
 	private Connection conn;
 	private IxPoiGasstation ixPoiGasstation;
 
-	public IxPoiGasstationOperator(Connection conn, IxPoiGasstation ixPoiGasstation) {
+	public IxPoiGasstationOperator(Connection conn,
+			IxPoiGasstation ixPoiGasstation) {
 		this.conn = conn;
 		this.ixPoiGasstation = ixPoiGasstation;
 	}
@@ -76,14 +77,16 @@ public class IxPoiGasstationOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiGasstation.tableName()
-				+ " set u_record=3,");
+		StringBuilder sb = new StringBuilder("update "
+				+ ixPoiGasstation.tableName() + " set u_record=3,u_date="
+				+ StringUtils.getCurrentTime() + ",");
 
 		PreparedStatement pstmt = null;
 
 		try {
 
-			Set<Entry<String, Object>> set = ixPoiGasstation.changedFields().entrySet();
+			Set<Entry<String, Object>> set = ixPoiGasstation.changedFields()
+					.entrySet();
 
 			Iterator<Entry<String, Object>> it = set.iterator();
 
@@ -96,7 +99,8 @@ public class IxPoiGasstationOperator implements IOperator {
 
 				Object columnValue = en.getValue();
 
-				Field field = ixPoiGasstation.getClass().getDeclaredField(column);
+				Field field = ixPoiGasstation.getClass().getDeclaredField(
+						column);
 
 				field.setAccessible(true);
 
@@ -141,7 +145,7 @@ public class IxPoiGasstationOperator implements IOperator {
 						isChanged = true;
 					}
 
-				} 
+				}
 			}
 			sb.append(" where gasstation_id=" + ixPoiGasstation.getPid());
 
@@ -206,18 +210,19 @@ public class IxPoiGasstationOperator implements IOperator {
 		ixPoiGasstation.setRowId(UuidUtils.genUuid());
 		StringBuilder sb = new StringBuilder("insert into ");
 		sb.append(ixPoiGasstation.tableName());
-		sb.append("(gasstation_id, poi_pid, service_prov, fuel_type, oil_type, eg_type, mg_type, payment, service, memo,open_hour, photo_name, u_record,row_id) values (");
+		sb.append("(gasstation_id, poi_pid, service_prov, fuel_type, oil_type, eg_type, mg_type, payment, service, memo,open_hour, photo_name, u_date,u_record,row_id) values (");
 		sb.append(ixPoiGasstation.getPid());
 		sb.append("," + ixPoiGasstation.getPoiPid());
-		sb.append(",'" + ixPoiGasstation.getServiceProv()+"'");
-		sb.append(",'" + ixPoiGasstation.getFuelType()+"'");
-		sb.append(",'" + ixPoiGasstation.getOilType()+"'");
-		sb.append(",'" + ixPoiGasstation.getEgType()+"'");
-		sb.append(",'" + ixPoiGasstation.getPayment()+"'");
-		sb.append(",'" + ixPoiGasstation.getService()+"'");
-		sb.append(",'" + ixPoiGasstation.getMemo()+"'");
-		sb.append(",'" + ixPoiGasstation.getOpenHour()+"'");
-		sb.append(",'" + ixPoiGasstation.getPhotoName()+"'");
+		sb.append(",'" + ixPoiGasstation.getServiceProv() + "'");
+		sb.append(",'" + ixPoiGasstation.getFuelType() + "'");
+		sb.append(",'" + ixPoiGasstation.getOilType() + "'");
+		sb.append(",'" + ixPoiGasstation.getEgType() + "'");
+		sb.append(",'" + ixPoiGasstation.getPayment() + "'");
+		sb.append(",'" + ixPoiGasstation.getService() + "'");
+		sb.append(",'" + ixPoiGasstation.getMemo() + "'");
+		sb.append(",'" + ixPoiGasstation.getOpenHour() + "'");
+		sb.append(",'" + ixPoiGasstation.getPhotoName() + "'");
+		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiGasstation.rowId() + "')");
 		stmt.addBatch(sb.toString());
 	}
@@ -230,7 +235,9 @@ public class IxPoiGasstationOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiGasstation.tableName() + " set u_record=2 where gasstation_id   =" + ixPoiGasstation.getPid();
+		String sql = "update " + ixPoiGasstation.tableName()
+				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where gasstation_id   ="
+				+ ixPoiGasstation.getPid();
 		stmt.addBatch(sql);
 	}
 

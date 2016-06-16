@@ -39,8 +39,7 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class IxPoiHotelOperator implements IOperator {
 
-	private static Logger logger = Logger
-			.getLogger(IxPoiHotelOperator.class);
+	private static Logger logger = Logger.getLogger(IxPoiHotelOperator.class);
 
 	private Connection conn;
 	private IxPoiHotel ixPoiHotel;
@@ -81,13 +80,15 @@ public class IxPoiHotelOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 		StringBuilder sb = new StringBuilder("update " + ixPoiHotel.tableName()
-				+ " set u_record=3,");
+				+ " set u_record=3,u_date=" + StringUtils.getCurrentTime()
+				+ ",");
 
 		PreparedStatement pstmt = null;
 
 		try {
 
-			Set<Entry<String, Object>> set = ixPoiHotel.changedFields().entrySet();
+			Set<Entry<String, Object>> set = ixPoiHotel.changedFields()
+					.entrySet();
 
 			Iterator<Entry<String, Object>> it = set.iterator();
 
@@ -145,7 +146,7 @@ public class IxPoiHotelOperator implements IOperator {
 						isChanged = true;
 					}
 
-				} 
+				}
 			}
 			sb.append(" where hotel_id   =" + ixPoiHotel.getPid());
 
@@ -210,11 +211,11 @@ public class IxPoiHotelOperator implements IOperator {
 		ixPoiHotel.setRowId(UuidUtils.genUuid());
 		StringBuilder sb = new StringBuilder("insert into ");
 		sb.append(ixPoiHotel.tableName());
-		sb.append("(hotel_id, poi_pid, credit_card, rating, checkin_time, checkout_time, room_count, room_type, room_price, breakfast, service, parking, long_description, long_descrip_eng, open_hour, open_hour_eng, telephone, address, city, photo_name, travelguide_flag, u_record, row_id) values (");
+		sb.append("(hotel_id, poi_pid, credit_card, rating, checkin_time, checkout_time, room_count, room_type, room_price, breakfast, service, parking, long_description, long_descrip_eng, open_hour, open_hour_eng, telephone, address, city, photo_name, travelguide_flag, u_date,u_record, row_id) values (");
 		sb.append(ixPoiHotel.getPid());
 		sb.append(",'" + ixPoiHotel.getPoiPid() + "'");
 		sb.append(",'" + ixPoiHotel.getCreditCard() + "'");
-		sb.append("," + ixPoiHotel.getRating() );
+		sb.append("," + ixPoiHotel.getRating());
 		sb.append(",'" + ixPoiHotel.getCheckinTime() + "'");
 		sb.append(",'" + ixPoiHotel.getCheckoutTime() + "'");
 		sb.append("," + ixPoiHotel.getRoomCount());
@@ -232,6 +233,7 @@ public class IxPoiHotelOperator implements IOperator {
 		sb.append(",'" + ixPoiHotel.getCity() + "'");
 		sb.append(",'" + ixPoiHotel.getPhotoName() + "'");
 		sb.append("," + ixPoiHotel.getTravelguideFlag());
+		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiHotel.rowId() + "')");
 		stmt.addBatch(sb.toString());
 	}
@@ -244,7 +246,9 @@ public class IxPoiHotelOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiHotel.tableName() + " set u_record=2 where   hotel_id     =" + ixPoiHotel.getPid();
+		String sql = "update " + ixPoiHotel.tableName()
+				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where   hotel_id     ="
+				+ ixPoiHotel.getPid();
 		stmt.addBatch(sql);
 	}
 

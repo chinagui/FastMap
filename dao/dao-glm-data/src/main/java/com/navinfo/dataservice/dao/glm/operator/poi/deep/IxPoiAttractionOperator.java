@@ -44,7 +44,8 @@ public class IxPoiAttractionOperator implements IOperator {
 	private Connection conn;
 	private IxPoiAttraction ixPoiAttraction;
 
-	public IxPoiAttractionOperator(Connection conn, IxPoiAttraction ixPoiAttraction) {
+	public IxPoiAttractionOperator(Connection conn,
+			IxPoiAttraction ixPoiAttraction) {
 		this.conn = conn;
 		this.ixPoiAttraction = ixPoiAttraction;
 	}
@@ -79,14 +80,16 @@ public class IxPoiAttractionOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiAttraction.tableName()
-				+ " set u_record=3,");
+		StringBuilder sb = new StringBuilder("update "
+				+ ixPoiAttraction.tableName() + " set u_record=3,u_date="
+				+ StringUtils.getCurrentTime() + ",");
 
 		PreparedStatement pstmt = null;
 
 		try {
 
-			Set<Entry<String, Object>> set = ixPoiAttraction.changedFields().entrySet();
+			Set<Entry<String, Object>> set = ixPoiAttraction.changedFields()
+					.entrySet();
 
 			Iterator<Entry<String, Object>> it = set.iterator();
 
@@ -99,7 +102,8 @@ public class IxPoiAttractionOperator implements IOperator {
 
 				Object columnValue = en.getValue();
 
-				Field field = ixPoiAttraction.getClass().getDeclaredField(column);
+				Field field = ixPoiAttraction.getClass().getDeclaredField(
+						column);
 
 				field.setAccessible(true);
 
@@ -144,7 +148,7 @@ public class IxPoiAttractionOperator implements IOperator {
 						isChanged = true;
 					}
 
-				} 
+				}
 			}
 			sb.append(" where attraction_id   =" + ixPoiAttraction.getPid());
 
@@ -209,22 +213,23 @@ public class IxPoiAttractionOperator implements IOperator {
 		ixPoiAttraction.setRowId(UuidUtils.genUuid());
 		StringBuilder sb = new StringBuilder("insert into ");
 		sb.append(ixPoiAttraction.tableName());
-		sb.append("(attraction_id, poi_pid, sight_level, long_description, long_descrip_eng, ticket_price, ticket_price_eng, open_hour, open_hour_eng, telephone, address, city, photo_name, parking, travelguide_flag,  u_record, row_id) values (");
+		sb.append("(attraction_id, poi_pid, sight_level, long_description, long_descrip_eng, ticket_price, ticket_price_eng, open_hour, open_hour_eng, telephone, address, city, photo_name, parking, travelguide_flag,u_date,  u_record, row_id) values (");
 		sb.append(ixPoiAttraction.getPid());
 		sb.append("," + ixPoiAttraction.getPoiPid());
 		sb.append("," + ixPoiAttraction.getSightLevel());
-		sb.append(",'" + ixPoiAttraction.getLongDescription()+"'");
-		sb.append(",'"  + ixPoiAttraction.getLongDescripEng()+"'");
-		sb.append(",'"  + ixPoiAttraction.getTicketPrice()+"'");
-		sb.append(",'"  + ixPoiAttraction.getTicketPriceEng()+"'");
-		sb.append(",'"  + ixPoiAttraction.getOpenHour()+"'");
-		sb.append(",'" + ixPoiAttraction.getOpenHourEng()+"'");
-		sb.append(",'" + ixPoiAttraction.getTelephone()+"'");
-		sb.append(",'" + ixPoiAttraction.getAddress()+"'");
-		sb.append(",'" + ixPoiAttraction.getCity()+"'");
-		sb.append(",'" + ixPoiAttraction.getPhotoName()+"'");
+		sb.append(",'" + ixPoiAttraction.getLongDescription() + "'");
+		sb.append(",'" + ixPoiAttraction.getLongDescripEng() + "'");
+		sb.append(",'" + ixPoiAttraction.getTicketPrice() + "'");
+		sb.append(",'" + ixPoiAttraction.getTicketPriceEng() + "'");
+		sb.append(",'" + ixPoiAttraction.getOpenHour() + "'");
+		sb.append(",'" + ixPoiAttraction.getOpenHourEng() + "'");
+		sb.append(",'" + ixPoiAttraction.getTelephone() + "'");
+		sb.append(",'" + ixPoiAttraction.getAddress() + "'");
+		sb.append(",'" + ixPoiAttraction.getCity() + "'");
+		sb.append(",'" + ixPoiAttraction.getPhotoName() + "'");
 		sb.append("," + ixPoiAttraction.getParking());
 		sb.append("," + ixPoiAttraction.getTravelguideFlag());
+		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiAttraction.rowId() + "')");
 		stmt.addBatch(sb.toString());
 	}
@@ -237,7 +242,9 @@ public class IxPoiAttractionOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiAttraction.tableName() + " set u_record=2 where attraction_id    =" + ixPoiAttraction.getPid();
+		String sql = "update " + ixPoiAttraction.tableName()
+				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where attraction_id    ="
+				+ ixPoiAttraction.getPid();
 		stmt.addBatch(sql);
 	}
 

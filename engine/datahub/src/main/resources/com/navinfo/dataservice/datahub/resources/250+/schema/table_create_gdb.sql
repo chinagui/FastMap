@@ -11,7 +11,7 @@
 --drop index IDX_RAW_COMMIT;
 
 --drop index IDX_RAW_TASK;
--- temp modify:ix_poi,ni_val_exception,add ix_poi_operate_ref,ix_poi_photo
+-- temp modify:ix_poi,ni_val_exception,ix_poi_photo
 
 /*==============================================================*/
 /* Table: ACH_GDB_INFO                                          */
@@ -6072,6 +6072,10 @@ create table CK_EXCEPTION  (
    MEMO_1               VARCHAR2(500),
    MEMO_2               VARCHAR2(500),
    MEMO_3               VARCHAR2(500),
+   U_RECORD             NUMBER(2)                      default 0 not null
+       check (U_RECORD in (0,1,2,3)),
+   U_DATE               VARCHAR2(14),
+   ROW_ID               RAW(16),
    constraint PK_CK_EXCEPTION primary key (EXCEPTION_ID)
 );
 
@@ -10937,17 +10941,6 @@ comment on column IX_POI_VIDEO.U_RECORD is
 
 comment on column IX_POI_VIDEO.U_FIELDS is
 '记录更新的英文字段名,多个之间采用半角''|''分隔';
-/*==============================================================*/
-/* Table: IX_POSTCODE                                           */
-/*==============================================================*/
-CREATE TABLE IX_POI_OPERATE_REF (
-	POI_PID NUMBER(10) NOT NULL,
-	FRESH_VERIFIED NUMBER(1) DEFAULT 0 NOT NULL
-	  CHECK(FRESH_VERIFIED IN (0,1)),
-	RAW_FIELDS VARCHAR2(30),
-	constraint IXPOI_OPEREF foreign key (POI_PID)
-         references IX_POI (PID)
-);
 
 /*==============================================================*/
 /* Table: IX_POSTCODE                                           */

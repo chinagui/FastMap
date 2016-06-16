@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -59,15 +61,15 @@ public class JobServiceTest {
 	public void hello_003(){
 		Glm glm = GlmCache.getInstance().getGlm("250+");
 		Map<String,GlmTable> tables = glm.getEditTables();
-		
+		List<String> tableNames = glm.getEditTableNames(GlmTable.FEATURE_TYPE_ALL);
 		for(String name:tables.keySet()){
-			System.out.println("INSERT INTO GLM_TABLE VALUES(GLM_TABLE_SEQ.NEXTVAL,'"+name+"',NULL,0,0,'240+');");
-//			GlmTable table = tables.get(name);
+			System.out.println(name);
 //			List<GlmColumn> cols = table.getColumns();
 //			for(GlmColumn col:cols){
 //				System.out.println("--"+col.getName()+":"+col.getDataType()+":"+col.isPk());
 //			}
 		}
+		System.out.println(StringUtils.join(tableNames,","));
 		System.out.println("Over.");
 	}
 }

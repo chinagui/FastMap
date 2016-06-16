@@ -70,11 +70,11 @@ public abstract class AbstractJobRequest {
 			if(attValue instanceof String){
 				argtypes = new Class[]{String.class};
 			}else if(attValue instanceof Integer){
-				argtypes= new Class[]{Integer.class};
+				argtypes= new Class[]{int.class};
 			}else if(attValue instanceof Double){
-				argtypes = new Class[]{Double.class};
+				argtypes = new Class[]{double.class};
 			}else if(attValue instanceof Boolean){
-				argtypes= new Class[]{Boolean.class};
+				argtypes= new Class[]{boolean.class};
 			}else if(attValue instanceof JSONArray){
 				JSONArray attArr = (JSONArray)attValue;
 				if(attArr.size()>0){

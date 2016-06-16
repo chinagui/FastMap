@@ -10,12 +10,12 @@ import net.sf.json.JSONObject;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.datahub.service.DatahubApiImpl;
 import com.navinfo.dataservice.engine.edit.export.GdbDataExporter;
-import com.navinfo.dataservice.engine.man.region.Region;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 
 public class GdbExportScriptsInterface {

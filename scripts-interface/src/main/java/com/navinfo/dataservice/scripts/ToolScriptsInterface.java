@@ -70,11 +70,11 @@ public class ToolScriptsInterface {
 			//初始化context
 			JobScriptsInterface.initContext();
 			//
-			if("init_regiondb".equals(itype)){
+			if("initRegiondb".equals(itype)){
 				request = readJson(dir+"request"+File.separator+"init_regiondb.json");
 				response = InitRegionDbScriptsInterface.execute(request);
 				writeJson(response,dir+"response"+File.separator+"init_regiondb.json");
-			}else if("init_desgdb".equals(itype)){
+			}else if("initDesgdb".equals(itype)){
 				request = readJson(dir+"request"+File.separator+"init_desgdb.json");
 				response = InitDesgdbScriptsInterface.execute(request);
 				writeJson(response,dir+"response"+File.separator+"init_desgdb.json");

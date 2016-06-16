@@ -69,13 +69,14 @@ public class AssembleFullCopySql{
 		try {
 			conn=sourceSchema.getPoolDataSource().getConnection();
 			for (String tableName : tables) {
+				String rename = (tableRenames!=null&&tableRenames.containsKey(tableName))?tableRenames.get(tableName):tableName;
 				String columnSelect=getSelectColumnString(conn,tableName);
 				if(StringUtils.isEmpty(columnSelect))continue;
 				ExpSQL expSQL = new ExpSQL();
 				// expSQL.setSql("create table " + tableName +
 				// " as select * from " +
 				// tableName + "@" + dbLinkName);
-				expSQL.setSql("INSERT /*+ append */ INTO " + tableRenames.get(tableName) + " select "+columnSelect+" from " + tableName + "@" + dbLinkName);
+				expSQL.setSql("INSERT /*+ append */ INTO " + rename + " select "+columnSelect+" from " + tableName + "@" + dbLinkName);
 				expSQLs.add(expSQL);
 			}
 		} catch (Exception e) {

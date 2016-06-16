@@ -27,7 +27,7 @@ public class GridService {
 	}
 	
 	public List<Grid> list()throws Exception{
-		String sql = "SELECT GRID_ID,REGION_ID,CITY_ID,BLOCK_ID FROM GRID";
+		String sql = "SELECT GRID_ID,REGION_ID,CITY_ID,BLOCK_ID FROM GRID WHERE REGION_ID IS NOT NULL";
 		QueryRunner run = new QueryRunner();
 		Connection conn = null;
 		try{
@@ -106,7 +106,7 @@ public class GridService {
 		@Override
 		public List<Grid> handle(ResultSet rs) throws SQLException {
 			List<Grid> results = new ArrayList<Grid>();
-			if(rs.next()){
+			while(rs.next()){
 				Grid g = new Grid();
 				g.setGridId(rs.getInt("GRID_ID"));
 				g.setRegionId(rs.getInt("REGION_ID"));

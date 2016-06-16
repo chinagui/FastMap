@@ -15,8 +15,8 @@ import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.engine.man.city.CityOperation;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
-import com.navinfo.dataservice.engine.man.task.Task;
 import com.navinfo.dataservice.commons.json.JsonOperation;
+import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -116,7 +116,8 @@ public class TaskService {
 					String key = (String) keys.next();
 					if ("cityId".equals(key)) {selectSql+=" and city_id="+conditionJson.getInt(key);}
 					if ("createUserId".equals(key)) {selectSql+=" and create_user_id="+conditionJson.getInt(key);}
-					if ("descp".equals(key)) {selectSql+=" and descp="+conditionJson.getString(key);}
+					if ("descp".equals(key)) {selectSql+=" and descp='"+conditionJson.getString(key)+"'";}
+					if ("name".equals(key)) {selectSql+=" and name='"+conditionJson.getString(key)+"'";}
 					if ("status".equals(key)) {selectSql+=" and status="+conditionJson.getInt(key);}
 					}
 				}
@@ -152,8 +153,6 @@ public class TaskService {
 	public HashMap<String,String> close(List<Integer> taskidList)throws Exception{
 		Connection conn = null;
 		try{
-			//持久化
-			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();	
 			
 			String taskIdStr=taskidList.toString().replace("[", "").replace("]", "").replace("\"", "");

@@ -7,16 +7,6 @@ public class LogDetail {
 
 	private String opId;
 
-	private String obNm;
-
-	private String obPk;
-
-	private int obPid;
-
-	private int opbTp;
-
-	private int obTp;
-
 	private String tbNm;
 
 	private String oldValue;
@@ -52,46 +42,6 @@ public class LogDetail {
 
 	public void setOpId(String opId) {
 		this.opId = opId;
-	}
-
-	public String getObNm() {
-		return obNm;
-	}
-
-	public void setObNm(String obNm) {
-		this.obNm = obNm;
-	}
-
-	public String getObPk() {
-		return obPk;
-	}
-
-	public void setObPk(String obPk) {
-		this.obPk = obPk;
-	}
-
-	public int getObPid() {
-		return obPid;
-	}
-
-	public void setObPid(int obPid) {
-		this.obPid = obPid;
-	}
-
-	public int getOpbTp() {
-		return opbTp;
-	}
-
-	public void setOpbTp(int opbTp) {
-		this.opbTp = opbTp;
-	}
-
-	public int getObTp() {
-		return obTp;
-	}
-
-	public void setObTp(int obTp) {
-		this.obTp = obTp;
 	}
 
 	public String getTbNm() {

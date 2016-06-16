@@ -49,7 +49,13 @@ public class SolrController {
 
 		doc.addField("t_command", json.getInt("t_command"));
 
+		doc.addField("t_cStatus", json.getInt("t_cStatus"));
+		
+		doc.addField("t_dStatus", json.getInt("t_dStatus"));
+		
 		doc.addField("handler", json.getInt("handler"));
+		
+		doc.addField("t_mStatus", json.getInt("t_mStatus"));
 
 		doc.addField("s_sourceCode", json.getInt("s_sourceCode"));
 

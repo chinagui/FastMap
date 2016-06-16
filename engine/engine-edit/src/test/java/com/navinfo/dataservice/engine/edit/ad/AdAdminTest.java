@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.edit.ad;
 
+import org.junit.Before;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -7,15 +9,18 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
+import com.navinfo.dataservice.engine.edit.xiaolong.InitApplication;
 
 import net.sf.json.JSONObject;
 
-public class AdAdminTest {
-
-
-	public AdAdminTest() {
+public class AdAdminTest extends InitApplication{
+	
+	@Override
+	@Before
+	public void init() {
+		initContext();
 	}
-
+	
 	public void testAdd() {
 		String parameter = "{\"command\":\"CREATE\",\"type\":\"ADADMIN\",\"projectId\":11,\"data\":{\"longitude\":116.39552235603331,\"latitude\":39.90676527744907,\"linkPid\":625962}}";
 		Transaction t = new Transaction(parameter);

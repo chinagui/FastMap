@@ -389,7 +389,7 @@ public class CompGridUtil {
 	 * @param meshId
 	 * @return
 	 */
-	private static Set<String> mesh2Grid(String meshId){
+	public static Set<String> mesh2Grid(String meshId){
 		
 		Set<String> grids = new HashSet<String>();
 		

@@ -3,9 +3,6 @@ package com.navinfo.dataservice.engine.man.task;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +12,7 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.Page;
@@ -56,6 +54,7 @@ public class TaskOperation {
 					while(rs.next()){
 						HashMap map = new HashMap();
 						map.put("taskId", rs.getInt("TASK_ID"));
+						map.put("name", rs.getString("NAME"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
 						map.put("createDate", DateUtils.dateToString(rs.getTimestamp("CREATE_DATE")));
@@ -109,6 +108,7 @@ public class TaskOperation {
 					while(rs.next()){
 						Task map = new Task();
 						map.setTaskId(rs.getInt("TASK_ID"));
+						map.setName(rs.getString("NAME"));
 						map.setCityId(rs.getInt("CITY_ID"));
 						map.setCreateUserId(rs.getInt("CREATE_USER_ID"));
 						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
@@ -151,13 +151,13 @@ public class TaskOperation {
 	public static void insertTask(Connection conn,Task bean) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			String createSql = "insert into task (TASK_ID,CITY_ID, CREATE_USER_ID, CREATE_DATE, STATUS, DESCP, "
+			String createSql = "insert into task (TASK_ID,NAME,CITY_ID, CREATE_USER_ID, CREATE_DATE, STATUS, DESCP, "
 					+ "COLLECT_PLAN_START_DATE, COLLECT_PLAN_END_DATE, DAY_EDIT_PLAN_START_DATE, "
 					+ "DAY_EDIT_PLAN_END_DATE, B_MONTH_EDIT_PLAN_START_DATE, B_MONTH_EDIT_PLAN_END_DATE, "
 					+ "C_MONTH_EDIT_PLAN_START_DATE, C_MONTH_EDIT_PLAN_END_DATE, DAY_PRODUCE_PLAN_START_DATE, "
 					+ "DAY_PRODUCE_PLAN_END_DATE, MONTH_PRODUCE_PLAN_START_DATE, MONTH_PRODUCE_PLAN_END_DATE, "
 					+ "LATEST) "
-					+ "values(TASK_SEQ.NEXTVAL,"+bean.getCityId()+","+bean.getCreateUserId()+",sysdate,1,'"
+					+ "values(TASK_SEQ.NEXTVAL,'"+bean.getName()+"',"+bean.getCityId()+","+bean.getCreateUserId()+",sysdate,1,'"
 					+  bean.getDescp()+"',"+ bean.getCollectPlanStartDate()
 					+","+ bean.getCollectPlanEndDate()+","+ bean.getDayEditPlanStartDate()
 					+","+ bean.getDayEditPlanEndDate()+","+  bean.getBMonthEditPlanStartDate()
@@ -183,6 +183,11 @@ public class TaskOperation {
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" DESCP=? ";
 				values.add(bean.getDescp());
+			};
+			if (bean!=null&&bean.getName()!=null && StringUtils.isNotEmpty(bean.getName().toString())){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql+=" NAME=? ";
+				values.add(bean.getName());
 			};
 			if (bean!=null&&bean.getCollectPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanStartDate().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}

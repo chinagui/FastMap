@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.man.block;
+package com.navinfo.dataservice.api.man.model;
 
 /** 
 * @ClassName:  Block 

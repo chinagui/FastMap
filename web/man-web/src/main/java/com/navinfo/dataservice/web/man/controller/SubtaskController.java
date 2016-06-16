@@ -350,7 +350,7 @@ public class SubtaskController extends BaseController {
 			JSONArray subtaskArray=dataJson.getJSONArray("subtasks");
 			List<Subtask> subtaskList = new ArrayList<Subtask>();
 			for(int i = 0;i<subtaskArray.size();i++){
-				Subtask subtask = (Subtask)JSONObject.toBean(subtaskArray.getJSONObject(i), Subtask.class);
+				Subtask subtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);
 				subtaskList.add(subtask);
 			}
 			
@@ -387,17 +387,26 @@ public class SubtaskController extends BaseController {
 			
 			JSONArray subtaskIds = dataJson.getJSONArray("subtaskIds");
 			
-			List<Subtask> subtaskArray = new ArrayList<Subtask>();
+			List<Integer> subtaskIdList = (List<Integer>)JSONArray.toCollection(subtaskIds,Integer.class); 
 			
-			for(int i = 0;i<subtaskIds.size();i++){
-				Subtask subtask = new Subtask();
-				subtask.setSubtaskId(subtaskIds.getInt(i));
-				subtaskArray.add(subtask);
+//			List<Subtask> subtaskArray = new ArrayList<Subtask>();
+//			
+//			for(int i = 0;i<subtasks.size();i++){
+//				Subtask subtask = (Subtask)JSONObject.toBean(subtasks.getJSONObject(i), Subtask.class);
+//				subtaskArray.add(subtask);
+//			}
+//			
+//			List<Integer> unClosedSubtaskList = service.close(subtaskArray);
+			
+			List<Integer> unClosedSubtaskList = service.close(subtaskIdList);
+			
+			if(unClosedSubtaskList.isEmpty()){
+				return new ModelAndView("jsonView", success("关闭成功"));
+			}else{
+				return new ModelAndView("jsonView", success(unClosedSubtaskList));
 			}
 			
-			service.close(subtaskArray);
 			
-			return new ModelAndView("jsonView", success("关闭成功"));
 		}catch(Exception e){
 			log.error("批量关闭失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

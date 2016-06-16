@@ -37,6 +37,10 @@
 	</dependency>
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>api-statics</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>commons</artifactId>
 	</dependency>
 	

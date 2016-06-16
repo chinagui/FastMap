@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -12,16 +14,26 @@ import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.BlockMan;
 import com.navinfo.navicommons.exception.ServiceException;
+
+import net.sf.json.JSONArray;
+
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import org.apache.commons.lang.StringUtils;
+
+import com.navinfo.dataservice.api.statics.model.GridStatInfo;
+import com.navinfo.dataservice.api.statics.iface.StaticsApi;
+
 
 
 /** 
@@ -553,36 +565,67 @@ public class SubtaskService {
 	 * 关闭多个子任务。
 	 * 参数：Subtask对象列表，List<Subtask>
 	 */
-	public void close(List<Subtask> subtaskArray)throws ServiceException{
+	public List<Integer> close(List<Integer> subtaskIdList)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();	
+			conn = DBConnector.getInstance().getManConnection();
+			
+			//根据subtaskId列表获取包含subtask type,status,gridIds信息的List<Subtask>
+			List<Subtask> subtaskList = SubtaskOperation.getSubtaskListByIdList(conn,subtaskIdList);
+	    	
+	    	List<Integer> unClosedSubtaskList = new ArrayList<Integer>();
+	    	List<Integer> closedSubtaskList = new ArrayList<Integer>();
+	    	
+	    	StaticsApi staticsApi = (StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+	    	
+	    	for(int i = 0;i<subtaskList.size();i++){
+	    		//采集
+	    		if(0==subtaskList.get(i).getStage()){
+	    			//判断采集任务是否可关闭
+	    			Boolean flg =  SubtaskOperation.isCollectReadyToClose(staticsApi,subtaskList.get(i));
+	    			if(flg){
+	    				closedSubtaskList.add(subtaskList.get(i).getSubtaskId());
+	    			}else{
+	    				unClosedSubtaskList.add(subtaskList.get(i).getSubtaskId());
+	    			}
+	    		}
+	    		
+	    		//日编
+	    		else if(1==subtaskList.get(i).getStage()){
+	    			//判断日编任务是否可关闭
+	    			Boolean flg =  SubtaskOperation.isDailyEditReadyToClose(staticsApi,subtaskList.get(i));
+	    			if(flg){
+	    				closedSubtaskList.add(subtaskList.get(i).getSubtaskId());
+	    			}else{
+	    				unClosedSubtaskList.add(subtaskList.get(i).getSubtaskId());
+	    			}
+	    		}
+	    		
+	    		//月编
+	    		else if(1==subtaskList.get(i).getStage()){
+	    			//判断月编任务是否可关闭
+	    			Boolean flg =  SubtaskOperation.isMonthlyEditReadyToClose(staticsApi,subtaskList.get(i));
+	    			if(flg){
+	    				closedSubtaskList.add(subtaskList.get(i).getSubtaskId());
+	    			}else{
+	    				unClosedSubtaskList.add(subtaskList.get(i).getSubtaskId());
+	    			}
+	    		}
+	    	}
+	    	
+	    	//根据subtaskId列表关闭subtask
+	    	if(!closedSubtaskList.isEmpty()){
+	    		SubtaskOperation.closeBySubtaskList(conn,closedSubtaskList);
+	    	}
 
-			String subtaskStr = "(";
-			
-			for(int i =0; i<subtaskArray.size(); i++){
-				subtaskStr += subtaskArray.get(i).getSubtaskId();
-				if(i < (subtaskArray.size()- 1)){
-					subtaskStr += ",";
-				}
-			}
-			
-			subtaskStr += ")";
-						
-			String updateSql = "update SUBTASK "
-					+ "set STATUS=0 "
-					+ "where SUBTASK_ID in"
-					+ subtaskStr;	
-			
-
-			run.update(conn,updateSql);
+			return unClosedSubtaskList;
 			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("修改失败，原因为:"+e.getMessage(),e);
+			throw new ServiceException("关闭失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}

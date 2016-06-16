@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.man.city;
+package com.navinfo.dataservice.api.man.model;
 
 import java.io.Serializable;
 

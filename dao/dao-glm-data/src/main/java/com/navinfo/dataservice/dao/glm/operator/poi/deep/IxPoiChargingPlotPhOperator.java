@@ -21,11 +21,12 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiBuilding;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingPlot;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingPlotPh;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchOperator;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
- * 索引:POI 深度信息(充电桩类)操作
+ *索引:POI 深度信息(充电桩类-照片)操作
  * 
  * @author zhaokk
  * 
@@ -36,11 +37,11 @@ public class IxPoiChargingPlotPhOperator implements IOperator {
 			.getLogger(IxPoiChargingPlotPhOperator.class);
 
 	private Connection conn;
-	private IxPoiChargingPlot ixPoiChargingPlot;
+	private IxPoiChargingPlotPh ixPoiChargingPlotPh;
 
-	public IxPoiChargingPlotPhOperator(Connection conn, IxPoiChargingPlot ixPoiChargingPlot) {
+	public IxPoiChargingPlotPhOperator(Connection conn,IxPoiChargingPlotPh ixPoiChargingPlotPh) {
 		this.conn = conn;
-		this.ixPoiChargingPlot = ixPoiChargingPlot;
+		this.ixPoiChargingPlotPh = ixPoiChargingPlotPh;
 	}
 
 	@Override
@@ -73,14 +74,14 @@ public class IxPoiChargingPlotPhOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiChargingPlot.tableName()
+		StringBuilder sb = new StringBuilder("update " + ixPoiChargingPlotPh.tableName()
 				+ " set u_record=3,");
 
 		PreparedStatement pstmt = null;
 
 		try {
 
-			Set<Entry<String, Object>> set = ixPoiChargingPlot.changedFields().entrySet();
+			Set<Entry<String, Object>> set = ixPoiChargingPlotPh.changedFields().entrySet();
 
 			Iterator<Entry<String, Object>> it = set.iterator();
 
@@ -93,11 +94,11 @@ public class IxPoiChargingPlotPhOperator implements IOperator {
 
 				Object columnValue = en.getValue();
 
-				Field field = ixPoiChargingPlot.getClass().getDeclaredField(column);
+				Field field = ixPoiChargingPlotPh.getClass().getDeclaredField(column);
 
 				field.setAccessible(true);
 
-				Object value = field.get(ixPoiChargingPlot);
+				Object value = field.get(ixPoiChargingPlotPh);
 
 				column = StringUtils.toColumnName(column);
 
@@ -140,7 +141,7 @@ public class IxPoiChargingPlotPhOperator implements IOperator {
 
 				} 
 			}
-			sb.append(" where row_id=hextoraw('" + ixPoiChargingPlot.getRowId() + "')");
+			sb.append(" where row_id=hextoraw('" + ixPoiChargingPlotPh.getRowId() + "')");
 
 			String sql = sb.toString();
 
@@ -200,35 +201,13 @@ public class IxPoiChargingPlotPhOperator implements IOperator {
 
 	@Override
 	public void insertRow2Sql(Statement stmt) throws Exception {
-		ixPoiChargingPlot.setRowId(UuidUtils.genUuid());
+		ixPoiChargingPlotPh.setRowId(UuidUtils.genUuid());
 		StringBuilder sb = new StringBuilder("insert into ");
-		sb.append(ixPoiChargingPlot.tableName());
-		sb.append("(poi_pid, group_id, count, acdc, plug_type, power, voltage, \"current\", \"mode\", memo, plug_num, prices, open_type, available_state, manufacturer, factory_num, plot_num, product_num, parking_num, floor, location_type, payment, u_record,row_id) values (");
-		
-		sb.append(ixPoiChargingPlot.getPoiPid());
-		sb.append("," + ixPoiChargingPlot.getGroupId());
-		sb.append("," + ixPoiChargingPlot.getCount() );
-		sb.append("," + ixPoiChargingPlot.getAcdc() );
-		sb.append(",'" + ixPoiChargingPlot.getPlugType()+"'" );
-		sb.append(",'" + ixPoiChargingPlot.getPower()+"'");
-		sb.append(",'" + ixPoiChargingPlot.getVoltage()+"'");
-		sb.append(",'" + ixPoiChargingPlot.getCurrent()+"'");
-		sb.append("," + ixPoiChargingPlot.getMode());
-		sb.append(",'" + ixPoiChargingPlot.getMemo()+"'");
-		sb.append("," + ixPoiChargingPlot.getPlugNum());
-		sb.append(",'" + ixPoiChargingPlot.getPrices()+"'");
-		sb.append(",'" + ixPoiChargingPlot.getOpenType()+"'");
-		sb.append("," + ixPoiChargingPlot.getAvailableState());
-		sb.append(",'" + ixPoiChargingPlot.getManufacturer()+"'");
-		sb.append(",'" + ixPoiChargingPlot.getFactoryNum()+"'");
-		sb.append(",'" + ixPoiChargingPlot.getPlotNum()+"'");
-		sb.append(",'" + ixPoiChargingPlot.getProductNum()+"'");
-		sb.append(",'" + ixPoiChargingPlot.getParkingNum()+"'");
-		sb.append("," + ixPoiChargingPlot.getFloor());
-		sb.append("," + ixPoiChargingPlot.getLocationType());
-		sb.append(",'" + ixPoiChargingPlot.getPayment()+"'");
-
-		sb.append(",1,'" + ixPoiChargingPlot.rowId() + "')");
+		sb.append(ixPoiChargingPlotPh.tableName());
+		sb.append("(poi_pid, photo_name,u_record,row_id) values (");
+		sb.append(ixPoiChargingPlotPh.getPoiPid());
+		sb.append(",'" + ixPoiChargingPlotPh.getPhotoName()+"'");
+		sb.append(",1,'" + ixPoiChargingPlotPh.rowId() + "')");
 
 		stmt.addBatch(sb.toString());
 	}
@@ -242,7 +221,7 @@ public class IxPoiChargingPlotPhOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		
-		String sql = "update " + ixPoiChargingPlot.tableName() + " set u_record=2 where row_id=hextoraw('" + ixPoiChargingPlot.rowId()
+		String sql = "update " + ixPoiChargingPlotPh.tableName() + " set u_record=2 where row_id=hextoraw('" + ixPoiChargingPlotPh.rowId()
 				+ "')";
 		stmt.addBatch(sql);
 	}

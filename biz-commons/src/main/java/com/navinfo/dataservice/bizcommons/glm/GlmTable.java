@@ -13,6 +13,7 @@ import java.util.Set;
  */
 public class GlmTable {
     protected String name;
+    protected int featureType;
     protected boolean editable;
 	//主键字段无顺序
 	protected Set<GlmColumn> pks;
@@ -27,6 +28,12 @@ public class GlmTable {
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	public int getFeatureType() {
+		return featureType;
+	}
+	public void setFeatureType(int featureType) {
+		this.featureType = featureType;
 	}
 	public boolean isEditable() {
 		return editable;

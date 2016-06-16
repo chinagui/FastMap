@@ -206,7 +206,6 @@ public class IxPoiVideoOperator implements IOperator {
 				+ "')";
 
 		stmt.addBatch(sql);
-
 	}
 
 }

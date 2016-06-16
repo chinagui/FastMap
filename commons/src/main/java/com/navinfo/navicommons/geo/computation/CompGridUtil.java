@@ -383,13 +383,12 @@ public class CompGridUtil {
 		}
 		return meshes;
 	}
-	
 	/**
 	 * 计算图幅内所有的grid号
 	 * @param meshId
 	 * @return
 	 */
-	private static Set<String> mesh2Grid(String meshId){
+	public static Set<String> mesh2Grid(String meshId){
 		
 		Set<String> grids = new HashSet<String>();
 		

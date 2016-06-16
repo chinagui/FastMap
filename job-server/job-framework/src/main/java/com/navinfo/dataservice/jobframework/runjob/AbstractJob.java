@@ -122,7 +122,7 @@ public abstract class AbstractJob implements Runnable {
 	}
 	private void response(String stepMsg,int status)throws JobException{
 		Map<String,Object> data = new HashMap<String,Object>();
-		data.put("exeStatus", String.valueOf(status));
+		data.put("exeStatus", status);
 		response(stepMsg,data);
 	}
 	

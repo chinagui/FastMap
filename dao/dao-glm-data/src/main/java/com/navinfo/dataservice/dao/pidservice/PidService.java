@@ -1547,4 +1547,158 @@ public class PidService {
 		return pid;
 
 	}
+
+	/**
+	 * 申请PoiIconId
+	 */
+	public synchronized int applyPoiIconId() throws Exception {
+
+		Connection conn = null;
+
+		int pid = 0;
+		try {
+			conn = PidServicePool.getInstance().getConnection();
+
+			conn.setAutoCommit(false);
+
+			String pidRange = PidServiceUtils.getPidRange(conn,
+					PidSequenceName.poiIconIdName);
+
+			if (pidRange != null) {
+				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
+
+				if (prc.getPid() != -1) {
+					PidServiceUtils.updatePidRange(conn,
+							PidSequenceName.poiIconIdName, prc.getPidRange());
+
+					pid = prc.getPid();
+				} else {
+					// 剩餘範圍不足,需要從ID分配器搬運新的PID
+					pid = PidServiceUtils.transportPid(conn, 5000,
+							PidSequenceName.poiIconIdName);
+				}
+			} else {
+				// 不存在對應的序列,報錯且拋出異常
+
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.poiIconIdName);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return pid;
+
+	}
+
+	/**
+	 * 申请PoiAttractionId
+	 */
+	public synchronized int applyPoiAttractionId() throws Exception {
+
+		Connection conn = null;
+
+		int pid = 0;
+		try {
+			conn = PidServicePool.getInstance().getConnection();
+
+			conn.setAutoCommit(false);
+
+			String pidRange = PidServiceUtils.getPidRange(conn,
+					PidSequenceName.poiAttractionIdName);
+
+			if (pidRange != null) {
+				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
+
+				if (prc.getPid() != -1) {
+					PidServiceUtils.updatePidRange(conn,
+							PidSequenceName.poiAttractionIdName, prc.getPidRange());
+
+					pid = prc.getPid();
+				} else {
+					// 剩餘範圍不足,需要從ID分配器搬運新的PID
+					pid = PidServiceUtils.transportPid(conn, 5000,
+							PidSequenceName.poiAttractionIdName);
+				}
+			} else {
+				// 不存在對應的序列,報錯且拋出異常
+
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.poiAttractionIdName);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return pid;
+
+	}
+
+	/**
+	 * 申请PoiRestaurantId
+	 */
+	public synchronized int applyPoiRestaurantId() throws Exception {
+
+		Connection conn = null;
+
+		int pid = 0;
+		try {
+			conn = PidServicePool.getInstance().getConnection();
+
+			conn.setAutoCommit(false);
+
+			String pidRange = PidServiceUtils.getPidRange(conn,
+					PidSequenceName.poiRestaurantIdName);
+
+			if (pidRange != null) {
+				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
+
+				if (prc.getPid() != -1) {
+					PidServiceUtils.updatePidRange(conn,
+							PidSequenceName.poiRestaurantIdName, prc.getPidRange());
+
+					pid = prc.getPid();
+				} else {
+					// 剩餘範圍不足,需要從ID分配器搬運新的PID
+					pid = PidServiceUtils.transportPid(conn, 5000,
+							PidSequenceName.poiRestaurantIdName);
+				}
+			} else {
+				// 不存在對應的序列,報錯且拋出異常
+
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.poiRestaurantIdName);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return pid;
+
+	}
+	
 }

@@ -8,6 +8,8 @@ import com.navinfo.dataservice.bizcommons.glm.Glm;
 import com.navinfo.dataservice.bizcommons.glm.GlmCache;
 import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculator;
 import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculatorFactory;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -39,10 +41,11 @@ public class NiValExceptionOperator {
 		this.conn = conn;
 
 		this.projectId = projectId;
+		this.gdbVersion=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 
-		ProjectSelector selector = new ProjectSelector();
+		//ProjectSelector selector = new ProjectSelector();
 
-		this.gdbVersion = selector.getGdbVersion(projectId);
+		//this.gdbVersion = selector.getGdbVersion(projectId);
 	}
 
 	public void insertCheckLogGrid(String md5, String targets) throws Exception {
@@ -54,7 +57,7 @@ public class NiValExceptionOperator {
 
 		String value = StringUtils.removeBlankChar(targets);
 
-		String insertSql = "INSERT INTO NI_VAL_EXCEPTION_GRID (CK_RESULT_ID,GRID_ID) VALUES (?,?)";
+		String insertSql = "INSERT INTO NI_VAL_EXCEPTION_GRID (CK_MD5_CODE,GRID_ID) VALUES (?,?)";
 
 		PreparedStatement stmt = null;
 		try {
@@ -92,7 +95,7 @@ public class NiValExceptionOperator {
 	public void insertCheckLog(String ruleId, String loc, String targets,
 			int meshId, String worker) throws Exception {
 
-		String sql = "merge into ni_val_exception a using ( select * from ( select :1 as RESERVED from dual) where RESERVED not in ( select RESERVED          from ni_val_exception          where RESERVED is not null        union all        select RESERVED          from ck_exception          where RESERVED is not null          )) b on (a.RESERVED = b.reserved) when not matched then   insert     (RESERVED, ruleid, information, location, targets, mesh_id, worker, row_id, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, :10, sysdate, sysdate)";
+		String sql = "merge into ni_val_exception a using ( select * from ( select :1 as MD5_CODE from dual) where MD5_CODE not in ( select MD5_CODE          from ni_val_exception          where MD5_CODE is not null        union all        select MD5_CODE          from ck_exception          where MD5_CODE is not null          )) b on (a.MD5_CODE = b.MD5_CODE) when not matched then   insert     (MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 
 		try {
@@ -115,9 +118,7 @@ public class NiValExceptionOperator {
 
 			pstmt.setString(8, worker);
 
-			pstmt.setString(9, UuidUtils.genUuid());
-
-			pstmt.setInt(10, 1);
+			pstmt.setInt(9, 1);
 
 			int res = pstmt.executeUpdate();
 
@@ -147,7 +148,7 @@ public class NiValExceptionOperator {
 	public void insertCheckLog(String ruleId, String loc, String targets,
 			int meshId, String log, String worker) throws Exception {
 
-		String sql = "merge into ni_val_exception a using ( select * from ( select :1 as RESERVED from dual) where RESERVED not in ( select RESERVED          from ni_val_exception          where RESERVED is not null        union all        select RESERVED          from ck_exception          where RESERVED is not null          )) b on (a.RESERVED = b.reserved) when not matched then   insert     (RESERVED, ruleid, information, location, targets, mesh_id, worker, row_id, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, :10, sysdate, sysdate)";
+		String sql = "merge into ni_val_exception a using ( select * from ( select :1 as MD5_CODE from dual) where MD5_CODE not in ( select MD5_CODE          from ni_val_exception          where MD5_CODE is not null        union all        select MD5_CODE          from ck_exception          where MD5_CODE is not null          )) b on (a.MD5_CODE = b.MD5_CODE) when not matched then   insert     (MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 
 		try {
@@ -169,9 +170,7 @@ public class NiValExceptionOperator {
 
 			pstmt.setString(8, worker);
 
-			pstmt.setString(9, UuidUtils.genUuid());
-
-			pstmt.setInt(10, 1);
+			pstmt.setInt(9, 1);
 
 			int res = pstmt.executeUpdate();
 
@@ -201,7 +200,7 @@ public class NiValExceptionOperator {
 	public void deleteNiValException(String tableName, int pid)
 			throws Exception {
 
-		String sql = "delete from ni_val_exception a where exists (select null from ck_result_object b where a.reserved=b.ck_result_id and b.table_name=? and b.pid=?)";
+		String sql = "delete from ni_val_exception a where exists (select null from ck_result_object b where a.MD5_CODE=b.ck_md5_code and b.table_name=? and b.pid=?)";
 
 		PreparedStatement pstmt = null;
 
@@ -217,7 +216,7 @@ public class NiValExceptionOperator {
 
 			pstmt.close();
 			
-			sql = "delete from NI_VAL_EXCEPTION_GRID a where exists (select null from ck_result_object b where a.CK_RESULT_ID=b.ck_result_id and b.table_name=? and b.pid=?)";
+			sql = "delete from NI_VAL_EXCEPTION_GRID a where exists (select null from ck_result_object b where a.ck_md5_code=b.ck_md5_code and b.table_name=? and b.pid=?)";
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -229,7 +228,7 @@ public class NiValExceptionOperator {
 			
 			pstmt.close();
 
-			sql = "delete from ck_result_object a where a.ck_result_id in (select b.ck_result_id from ck_result_object b where b.table_name=? and b.pid=?)";
+			sql = "delete from ck_result_object a where a.ck_md5_code in (select b.ck_md5_code from ck_result_object b where b.table_name=? and b.pid=?)";
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -257,13 +256,13 @@ public class NiValExceptionOperator {
 	 * 修改检查结果状态为例外、确认已修改、确认不修改 确认已修改进ni_val_exception_history表
 	 * 例外、确认不修改就ck_exception表
 	 * 
-	 * @param reserved
+	 * @param md5
 	 * @param projectId
 	 * @param type
 	 *            1例外，2确认不修改，3确认已修改
 	 * @throws Exception
 	 */
-	public void updateCheckLogStatus(String reserved, int type)
+	public void updateCheckLogStatus(String md5, int type)
 			throws Exception {
 
 		conn.setAutoCommit(false);
@@ -277,11 +276,11 @@ public class NiValExceptionOperator {
 			String sql = "";
 
 			if (type == 3) {
-				sql = "insert into ni_val_exception_history select * from ni_val_exception a where a.reserved=:1";
+				sql = "insert into ni_val_exception_history select * from ni_val_exception a where a.MD5_CODE=:1";
 
 				pstmt = conn.prepareStatement(sql);
 
-				pstmt.setString(1, reserved);
+				pstmt.setString(1, md5);
 
 				pstmt.executeUpdate();
 
@@ -291,7 +290,7 @@ public class NiValExceptionOperator {
 				NiValExceptionSelector selector = new NiValExceptionSelector(
 						conn);
 
-				NiValException exception = selector.loadById(reserved, false);
+				NiValException exception = selector.loadById(md5, false);
 
 				CkException ckexception = new CkException();
 
@@ -305,7 +304,7 @@ public class NiValExceptionOperator {
 
 				ckexception.setRowId(UuidUtils.genUuid());
 
-				sql = "insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, reserved, extended, task_id, qa_task_id, qa_status, worker, qa_worker, u_date, row_id, u_record) select :1,ruleid, task_name,:2,groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, mesh_id, scope_flag, province_name, map_scale, reserved, extended, task_id, qa_task_id, qa_status, worker, qa_worker, u_date,:3,1 from ni_val_exception a where a.reserved=:4";
+				sql = "insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, reserved, extended, task_id, qa_task_id, qa_status, worker, qa_worker, u_date, row_id, u_record) select :1,ruleid, task_name,:2,groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, mesh_id, scope_flag, province_name, map_scale, null, extended, task_id, qa_task_id, qa_status, worker, qa_worker, u_date,:3,1 from ni_val_exception a where a.MD5_CODE=:4";
 
 				pstmt = conn.prepareStatement(sql);
 				
@@ -315,19 +314,19 @@ public class NiValExceptionOperator {
 				
 				pstmt.setString(3, ckexception.rowId());
 
-				pstmt.setString(4, reserved);
+				pstmt.setString(4, md5);
 
 				pstmt.executeUpdate();
 
 				pstmt.close();
 				
-				sql = "insert into ck_exception_grid select :1,grid_id from NI_VAL_EXCEPTION_GRID where ck_result_id=:2";
+				sql = "insert into ck_exception_grid select :1,grid_id from NI_VAL_EXCEPTION_GRID where ck_md5_code=:2";
 
 				pstmt = conn.prepareStatement(sql);
 				
 				pstmt.setString(1, ckexception.rowId());
 
-				pstmt.setString(2, reserved);
+				pstmt.setString(2, md5);
 
 				pstmt.executeUpdate();
 				
@@ -340,31 +339,31 @@ public class NiValExceptionOperator {
 
 			}
 
-			sql = "delete from ni_val_exception where reserved=:1";
+			sql = "delete from ni_val_exception where MD5_CODE=:1";
 
 			pstmt = conn.prepareStatement(sql);
 
-			pstmt.setString(1, reserved);
+			pstmt.setString(1, md5);
 
 			pstmt.executeUpdate();
 
 			pstmt.close();
 
-			sql = "delete from ck_result_object where ck_result_id=:1";
+			sql = "delete from ck_result_object where ck_md5_code=:1";
 
 			pstmt = conn.prepareStatement(sql);
 
-			pstmt.setString(1, reserved);
+			pstmt.setString(1, md5);
 
 			pstmt.executeUpdate();
 			
 			pstmt.close();
 
-			sql = "delete from NI_VAL_EXCEPTION_GRID where ck_result_id=:1";
+			sql = "delete from NI_VAL_EXCEPTION_GRID where ck_md5_code=:1";
 
 			pstmt = conn.prepareStatement(sql);
 
-			pstmt.setString(1, reserved);
+			pstmt.setString(1, md5);
 
 			pstmt.executeUpdate();
 

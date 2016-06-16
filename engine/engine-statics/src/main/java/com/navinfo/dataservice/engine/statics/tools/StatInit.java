@@ -4,8 +4,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 
-public  class StatInit {
-	
+public class StatInit {
+
 	/**
 	 * 初始化datahub 连接环境
 	 */

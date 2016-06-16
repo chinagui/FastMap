@@ -45,10 +45,10 @@ public class InitRegionDbScriptsInterface {
 	public static JSONObject execute(JSONObject request) throws Exception{
 		JSONObject response = new JSONObject();
 		try {
-			String fmgdbId = (String) request.get("fmgdbId");
-			Assert.notNull(fmgdbId, "fmgdbId不能为空");
-			String fmMetaId = (String) request.get("fmMetaId");
-			Assert.notNull(fmMetaId, "fmMetaId不能为空");
+			int fmgdbId = request.getInt("fmgdbId");//get如果没取到会报错
+//			Assert.notNull(fmgdbId, "fmgdbId不能为空");
+			int fmMetaId = request.getInt("fmMetaId");
+//			Assert.notNull(fmMetaId, "fmMetaId不能为空");
 			String userNamePrefix = (String) request.get("userNamePrefix");
 			Assert.notNull(userNamePrefix, "userNamePrefix不能为空");
 			String gdbVersion = (String) request.get("gdbVersion");
@@ -59,6 +59,7 @@ public class InitRegionDbScriptsInterface {
 			//得到图幅号
 			Map<Integer,Set<String>> regionGridMap = new HashMap<Integer,Set<String>>();
 			for(Grid g:grids){
+				System.out.println(g.getGridId()+":"+g.getRegionId()+":"+g.getCityId()+":"+g.getBlockId());
 				Integer rid=g.getRegionId();
 				String gid = String.valueOf(g.getGridId());
 				Set<String> set =regionGridMap.get(rid);
@@ -79,15 +80,19 @@ public class InitRegionDbScriptsInterface {
 				req1.put("userPasswd", userNamePrefix+"_d_"+key);
 				req1.put("bizType", "regionRoad");
 				req1.put("descp", "region db");
-				req1.put("gdbVersion", "250+");
+				req1.put("gdbVersion", gdbVersion);
 				info1.setRequest(req1);
 				AbstractJob job1 = JobCreateStrategy.createAsMethod(info1);
 				job1.run();
+				if(job1.getJobInfo().getResponse().getInt("exeStatus")!=3){
+					throw new Exception("job1执行失败");
+				}
 				int dbDay = job1.getJobInfo().getResponse().getInt("outDbId");
-				response.put("region_"+key+"_day", dbDay);
+				response.put("region_"+key+"_day_db", dbDay);
 				JobInfo info2 = new JobInfo(0,"");
 				info2.setType("gdbExport");
 				JSONObject req2 = new JSONObject();
+				req2.put("gdbVersion", gdbVersion);
 				req2.put("sourceDbId", fmgdbId);
 				req2.put("condition", ExportConfig.CONDITION_BY_MESH);
 				req2.put("conditionParams", JSONArray.fromObject(meshes));
@@ -97,6 +102,13 @@ public class InitRegionDbScriptsInterface {
 				info2.setRequest(req2);
 				AbstractJob job2 = JobCreateStrategy.createAsMethod(info2);
 				job2.run();
+				if(job2.getJobInfo().getResponse().getInt("exeStatus")!=3){
+					throw new Exception("job2执行失败");
+				}
+				response.put("region_"+key+"_day_exp", "success");
+				//给日库和月库安装包
+				installPckUtils(dbDay);
+				response.put("region_"+key+"_day_utils", "success");
 				//创建月db
 				JobInfo info3 = new JobInfo(0, "");
 				info3.setType("createDb");
@@ -106,10 +118,13 @@ public class InitRegionDbScriptsInterface {
 				req3.put("userPasswd", userNamePrefix+"_m_"+key);
 				req3.put("bizType", "regionRoad");
 				req3.put("descp", "region db");
-				req3.put("gdbVersion", "250+");
+				req3.put("gdbVersion", gdbVersion);
 				info3.setRequest(req3);
 				AbstractJob job3 = JobCreateStrategy.createAsMethod(info3);
 				job3.run();
+				if(job3.getJobInfo().getResponse().getInt("exeStatus")!=3){
+					throw new Exception("job3执行失败");
+				}
 				int dbMonth = job3.getJobInfo().getResponse().getInt("outDbId");
 				response.put("region_"+key+"_month", dbMonth);
 				JobInfo info4 = new JobInfo(0,"");
@@ -117,10 +132,16 @@ public class InitRegionDbScriptsInterface {
 				JSONObject req4 = new JSONObject();
 				req4.put("sourceDbId", fmgdbId);
 				req4.put("targetDbId", dbDay);
+				req4.put("gdbVersion", gdbVersion);
 				info4.setRequest(req4);
 				AbstractJob job4 = JobCreateStrategy.createAsMethod(info4);
 				job4.run();
-				response.put("region_"+key, "success");
+				if(job4.getJobInfo().getResponse().getInt("exeStatus")!=3){
+					throw new Exception("job4执行失败");
+				}
+				response.put("region_"+key+"_month_exp", "success");
+				installPckUtils(dbMonth);
+				response.put("region_"+key+"_month_utils", "success");
 			}
 			response.put("msg", "执行成功");
 		} catch (Exception e) {
@@ -128,6 +149,25 @@ public class InitRegionDbScriptsInterface {
 			throw e;
 		}
 		return response;
+	}
+	
+	private static void installPckUtils(int dbId)throws Exception{
+		Connection conn = null;
+		try{
+			DbInfo db = DbService.getInstance()
+					.getDbById(dbId);
+			DbConnectConfig connConfig = MultiDataSourceFactory.createConnectConfig(db.getConnectParam());
+			conn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
+			String sqlFile = "/com/navinfo/dataservice/scripts/resources/prj_utils.sql";
+			SqlExec sqlExec = new SqlExec(conn);
+			sqlExec.executeIgnoreError(sqlFile);
+			String pckFile = "/com/navinfo/dataservice/scripts/resources/prj_utils.pck";
+			PackageExec packageExec = new PackageExec(conn);
+			packageExec.execute(pckFile);
+			conn.commit();
+		}finally{
+			DbUtils.closeQuietly(conn);
+		}
 	}
 
 }

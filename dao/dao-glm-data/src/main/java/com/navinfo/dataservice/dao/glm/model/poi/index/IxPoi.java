@@ -361,6 +361,17 @@ public class IxPoi implements IObj {
 	
 	public Map<String, IxPoiCarrental> carrentalMap = new HashMap<String, IxPoiCarrental>();
 	
+	private List<IRow> operateRefs = new ArrayList<IRow>();
+	public  Map <String, IxPoiOperateRef> operateRefMap = new HashMap<String, IxPoiOperateRef>();
+	
+	public List<IRow> getOperateRefs() {
+		return operateRefs;
+	}
+
+	public void setOperateRefs(List<IRow> operateRefs) {
+		this.operateRefs = operateRefs;
+	}
+
 	public int getPid() {
 		return pid;
 	}
@@ -1526,6 +1537,23 @@ public class IxPoi implements IObj {
 						carrentals.add(row);
 					}
 					break;
+				case "operateRefs":
+
+					operateRefs.clear();
+
+					ja = json.getJSONArray(key);
+
+					for (int i = 0; i < ja.size(); i++) {
+						JSONObject jo = ja.getJSONObject(i);
+
+						IxPoiOperateRef row = new IxPoiOperateRef();
+
+						row.Unserialize(jo);
+
+						operateRefs.add(row);
+					}
+					break;
+					
 				case "restaurants":
 
 					restaurants.clear();

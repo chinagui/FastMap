@@ -14,10 +14,12 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.navicommons.database.QueryRunner;
 
 
@@ -63,7 +65,7 @@ public class GlmCache {
 			//1. 先确定加载哪些表
 			String ignore = SystemConfigFactory.getSystemConfig().getValue("glm.ignore.table.prefix");
 			StringBuilder loadSql = new StringBuilder();
-			loadSql.append("SELECT TABLE_NAME,EDITABLE FROM GLM_TABLE WHERE GDB_VERSION=?");
+			loadSql.append("SELECT TABLE_NAME,FEATURE_TYPE,EDITABLE FROM GLM_TABLE WHERE GDB_VERSION=?");
 			if(StringUtils.isNotEmpty(ignore)){
 				Set<String> ignoreSqlSet = new HashSet<String>();
 				for(String prefix:ignore.split(",")){
@@ -72,14 +74,14 @@ public class GlmCache {
 				loadSql.append(" AND ");
 				loadSql.append(StringUtils.join(ignoreSqlSet," AND "));
 			}
-			Map<String,Integer> names = runner.query(manConn, loadSql.toString(), new ResultSetHandler<Map<String,Integer>>(){
+			Map<String,int[]> names = runner.query(manConn, loadSql.toString(), new ResultSetHandler<Map<String,int[]>>(){
 				@Override
-				public Map<String,Integer> handle(ResultSet rs)throws SQLException{
-					Map<String,Integer> set = new HashMap<String,Integer>();;
+				public Map<String,int[]> handle(ResultSet rs)throws SQLException{
+					Map<String,int[]> set = new HashMap<String,int[]>();;
 					while(rs.next()){
 						String tableName = rs.getString("TABLE_NAME");
 					
-						set.put(rs.getString("TABLE_NAME"),rs.getInt("EDITABLE"));
+						set.put(rs.getString("TABLE_NAME"),new int[]{rs.getInt("FEATURE_TYPE"),rs.getInt("EDITABLE")});
 					}
 					return set;
 				}
@@ -120,7 +122,9 @@ public class GlmCache {
 				//赋可编辑状态
 				for(String key:tables.keySet()){
 					GlmTable table = tables.get(key);
-					table.setEditable((names.get(key)==1?true:false));
+					int[] v = names.get(key);
+					table.setFeatureType(v[0]);
+					table.setEditable(v[1]==1?true:false);
 				}
 				//load pks
 				StringBuilder pkSql = new StringBuilder();
@@ -176,7 +180,7 @@ public class GlmCache {
 	}
 	
 	public static void main(String[] args){
-		Glm glm = GlmCache.getInstance().getGlm("240+");
+		Glm glm = GlmCache.getInstance().getGlm("250+");
 		Map<String,GlmTable> tables = glm.getEditTables();
 		
 		for(String name:tables.keySet()){

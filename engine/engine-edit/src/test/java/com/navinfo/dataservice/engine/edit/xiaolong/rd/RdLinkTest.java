@@ -10,9 +10,9 @@ import org.junit.Test;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.rd.utils.RdLinkSearchUtils;
-import com.navinfo.dataservice.engine.edit.xiaolong.InitApplication;
 
 public class RdLinkTest extends InitApplication{
 	

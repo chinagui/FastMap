@@ -170,11 +170,12 @@ public class SubtaskController extends BaseController {
 				HashMap<String, Object> subtask = new HashMap<String, Object>();
 				page.setTotalCount(subtaskList.size());
 				subtask.put("subtaskId", subtaskList.get(i).getSubtaskId());
+				subtask.put("subtaskName", subtaskList.get(i).getName());
 				subtask.put("geometry", subtaskList.get(i).getGeometry());
 				subtask.put("stage", subtaskList.get(i).getStage());
 				subtask.put("type", subtaskList.get(i).getType());
-				subtask.put("planStartDate", subtaskList.get(i).getPlanStartDate());
-				subtask.put("planEndDate", subtaskList.get(i).getPlanEndDate());
+				subtask.put("planStartDate", DateUtils.dateToString(subtaskList.get(i).getPlanStartDate()));
+				subtask.put("planEndDate", DateUtils.dateToString(subtaskList.get(i).getPlanEndDate()));
 				subtask.put("descp", subtaskList.get(i).getDescp());
 				if (subtaskList.get(i).getBlock()!=null && StringUtils.isNotEmpty(subtaskList.get(i).getBlock().toString())){
 					subtask.put("blockId", subtaskList.get(i).getBlock().getBlockId());
@@ -193,6 +194,7 @@ public class SubtaskController extends BaseController {
 				if (subtaskList.get(i).getTask()!=null && StringUtils.isNotEmpty(subtaskList.get(i).getTask().toString())){
 					subtask.put("taskId", subtaskList.get(i).getTask().getTaskId());
 					subtask.put("taskDescp", subtaskList.get(i).getTask().getDescp());
+					subtask.put("taskName", subtaskList.get(i).getTask().getName());
 					if(0 == bean.getStage()){
 						subtask.put("TaskCollectPlanStartDate", subtaskList.get(i).getTask().getCollectPlanStartDate());
 						subtask.put("TaskCollectPlanEndDate", subtaskList.get(i).getTask().getCollectPlanEndDate());
@@ -265,6 +267,8 @@ public class SubtaskController extends BaseController {
 				subtask.put("planStartDate", DateUtils.dateToString(subtaskList.get(i).getPlanStartDate()));
 				subtask.put("planEndDate", DateUtils.dateToString(subtaskList.get(i).getPlanEndDate()));
 				subtask.put("descp", subtaskList.get(i).getDescp());
+				subtask.put("status", subtaskList.get(i).getStatus());
+				subtask.put("dbId", subtaskList.get(i).getDbId());
 				if(0==snapshot){
 					subtask.put("geometry", subtaskList.get(i).getGeometry());
 					subtask.put("gridIds", subtaskList.get(i).getGridIds());

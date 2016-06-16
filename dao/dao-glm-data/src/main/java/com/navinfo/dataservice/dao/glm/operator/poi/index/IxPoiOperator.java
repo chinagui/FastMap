@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -104,7 +106,10 @@ public class IxPoiOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoi.tableName() + " set u_record=3,");
+		Date sysDate = new Date();
+		SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+		String dateStr = df.format(sysDate);
+		StringBuilder sb = new StringBuilder("update " + ixPoi.tableName() + " set u_record=3,u_date='" + dateStr +"',");
 
 		PreparedStatement pstmt = null;
 

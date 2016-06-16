@@ -140,20 +140,14 @@ public class IxPoiAddressOperator implements IOperator {
 
 	@Override
 	public void deleteRow() throws Exception {
-		String sql = "update " + ixPoiAddress.tableName() + " set u_record=:1,u_date=:3 where name_id=:2";
-
-		PreparedStatement pstmt = null;
+		Statement stmt = null;
 
 		try {
-			pstmt = conn.prepareStatement(sql);
+			stmt = conn.createStatement();
 
-			pstmt.setInt(1, 2);
+			this.deleteRow2Sql(stmt);
 
-			pstmt.setInt(2, ixPoiAddress.getPid());
-			
-			pstmt.setString(3, StringUtils.getCurrentTime());
-
-			pstmt.executeUpdate();
+			stmt.executeBatch();
 
 		} catch (Exception e) {
 
@@ -161,13 +155,12 @@ public class IxPoiAddressOperator implements IOperator {
 
 		} finally {
 			try {
-				if (pstmt != null) {
-					pstmt.close();
+				if (stmt != null) {
+					stmt.close();
 				}
 			} catch (Exception e) {
 
 			}
-
 		}
 
 	}

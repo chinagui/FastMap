@@ -243,7 +243,7 @@ public class IxPoiOperator implements IOperator {
 				+ "LABEL, TYPE, ADDRESS_FLAG, EX_PRIORITY, EDITION_FLAG, POI_MEMO, "
 				+ "OLD_BLOCKCODE, OLD_NAME, OLD_ADDRESS, OLD_KIND, POI_NUM, LOG, TASK_ID, "
 				+ "DATA_VERSION, FIELD_TASK_ID, VERIFIED_FLAG, COLLECT_TIME, "
-				+ "GEO_ADJUST_FLAG, FULL_ATTR_FLAG, OLD_X_GUIDE, OLD_Y_GUIDE, U_RECORD, " + "ROW_ID) values (");
+				+ "GEO_ADJUST_FLAG, FULL_ATTR_FLAG, OLD_X_GUIDE, OLD_Y_GUIDE,U_DATE,U_RECORD, " + "ROW_ID) values (");
 
 		sb.append(ixPoi.getPid());
 
@@ -338,6 +338,8 @@ public class IxPoiOperator implements IOperator {
 		sb.append("," + ixPoi.getOldXGuide());
 
 		sb.append("," + ixPoi.getOldYGuide());
+		
+		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
 
 		sb.append(",1,'" + ixPoi.rowId() + "')");
 
@@ -520,7 +522,7 @@ public class IxPoiOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoi.tableName() + " set u_record=2 where pid=" + ixPoi.getPid();
+		String sql = "update " + ixPoi.tableName() + " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where pid=" + ixPoi.getPid();
 
 		stmt.addBatch(sql);
 

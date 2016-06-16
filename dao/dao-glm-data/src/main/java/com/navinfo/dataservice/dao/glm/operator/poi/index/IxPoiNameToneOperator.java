@@ -176,7 +176,7 @@ public class IxPoiNameToneOperator implements IOperator {
 
 		sb.append(ixPoiNameTone.tableName());
 
-		sb.append("(NAME_ID, TONE_A, TONE_B, LH_A, LH_B, JYUTP, MEMO,U_RECORD, ROW_ID) values (");
+		sb.append("(NAME_ID, TONE_A, TONE_B, LH_A, LH_B, JYUTP, MEMO,U_DATE,U_RECORD, ROW_ID) values (");
 
 		sb.append(ixPoiNameTone.getNameId());
 
@@ -191,6 +191,8 @@ public class IxPoiNameToneOperator implements IOperator {
 		sb.append(",'" + ixPoiNameTone.getJyutp()+"'");
 
 		sb.append(",'" + ixPoiNameTone.getMemo()+"'");
+		
+		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
 
 		sb.append(",1,'" + ixPoiNameTone.rowId() + "')");
 		
@@ -204,7 +206,7 @@ public class IxPoiNameToneOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiNameTone.tableName() + " set u_record=2 where name_id="
+		String sql = "update " + ixPoiNameTone.tableName() + " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where name_id="
 				+ ixPoiNameTone.getNameId();
 
 		stmt.addBatch(sql);

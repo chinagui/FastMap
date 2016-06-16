@@ -20,19 +20,20 @@ public class PoiDailyMain {
 	private static Logger log = null;
 	private static CountDownLatch countDownLatch = null;
 	private static final String col_name = "fm_stat_daily_poi";
-	private String db_name ;
+	private String db_name;
 	private String stat_date;
-	public PoiDailyMain(String dbn,String stat_date) {
+
+	public PoiDailyMain(String dbn, String stat_date) {
 		this.db_name = dbn;
-		this.stat_date=stat_date;
+		this.stat_date = stat_date;
 	}
 
 	/**
 	 * 统计结果mongo结果库初始化
 	 */
 	public void initMongoDb(String db_name) {
-		
-		MongoDao mdao=new MongoDao(db_name);
+
+		MongoDao mdao = new MongoDao(db_name);
 		MongoDatabase md = mdao.getDatabase();
 		Iterator<String> iter = md.listCollectionNames().iterator();
 		boolean flag = true;
@@ -47,11 +48,11 @@ public class PoiDailyMain {
 			md.createCollection(col_name);
 			md.getCollection(col_name).createIndex(new BasicDBObject("grid_id", 1));
 			md.getCollection(col_name).createIndex(new BasicDBObject("stat_date", 1));
-			log.info("-- -- create mongo collection fm_stat_daily ok");
-			log.info("-- -- create mongo index on fm_stat_daily（grid_id，stat_date） ok");
+			log.info("-- -- create mongo collection " + col_name + " ok");
+			log.info("-- -- create mongo index on " + col_name + "(grid_id，stat_date) ok");
 		}
-		
-		BasicDBObject query = new BasicDBObject(); 
+
+		BasicDBObject query = new BasicDBObject();
 		query.put("stat_date", stat_date);
 		mdao.deleteMany(col_name, query);
 
@@ -63,7 +64,7 @@ public class PoiDailyMain {
 	public void runStat() {
 		log = LogManager.getLogger(PoiDailyMain.class);
 
-		log.info("-- poi 日库统计开始");
+		log.info("-- begin stat:" + col_name);
 
 		try {
 			// 初始化mongodb数据库
@@ -84,13 +85,13 @@ public class PoiDailyMain {
 				int db_id = iter.next();
 
 				log.info("-- -- 创建统计进程 db_id：" + db_id);
-				executorService.submit(new PoiDailyStat(countDownLatch, db_id, db_name, col_name,stat_date));
+				executorService.submit(new PoiDailyStat(countDownLatch, db_id, db_name, col_name, stat_date));
 			}
 
 			countDownLatch.await();
 			executorService.shutdown();
 
-			log.info("-- poi 日库统计结束");
+			log.info("-- end stat:" + col_name);
 			System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();

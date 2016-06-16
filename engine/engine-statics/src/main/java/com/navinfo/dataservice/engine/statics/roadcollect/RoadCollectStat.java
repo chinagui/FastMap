@@ -4,12 +4,13 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -24,7 +25,9 @@ import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
+import com.navinfo.navicommons.geo.computation.JtsGeometryConvertor;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Polygon;
 
 public class RoadCollectStat implements Runnable {
 	private Connection conn;
@@ -49,31 +52,61 @@ public class RoadCollectStat implements Runnable {
 		}
 	}
 
-	public JSONArray getPois() throws ServiceException {
+	public List<Document> getRdlink() throws ServiceException {
 		try {
 			QueryRunner run = new QueryRunner();
 
-			String sql = "select ip.row_id, pes.is_upload, ip.geometry from ix_poi ip, poi_edit_status pes where ip.row_id = pes.row_id and rownum<100";
-			return run.query(conn, sql, new ResultSetHandler<JSONArray>() {
+			String sql = "select rl.mesh_id, rl.geometry from rd_link rl where rownum < 100";
+			return run.query(conn, sql, new ResultSetHandler<List<Document>>() {
 
 				@Override
-				public JSONArray handle(ResultSet rs) throws SQLException {
-
-					JSONArray json_list = new JSONArray();
+				public List<Document> handle(ResultSet rs) throws SQLException {
+					// map 存放 rd_link表中，以grid_id为key，以多条grid内link长度之和为value的集合。
+					Map<String, Double> map = new HashMap<String, Double>();
 					while (rs.next()) {
 						try {
-							JSONObject json = new JSONObject();
 							STRUCT struct = (STRUCT) rs.getObject("geometry");
-							Geometry geo = GeoTranslator.struct2Jts(struct);
+							Geometry linkGeo = GeoTranslator.struct2Jts(struct);
 
-							String grid_id = CompGridUtil.point2Grids(geo.getCoordinate().x, geo.getCoordinate().y)[0];
-							json.put("grid_id", grid_id);
-							json.put("is_upload", String.valueOf(rs.getInt("is_upload")));
-							json_list.add(json);
+							int mesh_id = rs.getInt("mesh_id");
+							// 根据 mesh_id 获得16个grid
+							Set<String> grids = CompGridUtil.mesh2Grid(String.valueOf(mesh_id));
+							// 不知道link跨越多少个grid，所以循环16个grid计算每个中的长度
+							for (String grid_id : grids) {
+								// 获取grid对应的矩形Polygon结构
+								double[] loc = CompGridUtil.grid2Rect(grid_id);
+								Polygon gridPolygon = JtsGeometryConvertor.convert(loc);
+
+								// 根据 rd_link 获得的link计算在grid中相交的长度。
+								Geometry ls = linkGeo.intersection(gridPolygon);
+								double lineLength = ls.getLength();
+
+								if (map.containsKey(grid_id)) {
+									map.put(grid_id, map.get(grid_id) + lineLength);
+								} else {
+									map.put(grid_id, lineLength);
+								}
+							}
 						} catch (Exception e1) {
 							e1.printStackTrace();
 						}
 					}
+					
+					List<Document> json_list = new ArrayList<Document>();
+					for (Entry<String, Double> entry : map.entrySet()) {
+						Document json = new Document();
+						json.put("grid_id", entry.getKey());
+						json.put("stat_date", stat_date);
+						// ------------------------------
+						Document road = new Document();
+						road.put("total", entry.getValue());
+						road.put("finish", 0);
+						road.put("percent", 0);
+						// ------------------------------
+						json.put("road", road);
+						json_list.add(json);
+					}
+
 					return json_list;
 				}
 			}
@@ -87,68 +120,11 @@ public class RoadCollectStat implements Runnable {
 		}
 	}
 
-	public Document getJsonTemplet(String grid_id) {
-		Document doc = new Document();
-		doc.append("grid_id", grid_id);
-		doc.append("stat_date", stat_date);
-
-		Document poi = new Document();
-		poi.append("total", 1);
-		poi.append("finish", 0);
-		poi.append("percent", 0);
-		doc.append("poi", poi);
-
-		return doc;
-	}
-
-	public List<Document> doStatPoi(JSONArray ja) {
-		Document doc =new Document();
-		for (int i = 0; i < ja.size(); i++) {
-			JSONObject json = ja.getJSONObject(i);
-			String grid_id =json.getString("grid_id");
-			String is_upload =json.getString("is_upload");
-			
-			
-			if (doc.containsKey(grid_id)){
-				Document d= (Document)((Document) doc.get(grid_id)).get("poi");
-				d.put("total", d.getInteger("total")+1);
-				if (is_upload.equals("1")){
-					d.put("finish", d.getInteger("finish")+1);
-				}
-				
-			}else{
-				doc.append(grid_id, getJsonTemplet(grid_id));
-			}
-			
-			
-		}
-		
-		
-		
-		List<Document> backList=new ArrayList<Document>();
-
-		 for (Iterator iter = doc.keySet().iterator(); iter.hasNext();) {
-			  String key = (String)iter.next();
-			  Document dd=(Document)doc.get(key);
-			  
-			  Document poi= (Document) dd.get("poi");
-			  
-			  poi.put("percent", poi.getInteger("finish")/poi.getInteger("total"));
-			  backList.add(dd);
-			 }
-					
-	
-		return backList;
-	}
-
 	public void run() {
 		log.info("-- begin do sub_task");
 		try {
 			log.info("-- begin do sub_task" + conn);
-			JSONArray ja = getPois();
-			new MongoDao(db_name).insertMany(col_name, doStatPoi(ja));
-
-			System.out.println("--------------" + ja.size());
+			new MongoDao(db_name).insertMany(col_name, getRdlink());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -8,8 +8,7 @@ public class GeoUtil {
 
 	public static String getGridFromPoint(Geometry point) {
 		Coordinate[] coordinate = point.getCoordinates();
-		CompGridUtil gridUtil = new CompGridUtil();
-		String grid = gridUtil.point2Grids(coordinate[0].x, coordinate[0].y)[0];
+		String grid = CompGridUtil.point2Grids(coordinate[0].x, coordinate[0].y)[0];
 		return grid;
 	}
 }

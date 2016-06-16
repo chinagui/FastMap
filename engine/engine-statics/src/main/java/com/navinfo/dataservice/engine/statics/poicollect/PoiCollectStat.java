@@ -102,42 +102,37 @@ public class PoiCollectStat implements Runnable {
 	}
 
 	public List<Document> doStatPoi(JSONArray ja) {
-		Document doc =new Document();
+		Document doc = new Document();
 		for (int i = 0; i < ja.size(); i++) {
 			JSONObject json = ja.getJSONObject(i);
-			String grid_id =json.getString("grid_id");
-			String is_upload =json.getString("is_upload");
-			
-			
-			if (doc.containsKey(grid_id)){
-				Document d= (Document)((Document) doc.get(grid_id)).get("poi");
-				d.put("total", d.getInteger("total")+1);
-				if (is_upload.equals("1")){
-					d.put("finish", d.getInteger("finish")+1);
+			String grid_id = json.getString("grid_id");
+			String is_upload = json.getString("is_upload");
+
+			if (doc.containsKey(grid_id)) {
+				Document d = (Document) ((Document) doc.get(grid_id)).get("poi");
+				d.put("total", d.getInteger("total") + 1);
+				if (is_upload.equals("1")) {
+					d.put("finish", d.getInteger("finish") + 1);
 				}
-				
-			}else{
+
+			} else {
 				doc.append(grid_id, getJsonTemplet(grid_id));
 			}
-			
-			
-		}
-		
-		
-		
-		List<Document> backList=new ArrayList<Document>();
 
-		 for (Iterator iter = doc.keySet().iterator(); iter.hasNext();) {
-			  String key = (String)iter.next();
-			  Document dd=(Document)doc.get(key);
-			  
-			  Document poi= (Document) dd.get("poi");
-			  
-			  poi.put("percent", poi.getInteger("finish")/poi.getInteger("total"));
-			  backList.add(dd);
-			 }
-					
-	
+		}
+
+		List<Document> backList = new ArrayList<Document>();
+
+		for (Iterator<String> iter = doc.keySet().iterator(); iter.hasNext();) {
+			String key = iter.next();
+			Document dd = (Document) doc.get(key);
+
+			Document poi = (Document) dd.get("poi");
+
+			poi.put("percent", poi.getInteger("finish") / poi.getInteger("total"));
+			backList.add(dd);
+		}
+
 		return backList;
 	}
 
@@ -148,7 +143,6 @@ public class PoiCollectStat implements Runnable {
 			JSONArray ja = getPois();
 			new MongoDao(db_name).insertMany(col_name, doStatPoi(ja));
 
-			System.out.println("--------------" + ja.size());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

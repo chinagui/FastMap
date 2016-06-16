@@ -19,7 +19,7 @@ public class RoadCollectMain {
 
 	private static Logger log = null;
 	private static CountDownLatch countDownLatch = null;
-	private static final String col_name = "fm_stat_collect_poi";
+	private static final String col_name = "fm_stat_collect_road";
 	private String db_name;
 	private String stat_date;
 
@@ -48,8 +48,8 @@ public class RoadCollectMain {
 			md.createCollection(col_name);
 			md.getCollection(col_name).createIndex(new BasicDBObject("grid_id", 1));
 			md.getCollection(col_name).createIndex(new BasicDBObject("stat_date", 1));
-			log.info("-- -- create mongo collection "+col_name+" ok");
-			log.info("-- -- create mongo index on "+col_name+"(grid_id，stat_date) ok");
+			log.info("-- -- create mongo collection " + col_name + " ok");
+			log.info("-- -- create mongo index on " + col_name + "(grid_id，stat_date) ok");
 		}
 
 		BasicDBObject query = new BasicDBObject();
@@ -64,7 +64,7 @@ public class RoadCollectMain {
 	public void runStat() {
 		log = LogManager.getLogger(RoadCollectMain.class);
 
-		log.info("-- poi 日库统计开始");
+		log.info("-- begin stat:" + col_name);
 
 		try {
 			// 初始化mongodb数据库
@@ -91,7 +91,7 @@ public class RoadCollectMain {
 			countDownLatch.await();
 			executorService.shutdown();
 
-			log.info("-- poi 日库统计结束");
+			log.info("-- end stat:" + col_name);
 			System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();

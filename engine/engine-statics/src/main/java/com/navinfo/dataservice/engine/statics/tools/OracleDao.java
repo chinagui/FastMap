@@ -18,13 +18,13 @@ public class OracleDao {
 	/**
 	 * 根据 日大区库的 db_id
 	 */
-	
+
 	public static List<Integer> getDbIdDaily() throws ServiceException {
 		Connection conn = null;
 		try {
 			QueryRunner run = new QueryRunner();
 
-			conn=DBConnector.getInstance().getManConnection();
+			conn = DBConnector.getInstance().getManConnection();
 			String sql = "select distinct daily_db_id from region";
 			return run.query(conn, sql, new ResultSetHandler<List<Integer>>() {
 
@@ -44,17 +44,17 @@ public class OracleDao {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	
+
 	/**
 	 * 根据 日大区库的 db_id
 	 */
-	
+
 	public static List<Integer> getDbIdMonth() throws ServiceException {
 		Connection conn = null;
 		try {
 			QueryRunner run = new QueryRunner();
 
-			conn=DBConnector.getInstance().getManConnection();
+			conn = DBConnector.getInstance().getManConnection();
 			String sql = "select distinct monthly_db_id from region";
 			return run.query(conn, sql, new ResultSetHandler<List<Integer>>() {
 
@@ -74,6 +74,7 @@ public class OracleDao {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+
 	public static List<Integer> getDbId() throws ServiceException {
 		Connection conn = null;
 		try {

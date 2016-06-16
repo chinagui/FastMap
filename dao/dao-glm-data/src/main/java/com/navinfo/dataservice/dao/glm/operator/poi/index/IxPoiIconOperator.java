@@ -71,7 +71,7 @@ public class IxPoiIconOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 		StringBuilder sb = new StringBuilder("update " + ixPoiIcon.tableName()
-				+ " set u_record=3,");
+				+ " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
 
 		PreparedStatement pstmt = null;
 

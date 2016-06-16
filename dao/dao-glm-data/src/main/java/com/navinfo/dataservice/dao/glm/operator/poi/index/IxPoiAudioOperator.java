@@ -67,7 +67,7 @@ public class IxPoiAudioOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 		StringBuilder sb = new StringBuilder("update " + ixPoiAudio.tableName()
-				+ " set u_record=3,");
+				+ " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
 
 		PreparedStatement pstmt = null;
 
@@ -188,7 +188,7 @@ public class IxPoiAudioOperator implements IOperator {
 
 		sb.append(ixPoiAudio.tableName());
 
-		sb.append("(poi_pid, audio_id, status,memo, row_id,u_record) values (");
+		sb.append("(poi_pid, audio_id, status,memo, row_id,u_date,u_record) values (");
 
 		sb.append(ixPoiAudio.getPoiPid());
 
@@ -199,6 +199,8 @@ public class IxPoiAudioOperator implements IOperator {
 		sb.append(",'" + ixPoiAudio.getMemo() + "'");
 
 		sb.append(",'" + ixPoiAudio.getRowId() + "'");
+		
+		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 
 		sb.append(",'1')");
 

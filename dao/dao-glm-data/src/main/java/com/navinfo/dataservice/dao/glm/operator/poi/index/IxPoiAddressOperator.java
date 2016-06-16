@@ -59,7 +59,7 @@ public class IxPoiAddressOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiAddress.tableName() + " set u_record=3,");
+		StringBuilder sb = new StringBuilder("update " + ixPoiAddress.tableName() + " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
 
 		PreparedStatement pstmt = null;
 
@@ -140,7 +140,7 @@ public class IxPoiAddressOperator implements IOperator {
 
 	@Override
 	public void deleteRow() throws Exception {
-		String sql = "update " + ixPoiAddress.tableName() + " set u_record=:1 where name_id=:2";
+		String sql = "update " + ixPoiAddress.tableName() + " set u_record=:1,u_date=:3 where name_id=:2";
 
 		PreparedStatement pstmt = null;
 
@@ -150,6 +150,8 @@ public class IxPoiAddressOperator implements IOperator {
 			pstmt.setInt(1, 2);
 
 			pstmt.setInt(2, ixPoiAddress.getPid());
+			
+			pstmt.setString(3, StringUtils.getCurrentTime());
 
 			pstmt.executeUpdate();
 
@@ -181,7 +183,7 @@ public class IxPoiAddressOperator implements IOperator {
 		sb.append(
 				"(NAME_ID, NAME_GROUPID, POI_PID, LANG_CODE, SRC_FLAG, FULLNAME, FULLNAME_PHONETIC, ROADNAME, ROADNAME_PHONETIC, ADDRNAME, "
 				+ "ADDRNAME_PHONETIC, PROVINCE, CITY, COUNTY, TOWN, PLACE, STREET, LANDMARK,"
-				+ " PREFIX, HOUSENUM, TYPE, SUBNUM, SURFIX, ESTAB, BUILDING, FLOOR, UNIT, ROOM, ADDONS, PROV_PHONETIC, CITY_PHONETIC, COUNTY_PHONETIC, TOWN_PHONETIC, STREET_PHONETIC, PLACE_PHONETIC, LANDMARK_PHONETIC, PREFIX_PHONETIC, HOUSENUM_PHONETIC, TYPE_PHONETIC, SUBNUM_PHONETIC, SURFIX_PHONETIC, ESTAB_PHONETIC, BUILDING_PHONETIC, FLOOR_PHONETIC, UNIT_PHONETIC, ROOM_PHONETIC, ADDONS_PHONETIC, U_RECORD, ROW_ID) values (");
+				+ " PREFIX, HOUSENUM, TYPE, SUBNUM, SURFIX, ESTAB, BUILDING, FLOOR, UNIT, ROOM, ADDONS, PROV_PHONETIC, CITY_PHONETIC, COUNTY_PHONETIC, TOWN_PHONETIC, STREET_PHONETIC, PLACE_PHONETIC, LANDMARK_PHONETIC, PREFIX_PHONETIC, HOUSENUM_PHONETIC, TYPE_PHONETIC, SUBNUM_PHONETIC, SURFIX_PHONETIC, ESTAB_PHONETIC, BUILDING_PHONETIC, FLOOR_PHONETIC, UNIT_PHONETIC, ROOM_PHONETIC, ADDONS_PHONETIC,U_DATE,U_RECORD,ROW_ID) values (");
 
 		sb.append(ixPoiAddress.getPid());
 
@@ -277,6 +279,8 @@ public class IxPoiAddressOperator implements IOperator {
 		
 		sb.append(",'" + ixPoiAddress.getAddonsPhonetic()+"'");
 		
+		sb.append(",'" + StringUtils.getCurrentTime()+"'");
+		
 		sb.append(",1,'" + ixPoiAddress.rowId() + "')");
 
 		stmt.addBatch(sb.toString());
@@ -288,7 +292,8 @@ public class IxPoiAddressOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiAddress.tableName() + " set u_record=2 where name_id="
+		String sql = "update " + ixPoiAddress.tableName() + " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where name_id="
+				
 				+ ixPoiAddress.getPid();
 
 		stmt.addBatch(sql);

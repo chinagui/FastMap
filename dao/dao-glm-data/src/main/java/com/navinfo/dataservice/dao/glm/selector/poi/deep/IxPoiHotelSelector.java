@@ -158,7 +158,7 @@ public class IxPoiHotelSelector implements ISelector {
 		ixPoiHotel.setPhotoName(resultSet.getString("photo_name"));
 		ixPoiHotel.setTravelguideFlag(resultSet.getInt("travelguide_flag"));
 		ixPoiHotel.setRowId(resultSet.getString("row_id"));
-
+		ixPoiHotel.setuDate(resultSet.getString("u_date"));
 	}
 	
 }

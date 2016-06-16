@@ -238,6 +238,8 @@ public class IxPoiAddressSelector implements ISelector {
 		ixPoiAddress.setAddonsPhonetic(resultSet.getString("addons_phonetic"));
 		
 		ixPoiAddress.setRowId(resultSet.getString("row_id"));
+		
+		ixPoiAddress.setuDate(resultSet.getString("u_date"));
 	}
 	
 	/**

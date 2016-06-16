@@ -68,6 +68,8 @@ public class IxPoiAudioSelector implements ISelector {
 				audio.setMemo(resultSet.getString("memo"));
 
 				audio.setRowId(resultSet.getString("row_id"));
+				
+				audio.setuDate(resultSet.getString("u_date"));
 			} else {
 				
 				throw new DataNotFoundException("数据不存在");

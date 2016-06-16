@@ -28,6 +28,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEntryimage;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiFlag;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiIcon;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiOperateRef;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
 import com.navinfo.dataservice.dao.pidservice.PidService;
@@ -111,6 +112,8 @@ public class Operation implements IOperation {
 		updataIxPoiRestaurant(result, content);
 
 		updataIxPoiCarrental(result, content);
+		
+		updataIxPoiOperateRef( result,  content);
 
 		return null;
 	}
@@ -393,10 +396,10 @@ public class Operation implements IOperation {
 
 	private void updataIxPoiIcon(Result result, JSONObject content)
 			throws Exception {
-		if (!content.containsKey("flags")) {
+		if (!content.containsKey("icons")) {
 			return;
 		}
-		JSONArray subObj = content.getJSONArray("flags");
+		JSONArray subObj = content.getJSONArray("icons");
 
 		for (int i = 0; i < subObj.size(); i++) {
 
@@ -1385,6 +1388,61 @@ public class Operation implements IOperation {
 					}
 				} else {
 					IxPoiCarrental row = new IxPoiCarrental();
+
+					row.Unserialize(json);
+
+					row.setPoiPid(ixPoi.getPid());
+
+					row.setMesh(ixPoi.mesh());
+
+					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+				}
+			}
+		}
+
+	}
+
+	private void updataIxPoiOperateRef(Result result, JSONObject content)
+			throws Exception {
+		if (!content.containsKey("operateRefs")) {
+			return;
+		}
+		JSONArray subObj = content.getJSONArray("operateRefs");
+
+		for (int i = 0; i < subObj.size(); i++) {
+
+			JSONObject json = subObj.getJSONObject(i);
+
+			if (json.containsKey("objStatus")) {
+
+				if (!ObjStatus.INSERT.toString().equals(
+						json.getString("objStatus"))) {
+
+					IxPoiOperateRef row = ixPoi.operateRefMap.get(json
+							.getString("rowId"));
+
+					if (row == null) {
+						throw new Exception("rowId=" + json.getString("rowId")
+								+ "的IxPoiOperateRef不存在");
+					}
+
+					if (ObjStatus.DELETE.toString().equals(
+							json.getString("objStatus"))) {
+						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+
+						continue;
+					} else if (ObjStatus.UPDATE.toString().equals(
+							json.getString("objStatus"))) {
+
+						boolean isChanged = row.fillChangeFields(json);
+
+						if (isChanged) {
+							result.insertObject(row, ObjStatus.UPDATE,
+									ixPoi.pid());
+						}
+					}
+				} else {
+					IxPoiOperateRef row = new IxPoiOperateRef();
 
 					row.Unserialize(json);
 

@@ -149,6 +149,7 @@ public class IxPoiGasstationSelector implements ISelector {
 		ixPoiGasstation.setOpenHour(resultSet.getString("open_hour"));
 		ixPoiGasstation.setPhotoName(resultSet.getString("photo_name"));
 		ixPoiGasstation.setRowId(resultSet.getString("row_id"));
+		ixPoiGasstation.setuDate(resultSet.getString("u_date"));
 	}
 	
 }

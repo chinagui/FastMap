@@ -68,6 +68,8 @@ public class IxPoiVideoSelector implements ISelector {
 				video.setMemo(resultSet.getString("memo"));	
 
 				video.setRowId(resultSet.getString("row_id"));
+				
+				video.setuDate(resultSet.getString("u_date"));
 			} else {
 				
 				throw new DataNotFoundException("数据不存在");
@@ -135,6 +137,8 @@ public class IxPoiVideoSelector implements ISelector {
 				video.setMemo(resultSet.getString("memo"));	
 
 				video.setRowId(resultSet.getString("row_id"));
+				
+				video.setuDate(resultSet.getString("u_date"));
 
 				rows.add(video);
 			}

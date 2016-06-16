@@ -93,6 +93,7 @@ public class IxPoiChargingPlotPhSelector implements ISelector {
 		chargingPlotPh.setPoiPid(resultSet.getInt("poi_pid"));
 		chargingPlotPh.setPhotoName(resultSet.getString("photo_name"));
 		chargingPlotPh.setRowId(resultSet.getString("rowId"));
+		chargingPlotPh.setuDate(resultSet.getString("u_date"));
 
 	}
 	

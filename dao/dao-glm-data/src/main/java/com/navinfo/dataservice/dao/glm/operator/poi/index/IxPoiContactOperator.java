@@ -65,7 +65,7 @@ public class IxPoiContactOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 		StringBuilder sb = new StringBuilder("update " + ixPoiContact.tableName()
-				+ " set u_record=3,");
+				+ " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
 
 		PreparedStatement pstmt = null;
 
@@ -186,7 +186,7 @@ public class IxPoiContactOperator implements IOperator {
 
 		sb.append(ixPoiContact.tableName());
 
-		sb.append("(poi_pid, contactType, contact,contactDepart,priority, row_id,u_record) values (");
+		sb.append("(poi_pid, contactType, contact,contactDepart,priority, row_id,u_date,u_record) values (");
 
 		sb.append(ixPoiContact.getPoiPid());
 
@@ -199,6 +199,9 @@ public class IxPoiContactOperator implements IOperator {
 		sb.append("," + ixPoiContact.getPriority() + "");
 
 		sb.append(",'" + ixPoiContact.getRowId() + "'");
+		
+		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
+
 
 		sb.append(",'1')");
 
@@ -216,7 +219,7 @@ public class IxPoiContactOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiContact.tableName()
-				+ " set u_record=2 where row_id=hextoraw('"
+				+ " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where row_id=hextoraw('"
 				+ ixPoiContact.rowId() + "')";
 
 		stmt.addBatch(sql);

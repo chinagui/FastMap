@@ -64,7 +64,7 @@ public class IxPoiVideoOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiVideo.tableName() + " set u_record=3,");
+		StringBuilder sb = new StringBuilder("update " + ixPoiVideo.tableName() + " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
 
 		PreparedStatement pstmt = null;
 
@@ -175,7 +175,7 @@ public class IxPoiVideoOperator implements IOperator {
 
 		sb.append(ixPoiVideo.tableName());
 
-		sb.append("(poi_pid, video_id, status,memo, row_id,u_record) values (");
+		sb.append("(poi_pid, video_id, status,memo, row_id,u_date,u_record) values (");
 
 		sb.append(ixPoiVideo.getPoiPid());
 
@@ -186,6 +186,8 @@ public class IxPoiVideoOperator implements IOperator {
 		sb.append(",'" + ixPoiVideo.getMemo() + "'");
 
 		sb.append(",'" + ixPoiVideo.getRowId() + "'");
+		
+		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
 
 		sb.append(",'1')");
 
@@ -202,7 +204,7 @@ public class IxPoiVideoOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiVideo.tableName() + " set u_record=2 where row_id=hextoraw('" + ixPoiVideo.rowId()
+		String sql = "update " + ixPoiVideo.tableName() + " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where row_id=hextoraw('" + ixPoiVideo.rowId()
 				+ "')";
 
 		stmt.addBatch(sql);

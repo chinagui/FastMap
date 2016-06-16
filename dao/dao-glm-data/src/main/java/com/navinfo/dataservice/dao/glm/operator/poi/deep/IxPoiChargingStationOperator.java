@@ -42,7 +42,8 @@ public class IxPoiChargingStationOperator implements IOperator {
 	private Connection conn;
 	private IxPoiChargingStation ixPoiChargingStation;
 
-	public IxPoiChargingStationOperator(Connection conn, IxPoiChargingStation ixPoiChargingStation) {
+	public IxPoiChargingStationOperator(Connection conn,
+			IxPoiChargingStation ixPoiChargingStation) {
 		this.conn = conn;
 		this.ixPoiChargingStation = ixPoiChargingStation;
 	}
@@ -77,14 +78,16 @@ public class IxPoiChargingStationOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiChargingStation.tableName()
-				+ " set u_record=3,");
+		StringBuilder sb = new StringBuilder("update "
+				+ ixPoiChargingStation.tableName() + " set u_record=3,u_date="
+				+ StringUtils.getCurrentTime() + ",");
 
 		PreparedStatement pstmt = null;
 
 		try {
 
-			Set<Entry<String, Object>> set = ixPoiChargingStation.changedFields().entrySet();
+			Set<Entry<String, Object>> set = ixPoiChargingStation
+					.changedFields().entrySet();
 
 			Iterator<Entry<String, Object>> it = set.iterator();
 
@@ -97,7 +100,8 @@ public class IxPoiChargingStationOperator implements IOperator {
 
 				Object columnValue = en.getValue();
 
-				Field field = ixPoiChargingStation.getClass().getDeclaredField(column);
+				Field field = ixPoiChargingStation.getClass().getDeclaredField(
+						column);
 
 				field.setAccessible(true);
 
@@ -142,7 +146,7 @@ public class IxPoiChargingStationOperator implements IOperator {
 						isChanged = true;
 					}
 
-				} 
+				}
 			}
 			sb.append(" where charging_id  =" + ixPoiChargingStation.getPid());
 
@@ -207,20 +211,21 @@ public class IxPoiChargingStationOperator implements IOperator {
 		ixPoiChargingStation.setRowId(UuidUtils.genUuid());
 		StringBuilder sb = new StringBuilder("insert into ");
 		sb.append(ixPoiChargingStation.tableName());
-		sb.append("(charging_id, poi_pid, charging_type, change_brands, change_open_type, charging_num, service_prov, memo, photo_name, open_hour, parking_fees, parking_info, available_state, u_record, row_id) values (");
+		sb.append("(charging_id, poi_pid, charging_type, change_brands, change_open_type, charging_num, service_prov, memo, photo_name, open_hour, parking_fees, parking_info, available_state, u_date,u_record, row_id) values (");
 		sb.append(ixPoiChargingStation.getPid());
 		sb.append("," + ixPoiChargingStation.getPoiPid());
 		sb.append("," + ixPoiChargingStation.getChargingType());
-		sb.append(",'"  + ixPoiChargingStation.getChangeBrands()+"'");
-		sb.append(","  + ixPoiChargingStation.getChangeOpenType());
-		sb.append(","  + ixPoiChargingStation.getChargingNum());
-		sb.append(",'"  + ixPoiChargingStation.getServiceProv()+"'");
-		sb.append(",'"  + ixPoiChargingStation.getMemo()+"'");
-		sb.append(",'"  + ixPoiChargingStation.getPhotoName()+"'");
-		sb.append(",'"  + ixPoiChargingStation.getOpenHour()+"'");
-		sb.append(","  + ixPoiChargingStation.getParkingFees());
-		sb.append(",'"  + ixPoiChargingStation.getParkingInfo()+"'");
-		sb.append(","  + ixPoiChargingStation.getAvailableState());
+		sb.append(",'" + ixPoiChargingStation.getChangeBrands() + "'");
+		sb.append("," + ixPoiChargingStation.getChangeOpenType());
+		sb.append("," + ixPoiChargingStation.getChargingNum());
+		sb.append(",'" + ixPoiChargingStation.getServiceProv() + "'");
+		sb.append(",'" + ixPoiChargingStation.getMemo() + "'");
+		sb.append(",'" + ixPoiChargingStation.getPhotoName() + "'");
+		sb.append(",'" + ixPoiChargingStation.getOpenHour() + "'");
+		sb.append("," + ixPoiChargingStation.getParkingFees());
+		sb.append(",'" + ixPoiChargingStation.getParkingInfo() + "'");
+		sb.append("," + ixPoiChargingStation.getAvailableState());
+		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiChargingStation.rowId() + "')");
 		stmt.addBatch(sb.toString());
 	}
@@ -233,7 +238,9 @@ public class IxPoiChargingStationOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiChargingStation.tableName() + " set u_record=2 where charging_id   =" + ixPoiChargingStation.getPid();
+		String sql = "update " + ixPoiChargingStation.tableName()
+				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where charging_id   ="
+				+ ixPoiChargingStation.getPid();
 		stmt.addBatch(sql);
 	}
 

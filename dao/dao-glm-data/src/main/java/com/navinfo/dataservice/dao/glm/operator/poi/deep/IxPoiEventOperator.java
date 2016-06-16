@@ -42,8 +42,7 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class IxPoiEventOperator implements IOperator {
 
-	private static Logger logger = Logger
-			.getLogger(IxPoiEventOperator.class);
+	private static Logger logger = Logger.getLogger(IxPoiEventOperator.class);
 
 	private Connection conn;
 	private IxPoiEvent ixPoiEvent;
@@ -84,13 +83,15 @@ public class IxPoiEventOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 		StringBuilder sb = new StringBuilder("update " + ixPoiEvent.tableName()
-				+ " set u_record=3,");
+				+ " set u_record=3,u_date=" + StringUtils.getCurrentTime()
+				+ ",");
 
 		PreparedStatement pstmt = null;
 
 		try {
 
-			Set<Entry<String, Object>> set = ixPoiEvent.changedFields().entrySet();
+			Set<Entry<String, Object>> set = ixPoiEvent.changedFields()
+					.entrySet();
 
 			Iterator<Entry<String, Object>> it = set.iterator();
 
@@ -148,7 +149,7 @@ public class IxPoiEventOperator implements IOperator {
 						isChanged = true;
 					}
 
-				} 
+				}
 			}
 			sb.append(" where event_id    =" + ixPoiEvent.getPid());
 
@@ -213,23 +214,24 @@ public class IxPoiEventOperator implements IOperator {
 		ixPoiEvent.setRowId(UuidUtils.genUuid());
 		StringBuilder sb = new StringBuilder("insert into ");
 		sb.append(ixPoiEvent.tableName());
-		sb.append("(event_id, event_name, event_name_eng, event_kind, event_kind_eng, event_desc, event_desc_eng, start_date, end_date, detail_time, detail_time_eng, city, poi_pid, photo_name, reserved,memo, u_record,row_id) values (");
+		sb.append("(event_id, event_name, event_name_eng, event_kind, event_kind_eng, event_desc, event_desc_eng, start_date, end_date, detail_time, detail_time_eng, city, poi_pid, photo_name, reserved,memo, u_date,u_record,row_id) values (");
 		sb.append(ixPoiEvent.getPid());
-		sb.append(",'" + ixPoiEvent.getEventName()+"'");
-		sb.append(",'" + ixPoiEvent.getEventNameEng()+"'");
-		sb.append(",'" + ixPoiEvent.getEventKind()+"'");
-		sb.append(",'"+ ixPoiEvent.getEventKindEng()+"'");
-		sb.append(",'" + ixPoiEvent.getEventDesc()+"'");
-		sb.append(",'" + ixPoiEvent.getEventDescEng()+"'");
-		sb.append(",'" + ixPoiEvent.getStartDate()+"'");
-		sb.append(",'" + ixPoiEvent.getEndDate()+"'");
-		sb.append(",'" + ixPoiEvent.getDetailTime()+"'");
-		sb.append(",'" + ixPoiEvent.getDetailTimeEng()+"'");
-		sb.append(",'" + ixPoiEvent.getCity()+"'");
-		sb.append(",'" + ixPoiEvent.getPoiPid()+"'");
-		sb.append(",'" + ixPoiEvent.getPhotoName()+"'");
-		sb.append(",'" + ixPoiEvent.getReserved()+"'");
-		sb.append(",'" + ixPoiEvent.getMemo()+"'");
+		sb.append(",'" + ixPoiEvent.getEventName() + "'");
+		sb.append(",'" + ixPoiEvent.getEventNameEng() + "'");
+		sb.append(",'" + ixPoiEvent.getEventKind() + "'");
+		sb.append(",'" + ixPoiEvent.getEventKindEng() + "'");
+		sb.append(",'" + ixPoiEvent.getEventDesc() + "'");
+		sb.append(",'" + ixPoiEvent.getEventDescEng() + "'");
+		sb.append(",'" + ixPoiEvent.getStartDate() + "'");
+		sb.append(",'" + ixPoiEvent.getEndDate() + "'");
+		sb.append(",'" + ixPoiEvent.getDetailTime() + "'");
+		sb.append(",'" + ixPoiEvent.getDetailTimeEng() + "'");
+		sb.append(",'" + ixPoiEvent.getCity() + "'");
+		sb.append(",'" + ixPoiEvent.getPoiPid() + "'");
+		sb.append(",'" + ixPoiEvent.getPhotoName() + "'");
+		sb.append(",'" + ixPoiEvent.getReserved() + "'");
+		sb.append(",'" + ixPoiEvent.getMemo() + "'");
+		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiEvent.rowId() + "')");
 		stmt.addBatch(sb.toString());
 	}
@@ -242,7 +244,9 @@ public class IxPoiEventOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiEvent.tableName() + " set u_record=2 where   event_id      =" + ixPoiEvent.getPid();
+		String sql = "update " + ixPoiEvent.tableName()
+				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where   event_id      ="
+				+ ixPoiEvent.getPid();
 		stmt.addBatch(sql);
 	}
 

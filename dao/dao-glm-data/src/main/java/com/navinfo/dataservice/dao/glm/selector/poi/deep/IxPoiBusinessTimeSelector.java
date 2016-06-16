@@ -105,6 +105,7 @@ public class IxPoiBusinessTimeSelector implements ISelector {
 		ixPoiBusinessTime.setReserved(resultSet.getString("reserved"));
 		ixPoiBusinessTime.setMemo(resultSet.getString("memo"));
 		ixPoiBusinessTime.setRowId(resultSet.getString("rowId"));
+		ixPoiBusinessTime.setuDate(resultSet.getString("u_date"));
 
 	}
 	

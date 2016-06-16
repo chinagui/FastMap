@@ -72,14 +72,16 @@ public class IxPoiBuildingOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiBuilding.tableName()
-				+ " set u_record=3,");
+		StringBuilder sb = new StringBuilder("update "
+				+ ixPoiBuilding.tableName() + " set u_record=3,u_date="
+				+ StringUtils.getCurrentTime() + ",");
 
 		PreparedStatement pstmt = null;
 
 		try {
 
-			Set<Entry<String, Object>> set = ixPoiBuilding.changedFields().entrySet();
+			Set<Entry<String, Object>> set = ixPoiBuilding.changedFields()
+					.entrySet();
 
 			Iterator<Entry<String, Object>> it = set.iterator();
 
@@ -137,9 +139,10 @@ public class IxPoiBuildingOperator implements IOperator {
 						isChanged = true;
 					}
 
-				} 
+				}
 			}
-			sb.append(" where row_id=hextoraw('" + ixPoiBuilding.getRowId() + "')");
+			sb.append(" where row_id=hextoraw('" + ixPoiBuilding.getRowId()
+					+ "')");
 
 			String sql = sb.toString();
 
@@ -202,13 +205,13 @@ public class IxPoiBuildingOperator implements IOperator {
 		ixPoiBuilding.setRowId(UuidUtils.genUuid());
 		StringBuilder sb = new StringBuilder("insert into ");
 		sb.append(ixPoiBuilding.tableName());
-		sb.append("(poi_pid, floor_used, floor_empty, memo, u_record, row_id) values (");
-		
-		sb.append(ixPoiBuilding.getPoiPid());
-		sb.append(",'" + ixPoiBuilding.getFloorUsed()+"'");
-		sb.append(",'"  + ixPoiBuilding.getFloorEmpty()+"'");
-		sb.append(",'"  + ixPoiBuilding.getMemo()+"'");
+		sb.append("(poi_pid, floor_used, floor_empty, memo, u_date,u_record, row_id) values (");
 
+		sb.append(ixPoiBuilding.getPoiPid());
+		sb.append(",'" + ixPoiBuilding.getFloorUsed() + "'");
+		sb.append(",'" + ixPoiBuilding.getFloorEmpty() + "'");
+		sb.append(",'" + ixPoiBuilding.getMemo() + "'");
+		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiBuilding.rowId() + "')");
 
 		stmt.addBatch(sb.toString());
@@ -222,9 +225,10 @@ public class IxPoiBuildingOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		
-		String sql = "update " + ixPoiBuilding.tableName() + " set u_record=2 where row_id=hextoraw('" + ixPoiBuilding.rowId()
-				+ "')";
+
+		String sql = "update " + ixPoiBuilding.tableName()
+				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where row_id=hextoraw('"
+				+ ixPoiBuilding.rowId() + "')";
 		stmt.addBatch(sql);
 	}
 

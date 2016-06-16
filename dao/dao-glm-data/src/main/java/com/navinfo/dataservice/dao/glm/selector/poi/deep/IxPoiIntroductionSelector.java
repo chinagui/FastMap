@@ -145,7 +145,7 @@ public class IxPoiIntroductionSelector implements ISelector {
 		ixPoiIntroduction.setTraffic(resultSet.getString("traffic"));
 		ixPoiIntroduction.setTrafficEng(resultSet.getString("traffic_eng"));
 		ixPoiIntroduction.setRowId(resultSet.getString("row_id"));
-
+		ixPoiIntroduction.setuDate(resultSet.getString("u_date"));
 	}
 	
 }

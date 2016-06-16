@@ -5,9 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -35,7 +33,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEntryimage;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiFlag;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiIcon;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiOperateRef;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
@@ -54,6 +51,10 @@ import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiIntroductionSelect
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiParkingSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiRestaurantSelector;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 /**
  * POI基础信息表 selector
@@ -299,18 +300,6 @@ public class IxPoiSelector implements ISelector {
 
 					ixPoi.chargingstationMap.put(obj.getRowId(), obj);
 				}
-				// 设置子表IX_POI_BUSINESSTIME
-				IxPoiOperateRefSelector IxPoiOperateRefSelector = new IxPoiOperateRefSelector(
-						conn);
-
-				ixPoi.setBusinesstimes(IxPoiOperateRefSelector
-						.loadRowsByParentId(id, isLock));
-
-				for (IRow row : ixPoi.getOperateRefs()) {
-					IxPoiOperateRef obj = (IxPoiOperateRef) row;
-
-					ixPoi.operateRefMap.put(obj.getRowId(), obj);
-				}
 
 				// 设置子表IX_POI_CHARGINGPLOT
 				IxPoiChargingPlotSelector ixPoiChargingPlotSelector = new IxPoiChargingPlotSelector(
@@ -482,7 +471,7 @@ public class IxPoiSelector implements ISelector {
 		return null;
 	}
 
-	public JSONObject loadPids(boolean isLock,int pageSize, int pageNum) throws Exception {
+	public JSONObject loadPids(boolean isLock,int pid ,String pidName,int pageSize, int pageNum) throws Exception {
 
 		JSONObject result = new JSONObject();
 
@@ -502,7 +491,16 @@ public class IxPoiSelector implements ISelector {
         buffer.append(" WHERE     ip.pid = ipn.poi_pid ");
         buffer.append(" AND lang_code = 'CHI'");
         buffer.append(" AND ipn.name_type = 2 ");
-        buffer.append(" AND name_class = 1) c ");
+        buffer.append(" AND name_class = 1"); 
+        if( pid != 0){
+        	buffer.append("AND ip.pid = "+pid+"");
+        }else{
+        	if(StringUtils.isNotBlank(pidName)){
+        		buffer.append("AND ipn.name like %'"+pidName+"%'");
+        	}
+        }
+        
+        buffer.append(" ) c");
         buffer.append(" WHERE ROWNUM <= :1) ");
         buffer.append("  WHERE rn >= :2 ");
 		if (isLock) {
@@ -646,7 +644,7 @@ public class IxPoiSelector implements ISelector {
 		ixPoi.setOldAddress(resultSet.getString("old_address"));
 
 		ixPoi.setOldKind(resultSet.getString("old_kind"));
-
+		
 		ixPoi.setPoiNum(resultSet.getString("poi_num"));
 
 		ixPoi.setLog(resultSet.getString("log"));
@@ -670,5 +668,8 @@ public class IxPoiSelector implements ISelector {
 		ixPoi.setOldYGuide(resultSet.getDouble("old_y_guide"));
 
 		ixPoi.setRowId(resultSet.getString("row_id"));
+		
+		ixPoi.setuDate(resultSet.getString("u_date"));
+
 	}
 }

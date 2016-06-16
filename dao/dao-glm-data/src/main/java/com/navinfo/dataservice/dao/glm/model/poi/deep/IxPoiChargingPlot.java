@@ -14,39 +14,49 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+
 /**
  * 索引:POI 深度信息(充电桩类)
+ * 
  * @author zhaokk
  *
  */
 public class IxPoiChargingPlot implements IRow {
 
-	private int poiPid =0;
-	private int   groupId =1;//充电桩分组号
-	private int   count = 1;//组内充电桩数 
-	private int  acdc = 0 ;//交直流电充电
-	private String   plugType = "9" ;//插座类型 
-	private String  power; //充电功率 
-	private String voltage;//充电电压 
-	private String current ;//充电电流
-	private int mode = 0;//充电模式
-	private int plugNum = 1;//单个充电桩插数量
-	private String prices;//充电价格
-	private String openType ="1";//开放状态
-	private int  availableState =0 ;//可用状态
-	private String manufacturer;//设备生产商
-	private String  factoryNum;//出厂编号
-	private String plotNum;//充电桩编号 
-	private String productNum;//产品型号
-	private String parkingNum;//电动车泊位号码
-	private int floor = 1 ;//楼层
-	private int locationType = 0 ;//充电桩位置类型
-	private String payment ="4" ;//支付方式
+	private int poiPid = 0;
+	private int groupId = 1;// 充电桩分组号
+	private int count = 1;// 组内充电桩数
+	private int acdc = 0;// 交直流电充电
+	private String plugType = "9";// 插座类型
+	private String power; // 充电功率
+	private String voltage;// 充电电压
+	private String current;// 充电电流
+	private int mode = 0;// 充电模式
+	private int plugNum = 1;// 单个充电桩插数量
+	private String prices;// 充电价格
+	private String openType = "1";// 开放状态
+	private int availableState = 0;// 可用状态
+	private String manufacturer;// 设备生产商
+	private String factoryNum;// 出厂编号
+	private String plotNum;// 充电桩编号
+	private String productNum;// 产品型号
+	private String parkingNum;// 电动车泊位号码
+	private int floor = 1;// 楼层
+	private int locationType = 0;// 充电桩位置类型
+	private String payment = "4";// 支付方式
 	private String memo;
 	private int mesh;
 	private String rowId;
-
+	// 更新时间
+	private String uDate;
 	
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
+	}
 
 	public int getMesh() {
 		return mesh;
@@ -59,11 +69,13 @@ public class IxPoiChargingPlot implements IRow {
 	public void setPoiPid(int poiPid) {
 		this.poiPid = poiPid;
 	}
+
 	public String getRowId() {
 		return rowId;
 	}
- 
-    private Map<String, Object> changedFields = new HashMap<String, Object>();   
+
+	private Map<String, Object> changedFields = new HashMap<String, Object>();
+
 	@Override
 	public String rowId() {
 		return rowId;
@@ -72,14 +84,13 @@ public class IxPoiChargingPlot implements IRow {
 	@Override
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
-		
+
 	}
 
 	@Override
 	public String tableName() {
 		return "ix_poi_chargingplot";
 	}
-	
 
 	public int getGroupId() {
 		return groupId;
@@ -250,7 +261,7 @@ public class IxPoiChargingPlot implements IRow {
 	@Override
 	public void setStatus(ObjStatus os) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -261,7 +272,7 @@ public class IxPoiChargingPlot implements IRow {
 	@Override
 	public void copy(IRow row) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -287,7 +298,6 @@ public class IxPoiChargingPlot implements IRow {
 		// TODO Auto-generated method stub
 		return "ix_poi";
 	}
-
 
 	public String getMemo() {
 		return memo;
@@ -320,44 +330,42 @@ public class IxPoiChargingPlot implements IRow {
 			if (json.get(key) instanceof JSONArray) {
 				continue;
 			} else {
-				if ( !"objStatus".equals(key)) {
-					
+				if (!"objStatus".equals(key)) {
+
 					Field field = this.getClass().getDeclaredField(key);
-					
+
 					field.setAccessible(true);
-					
+
 					Object objValue = field.get(this);
-					
+
 					String oldValue = null;
-					
-					if (objValue == null){
+
+					if (objValue == null) {
 						oldValue = "null";
-					}else{
+					} else {
 						oldValue = String.valueOf(objValue);
 					}
-					
+
 					String newValue = json.getString(key);
-					
-					if (!newValue.equals(oldValue)){
+
+					if (!newValue.equals(oldValue)) {
 						Object value = json.get(key);
-						
-						if(value instanceof String){
+
+						if (value instanceof String) {
 							changedFields.put(key, newValue.replace("'", "''"));
-						}
-						else{
+						} else {
 							changedFields.put(key, value);
 						}
 
 					}
 
-					
 				}
 			}
 		}
-		
-		if (changedFields.size() >0){
+
+		if (changedFields.size() > 0) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 
@@ -400,8 +408,7 @@ public class IxPoiChargingPlot implements IRow {
 	@Override
 	public void setMesh(int mesh) {
 		this.mesh = mesh;
-		
-	}
 
+	}
 
 }

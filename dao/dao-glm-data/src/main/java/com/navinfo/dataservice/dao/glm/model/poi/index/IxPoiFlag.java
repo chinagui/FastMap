@@ -17,19 +17,23 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 /**
  * POI标识信息表,记录POIFLAG,名称来源,地址确认标识等信息
+ * 
  * @author zhangxiaolong
  *
  */
 public class IxPoiFlag implements IRow {
-	
+
 	private int poiPid;
-	
-	private String flagCode;//标识代码
-	
+
+	private String flagCode;// 标识代码
+
 	private String rowId;
-	
+
+	// 更新时间
+	private String uDate;
+
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
-	
+
 	public int getPoiPid() {
 		return poiPid;
 	}
@@ -44,6 +48,14 @@ public class IxPoiFlag implements IRow {
 
 	public void setFlagCode(String flagCode) {
 		this.flagCode = flagCode;
+	}
+	
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
 	}
 
 	public String getRowId() {

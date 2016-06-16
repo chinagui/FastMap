@@ -17,11 +17,10 @@ public class IxPoiTest extends InitApplication{
 	}
 	@Test
 	public void addPoi(){
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":8,\"data\":{\"longitude\":116.39552235603331,\"latitude\":39.90676527744907,\"linkPid\":625962}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":42,\"data\":{\"longitude\":116.39552235603331,\"latitude\":39.90676527744907,\"x_guide\":0,\"y_guide\":0,\"linkPid\":0}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
-			System.out.println(msg);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

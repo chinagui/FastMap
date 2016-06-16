@@ -151,6 +151,7 @@ public class IxPoiRestaurantSelector implements ISelector {
 		ixPoiRestaurant.setPhotoName(resultSet.getString("photo_name"));
 		ixPoiRestaurant.setTravelguideFlag(resultSet.getInt("travelguide_flag"));
 		ixPoiRestaurant.setRowId(resultSet.getString("row_id"));
+		ixPoiRestaurant.setuDate(resultSet.getString("u_date"));
 
 	}
 	

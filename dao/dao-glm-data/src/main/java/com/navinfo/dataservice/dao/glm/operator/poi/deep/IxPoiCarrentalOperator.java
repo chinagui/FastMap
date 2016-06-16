@@ -25,7 +25,7 @@ import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchOperator;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
- 	索引:POI 深度信息(汽车租赁)  操作
+ * 索引:POI 深度信息(汽车租赁) 操作
  * 
  * @author zhaokk
  * 
@@ -73,14 +73,16 @@ public class IxPoiCarrentalOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiCarrental.tableName()
-				+ " set u_record=3,");
+		StringBuilder sb = new StringBuilder("update "
+				+ ixPoiCarrental.tableName() + " set u_record=3,u_date="
+				+ StringUtils.getCurrentTime() + ",");
 
 		PreparedStatement pstmt = null;
 
 		try {
 
-			Set<Entry<String, Object>> set = ixPoiCarrental.changedFields().entrySet();
+			Set<Entry<String, Object>> set = ixPoiCarrental.changedFields()
+					.entrySet();
 
 			Iterator<Entry<String, Object>> it = set.iterator();
 
@@ -93,7 +95,8 @@ public class IxPoiCarrentalOperator implements IOperator {
 
 				Object columnValue = en.getValue();
 
-				Field field = ixPoiCarrental.getClass().getDeclaredField(column);
+				Field field = ixPoiCarrental.getClass()
+						.getDeclaredField(column);
 
 				field.setAccessible(true);
 
@@ -138,9 +141,10 @@ public class IxPoiCarrentalOperator implements IOperator {
 						isChanged = true;
 					}
 
-				} 
+				}
 			}
-			sb.append(" where row_id=hextoraw('" + ixPoiCarrental.getRowId() + "')");
+			sb.append(" where row_id=hextoraw('" + ixPoiCarrental.getRowId()
+					+ "')");
 
 			String sql = sb.toString();
 
@@ -203,15 +207,15 @@ public class IxPoiCarrentalOperator implements IOperator {
 		ixPoiCarrental.setRowId(UuidUtils.genUuid());
 		StringBuilder sb = new StringBuilder("insert into ");
 		sb.append(ixPoiCarrental.tableName());
-		sb.append("(poi_pid, open_hour, address, how_to_go, phone_400,web_site, u_record,row_id) values (");
-		
-		sb.append(ixPoiCarrental.getPoiPid());
-		sb.append(",'" + ixPoiCarrental.getOpenHour()+"'");
-		sb.append(",'" + ixPoiCarrental.getAdress()+"'");
-		sb.append(",'" + ixPoiCarrental.getHowToGo()+"'");
-		sb.append(",'" + ixPoiCarrental.getPhone400()+"'");
-		sb.append(",'" + ixPoiCarrental.getWebsite()+"'");
+		sb.append("(poi_pid, open_hour, address, how_to_go, phone_400,web_site, u_date,u_record,row_id) values (");
 
+		sb.append(ixPoiCarrental.getPoiPid());
+		sb.append(",'" + ixPoiCarrental.getOpenHour() + "'");
+		sb.append(",'" + ixPoiCarrental.getAdress() + "'");
+		sb.append(",'" + ixPoiCarrental.getHowToGo() + "'");
+		sb.append(",'" + ixPoiCarrental.getPhone400() + "'");
+		sb.append(",'" + ixPoiCarrental.getWebsite() + "'");
+		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiCarrental.rowId() + "')");
 
 		stmt.addBatch(sb.toString());
@@ -225,9 +229,10 @@ public class IxPoiCarrentalOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		
-		String sql = "update " + ixPoiCarrental.tableName() + " set u_record=2 where row_id=hextoraw('" + ixPoiCarrental.rowId()
-				+ "')";
+
+		String sql = "update " + ixPoiCarrental.tableName()
+				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where row_id=hextoraw('"
+				+ ixPoiCarrental.rowId() + "')";
 		stmt.addBatch(sql);
 	}
 

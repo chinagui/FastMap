@@ -19,7 +19,7 @@ public class GdbExportJobRequest extends AbstractJobRequest {
 	protected String condition;
 	protected List<String> conditionParams;
 	protected String feature;
-//	protected boolean truncateData;
+//	protected boolean deleteData;
 //	protected boolean destroyTarget;
 	protected int targetDbId;
 	protected boolean multiThread4Input=true;

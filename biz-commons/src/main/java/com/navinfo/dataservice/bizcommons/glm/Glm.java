@@ -1,6 +1,9 @@
 package com.navinfo.dataservice.bizcommons.glm;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -11,11 +14,12 @@ import java.util.Set;
  * @Description: 只支持GDB+模型，没有主键的表使用ROW_ID作为主键
  */
 public class Glm {
-	private String gdbVersion;//240+,...
+	private String gdbVersion;//240+,250+...
 	private Map<String,GlmTable> editTables;//key:tableName,value:GLMTable object
 	private Map<String,GlmTable> extendTables;
 	//for cache
-	private Map<String,Set<String>> tableNameMap;//key:featureType,value:tableName
+	private Map<String,List<String>> editTableNameCache;//key:featureType,value:tableName
+	private Map<String,List<String>> extendTableNameCache;//key:featureType,value:tableName
 	public Glm(String gdbVersion){
 		this.gdbVersion=gdbVersion;
 	}
@@ -39,21 +43,17 @@ public class Glm {
 		if(tables!=null){
 			editTables = new HashMap<String,GlmTable>();
 			extendTables = new HashMap<String,GlmTable>();
-			for(String key:tables.keySet()){
-				GlmTable table = tables.get(key);
+			editTableNameCache = new HashMap<String,List<String>>();//空map
+			extendTableNameCache = new HashMap<String,List<String>>();//空map
+			for(String name:tables.keySet()){
+				GlmTable table = tables.get(name);
 				if(table.isEditable()){
-					editTables.put(key, table);
+					editTables.put(name, table);
 				}else{
-					extendTables.put(key, table);
+					extendTables.put(name, table);
 				}
 			}
 		}
-	}
-	public Map<String, Set<String>> getTableNameMap() {
-		return tableNameMap;
-	}
-	public void setTableNameMap(Map<String, Set<String>> tableNameMap) {
-		this.tableNameMap = tableNameMap;
 	}
 	public String getTablePidColName(String tableName){
 		GlmTable glmTable = editTables.get(tableName);
@@ -65,8 +65,63 @@ public class Glm {
 		}
 		return null;
 	}
-	public Set<String> getTableNames(String featureType){
-		return tableNameMap.get(featureType);
+	/**
+	 * 获取glm中fm作业的表
+	 * @param featureType:GlmTable.FEATURE_TYPE
+	 * @return
+	 */
+	public List<String> getEditTableNames(String featureType){
+		List<String> names = editTableNameCache.get(featureType);
+		if(names==null){
+			synchronized(this){
+				names = editTableNameCache.get(featureType);
+				if(names==null){
+					names = new ArrayList<String>();
+					//edit
+					if(featureType.equals(GlmTable.FEATURE_TYPE_ALL)){
+						names.addAll(editTables.keySet());
+					}else{
+						for(String name:editTables.keySet()){
+							GlmTable table = editTables.get(name);
+							if(featureType.equals(table.getFeatureType())){
+								names.add(name);
+							}
+						}
+					}
+					editTableNameCache.put(featureType, names);
+				}
+			}
+		}
+		return names;
 	}
 
+	/**
+	 * 获取glm中在fm中不作业的其他表
+	 * @param featureType:GlmTable.FEATURE_TYPE
+	 * @return
+	 */
+	public List<String> getExtendTableNames(String featureType){
+		List<String> names = extendTableNameCache.get(featureType);
+		if(names==null){
+			synchronized(this){
+				names = extendTableNameCache.get(featureType);
+				if(names==null){
+					names = new ArrayList<String>();
+					//extend
+					if(featureType.equals(GlmTable.FEATURE_TYPE_ALL)){
+						names.addAll(extendTables.keySet());
+					}else{
+						for(String name:extendTables.keySet()){
+							GlmTable table = extendTables.get(name);
+							if(featureType.equals(table.getFeatureType())){
+								names.add(name);
+							}
+						}
+					}
+					extendTableNameCache.put(featureType, names);
+				}
+			}
+		}
+		return names;
+	}
 }

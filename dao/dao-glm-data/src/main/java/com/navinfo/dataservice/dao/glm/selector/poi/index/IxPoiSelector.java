@@ -5,6 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
+
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
@@ -482,7 +486,7 @@ public class IxPoiSelector implements ISelector {
 		return null;
 	}
 
-	public JSONObject loadPids(boolean isLock,int pageSize, int pageNum) throws Exception {
+	public JSONObject loadPids(boolean isLock,int pid ,String pidName,int pageSize, int pageNum) throws Exception {
 
 		JSONObject result = new JSONObject();
 
@@ -502,7 +506,16 @@ public class IxPoiSelector implements ISelector {
         buffer.append(" WHERE     ip.pid = ipn.poi_pid ");
         buffer.append(" AND lang_code = 'CHI'");
         buffer.append(" AND ipn.name_type = 2 ");
-        buffer.append(" AND name_class = 1) c ");
+        buffer.append(" AND name_class = 1"); 
+        if( pid != 0){
+        	buffer.append("AND ip.pid = "+pid+"");
+        }else{
+        	if(StringUtils.isNotBlank(pidName)){
+        		buffer.append("AND ipn.name like %'"+pidName+"%'");
+        	}
+        }
+        
+        buffer.append(" ) c");
         buffer.append(" WHERE ROWNUM <= :1) ");
         buffer.append("  WHERE rn >= :2 ");
 		if (isLock) {

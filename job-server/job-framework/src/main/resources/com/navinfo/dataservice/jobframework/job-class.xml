@@ -12,4 +12,12 @@
 		class="com.navinfo.dataservice.diff.DiffJob"
 	 	request="com.navinfo.dataservice.diff.DiffJobRequest"
 	/>
+	<type name="gdbExport" 
+		class="com.navinfo.dataservice.expcore.job.GdbExportJob"
+	 	request="com.navinfo.dataservice.expcore.job.GdbExportJobRequest"
+	/>
+	<type name="gdbFullCopy" 
+		class="com.navinfo.dataservice.expcore.job.GdbFullCopyJob"
+	 	request="com.navinfo.dataservice.expcore.job.GdbFullCopyJobRequest"
+	/>
 </mapping>

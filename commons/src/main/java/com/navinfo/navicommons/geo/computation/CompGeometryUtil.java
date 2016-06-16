@@ -223,4 +223,10 @@ public class CompGeometryUtil {
 		return set;
 		
 	}
+	public static Set<String> geo2GridsWithoutBreak(Geometry geo){
+		if(geo!=null){
+			
+		}
+		return null;
+	}
 }

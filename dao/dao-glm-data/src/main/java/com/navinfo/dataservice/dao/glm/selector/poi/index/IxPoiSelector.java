@@ -7,12 +7,6 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
-
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
@@ -39,7 +33,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEntryimage;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiFlag;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiIcon;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiOperateRef;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
@@ -58,6 +51,10 @@ import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiIntroductionSelect
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiParkingSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiRestaurantSelector;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 /**
  * POI基础信息表 selector
@@ -302,18 +299,6 @@ public class IxPoiSelector implements ISelector {
 					IxPoiChargingStation obj = (IxPoiChargingStation) row;
 
 					ixPoi.chargingstationMap.put(obj.getRowId(), obj);
-				}
-				// 设置子表IX_POI_BUSINESSTIME
-				IxPoiOperateRefSelector IxPoiOperateRefSelector = new IxPoiOperateRefSelector(
-						conn);
-
-				ixPoi.setBusinesstimes(IxPoiOperateRefSelector
-						.loadRowsByParentId(id, isLock));
-
-				for (IRow row : ixPoi.getOperateRefs()) {
-					IxPoiOperateRef obj = (IxPoiOperateRef) row;
-
-					ixPoi.operateRefMap.put(obj.getRowId(), obj);
 				}
 
 				// 设置子表IX_POI_CHARGINGPLOT

@@ -218,7 +218,7 @@ public class IxPoiIconOperator implements IOperator {
 
 		sb.append(ixPoiIcon.tableName());
 
-		sb.append("(rel_id, poiPid,iconName, geometry, manageCode, clientFlag, row_id, u_record) values (");
+		sb.append("(rel_id, poiPid,iconName, geometry, manageCode, clientFlag, row_id,u_date,u_record) values (");
 
 		sb.append(ixPoiIcon.getPid());
 
@@ -235,6 +235,8 @@ public class IxPoiIconOperator implements IOperator {
 		sb.append(",'" + ixPoiIcon.getClientFlag() + "'");
 
 		sb.append(",'" + ixPoiIcon.getRowId() + "'");
+		
+		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
 
 		sb.append(",'1')");
 
@@ -251,7 +253,7 @@ public class IxPoiIconOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiIcon.tableName()
-				+ " set u_record=2 where rel_id=" + ixPoiIcon.getPid();
+				+ " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where rel_id=" + ixPoiIcon.getPid();
 
 		stmt.addBatch(sql);
 	}

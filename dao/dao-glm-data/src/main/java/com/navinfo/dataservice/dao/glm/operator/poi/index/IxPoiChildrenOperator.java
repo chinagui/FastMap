@@ -178,7 +178,7 @@ public class IxPoiChildrenOperator implements IOperator {
 
 		sb.append(ixPoiChildren.tableName());
 
-		sb.append("(groupId, childPoiPid, relationType, row_id,u_record) values (");
+		sb.append("(groupId, childPoiPid, relationType, row_id,u_date,u_record) values (");
 
 		sb.append(ixPoiChildren.getGroupId());
 
@@ -187,6 +187,8 @@ public class IxPoiChildrenOperator implements IOperator {
 		sb.append("," + ixPoiChildren.getRelationType() + "");
 
 		sb.append(",'" + ixPoiChildren.getRowId()+ "'");
+		
+		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
 
 		sb.append(",'1')");
 
@@ -202,7 +204,7 @@ public class IxPoiChildrenOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiChildren.tableName() + " set u_record=2 where row_id=hextoraw('" + ixPoiChildren.rowId()
+		String sql = "update " + ixPoiChildren.tableName() + " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where row_id=hextoraw('" + ixPoiChildren.rowId()
 				+ "')";
 
 		stmt.addBatch(sql);

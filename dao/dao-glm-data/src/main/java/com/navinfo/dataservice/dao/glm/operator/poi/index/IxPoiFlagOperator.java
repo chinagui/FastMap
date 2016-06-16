@@ -178,11 +178,13 @@ public class IxPoiFlagOperator implements IOperator {
 		sb.append(ixPoiFlag.tableName());
 
 		sb.append(
-				"(POI_PID, FLAG_CODE, U_RECORD, ROW_ID) values (");
+				"(POI_PID, FLAG_CODE, U_DATE,U_RECORD, ROW_ID) values (");
 
 		sb.append(ixPoiFlag.getPoiPid());
 		
 		sb.append(",'"+ixPoiFlag.getFlagCode()+"'");
+		
+		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
 
 		sb.append(",1,'" + ixPoiFlag.rowId() + "')");
 		
@@ -196,7 +198,7 @@ public class IxPoiFlagOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiFlag.tableName() + " set u_record=2 where row_id=hextoraw('"
+		String sql = "update " + ixPoiFlag.tableName() + " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where row_id=hextoraw('"
 				+ ixPoiFlag.rowId() + "')";
 
 		stmt.addBatch(sql);

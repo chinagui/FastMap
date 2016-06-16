@@ -218,7 +218,7 @@ public class IxPoiAudioOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiAudio.tableName()
-				+ " set u_record=2 where row_id=hextoraw('"
+				+ " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where row_id=hextoraw('"
 				+ ixPoiAudio.rowId() + "')";
 
 		stmt.addBatch(sql);

@@ -186,7 +186,7 @@ public class IxPoiPhotoOperator implements IOperator {
 
 		sb.append(ixPoiPhoto.tableName());
 
-		sb.append("(poi_pid, photo_id, status,memo, row_id,u_record) values (");
+		sb.append("(poi_pid, photo_id, status,memo, row_id,u_date,u_record) values (");
 
 		sb.append(ixPoiPhoto.getPoiPid());
 
@@ -197,6 +197,8 @@ public class IxPoiPhotoOperator implements IOperator {
 		sb.append(",'" + ixPoiPhoto.getMemo() + "'");
 
 		sb.append(",'" + ixPoiPhoto.getRowId() + "'");
+		
+		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
 
 		sb.append(",'1')");
 
@@ -213,7 +215,7 @@ public class IxPoiPhotoOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiPhoto.tableName()
-				+ " set u_record=2 where row_id=hextoraw('"
+				+ " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where row_id=hextoraw('"
 				+ ixPoiPhoto.rowId() + "')";
 
 		stmt.addBatch(sql);

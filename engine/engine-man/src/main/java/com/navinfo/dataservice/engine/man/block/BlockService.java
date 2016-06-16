@@ -18,10 +18,12 @@ import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.BlockMan;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
+import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -248,5 +250,43 @@ public class BlockService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	public List<Integer> close(List<Integer> blockIdList) throws ServiceException {
+		Connection conn = null;
+		try {
+
+			conn = DBConnector.getInstance().getManConnection();
+			
+			//获取所有blockIdList中可以关闭的block
+			List<Integer> blockReadyToClose = BlockOperation.getBlockListReadyToClose(conn,blockIdList);
+			
+			if(!blockReadyToClose.isEmpty()){
+				BlockOperation.closeBlockByBlockIdList(conn,blockReadyToClose);
+				
+				List<Integer> unClosedBlockList = new ArrayList<Integer>();
+				for(int i = 0;i<blockIdList.size();i++){
+					if(!blockReadyToClose.contains(blockIdList.get(i))){
+						unClosedBlockList.add(blockIdList.get(i));
+					}
+				}
+
+				return unClosedBlockList;
+			}else{
+				return blockIdList;
+			}
+			
+			
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("鏌ヨ鍒楄〃澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
+	
 
 }

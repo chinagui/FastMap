@@ -66,7 +66,6 @@ public class SubtaskController extends BaseController {
 			
 			dataJson.remove("gridIds");
 			
-//			Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
 			Subtask bean = (Subtask) JsonOperation.jsonToBean(dataJson,Subtask.class);
 			bean.setCreateUserId((int)userId);
 			bean.setGeometry(wkt);

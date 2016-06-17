@@ -349,6 +349,7 @@ public class UserInfoService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
 	public UserInfo query(UserInfo bean)throws ServiceException{
 		Connection conn = null;
 		try{
@@ -406,7 +407,6 @@ public class UserInfoService {
 						model.setUserId(rs.getInt("USER_ID"));
 						model.setUserRealName(rs.getString("USER_REAL_NAME"));
 						model.setUserNickName(rs.getString("USER_NICK_NAME"));
-						model.setUserPassword(rs.getString("USER_PASSWORD"));
 						model.setUserEmail(rs.getString("USER_EMAIL"));
 						model.setUserPhone(rs.getString("USER_PHONE"));
 						model.setUserLevel(rs.getInt("USER_LEVEL"));
@@ -433,6 +433,7 @@ public class UserInfoService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
 	/**
 	 * @param userInfo
 	 * @param userDevice

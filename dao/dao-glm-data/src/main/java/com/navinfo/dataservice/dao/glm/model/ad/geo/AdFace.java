@@ -107,7 +107,7 @@ public class AdFace implements IObj {
 	@Override
 	public String tableName() {
 
-		return "AD_FACE";
+		return "ad_face";
 	}
 
 	@Override
@@ -214,7 +214,7 @@ public class AdFace implements IObj {
 	@Override
 	public String parentTableName() {
 
-		return "AD_FACE";
+		return "ad_face";
 	}
 
 	@Override

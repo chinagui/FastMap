@@ -8,18 +8,20 @@ import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminDetail;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminGroup;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminName;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminPart;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminDetail;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminGroup;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminName;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminPart;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchName;
@@ -70,7 +72,9 @@ import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminGroupOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminNameOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminPartOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiChildrenOperator;
 import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiParentOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchDetailOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchNameOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchOperator;
@@ -153,7 +157,7 @@ public class OperatorFactory {
 	 * @return
 	 * @throws Exception 
 	 */
-	private static IOperator getOperator(Connection conn, IRow obj) throws Exception {
+	private static IOperator getOperator(Connection conn, IRow obj) throws Exception  {
 		switch (obj.objType()) {
 		case RDLINK:
 			return new RdLinkOperator(conn, (RdLink) obj);
@@ -258,13 +262,11 @@ public class OperatorFactory {
 		case ADNODEMESH:
 			return new AdNodeMeshOperator(conn, (AdNodeMesh)obj);
 		case IXPOI:
-			IxPoi poi = (IxPoi)obj;
-			if(StringUtils.isBlank(obj.rowId())){
-				poi.setRowId(UuidUtils.genUuid());
-			}
-			IxPoiOperator ixPoiOperator = new IxPoiOperator(conn, poi);
-			ixPoiOperator.upatePoiStatus();
-			return ixPoiOperator;
+			return new IxPoiOperator(conn, (IxPoi)obj);
+		case IXPOIPARENT:
+			return new IxPoiParentOperator(conn, (IxPoiParent)obj);
+		case IXPOICHILDREN:
+			return new IxPoiChildrenOperator(conn, (IxPoiChildren)obj);
 		default:
 			return null;
 		}

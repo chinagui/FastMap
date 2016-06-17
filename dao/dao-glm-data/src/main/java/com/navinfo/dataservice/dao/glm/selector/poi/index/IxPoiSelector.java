@@ -6,7 +6,9 @@ import java.sql.ResultSet;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.hssf.record.formula.functions.Islogical;
 
+import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
@@ -33,6 +35,8 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEntryimage;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiFlag;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiIcon;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameFlag;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameTone;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
@@ -478,9 +482,9 @@ public class IxPoiSelector implements ISelector {
 		JSONArray array = new JSONArray();
 
 		int total = 0;
-		int startRow = pageNum * pageSize + 1;
+		int startRow = (pageNum-1) * pageSize + 1;
 
-		int endRow = (pageNum + 1) * pageSize;
+		int endRow = pageNum * pageSize;
 		StringBuilder buffer = new StringBuilder();
         buffer.append(" SELECT * ");
         buffer.append(" FROM (SELECT c.*, ROWNUM rn ");
@@ -488,15 +492,15 @@ public class IxPoiSelector implements ISelector {
         //TODO 0 as freshness_vefication
         buffer.append(" ip.pid,ip.kind_code, 0 as freshness_vefication,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
         buffer.append(" FROM ix_poi ip, ix_poi_name ipn ");
-        buffer.append(" WHERE     ip.pid = ipn.poi_pid ");
+        buffer.append(" WHERE     ip.pid = ipn.poi_pid and ip.u_record !=2 ");
         buffer.append(" AND lang_code = 'CHI'");
         buffer.append(" AND ipn.name_type = 2 ");
         buffer.append(" AND name_class = 1"); 
         if( pid != 0){
-        	buffer.append("AND ip.pid = "+pid+"");
+        	buffer.append(" AND ip.pid = "+pid+"");
         }else{
         	if(StringUtils.isNotBlank(pidName)){
-        		buffer.append("AND ipn.name like %'"+pidName+"'%");
+        		buffer.append(" AND ipn.name like '%"+pidName+"%'");
         	}
         }
         
@@ -506,11 +510,9 @@ public class IxPoiSelector implements ISelector {
 		if (isLock) {
 			buffer.append(" for update nowait");
 		}
-
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
-		
 		try {
 			pstmt = conn.prepareStatement(buffer.toString());
 			pstmt.setInt(1, endRow);
@@ -671,5 +673,57 @@ public class IxPoiSelector implements ISelector {
 		
 		ixPoi.setuDate(resultSet.getString("u_date"));
 
+	}
+	public String loadRowIdByPid(int pid,boolean isLock ) throws Exception{
+
+
+		String sql = "select row_id from  ix_poi where pid=:1";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, pid);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+				return resultSet.getString("row_id");
+				
+			} else {
+				
+				throw new DataNotFoundException("数据不存在");
+			}
+
+		} catch (Exception e) {
+			
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+		}
+		
 	}
 }

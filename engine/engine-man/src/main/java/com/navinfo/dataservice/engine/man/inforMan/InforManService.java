@@ -36,10 +36,10 @@ public class InforManService {
 			conn = DBConnector.getInstance().getManConnection();	
 			InforMan  bean = (InforMan)JSONObject.toBean(json, InforMan.class);	
 			Date date = new Date(new java.util.Date().getTime());
-			String createSql = "insert into infor_man (INFOR_ID, INFOR_STATUS, DESCP, CREATE_USER_ID, CREATE_DATE, COLLECT_PLAN_START_DATE, COLLECT_PLAN_END_DATE, COLLECT_GROUP_ID, DAY_EDIT_PLAN_START_DATE, DAY_EDIT_PLAN_END_DATE, DAY_EDIT_GROUP_ID, MONTH_EDIT_PLAN_START_DATE, MONTH_EDIT_PLAN_END_DATE, MONTH_EDIT_GROUP_ID, DAY_PRODUCE_PLAN_START_DATE, DAY_PRODUCE_PLAN_END_DATE, MONTH_PRODUCE_PLAN_START_DATE, MONTH_PRODUCE_PLAN_END_DATE) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";			
+			String createSql = "insert into infor_man (INFOR_ID, INFOR_STATUS, DESCP, CREATE_USER_ID, CREATE_DATE, COLLECT_PLAN_START_DATE, COLLECT_PLAN_END_DATE, DAY_EDIT_PLAN_START_DATE, DAY_EDIT_PLAN_END_DATE, MONTH_EDIT_PLAN_START_DATE, MONTH_EDIT_PLAN_END_DATE, DAY_PRODUCE_PLAN_START_DATE, DAY_PRODUCE_PLAN_END_DATE, MONTH_PRODUCE_PLAN_START_DATE, MONTH_PRODUCE_PLAN_END_DATE) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";			
 			run.update(conn, 
 					   createSql, 
-					   bean.getInforId() , 1, bean.getDescp(), userId, date, bean.getCollectPlanStartDate(), bean.getCollectPlanEndDate(), bean.getCollectGroupId(), bean.getDayEditPlanStartDate(), bean.getDayEditPlanEndDate(), bean.getDayEditGroupId(), bean.getMonthEditPlanStartDate(), bean.getMonthEditPlanEndDate(), bean.getMonthEditGroupId(), bean.getDayProducePlanStartDate(), bean.getDayProducePlanEndDate(), bean.getMonthProducePlanStartDate(), bean.getMonthProducePlanEndDate()
+					   bean.getInforId() , 1, bean.getDescp(), userId, date, bean.getCollectPlanStartDate(), bean.getCollectPlanEndDate(), bean.getDayEditPlanStartDate(), bean.getDayEditPlanEndDate(), bean.getMonthEditPlanStartDate(), bean.getMonthEditPlanEndDate(), bean.getDayProducePlanStartDate(), bean.getDayProducePlanEndDate(), bean.getMonthProducePlanStartDate(), bean.getMonthProducePlanEndDate()
 					   );
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -58,7 +58,7 @@ public class InforManService {
 			JSONObject obj = JSONObject.fromObject(json);	
 			InforMan  bean = (InforMan)JSONObject.toBean(obj, InforMan.class);	
 			
-			String updateSql = "update infor_man set INFOR_ID=?, INFOR_STATUS=?, DESCP=?, CREATE_USER_ID=?, CREATE_DATE=?, COLLECT_PLAN_START_DATE=?, COLLECT_PLAN_END_DATE=?, COLLECT_GROUP_ID=?, DAY_EDIT_PLAN_START_DATE=?, DAY_EDIT_PLAN_END_DATE=?, DAY_EDIT_GROUP_ID=?, MONTH_EDIT_PLAN_START_DATE=?, MONTH_EDIT_PLAN_END_DATE=?, MONTH_EDIT_GROUP_ID=?, DAY_PRODUCE_PLAN_START_DATE=?, DAY_PRODUCE_PLAN_END_DATE=?, MONTH_PRODUCE_PLAN_START_DATE=?, MONTH_PRODUCE_PLAN_END_DATE=? where 1=1 INFOR_ID=? and INFOR_STATUS=? and DESCP=? and CREATE_USER_ID=? and CREATE_DATE=? and COLLECT_PLAN_START_DATE=? and COLLECT_PLAN_END_DATE=? and COLLECT_GROUP_ID=? and DAY_EDIT_PLAN_START_DATE=? and DAY_EDIT_PLAN_END_DATE=? and DAY_EDIT_GROUP_ID=? and MONTH_EDIT_PLAN_START_DATE=? and MONTH_EDIT_PLAN_END_DATE=? and MONTH_EDIT_GROUP_ID=? and DAY_PRODUCE_PLAN_START_DATE=? and DAY_PRODUCE_PLAN_END_DATE=? and MONTH_PRODUCE_PLAN_START_DATE=? and MONTH_PRODUCE_PLAN_END_DATE=?";
+			String updateSql = "update infor_man set INFOR_ID=?, INFOR_STATUS=?, DESCP=?, CREATE_USER_ID=?, CREATE_DATE=?, COLLECT_PLAN_START_DATE=?, COLLECT_PLAN_END_DATE=?, DAY_EDIT_PLAN_START_DATE=?, DAY_EDIT_PLAN_END_DATE=?, MONTH_EDIT_PLAN_START_DATE=?, MONTH_EDIT_PLAN_END_DATE=?, DAY_PRODUCE_PLAN_START_DATE=?, DAY_PRODUCE_PLAN_END_DATE=?, MONTH_PRODUCE_PLAN_START_DATE=?, MONTH_PRODUCE_PLAN_END_DATE=? where 1=1 INFOR_ID=? and INFOR_STATUS=? and DESCP=? and CREATE_USER_ID=? and CREATE_DATE=? and COLLECT_PLAN_START_DATE=? and COLLECT_PLAN_END_DATE=? and COLLECT_GROUP_ID=? and DAY_EDIT_PLAN_START_DATE=? and DAY_EDIT_PLAN_END_DATE=? and DAY_EDIT_GROUP_ID=? and MONTH_EDIT_PLAN_START_DATE=? and MONTH_EDIT_PLAN_END_DATE=? and MONTH_EDIT_GROUP_ID=? and DAY_PRODUCE_PLAN_START_DATE=? and DAY_PRODUCE_PLAN_END_DATE=? and MONTH_PRODUCE_PLAN_START_DATE=? and MONTH_PRODUCE_PLAN_END_DATE=?";
 			List<Object> values=new ArrayList();
 			if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
 				updateSql+=" and INFOR_ID=? ";

@@ -71,9 +71,17 @@ public class IxPoiOperator implements IOperator {
 
 	private IxPoi ixPoi;
 
-	public IxPoiOperator(Connection conn, IxPoi ixPoi) {
+	public IxPoiOperator(Connection conn, IxPoi ixPoi) throws Exception  {
 		this.conn = conn;
 		this.ixPoi = ixPoi;
+		if(org.apache.commons.lang.StringUtils.isBlank(ixPoi.rowId())){
+			ixPoi.setRowId(UuidUtils.genUuid());
+		}
+		upatePoiStatus(0);
+	}
+	public IxPoiOperator(Connection conn, String rowId) throws Exception  {
+		ixPoi.setRowId(rowId);
+		upatePoiStatus(0);
 	}
 
 	@Override
@@ -696,17 +704,18 @@ public class IxPoiOperator implements IOperator {
 	/**
 	 * poi操作修改poi状态为已作业，限度信息为0
 	 * zhaokk
+	 * sourceFlag 0 web 1 Android
 	 * @param row
 	 * @throws Exception
 	 */
-	public void  upatePoiStatus() throws Exception{
+	public void  upatePoiStatus(int sourceFlag) throws Exception{
 		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
-		sb.append(" USING (SELECT '"+ixPoi.getRowId()+"' as a, 2 as b,0 as c FROM dual) T2 ");
+		sb.append(" USING (SELECT '"+ixPoi.getRowId()+"' as a, decode("+sourceFlag+",0,2,1,1) as b,decode("+sourceFlag+",0,0,1,0) as c FROM dual) T2 ");
 		sb.append(" ON ( T1.row_id=T2.a) ");
 		sb.append(" WHEN MATCHED THEN ");
-		sb.append(" UPDATE SET T1.status = 2,T1.fresh_verified= 0 ");
+		sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.b ");
 		sb.append(" WHEN NOT MATCHED THEN ");
-		sb.append(" INSERT (T1.row_id,T1.status,T1.fresh_verified) VALUES(T2.a,T2.b,T2.c)");
+		sb.append(" INSERT (T1.row_id,T1.status,T1.fresh_verified) VALUES(T2.a,T2.b,T2.b)");
 		PreparedStatement pstmt = null;
 		try {
 				pstmt = conn.prepareStatement(sb.toString());

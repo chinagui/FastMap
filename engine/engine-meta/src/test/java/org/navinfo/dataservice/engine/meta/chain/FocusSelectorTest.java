@@ -18,6 +18,7 @@ public class FocusSelectorTest {
 		new ApplicationContextUtil().setApplicationContext(context);
 	}
 	
+	@Test
 	public void testLoadPoiNum() {
 		try {
 			FocusSelector selector = new FocusSelector();
@@ -31,6 +32,7 @@ public class FocusSelectorTest {
 
 	}
 	
+	@Test
 	public void testGetChain()
 	{
 		try {

@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +24,7 @@ import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
 public class PoiGridSearch {
@@ -39,7 +39,6 @@ public class PoiGridSearch {
 	public List<IRow> getPoiByGrids(JSONArray gridDateList) throws Exception{
 		Connection manConn = null;
 		Connection conn = null;
-		Map<String,String> gridDate = new HashMap<String,String>();
 		try {
 			manConn = DBConnector.getInstance().getManConnection();
 			String manQuery = "SELECT region_id FROM grid WHERE grid_id=:1";
@@ -50,8 +49,8 @@ public class PoiGridSearch {
 			List<IRow> retList = new ArrayList<IRow>();
 			for (int i=0;i<gridDateList.size();i++ ){
 				pstmt = manConn.prepareStatement(manQuery);
-				gridDate = (Map<String, String>) gridDateList.get(i);
-				pstmt.setString(1, gridDate.get("grid"));
+				JSONObject gridDate = gridDateList.getJSONObject(i);
+				pstmt.setString(1, gridDate.getString("grid"));
 				resultSet = pstmt.executeQuery();
 				if (resultSet.next()){
 					regionId = resultSet.getInt("region_id");
@@ -102,7 +101,7 @@ public class PoiGridSearch {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("static-access")
-	private List<IRow> getPoiData(Map<String, String> gridDate,Connection conn) throws Exception{
+	private List<IRow> getPoiData(JSONObject gridDate,Connection conn) throws Exception{
 		IxPoi ixPoi = new IxPoi();
 		List<IRow> retList = new ArrayList<IRow>();
 		
@@ -110,8 +109,8 @@ public class PoiGridSearch {
 		sb.append("SELECT poi_num,pid,mesh_id,kind_code,link_pid,x_guide,y_guide,post_code,open_24h,chain,u_record,geometry");
 		sb.append(" FROM "+ixPoi.tableName());
 		sb.append(" WHERE sdo_relate(geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE' ");
-		if (gridDate.get("date")!=""){
-			sb.append(" AND u_date>"+gridDate.get("date"));
+		if (!gridDate.getString("date").isEmpty()){
+			sb.append(" AND u_date>'"+gridDate.getString("date")+"'");
 		}
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -120,7 +119,7 @@ public class PoiGridSearch {
 			pstmt = conn.prepareStatement(sb.toString());
 			
 			GridUtils gu = new GridUtils();
-			String wkt = gu.grid2Wkt(gridDate.get("grid"));
+			String wkt = gu.grid2Wkt(gridDate.getString("grid"));
 
 			pstmt.setString(1, wkt);
 			resultSet = pstmt.executeQuery();

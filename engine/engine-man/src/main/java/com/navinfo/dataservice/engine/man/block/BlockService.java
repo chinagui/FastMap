@@ -140,13 +140,15 @@ public class BlockService {
 
 			conn = DBConnector.getInstance().getManConnection();
 
-			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY from BLOCK t where PLAN_STATUS="
-					+ json.getInt("planningStatus");
+			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']', ')');
+			
+			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY,t.PLAN_STATUS from BLOCK t where PLAN_STATUS in "
+					+ planningStatus;
 
 			if (StringUtils.isNotEmpty(json.getString("snapshot"))) {
 				if ("1".equals(json.getString("snapshot"))) {
-					selectSql = "select t.BLOCK_ID,t.BLOCK_NAME, from BLOCK t where PLAN_STATUS="
-							+ json.getInt("planningStatus");
+					selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.PLAN_STATUS from BLOCK t where PLAN_STATUS in "
+							+ planningStatus;
 				}
 			}
 			;
@@ -157,9 +159,8 @@ public class BlockService {
 					selectSql += " and sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE'";
 				}
 			}
-			List<Object> list = new ArrayList<Object>();
-			list.add(json.getString("wkt"));
-			return BlockOperation.queryBlockBySql(conn, selectSql, list);
+
+			return BlockOperation.queryBlockBySql(conn, selectSql, json.getString("wkt"));
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

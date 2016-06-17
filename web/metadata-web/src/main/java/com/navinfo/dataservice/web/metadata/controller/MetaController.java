@@ -30,7 +30,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
-import com.navinfo.dataservice.engine.man.version.VersionSelector;
+import com.navinfo.dataservice.engine.man.version.VersionService;
 
 @Controller
 public class MetaController extends BaseController {
@@ -208,9 +208,9 @@ public class MetaController extends BaseController {
 
 			JSONObject json = new JSONObject();
 
-			VersionSelector selector = new VersionSelector();
+			VersionService selector = new VersionService();
 
-			String specVersion = selector.getByType(3);
+			String specVersion = selector.query(3);
 
 			json.put("version", version);
 
@@ -287,7 +287,7 @@ public class MetaController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/meta/queryTelByProvince")
+	@RequestMapping(value = "/queryTelByProvince")
 	public ModelAndView searchTelByProvince(HttpServletRequest request)
 			throws ServletException, IOException {
 
@@ -312,7 +312,7 @@ public class MetaController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/meta/queryChain")
+	@RequestMapping(value = "/queryChain")
 	public ModelAndView queryChain(HttpServletRequest request)
 			throws ServletException, IOException {
 		
@@ -337,7 +337,7 @@ public class MetaController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/meta/chainLevel")
+	@RequestMapping(value = "/chainLevel")
 	public ModelAndView queryChainLevel(HttpServletRequest request)
 			throws ServletException, IOException {
 		
@@ -364,7 +364,7 @@ public class MetaController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/meta/queryFocus")
+	@RequestMapping(value = "/queryFocus")
 	public ModelAndView queryFocus(HttpServletRequest request)
 			throws ServletException, IOException {
 
@@ -384,7 +384,7 @@ public class MetaController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/meta/queryTelLength")
+	@RequestMapping(value = "/queryTelLength")
 	public ModelAndView searchTelLength(HttpServletRequest request)
 			throws ServletException, IOException {
 
@@ -409,7 +409,7 @@ public class MetaController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/meta/queryFoodType")
+	@RequestMapping(value = "/queryFoodType")
 	public ModelAndView searchFoodType(HttpServletRequest request)
 			throws ServletException, IOException {
 
@@ -434,7 +434,7 @@ public class MetaController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/meta/kindLevel")
+	@RequestMapping(value = "/kindLevel")
 	public ModelAndView searchKindLevel(HttpServletRequest request)
 			throws ServletException, IOException {
 

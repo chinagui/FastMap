@@ -15,15 +15,13 @@ public class Operation implements IOperation {
 		this.command = command;
 
 		this.ixPoi = ixPoi;
-
 	}
 
 	@Override
 	public String run(Result result) throws Exception {
 
 		result.insertObject(ixPoi, ObjStatus.DELETE, command.getPid());
-				
+
 		return null;
 	}
-
 }

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.dao.glm.model.ad.geo;
+package com.navinfo.dataservice.dao.glm.model.ad.zone;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -19,8 +19,13 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.vividsolutions.jts.geom.Geometry;
-
-public class AdFace implements IObj {
+/**
+ * 
+ * 
+ * @author zhaokk
+ *ZONE:FACE 表
+ */
+public class ZoneFace implements IObj {
 
 	private String rowId;
 
@@ -42,9 +47,9 @@ public class AdFace implements IObj {
 
 	private List<IRow> faceTopos = new ArrayList<IRow>();
 
-	public Map<String, AdFaceTopo> adFaceTopoMap = new HashMap<String, AdFaceTopo>();
+	public Map<String, ZoneFaceTopo> adFaceTopoMap = new HashMap<String, ZoneFaceTopo>();
 
-	public AdFace() {
+	public ZoneFace() {
 
 	}
 
@@ -107,7 +112,7 @@ public class AdFace implements IObj {
 	@Override
 	public String tableName() {
 
-		return "ad_face";
+		return "zone_face";
 	}
 
 	@Override
@@ -124,7 +129,7 @@ public class AdFace implements IObj {
 	@Override
 	public ObjType objType() {
 
-		return ObjType.ADFACE;
+		return ObjType.ZONEFACE;
 	}
 
 	@Override
@@ -214,7 +219,7 @@ public class AdFace implements IObj {
 	@Override
 	public String parentTableName() {
 
-		return "ad_face";
+		return "ZONE_FACE";
 	}
 
 	@Override

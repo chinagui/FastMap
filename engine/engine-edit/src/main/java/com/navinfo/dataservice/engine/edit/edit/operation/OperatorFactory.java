@@ -8,17 +8,17 @@ import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminDetail;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminGroup;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminName;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminPart;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminDetail;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminGroup;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminName;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminPart;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
@@ -259,10 +259,10 @@ public class OperatorFactory {
 			return new AdNodeMeshOperator(conn, (AdNodeMesh)obj);
 		case IXPOI:
 			IxPoi poi = (IxPoi)obj;
-			IxPoiOperator ixPoiOperator = new IxPoiOperator(conn, poi);
 			if(StringUtils.isBlank(obj.rowId())){
-				obj.setRowId(UuidUtils.genUuid());
+				poi.setRowId(UuidUtils.genUuid());
 			}
+			IxPoiOperator ixPoiOperator = new IxPoiOperator(conn, poi);
 			ixPoiOperator.upatePoiStatus();
 			return ixPoiOperator;
 		default:

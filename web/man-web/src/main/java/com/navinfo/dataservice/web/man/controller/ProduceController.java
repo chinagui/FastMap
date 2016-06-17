@@ -67,7 +67,7 @@ public class ProduceController extends BaseController {
 			//TODO
 			dataJson.put("dataType", "ALL");
 			dataJson.put("stopTime", "20160616000000");
-			long jobId=jobApi.createJob("releaseFmidbDaily", dataJson, (int)userId, "日出品");
+			long jobId=jobApi.createJob("releaseFmidbDaily", dataJson,1, (int)userId, "日出品");
 			return new ModelAndView("jsonView", success(jobId));
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);
@@ -101,7 +101,7 @@ public class ProduceController extends BaseController {
 			 */
 			//TODO
 			dataJson.put("stopTime", "20160616000000");
-			long jobId=jobApi.createJob("releaseFmidbMonthly", dataJson, (int)userId, "月出品");
+			long jobId=jobApi.createJob("releaseFmidbMonthly", dataJson,1, (int)userId, "月出品");
 			return new ModelAndView("jsonView", success(jobId));
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);
@@ -135,7 +135,7 @@ public class ProduceController extends BaseController {
 			 */
 			dataJson.put("stopTime", "20160616000000");
 			//TODO 道路日落月，poi后台定时脚本
-			long jobId=jobApi.createJob("commitDay2monthRoad", dataJson, (int)userId, "月融合");
+			long jobId=jobApi.createJob("commitDay2monthRoad", dataJson, 1,(int)userId, "月融合");
 			return new ModelAndView("jsonView", success(jobId));
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);

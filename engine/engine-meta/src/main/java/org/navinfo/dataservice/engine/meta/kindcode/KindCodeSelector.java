@@ -259,10 +259,10 @@ public class KindCodeSelector {
 						String kindName = resultSet.getString("kind_name");
 						String mediumId = resultSet.getString("sub_class_code");
 						String level = resultSet.getString("level");
-						String extend = resultSet.getString("extend");
-						String parent = resultSet.getString("parent");
-						String chainFlag = resultSet.getString("chain");
-						String dispOnlink = resultSet.getString("disp_onlink");
+						int extend = resultSet.getInt("extend");
+						int parent = resultSet.getInt("parent");
+						int chainFlag = resultSet.getInt("chain");
+						int dispOnlink = resultSet.getInt("disp_onlink");
 
 						JSONObject json = new JSONObject();
 

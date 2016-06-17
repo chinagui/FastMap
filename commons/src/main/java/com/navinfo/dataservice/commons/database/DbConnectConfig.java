@@ -29,7 +29,7 @@ public class DbConnectConfig {
 		this.serverIp=serverIp;
 		this.serverPort=serverPort;
 		this.serverType=serverType;
-		this.key=serverIp+":"+serverPort+"/"+userName;
+		this.key=serverIp+":"+serverPort+"/"+dbName+"/"+userName;
 	}
 	
 	public String getBizType() {

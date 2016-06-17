@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -230,7 +232,6 @@ public class IxPoiOperator implements IOperator {
 
 	@Override
 	public void insertRow2Sql(Statement stmt) throws Exception {
-		ixPoi.setRowId(UuidUtils.genUuid());
 
 		StringBuilder sb = new StringBuilder("insert into ");
 

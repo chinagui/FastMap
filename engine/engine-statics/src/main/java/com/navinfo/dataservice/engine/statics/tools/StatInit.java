@@ -25,9 +25,9 @@ public class StatInit {
 	}
 
 	/**
-	 * 初始化tips库统计结果
+	 * 获取 tips库中 track轨迹统计结果，并封装成map返回 支持 根据参数key返回 grid，block，city三种
 	 */
-	public static Map<String, Double> getGridTipsStat(String db_name, String col_name, String stat_date) {
+	public static Map<String, Double> getTrackTipsStat(String db_name, String col_name, String key, String stat_date) {
 		Map<String, Double> map = new HashMap<String, Double>();
 
 		Pattern pattern = Pattern.compile("^" + stat_date + ".*$", Pattern.CASE_INSENSITIVE);
@@ -37,7 +37,21 @@ public class StatInit {
 		MongoCursor<Document> iter = new MongoDao(db_name).find(col_name, query).iterator();
 		while (iter.hasNext()) {
 			JSONObject json = JSONObject.fromObject(iter.next());
-			map.put(json.getString("grid_id"), json.getDouble("track_length"));
+			map.put(json.getString(key), json.getDouble("track_length"));
+		}
+		return map;
+	}
+
+	/**
+	 * 获取 tips库中 track轨迹统计结果，并封装成map返回 支持 根据参数key返回 grid，block，city三种
+	 */
+	public static Map<String, Double> getTrackSeasonStat(String db_name, String col_name, String key) {
+		Map<String, Double> map = new HashMap<String, Double>();
+
+		MongoCursor<Document> iter = new MongoDao(db_name).find(col_name, null).iterator();
+		while (iter.hasNext()) {
+			JSONObject json = JSONObject.fromObject(iter.next());
+			map.put(json.getString(key), json.getDouble("total"));
 		}
 		return map;
 	}

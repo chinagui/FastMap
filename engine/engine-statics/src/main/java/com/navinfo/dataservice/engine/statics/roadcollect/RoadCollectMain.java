@@ -1,31 +1,37 @@
 package com.navinfo.dataservice.engine.statics.roadcollect;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.bson.Document;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoDatabase;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
-import com.navinfo.dataservice.engine.statics.tools.OracleDao;
 import com.navinfo.dataservice.engine.statics.tools.StatInit;
+import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 
 public class RoadCollectMain {
 
 	private static Logger log = null;
-	private static CountDownLatch countDownLatch = null;
 	private static final String col_name = "fm_stat_collect_road";
 	private String db_name;
 	private String stat_date;
+	private String stat_time;
+	// tips 库
+	private String col_name_tips = "track_length_grid_stat";
+	// 季度库
+	private String col_name_seasion_grid = "road_season_grid_stat";
 
-	public RoadCollectMain(String dbn, String stat_date) {
+	public RoadCollectMain(String dbn, String stat_time) {
 		this.db_name = dbn;
-		this.stat_date = stat_date;
+		this.stat_date = stat_time.substring(0, 8);
+		this.stat_time = stat_time;
 	}
 
 	/**
@@ -58,6 +64,34 @@ public class RoadCollectMain {
 
 	}
 
+	public List<Document> getRdlink() {
+		List<Document> json_list = new ArrayList<Document>();
+		// 存储 从mongo提取的tips统计结果
+		Map<String, Double> mapTips = StatInit.getTrackTipsStat(db_name, col_name_tips, "grid_id", stat_date);
+		Map<String, Double> mapSeason = StatInit.getTrackSeasonStat(db_name, col_name_seasion_grid, "grid_id");
+
+		for (Entry<String, Double> entry : mapSeason.entrySet()) {
+			Document json = new Document();
+			String grid_id = entry.getKey();
+			double total = entry.getValue();
+			double finish = (mapTips.get(grid_id) == null ? 0 : mapTips.get(grid_id));
+
+			// ------------------------------
+			json.put("grid_id", grid_id);
+			json.put("stat_date", stat_date);
+			json.put("stat_time", stat_time);
+			// ------------------------------
+			Document road = new Document();
+			road.put("total", total);
+			road.put("finish", finish);
+			road.put("percent", StatUtil.formatDouble(finish / total * 100));
+			// ------------------------------
+			json.put("road", road);
+			json_list.add(json);
+		}
+		return json_list;
+	}
+
 	/**
 	 * 多线程执行所有大区库的统计
 	 */
@@ -69,27 +103,8 @@ public class RoadCollectMain {
 		try {
 			// 初始化mongodb数据库
 			initMongoDb(db_name);
-			// 初始化 datahub环境
-			StatInit.initDatahubDb();
-			// 获得 大区库的db_id
-			List<Integer> ListDbId = OracleDao.getDbIdDaily();
-
-			int dbid_cnt = ListDbId.size();
-			Iterator<Integer> iter = ListDbId.iterator();
-
-			ExecutorService executorService = Executors.newCachedThreadPool();
-			// 计数器，线程数
-			countDownLatch = new CountDownLatch(dbid_cnt);
-
-			while (iter.hasNext()) {
-				int db_id = iter.next();
-
-				log.info("-- -- 创建统计进程 db_id：" + db_id);
-				executorService.submit(new RoadCollectStat(countDownLatch, db_id, db_name, col_name, stat_date));
-			}
-
-			countDownLatch.await();
-			executorService.shutdown();
+			// 统计数据如mongo
+			new MongoDao(db_name).insertMany(col_name, getRdlink());
 
 			log.info("-- end stat:" + col_name);
 			System.exit(0);

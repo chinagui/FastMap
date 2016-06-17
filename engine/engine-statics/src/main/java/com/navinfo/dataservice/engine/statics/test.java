@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.engine.statics;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -63,7 +65,8 @@ public class test {
 
 	public static void main(String[] args) throws Exception {
 
-		test1();
+		System.out.print(new SimpleDateFormat("yyyyMMddkkmmss").format(new Date()).substring(1,8) );
+
 		//
 		// ClassPathXmlApplicationContext context = new
 		// ClassPathXmlApplicationContext(new String[] {

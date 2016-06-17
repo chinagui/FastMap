@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.dao.glm.model.ad.geo;
+package com.navinfo.dataservice.dao.glm.model.ad.zone;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -20,22 +20,23 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
 import com.vividsolutions.jts.geom.Geometry;
-
-public class AdLink implements IObj {
+/**
+ * 
+ * ZONE:LINK 表
+ * @author zhaokk
+ *
+ */
+public class ZoneLink implements IObj {
 
 	private int pid;
 
-	private int sNodePid;
+	private int sNodePid;//起始节点
 
-	private int eNodePid;
+	private int eNodePid;//终止节点
 
-	private int kind = 1;
+	private Geometry geometry;//LINK 坐标
 
-	private int form = 1;
-
-	private Geometry geometry;
-
-	private double length;
+	private double length;//LINK 长度
 
 	private int scale;
 
@@ -43,19 +44,18 @@ public class AdLink implements IObj {
 
 	private String rowId;
 
-	private int mesh;
-
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	private List<IRow> meshes = new ArrayList<IRow>();
+	private List<IRow> kinds = new ArrayList<IRow>();
 
-	public Map<String, AdNode> nodeMap = new HashMap<String, AdNode>();
+	public Map<String, ZoneNode> nodeMap = new HashMap<String, ZoneNode>();
 
-	public Map<String, AdLinkMesh> meshMap = new HashMap<String, AdLinkMesh>();
+	public Map<String, ZoneLinkMesh> meshMap = new HashMap<String, ZoneLinkMesh>();
 
-	public Map<String, AdLinkMesh> adLinkMeshMap = new HashMap<String, AdLinkMesh>();
+	public Map<String, ZoneLinkMesh> adLinkMeshMap = new HashMap<String, ZoneLinkMesh>();
 
-	public AdLink() {
+	public ZoneLink() {
 	}
 
 	@Override
@@ -70,7 +70,7 @@ public class AdLink implements IObj {
 
 	@Override
 	public String tableName() {
-		return "ad_link";
+		return "zone_link";
 	}
 
 	@Override
@@ -84,42 +84,43 @@ public class AdLink implements IObj {
 
 	@Override
 	public ObjType objType() {
-		return ObjType.ADLINK;
+		return ObjType.ZONELINK;
 	}
 
 	@Override
 	public void copy(IRow row) {
-		AdLink sourceAdLink = (AdLink) row;
+		ZoneLink zoneLink = (ZoneLink) row;
 
-		this.pid = sourceAdLink.getPid();
+		this.pid = zoneLink.getPid();
 
-		this.editFlag = sourceAdLink.getEditFlag();
+		this.editFlag = zoneLink.getEditFlag();
 
-		this.eNodePid = sourceAdLink.geteNodePid();
+		this.eNodePid = zoneLink.geteNodePid();
 
-		this.form = sourceAdLink.getForm();
+		this.geometry = zoneLink.getGeometry();
 
-		this.geometry = sourceAdLink.getGeometry();
+		this.length = zoneLink.getLength();
 
-		this.kind = sourceAdLink.getKind();
+		this.scale = zoneLink.getScale();
 
-		this.length = sourceAdLink.getLength();
+		this.sNodePid = zoneLink.getsNodePid();
 
-		this.scale = sourceAdLink.getScale();
+		for (IRow mesh : zoneLink.meshes) {
 
-		this.sNodePid = sourceAdLink.getsNodePid();
-
-		this.meshes = new ArrayList<IRow>();
-
-		for (IRow mesh : sourceAdLink.meshes) {
-
-			AdLinkMesh adLinkMesh = new AdLinkMesh();
+			ZoneLinkMesh adLinkMesh = new ZoneLinkMesh();
 
 			adLinkMesh.copy(mesh);
 
 			adLinkMesh.setLinkPid(this.getPid());
 
 			this.meshes.add(adLinkMesh);
+		}
+		for(IRow kind:zoneLink.kinds){
+			ZoneLinkKind zoneLinkKind = new ZoneLinkKind();
+			zoneLinkKind.copy(kind);
+			zoneLinkKind.setLinkPid(this.getPid());
+			this.kinds.add(zoneLinkKind);
+			
 		}
 	}
 
@@ -140,7 +141,7 @@ public class AdLink implements IObj {
 
 	@Override
 	public String parentTableName() {
-		return "ad_link";
+		return "zone_link";
 	}
 
 	@Override
@@ -148,8 +149,12 @@ public class AdLink implements IObj {
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
 
 		children.add(this.getMeshes());
-
+        children.add(this.getKinds());
 		return children;
+	}
+
+	public List<IRow> getKinds() {
+		return kinds;
 	}
 
 	@Override
@@ -254,7 +259,24 @@ public class AdLink implements IObj {
 					for (int i = 0; i < ja.size(); i++) {
 						JSONObject jo = ja.getJSONObject(i);
 
-						AdLinkMesh row = new AdLinkMesh();
+						ZoneLinkMesh row= new ZoneLinkMesh();
+
+						row.Unserialize(jo);
+
+						meshes.add(row);
+					}
+
+					break;
+				case "kinds":
+
+					kinds.clear();
+
+					ja = json.getJSONArray(key);
+
+					for (int i = 0; i < ja.size(); i++) {
+						JSONObject jo = ja.getJSONObject(i);
+
+						ZoneLinkKind row = new ZoneLinkKind();
 
 						row.Unserialize(jo);
 
@@ -324,22 +346,6 @@ public class AdLink implements IObj {
 		this.eNodePid = eNodePid;
 	}
 
-	public int getKind() {
-		return kind;
-	}
-
-	public void setKind(int kind) {
-		this.kind = kind;
-	}
-
-	public int getForm() {
-		return form;
-	}
-
-	public void setForm(int form) {
-		this.form = form;
-	}
-
 	public Geometry getGeometry() {
 		return geometry;
 	}
@@ -383,17 +389,10 @@ public class AdLink implements IObj {
 	public List<IRow> getMeshes() {
 		return meshes;
 	}
-
-	public void setMeshes(List<IRow> meshes) {
-		this.meshes = meshes;
-	}
-
 	public String getRowId() {
 		return rowId;
 	}
 
-	public int getMesh() {
-		return mesh;
-	}
+
 
 }

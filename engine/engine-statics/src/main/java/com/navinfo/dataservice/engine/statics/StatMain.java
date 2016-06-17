@@ -6,6 +6,7 @@ import java.util.Date;
 import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectMain;
 import com.navinfo.dataservice.engine.statics.poidaily.PoiDailyMain;
 import com.navinfo.dataservice.engine.statics.roadcollect.RoadCollectMain;
+import com.navinfo.dataservice.engine.statics.season.RoadSeasonMain;
 
 public class StatMain {
 	// 定义统计库名称
@@ -21,6 +22,9 @@ public class StatMain {
 	// 统计 daily
 	private static final String flag_month_poi = "mp";
 	private static final String flag_month_road = "mr";
+	// 统计 seasion
+	private static final String flag_season_poi = "sp";
+	private static final String flag_season_road = "sr";
 
 	/**
 	 * @param args
@@ -37,6 +41,8 @@ public class StatMain {
 				new RoadCollectMain(db_name, stat_date).runStat();
 			} else if (flag.equalsIgnoreCase(flag_daily_poi)) {
 				new PoiDailyMain(db_name, stat_date).runStat();
+			} else if (flag.equalsIgnoreCase(flag_season_road)) {
+				new RoadSeasonMain(db_name, stat_date).runStat();
 			}
 		}
 

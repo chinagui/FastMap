@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.dao.glm.model.ad.zone;
+package com.navinfo.dataservice.dao.glm.model.ad.geo;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;

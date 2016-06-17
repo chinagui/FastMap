@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminPart;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminPart;
 import com.navinfo.dataservice.dao.glm.operator.rd.gsc.RdGscLinkOperator;
 
 public class AdAdminPartOperator implements IOperator {

@@ -15,8 +15,8 @@ import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminName;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminName;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 
 public class AdAdminSelector implements ISelector {

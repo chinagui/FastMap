@@ -56,7 +56,7 @@ public class LayerController extends BaseController {
 //			long userId = tokenObj.getUserId();
 			long userId=2;
 			
-			service.create(userId, dataJson.getString("wkt"));
+			service.create(userId, dataJson.getString("layerName"),dataJson.getString("wkt"));
 			return new ModelAndView("jsonView", success("创建成功"));
 		} catch (Exception e) {
 			log.error("创建失败，原因：" + e.getMessage(), e);

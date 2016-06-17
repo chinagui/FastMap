@@ -39,12 +39,12 @@ public class LayerService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
 	
-	public void create(long userId,String wkt)throws Exception{
+	public void create(long userId, String layerName,String wkt)throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();			
-			String createSql = "insert into customised_layer (LAYER_ID, GEOMETRY, CREATE_USER_ID, CREATE_DATE) "
-					+ "values(customised_layer_seq.nextval,sdo_geometry('"+wkt+"',8307),"+userId+",sysdate)";			
+			String createSql = "insert into customised_layer (LAYER_ID, LAYER_NAME,GEOMETRY, CREATE_USER_ID, CREATE_DATE) "
+					+ "values(customised_layer_seq.nextval,'"+layerName+"',sdo_geometry('"+wkt+"',8307),"+userId+",sysdate)";			
 			DbOperation.exeUpdateOrInsertBySql(conn, createSql);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

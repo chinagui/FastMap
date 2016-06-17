@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.dao.glm.model.ad.zone;
+package com.navinfo.dataservice.dao.glm.model.ad.geo;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -9,29 +9,113 @@ import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import org.springframework.util.StringUtils;
-
 import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
-public class AdAdminPart implements IRow {
+public class AdAdminDetail implements IObj {
 
-	private int groupId;
-	private int regionIdDown;
-	private int meshId = 0;
-    private String rowId;
-    private String objType;
-    public String getRowId() {
-		return rowId;
+    private int pid;
+	private String cityName ;
+	public int getPid() {
+		return pid;
 	}
 
-	private Map<String, Object> changedFields = new HashMap<String, Object>();
+	public void setPid(int pid) {
+		this.pid = pid;
+	}
+
+	private String cityNameEng;
+	private String cityIntr;
+	public String getCityName() {
+		return cityName;
+	}
+
+	public void setCityName(String cityName) {
+		this.cityName = cityName;
+	}
+
+	public String getCityNameEng() {
+		return cityNameEng;
+	}
+
+	public void setCityNameEng(String cityNameEng) {
+		this.cityNameEng = cityNameEng;
+	}
+
+	public String getCityIntr() {
+		return cityIntr;
+	}
+
+	public void setCityIntr(String cityIntr) {
+		this.cityIntr = cityIntr;
+	}
+
+	public String getCityIntrEng() {
+		return cityIntrEng;
+	}
+
+	public void setCityIntrEng(String cityIntrEng) {
+		this.cityIntrEng = cityIntrEng;
+	}
+
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+	public String getPhotoName() {
+		return photoName;
+	}
+
+	public void setPhotoName(String photoName) {
+		this.photoName = photoName;
+	}
+
+	public String getAudioFile() {
+		return audioFile;
+	}
+
+	public void setAudioFile(String audioFile) {
+		this.audioFile = audioFile;
+	}
+
+	public String getReserved() {
+		return reserved;
+	}
+
+	public void setReserved(String reserved) {
+		this.reserved = reserved;
+	}
+
+	public String getMemo() {
+		return memo;
+	}
+
+	public void setMemo(String memo) {
+		this.memo = memo;
+	}
+
+	private String  cityIntrEng; 
+	
+	private String country ;
+	private String photoName;
+	
+	private String audioFile;
+	private String reserved;
+	private String memo ;
+	private int meshId = 0;
+    private String rowId;
+    private Map<String, Object> changedFields = new HashMap<String, Object>();
 	@Override
 	public String rowId() {
-		return this.getRowId();
+		return rowId;
 	}
 
 	@Override
@@ -39,18 +123,10 @@ public class AdAdminPart implements IRow {
 		this.rowId = rowId;
 		
 	}
-	
-	public String getObjType() {
-		return objType;
-	}
-
-	public void setObjType(String objType) {
-		this.objType = objType;
-	}
 
 	@Override
 	public String tableName() {
-		return "ad_admin_part";
+		return "ad_admin_detail";
 	}
 
 	@Override
@@ -61,59 +137,44 @@ public class AdAdminPart implements IRow {
 
 	@Override
 	public void setStatus(ObjStatus os) {
+		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public ObjType objType() {
-		return ObjType.ADADMINGPART;
+		return ObjType.ADADMINDETAIL;
 	}
 
 	@Override
 	public void copy(IRow row) {
+		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public Map<String, Object> changedFields() {
 		// TODO Auto-generated method stub
-		return this.changedFields;
+		return null;
 	}
 
 	@Override
 	public String parentPKName() {
 		// TODO Auto-generated method stub
-		return "group_id";
+		return null;
 	}
 
 	@Override
 	public int parentPKValue() {
 		// TODO Auto-generated method stub
-		return this.getGroupId();
-	}
-
-	public int getGroupId() {
-		return groupId;
-	}
-
-	public void setGroupId(int groupId) {
-		this.groupId = groupId;
-	}
-
-	public int getRegionIdDown() {
-		return regionIdDown;
-	}
-
-	public void setRegionIdDown(int regionIdDown) {
-		this.regionIdDown = regionIdDown;
+		return 0;
 	}
 
 	@Override
 	public String parentTableName() {
 		// TODO Auto-generated method stub
-		return "ad_admin_group";
+		return "ad_admin";
 	}
-
 	public Map<String, Object> getChangedFields() {
 		return changedFields;
 	}
@@ -194,34 +255,31 @@ public class AdAdminPart implements IRow {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		if (objLevel == ObjLevel.FULL || objLevel == ObjLevel.HISTORY) {
-
-			JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
-
-			return json;
-		}
-		else if (objLevel == ObjLevel.BRIEF) {
-			JSONObject json = new JSONObject();
-
-			json.put("groupId", groupId);
-			
-			json.put("regionIdDown", regionIdDown);
-			
-			json.put("rowId", rowId);
-			
-			if(!StringUtils.isEmpty(objType))
-			{
-				json.put("objType", objType);
-			}
-
-			return json;
-		}
-		return null;
+		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
 	}
 
 	@Override
 	public boolean Unserialize(JSONObject json) throws Exception {
+		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public List<IRow> relatedRows() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int pid() {
+		// TODO Auto-generated method stub
+		return this.getPid();
+	}
+
+	@Override
+	public String primaryKey() {
+		// TODO Auto-generated method stub
+		return "admin_id";
 	}
 
 }

@@ -34,7 +34,7 @@ public class LayerController extends BaseController {
 	@RequestMapping(value = "/layer/create")
 	public ModelAndView create(HttpServletRequest request) {
 		try {
-//			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			//AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 
 			StringBuffer sb = new StringBuffer();
 			String line = null;
@@ -53,8 +53,9 @@ public class LayerController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
-//			long userId = tokenObj.getUserId();
+			//long userId = tokenObj.getUserId();
 			long userId=2;
+			//log.info(tokenObj);
 			
 			service.create(userId, dataJson.getString("layerName"),dataJson.getString("wkt"));
 			return new ModelAndView("jsonView", success("创建成功"));

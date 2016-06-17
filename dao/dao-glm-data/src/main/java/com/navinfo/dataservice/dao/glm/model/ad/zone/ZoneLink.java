@@ -53,7 +53,7 @@ public class ZoneLink implements IObj {
 
 	public Map<String, ZoneLinkMesh> meshMap = new HashMap<String, ZoneLinkMesh>();
 
-	public Map<String, ZoneLinkMesh> adLinkMeshMap = new HashMap<String, ZoneLinkMesh>();
+	public Map<String, ZoneLinkKind> kindMap = new HashMap<String, ZoneLinkKind>();
 
 	public ZoneLink() {
 	}
@@ -226,6 +226,14 @@ public class ZoneLink implements IObj {
 
 	@Override
 	public void setMesh(int mesh) {
+	}
+
+	public void setMeshes(List<IRow> meshes) {
+		this.meshes = meshes;
+	}
+
+	public void setKinds(List<IRow> kinds) {
+		this.kinds = kinds;
 	}
 
 	@Override

@@ -62,7 +62,7 @@ public class UserInfoController extends BaseController {
 			
 			UserInfo  userInfo = (UserInfo)JSONObject.toBean(dataJson, UserInfo.class);	
 			
-			HashMap data = service.login(userInfo,userDevice);
+			HashMap<?, ?> data = service.login(userInfo,userDevice);
 		
 			if(!data.isEmpty()){
 				return new ModelAndView("jsonView", success("data"));
@@ -149,12 +149,25 @@ public class UserInfoController extends BaseController {
 	@RequestMapping(value = "/userInfo/query")
 	public ModelAndView query(HttpServletRequest request){
 		try{
+
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			UserInfo  bean = (UserInfo)JSONObject.toBean(dataJson, UserInfo.class);
-			UserInfo  data = service.query(bean);			
+			UserInfo  userInfo = service.query(bean);
+			
+			HashMap<String, Object> data = new HashMap<String, Object>();
+			data.put("userId", userInfo.getUserId());
+			data.put("userRealName", userInfo.getUserRealName());
+			data.put("userNickName", userInfo.getUserNickName());
+			data.put("userIcon", userInfo.getUserIcon());
+			data.put("userEmail", userInfo.getUserEmail());
+			data.put("userPhone", userInfo.getUserPhone());
+			data.put("userLevel", userInfo.getUserLevel());
+			data.put("userScore", userInfo.getUserScore());
+			data.put("userGpsId", userInfo.getUserGpsid());
+			
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("获取明细失败，原因："+e.getMessage(), e);

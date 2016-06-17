@@ -231,7 +231,8 @@ public class SubtaskService {
 			
 			selectSql =  selectSql + " from SUBTASK s, Task t, Block b, Block_man bm "
 					+ " where (s.block_id=b.block_id or s.task_id=t.task_id)"
-					+ " and b.block_id = bm.block_id";
+					+ " and b.block_id = bm.block_id"
+					+ " and s.stage=" + bean.getStage();
 			//筛选条件
 			if(bean!=null&&bean.getBlockId()!=null && StringUtils.isNotEmpty(bean.getBlockId().toString())){
 				selectSql += " and block_id = " + bean.getBlockId();
@@ -306,8 +307,8 @@ public class SubtaskService {
 
 							//月编
 							if(2==rs.getInt("STAGE")){
-								task.setCMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE_t"));
-								task.setCMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE_t"));
+								task.setMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE_t"));
+								task.setMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE_t"));
 							}	
 							
 							subtask.setTask(task);

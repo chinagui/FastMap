@@ -77,13 +77,13 @@ public class IxPoiOperator implements IOperator {
 		if(org.apache.commons.lang.StringUtils.isBlank(ixPoi.rowId())){
 			ixPoi.setRowId(UuidUtils.genUuid());
 		}
-		upatePoiStatus(0);
+		upatePoiStatus();
 	}
 	public IxPoiOperator(Connection conn, String rowId) throws Exception  {
 		this.conn = conn;
 		ixPoi = new IxPoi();
 		ixPoi.setRowId(rowId);
-		upatePoiStatus(0);
+		upatePoiStatus();
 	}
 
 	@Override
@@ -710,9 +710,9 @@ public class IxPoiOperator implements IOperator {
 	 * @param row
 	 * @throws Exception
 	 */
-	public void  upatePoiStatus(int sourceFlag) throws Exception{
+	public void  upatePoiStatus() throws Exception{
 		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
-		sb.append(" USING (SELECT '"+ixPoi.getRowId()+"' as a, decode("+sourceFlag+",0,2,1,1) as b,decode("+sourceFlag+",0,0,1,0) as c FROM dual) T2 ");
+		sb.append(" USING (SELECT '"+ixPoi.getRowId()+"' as a, 2 as b,0 as c FROM dual) T2 ");
 		sb.append(" ON ( T1.row_id=T2.a) ");
 		sb.append(" WHEN MATCHED THEN ");
 		sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.b ");

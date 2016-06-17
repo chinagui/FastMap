@@ -45,7 +45,7 @@ public class TaskController extends BaseController {
 	@RequestMapping(value = "/task/create")
 	public ModelAndView create(HttpServletRequest request){
 		try{
-			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			//AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			String parameter = request.getParameter("parameter");
 			if (StringUtils.isEmpty(parameter)){
 				throw new IllegalArgumentException("parameter参数不能为空。");
@@ -54,8 +54,8 @@ public class TaskController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			long userId=tokenObj.getUserId();
-			//long userId=3;
+			//long userId=tokenObj.getUserId();
+			long userId=3;
 			service.create(userId,dataJson);
 			return new ModelAndView("jsonView", success("创建成功"));
 		}catch(Exception e){
@@ -111,9 +111,6 @@ public class TaskController extends BaseController {
 	public ModelAndView list(HttpServletRequest request){
 		try{	
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
-			
-			
-
 			JSONObject condition = dataJson.getJSONObject("condition");			
 			JSONObject order = dataJson.getJSONObject("order");	
 			

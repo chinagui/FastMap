@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -12,11 +13,15 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.navinfo.dataservice.api.man.model.UserDevice;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 
 /** 
 * @ClassName:  UserInfoService 
@@ -424,6 +429,85 @@ public class UserInfoService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询明细失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	/**
+	 * @param userInfo
+	 * @param userDevice
+	 * @throws ServiceException 
+	 */
+	public HashMap login(UserInfo userInfo, UserDevice userDevice) throws ServiceException {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try{
+			//持久化
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			
+			String selectSql = "";
+
+			if(userDevice!=null){
+				selectSql = "select u.user_id ,r.role_name "
+						+ " from user_info u,role r,role_user_mapping rum,user_device d "
+						+ " where u.user_id=d.user_id "
+						+ " and u.user_id = rum.user_id "
+						+ " and rum.role_id = r.role_id ";
+			}else{
+				selectSql = "select u.user_id ,r.role_name "
+						+ " from user_info u,role r,role_user_mapping rum "
+						+ " where u.user_id = rum.user_id "
+						+ " and rum.role_id = r.role_id ";
+			}
+			
+			selectSql += " and u.user_nick_name = '" + userInfo.getUserNickName() + "'";
+			selectSql += " and u.user_password = '" + userInfo.getUserPassword() + "'";
+			
+			if(userDevice!=null&&userDevice.getDeviceToken()!=null && StringUtils.isNotEmpty(userDevice.getDeviceToken().toString())){
+				selectSql += " and d.device_token = '" + userDevice.getDeviceToken() + "'";
+			}
+			if(userDevice!=null&&userDevice.getDevicePlatform()!=null && StringUtils.isNotEmpty(userDevice.getDevicePlatform().toString())){
+				selectSql += " and d.device_platform = '" + userDevice.getDevicePlatform() + "'";
+			}
+			if(userDevice!=null&&userDevice.getDeviceVersion()!=null && StringUtils.isNotEmpty(userDevice.getDeviceVersion().toString())){
+				selectSql += " and d.device_version = '" + userDevice.getDeviceVersion() + "'";
+			}
+			
+
+			
+			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>(){
+				public HashMap handle(ResultSet rs) throws SQLException {
+					HashMap map = new HashMap();
+					while(rs.next()){
+						map.put("userId", rs.getLong("user_id"));
+						map.put("roleName", rs.getString("role_name"));
+						return map;
+					}
+					return map;
+				}
+	    		
+	    	};
+			
+	    	HashMap map = run.query(conn, selectSql, rsHandler);
+	    	HashMap result = new HashMap();
+			
+	    	if(!map.isEmpty()){
+				AccessToken access_token = AccessTokenFactory.generate((long) (map.get("userId")));
+				if(access_token!=null){
+					result.put("access_token", access_token.getTokenString());
+					result.put("expires_in", access_token.getExpireSecond());
+					result.put("role", map.get("role"));
+				}	
+	    	}
+			
+			return result;
+
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("登录失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}

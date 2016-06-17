@@ -2,7 +2,7 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.adadmin.update;
 
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
-import com.navinfo.dataservice.dao.glm.selector.ad.zone.AdAdminSelector;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 

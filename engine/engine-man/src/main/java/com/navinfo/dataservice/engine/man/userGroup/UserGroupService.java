@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.model.UserGroup;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -291,6 +292,81 @@ public class UserGroupService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询明细失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public List<UserGroup> listByUser(UserInfo userInfo)throws ServiceException{
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();	
+					
+			String selectSql = "select ug.GROUP_ID"
+					+ ",ug.GROUP_NAME"
+					+ " from user_group ug,group_user_mapping gum"
+					+ " where ug.group_id = gum.group_id"
+					+ " and gum.user_id = " + userInfo.getUserId();
+
+			ResultSetHandler<List<UserGroup>> rsHandler = new ResultSetHandler<List<UserGroup>>(){
+				public List<UserGroup> handle(ResultSet rs) throws SQLException {
+					List<UserGroup> list = new ArrayList<UserGroup>();
+					while(rs.next()){
+						UserGroup model = new UserGroup();
+						model.setGroupId(rs.getInt("GROUP_ID"));
+						model.setGroupName(rs.getString("GROUP_NAME"));
+						list.add(model);
+					}
+					return list;
+				}
+	    		
+	    	}		;
+	    	
+	    	
+	    	return run.query(conn, selectSql, rsHandler);
+	    	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public List<UserGroup> listByType(UserGroup userGroup)throws ServiceException{
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();	
+					
+			String selectSql = "select ug.GROUP_ID"
+					+ ",ug.GROUP_NAME"
+					+ " from user_group ug"
+					+ " where ug.group_type =" + userGroup.getGroupType();
+
+			ResultSetHandler<List<UserGroup>> rsHandler = new ResultSetHandler<List<UserGroup>>(){
+				public List<UserGroup> handle(ResultSet rs) throws SQLException {
+					List<UserGroup> list = new ArrayList<UserGroup>();
+					while(rs.next()){
+						UserGroup model = new UserGroup();
+						model.setGroupId(rs.getInt("GROUP_ID"));
+						model.setGroupName(rs.getString("GROUP_NAME"));
+						list.add(model);
+					}
+					return list;
+				}
+	    		
+	    	}		;
+	    	
+	    	
+	    	return run.query(conn, selectSql, rsHandler);
+	    	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}

@@ -30,7 +30,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
-import com.navinfo.dataservice.engine.man.version.VersionSelector;
+import com.navinfo.dataservice.engine.man.version.VersionService;
 
 @Controller
 public class MetaController extends BaseController {
@@ -208,9 +208,9 @@ public class MetaController extends BaseController {
 
 			JSONObject json = new JSONObject();
 
-			VersionSelector selector = new VersionSelector();
+			VersionService selector = new VersionService();
 
-			String specVersion = selector.getByType(3);
+			String specVersion = selector.query(3);
 
 			json.put("version", version);
 

@@ -6,7 +6,7 @@ import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 
 import net.sf.json.JSONObject;
 
-public class Command extends AbstractCommand {
+public class CommandForUpload extends AbstractCommand {
 
 	private String requester;
 
@@ -35,7 +35,7 @@ public class Command extends AbstractCommand {
 		return requester;
 	}
 
-	public Command(JSONObject json, String requester) {
+	public CommandForUpload(JSONObject json, String requester) {
 		this.requester = requester;
 
 		this.setDbId(json.getInt("dbId"));

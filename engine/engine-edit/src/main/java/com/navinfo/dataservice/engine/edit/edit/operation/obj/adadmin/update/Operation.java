@@ -6,8 +6,8 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminName;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminName;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 
 public class Operation implements IOperation {

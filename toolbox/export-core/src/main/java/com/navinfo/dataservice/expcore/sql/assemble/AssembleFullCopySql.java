@@ -16,57 +16,37 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.glm.Glm;
 import com.navinfo.dataservice.bizcommons.glm.GlmCache;
+import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.expcore.sql.ExpSQL;
 
 
 public class AssembleFullCopySql{
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected static Logger log = Logger.getLogger(AssembleFullCopySql.class);
 
-	public AssembleFullCopySql() {
-	}
-
-	public List<ExpSQL> assemble(String dbLinkName, OracleSchema sourceSchema, OracleSchema targetSchema, String gdbVersion,List<String> specificTables,List<String> excludedTables,Map<String,String> tableRenames) throws Exception {
-		try {
-			List<String> tables = null;
-			if(specificTables!=null){
-				tables = specificTables;
-			}else{
-				Glm glm = GlmCache.getInstance().getGlm(gdbVersion);
-				tables = new ArrayList<String>();
-				tables.addAll(glm.getEditTables().keySet());
-				tables.addAll(glm.getExtendTables().keySet());
-				if(excludedTables!=null){
-					tables.removeAll(excludedTables);
-				}
+	private static List<String> getAssembleTables(String gdbVersion,String featureType,List<String> specificTables,List<String> excludedTables)throws Exception{
+		List<String> tables = null;
+		if(specificTables!=null){
+			tables = specificTables;
+		}else{
+			Glm glm = GlmCache.getInstance().getGlm(gdbVersion);
+			tables = new ArrayList<String>();
+			tables.addAll(glm.getEditTableNames(featureType));
+			tables.addAll(glm.getExtendTableNames(featureType));
+			if(excludedTables!=null){
+				tables.removeAll(excludedTables);
 			}
-			
-
-			// 自动构造所有表复制的sql
-			List<ExpSQL> expSQLs = assembleFastCopySql(dbLinkName, sourceSchema,tables,tableRenames);
-			return expSQLs;
-
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			throw e;
 		}
-
+		return tables;
 	}
 
-	/**
-	 * 自动构造所有表复制的sql
-	 * 
-	 * @param dbLinkName
-	 * @param parentDataSource
-	 * @return
-	 * @throws java.sql.SQLException
-	 */
-	protected List<ExpSQL> assembleFastCopySql(final String dbLinkName, OracleSchema sourceSchema,
-			List<String> tables,Map<String,String> tableRenames) throws Exception {
-		Connection conn=null;
+	public static List<ExpSQL> assembleFastCopySql(String dbLinkName, OracleSchema sourceSchema, OracleSchema targetSchema, String gdbVersion,String featureType,List<String> specificTables,List<String> excludedTables,Map<String,String> tableRenames) throws Exception {
+		List<String> tables = getAssembleTables(gdbVersion, featureType, specificTables, excludedTables);
 		List<ExpSQL> expSQLs = new ArrayList<ExpSQL>();
+		Connection conn=null;
 		try {
+			// 自动构造所有表复制的sql
 			conn=sourceSchema.getPoolDataSource().getConnection();
 			for (String tableName : tables) {
 				String rename = (tableRenames!=null&&tableRenames.containsKey(tableName))?tableRenames.get(tableName):tableName;
@@ -79,17 +59,16 @@ public class AssembleFullCopySql{
 				expSQL.setSql("INSERT /*+ append */ INTO " + rename + " select "+columnSelect+" from " + tableName + "@" + dbLinkName);
 				expSQLs.add(expSQL);
 			}
+			return expSQLs;
 		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 			throw e;
 		}finally{
 			DbUtils.closeQuietly(conn);
 		}
-		
-
-		return expSQLs;
 	}
 
-	private String getSelectColumnString(Connection conn, String tableName) throws SQLException {
+	private static String getSelectColumnString(Connection conn, String tableName) throws SQLException {
 		String sql = "select COLUMN_NAME from USER_TAB_COLUMNS where table_name = ? ORDER BY COLUMN_ID";
 		QueryRunner runner = new QueryRunner();
 		return runner.query(conn, sql, new ResultSetHandler<String>() {
@@ -113,4 +92,15 @@ public class AssembleFullCopySql{
 		}, tableName);
 
 	}
+	public static List<ExpSQL> assembleTruncateSql(String gdbVersion,String featureType, List<String> specificTables,List<String> excludedTables) throws Exception {
+		List<String> tables = getAssembleTables(gdbVersion,featureType, specificTables, excludedTables);
+		List<ExpSQL> expSQLs = new ArrayList<ExpSQL>();
+		for (String tableName : tables) {
+			ExpSQL expSQL = new ExpSQL();
+			expSQL.setSql("TRUNCATE TABLE " + tableName);
+			expSQLs.add(expSQL);
+		}
+		return expSQLs;
+	}
+
 }

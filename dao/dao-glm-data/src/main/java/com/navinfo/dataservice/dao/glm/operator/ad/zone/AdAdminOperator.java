@@ -17,10 +17,10 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminDetail;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminGroup;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminName;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminDetail;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminGroup;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminName;
 import com.navinfo.dataservice.dao.glm.operator.rd.gsc.RdGscLinkOperator;
 import com.vividsolutions.jts.geom.Geometry;
 

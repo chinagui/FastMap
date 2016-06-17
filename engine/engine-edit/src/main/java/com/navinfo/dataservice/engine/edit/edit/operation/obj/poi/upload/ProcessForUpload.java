@@ -5,11 +5,11 @@ import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 
-public class Process extends AbstractProcess<Command>{
+public class ProcessForUpload extends AbstractProcess<CommandForUpload>{
 
 	private IxPoi ixPoi;
 
-	public Process(AbstractCommand command) throws Exception {
+	public ProcessForUpload(AbstractCommand command) throws Exception {
 		super(command);
 	}
 

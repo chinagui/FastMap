@@ -17,6 +17,7 @@ import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /** 
@@ -163,6 +164,41 @@ public class BlockController extends BaseController {
 			}
 			List<HashMap> data = service.listByGroup(dataJson);			
 			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("获取block列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * 判断block是否可关闭:该block每个阶段的所有子任务均关闭，则该block可以关闭。
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/block/close")
+	public ModelAndView close(HttpServletRequest request){
+		try{			
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			if(!(dataJson.containsKey("blockIds"))){
+				throw new IllegalArgumentException("groupIds参数是必须的。");
+			}
+			
+			JSONArray blockIds = dataJson.getJSONArray("blockIds");
+			List<Integer> blockIdList = (List<Integer>)JSONArray.toCollection(blockIds,Integer.class);
+			
+			List<Integer> unClosedBlockList = service.close(blockIdList);
+			
+			if(unClosedBlockList.isEmpty()){
+				return new ModelAndView("jsonView", success("关闭成功"));
+			}else{
+				return new ModelAndView("jsonView", success(unClosedBlockList));
+			}
+			
 		}catch(Exception e){
 			log.error("获取block列表失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

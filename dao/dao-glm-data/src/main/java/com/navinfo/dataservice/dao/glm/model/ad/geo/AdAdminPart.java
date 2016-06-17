@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.dao.glm.model.ad.zone;
+package com.navinfo.dataservice.dao.glm.model.ad.geo;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -9,119 +9,49 @@ import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.springframework.util.StringUtils;
+
 import com.navinfo.dataservice.commons.util.JsonUtils;
-import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
-public class AdAdminName implements IObj {
-	private int regionId ;
-	private int nameGroupId = 1;
-	private String langCode;
-	private   int nameClass = 1; 
-	private  int pid;
-	private String name ;
-	private String phonetic;
-	
-	private int linkPid = 0;
-	private int srcFlag = 0;
+public class AdAdminPart implements IRow {
+
+	private int groupId;
+	private int regionIdDown;
 	private int meshId = 0;
     private String rowId;
-    private Map<String, Object> changedFields = new HashMap<String, Object>();
-    
-	@Override
-	public String rowId() {
-		return rowId;
-	}
-	
-	public String getRowId() {
+    private String objType;
+    public String getRowId() {
 		return rowId;
 	}
 
+	private Map<String, Object> changedFields = new HashMap<String, Object>();
+	@Override
+	public String rowId() {
+		return this.getRowId();
+	}
 
 	@Override
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
 		
 	}
+	
+	public String getObjType() {
+		return objType;
+	}
+
+	public void setObjType(String objType) {
+		this.objType = objType;
+	}
 
 	@Override
 	public String tableName() {
-		return "ad_admin_name";
+		return "ad_admin_part";
 	}
-	public int getRegionId() {
-		return regionId;
-	}
-
-	public void setRegionId(int regionId) {
-		this.regionId = regionId;
-	}
-
-	public int getNameGroupId() {
-		return nameGroupId;
-	}
-
-	public void setNameGroupId(int nameGroupId) {
-		this.nameGroupId = nameGroupId;
-	}
-
-	public String getLangCode() {
-		return langCode;
-	}
-
-	public void setLangCode(String langCode) {
-		this.langCode = langCode;
-	}
-
-	public int getNameClass() {
-		return nameClass;
-	}
-
-	public void setNameClass(int nameClass) {
-		this.nameClass = nameClass;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getPhonetic() {
-		return phonetic;
-	}
-
-	public void setPhonetic(String phonetic) {
-		this.phonetic = phonetic;
-	}
-
-	public int getLinkPid() {
-		return linkPid;
-	}
-
-	public void setLinkPid(int linkPid) {
-		this.linkPid = linkPid;
-	}
-
-	public int getSrcFlag() {
-		return srcFlag;
-	}
-
-	public void setSrcFlag(int srcFlag) {
-		this.srcFlag = srcFlag;
-	}
-	public int getPid() {
-		return pid;
-	}
-
-	public void setPid(int pid) {
-		this.pid = pid;
-	}
-
 
 	@Override
 	public ObjStatus status() {
@@ -131,18 +61,16 @@ public class AdAdminName implements IObj {
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public ObjType objType() {
-		return ObjType.ADADMINGNAME;
+		return ObjType.ADADMINGPART;
 	}
 
 	@Override
 	public void copy(IRow row) {
-		// TODO Auto-generated method stub
 		
 	}
 
@@ -155,20 +83,37 @@ public class AdAdminName implements IObj {
 	@Override
 	public String parentPKName() {
 		// TODO Auto-generated method stub
-		return "region_id";
+		return "group_id";
 	}
 
 	@Override
 	public int parentPKValue() {
 		// TODO Auto-generated method stub
-		return this.getRegionId();
+		return this.getGroupId();
+	}
+
+	public int getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(int groupId) {
+		this.groupId = groupId;
+	}
+
+	public int getRegionIdDown() {
+		return regionIdDown;
+	}
+
+	public void setRegionIdDown(int regionIdDown) {
+		this.regionIdDown = regionIdDown;
 	}
 
 	@Override
 	public String parentTableName() {
 		// TODO Auto-generated method stub
-		return "ad_admin";
+		return "ad_admin_group";
 	}
+
 	public Map<String, Object> getChangedFields() {
 		return changedFields;
 	}
@@ -181,6 +126,7 @@ public class AdAdminName implements IObj {
 	public List<List<IRow>> children() {
 		return null;
 	}
+
 	@Override
 	public boolean fillChangeFields(JSONObject json) throws Exception {
 		Iterator keys = json.keys();
@@ -233,8 +179,6 @@ public class AdAdminName implements IObj {
 			return false;
 		}
 
-
-
 	}
 
 	@Override
@@ -250,52 +194,34 @@ public class AdAdminName implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		if (objLevel == ObjLevel.FULL || objLevel == ObjLevel.HISTORY) {
 
-		if (objLevel == ObjLevel.HISTORY) {
-			json.remove("name");
+			JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+
+			return json;
 		}
+		else if (objLevel == ObjLevel.BRIEF) {
+			JSONObject json = new JSONObject();
 
-		return json;
-	}
-
-	@Override
-	public boolean Unserialize(JSONObject json) throws Exception {
-		Iterator keys = json.keys();
-
-		while (keys.hasNext()) {
-
-			String key = (String) keys.next();
-
-			if (!"objStatus".equals(key)) {
-
-				Field f = this.getClass().getDeclaredField(key);
-
-				f.setAccessible(true);
-
-				f.set(this, json.get(key));
+			json.put("groupId", groupId);
+			
+			json.put("regionIdDown", regionIdDown);
+			
+			json.put("rowId", rowId);
+			
+			if(!StringUtils.isEmpty(objType))
+			{
+				json.put("objType", objType);
 			}
 
+			return json;
 		}
-		return true;
-	}
-
-	@Override
-	public List<IRow> relatedRows() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public int pid() {
-		// TODO Auto-generated method stub
-		return this.getPid();
-	}
-
-	@Override
-	public String primaryKey() {
-		// TODO Auto-generated method stub
-		return "name_id";
+	public boolean Unserialize(JSONObject json) throws Exception {
+		return false;
 	}
 
 }

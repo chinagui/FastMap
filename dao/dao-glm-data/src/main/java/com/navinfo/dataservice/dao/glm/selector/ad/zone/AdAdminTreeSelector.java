@@ -8,10 +8,10 @@ import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdmin;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminGroup;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminPart;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminTree;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminGroup;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminPart;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminTree;
 
 public class AdAdminTreeSelector implements ISelector {
 

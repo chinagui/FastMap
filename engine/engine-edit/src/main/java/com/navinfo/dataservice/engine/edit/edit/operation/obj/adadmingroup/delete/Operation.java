@@ -9,9 +9,9 @@ import com.google.gson.Gson;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminGroup;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminPart;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminTree;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminGroup;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminPart;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminTree;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 
 import net.sf.json.JSONObject;

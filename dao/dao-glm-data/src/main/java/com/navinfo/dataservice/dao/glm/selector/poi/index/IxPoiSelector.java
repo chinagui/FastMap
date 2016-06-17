@@ -478,9 +478,9 @@ public class IxPoiSelector implements ISelector {
 		JSONArray array = new JSONArray();
 
 		int total = 0;
-		int startRow = pageNum * pageSize + 1;
+		int startRow = (pageNum-1) * pageSize + 1;
 
-		int endRow = (pageNum + 1) * pageSize;
+		int endRow = pageNum * pageSize;
 		StringBuilder buffer = new StringBuilder();
         buffer.append(" SELECT * ");
         buffer.append(" FROM (SELECT c.*, ROWNUM rn ");
@@ -488,15 +488,15 @@ public class IxPoiSelector implements ISelector {
         //TODO 0 as freshness_vefication
         buffer.append(" ip.pid,ip.kind_code, 0 as freshness_vefication,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
         buffer.append(" FROM ix_poi ip, ix_poi_name ipn ");
-        buffer.append(" WHERE     ip.pid = ipn.poi_pid ");
+        buffer.append(" WHERE     ip.pid = ipn.poi_pid and ip.u_record !=2 ");
         buffer.append(" AND lang_code = 'CHI'");
         buffer.append(" AND ipn.name_type = 2 ");
         buffer.append(" AND name_class = 1"); 
         if( pid != 0){
-        	buffer.append("AND ip.pid = "+pid+"");
+        	buffer.append(" AND ip.pid = "+pid+"");
         }else{
         	if(StringUtils.isNotBlank(pidName)){
-        		buffer.append("AND ipn.name like %'"+pidName+"%'");
+        		buffer.append(" AND ipn.name like '%"+pidName+"%'");
         	}
         }
         
@@ -506,11 +506,9 @@ public class IxPoiSelector implements ISelector {
 		if (isLock) {
 			buffer.append(" for update nowait");
 		}
-
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
-		
 		try {
 			pstmt = conn.prepareStatement(buffer.toString());
 			pstmt.setInt(1, endRow);

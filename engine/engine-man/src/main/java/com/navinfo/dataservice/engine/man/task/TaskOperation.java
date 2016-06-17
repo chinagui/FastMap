@@ -101,9 +101,11 @@ public class TaskOperation {
 					while(rs.next()){
 						Task map = new Task();
 						map.setTaskId(rs.getInt("TASK_ID"));
+						map.setCityName(rs.getString("CITY_NAME"));
 						map.setName(rs.getString("NAME"));
 						map.setCityId(rs.getInt("CITY_ID"));
 						map.setCreateUserId(rs.getInt("CREATE_USER_ID"));
+						map.setCreateUserName(rs.getString("USER_REAL_NAME"));
 						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
 						map.setStatus(rs.getInt("STATUS"));
 						map.setDescp(rs.getString("DESCP"));
@@ -111,7 +113,7 @@ public class TaskOperation {
 						map.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						map.setMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE"));
 						map.setMonthEditPlanEndDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE"));
-						map.setMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_GROUP_ID"));
+						map.setMonthEditGroupId(rs.getInt("MONTH_EDIT_GROUP_ID"));
 						map.setLatest(rs.getInt("LATEST"));
 						list.add(map);
 					}

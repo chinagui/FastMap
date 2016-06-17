@@ -13,7 +13,10 @@ public class Task{
 	private Integer taskId ;
 	private String name;
 	private Integer cityId ;
+	private String cityName;
+	private String version;
 	private Integer createUserId ;
+	private String createUserName;
 	private Timestamp createDate ;
 	private Integer status ;
 	private String descp ;
@@ -232,5 +235,23 @@ public class Task{
 	public void setMonthEditGroupId(Integer monthEditGroupId) {
 		if(null==monthEditGroupId){this.monthEditGroupId=0;}
 		this.monthEditGroupId = monthEditGroupId;
+	}
+	public String getCityName() {
+		return cityName;
+	}
+	public void setCityName(String cityName) {
+		this.cityName = cityName;
+	}
+	public String getVersion() {
+		return version;
+	}
+	public void setVersion(String version) {
+		this.version = version;
+	}
+	public String getCreateUserName() {
+		return createUserName;
+	}
+	public void setCreateUserName(String createUserName) {
+		this.createUserName = createUserName;
 	}	
 }

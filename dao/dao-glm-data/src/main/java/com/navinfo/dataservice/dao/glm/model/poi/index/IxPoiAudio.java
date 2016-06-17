@@ -17,26 +17,40 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 /**
  * POI音频表
+ * 
  * @author zhangxiaolong
  *
  */
 public class IxPoiAudio implements IRow {
-	
-	private int poiPid;//POI号码
-	
-	private int audioId;//音频号码
-	
-	private String status;//状态信息
-	
+
+	private int poiPid;// POI号码
+
+	private int audioId;// 音频号码
+
+	private String status;// 状态信息
+
 	private String memo;
-	
+
 	private String rowId;
-	
+
+	// 更新时间
+	private String uDate;
+
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
-	
+
 	public int getPoiPid() {
 		return poiPid;
 	}
+	
+	public String getuDate() {
+		return uDate;
+	}
+
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
+	}
+
 
 	public void setPoiPid(int poiPid) {
 		this.poiPid = poiPid;

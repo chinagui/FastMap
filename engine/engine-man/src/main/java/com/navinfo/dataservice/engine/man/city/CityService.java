@@ -13,8 +13,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.navinfo.dataservice.api.man.model.City;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -22,6 +25,7 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.io.ParseException;
 
 import net.sf.json.JSONObject;
+import oracle.sql.CLOB;
 
 /** 
 * @ClassName:  CityService 
@@ -109,6 +113,7 @@ public class CityService {
 			//持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();	
+			
 			String deleteSql = "delete from  CITY where 1=1 ";
 			List<Object> values=new ArrayList();
 			if (bean!=null&&bean.getCityId()!=null && StringUtils.isNotEmpty(bean.getCityId().toString())){
@@ -231,12 +236,14 @@ public class CityService {
 					List<City> list = new ArrayList<City>();
 					while(rs.next()){
 						try {
-							if (GeometryUtils.IsIntersectPolygon(wkt,rs.getString("geometry"))){
-								City model = new City();
-								model.setCityId(rs.getInt("CITY_ID"));
-								model.setCityName(rs.getString("CITY_NAME"));
-								model.setGeometry(rs.getObject("geometry"));
-								list.add(model);
+							CLOB clob=(CLOB)rs.getObject("geometry");
+							String clobStr=DataBaseUtils.clob2String(clob);
+							if (GeometryUtils.IsIntersectPolygon(wkt,clobStr)){
+								City city = new City();
+								city.setCityId(rs.getInt("CITY_ID"));
+								city.setCityName(rs.getString("CITY_NAME"));
+								city.setGeometry(Geojson.wkt2Geojson(clobStr));
+								list.add(city);
 							}
 						} catch (ParseException e) {
 							// TODO Auto-generated catch block

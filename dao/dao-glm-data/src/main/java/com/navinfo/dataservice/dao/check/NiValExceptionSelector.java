@@ -28,7 +28,7 @@ public class NiValExceptionSelector {
 
 		NiValException exception = new NiValException();
 
-		String sql = "select * from ni_val_exception where reserved=:1";
+		String sql = "select * from ni_val_exception where md5_code=:1";
 		
 		if (isLock) {
 			sql += " for update nowait";
@@ -101,7 +101,7 @@ public class NiValExceptionSelector {
 				
 				exception.setLogType(resultSet.getInt("log_type"));
 				
-				exception.setRowId(resultSet.getString("row_id"));
+				exception.setMd5Code(resultSet.getString("md5_code"));
 
 			} else {
 
@@ -144,7 +144,7 @@ public class NiValExceptionSelector {
 		ResultSet rs = null;
 
 		StringBuilder sql = new StringBuilder(
-				"select * from (select b.*,rownum rn from (select reserved,ruleid,situation,\"LEVEL\" level_,targets,information,a.location.sdo_point.x x,"
+				"select * from (select b.*,rownum rn from (select md5_code,ruleid,situation,\"LEVEL\" level_,targets,information,a.location.sdo_point.x x,"
 						+ "a.location.sdo_point.y y,created,worker from ni_val_exception a where mesh_id in (");
 
 		for (int i = 0; i < meshes.size(); i++) {
@@ -174,7 +174,7 @@ public class NiValExceptionSelector {
 			while (rs.next()) {
 				JSONObject json = new JSONObject();
 				
-				json.put("id",  rs.getString("reserved"));
+				json.put("id",  rs.getString("md5_code"));
 
 				json.put("ruleid", rs.getString("ruleid"));
 
@@ -271,7 +271,7 @@ public class NiValExceptionSelector {
 
 		ResultSet rs = null;
 
-		StringBuilder sql = new StringBuilder("select * from (select b.*,rownum rn from (select reserved,ruleid,situation,\"LEVEL\" level_,targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,worker from ni_val_exception a,ni_val_exception_grid b where a.reserved=b.ck_result_id and b.grid_id in(");
+		StringBuilder sql = new StringBuilder("select * from (select b.*,rownum rn from (select md5_code,ruleid,situation,\"LEVEL\" level_,targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,worker from ni_val_exception a,ni_val_exception_grid b where a.md5_code=b.ck_md5_code and b.grid_id in(");
 
 		for (int i = 0; i < grids.size(); i++) {
 			if (i > 0) {
@@ -300,7 +300,7 @@ public class NiValExceptionSelector {
 			while (rs.next()) {
 				JSONObject json = new JSONObject();
 				
-				json.put("id",  rs.getString("reserved"));
+				json.put("id",  rs.getString("md5_code"));
 
 				json.put("ruleid", rs.getString("ruleid"));
 
@@ -347,7 +347,7 @@ public class NiValExceptionSelector {
 		ResultSet rs = null;
 
 		StringBuilder sql = new StringBuilder(
-				"select count(distinct(ck_result_id)) count from ni_val_exception_grid a where grid_id in (");
+				"select count(distinct(ck_md5_code)) count from ni_val_exception_grid a where grid_id in (");
 
 		for (int i = 0; i < grids.size(); i++) {
 			if (i > 0) {

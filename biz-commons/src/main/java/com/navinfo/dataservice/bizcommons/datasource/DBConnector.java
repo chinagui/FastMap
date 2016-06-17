@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import com.mongodb.MongoClient;
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
@@ -27,6 +28,7 @@ public class DBConnector {
 	private DataSource metaDataSource;
 	private DataSource mkDataSource;
 	private DataSource pidDataSource;
+	private MongoClient statClient;
 
 	// 大区库连接池
 	private Map<String, DataSource> dataSourceMap = new HashMap<String, DataSource>();
@@ -60,7 +62,7 @@ public class DBConnector {
 			synchronized (this) {
 				if (metaDataSource == null) {
 					DatahubApi datahub = (DatahubApi) ApplicationContextUtil
-							.getBean("datahubApiService");
+							.getBean("datahubApi");
 					DbInfo metaDb = null;
 					DbConnectConfig connConfig = null;
 					try {
@@ -140,6 +142,7 @@ public class DBConnector {
 								.getBean("datahubApi");
 
 						DbInfo db = datahub.getDbById(dbId);
+						System.out.println(db.toString());
 
 						DbConnectConfig connConfig = MultiDataSourceFactory
 								.createConnectConfig(db.getConnectParam());
@@ -157,5 +160,27 @@ public class DBConnector {
 		return dataSourceMap.get(str).getConnection();
 	}
 	
-	
+	public MongoClient getStatConnection() throws Exception {
+		if (statClient == null) {
+			synchronized (this) {
+				if (statClient == null) {
+					DatahubApi datahub = (DatahubApi) ApplicationContextUtil
+							.getBean("datahubApi");
+					DbInfo db = null;
+					DbConnectConfig connConfig = null;
+					try {
+						db = datahub.getOnlyDbByType("fmStat");
+						connConfig = MultiDataSourceFactory
+								.createConnectConfig(db.getConnectParam());
+					} catch (Exception e) {
+						throw new SQLException("从datahub获取元数据信息失败："
+								+ e.getMessage(), e);
+					}
+					statClient = MultiDataSourceFactory.getInstance()
+							.getMongoClient(connConfig);
+				}
+			}
+		}
+		return statClient;
+	}
 }

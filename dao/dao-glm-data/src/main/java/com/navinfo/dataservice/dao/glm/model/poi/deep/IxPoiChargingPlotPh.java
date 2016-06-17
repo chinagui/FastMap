@@ -14,19 +14,29 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+
 /**
  * 索引:POI 深度信息(充电桩类-照片)
+ * 
  * @author zhaokk
  *
  */
 public class IxPoiChargingPlotPh implements IRow {
 
-	private int poiPid =0;
-	private String photoName;//充电桩分组照片
+	private int poiPid = 0;
+	private String photoName;// 充电桩分组照片
 	private int mesh;
 	private String rowId;
+	// 更新时间
+	private String uDate;
 
-	
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
+	}
 
 	public String getPhotoName() {
 		return photoName;
@@ -47,11 +57,13 @@ public class IxPoiChargingPlotPh implements IRow {
 	public void setPoiPid(int poiPid) {
 		this.poiPid = poiPid;
 	}
+
 	public String getRowId() {
 		return rowId;
 	}
- 
-    private Map<String, Object> changedFields = new HashMap<String, Object>();   
+
+	private Map<String, Object> changedFields = new HashMap<String, Object>();
+
 	@Override
 	public String rowId() {
 		return rowId;
@@ -60,16 +72,13 @@ public class IxPoiChargingPlotPh implements IRow {
 	@Override
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
-		
+
 	}
 
 	@Override
 	public String tableName() {
 		return "ix_poi_chargingplot_ph";
 	}
-	
-
-	
 
 	@Override
 	public ObjStatus status() {
@@ -80,7 +89,7 @@ public class IxPoiChargingPlotPh implements IRow {
 	@Override
 	public void setStatus(ObjStatus os) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -91,7 +100,7 @@ public class IxPoiChargingPlotPh implements IRow {
 	@Override
 	public void copy(IRow row) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -118,7 +127,6 @@ public class IxPoiChargingPlotPh implements IRow {
 		return "ix_poi";
 	}
 
-
 	public Map<String, Object> getChangedFields() {
 		return changedFields;
 	}
@@ -142,44 +150,42 @@ public class IxPoiChargingPlotPh implements IRow {
 			if (json.get(key) instanceof JSONArray) {
 				continue;
 			} else {
-				if ( !"objStatus".equals(key)) {
-					
+				if (!"objStatus".equals(key)) {
+
 					Field field = this.getClass().getDeclaredField(key);
-					
+
 					field.setAccessible(true);
-					
+
 					Object objValue = field.get(this);
-					
+
 					String oldValue = null;
-					
-					if (objValue == null){
+
+					if (objValue == null) {
 						oldValue = "null";
-					}else{
+					} else {
 						oldValue = String.valueOf(objValue);
 					}
-					
+
 					String newValue = json.getString(key);
-					
-					if (!newValue.equals(oldValue)){
+
+					if (!newValue.equals(oldValue)) {
 						Object value = json.get(key);
-						
-						if(value instanceof String){
+
+						if (value instanceof String) {
 							changedFields.put(key, newValue.replace("'", "''"));
-						}
-						else{
+						} else {
 							changedFields.put(key, value);
 						}
 
 					}
 
-					
 				}
 			}
 		}
-		
-		if (changedFields.size() >0){
+
+		if (changedFields.size() > 0) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 
@@ -222,8 +228,7 @@ public class IxPoiChargingPlotPh implements IRow {
 	@Override
 	public void setMesh(int mesh) {
 		this.mesh = mesh;
-		
-	}
 
+	}
 
 }

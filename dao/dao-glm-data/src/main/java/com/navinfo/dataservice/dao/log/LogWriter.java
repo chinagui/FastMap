@@ -53,7 +53,7 @@ public class LogWriter {
 
 		ProjectSelector selector = new ProjectSelector();
 
-		String gdbVersion = selector.getGdbVersion(projectId);
+		String gdbVersion = selector.getGdbVersion();
 
 		this.gridCalculator = GlmGridCalculatorFactory.getInstance().create(
 				gdbVersion);
@@ -152,24 +152,14 @@ public class LogWriter {
 
 		PreparedStatement pstmt = null;
 
-		String sql = "insert into log_detail (op_id, ob_nm, ob_pk, ob_pid, opb_tp, ob_tp, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		String sql = "insert into log_detail (op_id, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id) values (?,?,?,?,?,?,?,?,?)";
 
 		try {
 			pstmt = this.conn.prepareStatement(sql);
 
 			pstmt.setString(1, detail.getOpId());
 
-			pstmt.setString(2, detail.getObNm());
-
-			pstmt.setString(3, detail.getObPk());
-
-			pstmt.setInt(4, detail.getObPid());
-
-			pstmt.setInt(5, detail.getOpbTp());
-
-			pstmt.setInt(6, detail.getObTp());
-
-			pstmt.setString(7, detail.getTbNm());
+			pstmt.setString(2, detail.getTbNm());
 
 			Clob oldclob = conn.createClob();
 
@@ -180,7 +170,7 @@ public class LogWriter {
 				oldclob = impl.getRawClob(); // 获取原生的这个 Clob
 			}
 
-			pstmt.setClob(8, oldclob);
+			pstmt.setClob(3, oldclob);
 
 			Clob newclob = conn.createClob();
 
@@ -191,17 +181,17 @@ public class LogWriter {
 				newclob = impl.getRawClob(); // 获取原生的这个 Clob
 			}
 
-			pstmt.setClob(9, newclob);
+			pstmt.setClob(4, newclob);
 
-			pstmt.setString(10, detail.getFdLst());
+			pstmt.setString(5, detail.getFdLst());
 
-			pstmt.setInt(11, detail.getOpTp());
+			pstmt.setInt(6, detail.getOpTp());
 
-			pstmt.setString(12, detail.getRowId());
+			pstmt.setString(7, detail.getRowId());
 
-			pstmt.setInt(13, detail.getIsCk());
+			pstmt.setInt(8, detail.getIsCk());
 
-			pstmt.setString(14, detail.getTbRowId());
+			pstmt.setString(9, detail.getTbRowId());
 
 			pstmt.execute();
 
@@ -267,27 +257,9 @@ public class LogWriter {
 
 		sb.append(detail.tableName());
 
-		sb.append("(op_id, ob_nm, ob_pk, ob_pid, opb_tp, ob_tp, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id) values (");
+		sb.append("(op_id, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id) values (");
 
 		sb.append("'" + detail.getOpId() + "'");
-
-		if (detail.getObNm() == null) {
-			sb.append(",null");
-		} else {
-			sb.append(",'" + detail.getObNm() + "'");
-		}
-
-		if (detail.getObPk() == null) {
-			sb.append(",null");
-		} else {
-			sb.append(",'" + detail.getObPk() + "'");
-		}
-
-		sb.append("," + detail.getObPid());
-
-		sb.append("," + detail.getOpbTp());
-
-		sb.append("," + detail.getObTp());
 
 		if (detail.getTbNm() == null) {
 			sb.append(",null");
@@ -386,16 +358,6 @@ public class LogWriter {
 
 			ld.setOpTp(Status.UPDATE);
 
-			ld.setOpbTp(Status.UPDATE);
-
-			ld.setObNm(r.parentTableName());
-
-			ld.setObPid(r.parentPKValue());
-
-			ld.setObPk(r.parentPKName());
-
-			ld.setObTp(1);
-
 			ld.setTbNm(r.tableName());
 
 			ld.setIsCk(0);
@@ -490,23 +452,6 @@ public class LogWriter {
 
 			ld.setOpTp(Status.DELETE);
 
-			if (r.parentTableName().equals(r.tableName())) {
-				ld.setOpbTp(Status.DELETE);
-
-				ld.setObTp(1);
-
-			} else {
-				ld.setOpbTp(Status.UPDATE);
-
-				ld.setObTp(2);
-			}
-
-			ld.setObNm(r.parentTableName());
-
-			ld.setObPid(r.parentPKValue());
-
-			ld.setObPk(r.parentPKName());
-
 			ld.setTbNm(r.tableName());
 
 			ld.setIsCk(0);
@@ -541,16 +486,6 @@ public class LogWriter {
 						LogDetail ldC = new LogDetail();
 
 						ldC.setOpTp(Status.DELETE);
-
-						ldC.setOpbTp(Status.DELETE);
-
-						ldC.setObNm(row.parentTableName());
-
-						ldC.setObPid(row.parentPKValue());
-
-						ldC.setObPk(row.parentPKName());
-
-						ldC.setObTp(2);
 
 						ldC.setTbNm(row.tableName());
 
@@ -606,16 +541,6 @@ public class LogWriter {
 
 			ld.setOpTp(Status.INSERT);
 
-			ld.setOpbTp(Status.INSERT);
-
-			ld.setObNm(r.parentTableName());
-
-			ld.setObPid(r.parentPKValue());
-
-			ld.setObPk(r.parentPKName());
-
-			ld.setObTp(1);
-
 			ld.setTbNm(r.tableName());
 
 			ld.setIsCk(0);
@@ -652,16 +577,6 @@ public class LogWriter {
 						LogDetail ldC = new LogDetail();
 
 						ldC.setOpTp(Status.INSERT);
-
-						ldC.setOpbTp(Status.INSERT);
-
-						ldC.setObNm(row.parentTableName());
-
-						ldC.setObPid(row.parentPKValue());
-
-						ldC.setObPk(row.parentPKName());
-
-						ldC.setObTp(1);
 
 						ldC.setTbNm(row.tableName());
 

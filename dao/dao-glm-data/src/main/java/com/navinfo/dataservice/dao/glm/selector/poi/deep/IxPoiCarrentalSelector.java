@@ -97,6 +97,7 @@ public class IxPoiCarrentalSelector implements ISelector {
 		ixPoiCarrental.setPhone400(resultSet.getString("phone_400"));
 		ixPoiCarrental.setWebsite(resultSet.getString("web_site"));
 		ixPoiCarrental.setRowId(resultSet.getString("rowId"));
+		ixPoiCarrental.setuDate(resultSet.getString("u_date"));
 
 	}
 	

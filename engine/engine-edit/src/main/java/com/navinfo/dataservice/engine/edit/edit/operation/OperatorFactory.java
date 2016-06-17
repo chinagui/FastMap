@@ -2,6 +2,9 @@ package com.navinfo.dataservice.engine.edit.edit.operation;
 
 import java.sql.Connection;
 
+import org.apache.commons.lang.StringUtils;
+
+import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -16,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminDetail;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminGroup;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminName;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminPart;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchName;
@@ -66,6 +70,7 @@ import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminGroupOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminNameOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminPartOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchDetailOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchNameOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchOperator;
@@ -146,8 +151,9 @@ public class OperatorFactory {
 	 * @param obj
 	 *            对象
 	 * @return
+	 * @throws Exception 
 	 */
-	private static IOperator getOperator(Connection conn, IRow obj) {
+	private static IOperator getOperator(Connection conn, IRow obj) throws Exception {
 		switch (obj.objType()) {
 		case RDLINK:
 			return new RdLinkOperator(conn, (RdLink) obj);
@@ -251,6 +257,14 @@ public class OperatorFactory {
 			return new AdNodeOperator(conn, (AdNode)obj);
 		case ADNODEMESH:
 			return new AdNodeMeshOperator(conn, (AdNodeMesh)obj);
+		case IXPOI:
+			IxPoi poi = (IxPoi)obj;
+			if(StringUtils.isBlank(obj.rowId())){
+				poi.setRowId(UuidUtils.genUuid());
+			}
+			IxPoiOperator ixPoiOperator = new IxPoiOperator(conn, poi);
+			ixPoiOperator.upatePoiStatus();
+			return ixPoiOperator;
 		default:
 			return null;
 		}

@@ -1,13 +1,14 @@
 package com.navinfo.dataservice.engine.man.block;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.text.Format;
-import java.text.SimpleDateFormat;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -15,14 +16,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.navinfo.dataservice.api.man.model.Block;
+import com.navinfo.dataservice.api.man.model.BlockMan;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
-import com.navinfo.dataservice.engine.man.block.Block;
-import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.navicommons.database.DataBaseUtils;
-import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
@@ -40,17 +40,35 @@ import oracle.sql.CLOB;
 public class BlockService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
-	public void create(JSONObject json) throws ServiceException {
+	public void batchOpen(long userId,JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
 			// 鎸佷箙鍖�
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			Block bean = (Block) JSONObject.toBean(json, Block.class);
+			JSONArray blockArray=json.getJSONArray("blocks");
+			
+			Date date = new Date(new java.util.Date().getTime());
 
-			String createSql = "insert into BLOCK (BLOCK_ID, CITY_ID, BLOCK_NAME, GEOMETRY, PLAN_STATUS) values(?,?,?,?,?)";
-			run.update(conn, createSql, bean.getBlockId(), bean.getCityId(), bean.getBlockName(), bean.getGeometry(),
-					bean.getPlanStatus());
+			String createSql = "insert into block_man (BLOCK_MAN_ID, CREATE_USER_ID, CREATE_DATE,BLOCK_ID,COLLECT_GROUP_ID, COLLECT_PLAN_START_DATE,"
+					+ "COLLECT_PLAN_END_DATE,DAY_EDIT_GROUP_ID,DAY_EDIT_PLAN_START_DATE,DAY_EDIT_PLAN_END_DATE,MONTH_EDIT_GROUP_ID,"
+					+ "MONTH_EDIT_PLAN_START_DATE,MONTH_EDIT_PLAN_END_DATE,DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,"
+					+ "MONTH_PRODUCE_PLAN_START_DATE,MONTH_PRODUCE_PLAN_END_DATE) "
+					+ "values(BLOCK_MAN_SEQ.NEXTVAL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			
+			Object[][] param = new Object[blockArray.size()][];
+			for (int i = 0; i < blockArray.size(); i++) {
+	               JSONObject block = blockArray.getJSONObject(i);
+	               Object[] obj = new Object[]{userId,date,block.getInt("blockId"),block.getInt("collectGroupId"),block.getString("collectPlanStartDate"),
+	            		   block.getString("collectPlanEndDate"),block.getInt("dayEditGroupId"),block.getString("dayEditPlanStartDate"),
+	            		   block.getString("dayEditPlanEndDate"),block.getInt("monthEditGroupId"),block.getString("monthEditPlanStartDate"),
+	            		   block.getString("monthEditPlanEndDate"),block.getString("dayProducePlanStartDate"),block.getString("dayProducePlanEndDate")
+	            		   ,block.getString("monthProducePlanStartDate"),block.getString("monthProducePlanEndDate")};
+	               param[i]=obj;                   
+	            }
+			
+			run.batch(conn,createSql, param);
+			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -60,165 +78,51 @@ public class BlockService {
 		}
 	}
 
-	public void update(JSONObject json) throws ServiceException {
+	public void batchUpdate(JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
 			// 鎸佷箙鍖�
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			JSONObject obj = JSONObject.fromObject(json);
-			Block bean = (Block) JSONObject.toBean(obj, Block.class);
+			JSONArray blockArray=json.getJSONArray("blocks");
 
-			String updateSql = "update BLOCK set BLOCK_ID=?, CITY_ID=?, BLOCK_NAME=?, GEOMETRY=?, PLAN_STATUS=? where 1=1 BLOCK_ID=? and CITY_ID=? and BLOCK_NAME=? and GEOMETRY=? and PLAN_STATUS=?";
-			List<Object> values = new ArrayList<Object>();
-			if (bean != null && bean.getBlockId() != null && StringUtils.isNotEmpty(bean.getBlockId().toString())) {
-				updateSql += " and BLOCK_ID=? ";
-				values.add(bean.getBlockId());
-			}
-			;
-			if (bean != null && bean.getCityId() != null && StringUtils.isNotEmpty(bean.getCityId().toString())) {
-				updateSql += " and CITY_ID=? ";
-				values.add(bean.getCityId());
-			}
-			;
-			if (bean != null && bean.getBlockName() != null && StringUtils.isNotEmpty(bean.getBlockName().toString())) {
-				updateSql += " and BLOCK_NAME=? ";
-				values.add(bean.getBlockName());
-			}
-			;
-			if (bean != null && bean.getGeometry() != null && StringUtils.isNotEmpty(bean.getGeometry().toString())) {
-				updateSql += " and GEOMETRY=? ";
-				values.add(bean.getGeometry());
-			}
-			;
-			if (bean != null && bean.getPlanStatus() != null
-					&& StringUtils.isNotEmpty(bean.getPlanStatus().toString())) {
-				updateSql += " and PLAN_STATUS=? ";
-				values.add(bean.getPlanStatus());
-			}
-			;
-			run.update(conn, updateSql, bean.getBlockId(), bean.getCityId(), bean.getBlockName(), bean.getGeometry(),
-					bean.getPlanStatus(), values.toArray());
+			String createSql = "update block_man set COLLECT_GROUP_ID=?, COLLECT_PLAN_START_DATE=?,"
+					+ "COLLECT_PLAN_END_DATE=?,DAY_EDIT_GROUP_ID=?,DAY_EDIT_PLAN_START_DATE=?,DAY_EDIT_PLAN_END_DAT=?,MONTH_EDIT_GROUP_ID=?,"
+					+ "MONTH_EDIT_PLAN_START_DATE=?,MONTH_EDIT_PLAN_END_DATE=?,DAY_PRODUCE_PLAN_START_DATE=?,DAY_PRODUCE_PLAN_END_DATE=?,"
+					+ "MONTH_PRODUCE_PLAN_START_DATE=?,MONTH_PRODUCE_PLAN_END_DATE=? where BLOCK_ID=?";
+			
+			Object[][] param = new Object[blockArray.size()][];
+			for (int i = 0; i < blockArray.size(); i++) {
+	               JSONObject block = blockArray.getJSONObject(i);
+	               BlockMan  bean = (BlockMan)JSONObject.toBean(block, BlockMan.class);	
+	               Object[] obj = new Object[]{bean.getCollectGroupId(),bean.getCollectPlanStartDate(),bean.getCollectPlanEndDate(),
+	            		   bean.getDayEditGroupId(),bean.getDayEditPlanStartDate(),bean.getDayEditPlanEndDate(),bean.getMonthEditGroupId(),
+	            		   bean.getMonthEditPlanStartDate(),bean.getMonthEditPlanEndDate(),bean.getDayProducePlanStartDate(),bean.getDayProducePlanEndDate(),
+	            		   bean.getMonthProducePlanStartDate(),bean.getMonthProducePlanStartDate(),bean.getBlockId()};
+	               param[i]=obj;                   
+	            }
+			
+			run.batch(conn,createSql, param);
+			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("淇敼澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
+			throw new ServiceException("鍒涘缓澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
-	public void delete(JSONObject json) throws ServiceException {
+	
+	public List<HashMap> listByProduce(String wkt) throws ServiceException {
 		Connection conn = null;
 		try {
-			// 鎸佷箙鍖�
-			QueryRunner run = new QueryRunner();
+
 			conn = DBConnector.getInstance().getManConnection();
-			JSONObject obj = JSONObject.fromObject(json);
-			Block bean = (Block) JSONObject.toBean(obj, Block.class);
 
-			String deleteSql = "delete from  BLOCK where 1=1 ";
-			List<Object> values = new ArrayList<Object>();
-			if (bean != null && bean.getBlockId() != null && StringUtils.isNotEmpty(bean.getBlockId().toString())) {
-				deleteSql += " and BLOCK_ID=? ";
-				values.add(bean.getBlockId());
-			}
-			;
-			if (bean != null && bean.getCityId() != null && StringUtils.isNotEmpty(bean.getCityId().toString())) {
-				deleteSql += " and CITY_ID=? ";
-				values.add(bean.getCityId());
-			}
-			;
-			if (bean != null && bean.getBlockName() != null && StringUtils.isNotEmpty(bean.getBlockName().toString())) {
-				deleteSql += " and BLOCK_NAME=? ";
-				values.add(bean.getBlockName());
-			}
-			;
-			if (bean != null && bean.getGeometry() != null && StringUtils.isNotEmpty(bean.getGeometry().toString())) {
-				deleteSql += " and GEOMETRY=? ";
-				values.add(bean.getGeometry());
-			}
-			;
-			if (bean != null && bean.getPlanStatus() != null
-					&& StringUtils.isNotEmpty(bean.getPlanStatus().toString())) {
-				deleteSql += " and PLAN_STATUS=? ";
-				values.add(bean.getPlanStatus());
-			}
-			;
-			if (values.size() == 0) {
-				run.update(conn, deleteSql);
-			} else {
-				run.update(conn, deleteSql, values.toArray());
-			}
-
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("鍒犻櫎澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
-
-	public Page list(JSONObject json, final int currentPageNum) throws ServiceException {
-		Connection conn = null;
-		try {
-			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();
-			JSONObject obj = JSONObject.fromObject(json);
-			Block bean = (Block) JSONObject.toBean(obj, Block.class);
-
-			String selectSql = "select * from BLOCK where 1=1 ";
-			List<Object> values = new ArrayList<Object>();
-			if (bean != null && bean.getBlockId() != null && StringUtils.isNotEmpty(bean.getBlockId().toString())) {
-				selectSql += " and BLOCK_ID=? ";
-				values.add(bean.getBlockId());
-			}
-			;
-			if (bean != null && bean.getCityId() != null && StringUtils.isNotEmpty(bean.getCityId().toString())) {
-				selectSql += " and CITY_ID=? ";
-				values.add(bean.getCityId());
-			}
-			;
-			if (bean != null && bean.getBlockName() != null && StringUtils.isNotEmpty(bean.getBlockName().toString())) {
-				selectSql += " and BLOCK_NAME=? ";
-				values.add(bean.getBlockName());
-			}
-			;
-			if (bean != null && bean.getGeometry() != null && StringUtils.isNotEmpty(bean.getGeometry().toString())) {
-				selectSql += " and GEOMETRY=? ";
-				values.add(bean.getGeometry());
-			}
-			;
-			if (bean != null && bean.getPlanStatus() != null
-					&& StringUtils.isNotEmpty(bean.getPlanStatus().toString())) {
-				selectSql += " and PLAN_STATUS=? ";
-				values.add(bean.getPlanStatus());
-			}
-			;
-			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
-				public Page handle(ResultSet rs) throws SQLException {
-					List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
-					Page page = new Page(currentPageNum);
-					while (rs.next()) {
-						HashMap<String, Object> map = new HashMap<String, Object>();
-						page.setTotalCount(rs.getInt(QueryRunner.TOTAL_RECORD_NUM));
-						map.put("blockId", rs.getInt("BLOCK_ID"));
-						map.put("cityId", rs.getInt("CITY_ID"));
-						map.put("blockName", rs.getString("BLOCK_NAME"));
-						map.put("geometry", rs.getObject("GEOMETRY"));
-						map.put("planStatus", rs.getInt("PLAN_STATUS"));
-						list.add(map);
-					}
-					page.setResult(list);
-					return page;
-				}
-
-			};
-			if (values.size() == 0) {
-				return run.query(currentPageNum, 20, conn, selectSql, rsHandler);
-			}
-			return run.query(currentPageNum, 20, conn, selectSql, rsHandler, values.toArray());
+			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY from BLOCK t where sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE'";
+			List<Object> list = new ArrayList<Object>();
+			list.add(wkt);
+			return BlockOperation.queryProduceBlock(conn, selectSql, list);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -226,7 +130,6 @@ public class BlockService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-
 	}
 
 	public List<HashMap> listByWkt(JSONObject json) throws ServiceException {

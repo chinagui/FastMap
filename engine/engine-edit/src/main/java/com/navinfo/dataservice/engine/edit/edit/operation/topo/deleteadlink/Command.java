@@ -69,7 +69,7 @@ public class Command extends AbstractCommand{
 		
 		this.linkPid = json.getInt("objId");
 		
-		this.setDbId(json.getInt("subTaskId"));
+		this.setDbId(json.getInt("dbId"));
 		
 		if (json.containsKey("infect") && json.getInt("infect") == 1){
 			this.isCheckInfect = true;

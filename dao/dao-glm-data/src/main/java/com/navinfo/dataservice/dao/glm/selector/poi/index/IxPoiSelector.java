@@ -5,9 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -53,6 +51,10 @@ import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiIntroductionSelect
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiParkingSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiRestaurantSelector;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 /**
  * POI基础信息表 selector
@@ -106,7 +108,14 @@ public class IxPoiSelector implements ISelector {
 
 					ixPoi.nameMap.put(obj.getRowId(), obj);
 				}
-
+				
+				//设置POI_EDIT_STATUS
+				IxPoiEditStatusSelector ixPoiEditStatusSelector = new IxPoiEditStatusSelector(conn);
+				
+				int status = ixPoiEditStatusSelector.loadStatusByRowId(ixPoi.getRowId(), isLock);
+				
+				ixPoi.setStatus(status);
+				
 				// 设置子表IX_POI_ADDRESS
 				IxPoiAddressSelector ixPoiAddressSelector = new IxPoiAddressSelector(
 						conn);
@@ -462,7 +471,7 @@ public class IxPoiSelector implements ISelector {
 		return null;
 	}
 
-	public JSONObject loadPids(boolean isLock,int pageSize, int pageNum) throws Exception {
+	public JSONObject loadPids(boolean isLock,int pid ,String pidName,int pageSize, int pageNum) throws Exception {
 
 		JSONObject result = new JSONObject();
 
@@ -482,7 +491,16 @@ public class IxPoiSelector implements ISelector {
         buffer.append(" WHERE     ip.pid = ipn.poi_pid ");
         buffer.append(" AND lang_code = 'CHI'");
         buffer.append(" AND ipn.name_type = 2 ");
-        buffer.append(" AND name_class = 1) c ");
+        buffer.append(" AND name_class = 1"); 
+        if( pid != 0){
+        	buffer.append("AND ip.pid = "+pid+"");
+        }else{
+        	if(StringUtils.isNotBlank(pidName)){
+        		buffer.append("AND ipn.name like %'"+pidName+"%'");
+        	}
+        }
+        
+        buffer.append(" ) c");
         buffer.append(" WHERE ROWNUM <= :1) ");
         buffer.append("  WHERE rn >= :2 ");
 		if (isLock) {
@@ -626,7 +644,7 @@ public class IxPoiSelector implements ISelector {
 		ixPoi.setOldAddress(resultSet.getString("old_address"));
 
 		ixPoi.setOldKind(resultSet.getString("old_kind"));
-
+		
 		ixPoi.setPoiNum(resultSet.getString("poi_num"));
 
 		ixPoi.setLog(resultSet.getString("log"));
@@ -650,5 +668,8 @@ public class IxPoiSelector implements ISelector {
 		ixPoi.setOldYGuide(resultSet.getDouble("old_y_guide"));
 
 		ixPoi.setRowId(resultSet.getString("row_id"));
+		
+		ixPoi.setuDate(resultSet.getString("u_date"));
+
 	}
 }

@@ -15,29 +15,40 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+
 /**
- * 索引:POI 深度信息(充电站类)  
+ * 索引:POI 深度信息(充电站类)
+ * 
  * @author zhaokk
  *
  */
 public class IxPoiChargingStation implements IObj {
 
 	private int pid;
-	private int poiPid =0;
-	private int   chargingType = 3;//充电站类型
-	private String  changeBrands ;//CHANGE_BRANDS
-	private int   changeOpenType =1;//CHANGE_OPEN_TYPE
-	private int chargingNum = 0;//充电桩总数
-	private String serviceProv;//服务提供商
+	private int poiPid = 0;
+	private int chargingType = 3;// 充电站类型
+	private String changeBrands;// CHANGE_BRANDS
+	private int changeOpenType = 1;// CHANGE_OPEN_TYPE
+	private int chargingNum = 0;// 充电桩总数
+	private String serviceProv;// 服务提供商
 	private String memo;// 备注信息
-	private String openHour;//营业时间  
-	private String photoName;//全景照片
-	private int parkingFees = 0;//停车收费  
-	private String parkingInfo;//停 车 收 费 备注
-	private int availableState = 0;//可用状态
+	private String openHour;// 营业时间
+	private String photoName;// 全景照片
+	private int parkingFees = 0;// 停车收费
+	private String parkingInfo;// 停 车 收 费 备注
+	private int availableState = 0;// 可用状态
 	private int mesh;
 	private String rowId;
-	
+	// 更新时间
+	private String uDate;
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
+	}
 
 	public int getMesh() {
 		return mesh;
@@ -50,11 +61,13 @@ public class IxPoiChargingStation implements IObj {
 	public void setPoiPid(int poiPid) {
 		this.poiPid = poiPid;
 	}
+
 	public String getRowId() {
 		return rowId;
 	}
- 
-    private Map<String, Object> changedFields = new HashMap<String, Object>();   
+
+	private Map<String, Object> changedFields = new HashMap<String, Object>();
+
 	@Override
 	public String rowId() {
 		return rowId;
@@ -63,14 +76,13 @@ public class IxPoiChargingStation implements IObj {
 	@Override
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
-		
+
 	}
 
 	@Override
 	public String tableName() {
 		return "ix_poi_chargingstation";
 	}
-	
 
 	@Override
 	public ObjStatus status() {
@@ -86,13 +98,10 @@ public class IxPoiChargingStation implements IObj {
 		this.pid = pid;
 	}
 
-	
-
-	
 	@Override
 	public void setStatus(ObjStatus os) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -103,7 +112,7 @@ public class IxPoiChargingStation implements IObj {
 	@Override
 	public void copy(IRow row) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -207,7 +216,6 @@ public class IxPoiChargingStation implements IObj {
 		this.serviceProv = serviceProv;
 	}
 
-	
 	public String getMemo() {
 		return memo;
 	}
@@ -242,44 +250,42 @@ public class IxPoiChargingStation implements IObj {
 			if (json.get(key) instanceof JSONArray) {
 				continue;
 			} else {
-				if ( !"objStatus".equals(key)) {
-					
+				if (!"objStatus".equals(key)) {
+
 					Field field = this.getClass().getDeclaredField(key);
-					
+
 					field.setAccessible(true);
-					
+
 					Object objValue = field.get(this);
-					
+
 					String oldValue = null;
-					
-					if (objValue == null){
+
+					if (objValue == null) {
 						oldValue = "null";
-					}else{
+					} else {
 						oldValue = String.valueOf(objValue);
 					}
-					
+
 					String newValue = json.getString(key);
-					
-					if (!newValue.equals(oldValue)){
+
+					if (!newValue.equals(oldValue)) {
 						Object value = json.get(key);
-						
-						if(value instanceof String){
+
+						if (value instanceof String) {
 							changedFields.put(key, newValue.replace("'", "''"));
-						}
-						else{
+						} else {
 							changedFields.put(key, value);
 						}
 
 					}
 
-					
 				}
 			}
 		}
-		
-		if (changedFields.size() >0){
+
+		if (changedFields.size() > 0) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 
@@ -322,7 +328,7 @@ public class IxPoiChargingStation implements IObj {
 	@Override
 	public void setMesh(int mesh) {
 		this.mesh = mesh;
-		
+
 	}
 
 	@Override
@@ -341,6 +347,5 @@ public class IxPoiChargingStation implements IObj {
 	public String primaryKey() {
 		return "charging_id";
 	}
-
 
 }

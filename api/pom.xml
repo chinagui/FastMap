@@ -18,6 +18,7 @@
 		<module>api-man</module>
 		<module>api-metadata</module>
 		<module>api-render</module>
+		<module>api-statics</module>
     </modules>
     <packaging>pom</packaging>
     <name>api</name>

@@ -144,7 +144,7 @@ public class IxPoiParkingSelector implements ISelector {
 		ixPoiParking.setPayment(resultSet.getString("payment"));
 		ixPoiParking.setRemark(resultSet.getString("remark"));
 		ixPoiParking.setSource(resultSet.getString("source"));
-		ixPoiParking.setOpenTime(resultSet.getString("open_time"));
+		ixPoiParking.setOpenTiime(resultSet.getString("open_tiime"));
 		ixPoiParking.setTotalNum(resultSet.getInt("total_num"));
 		ixPoiParking.setWorkTime(resultSet.getString("work_time"));
 		ixPoiParking.setResHigh(resultSet.getDouble("res_high"));
@@ -159,7 +159,7 @@ public class IxPoiParkingSelector implements ISelector {
 		ixPoiParking.setHaveSpecialplace("have_specialplace");
 		ixPoiParking.setCertificate(resultSet.getInt("certificate"));
 		ixPoiParking.setRowId(resultSet.getString("row_id"));
-
+		ixPoiParking.setuDate(resultSet.getString("u_date"));
 	}
 	
 }

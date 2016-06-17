@@ -15,7 +15,6 @@ import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
-import com.navinfo.dataservice.expcore.config.ExportConfig;
 import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.dataservice.expcore.sql.handler.DMLExecThreadHandler;
 
@@ -28,17 +27,17 @@ import com.navinfo.dataservice.expcore.sql.handler.DMLExecThreadHandler;
 public class ExecuteFullCopySql {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected VMThreadPoolExecutor threadPoolExecutor;
-	protected ExportConfig expConfig;
 	protected OracleSchema targetSchema;
-	public ExecuteFullCopySql(ExportConfig expConfig,OracleSchema targetSchema)throws ExportException{
-		this.expConfig = expConfig;
+	protected boolean multiThread4Output;
+	public ExecuteFullCopySql(OracleSchema targetSchema,boolean multiThread4Output)throws ExportException{
 		this.targetSchema=targetSchema;
+		this.multiThread4Output=multiThread4Output;
 		createThreadPool();
 	}
 
     protected void createThreadPool() throws ExportException{
 		int outPoolSize = 1;
-		if(expConfig.isMultiThread4Output()){
+		if(multiThread4Output){
 			outPoolSize = SystemConfigFactory.getSystemConfig().getIntValue("export.multiThread.outputPoolSize", 10);
 		}
         try {

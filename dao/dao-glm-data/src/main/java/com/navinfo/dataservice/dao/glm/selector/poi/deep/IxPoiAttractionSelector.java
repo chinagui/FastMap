@@ -152,6 +152,7 @@ public class IxPoiAttractionSelector implements ISelector {
 		ixPoiAttraction.setParking(resultSet.getInt("parking"));
 		ixPoiAttraction.setTravelguideFlag(resultSet.getInt("travelguide_flag"));
 		ixPoiAttraction.setRowId(resultSet.getString("row_id"));
+		ixPoiAttraction.setuDate(resultSet.getString("u_date"));
 	}
 	
 }

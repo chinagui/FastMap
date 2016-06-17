@@ -103,6 +103,7 @@ public class IxPoiTourrouteSelector implements ISelector {
 		ixPoiTourroute.setReserved(resultSet.getString("reserved"));
 		ixPoiTourroute.setMemo(resultSet.getString("memo"));
 		ixPoiTourroute.setRowId(resultSet.getString("row_id"));
+		ixPoiTourroute.setuDate(resultSet.getString("u_date"));
 
 	}
 	

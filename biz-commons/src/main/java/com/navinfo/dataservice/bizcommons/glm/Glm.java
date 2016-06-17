@@ -2,6 +2,7 @@ package com.navinfo.dataservice.bizcommons.glm;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /** 
  * @ClassName: Glm 
@@ -11,8 +12,10 @@ import java.util.Map;
  */
 public class Glm {
 	private String gdbVersion;//240+,...
-	private Map<String,GlmTable> editTables;
+	private Map<String,GlmTable> editTables;//key:tableName,value:GLMTable object
 	private Map<String,GlmTable> extendTables;
+	//for cache
+	private Map<String,Set<String>> tableNameMap;//key:featureType,value:tableName
 	public Glm(String gdbVersion){
 		this.gdbVersion=gdbVersion;
 	}
@@ -46,6 +49,12 @@ public class Glm {
 			}
 		}
 	}
+	public Map<String, Set<String>> getTableNameMap() {
+		return tableNameMap;
+	}
+	public void setTableNameMap(Map<String, Set<String>> tableNameMap) {
+		this.tableNameMap = tableNameMap;
+	}
 	public String getTablePidColName(String tableName){
 		GlmTable glmTable = editTables.get(tableName);
 		if(glmTable==null) return null;
@@ -56,4 +65,8 @@ public class Glm {
 		}
 		return null;
 	}
+	public Set<String> getTableNames(String featureType){
+		return tableNameMap.get(featureType);
+	}
+
 }

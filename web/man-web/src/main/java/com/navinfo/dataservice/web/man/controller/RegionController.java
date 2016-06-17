@@ -9,9 +9,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
-import com.navinfo.dataservice.engine.man.region.Region;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.navicommons.database.Page;
 

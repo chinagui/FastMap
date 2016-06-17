@@ -19,6 +19,9 @@ import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdRestrictionSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSpeedlimitSearch;
 import com.navinfo.dataservice.dao.glm.search.RwLinkSearch;
+import com.navinfo.dataservice.dao.glm.search.ZoneFaceSearch;
+import com.navinfo.dataservice.dao.glm.search.ZoneLinkSearch;
+import com.navinfo.dataservice.dao.glm.search.ZoneNodeSearch;
 
 /**
  * 查询工厂
@@ -64,13 +67,19 @@ public class SearchFactory {
 		case ADFACE:
 			return new AdFaceSearch(conn);
 		case ADNODE:
-			return new AdNodeSearch(conn); 
+			return new AdNodeSearch(conn);
 		case RWLINK:
 			return new RwLinkSearch(conn);
 		case ADADMIN:
 			return new AdAdminSearch(conn);
 		case IXPOI:
 			return new IxPoiSearch(conn);
+		case ZONENODE:
+			return new ZoneNodeSearch(conn);
+		case ZONELINK:
+			return new ZoneLinkSearch(conn);
+		case ZONEFACE:
+			return new ZoneFaceSearch(conn);
 		default:
 			return null;
 		}

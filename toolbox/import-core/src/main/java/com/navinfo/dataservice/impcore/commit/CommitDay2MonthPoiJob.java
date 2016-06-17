@@ -1,12 +1,20 @@
 package com.navinfo.dataservice.impcore.commit;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
 import com.navinfo.dataservice.impcore.flushbylog.LogFlusher;
+import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
 /*
@@ -24,6 +32,37 @@ public class CommitDay2MonthPoiJob extends AbstractCommitDay2MonthJob {
 	@Override
 	public IDay2MonthCommand createDay2MonthCommand() {
 		return new CommitDay2MonthPoiCommand(this.request);
+	}
+	@Override
+	public void doFlushFromDay2Month(IDay2MonthCommand command){
+		try{
+			this.log.info("获取大区和grid的映射关系");
+			ManApi gridSelectorApiSvr = (ManApi) ApplicationContextUtil.getBean("manApi");
+			List<Region> regionSet = gridSelectorApiSvr.queryRegionList();
+			this.log.debug("regionSet:"+regionSet);
+			HashMap<String,FlushResult> jobResponse = new HashMap<String,FlushResult> ();
+			for (Region region:regionSet){
+				DatahubApi databhubApi = (DatahubApi) ApplicationContextUtil.getBean("datahubApi");
+				DbInfo dailyDb = databhubApi.getDbById(region.getDailyDbId());
+				DbInfo monthlyDb = databhubApi.getDbById(region.getMonthlyDbId());
+				this.log.info("开始进行日落月（源库:"+dailyDb+",目标库："+monthlyDb+")");
+				LogFlusher logFlusher= new LogFlusher(region.getRegionId(),
+													dailyDb, 
+													monthlyDb, 
+													gridListOfRegion, 
+													command.getStopTime(),
+													command.getFlushFeatureType(),
+													command.getLockType());
+				logFlusher.setLog(this.log);
+				FlushResult result= logFlusher.perform();
+				jobResponse.put(regionId.toString(), result);
+			}
+			this.response("日落月执行完毕", jobResponse);
+			
+		}catch(Exception e){
+			throw new JobException(e);
+		}
+	}
 	}
 	@Override
 	public void afterFlush(){

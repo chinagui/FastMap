@@ -14,21 +14,34 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+
 /**
- * 索引:POI 深度信息(汽车租赁) 
+ * 索引:POI 深度信息(汽车租赁)
+ * 
  * @author zhaokk
  *
  */
 public class IxPoiCarrental implements IRow {
 
-	private int poiPid =0;
-	private String  openHour;//租车点的营业时间
-	private String  adress;//租车点的详细地址描述 
-	private String howToGo;//周边交通路线 
-	private String phone400;//400 电话 
-	private String website;//主页网址
+	private int poiPid = 0;
+	private String openHour;// 租车点的营业时间
+	private String adress;// 租车点的详细地址描述
+	private String howToGo;// 周边交通路线
+	private String phone400;// 400 电话
+	private String website;// 主页网址
 	private int mesh;
 	private String rowId;
+	// 更新时间
+	private String uDate;
+	
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
+	}
+
 	public int getPoiPid() {
 		return poiPid;
 	}
@@ -37,13 +50,13 @@ public class IxPoiCarrental implements IRow {
 		this.poiPid = poiPid;
 	}
 
-	
-
 	public String getRowId() {
 		return rowId;
 	}
-    private String memo;
-    private Map<String, Object> changedFields = new HashMap<String, Object>();   
+
+	private String memo;
+	private Map<String, Object> changedFields = new HashMap<String, Object>();
+
 	@Override
 	public String rowId() {
 		return rowId;
@@ -52,14 +65,13 @@ public class IxPoiCarrental implements IRow {
 	@Override
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
-		
+
 	}
 
 	@Override
 	public String tableName() {
 		return "ix_poi_carrental";
 	}
-	
 
 	@Override
 	public ObjStatus status() {
@@ -70,7 +82,7 @@ public class IxPoiCarrental implements IRow {
 	@Override
 	public void setStatus(ObjStatus os) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -81,7 +93,7 @@ public class IxPoiCarrental implements IRow {
 	@Override
 	public void copy(IRow row) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -152,7 +164,6 @@ public class IxPoiCarrental implements IRow {
 		return "ix_poi";
 	}
 
-
 	public String getMemo() {
 		return memo;
 	}
@@ -184,44 +195,42 @@ public class IxPoiCarrental implements IRow {
 			if (json.get(key) instanceof JSONArray) {
 				continue;
 			} else {
-				if ( !"objStatus".equals(key)) {
-					
+				if (!"objStatus".equals(key)) {
+
 					Field field = this.getClass().getDeclaredField(key);
-					
+
 					field.setAccessible(true);
-					
+
 					Object objValue = field.get(this);
-					
+
 					String oldValue = null;
-					
-					if (objValue == null){
+
+					if (objValue == null) {
 						oldValue = "null";
-					}else{
+					} else {
 						oldValue = String.valueOf(objValue);
 					}
-					
+
 					String newValue = json.getString(key);
-					
-					if (!newValue.equals(oldValue)){
+
+					if (!newValue.equals(oldValue)) {
 						Object value = json.get(key);
-						
-						if(value instanceof String){
+
+						if (value instanceof String) {
 							changedFields.put(key, newValue.replace("'", "''"));
-						}
-						else{
+						} else {
 							changedFields.put(key, value);
 						}
 
 					}
 
-					
 				}
 			}
 		}
-		
-		if (changedFields.size() >0){
+
+		if (changedFields.size() > 0) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 
@@ -264,8 +273,7 @@ public class IxPoiCarrental implements IRow {
 	@Override
 	public void setMesh(int mesh) {
 		this.mesh = mesh;
-		
-	}
 
+	}
 
 }

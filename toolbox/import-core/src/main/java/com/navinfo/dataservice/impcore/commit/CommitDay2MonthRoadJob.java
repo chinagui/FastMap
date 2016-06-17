@@ -5,6 +5,7 @@ import java.util.Map;
 import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.impcore.flushbylog.LogFlusher;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;

@@ -14,9 +14,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /** 
@@ -43,38 +43,58 @@ public class BlockController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			service.create(dataJson);			
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
+			service.batchOpen(userId,dataJson);			
 			return new ModelAndView("jsonView", success("创建成功"));
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	/**
+	 * 批量修改Block信息
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(value = "/block/update")
 	public ModelAndView update(HttpServletRequest request){
 		try{			
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
 			if(dataJson==null){
-				throw new IllegalArgumentException("param参数不能为空。");
+				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			service.update(dataJson);			
+			service.batchUpdate(dataJson);			
 			return new ModelAndView("jsonView", success("修改成功"));
 		}catch(Exception e){
 			log.error("修改失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	@RequestMapping(value = "/block/delete")
-	public ModelAndView delete(HttpServletRequest request){
+	
+	/**
+	 * 根据几何范围，查询范围内的可出品的block并返回
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/block/listByProduce/")
+	public ModelAndView listByProduce(HttpServletRequest request){
 		try{			
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));			
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
 			if(dataJson==null){
-				throw new IllegalArgumentException("param参数不能为空。");
+				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			service.delete(dataJson);			
-			return new ModelAndView("jsonView", success("删除成功"));
+			if(!(dataJson.containsKey("wkt"))){
+				throw new IllegalArgumentException("wkt参数是必须的。");
+			}
+			String wkt= dataJson.getString("wkt");
+			if(StringUtils.isEmpty(wkt)){
+				throw new IllegalArgumentException("wkt参数值不能为空");
+			}
+			List<HashMap> data = service.listByProduce(wkt);			
+			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
-			log.error("删除失败，原因："+e.getMessage(), e);
+			log.error("获取block列表失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}

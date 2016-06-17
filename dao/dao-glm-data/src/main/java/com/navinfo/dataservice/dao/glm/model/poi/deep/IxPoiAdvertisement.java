@@ -31,10 +31,19 @@ public class IxPoiAdvertisement implements IObj {
 	private String  endTime;//广告到期时间
 	private int mesh;
 	private String rowId;
-	
+	// 更新时间
+	private String uDate;
 
 	public int getMesh() {
 		return mesh;
+	}
+	
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
 	}
 
 	public int getPoiPid() {

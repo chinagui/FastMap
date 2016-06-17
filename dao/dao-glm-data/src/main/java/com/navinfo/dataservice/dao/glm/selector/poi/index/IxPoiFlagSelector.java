@@ -145,6 +145,9 @@ public class IxPoiFlagSelector implements ISelector {
 		ixPoiFlag.setFlagCode(resultSet.getString("flag_code"));
 		
 		ixPoiFlag.setRowId(resultSet.getString("row_id"));
+		
+		ixPoiFlag.setuDate(resultSet.getString("u_date"));
+
 	}
 
 }

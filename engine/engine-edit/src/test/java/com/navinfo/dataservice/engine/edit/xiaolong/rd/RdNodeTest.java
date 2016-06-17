@@ -1,10 +1,21 @@
 package com.navinfo.dataservice.engine.edit.xiaolong.rd;
 
+import org.junit.Before;
+import org.junit.Test;
+
+import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 
-public class RdNodeTest {
-
-	public static void testMove() {
+public class RdNodeTest extends InitApplication{
+	
+	@Override
+	@Before
+	public void init() {
+		initContext();
+	}
+	
+	@Test
+	public void testMove() {
 		String parameter = "{\"command\":\"MOVE\",\"projectId\":11,\"objId\":47039001,\"data\":{\"longitude\":116.47554874420166,\"latitude\":40.018470039395126},\"type\":\"RDNODE\"}";
 		Transaction t = new Transaction(parameter);
 		try {
@@ -15,7 +26,4 @@ public class RdNodeTest {
 		}
 	}
 	
-	public static void main(String[] args) {
-		testMove();
-	}
 }

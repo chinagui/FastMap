@@ -21,7 +21,7 @@ public class DbConnectConfig {
 	protected String serverType;
 	protected String key;
 	public DbConnectConfig(String bizType,String dbName,String userName,String userPasswd
-			,String serverIp,int serverPort,String serverType,String key){
+			,String serverIp,int serverPort,String serverType){
 		this.bizType=bizType;
 		this.dbName=dbName;
 		this.userName=userName;
@@ -29,7 +29,7 @@ public class DbConnectConfig {
 		this.serverIp=serverIp;
 		this.serverPort=serverPort;
 		this.serverType=serverType;
-		this.key=serverIp+":"+serverPort+"/"+dbName;
+		this.key=serverIp+":"+serverPort+"/"+userName;
 	}
 	
 	public String getBizType() {

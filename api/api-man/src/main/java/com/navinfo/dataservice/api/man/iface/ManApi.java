@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.navinfo.dataservice.api.man.model.IRegion;
+import com.navinfo.dataservice.api.man.model.Grid;
+import com.navinfo.dataservice.api.man.model.Region;
 
 
 /*
@@ -22,6 +23,9 @@ public interface ManApi{
 	 * 
 	 */
 	public Map queryRegionGridMapping(List<Integer> gridList) throws Exception;
+	public Region queryByRegionId(Integer regionId) throws Exception ;
+	
+	List<Grid> listGrids()throws Exception;
 	/**
 	 * @param taskList subTaskId的列表
 	 * <b>注意：如果参数taskList太长（不能超过1000个），会导致oracle sql太长而出现异常；</b>
@@ -29,7 +33,7 @@ public interface ManApi{
 	 * @throws Exception
 	 */
 	public Map queryRegionGridMappingOfSubtasks(List<Integer> taskList) throws Exception;
-	public IRegion queryByRegionId(Integer regionId) throws Exception ;
 	public Set<Integer> queryGrid(int limit) throws Exception;
+	public List<Region> queryRegionList() throws Exception;
 }
 

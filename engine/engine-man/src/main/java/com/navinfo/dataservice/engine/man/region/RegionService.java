@@ -7,19 +7,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import net.sf.json.JSONObject;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
-
-import net.sf.json.JSONObject;
 
 /**
  * @ClassName: RegionService
@@ -218,15 +219,15 @@ public class RegionService {
 		}
 
 	}
-
-	public List<HashMap> list(JSONObject json) throws ServiceException {
+	public List<Region> list() throws Exception{
+		return list(null);
+	}
+	public List<Region> list(Region bean) throws ServiceException {
 		Connection conn = null;
 		try {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 
-			JSONObject obj = JSONObject.fromObject(json);
-			Region bean = (Region) JSONObject.toBean(obj, Region.class);
 			String selectSql = "select * from Region where 1=1 ";
 			List<Object> values = new ArrayList();
 			if (bean != null && bean.getRegionId() != null
@@ -253,16 +254,16 @@ public class RegionService {
 				values.add(bean.getMonthlyDbId());
 			}
 			;
-			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>() {
-				public List<HashMap> handle(ResultSet rs) throws SQLException {
-					List<HashMap> list = new ArrayList<HashMap>();
+			ResultSetHandler<List<Region>> rsHandler = new ResultSetHandler<List<Region>>() {
+				public List<Region> handle(ResultSet rs) throws SQLException {
+					List<Region> list = new ArrayList<Region>();
 					while (rs.next()) {
-						HashMap<String, Object> map = new HashMap<String, Object>();
-						map.put("regionId", rs.getInt("REGION_ID"));
-						map.put("regionName", rs.getString("REGION_NAME"));
-						map.put("dailyDbId", rs.getInt("DAILY_DB_ID"));
-						map.put("monthlyDbId", rs.getInt("MONTHLY_DB_ID"));
-						list.add(map);
+						Region region = new Region();
+						region.setRegionId(rs.getInt("REGION_ID"));
+						region.setRegionName(rs.getString("REGION_NAME"));
+						region.setDailyDbId(rs.getInt("DAILY_DB_ID"));
+						region.setMonthlyDbId(rs.getInt("MONTHLY_DB_ID"));
+						list.add(region);
 					}
 					return list;
 				}

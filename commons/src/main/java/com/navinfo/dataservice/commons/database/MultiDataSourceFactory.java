@@ -15,6 +15,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.oracle.MyDriverManagerDataSource;
@@ -91,6 +93,29 @@ public class MultiDataSourceFactory {
 		return dataSourceMap.get(dataSourceKey);
 	}
 
+
+/**
+     * 初始化mongo连接
+     * 
+     * @param connConfig
+     * @return
+     * @throws Exception
+     */
+    public MongoClient getMongoClient(DbConnectConfig connConfig)
+            throws Exception {
+
+        try {
+            String ip = connConfig.getServerIp();
+            Integer port = connConfig.getServerPort();
+
+            MongoClient mongoClient = new MongoClient(ip, port);
+            
+            return mongoClient;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new Exception(e);
+        }
+    }
 
 	/**
 	 * 初始化连接池
@@ -384,9 +409,8 @@ public class MultiDataSourceFactory {
 		String serverIp=(String)connParam.get("serverIp");
 		int serverPort=(Integer)connParam.get("serverPort");
 		String serverType=(String)connParam.get("serverType");
-		String key=serverIp+":"+serverPort+"/"+dbName;
 		return new DbConnectConfig(bizType,dbName,userName,userPasswd
-				,serverIp,serverPort,serverType,key);
+				,serverIp,serverPort,serverType);
 	}
 
 	public void closeDataSource(String key) {

@@ -24,13 +24,17 @@ public class IxPoiPhoto implements IRow {
 	
 	private int poiPid;//POI号码
 	
-	private int photoId=0;//照片号码
+	private String photoId;//照片号码
 	
 	private String status;//状态信息
 	
 	private String memo;//备注信息
 	
 	private String rowId;
+	
+	private int uRecord=0;
+	
+	private String uDate;
 	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
@@ -42,11 +46,11 @@ public class IxPoiPhoto implements IRow {
 		this.poiPid = poiPid;
 	}
 
-	public int getPhotoId() {
+	public String getPhotoId() {
 		return photoId;
 	}
 
-	public void setPhotoId(int photoId) {
+	public void setPhotoId(String photoId) {
 		this.photoId = photoId;
 	}
 
@@ -68,6 +72,22 @@ public class IxPoiPhoto implements IRow {
 
 	public String getRowId() {
 		return rowId;
+	}
+
+	public int getuRecord() {
+		return uRecord;
+	}
+
+	public void setuRecord(int uRecord) {
+		this.uRecord = uRecord;
+	}
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
 	}
 
 	@Override

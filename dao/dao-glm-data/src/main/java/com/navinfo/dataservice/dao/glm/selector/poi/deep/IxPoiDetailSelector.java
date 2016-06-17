@@ -104,6 +104,7 @@ public class IxPoiDetailSelector implements ISelector {
 	    ixPoiDetail.setCardType(resultSet.getString("cardtype"));
 	    ixPoiDetail.setHospitalClass(resultSet.getInt("hospital_class"));
 	    ixPoiDetail.setRowId(resultSet.getString("rowId"));
+	    ixPoiDetail.setuDate(resultSet.getString("u_date"));
 
 	}
 	

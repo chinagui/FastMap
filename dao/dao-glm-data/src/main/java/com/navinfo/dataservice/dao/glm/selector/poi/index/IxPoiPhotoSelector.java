@@ -60,13 +60,15 @@ public class IxPoiPhotoSelector implements ISelector {
 
 				photo.setPoiPid(resultSet.getInt("poi_pid"));
 
-				photo.setPhotoId(resultSet.getInt("photo_id"));				
+				photo.setPhotoId(resultSet.getString("photo_id"));				
 				
 				photo.setStatus(resultSet.getString("status"));
 					
 				photo.setMemo(resultSet.getString("memo"));	
 
 				photo.setRowId(resultSet.getString("row_id"));
+				
+				photo.setuDate(resultSet.getString("u_date"));
 			} else {
 				
 				throw new DataNotFoundException("数据不存在");
@@ -127,13 +129,15 @@ public class IxPoiPhotoSelector implements ISelector {
 
 				photo.setPoiPid(resultSet.getInt("poi_pid"));
 
-				photo.setPhotoId(resultSet.getInt("photo_id"));				
+				photo.setPhotoId(resultSet.getString("photo_id"));				
 				
 				photo.setStatus(resultSet.getString("status"));
 					
 				photo.setMemo(resultSet.getString("memo"));	
 
 				photo.setRowId(resultSet.getString("row_id"));
+				
+				photo.setuDate(resultSet.getString("u_date"));
 
 				rows.add(photo);
 			}

@@ -135,10 +135,12 @@ public class GridLockManager{
 			StringBuffer sqlBuf = new StringBuffer();
 			int updateCount=0;
 			//申请锁时，借出例外
+			String gridLockDbName = getGridLockDbName(dbType);
+			this.log.debug("gridLockDbName:"+gridLockDbName);
 			if(lockType==FmEditLock.TYPE_BORROW){
 				sqlBuf = new StringBuffer();
 				
-				sqlBuf.append("UPDATE "+getGridLockDbName(dbType)+" SET HANDLE_REGION_ID=?,LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE WHERE");
+				sqlBuf.append("UPDATE "+gridLockDbName+" SET HANDLE_REGION_ID=?,LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE WHERE");
 				sqlBuf.append(gridInClause);
 				sqlBuf.append(" AND HANDLE_REGION_ID <> ? AND LOCK_STATUS=0");
 				sqlBuf.append(lockObjClause);
@@ -151,7 +153,7 @@ public class GridLockManager{
 				
 			}else if(lockType==FmEditLock.TYPE_GIVE_BACK){
 				sqlBuf=new StringBuffer();
-				sqlBuf.append("UPDATE "+getGridLockDbName(dbType)+" SET LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE WHERE");
+				sqlBuf.append("UPDATE "+gridLockDbName+" SET LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE WHERE");
 				sqlBuf.append(gridInClause);
 				sqlBuf.append(" AND REGION_ID <> ? AND HANDLE_REGION_ID = ? AND LOCK_STATUS=0");
 				sqlBuf.append(lockObjClause);
@@ -163,7 +165,7 @@ public class GridLockManager{
 				}
 			}else{
 				sqlBuf=new StringBuffer();
-				sqlBuf.append("UPDATE "+getGridLockDbName(dbType)+" SET LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE WHERE");
+				sqlBuf.append("UPDATE "+gridLockDbName+" SET LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE WHERE");
 				sqlBuf.append(gridInClause);
 				sqlBuf.append(" AND HANDLE_REGION_ID = ? AND LOCK_STATUS=0");
 				sqlBuf.append(lockObjClause);

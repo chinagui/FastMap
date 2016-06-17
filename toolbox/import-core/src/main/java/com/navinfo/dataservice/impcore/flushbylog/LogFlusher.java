@@ -1,42 +1,30 @@
 package com.navinfo.dataservice.impcore.flushbylog;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
 import javax.sql.DataSource;
 
-import net.sf.json.JSONObject;
-import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
-import oracle.sql.STRUCT;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.edit.iface.DatalockApi;
-import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.edit.model.FmEditLock;
-import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.IRegion;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.NaviListUtils;
 import com.navinfo.dataservice.impcore.exception.LockException;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -47,7 +35,7 @@ import com.navinfo.navicommons.database.sql.DbLinkCreator;
  * 2016年6月8日
  * 描述：import-coreLogFlusher.java
  */
-public class LogFlusher {
+public abstract class LogFlusher {
 	public static final String FEATURE_ALL="ALL";
 	public static final String FEATURE_POI="POI";
 	public static final String FEATURE_ROAD="ROAD";
@@ -60,8 +48,12 @@ public class LogFlusher {
 	private List<Integer> grids;
 	private String stopTime;//履历生成的截止时间；yyyymmddhh24miss
 	private String tempTable;
+	public String getTempTable() {
+		return tempTable;
+	}
 	private String tempFailLogTable;//刷履历失败的日志记录临时表
 	private String featureType = FEATURE_ALL;
+	
 	private String monthDbLinkName;
 	private int regionId;
 	private int lockType;
@@ -87,7 +79,9 @@ public class LogFlusher {
 		this.regionId = regionId;
 		this.lockType = lockType;
 	}
-	
+	public String getFeatureType() {
+		return featureType;
+	}
 	private int getLockObject() {
 		if (FEATURE_ROAD.equals(this.featureType)){
 			return FmEditLock.LOCK_OBJ_ROAD;
@@ -162,7 +156,7 @@ public class LogFlusher {
 	 * @return 初始化temp表的sql；POI和道路的sql有差别
 	 * @throws Exception
 	 */
-	private String getPrepareSql() throws Exception{
+	public abstract String getPrepareSql() throws Exception{
 		if (FEATURE_ROAD.equals(this.featureType)){
 			StringBuilder sb = new StringBuilder();
 			sb.append("INSERT INTO ");
@@ -177,7 +171,7 @@ public class LogFlusher {
 				sb.append(StringUtils.join(grids, ","));
 				sb.append(")");
 			}
-			sb.append(" and "+this.getFeatureFilter());
+			sb.append(this.getFeatureFilter());
 			return sb.toString();
 		}
 		if (FEATURE_POI.equals(this.featureType)){
@@ -194,20 +188,20 @@ public class LogFlusher {
 				sb.append(StringUtils.join(grids, ","));
 				sb.append(")");
 			}
-			sb.append(" and "+this.getFeatureFilter());
+			sb.append(this.getFeatureFilter());
 			sb.append(" AND EXISTS(SELECT 1 FROM POI_EDIT_STATUS I WHERE L.ROW_ID=L.ROW_ID AND I.STATUS=3)");
 			return sb.toString();
 		}
 		throw new Exception("要素类型未知，或者不支持的要素类型："+this.featureType);
 		
 	}
-	private String getFeatureFilter(){
-		if (this.featureType.equals(FEATURE_ROAD)){
-			return " AND substr(L.TB_NM,0,2) != 'ix'";
-		}
-		if (this.featureType.equals(FEATURE_POI)){
-			return " AND substr(L.TB_NM,0,2) = 'ix'";
-		}
+	public String getFeatureFilter(){
+//		if (this.featureType.equals(FEATURE_ROAD)){
+//			return " AND substr(L.TB_NM,0,2) != 'ix'";
+//		}
+//		if (this.featureType.equals(FEATURE_POI)){
+//			return " AND substr(L.TB_NM,0,2) = 'ix'";
+//		}
 		return " 1=1";
 	}
 	private void initConnections() throws Exception{
@@ -293,7 +287,7 @@ public class LogFlusher {
 	private FlushResult flushData() throws Exception {
 		String logQuerySql = "SELECT L.* FROM LOG_DETAIL L," + tempTable
 				+ " T WHERE L.OP_ID=T.OP_ID "
-				+ " AND "+this.getFeatureFilter()
+				+ this.getFeatureFilter()
 				+ " ORDER BY T.OP_DT"
 				;
 		this.log.debug(logQuerySql);

@@ -179,6 +179,9 @@ public class CompGridUtil {
 	 * @return double精度超过5位小数
 	 */
 	public static double[] grid2Rect(String gridId){
+		
+		gridId = StringUtils.leftPad(gridId, 8, '0');
+		
 		int m1 = Integer.valueOf(gridId.substring(0, 1));
 		int m2 = Integer.valueOf(gridId.substring(1, 2));
 		int m3 = Integer.valueOf(gridId.substring(2, 3));

@@ -13,7 +13,6 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -29,7 +28,7 @@ public class BlockOperation {
 		// TODO Auto-generated constructor stub
 	}
 
-	public static List<HashMap> queryBlockBySql(Connection conn,String selectSql,List<Object> values) throws Exception{
+	public static List<HashMap> queryBlockBySql(Connection conn,String selectSql,String wkt) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
@@ -39,6 +38,8 @@ public class BlockOperation {
 						HashMap map = new HashMap<String, Integer>();
 						map.put("blockId", rs.getInt("BLOCK_ID"));
 						map.put("blockName", rs.getInt("BLOCK_NAME"));
+						map.put("planningStatus", rs.getInt("PLAN_STATUS"));
+						
 						CLOB clob = (CLOB)rs.getObject("geometry");
 						String clobStr = DataBaseUtils.clob2String(clob);
 						try {
@@ -53,12 +54,7 @@ public class BlockOperation {
 				}
 	    		
 	    	}		;
-	    	if (null==values || values.size()==0){
-	    		return run.query(conn, selectSql, rsHandler
-						);
-	    	}
-	    	return run.query(conn, selectSql, rsHandler,values.toArray()
-					);			
+	    	return run.query(conn, selectSql, rsHandler,wkt);			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

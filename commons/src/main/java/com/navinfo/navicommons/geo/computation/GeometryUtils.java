@@ -1,24 +1,19 @@
 package com.navinfo.navicommons.geo.computation;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import net.sf.json.JSONObject;
 
 import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.navicommons.database.DataBaseUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.MultiPoint;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
-
-import net.sf.json.JSONObject;
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.CLOB;
-import oracle.sql.STRUCT;
 
 public class GeometryUtils {
 	private static double EARTH_RADIUS = 6378137;
@@ -368,6 +363,22 @@ public class GeometryUtils {
 		MultiPoint mpoint = (MultiPoint) reader.read(wkt);
 
 		return mpoint;
+	}
+	
+	public static double[] getCoordinate(Geometry geo) {
+		
+		Coordinate[] coords = geo.getCoordinates();
+		
+		double[] points = new double[coords.length*2];
+		
+		for(int i=0;i<coords.length;i++){
+			
+			points[2*i] = coords[i].x;
+			
+			points[2*i+1] = coords[i].y;
+		}
+		
+		return points;
 	}
 
 	public static void main(String[] args) throws Exception {

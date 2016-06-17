@@ -16,6 +16,7 @@ import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchOperator;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 /**
  * POI父子关系子表 操作
  * @author luyao
@@ -30,10 +31,11 @@ public class IxPoiChildrenOperator implements IOperator {
 
 	private IxPoiChildren ixPoiChildren;
 
-	public IxPoiChildrenOperator(Connection conn, IxPoiChildren ixPoiChildren) {
+	public IxPoiChildrenOperator(Connection conn, IxPoiChildren ixPoiChildren) throws Exception {
 		this.conn = conn;
-
 		this.ixPoiChildren = ixPoiChildren;
+		IxPoiOperator operator = new IxPoiOperator(conn,new IxPoiSelector(conn).loadRowIdByPid(ixPoiChildren.getChildPoiPid(), false));
+		operator.upatePoiStatus();
 	}
 	
 	@Override

@@ -39,30 +39,26 @@ public class IxPoiSearch implements ISearch {
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
+	public List<SearchSnapshot> searchDataBySpatial(String wkt)
+			throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByCondition(String condition) throws Exception {
+	public List<SearchSnapshot> searchDataByCondition(String condition)
+			throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
+	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
+			int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select pid,x_guide,y_guide,geometry,"
-				+ " (SELECT PS.STATUS FROM POI_EDIT_STATUS PS WHERE I.ROW_ID = PS.ROW_ID)"
-				+ " STATUS, (SELECT COUNT(1) FROM IX_POI_PARENT P WHERE group_id in "
-				+ " (SELECT group_id FROM IX_POI_CHILDREN WHERE CHILD_POI_PID = I.PID)) "
-				+ " PARENTCOUNT,  (SELECT COUNT(1) FROM IX_POI_CHILDREN P WHERE group_id in (SELECT group_id FROM IX_POI_PARENT WHERE parent_poi_pid = I.PID)) CHILDCOUNT"
-				+ ",(SELECT NAME FROM ix_poi_name WHERE POI_PID = I.PID AND LANG_CODE='CHI' AND NAME_CLASS=1 AND NAME_TYPE=2) NAME from ix_poi i "
-				+ " where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =    'TRUE'  "
-				+ " and u_record != 2";
-
+		String sql = "select pid,  kind_code,      x_guide,        y_guide,        geometry,        (SELECT PS.STATUS FROM POI_EDIT_STATUS PS WHERE I.ROW_ID = PS.ROW_ID) STATUS,        (SELECT COUNT(1)           FROM IX_POI_PARENT P          WHERE p.parent_poi_pid = I.PID) PARENTCOUNT,        (SELECT COUNT(1)           FROM IX_POI_CHILDREN P          WHERE p.child_poi_pid = I.PID) CHILDCOUNT,        (SELECT NAME           FROM ix_poi_name          WHERE POI_PID = I.PID            AND LANG_CODE = 'CHI'            AND NAME_CLASS = 1            AND NAME_TYPE = 2) NAME   from ix_poi i  where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =        'TRUE'    and u_record != 2";
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -91,14 +87,16 @@ public class IxPoiSearch implements ISearch {
 
 				int childCount = resultSet.getInt("childCount");
 
-				String haveParentOrChild = GetParentOrChild(parentCount, childCount);
+				String haveParentOrChild = GetParentOrChild(parentCount,
+						childCount);
 				int status = resultSet.getInt("status");
 
 				JSONObject m = new JSONObject();
 
 				m.put("a", haveParentOrChild);
 				m.put("b", status);
-				
+				m.put("d", resultSet.getString("kind_code"));
+
 				m.put("e", resultSet.getString("name"));
 
 				Double xGuide = resultSet.getDouble("x_guide");
@@ -157,16 +155,12 @@ public class IxPoiSearch implements ISearch {
 	private String GetParentOrChild(int parentCount, int childCount) {
 		String haveParentOrChild = "0";
 
-		if (parentCount > 0) {
-			haveParentOrChild = "1";
-		}
-
-		if (childCount > 0) {
-			haveParentOrChild = "2";
-		}
-
-		if (parentCount > 0 || childCount > 0) {
+		if (parentCount > 0 && childCount > 0) {
 			haveParentOrChild = "3";
+		} else if (parentCount > 0) {
+			haveParentOrChild = "1";
+		} else if (childCount > 0) {
+			haveParentOrChild = "2";
 		}
 
 		return haveParentOrChild;

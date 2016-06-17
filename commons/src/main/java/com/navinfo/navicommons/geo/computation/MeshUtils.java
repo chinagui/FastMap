@@ -738,4 +738,34 @@ public abstract class MeshUtils {
 			return MeshLocation.Inside;
 		}
 	}
+	
+	/**
+	 * 判断grid是否被一个面包含
+	 * @param face
+	 * @param gridId
+	 * @return
+	 */
+	public static boolean meshInFace(double[] face, String meshId){
+		double[] rect = mesh2Rect(meshId);
+		
+		double[] p1 = new double[]{rect[0],rect[1]};
+		double[] p2 = new double[]{rect[0],rect[3]};
+		double[] p3 = new double[]{rect[2],rect[1]};
+		double[] p4 = new double[]{rect[2],rect[3]};
+		
+		if(!CompGeometryUtil.pointInFace(p1, face)){
+			return false;
+		}
+		if(!CompGeometryUtil.pointInFace(p2, face)){
+			return false;
+		}
+		if(!CompGeometryUtil.pointInFace(p3, face)){
+			return false;
+		}
+		if(!CompGeometryUtil.pointInFace(p4, face)){
+			return false;
+		}
+		
+		return true;
+	}
 }

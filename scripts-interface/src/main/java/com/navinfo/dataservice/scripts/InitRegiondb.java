@@ -21,6 +21,7 @@ import org.springframework.util.Assert;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.model.Grid;
+import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
@@ -40,7 +41,7 @@ import com.navinfo.navicommons.geo.computation.MeshUtils;
  * @date 2016-1-15 下午3:40:32
  * @Description: TODO
  */
-public class InitRegionDbScriptsInterface {
+public class InitRegiondb {
 
 	public static JSONObject execute(JSONObject request) throws Exception{
 		JSONObject response = new JSONObject();
@@ -96,7 +97,7 @@ public class InitRegionDbScriptsInterface {
 				req2.put("sourceDbId", fmgdbId);
 				req2.put("condition", ExportConfig.CONDITION_BY_MESH);
 				req2.put("conditionParams", JSONArray.fromObject(meshes));
-				req2.put("feature", ExportConfig.FEATURE_GDB);
+				req2.put("featureType", GlmTable.FEATURE_TYPE_ALL);
 				req2.put("dataIntegrity", false);
 				req2.put("targetDbId", dbDay);
 				info2.setRequest(req2);
@@ -132,6 +133,7 @@ public class InitRegionDbScriptsInterface {
 				JSONObject req4 = new JSONObject();
 				req4.put("sourceDbId", fmgdbId);
 				req4.put("targetDbId", dbDay);
+				req4.put("featureType", GlmTable.FEATURE_TYPE_ALL);
 				req4.put("gdbVersion", gdbVersion);
 				info4.setRequest(req4);
 				AbstractJob job4 = JobCreateStrategy.createAsMethod(info4);

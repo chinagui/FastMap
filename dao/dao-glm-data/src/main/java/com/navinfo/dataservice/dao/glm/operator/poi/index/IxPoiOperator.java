@@ -80,6 +80,8 @@ public class IxPoiOperator implements IOperator {
 		upatePoiStatus(0);
 	}
 	public IxPoiOperator(Connection conn, String rowId) throws Exception  {
+		this.conn = conn;
+		ixPoi = new IxPoi();
 		ixPoi.setRowId(rowId);
 		upatePoiStatus(0);
 	}

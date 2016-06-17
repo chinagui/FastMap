@@ -130,7 +130,7 @@ public class PoiDailyStat implements Runnable {
 
 			Document poi = (Document) dd.get("poi");
 
-			poi.put("percent", poi.getInteger("finish") / poi.getInteger("total"));
+			poi.put("percent", poi.getInteger("finish") / poi.getInteger("total")*100);
 			backList.add(dd);
 		}
 

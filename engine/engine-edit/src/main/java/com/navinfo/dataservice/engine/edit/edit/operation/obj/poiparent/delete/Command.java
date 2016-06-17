@@ -15,7 +15,8 @@ public class Command extends AbstractCommand implements ICommand {
 	
 	private int objId;
 
-
+	private ObjType objType = ObjType.IXPOIPARENT;
+	
 	public JSONObject getContent() {
 		return content;
 	}
@@ -31,7 +32,7 @@ public class Command extends AbstractCommand implements ICommand {
 
 	@Override
 	public ObjType getObjType() {
-		return ObjType.IXPOIPARENT;
+		return objType;
 	}
 
 	@Override
@@ -51,5 +52,9 @@ public class Command extends AbstractCommand implements ICommand {
 
 	public void setObjId(int objId) {
 		this.objId = objId;
+	}
+
+	public void setObjType(ObjType objType) {
+		this.objType = objType;
 	}
 }

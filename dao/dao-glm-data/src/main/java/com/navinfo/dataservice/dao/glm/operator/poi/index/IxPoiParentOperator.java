@@ -40,7 +40,7 @@ public class IxPoiParentOperator implements IOperator {
 		this.ixPoiParent = ixPoiParent;
 		this.conn = conn;
 		IxPoiOperator operator = new IxPoiOperator(conn,new IxPoiSelector(conn).loadRowIdByPid(ixPoiParent.getParentPoiPid(), false));
-		operator.upatePoiStatus(0);
+		operator.upatePoiStatus();
 	}
 
 	@Override

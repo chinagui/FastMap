@@ -19,7 +19,7 @@
     <module>engine-photo</module>
     <module>engine-dropbox</module>
     <module>engine-check</module>
-    <module>engine-statics</module>
+	<module>engine-statics</module>
     </modules>
     <packaging>pom</packaging>
     <name>engine</name>

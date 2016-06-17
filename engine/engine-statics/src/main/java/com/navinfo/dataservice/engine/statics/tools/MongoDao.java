@@ -5,6 +5,7 @@ import java.util.List;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
 
 public class MongoDao {
@@ -35,6 +36,20 @@ public class MongoDao {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	public FindIterable<Document> find(String col_name, Bson filter) {
+		try {
+			if (filter == null) {
+				return md.getCollection(col_name).find();
+			} else {
+				return md.getCollection(col_name).find(filter);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 }

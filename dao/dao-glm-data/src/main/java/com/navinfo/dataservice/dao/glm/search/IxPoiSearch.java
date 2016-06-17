@@ -57,7 +57,7 @@ public class IxPoiSearch implements ISearch {
 			int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select pid,  kind_code,      x_guide,        y_guide,        geometry,        (SELECT PS.STATUS FROM POI_EDIT_STATUS PS WHERE I.ROW_ID = PS.ROW_ID) STATUS,        (SELECT COUNT(1)           FROM IX_POI_PARENT P          WHERE p.parent_poi_pid = I.PID) PARENTCOUNT,        (SELECT COUNT(1)           FROM IX_POI_CHILDREN P          WHERE p.child_poi_pid = I.PID) CHILDCOUNT,        (SELECT NAME           FROM ix_poi_name          WHERE POI_PID = I.PID            AND LANG_CODE = 'CHI'            AND NAME_CLASS = 1            AND NAME_TYPE = 2) NAME   from ix_poi i  where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =        'TRUE'    and u_record != 2";
+		String sql = "with tmp1 as  (select pid, kind_code,x_guide, y_guide, geometry, row_id     from ix_poi    where sdo_relate(geometry, sdo_geometry(    :1    , 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2),  tmp2 as  (SELECT COUNT(1) PARENTCOUNT     FROM IX_POI_PARENT P, tmp1 a    WHERE p.parent_poi_pid = a.PID      and p.u_record != 2),  tmp3 as  (SELECT COUNT(1) CHILDCOUNT     FROM IX_POI_CHILDREN P, tmp1 a    WHERE p.child_poi_pid = a.PID      and p.u_record != 2) select  a.*,  b.status,  c.PARENTCOUNT,  d.CHILDCOUNT,  (SELECT NAME     FROM ix_poi_name p    WHERE p.POI_PID = a.PID      AND p.LANG_CODE = 'CHI'      AND p.NAME_CLASS = 1      AND p.NAME_TYPE = 2      AND p.u_record != 2) NAME   from tmp1 a, poi_edit_status b, tmp2 c, tmp3 d  where a.row_id = b.row_id";
 		
 		PreparedStatement pstmt = null;
 

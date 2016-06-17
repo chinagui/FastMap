@@ -18,7 +18,8 @@ public class GdbExportJobRequest extends AbstractJobRequest {
 	protected int sourceDbId;
 	protected String condition;
 	protected List<String> conditionParams;
-	protected String feature;
+	protected String featureType;//poi,road,all,GlmTable.FEATURE_TYPE_XXX
+//	protected List<String> objTypes;
 //	protected boolean deleteData;
 //	protected boolean destroyTarget;
 	protected int targetDbId;
@@ -68,12 +69,12 @@ public class GdbExportJobRequest extends AbstractJobRequest {
 		this.conditionParams = conditionParams;
 	}
 
-	public String getFeature() {
-		return feature;
+	public String getFeatureType() {
+		return featureType;
 	}
 
-	public void setFeature(String feature) {
-		this.feature = feature;
+	public void setFeatureType(String featureType) {
+		this.featureType = featureType;
 	}
 	
 	public int getTargetDbId() {

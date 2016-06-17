@@ -32,8 +32,17 @@ public class VersionController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			String version = service.query(dataJson.getInt("type"));
-			return new ModelAndView("jsonView", success("success",version));
+			int type = dataJson.getInt("type");
+			
+			String version = service.query(type);
+			
+			JSONObject json = new JSONObject();
+			
+			json.put("specVersion", version);
+			
+			json.put("type", type);
+			
+			return new ModelAndView("jsonView", success(json));
 		} catch (Exception e) {
 			log.error("创建失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

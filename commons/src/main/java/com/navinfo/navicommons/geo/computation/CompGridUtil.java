@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.util.DoubleUtil;
@@ -20,7 +21,32 @@ import com.navinfo.dataservice.commons.util.DoubleUtil;
 public class CompGridUtil {
 
 	/**
+	 * 计算line在图幅范围内所属的grid
+	 * 
+	 * @param line
+	 * @param meshId
+	 * @return
+	 */
+	public static Set<String> line2Grid(double[] line, String meshId){
+
+		//计算line的外接矩形相交的grid矩形
+		Set<String> rawGrids = mesh2Grid(meshId);
+		Set<String> interGrids = new HashSet<String>();
+		//再计算line是否和每个grid矩形相交
+		for(String gridId:rawGrids){
+			long[] grid = MyGeoConvertor.degree2Millisec(grid2Rect(gridId));
+			if(LongLineUtil.intersectant(MyGeoConvertor.lineArr2Line(MyGeoConvertor.degree2Millisec(line))
+					,MyGeoConvertor.rectArr2Rect(grid))){
+				interGrids.add(gridId);
+			}
+		}
+		return interGrids;
+	
+		
+	}
+	/**
 	 * 传入该line所属的图幅号
+	 * line不能超过图幅范围
 	 * @param line:[x1,y1,x2,y2]
 	 * @param meshId：line所属的图幅号
 	 * @return

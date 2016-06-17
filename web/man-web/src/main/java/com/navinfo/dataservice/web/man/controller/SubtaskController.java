@@ -66,7 +66,6 @@ public class SubtaskController extends BaseController {
 			
 			dataJson.remove("gridIds");
 			
-//			Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
 			Subtask bean = (Subtask) JsonOperation.jsonToBean(dataJson,Subtask.class);
 			bean.setCreateUserId((int)userId);
 			bean.setGeometry(wkt);
@@ -195,15 +194,9 @@ public class SubtaskController extends BaseController {
 					subtask.put("taskId", subtaskList.get(i).getTask().getTaskId());
 					subtask.put("taskDescp", subtaskList.get(i).getTask().getDescp());
 					subtask.put("taskName", subtaskList.get(i).getTask().getName());
-					if(0 == bean.getStage()){
-						subtask.put("TaskCollectPlanStartDate", subtaskList.get(i).getTask().getCollectPlanStartDate());
-						subtask.put("TaskCollectPlanEndDate", subtaskList.get(i).getTask().getCollectPlanEndDate());
-					}else if(1 == bean.getStage()){
-						subtask.put("TaskDayEditPlanStartDate", subtaskList.get(i).getTask().getDayEditPlanStartDate());
-						subtask.put("TaskDayEditPlanEndDate", subtaskList.get(i).getTask().getDayEditPlanEndDate());
-					}else if(2 == bean.getStage()){
-						subtask.put("TaskCMonthEditPlanStartDate", subtaskList.get(i).getTask().getCMonthEditPlanStartDate());
-						subtask.put("TaskCMonthEditPlanEndDate", subtaskList.get(i).getTask().getCMonthEditPlanEndDate());
+					if(2 == bean.getStage()){
+						subtask.put("TaskCMonthEditPlanStartDate", subtaskList.get(i).getTask().getMonthEditPlanStartDate());
+						subtask.put("TaskCMonthEditPlanEndDate", subtaskList.get(i).getTask().getMonthEditPlanEndDate());
 					}
 				}
 				list.add(subtask);

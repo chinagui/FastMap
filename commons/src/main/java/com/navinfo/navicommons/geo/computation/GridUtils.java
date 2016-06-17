@@ -3,6 +3,11 @@ package com.navinfo.navicommons.geo.computation;
 import java.util.List;
 
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
+import com.vividsolutions.jts.io.WKTWriter;
 
 import net.sf.json.JSONArray;
 import ch.hsr.geohash.GeoHash;
@@ -84,46 +89,42 @@ public class GridUtils {
 
 	}
 	
+	public static Geometry grid2Geometry(String gridId) throws ParseException{
+		
+		String wkt = grid2Wkt(gridId);
+		
+		WKTReader reader = new WKTReader();
+		
+		return reader.read(wkt);
+	}
+	
 	/**
 	 * grid转wkt
 	 * @param gridId
 	 * @return
+	 * @throws ParseException 
 	 */
-	public static String grids2Wkt(JSONArray grids) {
+	public static String grids2Wkt(JSONArray grids) throws ParseException {
 
-		double minLon = 180;
-
-		double minLat = 90;
-
-		double maxLon = -180;
-
-		double maxLat = -90;
-
+		Geometry geometry = null;
+		
 		for (int i = 0; i < grids.size(); i++) {
-			int gridId = grids.getInt(i);
+			String gridId = grids.getString(i);
 
-			double[] loc = CompGridUtil.grid2Rect(gridId);
-
-			if (loc[0] < minLon) {
-				minLon = loc[0];
+			Geometry geo = grid2Geometry(gridId);
+			
+			if(geometry == null){
+				geometry = geo;
 			}
-
-			if (loc[1] < minLat) {
-				minLat = loc[1];
-			}
-
-			if (loc[2] > maxLon) {
-				maxLon = loc[2];
-			}
-
-			if (loc[3] > maxLat) {
-				maxLat = loc[3];
+			else{
+				geometry = geometry.union(geo);
 			}
 		}
+		
 
-		return "POLYGON ((" + minLon + " " + minLat + ", " + minLon + " " + maxLat + ", "
-				+ maxLon + " " + maxLat + ", " + maxLon + " " + minLat  + ", " + + minLon + " " + minLat + "))";
-
+		WKTWriter w = new WKTWriter();
+		
+		return w.write(geometry);
 	}
 
 	/**
@@ -198,60 +199,6 @@ public class GridUtils {
 		lonlat[1] = lat;
 
 		return lonlat;
-	}
-
-	public static void main(String[] args) {
-
-		double[] data = grid2Location("59567201");
-
-		System.out.println(data[0] + "," + data[1]);
-		System.out.println(data[2] + "," + data[3]);
-
-		String[] str = getEnclosingRectangle(JSONArray
-				.fromObject(new String[] { "59567201" }));
-
-		for (String s : str) {
-			System.out.println(s);
-		}
-
-		System.out.println(GeoHash.geoHashStringWithCharacterPrecision(39, 116,
-				12));
-
-		System.out.println(GeoHash.geoHashStringWithCharacterPrecision(39, 117,
-				12));
-
-		System.out.println(GeoHash.geoHashStringWithCharacterPrecision(40, 117,
-				12));
-
-		System.out.println(GeoHash.geoHashStringWithCharacterPrecision(40, 116,
-				12));
-		for (int i = 0; i < 1000; i++) {
-
-			System.out.println(UuidUtils.genUuid());
-		}
-
-		WGS84Point p = GeoHash.fromGeohashString("tuzhpe291z9x").getPoint();
-
-		double lon = p.getLongitude();
-
-		double lat = p.getLatitude();
-
-		System.out.println(lon + "," + lat);
-
-		/*
-		 * data = grid2Location("59567202");
-		 * System.out.println(location2Grid(data[0], data[1]));
-		 * System.out.println(location2Grid(data[2], data[3]));
-		 * 
-		 * data = grid2Location("59567203");
-		 * System.out.println(location2Grid(data[0], data[1]));
-		 * System.out.println(location2Grid(data[2], data[3]));
-		 * 
-		 * data = grid2Location("59567204");
-		 * System.out.println(location2Grid(data[0], data[1]));
-		 * System.out.println(location2Grid(data[2], data[3]));
-		 */
-
 	}
 
 }

@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.poiparent.delete;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
@@ -31,6 +32,7 @@ public class Operation implements IOperation {
 		}
 		else if(ixPoiChildren != null)
 		{
+			this.command.setObjType(ObjType.IXPOICHILDREN);
 			result.insertObject(ixPoiChildren, ObjStatus.DELETE, command.getObjId());
 		}
 		

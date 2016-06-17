@@ -8,43 +8,42 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminPart;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkMesh;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNodeMesh;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 
-/**
- * @Title: AdAdminPartSelector.java
- * @Description: AdAdminPart的查询类
- * @author 张小龙
- * @date 2016年4月18日 下午5:30:06
- * @version V1.0
- */
-public class AdAdminPartSelector implements ISelector {
 
-	private static Logger logger = Logger.getLogger(AdFaceSelector.class);
+/**
+ * ZONE:LINK图幅表  查询接口
+ * @author zhaokk
+ *
+ */
+public class ZoneLinkMeshSelector implements ISelector{
+	
+	private static Logger logger = Logger.getLogger(ZoneLinkMeshSelector.class);
 
 	private Connection conn;
-
-	public AdAdminPartSelector(Connection conn) {
+	
+	public ZoneLinkMeshSelector(Connection conn) {
+		super();
 		this.conn = conn;
 	}
 
 	@Override
 	public IRow loadById(int id, boolean isLock) throws Exception {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
-		return null;
-	}
+		ZoneLinkMesh mesh = new ZoneLinkMesh();
 
-	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
-		List<IRow> rows = new ArrayList<IRow>();
-
-		String sql = "select * from ad_admin_part where group_id=:1 and u_record!=:2";
+		String sql = "select * from " + mesh.tableName() + " where row_id=hextoraw(:1)";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -57,81 +56,20 @@ public class AdAdminPartSelector implements ISelector {
 		try {
 			pstmt = this.conn.prepareStatement(sql);
 
-			pstmt.setInt(1, id);
-
-			pstmt.setInt(2, 2);
-
-			resultSet = pstmt.executeQuery();
-
-			while (resultSet.next()) {
-
-				AdAdminPart part = new AdAdminPart();
-
-				part.setGroupId(resultSet.getInt("group_id"));
-
-				part.setRegionIdDown(resultSet.getInt("region_id_down"));
-
-				part.setRowId(resultSet.getString("row_id"));
-
-				rows.add(part);
-			}
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-
-		return rows;
-	}
-	
-	public AdAdminPart loadByRegionId(int id, boolean isLock) throws Exception {
-		AdAdminPart part = null;
-
-		String sql = "select * from ad_admin_part where region_id_down =:1";
-		
-		if (isLock) {
-			sql += " for update nowait";
-		}
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setInt(1, id);
+			pstmt.setString(1, rowId);
 
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
-				
-				part = new AdAdminPart();
 
-				part.setGroupId(resultSet.getInt("group_id"));
+				mesh.setLinkPid(resultSet.getInt("link_pid"));
 
-				part.setRegionIdDown(resultSet.getInt("region_id_down"));
+				mesh.setMeshId(resultSet.getInt("mesh_id"));
 
-				part.setRowId(resultSet.getString("row_id"));
-
+				mesh.setRowId(resultSet.getString("row_id"));
 			} else {
+				
+				throw new DataNotFoundException("数据不存在");
 			}
 		} catch (Exception e) {
 			
@@ -156,7 +94,69 @@ public class AdAdminPartSelector implements ISelector {
 
 		}
 
-		return part;
+		return mesh;
+	}
+
+	@Override
+	public List<IRow> loadRowsByParentId(int id, boolean isLock)
+			throws Exception {
+		List<IRow> rows = new ArrayList<IRow>();
+
+		String sql = "select * from zone_link_mesh where link_pid =:1 and u_record!=:2";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, id);
+
+			pstmt.setInt(2, 2);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				ZoneLinkMesh mesh = new ZoneLinkMesh();
+
+				mesh.setLinkPid(resultSet.getInt("node_pid"));
+
+				mesh.setMeshId(resultSet.getInt("mesh_id"));
+
+				mesh.setRowId(resultSet.getString("row_id"));
+
+				rows.add(mesh);
+			}
+		} catch (Exception e) {
+			
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+		}
+
+		return rows;
 	}
 
 }

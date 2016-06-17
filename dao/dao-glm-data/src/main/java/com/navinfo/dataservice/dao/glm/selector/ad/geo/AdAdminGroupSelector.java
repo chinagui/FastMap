@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.dao.glm.selector.ad.zone;
+package com.navinfo.dataservice.dao.glm.selector.ad.geo;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,7 +12,6 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminGroup;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminPart;
-import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 
 /**
  * @Title: AdAdminGroupSelector.java

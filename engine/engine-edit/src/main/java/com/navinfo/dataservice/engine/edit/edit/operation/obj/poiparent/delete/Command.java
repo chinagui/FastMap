@@ -26,12 +26,12 @@ public class Command extends AbstractCommand implements ICommand {
 
 	@Override
 	public OperType getOperType() {
-		return OperType.UPDATE;
+		return OperType.DELETE;
 	}
 
 	@Override
 	public ObjType getObjType() {
-		return ObjType.RDRESTRICTION;
+		return ObjType.IXPOIPARENT;
 	}
 
 	@Override

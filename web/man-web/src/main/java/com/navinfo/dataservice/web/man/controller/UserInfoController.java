@@ -97,12 +97,22 @@ public class UserInfoController extends BaseController {
 	}
 	@RequestMapping(value = "/userInfo/update")
 	public ModelAndView update(HttpServletRequest request){
-		try{			
+		try{	
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
+			if(dataJson.isEmpty()){
+				return new ModelAndView("jsonView", success("无可修改内容"));
+			}
+			
+			int userId = (int)tokenObj.getUserId();
 			UserInfo  bean = (UserInfo)JSONObject.toBean(dataJson, UserInfo.class);
+
+			bean.setUserId(userId);
+			
 			service.update(bean);			
 			return new ModelAndView("jsonView", success("修改成功"));
 		}catch(Exception e){
@@ -153,6 +163,11 @@ public class UserInfoController extends BaseController {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			
+			if(dataJson.isEmpty()){
+				return new ModelAndView("jsonView", success("无请求信息"));
 			}
 			UserInfo  bean = (UserInfo)JSONObject.toBean(dataJson, UserInfo.class);
 			UserInfo  userInfo = service.query(bean);

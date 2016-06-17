@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.web.man.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.api.man.model.UserGroup;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -114,11 +116,81 @@ public class UserGroupController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
+			
+			if(dataJson.isEmpty()){
+				return new ModelAndView("jsonView", success("无请求信息"));
+			}
+
 			UserGroup  bean = (UserGroup)JSONObject.toBean(dataJson, UserGroup.class);
 			UserGroup  data = service.query(bean);			
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("获取明细失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	
+	@RequestMapping(value = "/userGroup/listByUser")
+	public ModelAndView listByUser(HttpServletRequest request){
+		try{			
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			if(dataJson.isEmpty()){
+				return new ModelAndView("jsonView", success("无用户信息"));
+			}
+
+			UserInfo  bean = (UserInfo)JSONObject.toBean(dataJson, UserInfo.class);
+			
+			List<UserGroup> userGroupList = service.listByUser(bean);
+			
+			List<HashMap<?,?>> data = new ArrayList<HashMap<?,?>>();
+			
+			for(int i = 0;i<userGroupList.size();i++){
+				HashMap<String, Comparable> userGroup = new HashMap<String, Comparable>();
+				userGroup.put("groupId", userGroupList.get(i).getGroupId());
+				userGroup.put("groupName", userGroupList.get(i).getGroupName());
+				data.add(userGroup);
+			}
+			
+			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("获取列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	@RequestMapping(value = "/userGroup/listByType")
+	public ModelAndView listByType(HttpServletRequest request){
+		try{			
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			if(dataJson.isEmpty()){
+				return new ModelAndView("jsonView", success("无组类型信息"));
+			}
+
+			UserGroup  bean = (UserGroup)JSONObject.toBean(dataJson, UserGroup.class);
+			
+			List<UserGroup> userGroupList = service.listByType(bean);
+			
+			List<HashMap<?,?>> data = new ArrayList<HashMap<?,?>>();
+			
+			for(int i = 0;i<userGroupList.size();i++){
+				HashMap<String, Comparable> userGroup = new HashMap<String, Comparable>();
+				userGroup.put("groupId", userGroupList.get(i).getGroupId());
+				userGroup.put("groupName", userGroupList.get(i).getGroupName());
+				data.add(userGroup);
+			}
+			
+			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("获取列表失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}

@@ -35,7 +35,7 @@ public class IxPoiChildrenOperator implements IOperator {
 		this.conn = conn;
 		this.ixPoiChildren = ixPoiChildren;
 		IxPoiOperator operator = new IxPoiOperator(conn,new IxPoiSelector(conn).loadRowIdByPid(ixPoiChildren.getChildPoiPid(), false));
-		operator.upatePoiStatus(0);
+		operator.upatePoiStatus();
 	}
 	
 	@Override

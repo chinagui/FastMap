@@ -1,6 +1,9 @@
 package com.navinfo.dataservice.web.edit.controller;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -11,10 +14,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
+import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.download.DownloadOperation;
+import com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.upload.UploadOperation;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -73,15 +79,13 @@ public class PoiController extends BaseController{
 			JSONObject json = JSONObject.fromObject(parameter);
 
 			int jobId = json.getInt("jobId");
-
-//			UploadManager upload = new UploadManager();
-//			
-//			String filePath = upload.unzipByJobId(jobId);
-//
-//			Operation operation = new Operation();
-//			JSONArray retArray = operation.importPoi(filePath + "/poi.txt");
 			
-			return new ModelAndView("jsonView", success());
+			String filePath = unzipByJobId(jobId);
+
+			UploadOperation operation = new UploadOperation();
+			JSONObject retArray = operation.importPoi(filePath + "/poi.txt");
+			
+			return new ModelAndView("jsonView", success(retArray));
 		}catch(Exception e){
 			String logid = Log4jUtils.genLogid();
 
@@ -92,5 +96,72 @@ public class PoiController extends BaseController{
 		
 	}
 	
+	public String unzipByJobId(int jobId) throws Exception{
+		
+		JSONObject uploadInfo = getUploadInfo(jobId);
+
+		String fileName = uploadInfo.getString("fileName");
+
+		String filePath = uploadInfo.getString("filePath") + "/" + jobId;
+
+		ZipUtils.unzipFile(filePath + "/" + fileName, filePath);
+		
+		return filePath;
+	}
+	
+	public JSONObject getUploadInfo(int jobId) throws Exception {
+
+		Connection conn = null;
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+
+			JSONObject json = new JSONObject();
+
+			String sql = "select * from dropbox_upload where job_id = :1";
+
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, jobId);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+				String fileName = resultSet.getString("file_name");
+
+				String filePath = resultSet.getString("file_path");
+
+				String md5 = resultSet.getString("md5");
+
+				json.put("fileName", fileName);
+
+				json.put("filePath", filePath);
+
+				json.put("md5", md5);
+
+			} else {
+				throw new Exception("不存在对应的jobid:" + jobId);
+			}
+
+			return json;
+
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			if (resultSet != null) {
+				resultSet.close();
+			}
+			if (pstmt != null) {
+				pstmt.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
+	}
 
 }

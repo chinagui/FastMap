@@ -16,13 +16,10 @@ public class InforMan  {
 	private Timestamp createDate ;
 	private Timestamp collectPlanStartDate ;
 	private Timestamp collectPlanEndDate ;
-	private Integer collectGroupId ;
 	private Timestamp dayEditPlanStartDate ;
 	private Timestamp dayEditPlanEndDate ;
-	private Integer dayEditGroupId ;
 	private Timestamp monthEditPlanStartDate ;
 	private Timestamp monthEditPlanEndDate ;
-	private Integer monthEditGroupId ;
 	private Timestamp dayProducePlanStartDate ;
 	private Timestamp dayProducePlanEndDate ;
 	private Timestamp monthProducePlanStartDate ;
@@ -39,13 +36,10 @@ public class InforMan  {
 		this.createDate=createDate ;
 		this.collectPlanStartDate=collectPlanStartDate ;
 		this.collectPlanEndDate=collectPlanEndDate ;
-		this.collectGroupId=collectGroupId ;
 		this.dayEditPlanStartDate=dayEditPlanStartDate ;
 		this.dayEditPlanEndDate=dayEditPlanEndDate ;
-		this.dayEditGroupId=dayEditGroupId ;
 		this.monthEditPlanStartDate=monthEditPlanStartDate ;
 		this.monthEditPlanEndDate=monthEditPlanEndDate ;
-		this.monthEditGroupId=monthEditGroupId ;
 		this.dayProducePlanStartDate=dayProducePlanStartDate ;
 		this.dayProducePlanEndDate=dayProducePlanEndDate ;
 		this.monthProducePlanStartDate=monthProducePlanStartDate ;
@@ -93,12 +87,6 @@ public class InforMan  {
 	public void setCollectPlanEndDate(Timestamp collectPlanEndDate) {
 		this.collectPlanEndDate = collectPlanEndDate;
 	}
-	public Integer getCollectGroupId() {
-		return collectGroupId;
-	}
-	public void setCollectGroupId(Integer collectGroupId) {
-		this.collectGroupId = collectGroupId;
-	}
 	public Timestamp getDayEditPlanStartDate() {
 		return dayEditPlanStartDate;
 	}
@@ -111,12 +99,6 @@ public class InforMan  {
 	public void setDayEditPlanEndDate(Timestamp dayEditPlanEndDate) {
 		this.dayEditPlanEndDate = dayEditPlanEndDate;
 	}
-	public Integer getDayEditGroupId() {
-		return dayEditGroupId;
-	}
-	public void setDayEditGroupId(Integer dayEditGroupId) {
-		this.dayEditGroupId = dayEditGroupId;
-	}
 	public Timestamp getMonthEditPlanStartDate() {
 		return monthEditPlanStartDate;
 	}
@@ -128,12 +110,6 @@ public class InforMan  {
 	}
 	public void setMonthEditPlanEndDate(Timestamp monthEditPlanEndDate) {
 		this.monthEditPlanEndDate = monthEditPlanEndDate;
-	}
-	public Integer getMonthEditGroupId() {
-		return monthEditGroupId;
-	}
-	public void setMonthEditGroupId(Integer monthEditGroupId) {
-		this.monthEditGroupId = monthEditGroupId;
 	}
 	public Timestamp getDayProducePlanStartDate() {
 		return dayProducePlanStartDate;
@@ -164,7 +140,7 @@ public class InforMan  {
 	 */
 	@Override
 	public String toString() {
-		return "InforMan [inforId=" + inforId +",inforStatus="+inforStatus+",descp="+descp+",createUserId="+createUserId+",createDate="+createDate+",collectPlanStartDate="+collectPlanStartDate+",collectPlanEndDate="+collectPlanEndDate+",collectGroupId="+collectGroupId+",dayEditPlanStartDate="+dayEditPlanStartDate+",dayEditPlanEndDate="+dayEditPlanEndDate+",dayEditGroupId="+dayEditGroupId+",monthEditPlanStartDate="+monthEditPlanStartDate+",monthEditPlanEndDate="+monthEditPlanEndDate+",monthEditGroupId="+monthEditGroupId+",dayProducePlanStartDate="+dayProducePlanStartDate+",dayProducePlanEndDate="+dayProducePlanEndDate+",monthProducePlanStartDate="+monthProducePlanStartDate+",monthProducePlanEndDate="+monthProducePlanEndDate+"]";
+		return "InforMan [inforId=" + inforId +",inforStatus="+inforStatus+",descp="+descp+",createUserId="+createUserId+",createDate="+createDate+",collectPlanStartDate="+collectPlanStartDate+",collectPlanEndDate="+collectPlanEndDate+",dayEditPlanStartDate="+dayEditPlanStartDate+",dayEditPlanEndDate="+dayEditPlanEndDate+",monthEditPlanStartDate="+monthEditPlanStartDate+",monthEditPlanEndDate="+monthEditPlanEndDate+",dayProducePlanStartDate="+dayProducePlanStartDate+",dayProducePlanEndDate="+dayProducePlanEndDate+",monthProducePlanStartDate="+monthProducePlanStartDate+",monthProducePlanEndDate="+monthProducePlanEndDate+"]";
 	}
 
 
@@ -182,13 +158,10 @@ public class InforMan  {
 		result = prime * result + ((createDate == null) ? 0 : createDate.hashCode());
 		result = prime * result + ((collectPlanStartDate == null) ? 0 : collectPlanStartDate.hashCode());
 		result = prime * result + ((collectPlanEndDate == null) ? 0 : collectPlanEndDate.hashCode());
-		result = prime * result + ((collectGroupId == null) ? 0 : collectGroupId.hashCode());
 		result = prime * result + ((dayEditPlanStartDate == null) ? 0 : dayEditPlanStartDate.hashCode());
 		result = prime * result + ((dayEditPlanEndDate == null) ? 0 : dayEditPlanEndDate.hashCode());
-		result = prime * result + ((dayEditGroupId == null) ? 0 : dayEditGroupId.hashCode());
 		result = prime * result + ((monthEditPlanStartDate == null) ? 0 : monthEditPlanStartDate.hashCode());
 		result = prime * result + ((monthEditPlanEndDate == null) ? 0 : monthEditPlanEndDate.hashCode());
-		result = prime * result + ((monthEditGroupId == null) ? 0 : monthEditGroupId.hashCode());
 		result = prime * result + ((dayProducePlanStartDate == null) ? 0 : dayProducePlanStartDate.hashCode());
 		result = prime * result + ((dayProducePlanEndDate == null) ? 0 : dayProducePlanEndDate.hashCode());
 		result = prime * result + ((monthProducePlanStartDate == null) ? 0 : monthProducePlanStartDate.hashCode());
@@ -244,11 +217,6 @@ public class InforMan  {
 				return false;
 		} else if (!collectPlanEndDate.equals(other.collectPlanEndDate))
 			return false;
-		if (collectGroupId == null) {
-			if (other.collectGroupId != null)
-				return false;
-		} else if (!collectGroupId.equals(other.collectGroupId))
-			return false;
 		if (dayEditPlanStartDate == null) {
 			if (other.dayEditPlanStartDate != null)
 				return false;
@@ -259,11 +227,6 @@ public class InforMan  {
 				return false;
 		} else if (!dayEditPlanEndDate.equals(other.dayEditPlanEndDate))
 			return false;
-		if (dayEditGroupId == null) {
-			if (other.dayEditGroupId != null)
-				return false;
-		} else if (!dayEditGroupId.equals(other.dayEditGroupId))
-			return false;
 		if (monthEditPlanStartDate == null) {
 			if (other.monthEditPlanStartDate != null)
 				return false;
@@ -273,11 +236,6 @@ public class InforMan  {
 			if (other.monthEditPlanEndDate != null)
 				return false;
 		} else if (!monthEditPlanEndDate.equals(other.monthEditPlanEndDate))
-			return false;
-		if (monthEditGroupId == null) {
-			if (other.monthEditGroupId != null)
-				return false;
-		} else if (!monthEditGroupId.equals(other.monthEditGroupId))
 			return false;
 		if (dayProducePlanStartDate == null) {
 			if (other.dayProducePlanStartDate != null)

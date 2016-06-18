@@ -18,8 +18,8 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
-import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdFaceTopoOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchOperator;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 
 /**
  * 索引:POI父子关系父表 操作
@@ -34,10 +34,13 @@ public class IxPoiParentOperator implements IOperator {
 
 	private IxPoiParent ixPoiParent;
 
-	public IxPoiParentOperator(Connection conn, IxPoiParent ixPoiParent) {
+	public IxPoiParentOperator(Connection conn, IxPoiParent ixPoiParent) throws Exception {
 		this.conn = conn;
 
 		this.ixPoiParent = ixPoiParent;
+		this.conn = conn;
+		IxPoiOperator operator = new IxPoiOperator(conn,new IxPoiSelector(conn).loadRowIdByPid(ixPoiParent.getParentPoiPid(), false));
+		operator.upatePoiStatus();
 	}
 
 	@Override
@@ -193,7 +196,7 @@ public class IxPoiParentOperator implements IOperator {
 
 		sb.append(ixPoiParent.tableName());
 
-		sb.append("(group_id, parentPoiPid, tenantFlag, memo, row_id,u_date,u_record) values (");
+		sb.append("(group_id, parent_poi_pid, tenant_flag, memo, row_id,u_date,u_record) values (");
 
 		sb.append(ixPoiParent.getPid());
 

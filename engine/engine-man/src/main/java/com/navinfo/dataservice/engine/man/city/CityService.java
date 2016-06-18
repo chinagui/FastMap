@@ -17,6 +17,7 @@ import com.navinfo.dataservice.api.man.model.City;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -107,12 +108,14 @@ public class CityService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public void delete(City  bean)throws ServiceException{
+	public void delete(City bean2)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();	
+			JSONObject obj = JSONObject.fromObject(bean2);	
+			City  bean = (City)JSONObject.toBean(obj, City.class);	
 			
 			String deleteSql = "delete from  CITY where 1=1 ";
 			List<Object> values=new ArrayList();
@@ -223,28 +226,30 @@ public class CityService {
 		}
 		
 	}
-	public List<City> queryListByWkt(final String wkt,int planningStatus)throws ServiceException{
+	public List<HashMap> queryListByWkt(JSONObject json)throws ServiceException{
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 					
-			String selectSql = "select t.CITY_ID,t.CITY_NAME, t.geometry.get_wkt() as geometry from CITY t where t.PLAN_STATUS="+planningStatus;
+			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']', ')');
+			
+			String selectSql = "select t.CITY_ID,t.CITY_NAME, t.geometry.get_wkt() as geometry,t.plan_status from CITY t where t.PLAN_STATUS in "+planningStatus
+					+" and SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
 		
-			ResultSetHandler<List<City>> rsHandler = new ResultSetHandler<List<City>>(){
-				public List<City> handle(ResultSet rs) throws SQLException {
-					List<City> list = new ArrayList<City>();
+			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
+				public List<HashMap> handle(ResultSet rs) throws SQLException {
+					List<HashMap> list = new ArrayList<HashMap>();
 					while(rs.next()){
 						try {
+							HashMap<String,Object> map = new HashMap<String,Object>();
+							map.put("cityId", rs.getInt("CITY_ID"));
+							map.put("cityName", rs.getString("CITY_NAME"));
 							CLOB clob=(CLOB)rs.getObject("geometry");
 							String clobStr=DataBaseUtils.clob2String(clob);
-							if (GeometryUtils.IsIntersectPolygon(wkt,clobStr)){
-								City city = new City();
-								city.setCityId(rs.getInt("CITY_ID"));
-								city.setCityName(rs.getString("CITY_NAME"));
-								city.setGeometry(Geojson.wkt2Geojson(clobStr));
-								list.add(city);
-							}
+							map.put("geometry", Geojson.wkt2Geojson(clobStr));
+							map.put("planningStatus", rs.getInt("plan_status"));
+							list.add(map);
 						} catch (ParseException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -258,7 +263,9 @@ public class CityService {
 				}
 	    		
 	    	}		;
-	    	return run.query(conn, selectSql, rsHandler);
+//	    	List<Object> list = new ArrayList<Object>();
+//			list.add(json.getString("wkt"));
+	    	return run.query(conn, selectSql, rsHandler,json.getString("wkt"));
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -269,25 +276,27 @@ public class CityService {
 	}
 	
 	
-	public City query(City  bean)throws ServiceException{
+	public HashMap query(JSONObject json)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
+			JSONObject obj = JSONObject.fromObject(json);	
+			City  bean = (City)JSONObject.toBean(obj, City.class);	
 			
 			String selectSql = "select * from CITY where CITY_ID=? and CITY_NAME=? and PROVINCE_NAME=? and GEOMETRY=? and REGION_ID=? and PLAN_STATUS=?";
-			ResultSetHandler<City> rsHandler = new ResultSetHandler<City>(){
-				public City handle(ResultSet rs) throws SQLException {
+			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>(){
+				public HashMap handle(ResultSet rs) throws SQLException {
 					while(rs.next()){
-						City model = new City();
-						model.setCityId(rs.getInt("CITY_ID"));
-						model.setCityName(rs.getString("CITY_NAME"));
-						model.setProvinceName(rs.getString("PROVINCE_NAME"));
-						model.setGeometry(rs.getObject("GEOMETRY"));
-						model.setRegionId(rs.getInt("REGION_ID"));
-						model.setPlanStatus( rs.getInt("PLAN_STATUS"));
-						return model;
+						HashMap map = new HashMap();
+						map.put("cityId", rs.getInt("CITY_ID"));
+						map.put("cityName", rs.getString("CITY_NAME"));
+						map.put("provinceName", rs.getString("PROVINCE_NAME"));
+						map.put("geometry", rs.getObject("GEOMETRY"));
+						map.put("regionId", rs.getInt("REGION_ID"));
+						map.put("planStatus", rs.getInt("PLAN_STATUS"));
+						return map;
 					}
 					return null;
 				}

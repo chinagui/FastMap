@@ -27,8 +27,8 @@ public class Subtask  {
 	private Integer status ;
 	private Timestamp planStartDate ;
 	private Timestamp planEndDate ;
-	private Timestamp startDate ;
-	private Timestamp endDate ;
+//	private Timestamp startDate ;
+//	private Timestamp endDate ;
 	private String descp ;
 	private Block block;
 	private Task task;
@@ -52,8 +52,8 @@ public class Subtask  {
 			Integer status,
 			Timestamp planStartDate,
 			Timestamp planEndDate,
-			Timestamp startDate,
-			Timestamp endDate,
+//			Timestamp startDate,
+//			Timestamp endDate,
 			String descp,
 			Block block,
 			Task task,
@@ -73,8 +73,8 @@ public class Subtask  {
 		this.status=status ;
 		this.planStartDate=planStartDate ;
 		this.planEndDate=planEndDate ;
-		this.startDate=startDate ;
-		this.endDate=endDate ;
+//		this.startDate=startDate ;
+//		this.endDate=endDate ;
 		this.descp=descp ;
 		this.block=block ;
 		this.task=task ;
@@ -190,18 +190,18 @@ public class Subtask  {
 	public void setPlanEndDate(Timestamp planEndDate) {
 		this.planEndDate = planEndDate;
 	}
-	public Timestamp getStartDate() {
-		return startDate;
-	}
-	public void setStartDate(Timestamp startDate) {
-		this.startDate = startDate;
-	}
-	public Timestamp getEndDate() {
-		return endDate;
-	}
-	public void setEndDate(Timestamp endDate) {
-		this.endDate = endDate;
-	}
+//	public Timestamp getStartDate() {
+//		return startDate;
+//	}
+//	public void setStartDate(Timestamp startDate) {
+//		this.startDate = startDate;
+//	}
+//	public Timestamp getEndDate() {
+//		return endDate;
+//	}
+//	public void setEndDate(Timestamp endDate) {
+//		this.endDate = endDate;
+//	}
 	public String getDescp() {
 		return descp;
 	}
@@ -213,7 +213,28 @@ public class Subtask  {
 	 */
 	@Override
 	public String toString() {
-		return "Subtask [subtaskId=" + subtaskId +",blockId="+blockId+",taskId="+taskId+",geometry="+geometry+",stage="+stage+",type="+type+",createUserId="+createUserId+",createDate="+createDate+",exeUserId="+exeUserId+",status="+status+",planStartDate="+planStartDate+",planEndDate="+planEndDate+",startDate="+startDate+",endDate="+endDate+",descp="+descp+"]";
+		return "Subtask ["
+				+ "subtaskId=" + subtaskId 
+				+ ",name=" + name 
+				+",blockId="+blockId
+				+",taskId="+taskId
+				+",geometry="+geometry
+				+",stage="+stage
+				+",type="+type
+				+",createUserId="+createUserId
+				+",createDate="+createDate
+				+",exeUserId="+exeUserId
+				+",status="+status
+				+",planStartDate="+planStartDate
+				+",planEndDate="+planEndDate
+//				+",startDate="+startDate
+//				+",endDate="+endDate
+				+ ",block=" + block.toString()
+				+ ",blockMan=" + blockMan.toString()
+				+ ",task=" + task.toString()
+				+ ",dbId=" + dbId
+				+ ",gridIds=" + gridIds
+				+",descp="+descp+"]";
 	}
 
 
@@ -225,6 +246,7 @@ public class Subtask  {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((subtaskId == null) ? 0 : subtaskId.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((blockId == null) ? 0 : blockId.hashCode());
 		result = prime * result + ((taskId == null) ? 0 : taskId.hashCode());
 		result = prime * result + ((geometry == null) ? 0 : geometry.hashCode());
@@ -236,8 +258,13 @@ public class Subtask  {
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
 		result = prime * result + ((planStartDate == null) ? 0 : planStartDate.hashCode());
 		result = prime * result + ((planEndDate == null) ? 0 : planEndDate.hashCode());
-		result = prime * result + ((startDate == null) ? 0 : startDate.hashCode());
-		result = prime * result + ((endDate == null) ? 0 : endDate.hashCode());
+		result = prime * result + ((dbId == null) ? 0 : dbId.hashCode());
+		result = prime * result + ((gridIds == null) ? 0 : gridIds.hashCode());
+		result = prime * result + ((block == null) ? 0 : block.hashCode());
+		result = prime * result + ((blockMan == null) ? 0 : blockMan.hashCode());
+		result = prime * result + ((task == null) ? 0 : task.hashCode());
+//		result = prime * result + ((startDate == null) ? 0 : startDate.hashCode());
+//		result = prime * result + ((endDate == null) ? 0 : endDate.hashCode());
 		result = prime * result + ((descp == null) ? 0 : descp.hashCode());
 		return result;
 	}
@@ -259,6 +286,11 @@ public class Subtask  {
 			if (other.subtaskId != null)
 				return false;
 		} else if (!subtaskId.equals(other.subtaskId))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
 			return false;
 		if (blockId == null) {
 			if (other.blockId != null)
@@ -315,16 +347,41 @@ public class Subtask  {
 				return false;
 		} else if (!planEndDate.equals(other.planEndDate))
 			return false;
-		if (startDate == null) {
-			if (other.startDate != null)
+		if (dbId == null) {
+			if (other.dbId != null)
 				return false;
-		} else if (!startDate.equals(other.startDate))
+		} else if (!dbId.equals(other.dbId))
 			return false;
-		if (endDate == null) {
-			if (other.endDate != null)
+		if (gridIds == null) {
+			if (other.gridIds != null)
 				return false;
-		} else if (!endDate.equals(other.endDate))
+		} else if (!gridIds.equals(other.gridIds))
 			return false;
+		if (block == null) {
+			if (other.block != null)
+				return false;
+		} else if (!block.equals(other.block))
+			return false;
+		if (blockMan == null) {
+			if (other.blockMan != null)
+				return false;
+		} else if (!blockMan.equals(other.blockMan))
+			return false;
+		if (task == null) {
+			if (other.task != null)
+				return false;
+		} else if (!task.equals(other.task))
+			return false;
+//		if (startDate == null) {
+//			if (other.startDate != null)
+//				return false;
+//		} else if (!startDate.equals(other.startDate))
+//			return false;
+//		if (endDate == null) {
+//			if (other.endDate != null)
+//				return false;
+//		} else if (!endDate.equals(other.endDate))
+//			return false;
 		if (descp == null) {
 			if (other.descp != null)
 				return false;

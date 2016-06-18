@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.statics.roadcollect;
+package com.navinfo.dataservice.engine.statics.season;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -22,6 +22,7 @@ import org.bson.Document;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
+import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
@@ -30,7 +31,7 @@ import com.navinfo.navicommons.geo.computation.JtsGeometryConvertor;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
 
-public class RoadCollectStat implements Runnable {
+public class RoadSeasonStat implements Runnable {
 	private Connection conn;
 	private Logger log;
 	private CountDownLatch latch;
@@ -38,7 +39,7 @@ public class RoadCollectStat implements Runnable {
 	private String col_name;
 	private String stat_date;
 
-	public RoadCollectStat(CountDownLatch cdl, int db_id, String db_name, String col_name, String stat_date) {
+	public RoadSeasonStat(CountDownLatch cdl, int db_id, String db_name, String col_name, String stat_date) {
 		this.latch = cdl;
 		this.db_name = db_name;
 		this.col_name = col_name;
@@ -56,19 +57,24 @@ public class RoadCollectStat implements Runnable {
 	public List<Document> getRdlink() throws ServiceException {
 		try {
 			QueryRunner run = new QueryRunner();
-			//String sql = "select rl.mesh_id, rl.geometry from rd_link rl where  mesh_id=595646 and link_pid=261067";
-			String sql = "select rl.mesh_id, rl.geometry from rd_link rl ";
+			// String sql =
+			// "select rl.mesh_id,rl.multi_digitized, rl.geometry from rd_link rl where link_pid=261067";
+			String sql = "select rl.mesh_id,rl.multi_digitized, rl.geometry from rd_link rl";
+
 			return run.query(conn, sql, new ResultSetHandler<List<Document>>() {
 
 				@Override
 				public List<Document> handle(ResultSet rs) throws SQLException {
 					// map 存放 rd_link表中，以grid_id为key，以多条grid内link长度之和为value的集合。
 					Map<String, Double> map = new HashMap<String, Double>();
+
 					while (rs.next()) {
 						try {
 							STRUCT struct = (STRUCT) rs.getObject("geometry");
 							Geometry linkGeo = GeoTranslator.struct2Jts(struct);
 							int mesh_id = rs.getInt("mesh_id");
+							// 上下线分离：link*2
+							int md = rs.getInt("multi_digitized") * 2;
 							// 根据 mesh_id 获得16个grid
 							Set<String> grids = CompGridUtil.mesh2Grid(String.valueOf(mesh_id));
 							// 不知道link跨越多少个grid，所以循环16个grid计算每个中的长度
@@ -81,9 +87,9 @@ public class RoadCollectStat implements Runnable {
 								double gridLineLength = GeometryUtils.getLinkLength(linkGeo.intersection(gridPolygon));
 
 								if (map.containsKey(grid_id)) {
-									map.put(grid_id, map.get(grid_id) + gridLineLength);
+									map.put(grid_id, StatUtil.formatDouble(map.get(grid_id) + gridLineLength * md));
 								} else {
-									map.put(grid_id, gridLineLength);
+									map.put(grid_id, StatUtil.formatDouble(gridLineLength * md));
 								}
 							}
 						} catch (Exception e1) {
@@ -94,15 +100,10 @@ public class RoadCollectStat implements Runnable {
 					List<Document> json_list = new ArrayList<Document>();
 					for (Entry<String, Double> entry : map.entrySet()) {
 						Document json = new Document();
+						// ------------------------------
 						json.put("grid_id", entry.getKey());
+						json.put("total", entry.getValue());
 						json.put("stat_date", stat_date);
-						// ------------------------------
-						Document road = new Document();
-						road.put("total", entry.getValue());
-						road.put("finish", 0);
-						road.put("percent", 0);
-						// ------------------------------
-						json.put("road", road);
 						json_list.add(json);
 					}
 					return json_list;

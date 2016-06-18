@@ -6,19 +6,18 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONObject;
+
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.commons.util.StringUtils;
-
-import net.sf.json.JSONObject;
 
 public class DBController {
 
-	public int addUploadRecord(String fileName, String md5, int fileSize, int chunkSize)
-			throws Exception {
+	public int addUploadRecord(String fileName, String md5, int fileSize,
+			int chunkSize) throws Exception {
 
 		Connection conn = null;
 
@@ -28,31 +27,31 @@ public class DBController {
 
 		try {
 
-			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
+					.getConnection();
 
 			String autoIncreateSql = "select seq_upload.nextval from dual";
 
 			PreparedStatement pst = conn.prepareStatement(autoIncreateSql);
-			
+
 			ResultSet rs = pst.executeQuery();
-			
+
 			int autoId = -1;
-			
-			if(rs.next())
-			{
+
+			if (rs.next()) {
 				autoId = rs.getInt(1);
 			}
 
-			String sql = "insert into dropbox_upload(job_id,file_name,file_path,md5,file_size,chunk_size) values(:1,:2,:3,:4,:5,:6)";
+			String sql = "insert into dropbox_upload(upload_id,file_name,file_path,md5,file_size,chunk_size) values(:1,:2,:3,:4,:5,:6)";
 
 			pstmt = conn.prepareStatement(sql);
-			
+
 			pstmt.setInt(1, autoId);
 
 			pstmt.setString(2, fileName);
 
-			String uploadPath = SystemConfigFactory.getSystemConfig()
-					.getValue(PropConstant.uploadPath);
+			String uploadPath = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.uploadPath);
 
 			pstmt.setString(3, uploadPath);
 
@@ -63,12 +62,13 @@ public class DBController {
 			pstmt.setInt(6, chunkSize);
 
 			pstmt.executeUpdate();
-			
+
 			conn.commit();
-			
+
 			return autoId;
 		} catch (Exception e) {
-			if(conn!=null)conn.rollback();
+			if (conn != null)
+				conn.rollback();
 			throw e;
 		} finally {
 			if (resultSet != null) {
@@ -92,9 +92,10 @@ public class DBController {
 		ResultSet resultSet = null;
 
 		try {
-			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
+					.getConnection();
 
-			String sql = "select progress,trunc(chunk_size/file_size*100) split from dropbox_upload where job_id = :1";
+			String sql = "select progress,trunc(chunk_size/file_size*100) split from dropbox_upload where upload_id = :1";
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -113,7 +114,7 @@ public class DBController {
 					progress = split + progress;
 				}
 
-				sql = "update dropbox_upload set progress = :1 where job_id= :2";
+				sql = "update dropbox_upload set progress = :1 where upload_id= :2";
 
 				PreparedStatement pstmt2 = null;
 
@@ -139,7 +140,8 @@ public class DBController {
 			conn.commit();
 
 		} catch (Exception e) {
-			if(conn!=null)conn.rollback();
+			if (conn != null)
+				conn.rollback();
 			throw e;
 		} finally {
 			if (resultSet != null) {
@@ -163,9 +165,10 @@ public class DBController {
 		ResultSet resultSet = null;
 
 		try {
-			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
+					.getConnection();
 
-			String sql = "update dropbox_upload set end_date = sysdate where job_id = :1";
+			String sql = "update dropbox_upload set end_date = sysdate where upload_id = :1";
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -178,7 +181,8 @@ public class DBController {
 			}
 			conn.commit();
 		} catch (Exception e) {
-			if(conn!=null)conn.rollback();
+			if (conn != null)
+				conn.rollback();
 			throw e;
 		} finally {
 			if (resultSet != null) {
@@ -202,11 +206,12 @@ public class DBController {
 		ResultSet resultSet = null;
 
 		try {
-			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
+					.getConnection();
 
 			JSONObject json = new JSONObject();
 
-			String sql = "select * from dropbox_upload where job_id = :1";
+			String sql = "select * from dropbox_upload where upload_id = :1";
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -257,9 +262,10 @@ public class DBController {
 		ResultSet resultSet = null;
 
 		try {
-			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
+					.getConnection();
 
-			String sql = "insert into dropbox_upload_chunk(job_id,chunk_no) values (:1,:2)";
+			String sql = "insert into dropbox_upload_chunk(upload_id,chunk_no) values (:1,:2)";
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -294,11 +300,12 @@ public class DBController {
 		ResultSet resultSet = null;
 
 		try {
-			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
+					.getConnection();
 
 			List<Integer> results = new ArrayList<Integer>();
 
-			String sql = "select distinct chunk_no from dropbox_upload_chunk where job_id = :1 order by chunk_no";
+			String sql = "select distinct chunk_no from dropbox_upload_chunk where upload_id = :1 order by chunk_no";
 
 			pstmt = conn.prepareStatement(sql);
 

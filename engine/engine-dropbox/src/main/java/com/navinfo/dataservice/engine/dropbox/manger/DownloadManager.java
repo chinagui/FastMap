@@ -21,29 +21,29 @@ public class DownloadManager {
 		String dir = filePath + "/" + projectId;
 
 		JSONObject data = DropboxUtil.getLastestInfo(urlPath, dir, projectId);
-		
+
 		VersionService versionMan = new VersionService();
-		
-		String version = versionMan.getByType(2);
-		
+
+		String version = versionMan.query(2);
+
 		data.put("specVersion", version);
 
 		return data;
 
 	}
-	
+
 	public JSONArray getBasedataList() throws Exception {
 
 		VersionService versionMan = new VersionService();
-		
-		String version = versionMan.getByType(2);
-		
+
+		String version = versionMan.query(2);
+
 		JSONArray data = DropboxUtil.getGdbList(version);
 
 		return data;
 
 	}
-	
+
 	public JSONObject getNds(String projectId) throws Exception {
 
 		String filePath = SystemConfigFactory.getSystemConfig().getValue(
@@ -55,11 +55,11 @@ public class DownloadManager {
 		String dir = filePath + "/" + projectId;
 
 		JSONObject data = DropboxUtil.getLastestInfo(urlPath, dir, projectId);
-		
+
 		return data;
 
 	}
-	
+
 	public JSONArray getNdsList() throws Exception {
 
 		JSONArray data = DropboxUtil.getNdsList();
@@ -67,7 +67,7 @@ public class DownloadManager {
 		return data;
 
 	}
-	
+
 	public JSONObject getPatternimg() throws Exception {
 
 		String filePath = SystemConfigFactory.getSystemConfig().getValue(
@@ -77,11 +77,11 @@ public class DownloadManager {
 				PropConstant.downloadUrlPathPatternimg);
 
 		JSONObject data = DropboxUtil.getLastestInfo(urlPath, filePath, null);
-		
+
 		VersionService versionMan = new VersionService();
-		
-		String version = versionMan.getByType(3);
-		
+
+		String version = versionMan.query(3);
+
 		data.put("specVersion", version);
 
 		return data;

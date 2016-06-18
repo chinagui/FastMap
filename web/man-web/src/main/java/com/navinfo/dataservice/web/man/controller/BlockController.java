@@ -115,9 +115,8 @@ public class BlockController extends BaseController {
 				throw new IllegalArgumentException("wkt、planningStatus参数是必须的。");
 			}
 			String wkt= dataJson.getString("wkt");
-			String  planningStatus = dataJson.getString("planningStatus");
-			if(StringUtils.isEmpty(wkt) || StringUtils.isEmpty(planningStatus)){
-				throw new IllegalArgumentException("wkt、planningStatus参数值不能为空");
+			if(StringUtils.isEmpty(wkt)){
+				throw new IllegalArgumentException("wkt参数值不能为空");
 			}
 			List<HashMap> data = service.listByWkt(dataJson);			
 			return new ModelAndView("jsonView", success(data));

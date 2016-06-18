@@ -2,6 +2,8 @@ package com.navinfo.dataservice.web.metadata.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -11,7 +13,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
-
+import org.apache.uima.pear.util.FileUtil;
 import org.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
 import org.navinfo.dataservice.engine.meta.chain.ChainSelector;
 import org.navinfo.dataservice.engine.meta.chain.FocusSelector;
@@ -30,6 +32,8 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.engine.man.version.VersionService;
 
 @Controller
@@ -167,8 +171,6 @@ public class MetaController extends BaseController {
 
 			PatternImageExporter exporter = new PatternImageExporter();
 
-			String fileName = "";
-
 			SystemConfig config = SystemConfigFactory.getSystemConfig();
 
 			String url = config.getValue(PropConstant.serverUrl);
@@ -177,34 +179,54 @@ public class MetaController extends BaseController {
 
 			String path = config
 					.getValue(PropConstant.downloadFilePathPatternimg);
+			
+			String dir = null;
+			
+			String currentDate = StringUtils.getCurrentTime();
+			
+			String zipFileName = currentDate + ".zip";
 
 			if (jsonReq.containsKey("names")) {
 				JSONArray names = jsonReq.getJSONArray("names");
 
 				path += "/byname";
+				
+				dir = path + "/" + currentDate;
+				
+				Set<String> set = new HashSet<String>();
+				
+				for(int i=0;i<names.size();i++){
+					set.add(names.getString(i));
+				}
 
-				fileName = exporter.export2SqliteByNames(path, names);
+				exporter.export2SqliteByNames(dir, set);
 
-				url += "/byname/" + fileName;
+				url += "/byname/" + zipFileName;
 			} else if (jsonReq.containsKey("date")) {
 				String date = jsonReq.getString("date");
 
 				path += "/bydate";
+				
+				dir = path + "/" + currentDate;
 
-				fileName = exporter.export2SqliteByDate(path, date);
+				exporter.export2SqliteByDate(dir, date);
 
-				url += "/bydate/" + fileName;
+				url += "/bydate/" + zipFileName;
 			} else {
 				throw new Exception("错误的参数");
 			}
+			
+			ZipUtils.zipFile(dir, path + "/" + currentDate + ".zip");
 
-			String fullPath = path + "/" + fileName;
+			FileUtil.deleteDirectory(new File(dir));
+
+			String fullPath = path + "/" + zipFileName;
 
 			File f = new File(fullPath);
 
 			long filesize = f.length();
 
-			String version = fileName.replace(".zip", "");
+			String version = zipFileName.replace(".zip", "");
 
 			JSONObject json = new JSONObject();
 
@@ -287,7 +309,7 @@ public class MetaController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/meta/queryTelByProvince")
+	@RequestMapping(value = "/queryTelByProvince")
 	public ModelAndView searchTelByProvince(HttpServletRequest request)
 			throws ServletException, IOException {
 
@@ -312,7 +334,7 @@ public class MetaController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/meta/queryChain")
+	@RequestMapping(value = "/queryChain")
 	public ModelAndView queryChain(HttpServletRequest request)
 			throws ServletException, IOException {
 		
@@ -337,7 +359,7 @@ public class MetaController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/meta/chainLevel")
+	@RequestMapping(value = "/chainLevel")
 	public ModelAndView queryChainLevel(HttpServletRequest request)
 			throws ServletException, IOException {
 		
@@ -364,7 +386,7 @@ public class MetaController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/meta/queryFocus")
+	@RequestMapping(value = "/queryFocus")
 	public ModelAndView queryFocus(HttpServletRequest request)
 			throws ServletException, IOException {
 
@@ -384,7 +406,7 @@ public class MetaController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/meta/queryTelLength")
+	@RequestMapping(value = "/queryTelLength")
 	public ModelAndView searchTelLength(HttpServletRequest request)
 			throws ServletException, IOException {
 
@@ -409,7 +431,7 @@ public class MetaController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/meta/queryFoodType")
+	@RequestMapping(value = "/queryFoodType")
 	public ModelAndView searchFoodType(HttpServletRequest request)
 			throws ServletException, IOException {
 
@@ -434,7 +456,7 @@ public class MetaController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/meta/kindLevel")
+	@RequestMapping(value = "/kindLevel")
 	public ModelAndView searchKindLevel(HttpServletRequest request)
 			throws ServletException, IOException {
 

@@ -60,18 +60,11 @@ public class TaskOperation {
 						map.put("createDate", DateUtils.dateToString(rs.getTimestamp("CREATE_DATE")));
 						map.put("status", rs.getInt("STATUS"));
 						map.put("descp", rs.getString("DESCP"));
-						map.put("collectPlanStartDate", DateUtils.dateToString(rs.getTimestamp("COLLECT_PLAN_START_DATE")));
-						map.put("collectPlanEndDate", DateUtils.dateToString(rs.getTimestamp("COLLECT_PLAN_END_DATE")));
-						map.put("dayEditPlanStartDate", DateUtils.dateToString(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE")));
-						map.put("dayEditPlanEndDate", DateUtils.dateToString(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE")));
-						map.put("bMonthEditPlanStartDate", DateUtils.dateToString(rs.getTimestamp("B_MONTH_EDIT_PLAN_START_DATE")));
-						map.put("bMonthEditPlanEndDate", DateUtils.dateToString(rs.getTimestamp("B_MONTH_EDIT_PLAN_END_DATE")));
-						map.put("cMonthEditPlanStartDate", DateUtils.dateToString(rs.getTimestamp("C_MONTH_EDIT_PLAN_START_DATE")));
-						map.put("cMonthEditPlanEndDate", DateUtils.dateToString(rs.getTimestamp("C_MONTH_EDIT_PLAN_END_DATE")));
-						map.put("dayProducePlanStartDate", DateUtils.dateToString(rs.getTimestamp("DAY_PRODUCE_PLAN_START_DATE")));
-						map.put("dayProducePlanEndDate", DateUtils.dateToString(rs.getTimestamp("DAY_PRODUCE_PLAN_END_DATE")));
-						map.put("monthProducePlanStartDate", DateUtils.dateToString(rs.getTimestamp("MONTH_PRODUCE_PLAN_START_DATE")));
-						map.put("monthProducePlanEndDate", DateUtils.dateToString(rs.getTimestamp("MONTH_PRODUCE_PLAN_END_DATE")));
+						map.put("planStartDate", DateUtils.dateToString(rs.getTimestamp("PLAN_START_DATE")));
+						map.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
+						map.put("monthEditPlanStartDate", DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE")));
+						map.put("monthEditPlanEndDate", DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE")));
+						map.put("monthEditGroupId", rs.getInt("MONTH_EDIT_GROUP_ID"));
 						map.put("latest", rs.getInt("LATEST"));
 						list.add(map);
 					}
@@ -108,24 +101,20 @@ public class TaskOperation {
 					while(rs.next()){
 						Task map = new Task();
 						map.setTaskId(rs.getInt("TASK_ID"));
+						map.setCityName(rs.getString("CITY_NAME"));
 						map.setName(rs.getString("NAME"));
 						map.setCityId(rs.getInt("CITY_ID"));
 						map.setCreateUserId(rs.getInt("CREATE_USER_ID"));
+						map.setCreateUserName(rs.getString("USER_REAL_NAME"));
 						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
 						map.setStatus(rs.getInt("STATUS"));
 						map.setDescp(rs.getString("DESCP"));
-						map.setCollectPlanStartDate(rs.getTimestamp("COLLECT_PLAN_START_DATE"));
-						map.setCollectPlanEndDate(rs.getTimestamp("COLLECT_PLAN_END_DATE"));
-						map.setDayEditPlanStartDate(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE"));
-						map.setDayEditPlanEndDate(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE"));
-						map.setBMonthEditPlanStartDate(rs.getTimestamp("B_MONTH_EDIT_PLAN_START_DATE"));
-						map.setBMonthEditPlanEndDate(rs.getTimestamp("B_MONTH_EDIT_PLAN_END_DATE"));
-						map.setCMonthEditPlanStartDate(rs.getTimestamp("C_MONTH_EDIT_PLAN_START_DATE"));
-						map.setCMonthEditPlanEndDate(rs.getTimestamp("C_MONTH_EDIT_PLAN_END_DATE"));
-						map.setDayEditPlanStartDate(rs.getTimestamp("DAY_PRODUCE_PLAN_START_DATE"));
-						map.setDayEditPlanEndDate(rs.getTimestamp("DAY_PRODUCE_PLAN_END_DATE"));
-						map.setMonthProducePlanStartDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_START_DATE"));
-						map.setMonthProducePlanEndDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_END_DATE"));
+						map.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
+						map.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
+						map.setMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE"));
+						map.setMonthEditPlanEndDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE"));
+						map.setMonthEditGroupId(rs.getInt("MONTH_EDIT_GROUP_ID"));
+						map.setMonthEditGroupName(rs.getString("GROUP_NAME"));
 						map.setLatest(rs.getInt("LATEST"));
 						list.add(map);
 					}
@@ -152,19 +141,13 @@ public class TaskOperation {
 		try{
 			QueryRunner run = new QueryRunner();
 			String createSql = "insert into task (TASK_ID,NAME,CITY_ID, CREATE_USER_ID, CREATE_DATE, STATUS, DESCP, "
-					+ "COLLECT_PLAN_START_DATE, COLLECT_PLAN_END_DATE, DAY_EDIT_PLAN_START_DATE, "
-					+ "DAY_EDIT_PLAN_END_DATE, B_MONTH_EDIT_PLAN_START_DATE, B_MONTH_EDIT_PLAN_END_DATE, "
-					+ "C_MONTH_EDIT_PLAN_START_DATE, C_MONTH_EDIT_PLAN_END_DATE, DAY_PRODUCE_PLAN_START_DATE, "
-					+ "DAY_PRODUCE_PLAN_END_DATE, MONTH_PRODUCE_PLAN_START_DATE, MONTH_PRODUCE_PLAN_END_DATE, "
-					+ "LATEST) "
+					+ "PLAN_START_DATE, PLAN_END_DATE, MONTH_EDIT_PLAN_START_DATE, MONTH_EDIT_PLAN_END_DATE, "
+					+ "MONTH_EDIT_GROUP_ID,LATEST) "
 					+ "values(TASK_SEQ.NEXTVAL,'"+bean.getName()+"',"+bean.getCityId()+","+bean.getCreateUserId()+",sysdate,1,'"
-					+  bean.getDescp()+"',"+ bean.getCollectPlanStartDate()
-					+","+ bean.getCollectPlanEndDate()+","+ bean.getDayEditPlanStartDate()
-					+","+ bean.getDayEditPlanEndDate()+","+  bean.getBMonthEditPlanStartDate()
-					+","+ bean.getBMonthEditPlanEndDate()+","+  bean.getCMonthEditPlanStartDate()
-					+","+ bean.getCMonthEditPlanEndDate()+","+  bean.getDayProducePlanStartDate()
-					+","+  bean.getDayProducePlanEndDate()+","+ bean.getMonthProducePlanStartDate()
-					+","+ bean.getMonthProducePlanEndDate()+",1)";
+					+  bean.getDescp()+"',to_timestamp('"+ bean.getPlanStartDate()
+					+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+  bean.getMonthEditPlanStartDate()
+					+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+ bean.getMonthEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),"+  bean.getMonthEditGroupId()+",1)";
+			
 			run.update(conn,createSql);			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -189,67 +172,31 @@ public class TaskOperation {
 				updateSql+=" NAME=? ";
 				values.add(bean.getName());
 			};
-			if (bean!=null&&bean.getCollectPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanStartDate().toString())){
+			if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" COLLECT_PLAN_START_DATE=? ";
-				values.add(bean.getCollectPlanStartDate());
+				updateSql+=" PLAN_START_DATE=? ";
+				values.add(bean.getPlanStartDate());
 			};
-			if (bean!=null&&bean.getCollectPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanEndDate().toString())){
+			if (bean!=null&&bean.getPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" COLLECT_PLAN_END_DATE=? ";
-				values.add(bean.getCollectPlanEndDate());
+				updateSql+=" PLAN_END_DATE=? ";
+				values.add(bean.getPlanEndDate());
 			};
-			if (bean!=null&&bean.getDayEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanStartDate().toString())){
+			if (bean!=null&&bean.getMonthEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanStartDate().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" DAY_EDIT_PLAN_START_DATE=? ";
-				values.add(bean.getDayEditPlanStartDate());
+				updateSql+=" MONTH_EDIT_PLAN_START_DATE=? ";
+				values.add(bean.getMonthEditPlanStartDate());
 			};
-			if (bean!=null&&bean.getDayEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanEndDate().toString())){
+			if (bean!=null&&bean.getMonthEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanEndDate().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" DAY_EDIT_PLAN_END_DATE=? ";
-				values.add(bean.getDayEditPlanEndDate());
+				updateSql+=" MONTH_EDIT_PLAN_END_DATE=? ";
+				values.add(bean.getMonthEditPlanEndDate());
 			};
-			if (bean!=null&&bean.getBMonthEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getBMonthEditPlanStartDate().toString())){
+			if (bean!=null&&bean.getMonthEditGroupId()!=null && StringUtils.isNotEmpty(bean.getMonthEditGroupId().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" B_MONTH_EDIT_PLAN_START_DATE=? ";
-				values.add(bean.getBMonthEditPlanStartDate());
+				updateSql+=" MONTH_EDIT_PLAN_START_DATE=? ";
+				values.add(bean.getMonthEditGroupId());
 			};
-			if (bean!=null&&bean.getBMonthEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getBMonthEditPlanEndDate().toString())){
-				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" B_MONTH_EDIT_PLAN_END_DATE=? ";
-				values.add(bean.getBMonthEditPlanEndDate());
-			};
-			if (bean!=null&&bean.getCMonthEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getCMonthEditPlanStartDate().toString())){
-				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" C_MONTH_EDIT_PLAN_START_DATE=? ";
-				values.add(bean.getCMonthEditPlanStartDate());
-			};
-			if (bean!=null&&bean.getCMonthEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getCMonthEditPlanEndDate().toString())){
-				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" C_MONTH_EDIT_PLAN_END_DATE=? ";
-				values.add(bean.getCMonthEditPlanEndDate());
-			};
-			if (bean!=null&&bean.getDayProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getDayProducePlanStartDate().toString())){
-				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" DAY_PRODUCE_PLAN_START_DATE=? ";
-				values.add(bean.getDayProducePlanStartDate());
-			};
-			if (bean!=null&&bean.getDayProducePlanEndDate()!=null && StringUtils.isNotEmpty(bean.getDayProducePlanEndDate().toString())){
-				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" DAY_PRODUCE_PLAN_END_DATE=? ";
-				values.add(bean.getDayProducePlanEndDate());
-			};
-			if (bean!=null&&bean.getMonthProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getMonthProducePlanStartDate().toString())){
-				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" MONTH_PRODUCE_PLAN_START_DATE=? ";
-				values.add(bean.getMonthProducePlanStartDate());
-			};
-			if (bean!=null&&bean.getMonthProducePlanEndDate()!=null && StringUtils.isNotEmpty(bean.getMonthProducePlanEndDate().toString())){
-				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" MONTH_PRODUCE_PLAN_END_DATE=? ";
-				values.add(bean.getMonthProducePlanEndDate());
-			};
-			
 			if (bean!=null&&bean.getTaskId()!=null && StringUtils.isNotEmpty(bean.getTaskId().toString())){
 				updateSql+=" where TASK_ID=?";
 				values.add(bean.getTaskId());

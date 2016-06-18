@@ -3,9 +3,16 @@ package org.navinfo.dataservice.engine.meta.chain;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -13,14 +20,11 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 /**
  * e获取chain值
  * 
  * @author zhangxiaolong
- *
+ * 
  */
 public class ChainSelector {
 
@@ -33,36 +37,72 @@ public class ChainSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray getChainByKindCode(String kindCode) throws Exception {
+	public JSONObject getChainByKindCode(String kindCode) throws Exception {
 
 		Connection conn = DBConnector.getInstance().getMetaConnection();
 
 		try {
 			QueryRunner run = new QueryRunner();
 
-			String sql = "select a.chain_name, a.chain_code from sc_point_chain_code a, sc_point_kind_new b where a.chain_code = b.r_kind and b.poikind = ?";
+			StringBuilder sb = new StringBuilder();
 
-			ResultSetHandler<JSONArray> handler = new ResultSetHandler<JSONArray>() {
+			sb.append(" select a.chain_name, a.chain_code,a.category,a.weight,b.poikind ");
+
+			sb.append(" from sc_point_chain_code a, sc_point_kind_new b ");
+
+			if (kindCode == null || kindCode.length() <= 0) {
+				sb.append(" where a.chain_code = b.r_kind ");
+			} else {
+				sb.append(" where a.chain_code = b.r_kind and b.poikind = ? ");
+			}
+
+			sb.append("order by b.poikind ");
+
+			ResultSetHandler<JSONObject> handler = new ResultSetHandler<JSONObject>() {
 
 				@Override
-				public JSONArray handle(ResultSet rs) throws SQLException {
-
-					JSONArray array = new JSONArray();
+				public JSONObject handle(ResultSet rs) throws SQLException {
+					JSONObject rootObj = new JSONObject();
 
 					while (rs.next()) {
-						JSONObject object = new JSONObject();
+						JSONObject codeObj = new JSONObject();
 
-						object.put("chainCode", rs.getString("chain_code"));
+						int category = rs.getInt("category");
 
-						object.put("chainName", rs.getString("chain_name"));
+						codeObj.put("category",
+								rs.wasNull() ? "" : String.valueOf(category));
 
-						array.add(object);
+						int weight = rs.getInt("weight");
+
+						codeObj.put("weight",
+								rs.wasNull() ? "" : String.valueOf(weight));
+
+						codeObj.put("chainCode", rs.getString("chain_Code"));
+
+						codeObj.put("chainName", rs.getString("chain_Name"));
+
+						String poiKind = rs.getString("poikind");
+
+						if (rootObj.has(poiKind)) {
+							JSONArray array = rootObj.getJSONArray(poiKind);
+
+							array.add(codeObj);
+						} else {
+							JSONArray array = new JSONArray();
+
+							array.add(codeObj);
+
+							rootObj.put(poiKind, array);
+						}
 					}
 
-					return array;
+					return rootObj;
 				}
 			};
-			return run.query(conn, sql, handler, kindCode);
+			if (kindCode == null || kindCode.length() <= 0) {
+				return run.query(conn, sb.toString(), handler);
+			}
+			return run.query(conn, sb.toString(), handler, kindCode);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -79,7 +119,8 @@ public class ChainSelector {
 	 * @return chain的level
 	 * @throws Exception
 	 */
-	public String getLevelByChain(String chain, String kindCode) throws Exception {
+	public String getLevelByChain(String chain, String kindCode)
+			throws Exception {
 
 		Connection conn = DBConnector.getInstance().getMetaConnection();
 

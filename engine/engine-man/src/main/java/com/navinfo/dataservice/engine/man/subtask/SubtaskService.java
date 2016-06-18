@@ -220,6 +220,7 @@ public class SubtaskService {
 					+ ",s.PLAN_END_DATE"
 					+ ",s.DESCP"
 					+ ",s.NAME"
+					+ ",s.STATUS"
 					+ ",TO_CHAR(s.GEOMETRY.get_wkt()) AS GEOMETRY "
 					+ ",(case when s.block_id is not null and s.block_id = b.block_id then b.block_id else -1 end) AS block_id"
 					+ ",(case when s.block_id is not null and s.block_id = b.block_id then b.block_name else null end) AS block_name"
@@ -274,6 +275,7 @@ public class SubtaskService {
 						Subtask subtask = new Subtask();
 						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
 						subtask.setName(rs.getString("NAME"));
+						subtask.setStatus(rs.getInt("STATUS"));
 						subtask.setGeometry(rs.getString("GEOMETRY"));
 						subtask.setStage(rs.getInt("STAGE"));
 						subtask.setType(rs.getInt("TYPE"));

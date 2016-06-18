@@ -15,6 +15,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
@@ -178,9 +180,12 @@ public class SubtaskController extends BaseController {
 				subtask.put("geometry", subtaskList.get(i).getGeometry());
 				subtask.put("stage", subtaskList.get(i).getStage());
 				subtask.put("type", subtaskList.get(i).getType());
+				subtask.put("status", subtaskList.get(i).getStatus());
 				subtask.put("planStartDate", DateUtils.dateToString(subtaskList.get(i).getPlanStartDate()));
 				subtask.put("planEndDate", DateUtils.dateToString(subtaskList.get(i).getPlanEndDate()));
 				subtask.put("descp", subtaskList.get(i).getDescp());
+				subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+				
 				if (subtaskList.get(i).getBlock()!=null && StringUtils.isNotEmpty(subtaskList.get(i).getBlock().toString())){
 					subtask.put("blockId", subtaskList.get(i).getBlock().getBlockId());
 					subtask.put("blockName", subtaskList.get(i).getBlock().getBlockName());

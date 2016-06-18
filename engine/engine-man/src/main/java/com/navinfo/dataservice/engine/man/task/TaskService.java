@@ -109,10 +109,12 @@ public class TaskService {
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			
-			String selectSql = "SELECT T.*,C.CITY_NAME,U.USER_REAL_NAME FROM TASK T,CITY C,USER_INFO U"
-					+ " WHERE T.CITY_ID=C.CITY_ID"
-					+ " AND T.CREATE_USER_ID=U.USER_ID"
-					+ " AND T.LATEST=1 ";
+			String selectSql = "SELECT T.*, C.CITY_NAME, U.USER_REAL_NAME, G.GROUP_NAME"
+					+ "  FROM TASK T, CITY C, USER_INFO U, USER_GROUP G"
+					+ " WHERE T.CITY_ID = C.CITY_ID"
+					+ "   AND T.CREATE_USER_ID = U.USER_ID"
+					+ "   AND T.MONTH_EDIT_GROUP_ID = G.GROUP_ID"
+					+ "   AND T.LATEST = 1";
 			if(null!=conditionJson && !conditionJson.isEmpty()){
 				Iterator keys = conditionJson.keys();
 				while (keys.hasNext()) {

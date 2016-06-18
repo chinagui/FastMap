@@ -30,12 +30,15 @@ import net.sf.json.JSONObject;
 @Service
 public class GridService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	
-	private GridService(){}
-	private static class SingletonHolder{
-		private static final GridService INSTANCE =new GridService();
+
+	private GridService() {
 	}
-	public static GridService getInstance(){
+
+	private static class SingletonHolder {
+		private static final GridService INSTANCE = new GridService();
+	}
+
+	public static GridService getInstance() {
 		return SingletonHolder.INSTANCE;
 	}
 	public Set<Integer> queryGrid(int limit) throws SQLException{
@@ -68,34 +71,35 @@ public class GridService {
 		String sql = "SELECT GRID_ID,REGION_ID,CITY_ID,BLOCK_ID FROM GRID";
 		QueryRunner run = new QueryRunner();
 		Connection conn = null;
-		try{
+		try {
 			conn = DBConnector.getInstance().getManConnection();
 			List<Grid> results = run.query(conn, sql, new GridResultSetHandler());
 			return results;
-		}finally{
+		} finally {
 			DbUtils.closeQuietly(conn);
 		}
 	}
+
 	/**
 	 * @param gridList  <br/>
 	 * <b>注意：如果参数gridList太长(不能超过1000)，会导致oracle sql太长而出现异常；</b>
 	 * @return 根据给定的gridlist，查询获取regioin和grid的映射；key:RegionId；value：grid列表<br/>
-	 * @throws Exception 
+	 * @throws Exception
 	 * 
 	 */
-	public Map queryRegionGridMapping(List<Integer> gridList) throws Exception{
+	public Map queryRegionGridMapping(List<Integer> gridList) throws Exception {
 		String sql = "select grid_id,region_id from grid g where 1=1 ";
 		QueryRunner queryRunner = new QueryRunner();
 		Connection conn = null;
-		try{
-			conn = DBConnector.getInstance().getManConnection();	
-			ResultSetHandler<MultiValueMap> rsh = new ResultSetHandler<MultiValueMap>(){
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			ResultSetHandler<MultiValueMap> rsh = new ResultSetHandler<MultiValueMap>() {
 
 				@Override
 				public MultiValueMap handle(ResultSet rs) throws SQLException {
-					if (rs!=null){
+					if (rs != null) {
 						MultiValueMap mvMap = new MultiValueMap();
-						while(rs.next()){
+						while (rs.next()) {
 							int gridId = rs.getInt("grid_id");
 							int regionId = rs.getInt("region_id");
 							mvMap.put(regionId, gridId);
@@ -108,7 +112,8 @@ public class GridService {
 			sql=sql+InClause;
 			return queryRunner.query(conn, sql, rsh);
 			
-		}finally{
+
+		} finally {
 			DbUtils.closeQuietly(conn);
 		}
 	}
@@ -158,13 +163,13 @@ public class GridService {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	
-	class GridResultSetHandler implements ResultSetHandler<List<Grid>>{
+
+	class GridResultSetHandler implements ResultSetHandler<List<Grid>> {
 
 		@Override
 		public List<Grid> handle(ResultSet rs) throws SQLException {
 			List<Grid> results = new ArrayList<Grid>();
-			if(rs.next()){
+			if (rs.next()) {
 				Grid g = new Grid();
 				g.setGridId(rs.getInt("GRID_ID"));
 				g.setRegionId(rs.getInt("REGION_ID"));
@@ -174,16 +179,17 @@ public class GridService {
 			}
 			return results;
 		}
-		
+
 	}
-	
+
 	public List<HashMap> quryListByAlloc(JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
 
 			conn = DBConnector.getInstance().getManConnection();
-			//根据输入的几何wkt，计算几何包含的gird，目前只有方法，小文在实现中。。。
-			List<?> grids=(List<?>) CompGeometryUtil.geo2GridsWithoutBreak(GeometryUtils.getMulPointByWKT(json.getString("wkt")));
+			// 根据输入的几何wkt，计算几何包含的gird，目前只有方法，小文在实现中。。。
+			List<?> grids = (List<?>) CompGeometryUtil
+					.geo2GridsWithoutBreak(GeometryUtils.getPolygonByWKT(json.getString("wkt")));
 
 			String selectSql = "select t.grid_id,s.status from subtask_grid_mapping t,subtask s where t.subtask_id=s.subtask_id "
 					+ "and s.stage="+json.getInt("stage")+"and s.type="+json.getInt("type");

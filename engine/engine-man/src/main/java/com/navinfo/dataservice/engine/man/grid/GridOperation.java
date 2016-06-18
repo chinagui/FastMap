@@ -12,17 +12,14 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;
-
-import oracle.sql.CLOB;
 
 public class GridOperation {
 	private static Logger log = LoggerRepos.getLogger(GridOperation.class);
-	
+
 	public GridOperation() {
 		// TODO Auto-generated constructor stub
 	}
@@ -35,63 +32,25 @@ public class GridOperation {
 					List<HashMap> list = new ArrayList<HashMap>();
 					while(rs.next()){
 						HashMap map = new HashMap<String, Integer>();
-						map.put("gridId", rs.getString("grid_id"));
+						map.put("gridId", rs.getInt("grid_id"));
 						map.put("status", rs.getInt("status"));
+						try {
+							map.put("type", GridOperation.getGridType(rs.getInt("grid_id"),rs.getInt("status")));
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 						list.add(map);
 					}
 					return list;
 				}
 	    		
 	    	};
-	    	
-	    	return run.query(conn, selectSql, rsHandler
-					);			
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new Exception("鏌ヨ澶辫触锛屽師鍥犱负:"+e.getMessage(),e);
-		}
-	}
-	
-	
-	public static List<HashMap> queryProduceBlock(Connection conn,String selectSql,List<Object> values) throws Exception{
-		try{
-			QueryRunner run = new QueryRunner();
-			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
-				public List<HashMap> handle(ResultSet rs) throws SQLException {
-					List<HashMap> list = new ArrayList<HashMap>();
-					while(rs.next()){
-						HashMap map = new HashMap<String, Integer>();
-						//block下grid日完成度为100%，block才可出品
-						try {
-							if (GridOperation.checkGridFinished(rs.getInt("BLOCK_ID"))){
-								map.put("blockId", rs.getInt("BLOCK_ID"));
-								map.put("blockName", rs.getInt("BLOCK_NAME"));
-								CLOB clob = (CLOB)rs.getObject("geometry");
-								String clobStr = DataBaseUtils.clob2String(clob);
-								try {
-									map.put("geometry",Geojson.wkt2Geojson(clobStr));
-								} catch (Exception e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
-								list.add(map);
-							}
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						
-					}
-					return list;
-				}
-	    		
-	    	}		;
-	    	if (null==values || values.size()==0){
+	    	if (null==grids || grids.size()==0){
 	    		return run.query(conn, selectSql, rsHandler
 						);
 	    	}
-	    	return run.query(conn, selectSql, rsHandler,values.toArray()
+	    	return run.query(conn, selectSql, rsHandler,grids.toArray()
 					);			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -99,64 +58,97 @@ public class GridOperation {
 			throw new Exception("鏌ヨ澶辫触锛屽師鍥犱负:"+e.getMessage(),e);
 		}
 	}
-	
-	
-	public static List<HashMap> queryBlockByGroup(Connection conn,String selectSql,List<Object> values) throws Exception{
-		try{
-			QueryRunner run = new QueryRunner();
-			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
-				public List<HashMap> handle(ResultSet rs) throws SQLException {
-					List<HashMap> list = new ArrayList<HashMap>();
-					while(rs.next()){
-						HashMap map = new HashMap<String, Integer>();
-						System.out.println(rs.getInt("BLOCK_ID"));
-						map.put("blockId", rs.getInt("BLOCK_ID"));
-						map.put("planStartDate", rs.getDate("planStartDate"));
-						map.put("planEndDate", rs.getDate("planEndDate"));
-						map.put("descp", rs.getString("DESCP"));
-		
-						list.add(map);
-					}
-					return list;
-				}
-	    		
-	    	}		;
-	    	if (null==values || values.size()==0){
-	    		return run.query(conn, selectSql, rsHandler
-						);
-	    	}
-	    	return run.query(conn, selectSql, rsHandler,values.toArray()
-					);			
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new Exception("鏌ヨ澶辫触锛屽師鍥犱负:"+e.getMessage(),e);
-		}
-	}
-	
-	public static boolean checkGridFinished(int blockId) throws Exception{
+
+	// public static List<HashMap> queryProduceBlock(Connection conn,String
+	// selectSql,List<Object> values) throws Exception{
+	// try{
+	// QueryRunner run = new QueryRunner();
+	// ResultSetHandler<List<HashMap>> rsHandler = new
+	// ResultSetHandler<List<HashMap>>(){
+	// public List<HashMap> handle(ResultSet rs) throws SQLException {
+	// List<HashMap> list = new ArrayList<HashMap>();
+	// while(rs.next()){
+	// HashMap map = new HashMap<String, Integer>();
+	// //block下grid日完成度为100%，block才可出品
+	// try {
+	// if (GridOperation.checkGridFinished(rs.getInt("BLOCK_ID"))){
+	// map.put("blockId", rs.getInt("BLOCK_ID"));
+	// map.put("blockName", rs.getInt("BLOCK_NAME"));
+	// CLOB clob = (CLOB)rs.getObject("geometry");
+	// String clobStr = DataBaseUtils.clob2String(clob);
+	// try {
+	// map.put("geometry",Geojson.wkt2Geojson(clobStr));
+	// } catch (Exception e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }
+	// list.add(map);
+	// }
+	// } catch (Exception e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }
+	//
+	// }
+	// return list;
+	// }
+	//
+	// } ;
+	// if (null==values || values.size()==0){
+	// return run.query(conn, selectSql, rsHandler
+	// );
+	// }
+	// return run.query(conn, selectSql, rsHandler,values.toArray()
+	// );
+	// }catch(Exception e){
+	// DbUtils.rollbackAndCloseQuietly(conn);
+	// log.error(e.getMessage(), e);
+	// throw new Exception("鏌ヨ澶辫触锛屽師鍥犱负:"+e.getMessage(),e);
+	// }
+	// }
+
+	public static <E> String getGridType(int gridId, int stage) throws Exception {
 		Connection conn = null;
-		try{
-			QueryRunner run = new QueryRunner();
+		try {
 			conn = DBConnector.getInstance().getManConnection();
-			String sqlByblockId="select grid_id from grid where block_id="+blockId;
-			
-			PreparedStatement stmt = conn.prepareStatement(sqlByblockId);
+			String selectSql = "select distinct s.type from subtask_grid_mapping t,subtask s where t.subtask_id=s.subtask_id "
+					+ "and s.stage=" + stage + "and t.grid_id=" + gridId;
+
+			PreparedStatement stmt = conn.prepareStatement(selectSql);
 			ResultSet rs = stmt.executeQuery();
+			List<Integer> listType = new ArrayList();
+			int TypeTotal = 0;
+			String flagType = null;
 			while (rs.next()) {
-				int grid_id = rs.getInt(1);
-				//调用统计模块，查询grid完成度,若不为100%，返回false
-				//TODO
-				return false;
+				listType.add(rs.getInt(1));
 			}
-			return true;
-		}catch(Exception e){
+			for (int i = 0; i < listType.size(); i++) {
+				TypeTotal += listType.get(i);
+			}
+			if (2 == TypeTotal) {
+				flagType = "P+R";
+			}
+			if (1 == TypeTotal) {
+				if (listType.contains(0)) {
+					flagType = "P/R";
+				} else {
+					flagType = "R";
+				}
+			}
+			if (0 == TypeTotal) {
+				if (listType.contains(0)) {
+					flagType = "P";
+				}
+			}
+
+			return flagType;
+		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
-		}finally{
+			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
+		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	
+
 }

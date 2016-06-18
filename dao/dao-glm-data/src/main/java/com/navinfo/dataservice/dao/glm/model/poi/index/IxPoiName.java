@@ -190,7 +190,7 @@ public class IxPoiName implements IObj {
 
 	@Override
 	public String tableName() {
-		return "IX_POI_NAME";
+		return "ix_poi_name";
 	}
 
 	@Override
@@ -327,6 +327,7 @@ public class IxPoiName implements IObj {
 
 	@Override
 	public boolean Unserialize(JSONObject json) throws Exception {
+		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {

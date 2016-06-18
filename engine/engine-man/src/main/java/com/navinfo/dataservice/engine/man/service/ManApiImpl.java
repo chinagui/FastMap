@@ -32,12 +32,17 @@ public class ManApiImpl implements ManApi {
 	public Region queryByRegionId(Integer regionId) throws Exception {
 		Region region = new Region();
 		region.setRegionId(regionId);
-		return new RegionService().query(region);
+		return RegionService.getInstance().query(region);
 		
 	}
 	@Override
 	public List<Grid> listGrids() throws Exception {
 		return GridService.getInstance().list();
+	}
+	
+	@Override
+	public List<Region> listRegions()throws Exception{
+		return RegionService.getInstance().list();
 	}
 	
 }

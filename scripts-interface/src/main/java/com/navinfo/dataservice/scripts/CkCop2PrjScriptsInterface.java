@@ -13,6 +13,7 @@ import org.springframework.util.Assert;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -46,7 +47,7 @@ public class CkCop2PrjScriptsInterface {
 			//先批md5值
 			DbInfo sourceDb = DbService.getInstance().getDbById(Integer.valueOf(sourceDbId));
 			OracleSchema sourceSchema = new OracleSchema(
-					MultiDataSourceFactory.createConnectConfig(sourceDb.getConnectParam()));
+					DbConnectConfig.createConnectConfig(sourceDb.getConnectParam()));
 			ExternalTool4Exporter.generateCkMd5(sourceSchema);
 			response.put("md5", "success");
 			//generate ck_result_object
@@ -58,7 +59,7 @@ public class CkCop2PrjScriptsInterface {
 
 			DbInfo targetDb = DbService.getInstance().getDbById(Integer.valueOf(targetDbId));
 			OracleSchema targetSchema = new OracleSchema(
-					MultiDataSourceFactory.createConnectConfig(targetDb.getConnectParam()));
+					DbConnectConfig.createConnectConfig(targetDb.getConnectParam()));
 			//将在grids范围导出到目标
 			ExternalTool4Exporter.selectLogGrids(sourceSchema,targetSchema,grids.split(","));
 			response.put("exp", "success");

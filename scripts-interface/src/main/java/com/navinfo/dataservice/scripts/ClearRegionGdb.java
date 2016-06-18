@@ -28,9 +28,7 @@ public class ClearRegionGdb {
 			context.start();
 			new ApplicationContextUtil().setApplicationContext(context);
 
-			RegionService s = new RegionService();
-
-			List<Region> list = s.list(new JSONObject());
+			List<Region> list = RegionService.getInstance().list(new JSONObject());
 
 			for (Region region : list) {
 				
@@ -54,7 +52,7 @@ public class ClearRegionGdb {
 		
 		DbInfo dbinfo = datahub.getDbById(dbId);
 		
-		DbConnectConfig connConfig = MultiDataSourceFactory
+		DbConnectConfig connConfig = DbConnectConfig
 				.createConnectConfig(dbinfo.getConnectParam());
 		
 		DataSource datasource = MultiDataSourceFactory.getInstance()

@@ -14,8 +14,11 @@ import com.navinfo.dataservice.api.man.model.Region;
  */
 public interface ManApi{
 	public Map queryRegionGridMapping(List<Integer> gridList) throws Exception;
+	
 	public Region queryByRegionId(Integer regionId) throws Exception ;
 	
 	List<Grid> listGrids()throws Exception;
+	
+	List<Region> listRegions()throws Exception;
 }
 

@@ -1,9 +1,6 @@
 package com.navinfo.dataservice.scripts;
 
-import java.io.File;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -13,9 +10,7 @@ import java.util.Set;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
@@ -23,6 +18,7 @@ import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.model.Grid;
 import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.service.DbService;
@@ -30,7 +26,6 @@ import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.expcore.ExportConfig;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
-import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.PackageExec;
 import com.navinfo.navicommons.database.sql.SqlExec;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -46,14 +41,14 @@ public class InitRegiondb {
 	public static JSONObject execute(JSONObject request) throws Exception{
 		JSONObject response = new JSONObject();
 		try {
-			int fmgdbId = request.getInt("fmgdbId");//get如果没取到会报错
+			String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
+			Assert.notNull(gdbVersion, "gdbVersion不能为空,检查是否sys_config表中未配置当前gdb版本");
+			DbInfo fmgdb = DbService.getInstance().getOnlyDbByBizType("nationRoad");
 //			Assert.notNull(fmgdbId, "fmgdbId不能为空");
-			int fmMetaId = request.getInt("fmMetaId");
+//			int fmMetaId = request.getInt("fmMetaId");
 //			Assert.notNull(fmMetaId, "fmMetaId不能为空");
 			String userNamePrefix = (String) request.get("userNamePrefix");
 			Assert.notNull(userNamePrefix, "userNamePrefix不能为空");
-			String gdbVersion = (String) request.get("gdbVersion");
-			Assert.notNull(gdbVersion, "gdbVersion不能为空");
 			
 			//
 			List<Grid> grids =GridService.getInstance().list();
@@ -72,6 +67,8 @@ public class InitRegiondb {
 			}
 			for(Integer key:regionGridMap.keySet()){
 				Set<String> meshes = regionGridMap.get(key);
+				Set<String> extendMeshes = MeshUtils.getNeighborMeshSet(meshes,1);
+				//大区库不直接做检查批处理，不维护M_MESH_TYPE表
 				//创建日db
 				JobInfo info1 = new JobInfo(0, "");
 				info1.setType("createDb");
@@ -94,9 +91,9 @@ public class InitRegiondb {
 				info2.setType("gdbExport");
 				JSONObject req2 = new JSONObject();
 				req2.put("gdbVersion", gdbVersion);
-				req2.put("sourceDbId", fmgdbId);
+				req2.put("sourceDbId", fmgdb.getDbId());
 				req2.put("condition", ExportConfig.CONDITION_BY_MESH);
-				req2.put("conditionParams", JSONArray.fromObject(meshes));
+				req2.put("conditionParams", JSONArray.fromObject(extendMeshes));
 				req2.put("featureType", GlmTable.FEATURE_TYPE_ALL);
 				req2.put("dataIntegrity", false);
 				req2.put("targetDbId", dbDay);
@@ -131,7 +128,7 @@ public class InitRegiondb {
 				JobInfo info4 = new JobInfo(0,"");
 				info4.setType("gdbFullCopy");
 				JSONObject req4 = new JSONObject();
-				req4.put("sourceDbId", fmgdbId);
+				req4.put("sourceDbId", fmgdb.getDbId());
 				req4.put("targetDbId", dbDay);
 				req4.put("featureType", GlmTable.FEATURE_TYPE_ALL);
 				req4.put("gdbVersion", gdbVersion);
@@ -158,7 +155,7 @@ public class InitRegiondb {
 		try{
 			DbInfo db = DbService.getInstance()
 					.getDbById(dbId);
-			DbConnectConfig connConfig = MultiDataSourceFactory.createConnectConfig(db.getConnectParam());
+			DbConnectConfig connConfig = DbConnectConfig.createConnectConfig(db.getConnectParam());
 			conn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
 			String sqlFile = "/com/navinfo/dataservice/scripts/resources/prj_utils.sql";
 			SqlExec sqlExec = new SqlExec(conn);

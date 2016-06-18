@@ -10,9 +10,11 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.engine.dropbox.manger.HashMap;
 
 public class DBController {
 
@@ -335,4 +337,54 @@ public class DBController {
 			}
 		}
 	}
+
+	/**
+	 * @param dbId
+	 * @param pid
+	 * @param string
+	 */
+	public void insertIxPoiPhoto(int dbId, int pid, String photoId) {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			List<Integer> results = new ArrayList<Integer>();
+
+			String sql = "insert into ix_poi_photo  (poi_pid,photo_id) values  ("
+					+ pid
+					+ "," + photoId + ")";
+
+			pstmt = conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				results.add(resultSet.getInt(1));
+			}
+
+			conn.close();
+
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			if (resultSet != null) {
+				resultSet.close();
+			}
+			if (pstmt != null) {
+				pstmt.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
+		
+	}
+
+
 }

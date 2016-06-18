@@ -1,6 +1,12 @@
 package com.navinfo.dataservice.engine.dropbox.manger;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -9,9 +15,11 @@ import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.util.ZipUtils;
@@ -133,5 +141,62 @@ public class UploadManager {
 		ZipUtils.unzipFile(filePath + "/" + fileName, filePath);
 		
 		return filePath;
+	}
+
+	/**
+	 * @param request
+	 * @throws FileUploadException 
+	 * @throws UnsupportedEncodingException 
+	 */
+	public void uploadResource(HttpServletRequest request) throws Exception {
+		// TODO Auto-generated method stub
+		DiskFileItemFactory factory = new DiskFileItemFactory();
+		
+		ServletFileUpload upload = new ServletFileUpload(factory);
+		
+		List<FileItem> items = upload.parseRequest(request);
+		
+		Iterator<FileItem> it = items.iterator();
+		
+		int pid = 0;
+		int dbId = 0;
+		
+		String fileType = "";
+		
+		String fileName = "";
+		
+		FileItem uploadItem = null;
+		
+		while(it.hasNext()){
+			FileItem item = it.next();
+			
+			if (item.isFormField()){
+				
+				if ("parameter".equals(item.getFieldName())) {
+					String param = item.getString("UTF-8");
+					JSONObject jsonParam = JSONObject.fromObject(param);
+					pid = jsonParam.getInt("pid");
+					fileType = jsonParam.getString("fileType");
+					fileName = jsonParam.getString("fileName");
+				}
+				
+			}else{
+				if (item.getName()!= null && !item.getName().equals("")){
+					uploadItem = item;
+				}else{
+					throw new Exception("上传的文件格式有问题！");
+				}
+			}
+		}
+		
+		InputStream fileStream = uploadItem.getInputStream();
+		
+		DBController controller = new DBController();
+			
+		//调用hadoop方法传输文件流，userId,经纬度，获取photo_id
+//		String photoId = HBaseController.putPhoto(fileStream);
+//			
+//		controller.insertIxPoiPhoto(dbId,pid,photoId);
+
 	}
 }

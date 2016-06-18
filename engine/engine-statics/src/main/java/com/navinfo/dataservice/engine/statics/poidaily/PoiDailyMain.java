@@ -22,10 +22,12 @@ public class PoiDailyMain {
 	private static final String col_name = "fm_stat_daily_poi";
 	private String db_name;
 	private String stat_date;
+	private String stat_time;
 
-	public PoiDailyMain(String dbn, String stat_date) {
+	public PoiDailyMain(String dbn, String stat_time) {
 		this.db_name = dbn;
-		this.stat_date = stat_date;
+		this.stat_date = stat_time.substring(0, 8);
+		this.stat_time = stat_time;
 	}
 
 	/**
@@ -85,7 +87,7 @@ public class PoiDailyMain {
 				int db_id = iter.next();
 
 				log.info("-- -- 创建统计进程 db_id：" + db_id);
-				executorService.submit(new PoiDailyStat(countDownLatch, db_id, db_name, col_name, stat_date));
+				executorService.submit(new PoiDailyStat(countDownLatch, db_id, db_name, col_name, stat_date, stat_time));
 			}
 
 			countDownLatch.await();

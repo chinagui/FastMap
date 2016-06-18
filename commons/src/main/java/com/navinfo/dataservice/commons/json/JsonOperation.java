@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.commons.json;
 
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 import net.sf.json.JSONArray;
@@ -32,7 +33,9 @@ public class JsonOperation {
 	 */
 	public static JSONObject beanToJson(Object bean){  
 	    JsonConfig config=new JsonConfig();  
-	    config.registerJsonValueProcessor(Timestamp.class, new DateJsonValueProcessor("yyyy-MM-dd HH:mm:ss"));  
+	    //格式要求只返回年月日
+	    config.registerJsonValueProcessor(Timestamp.class, new DateJsonValueProcessor("yyyyMMdd"));  
+	    config.registerJsonValueProcessor(Date.class, new DateJsonValueProcessor2("yyyyMMdd"));  
 	    JSONObject json=JSONObject.fromObject(bean,config);  
 	    return json;
 	    } 

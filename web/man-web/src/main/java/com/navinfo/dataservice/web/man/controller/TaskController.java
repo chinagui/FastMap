@@ -55,7 +55,7 @@ public class TaskController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			//long userId=tokenObj.getUserId();
-			long userId=3;
+			long userId=2;
 			service.create(userId,dataJson);
 			return new ModelAndView("jsonView", success("创建成功"));
 		}catch(Exception e){

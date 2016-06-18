@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Set;
 
 import net.sf.json.JSONArray;
 import oracle.sql.BLOB;
@@ -152,15 +153,8 @@ public class PatternImageExporter {
 		return sqliteConn;
 	}
 
-	public String export2SqliteByNames(String path, JSONArray names)
+	public void export2SqliteByNames(String dir, Set<String> names)
 			throws Exception {
-		Date date = new Date();
-
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-
-		String currentDate = sdf.format(date);
-
-		String dir = path + "/" + currentDate;
 
 		File mkdirFile = new File(dir);
 
@@ -170,14 +164,15 @@ public class PatternImageExporter {
 
 		String sql = "select * from sc_model_match_g where file_name in (";
 
-		for (int i = 0; i < names.size(); i++) {
-			String name = names.getString(i);
-
+		int i=0;
+		for(String name:names){
 			if (i > 0) {
 				sql += ",";
 			}
 
 			sql += "'" + name + "'";
+			
+			i++;
 		}
 
 		sql += ")";
@@ -185,14 +180,8 @@ public class PatternImageExporter {
 		exportImage2Sqlite(sqliteConn, sql);
 
 		sqliteConn.close();
-
-		ZipUtils.zipFile(dir, path + "/" + currentDate + ".zip");
-
-		FileUtil.deleteDirectory(new File(dir));
-
-		return currentDate + ".zip";
 	}
-
+	
 	public String export2SqliteByDate(String path, String date)
 			throws Exception {
 		Date curdate = new Date();
@@ -258,11 +247,11 @@ public class PatternImageExporter {
 
 		// exporter.export2Sqlite(path);
 
-		JSONArray a = new JSONArray();
-		a.add("03311011");
-		a.add("03514013");
-		exporter.export2SqliteByNames(path, a);
-
-		System.out.println("done");
+//		JSONArray a = new JSONArray();
+//		a.add("03311011");
+//		a.add("03514013");
+//		exporter.export2SqliteByNames(path, a);
+//
+//		System.out.println("done");
 	}
 }

@@ -17,10 +17,6 @@ import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
-import org.hbase.async.KeyValue;
-import org.hbase.async.Scanner;
-
-import ch.hsr.geohash.GeoHash;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.util.FileUtils;
@@ -77,7 +73,8 @@ public class TipsExporter {
 		return gets;
 	}
 
-	private JSONArray exportByGets(List<Get> gets) throws Exception {
+	private JSONArray exportByGets(List<Get> gets, Set<String> patternImages)
+			throws Exception {
 
 		JSONArray ja = new JSONArray();
 
@@ -106,6 +103,13 @@ public class TipsExporter {
 
 			json.put("rowkey", rowkey);
 
+			String source = new String(result.getValue("data".getBytes(),
+					"source".getBytes()));
+
+			json.putAll(JSONObject.fromObject(source));
+
+			String sourceType = json.getString("s_sourceType");
+
 			String deep = new String(result.getValue("data".getBytes(),
 					"deep".getBytes()));
 
@@ -119,35 +123,39 @@ public class TipsExporter {
 			}
 
 			json.put("deep", deepjson);
-			
-			if(deepjson.containsKey("in")){
+
+			if (deepjson.containsKey("in")) {
 				JSONObject in = deepjson.getJSONObject("in");
-				
+
 				json.put("relatedLinkId", in.getString("id"));
-			}
-			else if (deepjson.containsKey("f")){
-				
+			} else if (deepjson.containsKey("f")) {
+
 				JSONObject f = deepjson.getJSONObject("f");
 				json.put("relatedLinkId", f.getString("id"));
-			}
-			else if (deepjson.containsKey("out")){
-				
+			} else if (deepjson.containsKey("out")) {
+
 				JSONObject out = deepjson.getJSONObject("out");
 				json.put("relatedLinkId", out.getString("id"));
-			}
-			else{
+			} else {
 				json.put("relatedLinkId", JSONNull.getInstance());
+			}
+
+			if (sourceType.equals("1406") || sourceType.equals("1401")) {
+				// 需要导出关联的模式图
+
+				if (deepjson.containsKey("ptn")) {
+					String ptn = deepjson.getString("ptn");
+
+					if (ptn != null && ptn.length() > 0) {
+						patternImages.add(ptn);
+					}
+				}
 			}
 
 			String geometry = new String(result.getValue("data".getBytes(),
 					"geometry".getBytes()));
 
 			json.putAll(JSONObject.fromObject(geometry));
-
-			String source = new String(result.getValue("data".getBytes(),
-					"source".getBytes()));
-			
-			json.putAll(JSONObject.fromObject(source));
 
 			String track = new String(result.getValue("data".getBytes(),
 					"track".getBytes()));
@@ -349,7 +357,7 @@ public class TipsExporter {
 	 * @throws Exception
 	 */
 	public int export(JSONArray grids, String date, String folderName,
-			String fileName) throws Exception {
+			String fileName, Set<String> patternImages) throws Exception {
 
 		int count = 0;
 
@@ -365,7 +373,7 @@ public class TipsExporter {
 
 		List<Get> gets = generateGets(grids, date);
 
-		JSONArray ja = exportByGets(gets);
+		JSONArray ja = exportByGets(gets, patternImages);
 
 		for (int j = 0; j < ja.size(); j++) {
 			pw.println(ja.getJSONObject(j).toString());
@@ -381,11 +389,14 @@ public class TipsExporter {
 	public static void main(String[] args) throws Exception {
 		JSONArray grids = new JSONArray();
 
-		grids.add(60560304);
+		grids.add(47600403);
+
+		Set<String> images = new HashSet<String>();
 
 		TipsExporter exporter = new TipsExporter();
 		System.out.println(exporter.export(grids, "20150302010101",
-				"C:/Users/wangshishuai3966/Desktop", "1.txt"));
+				"C:/Users/wangshishuai3966/Desktop", "1.txt", images));
+		System.out.println(images);
 		System.out.println("done");
 	}
 }

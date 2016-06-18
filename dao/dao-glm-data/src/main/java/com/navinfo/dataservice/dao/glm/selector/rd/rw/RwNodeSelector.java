@@ -53,11 +53,11 @@ public class RwNodeSelector implements ISelector {
 
 				setAttr(rwNode, resultSet);
 
-				List<IRow> meshs = new RwNodeMeshSelector(conn).loadRowsByParentId(id, isLock);
+				List<IRow> meshes = new RwNodeMeshSelector(conn).loadRowsByParentId(id, isLock);
 
-				rwNode.setMeshs(meshs);
+				rwNode.setMeshes(meshes);
 
-				for (IRow row : rwNode.getMeshs()) {
+				for (IRow row : rwNode.getMeshes()) {
 					RwNodeMesh obj = (RwNodeMesh) row;
 
 					rwNode.meshMap.put(obj.rowId(), obj);
@@ -143,11 +143,11 @@ public class RwNodeSelector implements ISelector {
 
 				RwNodeMeshSelector meshSelector = new RwNodeMeshSelector(conn);
 				
-				List<IRow> meshs = meshSelector.loadRowsByParentId(node.getPid(), isLock);
+				List<IRow> meshes = meshSelector.loadRowsByParentId(node.getPid(), isLock);
 				
-				node.setMeshs(meshs);
+				node.setMeshes(meshes);
 				
-				for (IRow row : meshs) {
+				for (IRow row : meshes) {
 					RwNodeMesh mesh = (RwNodeMesh) row;
 
 					node.meshMap.put(mesh.rowId(), mesh);

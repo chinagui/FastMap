@@ -14,11 +14,13 @@ public class DbServer implements Serializable{
 	protected String type=DbServerType.TYPE_NONE;
 	private String ip;
 	private int port;
+	private String serviceName;
 	private Set<String> bizType;
 	private String descp;
 	
 	private String identity;//ip:port
-	
+	public DbServer(){
+	} 
 	public DbServer(String type,String ip,int port){
 		this.type=type;
 		this.ip=ip;
@@ -52,6 +54,14 @@ public class DbServer implements Serializable{
 	public void setPort(int port) {
 		this.port = port;
 	}
+	public String getServiceName() {
+		return serviceName;
+	}
+
+	public void setServiceName(String serviceName) {
+		this.serviceName = serviceName;
+	}
+
 	public Set<String> getBizType() {
 		return bizType;
 	}
@@ -83,7 +93,7 @@ public class DbServer implements Serializable{
 	@Override
 	public String toString() {
 		return "DbServer [sid=" + sid + ", type=" + type + ", ip=" + ip
-				+ ", port=" + port + ", bizType=" + bizType + ", descp="
+				+ ", port=" + port + ",serviceName=" +serviceName + ", bizType=" + bizType + ", descp="
 				+ descp + ", identity=" + identity + "]";
 	}
 	

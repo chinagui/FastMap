@@ -22,7 +22,7 @@ import net.sf.json.JSONObject;
 public class JobApiServiceImpl implements JobApiService{
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 
-	public long createJob(String jobType,JSONObject request,long projectId,long userId,String descp)throws ServiceException{
+	public long createJob(String jobType,JSONObject request,long userId,String descp)throws ServiceException{
 		return JobService.getInstance().create(jobType, request, userId, descp);
 	}
 	public List<JobInfo> getAllJob()throws ServiceException{

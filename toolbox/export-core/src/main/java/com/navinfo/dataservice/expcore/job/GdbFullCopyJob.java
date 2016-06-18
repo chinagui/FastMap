@@ -1,12 +1,15 @@
 package com.navinfo.dataservice.expcore.job;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -40,11 +43,25 @@ public class GdbFullCopyJob extends AbstractJob {
 		try{
 			GdbFullCopyJobRequest req = (GdbFullCopyJobRequest)request;
 			//1.获取schema信息
-			DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
-			DbInfo sourceDb = datahub.getDbById(req.getSourceDbId());
-			OracleSchema sourceSchema = new OracleSchema(MultiDataSourceFactory.createConnectConfig(sourceDb.getConnectParam()));
-			DbInfo targetDb = datahub.getDbById(req.getTargetDbId());
-			targetSchema = new OracleSchema(MultiDataSourceFactory.createConnectConfig(targetDb.getConnectParam()));
+			DbConnectConfig srcConf = null;
+			DbConnectConfig tarConf = null;
+			DatahubApi datahub = null;
+			if(req.getSourceDbId()>0){
+				datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
+				DbInfo sourceDb = datahub.getDbById(req.getSourceDbId());
+				srcConf = DbConnectConfig.createConnectConfig(sourceDb.getConnectParam());
+			}else{
+				srcConf = DbConnectConfig.createConnectConfig(req.getSourceDbInfo(),null);
+			}
+			OracleSchema sourceSchema = new OracleSchema(srcConf);
+			if(req.getTargetDbId()>0){
+				if(datahub==null)datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
+				DbInfo targetDb = datahub.getDbById(req.getTargetDbId());
+				tarConf = DbConnectConfig.createConnectConfig(targetDb.getConnectParam());
+			}else{
+				tarConf = DbConnectConfig.createConnectConfig(req.getTargetDbInfo(),null);
+			}
+			targetSchema = new OracleSchema(tarConf);
 			//执行类
 			ExecuteFullCopySql sqlExecutor = new ExecuteFullCopySql(targetSchema,req.isMultiThread4Output());
 			ThreadLocalContext ctx = new ThreadLocalContext(log);

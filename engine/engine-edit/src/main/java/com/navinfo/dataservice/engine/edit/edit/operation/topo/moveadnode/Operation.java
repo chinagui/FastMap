@@ -140,7 +140,7 @@ public class Operation implements IOperation {
 		geojson.put("coordinates", new double[] { command.getLongitude(), command.getLatitude() });
 		JSONObject updateNodeJson = new JSONObject();
 		// 要移动点的project_id
-		updateNodeJson.put("subTaskId", command.getDbId());
+		updateNodeJson.put("dbId", command.getDbId());
 		JSONObject data = new JSONObject();
 		// 移动点的新几何
 		data.put("geometry", geojson);

@@ -99,11 +99,12 @@ public class SubtaskController extends BaseController {
 			}
 			
 			//获取几何范围,任务类型，作业阶段
-			ArrayList<Integer> types = (ArrayList<Integer>)JSONArray.toList(dataJson.getJSONArray("types"),int.class);
-			int stage = dataJson.getInt("stage");
+//			ArrayList<Integer> types = (ArrayList<Integer>)JSONArray.toList(dataJson.getJSONArray("types"),int.class);
+//			int stage = dataJson.getInt("stage");
 			String wkt = dataJson.getString("wkt");
 			
-			List<Subtask> subtaskList = service.listByWkt(wkt,types,stage);
+//			List<Subtask> subtaskList = service.listByWkt(wkt,types,stage);
+			List<Subtask> subtaskList = service.listByWkt(wkt);
 			
 			//根据需要的返回字段拼装结果
 			List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
@@ -113,6 +114,10 @@ public class SubtaskController extends BaseController {
 				subtask.put("subtaskId", subtaskList.get(i).getSubtaskId());
 				subtask.put("geometry", subtaskList.get(i).getGeometry());
 				subtask.put("descp", subtaskList.get(i).getDescp());
+				subtask.put("name", subtaskList.get(i).getName());
+				subtask.put("stage", subtaskList.get(i).getStage());
+				subtask.put("type", subtaskList.get(i).getType());
+				subtask.put("gridIds", subtaskList.get(i).getGridIds());
 				list.add(subtask);
 			}
 	

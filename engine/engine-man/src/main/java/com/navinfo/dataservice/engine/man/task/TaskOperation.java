@@ -114,6 +114,7 @@ public class TaskOperation {
 						map.setMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE"));
 						map.setMonthEditPlanEndDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE"));
 						map.setMonthEditGroupId(rs.getInt("MONTH_EDIT_GROUP_ID"));
+						map.setMonthEditGroupName(rs.getString("GROUP_NAME"));
 						map.setLatest(rs.getInt("LATEST"));
 						list.add(map);
 					}

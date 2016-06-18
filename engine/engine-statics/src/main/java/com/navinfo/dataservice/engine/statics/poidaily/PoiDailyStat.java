@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -55,27 +57,37 @@ public class PoiDailyStat implements Runnable {
 		}
 	}
 
-	public Map<String, Integer> getPois() throws ServiceException {
+	public Map<String, JSONObject> getPois() throws ServiceException {
 		try {
 			QueryRunner run = new QueryRunner();
 
-			String sql = "select ip.geometry from ix_poi ip, poi_edit_status pes where ip.row_id = pes.row_id and pes.status=3";
-			return run.query(conn, sql, new ResultSetHandler<Map<String, Integer>>() {
+			String sql = "select ip.pid, ip.geometry from ix_poi ip, poi_edit_status pes where ip.row_id = pes.row_id and pes.status=3";
+			return run.query(conn, sql, new ResultSetHandler<Map<String, JSONObject>>() {
 
 				@Override
-				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
+				public Map<String, JSONObject> handle(ResultSet rs) throws SQLException {
 
-					Map<String, Integer> map = new HashMap<String, Integer>();
+					Map<String, JSONObject> map = new HashMap<String, JSONObject>();
 					while (rs.next()) {
 						try {
 
 							STRUCT struct = (STRUCT) rs.getObject("geometry");
 							Geometry geo = GeoTranslator.struct2Jts(struct);
 							String grid_id = CompGridUtil.point2Grids(geo.getCoordinate().x, geo.getCoordinate().y)[0];
+
+							int pid = rs.getInt("pid");
 							if (map.containsKey(grid_id)) {
-								map.put(grid_id, map.get(grid_id) + 1);
+								JSONObject obj = map.get(grid_id);
+								obj.put("finish", obj.getInt("finish") + 1);
+								obj.put("finish_pids", obj.getJSONArray("finish_pids").element(pid));
+								map.put(grid_id, obj);
+
 							} else {
-								map.put(grid_id, 1);
+								JSONObject obj = new JSONObject();
+								obj.put("finish", 1);
+								obj.put("finish_pids", new JSONArray().element(pid));
+
+								map.put(grid_id, obj);
 							}
 						} catch (Exception e1) {
 							e1.printStackTrace();
@@ -94,7 +106,7 @@ public class PoiDailyStat implements Runnable {
 		}
 	}
 
-	public List<Document> doStatPoi(Map<String, Integer> map) {
+	public List<Document> doStatPoi(Map<String, JSONObject> map) {
 		List<Document> backList = new ArrayList<Document>();
 
 		Map<String, Integer> mapSeason = StatInit.getPoiSeasonStat(db_name, col_name_seasion_grid, "grid_id");
@@ -103,7 +115,13 @@ public class PoiDailyStat implements Runnable {
 
 			String grid_id = entry.getKey();
 			int total = entry.getValue();
-			int finish = (map.get(grid_id) == null ? 0 : map.get(grid_id));
+			JSONObject obj = map.get(grid_id);
+			JSONArray finish_pids = new JSONArray();
+			int finish = 0;
+			if (obj != null) {
+				finish_pids = obj.getJSONArray("finish_pids");
+				finish = (Integer) obj.get("finish");
+			}
 
 			Document json = new Document();
 			// ------------------------------
@@ -114,6 +132,7 @@ public class PoiDailyStat implements Runnable {
 			Document road = new Document();
 			road.put("total", total);
 			road.put("finish", finish);
+			road.put("finish_pids", finish_pids);
 			if (finish == 0 || total == 0) {
 				road.put("percent", 0);
 			} else {
@@ -131,7 +150,7 @@ public class PoiDailyStat implements Runnable {
 		log.info("-- begin do sub_task");
 		try {
 			log.info("-- begin do sub_task" + conn);
-			Map<String, Integer> ja = getPois();
+			Map<String, JSONObject> ja = getPois();
 			new MongoDao(db_name).insertMany(col_name, doStatPoi(ja));
 
 		} catch (Exception e) {

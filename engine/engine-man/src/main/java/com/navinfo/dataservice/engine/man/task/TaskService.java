@@ -130,18 +130,10 @@ public class TaskService {
 				Iterator keys = orderJson.keys();
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
-					if ("collectPlanStartDate".equals(key)) {selectSql+=" order by T.COLLECT_PLAN_START_DATE";break;}
-					if ("collectPlanEndDate".equals(key)) {selectSql+=" order by T.COLLECT_PLAN_END_DATE";break;}
-					if ("dayEditPlanStartDate".equals(key)) {selectSql+=" order by T.DAY_EDIT_PLAN_START_DATE";break;}
-					if ("dayEditPlanEndDate".equals(key)) {selectSql+=" order by T.DAY_EDIT_PLAN_END_DATE";break;}
-					if ("bMonthEditPlanStartDate".equals(key)) {selectSql+=" order by T.B_MONTH_EDIT_PLAN_START_DATE";break;}
-					if ("bMonthEditPlanEndDate".equals(key)) {selectSql+=" order by T.B_MONTH_EDIT_PLAN_END_DATE";break;}
-					if ("cMonthEditPlanStartDate".equals(key)) {selectSql+=" order by T.C_MONTH_EDIT_PLAN_START_DATE";break;}
-					if ("cMonthEditPlanEndDate".equals(key)) {selectSql+=" order by T.C_MONTH_EDIT_PLAN_END_DATE";break;}	
-					if ("dayProducePlanStartDate".equals(key)) {selectSql+=" order by T.DAY_PRODUCE_PLAN_START_DATE";break;}
-					if ("dayProducePlanEndDate".equals(key)) {selectSql+=" order by T.DAY_PRODUCE_PLAN_END_DATE";break;}
-					if ("monthProducePlanStartDate".equals(key)) {selectSql+=" order by T.MONTH_PRODUCE_PLAN_START_DATE";break;}
-					if ("monthProducePlanStartDate".equals(key)) {selectSql+=" order by T.MONTH_PRODUCE_PLAN_END_DATE";break;}
+					if ("planStartDate".equals(key)) {selectSql+=" order by T.PLAN_START_DATE";break;}
+					if ("planEndDate".equals(key)) {selectSql+=" order by T._PLAN_END_DATE";break;}
+					if ("monthEditPlanStartDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_START_DATE";break;}
+					if ("monthEditPlanEndDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_END_DATE";break;}
 					}
 			}
 			return TaskOperation.selectTaskBySql2(conn, selectSql, null,currentPageNum,pageSize);

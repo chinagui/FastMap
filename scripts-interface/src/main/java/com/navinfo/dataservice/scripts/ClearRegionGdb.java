@@ -5,8 +5,6 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import net.sf.json.JSONObject;
-
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;

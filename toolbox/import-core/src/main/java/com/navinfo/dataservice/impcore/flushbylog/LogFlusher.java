@@ -252,7 +252,7 @@ public abstract class LogFlusher {
 	private FlushResult flushData(Connection sourceDbConn,Connection targetDbConn) throws Exception {
 		String logQuerySql = "SELECT L.* FROM LOG_DETAIL L," + tempTable
 				+ " T WHERE L.OP_ID=T.OP_ID "
-				+ this.getFeatureFilter()
+				+ " AND "+this.getFeatureFilter()
 				+ " ORDER BY T.OP_DT"
 				;
 		this.log.debug(logQuerySql);

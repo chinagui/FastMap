@@ -2,6 +2,8 @@ package com.navinfo.dataservice.web.man.controller;
 
 import javax.servlet.http.HttpServletRequest;
 
+import net.sf.json.JSONObject;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +16,6 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.navicommons.database.Page;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName: RegionController 

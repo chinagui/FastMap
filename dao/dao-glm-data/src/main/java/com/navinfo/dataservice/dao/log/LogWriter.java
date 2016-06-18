@@ -30,6 +30,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
 import com.navinfo.dataservice.engine.man.project.ProjectSelector;
+import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Geometry;
 
 class Status {
@@ -87,6 +88,7 @@ public class LogWriter {
 				pstmt.execute();
 
 				pstmt.close();
+				this.insertLogdayRelease(logOperation.getOpId());
 
 				for (LogDetail r : logOperation.getDetails()) {
 					this.insertLogDetail(r);
@@ -104,6 +106,24 @@ public class LogWriter {
 
 			}
 
+		}
+	}
+	/**
+	 * zhaokk
+	 * 增加日出品信息
+	 * @param opId
+	 * @throws Exception 
+	 */
+	private void insertLogdayRelease(String opId) throws Exception {
+
+		String sql = "insert into log_day_release (op_id, rel_poi_sta,rel_poi_dt,rel_all_sta,rel_all_dt,rel_poi_lock,rel_all_lock) values (?,?,?,?,?,?,?)";
+		try{
+			QueryRunner run = new QueryRunner();
+			LogDayRelease release  = new LogDayRelease(opId);
+			run.update(conn, sql,opId,release.getRelPoiSta(),release.getRelPoiDt(),release.getRelAllSta(),release.getRelAllDt(),release.getRelPoiLock(),release.getRelAllLock());
+			
+		}catch (Exception e) {
+			throw new Exception("增加日出品信息SQL错误，"+e.getMessage(),e);
 		}
 	}
 

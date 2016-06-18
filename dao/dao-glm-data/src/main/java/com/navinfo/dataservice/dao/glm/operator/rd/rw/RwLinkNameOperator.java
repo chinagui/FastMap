@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.dao.glm.operator.poi.index;
+package com.navinfo.dataservice.dao.glm.operator.rd.rw;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -9,35 +9,28 @@ import java.util.List;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
-import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchOperator;
-import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
+
 /**
- * POI父子关系子表 操作
- * @author luyao
+ * 铁路线name操作类
+ * @author zhangxiaolong
  *
  */
-public class IxPoiChildrenOperator implements IOperator {
-
-	
-	private static Logger logger = Logger.getLogger(RdBranchOperator.class);
+public class RwLinkNameOperator implements IOperator {
 
 	private Connection conn;
 
-	private IxPoiChildren ixPoiChildren;
+	private RwLinkName rwLinkName;
 
-	public IxPoiChildrenOperator(Connection conn, IxPoiChildren ixPoiChildren) throws Exception {
+	public RwLinkNameOperator(Connection conn, RwLinkName rwLinkName) {
 		this.conn = conn;
-		this.ixPoiChildren = ixPoiChildren;
-		IxPoiOperator operator = new IxPoiOperator(conn,new IxPoiSelector(conn).loadRowIdByPid(ixPoiChildren.getChildPoiPid(), false));
-		operator.upatePoiStatus();
+
+		this.rwLinkName = rwLinkName;
 	}
-	
+
 	@Override
 	public void insertRow() throws Exception {
 		Statement stmt = null;
@@ -61,19 +54,18 @@ public class IxPoiChildrenOperator implements IOperator {
 			} catch (Exception e) {
 
 			}
-
 		}
 	}
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiChildren.tableName() + " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
+		StringBuilder sb = new StringBuilder("update " + rwLinkName.tableName() + " set u_record=3,");
 
 		PreparedStatement pstmt = null;
 
 		try {
 
-			Set<Entry<String, Object>> set = ixPoiChildren.changedFields().entrySet();
+			Set<Entry<String, Object>> set = rwLinkName.changedFields().entrySet();
 
 			Iterator<Entry<String, Object>> it = set.iterator();
 
@@ -84,13 +76,13 @@ public class IxPoiChildrenOperator implements IOperator {
 
 				Object columnValue = en.getValue();
 
-				Field field = ixPoiChildren.getClass().getDeclaredField(column);
+				Field field = rwLinkName.getClass().getDeclaredField(column);
 
 				field.setAccessible(true);
 
-				Object value = field.get(ixPoiChildren);
-
 				column = StringUtils.toColumnName(column);
+
+				Object value = field.get(rwLinkName);
 
 				if (value instanceof String || value == null) {
 
@@ -118,7 +110,9 @@ public class IxPoiChildrenOperator implements IOperator {
 
 				}
 			}
-			sb.append(" where row_id=hextoraw('" + ixPoiChildren.getRowId() + "')");
+			sb.append(" where row_id=hextoraw('" + rwLinkName.getRowId());
+
+			sb.append("')");
 
 			String sql = sb.toString();
 
@@ -142,7 +136,6 @@ public class IxPoiChildrenOperator implements IOperator {
 			}
 
 		}
-
 	}
 
 	@Override
@@ -169,48 +162,38 @@ public class IxPoiChildrenOperator implements IOperator {
 
 			}
 		}
-
 	}
 
 	@Override
 	public void insertRow2Sql(Statement stmt) throws Exception {
-		ixPoiChildren.setRowId(UuidUtils.genUuid());
+		rwLinkName.setRowId(UuidUtils.genUuid());
 
 		StringBuilder sb = new StringBuilder("insert into ");
 
-		sb.append(ixPoiChildren.tableName());
+		sb.append(rwLinkName.tableName());
 
-		sb.append("(group_id, child_poi_pid, relation_type, row_id,u_date,u_record) values (");
+		sb.append("(LINK_PID, NAME_GROUPID, U_RECORD, ROW_ID) values (");
 
-		sb.append(ixPoiChildren.getGroupId());
+		sb.append(rwLinkName.getLinkPid());
 
-		sb.append("," + ixPoiChildren.getChildPoiPid());
-		
-		sb.append("," + ixPoiChildren.getRelationType() + "");
+		sb.append("," + rwLinkName.getNameGroupid());
 
-		sb.append(",'" + ixPoiChildren.getRowId()+ "'");
-		
-		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
-
-		sb.append(",'1')");
+		sb.append(",1,'" + rwLinkName.rowId() + "')");
 
 		stmt.addBatch(sb.toString());
 	}
 
 	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
-			throws Exception {
-		// TODO Auto-generated method stub
+	public void updateRow2Sql(List<String> fieldNames, Statement stmt) throws Exception {
 
 	}
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiChildren.tableName() + " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where row_id=hextoraw('" + ixPoiChildren.rowId()
-				+ "')";
+		String sql = "update " + rwLinkName.tableName() + " set u_record=2 where row_id=hextoraw('"
+				+ rwLinkName.getRowId() + "')";
 
 		stmt.addBatch(sql);
-
 	}
 
 }

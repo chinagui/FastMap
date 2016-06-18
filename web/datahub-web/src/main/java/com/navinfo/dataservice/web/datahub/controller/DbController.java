@@ -38,12 +38,14 @@ public class DbController extends BaseController {
 	@RequestMapping(value = "/db/create/")
 	public ModelAndView createDb(HttpServletRequest request){
 		try{
+			String serverType = URLDecode(request.getParameter("serverType"));
+			Assert.notNull(serverType, "serverType不能为空");
 			String dbName = URLDecode(request.getParameter("dbName"));
-			Assert.notNull(dbName, "dbName不能为空");
+//			Assert.notNull(dbName, "dbName不能为空");
 			String userName = URLDecode(request.getParameter("userName"));
-			Assert.notNull(userName, "userName不能为空");
+//			Assert.notNull(userName, "userName不能为空");
 			String userPasswd = URLDecode(request.getParameter("userPasswd"));
-			Assert.notNull(userPasswd, "userPasswd不能为空");
+//			Assert.notNull(userPasswd, "userPasswd不能为空");
 			String type = URLDecode(request.getParameter("bizType"));
 			Assert.notNull(type, "type不能为空");
 			String descp = URLDecode(request.getParameter("descp"));
@@ -55,7 +57,7 @@ public class DbController extends BaseController {
 			//省份代码，使用按省份分配策略
 			//String provCode = URLDecode(request.getParameter("provcode"));
 			
-			DbInfo db = DbService.getInstance().createDb(dbName,userName,userPasswd,type, descp,gdbVersion,refDbName,refUserName,refType);
+			DbInfo db = DbService.getInstance().createDb(serverType,dbName,userName,userPasswd,type, descp,gdbVersion,refDbName,refUserName,refType);
 
 			return new ModelAndView("jsonView", success(db.getConnectParam()));
 		}catch(Exception e){
@@ -112,11 +114,11 @@ public class DbController extends BaseController {
 	@RequestMapping(value = "/db/getonlybytype/")
 	public ModelAndView getOnlyDbByType(HttpServletRequest request){
 		try{
-			String dbType = URLDecode(request.getParameter("type"));
-			if(StringUtils.isEmpty(dbType)){
+			String bizType = URLDecode(request.getParameter("type"));
+			if(StringUtils.isEmpty(bizType)){
 				throw new IllegalArgumentException("type参数不能为空。");
 			}
-			DbInfo db = DbService.getInstance().getOnlyDbByType(dbType);
+			DbInfo db = DbService.getInstance().getOnlyDbByBizType(bizType);
 			return new ModelAndView("jsonView", success(db.getConnectParam()));
 		}catch(Exception e){
 			log.error("获取db失败，原因："+e.getMessage(), e);

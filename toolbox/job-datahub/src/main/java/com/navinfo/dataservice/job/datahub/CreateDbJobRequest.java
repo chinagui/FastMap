@@ -12,6 +12,7 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 *  
 */
 public class CreateDbJobRequest extends AbstractJobRequest {
+	protected String serverType;
 	protected String dbName;
 	protected String userName;
 	protected String userPasswd;
@@ -21,6 +22,14 @@ public class CreateDbJobRequest extends AbstractJobRequest {
 	protected String refDbName;
 	protected String refUserName;
 	protected String refBizType;
+
+	public String getServerType() {
+		return serverType;
+	}
+
+	public void setServerType(String serverType) {
+		this.serverType = serverType;
+	}
 
 	public String getDbName() {
 		return dbName;

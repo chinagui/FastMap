@@ -28,9 +28,16 @@ import com.navinfo.navicommons.exception.ServiceException;
  * @date 2016-06-08 02:32:17
  * @Description: TODO
  */
-@Service
 public class RegionService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
+	
+	private RegionService(){}
+	private static class SingletonHolder{
+		private static final RegionService INSTANCE =new RegionService();
+	}
+	public static RegionService getInstance(){
+		return SingletonHolder.INSTANCE;
+	}
 
 	public void create(JSONObject json) throws ServiceException {
 		Connection conn = null;
@@ -312,5 +319,37 @@ public class RegionService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	public List<Region> list()throws ServiceException{
+		Connection conn = null;
+		try {
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			String selectSql = "SELECT REGION_ID,REGION_NAME,DAILY_DB_ID,MONTHLY_DB_ID FROM REGION";
+			return run.query(conn, selectSql, new RegionRsHandler());
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询region列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	class RegionRsHandler implements ResultSetHandler<List<Region>>{
+
+		@Override
+		public List<Region> handle(ResultSet rs) throws SQLException {
+			List<Region> results = new ArrayList<Region>();
+			while(rs.next()){
+				Region region = new Region();
+				region.setRegionId(rs.getInt("REGION_ID"));
+				region.setRegionName(rs.getString("REGION_NAME"));
+				region.setDailyDbId(rs.getInt("DAILY_DB_ID"));
+				region.setMonthlyDbId(rs.getInt("MONTHLY_DB_ID"));
+				results.add(region);
+			}
+			return results;
+		}
+		
 	}
 }

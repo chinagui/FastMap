@@ -90,6 +90,7 @@ public class DbInfo implements Serializable{
 		map.put("serverPort", dbServer.getPort());
 		map.put("serverType", dbServer.getType());
 		map.put("bizType", bizType);
+		map.put("serviceName", dbServer.getServiceName());
 		return map;
 	}
 	public int getDbId() {

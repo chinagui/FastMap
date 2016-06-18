@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.impcore;
 
-import static org.junit.Assert.*;
 import net.sf.json.JSONObject;
 
 import org.junit.Before;
@@ -9,9 +8,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.impcore.commit.CommitDay2MonthRoadJob;
-import com.navinfo.dataservice.jobframework.exception.JobCreateException;
-import com.navinfo.dataservice.jobframework.exception.JobTypeNotFoundException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 

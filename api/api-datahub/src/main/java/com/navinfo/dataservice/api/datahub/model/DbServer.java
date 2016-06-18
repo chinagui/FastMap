@@ -18,7 +18,8 @@ public class DbServer implements Serializable{
 	private String descp;
 	
 	private String identity;//ip:port
-	
+	public DbServer(){
+	} 
 	public DbServer(String type,String ip,int port){
 		this.type=type;
 		this.ip=ip;

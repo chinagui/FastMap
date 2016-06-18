@@ -40,6 +40,15 @@ public class GridServiceTest {
 		Assert.assertNotNull(regionGridMapping);
 		Assert.assertTrue(regionGridMapping.containsValue(39550711));
 	}
+	@Test
+	public void testQueryRegionGridMappingOfSubtasks() throws Exception {
+		GridService selector = GridService.getInstance();
+		List<Integer> gridList = new ArrayList<Integer>();
+		gridList.add(34);
+		gridList.add(35);
+		MultiValueMap regionGridMapping = (MultiValueMap) (selector.queryRegionGridMappingOfSubtasks(gridList));
+		Assert.assertNotNull(regionGridMapping);
+	}
 
 }
 

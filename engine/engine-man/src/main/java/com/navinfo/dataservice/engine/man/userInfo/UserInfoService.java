@@ -17,11 +17,11 @@ import com.navinfo.dataservice.api.man.model.UserDevice;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
-import com.navinfo.dataservice.commons.token.AccessToken;
-import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 
 /** 
 * @ClassName:  UserInfoService 
@@ -434,7 +434,6 @@ public class UserInfoService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	
 	/**
 	 * @param userInfo
 	 * @param userDevice

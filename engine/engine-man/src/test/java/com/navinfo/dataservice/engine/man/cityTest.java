@@ -22,7 +22,7 @@ public class cityTest {
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}
 		CityService service = new CityService();
-		return service.queryListByWkt(dataJson);			
+		return service.queryListByWkt(null);			
 	}
 	
 

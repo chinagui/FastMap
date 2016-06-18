@@ -24,7 +24,7 @@ public class GridOperation {
 		// TODO Auto-generated constructor stub
 	}
 
-	public static List<HashMap> queryGirdBySql(Connection conn,String selectSql,List<?> grids) throws Exception{
+	public static List<HashMap> queryGirdBySql(Connection conn,String selectSql) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){

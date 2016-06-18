@@ -10,6 +10,8 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNodeMesh;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 
@@ -83,5 +85,36 @@ public class NodeOperateUtils {
 		node.setMeshes(nodeMeshs);
 		return node;
 	}
+	
+	/**
+	 * 生成铁路点
+	 * @param x 经度
+	 * @param y 纬度
+	 * @return 铁路点对象
+	 * @throws Exception
+	 */
+	public static RwNode createRwNode(double x, double y) throws Exception {
 
+		RwNode node = new RwNode();
+		// 申请pid
+		node.setPid(PidService.getInstance().applyRwNodePid());
+		// 获取点的几何信息
+		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y), 100000, 0));
+		// 维护Node图幅信息
+		// 判断是否图廓点
+		if (MeshUtils.isPointAtMeshBorder(x, y)) {
+			node.setForm(4);
+		}
+		List<IRow> nodeMeshs = new ArrayList<IRow>();
+
+		for (String mesh : MeshUtils.point2Meshes(x, y)) {
+
+			RwNodeMesh nodeMesh = new RwNodeMesh();
+			nodeMesh.setNodePid(node.getPid());
+			nodeMesh.setMeshId(Integer.parseInt(mesh));
+			nodeMeshs.add(nodeMesh);
+		}
+		node.setMeshes(nodeMeshs);
+		return node;
+	}
 }

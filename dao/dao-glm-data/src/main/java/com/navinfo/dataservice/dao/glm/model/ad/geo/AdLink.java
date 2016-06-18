@@ -254,7 +254,7 @@ public class AdLink implements IObj {
 					for (int i = 0; i < ja.size(); i++) {
 						JSONObject jo = ja.getJSONObject(i);
 
-						RdNodeMesh row = new RdNodeMesh();
+						AdLinkMesh row = new AdLinkMesh();
 
 						row.Unserialize(jo);
 

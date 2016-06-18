@@ -17,6 +17,7 @@ import com.navinfo.dataservice.api.man.model.City;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -231,25 +232,24 @@ public class CityService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 					
-			final String wkt= json.getString("wkt");
-			int planningStatus = json.getInt("planningStatus");
+			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']', ')');
 			
-			String selectSql = "select t.CITY_ID,t.CITY_NAME, t.geometry.get_wkt() as geometry from CITY t where t.PLAN_STATUS="+planningStatus;
+			String selectSql = "select t.CITY_ID,t.CITY_NAME, t.geometry.get_wkt() as geometry,t.plan_status from CITY t where t.PLAN_STATUS in "+planningStatus
+					+" and SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
 		
 			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
 				public List<HashMap> handle(ResultSet rs) throws SQLException {
 					List<HashMap> list = new ArrayList<HashMap>();
 					while(rs.next()){
 						try {
+							HashMap<String,Object> map = new HashMap<String,Object>();
+							map.put("cityId", rs.getInt("CITY_ID"));
+							map.put("cityName", rs.getString("CITY_NAME"));
 							CLOB clob=(CLOB)rs.getObject("geometry");
 							String clobStr=DataBaseUtils.clob2String(clob);
-							if (GeometryUtils.IsIntersectPolygon(wkt,clobStr)){
-								HashMap<String,Object> map = new HashMap<String,Object>();
-								map.put("cityId", rs.getInt("CITY_ID"));
-								map.put("cityName", rs.getString("CITY_NAME"));
-								map.put("geometry", Geojson.wkt2Geojson(clobStr));
-								list.add(map);
-							}
+							map.put("geometry", Geojson.wkt2Geojson(clobStr));
+							map.put("planningStatus", rs.getInt("plan_status"));
+							list.add(map);
 						} catch (ParseException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -263,7 +263,9 @@ public class CityService {
 				}
 	    		
 	    	}		;
-	    	return run.query(conn, selectSql, rsHandler);
+//	    	List<Object> list = new ArrayList<Object>();
+//			list.add(json.getString("wkt"));
+	    	return run.query(conn, selectSql, rsHandler,json.getString("wkt"));
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

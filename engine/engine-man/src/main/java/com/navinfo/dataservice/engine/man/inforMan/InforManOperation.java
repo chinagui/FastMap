@@ -39,13 +39,10 @@ public class InforManOperation {
 						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
 						map.setCollectPlanStartDate(rs.getTimestamp("COLLECT_PLAN_START_DATE"));
 						map.setCollectPlanEndDate(rs.getTimestamp("COLLECT_PLAN_END_DATE"));
-						map.setCollectGroupId(rs.getInt("COLLECT_GROUP_ID"));
 						map.setDayEditPlanStartDate(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE"));
 						map.setDayEditPlanEndDate(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE"));
-						map.setDayEditGroupId(rs.getInt("DAY_EDIT_GROUP_ID"));
 						map.setMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE"));
 						map.setMonthEditPlanEndDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE"));
-						map.setMonthEditGroupId(rs.getInt("MONTH_EDIT_GROUP_ID"));
 						map.setDayEditPlanStartDate(rs.getTimestamp("DAY_PRODUCE_PLAN_START_DATE"));
 						map.setDayEditPlanEndDate(rs.getTimestamp("DAY_PRODUCE_PLAN_END_DATE"));
 						map.setMonthProducePlanStartDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_START_DATE"));

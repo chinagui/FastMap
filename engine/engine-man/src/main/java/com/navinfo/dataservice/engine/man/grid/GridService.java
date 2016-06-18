@@ -3,10 +3,12 @@ package com.navinfo.dataservice.engine.man.grid;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.dbutils.DbUtils;
@@ -27,36 +29,108 @@ import net.sf.json.JSONObject;
 
 public class GridService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	
-	private GridService(){}
-	private static class SingletonHolder{
-		private static final GridService INSTANCE =new GridService();
+
+	private GridService() {
 	}
-	public static GridService getInstance(){
+
+	private static class SingletonHolder {
+		private static final GridService INSTANCE = new GridService();
+	}
+
+	public static GridService getInstance() {
 		return SingletonHolder.INSTANCE;
 	}
-	
-	public List<Grid> list()throws Exception{
-		String sql = "SELECT GRID_ID,REGION_ID,CITY_ID,BLOCK_ID FROM GRID";
-		QueryRunner run = new QueryRunner();
+	public Set<Integer> queryGrid(int limit) throws SQLException{
+		String sql = "select grid_id from grid g where rownum<?";
+		QueryRunner queryRunner = new QueryRunner();
 		Connection conn = null;
 		try{
-			conn = DBConnector.getInstance().getManConnection();
-			List<Grid> results = run.query(conn, sql, new GridResultSetHandler());
-			return results;
+			conn = DBConnector.getInstance().getManConnection();	
+			ResultSetHandler<Set<Integer>> rsh = new ResultSetHandler<Set<Integer>>(){
+
+				@Override
+				public Set<Integer> handle(ResultSet rs) throws SQLException {
+					if (rs!=null){
+						Set<Integer> grids = new HashSet<Integer>();
+						while(rs.next()){
+							int gridId = rs.getInt("grid_id");
+							grids.add(gridId);
+						}
+						return grids;
+					}
+					return null;
+				}};
+			return queryRunner.query(conn, sql, limit, rsh);
+			
 		}finally{
 			DbUtils.closeQuietly(conn);
 		}
 	}
+	public List<Grid> list()throws Exception{
+		String sql = "SELECT GRID_ID,REGION_ID,CITY_ID,BLOCK_ID FROM GRID";
+		QueryRunner run = new QueryRunner();
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			List<Grid> results = run.query(conn, sql, new GridResultSetHandler());
+			return results;
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+
 	/**
 	 * @param gridList  <br/>
-	 * <b>注意：如果参数gridList太长，会导致oracle sql太长而出现异常；</b>
+	 * <b>注意：如果参数gridList太长(不能超过1000)，会导致oracle sql太长而出现异常；</b>
 	 * @return 根据给定的gridlist，查询获取regioin和grid的映射；key:RegionId；value：grid列表<br/>
-	 * @throws Exception 
+	 * @throws Exception
 	 * 
 	 */
-	public Map queryRegionGridMapping(List<Integer> gridList) throws Exception{
-		String sql = "select grid_id,r.* from grid g,region r where g.region_id=r.region_id ";
+	public Map queryRegionGridMapping(List<Integer> gridList) throws Exception {
+		String sql = "select grid_id,region_id from grid g where 1=1 ";
+		QueryRunner queryRunner = new QueryRunner();
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			ResultSetHandler<MultiValueMap> rsh = new ResultSetHandler<MultiValueMap>() {
+
+				@Override
+				public MultiValueMap handle(ResultSet rs) throws SQLException {
+					if (rs != null) {
+						MultiValueMap mvMap = new MultiValueMap();
+						while (rs.next()) {
+							int gridId = rs.getInt("grid_id");
+							int regionId = rs.getInt("region_id");
+							mvMap.put(regionId, gridId);
+						}
+						return mvMap;
+					}
+					return null;
+				}};
+			String InClause = buildInClause("g.grid_id",gridList);
+			sql=sql+InClause;
+			return queryRunner.query(conn, sql, rsh);
+			
+
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	private String buildInClause(String columName,List inValuesList){
+		int size = inValuesList.size();
+		if (size==0) return null;
+		return " and "+columName+" in ("+org.apache.commons.lang.StringUtils.join(inValuesList, ",")+")";
+	}
+
+	/**
+	 * @param taskList subTaskId的列表
+	 * <b>注意：如果参数taskList太长（不能超过1000个），会导致oracle sql太长而出现异常；</b>
+	 * @return MultiValueMap key是regionId，value是大区中满足条件的grid的列表
+	 * @throws Exception
+	 */
+	public Map queryRegionGridMappingOfSubtasks(List<Integer> taskList) throws Exception {
+		String sql = "select distinct g.grid_id,g.region_id  from grid g,subtask t ,subtask_grid_mapping m " + 
+				" where t.subtask_id=m.subtask_id and m.grid_id=g.grid_id ";
 		QueryRunner queryRunner = new QueryRunner();
 		Connection conn = null;
 		try{
@@ -70,53 +144,31 @@ public class GridService {
 						while(rs.next()){
 							int gridId = rs.getInt("grid_id");
 							int regionId = rs.getInt("region_id");
-//							int regionDailyDbId = rs.getInt("daily_db_id");
-//							int regionMongthlyDbId = rs.getInt("mongthly_db_id");
-//							String regionName = rs.getString("regionName");
-//							Region region = new Region(Integer.valueOf(regionId),regionName,Integer.valueOf(regionDailyDbId),Integer.valueOf(regionMongthlyDbId));
 							mvMap.put(regionId, gridId);
 						}
 						return mvMap;
 					}
 					return null;
 				}};
-			StringBuffer InClause = buildInClause("g.grid_id",gridList);
+			String InClause = buildInClause(" t.subtask_id ",taskList);
 			sql=sql+InClause;
 			if(StringUtils.isEmpty(InClause)){
 				return queryRunner.query(conn, sql, rsh);
 			}else{
-				return queryRunner.query(conn, sql, gridList.toArray(), rsh);
+				return queryRunner.query(conn, sql, rsh);
 			}
 			
 		}finally{
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	private StringBuffer buildInClause(String columName,List inValuesList){
-		int size = inValuesList.size();
-		if (size==0) return null;
-		StringBuffer whereClaus= new StringBuffer();
-		for (int i=0;i<size;i++){
-			if (i==0){
-				whereClaus.append("and "+columName+" in (?");//grid_id 
-			}else{
-				if (i==size-1){
-					whereClaus.append(",?)");
-				}else{
-					whereClaus.append(",?");
-				}
-				
-			}
-		}
-		return whereClaus;
-	}
-	
-	class GridResultSetHandler implements ResultSetHandler<List<Grid>>{
+
+	class GridResultSetHandler implements ResultSetHandler<List<Grid>> {
 
 		@Override
 		public List<Grid> handle(ResultSet rs) throws SQLException {
 			List<Grid> results = new ArrayList<Grid>();
-			if(rs.next()){
+			if (rs.next()) {
 				Grid g = new Grid();
 				g.setGridId(rs.getInt("GRID_ID"));
 				g.setRegionId(rs.getInt("REGION_ID"));
@@ -126,23 +178,24 @@ public class GridService {
 			}
 			return results;
 		}
-		
+
 	}
-	
+
 	public List<HashMap> quryListByAlloc(JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
 
 			conn = DBConnector.getInstance().getManConnection();
-			//根据输入的几何wkt，计算几何包含的gird，目前只有方法，小文在实现中。。。
-			List<?> grids=(List<?>) CompGeometryUtil.geo2GridsWithoutBreak(GeometryUtils.getMulPointByWKT(json.getString("wkt")));
+			// 根据输入的几何wkt，计算几何包含的gird，目前只有方法，小文在实现中。。。
+			List<?> grids = (List<?>) CompGeometryUtil
+					.geo2GridsWithoutBreak(GeometryUtils.getPolygonByWKT(json.getString("wkt")));
 
 			String selectSql = "select t.grid_id,s.status from subtask_grid_mapping t,subtask s where t.subtask_id=s.subtask_id "
 					+ "and s.stage="+json.getInt("stage")+"and s.type="+json.getInt("type");
-			StringBuffer InClause = buildInClause("t..grid_id",grids);
+			String InClause = buildInClause("t.grid_id",grids);
 			String sql=selectSql+InClause;
 	
-			return GridOperation.queryGirdBySql(conn, sql,grids);
+			return GridOperation.queryGirdBySql(conn, sql);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

@@ -4,9 +4,25 @@
 		class="com.navinfo.dataservice.job.datahub.CreateDbJob"
 	 	request="com.navinfo.dataservice.job.datahub.CreateDbJobRequest">
 	</type>
-	<type name="commitDay2MonthRoadJob" 
-		class="com.navinfo.dataservice.impcore.commit.CommitDay2MonthRoadJob"
-	 	request="com.navinfo.dataservice.impcore.commit.CommitDay2MonthRoadJobRequest"
+	<type name="day2MonthRoadJob" 
+		class="com.navinfo.dataservice.impcore.commit.day.road.Day2MonthRoadJob"
+	 	request="com.navinfo.dataservice.impcore.commit.day.road.Day2MonthRoadJobRequest"
+	/>
+	<type name="day2MonthPoiJob" 
+		class="com.navinfo.dataservice.impcore.commit.day.poi.Day2MonthPoiJob"
+	 	request="com.navinfo.dataservice.impcore.commit.day.poi.Day2MonthPoiJobRequest"
+	/>
+	<type name="commitMonthlyJob" 
+		class="com.navinfo.dataservice.impcore.commit.mon.CommitMonthlyJob"
+	 	request="com.navinfo.dataservice.impcore.commit.mon.CommitMonthlyJobRequest"
+	/>
+	<type name="releaseFmIdbDailyJob" 
+		class="com.navinfo.dataservice.impcore.release.day.ReleaseFmIdbDailyJob"
+	 	request="com.navinfo.dataservice.impcore.release.day.ReleaseFmIdbDailyJobRequest"
+	/>
+	<type name="releaseFmIdbMonthlyJob" 
+		class="com.navinfo.dataservice.impcore.release.mon.ReleaseFmIdbMonthlyJob"
+	 	request="com.navinfo.dataservice.impcore.release.mon.ReleaseFmIdbMonthlyJobRequest"
 	/>
 	<type name="diff" 
 		class="com.navinfo.dataservice.diff.DiffJob"

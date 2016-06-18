@@ -1,13 +1,12 @@
 package com.navinfo.dataservice.engine.edit.edit.operation;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * 操作控制器
@@ -88,10 +87,10 @@ public class Transaction {
 			case UPDOWNDEPART:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.updowndepartlink.Command(
 						json, requester);
-			// case DEPART:
-			// return new
-			// com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Command(
-			// json, requester);
+				// case DEPART:
+				// return new
+				// com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Command(
+				// json, requester);
 			}
 		case RDNODE:
 			switch (operType) {
@@ -275,9 +274,22 @@ public class Transaction {
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.delete.Command(
 						json, requester);
+			}
+		case IXPOIPARENT:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poiparent.create.Command(
+						json, requester);
+
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poiparent.update.Command(
+						json, requester);
+
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poiparent.delete.Command(
+						json);
+			}
 		}
-		
-		}	
 		throw new Exception("不支持的操作类型");
 	}
 
@@ -310,11 +322,12 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.Process(
 						command);
 			case UPDOWNDEPART:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.updowndepartlink.Process(command);
-			// case DEPART:
-			// return new
-			// com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Process(
-			// command);
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.updowndepartlink.Process(
+						command);
+				// case DEPART:
+				// return new
+				// com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Process(
+				// command);
 			}
 		case RDNODE:
 			switch (operType) {
@@ -497,6 +510,20 @@ public class Transaction {
 						command);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.delete.Process(
+						command);
+			}
+		case IXPOIPARENT:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poiparent.create.Process(
+						command);
+
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poiparent.update.Process(
+						command);
+
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poiparent.delete.Process(
 						command);
 			}
 		}

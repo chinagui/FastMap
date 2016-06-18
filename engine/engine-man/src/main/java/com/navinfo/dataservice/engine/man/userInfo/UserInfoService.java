@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -12,8 +13,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.navinfo.dataservice.api.man.model.UserDevice;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -56,51 +61,52 @@ public class UserInfoService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			
-			String updateSql = "update user_info set USER_ID=?, USER_REAL_NAME=?, USER_NICK_NAME=?, USER_PASSWORD=?, USER_EMAIL=?, USER_PHONE=?, USER_LEVEL=?, USER_SCORE=?, USER_ICON=?, USER_GPSID=? where 1=1 ";
+			String updateSql = "update user_info set ";
 			List<Object> values=new ArrayList<Object>();
-			if (bean!=null&&bean.getUserId()!=null && StringUtils.isNotEmpty(bean.getUserId().toString())){
-				updateSql+=" and USER_ID=? ";
-				values.add(bean.getUserId());
-			};
+
 			if (bean!=null&&bean.getUserRealName()!=null && StringUtils.isNotEmpty(bean.getUserRealName().toString())){
-				updateSql+=" and USER_REAL_NAME=? ";
+				updateSql+=" USER_REAL_NAME=? ,";
 				values.add(bean.getUserRealName());
 			};
 			if (bean!=null&&bean.getUserNickName()!=null && StringUtils.isNotEmpty(bean.getUserNickName().toString())){
-				updateSql+=" and USER_NICK_NAME=? ";
+				updateSql+=" USER_NICK_NAME=? ,";
 				values.add(bean.getUserNickName());
 			};
 			if (bean!=null&&bean.getUserPassword()!=null && StringUtils.isNotEmpty(bean.getUserPassword().toString())){
-				updateSql+=" and USER_PASSWORD=? ";
+				updateSql+=" USER_PASSWORD=? ,";
 				values.add(bean.getUserPassword());
 			};
 			if (bean!=null&&bean.getUserEmail()!=null && StringUtils.isNotEmpty(bean.getUserEmail().toString())){
-				updateSql+=" and USER_EMAIL=? ";
+				updateSql+=" USER_EMAIL=? ,";
 				values.add(bean.getUserEmail());
 			};
 			if (bean!=null&&bean.getUserPhone()!=null && StringUtils.isNotEmpty(bean.getUserPhone().toString())){
-				updateSql+=" and USER_PHONE=? ";
+				updateSql+=" USER_PHONE=? ,";
 				values.add(bean.getUserPhone());
 			};
 			if (bean!=null&&bean.getUserLevel()!=null && StringUtils.isNotEmpty(bean.getUserLevel().toString())){
-				updateSql+=" and USER_LEVEL=? ";
+				updateSql+=" USER_LEVEL=? ,";
 				values.add(bean.getUserLevel());
 			};
 			if (bean!=null&&bean.getUserScore()!=null && StringUtils.isNotEmpty(bean.getUserScore().toString())){
-				updateSql+=" and USER_SCORE=? ";
+				updateSql+=" USER_SCORE=? ,";
 				values.add(bean.getUserScore());
 			};
 			if (bean!=null&&bean.getUserIcon()!=null && StringUtils.isNotEmpty(bean.getUserIcon().toString())){
-				updateSql+=" and USER_ICON=? ";
+				updateSql+=" USER_ICON=? ,";
 				values.add(bean.getUserIcon());
 			};
 			if (bean!=null&&bean.getUserGpsid()!=null && StringUtils.isNotEmpty(bean.getUserGpsid().toString())){
-				updateSql+=" and USER_GPSID=? ";
+				updateSql+=" USER_GPSID=? ,";
 				values.add(bean.getUserGpsid());
 			};
+			
+			updateSql = updateSql.substring(0,updateSql.length()-1);
+			updateSql += " where user_id = ?";
+			values.add(bean.getUserId());
+			
 			run.update(conn, 
 					   updateSql, 
-					   values.toArray(),
 					   values.toArray()
 					   );
 		}catch(Exception e){
@@ -344,6 +350,7 @@ public class UserInfoService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
 	public UserInfo query(UserInfo bean)throws ServiceException{
 		Connection conn = null;
 		try{
@@ -401,7 +408,6 @@ public class UserInfoService {
 						model.setUserId(rs.getInt("USER_ID"));
 						model.setUserRealName(rs.getString("USER_REAL_NAME"));
 						model.setUserNickName(rs.getString("USER_NICK_NAME"));
-						model.setUserPassword(rs.getString("USER_PASSWORD"));
 						model.setUserEmail(rs.getString("USER_EMAIL"));
 						model.setUserPhone(rs.getString("USER_PHONE"));
 						model.setUserLevel(rs.getInt("USER_LEVEL"));
@@ -424,6 +430,85 @@ public class UserInfoService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询明细失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	/**
+	 * @param userInfo
+	 * @param userDevice
+	 * @throws ServiceException 
+	 */
+	public HashMap login(UserInfo userInfo, UserDevice userDevice) throws ServiceException {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try{
+			//持久化
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			
+			String selectSql = "";
+
+			if(userDevice!=null){
+				selectSql = "select u.user_id ,r.role_name "
+						+ " from user_info u,role r,role_user_mapping rum,user_device d "
+						+ " where u.user_id=d.user_id "
+						+ " and u.user_id = rum.user_id "
+						+ " and rum.role_id = r.role_id ";
+			}else{
+				selectSql = "select u.user_id ,r.role_name "
+						+ " from user_info u,role r,role_user_mapping rum "
+						+ " where u.user_id = rum.user_id "
+						+ " and rum.role_id = r.role_id ";
+			}
+			
+			selectSql += " and u.user_nick_name = '" + userInfo.getUserNickName() + "'";
+			selectSql += " and u.user_password = '" + userInfo.getUserPassword() + "'";
+			
+			if(userDevice!=null&&userDevice.getDeviceToken()!=null && StringUtils.isNotEmpty(userDevice.getDeviceToken().toString())){
+				selectSql += " and d.device_token = '" + userDevice.getDeviceToken() + "'";
+			}
+			if(userDevice!=null&&userDevice.getDevicePlatform()!=null && StringUtils.isNotEmpty(userDevice.getDevicePlatform().toString())){
+				selectSql += " and d.device_platform = '" + userDevice.getDevicePlatform() + "'";
+			}
+			if(userDevice!=null&&userDevice.getDeviceVersion()!=null && StringUtils.isNotEmpty(userDevice.getDeviceVersion().toString())){
+				selectSql += " and d.device_version = '" + userDevice.getDeviceVersion() + "'";
+			}
+			
+
+			
+			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>(){
+				public HashMap handle(ResultSet rs) throws SQLException {
+					HashMap map = new HashMap();
+					while(rs.next()){
+						map.put("userId", rs.getLong("user_id"));
+						map.put("roleName", rs.getString("role_name"));
+						return map;
+					}
+					return map;
+				}
+	    		
+	    	};
+			
+	    	HashMap map = run.query(conn, selectSql, rsHandler);
+	    	HashMap result = new HashMap();
+			
+	    	if(!map.isEmpty()){
+				AccessToken access_token = AccessTokenFactory.generate((long) (map.get("userId")));
+				if(access_token!=null){
+					result.put("access_token", access_token.getTokenString());
+					result.put("expires_in", access_token.getExpireSecond());
+					result.put("role", map.get("role"));
+				}	
+	    	}
+			
+			return result;
+
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("登录失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}

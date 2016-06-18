@@ -1,11 +1,8 @@
 package com.navinfo.dataservice.web.man.controller;
 
-import java.sql.Date;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
+
+import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -14,19 +11,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
-import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.iface.JobApiService;
-import com.navinfo.dataservice.commons.database.DbConnectConfig;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.man.block.BlockService;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName: BlockController 
@@ -62,12 +52,12 @@ public class ProduceController extends BaseController {
 			JobApiService jobApi=(JobApiService) ApplicationContextUtil.getBean("jobApi");
 			/*
 			 * {"gridIds":[213424,343434,23423432],"stopTime":"yyyymmddhh24miss","dataType":"POI"//POI,ALL}
-			 * jobType:releaseFmidbDaily/releaseFmidbMonthly
+			 * jobType:releaseFmIdbDailyJob/releaseFmIdbMonthlyJob
 			 */
 			//TODO
 			dataJson.put("dataType", "ALL");
 			dataJson.put("stopTime", "20160616000000");
-			long jobId=jobApi.createJob("releaseFmidbDaily", dataJson,1, (int)userId, "日出品");
+			long jobId=jobApi.createJob("releaseFmIdbDailyJob", dataJson, userId, "日出品");
 			return new ModelAndView("jsonView", success(jobId));
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);
@@ -96,12 +86,12 @@ public class ProduceController extends BaseController {
 			long userId=tokenObj.getUserId();
 			JobApiService jobApi=(JobApiService) ApplicationContextUtil.getBean("jobApi");
 			/*
-			 * {"cityIds":[213424,343434,23423432],"stopTime":"yyyymmddhh24miss"}
-			 * jobType:releaseFmidbDaily/releaseFmidbMonthly
+			 * {"gridIds":[213424,343434,23423432],"stopTime":"yyyymmddhh24miss","dataType":"POI"//POI,ALL}
+			 * jobType:releaseFmIdbDailyJob/releaseFmIdbMonthlyJob
 			 */
 			//TODO
 			dataJson.put("stopTime", "20160616000000");
-			long jobId=jobApi.createJob("releaseFmidbMonthly", dataJson,1, (int)userId, "月出品");
+			long jobId=jobApi.createJob("releaseFmIdbMonthlyJob", dataJson,userId, "月出品");
 			return new ModelAndView("jsonView", success(jobId));
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);
@@ -134,9 +124,18 @@ public class ProduceController extends BaseController {
 			 * jobType:releaseFmidbDaily/releaseFmidbMonthly
 			 */
 			dataJson.put("stopTime", "20160616000000");
+			String featureType = (String) dataJson.get("featureType");//featureType:POI,ROAD
+			dataJson.put("stopTime", dataJson.get("featureType"));//featureType:POI,ROAD
 			//TODO 道路日落月，poi后台定时脚本
-			long jobId=jobApi.createJob("commitDay2monthRoad", dataJson, 1,(int)userId, "月融合");
+			long jobId=0;
+			if (featureType.equals("POI")){
+				jobId=jobApi.createJob("day2MonthPoiJob", dataJson, userId, "POI月融合");	
+				return new ModelAndView("jsonView", success(jobId));
+			}
+			jobId=jobApi.createJob("day2MonthRoadJob", dataJson, userId, "ROAD月融合");	
 			return new ModelAndView("jsonView", success(jobId));
+			
+			
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

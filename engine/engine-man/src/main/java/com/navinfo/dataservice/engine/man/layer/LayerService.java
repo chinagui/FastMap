@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import oracle.sql.CLOB;
 import oracle.sql.STRUCT;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -20,11 +21,14 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.Page;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
 
 import net.sf.json.JSONObject;
 
@@ -39,12 +43,12 @@ public class LayerService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
 	
-	public void create(long userId,String wkt)throws Exception{
+	public void create(long userId, String layerName,String wkt)throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();			
-			String createSql = "insert into customised_layer (LAYER_ID, GEOMETRY, CREATE_USER_ID, CREATE_DATE) "
-					+ "values(customised_layer_seq.nextval,sdo_geometry('"+wkt+"',8307),"+userId+",sysdate)";			
+			String createSql = "insert into customised_layer (LAYER_ID, LAYER_NAME,GEOMETRY, CREATE_USER_ID, CREATE_DATE) "
+					+ "values(customised_layer_seq.nextval,'"+layerName+"',sdo_geometry('"+wkt+"',8307),"+userId+",sysdate)";			
 			DbOperation.exeUpdateOrInsertBySql(conn, createSql);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -84,14 +88,14 @@ public class LayerService {
 		}
 	}
 	
-	public List<Layer> listByWkt(String wkt)throws Exception{
+	public List<HashMap> listByWkt(String wkt)throws Exception{
 		Connection conn = null;
 		try{
 			conn =  DBConnector.getInstance().getManConnection();	
 			
 			String selectSql ="SELECT LAYER_ID,LAYER_NAME,T.GEOMETRY.GET_WKT() as GEOMETRY,CREATE_USER_ID,CREATE_DATE FROM CUSTOMISED_LAYER t"
 					+ " where SDO_ANYINTERACT(geometry,sdo_geometry('"+wkt+"',8307))='TRUE'";
-			ResultSetHandler<List<Layer>> rsHandler = new ResultSetHandler<List<Layer>>(){
+			/*ResultSetHandler<List<Layer>> rsHandler = new ResultSetHandler<List<Layer>>(){
 				public List<Layer> handle(ResultSet rs) throws SQLException{
 					List<Layer> result=new ArrayList<Layer>();
 					while(rs.next()){
@@ -105,6 +109,28 @@ public class LayerService {
 					}
 					return result;
 				}	    		
+	    	};*/
+			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
+				public List<HashMap> handle(ResultSet rs) throws SQLException {
+					List<HashMap> list = new ArrayList<HashMap>();
+					while(rs.next()){
+						try {
+							HashMap<String,Object> map = new HashMap<String,Object>();
+							map.put("layerId", rs.getInt("LAYER_ID"));
+							map.put("layerName", rs.getString("LAYER_NAME"));
+							CLOB clob=(CLOB)rs.getObject("GEOMETRY");
+							String clobStr=DataBaseUtils.clob2String(clob);
+							map.put("geometry", Geojson.wkt2Geojson(clobStr));
+							map.put("createUserId", rs.getInt("CREATE_USER_ID"));
+							map.put("createDate", DateUtils.dateToString(rs.getTimestamp("CREATE_DATE")));
+							list.add(map);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					return list;
+				}
 	    	};
 	    	QueryRunner run = new QueryRunner();
 			return run.query(conn,selectSql,rsHandler);

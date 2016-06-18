@@ -34,7 +34,7 @@ public class GdbExportScriptsInterface {
 			context.start();
 			new ApplicationContextUtil().setApplicationContext(context);
 			
-			List<Region> list = RegionService.getInstance().list(new JSONObject());
+			List<Region> list = RegionService.getInstance().list();
 			
 			for(Region region : list){
 				

@@ -41,8 +41,8 @@ public class GridController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			if (!dataJson.containsKey("wkt") || !dataJson.containsKey("stage") || !dataJson.containsKey("type")){
-				throw new IllegalArgumentException("wkt/stage/type不能为空");
+			if (!dataJson.containsKey("wkt") || !dataJson.containsKey("stage")){
+				throw new IllegalArgumentException("wkt/stage不能为空");
 			}
 			List<HashMap> data = GridService.getInstance().quryListByAlloc(dataJson);
 			return new ModelAndView("jsonView", success(data));

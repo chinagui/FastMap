@@ -115,10 +115,10 @@ public class CodeGen {
 	 * @param args
 	 */
 	 public static void main(String[] args) throws Exception {
-	    Table table = new Table("jdbc:oracle:thin:@192.168.4.131:1521/orcl","fm_man_sp5","fm_man_sp5","user_info");
+	    Table table = new Table("jdbc:oracle:thin:@192.168.4.131:1521/orcl","fm_man_sp5","fm_man_sp5","grid");
 	 	CodeGen codeGen = new CodeGen("com.navinfo.dataservice.web.codegen",table,"E:\\workspace\\github2\\DataService\\code-generator\\src\\main\\java");
-	 	codeGen.genController();
-	 	codeGen.genService();
+//	 	codeGen.genController();
+//	 	codeGen.genService();
 	 	codeGen.genModel();
 	    }
 	

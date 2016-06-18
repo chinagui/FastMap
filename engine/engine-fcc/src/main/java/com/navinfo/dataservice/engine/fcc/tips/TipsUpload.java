@@ -226,6 +226,12 @@ public class TipsUpload {
 
 					json.put("deep", deep);
 				}
+				
+				json.put("t_cStatus", 1);
+				
+				json.put("t_dStatus", 0);
+				
+				json.put("t_mStatus", 0);
 
 				if (3 == lifecycle) {
 					insertTips.put(rowkey, json);
@@ -787,7 +793,7 @@ public class TipsUpload {
 
 		TipsUpload a = new TipsUpload();
 
-		a.run("D:/4.txt");
+		a.run("C:/tips.txt");
 		System.out.println("成功");
 	}
 }

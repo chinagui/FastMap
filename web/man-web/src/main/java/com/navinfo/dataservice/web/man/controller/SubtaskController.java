@@ -15,6 +15,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
@@ -66,7 +68,6 @@ public class SubtaskController extends BaseController {
 			
 			dataJson.remove("gridIds");
 			
-//			Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
 			Subtask bean = (Subtask) JsonOperation.jsonToBean(dataJson,Subtask.class);
 			bean.setCreateUserId((int)userId);
 			bean.setGeometry(wkt);
@@ -82,7 +83,7 @@ public class SubtaskController extends BaseController {
 	
 	
 	/*
-	 * 根据几何范围,任务类型，作业阶段查询任务列表
+	 * 根据几何范围查询任务列表
 	 */
 	@RequestMapping(value = "/subtask/listByWkt")
 	public ModelAndView listByWkt(HttpServletRequest request){
@@ -99,12 +100,10 @@ public class SubtaskController extends BaseController {
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
 			
-			//获取几何范围,任务类型，作业阶段
-			ArrayList<Integer> types = (ArrayList<Integer>)JSONArray.toList(dataJson.getJSONArray("types"),int.class);
-			int stage = dataJson.getInt("stage");
+			//获取几何范围
 			String wkt = dataJson.getString("wkt");
 			
-			List<Subtask> subtaskList = service.listByWkt(wkt,types,stage);
+			List<Subtask> subtaskList = service.listByWkt(wkt);
 			
 			//根据需要的返回字段拼装结果
 			List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
@@ -114,6 +113,11 @@ public class SubtaskController extends BaseController {
 				subtask.put("subtaskId", subtaskList.get(i).getSubtaskId());
 				subtask.put("geometry", subtaskList.get(i).getGeometry());
 				subtask.put("descp", subtaskList.get(i).getDescp());
+				subtask.put("name", subtaskList.get(i).getName());
+				subtask.put("stage", subtaskList.get(i).getStage());
+				subtask.put("status", subtaskList.get(i).getStatus());
+				subtask.put("type", subtaskList.get(i).getType());
+				subtask.put("gridIds", subtaskList.get(i).getGridIds());
 				list.add(subtask);
 			}
 	
@@ -174,9 +178,13 @@ public class SubtaskController extends BaseController {
 				subtask.put("geometry", subtaskList.get(i).getGeometry());
 				subtask.put("stage", subtaskList.get(i).getStage());
 				subtask.put("type", subtaskList.get(i).getType());
+				subtask.put("status", subtaskList.get(i).getStatus());
+				subtask.put("ExeUserId", subtaskList.get(i).getExeUserId());
 				subtask.put("planStartDate", DateUtils.dateToString(subtaskList.get(i).getPlanStartDate()));
 				subtask.put("planEndDate", DateUtils.dateToString(subtaskList.get(i).getPlanEndDate()));
 				subtask.put("descp", subtaskList.get(i).getDescp());
+				subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+				
 				if (subtaskList.get(i).getBlock()!=null && StringUtils.isNotEmpty(subtaskList.get(i).getBlock().toString())){
 					subtask.put("blockId", subtaskList.get(i).getBlock().getBlockId());
 					subtask.put("blockName", subtaskList.get(i).getBlock().getBlockName());
@@ -195,15 +203,9 @@ public class SubtaskController extends BaseController {
 					subtask.put("taskId", subtaskList.get(i).getTask().getTaskId());
 					subtask.put("taskDescp", subtaskList.get(i).getTask().getDescp());
 					subtask.put("taskName", subtaskList.get(i).getTask().getName());
-					if(0 == bean.getStage()){
-						subtask.put("TaskCollectPlanStartDate", subtaskList.get(i).getTask().getCollectPlanStartDate());
-						subtask.put("TaskCollectPlanEndDate", subtaskList.get(i).getTask().getCollectPlanEndDate());
-					}else if(1 == bean.getStage()){
-						subtask.put("TaskDayEditPlanStartDate", subtaskList.get(i).getTask().getDayEditPlanStartDate());
-						subtask.put("TaskDayEditPlanEndDate", subtaskList.get(i).getTask().getDayEditPlanEndDate());
-					}else if(2 == bean.getStage()){
-						subtask.put("TaskCMonthEditPlanStartDate", subtaskList.get(i).getTask().getCMonthEditPlanStartDate());
-						subtask.put("TaskCMonthEditPlanEndDate", subtaskList.get(i).getTask().getCMonthEditPlanEndDate());
+					if(2 == bean.getStage()){
+						subtask.put("TaskCMonthEditPlanStartDate", subtaskList.get(i).getTask().getMonthEditPlanStartDate());
+						subtask.put("TaskCMonthEditPlanEndDate", subtaskList.get(i).getTask().getMonthEditPlanEndDate());
 					}
 				}
 				list.add(subtask);

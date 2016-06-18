@@ -226,15 +226,15 @@ public class RegionService {
 		}
 
 	}
-
-	public List<Region> list(JSONObject json) throws ServiceException {
+	public List<Region> list() throws Exception{
+		return list(null);
+	}
+	public List<Region> list(Region bean) throws ServiceException {
 		Connection conn = null;
 		try {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 
-			JSONObject obj = JSONObject.fromObject(json);
-			Region bean = (Region) JSONObject.toBean(obj, Region.class);
 			String selectSql = "select * from Region where 1=1 ";
 			List<Object> values = new ArrayList();
 			if (bean != null && bean.getRegionId() != null

@@ -11,7 +11,7 @@ import net.sf.json.processors.JsonValueProcessor;
 
 public class DateJsonValueProcessor implements JsonValueProcessor{
 
-	public static final String Default_DATE_PATTERN ="yyyy-MM-dd HH:mm:ss";  
+	public static final String Default_DATE_PATTERN ="yyyyMMdd";  
     private DateFormat dateFormat ;  
     public DateJsonValueProcessor(String datePattern){  
         try{  

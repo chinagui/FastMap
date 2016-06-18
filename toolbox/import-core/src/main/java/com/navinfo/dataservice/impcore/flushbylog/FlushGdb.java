@@ -3,35 +3,26 @@ package com.navinfo.dataservice.impcore.flushbylog;
 import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
-import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
-import oracle.sql.STRUCT;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.api.datahub.model.DbServer;
 import com.navinfo.dataservice.api.edit.iface.DatalockApi;
-import com.navinfo.dataservice.api.edit.model.FmMesh4Lock;
+import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.impcore.exception.LockException;
-import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.dataservice.impcore.commit.AllFeatureLogFlusher;
 
 public class FlushGdb {
 
@@ -64,51 +55,12 @@ public class FlushGdb {
 	 * @return
 	 */
 	public static FlushResult copXcopyHistory(String[] args) {
-		FlushResult result = new FlushResult();
-
-		try {
-			result = flushByGrids(args);
-
-			sourceConn.commit();
-
-			destConn.commit();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			try {
-				sourceConn.rollback();
-
-				destConn.rollback();
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-		}
-
-		return result;
+		return flushByGrids(args);
 	}
 
 	public static FlushResult fmgdb2gdbg(String[] args) {
 
-		FlushResult result = new FlushResult();
-		try {
-			result = flushAll(args);
-
-			sourceConn.commit();
-
-			destConn.commit();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			try {
-				sourceConn.rollback();
-
-				destConn.rollback();
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-		}
-
-		return result;
+		return flushAll(args);
 	}
 
 	/**
@@ -118,26 +70,8 @@ public class FlushGdb {
 	 */
 	public static FlushResult prjMeshCommit(String[] args) {
 
-		FlushResult result = new FlushResult();
-		try {
-			result = flushByGrids(args);
+		return flushByGrids(args);
 
-			sourceConn.commit();
-
-			destConn.commit();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			try {
-				sourceConn.rollback();
-
-				destConn.rollback();
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-		}
-
-		return result;
 	}
 
 	/**
@@ -181,7 +115,7 @@ public class FlushGdb {
 			int prjId = Integer.parseInt(props.getProperty("project_id"));
 			
 			DatalockApi datalock = (DatalockApi)ApplicationContextUtil.getBean("datalockApi");
-			datalock.lock(prjId, userId, setMesh, FmMesh4Lock.TYPE_GIVE_BACK);
+			datalock.lock(prjId, userId, setMesh, FmEditLock.TYPE_GIVE_BACK);
 
 			logDetailQuery.append(" and mesh_id in (");
 
@@ -205,7 +139,7 @@ public class FlushGdb {
 
 			destConn.commit();
 
-			datalock.unlock(prjId, setMesh, FmMesh4Lock.TYPE_GIVE_BACK);
+			datalock.unlock(prjId, setMesh, FmEditLock.TYPE_GIVE_BACK);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -225,225 +159,81 @@ public class FlushGdb {
 		return flushResult;
 
 	}
-	private static String createTempTable()throws SQLException{
-		QueryRunner run = new QueryRunner();
-		StringBuilder sb = new StringBuilder();
-		String tempTable = "TEMP_LOG_OP_"+new Random().nextInt(1000000);
-		sb.append("CREATE TABLE ");
-		sb.append(tempTable);
-		sb.append("(OP_ID RAW(16),OP_DT TIMESTAMP)");
-		run.execute(sourceConn, sb.toString());
-		return tempTable;
-	}
-	private static void dropTempTable(String tempTable){
-		//
-	}
-	private static int prepareLog(String stopTime,List<Integer> grids,String tempTable)throws SQLException{
-		QueryRunner run = new QueryRunner();
-		StringBuilder sb = new StringBuilder();
-		sb.append("INSERT INTO ");
-		sb.append(tempTable);
-		sb.append(" SELECT DISTINCT P.OP_ID,P.OP_DT FROM LOG_OPERATION P,LOG_DETAIL L,LOG_DETAIL_GRID T WHERE P.OP_ID=L.OP_ID AND L.ROW_ID=T.LOG_ROW_ID AND P.COM_STA = 0");
-		if(StringUtils.isNotEmpty(stopTime)){
-			sb.append(" AND P.OP_DT<=TO_DATE('");
-			sb.append(stopTime+ "','yyyymmddhh24miss')"); 
-		}
-		if(grids!=null&&grids.size()>0){
-			sb.append(" AND T.GRID_ID IN (");
-			sb.append(StringUtils.join(grids, ","));
-			sb.append(")");
-		}
-		return run.update(sourceConn, sb.toString());
-	}
-	private static int extendLogByRowId(String tempTable)throws SQLException{
-		QueryRunner run = new QueryRunner();
-		StringBuilder sb = new StringBuilder();
-		sb.append("MERGE INTO ");
-		sb.append(tempTable);
-		sb.append(" T USING (SELECT P.OP_ID,P.OP_DT FROM LOG_OPERATION P,LOG_DETAIL L WHERE EXISTS (SELECT 1 FROM LOG_DETAIL L1,");
-		sb.append(tempTable);
-		sb.append(" T1 WHERE L1.OP_ID=T1.OP_ID AND L1.ROW_ID=L.ROW_ID AND P.OP_DT<=T1.OP_DT) AND P.OP_ID=L.OP_ID AND P.COM_STA=0) TP ON (T.OP_ID=TP.OP_ID) WHEN NOT MATCHED THEN INSERT VALUES (TP.OP_ID,TP.OP_DT)");
-		int result = run.update(sourceConn, sb.toString());
-		if(result>0){
-			return result+extendLogByRowId(tempTable);
-		}
-		return result;
-	}
-	private static void lockPreparedLog(String tempTable,int rowCount)throws LockException,SQLException{
-		QueryRunner run = new QueryRunner();
-		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE LOG_OPERATION L SET L.LOCK_STA=1 WHERE EXISTS (SELECT 1 FROM ");
-		sb.append(tempTable);
-		sb.append(" T WHERE L.OP_ID=T.OP_ID) AND L.LOCK_STA=0");
-		int result = run.update(sourceConn, sb.toString());
-		if(result<rowCount){
-			throw new LockException("部分履历已经被其他回库操作锁定,请稍候再试。");
-		}
-	}
-	private static void unlockPreparedLog(String tempTable){
-		try{
-			QueryRunner run = new QueryRunner();
-			StringBuilder sb = new StringBuilder();
-			sb.append("UPDATE LOG_OPERATION L SET L.LOCK_STA=0 WHERE EXISTS (SELECT 1 FROM ");
-			sb.append(tempTable);
-			sb.append(" T WHERE L.OP_ID=T.OP_ID)");
-			run.update(sourceConn, sb.toString());
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
-	private static String prepareAndLockLog(String tempTable,String stopTime,List<Integer> grids)throws LockException{
-		//
-		//Set<String> logOp
-		try{
-			int logOperationCount = 0;
-			//2.select by conditions
-			logOperationCount+=prepareLog(stopTime,grids,tempTable);
-			//3.
-			logOperationCount+=extendLogByRowId(tempTable);
-			lockPreparedLog(tempTable,logOperationCount);
-			sourceConn.commit();
-			return tempTable;
-		}catch(LockException e){
-			throw e;
-		}
-		catch(SQLException e){
-			throw new LockException("锁定要准备回库的履历时出现错误:"+e.getMessage(),e);
-		}
-	}
-	private static String prepareAndLockLog(String tempTable,String stopTime)throws LockException{
-		//
-		//Set<String> logOp
-		try{
-			int logOperationCount = 0;
-			//select by conditions
-			logOperationCount+=prepareLog(stopTime,null,tempTable);
-			//全部回只是少了一步扩履历步骤
-			//锁定
-			lockPreparedLog(tempTable,logOperationCount);
-			sourceConn.commit();
-			return tempTable;
-		}catch(LockException e){
-			throw e;
-		}
-		catch(SQLException e){
-			throw new LockException("锁定要准备回库的履历时出现错误:"+e.getMessage(),e);
-		}
-	}
+	
+	
 
 	public static FlushResult flushByGrids(String[] args) {
-		FlushResult flushResult = new FlushResult();
-		Scanner scanner = null;
 		try {
-
+			String configPropFile = args[0];
+			String gridFile = args[1];
 			props = new Properties();
-
-			props.load(new FileInputStream(args[0]));
-
-			String stopTime = props.getProperty("stopTime");
-
-			scanner = new Scanner(new FileInputStream(args[1]));
-
-			List<Integer> grids = new ArrayList<Integer>();
-			while (scanner.hasNextLine()) {
-				grids.add(Integer.parseInt(scanner.nextLine()));
-			}
-			flushResult= exeFlushByGrids(grids,stopTime);
-			
+			props.load(new FileInputStream(configPropFile));			
+			DbInfo srcDbInfo = genDbInfo(
+					props.getProperty("sourceDBUsername"),
+					props.getProperty("sourceDBPassword"),
+					props.getProperty("sourceDBIp")
+					);
+			DbInfo targetDbInfo = genDbInfo(
+					props.getProperty("destDBUsername"),
+					props.getProperty("destDBPassword"),
+					props.getProperty("destDBIp")
+					);
+			LogFlusher flusher = new AllFeatureLogFlusher(
+					Integer.valueOf(props.getProperty("regionId")).intValue(),
+					srcDbInfo, 
+					targetDbInfo, 
+					extraceGridFromInFile(gridFile), 
+					props.getProperty("stopTime"));
+			return flusher.perform();
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			try {
-				sourceConn.rollback();
-
-				destConn.rollback();
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-			
-		}finally{
-			if(scanner!=null)scanner.close();
-			
 		}
+		return null;
 
-		return flushResult;
-	}
-	
-	private static FlushResult exeFlushByGrids(List<Integer> grids,String stopTime ) throws Exception{
-		FlushResult flushResult = new FlushResult();
-		String tempTable = null;
-		try {
-			init();
-			tempTable= createTempTable();
-			prepareAndLockLog(tempTable, stopTime, grids);
-			String logQuerySql = "SELECT L.* FROM LOG_DETAIL L," + tempTable
-					+ " T WHERE L.OP_ID=T.OP_ID ORDER BY T.OP_DT";
-			if (flushData(flushResult, logQuerySql)) {
-				moveLog(flushResult, tempTable);
-				updateLogCommitStatus(tempTable);
-				flushResult.setResultMsg("Success");
-			} else {
-				flushResult.setResultMsg("Fail");
-				throw new Exception("刷数据失败。");
-			}
-		} catch (Exception e) {
-			if(StringUtils.isNotEmpty(tempTable)){
-				unlockPreparedLog(tempTable);
-			}
-			throw e ;
-		}finally{
-			dropTempTable(tempTable);
-		}
-		return flushResult;
-		
 	}
 
+	/**
+	 * @param args 
+	 * 第一个参数：properties文件所在的路径。properties文件规格如下
+	 * sourceDBUsername=
+	 * sourceDBPassword=
+	 * sourceDBIp=
+	 * destDBUsername=
+	 * destDBPassword=
+	 * destDBIp=
+	 * regionId=
+	 * stopTime= 格式为yyyymmddhhMMss 
+	 * @return
+	 */
 	public static FlushResult flushAll(String[] args) {
-
-		FlushResult flushResult = new FlushResult();
-		String tempTable = null;
 		try {
-
+			String configPropFile = args[0];
 			props = new Properties();
-
-			props.load(new FileInputStream(args[0]));
-
-			String stopTime = props.getProperty("stopTime");
-
-			init();//初始化源数据库、目标数据库的连接
-			tempTable = createTempTable();
-			prepareAndLockLog(tempTable,stopTime);
-
-			String logQuerySql = "SELECT L.* FROM LOG_DETAIL L,"+tempTable+" T WHERE L.OP_ID=T.OP_ID ORDER BY T.OP_DT";
-
-			if(flushData(flushResult,logQuerySql)){
-
-				moveLog(flushResult,tempTable);
-
-				updateLogCommitStatus(tempTable);
-				flushResult.setResultMsg("Success");
-			}else{
-				flushResult.setResultMsg("Fail");
-				throw new Exception("刷数据失败。");
-			}
+			props.load(new FileInputStream(configPropFile));			
+			DbInfo srcDbInfo = genDbInfo(
+					props.getProperty("sourceDBUsername"),
+					props.getProperty("sourceDBPassword"),
+					props.getProperty("sourceDBIp")
+					);
+			DbInfo targetDbInfo = genDbInfo(
+					props.getProperty("destDBUsername"),
+					props.getProperty("destDBPassword"),
+					props.getProperty("destDBIp")
+					);
+			LogFlusher flusher = new AllFeatureLogFlusher(
+					Integer.valueOf(props.getProperty("regionId")).intValue(),
+					srcDbInfo, 
+					targetDbInfo, 
+					null, 
+					props.getProperty("stopTime")
+					);
+			return flusher.perform();
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			try {
-				sourceConn.rollback();
-
-				destConn.rollback();
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-			if(StringUtils.isNotEmpty(tempTable)){
-				unlockPreparedLog(tempTable);
-			}
-		}finally{
-			dropTempTable(tempTable);
 		}
-
-		return flushResult;
+		return null;
 	}
 
 	private static void init() throws SQLException {
@@ -464,7 +254,37 @@ public class FlushGdb {
 
 		destConn.setAutoCommit(false);
 	}
+	private static List<Integer> extraceGridFromInFile(String inFile) throws Exception {
+		if (StringUtils.isEmpty(inFile)){
+			return null;
+		}
+		Scanner scanner = null;
+		FileInputStream gridFile =null; 
+		try{
+			gridFile = new FileInputStream(inFile);		
+			List<Integer> grids = new ArrayList<Integer>();
+			scanner = new Scanner(gridFile);
+			while (scanner.hasNextLine()) {
+				grids.add(Integer.parseInt(scanner.nextLine()));
+			}
+			return grids;
+		}finally{
+			org.apache.commons.io.IOUtils.closeQuietly(gridFile);
+			if(scanner!=null)scanner.close();
+		}
+	}
 
+	private static DbInfo genDbInfo(String dbUserName,String dbPwd,String ip) {
+		DbInfo srcDbInfo = new DbInfo();
+		srcDbInfo.setDbUserName(dbUserName);
+		srcDbInfo.setDbUserPasswd(dbPwd);
+		DbServer dbServer =new DbServer();
+		dbServer.setIp(ip);
+		dbServer.setPort(1521);
+		srcDbInfo.setDbName("orcl");
+		srcDbInfo.setDbServer(dbServer );
+		return srcDbInfo;
+	}
 	private static boolean flushData(FlushResult flushResult,String logQuerySql) throws Exception {
 
 		Statement sourceStmt = sourceConn.createStatement();
@@ -472,45 +292,21 @@ public class FlushGdb {
 		ResultSet rs = sourceStmt.executeQuery(logQuerySql);
 
 		rs.setFetchSize(1000);
-
+		LogWriter logWriter = new LogWriter(destConn);
 		while (rs.next()) {
 
 			flushResult.addTotal();
 
-			int op_tp = rs.getInt("op_tp");
-
+			int opType = rs.getInt("op_tp");
 			String rowId = rs.getString("row_id");
+			String opId = rs.getString("op_id");
+			String newValue = rs.getString("new");
+			String tableName = rs.getString("tb_nm");
+			String tableRowId = rs.getString("tb_row_id");
 
-			if (op_tp == 1) {// 新增
-
-				flushResult.addInsertTotal();
-
-				if (insertData(rs) == 0) {
-					flushResult.addInsertFailed();
-
-					flushResult.addInsertFailedRowId(rowId);
-				}
-
-			} else if (op_tp == 3) { // 修改
-
-				flushResult.addUpdateTotal();
-
-				if (updateData(rs) == 0) {
-					flushResult.addUpdateFailed();
-
-					flushResult.addUpdateFailedRowId(rowId);
-				}
-
-			} else if (op_tp == 2) { // 删除
-
-				flushResult.addDeleteTotal();
-
-				if (deleteData(rs) == 0) {
-					flushResult.addDeleteFailed();
-
-					flushResult.addDeleteFailedRowId(rowId);
-				}
-			}
+			EditLog editLog = new EditLog(opType, rowId, opId, rowId,newValue, tableName, tableRowId);
+			ILogWriteListener listener = new LogWriteListener(flushResult);
+			logWriter.write(editLog , listener );
 
 		}
 		if(flushResult.getFailedTotal()>0){
@@ -519,318 +315,9 @@ public class FlushGdb {
 		return true;
 	}
 
-	private static void moveLog(FlushResult flushResult, String tempTable) throws Exception {
 
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyymmdd");
-
-		String dbLinkName = "dblink_" + sdf.format(new Date());
-
-		String sqlCreateDblink = "create database link "
-				+ dbLinkName
-				+ "  connect to "
-				+ props.getProperty("destDBUsername")
-				+ " identified by "
-				+ props.getProperty("destDBPassword")
-				+ "  using '(DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = "
-				+ props.getProperty("destDBIp")
-				+ " )(PORT = 1521 )))(CONNECT_DATA = (SERVICE_NAME = orcl )))'";
-
-		Statement stmt = sourceConn.createStatement();
-
-		stmt.execute(sqlCreateDblink);
-		
-		String moveSql = "INSERT INTO LOG_OPERATION@"+dbLinkName
-				+"(OP_ID,US_ID,OP_CMD,OP_DT) SELECT L.OP_ID,L.US_ID,L.OP_CMD,L.OP_DT FROM LOG_OPERATION L,"+tempTable+" T WHERE L.OP_ID=T.OP_ID";
-		flushResult.setLogOpMoved(stmt.executeUpdate(moveSql));
-		
-		moveSql = "insert into log_detail@" + dbLinkName
-				+ " select l.* from log_detail l,"+tempTable+" t where l.op_id=t.op_id";
-		flushResult.setLogDetailMoved(stmt.executeUpdate(moveSql));
-		
-		moveSql = "INSERT INTO LOG_DETAIL_GRID@"+dbLinkName
-				+" SELECT P.* FROM LOG_DETAIL_GRID P,LOG_DETAIL L,"+tempTable+" T WHERE L.OP_ID=T.OP_ID AND L.ROW_ID=P.LOG_ROW_ID";
-		flushResult.setLogDetailGridMoved(stmt.executeUpdate(moveSql));		
-
-		String sqlDropDblink = "drop database link " + dbLinkName;
-
-		stmt.execute(sqlDropDblink);
-
-	}
-
-	private static void updateLogCommitStatus(String tempTable) throws Exception {
-
-		Statement stmt = sourceConn.createStatement();
-
-		String sql = "update LOG_OPERATION set com_dt = sysdate,com_sta=1,LOCK_STA=0 where OP_ID IN (SELECT OP_ID FROM "+tempTable+")";
-		stmt.execute(sql);
-
-		stmt.close();
-	}
-
-	private static int insertData(ResultSet rs) {
-
-		StringBuilder sb = new StringBuilder("insert into ");
-
-		PreparedStatement pstmt = null;
-
-		try {
-			String logRowId = rs.getString("row_id");
-
-			String newValue = rs.getString("new");
-
-			JSONObject json = JSONObject.fromObject(newValue);
-			
-			String tableName = rs.getString("tb_nm").toLowerCase();
-
-			sb.append(tableName);
-
-			sb.append(" (");
-
-			Iterator<String> it = json.keys();
-
-			int keySize = json.keySet().size();
-
-			int tmpPos = 0;
-
-			while (it.hasNext()) {
-				if (++tmpPos < keySize) {
-					sb.append(it.next());
-
-					sb.append(",");
-				} else {
-					sb.append(it.next());
-				}
-			}
-
-			sb.append(",u_record) ");
-
-			sb.append("values(");
-
-			it = json.keys();
-
-			tmpPos = 0;
-
-			while (it.hasNext()) {
-				String keyName = it.next();
-
-				sb.append(":");
-
-				sb.append(++tmpPos);
-
-				if (tmpPos < keySize) {
-
-					sb.append(",");
-				}
-			}
-
-			sb.append(",1)");
-
-			it = json.keys();
-
-			tmpPos = 0;
-
-			pstmt = destConn.prepareStatement(sb.toString());
-
-			while (it.hasNext()) {
-				tmpPos++;
-
-				String keyName = it.next();
-
-				Object valObj = json.get(keyName);
-
-				if (!"geometry".equalsIgnoreCase(keyName)) {
-					
-					if(tableName.equals("ck_exception")){
-						
-						if("create_date".equalsIgnoreCase(keyName) || "update_date".equalsIgnoreCase(keyName))
-						{
-							Timestamp ts = new Timestamp( DateUtils.stringToLong(valObj.toString(), "yyyy-MM-dd HH:mm:ss"));
-									
-							pstmt.setTimestamp(tmpPos, ts);
-						}
-						else{
-							pstmt.setObject(tmpPos, valObj);
-						}
-					}
-					else{
-						pstmt.setObject(tmpPos, valObj);
-					}
-				} else {
-					
-					if(tableName.equalsIgnoreCase("ck_exception")){
-						pstmt.setObject(tmpPos, valObj);
-					}
-					else{
-						JGeometry jg = wktUtil.toJGeometry(valObj.toString()
-								.getBytes());
 	
-						jg.setSRID(8307);
+
 	
-						STRUCT s = JGeometry.store(jg, destConn);
-	
-						pstmt.setObject(tmpPos, s);
-					}
-				}
-
-			}
-
-			int result = pstmt.executeUpdate();
-
-			logDetails.add("hextoraw('"+logRowId+"')");
-
-			return result;
-		} catch (Exception e) {
-			System.out.println(sb.toString());
-			e.printStackTrace();
-
-			return 0;
-		} finally {
-			try {
-				pstmt.close();
-			} catch (Exception e) {
-
-			}
-		}
-	}
-
-	private static int updateData(ResultSet rs) {
-
-		PreparedStatement pstmt = null;
-
-		StringBuilder sb = new StringBuilder("update ");
-
-		try {
-			String logRowId = rs.getString("row_id");
-
-			String newValue = rs.getString("new");
-
-			JSONObject json = JSONObject.fromObject(newValue);
-			
-			String tableName = rs.getString("tb_nm").toLowerCase();
-
-			sb.append(tableName);
-
-			sb.append(" set ");
-
-			Iterator<String> it = json.keys();
-
-			int keySize = json.keySet().size();
-
-			int tmpPos = 0;
-
-			while (it.hasNext()) {
-				String keyName = it.next();
-
-				Object valObj = json.get(keyName);
-
-				sb.append(keyName);
-
-				sb.append("=:");
-
-				sb.append(++tmpPos);
-
-				if (tmpPos < keySize) {
-
-					sb.append(",");
-				}
-			}
-
-			sb.append(",u_record=3 where row_id = hextoraw('");
-
-			sb.append(rs.getString("tb_row_id"));
-
-			sb.append("')");
-
-			it = json.keys();
-
-			tmpPos = 0;
-
-			pstmt = destConn.prepareStatement(sb.toString());
-
-			while (it.hasNext()) {
-				tmpPos++;
-
-				String keyName = it.next();
-
-				Object valObj = json.get(keyName);
-
-				if (!"geometry".equalsIgnoreCase(keyName)) {
-
-					pstmt.setObject(tmpPos, valObj);
-				} else {
-					
-					if(tableName.equalsIgnoreCase("ck_exception")){
-						pstmt.setObject(tmpPos, valObj);
-					}
-					else{
-						JGeometry jg = wktUtil.toJGeometry(valObj.toString()
-								.getBytes());
-	
-						jg.setSRID(8307);
-	
-						STRUCT s = JGeometry.store(jg, destConn);
-	
-						pstmt.setObject(tmpPos, s);
-					}
-				}
-
-			}
-
-			int result = pstmt.executeUpdate();
-
-			logDetails.add("hextoraw('"+logRowId+"')");
-
-			return result;
-
-		} catch (Exception e) {
-			System.out.println(sb.toString());
-			e.printStackTrace();
-
-			return 0;
-		} finally {
-			try {
-				pstmt.close();
-			} catch (Exception e) {
-
-			}
-		}
-	}
-
-	private static int deleteData(ResultSet rs) {
-
-		PreparedStatement pstmt = null;
-
-		StringBuilder sb = new StringBuilder("update ");
-
-		try {
-
-			String logRowId = rs.getString("row_id");
-
-			String sql = "update " + rs.getString("tb_nm")
-					+ " set u_record = 2 where row_id =hextoraw('"
-					+ rs.getString("tb_row_id") + "')";
-
-			pstmt = destConn.prepareStatement(sql);
-
-			int result = pstmt.executeUpdate();
-
-			logDetails.add("hextoraw('"+logRowId+"')");
-
-			return result;
-
-		} catch (Exception e) {
-			System.out.println(sb.toString());
-			e.printStackTrace();
-
-			return 0;
-		} finally {
-			try {
-				pstmt.close();
-			} catch (Exception e) {
-
-			}
-		}
-
-	}
 
 }

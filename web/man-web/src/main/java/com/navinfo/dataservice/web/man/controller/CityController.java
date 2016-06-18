@@ -17,6 +17,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.engine.man.city.CityService;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -89,8 +90,6 @@ public class CityController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			final String wkt = dataJson.getString("wkt");
-			int planningStatus = dataJson.getInt("planningStatus");
 			List<HashMap> data = service.queryListByWkt(dataJson);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {

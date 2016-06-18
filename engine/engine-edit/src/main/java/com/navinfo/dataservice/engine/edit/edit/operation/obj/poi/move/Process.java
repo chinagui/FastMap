@@ -3,7 +3,7 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.move;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
-import com.navinfo.dataservice.dao.glm.selector.ad.zone.AdAdminSelector;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;

@@ -30,7 +30,7 @@ public class RwFeature implements IObj {
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
-	private List<IRow> rwLinks = new ArrayList<IRow>();
+	private List<IRow> links = new ArrayList<IRow>();
 
 	public Map<String, RwLink> rwLinkMap = new HashMap<String, RwLink>();
 
@@ -45,13 +45,13 @@ public class RwFeature implements IObj {
 	public String getRowId() {
 		return rowId;
 	}
-
-	public List<IRow> getRwLinks() {
-		return rwLinks;
+	
+	public List<IRow> getLinks() {
+		return links;
 	}
 
-	public void setRwLinks(List<IRow> rwLinks) {
-		this.rwLinks = rwLinks;
+	public void setLinks(List<IRow> links) {
+		this.links = links;
 	}
 
 	@Override
@@ -91,7 +91,7 @@ public class RwFeature implements IObj {
 		
 		this.setRowId(sourceLink.getRowId());
 		
-		List<IRow> rwLinkSources = sourceLink.getRwLinks();
+		List<IRow> rwLinkSources = sourceLink.getLinks();
 
 		List<IRow> rwLinks = new ArrayList<IRow>();
 
@@ -104,7 +104,7 @@ public class RwFeature implements IObj {
 			rwLinks.add(f);
 		}
 		
-		this.setRwLinks(rwLinks);
+		this.setLinks(rwLinks);
 	}
 
 	@Override
@@ -131,7 +131,7 @@ public class RwFeature implements IObj {
 	public List<List<IRow>> children() {
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
 
-		children.add(rwLinks);
+		children.add(links);
 
 		return children;
 	}
@@ -216,8 +216,8 @@ public class RwFeature implements IObj {
 
 			if (json.get(key) instanceof JSONArray) {
 				switch (key) {
-				case "rwLinks":
-					rwLinks.clear();
+				case "links":
+					links.clear();
 
 					ja = json.getJSONArray(key);
 
@@ -228,7 +228,7 @@ public class RwFeature implements IObj {
 
 						row.Unserialize(jo);
 
-						rwLinks.add(row);
+						links.add(row);
 					}
 
 					break;

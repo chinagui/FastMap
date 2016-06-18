@@ -122,33 +122,27 @@ public class SubtaskService {
 	/*
 	 * 根据几何范围,任务类型，作业阶段查询任务列表
 	 * 参数1：几何范围，String wkt
-	 * 参数1：任务类型，ArrayList<Integer> types
-	 * 参数1：作业阶段，int stage
 	 */
-//	public List<Subtask> listByWkt(String wkt,ArrayList<Integer> types, int stage)throws ServiceException{
 	public List<Subtask> listByWkt(String wkt)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();	
-
-//			String type = types.toString();
-//			type = type.replace("[", "(");
-//			type = type.replace("]", ")");
 			
 			String querySql = "select "
 					+ "s.subtask_id"
 					+ ",s.name"
 					+ ",s.type"
 					+ ",s.stage"
+					+ ",s.status"
 					+ ", TO_CHAR(s.geometry.get_wkt()) as geometry"
 					+ ",s.descp"
 					+ ",listagg(sgm.GRID_ID, ',') within group(order by s.SUBTASK_ID) as GRID_ID"
 					+ " from subtask s ,subtask_grid_mapping sgm "
 					+ "where s.subtask_id = sgm.subtask_id "
 					+ " and SDO_GEOM.RELATE(geometry, 'ANYINTERACT', " + "sdo_geometry(" +  "'" + wkt + "',8307)" + ", 0.000005) ='TRUE'"
-					+ "group by s.subtask_id, s.name, s.type, s.stage, s.descp,TO_CHAR(s.geometry.get_wkt())";
+					+ "group by s.subtask_id, s.name, s.type, s.stage,s.status, s.descp,TO_CHAR(s.geometry.get_wkt())";
 		
 			ResultSetHandler<List<Subtask>> rsHandler = new ResultSetHandler<List<Subtask>>(){
 				public List<Subtask> handle(ResultSet rs) throws SQLException {
@@ -161,6 +155,7 @@ public class SubtaskService {
 						subtask.setName(rs.getString("name"));
 						subtask.setType(rs.getInt("type"));
 						subtask.setStage(rs.getInt("stage"));
+						subtask.setStatus(rs.getInt("status"));
 						String gridIds = rs.getString("GRID_ID");
 						String[] gridIdList = gridIds.split(",");
 						subtask.setGridIds(gridIdList);
@@ -215,6 +210,7 @@ public class SubtaskService {
 			
 			String selectSql = "select distinct s.SUBTASK_ID"
 					+ ",s.STAGE"
+					+ ",s.CREATE_USER_ID"
 					+ ",s.TYPE"
 					+ ",s.PLAN_START_DATE"
 					+ ",s.PLAN_END_DATE"
@@ -275,6 +271,7 @@ public class SubtaskService {
 						Subtask subtask = new Subtask();
 						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
 						subtask.setName(rs.getString("NAME"));
+						subtask.setCreateUserId((rs.getInt("CREATE_USER_ID")));					
 						subtask.setStatus(rs.getInt("STATUS"));
 						subtask.setGeometry(rs.getString("GEOMETRY"));
 						subtask.setStage(rs.getInt("STAGE"));

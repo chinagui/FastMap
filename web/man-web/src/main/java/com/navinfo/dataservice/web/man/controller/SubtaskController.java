@@ -83,7 +83,7 @@ public class SubtaskController extends BaseController {
 	
 	
 	/*
-	 * 根据几何范围,任务类型，作业阶段查询任务列表
+	 * 根据几何范围查询任务列表
 	 */
 	@RequestMapping(value = "/subtask/listByWkt")
 	public ModelAndView listByWkt(HttpServletRequest request){
@@ -100,12 +100,9 @@ public class SubtaskController extends BaseController {
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
 			
-			//获取几何范围,任务类型，作业阶段
-//			ArrayList<Integer> types = (ArrayList<Integer>)JSONArray.toList(dataJson.getJSONArray("types"),int.class);
-//			int stage = dataJson.getInt("stage");
+			//获取几何范围
 			String wkt = dataJson.getString("wkt");
 			
-//			List<Subtask> subtaskList = service.listByWkt(wkt,types,stage);
 			List<Subtask> subtaskList = service.listByWkt(wkt);
 			
 			//根据需要的返回字段拼装结果
@@ -118,6 +115,7 @@ public class SubtaskController extends BaseController {
 				subtask.put("descp", subtaskList.get(i).getDescp());
 				subtask.put("name", subtaskList.get(i).getName());
 				subtask.put("stage", subtaskList.get(i).getStage());
+				subtask.put("status", subtaskList.get(i).getStatus());
 				subtask.put("type", subtaskList.get(i).getType());
 				subtask.put("gridIds", subtaskList.get(i).getGridIds());
 				list.add(subtask);
@@ -181,6 +179,7 @@ public class SubtaskController extends BaseController {
 				subtask.put("stage", subtaskList.get(i).getStage());
 				subtask.put("type", subtaskList.get(i).getType());
 				subtask.put("status", subtaskList.get(i).getStatus());
+				subtask.put("ExeUserId", subtaskList.get(i).getExeUserId());
 				subtask.put("planStartDate", DateUtils.dateToString(subtaskList.get(i).getPlanStartDate()));
 				subtask.put("planEndDate", DateUtils.dateToString(subtaskList.get(i).getPlanEndDate()));
 				subtask.put("descp", subtaskList.get(i).getDescp());

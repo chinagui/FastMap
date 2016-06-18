@@ -7,6 +7,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class FocusSelectorTest {
 	
@@ -37,10 +38,24 @@ public class FocusSelectorTest {
 	{
 		try {
 			ChainSelector selector = new ChainSelector();
+			
+			String kindCode =null;	
 
-			JSONArray jsonObject = selector.getChainByKindCode("210204");
-
-			System.out.println(jsonObject);
+			JSONObject data = selector.getChainByKindCode(kindCode);
+			
+			System.out.println(data);			
+			
+			kindCode ="210204";	
+			
+			data = selector.getChainByKindCode(kindCode);
+			
+			if(kindCode!=null&&data.has(kindCode))
+			{
+				JSONArray array = data.getJSONArray(kindCode);
+				
+				System.out.println(array);
+			}	
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

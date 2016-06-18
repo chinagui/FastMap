@@ -218,7 +218,7 @@ public class IxPoiIconOperator implements IOperator {
 
 		sb.append(ixPoiIcon.tableName());
 
-		sb.append("(rel_id, poiPid,iconName, geometry, manageCode, clientFlag, row_id,u_date,u_record) values (");
+		sb.append("(rel_id, poi_pid,icon_name, geometry, manage_code, client_flag, row_id,u_date,u_record) values (");
 
 		sb.append(ixPoiIcon.getPid());
 

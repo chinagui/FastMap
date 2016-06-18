@@ -196,7 +196,7 @@ public class IxPoiParentOperator implements IOperator {
 
 		sb.append(ixPoiParent.tableName());
 
-		sb.append("(group_id, parentPoiPid, tenantFlag, memo, row_id,u_date,u_record) values (");
+		sb.append("(group_id, parent_poi_pid, tenant_flag, memo, row_id,u_date,u_record) values (");
 
 		sb.append(ixPoiParent.getPid());
 

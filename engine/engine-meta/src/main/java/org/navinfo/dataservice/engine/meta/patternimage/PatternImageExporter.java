@@ -57,6 +57,10 @@ public class PatternImageExporter {
 
 				BLOB blob = (BLOB) resultSet.getBlob("file_content");
 
+				if(blob == null){
+					continue;
+				}
+				
 				InputStream is = blob.getBinaryStream();
 				int length = (int) blob.length();
 				byte[] content = new byte[length];

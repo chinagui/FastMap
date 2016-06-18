@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.datahub.model.DbServer;
+import com.navinfo.dataservice.api.datahub.model.DbServerType;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -44,15 +45,15 @@ public class DbService {
 	private DbService(){}
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	
-	protected String mainSql = "SELECT D.DB_ID,D.DB_NAME,D.DB_USER_NAME,D.DB_USER_PASSWD,D.DB_ROLE,D.BIZ_TYPE,D.TABLESPACE_NAME,D.GDB_VERSION,D.DB_STATUS,D.CREATE_TIME,D.DESCP,S.SERVER_ID,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT FROM DB_HUB D,DB_SERVER S ";
+	protected String mainSql = "SELECT D.DB_ID,D.DB_NAME,D.DB_USER_NAME,D.DB_USER_PASSWD,D.DB_ROLE,D.BIZ_TYPE,D.TABLESPACE_NAME,D.GDB_VERSION,D.DB_STATUS,D.CREATE_TIME,D.DESCP,S.SERVER_ID,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME FROM DB_HUB D,DB_SERVER S ";
 
-	public DbInfo createDb(String dbName,String userName,String userPasswd,String bizType,String descp,String gdbVersion,String refDbName,String refUserName,String refDbType)throws DataHubException{
+	public DbInfo createOracleDb(String userName,String userPasswd,String bizType,String descp,String gdbVersion,String refUserName,String refBizType)throws DataHubException{
 		String strategyType = null;
 		Map<String,String> strategyParam = new HashMap<String,String>();
-		if(StringUtils.isNotEmpty(refDbName)&&StringUtils.isNotEmpty(refDbType)){
+		if(StringUtils.isNotEmpty(refUserName)&&StringUtils.isNotEmpty(refBizType)){
 			strategyType = DbServerStrategy.USE_REF_DB;
-			strategyParam.put("refDbName", refDbName);
-			strategyParam.put("refDbType", refDbType);
+			strategyParam.put("refUserName", refUserName);
+			strategyParam.put("refBizType", refBizType);
 			log.debug("使用参考策略创建新库。");
 		}
 //		else if(StringUtils.isNotEmpty(provCode)){
@@ -65,24 +66,81 @@ public class DbService {
 			log.debug("使用随机策略创建新库。");
 		}
 		
-		return createDb(dbName,userName,userPasswd,bizType,descp, gdbVersion, strategyType, strategyParam);
+		return createDb(DbServerType.TYPE_ORACLE,null,userName,userPasswd,bizType,descp, gdbVersion, strategyType, strategyParam);
+	}
+	/**
+	 * 
+	 * @param serverType:必须
+	 * @param dbName：ORACLE类型不需要传，会从db所在服务器上取ServiceName，MONGO，MYSQL必传
+	 * @param userName：非必须，ORACLE类型会生成一个随机的用户名，MONGO,MYSQL,会使用管理原账户
+	 * @param userPasswd，非必须，同userName
+	 * @param bizType
+	 * @param descp
+	 * @param gdbVersion
+	 * @param refDbName
+	 * @param refUserName
+	 * @param refDbType
+	 * @return
+	 * @throws DataHubException
+	 */
+	public DbInfo createMongoDb(String dbName,String bizType,String descp,String gdbVersion,String refDbName,String refBizType)throws DataHubException{
+		String strategyType = null;
+		Map<String,String> strategyParam = new HashMap<String,String>();
+		if(StringUtils.isNotEmpty(refDbName)&&StringUtils.isNotEmpty(refBizType)){
+			strategyType = DbServerStrategy.USE_REF_DB;
+			strategyParam.put("refDbName", refDbName);
+			strategyParam.put("refBizType", refBizType);
+			log.debug("使用参考策略创建新库。");
+		}
+//		else if(StringUtils.isNotEmpty(provCode)){
+//			strategyType = DbServerStrategy.BY_PROVINCE;
+//			strategyParam.put("provinceCode", provCode);
+//		}
+		else{
+			//strategyType = DbServerStrategy.RANDOM;
+			strategyParam = null;
+			log.debug("使用随机策略创建新库。");
+		}
+		
+		return createDb(DbServerType.TYPE_MONGODB,dbName,null,null,bizType,descp, gdbVersion, strategyType, strategyParam);
+	}
+	public  DbInfo createDb(String serverType,String dbName,String userName,String userPasswd,String bizType,String descp,String gdbVersion,String refDbName,String refUserName,String refBizType)throws DataHubException{
+		if(DbServerType.TYPE_ORACLE.equals(serverType)){
+			return createOracleDb(userName,userPasswd, bizType, descp, gdbVersion,refUserName,refBizType);
+		}else if(DbServerType.TYPE_MONGODB.equals(serverType)){
+			return createMongoDb(dbName,bizType,descp,gdbVersion,refDbName,refBizType);
+		}else{
+			throw new DataHubException("暂不支持的库类型");
+		}
 	}
 	
-	private DbInfo createDb(String dbName,String userName,String userPasswd,String bizType,String descp,String gdbVersion,String strategyType,Map<String,String> strategyParamMap)throws DataHubException{
+	private DbInfo createDb(String serverType,String dbName,String userName,String userPasswd,String bizType,String descp,String gdbVersion,String strategyType,Map<String,String> strategyParamMap)throws DataHubException{
 		DbInfo db = null;
 		Connection conn = null;
 		int dbId = 0;
 		QueryRunner run = new QueryRunner();
 		try{
-			String checkSql = "select count(1) from db_hub where db_status>0 and db_name=? and db_user_name=? and biz_type=?";
+			String checkSql = null;
+			String checkName = null;
+			if(DbServerType.TYPE_ORACLE.equals(serverType)){
+				checkSql = "select count(1) from db_hub where db_status>0 and db_name=? and biz_type=?";
+				checkName = dbName;
+			}else{
+				checkSql = "select count(1) from db_hub where db_status>0 and db_user_name=? and db_user_name=? and biz_type=?";
+				checkName = userName;
+			}
+			
 			DbServer server = null;
 			synchronized(DbService.class){
 				conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-				if(StringUtils.isEmpty(userName)){
-					userName="RD_" + RandomUtil.nextString(10);
+				if(DbServerType.TYPE_ORACLE.equals(serverType)&&StringUtils.isEmpty(userName)){
+					userName="HUB_" + RandomUtil.nextString(10);
+					userPasswd = userName;
+				}else if(StringUtils.isEmpty(dbName)){
+					dbName = "HUB_" + RandomUtil.nextString(10);
 				}else{
 					//验证同类型是否已经存在
-					int count = run.queryForInt(conn, checkSql,dbName, userName,bizType);
+					int count = run.queryForInt(conn, checkSql,checkName,bizType);
 					if(count>0){
 						throw new DataHubException("数据库已经存在，不能重复创建。");
 					}
@@ -95,7 +153,7 @@ public class DbService {
 				//写入记录
 				String insSql = "insert into db_hub(db_id,db_name,db_user_name,db_user_passwd,db_role,biz_type,gdb_version,server_id,db_status,create_time,descp)" +
 						"values(DB_SEQ.nextval,?,?,?,0,?,?,?,1,sysdate,?)";
-				run.update(conn, insSql, dbName,userName,userName,bizType,gdbVersion,server.getSid(),descp);
+				run.update(conn, insSql, dbName,userName,userPasswd,bizType,gdbVersion,server.getSid(),descp);
 				conn.commit();
 			}
 			dbId = run.queryForInt(conn, "SELECT DB_SEQ.CURRVAL FROM DUAL");
@@ -132,14 +190,21 @@ public class DbService {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	public DbInfo getDbByName(String dbName,String dbType)throws DataHubException{
+	/**
+	 * DB_NAME和DB_USER_NAME都会查询，[D.DB_NAME=? OR D.DB_USER_NAME=?]
+	 * @param dbName
+	 * @param bizType
+	 * @return
+	 * @throws DataHubException
+	 */
+	public DbInfo getDbByName(String name,String bizType)throws DataHubException{
 		DbInfo db=null;
 		Connection conn = null;
 		try{
-			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND D.DB_NAME=? AND D.BIZ_TYPE=? AND D.DB_ROLE=0";
+			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND (D.DB_NAME=? OR D.DB_USER_NAME=?) AND D.BIZ_TYPE=? AND D.DB_ROLE=0";
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
-			db = run.query(conn,sql, new DbResultSetHandler(false),dbName,dbType);
+			db = run.query(conn,sql, new DbResultSetHandler(false),name,name,bizType);
 			
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -174,14 +239,20 @@ public class DbService {
 		}
 		return db;
 	}
-	public DbInfo getOnlyDbByName(String dbName)throws DataHubException{
+	/**
+	 * DB_NAME和DB_USER_NAME都会查询，[D.DB_NAME=? OR D.DB_USER_NAME=?]
+	 * @param name
+	 * @return
+	 * @throws DataHubException
+	 */
+	public DbInfo getOnlyDbByName(String name)throws DataHubException{
 		DbInfo db=null;
 		Connection conn = null;
 		try{
-			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND D.DB_NAME=? AND D.DB_ROLE=0";
+			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND (D.DB_NAME=? OR D.DB_USER_NAME=?) AND D.DB_ROLE=0";
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
-			db = run.query(conn,sql, new DbResultSetHandler(true),dbName);
+			db = run.query(conn,sql, new DbResultSetHandler(true),name,name);
 			
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -195,7 +266,7 @@ public class DbService {
 		}
 		return db;
 	}
-	public DbInfo getOnlyDbByType(String bizType)throws DataHubException{
+	public DbInfo getOnlyDbByBizType(String bizType)throws DataHubException{
 		DbInfo db=null;
 		Connection conn = null;
 		try{
@@ -217,7 +288,7 @@ public class DbService {
 		return db;
 	}
 	/**
-	 * 先用先用server_id和db_type查找，如果查不到，再只用server_id查找
+	 * 先用先用server_id和biz_type查找，如果查不到，再只用server_id查找
 	 * @param normalDb
 	 * @return
 	 * @throws DataHubException
@@ -253,8 +324,10 @@ public class DbService {
 //			System.out.println(conString);
 //			System.out.println(RandomUtil.nextString(8));
 			//DbInfo db = dbMan.createDb("TEMP_BJ_01", "prjRoad", "4TEST","240+");
-			DbInfo db = DbService.getInstance().getDbByName("TEMP_BJ_01","prjRoad");
+			DbInfo db = DbService.getInstance().createOracleDb(null, null, "copVersion", "descp", "250+", null, null);
 			System.out.println(db.getConnectParam());
+//			DbInfo su = DbService.getInstance().getSuperDb(db);
+//			System.out.println(su.toString());
 			
 		}catch(Exception e){
 			e.printStackTrace();
@@ -279,6 +352,7 @@ public class DbService {
 				 DbServer server = new DbServer(rs.getString("SERVER_TYPE")
 						 ,rs.getString("SERVER_IP"),rs.getInt("SERVER_PORT"));
 				 server.setSid(rs.getInt("SERVER_ID"));
+				 server.setServiceName(rs.getString("SERVICE_NAME"));
 				 db = DbFactory.getInstance()
 						 .newdb(rs.getInt("DB_ID"),rs.getString("DB_NAME")
 								 ,rs.getString("DB_USER_NAME"),rs.getString("DB_USER_PASSWD")

@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
 import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.jobframework.exception.JobException;
@@ -29,9 +30,13 @@ public class CreateDbJob extends AbstractJob {
 		CreateDbJobRequest req = (CreateDbJobRequest)request;
 		DbInfo db = null;
 		try{
-			db = DbService.getInstance().createDb(
-					req.getDbName(), req.getUserName(),req.getUserPasswd(),req.getBizType(),req.getDescp()
-					,req.getGdbVersion(),req.getRefDbName(),req.getRefUserName(),req.getRefBizType());
+			if(DbConnectConfig.TYPE_ORACLE.equals(req.getServerType())){
+				db = DbService.getInstance().createOracleDb(req.getUserName(),req.getUserPasswd(),req.getBizType(),req.getDescp()
+						,req.getGdbVersion(),req.getRefUserName(),req.getRefBizType());
+			}else{
+				db = DbService.getInstance().createMongoDb(req.getDbName(),req.getBizType(),req.getDescp()
+						,req.getGdbVersion(),req.getRefDbName(),req.getRefBizType());
+			}
 			Map<String,Object> data = new HashMap<String,Object>();
 			data.put("outDbId", db.getDbId());
 			super.response("创建库完成",data);

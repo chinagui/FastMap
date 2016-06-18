@@ -50,8 +50,8 @@ public class Exp2CopVersionScriptsInterface {
 			String allMeshesStr = null;
 			DbInfo db = DbService.getInstance().getDbById(Integer.valueOf(targetDbId));
 			OracleSchema schema = new OracleSchema(
-					MultiDataSourceFactory.createConnectConfig(db.getConnectParam()));
-			DbConnectConfig connConfig = MultiDataSourceFactory.createConnectConfig(db.getConnectParam()); 
+					DbConnectConfig.createConnectConfig(db.getConnectParam()));
+			DbConnectConfig connConfig = DbConnectConfig.createConnectConfig(db.getConnectParam()); 
 			
 			conn = schema.getDriverManagerDataSource().getConnection();
 			//计算扩圈，写m_mesh_type

@@ -17,7 +17,7 @@ public class MongoDbPhysicalCreator implements DbPhysicalCreator {
 	@Override
 	public void create(DbInfo db) throws DataHubException {
 		// do nothing
-
+		//记得如果userName为空，把管理员的用户名密码拿过来
 	}
 
 	/* (non-Javadoc)

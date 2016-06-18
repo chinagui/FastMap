@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.statics.roadcollect;
+package com.navinfo.dataservice.engine.statics.roaddaily;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -16,10 +16,10 @@ import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.StatInit;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 
-public class RoadCollectMain {
+public class RoadDailyMain {
 
 	private static Logger log = null;
-	private static final String col_name = "fm_stat_collect_road";
+	private static final String col_name = "fm_stat_daily_road";
 	private String db_name;
 	private String stat_date;
 	private String stat_time;
@@ -28,7 +28,7 @@ public class RoadCollectMain {
 	// 季度库
 	private String col_name_seasion_grid = "road_season_grid_stat";
 
-	public RoadCollectMain(String dbn, String stat_time) {
+	public RoadDailyMain(String dbn, String stat_time) {
 		this.db_name = dbn;
 		this.stat_date = stat_time.substring(0, 8);
 		this.stat_time = stat_time;
@@ -101,7 +101,7 @@ public class RoadCollectMain {
 	 * 多线程执行所有大区库的统计
 	 */
 	public void runStat() {
-		log = LogManager.getLogger(RoadCollectMain.class);
+		log = LogManager.getLogger(RoadDailyMain.class);
 
 		log.info("-- begin stat:" + col_name);
 

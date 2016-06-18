@@ -3,17 +3,18 @@ package com.navinfo.dataservice.commons.json;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 import net.sf.json.processors.JsonValueProcessor;
 
-public class DateJsonValueProcessor implements JsonValueProcessor{
+public class DateJsonValueProcessor2 implements JsonValueProcessor{
 
 	public static final String Default_DATE_PATTERN ="yyyyMMdd";  
     private DateFormat dateFormat ;  
-    public DateJsonValueProcessor(String datePattern){  
+    public DateJsonValueProcessor2(String datePattern){  
         try{  
             dateFormat  = new SimpleDateFormat(datePattern);}  
         catch(Exception e ){  
@@ -28,7 +29,7 @@ public class DateJsonValueProcessor implements JsonValueProcessor{
     }  
     private Object process(Object value){
     	if(null==value){return "";}
-        return dateFormat.format((Timestamp)value);
+        return dateFormat.format((Date)value);
     }  
 
 }

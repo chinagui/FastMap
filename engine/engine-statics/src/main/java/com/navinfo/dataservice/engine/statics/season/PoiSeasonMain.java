@@ -23,19 +23,18 @@ import com.mongodb.client.MongoDatabase;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.OracleDao;
 import com.navinfo.dataservice.engine.statics.tools.StatInit;
-import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 
-public class RoadSeasonMain {
+public class PoiSeasonMain {
 
 	private static Logger log = null;
 	private static CountDownLatch countDownLatch = null;
-	private static final String col_name_grid = "road_season_grid_stat";
-	private static final String col_name_block = "road_season_block_stat";
-	private static final String col_name_city = "road_season_city_stat";
+	private static final String col_name_grid = "poi_season_grid_stat";
+	private static final String col_name_block = "poi_season_block_stat";
+	private static final String col_name_city = "poi_season_city_stat";
 	private String db_name;
 	private String stat_date;
 
-	public RoadSeasonMain(String dbn, String stat_date) {
+	public PoiSeasonMain(String dbn, String stat_date) {
 		this.db_name = dbn;
 		this.stat_date = stat_date;
 	}
@@ -50,49 +49,49 @@ public class RoadSeasonMain {
 
 		md.getCollection(col_name_grid).drop();
 		md.createCollection(col_name_grid);
-		BasicDBObject index1 = new BasicDBObject();  
-		index1.put("grid_id",1);
-		index1.put("unique",true);
+		BasicDBObject index1 = new BasicDBObject();
+		index1.put("grid_id", 1);
+		index1.put("unique", true);
 		md.getCollection(col_name_grid).createIndex(index1);
 		log.info("-- -- finish init collection:" + col_name_grid);
 		// ----------------------------
 		md.getCollection(col_name_block).drop();
 		md.createCollection(col_name_block);
-		BasicDBObject index2 = new BasicDBObject();  
-		index2.put("block_id",1);
-		index2.put("unique",true);
+		BasicDBObject index2 = new BasicDBObject();
+		index2.put("block_id", 1);
+		index2.put("unique", true);
 		md.getCollection(col_name_block).createIndex(index2);
 		log.info("-- -- finish init collection:" + col_name_block);
 		// ----------------------------
 		md.getCollection(col_name_city).drop();
 		md.createCollection(col_name_city);
-		BasicDBObject index3 = new BasicDBObject();  
-		index3.put("city_id",1);
-		index3.put("unique",true);
+		BasicDBObject index3 = new BasicDBObject();
+		index3.put("city_id", 1);
+		index3.put("unique", true);
 		md.getCollection(col_name_city).createIndex(index3);
 		log.info("-- -- finish init collection:" + col_name_city);
 	}
 
 	/**
-	 * 根据季度grid统计结果生成block维度统计，并插入到mongo
+	 * 根据季度 grid 统计结果生成 block维度统计，并插入到 mongo
 	 */
 	private void buildBlockStat() {
 		log.info("-- -- building block data from grid：" + col_name_block);
 		try {
 			Map<String, String> gridBlockMap = OracleDao.getGrid2Block();
 
-			Map<String, Double> resultMap = new HashMap<String, Double>();
+			Map<String, Integer> resultMap = new HashMap<String, Integer>();
 			MongoDao md = new MongoDao(db_name);
 			MongoCursor<Document> iter1 = md.find(col_name_grid, null).iterator();
 			while (iter1.hasNext()) {
 				JSONObject json = JSONObject.fromObject(iter1.next());
 				String grid_id = json.getString("grid_id");
 				String block_id = gridBlockMap.get(grid_id);
-				Double total = json.getDouble("total");
+				Integer total = json.getInt("total");
 				if (resultMap.containsKey(block_id)) {
-					resultMap.put(block_id, StatUtil.formatDouble(resultMap.get(block_id) + total));
+					resultMap.put(block_id, resultMap.get(block_id) + total);
 				} else {
-					resultMap.put(block_id, StatUtil.formatDouble(total));
+					resultMap.put(block_id, total);
 				}
 			}
 
@@ -100,7 +99,7 @@ public class RoadSeasonMain {
 
 			for (Iterator<String> iter2 = resultMap.keySet().iterator(); iter2.hasNext();) {
 				String key = iter2.next();
-				Double total = resultMap.get(key);
+				Integer total = resultMap.get(key);
 				Document doc = new Document();
 				doc.put("block_id", key);
 				doc.put("total", total);
@@ -121,18 +120,18 @@ public class RoadSeasonMain {
 		try {
 			Map<String, String> gridCityMap = OracleDao.getGrid2City();
 
-			Map<String, Double> resultMap = new HashMap<String, Double>();
+			Map<String, Integer> resultMap = new HashMap<String, Integer>();
 			MongoDao md = new MongoDao(db_name);
 			MongoCursor<Document> iter1 = md.find(col_name_grid, null).iterator();
 			while (iter1.hasNext()) {
 				JSONObject json = JSONObject.fromObject(iter1.next());
 				String grid_id = json.getString("grid_id");
 				String city_id = gridCityMap.get(grid_id);
-				Double total = json.getDouble("total");
+				Integer total = json.getInt("total");
 				if (resultMap.containsKey(city_id)) {
-					resultMap.put(city_id, StatUtil.formatDouble(resultMap.get(city_id) + total));
+					resultMap.put(city_id, resultMap.get(city_id) + total);
 				} else {
-					resultMap.put(city_id, StatUtil.formatDouble(total));
+					resultMap.put(city_id, total);
 				}
 			}
 
@@ -140,7 +139,7 @@ public class RoadSeasonMain {
 
 			for (Iterator<String> iter2 = resultMap.keySet().iterator(); iter2.hasNext();) {
 				String key = iter2.next();
-				Double total = resultMap.get(key);
+				Integer total = resultMap.get(key);
 				Document doc = new Document();
 				doc.put("city_id", key);
 				doc.put("total", total);
@@ -182,7 +181,7 @@ public class RoadSeasonMain {
 				int db_id = iter.next();
 
 				log.info("-- -- 创建统计进程 db_id：" + db_id);
-				executorService.submit(new RoadSeasonStat(countDownLatch, db_id, db_name, col_name_grid, stat_date));
+				executorService.submit(new PoiSeasonStat(countDownLatch, db_id, db_name, col_name_grid, stat_date));
 			}
 
 			countDownLatch.await();
@@ -192,7 +191,7 @@ public class RoadSeasonMain {
 			buildBlockStat();
 			// 所有大区库统计完成后，进行派生city数据
 			buildCityStat();
-			log.info("-- end stat --" );
+			log.info("-- end stat --");
 			System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -46,12 +46,7 @@ public class GridOperation {
 				}
 	    		
 	    	};
-	    	if (null==grids || grids.size()==0){
-	    		return run.query(conn, selectSql, rsHandler
-						);
-	    	}
-	    	return run.query(conn, selectSql, rsHandler,grids.toArray()
-					);			
+	    	return run.query(conn, selectSql, rsHandler);			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

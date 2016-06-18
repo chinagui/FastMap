@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rwlink.update;
 
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
@@ -12,14 +12,14 @@ public class Process extends AbstractProcess<Command> {
 		// TODO Auto-generated constructor stub
 	}
 
-	private RdLink updateLink;
+	private RwLink updateLink;
 
 	@Override
 	public boolean prepareData() throws Exception {
 		
 		RdLinkSelector linkSelector = new RdLinkSelector(this.getConn());
 
-		this.updateLink = (RdLink) linkSelector.loadById(this.getCommand().getLinkPid(),
+		this.updateLink = (RwLink) linkSelector.loadById(this.getCommand().getLinkPid(),
 				true);
 
 		return false;

@@ -116,10 +116,6 @@ public class UserGroupController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			
-			if(dataJson.isEmpty()){
-				return new ModelAndView("jsonView", success("无请求信息"));
-			}
 
 			UserGroup  bean = (UserGroup)JSONObject.toBean(dataJson, UserGroup.class);
 			UserGroup  data = service.query(bean);			

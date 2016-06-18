@@ -15,8 +15,8 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminGroup;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminPart;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminGroup;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminPart;
 import com.navinfo.dataservice.dao.glm.operator.rd.gsc.RdGscLinkOperator;
 
 public class AdAdminGroupOperator implements IOperator {

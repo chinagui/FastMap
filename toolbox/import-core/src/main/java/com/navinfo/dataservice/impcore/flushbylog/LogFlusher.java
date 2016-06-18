@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.edit.iface.DatalockApi;
 import com.navinfo.dataservice.api.edit.model.FmEditLock;
+import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -39,24 +40,35 @@ public abstract class LogFlusher {
 	public static final String FEATURE_ALL="ALL";
 	public static final String FEATURE_POI="POI";
 	public static final String FEATURE_ROAD="ROAD";
-	private Logger log = LoggerRepos.getLogger(this.getClass());
-	private static WKT wktUtil = new WKT();
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	private DbInfo sourceDbInfo;
 	private DbInfo targetDbInfo;
 	private Connection sourceDbConn;
+	public Connection getSourceDbConn() {
+		return sourceDbConn;
+	}
 	private Connection targetDbConn;
 	private List<Integer> grids;
+	protected List<Integer> getGrids() {
+		return grids;
+	}
 	private String stopTime;//履历生成的截止时间；yyyymmddhh24miss
+	protected String getStopTime() {
+		return stopTime;
+	}
 	private String tempTable;
-	public String getTempTable() {
+	protected String getTempTable() {
 		return tempTable;
 	}
 	private String tempFailLogTable;//刷履历失败的日志记录临时表
 	private String featureType = FEATURE_ALL;
 	
-	private String monthDbLinkName;
+	private String targetDbLink;
 	private int regionId;
 	private int lockType;
+	protected int getLockType() {
+		return lockType;
+	}
 	private int gridLockSeq;
 
 	/**
@@ -79,10 +91,13 @@ public abstract class LogFlusher {
 		this.regionId = regionId;
 		this.lockType = lockType;
 	}
-	public String getFeatureType() {
+	protected int getRegionId() {
+		return regionId;
+	}
+	protected String getFeatureType() {
 		return featureType;
 	}
-	private int getLockObject() {
+	protected int getLockObject() {
 		if (FEATURE_ROAD.equals(this.featureType)){
 			return FmEditLock.LOCK_OBJ_ROAD;
 		}
@@ -97,15 +112,18 @@ public abstract class LogFlusher {
 	}
 	public FlushResult perform() throws Exception{
 		FlushResult flushResult= new FlushResult();
+		int targetGridLockHookId =0;
+		int sourceGridLockHookId =0;
 		try{
 			initConnections();//创建源、目标库的connection
 			closeAutoCommit();//关闭autoCommit，手工控制数据库事务
 			createTempTable();
-			createMonthDbLink();
+			createTargetDbLink();
+			sourceGridLockHookId=lockSourceDbGrid();
 			createFailueLogTempTable();
 			prepareAndLockLog();
-			lockMonthGrid();
-			flushResult = flushData();
+			targetGridLockHookId = lockTargetDbGrid();
+			flushResult = flushData(this.sourceDbConn,this.targetDbConn);
 			recordFailLog2Temptable(flushResult);
 			//修改全部履历的提交状态为“已提交”
 			moveLog(flushResult, tempTable);
@@ -118,27 +136,16 @@ public abstract class LogFlusher {
 			this.unlockPreparedLog();
 		}finally{
 			this.closeConnections();
-			unlockMonthGrid();
+			unlockTargetDbGrid(targetGridLockHookId);
 			dropMonthDbLink();
+			unlockSourceDbGrid(sourceGridLockHookId);
 		}
 		return flushResult;
 	}
-	protected void unlockMonthGrid() {
-		if (0==this.gridLockSeq) return ;//没有进行grid加锁，直接返回；
-		try{
-			DatalockApi datalockApi = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
-			datalockApi.unlockGrid(this.gridLockSeq,FmEditLock.DB_TYPE_MONTH);
-		}catch(Exception e){
-			this.log.warn("grid解锁时，出现异常", e);
-		}
-		
-	};
-	private void lockMonthGrid() throws Exception {
-		DatalockApi datalockApi = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
-		int regionId = this.regionId;
-		int lockObject=this.getLockObject();
-		this.gridLockSeq = datalockApi.lockGrid(regionId , lockObject, grids, lockType,FmEditLock.DB_TYPE_MONTH );
-	}
+	public abstract int lockSourceDbGrid() throws Exception ;
+	public abstract void unlockSourceDbGrid(int lockHookId) ;
+	public abstract void unlockTargetDbGrid(int lockHookId);
+	public abstract int lockTargetDbGrid() throws Exception ;
 	private  void unlockPreparedLog(){
 		try{
 			QueryRunner run = new QueryRunner();
@@ -152,56 +159,12 @@ public abstract class LogFlusher {
 			e.printStackTrace();
 		}
 	}
+	public  abstract String getPrepareSql() throws Exception;
 	/**
-	 * @return 初始化temp表的sql；POI和道路的sql有差别
-	 * @throws Exception
+	 * 实现类可以覆盖改方法的实现,根据刷履历的要素类型,实现preparesql的生成,以及 刷履历sql的定制化
+	 * @return
 	 */
-	public abstract String getPrepareSql() throws Exception{
-		if (FEATURE_ROAD.equals(this.featureType)){
-			StringBuilder sb = new StringBuilder();
-			sb.append("INSERT INTO ");
-			sb.append(tempTable);
-			sb.append(" SELECT DISTINCT P.OP_ID,P.OP_DT FROM LOG_OPERATION P,LOG_DETAIL L,LOG_DETAIL_GRID T WHERE P.OP_ID=L.OP_ID AND L.ROW_ID=T.LOG_ROW_ID AND P.COM_STA = 0");
-			if(StringUtils.isNotEmpty(stopTime)){
-				sb.append(" AND P.OP_DT<=TO_DATE('");
-				sb.append(stopTime+ "','yyyymmddhh24miss')"); 
-			}
-			if(grids!=null&&grids.size()>0){
-				sb.append(" AND T.GRID_ID IN (");
-				sb.append(StringUtils.join(grids, ","));
-				sb.append(")");
-			}
-			sb.append(this.getFeatureFilter());
-			return sb.toString();
-		}
-		if (FEATURE_POI.equals(this.featureType)){
-			StringBuilder sb = new StringBuilder();
-			sb.append("INSERT INTO ");
-			sb.append(tempTable);
-			sb.append(" SELECT DISTINCT P.OP_ID,P.OP_DT FROM LOG_OPERATION P,LOG_DETAIL L,LOG_DETAIL_GRID T  WHERE P.OP_ID=L.OP_ID AND L.ROW_ID=T.LOG_ROW_ID AND P.COM_STA = 0 ");
-			if(StringUtils.isNotEmpty(stopTime)){
-				sb.append(" AND P.OP_DT<=TO_DATE('");
-				sb.append(stopTime+ "','yyyymmddhh24miss')"); 
-			}
-			if(grids!=null&&grids.size()>0){
-				sb.append(" AND T.GRID_ID IN (");
-				sb.append(StringUtils.join(grids, ","));
-				sb.append(")");
-			}
-			sb.append(this.getFeatureFilter());
-			sb.append(" AND EXISTS(SELECT 1 FROM POI_EDIT_STATUS I WHERE L.ROW_ID=L.ROW_ID AND I.STATUS=3)");
-			return sb.toString();
-		}
-		throw new Exception("要素类型未知，或者不支持的要素类型："+this.featureType);
-		
-	}
 	public String getFeatureFilter(){
-//		if (this.featureType.equals(FEATURE_ROAD)){
-//			return " AND substr(L.TB_NM,0,2) != 'ix'";
-//		}
-//		if (this.featureType.equals(FEATURE_POI)){
-//			return " AND substr(L.TB_NM,0,2) = 'ix'";
-//		}
 		return " 1=1";
 	}
 	private void initConnections() throws Exception{
@@ -216,12 +179,13 @@ public abstract class LogFlusher {
 		DbUtils.closeQuietly(this.sourceDbConn);
 		DbUtils.closeQuietly(this.targetDbConn);
 	} 
-	private  void updateLogCommitStatus(String tempTable) throws Exception {
+	protected abstract  void updateLogCommitStatus(String tempTable) throws Exception ;
+	/*{
 		QueryRunner run = new QueryRunner();
 		String sql = "update LOG_OPERATION set com_dt = sysdate,com_sta=1,LOCK_STA=0 where OP_ID IN (SELECT OP_ID FROM "+tempTable+")";
 		run.execute(this.sourceDbConn, sql);
-	}
-	private void createMonthDbLink() throws Exception{
+	}*/
+	private void createTargetDbLink() throws Exception{
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyymmdd");
 		String dbLinkName = "dblink_" + sdf.format(new Date());
 		OracleSchema oraSchema = new OracleSchema(MultiDataSourceFactory.createConnectConfig(this.sourceDbInfo.getConnectParam()));
@@ -234,14 +198,15 @@ public abstract class LogFlusher {
 									this.targetDbInfo.getDbServer().getIp(), 
 									String.valueOf(this.targetDbInfo.getDbServer().getPort()), 
 									this.targetDbInfo.getDbName());
-		this.monthDbLinkName = dbLinkName;
+		this.targetDbLink = dbLinkName;
 	}
 	/*
 	      将成功的operation相关的履历搬移到目标库；
+	      可以被子类重载复写
 	 */
-	private  void moveLog(FlushResult flushResult, String tempTable) throws Exception {
+	protected  void moveLog(FlushResult flushResult, String tempTable) throws Exception {
 		
-		String dbLinkName=this.monthDbLinkName;
+		String dbLinkName=this.targetDbLink;
 		Statement stmt = this.sourceDbConn.createStatement();
 		String moveSql = "insert into log_detail@" + dbLinkName
 				+ " select l.* from log_detail l,"+tempTable+" t where l.op_id=t.op_id"
@@ -262,13 +227,13 @@ public abstract class LogFlusher {
 	}
 
 	private void dropMonthDbLink(){
-		String sqlDropDblink = "drop database link " + this.monthDbLinkName;
+		String sqlDropDblink = "drop database link " + this.targetDbLink;
 		try {
 			QueryRunner run = new QueryRunner();
 			run.execute(this.sourceDbConn, sqlDropDblink);
 			OracleSchema oraSchema = new OracleSchema(MultiDataSourceFactory.createConnectConfig(this.sourceDbInfo.getConnectParam()));
 			DataSource dblinkContainer= oraSchema.getDriverManagerDataSource();
-			new DbLinkCreator().drop(this.monthDbLinkName, 
+			new DbLinkCreator().drop(this.targetDbLink, 
 										true, 
 										dblinkContainer );
 		} catch (Exception e) {
@@ -284,20 +249,20 @@ public abstract class LogFlusher {
 		Object[][] batchParams = NaviListUtils.toArrayMatrix(flushResult.getFailedLog());
 		run.batch(this.sourceDbConn, sql, batchParams);
 	}
-	private FlushResult flushData() throws Exception {
+	private FlushResult flushData(Connection sourceDbConn,Connection targetDbConn) throws Exception {
 		String logQuerySql = "SELECT L.* FROM LOG_DETAIL L," + tempTable
 				+ " T WHERE L.OP_ID=T.OP_ID "
 				+ this.getFeatureFilter()
 				+ " ORDER BY T.OP_DT"
 				;
 		this.log.debug(logQuerySql);
-		Statement sourceStmt = this.sourceDbConn.createStatement();
+		Statement sourceStmt = sourceDbConn.createStatement();
 
 		ResultSet rs = sourceStmt.executeQuery(logQuerySql);
 		try{
 			rs.setFetchSize(1000);
 			FlushResult flushResult =new FlushResult();
-			LogWriter logWriter = new LogWriter(this.targetDbConn);
+			LogWriter logWriter = new LogWriter(targetDbConn);
 			while (rs.next()) {
 				flushResult .addTotal();
 				int opType = rs.getInt("op_tp");
@@ -348,30 +313,31 @@ public abstract class LogFlusher {
 	}
 	private  void lockPreparedLog(int rowCount)throws LockException,SQLException{
 		QueryRunner run = new QueryRunner();
-		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE LOG_OPERATION L SET L.LOCK_STA=1 WHERE EXISTS (SELECT 1 FROM ");
-		sb.append(tempTable);
-		sb.append(" T WHERE L.OP_ID=T.OP_ID) AND L.LOCK_STA=0");
+		StringBuilder sb = getOperationLockSql();
 		this.log.debug(sb);
 		int result = run.update(this.sourceDbConn, sb.toString());
 		if(result<rowCount){
 			throw new LockException("部分履历已经被其他回库操作锁定,请稍候再试。");
 		}
 	}
+	protected StringBuilder getOperationLockSql() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("UPDATE LOG_OPERATION L SET L.LOCK_STA=1 WHERE EXISTS (SELECT 1 FROM ");
+		sb.append(tempTable);
+		sb.append(" T WHERE L.OP_ID=T.OP_ID) AND L.LOCK_STA=0");
+		return sb;
+	}
 	private  int extendLogByRowId()throws SQLException{
 		QueryRunner run = new QueryRunner();
-		StringBuilder sb = new StringBuilder();
-		sb.append("MERGE INTO ");
-		sb.append(tempTable);
-		sb.append(" T USING (SELECT P.OP_ID,P.OP_DT FROM LOG_OPERATION P,LOG_DETAIL L WHERE EXISTS (SELECT 1 FROM LOG_DETAIL L1,");
-		sb.append(tempTable);
-		sb.append(" T1 WHERE L1.OP_ID=T1.OP_ID AND L1.ROW_ID=L.ROW_ID AND P.OP_DT<=T1.OP_DT) AND P.OP_ID=L.OP_ID AND P.COM_STA=0) TP ON (T.OP_ID=TP.OP_ID) WHEN NOT MATCHED THEN INSERT VALUES (TP.OP_ID,TP.OP_DT)");
+		StringBuilder sb = getExtendLogSql();
+		if(sb==null) return 0;
 		int result = run.update(this.sourceDbConn, sb.toString());
 		if(result>0){
 			return result+extendLogByRowId();
 		}
 		return result;
 	}
+	public abstract StringBuilder getExtendLogSql() ;
 	/**
 	 * 创建临时表TEMP_LOG_OP_xxxx，用于存放
 	 * @throws SQLException 
@@ -427,6 +393,15 @@ public abstract class LogFlusher {
 	private void closeAutoCommit() throws SQLException {
 		this.sourceDbConn.setAutoCommit(false);
 		this.sourceDbConn.setAutoCommit(false);
+	}
+	protected String getGlmFeatureType(String featureType) {
+		if (FEATURE_ROAD.equals(featureType)){
+			return GlmTable.FEATURE_TYPE_ROAD;
+		}
+		if (FEATURE_POI.equals(featureType)){
+			return GlmTable.FEATURE_TYPE_POI;
+		}
+		return GlmTable.FEATURE_TYPE_ALL;
 	}
 	
 	

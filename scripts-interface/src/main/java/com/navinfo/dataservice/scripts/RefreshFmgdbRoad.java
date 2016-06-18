@@ -3,6 +3,13 @@ package com.navinfo.dataservice.scripts;
 import java.io.File;
 import java.util.Iterator;
 
+import org.springframework.util.Assert;
+
+import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.bizcommons.glm.GlmTable;
+import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
+import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -16,49 +23,37 @@ import net.sf.json.JSONObject;
 */
 public class RefreshFmgdbRoad {
 	
-	public static JSONObject refresh(JSONObject request){
-		for(Iterator it = request.keys();it.hasNext();){
-			String attName = (String)it.next();
-			System.out.print(attName+":");
-			Object value = request.get(attName);
-			System.out.print(value.getClass().getSimpleName()+",");
-			if(value instanceof String){
-				System.out.println("String");
-			}else if(value instanceof Integer){
-				System.out.println("Integer");
-			}else if(value instanceof Boolean){
-				System.out.println("Boolean");
-			}else if(value instanceof JSONArray){
-				System.out.println("JSONArray");
-			}else if(value instanceof JSONNull){
-				System.out.println("JSONNull");
-			}
+	public static JSONObject execute(JSONObject request)throws Exception{
+		JSONObject response = new JSONObject();
+		try{
+			String gen2GdbIp = request.getString("gen2GdbIp");
+			Assert.notNull(gen2GdbIp, "gen2GdbIp不能为空");
+			int gen2GdbPort = request.getInt("gen2GdbPort");
+			String gen2GdbSid = request.getString("gen2GdbSid");
+			Assert.notNull(gen2GdbSid, "gen2GdbSid不能为空");
+			String gen2GdbUserName = request.getString("gen2GdbUserName");
+			Assert.notNull(gen2GdbUserName, "gen2GdbUserName不能为空");
+			String gen2GdbUserPasswd = request.getString("gen2GdbUserPasswd");
+			Assert.notNull(gen2GdbUserPasswd, "gen2GdbUserPasswd不能为空");
+			int fmgdbId = request.getInt("fmgdbId");//get如果没取到会报错
+//			Assert.notNull(fmgdbId, "fmgdbId不能为空");
+			String gdbVersion = (String) request.get("gdbVersion");
+			Assert.notNull(gdbVersion, "gdbVersion不能为空");
+			//整表复制道路数据
+			JobInfo info2 = new JobInfo(0,"");
+			info2.setType("gdbFullCopy");
+			JSONObject req2 = new JSONObject();
+			req2.put("sourceDbId", fmgdbId);
+			req2.put("targetDbId", 1);
+			req2.put("gdbVersion", "250+");
+			req2.put("featureType", GlmTable.FEATURE_TYPE_ALL);
+			info2.setRequest(req2);
+			AbstractJob job2 = JobCreateStrategy.createAsMethod(info2);
+			job2.run();
+		}catch (Exception e) {
+			response.put("msg", "ERROR:" + e.getMessage());
+			throw e;
 		}
-		return null;
-	}
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		try {
-			JSONObject request = null;
-			JSONObject response = null;
-//			String dir = SystemConfigFactory.getSystemConfig().getValue(
-//					"scripts.dir");
-			String dir = "F:\\Fm_Projects_Doc\\scripts\\";
-			request = ToolScriptsInterface.readJson(dir + "request"
-					+ File.separator + "test.json");
-			response = refresh(request);
-//			ToolScriptsInterface.writeJson(response, dir + "response"
-//					+ File.separator + "sampleJobB.json");
-//
-//			System.out.println(response);
-			System.out.println("Over.");
-			System.exit(0);
-		} catch (Exception e) {
-			System.out.println("Oops, something wrong...");
-			e.printStackTrace();
-		}
-
+		return response;
 	}
 }

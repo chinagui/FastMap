@@ -35,7 +35,7 @@ public class GdbExportJob extends AbstractJob {
 			DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
 			DbInfo sourceDb = datahub.getDbById(req.getSourceDbId());
 			OracleSchema sourceSchema = new OracleSchema(MultiDataSourceFactory.createConnectConfig(sourceDb.getConnectParam()));
-			OracleInput input = new OracleInput(sourceSchema,req.getFeature()
+			OracleInput input = new OracleInput(sourceSchema,req.getFeatureType()
 					,req.getCondition(),req.getConditionParams(),req.getGdbVersion());
 			input.initSource();
 			input.serializeParameters();

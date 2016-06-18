@@ -14,6 +14,25 @@ import java.util.Map;
 *  
 */
 public class DbInfo implements Serializable{
+	//nationRoad,desDayAll,desMon,desDayPoi,fmMan,fmSys
+	public static enum BIZ_TYPE {
+        DES_MON("desMon"), 
+        DES_DAY_POI("desDayPoi"), 
+        DES_DAY_ALL("desDayAll"),
+        GDB_PLUS("nationRoad");//gdb+母库
+        private String value;
+		private BIZ_TYPE(String value) {
+            this.value = value;
+        }
+		public String getValue() {
+			return value;
+		}
+		public String toString(){
+			return value;
+		}
+		
+    }
+	
 	protected int dbId;
 	protected String dbName;
 	protected String dbUserName;

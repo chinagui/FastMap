@@ -22,6 +22,7 @@ import com.navinfo.dataservice.api.datahub.model.DbServer;
 import com.navinfo.dataservice.api.edit.iface.DatalockApi;
 import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.impcore.commit.AllFeatureLogFlusher;
 
 public class FlushGdb {
 
@@ -177,14 +178,12 @@ public class FlushGdb {
 					props.getProperty("destDBPassword"),
 					props.getProperty("destDBIp")
 					);
-			LogFlusher flusher = new LogFlusher(
+			LogFlusher flusher = new AllFeatureLogFlusher(
 					Integer.valueOf(props.getProperty("regionId")).intValue(),
 					srcDbInfo, 
 					targetDbInfo, 
 					extraceGridFromInFile(gridFile), 
-					props.getProperty("stopTime"), 
-					LogFlusher.FEATURE_ALL,
-					FmEditLock.TYPE_DEFAULT);
+					props.getProperty("stopTime"));
 			return flusher.perform();
 
 		} catch (Exception e) {
@@ -222,14 +221,12 @@ public class FlushGdb {
 					props.getProperty("destDBPassword"),
 					props.getProperty("destDBIp")
 					);
-			LogFlusher flusher = new LogFlusher(
+			LogFlusher flusher = new AllFeatureLogFlusher(
 					Integer.valueOf(props.getProperty("regionId")).intValue(),
 					srcDbInfo, 
 					targetDbInfo, 
 					null, 
-					props.getProperty("stopTime"), 
-					LogFlusher.FEATURE_ALL,
-					FmEditLock.TYPE_DEFAULT
+					props.getProperty("stopTime")
 					);
 			return flusher.perform();
 

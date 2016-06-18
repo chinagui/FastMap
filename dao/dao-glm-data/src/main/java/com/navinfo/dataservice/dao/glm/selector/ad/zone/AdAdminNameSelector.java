@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.AdAdminName;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminName;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 
 public class AdAdminNameSelector implements ISelector {

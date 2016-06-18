@@ -5,16 +5,12 @@
 	<!--全要素导出 -->
 	<scripts name="全要素按图幅复制" feature="all" condition="mesh"
 			main-script="exp-all-main.xml" />
-	<scripts name=""  feature="gdb" condition="mesh"
-			main-script="exp-gdb-main.xml" />
-	<scripts name=""  feature="log" condition="mesh"
-			main-script="exp-log-main.xml" />
-	<scripts name="" feature="ck" condition="mesh"
-			main-script="exp-ck-main.xml" />
-	<scripts name="" feature="gdb" condition="area"
+	<!-- 未实现
+	<scripts name="" feature="all" condition="area"
 		main-script="exp-gdb-main.xml"
 		replacer="com.navinfo.dms.tools.expcore.sql.replacer.AreaSqlReplacer" />
-	<scripts name="" feature="gdb" condition="polygon"
+	<scripts name="" feature="all" condition="polygon"
 		main-script="exp-gdb-main.xml"
 		replacer="com.navinfo.dms.tools.expcore.sql.replacer.PolygonSqlReplacer" />
+	 -->
 </scripts-config>

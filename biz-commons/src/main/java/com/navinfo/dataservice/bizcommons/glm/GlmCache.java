@@ -123,7 +123,7 @@ public class GlmCache {
 				for(String key:tables.keySet()){
 					GlmTable table = tables.get(key);
 					int[] v = names.get(key);
-					table.setFeatureType(v[0]);
+					table.setFeatureType(v[0]==1?GlmTable.FEATURE_TYPE_POI:GlmTable.FEATURE_TYPE_ROAD);
 					table.setEditable(v[1]==1?true:false);
 				}
 				//load pks

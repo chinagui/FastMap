@@ -6,7 +6,7 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.engine.dropbox.util.DropboxUtil;
-import com.navinfo.dataservice.engine.man.version.VersionSelector;
+import com.navinfo.dataservice.engine.man.version.VersionService;
 
 public class DownloadManager {
 
@@ -22,7 +22,7 @@ public class DownloadManager {
 
 		JSONObject data = DropboxUtil.getLastestInfo(urlPath, dir, projectId);
 		
-		VersionSelector versionMan = new VersionSelector();
+		VersionService versionMan = new VersionService();
 		
 		String version = versionMan.getByType(2);
 		
@@ -34,7 +34,7 @@ public class DownloadManager {
 	
 	public JSONArray getBasedataList() throws Exception {
 
-		VersionSelector versionMan = new VersionSelector();
+		VersionService versionMan = new VersionService();
 		
 		String version = versionMan.getByType(2);
 		
@@ -78,7 +78,7 @@ public class DownloadManager {
 
 		JSONObject data = DropboxUtil.getLastestInfo(urlPath, filePath, null);
 		
-		VersionSelector versionMan = new VersionSelector();
+		VersionService versionMan = new VersionService();
 		
 		String version = versionMan.getByType(3);
 		

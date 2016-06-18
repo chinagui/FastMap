@@ -18,9 +18,9 @@ public class UserInfo  {
 	private Integer userScore ;
 	private Object userIcon ;
 	private String userGpsid ;
-	private String deviceToken;//璁惧token
-	private String devicePlatform;//璁惧骞冲彴
-	private String deviceVersion;//璁惧鐗堟湰
+	private String deviceToken;//设备token
+	private String devicePlatform;//设备平台
+	private String deviceVersion;//设备版本
 	
 	public UserInfo (){
 	}

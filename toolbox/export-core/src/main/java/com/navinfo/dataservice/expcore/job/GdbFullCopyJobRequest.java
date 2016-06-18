@@ -14,9 +14,12 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 *  
 */
 public class GdbFullCopyJobRequest extends AbstractJobRequest {
-	protected int sourceDbId;
-//	protected String feature;
-	protected int targetDbId;
+	protected int sourceDbId=0;
+	protected String sourceDbInfo;//"ip,port,dbname/sid,user name,user passwd"
+	protected String featureType;//poi,road,all,GlmTable.FEATURE_TYPE_XXX
+	protected boolean truncateData=false;//导入数据之前，是否清空目标库，只会清空导出目标表
+	protected int targetDbId=0;
+	protected String targetDbInfo;//"ip,port,dbname/sid,user name,user passwd"
 	protected boolean multiThread4Output=true;
 	protected Map<String,String> tableReNames;
 	protected List<String> specificTables;
@@ -24,7 +27,11 @@ public class GdbFullCopyJobRequest extends AbstractJobRequest {
 
 	@Override
 	public int getStepCount() throws JobException {
-		return 0;
+		int count =2;
+		if(truncateData){
+			count+=1;
+		}
+		return count;
 	}
 
 
@@ -43,6 +50,26 @@ public class GdbFullCopyJobRequest extends AbstractJobRequest {
 		this.sourceDbId = sourceDbId;
 	}
 
+	public boolean isTruncateData() {
+		return truncateData;
+	}
+
+
+	public void setTruncateData(boolean truncateData) {
+		this.truncateData = truncateData;
+	}
+
+
+	public String getFeatureType() {
+		return featureType;
+	}
+
+
+	public void setFeatureType(String featureType) {
+		this.featureType = featureType;
+	}
+
+
 	public int getTargetDbId() {
 		return targetDbId;
 	}
@@ -50,6 +77,26 @@ public class GdbFullCopyJobRequest extends AbstractJobRequest {
 
 	public void setTargetDbId(int targetDbId) {
 		this.targetDbId = targetDbId;
+	}
+
+
+	public String getSourceDbInfo() {
+		return sourceDbInfo;
+	}
+
+
+	public void setSourceDbInfo(String sourceDbInfo) {
+		this.sourceDbInfo = sourceDbInfo;
+	}
+
+
+	public String getTargetDbInfo() {
+		return targetDbInfo;
+	}
+
+
+	public void setTargetDbInfo(String targetDbInfo) {
+		this.targetDbInfo = targetDbInfo;
 	}
 
 

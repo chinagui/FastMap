@@ -13,12 +13,16 @@ import java.util.Set;
  */
 public class GlmTable {
     protected String name;
-    protected int featureType;
+    protected String featureType;
     protected boolean editable;
 	//主键字段无顺序
 	protected Set<GlmColumn> pks;
 	//所有字段按column_id排序；
 	protected List<GlmColumn> columns;
+
+	public final static String FEATURE_TYPE_ALL="all";
+	public final static String FEATURE_TYPE_POI="poi";
+	public final static String FEATURE_TYPE_ROAD="road";
 	
 	public GlmTable(String name){
 		this.name=name;
@@ -29,10 +33,10 @@ public class GlmTable {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public int getFeatureType() {
+	public String getFeatureType() {
 		return featureType;
 	}
-	public void setFeatureType(int featureType) {
+	public void setFeatureType(String featureType) {
 		this.featureType = featureType;
 	}
 	public boolean isEditable() {

@@ -3,6 +3,7 @@ package com.navinfo.dataservice.scripts;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,15 +54,15 @@ public class ToolScriptsInterface {
 		try{
 			Map<String,String> map = new HashMap<String,String>();
 			if(args.length%2!=0){
-				System.out.println("ERROR:need args:-itype xxx");
+				System.out.println("ERROR:need args:-iclass xxx");
 				return;
 			}
 			for(int i=0; i<args.length;i+=2){
 			        map.put(args[i], args[i+1]);
 		    }
-			String itype = map.get("-itype");
-			if(StringUtils.isEmpty(itype)){
-				System.out.println("ERROR:need args:-itype xxx");
+			String iclass = map.get("-iclass");
+			if(StringUtils.isEmpty(iclass)){
+				System.out.println("ERROR:need args:-iclass xxx");
 				return;
 			}
 			JSONObject request=null;
@@ -70,18 +71,11 @@ public class ToolScriptsInterface {
 			//初始化context
 			JobScriptsInterface.initContext();
 			//
-			if("initRegiondb".equals(itype)){
-				request = readJson(dir+"request"+File.separator+"init_regiondb.json");
-				response = InitRegionDbScriptsInterface.execute(request);
-				writeJson(response,dir+"response"+File.separator+"init_regiondb.json");
-			}else if("initDesgdb".equals(itype)){
-				request = readJson(dir+"request"+File.separator+"init_desgdb.json");
-				response = InitDesgdbScriptsInterface.execute(request);
-				writeJson(response,dir+"response"+File.separator+"init_desgdb.json");
-			}
-			else{
-				System.out.println("ERROR:need arg -itype");
-			}
+			request = readJson(dir+"request"+File.separator+iclass+".json");
+			Class<?> tool = Class.forName("com.navinfo.dataservice.scripts."+iclass);
+			Method m = tool.getMethod("execute", JSONObject.class);
+			response = (JSONObject)(m.invoke(null, request));
+			writeJson(response,dir+"response"+File.separator+iclass+".json");
 			System.out.println(response);
 			System.out.println("Over.");
 			System.exit(0);

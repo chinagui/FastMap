@@ -1,12 +1,15 @@
 package com.navinfo.dataservice.engine.statics;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.bson.Document;
 
+import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.JtsGeometryConvertor;
 import com.vividsolutions.jts.geom.Polygon;
@@ -62,8 +65,11 @@ public class test {
 	}
 
 	public static void main(String[] args) throws Exception {
+		System.out.print((double)2/3*100);
+		
+		
+		
 
-		test1();
 		//
 		// ClassPathXmlApplicationContext context = new
 		// ClassPathXmlApplicationContext(new String[] {

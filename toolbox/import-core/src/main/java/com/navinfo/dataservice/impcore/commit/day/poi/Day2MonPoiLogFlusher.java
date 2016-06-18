@@ -1,7 +1,13 @@
 package com.navinfo.dataservice.impcore.commit.day.poi;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
@@ -71,7 +77,36 @@ public class Day2MonPoiLogFlusher extends LogFlusher {
 		DatalockApi datalockApi = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
 		int regionId = this.getRegionId();
 		int lockObject=this.getLockObject();
-		return datalockApi.lockGrid(regionId , lockObject, this.getGrids(), this.getLockType(),FmEditLock.DB_TYPE_MONTH );
+		Collection<Integer> gridsToLock = queryGrids2Lock();
+		if (CollectionUtils.isEmpty(gridsToLock)) return 0;//如果没有要锁定的grids，则返回
+		return datalockApi.lockGrid(regionId , lockObject, gridsToLock, this.getLockType(),FmEditLock.DB_TYPE_MONTH );
+	}
+	/**
+	 * 获取要锁定的grid的列表，因为poi日落月时，没有grids参数；只能通过履历来计算
+	 * @return
+	 * @throws SQLException
+	 */
+	private Collection<Integer> queryGrids2Lock() throws SQLException {
+		String sql = "select DISTINCT G.GRID_ID AS GRID_ID\r\n" + 
+				"  from LOG_OPERATION      P,\r\n" + 
+				"       LOG_DETAIL         L,\r\n" + 
+				"       LOG_DETAIL_GRID    G,\r\n" + 
+				"       "+this.getTempTable()+" T \r\n" + 
+				" WHERE P.OP_ID = L.OP_ID\r\n" + 
+				"   AND L.ROW_ID = G.LOG_ROW_ID\r\n" + 
+				"   AND P.OP_ID = T.OP_ID";
+		QueryRunner run = new QueryRunner();
+		ResultSetHandler<List<Integer>> rsl = new ResultSetHandler<List<Integer>>(){
+
+			@Override
+			public List<Integer> handle(ResultSet rs) throws SQLException {
+				List<Integer> grids = new ArrayList<Integer>();
+				while(rs.next()){
+					grids.add(rs.getInt("GRID_ID"));
+				}
+				return grids;
+			}};
+		return run.query(this.getSourceDbConn(), sql,rsl );
 	}
 	@Override
 	public StringBuilder getExtendLogSql() {

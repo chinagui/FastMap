@@ -84,7 +84,7 @@ public class GridService {
 	 * 
 	 */
 	public Map queryRegionGridMapping(List<Integer> gridList) throws Exception{
-		String sql = "select grid_id from grid g where 1=1 ";
+		String sql = "select grid_id,region_id from grid g where 1=1 ";
 		QueryRunner queryRunner = new QueryRunner();
 		Connection conn = null;
 		try{

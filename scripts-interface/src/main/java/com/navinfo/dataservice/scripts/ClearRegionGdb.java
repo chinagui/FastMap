@@ -30,7 +30,7 @@ public class ClearRegionGdb {
 
 			RegionService s = new RegionService();
 
-			List<Region> list = s.list(new JSONObject());
+			List<Region> list = s.list();
 
 			for (Region region : list) {
 				

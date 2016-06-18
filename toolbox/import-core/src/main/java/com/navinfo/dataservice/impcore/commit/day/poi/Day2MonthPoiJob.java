@@ -29,9 +29,9 @@ public class Day2MonthPoiJob extends AbstractJob {
 	@Override
 	public void execute() throws JobException{
 		try{
-			this.log.info("获取大区和grid的映射关系");
-			ManApi gridSelectorApiSvr = (ManApi) ApplicationContextUtil.getBean("manApi");
-			List<Region> regionSet = gridSelectorApiSvr.queryRegionList();
+			this.log.info("获取大区列表");
+			ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+			List<Region> regionSet = manApi.queryRegionList();
 			this.log.debug("regionSet:"+regionSet);
 			HashMap<String,FlushResult> jobResponse = new HashMap<String,FlushResult> ();
 			for (Region region:regionSet){

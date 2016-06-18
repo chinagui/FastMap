@@ -37,7 +37,7 @@ public class BlockOperation {
 					while(rs.next()){
 						HashMap map = new HashMap<String, Integer>();
 						map.put("blockId", rs.getInt("BLOCK_ID"));
-						map.put("blockName", rs.getInt("BLOCK_NAME"));
+						map.put("blockName", rs.getString("BLOCK_NAME"));
 						map.put("planningStatus", rs.getInt("PLAN_STATUS"));
 						
 						CLOB clob = (CLOB)rs.getObject("geometry");

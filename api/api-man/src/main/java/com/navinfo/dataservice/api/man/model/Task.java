@@ -13,46 +13,35 @@ public class Task{
 	private Integer taskId ;
 	private String name;
 	private Integer cityId ;
+	private String cityName;
+	private String version;
 	private Integer createUserId ;
+	private String createUserName;
 	private Timestamp createDate ;
 	private Integer status ;
 	private String descp ;
-	private Timestamp collectPlanStartDate ;
-	private Timestamp collectPlanEndDate ;
-	private Timestamp dayEditPlanStartDate ;
-	private Timestamp dayEditPlanEndDate ;
-	private Timestamp bMonthEditPlanStartDate ;
-	private Timestamp bMonthEditPlanEndDate ;
-	private Timestamp cMonthEditPlanStartDate ;
-	private Timestamp cMonthEditPlanEndDate ;
-	private Timestamp dayProducePlanStartDate ;
-	private Timestamp dayProducePlanEndDate ;
-	private Timestamp monthProducePlanStartDate ;
-	private Timestamp monthProducePlanEndDate ;
+	private Timestamp planStartDate ;
+	private Timestamp planEndDate ;
+	private Timestamp monthEditPlanStartDate ;
+	private Timestamp monthEditPlanEndDate ;
+	private Integer monthEditGroupId ;
 	private Integer latest ;
 	
 	public Task (){
 	}
-	public Task (Integer taskId ,String name,Integer cityId,Integer createUserId,Timestamp createDate,Integer status,String descp,Timestamp collectPlanStartDate,Timestamp collectPlanEndDate,Timestamp dayEditPlanStartDate,Timestamp dayEditPlanEndDate,Timestamp bMonthEditPlanStartDate,Timestamp bMonthEditPlanEndDate,Timestamp cMonthEditPlanStartDate,Timestamp cMonthEditPlanEndDate,Timestamp dayProducePlanStartDate,Timestamp dayProducePlanEndDate,Timestamp monthProducePlanStartDate,Timestamp monthProducePlanEndDate,Integer latest){
+	public Task (Integer taskId ,String name,Integer cityId,Integer createUserId,Timestamp createDate,Integer status,String descp,Timestamp planStartDate,Timestamp planEndDate,Timestamp monthEditPlanStartDate,Timestamp monthEditPlanEndDate,Integer monthEditGroupId,Integer latest){
 		this.taskId=taskId ;
 		this.name=name;
 		this.cityId=cityId ;
 		this.createUserId=createUserId ;
 		this.createDate=createDate ;
 		this.status=status ;
-		this.descp=descp ;
-		this.collectPlanStartDate=collectPlanStartDate ;
-		this.collectPlanEndDate=collectPlanEndDate ;
-		this.dayEditPlanStartDate=dayEditPlanStartDate ;
-		this.dayEditPlanEndDate=dayEditPlanEndDate ;
-		this.bMonthEditPlanStartDate=bMonthEditPlanStartDate ;
-		this.bMonthEditPlanEndDate=bMonthEditPlanEndDate ;
-		this.cMonthEditPlanStartDate=cMonthEditPlanStartDate ;
-		this.cMonthEditPlanEndDate=cMonthEditPlanEndDate ;
-		this.dayProducePlanStartDate=dayProducePlanStartDate ;
-		this.dayProducePlanEndDate=dayProducePlanEndDate ;
-		this.monthProducePlanStartDate=monthProducePlanStartDate ;
-		this.monthProducePlanEndDate=monthProducePlanEndDate ;
+		this.setDescp(descp) ;
+		this.planStartDate=planStartDate ;
+		this.planEndDate=planEndDate ;
+		this.monthEditPlanStartDate=monthEditPlanStartDate ;
+		this.monthEditPlanEndDate=monthEditPlanEndDate ;
+		this.monthEditGroupId=monthEditGroupId ;
 		this.latest=latest ;
 	}
 	
@@ -87,83 +76,30 @@ public class Task{
 		this.status = status;
 	}
 	public String getDescp() {
+		if(null==descp){return "";}
 		return descp;
 	}
 	public void setDescp(String descp) {
+		if(null==descp){this.descp="";}
 		this.descp = descp;
 	}
-	public Timestamp getCollectPlanStartDate() {
-		return collectPlanStartDate;
+	public Timestamp getPlanEndDate() {
+		return planEndDate;
 	}
-	
-	public void setCollectPlanStartDate(Timestamp collectPlanStartDate) {
-		this.collectPlanStartDate = collectPlanStartDate;//String.valueOf(collectPlanStartDate);
+	public void setPlanEndDate(Timestamp collectPlanEndDate) {
+		this.planEndDate = collectPlanEndDate;
 	}
-	public Timestamp getCollectPlanEndDate() {
-		return collectPlanEndDate;
+	public Timestamp getMonthEditPlanStartDate() {
+		return monthEditPlanStartDate;
 	}
-	public void setCollectPlanEndDate(Timestamp collectPlanEndDate) {
-		this.collectPlanEndDate = collectPlanEndDate;
+	public void setMonthEditPlanStartDate(Timestamp MonthEditPlanStartDate) {
+		this.monthEditPlanStartDate =MonthEditPlanStartDate;
 	}
-	public Timestamp getDayEditPlanStartDate() {
-		return dayEditPlanStartDate;
+	public Timestamp getMonthEditPlanEndDate() {
+		return monthEditPlanEndDate;
 	}
-	public void setDayEditPlanStartDate(Timestamp dayEditPlanStartDate) {
-		this.dayEditPlanStartDate = dayEditPlanStartDate;
-	}
-	public Timestamp getDayEditPlanEndDate() {
-		return dayEditPlanEndDate;
-	}
-	public void setDayEditPlanEndDate(Timestamp dayEditPlanEndDate) {
-		this.dayEditPlanEndDate = dayEditPlanEndDate;
-	}
-	public Timestamp getBMonthEditPlanStartDate() {
-		return bMonthEditPlanStartDate;
-	}
-	public void setBMonthEditPlanStartDate(Timestamp bMonthEditPlanStartDate) {
-		this.bMonthEditPlanStartDate =bMonthEditPlanStartDate;
-	}
-	public Timestamp getBMonthEditPlanEndDate() {
-		return bMonthEditPlanEndDate;
-	}
-	public void setBMonthEditPlanEndDate(Timestamp bMonthEditPlanEndDate) {
-		this.bMonthEditPlanEndDate = bMonthEditPlanEndDate;
-	}
-	public Timestamp getCMonthEditPlanStartDate() {
-		return cMonthEditPlanStartDate;
-	}
-	public void setCMonthEditPlanStartDate(Timestamp cMonthEditPlanStartDate) {
-		this.cMonthEditPlanStartDate = cMonthEditPlanStartDate;
-	}
-	public Timestamp getCMonthEditPlanEndDate() {
-		return cMonthEditPlanEndDate;
-	}
-	public void setCMonthEditPlanEndDate(Timestamp cMonthEditPlanEndDate) {
-		this.cMonthEditPlanEndDate = cMonthEditPlanEndDate;
-	}
-	public Timestamp getDayProducePlanStartDate() {
-		return dayProducePlanStartDate;
-	}
-	public void setDayProducePlanStartDate(Timestamp dayProducePlanStartDate) {
-		this.dayProducePlanStartDate = dayProducePlanStartDate;
-	}
-	public Timestamp getDayProducePlanEndDate() {
-		return dayProducePlanEndDate;
-	}
-	public void setDayProducePlanEndDate(Timestamp dayProducePlanEndDate) {
-		this.dayProducePlanEndDate = dayProducePlanEndDate;
-	}
-	public Timestamp getMonthProducePlanStartDate() {
-		return monthProducePlanStartDate;
-	}
-	public void setMonthProducePlanStartDate(Timestamp monthProducePlanStartDate) {
-		this.monthProducePlanStartDate = monthProducePlanStartDate;
-	}
-	public Timestamp getMonthProducePlanEndDate() {
-		return monthProducePlanEndDate;
-	}
-	public void setMonthProducePlanEndDate(Timestamp monthProducePlanEndDate) {
-		this.monthProducePlanEndDate = monthProducePlanEndDate;
+	public void setMonthEditPlanEndDate(Timestamp MonthEditPlanEndDate) {
+		this.monthEditPlanEndDate = MonthEditPlanEndDate;
 	}
 	public Integer getLatest() {
 		return latest;
@@ -176,7 +112,7 @@ public class Task{
 	 */
 	@Override
 	public String toString() {
-		return "Task [taskId=" + taskId +",cityId="+cityId+",createUserId="+createUserId+",createDate="+createDate+",status="+status+",descp="+descp+",collectPlanStartDate="+collectPlanStartDate+",collectPlanEndDate="+collectPlanEndDate+",dayEditPlanStartDate="+dayEditPlanStartDate+",dayEditPlanEndDate="+dayEditPlanEndDate+",bMonthEditPlanStartDate="+bMonthEditPlanStartDate+",bMonthEditPlanEndDate="+bMonthEditPlanEndDate+",cMonthEditPlanStartDate="+cMonthEditPlanStartDate+",cMonthEditPlanEndDate="+cMonthEditPlanEndDate+",dayProducePlanStartDate="+dayProducePlanStartDate+",dayProducePlanEndDate="+dayProducePlanEndDate+",monthProducePlanStartDate="+monthProducePlanStartDate+",monthProducePlanEndDate="+monthProducePlanEndDate+",latest="+latest+"]";
+		return "Task [taskId=" + taskId +",cityId="+cityId+",createUserId="+createUserId+",createDate="+createDate+",status="+status+",descp="+descp+",planStartDate="+planStartDate+",planEndDate="+planEndDate+",monthEditPlanStartDate="+monthEditPlanStartDate+",monthEditPlanEndDate="+monthEditPlanEndDate+",monthEditGroupId="+monthEditGroupId+",latest="+latest+"]";
 	}
 
 
@@ -193,18 +129,11 @@ public class Task{
 		result = prime * result + ((createDate == null) ? 0 : createDate.hashCode());
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
 		result = prime * result + ((descp == null) ? 0 : descp.hashCode());
-		result = prime * result + ((collectPlanStartDate == null) ? 0 : collectPlanStartDate.hashCode());
-		result = prime * result + ((collectPlanEndDate == null) ? 0 : collectPlanEndDate.hashCode());
-		result = prime * result + ((dayEditPlanStartDate == null) ? 0 : dayEditPlanStartDate.hashCode());
-		result = prime * result + ((dayEditPlanEndDate == null) ? 0 : dayEditPlanEndDate.hashCode());
-		result = prime * result + ((bMonthEditPlanStartDate == null) ? 0 : bMonthEditPlanStartDate.hashCode());
-		result = prime * result + ((bMonthEditPlanEndDate == null) ? 0 : bMonthEditPlanEndDate.hashCode());
-		result = prime * result + ((cMonthEditPlanStartDate == null) ? 0 : cMonthEditPlanStartDate.hashCode());
-		result = prime * result + ((cMonthEditPlanEndDate == null) ? 0 : cMonthEditPlanEndDate.hashCode());
-		result = prime * result + ((dayProducePlanStartDate == null) ? 0 : dayProducePlanStartDate.hashCode());
-		result = prime * result + ((dayProducePlanEndDate == null) ? 0 : dayProducePlanEndDate.hashCode());
-		result = prime * result + ((monthProducePlanStartDate == null) ? 0 : monthProducePlanStartDate.hashCode());
-		result = prime * result + ((monthProducePlanEndDate == null) ? 0 : monthProducePlanEndDate.hashCode());
+		result = prime * result + ((planStartDate == null) ? 0 : planStartDate.hashCode());
+		result = prime * result + ((planEndDate == null) ? 0 : planEndDate.hashCode());
+		result = prime * result + ((monthEditPlanStartDate == null) ? 0 : monthEditPlanStartDate.hashCode());
+		result = prime * result + ((monthEditPlanEndDate == null) ? 0 : monthEditPlanEndDate.hashCode());
+		result = prime * result + ((monthEditGroupId == null) ? 0 : monthEditGroupId.hashCode());
 		result = prime * result + ((latest == null) ? 0 : latest.hashCode());
 		return result;
 	}
@@ -252,65 +181,31 @@ public class Task{
 				return false;
 		} else if (!descp.equals(other.descp))
 			return false;
-		if (collectPlanStartDate == null) {
-			if (other.collectPlanStartDate != null)
+		if (planStartDate == null) {
+			if (other.planStartDate != null)
 				return false;
-		} else if (!collectPlanStartDate.equals(other.collectPlanStartDate))
+		} else if (!planStartDate.equals(other.planStartDate))
 			return false;
-		if (collectPlanEndDate == null) {
-			if (other.collectPlanEndDate != null)
+		if (planEndDate == null) {
+			if (other.planEndDate != null)
 				return false;
-		} else if (!collectPlanEndDate.equals(other.collectPlanEndDate))
+		} else if (!planEndDate.equals(other.planEndDate))
 			return false;
-		if (dayEditPlanStartDate == null) {
-			if (other.dayEditPlanStartDate != null)
+		
+		if (monthEditPlanStartDate == null) {
+			if (other.monthEditPlanStartDate != null)
 				return false;
-		} else if (!dayEditPlanStartDate.equals(other.dayEditPlanStartDate))
+		} else if (!monthEditPlanStartDate.equals(other.monthEditPlanStartDate))
 			return false;
-		if (dayEditPlanEndDate == null) {
-			if (other.dayEditPlanEndDate != null)
+		if (monthEditPlanEndDate == null) {
+			if (other.monthEditPlanEndDate != null)
 				return false;
-		} else if (!dayEditPlanEndDate.equals(other.dayEditPlanEndDate))
+		} else if (!monthEditPlanEndDate.equals(other.monthEditPlanEndDate))
 			return false;
-		if (bMonthEditPlanStartDate == null) {
-			if (other.bMonthEditPlanStartDate != null)
+		if (monthEditGroupId == null) {
+			if (other.monthEditGroupId != null)
 				return false;
-		} else if (!bMonthEditPlanStartDate.equals(other.bMonthEditPlanStartDate))
-			return false;
-		if (bMonthEditPlanEndDate == null) {
-			if (other.bMonthEditPlanEndDate != null)
-				return false;
-		} else if (!bMonthEditPlanEndDate.equals(other.bMonthEditPlanEndDate))
-			return false;
-		if (cMonthEditPlanStartDate == null) {
-			if (other.cMonthEditPlanStartDate != null)
-				return false;
-		} else if (!cMonthEditPlanStartDate.equals(other.cMonthEditPlanStartDate))
-			return false;
-		if (cMonthEditPlanEndDate == null) {
-			if (other.cMonthEditPlanEndDate != null)
-				return false;
-		} else if (!cMonthEditPlanEndDate.equals(other.cMonthEditPlanEndDate))
-			return false;
-		if (dayProducePlanStartDate == null) {
-			if (other.dayProducePlanStartDate != null)
-				return false;
-		} else if (!dayProducePlanStartDate.equals(other.dayProducePlanStartDate))
-			return false;
-		if (dayProducePlanEndDate == null) {
-			if (other.dayProducePlanEndDate != null)
-				return false;
-		} else if (!dayProducePlanEndDate.equals(other.dayProducePlanEndDate))
-			return false;
-		if (monthProducePlanStartDate == null) {
-			if (other.monthProducePlanStartDate != null)
-				return false;
-		} else if (!monthProducePlanStartDate.equals(other.monthProducePlanStartDate))
-			return false;
-		if (monthProducePlanEndDate == null) {
-			if (other.monthProducePlanEndDate != null)
-				return false;
-		} else if (!monthProducePlanEndDate.equals(other.monthProducePlanEndDate))
+		} else if (!monthEditGroupId.equals(other.monthEditGroupId))
 			return false;
 		if (latest == null) {
 			if (other.latest != null)
@@ -320,9 +215,43 @@ public class Task{
 		return true;
 	}
 	public String getName() {
+		if(null==name){return "";}
 		return name;
 	}
 	public void setName(String name) {
+		if(null==name){this.name="";}
 		this.name = name;
+	}
+	public Timestamp getPlanStartDate() {
+		return planStartDate;
+	}
+	public void setPlanStartDate(Timestamp planStartDate) {
+		this.planStartDate = planStartDate;
+	}
+	public Integer getMonthEditGroupId() {
+		if(null==monthEditGroupId){return 0;}
+		return monthEditGroupId;
+	}
+	public void setMonthEditGroupId(Integer monthEditGroupId) {
+		if(null==monthEditGroupId){this.monthEditGroupId=0;}
+		this.monthEditGroupId = monthEditGroupId;
+	}
+	public String getCityName() {
+		return cityName;
+	}
+	public void setCityName(String cityName) {
+		this.cityName = cityName;
+	}
+	public String getVersion() {
+		return version;
+	}
+	public void setVersion(String version) {
+		this.version = version;
+	}
+	public String getCreateUserName() {
+		return createUserName;
+	}
+	public void setCreateUserName(String createUserName) {
+		this.createUserName = createUserName;
 	}	
 }

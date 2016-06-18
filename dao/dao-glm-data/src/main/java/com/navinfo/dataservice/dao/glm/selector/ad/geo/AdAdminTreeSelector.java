@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.dao.glm.selector.ad.zone;
+package com.navinfo.dataservice.dao.glm.selector.ad.geo;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

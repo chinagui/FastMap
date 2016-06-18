@@ -125,25 +125,30 @@ public class SubtaskService {
 	 * 参数1：任务类型，ArrayList<Integer> types
 	 * 参数1：作业阶段，int stage
 	 */
-	public List<Subtask> listByWkt(String wkt,ArrayList<Integer> types, int stage)throws ServiceException{
+//	public List<Subtask> listByWkt(String wkt,ArrayList<Integer> types, int stage)throws ServiceException{
+	public List<Subtask> listByWkt(String wkt)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();	
 
-			String type = types.toString();
-			type = type.replace("[", "(");
-			type = type.replace("]", ")");
+//			String type = types.toString();
+//			type = type.replace("[", "(");
+//			type = type.replace("]", ")");
 			
 			String querySql = "select "
 					+ "s.subtask_id"
+					+ ",s.name"
+					+ ",s.type"
+					+ ",s.stage"
 					+ ", TO_CHAR(s.geometry.get_wkt()) as geometry"
-					+ ",s.descp "
-					+ "from subtask s "
-					+ "where type in" + type 
-					+ " and stage =" + stage 
-					+ " and SDO_GEOM.RELATE(geometry, 'ANYINTERACT', " + "sdo_geometry(" +  "'" + wkt + "',8307)" + ", 0.000005) ='TRUE'";
+					+ ",s.descp"
+					+ ",listagg(sgm.GRID_ID, ',') within group(order by s.SUBTASK_ID) as GRID_ID"
+					+ " from subtask s ,subtask_grid_mapping sgm "
+					+ "where s.subtask_id = sgm.subtask_id "
+					+ " and SDO_GEOM.RELATE(geometry, 'ANYINTERACT', " + "sdo_geometry(" +  "'" + wkt + "',8307)" + ", 0.000005) ='TRUE'"
+					+ "group by s.subtask_id, s.name, s.type, s.stage, s.descp,TO_CHAR(s.geometry.get_wkt())";
 		
 			ResultSetHandler<List<Subtask>> rsHandler = new ResultSetHandler<List<Subtask>>(){
 				public List<Subtask> handle(ResultSet rs) throws SQLException {
@@ -153,6 +158,12 @@ public class SubtaskService {
 						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
 						subtask.setGeometry(rs.getString("GEOMETRY"));
 						subtask.setDescp(rs.getString("DESCP"));
+						subtask.setName(rs.getString("name"));
+						subtask.setType(rs.getInt("type"));
+						subtask.setStage(rs.getInt("stage"));
+						String gridIds = rs.getString("GRID_ID");
+						String[] gridIdList = gridIds.split(",");
+						subtask.setGridIds(gridIdList);
 						list.add(subtask);
 					}
 					return list;
@@ -217,25 +228,22 @@ public class SubtaskService {
 					+ ",(case when s.task_id is not null and s.task_id = t.task_id then t.name else null end) AS task_name";
 			//0采集，1日编，2月编，
 			if(0 == bean.getStage()){
-				selectSql += ",(case when s.block_id is not null and s.block_id = b.block_id and bm.LATEST = 1 and b.block_id = bm.block_id then bm.COLLECT_PLAN_START_DATE else null end) AS COLLECT_PLAN_START_DATE_b";
-				selectSql += ",(case when s.block_id is not null and s.block_id = b.block_id and bm.LATEST = 1 and b.block_id = bm.block_id then bm.COLLECT_PLAN_END_DATE else null end) AS COLLECT_PLAN_END_DATE_b";
-				selectSql += ",(case when s.task_id is not null and s.task_id = t.task_id then t.COLLECT_PLAN_START_DATE else null end) AS COLLECT_PLAN_START_DATE_t";
-				selectSql += ",(case when s.task_id is not null and s.task_id = t.task_id then t.COLLECT_PLAN_END_DATE else null end) AS COLLECT_PLAN_END_DATE_t";
+				selectSql += ",(case when s.block_id is not null and s.block_id = b.block_id and bm.LATEST = 1 and b.block_id = bm.block_id then bm.COLLECT_PLAN_START_DATE else null end) AS COLLECT_PLAN_START_DATE";
+				selectSql += ",(case when s.block_id is not null and s.block_id = b.block_id and bm.LATEST = 1 and b.block_id = bm.block_id then bm.COLLECT_PLAN_END_DATE else null end) AS COLLECT_PLAN_END_DATE";
 			}else if(1 == bean.getStage()){
-				selectSql += ",(case when s.block_id is not null and s.block_id = b.block_id and bm.LATEST = 1 and b.block_id = bm.block_id then bm.DAY_EDIT_PLAN_START_DATE else null end) AS DAY_EDIT_PLAN_START_DATE_b";
-				selectSql += ",(case when s.block_id is not null and s.block_id = b.block_id and bm.LATEST = 1 and b.block_id = bm.block_id then bm.DAY_EDIT_PLAN_END_DATE else null end) AS DAY_EDIT_PLAN_END_DATE_b";
-				selectSql += ",(case when s.task_id is not null and s.task_id = t.task_id then t.DAY_EDIT_PLAN_START_DATE else null end) AS DAY_EDIT_PLAN_START_DATE_t";
-				selectSql += ",(case when s.task_id is not null and s.task_id = t.task_id then t.DAY_EDIT_PLAN_END_DATE else null end) AS DAY_EDIT_PLAN_END_DATE_t";
+				selectSql += ",(case when s.block_id is not null and s.block_id = b.block_id and bm.LATEST = 1 and b.block_id = bm.block_id then bm.DAY_EDIT_PLAN_START_DATE else null end) AS DAY_EDIT_PLAN_START_DATE";
+				selectSql += ",(case when s.block_id is not null and s.block_id = b.block_id and bm.LATEST = 1 and b.block_id = bm.block_id then bm.DAY_EDIT_PLAN_END_DATE else null end) AS DAY_EDIT_PLAN_END_DATE";
 			}else if(2 == bean.getStage()){
 				selectSql += ",(case when s.block_id is not null and s.block_id = b.block_id and bm.LATEST = 1 and b.block_id = bm.block_id then bm.MONTH_EDIT_PLAN_START_DATE else null end) AS MONTH_EDIT_PLAN_START_DATE_b";
 				selectSql += ",(case when s.block_id is not null and s.block_id = b.block_id and bm.LATEST = 1 and b.block_id = bm.block_id then bm.MONTH_EDIT_PLAN_END_DATE else null end) AS MONTH_EDIT_PLAN_END_DATE_b";
-				selectSql += ",(case when s.task_id is not null and s.task_id = t.task_id then t.C_MONTH_EDIT_PLAN_START_DATE else null end) AS C_MONTH_EDIT_PLAN_START_DATE_t";
-				selectSql += ",(case when s.task_id is not null and s.task_id = t.task_id then t.C_MONTH_EDIT_PLAN_END_DATE else null end) AS C_MONTH_EDIT_PLAN_END_DATE_t";	
+				selectSql += ",(case when s.task_id is not null and s.task_id = t.task_id then t.MONTH_EDIT_PLAN_START_DATE else null end) AS MONTH_EDIT_PLAN_START_DATE_t";
+				selectSql += ",(case when s.task_id is not null and s.task_id = t.task_id then t.MONTH_EDIT_PLAN_END_DATE else null end) AS MONTH_EDIT_PLAN_END_DATE_t";	
 			}
 			
 			selectSql =  selectSql + " from SUBTASK s, Task t, Block b, Block_man bm "
 					+ " where (s.block_id=b.block_id or s.task_id=t.task_id)"
-					+ " and b.block_id = bm.block_id";
+					+ " and b.block_id = bm.block_id"
+					+ " and s.stage=" + bean.getStage();
 			//筛选条件
 			if(bean!=null&&bean.getBlockId()!=null && StringUtils.isNotEmpty(bean.getBlockId().toString())){
 				selectSql += " and block_id = " + bean.getBlockId();
@@ -281,74 +289,40 @@ public class SubtaskService {
 							subtask.setBlock(block);
 							//blockMan
 							BlockMan blockMan = new BlockMan();
-							try{
-								if(rs.findColumn("COLLECT_PLAN_START_DATE_b") > 0){
-									blockMan.setCollectPlanStartDate(DateUtils.dateToString(rs.getTimestamp("COLLECT_PLAN_START_DATE_b")));
-									blockMan.setCollectPlanStartDate(DateUtils.dateToString(rs.getTimestamp("COLLECT_PLAN_END_DATE_b")));
-								}
+							//采集
+							if(0==rs.getInt("STAGE")){
+								blockMan.setCollectPlanStartDate(DateUtils.dateToString(rs.getTimestamp("COLLECT_PLAN_START_DATE")));
+								blockMan.setCollectPlanStartDate(DateUtils.dateToString(rs.getTimestamp("COLLECT_PLAN_END_DATE")));
 							}
-							catch (SQLException e) {
-						        int a = 1;
-						    }
-							try{
-								if(rs.findColumn("COLLECT_PLAN_START_DATE_b") > 0){
-									blockMan.setDayEditPlanStartDate(DateUtils.dateToString(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE_b")));
-									blockMan.setDayEditPlanStartDate(DateUtils.dateToString(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE_b")));
-								}
+							//日编
+							if(1==rs.getInt("STAGE")){
+								blockMan.setDayEditPlanStartDate(DateUtils.dateToString(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE")));
+								blockMan.setDayEditPlanStartDate(DateUtils.dateToString(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE")));
 							}
-							catch (SQLException e) {
-						        int a = 1;
-						    }
-							try{
-								if(rs.findColumn("COLLECT_PLAN_START_DATE_b") > 0){
-									blockMan.setMonthEditPlanStartDate(DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE_b")));
-									blockMan.setMonthEditPlanStartDate(DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE_b")));
-								}
+							//月编
+							if(2==rs.getInt("STAGE")){
+								blockMan.setMonthEditPlanStartDate(DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE_b")));
+								blockMan.setMonthEditPlanStartDate(DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE_b")));
 							}
-							catch (SQLException e) {
-						        int a = 1;
-						    }
+							
 							subtask.setBlockMan(blockMan);
 						}
 						
-						//与task关联，返回block信息。
+						//与task关联，返回task信息。
 						if(rs.getInt("task_id") > 0){
 							//task
 							Task task = new Task();
 							task.setTaskId(rs.getInt("task_id"));
 							task.setDescp(rs.getString("task_descp"));
 							task.setName(rs.getString("task_name"));
-							
-							try{
-								if(rs.findColumn("COLLECT_PLAN_START_DATE_t") > 0){
-									task.setCollectPlanStartDate(rs.getTimestamp("COLLECT_PLAN_START_DATE_t"));
-									task.setCollectPlanStartDate(rs.getTimestamp("COLLECT_PLAN_END_DATE_t"));
-								}
-							}
-							catch (SQLException e) {
-						        int a = 1;
-						    }
-							try{
-								if(rs.findColumn("COLLECT_PLAN_START_DATE_t") > 0){
-									task.setDayEditPlanStartDate(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE_t"));
-									task.setDayEditPlanStartDate(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE_t"));
-								}
-							}
-							catch (SQLException e) {
-						        int a = 1;
-						    }
-							try{
-								if(rs.findColumn("COLLECT_PLAN_START_DATE_t") > 0){
-									task.setCMonthEditPlanStartDate(rs.getTimestamp("C_MONTH_EDIT_PLAN_START_DATE_t"));
-									task.setCMonthEditPlanStartDate(rs.getTimestamp("C_MONTH_EDIT_PLAN_END_DATE_t"));
-								}
-							}
-							catch (SQLException e) {
-						        int a = 1;
-						    }
+
+							//月编
+							if(2==rs.getInt("STAGE")){
+								task.setMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE_t"));
+								task.setMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE_t"));
+							}	
 							
 							subtask.setTask(task);
-							
 						}
 						
 						list.add(subtask);

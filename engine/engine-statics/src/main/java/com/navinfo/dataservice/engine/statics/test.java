@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.bson.Document;
 
+import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.JtsGeometryConvertor;
 import com.vividsolutions.jts.geom.Polygon;
@@ -64,8 +65,10 @@ public class test {
 	}
 
 	public static void main(String[] args) throws Exception {
-
-		System.out.print(new SimpleDateFormat("yyyyMMddkkmmss").format(new Date()).substring(1,8) );
+		System.out.print((double)2/3*100);
+		
+		
+		
 
 		//
 		// ClassPathXmlApplicationContext context = new

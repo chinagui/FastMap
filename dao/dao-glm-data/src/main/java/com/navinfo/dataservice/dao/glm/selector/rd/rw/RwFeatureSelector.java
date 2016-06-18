@@ -47,9 +47,9 @@ public class RwFeatureSelector implements ISelector {
 				
 				List<IRow> links = new RwLinkSelector(conn).loadRowsByParentId(id, isLock);
 
-				rwFeature.setRwLinks(links);
+				rwFeature.setLinks(links);
 
-				for (IRow row : rwFeature.getRwLinks()) {
+				for (IRow row : rwFeature.getLinks()) {
 					RwLink obj = (RwLink) row;
 
 					rwFeature.rwLinkMap.put(obj.rowId(), obj);

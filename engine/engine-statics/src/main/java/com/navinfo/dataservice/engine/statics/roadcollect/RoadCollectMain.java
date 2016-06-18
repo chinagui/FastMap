@@ -84,7 +84,12 @@ public class RoadCollectMain {
 			Document road = new Document();
 			road.put("total", total);
 			road.put("finish", finish);
-			road.put("percent", StatUtil.formatDouble(finish / total * 100));
+			if (finish==0 || total==0){
+				road.put("percent", 0);
+			}else{
+				road.put("percent", StatUtil.formatDouble(finish / total * 100));
+			}
+			
 			// ------------------------------
 			json.put("road", road);
 			json_list.add(json);

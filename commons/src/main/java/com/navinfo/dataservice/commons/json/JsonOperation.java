@@ -18,7 +18,9 @@ public class JsonOperation {
 	 * JSONObject转类对象，调用方式jsonOperation.jsonToBean(taskJson,Task.class)
 	 */
 	public static Object jsonToBean(JSONObject json,Class classObj){
-		String[] formats={"yyyy-MM-dd HH:mm:ss","yyyy-MM-dd"};  
+		String[] formats={"yyyyMMdd","yyyy-MM-dd HH:mm:ss","yyyy-MM-dd"}; 
+		//String[] formats={"yyyyMMdd"};
+		
 		JSONUtils.getMorpherRegistry().registerMorpher(new TimestampMorpher(formats));  
 		JSONObject taskJson=JSONObject.fromObject(json); 
 		

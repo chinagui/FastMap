@@ -71,11 +71,11 @@ public class RwLink implements IObj {
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
-	private List<IRow> rwNodes = new ArrayList<>();
+	private List<IRow> nodes = new ArrayList<>();
 
 	public Map<String, RwNode> nodeMap = new HashMap<>();
 
-	private List<IRow> rwLinkNames = new ArrayList<>();
+	private List<IRow> names = new ArrayList<>();
 
 	public Map<String, RwLinkName> linkNameMap = new HashMap<>();
 
@@ -175,6 +175,22 @@ public class RwLink implements IObj {
 		this.editFlag = editFlag;
 	}
 
+	public List<IRow> getNodes() {
+		return nodes;
+	}
+
+	public void setNodes(List<IRow> nodes) {
+		this.nodes = nodes;
+	}
+
+	public List<IRow> getNames() {
+		return names;
+	}
+
+	public void setNames(List<IRow> names) {
+		this.names = names;
+	}
+
 	public String getColor() {
 		return color;
 	}
@@ -185,22 +201,6 @@ public class RwLink implements IObj {
 
 	public String getRowId() {
 		return rowId;
-	}
-
-	public List<IRow> getRwNodes() {
-		return rwNodes;
-	}
-
-	public void setRwNodes(List<IRow> rwNodes) {
-		this.rwNodes = rwNodes;
-	}
-
-	public List<IRow> getRwLinkNames() {
-		return rwLinkNames;
-	}
-
-	public void setRwLinkNames(List<IRow> rwLinkNames) {
-		this.rwLinkNames = rwLinkNames;
 	}
 
 	@Override
@@ -260,9 +260,9 @@ public class RwLink implements IObj {
 	public List<List<IRow>> children() {
 		List<List<IRow>> children = new ArrayList<>();
 
-		children.add(this.rwNodes);
+		children.add(this.nodes);
 
-		children.add(this.rwLinkNames);
+		children.add(this.names);
 
 		return children;
 	}
@@ -361,8 +361,8 @@ public class RwLink implements IObj {
 
 			if (json.get(key) instanceof JSONArray) {
 				switch (key) {
-				case "rwNodes":
-					rwNodes.clear();
+				case "nodes":
+					nodes.clear();
 
 					ja = json.getJSONArray(key);
 
@@ -373,12 +373,12 @@ public class RwLink implements IObj {
 
 						row.Unserialize(jo);
 
-						rwNodes.add(row);
+						nodes.add(row);
 					}
 
 					break;
-				case "rwLinkNames":
-					rwLinkNames.clear();
+				case "names":
+					names.clear();
 
 					ja = json.getJSONArray(key);
 
@@ -389,11 +389,17 @@ public class RwLink implements IObj {
 
 						row.Unserialize(jo);
 
-						rwLinkNames.add(row);
+						names.add(row);
 					}
 
 					break;
 				}
+			} else if ("geometry".equals(key)) {
+
+				Geometry jts = GeoTranslator.geojson2Jts(json.getJSONObject(key), 100000, 0);
+
+				this.setGeometry(jts);
+
 			} else if (!"objStatus".equals(key)) {
 
 				Field f = this.getClass().getDeclaredField(key);

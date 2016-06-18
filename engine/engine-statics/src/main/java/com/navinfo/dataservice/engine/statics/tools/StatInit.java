@@ -55,4 +55,18 @@ public class StatInit {
 		}
 		return map;
 	}
+	
+	/**
+	 * 获取 tips库中 track轨迹统计结果，并封装成map返回 支持 根据参数key返回 grid，block，city三种
+	 */
+	public static Map<String, Integer> getPoiSeasonStat(String db_name, String col_name, String key) {
+		Map<String, Integer> map = new HashMap<String, Integer>();
+
+		MongoCursor<Document> iter = new MongoDao(db_name).find(col_name, null).iterator();
+		while (iter.hasNext()) {
+			JSONObject json = JSONObject.fromObject(iter.next());
+			map.put(json.getString(key), json.getInt("total"));
+		}
+		return map;
+	}
 }

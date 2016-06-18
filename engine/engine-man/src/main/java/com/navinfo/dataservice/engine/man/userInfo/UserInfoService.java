@@ -61,51 +61,52 @@ public class UserInfoService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			
-			String updateSql = "update user_info set USER_ID=?, USER_REAL_NAME=?, USER_NICK_NAME=?, USER_PASSWORD=?, USER_EMAIL=?, USER_PHONE=?, USER_LEVEL=?, USER_SCORE=?, USER_ICON=?, USER_GPSID=? where 1=1 ";
+			String updateSql = "update user_info set ";
 			List<Object> values=new ArrayList<Object>();
-			if (bean!=null&&bean.getUserId()!=null && StringUtils.isNotEmpty(bean.getUserId().toString())){
-				updateSql+=" and USER_ID=? ";
-				values.add(bean.getUserId());
-			};
+
 			if (bean!=null&&bean.getUserRealName()!=null && StringUtils.isNotEmpty(bean.getUserRealName().toString())){
-				updateSql+=" and USER_REAL_NAME=? ";
+				updateSql+=" USER_REAL_NAME=? ,";
 				values.add(bean.getUserRealName());
 			};
 			if (bean!=null&&bean.getUserNickName()!=null && StringUtils.isNotEmpty(bean.getUserNickName().toString())){
-				updateSql+=" and USER_NICK_NAME=? ";
+				updateSql+=" USER_NICK_NAME=? ,";
 				values.add(bean.getUserNickName());
 			};
 			if (bean!=null&&bean.getUserPassword()!=null && StringUtils.isNotEmpty(bean.getUserPassword().toString())){
-				updateSql+=" and USER_PASSWORD=? ";
+				updateSql+=" USER_PASSWORD=? ,";
 				values.add(bean.getUserPassword());
 			};
 			if (bean!=null&&bean.getUserEmail()!=null && StringUtils.isNotEmpty(bean.getUserEmail().toString())){
-				updateSql+=" and USER_EMAIL=? ";
+				updateSql+=" USER_EMAIL=? ,";
 				values.add(bean.getUserEmail());
 			};
 			if (bean!=null&&bean.getUserPhone()!=null && StringUtils.isNotEmpty(bean.getUserPhone().toString())){
-				updateSql+=" and USER_PHONE=? ";
+				updateSql+=" USER_PHONE=? ,";
 				values.add(bean.getUserPhone());
 			};
 			if (bean!=null&&bean.getUserLevel()!=null && StringUtils.isNotEmpty(bean.getUserLevel().toString())){
-				updateSql+=" and USER_LEVEL=? ";
+				updateSql+=" USER_LEVEL=? ,";
 				values.add(bean.getUserLevel());
 			};
 			if (bean!=null&&bean.getUserScore()!=null && StringUtils.isNotEmpty(bean.getUserScore().toString())){
-				updateSql+=" and USER_SCORE=? ";
+				updateSql+=" USER_SCORE=? ,";
 				values.add(bean.getUserScore());
 			};
 			if (bean!=null&&bean.getUserIcon()!=null && StringUtils.isNotEmpty(bean.getUserIcon().toString())){
-				updateSql+=" and USER_ICON=? ";
+				updateSql+=" USER_ICON=? ,";
 				values.add(bean.getUserIcon());
 			};
 			if (bean!=null&&bean.getUserGpsid()!=null && StringUtils.isNotEmpty(bean.getUserGpsid().toString())){
-				updateSql+=" and USER_GPSID=? ";
+				updateSql+=" USER_GPSID=? ,";
 				values.add(bean.getUserGpsid());
 			};
+			
+			updateSql = updateSql.substring(0,updateSql.length()-1);
+			updateSql += " where user_id = ?";
+			values.add(bean.getUserId());
+			
 			run.update(conn, 
 					   updateSql, 
-					   values.toArray(),
 					   values.toArray()
 					   );
 		}catch(Exception e){

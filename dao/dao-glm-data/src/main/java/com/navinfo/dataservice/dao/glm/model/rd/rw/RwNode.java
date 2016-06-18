@@ -270,6 +270,12 @@ public class RwNode implements IObj {
 					}
 					break;
 				}
+			} else if ("geometry".equals(key)) {
+
+				Geometry jts = GeoTranslator.geojson2Jts(json.getJSONObject(key), 100000, 0);
+
+				this.setGeometry(jts);
+
 			} else if (!"objStatus".equals(key)) {
 
 				Field f = this.getClass().getDeclaredField(key);

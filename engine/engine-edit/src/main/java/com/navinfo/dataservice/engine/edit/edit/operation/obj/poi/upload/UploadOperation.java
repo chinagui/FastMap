@@ -4,9 +4,7 @@ import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -121,7 +119,7 @@ public class UploadOperation {
 			// fid在IX_POI.POI_NUM中查找不到，并且待上传数据lifecycle不为1，为新增
 			// fid能找到，并且待上传数据lifecycle不为1且对应的IX_POI.U_RECORD不为2（删除），即为修改
 			// fid能找到，并且待上传数据lifecycle为1，即为删除
-			String subQuery = "SELECT poi_num,u_record FROM ix_poi WHERE poi_num=':1'";
+			String subQuery = "SELECT poi_num,u_record FROM ix_poi WHERE poi_num=:1";
 			JSONObject insertObj= new JSONObject();
 			JSONObject updateObj = new JSONObject();
 			JSONObject deleteObj = new JSONObject();
@@ -522,7 +520,7 @@ public class UploadOperation {
 				int groupId = PidService.getInstance().applyPoiGroupId();
 				IxPoiParent parent = new IxPoiParent();
 				List<IRow> parentList = new ArrayList<IRow>();
-				parent.setGroupId(groupId);
+				parent.setPid(groupId);
 				parent.setParentPoiPid(pid);
 				parent.setRowId(uuid.genUuid());
 				parentList.add(parent);
@@ -944,7 +942,7 @@ public class UploadOperation {
 					JSONArray parentList = new JSONArray();
 					groupId = PidService.getInstance().applyPoiGroupId();
 					parent.put("objStatus", ObjStatus.INSERT.toString());
-					parent.put("groupId", groupId);
+					parent.put("pid", groupId);
 					parent.put("parentPoiPid", pid);
 					parent.put("rowId", uuid.genUuid());
 					parentList.add(parent);
@@ -957,7 +955,7 @@ public class UploadOperation {
 					IRow oldParentIRow = oldParentList.get(0);
 					IxPoiParent oldParent = (IxPoiParent)oldParentIRow;
 					parent.put("objStatus", ObjStatus.DELETE.toString());
-					parent.put("groupId", oldParent.getGroupId());
+					parent.put("pid", oldParent.getPid());
 					parent.put("parentPoiPid", oldParent.getPid());
 					parent.put("rowId", oldParent.getRowId());
 					parentList.add(parent);

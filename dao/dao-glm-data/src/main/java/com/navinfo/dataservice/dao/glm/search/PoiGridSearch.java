@@ -41,7 +41,7 @@ public class PoiGridSearch {
 		Connection conn = null;
 		try {
 			manConn = DBConnector.getInstance().getManConnection();
-			String manQuery = "SELECT region_id FROM grid WHERE grid_id=:1";
+			String manQuery = "SELECT daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id=:1";
 			PreparedStatement pstmt = null;
 			ResultSet resultSet = null;
 			int oldRegionId = 0;

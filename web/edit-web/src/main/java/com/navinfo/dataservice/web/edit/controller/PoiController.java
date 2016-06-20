@@ -36,7 +36,7 @@ public class PoiController extends BaseController{
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "/poi/base/download/")
+	@RequestMapping(value = "/poi/base/download")
 	public ModelAndView getPoi(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		String parameter = request.getParameter("parameter");
@@ -69,7 +69,7 @@ public class PoiController extends BaseController{
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "/poi/base/upload/")
+	@RequestMapping(value = "/poi/base/upload")
 	public ModelAndView importPoi(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		String parameter = request.getParameter("parameter");

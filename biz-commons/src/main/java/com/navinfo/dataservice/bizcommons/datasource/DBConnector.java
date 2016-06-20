@@ -43,7 +43,7 @@ public class DBConnector {
 					DbConnectConfig connConfig = null;
 					try {
 						manDb = datahub.getOnlyDbByType("fmMan");
-						connConfig = MultiDataSourceFactory
+						connConfig = DbConnectConfig
 								.createConnectConfig(manDb.getConnectParam());
 					} catch (Exception e) {
 						throw new SQLException("从datahub获取元数据信息失败："
@@ -67,7 +67,7 @@ public class DBConnector {
 					DbConnectConfig connConfig = null;
 					try {
 						metaDb = datahub.getOnlyDbByType("metaRoad");
-						connConfig = MultiDataSourceFactory
+						connConfig = DbConnectConfig
 								.createConnectConfig(metaDb.getConnectParam());
 					} catch (Exception e) {
 						throw new SQLException("从datahub获取元数据信息失败："
@@ -91,7 +91,7 @@ public class DBConnector {
 					DbConnectConfig connConfig = null;
 					try {
 						metaDb = datahub.getOnlyDbByType("nationRoad");
-						connConfig = MultiDataSourceFactory
+						connConfig = DbConnectConfig
 								.createConnectConfig(metaDb.getConnectParam());
 					} catch (Exception e) {
 						throw new SQLException("从datahub获取元数据信息失败："
@@ -115,7 +115,7 @@ public class DBConnector {
 					DbConnectConfig connConfig = null;
 					try {
 						metaDb = datahub.getOnlyDbByType("pidCenter");
-						connConfig = MultiDataSourceFactory
+						connConfig = DbConnectConfig
 								.createConnectConfig(metaDb.getConnectParam());
 					} catch (Exception e) {
 						throw new SQLException("从datahub获取元数据信息失败："
@@ -144,7 +144,7 @@ public class DBConnector {
 						DbInfo db = datahub.getDbById(dbId);
 						System.out.println(db.toString());
 
-						DbConnectConfig connConfig = MultiDataSourceFactory
+						DbConnectConfig connConfig = DbConnectConfig
 								.createConnectConfig(db.getConnectParam());
 
 						dataSourceMap.put(str, MultiDataSourceFactory
@@ -170,7 +170,7 @@ public class DBConnector {
 					DbConnectConfig connConfig = null;
 					try {
 						db = datahub.getOnlyDbByType("fmStat");
-						connConfig = MultiDataSourceFactory
+						connConfig = DbConnectConfig
 								.createConnectConfig(db.getConnectParam());
 					} catch (Exception e) {
 						throw new SQLException("从datahub获取元数据信息失败："

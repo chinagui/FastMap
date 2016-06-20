@@ -31,7 +31,7 @@ public class ManApiImpl implements ManApi {
 	public Region queryByRegionId(Integer regionId) throws Exception {
 		Region region = new Region();
 		region.setRegionId(regionId);
-		return new RegionService().query(region);
+		return RegionService.getInstance().query(region);
 		
 	}
 	@Override
@@ -50,7 +50,7 @@ public class ManApiImpl implements ManApi {
 	}
 	@Override
 	public List<Region> queryRegionList() throws Exception {
-		return new RegionService().list();
+		return RegionService.getInstance().list();
 	}
 	
 }

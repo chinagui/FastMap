@@ -33,7 +33,7 @@ public class BlockController extends BaseController {
 	private BlockService service;
 
 	
-	@RequestMapping(value = "/block/open/")
+	@RequestMapping(value = "/block/open")
 	public ModelAndView create(HttpServletRequest request){
 		try{	
 			String parameter = request.getParameter("parameter");
@@ -78,7 +78,7 @@ public class BlockController extends BaseController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/block/listByProduce/")
+	@RequestMapping(value = "/block/listByProduce")
 	public ModelAndView listByProduce(HttpServletRequest request){
 		try{			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			

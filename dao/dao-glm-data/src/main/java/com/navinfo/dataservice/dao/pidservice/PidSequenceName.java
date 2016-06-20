@@ -2,6 +2,11 @@ package com.navinfo.dataservice.dao.pidservice;
 
 public class PidSequenceName {
 	public static final String adAdminNodeName = "SEQ_AD_NODE";
+	
+	public static final String rwNodeName = "SEQ_RW_NODE";
+	
+	public static final String rwLinkName = "SEQ_RW_LINK";
+	
 	public static final String adAdminLinkName = "SEQ_AD_LINK";
 	public static final String adAdminFaceName = "SEQ_AD_FACE";
 

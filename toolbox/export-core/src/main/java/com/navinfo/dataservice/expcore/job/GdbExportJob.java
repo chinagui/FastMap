@@ -3,6 +3,7 @@ package com.navinfo.dataservice.expcore.job;
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -34,7 +35,7 @@ public class GdbExportJob extends AbstractJob {
 			//1. 导出源预处理
 			DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
 			DbInfo sourceDb = datahub.getDbById(req.getSourceDbId());
-			OracleSchema sourceSchema = new OracleSchema(MultiDataSourceFactory.createConnectConfig(sourceDb.getConnectParam()));
+			OracleSchema sourceSchema = new OracleSchema(DbConnectConfig.createConnectConfig(sourceDb.getConnectParam()));
 			OracleInput input = new OracleInput(sourceSchema,req.getFeatureType()
 					,req.getCondition(),req.getConditionParams(),req.getGdbVersion());
 			input.initSource();
@@ -43,7 +44,7 @@ public class GdbExportJob extends AbstractJob {
 			response("导出源预处理完成",null);
 			//2.导出目标预处理
 			DbInfo targetDb = datahub.getDbById(req.getTargetDbId());
-			OracleSchema targetSchema = new OracleSchema(MultiDataSourceFactory.createConnectConfig(targetDb.getConnectParam()));
+			OracleSchema targetSchema = new OracleSchema(DbConnectConfig.createConnectConfig(targetDb.getConnectParam()));
 			ThreadLocalContext ctx = new ThreadLocalContext(log);
 			Oracle2OracleDataOutput output = new Oracle2OracleDataOutput(targetSchema,req.getCheckExistTables(),req.getWhenExist(),req.getTableReNames(),ctx);
 			response("导出目标预处理完成",null);

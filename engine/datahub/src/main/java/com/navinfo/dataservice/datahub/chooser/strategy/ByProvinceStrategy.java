@@ -52,7 +52,7 @@ public class ByProvinceStrategy extends DbServerStrategy implements Observer{
 		//以后可以实现从serverProvinceMap中取
 		Connection conn = null;
 		try{
-			String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.server_type,p.province_code FROM unified_db_server s,db_server_province p WHERE s.server_id=p.DB_SERVER_ID and s.use_type like ? and p.province_code=?";
+			String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.server_type,S.SERVICE_NAME,p.province_code FROM unified_db_server s,db_server_province p WHERE s.server_id=p.DB_SERVER_ID and s.use_type like ? and p.province_code=?";
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			DbServer db = run.query(conn, sql,new ResultSetHandler<DbServer>(){
@@ -66,6 +66,7 @@ public class ByProvinceStrategy extends DbServerStrategy implements Observer{
 						String type = rs.getString("SERVER_TYPE");
 						inDb = new DbServer(type,ip,port);
 						inDb.setSid(rs.getInt("SERVER_ID"));
+						inDb.setServiceName(rs.getString("SERVICE_NAME"));
 					}
 					return inDb;
 				}

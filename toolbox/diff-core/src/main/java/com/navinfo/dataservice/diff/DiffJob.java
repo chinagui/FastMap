@@ -18,6 +18,7 @@ import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.bizcommons.glm.Glm;
 import com.navinfo.dataservice.bizcommons.glm.GlmCache;
 import com.navinfo.dataservice.bizcommons.glm.GlmTable;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
@@ -96,10 +97,10 @@ public class DiffJob extends AbstractJob
 			//shcema
 			DbInfo leftDb = DbService.getInstance().getDbById(diffConfig.getLeftDbId());
 			OracleSchema leftSchema = new OracleSchema(
-					MultiDataSourceFactory.createConnectConfig(leftDb.getConnectParam()));
+					DbConnectConfig.createConnectConfig(leftDb.getConnectParam()));
 			DbInfo rightDb = DbService.getInstance().getDbById(diffConfig.getRightDbId());
 			OracleSchema rightSchema = new OracleSchema(
-					MultiDataSourceFactory.createConnectConfig(rightDb.getConnectParam()));
+					DbConnectConfig.createConnectConfig(rightDb.getConnectParam()));
 			//安装EQUALS
 			installPcks(leftSchema);
 			//datahub创建时统一都赋上了跨用户访问权限

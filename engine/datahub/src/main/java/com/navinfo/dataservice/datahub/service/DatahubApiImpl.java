@@ -32,7 +32,7 @@ public class DatahubApiImpl implements DatahubApi {
 
 	@Override
 	public DbInfo getOnlyDbByType(String bizType) throws Exception {
-		return DbService.getInstance().getOnlyDbByType(bizType);
+		return DbService.getInstance().getOnlyDbByBizType(bizType);
 	}
 
 }

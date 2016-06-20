@@ -24,7 +24,7 @@ public class ZoneLinkKind implements IRow {
 
 	private int linkPid;
 	private int kind =1;//0  假想 1  AOIZone 边界线  2  KDZone 边界线
-    private int from =1 ;//0  未调查1  无属性
+    private int form =1 ;//0  未调查1  无属性
 
 	private String rowId;
 
@@ -95,7 +95,7 @@ public class ZoneLinkKind implements IRow {
 	public void copy(IRow row) {
 		ZoneLinkKind zoneLinkKind = (ZoneLinkKind) row;
 		zoneLinkKind.setKind(zoneLinkKind.getKind());
-		zoneLinkKind.setFrom(zoneLinkKind.getFrom());
+		zoneLinkKind.setForm(zoneLinkKind.getForm());
 		zoneLinkKind.setLinkPid(zoneLinkKind.getLinkPid());
 		zoneLinkKind.setRowId(zoneLinkKind.getRowId());
 	}
@@ -128,12 +128,13 @@ public class ZoneLinkKind implements IRow {
 		this.kind = kind;
 	}
 
-	public int getFrom() {
-		return from;
+
+	public int getForm() {
+		return form;
 	}
 
-	public void setFrom(int from) {
-		this.from = from;
+	public void setForm(int form) {
+		this.form = form;
 	}
 
 	@Override

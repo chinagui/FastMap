@@ -86,10 +86,10 @@ public class IxPoiParkingSelector implements ISelector {
 	public List<IRow> loadRowsByParentId(int id, boolean isLock)
 			throws Exception {
 		List<IRow> rows = new ArrayList<IRow>();
-		
+		IxPoiParking ixPoiParking = new IxPoiParking();
 
 		StringBuilder sb = new StringBuilder(
-				"select * from ix_poi_introduction WHERE poi_pid  = :1 and  u_record !=2");
+				"select * from " + ixPoiParking.tableName() + " WHERE poi_pid  = :1 and  u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -107,7 +107,6 @@ public class IxPoiParkingSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 
 			while(resultSet.next()) {
-				IxPoiParking ixPoiParking = new IxPoiParking();
 				this.setAttr(ixPoiParking, resultSet);
 				rows.add(ixPoiParking);
 			} return rows;

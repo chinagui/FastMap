@@ -13,7 +13,6 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -28,9 +27,16 @@ import com.navinfo.navicommons.exception.ServiceException;
  * @date 2016-06-08 02:32:17
  * @Description: TODO
  */
-@Service
 public class RegionService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
+	
+	private RegionService(){}
+	private static class SingletonHolder{
+		private static final RegionService INSTANCE =new RegionService();
+	}
+	public static RegionService getInstance(){
+		return SingletonHolder.INSTANCE;
+	}
 
 	public void create(JSONObject json) throws ServiceException {
 		Connection conn = null;
@@ -312,5 +318,23 @@ public class RegionService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	
+	class RegionRsHandler implements ResultSetHandler<List<Region>>{
+
+		@Override
+		public List<Region> handle(ResultSet rs) throws SQLException {
+			List<Region> results = new ArrayList<Region>();
+			while(rs.next()){
+				Region region = new Region();
+				region.setRegionId(rs.getInt("REGION_ID"));
+				region.setRegionName(rs.getString("REGION_NAME"));
+				region.setDailyDbId(rs.getInt("DAILY_DB_ID"));
+				region.setMonthlyDbId(rs.getInt("MONTHLY_DB_ID"));
+				results.add(region);
+			}
+			return results;
+		}
+		
 	}
 }

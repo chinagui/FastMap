@@ -26,10 +26,7 @@ import com.navinfo.navicommons.database.Page;
 @Controller
 public class RegionController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	@Autowired 
-	private RegionService service;
 
-	
 	@RequestMapping(value = "/region/create")
 	public ModelAndView create(HttpServletRequest request){
 		try{	
@@ -41,7 +38,7 @@ public class RegionController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
-			service.create(dataJson);			
+			RegionService.getInstance().create(dataJson);			
 			return new ModelAndView("jsonView", success("创建成功"));
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);
@@ -55,7 +52,7 @@ public class RegionController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
-			service.update(dataJson);			
+			RegionService.getInstance().update(dataJson);			
 			return new ModelAndView("jsonView", success("修改成功"));
 		}catch(Exception e){
 			log.error("修改失败，原因："+e.getMessage(), e);
@@ -69,7 +66,7 @@ public class RegionController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
-			service.delete(dataJson);			
+			RegionService.getInstance().delete(dataJson);			
 			return new ModelAndView("jsonView", success("删除成功"));
 		}catch(Exception e){
 			log.error("删除失败，原因："+e.getMessage(), e);
@@ -88,7 +85,7 @@ public class RegionController extends BaseController {
 			if (StringUtils.isNotEmpty(curPage)){
 				curPageNum = Integer.parseInt(curPage);
 			}
-			Page data = service.list(dataJson,curPageNum);			
+			Page data = RegionService.getInstance().list(dataJson,curPageNum);			
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);
@@ -104,7 +101,7 @@ public class RegionController extends BaseController {
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
 			Region bean = (Region) JSONObject.toBean(dataJson, Region.class);
-			Region data = service.query(bean);			
+			Region data = RegionService.getInstance().query(bean);			
 			return new ModelAndView("jsonView", success(JSONObject.fromObject(data)));
 		}catch(Exception e){
 			log.error("获取明细失败，原因："+e.getMessage(), e);

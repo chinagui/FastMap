@@ -45,12 +45,15 @@ public class Operation implements IOperation {
 		}
 
 		Map<Geometry, JSONObject> map = new HashMap<Geometry, JSONObject>();
-
+		
+		//有挂接的线
 		if (command.getCatchLinks().size() > 0) {
-			map = RwLinkOperateUtils.splitRdLink(command.getGeometry(), command.getsNodePid(), command.geteNodePid(),
+			map = RwLinkOperateUtils.splitRwLink(command.getGeometry(), command.getsNodePid(), command.geteNodePid(),
 					command.getCatchLinks(), result);
 
 		}
+		
+		//没有挂接的线
 		if (command.getCatchLinks().size() == 0 || map.size() == 0) {
 			JSONObject se = new JSONObject();
 
@@ -69,9 +72,9 @@ public class Operation implements IOperation {
 	}
 
 	/*
-	 * 创建RDLINK 不跨图幅生成线
+	 * 创建RwLink 不跨图幅生成线
 	 */
-	private void createRdLinkWithNoMesh(Geometry g, int sNodePid, int eNodePid, Result result) throws Exception {
+	private void createRwLinkWithNoMesh(Geometry g, int sNodePid, int eNodePid, Result result) throws Exception {
 		if (g != null) {
 			JSONObject node = RwLinkOperateUtils.createRwNodeForLink(g, sNodePid, eNodePid, result);
 			RwLink link = RwLinkOperateUtils.addLink(g, (int) node.get("s"), (int) node.get("e"), result);
@@ -85,20 +88,20 @@ public class Operation implements IOperation {
 	}
 
 	/*
-	 * 创建RDLINK针对跨图幅有两种情况 1.跨图幅和图幅交集是LineString 2.跨图幅和图幅交集是MultineString
+	 * 创建RwLink针对跨图幅有两种情况 1.跨图幅和图幅交集是LineString 2.跨图幅和图幅交集是MultineString
 	 * 跨图幅需要生成和图廓线的交点
 	 */
 
-	private void createRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result, String meshId)
+	private void createRwLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result, String meshId)
 			throws Exception {
 		if (g != null) {
 
 			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
-				this.calRdLinkWithMesh(g, maps, result);
+				this.calRwLinkWithMesh(g, maps, result);
 			}
 			if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
 				for (int i = 0; i < g.getNumGeometries(); i++) {
-					calRdLinkWithMesh(g.getGeometryN(i), maps, result);
+					calRwLinkWithMesh(g.getGeometryN(i), maps, result);
 				}
 
 			}
@@ -106,10 +109,10 @@ public class Operation implements IOperation {
 	}
 
 	/*
-	 * 创建RDLINK 针对跨图幅创建图廓点不能重复
+	 * 创建RwLink 针对跨图幅创建图廓点不能重复
 	 */
-	private void calRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result) throws Exception {
-		// 定义创建RDLINK的起始Pid 默认为0
+	private void calRwLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result) throws Exception {
+		// 定义创建RwLink的起始Pid 默认为0
 		int sNodePid = 0;
 		int eNodePid = 0;
 		// 判断新创建的线起点对应的pid是否存在，如果存在取出赋值
@@ -148,7 +151,7 @@ public class Operation implements IOperation {
 			Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
 			// 不跨图幅
 			if (meshes.size() == 1) {
-				createRdLinkWithNoMesh(g, (int) map.get(g).get("s"), (int) map.get(g).get("e"), result);
+				createRwLinkWithNoMesh(g, (int) map.get(g).get("s"), (int) map.get(g).get("e"), result);
 			}
 			// 跨图幅
 			else {
@@ -160,7 +163,7 @@ public class Operation implements IOperation {
 					String meshIdStr = it.next();
 					Geometry geomInter = MeshUtils.linkInterMeshPolygon(g, MeshUtils.mesh2Jts(meshIdStr));
 					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					this.createRdLinkWithMesh(geomInter, maps, result, meshIdStr);
+					this.createRwLinkWithMesh(geomInter, maps, result, meshIdStr);
 				}
 			}
 
@@ -168,7 +171,12 @@ public class Operation implements IOperation {
 
 	}
 
-	public void breakLine(Result result) throws Exception {
+	/**
+	 * RWLINK打断操作
+	 * @param result 结果集
+	 * @throws Exception
+	 */
+	private void breakLine(Result result) throws Exception {
 		for (int i = 0; i < command.getCatchLinks().size(); i++) {
 			JSONObject json = command.getCatchLinks().getJSONObject(i);
 			if (json.containsKey("breakNode")) {

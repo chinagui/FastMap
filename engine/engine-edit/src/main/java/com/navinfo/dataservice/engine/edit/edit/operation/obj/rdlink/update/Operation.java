@@ -587,8 +587,6 @@ public class Operation implements IOperation {
 
 					name.setLinkPid(this.updateLink.getPid());
 					
-					name.setMesh(this.updateLink.getMeshId());
-					
 					result.insertObject(name, ObjStatus.INSERT, updateLink.pid());
 
 				}

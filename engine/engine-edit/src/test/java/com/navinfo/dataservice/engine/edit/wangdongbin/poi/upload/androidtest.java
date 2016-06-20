@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.wangdongbin.poi;
+package com.navinfo.dataservice.engine.edit.wangdongbin.poi.upload;
 
 import org.junit.Before;
 import org.junit.Test;

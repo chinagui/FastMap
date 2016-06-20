@@ -51,6 +51,11 @@
 		
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>cop-waistcoat</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>engine-man</artifactId>
 		</dependency>
 		

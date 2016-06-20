@@ -14,7 +14,6 @@ import com.navinfo.dataservice.datahub.exception.DataHubException;
  */
 public abstract class DbServerStrategy {
 	
-	public static final String BY_PROVINCE = "by_province";
 	public static final String USE_REF_DB = "use_ref_db";
 	public static final String RELATIVELY_IDLE = "relatively_idle";
 	public static final String RANDOM = "random";
@@ -22,6 +21,6 @@ public abstract class DbServerStrategy {
 	public DbServerStrategy(AbstractStrategyLock strategyLock){
 		
 	}
-	public abstract DbServer getPriorDbServer(String useType,Map<String,String> params)throws DataHubException;
-	public abstract DbServer getPriorDbServer(List<DbServer> dbServers,Map<String,String> params)throws DataHubException;
+	public abstract DbServer getPriorDbServer(String useType,Map<String,Object> params)throws DataHubException;
+	public abstract DbServer getPriorDbServer(List<DbServer> dbServers,Map<String,Object> params)throws DataHubException;
 }

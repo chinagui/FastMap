@@ -1,8 +1,6 @@
 package com.navinfo.dataservice.job.datahub;
 
 import com.alibaba.druid.util.StringUtils;
-import com.navinfo.dataservice.commons.database.DbConnectConfig;
-import com.navinfo.dataservice.commons.database.DbServerType;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
@@ -20,10 +18,7 @@ public class CreateDbJobRequest extends AbstractJobRequest {
 	protected String userPasswd;
 	protected String bizType;
 	protected String descp;
-	protected String gdbVersion;
-	protected String refDbName;
-	protected String refUserName;
-	protected String refBizType;
+	protected int refDbId;
 
 	public String getServerType() {
 		return serverType;
@@ -73,36 +68,13 @@ public class CreateDbJobRequest extends AbstractJobRequest {
 		this.descp = descp;
 	}
 
-	public String getGdbVersion() {
-		return gdbVersion;
+
+	public int getRefDbId() {
+		return refDbId;
 	}
 
-	public void setGdbVersion(String gdbVersion) {
-		this.gdbVersion = gdbVersion;
-	}
-
-	public String getRefDbName() {
-		return refDbName;
-	}
-
-	public void setRefDbName(String refDbName) {
-		this.refDbName = refDbName;
-	}
-
-	public String getRefUserName() {
-		return refUserName;
-	}
-
-	public void setRefUserName(String refUserName) {
-		this.refUserName = refUserName;
-	}
-
-	public String getRefBizType() {
-		return refBizType;
-	}
-
-	public void setRefBizType(String refBizType) {
-		this.refBizType = refBizType;
+	public void setRefDbId(int refDbId) {
+		this.refDbId = refDbId;
 	}
 
 	@Override

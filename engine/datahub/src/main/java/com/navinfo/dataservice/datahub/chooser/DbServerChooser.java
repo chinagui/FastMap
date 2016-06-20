@@ -77,7 +77,7 @@ public class DbServerChooser implements Observer{
 			return null;
 		}
 	}
-	public DbServer getPriorDbServer(String bizType,String strategyType,Map<String,String> strategyParamMap)throws DataHubException{
+	public DbServer getPriorDbServer(String bizType,String strategyType,Map<String,Object> strategyParamMap)throws DataHubException{
 		if("true".equals(SystemConfigFactory.getSystemConfig().getValue("dbserver.cache.enable"))){
 			List<DbServer> serList = dbServerMap.get(bizType);
 			if(serList==null||serList.isEmpty()){

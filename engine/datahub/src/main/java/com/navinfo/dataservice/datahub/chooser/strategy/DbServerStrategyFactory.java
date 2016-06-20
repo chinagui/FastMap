@@ -28,9 +28,7 @@ public class DbServerStrategyFactory {
 			return strategyMap.get(type);
 		}else{
 			DbServerStrategy strategy = null;
-			if(DbServerStrategy.BY_PROVINCE.equals(type)){
-				strategy = new ByProvinceStrategy(strategyLock);
-			}else if(DbServerStrategy.RANDOM.equals(type)){
+			if(DbServerStrategy.RANDOM.equals(type)){
 				strategy = new RandomStrategy(strategyLock);
 			}else if(DbServerStrategy.USE_REF_DB.equals(type)){
 				strategy = new UseRefDbStrategy(strategyLock);

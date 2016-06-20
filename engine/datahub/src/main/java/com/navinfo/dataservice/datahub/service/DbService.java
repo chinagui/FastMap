@@ -47,13 +47,12 @@ public class DbService {
 	
 	protected String mainSql = "SELECT D.DB_ID,D.DB_NAME,D.DB_USER_NAME,D.DB_USER_PASSWD,D.DB_ROLE,D.BIZ_TYPE,D.TABLESPACE_NAME,D.GDB_VERSION,D.DB_STATUS,D.CREATE_TIME,D.DESCP,S.SERVER_ID,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME FROM DB_HUB D,DB_SERVER S ";
 
-	public DbInfo createOracleDb(String userName,String userPasswd,String bizType,String descp,String gdbVersion,String refUserName,String refBizType)throws DataHubException{
+	public DbInfo createOracleDb(String userName,String userPasswd,String bizType,String descp,String gdbVersion,int refDbId)throws DataHubException{
 		String strategyType = null;
-		Map<String,String> strategyParam = new HashMap<String,String>();
-		if(StringUtils.isNotEmpty(refUserName)&&StringUtils.isNotEmpty(refBizType)){
+		Map<String,Object> strategyParam = new HashMap<String,Object>();
+		if(refDbId>0){
 			strategyType = DbServerStrategy.USE_REF_DB;
-			strategyParam.put("refUserName", refUserName);
-			strategyParam.put("refBizType", refBizType);
+			strategyParam.put("refDbId", refDbId);
 			log.debug("使用参考策略创建新库。");
 		}
 //		else if(StringUtils.isNotEmpty(provCode)){
@@ -83,13 +82,12 @@ public class DbService {
 	 * @return
 	 * @throws DataHubException
 	 */
-	public DbInfo createMongoDb(String dbName,String bizType,String descp,String gdbVersion,String refDbName,String refBizType)throws DataHubException{
+	public DbInfo createMongoDb(String dbName,String bizType,String descp,String gdbVersion,int refDbId)throws DataHubException{
 		String strategyType = null;
-		Map<String,String> strategyParam = new HashMap<String,String>();
-		if(StringUtils.isNotEmpty(refDbName)&&StringUtils.isNotEmpty(refBizType)){
+		Map<String,Object> strategyParam = new HashMap<String,Object>();
+		if(refDbId>0){
 			strategyType = DbServerStrategy.USE_REF_DB;
-			strategyParam.put("refDbName", refDbName);
-			strategyParam.put("refBizType", refBizType);
+			strategyParam.put("refDbId", refDbId);
 			log.debug("使用参考策略创建新库。");
 		}
 //		else if(StringUtils.isNotEmpty(provCode)){
@@ -104,17 +102,17 @@ public class DbService {
 		
 		return createDb(DbServerType.TYPE_MONGODB,dbName,null,null,bizType,descp, gdbVersion, strategyType, strategyParam);
 	}
-	public  DbInfo createDb(String serverType,String dbName,String userName,String userPasswd,String bizType,String descp,String gdbVersion,String refDbName,String refUserName,String refBizType)throws DataHubException{
+	public  DbInfo createDb(String serverType,String dbName,String userName,String userPasswd,String bizType,String descp,String gdbVersion,int refDbId)throws DataHubException{
 		if(DbServerType.TYPE_ORACLE.equals(serverType)){
-			return createOracleDb(userName,userPasswd, bizType, descp, gdbVersion,refUserName,refBizType);
+			return createOracleDb(userName,userPasswd, bizType, descp, gdbVersion,refDbId);
 		}else if(DbServerType.TYPE_MONGODB.equals(serverType)){
-			return createMongoDb(dbName,bizType,descp,gdbVersion,refDbName,refBizType);
+			return createMongoDb(dbName,bizType,descp,gdbVersion,refDbId);
 		}else{
 			throw new DataHubException("暂不支持的库类型");
 		}
 	}
 	
-	private DbInfo createDb(String serverType,String dbName,String userName,String userPasswd,String bizType,String descp,String gdbVersion,String strategyType,Map<String,String> strategyParamMap)throws DataHubException{
+	private DbInfo createDb(String serverType,String dbName,String userName,String userPasswd,String bizType,String descp,String gdbVersion,String strategyType,Map<String,Object> strategyParamMap)throws DataHubException{
 		DbInfo db = null;
 		Connection conn = null;
 		int dbId = 0;

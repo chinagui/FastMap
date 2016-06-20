@@ -32,10 +32,10 @@ public class CreateDbJob extends AbstractJob {
 		try{
 			if(DbServerType.TYPE_ORACLE.equals(req.getServerType())){
 				db = DbService.getInstance().createOracleDb(req.getUserName(),req.getUserPasswd(),req.getBizType(),req.getDescp()
-						,req.getGdbVersion(),req.getRefUserName(),req.getRefBizType());
+						,req.getGdbVersion(),req.getRefDbId());
 			}else{
 				db = DbService.getInstance().createMongoDb(req.getDbName(),req.getBizType(),req.getDescp()
-						,req.getGdbVersion(),req.getRefDbName(),req.getRefBizType());
+						,req.getGdbVersion(),req.getRefDbId());
 			}
 			Map<String,Object> data = new HashMap<String,Object>();
 			data.put("outDbId", db.getDbId());

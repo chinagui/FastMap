@@ -33,7 +33,7 @@ public class RandomStrategy extends DbServerStrategy {
 	 * @see com.navinfo.dataservice.datahub.chooser.strategy.DbServerStrategy#getPriorDbServer(java.util.Set)
 	 */
 	@Override
-	public DbServer getPriorDbServer(List<DbServer> dbServers,Map<String,String> params)
+	public DbServer getPriorDbServer(List<DbServer> dbServers,Map<String,Object> params)
 			throws DataHubException {
 		if(dbServers.size()>1){
 			int index = RandomUtils.nextInt(dbServers.size());
@@ -44,7 +44,7 @@ public class RandomStrategy extends DbServerStrategy {
 		}
 	}
 	@Override
-	public DbServer getPriorDbServer(String bizType,Map<String, String> params)
+	public DbServer getPriorDbServer(String bizType,Map<String, Object> params)
 			throws DataHubException {
 		Connection conn = null;
 		try{

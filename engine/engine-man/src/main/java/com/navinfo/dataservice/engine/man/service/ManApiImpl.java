@@ -54,6 +54,10 @@ public class ManApiImpl implements ManApi {
 	public List<Region> queryRegionList() throws Exception {
 		return RegionService.getInstance().list();
 	}
+	@Override
+	public Region queryRegionByDbId(int dbId) throws Exception {
+		return RegionService.getInstance().queryByDbId(dbId);
+	}
 	
 }
 

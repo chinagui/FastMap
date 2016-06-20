@@ -14,6 +14,25 @@ import java.util.Map;
 *  
 */
 public class DbInfo implements Serializable{
+	//nationRoad,desDayAll,desMon,desDayPoi,fmMan,fmSys
+	public static enum BIZ_TYPE {
+        DES_MON("desMon"), 
+        DES_DAY_POI("desDayPoi"), 
+        DES_DAY_ALL("desDayAll"),
+        GDB_PLUS("nationRoad");//gdb+母库
+        private String value;
+		private BIZ_TYPE(String value) {
+            this.value = value;
+        }
+		public String getValue() {
+			return value;
+		}
+		public String toString(){
+			return value;
+		}
+		
+    }
+	
 	protected int dbId;
 	protected String dbName;
 	protected String dbUserName;
@@ -26,6 +45,8 @@ public class DbInfo implements Serializable{
 	protected Date createTime;
 	protected String descp;
 	protected DbServer dbServer;
+	public DbInfo(){
+	}
 	public DbInfo(int dbId,String dbName,String dbUserName,String dbUserPasswd,String bizType,String gdbVersion
 			,DbServer dbServer,int dbStatus){
 		this.dbId=dbId;
@@ -69,6 +90,7 @@ public class DbInfo implements Serializable{
 		map.put("serverPort", dbServer.getPort());
 		map.put("serverType", dbServer.getType());
 		map.put("bizType", bizType);
+		map.put("serviceName", dbServer.getServiceName());
 		return map;
 	}
 	public int getDbId() {

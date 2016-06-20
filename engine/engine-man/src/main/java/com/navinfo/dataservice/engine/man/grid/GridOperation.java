@@ -24,7 +24,7 @@ public class GridOperation {
 		// TODO Auto-generated constructor stub
 	}
 
-	public static List<HashMap> queryGirdBySql(Connection conn,String selectSql,List<?> grids) throws Exception{
+	public static List<HashMap> queryGirdBySql(Connection conn,String selectSql) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
@@ -46,12 +46,7 @@ public class GridOperation {
 				}
 	    		
 	    	};
-	    	if (null==grids || grids.size()==0){
-	    		return run.query(conn, selectSql, rsHandler
-						);
-	    	}
-	    	return run.query(conn, selectSql, rsHandler,grids.toArray()
-					);			
+	    	return run.query(conn, selectSql, rsHandler);			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

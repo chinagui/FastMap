@@ -32,7 +32,7 @@ public class DbServerService {
 		Connection conn = null;
 		try{
 			//如果useType的set为空，则忽略该server
-			String sql = "select s.SERVER_ID,s.SERVER_TYPE,s.SERVER_IP,s.SERVER_PORT,s.BIZ_TYPE from db_server s";
+			String sql = "select s.SERVER_ID,s.SERVER_TYPE,s.SERVER_IP,s.SERVER_PORT,s.BIZ_TYPE,S.SERVICE_NAME from db_server s";
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			return run.query(conn, sql, new ResultSetHandler<List<DbServer>>(){
@@ -43,6 +43,7 @@ public class DbServerService {
 					while(rs.next()){
 						DbServer ser = new DbServer(rs.getString("SERVER_TYPE"),rs.getString("SERVER_IP"),rs.getInt("SERVER_PORT"));
 						ser.setSid(rs.getInt("SERVER_ID"));
+						ser.setServiceName(rs.getString("SERVICE_NAME"));
 						String bizTypes = rs.getString("BIZ_TYPE");
 						if(StringUtils.isNotEmpty(bizTypes)){
 							Set<String> bizSet = new HashSet<String>();

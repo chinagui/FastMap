@@ -65,17 +65,22 @@ public class ToolScriptsInterface {
 				System.out.println("ERROR:need args:-iclass xxx");
 				return;
 			}
+			String irequest = map.get("-irequest");
+			if(StringUtils.isEmpty(irequest)){
+				System.out.println("ERROR:need args:-irequest xxx");
+				return;
+			}
 			JSONObject request=null;
 			JSONObject response = null;
 			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
 			//初始化context
 			JobScriptsInterface.initContext();
 			//
-			request = readJson(dir+"request"+File.separator+iclass+".json");
+			request = readJson(dir+"request"+File.separator+irequest);
 			Class<?> tool = Class.forName("com.navinfo.dataservice.scripts."+iclass);
 			Method m = tool.getMethod("execute", JSONObject.class);
 			response = (JSONObject)(m.invoke(null, request));
-			writeJson(response,dir+"response"+File.separator+iclass+".json");
+			writeJson(response,dir+"response"+File.separator+irequest);
 			System.out.println(response);
 			System.out.println("Over.");
 			System.exit(0);

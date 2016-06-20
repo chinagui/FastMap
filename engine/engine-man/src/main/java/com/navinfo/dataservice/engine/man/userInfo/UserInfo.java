@@ -18,6 +18,9 @@ public class UserInfo  {
 	private Integer userScore ;
 	private Object userIcon ;
 	private String userGpsid ;
+	private String deviceToken;
+	private String devicePlatform;
+	private String deviceVersion;
 	
 	public UserInfo (){
 	}
@@ -94,6 +97,31 @@ public class UserInfo  {
 	public void setUserGpsid(String userGpsid) {
 		this.userGpsid = userGpsid;
 	}
+	
+	public String getDeviceToken() {
+		return deviceToken;
+	}
+
+	public void setDeviceToken(String deviceToken) {
+		this.deviceToken = deviceToken;
+	}
+
+	public String getDevicePlatform() {
+		return devicePlatform;
+	}
+
+	public void setDevicePlatform(String devicePlatform) {
+		this.devicePlatform = devicePlatform;
+	}
+
+	public String getDeviceVersion() {
+		return deviceVersion;
+	}
+
+	public void setDeviceVersion(String deviceVersion) {
+		this.deviceVersion = deviceVersion;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */

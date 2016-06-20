@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.datalock;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
@@ -38,6 +39,17 @@ public class DatalockApiImpl implements DatalockApi {
 	@Override
 	public void unlock(int prjId, Set<Integer> meshes, int lockType) throws Exception {
 		MeshLockManager.getInstance().unlock(prjId, meshes, lockType);
+	}
+
+	@Override
+	public int lockGrid(int regionId, int lockObject, Collection<Integer> grids,
+			int lockType,String dbType) throws Exception {
+		return GridLockManager.getInstance().lock(regionId, lockObject, grids, lockType, 0,dbType);
+	}
+
+	@Override
+	public int unlockGrid(int lockSeq,String dbType) throws Exception {
+		return GridLockManager.getInstance().unlock(lockSeq,dbType);
 	}
 
 }

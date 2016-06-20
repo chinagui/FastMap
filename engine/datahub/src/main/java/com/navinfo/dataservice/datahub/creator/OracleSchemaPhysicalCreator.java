@@ -109,7 +109,7 @@ public class OracleSchemaPhysicalCreator implements DbPhysicalCreator{
 	public void installGdbModel(DbInfo db,String gdbVersion)throws DataHubException{
 		Connection conn = null;
 		try{
-			DbConnectConfig connConfig = MultiDataSourceFactory.createConnectConfig(db.getConnectParam());
+			DbConnectConfig connConfig = DbConnectConfig.createConnectConfig(db.getConnectParam());
 			conn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
 			// gdb
 			String schemaCreateFile = "/com/navinfo/dataservice/datahub/resources/"

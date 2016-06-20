@@ -16,7 +16,6 @@ import org.apache.log4j.Logger;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.oracle.MyDriverManagerDataSource;
@@ -127,6 +126,10 @@ public class MultiDataSourceFactory {
 	 */
 
 	public BasicDataSource getDataSource(DbConnectConfig connConfig) throws SQLException{
+		if(!(DbConnectConfig.TYPE_ORACLE.equals(connConfig.getServerType())
+				||DbConnectConfig.TYPE_MYSQL.equals(connConfig.getServerType()))){
+			throw new SQLException("非ORACLE,MYSQL类型库，无法通过此方法获取连接类");
+		}
 		String key = connConfig.getKey();
 		BasicDataSource dataSource = dataSourceMap.get(key);
 		if (dataSource == null || dataSource.isClosed()) {
@@ -135,8 +138,8 @@ public class MultiDataSourceFactory {
 				String driveClassName = getDriverClassName(serverType);
 				String ip = connConfig.getServerIp();
 				Integer port = connConfig.getServerPort();
-				String dbName = connConfig.getDbName();
-				String url = createJdbcUrl(serverType,ip,port,dbName);
+				String name = DbConnectConfig.TYPE_ORACLE.equals(connConfig.getServerType())?connConfig.getServiceName():connConfig.getDbName();
+				String url = createJdbcUrl(serverType,ip,port,name);
 				String username = connConfig.getUserName();
 				String password = connConfig.getUserPasswd();
 				int initialSize = SystemConfigFactory.getSystemConfig().getIntValue(PoolDataSource.SYS_KEY + ".dataSource.initialSize", 2);
@@ -160,7 +163,6 @@ public class MultiDataSourceFactory {
 		} else
 			log.debug("find datasource from cache,key=" + key);
 		return dataSource;
-
 	}
 
 	/**
@@ -366,7 +368,7 @@ public class MultiDataSourceFactory {
 	 * 
 	 * @param host
 	 * @param port
-	 * @param name:oracle-Server name，mysql-DBNAME
+	 * @param name:oracle-Service name，mysql-DBNAME
 	 * @return
 	 */
 	public static String createJdbcUrl(String serverType,String host,Integer port,String name){
@@ -400,17 +402,6 @@ public class MultiDataSourceFactory {
 	public static String createMysqlJdbcUrl(String host, Integer port, String dbName) {
 		return "jdbc:mysql://"+host+":"+port+"/"+"dbName";
 
-	}
-	public static DbConnectConfig createConnectConfig(Map<String,Object> connParam){
-		String bizType=(String)connParam.get("bizType");
-		String dbName=(String)connParam.get("dbName");
-		String userName = (String)connParam.get("dbUserName");
-		String userPasswd=(String)connParam.get("dbUserPasswd");
-		String serverIp=(String)connParam.get("serverIp");
-		int serverPort=(Integer)connParam.get("serverPort");
-		String serverType=(String)connParam.get("serverType");
-		return new DbConnectConfig(bizType,dbName,userName,userPasswd
-				,serverIp,serverPort,serverType);
 	}
 
 	public void closeDataSource(String key) {

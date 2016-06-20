@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.impcore.commit;
+package com.navinfo.dataservice.impcore.commit.day.road;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
  * 描述：CommitDay2MonthRoadJob 请求参数的解析处理类
  * 
  */
-public class CommitDay2MonthRoadJobRequest extends AbstractJobRequest {
+public class Day2MonthRoadJobRequest extends AbstractJobRequest {
 	private List<Integer> gridList;
 	private String stopTime;//format:yyyymmddhh24miss
 	
@@ -30,11 +30,11 @@ public class CommitDay2MonthRoadJobRequest extends AbstractJobRequest {
 	public void setGridSet(List<Integer> gridSet) {
 		this.gridList = gridSet;
 	}
-	public CommitDay2MonthRoadJobRequest() {
+	public Day2MonthRoadJobRequest() {
 		super();
 		log = LoggerRepos.getLogger(log);
 	}
-	public CommitDay2MonthRoadJobRequest(JSONObject jsonConfig) {
+	public Day2MonthRoadJobRequest(JSONObject jsonConfig) {
 		super();
 		log = LoggerRepos.getLogger(log);
     	this.parseByJsonConfig(jsonConfig);

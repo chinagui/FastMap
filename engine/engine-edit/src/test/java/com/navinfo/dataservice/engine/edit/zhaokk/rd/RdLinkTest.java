@@ -24,7 +24,7 @@ public class RdLinkTest extends InitApplication{
 	
 	private Connection conn;
 	public RdLinkTest() throws Exception {
-		this.conn = DBConnector.getInstance().getConnectionById(11);
+		//this.conn = DBConnector.getInstance().getConnectionById(11);
 	}
 	
 	public void testDelete() {
@@ -86,8 +86,8 @@ public class RdLinkTest extends InitApplication{
 	@Test
 	public void departRdLink()
 	{
-		String line  = "[20465744,20465745,14226884]";
-		String parameter =  "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"distance\":25.3,\"projectId\":11,\"data\":{\"linkPids\":"+line+"}}";
+		String line  = "[100005822,100005823]";
+		String parameter =  "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"distance\":25.3,\"dbId\":42,\"data\":{\"linkPids\":"+line+"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

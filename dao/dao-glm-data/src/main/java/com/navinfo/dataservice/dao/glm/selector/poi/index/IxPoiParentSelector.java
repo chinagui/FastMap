@@ -394,8 +394,9 @@ public class IxPoiParentSelector implements ISelector{
 			pstmt.setInt(1, id);
 			resultSet = pstmt.executeQuery();
 			int parentPoiPid  = 0;
-			resultSet.next();
-			parentPoiPid = resultSet.getInt("parent_poi_pid");
+			if (resultSet.next()){
+				parentPoiPid = resultSet.getInt("parent_poi_pid");
+			}
 			while(resultSet.next()){
 				if (resultSet.getInt("relation_type")==2){
 					parentPoiPid = resultSet.getInt("parent_poi_pid");

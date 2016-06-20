@@ -299,7 +299,7 @@ public class RdLinkOperateUtils {
 	}
 	
 	/*
-	 * 创建生成一条RDLINK,未赋值图幅号
+	 * 创建生成一条RDLINK
 	 * */
 	public static RdLink addLink(Geometry geo,int sNodePid, int eNodePid,Result result) throws Exception{
 		RdLink link = new RdLink();

@@ -69,10 +69,6 @@ public class BaseController {
         return createModelMap(0,"success",null);
     }
     
-    protected Map<String,?> success(String msg) {
-        return createModelMap(0,msg,null);
-    }
-    
     protected Map<String,?> success(String msg, Object result) {
         return createModelMap(0,msg,result);
     }

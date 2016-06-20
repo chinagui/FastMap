@@ -185,6 +185,9 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		lw.generateLog(command, result);
 		OperatorFactory.recordData(conn, result);
 		lw.recordLog(command, result);
+		
+		PoiMsgPublisher.publish(result);
+		
 		return true;
 	}
 

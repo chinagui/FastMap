@@ -179,23 +179,23 @@ public class MetaController extends BaseController {
 
 			String path = config
 					.getValue(PropConstant.downloadFilePathPatternimg);
-			
+
 			String dir = null;
-			
+
 			String currentDate = StringUtils.getCurrentTime();
-			
+
 			String zipFileName = currentDate + ".zip";
 
 			if (jsonReq.containsKey("names")) {
 				JSONArray names = jsonReq.getJSONArray("names");
 
 				path += "/byname";
-				
+
 				dir = path + "/" + currentDate;
-				
+
 				Set<String> set = new HashSet<String>();
-				
-				for(int i=0;i<names.size();i++){
+
+				for (int i = 0; i < names.size(); i++) {
 					set.add(names.getString(i));
 				}
 
@@ -206,7 +206,7 @@ public class MetaController extends BaseController {
 				String date = jsonReq.getString("date");
 
 				path += "/bydate";
-				
+
 				dir = path + "/" + currentDate;
 
 				exporter.export2SqliteByDate(dir, date);
@@ -215,7 +215,7 @@ public class MetaController extends BaseController {
 			} else {
 				throw new Exception("错误的参数");
 			}
-			
+
 			ZipUtils.zipFile(dir, path + "/" + currentDate + ".zip");
 
 			FileUtil.deleteDirectory(new File(dir));
@@ -333,21 +333,31 @@ public class MetaController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
-	
+
 	@RequestMapping(value = "/queryChain")
 	public ModelAndView queryChain(HttpServletRequest request)
 			throws ServletException, IOException {
-		
+
 		String parameter = request.getParameter("parameter");
-		
+
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			String kindCode = jsonReq.getString("kindCode");
+			String kindCode = null;
+
+			if (jsonReq.has("kindCode")) {
+				kindCode = jsonReq.getString("kindCode");
+			}
 
 			ChainSelector selector = new ChainSelector();
 
-			JSONArray data = selector.getChainByKindCode(kindCode);
+			JSONObject data = selector.getChainByKindCode(kindCode);
+
+			if (kindCode != null && data.has(kindCode)) {
+				JSONArray array = data.getJSONArray(kindCode);
+
+				return new ModelAndView("jsonView", success(array));
+			}
 
 			return new ModelAndView("jsonView", success(data));
 
@@ -358,18 +368,18 @@ public class MetaController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
-	
+
 	@RequestMapping(value = "/chainLevel")
 	public ModelAndView queryChainLevel(HttpServletRequest request)
 			throws ServletException, IOException {
-		
+
 		String parameter = request.getParameter("parameter");
-		
+
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			String kindCode = jsonReq.getString("kindCode");
-			
+
 			String chainCode = jsonReq.getString("chainCode");
 
 			ChainSelector selector = new ChainSelector();
@@ -385,7 +395,7 @@ public class MetaController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
-	
+
 	@RequestMapping(value = "/queryFocus")
 	public ModelAndView queryFocus(HttpServletRequest request)
 			throws ServletException, IOException {
@@ -405,7 +415,7 @@ public class MetaController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
-	
+
 	@RequestMapping(value = "/queryTelLength")
 	public ModelAndView searchTelLength(HttpServletRequest request)
 			throws ServletException, IOException {
@@ -532,7 +542,7 @@ public class MetaController extends BaseController {
 		String parameter = request.getParameter("parameter");
 
 		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);	
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			int region = jsonReq.getInt("region");
 

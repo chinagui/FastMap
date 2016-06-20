@@ -1,38 +1,33 @@
-package com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.update;
+package com.navinfo.dataservice.engine.edit.edit.operation.obj.rwlink.update;
 
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 
-public class Command extends AbstractCommand  implements ICommand{
-
+public class Command extends AbstractCommand {
 
 	private String requester;
-
-
-	private JSONObject content;
 	
-	private int pid;
+	private int linkPid;
 	
-	public int getPid() {
-		return pid;
-	}
+	private JSONObject updateContent;
 
-	public void setPid(int pid) {
-		this.pid = pid;
+	public int getLinkPid() {
+		return linkPid;
 	}
 
 
-	public JSONObject getContent() {
-		return content;
+	public void setLinkPid(int linkPid) {
+		this.linkPid = linkPid;
 	}
 
-	public void setContent(JSONObject content) {
-		this.content = content;
+
+	public JSONObject getUpdateContent() {
+		return updateContent;
 	}
+
 
 	@Override
 	public OperType getOperType() {
@@ -41,23 +36,22 @@ public class Command extends AbstractCommand  implements ICommand{
 	
 	@Override
 	public ObjType getObjType() {
-		return ObjType.IXPOI;
+		return ObjType.RDLINK;
 	}
 
 	@Override
 	public String getRequester() {
 		return requester;
 	}
-
+	
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 
 		this.setDbId(json.getInt("dbId"));
-
-		this.content = json.getJSONObject("data");
 		
-		this.pid = json.getInt("objId");
-
+		this.updateContent = json.getJSONObject("data");
+		
+		this.linkPid = this.updateContent.getInt("pid");
 	}
 
 }

@@ -27,6 +27,7 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 
 import net.sf.json.JSONObject;
 
+@Service
 public class GridService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 

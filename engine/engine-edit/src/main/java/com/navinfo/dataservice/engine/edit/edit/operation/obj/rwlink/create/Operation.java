@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.create;
+package com.navinfo.dataservice.engine.edit.edit.operation.obj.rwlink.create;
 
 import java.sql.Connection;
 import java.util.HashMap;
@@ -10,9 +10,8 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.engine.edit.comm.util.operate.AdminOperateUtils;
-import com.navinfo.dataservice.engine.edit.comm.util.operate.RdLinkOperateUtils;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.RwLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -40,30 +39,29 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 		String msg = null;
-		
-		if(command.getGeometry().getCoordinates().length<2)
-		{
+
+		if (command.getGeometry().getCoordinates().length < 2) {
 			throw new Exception("线至少包含两个点");
 		}
-		
+
 		Map<Geometry, JSONObject> map = new HashMap<Geometry, JSONObject>();
 
 		if (command.getCatchLinks().size() > 0) {
-			map = RdLinkOperateUtils.splitRdLink(command.getGeometry(), command.getsNodePid(), command.geteNodePid(),
+			map = RwLinkOperateUtils.splitRdLink(command.getGeometry(), command.getsNodePid(), command.geteNodePid(),
 					command.getCatchLinks(), result);
 
 		}
 		if (command.getCatchLinks().size() == 0 || map.size() == 0) {
 			JSONObject se = new JSONObject();
 
-			se = RdLinkOperateUtils.createRdNodeForLink(command.getGeometry(), command.getsNodePid(), command.geteNodePid(),
-					result);
+			se = RwLinkOperateUtils.createRwNodeForLink(command.getGeometry(), command.getsNodePid(),
+					command.geteNodePid(), result);
 
 			map.put(command.getGeometry(), se);
 		}
 
 		// 创建线信息
-		this.createRdLinks(map, result);
+		this.createRwLinks(map, result);
 		// 挂接的线被打断的操作
 		this.breakLine(result);
 
@@ -75,15 +73,13 @@ public class Operation implements IOperation {
 	 */
 	private void createRdLinkWithNoMesh(Geometry g, int sNodePid, int eNodePid, Result result) throws Exception {
 		if (g != null) {
-			JSONObject node = RdLinkOperateUtils.createRdNodeForLink(g, sNodePid, eNodePid, result);
-			RdLink link = RdLinkOperateUtils.addLink(g, (int) node.get("s"), (int) node.get("e"), result);
-			
+			JSONObject node = RwLinkOperateUtils.createRwNodeForLink(g, sNodePid, eNodePid, result);
+			RwLink link = RwLinkOperateUtils.addLink(g, (int) node.get("s"), (int) node.get("e"), result);
+
 			link.setKind(command.getKind());
 
-			link.setLaneNum(command.getLaneNum());
-			
-			AdminOperateUtils.SetAdminInfo4Link(link, conn);
-			
+			link.setForm(command.getForm());
+
 			result.insertObject(link, ObjStatus.INSERT, link.pid());
 		}
 	}
@@ -93,7 +89,8 @@ public class Operation implements IOperation {
 	 * 跨图幅需要生成和图廓线的交点
 	 */
 
-	private void createRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result, String meshId) throws Exception {
+	private void createRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result, String meshId)
+			throws Exception {
 		if (g != null) {
 
 			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
@@ -124,7 +121,7 @@ public class Operation implements IOperation {
 			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
 		}
 		// 创建线对应的点
-		JSONObject node = RdLinkOperateUtils.createRdNodeForLink(g, sNodePid, eNodePid, result);
+		JSONObject node = RwLinkOperateUtils.createRwNodeForLink(g, sNodePid, eNodePid, result);
 		if (!maps.containsValue(node.get("s"))) {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
 		}
@@ -132,14 +129,12 @@ public class Operation implements IOperation {
 			maps.put(g.getCoordinates()[0], (int) node.get("e"));
 		}
 		// 创建线
-		RdLink link = RdLinkOperateUtils.addLink(g, (int) node.get("s"), (int) node.get("e"), result);
-		
+		RwLink link = RwLinkOperateUtils.addLink(g, (int) node.get("s"), (int) node.get("e"), result);
+
 		link.setKind(command.getKind());
 
-		link.setLaneNum(command.getLaneNum());
-		
-		AdminOperateUtils.SetAdminInfo4Link(link, conn);
-		
+		link.setForm(command.getForm());
+
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
 	}
 
@@ -147,10 +142,10 @@ public class Operation implements IOperation {
 	 * 创建多条被分割的线 1.按照线是否跨图幅逻辑走不同分支生成线
 	 */
 
-	public void createRdLinks(Map<Geometry, JSONObject> map, Result result) throws Exception {
+	private void createRwLinks(Map<Geometry, JSONObject> map, Result result) throws Exception {
 
 		for (Geometry g : map.keySet()) {
-			Set<String> meshes =  CompGeometryUtil.geoToMeshesWithoutBreak(g);
+			Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
 			// 不跨图幅
 			if (meshes.size() == 1) {
 				createRdLinkWithNoMesh(g, (int) map.get(g).get("s"), (int) map.get(g).get("e"), result);
@@ -165,7 +160,7 @@ public class Operation implements IOperation {
 					String meshIdStr = it.next();
 					Geometry geomInter = MeshUtils.linkInterMeshPolygon(g, MeshUtils.mesh2Jts(meshIdStr));
 					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					this.createRdLinkWithMesh(geomInter, maps, result,meshIdStr);
+					this.createRdLinkWithMesh(geomInter, maps, result, meshIdStr);
 				}
 			}
 
@@ -185,10 +180,10 @@ public class Operation implements IOperation {
 				data.put("longitude", json.getDouble("lon"));
 				data.put("latitude", json.getDouble("lat"));
 				breakJson.put("data", data);
-				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Command(
+				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakrwpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakrwpoint.Command(
 						breakJson, breakJson.toString());
-				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Process(
-						breakCommand, conn);
+				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakrwpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakrwpoint.Process(
+						breakCommand,result,conn);
 				breakProcess.run();
 			}
 		}

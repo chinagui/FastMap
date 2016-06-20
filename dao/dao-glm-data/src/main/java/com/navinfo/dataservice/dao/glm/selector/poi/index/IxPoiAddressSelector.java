@@ -252,14 +252,38 @@ public class IxPoiAddressSelector implements ISelector {
 	public List<IRow> loadByIdForAndroid(int id)throws Exception{
 		List<IRow> rows = new ArrayList<IRow>();
 		IxPoiAddress ixPoiAddress = new IxPoiAddress();
-		String sql = "SELECT fullname FROM " + ixPoiAddress.tableName() + " where poi_pid=:1 AND name_groupid=1 AND lang_code='CHI' AND u_record!=2";
-		PreparedStatement pstmt = conn.prepareStatement(sql);
-		pstmt.setInt(1, id);
-		ResultSet resultSet = pstmt.executeQuery();
-		if (resultSet.next()){
-			ixPoiAddress.setFullname(resultSet.getString("fullname"));
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			String sql = "SELECT fullname FROM " + ixPoiAddress.tableName() + " where poi_pid=:1 AND name_groupid=1 AND lang_code='CHI' AND u_record!=2";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, id);
+			resultSet = pstmt.executeQuery();
+			if (resultSet.next()){
+				ixPoiAddress.setFullname(resultSet.getString("fullname"));
+			}
+			rows.add(ixPoiAddress);
+			return rows;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
 		}
-		rows.add(ixPoiAddress);
-		return rows;
+
 	}
 }

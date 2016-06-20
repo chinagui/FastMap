@@ -142,11 +142,20 @@ public class DownloadOperation {
 			jsonObj.put("address", address.getFullname());
 			jsonObj.put("postCode", poi.getPostCode());
 			
+			JSONObject indoor = new JSONObject();
+			indoor.put("type", poi.getIndoor());
+			indoor.put("floor", address.getFloor());
+			jsonObj.put("indoor", indoor);
+			
 			int open24H = poi.getOpen24h();
 			if (open24H!=1) {
 				open24H = 2;
 			}
 			jsonObj.put("open24H", open24H);
+			
+			jsonObj.put("level", poi.getLevel());
+			jsonObj.put("sportsVenues", poi.getSportsVenue());
+			jsonObj.put("vipFlag", poi.getVipFlag());
 			
 			IxPoiParentForAndroid parent = (IxPoiParentForAndroid)poi.getParents().get(0);
 			jsonObj.put("parentFid", parent.getPoiNum());
@@ -296,8 +305,6 @@ public class DownloadOperation {
 			} else {
 				jsonObj.put("gasStation", null);
 			}
-			
-			// TODO indoor
 			
 			jsonObj.put("attachments", new ArrayList<Object>());
 			jsonObj.put("chain", poi.getChain());

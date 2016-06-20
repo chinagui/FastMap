@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadManager;
 
 @Controller
@@ -127,5 +128,25 @@ public class UploadController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 
+	}
+	
+	
+	@RequestMapping(value = "/upload/resource")
+	public ModelAndView resource(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		try {
+
+			UploadManager upload = new UploadManager();
+
+			upload.uploadResource(request);
+
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
 	}
 }

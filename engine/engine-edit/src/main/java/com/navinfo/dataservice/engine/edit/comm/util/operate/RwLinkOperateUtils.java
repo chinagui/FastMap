@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.edit.comm.util.operate;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,6 +19,11 @@ import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+/**
+ * RWLINK公共方法类
+ * @author zhangxiaolong
+ *
+ */
 public class RwLinkOperateUtils {
 	
 	/*
@@ -32,11 +36,11 @@ public class RwLinkOperateUtils {
 		
 		if(meshes.size()>1)
 		{
-			throw new Exception("创建RDLINK失败：对应多个图幅");
+			throw new Exception("创建rwLink失败：对应多个图幅");
 		}
 		else
 		{
-			link.setMeshId(Integer.parseInt(meshes.iterator().next()));
+			link.setMesh(Integer.parseInt(meshes.iterator().next()));
 		}
 		
 		link.setPid(PidService.getInstance().applyLinkPid());
@@ -56,28 +60,17 @@ public class RwLinkOperateUtils {
 		link.setsNodePid(sNodePid);
 		
 		link.seteNodePid(eNodePid);
-
-		setLinkChildren(link);
 		
 		return link;
-	}
-	
-	/**
-	 * 维护link的子表
-	 * 
-	 * @param link
-	 */
-	private static void setLinkChildren(RwLink link) {
-
 	}
 	
 	/*
 	 * 分割线
 	 * 
 	 * @param geometry 要分割线的几何 sNodePid 起点pid eNodePid 终点pid catchLinks
-	 * 挂接的线和点的集合 1.生成所有不存在的RDNODE 2.标记挂接的link被打断的点 3.返回线被分割的几何属性和起点和终点的List集合
+	 * 挂接的线和点的集合 1.生成所有不存在的rwNODE 2.标记挂接的link被打断的点 3.返回线被分割的几何属性和起点和终点的List集合
 	 */
-	public static Map<Geometry, JSONObject> splitRdLink(Geometry geometry, int sNodePid,
+	public static Map<Geometry, JSONObject> splitRwLink(Geometry geometry, int sNodePid,
 			int eNodePid, JSONArray catchLinks, Result result) throws Exception {
 		Map<Geometry, JSONObject> maps = new HashMap<Geometry, JSONObject>();
 		JSONArray coordinates = GeoTranslator.jts2Geojson(geometry)
@@ -100,7 +93,7 @@ public class RwLinkOperateUtils {
 			p = 1;
 		}
 		JSONObject se = new JSONObject();
-        // 生成起点ADNODE
+        // 生成起点RWNODE
 		if (0 == sNodePid) {
 			double x = coordinates.getJSONArray(0).getDouble(0);
 
@@ -119,7 +112,7 @@ public class RwLinkOperateUtils {
         //循环当前要分割LINK的几何 循环挂接的集合
 		// 当挂接几何和link的集合有相同的点 生成新的link
 		//如果挂接的存在linkPid 则被打断，且生成新的点
-		//如果挂接只有RDNODE则不需要生成新的RDNODE
+		//如果挂接只有RWNODE则不需要生成新的RWNODE
 		while (p < catchLinks.size() && pc < coordinates.size()) {
 			tmpCs.add(coordinates.getJSONArray(pc));
 
@@ -190,25 +183,25 @@ public class RwLinkOperateUtils {
 	}
 	
 	/*
-	 * 创建一条RDLINK对应的端点
+	 * 创建一条rwLink对应的端点
 	 */
 	public static JSONObject createRwNodeForLink(Geometry g, int sNodePid, int eNodePid,Result result)
 			throws Exception {
 		JSONObject node = new JSONObject();
 		if (0 == sNodePid) {
 			Coordinate point = g.getCoordinates()[0];
-			RwNode rdNode =NodeOperateUtils.createRwNode(point.x, point.y);
-			result.insertObject(rdNode, ObjStatus.INSERT, rdNode.pid());
-			node.put("s", rdNode.getPid());
+			RwNode rwNODE =NodeOperateUtils.createRwNode(point.x, point.y);
+			result.insertObject(rwNODE, ObjStatus.INSERT, rwNODE.pid());
+			node.put("s", rwNODE.getPid());
 		}else{
 			node.put("s", sNodePid);
 		}
 		//创建终止点信息
 		if (0 == eNodePid) {
 			Coordinate point = g.getCoordinates()[g.getCoordinates().length - 1];
-			RwNode rdNode =NodeOperateUtils.createRwNode(point.x, point.y);
-			result.insertObject(rdNode, ObjStatus.INSERT, rdNode.pid());
-			node.put("e", rdNode.getPid());
+			RwNode rwNODE =NodeOperateUtils.createRwNode(point.x, point.y);
+			result.insertObject(rwNODE, ObjStatus.INSERT, rwNODE.pid());
+			node.put("e", rwNODE.getPid());
 		}else{
 			node.put("e", eNodePid);
 		}
@@ -217,20 +210,21 @@ public class RwLinkOperateUtils {
 	}
 	
 	/*
-	 * 创建生成一条ADLINK
+	 * 创建生成一条RwLink
 	 * 继承原有LINK的属性
 	 * */
 	public static IRow addLinkBySourceLink(Geometry g,int sNodePid, int eNodePid,RwLink sourcelink,Result result) throws Exception{
 		RwLink link = new RwLink();
 		link.copy(sourcelink);
 		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-		link.setPid(PidService.getInstance().applyAdLinkPid());
-		if(meshes.size() ==2){
-			link.setKind(0);
+		link.setPid(PidService.getInstance().applyRwLinkPid());
+		if(meshes.size()>1)
+		{
+			throw new Exception("打断生成新RwLink失败：对应多个图幅");
 		}
-		Iterator<String> it = meshes.iterator();
-		while(it.hasNext()){
-			setLinkChildren(link,Integer.parseInt(it.next()));
+		else
+		{
+			link.setMesh(Integer.parseInt(meshes.iterator().next()));
 		}
 		double linkLength = GeometryUtils.getLinkLength(g);
 		link.setLength(linkLength);
@@ -239,13 +233,5 @@ public class RwLinkOperateUtils {
 		link.seteNodePid(eNodePid);
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
 		return link;
-	}
-	
-	/*
-	 * 维护link的子表 RW_LINK_MESH
-	 * 
-	 * @param link
-	 */
-	private static void setLinkChildren(RwLink link,int meshId) {
 	}
 }

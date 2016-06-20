@@ -10,6 +10,7 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
@@ -335,4 +336,51 @@ public class DBController {
 			}
 		}
 	}
+
+	/**
+	 * @param dbId
+	 * @param pid
+	 * @param string
+	 * @throws Exception 
+	 */
+	public void insertIxPoiPhoto(int dbId, int pid, String photoId) throws Exception {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			List<Integer> results = new ArrayList<Integer>();
+
+			String sql = "insert into ix_poi_photo  (poi_pid,photo_id) values  ("
+					+ pid
+					+ ",'" + photoId + "')";
+
+			pstmt = conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			conn.close();
+
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			if (resultSet != null) {
+				resultSet.close();
+			}
+			if (pstmt != null) {
+				pstmt.close();
+			}
+			if (conn != null) {
+				conn.close();
+			}
+		}
+		
+	}
+
+
 }

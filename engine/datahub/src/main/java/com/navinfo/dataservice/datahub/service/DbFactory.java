@@ -7,7 +7,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.datahub.model.DbServer;
-import com.navinfo.dataservice.api.datahub.model.DbServerType;
+import com.navinfo.dataservice.commons.database.DbServerType;
 import com.navinfo.dataservice.datahub.creator.DbPhysicalCreator;
 import com.navinfo.dataservice.datahub.creator.MongoDbPhysicalCreator;
 import com.navinfo.dataservice.datahub.creator.OracleSchemaPhysicalCreator;

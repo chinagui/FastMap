@@ -36,4 +36,9 @@
 		class="com.navinfo.dataservice.expcore.job.GdbFullCopyJob"
 	 	request="com.navinfo.dataservice.expcore.job.GdbFullCopyJobRequest"
 	/>
+	<type name="gdbBatch" 
+		class="com.navinfo.dataservice.cop.waistcoat.job.GdbBatchJob"
+	 	request="com.navinfo.dataservice.cop.waistcoat.job.GdbBatchJobRequest"
+	/>
+	
 </mapping>

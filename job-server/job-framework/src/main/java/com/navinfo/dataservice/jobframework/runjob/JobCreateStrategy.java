@@ -30,6 +30,11 @@ public class JobCreateStrategy {
 	public static Map<String,Class<?>> jobClassMap;
 	public static Map<String,Class<?>> requestClassMap;
 	public static AbstractJob create(JobInfo jobInfo)throws JobTypeNotFoundException,JobCreateException{
+		AbstractJobRequest 
+		request = createJobRequest(jobInfo.getType(),jobInfo.getRequest());
+		return create(jobInfo,request);
+	}
+	public static AbstractJob create(JobInfo jobInfo,AbstractJobRequest request)throws JobTypeNotFoundException,JobCreateException{
 		if(jobClassMap==null){
 			loadMapping();
 		}
@@ -40,7 +45,7 @@ public class JobCreateStrategy {
 		AbstractJob job = null;
 		try{
 			job = (AbstractJob)clazz.getConstructor(JobInfo.class).newInstance(jobInfo);
-			job.setRequest(createJobRequest(jobInfo.getType(),jobInfo.getRequest()));
+			job.setRequest(request);
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			throw new JobCreateException(e.getMessage(),e);
@@ -52,8 +57,18 @@ public class JobCreateStrategy {
 		job.setParent(parent);
 		return job;
 	}
+	public static AbstractJob createAsSubJob(JobInfo jobInfo,AbstractJobRequest request,AbstractJob parent)throws JobTypeNotFoundException,JobCreateException{
+		AbstractJob job = create(jobInfo,request);
+		job.setParent(parent);
+		return job;
+	}
 	public static AbstractJob createAsMethod(JobInfo jobInfo)throws JobTypeNotFoundException,JobCreateException{
 		AbstractJob job = create(jobInfo);
+		job.setRunAsMethod(true);
+		return job;
+	}
+	public static AbstractJob createAsMethod(JobInfo jobInfo,AbstractJobRequest request)throws JobTypeNotFoundException,JobCreateException{
+		AbstractJob job = create(jobInfo,request);
 		job.setRunAsMethod(true);
 		return job;
 	}

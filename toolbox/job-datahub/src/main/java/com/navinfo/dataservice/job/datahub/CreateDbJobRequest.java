@@ -18,10 +18,7 @@ public class CreateDbJobRequest extends AbstractJobRequest {
 	protected String userPasswd;
 	protected String bizType;
 	protected String descp;
-	protected String gdbVersion;
-	protected String refDbName;
-	protected String refUserName;
-	protected String refBizType;
+	protected int refDbId;
 
 	public String getServerType() {
 		return serverType;
@@ -71,36 +68,13 @@ public class CreateDbJobRequest extends AbstractJobRequest {
 		this.descp = descp;
 	}
 
-	public String getGdbVersion() {
-		return gdbVersion;
+
+	public int getRefDbId() {
+		return refDbId;
 	}
 
-	public void setGdbVersion(String gdbVersion) {
-		this.gdbVersion = gdbVersion;
-	}
-
-	public String getRefDbName() {
-		return refDbName;
-	}
-
-	public void setRefDbName(String refDbName) {
-		this.refDbName = refDbName;
-	}
-
-	public String getRefUserName() {
-		return refUserName;
-	}
-
-	public void setRefUserName(String refUserName) {
-		this.refUserName = refUserName;
-	}
-
-	public String getRefBizType() {
-		return refBizType;
-	}
-
-	public void setRefBizType(String refBizType) {
-		this.refBizType = refBizType;
+	public void setRefDbId(int refDbId) {
+		this.refDbId = refDbId;
 	}
 
 	@Override
@@ -114,14 +88,11 @@ public class CreateDbJobRequest extends AbstractJobRequest {
 	 */
 	@Override
 	public void validate() throws JobException {
-		if(StringUtils.isEmpty(dbName)){
-			throw new JobException("create_db job请求参数错误：未设置dbNane属性");
-		}
-		if(StringUtils.isEmpty(userName)){
-			throw new JobException("create_db job请求参数错误：未设置userName属性");
+		if(StringUtils.isEmpty(serverType)){
+			throw new JobException("create_db job请求参数错误：serverType库类型未设置");
 		}
 		if(StringUtils.isEmpty(bizType)){
-			throw new JobException("create_db job请求参数错误：未设置userName属性");
+			throw new JobException("create_db job请求参数错误：未设置bizType属性");
 		}
 	}
 

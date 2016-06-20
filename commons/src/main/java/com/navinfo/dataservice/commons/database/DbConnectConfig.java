@@ -13,9 +13,6 @@ import org.apache.commons.lang.StringUtils;
 * @Description: TODO
 */
 public class DbConnectConfig {
-	public static final String TYPE_ORACLE = "ORACLE";
-	public static final String TYPE_MYSQL = "MYSQL";
-	public static final String TYPE_MONGO = "MONGODB";
 
 	protected String bizType;
 	protected String dbName;//ORACLE为空，其余不为空
@@ -36,7 +33,7 @@ public class DbConnectConfig {
 		this.serverPort=serverPort;
 		this.serverType=serverType;
 		this.serviceName=serviceName;
-		if(TYPE_ORACLE.equals(serverType)){
+		if(DbServerType.TYPE_ORACLE.equals(serverType)){
 			this.key=serverIp+":"+serverPort+"/"+userName;
 		}else{
 			this.key=serverIp+":"+serverPort+"/"+dbName;
@@ -106,7 +103,7 @@ public class DbConnectConfig {
 	 */
 	public String toConnectString(){
 		return this.serverType+this.serverIp+String.valueOf(this.serverPort)
-		+(TYPE_ORACLE.equals(serverType)?serviceName:dbName)+this.userName+userPasswd;
+		+(DbServerType.TYPE_ORACLE.equals(serverType)?serviceName:dbName)+this.userName+userPasswd;
 	};
 	public static DbConnectConfig createConnectConfig(String connectString,String bizType)throws Exception{
 		if(StringUtils.isEmpty(connectString))throw new Exception("连接参数为空");
@@ -117,7 +114,7 @@ public class DbConnectConfig {
 		int serverPort = Integer.valueOf(conArr[2]);
 		String serviceName = null;
 		String dbName = null;
-		if(TYPE_ORACLE.equals(serverType)){
+		if(DbServerType.TYPE_ORACLE.equals(serverType)){
 			serviceName = conArr[3];
 		}else{
 			dbName = conArr[3];

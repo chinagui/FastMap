@@ -319,6 +319,40 @@ public class RegionService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	public Region queryByDbId(int dbId) throws ServiceException {
+		Connection conn = null;
+		try {
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			String selectSql = "SELECT REGION_ID,REGION_NAME,DAILY_DB_ID,MONTHLY_DB_ID FROM REGION WHERE DAILY_DB_ID=? OR MONTHLY_DB_ID=? AND ROWNUM=1";
+			
+			return run.query(conn, selectSql, new SingleRegionRsHander() , dbId,dbId);
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	class SingleRegionRsHander implements ResultSetHandler<Region>{
+
+		@Override
+		public Region handle(ResultSet rs) throws SQLException {
+			if(rs.next()){
+				Region region = new Region();
+				region.setRegionId(rs.getInt("REGION_ID"));
+				region.setRegionName(rs.getString("REGION_NAME"));
+				region.setDailyDbId(rs.getInt("DAILY_DB_ID"));
+				region.setMonthlyDbId(rs.getInt("MONTHLY_DB_ID"));
+				return region;
+			}
+			return null;
+		}
+		
+	}
 	
 	class RegionRsHandler implements ResultSetHandler<List<Region>>{
 

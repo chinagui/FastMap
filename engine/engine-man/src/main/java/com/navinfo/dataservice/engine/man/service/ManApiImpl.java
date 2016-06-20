@@ -55,6 +55,10 @@ public class ManApiImpl implements ManApi {
 		return RegionService.getInstance().list();
 	}
 	@Override
+	public Region queryRegionByDbId(int dbId) throws Exception {
+		return RegionService.getInstance().queryByDbId(dbId);
+	}
+	@Override
 	public Subtask queryBySubtaskId(Integer subtaskId)
 			throws Exception {
 		// TODO Auto-generated method stub

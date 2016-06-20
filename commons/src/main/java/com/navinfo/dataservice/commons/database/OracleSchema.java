@@ -35,12 +35,12 @@ public class OracleSchema {
 			return dds;
 		}
 		String serverType = connConfig.getServerType();
-		if(DbConnectConfig.TYPE_ORACLE.equals(serverType)){
+		if(DbServerType.TYPE_ORACLE.equals(serverType)){
 			
 			String url = MultiDataSourceFactory.createOracleJdbcUrl(
 					connConfig.getServerIp(),connConfig.getServerPort(),connConfig.getDbName());
-			dds = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(DbConnectConfig.TYPE_ORACLE
-					, MultiDataSourceFactory.getDriverClassName(DbConnectConfig.TYPE_ORACLE)
+			dds = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(DbServerType.TYPE_ORACLE
+					, MultiDataSourceFactory.getDriverClassName(DbServerType.TYPE_ORACLE)
 					,url,connConfig.getUserName(), connConfig.getUserPasswd());
 			return dds;
 		}else{

@@ -13,6 +13,8 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.exception.JobRuntimeException;
@@ -25,7 +27,7 @@ import com.navinfo.dataservice.jobframework.exception.JobRuntimeException;
  */
 public abstract class AbstractJobRequest {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
-	protected String gdbVersion;
+	protected String gdbVersion=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 	
 	public abstract int getStepCount()throws JobException;
 	

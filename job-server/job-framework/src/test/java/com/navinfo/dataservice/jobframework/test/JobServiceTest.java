@@ -45,9 +45,7 @@ public class JobServiceTest {
 	public void hello_002(){
 		try{
 			List<Integer> list = new ArrayList<Integer>();
-			list.add(8);
-			list.add(9);
-			list.add(24);
+			list.add(43);
 			for (int i : list) {
 				Connection conn = DBConnector.getInstance().getConnectionById(i);
 				System.out.println(conn + "----------------test1");

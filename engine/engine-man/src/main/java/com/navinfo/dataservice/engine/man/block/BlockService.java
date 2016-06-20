@@ -25,6 +25,7 @@ import com.navinfo.dataservice.api.man.model.BlockMan;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -43,27 +44,27 @@ public class BlockService {
 	public void batchOpen(long userId,JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
-			// 鎸佷箙鍖�
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			JSONArray blockArray=json.getJSONArray("blocks");
 			
-			Date date = new Date(new java.util.Date().getTime());
-
-			String createSql = "insert into block_man (BLOCK_MAN_ID, CREATE_USER_ID, CREATE_DATE,BLOCK_ID,COLLECT_GROUP_ID, COLLECT_PLAN_START_DATE,"
+			String createSql = "insert into block_man (BLOCK_MAN_ID, CREATE_USER_ID,BLOCK_ID,COLLECT_GROUP_ID, COLLECT_PLAN_START_DATE,"
 					+ "COLLECT_PLAN_END_DATE,DAY_EDIT_GROUP_ID,DAY_EDIT_PLAN_START_DATE,DAY_EDIT_PLAN_END_DATE,MONTH_EDIT_GROUP_ID,"
 					+ "MONTH_EDIT_PLAN_START_DATE,MONTH_EDIT_PLAN_END_DATE,DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,"
-					+ "MONTH_PRODUCE_PLAN_START_DATE,MONTH_PRODUCE_PLAN_END_DATE) "
-					+ "values(BLOCK_MAN_SEQ.NEXTVAL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+					+ "MONTH_PRODUCE_PLAN_START_DATE,MONTH_PRODUCE_PLAN_END_DATE,DESCP) "
+					+ "values(BLOCK_MAN_SEQ.NEXTVAL,?,?,?,to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?,"
+					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?,to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
+					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
+					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?)";
 			
 			Object[][] param = new Object[blockArray.size()][];
 			for (int i = 0; i < blockArray.size(); i++) {
-	               JSONObject block = blockArray.getJSONObject(i);
-	               Object[] obj = new Object[]{userId,date,block.getInt("blockId"),block.getInt("collectGroupId"),block.getString("collectPlanStartDate"),
-	            		   block.getString("collectPlanEndDate"),block.getInt("dayEditGroupId"),block.getString("dayEditPlanStartDate"),
+	               JSONObject block = blockArray.getJSONObject(i); 
+	               Object[] obj = new Object[]{userId,block.getInt("blockId"),block.getInt("collectGroupId"),block.getString("collectPlanStartDate"),
+	            		   block.getString("collectPlanEndDate"),block.getInt("dayEditGroupId"), block.getString("dayEditPlanStartDate"),
 	            		   block.getString("dayEditPlanEndDate"),block.getInt("monthEditGroupId"),block.getString("monthEditPlanStartDate"),
-	            		   block.getString("monthEditPlanEndDate"),block.getString("dayProducePlanStartDate"),block.getString("dayProducePlanEndDate")
-	            		   ,block.getString("monthProducePlanStartDate"),block.getString("monthProducePlanEndDate")};
+	            		   block.getString("monthEditPlanEndDate"),block.getString("dayProducePlanStartDate"),block.getString("dayProducePlanEndDate"),
+	            		   block.getString("monthProducePlanStartDate"),block.getString("monthProducePlanEndDate"),block.getString("descp")};
 	               param[i]=obj;                   
 	            }
 			
@@ -81,15 +82,15 @@ public class BlockService {
 	public void batchUpdate(JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
-			// 鎸佷箙鍖�
+
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			JSONArray blockArray=json.getJSONArray("blocks");
 
-			String createSql = "update block_man set COLLECT_GROUP_ID=?, COLLECT_PLAN_START_DATE=?,"
-					+ "COLLECT_PLAN_END_DATE=?,DAY_EDIT_GROUP_ID=?,DAY_EDIT_PLAN_START_DATE=?,DAY_EDIT_PLAN_END_DAT=?,MONTH_EDIT_GROUP_ID=?,"
-					+ "MONTH_EDIT_PLAN_START_DATE=?,MONTH_EDIT_PLAN_END_DATE=?,DAY_PRODUCE_PLAN_START_DATE=?,DAY_PRODUCE_PLAN_END_DATE=?,"
-					+ "MONTH_PRODUCE_PLAN_START_DATE=?,MONTH_PRODUCE_PLAN_END_DATE=? where BLOCK_ID=?";
+			String createSql = "update block_man set COLLECT_GROUP_ID=?, COLLECT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
+					+ "COLLECT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_GROUP_ID=?,DAY_EDIT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_PLAN_END_DAT=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_EDIT_GROUP_ID=?,"
+					+ "MONTH_EDIT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_EDIT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
+					+ "MONTH_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'), DESCP=? where BLOCK_ID=?";
 			
 			Object[][] param = new Object[blockArray.size()][];
 			for (int i = 0; i < blockArray.size(); i++) {
@@ -98,7 +99,7 @@ public class BlockService {
 	               Object[] obj = new Object[]{bean.getCollectGroupId(),bean.getCollectPlanStartDate(),bean.getCollectPlanEndDate(),
 	            		   bean.getDayEditGroupId(),bean.getDayEditPlanStartDate(),bean.getDayEditPlanEndDate(),bean.getMonthEditGroupId(),
 	            		   bean.getMonthEditPlanStartDate(),bean.getMonthEditPlanEndDate(),bean.getDayProducePlanStartDate(),bean.getDayProducePlanEndDate(),
-	            		   bean.getMonthProducePlanStartDate(),bean.getMonthProducePlanStartDate(),bean.getBlockId()};
+	            		   bean.getMonthProducePlanStartDate(),bean.getMonthProducePlanStartDate(),bean.getDescp(),bean.getBlockId()};
 	               param[i]=obj;                   
 	            }
 			

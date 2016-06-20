@@ -51,13 +51,12 @@ public class DbController extends BaseController {
 			String descp = URLDecode(request.getParameter("descp"));
 			String gdbVersion = URLDecode(request.getParameter("gdbVersion"));
 			//参考db，使用参考策略
-			String refDbName = URLDecode(request.getParameter("refDbName"));
-			String refUserName = URLDecode(request.getParameter("refUserName"));
-			String refType = URLDecode(request.getParameter("refBizType"));
+			String refDbIdStr = URLDecode(request.getParameter("refDbId"));
+			int refDbId = StringUtils.isEmpty(refDbIdStr)?0:Integer.valueOf(refDbIdStr);
 			//省份代码，使用按省份分配策略
 			//String provCode = URLDecode(request.getParameter("provcode"));
 			
-			DbInfo db = DbService.getInstance().createDb(serverType,dbName,userName,userPasswd,type, descp,gdbVersion,refDbName,refUserName,refType);
+			DbInfo db = DbService.getInstance().createDb(serverType,dbName,userName,userPasswd,type, descp,gdbVersion,refDbId);
 
 			return new ModelAndView("jsonView", success(db.getConnectParam()));
 		}catch(Exception e){

@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,10 +25,11 @@ import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Polygon;
 
 import net.sf.json.JSONObject;
 
-@Service
+
 public class GridService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
@@ -188,12 +190,15 @@ public class GridService {
 
 			conn = DBConnector.getInstance().getManConnection();
 			// 根据输入的几何wkt，计算几何包含的gird，目前只有方法，小文在实现中。。。
-			List<?> grids = (List<?>) CompGeometryUtil
-					.geo2GridsWithoutBreak(GeometryUtils.getPolygonByWKT(json.getString("wkt")));
+			
+			Polygon polygon=(Polygon) GeometryUtils.getPolygonByWKT(json.getString("wkt"));
+			Set<?> grids = (Set<?>) CompGeometryUtil.geo2GridsWithoutBreak(polygon);
 
 			String selectSql = "select t.grid_id,s.status from subtask_grid_mapping t,subtask s where t.subtask_id=s.subtask_id "
 					+ "and s.stage="+json.getInt("stage")+"and s.type="+json.getInt("type");
-			String InClause = buildInClause("t.grid_id",grids);
+			List<String> gridList = new ArrayList<String>();  
+			gridList.addAll((Collection<? extends String>) grids);
+			String InClause = buildInClause("t.grid_id",gridList);
 			String sql=selectSql+InClause;
 	
 			return GridOperation.queryGirdBySql(conn, sql);

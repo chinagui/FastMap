@@ -163,6 +163,7 @@ public class Subtask implements Serializable  {
 		this.type = type;
 	}
 	public Integer getCreateUserId() {
+		if(null==createUserId){return 0;}
 		return createUserId;
 	}
 	public void setCreateUserId(Integer createUserId) {
@@ -175,6 +176,7 @@ public class Subtask implements Serializable  {
 		this.createDate = createDate;
 	}
 	public Integer getExeUserId() {
+		if(null==exeUserId){return 0;}
 		return exeUserId;
 	}
 	public void setExeUserId(Integer exeUserId) {

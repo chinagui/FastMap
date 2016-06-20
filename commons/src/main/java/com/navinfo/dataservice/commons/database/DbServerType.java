@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.api.datahub.model;
+package com.navinfo.dataservice.commons.database;
 
 /** 
  * @ClassName: DbType 

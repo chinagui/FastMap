@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.job.datahub;
 
 import com.alibaba.druid.util.StringUtils;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
+import com.navinfo.dataservice.commons.database.DbServerType;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
@@ -114,14 +116,11 @@ public class CreateDbJobRequest extends AbstractJobRequest {
 	 */
 	@Override
 	public void validate() throws JobException {
-		if(StringUtils.isEmpty(dbName)){
-			throw new JobException("create_db job请求参数错误：未设置dbNane属性");
-		}
-		if(StringUtils.isEmpty(userName)){
-			throw new JobException("create_db job请求参数错误：未设置userName属性");
+		if(StringUtils.isEmpty(serverType)){
+			throw new JobException("create_db job请求参数错误：serverType库类型未设置");
 		}
 		if(StringUtils.isEmpty(bizType)){
-			throw new JobException("create_db job请求参数错误：未设置userName属性");
+			throw new JobException("create_db job请求参数错误：未设置bizType属性");
 		}
 	}
 

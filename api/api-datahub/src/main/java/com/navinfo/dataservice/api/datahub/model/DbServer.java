@@ -11,7 +11,7 @@ import java.util.Set;
  */
 public class DbServer implements Serializable{
 	private int sid;
-	protected String type=DbServerType.TYPE_NONE;
+	protected String type="NONE";
 	private String ip;
 	private int port;
 	private String serviceName;

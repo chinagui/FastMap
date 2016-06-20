@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParentForAndroid;
 
 /**
  * POI父子关系父表 查询
@@ -376,34 +377,36 @@ public class IxPoiParentSelector implements ISelector{
 	 */
 	public List<IRow> loadByIdForAndroid(int id)throws Exception{
 		List<IRow> rows = new ArrayList<IRow>();
-		IxPoiParent poiParent = new IxPoiParent();
+		IxPoiParentForAndroid poiParent = new IxPoiParentForAndroid();
 		IxPoiChildren poiCheildre = new IxPoiChildren();
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
 			//直接进行联结查询，对结果进行判断
 			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT p.parent_poi_pid,c.relation_type");
+			sb.append("SELECT i.poi_num,c.relation_type");
 			sb.append(" FROM "+poiParent.tableName()+" p");
 			sb.append(" ,"+poiCheildre.tableName()+" c");
+			sb.append(" ,ix_poi i");
 			sb.append(" WHERE p.group_id=c.group_id");
 			sb.append(" AND c.child_poi_pid = :1");
 			sb.append(" AND c.u_record !=2");
+			sb.append(" AND p.parent_poi_pid=i.pid");
 			sb.append(" ORDER BY p.parent_poi_pid ASC");
 			pstmt = conn.prepareStatement(sb.toString());
 			pstmt.setInt(1, id);
 			resultSet = pstmt.executeQuery();
-			int parentPoiPid  = 0;
+			String poiNum  = "";
 			if (resultSet.next()){
-				parentPoiPid = resultSet.getInt("parent_poi_pid");
+				poiNum = resultSet.getString("poi_num");
 			}
 			while(resultSet.next()){
 				if (resultSet.getInt("relation_type")==2){
-					parentPoiPid = resultSet.getInt("parent_poi_pid");
+					poiNum = resultSet.getString("poi_num");
 					break;
 				}
 			}
-			poiParent.setParentPoiPid(parentPoiPid);
+			poiParent.setPoiNum(poiNum);
 			rows.add(poiParent);
 		}catch(Exception e){
 			throw e;

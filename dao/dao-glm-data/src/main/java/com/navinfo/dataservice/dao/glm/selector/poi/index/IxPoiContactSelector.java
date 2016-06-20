@@ -154,4 +154,65 @@ public class IxPoiContactSelector implements ISelector {
 		
 		ixPoiContact.setuDate(resultSet.getString("u_date"));
 	}
+	
+	public List<IRow> loadByIdForAndroid(int id) throws Exception {
+		List<IRow> rows = new ArrayList<IRow>();
+
+		String sql = "select CONTACT_TYPE,CONTACT,CONTACT_DEPART,PRIORITY,ROW_ID from ix_poi_contact where poi_pid=:1 and u_record!=:2";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, id);
+
+			pstmt.setInt(2, 2);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				IxPoiContact ixPoiContact = new IxPoiContact();
+
+				ixPoiContact.setContactType(resultSet.getInt("contact_type"));
+
+				ixPoiContact.setContact(resultSet.getString("contact"));
+
+				ixPoiContact.setContactDepart(resultSet.getInt("contact_depart"));
+
+				ixPoiContact.setPriority(resultSet.getInt("priority"));
+
+				ixPoiContact.setRowId(resultSet.getString("row_id"));
+
+				rows.add(ixPoiContact);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return rows;
+	}
+	
 }

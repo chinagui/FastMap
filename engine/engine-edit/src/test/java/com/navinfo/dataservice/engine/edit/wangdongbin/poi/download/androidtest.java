@@ -3,8 +3,8 @@ package com.navinfo.dataservice.engine.edit.wangdongbin.poi.download;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.navinfo.dataservice.dao.glm.search.PoiGridSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
+import com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.download.DownloadOperation;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -19,14 +19,14 @@ public class androidtest extends InitApplication {
 	
 	@Test
 	public void test() {
-		PoiGridSearch gridSearch = new PoiGridSearch();
+		DownloadOperation download = new DownloadOperation();
 		JSONArray gridList = new JSONArray();
 		JSONObject grid = new JSONObject();
 		grid.put("grid", "60560213");
 		grid.put("date", "");
 		gridList.add(grid);
 		try {
-			gridSearch.getPoiByGrids(gridList);
+			download.export(gridList, "f://poidownload", "poi.txt");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

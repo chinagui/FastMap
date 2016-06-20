@@ -17,7 +17,6 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.dao.pool.OracleAddress;
-import com.navinfo.dataservice.engine.man.project.ProjectSelector;
 
 public class NiValExceptionOperator {
 

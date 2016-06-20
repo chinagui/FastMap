@@ -53,4 +53,9 @@
 	<dropbox.download.urlpath.basedata>/resources/download/basedata</dropbox.download.urlpath.basedata>
 	<dropbox.download.urlpath.patternimg>/resources/download/patternimg</dropbox.download.urlpath.patternimg>
  	<dropbox.url>http://192.168.4.188</dropbox.url>
+ 	
+<!-- POI -->
+	<editsupport.poi.download.filepath.poi>/data/resources/download/poi</editsupport.poi.download.filepath.poi>
+	<editsupport.poi.download.urlpath.poi>/resources/download/poi</editsupport.poi.download.urlpath.poi>
+	<editsupport.poi.url>http://192.168.4.188</editsupport.poi.url>
 </configMap>

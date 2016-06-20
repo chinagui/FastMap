@@ -135,8 +135,6 @@ public class UploadController extends BaseController {
 	public ModelAndView resource(HttpServletRequest request)
 			throws ServletException, IOException {
 
-		String parameter = request.getParameter("parameter");
-
 		try {
 
 			UploadManager upload = new UploadManager();

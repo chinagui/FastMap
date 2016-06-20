@@ -358,15 +358,11 @@ public class DBController {
 
 			String sql = "insert into ix_poi_photo  (poi_pid,photo_id) values  ("
 					+ pid
-					+ "," + photoId + ")";
+					+ ",'" + photoId + "')";
 
 			pstmt = conn.prepareStatement(sql);
 
 			resultSet = pstmt.executeQuery();
-
-			while (resultSet.next()) {
-				results.add(resultSet.getInt(1));
-			}
 
 			conn.close();
 

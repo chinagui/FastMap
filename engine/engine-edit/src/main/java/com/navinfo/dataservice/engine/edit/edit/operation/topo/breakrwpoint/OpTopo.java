@@ -116,7 +116,7 @@ public class OpTopo implements IOperation {
 	 * 1.生成打断点的信息
 	 * 2.根据link1 和link2的几何属性生成新的一组link
 	 * 3.维护link和点的关系 以及维护linkMesh的关系
-	 * @param AdLink 要打断的link   sArray link1的几何属性  eArray link2的几何属性 result
+	 * @param RwLink 要打断的link   sArray link1的几何属性  eArray link2的几何属性 result
 	 * @throws Exception 
 	 */
 	private void  createLinksForRwNode(RwLink rwLink,JSONArray sArray,JSONArray eArray,Result result) throws Exception {

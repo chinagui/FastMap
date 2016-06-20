@@ -17,6 +17,7 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.OperStage;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiGasstation;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiHotel;
@@ -219,6 +220,7 @@ public class UploadOperation {
 					if (flag == 1) {
 						poi = (IxPoi)perRetObj.get("ret");
 						Result result = new Result();
+						result.setOperStage(OperStage.Collect);
 						JSONObject poiObj = new JSONObject();
 						poiObj.put("dbId", dbId);
 						poiObj.put("objId", poi.getPid());
@@ -304,6 +306,7 @@ public class UploadOperation {
 					poi.setPid(pid);
 					try {
 						Result result = new Result();
+						result.setOperStage(OperStage.Collect);
 						CommandForUpload poiCommand = new CommandForUpload(poiObj, null);
 						ProcessForUpload poiProcess = new ProcessForUpload(poiCommand);
 						result.insertObject(poi, ObjStatus.DELETE, pid);

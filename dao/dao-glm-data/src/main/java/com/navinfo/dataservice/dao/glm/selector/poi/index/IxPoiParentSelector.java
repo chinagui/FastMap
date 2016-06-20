@@ -112,27 +112,40 @@ public class IxPoiParentSelector implements ISelector{
 		return null;
 	}
 
+	/**
+	 * 加载poi做为父poi时，所有的poi父子关系
+	 * @param id 被查poi的pid
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
 	@Override
 	public List<IRow> loadRowsByParentId(int id, boolean isLock)
 			throws Exception {
 		List<IRow> rows = new ArrayList<IRow>();
-
-		String sql = "select * from ix_poi_parent where parent_poi_pid=:1 and u_record!=:2";
-
-		if (isLock) {
-			sql += " for update nowait";
-		}
-
+	
+		StringBuilder sb=new  StringBuilder();
+		
+		sb.append(" SELECT * FROM ix_poi_parent WHERE parent_poi_pid=:1 AND u_record!=:2" );
+		
+		sb.append(" AND EXISTS (SELECT null FROM ix_poi_children c WHERE c.group_id IN " );
+		
+		sb.append(" (SELECT group_id FROM ix_poi_parent where Parent_Poi_Pid =:3))" );
+		
+		sb.append(" FOR update nowait");		
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 
 		try {
-			pstmt = this.conn.prepareStatement(sql);
+			pstmt = this.conn.prepareStatement(sb.toString());
 
 			pstmt.setInt(1, id);
 
 			pstmt.setInt(2, 2);
+			
+			pstmt.setInt(3, id);
 
 			resultSet = pstmt.executeQuery();
 
@@ -192,6 +205,101 @@ public class IxPoiParentSelector implements ISelector{
 		return rows;
 	}
 	
+	
+	/**
+	 * 加载poi做为子poi时，所有的poi父子关系
+	 * @param id 被查poi的pid
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<IRow> loadParentRowsByChildrenId(int id, boolean isLock)
+			throws Exception {
+		List<IRow> rows = new ArrayList<IRow>();
+
+		String sql = "SELECT * FROM ix_poi_parent WHERE group_id IN (SELECT group_id FROM ix_poi_children WHERE child_poi_pid = :1 AND u_record != :2)";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, id);
+
+			pstmt.setInt(2, 2);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				IxPoiParent poiParent = new IxPoiParent();
+
+				poiParent.setPid(resultSet.getInt("group_id"));
+
+				poiParent.setParentPoiPid(resultSet.getInt("parent_poi_pid"));
+
+				poiParent.setTenantFlag(resultSet.getInt("tenant_flag"));
+				
+				poiParent.setMemo (resultSet.getString("memo"));
+				
+				poiParent.setRowId(resultSet.getString("row_id"));
+				
+				poiParent.setuDate(resultSet.getString("u_date"));
+				
+				// 获取IX_POI_PARENT对应的关联数据
+				// ix_poi_children
+				List<IRow> poiChildrens = new IxPoiChildrenSelector(conn).loadRowsByParentId(poiParent.getPid(), isLock);
+		
+				poiParent.setPoiChildrens(poiChildrens);
+
+				for (IRow row : poiParent.getPoiChildrens()) {
+					IxPoiChildren children = (IxPoiChildren) row;
+
+					poiParent.poiChildrenMap.put(children.rowId(), children);
+				}
+				
+				rows.add(poiParent);
+			}
+		} catch (Exception e) {
+			
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+		}
+
+		return rows;
+	}
+	
+
+	/**
+	 * 加载且仅加载poi做为父poi时，IX_POI_PARENT表
+	 * @param id
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
 	public List<IRow> loadParentRowsByPoiId(int id, boolean isLock)
 			throws Exception {
 		List<IRow> rows = new ArrayList<IRow>();

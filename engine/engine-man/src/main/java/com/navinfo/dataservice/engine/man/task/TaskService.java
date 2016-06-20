@@ -109,10 +109,12 @@ public class TaskService {
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			
-			String selectSql = "SELECT T.*,C.CITY_NAME,U.USER_REAL_NAME FROM TASK T,CITY C,USER_INFO U"
-					+ " WHERE T.CITY_ID=C.CITY_ID"
-					+ " AND T.CREATE_USER_ID=U.USER_ID"
-					+ " AND T.LATEST=1 ";
+			String selectSql = "SELECT T.*, C.CITY_NAME, U.USER_REAL_NAME, G.GROUP_NAME"
+					+ "  FROM TASK T, CITY C, USER_INFO U, USER_GROUP G"
+					+ " WHERE T.CITY_ID = C.CITY_ID"
+					+ "   AND T.CREATE_USER_ID = U.USER_ID"
+					+ "   AND T.MONTH_EDIT_GROUP_ID = G.GROUP_ID"
+					+ "   AND T.LATEST = 1";
 			if(null!=conditionJson && !conditionJson.isEmpty()){
 				Iterator keys = conditionJson.keys();
 				while (keys.hasNext()) {
@@ -128,18 +130,10 @@ public class TaskService {
 				Iterator keys = orderJson.keys();
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
-					if ("collectPlanStartDate".equals(key)) {selectSql+=" order by T.COLLECT_PLAN_START_DATE";break;}
-					if ("collectPlanEndDate".equals(key)) {selectSql+=" order by T.COLLECT_PLAN_END_DATE";break;}
-					if ("dayEditPlanStartDate".equals(key)) {selectSql+=" order by T.DAY_EDIT_PLAN_START_DATE";break;}
-					if ("dayEditPlanEndDate".equals(key)) {selectSql+=" order by T.DAY_EDIT_PLAN_END_DATE";break;}
-					if ("bMonthEditPlanStartDate".equals(key)) {selectSql+=" order by T.B_MONTH_EDIT_PLAN_START_DATE";break;}
-					if ("bMonthEditPlanEndDate".equals(key)) {selectSql+=" order by T.B_MONTH_EDIT_PLAN_END_DATE";break;}
-					if ("cMonthEditPlanStartDate".equals(key)) {selectSql+=" order by T.C_MONTH_EDIT_PLAN_START_DATE";break;}
-					if ("cMonthEditPlanEndDate".equals(key)) {selectSql+=" order by T.C_MONTH_EDIT_PLAN_END_DATE";break;}	
-					if ("dayProducePlanStartDate".equals(key)) {selectSql+=" order by T.DAY_PRODUCE_PLAN_START_DATE";break;}
-					if ("dayProducePlanEndDate".equals(key)) {selectSql+=" order by T.DAY_PRODUCE_PLAN_END_DATE";break;}
-					if ("monthProducePlanStartDate".equals(key)) {selectSql+=" order by T.MONTH_PRODUCE_PLAN_START_DATE";break;}
-					if ("monthProducePlanStartDate".equals(key)) {selectSql+=" order by T.MONTH_PRODUCE_PLAN_END_DATE";break;}
+					if ("planStartDate".equals(key)) {selectSql+=" order by T.PLAN_START_DATE";break;}
+					if ("planEndDate".equals(key)) {selectSql+=" order by T._PLAN_END_DATE";break;}
+					if ("monthEditPlanStartDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_START_DATE";break;}
+					if ("monthEditPlanEndDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_END_DATE";break;}
 					}
 			}
 			return TaskOperation.selectTaskBySql2(conn, selectSql, null,currentPageNum,pageSize);

@@ -25,6 +25,7 @@ public class Task{
 	private Timestamp monthEditPlanStartDate ;
 	private Timestamp monthEditPlanEndDate ;
 	private Integer monthEditGroupId ;
+	private String monthEditGroupName;
 	private Integer latest ;
 	
 	public Task (){
@@ -253,5 +254,11 @@ public class Task{
 	}
 	public void setCreateUserName(String createUserName) {
 		this.createUserName = createUserName;
+	}
+	public String getMonthEditGroupName() {
+		return monthEditGroupName;
+	}
+	public void setMonthEditGroupName(String monthEditGroupName) {
+		this.monthEditGroupName = monthEditGroupName;
 	}	
 }

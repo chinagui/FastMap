@@ -34,9 +34,7 @@ public class GdbExportScriptsInterface {
 			context.start();
 			new ApplicationContextUtil().setApplicationContext(context);
 			
-			RegionService s = new RegionService();
-			
-			List<Region> list = s.list(new JSONObject());
+			List<Region> list = RegionService.getInstance().list();
 			
 			for(Region region : list){
 				
@@ -44,7 +42,7 @@ public class GdbExportScriptsInterface {
 				
 				DbInfo dbinfo = datahub.getDbById(region.getMonthlyDbId());
 				
-				DbConnectConfig connConfig = MultiDataSourceFactory
+				DbConnectConfig connConfig = DbConnectConfig
 						.createConnectConfig(dbinfo.getConnectParam());
 				
 				DataSource datasource = MultiDataSourceFactory.getInstance()

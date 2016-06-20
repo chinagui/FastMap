@@ -19,6 +19,7 @@ import org.springframework.util.Assert;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.datahub.service.DbService;
@@ -78,7 +79,7 @@ public class DistributeCkScriptsInterface {
 				tables.add("NI_VAL_EXCEPTION");
 				DbInfo targetDb = DbService.getInstance().getDbById(Integer.valueOf(strs[0]));
 				OracleSchema targetSchema = new OracleSchema(
-						MultiDataSourceFactory.createConnectConfig(targetDb.getConnectParam()));
+						DbConnectConfig.createConnectConfig(targetDb.getConnectParam()));
 				RemoveDuplicateRow.removeDup(tables, targetSchema);
 				response.put("removeDup_"+prjIdStr, "success");
 				

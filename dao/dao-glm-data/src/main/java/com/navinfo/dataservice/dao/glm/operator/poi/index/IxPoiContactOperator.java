@@ -186,7 +186,7 @@ public class IxPoiContactOperator implements IOperator {
 
 		sb.append(ixPoiContact.tableName());
 
-		sb.append("(poi_pid, contactType, contact,contactDepart,priority, row_id,u_date,u_record) values (");
+		sb.append("(poi_pid, contact_type, contact,contact_depart,priority, row_id,u_date,u_record) values (");
 
 		sb.append(ixPoiContact.getPoiPid());
 

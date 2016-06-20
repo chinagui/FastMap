@@ -17,11 +17,11 @@ import com.navinfo.dataservice.api.man.model.UserDevice;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
-import com.navinfo.dataservice.commons.token.AccessToken;
-import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 
 /** 
 * @ClassName:  UserInfoService 
@@ -61,7 +61,6 @@ public class UserInfoService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			
-//			String updateSql = "update user_info set USER_ID=?, USER_REAL_NAME=?, USER_NICK_NAME=?, USER_PASSWORD=?, USER_EMAIL=?, USER_PHONE=?, USER_LEVEL=?, USER_SCORE=?, USER_ICON=?, USER_GPSID=? where 1=1 ";
 			String updateSql = "update user_info set ";
 			List<Object> values=new ArrayList<Object>();
 
@@ -435,7 +434,6 @@ public class UserInfoService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	
 	/**
 	 * @param userInfo
 	 * @param userDevice

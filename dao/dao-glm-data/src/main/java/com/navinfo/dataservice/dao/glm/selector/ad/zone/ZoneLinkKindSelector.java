@@ -65,7 +65,7 @@ public class ZoneLinkKindSelector implements ISelector{
 
 				kind.setLinkPid(resultSet.getInt("link_pid"));
 				kind.setKind(resultSet.getInt("kind"));
-				kind.setFrom(resultSet.getInt("form"));
+				kind.setForm(resultSet.getInt("form"));
 				kind.setRowId(resultSet.getString("row_id"));
 			} else {
 				
@@ -127,7 +127,7 @@ public class ZoneLinkKindSelector implements ISelector{
 
 				kind.setLinkPid(resultSet.getInt("link_pid"));
 				kind.setKind(resultSet.getInt("kind"));
-				kind.setFrom(resultSet.getInt("form"));
+				kind.setForm(resultSet.getInt("form"));
 				kind.setRowId(resultSet.getString("row_id"));
 
 				rows.add(kind);

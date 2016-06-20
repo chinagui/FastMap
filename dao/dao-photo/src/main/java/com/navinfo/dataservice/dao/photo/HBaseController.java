@@ -1,17 +1,28 @@
 package com.navinfo.dataservice.dao.photo;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONObject;
+
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Table;
 import org.hbase.async.GetRequest;
 import org.hbase.async.KeyValue;
 import org.hbase.async.Scanner;
 
 import ch.hsr.geohash.GeoHash;
 
+import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.ByteUtils;
+import com.navinfo.dataservice.commons.util.FileUtils;
+import com.navinfo.dataservice.commons.util.UuidUtils;
 
 public class HBaseController {
 
@@ -136,4 +147,37 @@ public class HBaseController {
 		return result;
 	}
 
+	public String putPhoto(InputStream in) throws Exception{
+		
+		String rowkey = UuidUtils.genUuid();
+		
+		Photo photo = new Photo();
+		
+		photo.setRowkey(rowkey);
+		
+		int count = in.available();
+		
+		byte[] bytes = new byte[(int) count];
+
+		in.read(bytes);
+		
+		byte[] sbytes = FileUtils.makeSmallImage(bytes);
+		
+		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+
+		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
+		
+		Put put = new Put(rowkey.getBytes());
+		
+		put.addColumn("data".getBytes(), "attribute".getBytes(), JSONObject
+				.fromObject(photo).toString().getBytes());
+		
+		put.addColumn("data".getBytes(), "origin".getBytes(), bytes);
+		
+		put.addColumn("data".getBytes(), "thumbnail".getBytes(), sbytes);
+		
+		htab.put(put);
+		
+		return rowkey;
+	}
 }

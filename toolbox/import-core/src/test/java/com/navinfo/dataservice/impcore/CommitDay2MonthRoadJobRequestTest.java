@@ -7,7 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.navinfo.dataservice.impcore.commit.CommitDay2MonthRoadJobRequest;
+import com.navinfo.dataservice.impcore.commit.day.road.Day2MonthRoadJobRequest;
 
 /*
  * @author mayunfei
@@ -24,7 +24,7 @@ public class CommitDay2MonthRoadJobRequestTest {
 	public void test() {
 		String param = "{\"gridSet\":[23432,4343243,3434]}";
 		JSONObject json=JSONObject.fromObject(param);
-		CommitDay2MonthRoadJobRequest request = new CommitDay2MonthRoadJobRequest();
+		Day2MonthRoadJobRequest request = new Day2MonthRoadJobRequest();
 		request.parseByJsonConfig(json);
 		Assert.assertTrue(request.getGridList().size()==3);
 	}

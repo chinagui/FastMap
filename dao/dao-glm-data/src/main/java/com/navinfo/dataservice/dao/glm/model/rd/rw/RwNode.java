@@ -42,7 +42,7 @@ public class RwNode implements IObj {
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
-	private List<IRow> meshs = new ArrayList<>();
+	private List<IRow> meshes = new ArrayList<>();
 
 	public Map<String, RwNodeMesh> meshMap = new HashMap<>();
 
@@ -90,12 +90,12 @@ public class RwNode implements IObj {
 		return rowId;
 	}
 
-	public List<IRow> getMeshs() {
-		return meshs;
+	public List<IRow> getMeshes() {
+		return meshes;
 	}
 
-	public void setMeshs(List<IRow> meshs) {
-		this.meshs = meshs;
+	public void setMeshes(List<IRow> meshes) {
+		this.meshes = meshes;
 	}
 
 	@Override
@@ -156,7 +156,7 @@ public class RwNode implements IObj {
 
 		List<List<IRow>> children = new ArrayList<>();
 
-		children.add(meshs);
+		children.add(meshes);
 
 		return children;
 	}
@@ -254,8 +254,8 @@ public class RwNode implements IObj {
 
 			if (json.get(key) instanceof JSONArray) {
 				switch (key) {
-				case "meshs":
-					meshs.clear();
+				case "meshes":
+					meshes.clear();
 
 					ja = json.getJSONArray(key);
 
@@ -266,10 +266,16 @@ public class RwNode implements IObj {
 
 						row.Unserialize(jo);
 
-						meshs.add(row);
+						meshes.add(row);
 					}
 					break;
 				}
+			} else if ("geometry".equals(key)) {
+
+				Geometry jts = GeoTranslator.geojson2Jts(json.getJSONObject(key), 100000, 0);
+
+				this.setGeometry(jts);
+
 			} else if (!"objStatus".equals(key)) {
 
 				Field f = this.getClass().getDeclaredField(key);

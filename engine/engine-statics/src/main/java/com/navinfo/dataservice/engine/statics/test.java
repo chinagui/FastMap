@@ -1,9 +1,13 @@
 package com.navinfo.dataservice.engine.statics;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 import org.bson.Document;
 
@@ -62,25 +66,31 @@ public class test {
 	}
 
 	public static void main(String[] args) throws Exception {
+		/*
+		JSONObject jsonObject = new JSONObject();
+        jsonObject.put("UserName", "ZHULI");
+        jsonObject.put("age", "30");
+        jsonObject.put("workIn", "ALI");
+        System.out.println("jsonObject1：" + jsonObject);
+        
+        HashMap<String, String> hashMap = new HashMap<String, String>();
+        hashMap.put("UserName", "ZHULI");
+        hashMap.put("age", "30");
+        hashMap.put("workIn", "ALI");
+        System.out.println("jsonObject2：" + JSONObject.fromObject(hashMap));
+        */
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.add("ZHULI");
+        jsonArray.add("30");
+        jsonArray.add("ALI");
 
-		test1();
-		//
-		// ClassPathXmlApplicationContext context = new
-		// ClassPathXmlApplicationContext(new String[] {
-		// "dubbo-consumer-datahub-test.xml" });
-		// context.start();
-		// new ApplicationContextUtil().setApplicationContext(context);
-		//
-		// //-----------------------
-		// List<Integer> list = new ArrayList<Integer>();
-		// list.add(8);
-		// list.add(9);
-		// list.add(24);
-		// for (int i : list) {
-		// Connection conn = DBConnector.getInstance().getConnectionById(i);
-		// System.out.println(conn + "----------------test1");
-		//
-		// }
 
+        JSONObject jsonObject2 = new JSONObject();
+        jsonObject2.put("UserName", "ZHULI");
+        //jsonObject2.put("Array", jsonArray);
+        jsonObject2.element("xxx", new JSONArray().element(1).element(34));
+        System.out.println("xxxx  ：" + jsonObject2.getJSONArray("xxx"));
+        
+        System.out.println("jsonObject2：" + jsonObject2);
 	}
 }

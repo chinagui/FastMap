@@ -13,7 +13,7 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.edit.model.FmMesh4Lock;
+import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -133,7 +133,7 @@ public class MeshLockManager{
 			StringBuffer sqlBuf = new StringBuffer();
 			int updateCount=0;
 			//申请锁时，借出例外
-			if(lockType==FmMesh4Lock.TYPE_BORROW){
+			if(lockType==FmEditLock.TYPE_BORROW){
 				sqlBuf.append("UPDATE MESH SET HANDLE_PROJECT_ID=?,LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE WHERE");
 				sqlBuf.append(meshInClause);
 				sqlBuf.append(" AND HANDLE_PROJECT_ID <> ? AND LOCK_STATUS=0");
@@ -154,7 +154,7 @@ public class MeshLockManager{
 					run.update(conn, sqlBuf.toString(),userId, prjId,lockType,lockSeq,prjId);
 				}
 				
-			}else if(lockType==FmMesh4Lock.TYPE_GIVE_BACK){
+			}else if(lockType==FmEditLock.TYPE_GIVE_BACK){
 				sqlBuf.append("UPDATE MESH SET LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE WHERE");
 				sqlBuf.append(meshInClause);
 				sqlBuf.append(" AND PROJECT_ID <> ? AND HANDLE_PROJECT_ID = ? AND LOCK_STATUS=0");
@@ -223,7 +223,7 @@ public class MeshLockManager{
 			conn = DBConnector.getInstance().getManConnection();
 			//解锁时，归还例外
 			String sql = null;
-			if(lockType==FmMesh4Lock.TYPE_GIVE_BACK){
+			if(lockType==FmEditLock.TYPE_GIVE_BACK){
 				sql = "UPDATE MESH SET HANDLE_PROJECT_ID=PROJECT_ID,LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,LOCK_TIME=SYSDATE" +
 						" WHERE HANDLE_PROJECT_ID=? AND LOCK_TYPE=? AND LOCK_STATUS=1 AND LOCK_SEQ=?";
 			}else{
@@ -276,7 +276,7 @@ public class MeshLockManager{
 			//解锁时，归还例外
 			StringBuffer sqlBuf = new StringBuffer();
 			int updateCount=0;
-			if(lockType==FmMesh4Lock.TYPE_GIVE_BACK){
+			if(lockType==FmEditLock.TYPE_GIVE_BACK){
 				sqlBuf.append("UPDATE MESH SET HANDLE_PROJECT_ID=PROJECT_ID,LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,LOCK_TIME=SYSDATE WHERE");
 			}else{
 				sqlBuf.append("UPDATE MESH SET LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,LOCK_TIME=SYSDATE WHERE");
@@ -291,7 +291,7 @@ public class MeshLockManager{
 			}
 			
 			sqlBuf = new StringBuffer();
-			if(lockType==FmMesh4Lock.TYPE_GIVE_BACK){
+			if(lockType==FmEditLock.TYPE_GIVE_BACK){
 				sqlBuf.append("UPDATE GRID SET HANDLE_PROJECT_ID=PROJECT_ID,HANDLE_USER_ID=USER_ID,LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,LOCK_TIME=SYSDATE WHERE");
 			}else{
 				sqlBuf.append("UPDATE GRID SET LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,LOCK_TIME=SYSDATE WHERE");
@@ -347,7 +347,7 @@ public class MeshLockManager{
 				}
 				int rentSize = rentMeshes.size();
 
-				int updateCount = run.update(conn, sql,prjId,FmMesh4Lock.TYPE_BORROW,lockSeq,StringUtils.join(rentMeshes, "','"),rentPrjId);
+				int updateCount = run.update(conn, sql,prjId,FmEditLock.TYPE_BORROW,lockSeq,StringUtils.join(rentMeshes, "','"),rentPrjId);
 				if(updateCount!=rentSize){
 					throw new LockException("借图幅失败：项目"+rentPrjId+"能够借出的图幅数和传入图幅数不相等。");
 				}

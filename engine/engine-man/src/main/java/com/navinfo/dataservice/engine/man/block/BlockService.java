@@ -74,7 +74,7 @@ public class BlockService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("鍒涘缓澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
+			throw new ServiceException("更新失败:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -109,7 +109,7 @@ public class BlockService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("鍒涘缓澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
+			throw new ServiceException("更新失败:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -128,7 +128,7 @@ public class BlockService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("鏌ヨ鍒楄〃澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
+			throw new ServiceException("查询失败:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -164,7 +164,7 @@ public class BlockService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("鏌ヨ鍒楄〃澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
+			throw new ServiceException("查询失败:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -206,7 +206,7 @@ public class BlockService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("鏌ヨ鏄庣粏澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
+			throw new ServiceException("查询失败:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -246,7 +246,7 @@ public class BlockService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("鏌ヨ鍒楄〃澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
+			throw new ServiceException("查询失败:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -281,7 +281,7 @@ public class BlockService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("鏌ヨ鍒楄〃澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
+			throw new ServiceException("查询失败:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}

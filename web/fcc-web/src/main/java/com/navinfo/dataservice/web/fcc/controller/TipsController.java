@@ -2,7 +2,9 @@ package com.navinfo.dataservice.web.fcc.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -12,16 +14,15 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
+import org.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
-import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
@@ -172,8 +173,17 @@ public class TipsController extends BaseController {
 			TipsExporter op = new TipsExporter();
 
 			JSONArray grids = jsonReq.getJSONArray("grids");
+			
+			Set<String> images = new HashSet<String>();
 
-			op.export(grids, date, filePath, "tips.txt");
+			op.export(grids, date, filePath, "tips.txt", images);
+			
+			if(images.size()>0){
+			
+				PatternImageExporter exporter = new PatternImageExporter();
+				
+				exporter.export2SqliteByNames(filePath, images);
+			}
 
 			String zipFileName = uuid + ".zip";
 
@@ -199,9 +209,8 @@ public class TipsController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
-
 	@RequestMapping(value = "/tip/getByRowkey")
-	public ModelAndView getByRowkey(HttpServletRequest request
+	public void getByRowkey(HttpServletRequest request,HttpServletResponse response
 			) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
@@ -215,13 +224,14 @@ public class TipsController extends BaseController {
 
 			JSONObject data = selector.searchDataByRowkey(rowkey);
 
-			return new ModelAndView("jsonView", success(data));
-
+			response.getWriter().println(
+					ResponseUtils.assembleRegularResult(data));
 		} catch (Exception e) {
 
 			logger.error(e.getMessage(), e);
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage()));
 		}
 	}
 
@@ -251,7 +261,7 @@ public class TipsController extends BaseController {
 	}
 
 	@RequestMapping(value = "/tip/getSnapshot")
-	public ModelAndView getSnapshot(HttpServletRequest request
+	public void getSnapshot(HttpServletRequest request, HttpServletResponse response
 			) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
@@ -272,13 +282,15 @@ public class TipsController extends BaseController {
 			JSONArray array = selector.getSnapshot(grids, stage, type,
 					dbId);
 
-			return new ModelAndView("jsonView", success(array));
+			response.getWriter().println(
+					ResponseUtils.assembleRegularResult(array));
 
 		} catch (Exception e) {
 
 			logger.error(e.getMessage(), e);
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage()));
 		}
 	}
 

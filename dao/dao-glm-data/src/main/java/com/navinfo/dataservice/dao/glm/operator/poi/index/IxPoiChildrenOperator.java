@@ -180,7 +180,7 @@ public class IxPoiChildrenOperator implements IOperator {
 
 		sb.append(ixPoiChildren.tableName());
 
-		sb.append("(groupId, childPoiPid, relationType, row_id,u_date,u_record) values (");
+		sb.append("(group_id, child_poi_pid, relation_type, row_id,u_date,u_record) values (");
 
 		sb.append(ixPoiChildren.getGroupId());
 

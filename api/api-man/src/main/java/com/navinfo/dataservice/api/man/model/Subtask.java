@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.api.man.model;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 import com.navinfo.dataservice.api.man.model.Task;
@@ -13,7 +14,7 @@ import com.navinfo.dataservice.api.man.model.BlockMan;
 * @date 2016-06-06 07:40:15 
 * @Description: TODO
 */
-public class Subtask  {
+public class Subtask implements Serializable  {
 	private Integer subtaskId ;
 	private String name;
 	private Integer blockId ;
@@ -83,6 +84,7 @@ public class Subtask  {
 		this.dbId = dbId;
 	}
 	public String getName(){
+		if(null==name){return "";}
 		return name;
 	}
 	public void setName(String name) {
@@ -119,36 +121,42 @@ public class Subtask  {
 		this.task = task;
 	}
 	public Integer getSubtaskId() {
+		if(null==subtaskId){return 0;}
 		return subtaskId;
 	}
 	public void setSubtaskId(Integer subtaskId) {
 		this.subtaskId = subtaskId;
 	}
 	public Integer getBlockId() {
+		if(null==blockId){return 0;}
 		return blockId;
 	}
 	public void setBlockId(Integer blockId) {
 		this.blockId = blockId;
 	}
 	public Integer getTaskId() {
+		if(null==taskId){return 0;}
 		return taskId;
 	}
 	public void setTaskId(Integer taskId) {
 		this.taskId = taskId;
 	}
 	public String getGeometry() {
+		if(null==geometry){return "";}
 		return geometry;
 	}
 	public void setGeometry(String geometry) {
 		this.geometry = geometry;
 	}
 	public Integer getStage() {
+		if(null==stage){return 0;}
 		return stage;
 	}
 	public void setStage(Integer stage) {
 		this.stage = stage;
 	}
 	public Integer getType() {
+		if(null==type){return 0;}
 		return type;
 	}
 	public void setType(Integer type) {
@@ -173,6 +181,7 @@ public class Subtask  {
 		this.exeUserId = exeUserId;
 	}
 	public Integer getStatus() {
+		if(null==status){return 0;}
 		return status;
 	}
 	public void setStatus(Integer status) {
@@ -214,10 +223,10 @@ public class Subtask  {
 	@Override
 	public String toString() {
 		return "Subtask ["
-				+ "subtaskId=" + subtaskId 
-				+ ",name=" + name 
-				+",blockId="+blockId
-				+",taskId="+taskId
+				+ "subtaskId=" + subtaskId
+				+ ",name=" + this.getName() 
+				+",blockId="+this.getBlockId()
+				+",taskId="+this.getTaskId()
 				+",geometry="+geometry
 				+",stage="+stage
 				+",type="+type
@@ -225,15 +234,15 @@ public class Subtask  {
 				+",createDate="+createDate
 				+",exeUserId="+exeUserId
 				+",status="+status
-				+",planStartDate="+planStartDate
-				+",planEndDate="+planEndDate
+				//+",planStartDate="+planStartDate
+				//+",planEndDate="+planEndDate
 //				+",startDate="+startDate
 //				+",endDate="+endDate
-				+ ",block=" + block.toString()
-				+ ",blockMan=" + blockMan.toString()
-				+ ",task=" + task.toString()
+				//+ ",block=" + block.toString()
+				//+ ",blockMan=" + blockMan.toString()
+				//+ ",task=" + task.toString()
 				+ ",dbId=" + dbId
-				+ ",gridIds=" + gridIds
+				//+ ",gridIds=" + gridIds
 				+",descp="+descp+"]";
 	}
 

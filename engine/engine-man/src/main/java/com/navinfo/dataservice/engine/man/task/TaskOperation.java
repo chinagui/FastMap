@@ -194,7 +194,7 @@ public class TaskOperation {
 			};
 			if (bean!=null&&bean.getMonthEditGroupId()!=null && StringUtils.isNotEmpty(bean.getMonthEditGroupId().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" MONTH_EDIT_PLAN_START_DATE=? ";
+				updateSql+=" MONTH_EDIT_GROUP_ID=? ";
 				values.add(bean.getMonthEditGroupId());
 			};
 			if (bean!=null&&bean.getTaskId()!=null && StringUtils.isNotEmpty(bean.getTaskId().toString())){

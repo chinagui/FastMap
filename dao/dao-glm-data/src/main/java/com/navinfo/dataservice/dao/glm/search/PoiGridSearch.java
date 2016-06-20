@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -35,7 +34,6 @@ public class PoiGridSearch {
 	 * @return data
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked")
 	public List<IRow> getPoiByGrids(JSONArray gridDateList) throws Exception{
 		Connection manConn = null;
 		Connection conn = null;
@@ -102,12 +100,12 @@ public class PoiGridSearch {
 	 */
 	@SuppressWarnings("static-access")
 	private List<IRow> getPoiData(JSONObject gridDate,Connection conn) throws Exception{
-		IxPoi ixPoi = new IxPoi();
+		
 		List<IRow> retList = new ArrayList<IRow>();
 		
 		StringBuffer sb = new StringBuffer();
-		sb.append("SELECT poi_num,pid,mesh_id,kind_code,link_pid,x_guide,y_guide,post_code,open_24h,chain,u_record,geometry");
-		sb.append(" FROM "+ixPoi.tableName());
+		sb.append("SELECT poi_num,pid,mesh_id,kind_code,link_pid,x_guide,y_guide,post_code,open_24h,chain,u_record,geometry,\"LEVEL\",sports_venue,indoor,vip_flag  ");
+		sb.append(" FROM ix_poi");
 		sb.append(" WHERE sdo_relate(geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE' ");
 		if (!gridDate.getString("date").isEmpty()){
 			sb.append(" AND u_date>'"+gridDate.getString("date")+"'");
@@ -125,6 +123,7 @@ public class PoiGridSearch {
 			resultSet = pstmt.executeQuery();
 			
 			while(resultSet.next()){
+				IxPoi ixPoi = new IxPoi();
 				setAttr(ixPoi,resultSet);
 				
 				int id = ixPoi.getPid();
@@ -152,29 +151,27 @@ public class PoiGridSearch {
 				// 设置子表IX_POI_CONTACT
 				IxPoiContactSelector ixPoiContactSelector = new IxPoiContactSelector(conn);
 				
-				ixPoi.setContacts(ixPoiContactSelector.loadRowsByParentId(id, false));
+				ixPoi.setContacts(ixPoiContactSelector.loadByIdForAndroid(id));
 				
 				// 设置子表IX_POI_RESTAURANT
 				IxPoiRestaurantSelector ixPoiRestaurantSelector = new IxPoiRestaurantSelector(conn);
 				
-				ixPoi.setRestaurants(ixPoiRestaurantSelector.loadRowsByParentId(id, false));
+				ixPoi.setRestaurants(ixPoiRestaurantSelector.loadByIdForAndroid(id));
 				
 				// 设置子表IX_POI_PARKING
 				IxPoiParkingSelector ixPoiParkingSelector = new IxPoiParkingSelector(conn);
 				
-				ixPoi.setParkings(ixPoiParkingSelector.loadRowsByParentId(id, false));
+				ixPoi.setParkings(ixPoiParkingSelector.loadByIdForAndroid(id));
 				
 				// 设置子表IX_POI_HOTEL
 				IxPoiHotelSelector ixPoiHotelSelector = new IxPoiHotelSelector(conn);
 				
-				ixPoi.setHotels(ixPoiHotelSelector.loadRowsByParentId(id, false));
+				ixPoi.setHotels(ixPoiHotelSelector.loadByIdForAndroid(id));
 				
 				// 设置子表IX_POI_GASSTATION
 				IxPoiGasstationSelector ixPoiGasstationSelector = new IxPoiGasstationSelector(conn);
 				
-				ixPoi.setGasstations(ixPoiGasstationSelector.loadRowsByParentId(id, false));
-				
-				//TODO indoor
+				ixPoi.setGasstations(ixPoiGasstationSelector.loadByIdForAndroid(id));
 				
 				retList.add(ixPoi);
 			}
@@ -219,6 +216,14 @@ public class PoiGridSearch {
 		ixPoi.setChain(resultSet.getString("chain"));
 		
 		ixPoi.setuRecord(resultSet.getInt("u_record"));
+		
+		ixPoi.setLevel(resultSet.getString("level"));
+		
+		ixPoi.setSportsVenue(resultSet.getString("sports_venue"));
+		
+		ixPoi.setIndoor(resultSet.getInt("indoor"));
+		
+		ixPoi.setVipFlag(resultSet.getString("vip_flag"));
 		
 	}
 }

@@ -159,19 +159,19 @@ public class UploadManager {
 		
 		Iterator<FileItem> it = items.iterator();
 		
-//		int pid = 0;
-//		int dbId = 0;
+		int pid = 0;
+		int dbId = 0;
+		
+		String fileType = "";
+		
+		String fileName = "";
+		
+//		int pid = 1;
+//		int dbId = 43;
 //		
-//		String fileType = "";
+//		String fileType = "photo";
 //		
-//		String fileName = "";
-		
-		int pid = 1;
-		int dbId = 43;
-		
-		String fileType = "photo";
-		
-		String fileName = "photo_test";
+//		String fileName = "photo_test";
 		
 		FileItem uploadItem = null;
 			

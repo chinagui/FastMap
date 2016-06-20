@@ -62,16 +62,6 @@ public class ReleaseFmIdbMonthlyJob extends AbstractJob {
 		// TODO 待实现；
 	}
 
-
-	/**
-	 * @return 大区id和对应grid的mapping信息
-	 * @throws Exception
-	 */
-	private Map queryRegionGridsMapping() throws Exception {
-		ManApi gridSelectorApiSvr = (ManApi) ApplicationContextUtil.getBean("manApi");
-		Map regionGridMapping= gridSelectorApiSvr.queryRegionGridMapping(((ReleaseFmIdbDailyJobRequest )this.request).getGridList());
-		return regionGridMapping;
-	}
-
+	
 }
 

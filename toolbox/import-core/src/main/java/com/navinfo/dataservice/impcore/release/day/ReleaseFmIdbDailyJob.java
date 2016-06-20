@@ -51,7 +51,7 @@ public class ReleaseFmIdbDailyJob extends AbstractJob {
 				ReleaseFmIdbDailyJobRequest releaseFmIdbDailyRequest = (ReleaseFmIdbDailyJobRequest )this.request;
 				DbInfo releaseDb = getReleaseDbConn(databhubApi,releaseFmIdbDailyRequest.getFeatureType());//databhubApi.getOnlyDbByType(DbInfo.BIZ_TYPE.DES_DAY_ALL.getValue());
 				this.log.info("开始日出品（源库:"+dailyDb+",目标库："+releaseDb+")");
-				LogFlusher logFlusher= new ReleaseDailyPoiLogFlusher(regionInfo.getRegionId(),
+				LogFlusher logFlusher= new ReleaseDailyLogFlusher(regionInfo.getRegionId(),
 													dailyDb, 
 													releaseDb, 
 													gridListOfRegion, 

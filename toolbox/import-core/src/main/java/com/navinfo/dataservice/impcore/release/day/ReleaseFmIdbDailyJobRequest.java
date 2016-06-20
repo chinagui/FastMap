@@ -12,7 +12,10 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
  * @author mayunfei
  * 2016年6月6日
  * 描述：CommitDay2MonthRoadJob 请求参数的解析处理类
- * 
+ * {"gridList":[34234,234324],
+ *  "stopTime":"yyyymmddHH24miss",
+ *  "featureType":"ALL"//POI,ROAD
+ * }
  */
 public class ReleaseFmIdbDailyJobRequest extends AbstractJobRequest {
 	private List<Integer> gridList;

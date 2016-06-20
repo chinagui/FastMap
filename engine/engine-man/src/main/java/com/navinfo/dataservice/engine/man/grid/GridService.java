@@ -29,7 +29,7 @@ import com.vividsolutions.jts.geom.Polygon;
 
 import net.sf.json.JSONObject;
 
-@Service
+
 public class GridService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 

@@ -7,6 +7,8 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
@@ -116,5 +118,54 @@ public class NodeOperateUtils {
 		}
 		node.setMeshes(nodeMeshs);
 		return node;
+	}
+	/**
+	 * 生成Zone点
+	 * @author zhaokk
+	 * @param x 经度
+	 * @param y 纬度
+	 * @return 铁路点对象
+	 * @throws Exception
+	 */
+	public static ZoneNode createZoneNode(double x, double y) throws Exception {
+
+		ZoneNode node = new ZoneNode();
+		// 申请pid
+		node.setPid(PidService.getInstance().applyZoneNodePid());
+		// 获取点的几何信息
+		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y), 100000, 0));
+		// 维护Node图幅信息
+		// 判断是否图廓点
+		if (MeshUtils.isPointAtMeshBorder(x, y)) {
+			node.setForm(1);
+		}
+		List<IRow> nodeMeshs = new ArrayList<IRow>();
+
+		for (String mesh : MeshUtils.point2Meshes(x, y)) {
+
+			ZoneNodeMesh nodeMesh = new ZoneNodeMesh();
+			nodeMesh.setNodePid(node.getPid());
+			nodeMesh.setMeshId(Integer.parseInt(mesh));
+			nodeMeshs.add(nodeMesh);
+		}
+		node.setMeshes(nodeMeshs);
+		return node;
+	}
+	
+	public static Object createXNode(double x, double y,Class<?>c) throws Exception{
+		
+		if (c.equals(ZoneNode.class)){
+			return createAdNode(x, y);
+		}
+		if(c.equals(RdNode.class)){
+			return createNode(x, y);
+		}
+		if(c.equals(ZoneNode.class)){
+			return createZoneNode(x, y);
+		}
+		if(c.equals(RwNode.class)){
+			return createRwNode(x, y);
+		}
+		return null;
 	}
 }

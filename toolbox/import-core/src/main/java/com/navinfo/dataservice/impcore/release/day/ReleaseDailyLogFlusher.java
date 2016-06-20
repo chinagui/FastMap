@@ -20,8 +20,8 @@ import com.navinfo.navicommons.database.QueryRunner;
  * 2016年6月17日
  * 描述：import-coreDay2MonLogFlusher.java
  */
-public class ReleaseDailyPoiLogFlusher extends LogFlusher {
-	public ReleaseDailyPoiLogFlusher(int regionId, DbInfo sourceDbInfo,
+public class ReleaseDailyLogFlusher extends LogFlusher {
+	public ReleaseDailyLogFlusher(int regionId, DbInfo sourceDbInfo,
 			DbInfo targetDbInfo, List<Integer> grids, String stopTime,String featureType) {
 		super(regionId, sourceDbInfo, targetDbInfo, grids, stopTime, 
 				featureType,//LogFlusher.FEATURE_POI,

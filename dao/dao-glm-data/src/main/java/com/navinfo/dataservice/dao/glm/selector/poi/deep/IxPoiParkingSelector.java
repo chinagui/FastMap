@@ -89,7 +89,7 @@ public class IxPoiParkingSelector implements ISelector {
 		IxPoiParking ixPoiParking = new IxPoiParking();
 
 		StringBuilder sb = new StringBuilder(
-				"select * from " + ixPoiParking.tableName() + "WHERE poi_pid  = :1 and  u_record !=2");
+				"select * from " + ixPoiParking.tableName() + " WHERE poi_pid  = :1 and  u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");

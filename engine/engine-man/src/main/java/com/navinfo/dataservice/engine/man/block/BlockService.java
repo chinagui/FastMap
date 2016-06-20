@@ -87,10 +87,10 @@ public class BlockService {
 			conn = DBConnector.getInstance().getManConnection();
 			JSONArray blockArray=json.getJSONArray("blocks");
 
-			String createSql = "update block_man set COLLECT_GROUP_ID=?, COLLECT_PLAN_START_DATE=?,"
-					+ "COLLECT_PLAN_END_DATE=?,DAY_EDIT_GROUP_ID=?,DAY_EDIT_PLAN_START_DATE=?,DAY_EDIT_PLAN_END_DAT=?,MONTH_EDIT_GROUP_ID=?,"
-					+ "MONTH_EDIT_PLAN_START_DATE=?,MONTH_EDIT_PLAN_END_DATE=?,DAY_PRODUCE_PLAN_START_DATE=?,DAY_PRODUCE_PLAN_END_DATE=?,"
-					+ "MONTH_PRODUCE_PLAN_START_DATE=?,MONTH_PRODUCE_PLAN_END_DATE=? where BLOCK_ID=?";
+			String createSql = "update block_man set COLLECT_GROUP_ID=?, COLLECT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
+					+ "COLLECT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_GROUP_ID=?,DAY_EDIT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_PLAN_END_DAT=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_EDIT_GROUP_ID=?,"
+					+ "MONTH_EDIT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_EDIT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
+					+ "MONTH_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'), DESCP=? where BLOCK_ID=?";
 			
 			Object[][] param = new Object[blockArray.size()][];
 			for (int i = 0; i < blockArray.size(); i++) {
@@ -99,7 +99,7 @@ public class BlockService {
 	               Object[] obj = new Object[]{bean.getCollectGroupId(),bean.getCollectPlanStartDate(),bean.getCollectPlanEndDate(),
 	            		   bean.getDayEditGroupId(),bean.getDayEditPlanStartDate(),bean.getDayEditPlanEndDate(),bean.getMonthEditGroupId(),
 	            		   bean.getMonthEditPlanStartDate(),bean.getMonthEditPlanEndDate(),bean.getDayProducePlanStartDate(),bean.getDayProducePlanEndDate(),
-	            		   bean.getMonthProducePlanStartDate(),bean.getMonthProducePlanStartDate(),bean.getBlockId()};
+	            		   bean.getMonthProducePlanStartDate(),bean.getMonthProducePlanStartDate(),bean.getDescp(),bean.getBlockId()};
 	               param[i]=obj;                   
 	            }
 			

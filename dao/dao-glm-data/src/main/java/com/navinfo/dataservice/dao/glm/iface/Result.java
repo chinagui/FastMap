@@ -10,8 +10,18 @@ import net.sf.json.JSONObject;
  * 操作结果
  */
 public class Result implements ISerializable {
-	
+
 	private int primaryPid;
+
+	private OperStage operStage = OperStage.DayEdit;
+
+	public OperStage getOperStage() {
+		return operStage;
+	}
+
+	public void setOperStage(OperStage operStage) {
+		this.operStage = operStage;
+	}
 
 	public int getPrimaryPid() {
 		return primaryPid;
@@ -35,9 +45,9 @@ public class Result implements ISerializable {
 	 * 修改对象列表
 	 */
 	private List<IRow> listUpdateIRow = new ArrayList<IRow>();
-	
+
 	private JSONArray checkResults = new JSONArray();
-	
+
 	private JSONArray logs = new JSONArray();
 
 	public JSONArray getCheckResults() {
@@ -56,46 +66,43 @@ public class Result implements ISerializable {
 	 * @param os
 	 *            对象状态
 	 * @param topParentPid
-	 * 			       最顶级父表的pid,用来给前台做定位用          
+	 *            最顶级父表的pid,用来给前台做定位用
 	 * 
 	 */
 	public void insertObject(IRow row, ObjStatus os, int topParentPid) {
 
 		row.setStatus(os);
-		
+
 		JSONObject json = new JSONObject();
-		
+
 		json.put("type", row.objType());
-		
-		if(row instanceof IObj){
-			IObj obj = (IObj)row;
-			
-			if(obj.parentTableName().equals(obj.tableName())){
-				//该表没有父
+
+		if (row instanceof IObj) {
+			IObj obj = (IObj) row;
+
+			if (obj.parentTableName().equals(obj.tableName())) {
+				// 该表没有父
 				json.put("pid", obj.pid());
-				
+
 				json.put("childPid", "");
-			}
-			else{
-				//该表有父表
+			} else {
+				// 该表有父表
 				json.put("pid", topParentPid);
-				
+
 				json.put("childPid", obj.pid());
 			}
-		}
-		else{
+		} else {
 			json.put("pid", topParentPid);
-			
-			if(row.parentPKValue() == topParentPid){
-				//该表是二级子表
+
+			if (row.parentPKValue() == topParentPid) {
+				// 该表是二级子表
 				json.put("childPid", "");
-			}
-			else{
-				//该表是三级子表
+			} else {
+				// 该表是三级子表
 				json.put("childPid", row.parentPKValue());
 			}
 		}
-		
+
 		switch (os) {
 		case INSERT:
 			listAddIRow.add(row);
@@ -114,7 +121,7 @@ public class Result implements ISerializable {
 		}
 		System.out.println(json);
 		logs.add(json);
-	
+
 	}
 
 	/**
@@ -149,8 +156,8 @@ public class Result implements ISerializable {
 
 		return false;
 	}
-	
-	public void clear(){
+
+	public void clear() {
 		this.listAddIRow.clear();
 		this.listDelIRow.clear();
 		this.listUpdateIRow.clear();
@@ -162,6 +169,6 @@ public class Result implements ISerializable {
 	public String getLogs() {
 		System.out.println(logs.toString());
 		return logs.toString();
-		
+
 	}
 }

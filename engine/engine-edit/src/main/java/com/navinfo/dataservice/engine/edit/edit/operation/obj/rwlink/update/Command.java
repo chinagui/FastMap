@@ -51,7 +51,7 @@ public class Command extends AbstractCommand {
 		
 		this.updateContent = json.getJSONObject("data");
 		
-		this.linkPid = this.updateContent.getInt("pid");
+		this.linkPid = this.updateContent.getInt("objId");
 	}
 
 }

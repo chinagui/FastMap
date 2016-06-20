@@ -36,7 +36,7 @@ public class AdAdminTreeSelector implements ISelector {
 		return null;
 	}
 
-	public IRow loadRowsByProjectId(int projectId, boolean isLock) throws Exception {
+	public IRow loadRowsByProjectId(int dbId, boolean isLock) throws Exception {
 		AdAdminTree result = new AdAdminTree();
 
 		AdAdminSelector adAdminSelector = new AdAdminSelector(conn);
@@ -49,8 +49,8 @@ public class AdAdminTreeSelector implements ISelector {
 		result = getAdAdminTreeById(topRegionId, isLock, 0);
 
 		// 项目库ID+0000 对应的行政区划代表点AdAdminId
-
-		int cityAdadminId = Integer.parseInt(projectId + "0000");
+		//TODO
+		int cityAdadminId = Integer.parseInt(11 + "0000");
 
 		AdAdmin adAdmin = adAdminSelector.loadByAdminId(cityAdadminId, isLock);
 

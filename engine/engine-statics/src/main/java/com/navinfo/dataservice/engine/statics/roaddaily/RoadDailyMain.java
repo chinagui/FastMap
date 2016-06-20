@@ -1,6 +1,10 @@
 package com.navinfo.dataservice.engine.statics.roaddaily;
 
 import java.util.ArrayList;
+/**
+ * 由于数据都来源于fcc，所以赵俊芳完成此统计
+ * 此类暂时废弃
+ */
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +19,7 @@ import com.mongodb.client.MongoDatabase;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.StatInit;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
-
+@Deprecated
 public class RoadDailyMain {
 
 	private static Logger log = null;

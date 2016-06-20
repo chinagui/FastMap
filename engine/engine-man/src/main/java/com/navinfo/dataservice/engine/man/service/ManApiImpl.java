@@ -52,11 +52,6 @@ public class ManApiImpl implements ManApi {
 	}
 	@Override
 	public List<Region> queryRegionList() throws Exception {
-		return new RegionService().list();
-	}
-	
-	@Override
-	public List<Region> listRegions()throws Exception{
 		return RegionService.getInstance().list();
 	}
 	

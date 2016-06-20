@@ -13,7 +13,6 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -318,20 +317,6 @@ public class RegionService {
 			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
-	public List<Region> list()throws ServiceException{
-		Connection conn = null;
-		try {
-			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = "SELECT REGION_ID,REGION_NAME,DAILY_DB_ID,MONTHLY_DB_ID FROM REGION";
-			return run.query(conn, selectSql, new RegionRsHandler());
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			throw new ServiceException("查询region列表失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.closeQuietly(conn);
 		}
 	}
 	

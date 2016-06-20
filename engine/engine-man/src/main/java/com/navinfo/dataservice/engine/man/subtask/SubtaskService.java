@@ -29,9 +29,9 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.QueryRunner;
+
 import org.apache.commons.lang.StringUtils;
 
-import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 
 
@@ -45,7 +45,15 @@ import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 @Service
 public class SubtaskService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-
+	
+	private SubtaskService(){}
+	
+	private static class SingletonHolder{
+		private static final SubtaskService INSTANCE =new SubtaskService();
+	}
+	public static SubtaskService getInstance(){
+		return SingletonHolder.INSTANCE;
+	}
 	
 	/*
 	 * 创建一个子任务。
@@ -489,11 +497,18 @@ public class SubtaskService {
 	 * 参数为Subtask对象
 	 */
 	public Subtask query(Subtask bean)throws ServiceException{
+		return queryBySubtaskId(bean.getSubtaskId());
+	}
+	
+	/*
+	 * 根据subtaskId查询一个任务的详细信息。
+	 * 参数为Subtask对象
+	 */
+	public Subtask queryBySubtaskId(Integer subtaskId)throws ServiceException{
 		Connection conn = null;
 		try{
-			//持久化
-			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
 			
 			String selectSql = "select s.SUBTASK_ID,"
 					+ "s.STAGE,"
@@ -503,8 +518,7 @@ public class SubtaskService {
 					+ "s.DESCP,"
 					+ "TO_CHAR(s.GEOMETRY.get_wkt()) AS GEOMETRY "
 					+ "from SUBTASK s "
-					+ "where s.SUBTASK_ID="
-					+ bean.getSubtaskId();
+					+ "where s.SUBTASK_ID="+subtaskId;
 			
 			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>(){
 				public Subtask handle(ResultSet rs) throws SQLException {

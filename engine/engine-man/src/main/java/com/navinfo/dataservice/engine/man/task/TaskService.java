@@ -135,6 +135,8 @@ public class TaskService {
 					if ("monthEditPlanStartDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_START_DATE";break;}
 					if ("monthEditPlanEndDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_END_DATE";break;}
 					}
+			}else{
+				selectSql+=" order by T.TASK_ID";
 			}
 			return TaskOperation.selectTaskBySql2(conn, selectSql, null,currentPageNum,pageSize);
 		}catch(Exception e){

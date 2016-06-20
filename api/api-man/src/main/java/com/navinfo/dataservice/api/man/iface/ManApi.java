@@ -1,12 +1,12 @@
 package com.navinfo.dataservice.api.man.iface;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.navinfo.dataservice.api.man.model.Grid;
 import com.navinfo.dataservice.api.man.model.Region;
+import com.navinfo.dataservice.api.man.model.Subtask;
 
 
 /*
@@ -25,6 +25,8 @@ public interface ManApi{
 	public Map queryRegionGridMapping(List<Integer> gridList) throws Exception;
 	
 	public Region queryByRegionId(Integer regionId) throws Exception ;
+	
+	public Subtask queryBySubtaskId(Integer subtaskId) throws Exception ;
 	
 	List<Grid> listGrids()throws Exception;
 	/**

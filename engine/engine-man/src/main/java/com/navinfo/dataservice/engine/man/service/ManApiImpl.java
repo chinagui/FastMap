@@ -4,15 +4,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
-
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Grid;
 import com.navinfo.dataservice.api.man.model.Region;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
+import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 /*
  * @author mayunfei
  * 2016年6月7日
@@ -53,6 +53,12 @@ public class ManApiImpl implements ManApi {
 	@Override
 	public List<Region> queryRegionList() throws Exception {
 		return RegionService.getInstance().list();
+	}
+	@Override
+	public Subtask queryBySubtaskId(Integer subtaskId)
+			throws Exception {
+		// TODO Auto-generated method stub
+		return SubtaskService.getInstance().queryBySubtaskId(subtaskId);
 	}
 	
 }

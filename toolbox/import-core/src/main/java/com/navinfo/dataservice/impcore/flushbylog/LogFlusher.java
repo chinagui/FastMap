@@ -22,6 +22,7 @@ import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.edit.iface.DatalockApi;
 import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.bizcommons.glm.GlmTable;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -172,7 +173,7 @@ public abstract class LogFlusher {
 		this.targetDbConn = createConnection(this.targetDbInfo);
 	}
 	private Connection createConnection(DbInfo dbInfo ) throws Exception{
-		OracleSchema oraSchema = new OracleSchema(MultiDataSourceFactory.createConnectConfig(dbInfo.getConnectParam()));
+		OracleSchema oraSchema = new OracleSchema(DbConnectConfig.createConnectConfig(dbInfo.getConnectParam()));
 		return oraSchema.getDriverManagerDataSource().getConnection();
 	}
 	private void closeConnections(){
@@ -188,7 +189,7 @@ public abstract class LogFlusher {
 	private void createTargetDbLink() throws Exception{
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyymmdd");
 		String dbLinkName = "dblink_" + sdf.format(new Date());
-		OracleSchema oraSchema = new OracleSchema(MultiDataSourceFactory.createConnectConfig(this.sourceDbInfo.getConnectParam()));
+		OracleSchema oraSchema = new OracleSchema(DbConnectConfig.createConnectConfig(this.sourceDbInfo.getConnectParam()));
 		DataSource dblinkContainer= oraSchema.getDriverManagerDataSource();
 		new DbLinkCreator().create(dbLinkName, 
 									true, 
@@ -231,7 +232,7 @@ public abstract class LogFlusher {
 		try {
 			QueryRunner run = new QueryRunner();
 			run.execute(this.sourceDbConn, sqlDropDblink);
-			OracleSchema oraSchema = new OracleSchema(MultiDataSourceFactory.createConnectConfig(this.sourceDbInfo.getConnectParam()));
+			OracleSchema oraSchema = new OracleSchema(DbConnectConfig.createConnectConfig(this.sourceDbInfo.getConnectParam()));
 			DataSource dblinkContainer= oraSchema.getDriverManagerDataSource();
 			new DbLinkCreator().drop(this.targetDbLink, 
 										true, 

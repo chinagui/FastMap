@@ -32,10 +32,7 @@
 		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>commons</artifactId>
 	</dependency>
-	<dependency>
-		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>datahub</artifactId>
-	</dependency>
+
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>engine-fcc</artifactId>
@@ -53,7 +50,10 @@
 		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>commons</artifactId>
 	</dependency>
-	
+		<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>api-datahub</artifactId>
+	</dependency>
     <dependency>
         <groupId>log4j</groupId>
         <artifactId>log4j</artifactId>
@@ -148,6 +148,21 @@
     <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-webmvc</artifactId>
+    </dependency>
+    <dependency>
+	    <groupId>org.apache.zookeeper</groupId>
+	    <artifactId>zookeeper</artifactId>
+	    <type>pom</type>
+	</dependency>
+	
+	<dependency>
+	    <groupId>com.github.sgroschupf</groupId>
+	    <artifactId>zkclient</artifactId>
+	</dependency>
+	
+    <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>dubbo</artifactId>
     </dependency>
      
   </dependencies>

@@ -41,7 +41,7 @@ public class PoiGridSearch {
 		Connection conn = null;
 		try {
 			manConn = DBConnector.getInstance().getManConnection();
-			String manQuery = "SELECT daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id=:1";
+			String manQuery = "SELECT r.daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id=:1";
 			PreparedStatement pstmt = null;
 			ResultSet resultSet = null;
 			int oldRegionId = 0;
@@ -53,7 +53,7 @@ public class PoiGridSearch {
 				pstmt.setString(1, gridDate.getString("grid"));
 				resultSet = pstmt.executeQuery();
 				if (resultSet.next()){
-					regionId = resultSet.getInt("region_id");
+					regionId = resultSet.getInt("daily_db_id");
 					if (regionId != oldRegionId){
 						//关闭之前的连接，创建新连接
 						if (conn != null) {
@@ -139,8 +139,6 @@ public class PoiGridSearch {
 
 				ixPoi.setAddresses(ixPoiAddressSelector.loadByIdForAndroid(id));
 
-				//TODO IX_POI_ATTR_AUX
-				
 				// 设置子表IX_POI_PARENT
 				IxPoiParentSelector ixPoiParentSelector = new IxPoiParentSelector(conn);
 				

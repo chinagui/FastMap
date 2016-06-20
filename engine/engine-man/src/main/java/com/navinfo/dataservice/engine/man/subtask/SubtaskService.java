@@ -250,13 +250,13 @@ public class SubtaskService {
 					+ " and b.block_id = bm.block_id"
 					+ " and s.stage=" + bean.getStage();
 			//筛选条件
-			if(bean!=null&&bean.getBlockId()!=null && StringUtils.isNotEmpty(bean.getBlockId().toString())){
+			if(bean!=null&&bean.getBlockId()!=0){
 				selectSql += " and block_id = " + bean.getBlockId();
 			}
-			if(bean!=null&&bean.getSubtaskId()!=null && StringUtils.isNotEmpty(bean.getSubtaskId().toString())){
+			if(bean!=null&&bean.getSubtaskId()!=0){
 				selectSql += " and subtask_id = " + bean.getSubtaskId();
 			}
-			if(bean!=null&&bean.getExeUserId()!=null && StringUtils.isNotEmpty(bean.getExeUserId().toString())){
+			if(bean!=null&&bean.getExeUserId()!=0){
 				selectSql += " and EXE_USER_ID = " + bean.getExeUserId();
 			}
 			//排序

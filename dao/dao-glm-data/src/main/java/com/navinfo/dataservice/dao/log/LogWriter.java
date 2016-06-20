@@ -16,6 +16,8 @@ import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculator;
 import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculatorFactory;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -29,7 +31,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
-import com.navinfo.dataservice.engine.man.project.ProjectSelector;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -52,9 +53,7 @@ public class LogWriter {
 	public LogWriter(Connection conn, int projectId) throws Exception {
 		this.conn = conn;
 
-		ProjectSelector selector = new ProjectSelector();
-
-		String gdbVersion = selector.getGdbVersion();
+		String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 
 		this.gridCalculator = GlmGridCalculatorFactory.getInstance().create(
 				gdbVersion);

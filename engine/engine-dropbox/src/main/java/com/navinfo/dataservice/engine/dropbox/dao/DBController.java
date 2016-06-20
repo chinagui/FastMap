@@ -14,7 +14,6 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.engine.dropbox.manger.HashMap;
 
 public class DBController {
 
@@ -342,8 +341,9 @@ public class DBController {
 	 * @param dbId
 	 * @param pid
 	 * @param string
+	 * @throws Exception 
 	 */
-	public void insertIxPoiPhoto(int dbId, int pid, String photoId) {
+	public void insertIxPoiPhoto(int dbId, int pid, String photoId) throws Exception {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 

@@ -25,6 +25,7 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.engine.dropbox.dao.DBController;
 import com.navinfo.dataservice.engine.dropbox.util.DropboxUtil;
+import com.navinfo.dataservice.dao.photo.HBaseController;
 
 public class UploadManager {
 
@@ -158,15 +159,22 @@ public class UploadManager {
 		
 		Iterator<FileItem> it = items.iterator();
 		
-		int pid = 0;
-		int dbId = 0;
+//		int pid = 0;
+//		int dbId = 0;
+//		
+//		String fileType = "";
+//		
+//		String fileName = "";
 		
-		String fileType = "";
+		int pid = 1;
+		int dbId = 43;
 		
-		String fileName = "";
+		String fileType = "photo";
+		
+		String fileName = "photo_test";
 		
 		FileItem uploadItem = null;
-		
+			
 		while(it.hasNext()){
 			FileItem item = it.next();
 			
@@ -189,14 +197,19 @@ public class UploadManager {
 			}
 		}
 		
-		InputStream fileStream = uploadItem.getInputStream();
-		
-		DBController controller = new DBController();
+		if(fileType.equals("photo")){
+			InputStream fileStream = uploadItem.getInputStream();
 			
-		//调用hadoop方法传输文件流，userId,经纬度，获取photo_id
-//		String photoId = HBaseController.putPhoto(fileStream);
-//			
-//		controller.insertIxPoiPhoto(dbId,pid,photoId);
+			DBController dbController = new DBController();
+			HBaseController hbaseController = new HBaseController();
+				
+			//调用hadoop方法传输文件流，userId,经纬度，获取photo_id
+			String photoId = hbaseController.putPhoto(fileStream);
+				
+			dbController.insertIxPoiPhoto(dbId,pid,photoId);
+		}
+		
+
 
 	}
 }

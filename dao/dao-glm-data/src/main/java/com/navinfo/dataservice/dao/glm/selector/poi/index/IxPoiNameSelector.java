@@ -286,15 +286,39 @@ public class IxPoiNameSelector implements ISelector {
 	public List<IRow> loadByIdForAndroid(int id) throws Exception{
 		List<IRow> rows = new ArrayList<IRow>();
 		IxPoiName ixPoiName = new IxPoiName();
-		String sql = "SELECT name FROM " + ixPoiName.tableName() + " where poi_pid=:1 AND name_class=1 AND name_type=2 AND lang_code='CHI' AND u_record!=2";
-		PreparedStatement pstmt = conn.prepareStatement(sql);
-		pstmt.setInt(1, id);
-		ResultSet resultSet = pstmt.executeQuery();
-		if (resultSet.next()){
-			ixPoiName.setName(resultSet.getString("name"));
+		ResultSet resultSet = null;
+		PreparedStatement pstmt = null;
+		try {
+			String sql = "SELECT name FROM " + ixPoiName.tableName() + " where poi_pid=:1 AND name_class=1 AND name_type=2 AND lang_code='CHI' AND u_record!=2";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, id);
+			resultSet = pstmt.executeQuery();
+			if (resultSet.next()){
+				ixPoiName.setName(resultSet.getString("name"));
+			}
+			rows.add(ixPoiName);
+			return rows;
+		} catch (Exception e) {
+			throw e;
+		}finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
 		}
-		rows.add(ixPoiName);
-		return rows;
+		
 	}
 	
 }

@@ -3,28 +3,24 @@ package com.navinfo.dataservice.web.man.controller;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.beans.factory.annotation.Autowired; 
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
-
-import org.apache.commons.lang.StringUtils;
 import com.navinfo.navicommons.database.Page;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName: UserGroupController 

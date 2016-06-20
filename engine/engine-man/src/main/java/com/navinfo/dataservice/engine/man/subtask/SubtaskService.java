@@ -29,9 +29,9 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.QueryRunner;
+
 import org.apache.commons.lang.StringUtils;
 
-import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 
 
@@ -45,7 +45,15 @@ import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 @Service
 public class SubtaskService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-
+	
+	private SubtaskService(){}
+	
+	private static class SingletonHolder{
+		private static final SubtaskService INSTANCE =new SubtaskService();
+	}
+	public static SubtaskService getInstance(){
+		return SingletonHolder.INSTANCE;
+	}
 	
 	/*
 	 * 创建一个子任务。
@@ -242,13 +250,13 @@ public class SubtaskService {
 					+ " and b.block_id = bm.block_id"
 					+ " and s.stage=" + bean.getStage();
 			//筛选条件
-			if(bean!=null&&bean.getBlockId()!=null && StringUtils.isNotEmpty(bean.getBlockId().toString())){
+			if(bean!=null&&bean.getBlockId()!=0){
 				selectSql += " and block_id = " + bean.getBlockId();
 			}
-			if(bean!=null&&bean.getSubtaskId()!=null && StringUtils.isNotEmpty(bean.getSubtaskId().toString())){
+			if(bean!=null&&bean.getSubtaskId()!=0){
 				selectSql += " and subtask_id = " + bean.getSubtaskId();
 			}
-			if(bean!=null&&bean.getExeUserId()!=null && StringUtils.isNotEmpty(bean.getExeUserId().toString())){
+			if(bean!=null&&bean.getExeUserId()!=0){
 				selectSql += " and EXE_USER_ID = " + bean.getExeUserId();
 			}
 			//排序
@@ -489,11 +497,18 @@ public class SubtaskService {
 	 * 参数为Subtask对象
 	 */
 	public Subtask query(Subtask bean)throws ServiceException{
+		return queryBySubtaskId(bean.getSubtaskId());
+	}
+	
+	/*
+	 * 根据subtaskId查询一个任务的详细信息。
+	 * 参数为Subtask对象
+	 */
+	public Subtask queryBySubtaskId(Integer subtaskId)throws ServiceException{
 		Connection conn = null;
 		try{
-			//持久化
-			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
 			
 			String selectSql = "select s.SUBTASK_ID,"
 					+ "s.STAGE,"
@@ -503,8 +518,7 @@ public class SubtaskService {
 					+ "s.DESCP,"
 					+ "TO_CHAR(s.GEOMETRY.get_wkt()) AS GEOMETRY "
 					+ "from SUBTASK s "
-					+ "where s.SUBTASK_ID="
-					+ bean.getSubtaskId();
+					+ "where s.SUBTASK_ID="+subtaskId;
 			
 			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>(){
 				public Subtask handle(ResultSet rs) throws SQLException {

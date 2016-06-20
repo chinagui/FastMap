@@ -31,7 +31,7 @@ public class ProduceController extends BaseController {
 	private BlockService service;
 
 	/**
-	 * 日出品管理--生成POI&Road日出品包
+	 * 日出品管理--生成POI&Road日出品包,生成POI日出品包
 	 * 判断类型，如果是POI，将grid范围内的POI数据刷到出品库；否则将grid范围内的全部数据刷到出品库。再调用出品转换脚本生成出品包。
 	 * @param request
 	 * @return
@@ -55,9 +55,11 @@ public class ProduceController extends BaseController {
 			 * jobType:releaseFmIdbDailyJob/releaseFmIdbMonthlyJob
 			 */
 			//TODO
-			dataJson.put("dataType", "ALL");
-			dataJson.put("stopTime", "20160616000000");
-			long jobId=jobApi.createJob("releaseFmIdbDailyJob", dataJson, userId, "日出品");
+			JSONObject jobDataJson=new JSONObject();
+			jobDataJson.put("gridList", dataJson.get("gridIds"));
+			jobDataJson.put("dataType", dataJson.get("dataType"));
+			jobDataJson.put("stopTime", "20160616000000");
+			long jobId=jobApi.createJob("releaseFmIdbDailyJob", jobDataJson, userId, "日出品");
 			return new ModelAndView("jsonView", success(jobId));
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);
@@ -90,8 +92,10 @@ public class ProduceController extends BaseController {
 			 * jobType:releaseFmIdbDailyJob/releaseFmIdbMonthlyJob
 			 */
 			//TODO
-			dataJson.put("stopTime", "20160616000000");
-			long jobId=jobApi.createJob("releaseFmIdbMonthlyJob", dataJson,userId, "月出品");
+			JSONObject jobDataJson=new JSONObject();
+			jobDataJson.put("gridList", dataJson.get("gridIds"));
+			jobDataJson.put("stopTime", "20160616000000");
+			long jobId=jobApi.createJob("releaseFmIdbMonthlyJob", jobDataJson,userId, "月出品");
 			return new ModelAndView("jsonView", success(jobId));
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);
@@ -125,7 +129,7 @@ public class ProduceController extends BaseController {
 			 */
 			dataJson.put("stopTime", "20160616000000");
 			String featureType = (String) dataJson.get("featureType");//featureType:POI,ROAD
-			dataJson.put("stopTime", dataJson.get("featureType"));//featureType:POI,ROAD
+			dataJson.put("featureType", dataJson.get("featureType"));//featureType:POI,ROAD
 			//TODO 道路日落月，poi后台定时脚本
 			long jobId=0;
 			if (featureType.equals("POI")){

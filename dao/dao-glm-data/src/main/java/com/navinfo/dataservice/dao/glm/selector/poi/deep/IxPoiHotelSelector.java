@@ -140,7 +140,7 @@ public class IxPoiHotelSelector implements ISelector {
 		ixPoiHotel.setPoiPid(resultSet.getInt("poi_pid"));
 		ixPoiHotel.setCreditCard(resultSet.getString("credit_card"));
 		ixPoiHotel.setRating(resultSet.getInt("rating"));
-		ixPoiHotel.setCheckinTime(resultSet.getString("check_time"));
+		ixPoiHotel.setCheckinTime(resultSet.getString("checkin_time"));
 		ixPoiHotel.setCheckoutTime(resultSet.getString("checkout_time"));
 		ixPoiHotel.setRoomCount(resultSet.getInt("room_count"));
 		ixPoiHotel.setRoomType(resultSet.getString("room_type"));

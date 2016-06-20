@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -35,7 +34,6 @@ public class PoiGridSearch {
 	 * @return data
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked")
 	public List<IRow> getPoiByGrids(JSONArray gridDateList) throws Exception{
 		Connection manConn = null;
 		Connection conn = null;
@@ -106,7 +104,7 @@ public class PoiGridSearch {
 		List<IRow> retList = new ArrayList<IRow>();
 		
 		StringBuffer sb = new StringBuffer();
-		sb.append("SELECT poi_num,pid,mesh_id,kind_code,link_pid,x_guide,y_guide,post_code,open_24h,chain,u_record,geometry");
+		sb.append("SELECT * ");
 		sb.append(" FROM "+ixPoi.tableName());
 		sb.append(" WHERE sdo_relate(geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE' ");
 		if (!gridDate.getString("date").isEmpty()){
@@ -174,8 +172,6 @@ public class PoiGridSearch {
 				
 				ixPoi.setGasstations(ixPoiGasstationSelector.loadRowsByParentId(id, false));
 				
-				//TODO indoor
-				
 				retList.add(ixPoi);
 			}
 		} catch (Exception e) {
@@ -219,6 +215,14 @@ public class PoiGridSearch {
 		ixPoi.setChain(resultSet.getString("chain"));
 		
 		ixPoi.setuRecord(resultSet.getInt("u_record"));
+		
+		ixPoi.setLevel(resultSet.getString("level"));
+		
+		ixPoi.setSportsVenue(resultSet.getString("sports_venue"));
+		
+		ixPoi.setIndoor(resultSet.getInt("indoor"));
+		
+		ixPoi.setVipFlag(resultSet.getString("vip_flag"));
 		
 	}
 }

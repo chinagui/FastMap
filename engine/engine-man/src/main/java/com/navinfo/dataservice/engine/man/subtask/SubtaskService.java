@@ -635,7 +635,7 @@ public class SubtaskService {
 
 			selectSql += " union all";
 
-			selectSql += "select c.admin_id from city c, subtask s, task t where c.city_id=t.city_id and s.task_id=t.task_id and s.subtask_id=:2";
+			selectSql += " select c.admin_id from city c, subtask s, task t where c.city_id=t.city_id and s.task_id=t.task_id and s.subtask_id=:2";
 
 			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
 

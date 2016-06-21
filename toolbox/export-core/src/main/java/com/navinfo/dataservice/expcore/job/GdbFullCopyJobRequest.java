@@ -139,4 +139,10 @@ public class GdbFullCopyJobRequest extends AbstractJobRequest {
 		this.excludedTables = excludedTables;
 	}
 
+
+	@Override
+	public String getJobType() {
+		return "gdbFullCopy";
+	}
+
 }

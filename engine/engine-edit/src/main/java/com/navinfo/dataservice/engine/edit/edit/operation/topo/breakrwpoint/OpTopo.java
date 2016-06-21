@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
@@ -121,7 +122,7 @@ public class OpTopo implements IOperation {
 	 */
 	private void  createLinksForRwNode(RwLink rwLink,JSONArray sArray,JSONArray eArray,Result result) throws Exception {
 		log.debug("3 生成打断点的信息");
-		RwNode node = NodeOperateUtils.createRwNode(command.getPoint().getX(), command.getPoint().getY());
+		RwNode node = (RwNode) NodeOperateUtils.createNode(command.getPoint().getX(), command.getPoint().getY(),ObjType.RWNODE);
 		result.insertObject(node, ObjStatus.INSERT, node.pid());
 		log.debug("3.1 打断点的pid = "+node.pid());
 		JSONObject sGeojson = new JSONObject();

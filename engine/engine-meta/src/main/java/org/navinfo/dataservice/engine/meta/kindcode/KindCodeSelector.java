@@ -214,11 +214,7 @@ public class KindCodeSelector {
 	/**
 	 * 通过region（1：港澳，0：大陆）信息获取KindCode信息
 	 * 
-	 * @param topId
-	 *            大分类
-	 * @param mediumId
-	 *            中分类
-	 * @return kindCode、kindName、extend
+	 * @return
 	 * @throws Exception
 	 */
 	public JSONArray queryKindInfo(int region) throws Exception {
@@ -254,8 +250,9 @@ public class KindCodeSelector {
 					JSONArray array = new JSONArray();
 
 					while (resultSet.next()) {
-						String kindCode = resultSet.getString("kind_code");
-						String id = kindCode;
+						JSONObject json = new JSONObject();
+
+						String kindCode = resultSet.getString("kind_code");						
 						String kindName = resultSet.getString("kind_name");
 						String mediumId = resultSet.getString("sub_class_code");
 						String level = resultSet.getString("level");
@@ -263,18 +260,17 @@ public class KindCodeSelector {
 						int parent = resultSet.getInt("parent");
 						int chainFlag = resultSet.getInt("chain");
 						int dispOnlink = resultSet.getInt("disp_onlink");
-
-						JSONObject json = new JSONObject();
+						String strDispOnlink = resultSet.wasNull() ? ""
+								: String.valueOf(dispOnlink);
 
 						json.put("kindCode", kindCode);
-						json.put("id", id);
 						json.put("kindName", kindName);
 						json.put("mediumId", mediumId);
 						json.put("level", level);
 						json.put("extend", extend);
 						json.put("parent", parent);
 						json.put("chainFlag", chainFlag);
-						json.put("dispOnlink", dispOnlink);
+						json.put("dispOnlink", strDispOnlink);
 
 						array.add(json);
 					}

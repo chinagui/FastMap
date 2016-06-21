@@ -269,7 +269,7 @@ public class IxPoiNameSelector implements ISelector {
 		
 		obj.setKeywords(resultSet.getString("keywords"));
 		
-		obj.setNidePid(resultSet.getString("nidb_pid"));
+		obj.setNidbPid(resultSet.getString("nidb_pid"));
 
 		obj.setRowId(resultSet.getString("row_id"));
 		

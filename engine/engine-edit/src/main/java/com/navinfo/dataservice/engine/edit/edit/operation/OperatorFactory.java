@@ -2,9 +2,6 @@ package com.navinfo.dataservice.engine.edit.edit.operation;
 
 import java.sql.Connection;
 
-import org.apache.commons.lang.StringUtils;
-
-import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -19,9 +16,34 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiAdvertisement;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiAttraction;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiBuilding;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiBusinessTime;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiCarrental;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingPlot;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingPlotPh;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingStation;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiDetail;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiGasstation;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiHotel;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiIntroduction;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAudio;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEntryimage;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiFlag;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiIcon;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameFlag;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameTone;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchName;
@@ -75,9 +97,34 @@ import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminGroupOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminNameOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.AdAdminPartOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiAdvertisementOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiAttractionOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiBuildingOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiBusinessTimeOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiCarrentalOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiChargingPlotOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiChargingPlotPhOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiChargingStationOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiDetailOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiGasstationOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiHotelOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiIntroductionOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiParkingOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiRestaurantOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiAddressOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiAudioOperator;
 import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiChildrenOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiContactOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiEntryImageOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiFlagOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiIconOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiNameFlagOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiNameOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiNameToneOperator;
 import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiOperator;
 import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiParentOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiPhotoOperator;
+import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiVideoOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchDetailOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchNameOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchOperator;
@@ -120,7 +167,6 @@ import com.navinfo.dataservice.dao.glm.operator.rd.rw.RwLinkNameOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.rw.RwLinkOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.rw.RwNodeOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.speedlimit.RdSpeedlimitOperator;
-import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwNodeSelector;
 
 /**
  * 操作类工厂
@@ -162,9 +208,10 @@ public class OperatorFactory {
 	 * @param obj
 	 *            对象
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	private static IOperator getOperator(Connection conn, IRow obj) throws Exception  {
+	private static IOperator getOperator(Connection conn, IRow obj)
+			throws Exception {
 		switch (obj.objType()) {
 		case RDLINK:
 			return new RdLinkOperator(conn, (RdLink) obj);
@@ -245,41 +292,98 @@ public class OperatorFactory {
 		case RDGSC:
 			return new RdGscOperator(conn, (RdGsc) obj);
 		case RDGSCLINK:
-			return new RdGscLinkOperator(conn, (RdGscLink)obj);
+			return new RdGscLinkOperator(conn, (RdGscLink) obj);
 		case ADFACE:
-			return new AdFaceOperator(conn, (AdFace)obj);
+			return new AdFaceOperator(conn, (AdFace) obj);
 		case ADFACETOPO:
-			return new AdFaceTopoOperator(conn, (AdFaceTopo)obj);
+			return new AdFaceTopoOperator(conn, (AdFaceTopo) obj);
 		case ADADMIN:
-			return new AdAdminOperator(conn, (AdAdmin)obj);
+			return new AdAdminOperator(conn, (AdAdmin) obj);
 		case ADADMINGPART:
-			return new AdAdminPartOperator(conn, (AdAdminPart)obj);
+			return new AdAdminPartOperator(conn, (AdAdminPart) obj);
 		case ADADMINDETAIL:
-			return new AdAdminDetailOperator(conn, (AdAdminDetail)obj);
+			return new AdAdminDetailOperator(conn, (AdAdminDetail) obj);
 		case ADADMINGROUP:
-			return new AdAdminGroupOperator(conn, (AdAdminGroup)obj);
+			return new AdAdminGroupOperator(conn, (AdAdminGroup) obj);
 		case ADADMINGNAME:
-			return new AdAdminNameOperator(conn, (AdAdminName)obj);
+			return new AdAdminNameOperator(conn, (AdAdminName) obj);
 		case ADLINK:
-			return new AdLinkOperator(conn, (AdLink)obj);
+			return new AdLinkOperator(conn, (AdLink) obj);
 		case ADLINKMESH:
-			return new AdLinkMeshOperator(conn, (AdLinkMesh)obj);
+			return new AdLinkMeshOperator(conn, (AdLinkMesh) obj);
 		case ADNODE:
-			return new AdNodeOperator(conn, (AdNode)obj);
+			return new AdNodeOperator(conn, (AdNode) obj);
 		case ADNODEMESH:
-			return new AdNodeMeshOperator(conn, (AdNodeMesh)obj);
+			return new AdNodeMeshOperator(conn, (AdNodeMesh) obj);
 		case IXPOI:
-			return new IxPoiOperator(conn, (IxPoi)obj);
+			return new IxPoiOperator(conn, (IxPoi) obj);
 		case IXPOIPARENT:
-			return new IxPoiParentOperator(conn, (IxPoiParent)obj);
+			return new IxPoiParentOperator(conn, (IxPoiParent) obj);
 		case IXPOICHILDREN:
-			return new IxPoiChildrenOperator(conn, (IxPoiChildren)obj);
+			return new IxPoiChildrenOperator(conn, (IxPoiChildren) obj);
 		case RWNODE:
-			return new RwNodeOperator(conn, (RwNode)obj);
+			return new RwNodeOperator(conn, (RwNode) obj);
 		case RWLINK:
-			return new RwLinkOperator(conn, (RwLink)obj);
+			return new RwLinkOperator(conn, (RwLink) obj);
 		case RWLINKNAME:
-			return new RwLinkNameOperator(conn, (RwLinkName)obj);
+			return new RwLinkNameOperator(conn, (RwLinkName) obj);
+
+		case IXPOINAME:
+			return new IxPoiNameOperator(conn, (IxPoiName) obj);
+
+		case IXPOINAMEFLAG:
+			return new IxPoiNameFlagOperator(conn, (IxPoiNameFlag) obj);
+
+		case IXPOIADDRESS:
+			return new IxPoiAddressOperator(conn, (IxPoiAddress) obj);
+
+		case IXPOICONTACT:
+			return new IxPoiContactOperator(conn, (IxPoiContact) obj);
+		case IXPOIFLAG:
+			return new IxPoiFlagOperator(conn, (IxPoiFlag) obj);
+		case IXPOIENTRYIMAGE:
+			return new IxPoiEntryImageOperator(conn, (IxPoiEntryimage) obj);
+		case IXPOIICON:
+			return new IxPoiIconOperator(conn, (IxPoiIcon) obj);
+		case IXPOINAMETONE:
+			return new IxPoiNameToneOperator(conn, (IxPoiNameTone) obj);
+		case IXPOIPHOTO:
+			return new IxPoiPhotoOperator(conn, (IxPoiPhoto) obj);
+		case IXPOIAUDIO:
+			return new IxPoiAudioOperator(conn, (IxPoiAudio) obj);
+		case IXPOIVIDEO:
+			return new IxPoiVideoOperator(conn, (IxPoiVideo) obj);
+		case IXPOIBUILDING:
+			return new IxPoiBuildingOperator(conn, (IxPoiBuilding) obj);
+		case IXPOIDETAIL:
+			return new IxPoiDetailOperator(conn, (IxPoiDetail) obj);
+		case IXPOIBUSINESSTIME:
+			return new IxPoiBusinessTimeOperator(conn, (IxPoiBusinessTime) obj);
+		case IXPOIINTRODUCTION:
+			return new IxPoiIntroductionOperator(conn, (IxPoiIntroduction) obj);
+		case IXPOIADVERTISEMENT:
+			return new IxPoiAdvertisementOperator(conn,
+					(IxPoiAdvertisement) obj);
+		case IXPOIGASSTATION:
+			return new IxPoiGasstationOperator(conn, (IxPoiGasstation) obj);
+		case IXPOICHARGINGSTATION:
+			return new IxPoiChargingStationOperator(conn,
+					(IxPoiChargingStation) obj);
+		case IXPOICHARGINGPLOT:
+			return new IxPoiChargingPlotOperator(conn, (IxPoiChargingPlot) obj);
+		case IXPOICHARGINGPLOTPH:
+			return new IxPoiChargingPlotPhOperator(conn,
+					(IxPoiChargingPlotPh) obj);
+		case IXPOIPARKING:
+			return new IxPoiParkingOperator(conn, (IxPoiParking) obj);
+		case IXPOIATTRACTION:
+			return new IxPoiAttractionOperator(conn, (IxPoiAttraction) obj);
+		case IXPOIHOTEL:
+			return new IxPoiHotelOperator(conn, (IxPoiHotel) obj);
+		case IXPOIRESTAURANT:
+			return new IxPoiRestaurantOperator(conn, (IxPoiRestaurant) obj);
+		case IXPOICARRENTAL:
+			return new IxPoiCarrentalOperator(conn, (IxPoiCarrental) obj);
 		default:
 			return null;
 		}

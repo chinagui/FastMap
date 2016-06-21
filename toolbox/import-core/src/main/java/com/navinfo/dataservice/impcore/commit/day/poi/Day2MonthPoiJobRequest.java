@@ -18,6 +18,10 @@ public class Day2MonthPoiJobRequest extends AbstractJobRequest {
 	public void validate() throws JobException {
 
 	}
+	@Override
+	public String getJobType() {
+		return "day2MonthPoiJob";
+	}
 
 }
 

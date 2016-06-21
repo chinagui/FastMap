@@ -625,4 +625,41 @@ public class SubtaskService {
 		}
 	}
 
+	public int queryAdminIdBySubtask(int subtaskId) throws ServiceException {
+		Connection conn = null;
+		try {
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+
+			String selectSql = "select c.admin_id from block b, city c, subtask s where s.block_id=b.block_id and b.city_id=c.city_id and s.subtask_id=:1";
+
+			selectSql += " union all";
+
+			selectSql += " select c.admin_id from city c, subtask s, task t where c.city_id=t.city_id and s.task_id=t.task_id and s.subtask_id=:2";
+
+			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
+
+				public Integer handle(ResultSet rs) throws SQLException {
+					if (rs.next()) {
+
+						int adminId = rs.getInt("admin_id");
+
+						return adminId;
+
+					}
+
+					return 0;
+				}
+			};
+
+			return run.query(conn, selectSql, rsHandler, subtaskId, subtaskId);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+
+	}
 }

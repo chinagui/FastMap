@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.edit.operation.topo.deleterwlink;
+package com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterwlink;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.vividsolutions.jts.geom.Coordinate;

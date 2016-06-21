@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.edit.operation.topo.deleterwlink;
+package com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterwlink;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;

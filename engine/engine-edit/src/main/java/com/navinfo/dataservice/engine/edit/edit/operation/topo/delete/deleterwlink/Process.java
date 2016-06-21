@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.edit.operation.topo.deleterwlink;
+package com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterwlink;
 
 import java.util.ArrayList;
 import java.util.List;

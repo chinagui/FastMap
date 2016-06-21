@@ -201,7 +201,7 @@ public class IxPoiNameOperator implements IOperator {
 
 		sb.append(",'" + ixPoiName.getKeywords()+"'");
 
-		sb.append(",'" + ixPoiName.getNidePid()+"'");
+		sb.append(",'" + ixPoiName.getNidbPid()+"'");
 		
 		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
 

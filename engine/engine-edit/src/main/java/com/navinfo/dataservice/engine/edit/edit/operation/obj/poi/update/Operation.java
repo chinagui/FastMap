@@ -1,5 +1,10 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.update;
 
+import java.sql.Connection;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -25,12 +30,13 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEntryimage;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiFlag;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiIcon;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameFlag;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameTone;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
+import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiOperator;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -38,10 +44,14 @@ public class Operation implements IOperation {
 
 	private IxPoi ixPoi;
 
-	public Operation(Command command, IxPoi ixPoi) {
+	private Connection conn;
+
+	public Operation(Command command, IxPoi ixPoi, Connection conn) {
 		this.command = command;
 
 		this.ixPoi = ixPoi;
+
+		this.conn = conn;
 	}
 
 	@Override
@@ -111,7 +121,12 @@ public class Operation implements IOperation {
 		updataIxPoiRestaurant(result, content);
 
 		updataIxPoiCarrental(result, content);
-		
+
+		IxPoiOperator operator = new IxPoiOperator(this.conn,
+				new IxPoiSelector(this.conn).loadRowIdByPid(ixPoi.pid(), false));
+
+		operator.upatePoiStatus();
+
 		return null;
 	}
 
@@ -452,55 +467,197 @@ public class Operation implements IOperation {
 		if (!content.containsKey("names")) {
 			return;
 		}
+
 		JSONArray subObj = content.getJSONArray("names");
 
 		for (int i = 0; i < subObj.size(); i++) {
 
 			JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+			if (!json.containsKey("objStatus")) {
+				continue;
+			}
 
-				if (!ObjStatus.INSERT.toString().equals(
-						json.getString("objStatus"))) {
+			String objStatus = json.getString("objStatus");
 
-					IxPoiName row = ixPoi.nameMap.get(json.getString("rowId"));
+			IxPoiName row = null;
+			// 新增
+			if (ObjStatus.INSERT.toString().equals(objStatus)) {
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId")
-								+ "的IxPoiName不存在");
+				row = new IxPoiName();
+
+				row.Unserialize(json);
+
+				row.setPid(PidService.getInstance().applyPoiNameId());
+
+				row.setPoiPid(ixPoi.getPid());
+
+				row.setMesh(ixPoi.mesh());
+
+				result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+
+			} else {
+
+				row = ixPoi.nameMap.get(json.getString("rowId"));
+
+				if (row == null) {
+					throw new Exception("rowId=" + json.getString("rowId")
+							+ "的IxPoiName不存在");
+				}
+				// 删除
+				if (ObjStatus.DELETE.toString().equals(objStatus)) {
+
+					result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+
+					continue;
+				}
+				// 更新
+				if (ObjStatus.UPDATE.toString().equals(objStatus)) {
+
+					boolean isChanged = row.fillChangeFields(json);
+
+					if (isChanged) {
+						result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
 					}
+				}
+			}
 
-					if (ObjStatus.DELETE.toString().equals(
-							json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+			// 维护IxPoiNameTone、IxPoiNameFlag
+			if (row != null) {
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(
-							json.getString("objStatus"))) {
+				updataIxPoiNameTones(result, row, content);
 
-						boolean isChanged = row.fillChangeFields(json);
+				updataIxPoiNameFlags(result, row, content);
+			}
+		}
+	}
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE,
-									ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiName row = new IxPoiName();
+	private void updataIxPoiNameTones(Result result, IxPoiName poiName,
+			JSONObject content) throws Exception {
+		if (!content.containsKey("nameTones")) {
+			return;
+		}
 
-					row.Unserialize(json);
+		JSONArray subObj = content.getJSONArray("nameTones");
 
-					row.setPid(PidService.getInstance().applyPoiNameId());
+		for (int i = 0; i < subObj.size(); i++) {
 
-					row.setPoiPid(ixPoi.getPid());
+			JSONObject json = subObj.getJSONObject(i);
 
-					row.setMesh(ixPoi.mesh());
+			if (!json.containsKey("objStatus")) {
+				continue;
+			}
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+			String objStatus = json.getString("objStatus");
+			// 新增
+			if (ObjStatus.INSERT.toString().equals(objStatus)) {
+
+				IxPoiNameTone row = new IxPoiNameTone();
+
+				row.Unserialize(json);
+
+				row.setNameId(poiName.getPid());
+
+				row.setMesh(ixPoi.mesh());
+
+				result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+
+				continue;
+			}
+
+			if (!json.containsKey("rowId")) {
+				continue;
+			}
+
+			IxPoiNameTone row = poiName.nameToneMap
+					.get(json.getString("rowId"));
+
+			if (row == null) {
+				throw new Exception("rowId=" + json.getString("rowId")
+						+ "的IxPoiNameTone不存在");
+			}
+
+			// 删除
+			if (ObjStatus.DELETE.toString().equals(objStatus)) {
+
+				result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+
+				continue;
+			}
+			// 修改
+			if (ObjStatus.UPDATE.toString().equals(objStatus)) {
+
+				boolean isChanged = row.fillChangeFields(json);
+
+				if (isChanged) {
+					result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
 				}
 			}
 		}
+	}
 
+	private void updataIxPoiNameFlags(Result result, IxPoiName poiName,
+			JSONObject content) throws Exception {
+		if (!content.containsKey("nameFlags")) {
+			return;
+		}
+
+		JSONArray subObj = content.getJSONArray("nameFlags");
+
+		for (int i = 0; i < subObj.size(); i++) {
+
+			JSONObject json = subObj.getJSONObject(i);
+
+			if (!json.containsKey("objStatus")) {
+				continue;
+			}
+
+			String objStatus = json.getString("objStatus");
+			// 新增
+			if (ObjStatus.INSERT.toString().equals(objStatus)) {
+
+				IxPoiNameFlag row = new IxPoiNameFlag();
+
+				row.Unserialize(json);
+
+				row.setNameId(poiName.getPid());
+
+				row.setMesh(ixPoi.mesh());
+
+				result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+
+				continue;
+			}
+
+			if (!json.containsKey("rowId")) {
+				continue;
+			}
+
+			IxPoiNameFlag row = poiName.nameFlagMap
+					.get(json.getString("rowId"));
+
+			if (row == null) {
+				throw new Exception("rowId=" + json.getString("rowId")
+						+ "的IxPoiNameFlag不存在");
+			}
+
+			// 删除
+			if (ObjStatus.DELETE.toString().equals(objStatus)) {
+
+				result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+
+				continue;
+			}
+			// 修改
+			if (ObjStatus.UPDATE.toString().equals(objStatus)) {
+
+				boolean isChanged = row.fillChangeFields(json);
+
+				if (isChanged) {
+					result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+				}
+			}
+		}
 	}
 
 	private void updataIxPoiPhoto(Result result, JSONObject content)
@@ -545,7 +702,7 @@ public class Operation implements IOperation {
 				} else {
 					IxPoiPhoto row = new IxPoiPhoto();
 
-					row.Unserialize(json);				
+					row.Unserialize(json);
 
 					row.setPoiPid(ixPoi.getPid());
 
@@ -657,7 +814,7 @@ public class Operation implements IOperation {
 
 					row.Unserialize(json);
 
-					//row.setPid(0);
+					// row.setPid(0);
 
 					row.setPoiPid(ixPoi.getPid());
 
@@ -824,8 +981,8 @@ public class Operation implements IOperation {
 
 					row.Unserialize(json);
 
-					//row.setPid(0);
-					
+					// row.setPid(0);
+
 					row.setPoiPid(ixPoi.getPid());
 
 					row.setMesh(ixPoi.mesh());
@@ -1046,7 +1203,7 @@ public class Operation implements IOperation {
 
 					row.Unserialize(json);
 
-					//row.setPid(0);
+					// row.setPid(0);
 
 					row.setPoiPid(ixPoi.getPid());
 
@@ -1103,7 +1260,7 @@ public class Operation implements IOperation {
 
 					row.Unserialize(json);
 
-					//row.setPid(0);
+					// row.setPid(0);
 
 					row.setPoiPid(ixPoi.getPid());
 
@@ -1160,7 +1317,7 @@ public class Operation implements IOperation {
 
 					row.Unserialize(json);
 
-					//row.setPid(0);
+					// row.setPid(0);
 
 					row.setPoiPid(ixPoi.getPid());
 

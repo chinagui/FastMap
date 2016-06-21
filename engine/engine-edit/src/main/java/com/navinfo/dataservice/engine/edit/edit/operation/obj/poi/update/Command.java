@@ -54,10 +54,9 @@ public class Command extends AbstractCommand  implements ICommand{
 
 		this.setDbId(json.getInt("dbId"));
 
-		this.content = json.getJSONObject("data");
+		this.content = json.getJSONObject("data");	
 		
-		this.pid = json.getInt("objId");
-
+		this.pid = this.content.getInt("pid");
 	}
 
 }

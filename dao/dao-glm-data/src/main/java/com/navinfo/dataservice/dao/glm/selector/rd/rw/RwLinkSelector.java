@@ -46,6 +46,8 @@ public class RwLinkSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
+				
+				setAttr(rwLink, resultSet);
 
 				List<IRow> names = new RwLinkNameSelector(conn).loadRowsByParentId(id, isLock);
 

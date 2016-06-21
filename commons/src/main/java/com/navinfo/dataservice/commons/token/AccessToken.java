@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.commons.token;
 
-import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 
 /** 
 * @ClassName: AccessToken
@@ -10,12 +9,12 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 */
 public class AccessToken {
 	private long userId;
-	private long expireSecond;
-	private long lastestActiveSecond;
+	private long timestamp;
 	private String tokenString;
-	AccessToken(long userId,long expireSecond,TokenGenerateLock lock){
+	AccessToken(long userId,long timestamp,String tokenString){
 		this.userId=userId;
-		this.expireSecond=expireSecond;
+		this.timestamp=timestamp;
+		this.tokenString=tokenString;
 	}
 	public long getUserId() {
 		return userId;
@@ -23,17 +22,11 @@ public class AccessToken {
 	public void setUserId(long userId) {
 		this.userId = userId;
 	}
-	public long getExpireSecond() {
-		return expireSecond;
+	public long getTimestamp() {
+		return timestamp;
 	}
-	public void setExpireSecond(int expireSecond) {
-		this.expireSecond = expireSecond;
-	}
-	public long getLastestActiveSecond() {
-		return lastestActiveSecond;
-	}
-	public void setLastestActiveSecond(long lastestActiveSecond) {
-		this.lastestActiveSecond = lastestActiveSecond;
+	public void setTimestamp(int timestamp) {
+		this.timestamp = timestamp;
 	}
 	public String getTokenString() {
 		return tokenString;

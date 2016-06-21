@@ -261,9 +261,9 @@ public class SearchProcess {
 				{
 					AdAdminTreeSelector adAdminTreeSelector = new AdAdminTreeSelector(conn);
 					
-					int projectId = condition.getInt("dbId");
+					int subTaskId = condition.getJSONObject("data").getInt("subTaskId");
 					
-					IRow row = adAdminTreeSelector.loadRowsByProjectId(projectId,false);
+					IRow row = adAdminTreeSelector.loadRowsBySubTaskId(subTaskId,false);
 
 					array.add(row.Serialize(ObjLevel.BRIEF));
 				}

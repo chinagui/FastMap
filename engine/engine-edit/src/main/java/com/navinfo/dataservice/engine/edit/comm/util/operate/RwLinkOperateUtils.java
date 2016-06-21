@@ -7,6 +7,7 @@ import java.util.Set;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
@@ -101,7 +102,7 @@ public class RwLinkOperateUtils {
 
 			double y = coordinates.getJSONArray(0).getDouble(1);
 
-			RwNode node = NodeOperateUtils.createRwNode(x, y);
+			RwNode node = (RwNode) NodeOperateUtils.createNode(x, y,ObjType.RWNODE);
 			result.insertObject(node, ObjStatus.INSERT, node.pid());
 			se.put("s", node.getPid());
 
@@ -135,7 +136,7 @@ public class RwLinkOperateUtils {
 
 					double y = catchLinks.getJSONObject(p).getDouble("lat");
 
-					RwNode node = NodeOperateUtils.createRwNode(x, y);
+					RwNode node = (RwNode) NodeOperateUtils.createNode(x, y,ObjType.RWNODE);
 
 					result.insertObject(node, ObjStatus.INSERT, node.pid());
 
@@ -172,7 +173,7 @@ public class RwLinkOperateUtils {
 
 				double y = tmpCs.getJSONArray(tmpCs.size() - 1).getDouble(1);
 
-				RwNode node = NodeOperateUtils.createRwNode(x, y);
+				RwNode node = (RwNode) NodeOperateUtils.createNode(x, y,ObjType.RWNODE);
 
 				result.insertObject(node, ObjStatus.INSERT, node.pid());
 
@@ -192,7 +193,7 @@ public class RwLinkOperateUtils {
 		JSONObject node = new JSONObject();
 		if (0 == sNodePid) {
 			Coordinate point = g.getCoordinates()[0];
-			RwNode rwNODE =NodeOperateUtils.createRwNode(point.x, point.y);
+			RwNode rwNODE =(RwNode) NodeOperateUtils.createNode(point.x, point.y,ObjType.RWNODE);
 			result.insertObject(rwNODE, ObjStatus.INSERT, rwNODE.pid());
 			node.put("s", rwNODE.getPid());
 		}else{
@@ -201,7 +202,7 @@ public class RwLinkOperateUtils {
 		//创建终止点信息
 		if (0 == eNodePid) {
 			Coordinate point = g.getCoordinates()[g.getCoordinates().length - 1];
-			RwNode rwNODE =NodeOperateUtils.createRwNode(point.x, point.y);
+			RwNode rwNODE =(RwNode) NodeOperateUtils.createNode(point.x, point.y,ObjType.RWNODE);
 			result.insertObject(rwNODE, ObjStatus.INSERT, rwNODE.pid());
 			node.put("e", rwNODE.getPid());
 		}else{

@@ -24,7 +24,7 @@ public class GridOperation {
 		// TODO Auto-generated constructor stub
 	}
 
-	public static List<HashMap> queryGirdBySql(Connection conn,String selectSql) throws Exception{
+	public static List<HashMap> queryGirdBySql(Connection conn,String selectSql,final int stage) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
@@ -33,9 +33,9 @@ public class GridOperation {
 					while(rs.next()){
 						HashMap map = new HashMap<String, Integer>();
 						map.put("gridId", rs.getInt("grid_id"));
-						map.put("status", rs.getInt("status"));
+						map.put("status", 2);
 						try {
-							map.put("type", GridOperation.getGridType(rs.getInt("grid_id"),rs.getInt("status")));
+							map.put("type", GridOperation.getGridType(rs.getInt("grid_id"),stage));
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -50,9 +50,35 @@ public class GridOperation {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("鏌ヨ澶辫触锛屽師鍥犱负:"+e.getMessage(),e);
+			throw new Exception("查询grid失败:"+e.getMessage(),e);
 		}
 	}
+	
+	public static List<HashMap> queryGirdBySql(Connection conn,String selectSql) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
+				public List<HashMap> handle(ResultSet rs) throws SQLException {
+					List<HashMap> list = new ArrayList<HashMap>();
+					while(rs.next()){
+						HashMap map = new HashMap<String, Integer>();
+						map.put("gridId", rs.getInt("grid_id"));
+						map.put("status", 1);
+						map.put("type", "");
+						list.add(map);
+					}
+					return list;
+				}
+	    		
+	    	};
+	    	return run.query(conn, selectSql, rsHandler);			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询grid失败:"+e.getMessage(),e);
+		}
+	}
+
 
 	// public static List<HashMap> queryProduceBlock(Connection conn,String
 	// selectSql,List<Object> values) throws Exception{

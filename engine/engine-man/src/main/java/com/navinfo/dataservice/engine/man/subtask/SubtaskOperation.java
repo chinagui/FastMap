@@ -45,7 +45,7 @@ public class SubtaskOperation {
 			};
 			if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql += " PLAN_START_DATE= " + "to_date('" + bean.getPlanStartDate().toString().substring(0,10) + "','yyyy-MM-dd HH24:MI:ss')";
+				updateSql += " PLAN_START_DATE= " + "to_timestamp('" + bean.getPlanStartDate() + "','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
 			if (bean!=null&&bean.getExeUserId()!=null && StringUtils.isNotEmpty(bean.getExeUserId().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
@@ -53,7 +53,7 @@ public class SubtaskOperation {
 			};
 			if (bean!=null&&bean.getPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql += " PLAN_END_DATE= " + "to_date('" + bean.getPlanEndDate().toString().substring(0,10) + "','yyyy-MM-dd HH24:MI:ss')";
+				updateSql += " PLAN_END_DATE= " + "to_timestamp('" + bean.getPlanEndDate()+ "','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
 			
 			

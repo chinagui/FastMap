@@ -406,21 +406,21 @@ public class SubtaskService {
 					+ ",r.DAILY_DB_ID" + ",r.MONTHLY_DB_ID";
 			String groupByExtra = ",TO_CHAR(st.GEOMETRY.get_wkt())";
 
-			if (bean.getStage() != null) {
+			if (bean.getStage() != 0) {
 				conditionSql_task = conditionSql_task + " and st.STAGE = "
 						+ bean.getStage();
 				conditionSql_block = conditionSql_block + " and st.STAGE = "
 						+ bean.getStage();
 			}
 
-			if (bean.getType() != null) {
+			if (bean.getType() != 0) {
 				conditionSql_task = conditionSql_task + " and st.TYPE = "
 						+ bean.getType();
 				conditionSql_block = conditionSql_block + " and st.TYPE = "
 						+ bean.getType();
 			}
 
-			if (bean.getStatus() != null) {
+			if (bean.getStatus() != 0) {
 				conditionSql_task = conditionSql_task + " and st.STATUS = "
 						+ bean.getStatus();
 				conditionSql_block = conditionSql_block + " and st.STATUS = "

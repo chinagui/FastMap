@@ -18,6 +18,8 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFaceTopo;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceTopoSelector;
+import com.navinfo.navicommons.database.QueryRunner;
 /**
  * ZONE:Face查询接口
  * @author zhaokk
@@ -127,6 +129,93 @@ public class ZoneFaceSelector implements ISelector {
 	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
 
 		return null;
+	}
+	/**
+	 * 获取此ZONELINK上行政取区划面拓扑关系
+	 * @param linkPid
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<ZoneFace> loadZoneFaceByLinkId(int linkPid, boolean isLock)
+			throws Exception {
+		List<ZoneFace> faces = new ArrayList<ZoneFace>();
+		String sql = "select  a.*  from zone_face a ,zone_face_topo t where a.u_record != 2  and a.face_pid = t.face_pid and t.link_pid = :1 ";
+		
+		if (isLock) {
+			sql += " for update nowait";
+		}
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				
+				ZoneFace face = new ZoneFace();
+
+				face.setPid(resultSet.getInt("face_pid"));
+				
+				face.setRegionId(resultSet.getInt("region_id"));
+				
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+				face.setGeometry(GeoTranslator.struct2Jts(struct, 100000, 0));
+				
+				face.setArea(resultSet.getDouble("area"));
+				
+				face.setPerimeter(resultSet.getDouble("perimeter"));
+				
+				face.setMeshId(resultSet.getInt("mesh_id"));
+				
+				face.setEditFlag(resultSet.getInt("edit_flag"));
+				
+				face.setRowId(resultSet.getString("row_id"));
+
+				faces.add(face);
+				List<IRow> adFaceTopo = new ZoneFaceTopoSelector(conn).loadRowsByParentId(face.getPid(), isLock);
+
+				for (IRow row : adFaceTopo) {
+					row.setMesh(face.mesh());
+				}
+				face.setFaceTopos(adFaceTopo);
+
+				for (IRow row : adFaceTopo) {
+					ZoneFaceTopo obj = (ZoneFaceTopo) row;
+
+					face.adFaceTopoMap.put(obj.rowId(), obj);
+				}
+			}
+		} catch (Exception e) {
+			
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+		}
+
+		return faces;
 	}
    
 	

@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.model.UserDevice;
+import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -267,58 +268,21 @@ public class UserInfoService {
 		}
 		
 	}
-	public List<UserInfo> list(UserInfo bean)throws ServiceException{
+	public List<UserInfo> list(UserGroup bean) throws ServiceException {
 		Connection conn = null;
-		try{
+		try {
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();	
-					
-			String selectSql = "select * from user_info where 1=1 ";
-			List<Object> values=new ArrayList<Object>();
-			if (bean!=null&&bean.getUserId()!=null && StringUtils.isNotEmpty(bean.getUserId().toString())){
-				selectSql+=" and USER_ID=? ";
-				values.add(bean.getUserId());
-			};
-			if (bean!=null&&bean.getUserRealName()!=null && StringUtils.isNotEmpty(bean.getUserRealName().toString())){
-				selectSql+=" and USER_REAL_NAME=? ";
-				values.add(bean.getUserRealName());
-			};
-			if (bean!=null&&bean.getUserNickName()!=null && StringUtils.isNotEmpty(bean.getUserNickName().toString())){
-				selectSql+=" and USER_NICK_NAME=? ";
-				values.add(bean.getUserNickName());
-			};
-			if (bean!=null&&bean.getUserPassword()!=null && StringUtils.isNotEmpty(bean.getUserPassword().toString())){
-				selectSql+=" and USER_PASSWORD=? ";
-				values.add(bean.getUserPassword());
-			};
-			if (bean!=null&&bean.getUserEmail()!=null && StringUtils.isNotEmpty(bean.getUserEmail().toString())){
-				selectSql+=" and USER_EMAIL=? ";
-				values.add(bean.getUserEmail());
-			};
-			if (bean!=null&&bean.getUserPhone()!=null && StringUtils.isNotEmpty(bean.getUserPhone().toString())){
-				selectSql+=" and USER_PHONE=? ";
-				values.add(bean.getUserPhone());
-			};
-			if (bean!=null&&bean.getUserLevel()!=null && StringUtils.isNotEmpty(bean.getUserLevel().toString())){
-				selectSql+=" and USER_LEVEL=? ";
-				values.add(bean.getUserLevel());
-			};
-			if (bean!=null&&bean.getUserScore()!=null && StringUtils.isNotEmpty(bean.getUserScore().toString())){
-				selectSql+=" and USER_SCORE=? ";
-				values.add(bean.getUserScore());
-			};
-			if (bean!=null&&bean.getUserIcon()!=null && StringUtils.isNotEmpty(bean.getUserIcon().toString())){
-				selectSql+=" and USER_ICON=? ";
-				values.add(bean.getUserIcon());
-			};
-			if (bean!=null&&bean.getUserGpsid()!=null && StringUtils.isNotEmpty(bean.getUserGpsid().toString())){
-				selectSql+=" and USER_GPSID=? ";
-				values.add(bean.getUserGpsid());
-			};
-			ResultSetHandler<List<UserInfo>> rsHandler = new ResultSetHandler<List<UserInfo>>(){
+			conn = DBConnector.getInstance().getManConnection();
+			String selectSql = "select us.* from user_info us,group_user_mapping gum where us.user_id=gum.user_id and gum.group_id=? ";
+
+			List<Object> values = new ArrayList<Object>();
+
+			values.add(bean.getGroupId());
+
+			ResultSetHandler<List<UserInfo>> rsHandler = new ResultSetHandler<List<UserInfo>>() {
 				public List<UserInfo> handle(ResultSet rs) throws SQLException {
 					List<UserInfo> list = new ArrayList<UserInfo>();
-					while(rs.next()){
+					while (rs.next()) {
 						UserInfo model = new UserInfo();
 						model.setUserId(rs.getInt("USER_ID"));
 						model.setUserRealName(rs.getString("USER_REAL_NAME"));
@@ -334,19 +298,14 @@ public class UserInfoService {
 					}
 					return list;
 				}
-	    		
-	    	}		;
-	    	if (values.size()==0){
-	    		return run.query(conn, selectSql, rsHandler
-						);
-	    	}
-	    	return run.query(conn, selectSql, rsHandler,values.toArray()
-					);
-		}catch(Exception e){
+
+			};
+			return run.query(conn, selectSql, rsHandler, values.toArray());
+		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("查询列表失败，原因为:"+e.getMessage(),e);
-		}finally{
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
@@ -497,7 +456,7 @@ public class UserInfoService {
 				AccessToken access_token = AccessTokenFactory.generate((long) (map.get("userId")));
 				if(access_token!=null){
 					result.put("access_token", access_token.getTokenString());
-					result.put("expires_in", access_token.getExpireSecond());
+					result.put("expires_in", access_token.getTimestamp());
 					result.put("role", map.get("role"));
 				}	
 	    	}

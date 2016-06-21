@@ -1083,9 +1083,9 @@ public class IxPoi implements IObj {
 				String oldwkt = GeoTranslator.jts2Wkt(geometry, 0.00001, 5);
 
 				if (!wkt.equals(oldwkt)) {
-					double length = GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(geojson));
-
-					changedFields.put("length", length);
+//					double length = GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(geojson));
+//
+//					changedFields.put("length", length);
 
 					changedFields.put(key, json.getJSONObject(key));
 				}

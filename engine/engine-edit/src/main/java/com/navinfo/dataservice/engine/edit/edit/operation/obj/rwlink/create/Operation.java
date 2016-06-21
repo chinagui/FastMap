@@ -188,9 +188,9 @@ public class Operation implements IOperation {
 				data.put("longitude", json.getDouble("lon"));
 				data.put("latitude", json.getDouble("lat"));
 				breakJson.put("data", data);
-				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakrwpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakrwpoint.Command(
+				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Command(
 						breakJson, breakJson.toString());
-				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakrwpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakrwpoint.Process(
+				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Process(
 						breakCommand,result,conn);
 				breakProcess.run();
 			}

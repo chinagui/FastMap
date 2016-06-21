@@ -76,13 +76,13 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.update.Command(
 						json, requester);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deletelink.Command(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterdlink.Command(
 						json, requester);
 			case BREAK:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Command(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrdpoint.Command(
 						json, requester);
 			case REPAIR:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.Command(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairrdlink.Command(
 						json, requester);
 			case UPDOWNDEPART:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.updowndepartlink.Command(
@@ -95,16 +95,16 @@ public class Transaction {
 		case RDNODE:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Command(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrdpoint.Command(
 						json, requester);
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdnode.update.Command(
 						json, requester);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deletenode.Command(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterdnode.Command(
 						json, requester);
 			case MOVE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.movenode.Command(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.move.moverdnode.Command(
 						json, requester);
 			}
 		case RDRESTRICTION:
@@ -209,16 +209,16 @@ public class Transaction {
 		case ADNODE:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadpoint.Command(
 						json, requester);
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Command(
 						json, requester);
 			case MOVE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.moveadnode.Command(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.move.moveadnode.Command(
 						json, requester);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadnode.Command(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleteadnode.Command(
 						json, requester);
 			}
 		case ADLINK:
@@ -230,13 +230,13 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.update.Command(
 						json, requester);
 			case BREAK:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadpoint.Command(
 						json, requester);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadlink.Command(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleteadlink.Command(
 						json, requester);
 			case REPAIR:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repairadlink.Command(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairadlink.Command(
 						json, requester);
 			}
 		case ADFACE:
@@ -325,13 +325,13 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.update.Process(
 						command);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deletelink.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterdlink.Process(
 						command);
 			case BREAK:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrdpoint.Process(
 						command);
 			case REPAIR:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairrdlink.Process(
 						command);
 			case UPDOWNDEPART:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.updowndepartlink.Process(
@@ -344,16 +344,16 @@ public class Transaction {
 		case RDNODE:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakpoint.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrdpoint.Process(
 						command);
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdnode.update.Process(
 						command);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deletenode.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterdnode.Process(
 						command);
 			case MOVE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.movenode.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.move.moverdnode.Process(
 						command);
 			}
 		case RDRESTRICTION:
@@ -458,16 +458,16 @@ public class Transaction {
 		case ADNODE:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadpoint.Process(
 						command);
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Process(
 						command);
 			case MOVE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.moveadnode.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.move.moveadnode.Process(
 						command);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadnode.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleteadnode.Process(
 						command);
 			}
 		case ADLINK:
@@ -479,13 +479,13 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adlink.update.Process(
 						command);
 			case BREAK:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadpoint.Process(
 						command);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deleteadlink.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleteadlink.Process(
 						command);
 			case REPAIR:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repairadlink.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairadlink.Process(
 						command);
 			}
 		case ADFACE:

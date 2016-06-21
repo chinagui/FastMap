@@ -523,7 +523,7 @@ public class Operation implements IOperation {
 		if (map.containsKey(geometry)) {
 			node = map.get(geometry);
 		} else {
-			node = NodeOperateUtils.createNode(coordinate.x,coordinate.y);
+			node = NodeOperateUtils.createRdNode(coordinate.x,coordinate.y);
 			map.put(GeoTranslator.transform(node.getGeometry(),0.00001,5), node);
 			result.insertObject(node, ObjStatus.INSERT, node.getPid());
 		}

@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
@@ -19,7 +20,7 @@ import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 public class NodeOperateUtils {
 
-	public static RdNode createNode(double x, double y) throws Exception {
+	public static RdNode createRdNode(double x, double y) throws Exception {
 
 		RdNode node = new RdNode();
 
@@ -152,20 +153,22 @@ public class NodeOperateUtils {
 		return node;
 	}
 	
-	public static Object createXNode(double x, double y,Class<?>c) throws Exception{
-		
-		if (c.equals(ZoneNode.class)){
+	public static Object createNode(double x, double y,ObjType type) throws Exception{
+		if(type.equals(ObjType.RDNODE)){
+			return createRdNode(x, y);
+		}
+		if(type.equals(ObjType.ADNODE)){
 			return createAdNode(x, y);
 		}
-		if(c.equals(RdNode.class)){
-			return createNode(x, y);
-		}
-		if(c.equals(ZoneNode.class)){
-			return createZoneNode(x, y);
-		}
-		if(c.equals(RwNode.class)){
+		if(type.equals(ObjType.RWNODE)){
 			return createRwNode(x, y);
 		}
-		return null;
+		if(type.equals(ObjType.ZONENODE)){
+			return createZoneNode(x, y);
+		}
+		else{
+			throw new Exception("不存在的创建点类型");
+		}	
+		
 	}
 }

@@ -87,14 +87,14 @@ public class Operation implements IOperation {
 	private void updateNodeGeometry(Result result) throws Exception {
 
 		if (command.getsNodePid() > 0) {
-			RdNode node = NodeOperateUtils.createNode(command.getSlon(),
+			RdNode node = NodeOperateUtils.createRdNode(command.getSlon(),
 					command.getSlat());
 
 			result.insertObject(node, ObjStatus.INSERT, node.pid());
 		}
 
 		if (command.geteNodePid() > 0) {
-			RdNode node = NodeOperateUtils.createNode(command.getElon(),
+			RdNode node = NodeOperateUtils.createRdNode(command.getElon(),
 					command.getElat());
 
 			result.insertObject(node, ObjStatus.INSERT, node.pid());

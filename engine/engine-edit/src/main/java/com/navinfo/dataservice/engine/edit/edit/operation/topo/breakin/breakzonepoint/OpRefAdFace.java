@@ -62,10 +62,10 @@ public class OpRefAdFace implements IOperation {
 			}
 			links.add(command.geteZoneLink());
 			links.add(command.getsZoneLink());
-			//com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Operation opFace =
-					//new com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Operation(
-					//result,face);
-			//opFace.reCaleFaceGeometry(links);
+			com.navinfo.dataservice.engine.edit.edit.operation.obj.zoneface.create.Operation opFace  =
+					new com.navinfo.dataservice.engine.edit.edit.operation.obj.zoneface.create.Operation(
+					result,face);
+			opFace.reCaleFaceGeometry(links);
 		}
 
 	}

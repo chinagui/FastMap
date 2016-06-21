@@ -13,7 +13,7 @@ public abstract class InitApplication {
 	public void initContext()
 	{
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-				new String[] { "dubbo-consumer-datahub-test.xml" });
+				new String[] { "dubbo-consumer-datahub-test.xml"});
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
 	}

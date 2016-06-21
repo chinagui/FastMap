@@ -94,4 +94,8 @@ public class DiffJobRequest extends AbstractJobRequest
 		// TODO Auto-generated method stub
 		return 3;
 	}
+	@Override
+	public String getJobType() {
+		return "diff";
+	}
 }

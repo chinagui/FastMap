@@ -60,5 +60,9 @@ public class SamplebJobRequest extends AbstractJobRequest{
 	public void setSampleaJobRequest1(AbstractJobRequest sampleaJobRequest1) {
 		this.sampleaJobRequest1 = sampleaJobRequest1;
 	}
+	@Override
+	public String getJobType() {
+		return "sampleb";
+	}
 
 }

@@ -128,4 +128,9 @@ public class GdbBatchJobRequest extends AbstractJobRequest {
 		this.commitBody = commitBody;
 	}
 
+	@Override
+	public String getJobType() {
+		return "gdbBatch";
+	}
+
 }

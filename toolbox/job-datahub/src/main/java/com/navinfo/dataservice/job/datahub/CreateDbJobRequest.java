@@ -96,4 +96,9 @@ public class CreateDbJobRequest extends AbstractJobRequest {
 		}
 	}
 
+	@Override
+	public String getJobType() {
+		return "createDb";
+	}
+
 }

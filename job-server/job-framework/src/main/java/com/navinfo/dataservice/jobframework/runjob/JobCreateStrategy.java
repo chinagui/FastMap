@@ -38,9 +38,10 @@ public class JobCreateStrategy {
 		if(jobClassMap==null){
 			loadMapping();
 		}
+		jobInfo.setType(request.getJobType());
 		Class<?> clazz = jobClassMap.get(jobInfo.getType());
 		if(clazz==null){
-			throw new JobTypeNotFoundException("未找到对应的任务类型的class类名");
+			throw new JobTypeNotFoundException("未找到对应的任务类型的class类名,type:"+jobInfo.getType());
 		}
 		AbstractJob job = null;
 		try{
@@ -79,7 +80,7 @@ public class JobCreateStrategy {
 		}
 		Class<?> clazz = requestClassMap.get(jobType);
 		if(clazz==null){
-			throw new JobTypeNotFoundException("未找到对应的任务类型的reques类名");
+			throw new JobTypeNotFoundException("未找到对应的任务类型的reques类名,type:"+jobType);
 		}
 		AbstractJobRequest req = null;
 		try{

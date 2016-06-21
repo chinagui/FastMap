@@ -51,5 +51,9 @@ public class SampleaJobRequest extends AbstractJobRequest{
 	public void setSleepSeconds(int sleepSeconds) {
 		this.sleepSeconds = sleepSeconds;
 	}
+	@Override
+	public String getJobType() {
+		return "samplea";
+	}
 
 }

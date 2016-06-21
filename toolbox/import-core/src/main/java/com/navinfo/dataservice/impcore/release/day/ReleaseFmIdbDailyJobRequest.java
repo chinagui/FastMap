@@ -61,6 +61,10 @@ public class ReleaseFmIdbDailyJobRequest extends AbstractJobRequest {
 	public void validate() throws JobException {
 
 	}
+	@Override
+	public String getJobType() {
+		return "releaseFmIdbDailyJob";
+	}
 
 	
 

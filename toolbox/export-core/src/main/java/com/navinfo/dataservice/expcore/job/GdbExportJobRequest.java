@@ -165,4 +165,9 @@ public class GdbExportJobRequest extends AbstractJobRequest {
 		this.flexConditions = flexConditions;
 	}
 
+	@Override
+	public String getJobType() {
+		return "gdbExport";
+	}
+
 }

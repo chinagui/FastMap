@@ -12,7 +12,7 @@ import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.edit.datalock.MeshLockManager;
-import com.navinfo.dataservice.engine.man.project.ProjectSelector;
+//import com.navinfo.dataservice.engine.man.project.ProjectSelector;
 
 public class BorrowMeshScriptsInterface {
 
@@ -47,12 +47,14 @@ public class BorrowMeshScriptsInterface {
 
 			System.out.println("get dbId");
 			// 获取dbId
-			ProjectSelector prjselector = new ProjectSelector();
-			int sourceDbId = prjselector.getDbId(sourceProjectId);
-
-			prjselector = new ProjectSelector();
-
-			int targetDbId = prjselector.getDbId(targetProjectId);
+//			ProjectSelector prjselector = new ProjectSelector();
+//			int sourceDbId = prjselector.getDbId(sourceProjectId);
+//
+//			prjselector = new ProjectSelector();
+//
+//			int targetDbId = prjselector.getDbId(targetProjectId);
+			int sourceDbId  =0;
+			int targetDbId = 0;
 
 			// 加锁
 			System.out.println("locking");

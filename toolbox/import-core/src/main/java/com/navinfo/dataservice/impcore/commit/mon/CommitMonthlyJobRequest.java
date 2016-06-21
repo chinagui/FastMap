@@ -48,6 +48,10 @@ public class CommitMonthlyJobRequest extends AbstractJobRequest {
 	public void validate() throws JobException {
 
 	}
+	@Override
+	public String getJobType() {
+		return "commitMonthlyJob";
+	}
 
 	
 

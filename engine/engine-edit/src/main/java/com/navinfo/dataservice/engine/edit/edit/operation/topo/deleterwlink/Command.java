@@ -1,12 +1,11 @@
-package com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleteadlink;
+package com.navinfo.dataservice.engine.edit.edit.operation.topo.deleterwlink;
 
 import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 
 import net.sf.json.JSONObject;
@@ -17,52 +16,32 @@ public class Command extends AbstractCommand{
 
 	private int linkPid;
 	
-	private AdLink link;
+	private RwLink link;
 	
-	private List<Integer> nodePids;
+	private List<RwNode> nodes;
 	
-	private List<AdNode> nodes;
-	
-	private List<AdFace> faces;
-	
-	public AdLink getLink() {
+	public RwLink getLink() {
 		return link;
 	}
 
-	public void setLink(AdLink link) {
+	public void setLink(RwLink link) {
 		this.link = link;
 	}
 
-	public List<AdNode> getNodes() {
+	public List<RwNode> getNodes() {
 		return nodes;
 	}
 
-	public void setNodes(List<AdNode> nodes) {
+	public void setNodes(List<RwNode> nodes) {
 		this.nodes = nodes;
 	}
 
-	public List<AdFace> getFaces() {
-		return faces;
-	}
-
-	public void setFaces(List<AdFace> faces) {
-		this.faces = faces;
-	}
-
-	
 	private boolean isCheckInfect = false;
 	
 	public boolean isCheckInfect() {
 		return isCheckInfect;
 	}
-	
-	public List<Integer> getNodePids() {
-		return nodePids;
-	}
 
-	public void setNodePids(List<Integer> nodePids) {
-		this.nodePids = nodePids;
-	}
 	public Command(JSONObject json,String requester) {
 		this.requester = requester;
 		
@@ -91,7 +70,7 @@ public class Command extends AbstractCommand{
 	
 	@Override
 	public ObjType getObjType() {
-		return ObjType.ADLINK;
+		return ObjType.RWLINK;
 	}
 
 	@Override

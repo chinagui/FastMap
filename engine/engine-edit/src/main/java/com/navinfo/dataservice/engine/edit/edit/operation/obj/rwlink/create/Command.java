@@ -69,7 +69,7 @@ public class Command extends AbstractCommand{
 	
 	@Override
 	public ObjType getObjType() {
-		return ObjType.RDLINK;
+		return ObjType.RWLINK;
 	}
 
 	@Override

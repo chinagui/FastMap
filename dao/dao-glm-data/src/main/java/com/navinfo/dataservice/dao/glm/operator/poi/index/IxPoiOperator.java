@@ -139,7 +139,14 @@ public class IxPoiOperator implements IOperator {
 
 				Object value = field.get(ixPoi);
 
-				column = StringUtils.toColumnName(column);
+				if (column.equals("open24h")) {
+					column = "open_24h";
+				} else if (column.equals("level")) {
+					column = "\"LEVEL\"";
+				}else {
+				
+					column = StringUtils.toColumnName(column);
+				}
 
 				if (value instanceof String || value == null) {
 

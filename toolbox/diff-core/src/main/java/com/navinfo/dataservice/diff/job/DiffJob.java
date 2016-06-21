@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.diff;
+package com.navinfo.dataservice.diff.job;
 
 import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.diff.dataaccess.CrossSchemaDataAccess;

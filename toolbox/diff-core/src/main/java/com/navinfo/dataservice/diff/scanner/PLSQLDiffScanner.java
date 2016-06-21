@@ -3,8 +3,8 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.commons.database.OracleSchema;
-import com.navinfo.dataservice.diff.DiffJob;
 import com.navinfo.dataservice.diff.exception.DiffException;
+import com.navinfo.dataservice.diff.job.DiffJob;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /**

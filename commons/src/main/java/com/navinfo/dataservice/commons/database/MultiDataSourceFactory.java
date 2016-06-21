@@ -59,9 +59,9 @@ public class MultiDataSourceFactory {
 	 */
 	public DriverManagerDataSource getDriverManagerDataSource(String serverType,String driverClassName,String url,String username,String pwd){
 		DriverManagerDataSource dataSource = null;
-		if(DbConnectConfig.TYPE_ORACLE.equals(serverType)){
+		if(DbServerType.TYPE_ORACLE.equals(serverType)){
 			dataSource = new MyDriverManagerDataSource();
-		}else if(DbConnectConfig.TYPE_MYSQL.equals(serverType)){
+		}else if(DbServerType.TYPE_MYSQL.equals(serverType)){
 			dataSource = new DriverManagerDataSource();
 		}else{
 			throw new DataSourceException("不支持的数据库类型，找不到相应的DriverManagerDataSource");
@@ -126,8 +126,8 @@ public class MultiDataSourceFactory {
 	 */
 
 	public BasicDataSource getDataSource(DbConnectConfig connConfig) throws SQLException{
-		if(!(DbConnectConfig.TYPE_ORACLE.equals(connConfig.getServerType())
-				||DbConnectConfig.TYPE_MYSQL.equals(connConfig.getServerType()))){
+		if(!(DbServerType.TYPE_ORACLE.equals(connConfig.getServerType())
+				||DbServerType.TYPE_MYSQL.equals(connConfig.getServerType()))){
 			throw new SQLException("非ORACLE,MYSQL类型库，无法通过此方法获取连接类");
 		}
 		String key = connConfig.getKey();
@@ -138,7 +138,7 @@ public class MultiDataSourceFactory {
 				String driveClassName = getDriverClassName(serverType);
 				String ip = connConfig.getServerIp();
 				Integer port = connConfig.getServerPort();
-				String name = DbConnectConfig.TYPE_ORACLE.equals(connConfig.getServerType())?connConfig.getServiceName():connConfig.getDbName();
+				String name = DbServerType.TYPE_ORACLE.equals(connConfig.getServerType())?connConfig.getServiceName():connConfig.getDbName();
 				String url = createJdbcUrl(serverType,ip,port,name);
 				String username = connConfig.getUserName();
 				String password = connConfig.getUserPasswd();
@@ -243,9 +243,9 @@ public class MultiDataSourceFactory {
 			int maxActive,String validationQuery)
 			throws SQLException {
 		BasicDataSource bds = null;
-		if(DbConnectConfig.TYPE_ORACLE.equals(serverType)){
+		if(DbServerType.TYPE_ORACLE.equals(serverType)){
 			bds = new PoolDataSource();
-		}else if(DbConnectConfig.TYPE_MYSQL.equals(serverType)){
+		}else if(DbServerType.TYPE_MYSQL.equals(serverType)){
 			bds = new BasicDataSource();
 		}else{
 			throw new DataSourceException("不支持的数据库类型，找不到相应的DriverManagerDataSource");
@@ -347,18 +347,18 @@ public class MultiDataSourceFactory {
 	}
 
 	public static String getDriverClassName(String serverType){
-		if(DbConnectConfig.TYPE_ORACLE.equals(serverType)){
+		if(DbServerType.TYPE_ORACLE.equals(serverType)){
 			return "oracle.jdbc.driver.OracleDriver";
-		}else if(DbConnectConfig.TYPE_MYSQL.equals(serverType)){
+		}else if(DbServerType.TYPE_MYSQL.equals(serverType)){
 			return "com.mysql.jdbc.Driver";
 		}else{
 			throw new DataSourceException("不支持的数据库类型，找不到相应的jdbc.Driver");
 		}
 	}
 	public static String getValidationQuery(String serverType){
-		if(DbConnectConfig.TYPE_ORACLE.equals(serverType)){
+		if(DbServerType.TYPE_ORACLE.equals(serverType)){
 			return "select sysdate from dual";
-		}else if(DbConnectConfig.TYPE_MYSQL.equals(serverType)){
+		}else if(DbServerType.TYPE_MYSQL.equals(serverType)){
 			return "select 1";
 		}else{
 			throw new DataSourceException("不支持的数据库类型，找不到相应的jdbc.Driver");
@@ -372,9 +372,9 @@ public class MultiDataSourceFactory {
 	 * @return
 	 */
 	public static String createJdbcUrl(String serverType,String host,Integer port,String name){
-		if(DbConnectConfig.TYPE_ORACLE.equals(serverType)){
+		if(DbServerType.TYPE_ORACLE.equals(serverType)){
 			return createOracleJdbcUrl(host,port,name);
-		}else if(DbConnectConfig.TYPE_MYSQL.equals(serverType)){
+		}else if(DbServerType.TYPE_MYSQL.equals(serverType)){
 			return createMysqlJdbcUrl(host,port,name);
 		}else{
 			throw new DataSourceException("不支持的数据库类型，无法生成相应的URL");

@@ -7,6 +7,7 @@ import com.navinfo.dataservice.api.job.model.JobStep;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.job.JobMsgPublisher;
 import com.navinfo.dataservice.jobframework.exception.JobException;
+import com.navinfo.dataservice.jobframework.exception.LockException;
 import com.navinfo.dataservice.jobframework.sample.SamplebJobRequest;
 
 import java.io.IOException;
@@ -47,6 +48,7 @@ public abstract class AbstractJob implements Runnable {
 			jobInfo.setResponse(new JSONObject());
 			volidateRequest();
 			initLogger();
+			lock();
 			jobInfo.setStatus(2);
 			response("检查、初始化任务执行环境及相关操作已完成...",jobInfo.getStatus());
 			execute();
@@ -56,6 +58,12 @@ public abstract class AbstractJob implements Runnable {
 			exception = e;
 			log.error(e.getMessage(),e);
 		}finally{
+			try{
+				unlock();
+			}catch(LockException le){
+				log.error(le.getMessage(),le);
+				log.warn("注意：job执行完成后解锁失败。");
+			}
 			try{
 				response("job执行完成。",jobInfo.getStatus());
 			}catch(Exception err){
@@ -124,6 +132,31 @@ public abstract class AbstractJob implements Runnable {
 		Map<String,Object> data = new HashMap<String,Object>();
 		data.put("exeStatus", status);
 		response(stepMsg,data);
+	}
+	private void lock()throws LockException{
+		if(parent==null){
+			lockResources();
+		}
+	}
+	private void unlock()throws LockException{
+		if(parent==null){
+			unlockResources();
+		}
+	}
+	
+	/**
+	 * 有加锁逻辑的job需要重写此方法
+	 * @throws LockException
+	 */
+	public void lockResources()throws LockException{
+		
+	}
+	/**
+	 * 有解锁逻辑的job需要重写此方法
+	 * @throws LockException
+	 */
+	public void unlockResources()throws LockException{
+		
 	}
 	
 

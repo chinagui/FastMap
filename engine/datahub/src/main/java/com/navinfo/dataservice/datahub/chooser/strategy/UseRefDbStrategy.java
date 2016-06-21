@@ -33,7 +33,7 @@ public class UseRefDbStrategy extends DbServerStrategy{
 	 */
 	@Override
 	public DbServer getPriorDbServer(List<DbServer> dbServers,
-			Map<String, String> params) throws DataHubException {
+			Map<String, Object> params) throws DataHubException {
 		if(dbServers.size()>1){
 			return null;
 		}else{
@@ -44,22 +44,16 @@ public class UseRefDbStrategy extends DbServerStrategy{
 	 * @see com.navinfo.dataservice.datahub.chooser.strategy.DbServerStrategy#getPriorDbServer(java.util.Map)
 	 */
 	@Override
-	public DbServer getPriorDbServer(String bizType,Map<String, String> params)
+	public DbServer getPriorDbServer(String bizType,Map<String, Object> params)
 			throws DataHubException {
 		if(params==null
-				||StringUtils.isEmpty(params.get("refBizType"))){
-			throw new DataHubException("必须传入参考库的名称和类型，否则无法选择服务器。");
+				||params.get("refDbId")==null){
+			throw new DataHubException("必须传入参考库Id，否则无法选择服务器。");
 		}
 		Connection conn = null;
 		try{
-			String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.server_type,S.SERVICE_NAME FROM db_server s,db_hub d WHERE s.server_id=d.SERVER_ID and s.biz_type like ? and d.biz_type=?";
-			if(StringUtils.isNotEmpty(params.get("refDbName"))){
-				sql=sql+" AND D.DB_NAME = ?";
-			}else if(StringUtils.isNotEmpty(params.get("refUserName"))){
-				sql=sql+" AND D.DB_USER_NAME = ?";
-			}else{
-				throw new DataHubException("必须传入参考库的名称和类型，否则无法选择服务器。");
-			}
+			String sql = "SELECT s.server_id,s.SERVER_IP,s.server_port,s.server_type,S.SERVICE_NAME FROM db_server s,db_hub d WHERE s.server_id=d.SERVER_ID and s.biz_type like ? and d.db_id=?";
+			
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			DbServer db = run.query(conn, sql,new ResultSetHandler<DbServer>(){
@@ -78,7 +72,7 @@ public class UseRefDbStrategy extends DbServerStrategy{
 					return inDb;
 				}
 				
-			}, "%"+bizType+"%", params.get("refDbName"),params.get("refUserName"),params.get("refBizType"));
+			}, "%"+bizType+"%", params.get("refDbId"));
 			return db;
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

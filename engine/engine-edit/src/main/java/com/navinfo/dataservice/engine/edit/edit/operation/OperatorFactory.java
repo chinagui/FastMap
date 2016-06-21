@@ -60,6 +60,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdFaceOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdFaceTopoOperator;
@@ -113,7 +116,11 @@ import com.navinfo.dataservice.dao.glm.operator.rd.restrict.RdRestrictionConditi
 import com.navinfo.dataservice.dao.glm.operator.rd.restrict.RdRestrictionDetailOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.restrict.RdRestrictionOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.restrict.RdRestrictionViaOperator;
+import com.navinfo.dataservice.dao.glm.operator.rd.rw.RwLinkNameOperator;
+import com.navinfo.dataservice.dao.glm.operator.rd.rw.RwLinkOperator;
+import com.navinfo.dataservice.dao.glm.operator.rd.rw.RwNodeOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.speedlimit.RdSpeedlimitOperator;
+import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwNodeSelector;
 
 /**
  * 操作类工厂
@@ -267,6 +274,12 @@ public class OperatorFactory {
 			return new IxPoiParentOperator(conn, (IxPoiParent)obj);
 		case IXPOICHILDREN:
 			return new IxPoiChildrenOperator(conn, (IxPoiChildren)obj);
+		case RWNODE:
+			return new RwNodeOperator(conn, (RwNode)obj);
+		case RWLINK:
+			return new RwLinkOperator(conn, (RwLink)obj);
+		case RWLINKNAME:
+			return new RwLinkNameOperator(conn, (RwLinkName)obj);
 		default:
 			return null;
 		}

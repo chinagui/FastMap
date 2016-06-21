@@ -3,6 +3,7 @@ package com.navinfo.dataservice.commons;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
@@ -91,5 +92,16 @@ public class CompGeometryUtilTest{
 			e.printStackTrace();
 		}
 		
+	}
+	
+	@Test
+	public void geo2GridsWithoutBreak_001(){
+		try{
+			Polygon p = (Polygon)JtsGeometryFactory.read("POLYGON((116.30559466134446 39.92893348687963,116.30559466134446 39.98670948206808,116.43661979549893 39.98670948206808,116.43661979549893 39.92893348687963,116.30559466134446 39.92893348687963))");
+			Set<String> result = CompGeometryUtil.geo2GridsWithoutBreak(p);
+			System.out.println(StringUtils.join(result, ","));
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 }

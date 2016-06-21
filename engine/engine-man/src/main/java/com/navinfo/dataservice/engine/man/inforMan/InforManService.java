@@ -11,7 +11,9 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.model.InforMan;
+import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -34,12 +36,17 @@ public class InforManService {
 			//持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();	
-			InforMan  bean = (InforMan)JSONObject.toBean(json, InforMan.class);	
-			Date date = new Date(new java.util.Date().getTime());
-			String createSql = "insert into infor_man (INFOR_ID, INFOR_STATUS, DESCP, CREATE_USER_ID, CREATE_DATE, COLLECT_PLAN_START_DATE, COLLECT_PLAN_END_DATE, DAY_EDIT_PLAN_START_DATE, DAY_EDIT_PLAN_END_DATE, MONTH_EDIT_PLAN_START_DATE, MONTH_EDIT_PLAN_END_DATE, DAY_PRODUCE_PLAN_START_DATE, DAY_PRODUCE_PLAN_END_DATE, MONTH_PRODUCE_PLAN_START_DATE, MONTH_PRODUCE_PLAN_END_DATE) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";			
+			InforMan bean = (InforMan) JsonOperation.jsonToBean(json,InforMan.class);
+			String createSql = "insert into infor_man (INFOR_ID, INFOR_STATUS, DESCP, CREATE_USER_ID, "
+					+ "COLLECT_PLAN_START_DATE, COLLECT_PLAN_END_DATE, DAY_EDIT_PLAN_START_DATE, DAY_EDIT_PLAN_END_DATE, MONTH_EDIT_PLAN_START_DATE, MONTH_EDIT_PLAN_END_DATE, DAY_PRODUCE_PLAN_START_DATE, DAY_PRODUCE_PLAN_END_DATE, MONTH_PRODUCE_PLAN_START_DATE, MONTH_PRODUCE_PLAN_END_DATE) values(?,?,?,?,"
+					+ "to_timestamp('"+bean.getCollectPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+bean.getCollectPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),"
+					+ "to_timestamp('"+bean.getDayEditPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+bean.getDayEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),"
+					+ "to_timestamp('"+bean.getMonthEditPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+bean.getMonthEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),"
+					+ "to_timestamp('"+bean.getDayProducePlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),"
+					+ "to_timestamp('"+bean.getDayProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+bean.getMonthProducePlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+bean.getMonthProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff'))";			
 			run.update(conn, 
 					   createSql, 
-					   bean.getInforId() , 1, bean.getDescp(), userId, date, bean.getCollectPlanStartDate(), bean.getCollectPlanEndDate(), bean.getDayEditPlanStartDate(), bean.getDayEditPlanEndDate(), bean.getMonthEditPlanStartDate(), bean.getMonthEditPlanEndDate(), bean.getDayProducePlanStartDate(), bean.getDayProducePlanEndDate(), bean.getMonthProducePlanStartDate(), bean.getMonthProducePlanEndDate()
+					   bean.getInforId(), 1,bean.getDescp(), userId
 					   );
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

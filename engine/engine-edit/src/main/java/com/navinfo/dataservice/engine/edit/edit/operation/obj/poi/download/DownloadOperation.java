@@ -182,7 +182,7 @@ public class DownloadOperation {
 				contact.put("type", poiContact.getContactType());
 				int linkman = poiContact.getContactDepart();
 				if (linkman == 0) {
-					contact.put("linkman", new ArrayList<IRow>());
+					contact.put("linkman", "");
 				} else {
 					String linkmanStr = Integer.toBinaryString(linkman);
 					String retStr = "";

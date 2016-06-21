@@ -139,9 +139,9 @@ public class Operation implements IOperation {
 				breakJson.put("data", data);
 				//组装打断线的参数
 				//保证是同一个连接
-				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command(
+				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadpoint.Command(
 						breakJson, breakJson.toString());
-				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process(
+				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadpoint.Process(
 						breakCommand,result, conn);
 				breakProcess.run();
 			}

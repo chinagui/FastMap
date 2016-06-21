@@ -127,9 +127,13 @@ public class TipsSelector {
 					if (type == 1203) {
 						m.put("d", String.valueOf(deep.get("dr")));
 					}
-					if (type == 1105) {
+					else if (type == 1105) {
 						m.put("d", String.valueOf(deep.get("tp")));
 					}
+					else if(type == 1107){
+						m.put("d", deep.getString("name"));
+					}
+					
 
 				} else if (type == 1510 || type == 1514 || type == 1501 || type == 1515) {
 
@@ -527,7 +531,7 @@ public class TipsSelector {
 						m.put("e", name);
 					}
 				}*/
-			} else if (type == 1704 || type == 1510) {
+			} else if (type == 1704 || type == 1510 || type == 1107) {
 
 				String name = deep.getString("name");
 

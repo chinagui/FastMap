@@ -7,8 +7,8 @@ import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.datahub.service.DbService;
-import com.navinfo.dataservice.diff.DiffJobRequest;
 import com.navinfo.dataservice.diff.exception.DiffException;
+import com.navinfo.dataservice.diff.job.DiffJobRequest;
 
 /**
  * @author arnold

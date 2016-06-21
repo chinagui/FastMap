@@ -44,7 +44,7 @@ public class IxPoiName implements IObj {
 
 	private String keywords;// 关键字
 
-	private String nidePid;// 现有PID
+	private String nidbPid;// 现有PID
 
 	private String rowId;
 	
@@ -134,12 +134,12 @@ public class IxPoiName implements IObj {
 		this.keywords = keywords;
 	}
 
-	public String getNidePid() {
-		return nidePid;
+	public String getNidbPid() {
+		return nidbPid;
 	}
 
-	public void setNidePid(String nidePid) {
-		this.nidePid = nidePid;
+	public void setNidbPid(String nidbPid) {
+		this.nidbPid = nidbPid;
 	}
 
 	public String getRowId() {

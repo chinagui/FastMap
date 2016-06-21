@@ -43,8 +43,10 @@ public class RwLinkOperateUtils {
 			link.setMesh(Integer.parseInt(meshes.iterator().next()));
 		}
 		
-		link.setPid(PidService.getInstance().applyLinkPid());
+		link.setPid(PidService.getInstance().applyRwLinkPid());
 
+		System.out.println(link.getPid());
+		
 		result.setPrimaryPid(link.getPid());
 
 		double linkLength = GeometryUtils.getLinkLength(geo);

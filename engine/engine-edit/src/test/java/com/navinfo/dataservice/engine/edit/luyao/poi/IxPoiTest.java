@@ -40,7 +40,7 @@ public class IxPoiTest extends InitApplication{
 	
 	@Test
 	public void UpdatePoi(){
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"IXPOI\",\"dbId\":42,\"data\":{\"pid\":100000021,\"kindCode\":22010,\"side\":2,\"objStatus\":\"UPDATE\"}}";
+		String parameter = "{\"dbId\":42,\"command\":\"UPDATE\",\"type\":\"IXPOI\",\"objId\":88581671,\"data\":{\"pid\":88581671,\"objStatus\":\"UPDATE\",\"names\":[{\"pid\":0,\"poiPid\":88581671,\"nameGroupid\":3,\"langCode\":\"CHI\",\"nameClass\":1,\"nameType\":2,\"name\":\"充电桩555\",\"namePhonetic\":\"Chong+Dian+Zhuang\",\"keywords\":\"\",\"nidbPid\":\"\",\"objStatus\":\"INSERT\"},{\"pid\":0,\"poiPid\":88581671,\"nameGroupid\":3,\"langCode\":\"CHI\",\"nameClass\":1,\"nameType\":1,\"name\":\"充电桩\",\"namePhonetic\":\"Chong+Dian+Zhuang\",\"keywords\":\"\",\"nidbPid\":\"\",\"objStatus\":\"INSERT\"},{\"pid\":0,\"poiPid\":88581671,\"nameGroupid\":3,\"langCode\":\"ENG\",\"nameClass\":1,\"nameType\":2,\"name\":\"Charging+Pile\",\"namePhonetic\":\"\",\"keywords\":\"\",\"nidbPid\":\"\",\"objStatus\":\"INSERT\"}]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

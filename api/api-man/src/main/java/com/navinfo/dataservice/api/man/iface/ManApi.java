@@ -41,5 +41,7 @@ public interface ManApi{
 	public Set<Integer> queryGrid(int limit) throws Exception;
 	public List<Region> queryRegionList() throws Exception;
 	Region queryRegionByDbId(int dbId)throws Exception;
+	
+	public int queryAdminIdBySubtask(int subtaskId) throws Exception;
 }
 

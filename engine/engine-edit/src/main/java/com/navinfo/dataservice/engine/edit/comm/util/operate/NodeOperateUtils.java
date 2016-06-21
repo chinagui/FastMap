@@ -5,8 +5,11 @@ import java.util.List;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
@@ -17,7 +20,7 @@ import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 public class NodeOperateUtils {
 
-	public static RdNode createNode(double x, double y) throws Exception {
+	public static RdNode createRdNode(double x, double y) throws Exception {
 
 		RdNode node = new RdNode();
 
@@ -116,5 +119,56 @@ public class NodeOperateUtils {
 		}
 		node.setMeshes(nodeMeshs);
 		return node;
+	}
+	/**
+	 * 生成Zone点
+	 * @author zhaokk
+	 * @param x 经度
+	 * @param y 纬度
+	 * @return 铁路点对象
+	 * @throws Exception
+	 */
+	public static ZoneNode createZoneNode(double x, double y) throws Exception {
+
+		ZoneNode node = new ZoneNode();
+		// 申请pid
+		node.setPid(PidService.getInstance().applyZoneNodePid());
+		// 获取点的几何信息
+		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y), 100000, 0));
+		// 维护Node图幅信息
+		// 判断是否图廓点
+		if (MeshUtils.isPointAtMeshBorder(x, y)) {
+			node.setForm(1);
+		}
+		List<IRow> nodeMeshs = new ArrayList<IRow>();
+
+		for (String mesh : MeshUtils.point2Meshes(x, y)) {
+
+			ZoneNodeMesh nodeMesh = new ZoneNodeMesh();
+			nodeMesh.setNodePid(node.getPid());
+			nodeMesh.setMeshId(Integer.parseInt(mesh));
+			nodeMeshs.add(nodeMesh);
+		}
+		node.setMeshes(nodeMeshs);
+		return node;
+	}
+	
+	public static Object createNode(double x, double y,ObjType type) throws Exception{
+		if(type.equals(ObjType.RDNODE)){
+			return createRdNode(x, y);
+		}
+		if(type.equals(ObjType.ADNODE)){
+			return createAdNode(x, y);
+		}
+		if(type.equals(ObjType.RWNODE)){
+			return createRwNode(x, y);
+		}
+		if(type.equals(ObjType.ZONENODE)){
+			return createZoneNode(x, y);
+		}
+		else{
+			throw new Exception("不存在的创建点类型");
+		}	
+		
 	}
 }

@@ -63,7 +63,7 @@ public class POITest extends InitApplication{
 	@Test
 	public void testDeletePoi()
 	{
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"IXPOI\",\"dbId\":42,\"objId\":100000012}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"IXPOI\",\"dbId\":42,\"objId\":642692}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -75,7 +75,7 @@ public class POITest extends InitApplication{
 	
 	@Test
 	public void addPoi(){
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":42,\"data\":{\"longitude\":116.39552235603331,\"latitude\":39.90676527744907,\"x_guide\":0,\"y_guide\":0,\"linkPid\":0}}";
+		String parameter = "{\"dbId\":42,\"command\":\"UPDATE\",\"type\":\"IXPOI\",\"objId\":88581671,\"data\":{\"names\":[{\"nameId\":0,\"poiPid\":88581671,\"nameGroupid\":2,\"langCode\":\"CHI\",\"nameClass\":1,\"nameType\":2,\"name\":\"充电桩556\",\"namePhonetic\":\"Chong+Dian+Zhuang\",\"keywords\":null,\"nidbPid\":null},{\"nameId\":0,\"poiPid\":88581671,\"nameGroupid\":1,\"langCode\":\"CHI\",\"nameClass\":1,\"nameType\":1,\"name\":\"充电桩\",\"namePhonetic\":\"Chong+Dian+Zhuang\",\"keywords\":null,\"nidbPid\":null},{\"nameId\":0,\"poiPid\":88581671,\"nameGroupid\":1,\"langCode\":\"ENG\",\"nameClass\":1,\"nameType\":2,\"name\":\"Charging+Pile\",\"namePhonetic\":null,\"keywords\":null,\"nidbPid\":null}]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

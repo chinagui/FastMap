@@ -289,6 +289,17 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poiparent.delete.Command(
 						json);
 			}
+		case RWLINK:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwlink.create.Command(
+						json, requester);
+
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwlink.update.Command(
+						json, requester);
+
+			}
 		}
 		throw new Exception("不支持的操作类型");
 	}
@@ -524,6 +535,24 @@ public class Transaction {
 
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poiparent.delete.Process(
+						command);
+			}
+		case RWNODE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwlink.create.Process(
+						command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwlink.update.Process(
+						command);
+			}
+		case RWLINK:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwlink.create.Process(
+						command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwlink.update.Process(
 						command);
 			}
 		}

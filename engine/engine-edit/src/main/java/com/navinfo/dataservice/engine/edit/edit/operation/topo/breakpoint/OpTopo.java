@@ -49,7 +49,7 @@ public class OpTopo implements IOperation {
 		
 		if (command.getBreakNodePid() == 0){
 			
-			RdNode node = NodeOperateUtils.createNode(command.getPoint().getX(), command.getPoint().getY());
+			RdNode node = NodeOperateUtils.createRdNode(command.getPoint().getX(), command.getPoint().getY());
 			
 			result.insertObject(node, ObjStatus.INSERT, node.pid());
 			

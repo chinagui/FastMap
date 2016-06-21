@@ -6,6 +6,10 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
@@ -36,7 +40,7 @@ public class AdAdminTreeSelector implements ISelector {
 		return null;
 	}
 
-	public IRow loadRowsByProjectId(int dbId, boolean isLock) throws Exception {
+	public IRow loadRowsBySubTaskId(int subtaskId, boolean isLock) throws Exception {
 		AdAdminTree result = new AdAdminTree();
 
 		AdAdminSelector adAdminSelector = new AdAdminSelector(conn);
@@ -49,8 +53,9 @@ public class AdAdminTreeSelector implements ISelector {
 		result = getAdAdminTreeById(topRegionId, isLock, 0);
 
 		// 项目库ID+0000 对应的行政区划代表点AdAdminId
-		//TODO
-		int cityAdadminId = Integer.parseInt(11 + "0000");
+		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
+		
+		int  cityAdadminId = manApi.queryAdminIdBySubtask(subtaskId);
 
 		AdAdmin adAdmin = adAdminSelector.loadByAdminId(cityAdadminId, isLock);
 

@@ -15,14 +15,14 @@ import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.model.City;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
-import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.io.ParseException;
 
 import net.sf.json.JSONObject;
@@ -249,6 +249,7 @@ public class CityService {
 							String clobStr=DataBaseUtils.clob2String(clob);
 							map.put("geometry", Geojson.wkt2Geojson(clobStr));
 							map.put("planningStatus", rs.getInt("plan_status"));
+							map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 							list.add(map);
 						} catch (ParseException e) {
 							// TODO Auto-generated catch block

@@ -66,10 +66,10 @@ public class GridController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			if (!dataJson.containsKey("wkt") || !dataJson.containsKey("stage")){
-				throw new IllegalArgumentException("wkt/stage不能为空");
+			if (!dataJson.containsKey("wkt") || !dataJson.containsKey("type")||!dataJson.containsKey("stage")){
+				throw new IllegalArgumentException("wkt/type/stage不能为空");
 			}
-			List<HashMap> data = GridService.getInstance().quryListByAlloc(dataJson);
+			List<String> data = GridService.getInstance().quryListProduce(dataJson);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取grid列表失败，原因：" + e.getMessage(), e);

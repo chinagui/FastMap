@@ -120,8 +120,8 @@ public abstract class LogFlusher {
 			closeAutoCommit();//关闭autoCommit，手工控制数据库事务
 			createTempTable();
 			createTargetDbLink();
-			sourceGridLockHookId=lockSourceDbGrid();
 			createFailueLogTempTable();
+			sourceGridLockHookId=lockSourceDbGrid();
 			prepareAndLockLog();
 			targetGridLockHookId = lockTargetDbGrid();
 			flushResult = flushData(this.sourceDbConn,this.targetDbConn);
@@ -133,8 +133,8 @@ public abstract class LogFlusher {
 		}catch(Exception e){
 			this.log.warn("exception accured", e);
 			flushResult.setResultMsg(e.getMessage());
-			rollbackConnections();
 			this.unlockPreparedLog();
+			rollbackConnections();
 		}finally{
 			this.closeConnections();
 			unlockTargetDbGrid(targetGridLockHookId);

@@ -259,7 +259,9 @@ public class IxPoiOperator implements IOperator {
 				+ "LABEL, TYPE, ADDRESS_FLAG, EX_PRIORITY, EDITION_FLAG, POI_MEMO, "
 				+ "OLD_BLOCKCODE, OLD_NAME, OLD_ADDRESS, OLD_KIND, POI_NUM, LOG, TASK_ID, "
 				+ "DATA_VERSION, FIELD_TASK_ID, VERIFIED_FLAG, COLLECT_TIME, "
-				+ "GEO_ADJUST_FLAG, FULL_ATTR_FLAG, OLD_X_GUIDE, OLD_Y_GUIDE,U_DATE,U_RECORD, " + "ROW_ID) values (");
+				+ "GEO_ADJUST_FLAG, FULL_ATTR_FLAG, OLD_X_GUIDE, OLD_Y_GUIDE,U_DATE," 
+				+ "\"LEVEL\",SPORTS_VENUE,INDOOR,VIP_FLAG,U_RECORD,"
+				+ "ROW_ID) values (");
 
 		sb.append(ixPoi.getPid());
 
@@ -289,13 +291,13 @@ public class IxPoiOperator implements IOperator {
 
 		sb.append(",'" + ixPoi.getChain() + "'");
 
-		sb.append("," + ixPoi.getAirportCode());
+		sb.append(",'" + ixPoi.getAirportCode() + "'");
 
 		sb.append("," + ixPoi.getAccessFlag());
 
 		sb.append("," + ixPoi.getOpen24h());
 
-		sb.append("," + ixPoi.getMeshId5k());
+		sb.append(",'" + ixPoi.getMeshId5k() + "'");
 
 		sb.append("," + ixPoi.getMeshId());
 
@@ -355,7 +357,15 @@ public class IxPoiOperator implements IOperator {
 
 		sb.append("," + ixPoi.getOldYGuide());
 		
-		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
+		sb.append(",'" + StringUtils.getCurrentTime() + "'");
+		
+		sb.append(",'" + ixPoi.getLevel() + "'");
+		
+		sb.append(",'" + ixPoi.getSportsVenue() + "'");
+		
+		sb.append("," + ixPoi.getIndoor());
+		
+		sb.append(",'" + ixPoi.getVipFlag() + "'");
 
 		sb.append(",1,'" + ixPoi.rowId() + "')");
 

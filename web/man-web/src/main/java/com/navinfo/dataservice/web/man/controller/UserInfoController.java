@@ -20,6 +20,7 @@ import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 
 /**
@@ -196,6 +197,40 @@ public class UserInfoController extends BaseController {
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取明细失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+
+	@RequestMapping(value = "/user/getUploadTime")
+	public ModelAndView getUploadTime(HttpServletRequest request) {
+		try {
+
+			String tokenString = request.getParameter("access_token");
+			if (tokenString == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			AccessToken token = AccessTokenFactory.validate(tokenString);
+			Integer use_id = (int) token.getUserId();
+			// ------------
+
+			UserInfo bean = new UserInfo();
+			bean.setUserId(use_id);
+
+			List<String> poi_tips_time = service.getUploadTime(bean);
+			HashMap<String, String> data = new HashMap<String, String>();
+			String poi_time = "";
+			String tips_time = "";
+			if (poi_tips_time.size() > 0) {
+				poi_time = poi_tips_time.get(0);
+				tips_time = poi_tips_time.get(1);
+			}
+			data.put("poi", poi_time);
+			data.put("tips", tips_time);
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+			log.error("获取列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}

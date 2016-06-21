@@ -497,7 +497,7 @@ public class UserInfoService {
 				AccessToken access_token = AccessTokenFactory.generate((long) (map.get("userId")));
 				if(access_token!=null){
 					result.put("access_token", access_token.getTokenString());
-					result.put("expires_in", access_token.getExpireSecond());
+					result.put("expires_in", access_token.getTimestamp());
 					result.put("role", map.get("role"));
 				}	
 	    	}

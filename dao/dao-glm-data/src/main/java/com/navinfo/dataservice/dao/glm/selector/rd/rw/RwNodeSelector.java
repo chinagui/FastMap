@@ -117,7 +117,7 @@ public class RwNodeSelector implements ISelector {
 				+ "tmp4 as  (select s_node_pid pid from tmp2 group by s_node_pid having "
 				+ "count(*) = 1), tmp5 as  (select e_node_pid pid from tmp3 group by e_node_pid "
 				+ "having count(*) = 1), tmp6 as  (select pid from tmp4 union select pid from "
-				+ "tmp5) select *   from rd_node a  where exists (select null from tmp6 b "
+				+ "tmp5) select *   from rw_node a  where exists (select null from tmp6 b "
 				+ "where a.node_pid = b.pid) and a.u_record!=2";
 
 		if (isLock) {

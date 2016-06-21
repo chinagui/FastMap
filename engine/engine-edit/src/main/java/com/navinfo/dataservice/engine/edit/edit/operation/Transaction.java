@@ -85,7 +85,7 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairrdlink.Command(
 						json, requester);
 			case UPDOWNDEPART:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.updowndepartlink.Command(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.depart.updowndepartlink.Command(
 						json, requester);
 				// case DEPART:
 				// return new
@@ -298,7 +298,7 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwlink.update.Command(
 						json, requester);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deleterwlink.Command(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterwlink.Command(
 						json,requester);
 			}
 		}
@@ -334,7 +334,7 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairrdlink.Process(
 						command);
 			case UPDOWNDEPART:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.updowndepartlink.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.depart.updowndepartlink.Process(
 						command);
 				// case DEPART:
 				// return new
@@ -556,7 +556,7 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwlink.update.Process(
 						command);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.deleterwlink.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterwlink.Process(
 						command);
 			}
 		}

@@ -133,7 +133,7 @@ public class Operation implements IOperation {
 
 			if (sNodeDepart) { // 需要新增节点
 
-				RdNode node = NodeOperateUtils.createNode(slon, slat);
+				RdNode node = NodeOperateUtils.createRdNode(slon, slat);
 
 				content.put("sNodePid", node.getPid());
 
@@ -142,7 +142,7 @@ public class Operation implements IOperation {
 
 			if (eNodeDepart) {
 
-				RdNode node = NodeOperateUtils.createNode(elon, elat);
+				RdNode node = NodeOperateUtils.createRdNode(elon, elat);
 
 				content.put("eNodePid", node.getPid());
 
@@ -159,7 +159,7 @@ public class Operation implements IOperation {
 
 			if (sNodeDepart) { // 需要新增节点
 
-				RdNode node = NodeOperateUtils.createNode(slon, slat);
+				RdNode node = NodeOperateUtils.createRdNode(slon, slat);
 
 				content.put("sNodePid", node.getPid());
 
@@ -170,7 +170,7 @@ public class Operation implements IOperation {
 
 			if (eNodeDepart) {
 
-				RdNode node = NodeOperateUtils.createNode(elon, elat);
+				RdNode node = NodeOperateUtils.createRdNode(elon, elat);
 
 				content.put("eNodePid", node.getPid());
 
@@ -238,7 +238,7 @@ public class Operation implements IOperation {
 			if (content.containsKey("eNodePid")) {
 				if (sNodeDepart) { // 需要新增节点
 
-					RdNode node = NodeOperateUtils.createNode(slon, slat);
+					RdNode node = NodeOperateUtils.createRdNode(slon, slat);
 
 					content.put("sNodePid", node.getPid());
 
@@ -249,7 +249,7 @@ public class Operation implements IOperation {
 			} else {
 				if (eNodeDepart) {
 
-					RdNode node = NodeOperateUtils.createNode(elon, elat);
+					RdNode node = NodeOperateUtils.createRdNode(elon, elat);
 
 					content.put("eNodePid", node.getPid());
 

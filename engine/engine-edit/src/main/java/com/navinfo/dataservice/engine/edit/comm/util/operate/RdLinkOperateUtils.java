@@ -65,7 +65,7 @@ public class RdLinkOperateUtils {
 
 			double y = coordinates.getJSONArray(0).getDouble(1);
 
-			RdNode node = NodeOperateUtils.createNode(x, y);
+			RdNode node = NodeOperateUtils.createRdNode(x, y);
 			result.insertObject(node, ObjStatus.INSERT, node.pid());
 			se.put("s", node.getPid());
 
@@ -99,7 +99,7 @@ public class RdLinkOperateUtils {
 
 					double y = catchLinks.getJSONObject(p).getDouble("lat");
 
-					RdNode node = NodeOperateUtils.createNode(x, y);
+					RdNode node = NodeOperateUtils.createRdNode(x, y);
 
 					result.insertObject(node, ObjStatus.INSERT, node.pid());
 
@@ -136,7 +136,7 @@ public class RdLinkOperateUtils {
 
 				double y = tmpCs.getJSONArray(tmpCs.size() - 1).getDouble(1);
 
-				RdNode node = NodeOperateUtils.createNode(x, y);
+				RdNode node = NodeOperateUtils.createRdNode(x, y);
 
 				result.insertObject(node, ObjStatus.INSERT, node.pid());
 
@@ -279,7 +279,7 @@ public class RdLinkOperateUtils {
 		JSONObject node = new JSONObject();
 		if (0 == sNodePid) {
 			Coordinate point = g.getCoordinates()[0];
-			RdNode rdNode =NodeOperateUtils.createNode(point.x, point.y);
+			RdNode rdNode =NodeOperateUtils.createRdNode(point.x, point.y);
 			result.insertObject(rdNode, ObjStatus.INSERT, rdNode.pid());
 			node.put("s", rdNode.getPid());
 		}else{
@@ -288,7 +288,7 @@ public class RdLinkOperateUtils {
 		//创建终止点信息
 		if (0 == eNodePid) {
 			Coordinate point = g.getCoordinates()[g.getCoordinates().length - 1];
-			RdNode rdNode =NodeOperateUtils.createNode(point.x, point.y);
+			RdNode rdNode =NodeOperateUtils.createRdNode(point.x, point.y);
 			result.insertObject(rdNode, ObjStatus.INSERT, rdNode.pid());
 			node.put("e", rdNode.getPid());
 		}else{

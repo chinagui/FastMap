@@ -13,10 +13,12 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.DataBaseUtils;
+import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 
 import oracle.sql.CLOB;
@@ -238,6 +240,59 @@ public class BlockOperation {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("更新失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	
+	/*
+	 * 查询block list
+	 */
+	public static Page selectBlockList(Connection conn,String selectSql,List<Object> values,final int currentPageNum,final int pageSize) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
+				public Page handle(ResultSet rs) throws SQLException {
+					List<HashMap> list = new ArrayList<HashMap>();
+				    Page page = new Page(currentPageNum);
+				    page.setPageSize(pageSize);
+					while(rs.next()){
+						HashMap map = new HashMap();
+						map.put("blockId", rs.getInt("BLOCK_ID"));
+						map.put("descp", rs.getString("DESCP"));
+						map.put("collectGroupId", rs.getInt("COLLECT_GROUP_ID"));
+						map.put("dayEditGroupId", rs.getInt("DAY_EDIT_GROUP_ID"));
+						map.put("monthEditGroupId", rs.getInt("MONTH_EDIT_GROUP_ID"));
+						map.put("createDate", rs.getString("CREATE_DATE"));
+						map.put("collectPlanStartDate", rs.getString("COLLECT_PLAN_START_DATE"));
+						map.put("collectPlanEndDate", rs.getString("COLLECT_PLAN_END_DATE"));
+						map.put("dayEditPlanStartDate", rs.getString("DAY_EDIT_PLAN_START_DATE"));
+						map.put("dayEditPlanEndDate", rs.getString("DAY_EDIT_PLAN_END_DATE"));
+						map.put("monthEditPlanStartDate", rs.getString("MONTH_EDIT_PLAN_START_DATE"));
+						map.put("monthEditPlanEndDate", rs.getString("MONTH_EDIT_PLAN_END_DATE"));
+						map.put("dayProducePlanStartDate", rs.getString("DAY_PRODUCE_PLAN_START_DATE"));
+						map.put("dayProducePlanEndDate", rs.getString("DAY_PRODUCE_PLAN_END_DATE"));
+						map.put("monthProducePlanStartDate", rs.getString("MONTH_PRODUCE_PLAN_START_DATE"));
+						map.put("monthProducePlanEndDate", rs.getString("MONTH_PRODUCE_PLAN_END_DATE"));
+						map.put("blockName", rs.getString("BLOCK_NAME"));
+						map.put("createUserName", rs.getString("USER_REAL_NAME"));
+									
+						list.add(map);
+					}
+					page.setResult(list);
+					return page;
+				}
+	    		
+	    	}		;
+	    	if (null==values || values.size()==0){
+	    		return run.query(currentPageNum, pageSize, conn, selectSql, rsHandler
+						);
+	    	}
+	    	return run.query(currentPageNum, pageSize, conn, selectSql, rsHandler,values.toArray()
+					);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}
 	}
 	

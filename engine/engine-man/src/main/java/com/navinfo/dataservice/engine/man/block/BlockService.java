@@ -8,6 +8,7 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import net.sf.json.JSONArray;
@@ -27,7 +28,9 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
+import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.navicommons.database.DataBaseUtils;
+import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
@@ -275,13 +278,50 @@ public class BlockService {
 				return blockIdList;
 			}
 			
-			
-			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询失败:" + e.getMessage(), e);
 		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	public Page listAll(JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			
+			String selectSql = "select m.BLOCK_ID,m.DESCP, m.COLLECT_GROUP_ID, m.DAY_EDIT_GROUP_ID, m.MONTH_EDIT_GROUP_ID, to_char(m.CREATE_DATE,'yyyy-mm-dd') CREATE_DATE, to_char(m.COLLECT_PLAN_START_DATE,'yyyy-mm-dd') COLLECT_PLAN_START_DATE, "    
+					 +"to_char(m.COLLECT_PLAN_END_DATE,'yyyy-mm-dd') COLLECT_PLAN_END_DATE,  to_char(m.DAY_EDIT_PLAN_START_DATE,'yyyy-mm-dd') DAY_EDIT_PLAN_START_DATE, to_char(m.DAY_EDIT_PLAN_END_DATE,'yyyy-mm-dd') DAY_EDIT_PLAN_END_DATE, to_char(m.MONTH_EDIT_PLAN_START_DATE,'yyyy-mm-dd') MONTH_EDIT_PLAN_START_DATE,"
+					 +"to_char(m.MONTH_EDIT_PLAN_END_DATE,'yyyy-mm-dd') MONTH_EDIT_PLAN_END_DATE, to_char(m.DAY_PRODUCE_PLAN_START_DATE,'yyyy-mm-dd') DAY_PRODUCE_PLAN_START_DATE,to_char(m.DAY_PRODUCE_PLAN_END_DATE,'yyyy-mm-dd') DAY_PRODUCE_PLAN_END_DATE,to_char(m.MONTH_PRODUCE_PLAN_START_DATE,'yyyy-mm-dd') MONTH_PRODUCE_PLAN_START_DATE,"
+					 +"to_char(m.MONTH_PRODUCE_PLAN_END_DATE,'yyyy-mm-dd') MONTH_PRODUCE_PLAN_END_DATE,t.BLOCK_NAME,nvl(u.user_real_name,'') USER_REAL_NAME from block_man m,block t,user_info u "
+					 +"where m.block_id=t.block_id and m.create_user_id=u.user_id";
+			if(null!=conditionJson && !conditionJson.isEmpty()){
+				Iterator keys = conditionJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if ("blockId".equals(key)) {selectSql+=" and t.block_id="+conditionJson.getInt(key);}
+					if ("createUserId".equals(key)) {selectSql+=" and m.create_user_id="+conditionJson.getInt(key);}
+					if ("blockName".equals(key)) {selectSql+=" and t.block_name like '%"+conditionJson.getString(key)+"%";}
+					}
+				}
+			if(null!=orderJson && !orderJson.isEmpty()){
+				Iterator keys = orderJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if ("collectPlanEndDate".equals(key)) {selectSql+=" order by T.COLLECT_PLAN_START_DATE";break;}
+					if ("collectPlanEndDate ".equals(key)) {selectSql+=" order by T.COLLECT_PLAN_END_DATE";break;}
+					}
+			}else{
+				selectSql+=" order by m.block_id";
+			}
+			return BlockOperation.selectBlockList(conn, selectSql, null,currentPageNum,pageSize);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询列表失败，原因为:"+e.getMessage(),e);
+		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}

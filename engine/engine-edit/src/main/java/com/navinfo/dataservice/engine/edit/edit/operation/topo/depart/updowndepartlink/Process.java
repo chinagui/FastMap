@@ -1,8 +1,8 @@
-package com.navinfo.dataservice.engine.edit.edit.operation.topo.updowndepartlink;
+package com.navinfo.dataservice.engine.edit.edit.operation.topo.depart.updowndepartlink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
-import com.navinfo.dataservice.engine.edit.edit.operation.topo.updowndepartlink.Operation;
+import com.navinfo.dataservice.engine.edit.edit.operation.topo.depart.updowndepartlink.Operation;
 
 /**
  * @author zhaokk

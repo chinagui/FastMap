@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.edit.operation.topo.updowndepartlink;
+package com.navinfo.dataservice.engine.edit.edit.operation.topo.depart.updowndepartlink;
 
 import java.sql.Connection;
 import java.util.ArrayList;

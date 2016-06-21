@@ -49,7 +49,7 @@ public class ProduceController extends BaseController {
 			}
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
-			JobApiService jobApi=(JobApiService) ApplicationContextUtil.getBean("jobApi");
+			JobApiService jobApi=(JobApiService) ApplicationContextUtil.getBean("jobApiService");
 			/*
 			 * {"gridIds":[213424,343434,23423432],"stopTime":"yyyymmddhh24miss","dataType":"POI"//POI,ALL}
 			 * jobType:releaseFmIdbDailyJob/releaseFmIdbMonthlyJob
@@ -138,7 +138,6 @@ public class ProduceController extends BaseController {
 			}
 			jobId=jobApi.createJob("day2MonthRoadJob", dataJson, userId, "ROAD月融合");	
 			return new ModelAndView("jsonView", success(jobId));
-			
 			
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);

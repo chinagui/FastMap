@@ -300,6 +300,9 @@ public class Transaction {
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterwlink.Command(
 						json,requester);
+			case REPAIR:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairrwlink.Command(
+						json,requester);
 			}
 		}
 		throw new Exception("不支持的操作类型");
@@ -557,6 +560,9 @@ public class Transaction {
 						command);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterwlink.Process(
+						command);
+			case REPAIR:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairrwlink.Process(
 						command);
 			}
 		}

@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.web.man.controller;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import net.sf.json.JSONObject;
@@ -7,13 +9,16 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.engine.man.statics.StaticsService;
 
+@Controller
 public class StaticsController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	@Autowired
@@ -38,8 +43,8 @@ public class StaticsController extends BaseController {
 			}
 			String wkt=dataJson.getString("wkt");
 			int type=dataJson.getInt("type");
-			service.staticsGridQuery(wkt, type);
-			return new ModelAndView("jsonView", success());
+			List<GridStatInfo> gridStatObjList=service.staticsGridQuery(wkt, type);
+			return new ModelAndView("jsonView", success(gridStatObjList));
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

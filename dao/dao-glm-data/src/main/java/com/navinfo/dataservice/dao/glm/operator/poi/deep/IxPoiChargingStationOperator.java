@@ -215,15 +215,40 @@ public class IxPoiChargingStationOperator implements IOperator {
 		sb.append(ixPoiChargingStation.getPid());
 		sb.append("," + ixPoiChargingStation.getPoiPid());
 		sb.append("," + ixPoiChargingStation.getChargingType());
-		sb.append(",'" + ixPoiChargingStation.getChangeBrands() + "'");
+		if(StringUtils.isNotEmpty(ixPoiChargingStation.getChangeBrands())){
+			sb.append(",'" + ixPoiChargingStation.getChangeBrands() + "'");
+		}else{
+			sb.append(", null ");
+		}
+	
 		sb.append("," + ixPoiChargingStation.getChangeOpenType());
 		sb.append("," + ixPoiChargingStation.getChargingNum());
-		sb.append(",'" + ixPoiChargingStation.getServiceProv() + "'");
-		sb.append(",'" + ixPoiChargingStation.getMemo() + "'");
-		sb.append(",'" + ixPoiChargingStation.getPhotoName() + "'");
-		sb.append(",'" + ixPoiChargingStation.getOpenHour() + "'");
+		if(StringUtils.isNotEmpty(ixPoiChargingStation.getServiceProv())){
+			sb.append(",'" + ixPoiChargingStation.getServiceProv() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiChargingStation.getMemo())){
+			sb.append(",'" + ixPoiChargingStation.getMemo() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiChargingStation.getPhotoName())){
+			sb.append(",'" + ixPoiChargingStation.getPhotoName() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiChargingStation.getOpenHour())){
+			sb.append(",'" + ixPoiChargingStation.getOpenHour() + "'");
+		}else{
+			sb.append(", null ");
+		}
 		sb.append("," + ixPoiChargingStation.getParkingFees());
-		sb.append(",'" + ixPoiChargingStation.getParkingInfo() + "'");
+		if(StringUtils.isNotEmpty(ixPoiChargingStation.getParkingInfo())){
+			sb.append(",'" + ixPoiChargingStation.getParkingInfo() + "'");
+		}else{
+			sb.append(", null ");
+		}
 		sb.append("," + ixPoiChargingStation.getAvailableState());
 		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiChargingStation.rowId() + "')");

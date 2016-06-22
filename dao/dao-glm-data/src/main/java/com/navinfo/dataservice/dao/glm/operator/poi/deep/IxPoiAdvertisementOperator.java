@@ -10,21 +10,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiAdvertisement;
-import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiBuilding;
-import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiDetail;
-import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiIntroduction;
-import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchOperator;
-import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * 索引:POI 深度信息(广告类)操作
@@ -212,11 +201,27 @@ public class IxPoiAdvertisementOperator implements IOperator {
 		sb.append("(advertise_id, poi_pid, label_text, type, priority,start_time, end_time,u_date, u_record,row_id) values (");
 		sb.append(ixPoiAdvertisement.getPid());
 		sb.append("," + ixPoiAdvertisement.getPoiPid());
-		sb.append(",'" + ixPoiAdvertisement.getLableText() + "'");
-		sb.append(",'" + ixPoiAdvertisement.getType() + "'");
+		if(StringUtils.isNotEmpty(ixPoiAdvertisement.getLableText())){
+			sb.append(",'" + ixPoiAdvertisement.getLableText() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiAdvertisement.getType())){
+			sb.append(",'" + ixPoiAdvertisement.getType() + "'");
+		}else{
+			sb.append(", null ");
+		}
 		sb.append("," + ixPoiAdvertisement.getPriority());
-		sb.append(",'" + ixPoiAdvertisement.getStartTime() + "'");
-		sb.append(",'" + ixPoiAdvertisement.getEndTime() + "'");
+		if(StringUtils.isNotEmpty(ixPoiAdvertisement.getStartTime())){
+			sb.append(",'" + ixPoiAdvertisement.getStartTime() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiAdvertisement.getEndTime())){
+			sb.append(",'" + ixPoiAdvertisement.getEndTime() + "'");
+		}else{
+			sb.append(", null ");
+		}
 		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiAdvertisement.rowId() + "')");
 		stmt.addBatch(sb.toString());

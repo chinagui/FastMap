@@ -211,7 +211,11 @@ public class IxPoiChargingPlotPhOperator implements IOperator {
 		sb.append(ixPoiChargingPlotPh.tableName());
 		sb.append("(poi_pid, photo_name,u_date,u_record,row_id) values (");
 		sb.append(ixPoiChargingPlotPh.getPoiPid());
-		sb.append(",'" + ixPoiChargingPlotPh.getPhotoName() + "'");
+		if(StringUtils.isNotEmpty(ixPoiChargingPlotPh.getPhotoName() )){
+			sb.append(",'" + ixPoiChargingPlotPh.getPhotoName() + "'");
+		}else{
+			sb.append(", null ");
+		}
 		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiChargingPlotPh.rowId() + "')");
 

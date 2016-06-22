@@ -214,24 +214,94 @@ public class IxPoiChargingPlotOperator implements IOperator {
 		sb.append("," + ixPoiChargingPlot.getGroupId());
 		sb.append("," + ixPoiChargingPlot.getCount());
 		sb.append("," + ixPoiChargingPlot.getAcdc());
-		sb.append(",'" + ixPoiChargingPlot.getPlugType() + "'");
-		sb.append(",'" + ixPoiChargingPlot.getPower() + "'");
-		sb.append(",'" + ixPoiChargingPlot.getVoltage() + "'");
-		sb.append(",'" + ixPoiChargingPlot.getCurrent() + "'");
+		if(StringUtils.isNotEmpty(ixPoiChargingPlot.getPlugType())){
+			sb.append(",'" + ixPoiChargingPlot.getPlugType() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiChargingPlot.getPower())){
+			sb.append(",'" + ixPoiChargingPlot.getPower() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiChargingPlot.getVoltage())){
+			sb.append(",'" + ixPoiChargingPlot.getVoltage() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiChargingPlot.getCurrent())){
+			sb.append(",'" + ixPoiChargingPlot.getCurrent() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		
+	
+		
 		sb.append("," + ixPoiChargingPlot.getMode());
-		sb.append(",'" + ixPoiChargingPlot.getMemo() + "'");
+		if(StringUtils.isNotEmpty(ixPoiChargingPlot.getMemo())){
+			sb.append(",'" + ixPoiChargingPlot.getMemo() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		
 		sb.append("," + ixPoiChargingPlot.getPlugNum());
-		sb.append(",'" + ixPoiChargingPlot.getPrices() + "'");
-		sb.append(",'" + ixPoiChargingPlot.getOpenType() + "'");
+		
+		if(StringUtils.isNotEmpty(ixPoiChargingPlot.getPrices())){
+			sb.append(",'" + ixPoiChargingPlot.getPrices() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiChargingPlot.getOpenType())){
+			sb.append(",'" + ixPoiChargingPlot.getOpenType() + "'");
+		}else{
+			sb.append(", null ");
+		}
+	
 		sb.append("," + ixPoiChargingPlot.getAvailableState());
-		sb.append(",'" + ixPoiChargingPlot.getManufacturer() + "'");
-		sb.append(",'" + ixPoiChargingPlot.getFactoryNum() + "'");
-		sb.append(",'" + ixPoiChargingPlot.getPlotNum() + "'");
-		sb.append(",'" + ixPoiChargingPlot.getProductNum() + "'");
-		sb.append(",'" + ixPoiChargingPlot.getParkingNum() + "'");
+		if(StringUtils.isNotEmpty(ixPoiChargingPlot.getManufacturer())){
+			sb.append(",'" + ixPoiChargingPlot.getManufacturer() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiChargingPlot.getFactoryNum())){
+			sb.append(",'" + ixPoiChargingPlot.getFactoryNum() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiChargingPlot.getPlotNum())){
+			sb.append(",'" + ixPoiChargingPlot.getPlotNum() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiChargingPlot.getProductNum())){
+			sb.append(",'" + ixPoiChargingPlot.getProductNum() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiChargingPlot.getParkingNum())){
+			sb.append(",'" + ixPoiChargingPlot.getParkingNum() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		
+		
 		sb.append("," + ixPoiChargingPlot.getFloor());
 		sb.append("," + ixPoiChargingPlot.getLocationType());
-		sb.append(",'" + ixPoiChargingPlot.getPayment() + "'");
+		
+
+		if(StringUtils.isNotEmpty(ixPoiChargingPlot.getPayment())){
+			sb.append(",'" + ixPoiChargingPlot.getPayment() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
 		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiChargingPlot.rowId() + "')");
 

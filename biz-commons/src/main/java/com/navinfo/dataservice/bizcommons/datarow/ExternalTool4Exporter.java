@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.expcore.external;
+package com.navinfo.dataservice.bizcommons.datarow;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

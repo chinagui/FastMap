@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.expcore.sql;
+package com.navinfo.dataservice.bizcommons.sql;
 
 import java.util.ArrayList;
 import java.util.List;

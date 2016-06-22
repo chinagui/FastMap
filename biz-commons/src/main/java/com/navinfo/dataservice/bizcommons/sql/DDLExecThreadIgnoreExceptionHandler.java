@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.expcore.sql.handler;
+package com.navinfo.dataservice.bizcommons.sql;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -10,7 +10,6 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.commons.database.oracle.ConnectionRegister;
 import com.navinfo.navicommons.database.sql.DbLinkCreator;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;

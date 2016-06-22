@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.expcore.sql.handler;
+package com.navinfo.dataservice.bizcommons.sql;
 
 import java.sql.Connection;
 import java.util.List;

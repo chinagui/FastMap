@@ -17,9 +17,9 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.bizcommons.glm.Glm;
 import com.navinfo.dataservice.bizcommons.glm.GlmCache;
 import com.navinfo.dataservice.bizcommons.glm.GlmTable;
+import com.navinfo.dataservice.bizcommons.sql.ExpSQL;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
-import com.navinfo.dataservice.expcore.sql.ExpSQL;
 
 
 public class AssembleFullCopySql{

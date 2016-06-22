@@ -13,7 +13,7 @@ import net.sf.json.JSONObject;
 * @Description: 不属于任何
 */
 public class JobInfo {
-	private long id;
+	private int id;
 	private String type;
 	private Date createTime;
 	private Date beginTime;
@@ -27,16 +27,16 @@ public class JobInfo {
 	private int stepCount=0;
 	private String guid;
 	private String identity;
-	public JobInfo(long id,String guid){
+	public JobInfo(int id,String guid){
 		this.id=id;
 		this.guid=guid;
 		this.identity=id+"-"+guid;
 	}
 /* getter & setter */
-	public long getId() {
+	public int getId() {
 		return id;
 	}
-	public void setId(long id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 	public String getType() {

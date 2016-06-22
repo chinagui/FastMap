@@ -1,6 +1,4 @@
-package com.navinfo.dataservice.expcore.sql.handler;
-
-import com.navinfo.dataservice.expcore.sql.ExpSQL;
+package com.navinfo.dataservice.bizcommons.sql;
 
 /**
  * User: liuqing

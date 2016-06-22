@@ -292,4 +292,44 @@ public class GridService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	
+	public List<String> queryMergeGrid(JSONObject json) throws ServiceException {
+		Connection conn = null;
+		try {
+
+			conn = DBConnector.getInstance().getManConnection();
+			// 根据输入的几何wkt，计算几何包含的gird，
+			Polygon polygon = (Polygon) GeometryUtils.getPolygonByWKT(json.getString("wkt"));
+			Set<?> grids = (Set<?>) CompGeometryUtil.geo2GridsWithoutBreak(polygon);
+
+
+			List<String> gridList = new ArrayList<String>();
+			gridList.addAll((Collection<? extends String>) grids);
+		
+			//获取的gird,只要road 日编完成100%，就可融合
+			StaticsApi statics = (StaticsApi) ApplicationContextUtil
+					.getBean("staticsApi");
+			List<GridStatInfo> GridStatList=statics.getDailyEditStatByGrids(gridList);
+			
+			List<String> gridMerge = new ArrayList<String>();
+			
+			for(int i=0;i<GridStatList.size();i++){
+				GridStatInfo statInfo=GridStatList.get(i);
+	
+				if (statInfo.getPercentRoad()==100){
+					gridMerge.add(statInfo.getGridId());
+				}
+			}
+
+			return gridMerge;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询可融合grid失败:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

@@ -2,7 +2,8 @@ package com.navinfo.dataservice.expcore.sql.replacer;
 
 
 import java.util.List;
-import com.navinfo.dataservice.expcore.sql.ExpSQL;
+
+import com.navinfo.dataservice.bizcommons.sql.ExpSQL;
 
 /**
  * User: liuqing

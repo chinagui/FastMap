@@ -15,6 +15,7 @@
 		<module>export-core</module>
 		<module>import-core</module>
 		<module>job-datahub</module>
+		<module>job-edit</module>
     </modules>
     <packaging>pom</packaging>
     <name>toolbox</name>

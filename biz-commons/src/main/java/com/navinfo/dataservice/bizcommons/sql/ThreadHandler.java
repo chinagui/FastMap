@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.expcore.sql.handler;
+package com.navinfo.dataservice.bizcommons.sql;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -10,7 +10,6 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 
 import com.navinfo.navicommons.exception.ThreadExecuteException;
-import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 
 /**

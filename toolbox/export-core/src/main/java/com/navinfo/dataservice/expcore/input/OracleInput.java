@@ -10,9 +10,9 @@ import com.navinfo.dataservice.expcore.exception.ExportException;
 import com.navinfo.dataservice.expcore.exception.ExportInputException;
 import com.navinfo.dataservice.expcore.source.OracleSource;
 import com.navinfo.dataservice.expcore.source.parameter.SerializeParameters;
-import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.expcore.sql.assemble.AssembleSql;
 import com.navinfo.dataservice.expcore.sql.assemble.AssembleXmlConfigSql;
+import com.navinfo.dataservice.bizcommons.sql.ExpSQL;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 

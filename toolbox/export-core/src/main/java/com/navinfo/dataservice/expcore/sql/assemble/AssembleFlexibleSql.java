@@ -18,9 +18,9 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.bizcommons.sql.ExpSQL;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
-import com.navinfo.dataservice.expcore.sql.ExpSQL;
 
 
 public class AssembleFlexibleSql{

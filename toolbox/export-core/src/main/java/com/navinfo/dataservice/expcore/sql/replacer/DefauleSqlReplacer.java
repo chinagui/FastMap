@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.bizcommons.sql.ExpSQL;
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.expcore.sql.ExpSQL;
 
 /**
  * User: liuqing Date: 2010-9-29 Time: 14:31:06

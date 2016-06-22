@@ -87,7 +87,27 @@ public class GdbBatchJob extends AbstractJob {
 			}
 			// 5. 在批处理子版本上执行批处理
 			// ...
-			// 6.
+			// 6. 执行差分
+			req.getDiff().setAttrValue("leftDbId", batchDbId);
+			req.getDiff().setAttrValue("rightDbId", bakDbId);
+			JobInfo diffJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
+			AbstractJob diffJob = JobCreateStrategy.createAsSubJob(diffJobInfo, req.getDiff(), this);
+			diffJob.run();
+			if (diffJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
+				throw new Exception("差分时job执行失败。");
+			}
+			//7. 差分履历会大区库
+			req.getCommit().setAttrValue("batchDbId", batchDbId);
+			req.getCommit().setAttrValue("targetDbId", req.getTargetDbId());
+			req.getCommit().setAttrValue("grids", JSONArray.fromObject(req.getGrids()));
+			JobInfo commitJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
+			AbstractJob commitJob = JobCreateStrategy.createAsSubJob(commitJobInfo, req.getCommit(), this);
+			commitJob.run();
+			if (commitJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
+				throw new Exception("回区域库时job执行失败。");
+			}
+			//8. 检查结果搬迁
+			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(), e);

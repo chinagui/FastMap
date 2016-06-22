@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.expcore.external;
+package com.navinfo.dataservice.bizcommons.datarow;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -11,15 +11,14 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.bizcommons.sql.DMLExecThreadHandler;
+import com.navinfo.dataservice.bizcommons.sql.ExpSQL;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
-import com.navinfo.dataservice.expcore.exception.ExportException;
-import com.navinfo.dataservice.expcore.sql.ExpSQL;
-import com.navinfo.dataservice.expcore.sql.handler.DMLExecThreadHandler;
 
 /** 
  * @ClassName: ExecuteFullCopySql 
@@ -31,23 +30,19 @@ public class ExecuteExternlToolSql {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected VMThreadPoolExecutor threadPoolExecutor;
 	protected OracleSchema targetDb;
-	public ExecuteExternlToolSql(OracleSchema targetDb)throws ExportException{
+	public ExecuteExternlToolSql(OracleSchema targetDb)throws Exception{
 		this.targetDb=targetDb;
 		createThreadPool();
 	}
 
-    protected void createThreadPool() throws ExportException{
+    protected void createThreadPool() throws Exception{
 		int outPoolSize = SystemConfigFactory.getSystemConfig().getIntValue("export.multiThread.outputPoolSize", 10);
-        try {
-            threadPoolExecutor = new VMThreadPoolExecutor(outPoolSize,
-					outPoolSize,
-					3,
-					TimeUnit.SECONDS,
-					new LinkedBlockingQueue(),
-					new ThreadPoolExecutor.CallerRunsPolicy());
-        } catch (Exception e) {
-            throw new ExportException("初始化线程池错误", e);
-        }
+        threadPoolExecutor = new VMThreadPoolExecutor(outPoolSize,
+				outPoolSize,
+				3,
+				TimeUnit.SECONDS,
+				new LinkedBlockingQueue(),
+				new ThreadPoolExecutor.CallerRunsPolicy());
     }	
     public void execute(List<ExpSQL> sqlList, ThreadLocalContext ctx) throws Exception {
 		try {

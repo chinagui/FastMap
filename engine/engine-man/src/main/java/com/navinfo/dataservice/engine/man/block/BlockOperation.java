@@ -254,15 +254,15 @@ public class BlockOperation {
 						map.put("createUserName", rs.getString("USER_REAL_NAME"));
 						map.put("collectPlanStartDate", rs.getString("COLLECT_PLAN_START_DATE"));
 						map.put("collectPlanEndDate", rs.getString("COLLECT_PLAN_END_DATE"));
-						map.put("collectGroup", rs.getInt("COLLECT_GROUP"));
+						map.put("collectGroup", rs.getString("COLLECT_GROUP"));
 						map.put("dayEditPlanStartDate", rs.getString("DAY_EDIT_PLAN_START_DATE"));
 						map.put("dayEditPlanEndDate", rs.getString("DAY_EDIT_PLAN_END_DATE"));
-						map.put("dayEditGroup", rs.getInt("DAY_EDIT_GROUP"));
+						map.put("dayEditGroup", rs.getString("DAY_EDIT_GROUP"));
 						map.put("dayProducePlanStartDate", rs.getString("DAY_PRODUCE_PLAN_START_DATE"));
 						map.put("dayProducePlanEndDate", rs.getString("DAY_PRODUCE_PLAN_END_DATE"));
 						map.put("monthEditPlanStartDate", rs.getString("MONTH_EDIT_PLAN_START_DATE"));
 						map.put("monthEditPlanEndDate", rs.getString("MONTH_EDIT_PLAN_END_DATE"));
-						map.put("monthEditGroup", rs.getInt("MONTH_EDIT_GROUP"));
+						map.put("monthEditGroup", rs.getString("MONTH_EDIT_GROUP"));
 						map.put("monthProducePlanStartDate", rs.getString("MONTH_PRODUCE_PLAN_START_DATE"));
 						map.put("monthProducePlanEndDate", rs.getString("MONTH_PRODUCE_PLAN_END_DATE"));
 						map.put("status", rs.getInt("STATUS"));
@@ -287,7 +287,7 @@ public class BlockOperation {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("创建失败，原因为:" + e.getMessage(), e);
+			throw new Exception("查询列表失败，原因为:" + e.getMessage(), e);
 		}
 	}
 

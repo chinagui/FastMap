@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
@@ -20,6 +21,8 @@ public class Command extends AbstractCommand{
 	
 	private List<RwNode> nodes;
 	
+	private List<RdGsc> rdGscs;
+	
 	public RwLink getLink() {
 		return link;
 	}
@@ -35,6 +38,15 @@ public class Command extends AbstractCommand{
 	public void setNodes(List<RwNode> nodes) {
 		this.nodes = nodes;
 	}
+	
+	public List<RdGsc> getRdGscs() {
+		return rdGscs;
+	}
+
+	public void setRdGscs(List<RdGsc> rdGscs) {
+		this.rdGscs = rdGscs;
+	}
+
 
 	private boolean isCheckInfect = false;
 	

@@ -92,7 +92,7 @@ public class Operation implements IOperation {
 							MeshUtils.mesh2Jts(meshIdStr));
 					geomInter = GeoTranslator.geojson2Jts(
 							GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					ZoneLinkOperateUtils.createAdLinkWithMesh(geomInter, maps,result);
+					ZoneLinkOperateUtils.createZoneLinkWithMesh(geomInter, maps,result);
 
 				}
 			}

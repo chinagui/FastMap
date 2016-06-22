@@ -102,7 +102,7 @@ public class Operation implements IOperation {
 		List<Geometry> list = new ArrayList<Geometry>();
 		Set<String> meshes = new HashSet<String>();
 		List<ZoneLink> zoneLinks = new ArrayList<ZoneLink>();
-		for (IObj obj : command.getLinks()) {
+		for (IObj obj : objList) {
 			ZoneLink link = (ZoneLink) obj;
 			zoneLinks.add(link);
 			if (link.getMeshes().size() == 1) {
@@ -365,6 +365,7 @@ public class Operation implements IOperation {
 		updateContent.put("geometry", GeoTranslator.jts2Geojson(g));
 		updateContent.put("area", GeometryUtils.getCalculateArea(g));
 		updateContent.put("perimeter", GeometryUtils.getLinkLength(g));
+		face.fillChangeFields(updateContent);
 		result.insertObject(face, ObjStatus.UPDATE, face.getPid());
 	}
 

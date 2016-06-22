@@ -45,23 +45,28 @@ public class Process extends AbstractProcess<Command> {
 
 		List<IRow> childrens = ixPoiChildrenSelector.loadRowsByPoiId(this.getCommand().getPid(), true);
 
-		if (CollectionUtils.isNotEmpty(childrens) && childrens.size() == 1) {
-			ixPoiChildren = (IxPoiChildren) childrens.get(0);
+		if (CollectionUtils.isNotEmpty(childrens) ) {
+			if(childrens.size() == 1)
+			{
+				ixPoiChildren = (IxPoiChildren) childrens.get(0);
 
-			List<IRow> allChilds = ixPoiChildrenSelector.loadRowsByParentId(ixPoiChildren.getGroupId(), true);
+				List<IRow> allChilds = ixPoiChildrenSelector.loadRowsByParentId(ixPoiChildren.getGroupId(), true);
 
-			if (allChilds.size() == 1
-					&& ((IxPoiChildren) allChilds.get(0)).getChildPoiPid() == this.getCommand().getPid()) {
-				// 需要删除ix_poi_parent表中的记录
-				IxPoiParentSelector ixPoiParentSelector = new IxPoiParentSelector(this.getConn());
+				if (allChilds.size() == 1
+						&& ((IxPoiChildren) allChilds.get(0)).getChildPoiPid() == this.getCommand().getPid()) {
+					// 需要删除ix_poi_parent表中的记录
+					IxPoiParentSelector ixPoiParentSelector = new IxPoiParentSelector(this.getConn());
 
-				ixPoiParent = (IxPoiParent) ixPoiParentSelector.loadById(ixPoiChildren.getGroupId(), true);
+					ixPoiParent = (IxPoiParent) ixPoiParentSelector.loadById(ixPoiChildren.getGroupId(), true);
 
-				ixPoiParent.setPoiChildrens(childrens);
+					ixPoiParent.setPoiChildrens(childrens);
+				}
 			}
-		} else {
-			throw new Exception("poi:" + this.getCommand().getPid() + "的父不唯一");
-		}
+			else
+			{
+				throw new Exception("poi:" + this.getCommand().getPid() + "的父不唯一");
+			}
+		} 
 	}
 
 	@Override

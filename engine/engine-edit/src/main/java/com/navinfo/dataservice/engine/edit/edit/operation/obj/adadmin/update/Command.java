@@ -40,7 +40,7 @@ public class Command extends AbstractCommand  implements ICommand {
 	
 	@Override
 	public ObjType getObjType() {
-		return ObjType.RDRESTRICTION;
+		return ObjType.ADADMIN;
 	}
 
 	@Override

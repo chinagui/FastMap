@@ -134,6 +134,7 @@ public abstract class LogFlusher {
 			flushResult.setResultMsg(e.getMessage());
 			this.unlockPreparedLog();
 			rollbackConnections();
+			throw e ;
 		}finally{
 			this.closeConnections();
 			unlockTargetDbGrid(targetGridLockHookId);

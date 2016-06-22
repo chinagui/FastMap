@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.commons.util;
 
+import net.sf.json.JSONNull;
+import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 import net.sf.json.processors.JsonValueProcessor;
 import net.sf.json.util.JSONUtils;
@@ -45,5 +47,16 @@ public class JsonUtils {
 		}
 		
 		return strConfig;
+	}
+	
+	public static String getString(JSONObject json, String key){
+		Object value = json.get(key);
+		if(value == JSONNull.getInstance()){
+			return null;
+		}
+		else{
+			return value.toString();
+		}
+		
 	}
 }

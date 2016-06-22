@@ -45,32 +45,31 @@ public abstract class LogFlusher {
 	private DbInfo sourceDbInfo;
 	private DbInfo targetDbInfo;
 	private Connection sourceDbConn;
-	public Connection getSourceDbConn() {
-		return sourceDbConn;
-	}
 	private Connection targetDbConn;
 	private List<Integer> grids;
-	protected List<Integer> getGrids() {
-		return grids;
-	}
 	private String stopTime;//履历生成的截止时间；yyyymmddhh24miss
-	protected String getStopTime() {
-		return stopTime;
-	}
 	private String tempTable;
-	protected String getTempTable() {
-		return tempTable;
-	}
 	private String tempFailLogTable;//刷履历失败的日志记录临时表
 	private String featureType = FEATURE_ALL;
-	
 	private String targetDbLink;
 	private int regionId;
 	private int lockType;
+	private int gridLockSeq;
+	protected Connection getSourceDbConn() {
+		return sourceDbConn;
+	}
+	protected List<Integer> getGrids() {
+		return grids;
+	}
+	protected String getStopTime() {
+		return stopTime;
+	}
+	protected String getTempTable() {
+		return tempTable;
+	}
 	protected int getLockType() {
 		return lockType;
 	}
-	private int gridLockSeq;
 
 	/**
 	 * @param regionInfo
@@ -252,8 +251,8 @@ public abstract class LogFlusher {
 	}
 	private FlushResult flushData(Connection sourceDbConn,Connection targetDbConn) throws Exception {
 		String logQuerySql = "SELECT L.* FROM LOG_DETAIL L," + tempTable
-				+ " T WHERE L.OP_ID=T.OP_ID "
-				+ " AND "+this.getFeatureFilter()
+				+ " T WHERE L.OP_ID=T.OP_ID "				
+				+ " AND "+(StringUtils.isEmpty(this.getFeatureFilter())?"1=1":this.getFeatureFilter())
 				+ " ORDER BY T.OP_DT"
 				;
 		this.log.debug(logQuerySql);

@@ -3,15 +3,24 @@ package com.navinfo.dataservice.impcore.flushbylog;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import javax.sql.DataSource;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.edit.iface.DatalockApi;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.impcore.exception.LockException;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.DbLinkCreator;
 
 /*
  * @author MaYunFei
@@ -123,6 +132,7 @@ public class LogFlushUtil {
 	 */
 	public  void prepareAndLockLog(Connection sourceDbConn,
 			String prepareSql,
+			List<Object> prepareParaValues,
 			boolean isExtLog,//是否要进行扩履历
 			String extLogSql,
 			boolean isLockLog,//是否要对履历加锁
@@ -131,7 +141,7 @@ public class LogFlushUtil {
 		try{
 			int logOperationCount = 0;
 			//2.select by conditions
-			logOperationCount+=this.prepareLog(sourceDbConn,prepareSql);
+			logOperationCount+=this.prepareLog(sourceDbConn,prepareSql,prepareParaValues);
 			//3.
 			if (isExtLog){//如果是全部回，则不扩履历
 				logOperationCount+=extendLogByRowId(sourceDbConn,extLogSql);
@@ -185,10 +195,50 @@ public class LogFlushUtil {
 		DatalockApi datalockApi = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
 		datalockApi.unlockGrid(lockSeqence,dbType);
 	};
+	/**
+	 * 根据dbinfo，初始化数据库连接
+	 * @param dbInfo
+	 * @param autoCommit 是否设置数据库事务的autocommit，
+	 * @return
+	 * @throws Exception
+	 */
+	public Connection intiConenction(DbInfo dbInfo ,boolean autoCommit) throws Exception{
+		Connection conn = createConnection(dbInfo);
+		conn.setAutoCommit(autoCommit);
+		return conn;
+	}
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyymmddhhMMss");
+	/**在源数据库上面创建指向目标db的dblink
+	 * @param sourceDbInfo
+	 * @param targetDbInfo
+	 * @return dblink的名称 dblink_yyyymmddhhMMss
+	 * @throws Exception
+	 */
+	public String createTargetDbLink(DbInfo sourceDbInfo,DbInfo targetDbInfo) throws Exception{
+		String dbLinkName = "dblink_" + sdf.format(new Date());
+		OracleSchema oraSchema = new OracleSchema(DbConnectConfig.createConnectConfig(sourceDbInfo.getConnectParam()));
+		DataSource dblinkContainer= oraSchema.getDriverManagerDataSource();
+		new DbLinkCreator().create(dbLinkName, 
+									true, 
+									dblinkContainer , 
+									targetDbInfo.getDbUserName(), 
+									targetDbInfo.getDbUserPasswd(), 
+									targetDbInfo.getDbServer().getIp(), 
+									String.valueOf(targetDbInfo.getDbServer().getPort()), 
+									targetDbInfo.getDbName());
+		return dbLinkName;
+	}
+	private Connection createConnection(DbInfo dbInfo ) throws Exception{
+		OracleSchema oraSchema = new OracleSchema(DbConnectConfig.createConnectConfig(dbInfo.getConnectParam()));
+		return oraSchema.getDriverManagerDataSource().getConnection();
+	}
 	
-	private  int prepareLog(Connection sourceDbConn,String prepareSql)throws Exception{
+	private  int prepareLog(Connection sourceDbConn,String prepareSql,List<Object> values)throws Exception{
 		QueryRunner run = new QueryRunner();
-		return run.update(sourceDbConn, prepareSql);
+		if (CollectionUtils.isEmpty(values)){
+			return run.update(sourceDbConn, prepareSql);
+		}
+		return run.update(sourceDbConn, prepareSql,values.toArray());
 	}
 	private  int extendLogByRowId(Connection sourceDbConn, String extLogSql)throws SQLException{
 		QueryRunner run = new QueryRunner();

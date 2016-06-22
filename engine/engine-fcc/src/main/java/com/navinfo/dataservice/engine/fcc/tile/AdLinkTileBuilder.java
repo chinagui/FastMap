@@ -293,7 +293,7 @@ public class AdLinkTileBuilder {
 
 					Tile tile = new Tile();
 
-					tile.setT(14);
+					tile.setT(12);
 
 					tile.setI(String.valueOf(linkPid));
 
@@ -383,7 +383,7 @@ public class AdLinkTileBuilder {
 
 						Tile tile = new Tile();
 
-						tile.setT(14);
+						tile.setT(12);
 
 						tile.setI(String.valueOf(linkPid));
 
@@ -812,7 +812,7 @@ public class AdLinkTileBuilder {
 
 		// conf.set("splits", "100");
 
-		conf.set("isgdb", props.getProperty("isgdb"));
+//		conf.set("isgdb", props.getProperty("isgdb"));
 
 		// if (args.length>1){
 		// conf.set("maxDegree", args[1]);

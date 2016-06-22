@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.man.inforMan;
 import java.sql.Connection;
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -15,7 +16,9 @@ import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
+import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import net.sf.json.JSONObject;
 
@@ -161,6 +164,75 @@ public class InforManService {
 			log.error(e.getMessage(), e);
 			throw new Exception("删除失败，原因为:"+e.getMessage(),e);
 		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public Page listAll(JSONObject conditionJson, JSONObject orderJson, int currentPageNum, int pageSize)
+			throws Exception {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+
+			String selectSql = "select i.infor_id,"
+				      + " i.infor_name,"
+				      + " i.infor_level,"
+				      + " i.descp,"
+				      + " nvl(u.user_real_name, '') user_name,"
+				      + " to_char(i.collect_plan_start_date, 'yyyy-mm-dd') collect_plan_start_date,"
+				      + " to_char(i.collect_plan_end_date, 'yyyy-mm-dd') collect_plan_end_date,"
+				      + " to_char(i.day_edit_plan_start_date, 'yyyy-mm-dd') day_edit_plan_start_date,"
+				      + " to_char(i.day_edit_plan_end_date, 'yyyy-mm-dd') day_edit_plan_end_date,"
+				      + " to_char(i.day_produce_plan_start_date, 'yyyy-mm-dd') day_produce_plan_start_date,"
+				      + " to_char(i.day_produce_plan_end_date, 'yyyy-mm-dd') day_produce_plan_end_date,"
+				      + " to_char(i.month_edit_plan_start_date, 'yyyy-mm-dd') month_edit_plan_start_date,"
+				      + " to_char(i.month_edit_plan_end_date, 'yyyy-mm-dd') month_edit_plan_end_date,"
+				      + " to_char(i.month_produce_plan_start_date, 'yyyy-mm-dd') month_produce_plan_start_date,"
+				      + " to_char(i.month_produce_plan_end_date, 'yyyy-mm-dd') month_produce_plan_end_date,"
+				      + " i.infor_status,"
+				      + " b.block_id,"
+				      + " k.block_name"
+				  + " from infor_man i, infor_block_mapping b, block k, user_info u"
+				+ " where i.infor_id = b.infor_id(+)"
+				+ "  and b.block_id = k.block_id(+)"
+				+ "   and i.create_user_id = u.user_id(+)";
+			if (null != conditionJson && !conditionJson.isEmpty()) {
+				Iterator keys = conditionJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if ("inforId".equals(key)) {
+						selectSql += " and i.infor_id=" + conditionJson.getInt(key);
+					}
+					if ("createUserId".equals(key)) {
+						selectSql += " and i.create_user_id=" + conditionJson.getInt(key);
+					}
+					if ("inforName".equals(key)) {
+						selectSql += " and i.infor_name like '%" + conditionJson.getString(key) + "%";
+					}
+				}
+			}
+			if (null != orderJson && !orderJson.isEmpty()) {
+				Iterator keys = orderJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if ("inforStatus".equals(key)) {
+						selectSql += " order by i.infor_status";
+						break;
+					}
+					if ("inforLevel  ".equals(key)) {
+						selectSql += " order by i.infor_level";
+						break;
+					}
+				}
+			} else {
+				selectSql += " order by i.infor_id";
+			}
+			return InforManOperation.selectInforList(conn, selectSql, null, currentPageNum, pageSize);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}

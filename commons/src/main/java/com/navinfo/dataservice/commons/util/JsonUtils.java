@@ -51,7 +51,7 @@ public class JsonUtils {
 	
 	public static String getString(JSONObject json, String key){
 		Object value = json.get(key);
-		if(value == JSONNull.getInstance()){
+		if(JSONUtils.isNull(value)){
 			return null;
 		}
 		else{

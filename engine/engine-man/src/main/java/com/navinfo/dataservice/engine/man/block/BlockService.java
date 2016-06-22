@@ -299,10 +299,10 @@ public class BlockService {
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 
-			String selectSql = "select distinct m.BLOCK_ID," + "m.DESCP," + "u.GROUP_NAME COLLECT_GROUP,"
-					+ "(select distinct group_name" + "   from user_group"
-					+ "  where group_id = m.DAY_EDIT_GROUP_ID) DAY_EDIT_GROUP," + "(select distinct group_name"
-					+ "   from user_group" + "  where group_id = m.MONTH_EDIT_GROUP_ID) MONTH_EDIT_GROUP,"
+			String selectSql = "select distinct m.BLOCK_ID,m.DESCP,m.COLLECT_GROUP_ID,u.GROUP_NAME COLLECT_GROUP,"
+					+ "m.DAY_EDIT_GROUP_ID,(select distinct group_name from user_group"
+					+ "  where group_id = m.DAY_EDIT_GROUP_ID) DAY_EDIT_GROUP, m.MONTH_EDIT_GROUP_ID,(select distinct group_name"
+					+ "  from user_group where group_id = m.MONTH_EDIT_GROUP_ID) MONTH_EDIT_GROUP,"
 					+ " to_char(m.COLLECT_PLAN_START_DATE, 'yyyy-mm-dd') COLLECT_PLAN_START_DATE,"
 					+ " to_char(m.COLLECT_PLAN_END_DATE, 'yyyy-mm-dd') COLLECT_PLAN_END_DATE,"
 					+ " to_char(m.DAY_EDIT_PLAN_START_DATE, 'yyyy-mm-dd') DAY_EDIT_PLAN_START_DATE,"

@@ -133,7 +133,7 @@ public class TaskService {
 					if ("status".equals(key)) {selectSql+=" order by T.status "+orderJson.getString(key);break;}
 					if ("taskId".equals(key)) {selectSql+=" order by T.TASK_ID "+orderJson.getString(key);break;}
 					if ("planStartDate".equals(key)) {selectSql+=" order by T.PLAN_START_DATE "+orderJson.getString(key);break;}
-					if ("planEndDate".equals(key)) {selectSql+=" order by T._PLAN_END_DATE "+orderJson.getString(key);break;}
+					if ("planEndDate".equals(key)) {selectSql+=" order by T.PLAN_END_DATE "+orderJson.getString(key);break;}
 					if ("monthEditPlanStartDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_START_DATE "+orderJson.getString(key);break;}
 					if ("monthEditPlanEndDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_END_DATE "+orderJson.getString(key);break;}
 					}

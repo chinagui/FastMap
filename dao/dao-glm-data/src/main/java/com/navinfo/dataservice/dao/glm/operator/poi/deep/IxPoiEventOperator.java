@@ -216,21 +216,89 @@ public class IxPoiEventOperator implements IOperator {
 		sb.append(ixPoiEvent.tableName());
 		sb.append("(event_id, event_name, event_name_eng, event_kind, event_kind_eng, event_desc, event_desc_eng, start_date, end_date, detail_time, detail_time_eng, city, poi_pid, photo_name, reserved,memo, u_date,u_record,row_id) values (");
 		sb.append(ixPoiEvent.getPid());
-		sb.append(",'" + ixPoiEvent.getEventName() + "'");
-		sb.append(",'" + ixPoiEvent.getEventNameEng() + "'");
-		sb.append(",'" + ixPoiEvent.getEventKind() + "'");
-		sb.append(",'" + ixPoiEvent.getEventKindEng() + "'");
-		sb.append(",'" + ixPoiEvent.getEventDesc() + "'");
-		sb.append(",'" + ixPoiEvent.getEventDescEng() + "'");
-		sb.append(",'" + ixPoiEvent.getStartDate() + "'");
-		sb.append(",'" + ixPoiEvent.getEndDate() + "'");
-		sb.append(",'" + ixPoiEvent.getDetailTime() + "'");
-		sb.append(",'" + ixPoiEvent.getDetailTimeEng() + "'");
-		sb.append(",'" + ixPoiEvent.getCity() + "'");
-		sb.append(",'" + ixPoiEvent.getPoiPid() + "'");
-		sb.append(",'" + ixPoiEvent.getPhotoName() + "'");
-		sb.append(",'" + ixPoiEvent.getReserved() + "'");
-		sb.append(",'" + ixPoiEvent.getMemo() + "'");
+		if(StringUtils.isNotEmpty(ixPoiEvent.getEventName())){
+			sb.append(",'" + ixPoiEvent.getEventName() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiEvent.getEventNameEng())){
+			sb.append(",'" + ixPoiEvent.getEventNameEng() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiEvent.getEventKind())){
+			sb.append(",'" + ixPoiEvent.getEventKind() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiEvent.getEventKindEng())){
+			sb.append(",'" + ixPoiEvent.getEventKindEng() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiEvent.getEventDesc())){
+			sb.append(",'" + ixPoiEvent.getEventDesc() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiEvent.getEventDescEng())){
+			sb.append(",'" + ixPoiEvent.getEventDescEng() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiEvent.getStartDate())){
+			sb.append(",'" + ixPoiEvent.getStartDate() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiEvent.getEndDate())){
+			sb.append(",'" + ixPoiEvent.getEndDate() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiEvent.getDetailTime())){
+			sb.append(",'" + ixPoiEvent.getDetailTime() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiEvent.getDetailTimeEng())){
+			sb.append(",'" + ixPoiEvent.getDetailTimeEng() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiEvent.getCity())){
+			sb.append(",'" + ixPoiEvent.getCity() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiEvent.getPoiPid())){
+			sb.append(",'" + ixPoiEvent.getPoiPid() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiEvent.getPhotoName())){
+			sb.append(",'" + ixPoiEvent.getPhotoName() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiEvent.getReserved())){
+			sb.append(",'" + ixPoiEvent.getReserved() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiEvent.getMemo())){
+			sb.append(",'" + ixPoiEvent.getMemo() + "'");
+		}else{
+			sb.append(", null ");
+		}
 		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiEvent.rowId() + "')");
 		stmt.addBatch(sb.toString());

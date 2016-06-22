@@ -208,9 +208,23 @@ public class IxPoiBuildingOperator implements IOperator {
 		sb.append("(poi_pid, floor_used, floor_empty, memo, u_date,u_record, row_id) values (");
 
 		sb.append(ixPoiBuilding.getPoiPid());
-		sb.append(",'" + ixPoiBuilding.getFloorUsed() + "'");
-		sb.append(",'" + ixPoiBuilding.getFloorEmpty() + "'");
-		sb.append(",'" + ixPoiBuilding.getMemo() + "'");
+		if(StringUtils.isNotEmpty(ixPoiBuilding.getFloorUsed())){
+			sb.append(",'" + ixPoiBuilding.getFloorUsed() + "'");
+		}else{
+			sb.append(", null ");
+		}
+	    
+		if(StringUtils.isNotEmpty(ixPoiBuilding.getFloorEmpty())){
+			sb.append(",'" + ixPoiBuilding.getFloorEmpty() + "'");
+		}else{
+			sb.append(", null ");
+		}
+	
+		if(StringUtils.isNotEmpty(ixPoiBuilding.getMemo())){
+			sb.append(",'" + ixPoiBuilding.getMemo() + "'");
+		}else{
+			sb.append(", null ");
+		}
 		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiBuilding.rowId() + "')");
 

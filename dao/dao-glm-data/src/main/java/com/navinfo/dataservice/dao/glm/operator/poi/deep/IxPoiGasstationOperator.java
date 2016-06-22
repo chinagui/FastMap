@@ -213,17 +213,57 @@ public class IxPoiGasstationOperator implements IOperator {
 		sb.append("(gasstation_id, poi_pid, service_prov, fuel_type, oil_type, eg_type, mg_type, payment, service, memo,open_hour, photo_name, u_date,u_record,row_id) values (");
 		sb.append(ixPoiGasstation.getPid());
 		sb.append("," + ixPoiGasstation.getPoiPid());
-		sb.append(",'" + ixPoiGasstation.getServiceProv() + "'");
-		sb.append(",'" + ixPoiGasstation.getFuelType() + "'");
-		sb.append(",'" + ixPoiGasstation.getOilType() + "'");
-		sb.append(",'" + ixPoiGasstation.getEgType() + "'");
-		sb.append(",'" + ixPoiGasstation.getMgType() + "'");
-		sb.append(",'" + ixPoiGasstation.getPayment() + "'");
-		sb.append(",'" + ixPoiGasstation.getService() + "'");
-		sb.append(",'" + ixPoiGasstation.getMemo() + "'");
-		sb.append(",'" + ixPoiGasstation.getOpenHour() + "'");
-		sb.append(",'" + ixPoiGasstation.getPhotoName() + "'");
-		sb.append(",'" + StringUtils.getCurrentTime()+"'");
+		if (ixPoiGasstation.getServiceProv() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiGasstation.getServiceProv() + "'");
+		}
+		if (ixPoiGasstation.getServiceProv() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiGasstation.getFuelType() + "'");
+		}
+		if (ixPoiGasstation.getOilType() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiGasstation.getOilType() + "'");
+		}
+		if (ixPoiGasstation.getEgType() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiGasstation.getEgType() + "'");
+		}
+		if (ixPoiGasstation.getMgType() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiGasstation.getMgType() + "'");
+		}
+		if (ixPoiGasstation.getPayment() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiGasstation.getPayment() + "'");
+		}
+		if (ixPoiGasstation.getService() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiGasstation.getService() + "'");
+		}
+		if (ixPoiGasstation.getMemo() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiGasstation.getMemo() + "'");
+		}
+		if (ixPoiGasstation.getOpenHour() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiGasstation.getOpenHour() + "'");
+		}
+		if (ixPoiGasstation.getPhotoName() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiGasstation.getPhotoName() + "'");
+		}
+		sb.append(",'" + StringUtils.getCurrentTime() + "'");
 		sb.append(",1,'" + ixPoiGasstation.rowId() + "')");
 		stmt.addBatch(sb.toString());
 	}
@@ -237,8 +277,8 @@ public class IxPoiGasstationOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiGasstation.tableName()
-				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where gasstation_id   ="
-				+ ixPoiGasstation.getPid();
+				+ " set u_record=2 ,u_date=" + StringUtils.getCurrentTime()
+				+ " where gasstation_id   =" + ixPoiGasstation.getPid();
 		stmt.addBatch(sql);
 	}
 

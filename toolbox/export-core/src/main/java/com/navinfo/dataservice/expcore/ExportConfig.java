@@ -5,8 +5,8 @@ public class ExportConfig {
 	public final static String MODE_FLEXIBLE="flexible";//定制导出，走db_link,只支持oracle到oracle
 	public final static String MODE_FULL_COPY="full_copy";//整库复制，走db_link,只支持oracle到oracle
 	public final static String MODE_COPY="copy";
-	public final static String MODE_CUT="cut";
 	public final static String MODE_DELETE="delete";
+	public final static String MODE_DELETE_COPY="delete_copy";//先在目标库上删除数据，再导入数据
 
 	public final static String CONDITION_BY_MESH="mesh";
 	public final static String CONDITION_BY_AREA="area";

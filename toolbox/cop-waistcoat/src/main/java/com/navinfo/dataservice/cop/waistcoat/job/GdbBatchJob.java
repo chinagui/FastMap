@@ -3,11 +3,17 @@ package com.navinfo.dataservice.cop.waistcoat.job;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.edit.iface.DatalockApi;
 import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Region;
+import com.navinfo.dataservice.bizcommons.datarow.CkResultTool;
+import com.navinfo.dataservice.bizcommons.datarow.PhysicalDeleteRow;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.exception.LockException;
@@ -66,6 +72,13 @@ public class GdbBatchJob extends AbstractJob {
 			if (expBatchDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
 				throw new Exception("批处理子版本库导数据时job执行失败。");
 			}
+			//cop 子版本物理删除逻辑删除数据
+			DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
+			DbInfo batDb = datahub.getDbById(batchDbId);
+			OracleSchema batSchema = new OracleSchema(
+					DbConnectConfig.createConnectConfig(batDb.getConnectParam()));
+			PhysicalDeleteRow.doDelete(batSchema);
+			
 			// 3.创建批处理子版本备份库
 			req.getCreateBakDb().setAttrValue("refDbId", batchDbId);
 			JobInfo createBakDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
@@ -107,7 +120,14 @@ public class GdbBatchJob extends AbstractJob {
 				throw new Exception("回区域库时job执行失败。");
 			}
 			//8. 检查结果搬迁
-			
+			CkResultTool.generateCkMd5(batSchema);
+			CkResultTool.generateCkResultObject(batSchema);
+			CkResultTool.generateCkResultGrid(batSchema);
+			DbInfo tarDb = datahub.getDbById(req.getTargetDbId());
+			OracleSchema tarSchema = new OracleSchema(
+					DbConnectConfig.createConnectConfig(tarDb.getConnectParam()));
+			CkResultTool.moveNiVal(batSchema, tarSchema, req.getGrids().toArray(new String[0]));
+			response("批处理生成的检查结果搬迁完毕。",null);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(), e);

@@ -5,8 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -81,6 +83,7 @@ public class GdbExportJob extends AbstractJob {
 			if(req.getCondition().equals(ExportConfig.CONDITION_BY_MESH)){
 				allMeshes.removeAll(coreMeshes);
 				writeMeshType(targetSchema,coreMeshes,allMeshes);
+				jobInfo.getResponse().put("extendMeshes", allMeshes);
 			}
 		}catch(Exception e){
 			log.error(e.getMessage(),e);

@@ -3,7 +3,14 @@ package com.navinfo.dataservice.cop.waistcoat.job;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.bizcommons.datarow.CkResultTool;
+import com.navinfo.dataservice.bizcommons.datarow.PhysicalDeleteRow;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
+import com.navinfo.dataservice.commons.database.OracleSchema;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
@@ -29,8 +36,10 @@ public class GdbValidationJob extends AbstractJob {
 		//1. 创建检查子版本
 		try {
 			// 1. 创建检查子版本库库
+			int valDbId = 0;
 			if(req.getValDbId()>0){
-				
+				valDbId = req.getValDbId();
+				jobInfo.getResponse().put("valDbId", valDbId);
 			}else if(req.getCreateValDb()!=null&&req.getExpValDb()!=null){
 				JobInfo createValDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
 				AbstractJob createValDbJob = JobCreateStrategy.createAsSubJob(createValDbJobInfo,
@@ -41,7 +50,8 @@ public class GdbValidationJob extends AbstractJob {
 				}
 				// 2.给检查子版本库导数据
 				req.getExpValDb().setAttrValue("sourceDbId", req.getTargetDbId());
-				int valDbId = createValDbJob.getJobInfo().getResponse().getInt("outDbId");
+				valDbId = createValDbJob.getJobInfo().getResponse().getInt("outDbId");
+				jobInfo.getResponse().put("valDbId", valDbId);
 				req.getExpValDb().setAttrValue("targetDbId", valDbId);
 				Set<String> meshes = new HashSet<String>();
 				for (Integer g : req.getGrids()) {
@@ -57,9 +67,23 @@ public class GdbValidationJob extends AbstractJob {
 				}
 			}
 			// 2. 在检查子版本上执行检查
-			// ...
-			// 3. 检查结果搬迁
+			//检查前预处理
+			DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
+			DbInfo valDb = datahub.getDbById(valDbId);
+			OracleSchema valSchema = new OracleSchema(
+					DbConnectConfig.createConnectConfig(valDb.getConnectParam()));
+			PhysicalDeleteRow.doDelete(valSchema);
+			// ...检查
 			
+			// 3. 检查结果后处理
+			CkResultTool.generateCkMd5(valSchema);
+			CkResultTool.generateCkResultObject(valSchema);
+			CkResultTool.generateCkResultGrid(valSchema);
+			DbInfo tarDb = datahub.getDbById(req.getTargetDbId());
+			OracleSchema tarSchema = new OracleSchema(
+					DbConnectConfig.createConnectConfig(tarDb.getConnectParam()));
+			CkResultTool.moveNiVal(valSchema, tarSchema, req.getGrids().toArray(new String[0]));
+			response("批处理生成的检查结果后处理及搬迁完毕。",null);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(), e);

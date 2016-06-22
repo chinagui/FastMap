@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.jobframework.runjob;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
@@ -112,6 +113,7 @@ public abstract class AbstractJob implements Runnable {
 				jobInfo.getResponse().put(key, data.get(key));
 			}
 		}
+		//发送消息
 		if(runAsMethod)return;//如果作为方法执行，不需要反馈
 		try{
 			//step如果有parent需要添加到parent
@@ -120,7 +122,7 @@ public abstract class AbstractJob implements Runnable {
 				JobMsgPublisher.responseJob(jobInfo.getId(),jobInfo.getStatus(),jobInfo.getStepCount(), jobInfo.getResponse(),step);
 			}else{
 				JobStep step = parent.jobInfo.addStep("[from sub job(type:"+jobInfo.getType().toString()+")]"+stepMsg);
-				JobMsgPublisher.responseJob(jobInfo.getId(),parent.jobInfo.getStatus(),parent.jobInfo.getStepCount(), parent.jobInfo.getResponse(),step);
+				JobMsgPublisher.responseJob(parent.jobInfo.getId(),parent.jobInfo.getStatus(),parent.jobInfo.getStepCount(), parent.jobInfo.getResponse(),step);
 			}
 		}catch(Exception e){
 			log.error(e.getMessage(),e);

@@ -133,6 +133,22 @@ public class TipsSelector {
 					else if(type == 1107){
 						m.put("d", deep.getString("name"));
 					}
+					else if(type == 1109){
+						
+						String tp = TipsSelectorUtils.convertElecEyeKind(deep.getInt("tp"));
+						
+						String loc = TipsSelectorUtils.convertElecEyeLocation(deep.getInt("loc"));
+						
+						double value = deep.getDouble("value");
+						
+						String d = tp + "|" + loc;
+						
+						if((int)value != 0){
+							d += "|" + value;
+						}
+						
+						m.put("d", d);
+					}
 					
 
 				} else if (type == 1510 || type == 1514 || type == 1501 || type == 1515) {

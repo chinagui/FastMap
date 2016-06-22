@@ -6,18 +6,20 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import oracle.sql.STRUCT;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNodeMesh;
 
-import oracle.sql.STRUCT;
-
 /**
  * 铁路点查询类
+ * 
  * @author zhangxiaolong
- *
+ * 
  */
 public class RwNodeSelector implements ISelector {
 
@@ -31,8 +33,8 @@ public class RwNodeSelector implements ISelector {
 	public IRow loadById(int id, boolean isLock) throws Exception {
 		RwNode rwNode = new RwNode();
 
-		StringBuilder sb = new StringBuilder(
-				"select * from " + rwNode.tableName() + " where node_pid = :1 and u_record !=2");
+		StringBuilder sb = new StringBuilder("select * from "
+				+ rwNode.tableName() + " where node_pid = :1 and u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -53,7 +55,8 @@ public class RwNodeSelector implements ISelector {
 
 				setAttr(rwNode, resultSet);
 
-				List<IRow> meshes = new RwNodeMeshSelector(conn).loadRowsByParentId(id, isLock);
+				List<IRow> meshes = new RwNodeMeshSelector(conn)
+						.loadRowsByParentId(id, isLock);
 
 				rwNode.setMeshes(meshes);
 
@@ -95,12 +98,14 @@ public class RwNodeSelector implements ISelector {
 	}
 
 	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
+	public List<IRow> loadRowsByParentId(int id, boolean isLock)
+			throws Exception {
 		return null;
 	}
 
 	// 加载盲端节点
-	public List<RwNode> loadEndRdNodeByLinkPid(int linkPid, boolean isLock) throws Exception {
+	public List<RwNode> loadEndRdNodeByLinkPid(int linkPid, boolean isLock)
+			throws Exception {
 
 		List<RwNode> nodes = new ArrayList<RwNode>();
 
@@ -142,17 +147,18 @@ public class RwNodeSelector implements ISelector {
 				setAttr(node, resultSet);
 
 				RwNodeMeshSelector meshSelector = new RwNodeMeshSelector(conn);
-				
-				List<IRow> meshes = meshSelector.loadRowsByParentId(node.getPid(), isLock);
-				
+
+				List<IRow> meshes = meshSelector.loadRowsByParentId(
+						node.getPid(), isLock);
+
 				node.setMeshes(meshes);
-				
+
 				for (IRow row : meshes) {
 					RwNodeMesh mesh = (RwNodeMesh) row;
 
 					node.meshMap.put(mesh.rowId(), mesh);
 				}
-				
+
 				nodes.add(node);
 			}
 		} catch (Exception e) {
@@ -226,19 +232,21 @@ public class RwNodeSelector implements ISelector {
 
 		return 0;
 	}
-	
+
 	/**
 	 * 设置属性
-	 * @param node node对象
-	 * @param resultSet 结果集
+	 * 
+	 * @param node
+	 *            node对象
+	 * @param resultSet
+	 *            结果集
 	 * @throws Exception
 	 */
-	private void setAttr(RwNode node,ResultSet resultSet) throws Exception
-	{
+	private void setAttr(RwNode node, ResultSet resultSet) throws Exception {
 		node.setPid(resultSet.getInt("node_pid"));
 
 		node.setKind(resultSet.getInt("kind"));
-		
+
 		node.setForm(resultSet.getInt("form"));
 
 		STRUCT struct = (STRUCT) resultSet.getObject("geometry");
@@ -249,4 +257,36 @@ public class RwNodeSelector implements ISelector {
 
 		node.setRowId(resultSet.getString("row_id"));
 	}
+
+	/**
+	 * 通过pid查rwnode，返回的rwnode中包含关联rwlink
+	 * 
+	 * @param id
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public RwNode GetRwNodeWithLinkById(int id, boolean isLock)
+			throws Exception {
+		RwNode rwNode = null;
+
+		try {
+			rwNode = (RwNode) loadById(id, isLock);
+
+			List<RwLink> links = new RwLinkSelector(conn).loadByNodePid(id,
+					isLock);
+
+			rwNode.setTopoLink(links);
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+		}
+
+		return rwNode;
+	}
+	
 }

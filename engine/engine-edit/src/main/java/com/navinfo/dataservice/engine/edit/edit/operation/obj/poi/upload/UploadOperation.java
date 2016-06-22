@@ -305,14 +305,11 @@ public class UploadOperation {
 					JSONObject poiObj = new JSONObject();
 					poiObj.put("dbId", dbId);
 					poiObj.put("objId", pid);
-					IxPoi poi = new IxPoi();
-					poi.setPid(pid);
 					try {
 						Result result = new Result();
 						result.setOperStage(OperStage.Collect);
 						CommandForDelete poiCommand = new CommandForDelete(poiObj, null);
 						ProcessForDelete poiProcess = new ProcessForDelete(poiCommand);
-						result.insertObject(poi, ObjStatus.DELETE, pid);
 						poiProcess.setResult(result);
 						poiProcess.run();
 						count++;

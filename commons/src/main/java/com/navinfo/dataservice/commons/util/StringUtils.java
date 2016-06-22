@@ -205,6 +205,16 @@ public class StringUtils {
     	return sb.toString();
     }
     
+    public static boolean isNotEmpty(String str)
+    {
+    	return org.apache.commons.lang.StringUtils.isNotEmpty(str);
+    }
+    
+    public static boolean isEmpty(String str)
+    {
+    	return org.apache.commons.lang.StringUtils.isEmpty(str);
+    }
+    
 	public static void main(String[] args) {
 
 //		List<Integer> integers =  new ArrayList<Integer>();

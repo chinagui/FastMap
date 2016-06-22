@@ -319,7 +319,7 @@ public class BlockService {
 					+ " to_char(k.MONTH_EDIT_PLAN_START_DATE, 'yyyy-mm-dd') TASK_START_DATE,"
 					+ " to_char(k.MONTH_EDIT_PLAN_END_DATE, 'yyyy-mm-dd') TASK_END_DATE"
 					+ " from block_man m, block t, user_info u, task k, user_group u"
-					+ " where m.block_id = t.block_id(+)" + "and m.create_user_id = u.user_id(+)"
+					+ " where m.block_id = t.block_id(+) and m.latest = 1 and m.create_user_id = u.user_id(+)"
 					+ " and t.city_id = k.city_id(+)" + " and k.latest = 1" + "and m.collect_group_id = u.group_id(+)";
 			if (null != conditionJson && !conditionJson.isEmpty()) {
 				Iterator keys = conditionJson.keys();

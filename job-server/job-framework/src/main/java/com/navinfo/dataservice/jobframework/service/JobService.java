@@ -45,7 +45,7 @@ public class JobService {
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();
-			long jobId = run.queryForLong(conn, "SELECT JOB_ID_SEQ.NEXTVAL FROM DUAL");
+			int jobId = run.queryForInt(conn, "SELECT JOB_ID_SEQ.NEXTVAL FROM DUAL");
 			String jobGuid = UuidUtils.genUuid();
 			String jobInfoSql = "INSERT INTO JOB_INFO(JOB_ID,JOB_TYPE,CREATE_TIME,STATUS,JOB_REQUEST,JOB_GUID,USER_ID,DESCP)"
 					+ " VALUES (?,?,SYSDATE,1,?,?,?,?)";
@@ -114,7 +114,7 @@ public class JobService {
 		public JobInfo handle(ResultSet rs) throws SQLException {
 			JobInfo jobInfo = null;
 			if(rs.next()){
-				long id = rs.getLong("JOB_ID");
+				int id = rs.getInt("JOB_ID");
 				String guid = rs.getString("JOB_GUID");
 				jobInfo = new JobInfo(id,guid);
 				jobInfo.setType(rs.getString("JOB_TYPE"));

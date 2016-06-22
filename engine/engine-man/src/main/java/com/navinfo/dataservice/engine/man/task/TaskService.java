@@ -122,7 +122,7 @@ public class TaskService {
 					if ("cityId".equals(key)) {selectSql+=" and T.city_id="+conditionJson.getInt(key);}
 					if ("createUserId".equals(key)) {selectSql+=" and T.create_user_id="+conditionJson.getInt(key);}
 					if ("descp".equals(key)) {selectSql+=" and T.descp='"+conditionJson.getString(key)+"'";}
-					if ("name".equals(key)) {selectSql+=" and T.name='"+conditionJson.getString(key)+"'";}
+					if ("name".equals(key)) {selectSql+=" and T.name like '%"+conditionJson.getString(key)+"%'";}
 					if ("status".equals(key)) {selectSql+=" and T.status="+conditionJson.getInt(key);}
 					}
 				}
@@ -130,10 +130,12 @@ public class TaskService {
 				Iterator keys = orderJson.keys();
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
-					if ("planStartDate".equals(key)) {selectSql+=" order by T.PLAN_START_DATE";break;}
-					if ("planEndDate".equals(key)) {selectSql+=" order by T._PLAN_END_DATE";break;}
-					if ("monthEditPlanStartDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_START_DATE";break;}
-					if ("monthEditPlanEndDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_END_DATE";break;}
+					if ("status".equals(key)) {selectSql+=" order by T.status "+orderJson.getString(key);break;}
+					if ("taskId".equals(key)) {selectSql+=" order by T.TASK_ID "+orderJson.getString(key);break;}
+					if ("planStartDate".equals(key)) {selectSql+=" order by T.PLAN_START_DATE "+orderJson.getString(key);break;}
+					if ("planEndDate".equals(key)) {selectSql+=" order by T.PLAN_END_DATE "+orderJson.getString(key);break;}
+					if ("monthEditPlanStartDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_START_DATE "+orderJson.getString(key);break;}
+					if ("monthEditPlanEndDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_END_DATE "+orderJson.getString(key);break;}
 					}
 			}else{
 				selectSql+=" order by T.TASK_ID";

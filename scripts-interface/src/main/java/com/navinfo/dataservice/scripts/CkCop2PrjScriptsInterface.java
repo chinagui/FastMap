@@ -12,14 +12,14 @@ import org.apache.commons.dbutils.DbUtils;
 import org.springframework.util.Assert;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.bizcommons.datarow.ExternalTool4Exporter;
+import com.navinfo.dataservice.bizcommons.datarow.RemoveDuplicateRow;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.datahub.service.DbService;
-import com.navinfo.dataservice.expcore.external.ExternalTool4Exporter;
-import com.navinfo.dataservice.expcore.external.RemoveDuplicateRow;
 
 /** 
  * @ClassName: InitProjectScriptsInterface 

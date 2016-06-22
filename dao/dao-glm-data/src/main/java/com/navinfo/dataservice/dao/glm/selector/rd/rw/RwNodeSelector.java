@@ -3,15 +3,8 @@ package com.navinfo.dataservice.dao.glm.selector.rd.rw;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.apache.commons.dbutils.ResultSetHandler;
 
 import oracle.sql.STRUCT;
 
@@ -21,7 +14,6 @@ import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNodeMesh;
-import com.navinfo.navicommons.database.QueryRunner;
 
 /**
  * 铁路点查询类
@@ -130,7 +122,7 @@ public class RwNodeSelector implements ISelector {
 				+ "tmp4 as  (select s_node_pid pid from tmp2 group by s_node_pid having "
 				+ "count(*) = 1), tmp5 as  (select e_node_pid pid from tmp3 group by e_node_pid "
 				+ "having count(*) = 1), tmp6 as  (select pid from tmp4 union select pid from "
-				+ "tmp5) select *   from rd_node a  where exists (select null from tmp6 b "
+				+ "tmp5) select *   from rw_node a  where exists (select null from tmp6 b "
 				+ "where a.node_pid = b.pid) and a.u_record!=2";
 
 		if (isLock) {

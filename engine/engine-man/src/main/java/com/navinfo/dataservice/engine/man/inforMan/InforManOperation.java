@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -11,7 +12,10 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.InforMan;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 
 public class InforManOperation {
@@ -61,6 +65,58 @@ public class InforManOperation {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/*
+	 * 查询infor list
+	 */
+	public static Page selectInforList(Connection conn, String selectSql, List<Object> values, final int currentPageNum,
+			final int pageSize) throws Exception {
+		try {
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
+				public Page handle(ResultSet rs) throws SQLException {
+					List<HashMap> list = new ArrayList<HashMap>();
+					Page page = new Page(currentPageNum);
+					page.setPageSize(pageSize);
+					while (rs.next()) {
+						HashMap map = new HashMap();
+						map.put("inforId", rs.getString("infor_id"));
+						map.put("inforName", rs.getString("infor_name"));
+						map.put("inforLevel", rs.getString("infor_level"));
+						map.put("descp", rs.getString("descp"));
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						map.put("userName", rs.getString("user_name"));
+						map.put("collectPlanStartDate", rs.getString("collect_plan_start_date"));
+						map.put("collectPlanEndDate", rs.getString("collect_plan_end_date"));					
+						map.put("dayEditPlanStartDate", rs.getString("day_edit_plan_start_date"));
+						map.put("dayEditPlanEndDate", rs.getString("day_edit_plan_end_date"));
+						map.put("dayProducePlanStartDate", rs.getString("day_produce_plan_start_date"));
+						map.put("dayProducePlanEndDate", rs.getString("day_produce_plan_end_date"));
+						map.put("monthEditPlanStartDate", rs.getString("month_edit_plan_start_date"));
+						map.put("monthEditPlanEndDate", rs.getString("month_edit_plan_end_date"));
+						map.put("monthProducePlanStartDate", rs.getString("month_produce_plan_start_date"));
+						map.put("monthProducePlanEndDate", rs.getString("month_produce_plan_end_date"));
+						map.put("inforStatus", rs.getInt("infor_status"));
+						map.put("blockId", rs.getInt("block_id"));
+						map.put("blockName", rs.getString("block_name"));
+			
+						list.add(map);
+					}
+					page.setResult(list);
+					return page;
+				}
+
+			};
+			if (null == values || values.size() == 0) {
+				return run.query(currentPageNum, pageSize, conn, selectSql, rsHandler);
+			}
+			return run.query(currentPageNum, pageSize, conn, selectSql, rsHandler, values.toArray());
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询列表失败，原因为:" + e.getMessage(), e);
 		}
 	}
 

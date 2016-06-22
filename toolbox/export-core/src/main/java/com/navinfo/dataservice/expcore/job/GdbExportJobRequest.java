@@ -18,6 +18,7 @@ public class GdbExportJobRequest extends AbstractJobRequest {
 	protected int sourceDbId;
 	protected String condition;
 	protected List<String> conditionParams;
+	protected int meshExtendCount=0;
 	protected String featureType;//poi,road,all,GlmTable.FEATURE_TYPE_XXX
 //	protected List<String> objTypes;
 //	protected boolean deleteData;
@@ -67,6 +68,14 @@ public class GdbExportJobRequest extends AbstractJobRequest {
 
 	public void setConditionParams(List<String> conditionParams) {
 		this.conditionParams = conditionParams;
+	}
+
+	public int getMeshExtendCount() {
+		return meshExtendCount;
+	}
+
+	public void setMeshExtendCount(int meshExtendCount) {
+		this.meshExtendCount = meshExtendCount;
 	}
 
 	public String getFeatureType() {

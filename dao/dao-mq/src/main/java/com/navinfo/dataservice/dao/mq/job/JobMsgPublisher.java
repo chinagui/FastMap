@@ -33,12 +33,13 @@ public class JobMsgPublisher {
 		MsgPublisher.publish2WorkQueue("create_job", jobMsg.toString());
 		return "";
 	}
-	public static void runJob(long jobId,String jobGuid,String type,JSONObject jobRequest)throws Exception{
+	public static void runJob(int jobId,String jobGuid,String type,JSONObject jobRequest)throws Exception{
 		if(jobRequest==null){
 			throw new Exception("jobRequest不能为空");
 		}
 		JSONObject jobMsg = new JSONObject();
 		jobMsg.put("jobId", jobId);
+		jobMsg.put("jobGuid", jobGuid);
 		jobMsg.put("type", type);
 		jobMsg.put("request", jobRequest);
 		MsgPublisher.publish2WorkQueue("run_job", jobMsg.toString());

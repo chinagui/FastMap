@@ -4,7 +4,10 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+
+import net.sf.json.JSONObject;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -210,7 +213,7 @@ public class SubtaskService {
 		}
 	}
 
-	public List<Subtask> list(Subtask bean, List<String> sortby, long pageSize,
+	public List<Subtask> list(Subtask bean, JSONObject orderJson, long pageSize,
 			long curPageNum) throws ServiceException {
 		Connection conn = null;
 		try {
@@ -262,16 +265,16 @@ public class SubtaskService {
 				selectSql += " and EXE_USER_ID = " + bean.getExeUserId();
 			}
 			// 排序
-			selectSql += " order by block_id";
-			if (!sortby.isEmpty()) {
-				selectSql += ",";
-				for (int i = 0; i < sortby.size(); i++) {
-					selectSql += sortby.get(i);
-					if (i < (sortby.size() - 1)) {
-						selectSql += ",";
-					}
-				}
-			}
+			if(null!=orderJson && !orderJson.isEmpty()){
+				Iterator keys = orderJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if ("status".equals(key)) {selectSql+=" order by s.status "+orderJson.getString(key);break;}
+					if ("subtaskId".equals(key)) {selectSql+=" order by s.SUBTASK_ID "+orderJson.getString(key);break;}
+					if ("blockId".equals(key)) {selectSql+=" order by s.block_id "+orderJson.getString(key);break;}
+					if ("planStartDate".equals(key)) {selectSql+=" order by s.PLAN_START_DATE "+orderJson.getString(key);break;}
+					if ("planEndDate".equals(key)) {selectSql+=" order by s.PLAN_END_DATE "+orderJson.getString(key);break;}}
+			}else{selectSql += " order by block_id";}
 
 			ResultSetHandler<List<Subtask>> rsHandler = new ResultSetHandler<List<Subtask>>() {
 
@@ -406,21 +409,21 @@ public class SubtaskService {
 					+ ",r.DAILY_DB_ID" + ",r.MONTHLY_DB_ID";
 			String groupByExtra = ",TO_CHAR(st.GEOMETRY.get_wkt())";
 
-			if (bean.getStage() != null) {
+			if (bean.getStage() != 0) {
 				conditionSql_task = conditionSql_task + " and st.STAGE = "
 						+ bean.getStage();
 				conditionSql_block = conditionSql_block + " and st.STAGE = "
 						+ bean.getStage();
 			}
 
-			if (bean.getType() != null) {
+			if (bean.getType() != 0) {
 				conditionSql_task = conditionSql_task + " and st.TYPE = "
 						+ bean.getType();
 				conditionSql_block = conditionSql_block + " and st.TYPE = "
 						+ bean.getType();
 			}
 
-			if (bean.getStatus() != null) {
+			if (bean.getStatus() != 0) {
 				conditionSql_task = conditionSql_task + " and st.STATUS = "
 						+ bean.getStatus();
 				conditionSql_block = conditionSql_block + " and st.STATUS = "

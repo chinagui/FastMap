@@ -11,8 +11,10 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.expcore.output.DataOutput;
+import com.navinfo.dataservice.bizcommons.sql.ExpSQL;
+import com.navinfo.dataservice.bizcommons.sql.ExpSqlProcessor;
+import com.navinfo.dataservice.bizcommons.sql.ThreadHandler;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.oracle.ConnectionRegister;

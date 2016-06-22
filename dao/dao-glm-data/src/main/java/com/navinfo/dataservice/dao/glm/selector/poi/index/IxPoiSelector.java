@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.poi.hssf.record.formula.functions.Islogical;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -35,8 +34,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEntryimage;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiFlag;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiIcon;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameFlag;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameTone;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
@@ -54,6 +51,7 @@ import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiHotelSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiIntroductionSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiParkingSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiRestaurantSelector;
+import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
@@ -541,6 +539,74 @@ public class IxPoiSelector implements ISelector {
 			result.put("rows", array);
 
 			return result;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+	}
+	
+	
+	/**
+	 * 安卓端检查是否有可下载的POI
+	 * @param gridDate
+	 * @return
+	 * @throws Exception
+	 */
+	@SuppressWarnings("static-access")
+	public JSONObject downloadCheck(JSONObject gridDate) throws Exception {
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		
+		
+		StringBuffer sb = new StringBuffer();
+		sb.append("SELECT count(1) num");
+		sb.append(" FROM ix_poi");
+		sb.append(" WHERE sdo_relate(geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE' ");
+		sb.append(" AND u_date>'"+gridDate.getString("date")+"'");
+		
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			GridUtils gu = new GridUtils();
+			String wkt = gu.grid2Wkt(gridDate.getString("grid"));
+
+			pstmt.setString(1, wkt);
+			resultSet = pstmt.executeQuery();
+			
+			int num = 0;
+			if (resultSet.next()) {
+				num = resultSet.getInt("num");
+			}
+			
+			JSONObject ret = new JSONObject();
+			
+			ret.put("gridId", gridDate.getString("grid"));
+			if (num>0) {
+				ret.put("flag", 1);
+			} else {
+				ret.put("flag", 0);
+			}
+			
+			return ret;
 		} catch (Exception e) {
 
 			throw e;

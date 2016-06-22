@@ -20,6 +20,7 @@ import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.download.DownloadOperation;
+import com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.downloadCheck.Operation;
 import com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.upload.UploadOperation;
 
 import net.sf.json.JSONArray;
@@ -94,6 +95,38 @@ public class PoiController extends BaseController{
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 		
+	}
+	
+	/**
+	 * 安卓端检查是否有可下载的POI
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/base/download/check")
+	public ModelAndView downloadCheck(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try{
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			JSONArray gridDateList = new JSONArray();
+			gridDateList = jsonReq.getJSONArray("grid");
+			
+			Operation operation = new Operation();
+			JSONArray ret = operation.downloadCheck(gridDateList);
+			
+			return new ModelAndView("jsonView", success(ret));
+		} catch (Exception e) {
+			String logid = Log4jUtils.genLogid();
+
+			Log4jUtils.error(logger, logid, parameter, e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
 	}
 	
 	public String unzipByJobId(int jobId) throws Exception{

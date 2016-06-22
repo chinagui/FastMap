@@ -78,8 +78,8 @@ public class GridController extends BaseController {
 	}
 	
 	/**
-	 * 出品管理--日出品管理
-	 * 根据输入的几何，查询跟几何范围内的grid，获取可出品的grid，并返回grid列表。
+	 * 融合管理--融合月编辑库
+	 * 根据输入的几何，查询跟几何范围内的grid，获取可融合的grid，并返回grid列表。
 	 * @param request
 	 * @return
 	 */

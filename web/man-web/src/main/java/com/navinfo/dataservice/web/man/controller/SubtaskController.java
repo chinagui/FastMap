@@ -153,15 +153,15 @@ public class SubtaskController extends BaseController {
 				dataJson.remove("pageSize");
 			}
 			
-			List<String> sortby = new ArrayList<String>();
-			if(dataJson.containsKey("sortBy")){
-				sortby = (ArrayList<String>)JSONArray.toList(dataJson.getJSONArray("sortBy"),String.class);
-				dataJson.remove("sortBy");
+			JSONObject order =null; 
+			if(dataJson.containsKey("order")){
+				order=dataJson.getJSONObject("order");
+				dataJson.remove("order");
 			}
 
 			Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
 			
-			List<Subtask> subtaskList = service.list(bean,sortby,pageSize,curPageNum);
+			List<Subtask> subtaskList = service.list(bean,order,pageSize,curPageNum);
 			
 			List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
 			

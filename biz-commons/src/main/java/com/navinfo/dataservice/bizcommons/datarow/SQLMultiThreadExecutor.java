@@ -26,27 +26,25 @@ import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
  * @date 2016-1-9 下午11:28:02 
  * @Description: TODO
  */
-public class ExecuteExternlToolSql {
-	protected Logger log = LoggerRepos.getLogger(this.getClass());
-	protected VMThreadPoolExecutor threadPoolExecutor;
-	protected OracleSchema targetDb;
-	public ExecuteExternlToolSql(OracleSchema targetDb)throws Exception{
-		this.targetDb=targetDb;
-		createThreadPool();
-	}
+public class SQLMultiThreadExecutor {
+	protected static Logger log = LoggerRepos.getLogger(SQLMultiThreadExecutor.class);
 
-    protected void createThreadPool() throws Exception{
-		int outPoolSize = SystemConfigFactory.getSystemConfig().getIntValue("export.multiThread.outputPoolSize", 10);
-        threadPoolExecutor = new VMThreadPoolExecutor(outPoolSize,
-				outPoolSize,
-				3,
-				TimeUnit.SECONDS,
-				new LinkedBlockingQueue(),
-				new ThreadPoolExecutor.CallerRunsPolicy());
-    }	
-    public void execute(List<ExpSQL> sqlList, ThreadLocalContext ctx) throws Exception {
-		try {
-			DataSource dataSource = targetDb.getPoolDataSource();
+	public static void execute(DataSource dataSource,List<ExpSQL> sqlList, ThreadLocalContext ctx)throws Exception{
+		int poolSize = 10;
+		if(sqlList.size()<10){
+			poolSize = sqlList.size();
+		}
+		executeMultiThread(poolSize,dataSource,sqlList,ctx);
+	}
+    public static void executeMultiThread(int poolSize,DataSource dataSource,List<ExpSQL> sqlList, ThreadLocalContext ctx) throws Exception {
+    	VMThreadPoolExecutor threadPoolExecutor = null;
+    	try {
+    		threadPoolExecutor = new VMThreadPoolExecutor(poolSize,
+            		poolSize,
+    				3,
+    				TimeUnit.SECONDS,
+    				new LinkedBlockingQueue(),
+    				new ThreadPoolExecutor.CallerRunsPolicy());
 			if (threadPoolExecutor.isShutdown())
 				return;
 			int theadCount = 0;
@@ -57,9 +55,6 @@ public class ExecuteExternlToolSql {
 			threadPoolExecutor.addDoneSignal(executeDoneSignal);
 
 			for (ExpSQL expSQL : sqlList) {
-				// log.debug(sqlprocess.getSql());
-				// 执行sql
-
 				Runnable handler = new DMLExecThreadHandler(executeDoneSignal, expSQL, dataSource, ctx);
 				threadPoolExecutor.execute(handler);
 
@@ -73,6 +68,7 @@ public class ExecuteExternlToolSql {
 			}
 
 		} catch (Exception e) {
+			if(threadPoolExecutor!=null)
 			threadPoolExecutor.shutdownNow();
 			throw e;
 		}

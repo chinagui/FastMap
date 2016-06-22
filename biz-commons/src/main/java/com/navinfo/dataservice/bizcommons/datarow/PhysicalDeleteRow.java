@@ -2,6 +2,7 @@ package com.navinfo.dataservice.bizcommons.datarow;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -9,7 +10,14 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.sql.ExpSQL;
+import com.navinfo.dataservice.bizcommons.datarow.SQLMultiThreadExecutor;
+import com.navinfo.dataservice.bizcommons.glm.Glm;
+import com.navinfo.dataservice.bizcommons.glm.GlmCache;
+import com.navinfo.dataservice.bizcommons.glm.GlmTable;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.OracleSchema;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -20,7 +28,15 @@ import com.navinfo.navicommons.database.QueryRunner;
  * @Description: TODO
  */
 public class PhysicalDeleteRow {
-	protected static Logger log = Logger.getLogger(PhysicalDeleteRow.class);
+	protected static Logger log = LoggerRepos.getLogger(PhysicalDeleteRow.class);
+	public static void doDelete(OracleSchema schema)throws Exception{
+		Set<String> tables = new HashSet<String>();
+		String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
+		Glm glm = GlmCache.getInstance().getGlm(gdbVersion);
+		tables.addAll(glm.getEditTableNames(GlmTable.FEATURE_TYPE_ALL));
+		tables.addAll(glm.getExtendTableNames(GlmTable.FEATURE_TYPE_ALL));
+		doDelete(tables,schema);
+	}
 	public static void doDelete(Set<String> tables,OracleSchema schema)throws Exception{
 		if(tables!=null&&tables.size()>0){
 			List<ExpSQL> expSQLs = new ArrayList<ExpSQL>();
@@ -43,10 +59,10 @@ public class PhysicalDeleteRow {
 					DbUtils.commitAndCloseQuietly(conn);
 				}
 			}else if(expSQLs.size()>1){
-				ExecuteExternlToolSql executor = new ExecuteExternlToolSql(schema);
 				ThreadLocalContext ctx = new ThreadLocalContext(log);
-				executor.execute(expSQLs, ctx);
+				SQLMultiThreadExecutor.execute(schema.getDriverManagerDataSource(),expSQLs, ctx);
 			}
+			log.debug("物理删除逻辑删除的数据已完成");
 		}
 	}
 }

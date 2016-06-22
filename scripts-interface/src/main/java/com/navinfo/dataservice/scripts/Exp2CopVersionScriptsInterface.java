@@ -14,10 +14,9 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.bizcommons.datarow.ExternalTool4Exporter;
+import com.navinfo.dataservice.bizcommons.datarow.PhysicalDeleteRow;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -94,7 +93,7 @@ public class Exp2CopVersionScriptsInterface {
 			JSONObject expResponse = ToolScriptsInterface.exportData(expRequest);
 			response.put("export_data", expResponse);
 			//逻辑删除数据
-			ExternalTool4Exporter.physicalDeleteRow(gdbVersion, schema, null);
+			PhysicalDeleteRow.doDelete(schema);
 			response.put("physical_delete", "success");
 			response.put("msg", "执行成功");
 		}catch(Exception e){

@@ -112,35 +112,30 @@ public class ExecuteSql {
 		ThreadLocalContext ctx = new ThreadLocalContext(log);
 		try {
 			Map<Integer, List<ExpSQL>> expSqlMap = input.getExpSqlMap();
-			// 获取当前执行任务对应的sql集合
+			// 获取当前执行任务对应的sql集合，执行临时表装载
 			Set<Entry<Integer, List<ExpSQL>>> sqlEntrySet = expSqlMap.entrySet();
-
 			for (Iterator iterator = sqlEntrySet.iterator(); iterator.hasNext();) {
-
-				long t1 = System.currentTimeMillis();
 				Entry sqlEntry = (Entry) iterator.next();
 				Integer step = (Integer) sqlEntry.getKey();
+				if(step>99)continue;
 				List<ExpSQL> sqlList = (List<ExpSQL>) sqlEntry.getValue();
-				
-				// 100 输出数据
-				// 101 删除数据
-				if(exportMode.equals(ExportConfig.MODE_COPY)){
-					// step 大于100不执行
-					if (step > 100) continue;
-				}else if (exportMode.equals(ExportConfig.MODE_DELETE)) {
-					// 101 删除数据
-					if (step == 100) continue;
-				} 
-				//cut 模式 100和101都执行
-				//full_copy不会到这来
-				log.debug("start execute step "+step);
-				execute(step, filterSql(sqlList), ctx);
-
-				long t2 = System.currentTimeMillis();
-				log.debug("step:" + step + " " + (t2 - t1) + "ms");
+				execute(step, sqlList, ctx);
 			}
-
-			// shutdownNormalThreadPool();
+			//导出数据
+			// 100 输出数据
+			// 101 删除数据
+			if(exportMode.equals(ExportConfig.MODE_COPY)){
+				Integer step = new Integer(100);
+				execute(step, expSqlMap.get(step), ctx);
+			}else if (exportMode.equals(ExportConfig.MODE_DELETE)) {
+				Integer step = new Integer(101);
+				execute(step, expSqlMap.get(step), ctx);
+			}else if(exportMode.equals(ExportConfig.MODE_DELETE_COPY)){
+				Integer step = new Integer(101);
+				execute(step, expSqlMap.get(step), ctx);
+				step = new Integer(100);
+				execute(step, expSqlMap.get(step), ctx);
+			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw e;
@@ -191,8 +186,11 @@ public class ExecuteSql {
 	}
 
 
-	private void execute(Integer step, List<ExpSQL> sqlList, ThreadLocalContext ctx) throws Exception {
+	private void execute(Integer step, List<ExpSQL> oriSqlList, ThreadLocalContext ctx) throws Exception {
 		try {
+			List<ExpSQL> sqlList = filterSql(oriSqlList);
+			long t1 = System.currentTimeMillis();
+			log.debug("start execute step "+step);
 			DataSource dataSource = input.getSource().getSchema().getPoolDataSource();
 			if (executePoolExecutor.isShutdown())
 				return;
@@ -255,6 +253,9 @@ public class ExecuteSql {
 			if (queryPoolExecutor.getExceptions().size() > 0) {
 				throw new Exception(queryPoolExecutor.getExceptions().get(0));
 			}
+
+			long t2 = System.currentTimeMillis();
+			log.debug("step:" + step + " " + (t2 - t1) + "ms");
 
 		} catch (Exception e) {
 			executePoolExecutor.shutdownNow();

@@ -1,12 +1,12 @@
 package com.navinfo.dataservice.engine.edit.edit.operation;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * 操作控制器
@@ -289,6 +289,21 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poiparent.delete.Command(
 						json);
 			}
+		case RWNODE:
+			switch (operType) {
+
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwnode.update.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterwnode.Command(
+						json, requester);
+			case MOVE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.move.moverwnode.Command(
+						json, requester);
+			}
+			
+			
 		case RWLINK:
 			switch (operType) {
 			case CREATE:
@@ -589,7 +604,13 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwlink.create.Process(
 						command);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwlink.update.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwnode.update.Process(
+						command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterwnode.Process(
+						command);
+			case MOVE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.move.moverwnode.Process(
 						command);
 			}
 		case RWLINK:

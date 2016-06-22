@@ -19,7 +19,7 @@ public class Process extends AbstractProcess<Command> {
 
 	private IxPoi ixPoi;
 
-	private IxPoiParent ixPoiParent;
+	private List<IxPoiParent> ixPoiParents;
 
 	private IxPoiChildren ixPoiChildren;
 
@@ -42,29 +42,37 @@ public class Process extends AbstractProcess<Command> {
 	private void lockParent() throws Exception {
 
 		IxPoiChildrenSelector ixPoiChildrenSelector = new IxPoiChildrenSelector(this.getConn());
+		
+		IxPoiParentSelector ixPoiParentSelector = new IxPoiParentSelector(this.getConn());
+		
+		//poi作为父的时候的数据
+		List<IRow> parents = ixPoiParentSelector.loadRowsByParentId(this.getCommand().getPid(), true);
+		
+		if(parents != null)
+		{
+			ixPoiParents.add((IxPoiParent) parents.get(0));
+		}
+		
+		//poi作为子的时候数据
+		List<IRow> child2parents = ixPoiParentSelector.loadParentRowsByChildrenId(this.getCommand().getPid(), true);
 
-		List<IRow> childrens = ixPoiChildrenSelector.loadRowsByPoiId(this.getCommand().getPid(), true);
-
-		if (CollectionUtils.isNotEmpty(childrens) ) {
-			if(childrens.size() == 1)
+		if (CollectionUtils.isNotEmpty(child2parents) ) {
+			IxPoiParent parent = (IxPoiParent) child2parents.get(0);
+			
+			List<IRow> childs = parent.getPoiChildrens();
+			
+			if(childs.size() == 1)
 			{
-				ixPoiChildren = (IxPoiChildren) childrens.get(0);
-
-				List<IRow> allChilds = ixPoiChildrenSelector.loadRowsByParentId(ixPoiChildren.getGroupId(), true);
-
-				if (allChilds.size() == 1
-						&& ((IxPoiChildren) allChilds.get(0)).getChildPoiPid() == this.getCommand().getPid()) {
-					// 需要删除ix_poi_parent表中的记录
-					IxPoiParentSelector ixPoiParentSelector = new IxPoiParentSelector(this.getConn());
-
-					ixPoiParent = (IxPoiParent) ixPoiParentSelector.loadById(ixPoiChildren.getGroupId(), true);
-
-					ixPoiParent.setPoiChildrens(childrens);
-				}
+				ixPoiParents.add(parent);
 			}
 			else
 			{
-				throw new Exception("poi:" + this.getCommand().getPid() + "的父不唯一");
+				List<IRow> childList = ixPoiChildrenSelector.loadRowsByPoiId(this.getCommand().getPid(), true);
+				
+				if(CollectionUtils.isNotEmpty(childList))
+				{
+					ixPoiChildren = (IxPoiChildren) childList.get(0);
+				}
 			}
 		} 
 	}
@@ -75,7 +83,7 @@ public class Process extends AbstractProcess<Command> {
 		IOperation op = new Operation(this.getCommand(), this.ixPoi);
 		String msg = op.run(this.getResult());
 		// 维护poi父子关系
-		IOperation opParent = new OpRefParent(this.getCommand(), ixPoiParent, ixPoiChildren);
+		IOperation opParent = new OpRefParent(this.getCommand(), ixPoiParents, ixPoiChildren);
 		opParent.run(this.getResult());
 		return msg;
 	}

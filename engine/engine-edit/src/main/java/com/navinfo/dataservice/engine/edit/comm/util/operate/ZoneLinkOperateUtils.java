@@ -340,31 +340,31 @@ public class ZoneLinkOperateUtils {
 	 * 3.跨图幅需要生成和图廓线的交点
 	 */
 
-	public static void createAdLinkWithMesh(Geometry g,
+	public static void createZoneLinkWithMesh(Geometry g,
 			Map<Coordinate, Integer> maps, Result result) throws Exception {
 		if (g != null) {
 			
 			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
-				ZoneLinkOperateUtils.calAdLinkWithMesh(g, maps,result);
+				ZoneLinkOperateUtils.calZoneLinkWithMesh(g, maps,result);
 			}
 			if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
 				for (int i = 0; i < g.getNumGeometries(); i++) {
-					ZoneLinkOperateUtils.calAdLinkWithMesh(g.getGeometryN(i), maps,result);
+					ZoneLinkOperateUtils.calZoneLinkWithMesh(g.getGeometryN(i), maps,result);
 				}
 
 			}
 		}
 	}
-	public static List<ZoneLink> getCreateAdLinksWithMesh(Geometry g,
+	public static List<ZoneLink> getCreateZoneLinksWithMesh(Geometry g,
 			Map<Coordinate, Integer> maps, Result result) throws Exception {
 		List<ZoneLink> links = new ArrayList<ZoneLink>();
 		if (g != null) {
 			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
-				links.add(ZoneLinkOperateUtils.getCalAdLinkWithMesh(g, maps,result));
+				links.add(ZoneLinkOperateUtils.getCalZoneLinkWithMesh(g, maps,result));
 			}
 			if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
 				for (int i = 0; i < g.getNumGeometries(); i++) {
-					links.add(ZoneLinkOperateUtils.getCalAdLinkWithMesh(g.getGeometryN(i), maps,result));
+					links.add(ZoneLinkOperateUtils.getCalZoneLinkWithMesh(g.getGeometryN(i), maps,result));
 				}
 
 			}
@@ -375,7 +375,7 @@ public class ZoneLinkOperateUtils {
 	/*
 	 * 创建行政区划线 针对跨图幅创建图廓点不能重复
 	 */
-	public static void calAdLinkWithMesh(Geometry g,Map<Coordinate, Integer> maps,
+	public static void calZoneLinkWithMesh(Geometry g,Map<Coordinate, Integer> maps,
 			Result result) throws Exception {
 		//定义创建行政区划线的起始Pid 默认为0
 		int sNodePid = 0;
@@ -405,7 +405,7 @@ public class ZoneLinkOperateUtils {
 	/*
 	 * 创建行政区划线 针对跨图幅创建图廓点不能重复
 	 */
-	public static ZoneLink getCalAdLinkWithMesh(Geometry g,Map<Coordinate, Integer> maps,
+	public static ZoneLink getCalZoneLinkWithMesh(Geometry g,Map<Coordinate, Integer> maps,
 			Result result) throws Exception {
 		//定义创建行政区划线的起始Pid 默认为0
 		int sNodePid = 0;

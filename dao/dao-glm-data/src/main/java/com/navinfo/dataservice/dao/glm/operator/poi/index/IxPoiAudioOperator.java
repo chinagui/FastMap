@@ -194,9 +194,23 @@ public class IxPoiAudioOperator implements IOperator {
 
 		sb.append("," + ixPoiAudio.getAudioId());
 
-		sb.append(",'" + ixPoiAudio.getStatus() + "'");
-
-		sb.append(",'" + ixPoiAudio.getMemo() + "'");
+		if(StringUtils.isNotEmpty(ixPoiAudio.getStatus()))
+		{
+			sb.append(",'" + ixPoiAudio.getStatus()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAudio.getMemo()))
+		{
+			sb.append(",'" + ixPoiAudio.getMemo()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 
 		sb.append(",'" + ixPoiAudio.getRowId() + "'");
 		

@@ -191,9 +191,16 @@ public class IxPoiContactOperator implements IOperator {
 		sb.append(ixPoiContact.getPoiPid());
 
 		sb.append("," + ixPoiContact.getContactType());
-
-		sb.append(",'" + ixPoiContact.getContact() + "'");
-
+		
+		if(StringUtils.isNotEmpty(ixPoiContact.getContact()))
+		{
+			sb.append(",'" + ixPoiContact.getContact()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
 		sb.append("," + ixPoiContact.getContactDepart() + "");
 		
 		sb.append("," + ixPoiContact.getPriority() + "");

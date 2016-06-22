@@ -188,89 +188,383 @@ public class IxPoiAddressOperator implements IOperator {
 		
 		sb.append("," + ixPoiAddress.getSrcFlag());
 		
-		sb.append(",'" + ixPoiAddress.getFullname()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getFullname()))
+		{
+			sb.append(",'" + ixPoiAddress.getFullname()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getFloorPhonetic()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getFloorPhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getFloorPhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getRodename()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getRodename()))
+		{
+			sb.append(",'" + ixPoiAddress.getRodename()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getRoadnamePhonetic()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getRoadnamePhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getRoadnamePhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getAddrname()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getAddrname()))
+		{
+			sb.append(",'" + ixPoiAddress.getAddrname()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getAddrnamePhonetic()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getAddrnamePhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getAddrnamePhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getProvince()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getProvince()))
+		{
+			sb.append(",'" + ixPoiAddress.getProvince()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getCity()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getCity()))
+		{
+			sb.append(",'" + ixPoiAddress.getCity()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getCounty()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getCounty()))
+		{
+			sb.append(",'" + ixPoiAddress.getCounty()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getTown()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getTown()))
+		{
+			sb.append(",'" + ixPoiAddress.getTown()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getPlace()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getPlace()))
+		{
+			sb.append(",'" + ixPoiAddress.getPlace()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getStreet()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getStreet()))
+		{
+			sb.append(",'" + ixPoiAddress.getStreet()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getLandmark()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getLandmark()))
+		{
+			sb.append(",'" + ixPoiAddress.getLandmark()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getPrefix()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getPrefix()))
+		{
+			sb.append(",'" + ixPoiAddress.getPrefix()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getHousesum()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getHousesum()))
+		{
+			sb.append(",'" + ixPoiAddress.getHousesum()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getType()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getType()))
+		{
+			sb.append(",'" + ixPoiAddress.getType()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getSubnum()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getSubnum()))
+		{
+			sb.append(",'" + ixPoiAddress.getSubnum()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getSurfix()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getSurfix()))
+		{
+			sb.append(",'" + ixPoiAddress.getSurfix()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAddress.getEstab()))
+		{
+			sb.append(",'" + ixPoiAddress.getEstab()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAddress.getBuilding()))
+		{
+			sb.append(",'" + ixPoiAddress.getBuilding()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAddress.getFloor()))
+		{
+			sb.append(",'" + ixPoiAddress.getFloor()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAddress.getUnit()))
+		{
+			sb.append(",'" + ixPoiAddress.getUnit()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAddress.getRoom()))
+		{
+			sb.append(",'" + ixPoiAddress.getRoom()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAddress.getAddons()))
+		{
+			sb.append(",'" + ixPoiAddress.getAddons()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAddress.getProvPhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getProvPhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAddress.getCityPhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getCityPhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAddress.getCountyPhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getCountyPhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAddress.getTownPhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getTownPhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAddress.getStreetPhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getStreetPhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAddress.getPlacePhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getPlacePhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAddress.getLandmarkPhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getLandmarkPhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAddress.getPrefixPhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getPrefixPhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAddress.getHousenumPhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getHousenumPhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAddress.getTypePhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getTypePhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAddress.getSubsumPhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getSubsumPhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAddress.getSurfixPhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getSurfixPhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAddress.getEstabPhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getEstabPhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 
-		sb.append(",'" + ixPoiAddress.getEstab()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getBuildingPhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getBuildingPhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getBuilding()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getFloorPhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getFloorPhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getFloor()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getUnitPhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getUnitPhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getUnit()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getRoomPhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getRoomPhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
-		sb.append(",'" + ixPoiAddress.getRoom()+"'");
-		
-		sb.append(",'" + ixPoiAddress.getAddons()+"'");
-		
-		sb.append(",'" + ixPoiAddress.getProvPhonetic()+"'");
-		
-		sb.append(",'" + ixPoiAddress.getCityPhonetic()+"'");
-		
-		sb.append(",'" + ixPoiAddress.getCountyPhonetic()+"'");
-		
-		sb.append(",'" + ixPoiAddress.getTownPhonetic()+"'");
-		
-		sb.append(",'" + ixPoiAddress.getStreetPhonetic()+"'");
-		
-		sb.append(",'" + ixPoiAddress.getPlacePhonetic()+"'");
-		
-		sb.append(",'" + ixPoiAddress.getLandmarkPhonetic()+"'");
-		
-		sb.append(",'" + ixPoiAddress.getPrefixPhonetic()+"'");
-		
-		sb.append(",'" + ixPoiAddress.getHousenumPhonetic()+"'");
-		
-		sb.append(",'" + ixPoiAddress.getTypePhonetic()+"'");
-		
-		sb.append(",'" + ixPoiAddress.getSubsumPhonetic()+"'");
-
-		sb.append(",'" + ixPoiAddress.getSurfixPhonetic()+"'");
-		
-		sb.append(",'" + ixPoiAddress.getEstabPhonetic()+"'");
-		
-		sb.append(",'" + ixPoiAddress.getBuildingPhonetic()+"'");
-		
-		sb.append(",'" + ixPoiAddress.getFloorPhonetic()+"'");
-		
-		sb.append(",'" + ixPoiAddress.getUnitPhonetic()+"'");
-		
-		sb.append(",'" + ixPoiAddress.getRoomPhonetic()+"'");
-		
-		sb.append(",'" + ixPoiAddress.getAddonsPhonetic()+"'");
+		if(StringUtils.isNotEmpty(ixPoiAddress.getAddonsPhonetic()))
+		{
+			sb.append(",'" + ixPoiAddress.getAddonsPhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
 		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		

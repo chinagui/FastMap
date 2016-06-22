@@ -182,7 +182,14 @@ public class IxPoiFlagOperator implements IOperator {
 
 		sb.append(ixPoiFlag.getPoiPid());
 		
-		sb.append(",'"+ixPoiFlag.getFlagCode()+"'");
+		if(StringUtils.isNotEmpty(ixPoiFlag.getFlagCode()))
+		{
+			sb.append(",'" + ixPoiFlag.getFlagCode()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
 		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
 

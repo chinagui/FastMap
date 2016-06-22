@@ -223,16 +223,37 @@ public class IxPoiIconOperator implements IOperator {
 		sb.append(ixPoiIcon.getPid());
 
 		sb.append("," + ixPoiIcon.getPoiPid());
-
-		sb.append(",'" + ixPoiIcon.getIconName() + "'");
+		
+		if(StringUtils.isNotEmpty(ixPoiIcon.getIconName()))
+		{
+			sb.append(",'" + ixPoiIcon.getIconName()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 
 		String wkt = GeoTranslator.jts2Wkt(ixPoiIcon.getGeometry(), 0.00001, 5);
 
 		sb.append(",sdo_geometry('" + wkt + "',8307)");
-
-		sb.append(",'" + ixPoiIcon.getManageCode() + "'");
-
-		sb.append(",'" + ixPoiIcon.getClientFlag() + "'");
+		
+		if(StringUtils.isNotEmpty(ixPoiIcon.getManageCode()))
+		{
+			sb.append(",'" + ixPoiIcon.getManageCode()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiIcon.getClientFlag()))
+		{
+			sb.append(",'" + ixPoiIcon.getClientFlag()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 
 		sb.append(",'" + ixPoiIcon.getRowId() + "'");
 		

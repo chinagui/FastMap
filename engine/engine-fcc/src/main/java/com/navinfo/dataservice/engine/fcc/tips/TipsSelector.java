@@ -122,13 +122,33 @@ public class TipsSelector {
 						|| type == 1105 || type == 1109 || type == 1107
 						|| type ==1110 ) {
 
-					m.put("c", String.valueOf(deep.getDouble("agl")));
-
+					if(deep.containsKey("agl")){
+						m.put("c", String.valueOf(deep.getDouble("agl")));
+					}
+					
 					if (type == 1203) {
 						m.put("d", String.valueOf(deep.get("dr")));
 					}
 					else if (type == 1105) {
-						m.put("d", String.valueOf(deep.get("tp")));
+						
+						JSONArray w_array = deep.getJSONArray("w_array");
+						
+						String d="";
+						
+						for(int i=0;i<w_array.size();i++){
+							JSONObject w = w_array.getJSONObject(i);
+							
+							String tp = w.getString("tp");
+							
+							if(i==0){
+								d=tp;
+							}
+							else{
+								d+="|"+tp;
+							}
+						}
+						
+						m.put("d", d);
 					}
 					else if(type == 1107){
 						m.put("d", deep.getString("name"));

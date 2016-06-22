@@ -373,6 +373,7 @@ public class Operation implements IOperation {
 		updateContent.put("geometry", GeoTranslator.jts2Geojson(g));
 		updateContent.put("area", GeometryUtils.getCalculateArea(g));
 		updateContent.put("perimeter", GeometryUtils.getLinkLength(g));
+		face.fillChangeFields(updateContent);
 		result.insertObject(face, ObjStatus.UPDATE, face.getPid());
 	}
 

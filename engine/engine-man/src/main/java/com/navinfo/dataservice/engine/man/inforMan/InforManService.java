@@ -66,52 +66,52 @@ public class InforManService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();	
 			JSONObject obj = JSONObject.fromObject(json);	
-			InforMan  bean = (InforMan)JSONObject.toBean(obj, InforMan.class);	
+			InforMan bean=(InforMan) JsonOperation.jsonToBean(obj,InforMan.class);
 			
-			String updateSql = "update infor_man set INFOR_ID=?, INFOR_STATUS=?, DESCP=?, CREATE_USER_ID=?, CREATE_DATE=?, COLLECT_PLAN_START_DATE=?, COLLECT_PLAN_END_DATE=?, DAY_EDIT_PLAN_START_DATE=?, DAY_EDIT_PLAN_END_DATE=?, MONTH_EDIT_PLAN_START_DATE=?, MONTH_EDIT_PLAN_END_DATE=?, DAY_PRODUCE_PLAN_START_DATE=?, DAY_PRODUCE_PLAN_END_DATE=?, MONTH_PRODUCE_PLAN_START_DATE=?, MONTH_PRODUCE_PLAN_END_DATE=? where 1=1 INFOR_ID=? and INFOR_STATUS=? and DESCP=? and CREATE_USER_ID=? and CREATE_DATE=? and COLLECT_PLAN_START_DATE=? and COLLECT_PLAN_END_DATE=? and COLLECT_GROUP_ID=? and DAY_EDIT_PLAN_START_DATE=? and DAY_EDIT_PLAN_END_DATE=? and DAY_EDIT_GROUP_ID=? and MONTH_EDIT_PLAN_START_DATE=? and MONTH_EDIT_PLAN_END_DATE=? and MONTH_EDIT_GROUP_ID=? and DAY_PRODUCE_PLAN_START_DATE=? and DAY_PRODUCE_PLAN_END_DATE=? and MONTH_PRODUCE_PLAN_START_DATE=? and MONTH_PRODUCE_PLAN_END_DATE=?";
+			String updateSql = "update infor_man set ";
 			List<Object> values=new ArrayList();
 			if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
-				updateSql+=" and INFOR_ID=? ";
+				updateSql+=" INFOR_ID=?, ";
 				values.add(bean.getInforId());
 			};
 			if (bean!=null&&bean.getInforStatus()!=null && StringUtils.isNotEmpty(bean.getInforStatus().toString())){
-				updateSql+=" and INFOR_STATUS=? ";
+				updateSql+=" INFOR_STATUS=?, ";
 				values.add(bean.getInforStatus());
 			};
 			if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp().toString())){
-				updateSql+=" and DESCP=? ";
+				updateSql+=" DESCP=?, ";
 				values.add(bean.getDescp());
 			};
 			if (bean!=null&&bean.getCollectPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanStartDate().toString())){
-				updateSql+=" and COLLECT_PLAN_START_DATE=? ";
+				updateSql+=" COLLECT_PLAN_START_DATE=?, ";
 				values.add(bean.getCollectPlanStartDate());
 			};
 			if (bean!=null&&bean.getCollectPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanEndDate().toString())){
-				updateSql+=" and COLLECT_PLAN_END_DATE=? ";
+				updateSql+=" COLLECT_PLAN_END_DATE=?, ";
 				values.add(bean.getCollectPlanEndDate());
 			};
 			if (bean!=null&&bean.getDayEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanStartDate().toString())){
-				updateSql+=" and DAY_EDIT_PLAN_START_DATE=? ";
+				updateSql+=" DAY_EDIT_PLAN_START_DATE=?, ";
 				values.add(bean.getDayEditPlanStartDate());
 			};
 			if (bean!=null&&bean.getDayEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanEndDate().toString())){
-				updateSql+=" and DAY_EDIT_PLAN_END_DATE=? ";
+				updateSql+=" DAY_EDIT_PLAN_END_DATE=?, ";
 				values.add(bean.getDayEditPlanEndDate());
 			};
 			if (bean!=null&&bean.getMonthEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanStartDate().toString())){
-				updateSql+=" and MONTH_EDIT_PLAN_START_DATE=? ";
+				updateSql+=" MONTH_EDIT_PLAN_START_DATE=?, ";
 				values.add(bean.getMonthEditPlanStartDate());
 			};
 			if (bean!=null&&bean.getMonthEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanEndDate().toString())){
-				updateSql+=" and MONTH_EDIT_PLAN_END_DATE=? ";
+				updateSql+=" MONTH_EDIT_PLAN_END_DATE=?, ";
 				values.add(bean.getMonthEditPlanEndDate());
 			};
 			if (bean!=null&&bean.getDayProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getDayProducePlanStartDate().toString())){
-				updateSql+=" and DAY_PRODUCE_PLAN_START_DATE=? ";
+				updateSql+=" DAY_PRODUCE_PLAN_START_DATE=?, ";
 				values.add(bean.getDayProducePlanStartDate());
 			};
 			if (bean!=null&&bean.getDayProducePlanEndDate()!=null && StringUtils.isNotEmpty(bean.getDayProducePlanEndDate().toString())){
-				updateSql+=" and DAY_PRODUCE_PLAN_END_DATE=? ";
+				updateSql+=" DAY_PRODUCE_PLAN_END_DATE=? ";
 				values.add(bean.getDayProducePlanEndDate());
 			};
 			if (bean!=null&&bean.getMonthProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getMonthProducePlanStartDate().toString())){

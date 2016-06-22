@@ -23,8 +23,9 @@ import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 
 /**
  * 索引:POI父子关系父表 操作
+ * 
  * @author luyao
- *
+ * 
  */
 public class IxPoiParentOperator implements IOperator {
 
@@ -34,12 +35,15 @@ public class IxPoiParentOperator implements IOperator {
 
 	private IxPoiParent ixPoiParent;
 
-	public IxPoiParentOperator(Connection conn, IxPoiParent ixPoiParent) throws Exception {
+	public IxPoiParentOperator(Connection conn, IxPoiParent ixPoiParent)
+			throws Exception {
 		this.conn = conn;
 
 		this.ixPoiParent = ixPoiParent;
 		this.conn = conn;
-		IxPoiOperator operator = new IxPoiOperator(conn,new IxPoiSelector(conn).loadRowIdByPid(ixPoiParent.getParentPoiPid(), false));
+		IxPoiOperator operator = new IxPoiOperator(conn,
+				new IxPoiSelector(conn).loadRowIdByPid(
+						ixPoiParent.getParentPoiPid(), false));
 		operator.upatePoiStatus();
 	}
 
@@ -73,7 +77,8 @@ public class IxPoiParentOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 		StringBuilder sb = new StringBuilder("update "
-				+ ixPoiParent.tableName() + " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
+				+ ixPoiParent.tableName() + " set u_record=3,u_date="
+				+ StringUtils.getCurrentTime() + ",");
 
 		PreparedStatement pstmt = null;
 
@@ -204,11 +209,16 @@ public class IxPoiParentOperator implements IOperator {
 
 		sb.append("," + ixPoiParent.getTenantFlag());
 
-		sb.append(",'" + ixPoiParent.getMemo() + "'");
+		if (StringUtils.isNotEmpty(ixPoiParent.getMemo())) {
+
+			sb.append(",'" + ixPoiParent.getMemo() + "'");
+		} else {
+			sb.append(",null");
+		}
 
 		sb.append(",'" + ixPoiParent.getRowId() + "'");
-		
-		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
+
+		sb.append(",'" + StringUtils.getCurrentTime() + "'");
 
 		sb.append(",'1')");
 
@@ -233,7 +243,8 @@ public class IxPoiParentOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiParent.tableName()
-				+ " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where group_id=" + ixPoiParent.getPid();
+				+ " set u_record=2,u_date=" + StringUtils.getCurrentTime()
+				+ " where group_id=" + ixPoiParent.getPid();
 
 		stmt.addBatch(sql);
 

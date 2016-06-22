@@ -191,10 +191,20 @@ public class IxPoiPhotoOperator implements IOperator {
 		sb.append(ixPoiPhoto.getPoiPid());
 
 		sb.append("," + ixPoiPhoto.getPhotoId());
+		
+		if (StringUtils.isNotEmpty(ixPoiPhoto.getStatus())) {
 
-		sb.append(",'" + ixPoiPhoto.getStatus() + "'");
+			sb.append(",'" + ixPoiPhoto.getStatus() + "'");
+		} else {
+			sb.append(",null");
+		}
 
-		sb.append(",'" + ixPoiPhoto.getMemo() + "'");
+		if (StringUtils.isNotEmpty(ixPoiPhoto.getMemo())) {
+
+			sb.append(",'" + ixPoiPhoto.getMemo() + "'");
+		} else {
+			sb.append(",null");
+		}
 
 		sb.append(",'" + ixPoiPhoto.getRowId() + "'");
 		

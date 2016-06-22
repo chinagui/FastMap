@@ -208,7 +208,7 @@ public class IxPoiChildrenOperator implements IOperator {
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiChildren.tableName() + " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where row_id=hextoraw('" + ixPoiChildren.rowId()
 				+ "')";
-
+		
 		stmt.addBatch(sql);
 
 	}

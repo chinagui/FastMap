@@ -65,7 +65,7 @@ public class Command extends AbstractCommand implements ICommand {
 
 	@Override
 	public ObjType getObjType() {
-		return ObjType.RDBRANCH;
+		return ObjType.ADADMIN;
 	}
 
 	@Override

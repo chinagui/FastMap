@@ -2,9 +2,9 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdgsc.create;
 
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -14,15 +14,13 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.RdGscOperateUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -40,13 +38,17 @@ public class Operation implements IOperation {
 	private Check check;
 
 	// 立交组成link对象的map集合
-	private Map<Integer, RdLink> linkObjMap;
+	private Map<Integer, IRow> linkObjMap;
 
 	// 获取交点（可能包含多个交点）
 	private Geometry interGeometry = null;
 
 	private boolean isSelfGsc = false;
 
+	private Result result;
+
+	private boolean selfGscHasUpdate;
+	
 	public Operation(Command command, Check check, Connection conn) {
 		this.command = command;
 
@@ -62,25 +64,10 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private List<Geometry> preParedData() throws Exception {
-		linkObjMap = new HashMap<>();
-
-		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 
 		List<Geometry> linksGeometryList = new ArrayList<Geometry>();
 
-		for (Integer linkPid : command.getLinkMap().values()) {
-			if (!linkObjMap.containsKey(linkPid)) {
-				RdLink link = (RdLink) linkSelector.loadById(linkPid, true);
-
-				Geometry geometry = link.getGeometry();
-
-				geometry.setUserData(linkPid);
-
-				linkObjMap.put(link.getPid(), link);
-
-				linksGeometryList.add(geometry);
-			}
-		}
+		linkObjMap = RdGscOperateUtils.handleLink(command.getLinkMap(), linksGeometryList, conn);
 
 		return linksGeometryList;
 	}
@@ -88,8 +75,10 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 
-		// link的pid和层级的映射关系:key-》zlevel value:link_pid
-		Map<Integer, Integer> linkMap = command.getLinkMap();
+		this.result = result;
+
+		// link的pid和层级的映射关系:key-》zlevel value:link对象
+		Map<Integer, RdGscLink> linkMap = command.getLinkMap();
 
 		// 立交组成线分两种：1.一条link组成线 2.多条link组成线
 		if (linkMap.size() < 1) {
@@ -99,126 +88,111 @@ public class Operation implements IOperation {
 		// 查询数据：1.link_pid和对象map 2.立交组成线几何的集合
 		List<Geometry> linksGeometryList = preParedData();
 
-		// 一条link自相交建立立交
 		if (linkObjMap.size() == 1) {
-
-			isSelfGsc = true;
-
-			interGeometry = GeometryUtils.getInterPointFromSelf(linksGeometryList.get(0));
-		}
-		// 多条link相交建立立交
-		if (linkObjMap.size() >= 2) {
+			if (linkObjMap.values().size() == 1) {
+				isSelfGsc = true;
+				// 处理自相交立交
+				interGeometry = GeometryUtils.getInterPointFromSelf(linksGeometryList.get(0));
+			}
+		} else {
+			// 不同类型要素的多条link相交建立立交
 			interGeometry = GeometryUtils.getIntersectsGeo(linksGeometryList);
 		}
-		if (interGeometry != null && !interGeometry.isEmpty()) {
+		
+		createGsc(linksGeometryList);
+		
+		return null;
+	}
+
+	private void createGsc(List<Geometry> linksGeometryList) throws Exception {
+		
+		List<IRow> rdGscLinks = new ArrayList<IRow>();
+
+		Coordinate[] linkCoor = null;
+
+		Geometry gscGeo = checkHasInter(interGeometry);
+
+		RdGsc rdGsc = RdGscOperateUtils.addRdGsc(gscGeo);
+
+		for (Entry<Integer, RdGscLink> entry : command.getLinkMap().entrySet()) {
+
+			int level = entry.getKey();
+
+			RdGscLink gscLink = entry.getValue();
+
+			gscLink.setPid(rdGsc.getPid());
+
+			gscLink.setZlevel(level);
+
+			IRow row = linkObjMap.get(level);
+
+			if (row instanceof RdLink) {
+				RdLink linkObj = (RdLink) row;
+
+				JSONObject jsonObj = updateLinkGeo(gscLink, linkObj.getGeometry(), gscGeo);
+
+				JSONObject updateContent = new JSONObject();
+
+				updateContent.put("geometry", jsonObj);
+
+				boolean changed = linkObj.fillChangeFields(updateContent);
+
+				if (changed) {
+					result.insertObject(linkObj, ObjStatus.UPDATE, linkObj.pid());
+				}
+				
+				linkCoor = GeoTranslator.geojson2Jts(jsonObj, 100000, 0).getCoordinates();
+			}
+			if (row instanceof RwLink) {
+				RwLink linkObj = (RwLink) row;
+				
+				JSONObject jsonObj = updateLinkGeo(gscLink, linkObj.getGeometry(), gscGeo);				
+				
+				JSONObject updateContent = new JSONObject();
+
+				updateContent.put("geometry", jsonObj);
+
+				boolean changed = linkObj.fillChangeFields(updateContent);
+
+				if (changed) {
+					result.insertObject(linkObj, ObjStatus.UPDATE, linkObj.pid());
+				}
+				
+				linkCoor = GeoTranslator.geojson2Jts(jsonObj, 100000, 0).getCoordinates();
+			}
+			
+			RdGscOperateUtils.calcShpSeqNum(gscGeo, linkCoor);
+			
+			// 更新线上其他立交的形状点号
+			handleOtherGscLink(gscLink, result, linkCoor);
+
+			rdGscLinks.add(gscLink);
+		}
+
+		rdGsc.setLinks(rdGscLinks);
+
+		result.insertObject(rdGsc, ObjStatus.INSERT, rdGsc.pid());
+	}
+
+	private Geometry checkHasInter(Geometry interGeo) throws Exception {
+		Geometry gscGeo = null;
+
+		if (interGeo != null && !interGeo.isEmpty()) {
 
 			// 矩形框
 			Geometry spatial = GeoTranslator.transform(GeoTranslator.geojson2Jts(command.getGeoObject()), 100000, 0);
 
 			// 立交组成线和矩形框交点
-			Geometry gscGeo = interGeometry.intersection(spatial);
+			gscGeo = interGeo.intersection(spatial);
 
 			// 立交检查：1.点位是否重复 2.是否和矩形框有交点
-			check.checkGsc(gscGeo,command.getLinkMap());
+			check.checkGsc(gscGeo, command.getLinkMap());
 
 			// 创建立交
-			createGsc(result, gscGeo);
 		} else {
 			throw new Exception("组成Link没有交点");
 		}
-
-		return null;
-	}
-
-	
-
-	/**
-	 * 创建立交
-	 * 
-	 * @param result
-	 *            结果集
-	 * @param gscGeo
-	 *            立交点几何
-	 * @throws Exception
-	 */
-	private void createGsc(Result result, Geometry gscGeo) throws Exception {
-
-		RdGsc rdGsc = new RdGsc();
-
-		rdGsc.setPid(PidService.getInstance().applyRdGscPid());
-
-		result.setPrimaryPid(rdGsc.getPid());
-
-		rdGsc.setGeometry(gscGeo);
-
-		// 处理标识默认为不处理
-		rdGsc.setProcessFlag(1);
-
-		List<IRow> rdGscLinks = new ArrayList<IRow>();
-		
-		boolean hasUpdated = false;
-		
-		Coordinate[] linkCoor = null;
-
-		for (Map.Entry<Integer, Integer> entry : command.getLinkMap().entrySet()) {
-
-			int zlevel = entry.getKey();
-
-			int linkPid = entry.getValue();
-
-			RdGscLink rdGscLink = new RdGscLink();
-
-			rdGscLink.setPid(rdGsc.getPid());
-
-			rdGscLink.setTableName("RD_LINK");
-
-			rdGscLink.setZlevel(zlevel);
-
-			rdGscLink.setLinkPid(linkPid);
-
-			RdLink linkObj = linkObjMap.get(linkPid);
-
-			// 更新link的形状点
-			if(!hasUpdated)
-			{
-				linkCoor = updateLinkGeo(linkObj, gscGeo, result);
-				if(isSelfGsc)
-				{
-					hasUpdated = true;
-				}
-			}
-			
-			// 获取link起终点标识
-			int startEndFlag = GeometryUtils.getStartOrEndType(linkObj.getGeometry(), gscGeo);
-
-			rdGscLink.setStartEnd(startEndFlag);
-
-			// 计算形状点号：SHP_SEQ_NUM
-			if (startEndFlag == 1) {
-				rdGscLink.setShpSeqNum(0);
-			} else if (startEndFlag == 2) {
-				rdGscLink.setShpSeqNum(linkCoor.length - 1);
-			} else {
-				List<Integer> shpSeqNumList = RdGscOperateUtils.calcShpSeqNum(gscGeo, linkCoor);
-
-				// 自相交情况
-				if (isSelfGsc) {
-					rdGscLink.setShpSeqNum(shpSeqNumList.get(zlevel));
-				} else {
-					rdGscLink.setShpSeqNum(shpSeqNumList.get(0));
-				}
-
-				// 更新线上其他立交的形状点号
-				handleOtherGscLink(linkPid, result, linkCoor);
-			}
-
-			rdGscLinks.add(rdGscLink);
-
-		}
-		rdGsc.setLinks(rdGscLinks);
-
-		result.insertObject(rdGsc, ObjStatus.INSERT, rdGsc.pid());
-
+		return gscGeo;
 	}
 
 	/**
@@ -230,12 +204,11 @@ public class Operation implements IOperation {
 	 *            线上新的几何点
 	 * @throws Exception
 	 */
-	private void handleOtherGscLink(int linkPid, Result result, Coordinate[] linkCoor) throws Exception {
+	private void handleOtherGscLink(RdGscLink gscLink, Result result, Coordinate[] linkCoor) throws Exception {
 
 		RdGscSelector selector = new RdGscSelector(conn);
 
-		//TODO 其他类型待第五迭代和web讨论类型参数
-		List<RdGsc> rdGscList = selector.onlyLoadRdGscLinkByLinkPid(linkPid, "RD_LINK",true);
+		List<RdGsc> rdGscList = selector.onlyLoadRdGscLinkByLinkPid(gscLink.getLinkPid(), gscLink.getTableName(), true);
 
 		for (RdGsc gsc : rdGscList) {
 
@@ -248,51 +221,22 @@ public class Operation implements IOperation {
 		}
 
 	}
-
-	/**
-	 * 更新link几何信息
-	 * 
-	 * @param linkObj
-	 *            link对象
-	 * @param gscGeo
-	 *            立交交点
-	 * @param result
-	 * @return 新的link的形状点
-	 * @throws Exception
-	 */
-	private Coordinate[] updateLinkGeo(RdLink linkObj, Geometry gscGeo, Result result) throws Exception {
-
-		// link的几何
-		JSONObject geojson = GeoTranslator.jts2Geojson(linkObj.getGeometry());
-
-		JSONArray ja1 = null;
-
-		if (isSelfGsc) {
-			ja1 = RdGscOperateUtils.calCoordinateBySelfInter(geojson, gscGeo);
-		} else {
-			ja1 = RdGscOperateUtils.calCoordinateByNotSelfInter(geojson, gscGeo);
+	
+	private JSONObject updateLinkGeo(RdGscLink gscLink,Geometry geometry,Geometry gscGeo) throws Exception
+	{
+		JSONObject jsonObj = null;
+		
+		if(isSelfGsc && !selfGscHasUpdate)
+		{
+			jsonObj = RdGscOperateUtils.updateLinkGeoBySelf(gscLink, geometry, gscGeo);
+			
+			selfGscHasUpdate = true;
 		}
-
-		JSONObject geojson1 = new JSONObject();
-
-		geojson1.put("type", "LineString");
-
-		geojson1.put("coordinates", ja1);
-
-		JSONObject updateContent = new JSONObject();
-
-		// 新的link的几何
-		JSONObject geoJson = GeoTranslator.jts2Geojson(GeoTranslator.geojson2Jts(geojson1), 0.00001, 5);
-
-		updateContent.put("geometry", geoJson);
-
-		boolean changed = linkObj.fillChangeFields(updateContent);
-
-		if (changed) {
-			result.insertObject(linkObj, ObjStatus.UPDATE, linkObj.pid());
+		else
+		{
+			jsonObj = RdGscOperateUtils.updateLinkGeo(gscLink, geometry, gscGeo);
 		}
-
-		return GeoTranslator.geojson2Jts(geoJson, 100000, 0).getCoordinates();
+		
+		return jsonObj;
 	}
-
 }

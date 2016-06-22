@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 
 import net.sf.json.JSONArray;
@@ -21,7 +22,7 @@ public class Command extends AbstractCommand {
 
 	private String requester;
 
-	private Map<Integer,Integer> linkMap = new HashMap<Integer,Integer>();
+	private Map<Integer,RdGscLink> linkMap = new HashMap<Integer,RdGscLink>();
 	
 	private JSONObject geoObject;
 
@@ -40,14 +41,14 @@ public class Command extends AbstractCommand {
 		return requester;
 	}
 	
-	public Map<Integer, Integer> getLinkMap() {
+	public Map<Integer, RdGscLink> getLinkMap() {
 		return linkMap;
 	}
 
-	public void setLinkMap(Map<Integer, Integer> linkMap) {
+	public void setLinkMap(Map<Integer, RdGscLink> linkMap) {
 		this.linkMap = linkMap;
 	}
-	
+
 	public JSONObject getGeoObject() {
 		return geoObject;
 	}
@@ -57,8 +58,6 @@ public class Command extends AbstractCommand {
 	}
 
 	public void createGlmList() throws Exception {
-		// TODO Auto-generated method stub
-		
 	}
 
 	public Command(JSONObject json, String requester) {
@@ -76,7 +75,21 @@ public class Command extends AbstractCommand {
 			for(int i = 0;i<linkAttrArray.size();i++)
 			{
 				JSONObject linkObj = linkAttrArray.getJSONObject(i);
-				linkMap.put(linkObj.getInt("level_index"),linkObj.getInt("pid"));
+				
+				int level = linkObj.getInt("level_index");
+				
+				int pid = linkObj.getInt("pid");
+				
+				String type = linkObj.getString("type");
+				
+				RdGscLink link = new RdGscLink();
+				
+				link.setTableName(type);
+				
+				link.setLinkPid(pid);
+				
+				linkMap.put(level,link);
+				
 			}
 			
 		}

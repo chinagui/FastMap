@@ -180,12 +180,23 @@ public class IxPoiVideoOperator implements IOperator {
 		sb.append(ixPoiVideo.getPoiPid());
 
 		sb.append("," + ixPoiVideo.getVideoId());
+		
+		
+		if (StringUtils.isNotEmpty(ixPoiVideo.getStatus())) {
 
-		sb.append(",'" + ixPoiVideo.getStatus() + "'");
+			sb.append(",'" + ixPoiVideo.getStatus() + "'");
+		} else {
+			sb.append(",null");
+		}
 
-		sb.append(",'" + ixPoiVideo.getMemo() + "'");
+		if (StringUtils.isNotEmpty(ixPoiVideo.getMemo())) {
 
-		sb.append(",'" + ixPoiVideo.getRowId() + "'");
+			sb.append(",'" + ixPoiVideo.getMemo() + "'");
+		} else {
+			sb.append(",null");
+		}
+
+		sb.append(",'" + ixPoiVideo.getRowId() + "'");	
 		
 		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
 

@@ -179,8 +179,15 @@ public class IxPoiNameFlagOperator implements IOperator {
 		sb.append("(NAME_ID, FLAG_CODE,U_DATE,U_RECORD, ROW_ID) values (");
 
 		sb.append(ixPoiNameFlag.getNameId());
-
-		sb.append(",'" + ixPoiNameFlag.getFlagCode()+"'");
+		
+		if(StringUtils.isNotEmpty(ixPoiNameFlag.getFlagCode()))
+		{
+			sb.append(",'" + ixPoiNameFlag.getFlagCode()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
 		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
 

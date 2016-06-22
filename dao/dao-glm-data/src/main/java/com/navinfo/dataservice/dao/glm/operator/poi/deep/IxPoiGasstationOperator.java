@@ -217,6 +217,7 @@ public class IxPoiGasstationOperator implements IOperator {
 		sb.append(",'" + ixPoiGasstation.getFuelType() + "'");
 		sb.append(",'" + ixPoiGasstation.getOilType() + "'");
 		sb.append(",'" + ixPoiGasstation.getEgType() + "'");
+		sb.append(",'" + ixPoiGasstation.getMgType() + "'");
 		sb.append(",'" + ixPoiGasstation.getPayment() + "'");
 		sb.append(",'" + ixPoiGasstation.getService() + "'");
 		sb.append(",'" + ixPoiGasstation.getMemo() + "'");

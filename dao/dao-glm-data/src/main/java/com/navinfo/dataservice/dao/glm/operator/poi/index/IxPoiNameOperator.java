@@ -192,16 +192,51 @@ public class IxPoiNameOperator implements IOperator {
 		sb.append("," + ixPoiName.getNameClass());
 
 		sb.append("," + ixPoiName.getNameType());
-
-		sb.append(",'" + ixPoiName.getLangCode()+"'");
-
-		sb.append(",'" + ixPoiName.getName()+"'");
-
-		sb.append(",'" + ixPoiName.getNamePhonetic()+"'");
-
-		sb.append(",'" + ixPoiName.getKeywords()+"'");
-
-		sb.append(",'" + ixPoiName.getNidbPid()+"'");
+		
+		if(StringUtils.isNotEmpty(ixPoiName.getLangCode()))
+		{
+			sb.append(",'" + ixPoiName.getLangCode()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiName.getName()))
+		{
+			sb.append(",'" + ixPoiName.getName()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiName.getNamePhonetic()))
+		{
+			sb.append(",'" + ixPoiName.getNamePhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiName.getKeywords()))
+		{
+			sb.append(",'" + ixPoiName.getKeywords()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiName.getNidbPid()))
+		{
+			sb.append(",'" + ixPoiName.getNidbPid()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
 		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
 

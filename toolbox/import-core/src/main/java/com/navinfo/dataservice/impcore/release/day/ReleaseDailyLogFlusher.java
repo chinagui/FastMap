@@ -48,7 +48,7 @@ public class ReleaseDailyLogFlusher extends LogFlusher {
 			sb.append(StringUtils.join(this.getGrids(), ","));
 			sb.append(")");
 		}
-		sb.append(this.getFeatureFilter());
+		sb.append(" AND "+this.getFeatureFilter());
 		return sb.toString();
 	}
 	/**
@@ -66,7 +66,7 @@ public class ReleaseDailyLogFlusher extends LogFlusher {
 	public String getFeatureFilter(){
 		String glmFeatureType = getGlmFeatureType(this.getFeatureType());
 		if (GlmTable.FEATURE_TYPE_ALL.equals(glmFeatureType)){
-			return null;
+			return " 1=1 ";
 		}
 		String gdbVesion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 		List<String> tableNames = GlmCache.getInstance().getGlm(gdbVesion).getEditTableNames(glmFeatureType);
@@ -133,16 +133,16 @@ public class ReleaseDailyLogFlusher extends LogFlusher {
 		//如果是全要素，则更新LOCK_ALL_STA=1 
 		if (GlmTable.FEATURE_TYPE_ALL.equals(glmFeatureType)){
 			StringBuilder sb = new StringBuilder();
-			sb.append("UPDATE LOG_DAY_RELEASE L SET L.LOCK_ALL_STA=1 WHERE EXISTS (SELECT 1 FROM ");
+			sb.append("UPDATE LOG_DAY_RELEASE L SET L.REL_ALL_LOCK=1 WHERE EXISTS (SELECT 1 FROM ");
 			sb.append(this.getTempTable());
-			sb.append(" T WHERE L.OP_ID=T.OP_ID) AND L.LOCK_ALL_STA=0");
+			sb.append(" T WHERE L.OP_ID=T.OP_ID) AND L.REL_ALL_LOCK=0");
 			return sb;
 		} 
 		//如果是POI日出品则只更新LOCK_POI_STA=1
 		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE LOG_DAY_RELEASE L SET L.LOCK_POI_STA=1 WHERE EXISTS (SELECT 1 FROM ");
+		sb.append("UPDATE LOG_DAY_RELEASE L SET L.REL_POI_LOCK=1 WHERE EXISTS (SELECT 1 FROM ");
 		sb.append(this.getTempTable());
-		sb.append(" T WHERE L.OP_ID=T.OP_ID) AND L.LOCK_POI_STA=0");
+		sb.append(" T WHERE L.OP_ID=T.OP_ID) AND L.REL_POI_LOCK=0");
 		return sb;
 	}
 }

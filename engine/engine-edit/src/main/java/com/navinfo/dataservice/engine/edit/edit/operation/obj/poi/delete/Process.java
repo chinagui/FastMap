@@ -48,7 +48,7 @@ public class Process extends AbstractProcess<Command> {
 		//poi作为父的时候的数据
 		List<IRow> parents = ixPoiParentSelector.loadRowsByParentId(this.getCommand().getPid(), true);
 		
-		if(parents != null)
+		if(CollectionUtils.isNotEmpty(parents))
 		{
 			ixPoiParents.add((IxPoiParent) parents.get(0));
 		}

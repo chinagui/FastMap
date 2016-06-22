@@ -26,6 +26,7 @@ import org.dom4j.io.SAXReader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
+import com.navinfo.dataservice.bizcommons.sql.ExpSQL;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.expcore.exception.ExportException;
 

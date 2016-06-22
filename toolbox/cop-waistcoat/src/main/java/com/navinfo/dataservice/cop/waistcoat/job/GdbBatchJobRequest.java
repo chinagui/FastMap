@@ -22,20 +22,20 @@ public class GdbBatchJobRequest extends AbstractJobRequest {
 	protected AbstractJobRequest expBatchDb;
 	protected AbstractJobRequest createBakDb;
 	protected AbstractJobRequest copyBakDb;
-	protected AbstractJobRequest batchBody;
-	protected AbstractJobRequest diffBody;
-	protected AbstractJobRequest commitBody;
+	protected AbstractJobRequest batch;
+	protected AbstractJobRequest diff;
+	protected AbstractJobRequest commit;
 	
 	@Override
 	public int getStepCount() throws JobException {
-		int count = 0;
+		int count = 1;
 		count+=createBatchDb.getStepCount();
 		count+=expBatchDb.getStepCount();
 		count+=createBakDb.getStepCount();
 		count+=copyBakDb.getStepCount();
-		count+=batchBody.getStepCount();
-		count+=diffBody.getStepCount();
-		count+=commitBody.getStepCount();
+		count+=batch.getStepCount();
+		count+=diff.getStepCount();
+		count+=commit.getStepCount();
 		return count;
 	}
 
@@ -104,28 +104,28 @@ public class GdbBatchJobRequest extends AbstractJobRequest {
 		this.copyBakDb = copyBakDb;
 	}
 
-	public AbstractJobRequest getBatchBody() {
-		return batchBody;
+	public AbstractJobRequest getBatch() {
+		return batch;
 	}
 
-	public void setBatchBody(AbstractJobRequest batchBody) {
-		this.batchBody = batchBody;
+	public void setBatch(AbstractJobRequest batch) {
+		this.batch = batch;
 	}
 
-	public AbstractJobRequest getDiffBody() {
-		return diffBody;
+	public AbstractJobRequest getDiff() {
+		return diff;
 	}
 
-	public void setDiffBody(AbstractJobRequest diffBody) {
-		this.diffBody = diffBody;
+	public void setDiff(AbstractJobRequest diff) {
+		this.diff = diff;
 	}
 
-	public AbstractJobRequest getCommitBody() {
-		return commitBody;
+	public AbstractJobRequest getCommit() {
+		return commit;
 	}
 
-	public void setCommitBody(AbstractJobRequest commitBody) {
-		this.commitBody = commitBody;
+	public void setCommit(AbstractJobRequest commit) {
+		this.commit = commit;
 	}
 
 	@Override

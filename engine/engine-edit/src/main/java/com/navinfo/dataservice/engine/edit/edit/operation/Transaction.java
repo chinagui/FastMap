@@ -1,12 +1,12 @@
 package com.navinfo.dataservice.engine.edit.edit.operation;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * 操作控制器
@@ -289,6 +289,21 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.poiparent.delete.Command(
 						json);
 			}
+		case RWNODE:
+			switch (operType) {
+
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwnode.update.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterwnode.Command(
+						json, requester);
+			case MOVE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.move.moverwnode.Command(
+						json, requester);
+			}
+			
+			
 		case RWLINK:
 			switch (operType) {
 			case CREATE:
@@ -303,6 +318,48 @@ public class Transaction {
 			case REPAIR:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairrwlink.Command(
 						json,requester);
+			}
+		case ZONENODE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakzonepoint.Command(
+						json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.zonenode.update.Command(
+						json, requester);
+			case MOVE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.move.movezonenode.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deletezonenode.Command(
+						json, requester);
+			}
+		case ZONELINK:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.zonelink.create.Command(
+						json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.zonelink.update.Command(
+						json, requester);
+			case BREAK:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakzonepoint.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deletezonelink.Command(
+						json, requester);
+			case REPAIR:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairzonelink.Command(
+						json, requester);
+			}
+		case ZONEFACE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.zoneface.create.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.zoneface.delete.Command(
+						json, requester);
 			}
 		}
 		throw new Exception("不支持的操作类型");
@@ -547,7 +604,13 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwlink.create.Process(
 						command);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwlink.update.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwnode.update.Process(
+						command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterwnode.Process(
+						command);
+			case MOVE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.move.moverwnode.Process(
 						command);
 			}
 		case RWLINK:
@@ -565,7 +628,51 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairrwlink.Process(
 						command);
 			}
+			
+		case ZONENODE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadpoint.Process(
+						command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Process(
+						command);
+			case MOVE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.move.moveadnode.Process(
+						command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleteadnode.Process(
+						command);
+			}
+		case ZONELINK:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.zonelink.create.Process(
+						command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.zonelink.update.Process(
+						command);
+			case BREAK:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakzonepoint.Process(
+						command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deletezonelink.Process(
+						command);
+			case REPAIR:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairzonelink.Process(
+						command);
+			}
+		case ZONEFACE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.zoneface.create.Process(
+						command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.zoneface.delete.Process(
+						command);
+			}
 		}
+		
 		throw new Exception("不支持的操作类型");
 
 	}

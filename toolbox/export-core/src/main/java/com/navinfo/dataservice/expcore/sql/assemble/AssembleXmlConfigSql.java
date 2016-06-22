@@ -12,9 +12,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.util.Assert;
 
+import com.navinfo.dataservice.bizcommons.sql.ExpSQL;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.expcore.exception.ExportException;
-import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.expcore.sql.ExpXMLSQLManager;
 import com.navinfo.dataservice.expcore.sql.replacer.SqlReplacer;
 

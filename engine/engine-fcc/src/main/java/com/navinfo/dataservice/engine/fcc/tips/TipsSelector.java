@@ -122,14 +122,54 @@ public class TipsSelector {
 						|| type == 1105 || type == 1109 || type == 1107
 						|| type ==1110 ) {
 
-					m.put("c", String.valueOf(deep.getDouble("agl")));
-
+					if(deep.containsKey("agl")){
+						m.put("c", String.valueOf(deep.getDouble("agl")));
+					}
+					
 					if (type == 1203) {
 						m.put("d", String.valueOf(deep.get("dr")));
 					}
-					if (type == 1105) {
-						m.put("d", String.valueOf(deep.get("tp")));
+					else if (type == 1105) {
+						
+						JSONArray w_array = deep.getJSONArray("w_array");
+						
+						String d="";
+						
+						for(int i=0;i<w_array.size();i++){
+							JSONObject w = w_array.getJSONObject(i);
+							
+							String tp = w.getString("tp");
+							
+							if(i==0){
+								d=tp;
+							}
+							else{
+								d+="|"+tp;
+							}
+						}
+						
+						m.put("d", d);
 					}
+					else if(type == 1107){
+						m.put("d", deep.getString("name"));
+					}
+					else if(type == 1109){
+						
+						String tp = TipsSelectorUtils.convertElecEyeKind(deep.getInt("tp"));
+						
+						String loc = TipsSelectorUtils.convertElecEyeLocation(deep.getInt("loc"));
+						
+						double value = deep.getDouble("value");
+						
+						String d = tp + "|" + loc;
+						
+						if((int)value != 0){
+							d += "|" + value;
+						}
+						
+						m.put("d", d);
+					}
+					
 
 				} else if (type == 1510 || type == 1514 || type == 1501 || type == 1515) {
 
@@ -527,7 +567,7 @@ public class TipsSelector {
 						m.put("e", name);
 					}
 				}*/
-			} else if (type == 1704 || type == 1510) {
+			} else if (type == 1704 || type == 1510 || type == 1107) {
 
 				String name = deep.getString("name");
 

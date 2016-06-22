@@ -14,7 +14,7 @@ import java.util.Scanner;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -43,7 +43,6 @@ import com.vividsolutions.jts.io.WKTReader;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
 
 public class UploadOperation {
 	/**
@@ -221,7 +220,7 @@ public class UploadOperation {
 					JSONObject perRetObj = obj2PoiForInsert(jo,version);
 					int flag = perRetObj.getInt("flag");
 					if (flag == 1) {
-						poi = (IxPoi)perRetObj.get("ret");
+						poi.Unserialize(perRetObj.getJSONObject("ret"));
 						Result result = new Result();
 						result.setOperStage(OperStage.Collect);
 						JSONObject poiObj = new JSONObject();
@@ -306,14 +305,11 @@ public class UploadOperation {
 					JSONObject poiObj = new JSONObject();
 					poiObj.put("dbId", dbId);
 					poiObj.put("objId", pid);
-					IxPoi poi = new IxPoi();
-					poi.setPid(pid);
 					try {
 						Result result = new Result();
 						result.setOperStage(OperStage.Collect);
-						CommandForUpload poiCommand = new CommandForUpload(poiObj, null);
-						ProcessForUpload poiProcess = new ProcessForUpload(poiCommand);
-						result.insertObject(poi, ObjStatus.DELETE, pid);
+						CommandForDelete poiCommand = new CommandForDelete(poiObj, null);
+						ProcessForDelete poiProcess = new ProcessForDelete(poiCommand);
 						poiProcess.setResult(result);
 						poiProcess.run();
 						count++;
@@ -349,9 +345,9 @@ public class UploadOperation {
 			poi.setKindCode(jo.getString("kindCode"));
 			// geometry按SDO_GEOMETRY格式原值转出
 			Geometry geometry = new WKTReader().read(jo.getString("geometry"));
-			poi.setGeometry(geometry);
-			poi.setxGuide(jo.getJSONObject("guide").getInt("longitude"));
-			poi.setyGuide(jo.getJSONObject("guide").getInt("latitude"));
+			poi.setGeometry(GeoTranslator.transform(geometry, 100000, 5));
+			poi.setxGuide(jo.getJSONObject("guide").getDouble("longitude"));
+			poi.setyGuide(jo.getJSONObject("guide").getDouble("latitude"));
 			poi.setLinkPid(jo.getJSONObject("guide").getInt("linkPid"));
 			poi.setChain(jo.getString("chain"));
 			poi.setOpen24h(jo.getInt("open24H"));
@@ -373,8 +369,10 @@ public class UploadOperation {
 			if (!jo.getString("chain").isEmpty()) {
 				fieldState += "改连锁品牌|";
 			}
-			if (!jo.getString("rating").isEmpty()) {
-				fieldState += "改酒店星级|";
+			if (jo.has("hotel")) {
+				if (!jo.getJSONObject("hotel").getString("rating").isEmpty()) {
+					fieldState += "改酒店星级|";
+				}
 			}
 			if (fieldState.length()>0) {
 				fieldState = fieldState.substring(0, fieldState.length()-1);
@@ -639,7 +637,7 @@ public class UploadOperation {
 			}
 			
 			retObj.put("flag", 1);
-			retObj.put("ret", poi);
+			retObj.put("ret", poi.Serialize(null));
 		} catch (Exception e) {
 			retObj.put("flag", 0);
 			String errstr = "fid:" + fid + ":" + e.getMessage();
@@ -665,17 +663,15 @@ public class UploadOperation {
 			IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
 			IxPoi oldPoi = (IxPoi) ixPoiSelector.loadById(pid, false);
 			// POI主表
-			IxPoi newPoi = new IxPoi();
 			JSONObject poiJson = new JSONObject();
 			poiJson.put("pid", pid);
 			poiJson.put("kindCode", jo.getString("kindCode"));
 			// geometry按SDO_GEOMETRY格式原值转出
 			Geometry geometry = new WKTReader().read(jo.getString("geometry"));
-			newPoi.setGeometry(geometry);
-			JSONObject newPoiJson = newPoi.Serialize(null);
-			poiJson.put("geometry", newPoiJson.getJSONObject("geometry"));
-			poiJson.put("xGuide", jo.getJSONObject("guide").getInt("longitude"));
-			poiJson.put("yGuide", jo.getJSONObject("guide").getInt("latitude"));
+			JSONObject geometryObj = GeoTranslator.jts2Geojson(geometry);
+			poiJson.put("geometry", geometryObj);
+			poiJson.put("xGuide", jo.getJSONObject("guide").getDouble("longitude"));
+			poiJson.put("yGuide", jo.getJSONObject("guide").getDouble("latitude"));
 			poiJson.put("linkPid", jo.getJSONObject("guide").getInt("linkPid"));
 			poiJson.put("chain", jo.getString("chain"));
 			poiJson.put("open24h", jo.getInt("open24H"));

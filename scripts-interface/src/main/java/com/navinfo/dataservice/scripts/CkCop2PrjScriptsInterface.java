@@ -12,14 +12,14 @@ import org.apache.commons.dbutils.DbUtils;
 import org.springframework.util.Assert;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.bizcommons.datarow.CkResultTool;
+import com.navinfo.dataservice.bizcommons.datarow.DataRowTool;
+import com.navinfo.dataservice.bizcommons.datarow.RemoveDuplicateRow;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.datahub.service.DbService;
-import com.navinfo.dataservice.expcore.external.ExternalTool4Exporter;
-import com.navinfo.dataservice.expcore.external.RemoveDuplicateRow;
 
 /** 
  * @ClassName: InitProjectScriptsInterface 
@@ -48,20 +48,20 @@ public class CkCop2PrjScriptsInterface {
 			DbInfo sourceDb = DbService.getInstance().getDbById(Integer.valueOf(sourceDbId));
 			OracleSchema sourceSchema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(sourceDb.getConnectParam()));
-			ExternalTool4Exporter.generateCkMd5(sourceSchema);
+			CkResultTool.generateCkMd5(sourceSchema);
 			response.put("md5", "success");
 			//generate ck_result_object
-			ExternalTool4Exporter.generateCkResultObject(sourceSchema);
+			CkResultTool.generateCkResultObject(sourceSchema);
 			response.put("ck_result_object", "success");
 			//generate ni_val_exception_grid
-			ExternalTool4Exporter.generateCkResultGrid(sourceSchema,gdbVersion);
+			CkResultTool.generateCkResultGrid(sourceSchema);
 			response.put("ni_val_exception_grid", "success");
 
 			DbInfo targetDb = DbService.getInstance().getDbById(Integer.valueOf(targetDbId));
 			OracleSchema targetSchema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(targetDb.getConnectParam()));
 			//将在grids范围导出到目标
-			ExternalTool4Exporter.selectLogGrids(sourceSchema,targetSchema,grids.split(","));
+			CkResultTool.moveNiVal(sourceSchema,targetSchema,grids.split(","));
 			response.put("exp", "success");
 			//去重
 			List<String> tables = new ArrayList<String>();

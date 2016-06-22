@@ -114,7 +114,7 @@ public class JobService {
 		public JobInfo handle(ResultSet rs) throws SQLException {
 			JobInfo jobInfo = null;
 			if(rs.next()){
-				long id = rs.getLong("JOB_ID");
+				int id = rs.getInt("JOB_ID");
 				String guid = rs.getString("JOB_GUID");
 				jobInfo = new JobInfo(id,guid);
 				jobInfo.setType(rs.getString("JOB_TYPE"));

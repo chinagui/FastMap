@@ -1279,6 +1279,22 @@ public class IxPoi implements IObj {
 					}
 
 					break;
+				case "children":
+					children.clear();
+					
+					ja = json.getJSONArray(key);
+					
+					for (int i = 0; i < ja.size(); i++) {
+						JSONObject jo = ja.getJSONObject(i);
+
+						IxPoiChildren row = new IxPoiChildren();
+
+						row.Unserialize(jo);
+
+						children.add(row);
+					}
+
+					break;
 				case "photos":
 
 					photos.clear();

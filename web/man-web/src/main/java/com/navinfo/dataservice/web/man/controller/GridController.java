@@ -76,5 +76,30 @@ public class GridController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	/**
+	 * 出品管理--日出品管理
+	 * 根据输入的几何，查询跟几何范围内的grid，获取可出品的grid，并返回grid列表。
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/grid/listByMerge")
+	public ModelAndView queryMergeGrid(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if (!dataJson.containsKey("wkt")){
+				throw new IllegalArgumentException("wkt");
+			}
+			List<String> data = GridService.getInstance().queryMergeGrid(dataJson);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("获取grid列表失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+
 
 }

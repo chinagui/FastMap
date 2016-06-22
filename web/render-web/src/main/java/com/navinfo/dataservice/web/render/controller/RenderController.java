@@ -15,7 +15,6 @@ import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
@@ -33,8 +32,8 @@ public class RenderController extends BaseController {
 			.getLogger(RenderController.class);
 
 	@RequestMapping(value = "/obj/getByTileWithGap")
-	public void getObjByTile(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+	public void getObjByTile(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -68,54 +67,56 @@ public class RenderController extends BaseController {
 			JSONObject data = null;
 
 			if (z <= 16) {
-				
+
 				List<ObjType> tileTypes = new ArrayList<ObjType>();
-				
+
 				List<ObjType> gdbTypes = new ArrayList<ObjType>();
-				
-				for (ObjType t : types){
-					if(t == ObjType.RDLINK || t == ObjType.ADLINK || t == ObjType.RWLINK){
+
+				for (ObjType t : types) {
+					if (t == ObjType.RDLINK || t == ObjType.ADLINK
+							|| t == ObjType.RWLINK) {
 						tileTypes.add(t);
-					}
-					else{
+					} else {
 						gdbTypes.add(t);
 					}
 				}
-				
-				if(!gdbTypes.isEmpty()){
-					
+
+				if (!gdbTypes.isEmpty()) {
+
 					conn = DBConnector.getInstance().getConnectionById(dbId);
 
 					SearchProcess p = new SearchProcess(conn);
 
-					JSONObject jo = p.searchDataByTileWithGap(gdbTypes, x, y, z, gap);
-					
-					if(data == null){
+					JSONObject jo = p.searchDataByTileWithGap(gdbTypes, x, y,
+							z, gap);
+
+					if (data == null) {
 						data = new JSONObject();
 					}
-						
+
 					data.putAll(jo);
 				}
-				
-				if(!tileTypes.isEmpty()){
-					JSONObject jo = TileSelector.getByTiles(tileTypes, x, y, z, dbId);
-					
-					if(data == null){
+
+				if (!tileTypes.isEmpty()) {
+					JSONObject jo = TileSelector.getByTiles(tileTypes, x, y, z,
+							dbId);
+
+					if (data == null) {
 						data = new JSONObject();
 					}
-					
+
 					data.putAll(jo);
 				}
-				
+
 			} else {
 				conn = DBConnector.getInstance().getConnectionById(dbId);
 
 				SearchProcess p = new SearchProcess(conn);
 
 				data = p.searchDataByTileWithGap(types, x, y, z, gap);
-				
+
 			}
-			
+
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(data));
 		} catch (Exception e) {
@@ -137,8 +138,8 @@ public class RenderController extends BaseController {
 	}
 
 	@RequestMapping(value = "/tip/getByTileWithGap")
-	public ModelAndView getTipsByTile(HttpServletRequest request)
-			throws ServletException, IOException {
+	public void getTipsByTile(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -164,19 +165,21 @@ public class RenderController extends BaseController {
 			JSONArray array = selector.searchDataByTileWithGap(x, y, z, gap,
 					types);
 
-			return new ModelAndView("jsonView", success(array));
+			response.getWriter().println(
+					ResponseUtils.assembleRegularResult(array));
 
 		} catch (Exception e) {
 
 			logger.error(e.getMessage(), e);
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage()));
 		}
 	}
 
 	@RequestMapping(value = "/photo/getByTileWithGap")
-	public ModelAndView getPhotoByTile(HttpServletRequest request)
-			throws ServletException, IOException {
+	public void getPhotoByTile(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -196,19 +199,20 @@ public class RenderController extends BaseController {
 
 			JSONArray array = getter.getPhotoByTileWithGap(x, y, z, gap);
 
-			return new ModelAndView("jsonView", success(array));
-
+			response.getWriter().println(
+					ResponseUtils.assembleRegularResult(array));
 		} catch (Exception e) {
 
 			logger.error(e.getMessage(), e);
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage()));
 		}
 	}
 
 	@RequestMapping(value = "/photo/heatmap")
-	public ModelAndView getPhotoHeatmap(HttpServletRequest request)
-			throws ServletException, IOException {
+	public void getPhotoHeatmap(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -231,13 +235,14 @@ public class RenderController extends BaseController {
 			JSONArray array = getter.getPhotoTile(minLon, minLat, maxLon,
 					maxLat, zoom);
 
-			return new ModelAndView("jsonView", success(array));
-
+			response.getWriter().println(
+					ResponseUtils.assembleRegularResult(array));
 		} catch (Exception e) {
 
 			logger.error(e.getMessage(), e);
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage()));
 		}
 	}
 

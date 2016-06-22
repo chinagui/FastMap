@@ -211,19 +211,65 @@ public class IxPoiBusinessTimeOperator implements IOperator {
 		sb.append(ixPoiBusinessTime.tableName());
 		sb.append("(poi_pid, mon_srt, mon_end, week_in_year_srt, week_in_year_end, week_in_month_srt, week_in_month_end, valid_week, day_srt, day_end, time_srt, time_dur, reserved, memo, u_date,u_record, row_id) values (");
 		sb.append(ixPoiBusinessTime.getPoiPid());
-		sb.append(",'" + ixPoiBusinessTime.getMonSrt() + "'");
-		sb.append(",'" + ixPoiBusinessTime.getMonEnd() + "'");
-		sb.append(",'" + ixPoiBusinessTime.getWeekInYearSrt() + "'");
-		sb.append(",'" + ixPoiBusinessTime.getWeekInYearEnd() + "'");
-		sb.append(",'" + ixPoiBusinessTime.getWeekInMonthSrt() + "'");
-		sb.append(",'" + ixPoiBusinessTime.getWeekInMonthEnd() + "'");
-		sb.append(",'" + ixPoiBusinessTime.getVaildWeek() + "'");
-		sb.append(",'" + ixPoiBusinessTime.getDaySrt() + "'");
-		sb.append(",'" + ixPoiBusinessTime.getDayEnd() + "'");
-		sb.append(",'" + ixPoiBusinessTime.getTimeSrt() + "'");
-		sb.append(",'" + ixPoiBusinessTime.getTimeDue() + "'");
-		sb.append(",'" + ixPoiBusinessTime.getReserved() + "'");
-		sb.append(",'" + ixPoiBusinessTime.getMemo() + "'");
+		if(StringUtils.isNotEmpty(ixPoiBusinessTime.getMonSrt())){
+			sb.append(",'" + ixPoiBusinessTime.getMonSrt() + "'");
+		}else{
+			sb.append(", null ");
+		}if(StringUtils.isNotEmpty(ixPoiBusinessTime.getMonEnd())){
+			sb.append(",'" + ixPoiBusinessTime.getMonEnd() + "'");
+		}else{
+			sb.append(", null ");
+		}if(StringUtils.isNotEmpty(ixPoiBusinessTime.getWeekInYearSrt())){
+			sb.append(",'" + ixPoiBusinessTime.getWeekInYearSrt() + "'");
+		}else{
+			sb.append(", null ");
+		}if(StringUtils.isNotEmpty(ixPoiBusinessTime.getWeekInYearEnd())){
+			sb.append(",'" + ixPoiBusinessTime.getWeekInYearEnd() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiBusinessTime.getWeekInMonthSrt())){
+			sb.append(",'" + ixPoiBusinessTime.getWeekInMonthSrt() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiBusinessTime.getWeekInMonthEnd())){
+			sb.append(",'" + ixPoiBusinessTime.getWeekInMonthEnd() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiBusinessTime.getVaildWeek())){
+			sb.append(",'" + ixPoiBusinessTime.getVaildWeek() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiBusinessTime.getDaySrt())){
+			sb.append(",'" + ixPoiBusinessTime.getDaySrt() + "'");
+		}else{
+			sb.append(", null ");
+		}if(StringUtils.isNotEmpty(ixPoiBusinessTime.getDayEnd())){
+			sb.append(",'" + ixPoiBusinessTime.getDayEnd() + "'");
+		}else{
+			sb.append(", null ");
+		}if(StringUtils.isNotEmpty(ixPoiBusinessTime.getTimeSrt())){
+			sb.append(",'" + ixPoiBusinessTime.getTimeSrt() + "'");
+		}else{
+			sb.append(", null ");
+		}if(StringUtils.isNotEmpty(ixPoiBusinessTime.getTimeDue())){
+			sb.append(",'" + ixPoiBusinessTime.getTimeDue() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiBusinessTime.getReserved())){
+			sb.append(",'" + ixPoiBusinessTime.getReserved() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiBusinessTime.getMemo())){
+			sb.append(",'" + ixPoiBusinessTime.getMemo() + "'");
+		}else{
+			sb.append(", null ");
+		}
 		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiBusinessTime.rowId() + "')");
 		stmt.addBatch(sb.toString());

@@ -213,27 +213,100 @@ public class IxPoiHotelOperator implements IOperator {
 		sb.append(ixPoiHotel.tableName());
 		sb.append("(hotel_id, poi_pid, credit_card, rating, checkin_time, checkout_time, room_count, room_type, room_price, breakfast, service, parking, long_description, long_descrip_eng, open_hour, open_hour_eng, telephone, address, city, photo_name, travelguide_flag, u_date,u_record, row_id) values (");
 		sb.append(ixPoiHotel.getPid());
-		sb.append(",'" + ixPoiHotel.getPoiPid() + "'");
-		sb.append(",'" + ixPoiHotel.getCreditCard() + "'");
+		sb.append("," + ixPoiHotel.getPoiPid());
+		if (StringUtils.isNotEmpty(ixPoiHotel.getCreditCard())) {
+			sb.append(",'" + ixPoiHotel.getCreditCard() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
 		sb.append("," + ixPoiHotel.getRating());
-		sb.append(",'" + ixPoiHotel.getCheckinTime() + "'");
-		sb.append(",'" + ixPoiHotel.getCheckoutTime() + "'");
+		if (StringUtils.isNotEmpty(ixPoiHotel.getCheckinTime())) {
+			sb.append(",'" + ixPoiHotel.getCheckinTime() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiHotel.getCheckoutTime())) {
+			sb.append(",'" + ixPoiHotel.getCheckoutTime() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
 		sb.append("," + ixPoiHotel.getRoomCount());
-		sb.append(",'" + ixPoiHotel.getRoomType() + "'");
-		sb.append(",'" + ixPoiHotel.getRoomPrice() + "'");
+
+		if (StringUtils.isNotEmpty(ixPoiHotel.getRoomType())) {
+			sb.append(",'" + ixPoiHotel.getRoomType() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiHotel.getRoomPrice())) {
+			sb.append(",'" + ixPoiHotel.getRoomPrice() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
 		sb.append("," + ixPoiHotel.getBreakfast());
-		sb.append(",'" + ixPoiHotel.getService() + "'");
+
+		if (StringUtils.isNotEmpty(ixPoiHotel.getService())) {
+			sb.append(",'" + ixPoiHotel.getService() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
 		sb.append("," + ixPoiHotel.getParking());
-		sb.append(",'" + ixPoiHotel.getLongDescription() + "'");
-		sb.append(",'" + ixPoiHotel.getLongDescripEng() + "'");
-		sb.append(",'" + ixPoiHotel.getOpenHour() + "'");
-		sb.append(",'" + ixPoiHotel.getOpenHourEng() + "'");
-		sb.append(",'" + ixPoiHotel.getTelephone() + "'");
-		sb.append(",'" + ixPoiHotel.getAddress() + "'");
-		sb.append(",'" + ixPoiHotel.getCity() + "'");
-		sb.append(",'" + ixPoiHotel.getPhotoName() + "'");
+
+		if (StringUtils.isNotEmpty(ixPoiHotel.getLongDescription())) {
+			sb.append(",'" + ixPoiHotel.getLongDescription() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiHotel.getLongDescripEng())) {
+			sb.append(",'" + ixPoiHotel.getLongDescripEng() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiHotel.getOpenHour())) {
+			sb.append(",'" + ixPoiHotel.getOpenHour() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiHotel.getOpenHourEng())) {
+			sb.append(",'" + ixPoiHotel.getOpenHourEng() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiHotel.getTelephone())) {
+			sb.append(",'" + ixPoiHotel.getTelephone() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiHotel.getAddress())) {
+			sb.append(",'" + ixPoiHotel.getAddress() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiHotel.getCity())) {
+			sb.append(",'" + ixPoiHotel.getCity() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiHotel.getPhotoName())) {
+			sb.append(",'" + ixPoiHotel.getPhotoName() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
 		sb.append("," + ixPoiHotel.getTravelguideFlag());
-		sb.append(",'" + StringUtils.getCurrentTime()+"'");
+		sb.append(",'" + StringUtils.getCurrentTime() + "'");
 		sb.append(",1,'" + ixPoiHotel.rowId() + "')");
 		stmt.addBatch(sb.toString());
 	}
@@ -247,8 +320,8 @@ public class IxPoiHotelOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiHotel.tableName()
-				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where   hotel_id     ="
-				+ ixPoiHotel.getPid();
+				+ " set u_record=2 ,u_date=" + StringUtils.getCurrentTime()
+				+ " where   hotel_id     =" + ixPoiHotel.getPid();
 		stmt.addBatch(sql);
 	}
 

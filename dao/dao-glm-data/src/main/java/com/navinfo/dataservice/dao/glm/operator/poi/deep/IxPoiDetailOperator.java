@@ -207,17 +207,64 @@ public class IxPoiDetailOperator implements IOperator {
 		sb.append(ixPoiDetail.tableName());
 		sb.append("(poi_pid, web_site, fax, star_hotel, brief_desc, adver_flag, photo_name, reserved, memo, hw_entryexit, paycard, cardtype, hospital_class, u_date,u_record, row_id) values (");
 		sb.append(ixPoiDetail.getPoiPid());
-		sb.append(",'" + ixPoiDetail.getWebsite() + "'");
-		sb.append(",'" + ixPoiDetail.getFax() + "'");
-		sb.append(",'" + ixPoiDetail.getStarHotel() + "'");
-		sb.append(",'" + ixPoiDetail.getBriefDesc() + "'");
+		if(StringUtils.isNotEmpty(ixPoiDetail.getWebsite())){
+			sb.append(",'" + ixPoiDetail.getWebsite() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiDetail.getFax())){
+			sb.append(",'" + ixPoiDetail.getFax() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiDetail.getStarHotel())){
+			sb.append(",'" + ixPoiDetail.getStarHotel() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiDetail.getBriefDesc())){
+			sb.append(",'" + ixPoiDetail.getBriefDesc() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		
+		
+		
 		sb.append("," + ixPoiDetail.getAdverFlag());
-		sb.append(",'" + ixPoiDetail.getPhotoName() + "'");
-		sb.append(",'" + ixPoiDetail.getReserved() + "'");
-		sb.append(",'" + ixPoiDetail.getMemo() + "'");
+		
+
+		if(StringUtils.isNotEmpty(ixPoiDetail.getPhotoName())){
+			sb.append(",'" + ixPoiDetail.getPhotoName() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		
+		if(StringUtils.isNotEmpty(ixPoiDetail.getReserved())){
+			sb.append(",'" + ixPoiDetail.getReserved() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiDetail.getMemo())){
+			sb.append(",'" + ixPoiDetail.getMemo() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+	
+	
 		sb.append("," + ixPoiDetail.getHwEntryExit());
 		sb.append("," + ixPoiDetail.getPayCard());
-		sb.append(",'" + ixPoiDetail.getCardType() + "'");
+		if(StringUtils.isNotEmpty(ixPoiDetail.getCardType())){
+			sb.append(",'" + ixPoiDetail.getCardType() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
 		sb.append("," + ixPoiDetail.getHospitalClass());
 		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiDetail.rowId() + "')");

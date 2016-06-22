@@ -51,7 +51,7 @@ public class CommitMonthlyLogFlusher extends LogFlusher {
 		DatalockApi datalockApi = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
 		int regionId = this.getRegionId();
 		int lockObject=this.getLockObject();
-		return datalockApi.lockGrid(regionId , lockObject, this.getGrids(), this.getLockType(),FmEditLock.DB_TYPE_MONTH );
+		return datalockApi.lockGrid(regionId , lockObject, this.getGrids(), this.getLockType(),FmEditLock.DB_TYPE_MONTH,0);
 	}
 	@Override
 	public void unlockSourceDbGrid(int lockHookId) {

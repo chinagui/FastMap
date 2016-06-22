@@ -76,7 +76,7 @@ public class GdbExportJob extends AbstractJob {
 			Oracle2OracleDataOutput output = new Oracle2OracleDataOutput(targetSchema,req.getCheckExistTables(),req.getWhenExist(),req.getTableReNames(),ctx);
 			response("导出目标预处理完成",null);
 			//3.执行导出脚本
-			ExecuteSql exportSqlExecutor = new ExecuteSql(input,output,ExportConfig.MODE_COPY,req.isDataIntegrity(),req.isMultiThread4Input(),req.isMultiThread4Output());
+			ExecuteSql exportSqlExecutor = new ExecuteSql(input,output,req.getMode(),req.isDataIntegrity(),req.isMultiThread4Input(),req.isMultiThread4Output());
 			exportSqlExecutor.execute();
 			response("导出脚本执行完成",null);
 			//4. 维护M_MESH_TYPE

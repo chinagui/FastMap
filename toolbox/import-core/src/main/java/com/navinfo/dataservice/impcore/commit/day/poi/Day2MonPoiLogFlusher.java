@@ -79,7 +79,7 @@ public class Day2MonPoiLogFlusher extends LogFlusher {
 		int lockObject=this.getLockObject();
 		Collection<Integer> gridsToLock = queryGrids2Lock();
 		if (CollectionUtils.isEmpty(gridsToLock)) return 0;//如果没有要锁定的grids，则返回
-		return datalockApi.lockGrid(regionId , lockObject, gridsToLock, this.getLockType(),FmEditLock.DB_TYPE_MONTH );
+		return datalockApi.lockGrid(regionId , lockObject, gridsToLock, this.getLockType(),FmEditLock.DB_TYPE_MONTH ,0);
 	}
 	/**
 	 * 获取要锁定的grid的列表，因为poi日落月时，没有grids参数；只能通过履历来计算

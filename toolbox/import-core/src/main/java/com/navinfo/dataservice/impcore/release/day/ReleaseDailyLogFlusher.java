@@ -78,7 +78,7 @@ public class ReleaseDailyLogFlusher extends LogFlusher {
 		DatalockApi datalockApi = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
 		int regionId = this.getRegionId();
 		int lockObject=this.getLockObject();
-		return datalockApi.lockGrid(regionId , lockObject, this.getGrids(), this.getLockType(),FmEditLock.DB_TYPE_DAY );
+		return datalockApi.lockGrid(regionId , lockObject, this.getGrids(), this.getLockType(),FmEditLock.DB_TYPE_DAY ,0);
 	}
 	@Override
 	public void unlockSourceDbGrid(int lockHookId) {

@@ -197,7 +197,7 @@ public class BlockOperation {
 					List<Integer> list = new ArrayList<Integer>();
 					while (rs.next()) {
 						String[] s = rs.getString("status").split(",");
-						ArrayList<String> status = (ArrayList<String>) Arrays.asList(s);
+						List<String> status = (List<String>) Arrays.asList(s);
 						if(!status.contains("1")){
 							list.add(rs.getInt("block_id"));
 						}

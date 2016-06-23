@@ -135,10 +135,10 @@ public class EditController extends BaseController {
 
 			if (jsonReq.containsKey("detailId")) {
 				int detailId = jsonReq.getInt("detailId");
-
+				int branchType = jsonReq.getInt("branchType");
+				String rowId =jsonReq.getString("rowId");
 				RdBranchSelector selector = new RdBranchSelector(conn);
-
-				IRow row = selector.loadByDetailId(detailId, false);
+				IRow row = selector.loadByDetailId(detailId,branchType,rowId, false);
 
 				if (row != null) {
 
@@ -385,8 +385,8 @@ public class EditController extends BaseController {
 			jobReq.put("gridIds", gridIds);
 					
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
-			//long userId=tokenObj.getUserId();
-			long userId=2;
+			long userId=tokenObj.getUserId();
+			//long userId=2;
 			JobApiService apiService=(JobApiService) ApplicationContextUtil.getBean("jobApiService");
 			long jobId=apiService.createJob("editPoiBaseRelease", jobReq, userId, "POI行编提交");	
 			return new ModelAndView("jsonView", success(jobId));

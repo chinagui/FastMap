@@ -179,6 +179,7 @@ public class SubtaskController extends BaseController {
 				subtask.put("geometry", subtaskList.get(i).getGeometry());
 				subtask.put("stage", subtaskList.get(i).getStage());
 				subtask.put("type", subtaskList.get(i).getType());
+				subtask.put("groupId", subtaskList.get(i).getGroupId());
 				subtask.put("status", subtaskList.get(i).getStatus());
 				subtask.put("ExeUserId", subtaskList.get(i).getExeUserId());
 				subtask.put("planStartDate", DateUtils.dateToString(subtaskList.get(i).getPlanStartDate()));

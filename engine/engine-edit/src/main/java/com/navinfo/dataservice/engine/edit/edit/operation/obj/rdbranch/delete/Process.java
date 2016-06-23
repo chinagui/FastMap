@@ -1,135 +1,55 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.delete;
 
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchRealimage;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchSchematic;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 
 public class Process extends AbstractProcess<Command> {
 
-//	private Command command;
-//
-//	private Result result;
-//
-//	private Connection conn;
-//
-//	private String postCheckMsg;
-
 	private RdBranch branch;
+	
+//	private RdBranchDetail detail;
+//	
+//	private RdSignboard signboard;
+//	
+//	private RdSignasreal signasreal;
+//	
+//	private RdSeriesbranch seriesbranch;
+//	
+//	private RdBranchRealimage realimage;
+//	
+//	private RdBranchSchematic schematic;
 
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
-//		this.command = (Command) command;
-//
-//		this.result = new Result();
-//
-//		this.conn = GlmDbPoolManager.getInstance().getConnection(this.command
-//				.getProjectId());
-
 	}
 	
 	@Override
 	public boolean prepareData() throws Exception {
 
 		RdBranchSelector selector = new RdBranchSelector(this.getConn());
-
-		this.branch = (RdBranch) selector.loadById(this.getCommand().getPid(),
-				true);
-
+		
+		int type = this.getCommand().getBranchType();
+		
+		int detailId = this.getCommand().getDetailId();
+		
+		String rowId = this.getCommand().getRowId();
+		
+		this.branch = (RdBranch) selector.loadByDetailId(detailId,type,rowId,true);
+		
 		return true;
 	}
 	
 	@Override
 	public String exeOperation() throws Exception {
-		// TODO Auto-generated method stub
 		return new Operation(this.getCommand(),this.branch).run(this.getResult());
 	}
-//
-//	@Override
-//	public ICommand getCommand() {
-//
-//		return command;
-//	}
-//
-//	@Override
-//	public Result getResult() {
-//
-//		return result;
-//	}
-
-
-
-//	@Override
-//	public String preCheck() throws Exception {
-//
-//		return null;
-//	}
-//
-//	@Override
-//	public String run() throws Exception {
-//		String msg;
-//		try {
-//			conn.setAutoCommit(false);
-//
-//			this.prepareData();
-//
-//			String preCheckMsg = this.preCheck();
-//
-//			if (preCheckMsg != null) {
-//				throw new Exception(preCheckMsg);
-//			}
-//
-//			IOperation operation = new Operation(command, this.branch);
-//
-//			msg = operation.run(result);
-//
-//			this.recordData();
-//
-//			this.postCheck();
-//
-//			conn.commit();
-//
-//		} catch (Exception e) {
-//
-//			conn.rollback();
-//
-//			throw e;
-//		} finally {
-//			try {
-//				conn.close();
-//			} catch (Exception e) {
-//
-//			}
-//		}
-//
-//		return msg;
-//	}
-//
-//	@Override
-//	public void postCheck() throws Exception {
-//
-//	}
-//
-//	@Override
-//	public String getPostCheck() throws Exception {
-//
-//		return postCheckMsg;
-//	}
-//
-//	@Override
-//	public boolean recordData() throws Exception {
-//		
-//		LogWriter lw = new LogWriter(conn, this.command.getDbId());
-//		
-//		lw.generateLog(command, result);
-//		
-//		OperatorFactory.recordData(conn, result);
-//
-//		lw.recordLog(command, result);
-//
-//		return true;
-//	}
-
-
-
 }

@@ -630,6 +630,60 @@ public class IxPoiSelector implements ISelector {
 
 		}
 	}
+	
+	/**
+	 * 根据rowId获取POI（返回名称和分类）
+	 * @param gridDate
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject getByRowIdForAndroid(String rowId) throws Exception {
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		
+		
+		StringBuffer sb = new StringBuffer();
+		sb.append("SELECT name,kind_code");
+		sb.append(" FROM ix_poi");
+		sb.append(" WHERE row_id=:1");
+		
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setString(1, rowId);
+			resultSet = pstmt.executeQuery();
+			
+			JSONObject ret = new JSONObject();
+			if (resultSet.next()) {
+				ret.put("name", resultSet.getString("name"));
+				ret.put("kindCode", resultSet.getString("kind_code"));
+			}
+			
+			return ret;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+	}
 
 	/**
 	 * 设置属性

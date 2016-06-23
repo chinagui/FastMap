@@ -260,7 +260,7 @@ public class BlockService {
 		}
 	}
 
-	public List<Integer> close(List<Integer> blockIdList) throws ServiceException {
+	public HashMap close(List<Integer> blockIdList) throws ServiceException {
 		Connection conn = null;
 		try {
 
@@ -271,18 +271,16 @@ public class BlockService {
 
 			if (!blockReadyToClose.isEmpty()) {
 				BlockOperation.closeBlockByBlockIdList(conn, blockReadyToClose);
-
-				List<Integer> unClosedBlockList = new ArrayList<Integer>();
-				for (int i = 0; i < blockIdList.size(); i++) {
-					if (!blockReadyToClose.contains(blockIdList.get(i))) {
-						unClosedBlockList.add(blockIdList.get(i));
-					}
+			} 
+			
+			HashMap unClosedBlocks = new HashMap();
+			for (int i = 0; i < blockIdList.size(); i++) {
+				if (!blockReadyToClose.contains(blockIdList.get(i))) {
+					unClosedBlocks.put(blockIdList.get(i), "BLOCK内存在未完成作业，BLOCK无法关闭");
 				}
-
-				return unClosedBlockList;
-			} else {
-				return blockIdList;
 			}
+
+			return unClosedBlocks;
 
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

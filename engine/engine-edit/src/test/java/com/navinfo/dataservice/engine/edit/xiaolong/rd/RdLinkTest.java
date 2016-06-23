@@ -41,19 +41,6 @@ public class RdLinkTest extends InitApplication{
 	@Test
 	public void testAddRdLink()
 	{
-		String linea= "[[116.02564,39.76918], [116.02601,39.76917]]";
-		String lineb= "[[116.02601,39.76917], [116.02634,39.76921]]";
-		String linec= "[[116.02634,39.76921], [116.02670,39.76922]]";
-		String lined= "[[116.02670,39.76922], [116.02728,39.76921]]";
-		String linee= "[[116.02728,39.76921], [116.02766,39.76909]]";
-		
-		String linef = "[[116.02601,39.76917], [116.02603,39.76889]]";
-		String lineg = "[[116.02629,39.76954], [116.02634,39.76921]]";
-		
-		String lineh = "[[116.02670,39.76922], [116.02674,39.76891]]";
-		
-		String linek= "[[116.02670,39.76922], [116.02656,39.76950]]";
-		String linel ="[[116.02670,39.76922], [116.02683,39.76956]]";
 		String linem = "[[116.02728,39.76921], [116.02775,39.76921]]";
 		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"projectId\":11," +
 				"\"data\":{\"eNodePid\":0,\"sNodePid\":100019730,\"geometry\":{\"type\":\"LineString\"," +

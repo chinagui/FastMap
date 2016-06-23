@@ -19,11 +19,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.job.iface.JobApiService;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -133,10 +135,10 @@ public class EditController extends BaseController {
 
 			if (jsonReq.containsKey("detailId")) {
 				int detailId = jsonReq.getInt("detailId");
-
+				int branchType = jsonReq.getInt("branchType");
+				String rowId =jsonReq.getString("rowId");
 				RdBranchSelector selector = new RdBranchSelector(conn);
-
-				IRow row = selector.loadByDetailId(detailId, false);
+				IRow row = selector.loadByDetailId(detailId,branchType,rowId, false);
 
 				if (row != null) {
 
@@ -373,51 +375,24 @@ public class EditController extends BaseController {
 			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
-		Connection conn = null;
-		Connection manConn=null;
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			int dbId = jsonReq.getInt("dbId");
-			int subtaskId=jsonReq.getInt("subtaskId");
-			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
-			manConn=DBConnector.getInstance().getManConnection();
-			Subtask subtaskObj=apiService.queryBySubtaskId(subtaskId);
-			String sql="SELECT E.STATUS, COUNT(1) COUNT_NUM "
-					+ "  FROM POI_EDIT_STATUS E, IX_POI P"
-					+ " WHERE E.ROW_ID = P.ROW_ID"
-					+ "   AND SDO_RELATE(P.GEOMETRY, SDO_GEOMETRY('"+subtaskObj.getGeometry()+"', 8307), 'MASK=ANYINTERACT') ="
-					+ "       'TRUE'"
-					+ " GROUP BY E.STATUS";
-			conn = DBConnector.getInstance().getConnectionById(dbId);
-			ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>(){
-				public JSONObject handle(ResultSet rs) throws SQLException {
-					JSONObject staticsObj=new JSONObject();
-					while(rs.next()){
-						staticsObj.put(rs.getInt("STATUS"), rs.getInt("COUNT_NUM"));
-					}
-					return staticsObj;
-				}	    		
-	    	};		
-	    	QueryRunner run = new QueryRunner();			
-			return new ModelAndView("jsonView", success(run.query(conn, sql,rsHandler)));
+			JSONArray gridIds=jsonReq.getJSONArray("gridIds");
+			
+			JSONObject jobReq=new JSONObject();
+			jobReq.put("targetDbId", dbId);
+			jobReq.put("gridIds", gridIds);
+					
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
+			//long userId=2;
+			JobApiService apiService=(JobApiService) ApplicationContextUtil.getBean("jobApiService");
+			long jobId=apiService.createJob("editPoiBaseRelease", jobReq, userId, "POI行编提交");	
+			return new ModelAndView("jsonView", success(jobId));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
-		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-			if (manConn != null) {
-				try {
-					manConn.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
 		}
 	}
 }

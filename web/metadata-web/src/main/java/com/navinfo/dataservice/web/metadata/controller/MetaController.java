@@ -18,14 +18,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
-import com.navinfo.dataservice.engine.man.version.VersionService;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
 import com.navinfo.dataservice.engine.meta.chain.ChainSelector;
 import com.navinfo.dataservice.engine.meta.chain.FocusSelector;
@@ -230,9 +231,9 @@ public class MetaController extends BaseController {
 
 			JSONObject json = new JSONObject();
 
-			VersionService selector = new VersionService();
+			ManApi man = (ManApi) ApplicationContextUtil.getBean("manApi");
 
-			String specVersion = selector.query(3);
+			String specVersion = man.querySpecVersionByType(3);
 
 			json.put("version", version);
 

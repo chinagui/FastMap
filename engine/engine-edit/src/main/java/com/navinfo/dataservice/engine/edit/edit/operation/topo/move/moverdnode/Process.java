@@ -48,7 +48,6 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
-		return new Operation(this.getCommand(),updateNode).run(this.getResult());
+		return new Operation(this.getCommand(),updateNode,this.getConn()).run(this.getResult());
 	}
-
 }

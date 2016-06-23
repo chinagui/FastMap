@@ -119,11 +119,14 @@ public class TaskService {
 				Iterator keys = conditionJson.keys();
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
+					if ("taskId".equals(key)) {selectSql+=" and T.task_id="+conditionJson.getInt(key);}
 					if ("cityId".equals(key)) {selectSql+=" and T.city_id="+conditionJson.getInt(key);}
 					if ("createUserId".equals(key)) {selectSql+=" and T.create_user_id="+conditionJson.getInt(key);}
 					if ("descp".equals(key)) {selectSql+=" and T.descp='"+conditionJson.getString(key)+"'";}
 					if ("name".equals(key)) {selectSql+=" and T.name like '%"+conditionJson.getString(key)+"%'";}
 					if ("status".equals(key)) {selectSql+=" and T.status="+conditionJson.getInt(key);}
+					if ("createUserName".equals(key)) {selectSql+=" and U.USER_REAL_NAME like '%"+conditionJson.getString(key)+"%'";}
+					if ("cityName".equals(key)) {selectSql+=" and C.CITY_NAME like '%"+conditionJson.getString(key)+"%'";}
 					}
 				}
 			if(null!=orderJson && !orderJson.isEmpty()){

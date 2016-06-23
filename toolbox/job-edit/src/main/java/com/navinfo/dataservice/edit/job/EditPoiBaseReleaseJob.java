@@ -143,7 +143,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		Connection conn = null;
 		try{
 			String sql="SELECT 1 FROM NI_VAL_EXCEPTION_GRID G "
-					+ "WHERE G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(releaseJobRequest.getGridIds(),",")+"))";
+					+ "WHERE G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(releaseJobRequest.getGridIds(),",")+")";
 			conn = DBConnector.getInstance().getConnectionById(releaseJobRequest.getTargetDbId());
 			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>(){
 				public Integer handle(ResultSet rs) throws SQLException {

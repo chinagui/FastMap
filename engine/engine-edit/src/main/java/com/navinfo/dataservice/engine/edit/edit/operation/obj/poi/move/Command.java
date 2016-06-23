@@ -114,6 +114,7 @@ public class Command extends AbstractCommand implements ICommand {
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 		this.setDbId(json.getInt("dbId"));
+		this.setPid(json.getInt("objId"));
 		JSONObject data = json.getJSONObject("data");
 		this.setLinkPid(data.getInt("linkPid"));
 		//获取经纬度

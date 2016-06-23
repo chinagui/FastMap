@@ -75,8 +75,8 @@ public class IxPoiChargingPlotOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 		StringBuilder sb = new StringBuilder("update "
-				+ ixPoiChargingPlot.tableName() + " set u_record=3,u_date="
-				+ StringUtils.getCurrentTime() + ",");
+				+ ixPoiChargingPlot.tableName() + " set u_record=3,u_date='"
+				+ StringUtils.getCurrentTime() + "',");
 
 		PreparedStatement pstmt = null;
 
@@ -318,7 +318,7 @@ public class IxPoiChargingPlotOperator implements IOperator {
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 
 		String sql = "update " + ixPoiChargingPlot.tableName()
-				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where row_id=hextoraw('"
+				+ " set u_record=2 ,u_date='"+StringUtils.getCurrentTime()+"' where row_id=hextoraw('"
 				+ ixPoiChargingPlot.rowId() + "')";
 		stmt.addBatch(sql);
 	}

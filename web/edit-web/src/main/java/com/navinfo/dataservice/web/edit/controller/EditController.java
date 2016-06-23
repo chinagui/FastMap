@@ -135,10 +135,10 @@ public class EditController extends BaseController {
 
 			if (jsonReq.containsKey("detailId")) {
 				int detailId = jsonReq.getInt("detailId");
-
+				int branchType = jsonReq.getInt("branchType");
+				String rowId =jsonReq.getString("rowId");
 				RdBranchSelector selector = new RdBranchSelector(conn);
-
-				IRow row = selector.loadByDetailId(detailId, false);
+				IRow row = selector.loadByDetailId(detailId,branchType,rowId, false);
 
 				if (row != null) {
 

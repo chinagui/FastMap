@@ -220,13 +220,13 @@ public class InforManService {
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
 					if ("inforId".equals(key)) {
-						selectSql += " and i.infor_id=" + conditionJson.getInt(key);
+						selectSql += " and i.infor_id=" + conditionJson.getString(key);
 					}
-					if ("createUserId".equals(key)) {
-						selectSql += " and i.create_user_id=" + conditionJson.getInt(key);
+					if ("createUserName".equals(key)) {
+						selectSql += " and u.createUserName like '%" + conditionJson.getInt(key) + "%'";
 					}
 					if ("inforName".equals(key)) {
-						selectSql += " and i.infor_name like '%" + conditionJson.getString(key) + "%";
+						selectSql += " and i.infor_name like '%" + conditionJson.getString(key) + "%'";
 					}
 				}
 			}
@@ -235,11 +235,15 @@ public class InforManService {
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
 					if ("inforStatus".equals(key)) {
-						selectSql += " order by i.infor_status";
+						selectSql += (" order by i.infor_status "+orderJson.getString("inforStatus"));
 						break;
 					}
-					if ("inforLevel  ".equals(key)) {
-						selectSql += " order by i.infor_level";
+					if ("inforLevel".equals(key)) {
+						selectSql += (" order by i.infor_level "+orderJson.getString("inforLevel"));
+						break;
+					}
+					if ("inforId".equals(key)) {
+						selectSql += (" order by i.inforId "+orderJson.getString("inforId"));
 						break;
 					}
 				}

@@ -64,7 +64,7 @@ public class IxPoiVideoOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiVideo.tableName() + " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
+		StringBuilder sb = new StringBuilder("update " + ixPoiVideo.tableName() + " set u_record=3,u_date='"+StringUtils.getCurrentTime()+"',");
 
 		PreparedStatement pstmt = null;
 
@@ -215,7 +215,7 @@ public class IxPoiVideoOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiVideo.tableName() + " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where row_id=hextoraw('" + ixPoiVideo.rowId()
+		String sql = "update " + ixPoiVideo.tableName() + " set u_record=2,u_date='"+StringUtils.getCurrentTime()+"' where row_id=hextoraw('" + ixPoiVideo.rowId()
 				+ "')";
 
 		stmt.addBatch(sql);

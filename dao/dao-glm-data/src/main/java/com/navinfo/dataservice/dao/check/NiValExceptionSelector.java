@@ -271,7 +271,7 @@ public class NiValExceptionSelector {
 
 		ResultSet rs = null;
 
-		StringBuilder sql = new StringBuilder("select * from (select b.*,rownum rn from (select md5_code,ruleid,situation,\"LEVEL\" level_,targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,worker from ni_val_exception a,ni_val_exception_grid b where a.md5_code=b.ck_md5_code and b.grid_id in(");
+		StringBuilder sql = new StringBuilder("select * from (select b.*,rownum rn from (select md5_code,ruleid,situation,\"LEVEL\" level_,targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,worker from ni_val_exception a,ni_val_exception_grid b where a.md5_code=b.md5_code and b.grid_id in(");
 
 		for (int i = 0; i < grids.size(); i++) {
 			if (i > 0) {
@@ -347,7 +347,7 @@ public class NiValExceptionSelector {
 		ResultSet rs = null;
 
 		StringBuilder sql = new StringBuilder(
-				"select count(distinct(ck_md5_code)) count from ni_val_exception_grid a where grid_id in (");
+				"select count(distinct(md5_code)) count from ni_val_exception_grid a where grid_id in (");
 
 		for (int i = 0; i < grids.size(); i++) {
 			if (i > 0) {

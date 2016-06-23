@@ -44,4 +44,17 @@ public class AdLinkTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
+	public void testDeleteAdLink()
+	{
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDLINK\",\"dbId\":42,\"objId\":  100005744}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

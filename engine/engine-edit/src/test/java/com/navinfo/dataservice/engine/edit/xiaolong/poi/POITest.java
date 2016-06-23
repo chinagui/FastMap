@@ -75,7 +75,7 @@ public class POITest extends InitApplication{
 	
 	@Test
 	public void addPoi(){
-		String parameter = "{\"dbId\":42,\"command\":\"UPDATE\",\"type\":\"IXPOI\",\"objId\":88581671,\"data\":{\"names\":[{\"nameId\":0,\"poiPid\":88581671,\"nameGroupid\":2,\"langCode\":\"CHI\",\"nameClass\":1,\"nameType\":2,\"name\":\"充电桩556\",\"namePhonetic\":\"Chong+Dian+Zhuang\",\"keywords\":null,\"nidbPid\":null},{\"nameId\":0,\"poiPid\":88581671,\"nameGroupid\":1,\"langCode\":\"CHI\",\"nameClass\":1,\"nameType\":1,\"name\":\"充电桩\",\"namePhonetic\":\"Chong+Dian+Zhuang\",\"keywords\":null,\"nidbPid\":null},{\"nameId\":0,\"poiPid\":88581671,\"nameGroupid\":1,\"langCode\":\"ENG\",\"nameClass\":1,\"nameType\":2,\"name\":\"Charging+Pile\",\"namePhonetic\":null,\"keywords\":null,\"nidbPid\":null}]}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":42,\"data\":{\"longitude\":116.39552235603331,\"latitude\":39.90676527744907,\"linkPid\":625962}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -85,6 +85,18 @@ public class POITest extends InitApplication{
 		}
 	}
 	
+	@Test
+	public void testUpdatePoi()
+	{
+		String parameter = "{\"dbId\":42,\"command\":\"UPDATE\",\"type\":\"IXPOI\",\"objId\":100000030,\"data\":{\"addresses\":[{\"addons\":\"\",\"addonsPhonetic\":\"\",\"addrname\":\"\",\"addrnamePhonetic\":\"\",\"building\":\"\",\"buildingPhonetic\":\"\",\"city\":\"平谷区\",\"cityPhonetic\":\"Ping Gu Qu\",\"county\":\"\",\"countyPhonetic\":\"\",\"estab\":\"\",\"estabPhonetic\":\"\",\"floor\":\"\",\"floorPhonetic\":\"\",\"fullname\":\"北京市平谷区峪口村育才路４６号\",\"fullnamePhonetic\":\"Bei Jing Shi Ping Gu Qu Yu Kou Cun Yu Cai Lu 46 Hao\",\"housenumPhonetic\":\"46\",\"housesum\":\"４６\",\"landmark\":\"\",\"landmarkPhonetic\":\"\",\"langCode\":\"CHI\",\"nameGroupid\":1,\"pid\":10841289,\"place\":\"峪口村\",\"placePhonetic\":\"Yu Kou Cun\",\"poiPid\":1317,\"prefix\":\"\",\"prefixPhonetic\":\"\",\"provPhonetic\":\"Bei Jing Shi\",\"province\":\"北京市\",\"roadnamePhonetic\":\"\",\"rodename\":\"\",\"room\":\"\",\"roomPhonetic\":\"\",\"rowId\":\"3524E79CE0C66E1AE050A8C08304BA17\",\"srcFlag\":0,\"street\":\"育才路\",\"streetPhonetic\":\"Yu Cai Lu\",\"subnum\":\"\",\"subsumPhonetic\":\"\",\"surfix\":\"\",\"surfixPhonetic\":\"\",\"town\":\"\",\"townPhonetic\":\"\",\"type\":\"号\",\"typePhonetic\":\"Hao\",\"uDate\":\"\",\"uRecord\":0,\"unit\":\"\",\"unitPhonetic\":\"\",\"objStatus\":\"INSERT\"}],\"pid\":100000030}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	@Test
 	public void testDeleteParent()
 	{

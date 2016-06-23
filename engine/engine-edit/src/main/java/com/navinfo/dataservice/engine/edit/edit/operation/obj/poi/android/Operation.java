@@ -1,10 +1,13 @@
-package com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.downloadCheck;
+package com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.android;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 
 import net.sf.json.JSONArray;
@@ -87,5 +90,38 @@ public class Operation {
 		}
 		
 	}
+	
+	/**
+	 * 根据rowId获取POI（返回名称和分类）
+	 * @param rowId
+	 * @param x
+	 * @param y
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject getByRowId(String rowId,double x,double y) throws Exception {
+		MetadataApi metaApi = (MetadataApi)ApplicationContextUtil.getBean("metadataApi");
+		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
+		Connection conn = null;
+		try {
+			int adminId = metaApi.queryAdminIdByLocation(x, y);
+			int dbId = manApi.queryDbIdByAdminId(adminId);
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			IxPoiSelector poiSelector = new IxPoiSelector(conn);
+			JSONObject ret = poiSelector.getByRowIdForAndroid(rowId);
+			return ret;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+
+				}
+			}
+		}
+	}
+	
 
 }

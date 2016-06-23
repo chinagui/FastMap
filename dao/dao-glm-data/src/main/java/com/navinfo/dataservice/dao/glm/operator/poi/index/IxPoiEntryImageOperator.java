@@ -60,7 +60,7 @@ public class IxPoiEntryImageOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiEntryimage.tableName() + " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
+		StringBuilder sb = new StringBuilder("update " + ixPoiEntryimage.tableName() + " set u_record=3,u_date= '"+StringUtils.getCurrentTime()+"',");
 
 		PreparedStatement pstmt = null;
 
@@ -229,7 +229,7 @@ public class IxPoiEntryImageOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiEntryimage.tableName() + " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where row_id=hextoraw('"
+		String sql = "update " + ixPoiEntryimage.tableName() + " set u_record=2,u_date= '"+StringUtils.getCurrentTime()+"' where row_id=hextoraw('"
 				+ ixPoiEntryimage.rowId() + "')";
 
 		stmt.addBatch(sql);

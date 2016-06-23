@@ -80,8 +80,8 @@ public class IxPoiHotelOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 		StringBuilder sb = new StringBuilder("update " + ixPoiHotel.tableName()
-				+ " set u_record=3,u_date=" + StringUtils.getCurrentTime()
-				+ ",");
+				+ " set u_record=3,u_date='" + StringUtils.getCurrentTime()
+				+ "',");
 
 		PreparedStatement pstmt = null;
 
@@ -320,8 +320,8 @@ public class IxPoiHotelOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiHotel.tableName()
-				+ " set u_record=2 ,u_date=" + StringUtils.getCurrentTime()
-				+ " where   hotel_id     =" + ixPoiHotel.getPid();
+				+ " set u_record=2 ,u_date='" + StringUtils.getCurrentTime()
+				+ "' where   hotel_id     =" + ixPoiHotel.getPid();
 		stmt.addBatch(sql);
 	}
 

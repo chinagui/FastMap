@@ -144,24 +144,27 @@ public class SubtaskController extends BaseController {
 			int curPageNum= 1;//默认为第一页
 			if(dataJson.containsKey("pageNum")){
 				curPageNum = dataJson.getInt("pageNum");
-				dataJson.remove("pageNum");
 			}
 			
 			int pageSize = 20;//默认页容量为10
 			if(dataJson.containsKey("pageSize")){
 				pageSize = dataJson.getInt("pageSize");
-				dataJson.remove("pageSize");
 			}
 			
 			JSONObject order =null; 
 			if(dataJson.containsKey("order")){
 				order=dataJson.getJSONObject("order");
-				dataJson.remove("order");
 			}
-
-			Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
 			
-			List<Subtask> subtaskList = service.list(bean,order,pageSize,curPageNum);
+			JSONObject condition =null; 
+			if(dataJson.containsKey("condition")){
+				condition=dataJson.getJSONObject("condition");
+			}
+			
+			//作业阶段
+			int stage = dataJson.getInt("stage");
+		
+			List<Subtask> subtaskList = service.list(stage,condition,order,pageSize,curPageNum);
 			
 			List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
 			
@@ -186,13 +189,13 @@ public class SubtaskController extends BaseController {
 				if (subtaskList.get(i).getBlock()!=null && StringUtils.isNotEmpty(subtaskList.get(i).getBlock().toString())){
 					subtask.put("blockId", subtaskList.get(i).getBlock().getBlockId());
 					subtask.put("blockName", subtaskList.get(i).getBlock().getBlockName());
-					if(0 == bean.getStage()){
+					if(0 == stage){
 						subtask.put("BlockCollectPlanStartDate", subtaskList.get(i).getBlockMan().getCollectPlanStartDate());
 						subtask.put("BlockCollectPlanEndDate", subtaskList.get(i).getBlockMan().getCollectPlanEndDate());
-					}else if(1 == bean.getStage()){
+					}else if(1 == stage){
 						subtask.put("BlockDayEditPlanStartDate", subtaskList.get(i).getBlockMan().getDayEditPlanStartDate());
 						subtask.put("BlockDayEditPlanEndDate", subtaskList.get(i).getBlockMan().getDayEditPlanEndDate());
-					}else if(2 == bean.getStage()){
+					}else if(2 == stage){
 						subtask.put("BlockCMonthEditPlanStartDate", subtaskList.get(i).getBlockMan().getMonthEditPlanStartDate());
 						subtask.put("BlockCMonthEditPlanEndDate", subtaskList.get(i).getBlockMan().getMonthEditPlanEndDate());
 					}
@@ -201,7 +204,7 @@ public class SubtaskController extends BaseController {
 					subtask.put("taskId", subtaskList.get(i).getTask().getTaskId());
 					subtask.put("taskDescp", subtaskList.get(i).getTask().getDescp());
 					subtask.put("taskName", subtaskList.get(i).getTask().getName());
-					if(2 == bean.getStage()){
+					if(2 == stage){
 						subtask.put("TaskCMonthEditPlanStartDate", subtaskList.get(i).getTask().getMonthEditPlanStartDate());
 						subtask.put("TaskCMonthEditPlanEndDate", subtaskList.get(i).getTask().getMonthEditPlanEndDate());
 					}

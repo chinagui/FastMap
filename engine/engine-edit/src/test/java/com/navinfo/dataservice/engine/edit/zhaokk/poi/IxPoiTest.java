@@ -50,9 +50,9 @@ public class IxPoiTest extends InitApplication{
 		String pidName = "";
 		Connection conn = DBConnector.getInstance().getConnectionById(42);
 		IxPoiSelector  ixPoiSelector  = new IxPoiSelector(conn);
-		JSONObject jsonObject = ixPoiSelector.loadPids(false,pid,pidName,pageSize, pageNum);
+		//JSONObject jsonObject = ixPoiSelector.loadPids(false,pid,pidName,pageSize, pageNum);
 		
-		System.out.println(jsonObject);
+		//System.out.println(jsonObject);
 	}
 	
 	

@@ -9,6 +9,8 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchRealimage;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -23,8 +25,6 @@ public class Transaction {
 	 */
 	private String requester;
 
-	private String rowId;
-	
 	/**
 	 * 操作类型
 	 */
@@ -65,13 +65,18 @@ public class Transaction {
 		List<IRow> rows = process.getResult().getAddObjects();
 		if(CollectionUtils.isNotEmpty(process.getResult().getAddObjects()))
 		{
-			return rows.get(0).rowId();
+			for(IRow row : rows)
+			{
+				if(row instanceof RdBranchRealimage || row instanceof RdSeriesbranch)
+				{
+					return row.rowId();
+				}
+			}
 		}
 		return null;
 	}
 
 	public void setRowId(String rowId) {
-		this.rowId = rowId;
 	}
 
 	/**

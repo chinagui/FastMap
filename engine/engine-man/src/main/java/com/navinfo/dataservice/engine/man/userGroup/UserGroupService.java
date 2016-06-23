@@ -340,11 +340,14 @@ public class UserGroupService {
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();	
-					
+			
 			String selectSql = "select ug.GROUP_ID"
-					+ ",ug.GROUP_NAME"
-					+ " from user_group ug"
-					+ " where ug.group_type =" + userGroup.getGroupType();
+					+ ",ug.GROUP_NAME,ug.GROUP_TYPE"
+					+ " from user_group ug";
+					
+			if(userGroup.getGroupType() != null){	
+				selectSql += " where ug.group_type =" + userGroup.getGroupType();
+			}
 
 			ResultSetHandler<List<UserGroup>> rsHandler = new ResultSetHandler<List<UserGroup>>(){
 				public List<UserGroup> handle(ResultSet rs) throws SQLException {
@@ -353,6 +356,7 @@ public class UserGroupService {
 						UserGroup model = new UserGroup();
 						model.setGroupId(rs.getInt("GROUP_ID"));
 						model.setGroupName(rs.getString("GROUP_NAME"));
+						model.setGroupType(rs.getInt("GROUP_TYPE"));
 						list.add(model);
 					}
 					return list;

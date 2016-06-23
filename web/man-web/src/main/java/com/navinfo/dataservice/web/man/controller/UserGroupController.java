@@ -162,10 +162,6 @@ public class UserGroupController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			
-			if(dataJson.isEmpty()){
-				return new ModelAndView("jsonView", success("无组类型信息"));
-			}
 
 			UserGroup  bean = (UserGroup)JSONObject.toBean(dataJson, UserGroup.class);
 			
@@ -177,6 +173,7 @@ public class UserGroupController extends BaseController {
 				HashMap<String, Comparable> userGroup = new HashMap<String, Comparable>();
 				userGroup.put("groupId", userGroupList.get(i).getGroupId());
 				userGroup.put("groupName", userGroupList.get(i).getGroupName());
+				userGroup.put("groupType", userGroupList.get(i).getGroupType());
 				data.add(userGroup);
 			}
 			

@@ -40,5 +40,13 @@
 		class="com.navinfo.dataservice.cop.waistcoat.job.GdbBatchJob"
 	 	request="com.navinfo.dataservice.cop.waistcoat.job.GdbBatchJobRequest"
 	/>
+	<type name="gdbValidation" 
+		class="com.navinfo.dataservice.cop.waistcoat.job.GdbValidationJob"
+	 	request="com.navinfo.dataservice.cop.waistcoat.job.GdbValidationJobRequest"
+	/>
+	<type name="gdbImport" 
+		class="com.navinfo.dataservice.impcore.job.GdbImportJob"
+	 	request="com.navinfo.dataservice.impcore.job.GdbImportJobRequest"
+	/>
 	
 </mapping>

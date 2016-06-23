@@ -69,6 +69,9 @@ public class ManApiImpl implements ManApi {
 	public int queryAdminIdBySubtask(int subtaskId) throws Exception {
 		return SubtaskService.getInstance().queryAdminIdBySubtask(subtaskId);
 	}
-	
+	@Override
+	public int queryDbIdByAdminId(int adminId) throws Exception {
+		return RegionService.getInstance().queryDbIdByAdminId(adminId);
+	}
 }
 

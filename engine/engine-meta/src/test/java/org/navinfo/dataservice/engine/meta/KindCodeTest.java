@@ -4,10 +4,10 @@ import net.sf.json.JSONArray;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
 
 public class KindCodeTest {
 	

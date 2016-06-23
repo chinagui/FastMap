@@ -45,5 +45,7 @@ public interface ManApi{
 	Region queryRegionByDbId(int dbId)throws Exception;
 	
 	public int queryAdminIdBySubtask(int subtaskId) throws Exception;
+	
+	public int queryDbIdByAdminId(int adminId) throws Exception;
 }
 

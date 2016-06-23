@@ -59,7 +59,7 @@ public class IxPoiNameFlagOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiNameFlag.tableName() + " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
+		StringBuilder sb = new StringBuilder("update " + ixPoiNameFlag.tableName() + " set u_record=3,u_date= '"+StringUtils.getCurrentTime()+"',");
 
 		PreparedStatement pstmt = null;
 
@@ -139,7 +139,7 @@ public class IxPoiNameFlagOperator implements IOperator {
 
 	@Override
 	public void deleteRow() throws Exception {
-		String sql = "update " + ixPoiNameFlag.tableName() + " set u_record=? where row_id=hextoraw(?)";
+		String sql = "update " + ixPoiNameFlag.tableName() + " set u_record=? ,u_date= '"+StringUtils.getCurrentTime()+"' where row_id=hextoraw(?)";
 
 		PreparedStatement pstmt = null;
 
@@ -203,7 +203,7 @@ public class IxPoiNameFlagOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiNameFlag.tableName() + " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where name_id="
+		String sql = "update " + ixPoiNameFlag.tableName() + " set u_record=2,u_date= '"+StringUtils.getCurrentTime()+"'  where name_id="
 				+ ixPoiNameFlag.getNameId();
 
 		stmt.addBatch(sql);

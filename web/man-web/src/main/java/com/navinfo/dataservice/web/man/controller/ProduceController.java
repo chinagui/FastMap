@@ -58,7 +58,7 @@ public class ProduceController extends BaseController {
 			//TODO
 			JSONObject jobDataJson=new JSONObject();
 			jobDataJson.put("gridList", dataJson.get("gridIds"));
-			jobDataJson.put("dataType", dataJson.get("dataType"));
+			jobDataJson.put("featureType", dataJson.get("dataType"));
 			jobDataJson.put("stopTime", "20160616000000");
 			long jobId=jobApi.createJob("releaseFmIdbDailyJob", jobDataJson, userId, "日出品");
 			return new ModelAndView("jsonView", success(jobId));
@@ -131,6 +131,7 @@ public class ProduceController extends BaseController {
 			 * jobType:releaseFmidbDaily/releaseFmidbMonthly
 			 */
 			dataJson.put("stopTime", "20160616000000");
+			dataJson.put("featureType", "ROAD");
 			//String featureType = (String) dataJson.get("featureType");//featureType:POI,ROAD
 			//dataJson.put("featureType", dataJson.get("featureType"));//featureType:POI,ROAD
 			//TODO 道路日落月，poi后台定时脚本

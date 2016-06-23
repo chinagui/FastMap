@@ -40,5 +40,9 @@
 		class="com.navinfo.dataservice.cop.waistcoat.job.GdbBatchJob"
 	 	request="com.navinfo.dataservice.cop.waistcoat.job.GdbBatchJobRequest"
 	/>
+	<type name="editPoiBaseRelease" 
+		class="com.navinfo.dataservice.edit.job.EditPoiBaseReleaseJob"
+	 	request="com.navinfo.dataservice.edit.job.EditPoiBaseReleaseJobRequest"
+	/>
 	
 </mapping>

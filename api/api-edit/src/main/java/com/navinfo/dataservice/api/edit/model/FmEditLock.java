@@ -22,4 +22,22 @@ public class FmEditLock {
 	public final static String DB_TYPE_DAY="DAY";
 	public final static String DB_TYPE_MONTH="MONTH";
 	
+	protected int lockSeq;
+	protected String dbType;
+	public FmEditLock(int lockSeq,String dbType){
+		this.lockSeq=lockSeq;
+		this.dbType=dbType;
+	}
+	public int getLockSeq() {
+		return lockSeq;
+	}
+	public void setLockSeq(int lockSeq) {
+		this.lockSeq = lockSeq;
+	}
+	public String getDbType() {
+		return dbType;
+	}
+	public void setDbType(String dbType) {
+		this.dbType = dbType;
+	}
 }

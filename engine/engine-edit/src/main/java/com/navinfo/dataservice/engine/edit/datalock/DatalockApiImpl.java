@@ -1,11 +1,11 @@
 package com.navinfo.dataservice.engine.edit.datalock;
 
 import java.util.Collection;
-import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.edit.iface.DatalockApi;
+import com.navinfo.dataservice.api.edit.model.FmEditLock;
 
 /** 
 * @ClassName: DatalockApiImpl 
@@ -18,38 +18,19 @@ import com.navinfo.dataservice.api.edit.iface.DatalockApi;
 public class DatalockApiImpl implements DatalockApi {
 
 	@Override
-	public Set<Integer> query(int prjId, Set<Integer> meshes) throws Exception {
-		return MeshLockManager.getInstance().query(prjId, meshes);
-	}
-
-	@Override
-	public int lock(int prjId, int userId, Set<Integer> meshes, int lockType) throws Exception {
-		return MeshLockManager.getInstance().lock(prjId, userId, meshes, lockType);
-	}
-
-	@Override
-	public int unlock(int prjId, int lockSeq, int lockType) throws Exception {
-		
-		return MeshLockManager.getInstance().unlock(prjId, lockSeq, lockType);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.api.edit.iface.DatalockApi#unlock(int, java.util.Set, int)
-	 */
-	@Override
-	public void unlock(int prjId, Set<Integer> meshes, int lockType) throws Exception {
-		MeshLockManager.getInstance().unlock(prjId, meshes, lockType);
-	}
-
-	@Override
 	public int lockGrid(int regionId, int lockObject, Collection<Integer> grids,
-			int lockType,String dbType) throws Exception {
-		return GridLockManager.getInstance().lock(regionId, lockObject, grids, lockType, 0,dbType);
+			int lockType,String dbType,int jobId) throws Exception {
+		return GridLockManager.getInstance().lock(regionId, lockObject, grids, lockType,dbType, jobId);
 	}
 
 	@Override
 	public int unlockGrid(int lockSeq,String dbType) throws Exception {
 		return GridLockManager.getInstance().unlock(lockSeq,dbType);
+	}
+
+	@Override
+	public FmEditLock lockGrid(int dbId, int lockObject, Collection<Integer> grids, int lockType,int jobId) throws Exception {
+		return GridLockManager.getInstance().lock(dbId, lockObject, grids, lockType, jobId);
 	}
 
 }

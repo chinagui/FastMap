@@ -11,6 +11,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.navinfo.dataservice.api.man.model.BlockMan;
 import com.navinfo.dataservice.api.man.model.InforMan;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -20,6 +21,8 @@ import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
+
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /** 
@@ -65,86 +68,84 @@ public class InforManService {
 			//持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();	
-			JSONObject obj = JSONObject.fromObject(json);	
-			InforMan bean=(InforMan) JsonOperation.jsonToBean(obj,InforMan.class);
+			JSONArray blockArray = json.getJSONArray("blocks");
+			for (int i = 0; i < blockArray.size(); i++) {
+				JSONObject block = blockArray.getJSONObject(i);
+				InforMan bean=(InforMan) JsonOperation.jsonToBean(block,InforMan.class);
 			
-			String updateSql = "update infor_man set ";
-			List<Object> values=new ArrayList<Object>();
-			if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
-				if (updateSql.indexOf("?")!=-1){updateSql+=" INFOR_ID=?";}
-				else {updateSql+=" ,INFOR_ID=?";}
-				values.add(bean.getInforId());
-			};
-			if (bean!=null&&bean.getInforStatus()!=null && StringUtils.isNotEmpty(bean.getInforStatus().toString())){
-				if (updateSql.indexOf("?")!=-1){updateSql+=" INFOR_STATUS=?";}
-				else {updateSql+=" ,INFOR_STATUS=?";}
-				values.add(bean.getInforStatus());
-			};
-			if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp().toString())){
-				if (updateSql.indexOf("?")!=-1){updateSql+=" DESCP=?";}
-				else {updateSql+=" ,DESCP=?";}
-				values.add(bean.getDescp());
-			};
-			if (bean!=null&&bean.getCollectPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanStartDate().toString())){
-				if (updateSql.indexOf("?")!=-1){updateSql+=" COLLECT_PLAN_START_DATE=?";}
-				else {updateSql+=" ,COLLECT_PLAN_START_DATE=?";}
-				values.add(bean.getCollectPlanStartDate());
-			};
-			if (bean!=null&&bean.getCollectPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanEndDate().toString())){
-				if (updateSql.indexOf("?")!=-1){updateSql+=" COLLECT_PLAN_END_DATE=?";}
-				else {updateSql+=" ,COLLECT_PLAN_END_DATE=?";}
-				values.add(bean.getCollectPlanEndDate());
-			};
-			if (bean!=null&&bean.getDayEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanStartDate().toString())){
-				if (updateSql.indexOf("?")!=-1){updateSql+=" DAY_EDIT_PLAN_START_DATE=?";}
-				else {updateSql+=" ,DAY_EDIT_PLAN_START_DATE=?";}
-			
-				values.add(bean.getDayEditPlanStartDate());
-			};
-			if (bean!=null&&bean.getDayEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanEndDate().toString())){
-				if (updateSql.indexOf("?")!=-1){updateSql+=" DAY_EDIT_PLAN_END_DATE=?";}
-				else {updateSql+=" ,DAY_EDIT_PLAN_END_DATE=?";}
-			
-				values.add(bean.getDayEditPlanEndDate());
-			};
-			if (bean!=null&&bean.getMonthEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanStartDate().toString())){
-				if (updateSql.indexOf("?")!=-1){updateSql+=" MONTH_EDIT_PLAN_START_DATE=?";}
-				else {updateSql+=" ,MONTH_EDIT_PLAN_START_DATE=?";}
-				values.add(bean.getMonthEditPlanStartDate());
-			};
-			if (bean!=null&&bean.getMonthEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanEndDate().toString())){
-				if (updateSql.indexOf("?")!=-1){updateSql+=" MONTH_EDIT_PLAN_END_DATE=?";}
-				else {updateSql+=" ,MONTH_EDIT_PLAN_END_DATE=?";}
-				values.add(bean.getMonthEditPlanEndDate());
-			};
-			if (bean!=null&&bean.getDayProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getDayProducePlanStartDate().toString())){
-				if (updateSql.indexOf("?")!=-1){updateSql+=" DAY_PRODUCE_PLAN_START_DATE=?";}
-				else {updateSql+=" ,DAY_PRODUCE_PLAN_START_DATE=?";}
-				values.add(bean.getDayProducePlanStartDate());
-			};
-			if (bean!=null&&bean.getDayProducePlanEndDate()!=null && StringUtils.isNotEmpty(bean.getDayProducePlanEndDate().toString())){
-				if (updateSql.indexOf("?")!=-1){updateSql+=" DAY_PRODUCE_PLAN_END_DATE=?";}
-				else {updateSql+=" ,DAY_PRODUCE_PLAN_END_DATE=?";}
-				values.add(bean.getDayProducePlanEndDate());
-			};
-			if (bean!=null&&bean.getMonthProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getMonthProducePlanStartDate().toString())){
-				if (updateSql.indexOf("?")!=-1){updateSql+=" MONTH_PRODUCE_PLAN_START_DATE=?";}
-				else {updateSql+=" ,MONTH_PRODUCE_PLAN_START_DATE=?";}
-				values.add(bean.getMonthProducePlanStartDate());
-			};
-			if (bean!=null&&bean.getMonthProducePlanEndDate()!=null && StringUtils.isNotEmpty(bean.getMonthProducePlanEndDate().toString())){
-				if (updateSql.indexOf("?")!=-1){updateSql+=" MONTH_PRODUCE_PLAN_END_DATE=?";}
-				else {updateSql+=" ,MONTH_PRODUCE_PLAN_END_DATE=?";}
-				values.add(bean.getMonthProducePlanEndDate());
-			};
-			if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
-				updateSql+=" where Infor_ID=?";
-				values.add(bean.getInforId());
-			};
-			run.update(conn, 
-					   updateSql, 
-					   values.toArray()
-					   );
+				String updateSql = "update infor_man set ";
+				List<Object> values=new ArrayList<Object>();
+		
+				if (bean!=null&&bean.getInforStatus()!=null && StringUtils.isNotEmpty(bean.getInforStatus().toString())){
+					if (updateSql.indexOf("?")!=-1){updateSql+=" INFOR_STATUS=?";}
+					else {updateSql+=" ,INFOR_STATUS=?";}
+					values.add(bean.getInforStatus());
+				};
+				if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp().toString())){
+					if (updateSql.indexOf("?")!=-1){updateSql+=" DESCP=?";}
+					else {updateSql+=" ,DESCP=?";}
+					values.add(bean.getDescp());
+				};
+				if (bean!=null&&bean.getCollectPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanStartDate().toString())){
+					if (updateSql.indexOf("?")!=-1){updateSql+=" COLLECT_PLAN_START_DATE=?";}
+					else {updateSql+=" ,COLLECT_PLAN_START_DATE=?";}
+					values.add(bean.getCollectPlanStartDate());
+				};
+				if (bean!=null&&bean.getCollectPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanEndDate().toString())){
+					if (updateSql.indexOf("?")!=-1){updateSql+=" COLLECT_PLAN_END_DATE=?";}
+					else {updateSql+=" ,COLLECT_PLAN_END_DATE=?";}
+					values.add(bean.getCollectPlanEndDate());
+				};
+				if (bean!=null&&bean.getDayEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanStartDate().toString())){
+					if (updateSql.indexOf("?")!=-1){updateSql+=" DAY_EDIT_PLAN_START_DATE=?";}
+					else {updateSql+=" ,DAY_EDIT_PLAN_START_DATE=?";}
+				
+					values.add(bean.getDayEditPlanStartDate());
+				};
+				if (bean!=null&&bean.getDayEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanEndDate().toString())){
+					if (updateSql.indexOf("?")!=-1){updateSql+=" DAY_EDIT_PLAN_END_DATE=?";}
+					else {updateSql+=" ,DAY_EDIT_PLAN_END_DATE=?";}
+				
+					values.add(bean.getDayEditPlanEndDate());
+				};
+				if (bean!=null&&bean.getMonthEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanStartDate().toString())){
+					if (updateSql.indexOf("?")!=-1){updateSql+=" MONTH_EDIT_PLAN_START_DATE=?";}
+					else {updateSql+=" ,MONTH_EDIT_PLAN_START_DATE=?";}
+					values.add(bean.getMonthEditPlanStartDate());
+				};
+				if (bean!=null&&bean.getMonthEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanEndDate().toString())){
+					if (updateSql.indexOf("?")!=-1){updateSql+=" MONTH_EDIT_PLAN_END_DATE=?";}
+					else {updateSql+=" ,MONTH_EDIT_PLAN_END_DATE=?";}
+					values.add(bean.getMonthEditPlanEndDate());
+				};
+				if (bean!=null&&bean.getDayProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getDayProducePlanStartDate().toString())){
+					if (updateSql.indexOf("?")!=-1){updateSql+=" DAY_PRODUCE_PLAN_START_DATE=?";}
+					else {updateSql+=" ,DAY_PRODUCE_PLAN_START_DATE=?";}
+					values.add(bean.getDayProducePlanStartDate());
+				};
+				if (bean!=null&&bean.getDayProducePlanEndDate()!=null && StringUtils.isNotEmpty(bean.getDayProducePlanEndDate().toString())){
+					if (updateSql.indexOf("?")!=-1){updateSql+=" DAY_PRODUCE_PLAN_END_DATE=?";}
+					else {updateSql+=" ,DAY_PRODUCE_PLAN_END_DATE=?";}
+					values.add(bean.getDayProducePlanEndDate());
+				};
+				if (bean!=null&&bean.getMonthProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getMonthProducePlanStartDate().toString())){
+					if (updateSql.indexOf("?")!=-1){updateSql+=" MONTH_PRODUCE_PLAN_START_DATE=?";}
+					else {updateSql+=" ,MONTH_PRODUCE_PLAN_START_DATE=?";}
+					values.add(bean.getMonthProducePlanStartDate());
+				};
+				if (bean!=null&&bean.getMonthProducePlanEndDate()!=null && StringUtils.isNotEmpty(bean.getMonthProducePlanEndDate().toString())){
+					if (updateSql.indexOf("?")!=-1){updateSql+=" MONTH_PRODUCE_PLAN_END_DATE=?";}
+					else {updateSql+=" ,MONTH_PRODUCE_PLAN_END_DATE=?";}
+					values.add(bean.getMonthProducePlanEndDate());
+				};
+				if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
+					updateSql+=" where INFOR_ID=?";
+					values.add(bean.getInforId());
+				};
+				run.update(conn, 
+						   updateSql, 
+						   values.toArray()
+						   );}
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

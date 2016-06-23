@@ -67,7 +67,7 @@ public class UserInfoController extends BaseController {
 			HashMap<?, ?> data = service.login(userInfo, userDevice);
 
 			if (!data.isEmpty()) {
-				return new ModelAndView("jsonView", success("data"));
+				return new ModelAndView("jsonView", success(data));
 			} else {
 				return new ModelAndView("jsonView", success("用户不存在"));
 			}

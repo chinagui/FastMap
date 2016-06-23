@@ -3,6 +3,7 @@ package com.navinfo.dataservice.jobframework.runjob;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.job.model.JobStep;
 import com.navinfo.dataservice.commons.log.LoggerRepos;

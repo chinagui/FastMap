@@ -115,7 +115,7 @@ public class FlushGdb {
 			int prjId = Integer.parseInt(props.getProperty("project_id"));
 			
 			DatalockApi datalock = (DatalockApi)ApplicationContextUtil.getBean("datalockApi");
-			datalock.lock(prjId, userId, setMesh, FmEditLock.TYPE_GIVE_BACK);
+//			datalock.lock(prjId, userId, setMesh, FmEditLock.TYPE_GIVE_BACK);
 
 			logDetailQuery.append(" and mesh_id in (");
 
@@ -139,7 +139,7 @@ public class FlushGdb {
 
 			destConn.commit();
 
-			datalock.unlock(prjId, setMesh, FmEditLock.TYPE_GIVE_BACK);
+//			datalock.unlock(prjId, setMesh, FmEditLock.TYPE_GIVE_BACK);
 
 		} catch (Exception e) {
 			e.printStackTrace();

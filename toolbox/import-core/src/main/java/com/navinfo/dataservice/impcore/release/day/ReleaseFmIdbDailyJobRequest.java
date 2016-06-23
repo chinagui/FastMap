@@ -40,8 +40,8 @@ public class ReleaseFmIdbDailyJobRequest extends AbstractJobRequest {
 	public List<Integer> getGridList() {
 		return gridList;
 	}
-	public void setGridList(List<Integer> gridSet) {
-		this.gridList = gridSet;
+	public void setGridList(List<Integer> gridList) {
+		this.gridList = gridList;
 	}
 	public ReleaseFmIdbDailyJobRequest() {
 		super();

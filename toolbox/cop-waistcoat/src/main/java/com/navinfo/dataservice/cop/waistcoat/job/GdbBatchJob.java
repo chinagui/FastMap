@@ -31,9 +31,7 @@ import net.sf.json.JSONArray;
  */
 public class GdbBatchJob extends AbstractJob {
 
-	protected int lockSeq = -1;// 加锁时得到值
-	protected String dbType;// 加锁时得到值
-
+	protected FmEditLock editLock=null;
 	public GdbBatchJob(JobInfo jobInfo) {
 		super(jobInfo);
 		// TODO Auto-generated constructor stub
@@ -138,23 +136,10 @@ public class GdbBatchJob extends AbstractJob {
 	@Override
 	public void lockResources() throws LockException {
 		GdbBatchJobRequest req = (GdbBatchJobRequest) request;
-		// 预处理
 		// 根据批处理的目标库找到对应的大区
 		try {
-			ManApi man = (ManApi) ApplicationContextUtil.getBean("manApi");
-			Region r = man.queryRegionByDbId(req.getTargetDbId());
-			if (r == null) {
-				throw new Exception("根据batchDbId未查询到匹配的区域");
-			}
-			String dbType = null;
-			if (r.getDailyDbId() == req.getTargetDbId()) {
-				dbType = FmEditLock.DB_TYPE_DAY;
-			} else if (r.getMonthlyDbId() == req.getTargetDbId()) {
-				dbType = FmEditLock.DB_TYPE_MONTH;
-			}
 			DatalockApi datalock = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
-			lockSeq = datalock.lockGrid(r.getRegionId(), FmEditLock.LOCK_OBJ_ALL, req.getGrids(), FmEditLock.TYPE_BATCH,
-					dbType);
+			editLock = datalock.lockGrid(req.getTargetDbId(), FmEditLock.LOCK_OBJ_ALL, req.getGrids(), FmEditLock.TYPE_BATCH, jobInfo.getId());
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw new LockException("加锁发生错误," + e.getMessage(), e);
@@ -163,14 +148,14 @@ public class GdbBatchJob extends AbstractJob {
 
 	@Override
 	public void unlockResources() throws LockException {
-		if (lockSeq < 0)
+		if (editLock==null)
 			return;
 		try {
 			DatalockApi datalock = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
-			datalock.unlockGrid(lockSeq, dbType);
+			datalock.unlockGrid(editLock.getLockSeq(), editLock.getDbType());
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
-			throw new LockException("加锁发生错误," + e.getMessage(), e);
+			throw new LockException("解锁时发生错误," + e.getMessage(), e);
 		}
 	}
 

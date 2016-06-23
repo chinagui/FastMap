@@ -15,6 +15,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.FmEditLock;
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.edit.datalock.MeshLockManager.FmMeshResultSetHandler4QueryLock;
@@ -98,6 +100,27 @@ public class GridLockManager{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
     }
+    public FmEditLock lock(int dbId,int lockObject,Collection<Integer> grids,int lockType,int jobId)throws LockException{
+    	Region r = null;
+    	try{
+        	ManApi man = (ManApi) ApplicationContextUtil.getBean("manApi");
+    		r = man.queryRegionByDbId(dbId);
+    	}catch(Exception e){
+    		log.error(e.getMessage(),e);
+    		throw new LockException("申请锁失败：根据dbId查询区域时发生错误，"+e.getMessage(),e);
+    	}
+		if (r == null) {
+			throw new LockException("申请锁失败：根据batchDbId未查询到匹配的区域");
+		}
+		String dbType = null;
+		if (r.getDailyDbId() == dbId) {
+			dbType = FmEditLock.DB_TYPE_DAY;
+		} else if (r.getMonthlyDbId() == dbId) {
+			dbType = FmEditLock.DB_TYPE_MONTH;
+		}
+		int lockSeq = lock(r.getRegionId(),lockObject,grids,lockType,dbType,jobId);
+		return new FmEditLock(lockSeq,dbType);
+    }
 
     /**
      * 所有grid均符合锁定条件，则申请锁成功，否则抛出异常
@@ -107,7 +130,7 @@ public class GridLockManager{
      * @return 本次申请锁的批次号
      * @throws LockException
      */
-    public int lock(int regionId, int lockObject, Collection<Integer> grids,int lockType,int jobId,String dbType)throws LockException{
+    public int lock(int regionId, int lockObject, Collection<Integer> grids,int lockType,String dbType,int jobId)throws LockException{
     	if(grids==null){
     		throw new LockException("申请锁失败：传入grids为空，请检查。");
     	}

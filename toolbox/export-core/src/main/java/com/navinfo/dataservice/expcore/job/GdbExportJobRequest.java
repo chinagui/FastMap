@@ -16,10 +16,11 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 */
 public class GdbExportJobRequest extends AbstractJobRequest {
 	protected int sourceDbId;
-	protected String condition;
+	protected String condition=ExportConfig.CONDITION_BY_MESH;
 	protected List<String> conditionParams;
 	protected int meshExtendCount=0;
-	protected String featureType;//poi,road,all,GlmTable.FEATURE_TYPE_XXX
+	protected String featureType=ExportConfig.FEATURE_ALL;//poi,road,all,GlmTable.FEATURE_TYPE_XXX
+	protected String mode=ExportConfig.MODE_COPY;
 //	protected List<String> objTypes;
 //	protected boolean deleteData;
 //	protected boolean destroyTarget;
@@ -86,6 +87,14 @@ public class GdbExportJobRequest extends AbstractJobRequest {
 		this.featureType = featureType;
 	}
 	
+	public String getMode() {
+		return mode;
+	}
+
+	public void setMode(String mode) {
+		this.mode = mode;
+	}
+
 	public int getTargetDbId() {
 		return targetDbId;
 	}

@@ -198,12 +198,12 @@ public class BlockController extends BaseController {
 			JSONArray blockIds = dataJson.getJSONArray("blockIds");
 			List<Integer> blockIdList = (List<Integer>) JSONArray.toCollection(blockIds, Integer.class);
 
-			List<Integer> unClosedBlockList = service.close(blockIdList);
+			HashMap unClosedBlock = (HashMap) service.close(blockIdList);
 
-			if (unClosedBlockList.isEmpty()) {
+			if (unClosedBlock.isEmpty()) {
 				return new ModelAndView("jsonView", success("关闭成功"));
 			} else {
-				return new ModelAndView("jsonView", success(unClosedBlockList));
+				return new ModelAndView("jsonView", success(unClosedBlock));
 			}
 
 		} catch (Exception e) {

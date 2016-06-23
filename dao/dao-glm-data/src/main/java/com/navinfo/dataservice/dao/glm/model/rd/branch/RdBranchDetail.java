@@ -55,6 +55,10 @@ public class RdBranchDetail implements IObj {
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
 	}
+	
+	public String getRowId() {
+		return rowId;
+	}
 
 	public RdBranchDetail() {
 

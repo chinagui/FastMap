@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -183,15 +184,24 @@ public class BlockOperation {
 			String BlockIds = "(";
 			BlockIds += StringUtils.join(blockIdList.toArray(), ",") + ")";
 
-			String selectSql = "select distinct b.block_id " + "from subtask st" + ", block b "
-					+ " where st.block_id = b.block_id" + " and st.status = 0" + " and b.plan_status = 1"
-					+ " and b.block_id in " + BlockIds;
+			String selectSql = "select distinct b.block_id "
+					+ ",listagg(st.status , ',') within group(order by b.block_id) as status" 
+					+ " from subtask st" + ", block b "
+					+ " where st.block_id = b.block_id"  
+					+ " and b.plan_status = 1"
+					+ " and b.block_id in " + BlockIds
+					+ " group by b.block_id";
 
 			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
 				public List<Integer> handle(ResultSet rs) throws SQLException {
 					List<Integer> list = new ArrayList<Integer>();
 					while (rs.next()) {
-						list.add(rs.getInt("block_id"));
+						String[] s = rs.getString("status").split(",");
+						List<String> status = (List<String>) Arrays.asList(s);
+						if(!status.contains("1")){
+							list.add(rs.getInt("block_id"));
+						}
+						
 					}
 					return list;
 				}

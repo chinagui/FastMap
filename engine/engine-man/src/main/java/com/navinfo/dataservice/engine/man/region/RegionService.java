@@ -337,6 +337,40 @@ public class RegionService {
 		}
 	}
 	
+	public int queryDbIdByAdminId(int adminId) throws ServiceException{
+		Connection conn = null;
+		
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			String selectSql = "SELECT DAILY_DB_ID FROM REGION R, CITY C WHERE R.REGION_ID=C.REGION AND C.ADMIN_ID=?";
+			
+			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
+				public Integer handle(ResultSet rs) throws SQLException {
+					if (rs.next()) {
+						return rs.getInt("DAILY_DB_ID");
+					}
+					return 0;
+				}
+
+			};
+			
+			int dbId = run.query(conn, selectSql, rsHandler, adminId);
+			
+			if(dbId == 0){
+				throw new ServiceException("未找到adminId "+adminId+" 对应的大区");
+			}
+
+			return dbId;
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
 	class SingleRegionRsHander implements ResultSetHandler<Region>{
 
 		@Override

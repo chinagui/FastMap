@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.man.subtask;
 
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -213,7 +215,7 @@ public class SubtaskService {
 		}
 	}
 
-	public List<Subtask> list(Subtask bean, JSONObject orderJson, long pageSize,
+	public List<Subtask> list(int stage, JSONObject conditionJson, JSONObject orderJson, long pageSize,
 			long curPageNum) throws ServiceException {
 		Connection conn = null;
 		try {
@@ -222,7 +224,7 @@ public class SubtaskService {
 
 			String selectSql = "select distinct s.SUBTASK_ID"
 					+ ",s.STAGE"
-					+ ",s.CREATE_USER_ID"
+					+ ",s.EXE_USER_ID"
 					+ ",s.TYPE"
 					+ ",s.PLAN_START_DATE"
 					+ ",s.PLAN_END_DATE"
@@ -236,33 +238,54 @@ public class SubtaskService {
 					+ ",(case when s.task_id is not null and s.task_id = t.task_id then t.descp else null end) AS task_descp"
 					+ ",(case when s.task_id is not null and s.task_id = t.task_id then t.name else null end) AS task_name";
 			// 0采集，1日编，2月编，
-			if (0 == bean.getStage()) {
+			if (0 == stage) {
 				selectSql += ",(case when s.block_id is not null and s.block_id = b.block_id and bm.LATEST = 1 and b.block_id = bm.block_id then bm.COLLECT_PLAN_START_DATE else null end) AS COLLECT_PLAN_START_DATE";
 				selectSql += ",(case when s.block_id is not null and s.block_id = b.block_id and bm.LATEST = 1 and b.block_id = bm.block_id then bm.COLLECT_PLAN_END_DATE else null end) AS COLLECT_PLAN_END_DATE";
-			} else if (1 == bean.getStage()) {
+				selectSql += ",(case when s.block_id is not null and s.block_id = b.block_id and bm.LATEST = 1 and b.block_id = bm.block_id then bm.COLLECT_GROUP_ID else null end) AS group_id";
+			} else if (1 == stage) {
 				selectSql += ",(case when s.block_id is not null and s.block_id = b.block_id and bm.LATEST = 1 and b.block_id = bm.block_id then bm.DAY_EDIT_PLAN_START_DATE else null end) AS DAY_EDIT_PLAN_START_DATE";
 				selectSql += ",(case when s.block_id is not null and s.block_id = b.block_id and bm.LATEST = 1 and b.block_id = bm.block_id then bm.DAY_EDIT_PLAN_END_DATE else null end) AS DAY_EDIT_PLAN_END_DATE";
-			} else if (2 == bean.getStage()) {
+				selectSql += ",(case when s.block_id is not null and s.block_id = b.block_id and bm.LATEST = 1 and b.block_id = bm.block_id then bm.DAY_EDIT_GROUP_ID else null end) AS group_id";
+			} else if (2 == stage) {
 				selectSql += ",(case when s.block_id is not null and s.block_id = b.block_id and bm.LATEST = 1 and b.block_id = bm.block_id then bm.MONTH_EDIT_PLAN_START_DATE else null end) AS MONTH_EDIT_PLAN_START_DATE_b";
 				selectSql += ",(case when s.block_id is not null and s.block_id = b.block_id and bm.LATEST = 1 and b.block_id = bm.block_id then bm.MONTH_EDIT_PLAN_END_DATE else null end) AS MONTH_EDIT_PLAN_END_DATE_b";
+				selectSql += ",(case when s.block_id is not null and s.block_id = b.block_id and bm.LATEST = 1 and b.block_id = bm.block_id then bm.MONTH_EDIT_GROUP_ID else -1 end) AS group_id";
 				selectSql += ",(case when s.task_id is not null and s.task_id = t.task_id then t.MONTH_EDIT_PLAN_START_DATE else null end) AS MONTH_EDIT_PLAN_START_DATE_t";
 				selectSql += ",(case when s.task_id is not null and s.task_id = t.task_id then t.MONTH_EDIT_PLAN_END_DATE else null end) AS MONTH_EDIT_PLAN_END_DATE_t";
+				selectSql += ",(case when s.task_id is not null and s.task_id = t.task_id then t.MONTH_EDIT_GROUP_ID else -1 end) AS group_id_t";
 			}
 
 			selectSql = selectSql
 					+ " from SUBTASK s, Task t, Block b, Block_man bm "
 					+ " where (s.block_id=b.block_id or s.task_id=t.task_id)"
 					+ " and b.block_id = bm.block_id" + " and bm.latest=1"
-					+ " and s.stage=" + bean.getStage();
-			// 筛选条件
-			if (bean != null && bean.getBlockId() != 0) {
-				selectSql += " and block_id = " + bean.getBlockId();
-			}
-			if (bean != null && bean.getSubtaskId() != 0) {
-				selectSql += " and subtask_id = " + bean.getSubtaskId();
-			}
-			if (bean != null && bean.getExeUserId() != 0) {
-				selectSql += " and EXE_USER_ID = " + bean.getExeUserId();
+					+ " and s.stage=" + stage;
+			
+			//查询条件
+			if(null!=conditionJson && !conditionJson.isEmpty()){
+				Iterator keys = conditionJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if ("subtaskId".equals(key)) {selectSql+=" and s.SUBTASK_ID="+conditionJson.getInt(key);break;}
+					if ("subtaskName".equals(key)) {	
+						String s = new String(conditionJson.getString(key).getBytes("ISO-8859-1"),"UTF-8");
+						selectSql+=" and s.NAME like '%" + s +"%'";
+						break;
+					}
+					if ("ExeUserId".equals(key)) {selectSql+=" and s.EXE_USER_ID="+conditionJson.getInt(key);break;}
+					if ("blockName".equals(key)) {
+						String s = new String(conditionJson.getString(key).getBytes("ISO-8859-1"),"UTF-8");
+						selectSql+=" and s.block_id = b.block_id and b.block_name like '%" + s +"%'";
+						break;
+					}
+					if ("blockId".equals(key)) {selectSql+=" and s.block_id="+conditionJson.getInt(key);break;}
+					if ("taskId".equals(key)) {selectSql+=" and s.task_id="+conditionJson.getInt(key);break;}
+					if ("taskName".equals(key)) {
+						String s = new String(conditionJson.getString(key).getBytes("ISO-8859-1"),"UTF-8");
+						selectSql+=" and s.task_id = t.task_id and t.name like '%" + s +"%'";
+						break;
+					}
+				}
 			}
 			// 排序
 			if(null!=orderJson && !orderJson.isEmpty()){
@@ -271,7 +294,7 @@ public class SubtaskService {
 					String key = (String) keys.next();
 					if ("status".equals(key)) {selectSql+=" order by s.status "+orderJson.getString(key);break;}
 					if ("subtaskId".equals(key)) {selectSql+=" order by s.SUBTASK_ID "+orderJson.getString(key);break;}
-					if ("blockId".equals(key)) {selectSql+=" order by s.block_id "+orderJson.getString(key);break;}
+					if ("blockId".equals(key)) {selectSql+=" order by block_id "+orderJson.getString(key);break;}
 					if ("planStartDate".equals(key)) {selectSql+=" order by s.PLAN_START_DATE "+orderJson.getString(key);break;}
 					if ("planEndDate".equals(key)) {selectSql+=" order by s.PLAN_END_DATE "+orderJson.getString(key);break;}}
 			}else{selectSql += " order by block_id";}
@@ -284,7 +307,7 @@ public class SubtaskService {
 						Subtask subtask = new Subtask();
 						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
 						subtask.setName(rs.getString("NAME"));
-						subtask.setCreateUserId((rs.getInt("CREATE_USER_ID")));
+						subtask.setCreateUserId((rs.getInt("EXE_USER_ID")));
 						subtask.setStatus(rs.getInt("STATUS"));
 						subtask.setGeometry(rs.getString("GEOMETRY"));
 						subtask.setStage(rs.getInt("STAGE"));
@@ -293,6 +316,11 @@ public class SubtaskService {
 								.getTimestamp("PLAN_START_DATE"));
 						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						subtask.setDescp(rs.getString("DESCP"));
+						if(rs.getInt("group_id")>0){
+							subtask.setGroupId(rs.getInt("group_id"));
+						}else{
+							subtask.setGroupId(rs.getInt("group_id_t"));
+						}
 						// 与block关联，返回block信息。
 						if (rs.getInt("block_id") > 0) {
 							// block
@@ -513,10 +541,24 @@ public class SubtaskService {
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 
-			String selectSql = "select s.SUBTASK_ID," + "s.STAGE," + "s.TYPE,"
-					+ "s.PLAN_START_DATE," + "s.PLAN_END_DATE," + "s.DESCP,"
+			String selectSql = "select s.SUBTASK_ID," 
+					+ "s.STAGE,"
+					+ "s.TYPE,"
+					+ "s.PLAN_START_DATE," 
+					+ "s.PLAN_END_DATE,"
+					+ "s.DESCP,"
 					+ "TO_CHAR(s.GEOMETRY.get_wkt()) AS GEOMETRY "
-					+ "from SUBTASK s " + "where s.SUBTASK_ID=" + subtaskId;
+					+ ",listagg(sgm.GRID_ID, ',') within group(order by s.SUBTASK_ID) as GRID_ID "
+					+ "from SUBTASK s,subtask_grid_mapping sgm "
+					+ "where s.subtask_id = sgm.subtask_id "
+					+ " and s.SUBTASK_ID=" + subtaskId
+					+ " group by s.SUBTASK_ID"
+					+ ",s.STAGE"
+					+ ",s.TYPE"
+					+ ",s.PLAN_START_DATE"
+					+ ",s.PLAN_END_DATE"
+					+ ",s.DESCP"
+					+ ",TO_CHAR(s.GEOMETRY.get_wkt())";
 
 			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>() {
 				public Subtask handle(ResultSet rs) throws SQLException {
@@ -530,6 +572,11 @@ public class SubtaskService {
 								.getTimestamp("PLAN_START_DATE"));
 						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						subtask.setDescp(rs.getString("DESCP"));
+						
+						String gridIds = rs.getString("GRID_ID");
+						String[] gridIdList = gridIds.split(",");
+						subtask.setGridIds(gridIdList);
+						
 						return subtask;
 					}
 					return null;

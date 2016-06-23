@@ -116,7 +116,7 @@ public class DownloadController extends BaseController {
 
 	}
 
-	@RequestMapping(value = "/download/patternimage")
+	@RequestMapping(value = "/download/metadata")
 	public ModelAndView getPatternimg(HttpServletRequest request)
 			throws ServletException, IOException {
 

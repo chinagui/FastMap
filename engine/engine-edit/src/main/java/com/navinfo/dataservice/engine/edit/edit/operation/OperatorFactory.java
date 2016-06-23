@@ -16,6 +16,10 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkMesh;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiAdvertisement;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiAttraction;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiBuilding;
@@ -97,6 +101,10 @@ import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdLinkMeshOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdLinkOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdNodeMeshOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdNodeOperator;
+import com.navinfo.dataservice.dao.glm.operator.ad.zone.ZoneLinkMeshOperator;
+import com.navinfo.dataservice.dao.glm.operator.ad.zone.ZoneLinkOperator;
+import com.navinfo.dataservice.dao.glm.operator.ad.zone.ZoneNodeMeshOperator;
+import com.navinfo.dataservice.dao.glm.operator.ad.zone.ZoneNodeOperator;
 import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiAdvertisementOperator;
 import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiAttractionOperator;
 import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiBuildingOperator;
@@ -383,7 +391,15 @@ public class OperatorFactory {
 		case IXPOIRESTAURANT:
 			return new IxPoiRestaurantOperator(conn, (IxPoiRestaurant) obj);
 		case IXPOICARRENTAL:
-			return new IxPoiCarrentalOperator(conn, (IxPoiCarrental) obj);
+			return new IxPoiCarrentalOperator(conn, (IxPoiCarrental) obj);			
+		case ZONELINK:
+			return new ZoneLinkOperator(conn, (ZoneLink) obj);
+		case ZONELINKMESH:
+			return new ZoneLinkMeshOperator(conn, (ZoneLinkMesh) obj);
+		case ZONENODE:
+			return new ZoneNodeOperator(conn, (ZoneNode) obj);
+		case ZONENODEMESH:
+			return new ZoneNodeMeshOperator(conn, (ZoneNodeMesh) obj);
 		default:
 			return null;
 		}

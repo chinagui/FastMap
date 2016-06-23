@@ -3,9 +3,11 @@ package com.navinfo.dataservice.engine.edit.edit.operation;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.iface.OperStage;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
@@ -40,7 +42,7 @@ public class PoiMsgPublisher {
 					msg.put("address", poi.getOldAddress());
 					msg.put("kindCode", poi.getKindCode());
 					msg.put("geometry",
-							GeoTranslator.jts2Wkt(poi.getGeometry()));
+							GeoTranslator.jts2Wkt(poi.getGeometry(),0.00001,5));
 
 					MsgPublisher
 							.publish2WorkQueue("notify_poi", msg.toString());
@@ -107,7 +109,8 @@ public class PoiMsgPublisher {
 					msg.put("kindCode", poi.changedFields().get("kindCode"));
 				}
 				if (poi.changedFields().containsKey("geometry")) {
-					msg.put("geometry", poi.changedFields().get("geometry"));
+					Object geometry = poi.changedFields().get("geometry");
+					msg.put("geometry",Geojson.geojson2Wkt(geometry.toString()));
 				}
 
 				MsgPublisher.publish2WorkQueue("notify_poi", msg.toString());
@@ -167,5 +170,15 @@ public class PoiMsgPublisher {
 				MsgPublisher.publish2WorkQueue("notify_poi", msg.toString());
 			}
 		}
+	}
+	
+	public static void main(String[] args) throws Exception {
+		JSONObject msg = new JSONObject();
+
+		msg.put("pid", 542);
+		msg.put("status", ObjStatus.DELETE.toString());
+		msg.put("type", OperStage.DayEdit.toString());
+
+		MsgPublisher.publish2WorkQueue("notify_poi", msg.toString());
 	}
 }

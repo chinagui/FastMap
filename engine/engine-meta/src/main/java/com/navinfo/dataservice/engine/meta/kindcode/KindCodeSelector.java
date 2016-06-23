@@ -1,4 +1,4 @@
-package org.navinfo.dataservice.engine.meta.kindcode;
+package com.navinfo.dataservice.engine.meta.kindcode;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

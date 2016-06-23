@@ -26,7 +26,6 @@ public class VersionService {
 
 		try {
 
-//			conn = DBConnector.getInstance().getConnection();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 
 			pstmt = conn.prepareStatement(sql);

@@ -500,16 +500,17 @@ public class UserInfoService {
 		}
 	}
 
-	public List<String> getUploadTime(UserInfo bean) throws ServiceException {
+	public List<String> getUploadTime(UserInfo bean,String deviceId) throws ServiceException {
 		Connection conn = null;
 		try {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = "select upload_poi_time,upload_tips_time from user_upload where user_id=?";
+			String selectSql = "select upload_poi_time,upload_tips_time from user_upload where user_id=? and device_id=?";
 
 			List<Object> values = new ArrayList<Object>();
 
 			values.add(bean.getUserId());
+			values.add(deviceId);
 
 			ResultSetHandler<List<String>> rsHandler = new ResultSetHandler<List<String>>() {
 				public List<String> handle(ResultSet rs) throws SQLException {

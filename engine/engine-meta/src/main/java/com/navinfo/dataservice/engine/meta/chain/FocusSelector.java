@@ -1,4 +1,4 @@
-package org.navinfo.dataservice.engine.meta.chain;
+package com.navinfo.dataservice.engine.meta.chain;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

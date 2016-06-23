@@ -1,4 +1,4 @@
-package org.navinfo.dataservice.engine.meta.area;
+package com.navinfo.dataservice.engine.meta.area;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;

@@ -14,7 +14,6 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
-import org.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -32,6 +31,7 @@ import com.navinfo.dataservice.engine.fcc.tips.TipsExporter;
 import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
 import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
+import com.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
 
 @Controller

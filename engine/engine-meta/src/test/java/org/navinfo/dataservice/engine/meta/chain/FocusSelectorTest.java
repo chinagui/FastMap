@@ -5,6 +5,8 @@ import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.engine.meta.chain.ChainSelector;
+import com.navinfo.dataservice.engine.meta.chain.FocusSelector;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;

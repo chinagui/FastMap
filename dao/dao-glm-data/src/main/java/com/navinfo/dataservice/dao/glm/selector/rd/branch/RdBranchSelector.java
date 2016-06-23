@@ -201,24 +201,52 @@ public class RdBranchSelector implements ISelector {
 		return branch;
 	}
 
-	public IRow loadByDetailId(int detailId, boolean isLock) throws Exception {
+	public IRow loadByDetailId(int detailId,int branchType,String rowId, boolean isLock) throws Exception {
 		
-		RdBranch branch = new RdBranch();
-
-		String sql = "select a.*,b.mesh_id from rd_branch a,rd_link b,rd_branch_detail c where a.u_record!=2 and a.in_link_pid = b.link_pid  and a.branch_pid=c.branch_pid and c.detail_id=:1";
+		String tableName="";
+		String condition = "";
+		if(branchType >=0 && branchType <= 4){
+			tableName = " rd_branch_detail "; 
+			condition = " detail_id=:1 ";
+		}if(branchType == 5){
+			tableName = " rd_branch_realimage "; 
+			condition = " row_id=:1 ";
+			
+		}if(branchType == 6){
+			tableName = " rd_signasreal "; 
+			condition = " signboard_id =:1 ";
+		}
+		if(branchType == 7){
+			tableName = " rd_seriesbranch "; 
+			condition = " row_id=:1 ";
+		}if(branchType == 8){
+			tableName = " rd_branch_schematic "; 
+			condition = " schematic_id =:1 ";
+			
+		}if(branchType == 9){
+			tableName = " rd_signboard "; 
+			condition = " signboard_id =:1 ";
+			
+		}
+		String sql = "select a.*,b.mesh_id from rd_branch a,rd_link b,"+tableName+" c where a.u_record!=2 and a.in_link_pid = b.link_pid  and a.branch_pid=c.branch_pid and c."+condition+"";
 
 		if (isLock) {
 			sql += " for update nowait";
 		}
-
+		RdBranch branch = new RdBranch();
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 
 		try {
 			pstmt = this.conn.prepareStatement(sql);
-
-			pstmt.setInt(1, detailId);
+			
+			if(branchType == 5||branchType == 7){
+				pstmt.setString(1, rowId);
+			}else{
+				pstmt.setInt(1, detailId);
+			}
+			
 
 			resultSet = pstmt.executeQuery();
 
@@ -240,17 +268,55 @@ public class RdBranchSelector implements ISelector {
 				branch.setRowId(resultSet.getString("row_id"));
 				
 				branch.setMesh(meshId);
+				if(branchType >=0 && branchType <= 4){
+					RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
+							conn);
+					
+					IRow detail = detailSelector.loadById(detailId, isLock);
+					
+					List<IRow> details = new ArrayList<IRow>();
+					
+					details.add(detail);
 
-				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
-						conn);
-				
-				IRow detail = detailSelector.loadById(detailId, isLock);
-				
-				List<IRow> details = new ArrayList<IRow>();
-				
-				details.add(detail);
+					branch.setDetails(details);
+				}
+				if(branchType == 5){
+					RdBranchRealimageSelector realimageSelector = new RdBranchRealimageSelector(conn);
+					IRow image = realimageSelector.loadByRowId(rowId, isLock);
+					List<IRow> images = new ArrayList<IRow>();
+					images.add(image);
+					branch.setRealimages(images);
+				}
+				if(branchType == 6){
+					RdSignasrealSelector signasrealSelector =  new RdSignasrealSelector(conn);
+					IRow signasreal = signasrealSelector.loadById(detailId, isLock);
+					List<IRow> signasreals = new ArrayList<IRow>();
+					signasreals.add(signasreal);
+					branch.setSignasreals(signasreals);
+				}
+				if(branchType == 7){
+					RdSeriesbranchSelector seriesbranchSelector = new RdSeriesbranchSelector(conn);
+					IRow seriesbranch = seriesbranchSelector.loadByRowId(rowId, isLock);
+					List<IRow> seriesbranches = new ArrayList<IRow>();
+					seriesbranches.add(seriesbranch);
+					branch.setSeriesbranches(seriesbranches);
+				}
+				if(branchType == 8){
+					RdBranchSchematicSelector schematicSelector=  new RdBranchSchematicSelector(conn);
+					IRow schematic = schematicSelector.loadById(detailId, isLock);
+					List<IRow> schematics = new ArrayList<IRow>();
+					schematics.add(schematic);
+					branch.setSchematics(schematics);
+				}
+				if(branchType == 9){
+					RdSignboardSelector signboardSelector =  new RdSignboardSelector(conn);
+					IRow signboard = signboardSelector.loadById(detailId, isLock);
+					List<IRow> signboards = new ArrayList<IRow>();
+					signboards.add(signboard);
+					branch.setSignboards(signboards);
+				}
 
-				branch.setDetails(details);
+				
 
 				RdBranchViaSelector viaSelector = new RdBranchViaSelector(conn);
 

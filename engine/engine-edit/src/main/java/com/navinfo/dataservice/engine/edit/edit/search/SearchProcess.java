@@ -240,10 +240,12 @@ public class SearchProcess {
 				if (condition.containsKey("detailId")) {
 
 					int detailId = condition.getInt("detailId");
+					int branchType = condition.getInt("branchType");
+					String rowId =condition.getString("rowId");
 
 					RdBranchSelector selector = new RdBranchSelector(conn);
 
-					IRow row = selector.loadByDetailId(detailId, false);
+					IRow row = selector.loadByDetailId(detailId,branchType,rowId, false);
 
 					array.add(row.Serialize(ObjLevel.FULL));
 				}

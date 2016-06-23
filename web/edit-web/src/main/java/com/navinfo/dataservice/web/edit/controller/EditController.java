@@ -385,8 +385,8 @@ public class EditController extends BaseController {
 			jobReq.put("gridIds", gridIds);
 					
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
-			//long userId=tokenObj.getUserId();
-			long userId=2;
+			long userId=tokenObj.getUserId();
+			//long userId=2;
 			JobApiService apiService=(JobApiService) ApplicationContextUtil.getBean("jobApiService");
 			long jobId=apiService.createJob("editPoiBaseRelease", jobReq, userId, "POI行编提交");	
 			return new ModelAndView("jsonView", success(jobId));

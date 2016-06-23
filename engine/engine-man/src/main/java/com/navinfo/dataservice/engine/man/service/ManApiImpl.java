@@ -14,6 +14,7 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
+import com.navinfo.dataservice.engine.man.version.VersionService;
 /*
  * @author mayunfei
  * 2016年6月7日
@@ -72,6 +73,12 @@ public class ManApiImpl implements ManApi {
 	@Override
 	public int queryDbIdByAdminId(int adminId) throws Exception {
 		return RegionService.getInstance().queryDbIdByAdminId(adminId);
+	}
+	@Override
+	public String querySpecVersionByType(int type) throws Exception {
+		VersionService service = new VersionService();
+		
+		return service.query(type);
 	}
 }
 

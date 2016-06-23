@@ -318,9 +318,10 @@ public class SubtaskController extends BaseController {
 			data.put("geometry", subtask.getGeometry());
 			data.put("stage", subtask.getStage());
 			data.put("type", subtask.getType());
-			data.put("planStartDate", subtask.getPlanStartDate());
-			data.put("planEndDate", subtask.getPlanEndDate());
+			data.put("planStartDate", DateUtils.dateToString(subtask.getPlanStartDate()));
+			data.put("planEndDate", DateUtils.dateToString(subtask.getPlanEndDate()));
 			data.put("descp", subtask.getDescp());
+			data.put("gridIds", subtask.getGridIds());
 
 			return new ModelAndView("jsonView", success(data));
 			

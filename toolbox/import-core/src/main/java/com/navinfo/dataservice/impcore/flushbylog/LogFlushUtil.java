@@ -183,7 +183,7 @@ public class LogFlushUtil {
 	 */
 	public int lockTargetDbGrid(int regionId,int lockObject,int lockType,String dbType,List<Integer> grids) throws Exception {
 		DatalockApi datalockApi = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
-		return datalockApi.lockGrid(regionId , lockObject, grids, lockType,dbType );
+		return datalockApi.lockGrid(regionId , lockObject, grids, lockType,dbType ,0);
 	}
 	/**根据grid锁的id，进行解锁
 	 * @param lockSeqence lock的sequence id ； 0 表示没有锁定

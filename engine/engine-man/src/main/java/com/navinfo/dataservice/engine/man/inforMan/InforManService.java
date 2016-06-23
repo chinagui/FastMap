@@ -243,7 +243,7 @@ public class InforManService {
 						break;
 					}
 					if ("inforId".equals(key)) {
-						selectSql += (" order by i.inforId "+orderJson.getString("inforId"));
+						selectSql += (" order by i.infor_id "+orderJson.getString("inforId"));
 						break;
 					}
 				}

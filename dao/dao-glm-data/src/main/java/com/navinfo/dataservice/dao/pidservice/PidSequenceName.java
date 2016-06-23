@@ -40,7 +40,7 @@ public class PidSequenceName {
 	
 	public static final String signasreal = "SEQ_RD_SIGNASREAL";
 	
-	public static final String branchSchematic = "SEQ_RD_BRANCH_SCHEMATICL";
+	public static final String branchSchematic = "SEQ_RD_BRANCH_SCHEMATIC";
 	
 	public static final String signboard = "SEQ_RD_SIGNBOARD";	
 	

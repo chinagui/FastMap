@@ -86,7 +86,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			}
 			DatalockApi datalock = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
 			lockSeq = datalock.lockGrid(r.getRegionId(), FmEditLock.LOCK_OBJ_POI, req.getGridIds(), FmEditLock.TYPE_EDIT_POI_BASE_RELEASE,
-					dbType);
+					dbType,jobInfo.getId());
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw new LockException("加锁发生错误," + e.getMessage(), e);

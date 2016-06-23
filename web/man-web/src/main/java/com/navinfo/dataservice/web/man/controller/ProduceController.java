@@ -48,8 +48,8 @@ public class ProduceController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
-			//long userId=tokenObj.getUserId();
-			long userId=2;
+			long userId=tokenObj.getUserId();
+			//long userId=2;
 			JobApiService jobApi=(JobApiService) ApplicationContextUtil.getBean("jobApiService");
 			/*
 			 * {"gridIds":[213424,343434,23423432],"stopTime":"yyyymmddhh24miss","dataType":"POI"//POI,ALL}
@@ -86,8 +86,8 @@ public class ProduceController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
-			//long userId=tokenObj.getUserId();
-			long userId=2;
+			long userId=tokenObj.getUserId();
+			//long userId=2;
 			JobApiService jobApi=(JobApiService) ApplicationContextUtil.getBean("jobApiService");
 			/*
 			 * {"gridIds":[213424,343434,23423432],"stopTime":"yyyymmddhh24miss","dataType":"POI"//POI,ALL}
@@ -123,8 +123,8 @@ public class ProduceController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
-			//long userId=tokenObj.getUserId();
-			long userId=2;
+			long userId=tokenObj.getUserId();
+			//long userId=2;
 			JobApiService jobApi=(JobApiService) ApplicationContextUtil.getBean("jobApiService");
 			/*
 			 * {"gridIds":[213424,343434,23423432],"stopTime":"yyyymmddhh24miss"}

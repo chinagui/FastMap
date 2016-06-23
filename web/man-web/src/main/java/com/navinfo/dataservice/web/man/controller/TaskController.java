@@ -18,6 +18,7 @@ import org.springframework.web.servlet.ModelAndView;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.database.Page;
 
@@ -44,7 +45,7 @@ public class TaskController extends BaseController {
 	@RequestMapping(value = "/task/create")
 	public ModelAndView create(HttpServletRequest request){
 		try{
-			//AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			String parameter = request.getParameter("parameter");
 			if (StringUtils.isEmpty(parameter)){
 				throw new IllegalArgumentException("parameter参数不能为空。");
@@ -53,8 +54,8 @@ public class TaskController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			//long userId=tokenObj.getUserId();
-			long userId=2;
+			long userId=tokenObj.getUserId();
+			//long userId=2;
 			service.create(userId,dataJson);
 			return new ModelAndView("jsonView", success("创建成功"));
 		}catch(Exception e){

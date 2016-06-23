@@ -15,6 +15,7 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -281,8 +282,10 @@ public class EditController extends BaseController {
 			int dbId = jsonReq.getInt("dbId");
 			// 项目管理（放开）
 			// subtaskId
-			// int subtaskId = jsonReq.getInt("subtaskId");
-			// int type = jsonReq.getInt("type");
+			int subtaskId = jsonReq.getInt("subtaskId");
+			int type = jsonReq.getInt("type");
+			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 			int pageNum = jsonReq.getInt("pageNum");
 			int pageSize = jsonReq.getInt("pageSize");
 			int pid =0;
@@ -294,7 +297,7 @@ public class EditController extends BaseController {
 			}
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			IxPoiSelector selector = new IxPoiSelector(conn);
-			JSONObject jsonObject = selector.loadPids(false,pid,pidName,pageSize, pageNum);
+			JSONObject jsonObject = selector.loadPids(false,pid,pidName,type,subtask.getGeometry(),pageSize, pageNum);
 			return new ModelAndView("jsonView", success(jsonObject));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -395,4 +398,5 @@ public class EditController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
+	
 }

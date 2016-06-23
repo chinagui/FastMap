@@ -1,10 +1,21 @@
 package com.navinfo.dataservice.engine.edit.xiaolong.rd;
 
+import java.sql.Connection;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
+import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
+import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
+
+import net.sf.json.JSONObject;
 
 public class RwLinkTest extends InitApplication {
 
@@ -12,6 +23,46 @@ public class RwLinkTest extends InitApplication {
 	@Before
 	public void init() {
 		initContext();
+	}
+
+	@Test
+	public void testGetByPid()
+	{
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(42);
+
+			String parameter = "{\"type\":\"RWLINK\",\"dbId\":42,\"objId\":33}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			System.out.println(p.searchDataByCondition(ObjType.RWLINK, jsonReq));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testSearchByCondition()
+	{
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(42);
+
+			String parameter = "{\"dbId\":42,\"type\":\"RWLINK\",\"nodePid\":100005922}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			System.out.println(p.searchDataByCondition(ObjType.RWLINK, jsonReq));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Test//不跨图幅

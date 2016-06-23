@@ -210,7 +210,7 @@ public class RdBranchSelector implements ISelector {
 			condition = " detail_id=:1 ";
 		}if(branchType == 5){
 			tableName = " rd_branch_realimage "; 
-			condition = " row_id=:1 ";
+			condition = " row_id=hextoraw(:1)";
 			
 		}if(branchType == 6){
 			tableName = " rd_signasreal "; 
@@ -218,7 +218,7 @@ public class RdBranchSelector implements ISelector {
 		}
 		if(branchType == 7){
 			tableName = " rd_seriesbranch "; 
-			condition = " row_id=:1 ";
+			condition = " row_id=hextoraw(:1)";
 		}if(branchType == 8){
 			tableName = " rd_branch_schematic "; 
 			condition = " schematic_id =:1 ";

@@ -1,12 +1,17 @@
 package com.navinfo.dataservice.engine.edit.edit.operation;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * 操作控制器
@@ -18,6 +23,8 @@ public class Transaction {
 	 */
 	private String requester;
 
+	private String rowId;
+	
 	/**
 	 * 操作类型
 	 */
@@ -52,6 +59,19 @@ public class Transaction {
 
 	public void setRequester(String requester) {
 		this.requester = requester;
+	}
+	
+	public String getRowId() {
+		List<IRow> rows = process.getResult().getAddObjects();
+		if(CollectionUtils.isNotEmpty(process.getResult().getAddObjects()))
+		{
+			return rows.get(0).rowId();
+		}
+		return null;
+	}
+
+	public void setRowId(String rowId) {
+		this.rowId = rowId;
 	}
 
 	/**

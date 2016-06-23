@@ -28,14 +28,13 @@ public class Subtask implements Serializable  {
 	private Integer status ;
 	private Timestamp planStartDate ;
 	private Timestamp planEndDate ;
-//	private Timestamp startDate ;
-//	private Timestamp endDate ;
 	private String descp ;
 	private Block block;
 	private Task task;
 	private BlockMan blockMan;
 	private String[] gridIds;
 	private Integer dbId ;
+	private Integer groupId;
 	
 	public Subtask (){
 	}
@@ -53,14 +52,13 @@ public class Subtask implements Serializable  {
 			Integer status,
 			Timestamp planStartDate,
 			Timestamp planEndDate,
-//			Timestamp startDate,
-//			Timestamp endDate,
 			String descp,
 			Block block,
 			Task task,
 			BlockMan blockMan,
 			String[] gridIds,
-			Integer dbId){
+			Integer dbId,
+			Integer groupId){
 		this.subtaskId=subtaskId ;
 		this.name = name;
 		this.blockId=blockId ;
@@ -74,14 +72,19 @@ public class Subtask implements Serializable  {
 		this.status=status ;
 		this.planStartDate=planStartDate ;
 		this.planEndDate=planEndDate ;
-//		this.startDate=startDate ;
-//		this.endDate=endDate ;
 		this.descp=descp ;
 		this.block=block ;
 		this.task=task ;
 		this.blockMan=blockMan ;
 		this.gridIds = gridIds;
 		this.dbId = dbId;
+		this.groupId = groupId;
+	}
+	public int getGroupId(){
+		return groupId;
+	}
+	public void setGroupId(int groupId) {
+		this.groupId = groupId;
 	}
 	public String getName(){
 		if(null==name){return "";}
@@ -201,18 +204,6 @@ public class Subtask implements Serializable  {
 	public void setPlanEndDate(Timestamp planEndDate) {
 		this.planEndDate = planEndDate;
 	}
-//	public Timestamp getStartDate() {
-//		return startDate;
-//	}
-//	public void setStartDate(Timestamp startDate) {
-//		this.startDate = startDate;
-//	}
-//	public Timestamp getEndDate() {
-//		return endDate;
-//	}
-//	public void setEndDate(Timestamp endDate) {
-//		this.endDate = endDate;
-//	}
 	public String getDescp() {
 		return descp;
 	}
@@ -244,6 +235,7 @@ public class Subtask implements Serializable  {
 				//+ ",blockMan=" + blockMan.toString()
 				//+ ",task=" + task.toString()
 				+ ",dbId=" + dbId
+				+ ",groupId=" + groupId
 				//+ ",gridIds=" + gridIds
 				+",descp="+descp+"]";
 	}
@@ -270,12 +262,11 @@ public class Subtask implements Serializable  {
 		result = prime * result + ((planStartDate == null) ? 0 : planStartDate.hashCode());
 		result = prime * result + ((planEndDate == null) ? 0 : planEndDate.hashCode());
 		result = prime * result + ((dbId == null) ? 0 : dbId.hashCode());
+		result = prime * result + ((groupId == null) ? 0 : groupId.hashCode());
 		result = prime * result + ((gridIds == null) ? 0 : gridIds.hashCode());
 		result = prime * result + ((block == null) ? 0 : block.hashCode());
 		result = prime * result + ((blockMan == null) ? 0 : blockMan.hashCode());
 		result = prime * result + ((task == null) ? 0 : task.hashCode());
-//		result = prime * result + ((startDate == null) ? 0 : startDate.hashCode());
-//		result = prime * result + ((endDate == null) ? 0 : endDate.hashCode());
 		result = prime * result + ((descp == null) ? 0 : descp.hashCode());
 		return result;
 	}
@@ -363,6 +354,11 @@ public class Subtask implements Serializable  {
 				return false;
 		} else if (!dbId.equals(other.dbId))
 			return false;
+		if (groupId == null) {
+			if (other.groupId != null)
+				return false;
+		} else if (!groupId.equals(other.groupId))
+			return false;
 		if (gridIds == null) {
 			if (other.gridIds != null)
 				return false;
@@ -383,16 +379,6 @@ public class Subtask implements Serializable  {
 				return false;
 		} else if (!task.equals(other.task))
 			return false;
-//		if (startDate == null) {
-//			if (other.startDate != null)
-//				return false;
-//		} else if (!startDate.equals(other.startDate))
-//			return false;
-//		if (endDate == null) {
-//			if (other.endDate != null)
-//				return false;
-//		} else if (!endDate.equals(other.endDate))
-//			return false;
 		if (descp == null) {
 			if (other.descp != null)
 				return false;

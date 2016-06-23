@@ -14,15 +14,6 @@ import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
 import org.apache.uima.pear.util.FileUtil;
-import org.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
-import org.navinfo.dataservice.engine.meta.chain.ChainSelector;
-import org.navinfo.dataservice.engine.meta.chain.FocusSelector;
-import org.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
-import org.navinfo.dataservice.engine.meta.mesh.MeshSelector;
-import org.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
-import org.navinfo.dataservice.engine.meta.patternimage.PatternImageSelector;
-import org.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
-import org.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -35,6 +26,15 @@ import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.engine.man.version.VersionService;
+import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
+import com.navinfo.dataservice.engine.meta.chain.ChainSelector;
+import com.navinfo.dataservice.engine.meta.chain.FocusSelector;
+import com.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
+import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
+import com.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
+import com.navinfo.dataservice.engine.meta.patternimage.PatternImageSelector;
+import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
+import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
 
 @Controller
 public class MetaController extends BaseController {
@@ -160,7 +160,7 @@ public class MetaController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/patternImage/export")
+	@RequestMapping(value = "/patternImage/download")
 	public ModelAndView exportPatternImage(HttpServletRequest request)
 			throws ServletException, IOException {
 

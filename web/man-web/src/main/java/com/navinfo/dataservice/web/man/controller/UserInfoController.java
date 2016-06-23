@@ -67,7 +67,7 @@ public class UserInfoController extends BaseController {
 			HashMap<?, ?> data = service.login(userInfo, userDevice);
 
 			if (!data.isEmpty()) {
-				return new ModelAndView("jsonView", success("data"));
+				return new ModelAndView("jsonView", success(data));
 			} else {
 				return new ModelAndView("jsonView", success("用户不存在"));
 			}
@@ -206,6 +206,7 @@ public class UserInfoController extends BaseController {
 		try {
 
 			String tokenString = request.getParameter("access_token");
+			String deviceId = request.getParameter("deviceId");
 			if (tokenString == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
@@ -216,7 +217,7 @@ public class UserInfoController extends BaseController {
 			UserInfo bean = new UserInfo();
 			bean.setUserId(use_id);
 
-			List<String> poi_tips_time = service.getUploadTime(bean);
+			List<String> poi_tips_time = service.getUploadTime(bean,deviceId);
 			HashMap<String, String> data = new HashMap<String, String>();
 			String poi_time = "";
 			String tips_time = "";

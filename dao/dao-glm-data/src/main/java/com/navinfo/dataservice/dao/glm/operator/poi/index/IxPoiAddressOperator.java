@@ -184,7 +184,14 @@ public class IxPoiAddressOperator implements IOperator {
 		
 		sb.append("," + ixPoiAddress.getPoiPid());
 		
-		sb.append("," + ixPoiAddress.getLangCode());
+		if(StringUtils.isNotEmpty(ixPoiAddress.getLangCode()))
+		{
+			sb.append(",'" + ixPoiAddress.getLangCode()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
 		sb.append("," + ixPoiAddress.getSrcFlag());
 		
@@ -569,7 +576,7 @@ public class IxPoiAddressOperator implements IOperator {
 		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		
 		sb.append(",1,'" + ixPoiAddress.rowId() + "')");
-
+		
 		stmt.addBatch(sb.toString());
 	}
 

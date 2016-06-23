@@ -9,11 +9,11 @@ import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 
 /**
  * 
-* @Title: Command.java 
-* @Description: 前台创建poi request数据封装类
-* @author 赵凯凯
-* @date 2016年6月15日 下午2:26:38 
-* @version V1.0
+ * @Title: Command.java
+ * @Description: 前台创建poi request数据封装类
+ * @author 赵凯凯
+ * @date 2016年6月15日 下午2:26:38
+ * @version V1.0
  */
 public class Command extends AbstractCommand implements ICommand {
 
@@ -33,8 +33,9 @@ public class Command extends AbstractCommand implements ICommand {
 	 * 维度
 	 */
 	private double latitude;
-	//引导坐标
+	// 引导坐标
 	private double xguide;
+
 	public double getXguide() {
 		return xguide;
 	}
@@ -96,13 +97,27 @@ public class Command extends AbstractCommand implements ICommand {
 		this.requester = requester;
 		this.setDbId(json.getInt("dbId"));
 		JSONObject data = json.getJSONObject("data");
-		this.setLinkPid(data.getInt("linkPid"));
-		//获取经纬度
-        this.setLatitude(Math.round(data.getDouble("latitude")*100000)/100000.0);
-        this.setLongitude(Math.round(data.getDouble("longitude")*100000)/100000.0);
-        //获取引导坐标
-		this.setXguide(Math.round(data.getDouble("x_guide")*100000)/100000.0);
-		this.setYguide(Math.round(data.getDouble("y_guide")*100000)/100000.0);
+		if (data.containsKey("linkPid")) {
+			this.setLinkPid(data.getInt("linkPid"));
+		}
+		else
+		{
+			this.setLinkPid(0);
+		}
+		// 获取经纬度
+		this.setLatitude(Math.round(data.getDouble("latitude") * 100000) / 100000.0);
+		this.setLongitude(Math.round(data.getDouble("longitude") * 100000) / 100000.0);
+		if (data.containsKey("x_guide")) {
+			// 获取引导坐标
+			this.setXguide(Math.round(data.getDouble("x_guide") * 100000) / 100000.0);
+		} else {
+			this.setXguide(0);
+		}
+		if (data.containsKey("y_guide")) {
+			this.setYguide(Math.round(data.getDouble("y_guide") * 100000) / 100000.0);
+		} else {
+			this.setYguide(0);
+		}
 	}
 
 }

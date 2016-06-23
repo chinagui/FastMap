@@ -37,7 +37,7 @@ public class GridLockManagerTest {
 	@Test
 	public void testLock() throws Exception {
 		Set<Integer> grids=queryGrid(1500);
-		int lockSeq = GridLockManager.getInstance().lock(2, FmEditLock.LOCK_OBJ_POI, grids, FmEditLock.TYPE_BORROW, 0,FmEditLock.DB_TYPE_DAY);
+		int lockSeq = GridLockManager.getInstance().lock(2, FmEditLock.LOCK_OBJ_POI, grids, FmEditLock.TYPE_BORROW,FmEditLock.DB_TYPE_DAY, 0);
 		System.out.println(lockSeq);
 		Assert.assertTrue(lockSeq>0);
 	}

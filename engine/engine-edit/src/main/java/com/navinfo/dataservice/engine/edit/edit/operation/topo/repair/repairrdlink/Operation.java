@@ -279,7 +279,7 @@ public class Operation implements IOperation {
 				String meshIdStr = it.next();
 				Geometry geomInter = MeshUtils.linkInterMeshPolygon(g, MeshUtils.mesh2Jts(meshIdStr));
 				geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-				this.createRdLinkWithMesh(geomInter, maps, result,meshIdStr);
+				this.createRdLinkWithMesh(geomInter, maps, result);
 			}
 			//删掉原始link
 			result.insertObject(updateLink, ObjStatus.DELETE, updateLink.pid());
@@ -302,7 +302,7 @@ public class Operation implements IOperation {
 	 * 创建RDLINK针对跨图幅有两种情况 1.跨图幅和图幅交集是LineString 2.跨图幅和图幅交集是MultineString
 	 * 跨图幅需要生成和图廓线的交点
 	 */
-	private void createRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result, String meshId) throws Exception {
+	private void createRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result) throws Exception {
 		if (g != null) {
 
 			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {

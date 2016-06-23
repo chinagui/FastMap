@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections.map.MultiValueMap;
+
 import com.navinfo.dataservice.api.man.model.Grid;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -22,7 +24,7 @@ public interface ManApi{
 	 * @throws Exception 
 	 * 
 	 */
-	public Map queryRegionGridMapping(List<Integer> gridList) throws Exception;
+	public MultiValueMap queryRegionGridMapping(List<Integer> gridList) throws Exception;
 	
 	public Region queryByRegionId(Integer regionId) throws Exception ;
 	
@@ -43,5 +45,7 @@ public interface ManApi{
 	Region queryRegionByDbId(int dbId)throws Exception;
 	
 	public int queryAdminIdBySubtask(int subtaskId) throws Exception;
+	
+	public int queryDbIdByAdminId(int adminId) throws Exception;
 }
 

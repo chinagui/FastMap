@@ -27,6 +27,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -63,6 +64,11 @@ public class EditController extends BaseController {
 			json.put("log", log);
 
 			json.put("check", t.getCheckLog());
+			
+			if(StringUtils.isNotEmpty(t.getRowId()))
+			{
+				json.put("rowId", t.getRowId());
+			}
 
 			json.put("pid", t.getPid());
 

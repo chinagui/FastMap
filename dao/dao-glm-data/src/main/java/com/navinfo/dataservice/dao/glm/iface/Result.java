@@ -12,6 +12,8 @@ import net.sf.json.JSONObject;
 public class Result implements ISerializable {
 
 	private int primaryPid;
+	
+	private String rowId;
 
 	private OperStage operStage = OperStage.DayEdit;
 
@@ -30,6 +32,15 @@ public class Result implements ISerializable {
 	public void setPrimaryPid(int primaryPid) {
 		this.primaryPid = primaryPid;
 	}
+	
+	public String getRowId() {
+		return rowId;
+	}
+
+	public void setRowId(String rowId) {
+		this.rowId = rowId;
+	}
+
 
 	/**
 	 * 新增对象列表

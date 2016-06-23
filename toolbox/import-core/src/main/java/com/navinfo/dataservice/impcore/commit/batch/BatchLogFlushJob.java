@@ -56,6 +56,7 @@ public class BatchLogFlushJob extends AbstractJob {
 			String tempTable = logUtils.createTempTable(sourceDbConn);//创建临时表，
 			logUtils.createTargetDbLink(sourceDbInfo, targetDbInfo);//创建指向目标库的dblink
 			this.response("数据库初始化完毕", jobResponse);
+			
 			List<Object> prepareParaValues = new ArrayList<Object>();
 			Glm glm = new Glm(sourceDbInfo.getGdbVersion());
 			List ixTables = ListUtils.union(glm.getEditTableNames(GlmTable.FEATURE_TYPE_POI), glm.getExtendTableNames(GlmTable.FEATURE_TYPE_POI));
@@ -91,6 +92,7 @@ public class BatchLogFlushJob extends AbstractJob {
 					"and d.row_id = p.row_id\r\n" + 
 					"and p.row_id = s.row_id\r\n" + 
 					"and s.status=2\r\n") ;
+		sb.append(" union all\r\n");
 		sb.append("select l.op_id,l.op_dt  from log_operation l ,log_detail d ,log_detail_grid g ,ix_poi  p \r\n" + 
 				"where l.op_id = d.op_id and d.row_id = g.log_row_id\r\n" + 
 				"and "+(gridSqlClause==null?"1=1":gridSqlClause.getSql())+"\r\n" + 

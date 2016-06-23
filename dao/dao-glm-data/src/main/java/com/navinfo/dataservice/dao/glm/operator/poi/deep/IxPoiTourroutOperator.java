@@ -83,8 +83,8 @@ public class IxPoiTourroutOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 		StringBuilder sb = new StringBuilder("update "
-				+ ixPoiTourroute.tableName() + " set u_record=3,u_date="
-				+ StringUtils.getCurrentTime() + ",");
+				+ ixPoiTourroute.tableName() + " set u_record=3,u_date='"
+				+ StringUtils.getCurrentTime() + "',");
 
 		PreparedStatement pstmt = null;
 
@@ -301,7 +301,7 @@ public class IxPoiTourroutOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiTourroute.tableName()
-				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where   tour_id      ="
+				+ " set u_record=2 ,u_date='"+StringUtils.getCurrentTime()+"' where   tour_id      ="
 				+ ixPoiTourroute.getPid();
 		stmt.addBatch(sql);
 	}

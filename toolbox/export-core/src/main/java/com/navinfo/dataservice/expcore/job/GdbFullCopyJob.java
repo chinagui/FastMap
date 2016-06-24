@@ -73,7 +73,7 @@ public class GdbFullCopyJob extends AbstractJob {
 			}
 			//2.在target上创建指向source的dblink
 			dbLinkName = targetSchema.getConnConfig().getUserName()+"_"+RandomUtil.nextNumberStr(4);
-			cr.create(dbLinkName, false, targetSchema.getPoolDataSource(), sourceSchema.getConnConfig().getUserName(), sourceSchema.getConnConfig().getUserPasswd(), sourceSchema.getConnConfig().getServerIp(), String.valueOf(sourceSchema.getConnConfig().getServerPort()), sourceSchema.getConnConfig().getDbName());
+			cr.create(dbLinkName, false, targetSchema.getPoolDataSource(), sourceSchema.getConnConfig().getUserName(), sourceSchema.getConnConfig().getUserPasswd(), sourceSchema.getConnConfig().getServerIp(), String.valueOf(sourceSchema.getConnConfig().getServerPort()), sourceSchema.getConnConfig().getServiceName());
 			List<ExpSQL> copySqls =AssembleFullCopySql.assembleFastCopySql(dbLinkName, sourceSchema, targetSchema, req.getGdbVersion(),req.getFeatureType()
 					, req.getSpecificTables(),req.getExcludedTables(),req.getTableReNames());
 			response("复制sql列表已经装配完成",null);

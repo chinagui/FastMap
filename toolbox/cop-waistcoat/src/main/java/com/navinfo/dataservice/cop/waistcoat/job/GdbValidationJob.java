@@ -82,7 +82,7 @@ public class GdbValidationJob extends AbstractJob {
 			DbInfo tarDb = datahub.getDbById(req.getTargetDbId());
 			OracleSchema tarSchema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(tarDb.getConnectParam()));
-			CkResultTool.moveNiVal(valSchema, tarSchema, req.getGrids().toArray(new String[0]));
+			CkResultTool.moveNiVal(valSchema, tarSchema, req.getGrids());
 			response("批处理生成的检查结果后处理及搬迁完毕。",null);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

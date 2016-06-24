@@ -124,7 +124,7 @@ public class GdbBatchJob extends AbstractJob {
 			DbInfo tarDb = datahub.getDbById(req.getTargetDbId());
 			OracleSchema tarSchema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(tarDb.getConnectParam()));
-			CkResultTool.moveNiVal(batSchema, tarSchema, req.getGrids().toArray(new String[0]));
+			CkResultTool.moveNiVal(batSchema, tarSchema, req.getGrids());
 			response("批处理生成的检查结果搬迁完毕。",null);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

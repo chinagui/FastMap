@@ -16,6 +16,8 @@ public class Command extends AbstractCommand {
 	
 	private String rowId;
 	
+	private ObjType objType = ObjType.RDBRANCH;
+	
 	public int getDetailId() {
 		return detailId;
 	}
@@ -31,7 +33,11 @@ public class Command extends AbstractCommand {
 	
 	@Override
 	public ObjType getObjType() {
-		return ObjType.RDBRANCH;
+		return this.objType;
+	}
+
+	public void setObjType(ObjType objType) {
+		this.objType = objType;
 	}
 
 	@Override
@@ -55,7 +61,7 @@ public class Command extends AbstractCommand {
 		this.rowId = rowId;
 	}
 
-	public Command(JSONObject json, String requester) {
+	public Command(JSONObject json, String requester) throws Exception {
 		this.requester = requester;
 
 		this.setDbId(json.getInt("dbId"));
@@ -65,14 +71,25 @@ public class Command extends AbstractCommand {
 			this.detailId = json.getInt("detailId");
 		}
 		
-		if(json.containsKey("rowId"))
-		{
-			this.rowId = json.getString("rowId");
-		}
-		
 		if(json.containsKey("branchType"))
 		{
 			this.branchType = json.getInt("branchType");
+			
+			if(this.branchType == 5 || this.branchType == 7)
+			{
+				if(json.containsKey("rowId"))
+				{
+					this.rowId = json.getString("rowId");
+				}
+				else
+				{
+					throw new Exception("请求中缺少参数：rowId");
+				}
+			}
+		}
+		else
+		{
+			throw new Exception("请求中缺少参数：branchType");
 		}
 	}
 

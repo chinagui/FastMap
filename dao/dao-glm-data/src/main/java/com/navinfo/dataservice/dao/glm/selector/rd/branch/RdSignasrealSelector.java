@@ -29,7 +29,7 @@ public class RdSignasrealSelector implements ISelector {
 		RdSignasreal signasreal = new RdSignasreal();
 
 		String sql = "select * from " + signasreal.tableName()
-				+ " where signasreal_id=:1";
+				+ " where signboard_id =:1";
 
 		if (isLock) {
 			sql += " for update nowait";

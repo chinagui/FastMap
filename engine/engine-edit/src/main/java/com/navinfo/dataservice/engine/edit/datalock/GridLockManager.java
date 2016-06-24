@@ -19,7 +19,6 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.engine.edit.datalock.MeshLockManager.FmMeshResultSetHandler4QueryLock;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /** 

@@ -120,11 +120,11 @@ public class DbService {
 		try{
 			String checkSql = null;
 			String checkName = null;
-			if(DbServerType.TYPE_ORACLE.equals(serverType)){
+			if(!DbServerType.TYPE_ORACLE.equals(serverType)){
 				checkSql = "select count(1) from db_hub where db_status>0 and db_name=? and biz_type=?";
 				checkName = dbName;
 			}else{
-				checkSql = "select count(1) from db_hub where db_status>0 and db_user_name=? and db_user_name=? and biz_type=?";
+				checkSql = "select count(1) from db_hub where db_status>0 and db_user_name=? and biz_type=?";
 				checkName = userName;
 			}
 			
@@ -134,7 +134,8 @@ public class DbService {
 				if(DbServerType.TYPE_ORACLE.equals(serverType)&&StringUtils.isEmpty(userName)){
 					userName="HUB_" + RandomUtil.nextString(10);
 					userPasswd = userName;
-				}else if(StringUtils.isEmpty(dbName)){
+				}else if((DbServerType.TYPE_MONGODB.equals(serverType)||DbServerType.TYPE_MYSQL.equals(serverType))
+						&&StringUtils.isEmpty(dbName)){
 					dbName = "HUB_" + RandomUtil.nextString(10);
 				}else{
 					//验证同类型是否已经存在

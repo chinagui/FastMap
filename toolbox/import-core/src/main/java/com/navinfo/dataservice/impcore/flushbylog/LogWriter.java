@@ -25,22 +25,12 @@ public class LogWriter {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private static WKT wktUtil = new WKT();
 	private Connection targetDbConn;
-	private boolean ignoreError=true;
 	/**
 	 * @param conn 目标库的连接
 	 * 默认情况下，出现履历执行的错误，不抛异常
 	 */
 	public LogWriter(Connection conn) {
-		this(conn,true);
-	}
-	/**
-	 * @param conn 目标库的连接
-	 * @param ignoreError 是否忽略履历执行时出现的错误
-	 */
-	public LogWriter(Connection conn,boolean ignoreError) {
-		super();
-		this.targetDbConn = conn;
-		this.ignoreError = ignoreError;
+		this.targetDbConn=conn;
 	}
 
 	public void write(EditLog editLog,ILogWriteListener listener){

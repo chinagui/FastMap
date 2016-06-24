@@ -2,6 +2,7 @@ package com.navinfo.dataservice.impcore.job;
 
 import java.util.List;
 
+import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
@@ -24,11 +25,6 @@ public class GdbImportJobRequest extends AbstractJobRequest {
 	@Override
 	public String getJobType() {
 		return "gdbImport";
-	}
-
-	@Override
-	public int getStepCount() throws JobException {
-		return 3;
 	}
 
 	@Override
@@ -75,6 +71,16 @@ public class GdbImportJobRequest extends AbstractJobRequest {
 
 	public void setIgnoreError(boolean ignoreError) {
 		this.ignoreError = ignoreError;
+	}
+
+	@Override
+	public void defineSubJobRequests() throws JobCreateException {
+		
+	}
+
+	@Override
+	protected int myStepCount() throws JobException {
+		return 3;
 	}
 
 }

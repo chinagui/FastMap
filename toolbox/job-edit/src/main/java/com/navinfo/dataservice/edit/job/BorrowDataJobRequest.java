@@ -2,6 +2,7 @@ package com.navinfo.dataservice.edit.job;
 
 import java.util.List;
 
+import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
@@ -15,19 +16,10 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 public class BorrowDataJobRequest extends AbstractJobRequest {
 	protected List<String> meshes;
 	protected int borrowInDbId;
-	protected AbstractJobRequest borrow;
-	
 
 	@Override
 	public String getJobType() {
 		return "borrowData";
-	}
-
-	@Override
-	public int getStepCount() throws JobException {
-		int count = 0;
-		count+=borrow.getStepCount();
-		return count;
 	}
 
 	@Override
@@ -51,12 +43,16 @@ public class BorrowDataJobRequest extends AbstractJobRequest {
 		this.borrowInDbId = borrowInDbId;
 	}
 
-	public AbstractJobRequest getBorrow() {
-		return borrow;
+	@Override
+	public void defineSubJobRequests() throws JobCreateException {
+		// TODO Auto-generated method stub
+		//export job
 	}
 
-	public void setBorrow(AbstractJobRequest borrow) {
-		this.borrow = borrow;
+	@Override
+	protected int myStepCount() throws JobException {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }

@@ -31,7 +31,7 @@ public class BizType {
 	public static final String DB_DATA_GDBCHANGE = "dbDataGdbChange";
 	
 	public static final String DB_PRJ_ROAD = "prjRoad";
-	public static final String DB_COP_VERSION_ROAD = "copVersionRoad";
+	public static final String DB_COP_VERSION = "copVersion";
 	
 	public static final String DB_FM_MAN_RAOD="fmManRoad";
 	public static final String DB_META_ROAD="metaRoad";

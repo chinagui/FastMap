@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.expcore.ExportConfig;
+import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
@@ -35,12 +36,6 @@ public class GdbExportJobRequest extends AbstractJobRequest {
 	protected List<String> excludedTables;
 	protected  List<String> flexTables;
 	protected Map<String,String> flexConditions;
-	
-
-	@Override
-	public int getStepCount() throws JobException {
-		return 3;
-	}
 
 	@Override
 	public void validate() throws JobException {
@@ -186,6 +181,17 @@ public class GdbExportJobRequest extends AbstractJobRequest {
 	@Override
 	public String getJobType() {
 		return "gdbExport";
+	}
+
+	@Override
+	public void defineSubJobRequests() throws JobCreateException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected int myStepCount() throws JobException {
+		return 3;
 	}
 
 }

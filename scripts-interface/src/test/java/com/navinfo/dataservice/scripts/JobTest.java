@@ -28,7 +28,7 @@ public class JobTest {
 			//初始化context
 			JobScriptsInterface.initContext();
 			//执行job
-			int jobId=54;
+			int jobId=51;
 			JobInfo jobInfo = JobService.getInstance().getJobById(jobId);
 			AbstractJob job = JobCreateStrategy.createAsMethod(jobInfo);
 			job.run();

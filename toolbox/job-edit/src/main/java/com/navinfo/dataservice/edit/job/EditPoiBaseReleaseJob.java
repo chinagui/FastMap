@@ -44,22 +44,32 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 	public void execute() throws JobException {
 		EditPoiBaseReleaseJobRequest releaseJobRequest=(EditPoiBaseReleaseJobRequest) request;
 		try{
+			log.info("check exception1");
 			//判断是否有检查错误，有检查错误则直接返回不进行后续步骤
 			if(!hasException(releaseJobRequest)){
+				log.error("has exception,connot commit!");
 				super.response("grids中有检查错误，不能提交！",null);
 				throw new Exception("grids中有检查错误，不能提交！");}
 			//1对grids提取数据执行gdb检查
+			log.info("start gdb check");
 			JSONObject validationResponseJson=exeGdbValidationJob(releaseJobRequest);
 			int valDbId=validationResponseJson.getInt("valDbId");
 			jobInfo.getResponse().put("val&BatchDbId", valDbId);
+			log.info("end gdb check");
 			//判断是否有检查错误，有检查错误则直接返回不进行后续步骤
+			log.info("check exception2");
 			if(!hasException(releaseJobRequest)){
+				log.error("has exception,connot commit!");
 				super.response("grids中有检查错误，不能提交！",null);
 				throw new Exception("grids中有检查错误，不能提交！");}			
 			//对grids执行批处理
+			log.info("start gdb batch");
 			JSONObject batchResponseJson=exeGdbBatchJob(valDbId, releaseJobRequest);
+			log.info("end gdb batch");
 			//修改数据提交状态
+			log.info("start change poi_edit_status=3 commit");
 			commitPoi(releaseJobRequest);
+			log.info("end change poi_edit_status=3 commit");
 			super.response("POI行编提交成功！",null);
 		}catch (Exception e){
 			log.error(e.getMessage(), e);
@@ -143,7 +153,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		Connection conn = null;
 		try{
 			String sql="SELECT 1 FROM NI_VAL_EXCEPTION_GRID G "
-					+ "WHERE G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(releaseJobRequest.getGridIds(),",")+"))";
+					+ "WHERE G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(releaseJobRequest.getGridIds(),",")+")";
 			conn = DBConnector.getInstance().getConnectionById(releaseJobRequest.getTargetDbId());
 			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>(){
 				public Integer handle(ResultSet rs) throws SQLException {
@@ -172,7 +182,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		validationRequestJSON.put("grids", releaseJobRequest.getGridIds());
 		validationRequestJSON.put("rules", releaseJobRequest.getCheckRuleList());
 		validationRequestJSON.put("targetDbId", releaseJobRequest.getTargetDbId());
-		validationRequestJSON.put("type", "gdbValidation");
+		//validationRequestJSON.put("type", "gdbValidation");
 		validationRequestJSON.put("createValDb", releaseJobRequest.createDbJSON("validation temp db"));
 		validationRequestJSON.put("expValDb", releaseJobRequest.expDbJSON());
 		
@@ -195,7 +205,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		batchRequestJSON.put("rules", releaseJobRequest.getBatchRuleList());
 		batchRequestJSON.put("targetDbId", releaseJobRequest.getTargetDbId());
 		batchRequestJSON.put("batchDbId", batchDbId);
-		batchRequestJSON.put("type", "gdbBatch");
+		//batchRequestJSON.put("type", "gdbBatch");
 		batchRequestJSON.put("createBatchDb", releaseJobRequest.createDbJSON("batch temp db"));
 		batchRequestJSON.put("expBatchDb", releaseJobRequest.expDbJSON());
 		batchRequestJSON.put("createBakDb", releaseJobRequest.createDbJSON("batch bak db"));

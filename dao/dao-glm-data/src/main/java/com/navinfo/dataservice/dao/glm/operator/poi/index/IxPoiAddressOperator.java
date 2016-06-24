@@ -112,8 +112,6 @@ public class IxPoiAddressOperator implements IOperator {
 			}
 			sb.append(" where name_id= " + ixPoiAddress.getPid());
 
-			sb.append("')");
-
 			String sql = sb.toString();
 
 			sql = sql.replace(", where", " where");

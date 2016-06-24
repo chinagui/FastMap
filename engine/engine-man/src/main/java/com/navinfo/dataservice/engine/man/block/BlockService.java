@@ -327,7 +327,7 @@ public class BlockService {
 						selectSql += " and t.block_id=" + conditionJson.getInt(key);
 					}
 					if ("createUserName".equals(key)) {
-						selectSql += " and u.USER_REAL_NAME '%" + conditionJson.getString(key) + "%'";
+						selectSql += " and u.USER_REAL_NAME like '%" + conditionJson.getString(key) + "%'";
 					}
 					if ("blockName".equals(key)) {
 						selectSql += " and t.block_name like '%" + conditionJson.getString(key) + "%'";
@@ -339,15 +339,15 @@ public class BlockService {
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
 					if ("collectPlanStartDate".equals(key)) {
-						selectSql += (" order by t.COLLECT_PLAN_START_DATE "+conditionJson.getString("collectPlanStartDate"));
+						selectSql += (" order by t.COLLECT_PLAN_START_DATE "+orderJson.getString("collectPlanStartDate"));
 						break;
 					}
 					if ("collectPlanEndDate".equals(key)) {
-						selectSql += (" order by t.COLLECT_PLAN_END_DATE "+conditionJson.getString("collectPlanEndDate"));
+						selectSql += (" order by t.COLLECT_PLAN_END_DATE "+orderJson.getString("collectPlanEndDate"));
 						break;
 					}
 					if ("blockId".equals(key)) {
-						selectSql += (" order by m.block_id "+conditionJson.getString("blockId"));
+						selectSql += (" order by m.block_id "+orderJson.getString("blockId"));
 						break;
 					}
 				}

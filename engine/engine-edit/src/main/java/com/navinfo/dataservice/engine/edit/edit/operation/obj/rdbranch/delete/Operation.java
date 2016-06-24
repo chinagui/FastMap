@@ -3,13 +3,9 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.delete;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchRealimage;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchSchematic;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
 
 public class Operation implements IOperation {
 
@@ -17,10 +13,14 @@ public class Operation implements IOperation {
 
 	private RdBranch branch;
 
-	public Operation(Command command, RdBranch branch) {
+	private IRow row;
+
+	public Operation(Command command, RdBranch branch, IRow row) {
 		this.command = command;
 
 		this.branch = branch;
+
+		this.row = row;
 
 	}
 
@@ -29,26 +29,15 @@ public class Operation implements IOperation {
 
 		int branchType = command.getBranchType();
 
-		int detailId = command.getDetailId();
-
-		String rowId = command.getRowId();
-
-		if (branchType < 5) {
+		if (branchType < 5 && branchType >0) {
 			if (branch.getDetails().size() == 1 && branch.getSignboards().size() == 0
 					&& branch.getSignasreals().size() == 0 && branch.getSeriesbranches().size() == 0
 					&& branch.getRealimages().size() == 0 && branch.getSchematics().size() == 0) {
-
 				result.insertObject(branch, ObjStatus.DELETE, branch.getPid());
 			} else {
-				for (IRow detail : branch.getDetails()) {
-					RdBranchDetail branchDetail = (RdBranchDetail) detail;
-
-					if (branchDetail.getPid() == detailId) {
-						result.insertObject(branchDetail, ObjStatus.DELETE, branch.getPid());
-					}
-					break;
-				}
+				result.insertObject(row, ObjStatus.DELETE, branch.getPid());
 			}
+			command.setObjType(ObjType.RDBRANCHDETAIL);
 		}
 
 		// 实景图
@@ -58,16 +47,10 @@ public class Operation implements IOperation {
 					&& branch.getRealimages().size() == 1 && branch.getSchematics().size() == 0) {
 
 				result.insertObject(branch, ObjStatus.DELETE, branch.getPid());
-			} else {
-				for (IRow detail : branch.getRealimages()) {
-					RdBranchRealimage branchDetail = (RdBranchRealimage) detail;
-
-					if (branchDetail.getRowId().equals(rowId)) {
-						result.insertObject(branchDetail, ObjStatus.DELETE, branch.getPid());
-					}
-					break;
-				}
 			}
+		} else {
+			result.insertObject(row, ObjStatus.DELETE, branch.getPid());
+			command.setObjType(ObjType.RDBRANCHREALIMAGE);
 		}
 		// 实景看板
 		if (branchType == 6) {
@@ -77,14 +60,8 @@ public class Operation implements IOperation {
 
 				result.insertObject(branch, ObjStatus.DELETE, branch.getPid());
 			} else {
-				for (IRow detail : branch.getRealimages()) {
-					RdSignboard branchDetail = (RdSignboard) detail;
-
-					if (branchDetail.getPid() == detailId) {
-						result.insertObject(branchDetail, ObjStatus.DELETE, branch.getPid());
-					}
-					break;
-				}
+				result.insertObject(row, ObjStatus.DELETE, branch.getPid());
+				command.setObjType(ObjType.RDSIGNASREAL);
 			}
 		}
 		// 连续分歧
@@ -95,14 +72,8 @@ public class Operation implements IOperation {
 
 				result.insertObject(branch, ObjStatus.DELETE, branch.getPid());
 			} else {
-				for (IRow detail : branch.getRealimages()) {
-					RdSeriesbranch branchDetail = (RdSeriesbranch) detail;
-
-					if (branchDetail.getRowId().equals(rowId)) {
-						result.insertObject(branchDetail, ObjStatus.DELETE, branch.getPid());
-					}
-					break;
-				}
+				result.insertObject(row, ObjStatus.DELETE, branch.getPid());
+				command.setObjType(ObjType.RDSERIESBRANCH);
 			}
 		}
 		// 大规模交叉点
@@ -113,14 +84,8 @@ public class Operation implements IOperation {
 
 				result.insertObject(branch, ObjStatus.DELETE, branch.getPid());
 			} else {
-				for (IRow detail : branch.getRealimages()) {
-					RdBranchSchematic branchDetail = (RdBranchSchematic) detail;
-
-					if (branchDetail.getPid() == detailId) {
-						result.insertObject(branchDetail, ObjStatus.DELETE, branch.getPid());
-					}
-					break;
-				}
+				result.insertObject(row, ObjStatus.DELETE, branch.getPid());
+				command.setObjType(ObjType.RDBRANCHSCHEMATIC);
 			}
 		}
 
@@ -132,14 +97,8 @@ public class Operation implements IOperation {
 
 				result.insertObject(branch, ObjStatus.DELETE, branch.getPid());
 			} else {
-				for (IRow detail : branch.getRealimages()) {
-					RdSignboard branchDetail = (RdSignboard) detail;
-
-					if (branchDetail.getPid() == detailId) {
-						result.insertObject(branchDetail, ObjStatus.DELETE, branch.getPid());
-					}
-					break;
-				}
+				result.insertObject(row, ObjStatus.DELETE, branch.getPid());
+				command.setObjType(ObjType.RDSIGNBOARD);
 			}
 		}
 		return null;

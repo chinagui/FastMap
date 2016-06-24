@@ -49,16 +49,12 @@ public class UserInfoController extends BaseController {
 
 			UserDevice userDevice = new UserDevice();
 
-			if (dataJson.containsKey("deviceToken")) {
-				userDevice.setDeviceToken(dataJson.getString("deviceToken"));
-				dataJson.remove("deviceToken");
-			}
-			if (dataJson.containsKey("devicePlatform")) {
+			if (dataJson.containsKey("deviceToken")&&dataJson.containsKey("devicePlatform")&&dataJson.containsKey("deviceVersion")) {
+				userDevice.setDeviceToken(dataJson.getString("deviceToken"));				
 				userDevice.setDevicePlatform(dataJson.getString("devicePlatform"));
-				dataJson.remove("devicePlatform");
-			}
-			if (dataJson.containsKey("deviceVersion")) {
 				userDevice.setDeviceVersion(dataJson.getString("deviceVersion"));
+				dataJson.remove("deviceToken");
+				dataJson.remove("devicePlatform");
 				dataJson.remove("deviceVersion");
 			}
 

@@ -60,24 +60,6 @@ public class Transaction {
 	public void setRequester(String requester) {
 		this.requester = requester;
 	}
-	
-	public String getRowId() {
-		List<IRow> rows = process.getResult().getAddObjects();
-		if(CollectionUtils.isNotEmpty(process.getResult().getAddObjects()))
-		{
-			for(IRow row : rows)
-			{
-				if(row instanceof RdBranchRealimage || row instanceof RdSeriesbranch)
-				{
-					return row.rowId();
-				}
-			}
-		}
-		return null;
-	}
-
-	public void setRowId(String rowId) {
-	}
 
 	/**
 	 * 创建操作命令

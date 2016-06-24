@@ -3,6 +3,10 @@ package com.navinfo.dataservice.dao.glm.iface;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mongodb.util.JSON;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchRealimage;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -13,8 +17,6 @@ public class Result implements ISerializable {
 
 	private int primaryPid;
 	
-	private String rowId;
-
 	private OperStage operStage = OperStage.DayEdit;
 
 	public OperStage getOperStage() {
@@ -33,15 +35,6 @@ public class Result implements ISerializable {
 		this.primaryPid = primaryPid;
 	}
 	
-	public String getRowId() {
-		return rowId;
-	}
-
-	public void setRowId(String rowId) {
-		this.rowId = rowId;
-	}
-
-
 	/**
 	 * 新增对象列表
 	 */
@@ -178,6 +171,20 @@ public class Result implements ISerializable {
 	 * @return 操作结果信息
 	 */
 	public String getLogs() {
+		for(IRow row : listAddIRow)
+		{
+			if(row instanceof RdBranchRealimage || row instanceof RdSeriesbranch)
+			{
+				for(int i=0;i<logs.size();i++)
+				{
+					JSONObject obj = (JSONObject) logs.get(i);
+					if(obj.containsKey("pid") && obj.getInt("pid") ==row.parentPKValue())
+					{
+						obj.put("rowId", row.rowId());
+					}
+				}
+			}
+		}
 		System.out.println(logs.toString());
 		return logs.toString();
 

@@ -48,7 +48,6 @@ public class Operation implements IOperation {
 
 			branch = this.createBranch();
 		}
-		result.setPrimaryPid(branch.getPid());
 
 		switch (command.getBranchType()) {
 		case 0:
@@ -268,6 +267,8 @@ public class Operation implements IOperation {
 		} else {
 			result.insertObject(detail, ObjStatus.INSERT, branch.pid());
 		}
+		// 分歧特殊处理
+		result.setPrimaryPid(detail.getPid());
 	}
 
 	private void createBranchRealimage(RdBranch branch, boolean flag,
@@ -290,6 +291,9 @@ public class Operation implements IOperation {
 		} else {
 			result.insertObject(realimage, ObjStatus.INSERT, branch.pid());
 		}
+
+		// 分歧特殊处理
+		result.setPrimaryPid(branch.getPid());
 	}
 
 	private void createSignasreal(RdBranch branch, boolean flag, Result result)
@@ -314,10 +318,13 @@ public class Operation implements IOperation {
 		} else {
 			result.insertObject(signasreal, ObjStatus.INSERT, branch.pid());
 		}
+
+		// 分歧特殊处理
+		result.setPrimaryPid(signasreal.getPid());
 	}
 
-	private void createSeriesbranch(RdBranch branch, boolean flag,
-			Result result) throws Exception {
+	private void createSeriesbranch(RdBranch branch, boolean flag, Result result)
+			throws Exception {
 		RdSeriesbranch seriesbranch = new RdSeriesbranch();
 
 		seriesbranch.setBranchPid(branch.getPid());
@@ -336,10 +343,13 @@ public class Operation implements IOperation {
 		} else {
 			result.insertObject(seriesbranch, ObjStatus.INSERT, branch.pid());
 		}
+
+		// 分歧特殊处理
+		result.setPrimaryPid(branch.getPid());
 	}
 
-	private void createSchematic(RdBranch branch, boolean flag,
-			Result result) throws Exception {
+	private void createSchematic(RdBranch branch, boolean flag, Result result)
+			throws Exception {
 		RdBranchSchematic schematic = new RdBranchSchematic();
 
 		schematic.setPid(PidService.getInstance().applyBranchSchematic());
@@ -360,6 +370,9 @@ public class Operation implements IOperation {
 		} else {
 			result.insertObject(schematic, ObjStatus.INSERT, branch.pid());
 		}
+
+		// 分歧特殊处理
+		result.setPrimaryPid(schematic.getPid());
 	}
 
 	private void createSignboard(RdBranch branch, boolean flag, Result result)
@@ -384,6 +397,9 @@ public class Operation implements IOperation {
 		} else {
 			result.insertObject(signboard, ObjStatus.INSERT, branch.pid());
 		}
+
+		// 分歧特殊处理
+		result.setPrimaryPid(signboard.getPid());
 	}
 
 }

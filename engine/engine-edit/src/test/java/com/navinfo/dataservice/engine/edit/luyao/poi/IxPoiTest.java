@@ -50,5 +50,38 @@ public class IxPoiTest extends InitApplication{
 		}
 	}
 	
+	@Test
+	public void UpdatePoi0623(){
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":88581672,\"data\":{\"names\":[{\"name\":\"充电桩eee\",\"rowId\":\"3524EA0D21C06E1AE050A8C08304BA17\",\"objStatus\":\"UPDATE\"}],\"pid\":88581672}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	@Test
+	public void UpdatePoi0624(){
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":1626,\"data\":{\"addresses\":[{\"pid\":0,\"nameGroupId\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"eewerew\",\"pid\":1626,\"objStatus\":\"INSERT\"}],\"pid\":1626}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	
+	@Test
+	public void UpdatePoi0624_2(){
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":47040440,\"data\":{\"level\":\"B3\",\"pid\":47040440,\"objStatus\":\"UPDATE\"}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

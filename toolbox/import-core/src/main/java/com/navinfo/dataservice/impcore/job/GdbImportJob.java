@@ -2,6 +2,8 @@ package com.navinfo.dataservice.impcore.job;
 
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.api.edit.iface.DatalockApi;
+import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
@@ -14,6 +16,7 @@ import com.navinfo.dataservice.impcore.mover.LogMover;
 import com.navinfo.dataservice.impcore.selector.DefaultLogSelector;
 import com.navinfo.dataservice.impcore.selector.LogSelector;
 import com.navinfo.dataservice.jobframework.exception.JobException;
+import com.navinfo.dataservice.jobframework.exception.LockException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 
 /** 
@@ -25,6 +28,7 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 */
 public class GdbImportJob extends AbstractJob {
 
+	protected FmEditLock editLock=null;
 	public GdbImportJob(JobInfo jobInfo) {
 		super(jobInfo);
 	}
@@ -59,5 +63,30 @@ public class GdbImportJob extends AbstractJob {
 				
 	}
 	
+	@Override
+	public void lockResources() throws LockException {
+		GdbImportJobRequest req = (GdbImportJobRequest) request;
+		// 根据批处理的目标库找到对应的大区
+		try {
+			DatalockApi datalock = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
+			editLock = datalock.lockGrid(req.getTargetDbId(), FmEditLock.LOCK_OBJ_ALL, req.getGrids(), FmEditLock.TYPE_COMMIT, jobInfo.getId());
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new LockException("加锁发生错误," + e.getMessage(), e);
+		}
+	}
+
+	@Override
+	public void unlockResources() throws LockException {
+		if (editLock==null)
+			return;
+		try {
+			DatalockApi datalock = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
+			datalock.unlockGrid(editLock.getLockSeq(), editLock.getDbType());
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new LockException("解锁时发生错误," + e.getMessage(), e);
+		}
+	}
 
 }

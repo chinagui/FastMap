@@ -32,6 +32,7 @@ public abstract class AbstractJobRequest {
 	protected String gdbVersion=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 	
 	public abstract String getJobType();
+	
 	public abstract int getStepCount()throws JobException;
 	
 	public abstract void validate()throws JobException;

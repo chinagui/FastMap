@@ -14,6 +14,7 @@ import com.navinfo.dataservice.jobframework.sample.SamplebJobRequest;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.sf.json.JSONObject;
@@ -39,6 +40,9 @@ public abstract class AbstractJob implements Runnable {
 	protected AbstractJobRequest request;
 	
 	protected Exception exception;
+	
+	protected List<Integer> lockDbIds;
+	protected List<FmEditLock> editLocks;
 	
 	public AbstractJob(JobInfo jobInfo){
 		this.jobInfo=jobInfo;
@@ -189,5 +193,21 @@ public abstract class AbstractJob implements Runnable {
 	}
 	public Exception getException() {
 		return exception;
+	}
+
+	public List<Integer> getLockDbIds() {
+		return lockDbIds;
+	}
+
+	public void setLockDbIds(List<Integer> lockDbIds) {
+		this.lockDbIds = lockDbIds;
+	}
+
+	public List<FmEditLock> getEditLocks() {
+		return editLocks;
+	}
+
+	public void setEditLocks(List<FmEditLock> editLocks) {
+		this.editLocks = editLocks;
 	}
 }

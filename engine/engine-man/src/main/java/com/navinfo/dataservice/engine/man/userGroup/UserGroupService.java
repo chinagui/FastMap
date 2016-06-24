@@ -335,12 +335,13 @@ public class UserGroupService {
 		}
 	}
 	
+	//根据用户组类型获取用户组列表
 	public List<UserGroup> listByType(UserGroup userGroup)throws ServiceException{
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();	
-			
+			conn = DBConnector.getInstance().getManConnection();
+
 			String selectSql = "select ug.GROUP_ID"
 					+ ",ug.GROUP_NAME,ug.GROUP_TYPE"
 					+ " from user_group ug";
@@ -359,6 +360,77 @@ public class UserGroupService {
 						model.setGroupType(rs.getInt("GROUP_TYPE"));
 						list.add(model);
 					}
+					return list;
+				}
+	    		
+	    	}		;
+	    	
+	    	
+	    	return run.query(conn, selectSql, rsHandler);
+	    	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
+	//根据用户组类型获取用户组列表及用户组下用户信息
+	public ArrayList<HashMap<?, ?>> listByTypeWithUserInfo(UserGroup userGroup,int snapshot)throws ServiceException{
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+
+			String selectSql = "select ug.GROUP_ID, ug.GROUP_NAME, ug.GROUP_TYPE,u.user_id,u.user_real_name "
+					+ " from user_group ug, group_user_mapping gum, user_info u "
+					+ " where ug.group_id = gum.group_id "
+					+ " and gum.user_id = u.user_id ";
+		
+			if(userGroup.getGroupType() != null){	
+				selectSql += " and ug.group_type =" + userGroup.getGroupType();
+			}
+			selectSql += " order by ug.group_id";
+			
+			ResultSetHandler<ArrayList<HashMap<?,?>>> rsHandler = new ResultSetHandler<ArrayList<HashMap<?,?>>>(){
+				public ArrayList<HashMap<?,?>> handle(ResultSet rs) throws SQLException {
+					ArrayList<HashMap<?,?>> list = new ArrayList<HashMap<?,?>>();
+					HashMap group = new HashMap();
+					List userList = new ArrayList();
+					while(rs.next()){
+						if(group.containsKey("groupId")&&((int)group.get("groupId")==rs.getInt("GROUP_ID"))){
+							HashMap user = new HashMap();
+							user.put("userId", rs.getInt("user_id"));
+							user.put("userRealName", rs.getString("user_real_name"));
+							userList.add(user);
+						}else if(group.isEmpty()){
+							group.put("groupId", rs.getInt("GROUP_ID"));
+							group.put("groupName", rs.getString("GROUP_NAME"));
+							group.put("groupType", rs.getInt("GROUP_TYPE"));
+							userList = new ArrayList();
+							HashMap user = new HashMap();
+							user.put("userId", rs.getInt("user_id"));
+							user.put("userRealName", rs.getString("user_real_name"));
+							userList.add(user);
+						}else if(group.containsKey("groupId")&&((int)group.get("groupId")!=rs.getInt("GROUP_ID"))){
+							group.put("userList", userList);
+							list.add(group);
+							group = new HashMap();
+							group.put("groupId", rs.getInt("GROUP_ID"));
+							group.put("groupName", rs.getString("GROUP_NAME"));
+							group.put("groupType", rs.getInt("GROUP_TYPE"));
+							userList = new ArrayList();
+							HashMap user = new HashMap();
+							user.put("userId", rs.getInt("user_id"));
+							user.put("userRealName", rs.getString("user_real_name"));
+							userList.add(user);
+						}
+					}
+					group.put("userList", userList);
+					list.add(group);
 					return list;
 				}
 	    		

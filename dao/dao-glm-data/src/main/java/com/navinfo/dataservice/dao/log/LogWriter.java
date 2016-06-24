@@ -49,6 +49,10 @@ public class LogWriter {
 	private List<LogOperation> operations = new ArrayList<LogOperation>();
 
 	private GlmGridCalculator gridCalculator;
+	
+	public LogWriter(){
+		
+	}
 
 	public LogWriter(Connection conn, int projectId) throws Exception {
 		this.conn = conn;
@@ -57,6 +61,10 @@ public class LogWriter {
 
 		this.gridCalculator = GlmGridCalculatorFactory.getInstance().create(
 				gdbVersion);
+	}
+
+	public List<LogOperation> getOperations() {
+		return operations;
 	}
 
 	private void insertRow() throws Exception {
@@ -269,6 +277,56 @@ public class LogWriter {
 		}
 
 	}
+	
+	public void insertLogOperation2Sql(LogOperation op, Statement stmt) throws Exception{
+		
+		StringBuilder sb = new StringBuilder("insert into ");
+		
+		sb.append(op.tableName());
+		
+		sb.append("(op_id, us_id, op_cmd, op_dt, op_sg, com_sta, com_dt, lock_sta) values (");
+		
+		sb.append("hextoraw('" + op.getOpId() + "')");
+		
+		sb.append("," + op.getUsId());
+		
+		if (op.getOpCmd() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + op.getOpCmd() + "'");
+		}
+		
+		if (op.getOpDt() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",to_date('" + op.getOpDt()
+					+ "','yyyymmddhh24miss')");
+		}
+		
+		sb.append("," + op.getOpSg());
+		
+		sb.append("," + op.getComSta());
+		
+		if (op.getComDt() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",to_date('" + op.getComDt()
+					+ "','yyyymmddhh24miss')");
+		}
+		
+		sb.append("," + op.getLockSta());
+		
+		sb.append(")");
+		
+		stmt.addBatch(sb.toString());
+		
+		for (LogDetail r : op.getDetails()) {
+			this.insertLogDetail2Sql(r, stmt);
+		}
+		
+		this.insertLogDayRelease2Sql(op.getRelease(), stmt);
+		
+	}
 
 	private void insertLogDetail2Sql(LogDetail detail, Statement stmt)
 			throws Exception {
@@ -319,6 +377,69 @@ public class LogWriter {
 		sb.append(")");
 
 		stmt.addBatch(sb.toString());
+		
+		for (LogDetailGrid r : detail.getGrids()) {
+			this.insertLogDetailGrid2Sql(r, stmt);
+		}
+	}
+	
+	private void insertLogDetailGrid2Sql(LogDetailGrid grid, Statement stmt)
+			throws Exception {
+		StringBuilder sb = new StringBuilder("insert into ");
+
+		sb.append(grid.tableName());
+
+		sb.append("(log_row_id, grid_id, grid_type) values (");
+
+		sb.append("hextoraw('" + grid.getLogRowId() + "')");
+
+		sb.append("," + grid.getGridId());
+		
+		sb.append("," + grid.getGridType());
+
+		sb.append(")");
+
+		stmt.addBatch(sb.toString());
+		
+	}
+	
+	private void insertLogDayRelease2Sql(LogDayRelease release, Statement stmt)
+			throws Exception {
+		
+		StringBuilder sb = new StringBuilder("insert into ");
+
+		sb.append(release.tableName());
+
+		sb.append("(op_id, rel_poi_sta,rel_poi_dt,rel_all_sta,rel_all_dt,rel_poi_lock,rel_all_lock) values (");
+
+		sb.append("hextoraw('" + release.getOpId() + "')");
+
+		sb.append("," + release.getRelPoiSta());
+		
+		if (release.getRelPoiDt() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",to_date('" + release.getRelPoiDt()
+					+ "','yyyymmddhh24miss')");
+		}
+		
+		sb.append("," + release.getRelAllSta());
+		
+		if (release.getRelAllDt() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",to_date('" + release.getRelAllDt()
+					+ "','yyyymmddhh24miss')");
+		}
+		
+		sb.append("," + release.getRelPoiLock());
+		
+		sb.append("," + release.getRelAllLock());
+		
+		sb.append(")");
+
+		stmt.addBatch(sb.toString());
+		
 	}
 
 	private void updateRow2Sql(List<String> fieldNames, Statement stmt)

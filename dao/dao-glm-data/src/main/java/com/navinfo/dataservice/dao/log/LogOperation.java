@@ -25,12 +25,22 @@ public class LogOperation {
 
 	private List<LogDetail> details = new ArrayList<LogDetail>();
 
+	private LogDayRelease release;
+	
 	public LogOperation(String opId, String opCmd, int opSg){
 		this.opId = opId;
 		
 		this.opCmd = opCmd;
 		
 		this.opDt = StringUtils.getCurrentTime();
+	}
+
+	public LogDayRelease getRelease() {
+		return release;
+	}
+
+	public void setRelease(LogDayRelease release) {
+		this.release = release;
 	}
 
 	public int getComSta() {

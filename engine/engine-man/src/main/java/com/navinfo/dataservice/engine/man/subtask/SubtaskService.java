@@ -307,7 +307,7 @@ public class SubtaskService {
 						Subtask subtask = new Subtask();
 						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
 						subtask.setName(rs.getString("NAME"));
-						subtask.setCreateUserId((rs.getInt("EXE_USER_ID")));
+						subtask.setExeUserId((rs.getInt("EXE_USER_ID")));
 						subtask.setStatus(rs.getInt("STATUS"));
 						subtask.setGeometry(rs.getString("GEOMETRY"));
 						subtask.setStage(rs.getInt("STAGE"));

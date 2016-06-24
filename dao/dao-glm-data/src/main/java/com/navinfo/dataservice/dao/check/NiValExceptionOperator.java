@@ -56,7 +56,7 @@ public class NiValExceptionOperator {
 
 		String value = StringUtils.removeBlankChar(targets);
 
-		String insertSql = "INSERT INTO NI_VAL_EXCEPTION_GRID (CK_MD5_CODE,GRID_ID) VALUES (?,?)";
+		String insertSql = "INSERT INTO NI_VAL_EXCEPTION_GRID (md5_code,GRID_ID) VALUES (?,?)";
 
 		PreparedStatement stmt = null;
 		try {
@@ -199,7 +199,7 @@ public class NiValExceptionOperator {
 	public void deleteNiValException(String tableName, int pid)
 			throws Exception {
 
-		String sql = "delete from ni_val_exception a where exists (select null from ck_result_object b where a.MD5_CODE=b.ck_md5_code and b.table_name=? and b.pid=?)";
+		String sql = "delete from ni_val_exception a where exists (select null from ck_result_object b where a.MD5_CODE=b.md5_code and b.table_name=? and b.pid=?)";
 
 		PreparedStatement pstmt = null;
 
@@ -215,7 +215,7 @@ public class NiValExceptionOperator {
 
 			pstmt.close();
 			
-			sql = "delete from NI_VAL_EXCEPTION_GRID a where exists (select null from ck_result_object b where a.ck_md5_code=b.ck_md5_code and b.table_name=? and b.pid=?)";
+			sql = "delete from NI_VAL_EXCEPTION_GRID a where exists (select null from ck_result_object b where a.md5_code=b.md5_code and b.table_name=? and b.pid=?)";
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -227,7 +227,7 @@ public class NiValExceptionOperator {
 			
 			pstmt.close();
 
-			sql = "delete from ck_result_object a where a.ck_md5_code in (select b.ck_md5_code from ck_result_object b where b.table_name=? and b.pid=?)";
+			sql = "delete from ck_result_object a where a.md5_code in (select b.md5_code from ck_result_object b where b.table_name=? and b.pid=?)";
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -319,7 +319,7 @@ public class NiValExceptionOperator {
 
 				pstmt.close();
 				
-				sql = "insert into ck_exception_grid select :1,grid_id from NI_VAL_EXCEPTION_GRID where ck_md5_code=:2";
+				sql = "insert into ck_exception_grid select :1,grid_id from NI_VAL_EXCEPTION_GRID where md5_code=:2";
 
 				pstmt = conn.prepareStatement(sql);
 				
@@ -348,7 +348,7 @@ public class NiValExceptionOperator {
 
 			pstmt.close();
 
-			sql = "delete from ck_result_object where ck_md5_code=:1";
+			sql = "delete from ck_result_object where md5_code=:1";
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -358,7 +358,7 @@ public class NiValExceptionOperator {
 			
 			pstmt.close();
 
-			sql = "delete from NI_VAL_EXCEPTION_GRID where ck_md5_code=:1";
+			sql = "delete from NI_VAL_EXCEPTION_GRID where md5_code=:1";
 
 			pstmt = conn.prepareStatement(sql);
 

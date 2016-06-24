@@ -214,7 +214,7 @@ public class RdBranchSelector implements ISelector {
 			
 		}if(branchType == 6){
 			tableName = " rd_signasreal "; 
-			condition = " signasreal_id =:1 ";
+			condition = " signboard_id =:1 ";
 		}
 		if(branchType == 7){
 			tableName = " rd_seriesbranch "; 

@@ -19,6 +19,7 @@ import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.impcore.exception.LockException;
+import com.navinfo.dataservice.impcore.mover.LogMoveResult;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DbLinkCreator;
 
@@ -42,18 +43,18 @@ public class LogFlushUtil {
 	 * @return 履历刷新的结果
 	 * @throws Exception
 	 */
-	public  FlushResult flush(Connection sourceDbConn,Connection targetDbConn,String logQuerySql,boolean ignoreFlushSqlError) throws Exception {
+	public  FlushResult flush(Connection sourceDbConn,Connection targetDbConn,String logQuerySql) throws Exception {
 		LogReader logReader = new LogReader(sourceDbConn,logQuerySql);
-		return flush(logReader,targetDbConn,ignoreFlushSqlError);
+		return flush(logReader,targetDbConn);
 		
 	}
 	
-	private  FlushResult flush(LogReader logReader,Connection targetDbConn, boolean ignoreFlushSqlError) throws Exception {
+	private  FlushResult flush(LogReader logReader,Connection targetDbConn) throws Exception {
 		ResultSet rs = logReader.read();
 		try{
 			rs.setFetchSize(1000);
 			FlushResult flushResult =new FlushResult();
-			LogWriter logWriter = new LogWriter(targetDbConn,ignoreFlushSqlError);
+			LogWriter logWriter = new LogWriter(targetDbConn);
 			while (rs.next()) {
 				flushResult .addTotal();
 				int opType = rs.getInt("op_tp");

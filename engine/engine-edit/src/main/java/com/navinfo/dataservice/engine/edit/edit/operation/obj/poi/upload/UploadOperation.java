@@ -674,7 +674,7 @@ public class UploadOperation {
 			poiJson.put("yGuide", jo.getJSONObject("guide").getDouble("latitude"));
 			poiJson.put("linkPid", jo.getJSONObject("guide").getInt("linkPid"));
 			poiJson.put("chain", jo.getString("chain"));
-			poiJson.put("open24H", jo.getInt("open24H"));
+			poiJson.put("open24h", jo.getInt("open24H"));
 			// meshid非0时原值转出；为0时根据几何计算；
 			int meshId = jo.getInt("meshid");
 			if (meshId == 0) {

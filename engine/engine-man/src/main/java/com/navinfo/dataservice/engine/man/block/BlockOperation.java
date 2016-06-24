@@ -122,7 +122,6 @@ public class BlockOperation {
 					List<HashMap> list = new ArrayList<HashMap>();
 					while (rs.next()) {
 						HashMap map = new HashMap<String, Integer>();
-						System.out.println(rs.getInt("BLOCK_ID"));
 						map.put("blockId", rs.getInt("BLOCK_ID"));
 						map.put("planStartDate", rs.getDate("planStartDate"));
 						map.put("planEndDate", rs.getDate("planEndDate"));
@@ -302,6 +301,65 @@ public class BlockOperation {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询列表失败，原因为:" + e.getMessage(), e);
+		}
+	}
+	
+	
+	public static List<HashMap> QuerylistByInfoId(Connection conn, String selectSql,String selectSqlNotOpen)
+			throws Exception {
+		try {
+			QueryRunner run = new QueryRunner();
+			List<HashMap> resultList = new ArrayList<HashMap>();
+
+			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>() {
+				public List<HashMap> handle(ResultSet rs) throws SQLException {
+					List<HashMap> list = new ArrayList<HashMap>();
+					while (rs.next()) {
+						HashMap map = new HashMap<String, Integer>();
+						map.put("blockId", rs.getInt("block_id"));
+						map.put("blockName", rs.getString("block_name"));
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						map.put("taskName", rs.getString("name"));
+						map.put("taskPlanStartDate ", rs.getString("plan_start_date"));
+						map.put("taskPlanEndDate ", rs.getString("plan_end_date"));
+						map.put("taskMonthStartDate ", rs.getString("month_edit_plan_start_date"));
+						map.put("taskMonthEndDate ", rs.getString("month_edit_plan_end_date"));
+						map.put("status", rs.getInt("status"));
+					
+						list.add(map);
+					}
+					return list;
+				}
+
+			};
+			
+			List<HashMap> list = run.query(conn, selectSql, rsHandler);
+			
+			ResultSetHandler<List<HashMap>> rsHandlerNoOpen = new ResultSetHandler<List<HashMap>>() {
+				public List<HashMap> handle(ResultSet rs) throws SQLException {
+					List<HashMap> list = new ArrayList<HashMap>();
+					while (rs.next()) {
+						HashMap map = new HashMap<String, Integer>();
+						map.put("blockId", rs.getInt("block_id"));
+						map.put("blockName", rs.getString("block_name"));
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						map.put("status", rs.getInt("status"));
+					
+						list.add(map);
+					}
+					return list;
+				}
+
+			};
+			List<HashMap> listNotOpen = run.query(conn, selectSqlNotOpen, rsHandlerNoOpen);
+			
+			list.addAll(listNotOpen);
+			
+			return list;
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("鏌ヨ澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
 		}
 	}
 

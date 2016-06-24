@@ -49,7 +49,7 @@ public class RdBranchSchematicOperator implements IOperator {
 		try {
 			pstmt = conn.prepareStatement(sql);
 
-			pstmt.setInt(1, schematic.getBranchPid());
+			pstmt.setInt(1, schematic.getPid());
 
 			pstmt.setInt(2, schematic.getBranchPid());
 

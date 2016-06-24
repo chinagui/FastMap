@@ -38,7 +38,7 @@ public class OracleSchema {
 		if(DbServerType.TYPE_ORACLE.equals(serverType)){
 			
 			String url = MultiDataSourceFactory.createOracleJdbcUrl(
-					connConfig.getServerIp(),connConfig.getServerPort(),connConfig.getDbName());
+					connConfig.getServerIp(),connConfig.getServerPort(),connConfig.getServiceName());
 			dds = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(DbServerType.TYPE_ORACLE
 					, MultiDataSourceFactory.getDriverClassName(DbServerType.TYPE_ORACLE)
 					,url,connConfig.getUserName(), connConfig.getUserPasswd());

@@ -150,7 +150,7 @@ public class BlockService {
 			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']',
 					')');
 
-			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY,t.PLAN_STATUS from BLOCK t where PLAN_STATUS in "
+			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY,t.PLAN_STATUS,t.CITY_ID from BLOCK t where PLAN_STATUS in "
 					+ planningStatus;
 
 			if (StringUtils.isNotEmpty(json.getString("snapshot"))) {
@@ -326,11 +326,11 @@ public class BlockService {
 					if ("blockId".equals(key)) {
 						selectSql += " and t.block_id=" + conditionJson.getInt(key);
 					}
-					if ("createUserId".equals(key)) {
-						selectSql += " and m.create_user_id=" + conditionJson.getInt(key);
+					if ("createUserName".equals(key)) {
+						selectSql += " and u.USER_REAL_NAME like '%" + conditionJson.getString(key) + "%'";
 					}
 					if ("blockName".equals(key)) {
-						selectSql += " and t.block_name like '%" + conditionJson.getString(key) + "%";
+						selectSql += " and t.block_name like '%" + conditionJson.getString(key) + "%'";
 					}
 				}
 			}
@@ -338,12 +338,16 @@ public class BlockService {
 				Iterator keys = orderJson.keys();
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
-					if ("collectPlanEndDate".equals(key)) {
-						selectSql += " order by t.COLLECT_PLAN_START_DATE";
+					if ("collectPlanStartDate".equals(key)) {
+						selectSql += (" order by t.COLLECT_PLAN_START_DATE "+orderJson.getString("collectPlanStartDate"));
 						break;
 					}
-					if ("collectPlanEndDate ".equals(key)) {
-						selectSql += " order by t.COLLECT_PLAN_END_DATE";
+					if ("collectPlanEndDate".equals(key)) {
+						selectSql += (" order by t.COLLECT_PLAN_END_DATE "+orderJson.getString("collectPlanEndDate"));
+						break;
+					}
+					if ("blockId".equals(key)) {
+						selectSql += (" order by m.block_id "+orderJson.getString("blockId"));
 						break;
 					}
 				}

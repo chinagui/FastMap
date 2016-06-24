@@ -223,7 +223,7 @@ public class InforManService {
 						selectSql += " and i.infor_id=" + conditionJson.getString(key);
 					}
 					if ("createUserName".equals(key)) {
-						selectSql += " and u.createUserName like '%" + conditionJson.getInt(key) + "%'";
+						selectSql += " and u.USER_REAL_NAME like '%" + conditionJson.getString(key) + "%'";
 					}
 					if ("inforName".equals(key)) {
 						selectSql += " and i.infor_name like '%" + conditionJson.getString(key) + "%'";
@@ -243,7 +243,7 @@ public class InforManService {
 						break;
 					}
 					if ("inforId".equals(key)) {
-						selectSql += (" order by i.inforId "+orderJson.getString("inforId"));
+						selectSql += (" order by i.infor_id "+orderJson.getString("inforId"));
 						break;
 					}
 				}

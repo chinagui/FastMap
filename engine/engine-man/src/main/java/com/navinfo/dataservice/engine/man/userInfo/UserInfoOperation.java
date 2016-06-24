@@ -42,8 +42,7 @@ public class UserInfoOperation {
 					+ userDevice.getDeviceVersion()
 					+ "' then d.device_id else 0 end) AS device_id "
 					+ " from user_info u, role r, role_user_mapping rum, user_device d "
-					+ " where u.user_id = d.user_id "
-					+ " and u.user_id = rum.user_id "
+					+ " where u.user_id = rum.user_id "
 					+ " and rum.role_id = r.role_id "
 					+ " and u.user_nick_name = '" + userInfo.getUserNickName() + "'"
 					+ " and u.user_password = '" + userInfo.getUserPassword() + "'";

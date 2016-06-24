@@ -154,7 +154,10 @@ public class UserGroupController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	
+	/*
+	 * 根据用户组类型获取用户组列表。用户组下用户信息
+	 * groupType：0采集，1日编，2月编，不传则返回所有组
+	 */
 	@RequestMapping(value = "/userGroup/listByType")
 	public ModelAndView listByType(HttpServletRequest request){
 		try{			
@@ -163,20 +166,33 @@ public class UserGroupController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 
-			UserGroup  bean = (UserGroup)JSONObject.toBean(dataJson, UserGroup.class);
-			
-			List<UserGroup> userGroupList = service.listByType(bean);
-			
 			List<HashMap<?,?>> data = new ArrayList<HashMap<?,?>>();
 			
-			for(int i = 0;i<userGroupList.size();i++){
-				HashMap<String, Comparable> userGroup = new HashMap<String, Comparable>();
-				userGroup.put("groupId", userGroupList.get(i).getGroupId());
-				userGroup.put("groupName", userGroupList.get(i).getGroupName());
-				userGroup.put("groupType", userGroupList.get(i).getGroupType());
-				data.add(userGroup);
+			int snapshot = 0;
+			if(dataJson.containsKey("snapshot")){
+				snapshot = dataJson.getInt("snapshot");
+				dataJson.remove("snapshot");
 			}
-			
+			//snapshot=1需要返回用户信息
+			if(snapshot==1){
+				UserGroup  bean = (UserGroup)JSONObject.toBean(dataJson, UserGroup.class);
+				
+				data = service.listByTypeWithUserInfo(bean,snapshot);
+
+			}else{
+				UserGroup  bean = (UserGroup)JSONObject.toBean(dataJson, UserGroup.class);
+				
+				List<UserGroup> userGroupList = service.listByType(bean);
+
+				for(int i = 0;i<userGroupList.size();i++){
+					HashMap<String, Comparable> userGroup = new HashMap<String, Comparable>();
+					userGroup.put("groupId", userGroupList.get(i).getGroupId());
+					userGroup.put("groupName", userGroupList.get(i).getGroupName());
+					userGroup.put("groupType", userGroupList.get(i).getGroupType());
+					data.add(userGroup);
+				}
+			}
+		
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);

@@ -23,6 +23,7 @@ public class FmEditLock {
 	public final static String DB_TYPE_DAY="DAY";
 	public final static String DB_TYPE_MONTH="MONTH";
 	
+	
 	protected int lockSeq;
 	protected String dbType;
 	public FmEditLock(int lockSeq,String dbType){

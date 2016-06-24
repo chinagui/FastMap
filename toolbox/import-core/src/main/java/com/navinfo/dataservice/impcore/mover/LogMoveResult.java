@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.impcore.flushbylog;
+package com.navinfo.dataservice.impcore.mover;
 /*
  * @author MaYunFei
  * 2016年6月21日

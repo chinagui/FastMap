@@ -19,11 +19,13 @@ import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminTreeSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.engine.edit.edit.search.rd.utils.RdLinkSearchUtils;
 
 /**
@@ -269,6 +271,16 @@ public class SearchProcess {
 					AdLinkSelector selector = new AdLinkSelector(this.conn);
 					List<AdLink> adLinks = selector.loadByNodePid(nodePid, true);
 					for (AdLink link : adLinks) {
+						array.add(link.Serialize(ObjLevel.BRIEF));
+					}
+				}
+				break;
+			case RWLINK:
+				if (condition.containsKey("nodePid")) {
+					int nodePid = condition.getInt("nodePid");
+					RwLinkSelector selector = new RwLinkSelector(this.conn);
+					List<RwLink> rwLinks = selector.loadByNodePid(nodePid, true);
+					for (RwLink link : rwLinks) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
 				}

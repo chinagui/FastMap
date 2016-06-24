@@ -62,6 +62,7 @@ public class Operation implements IOperation {
 		ixPoi.setGeometry(GeoTranslator.geojson2Jts(geoPoint, 100000, 0));
 		ixPoi.setxGuide(command.getXguide());
 		ixPoi.setyGuide(command.getYguide());
+		ixPoi.setLinkPid(command.getLinkPid());
 		result.insertObject(ixPoi, ObjStatus.INSERT, ixPoi.getPid());
 		return msg;
 	}

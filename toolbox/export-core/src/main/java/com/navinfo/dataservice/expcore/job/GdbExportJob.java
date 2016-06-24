@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -81,9 +82,14 @@ public class GdbExportJob extends AbstractJob {
 			response("导出脚本执行完成",null);
 			//4. 维护M_MESH_TYPE
 			if(req.getCondition().equals(ExportConfig.CONDITION_BY_MESH)){
-				allMeshes.removeAll(coreMeshes);
-				writeMeshType(targetSchema,coreMeshes,allMeshes);
-				jobInfo.getResponse().put("extendMeshes", allMeshes);
+				if(req.getMeshExtendCount()>0){
+					allMeshes.removeAll(coreMeshes);
+					writeMeshType(targetSchema,coreMeshes,allMeshes);
+					jobInfo.getResponse().put("extendMeshes", allMeshes);
+				}else{
+					writeMeshType(targetSchema,req.getConditionParams(),null);
+					jobInfo.getResponse().put("extendMeshes", new String[]{});
+				}
 			}
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
@@ -91,7 +97,7 @@ public class GdbExportJob extends AbstractJob {
 		}
 	}
 	
-	private void writeMeshType(OracleSchema targetSchema, Set<String> coreMeshes,Set<String> extendMeshes)throws SQLException{
+	private void writeMeshType(OracleSchema targetSchema, Collection<String> coreMeshes,Collection<String> extendMeshes)throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		try{

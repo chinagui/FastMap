@@ -24,6 +24,7 @@ import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 
 /**
  * @ClassName: UserInfoService
@@ -395,55 +396,27 @@ public class UserInfoService {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
-			// 持久化
-			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-
-			String selectSql = "";
-
-			if (userDevice != null) {
-				selectSql = "select u.user_id ,r.role_name " + " from user_info u,role r,role_user_mapping rum,user_device d " + " where u.user_id=d.user_id "
-						+ " and u.user_id = rum.user_id " + " and rum.role_id = r.role_id ";
-			} else {
-				selectSql = "select u.user_id ,r.role_name " + " from user_info u,role r,role_user_mapping rum " + " where u.user_id = rum.user_id "
-						+ " and rum.role_id = r.role_id ";
-			}
-
-			selectSql += " and u.user_nick_name = '" + userInfo.getUserNickName() + "'";
-			selectSql += " and u.user_password = '" + userInfo.getUserPassword() + "'";
-
-			if (userDevice != null && userDevice.getDeviceToken() != null && StringUtils.isNotEmpty(userDevice.getDeviceToken().toString())) {
-				selectSql += " and d.device_token = '" + userDevice.getDeviceToken() + "'";
-			}
-			if (userDevice != null && userDevice.getDevicePlatform() != null && StringUtils.isNotEmpty(userDevice.getDevicePlatform().toString())) {
-				selectSql += " and d.device_platform = '" + userDevice.getDevicePlatform() + "'";
-			}
-			if (userDevice != null && userDevice.getDeviceVersion() != null && StringUtils.isNotEmpty(userDevice.getDeviceVersion().toString())) {
-				selectSql += " and d.device_version = '" + userDevice.getDeviceVersion() + "'";
-			}
-
-			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
-				public HashMap handle(ResultSet rs) throws SQLException {
-					HashMap map = new HashMap();
-					while (rs.next()) {
-						map.put("userId", rs.getLong("user_id"));
-						map.put("roleName", rs.getString("role_name"));
-						return map;
-					}
-					return map;
-				}
-
-			};
-
-			HashMap map = run.query(conn, selectSql, rsHandler);
 			HashMap result = new HashMap();
+			
+			HashMap user = UserInfoOperation.loginGetUserInfo(conn,userInfo,userDevice);
+			
+			if(user.isEmpty()){
+				return result;
+			}
+			
+			if((userDevice.getDeviceToken()!=null)&&(userDevice.getDevicePlatform()!=null)&&(userDevice.getDeviceVersion()!=null)&&(!user.containsKey("deviceId"))){
+				int deviceId = UserInfoOperation.insertIntoUserDevice(conn,(long)user.get("userId"),userDevice);
+				user.put("deviceId", deviceId);
+			}
 
-			if (!map.isEmpty()) {
-				AccessToken access_token = AccessTokenFactory.generate((long) (map.get("userId")));
+			if (!user.isEmpty()) {
+				AccessToken access_token = AccessTokenFactory.generate((long) (user.get("userId")));
 				if (access_token != null) {
 					result.put("access_token", access_token.getTokenString());
 					result.put("expires_in", access_token.getTimestamp());
-					result.put("role", map.get("role"));
+					result.put("role", user.get("roleName"));
+					result.put("deviceId", user.get("deviceId"));
 				}
 			}
 

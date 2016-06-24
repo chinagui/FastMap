@@ -27,10 +27,11 @@ public class RdBranchTest extends InitApplication {
 
 	@Test
 	public void testAdd3dBranch() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDBRANCH\",\"projectId\":11,\"data\":{\"branchType\":3,\"inLinkPid\":88026344,\"nodePid\":74186157,\"outLinkPid\":88026344}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"branchType\":7,\"inLinkPid\":58253118,\"nodePid\":51728081,\"outLinkPid\":\"58253115\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
+			System.out.println(t.getLogs());
 			System.out.println(msg);
 		} catch (Exception e) {
 			e.printStackTrace();

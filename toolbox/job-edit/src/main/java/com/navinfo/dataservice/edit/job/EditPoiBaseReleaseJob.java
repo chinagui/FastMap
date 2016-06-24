@@ -52,8 +52,14 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 				throw new Exception("grids中有检查错误，不能提交！");}
 			//1对grids提取数据执行gdb检查
 			log.info("start gdb check");
-			JSONObject validationResponseJson=exeGdbValidationJob(releaseJobRequest);
-			int valDbId=validationResponseJson.getInt("valDbId");
+			JobInfo valJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
+			AbstractJob valJob = JobCreateStrategy.createAsSubJob(valJobInfo,
+					releaseJobRequest.getSubJobRequest("validation"), this);
+			valJob.run();
+			if (valJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
+				throw new Exception("执行检查时job执行失败。");
+			}
+			int valDbId=valJob.getJobInfo().getResponse().getInt("valDbId");
 			jobInfo.getResponse().put("val&BatchDbId", valDbId);
 			log.info("end gdb check");
 			//判断是否有检查错误，有检查错误则直接返回不进行后续步骤
@@ -64,7 +70,14 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 				throw new Exception("grids中有检查错误，不能提交！");}			
 			//对grids执行批处理
 			log.info("start gdb batch");
-			JSONObject batchResponseJson=exeGdbBatchJob(valDbId, releaseJobRequest);
+			JobInfo batchJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
+			releaseJobRequest.getSubJobRequest("batch").setAttrValue("batchDbId", valDbId);
+			AbstractJob batchJob = JobCreateStrategy.createAsSubJob(batchJobInfo,
+					releaseJobRequest.getSubJobRequest("batch"), this);
+			batchJob.run();
+			if (batchJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
+				throw new Exception("批处理时job执行失败。");
+			}
 			log.info("end gdb batch");
 			//修改数据提交状态
 			log.info("start change poi_edit_status=3 commit");
@@ -174,64 +187,6 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-	}
-	
-	public JSONObject exeGdbValidationJob(EditPoiBaseReleaseJobRequest releaseJobRequest) throws Exception{
-		//1.1检查参数构建
-		JSONObject validationRequestJSON=new JSONObject();
-		validationRequestJSON.put("grids", releaseJobRequest.getGridIds());
-		validationRequestJSON.put("rules", releaseJobRequest.getCheckRuleList());
-		validationRequestJSON.put("targetDbId", releaseJobRequest.getTargetDbId());
-		//validationRequestJSON.put("type", "gdbValidation");
-		validationRequestJSON.put("createValDb", releaseJobRequest.createDbJSON("validation temp db"));
-		validationRequestJSON.put("expValDb", releaseJobRequest.expDbJSON());
-		
-		AbstractJobRequest gdbValidationRequest=JobCreateStrategy.createJobRequest("gdbValidation", validationRequestJSON);
-		//创建检查任务并执行
-		JobInfo gdbValidationJobInfo=new JobInfo(jobInfo.getId(),jobInfo.getGuid());
-		AbstractJob gdbValidationJob=JobCreateStrategy.createAsSubJob(gdbValidationJobInfo, gdbValidationRequest, this);
-		gdbValidationJob.run();
-		JSONObject validationResponseJson=gdbValidationJob.getJobInfo().getResponse();
-		if(validationResponseJson.getInt("exeStatus")!=3){
-			throw new Exception("检查job执行失败。");
-		}
-		return validationResponseJson;
-	}
-	
-	public JSONObject exeGdbBatchJob(int batchDbId,EditPoiBaseReleaseJobRequest releaseJobRequest) throws Exception{
-		//1.1批处理参数构建
-		JSONObject batchRequestJSON=new JSONObject();
-		batchRequestJSON.put("grids", releaseJobRequest.getGridIds());
-		batchRequestJSON.put("rules", releaseJobRequest.getBatchRuleList());
-		batchRequestJSON.put("targetDbId", releaseJobRequest.getTargetDbId());
-		//batchRequestJSON.put("batchDbId", batchDbId);
-		//batchRequestJSON.put("type", "gdbBatch");
-		batchRequestJSON.put("createBatchDb", releaseJobRequest.createDbJSON("batch temp db"));
-		batchRequestJSON.put("expBatchDb", releaseJobRequest.expDbJSON());
-		batchRequestJSON.put("createBakDb", releaseJobRequest.createDbJSON("batch bak db"));
-		
-		String copyBakDbString="{\"type\":\"gdbFullCopy\",\"request\":{\"featureType\":\"all\"}}";
-		JSONObject copyBakDbRequestJSON=JSONObject.fromObject(copyBakDbString);
-		batchRequestJSON.put("copyBakDb", copyBakDbRequestJSON);
-		
-		String diffString="{\"type\":\"diff\",\"request\":{}}";
-		JSONObject diffRequestJSON=JSONObject.fromObject(diffString);
-		batchRequestJSON.put("diff", diffRequestJSON);
-		
-		String commitString="{\"type\":\"batchLogFlush\",\"request\":{}}";
-		JSONObject commitRequestJSON=JSONObject.fromObject(commitString);
-		batchRequestJSON.put("commit", commitRequestJSON);
-		
-		AbstractJobRequest gdbBatchRequest=JobCreateStrategy.createJobRequest("gdbBatch", batchRequestJSON);
-		
-		JobInfo gdbBatchJobInfo=new JobInfo(jobInfo.getId(),jobInfo.getGuid());
-		AbstractJob gdbBatchJob=JobCreateStrategy.createAsSubJob(gdbBatchJobInfo,gdbBatchRequest, this);
-		gdbBatchJob.run();
-		JSONObject BatchResponseJson=gdbBatchJob.getJobInfo().getResponse();
-		if(BatchResponseJson.getInt("exeStatus")!=3){
-			throw new Exception("批处理job执行失败。");
-		}
-		return BatchResponseJson;
 	}
 
 }

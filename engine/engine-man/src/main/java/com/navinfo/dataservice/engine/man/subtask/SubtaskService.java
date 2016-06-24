@@ -645,7 +645,7 @@ public class SubtaskService {
 				}
 
 				// 月编
-				else if (1 == subtaskList.get(i).getStage()) {
+				else if (2 == subtaskList.get(i).getStage()) {
 					// 判断月编任务是否可关闭
 					Boolean flg = SubtaskOperation.isMonthlyEditReadyToClose(
 							staticsApi, subtaskList.get(i));
@@ -657,6 +657,7 @@ public class SubtaskService {
 								.getSubtaskId());
 					}
 				}
+				
 			}
 
 			// 根据subtaskId列表关闭subtask

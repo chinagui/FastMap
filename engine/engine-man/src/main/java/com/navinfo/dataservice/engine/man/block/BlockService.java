@@ -150,7 +150,7 @@ public class BlockService {
 			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']',
 					')');
 
-			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY,t.PLAN_STATUS from BLOCK t where PLAN_STATUS in "
+			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY,t.PLAN_STATUS,t.CITY_ID from BLOCK t where PLAN_STATUS in "
 					+ planningStatus;
 
 			if (StringUtils.isNotEmpty(json.getString("snapshot"))) {

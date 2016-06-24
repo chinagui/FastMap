@@ -34,7 +34,7 @@ public class PhysicalDeleteRow {
 		String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 		Glm glm = GlmCache.getInstance().getGlm(gdbVersion);
 		tables.addAll(glm.getEditTableNames(GlmTable.FEATURE_TYPE_ALL));
-		tables.addAll(glm.getExtendTableNames(GlmTable.FEATURE_TYPE_ALL));
+//		tables.addAll(glm.getExtendTableNames(GlmTable.FEATURE_TYPE_ALL));
 		doDelete(tables,schema);
 	}
 	public static void doDelete(Set<String> tables,OracleSchema schema)throws Exception{

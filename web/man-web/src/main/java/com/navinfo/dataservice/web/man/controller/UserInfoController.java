@@ -6,6 +6,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import net.sf.json.JSONObject;
+import net.sf.json.util.JSONUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -49,16 +50,21 @@ public class UserInfoController extends BaseController {
 
 			UserDevice userDevice = new UserDevice();
 
-			if (dataJson.containsKey("deviceToken")&&dataJson.containsKey("devicePlatform")&&dataJson.containsKey("deviceVersion")) {
-				userDevice.setDeviceToken(dataJson.getString("deviceToken"));				
-				userDevice.setDevicePlatform(dataJson.getString("devicePlatform"));
-				userDevice.setDeviceVersion(dataJson.getString("deviceVersion"));
+			if (dataJson.containsKey("deviceToken")
+					&& dataJson.containsKey("devicePlatform")
+					&& dataJson.containsKey("deviceVersion")) {
+				userDevice.setDeviceToken(dataJson.getString("deviceToken"));
+				userDevice.setDevicePlatform(dataJson
+						.getString("devicePlatform"));
+				userDevice
+						.setDeviceVersion(dataJson.getString("deviceVersion"));
 				dataJson.remove("deviceToken");
 				dataJson.remove("devicePlatform");
 				dataJson.remove("deviceVersion");
 			}
 
-			UserInfo userInfo = (UserInfo) JSONObject.toBean(dataJson, UserInfo.class);
+			UserInfo userInfo = (UserInfo) JSONObject.toBean(dataJson,
+					UserInfo.class);
 
 			HashMap<?, ?> data = service.login(userInfo, userDevice);
 
@@ -85,7 +91,8 @@ public class UserInfoController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			UserInfo bean = (UserInfo) JSONObject.toBean(dataJson, UserInfo.class);
+			UserInfo bean = (UserInfo) JSONObject.toBean(dataJson,
+					UserInfo.class);
 			service.create(bean);
 			return new ModelAndView("jsonView", success("创建成功"));
 		} catch (Exception e) {
@@ -99,7 +106,8 @@ public class UserInfoController extends BaseController {
 		try {
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request
+					.getParameter("parameter")));
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
@@ -108,7 +116,8 @@ public class UserInfoController extends BaseController {
 			}
 
 			int userId = (int) tokenObj.getUserId();
-			UserInfo bean = (UserInfo) JSONObject.toBean(dataJson, UserInfo.class);
+			UserInfo bean = (UserInfo) JSONObject.toBean(dataJson,
+					UserInfo.class);
 
 			bean.setUserId(userId);
 
@@ -123,11 +132,13 @@ public class UserInfoController extends BaseController {
 	@RequestMapping(value = "/userInfo/delete")
 	public ModelAndView delete(HttpServletRequest request) {
 		try {
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request
+					.getParameter("parameter")));
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			UserInfo bean = (UserInfo) JSONObject.toBean(dataJson, UserInfo.class);
+			UserInfo bean = (UserInfo) JSONObject.toBean(dataJson,
+					UserInfo.class);
 			service.delete(bean);
 			return new ModelAndView("jsonView", success("删除成功"));
 		} catch (Exception e) {
@@ -139,7 +150,8 @@ public class UserInfoController extends BaseController {
 	@RequestMapping(value = "/userInfo/list")
 	public ModelAndView list(HttpServletRequest request) {
 		try {
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request
+					.getParameter("parameter")));
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
@@ -168,15 +180,28 @@ public class UserInfoController extends BaseController {
 	public ModelAndView query(HttpServletRequest request) {
 		try {
 
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
-			if (dataJson == null) {
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
+			UserInfo bean = null;
 
-			if (dataJson.isEmpty()) {
-				return new ModelAndView("jsonView", success("无请求信息"));
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request
+					.getParameter("parameter")));
+			if (!JSONUtils.isNull(dataJson)) {
+
+				if (dataJson.isEmpty()) {
+					return new ModelAndView("jsonView", success("无请求信息"));
+				}
+				bean = (UserInfo) JSONObject.toBean(dataJson,
+						UserInfo.class);
 			}
-			UserInfo bean = (UserInfo) JSONObject.toBean(dataJson, UserInfo.class);
+			else{
+				AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+				
+				long userId = tokenObj.getUserId();
+				
+				bean = new UserInfo();
+				
+				bean.setUserId((int) userId);
+			}
+			
 			UserInfo userInfo = service.query(bean);
 
 			HashMap<String, Object> data = new HashMap<String, Object>();
@@ -213,7 +238,7 @@ public class UserInfoController extends BaseController {
 			UserInfo bean = new UserInfo();
 			bean.setUserId(use_id);
 
-			List<String> poi_tips_time = service.getUploadTime(bean,deviceId);
+			List<String> poi_tips_time = service.getUploadTime(bean, deviceId);
 			HashMap<String, String> data = new HashMap<String, String>();
 			String poi_time = "";
 			String tips_time = "";

@@ -15,7 +15,6 @@ import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.commons.exception.ConfigParseException;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
-import com.navinfo.dataservice.jobframework.exception.JobTypeNotFoundException;
 
 import net.sf.json.JSONObject;
 
@@ -29,19 +28,19 @@ public class JobCreateStrategy {
 	private static Logger log = LoggerRepos.getLogger(JobCreateStrategy.class);
 	public static Map<String,Class<?>> jobClassMap;
 	public static Map<String,Class<?>> requestClassMap;
-	public static AbstractJob create(JobInfo jobInfo)throws JobTypeNotFoundException,JobCreateException{
+	public static AbstractJob create(JobInfo jobInfo)throws JobCreateException{
 		AbstractJobRequest 
 		request = createJobRequest(jobInfo.getType(),jobInfo.getRequest());
 		return create(jobInfo,request);
 	}
-	public static AbstractJob create(JobInfo jobInfo,AbstractJobRequest request)throws JobTypeNotFoundException,JobCreateException{
+	public static AbstractJob create(JobInfo jobInfo,AbstractJobRequest request)throws JobCreateException{
 		if(jobClassMap==null){
 			loadMapping();
 		}
 		jobInfo.setType(request.getJobType());
 		Class<?> clazz = jobClassMap.get(jobInfo.getType());
 		if(clazz==null){
-			throw new JobTypeNotFoundException("未找到对应的任务类型的class类名,type:"+jobInfo.getType());
+			throw new JobCreateException("未找到对应的任务类型的class类名,type:"+jobInfo.getType());
 		}
 		AbstractJob job = null;
 		try{
@@ -53,34 +52,34 @@ public class JobCreateStrategy {
 		}
 		return job;
 	}
-	public static AbstractJob createAsSubJob(JobInfo jobInfo,AbstractJob parent)throws JobTypeNotFoundException,JobCreateException{
+	public static AbstractJob createAsSubJob(JobInfo jobInfo,AbstractJob parent)throws JobCreateException{
 		AbstractJob job = create(jobInfo);
 		job.setParent(parent);
 		return job;
 	}
-	public static AbstractJob createAsSubJob(JobInfo jobInfo,AbstractJobRequest request,AbstractJob parent)throws JobTypeNotFoundException,JobCreateException{
+	public static AbstractJob createAsSubJob(JobInfo jobInfo,AbstractJobRequest request,AbstractJob parent)throws JobCreateException{
 		AbstractJob job = create(jobInfo,request);
 		job.setParent(parent);
 		return job;
 	}
-	public static AbstractJob createAsMethod(JobInfo jobInfo)throws JobTypeNotFoundException,JobCreateException{
+	public static AbstractJob createAsMethod(JobInfo jobInfo)throws JobCreateException{
 		AbstractJob job = create(jobInfo);
 		job.setRunAsMethod(true);
 		return job;
 	}
-	public static AbstractJob createAsMethod(JobInfo jobInfo,AbstractJobRequest request)throws JobTypeNotFoundException,JobCreateException{
+	public static AbstractJob createAsMethod(JobInfo jobInfo,AbstractJobRequest request)throws JobCreateException{
 		AbstractJob job = create(jobInfo,request);
 		job.setRunAsMethod(true);
 		return job;
 	}
 	
-	public static AbstractJobRequest createJobRequest(String jobType,JSONObject request)throws JobTypeNotFoundException,JobCreateException{
+	public static AbstractJobRequest createJobRequest(String jobType,JSONObject request)throws JobCreateException{
 		if(jobClassMap==null){
 			loadMapping();
 		}
 		Class<?> clazz = requestClassMap.get(jobType);
 		if(clazz==null){
-			throw new JobTypeNotFoundException("未找到对应的任务类型的reques类名,type:"+jobType);
+			throw new JobCreateException("未找到对应的任务类型的reques类名,type:"+jobType);
 		}
 		AbstractJobRequest req = null;
 		try{

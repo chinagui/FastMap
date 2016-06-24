@@ -20,13 +20,19 @@ public class BatchCoreJobRequest extends AbstractJobRequest {
 
 
 	@Override
-	public int getStepCount() throws JobException {
+	public void validate() throws JobException {
+
+	}
+
+	@Override
+	protected int myStepCount() throws JobException {
+		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public void validate() throws JobException {
-
+	public void defineSubJobRequests() {
+		
 	}
 
 }

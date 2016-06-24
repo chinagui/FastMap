@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.exception.JobRuntimeException;
 
@@ -31,8 +32,26 @@ public abstract class AbstractJobRequest {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected String gdbVersion=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 	
+	/**
+	 * 注意循环调用。。。。。。
+	 */
+	protected Map<String,AbstractJobRequest> subJobRequests;
+	
+	public abstract void defineSubJobRequests()throws JobCreateException;
+	
 	public abstract String getJobType();
-	public abstract int getStepCount()throws JobException;
+	
+	public int getStepCount()throws JobException{
+		int count = myStepCount();
+		if(subJobRequests!=null){
+			for(AbstractJobRequest r:subJobRequests.values()){
+				count+=r.getStepCount();
+			}
+		}
+		return count;
+	}
+	
+	protected abstract int myStepCount()throws JobException;
 	
 	public abstract void validate()throws JobException;
 	
@@ -45,7 +64,15 @@ public abstract class AbstractJobRequest {
 		this.gdbVersion = gdbVersion;
 	}
 
-	public void parseByJsonConfig(JSONObject json)throws JobRuntimeException{
+	public AbstractJobRequest getSubJobRequest(String key) {
+		return subJobRequests==null?null:subJobRequests.get(key);
+	}
+
+	public void setSubJobRequests(Map<String, AbstractJobRequest> subJobRequests) {
+		this.subJobRequests = subJobRequests;
+	}
+
+	public void parseByJsonConfig(JSONObject json)throws JobCreateException{
 		if(json==null) {
 			log.warn("注意：未传入的解析json对象，request未被初始化");
 		}
@@ -61,9 +88,11 @@ public abstract class AbstractJobRequest {
 			}
 			setAttrValue(attName,attValue);
 		}
+		//
+		defineSubJobRequests();
 	}
 
-	public void setAttrValue(String attName,Object attValue)throws JobRuntimeException{
+	public void setAttrValue(String attName,Object attValue)throws JobCreateException{
 		if(StringUtils.isEmpty(attName)||attValue==null||(attValue instanceof JSONNull)){
 			log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。");
 			return;
@@ -120,7 +149,7 @@ public abstract class AbstractJobRequest {
 			method.invoke(this, attValue);
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
-			throw new JobRuntimeException("Request解析过程中可能未找到方法,原因为:"+e.getMessage(),e);
+			throw new JobCreateException("Request解析过程中可能未找到方法,原因为:"+e.getMessage(),e);
 		}
 	}
 	

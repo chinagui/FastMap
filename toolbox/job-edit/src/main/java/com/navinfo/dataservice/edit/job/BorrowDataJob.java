@@ -68,9 +68,9 @@ public class BorrowDataJob extends AbstractJob {
 				}
 			}
 			//1. 以delete_copy模式进行数据导出
-			req.getBorrow().setAttrValue("sourceDbId", lentOutDbId);
+			req.getSubJobRequest("borrow").setAttrValue("sourceDbId", lentOutDbId);
 			JobInfo borrowJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
-			AbstractJob borrowJob = JobCreateStrategy.createAsSubJob(borrowJobInfo, req.getBorrow(),
+			AbstractJob borrowJob = JobCreateStrategy.createAsSubJob(borrowJobInfo, req.getSubJobRequest("borrow"),
 					this);
 			borrowJob.run();
 			if (borrowJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {

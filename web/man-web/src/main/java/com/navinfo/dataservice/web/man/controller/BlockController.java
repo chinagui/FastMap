@@ -249,10 +249,10 @@ public class BlockController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			if (!(dataJson.containsKey("groupIds")) || !(dataJson.containsKey("stage"))) {
-				throw new IllegalArgumentException("groupIds、stage参数是必须的。");
+			if (!(dataJson.containsKey("inforId"))) {
+				throw new IllegalArgumentException("inforId参数是必须的。");
 			}
-			List<HashMap> data = service.listByGroup(dataJson);
+			List<HashMap> data = service.listByInfoId(dataJson);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取block列表失败，原因：" + e.getMessage(), e);

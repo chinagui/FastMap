@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
@@ -132,6 +133,27 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	
+	/*
+	 * 规划管理页面--任务管理--查看任务页面
+	 */
+	@SuppressWarnings("rawtypes")
+	@RequestMapping(value = "/task/listAll")
+	public ModelAndView listAll(HttpServletRequest request){
+		try{	
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
+			JSONObject condition = dataJson.getJSONObject("condition");			
+			JSONObject order = dataJson.getJSONObject("order");
+			
+			List<Task> data = service.listAll(condition,order);			
+			return new ModelAndView("jsonView", success(JsonOperation.beanToJsonList(data)));
+			//return new ModelAndView("jsonView", success(data.getResult()));
+		}catch(Exception e){
+			log.error("获取列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
 	/*
 	 *  20160607 by zhangxiaoyi 删除，此次生产管理平台的设计中不涉及该接口的使用
 	 */

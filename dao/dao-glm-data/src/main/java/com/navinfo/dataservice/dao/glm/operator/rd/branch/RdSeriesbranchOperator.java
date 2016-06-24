@@ -221,9 +221,9 @@ public class RdSeriesbranchOperator implements IOperator {
 
 		sb.append(seriesbranch.getBranchPid());
 
-		sb.append(seriesbranch.getType());
+		sb.append(","+seriesbranch.getType());
 
-		sb.append(seriesbranch.getVoiceDir());
+		sb.append(","+seriesbranch.getVoiceDir());
 
 		if (seriesbranch.getPatternCode() == null) {
 			sb.append(",null");
@@ -237,9 +237,11 @@ public class RdSeriesbranchOperator implements IOperator {
 			sb.append(",'" + seriesbranch.getArrowCode() + "'");
 		}
 
-		sb.append(seriesbranch.getArrowFlag());
+		sb.append(","+seriesbranch.getArrowFlag());
 
 		sb.append(",1,'" + seriesbranch.rowId() + "')");
+		
+		System.out.println(sb.toString());
 
 		stmt.addBatch(sb.toString());
 	}

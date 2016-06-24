@@ -204,7 +204,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		batchRequestJSON.put("grids", releaseJobRequest.getGridIds());
 		batchRequestJSON.put("rules", releaseJobRequest.getBatchRuleList());
 		batchRequestJSON.put("targetDbId", releaseJobRequest.getTargetDbId());
-		batchRequestJSON.put("batchDbId", batchDbId);
+		//batchRequestJSON.put("batchDbId", batchDbId);
 		//batchRequestJSON.put("type", "gdbBatch");
 		batchRequestJSON.put("createBatchDb", releaseJobRequest.createDbJSON("batch temp db"));
 		batchRequestJSON.put("expBatchDb", releaseJobRequest.expDbJSON());

@@ -65,7 +65,7 @@ public class UserInfoController extends BaseController {
 			if (!data.isEmpty()) {
 				return new ModelAndView("jsonView", success(data));
 			} else {
-				return new ModelAndView("jsonView", success("用户不存在"));
+				return new ModelAndView("jsonView", success("用户名或密码错误"));
 			}
 
 		} catch (Exception e) {

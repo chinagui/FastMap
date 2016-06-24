@@ -472,8 +472,20 @@ public class IxPoiSelector implements ISelector {
 			throws Exception {
 		return null;
 	}
-
-	public JSONObject loadPids(boolean isLock,int pid ,String pidName,int pageSize, int pageNum) throws Exception {
+	/**
+	 * @zhaokk 
+	 * 查询poi列表值
+	 * @param isLock
+	 * @param pid
+	 * @param pidName
+	 * @param type
+	 * @param g
+	 * @param pageSize
+	 * @param pageNum
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject loadPids(boolean isLock,int pid ,String pidName,int type,String g ,int pageSize, int pageNum) throws Exception {
 
 		JSONObject result = new JSONObject();
 
@@ -486,14 +498,15 @@ public class IxPoiSelector implements ISelector {
 		StringBuilder buffer = new StringBuilder();
         buffer.append(" SELECT * ");
         buffer.append(" FROM (SELECT c.*, ROWNUM rn ");
-        buffer.append(" FROM (SELECT COUNT (1) OVER (PARTITION BY 1) total,");
-        //TODO 0 as freshness_vefication
-        buffer.append(" ip.pid,ip.kind_code, 0 as freshness_vefication,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
-        buffer.append(" FROM ix_poi ip, ix_poi_name ipn ");
-        buffer.append(" WHERE     ip.pid = ipn.poi_pid and ip.u_record !=2 ");
+        buffer.append(" FROM (SELECT /*+ leading(ip,ipn,ps) use_hash(ip,ipn,ps)*/  COUNT (1) OVER (PARTITION BY 1) total,");
+        buffer.append(" ip.pid,ip.kind_code,ps.status, 0 as freshness_vefication,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
+        buffer.append(" FROM ix_poi ip, ix_poi_name ipn, poi_edit_status ps ");
+        buffer.append(" WHERE     ip.pid = ipn.poi_pid and ip.row_id = ps.row_id ");
         buffer.append(" AND lang_code = 'CHI'");
         buffer.append(" AND ipn.name_type = 2 ");
         buffer.append(" AND name_class = 1"); 
+        buffer.append(" AND ps.status = "+type+"");
+        buffer.append(" AND sdo_relate(ip.geometry, sdo_geometry(    '"+g+"'  , 8307), 'mask=anyinteract') = 'TRUE' ");
         if( pid != 0){
         	buffer.append(" AND ip.pid = "+pid+"");
         }else{
@@ -531,6 +544,7 @@ public class IxPoiSelector implements ISelector {
 				json.put("name", resultSet.getString("name"));
 				json.put("geometry", GeoTranslator.jts2Geojson(geometry));
 				json.put("uRecord", resultSet.getInt("u_record"));
+				json.put("status", resultSet.getInt("status"));
 				json.put("collectTime", resultSet.getString("collect_time"));
 				array.add(json);
 			}

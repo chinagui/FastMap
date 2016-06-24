@@ -61,7 +61,7 @@ public class CkCop2PrjScriptsInterface {
 			OracleSchema targetSchema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(targetDb.getConnectParam()));
 			//将在grids范围导出到目标
-			CkResultTool.moveNiVal(sourceSchema,targetSchema,grids.split(","));
+//			CkResultTool.moveNiVal(sourceSchema,targetSchema,grids.split(","));
 			response.put("exp", "success");
 			//去重
 			List<String> tables = new ArrayList<String>();

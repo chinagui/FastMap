@@ -3,7 +3,9 @@ package com.navinfo.dataservice.dao.glm.iface;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.mongodb.util.JSON;
+import org.apache.commons.collections.CollectionUtils;
+
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchRealimage;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
 
@@ -171,20 +173,7 @@ public class Result implements ISerializable {
 	 * @return 操作结果信息
 	 */
 	public String getLogs() {
-		for(IRow row : listAddIRow)
-		{
-			if(row instanceof RdBranchRealimage || row instanceof RdSeriesbranch)
-			{
-				for(int i=0;i<logs.size();i++)
-				{
-					JSONObject obj = (JSONObject) logs.get(i);
-					if(obj.containsKey("pid") && obj.getInt("pid") ==row.parentPKValue())
-					{
-						obj.put("rowId", row.rowId());
-					}
-				}
-			}
-		}
+		BranchResultHandle.handleResult(listAddIRow,logs);
 		System.out.println(logs.toString());
 		return logs.toString();
 

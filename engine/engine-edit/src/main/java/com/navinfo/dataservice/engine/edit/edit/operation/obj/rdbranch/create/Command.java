@@ -1,12 +1,11 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.create;
 
-import net.sf.json.JSONObject;
-
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
+
+import net.sf.json.JSONObject;
 
 public class Command extends AbstractCommand {
 

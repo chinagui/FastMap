@@ -29,7 +29,7 @@ public class Operation implements IOperation {
 
 		int branchType = command.getBranchType();
 
-		if (branchType < 5 && branchType >0) {
+		if (branchType < 5 && branchType > 0) {
 			if (branch.getDetails().size() == 1 && branch.getSignboards().size() == 0
 					&& branch.getSignasreals().size() == 0 && branch.getSeriesbranches().size() == 0
 					&& branch.getRealimages().size() == 0 && branch.getSchematics().size() == 0) {
@@ -47,10 +47,10 @@ public class Operation implements IOperation {
 					&& branch.getRealimages().size() == 1 && branch.getSchematics().size() == 0) {
 
 				result.insertObject(branch, ObjStatus.DELETE, branch.getPid());
+			} else {
+				result.insertObject(row, ObjStatus.DELETE, branch.getPid());
+				command.setObjType(ObjType.RDBRANCHREALIMAGE);
 			}
-		} else {
-			result.insertObject(row, ObjStatus.DELETE, branch.getPid());
-			command.setObjType(ObjType.RDBRANCHREALIMAGE);
 		}
 		// 实景看板
 		if (branchType == 6) {

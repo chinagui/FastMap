@@ -19,9 +19,9 @@ import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 public class RoadCollectMain {
 
 	private static Logger log = null;
-	private static final String col_name_grid = "fm_stat_collect_road_grid";
-	private static final String col_name_block = "fm_stat_collect_road_block";
-	private static final String col_name_city = "fm_stat_collect_road_city";
+	public static final String col_name_grid = "fm_stat_collect_road_grid";
+	public static final String col_name_block = "fm_stat_collect_road_block";
+	public static final String col_name_city = "fm_stat_collect_road_city";
 
 	private String db_name;
 	private String stat_date;

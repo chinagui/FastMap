@@ -123,7 +123,7 @@ public class SubtaskOperation {
 		try{
 			List<String> gridIds = new ArrayList<String>();
 			Collections.addAll(gridIds, subtask.getGridIds());
-			List<GridStatInfo> gridStatInfoColArr = staticsApi.getCollectStatByGrids(gridIds);
+			List<GridStatInfo> gridStatInfoColArr = staticsApi.getLatestCollectStatByGrids(gridIds);
 			//POI
 			if(0==subtask.getType()){
 				for(int j=0;j<gridStatInfoColArr.size();j++){
@@ -168,7 +168,7 @@ public class SubtaskOperation {
 		try{
 			List<String> gridIds = new ArrayList<String>();
 			Collections.addAll(gridIds, subtask.getGridIds());
-			List<GridStatInfo> gridStatInfoDailyEditArr = staticsApi.getDailyEditStatByGrids(gridIds);
+			List<GridStatInfo> gridStatInfoDailyEditArr = staticsApi.getLatestDailyEditStatByGrids(gridIds);
 			//POI
 			if(0==subtask.getType()){
 				for(int j=0;j<gridStatInfoDailyEditArr.size();j++){
@@ -213,7 +213,7 @@ public class SubtaskOperation {
 		try{
 			List<String> gridIds = new ArrayList<String>();
 			Collections.addAll(gridIds, subtask.getGridIds());
-			List<GridStatInfo> gridStatInfoMonthlyEditArr = staticsApi.getMonthlyEditStatByGrids(gridIds);
+			List<GridStatInfo> gridStatInfoMonthlyEditArr = staticsApi.getLatestMonthlyEditStatByGrids(gridIds);
 			//POI
 			if(0==subtask.getType()){
 				for(int j=0;j<gridStatInfoMonthlyEditArr.size();j++){

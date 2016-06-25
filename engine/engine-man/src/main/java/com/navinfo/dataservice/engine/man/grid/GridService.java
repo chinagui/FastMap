@@ -269,9 +269,9 @@ public class GridService {
 			StaticsApi statics = (StaticsApi) ApplicationContextUtil
 					.getBean("staticsApi");
 			List<GridStatInfo> GridStatList=new ArrayList();
-			if (0==stage){GridStatList=statics.getCollectStatByGrids(gridByType);}
-			if (1==stage){GridStatList=statics.getDailyEditStatByGrids(gridByType);}
-			if (2==stage){GridStatList=statics.getMonthlyEditStatByGrids(gridByType);}
+			if (0==stage){GridStatList=statics.getLatestCollectStatByGrids(gridByType);}
+			if (1==stage){GridStatList=statics.getLatestDailyEditStatByGrids(gridByType);}
+			if (2==stage){GridStatList=statics.getLatestMonthlyEditStatByGrids(gridByType);}
 			
 			for(int i=0;i<GridStatList.size();i++){
 				GridStatInfo statInfo=GridStatList.get(i);
@@ -311,7 +311,7 @@ public class GridService {
 			//获取的gird,只要road 日编完成100%，就可融合
 			StaticsApi statics = (StaticsApi) ApplicationContextUtil
 					.getBean("staticsApi");
-			List<GridStatInfo> GridStatList=statics.getDailyEditStatByGrids(gridList);
+			List<GridStatInfo> GridStatList=statics.getLatestDailyEditStatByGrids(gridList);
 			
 			List<String> gridMerge = new ArrayList<String>();
 			

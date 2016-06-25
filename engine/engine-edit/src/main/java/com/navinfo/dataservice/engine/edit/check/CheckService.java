@@ -15,6 +15,14 @@ public class CheckService {
 		// TODO Auto-generated constructor stub
 	}
 	
+	private static CheckService checkService = null;
+	
+	public static CheckService getInstance(){
+		if (checkService == null) {
+			checkService = new CheckService();
+		}
+		return checkService;
+	}
 	/**
 	 * 
 	 * @param dbId

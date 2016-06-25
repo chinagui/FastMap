@@ -13,7 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.api.statics.model.GridStatInfo;
+import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.engine.man.statics.StaticsService;
@@ -30,8 +30,8 @@ public class StaticsController extends BaseController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/statics/grid/query")
-	public ModelAndView merge(HttpServletRequest request){
+	@RequestMapping(value = "/statics/change/grid/query")
+	public ModelAndView query(HttpServletRequest request){
 		try{	
 			String parameter = request.getParameter("parameter");
 			if (StringUtils.isEmpty(parameter)){
@@ -43,7 +43,9 @@ public class StaticsController extends BaseController {
 			}
 			String wkt=dataJson.getString("wkt");
 			int type=dataJson.getInt("type");
-			List<GridStatInfo> gridStatObjList=service.staticsGridQuery(wkt, type);
+			int stage=dataJson.getInt("stage");
+			String date=dataJson.getString("date");
+			List<GridChangeStatInfo> gridStatObjList=service.staticsGridQuery(wkt, stage, type,date);
 			return new ModelAndView("jsonView", success(gridStatObjList));
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);

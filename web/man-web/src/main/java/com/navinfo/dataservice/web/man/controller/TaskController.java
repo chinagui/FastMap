@@ -2,6 +2,7 @@ package com.navinfo.dataservice.web.man.controller;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -127,8 +128,12 @@ public class TaskController extends BaseController {
 			}
 			Page data = service.list(condition,order,curPageNum,curPageSize);
 			List result=JsonOperation.beanToJsonList((List)data.getResult());
-			data.setResult(result);
-			return new ModelAndView("jsonView", success(data));
+			Map<String, Object> returnMap=new HashMap<String, Object>();
+			returnMap.put("result", result);
+			returnMap.put("pageSize", curPageSize);
+			returnMap.put("pageNum", curPageNum);
+			returnMap.put("totalCount", data.getTotalCount());
+			return new ModelAndView("jsonView", success(returnMap));
 			//return new ModelAndView("jsonView", success(data.getResult()));
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);

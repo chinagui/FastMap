@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.api.man.model;
 
 import java.io.Serializable;
+import java.util.List;
 
 /** 
 * @ClassName:  Region 
@@ -13,7 +14,8 @@ public class Region implements Serializable {
 	private String regionName ;
 	private Integer dailyDbId ;
 	private Integer monthlyDbId ;
-	
+	private List<Integer> grids;//
+
 	public Region (){
 	}
 	
@@ -47,12 +49,19 @@ public class Region implements Serializable {
 	public void setMonthlyDbId(Integer monthlyDbId) {
 		this.monthlyDbId = monthlyDbId;
 	}
+	public List<Integer> getGrids() {
+		return grids;
+	}
+
+	public void setGrids(List<Integer> grids) {
+		this.grids = grids;
+	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return "Region [regionId=" + regionId +",regionName="+regionName+",dailyDbId="+dailyDbId+",monthlyDbId="+monthlyDbId+"]";
+		return "Region [regionId=" + regionId +",regionName="+regionName+",dailyDbId="+dailyDbId+",monthlyDbId="+monthlyDbId+",grids="+grids+"]";
 	}
 
 

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.collections.map.MultiValueMap;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
@@ -24,13 +23,7 @@ import com.navinfo.dataservice.engine.man.version.VersionService;
 @Service("manApi")
 public class ManApiImpl implements ManApi {
 	
-	/* 
-	 * @see com.navinfo.dataservice.api.edit.iface.GridSelectorApiService#queryRegionGridMapping(java.util.List)
-	 */
-	@Override
-	public MultiValueMap queryRegionGridMapping(List<Integer> gridList) throws Exception {
-		return GridService.getInstance().queryRegionGridMapping(gridList);
-	}
+	
 	@Override
 	public Region queryByRegionId(Integer regionId) throws Exception {
 		Region region = new Region();
@@ -80,5 +73,10 @@ public class ManApiImpl implements ManApi {
 		
 		return service.query(type);
 	}
+	@Override
+	public List<Region> queryRegionWithGrids(List<Integer> grids) throws Exception {
+		return RegionService.getInstance().queryRegionWithGrids(grids);
+	}
+	
 }
 

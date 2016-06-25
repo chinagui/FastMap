@@ -65,6 +65,13 @@ public class GdbValidationJob extends AbstractJob {
 				if (expValDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
 					throw new Exception("批处理子版本库导数据时job执行失败。");
 				}
+
+				//cop 子版本物理删除逻辑删除数据
+				DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
+				DbInfo batDb = datahub.getDbById(valDbId);
+				OracleSchema batSchema = new OracleSchema(
+						DbConnectConfig.createConnectConfig(batDb.getConnectParam()));
+				PhysicalDeleteRow.doDelete(batSchema);
 			}
 			// 2. 在检查子版本上执行检查
 			//检查前预处理

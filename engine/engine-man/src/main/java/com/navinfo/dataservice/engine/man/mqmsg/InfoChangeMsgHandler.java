@@ -44,9 +44,10 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			QueryRunner run = new QueryRunner();
 			run.update(conn, sql, message);
 			conn.commit();
-		}catch(Exception e){
+		}catch(SQLException e){
 			log.error(e.getMessage(),e);
 			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
 		}finally{
 			DbUtils.closeQuietly(conn);
 		}

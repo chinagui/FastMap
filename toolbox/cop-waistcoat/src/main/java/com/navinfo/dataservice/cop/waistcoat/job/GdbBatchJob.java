@@ -48,8 +48,14 @@ public class GdbBatchJob extends AbstractJob {
 		try {
 			// 1. 创建批处理库
 			int batchDbId = 0;
+			OracleSchema batSchema = null;
+			DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
 			if(req.getBatchDbId()!=0){
 				batchDbId = req.getBatchDbId();
+				//cop 子版本物理删除逻辑删除数据
+				DbInfo batDb = datahub.getDbById(batchDbId);
+				batSchema = new OracleSchema(
+						DbConnectConfig.createConnectConfig(batDb.getConnectParam()));
 			}else{
 				JobInfo createBatchDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
 				AbstractJob createBatchDbJob = JobCreateStrategy.createAsSubJob(createBatchDbJobInfo,
@@ -74,13 +80,12 @@ public class GdbBatchJob extends AbstractJob {
 				if (expBatchDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
 					throw new Exception("批处理子版本库导数据时job执行失败。");
 				}
+				//cop 子版本物理删除逻辑删除数据
+				DbInfo batDb = datahub.getDbById(batchDbId);
+				batSchema = new OracleSchema(
+						DbConnectConfig.createConnectConfig(batDb.getConnectParam()));
+				PhysicalDeleteRow.doDelete(batSchema);
 			}
-			//cop 子版本物理删除逻辑删除数据
-			DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
-			DbInfo batDb = datahub.getDbById(batchDbId);
-			OracleSchema batSchema = new OracleSchema(
-					DbConnectConfig.createConnectConfig(batDb.getConnectParam()));
-			PhysicalDeleteRow.doDelete(batSchema);
 			
 			// 3.创建批处理子版本备份库
 			req.getSubJobRequest("createBakDb").setAttrValue("refDbId", batchDbId);
@@ -144,7 +149,7 @@ public class GdbBatchJob extends AbstractJob {
 		// 根据批处理的目标库找到对应的大区
 		try {
 			DatalockApi datalock = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
-			editLock = datalock.lockGrid(req.getTargetDbId(), FmEditLock.LOCK_OBJ_ALL, req.getGrids(), FmEditLock.TYPE_BATCH, jobInfo.getId());
+//			editLock = datalock.lockGrid(req.getTargetDbId(), FmEditLock.LOCK_OBJ_ALL, req.getGrids(), FmEditLock.TYPE_BATCH, jobInfo.getId());
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw new LockException("加锁发生错误," + e.getMessage(), e);

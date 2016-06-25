@@ -47,9 +47,6 @@ public class TokenValidateFilter implements Filter {
 		}catch(TokenExpiredException te){
 			response.getWriter().println(
 					ResponseUtils.assembleFailResult("登陆已过期，请重新登陆",-100));
-		}catch(Exception e){
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult("验证Token时发生未知错误",-100));
 		}
 
 	}

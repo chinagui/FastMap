@@ -1,12 +1,14 @@
 package com.navinfo.dataservice.api.statics.model;
 
+import java.io.Serializable;
+
 /**
  * grid变迁统计信息
  * 
  * @author wangshishuai3966
  *
  */
-public class GridChangeStatInfo {
+public class GridChangeStatInfo implements Serializable {
 
 	private String gridId;
 	

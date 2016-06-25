@@ -4,6 +4,7 @@ import java.util.List;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -21,6 +22,8 @@ public class Command extends AbstractCommand {
 	private String requester;
 	private RwLink  sRwLink;
 	private RwLink  eRwLink;
+	
+	private List<RdGsc> rdGscs;
 
 	public RwLink getsRwLink() {
 		return sRwLink;
@@ -64,6 +67,14 @@ public class Command extends AbstractCommand {
 	@Override
 	public String getRequester() {
 		return requester;
+	}
+
+	public List<RdGsc> getRdGscs() {
+		return rdGscs;
+	}
+
+	public void setRdGscs(List<RdGsc> rdGscs) {
+		this.rdGscs = rdGscs;
 	}
 
 	public Command(JSONObject json, String requester) throws Exception{

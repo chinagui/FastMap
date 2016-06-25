@@ -1,14 +1,12 @@
 package com.navinfo.dataservice.engine.man.statics;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.json.JSONException;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
-import com.navinfo.dataservice.api.statics.model.GridStatInfo;
+import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -25,21 +23,19 @@ public class StaticsService {
 	/**
 	 * 根据输入的范围和类型，查询范围内的所有grid的相应的统计信息，并返回grid列表和统计信息。
 	 * @param wkt
-	 * @param type 0采集变迁图 1日编变迁图 2月编变迁图 3日出品变迁图 4月出品变迁图 5计划预期图
+	 * @param type 0POI, 1ROAD
+	 * @param stage 0采集 1日编 2月编
 	 * @return 
 	 * @throws Exception 
 	 * @throws JSONException 
 	 */
-	public List<GridStatInfo> staticsGridQuery(String wkt,int type) throws JSONException, Exception{
+	public List<GridChangeStatInfo> gridChangeStaticQuery(String wkt,int stage, int type, String date) throws JSONException, Exception{
 		//通过wkt获取gridIdList
 		Geometry geo=GeoTranslator.geojson2Jts(Geojson.wkt2Geojson(wkt));
 		List<String> grids=(List<String>) CompGeometryUtil.geoToMeshesWithoutBreak(geo);
 		
 		StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
-		if(type==0){return api.getCollectStatByGrids(grids);}
-		if(type==1){return api.getDailyEditStatByGrids(grids);}
-		if(type==2){return api.getMonthlyEditStatByGrids(grids);}
-		//api.getCollectStatByGrids(grids)
-		return null;
+
+		return api.getChangeStatByGrids(grids, type, stage, date);
 	}
 }

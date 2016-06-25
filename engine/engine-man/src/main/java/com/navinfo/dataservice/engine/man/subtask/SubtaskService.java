@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -25,6 +26,7 @@ import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.ArrayUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -35,7 +37,7 @@ import com.navinfo.navicommons.exception.ServiceException;
  * @date 2016-06-06 07:40:14
  * @Description: TODO
  */
-@Service
+
 public class SubtaskService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
@@ -53,73 +55,21 @@ public class SubtaskService {
 	/*
 	 * 创建一个子任务。 参数1：Subtask对象 参数2：ArrayList<Integer>，组成Subtask的gridId列表
 	 */
-	public void create(Subtask bean, ArrayList<Integer> gridIds)
-			throws ServiceException {
+	public void create(Subtask bean)throws ServiceException {
 		Connection conn = null;
 		try {
-			// 持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			// 获取subtaskId
-			String querySql = "select SUBTASK_SEQ.NEXTVAL as subTaskId from dual";
+			int subtaskId = SubtaskOperation.getSubtaskId(conn, bean);
 
-			int subTaskId = Integer.valueOf(run
-					.query(conn, querySql, new MapHandler()).get("subTaskId")
-					.toString());
+			bean.setSubtaskId(subtaskId);
+			
 			// 插入subtask
-			String createSql = "insert into SUBTASK " + "(SUBTASK_ID"
-					+ ", NAME" + ", BLOCK_ID" + ", TASK_ID" + ", GEOMETRY"
-					+ ", STAGE" + ", TYPE" + ", CREATE_USER_ID"
-					+ ", EXE_USER_ID" + ", CREATE_DATE" + ", STATUS"
-					+ ", PLAN_START_DATE" + ", PLAN_END_DATE" + ", DESCP) "
-					+ "values("
-					+ subTaskId
-					+ ","
-					+ bean.getName()
-					+ ","
-					+ bean.getBlockId()
-					+ ","
-					+ bean.getTaskId()
-					+ ","
-					+ "sdo_geometry("
-					+ "'"
-					+ bean.getGeometry()
-					+ "',8307)"
-					+ ","
-					+ bean.getStage()
-					+ ","
-					+ bean.getType()
-					+ ","
-					+ bean.getCreateUserId()
-					+ ","
-					+ bean.getExeUserId()
-					+ ", sysdate"
-					+ ","
-					+ "1"
-					+ ",to_date('"
-					+ bean.getPlanStartDate().toString().substring(0, 10)
-					+ "','yyyy-MM-dd HH24:MI:ss')"
-					+ ",to_date('"
-					+ bean.getPlanEndDate().toString().substring(0, 10)
-					+ "','yyyy-MM-dd HH24:MI:ss')"
-					+ ",'"
-					+ bean.getDescp()
-					+ "')";
-
-			run.update(conn, createSql);
+			SubtaskOperation.insertSubtask(conn, bean);
+			
 			// 插入SUBTASK_GRID_MAPPING
-			String createMappingSql = "insert into SUBTASK_GRID_MAPPING (SUBTASK_ID, GRID_ID) VALUES (?,?)";
-
-			Object[][] inParam = new Object[gridIds.size()][];
-			for (int i = 0; i < inParam.length; i++) {
-				Object[] temp = new Object[2];
-				temp[0] = subTaskId;
-				temp[1] = gridIds.get(i);
-				inParam[i] = temp;
-
-			}
-
-			run.batch(conn, createMappingSql, inParam);
+			SubtaskOperation.insertSubtaskGridMapping(conn, bean);
 
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -172,8 +122,9 @@ public class SubtaskService {
 						subtask.setStage(rs.getInt("stage"));
 						subtask.setStatus(rs.getInt("status"));
 						String gridIds = rs.getString("GRID_ID");
+						
 						String[] gridIdList = gridIds.split(",");
-						subtask.setGridIds(gridIdList);
+						subtask.setGridIds(ArrayUtil.convertList(Arrays.asList(gridIdList)));
 						list.add(subtask);
 					}
 					return list;
@@ -473,7 +424,7 @@ public class SubtaskService {
 						
 						String gridIds = rs.getString("GRID_ID");
 						String[] gridIdList = gridIds.split(",");
-						subtask.setGridIds(gridIdList);
+						subtask.setGridIds(ArrayUtil.convertList(Arrays.asList(gridIdList)));
 						
 						return subtask;
 					}

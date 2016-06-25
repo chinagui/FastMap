@@ -37,8 +37,7 @@ public class CheckService {
 		
 		ManApi manApi=(ManApi) ApplicationContextUtil.getBean("manApi");
 		Subtask subtaskObj=manApi.queryBySubtaskId(subtaskId);
-		String[] gridsStr= subtaskObj.getGridIds();
-		List<Integer> grids=ArrayUtil.convertList(Arrays.asList(gridsStr));
+		List<Integer> grids=subtaskObj.getGridIds();
 		//todo 根据checkType获取 规则 号 
 		List<String> rules=new ArrayList<String>();
 		rules.add("1");

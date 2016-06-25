@@ -2,6 +2,7 @@ package com.navinfo.dataservice.api.man.model;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.List;
 
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.Block;
@@ -32,7 +33,8 @@ public class Subtask implements Serializable  {
 	private Block block;
 	private Task task;
 	private BlockMan blockMan;
-	private String[] gridIds;
+//	private String[] gridIds;
+	private List<Integer> gridIds;
 	private Integer dbId ;
 	private Integer groupId;
 	
@@ -56,7 +58,7 @@ public class Subtask implements Serializable  {
 			Block block,
 			Task task,
 			BlockMan blockMan,
-			String[] gridIds,
+			List<Integer> gridIds,
 			Integer dbId,
 			Integer groupId){
 		this.subtaskId=subtaskId ;
@@ -99,11 +101,11 @@ public class Subtask implements Serializable  {
 	public void setDbId(int dbId) {
 		this.dbId = dbId;
 	}
-	public String[] getGridIds(){
+	public List<Integer> getGridIds(){
 		return gridIds;
 	}
-	public void setGridIds(String[] gridIds) {
-		this.gridIds = gridIds;
+	public void setGridIds(List<Integer> list) {
+		this.gridIds = list;
 	}
 	public Block getBlock(){
 		return block;

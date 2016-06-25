@@ -98,6 +98,7 @@ public class TaskOperation {
 					List<Task> list = new ArrayList<Task>();
 				    Page page = new Page(currentPageNum);
 				    page.setPageSize(pageSize);
+				    int total=0;
 					while(rs.next()){
 						Task map = new Task();
 						map.setTaskId(rs.getInt("TASK_ID"));
@@ -116,9 +117,10 @@ public class TaskOperation {
 						map.setMonthEditGroupId(rs.getInt("MONTH_EDIT_GROUP_ID"));
 						map.setMonthEditGroupName(rs.getString("GROUP_NAME"));
 						map.setLatest(rs.getInt("LATEST"));
+						if(total==0){total=rs.getInt("TOTAL_RECORD_NUM_");}
 						list.add(map);
 					}
-					//page.setTotalCount(list.size());
+					page.setTotalCount(total);
 					page.setResult(list);
 					return page;
 				}

@@ -18,6 +18,16 @@ public class GridStatInfo implements Serializable {
 
 	private double percentRoad;
 	
+	private String statDate;
+	
+	public String getStatDate() {
+		return statDate;
+	}
+
+	public void setStatDate(String statDate) {
+		this.statDate = statDate;
+	}
+
 	public String getGridId() {
 		return gridId;
 	}

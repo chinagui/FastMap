@@ -11,8 +11,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 
-import net.sf.json.JSONObject;
-
 public class RwNodeTest extends InitApplication{
 	
 	@Override

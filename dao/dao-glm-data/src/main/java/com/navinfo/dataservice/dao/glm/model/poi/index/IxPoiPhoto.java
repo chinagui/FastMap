@@ -17,27 +17,32 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 /**
  * POI与照片关系表
+ * 
  * @author zhangxiaolong
- *
+ * 
  */
 public class IxPoiPhoto implements IRow {
-	
-	private int poiPid;//POI号码
-	
-	private String photoId;//照片号码
-	
-	private String status;//状态信息
-	
-	private String memo;//备注信息
-	
+
+	private int poiPid;// POI号码
+
+	private int photoId;// 照片号码
+
+	private String status;// 状态信息
+
+	private String memo;// 备注信息
+
+	private String pid;// FCC库照片号码
+
+	private int tag = 1; // 标识
+
 	private String rowId;
-	
-	private int uRecord=0;
-	
+
+	private int uRecord = 0;
+
 	private String uDate;
-	
+
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
-	
+
 	public int getPoiPid() {
 		return poiPid;
 	}
@@ -46,12 +51,28 @@ public class IxPoiPhoto implements IRow {
 		this.poiPid = poiPid;
 	}
 
-	public String getPhotoId() {
+	public int getPhotoId() {
 		return photoId;
 	}
 
-	public void setPhotoId(String photoId) {
+	public void setPhotoId(int photoId) {
 		this.photoId = photoId;
+	}
+
+	public String getPid() {
+		return pid;
+	}
+
+	public void setPid(String pid) {
+		this.pid = pid;
+	}
+
+	public int getTag() {
+		return tag;
+	}
+
+	public void setTag(int tag) {
+		this.tag = tag;
 	}
 
 	public String getStatus() {

@@ -60,11 +60,15 @@ public class IxPoiPhotoSelector implements ISelector {
 
 				photo.setPoiPid(resultSet.getInt("poi_pid"));
 
-				photo.setPhotoId(resultSet.getString("photo_id"));				
+				photo.setPhotoId(resultSet.getInt("photo_id"));			
+				
+				photo.setPid(resultSet.getString("pid"));
 				
 				photo.setStatus(resultSet.getString("status"));
 					
-				photo.setMemo(resultSet.getString("memo"));	
+				photo.setMemo(resultSet.getString("memo"));
+				
+				photo.setTag(resultSet.getInt("tag"));
 
 				photo.setRowId(resultSet.getString("row_id"));
 				
@@ -129,7 +133,7 @@ public class IxPoiPhotoSelector implements ISelector {
 
 				photo.setPoiPid(resultSet.getInt("poi_pid"));
 
-				photo.setPhotoId(resultSet.getString("photo_id"));				
+				photo.setPhotoId(resultSet.getInt("photo_id"));				
 				
 				photo.setStatus(resultSet.getString("status"));
 					
@@ -138,6 +142,10 @@ public class IxPoiPhotoSelector implements ISelector {
 				photo.setRowId(resultSet.getString("row_id"));
 				
 				photo.setuDate(resultSet.getString("u_date"));
+				
+				photo.setTag(resultSet.getInt("tag"));
+				
+				photo.setPid(resultSet.getString("pid"));
 
 				rows.add(photo);
 			}

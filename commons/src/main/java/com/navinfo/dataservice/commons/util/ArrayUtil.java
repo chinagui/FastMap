@@ -938,5 +938,10 @@ public class ArrayUtil {
     	for(String s : data) result.add(Integer.valueOf(s));
     	return result;
     }
-
+    
+    public static List<String> reConvertList(List<Integer> data){
+    	List<String> result=new ArrayList<String>();
+    	for(Integer s : data) result.add(String.valueOf(s));
+    	return result;
+    }
 }

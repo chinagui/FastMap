@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.web.dropbox.controller;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -139,9 +140,14 @@ public class UploadController extends BaseController {
 
 			UploadManager upload = new UploadManager();
 
-			upload.uploadResource(request);
+			HashMap data = upload.uploadResource(request);
+			if(!data.isEmpty()){
+				return new ModelAndView("jsonView", success(data));
+			}else{
+				return new ModelAndView("jsonView", exception("上传失败"));
+			}
 
-			return new ModelAndView("jsonView", success());
+			
 		} catch (Exception e) {
 
 			logger.error(e.getMessage(), e);

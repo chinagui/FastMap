@@ -24,6 +24,8 @@ import org.springframework.stereotype.Service;
 import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.BlockMan;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -219,6 +221,8 @@ public class BlockService {
 						map.put("dayEditPlanEndDate", rs.getString("day_edit_plan_end_date"));
 						map.put("monthEditPlanStartDate", rs.getString("month_edit_plan_start_date"));
 						map.put("monthEditPlanEndDate", rs.getString("month_edit_plan_end_date"));
+						map.put("monthEditPlanEndDate", rs.getString("month_edit_plan_end_date"));
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						return map;
 					}
 					return null;

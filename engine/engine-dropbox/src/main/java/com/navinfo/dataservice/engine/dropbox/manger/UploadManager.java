@@ -146,10 +146,11 @@ public class UploadManager {
 
 	/**
 	 * @param request
+	 * @return 
 	 * @throws FileUploadException 
 	 * @throws UnsupportedEncodingException 
 	 */
-	public void uploadResource(HttpServletRequest request) throws Exception {
+	public HashMap uploadResource(HttpServletRequest request) throws Exception {
 		// TODO Auto-generated method stub
 		DiskFileItemFactory factory = new DiskFileItemFactory();
 		
@@ -161,17 +162,11 @@ public class UploadManager {
 		
 		int pid = 0;
 		int dbId = 0;
-		
 		String fileType = "";
 		
-		String fileName = "";
-		
 //		int pid = 1;
-//		int dbId = 43;
-//		
+//		int dbId = 43;	
 //		String fileType = "photo";
-//		
-//		String fileName = "photo_test";
 		
 		FileItem uploadItem = null;
 			
@@ -184,8 +179,8 @@ public class UploadManager {
 					String param = item.getString("UTF-8");
 					JSONObject jsonParam = JSONObject.fromObject(param);
 					pid = jsonParam.getInt("pid");
+					dbId = jsonParam.getInt("dbId");
 					fileType = jsonParam.getString("fileType");
-					fileName = jsonParam.getString("fileName");
 				}
 				
 			}else{
@@ -205,11 +200,14 @@ public class UploadManager {
 				
 			//调用hadoop方法传输文件流，userId,经纬度，获取photo_id
 			String photoId = hbaseController.putPhoto(fileStream);
+			
+			HashMap<String,String> data = new HashMap<String,String>();
 				
 			dbController.insertIxPoiPhoto(dbId,pid,photoId);
-		}
-		
-
+			data.put("PID", photoId);
+			return data;
+		};
+		return null;
 
 	}
 }

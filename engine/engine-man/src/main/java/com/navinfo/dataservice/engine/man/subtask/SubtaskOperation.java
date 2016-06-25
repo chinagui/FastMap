@@ -4,18 +4,22 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.ArrayUtil;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -99,8 +103,9 @@ public class SubtaskOperation {
 						subtask.setStage(rs.getInt("STAGE"));
 						subtask.setType(rs.getInt("TYPE"));
 						String gridIds = rs.getString("GRID_ID");
+
 						String[] gridIdList = gridIds.split(",");
-						subtask.setGridIds(gridIdList);
+						subtask.setGridIds(ArrayUtil.convertList(Arrays.asList(gridIdList)));
 						list.add(subtask);
 					}
 					return list;
@@ -121,9 +126,8 @@ public class SubtaskOperation {
 	//判断采集任务是否可关闭
 	public static Boolean isCollectReadyToClose(StaticsApi staticsApi,Subtask subtask)throws Exception{
 		try{
-			List<String> gridIds = new ArrayList<String>();
-			Collections.addAll(gridIds, subtask.getGridIds());
-			List<GridStatInfo> gridStatInfoColArr = staticsApi.getCollectStatByGrids(gridIds);
+			List<String> gridIds = ArrayUtil.reConvertList(subtask.getGridIds());
+			List<GridStatInfo> gridStatInfoColArr = staticsApi.getLatestCollectStatByGrids(gridIds);
 			//POI
 			if(0==subtask.getType()){
 				for(int j=0;j<gridStatInfoColArr.size();j++){
@@ -166,9 +170,8 @@ public class SubtaskOperation {
 	//判断日编任务是否可关闭
 	public static Boolean isDailyEditReadyToClose(StaticsApi staticsApi,Subtask subtask)throws Exception{
 		try{
-			List<String> gridIds = new ArrayList<String>();
-			Collections.addAll(gridIds, subtask.getGridIds());
-			List<GridStatInfo> gridStatInfoDailyEditArr = staticsApi.getDailyEditStatByGrids(gridIds);
+			List<String> gridIds = ArrayUtil.reConvertList(subtask.getGridIds());
+			List<GridStatInfo> gridStatInfoDailyEditArr = staticsApi.getLatestDailyEditStatByGrids(gridIds);
 			//POI
 			if(0==subtask.getType()){
 				for(int j=0;j<gridStatInfoDailyEditArr.size();j++){
@@ -211,9 +214,8 @@ public class SubtaskOperation {
 	//判断月编任务是否可关闭
 	public static Boolean isMonthlyEditReadyToClose(StaticsApi staticsApi,Subtask subtask)throws Exception{
 		try{
-			List<String> gridIds = new ArrayList<String>();
-			Collections.addAll(gridIds, subtask.getGridIds());
-			List<GridStatInfo> gridStatInfoMonthlyEditArr = staticsApi.getMonthlyEditStatByGrids(gridIds);
+			List<String> gridIds = ArrayUtil.reConvertList(subtask.getGridIds());
+			List<GridStatInfo> gridStatInfoMonthlyEditArr = staticsApi.getLatestDailyEditStatByGrids(gridIds);
 			//POI
 			if(0==subtask.getType()){
 				for(int j=0;j<gridStatInfoMonthlyEditArr.size();j++){
@@ -383,7 +385,7 @@ public class SubtaskOperation {
 
 						String gridIds = rs.getString("GRID_ID");
 						String[] gridIdList = gridIds.split(",");
-						subtask.setGridIds(gridIdList);
+						subtask.setGridIds(ArrayUtil.convertList(Arrays.asList(gridIdList)));
 
 						if (1 == rs.getInt("STAGE")) {
 							subtask.setDbId(rs.getInt("DAILY_DB_ID"));
@@ -503,6 +505,125 @@ public class SubtaskOperation {
 
 			return run.query(pageSize, currentPageNum, conn, selectSql,
 					rsHandler);
+
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+		}
+	}
+
+
+	/**
+	 * @param conn
+	 * @param bean
+	 * @return
+	 * @throws Exception 
+	 */
+	public static int getSubtaskId(Connection conn, Subtask bean) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String querySql = "select SUBTASK_SEQ.NEXTVAL as subTaskId from dual";
+
+			int subTaskId = Integer.valueOf(run
+					.query(conn, querySql, new MapHandler()).get("subTaskId")
+					.toString());
+			return subTaskId;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+		}
+	}
+
+
+	/**
+	 * @param conn
+	 * @param bean
+	 * @throws Exception 
+	 */
+	public static void insertSubtask(Connection conn, Subtask bean) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+			String createSql = "insert into SUBTASK " ;
+			String column = "(SUBTASK_ID, NAME, GEOMETRY, STAGE, TYPE, CREATE_USER_ID, EXE_USER_ID, CREATE_DATE, STATUS, PLAN_START_DATE, PLAN_END_DATE, DESCP";
+			String values = " values("
+					+ bean.getSubtaskId()
+					+ ",'"
+					+ bean.getName()
+					+ "',"
+					+ "sdo_geometry("
+					+ "'"
+					+ bean.getGeometry()
+					+ "',8307)"
+					+ ","
+					+ bean.getStage()
+					+ ","
+					+ bean.getType()
+					+ ","
+					+ bean.getCreateUserId()
+					+ ","
+					+ bean.getExeUserId()
+					+ ", sysdate"
+					+ ","
+					+ "1"
+					+ ",to_date('"
+					+ bean.getPlanStartDate().toString().substring(0, 10)
+					+ "','yyyy-MM-dd HH24:MI:ss')"
+					+ ",to_date('"
+					+ bean.getPlanEndDate().toString().substring(0, 10)
+					+ "','yyyy-MM-dd HH24:MI:ss')"
+					+ ",'"
+					+ bean.getDescp()
+					+ "'";
+			if(0!=bean.getBlockId()){
+				column += ", BLOCK_ID)";
+				values += ","
+						+ bean.getBlockId()
+						+ ")";
+			}else{
+				column += ", TASK_ID)";
+				values += ","
+						+ bean.getTaskId()
+						+ ")";
+			}
+			createSql += column+values;
+			run.update(conn, createSql);
+
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+		}
+	}
+
+
+	/**
+	 * @param conn
+	 * @param bean
+	 * @throws Exception 
+	 */
+	public static void insertSubtaskGridMapping(Connection conn, Subtask bean) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String createMappingSql = "insert into SUBTASK_GRID_MAPPING (SUBTASK_ID, GRID_ID) VALUES (?,?)";
+
+			List<Integer> gridIds = bean.getGridIds();
+			Object[][] inParam = new Object[gridIds.size()][];
+			for (int i = 0; i < inParam.length; i++) {
+				Object[] temp = new Object[2];
+				temp[0] = bean.getSubtaskId();
+				temp[1] = gridIds.get(i);
+				inParam[i] = temp;
+
+			}
+
+			run.batch(conn, createMappingSql, inParam);
 
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

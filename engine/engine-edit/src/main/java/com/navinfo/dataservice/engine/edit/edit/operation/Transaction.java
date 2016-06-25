@@ -312,6 +312,9 @@ public class Transaction {
 			case REPAIR:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairrwlink.Command(
 						json,requester);
+			case BREAK:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Command(
+						json,requester);
 			}
 		case ZONENODE:
 			switch (operType) {
@@ -614,6 +617,9 @@ public class Transaction {
 						command);
 			case REPAIR:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairrwlink.Process(
+						command);
+			case BREAK:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Process(
 						command);
 			}
 			

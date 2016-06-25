@@ -1,8 +1,11 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint;
 
 import java.sql.Connection;
+import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
+import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
 
@@ -26,6 +29,12 @@ public class Process extends AbstractProcess<Command> {
 	}
 
 	public boolean prepareData() throws Exception {
+		// 获取由该link组成的立交（RDGSC）
+		RdGscSelector selector = new RdGscSelector(this.getConn());
+
+		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(this.getCommand().getLinkPid(), "RW_LINK", true);
+
+		this.getCommand().setRdGscs(rdGscList);
 		return true;
 	}
 
@@ -64,6 +73,9 @@ public class Process extends AbstractProcess<Command> {
 		// 创建铁路点有关行政区划线具体操作
 		OpTopo operation = new OpTopo(this.getCommand(), check, this.getConn());
 		String msg = operation.run(this.getResult());
+		// 打断线对立交影响
+		OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand(), this.getConn());
+		opRefRdGsc.run(this.getResult());
 		return msg;
 	}
 

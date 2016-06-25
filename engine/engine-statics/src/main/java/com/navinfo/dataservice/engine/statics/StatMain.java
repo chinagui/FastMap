@@ -12,7 +12,7 @@ import com.navinfo.dataservice.engine.statics.season.RoadSeasonMain;
 
 public class StatMain {
 	// 定义统计库名称
-	private static final String db_name = "fm_stat";
+	public static final String db_name = "fm_stat";
 	// 定义当前统计时间
 	private static final String stat_time = new SimpleDateFormat("yyyyMMddkkmmss").format(new Date());
 

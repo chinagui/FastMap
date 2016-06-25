@@ -1,16 +1,12 @@
 package com.navinfo.dataservice.engine.edit.xiaolong.rd;
 
 import java.sql.Connection;
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
-import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
@@ -52,7 +48,7 @@ public class RwLinkTest extends InitApplication {
 		try {
 			conn = DBConnector.getInstance().getConnectionById(42);
 
-			String parameter = "{\"dbId\":42,\"type\":\"RWLINK\",\"nodePid\":100005922}";
+			String parameter = "{\"dbId\":42,\"type\":\"RWLINK\",\"nodePid\":100005919}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -121,6 +117,19 @@ public class RwLinkTest extends InitApplication {
 	public void testRepairRwLink()
 	{
 		String parameter = "{\"command\":\"REPAIR\",\"dbId\":42,\"objId\":100005906,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46848,40.01558],[116.46901488304137,40.0154709357768],[116.46973,40.01552]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RWLINK\"}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testBreakRwLink()
+	{
+		String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100005910,\"data\":{\"longitude\":116.47772530228006,\"latitude\":40.01352131144351},\"type\":\"RWLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

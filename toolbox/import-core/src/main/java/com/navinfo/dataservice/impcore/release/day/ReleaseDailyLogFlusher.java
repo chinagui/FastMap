@@ -120,10 +120,10 @@ public class ReleaseDailyLogFlusher extends LogFlusher {
 	@Override
 	protected void updateLogCommitStatus(String tempTable) throws Exception {
 		QueryRunner run = new QueryRunner();
-		String sql = "update LOG_DAY_RELEASE set rel_poi_dt = sysdate,rel_poi_sta=1,LOCK_poi_STA=0 where OP_ID IN (SELECT OP_ID FROM "+tempTable+")";
+		String sql = "update LOG_DAY_RELEASE set rel_poi_dt = sysdate,rel_poi_sta=1,REL_POI_LOCK=0 where OP_ID IN (SELECT OP_ID FROM "+tempTable+")";
 		String glmFeatureType = getGlmFeatureType(this.getFeatureType());
 		if (GlmTable.FEATURE_TYPE_ALL.equals(glmFeatureType)){
-			sql="update LOG_DAY_RELEASE set rel_all_dt = sysdate,rel_all_sta=1,LOCK_all_STA=0 where OP_ID IN (SELECT OP_ID FROM "+tempTable+")";
+			sql="update LOG_DAY_RELEASE set rel_all_dt = sysdate,rel_all_sta=1,REL_ALL_LOCK=0 where OP_ID IN (SELECT OP_ID FROM "+tempTable+")";
 		}
 		run.execute(this.getSourceDbConn(), sql);
 	}

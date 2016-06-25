@@ -127,7 +127,7 @@ public class SubtaskOperation {
 	public static Boolean isCollectReadyToClose(StaticsApi staticsApi,Subtask subtask)throws Exception{
 		try{
 			List<String> gridIds = ArrayUtil.reConvertList(subtask.getGridIds());
-			List<GridStatInfo> gridStatInfoColArr = staticsApi.getCollectStatByGrids(gridIds);
+			List<GridStatInfo> gridStatInfoColArr = staticsApi.getLatestCollectStatByGrids(gridIds);
 			//POI
 			if(0==subtask.getType()){
 				for(int j=0;j<gridStatInfoColArr.size();j++){
@@ -171,7 +171,7 @@ public class SubtaskOperation {
 	public static Boolean isDailyEditReadyToClose(StaticsApi staticsApi,Subtask subtask)throws Exception{
 		try{
 			List<String> gridIds = ArrayUtil.reConvertList(subtask.getGridIds());
-			List<GridStatInfo> gridStatInfoDailyEditArr = staticsApi.getDailyEditStatByGrids(gridIds);
+			List<GridStatInfo> gridStatInfoDailyEditArr = staticsApi.getLatestDailyEditStatByGrids(gridIds);
 			//POI
 			if(0==subtask.getType()){
 				for(int j=0;j<gridStatInfoDailyEditArr.size();j++){
@@ -215,7 +215,7 @@ public class SubtaskOperation {
 	public static Boolean isMonthlyEditReadyToClose(StaticsApi staticsApi,Subtask subtask)throws Exception{
 		try{
 			List<String> gridIds = ArrayUtil.reConvertList(subtask.getGridIds());
-			List<GridStatInfo> gridStatInfoMonthlyEditArr = staticsApi.getMonthlyEditStatByGrids(gridIds);
+			List<GridStatInfo> gridStatInfoMonthlyEditArr = staticsApi.getLatestDailyEditStatByGrids(gridIds);
 			//POI
 			if(0==subtask.getType()){
 				for(int j=0;j<gridStatInfoMonthlyEditArr.size();j++){

@@ -16,12 +16,17 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		if(event.getApplicationContext().getParent() == null){
-			try{
-				MsgSubscriber.getInstance().subscribeFromWorkQueue("Info_Change", new InfoChangeMsgHandler(), null);
-			}catch(Exception e){
-				System.out.println(e.getMessage());
-				e.printStackTrace();
-			}
+			new Thread(){
+				@Override
+				public void run() {
+					try{
+						MsgSubscriber.getInstance().subscribeFromWorkQueue("Info_Change", new InfoChangeMsgHandler(), null);
+					}catch(Exception e){
+						System.out.println(e.getMessage());
+						e.printStackTrace();
+					}
+				}
+			}.start();
 		}
 	}
 	

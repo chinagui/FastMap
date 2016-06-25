@@ -38,10 +38,12 @@ public class StaticsService {
 	public List<GridChangeStatInfo> gridChangeStaticQuery(String wkt,int stage, int type, String date) throws JSONException, Exception{
 		//通过wkt获取gridIdList
 		Geometry geo=GeoTranslator.geojson2Jts(Geojson.wkt2Geojson(wkt));
-		Set<String> grids= CompGeometryUtil.geoToMeshesWithoutBreak(geo);
+		Set<String> grids= CompGeometryUtil.geo2GridsWithoutBreak(geo);
 		
 		StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
 
 		return api.getChangeStatByGrids(grids, type, stage, date);
 	}
+	
+	
 }

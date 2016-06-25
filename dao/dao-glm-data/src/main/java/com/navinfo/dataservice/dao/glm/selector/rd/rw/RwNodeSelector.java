@@ -67,6 +67,10 @@ public class RwNodeSelector implements ISelector {
 				}
 
 			}
+			else
+			{
+				throw new Exception("对应RWNODE: "+id+" 不存在!");
+			}
 		} catch (Exception e) {
 
 			throw e;

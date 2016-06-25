@@ -6,11 +6,7 @@ import java.sql.Connection;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -22,13 +18,14 @@ import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
 import com.navinfo.dataservice.engine.edit.check.CheckService;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 @Controller
 public class CheckController extends BaseController {
 	private static final Logger logger = Logger
 			.getLogger(CheckController.class);
-	@Autowired
-	private CheckService checkServiceObj;
-
+	
 	@RequestMapping(value = "/check/get")
 	public ModelAndView getCheck(HttpServletRequest request)
 			throws ServletException, IOException {
@@ -179,7 +176,7 @@ public class CheckController extends BaseController {
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
 			//long userId=2;
-			int jobId=checkServiceObj.checkRun(dbId,subtaskId,userId,checkType);				
+			int jobId=CheckService.getInstance().checkRun(dbId,subtaskId,userId,checkType);				
 			return new ModelAndView("jsonView", success(jobId));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

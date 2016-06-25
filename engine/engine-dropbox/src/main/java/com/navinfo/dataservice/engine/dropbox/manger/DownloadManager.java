@@ -88,4 +88,12 @@ public class DownloadManager {
 		return data;
 
 	}
+	
+	public JSONObject getAppVersion(int type,String platform) throws Exception {
+
+		JSONObject data = DropboxUtil.getAppVersion(type,platform);
+
+		return data;
+
+	}
 }

@@ -187,7 +187,12 @@ public class BlockService {
 			JSONObject obj = JSONObject.fromObject(json);
 			Block bean = (Block) JSONObject.toBean(obj, Block.class);
 
-			String selectSql = "select t.BLOCK_ID,t.CITY_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY,t.PLAN_STATUS from BLOCK t where t.BLOCK_ID=?";
+			String selectSql = "select t.BLOCK_ID,t.CITY_ID, t.BLOCK_NAME, t.GEOMETRY.get_wkt() as GEOMETRY,"
+					+ " t.PLAN_STATUS, k.name taskName, b.collect_group_id, b.day_edit_group_id,"
+					+ " b.month_edit_group_id, to_char(b.collect_plan_start_date, 'yyyy-mm-dd') collect_plan_start_date, to_char(b.collect_plan_end_date, 'yyyy-mm-dd') collect_plan_end_date,"
+					+ " to_char(b.day_edit_plan_start_date, 'yyyy-mm-dd') day_edit_plan_start_date, to_char(b.day_edit_plan_end_date, 'yyyy-mm-dd') day_edit_plan_end_date, to_char(b.month_edit_plan_start_date, 'yyyy-mm-dd') month_edit_plan_start_date,"
+					+ " to_char(b.month_edit_plan_end_date, 'yyyy-mm-dd') month_edit_plan_end_date from BLOCK t, BLOCK_MAN b, TASK k where t.BLOCK_ID = ?"
+					+ " and t.block_id = b.block_id and t.city_id = k.city_id and k.latest = 1 and b.latest=1";
 			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
 				public HashMap<String, Object> handle(ResultSet rs) throws SQLException {
 					while (rs.next()) {
@@ -204,6 +209,16 @@ public class BlockService {
 							e.printStackTrace();
 						}
 						map.put("planStatus", rs.getInt("PLAN_STATUS"));
+						map.put("taskName", rs.getString("taskName"));
+						map.put("collectGroupId", rs.getInt("collect_group_id"));
+						map.put("dayEditGroupId", rs.getInt("day_edit_group_id"));
+						map.put("monthEditGroupId", rs.getInt("month_edit_group_id"));
+						map.put("collectPlanStartDate", rs.getString("collect_plan_start_date"));
+						map.put("collectPlanEndDate", rs.getString("collect_plan_end_date"));
+						map.put("dayEditPlanStartDate", rs.getString("day_edit_plan_start_date"));
+						map.put("dayEditPlanEndDate", rs.getString("day_edit_plan_end_date"));
+						map.put("monthEditPlanStartDate", rs.getString("month_edit_plan_start_date"));
+						map.put("monthEditPlanEndDate", rs.getString("month_edit_plan_end_date"));
 						return map;
 					}
 					return null;
@@ -271,8 +286,8 @@ public class BlockService {
 
 			if (!blockReadyToClose.isEmpty()) {
 				BlockOperation.closeBlockByBlockIdList(conn, blockReadyToClose);
-			} 
-			
+			}
+
 			HashMap unClosedBlocks = new HashMap();
 			for (int i = 0; i < blockIdList.size(); i++) {
 				if (!blockReadyToClose.contains(blockIdList.get(i))) {
@@ -339,15 +354,16 @@ public class BlockService {
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
 					if ("collectPlanStartDate".equals(key)) {
-						selectSql += (" order by t.COLLECT_PLAN_START_DATE "+orderJson.getString("collectPlanStartDate"));
+						selectSql += (" order by t.COLLECT_PLAN_START_DATE "
+								+ orderJson.getString("collectPlanStartDate"));
 						break;
 					}
 					if ("collectPlanEndDate".equals(key)) {
-						selectSql += (" order by t.COLLECT_PLAN_END_DATE "+orderJson.getString("collectPlanEndDate"));
+						selectSql += (" order by t.COLLECT_PLAN_END_DATE " + orderJson.getString("collectPlanEndDate"));
 						break;
 					}
 					if ("blockId".equals(key)) {
-						selectSql += (" order by m.block_id "+orderJson.getString("blockId"));
+						selectSql += (" order by m.block_id " + orderJson.getString("blockId"));
 						break;
 					}
 				}
@@ -363,8 +379,7 @@ public class BlockService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	
-	
+
 	public List<HashMap> listByInfoId(JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
@@ -373,15 +388,15 @@ public class BlockService {
 
 			String inforId = json.getString("inforId");
 
-			String	selectSql = "select distinct i.block_id,t.block_name,b.status,k.name,to_char(k.plan_start_date, 'yyyy-mm-dd') plan_start_date,"
-						+ "to_char(k.plan_end_date, 'yyyy-mm-dd') plan_end_date,"
-						+" to_char(k.month_edit_plan_start_date, 'yyyy-mm-dd') month_edit_plan_start_date,"
-						+ "to_char(k.month_edit_plan_end_date, 'yyyy-mm-dd') month_edit_plan_end_date "
-                        +" from infor_block_mapping i, block t, task k,block_man b where  i.block_id = t.block_id and i.block_id=b.block_id"
-                        +" and t.city_id = k.city_id and k.latest = 1 and i.infor_id ='"+inforId+"'";
-			String	selectSqlNotOpen="select t.block_id,t.block_name,0 status from infor_block_mapping i,block t where t.plan_status=0 and"
-						+ " i.block_id=t.block_id and not exists （select 1 from block_man b where b.block_id=t.block_id）and  i.infor_id ='"+inforId+"'";
-						
+			String selectSql = "select distinct i.block_id,t.block_name,b.status,k.name,to_char(k.plan_start_date, 'yyyy-mm-dd') plan_start_date,"
+					+ "to_char(k.plan_end_date, 'yyyy-mm-dd') plan_end_date,"
+					+ " to_char(k.month_edit_plan_start_date, 'yyyy-mm-dd') month_edit_plan_start_date,"
+					+ "to_char(k.month_edit_plan_end_date, 'yyyy-mm-dd') month_edit_plan_end_date "
+					+ " from infor_block_mapping i, block t, task k,block_man b where  i.block_id = t.block_id and i.block_id=b.block_id"
+					+ " and t.city_id = k.city_id and k.latest = 1 and i.infor_id ='" + inforId + "'";
+			String selectSqlNotOpen = "select t.block_id,t.block_name,0 status from infor_block_mapping i,block t where t.plan_status=0 and"
+					+ " i.block_id=t.block_id and not exists （select 1 from block_man b where b.block_id=t.block_id）and  i.infor_id ='"
+					+ inforId + "'";
 
 			return BlockOperation.QuerylistByInfoId(conn, selectSql, selectSqlNotOpen);
 		} catch (Exception e) {

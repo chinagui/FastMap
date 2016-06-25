@@ -37,8 +37,8 @@ import com.navinfo.navicommons.geo.computation.GridUtils;
 @Controller
 public class SubtaskController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	@Autowired
-	private SubtaskService service;
+//	@Autowired
+//	private SubtaskService service;
 
 	/*
 	 * 创建一个子任务。
@@ -48,12 +48,8 @@ public class SubtaskController extends BaseController {
 		try{	
 
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
-			String parameter = request.getParameter("parameter");
-			if (StringUtils.isEmpty(parameter)){
-				throw new IllegalArgumentException("param参数不能为空。");
-			}		
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
 
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
@@ -62,15 +58,14 @@ public class SubtaskController extends BaseController {
 			//根据gridIds获取wkt
 			JSONArray gridIds = dataJson.getJSONArray("gridIds");
 			String wkt = GridUtils.grids2Wkt(gridIds);
-			ArrayList<Integer> gridIdList = (ArrayList<Integer>)JSONArray.toList(dataJson.getJSONArray("gridIds"),int.class);
-			
-			dataJson.remove("gridIds");
+			Object[] gridIdList = dataJson.getJSONArray("gridIds").toArray();
+			dataJson.put("gridIds",gridIdList);
 			
 			Subtask bean = (Subtask) JsonOperation.jsonToBean(dataJson,Subtask.class);
 			bean.setCreateUserId((int)userId);
 			bean.setGeometry(wkt);
-			
-			service.create(bean,gridIdList);	
+				
+			SubtaskService.getInstance().create(bean);	
 			
 			return new ModelAndView("jsonView", success("创建成功"));
 		}catch(Exception e){
@@ -87,13 +82,7 @@ public class SubtaskController extends BaseController {
 	public ModelAndView listByWkt(HttpServletRequest request){
 		try{	
 
-			String parameter = request.getParameter("parameter");
-			if (StringUtils.isEmpty(parameter)){
-				throw new IllegalArgumentException("param参数不能为空。");
-			}		
-		
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
-
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
@@ -101,7 +90,7 @@ public class SubtaskController extends BaseController {
 			//获取几何范围
 			String wkt = dataJson.getString("wkt");
 			
-			List<Subtask> subtaskList = service.listByWkt(wkt);
+			List<Subtask> subtaskList = SubtaskService.getInstance().listByWkt(wkt);
 			
 			//根据需要的返回字段拼装结果
 			List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
@@ -131,12 +120,7 @@ public class SubtaskController extends BaseController {
 	public ModelAndView list(HttpServletRequest request){
 		try{		
 			
-			String parameter = request.getParameter("parameter");
-			if (StringUtils.isEmpty(parameter)){
-				throw new IllegalArgumentException("param参数不能为空。");
-			}		
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
-
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
@@ -164,7 +148,7 @@ public class SubtaskController extends BaseController {
 			//作业阶段
 			int stage = dataJson.getInt("stage");
 		
-			List<Subtask> subtaskList = service.list(stage,condition,order,pageSize,curPageNum);
+			List<Subtask> subtaskList = SubtaskService.getInstance().list(stage,condition,order,pageSize,curPageNum);
 			
 			List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
 			
@@ -228,12 +212,7 @@ public class SubtaskController extends BaseController {
 	public ModelAndView listByUser(HttpServletRequest request){
 		try{	
 
-			String parameter = request.getParameter("parameter");
-			if (StringUtils.isEmpty(parameter)){
-				throw new IllegalArgumentException("param参数不能为空。");
-			}		
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
-
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
@@ -258,7 +237,7 @@ public class SubtaskController extends BaseController {
             
             Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
 			
-			List<Subtask> subtaskList = service.listByUser(bean,snapshot,pageSize,curPageNum);
+			List<Subtask> subtaskList = SubtaskService.getInstance().listByUser(bean,snapshot,pageSize,curPageNum);
 			
 			List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
 			for(int i=0;i<subtaskList.size();i++){
@@ -297,32 +276,27 @@ public class SubtaskController extends BaseController {
 	public ModelAndView query(HttpServletRequest request){
 		try{
 			
-			String parameter = request.getParameter("parameter");
-			if (StringUtils.isEmpty(parameter)){
-				throw new IllegalArgumentException("param参数不能为空。");
-			}										
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
-
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
 			
 			Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
 			
-			Subtask subtask = service.query(bean);	
+			Subtask subtask = SubtaskService.getInstance().query(bean);	
 			
 			//根据需要的返回字段拼装结果
 			HashMap<String, Object> data = new HashMap<String, Object>();
-
-			data.put("subtaskId", subtask.getSubtaskId());
-			data.put("geometry", subtask.getGeometry());
-			data.put("stage", subtask.getStage());
-			data.put("type", subtask.getType());
-			data.put("planStartDate", DateUtils.dateToString(subtask.getPlanStartDate()));
-			data.put("planEndDate", DateUtils.dateToString(subtask.getPlanEndDate()));
-			data.put("descp", subtask.getDescp());
-			data.put("gridIds", subtask.getGridIds());
-
+			if(subtask!=null&&subtask.getSubtaskId()!=null){
+				data.put("subtaskId", subtask.getSubtaskId());
+				data.put("geometry", subtask.getGeometry());
+				data.put("stage", subtask.getStage());
+				data.put("type", subtask.getType());
+				data.put("planStartDate", DateUtils.dateToString(subtask.getPlanStartDate()));
+				data.put("planEndDate", DateUtils.dateToString(subtask.getPlanEndDate()));
+				data.put("descp", subtask.getDescp());
+				data.put("gridIds", subtask.getGridIds());
+			}
 			return new ModelAndView("jsonView", success(data));
 			
 		}catch(Exception e){
@@ -338,12 +312,7 @@ public class SubtaskController extends BaseController {
 	public ModelAndView update(HttpServletRequest request){
 		try{
 
-			String parameter = request.getParameter("parameter");
-			if (StringUtils.isEmpty(parameter)){
-				throw new IllegalArgumentException("param参数不能为空。");
-			}
-			
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
@@ -359,7 +328,7 @@ public class SubtaskController extends BaseController {
 				subtaskList.add(subtask);
 			}
 			
-			service.update(subtaskList);
+			SubtaskService.getInstance().update(subtaskList);
 			
 			return new ModelAndView("jsonView", success("修改成功"));
 			
@@ -376,34 +345,20 @@ public class SubtaskController extends BaseController {
 	public ModelAndView close(HttpServletRequest request){
 		try{		
 			
-			String parameter = request.getParameter("parameter");
-			if (StringUtils.isEmpty(parameter)){
-				throw new IllegalArgumentException("param参数不能为空。");
-			}		
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
-
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
 			
 			if(!dataJson.containsKey("subtaskIds")){
-				return new ModelAndView("jsonView", success("关闭成功"));
+				return new ModelAndView("jsonView", exception("请传subtaskId"));
 			}
 			
 			JSONArray subtaskIds = dataJson.getJSONArray("subtaskIds");
 			
 			List<Integer> subtaskIdList = (List<Integer>)JSONArray.toCollection(subtaskIds,Integer.class); 
 			
-//			List<Subtask> subtaskArray = new ArrayList<Subtask>();
-//			
-//			for(int i = 0;i<subtasks.size();i++){
-//				Subtask subtask = (Subtask)JSONObject.toBean(subtasks.getJSONObject(i), Subtask.class);
-//				subtaskArray.add(subtask);
-//			}
-//			
-//			List<Integer> unClosedSubtaskList = service.close(subtaskArray);
-			
-			List<Integer> unClosedSubtaskList = service.close(subtaskIdList);
+			List<Integer> unClosedSubtaskList = SubtaskService.getInstance().close(subtaskIdList);
 			
 			if(unClosedSubtaskList.isEmpty()){
 				return new ModelAndView("jsonView", success("关闭成功"));

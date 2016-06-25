@@ -9,11 +9,8 @@ import java.util.List;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
-import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkMeshSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
 import oracle.sql.STRUCT;
@@ -61,6 +58,10 @@ public class RwLinkSelector implements ISelector {
 
 					rwLink.linkNameMap.put(obj.rowId(), obj);
 				}
+			}
+			else
+			{
+				throw new Exception("对应RWLINK: "+id+" 不存在!");
 			}
 		} catch (Exception e) {
 

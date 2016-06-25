@@ -50,4 +50,15 @@ public class ResponseUtils {
 		return json.toString();
 	}
 	
+	public static String assembleFailResult(String errmsg, int errcode){
+		
+		JSONObject json = new JSONObject();
+		
+		json.put("errcode", errcode);
+		
+		json.put("errmsg", errmsg==null?"":errmsg);
+		
+		return json.toString();
+	}
+	
 }

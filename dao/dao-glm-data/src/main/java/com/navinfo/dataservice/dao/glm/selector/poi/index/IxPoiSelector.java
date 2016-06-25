@@ -436,7 +436,7 @@ public class IxPoiSelector implements ISelector {
 				return ixPoi;
 			} else {
 
-				throw new Exception("对应IX_POI对象不存在!");
+				throw new Exception("对应IX_POI: "+id+" 对象不存在!");
 			}
 		} catch (Exception e) {
 

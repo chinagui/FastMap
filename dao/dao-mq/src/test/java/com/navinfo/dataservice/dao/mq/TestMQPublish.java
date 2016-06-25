@@ -43,7 +43,20 @@ public class TestMQPublish {
 			e.printStackTrace();
 		}
 	}
+
+	public static void sendInfoChange(){
+		try{
+			try{
+				MsgPublisher.publish2WorkQueue("Info_Change","{\"Test\":\"Test\"}");
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			System.exit(-1);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 	public static void main(String[] args){
-		sendWorkQueue();
+		sendInfoChange();
 	}
 }

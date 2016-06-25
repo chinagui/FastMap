@@ -48,7 +48,7 @@ public class RwLinkTest extends InitApplication {
 		try {
 			conn = DBConnector.getInstance().getConnectionById(42);
 
-			String parameter = "{\"dbId\":42,\"type\":\"RWLINK\",\"nodePid\":100005922}";
+			String parameter = "{\"dbId\":42,\"type\":\"RWLINK\",\"nodePid\":100005919}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 

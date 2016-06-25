@@ -2,8 +2,6 @@ package com.navinfo.dataservice.impcore.commit.day.road;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
@@ -31,21 +29,10 @@ public class Day2MonthRoadJob extends AbstractJob {
 			throws JobException {
 		try{
 			this.log.info("获取大区和grid的映射关系");
-			Map regionGridMapping = queryRegionGridsMapping();
-			Set<Integer> regionSet = regionGridMapping.keySet();
-			this.log.debug("regionSet:"+regionSet);
+			List<Region> regionsWithGrids= queryRegionGridsMapping();
 			HashMap<String,FlushResult> jobResponse = new HashMap<String,FlushResult> ();
-			for (Integer regionId:regionSet){
-				this.log.info("得到大区对应的grid列表");
-				List<Integer> gridListOfRegion = (List<Integer>) regionGridMapping.get(regionId);
-				//在大区日库中根据grid列表获取履历，并刷新对应的月库
-				//根据大区id获取对应的大区日库、大区月库
-				ManApi manApi =  (ManApi) ApplicationContextUtil.getBean("manApi");
-				Region regionInfo = manApi.queryByRegionId(regionId);
-				if (regionInfo==null){
-					this.log.warn("根据regionId："+regionId+",没有得到大区库数据");
-					continue;
-				}
+			for (Region regionInfo:regionsWithGrids){
+				List<Integer> gridListOfRegion = regionInfo.getGrids();
 				DatahubApi databhubApi = (DatahubApi) ApplicationContextUtil.getBean("datahubApi");
 				DbInfo dailyDb = databhubApi.getDbById(regionInfo.getDailyDbId());
 				DbInfo monthlyDb = databhubApi.getDbById(regionInfo.getMonthlyDbId());
@@ -57,7 +44,7 @@ public class Day2MonthRoadJob extends AbstractJob {
 													((Day2MonthRoadJobRequest )this.request).getStopTime());
 				logFlusher.setLog(this.log);
 				FlushResult result= logFlusher.perform();
-				jobResponse.put(regionId.toString(), result);
+				jobResponse.put(regionInfo.getRegionId().toString(), result);
 			}
 			this.response("日落月执行完毕", jobResponse);
 			
@@ -66,10 +53,10 @@ public class Day2MonthRoadJob extends AbstractJob {
 		}
 	}
 
-	private Map queryRegionGridsMapping() throws Exception {
-		ManApi gridSelectorApiSvr = (ManApi) ApplicationContextUtil.getBean("manApi");
-		Map regionGridMapping= gridSelectorApiSvr.queryRegionGridMapping(((Day2MonthRoadJobRequest )this.request).getGridList());
-		return regionGridMapping;
+	private List<Region> queryRegionGridsMapping() throws Exception {
+		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+		List<Region> regionWithGridsList= manApi.querRegionWithGrids(((Day2MonthRoadJobRequest )this.request).getGridList());
+		return regionWithGridsList;
 	}
 
 	

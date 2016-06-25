@@ -86,6 +86,7 @@ public class GridService {
 			DbUtils.closeQuietly(conn);
 		}
 	}
+	
 
 	/**
 	 * @param gridList

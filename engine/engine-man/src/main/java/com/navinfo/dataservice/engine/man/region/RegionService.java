@@ -1,14 +1,18 @@
 package com.navinfo.dataservice.engine.man.region;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import net.sf.json.JSONObject;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -17,6 +21,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.sql.SqlClause;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -369,6 +374,55 @@ public class RegionService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	public List<Region> queryRegionWithGrids(List<Integer> grids) throws Exception{
+		assert CollectionUtils.isNotEmpty(grids);
+		String sql = "select grid_id,region_id from grid g where 1=1 ";
+		QueryRunner queryRunner = new QueryRunner();
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			ResultSetHandler<MultiValueMap> rsh = new ResultSetHandler<MultiValueMap>() {
+
+				@Override
+				public MultiValueMap handle(ResultSet rs) throws SQLException {
+					if (rs != null) {
+						MultiValueMap mvMap = new MultiValueMap();
+						while (rs.next()) {
+							int gridId = rs.getInt("grid_id");
+							int regionId = rs.getInt("region_id");
+							mvMap.put(regionId, gridId);
+						}
+						return mvMap;
+					}
+					return null;
+				}
+			};
+			SqlClause inClause = SqlClause.genInClauseWithMulInt(conn,grids,"grid_id");
+			if (inClause!=null)
+				sql = sql + " AND "+ inClause.getSql();
+			this.log.debug("sql:"+sql);
+			MultiValueMap regionGridMapping =null;
+			if (inClause!=null && CollectionUtils.isNotEmpty(inClause.getValues())){
+				regionGridMapping = queryRunner.query(conn, sql, rsh,inClause.getValues().toArray());
+			}else{
+				regionGridMapping = queryRunner.query(conn, sql, rsh);
+			}
+			
+			Set<Integer> regionIds = regionGridMapping.keySet();
+			List<Region> regionList = new ArrayList<Region>();
+			for(Integer regionId:regionIds){
+				Region region = new Region();
+				region.setRegionId(regionId);
+				region.setGrids((List<Integer>) regionGridMapping.get(regionId));
+				regionList.add(region);
+			}
+			return regionList;
+
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+		
 	}
 	
 	class SingleRegionRsHander implements ResultSetHandler<Region>{

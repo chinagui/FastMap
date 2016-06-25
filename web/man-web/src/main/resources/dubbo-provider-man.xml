@@ -7,5 +7,5 @@
 	<dubbo:application name="man-api-provider" />
 	<dubbo:registry address="zookeeper://192.168.4.188:2681?backup=192.168.4.188:2682,192.168.4.188:2683" />
 	<dubbo:protocol name="dubbo" port="20888" />
-	<!--dubbo:service interface="com.navinfo.dataservice.api.man.iface.ManApi" ref="manApi" /-->
+	<dubbo:service interface="com.navinfo.dataservice.api.man.iface.ManApi" ref="manApi" />
 </beans>

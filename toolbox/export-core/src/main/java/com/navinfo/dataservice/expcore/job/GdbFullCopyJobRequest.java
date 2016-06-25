@@ -3,6 +3,7 @@ package com.navinfo.dataservice.expcore.job;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
@@ -24,16 +25,6 @@ public class GdbFullCopyJobRequest extends AbstractJobRequest {
 	protected Map<String,String> tableReNames;
 	protected List<String> specificTables;
 	protected List<String> excludedTables;
-
-	@Override
-	public int getStepCount() throws JobException {
-		int count =2;
-		if(truncateData){
-			count+=1;
-		}
-		return count;
-	}
-
 
 	@Override
 	public void validate() throws JobException {
@@ -143,6 +134,23 @@ public class GdbFullCopyJobRequest extends AbstractJobRequest {
 	@Override
 	public String getJobType() {
 		return "gdbFullCopy";
+	}
+
+
+	@Override
+	public void defineSubJobRequests() throws JobCreateException {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	protected int myStepCount() throws JobException {
+		int count =2;
+		if(truncateData){
+			count+=1;
+		}
+		return count;
 	}
 
 }

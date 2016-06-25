@@ -236,4 +236,27 @@ public class BlockController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	/**
+	 * 根据情报id分组返回block信息
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/block/listByInfoId")
+	public ModelAndView listByInfoId(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if (!(dataJson.containsKey("inforId"))) {
+				throw new IllegalArgumentException("inforId参数是必须的。");
+			}
+			List<HashMap> data = service.listByInfoId(dataJson);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("获取block列表失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

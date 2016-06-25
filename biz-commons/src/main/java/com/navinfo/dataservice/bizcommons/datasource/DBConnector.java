@@ -142,7 +142,6 @@ public class DBConnector {
 								.getBean("datahubApi");
 
 						DbInfo db = datahub.getDbById(dbId);
-						System.out.println(db.toString());
 
 						DbConnectConfig connConfig = DbConnectConfig
 								.createConnectConfig(db.getConnectParam());

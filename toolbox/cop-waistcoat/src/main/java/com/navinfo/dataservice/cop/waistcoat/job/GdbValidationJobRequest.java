@@ -1,9 +1,14 @@
 package com.navinfo.dataservice.cop.waistcoat.job;
 
+import java.util.HashMap;
 import java.util.List;
 
+import com.navinfo.dataservice.api.datahub.model.BizType;
+import com.navinfo.dataservice.commons.database.DbServerType;
+import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
+import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 
 /** 
 * @ClassName: GdbValidationJobRequest 
@@ -17,9 +22,6 @@ public class GdbValidationJobRequest extends AbstractJobRequest {
 	protected List<Integer> rules;
 	protected int targetDbId;
 	protected int valDbId=0;
-	protected AbstractJobRequest createValDb;
-	protected AbstractJobRequest expValDb;
-	protected AbstractJobRequest validation;
 	
 	@Override
 	public String getJobType() {
@@ -27,19 +29,8 @@ public class GdbValidationJobRequest extends AbstractJobRequest {
 	}
 
 	@Override
-	public int getStepCount() throws JobException {
-		int count =1;
-		if(createValDb!=null&&expValDb!=null){
-			count+=createValDb.getStepCount();
-			count+=expValDb.getStepCount();
-		}
-		count+=validation.getStepCount();
-		return count;
-	}
-
-	@Override
 	public void validate() throws JobException {
-		if(valDbId<1&&(createValDb==null||expValDb==null)){
+		if(valDbId<1&&(this.getSubJobRequest("createValDb")==null||this.getSubJobRequest("expValDb")==null)){
 			throw new JobException("检查的子版本库为指定，且未指定新创建方式。");
 		}
 	}
@@ -76,20 +67,35 @@ public class GdbValidationJobRequest extends AbstractJobRequest {
 		this.valDbId = valDbId;
 	}
 
-	public AbstractJobRequest getCreateValDb() {
-		return createValDb;
+	@Override
+	public void defineSubJobRequests() throws JobCreateException {
+		subJobRequests = new HashMap<String,AbstractJobRequest>();
+		//createBatchDb
+		if(valDbId==0){
+			AbstractJobRequest createValDb = JobCreateStrategy.createJobRequest("createDb", null);
+			createValDb.setAttrValue("serverType", DbServerType.TYPE_ORACLE);
+			createValDb.setAttrValue("bizType", BizType.DB_COP_VERSION);
+			createValDb.setAttrValue("descp", "validation temp db");
+			subJobRequests.put("createValDb", createValDb);
+			//expBatchDb
+			AbstractJobRequest expValDb = JobCreateStrategy.createJobRequest("gdbExport", null);
+			expValDb.setAttrValue("condition", "mesh");
+			expValDb.setAttrValue("featureType", "all");
+			expValDb.setAttrValue("dataIntegrity", true);
+			subJobRequests.put("expValDb", expValDb);
+		}
+		//createBakDb
+		AbstractJobRequest createBakDb = JobCreateStrategy.createJobRequest("createDb", null);
+		createBakDb.setAttrValue("serverType", DbServerType.TYPE_ORACLE);
+		createBakDb.setAttrValue("bizType", BizType.DB_COP_VERSION);
+		createBakDb.setAttrValue("descp", "batch bak db");
+		subJobRequests.put("createBakDb", createBakDb);
+		
 	}
 
-	public void setCreateValDb(AbstractJobRequest createValDb) {
-		this.createValDb = createValDb;
-	}
-
-	public AbstractJobRequest getExpValDb() {
-		return expValDb;
-	}
-
-	public void setExpValDb(AbstractJobRequest expValDb) {
-		this.expValDb = expValDb;
+	@Override
+	protected int myStepCount() throws JobException {
+		return 1;
 	}
 
 }

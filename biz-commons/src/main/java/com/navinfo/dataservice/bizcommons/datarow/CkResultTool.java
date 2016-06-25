@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -71,7 +72,7 @@ public class CkResultTool {
 			log.debug("开始计算并更新CK_RESULT_OBJECT表");
 			conn = schema.getDriverManagerDataSource().getConnection();
 			String sql = "SELECT MD5_CODE,TARGETS FROM NI_VAL_EXCEPTION";
-			String insertSql = "INSERT INTO CK_RESULT_OBJECT(CK_MD5_CODE,TABLE_NAME,PID)VALUES(?,?,?)";
+			String insertSql = "INSERT INTO CK_RESULT_OBJECT(MD5_CODE,TABLE_NAME,PID)VALUES(?,?,?)";
 			QueryRunner runner = new QueryRunner();
 			Map<String,String> rows = runner.query(conn, sql, new ResultSetHandler<Map<String,String>>(){
 
@@ -130,7 +131,7 @@ public class CkResultTool {
 			log.debug("开始计算并更新NI_VAL_EXCEPTION_GRID表");
 			conn = schema.getDriverManagerDataSource().getConnection();
 			String sql = "SELECT RESERVED,TARGETS FROM NI_VAL_EXCEPTION";
-			String insertSql = "INSERT INTO NI_VAL_EXCEPTION_GRID (CK_RESULT_ID,GRID_ID) VALUES (?,?)";
+			String insertSql = "INSERT INTO NI_VAL_EXCEPTION_GRID (MD5_CODE,GRID_ID) VALUES (?,?)";
 			QueryRunner runner = new QueryRunner();
 			Map<String,String> rows = runner.query(conn, sql, new ResultSetHandler<Map<String,String>>(){
 
@@ -185,7 +186,7 @@ public class CkResultTool {
 		}
 	}
 
-	public static void moveNiVal(OracleSchema srcSchema,OracleSchema targetSchema,String[] grids)throws Exception{
+	public static void moveNiVal(OracleSchema srcSchema,OracleSchema targetSchema,Collection<Integer> grids)throws Exception{
 		Connection conn=null;
 		try{
 			conn = targetSchema.getDriverManagerDataSource().getConnection();
@@ -193,12 +194,12 @@ public class CkResultTool {
 			DbLinkCreator cr = new DbLinkCreator();
 			String dbLinkName = targetSchema.getConnConfig().getUserName()+"_"+RandomUtil.nextNumberStr(4);
 			cr.create(dbLinkName, false, targetSchema.getDriverManagerDataSource(), srcSchema.getConnConfig().getUserName(), srcSchema.getConnConfig().getUserPasswd()
-					, srcSchema.getConnConfig().getServerIp(), String.valueOf(srcSchema.getConnConfig().getServerPort()), srcSchema.getConnConfig().getDbName());
+					, srcSchema.getConnConfig().getServerIp(), String.valueOf(srcSchema.getConnConfig().getServerPort()), srcSchema.getConnConfig().getServiceName());
 			
 			QueryRunner runner = new QueryRunner();
-			String sql = "INSERT INTO NI_VAL_EXCEPTION SELECT "+DataRowTool.getSelectColumnString(conn,"NI_VAL_EXCEPTION")+" FROM NI_VAL_EXCEPTION@"+dbLinkName+" T WHERE EXISTS (SELECT 1 FROM NI_VAL_EXCEPTION_GRID@"+dbLinkName+" G WHERE T.RESERVED=G.CK_RESULT_ID AND G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(grids,",")+"))";
+			String sql = "INSERT INTO NI_VAL_EXCEPTION SELECT "+DataRowTool.getSelectColumnString(conn,"NI_VAL_EXCEPTION")+" FROM NI_VAL_EXCEPTION@"+dbLinkName+" T WHERE EXISTS (SELECT 1 FROM NI_VAL_EXCEPTION_GRID@"+dbLinkName+" G WHERE T.MD5_CODE=G.MD5_CODE AND G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(grids,",")+"))";
 			runner.execute(conn, sql);
-			sql = "INSERT INTO CK_RESULT_OBJECT SELECT "+DataRowTool.getSelectColumnString(conn,"CK_RESULT_OBJECT")+" FROM CK_RESULT_OBJECT@"+dbLinkName+" T WHERE EXISTS (SELECT 1 FROM NI_VAL_EXCEPTION_GRID@"+dbLinkName+" G WHERE T.CK_RESULT_ID=G.CK_RESULT_ID AND G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(grids,",")+"))";
+			sql = "INSERT INTO CK_RESULT_OBJECT SELECT "+DataRowTool.getSelectColumnString(conn,"CK_RESULT_OBJECT")+" FROM CK_RESULT_OBJECT@"+dbLinkName+" T WHERE EXISTS (SELECT 1 FROM NI_VAL_EXCEPTION_GRID@"+dbLinkName+" G WHERE T.MD5_CODE=G.MD5_CODE AND G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(grids,",")+"))";
 			runner.execute(conn, sql);
 			sql = "INSERT INTO NI_VAL_EXCEPTION_GRID SELECT "+DataRowTool.getSelectColumnString(conn,"NI_VAL_EXCEPTION_GRID")+" FROM NI_VAL_EXCEPTION_GRID@"+dbLinkName+" T WHERE T.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(grids,",")+")";
 			runner.execute(conn, sql);

@@ -436,7 +436,7 @@ public class IxPoiSelector implements ISelector {
 				return ixPoi;
 			} else {
 
-				throw new Exception("对应IX_POI对象不存在!");
+				throw new Exception("对应IX_POI: "+id+" 对象不存在!");
 			}
 		} catch (Exception e) {
 
@@ -802,6 +802,14 @@ public class IxPoiSelector implements ISelector {
 		ixPoi.setOldXGuide(resultSet.getDouble("old_x_guide"));
 
 		ixPoi.setOldYGuide(resultSet.getDouble("old_y_guide"));
+		
+		ixPoi.setLevel(resultSet.getString("LEVEL"));
+		
+		ixPoi.setSportsVenue(resultSet.getString("sports_venue"));
+		
+		ixPoi.setIndoor(resultSet.getInt("indoor"));
+		
+		ixPoi.setVipFlag(resultSet.getString("vip_flag"));
 
 		ixPoi.setRowId(resultSet.getString("row_id"));
 		

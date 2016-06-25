@@ -31,7 +31,7 @@ public class POITest extends InitApplication{
 
 			IxPoiSelector selector = new IxPoiSelector(conn);
 
-			IRow jsonObject = selector.loadById(88553093, false);
+			IRow jsonObject = selector.loadById(3847439, false);
 
 			System.out.println(jsonObject.Serialize(ObjLevel.FULL));
 		} catch (Exception e) {
@@ -88,7 +88,7 @@ public class POITest extends InitApplication{
 	@Test
 	public void testUpdatePoi()
 	{
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":88581671,\"data\":{\"names\":[{\"name\":\"充电桩CHENX\",\"rowId\":\"3524EA0D21BD6E1AE050A8C08304BA17\",\"objStatus\":\"UPDATE\"}],\"pid\":88581671}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":1626,\"data\":{\"open24H\":\"1\",\"pid\":1626,\"objStatus\":\"UPDATE\"}}{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":1626,\"data\":{\"open24H\":\"1\",\"pid\":1626,\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

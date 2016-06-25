@@ -6,9 +6,6 @@ import java.sql.Connection;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,14 +13,19 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
+import com.navinfo.dataservice.engine.edit.check.CheckService;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 @Controller
 public class CheckController extends BaseController {
 	private static final Logger logger = Logger
 			.getLogger(CheckController.class);
-
+	
 	@RequestMapping(value = "/check/get")
 	public ModelAndView getCheck(HttpServletRequest request)
 			throws ServletException, IOException {
@@ -150,4 +152,36 @@ public class CheckController extends BaseController {
 			}
 		}
 	}
+	
+	/**
+	 * 检查执行
+	 * dbId	是	子任务id
+	 * type	是	检查类型（0 poi行编，1poi精编, 2道路）
+	 * 根据输入的子任务和检查类型，对任务范围内的数据执行，执行检查。不执行检查结果清理
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/check/run")
+	public ModelAndView checkRun(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			int dbId = jsonReq.getInt("dbId");
+			int subtaskId=jsonReq.getInt("subtaskId");
+			int checkType=jsonReq.getInt("checkType");
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
+			//long userId=2;
+			int jobId=CheckService.getInstance().checkRun(dbId,subtaskId,userId,checkType);				
+			return new ModelAndView("jsonView", success(jobId));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
 }

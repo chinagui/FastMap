@@ -32,6 +32,8 @@
 package com.navinfo.dataservice.commons.util;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Collection of static methods for operations on arrays
@@ -929,6 +931,12 @@ public class ArrayUtil {
         for (int i = 0; i < colindex.length; i++) {
             colindex[i] = i;
         }
+    }
+    
+    public static List<Integer> convertList(List<String> data){
+    	List<Integer> result=new ArrayList<Integer>();
+    	for(String s : data) result.add(Integer.valueOf(s));
+    	return result;
     }
 
 }

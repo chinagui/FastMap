@@ -2,6 +2,7 @@ package com.navinfo.dataservice.impcore.commit.batch;
 
 import java.util.List;
 
+import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
@@ -33,15 +34,21 @@ public class BatchLogFlushJobRequest extends AbstractJobRequest {
 	}
 
 	@Override
-	public int getStepCount() throws JobException {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
 	public void validate() throws JobException {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void defineSubJobRequests() throws JobCreateException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected int myStepCount() throws JobException {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }

@@ -40,27 +40,27 @@ public class GdbValidationJob extends AbstractJob {
 			if(req.getValDbId()>0){
 				valDbId = req.getValDbId();
 				jobInfo.getResponse().put("valDbId", valDbId);
-			}else if(req.getCreateValDb()!=null&&req.getExpValDb()!=null){
+			}else if(req.getSubJobRequest("createValDb")!=null&&req.getSubJobRequest("expValDb")!=null){
 				JobInfo createValDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
 				AbstractJob createValDbJob = JobCreateStrategy.createAsSubJob(createValDbJobInfo,
-						req.getCreateValDb(), this);
+						req.getSubJobRequest("createValDb"), this);
 				createValDbJob.run();
 				if (createValDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
 					throw new Exception("创建检查子版本库是job执行失败。");
 				}
 				// 2.给检查子版本库导数据
-				req.getExpValDb().setAttrValue("sourceDbId", req.getTargetDbId());
+				req.getSubJobRequest("expValDb").setAttrValue("sourceDbId", req.getTargetDbId());
 				valDbId = createValDbJob.getJobInfo().getResponse().getInt("outDbId");
 				jobInfo.getResponse().put("valDbId", valDbId);
-				req.getExpValDb().setAttrValue("targetDbId", valDbId);
+				req.getSubJobRequest("expValDb").setAttrValue("targetDbId", valDbId);
 				Set<String> meshes = new HashSet<String>();
 				for (Integer g : req.getGrids()) {
 					int m = g / 100;
 					meshes.add(m < 99999 ? "0" + String.valueOf(m) : String.valueOf(m));
 				}
-				req.getExpValDb().setAttrValue("conditionParams", JSONArray.fromObject(meshes));
+				req.getSubJobRequest("expValDb").setAttrValue("conditionParams", JSONArray.fromObject(meshes));
 				JobInfo expValDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
-				AbstractJob expValDbJob = JobCreateStrategy.createAsSubJob(expValDbJobInfo, req.getExpValDb(), this);
+				AbstractJob expValDbJob = JobCreateStrategy.createAsSubJob(expValDbJobInfo, req.getSubJobRequest("expValDb"), this);
 				expValDbJob.run();
 				if (expValDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
 					throw new Exception("批处理子版本库导数据时job执行失败。");
@@ -82,7 +82,7 @@ public class GdbValidationJob extends AbstractJob {
 			DbInfo tarDb = datahub.getDbById(req.getTargetDbId());
 			OracleSchema tarSchema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(tarDb.getConnectParam()));
-			CkResultTool.moveNiVal(valSchema, tarSchema, req.getGrids().toArray(new String[0]));
+			CkResultTool.moveNiVal(valSchema, tarSchema, req.getGrids());
 			response("批处理生成的检查结果后处理及搬迁完毕。",null);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

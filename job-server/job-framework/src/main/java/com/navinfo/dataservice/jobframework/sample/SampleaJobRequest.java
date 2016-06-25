@@ -1,17 +1,10 @@
 package com.navinfo.dataservice.jobframework.sample;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
 
-import org.dom4j.Document;
-
-import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.exception.JobRuntimeException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName: SampleJobRequest 
@@ -22,20 +15,7 @@ import net.sf.json.JSONObject;
 */
 public class SampleaJobRequest extends AbstractJobRequest{
 	private int sleepSeconds;
-    public SampleaJobRequest() {
-		super();
-		log = LoggerRepos.getLogger(log);
-	}
-    public SampleaJobRequest(JSONObject jsonConfig){
-    	super();
-		log = LoggerRepos.getLogger(log);
-    	this.parseByJsonConfig(jsonConfig);
-    }
 
-	@Override
-	public int getStepCount() throws JobException {
-		return 3;
-	}
 	@Override
 	public void validate() throws JobRuntimeException {
 		if(sleepSeconds<0){
@@ -54,6 +34,16 @@ public class SampleaJobRequest extends AbstractJobRequest{
 	@Override
 	public String getJobType() {
 		return "samplea";
+	}
+
+	@Override
+	public void defineSubJobRequests() throws JobCreateException {
+		
+	}
+
+	@Override
+	protected int myStepCount() throws JobException {
+		return 3;
 	}
 
 }

@@ -98,6 +98,56 @@ public class TaskOperation {
 					List<Task> list = new ArrayList<Task>();
 				    Page page = new Page(currentPageNum);
 				    page.setPageSize(pageSize);
+				    int total=0;
+					while(rs.next()){
+						Task map = new Task();
+						map.setTaskId(rs.getInt("TASK_ID"));
+						map.setCityName(rs.getString("CITY_NAME"));
+						map.setName(rs.getString("NAME"));
+						map.setCityId(rs.getInt("CITY_ID"));
+						map.setCreateUserId(rs.getInt("CREATE_USER_ID"));
+						map.setCreateUserName(rs.getString("USER_REAL_NAME"));
+						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
+						map.setStatus(rs.getInt("STATUS"));
+						map.setDescp(rs.getString("DESCP"));
+						map.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
+						map.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
+						map.setMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE"));
+						map.setMonthEditPlanEndDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE"));
+						map.setMonthEditGroupId(rs.getInt("MONTH_EDIT_GROUP_ID"));
+						map.setMonthEditGroupName(rs.getString("GROUP_NAME"));
+						map.setLatest(rs.getInt("LATEST"));
+						if(total==0){total=rs.getInt("TOTAL_RECORD_NUM_");}
+						list.add(map);
+					}
+					page.setTotalCount(total);
+					page.setResult(list);
+					return page;
+				}
+	    		
+	    	}		;
+	    	if (null==values || values.size()==0){
+	    		return run.query(currentPageNum, pageSize, conn, selectSql, rsHandler
+						);
+	    	}
+	    	return run.query(currentPageNum, pageSize, conn, selectSql, rsHandler,values.toArray()
+					);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/*
+	 * 根据sql语句查询task
+	 */
+	public static List<Task> selectTaskBySql2(Connection conn,String selectSql,List<Object> values) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<List<Task>> rsHandler = new ResultSetHandler<List<Task>>(){
+				public List<Task> handle(ResultSet rs) throws SQLException {
+					List<Task> list = new ArrayList<Task>();
 					while(rs.next()){
 						Task map = new Task();
 						map.setTaskId(rs.getInt("TASK_ID"));
@@ -118,18 +168,13 @@ public class TaskOperation {
 						map.setLatest(rs.getInt("LATEST"));
 						list.add(map);
 					}
-					//page.setTotalCount(list.size());
-					page.setResult(list);
-					return page;
+					return list;
 				}
-	    		
 	    	}		;
 	    	if (null==values || values.size()==0){
-	    		return run.query(currentPageNum, pageSize, conn, selectSql, rsHandler
-						);
+	    		return run.query( conn, selectSql, rsHandler);
 	    	}
-	    	return run.query(currentPageNum, pageSize, conn, selectSql, rsHandler,values.toArray()
-					);
+	    	return run.query(conn, selectSql, rsHandler,values.toArray());
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

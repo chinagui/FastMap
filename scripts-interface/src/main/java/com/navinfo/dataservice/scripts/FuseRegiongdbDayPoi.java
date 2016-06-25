@@ -1,53 +1,75 @@
 package com.navinfo.dataservice.scripts;
 
-import java.io.File;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.springframework.util.Assert;
+import org.apache.log4j.Logger;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.navinfo.dataservice.api.job.model.JobInfo;
-import com.navinfo.dataservice.bizcommons.glm.GlmTable;
-import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
-import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
+import com.navinfo.dataservice.api.man.model.Region;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.diff.merge.DayRegionPoiMerge;
+import com.navinfo.dataservice.engine.man.region.RegionService;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
-import net.sf.json.JSONObject;
-
-/** 
-* @ClassName: refreshFmgdbRoad 
-* @author Xiao Xiaowen 
-* @date 2016年5月26日 下午5:42:06 
-* @Description: TODO
-*  
-*/
+/**
+ * @ClassName: refreshFmgdbRoad
+ * @author Xiao Xiaowen
+ * @date 2016年5月26日 下午5:42:06
+ * @Description: TODO
+ * 
+ */
 public class FuseRegiongdbDayPoi {
 	
-	public static JSONObject execute(JSONObject request)throws Exception{
-		JSONObject response = new JSONObject();
-		try{
-			String gen2DbInfo = request.getString("gen2DbInfo");
-			Assert.notNull(gen2DbInfo, "gen2DbInfo不能为空");
-			int fmgdbId = request.getInt("fmgdbId");//get如果没取到会报错
-//			Assert.notNull(fmgdbId, "fmgdbId不能为空");
-			String gdbVersion = (String) request.get("gdbVersion");
-			Assert.notNull(gdbVersion, "gdbVersion不能为空");
-			//整表复制道路数据
-			JobInfo info2 = new JobInfo(0,"");
-			info2.setType("gdbFullCopy");
-			JSONObject req2 = new JSONObject();
-			req2.put("sourceDbInfo", gen2DbInfo);
-			req2.put("targetDbId", fmgdbId);
-			req2.put("gdbVersion", "250+");
-			req2.put("featureType", GlmTable.FEATURE_TYPE_ROAD);
-			info2.setRequest(req2);
-			AbstractJob job2 = JobCreateStrategy.createAsMethod(info2);
-			job2.run();
-			response.put("full_copy_road", "success");
-		}catch (Exception e) {
-			response.put("msg", "ERROR:" + e.getMessage());
-			throw e;
+	private static Logger log = LoggerRepos.getLogger(FuseRegiongdbDayPoi.class);
+
+	public static void main(String[] args) {
+
+		try {
+
+			ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+					new String[] { "dubbo-consumer-4scripts.xml" });
+			context.start();
+			new ApplicationContextUtil().setApplicationContext(context);
+
+			List<Region> list = RegionService.getInstance().list();
+
+			List<DayRegionPoiMerge> merges = new ArrayList<DayRegionPoiMerge>();
+			
+			for (Region region : list) {
+				DayRegionPoiMerge merge = new DayRegionPoiMerge(region.getDailyDbId());
+				
+				merge.run();
+				
+				merges.add(merge);
+			}
+			
+			int i=0;
+			for(Region region : list){
+				DayRegionPoiMerge merge = merges.get(i);
+				
+				log.info("region "+ region.getRegionId() + "," + region.getDailyDbId());
+
+				log.info("   poi update:"+merge.getPoiCount());
+				
+				log.info("   log_operation create:"+merge.getLogOpCount());
+				
+				log.info("   log_detail create:"+merge.getLogDetailCount());
+				
+				log.info("   log_detail_grid create:"+merge.getLogDetailGridCount());
+				
+				log.info("   log_day_release create:"+merge.getLogDayReleaseCount());
+				
+				i++;
+			}
+
+			System.out.println("Over.");
+			System.exit(0);
+		} catch (Exception e) {
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
+
 		}
-		return response;
+
 	}
 }

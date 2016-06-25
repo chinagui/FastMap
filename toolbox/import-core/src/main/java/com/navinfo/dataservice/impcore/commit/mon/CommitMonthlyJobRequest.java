@@ -5,6 +5,7 @@ import java.util.List;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
@@ -34,15 +35,6 @@ public class CommitMonthlyJobRequest extends AbstractJobRequest {
 		super();
 		log = LoggerRepos.getLogger(log);
 	}
-	public CommitMonthlyJobRequest(JSONObject jsonConfig) {
-		super();
-		log = LoggerRepos.getLogger(log);
-    	this.parseByJsonConfig(jsonConfig);
-	}
-	@Override
-	public int getStepCount() throws JobException {
-		return 1;
-	}
 
 	@Override
 	public void validate() throws JobException {
@@ -51,6 +43,16 @@ public class CommitMonthlyJobRequest extends AbstractJobRequest {
 	@Override
 	public String getJobType() {
 		return "commitMonthlyJob";
+	}
+	@Override
+	public void defineSubJobRequests() throws JobCreateException {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	protected int myStepCount() throws JobException {
+		// TODO Auto-generated method stub
+		return 1;
 	}
 
 	

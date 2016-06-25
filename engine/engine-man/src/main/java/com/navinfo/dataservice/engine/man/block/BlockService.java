@@ -150,7 +150,7 @@ public class BlockService {
 			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']',
 					')');
 
-			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY,t.PLAN_STATUS from BLOCK t where PLAN_STATUS in "
+			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY,t.PLAN_STATUS,t.CITY_ID from BLOCK t where PLAN_STATUS in "
 					+ planningStatus;
 
 			if (StringUtils.isNotEmpty(json.getString("snapshot"))) {
@@ -359,6 +359,35 @@ public class BlockService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
+	public List<HashMap> listByInfoId(JSONObject json) throws ServiceException {
+		Connection conn = null;
+		try {
+
+			conn = DBConnector.getInstance().getManConnection();
+
+			String inforId = json.getString("inforId");
+
+			String	selectSql = "select distinct i.block_id,t.block_name,b.status,k.name,to_char(k.plan_start_date, 'yyyy-mm-dd') plan_start_date,"
+						+ "to_char(k.plan_end_date, 'yyyy-mm-dd') plan_end_date,"
+						+" to_char(k.month_edit_plan_start_date, 'yyyy-mm-dd') month_edit_plan_start_date,"
+						+ "to_char(k.month_edit_plan_end_date, 'yyyy-mm-dd') month_edit_plan_end_date "
+                        +" from infor_block_mapping i, block t, task k,block_man b where  i.block_id = t.block_id and i.block_id=b.block_id"
+                        +" and t.city_id = k.city_id and k.latest = 1 and i.infor_id ='"+inforId+"'";
+			String	selectSqlNotOpen="select t.block_id,t.block_name,0 status from infor_block_mapping i,block t where t.plan_status=0 and"
+						+ " i.block_id=t.block_id and not exists （select 1 from block_man b where b.block_id=t.block_id）and  i.infor_id ='"+inforId+"'";
+						
+
+			return BlockOperation.QuerylistByInfoId(conn, selectSql, selectSqlNotOpen);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}

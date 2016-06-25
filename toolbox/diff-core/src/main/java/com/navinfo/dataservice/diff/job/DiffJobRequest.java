@@ -9,6 +9,7 @@ import net.sf.json.JSONObject;
 import org.dom4j.Document;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.exception.JobRuntimeException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
@@ -36,11 +37,6 @@ public class DiffJobRequest extends AbstractJobRequest
 		super();
 		log = LoggerRepos.getLogger(log);
 	}
-    public DiffJobRequest(JSONObject jsonConfig){
-    	super();
-		log = LoggerRepos.getLogger(log);
-    	this.parseByJsonConfig(jsonConfig);
-    }
     
 	public String getGdbVersion() {
 		return gdbVersion;
@@ -90,12 +86,19 @@ public class DiffJobRequest extends AbstractJobRequest
 	}
 	
 	@Override
-	public int getStepCount() throws JobException {
-		// TODO Auto-generated method stub
-		return 3;
-	}
-	@Override
 	public String getJobType() {
 		return "diff";
+	}
+
+	@Override
+	public void defineSubJobRequests() throws JobCreateException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected int myStepCount() throws JobException {
+		// TODO Auto-generated method stub
+		return 3;
 	}
 }

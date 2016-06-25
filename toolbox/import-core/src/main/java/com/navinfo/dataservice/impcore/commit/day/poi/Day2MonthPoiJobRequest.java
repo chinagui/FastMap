@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.impcore.commit.day.poi;
 
+import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
@@ -11,16 +12,21 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
  */
 public class Day2MonthPoiJobRequest extends AbstractJobRequest {
 	@Override
-	public int getStepCount() throws JobException {
-		return 1;
-	}
-	@Override
 	public void validate() throws JobException {
 
 	}
 	@Override
 	public String getJobType() {
 		return "day2MonthPoiJob";
+	}
+	@Override
+	public void defineSubJobRequests() throws JobCreateException {
+		
+	}
+	@Override
+	protected int myStepCount() throws JobException {
+		// TODO Auto-generated method stub
+		return 1;
 	}
 
 }

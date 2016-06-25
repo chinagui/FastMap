@@ -412,8 +412,9 @@ public class RegionService {
 			Set<Integer> regionIds = regionGridMapping.keySet();
 			List<Region> regionList = new ArrayList<Region>();
 			for(Integer regionId:regionIds){
-				Region region = new Region();
-				region.setRegionId(regionId);
+				Region condition =new Region();
+				condition.setRegionId(regionId);
+				Region region = this.query(condition );
 				region.setGrids((List<Integer>) regionGridMapping.get(regionId));
 				regionList.add(region);
 			}

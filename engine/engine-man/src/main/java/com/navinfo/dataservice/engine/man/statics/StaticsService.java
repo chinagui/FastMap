@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.man.statics;
 
 import java.util.List;
+import java.util.Set;
 
 import org.json.JSONException;
 import org.springframework.stereotype.Service;
@@ -16,9 +17,14 @@ import com.vividsolutions.jts.geom.Geometry;
 @Service
 public class StaticsService {
 
-	public StaticsService() {
-		// TODO Auto-generated constructor stub
+	private StaticsService(){}
+	private static class SingletonHolder{
+		private static final StaticsService INSTANCE =new StaticsService();
 	}
+	public static StaticsService getInstance(){
+		return SingletonHolder.INSTANCE;
+	}
+
 	
 	/**
 	 * 根据输入的范围和类型，查询范围内的所有grid的相应的统计信息，并返回grid列表和统计信息。
@@ -32,7 +38,7 @@ public class StaticsService {
 	public List<GridChangeStatInfo> gridChangeStaticQuery(String wkt,int stage, int type, String date) throws JSONException, Exception{
 		//通过wkt获取gridIdList
 		Geometry geo=GeoTranslator.geojson2Jts(Geojson.wkt2Geojson(wkt));
-		List<String> grids=(List<String>) CompGeometryUtil.geoToMeshesWithoutBreak(geo);
+		Set<String> grids= CompGeometryUtil.geoToMeshesWithoutBreak(geo);
 		
 		StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
 

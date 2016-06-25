@@ -21,35 +21,34 @@ import com.navinfo.dataservice.engine.man.statics.StaticsService;
 @Controller
 public class StaticsController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	@Autowired
-	private StaticsService service;
-	
+
 	/**
-	 * grid统计查询
-	 * 根据输入的范围和类型，查询范围内的所有grid的相应的统计信息，并返回grid列表和统计信息。
+	 * grid统计查询 根据输入的范围和类型，查询范围内的所有grid的相应的统计信息，并返回grid列表和统计信息。
+	 * 
 	 * @param request
 	 * @return
 	 */
 	@RequestMapping(value = "/statics/change/grid/query")
-	public ModelAndView query(HttpServletRequest request){
-		try{	
+	public ModelAndView query(HttpServletRequest request) {
+		try {
 			String parameter = request.getParameter("parameter");
-			if (StringUtils.isEmpty(parameter)){
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}		
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
-			if(dataJson==null){
+			if (StringUtils.isEmpty(parameter)) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			String wkt=dataJson.getString("wkt");
-			int type=dataJson.getInt("type");
-			int stage=dataJson.getInt("stage");
-			String date=dataJson.getString("date");
-			List<GridChangeStatInfo> gridStatObjList=service.staticsGridQuery(wkt, stage, type,date);
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			String wkt = dataJson.getString("wkt");
+			int type = dataJson.getInt("type");
+			int stage = dataJson.getInt("stage");
+			String date = dataJson.getString("date");
+			List<GridChangeStatInfo> gridStatObjList = StaticsService.getInstance()
+					.gridChangeStaticQuery(wkt, stage, type, date);
 			return new ModelAndView("jsonView", success(gridStatObjList));
-		}catch(Exception e){
-			log.error("创建失败，原因："+e.getMessage(), e);
-			return new ModelAndView("jsonView",exception(e));
+		} catch (Exception e) {
+			log.error("创建失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
 		}
 	}
 

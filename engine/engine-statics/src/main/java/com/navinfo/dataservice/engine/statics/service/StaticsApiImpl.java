@@ -60,7 +60,7 @@ public class StaticsApiImpl implements StaticsApi {
 	}
 
 	@Override
-	public List<GridChangeStatInfo> getChangeStatByGrids(List<String> grids,
+	public List<GridChangeStatInfo> getChangeStatByGrids(Set<String> grids,
 			int type, int stage, String date) throws Exception {
 		return StaticsService.getInstance().getChangeStatByGrids(grids, stage, type, date);
 	}

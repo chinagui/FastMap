@@ -1,8 +1,6 @@
 package com.navinfo.dataservice.engine.edit.check;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import net.sf.json.JSONObject;
@@ -11,7 +9,7 @@ import com.navinfo.dataservice.api.job.iface.JobApiService;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.ArrayUtil;
+
 public class CheckService {
 
 	public CheckService() {
@@ -41,8 +39,7 @@ public class CheckService {
 		ManApi manApi=(ManApi) ApplicationContextUtil.getBean("manApi");
 		Subtask subtaskObj=manApi.queryBySubtaskId(subtaskId);
 		int dbId=subtaskObj.getDbId();
-		String[] gridsStr= subtaskObj.getGridIds();
-		List<Integer> grids=ArrayUtil.convertList(Arrays.asList(gridsStr));
+		List<Integer> grids= subtaskObj.getGridIds();
 		//TODO 根据checkType获取 规则 号 
 		List<String> rules=new ArrayList<String>();
 		rules.add("1");

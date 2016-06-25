@@ -16,14 +16,13 @@ public class CheckService {
 		// TODO Auto-generated constructor stub
 	}
 	
-	private static CheckService checkService = null;
-	
-	public static CheckService getInstance(){
-		if (checkService == null) {
-			checkService = new CheckService();
-		}
-		return checkService;
+	private static class SingletonHolder{
+		private static final CheckService INSTANCE =new CheckService();
 	}
+	public static CheckService getInstance(){
+		return SingletonHolder.INSTANCE;
+	}
+	
 	/**
 	 * 
 	 * @param dbId

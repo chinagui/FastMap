@@ -170,13 +170,12 @@ public class CheckController extends BaseController {
 		String parameter = request.getParameter("parameter");
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			int dbId = jsonReq.getInt("dbId");
 			int subtaskId=jsonReq.getInt("subtaskId");
 			int checkType=jsonReq.getInt("checkType");
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
 			//long userId=2;
-			int jobId=CheckService.getInstance().checkRun(dbId,subtaskId,userId,checkType);				
+			long jobId=CheckService.getInstance().checkRun(subtaskId,userId,checkType);				
 			return new ModelAndView("jsonView", success(jobId));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

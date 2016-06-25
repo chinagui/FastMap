@@ -71,7 +71,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			//对grids执行批处理
 			log.info("start gdb batch");
 			JobInfo batchJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
-			releaseJobRequest.getSubJobRequest("batch").setAttrValue("batchDbId", valDbId);
+			//releaseJobRequest.getSubJobRequest("batch").setAttrValue("batchDbId", valDbId);
 			AbstractJob batchJob = JobCreateStrategy.createAsSubJob(batchJobInfo,
 					releaseJobRequest.getSubJobRequest("batch"), this);
 			batchJob.run();
@@ -101,7 +101,6 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			if (r == null) {
 				throw new Exception("根据batchDbId未查询到匹配的区域");
 			}
-			String dbType = null;
 			if (r.getDailyDbId() == req.getTargetDbId()) {
 				dbType = FmEditLock.DB_TYPE_DAY;
 			} else if (r.getMonthlyDbId() == req.getTargetDbId()) {

@@ -130,8 +130,8 @@ public class TaskController extends BaseController {
 			List result=JsonOperation.beanToJsonList((List)data.getResult());
 			Map<String, Object> returnMap=new HashMap<String, Object>();
 			returnMap.put("result", result);
-			returnMap.put("pageSize", curPageSize);
-			returnMap.put("pageNum", curPageNum);
+			//returnMap.put("pageSize", curPageSize);
+			//returnMap.put("pageNum", curPageNum);
 			returnMap.put("totalCount", data.getTotalCount());
 			return new ModelAndView("jsonView", success(returnMap));
 			//return new ModelAndView("jsonView", success(data.getResult()));

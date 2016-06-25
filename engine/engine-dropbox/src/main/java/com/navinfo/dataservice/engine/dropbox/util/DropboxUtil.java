@@ -3,6 +3,9 @@ package com.navinfo.dataservice.engine.dropbox.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -13,10 +16,13 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.navicommons.database.QueryRunner;
 
 public class DropboxUtil {
 
@@ -235,6 +241,35 @@ public class DropboxUtil {
 		}
 		
 		return array;
+	}
+	
+	
+	public static JSONObject getAppVersion(int type,String platform) throws Exception{
+		JSONObject json = new JSONObject();
+		Connection conn = null;
+		try {
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getConnectionById(11);
+			String sql = "select down_url,app_version,app_size from app_version where  app_platform='"+platform+"' and app_type=" + type +"order by RELEASE_DATE desc";
+
+			PreparedStatement stmt = conn.prepareStatement(sql);
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+                json.put("filesize", rs.getInt("app_size"));
+				
+				json.put("url", rs.getString("down_url"));
+				
+				json.put("version",  rs.getString("app_version"));
+			
+				break;
+			}
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		return json;
 	}
 	
 }

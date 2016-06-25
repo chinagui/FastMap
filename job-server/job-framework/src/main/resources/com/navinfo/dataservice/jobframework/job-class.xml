@@ -48,9 +48,9 @@
 		class="com.navinfo.dataservice.impcore.job.GdbImportJob"
 	 	request="com.navinfo.dataservice.impcore.job.GdbImportJobRequest"
 	/>
-	<!-- <type name="editPoiBaseRelease" 
+	<type name="editPoiBaseRelease" 
 		class="com.navinfo.dataservice.edit.job.EditPoiBaseReleaseJob"
 	 	request="com.navinfo.dataservice.edit.job.EditPoiBaseReleaseJobRequest"
-	/> -->
+	/>
 	
 </mapping>

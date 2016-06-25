@@ -33,8 +33,6 @@ import com.navinfo.navicommons.database.Page;
 @Controller
 public class TaskController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	@Autowired 
-	private TaskService service;
 
 	/*
 	 * 规划管理页面--任务管理
@@ -58,7 +56,7 @@ public class TaskController extends BaseController {
 			}
 			long userId=tokenObj.getUserId();
 			//long userId=2;
-			service.create(userId,dataJson);
+			TaskService.getInstance().create(userId,dataJson);
 			return new ModelAndView("jsonView", success("创建成功"));
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);
@@ -75,7 +73,7 @@ public class TaskController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			service.update(dataJson);					
+			TaskService.getInstance().update(dataJson);					
 			return new ModelAndView("jsonView", success("修改成功"));
 		}catch(Exception e){
 			log.error("修改失败，原因："+e.getMessage(), e);
@@ -98,7 +96,7 @@ public class TaskController extends BaseController {
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
 			JSONArray taskIds=dataJson.getJSONArray("taskIds");
-			HashMap<String,String> errorTask=service.close(JSONArray.toList(taskIds));			
+			HashMap<String,String> errorTask=TaskService.getInstance().close(JSONArray.toList(taskIds));			
 			return new ModelAndView("jsonView", success(errorTask));
 		}catch(Exception e){
 			log.error("删除失败，原因："+e.getMessage(), e);
@@ -126,12 +124,12 @@ public class TaskController extends BaseController {
 			if (StringUtils.isNotEmpty(curSize)){
 				curPageSize = Integer.parseInt(curSize);
 			}
-			Page data = service.list(condition,order,curPageNum,curPageSize);
+			Page data = TaskService.getInstance().list(condition,order,curPageNum,curPageSize);
 			List result=JsonOperation.beanToJsonList((List)data.getResult());
 			Map<String, Object> returnMap=new HashMap<String, Object>();
 			returnMap.put("result", result);
-			returnMap.put("pageSize", curPageSize);
-			returnMap.put("pageNum", curPageNum);
+			//returnMap.put("pageSize", curPageSize);
+			//returnMap.put("pageNum", curPageNum);
 			returnMap.put("totalCount", data.getTotalCount());
 			return new ModelAndView("jsonView", success(returnMap));
 			//return new ModelAndView("jsonView", success(data.getResult()));
@@ -152,7 +150,7 @@ public class TaskController extends BaseController {
 			JSONObject condition = dataJson.getJSONObject("condition");			
 			JSONObject order = dataJson.getJSONObject("order");
 			
-			List<Task> data = service.listAll(condition,order);			
+			List<Task> data = TaskService.getInstance().listAll(condition,order);			
 			return new ModelAndView("jsonView", success(JsonOperation.beanToJsonList(data)));
 			//return new ModelAndView("jsonView", success(data.getResult()));
 		}catch(Exception e){

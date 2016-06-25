@@ -75,19 +75,19 @@ public abstract class AbstractJobRequest {
 	public void parseByJsonConfig(JSONObject json)throws JobCreateException{
 		if(json==null) {
 			log.warn("注意：未传入的解析json对象，request未被初始化");
-		}
-		for(Iterator it = json.keys();it.hasNext();){
-			String attName = (String)it.next();
-			Object attValue = json.get(attName);
-			if(attValue==null||
-			   StringUtils.isEmpty(attName)||
-			   (attValue instanceof String && StringUtils.isEmpty((String)attValue))
-			   ){
-				log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。");
-				continue;
-			}
-			setAttrValue(attName,attValue);
-		}
+		}else{
+			for(Iterator it = json.keys();it.hasNext();){
+				String attName = (String)it.next();
+				Object attValue = json.get(attName);
+				if(attValue==null||
+				   StringUtils.isEmpty(attName)||
+				   (attValue instanceof String && StringUtils.isEmpty((String)attValue))
+				   ){
+					log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。");
+					continue;
+				}
+				setAttrValue(attName,attValue);
+			}}
 		//
 		defineSubJobRequests();
 	}

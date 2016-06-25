@@ -6,13 +6,10 @@ import java.sql.SQLException;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
 import com.navinfo.navicommons.database.QueryRunner;
-
-import net.sf.json.JSONObject;
 
 /** 
  * 同步消费消息

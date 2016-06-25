@@ -29,7 +29,7 @@ public class Operation implements IOperation {
 
 		int branchType = command.getBranchType();
 
-		if (branchType < 5 && branchType > 0) {
+		if (branchType < 5 && branchType >= 0) {
 			if (branch.getDetails().size() == 1 && branch.getSignboards().size() == 0
 					&& branch.getSignasreals().size() == 0 && branch.getSeriesbranches().size() == 0
 					&& branch.getRealimages().size() == 0 && branch.getSchematics().size() == 0) {

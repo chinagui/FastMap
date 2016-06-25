@@ -52,23 +52,23 @@ public class Operation implements IOperation {
 			}
 		}
 
-		// 更新分歧详细信息表
+		// 更新分歧详细信息表(0-4)
 		UpdateBranchDetail(result, content);
 
-		// 更新方向看板
-		UpdateSignboard(result, content);
-
-		// 更新实景看板
-		UpdateSignasreal(result, content);
-
-		// 更新大路口交叉点
-		UpdateSchematic(result, content);
-
-		// 更新分歧实景图
+		// 更新分歧实景图 (5)
 		UpdateBranchRealimage(result, content);
 
-		// 更新连续分歧
+		// 更新实景看板(6)
+		UpdateSignasreal(result, content);
+
+		// 更新连续分歧(7)
 		UpdateSeriesbranch(result, content);
+
+		// 更新大路口交叉点(8)
+		UpdateSchematic(result, content);
+
+		// 更新方向看板(9)
+		UpdateSignboard(result, content);
 
 		return null;
 	}
@@ -82,7 +82,7 @@ public class Operation implements IOperation {
 	 */
 	private void UpdateBranchDetail(Result result, JSONObject content)
 			throws Exception {
-		if (content.containsKey("details")) {
+		if (!content.containsKey("details")) {
 			return;
 		}
 
@@ -211,7 +211,7 @@ public class Operation implements IOperation {
 	 */
 	private void UpdateSignboard(Result result, JSONObject content)
 			throws Exception {
-		if (content.containsKey("signboards")) {
+		if (!content.containsKey("signboards")) {
 			return;
 		}
 
@@ -340,7 +340,7 @@ public class Operation implements IOperation {
 	 */
 	private void UpdateSignasreal(Result result, JSONObject content)
 			throws Exception {
-		if (content.containsKey("signasreals")) {
+		if (!content.containsKey("signasreals")) {
 			return;
 		}
 
@@ -406,7 +406,7 @@ public class Operation implements IOperation {
 	 */
 	private void UpdateSchematic(Result result, JSONObject content)
 			throws Exception {
-		if (content.containsKey("schematics")) {
+		if (!content.containsKey("schematics")) {
 			return;
 		}
 
@@ -472,7 +472,7 @@ public class Operation implements IOperation {
 	 */
 	private void UpdateBranchRealimage(Result result, JSONObject content)
 			throws Exception {
-		if (content.containsKey("realimages")) {
+		if (!content.containsKey("realimages")) {
 			return;
 		}
 
@@ -537,7 +537,7 @@ public class Operation implements IOperation {
 
 	private void UpdateSeriesbranch(Result result, JSONObject content)
 			throws Exception {
-		if (content.containsKey("seriesbranches")) {
+		if (!content.containsKey("seriesbranches")) {
 			return;
 		}
 

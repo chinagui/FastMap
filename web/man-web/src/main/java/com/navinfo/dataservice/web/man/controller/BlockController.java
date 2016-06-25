@@ -2,6 +2,7 @@ package com.navinfo.dataservice.web.man.controller;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -230,7 +231,10 @@ public class BlockController extends BaseController {
 				curPageSize = Integer.parseInt(curSize);
 			}
 			Page data = service.listAll(condition, order, curPageNum, curPageSize);
-			return new ModelAndView("jsonView", success(data.getResult()));
+			Map<String, Object> resultMap=new HashMap<String, Object>();
+			resultMap.put("result", data.getResult());
+			resultMap.put("totalCount", data.getTotalCount());
+			return new ModelAndView("jsonView", success(resultMap));
 		} catch (Exception e) {
 			log.error("获取列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

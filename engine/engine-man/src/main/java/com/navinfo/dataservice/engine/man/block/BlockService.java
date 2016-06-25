@@ -193,7 +193,11 @@ public class BlockService {
 					+ " t.PLAN_STATUS, k.name taskName, b.collect_group_id, b.day_edit_group_id,"
 					+ " b.month_edit_group_id, to_char(b.collect_plan_start_date, 'yyyy-mm-dd') collect_plan_start_date, to_char(b.collect_plan_end_date, 'yyyy-mm-dd') collect_plan_end_date,"
 					+ " to_char(b.day_edit_plan_start_date, 'yyyy-mm-dd') day_edit_plan_start_date, to_char(b.day_edit_plan_end_date, 'yyyy-mm-dd') day_edit_plan_end_date, to_char(b.month_edit_plan_start_date, 'yyyy-mm-dd') month_edit_plan_start_date,"
-					+ " to_char(b.month_edit_plan_end_date, 'yyyy-mm-dd') month_edit_plan_end_date from BLOCK t, BLOCK_MAN b, TASK k where t.BLOCK_ID = ?"
+					+ " to_char(b.month_edit_plan_end_date, 'yyyy-mm-dd') month_edit_plan_end_date,to_char(b.day_produce_plan_start_date, 'yyyy-mm-dd') day_produce_plan_start_date,"
+					+ " to_char(b.day_produce_plan_end_date, 'yyyy-mm-dd') day_produce_plan_end_date,"
+					+ " to_char(b.month_produce_plan_start_date, 'yyyy-mm-dd') month_produce_plan_start_date,"
+					+ " to_char(b.month_produce_plan_end_date, 'yyyy-mm-dd') month_produce_plan_end_date"
+					+ " from BLOCK t, BLOCK_MAN b, TASK k where t.BLOCK_ID = ?"
 					+ " and t.block_id = b.block_id and t.city_id = k.city_id and k.latest = 1 and b.latest=1";
 			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
 				public HashMap<String, Object> handle(ResultSet rs) throws SQLException {
@@ -221,8 +225,11 @@ public class BlockService {
 						map.put("dayEditPlanEndDate", rs.getString("day_edit_plan_end_date"));
 						map.put("monthEditPlanStartDate", rs.getString("month_edit_plan_start_date"));
 						map.put("monthEditPlanEndDate", rs.getString("month_edit_plan_end_date"));
-						map.put("monthEditPlanEndDate", rs.getString("month_edit_plan_end_date"));
 						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						map.put("dayProducePlanStartDate", rs.getString("day_produce_plan_start_date"));
+						map.put("dayProducePlanEndDate", rs.getString("day_produce_plan_end_date"));
+						map.put("monthProducePlanStartDate", rs.getString("month_produce_plan_start_date"));
+						map.put("monthProducePlanEndDate", rs.getString("month_produce_plan_end_date"));
 						return map;
 					}
 					return null;

@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.web.man.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
 import net.sf.json.JSONArray;
@@ -20,107 +23,115 @@ import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.inforMan.InforManService;
 import com.navinfo.navicommons.database.Page;
 
-/** 
-* @ClassName: InforManController 
-* @author code generator 
-* @date 2016年4月6日 下午6:25:24 
-* @Description: TODO
-*/
+/**
+ * @ClassName: InforManController
+ * @author code generator
+ * @date 2016年4月6日 下午6:25:24
+ * @Description: TODO
+ */
 @Controller
 public class InforManController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	@Autowired 
+	@Autowired
 	private InforManService service;
 
-/**
- * 规划管理-情报管理-查看及编辑情报信息
- * @param request
- * @return
- */
+	/**
+	 * 规划管理-情报管理-查看及编辑情报信息
+	 * 
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(value = "/inforMan/create")
-	public ModelAndView create(HttpServletRequest request){
-		try{	
+	public ModelAndView create(HttpServletRequest request) {
+		try {
 			String parameter = request.getParameter("parameter");
-			if (StringUtils.isEmpty(parameter)){
+			if (StringUtils.isEmpty(parameter)) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
-			if(dataJson==null){
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
-			long userId=tokenObj.getUserId();
-			service.create(dataJson,userId);			
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			service.create(dataJson, userId);
 			return new ModelAndView("jsonView", success("创建成功"));
-		}catch(Exception e){
-			log.error("创建失败，原因："+e.getMessage(), e);
-			return new ModelAndView("jsonView",exception(e));
+		} catch (Exception e) {
+			log.error("创建失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+
 	/**
 	 * 规划管理-情报管理-开启情报规划
+	 * 
 	 * @param request
 	 * @return
 	 */
 	@RequestMapping(value = "/inforMan/update")
-	public ModelAndView update(HttpServletRequest request){
-		try{			
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
-			if(dataJson==null){
+	public ModelAndView update(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			service.update(dataJson);			
+			service.update(dataJson);
 			return new ModelAndView("jsonView", success("修改成功"));
-		}catch(Exception e){
-			log.error("修改失败，原因："+e.getMessage(), e);
-			return new ModelAndView("jsonView",exception(e));
+		} catch (Exception e) {
+			log.error("修改失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+
 	/**
 	 * 情报管理--查看及编辑情报信息
+	 * 
 	 * @param request
 	 * @return
 	 */
 	@RequestMapping(value = "/inforMan/close")
-	public ModelAndView close(HttpServletRequest request){
-		try{			
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
-			if(dataJson==null){
+	public ModelAndView close(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			JSONArray inforManIds=dataJson.getJSONArray("inforIds");
-			service.close(JSONArray.toList(inforManIds));			
+			JSONArray inforManIds = dataJson.getJSONArray("inforIds");
+			service.close(JSONArray.toList(inforManIds));
 			return new ModelAndView("jsonView", success("情报已关闭"));
-		}catch(Exception e){
-			log.error("删除失败，原因："+e.getMessage(), e);
-			return new ModelAndView("jsonView",exception(e));
+		} catch (Exception e) {
+			log.error("删除失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
 		}
 	}
-	
+
 	/**
 	 * 情报管理--查看及编辑情报信息
+	 * 
 	 * @param request
 	 * @return
 	 */
 	@RequestMapping(value = "/inforMan/query")
-	public ModelAndView query(HttpServletRequest request){
-		try{
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
-			if(dataJson==null){
+	public ModelAndView query(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			InforMan data = service.query(dataJson.getString("inforId"));
-			if(null==data){
+			if (null == data) {
 				return new ModelAndView("jsonView", fail("该情报规划不存在"));
 			}
 			return new ModelAndView("jsonView", success(JsonOperation.beanToJson(data)));
-		}catch(Exception e){
-			log.error("获取明细失败，原因："+e.getMessage(), e);
-			return new ModelAndView("jsonView",exception(e));
+		} catch (Exception e) {
+			log.error("获取明细失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+
 	/**
 	 * 情报管理--查看及编辑情报信息
+	 * 
 	 * @param request
 	 * @return
 	 */
@@ -142,7 +153,10 @@ public class InforManController extends BaseController {
 				curPageSize = Integer.parseInt(curSize);
 			}
 			Page data = service.listAll(condition, order, curPageNum, curPageSize);
-			return new ModelAndView("jsonView", success(data.getResult()));
+			Map<String, Object> resultMap = new HashMap<String, Object>();
+			resultMap.put("result", data.getResult());
+			resultMap.put("totalCount", data.getTotalCount());
+			return new ModelAndView("jsonView", success(resultMap));
 		} catch (Exception e) {
 			log.error("获取列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

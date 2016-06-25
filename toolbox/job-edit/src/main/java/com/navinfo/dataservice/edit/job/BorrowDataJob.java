@@ -3,10 +3,8 @@ package com.navinfo.dataservice.edit.job;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.lang.StringUtils;
 
@@ -44,14 +42,9 @@ public class BorrowDataJob extends AbstractJob {
 		try{
 			//计算借出lendOutDbId
 			ManApi man = (ManApi)ApplicationContextUtil.getBean("manApi");
-			MultiValueMap map = man.queryRegionGridMapping(grids);
-			Set regions = map.keySet();
-			if(regions==null||regions.size()!=1)throw new JobException("计算借出区域id时发生错误");
-			int regionId = 0;
-			for(Object i:regions){
-				regionId = (Integer)i;
-			}
-			Region r = man.queryByRegionId(regionId);
+			List<Region> regionsWithGrid = man.queryRegionWithGrids(grids);
+			if(regionsWithGrid==null||regionsWithGrid.size()!=1)throw new JobException("计算借出区域id时发生错误");
+			Region r = regionsWithGrid.get(0);
 			int lentOutDbId = 0;
 			if(editLock!=null){
 				if(FmEditLock.DB_TYPE_DAY.equals(editLock.getDbType())){

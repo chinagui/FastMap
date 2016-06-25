@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.sf.json.JSONObject;
 
@@ -131,7 +132,7 @@ public class StaticsService {
 		return list;
 	}
 	
-	public List<GridChangeStatInfo> getChangeStatByGrids(List<String> grids,
+	public List<GridChangeStatInfo> getChangeStatByGrids(Set<String> grids,
 			int stage, int type, String date) {
 		
 		String colName;

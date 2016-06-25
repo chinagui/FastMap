@@ -40,6 +40,6 @@ public interface ManApi{
 
 	public String querySpecVersionByType(int type) throws Exception;
 	
-	public List<Region> querRegionWithGrids(List<Integer> grids) throws Exception;
+	public List<Region> queryRegionWithGrids(List<Integer> grids) throws Exception;
 }
 

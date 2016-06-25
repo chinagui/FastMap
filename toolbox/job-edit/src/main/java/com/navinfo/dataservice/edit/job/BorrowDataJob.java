@@ -42,7 +42,7 @@ public class BorrowDataJob extends AbstractJob {
 		try{
 			//计算借出lendOutDbId
 			ManApi man = (ManApi)ApplicationContextUtil.getBean("manApi");
-			List<Region> regionsWithGrid = man.querRegionWithGrids(grids);
+			List<Region> regionsWithGrid = man.queryRegionWithGrids(grids);
 			if(regionsWithGrid==null||regionsWithGrid.size()!=1)throw new JobException("计算借出区域id时发生错误");
 			Region r = regionsWithGrid.get(0);
 			int lentOutDbId = 0;

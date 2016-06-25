@@ -62,7 +62,7 @@ public class CommitMonthlyJob extends AbstractJob {
 	 */
 	private List<Region> queryRegionGridsMapping() throws Exception {
 		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
-		List<Region> regionWithGridsList= manApi.querRegionWithGrids(((Day2MonthRoadJobRequest )this.request).getGridList());
+		List<Region> regionWithGridsList= manApi.queryRegionWithGrids(((Day2MonthRoadJobRequest )this.request).getGridList());
 		return regionWithGridsList;
 	}
 

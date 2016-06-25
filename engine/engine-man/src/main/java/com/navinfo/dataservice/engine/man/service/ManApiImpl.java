@@ -74,7 +74,7 @@ public class ManApiImpl implements ManApi {
 		return service.query(type);
 	}
 	@Override
-	public List<Region> querRegionWithGrids(List<Integer> grids) throws Exception {
+	public List<Region> queryRegionWithGrids(List<Integer> grids) throws Exception {
 		return RegionService.getInstance().queryRegionWithGrids(grids);
 	}
 	

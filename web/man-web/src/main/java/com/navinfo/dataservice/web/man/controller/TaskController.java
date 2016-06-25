@@ -125,8 +125,10 @@ public class TaskController extends BaseController {
 			if (StringUtils.isNotEmpty(curSize)){
 				curPageSize = Integer.parseInt(curSize);
 			}
-			Page data = service.list(condition,order,curPageNum,curPageSize);			
-			return new ModelAndView("jsonView", success(JsonOperation.beanToJsonList((List)data.getResult())));
+			Page data = service.list(condition,order,curPageNum,curPageSize);
+			List result=JsonOperation.beanToJsonList((List)data.getResult());
+			data.setResult(result);
+			return new ModelAndView("jsonView", success(data));
 			//return new ModelAndView("jsonView", success(data.getResult()));
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);

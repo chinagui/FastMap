@@ -18,13 +18,15 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchRealimage;
 
 public class RdBranchRealimageOperator implements IOperator {
 
-	private static Logger logger = Logger.getLogger(RdBranchRealimageOperator.class);
+	private static Logger logger = Logger
+			.getLogger(RdBranchRealimageOperator.class);
 
 	private Connection conn;
 
 	private RdBranchRealimage realimage;
 
-	public RdBranchRealimageOperator(Connection conn, RdBranchRealimage realimage) {
+	public RdBranchRealimageOperator(Connection conn,
+			RdBranchRealimage realimage) {
 		this.conn = conn;
 
 		this.realimage = realimage;
@@ -85,7 +87,8 @@ public class RdBranchRealimageOperator implements IOperator {
 
 		try {
 
-			Set<Entry<String, Object>> set = realimage.changedFields().entrySet();
+			Set<Entry<String, Object>> set = realimage.changedFields()
+					.entrySet();
 
 			Iterator<Entry<String, Object>> it = set.iterator();
 
@@ -104,19 +107,18 @@ public class RdBranchRealimageOperator implements IOperator {
 
 				column = StringUtils.toColumnName(column);
 
-				if (value instanceof String || value==null ) {
+				if (value instanceof String || value == null) {
 
 					if (!StringUtils.isStringSame(String.valueOf(value),
 							String.valueOf(columnValue))) {
-						
-						if(columnValue==null){
+
+						if (columnValue == null) {
 							sb.append(column + "=null,");
+						} else {
+							sb.append(column + "='"
+									+ String.valueOf(columnValue) + "',");
 						}
-						else{
-							sb.append(column + "='" + String.valueOf(columnValue)
-									+ "',");
-						}
-						
+
 					}
 
 				} else if (value instanceof Double) {
@@ -140,11 +142,7 @@ public class RdBranchRealimageOperator implements IOperator {
 
 				}
 			}
-			sb.append(" where row_id=hextoraw('" + realimage.getRowId());
-
-			sb.append(realimage.getRowId());
-
-			sb.append("')");
+			sb.append(" where row_id=hextoraw('" + realimage.getRowId() + "')");
 
 			String sql = sb.toString();
 
@@ -229,7 +227,7 @@ public class RdBranchRealimageOperator implements IOperator {
 		} else {
 			sb.append(",'" + realimage.getArrowCode() + "'");
 		}
-		
+
 		sb.append(",1,'" + realimage.rowId() + "')");
 
 		stmt.addBatch(sb.toString());
@@ -238,14 +236,15 @@ public class RdBranchRealimageOperator implements IOperator {
 	@Override
 	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
 			throws Exception {
-		
+
 	}
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 
 		String sql = "update " + realimage.tableName()
-				+ " set u_record=2 where row_id=hextoraw('" + realimage.rowId() + "')";
+				+ " set u_record=2 where row_id=hextoraw('" + realimage.rowId()
+				+ "')";
 
 		stmt.addBatch(sql);
 	}

@@ -225,8 +225,15 @@ public class RwLinkOperator implements IOperator {
 		sb.append("," + rwLink.getDetailFlag());
 
 		sb.append("," + rwLink.getEditFlag());
-
-		sb.append(",'" + rwLink.getColor() + "'");
+		
+		if(StringUtils.isNotEmpty(rwLink.getColor()))
+		{
+			sb.append(",'" + rwLink.getColor()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 
 		sb.append(",1,'" + rwLink.rowId() + "')");
 

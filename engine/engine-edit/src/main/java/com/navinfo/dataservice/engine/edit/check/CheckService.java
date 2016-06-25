@@ -11,18 +11,15 @@ import com.navinfo.dataservice.commons.util.ArrayUtil;
 
 public class CheckService {
 
-	public CheckService() {
-		// TODO Auto-generated constructor stub
+	public CheckService() {}
+	
+	private static class SingletonHolder{
+		private static final CheckService INSTANCE =new CheckService();
 	}
-	
-	private static CheckService checkService = null;
-	
 	public static CheckService getInstance(){
-		if (checkService == null) {
-			checkService = new CheckService();
-		}
-		return checkService;
+		return SingletonHolder.INSTANCE;
 	}
+	
 	/**
 	 * 
 	 * @param dbId

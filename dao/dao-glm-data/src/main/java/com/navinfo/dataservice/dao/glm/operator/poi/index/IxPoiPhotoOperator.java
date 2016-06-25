@@ -16,10 +16,12 @@ import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchOperator;
+
 /**
  * 索引:POI与照片关系表 操作
+ * 
  * @author luyao
- *
+ * 
  */
 public class IxPoiPhotoOperator implements IOperator {
 
@@ -65,7 +67,8 @@ public class IxPoiPhotoOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 		StringBuilder sb = new StringBuilder("update " + ixPoiPhoto.tableName()
-				+ " set u_record=3,u_date= '"+StringUtils.getCurrentTime()+"' ,");
+				+ " set u_record=3,u_date= '" + StringUtils.getCurrentTime()
+				+ "' ,");
 
 		PreparedStatement pstmt = null;
 
@@ -186,12 +189,19 @@ public class IxPoiPhotoOperator implements IOperator {
 
 		sb.append(ixPoiPhoto.tableName());
 
-		sb.append("(poi_pid, photo_id, status,memo, row_id,u_date,u_record) values (");
+		sb.append("(poi_pid, photo_id,pid,status,memo,tag, row_id,u_date,u_record) values (");
 
 		sb.append(ixPoiPhoto.getPoiPid());
 
 		sb.append("," + ixPoiPhoto.getPhotoId());
-		
+
+		if (StringUtils.isNotEmpty(ixPoiPhoto.getPid())) {
+
+			sb.append(",'" + ixPoiPhoto.getPid() + "'");
+		} else {
+			sb.append(",null");
+		}
+
 		if (StringUtils.isNotEmpty(ixPoiPhoto.getStatus())) {
 
 			sb.append(",'" + ixPoiPhoto.getStatus() + "'");
@@ -206,9 +216,11 @@ public class IxPoiPhotoOperator implements IOperator {
 			sb.append(",null");
 		}
 
+		sb.append("," + ixPoiPhoto.getTag());
+
 		sb.append(",'" + ixPoiPhoto.getRowId() + "'");
-		
-		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
+
+		sb.append(",'" + StringUtils.getCurrentTime() + "'");
 
 		sb.append(",'1')");
 
@@ -225,8 +237,8 @@ public class IxPoiPhotoOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiPhoto.tableName()
-				+ " set u_record=2,u_date= '"+StringUtils.getCurrentTime()+"' where row_id=hextoraw('"
-				+ ixPoiPhoto.rowId() + "')";
+				+ " set u_record=2,u_date= '" + StringUtils.getCurrentTime()
+				+ "' where row_id=hextoraw('" + ixPoiPhoto.rowId() + "')";
 
 		stmt.addBatch(sql);
 

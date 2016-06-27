@@ -392,14 +392,14 @@ public class UserInfoService {
 	 * @param userDevice
 	 * @throws ServiceException
 	 */
-	public HashMap login(UserInfo userInfo, UserDevice userDevice) throws ServiceException {
+	public HashMap<Object,Object> login(UserInfo userInfo, UserDevice userDevice) throws ServiceException {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			HashMap result = new HashMap();
+			HashMap<Object,Object> result = new HashMap<Object,Object>();
 			
-			HashMap user = UserInfoOperation.loginGetUserInfo(conn,userInfo,userDevice);
+			HashMap<Object,Object> user = UserInfoOperation.loginGetUserInfo(conn,userInfo,userDevice);
 			
 			if(user.isEmpty()){
 				return result;
@@ -417,6 +417,8 @@ public class UserInfoService {
 					result.put("expires_in", access_token.getTimestamp());
 					result.put("role", user.get("roleName"));
 					result.put("deviceId", user.get("deviceId"));
+					result.put("userId", user.get("userId"));
+					result.put("userRealName", user.get("userRealName"));
 				}
 			}
 

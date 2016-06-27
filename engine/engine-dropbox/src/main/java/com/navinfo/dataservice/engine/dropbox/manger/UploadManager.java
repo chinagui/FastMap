@@ -150,7 +150,7 @@ public class UploadManager {
 	 * @throws FileUploadException 
 	 * @throws UnsupportedEncodingException 
 	 */
-	public HashMap uploadResource(HttpServletRequest request) throws Exception {
+	public HashMap<Object,Object>  uploadResource(HttpServletRequest request) throws Exception {
 		// TODO Auto-generated method stub
 		DiskFileItemFactory factory = new DiskFileItemFactory();
 		
@@ -201,7 +201,7 @@ public class UploadManager {
 			//调用hadoop方法传输文件流，userId,经纬度，获取photo_id
 			String photoId = hbaseController.putPhoto(fileStream);
 			
-			HashMap<String,String> data = new HashMap<String,String>();
+			HashMap<Object,Object> data = new HashMap<Object,Object>();
 				
 			dbController.insertIxPoiPhoto(dbId,pid,photoId);
 			data.put("PID", photoId);

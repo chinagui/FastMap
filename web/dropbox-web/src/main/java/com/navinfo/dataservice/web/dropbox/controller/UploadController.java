@@ -140,7 +140,7 @@ public class UploadController extends BaseController {
 
 			UploadManager upload = new UploadManager();
 
-			HashMap data = upload.uploadResource(request);
+			HashMap<Object,Object> data = upload.uploadResource(request);
 			if(!data.isEmpty()){
 				return new ModelAndView("jsonView", success(data));
 			}else{

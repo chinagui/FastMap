@@ -204,7 +204,7 @@ public class StaticsService {
 			else{
 				JSONObject road = json.getJSONObject("road");
 				
-				info.setPercent((int)road.getDouble("total"));
+				info.setPercent((int)road.getDouble("all_percent"));
 			}
 
 			map.put(gridId, info);
@@ -221,5 +221,16 @@ public class StaticsService {
 		}
 
 		return list;
+	}
+	
+	public Map<Integer,Integer> getExpectStatusByBlocks(Set<Integer> blocks){
+		
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		
+		for(Integer block:blocks){
+			map.put(block, 1);
+		}
+		
+		return map;
 	}
 }

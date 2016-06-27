@@ -36,6 +36,7 @@ public class BatchCoreJob extends AbstractJob {
 			Connection conn = DBConnector.getInstance().getConnectionById(req.getExecuteDBId());
 			String batchPrepareResult = prepareBatch(conn, batchParams);
 			response("批处理准备步骤完成",null);
+
 			if(batchPrepareResult.equals("批处理准备成功")) {
 				String batchRuleIds = StringUtils.join(req.getRuleIds(), ",");
 				String batchExecuteResult = executeBatch(conn, batchRuleIds);
@@ -58,6 +59,11 @@ public class BatchCoreJob extends AbstractJob {
 		return super.getException();
 	}
 
+	/**
+	 * 通过传入seq中的DBId号
+	 * @param req
+	 * @return
+     */
 	private BatchCoreParams analyzeBatchParams(BatchCoreJobRequest req) {
 		BatchCoreParams batchParams = new BatchCoreParams();
 		DatahubApi datahub = (DatahubApi) ApplicationContextUtil.getBean("datahubApi");
@@ -103,6 +109,12 @@ public class BatchCoreJob extends AbstractJob {
 		return batchParams;
 	}
 
+	/**
+	 * 批处理准备过程，通过conn调用PREPARE_BATCH存储过程
+	 * @param conn
+	 * @param batchParams：解析好的批处理参数信息
+     * @return
+     */
 	public String prepareBatch(Connection conn, BatchCoreParams batchParams){
 		String batchResult = "";
 		CallableStatement statement = null;
@@ -125,10 +137,10 @@ public class BatchCoreJob extends AbstractJob {
 				statement.setString(13, batchParams.getBackupHost());
 				statement.setString(14, batchParams.getBackupPort());
 				statement.setString(15, batchParams.getBackupSid());
-				statement.registerOutParameter(16, Types.NVARCHAR);
+				statement.registerOutParameter(16, Types.VARCHAR);
 				statement.execute();
 
-				String errInfo = statement.getNString(16);
+				String errInfo = statement.getString(16);
 				if (errInfo.length() == 0) {
 					batchResult = "批处理准备成功";
 				} else {
@@ -141,7 +153,7 @@ public class BatchCoreJob extends AbstractJob {
 		}
 		catch(SQLException e) {
 			try {
-				String errInfo = statement.getNString(16);
+				String errInfo = statement.getString(16);
 				batchResult = errInfo;
 			}catch(SQLException ex) {
 				batchResult = "获取批处理准备过程中异常信息失败";
@@ -160,6 +172,12 @@ public class BatchCoreJob extends AbstractJob {
 		return batchResult;
 	}
 
+	/**
+	 * 批处理执行过程，通过conn调用RUN存储过程
+	 * @param conn
+	 * @param ruleIds：执行的规则号，以“，”分割
+     * @return
+     */
 	public String executeBatch(Connection conn, String ruleIds) {
 		String batchResult = "";
 		CallableStatement statement = null;
@@ -168,10 +186,10 @@ public class BatchCoreJob extends AbstractJob {
 			if (conn != null) {
 				statement = conn.prepareCall(sql);
 				statement.setString(1, ruleIds);
-				statement.registerOutParameter(2, Types.NVARCHAR);
+				statement.registerOutParameter(2, Types.VARCHAR);
 				statement.execute();
 
-				String errInfo = statement.getNString(2);
+				String errInfo = statement.getString(2);
 				batchResult = "批处理执行成功";
 			}
 			else {
@@ -180,7 +198,7 @@ public class BatchCoreJob extends AbstractJob {
 		}
 		catch(SQLException e) {
 			try {
-				String errInfo = statement.getNString(16);
+				String errInfo = statement.getString(16);
 				batchResult = errInfo;
 			}catch(SQLException ex) {
 				batchResult = "获取批处理执行过程中获取异常信息失败";

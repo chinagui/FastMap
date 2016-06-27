@@ -793,7 +793,7 @@ public class TipsUpload {
 
 		TipsUpload a = new TipsUpload();
 
-		a.run("C:/tips.txt");
+		a.run("C:/2.txt");
 		System.out.println("成功");
 	}
 }

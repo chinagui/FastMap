@@ -13,6 +13,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCursor;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.mongodb.client.model.Filters;
 
 public class StatInit {
 
@@ -70,7 +71,7 @@ public class StatInit {
 		}
 		return map;
 	}
-
+	
 	/**
 	 * 获取 tips 统计库中 获取tips完成量，并封装成map返回 支持 根据参数key返回 grid，block，city三种
 	 */

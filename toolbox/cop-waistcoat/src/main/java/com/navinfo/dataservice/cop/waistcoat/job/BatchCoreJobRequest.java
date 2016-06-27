@@ -26,7 +26,7 @@ public class BatchCoreJobRequest extends AbstractJobRequest {
 
 	@Override
 	public int getStepCount() throws JobException {
-		return 2;
+		return 3;
 	}
 
 	@Override

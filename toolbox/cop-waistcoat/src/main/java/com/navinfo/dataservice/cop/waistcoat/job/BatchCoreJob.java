@@ -38,6 +38,7 @@ public class BatchCoreJob extends AbstractJob {
 				response("批处理执行步骤完成",null);
 				if(!batchExecuteResult.equals("批处理执行成功")) {
 					throw new JobException(batchExecuteResult);
+
 				}
 			}
 			else {

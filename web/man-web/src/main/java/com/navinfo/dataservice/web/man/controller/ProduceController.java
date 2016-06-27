@@ -6,7 +6,6 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -16,7 +15,6 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
-import com.navinfo.dataservice.engine.man.block.BlockService;
 
 /** 
 * @ClassName: BlockController 
@@ -27,8 +25,6 @@ import com.navinfo.dataservice.engine.man.block.BlockService;
 @Controller
 public class ProduceController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	@Autowired 
-	private BlockService service;
 
 	/**
 	 * 日出品管理--生成POI&Road日出品包,生成POI日出品包
@@ -130,8 +126,10 @@ public class ProduceController extends BaseController {
 			 * {"gridIds":[213424,343434,23423432],"stopTime":"yyyymmddhh24miss"}
 			 * jobType:releaseFmidbDaily/releaseFmidbMonthly
 			 */
-			dataJson.put("stopTime", "20160616000000");
-			dataJson.put("featureType", "ROAD");
+			JSONObject jobDataJson=new JSONObject();
+			jobDataJson.put("gridList", dataJson.get("gridIds"));
+			jobDataJson.put("stopTime", "20160616000000");
+			//jobDataJson.put("featureType", "ROAD");
 			//String featureType = (String) dataJson.get("featureType");//featureType:POI,ROAD
 			//dataJson.put("featureType", dataJson.get("featureType"));//featureType:POI,ROAD
 			//TODO 道路日落月，poi后台定时脚本
@@ -140,7 +138,7 @@ public class ProduceController extends BaseController {
 				jobId=jobApi.createJob("day2MonthPoiJob", dataJson, userId, "POI月融合");	
 				return new ModelAndView("jsonView", success(jobId));
 			}*/
-			long jobId=jobApi.createJob("day2MonthRoadJob", dataJson, userId, "ROAD月融合");	
+			long jobId=jobApi.createJob("day2MonthRoadJob", jobDataJson, userId, "ROAD月融合");	
 			return new ModelAndView("jsonView", success(jobId));
 			
 		}catch(Exception e){

@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.statics.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
@@ -43,25 +44,14 @@ public class StaticsApiImpl implements StaticsApi {
 				poi_month_grid_col_name, road_month_grid_col_name);
 	}
 
-	public static void main(String[] args) throws Exception {
-		StaticsApiImpl impl = new StaticsApiImpl();
-
-		List<String> grids = new ArrayList<String>();
-
-		Set<String> set = CompGridUtil.mesh2Grid("595672");
-
-		for (String grid : set) {
-			grids.add(grid);
-		}
-
-		List<GridStatInfo> list = impl.getLatestCollectStatByGrids(grids);
-
-		System.out.println(list.size());
-	}
-
 	@Override
 	public List<GridChangeStatInfo> getChangeStatByGrids(Set<String> grids,
 			int type, int stage, String date) throws Exception {
 		return StaticsService.getInstance().getChangeStatByGrids(grids, stage, type, date);
+	}
+
+	@Override
+	public Map<Integer, Integer> getExpectStatusByBlocks(Set<Integer> blocks) {
+		return StaticsService.getInstance().getExpectStatusByBlocks(blocks);
 	}
 }

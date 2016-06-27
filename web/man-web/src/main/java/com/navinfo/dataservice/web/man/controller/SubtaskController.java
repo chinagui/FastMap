@@ -235,37 +235,41 @@ public class SubtaskController extends BaseController {
 			
 			int snapshot = dataJson.getInt("snapshot");
 			dataJson.remove("snapshot");
-			
-			Page page = new Page(curPageNum);
-            page.setPageSize(pageSize);
-            
+
             Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
-			
-			List<Subtask> subtaskList = SubtaskService.getInstance().listByUser(bean,snapshot,pageSize,curPageNum);
-			
-			List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
-			for(int i=0;i<subtaskList.size();i++){
-				HashMap<String, Object> subtask = new HashMap<String, Object>();
-				page.setTotalCount(subtaskList.size());
-				subtask.put("subtaskId", subtaskList.get(i).getSubtaskId());
-				subtask.put("name", subtaskList.get(i).getName());
-				subtask.put("stage", subtaskList.get(i).getStage());
-				subtask.put("type", subtaskList.get(i).getType());
-				subtask.put("planStartDate", DateUtils.dateToString(subtaskList.get(i).getPlanStartDate()));
-				subtask.put("planEndDate", DateUtils.dateToString(subtaskList.get(i).getPlanEndDate()));
-				subtask.put("descp", subtaskList.get(i).getDescp());
-				subtask.put("status", subtaskList.get(i).getStatus());
-				subtask.put("dbId", subtaskList.get(i).getDbId());
-				if(0==snapshot){
-					subtask.put("geometry", subtaskList.get(i).getGeometry());
-					subtask.put("gridIds", subtaskList.get(i).getGridIds());
-				}
-				list.add(subtask);
-			}
-	
-            page.setResult(list);
-			
-			return new ModelAndView("jsonView", success(page));
+            
+            Page page = SubtaskService.getInstance().listByUserPage(bean,snapshot,pageSize,curPageNum);
+            
+            return new ModelAndView("jsonView", success(page));
+            
+//			Page page = new Page(curPageNum);
+//			page.setPageSize(pageSize);
+//			
+//			List<Subtask> subtaskList = SubtaskService.getInstance().listByUser(bean,snapshot,pageSize,curPageNum);
+//			
+//			List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+//			for(int i=0;i<subtaskList.size();i++){
+//				HashMap<String, Object> subtask = new HashMap<String, Object>();
+//				page.setTotalCount(subtaskList.size());
+//				subtask.put("subtaskId", subtaskList.get(i).getSubtaskId());
+//				subtask.put("name", subtaskList.get(i).getName());
+//				subtask.put("stage", subtaskList.get(i).getStage());
+//				subtask.put("type", subtaskList.get(i).getType());
+//				subtask.put("planStartDate", DateUtils.dateToString(subtaskList.get(i).getPlanStartDate()));
+//				subtask.put("planEndDate", DateUtils.dateToString(subtaskList.get(i).getPlanEndDate()));
+//				subtask.put("descp", subtaskList.get(i).getDescp());
+//				subtask.put("status", subtaskList.get(i).getStatus());
+//				subtask.put("dbId", subtaskList.get(i).getDbId());
+//				if(0==snapshot){
+//					subtask.put("geometry", subtaskList.get(i).getGeometry());
+//					subtask.put("gridIds", subtaskList.get(i).getGridIds());
+//				}
+//				list.add(subtask);
+//			}
+//	
+//            page.setResult(list);
+//			
+//			return new ModelAndView("jsonView", success(page));
 		}catch(Exception e){
 			log.error("查询失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

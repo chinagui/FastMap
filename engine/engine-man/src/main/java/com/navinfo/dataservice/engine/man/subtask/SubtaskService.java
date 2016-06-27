@@ -255,9 +255,8 @@ public class SubtaskService {
 			}else{selectSql += " order by block_id";}
 
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
-
 				public Page handle(ResultSet rs) throws SQLException {
-					List<HashMap> list = new ArrayList<HashMap>();
+					List<HashMap<Object,Object>> list = new ArrayList<HashMap<Object,Object>>();
 					Page page = new Page(curPageNum);
 				    page.setPageSize(pageSize);
 				    int total = 0;
@@ -265,7 +264,7 @@ public class SubtaskService {
 						if(total==0){
 							total=rs.getInt("TOTAL_RECORD_NUM_");
 						}
-						HashMap subtask = new HashMap();
+						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
 						subtask.put("subtaskName", rs.getString("NAME"));
 						subtask.put("geometry", rs.getString("GEOMETRY"));
@@ -572,50 +571,143 @@ public class SubtaskService {
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "select st.SUBTASK_ID "
+					+ ",st.NAME"
+					+ ",st.DESCP"
+					+ ",st.PLAN_START_DATE"
+					+ ",st.PLAN_END_DATE"
+					+ ",st.STAGE"
+					+ ",st.TYPE"
+					+ ",st.STATUS"
+					+ ",r.DAILY_DB_ID"
+					+ ",r.MONTHLY_DB_ID"
+					+ ",TO_CHAR(st.GEOMETRY.get_wkt()) AS GEOMETRY"
+					+ ",listagg(sgm.GRID_ID, ',') within group(order by st.SUBTASK_ID) as GRID_ID ";
 
-			String selectSql = "select s.SUBTASK_ID," 
-					+ "s.STAGE,"
-					+ "s.TYPE,"
-					+ "s.PLAN_START_DATE," 
-					+ "s.PLAN_END_DATE,"
-					+ "s.DESCP,"
-					+ "TO_CHAR(s.GEOMETRY.get_wkt()) AS GEOMETRY "
-					+ ",listagg(sgm.GRID_ID, ',') within group(order by s.SUBTASK_ID) as GRID_ID "
-					+ "from SUBTASK s,subtask_grid_mapping sgm "
-					+ "where s.subtask_id = sgm.subtask_id "
-					+ " and s.SUBTASK_ID=" + subtaskId
-					+ " group by s.SUBTASK_ID"
-					+ ",s.STAGE"
-					+ ",s.TYPE"
-					+ ",s.PLAN_START_DATE"
-					+ ",s.PLAN_END_DATE"
-					+ ",s.DESCP"
-					+ ",TO_CHAR(s.GEOMETRY.get_wkt())";
+			String fromSql_task = " from subtask st"
+					+ ",task t"
+					+ ",city c"
+					+ ",region r"
+					+ ",subtask_grid_mapping sgm ";
+
+			String fromSql_block = " from subtask st"
+					+ ",block b"
+					+ ",city c"
+					+ ",region r"
+					+ ",subtask_grid_mapping sgm ";
+
+			String conditionSql_task = " where st.task_id = t.task_id "
+					+ "and t.city_id = c.city_id "
+					+ "and c.region_id = r.region_id "
+					+ " and st.subtask_id = sgm.subtask_id "
+					+ " and st.SUBTASK_ID=" + subtaskId;
+
+			String conditionSql_block = " where st.block_id = b.block_id "
+					+ "and b.city_id = c.city_id "
+					+ "and c.region_id = r.region_id "
+					+ " and st.subtask_id = sgm.subtask_id "
+					+ " and st.SUBTASK_ID=" + subtaskId;
+
+			String groupBySql = " group by st.SUBTASK_ID"
+					+ ",st.NAME"
+					+ ",st.DESCP"
+					+ ",st.PLAN_START_DATE"
+					+ ",st.PLAN_END_DATE"
+					+ ",st.STAGE"
+					+ ",st.TYPE"
+					+ ",st.STATUS"
+					+ ",r.DAILY_DB_ID"
+					+ ",r.MONTHLY_DB_ID"
+					+ ",TO_CHAR(st.GEOMETRY.get_wkt())";
+			
+			selectSql = selectSql + fromSql_task
+					+ conditionSql_task + groupBySql
+					+ " union all " + selectSql
+					+ fromSql_block + conditionSql_block
+					+ groupBySql;
+			
 
 			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>() {
 				public Subtask handle(ResultSet rs) throws SQLException {
+					Subtask subtask = new Subtask();
 					while (rs.next()) {
-						Subtask subtask = new Subtask();
 						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
-						subtask.setGeometry(rs.getString("GEOMETRY"));
+						subtask.setName(rs.getString("NAME"));
 						subtask.setStage(rs.getInt("STAGE"));
 						subtask.setType(rs.getInt("TYPE"));
 						subtask.setPlanStartDate(rs
 								.getTimestamp("PLAN_START_DATE"));
 						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						subtask.setDescp(rs.getString("DESCP"));
-						
+						subtask.setStatus(rs.getInt("STATUS"));
+	
+						subtask.setGeometry(rs.getString("GEOMETRY"));
+	
 						String gridIds = rs.getString("GRID_ID");
 						String[] gridIdList = gridIds.split(",");
 						subtask.setGridIds(ArrayUtil.convertList(Arrays.asList(gridIdList)));
-						
+	
+						if (1 == rs.getInt("STAGE")) {
+							subtask.setDbId(rs.getInt("DAILY_DB_ID"));
+						} else if (2 == rs.getInt("STAGE")) {
+							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
+						} else {
+							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
+						}
 						return subtask;
 					}
-					return null;
+					return subtask;
 				}
-
+	
 			};
-			return run.query(conn, selectSql, rsHandler);
+
+			return run.query(conn, selectSql,rsHandler);
+			
+
+//			String selectSql = "select s.SUBTASK_ID," 
+//					+ "s.STAGE,"
+//					+ "s.TYPE,"
+//					+ "s.PLAN_START_DATE," 
+//					+ "s.PLAN_END_DATE,"
+//					+ "s.DESCP,"
+//					+ "TO_CHAR(s.GEOMETRY.get_wkt()) AS GEOMETRY "
+//					+ ",listagg(sgm.GRID_ID, ',') within group(order by s.SUBTASK_ID) as GRID_ID "
+//					+ "from SUBTASK s,subtask_grid_mapping sgm "
+//					+ "where s.subtask_id = sgm.subtask_id "
+//					+ " and s.SUBTASK_ID=" + subtaskId
+//					+ " group by s.SUBTASK_ID"
+//					+ ",s.STAGE"
+//					+ ",s.TYPE"
+//					+ ",s.PLAN_START_DATE"
+//					+ ",s.PLAN_END_DATE"
+//					+ ",s.DESCP"
+//					+ ",TO_CHAR(s.GEOMETRY.get_wkt())";
+//
+//			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>() {
+//				public Subtask handle(ResultSet rs) throws SQLException {
+//					while (rs.next()) {
+//						Subtask subtask = new Subtask();
+//						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
+//						subtask.setGeometry(rs.getString("GEOMETRY"));
+//						subtask.setStage(rs.getInt("STAGE"));
+//						subtask.setType(rs.getInt("TYPE"));
+//						subtask.setPlanStartDate(rs
+//								.getTimestamp("PLAN_START_DATE"));
+//						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
+//						subtask.setDescp(rs.getString("DESCP"));
+//						
+//						String gridIds = rs.getString("GRID_ID");
+//						String[] gridIdList = gridIds.split(",");
+//						subtask.setGridIds(ArrayUtil.convertList(Arrays.asList(gridIdList)));
+//						
+//						return subtask;
+//					}
+//					return null;
+//				}
+//
+//			};
+//			return run.query(conn, selectSql, rsHandler);
 
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -744,5 +836,39 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 
+	}
+
+	/**
+	 * @param bean
+	 * @param snapshot
+	 * @param pageSize
+	 * @param curPageNum
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Page listByUserPage(Subtask bean, int snapshot, int pageSize, int curPageNum) throws ServiceException {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try {
+
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+
+			Page page = new Page();
+			//snapshot=1不返回geometry和gridIds
+			if(snapshot==1){
+				page = SubtaskOperation.getListByUserSnapshotPage(conn, bean,curPageNum,pageSize);
+			}else{
+				page = SubtaskOperation.getListByUserPage(conn, bean,curPageNum,pageSize);
+			}
+			
+			return page;
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 }

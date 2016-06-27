@@ -2,9 +2,6 @@ package com.navinfo.dataservice.impcore.release.mon;
 
 import java.util.List;
 
-import net.sf.json.JSONObject;
-
-import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;

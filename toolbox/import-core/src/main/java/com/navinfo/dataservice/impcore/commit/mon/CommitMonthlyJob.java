@@ -11,6 +11,7 @@ import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.impcore.commit.day.road.Day2MonthRoadJobRequest;
 import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
+import com.navinfo.dataservice.impcore.flushbylog.LogFlushUtil;
 import com.navinfo.dataservice.impcore.flushbylog.LogFlusher;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
@@ -30,7 +31,8 @@ public class CommitMonthlyJob extends AbstractJob {
 	@Override
 	public void execute() throws JobException  {
 		try{
-			List<Region> regionsWithGrids= queryRegionGridsMapping();
+			Day2MonthRoadJobRequest req = (Day2MonthRoadJobRequest )this.request;
+			List<Region> regionsWithGrids= LogFlushUtil.getInstance().queryRegionGridsMapping(req.getGridList());
 			HashMap<String,FlushResult> jobResponse = new HashMap<String,FlushResult> ();
 			for (Region regionInfo :regionsWithGrids){
 				this.log.info("得到大区对应的grid列表");
@@ -43,7 +45,7 @@ public class CommitMonthlyJob extends AbstractJob {
 													monthlyDb, 
 													gdbPlus, 
 													gridListOfRegion, 
-													((Day2MonthRoadJobRequest )this.request).getStopTime());
+													req.getStopTime());
 				logFlusher.setLog(this.log);
 				FlushResult result= logFlusher.perform();
 				jobResponse.put(regionInfo.getRegionId().toString(), result);

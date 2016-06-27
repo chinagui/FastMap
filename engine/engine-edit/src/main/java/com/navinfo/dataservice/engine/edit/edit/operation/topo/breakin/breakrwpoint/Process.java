@@ -52,7 +52,6 @@ public class Process extends AbstractProcess<Command> {
 			// 创建铁路点有关铁路线具体操作
 			OpTopo operation = new OpTopo(this.getCommand(), check, this.getConn());
 			msg = operation.run(this.getResult());
-			this.recordData();
 		} catch (Exception e) {
 
 			this.getConn().rollback();

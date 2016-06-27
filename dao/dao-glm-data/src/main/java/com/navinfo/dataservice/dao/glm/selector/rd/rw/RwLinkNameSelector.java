@@ -33,7 +33,7 @@ public class RwLinkNameSelector implements ISelector {
 		
 		List<IRow> rows = new ArrayList<IRow>();
 
-		String sql = "select * from rw_link_name where link_pid=:1 and u_record!=:2";
+		String sql = "select a.*,b.name from rw_link_name a,rd_name b where link_pid =:1 and a.name_groupid=b.name_groupid(+) and b.lang_code(+)='CHI' and a.u_record!=2";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -48,8 +48,6 @@ public class RwLinkNameSelector implements ISelector {
 
 			pstmt.setInt(1, id);
 
-			pstmt.setInt(2, 2);
-
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
@@ -61,6 +59,8 @@ public class RwLinkNameSelector implements ISelector {
 				rwLinkName.setNameGroupid(resultSet.getInt("name_groupid"));
 
 				rwLinkName.setRowId(resultSet.getString("row_id"));
+				
+				rwLinkName.setName(resultSet.getString("name"));
 
 				rows.add(rwLinkName);
 			}

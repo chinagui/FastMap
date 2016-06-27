@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.man.block;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.Format;
@@ -11,15 +10,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import oracle.sql.CLOB;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.BlockMan;
@@ -28,13 +22,15 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
-import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.sql.CLOB;
 
 /**
  * @ClassName: BlockService
@@ -42,9 +38,19 @@ import com.navinfo.navicommons.exception.ServiceException;
  * @date 2016-06-08 01:32:00
  * @Description: TODO
  */
-@Service
+
 public class BlockService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
+	
+	private BlockService() {
+	}
+	
+	private static class SingletonHolder{
+		private static final BlockService INSTANCE =new BlockService();
+	}
+	public static BlockService getInstance(){
+		return SingletonHolder.INSTANCE;
+	}
 
 	public void batchOpen(long userId, JSONObject json) throws ServiceException {
 		Connection conn = null;

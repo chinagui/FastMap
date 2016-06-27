@@ -2,11 +2,11 @@ package org.navinfo.dataservice.engine.meta.chain;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
-import org.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
+import com.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;

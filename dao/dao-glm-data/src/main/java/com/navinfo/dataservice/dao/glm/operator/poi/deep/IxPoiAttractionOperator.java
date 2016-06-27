@@ -81,8 +81,8 @@ public class IxPoiAttractionOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 		StringBuilder sb = new StringBuilder("update "
-				+ ixPoiAttraction.tableName() + " set u_record=3,u_date="
-				+ StringUtils.getCurrentTime() + ",");
+				+ ixPoiAttraction.tableName() + " set u_record=3,u_date='"
+				+ StringUtils.getCurrentTime() + "',");
 
 		PreparedStatement pstmt = null;
 
@@ -217,16 +217,56 @@ public class IxPoiAttractionOperator implements IOperator {
 		sb.append(ixPoiAttraction.getPid());
 		sb.append("," + ixPoiAttraction.getPoiPid());
 		sb.append("," + ixPoiAttraction.getSightLevel());
-		sb.append(",'" + ixPoiAttraction.getLongDescription() + "'");
-		sb.append(",'" + ixPoiAttraction.getLongDescripEng() + "'");
-		sb.append(",'" + ixPoiAttraction.getTicketPrice() + "'");
-		sb.append(",'" + ixPoiAttraction.getTicketPriceEng() + "'");
-		sb.append(",'" + ixPoiAttraction.getOpenHour() + "'");
-		sb.append(",'" + ixPoiAttraction.getOpenHourEng() + "'");
-		sb.append(",'" + ixPoiAttraction.getTelephone() + "'");
-		sb.append(",'" + ixPoiAttraction.getAddress() + "'");
-		sb.append(",'" + ixPoiAttraction.getCity() + "'");
-		sb.append(",'" + ixPoiAttraction.getPhotoName() + "'");
+		if(StringUtils.isNotEmpty(ixPoiAttraction.getLongDescription())){
+			sb.append(",'" + ixPoiAttraction.getLongDescription() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiAttraction.getLongDescripEng())){
+			sb.append(",'" + ixPoiAttraction.getLongDescripEng() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiAttraction.getTicketPrice())){
+			sb.append(",'" + ixPoiAttraction.getTicketPrice() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiAttraction.getTicketPriceEng())){
+			sb.append(",'" + ixPoiAttraction.getTicketPriceEng() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiAttraction.getOpenHour())){
+			sb.append(",'" + ixPoiAttraction.getOpenHour() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiAttraction.getOpenHourEng())){
+			sb.append(",'" + ixPoiAttraction.getOpenHourEng() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiAttraction.getTelephone())){
+			sb.append(",'" + ixPoiAttraction.getTelephone() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiAttraction.getAddress())){
+			sb.append(",'" + ixPoiAttraction.getAddress() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiAttraction.getCity())){
+			sb.append(",'" + ixPoiAttraction.getCity() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiAttraction.getPhotoName())){
+			sb.append(",'" + ixPoiAttraction.getPhotoName() + "'");
+		}else{
+			sb.append(", null ");
+		}
 		sb.append("," + ixPoiAttraction.getParking());
 		sb.append("," + ixPoiAttraction.getTravelguideFlag());
 		sb.append(",'" + StringUtils.getCurrentTime()+"'");
@@ -243,7 +283,7 @@ public class IxPoiAttractionOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiAttraction.tableName()
-				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where attraction_id    ="
+				+ " set u_record=2 ,u_date='"+StringUtils.getCurrentTime()+"' where attraction_id    ="
 				+ ixPoiAttraction.getPid();
 		stmt.addBatch(sql);
 	}

@@ -25,8 +25,8 @@
 	 	request="com.navinfo.dataservice.impcore.release.mon.ReleaseFmIdbMonthlyJobRequest"
 	/>
 	<type name="diff" 
-		class="com.navinfo.dataservice.diff.DiffJob"
-	 	request="com.navinfo.dataservice.diff.DiffJobRequest"
+		class="com.navinfo.dataservice.diff.job.DiffJob"
+	 	request="com.navinfo.dataservice.diff.job.DiffJobRequest"
 	/>
 	<type name="gdbExport" 
 		class="com.navinfo.dataservice.expcore.job.GdbExportJob"
@@ -39,6 +39,18 @@
 	<type name="gdbBatch" 
 		class="com.navinfo.dataservice.cop.waistcoat.job.GdbBatchJob"
 	 	request="com.navinfo.dataservice.cop.waistcoat.job.GdbBatchJobRequest"
+	/>
+	<type name="gdbValidation" 
+		class="com.navinfo.dataservice.cop.waistcoat.job.GdbValidationJob"
+	 	request="com.navinfo.dataservice.cop.waistcoat.job.GdbValidationJobRequest"
+	/>
+	<type name="gdbImport" 
+		class="com.navinfo.dataservice.impcore.job.GdbImportJob"
+	 	request="com.navinfo.dataservice.impcore.job.GdbImportJobRequest"
+	/>
+	<type name="editPoiBaseRelease" 
+		class="com.navinfo.dataservice.edit.job.EditPoiBaseReleaseJob"
+	 	request="com.navinfo.dataservice.edit.job.EditPoiBaseReleaseJobRequest"
 	/>
 	
 </mapping>

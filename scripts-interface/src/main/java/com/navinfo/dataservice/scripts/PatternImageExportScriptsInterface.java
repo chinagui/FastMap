@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.scripts;
 
-import org.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
+import com.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
 
 public class PatternImageExportScriptsInterface {
 

@@ -3,6 +3,8 @@ package com.navinfo.dataservice.api.edit.iface;
 import java.util.Collection;
 import java.util.Set;
 
+import com.navinfo.dataservice.api.edit.model.FmEditLock;
+
 /** 
 * @ClassName: DatalockApiService 
 * @author Xiao Xiaowen 
@@ -11,10 +13,7 @@ import java.util.Set;
 *  
 */
 public interface DatalockApi {
-	Set<Integer> query(int prjId,Set<Integer> meshes)throws Exception;
-	int lock(int prjId, int userId, Set<Integer> meshes,int lockType)throws Exception;
-	int unlock(int prjId,int lockSeq,int lockType)throws Exception;
-	void unlock(int prjId, Set<Integer> meshes,int lockType)throws Exception;
-	public int lockGrid(int regionId, int lockObject, Collection<Integer> grids,int lockType,String dbType)throws Exception;
+	FmEditLock lockGrid(int dbId,int lockObject,Collection<Integer> grids,int lockType,int jobId)throws Exception;
+	public int lockGrid(int regionId, int lockObject, Collection<Integer> grids,int lockType,String dbType,int jobId)throws Exception;
 	public int unlockGrid(int lockSeq,String dbType)throws Exception;
 }

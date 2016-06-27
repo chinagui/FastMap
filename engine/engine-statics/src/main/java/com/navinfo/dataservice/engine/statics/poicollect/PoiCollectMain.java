@@ -27,9 +27,9 @@ public class PoiCollectMain {
 
 	private static Logger log = null;
 	private static CountDownLatch countDownLatch = null;
-	private static final String col_name_grid = "fm_stat_collect_poi_grid";
-	private static final String col_name_block = "fm_stat_collect_poi_block";
-	private static final String col_name_city = "fm_stat_collect_poi_city";
+	public static final String col_name_grid = "fm_stat_collect_poi_grid";
+	public static final String col_name_block = "fm_stat_collect_poi_block";
+	public static final String col_name_city = "fm_stat_collect_poi_city";
 	private String db_name;
 	private String stat_date;
 	private String stat_time;

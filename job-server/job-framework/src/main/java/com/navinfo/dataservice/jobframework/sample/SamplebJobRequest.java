@@ -1,18 +1,14 @@
 package com.navinfo.dataservice.jobframework.sample;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
 
 import org.apache.commons.lang.StringUtils;
-import org.dom4j.Document;
-
-import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.exception.JobRuntimeException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
+import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName: SampleJobRequest 
@@ -22,23 +18,8 @@ import net.sf.json.JSONObject;
 *  
 */
 public class SamplebJobRequest extends AbstractJobRequest{
-	private AbstractJobRequest sampleaJobRequest1;
 	private String type;
-    public SamplebJobRequest() {
-		super();
-		log = LoggerRepos.getLogger(log);
-	}
-    public SamplebJobRequest(JSONObject jsonConfig){
-    	super();
-		log = LoggerRepos.getLogger(log);
-    	this.parseByJsonConfig(jsonConfig);
-    }
 
-	@Override
-	public int getStepCount() throws JobException {
-		return 1+sampleaJobRequest1.getStepCount();
-	}
-	
 	@Override
 	public void validate() throws JobRuntimeException {
 		//不需要验证子job的request
@@ -54,15 +35,22 @@ public class SamplebJobRequest extends AbstractJobRequest{
 	public void setType(String type) {
 		this.type = type;
 	}
-	public AbstractJobRequest getSampleaJobRequest1() {
-		return sampleaJobRequest1;
-	}
-	public void setSampleaJobRequest1(AbstractJobRequest sampleaJobRequest1) {
-		this.sampleaJobRequest1 = sampleaJobRequest1;
-	}
+
 	@Override
 	public String getJobType() {
 		return "sampleb";
+	}
+
+	@Override
+	public void defineSubJobRequests() throws JobCreateException {
+		subJobRequests = new HashMap<String,AbstractJobRequest>();
+		AbstractJobRequest samplea1 = JobCreateStrategy.createJobRequest("samplea", null);
+		subJobRequests.put("samplea1", samplea1);
+	}
+
+	@Override
+	protected int myStepCount() throws JobException {
+		return 1;
 	}
 
 }

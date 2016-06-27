@@ -1,9 +1,15 @@
 package com.navinfo.dataservice.cop.waistcoat.job;
 
+import java.util.HashMap;
 import java.util.List;
 
+import com.navinfo.dataservice.api.datahub.model.BizType;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
+import com.navinfo.dataservice.commons.database.DbServerType;
+import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
+import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 
 import net.sf.json.JSONObject;
 
@@ -17,26 +23,51 @@ import net.sf.json.JSONObject;
 public class GdbBatchJobRequest extends AbstractJobRequest {
 	protected List<Integer> grids;
 	protected List<Integer> rules;
-	protected int targetDbId;
-	protected AbstractJobRequest createBatchDb;
-	protected AbstractJobRequest expBatchDb;
-	protected AbstractJobRequest createBakDb;
-	protected AbstractJobRequest copyBakDb;
-	protected AbstractJobRequest batchBody;
-	protected AbstractJobRequest diffBody;
-	protected AbstractJobRequest commitBody;
-	
+	protected int targetDbId;//批处理的导出源库
+	protected int batchDbId=0;//如果存在可用的子版本库，可以直接使用，不用再创建
+
 	@Override
-	public int getStepCount() throws JobException {
-		int count = 0;
-		count+=createBatchDb.getStepCount();
-		count+=expBatchDb.getStepCount();
-		count+=createBakDb.getStepCount();
-		count+=copyBakDb.getStepCount();
-		count+=batchBody.getStepCount();
-		count+=diffBody.getStepCount();
-		count+=commitBody.getStepCount();
-		return count;
+	protected int myStepCount() throws JobException {
+		return 0;//什么大事都没做，全调子job
+	}
+
+	@Override
+	public void defineSubJobRequests()throws JobCreateException{
+		subJobRequests = new HashMap<String,AbstractJobRequest>();
+		//createBatchDb
+		if(batchDbId==0){
+			AbstractJobRequest createBatchDb = JobCreateStrategy.createJobRequest("createDb", null);
+			createBatchDb.setAttrValue("serverType", DbServerType.TYPE_ORACLE);
+			createBatchDb.setAttrValue("bizType", BizType.DB_COP_VERSION);
+			createBatchDb.setAttrValue("descp", "batch temp db");
+			subJobRequests.put("createBatchDb", createBatchDb);
+			//expBatchDb
+			AbstractJobRequest expBatchDb = JobCreateStrategy.createJobRequest("gdbExport", null);
+			expBatchDb.setAttrValue("condition", "mesh");
+			expBatchDb.setAttrValue("featureType", "all");
+			expBatchDb.setAttrValue("dataIntegrity", false);
+			subJobRequests.put("expBatchDb", expBatchDb);
+		}
+		//createBakDb
+		AbstractJobRequest createBakDb = JobCreateStrategy.createJobRequest("createDb", null);
+		createBakDb.setAttrValue("serverType", DbServerType.TYPE_ORACLE);
+		createBakDb.setAttrValue("bizType", BizType.DB_COP_VERSION);
+		createBakDb.setAttrValue("descp", "batch bak db");
+		subJobRequests.put("createBakDb", createBakDb);
+		//copyBakDb
+		AbstractJobRequest copyBakDb = JobCreateStrategy.createJobRequest("gdbFullCopy", null);
+		copyBakDb.setAttrValue("featureType", "all");
+		subJobRequests.put("copyBakDb", copyBakDb);
+		//batch
+		//...
+		//diff
+		AbstractJobRequest diff = JobCreateStrategy.createJobRequest("diff", null);
+		subJobRequests.put("diff", diff);
+		//commit
+		AbstractJobRequest commit = JobCreateStrategy.createJobRequest("gdbImport", null);
+		subJobRequests.put("commit", commit);
+		
+		
 	}
 
 	/* (non-Javadoc)
@@ -72,60 +103,12 @@ public class GdbBatchJobRequest extends AbstractJobRequest {
 		this.targetDbId = targetDbId;
 	}
 
-	public AbstractJobRequest getCreateBatchDb() {
-		return createBatchDb;
+	public int getBatchDbId() {
+		return batchDbId;
 	}
 
-	public void setCreateBatchDb(AbstractJobRequest createBatchDb) {
-		this.createBatchDb = createBatchDb;
-	}
-
-	public AbstractJobRequest getExpBatchDb() {
-		return expBatchDb;
-	}
-
-	public void setExpBatchDb(AbstractJobRequest expBatchDb) {
-		this.expBatchDb = expBatchDb;
-	}
-
-	public AbstractJobRequest getCreateBakDb() {
-		return createBakDb;
-	}
-
-	public void setCreateBakDb(AbstractJobRequest createBakDb) {
-		this.createBakDb = createBakDb;
-	}
-
-	public AbstractJobRequest getCopyBakDb() {
-		return copyBakDb;
-	}
-
-	public void setCopyBakDb(AbstractJobRequest copyBakDb) {
-		this.copyBakDb = copyBakDb;
-	}
-
-	public AbstractJobRequest getBatchBody() {
-		return batchBody;
-	}
-
-	public void setBatchBody(AbstractJobRequest batchBody) {
-		this.batchBody = batchBody;
-	}
-
-	public AbstractJobRequest getDiffBody() {
-		return diffBody;
-	}
-
-	public void setDiffBody(AbstractJobRequest diffBody) {
-		this.diffBody = diffBody;
-	}
-
-	public AbstractJobRequest getCommitBody() {
-		return commitBody;
-	}
-
-	public void setCommitBody(AbstractJobRequest commitBody) {
-		this.commitBody = commitBody;
+	public void setBatchDbId(int batchDbId) {
+		this.batchDbId = batchDbId;
 	}
 
 	@Override

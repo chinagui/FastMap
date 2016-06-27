@@ -10,20 +10,19 @@ import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.job.iface.JobApiService;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -34,6 +33,9 @@ import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
 import com.navinfo.navicommons.database.QueryRunner;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 @Controller
 public class EditController extends BaseController {
@@ -133,10 +135,10 @@ public class EditController extends BaseController {
 
 			if (jsonReq.containsKey("detailId")) {
 				int detailId = jsonReq.getInt("detailId");
-
+				int branchType = jsonReq.getInt("branchType");
+				String rowId =jsonReq.getString("rowId");
 				RdBranchSelector selector = new RdBranchSelector(conn);
-
-				IRow row = selector.loadByDetailId(detailId, false);
+				IRow row = selector.loadByDetailId(detailId,branchType,rowId, false);
 
 				if (row != null) {
 
@@ -279,8 +281,10 @@ public class EditController extends BaseController {
 			int dbId = jsonReq.getInt("dbId");
 			// 项目管理（放开）
 			// subtaskId
-			// int subtaskId = jsonReq.getInt("subtaskId");
-			// int type = jsonReq.getInt("type");
+			int subtaskId = jsonReq.getInt("subtaskId");
+			int type = jsonReq.getInt("type");
+			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 			int pageNum = jsonReq.getInt("pageNum");
 			int pageSize = jsonReq.getInt("pageSize");
 			int pid =0;
@@ -292,7 +296,7 @@ public class EditController extends BaseController {
 			}
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			IxPoiSelector selector = new IxPoiSelector(conn);
-			JSONObject jsonObject = selector.loadPids(false,pid,pidName,pageSize, pageNum);
+			JSONObject jsonObject = selector.loadPids(false,pid,pidName,type,subtask.getGeometry(),pageSize, pageNum);
 			return new ModelAndView("jsonView", success(jsonObject));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -360,4 +364,38 @@ public class EditController extends BaseController {
 			}
 		}
 	}
+	/**
+	 * POI提交
+	 * 根据所选grid进行POI数据的提交，自动执行检查、批处理
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/base/release")
+	public ModelAndView getPoiBaseRelease(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			int dbId = jsonReq.getInt("dbId");
+			JSONArray gridIds=jsonReq.getJSONArray("gridIds");
+			
+			JSONObject jobReq=new JSONObject();
+			jobReq.put("targetDbId", dbId);
+			jobReq.put("gridIds", gridIds);
+					
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
+			//long userId=2;
+			JobApiService apiService=(JobApiService) ApplicationContextUtil.getBean("jobApiService");
+			long jobId=apiService.createJob("editPoiBaseRelease", jobReq, userId, "POI行编提交");	
+			return new ModelAndView("jsonView", success(jobId));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
 }

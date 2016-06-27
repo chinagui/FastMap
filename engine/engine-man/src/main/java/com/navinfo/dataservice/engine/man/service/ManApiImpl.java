@@ -13,6 +13,7 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
+import com.navinfo.dataservice.engine.man.version.VersionService;
 /*
  * @author mayunfei
  * 2016年6月7日
@@ -22,13 +23,7 @@ import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 @Service("manApi")
 public class ManApiImpl implements ManApi {
 	
-	/* 
-	 * @see com.navinfo.dataservice.api.edit.iface.GridSelectorApiService#queryRegionGridMapping(java.util.List)
-	 */
-	@Override
-	public Map queryRegionGridMapping(List<Integer> gridList) throws Exception {
-		return GridService.getInstance().queryRegionGridMapping(gridList);
-	}
+	
 	@Override
 	public Region queryByRegionId(Integer regionId) throws Exception {
 		Region region = new Region();
@@ -67,6 +62,20 @@ public class ManApiImpl implements ManApi {
 	@Override
 	public int queryAdminIdBySubtask(int subtaskId) throws Exception {
 		return SubtaskService.getInstance().queryAdminIdBySubtask(subtaskId);
+	}
+	@Override
+	public int queryDbIdByAdminId(int adminId) throws Exception {
+		return RegionService.getInstance().queryDbIdByAdminId(adminId);
+	}
+	@Override
+	public String querySpecVersionByType(int type) throws Exception {
+		VersionService service = new VersionService();
+		
+		return service.query(type);
+	}
+	@Override
+	public List<Region> queryRegionWithGrids(List<Integer> grids) throws Exception {
+		return RegionService.getInstance().queryRegionWithGrids(grids);
 	}
 	
 }

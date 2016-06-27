@@ -25,10 +25,12 @@ public class LogWriter {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private static WKT wktUtil = new WKT();
 	private Connection targetDbConn;
-	
+	/**
+	 * @param conn 目标库的连接
+	 * 默认情况下，出现履历执行的错误，不抛异常
+	 */
 	public LogWriter(Connection conn) {
-		super();
-		this.targetDbConn = conn;
+		this.targetDbConn=conn;
 	}
 
 	public void write(EditLog editLog,ILogWriteListener listener){

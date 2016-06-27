@@ -38,6 +38,14 @@ public class PidSequenceName {
 	
 	public static final String branchDetailIdName = "SEQ_RD_BRANCH_DETAIL";
 	
+	public static final String signasrealIdName= "SEQ_RD_SIGNASREAL";
+	
+	public static final String schematicIdName = "SEQ_RD_BRANCH_SCHEMATIC";
+	
+	public static final String signboardIdName = "SEQ_RD_SIGNBOARD";
+	
+	public static final String signboardNameIdName = "RD_SIGNBOARD_NAME";
+	
 	public static final String branchNameIdName = "SEQ_RD_BRANCH_NAME";
 	
 	public static final String ckExceptionIdName = "SEQ_CK_EXCEPTION";

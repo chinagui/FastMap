@@ -83,8 +83,8 @@ public class IxPoiTourroutOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 		StringBuilder sb = new StringBuilder("update "
-				+ ixPoiTourroute.tableName() + " set u_record=3,u_date="
-				+ StringUtils.getCurrentTime() + ",");
+				+ ixPoiTourroute.tableName() + " set u_record=3,u_date='"
+				+ StringUtils.getCurrentTime() + "',");
 
 		PreparedStatement pstmt = null;
 
@@ -217,21 +217,76 @@ public class IxPoiTourroutOperator implements IOperator {
 		sb.append(ixPoiTourroute.tableName());
 		sb.append("(tour_id, tour_name, tour_name_eng, tour_intr, tour_intr_eng, tour_type, tour_type_eng, tour_x, tour_y, tour_len, trail_time, visit_time, poi_pid, reserved, memo, u_date,u_record, row_id) values (");
 		sb.append(ixPoiTourroute.getPid());
-		sb.append(",'" + ixPoiTourroute.getTourName() + "'");
-		sb.append(",'" + ixPoiTourroute.getTourNameEng() + "'");
-		sb.append(",'" + ixPoiTourroute.getTourIntr() + "'");
-		sb.append(",'" + ixPoiTourroute.getTourIntrEng() + "'");
-		sb.append(",'" + ixPoiTourroute.getTourType() + "'");
-		sb.append(",'" + ixPoiTourroute.getTourTypeEng() + "'");
+		if (StringUtils.isNotEmpty(ixPoiTourroute.getTourName())) {
+			sb.append(",'" + ixPoiTourroute.getTourName() + "'");
+		} else {
+			sb.append(", null ");
+		}
+		if (StringUtils.isNotEmpty(ixPoiTourroute.getTourNameEng())) {
+			sb.append(",'" + ixPoiTourroute.getTourNameEng() + "'");
+		} else {
+			sb.append(", null ");
+		}
+		
+		if (StringUtils.isNotEmpty(ixPoiTourroute.getTourIntr())) {
+			sb.append(",'" + ixPoiTourroute.getTourIntr() + "'");
+		} else {
+			sb.append(", null ");
+		}
+		
+		if (StringUtils.isNotEmpty(ixPoiTourroute.getTourIntrEng())) {
+			sb.append(",'" + ixPoiTourroute.getTourIntrEng() + "'");
+		} else {
+			sb.append(", null ");
+		}
+		if (StringUtils.isNotEmpty(ixPoiTourroute.getTourType())) {
+			sb.append(",'" + ixPoiTourroute.getTourType() + "'");
+		} else {
+			sb.append(", null ");
+		}
+		if (StringUtils.isNotEmpty(ixPoiTourroute.getTourTypeEng())) {
+			sb.append(",'" + ixPoiTourroute.getTourTypeEng() + "'");
+		} else {
+			sb.append(", null ");
+		}
+		
+		
+	
+	
+	
 		sb.append("," + ixPoiTourroute.getTourX());
 		sb.append("," + ixPoiTourroute.getTourY());
 		sb.append("," + ixPoiTourroute.getTourLen());
-		sb.append(",'" + ixPoiTourroute.getTrailTime() + "'");
-		sb.append(",'" + ixPoiTourroute.getVisitTime() + "'");
-		sb.append(",'" + ixPoiTourroute.getPoiPid() + "'");
-		sb.append(",'" + ixPoiTourroute.getReserved() + "'");
-		sb.append(",'" + ixPoiTourroute.getMemo() + "'");
-		sb.append("," + ixPoiTourroute.getTravelguideFlag() + "'");
+		if (StringUtils.isNotEmpty(ixPoiTourroute.getTrailTime())) {
+			sb.append(",'" + ixPoiTourroute.getTrailTime() + "'");
+		} else {
+			sb.append(", null ");
+		}
+		
+		if (StringUtils.isNotEmpty(ixPoiTourroute.getVisitTime())) {
+			sb.append(",'" + ixPoiTourroute.getVisitTime() + "'");
+		} else {
+			sb.append(", null ");
+		}
+		
+		if (StringUtils.isNotEmpty(ixPoiTourroute.getPoiPid())) {
+			sb.append(",'" + ixPoiTourroute.getPoiPid() + "'");
+		} else {
+			sb.append(", null ");
+		}
+	
+		if (StringUtils.isNotEmpty(ixPoiTourroute.getReserved())) {
+			sb.append(",'" + ixPoiTourroute.getReserved() + "'");
+		} else {
+			sb.append(", null ");
+		}
+		if (StringUtils.isNotEmpty(ixPoiTourroute.getMemo())) {
+			sb.append(",'" + ixPoiTourroute.getMemo() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		sb.append("," + ixPoiTourroute.getTravelguideFlag());
 		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiTourroute.rowId() + "')");
 		stmt.addBatch(sb.toString());
@@ -246,7 +301,7 @@ public class IxPoiTourroutOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiTourroute.tableName()
-				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where   tour_id      ="
+				+ " set u_record=2 ,u_date='"+StringUtils.getCurrentTime()+"' where   tour_id      ="
 				+ ixPoiTourroute.getPid();
 		stmt.addBatch(sql);
 	}

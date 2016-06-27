@@ -13,10 +13,12 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFaceTopo;
+
 /**
- * ZONE:Face Topo  查询接口
+ * ZONE:Face Topo 查询接口
+ * 
  * @author zhaokk
- *
+ * 
  */
 public class ZoneFaceTopoSelector implements ISelector {
 
@@ -95,7 +97,8 @@ public class ZoneFaceTopoSelector implements ISelector {
 	}
 
 	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
+	public List<IRow> loadRowsByParentId(int id, boolean isLock)
+			throws Exception {
 		StringBuilder sb = new StringBuilder(
 				"SELECT * FROM ad_face_topo  WHERE a.face_pid=:1  and  a.u_record !=2");
 
@@ -154,6 +157,70 @@ public class ZoneFaceTopoSelector implements ISelector {
 
 		return list;
 	}
-	
+	/**
+	 * 
+	 * 加载Zone_link和topo的信息
+	 * @param linkPid
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<ZoneFaceTopo> loadByLinkPid(Integer linkPid, boolean isLock)
+			throws Exception {
+
+		List<ZoneFaceTopo> zoneFaceTopos= new ArrayList<ZoneFaceTopo>();
+		String sql = "SELECT a.* FROM zone_face_topo a WHERE a.link_pid =:1 and  a.u_record !=2 ";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				ZoneFaceTopo zoneFaceTopo = new ZoneFaceTopo();
+				zoneFaceTopo.setFacePid(resultSet.getInt("face_pid"));
+
+				zoneFaceTopo.setLinkPid(resultSet.getInt("link_pid"));
+
+				zoneFaceTopo.setRowId(resultSet.getString("row_id"));
+
+				zoneFaceTopo.setSeqNum(resultSet.getInt("seq_num"));
+				zoneFaceTopos.add(zoneFaceTopo);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return zoneFaceTopos;
+	}
 
 }

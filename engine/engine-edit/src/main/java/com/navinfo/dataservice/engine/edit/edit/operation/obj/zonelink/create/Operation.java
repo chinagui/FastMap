@@ -9,13 +9,11 @@ import java.util.Set;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.engine.edit.comm.util.operate.AdLinkOperateUtils;
-import com.navinfo.dataservice.engine.edit.comm.util.operate.RdLinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.ZoneLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
-import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -43,24 +41,24 @@ public class Operation implements IOperation {
 	public String run(Result result) throws Exception {
 		String msg = null;
 		Map<Geometry, JSONObject> map = new HashMap<Geometry, JSONObject>();
-		// 如果创建行政区划线有对应的挂接AD_NODE和ADFACE
+		// 如果创ZONE线有对应的挂接ZONE_NODE和ZONE_FACE
 		// 执行挂接线处理逻辑
 		if (command.getCatchLinks().size() > 0) {
-			map = AdLinkOperateUtils.splitLink(command.getGeometry(),
+			map = ZoneLinkOperateUtils.splitLink(command.getGeometry(),
 					command.getsNodePid(), command.geteNodePid(),
-					command.getCatchLinks(), result);
+					command.getCatchLinks(),ObjType.ZONENODE, result);
 
 		}
-		// 如果创建行政区划线没有对应的挂接AD_NODE和ADFACE
+		// 如果创建ZONE线没有对应的挂接ZONE_NODE和ZONE_FACE
 		// 创建对应的ADNODE
 		if (command.getCatchLinks().size() == 0||map.size() == 0) {
 			JSONObject se = new JSONObject();
-			se = AdLinkOperateUtils.createAdNodeForLink(command.getGeometry(),
+			se = ZoneLinkOperateUtils.createZoneNodeForLink(command.getGeometry(),
 					command.getsNodePid(), command.geteNodePid(), result);
 			map.put(command.getGeometry(), se);
 		}
-		// 创建行政区划线信息
-		this.createAdLinks(map,result);
+		// 创建ZONE线信息
+		this.createZoneLinks(map,result);
 		//挂接的线被打断的操作
 		this.breakLine(result);
         
@@ -71,7 +69,7 @@ public class Operation implements IOperation {
 	 *  1.按照线是否跨图幅逻辑走不同分支生成线
 	 */
 
-	public void createAdLinks(Map<Geometry, JSONObject> map, Result result)
+	public void createZoneLinks(Map<Geometry, JSONObject> map, Result result)
 			throws Exception {
 
 		for (Geometry g : map.keySet()) {
@@ -94,7 +92,7 @@ public class Operation implements IOperation {
 							MeshUtils.mesh2Jts(meshIdStr));
 					geomInter = GeoTranslator.geojson2Jts(
 							GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					AdLinkOperateUtils.createAdLinkWithMesh(geomInter, maps,result);
+					ZoneLinkOperateUtils.createZoneLinkWithMesh(geomInter, maps,result);
 
 				}
 			}
@@ -110,9 +108,9 @@ public class Operation implements IOperation {
 	private void createAdLinkWithNoMesh(Geometry g, int sNodePid, int eNodePid,
 			Result result) throws Exception {
 		if (g != null) {
-			JSONObject node = AdLinkOperateUtils.createAdNodeForLink(g, sNodePid,
+			JSONObject node = ZoneLinkOperateUtils.createZoneNodeForLink(g, sNodePid,
 					eNodePid, result);
-			AdLinkOperateUtils.addLink(g, (int) node.get("s"),
+			ZoneLinkOperateUtils.addLink(g, (int) node.get("s"),
 					(int) node.get("e"), result);
 		}
 	}
@@ -139,9 +137,9 @@ public class Operation implements IOperation {
 				breakJson.put("data", data);
 				//组装打断线的参数
 				//保证是同一个连接
-				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Command(
+				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadpoint.Command(
 						breakJson, breakJson.toString());
-				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakadpoint.Process(
+				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadpoint.Process(
 						breakCommand,result, conn);
 				breakProcess.run();
 			}

@@ -60,7 +60,7 @@ public class IxPoiEntryImageOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiEntryimage.tableName() + " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
+		StringBuilder sb = new StringBuilder("update " + ixPoiEntryimage.tableName() + " set u_record=3,u_date= '"+StringUtils.getCurrentTime()+"',");
 
 		PreparedStatement pstmt = null;
 
@@ -182,8 +182,15 @@ public class IxPoiEntryImageOperator implements IOperator {
 				"(POI_PID, IMAGE_CODE, X_PIXEL_R4, Y_PIXEL_R4, X_PIXEL_R5, Y_PIXEL_R5, X_PIXEL_35, Y_PIXEL_35, MEMO, MAIN_POI_PID, U_DATE,U_RECORD, ROW_ID) values (");
 
 		sb.append(ixPoiEntryimage.getPoiPid());
-
-		sb.append(",'" + ixPoiEntryimage.getImageCode() + "'");
+		
+		if(StringUtils.isNotEmpty(ixPoiEntryimage.getImageCode()))
+		{
+			sb.append(",'" + ixPoiEntryimage.getImageCode()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 
 		sb.append("," + ixPoiEntryimage.getxPixelR4());
 
@@ -196,8 +203,15 @@ public class IxPoiEntryImageOperator implements IOperator {
 		sb.append("," + ixPoiEntryimage.getxPixel35());
 
 		sb.append("," + ixPoiEntryimage.getyPixel35());
-
-		sb.append(",'" + ixPoiEntryimage.getMemo() + "'");
+		
+		if(StringUtils.isNotEmpty(ixPoiEntryimage.getMemo()))
+		{
+			sb.append(",'" + ixPoiEntryimage.getMemo()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 
 		sb.append("," + ixPoiEntryimage.getMainPoiPid());
 		
@@ -215,7 +229,7 @@ public class IxPoiEntryImageOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiEntryimage.tableName() + " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where row_id=hextoraw('"
+		String sql = "update " + ixPoiEntryimage.tableName() + " set u_record=2,u_date= '"+StringUtils.getCurrentTime()+"' where row_id=hextoraw('"
 				+ ixPoiEntryimage.rowId() + "')";
 
 		stmt.addBatch(sql);

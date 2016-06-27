@@ -33,7 +33,7 @@ public class CommitMonthlyLogFlusher extends LogFlusher {
 		StringBuilder sb = new StringBuilder();
 		sb.append("INSERT INTO ");
 		sb.append(this.getTempTable());
-		sb.append(" SELECT DISTINCT P.OP_ID,P.OP_DT FROM LOG_OPERATION P,LOG_DETAIL L,LOG_DETAIL_GRID T WHERE P.OP_ID=L.OP_ID AND L.ROW_ID=T.LOG_ROW_ID AND AND P.COM_STA=0 ");
+		sb.append(" SELECT DISTINCT P.OP_ID,P.OP_DT FROM LOG_OPERATION P,LOG_DETAIL L,LOG_DETAIL_GRID T WHERE P.OP_ID=L.OP_ID AND L.ROW_ID=T.LOG_ROW_ID AND  P.COM_STA=0 ");
 		if(StringUtils.isNotEmpty(this.getStopTime())){
 			sb.append(" AND P.OP_DT<=TO_DATE('");
 			sb.append(this.getStopTime()+ "','yyyymmddhh24miss')"); 
@@ -51,7 +51,7 @@ public class CommitMonthlyLogFlusher extends LogFlusher {
 		DatalockApi datalockApi = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
 		int regionId = this.getRegionId();
 		int lockObject=this.getLockObject();
-		return datalockApi.lockGrid(regionId , lockObject, this.getGrids(), this.getLockType(),FmEditLock.DB_TYPE_MONTH );
+		return datalockApi.lockGrid(regionId , lockObject, this.getGrids(), this.getLockType(),FmEditLock.DB_TYPE_MONTH,0);
 	}
 	@Override
 	public void unlockSourceDbGrid(int lockHookId) {

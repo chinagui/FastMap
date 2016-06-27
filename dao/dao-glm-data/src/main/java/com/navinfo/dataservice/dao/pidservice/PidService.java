@@ -677,6 +677,200 @@ public class PidService {
 
 	}
 
+	public synchronized int applyRdSignasreal() throws Exception {
+
+		Connection conn = null;
+
+		int pid = 0;
+		try {
+			conn = PidServicePool.getInstance().getConnection();
+
+			conn.setAutoCommit(false);
+
+			String pidRange = PidServiceUtils.getPidRange(conn,
+					PidSequenceName.signasrealIdName);
+
+			if (pidRange != null) {
+				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
+
+				if (prc.getPid() != -1) {
+					PidServiceUtils.updatePidRange(conn,
+							PidSequenceName.signasrealIdName,
+							prc.getPidRange());
+
+					pid = prc.getPid();
+				} else {
+					// 剩餘範圍不足,需要從ID分配器搬運新的PID
+					pid = PidServiceUtils.transportPid(conn, 5000,
+							PidSequenceName.signasrealIdName);
+				}
+			} else {
+				// 不存在對應的序列,報錯且拋出異常
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.signasrealIdName);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return pid;
+
+	}
+	
+	public synchronized int applyBranchSchematic() throws Exception {
+
+		Connection conn = null;
+
+		int pid = 0;
+		try {
+			conn = PidServicePool.getInstance().getConnection();
+
+			conn.setAutoCommit(false);
+
+			String pidRange = PidServiceUtils.getPidRange(conn,
+					PidSequenceName.schematicIdName);
+
+			if (pidRange != null) {
+				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
+
+				if (prc.getPid() != -1) {
+					PidServiceUtils.updatePidRange(conn,
+							PidSequenceName.schematicIdName,
+							prc.getPidRange());
+
+					pid = prc.getPid();
+				} else {
+					// 剩餘範圍不足,需要從ID分配器搬運新的PID
+					pid = PidServiceUtils.transportPid(conn, 5000,
+							PidSequenceName.schematicIdName);
+				}
+			} else {
+				// 不存在對應的序列,報錯且拋出異常
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.schematicIdName);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return pid;
+
+	}
+	
+	public synchronized int applyRdSignboard() throws Exception {
+
+		Connection conn = null;
+
+		int pid = 0;
+		try {
+			conn = PidServicePool.getInstance().getConnection();
+
+			conn.setAutoCommit(false);
+
+			String pidRange = PidServiceUtils.getPidRange(conn,
+					PidSequenceName.signboardIdName);
+
+			if (pidRange != null) {
+				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
+
+				if (prc.getPid() != -1) {
+					PidServiceUtils.updatePidRange(conn,
+							PidSequenceName.signboardIdName,
+							prc.getPidRange());
+
+					pid = prc.getPid();
+				} else {
+					// 剩餘範圍不足,需要從ID分配器搬運新的PID
+					pid = PidServiceUtils.transportPid(conn, 5000,
+							PidSequenceName.signboardIdName);
+				}
+			} else {
+				// 不存在對應的序列,報錯且拋出異常
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.signboardIdName);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return pid;
+
+	}
+	
+	public synchronized int applyRdSignboardName() throws Exception {
+
+		Connection conn = null;
+
+		int pid = 0;
+		try {
+			conn = PidServicePool.getInstance().getConnection();
+
+			conn.setAutoCommit(false);
+
+			String pidRange = PidServiceUtils.getPidRange(conn,
+					PidSequenceName.signboardNameIdName);
+
+			if (pidRange != null) {
+				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
+
+				if (prc.getPid() != -1) {
+					PidServiceUtils.updatePidRange(conn,
+							PidSequenceName.signboardNameIdName,
+							prc.getPidRange());
+
+					pid = prc.getPid();
+				} else {
+					// 剩餘範圍不足,需要從ID分配器搬運新的PID
+					pid = PidServiceUtils.transportPid(conn, 5000,
+							PidSequenceName.signboardNameIdName);
+				}
+			} else {
+				// 不存在對應的序列,報錯且拋出異常
+				pid = PidServiceUtils.transportPid(conn, 5000,
+						PidSequenceName.signboardNameIdName);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return pid;
+
+	}
+	
+
+	
 	public synchronized int applyCkExceptionId() throws Exception {
 
 		Connection conn = null;

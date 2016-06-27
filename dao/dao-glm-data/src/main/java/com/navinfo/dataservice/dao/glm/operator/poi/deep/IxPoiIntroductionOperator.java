@@ -76,8 +76,8 @@ public class IxPoiIntroductionOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 		StringBuilder sb = new StringBuilder("update "
-				+ ixPoiIntroduction.tableName() + " set u_record=3,u_date="
-				+ StringUtils.getCurrentTime() + ",");
+				+ ixPoiIntroduction.tableName() + " set u_record=3,u_date='"
+				+ StringUtils.getCurrentTime() + "',");
 
 		PreparedStatement pstmt = null;
 
@@ -211,14 +211,46 @@ public class IxPoiIntroductionOperator implements IOperator {
 		sb.append("(introduction_id, poi_pid, introduction, introduction_eng, website,neighbor, neighbor_eng, traffic, traffic_eng, u_date,u_record, row_id) values (");
 		sb.append(ixPoiIntroduction.getPid());
 		sb.append("," + ixPoiIntroduction.getPoiPid());
-		sb.append(",'" + ixPoiIntroduction.getIntroduction() + "'");
-		sb.append(",'" + ixPoiIntroduction.getIntroductionEng() + "'");
-		sb.append(",'" + ixPoiIntroduction.getWebsite() + "'");
-		sb.append(",'" + ixPoiIntroduction.getNeighbor() + "'");
-		sb.append(",'" + ixPoiIntroduction.getNeighborEng() + "'");
-		sb.append(",'" + ixPoiIntroduction.getTraffic() + "'");
-		sb.append(",'" + ixPoiIntroduction.getTrafficEng() + "'");
-		sb.append(",'" + StringUtils.getCurrentTime()+"'");
+
+		if (StringUtils.isNotEmpty(ixPoiIntroduction.getIntroduction())) {
+			sb.append(",'" + ixPoiIntroduction.getIntroduction() + "'");
+		} else {
+			sb.append(", null ");
+		}
+		if (StringUtils.isNotEmpty(ixPoiIntroduction.getIntroductionEng())) {
+			sb.append(",'" + ixPoiIntroduction.getIntroductionEng() + "'");
+		} else {
+			sb.append(", null ");
+		}
+		if (StringUtils.isNotEmpty(ixPoiIntroduction.getWebsite())) {
+			sb.append(",'" + ixPoiIntroduction.getWebsite() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiIntroduction.getNeighbor())) {
+			sb.append(",'" + ixPoiIntroduction.getNeighbor() + "'");
+		} else {
+			sb.append(", null ");
+		}
+		if (StringUtils.isNotEmpty(ixPoiIntroduction.getNeighborEng())) {
+			sb.append(",'" + ixPoiIntroduction.getNeighborEng() + "'");
+		} else {
+			sb.append(", null ");
+		}
+		if (StringUtils.isNotEmpty(ixPoiIntroduction.getTraffic())) {
+			sb.append(",'" + ixPoiIntroduction.getTraffic() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiIntroduction.getTrafficEng())) {
+			sb.append(",'" + ixPoiIntroduction.getTrafficEng() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		sb.append(",'" + StringUtils.getCurrentTime() + "'");
 		sb.append(",1,'" + ixPoiIntroduction.rowId() + "')");
 		stmt.addBatch(sb.toString());
 	}
@@ -232,8 +264,8 @@ public class IxPoiIntroductionOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiIntroduction.tableName()
-				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where introduction_id ="
-				+ ixPoiIntroduction.getPid();
+				+ " set u_record=2 ,u_date='" + StringUtils.getCurrentTime()
+				+ "' where introduction_id =" + ixPoiIntroduction.getPid();
 		stmt.addBatch(sql);
 	}
 

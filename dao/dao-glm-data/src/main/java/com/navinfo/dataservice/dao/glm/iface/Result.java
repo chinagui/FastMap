@@ -3,6 +3,12 @@ package com.navinfo.dataservice.dao.glm.iface;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchRealimage;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -12,7 +18,7 @@ import net.sf.json.JSONObject;
 public class Result implements ISerializable {
 
 	private int primaryPid;
-
+	
 	private OperStage operStage = OperStage.DayEdit;
 
 	public OperStage getOperStage() {
@@ -30,7 +36,7 @@ public class Result implements ISerializable {
 	public void setPrimaryPid(int primaryPid) {
 		this.primaryPid = primaryPid;
 	}
-
+	
 	/**
 	 * 新增对象列表
 	 */
@@ -167,6 +173,7 @@ public class Result implements ISerializable {
 	 * @return 操作结果信息
 	 */
 	public String getLogs() {
+		BranchResultHandle.handleResult(listAddIRow,logs);
 		System.out.println(logs.toString());
 		return logs.toString();
 

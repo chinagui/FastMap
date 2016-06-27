@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.bizcommons.sql.ExpSQL;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
@@ -16,7 +17,6 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.thread.ThreadLocalContext;
 import com.navinfo.dataservice.commons.util.RandomUtil;
 import com.navinfo.dataservice.expcore.sql.ExecuteFullCopySql;
-import com.navinfo.dataservice.expcore.sql.ExpSQL;
 import com.navinfo.dataservice.expcore.sql.assemble.AssembleFullCopySql;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
@@ -73,7 +73,7 @@ public class GdbFullCopyJob extends AbstractJob {
 			}
 			//2.在target上创建指向source的dblink
 			dbLinkName = targetSchema.getConnConfig().getUserName()+"_"+RandomUtil.nextNumberStr(4);
-			cr.create(dbLinkName, false, targetSchema.getPoolDataSource(), sourceSchema.getConnConfig().getUserName(), sourceSchema.getConnConfig().getUserPasswd(), sourceSchema.getConnConfig().getServerIp(), String.valueOf(sourceSchema.getConnConfig().getServerPort()), sourceSchema.getConnConfig().getDbName());
+			cr.create(dbLinkName, false, targetSchema.getPoolDataSource(), sourceSchema.getConnConfig().getUserName(), sourceSchema.getConnConfig().getUserPasswd(), sourceSchema.getConnConfig().getServerIp(), String.valueOf(sourceSchema.getConnConfig().getServerPort()), sourceSchema.getConnConfig().getServiceName());
 			List<ExpSQL> copySqls =AssembleFullCopySql.assembleFastCopySql(dbLinkName, sourceSchema, targetSchema, req.getGdbVersion(),req.getFeatureType()
 					, req.getSpecificTables(),req.getExcludedTables(),req.getTableReNames());
 			response("复制sql列表已经装配完成",null);

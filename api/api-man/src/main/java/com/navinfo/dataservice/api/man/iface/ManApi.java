@@ -15,14 +15,6 @@ import com.navinfo.dataservice.api.man.model.Subtask;
  * 描述：apiGridSelectorExternalService.java
  */
 public interface ManApi{
-	/**
-	 * @param gridList  <br/>
-	 * <b>注意：如果参数gridList太长(不能超过1000)，会导致oracle sql太长而出现异常；</b>
-	 * @return 根据给定的gridlist，查询获取regioin和grid的映射；key:RegionId；value：grid列表<br/>
-	 * @throws Exception 
-	 * 
-	 */
-	public Map queryRegionGridMapping(List<Integer> gridList) throws Exception;
 	
 	public Region queryByRegionId(Integer regionId) throws Exception ;
 	
@@ -43,5 +35,11 @@ public interface ManApi{
 	Region queryRegionByDbId(int dbId)throws Exception;
 	
 	public int queryAdminIdBySubtask(int subtaskId) throws Exception;
+	
+	public int queryDbIdByAdminId(int adminId) throws Exception;
+
+	public String querySpecVersionByType(int type) throws Exception;
+	
+	public List<Region> queryRegionWithGrids(List<Integer> grids) throws Exception;
 }
 

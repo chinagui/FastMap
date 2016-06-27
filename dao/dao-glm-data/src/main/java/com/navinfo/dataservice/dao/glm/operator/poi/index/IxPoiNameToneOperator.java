@@ -16,8 +16,9 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameTone;
 
 /**
  * POI名称语音语调表 操作类
+ * 
  * @author zhangxiaolong
- *
+ * 
  */
 public class IxPoiNameToneOperator implements IOperator {
 
@@ -59,13 +60,15 @@ public class IxPoiNameToneOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiNameTone.tableName() + " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
+		StringBuilder sb = new StringBuilder("update "
+				+ ixPoiNameTone.tableName() + " set u_record=3,u_date= '"+StringUtils.getCurrentTime()+"' ,");
 
 		PreparedStatement pstmt = null;
 
 		try {
 
-			Set<Entry<String, Object>> set = ixPoiNameTone.changedFields().entrySet();
+			Set<Entry<String, Object>> set = ixPoiNameTone.changedFields()
+					.entrySet();
 
 			Iterator<Entry<String, Object>> it = set.iterator();
 
@@ -86,26 +89,35 @@ public class IxPoiNameToneOperator implements IOperator {
 
 				if (value instanceof String || value == null) {
 
-					if (!StringUtils.isStringSame(String.valueOf(value), String.valueOf(columnValue))) {
+					if (!StringUtils.isStringSame(String.valueOf(value),
+							String.valueOf(columnValue))) {
 
 						if (columnValue == null) {
 							sb.append(column + "=null,");
 						} else {
-							sb.append(column + "='" + String.valueOf(columnValue) + "',");
+							sb.append(column + "='"
+									+ String.valueOf(columnValue) + "',");
 						}
 
 					}
 
 				} else if (value instanceof Double) {
 
-					if (Double.parseDouble(String.valueOf(value)) != Double.parseDouble(String.valueOf(columnValue))) {
-						sb.append(column + "=" + Double.parseDouble(String.valueOf(columnValue)) + ",");
+					if (Double.parseDouble(String.valueOf(value)) != Double
+							.parseDouble(String.valueOf(columnValue))) {
+						sb.append(column
+								+ "="
+								+ Double.parseDouble(String
+										.valueOf(columnValue)) + ",");
 					}
 
 				} else if (value instanceof Integer) {
 
-					if (Integer.parseInt(String.valueOf(value)) != Integer.parseInt(String.valueOf(columnValue))) {
-						sb.append(column + "=" + Integer.parseInt(String.valueOf(columnValue)) + ",");
+					if (Integer.parseInt(String.valueOf(value)) != Integer
+							.parseInt(String.valueOf(columnValue))) {
+						sb.append(column + "="
+								+ Integer.parseInt(String.valueOf(columnValue))
+								+ ",");
 					}
 
 				}
@@ -139,7 +151,8 @@ public class IxPoiNameToneOperator implements IOperator {
 
 	@Override
 	public void deleteRow() throws Exception {
-		String sql = "update " + ixPoiNameTone.tableName() + " set u_record=? where row_id=hextoraw(?)";
+		String sql = "update " + ixPoiNameTone.tableName()
+				+ " set u_record=? where row_id=hextoraw(?)";
 
 		PreparedStatement pstmt = null;
 
@@ -180,34 +193,62 @@ public class IxPoiNameToneOperator implements IOperator {
 
 		sb.append(ixPoiNameTone.getNameId());
 
-		sb.append(",'" + ixPoiNameTone.getToneA()+"'");
+		if (StringUtils.isNotEmpty(ixPoiNameTone.getToneA())) {
 
-		sb.append(",'" + ixPoiNameTone.getToneB()+"'");
+			sb.append(",'" + ixPoiNameTone.getToneA() + "'");
+		} else {
+			sb.append(",null");
+		}
 
-		sb.append(",'" + ixPoiNameTone.getLhA()+"'");
+		if (StringUtils.isNotEmpty(ixPoiNameTone.getToneB())) {
 
-		sb.append(",'" + ixPoiNameTone.getLhB()+"'");
+			sb.append(",'" + ixPoiNameTone.getToneB() + "'");
+		} else {
+			sb.append(",null");
+		}
 
-		sb.append(",'" + ixPoiNameTone.getJyutp()+"'");
+		if (StringUtils.isNotEmpty(ixPoiNameTone.getLhA())) {
 
-		sb.append(",'" + ixPoiNameTone.getMemo()+"'");
-		
-		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
+			sb.append(",'" + ixPoiNameTone.getLhA() + "'");
+		} else {
+			sb.append(",null");
+		}
+		if (StringUtils.isNotEmpty(ixPoiNameTone.getLhB())) {
+
+			sb.append(",'" + ixPoiNameTone.getLhB() + "'");
+		} else {
+			sb.append(",null");
+		}
+		if (StringUtils.isNotEmpty(ixPoiNameTone.getJyutp())) {
+
+			sb.append(",'" + ixPoiNameTone.getJyutp() + "'");
+		} else {
+			sb.append(",null");
+		}
+		if (StringUtils.isNotEmpty(ixPoiNameTone.getMemo())) {
+
+			sb.append(",'" + ixPoiNameTone.getMemo() + "'");
+		} else {
+			sb.append(",null");
+		}
+
+		sb.append(",'" + StringUtils.getCurrentTime() + "'");
 
 		sb.append(",1,'" + ixPoiNameTone.rowId() + "')");
-		
+
 		stmt.addBatch(sb.toString());
 	}
 
 	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt) throws Exception {
+	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
+			throws Exception {
 
 	}
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiNameTone.tableName() + " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where name_id="
-				+ ixPoiNameTone.getNameId();
+		String sql = "update " + ixPoiNameTone.tableName()
+				+ " set u_record=2,u_date= '"+StringUtils.getCurrentTime()+"'  where name_id=" + ixPoiNameTone.getNameId();
 
 		stmt.addBatch(sql);
 	}

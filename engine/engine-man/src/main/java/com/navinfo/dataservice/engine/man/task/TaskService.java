@@ -11,7 +11,6 @@ import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.engine.man.city.CityOperation;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
@@ -19,7 +18,6 @@ import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.Page;
 
 import net.sf.json.JSONArray;
@@ -31,9 +29,16 @@ import net.sf.json.JSONObject;
 * @date 2016-06-06 06:12:30 
 * @Description: TODO
 */
-@Service
+
 public class TaskService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
+	
+	private static class SingletonHolder{
+		private static final TaskService INSTANCE =new TaskService();
+	}
+	public static TaskService getInstance(){
+		return SingletonHolder.INSTANCE;
+	}
 
 	/**
 	 * 根据用户id，与tasks的json对象批量创建task
@@ -119,21 +124,26 @@ public class TaskService {
 				Iterator keys = conditionJson.keys();
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
+					if ("taskId".equals(key)) {selectSql+=" and T.task_id="+conditionJson.getInt(key);}
 					if ("cityId".equals(key)) {selectSql+=" and T.city_id="+conditionJson.getInt(key);}
 					if ("createUserId".equals(key)) {selectSql+=" and T.create_user_id="+conditionJson.getInt(key);}
 					if ("descp".equals(key)) {selectSql+=" and T.descp='"+conditionJson.getString(key)+"'";}
-					if ("name".equals(key)) {selectSql+=" and T.name='"+conditionJson.getString(key)+"'";}
+					if ("name".equals(key)) {selectSql+=" and T.name like '%"+conditionJson.getString(key)+"%'";}
 					if ("status".equals(key)) {selectSql+=" and T.status="+conditionJson.getInt(key);}
+					if ("createUserName".equals(key)) {selectSql+=" and U.USER_REAL_NAME like '%"+conditionJson.getString(key)+"%'";}
+					if ("cityName".equals(key)) {selectSql+=" and C.CITY_NAME like '%"+conditionJson.getString(key)+"%'";}
 					}
 				}
 			if(null!=orderJson && !orderJson.isEmpty()){
 				Iterator keys = orderJson.keys();
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
-					if ("planStartDate".equals(key)) {selectSql+=" order by T.PLAN_START_DATE";break;}
-					if ("planEndDate".equals(key)) {selectSql+=" order by T._PLAN_END_DATE";break;}
-					if ("monthEditPlanStartDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_START_DATE";break;}
-					if ("monthEditPlanEndDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_END_DATE";break;}
+					if ("status".equals(key)) {selectSql+=" order by T.status "+orderJson.getString(key);break;}
+					if ("taskId".equals(key)) {selectSql+=" order by T.TASK_ID "+orderJson.getString(key);break;}
+					if ("planStartDate".equals(key)) {selectSql+=" order by T.PLAN_START_DATE "+orderJson.getString(key);break;}
+					if ("planEndDate".equals(key)) {selectSql+=" order by T.PLAN_END_DATE "+orderJson.getString(key);break;}
+					if ("monthEditPlanStartDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_START_DATE "+orderJson.getString(key);break;}
+					if ("monthEditPlanEndDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_END_DATE "+orderJson.getString(key);break;}
 					}
 			}else{
 				selectSql+=" order by T.TASK_ID";
@@ -148,6 +158,54 @@ public class TaskService {
 		}
 	}
 	
+	public List<Task> listAll(JSONObject conditionJson,JSONObject orderJson)throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			
+			String selectSql = "select T.*, nvl(C.CITY_NAME,'') CITY_NAME, nvl(U.USER_REAL_NAME,'') USER_REAL_NAME, nvl(G.GROUP_NAME,'') GROUP_NAME"
+					+ "  FROM TASK T, CITY C, USER_INFO U, USER_GROUP G"
+					+ " WHERE T.CITY_ID = C.CITY_ID(+)"
+					+ "   AND T.CREATE_USER_ID = U.USER_ID(+)"
+					+ "   AND T.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
+					+ "   AND T.LATEST = 1";
+			if(null!=conditionJson && !conditionJson.isEmpty()){
+				Iterator keys = conditionJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if ("taskId".equals(key)) {selectSql+=" and T.task_id="+conditionJson.getInt(key);}
+					if ("cityIds".equals(key)) {selectSql+=" and T.city_id in ("+StringUtils.join(conditionJson.getJSONArray(key), ",")+")";}
+					if ("createUserId".equals(key)) {selectSql+=" and T.create_user_id="+conditionJson.getInt(key);}
+					if ("descp".equals(key)) {selectSql+=" and T.descp='"+conditionJson.getString(key)+"'";}
+					if ("name".equals(key)) {selectSql+=" and T.name like '%"+conditionJson.getString(key)+"%'";}
+					if ("status".equals(key)) {selectSql+=" and T.status="+conditionJson.getInt(key);}
+					if ("createUserName".equals(key)) {selectSql+=" and U.USER_REAL_NAME like '%"+conditionJson.getString(key)+"%'";}
+					if ("cityName".equals(key)) {selectSql+=" and C.CITY_NAME like '%"+conditionJson.getString(key)+"%'";}
+					}
+				}
+			if(null!=orderJson && !orderJson.isEmpty()){
+				Iterator keys = orderJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if ("status".equals(key)) {selectSql+=" order by T.status "+orderJson.getString(key);break;}
+					if ("taskId".equals(key)) {selectSql+=" order by T.TASK_ID "+orderJson.getString(key);break;}
+					if ("planStartDate".equals(key)) {selectSql+=" order by T.PLAN_START_DATE "+orderJson.getString(key);break;}
+					if ("planEndDate".equals(key)) {selectSql+=" order by T.PLAN_END_DATE "+orderJson.getString(key);break;}
+					if ("monthEditPlanStartDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_START_DATE "+orderJson.getString(key);break;}
+					if ("monthEditPlanEndDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_END_DATE "+orderJson.getString(key);break;}
+					}
+			}else{
+				selectSql+=" order by T.TASK_ID";
+			}
+			return TaskOperation.selectTaskBySql2(conn, selectSql, null);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询列表失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}	
 	
 	public HashMap<String,String> close(List<Integer> taskidList)throws Exception{
 		Connection conn = null;

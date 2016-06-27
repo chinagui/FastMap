@@ -74,8 +74,8 @@ public class IxPoiCarrentalOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 		StringBuilder sb = new StringBuilder("update "
-				+ ixPoiCarrental.tableName() + " set u_record=3,u_date="
-				+ StringUtils.getCurrentTime() + ",");
+				+ ixPoiCarrental.tableName() + " set u_record=3,u_date='"
+				+ StringUtils.getCurrentTime() + "',");
 
 		PreparedStatement pstmt = null;
 
@@ -210,11 +210,37 @@ public class IxPoiCarrentalOperator implements IOperator {
 		sb.append("(poi_pid, open_hour, address, how_to_go, phone_400,web_site, u_date,u_record,row_id) values (");
 
 		sb.append(ixPoiCarrental.getPoiPid());
-		sb.append(",'" + ixPoiCarrental.getOpenHour() + "'");
-		sb.append(",'" + ixPoiCarrental.getAdress() + "'");
-		sb.append(",'" + ixPoiCarrental.getHowToGo() + "'");
-		sb.append(",'" + ixPoiCarrental.getPhone400() + "'");
-		sb.append(",'" + ixPoiCarrental.getWebsite() + "'");
+		if(StringUtils.isNotEmpty(ixPoiCarrental.getOpenHour())){
+			sb.append(",'" + ixPoiCarrental.getOpenHour() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiCarrental.getAdress())){
+			sb.append(",'" + ixPoiCarrental.getAdress() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiCarrental.getHowToGo())){
+			sb.append(",'" + ixPoiCarrental.getHowToGo() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiCarrental.getPhone400())){
+			sb.append(",'" + ixPoiCarrental.getPhone400() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		if(StringUtils.isNotEmpty(ixPoiCarrental.getWebsite())){
+			sb.append(",'" + ixPoiCarrental.getWebsite() + "'");
+		}else{
+			sb.append(", null ");
+		}
+		
+		
+		
+		
 		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiCarrental.rowId() + "')");
 
@@ -231,7 +257,7 @@ public class IxPoiCarrentalOperator implements IOperator {
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 
 		String sql = "update " + ixPoiCarrental.tableName()
-				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where row_id=hextoraw('"
+				+ " set u_record=2 ,u_date='"+StringUtils.getCurrentTime()+"' where row_id=hextoraw('"
 				+ ixPoiCarrental.rowId() + "')";
 		stmt.addBatch(sql);
 	}

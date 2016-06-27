@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdRestrictionSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSpeedlimitSearch;
 import com.navinfo.dataservice.dao.glm.search.RwLinkSearch;
+import com.navinfo.dataservice.dao.glm.search.RwNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.ZoneFaceSearch;
 import com.navinfo.dataservice.dao.glm.search.ZoneLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.ZoneNodeSearch;
@@ -70,6 +71,8 @@ public class SearchFactory {
 			return new AdNodeSearch(conn);
 		case RWLINK:
 			return new RwLinkSearch(conn);
+		case RWNODE:
+			return new RwNodeSearch(conn);
 		case ADADMIN:
 			return new AdAdminSearch(conn);
 		case IXPOI:

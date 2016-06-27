@@ -49,7 +49,8 @@ public class ProduceController extends BaseController {
 			}
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
-			JobApiService jobApi=(JobApiService) ApplicationContextUtil.getBean("jobApi");
+			//long userId=2;
+			JobApiService jobApi=(JobApiService) ApplicationContextUtil.getBean("jobApiService");
 			/*
 			 * {"gridIds":[213424,343434,23423432],"stopTime":"yyyymmddhh24miss","dataType":"POI"//POI,ALL}
 			 * jobType:releaseFmIdbDailyJob/releaseFmIdbMonthlyJob
@@ -57,7 +58,7 @@ public class ProduceController extends BaseController {
 			//TODO
 			JSONObject jobDataJson=new JSONObject();
 			jobDataJson.put("gridList", dataJson.get("gridIds"));
-			jobDataJson.put("dataType", dataJson.get("dataType"));
+			jobDataJson.put("featureType", dataJson.get("dataType"));
 			jobDataJson.put("stopTime", "20160616000000");
 			long jobId=jobApi.createJob("releaseFmIdbDailyJob", jobDataJson, userId, "日出品");
 			return new ModelAndView("jsonView", success(jobId));
@@ -86,7 +87,8 @@ public class ProduceController extends BaseController {
 			}
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
-			JobApiService jobApi=(JobApiService) ApplicationContextUtil.getBean("jobApi");
+			//long userId=2;
+			JobApiService jobApi=(JobApiService) ApplicationContextUtil.getBean("jobApiService");
 			/*
 			 * {"gridIds":[213424,343434,23423432],"stopTime":"yyyymmddhh24miss","dataType":"POI"//POI,ALL}
 			 * jobType:releaseFmIdbDailyJob/releaseFmIdbMonthlyJob
@@ -122,23 +124,24 @@ public class ProduceController extends BaseController {
 			}
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
-			JobApiService jobApi=(JobApiService) ApplicationContextUtil.getBean("jobApi");
+			//long userId=2;
+			JobApiService jobApi=(JobApiService) ApplicationContextUtil.getBean("jobApiService");
 			/*
 			 * {"gridIds":[213424,343434,23423432],"stopTime":"yyyymmddhh24miss"}
 			 * jobType:releaseFmidbDaily/releaseFmidbMonthly
 			 */
 			dataJson.put("stopTime", "20160616000000");
-			String featureType = (String) dataJson.get("featureType");//featureType:POI,ROAD
-			dataJson.put("featureType", dataJson.get("featureType"));//featureType:POI,ROAD
+			dataJson.put("featureType", "ROAD");
+			//String featureType = (String) dataJson.get("featureType");//featureType:POI,ROAD
+			//dataJson.put("featureType", dataJson.get("featureType"));//featureType:POI,ROAD
 			//TODO 道路日落月，poi后台定时脚本
-			long jobId=0;
+			/*long jobId=0;
 			if (featureType.equals("POI")){
 				jobId=jobApi.createJob("day2MonthPoiJob", dataJson, userId, "POI月融合");	
 				return new ModelAndView("jsonView", success(jobId));
-			}
-			jobId=jobApi.createJob("day2MonthRoadJob", dataJson, userId, "ROAD月融合");	
+			}*/
+			long jobId=jobApi.createJob("day2MonthRoadJob", dataJson, userId, "ROAD月融合");	
 			return new ModelAndView("jsonView", success(jobId));
-			
 			
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);

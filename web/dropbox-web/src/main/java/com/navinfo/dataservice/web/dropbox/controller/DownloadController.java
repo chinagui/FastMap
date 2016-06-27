@@ -116,7 +116,7 @@ public class DownloadController extends BaseController {
 
 	}
 
-	@RequestMapping(value = "/download/patternimage")
+	@RequestMapping(value = "/download/metadata")
 	public ModelAndView getPatternimg(HttpServletRequest request)
 			throws ServletException, IOException {
 
@@ -136,4 +136,32 @@ public class DownloadController extends BaseController {
 		}
 
 	}
+	
+	@RequestMapping(value = "/download/appVersion")
+	public ModelAndView getAppVersion(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+
+			JSONObject json = JSONObject.fromObject(parameter);
+
+			int type = json.getInt("type");
+			String platform=json.getString("platform");
+
+			DownloadManager manager = new DownloadManager();
+
+			JSONObject data = manager.getAppVersion(type,platform);
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+
+}
 }

@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.poi.hssf.record.formula.functions.Islogical;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -35,8 +34,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEntryimage;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiFlag;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiIcon;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameFlag;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameTone;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
@@ -54,6 +51,7 @@ import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiHotelSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiIntroductionSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiParkingSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiRestaurantSelector;
+import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
@@ -438,7 +436,7 @@ public class IxPoiSelector implements ISelector {
 				return ixPoi;
 			} else {
 
-				throw new Exception("对应IX_POI对象不存在!");
+				throw new Exception("对应IX_POI: "+id+" 对象不存在!");
 			}
 		} catch (Exception e) {
 
@@ -474,8 +472,20 @@ public class IxPoiSelector implements ISelector {
 			throws Exception {
 		return null;
 	}
-
-	public JSONObject loadPids(boolean isLock,int pid ,String pidName,int pageSize, int pageNum) throws Exception {
+	/**
+	 * @zhaokk 
+	 * 查询poi列表值
+	 * @param isLock
+	 * @param pid
+	 * @param pidName
+	 * @param type
+	 * @param g
+	 * @param pageSize
+	 * @param pageNum
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject loadPids(boolean isLock,int pid ,String pidName,int type,String g ,int pageSize, int pageNum) throws Exception {
 
 		JSONObject result = new JSONObject();
 
@@ -488,14 +498,15 @@ public class IxPoiSelector implements ISelector {
 		StringBuilder buffer = new StringBuilder();
         buffer.append(" SELECT * ");
         buffer.append(" FROM (SELECT c.*, ROWNUM rn ");
-        buffer.append(" FROM (SELECT COUNT (1) OVER (PARTITION BY 1) total,");
-        //TODO 0 as freshness_vefication
-        buffer.append(" ip.pid,ip.kind_code, 0 as freshness_vefication,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
-        buffer.append(" FROM ix_poi ip, ix_poi_name ipn ");
-        buffer.append(" WHERE     ip.pid = ipn.poi_pid and ip.u_record !=2 ");
+        buffer.append(" FROM (SELECT /*+ leading(ip,ipn,ps) use_hash(ip,ipn,ps)*/  COUNT (1) OVER (PARTITION BY 1) total,");
+        buffer.append(" ip.pid,ip.kind_code,ps.status, 0 as freshness_vefication,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
+        buffer.append(" FROM ix_poi ip, ix_poi_name ipn, poi_edit_status ps ");
+        buffer.append(" WHERE     ip.pid = ipn.poi_pid and ip.row_id = ps.row_id ");
         buffer.append(" AND lang_code = 'CHI'");
         buffer.append(" AND ipn.name_type = 2 ");
         buffer.append(" AND name_class = 1"); 
+        buffer.append(" AND ps.status = "+type+"");
+        buffer.append(" AND sdo_relate(ip.geometry, sdo_geometry(    '"+g+"'  , 8307), 'mask=anyinteract') = 'TRUE' ");
         if( pid != 0){
         	buffer.append(" AND ip.pid = "+pid+"");
         }else{
@@ -533,6 +544,7 @@ public class IxPoiSelector implements ISelector {
 				json.put("name", resultSet.getString("name"));
 				json.put("geometry", GeoTranslator.jts2Geojson(geometry));
 				json.put("uRecord", resultSet.getInt("u_record"));
+				json.put("status", resultSet.getInt("status"));
 				json.put("collectTime", resultSet.getString("collect_time"));
 				array.add(json);
 			}
@@ -541,6 +553,128 @@ public class IxPoiSelector implements ISelector {
 			result.put("rows", array);
 
 			return result;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+	}
+	
+	
+	/**
+	 * 安卓端检查是否有可下载的POI
+	 * @param gridDate
+	 * @return
+	 * @throws Exception
+	 */
+	@SuppressWarnings("static-access")
+	public JSONObject downloadCheck(JSONObject gridDate) throws Exception {
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		
+		
+		StringBuffer sb = new StringBuffer();
+		sb.append("SELECT count(1) num");
+		sb.append(" FROM ix_poi");
+		sb.append(" WHERE sdo_relate(geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE' ");
+		sb.append(" AND u_date>'"+gridDate.getString("date")+"'");
+		
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			GridUtils gu = new GridUtils();
+			String wkt = gu.grid2Wkt(gridDate.getString("grid"));
+
+			pstmt.setString(1, wkt);
+			resultSet = pstmt.executeQuery();
+			
+			int num = 0;
+			if (resultSet.next()) {
+				num = resultSet.getInt("num");
+			}
+			
+			JSONObject ret = new JSONObject();
+			
+			ret.put("gridId", gridDate.getString("grid"));
+			if (num>0) {
+				ret.put("flag", 1);
+			} else {
+				ret.put("flag", 0);
+			}
+			
+			return ret;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+	}
+	
+	/**
+	 * 根据rowId获取POI（返回名称和分类）
+	 * @param gridDate
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject getByRowIdForAndroid(String rowId) throws Exception {
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		
+		
+		StringBuffer sb = new StringBuffer();
+		sb.append("SELECT name,kind_code");
+		sb.append(" FROM ix_poi");
+		sb.append(" WHERE row_id=:1");
+		
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setString(1, rowId);
+			resultSet = pstmt.executeQuery();
+			
+			JSONObject ret = new JSONObject();
+			if (resultSet.next()) {
+				ret.put("name", resultSet.getString("name"));
+				ret.put("kindCode", resultSet.getString("kind_code"));
+			}
+			
+			return ret;
 		} catch (Exception e) {
 
 			throw e;
@@ -668,6 +802,14 @@ public class IxPoiSelector implements ISelector {
 		ixPoi.setOldXGuide(resultSet.getDouble("old_x_guide"));
 
 		ixPoi.setOldYGuide(resultSet.getDouble("old_y_guide"));
+		
+		ixPoi.setLevel(resultSet.getString("LEVEL"));
+		
+		ixPoi.setSportsVenue(resultSet.getString("sports_venue"));
+		
+		ixPoi.setIndoor(resultSet.getInt("indoor"));
+		
+		ixPoi.setVipFlag(resultSet.getString("vip_flag"));
 
 		ixPoi.setRowId(resultSet.getString("row_id"));
 		

@@ -13,6 +13,7 @@ public class FmEditLock {
 	public final static int TYPE_GIVE_BACK = 4;
 	public final static int TYPE_COMMIT = 5;//日库上表示日库->月库、月库上表示月库->GDB+
 	public final static int TYPE_RELEASE = 6;
+	public final static int TYPE_EDIT_POI_BASE_RELEASE =7;//POI行编提交锁
 	public static final int TYPE_DEFAULT = 0;
 	
 	public final static int LOCK_OBJ_POI=1;
@@ -22,4 +23,24 @@ public class FmEditLock {
 	public final static String DB_TYPE_DAY="DAY";
 	public final static String DB_TYPE_MONTH="MONTH";
 	
+	protected int dbId;
+	protected int lockSeq;
+	protected String dbType;
+	protected boolean locked=false;
+	public FmEditLock(int lockSeq,String dbType){
+		this.lockSeq=lockSeq;
+		this.dbType=dbType;
+	}
+	public int getLockSeq() {
+		return lockSeq;
+	}
+	public void setLockSeq(int lockSeq) {
+		this.lockSeq = lockSeq;
+	}
+	public String getDbType() {
+		return dbType;
+	}
+	public void setDbType(String dbType) {
+		this.dbType = dbType;
+	}
 }

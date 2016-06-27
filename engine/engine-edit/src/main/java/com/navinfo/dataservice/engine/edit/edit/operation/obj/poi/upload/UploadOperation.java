@@ -14,6 +14,7 @@ import java.util.Scanner;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -99,10 +100,11 @@ public class UploadOperation {
 				ResultSet resultSet = pstmt.executeQuery();
 				String dbId = "";
 				if (resultSet.next()){
-					dbId = resultSet.getString("region_id");
+					dbId = resultSet.getString("daily_db_id");
 				} else {
 					String errstr = "fid:" + jo.getString("fid") + "不在已知grid内";
 					errList.add(errstr);
+					continue;
 				}
 				
 				if (!data.containsKey(dbId)) {
@@ -135,7 +137,7 @@ public class UploadOperation {
 				for (int i=0;i<dataList.size();i++) {
 					JSONObject poi = dataList.get(i);
 					String fid = poi.getString("fid");
-					int lifecycle = poi.getInt("lifecycle");
+					int lifecycle = poi.getInt("t_lifecycle");
 					PreparedStatement pstmt = null;
 					pstmt = conn.prepareStatement(subQuery);
 					pstmt.setString(1, fid);
@@ -218,7 +220,7 @@ public class UploadOperation {
 					JSONObject perRetObj = obj2PoiForInsert(jo,version);
 					int flag = perRetObj.getInt("flag");
 					if (flag == 1) {
-						poi = (IxPoi)perRetObj.get("ret");
+						poi.Unserialize(perRetObj.getJSONObject("ret"));
 						Result result = new Result();
 						result.setOperStage(OperStage.Collect);
 						JSONObject poiObj = new JSONObject();
@@ -263,8 +265,9 @@ public class UploadOperation {
 					if (flag == 1) {
 						JSONObject poiJson = perRetObj.getJSONObject("ret");
 						JSONObject commandJson = new JSONObject();
-						commandJson.put("dbId", dbId);
+						commandJson.put("dbId", Integer.parseInt(dbId));
 						commandJson.put("data", poiJson);
+						commandJson.put("objId", poiJson.getInt("pid"));
 						// 调用一次更新
 						Command updateCommand = new Command(commandJson,null);
 						Process updateProcess = new Process(updateCommand);
@@ -302,14 +305,11 @@ public class UploadOperation {
 					JSONObject poiObj = new JSONObject();
 					poiObj.put("dbId", dbId);
 					poiObj.put("objId", pid);
-					IxPoi poi = new IxPoi();
-					poi.setPid(pid);
 					try {
 						Result result = new Result();
 						result.setOperStage(OperStage.Collect);
-						CommandForUpload poiCommand = new CommandForUpload(poiObj, null);
-						ProcessForUpload poiProcess = new ProcessForUpload(poiCommand);
-						result.insertObject(poi, ObjStatus.DELETE, pid);
+						CommandForDelete poiCommand = new CommandForDelete(poiObj, null);
+						ProcessForDelete poiProcess = new ProcessForDelete(poiCommand);
 						poiProcess.setResult(result);
 						poiProcess.run();
 						count++;
@@ -345,9 +345,9 @@ public class UploadOperation {
 			poi.setKindCode(jo.getString("kindCode"));
 			// geometry按SDO_GEOMETRY格式原值转出
 			Geometry geometry = new WKTReader().read(jo.getString("geometry"));
-			poi.setGeometry(geometry);
-			poi.setxGuide(jo.getJSONObject("guide").getInt("longitude"));
-			poi.setyGuide(jo.getJSONObject("guide").getInt("latitude"));
+			poi.setGeometry(GeoTranslator.transform(geometry, 100000, 5));
+			poi.setxGuide(jo.getJSONObject("guide").getDouble("longitude"));
+			poi.setyGuide(jo.getJSONObject("guide").getDouble("latitude"));
 			poi.setLinkPid(jo.getJSONObject("guide").getInt("linkPid"));
 			poi.setChain(jo.getString("chain"));
 			poi.setOpen24h(jo.getInt("open24H"));
@@ -369,8 +369,10 @@ public class UploadOperation {
 			if (!jo.getString("chain").isEmpty()) {
 				fieldState += "改连锁品牌|";
 			}
-			if (!jo.getString("rating").isEmpty()) {
-				fieldState += "改酒店星级|";
+			if (jo.has("hotel")) {
+				if (!jo.getJSONObject("hotel").getString("rating").isEmpty()) {
+					fieldState += "改酒店星级|";
+				}
 			}
 			if (fieldState.length()>0) {
 				fieldState = fieldState.substring(0, fieldState.length()-1);
@@ -507,7 +509,7 @@ public class UploadOperation {
 						photoIdList.add(photoId);
 						IxPoiPhoto poiPhoto = new IxPoiPhoto();
 						poiPhoto.setPoiPid(pid);
-						poiPhoto.setPhotoId(photoId);
+						poiPhoto.setPid(photoId);
 						// TODO tag
 						poiPhoto.setRowId(photoId);
 						photoList.add(poiPhoto);
@@ -635,7 +637,7 @@ public class UploadOperation {
 			}
 			
 			retObj.put("flag", 1);
-			retObj.put("ret", poi);
+			retObj.put("ret", poi.Serialize(null));
 		} catch (Exception e) {
 			retObj.put("flag", 0);
 			String errstr = "fid:" + fid + ":" + e.getMessage();
@@ -662,14 +664,14 @@ public class UploadOperation {
 			IxPoi oldPoi = (IxPoi) ixPoiSelector.loadById(pid, false);
 			// POI主表
 			JSONObject poiJson = new JSONObject();
-			poiJson.put("objStatus", ObjStatus.UPDATE.toString());
 			poiJson.put("pid", pid);
 			poiJson.put("kindCode", jo.getString("kindCode"));
 			// geometry按SDO_GEOMETRY格式原值转出
 			Geometry geometry = new WKTReader().read(jo.getString("geometry"));
-			poiJson.put("geometry", geometry);
-			poiJson.put("xGuide", jo.getJSONObject("guide").getInt("longitude"));
-			poiJson.put("yGuide", jo.getJSONObject("guide").getInt("latitude"));
+			JSONObject geometryObj = GeoTranslator.jts2Geojson(geometry);
+			poiJson.put("geometry", geometryObj);
+			poiJson.put("xGuide", jo.getJSONObject("guide").getDouble("longitude"));
+			poiJson.put("yGuide", jo.getJSONObject("guide").getDouble("latitude"));
 			poiJson.put("linkPid", jo.getJSONObject("guide").getInt("linkPid"));
 			poiJson.put("chain", jo.getString("chain"));
 			poiJson.put("open24h", jo.getInt("open24H"));
@@ -679,7 +681,7 @@ public class UploadOperation {
 				String[] meshIds = MeshUtils.point2Meshes(geometry.getCoordinate().x, geometry.getCoordinate().y);
 				meshId = Integer.parseInt(meshIds[0]);
 			}
-			poiJson.put("mesh", meshId);
+			poiJson.put("meshId", meshId);
 			poiJson.put("postCode", jo.getString("postCode"));
 			//如果KIND_CODE有修改，则追加“改种别代码”；
 			//如果CHAIN有修改，则追加“改连锁品牌”；
@@ -691,10 +693,19 @@ public class UploadOperation {
 			if (!jo.getString("chain").equals(oldPoi.getChain())) {
 				fieldState += "改连锁品牌|";
 			}
-			IxPoiHotel hotelOld = (IxPoiHotel) oldPoi.getHotels().get(0);
-			if (!jo.getString("rating").equals(hotelOld.getRating())) {
-				fieldState += "改酒店星级|";
+			List<IRow> hotelListIRow = oldPoi.getHotels();
+			IxPoiHotel hotelOld = new IxPoiHotel();
+			if (hotelListIRow.size()>0) {
+				hotelOld = (IxPoiHotel) hotelListIRow.get(0);
 			}
+			
+			if (jo.has("hotel")) {
+				JSONObject hotelJSONObj = jo.getJSONObject("hotel");
+				if (!hotelJSONObj.getString("rating").equals(hotelOld.getRating())) {
+					fieldState += "改酒店星级|";
+				}
+			}
+			
 			if (fieldState.length()>0) {
 				fieldState = fieldState.substring(0, fieldState.length()-1);
 			}
@@ -707,20 +718,19 @@ public class UploadOperation {
 			poiJson.put("collectTime", jo.getString("t_operateDate"));
 			poiJson.put("level", jo.getString("level"));
 			String outDoorLog = "";
-			if (!poiJson.getString("oldName").equals(oldPoi.getOldName())) {
+			if (!jo.getString("name").equals(oldPoi.getOldName())) {
 				outDoorLog += "改名称|";
 			}
-			if (!poiJson.getString("oldAddress").equals(oldPoi.getOldAddress())) {
+			if (!jo.getString("address").equals(oldPoi.getOldAddress())) {
 				outDoorLog += "改地址|";
 			}
-			if (!poiJson.getString("oldKind").equals(oldPoi.getOldKind())) {
+			if (!jo.getString("kindCode").equals(oldPoi.getOldKind())) {
 				outDoorLog += "改分类|";
 			}
-			if (!poiJson.getString("level").equals(oldPoi.getLevel())) {
+			if (!jo.getString("level").equals(oldPoi.getLevel())) {
 				outDoorLog += "改POI_LEVEL|";
 			}
-			Geometry geo = (Geometry) poiJson.get("geometry");
-			if (!geo.equals(oldPoi.getGeometry())) {
+			if (!geometry.equals(oldPoi.getGeometry())) {
 				outDoorLog += "改RELATION|";
 			}
 			if (outDoorLog.length()>0) {
@@ -730,6 +740,7 @@ public class UploadOperation {
 			poiJson.put("sportsVenue", jo.getString("sportsVenues"));
 			poiJson.put("indoor", jo.getJSONObject("indoor").getInt("type"));
 			poiJson.put("vipFlag", jo.getString("vipFlag"));
+			poiJson.put("objStatus", ObjStatus.UPDATE.toString());
 			
 			UuidUtils uuid = new UuidUtils();
 			
@@ -905,7 +916,7 @@ public class UploadOperation {
 			JSONArray photoList = new JSONArray();
 			for (IRow oldPhotoIRow:oldPhotoList) {
 				IxPoiPhoto oldPhoto = (IxPoiPhoto) oldPhotoIRow;
-				photoIdList.add(oldPhoto.getPhotoId());
+				photoIdList.add(oldPhoto.getPid());
 			}
 			for (int k=0;k<attachments.size();k++) {
 				JSONObject photo = attachments.getJSONObject(k);

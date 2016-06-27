@@ -63,7 +63,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * POI主表操作类
  * 
  * @author zhangxiaolong
- *
+ * 
  */
 public class IxPoiOperator implements IOperator {
 
@@ -71,15 +71,16 @@ public class IxPoiOperator implements IOperator {
 
 	private IxPoi ixPoi;
 
-	public IxPoiOperator(Connection conn, IxPoi ixPoi) throws Exception  {
+	public IxPoiOperator(Connection conn, IxPoi ixPoi) throws Exception {
 		this.conn = conn;
 		this.ixPoi = ixPoi;
-		if(org.apache.commons.lang.StringUtils.isBlank(ixPoi.rowId())){
+		if (org.apache.commons.lang.StringUtils.isBlank(ixPoi.rowId())) {
 			ixPoi.setRowId(UuidUtils.genUuid());
 		}
 		upatePoiStatus();
 	}
-	public IxPoiOperator(Connection conn, String rowId) throws Exception  {
+
+	public IxPoiOperator(Connection conn, String rowId) throws Exception {
 		this.conn = conn;
 		ixPoi = new IxPoi();
 		ixPoi.setRowId(rowId);
@@ -114,7 +115,8 @@ public class IxPoiOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoi.tableName() + " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
+		StringBuilder sb = new StringBuilder("update " + ixPoi.tableName()
+				+ " set u_record=3,u_date= '"+StringUtils.getCurrentTime()+"' ,");
 
 		PreparedStatement pstmt = null;
 
@@ -139,32 +141,48 @@ public class IxPoiOperator implements IOperator {
 
 				Object value = field.get(ixPoi);
 
-				column = StringUtils.toColumnName(column);
+				if (column.equals("open24h")) {
+					column = "open_24h";
+				} else if (column.equals("level")) {
+					column = "\"LEVEL\"";
+				} else {
+
+					column = StringUtils.toColumnName(column);
+				}
 
 				if (value instanceof String || value == null) {
 
-					if (!StringUtils.isStringSame(String.valueOf(value), String.valueOf(columnValue))) {
+					if (!StringUtils.isStringSame(String.valueOf(value),
+							String.valueOf(columnValue))) {
 
 						if (columnValue == null) {
 							sb.append(column + "=null,");
 						} else {
-							sb.append(column + "='" + String.valueOf(columnValue) + "',");
+							sb.append(column + "='"
+									+ String.valueOf(columnValue) + "',");
 						}
 						isChanged = true;
 					}
 
 				} else if (value instanceof Double) {
 
-					if (Double.parseDouble(String.valueOf(value)) != Double.parseDouble(String.valueOf(columnValue))) {
-						sb.append(column + "=" + Double.parseDouble(String.valueOf(columnValue)) + ",");
+					if (Double.parseDouble(String.valueOf(value)) != Double
+							.parseDouble(String.valueOf(columnValue))) {
+						sb.append(column
+								+ "="
+								+ Double.parseDouble(String
+										.valueOf(columnValue)) + ",");
 
 						isChanged = true;
 					}
 
 				} else if (value instanceof Integer) {
 
-					if (Integer.parseInt(String.valueOf(value)) != Integer.parseInt(String.valueOf(columnValue))) {
-						sb.append(column + "=" + Integer.parseInt(String.valueOf(columnValue)) + ",");
+					if (Integer.parseInt(String.valueOf(value)) != Integer
+							.parseInt(String.valueOf(columnValue))) {
+						sb.append(column + "="
+								+ Integer.parseInt(String.valueOf(columnValue))
+								+ ",");
 
 						isChanged = true;
 					}
@@ -172,12 +190,14 @@ public class IxPoiOperator implements IOperator {
 				} else if (value instanceof Geometry) {
 					// 先降级转WKT
 
-					String oldWkt = GeoTranslator.jts2Wkt((Geometry) value, 0.00001, 5);
+					String oldWkt = GeoTranslator.jts2Wkt((Geometry) value,
+							0.00001, 5);
 
 					String newWkt = Geojson.geojson2Wkt(columnValue.toString());
 
 					if (!StringUtils.isStringSame(oldWkt, newWkt)) {
-						sb.append("geometry=sdo_geometry('" + String.valueOf(newWkt) + "',8307),");
+						sb.append("geometry=sdo_geometry('"
+								+ String.valueOf(newWkt) + "',8307),");
 
 						isChanged = true;
 					}
@@ -252,7 +272,9 @@ public class IxPoiOperator implements IOperator {
 				+ "LABEL, TYPE, ADDRESS_FLAG, EX_PRIORITY, EDITION_FLAG, POI_MEMO, "
 				+ "OLD_BLOCKCODE, OLD_NAME, OLD_ADDRESS, OLD_KIND, POI_NUM, LOG, TASK_ID, "
 				+ "DATA_VERSION, FIELD_TASK_ID, VERIFIED_FLAG, COLLECT_TIME, "
-				+ "GEO_ADJUST_FLAG, FULL_ATTR_FLAG, OLD_X_GUIDE, OLD_Y_GUIDE,U_DATE,U_RECORD, " + "ROW_ID) values (");
+				+ "GEO_ADJUST_FLAG, FULL_ATTR_FLAG, OLD_X_GUIDE, OLD_Y_GUIDE,U_DATE,"
+				+ "\"LEVEL\",SPORTS_VENUE,INDOOR,VIP_FLAG,U_RECORD,"
+				+ "ROW_ID) values (");
 
 		sb.append(ixPoi.getPid());
 
@@ -280,65 +302,154 @@ public class IxPoiOperator implements IOperator {
 
 		sb.append("," + ixPoi.getImportance());
 
-		sb.append(",'" + ixPoi.getChain() + "'");
+		if (StringUtils.isNotEmpty(ixPoi.getChain())) {
 
-		sb.append("," + ixPoi.getAirportCode());
+			sb.append(",'" + ixPoi.getChain() + "'");
+		} else {
+			sb.append(",null");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoi.getAirportCode())) {
+
+			sb.append(",'" + ixPoi.getAirportCode() + "'");
+		} else {
+			sb.append(",null");
+		}
 
 		sb.append("," + ixPoi.getAccessFlag());
 
 		sb.append("," + ixPoi.getOpen24h());
 
-		sb.append("," + ixPoi.getMeshId5k());
+		if (StringUtils.isNotEmpty(ixPoi.getMeshId5k())) {
+
+			sb.append(",'" + ixPoi.getMeshId5k() + "'");
+		} else {
+			sb.append(",null");
+		}
 
 		sb.append("," + ixPoi.getMeshId());
 
 		sb.append("," + ixPoi.getRegionId());
 
-		sb.append(",'" + ixPoi.getPostCode() + "'");
+		if (StringUtils.isNotEmpty(ixPoi.getPostCode())) {
+
+			sb.append(",'" + ixPoi.getPostCode() + "'");
+		} else {
+			sb.append(",null");
+		}
 
 		sb.append("," + ixPoi.getEditFlag());
 
-		sb.append(",'" + ixPoi.getDifGroupid() + "'");
+		if (StringUtils.isNotEmpty(ixPoi.getDifGroupid())) {
 
-		sb.append(",'" + ixPoi.getReserved() + "'");
+			sb.append(",'" + ixPoi.getDifGroupid() + "'");
+		} else {
+			sb.append(",null");
+		}
+		if (StringUtils.isNotEmpty(ixPoi.getReserved())) {
+
+			sb.append(",'" + ixPoi.getReserved() + "'");
+		} else {
+			sb.append(",null");
+		}
 
 		sb.append("," + ixPoi.getState());
 
-		sb.append(",'" + ixPoi.getFieldState() + "'");
+		if (StringUtils.isNotEmpty(ixPoi.getFieldState())) {
 
-		sb.append(",'" + ixPoi.getLabel() + "'");
+			sb.append(",'" + ixPoi.getFieldState() + "'");
+		} else {
+			sb.append(",null");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoi.getLabel())) {
+
+			sb.append(",'" + ixPoi.getLabel() + "'");
+		} else {
+			sb.append(",null");
+		}
 
 		sb.append("," + ixPoi.getType());
 
 		sb.append("," + ixPoi.getAddressFlag());
 
-		sb.append(",'" + ixPoi.getExPriority() + "'");
+		if (StringUtils.isNotEmpty(ixPoi.getExPriority())) {
+
+			sb.append(",'" + ixPoi.getExPriority() + "'");
+		} else {
+			sb.append(",null");
+		}
 
 		sb.append("," + ixPoi.getEditFlag());
 
-		sb.append(",'" + ixPoi.getPoiMemo() + "'");
+		if (StringUtils.isNotEmpty(ixPoi.getPoiMemo())) {
 
-		sb.append(",'" + ixPoi.getOldBlockcode() + "'");
+			sb.append(",'" + ixPoi.getPoiMemo() + "'");
+		} else {
+			sb.append(",null");
+		}
 
-		sb.append(",'" + ixPoi.getOldName() + "'");
+		if (StringUtils.isNotEmpty(ixPoi.getOldBlockcode())) {
 
-		sb.append(",'" + ixPoi.getOldAddress() + "'");
+			sb.append(",'" + ixPoi.getOldBlockcode() + "'");
+		} else {
+			sb.append(",null");
+		}
 
-		sb.append(",'" + ixPoi.getOldKind() + "'");
+		if (StringUtils.isNotEmpty(ixPoi.getOldName())) {
 
-		sb.append(",'" + ixPoi.getPoiNum() + "'");
+			sb.append(",'" + ixPoi.getOldName() + "'");
+		} else {
+			sb.append(",null");
+		}
 
-		sb.append(",'" + ixPoi.getLog() + "'");
+		if (StringUtils.isNotEmpty(ixPoi.getOldAddress())) {
+
+			sb.append(",'" + ixPoi.getOldAddress() + "'");
+		} else {
+			sb.append(",null");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoi.getOldKind())) {
+
+			sb.append(",'" + ixPoi.getOldKind() + "'");
+		} else {
+			sb.append(",null");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoi.getPoiNum())) {
+
+			sb.append(",'" + ixPoi.getPoiNum() + "'");
+		} else {
+			sb.append(",null");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoi.getLog())) {
+
+			sb.append(",'" + ixPoi.getLog() + "'");
+		} else {
+			sb.append(",null");
+		}
 
 		sb.append("," + ixPoi.getTaskId());
 
-		sb.append(",'" + ixPoi.getDataVersion() + "'");
+		if (StringUtils.isNotEmpty(ixPoi.getDataVersion())) {
+
+			sb.append(",'" + ixPoi.getDataVersion() + "'");
+		} else {
+			sb.append(",null");
+		}
 
 		sb.append("," + ixPoi.getFieldTaskId());
 
 		sb.append("," + ixPoi.getVerifiedFlag());
 
-		sb.append(",'" + ixPoi.getCollectTime() + "'");
+		if (StringUtils.isNotEmpty(ixPoi.getCollectTime())) {
+
+			sb.append(",'" + ixPoi.getCollectTime() + "'");
+		} else {
+			sb.append(",null");
+		}
 
 		sb.append("," + ixPoi.getGeoAdjustFlag());
 
@@ -347,8 +458,31 @@ public class IxPoiOperator implements IOperator {
 		sb.append("," + ixPoi.getOldXGuide());
 
 		sb.append("," + ixPoi.getOldYGuide());
-		
-		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
+
+		sb.append(",'" + StringUtils.getCurrentTime() + "'");
+
+		if (StringUtils.isNotEmpty(ixPoi.getLevel())) {
+
+			sb.append(",'" + ixPoi.getLevel() + "'");
+		} else {
+			sb.append(",null");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoi.getSportsVenue())) {
+
+			sb.append(",'" + ixPoi.getSportsVenue() + "'");
+		} else {
+			sb.append(",null");
+		}
+
+		sb.append("," + ixPoi.getIndoor());
+
+		if (StringUtils.isNotEmpty(ixPoi.getVipFlag())) {
+
+			sb.append(",'" + ixPoi.getVipFlag() + "'");
+		} else {
+			sb.append(",null");
+		}
 
 		sb.append(",1,'" + ixPoi.rowId() + "')");
 
@@ -361,13 +495,15 @@ public class IxPoiOperator implements IOperator {
 		}
 
 		for (IRow r : ixPoi.getContacts()) {
-			IxPoiContactOperator op = new IxPoiContactOperator(conn, (IxPoiContact) r);
+			IxPoiContactOperator op = new IxPoiContactOperator(conn,
+					(IxPoiContact) r);
 
 			op.insertRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getAddresses()) {
-			IxPoiAddressOperator op = new IxPoiAddressOperator(conn, (IxPoiAddress) r);
+			IxPoiAddressOperator op = new IxPoiAddressOperator(conn,
+					(IxPoiAddress) r);
 
 			op.insertRow2Sql(stmt);
 		}
@@ -397,7 +533,8 @@ public class IxPoiOperator implements IOperator {
 		}
 
 		for (IRow r : ixPoi.getEntryImages()) {
-			IxPoiEntryImageOperator op = new IxPoiEntryImageOperator(conn, (IxPoiEntryimage) r);
+			IxPoiEntryImageOperator op = new IxPoiEntryImageOperator(conn,
+					(IxPoiEntryimage) r);
 
 			op.insertRow2Sql(stmt);
 		}
@@ -409,13 +546,15 @@ public class IxPoiOperator implements IOperator {
 		}
 
 		for (IRow r : ixPoi.getParkings()) {
-			IxPoiParkingOperator op = new IxPoiParkingOperator(conn, (IxPoiParking) r);
+			IxPoiParkingOperator op = new IxPoiParkingOperator(conn,
+					(IxPoiParking) r);
 
 			op.insertRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getTourroutes()) {
-			IxPoiTourroutOperator op = new IxPoiTourroutOperator(conn, (IxPoiTourroute) r);
+			IxPoiTourroutOperator op = new IxPoiTourroutOperator(conn,
+					(IxPoiTourroute) r);
 
 			op.insertRow2Sql(stmt);
 		}
@@ -427,79 +566,92 @@ public class IxPoiOperator implements IOperator {
 		}
 
 		for (IRow r : ixPoi.getDetails()) {
-			IxPoiDetailOperator op = new IxPoiDetailOperator(conn, (IxPoiDetail) r);
+			IxPoiDetailOperator op = new IxPoiDetailOperator(conn,
+					(IxPoiDetail) r);
 
 			op.insertRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getBusinesstimes()) {
-			IxPoiBusinessTimeOperator op = new IxPoiBusinessTimeOperator(conn, (IxPoiBusinessTime) r);
+			IxPoiBusinessTimeOperator op = new IxPoiBusinessTimeOperator(conn,
+					(IxPoiBusinessTime) r);
 
 			op.insertRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getBusinesstimes()) {
-			IxPoiBusinessTimeOperator op = new IxPoiBusinessTimeOperator(conn, (IxPoiBusinessTime) r);
+			IxPoiBusinessTimeOperator op = new IxPoiBusinessTimeOperator(conn,
+					(IxPoiBusinessTime) r);
 
 			op.insertRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getChargingstations()) {
-			IxPoiChargingStationOperator op = new IxPoiChargingStationOperator(conn, (IxPoiChargingStation) r);
+			IxPoiChargingStationOperator op = new IxPoiChargingStationOperator(
+					conn, (IxPoiChargingStation) r);
 
 			op.insertRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getChargingplots()) {
-			IxPoiChargingPlotOperator op = new IxPoiChargingPlotOperator(conn, (IxPoiChargingPlot) r);
+			IxPoiChargingPlotOperator op = new IxPoiChargingPlotOperator(conn,
+					(IxPoiChargingPlot) r);
 
 			op.insertRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getChargingplots()) {
-			IxPoiChargingPlotPhOperator op = new IxPoiChargingPlotPhOperator(conn, (IxPoiChargingPlotPh) r);
+			IxPoiChargingPlotPhOperator op = new IxPoiChargingPlotPhOperator(
+					conn, (IxPoiChargingPlotPh) r);
 
 			op.insertRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getChargingplotPhs()) {
-			IxPoiChargingPlotPhOperator op = new IxPoiChargingPlotPhOperator(conn, (IxPoiChargingPlotPh) r);
+			IxPoiChargingPlotPhOperator op = new IxPoiChargingPlotPhOperator(
+					conn, (IxPoiChargingPlotPh) r);
 
 			op.insertRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getBuildings()) {
-			IxPoiBuildingOperator op = new IxPoiBuildingOperator(conn, (IxPoiBuilding) r);
+			IxPoiBuildingOperator op = new IxPoiBuildingOperator(conn,
+					(IxPoiBuilding) r);
 
 			op.insertRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getAdvertisements()) {
-			IxPoiAdvertisementOperator op = new IxPoiAdvertisementOperator(conn, (IxPoiAdvertisement) r);
+			IxPoiAdvertisementOperator op = new IxPoiAdvertisementOperator(
+					conn, (IxPoiAdvertisement) r);
 
 			op.insertRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getGasstations()) {
-			IxPoiGasstationOperator op = new IxPoiGasstationOperator(conn, (IxPoiGasstation) r);
+			IxPoiGasstationOperator op = new IxPoiGasstationOperator(conn,
+					(IxPoiGasstation) r);
 
 			op.insertRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getIntroductions()) {
-			IxPoiIntroductionOperator op = new IxPoiIntroductionOperator(conn, (IxPoiIntroduction) r);
+			IxPoiIntroductionOperator op = new IxPoiIntroductionOperator(conn,
+					(IxPoiIntroduction) r);
 
 			op.insertRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getAttractions()) {
-			IxPoiAttractionOperator op = new IxPoiAttractionOperator(conn, (IxPoiAttraction) r);
+			IxPoiAttractionOperator op = new IxPoiAttractionOperator(conn,
+					(IxPoiAttraction) r);
 
 			op.insertRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getAttractions()) {
-			IxPoiAttractionOperator op = new IxPoiAttractionOperator(conn, (IxPoiAttraction) r);
+			IxPoiAttractionOperator op = new IxPoiAttractionOperator(conn,
+					(IxPoiAttraction) r);
 
 			op.insertRow2Sql(stmt);
 		}
@@ -511,13 +663,15 @@ public class IxPoiOperator implements IOperator {
 		}
 
 		for (IRow r : ixPoi.getRestaurants()) {
-			IxPoiRestaurantOperator op = new IxPoiRestaurantOperator(conn, (IxPoiRestaurant) r);
+			IxPoiRestaurantOperator op = new IxPoiRestaurantOperator(conn,
+					(IxPoiRestaurant) r);
 
 			op.insertRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getCarrentals()) {
-			IxPoiCarrentalOperator op = new IxPoiCarrentalOperator(conn, (IxPoiCarrental) r);
+			IxPoiCarrentalOperator op = new IxPoiCarrentalOperator(conn,
+					(IxPoiCarrental) r);
 
 			op.insertRow2Sql(stmt);
 		}
@@ -525,13 +679,14 @@ public class IxPoiOperator implements IOperator {
 	}
 
 	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt) throws Exception {
+	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
+			throws Exception {
 
 	}
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoi.tableName() + " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where pid=" + ixPoi.getPid();
+		String sql = "update " + ixPoi.tableName() + " set u_record=2,u_date= '"+StringUtils.getCurrentTime()+"'  where pid=" + ixPoi.getPid();
 
 		stmt.addBatch(sql);
 
@@ -542,13 +697,15 @@ public class IxPoiOperator implements IOperator {
 		}
 
 		for (IRow r : ixPoi.getContacts()) {
-			IxPoiContactOperator op = new IxPoiContactOperator(conn, (IxPoiContact) r);
+			IxPoiContactOperator op = new IxPoiContactOperator(conn,
+					(IxPoiContact) r);
 
 			op.deleteRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getAddresses()) {
-			IxPoiAddressOperator op = new IxPoiAddressOperator(conn, (IxPoiAddress) r);
+			IxPoiAddressOperator op = new IxPoiAddressOperator(conn,
+					(IxPoiAddress) r);
 
 			op.deleteRow2Sql(stmt);
 		}
@@ -578,7 +735,8 @@ public class IxPoiOperator implements IOperator {
 		}
 
 		for (IRow r : ixPoi.getEntryImages()) {
-			IxPoiEntryImageOperator op = new IxPoiEntryImageOperator(conn, (IxPoiEntryimage) r);
+			IxPoiEntryImageOperator op = new IxPoiEntryImageOperator(conn,
+					(IxPoiEntryimage) r);
 
 			op.deleteRow2Sql(stmt);
 		}
@@ -590,13 +748,15 @@ public class IxPoiOperator implements IOperator {
 		}
 
 		for (IRow r : ixPoi.getParkings()) {
-			IxPoiParkingOperator op = new IxPoiParkingOperator(conn, (IxPoiParking) r);
+			IxPoiParkingOperator op = new IxPoiParkingOperator(conn,
+					(IxPoiParking) r);
 
 			op.deleteRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getTourroutes()) {
-			IxPoiTourroutOperator op = new IxPoiTourroutOperator(conn, (IxPoiTourroute) r);
+			IxPoiTourroutOperator op = new IxPoiTourroutOperator(conn,
+					(IxPoiTourroute) r);
 
 			op.deleteRow2Sql(stmt);
 		}
@@ -608,79 +768,92 @@ public class IxPoiOperator implements IOperator {
 		}
 
 		for (IRow r : ixPoi.getDetails()) {
-			IxPoiDetailOperator op = new IxPoiDetailOperator(conn, (IxPoiDetail) r);
+			IxPoiDetailOperator op = new IxPoiDetailOperator(conn,
+					(IxPoiDetail) r);
 
 			op.deleteRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getBusinesstimes()) {
-			IxPoiBusinessTimeOperator op = new IxPoiBusinessTimeOperator(conn, (IxPoiBusinessTime) r);
+			IxPoiBusinessTimeOperator op = new IxPoiBusinessTimeOperator(conn,
+					(IxPoiBusinessTime) r);
 
 			op.deleteRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getBusinesstimes()) {
-			IxPoiBusinessTimeOperator op = new IxPoiBusinessTimeOperator(conn, (IxPoiBusinessTime) r);
+			IxPoiBusinessTimeOperator op = new IxPoiBusinessTimeOperator(conn,
+					(IxPoiBusinessTime) r);
 
 			op.deleteRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getChargingstations()) {
-			IxPoiChargingStationOperator op = new IxPoiChargingStationOperator(conn, (IxPoiChargingStation) r);
+			IxPoiChargingStationOperator op = new IxPoiChargingStationOperator(
+					conn, (IxPoiChargingStation) r);
 
 			op.deleteRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getChargingplots()) {
-			IxPoiChargingPlotOperator op = new IxPoiChargingPlotOperator(conn, (IxPoiChargingPlot) r);
+			IxPoiChargingPlotOperator op = new IxPoiChargingPlotOperator(conn,
+					(IxPoiChargingPlot) r);
 
 			op.deleteRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getChargingplots()) {
-			IxPoiChargingPlotPhOperator op = new IxPoiChargingPlotPhOperator(conn, (IxPoiChargingPlotPh) r);
+			IxPoiChargingPlotPhOperator op = new IxPoiChargingPlotPhOperator(
+					conn, (IxPoiChargingPlotPh) r);
 
 			op.deleteRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getChargingplotPhs()) {
-			IxPoiChargingPlotPhOperator op = new IxPoiChargingPlotPhOperator(conn, (IxPoiChargingPlotPh) r);
+			IxPoiChargingPlotPhOperator op = new IxPoiChargingPlotPhOperator(
+					conn, (IxPoiChargingPlotPh) r);
 
 			op.deleteRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getBuildings()) {
-			IxPoiBuildingOperator op = new IxPoiBuildingOperator(conn, (IxPoiBuilding) r);
+			IxPoiBuildingOperator op = new IxPoiBuildingOperator(conn,
+					(IxPoiBuilding) r);
 
 			op.deleteRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getAdvertisements()) {
-			IxPoiAdvertisementOperator op = new IxPoiAdvertisementOperator(conn, (IxPoiAdvertisement) r);
+			IxPoiAdvertisementOperator op = new IxPoiAdvertisementOperator(
+					conn, (IxPoiAdvertisement) r);
 
 			op.deleteRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getGasstations()) {
-			IxPoiGasstationOperator op = new IxPoiGasstationOperator(conn, (IxPoiGasstation) r);
+			IxPoiGasstationOperator op = new IxPoiGasstationOperator(conn,
+					(IxPoiGasstation) r);
 
 			op.deleteRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getIntroductions()) {
-			IxPoiIntroductionOperator op = new IxPoiIntroductionOperator(conn, (IxPoiIntroduction) r);
+			IxPoiIntroductionOperator op = new IxPoiIntroductionOperator(conn,
+					(IxPoiIntroduction) r);
 
 			op.deleteRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getAttractions()) {
-			IxPoiAttractionOperator op = new IxPoiAttractionOperator(conn, (IxPoiAttraction) r);
+			IxPoiAttractionOperator op = new IxPoiAttractionOperator(conn,
+					(IxPoiAttraction) r);
 
 			op.deleteRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getAttractions()) {
-			IxPoiAttractionOperator op = new IxPoiAttractionOperator(conn, (IxPoiAttraction) r);
+			IxPoiAttractionOperator op = new IxPoiAttractionOperator(conn,
+					(IxPoiAttraction) r);
 
 			op.deleteRow2Sql(stmt);
 		}
@@ -692,27 +865,30 @@ public class IxPoiOperator implements IOperator {
 		}
 
 		for (IRow r : ixPoi.getRestaurants()) {
-			IxPoiRestaurantOperator op = new IxPoiRestaurantOperator(conn, (IxPoiRestaurant) r);
+			IxPoiRestaurantOperator op = new IxPoiRestaurantOperator(conn,
+					(IxPoiRestaurant) r);
 
 			op.deleteRow2Sql(stmt);
 		}
 
 		for (IRow r : ixPoi.getCarrentals()) {
-			IxPoiCarrentalOperator op = new IxPoiCarrentalOperator(conn, (IxPoiCarrental) r);
+			IxPoiCarrentalOperator op = new IxPoiCarrentalOperator(conn,
+					(IxPoiCarrental) r);
 
 			op.deleteRow2Sql(stmt);
 		}
 	}
+
 	/**
-	 * poi操作修改poi状态为已作业，限度信息为0
-	 * zhaokk
-	 * sourceFlag 0 web 1 Android
+	 * poi操作修改poi状态为已作业，限度信息为0 zhaokk sourceFlag 0 web 1 Android
+	 * 
 	 * @param row
 	 * @throws Exception
 	 */
-	public void  upatePoiStatus() throws Exception{
+	public void upatePoiStatus() throws Exception {
 		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
-		sb.append(" USING (SELECT '"+ixPoi.getRowId()+"' as a, 2 as b,0 as c FROM dual) T2 ");
+		sb.append(" USING (SELECT '" + ixPoi.getRowId()
+				+ "' as a, 2 as b,0 as c FROM dual) T2 ");
 		sb.append(" ON ( T1.row_id=T2.a) ");
 		sb.append(" WHEN MATCHED THEN ");
 		sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.b ");
@@ -720,8 +896,8 @@ public class IxPoiOperator implements IOperator {
 		sb.append(" INSERT (T1.row_id,T1.status,T1.fresh_verified) VALUES(T2.a,T2.b,T2.b)");
 		PreparedStatement pstmt = null;
 		try {
-				pstmt = conn.prepareStatement(sb.toString());
-				pstmt.executeUpdate();
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.executeUpdate();
 		} catch (Exception e) {
 			throw e;
 
@@ -735,6 +911,6 @@ public class IxPoiOperator implements IOperator {
 			}
 
 		}
-	
+
 	}
 }

@@ -25,9 +25,9 @@ public class AdAdminGroupTest extends InitApplication {
 	public void searchAdminGroupLevel() {
 		Connection conn;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(11);
+			conn = DBConnector.getInstance().getConnectionById(42);
 
-			String parameter = "{\"type\":\"ADADMINGROUP\",\"projectId\":11,\"data\":{\"projectId\":11}}";
+			String parameter = "{\"type\":\"ADADMINGROUP\",\"dbId\":42,\"subTaskId\":33}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 

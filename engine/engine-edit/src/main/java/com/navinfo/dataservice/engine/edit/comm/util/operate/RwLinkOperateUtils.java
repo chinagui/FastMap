@@ -1,23 +1,27 @@
 package com.navinfo.dataservice.engine.edit.comm.util.operate;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * RWLINK公共方法类
@@ -101,7 +105,7 @@ public class RwLinkOperateUtils {
 
 			double y = coordinates.getJSONArray(0).getDouble(1);
 
-			RwNode node = NodeOperateUtils.createRwNode(x, y);
+			RwNode node = (RwNode) NodeOperateUtils.createNode(x, y,ObjType.RWNODE);
 			result.insertObject(node, ObjStatus.INSERT, node.pid());
 			se.put("s", node.getPid());
 
@@ -135,7 +139,7 @@ public class RwLinkOperateUtils {
 
 					double y = catchLinks.getJSONObject(p).getDouble("lat");
 
-					RwNode node = NodeOperateUtils.createRwNode(x, y);
+					RwNode node = (RwNode) NodeOperateUtils.createNode(x, y,ObjType.RWNODE);
 
 					result.insertObject(node, ObjStatus.INSERT, node.pid());
 
@@ -172,7 +176,7 @@ public class RwLinkOperateUtils {
 
 				double y = tmpCs.getJSONArray(tmpCs.size() - 1).getDouble(1);
 
-				RwNode node = NodeOperateUtils.createRwNode(x, y);
+				RwNode node = (RwNode) NodeOperateUtils.createNode(x, y,ObjType.RWNODE);
 
 				result.insertObject(node, ObjStatus.INSERT, node.pid());
 
@@ -192,7 +196,7 @@ public class RwLinkOperateUtils {
 		JSONObject node = new JSONObject();
 		if (0 == sNodePid) {
 			Coordinate point = g.getCoordinates()[0];
-			RwNode rwNODE =NodeOperateUtils.createRwNode(point.x, point.y);
+			RwNode rwNODE =(RwNode) NodeOperateUtils.createNode(point.x, point.y,ObjType.RWNODE);
 			result.insertObject(rwNODE, ObjStatus.INSERT, rwNODE.pid());
 			node.put("s", rwNODE.getPid());
 		}else{
@@ -201,7 +205,7 @@ public class RwLinkOperateUtils {
 		//创建终止点信息
 		if (0 == eNodePid) {
 			Coordinate point = g.getCoordinates()[g.getCoordinates().length - 1];
-			RwNode rwNODE =NodeOperateUtils.createRwNode(point.x, point.y);
+			RwNode rwNODE =(RwNode) NodeOperateUtils.createNode(point.x, point.y,ObjType.RWNODE);
 			result.insertObject(rwNODE, ObjStatus.INSERT, rwNODE.pid());
 			node.put("e", rwNODE.getPid());
 		}else{
@@ -236,4 +240,194 @@ public class RwLinkOperateUtils {
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
 		return link;
 	}
+	
+	/*
+	 * 创建线 针对跨图幅有两种情况 
+	 * 1.跨图幅和图幅交集是LineString 
+	 * 2.跨图幅和图幅交集是MultineString
+	 * 3.跨图幅需要生成和图廓线的交点
+	 */
+
+	public static void createRwLinkWithMesh(Geometry g,
+			Map<Coordinate, Integer> maps, Result result) throws Exception {
+		if (g != null) {
+			
+			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
+				RwLinkOperateUtils.calLinkWithMesh(g, maps,result);
+			}
+			if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
+				for (int i = 0; i < g.getNumGeometries(); i++) {
+					RwLinkOperateUtils.calLinkWithMesh(g.getGeometryN(i), maps,result);
+				}
+
+			}
+		}
+	}
+	
+	/*
+	 * 创建线 针对跨图幅创建图廓点不能重复
+	 */
+	public static void calLinkWithMesh(Geometry g,Map<Coordinate, Integer> maps,
+			Result result) throws Exception {
+		//定义创建线的起始Pid 默认为0
+		int sNodePid = 0;
+		int eNodePid = 0;
+		//判断新创建的线起点对应的pid是否存在，如果存在取出赋值
+		if (maps.containsKey(g.getCoordinates()[0])) {
+			sNodePid = maps.get(g.getCoordinates()[0]);
+		}
+		//判断新创建的线终始点对应的pid是否存在，如果存在取出赋值
+		if (maps.containsKey(g.getCoordinates()[g.getCoordinates().length - 1])) {
+			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
+		}
+		//创建线对应的点
+		JSONObject node = RwLinkOperateUtils.createNodeForLink(
+				g, sNodePid, eNodePid, result);
+		if (!maps.containsValue(node.get("s"))) {
+			maps.put(g.getCoordinates()[0], (int) node.get("s"));
+		}
+		if (!maps.containsValue(node.get("e"))) {
+			maps.put(g.getCoordinates()[0], (int) node.get("e"));
+		}
+		//创建线
+		RwLinkOperateUtils.addLink(g, (int) node.get("s"),
+				(int) node.get("e"), result);
+	}
+	
+
+	/*
+	 * 创建线对应的端点
+	 */
+	public static JSONObject createNodeForLink(Geometry g, int sNodePid, int eNodePid,Result result)
+			throws Exception {
+		JSONObject node = new JSONObject();
+		if (0 == sNodePid) {
+			Coordinate point = g.getCoordinates()[0];
+			RwNode rwNode =NodeOperateUtils.createRwNode(point.x, point.y);
+			result.insertObject(rwNode, ObjStatus.INSERT, rwNode.pid());
+			node.put("s", rwNode.getPid());
+		}else{
+			node.put("s", sNodePid);
+		}
+		//创建终止点信息
+		if (0 == eNodePid) {
+			Coordinate point = g.getCoordinates()[g.getCoordinates().length - 1];
+			RwNode rwNode=NodeOperateUtils.createRwNode(point.x, point.y);
+			result.insertObject(rwNode, ObjStatus.INSERT, rwNode.pid());
+			node.put("e", rwNode.getPid());
+		}else{
+			node.put("e", eNodePid);
+		}
+		return node;
+		
+	}
+	
+	/*
+	 * 创建生成一条RwLINK返回
+	 * */
+	public static RwLink getAddLink(Geometry g,int sNodePid, int eNodePid,Result result) throws Exception{
+		RwLink link = new RwLink();
+		
+		link.setPid(PidService.getInstance().applyRwLinkPid());
+		
+		double linkLength = GeometryUtils.getLinkLength(g);
+		
+		link.setLength(linkLength);
+		
+		link.setGeometry(GeoTranslator.transform(g, 100000, 0));
+		
+		link.setsNodePid(sNodePid);
+		
+		link.seteNodePid(eNodePid);
+		
+		result.setPrimaryPid(link.pid());
+		
+		result.insertObject(link, ObjStatus.INSERT, link.pid());
+		
+		return link;
+	}
+	
+
+	
+
+		
+	public static List<RwLink> getCreateRwLinksWithMesh(Geometry g,
+			Map<Coordinate, Integer> maps, Result result) throws Exception {
+		List<RwLink> links = new ArrayList<RwLink>();
+		if (g != null) {
+			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
+				links.add(getCalAdLinkWithMesh(g, maps,result));
+			}
+			if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
+				for (int i = 0; i < g.getNumGeometries(); i++) {
+					links.add(getCalAdLinkWithMesh(g.getGeometryN(i), maps,result));
+				}
+
+			}
+		}
+		return links;
+	}
+	
+	/*
+	 * 创建铁路线 针对跨图幅创建图廓点不能重复
+	 */
+	public static void calAdLinkWithMesh(Geometry g,Map<Coordinate, Integer> maps,
+			Result result) throws Exception {
+		//定义创建铁路线的起始Pid 默认为0
+		int sNodePid = 0;
+		int eNodePid = 0;
+		//判断新创建的线起点对应的pid是否存在，如果存在取出赋值
+		if (maps.containsKey(g.getCoordinates()[0])) {
+			sNodePid = maps.get(g.getCoordinates()[0]);
+		}
+		//判断新创建的线终始点对应的pid是否存在，如果存在取出赋值
+		if (maps.containsKey(g.getCoordinates()[g.getCoordinates().length - 1])) {
+			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
+		}
+		//创建线对应的点
+		JSONObject node = AdLinkOperateUtils.createAdNodeForLink(
+				g, sNodePid, eNodePid, result);
+		if (!maps.containsValue(node.get("s"))) {
+			maps.put(g.getCoordinates()[0], (int) node.get("s"));
+		}
+		if (!maps.containsValue(node.get("e"))) {
+			maps.put(g.getCoordinates()[0], (int) node.get("e"));
+		}
+		//创建线
+		RwLinkOperateUtils.addLink(g, (int) node.get("s"),
+				(int) node.get("e"), result);
+	}
+	
+	/*
+	 * 创建铁路线 针对跨图幅创建图廓点不能重复
+	 */
+	public static RwLink getCalAdLinkWithMesh(Geometry g,Map<Coordinate, Integer> maps,
+			Result result) throws Exception {
+		//定义创建铁路线的起始Pid 默认为0
+		int sNodePid = 0;
+		int eNodePid = 0;
+		//判断新创建的线起点对应的pid是否存在，如果存在取出赋值
+		if (maps.containsKey(g.getCoordinates()[0])) {
+			sNodePid = maps.get(g.getCoordinates()[0]);
+		}
+		//判断新创建的线终始点对应的pid是否存在，如果存在取出赋值
+		if (maps.containsKey(g.getCoordinates()[g.getCoordinates().length - 1])) {
+			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
+		}
+		//创建线对应的点
+		JSONObject node = AdLinkOperateUtils.createAdNodeForLink(
+				g, sNodePid, eNodePid, result);
+		if (!maps.containsValue(node.get("s"))) {
+			maps.put(g.getCoordinates()[0], (int) node.get("s"));
+		}
+		if (!maps.containsValue(node.get("e"))) {
+			maps.put(g.getCoordinates()[0], (int) node.get("e"));
+		}
+		//创建线
+		return RwLinkOperateUtils.addLink(g, (int) node.get("s"),
+				(int) node.get("e"), result);
+	}
+
+	
+
 }

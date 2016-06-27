@@ -145,11 +145,8 @@ public class RdSeriesbranchOperator implements IOperator {
 
 				}
 			}
-			sb.append(" where row_id=hextoraw('" + seriesbranch.getRowId());
-
-			sb.append(seriesbranch.getRowId());
-
-			sb.append("')");
+			sb.append(" where row_id=hextoraw('" + seriesbranch.getRowId()
+					+ "')");
 
 			String sql = sb.toString();
 
@@ -221,9 +218,9 @@ public class RdSeriesbranchOperator implements IOperator {
 
 		sb.append(seriesbranch.getBranchPid());
 
-		sb.append(seriesbranch.getType());
+		sb.append("," + seriesbranch.getType());
 
-		sb.append(seriesbranch.getVoiceDir());
+		sb.append("," + seriesbranch.getVoiceDir());
 
 		if (seriesbranch.getPatternCode() == null) {
 			sb.append(",null");
@@ -237,9 +234,11 @@ public class RdSeriesbranchOperator implements IOperator {
 			sb.append(",'" + seriesbranch.getArrowCode() + "'");
 		}
 
-		sb.append(seriesbranch.getArrowFlag());
+		sb.append("," + seriesbranch.getArrowFlag());
 
 		sb.append(",1,'" + seriesbranch.rowId() + "')");
+
+		System.out.println(sb.toString());
 
 		stmt.addBatch(sb.toString());
 	}
@@ -247,14 +246,15 @@ public class RdSeriesbranchOperator implements IOperator {
 	@Override
 	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
 			throws Exception {
-		
+
 	}
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 
 		String sql = "update " + seriesbranch.tableName()
-				+ " set u_record=2 where row_id=hextoraw('" + seriesbranch.rowId() + "')";
+				+ " set u_record=2 where row_id=hextoraw('"
+				+ seriesbranch.rowId() + "')";
 
 		stmt.addBatch(sql);
 	}

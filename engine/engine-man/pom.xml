@@ -33,6 +33,11 @@
 	
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>dao-mq</artifactId>
+	</dependency>
+	
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>biz-commons</artifactId>
 	</dependency>
 	<dependency>

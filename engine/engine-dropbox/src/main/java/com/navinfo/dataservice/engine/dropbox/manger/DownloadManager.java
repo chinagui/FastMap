@@ -3,10 +3,11 @@ package com.navinfo.dataservice.engine.dropbox.manger;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.dropbox.util.DropboxUtil;
-import com.navinfo.dataservice.engine.man.version.VersionService;
 
 public class DownloadManager {
 
@@ -22,11 +23,11 @@ public class DownloadManager {
 
 		JSONObject data = DropboxUtil.getLastestInfo(urlPath, dir, projectId);
 
-		VersionService versionMan = new VersionService();
+		ManApi man = (ManApi) ApplicationContextUtil.getBean("manApi");
 
-		String version = versionMan.query(2);
+		String specVersion = man.querySpecVersionByType(2);
 
-		data.put("specVersion", version);
+		data.put("specVersion", specVersion);
 
 		return data;
 
@@ -34,11 +35,11 @@ public class DownloadManager {
 
 	public JSONArray getBasedataList() throws Exception {
 
-		VersionService versionMan = new VersionService();
+		ManApi man = (ManApi) ApplicationContextUtil.getBean("manApi");
 
-		String version = versionMan.query(2);
+		String specVersion = man.querySpecVersionByType(2);
 
-		JSONArray data = DropboxUtil.getGdbList(version);
+		JSONArray data = DropboxUtil.getGdbList(specVersion);
 
 		return data;
 
@@ -78,11 +79,19 @@ public class DownloadManager {
 
 		JSONObject data = DropboxUtil.getLastestInfo(urlPath, filePath, null);
 
-		VersionService versionMan = new VersionService();
+		ManApi man = (ManApi) ApplicationContextUtil.getBean("manApi");
 
-		String version = versionMan.query(3);
+		String specVersion = man.querySpecVersionByType(3);
 
-		data.put("specVersion", version);
+		data.put("specVersion", specVersion);
+
+		return data;
+
+	}
+	
+	public JSONObject getAppVersion(int type,String platform) throws Exception {
+
+		JSONObject data = DropboxUtil.getAppVersion(type,platform);
 
 		return data;
 

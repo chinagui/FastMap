@@ -2,6 +2,7 @@ package com.navinfo.dataservice.web.man.controller;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -15,9 +16,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.database.Page;
 
@@ -30,8 +33,6 @@ import com.navinfo.navicommons.database.Page;
 @Controller
 public class TaskController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	@Autowired 
-	private TaskService service;
 
 	/*
 	 * 规划管理页面--任务管理
@@ -44,7 +45,7 @@ public class TaskController extends BaseController {
 	@RequestMapping(value = "/task/create")
 	public ModelAndView create(HttpServletRequest request){
 		try{
-			//AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			String parameter = request.getParameter("parameter");
 			if (StringUtils.isEmpty(parameter)){
 				throw new IllegalArgumentException("parameter参数不能为空。");
@@ -53,9 +54,9 @@ public class TaskController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			//long userId=tokenObj.getUserId();
-			long userId=2;
-			service.create(userId,dataJson);
+			long userId=tokenObj.getUserId();
+			//long userId=2;
+			TaskService.getInstance().create(userId,dataJson);
 			return new ModelAndView("jsonView", success("创建成功"));
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);
@@ -72,7 +73,7 @@ public class TaskController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			service.update(dataJson);					
+			TaskService.getInstance().update(dataJson);					
 			return new ModelAndView("jsonView", success("修改成功"));
 		}catch(Exception e){
 			log.error("修改失败，原因："+e.getMessage(), e);
@@ -95,7 +96,7 @@ public class TaskController extends BaseController {
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
 			JSONArray taskIds=dataJson.getJSONArray("taskIds");
-			HashMap<String,String> errorTask=service.close(JSONArray.toList(taskIds));			
+			HashMap<String,String> errorTask=TaskService.getInstance().close(JSONArray.toList(taskIds));			
 			return new ModelAndView("jsonView", success(errorTask));
 		}catch(Exception e){
 			log.error("删除失败，原因："+e.getMessage(), e);
@@ -123,14 +124,41 @@ public class TaskController extends BaseController {
 			if (StringUtils.isNotEmpty(curSize)){
 				curPageSize = Integer.parseInt(curSize);
 			}
-			Page data = service.list(condition,order,curPageNum,curPageSize);			
-			return new ModelAndView("jsonView", success(JsonOperation.beanToJsonList((List)data.getResult())));
+			Page data = TaskService.getInstance().list(condition,order,curPageNum,curPageSize);
+			List result=JsonOperation.beanToJsonList((List)data.getResult());
+			Map<String, Object> returnMap=new HashMap<String, Object>();
+			returnMap.put("result", result);
+			//returnMap.put("pageSize", curPageSize);
+			//returnMap.put("pageNum", curPageNum);
+			returnMap.put("totalCount", data.getTotalCount());
+			return new ModelAndView("jsonView", success(returnMap));
 			//return new ModelAndView("jsonView", success(data.getResult()));
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	
+	/*
+	 * 规划管理页面--任务管理--查看任务页面
+	 */
+	@SuppressWarnings("rawtypes")
+	@RequestMapping(value = "/task/listAll")
+	public ModelAndView listAll(HttpServletRequest request){
+		try{	
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
+			JSONObject condition = dataJson.getJSONObject("condition");			
+			JSONObject order = dataJson.getJSONObject("order");
+			
+			List<Task> data = TaskService.getInstance().listAll(condition,order);			
+			return new ModelAndView("jsonView", success(JsonOperation.beanToJsonList(data)));
+			//return new ModelAndView("jsonView", success(data.getResult()));
+		}catch(Exception e){
+			log.error("获取列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
 	/*
 	 *  20160607 by zhangxiaoyi 删除，此次生产管理平台的设计中不涉及该接口的使用
 	 */

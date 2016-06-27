@@ -12,6 +12,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
+import com.navinfo.dataservice.commons.util.ResponseUtils;
+
 /** 
 * @ClassName: TokenValidateFilter 
 * @author Xiao Xiaowen 
@@ -43,9 +45,8 @@ public class TokenValidateFilter implements Filter {
 	        }			
 			chain.doFilter(request, response);
 		}catch(TokenExpiredException te){
-			throw new ServletException("Token已过期");
-		}catch(Exception e){
-			throw new ServletException("验证Token时发生错误");
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult("登陆已过期，请重新登陆",-100));
 		}
 
 	}

@@ -62,7 +62,7 @@ public class IxPoiNameOperator implements IOperator {
 
 	@Override
 	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiName.tableName() + " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
+		StringBuilder sb = new StringBuilder("update " + ixPoiName.tableName() + " set u_record=3,u_date='"+StringUtils.getCurrentTime()+"',");
 
 		PreparedStatement pstmt = null;
 
@@ -114,8 +114,6 @@ public class IxPoiNameOperator implements IOperator {
 				}
 			}
 			sb.append(" where name_id= " + ixPoiName.getPid());
-
-			sb.append("')");
 
 			String sql = sb.toString();
 
@@ -192,16 +190,51 @@ public class IxPoiNameOperator implements IOperator {
 		sb.append("," + ixPoiName.getNameClass());
 
 		sb.append("," + ixPoiName.getNameType());
-
-		sb.append(",'" + ixPoiName.getLangCode()+"'");
-
-		sb.append(",'" + ixPoiName.getName()+"'");
-
-		sb.append(",'" + ixPoiName.getNamePhonetic()+"'");
-
-		sb.append(",'" + ixPoiName.getKeywords()+"'");
-
-		sb.append(",'" + ixPoiName.getNidbPid()+"'");
+		
+		if(StringUtils.isNotEmpty(ixPoiName.getLangCode()))
+		{
+			sb.append(",'" + ixPoiName.getLangCode()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiName.getName()))
+		{
+			sb.append(",'" + ixPoiName.getName()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiName.getNamePhonetic()))
+		{
+			sb.append(",'" + ixPoiName.getNamePhonetic()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiName.getKeywords()))
+		{
+			sb.append(",'" + ixPoiName.getKeywords()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiName.getNidbPid()))
+		{
+			sb.append(",'" + ixPoiName.getNidbPid()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 		
 		sb.append(",'" + StringUtils.getCurrentTime()+ "'");
 
@@ -232,7 +265,7 @@ public class IxPoiNameOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoiName.tableName() + " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where name_id=" + ixPoiName.getPid();
+		String sql = "update " + ixPoiName.tableName() + " set u_record=2,u_date= '"+StringUtils.getCurrentTime()+"'  where name_id=" + ixPoiName.getPid();
 
 		stmt.addBatch(sql);
 

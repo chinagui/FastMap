@@ -17,13 +17,18 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		if(event.getApplicationContext().getParent() == null){
-			try{
-				JobFinder finder = new JobFinderFromMQ();
-				finder.startFinding(JobMsgType.MSG_RESPONSE_JOB);
-			}catch(Exception e){
-				System.out.println(e.getMessage());
-				e.printStackTrace();
-			}
+			new Thread(){
+				@Override
+				public void run(){
+					try{
+						JobFinder finder = new JobFinderFromMQ();
+						finder.startFinding(JobMsgType.MSG_RESPONSE_JOB);
+					}catch(Exception e){
+						System.out.println(e.getMessage());
+						e.printStackTrace();
+					}
+				}
+			}.start();
 		}
 	}
 	

@@ -46,6 +46,8 @@ public class RwLinkSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
+				
+				setAttr(rwLink, resultSet);
 
 				List<IRow> names = new RwLinkNameSelector(conn).loadRowsByParentId(id, isLock);
 
@@ -56,6 +58,10 @@ public class RwLinkSelector implements ISelector {
 
 					rwLink.linkNameMap.put(obj.rowId(), obj);
 				}
+			}
+			else
+			{
+				throw new Exception("对应RWLINK: "+id+" 不存在!");
 			}
 		} catch (Exception e) {
 

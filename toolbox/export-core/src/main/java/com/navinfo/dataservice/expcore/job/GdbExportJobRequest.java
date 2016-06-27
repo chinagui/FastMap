@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.expcore.ExportConfig;
+import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
@@ -16,9 +17,11 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 */
 public class GdbExportJobRequest extends AbstractJobRequest {
 	protected int sourceDbId;
-	protected String condition;
+	protected String condition=ExportConfig.CONDITION_BY_MESH;
 	protected List<String> conditionParams;
-	protected String featureType;//poi,road,all,GlmTable.FEATURE_TYPE_XXX
+	protected int meshExtendCount=0;
+	protected String featureType=ExportConfig.FEATURE_ALL;//poi,road,all,GlmTable.FEATURE_TYPE_XXX
+	protected String mode=ExportConfig.MODE_COPY;
 //	protected List<String> objTypes;
 //	protected boolean deleteData;
 //	protected boolean destroyTarget;
@@ -33,12 +36,6 @@ public class GdbExportJobRequest extends AbstractJobRequest {
 	protected List<String> excludedTables;
 	protected  List<String> flexTables;
 	protected Map<String,String> flexConditions;
-	
-
-	@Override
-	public int getStepCount() throws JobException {
-		return 3;
-	}
 
 	@Override
 	public void validate() throws JobException {
@@ -69,6 +66,14 @@ public class GdbExportJobRequest extends AbstractJobRequest {
 		this.conditionParams = conditionParams;
 	}
 
+	public int getMeshExtendCount() {
+		return meshExtendCount;
+	}
+
+	public void setMeshExtendCount(int meshExtendCount) {
+		this.meshExtendCount = meshExtendCount;
+	}
+
 	public String getFeatureType() {
 		return featureType;
 	}
@@ -77,6 +82,14 @@ public class GdbExportJobRequest extends AbstractJobRequest {
 		this.featureType = featureType;
 	}
 	
+	public String getMode() {
+		return mode;
+	}
+
+	public void setMode(String mode) {
+		this.mode = mode;
+	}
+
 	public int getTargetDbId() {
 		return targetDbId;
 	}
@@ -168,6 +181,17 @@ public class GdbExportJobRequest extends AbstractJobRequest {
 	@Override
 	public String getJobType() {
 		return "gdbExport";
+	}
+
+	@Override
+	public void defineSubJobRequests() throws JobCreateException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected int myStepCount() throws JobException {
+		return 3;
 	}
 
 }

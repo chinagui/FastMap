@@ -44,7 +44,10 @@ public class RwNode implements IObj {
 
 	private List<IRow> meshes = new ArrayList<>();
 
-	public Map<String, RwNodeMesh> meshMap = new HashMap<>();
+	public Map<String, RwNodeMesh> meshMap = new HashMap<>();		
+	
+	// rwnode关联的rwlink集合
+	private List<RwLink> topoLinks = new ArrayList<>();
 
 	public int getPid() {
 		return pid;
@@ -96,6 +99,14 @@ public class RwNode implements IObj {
 
 	public void setMeshes(List<IRow> meshes) {
 		this.meshes = meshes;
+	}	
+	
+	public List<RwLink> getTopoLinks() {
+		return topoLinks;
+	}
+
+	public void setTopoLink(List<RwLink> topoLinks) {
+		this.topoLinks = topoLinks;
 	}
 
 	@Override

@@ -13,7 +13,6 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.RwLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
-import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -88,60 +87,6 @@ public class Operation implements IOperation {
 	}
 
 	/*
-	 * 创建RwLink针对跨图幅有两种情况 1.跨图幅和图幅交集是LineString 2.跨图幅和图幅交集是MultineString
-	 * 跨图幅需要生成和图廓线的交点
-	 */
-
-	private void createRwLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result, String meshId)
-			throws Exception {
-		if (g != null) {
-
-			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
-				this.calRwLinkWithMesh(g, maps, result);
-			}
-			if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
-				for (int i = 0; i < g.getNumGeometries(); i++) {
-					calRwLinkWithMesh(g.getGeometryN(i), maps, result);
-				}
-
-			}
-		}
-	}
-
-	/*
-	 * 创建RwLink 针对跨图幅创建图廓点不能重复
-	 */
-	private void calRwLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result) throws Exception {
-		// 定义创建RwLink的起始Pid 默认为0
-		int sNodePid = 0;
-		int eNodePid = 0;
-		// 判断新创建的线起点对应的pid是否存在，如果存在取出赋值
-		if (maps.containsKey(g.getCoordinates()[0])) {
-			sNodePid = maps.get(g.getCoordinates()[0]);
-		}
-		// 判断新创建的线终始点对应的pid是否存在，如果存在取出赋值
-		if (maps.containsKey(g.getCoordinates()[g.getCoordinates().length - 1])) {
-			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
-		}
-		// 创建线对应的点
-		JSONObject node = RwLinkOperateUtils.createRwNodeForLink(g, sNodePid, eNodePid, result);
-		if (!maps.containsValue(node.get("s"))) {
-			maps.put(g.getCoordinates()[0], (int) node.get("s"));
-		}
-		if (!maps.containsValue(node.get("e"))) {
-			maps.put(g.getCoordinates()[0], (int) node.get("e"));
-		}
-		// 创建线
-		RwLink link = RwLinkOperateUtils.addLink(g, (int) node.get("s"), (int) node.get("e"), result);
-
-		link.setKind(command.getKind());
-
-		link.setForm(command.getForm());
-
-		result.insertObject(link, ObjStatus.INSERT, link.pid());
-	}
-
-	/*
 	 * 创建多条被分割的线 1.按照线是否跨图幅逻辑走不同分支生成线
 	 */
 
@@ -163,7 +108,7 @@ public class Operation implements IOperation {
 					String meshIdStr = it.next();
 					Geometry geomInter = MeshUtils.linkInterMeshPolygon(g, MeshUtils.mesh2Jts(meshIdStr));
 					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					this.createRwLinkWithMesh(geomInter, maps, result, meshIdStr);
+					RwLinkOperateUtils.getCreateRwLinksWithMesh(geomInter, maps, result);
 				}
 			}
 
@@ -188,9 +133,9 @@ public class Operation implements IOperation {
 				data.put("longitude", json.getDouble("lon"));
 				data.put("latitude", json.getDouble("lat"));
 				breakJson.put("data", data);
-				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakrwpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakrwpoint.Command(
+				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Command(
 						breakJson, breakJson.toString());
-				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakrwpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakrwpoint.Process(
+				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Process(
 						breakCommand,result,conn);
 				breakProcess.run();
 			}

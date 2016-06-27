@@ -78,8 +78,8 @@ public class IxPoiParkingOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 		StringBuilder sb = new StringBuilder("update "
-				+ ixPoiParking.tableName() + " set u_record=3,u_date="
-				+ StringUtils.getCurrentTime() + ",");
+				+ ixPoiParking.tableName() + " set u_record=3,u_date='"
+				+ StringUtils.getCurrentTime() + "',");
 
 		PreparedStatement pstmt = null;
 
@@ -212,28 +212,73 @@ public class IxPoiParkingOperator implements IOperator {
 		sb.append("(parking_id, poi_pid, parking_type, toll_std, toll_des, toll_way, payment, remark, source, open_tiime, total_num, work_time, res_high, res_width, res_weigh, certificate, vehicle, photo_name, have_specialplace, women_num,  handicap_num, mini_num, vip_num, u_date,u_record, row_id) values (");
 		sb.append(ixPoiParking.getPid());
 		sb.append("," + ixPoiParking.getPoiPid());
-		sb.append(",'" + ixPoiParking.getParkingType() + "'");
-		sb.append(",'" + ixPoiParking.getTollStd() + "'");
-		sb.append(",'" + ixPoiParking.getTollDes() + "'");
-		sb.append(",'" + ixPoiParking.getTollWay() + "'");
-		sb.append(",'" + ixPoiParking.getPayment() + "'");
-		sb.append(",'" + ixPoiParking.getRemark() + "'");
-		sb.append(",'" + ixPoiParking.getSource() + "'");
-		sb.append(",'" + ixPoiParking.getOpenTiime() + "'");
+		if (ixPoiParking.getParkingType() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiParking.getParkingType() + "'");
+		}
+		if (ixPoiParking.getTollStd() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiParking.getTollStd() + "'");
+		}
+		if (ixPoiParking.getTollStd() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiParking.getTollDes() + "'");
+		}
+		if (ixPoiParking.getTollWay() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiParking.getTollWay() + "'");
+		}
+		if (ixPoiParking.getPayment() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiParking.getPayment() + "'");
+		}
+		if (ixPoiParking.getRemark() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiParking.getRemark() + "'");
+		}
+		if (ixPoiParking.getSource() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiParking.getSource() + "'");
+		}
+		if (ixPoiParking.getOpenTiime() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiParking.getOpenTiime() + "'");
+		}
 		sb.append("," + ixPoiParking.getTotalNum());
-		sb.append(",'" + ixPoiParking.getWorkTime() + "'");
+		if (ixPoiParking.getWorkTime() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiParking.getWorkTime() + "'");
+		}
 		sb.append("," + ixPoiParking.getResHigh());
 		sb.append("," + ixPoiParking.getResWidth());
 		sb.append("," + ixPoiParking.getResWeigh());
 		sb.append("," + ixPoiParking.getCertificate());
 		sb.append("," + ixPoiParking.getVehicle());
-		sb.append(",'" + ixPoiParking.getPhotoName() + "'");
-		sb.append(",'" + ixPoiParking.getHaveSpecialplace() + "'");
-		sb.append(",'" + ixPoiParking.getWomenNum() + "'");
-		sb.append(",'" + ixPoiParking.getHandicapNum() + "'");
-		sb.append(",'" + ixPoiParking.getMiniNum() + "'");
-		sb.append(",'" + ixPoiParking.getVipNum() + "'");
-		sb.append(",'" + StringUtils.getCurrentTime()+"'");
+		if (ixPoiParking.getPhotoName() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiParking.getPhotoName() + "'");
+		}
+		if (ixPoiParking.getHaveSpecialplace() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + ixPoiParking.getHaveSpecialplace() + "'");
+		}
+		sb.append("," + ixPoiParking.getWomenNum());
+		sb.append("," + ixPoiParking.getHandicapNum());
+
+		sb.append("," + ixPoiParking.getMiniNum());
+		sb.append("," + ixPoiParking.getVipNum());
+		sb.append(",'" + StringUtils.getCurrentTime() + "'");
 		sb.append(",1,'" + ixPoiParking.rowId() + "')");
 		stmt.addBatch(sb.toString());
 	}
@@ -247,8 +292,8 @@ public class IxPoiParkingOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiParking.tableName()
-				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where parking_id   ="
-				+ ixPoiParking.getPid();
+				+ " set u_record=2 ,u_date='" + StringUtils.getCurrentTime()
+				+ "' where parking_id   =" + ixPoiParking.getPid();
 		stmt.addBatch(sql);
 	}
 

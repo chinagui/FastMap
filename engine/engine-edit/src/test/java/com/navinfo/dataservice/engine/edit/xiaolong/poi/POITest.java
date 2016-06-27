@@ -31,7 +31,7 @@ public class POITest extends InitApplication{
 
 			IxPoiSelector selector = new IxPoiSelector(conn);
 
-			IRow jsonObject = selector.loadById(88553093, false);
+			IRow jsonObject = selector.loadById(3847439, false);
 
 			System.out.println(jsonObject.Serialize(ObjLevel.FULL));
 		} catch (Exception e) {
@@ -75,7 +75,7 @@ public class POITest extends InitApplication{
 	
 	@Test
 	public void addPoi(){
-		String parameter = "{\"dbId\":42,\"command\":\"UPDATE\",\"type\":\"IXPOI\",\"objId\":88581671,\"data\":{\"names\":[{\"nameId\":0,\"poiPid\":88581671,\"nameGroupid\":2,\"langCode\":\"CHI\",\"nameClass\":1,\"nameType\":2,\"name\":\"充电桩556\",\"namePhonetic\":\"Chong+Dian+Zhuang\",\"keywords\":null,\"nidbPid\":null},{\"nameId\":0,\"poiPid\":88581671,\"nameGroupid\":1,\"langCode\":\"CHI\",\"nameClass\":1,\"nameType\":1,\"name\":\"充电桩\",\"namePhonetic\":\"Chong+Dian+Zhuang\",\"keywords\":null,\"nidbPid\":null},{\"nameId\":0,\"poiPid\":88581671,\"nameGroupid\":1,\"langCode\":\"ENG\",\"nameClass\":1,\"nameType\":2,\"name\":\"Charging+Pile\",\"namePhonetic\":null,\"keywords\":null,\"nidbPid\":null}]}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":42,\"data\":{\"longitude\":116.39552235603331,\"latitude\":39.90676527744907,\"linkPid\":625962}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -85,6 +85,18 @@ public class POITest extends InitApplication{
 		}
 	}
 	
+	@Test
+	public void testUpdatePoi()
+	{
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":1626,\"data\":{\"open24H\":\"1\",\"pid\":1626,\"objStatus\":\"UPDATE\"}}{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":1626,\"data\":{\"open24H\":\"1\",\"pid\":1626,\"objStatus\":\"UPDATE\"}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	@Test
 	public void testDeleteParent()
 	{

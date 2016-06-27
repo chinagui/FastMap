@@ -67,7 +67,7 @@ public class IxPoiAudioOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 		StringBuilder sb = new StringBuilder("update " + ixPoiAudio.tableName()
-				+ " set u_record=3,u_date="+StringUtils.getCurrentTime()+",");
+				+ " set u_record=3,u_date='"+StringUtils.getCurrentTime()+"',");
 
 		PreparedStatement pstmt = null;
 
@@ -194,9 +194,23 @@ public class IxPoiAudioOperator implements IOperator {
 
 		sb.append("," + ixPoiAudio.getAudioId());
 
-		sb.append(",'" + ixPoiAudio.getStatus() + "'");
-
-		sb.append(",'" + ixPoiAudio.getMemo() + "'");
+		if(StringUtils.isNotEmpty(ixPoiAudio.getStatus()))
+		{
+			sb.append(",'" + ixPoiAudio.getStatus()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
+		
+		if(StringUtils.isNotEmpty(ixPoiAudio.getMemo()))
+		{
+			sb.append(",'" + ixPoiAudio.getMemo()+"'");
+		}
+		else
+		{
+			sb.append(",null");
+		}
 
 		sb.append(",'" + ixPoiAudio.getRowId() + "'");
 		
@@ -218,7 +232,7 @@ public class IxPoiAudioOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiAudio.tableName()
-				+ " set u_record=2,u_date="+StringUtils.getCurrentTime()+" where row_id=hextoraw('"
+				+ " set u_record=2,u_date='"+StringUtils.getCurrentTime()+"' where row_id=hextoraw('"
 				+ ixPoiAudio.rowId() + "')";
 
 		stmt.addBatch(sql);

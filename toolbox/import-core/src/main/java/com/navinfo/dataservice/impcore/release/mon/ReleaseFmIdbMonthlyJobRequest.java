@@ -5,6 +5,7 @@ import java.util.List;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
@@ -30,21 +31,8 @@ public class ReleaseFmIdbMonthlyJobRequest extends AbstractJobRequest {
 	public List<Integer> getGridList() {
 		return gridList;
 	}
-	public void setGridSet(List<Integer> gridSet) {
-		this.gridList = gridSet;
-	}
-	public ReleaseFmIdbMonthlyJobRequest() {
-		super();
-		log = LoggerRepos.getLogger(log);
-	}
-	public ReleaseFmIdbMonthlyJobRequest(JSONObject jsonConfig) {
-		super();
-		log = LoggerRepos.getLogger(log);
-    	this.parseByJsonConfig(jsonConfig);
-	}
-	@Override
-	public int getStepCount() throws JobException {
-		return 1;
+	public void setGridList(List<Integer> gridList) {
+		this.gridList = gridList;
 	}
 
 	@Override
@@ -54,6 +42,16 @@ public class ReleaseFmIdbMonthlyJobRequest extends AbstractJobRequest {
 	@Override
 	public String getJobType() {
 		return "releaseFmIdbMonthlyJob";
+	}
+	@Override
+	public void defineSubJobRequests() throws JobCreateException {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	protected int myStepCount() throws JobException {
+		// TODO Auto-generated method stub
+		return 1;
 	}
 
 	

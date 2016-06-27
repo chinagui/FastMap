@@ -76,8 +76,8 @@ public class IxPoiChargingPlotPhOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 		StringBuilder sb = new StringBuilder("update "
-				+ ixPoiChargingPlotPh.tableName() + " set u_record=3,u_date="
-				+ StringUtils.getCurrentTime() + ",");
+				+ ixPoiChargingPlotPh.tableName() + " set u_record=3,u_date='"
+				+ StringUtils.getCurrentTime() + "',");
 
 		PreparedStatement pstmt = null;
 
@@ -211,7 +211,11 @@ public class IxPoiChargingPlotPhOperator implements IOperator {
 		sb.append(ixPoiChargingPlotPh.tableName());
 		sb.append("(poi_pid, photo_name,u_date,u_record,row_id) values (");
 		sb.append(ixPoiChargingPlotPh.getPoiPid());
-		sb.append(",'" + ixPoiChargingPlotPh.getPhotoName() + "'");
+		if(StringUtils.isNotEmpty(ixPoiChargingPlotPh.getPhotoName() )){
+			sb.append(",'" + ixPoiChargingPlotPh.getPhotoName() + "'");
+		}else{
+			sb.append(", null ");
+		}
 		sb.append(",'" + StringUtils.getCurrentTime()+"'");
 		sb.append(",1,'" + ixPoiChargingPlotPh.rowId() + "')");
 
@@ -228,7 +232,7 @@ public class IxPoiChargingPlotPhOperator implements IOperator {
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 
 		String sql = "update " + ixPoiChargingPlotPh.tableName()
-				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where row_id=hextoraw('"
+				+ " set u_record=2 ,u_date='"+StringUtils.getCurrentTime()+"' where row_id=hextoraw('"
 				+ ixPoiChargingPlotPh.rowId() + "')";
 		stmt.addBatch(sql);
 	}

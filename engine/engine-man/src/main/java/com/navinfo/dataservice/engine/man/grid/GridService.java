@@ -1,12 +1,13 @@
 package com.navinfo.dataservice.engine.man.grid;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,12 +16,14 @@ import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
-import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.navinfo.dataservice.api.man.model.Grid;
+import com.navinfo.dataservice.api.statics.iface.StaticsApi;
+import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -83,6 +86,7 @@ public class GridService {
 			DbUtils.closeQuietly(conn);
 		}
 	}
+	
 
 	/**
 	 * @param gridList
@@ -92,7 +96,7 @@ public class GridService {
 	 * @throws Exception
 	 * 
 	 */
-	public Map queryRegionGridMapping(List<Integer> gridList) throws Exception {
+	public MultiValueMap queryRegionGridMapping(List<Integer> gridList) throws Exception {
 		String sql = "select grid_id,region_id from grid g where 1=1 ";
 		QueryRunner queryRunner = new QueryRunner();
 		Connection conn = null;
@@ -228,6 +232,103 @@ public class GridService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询grid失败:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
+	public List<String> quryListProduce(JSONObject json) throws ServiceException {
+		Connection conn = null;
+		try {
+
+			conn = DBConnector.getInstance().getManConnection();
+			int stage=json.getInt("stage");
+			int type=json.getInt("type");
+			// 根据输入的几何wkt，计算几何包含的gird，
+			Polygon polygon = (Polygon) GeometryUtils.getPolygonByWKT(json.getString("wkt"));
+			Set<?> grids = (Set<?>) CompGeometryUtil.geo2GridsWithoutBreak(polygon);
+
+			String Sql = "select s.grid_id from subtask_grid_mapping s,subtask t where s.subtask_id=t.subtask_id and t.type="+type;
+
+			List<String> gridList = new ArrayList<String>();
+			gridList.addAll((Collection<? extends String>) grids);
+			String InClause = buildInClause("s.grid_id", gridList);
+			
+			PreparedStatement stmt = conn.prepareStatement(Sql+InClause);
+			ResultSet rs = stmt.executeQuery();
+			List<String> gridByType = new ArrayList();
+		
+			while (rs.next()) {
+				gridByType.add(rs.getString(1));
+			}
+			
+			List<String> gridProduce = new ArrayList();
+			
+			//获取可出品的gird,只有grid完成度为100%，才可出品
+			StaticsApi statics = (StaticsApi) ApplicationContextUtil
+					.getBean("staticsApi");
+			List<GridStatInfo> GridStatList=new ArrayList();
+			if (0==stage){GridStatList=statics.getLatestCollectStatByGrids(gridByType);}
+			if (1==stage){GridStatList=statics.getLatestDailyEditStatByGrids(gridByType);}
+			if (2==stage){GridStatList=statics.getLatestMonthlyEditStatByGrids(gridByType);}
+			
+			for(int i=0;i<GridStatList.size();i++){
+				GridStatInfo statInfo=GridStatList.get(i);
+				if (0==type && statInfo.getPercentPoi()==100){
+					gridProduce.add(statInfo.getGridId());
+				}
+				if (1==type && statInfo.getPercentRoad()==100){
+					gridProduce.add(statInfo.getGridId());
+				}
+			}
+
+			return gridProduce;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询grid失败:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
+	public List<String> queryMergeGrid(JSONObject json) throws ServiceException {
+		Connection conn = null;
+		try {
+
+			conn = DBConnector.getInstance().getManConnection();
+			// 根据输入的几何wkt，计算几何包含的gird，
+			Polygon polygon = (Polygon) GeometryUtils.getPolygonByWKT(json.getString("wkt"));
+			Set<?> grids = (Set<?>) CompGeometryUtil.geo2GridsWithoutBreak(polygon);
+
+
+			List<String> gridList = new ArrayList<String>();
+			gridList.addAll((Collection<? extends String>) grids);
+		
+			//获取的gird,只要road 日编完成100%，就可融合
+			StaticsApi statics = (StaticsApi) ApplicationContextUtil
+					.getBean("staticsApi");
+			List<GridStatInfo> GridStatList=statics.getLatestDailyEditStatByGrids(gridList);
+			
+			List<String> gridMerge = new ArrayList<String>();
+			
+			for(int i=0;i<GridStatList.size();i++){
+				GridStatInfo statInfo=GridStatList.get(i);
+	
+				if (statInfo.getPercentRoad()==100){
+					gridMerge.add(statInfo.getGridId());
+				}
+			}
+
+			return gridMerge;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询可融合grid失败:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}

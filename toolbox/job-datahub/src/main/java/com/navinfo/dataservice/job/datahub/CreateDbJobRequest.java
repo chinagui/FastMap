@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.job.datahub;
 
 import com.alibaba.druid.util.StringUtils;
+import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
@@ -77,12 +78,6 @@ public class CreateDbJobRequest extends AbstractJobRequest {
 		this.refDbId = refDbId;
 	}
 
-	@Override
-	public int getStepCount() throws JobException {
-		// TODO Auto-generated method stub
-		return 1;
-	}
-
 	/* (non-Javadoc)
 	 * @see com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest#validate()
 	 */
@@ -99,6 +94,17 @@ public class CreateDbJobRequest extends AbstractJobRequest {
 	@Override
 	public String getJobType() {
 		return "createDb";
+	}
+
+	@Override
+	public void defineSubJobRequests() throws JobCreateException {
+		
+	}
+
+	@Override
+	protected int myStepCount() throws JobException {
+		// TODO Auto-generated method stub
+		return 1;
 	}
 
 }

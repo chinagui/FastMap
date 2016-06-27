@@ -31,6 +31,10 @@
 		</dependency>
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>dao-glm-data</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>job-framework</artifactId>
 		</dependency>
 		<dependency>

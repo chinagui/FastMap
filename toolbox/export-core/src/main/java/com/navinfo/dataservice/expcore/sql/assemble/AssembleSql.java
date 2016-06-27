@@ -3,7 +3,7 @@ package com.navinfo.dataservice.expcore.sql.assemble;
 import java.util.List;
 import java.util.Map;
 
-import com.navinfo.dataservice.expcore.sql.ExpSQL;
+import com.navinfo.dataservice.bizcommons.sql.ExpSQL;
 
 /**
  * Created by IntelliJ IDEA.

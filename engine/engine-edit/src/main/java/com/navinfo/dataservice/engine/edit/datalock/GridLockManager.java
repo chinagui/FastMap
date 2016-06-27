@@ -15,9 +15,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.FmEditLock;
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.engine.edit.datalock.MeshLockManager.FmMeshResultSetHandler4QueryLock;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /** 
@@ -46,7 +47,7 @@ public class GridLockManager{
 	private GridLockManager(){}
 	
 	/**
-	 * 返回状态为锁定或者已借出的图幅Set，否则返回null
+	 * 返回状态为锁定或者已借出的GRIDSet，否则返回null
 	 * @param regionId
 	 * @param grids
 	 * @return
@@ -54,11 +55,11 @@ public class GridLockManager{
 	 */
     public Set<Integer> query(int regionId,Set<Integer> grids,int lockObject,String dbType)throws LockException{
     	if(grids==null){
-    		throw new LockException("查询锁失败：传入图幅为空，请检查。");
+    		throw new LockException("查询锁失败：传入GRID为空，请检查。");
     	}
     	int size = grids.size();
     	if(size==0){
-    		throw new LockException("查询锁失败：传入图幅为空，请检查。");
+    		throw new LockException("查询锁失败：传入GRID为空，请检查。");
     	}
     	Connection conn = null;
     	try{
@@ -92,11 +93,32 @@ public class GridLockManager{
 			if(e instanceof LockException){
 				throw (LockException)e;
 			}else{
-				throw new LockException("申请图幅锁发生SQL错误，"+e.getMessage(),e);
+				throw new LockException("申请GRID锁发生SQL错误，"+e.getMessage(),e);
 			}
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+    }
+    public FmEditLock lock(int dbId,int lockObject,Collection<Integer> grids,int lockType,int jobId)throws LockException{
+    	Region r = null;
+    	try{
+        	ManApi man = (ManApi) ApplicationContextUtil.getBean("manApi");
+    		r = man.queryRegionByDbId(dbId);
+    	}catch(Exception e){
+    		log.error(e.getMessage(),e);
+    		throw new LockException("申请锁失败：根据dbId查询区域时发生错误，"+e.getMessage(),e);
+    	}
+		if (r == null) {
+			throw new LockException("申请锁失败：根据batchDbId未查询到匹配的区域");
+		}
+		String dbType = null;
+		if (r.getDailyDbId() == dbId) {
+			dbType = FmEditLock.DB_TYPE_DAY;
+		} else if (r.getMonthlyDbId() == dbId) {
+			dbType = FmEditLock.DB_TYPE_MONTH;
+		}
+		int lockSeq = lock(r.getRegionId(),lockObject,grids,lockType,dbType,jobId);
+		return new FmEditLock(lockSeq,dbType);
     }
 
     /**
@@ -107,7 +129,7 @@ public class GridLockManager{
      * @return 本次申请锁的批次号
      * @throws LockException
      */
-    public int lock(int regionId, int lockObject, Collection<Integer> grids,int lockType,int jobId,String dbType)throws LockException{
+    public int lock(int regionId, int lockObject, Collection<Integer> grids,int lockType,String dbType,int jobId)throws LockException{
     	if(grids==null){
     		throw new LockException("申请锁失败：传入grids为空，请检查。");
     	}
@@ -177,7 +199,7 @@ public class GridLockManager{
 				}
 			}
 			if(updateCount!=gridModSize){
-				throw new LockException("锁定图幅失败，能够被锁定的图幅数和传入图幅数不相等。");
+				throw new LockException("锁定GRID失败，能够被锁定的GRID数和传入GRID数不相等。");
 			}
 			return lockSeq;
 		}catch (Exception e) {
@@ -186,7 +208,7 @@ public class GridLockManager{
 			if(e instanceof LockException){
 				throw (LockException)e;
 			}else{
-				throw new LockException("申请图幅锁发生SQL错误，"+e.getMessage(),e);
+				throw new LockException("申请GRID锁发生SQL错误，"+e.getMessage(),e);
 			}
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
@@ -197,7 +219,7 @@ public class GridLockManager{
      * 当所有grid符合解锁条件，则解锁成功，否则抛出异常
      * @param regionId
      * @param lockSeq
-     * @return 解锁的图幅个数
+     * @return 解锁的GRID个数
      * @throws LockException
      */
 	public int unlock(int lockSeq,String dbType)throws LockException{
@@ -216,7 +238,7 @@ public class GridLockManager{
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new LockException("释放图幅锁发生SQL错误，"+e.getMessage(),e);
+			throw new LockException("释放GRID锁发生SQL错误，"+e.getMessage(),e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -231,11 +253,11 @@ public class GridLockManager{
 	 */
 	public void unlock(int regionId, Set<Integer> grids,int lockType,int lockObject,String dbType)throws LockException{
     	if(grids==null){
-    		throw new LockException("释放锁失败：传入图幅为空，请检查。");
+    		throw new LockException("释放锁失败：传入GRID为空，请检查。");
     	}
     	int size = grids.size();
     	if(size==0){
-    		throw new LockException("释放锁失败：传入图幅为空，请检查。");
+    		throw new LockException("释放锁失败：传入GRID为空，请检查。");
     	}
 		Connection conn = null;
 		try{
@@ -273,7 +295,7 @@ public class GridLockManager{
 			
 			
 			if(updateCount!=gridModSize){
-				throw new LockException("释放图幅锁失败，符合释放条件的图幅数和传入图幅数不相等。");
+				throw new LockException("释放GRID锁失败，符合释放条件的GRID数和传入GRID数不相等。");
 			}
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -281,7 +303,7 @@ public class GridLockManager{
 			if(e instanceof LockException){
 				throw (LockException)e;
 			}else{
-				throw new LockException("释放图幅锁锁发生SQL错误，"+e.getMessage(),e);
+				throw new LockException("释放GRID锁锁发生SQL错误，"+e.getMessage(),e);
 			}
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);

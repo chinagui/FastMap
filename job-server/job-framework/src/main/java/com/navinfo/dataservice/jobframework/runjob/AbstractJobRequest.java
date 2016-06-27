@@ -2,9 +2,11 @@ package com.navinfo.dataservice.jobframework.runjob;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
@@ -16,6 +18,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.exception.JobRuntimeException;
 
@@ -29,8 +32,26 @@ public abstract class AbstractJobRequest {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected String gdbVersion=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 	
+	/**
+	 * 注意循环调用。。。。。。
+	 */
+	protected Map<String,AbstractJobRequest> subJobRequests;
+	
+	public abstract void defineSubJobRequests()throws JobCreateException;
+	
 	public abstract String getJobType();
-	public abstract int getStepCount()throws JobException;
+	
+	public int getStepCount()throws JobException{
+		int count = myStepCount();
+		if(subJobRequests!=null){
+			for(AbstractJobRequest r:subJobRequests.values()){
+				count+=r.getStepCount();
+			}
+		}
+		return count;
+	}
+	
+	protected abstract int myStepCount()throws JobException;
 	
 	public abstract void validate()throws JobException;
 	
@@ -43,25 +64,36 @@ public abstract class AbstractJobRequest {
 		this.gdbVersion = gdbVersion;
 	}
 
-	public void parseByJsonConfig(JSONObject json)throws JobRuntimeException{
-		if(json==null) {
-			log.warn("注意：未传入的解析json对象，request未被初始化");
-		}
-		for(Iterator it = json.keys();it.hasNext();){
-			String attName = (String)it.next();
-			Object attValue = json.get(attName);
-			if(attValue==null||
-			   StringUtils.isEmpty(attName)||
-			   (attValue instanceof String && StringUtils.isEmpty((String)attValue))
-			   ){
-				log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。");
-				continue;
-			}
-			setAttrValue(attName,attValue);
-		}
+	public AbstractJobRequest getSubJobRequest(String key) {
+		return subJobRequests==null?null:subJobRequests.get(key);
 	}
 
-	public void setAttrValue(String attName,Object attValue)throws JobRuntimeException{
+	public void setSubJobRequests(Map<String, AbstractJobRequest> subJobRequests) {
+		this.subJobRequests = subJobRequests;
+	}
+
+	public void parseByJsonConfig(JSONObject json)throws JobCreateException{
+		if(json==null) {
+			log.warn("注意：未传入的解析json对象，request未被初始化");
+		}else{
+			for(Iterator it = json.keys();it.hasNext();){
+				String attName = (String)it.next();
+				Object attValue = json.get(attName);
+				if(attValue==null||
+				   StringUtils.isEmpty(attName)||
+				   (attValue instanceof String && StringUtils.isEmpty((String)attValue))
+				   ){
+					log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。");
+					continue;
+				}
+				setAttrValue(attName,attValue);
+			}
+		}
+		//
+		defineSubJobRequests();
+	}
+
+	public void setAttrValue(String attName,Object attValue)throws JobCreateException{
 		if(StringUtils.isEmpty(attName)||attValue==null||(attValue instanceof JSONNull)){
 			log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。");
 			return;
@@ -118,7 +150,7 @@ public abstract class AbstractJobRequest {
 			method.invoke(this, attValue);
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
-			throw new JobRuntimeException("Request解析过程中可能未找到方法,原因为:"+e.getMessage(),e);
+			throw new JobCreateException("Request解析过程中可能未找到方法,原因为:"+e.getMessage(),e);
 		}
 	}
 	
@@ -133,6 +165,9 @@ public abstract class AbstractJobRequest {
 		json.put("para7", 1L);
 		JSONObject subJson1 = new JSONObject();
 		json.put("subObject1", subJson1);
+		Set<String> data = new HashSet<String>();
+		data.add("AAA");
+		json.put("para8", data);
 		for(Iterator it = json.keys();it.hasNext();){
 			String attName = (String)it.next();
 			System.out.println(json.get(attName).getClass().getSimpleName());

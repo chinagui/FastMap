@@ -1083,9 +1083,9 @@ public class IxPoi implements IObj {
 				String oldwkt = GeoTranslator.jts2Wkt(geometry, 0.00001, 5);
 
 				if (!wkt.equals(oldwkt)) {
-					double length = GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(geojson));
-
-					changedFields.put("length", length);
+//					double length = GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(geojson));
+//
+//					changedFields.put("length", length);
 
 					changedFields.put(key, json.getJSONObject(key));
 				}
@@ -1276,6 +1276,22 @@ public class IxPoi implements IObj {
 						row.Unserialize(jo);
 
 						parents.add(row);
+					}
+
+					break;
+				case "children":
+					children.clear();
+					
+					ja = json.getJSONArray(key);
+					
+					for (int i = 0; i < ja.size(); i++) {
+						JSONObject jo = ja.getJSONObject(i);
+
+						IxPoiChildren row = new IxPoiChildren();
+
+						row.Unserialize(jo);
+
+						children.add(row);
 					}
 
 					break;

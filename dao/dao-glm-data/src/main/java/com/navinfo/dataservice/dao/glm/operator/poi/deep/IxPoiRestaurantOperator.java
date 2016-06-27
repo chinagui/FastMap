@@ -83,8 +83,8 @@ public class IxPoiRestaurantOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 		StringBuilder sb = new StringBuilder("update "
-				+ ixPoiRestaurant.tableName() + " set u_record=3,u_date="
-				+ StringUtils.getCurrentTime() + ",");
+				+ ixPoiRestaurant.tableName() + " set u_record=3,u_date='"
+				+ StringUtils.getCurrentTime() + "',");
 
 		PreparedStatement pstmt = null;
 
@@ -218,21 +218,79 @@ public class IxPoiRestaurantOperator implements IOperator {
 		sb.append("(restaurant_id, poi_pid, food_type, credit_card, avg_cost, parking, long_description, long_descrip_eng, open_hour, open_hour_eng, telephone, address, city, photo_name, travelguide_flag, u_date,u_record, row_id) values (");
 		sb.append(ixPoiRestaurant.getPid());
 		sb.append("," + ixPoiRestaurant.getPoiPid());
-		sb.append(",'" + ixPoiRestaurant.getCreditCard() + "'");
-		sb.append(",'" + ixPoiRestaurant.getFoodType() + "'");
-		sb.append(",'" + ixPoiRestaurant.getCreditCard() + "'");
+
+		if (StringUtils.isNotEmpty(ixPoiRestaurant.getCreditCard())) {
+			sb.append(",'" + ixPoiRestaurant.getCreditCard() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiRestaurant.getFoodType())) {
+			sb.append(",'" + ixPoiRestaurant.getFoodType() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiRestaurant.getCreditCard())) {
+			sb.append(",'" + ixPoiRestaurant.getCreditCard() + "'");
+			;
+		} else {
+			sb.append(", null ");
+		}
+
 		sb.append("," + ixPoiRestaurant.getAvgCost());
 		sb.append("," + ixPoiRestaurant.getParking());
-		sb.append(",'" + ixPoiRestaurant.getLongDescription() + "'");
-		sb.append(",'" + ixPoiRestaurant.getLongDescripEng() + "'");
-		sb.append(",'" + ixPoiRestaurant.getOpenHour() + "'");
-		sb.append(",'" + ixPoiRestaurant.getOpenHourEng() + "'");
-		sb.append(",'" + ixPoiRestaurant.getTelephone() + "'");
-		sb.append(",'" + ixPoiRestaurant.getAddress() + "'");
-		sb.append(",'" + ixPoiRestaurant.getCity() + "'");
-		sb.append(",'" + ixPoiRestaurant.getPhotoName() + "'");
+
+		if (StringUtils.isNotEmpty(ixPoiRestaurant.getLongDescription())) {
+			sb.append(",'" + ixPoiRestaurant.getLongDescription() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiRestaurant.getLongDescripEng())) {
+			sb.append(",'" + ixPoiRestaurant.getLongDescripEng() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiRestaurant.getOpenHour())) {
+			sb.append(",'" + ixPoiRestaurant.getOpenHour() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiRestaurant.getOpenHourEng())) {
+			sb.append(",'" + ixPoiRestaurant.getOpenHourEng() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiRestaurant.getTelephone())) {
+			sb.append(",'" + ixPoiRestaurant.getTelephone() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiRestaurant.getAddress())) {
+			sb.append(",'" + ixPoiRestaurant.getAddress() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiRestaurant.getCity())) {
+			sb.append(",'" + ixPoiRestaurant.getCity() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
+		if (StringUtils.isNotEmpty(ixPoiRestaurant.getPhotoName())) {
+			sb.append(",'" + ixPoiRestaurant.getPhotoName() + "'");
+		} else {
+			sb.append(", null ");
+		}
+
 		sb.append("," + ixPoiRestaurant.getTravelguideFlag());
-		sb.append(",'" + StringUtils.getCurrentTime()+"'");
+		sb.append(",'" + StringUtils.getCurrentTime() + "'");
 		sb.append(",1,'" + ixPoiRestaurant.rowId() + "')");
 		stmt.addBatch(sb.toString());
 	}
@@ -246,8 +304,8 @@ public class IxPoiRestaurantOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiRestaurant.tableName()
-				+ " set u_record=2 ,u_date="+StringUtils.getCurrentTime()+" where   restaurant_id      ="
-				+ ixPoiRestaurant.getPid();
+				+ " set u_record=2 ,u_date='" + StringUtils.getCurrentTime()
+				+ "' where   restaurant_id      =" + ixPoiRestaurant.getPid();
 		stmt.addBatch(sql);
 	}
 

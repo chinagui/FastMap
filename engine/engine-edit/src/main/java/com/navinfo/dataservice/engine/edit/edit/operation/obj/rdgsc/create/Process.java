@@ -11,6 +11,14 @@ public class Process extends AbstractProcess<Command> {
 	}
 
 	private Check check = new Check(this.getConn());
+	
+	@Override
+	public boolean prepareData() throws Exception {
+		
+		return false;
+	}
+
+
 
 	@Override
 	public String exeOperation() throws Exception {

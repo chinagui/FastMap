@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -18,17 +19,17 @@ public class Check {
 		this.conn = conn;
 	}
 	
-	public boolean checkIsHasGsc(Geometry gscGeo, Map<Integer, Integer> map) throws Exception {
+	public boolean checkIsHasGsc(Geometry gscGeo, Map<Integer, RdGscLink> map) throws Exception {
 		boolean flag = false;
 
 		RdGscSelector selector = new RdGscSelector(conn);
 
 		List<Integer> linkPidList = new ArrayList<>();
 
-		for (Integer linkPid : map.values()) {
-			if(!linkPidList.contains(linkPid))
+		for (RdGscLink rdGscLink : map.values()) {
+			if(!linkPidList.contains(rdGscLink.getLinkPid()))
 			{
-				linkPidList.add(linkPid);
+				linkPidList.add(rdGscLink.getLinkPid());
 			}
 		}
 
@@ -52,7 +53,7 @@ public class Check {
 	 * @param gscGeo
 	 * @throws Exception
 	 */
-	public void checkGsc(Geometry gscGeo,Map<Integer, Integer> map) throws Exception {
+	public void checkGsc(Geometry gscGeo,Map<Integer, RdGscLink> map) throws Exception {
 
 		if (gscGeo == null || gscGeo.isEmpty()) {
 			throw new Exception("矩形框和线没有相交点");

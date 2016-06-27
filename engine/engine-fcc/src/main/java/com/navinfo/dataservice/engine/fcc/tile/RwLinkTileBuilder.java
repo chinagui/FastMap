@@ -816,7 +816,7 @@ public class RwLinkTileBuilder {
 
 		// conf.set("splits", "100");
 
-		conf.set("isgdb", props.getProperty("isgdb"));
+//		conf.set("isgdb", props.getProperty("isgdb"));
 
 		// if (args.length>1){
 		// conf.set("maxDegree", args[1]);

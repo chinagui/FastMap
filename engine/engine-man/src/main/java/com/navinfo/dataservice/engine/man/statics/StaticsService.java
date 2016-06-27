@@ -53,7 +53,7 @@ public class StaticsService {
 	}
 	
 	public List<HashMap> blockExpectStaticQuery(String wkt) throws JSONException, Exception{
-		BlockService service = new BlockService();
+		BlockService service = BlockService.getInstance();
 		
 		JSONObject json = new JSONObject();
 		

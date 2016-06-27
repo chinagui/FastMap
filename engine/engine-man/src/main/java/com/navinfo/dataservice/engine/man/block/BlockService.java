@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.man.block;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.Format;
@@ -11,15 +10,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import oracle.sql.CLOB;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.BlockMan;
@@ -28,13 +22,15 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
-import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.sql.CLOB;
 
 /**
  * @ClassName: BlockService
@@ -42,9 +38,19 @@ import com.navinfo.navicommons.exception.ServiceException;
  * @date 2016-06-08 01:32:00
  * @Description: TODO
  */
-@Service
+
 public class BlockService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
+	
+	private BlockService() {
+	}
+	
+	private static class SingletonHolder{
+		private static final BlockService INSTANCE =new BlockService();
+	}
+	public static BlockService getInstance(){
+		return SingletonHolder.INSTANCE;
+	}
 
 	public void batchOpen(long userId, JSONObject json) throws ServiceException {
 		Connection conn = null;
@@ -193,7 +199,11 @@ public class BlockService {
 					+ " t.PLAN_STATUS, k.name taskName, b.collect_group_id, b.day_edit_group_id,"
 					+ " b.month_edit_group_id, to_char(b.collect_plan_start_date, 'yyyy-mm-dd') collect_plan_start_date, to_char(b.collect_plan_end_date, 'yyyy-mm-dd') collect_plan_end_date,"
 					+ " to_char(b.day_edit_plan_start_date, 'yyyy-mm-dd') day_edit_plan_start_date, to_char(b.day_edit_plan_end_date, 'yyyy-mm-dd') day_edit_plan_end_date, to_char(b.month_edit_plan_start_date, 'yyyy-mm-dd') month_edit_plan_start_date,"
-					+ " to_char(b.month_edit_plan_end_date, 'yyyy-mm-dd') month_edit_plan_end_date from BLOCK t, BLOCK_MAN b, TASK k where t.BLOCK_ID = ?"
+					+ " to_char(b.month_edit_plan_end_date, 'yyyy-mm-dd') month_edit_plan_end_date,to_char(b.day_produce_plan_start_date, 'yyyy-mm-dd') day_produce_plan_start_date,"
+					+ " to_char(b.day_produce_plan_end_date, 'yyyy-mm-dd') day_produce_plan_end_date,"
+					+ " to_char(b.month_produce_plan_start_date, 'yyyy-mm-dd') month_produce_plan_start_date,"
+					+ " to_char(b.month_produce_plan_end_date, 'yyyy-mm-dd') month_produce_plan_end_date"
+					+ " from BLOCK t, BLOCK_MAN b, TASK k where t.BLOCK_ID = ?"
 					+ " and t.block_id = b.block_id and t.city_id = k.city_id and k.latest = 1 and b.latest=1";
 			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
 				public HashMap<String, Object> handle(ResultSet rs) throws SQLException {
@@ -221,8 +231,11 @@ public class BlockService {
 						map.put("dayEditPlanEndDate", rs.getString("day_edit_plan_end_date"));
 						map.put("monthEditPlanStartDate", rs.getString("month_edit_plan_start_date"));
 						map.put("monthEditPlanEndDate", rs.getString("month_edit_plan_end_date"));
-						map.put("monthEditPlanEndDate", rs.getString("month_edit_plan_end_date"));
 						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						map.put("dayProducePlanStartDate", rs.getString("day_produce_plan_start_date"));
+						map.put("dayProducePlanEndDate", rs.getString("day_produce_plan_end_date"));
+						map.put("monthProducePlanStartDate", rs.getString("month_produce_plan_start_date"));
+						map.put("monthProducePlanEndDate", rs.getString("month_produce_plan_end_date"));
 						return map;
 					}
 					return null;

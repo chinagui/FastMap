@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -20,7 +21,9 @@ import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.ArrayUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
+import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /** 
@@ -630,5 +633,258 @@ public class SubtaskOperation {
 			log.error(e.getMessage(), e);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
 		}
+	}
+
+
+	/**
+	 * @param conn
+	 * @param bean
+	 * @param curPageNum
+	 * @param pageSize
+	 * @return
+	 * @throws Exception 
+	 */
+	public static Page getListByUserSnapshotPage(Connection conn, Subtask bean, final int curPageNum, final int pageSize) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+			String selectSql = "select st.SUBTASK_ID " + ",st.NAME"
+					+ ",st.DESCP" + ",st.PLAN_START_DATE" + ",st.PLAN_END_DATE"
+					+ ",st.STAGE" + ",st.TYPE" + ",st.STATUS"
+					+ ",r.DAILY_DB_ID" + ",r.MONTHLY_DB_ID";
+
+			String fromSql_task = " from subtask st" + ",task t" + ",city c"
+					+ ",region r";
+
+			String fromSql_block = " from subtask st" + ",block b" + ",city c"
+					+ ",region r";
+
+			String conditionSql_task = " where st.task_id = t.task_id "
+					+ "and t.city_id = c.city_id "
+					+ "and c.region_id = r.region_id "
+					+ "and st.EXE_USER_ID = " + bean.getExeUserId() + " ";
+
+			String conditionSql_block = " where st.block_id = b.block_id "
+					+ "and b.city_id = c.city_id "
+					+ "and c.region_id = r.region_id "
+					+ "and st.EXE_USER_ID = " + bean.getExeUserId() + " ";
+
+			if (bean.getStage() != 0) {
+				conditionSql_task = conditionSql_task + " and st.STAGE = "
+						+ bean.getStage();
+				conditionSql_block = conditionSql_block + " and st.STAGE = "
+						+ bean.getStage();
+			}
+
+			if (bean.getType() != 0) {
+				conditionSql_task = conditionSql_task + " and st.TYPE = "
+						+ bean.getType();
+				conditionSql_block = conditionSql_block + " and st.TYPE = "
+						+ bean.getType();
+			}
+
+			if (bean.getStatus() != 0) {
+				conditionSql_task = conditionSql_task + " and st.STATUS = "
+						+ bean.getStatus();
+				conditionSql_block = conditionSql_block + " and st.STATUS = "
+						+ bean.getStatus();
+			}
+
+
+			selectSql = selectSql + fromSql_task + conditionSql_task
+						+ " union all " + selectSql
+						+ fromSql_block + conditionSql_block;
+			
+			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
+				public Page handle(ResultSet rs) throws SQLException {
+					List<HashMap<Object,Object>> list = new ArrayList<HashMap<Object,Object>>();
+					Page page = new Page(curPageNum);
+				    page.setPageSize(pageSize);
+				    int total = 0;
+					while (rs.next()) {
+						if(total==0){
+							total=rs.getInt("TOTAL_RECORD_NUM_");
+						}
+						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
+						
+						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
+						subtask.put("name", rs.getString("NAME"));
+						subtask.put("stage", rs.getInt("STAGE"));
+						subtask.put("type", rs.getInt("TYPE"));
+						subtask.put("planStartDate", DateUtils.dateToString(rs
+								.getTimestamp("PLAN_START_DATE")));
+						subtask.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
+						subtask.put("descp", rs.getString("DESCP"));
+						subtask.put("status", rs.getInt("STATUS"));
+						
+						if (1 == rs.getInt("STAGE")) {
+							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
+						} else if (2 == rs.getInt("STAGE")) {
+							subtask.put("dbId",rs.getInt("MONTHLY_DB_ID"));
+						} else {
+							subtask.put("dbId", rs.getInt("MONTHLY_DB_ID"));
+						}
+
+						list.add(subtask);
+
+					}
+					page.setTotalCount(total);
+					page.setResult(list);
+					return page;
+				}
+
+			};
+
+			return run.query(curPageNum, pageSize, conn, selectSql, rsHandler);
+
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+		}
+	}
+
+
+	/**
+	 * @param conn
+	 * @param bean
+	 * @param curPageNum
+	 * @param pageSize
+	 * @return
+	 * @throws Exception 
+	 */
+	public static Page getListByUserPage(Connection conn, Subtask bean, final int curPageNum, final int pageSize) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+			String selectSql = "select st.SUBTASK_ID "
+					+ ",st.NAME"
+					+ ",st.DESCP"
+					+ ",st.PLAN_START_DATE"
+					+ ",st.PLAN_END_DATE"
+					+ ",st.STAGE"
+					+ ",st.TYPE"
+					+ ",st.STATUS"
+					+ ",r.DAILY_DB_ID"
+					+ ",r.MONTHLY_DB_ID"
+					+ ",TO_CHAR(st.GEOMETRY.get_wkt()) AS GEOMETRY"
+					+ ",listagg(sgm.GRID_ID, ',') within group(order by st.SUBTASK_ID) as GRID_ID ";
+
+			String fromSql_task = " from subtask st"
+					+ ",task t"
+					+ ",city c"
+					+ ",region r"
+					+ ",subtask_grid_mapping sgm ";
+
+			String fromSql_block = " from subtask st"
+					+ ",block b"
+					+ ",city c"
+					+ ",region r"
+					+ ",subtask_grid_mapping sgm ";
+
+			String conditionSql_task = " where st.task_id = t.task_id "
+					+ "and t.city_id = c.city_id "
+					+ "and c.region_id = r.region_id "
+					+ "and st.EXE_USER_ID = " + bean.getExeUserId() 
+					+ " and st.subtask_id = sgm.subtask_id ";
+
+			String conditionSql_block = " where st.block_id = b.block_id "
+					+ "and b.city_id = c.city_id "
+					+ "and c.region_id = r.region_id "
+					+ "and st.EXE_USER_ID = " + bean.getExeUserId() 
+					+ " and st.subtask_id = sgm.subtask_id ";
+
+			String groupBySql = " group by st.SUBTASK_ID"
+					+ ",st.NAME"
+					+ ",st.DESCP"
+					+ ",st.PLAN_START_DATE"
+					+ ",st.PLAN_END_DATE"
+					+ ",st.STAGE"
+					+ ",st.TYPE"
+					+ ",st.STATUS"
+					+ ",r.DAILY_DB_ID"
+					+ ",r.MONTHLY_DB_ID"
+					+ ",TO_CHAR(st.GEOMETRY.get_wkt())";
+
+			if (bean.getStage() != 0) {
+				conditionSql_task = conditionSql_task + " and st.STAGE = "
+						+ bean.getStage();
+				conditionSql_block = conditionSql_block + " and st.STAGE = "
+						+ bean.getStage();
+			}
+
+			if (bean.getType() != 0) {
+				conditionSql_task = conditionSql_task + " and st.TYPE = "
+						+ bean.getType();
+				conditionSql_block = conditionSql_block + " and st.TYPE = "
+						+ bean.getType();
+			}
+
+			if (bean.getStatus() != 0) {
+				conditionSql_task = conditionSql_task + " and st.STATUS = "
+						+ bean.getStatus();
+				conditionSql_block = conditionSql_block + " and st.STATUS = "
+						+ bean.getStatus();
+			}
+
+			selectSql = selectSql + fromSql_task
+					+ conditionSql_task + groupBySql
+					+ " union all " + selectSql
+					+ fromSql_block + conditionSql_block
+					+ groupBySql;
+
+			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
+				public Page handle(ResultSet rs) throws SQLException {
+					List<HashMap<Object,Object>> list = new ArrayList<HashMap<Object,Object>>();
+					Page page = new Page(curPageNum);
+				    page.setPageSize(pageSize);
+				    int total = 0;
+					while (rs.next()) {
+						if(total==0){
+							total=rs.getInt("TOTAL_RECORD_NUM_");
+						}
+						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
+						
+						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
+						subtask.put("name", rs.getString("NAME"));
+						subtask.put("stage", rs.getInt("STAGE"));
+						subtask.put("type", rs.getInt("TYPE"));
+						subtask.put("planStartDate", DateUtils.dateToString(rs
+								.getTimestamp("PLAN_START_DATE")));
+						subtask.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
+						subtask.put("descp", rs.getString("DESCP"));
+						subtask.put("status", rs.getInt("STATUS"));
+						subtask.put("dbId", rs.getString("GEOMETRY"));
+						
+						String gridIds = rs.getString("GRID_ID");
+						String[] gridIdList = gridIds.split(",");
+						subtask.put("gridIds", ArrayUtil.convertList(Arrays.asList(gridIdList)));
+						subtask.put("geometry", rs.getString("GEOMETRY"));
+						
+						if (1 == rs.getInt("STAGE")) {
+							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
+						} else if (2 == rs.getInt("STAGE")) {
+							subtask.put("dbId",rs.getInt("MONTHLY_DB_ID"));
+						} else {
+							subtask.put("dbId", rs.getInt("MONTHLY_DB_ID"));
+						}
+						
+						list.add(subtask);
+
+					}
+					page.setTotalCount(total);
+					page.setResult(list);
+					return page;
+				}
+
+			};
+
+			return run.query(curPageNum, pageSize, conn, selectSql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+		}
+
 	}
 }

@@ -1,13 +1,7 @@
 package com.navinfo.dataservice.diff.job;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
+
 import java.util.List;
-
-import net.sf.json.JSONObject;
-
-import org.dom4j.Document;
-
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;

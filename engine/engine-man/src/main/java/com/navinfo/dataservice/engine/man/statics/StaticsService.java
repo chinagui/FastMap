@@ -1,7 +1,13 @@
 package com.navinfo.dataservice.engine.man.statics;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 import org.json.JSONException;
 import org.springframework.stereotype.Service;
@@ -11,6 +17,7 @@ import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -38,10 +45,48 @@ public class StaticsService {
 	public List<GridChangeStatInfo> gridChangeStaticQuery(String wkt,int stage, int type, String date) throws JSONException, Exception{
 		//通过wkt获取gridIdList
 		Geometry geo=GeoTranslator.geojson2Jts(Geojson.wkt2Geojson(wkt));
-		Set<String> grids= CompGeometryUtil.geoToMeshesWithoutBreak(geo);
+		Set<String> grids= CompGeometryUtil.geo2GridsWithoutBreak(geo);
 		
 		StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
 
 		return api.getChangeStatByGrids(grids, type, stage, date);
+	}
+	
+	public List<HashMap> blockExpectStaticQuery(String wkt) throws JSONException, Exception{
+		BlockService service = BlockService.getInstance();
+		
+		JSONObject json = new JSONObject();
+		
+		json.put("wkt",wkt);
+		
+		JSONArray status = new JSONArray();
+		
+		status.add(0);
+		
+		status.add(1);
+		
+		json.put("snapshot", 0);
+		
+		json.put("planningStatus", status);
+		
+		List<HashMap> data = service.listByWkt(json);
+		
+		Set<Integer> blocks = new HashSet<Integer>();
+		
+		for(HashMap map : data){
+			int blockId = (int) map.get("blockId");
+			
+			blocks.add(blockId);
+		}
+		
+		StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+		
+		Map<Integer,Integer> statusMap = api.getExpectStatusByBlocks(blocks);
+		
+		for(HashMap map : data){
+			map.put("expectStatus", statusMap.get(map.get("blockId")));
+		}
+		
+		return data;
 	}
 }

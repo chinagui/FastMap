@@ -11,7 +11,6 @@ import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.engine.man.city.CityOperation;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
@@ -19,7 +18,6 @@ import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.Page;
 
 import net.sf.json.JSONArray;
@@ -31,9 +29,16 @@ import net.sf.json.JSONObject;
 * @date 2016-06-06 06:12:30 
 * @Description: TODO
 */
-@Service
+
 public class TaskService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
+	
+	private static class SingletonHolder{
+		private static final TaskService INSTANCE =new TaskService();
+	}
+	public static TaskService getInstance(){
+		return SingletonHolder.INSTANCE;
+	}
 
 	/**
 	 * 根据用户id，与tasks的json对象批量创建task

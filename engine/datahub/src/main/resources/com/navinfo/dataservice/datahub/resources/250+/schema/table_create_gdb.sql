@@ -10769,9 +10769,11 @@ comment on column IX_POI_PARKING.U_FIELDS is
 /*==============================================================*/
 create table IX_POI_PHOTO  (
    POI_PID              NUMBER(10)                      not null,
-   PHOTO_ID             VARCHAR2(32),
+   PHOTO_ID             NUMBER(10),
+   PID                  VARCHAR2(32),
    STATUS               VARCHAR2(100),
    MEMO                 VARCHAR2(500),
+   TAG                  NUMBER(3),
    U_RECORD             NUMBER(2)                      default 0 not null
        check (U_RECORD in (0,1,2,3)),
    U_FIELDS             VARCHAR2(1000),

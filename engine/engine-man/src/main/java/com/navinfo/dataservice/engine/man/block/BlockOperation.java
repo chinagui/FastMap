@@ -254,7 +254,7 @@ public class BlockOperation {
 				public Page handle(ResultSet rs) throws SQLException {
 					List<HashMap> list = new ArrayList<HashMap>();
 					Page page = new Page(currentPageNum);
-					page.setPageSize(pageSize);
+					int totalCount=0;
 					while (rs.next()) {
 						HashMap map = new HashMap();
 						map.put("blockId", rs.getInt("BLOCK_ID"));
@@ -285,10 +285,11 @@ public class BlockOperation {
 						map.put("taskPlanEndDate", rs.getString("PLAN_END_DATE"));
 						map.put("taskMonthStartDate", rs.getString("TASK_START_DATE"));
 						map.put("taskMonthEndDate", rs.getString("TASK_END_DATE"));
-
+						if(totalCount==0){totalCount=rs.getInt("TOTAL_RECORD_NUM_");}
 						list.add(map);
 					}
 					page.setResult(list);
+					page.setTotalCount(totalCount);
 					return page;
 				}
 

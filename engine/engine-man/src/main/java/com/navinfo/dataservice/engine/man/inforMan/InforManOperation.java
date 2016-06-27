@@ -79,7 +79,7 @@ public class InforManOperation {
 				public Page handle(ResultSet rs) throws SQLException {
 					List<HashMap> list = new ArrayList<HashMap>();
 					Page page = new Page(currentPageNum);
-					page.setPageSize(pageSize);
+					int totalCount=0;
 					while (rs.next()) {
 						HashMap map = new HashMap();
 						map.put("inforId", rs.getString("infor_id"));
@@ -101,10 +101,12 @@ public class InforManOperation {
 						map.put("inforStatus", rs.getInt("infor_status"));
 						map.put("blockId", rs.getInt("block_id"));
 						map.put("blockName", rs.getString("block_name"));
+						if(totalCount==0){totalCount=rs.getInt("TOTAL_RECORD_NUM_");}
 			
 						list.add(map);
 					}
 					page.setResult(list);
+					page.setTotalCount(totalCount);
 					return page;
 				}
 

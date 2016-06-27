@@ -87,7 +87,8 @@ public abstract class AbstractJobRequest {
 					continue;
 				}
 				setAttrValue(attName,attValue);
-			}}
+			}
+		}
 		//
 		defineSubJobRequests();
 	}

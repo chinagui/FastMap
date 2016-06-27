@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 
@@ -39,4 +40,6 @@ public interface StaticsApi {
 			int stage, String date) throws Exception;
 
 	public Map<Integer, Integer> getExpectStatusByBlocks(Set<Integer> blocks);
+	
+	public List<BlockExpectStatInfo> getExpectStatByBlock(int blockId, int stage, int type);
 }

@@ -3,6 +3,9 @@ package com.navinfo.dataservice.cop.waistcoat.job;
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.List;
 
 /**
  * @ClassName: BatchCoreJobRequest
@@ -14,30 +17,25 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 public class BatchCoreJobRequest extends AbstractJobRequest {
 
 
-	private int executeDBId = 0;
-	private String executeGdbConnInfo = "";
-	private String backupGdbConnInfo = "";
-	private String kdbConnInfo = "";
-	private String pidConnInfo = "";
-	private String ruleIds = "";
+	private int executeDBId;
+	private int backupDBId;
+	private int kdbDBId;
+	private int pidDBId;
+	private List<String> ruleIds;
 
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {
+
 	}
 
 	@Override
 	protected int myStepCount() throws JobException {
-		return 0;
+		return 2;
 	}
 
 	@Override
 	public String getJobType() {
 		return "batchCore";
-	}
-
-	@Override
-	public int getStepCount() throws JobException {
-		return 2;
 	}
 
 	@Override
@@ -53,44 +51,38 @@ public class BatchCoreJobRequest extends AbstractJobRequest {
 		this.executeDBId = executeDBId;
 	}
 
-	public String getExecuteGdbConnInfo() {
-		return executeGdbConnInfo;
+	public int getBackupDBId() {
+		return backupDBId;
 	}
 
-	public void setExecuteGdbConnInfo(String executeGdbConnInfo) {
-		this.executeGdbConnInfo = executeGdbConnInfo;
+	public void setBackupDBId(int backupDBId) {
+		this.backupDBId = backupDBId;
 	}
 
-	public String getKdbConnInfo() {
-		return kdbConnInfo;
+	public int getKdbDBId() {
+		return kdbDBId;
 	}
 
-	public void setKdbConnInfo(String kdbConnInfo) {
-		this.kdbConnInfo = kdbConnInfo;
+	public void setKdbDBId(int kdbDBId) {
+		this.kdbDBId = kdbDBId;
 	}
 
-	public String getBackupGdbConnInfo() {
-		return backupGdbConnInfo;
+	public int getPidDBId() {
+		return pidDBId;
 	}
 
-	public void setBackupGdbConnInfo(String backupGdbConnInfo) {
-		this.backupGdbConnInfo = backupGdbConnInfo;
+	public void setPidDBId(int pidDBId) {
+		this.pidDBId = pidDBId;
 	}
 
-	public String getPidConnInfo() {
-		return pidConnInfo;
-	}
-
-	public void setPidConnInfo(String pidConnInfo) {
-		this.pidConnInfo = pidConnInfo;
-	}
-
-	public String getRuleIds() {
+	public List<String> getRuleIds() {
 		return ruleIds;
 	}
 
-	public void setRuleIds(String ruleIds) {
+	public void setRuleIds(List<String> ruleIds) {
 		this.ruleIds = ruleIds;
 	}
+
+
 
 }

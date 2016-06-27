@@ -1,10 +1,13 @@
 package com.navinfo.dataservice.cop.waistcoat.job;
 
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
-import com.navinfo.navicommons.database.QueryRunner;
+import org.apache.commons.lang.StringUtils;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -34,7 +37,8 @@ public class BatchCoreJob extends AbstractJob {
 			String batchPrepareResult = prepareBatch(conn, batchParams);
 			response("批处理准备步骤完成",null);
 			if(batchPrepareResult.equals("批处理准备成功")) {
-				String batchExecuteResult = executeBatch(conn, req.getRuleIds());
+				String batchRuleIds = StringUtils.join(req.getRuleIds(), ",");
+				String batchExecuteResult = executeBatch(conn, batchRuleIds);
 				response("批处理执行步骤完成",null);
 				if(!batchExecuteResult.equals("批处理执行成功")) {
 					throw new JobException(batchExecuteResult);
@@ -49,36 +53,52 @@ public class BatchCoreJob extends AbstractJob {
 		}
 	}
 
+	@Override
+	public Exception getException() {
+		return super.getException();
+	}
+
 	private BatchCoreParams analyzeBatchParams(BatchCoreJobRequest req) {
 		BatchCoreParams batchParams = new BatchCoreParams();
-		String[] batchDBInfos = req.getExecuteGdbConnInfo().split(",");
-		batchParams.setBatchUserName(batchDBInfos[4]);
-		batchParams.setBatchPasswd(batchDBInfos[5]);
-		batchParams.setBatchHost(batchDBInfos[1]);
-		batchParams.setBatchPort(batchDBInfos[2]);
-		batchParams.setBatchSid(batchDBInfos[3]);
+		DatahubApi datahub = (DatahubApi) ApplicationContextUtil.getBean("datahubApi");
+
+		try {
+			//解析批处理库参数
+			DbInfo batchDBInfo = datahub.getDbById(req.getExecuteDBId());
+			batchParams.setBatchUserName(batchDBInfo.getDbUserName());
+			batchParams.setBatchPasswd(batchDBInfo.getDbUserPasswd());
+			batchParams.setBatchHost(batchDBInfo.getDbServer().getIp());
+			batchParams.setBatchPort(Integer.toString(batchDBInfo.getDbServer().getPort()));
+			batchParams.setBatchSid(batchDBInfo.getDbName());
 
 
-		String[] backupDBInfos = req.getBackupGdbConnInfo().split(",");
-		batchParams.setBackupUserName(backupDBInfos[4]);
-		batchParams.setBackupPasswd(backupDBInfos[5]);
-		batchParams.setBackupHost(backupDBInfos[1]);
-		batchParams.setBackupPort(backupDBInfos[2]);
-		batchParams.setBackupSid(backupDBInfos[3]);
+			//解析备份库参数
+			DbInfo backupDBInfo = datahub.getDbById(req.getBackupDBId());
+			batchParams.setBackupUserName(backupDBInfo.getDbUserName());
+			batchParams.setBackupPasswd(backupDBInfo.getDbUserPasswd());
+			batchParams.setBackupHost(backupDBInfo.getDbServer().getIp());
+			batchParams.setBackupPort(Integer.toString(backupDBInfo.getDbServer().getPort()));
+			batchParams.setBackupSid(backupDBInfo.getDbName());
 
-		String[] kdbInfos = req.getKdbConnInfo().split(",");
-		batchParams.setKdbUserName(kdbInfos[4]);
-		batchParams.setKdbPasswd(kdbInfos[5]);
-		batchParams.setKdbHost(kdbInfos[1]);
-		batchParams.setKdbPort(kdbInfos[2]);
-		batchParams.setKdbSid(kdbInfos[3]);
+			//解析元数据库参数
+			DbInfo kdbDBInfo = datahub.getDbById(req.getKdbDBId());
+			batchParams.setKdbUserName(kdbDBInfo.getDbUserName());
+			batchParams.setKdbPasswd(kdbDBInfo.getDbUserPasswd());
+			batchParams.setKdbHost(kdbDBInfo.getDbServer().getIp());
+			batchParams.setKdbPort(Integer.toString(kdbDBInfo.getDbServer().getPort()));
+			batchParams.setKdbSid(kdbDBInfo.getDbName());
 
-		String[] pidManInfos = req.getPidConnInfo().split(",");
-		batchParams.setDmsUserName(pidManInfos[4]);
-		batchParams.setDmsPasswd(pidManInfos[5]);
-		batchParams.setDmsHost(pidManInfos[1]);
-		batchParams.setDmsPort(pidManInfos[2]);
-		batchParams.setDmsSid(pidManInfos[3]);
+			//解析DMS(PID)库参数
+			DbInfo pidManDBInfo = datahub.getDbById(req.getPidDBId());
+			batchParams.setDmsUserName(pidManDBInfo.getDbUserName());
+			batchParams.setDmsPasswd(pidManDBInfo.getDbUserPasswd());
+			batchParams.setDmsHost(pidManDBInfo.getDbServer().getIp());
+			batchParams.setDmsPort(Integer.toString(pidManDBInfo.getDbServer().getPort()));
+			batchParams.setDmsSid(pidManDBInfo.getDbName());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 
 		return batchParams;
 	}

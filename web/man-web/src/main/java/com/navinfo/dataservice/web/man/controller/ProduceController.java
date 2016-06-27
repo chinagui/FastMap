@@ -6,7 +6,6 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -16,7 +15,6 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
-import com.navinfo.dataservice.engine.man.block.BlockService;
 
 /** 
 * @ClassName: BlockController 
@@ -27,8 +25,6 @@ import com.navinfo.dataservice.engine.man.block.BlockService;
 @Controller
 public class ProduceController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	@Autowired 
-	private BlockService service;
 
 	/**
 	 * 日出品管理--生成POI&Road日出品包,生成POI日出品包

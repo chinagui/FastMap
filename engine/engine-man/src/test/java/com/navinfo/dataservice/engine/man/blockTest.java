@@ -23,7 +23,7 @@ public class blockTest {
 		if(dataJson==null){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}
-		BlockService service = new BlockService();
+		BlockService service = BlockService.getInstance();
 		return service.listByWkt(dataJson);	
 	}
 	
@@ -37,7 +37,7 @@ public class blockTest {
 		if(dataJson==null){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}
-		BlockService service = new BlockService();
+		BlockService service = BlockService.getInstance();
 		return service.query(dataJson);	
 	}
 	

@@ -101,10 +101,8 @@ public class CityService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 					
-			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']', ')');
-			
-			String selectSql = "select t.CITY_ID,t.CITY_NAME, t.geometry.get_wkt() as geometry,t.plan_status from CITY t where t.PLAN_STATUS in "+planningStatus
-					+" and SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
+			String selectSql = "select c.CITY_ID,c.CITY_NAME, c.geometry.get_wkt() as geometry,    case  when exists (select 1      from task t, subtask s     where c.city_id = t.city_id       and t.task_id = s.task_id) then   1  else   0    end subtask_status,    case when exists(select 1 from task t where c.city_id=t.city_id) then 1 else 0 end task_status   from city c where" 
+			  +	" SDO_ANYINTERACT(c.geometry,sdo_geometry(?,8307))='TRUE'";
 		
 			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
 				public List<HashMap> handle(ResultSet rs) throws SQLException {
@@ -117,7 +115,18 @@ public class CityService {
 							CLOB clob=(CLOB)rs.getObject("geometry");
 							String clobStr=DataBaseUtils.clob2String(clob);
 							map.put("geometry", Geojson.wkt2Geojson(clobStr));
-							map.put("planningStatus", rs.getInt("plan_status"));
+							int taskStatus = rs.getInt("task_status");
+							int subtaskStatus = rs.getInt("subtask_status");
+							
+							int planStatus=0;
+							if(subtaskStatus==1){
+								planStatus=2;
+							}
+							else if (taskStatus==1){
+								planStatus=1;
+							}
+							map.put("planStatus", planStatus);
+							
 							map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 							list.add(map);
 						} catch (ParseException e) {

@@ -21,7 +21,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.CheckRule;
 import com.navinfo.dataservice.engine.check.core.CheckSuitLoader;
 import com.navinfo.dataservice.engine.check.core.NiValException;
-import com.navinfo.dataservice.engine.check.core.RuleExecuter;
+import com.navinfo.dataservice.engine.check.core.PostRuleExecuter;
 import com.navinfo.dataservice.engine.check.core.VariableName;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.vividsolutions.jts.geom.Geometry;
@@ -89,7 +89,7 @@ public class CheckEngine {
 		//myCheckSuit.add(rule);
 		myCheckSuit.add(rule2);
 		myCheckSuit.add(rule3);
-		this.myCheckSuitVariables.addAll(rule.getVariables());
+		this.myCheckSuitVariables.addAll(rule.getPostVariables());
 		return myCheckSuit;
 	}
 	
@@ -97,21 +97,12 @@ public class CheckEngine {
 	 * 对后检查需要保存检查结果，调用此方法将检查结果插入到Ni_val_exception中
 	 */
 	private void saveCheckResult(List<NiValException> checkResultList) throws Exception{
-		if (checkResultList==null || checkResultList.size()==0) {return;}
-		
-		NiValExceptionOperator check = new NiValExceptionOperator(this.conn, this.projectId);
-		
-		for(int i=0;i<checkResultList.size();i++){
-			
+		if (checkResultList==null || checkResultList.size()==0) {return;}		
+		NiValExceptionOperator check = new NiValExceptionOperator(this.conn, this.projectId);		
+		for(int i=0;i<checkResultList.size();i++){			
 			check.insertCheckLog(checkResultList.get(i).getRuleId(), checkResultList.get(i).getLoc(), checkResultList.get(i).getTargets(), checkResultList.get(i).getMeshId(),checkResultList.get(i).getInformation(), "TEST");
 		}
 	}
-	
-//	private void isValidConn() throws Exception{
-//		if (this.conn.isClosed()){
-//			this.conn = GlmDbPoolManager.getInstance().getConnection(this.checkCommand.getProjectId());
-//			this.conn.setAutoCommit(true);}		
-//	}
 	
 	/*
 	 * 前检查
@@ -123,13 +114,12 @@ public class CheckEngine {
 		List<CheckRule> rulesList=getRules(checkCommand.getObjType(),checkCommand.getOperType(),"PRE");		
 		for (int i=0;i<rulesList.size();i++){
 			CheckRule rule=rulesList.get(i);
-			baseRule obj = (baseRule) rule.getRuleClass().newInstance();
+			baseRule obj = (baseRule) rule.getPreRuleClass().newInstance();
 			obj.setRuleDetail(rule);
 			obj.setConn(this.conn);
 			try{
 			//调用规则的前检查
-				obj.preCheck(this.checkCommand);
-				
+				obj.preCheck(this.checkCommand);				
 				if(obj.getCheckResultList().size()!=0){
 					log.info("end preCheck");
 					return obj.getCheckResultList().get(0).getInformation();
@@ -152,7 +142,7 @@ public class CheckEngine {
 		//获取后检查需要执行规则列表
 		List<CheckRule> rulesList=getRules(this.checkCommand.getObjType(),this.checkCommand.getOperType(),"POST");
 		List<NiValException> checkResultList = new ArrayList<NiValException>();
-		RuleExecuter ruleExecuterObj=new RuleExecuter(this.checkCommand,this.myCheckSuitVariables,this.conn);
+		PostRuleExecuter ruleExecuterObj=new PostRuleExecuter(this.checkCommand,this.myCheckSuitVariables,this.conn);
 		for (int i=0;i<rulesList.size();i++){
 			CheckRule rule=rulesList.get(i);
 			try{

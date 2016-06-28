@@ -88,7 +88,7 @@ public class Test {
 		
 		CheckRule rule=getRule();
 		ChainLoader loader=new ChainLoader();
-		baseRule obj = (baseRule) rule.getRuleClass().newInstance();
+		baseRule obj = (baseRule) rule.getPostRuleClass().newInstance();
 		obj.setLoader(loader);
 		obj.setRuleDetail(rule);
 		obj.setConn(conn);

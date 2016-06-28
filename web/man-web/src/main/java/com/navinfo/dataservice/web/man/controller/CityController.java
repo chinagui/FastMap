@@ -60,4 +60,19 @@ public class CityController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	@RequestMapping(value = "/city/listByAlloc")
+	public ModelAndView queryListByAlloc(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			List<HashMap> data = service.queryListByAlloc(dataJson);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("获取城市列表失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

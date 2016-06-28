@@ -85,7 +85,7 @@ public class StaticsService {
 
 			info.setFinishPoi(poi.getInt("finish"));
 
-			info.setPercentPoi(poi.getDouble("percent"));
+			info.setPercentPoi((int)poi.getDouble("percent"));
 
 			info.setTotalPoi(poi.getInt("total"));
 
@@ -120,7 +120,7 @@ public class StaticsService {
 
 			info.setFinishRoad(road.getDouble("finish"));
 
-			info.setPercentRoad(road.getDouble("percent"));
+			info.setPercentRoad((int)road.getDouble("percent"));
 
 			info.setTotalRoad(road.getDouble("total"));
 
@@ -308,12 +308,16 @@ public class StaticsService {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		String wkt = "POLYGON ((116.55736132939865 40.37309069499443, 116.88314510913636 40.37309069499443, 116.88314510913636 40.25788148053289, 116.55736132939865 40.25788148053289, 116.55736132939865 40.37309069499443))";
+//		String wkt = "POLYGON ((116.55736132939865 40.37309069499443, 116.88314510913636 40.37309069499443, 116.88314510913636 40.25788148053289, 116.55736132939865 40.25788148053289, 116.55736132939865 40.37309069499443))";
+//		
+//		WKTReader r = new WKTReader();
+//		Geometry geo = r.read(wkt);
+//		Set<String> grids = CompGeometryUtil.geo2GridsWithoutBreak(geo);
 		
-		WKTReader r = new WKTReader();
-		Geometry geo = r.read(wkt);
-		Set<String> grids = CompGeometryUtil.geo2GridsWithoutBreak(geo);
+		List<String> grids = new ArrayList<String>();
+		grids.add("60563600");
+		StaticsService.getInstance().getLatestStatByGrids(grids, PoiDailyMain.col_name_grid, RoadDailyMain.col_name_grid);
 		
-		StaticsService.getInstance().getChangeStatByGrids(grids, 0, 2, "20160620");
+//		StaticsService.getInstance().getChangeStatByGrids(grids, 0, 2, "20160620");
 	}
 }

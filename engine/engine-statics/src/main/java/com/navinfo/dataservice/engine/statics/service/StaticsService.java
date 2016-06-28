@@ -26,6 +26,9 @@ import com.navinfo.dataservice.engine.statics.poidaily.PoiDailyMain;
 import com.navinfo.dataservice.engine.statics.roadcollect.RoadCollectMain;
 import com.navinfo.dataservice.engine.statics.roaddaily.RoadDailyMain;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTReader;
 
 public class StaticsService {
 	private StaticsService() {
@@ -204,7 +207,12 @@ public class StaticsService {
 			} else {
 				JSONObject road = json.getJSONObject("road");
 
-				info.setPercent((int) road.getDouble("all_percent"));
+				if(stage==0){
+					info.setPercent((int) road.getDouble("percent"));
+				}
+				else{
+					info.setPercent((int) road.getDouble("all_percent"));
+				}
 			}
 
 			map.put(gridId, info);
@@ -286,5 +294,15 @@ public class StaticsService {
 
 		return list;
 
+	}
+	
+	public static void main(String[] args) throws Exception {
+		String wkt = "POLYGON ((116.55736132939865 40.37309069499443, 116.88314510913636 40.37309069499443, 116.88314510913636 40.25788148053289, 116.55736132939865 40.25788148053289, 116.55736132939865 40.37309069499443))";
+		
+		WKTReader r = new WKTReader();
+		Geometry geo = r.read(wkt);
+		Set<String> grids = CompGeometryUtil.geo2GridsWithoutBreak(geo);
+		
+		StaticsService.getInstance().getChangeStatByGrids(grids, 0, 2, "20160620");
 	}
 }

@@ -13,6 +13,7 @@ import org.json.JSONException;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
+import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
@@ -52,7 +53,7 @@ public class StaticsService {
 		return api.getChangeStatByGrids(grids, type, stage, date);
 	}
 	
-	public List<HashMap> blockExpectStaticQuery(String wkt) throws JSONException, Exception{
+	public List<HashMap> blockExpectStatQuery(String wkt) throws JSONException, Exception{
 		BlockService service = BlockService.getInstance();
 		
 		JSONObject json = new JSONObject();
@@ -88,5 +89,11 @@ public class StaticsService {
 		}
 		
 		return data;
+	}
+	
+	public List<BlockExpectStatInfo> blockExpectStatQuery(int blockId, int stage, int type) throws JSONException, Exception{
+		StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+	
+		return api.getExpectStatByBlock(blockId, stage, type);
 	}
 }

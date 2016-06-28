@@ -88,14 +88,10 @@ public class BlockController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			if (!(dataJson.containsKey("wkt"))) {
-				throw new IllegalArgumentException("wkt参数是必须的。");
+			if (!dataJson.containsKey("wkt") || !dataJson.containsKey("type")||!dataJson.containsKey("stage")){
+				throw new IllegalArgumentException("wkt/type/stage不能为空");
 			}
-			String wkt = dataJson.getString("wkt");
-			if (StringUtils.isEmpty(wkt)) {
-				throw new IllegalArgumentException("wkt参数值不能为空");
-			}
-			List<HashMap> data = service.listByProduce(wkt);
+			List<HashMap> data = service.listByProduce(dataJson);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取block列表失败，原因：" + e.getMessage(), e);

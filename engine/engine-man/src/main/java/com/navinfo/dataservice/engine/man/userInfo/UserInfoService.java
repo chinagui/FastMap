@@ -35,6 +35,17 @@ import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 @Service
 public class UserInfoService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
+	
+	private UserInfoService() {
+	}
+
+	private static class SingletonHolder {
+		private static final UserInfoService INSTANCE = new UserInfoService();
+	}
+
+	public static UserInfoService getInstance() {
+		return SingletonHolder.INSTANCE;
+	}
 
 	public void create(UserInfo bean) throws ServiceException {
 		Connection conn = null;

@@ -102,10 +102,8 @@ public class CityService {
 			//持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			JSONObject obj = JSONObject.fromObject(json);	
-			City  bean = (City)JSONObject.toBean(obj, City.class);	
 			
-			String selectSql = "select * from CITY where CITY_ID=? and CITY_NAME=? and PROVINCE_NAME=? and GEOMETRY=? and REGION_ID=? and PLAN_STATUS=?";
+			String selectSql = "select * from CITY where CITY_ID=?";
 			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>(){
 				public HashMap handle(ResultSet rs) throws SQLException {
 					while(rs.next()){
@@ -125,7 +123,7 @@ public class CityService {
 			return run.query(conn, 
 					   selectSql,
 					   rsHandler, 
-					   bean.getCityId(), bean.getCityName(), bean.getProvinceName(), bean.getGeometry(), bean.getRegionId(), bean.getPlanStatus());
+					   json.getInt("cityId"));
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

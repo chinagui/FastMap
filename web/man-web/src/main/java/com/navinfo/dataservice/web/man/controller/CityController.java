@@ -49,12 +49,10 @@ public class CityController extends BaseController {
 	@RequestMapping(value = "/city/query")
 	public ModelAndView query(HttpServletRequest request) {
 		try {
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("param")));
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if (dataJson == null) {
-				throw new IllegalArgumentException("param参数不能为空。");
+				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			JSONObject obj = null;
-			City bean = (City) JSONObject.toBean(obj, City.class);
 			HashMap data = service.query(dataJson);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {

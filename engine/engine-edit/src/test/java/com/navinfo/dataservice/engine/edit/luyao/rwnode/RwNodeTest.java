@@ -41,7 +41,7 @@ public class RwNodeTest extends InitApplication{
 
 	@Test
 	public void moveRwNodeTest() throws Exception {
-		String parameter = "{\"command\":\"MOVE\",\"dbId\":42,\"objId\":4322,\"data\":{\"longitude\":115.75628,\"latitude\":40.3365},\"type\":\"RWNODE\"}";
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100006009,\"data\":{\"longitude\":116.90934,\"latitude\":39.91718},\"type\":\"RWNODE\"}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);
 		;

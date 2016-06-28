@@ -170,6 +170,8 @@ public class Operation implements IOperation {
 		}
 
 		rdGsc.setLinks(rdGscLinks);
+		
+		result.setPrimaryPid(rdGsc.getPid());
 
 		result.insertObject(rdGsc, ObjStatus.INSERT, rdGsc.pid());
 	}

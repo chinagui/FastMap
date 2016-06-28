@@ -11,7 +11,6 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 public class CheckCommand implements ICommand {
 	private OperType operType;
 	private ObjType objType;
-	private int projectId;
 	private List<IRow> glmList;
 
 	@Override
@@ -48,12 +47,6 @@ public class CheckCommand implements ICommand {
 	//获取检查对象list
 	public List<IRow> getGlmList(){
 		return this.glmList;
-	}
-	
-	public void setProjectId(int projectId){this.projectId=projectId;}
-	
-	public int getProjectId(){
-		return this.projectId;
 	}
 	
 

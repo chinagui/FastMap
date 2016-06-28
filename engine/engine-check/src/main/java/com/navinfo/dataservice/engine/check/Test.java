@@ -40,13 +40,11 @@ public class Test {
 		
 		//检查调用
 		CheckCommand checkCommand=new CheckCommand();
-		checkCommand.setProjectId(11);
 		checkCommand.setGlmList(objList);
 		checkCommand.setOperType(OperType.CREATE);
 		checkCommand.setObjType(link.objType());
-		int projectid=11;
 		
-		CheckEngine checkEngine=new CheckEngine(checkCommand,conn,projectid);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
 		checkEngine.postCheck();
 		conn.commit();
 	}
@@ -81,14 +79,13 @@ public class Test {
 		
 		//检查调用
 		CheckCommand checkCommand=new CheckCommand();
-		checkCommand.setProjectId(11);
 		checkCommand.setGlmList(objList);
 		checkCommand.setOperType(OperType.CREATE);
 		checkCommand.setObjType(link.objType());
 		
 		CheckRule rule=getRule();
 		ChainLoader loader=new ChainLoader();
-		baseRule obj = (baseRule) rule.getRuleClass().newInstance();
+		baseRule obj = (baseRule) rule.getPostRuleClass().newInstance();
 		obj.setLoader(loader);
 		obj.setRuleDetail(rule);
 		obj.setConn(conn);

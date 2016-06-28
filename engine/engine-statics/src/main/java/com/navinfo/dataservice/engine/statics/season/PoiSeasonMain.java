@@ -28,9 +28,9 @@ public class PoiSeasonMain {
 
 	private static Logger log = null;
 	private static CountDownLatch countDownLatch = null;
-	private static final String col_name_grid = "poi_season_grid_stat";
-	private static final String col_name_block = "poi_season_block_stat";
-	private static final String col_name_city = "poi_season_city_stat";
+	public static final String col_name_grid = "poi_season_grid_stat";
+	public static final String col_name_block = "poi_season_block_stat";
+	public static final String col_name_city = "poi_season_city_stat";
 	private String db_name;
 	private String stat_date;
 

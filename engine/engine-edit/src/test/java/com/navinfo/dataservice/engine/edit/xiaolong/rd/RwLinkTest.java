@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
@@ -28,13 +29,13 @@ public class RwLinkTest extends InitApplication {
 		try {
 			conn = DBConnector.getInstance().getConnectionById(42);
 
-			String parameter = "{\"type\":\"RWLINK\",\"dbId\":42,\"objId\":33}";
+			String parameter = "{\"type\":\"RWLINK\",\"dbId\":42,\"objId\":100006019}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByCondition(ObjType.RWLINK, jsonReq));
+			System.out.println(p.searchDataByPid(ObjType.RWLINK, 100006019).Serialize(ObjLevel.BRIEF));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -90,7 +91,7 @@ public class RwLinkTest extends InitApplication {
 	@Test//更新rw_link_name
 	public void testUpdateRwLink()
 	{
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RWLINK\",\"dbId\":42,\"data\":{\"names\":[{\"linkPid\":100005904,\"rowId\":\"\",\"nameGroupid\":40555592,\"objStatus\":\"INSERT\"}],\"objId\":100005904}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"RWLINK\",\"objId\":100005906,\"data\":{\"names\":[{\"linkPid\":100005906,\"nameGroupid\":0,\"name\":\"北京西路下拉槽\",\"objStatus\":\"INSERT\"}],\"pid\":100005906}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -130,6 +131,19 @@ public class RwLinkTest extends InitApplication {
 	public void testBreakRwLink()
 	{
 		String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100005910,\"data\":{\"longitude\":116.47772530228006,\"latitude\":40.01352131144351},\"type\":\"RWLINK\"}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testCreateRwLinkByLineBreak()
+	{
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.47295236587523,40.017525130559186],[116.47331276445038,40.01750344948889],[116.47360507086599,40.01751434151012],[116.47389650344849,40.01742447645556]]},\"catchLinks\":[{\"linkPid\":100006104,\"lon\":116.47331276445038,\"lat\":40.01750344948889},{\"linkPid\":100006009,\"lon\":116.47360507086599,\"lat\":40.01751434151012}]},\"type\":\"RWLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

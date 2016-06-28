@@ -2,12 +2,12 @@ package com.navinfo.dataservice.web.man.controller;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -30,8 +30,8 @@ import net.sf.json.JSONObject;
 @Controller
 public class BlockController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	@Autowired
-	private BlockService service;
+
+	private BlockService service=BlockService.getInstance();
 
 	@RequestMapping(value = "/block/open")
 	public ModelAndView create(HttpServletRequest request) {
@@ -230,7 +230,10 @@ public class BlockController extends BaseController {
 				curPageSize = Integer.parseInt(curSize);
 			}
 			Page data = service.listAll(condition, order, curPageNum, curPageSize);
-			return new ModelAndView("jsonView", success(data.getResult()));
+			Map<String, Object> resultMap=new HashMap<String, Object>();
+			resultMap.put("result", data.getResult());
+			resultMap.put("totalCount", data.getTotalCount());
+			return new ModelAndView("jsonView", success(resultMap));
 		} catch (Exception e) {
 			log.error("获取列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

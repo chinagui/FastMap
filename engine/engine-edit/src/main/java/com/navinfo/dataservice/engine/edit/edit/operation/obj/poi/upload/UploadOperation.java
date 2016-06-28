@@ -14,6 +14,7 @@ import java.util.Scanner;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -35,6 +36,8 @@ import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.update.Command;
 import com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.update.Process;
+import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -78,11 +81,13 @@ public class UploadOperation {
 	private JSONObject changeData(JSONArray ja) throws Exception{
 		JSONObject retObj = new JSONObject();
 		List<String> errList = new ArrayList<String>();
+		Connection manConn = null;
+		Connection conn = null;
 		// 获取当前做业季
 		String version = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
+		QueryRunner qRunner = new QueryRunner();
 		try {
 			Map<String,List<JSONObject>> data = new HashMap<String,List<JSONObject>>();
-			Connection manConn = null;
 			manConn = DBConnector.getInstance().getManConnection();
 			for (int i=0;i<ja.size();i++) {
 				JSONObject jo = ja.getJSONObject(i);
@@ -94,14 +99,8 @@ public class UploadOperation {
 				CompGridUtil gridUtil = new CompGridUtil();
 				String grid = gridUtil.point2Grids(coordinate[0].x, coordinate[0].y)[0];
 				String manQuery = "SELECT daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id=:1";
-				PreparedStatement pstmt = null;
-				pstmt = manConn.prepareStatement(manQuery);
-				pstmt.setString(1, grid);
-				ResultSet resultSet = pstmt.executeQuery();
-				String dbId = "";
-				if (resultSet.next()){
-					dbId = resultSet.getString("daily_db_id");
-				} else {
+				String dbId = qRunner.queryForString(manConn, manQuery, grid);
+				if (dbId.isEmpty()){
 					String errstr = "fid:" + jo.getString("fid") + "不在已知grid内";
 					errList.add(errstr);
 					continue;
@@ -122,14 +121,17 @@ public class UploadOperation {
 			// fid在IX_POI.POI_NUM中查找不到，并且待上传数据lifecycle不为1，为新增
 			// fid能找到，并且待上传数据lifecycle不为1且对应的IX_POI.U_RECORD不为2（删除），即为修改
 			// fid能找到，并且待上传数据lifecycle为1，即为删除
-			String subQuery = "SELECT poi_num,u_record FROM ix_poi WHERE poi_num=:1";
+			String subQuery = "SELECT u_record FROM ix_poi WHERE poi_num=:1";
 			JSONObject insertObj= new JSONObject();
 			JSONObject updateObj = new JSONObject();
 			JSONObject deleteObj = new JSONObject();
 			for (Iterator<String> iter = data.keySet().iterator();iter.hasNext();){
 				// 创建连接，查找FID是否存在
 				String dbId = iter.next();
-				Connection conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
+				if (conn != null) {
+					DBUtils.closeConnection(conn);
+				}
+				conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
 				List<JSONObject> dataList = data.get(dbId);
 				List<JSONObject> insertList = new ArrayList<JSONObject>();
 				List<JSONObject> updateList = new ArrayList<JSONObject>();
@@ -138,17 +140,14 @@ public class UploadOperation {
 					JSONObject poi = dataList.get(i);
 					String fid = poi.getString("fid");
 					int lifecycle = poi.getInt("t_lifecycle");
-					PreparedStatement pstmt = null;
-					pstmt = conn.prepareStatement(subQuery);
-					pstmt.setString(1, fid);
-					ResultSet resultSet = pstmt.executeQuery();
+					int uRecord = qRunner.queryForInt(conn, subQuery, fid);
 					// 判断每一条数据是新增、修改还是删除
-					if (resultSet.next()) {
+					if (uRecord != -1) {
 						// 能找到，判断lifecycle和u_record
 						if (lifecycle == 1) {
 							deleteList.add(poi);
 						} else {
-							int uRecord = resultSet.getInt("u_record");
+							
 							if (uRecord == 2) {
 								String errstr = "fid:" + fid + "为修改数据，但库中u_record为2";
 								errList.add(errstr);
@@ -201,6 +200,9 @@ public class UploadOperation {
 			return retObj;
 		} catch (Exception e) {
 			throw e;
+		} finally {
+			DBUtils.closeConnection(conn);
+			DBUtils.closeConnection(manConn);
 		}
 	}
 	
@@ -1322,5 +1324,54 @@ public class UploadOperation {
 		}
 	}
 
+	
+	public JSONObject getUploadInfo(int jobId) throws Exception {
+
+		Connection conn = null;
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+
+			JSONObject json = new JSONObject();
+
+			String sql = "select * from dropbox_upload where job_id = :1";
+
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, jobId);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+				String fileName = resultSet.getString("file_name");
+
+				String filePath = resultSet.getString("file_path");
+
+				String md5 = resultSet.getString("md5");
+
+				json.put("fileName", fileName);
+
+				json.put("filePath", filePath);
+
+				json.put("md5", md5);
+
+			} else {
+				throw new Exception("不存在对应的jobid:" + jobId);
+			}
+
+			return json;
+
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeConnection(conn);
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+	}
 	
 }

@@ -63,6 +63,14 @@ public abstract class AbstractJob implements Runnable {
 			jobInfo.setStatus(4);
 			exception = e;
 			log.error(e.getMessage(),e);
+			JSONObject errorJson=new JSONObject();
+			errorJson.put("error", e.getMessage());
+			try {
+				response("job执行出错...",errorJson);
+			} catch (Exception e1) {
+				log.error("", e1);
+				log.warn("注意：job执行出错。错误信息写入失败");
+			}
 		}finally{
 			try{
 				unlock();
@@ -71,7 +79,11 @@ public abstract class AbstractJob implements Runnable {
 				log.warn("注意：job执行完成后解锁失败。");
 			}
 			try{
-				response("job执行完成。",jobInfo.getStatus());
+				if(this.getParent()!=null){
+					JSONObject returnJson=new JSONObject();
+					returnJson.put(jobInfo.getType()+","+jobInfo.getDescp(), jobInfo.getResponse());
+					this.getParent().response("", returnJson);}
+				response("job执行完成。",jobInfo.getStatus());				
 			}catch(Exception err){
 				log.error(err.getMessage(),err);
 				log.warn("注意：job执行完成后修改任务状态出错。");

@@ -65,7 +65,7 @@ public class RwLink implements IObj {
 
 	// 线路渲染颜色
 	private String color;
-
+	
 	// 行记录ID
 	private String rowId;
 

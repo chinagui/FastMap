@@ -61,7 +61,7 @@ public class Command extends AbstractCommand {
 	
 	@Override
 	public ObjType getObjType() {
-		return ObjType.ADNODE;
+		return ObjType.RWNODE;
 	}
 
 	@Override

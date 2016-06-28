@@ -11,7 +11,6 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.model.City;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -34,9 +33,18 @@ import oracle.sql.CLOB;
 * @date 2016-06-06 08:19:11 
 * @Description: TODO
 */
-@Service
 public class CityService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
+	
+	private CityService() {
+	}
+	
+	private static class SingletonHolder{
+		private static final CityService INSTANCE =new CityService();
+	}
+	public static CityService getInstance(){
+		return SingletonHolder.INSTANCE;
+	}
 
 	
 	public void create(JSONObject json)throws ServiceException{

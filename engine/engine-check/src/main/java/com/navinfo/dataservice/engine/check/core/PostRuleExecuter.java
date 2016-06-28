@@ -23,7 +23,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.vividsolutions.jts.geom.Geometry;
 
-public class RuleExecuter {
+public class PostRuleExecuter {
 	
 	CheckCommand checkCommand=new CheckCommand();
 	private List<IRow> dataList=new ArrayList<IRow>();
@@ -34,13 +34,13 @@ public class RuleExecuter {
 	
 	private static Logger log = Logger.getLogger(CheckEngine.class);
 
-	public RuleExecuter(CheckCommand checkCommand,List<VariableName> checkSuitVariables,Connection conn) {
+	public PostRuleExecuter(CheckCommand checkCommand,List<VariableName> checkSuitVariables,Connection conn) {
 		// TODO Auto-generated constructor stub
 		this.checkCommand=checkCommand;
 		this.setDataList(checkCommand.getGlmList());
 		this.checkSuitVariables=checkSuitVariables;
-		this.conn=conn;		
-		createVariablesValues();
+		this.conn=conn;
+		if(!checkSuitVariables.isEmpty()){createVariablesValues();}
 	}
 	
 	/*
@@ -79,7 +79,7 @@ public class RuleExecuter {
 	public List<NiValException> exeRule(CheckRule rule) throws Exception{
 		try{
 			log.info("start exe "+rule.getRuleCode());
-			if(rule.getAccessorType()==AccessorType.SQL){
+			if(rule.getPostAccessorType()==AccessorType.SQL){
 				return exeSqlRule(rule);
 			}else{return exeJavaRule(rule);}}
 		finally{
@@ -90,7 +90,7 @@ public class RuleExecuter {
 	 * 执行java写的检查规则
 	 */
 	private List<NiValException> exeJavaRule(CheckRule rule) throws Exception{
-		baseRule obj = (baseRule) rule.getRuleClass().newInstance();
+		baseRule obj = (baseRule) rule.getPostRuleClass().newInstance();
 		obj.setLoader(loader);
 		obj.setRuleDetail(rule);
 		obj.setConn(this.conn);
@@ -107,11 +107,11 @@ public class RuleExecuter {
 	 * 执行sql语句写的检查规则
 	 */
 	private List<NiValException> exeSqlRule(CheckRule rule) throws Exception{
-		String sql=rule.getAccessorName();
+		String sql=rule.getPostAccessorName();
 		List<String> sqlList=new ArrayList<String>();
 		List<String> sqlListTmp=new ArrayList<String>();
 		sqlList.add(sql);
-		List<VariableName> variableList=rule.getVariables();
+		List<VariableName> variableList=rule.getPostVariables();
 		//将sql语句中的参数进行替换，形成可执行的sql语句
 		for(int i=0;i<variableList.size();i++){
 			Set<String> variableValueList=variablesValueMap.get(variableList.get(i));

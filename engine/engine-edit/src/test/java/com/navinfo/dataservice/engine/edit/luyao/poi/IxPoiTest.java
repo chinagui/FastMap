@@ -84,4 +84,30 @@ public class IxPoiTest extends InitApplication{
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
+	public void UpdatePoi0627_1(){
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":100000073,\"data\":{\"kindCode\":\"120202\",\"pid\":100000073,\"objStatus\":\"UPDATE\",\"chain\":\"\",\"open24h\":\"1\",\"postCode\":\"123456\",\"poiMemo\":\"备注\",\"level\":\"B1\",\"indoor\":\"3\",\"names\":[{\"nameId\":0,\"poiPid\":0,\"nameGroupid\":1,\"langCode\":\"CHI\",\"nameClass\":1,\"nameType\":2,\"name\":\"名称\",\"namePhonetic\":null,\"keywords\":null,\"nidbPid\":null,\"pid\":100000073,\"objStatus\":\"INSERT\"}],\"addresses\":[{\"pid\":100000073,\"nameGroupid\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"地址\",\"objStatus\":\"INSERT\"}],\"photos\":[{\"photoId\":0,\"status\":null,\"memo\":0,\"pid\":100000073,\"objStatus\":\"INSERT\"},{\"photoId\":0,\"status\":null,\"memo\":0,\"pid\":100000073,\"objStatus\":\"INSERT\"},{\"photoId\":0,\"status\":null,\"memo\":0,\"pid\":100000073,\"objStatus\":\"INSERT\"},{\"photoId\":0,\"status\":null,\"memo\":0,\"pid\":100000073,\"objStatus\":\"INSERT\"},{\"photoId\":0,\"status\":null,\"memo\":0,\"pid\":100000073,\"objStatus\":\"INSERT\"},{\"photoId\":0,\"status\":null,\"memo\":0,\"pid\":100000073,\"objStatus\":\"INSERT\"}]}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void UpdatePoi0627_2(){
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":100000073,\"data\":{\"kindCode\":\"110102\",\"pid\":100000073,\"objStatus\":\"UPDATE\",\"chain\":\"3030\",\"open24h\":\"1\",\"postCode\":\"发多少\",\"poiMemo\":\"发的\",\"level\":\"B2\",\"indoor\":\"3\",\"names\":[{\"pid\":100000073,\"poiPid\":0,\"nameGroupid\":1,\"langCode\":\"CHI\",\"nameClass\":1,\"nameType\":2,\"name\":\"名臣\",\"namePhonetic\":null,\"keywords\":null,\"nidbPid\":null,\"objStatus\":\"INSERT\"}],\"addresses\":[{\"pid\":100000073,\"nameGroupid\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"双方都\",\"objStatus\":\"INSERT\"}],\"photos\":[{\"photoId\":0,\"status\":null,\"memo\":0,\"pid\":100000073,\"objStatus\":\"INSERT\"},{\"photoId\":0,\"status\":null,\"memo\":0,\"pid\":100000073,\"objStatus\":\"INSERT\"},{\"photoId\":0,\"status\":null,\"memo\":0,\"pid\":100000073,\"objStatus\":\"INSERT\"},{\"photoId\":0,\"status\":null,\"memo\":0,\"pid\":100000073,\"objStatus\":\"INSERT\"},{\"photoId\":0,\"status\":null,\"memo\":0,\"pid\":100000073,\"objStatus\":\"INSERT\"},{\"photoId\":0,\"status\":null,\"memo\":0,\"pid\":100000073,\"objStatus\":\"INSERT\"}]}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
 }

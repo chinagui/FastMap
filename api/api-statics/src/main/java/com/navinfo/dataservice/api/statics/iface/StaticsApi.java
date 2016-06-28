@@ -1,8 +1,10 @@
 package com.navinfo.dataservice.api.statics.iface;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 
@@ -14,13 +16,13 @@ import com.navinfo.dataservice.api.statics.model.GridStatInfo;
  * 
  */
 public interface StaticsApi {
-	List<GridStatInfo> getLatestCollectStatByGrids(List<String> grids)
+	public List<GridStatInfo> getLatestCollectStatByGrids(List<String> grids)
 			throws Exception;
 
-	List<GridStatInfo> getLatestDailyEditStatByGrids(List<String> grids)
+	public List<GridStatInfo> getLatestDailyEditStatByGrids(List<String> grids)
 			throws Exception;
 
-	List<GridStatInfo> getLatestMonthlyEditStatByGrids(List<String> grids)
+	public List<GridStatInfo> getLatestMonthlyEditStatByGrids(List<String> grids)
 			throws Exception;
 
 	/**
@@ -34,7 +36,10 @@ public interface StaticsApi {
 	 * @return
 	 * @throws Exception
 	 */
-	List<GridChangeStatInfo> getChangeStatByGrids(Set<String> grids, int type,
+	public List<GridChangeStatInfo> getChangeStatByGrids(Set<String> grids, int type,
 			int stage, String date) throws Exception;
 
+	public Map<Integer, Integer> getExpectStatusByBlocks(Set<Integer> blocks);
+	
+	public List<BlockExpectStatInfo> getExpectStatByBlock(int blockId, int stage, int type);
 }

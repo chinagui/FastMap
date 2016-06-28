@@ -22,24 +22,15 @@ public class NiValExceptionOperator {
 
 	private Connection conn;
 
-	private int projectId;
-
 	private String gdbVersion;
 
 	public NiValExceptionOperator() {
 
 	}
 
-	public NiValExceptionOperator(Connection conn) {
-		this.conn = conn;
-
-	}
-
-	public NiValExceptionOperator(Connection conn, int projectId)
+	public NiValExceptionOperator(Connection conn)
 			throws Exception {
 		this.conn = conn;
-
-		this.projectId = projectId;
 		this.gdbVersion=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 
 		//ProjectSelector selector = new ProjectSelector();
@@ -367,7 +358,7 @@ public class NiValExceptionOperator {
 			pstmt.executeUpdate();
 
 			if (result != null) {
-				LogWriter writer = new LogWriter(conn, projectId);
+				LogWriter writer = new LogWriter(conn);
 
 				Command command = new Command();
 
@@ -450,8 +441,7 @@ public class NiValExceptionOperator {
 		OracleAddress oa1 = new OracleAddress(username1, password1, port1, ip1,
 				serviceName1);
 
-		NiValExceptionOperator op = new NiValExceptionOperator(oa1.getConn(),
-				11);
+		NiValExceptionOperator op = new NiValExceptionOperator(oa1.getConn());
 
 		// op.insertCheckLog("3213131", "POINT(116.1313 37.131)",
 		// "[RD_LINK,32131]", 13, "13");

@@ -58,6 +58,9 @@ public class SubtaskController extends BaseController {
 			//根据gridIds获取wkt
 			JSONArray gridIds = dataJson.getJSONArray("gridIds");
 			String wkt = GridUtils.grids2Wkt(gridIds);
+			if(wkt.contains("MULTIPOLYGON")){
+				return new ModelAndView("jsonView",exception("请输入符合条件的grids"));
+			}
 			Object[] gridIdList = dataJson.getJSONArray("gridIds").toArray();
 			dataJson.put("gridIds",gridIdList);
 			

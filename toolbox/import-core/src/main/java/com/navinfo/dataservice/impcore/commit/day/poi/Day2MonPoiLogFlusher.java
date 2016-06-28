@@ -39,7 +39,7 @@ public class Day2MonPoiLogFlusher extends LogFlusher {
 			sb.append(this.getTempTable());
 			sb.append(" SELECT DISTINCT P.OP_ID,P.OP_DT FROM LOG_OPERATION P,LOG_DETAIL L,LOG_DETAIL_GRID T  WHERE P.OP_ID=L.OP_ID AND L.ROW_ID=T.LOG_ROW_ID AND P.COM_STA = 0 ");
 			sb.append(" AND "+this.getFeatureFilter());
-			sb.append(" AND EXISTS(SELECT 1 FROM POI_EDIT_STATUS I WHERE L.ROW_ID=L.ROW_ID AND I.STATUS=3)");
+			sb.append(" AND EXISTS(SELECT 1 FROM POI_EDIT_STATUS I WHERE L.TB_ROW_ID=I.ROW_ID AND I.STATUS=3)");
 			return sb.toString();
 	}
 	@Override

@@ -19,6 +19,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.man.block.BlockService;
+import com.navinfo.dataservice.engine.man.city.CityService;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -95,5 +96,41 @@ public class StaticsService {
 		StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
 	
 		return api.getExpectStatByBlock(blockId, stage, type);
+	}
+	
+	public List<HashMap> cityExpectStatQuery(String wkt) throws JSONException, Exception{
+		CityService service = CityService.getInstance();
+		
+		JSONObject json = new JSONObject();
+		
+		json.put("wkt",wkt);
+		
+		JSONArray status = new JSONArray();
+		
+		status.add(0);
+		
+		status.add(1);
+		
+		json.put("planningStatus", status);
+		
+		List<HashMap> data = service.queryListByWkt(json);
+		
+		Set<Integer> citys = new HashSet<Integer>();
+		
+		for(HashMap map : data){
+			int blockId = (int) map.get("cityId");
+			
+			citys.add(blockId);
+		}
+		
+		StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+		
+		Map<Integer,Integer> statusMap = api.getExpectStatusByCitys(citys);
+		
+		for(HashMap map : data){
+			map.put("expectStatus", statusMap.get(map.get("cityId")));
+		}
+		
+		return data;
 	}
 }

@@ -58,4 +58,9 @@ public class StaticsApiImpl implements StaticsApi {
 	public List<BlockExpectStatInfo> getExpectStatByBlock(int blockId, int stage, int type) {
 		return StaticsService.getInstance().getExpectStatByBlock(blockId, stage, type);
 	}
+
+	@Override
+	public Map<Integer, Integer> getExpectStatusByCitys(Set<Integer> citys) {
+		return StaticsService.getInstance().getExpectStatusByCitys(citys);
+	}
 }

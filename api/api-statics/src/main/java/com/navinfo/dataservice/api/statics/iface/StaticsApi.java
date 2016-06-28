@@ -41,5 +41,7 @@ public interface StaticsApi {
 
 	public Map<Integer, Integer> getExpectStatusByBlocks(Set<Integer> blocks);
 	
+	public Map<Integer, Integer> getExpectStatusByCitys(Set<Integer> citys);
+	
 	public List<BlockExpectStatInfo> getExpectStatByBlock(int blockId, int stage, int type);
 }

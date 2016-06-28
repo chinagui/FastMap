@@ -236,7 +236,18 @@ public class StaticsService {
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
 
 		for (Integer block : blocks) {
-			map.put(block, 1);
+			map.put(block, block%2);
+		}
+
+		return map;
+	}
+	
+	public Map<Integer, Integer> getExpectStatusByCitys(Set<Integer> citys) {
+
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+
+		for (Integer city : citys) {
+			map.put(city, city%2);
 		}
 
 		return map;

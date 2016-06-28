@@ -33,8 +33,8 @@ import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 @Controller
 public class UserInfoController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	@Autowired
-	private UserInfoService service;
+//	@Autowired
+//	private UserInfoService service;
 
 	@RequestMapping(value = "/userInfo/login")
 	public ModelAndView login(HttpServletRequest request) {
@@ -66,7 +66,7 @@ public class UserInfoController extends BaseController {
 			UserInfo userInfo = (UserInfo) JSONObject.toBean(dataJson,
 					UserInfo.class);
 
-			HashMap<?, ?> data = service.login(userInfo, userDevice);
+			HashMap<?, ?> data = UserInfoService.getInstance().login(userInfo, userDevice);
 
 			if (!data.isEmpty()) {
 				return new ModelAndView("jsonView", success(data));
@@ -93,7 +93,7 @@ public class UserInfoController extends BaseController {
 			}
 			UserInfo bean = (UserInfo) JSONObject.toBean(dataJson,
 					UserInfo.class);
-			service.create(bean);
+			UserInfoService.getInstance().create(bean);
 			return new ModelAndView("jsonView", success("创建成功"));
 		} catch (Exception e) {
 			log.error("创建失败，原因：" + e.getMessage(), e);
@@ -121,7 +121,7 @@ public class UserInfoController extends BaseController {
 
 			bean.setUserId(userId);
 
-			service.update(bean);
+			UserInfoService.getInstance().update(bean);
 			return new ModelAndView("jsonView", success("修改成功"));
 		} catch (Exception e) {
 			log.error("修改失败，原因：" + e.getMessage(), e);
@@ -139,7 +139,7 @@ public class UserInfoController extends BaseController {
 			}
 			UserInfo bean = (UserInfo) JSONObject.toBean(dataJson,
 					UserInfo.class);
-			service.delete(bean);
+			UserInfoService.getInstance().delete(bean);
 			return new ModelAndView("jsonView", success("删除成功"));
 		} catch (Exception e) {
 			log.error("删除失败，原因：" + e.getMessage(), e);
@@ -163,7 +163,7 @@ public class UserInfoController extends BaseController {
 			UserGroup bean = new UserGroup();
 			bean.setGroupId(group_Id);
 
-			List<UserInfo> userInfoList = service.list(bean);
+			List<UserInfo> userInfoList = UserInfoService.getInstance().list(bean);
 			HashMap<String, Object> data = new HashMap<String, Object>();
 			Integer userSize = userInfoList.size();
 			data.put("total", userSize);
@@ -202,7 +202,7 @@ public class UserInfoController extends BaseController {
 				bean.setUserId((int) userId);
 			}
 			
-			UserInfo userInfo = service.query(bean);
+			UserInfo userInfo = UserInfoService.getInstance().query(bean);
 
 			HashMap<String, Object> data = new HashMap<String, Object>();
 			data.put("userId", userInfo.getUserId());
@@ -238,7 +238,7 @@ public class UserInfoController extends BaseController {
 			UserInfo bean = new UserInfo();
 			bean.setUserId(use_id);
 
-			List<String> poi_tips_time = service.getUploadTime(bean, deviceId);
+			List<String> poi_tips_time = UserInfoService.getInstance().getUploadTime(bean, deviceId);
 			HashMap<String, String> data = new HashMap<String, String>();
 			String poi_time = "";
 			String tips_time = "";

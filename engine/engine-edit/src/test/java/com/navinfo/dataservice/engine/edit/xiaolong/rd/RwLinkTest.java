@@ -143,7 +143,7 @@ public class RwLinkTest extends InitApplication {
 	@Test
 	public void testCreateRwLinkByLineBreak()
 	{
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.47641777992247,40.01777984640311],[116.47697959464875,40.017435672006194],[116.47658944129945,40.01681849453093],[116.47629976272582,40.0168431447481]]},\"catchLinks\":[{\"linkPid\":100005959,\"lon\":116.47697959464875,\"lat\":40.017435672006194}]},\"type\":\"RWLINK\"}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.47295236587523,40.017525130559186],[116.47331276445038,40.01750344948889],[116.47360507086599,40.01751434151012],[116.47389650344849,40.01742447645556]]},\"catchLinks\":[{\"linkPid\":100006104,\"lon\":116.47331276445038,\"lat\":40.01750344948889},{\"linkPid\":100006009,\"lon\":116.47360507086599,\"lat\":40.01751434151012}]},\"type\":\"RWLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

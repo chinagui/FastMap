@@ -669,21 +669,21 @@ public class SubtaskOperation {
 					+ "and c.region_id = r.region_id "
 					+ "and st.EXE_USER_ID = " + bean.getExeUserId() + " ";
 
-			if (bean.getStage() != 0) {
+			if (bean.getStage() != null) {
 				conditionSql_task = conditionSql_task + " and st.STAGE = "
 						+ bean.getStage();
 				conditionSql_block = conditionSql_block + " and st.STAGE = "
 						+ bean.getStage();
 			}
 
-			if (bean.getType() != 0) {
+			if (bean.getType() != null) {
 				conditionSql_task = conditionSql_task + " and st.TYPE = "
 						+ bean.getType();
 				conditionSql_block = conditionSql_block + " and st.TYPE = "
 						+ bean.getType();
 			}
 
-			if (bean.getStatus() != 0) {
+			if (bean.getStatus() != null) {
 				conditionSql_task = conditionSql_task + " and st.STATUS = "
 						+ bean.getStatus();
 				conditionSql_block = conditionSql_block + " and st.STATUS = "
@@ -806,21 +806,21 @@ public class SubtaskOperation {
 					+ ",r.MONTHLY_DB_ID"
 					+ ",TO_CHAR(st.GEOMETRY.get_wkt())";
 
-			if (bean.getStage() != 0) {
+			if (bean.getStage() != null) {
 				conditionSql_task = conditionSql_task + " and st.STAGE = "
 						+ bean.getStage();
 				conditionSql_block = conditionSql_block + " and st.STAGE = "
 						+ bean.getStage();
 			}
 
-			if (bean.getType() != 0) {
+			if (bean.getType() != null) {
 				conditionSql_task = conditionSql_task + " and st.TYPE = "
 						+ bean.getType();
 				conditionSql_block = conditionSql_block + " and st.TYPE = "
 						+ bean.getType();
 			}
 
-			if (bean.getStatus() != 0) {
+			if (bean.getStatus() != null) {
 				conditionSql_task = conditionSql_task + " and st.STATUS = "
 						+ bean.getStatus();
 				conditionSql_block = conditionSql_block + " and st.STATUS = "

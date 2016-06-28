@@ -28,11 +28,11 @@ public class UserInfoOperation {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public static HashMap loginGetUserInfo(Connection conn,UserInfo userInfo,UserDevice userDevice) throws Exception{
+	public static HashMap<Object,Object> loginGetUserInfo(Connection conn,UserInfo userInfo,UserDevice userDevice) throws Exception{
 		try{
 
 			QueryRunner run = new QueryRunner();
-			String selectSql = "select distinct u.user_id"
+			String selectSql = "select distinct u.user_id,u.user_real_name"
 					+ ",r.role_name"
 					+ ",(case when d.device_token = '"
 					+ userDevice.getDeviceToken() 
@@ -49,12 +49,13 @@ public class UserInfoOperation {
 
 
 
-			ResultSetHandler<HashMap<?,?>> rsHandler = new ResultSetHandler<HashMap<?,?>>() {
-				public HashMap<?,?> handle(ResultSet rs) throws SQLException {
-					HashMap map = new HashMap();
+			ResultSetHandler<HashMap<Object,Object>> rsHandler = new ResultSetHandler<HashMap<Object,Object>>() {
+				public HashMap<Object,Object> handle(ResultSet rs) throws SQLException {
+					HashMap<Object,Object> map = new HashMap<Object,Object>();
 					while (rs.next()) {
 						if(!map.containsKey("userId")){
 							map.put("userId", rs.getLong("user_id"));
+							map.put("userRealName", rs.getString("user_real_name"));
 							map.put("roleName", rs.getString("role_name"));
 						}
 						if(rs.getInt("device_id")!=0){
@@ -67,7 +68,7 @@ public class UserInfoOperation {
 
 			};
 
-			HashMap map = run.query(conn, selectSql, rsHandler);
+			HashMap<Object,Object> map = run.query(conn, selectSql, rsHandler);
 			return map;
 		}catch(Exception e){
 			log.error(e.getMessage(), e);

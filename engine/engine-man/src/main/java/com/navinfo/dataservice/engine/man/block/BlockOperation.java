@@ -331,7 +331,14 @@ public class BlockOperation {
 		}
 	}
 	
-	
+	/**
+	 * 开启和未开启的block都返回
+	 * @param conn
+	 * @param selectSql
+	 * @param selectSqlNotOpen
+	 * @return
+	 * @throws Exception
+	 */
 	public static List<HashMap> QuerylistByInfoId(Connection conn, String selectSql,String selectSqlNotOpen)
 			throws Exception {
 		try {

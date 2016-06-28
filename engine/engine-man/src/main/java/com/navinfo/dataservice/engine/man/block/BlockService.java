@@ -41,14 +41,15 @@ import oracle.sql.CLOB;
 
 public class BlockService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	
+
 	private BlockService() {
 	}
-	
-	private static class SingletonHolder{
-		private static final BlockService INSTANCE =new BlockService();
+
+	private static class SingletonHolder {
+		private static final BlockService INSTANCE = new BlockService();
 	}
-	public static BlockService getInstance(){
+
+	public static BlockService getInstance() {
 		return SingletonHolder.INSTANCE;
 	}
 
@@ -130,16 +131,12 @@ public class BlockService {
 		}
 	}
 
-	public List<HashMap> listByProduce(String wkt) throws ServiceException {
+	public List<HashMap> listByProduce(JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
-
 			conn = DBConnector.getInstance().getManConnection();
-
 			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY from BLOCK t where sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE'";
-			List<Object> list = new ArrayList<Object>();
-			list.add(wkt);
-			return BlockOperation.queryProduceBlock(conn, selectSql, list);
+			return BlockOperation.queryProduceBlock(conn, selectSql, json);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

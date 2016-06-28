@@ -15,15 +15,19 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.api.statics.iface.StaticsApi;
+import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 
+import net.sf.json.JSONObject;
 import oracle.sql.CLOB;
 
 public class BlockOperation {
@@ -64,11 +68,11 @@ public class BlockOperation {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("鏌ヨ澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
+			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
 		}
 	}
 
-	public static List<HashMap> queryProduceBlock(Connection conn, String selectSql, List<Object> values)
+	public static List<HashMap> queryProduceBlock(Connection conn, String selectSql, final JSONObject json)
 			throws Exception {
 		try {
 			QueryRunner run = new QueryRunner();
@@ -79,7 +83,7 @@ public class BlockOperation {
 						HashMap map = new HashMap<String, Integer>();
 						// block下grid日完成度为100%，block才可出品
 						try {
-							if (BlockOperation.checkGridFinished(rs.getInt("BLOCK_ID"))) {
+							if (BlockOperation.checkGridFinished(rs.getInt("BLOCK_ID"),json.getInt("stage"),json.getInt("stage"))) {
 								map.put("blockId", rs.getInt("BLOCK_ID"));
 								map.put("blockName", rs.getInt("BLOCK_NAME"));
 								CLOB clob = (CLOB) rs.getObject("geometry");
@@ -102,14 +106,11 @@ public class BlockOperation {
 				}
 
 			};
-			if (null == values || values.size() == 0) {
-				return run.query(conn, selectSql, rsHandler);
-			}
-			return run.query(conn, selectSql, rsHandler, values.toArray());
+			return run.query(conn, selectSql, rsHandler, json.getString("wkt"));
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("鏌ヨ澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
+			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
 		}
 	}
 
@@ -140,11 +141,18 @@ public class BlockOperation {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("鏌ヨ澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
+			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
 		}
 	}
-
-	public static boolean checkGridFinished(int blockId) throws Exception {
+/**
+ * 判断block下grid是否完成度为100%
+ * @param blockId
+ * @param stage
+ * @param type
+ * @return
+ * @throws Exception
+ */
+	public static boolean checkGridFinished(int blockId,int stage,int type) throws Exception {
 		Connection conn = null;
 		try {
 			QueryRunner run = new QueryRunner();
@@ -153,11 +161,29 @@ public class BlockOperation {
 
 			PreparedStatement stmt = conn.prepareStatement(sqlByblockId);
 			ResultSet rs = stmt.executeQuery();
+			List<String> gridList = new ArrayList();
 			while (rs.next()) {
-				int grid_id = rs.getInt(1);
-				// 调用统计模块，查询grid完成度,若不为100%，返回false
-				// TODO
-				return false;
+				gridList.add(String.valueOf(rs.getInt(1)));
+			}
+			// 调用统计模块，查询grid完成度,若不为100%，返回false
+			StaticsApi statics = (StaticsApi) ApplicationContextUtil
+					.getBean("staticsApi");
+			List<GridStatInfo> GridStatList=new ArrayList();
+			//stage:作业阶段（0采集、1日编、2月编）
+			if (0==stage){GridStatList=statics.getLatestCollectStatByGrids(gridList);}
+			if (1==stage){GridStatList=statics.getLatestDailyEditStatByGrids(gridList);}
+			if (2==stage){GridStatList=statics.getLatestMonthlyEditStatByGrids(gridList);}
+			GridStatList=statics.getLatestCollectStatByGrids(gridList);
+			
+			//type:0 POI，1POI&Road
+			for(int i=0;i<GridStatList.size();i++){
+				GridStatInfo statInfo=GridStatList.get(i);
+				if (0==type && statInfo.getPercentPoi()!=100){
+					return false;
+				}
+				if (1==type && (statInfo.getPercentRoad()!=100 || statInfo.getPercentPoi()!=100)){
+					return false;
+				}
 			}
 			return true;
 		} catch (Exception e) {
@@ -360,7 +386,7 @@ public class BlockOperation {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("鏌ヨ澶辫触锛屽師鍥犱负:" + e.getMessage(), e);
+			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
 		}
 	}
 

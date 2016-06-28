@@ -664,51 +664,6 @@ public class SubtaskService {
 
 			return run.query(conn, selectSql,rsHandler);
 			
-
-//			String selectSql = "select s.SUBTASK_ID," 
-//					+ "s.STAGE,"
-//					+ "s.TYPE,"
-//					+ "s.PLAN_START_DATE," 
-//					+ "s.PLAN_END_DATE,"
-//					+ "s.DESCP,"
-//					+ "TO_CHAR(s.GEOMETRY.get_wkt()) AS GEOMETRY "
-//					+ ",listagg(sgm.GRID_ID, ',') within group(order by s.SUBTASK_ID) as GRID_ID "
-//					+ "from SUBTASK s,subtask_grid_mapping sgm "
-//					+ "where s.subtask_id = sgm.subtask_id "
-//					+ " and s.SUBTASK_ID=" + subtaskId
-//					+ " group by s.SUBTASK_ID"
-//					+ ",s.STAGE"
-//					+ ",s.TYPE"
-//					+ ",s.PLAN_START_DATE"
-//					+ ",s.PLAN_END_DATE"
-//					+ ",s.DESCP"
-//					+ ",TO_CHAR(s.GEOMETRY.get_wkt())";
-//
-//			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>() {
-//				public Subtask handle(ResultSet rs) throws SQLException {
-//					while (rs.next()) {
-//						Subtask subtask = new Subtask();
-//						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
-//						subtask.setGeometry(rs.getString("GEOMETRY"));
-//						subtask.setStage(rs.getInt("STAGE"));
-//						subtask.setType(rs.getInt("TYPE"));
-//						subtask.setPlanStartDate(rs
-//								.getTimestamp("PLAN_START_DATE"));
-//						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
-//						subtask.setDescp(rs.getString("DESCP"));
-//						
-//						String gridIds = rs.getString("GRID_ID");
-//						String[] gridIdList = gridIds.split(",");
-//						subtask.setGridIds(ArrayUtil.convertList(Arrays.asList(gridIdList)));
-//						
-//						return subtask;
-//					}
-//					return null;
-//				}
-//
-//			};
-//			return run.query(conn, selectSql, rsHandler);
-
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

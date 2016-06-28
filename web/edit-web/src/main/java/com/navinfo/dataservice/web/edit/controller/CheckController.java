@@ -130,8 +130,7 @@ public class CheckController extends BaseController {
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
-			NiValExceptionOperator selector = new NiValExceptionOperator(conn,
-					dbId);
+			NiValExceptionOperator selector = new NiValExceptionOperator(conn);
 
 			selector.updateCheckLogStatus(id, type);
 

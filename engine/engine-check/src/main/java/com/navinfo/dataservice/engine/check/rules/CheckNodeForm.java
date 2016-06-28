@@ -105,7 +105,6 @@ public class CheckNodeForm extends baseRule {
 		objList.add(rdCross);
 
 		CheckCommand checkCommand=new CheckCommand();
-		checkCommand.setProjectId(12);
 		checkCommand.setGlmList(objList);
 		checkCommand.setOperType(OperType.CREATE);
 //		checkCommand.setObjType(node.objType());

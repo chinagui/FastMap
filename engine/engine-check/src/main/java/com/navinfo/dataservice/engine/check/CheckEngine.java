@@ -30,7 +30,6 @@ public class CheckEngine {
 	private CheckCommand checkCommand = null;
 	private Connection conn;
 	private List<VariableName> myCheckSuitVariables=new ArrayList<VariableName>();
-	private int projectId;
 	
 	public Connection getConn() {
 		return conn;
@@ -49,11 +48,10 @@ public class CheckEngine {
 		//this.conn.setAutoCommit(true);
 	}
 	
-	public CheckEngine(CheckCommand checkCommand,Connection conn,int projectId) throws Exception{
+	public CheckEngine(CheckCommand checkCommand,Connection conn) throws Exception{
 		this.log = LoggerRepos.getLogger(this.log);
 		this.checkCommand=checkCommand;
 		this.conn=conn;
-		this.projectId=projectId;
 		//this.conn = GlmDbPoolManager.getInstance().getConnection(this.checkCommand.getProjectId());
 		//this.conn.setAutoCommit(true);
 	}
@@ -98,7 +96,7 @@ public class CheckEngine {
 	 */
 	private void saveCheckResult(List<NiValException> checkResultList) throws Exception{
 		if (checkResultList==null || checkResultList.size()==0) {return;}		
-		NiValExceptionOperator check = new NiValExceptionOperator(this.conn, this.projectId);		
+		NiValExceptionOperator check = new NiValExceptionOperator(this.conn);		
 		for(int i=0;i<checkResultList.size();i++){			
 			check.insertCheckLog(checkResultList.get(i).getRuleId(), checkResultList.get(i).getLoc(), checkResultList.get(i).getTargets(), checkResultList.get(i).getMeshId(),checkResultList.get(i).getInformation(), "TEST");
 		}
@@ -166,7 +164,7 @@ public class CheckEngine {
 		link.setsNodePid(2);
 		link.seteNodePid(2);
 		
-		Connection conn = DBConnector.getInstance().getConnectionById(11);
+		Connection conn = DBConnector.getInstance().getConnectionById(42);
 		
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 
@@ -177,12 +175,11 @@ public class CheckEngine {
 		
 		//检查调用
 		CheckCommand checkCommand=new CheckCommand();
-		checkCommand.setProjectId(11);
 		checkCommand.setGlmList(objList);
-		checkCommand.setOperType(OperType.CREATE);
+		checkCommand.setOperType(OperType.UPDATE);
 		checkCommand.setObjType(link.objType());
 		
-		CheckEngine checkEngine=new CheckEngine(checkCommand,conn,11);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
 		checkEngine.postCheck();
 		conn.commit();
 		

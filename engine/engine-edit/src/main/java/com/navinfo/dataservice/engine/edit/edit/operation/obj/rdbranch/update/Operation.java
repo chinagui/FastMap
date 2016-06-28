@@ -1,9 +1,13 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdbranch.update;
 
+import java.sql.Connection;
+import java.util.List;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
@@ -11,17 +15,21 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchName;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchRealimage;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchSchematic;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboardName;
 import com.navinfo.dataservice.dao.pidservice.PidService;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.CalLinkOperateUtils;
 
 public class Operation implements IOperation {
 
 	private Command command;
 
 	private RdBranch branch;
+
+	private Connection conn;
 
 	public Operation(Command command, RdBranch branch) {
 		this.command = command;
@@ -34,7 +42,7 @@ public class Operation implements IOperation {
 
 		JSONObject content = command.getContent();
 
-		// 判断是否存在交限进入线
+		//主表是否变化
 		if (content.containsKey("objStatus")) {
 
 			if (ObjStatus.DELETE.toString().equals(
@@ -43,34 +51,97 @@ public class Operation implements IOperation {
 
 				return null;
 			} else {
-
+				
+				updateLinkInfo( content, result);
+				
 				boolean isChanged = branch.fillChangeFields(content);
 
-				if (isChanged) {
+				if (isChanged) {					
 					result.insertObject(branch, ObjStatus.UPDATE, branch.pid());
 				}
 			}
 		}
 
 		// 更新分歧详细信息表(0-4)
-		UpdateBranchDetail(result, content);
+		updateBranchDetail(result, content);
 
 		// 更新分歧实景图 (5)
-		UpdateBranchRealimage(result, content);
+		updateBranchRealimage(result, content);
 
 		// 更新实景看板(6)
-		UpdateSignasreal(result, content);
+		updateSignasreal(result, content);
 
 		// 更新连续分歧(7)
-		UpdateSeriesbranch(result, content);
+		updateSeriesbranch(result, content);
 
 		// 更新大路口交叉点(8)
-		UpdateSchematic(result, content);
+		updateSchematic(result, content);
 
 		// 更新方向看板(9)
-		UpdateSignboard(result, content);
+		updateSignboard(result, content);
 
 		return null;
+	}
+
+	/**
+	 * 更新退出线、经过线、关系类型
+	 * @param content
+	 * @param result
+	 * @throws Exception
+	 */
+	private void updateLinkInfo(JSONObject content,Result result) throws Exception {
+
+		//前台未修改退出线，直接返回
+		if (!content.containsKey("outLinkPid")) {
+			return;
+		}
+
+		int outPid = content.getInt("outLinkPid");
+
+		//前台修改退出线与当前退出线相同，直接返回
+		if (this.branch.getOutLinkPid() == outPid) {
+			return;
+		}
+
+		CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
+
+		int relationShipType = calLinkOperateUtils.getRelationShipType(conn,
+				this.branch.getNodePid(), outPid);
+
+		//前台未修改关系类型且关系类型改变
+		if (this.branch.getRelationshipType() != relationShipType
+				&& !content.containsKey("relationshipType")) {
+
+			content.put("relationshipType", relationShipType);
+		}
+
+		List<Integer> viaLinks = calLinkOperateUtils.calViaLinks(conn,
+				this.branch.getInLinkPid(), this.branch.getNodePid(), outPid);
+		//删除原经过线
+		for(  IRow row : this.branch.getVias())
+		{
+			result.insertObject(row, ObjStatus.DELETE, branch.pid());
+		}
+		
+		int seqNum = 1;
+
+		//重新设置经过线
+		for (Integer linkPid : viaLinks) {
+			RdBranchVia via = new RdBranchVia();
+
+			via.setBranchPid(branch.getPid());
+
+			via.setLinkPid(linkPid);
+
+			via.setSeqNum(seqNum);
+
+			via.setMesh(this.branch.mesh());
+
+			seqNum++;
+			
+			result.insertObject(via, ObjStatus.INSERT, branch.pid());
+		}
+
 	}
 
 	/**
@@ -80,7 +151,7 @@ public class Operation implements IOperation {
 	 * @param content
 	 * @throws Exception
 	 */
-	private void UpdateBranchDetail(Result result, JSONObject content)
+	private void updateBranchDetail(Result result, JSONObject content)
 			throws Exception {
 		if (!content.containsKey("details")) {
 			return;
@@ -209,7 +280,7 @@ public class Operation implements IOperation {
 	 * @param content
 	 * @throws Exception
 	 */
-	private void UpdateSignboard(Result result, JSONObject content)
+	private void updateSignboard(Result result, JSONObject content)
 			throws Exception {
 		if (!content.containsKey("signboards")) {
 			return;
@@ -338,7 +409,7 @@ public class Operation implements IOperation {
 	 * @param content
 	 * @throws Exception
 	 */
-	private void UpdateSignasreal(Result result, JSONObject content)
+	private void updateSignasreal(Result result, JSONObject content)
 			throws Exception {
 		if (!content.containsKey("signasreals")) {
 			return;
@@ -404,7 +475,7 @@ public class Operation implements IOperation {
 	 * @param content
 	 * @throws Exception
 	 */
-	private void UpdateSchematic(Result result, JSONObject content)
+	private void updateSchematic(Result result, JSONObject content)
 			throws Exception {
 		if (!content.containsKey("schematics")) {
 			return;
@@ -470,7 +541,7 @@ public class Operation implements IOperation {
 	 * @param content
 	 * @throws Exception
 	 */
-	private void UpdateBranchRealimage(Result result, JSONObject content)
+	private void updateBranchRealimage(Result result, JSONObject content)
 			throws Exception {
 		if (!content.containsKey("realimages")) {
 			return;
@@ -535,7 +606,7 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 
-	private void UpdateSeriesbranch(Result result, JSONObject content)
+	private void updateSeriesbranch(Result result, JSONObject content)
 			throws Exception {
 		if (!content.containsKey("seriesbranches")) {
 			return;

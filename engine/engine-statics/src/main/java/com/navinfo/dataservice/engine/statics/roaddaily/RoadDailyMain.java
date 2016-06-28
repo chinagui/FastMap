@@ -40,8 +40,8 @@ public class RoadDailyMain {
 	private String col_name_tips_city = "fm_stat_daily_tips_city";
 	// 季度库
 
-	private String col_name_seasion_block = "tips_season_block_stat";
-	private String col_name_seasion_city = "tips_season_city_stat";
+	public static final String col_name_seasion_block = "tips_season_block_stat";
+	public static final String col_name_seasion_city = "tips_season_city_stat";
 
 	public RoadDailyMain(String dbn, String stat_time) {
 		this.db_name = dbn;

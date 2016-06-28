@@ -137,7 +137,7 @@ public class Operation implements IOperation {
 						breakJson, breakJson.toString());
 				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Process(
 						breakCommand,result,conn);
-				breakProcess.run();
+				breakProcess.innerRun();
 			}
 		}
 	}

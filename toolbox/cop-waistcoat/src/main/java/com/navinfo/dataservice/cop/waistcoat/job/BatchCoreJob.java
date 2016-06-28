@@ -141,7 +141,7 @@ public class BatchCoreJob extends AbstractJob {
 				statement.execute();
 
 				String errInfo = statement.getString(16);
-				if (errInfo.length() == 0) {
+				if (errInfo == null) {
 					batchResult = "批处理准备成功";
 				} else {
 					batchResult = errInfo;

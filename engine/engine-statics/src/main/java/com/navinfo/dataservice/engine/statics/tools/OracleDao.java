@@ -11,8 +11,10 @@ import java.util.Map;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
+import com.navinfo.dataservice.api.man.model.BlockMan;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.util.TimestampUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
@@ -157,6 +159,60 @@ public class OracleDao {
 					List<Integer> list = new ArrayList<Integer>();
 					while (rs.next()) {
 						list.add(rs.getInt("db_id"));
+					}
+					return list;
+				}
+			});
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public static List<BlockMan> getBlockManList() throws ServiceException {
+		Connection conn = null;
+		try {
+			QueryRunner run = new QueryRunner();
+
+			conn = DBConnector.getInstance().getManConnection();
+			String sql = "select * from block_man where latest=1";
+			
+			return run.query(conn, sql, new ResultSetHandler<List<BlockMan>>() {
+
+				@Override
+				public List<BlockMan> handle(ResultSet rs) throws SQLException {
+					List<BlockMan> list = new ArrayList<BlockMan>();
+					while (rs.next()) {
+						BlockMan man = new BlockMan();
+						
+						man.setBlockId(rs.getInt("BLOCK_ID"));
+						
+						man.setBlockManId(rs.getInt("block_man_id"));
+						
+						man.setCollectPlanStartDate(rs.getTimestamp("COLLECT_PLAN_START_DATE"));
+						
+						man.setCollectPlanEndDate(rs.getTimestamp("COLLECT_PLAN_END_DATE"));
+						
+						man.setDayEditPlanStartDate(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE"));
+						
+						man.setDayEditPlanEndDate(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE"));
+						
+						man.setMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE"));
+						
+						man.setMonthEditPlanEndDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE"));
+						
+						man.setDayProducePlanStartDate(rs.getTimestamp("DAY_PRODUCE_PLAN_START_DATE"));
+
+						man.setDayProducePlanEndDate(rs.getTimestamp("DAY_PRODUCE_PLAN_END_DATE"));
+
+						man.setMonthProducePlanStartDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_START_DATE"));
+
+						man.setMonthProducePlanEndDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_END_DATE"));
+
+						list.add(man);
+						
 					}
 					return list;
 				}

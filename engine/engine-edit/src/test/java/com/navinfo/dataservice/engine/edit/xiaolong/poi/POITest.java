@@ -40,7 +40,7 @@ public class POITest extends InitApplication{
 
 			IxPoiSelector selector = new IxPoiSelector(conn);
 
-			IRow jsonObject = selector.loadById(3847439, false);
+			IRow jsonObject = selector.loadById(5651968, false);
 
 			System.out.println(jsonObject.Serialize(ObjLevel.FULL));
 		} catch (Exception e) {

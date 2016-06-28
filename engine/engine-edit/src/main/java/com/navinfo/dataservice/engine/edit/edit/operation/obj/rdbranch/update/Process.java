@@ -33,7 +33,7 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public String exeOperation() throws Exception {
 		// TODO Auto-generated method stub
-		return new Operation(this.getCommand(),this.branch).run(this.getResult());
+		return new Operation(this.getCommand(),this.branch,this.getConn()).run(this.getResult());
 	}
 
 }

@@ -10,13 +10,13 @@ public class GridStatInfo implements Serializable {
 
 	private double finishPoi;
 
-	private double percentPoi;
+	private int percentPoi;
 	
 	private double totalRoad;
 
 	private double finishRoad;
 
-	private double percentRoad;
+	private int percentRoad;
 	
 	private String statDate;
 	
@@ -52,11 +52,11 @@ public class GridStatInfo implements Serializable {
 		this.finishPoi = finishPoi;
 	}
 
-	public double getPercentPoi() {
+	public int getPercentPoi() {
 		return percentPoi;
 	}
 
-	public void setPercentPoi(double percentPoi) {
+	public void setPercentPoi(int percentPoi) {
 		this.percentPoi = percentPoi;
 	}
 
@@ -76,11 +76,11 @@ public class GridStatInfo implements Serializable {
 		this.finishRoad = finishRoad;
 	}
 
-	public double getPercentRoad() {
+	public int getPercentRoad() {
 		return percentRoad;
 	}
 
-	public void setPercentRoad(double percentRoad) {
+	public void setPercentRoad(int percentRoad) {
 		this.percentRoad = percentRoad;
 	}
 

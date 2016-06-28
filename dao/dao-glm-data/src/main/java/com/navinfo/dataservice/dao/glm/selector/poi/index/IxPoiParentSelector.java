@@ -133,7 +133,12 @@ public class IxPoiParentSelector implements ISelector{
 		
 		sb.append(" (SELECT group_id FROM ix_poi_parent where Parent_Poi_Pid =:3))" );
 		
-		sb.append(" FOR update nowait");		
+		if(isLock)
+		{
+			sb.append(" for update nowait");	
+		}
+		
+		System.out.println(sb.toString());
 		
 		PreparedStatement pstmt = null;
 

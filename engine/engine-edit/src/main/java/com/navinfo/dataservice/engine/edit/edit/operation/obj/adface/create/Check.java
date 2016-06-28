@@ -124,7 +124,7 @@ public class Check {
 			if (obj instanceof RdLink){
 				RdLink rdLink = (RdLink)obj;
 				
-				NiValExceptionOperator check = new NiValExceptionOperator(conn, projectId);
+				NiValExceptionOperator check = new NiValExceptionOperator(conn);
 				
 				//获取link中间点
 				Geometry geo = GeoTranslator.transform(rdLink.getGeometry(),0.00001,5);

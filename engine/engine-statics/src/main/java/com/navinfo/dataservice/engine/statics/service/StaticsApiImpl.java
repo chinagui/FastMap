@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.statics.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -8,13 +7,13 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
+import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectMain;
 import com.navinfo.dataservice.engine.statics.poidaily.PoiDailyMain;
 import com.navinfo.dataservice.engine.statics.roadcollect.RoadCollectMain;
 import com.navinfo.dataservice.engine.statics.roaddaily.RoadDailyMain;
-import com.navinfo.navicommons.geo.computation.CompGridUtil;
 
 @Service("staticsApi")
 public class StaticsApiImpl implements StaticsApi {
@@ -53,5 +52,15 @@ public class StaticsApiImpl implements StaticsApi {
 	@Override
 	public Map<Integer, Integer> getExpectStatusByBlocks(Set<Integer> blocks) {
 		return StaticsService.getInstance().getExpectStatusByBlocks(blocks);
+	}
+
+	@Override
+	public List<BlockExpectStatInfo> getExpectStatByBlock(int blockId, int stage, int type) {
+		return StaticsService.getInstance().getExpectStatByBlock(blockId, stage, type);
+	}
+
+	@Override
+	public Map<Integer, Integer> getExpectStatusByCitys(Set<Integer> citys) {
+		return StaticsService.getInstance().getExpectStatusByCitys(citys);
 	}
 }

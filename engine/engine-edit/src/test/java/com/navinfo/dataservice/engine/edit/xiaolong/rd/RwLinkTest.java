@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
@@ -28,13 +29,13 @@ public class RwLinkTest extends InitApplication {
 		try {
 			conn = DBConnector.getInstance().getConnectionById(42);
 
-			String parameter = "{\"type\":\"RWLINK\",\"dbId\":42,\"objId\":33}";
+			String parameter = "{\"type\":\"RWLINK\",\"dbId\":42,\"objId\":100006019}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByCondition(ObjType.RWLINK, jsonReq));
+			System.out.println(p.searchDataByPid(ObjType.RWLINK, 100006019).Serialize(ObjLevel.BRIEF));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -64,7 +65,7 @@ public class RwLinkTest extends InitApplication {
 	@Test//不跨图幅
 	public void testAddRwLink()
 	{
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46778374910355,40.01895481363257],[116.46753162145615,40.018648748942766]]},\"catchLinks\":[]},\"type\":\"RWLINK\"}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.49462997913359,40.00015291028798],[116.49539172649382,40.00005428525468],[116.49646461009979,40.000157019661266]]},\"catchLinks\":[]},\"type\":\"RWLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -90,7 +91,7 @@ public class RwLinkTest extends InitApplication {
 	@Test//更新rw_link_name
 	public void testUpdateRwLink()
 	{
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RWLINK\",\"dbId\":42,\"data\":{\"names\":[{\"linkPid\":100005904,\"rowId\":\"\",\"nameGroupid\":40555592,\"objStatus\":\"INSERT\"}],\"objId\":100005904}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"RWLINK\",\"objId\":100005906,\"data\":{\"names\":[{\"linkPid\":100005906,\"nameGroupid\":0,\"name\":\"北京西路下拉槽\",\"objStatus\":\"INSERT\"}],\"pid\":100005906}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -130,6 +131,19 @@ public class RwLinkTest extends InitApplication {
 	public void testBreakRwLink()
 	{
 		String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100005910,\"data\":{\"longitude\":116.47772530228006,\"latitude\":40.01352131144351},\"type\":\"RWLINK\"}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testCreateRwLinkByLineBreak()
+	{
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":100006280,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.4770722389221,40.0339153893155],[116.47953987121582,40.03479435458311]]},\"catchLinks\":[{\"linkPid\":100006207,\"lon\":116.47953987121582,\"lat\":40.03479435458311}]},\"type\":\"RWLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

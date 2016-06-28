@@ -5,8 +5,6 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import net.sf.json.JSONObject;
-
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
@@ -15,8 +13,8 @@ import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.datahub.service.DatahubApiImpl;
-import com.navinfo.dataservice.engine.edit.export.GdbDataExporter;
 import com.navinfo.dataservice.engine.man.region.RegionService;
+import com.navinfo.dataservice.expcore.snapshot.GdbDataExporter;
 
 public class GdbExportScriptsInterface {
 
@@ -24,39 +22,39 @@ public class GdbExportScriptsInterface {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		
+
 		try {
-			
+
 			String path = args[0];
-			
-			ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(  
-	                new String[] { "dubbo-consumer-4scripts.xml" }); 
+
+			ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+					new String[] { "dubbo-consumer-4scripts.xml" });
 			context.start();
 			new ApplicationContextUtil().setApplicationContext(context);
-			
+
 			List<Region> list = RegionService.getInstance().list();
-			
-			for(Region region : list){
-				
+
+			for (Region region : list) {
+
 				DatahubApiImpl datahub = new DatahubApiImpl();
-				
+
 				DbInfo dbinfo = datahub.getDbById(region.getMonthlyDbId());
-				
+
 				DbConnectConfig connConfig = DbConnectConfig
 						.createConnectConfig(dbinfo.getConnectParam());
-				
+
 				DataSource datasource = MultiDataSourceFactory.getInstance()
-				.getDataSource(connConfig);
-				
+						.getDataSource(connConfig);
+
 				Connection conn = datasource.getConnection();
-				
-				if(!path.endsWith("/")){
+
+				if (!path.endsWith("/")) {
 					path += "/";
 				}
-				
+
 				path += region.getRegionId();
-				
-				GdbDataExporter.exportBaseData2Sqlite(conn, path);
+
+				GdbDataExporter.run(conn, path);
 			}
 
 			System.out.println("Over.");
@@ -64,7 +62,7 @@ public class GdbExportScriptsInterface {
 		} catch (Exception e) {
 			System.out.println("Oops, something wrong...");
 			e.printStackTrace();
-			
+
 		}
 	}
 

@@ -17,8 +17,8 @@ import com.navinfo.dataservice.api.man.model.BlockMan;
 */
 public class Subtask implements Serializable  {
 	private Integer subtaskId ;
-	private String name;
-	private Integer blockId ;
+	private String name ;
+	private Integer blockId;
 	private Integer taskId ;
 	private String geometry ;
 	private Integer stage ;
@@ -28,12 +28,11 @@ public class Subtask implements Serializable  {
 	private Integer exeUserId ;
 	private Integer status ;
 	private Timestamp planStartDate ;
-	private Timestamp planEndDate ;
+	private Timestamp planEndDate;
 	private String descp ;
 	private Block block;
 	private Task task;
-	private BlockMan blockMan;
-//	private String[] gridIds;
+	private BlockMan blockMan ;
 	private List<Integer> gridIds;
 	private Integer dbId ;
 	private Integer groupId;
@@ -154,14 +153,14 @@ public class Subtask implements Serializable  {
 		this.geometry = geometry;
 	}
 	public Integer getStage() {
-		if(null==stage){return 0;}
+//		if(null==stage){return 0;}
 		return stage;
 	}
 	public void setStage(Integer stage) {
 		this.stage = stage;
 	}
 	public Integer getType() {
-		if(null==type){return 0;}
+//		if(null==type){return 0;}
 		return type;
 	}
 	public void setType(Integer type) {
@@ -188,7 +187,7 @@ public class Subtask implements Serializable  {
 		this.exeUserId = exeUserId;
 	}
 	public Integer getStatus() {
-		if(null==status){return 0;}
+//		if(null==status){return 0;}
 		return status;
 	}
 	public void setStatus(Integer status) {

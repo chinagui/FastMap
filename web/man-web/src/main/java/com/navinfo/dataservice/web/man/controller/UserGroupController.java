@@ -31,8 +31,8 @@ import com.navinfo.navicommons.database.Page;
 @Controller
 public class UserGroupController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	@Autowired 
-	private UserGroupService service;
+//	@Autowired 
+//	private UserGroupService service;
 
 	
 	@RequestMapping(value = "/userGroup/create")
@@ -47,7 +47,7 @@ public class UserGroupController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			UserGroup  bean = (UserGroup)JSONObject.toBean(dataJson, UserGroup.class);	
-			service.create(bean);			
+			UserGroupService.getInstance().create(bean);			
 			return new ModelAndView("jsonView", success("创建成功"));
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);
@@ -62,7 +62,7 @@ public class UserGroupController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			UserGroup  bean = (UserGroup)JSONObject.toBean(dataJson, UserGroup.class);
-			service.update(bean);			
+			UserGroupService.getInstance().update(bean);			
 			return new ModelAndView("jsonView", success("修改成功"));
 		}catch(Exception e){
 			log.error("修改失败，原因："+e.getMessage(), e);
@@ -77,7 +77,7 @@ public class UserGroupController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			UserGroup  bean = (UserGroup)JSONObject.toBean(dataJson, UserGroup.class);
-			service.delete(bean);			
+			UserGroupService.getInstance().delete(bean);			
 			return new ModelAndView("jsonView", success("删除成功"));
 		}catch(Exception e){
 			log.error("删除失败，原因："+e.getMessage(), e);
@@ -97,7 +97,7 @@ public class UserGroupController extends BaseController {
 				curPageNum = Integer.parseInt(curPage);
 			}
 			UserGroup  bean = (UserGroup)JSONObject.toBean(dataJson, UserGroup.class);
-			Page data = service.list(bean,curPageNum);			
+			Page data = UserGroupService.getInstance().list(bean,curPageNum);			
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);
@@ -114,7 +114,7 @@ public class UserGroupController extends BaseController {
 			}
 
 			UserGroup  bean = (UserGroup)JSONObject.toBean(dataJson, UserGroup.class);
-			UserGroup  data = service.query(bean);			
+			UserGroup  data = UserGroupService.getInstance().query(bean);			
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("获取明细失败，原因："+e.getMessage(), e);
@@ -137,7 +137,7 @@ public class UserGroupController extends BaseController {
 
 			UserInfo  bean = (UserInfo)JSONObject.toBean(dataJson, UserInfo.class);
 			
-			List<UserGroup> userGroupList = service.listByUser(bean);
+			List<UserGroup> userGroupList = UserGroupService.getInstance().listByUser(bean);
 			
 			List<HashMap<?,?>> data = new ArrayList<HashMap<?,?>>();
 			
@@ -177,12 +177,12 @@ public class UserGroupController extends BaseController {
 			if(snapshot==1){
 				UserGroup  bean = (UserGroup)JSONObject.toBean(dataJson, UserGroup.class);
 				
-				data = service.listByTypeWithUserInfo(bean,snapshot);
+				data = UserGroupService.getInstance().listByTypeWithUserInfo(bean,snapshot);
 
 			}else{
 				UserGroup  bean = (UserGroup)JSONObject.toBean(dataJson, UserGroup.class);
 				
-				List<UserGroup> userGroupList = service.listByType(bean);
+				List<UserGroup> userGroupList = UserGroupService.getInstance().listByType(bean);
 
 				for(int i = 0;i<userGroupList.size();i++){
 					HashMap<String, Comparable> userGroup = new HashMap<String, Comparable>();

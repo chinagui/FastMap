@@ -29,9 +29,9 @@ public class RoadSeasonMain {
 
 	private static Logger log = null;
 	private static CountDownLatch countDownLatch = null;
-	private static final String col_name_grid = "road_season_grid_stat";
-	private static final String col_name_block = "road_season_block_stat";
-	private static final String col_name_city = "road_season_city_stat";
+	public static final String col_name_grid = "road_season_grid_stat";
+	public static final String col_name_block = "road_season_block_stat";
+	public static final String col_name_city = "road_season_city_stat";
 	private String db_name;
 	private String stat_date;
 

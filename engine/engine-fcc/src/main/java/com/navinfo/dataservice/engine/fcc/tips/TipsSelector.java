@@ -284,6 +284,9 @@ public class TipsSelector {
 
 			ArrayList<KeyValue> list = controller.getTipsByRowkey(rowkey);
 			
+			if(list.isEmpty()){
+				throw new Exception("未找到rowkey对应的数据!");
+			}
 
 			json.put("rowkey", rowkey);
 
@@ -752,7 +755,7 @@ public class TipsSelector {
 //		ConfigLoader
 //				.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
 		TipsSelector selector = new TipsSelector();
-		
+		selector.searchDataByRowkey("123");
 //		System.out.println(selector.searchDataByRowkey("0212014bb47de20366413db30504af53243a00"));
 		JSONArray grid = JSONArray
 				.fromObject("[59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");

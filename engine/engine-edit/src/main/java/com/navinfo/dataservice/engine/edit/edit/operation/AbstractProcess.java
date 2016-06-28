@@ -56,9 +56,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	public void initCheckCommand() throws Exception{
 		this.checkCommand.setObjType(this.command.getObjType());
 		this.checkCommand.setOperType(this.command.getOperType());
-		this.checkCommand.setProjectId(this.command.getDbId());
 		//this.checkCommand.setGlmList(this.command.getGlmList());
-		this.checkEngine=new CheckEngine(checkCommand,this.conn,this.command.getDbId());
+		this.checkEngine=new CheckEngine(checkCommand,this.conn);
 	}
 
 	/* (non-Javadoc)
@@ -181,7 +180,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	 */
 	@Override
 	public boolean recordData() throws Exception {
-		LogWriter lw = new LogWriter(conn, this.command.getDbId());
+		LogWriter lw = new LogWriter(conn);
 		lw.generateLog(command, result);
 		OperatorFactory.recordData(conn, result);
 		lw.recordLog(command, result);

@@ -58,6 +58,9 @@ public class SubtaskController extends BaseController {
 			//根据gridIds获取wkt
 			JSONArray gridIds = dataJson.getJSONArray("gridIds");
 			String wkt = GridUtils.grids2Wkt(gridIds);
+			if(wkt.contains("MULTIPOLYGON")){
+				return new ModelAndView("jsonView",exception("请输入符合条件的grids"));
+			}
 			Object[] gridIdList = dataJson.getJSONArray("gridIds").toArray();
 			dataJson.put("gridIds",gridIdList);
 			
@@ -215,13 +218,15 @@ public class SubtaskController extends BaseController {
 			HashMap<String, Object> data = new HashMap<String, Object>();
 			if(subtask!=null&&subtask.getSubtaskId()!=null){
 				data.put("subtaskId", subtask.getSubtaskId());
-				data.put("geometry", subtask.getGeometry());
+//				data.put("geometry", subtask.getGeometry());
 				data.put("stage", subtask.getStage());
 				data.put("type", subtask.getType());
 				data.put("planStartDate", DateUtils.dateToString(subtask.getPlanStartDate()));
 				data.put("planEndDate", DateUtils.dateToString(subtask.getPlanEndDate()));
 				data.put("descp", subtask.getDescp());
+				data.put("name", subtask.getName());
 				data.put("gridIds", subtask.getGridIds());
+				data.put("dbId", subtask.getDbId());
 			}
 			return new ModelAndView("jsonView", success(data));
 			

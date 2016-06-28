@@ -54,7 +54,7 @@ public class LogWriter {
 		
 	}
 
-	public LogWriter(Connection conn, int projectId) throws Exception {
+	public LogWriter(Connection conn) throws Exception {
 		this.conn = conn;
 
 		String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);

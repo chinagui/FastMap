@@ -59,7 +59,6 @@ public class OpTopo implements IOperation {
 	    JSONArray ja1 = new JSONArray();
 		JSONArray ja2 = new JSONArray();
 		boolean hasFound = false;
-		result.setPrimaryPid(command.getLinkPid());
 		log.info("1 获取要打断铁路线的信息 linkPid = "+command.getLinkPid());
 	    RwLink rwLink =(RwLink)new RwLinkSelector(conn).loadById(command.getLinkPid(),true);
 	    log.info("2 删除要打断的铁路线信息");

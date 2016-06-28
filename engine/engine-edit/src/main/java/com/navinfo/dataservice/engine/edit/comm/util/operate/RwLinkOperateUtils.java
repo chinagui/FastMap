@@ -49,8 +49,6 @@ public class RwLinkOperateUtils {
 		
 		link.setPid(PidService.getInstance().applyRwLinkPid());
 
-		System.out.println(link.getPid());
-		
 		result.setPrimaryPid(link.getPid());
 
 		double linkLength = GeometryUtils.getLinkLength(geo);
@@ -242,6 +240,7 @@ public class RwLinkOperateUtils {
 		link.setsNodePid(sNodePid);
 		link.seteNodePid(eNodePid);
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
+		result.setPrimaryPid(link.getPid());
 		return link;
 	}
 	

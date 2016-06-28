@@ -95,6 +95,54 @@ public class CityService {
 		}
 	}
 	
+	public List<HashMap> queryListByAlloc(JSONObject json)throws ServiceException{
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+					
+			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']', ')');
+			
+			String selectSql = "select t.CITY_ID,t.CITY_NAME, t.geometry.get_wkt() as geometry,t.plan_status from CITY t where t.PLAN_STATUS in "+planningStatus
+					+" and SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
+		
+			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
+				public List<HashMap> handle(ResultSet rs) throws SQLException {
+					List<HashMap> list = new ArrayList<HashMap>();
+					while(rs.next()){
+						try {
+							HashMap<String,Object> map = new HashMap<String,Object>();
+							map.put("cityId", rs.getInt("CITY_ID"));
+							map.put("cityName", rs.getString("CITY_NAME"));
+							CLOB clob=(CLOB)rs.getObject("geometry");
+							String clobStr=DataBaseUtils.clob2String(clob);
+							map.put("geometry", Geojson.wkt2Geojson(clobStr));
+							map.put("planningStatus", rs.getInt("plan_status"));
+							map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+							list.add(map);
+						} catch (ParseException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
+					}
+					return list;
+				}
+	    		
+	    	}		;
+
+	    	return run.query(conn, selectSql, rsHandler,json.getString("wkt"));
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 	
 	public HashMap query(JSONObject json)throws ServiceException{
 		Connection conn = null;

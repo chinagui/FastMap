@@ -37,74 +37,49 @@ public class CheckRuleLoader {
 		
 		if (!map.containsKey(ruleCode)) {
 			synchronized(this) {
-				if (!map.containsKey(ruleCode)) {
-					
-					String sql = "select RULE_CODE, RULE_LOG, SEVERITY, RULE_CLASS,ACCESSOR_TYPE,ACCESSOR_NAME,VARIABLES from CK_RULE where RULE_CODE = ? AND RULE_STATUS='E'";
-					
+				if (!map.containsKey(ruleCode)) {					
+					String sql = "SELECT RULE_CODE, RULE_LOG, SEVERITY, PRE_ACCESSOR_NAME,POST_ACCESSOR_TYPE,POST_ACCESSOR_NAME,POST_VARIABLES FROM CK_RULE where RULE_CODE = ? AND RULE_STATUS='E'";
 					PreparedStatement pstmt = null;
-
 					ResultSet resultSet = null;
-
 					Connection conn = null;
-					
 					try {
-
 						conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-
 						pstmt = conn.prepareStatement(sql);
 						pstmt.setString(1,ruleCode);
-
 						resultSet = pstmt.executeQuery();
-
 						if (resultSet.next()) {
-
-							String RULE_CODE = resultSet.getString("RULE_CODE");
-							String RULE_LOG = resultSet.getString("RULE_LOG");	
-							int SEVERITY = resultSet.getInt("SEVERITY");							
-							String CLASS = resultSet.getString("RULE_CLASS");
+							String ruleLog = resultSet.getString("RULE_LOG");	
+							int severity = resultSet.getInt("SEVERITY");							
+							String preAccessorName = resultSet.getString("PRE_ACCESSOR_NAME");
 							//ACCESSOR_TYPE,ACCESSOR_NAME,VARIABLES
-							String ACCESSOR_TYPE = resultSet.getString("ACCESSOR_TYPE");							
-							String ACCESSOR_NAME = resultSet.getString("ACCESSOR_NAME");
-							String VARIABLES = resultSet.getString("VARIABLES");
-	
-							CheckRule myCheckRule = new CheckRule(RULE_CODE,RULE_LOG,SEVERITY,CLASS,ACCESSOR_TYPE,ACCESSOR_NAME,VARIABLES);
-							
-							map.put(ruleCode,myCheckRule);
-					
+							String postAccessorType = resultSet.getString("POST_ACCESSOR_TYPE");							
+							String postAccessorName = resultSet.getString("POST_ACCESSOR_NAME");
+							String postVariables = resultSet.getString("POST_VARIABLES");
+							CheckRule myCheckRule = new CheckRule(ruleCode,ruleLog,severity,preAccessorName,postAccessorType,postAccessorName,postVariables);							
+							map.put(ruleCode,myCheckRule);					
 						} 
 					} catch (Exception e) {
-
 						throw new Exception(e);
-
 					} finally {
 						if (resultSet != null) {
 							try {
 								resultSet.close();
-							} catch (Exception e) {
-
-							}
+							} catch (Exception e) {}
 						}
-
 						if (pstmt != null) {
 							try {
 								pstmt.close();
-							} catch (Exception e) {
-
-							}
+							} catch (Exception e) {}
 						}
-
 						if (conn != null) {
 							try {
 								conn.close();
-							} catch (Exception e) {
-
-							}
+							} catch (Exception e) {}
 						}
 					}
 				}
 			}
 		}
-
 		return map.get(ruleCode);
 	}
 	
@@ -118,9 +93,9 @@ public class CheckRuleLoader {
 		System.out.println("CheckRule.ruleCode:" + myCheckRule.getRuleCode());
 		System.out.println("CheckRule.ruleLog:" + myCheckRule.getRuleLog());
 		System.out.println("CheckRule.severity:" + myCheckRule.getSeverity());
-		System.out.println("CheckRule.ruleClass:" + myCheckRule.getRuleClass());
+		//System.out.println("CheckRule.ruleClass:" + myCheckRule.getRuleClass());
 		
-		myCheckRule.getRuleClass().newInstance();
+		//myCheckRule.getRuleClass().newInstance();
 	}
 	
 	

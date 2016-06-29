@@ -48,7 +48,7 @@ public class Operation implements IOperation {
 	private Result result;
 
 	private boolean selfGscHasUpdate;
-	
+
 	public Operation(Command command, Check check, Connection conn) {
 		this.command = command;
 
@@ -77,38 +77,40 @@ public class Operation implements IOperation {
 
 		this.result = result;
 
-		// link的pid和层级的映射关系:key-》zlevel value:link对象
+		// link的pid和层级的映射关系:key:zlevel value:link对象(pid和线类型)
 		Map<Integer, RdGscLink> linkMap = command.getLinkMap();
 
 		// 立交组成线分两种：1.一条link组成线 2.多条link组成线
 		if (linkMap.size() < 1) {
 			throw new Exception("没有立交组成线");
 		}
-
+		
+		//判断是否自相交
+		isSelfGsc = RdGscOperateUtils.checkIsSelfGsc(linkMap);
+		
 		// 查询数据：1.link_pid和对象map 2.立交组成线几何的集合
 		List<Geometry> linksGeometryList = preParedData();
 
-		if (linkObjMap.size() == 1) {
-			if (linkObjMap.values().size() == 1) {
-				isSelfGsc = true;
-				// 处理自相交立交
-				interGeometry = GeometryUtils.getInterPointFromSelf(linksGeometryList.get(0));
-			}
+		if (isSelfGsc) {
+			// 处理自相交立交交点
+			interGeometry = GeometryUtils.getInterPointFromSelf(linksGeometryList.get(0));
 		} else {
-			// 不同类型要素的多条link相交建立立交
+			// 不同类型要素的多条link相交建立立交计算交点
 			interGeometry = GeometryUtils.getIntersectsGeo(linksGeometryList);
 		}
-		
-		createGsc(linksGeometryList);
-		
+
+		createGsc();
+
 		return null;
 	}
 
-	private void createGsc(List<Geometry> linksGeometryList) throws Exception {
-		
-		List<IRow> rdGscLinks = new ArrayList<IRow>();
+	/**
+	 * 创建立交
+	 * @throws Exception
+	 */
+	private void createGsc() throws Exception {
 
-		Coordinate[] linkCoor = null;
+		List<IRow> rdGscLinks = new ArrayList<IRow>();
 
 		Geometry gscGeo = checkHasInter(interGeometry);
 
@@ -120,62 +122,28 @@ public class Operation implements IOperation {
 
 			RdGscLink gscLink = entry.getValue();
 
-			gscLink.setPid(rdGsc.getPid());
-
-			gscLink.setZlevel(level);
-
+			//row是link对象非Rdgsclink对象
 			IRow row = linkObjMap.get(level);
-
-			if (row instanceof RdLink) {
-				RdLink linkObj = (RdLink) row;
-
-				JSONObject jsonObj = updateLinkGeo(gscLink, linkObj.getGeometry(), gscGeo);
-
-				JSONObject updateContent = new JSONObject();
-
-				updateContent.put("geometry", jsonObj);
-
-				boolean changed = linkObj.fillChangeFields(updateContent);
-
-				if (changed) {
-					result.insertObject(linkObj, ObjStatus.UPDATE, linkObj.pid());
-				}
-				
-				linkCoor = GeoTranslator.geojson2Jts(jsonObj, 100000, 0).getCoordinates();
-			}
-			if (row instanceof RwLink) {
-				RwLink linkObj = (RwLink) row;
-				
-				JSONObject jsonObj = updateLinkGeo(gscLink, linkObj.getGeometry(), gscGeo);				
-				
-				JSONObject updateContent = new JSONObject();
-
-				updateContent.put("geometry", jsonObj);
-
-				boolean changed = linkObj.fillChangeFields(updateContent);
-
-				if (changed) {
-					result.insertObject(linkObj, ObjStatus.UPDATE, linkObj.pid());
-				}
-				
-				linkCoor = GeoTranslator.geojson2Jts(jsonObj, 100000, 0).getCoordinates();
-			}
 			
-			RdGscOperateUtils.calcShpSeqNum(gscGeo, linkCoor);
-			
-			// 更新线上其他立交的形状点号
-			handleOtherGscLink(gscLink, result, linkCoor);
+			//更新立交组成线几何
+			updateLinkGeo(gscLink, row, gscGeo);
 
 			rdGscLinks.add(gscLink);
 		}
 
 		rdGsc.setLinks(rdGscLinks);
-		
+
 		result.setPrimaryPid(rdGsc.getPid());
 
 		result.insertObject(rdGsc, ObjStatus.INSERT, rdGsc.pid());
 	}
-
+	
+	/**
+	 * 立交检查
+	 * @param interGeo
+	 * @return 立交交点
+	 * @throws Exception
+	 */
 	private Geometry checkHasInter(Geometry interGeo) throws Exception {
 		Geometry gscGeo = null;
 
@@ -224,21 +192,78 @@ public class Operation implements IOperation {
 
 	}
 	
-	private JSONObject updateLinkGeo(RdGscLink gscLink,Geometry geometry,Geometry gscGeo) throws Exception
-	{
-		JSONObject jsonObj = null;
+	/**
+	 * 更新组成线link的几何
+	 * @param gscLink
+	 * @param row
+	 * @param gscGeo
+	 * @throws Exception
+	 */
+	private void updateLinkGeo(RdGscLink gscLink, IRow row, Geometry gscGeo) throws Exception {
 		
-		if(isSelfGsc && !selfGscHasUpdate)
-		{
-			jsonObj = RdGscOperateUtils.updateLinkGeoBySelf(gscLink, geometry, gscGeo);
-			
-			selfGscHasUpdate = true;
+		Coordinate[] linkCoor = null;
+		
+		if (row instanceof RdLink) {
+			RdLink linkObj = (RdLink) row;
+
+			JSONObject jsonObj = calcLinkGeo(gscLink, linkObj.getGeometry(), gscGeo);
+
+			JSONObject updateContent = new JSONObject();
+
+			updateContent.put("geometry", jsonObj);
+
+			boolean changed = linkObj.fillChangeFields(updateContent);
+
+			if (changed) {
+				result.insertObject(linkObj, ObjStatus.UPDATE, linkObj.pid());
+			}
+
+			linkCoor = GeoTranslator.geojson2Jts(jsonObj, 100000, 0).getCoordinates();
 		}
-		else
-		{
+		if (row instanceof RwLink) {
+			RwLink linkObj = (RwLink) row;
+
+			JSONObject jsonObj = calcLinkGeo(gscLink, linkObj.getGeometry(), gscGeo);
+
+			JSONObject updateContent = new JSONObject();
+
+			updateContent.put("geometry", jsonObj);
+
+			boolean changed = linkObj.fillChangeFields(updateContent);
+
+			if (changed) {
+				result.insertObject(linkObj, ObjStatus.UPDATE, linkObj.pid());
+			}
+
+			linkCoor = GeoTranslator.geojson2Jts(jsonObj, 100000, 0).getCoordinates();
+			
+		}
+		
+		RdGscOperateUtils.calcShpSeqNum(gscGeo, linkCoor);
+
+		// 更新线上其他立交的形状点号
+		handleOtherGscLink(gscLink, result, linkCoor);
+	}
+	
+	/**
+	 * 根据立交点计算并更新组成线几何
+	 * @param gscLink
+	 * @param geometry
+	 * @param gscGeo
+	 * @return 组成线几何
+	 * @throws Exception
+	 */
+	private JSONObject calcLinkGeo(RdGscLink gscLink, Geometry geometry, Geometry gscGeo) throws Exception {
+		JSONObject jsonObj = null;
+
+		if (isSelfGsc && !selfGscHasUpdate) {
+			jsonObj = RdGscOperateUtils.updateLinkGeoBySelf(gscLink, geometry, gscGeo);
+
+			selfGscHasUpdate = true;
+		} else {
 			jsonObj = RdGscOperateUtils.updateLinkGeo(gscLink, geometry, gscGeo);
 		}
-		
+
 		return jsonObj;
 	}
 }

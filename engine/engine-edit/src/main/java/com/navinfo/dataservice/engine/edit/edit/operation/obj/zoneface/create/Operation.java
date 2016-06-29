@@ -68,7 +68,7 @@ public class Operation implements IOperation {
 		// 既有线构成面
 		if (command.getLinkPids() != null) {
 			// ZONELINK
-			if (command.getLinkType().equals(ObjType.ADLINK.toString())) {
+			if (command.getLinkType().equals(ObjType.ZONELINK.toString())) {
 				this.createFaceByAdLink(command.getLinks());
 			}
 			// RDLINK
@@ -198,7 +198,7 @@ public class Operation implements IOperation {
 		// 如果不跨图幅
 		if (meshes.size() == 1) {
 			// 生成起始node
-			ZoneNode Node = (ZoneNode) NodeOperateUtils.createNode(sPoint.x, sPoint.y,ObjType.ADNODE);
+			ZoneNode Node = (ZoneNode) NodeOperateUtils.createNode(sPoint.x, sPoint.y,ObjType.ZONENODE);
 			result.insertObject(Node, ObjStatus.INSERT, Node.pid());
 			this.createFace();
 			List<ZoneLink> links = new ArrayList<ZoneLink>();

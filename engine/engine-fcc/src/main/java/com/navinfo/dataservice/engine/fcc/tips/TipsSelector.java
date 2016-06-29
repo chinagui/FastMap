@@ -184,6 +184,7 @@ public class TipsSelector {
 					m.put("e", String.valueOf(deep.getInt("dir")));
 				}else if(type == 1111){
 					m.put("c", String.valueOf(deep.getDouble("agl")));
+					m.put("d", String.valueOf(deep.getDouble("value")));
 				}else if(type == 1113){
 					m.put("c", String.valueOf(deep.getDouble("agl")));
 				}else if(type == 1202 ){

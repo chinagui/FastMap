@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.comm.util.operate;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -175,7 +176,32 @@ public class RdGscOperateUtils {
 
 		return flag;
 	}
-
+	
+	/**
+	 * 检查是否自相交立交
+	 * @param linkMap
+	 * @return
+	 */
+	public static boolean checkIsSelfGsc(Map<Integer, RdGscLink> linkMap)
+	{
+		boolean isSelfGsc = false;
+		
+		if(linkMap.size() == 2)
+		{
+			Iterator<RdGscLink> iterator = linkMap.values().iterator();
+			
+			RdGscLink gscLink1 = iterator.next();
+			
+			RdGscLink gscLink2 = iterator.next();
+			
+			if(gscLink1.getLinkPid() == gscLink2.getLinkPid())
+			{
+				isSelfGsc = true;
+			}
+		}
+		return isSelfGsc;
+	}
+	
 	/**
 	 * 更新新建的立交对组成线上对已有的立交的影响
 	 * 
@@ -278,11 +304,23 @@ public class RdGscOperateUtils {
 		return result;
 	}
 
+	/**
+	 * 根据link组成线（rdgsclink），返回lever和link对象(rdlink or rwlink or ...)
+	 * @param gscLinkMap link level和rdgsclink的map
+	 * @param linksGeometryList link的几何集合
+	 * @param conn 数据库链接
+	 * @return lever和link map对象
+	 * @throws Exception
+	 */
 	public static Map<Integer, IRow> handleLink(Map<Integer, RdGscLink> gscLinkMap, List<Geometry> linksGeometryList,
 			Connection conn) throws Exception {
 
 		Map<Integer, IRow> linkMap = new HashMap<>();
-
+		
+		RdLinkSelector linkSelector = new RdLinkSelector(conn);
+		
+		RwLinkSelector rwLinkSelector = new RwLinkSelector(conn);
+		
 		for (Entry<Integer, RdGscLink> rdGscLinkEntry : gscLinkMap.entrySet()) {
 
 			int level = rdGscLinkEntry.getKey();
@@ -295,17 +333,12 @@ public class RdGscOperateUtils {
 
 			switch (type) {
 			case "RDLINK":
-				RdLinkSelector linkSelector = new RdLinkSelector(conn);
 
 				RdLink link = (RdLink) linkSelector.loadById(linkPid, true);
 
 				Geometry geometry = link.getGeometry();
 
 				geometry.setUserData(linkPid);
-
-				Map<Integer, IRow> map = new HashMap<>();
-
-				map.put(link.getPid(), link);
 
 				linksGeometryList.add(geometry);
 
@@ -314,7 +347,6 @@ public class RdGscOperateUtils {
 				linkMap.put(level, link);
 				break;
 			case "RWLINK":
-				RwLinkSelector rwLinkSelector = new RwLinkSelector(conn);
 
 				RwLink rwLink = (RwLink) rwLinkSelector.loadById(linkPid, true);
 
@@ -403,7 +435,7 @@ public class RdGscOperateUtils {
 	}
 
 	/**
-	 * 更新link几何信息
+	 * 更新自相交link几何信息
 	 * 
 	 * @param linkObj
 	 *            link对象
@@ -418,9 +450,7 @@ public class RdGscOperateUtils {
 		// link的几何
 		JSONObject geojson = GeoTranslator.jts2Geojson(linkGeo);
 
-		JSONArray ja1 = null;
-
-		ja1 = RdGscOperateUtils.calCoordinateBySelfInter(geojson, gscGeo);
+		JSONArray ja1 = RdGscOperateUtils.calCoordinateBySelfInter(geojson, gscGeo);
 
 		JSONObject geojson1 = new JSONObject();
 
@@ -437,7 +467,15 @@ public class RdGscOperateUtils {
 
 		return geoJson;
 	}
-
+	
+	/**
+	 * 计算立交点在组成线上的形状点号
+	 * @param rdGscLink
+	 * @param linkGeo
+	 * @param gscGeo
+	 * @param linkCoor
+	 * @throws Exception
+	 */
 	public static void calShpSeqNum(RdGscLink rdGscLink, Geometry linkGeo, Geometry gscGeo,Coordinate[] linkCoor) throws Exception {
 		// 获取link起终点标识
 		int startEndFlag = GeometryUtils.getStartOrEndType(linkGeo, gscGeo);

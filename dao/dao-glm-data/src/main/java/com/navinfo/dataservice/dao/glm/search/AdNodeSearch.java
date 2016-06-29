@@ -79,7 +79,7 @@ public class AdNodeSearch implements ISearch {
 
 				snapshot.setM(m);
 
-				snapshot.setT(18);
+				snapshot.setT(17);
 
 				snapshot.setI(resultSet.getString("node_pid"));
 

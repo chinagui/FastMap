@@ -122,10 +122,6 @@ public class Operation implements IOperation {
 
 			RdGscLink gscLink = entry.getValue();
 
-			gscLink.setPid(rdGsc.getPid());
-
-			gscLink.setZlevel(level);
-
 			//row是link对象非Rdgsclink对象
 			IRow row = linkObjMap.get(level);
 			

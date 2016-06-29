@@ -321,7 +321,6 @@ public class EditController extends BaseController {
 		Connection manConn=null;
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			int dbId = jsonReq.getInt("dbId");
 			int subtaskId=jsonReq.getInt("subtaskId");
 			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 			manConn=DBConnector.getInstance().getManConnection();
@@ -329,21 +328,27 @@ public class EditController extends BaseController {
 			String sql="SELECT E.STATUS, COUNT(1) COUNT_NUM "
 					+ "  FROM POI_EDIT_STATUS E, IX_POI P"
 					+ " WHERE E.ROW_ID = P.ROW_ID"
+					+ "   AND E.STATUS IN (1,2)"
 					+ "   AND SDO_RELATE(P.GEOMETRY, SDO_GEOMETRY('"+subtaskObj.getGeometry()+"', 8307), 'MASK=ANYINTERACT') ="
 					+ "       'TRUE'"
 					+ " GROUP BY E.STATUS";
+			int dbId=subtaskObj.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>(){
 				public JSONObject handle(ResultSet rs) throws SQLException {
 					JSONObject staticsObj=new JSONObject();
+					int total=0;
 					while(rs.next()){
 						staticsObj.put(rs.getInt("STATUS"), rs.getInt("COUNT_NUM"));
+						total+=rs.getInt("COUNT_NUM");
 					}
+					staticsObj.put(4, total);
 					return staticsObj;
 				}	    		
 	    	};		
-	    	QueryRunner run = new QueryRunner();			
-			return new ModelAndView("jsonView", success(run.query(conn, sql,rsHandler)));
+	    	QueryRunner run = new QueryRunner();
+	    	JSONObject resultJson=run.query(conn, sql,rsHandler);
+			return new ModelAndView("jsonView", success(resultJson));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));

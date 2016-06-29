@@ -9,7 +9,6 @@ public class Process extends AbstractProcess<Command> {
 
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
-		// TODO Auto-generated constructor stub
 	}
 
 	private RdGsc rdGsc;
@@ -27,7 +26,6 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
-		// TODO Auto-generated method stub
 		return new Operation(this.getCommand(), rdGsc).run(this.getResult());
 	}
 

@@ -156,7 +156,7 @@ public class ZoneLinkOperateUtils {
 		}
 		List<IRow> kinds = new ArrayList<IRow>();
 		kinds.add(kind);
-		link.setMeshes(kinds);
+		link.setKinds(kinds);
 	}
 
 	/*

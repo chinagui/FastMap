@@ -33,7 +33,7 @@ public class Command extends AbstractCommand {
 
 	@Override
 	public ObjType getObjType() {
-		return ObjType.RDCROSS;
+		return ObjType.RDGSC;
 	}
 
 	@Override
@@ -87,6 +87,8 @@ public class Command extends AbstractCommand {
 				link.setTableName(type);
 				
 				link.setLinkPid(pid);
+				
+				link.setZlevel(level);
 				
 				linkMap.put(level,link);
 				

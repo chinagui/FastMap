@@ -272,8 +272,10 @@ public class SubtaskService {
 						subtask.put("type", rs.getInt("TYPE"));
 						subtask.put("status", rs.getInt("STATUS"));
 						subtask.put("ExeUserId", rs.getInt("EXE_USER_ID"));
-						subtask.put("planStartDate", DateUtils.dateToString(rs.getTimestamp("PLAN_START_DATE")));
-						subtask.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
+//						subtask.put("planStartDate", DateUtils.dateToString(rs.getTimestamp("PLAN_START_DATE")));
+//						subtask.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
+						subtask.put("planStartDate", rs.getTimestamp("PLAN_START_DATE"));
+						subtask.put("planEndDate", rs.getTimestamp("PLAN_END_DATE"));
 						subtask.put("descp", rs.getString("DESCP"));
 						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						if(rs.getInt("group_id")>0){
@@ -289,24 +291,18 @@ public class SubtaskService {
 							subtask.put("blockName", rs.getString("block_name"));
 							//采集
 							if(0 == rs.getInt("STAGE")){
-								subtask.put("BlockCollectPlanStartDate", DateUtils.dateToString(rs
-										.getTimestamp("COLLECT_PLAN_START_DATE")));
-								subtask.put("BlockCollectPlanEndDate",DateUtils.dateToString(rs
-										.getTimestamp("COLLECT_PLAN_END_DATE")));
+								subtask.put("BlockCollectPlanStartDate", rs.getTimestamp("COLLECT_PLAN_START_DATE"));
+								subtask.put("BlockCollectPlanEndDate",rs.getTimestamp("COLLECT_PLAN_END_DATE"));
 							}
 							//日编
 							else if(1 == rs.getInt("STAGE")){
-								subtask.put("BlockDayEditPlanStartDate", DateUtils.dateToString(rs
-										.getTimestamp("DAY_EDIT_PLAN_START_DATE")));
-								subtask.put("BlockDayEditPlanEndDate", DateUtils.dateToString(rs
-										.getTimestamp("DAY_EDIT_PLAN_END_DATE")));
+								subtask.put("BlockDayEditPlanStartDate", rs.getTimestamp("DAY_EDIT_PLAN_START_DATE"));
+								subtask.put("BlockDayEditPlanEndDate", rs.getTimestamp("DAY_EDIT_PLAN_END_DATE"));
 							}
 							//月编
 							else if(2 == rs.getInt("STAGE")){
-								subtask.put("BlockCMonthEditPlanStartDate", DateUtils.dateToString(rs
-										.getTimestamp("MONTH_EDIT_PLAN_START_DATE_b")));
-								subtask.put("BlockCMonthEditPlanEndDate", DateUtils.dateToString(rs
-										.getTimestamp("MONTH_EDIT_PLAN_END_DATE_b")));
+								subtask.put("BlockCMonthEditPlanStartDate", rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE_b"));
+								subtask.put("BlockCMonthEditPlanEndDate", rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE_b"));
 							}
 						}
 						// 与task关联，返回task信息。
@@ -317,10 +313,8 @@ public class SubtaskService {
 							subtask.put("taskName", rs.getString("task_name"));
 							// 月编
 							if(2 == rs.getInt("STAGE")){
-								subtask.put("TaskCMonthEditPlanStartDate", rs
-										.getTimestamp("MONTH_EDIT_PLAN_START_DATE_t"));
-								subtask.put("TaskCMonthEditPlanEndDate", rs
-										.getTimestamp("MONTH_EDIT_PLAN_END_DATE_t"));
+								subtask.put("TaskCMonthEditPlanStartDate", rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE_t"));
+								subtask.put("TaskCMonthEditPlanEndDate", rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE_t"));
 							}
 						}
 

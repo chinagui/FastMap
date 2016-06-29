@@ -54,7 +54,7 @@ public class Operation implements IOperation {
 	}
 
 	private void updateLinkGeomtry(Result result) throws Exception {
-
+		Map<Integer, List<RdLink>> map = new HashMap<Integer, List<RdLink>>();
 		for (RdLink link : command.getLinks()) {
 
 			Geometry geom = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
@@ -118,6 +118,7 @@ public class Operation implements IOperation {
 				result.insertObject(link, ObjStatus.DELETE, link.pid());
 			}
 		}
+		this.map = map;
 	}
 
 	private void updateNodeGeometry(Result result) throws Exception {
@@ -140,9 +141,9 @@ public class Operation implements IOperation {
 
 		// 组装更新线的参数
 		// 保证是同一个连接
-		com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.update.Command updatecommand = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.update.Command(
+		com.navinfo.dataservice.engine.edit.edit.operation.obj.rdnode.update.Command updatecommand = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdnode.update.Command(
 				updateContent, command.getRequester());
-		com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.update.Process process = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.update.Process(
+		com.navinfo.dataservice.engine.edit.edit.operation.obj.rdnode.update.Process process = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdnode.update.Process(
 				updatecommand, result, conn);
 		process.innerRun();
 	}

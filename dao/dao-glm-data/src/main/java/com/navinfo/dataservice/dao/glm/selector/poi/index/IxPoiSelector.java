@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
@@ -228,29 +229,37 @@ public class IxPoiSelector implements ISelector {
 				ixPoi.setParents(ixPoiParentSelector.loadParentRowsByPoiId(id,
 						isLock));
 				
-				int groupId = 0;
-				
 				for (IRow row : ixPoi.getParents()) {
 					IxPoiParent obj = (IxPoiParent) row;
-					
-					groupId = obj.getPid();
 					
 					ixPoi.parentMap.put(obj.getRowId(), obj);
 				}
 				
-				// 设置子表IX_POI_CHILDREN
-				IxPoiChildrenSelector ixPoiChildrenSelector = new IxPoiChildrenSelector(
-						conn);
+				//设置poi的子
+				List<IRow> parent = ixPoiParentSelector.loadRowsByParentId(id, isLock);
 				
-				ixPoi.setChildren(ixPoiChildrenSelector.loadRowsByParentId(groupId,
-						isLock));
+				if(CollectionUtils.isNotEmpty(parent))
+				{
+					int size = parent.size();
+					
+					if(size != 1)
+					{
+						throw new Exception("poi的作为父数据不唯一");
+					}
+					else
+					{
+						IxPoiParent poiParent = (IxPoiParent) parent.get(0);
+						
+						ixPoi.setChildren(poiParent.getPoiChildrens());
 
-				for (IRow row : ixPoi.getChildren()) {
-					IxPoiChildren obj = (IxPoiChildren) row;
+						for (IRow row : ixPoi.getChildren()) {
+							IxPoiChildren obj = (IxPoiChildren) row;
 
-					ixPoi.childrenMap.put(obj.getRowId(), obj);
+							ixPoi.childrenMap.put(obj.getRowId(), obj);
+						}
+					}
 				}
-
+				
 				// 设置子表IX_POI_PARKING
 				IxPoiParkingSelector ixPoiParkingSelector = new IxPoiParkingSelector(
 						conn);

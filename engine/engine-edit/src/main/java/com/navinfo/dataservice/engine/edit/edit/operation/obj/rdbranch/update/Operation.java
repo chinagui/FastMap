@@ -31,10 +31,12 @@ public class Operation implements IOperation {
 
 	private Connection conn;
 
-	public Operation(Command command, RdBranch branch) {
+	public Operation(Command command, RdBranch branch, Connection conn) {
 		this.command = command;
 
 		this.branch = branch;
+
+		this.conn = conn;
 	}
 
 	@Override
@@ -42,7 +44,7 @@ public class Operation implements IOperation {
 
 		JSONObject content = command.getContent();
 
-		//主表是否变化
+		// 主表是否变化
 		if (content.containsKey("objStatus")) {
 
 			if (ObjStatus.DELETE.toString().equals(
@@ -51,12 +53,12 @@ public class Operation implements IOperation {
 
 				return null;
 			} else {
-				
-				updateLinkInfo( content, result);
-				
+
+				updateLinkInfo(content, result);
+
 				boolean isChanged = branch.fillChangeFields(content);
 
-				if (isChanged) {					
+				if (isChanged) {
 					result.insertObject(branch, ObjStatus.UPDATE, branch.pid());
 				}
 			}
@@ -85,20 +87,22 @@ public class Operation implements IOperation {
 
 	/**
 	 * 更新退出线、经过线、关系类型
+	 * 
 	 * @param content
 	 * @param result
 	 * @throws Exception
 	 */
-	private void updateLinkInfo(JSONObject content,Result result) throws Exception {
+	private void updateLinkInfo(JSONObject content, Result result)
+			throws Exception {
 
-		//前台未修改退出线，直接返回
+		// 前台未修改退出线，直接返回
 		if (!content.containsKey("outLinkPid")) {
 			return;
 		}
 
 		int outPid = content.getInt("outLinkPid");
 
-		//前台修改退出线与当前退出线相同，直接返回
+		// 前台修改退出线与当前退出线相同，直接返回
 		if (this.branch.getOutLinkPid() == outPid) {
 			return;
 		}
@@ -108,7 +112,7 @@ public class Operation implements IOperation {
 		int relationShipType = calLinkOperateUtils.getRelationShipType(conn,
 				this.branch.getNodePid(), outPid);
 
-		//前台未修改关系类型且关系类型改变
+		// 前台未修改关系类型且关系类型改变
 		if (this.branch.getRelationshipType() != relationShipType
 				&& !content.containsKey("relationshipType")) {
 
@@ -117,15 +121,14 @@ public class Operation implements IOperation {
 
 		List<Integer> viaLinks = calLinkOperateUtils.calViaLinks(conn,
 				this.branch.getInLinkPid(), this.branch.getNodePid(), outPid);
-		//删除原经过线
-		for(  IRow row : this.branch.getVias())
-		{
+		// 删除原经过线
+		for (IRow row : this.branch.getVias()) {
 			result.insertObject(row, ObjStatus.DELETE, branch.pid());
 		}
-		
+
 		int seqNum = 1;
 
-		//重新设置经过线
+		// 重新设置经过线
 		for (Integer linkPid : viaLinks) {
 			RdBranchVia via = new RdBranchVia();
 
@@ -138,7 +141,7 @@ public class Operation implements IOperation {
 			via.setMesh(this.branch.mesh());
 
 			seqNum++;
-			
+
 			result.insertObject(via, ObjStatus.INSERT, branch.pid());
 		}
 

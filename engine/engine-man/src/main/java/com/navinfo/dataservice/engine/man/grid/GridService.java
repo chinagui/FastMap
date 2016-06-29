@@ -195,7 +195,7 @@ public class GridService {
 
 	}
 
-	public List<HashMap> quryListByAlloc(JSONObject json) throws ServiceException {
+	public List<HashMap> queryListByAlloc(JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
 
@@ -238,7 +238,7 @@ public class GridService {
 	}
 	
 	
-	public List<String> quryListProduce(JSONObject json) throws ServiceException {
+	public List<String> queryListProduce(JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
 
@@ -247,20 +247,10 @@ public class GridService {
 			int type=json.getInt("type");
 			// 根据输入的几何wkt，计算几何包含的gird，
 			Polygon polygon = (Polygon) GeometryUtils.getPolygonByWKT(json.getString("wkt"));
-			Set<?> grids = (Set<?>) CompGeometryUtil.geo2GridsWithoutBreak(polygon);
-
-			String Sql = "select s.grid_id from subtask_grid_mapping s,subtask t where s.subtask_id=t.subtask_id and t.type="+type;
-
-			List<String> gridList = new ArrayList<String>();
-			gridList.addAll((Collection<? extends String>) grids);
-			String InClause = buildInClause("s.grid_id", gridList);
-			
-			PreparedStatement stmt = conn.prepareStatement(Sql+InClause);
-			ResultSet rs = stmt.executeQuery();
+			Set<String> grids = CompGeometryUtil.geo2GridsWithoutBreak(polygon);
 			List<String> gridByType = new ArrayList();
-		
-			while (rs.next()) {
-				gridByType.add(rs.getString(1));
+			for(String grid:grids){
+				gridByType.add(grid);
 			}
 			
 			List<String> gridProduce = new ArrayList();
@@ -275,6 +265,12 @@ public class GridService {
 			
 			for(int i=0;i<GridStatList.size();i++){
 				GridStatInfo statInfo=GridStatList.get(i);
+				int a=1;
+				if(statInfo.getGridId().equals("60563600"))
+				{
+					
+					a++;
+				}
 				if (0==type && statInfo.getPercentPoi()==100){
 					gridProduce.add(statInfo.getGridId());
 				}

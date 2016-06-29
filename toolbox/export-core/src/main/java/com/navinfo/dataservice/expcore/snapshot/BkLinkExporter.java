@@ -1,11 +1,15 @@
 package com.navinfo.dataservice.expcore.snapshot;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
 
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
@@ -14,7 +18,7 @@ import oracle.sql.STRUCT;
 
 public class BkLinkExporter {
 	public static void run(Connection sqliteConn,
-			Statement stmt, Connection conn, String operateDate)
+			Statement stmt, Connection conn, String operateDate, Set<Integer> meshes)
 			throws Exception {
 		// creating a LINESTRING table
 		stmt.execute("create table gdb_bkLine(pid integer primary key)");
@@ -32,11 +36,16 @@ public class BkLinkExporter {
 
 		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
 
-		Statement stmt2 = conn.createStatement();
+		String sql = "select a.link_pid,a.geometry,a.mesh_id,a.kind from rw_link a where a.scale=0 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
 
-		String sql = "select a.link_pid,a.geometry,a.mesh_id,a.kind from rw_link a where a.scale=0 and a.u_record != 2";
+		Clob clob = conn.createClob();
+		clob.setString(1, StringUtils.join(meshes, ","));
 
-		ResultSet resultSet = stmt2.executeQuery(sql);
+		PreparedStatement stmt2 = conn.prepareStatement(sql);
+
+		stmt2.setClob(1, clob);
+		
+		ResultSet resultSet = stmt2.executeQuery();
 
 		resultSet.setFetchSize(5000);
 

@@ -26,73 +26,72 @@ public class DiffJobRequest extends AbstractJobRequest
     private String level = LEVEL_COLUMN; //差分粒度：表级，
     public static final String LEVEL_TABLE = "table";
     public static final String LEVEL_COLUMN = "column";
-    
-    public DiffJobRequest() {
-		super();
-		log = LoggerRepos.getLogger(log);
-	}
-    
-	public String getGdbVersion() {
-		return gdbVersion;
-	}
-	public void setGdbVersion(String gdbVersion) {
-		this.gdbVersion = gdbVersion;
-	}
-	public int getLeftDbId() {
-		return leftDbId;
-	}
-	public void setLeftDbId(int leftDbId) {
-		this.leftDbId = leftDbId;
-	}
-	public int getRightDbId() {
-		return rightDbId;
-	}
-	public void setRightDbId(int rightDbId) {
-		this.rightDbId = rightDbId;
-	}
-	public List<String> getSpecificTables() {
-		return specificTables;
-	}
-	public void setSpecificTables(List<String> specificTables) {
-		this.specificTables = specificTables;
-	}
-	public List<String> getExcludedTables() {
-		return excludedTables;
-	}
-	public void setExcludedTables(List<String> excludedTables) {
-		this.excludedTables = excludedTables;
-	}
-	public int getThreadCount() {
-		return threadCount;
-	}
-	public void setThreadCount(int threadCount) {
-		this.threadCount = threadCount;
-	}
-	public String getLevel() {
-		return level;
-	}
-	public void setLevel(String level) {
-		this.level = level;
-	}
+
 	@Override
-	public void validate() throws JobRuntimeException {
-		// TODO Auto-generated method stub
+	public void defineSubJobRequests() throws JobCreateException {
+		
 	}
-	
+
+	@Override
+	protected int myStepCount() throws JobException {
+		return 3;
+	}
+
 	@Override
 	public String getJobType() {
 		return "diff";
 	}
 
 	@Override
-	public void defineSubJobRequests() throws JobCreateException {
-		// TODO Auto-generated method stub
+	public void validate() throws JobException {
 		
 	}
 
-	@Override
-	protected int myStepCount() throws JobException {
-		// TODO Auto-generated method stub
-		return 3;
+	public int getLeftDbId() {
+		return leftDbId;
+	}
+
+	public void setLeftDbId(int leftDbId) {
+		this.leftDbId = leftDbId;
+	}
+
+	public int getRightDbId() {
+		return rightDbId;
+	}
+
+	public void setRightDbId(int rightDbId) {
+		this.rightDbId = rightDbId;
+	}
+
+	public List<String> getSpecificTables() {
+		return specificTables;
+	}
+
+	public void setSpecificTables(List<String> specificTables) {
+		this.specificTables = specificTables;
+	}
+
+	public List<String> getExcludedTables() {
+		return excludedTables;
+	}
+
+	public void setExcludedTables(List<String> excludedTables) {
+		this.excludedTables = excludedTables;
+	}
+
+	public int getThreadCount() {
+		return threadCount;
+	}
+
+	public void setThreadCount(int threadCount) {
+		this.threadCount = threadCount;
+	}
+
+	public String getLevel() {
+		return level;
+	}
+
+	public void setLevel(String level) {
+		this.level = level;
 	}
 }

@@ -47,7 +47,6 @@ public class DiffJob extends AbstractJob
 	private  Logger log = Logger
 			.getLogger(DiffJob.class);
 
-	private DiffJobRequest diffConfig;
 	private DataAccess leftAccess;
 	private DataAccess rightAccess;
 	private Set<GlmTable> diffTables;
@@ -91,14 +90,15 @@ public class DiffJob extends AbstractJob
 	}
 
 	public void init()throws InitException{
+		DiffJobRequest req = (DiffJobRequest)request;
 		//glmcache中没发现表的主键，使用row_id做主键
 		try{
 			//shcema
 			DatahubApi datahub=(DatahubApi)ApplicationContextUtil.getBean("datahubApi");
-			DbInfo leftDb = datahub.getDbById(diffConfig.getLeftDbId());
+			DbInfo leftDb = datahub.getDbById(req.getLeftDbId());
 			OracleSchema leftSchema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(leftDb.getConnectParam()));
-			DbInfo rightDb = datahub.getDbById(diffConfig.getRightDbId());
+			DbInfo rightDb = datahub.getDbById(req.getRightDbId());
 			OracleSchema rightSchema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(rightDb.getConnectParam()));
 			//安装EQUALS
@@ -116,10 +116,10 @@ public class DiffJob extends AbstractJob
 			gridCalc = new LogGridCalculatorByCrossUser(leftSchema,rightSchema.getConnConfig().getUserName());
 			//diffTables
 			diffTables = new HashSet<GlmTable>();
-			Glm glm = GlmCache.getInstance().getGlm(diffConfig.getGdbVersion());
+			Glm glm = GlmCache.getInstance().getGlm(req.getGdbVersion());
 			
-			List<String> specific = diffConfig.getSpecificTables();
-			List<String> excluded = diffConfig.getExcludedTables();
+			List<String> specific = req.getSpecificTables();
+			List<String> excluded = req.getExcludedTables();
 			if(specific!=null&&specific.size()>0){
 				for(String name:specific){
 					diffTables.add(glm.getEditTables().get(name));
@@ -271,6 +271,7 @@ public class DiffJob extends AbstractJob
 	
 
 	protected void calcLogDetailGrid(){
+		final String gdbVersion = request.getGdbVersion();
 		//初始线程池
 		int poolSize = 10;
 		try {
@@ -293,7 +294,7 @@ public class DiffJob extends AbstractJob
 				@Override
 				public void run() {
 					try{
-						gridCalc.calc(table,diffConfig.getGdbVersion());
+						gridCalc.calc(table,gdbVersion);
 						latch4LogGrid.countDown();
 						log.debug("填充履历grid号完成，表名为：" + table.getName());
 					}catch(Exception e){

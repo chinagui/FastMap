@@ -133,8 +133,8 @@ public class InitRegiondb {
 				JobInfo info4 = new JobInfo(0,"");
 				info4.setType("gdbFullCopy");
 				JSONObject req4 = new JSONObject();
-				req4.put("sourceDbId", fmgdb.getDbId());
-				req4.put("targetDbId", dbDay);
+				req4.put("sourceDbId", dbDay);
+				req4.put("targetDbId", dbMonth);
 				req4.put("featureType", GlmTable.FEATURE_TYPE_ALL);
 				req4.put("gdbVersion", gdbVersion);
 				info4.setRequest(req4);

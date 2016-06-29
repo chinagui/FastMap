@@ -20,6 +20,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkKind;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkMesh;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchOperator;
 import com.vividsolutions.jts.geom.Geometry;
@@ -226,6 +227,11 @@ public class ZoneLinkOperator implements IOperator {
 			ZoneLinkMeshOperator ap = new ZoneLinkMeshOperator(conn, (ZoneLinkMesh) r);
 			ap.insertRow2Sql(stmt);
 		}
+		for (IRow r : zoneLink.getKinds()) {
+			ZoneLinkKindOperator ap = new ZoneLinkKindOperator(conn, (ZoneLinkKind) r);
+			ap.insertRow2Sql(stmt);
+		}
+		
 		
 	}
 

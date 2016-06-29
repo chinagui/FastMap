@@ -1,9 +1,13 @@
 package com.navinfo.dataservice.expcore.snapshot;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
 
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
@@ -16,7 +20,7 @@ import com.vividsolutions.jts.geom.Geometry;
 public class RdGscExporter {
 	
 	public static void run(Connection sqliteConn,
-			Statement stmt, Connection conn, String operateDate)
+			Statement stmt, Connection conn, String operateDate, Set<Integer> meshes)
 			throws Exception {
 		// creating a LINESTRING table
 		stmt.execute("create table gdb_rdLink_gsc(uuid text primary key, gscPid integer)");
@@ -32,11 +36,16 @@ public class RdGscExporter {
 
 		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
 
-		Statement stmt2 = conn.createStatement();
+		String sql = "with tmp1 as  (select pid     from rd_gsc_link a    where a.table_name in ('RD_LINK', 'RW_LINK')    group by pid   having count(1) > 1), tmp2 as  (select a.*, b.geometry, b.mesh_id     from rd_gsc_link a, rd_link b, tmp1 c    where a.link_pid = b.link_pid      and a.pid = c.pid      and a.table_name = 'RD_LINK'), tmp3 as  (select a.*, b.geometry, b.mesh_id     from rd_gsc_link a, rw_link b, tmp1 c    where a.link_pid = b.link_pid      and a.pid = c.pid      and a.table_name = 'RW_LINK') select * from (select *   from tmp2 union all select * from tmp3) where mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
 
-		String oraSql = " with tmp1 as (select pid from rd_gsc_link a where a.table_name in ('RD_LINK','RW_LINK') group by pid having count(1)>1) ,tmp2 as( select a.*, b.geometry, b.mesh_id   from rd_gsc_link a, rd_link b, tmp1 c  where a.link_pid = b.link_pid and a.pid=c.pid    and a.table_name = 'RD_LINK'), tmp3 as (  select a.*, b.geometry, b.mesh_id   from rd_gsc_link a, rw_link b, tmp1 c  where a.link_pid = b.link_pid and a.pid=c.pid    and a.table_name = 'RW_LINK')   select * from tmp2   union all   select * from tmp3";
+		Clob clob = conn.createClob();
+		clob.setString(1, StringUtils.join(meshes, ","));
 
-		ResultSet resultSet = stmt2.executeQuery(oraSql);
+		PreparedStatement stmt2 = conn.prepareStatement(sql);
+
+		stmt2.setClob(1, clob);
+		
+		ResultSet resultSet = stmt2.executeQuery();
 
 		resultSet.setFetchSize(5000);
 

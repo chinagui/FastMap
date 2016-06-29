@@ -37,7 +37,7 @@ public class Command extends AbstractCommand {
 	
 	@Override
 	public ObjType getObjType() {
-		return ObjType.RDCROSS;
+		return ObjType.RDGSC;
 	}
 
 	@Override

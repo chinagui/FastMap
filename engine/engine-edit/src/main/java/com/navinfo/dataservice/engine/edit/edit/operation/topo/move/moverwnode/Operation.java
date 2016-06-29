@@ -58,6 +58,9 @@ public class Operation implements IOperation {
 
 			Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geo);		
 
+			
+			link.setGeometry(geo);	
+			
 			if (meshes.size() == 1) {
 
 				JSONObject updateContent = new JSONObject();
@@ -67,8 +70,6 @@ public class Operation implements IOperation {
 				updateContent.put("length", GeometryUtils.getLinkLength(geo));
 
 				link.fillChangeFields(updateContent);
-
-				link.setGeometry(geo);			
 
 				result.insertObject(link, ObjStatus.UPDATE, link.pid());
 				

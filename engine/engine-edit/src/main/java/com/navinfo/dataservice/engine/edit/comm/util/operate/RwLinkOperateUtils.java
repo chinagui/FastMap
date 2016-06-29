@@ -290,7 +290,7 @@ public class RwLinkOperateUtils {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
 		}
 		if (!maps.containsValue(node.get("e"))) {
-			maps.put(g.getCoordinates()[0], (int) node.get("e"));
+			maps.put(g.getCoordinates()[1], (int) node.get("e"));
 		}
 		//创建线
 		RwLink link = RwLinkOperateUtils.addLink(g, (int) node.get("s"),

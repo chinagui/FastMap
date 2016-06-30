@@ -6,8 +6,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
-import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -56,6 +54,11 @@ public class AdAdminTreeSelector implements ISelector {
 		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 		
 		int  cityAdadminId = manApi.queryAdminIdBySubtask(subtaskId);
+		
+		if(cityAdadminId == 0)
+		{
+			throw new Exception("根据子任务Id"+subtaskId+"获取admin_id失败");
+		}
 
 		AdAdmin adAdmin = adAdminSelector.loadByAdminId(cityAdadminId, isLock);
 

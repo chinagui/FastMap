@@ -128,12 +128,15 @@ public class RdGsc implements IObj  {
 
 	@Override
 	public List<List<IRow>> children() {
-		return null;
+		List<List<IRow>> children = new ArrayList<List<IRow>>();
+		children.add(this.getLinks());
+		return children;
 	}
 
 	@Override
 	public boolean fillChangeFields(JSONObject json) throws Exception {
 		
+		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {

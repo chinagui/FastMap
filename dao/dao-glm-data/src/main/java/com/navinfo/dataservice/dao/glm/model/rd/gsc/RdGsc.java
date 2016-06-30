@@ -128,9 +128,7 @@ public class RdGsc implements IObj  {
 
 	@Override
 	public List<List<IRow>> children() {
-		List<List<IRow>> children = new ArrayList<List<IRow>>();
-		children.add(this.getLinks());
-		return children;
+		return null;
 	}
 
 	@Override

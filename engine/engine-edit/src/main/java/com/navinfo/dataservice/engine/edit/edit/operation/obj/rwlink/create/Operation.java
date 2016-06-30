@@ -15,6 +15,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
+import com.navinfo.dataservice.engine.edit.comm.util.EditUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.RwLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -72,19 +73,7 @@ public class Operation implements IOperation {
 		this.breakLine(result);
 		
 		//往result中设置新增的pid（setPrimaryPid）
-		List<IRow> addObjList = result.getAddObjects();
-		
-		if(CollectionUtils.isNotEmpty(addObjList))
-		{
-			for(IRow row : addObjList)
-			{
-				if(row instanceof RwLink)
-				{
-					result.setPrimaryPid(row.parentPKValue());
-					break;
-				}
-			}
-		}
+		EditUtils.handleResult(RwLink.class, result);
 		
 		return msg;
 	}

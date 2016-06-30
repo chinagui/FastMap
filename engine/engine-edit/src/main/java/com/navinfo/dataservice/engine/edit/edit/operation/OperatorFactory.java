@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkKind;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNodeMesh;
@@ -105,6 +106,7 @@ import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdNodeMeshOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdNodeOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.ZoneFaceOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.ZoneFaceTopoOperator;
+import com.navinfo.dataservice.dao.glm.operator.ad.zone.ZoneLinkKindOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.ZoneLinkMeshOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.ZoneLinkOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.ZoneNodeMeshOperator;
@@ -402,6 +404,8 @@ public class OperatorFactory {
 			return new ZoneFaceTopoOperator(conn, (ZoneFaceTopo)obj);
 		case ZONELINK:
 			return new ZoneLinkOperator(conn, (ZoneLink) obj);
+		case ZONELINKKIND:
+			return new ZoneLinkKindOperator(conn, (ZoneLinkKind) obj);
 		case ZONELINKMESH:
 			return new ZoneLinkMeshOperator(conn, (ZoneLinkMesh) obj);
 		case ZONENODE:

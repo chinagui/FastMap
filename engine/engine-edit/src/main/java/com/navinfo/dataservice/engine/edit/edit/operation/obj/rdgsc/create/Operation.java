@@ -129,9 +129,9 @@ public class Operation implements IOperation {
 			updateLinkGeo(gscLink, row, gscGeo);
 
 			rdGscLinks.add(gscLink);
+			
+			result.insertObject(gscLink, ObjStatus.INSERT, rdGsc.pid());
 		}
-
-		rdGsc.setLinks(rdGscLinks);
 
 		result.setPrimaryPid(rdGsc.getPid());
 

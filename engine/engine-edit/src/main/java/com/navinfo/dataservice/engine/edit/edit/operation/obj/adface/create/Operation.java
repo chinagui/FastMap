@@ -27,6 +27,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.pidservice.PidService;
+import com.navinfo.dataservice.engine.edit.comm.util.EditUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.AdLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.navinfo.navicommons.exception.GeoComputationException;
@@ -96,6 +97,9 @@ public class Operation implements IOperation {
 		if (command.getGeometry() != null) {
 			this.createFaceByGeometry(result);
 		}
+		
+		EditUtils.handleResult(AdFace.class, result);
+		
 		return null;
 	}
 

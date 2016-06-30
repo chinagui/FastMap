@@ -676,7 +676,7 @@ public class SubtaskService {
 	/*
 	 * 关闭多个子任务。 参数：Subtask对象列表，List<Subtask>
 	 */
-	public List<Integer> close(List<Integer> subtaskIdList)
+	public HashMap<Object,Object> close(List<Integer> subtaskIdList)
 			throws ServiceException {
 		Connection conn = null;
 		try {
@@ -688,7 +688,7 @@ public class SubtaskService {
 			List<Subtask> subtaskList = SubtaskOperation
 					.getSubtaskListByIdList(conn, subtaskIdList);
 
-			List<Integer> unClosedSubtaskList = new ArrayList<Integer>();
+			HashMap<Object,Object> unClosedSubtaskList = new HashMap<Object,Object>();
 			List<Integer> closedSubtaskList = new ArrayList<Integer>();
 
 			StaticsApi staticsApi = (StaticsApi) ApplicationContextUtil
@@ -704,8 +704,8 @@ public class SubtaskService {
 						closedSubtaskList
 								.add(subtaskList.get(i).getSubtaskId());
 					} else {
-						unClosedSubtaskList.add(subtaskList.get(i)
-								.getSubtaskId());
+						unClosedSubtaskList.put(subtaskList.get(i)
+								.getSubtaskId(), "subtask内存在未完成作业，subtask无法关闭");
 					}
 				}
 
@@ -718,8 +718,8 @@ public class SubtaskService {
 						closedSubtaskList
 								.add(subtaskList.get(i).getSubtaskId());
 					} else {
-						unClosedSubtaskList.add(subtaskList.get(i)
-								.getSubtaskId());
+						unClosedSubtaskList.put(subtaskList.get(i)
+								.getSubtaskId(), "subtask内存在未完成作业，subtask无法关闭");
 					}
 				}
 
@@ -732,8 +732,8 @@ public class SubtaskService {
 						closedSubtaskList
 								.add(subtaskList.get(i).getSubtaskId());
 					} else {
-						unClosedSubtaskList.add(subtaskList.get(i)
-								.getSubtaskId());
+						unClosedSubtaskList.put(subtaskList.get(i)
+								.getSubtaskId(), "subtask内存在未完成作业，subtask无法关闭");
 					}
 				}
 				

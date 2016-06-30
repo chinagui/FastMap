@@ -304,9 +304,8 @@ public class SubtaskController extends BaseController {
 			
 			JSONArray subtaskIds = dataJson.getJSONArray("subtaskIds");
 			
-			List<Integer> subtaskIdList = (List<Integer>)JSONArray.toCollection(subtaskIds,Integer.class); 
-			
-			List<Integer> unClosedSubtaskList = SubtaskService.getInstance().close(subtaskIdList);
+			List<Integer> subtaskIdList = (List<Integer>)JSONArray.toCollection(subtaskIds,Integer.class);
+			HashMap<Object,Object> unClosedSubtaskList = SubtaskService.getInstance().close(subtaskIdList);
 			
 			if(unClosedSubtaskList.isEmpty()){
 				return new ModelAndView("jsonView", success("关闭成功"));

@@ -344,6 +344,14 @@ public class CompGeometryUtil {
 					if (MeshUtils.meshInFace(cs, mesh)) {
 						grids.addAll(gridIds);
 					} else {
+						
+						//计算被面包含的Grid
+						for(String gridId : gridIds){
+							if(CompGridUtil.gridInFace(cs, gridId)){
+								grids.add(gridId);
+							}
+						}
+						
 						// 计算跟面相交的Grid
 						for (int i = 1; i < coords.length; i++) {
 							double[] line = new double[] { coords[i - 1].x,

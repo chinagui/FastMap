@@ -100,7 +100,7 @@ public class ZoneFaceTopoSelector implements ISelector {
 	public List<IRow> loadRowsByParentId(int id, boolean isLock)
 			throws Exception {
 		StringBuilder sb = new StringBuilder(
-				"SELECT * FROM ad_face_topo  WHERE a.face_pid=:1  and  a.u_record !=2");
+				"SELECT * FROM ad_face_topo a WHERE a.face_pid=:1  and  a.u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");

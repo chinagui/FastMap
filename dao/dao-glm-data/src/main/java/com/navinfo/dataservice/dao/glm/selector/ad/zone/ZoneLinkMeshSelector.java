@@ -125,8 +125,6 @@ public class ZoneLinkMeshSelector implements ISelector{
 
 				ZoneLinkMesh mesh = new ZoneLinkMesh();
 
-				mesh.setLinkPid(resultSet.getInt("node_pid"));
-
 				mesh.setMeshId(resultSet.getInt("mesh_id"));
 
 				mesh.setRowId(resultSet.getString("row_id"));

@@ -17,11 +17,14 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminTreeSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkKindSelector;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
@@ -285,6 +288,18 @@ public class SearchProcess {
 					}
 				}
 				break;
+			case ZONELINK:
+				if (condition.containsKey("nodePid")) {
+					int nodePid = condition.getInt("nodePid");
+					
+					ZoneLinkSelector selector = new ZoneLinkSelector(this.conn);
+					
+					List<ZoneLink> zoneLinks = selector.loadByNodePid(nodePid, true);
+					
+					for (ZoneLink link : zoneLinks) {
+						array.add(link.Serialize(ObjLevel.BRIEF));
+					}
+				}
 			}
 
 			return array;
@@ -296,15 +311,4 @@ public class SearchProcess {
 
 		}
 	}
-	// public static void main(String[] args) throws Exception {
-	// Connection conn = DBConnector.getInstance().getConnectionById(11);
-	// SearchProcess p = new SearchProcess(conn);
-	//
-	// JSONObject condition = new JSONObject();
-	// JSONArray pid = new JSONArray();
-	// pid.add(13474060);
-	// pid.add(13474059);
-	// condition.put("linkPids", pid);
-	// System.out.println(p.searchDataByCondition(ObjType.RDLINK, condition));
-	// }
 }

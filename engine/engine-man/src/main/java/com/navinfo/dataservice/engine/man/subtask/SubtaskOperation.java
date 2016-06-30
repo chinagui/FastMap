@@ -711,9 +711,9 @@ public class SubtaskOperation {
 						subtask.put("name", rs.getString("NAME"));
 						subtask.put("stage", rs.getInt("STAGE"));
 						subtask.put("type", rs.getInt("TYPE"));
-						subtask.put("planStartDate", DateUtils.dateToString(rs
-								.getTimestamp("PLAN_START_DATE")));
-						subtask.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
+						subtask.put("planStartDate", rs
+								.getTimestamp("PLAN_START_DATE"));
+						subtask.put("planEndDate", rs.getTimestamp("PLAN_END_DATE"));
 						subtask.put("descp", rs.getString("DESCP"));
 						subtask.put("status", rs.getInt("STATUS"));
 						
@@ -849,9 +849,8 @@ public class SubtaskOperation {
 						subtask.put("name", rs.getString("NAME"));
 						subtask.put("stage", rs.getInt("STAGE"));
 						subtask.put("type", rs.getInt("TYPE"));
-						subtask.put("planStartDate", DateUtils.dateToString(rs
-								.getTimestamp("PLAN_START_DATE")));
-						subtask.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
+						subtask.put("planStartDate", rs.getTimestamp("PLAN_START_DATE"));
+						subtask.put("planEndDate", rs.getTimestamp("PLAN_END_DATE"));
 						subtask.put("descp", rs.getString("DESCP"));
 						subtask.put("status", rs.getInt("STATUS"));
 						subtask.put("dbId", rs.getString("GEOMETRY"));

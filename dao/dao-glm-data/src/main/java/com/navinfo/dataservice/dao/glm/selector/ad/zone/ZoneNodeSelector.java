@@ -71,8 +71,6 @@ public class ZoneNodeSelector implements ISelector  {
 
 				node.setEditFlag(resultSet.getInt("edit_flag"));
 				
-				node.setMesh(resultSet.getInt("mesh_id"));
-				
 				node.setRowId(resultSet.getString("row_id"));
 
 				// 获取Zone_Node对应的关联数据

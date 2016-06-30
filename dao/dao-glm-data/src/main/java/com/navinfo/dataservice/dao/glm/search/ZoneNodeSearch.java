@@ -43,14 +43,12 @@ public class ZoneNodeSearch implements ISearch {
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt)
 			throws Exception {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public List<SearchSnapshot> searchDataByCondition(String condition)
 			throws Exception {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

@@ -708,13 +708,24 @@ public class SubtaskOperation {
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 						
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
-						subtask.put("name", rs.getString("NAME"));
+//						subtask.put("name", rs.getString("NAME"));
+//						subtask.put("descp", rs.getString("DESCP"));
+						if(rs.getString("NAME") != null){
+							subtask.put("name", rs.getString("NAME"));
+						}else{
+							subtask.put("name", "");
+						}
+						if(rs.getString("descp") != null){
+							subtask.put("descp", rs.getString("DESCP"));
+						}else{
+							subtask.put("descp", "");
+						}
+
 						subtask.put("stage", rs.getInt("STAGE"));
 						subtask.put("type", rs.getInt("TYPE"));
 						subtask.put("planStartDate", rs
 								.getTimestamp("PLAN_START_DATE"));
 						subtask.put("planEndDate", rs.getTimestamp("PLAN_END_DATE"));
-						subtask.put("descp", rs.getString("DESCP"));
 						subtask.put("status", rs.getInt("STATUS"));
 						
 						if (1 == rs.getInt("STAGE")) {
@@ -846,12 +857,22 @@ public class SubtaskOperation {
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 						
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
-						subtask.put("name", rs.getString("NAME"));
+//						subtask.put("name", rs.getString("NAME"));
+//						subtask.put("descp", rs.getString("DESCP"));
+						if(rs.getString("NAME") != null){
+							subtask.put("name", rs.getString("NAME"));
+						}else{
+							subtask.put("name", "");
+						}
+						if(rs.getString("descp") != null){
+							subtask.put("descp", rs.getString("DESCP"));
+						}else{
+							subtask.put("descp", "");
+						}
 						subtask.put("stage", rs.getInt("STAGE"));
 						subtask.put("type", rs.getInt("TYPE"));
 						subtask.put("planStartDate", rs.getTimestamp("PLAN_START_DATE"));
 						subtask.put("planEndDate", rs.getTimestamp("PLAN_END_DATE"));
-						subtask.put("descp", rs.getString("DESCP"));
 						subtask.put("status", rs.getInt("STATUS"));
 						subtask.put("dbId", rs.getString("GEOMETRY"));
 						

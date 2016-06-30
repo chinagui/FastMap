@@ -223,21 +223,18 @@ public class SubtaskService {
 					String key = (String) keys.next();
 					if ("subtaskId".equals(key)) {selectSql+=" and s.SUBTASK_ID="+conditionJson.getInt(key);break;}
 					if ("subtaskName".equals(key)) {	
-						String s = new String(conditionJson.getString(key).getBytes("ISO-8859-1"),"UTF-8");
-						selectSql+=" and s.NAME like '%" + s +"%'";
+						selectSql+=" and s.NAME like '%" + conditionJson.getString(key) +"%'";
 						break;
 					}
 					if ("ExeUserId".equals(key)) {selectSql+=" and s.EXE_USER_ID="+conditionJson.getInt(key);break;}
 					if ("blockName".equals(key)) {
-						String s = new String(conditionJson.getString(key).getBytes("ISO-8859-1"),"UTF-8");
-						selectSql+=" and s.block_id = b.block_id and b.block_name like '%" + s +"%'";
+						selectSql+=" and s.block_id = b.block_id and b.block_name like '%" + conditionJson.getString(key) +"%'";
 						break;
 					}
 					if ("blockId".equals(key)) {selectSql+=" and s.block_id="+conditionJson.getInt(key);break;}
 					if ("taskId".equals(key)) {selectSql+=" and s.task_id="+conditionJson.getInt(key);break;}
 					if ("taskName".equals(key)) {
-						String s = new String(conditionJson.getString(key).getBytes("ISO-8859-1"),"UTF-8");
-						selectSql+=" and s.task_id = t.task_id and t.name like '%" + s +"%'";
+						selectSql+=" and s.task_id = t.task_id and t.name like '%" + conditionJson.getInt(key) +"%'";
 						break;
 					}
 				}
@@ -266,17 +263,26 @@ public class SubtaskService {
 						}
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
-						subtask.put("subtaskName", rs.getString("NAME"));
+//						subtask.put("subtaskName", rs.getString("NAME"));
+//						subtask.put("descp", rs.getString("DESCP"));
+						if(rs.getString("NAME") != null){
+							subtask.put("subtaskName", rs.getString("NAME"));
+						}else{
+							subtask.put("subtaskName", "");
+						}
+						if(rs.getString("descp") != null){
+							subtask.put("descp", rs.getString("DESCP"));
+						}else{
+							subtask.put("descp", "");
+						}
+
 						subtask.put("geometry", rs.getString("GEOMETRY"));
 						subtask.put("stage", rs.getInt("STAGE"));
 						subtask.put("type", rs.getInt("TYPE"));
 						subtask.put("status", rs.getInt("STATUS"));
 						subtask.put("ExeUserId", rs.getInt("EXE_USER_ID"));
-//						subtask.put("planStartDate", DateUtils.dateToString(rs.getTimestamp("PLAN_START_DATE")));
-//						subtask.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
 						subtask.put("planStartDate", rs.getTimestamp("PLAN_START_DATE"));
 						subtask.put("planEndDate", rs.getTimestamp("PLAN_END_DATE"));
-						subtask.put("descp", rs.getString("DESCP"));
 						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						if(rs.getInt("group_id")>0){
 							subtask.put("groupId", rs.getInt("group_id"));
@@ -670,7 +676,7 @@ public class SubtaskService {
 	/*
 	 * 关闭多个子任务。 参数：Subtask对象列表，List<Subtask>
 	 */
-	public List<Integer> close(List<Integer> subtaskIdList)
+	public HashMap<Object,Object> close(List<Integer> subtaskIdList)
 			throws ServiceException {
 		Connection conn = null;
 		try {
@@ -682,7 +688,7 @@ public class SubtaskService {
 			List<Subtask> subtaskList = SubtaskOperation
 					.getSubtaskListByIdList(conn, subtaskIdList);
 
-			List<Integer> unClosedSubtaskList = new ArrayList<Integer>();
+			HashMap<Object,Object> unClosedSubtaskList = new HashMap<Object,Object>();
 			List<Integer> closedSubtaskList = new ArrayList<Integer>();
 
 			StaticsApi staticsApi = (StaticsApi) ApplicationContextUtil
@@ -698,8 +704,8 @@ public class SubtaskService {
 						closedSubtaskList
 								.add(subtaskList.get(i).getSubtaskId());
 					} else {
-						unClosedSubtaskList.add(subtaskList.get(i)
-								.getSubtaskId());
+						unClosedSubtaskList.put(subtaskList.get(i)
+								.getSubtaskId(), "subtask内存在未完成作业，subtask无法关闭");
 					}
 				}
 
@@ -712,8 +718,8 @@ public class SubtaskService {
 						closedSubtaskList
 								.add(subtaskList.get(i).getSubtaskId());
 					} else {
-						unClosedSubtaskList.add(subtaskList.get(i)
-								.getSubtaskId());
+						unClosedSubtaskList.put(subtaskList.get(i)
+								.getSubtaskId(), "subtask内存在未完成作业，subtask无法关闭");
 					}
 				}
 
@@ -726,8 +732,8 @@ public class SubtaskService {
 						closedSubtaskList
 								.add(subtaskList.get(i).getSubtaskId());
 					} else {
-						unClosedSubtaskList.add(subtaskList.get(i)
-								.getSubtaskId());
+						unClosedSubtaskList.put(subtaskList.get(i)
+								.getSubtaskId(), "subtask内存在未完成作业，subtask无法关闭");
 					}
 				}
 				

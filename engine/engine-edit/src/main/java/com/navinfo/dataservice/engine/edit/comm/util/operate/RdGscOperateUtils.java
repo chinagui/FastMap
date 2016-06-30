@@ -186,7 +186,7 @@ public class RdGscOperateUtils {
 	{
 		boolean isSelfGsc = false;
 		
-		if(linkMap.size() == 2)
+		if(linkMap.size() >= 2)
 		{
 			Iterator<RdGscLink> iterator = linkMap.values().iterator();
 			

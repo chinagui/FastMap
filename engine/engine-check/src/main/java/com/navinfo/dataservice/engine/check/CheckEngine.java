@@ -152,46 +152,5 @@ public class CheckEngine {
 		}
 		saveCheckResult(checkResultList);
 		log.info("end postCheck");
-	}
-	
-	public static void main(String[] args) throws Exception{
-		RdLink link=new RdLink();
-		String str= "{ \"type\": \"LineString\",\"coordinates\": [ [116.17659, 39.97508], [116.16144, 39.94844],[116.20427, 39.94322],[116.20427, 39.94322], [116.17659, 39.97508] ]}";
-		JSONObject geometry = JSONObject.fromObject(str);
-		Geometry geometry2=GeoTranslator.geojson2Jts(geometry, 1, 5);
-		link.setGeometry(geometry2);
-		link.setPid(13474047);
-		link.setsNodePid(2);
-		link.seteNodePid(2);
-		
-		Connection conn = DBConnector.getInstance().getConnectionById(42);
-		
-		RdLinkSelector linkSelector = new RdLinkSelector(conn);
-
-		link = (RdLink) linkSelector.loadById(13474047,false);
-		
-		List<IRow> objList=new ArrayList<IRow>();
-		objList.add(link);
-		
-		//检查调用
-		CheckCommand checkCommand=new CheckCommand();
-		checkCommand.setGlmList(objList);
-		checkCommand.setOperType(OperType.UPDATE);
-		checkCommand.setObjType(link.objType());
-		
-		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
-		checkEngine.postCheck();
-		conn.commit();
-		
-//		
-//		GLM01025 glm=new GLM01025();
-//		glm.setConn(conn);
-//		glm.postCheck(checkCommand);	
-//		List<NiValException> checkResultList=glm.getCheckResultList();
-//		for(NiValException ni:checkResultList){
-//			System.out.println(ni.getRuleId());
-//			System.out.println(ni.getLoc());
-//		}
-	}
-	
+	}	
 }

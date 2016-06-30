@@ -15,6 +15,8 @@ import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 
 public class ZoneLinkSearch implements ISearch {
 
@@ -26,8 +28,11 @@ public class ZoneLinkSearch implements ISearch {
 
 	@Override
 	public IObj searchDataByPid(int pid) throws Exception {
+		ZoneLinkSelector selector = new ZoneLinkSelector(conn);
 
-		return null;
+		IObj obj = (IObj) selector.loadById(pid, false);
+		
+		return obj;
 	}
 
 	@Override

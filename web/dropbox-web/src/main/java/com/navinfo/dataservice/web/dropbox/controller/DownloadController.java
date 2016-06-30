@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
-import com.navinfo.dataservice.engine.dropbox.manger.DownloadManager;
+import com.navinfo.dataservice.engine.dropbox.manger.DownloadService;
 
 @Controller
 public class DownloadController extends BaseController {
@@ -32,7 +32,7 @@ public class DownloadController extends BaseController {
 
 			String prjId = json.getString("prjId");
 
-			DownloadManager manager = new DownloadManager();
+			DownloadService manager = DownloadService.getInstance();
 
 			JSONObject data = manager.getBasedata(prjId);
 
@@ -53,7 +53,7 @@ public class DownloadController extends BaseController {
 
 		try {
 
-			DownloadManager manager = new DownloadManager();
+			DownloadService manager = DownloadService.getInstance();
 
 			JSONArray data = manager.getBasedataList();
 
@@ -74,7 +74,7 @@ public class DownloadController extends BaseController {
 
 		try {
 
-			DownloadManager manager = new DownloadManager();
+			DownloadService manager = DownloadService.getInstance();
 
 			JSONArray data = manager.getNdsList();
 
@@ -101,7 +101,7 @@ public class DownloadController extends BaseController {
 
 			String id = json.getString("id");
 
-			DownloadManager manager = new DownloadManager();
+			DownloadService manager = DownloadService.getInstance();
 
 			JSONObject data = manager.getNds(id);
 
@@ -122,7 +122,7 @@ public class DownloadController extends BaseController {
 
 		try {
 
-			DownloadManager manager = new DownloadManager();
+			DownloadService manager = DownloadService.getInstance();
 
 			JSONObject data = manager.getPatternimg();
 
@@ -150,7 +150,7 @@ public class DownloadController extends BaseController {
 			int type = json.getInt("type");
 			String platform=json.getString("platform");
 
-			DownloadManager manager = new DownloadManager();
+			DownloadService manager = DownloadService.getInstance();
 
 			JSONObject data = manager.getAppVersion(type,platform);
 

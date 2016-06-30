@@ -183,7 +183,7 @@ public class Operation implements IOperation {
 					com.navinfo.dataservice.engine.edit.edit.operation.obj.zoneface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.edit.operation.obj.zoneface.create.Operation(result);
 					List<IObj> objs = new ArrayList<IObj>();
 					objs.addAll(links);
-					opFace.createFaceByAdLink(objs);
+					opFace.createFaceByZoneLink(objs);
 					result.insertObject(face, ObjStatus.DELETE, face.getPid());
 				}
 				else{

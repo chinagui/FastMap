@@ -185,6 +185,7 @@ public class TipsSelector {
 				}else if(type == 1111){
 					m.put("c", String.valueOf(deep.getDouble("agl")));
 					m.put("d", String.valueOf(deep.getDouble("value")));
+					m.put("e", String.valueOf(deep.getDouble("se")));
 				}else if(type == 1113){
 					m.put("c", String.valueOf(deep.getDouble("agl")));
 				}else if(type == 1202 ){
@@ -756,6 +757,9 @@ public class TipsSelector {
 //		ConfigLoader
 //				.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
 		TipsSelector selector = new TipsSelector();
+		JSONArray types = new JSONArray();
+		types.add(1515);
+		selector.searchDataByTileWithGap(107946, 49617, 17, 20, types);
 		selector.searchDataByRowkey("123");
 //		System.out.println(selector.searchDataByRowkey("0212014bb47de20366413db30504af53243a00"));
 		JSONArray grid = JSONArray

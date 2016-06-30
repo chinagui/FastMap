@@ -632,7 +632,7 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Process(
 						command);
 			case MOVE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.move.moveadnode.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.move.movezonenode.Process(
 						command);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleteadnode.Process(

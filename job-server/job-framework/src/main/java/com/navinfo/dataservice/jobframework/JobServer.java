@@ -29,7 +29,7 @@ public class JobServer {
 
 	public static void initContext(){
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(  
-                new String[] { "dubbo-consumer-4jobserver.xml" }); 
+                new String[] { "dubbo-app-jobserver.xml,dubbo-jobserver.xml" }); 
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
 		log.info("initialized app context.");

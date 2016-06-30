@@ -70,7 +70,7 @@ public class DiffJob extends AbstractJob
 	}
 	
 	@Override
-	public void execute() {
+	public void execute() throws JobException{
 		try {
 			init();
 			response("差分初始化完成。",null);
@@ -84,6 +84,7 @@ public class DiffJob extends AbstractJob
 			response("完整履历填充完成。",null);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
+			throw new JobException(e.getMessage(),e);
 		}finally {
 			shutDownPoolExecutor();
 		}
@@ -298,6 +299,7 @@ public class DiffJob extends AbstractJob
 						latch4LogGrid.countDown();
 						log.debug("填充履历grid号完成，表名为：" + table.getName());
 					}catch(Exception e){
+						log.debug("填充履历Grid失败，表名为：" + table.getName());
 						throw new ThreadExecuteException("表名："+table.getName()+"差分失败。",e);
 					}
 				}
@@ -309,8 +311,8 @@ public class DiffJob extends AbstractJob
 		} catch (InterruptedException e) {
 			log.warn("线程被打断");
 		}
-		if (logPoolExecutor.getExceptions().size() > 0)
-			throw new ServiceRtException("计算履历grid号时发生异常", logPoolExecutor
+		if (logGridPoolExecutor.getExceptions().size() > 0)
+			throw new ServiceRtException("计算履历grid号时发生异常", logGridPoolExecutor
 					.getExceptions().get(0));
 		log.debug("各计算履历grid号任务执行完成,用时：" + (System.currentTimeMillis() - t) + "ms");
 		//关闭线程池

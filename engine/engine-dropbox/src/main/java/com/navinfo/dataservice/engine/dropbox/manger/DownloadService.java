@@ -9,7 +9,15 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.dropbox.util.DropboxUtil;
 
-public class DownloadManager {
+public class DownloadService {
+	
+	private static class SingletonHolder {
+		private static final DownloadService INSTANCE = new DownloadService();
+	}
+
+	public static DownloadService getInstance() {
+		return SingletonHolder.INSTANCE;
+	}
 
 	public JSONObject getBasedata(String projectId) throws Exception {
 

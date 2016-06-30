@@ -106,7 +106,7 @@ public class JobScriptsInterface {
 	}
 	public static void initContext(){
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(  
-                new String[] { "dubbo-consumer-4scripts.xml" }); 
+                new String[] { "dubbo-app-scripts.xml,dubbo-scripts.xml" }); 
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
 	}

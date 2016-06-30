@@ -146,6 +146,8 @@ public class InitRegiondb {
 				response.put("region_"+key+"_month_exp", "success");
 				installPckUtils(dbMonth);
 				response.put("region_"+key+"_month_utils", "success");
+				//写入dbID
+				insertDbIds(conn,key,dbDay,dbMonth);
 				//更新grid表
 				insertGrids(conn,key);
 				conn.commit();
@@ -218,6 +220,11 @@ public class InitRegiondb {
 	private static void insertGrids(Connection conn,int regionId)throws Exception{
 		String sql = "UPDATE GRID G SET G.REGION_ID=? WHERE TRUNC(G.GRID_ID/100) IN (SELECT P.MESH FROM CP_MESHLIST@METADB_LINK P,CP_REGION_PROVINCE T WHERE P.ADMINCODE=T.ADMINCODE AND T.REGION_ID=?)";
 		new QueryRunner().update(conn, sql, regionId,regionId);
+	}
+
+	private static void insertDbIds(Connection conn,int regionId,int dayDbId,int monthDbId)throws Exception{
+		String sql = "UPDATE REGION SET DAILY_DB_ID=?,MONTHLY_DB_ID=? WHERE REGION_ID=?";
+		new QueryRunner().update(conn, sql,dayDbId,monthDbId,regionId);
 	}
 
 }

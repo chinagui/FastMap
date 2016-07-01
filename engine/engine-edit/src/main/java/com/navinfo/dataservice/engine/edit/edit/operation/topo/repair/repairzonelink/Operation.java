@@ -70,14 +70,20 @@ public class Operation implements IOperation {
 			result.setPrimaryPid(this.command.getUpdateLink().getPid());
 			content.put("geometry", command.getLinkGeom());
 			boolean isChanged = this.command.getUpdateLink().fillChangeFields(content);
+			
+			//需要往map中加入的对象，拷贝command.getUpdateLink()
+			ZoneLink link = new ZoneLink();
 			if (isChanged) {
 				result.insertObject(this.command.getUpdateLink(), ObjStatus.UPDATE,
 						this.command.getLinkPid());
-				this.command.getUpdateLink().setGeometry(GeoTranslator.geojson2Jts(command
+				
+				link.copy(this.command.getUpdateLink());
+				
+				link.setGeometry(GeoTranslator.geojson2Jts(command
 						.getLinkGeom(),100000,0));
 			}
 			
-			links.add(this.command.getUpdateLink());
+			links.add(link);
 		}
 		else {
 			Iterator<String> it = meshes.iterator();
@@ -126,10 +132,10 @@ public class Operation implements IOperation {
 				}
 				if(flag){
 					//如果跨图幅需要重新生成面并且删除原有面信息
-					com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.edit.operation.obj.adface.create.Operation(result);
+					com.navinfo.dataservice.engine.edit.edit.operation.obj.zoneface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.edit.operation.obj.zoneface.create.Operation(result);
 					List<IObj> objs = new ArrayList<IObj>();
 					objs.addAll(links);
-					opFace.createFaceByAdLink(objs);
+					opFace.createFaceByZoneLink(objs);
 					result.insertObject(face, ObjStatus.DELETE, face.getPid());
 				}
 				else{

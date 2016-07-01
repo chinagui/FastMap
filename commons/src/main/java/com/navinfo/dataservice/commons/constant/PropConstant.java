@@ -16,6 +16,8 @@ public class PropConstant {
 	
 	public static final String tipsTableName = "hbase.tablename.tips";
 	
+	public static final String trackLinesTableName = "hbase.tablename.tracklines";
+	
 	public static final String photoTableName = "hbase.tablename.photo";
 	
 	public static final String linkTileTableName = "hbase.tablename.linktile";
@@ -69,4 +71,8 @@ public class PropConstant {
 	public static final String serverUrl = "dropbox.url";
 	
 	public static final String gdbVersion = "gdb.version";
+	
+	public static final String inforUploadUrl = "mapspotter.infor.upload.url";
+	
+	public static final String inforTimeOut = "mapspotter.infor.upload.timeout";
 }

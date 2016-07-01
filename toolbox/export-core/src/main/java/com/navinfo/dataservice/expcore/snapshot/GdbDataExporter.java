@@ -61,8 +61,6 @@ public class GdbDataExporter {
 
 		System.out.println("exporting rdline");
 		
-		String meshstr = org.apache.commons.lang.StringUtils.join(meshes,",");
-
 		RdLinkExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
 
 		System.out.println("exporting rdnode");

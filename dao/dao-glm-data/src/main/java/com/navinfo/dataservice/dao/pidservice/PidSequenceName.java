@@ -81,4 +81,6 @@ public class PidSequenceName {
 	public static final String poiAttractionIdName = "SEQ_POI_ATTRACTION";
 	
 	public static final String poiRestaurantIdName = "SEQ_POI_RESTAURANT";
+	
+	public static final String rdNameIdName = "SEQ_RD_NAME";
 }

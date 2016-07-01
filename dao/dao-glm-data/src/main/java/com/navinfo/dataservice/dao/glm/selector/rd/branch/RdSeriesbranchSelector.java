@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.rd.branch;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
 
 public class RdSeriesbranchSelector implements ISelector {
@@ -55,20 +57,7 @@ public class RdSeriesbranchSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				seriesbranch.setBranchPid(resultSet.getInt("branch_pid"));
-
-				seriesbranch.setType(resultSet.getInt("type"));
-
-				seriesbranch.setVoiceDir(resultSet.getInt("voice_dir"));
-
-				seriesbranch
-						.setPatternCode(resultSet.getString("pattern_code"));
-
-				seriesbranch.setArrowCode(resultSet.getString("arrow_code"));
-
-				seriesbranch.setArrowFlag(resultSet.getInt("arrow_flag"));
-
-				seriesbranch.setRowId(resultSet.getString("row_id"));
+				setAttr(seriesbranch, resultSet);
 			} else {
 
 				throw new DataNotFoundException("数据不存在");
@@ -128,20 +117,7 @@ public class RdSeriesbranchSelector implements ISelector {
 
 				RdSeriesbranch seriesbranch = new RdSeriesbranch();
 
-				seriesbranch.setBranchPid(resultSet.getInt("branch_pid"));
-
-				seriesbranch.setType(resultSet.getInt("type"));
-
-				seriesbranch.setVoiceDir(resultSet.getInt("voice_dir"));
-
-				seriesbranch
-						.setPatternCode(resultSet.getString("pattern_code"));
-
-				seriesbranch.setArrowCode(resultSet.getString("arrow_code"));
-
-				seriesbranch.setArrowFlag(resultSet.getInt("arrow_flag"));
-
-				seriesbranch.setRowId(resultSet.getString("row_id"));
+				setAttr(seriesbranch, resultSet);
 
 				rows.add(seriesbranch);
 			}
@@ -169,6 +145,24 @@ public class RdSeriesbranchSelector implements ISelector {
 		}
 
 		return rows;
+	}
+
+	private void setAttr(RdSeriesbranch seriesbranch, ResultSet resultSet)
+			throws SQLException {
+
+		seriesbranch.setBranchPid(resultSet.getInt("branch_pid"));
+
+		seriesbranch.setType(resultSet.getInt("type"));
+
+		seriesbranch.setVoiceDir(resultSet.getInt("voice_dir"));
+
+		seriesbranch.setPatternCode(resultSet.getString("pattern_code"));
+
+		seriesbranch.setArrowCode(resultSet.getString("arrow_code"));
+
+		seriesbranch.setArrowFlag(resultSet.getInt("arrow_flag"));
+
+		seriesbranch.setRowId(resultSet.getString("row_id"));
 	}
 
 }

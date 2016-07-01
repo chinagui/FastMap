@@ -121,6 +121,8 @@ public class Operation implements IOperation {
 			int level = entry.getKey();
 
 			RdGscLink gscLink = entry.getValue();
+			
+			gscLink.setPid(rdGsc.getPid());
 
 			//row是link对象非Rdgsclink对象
 			IRow row = linkObjMap.get(level);
@@ -129,10 +131,10 @@ public class Operation implements IOperation {
 			updateLinkGeo(gscLink, row, gscGeo);
 
 			rdGscLinks.add(gscLink);
-			
-			result.insertObject(gscLink, ObjStatus.INSERT, rdGsc.pid());
 		}
-
+		
+		rdGsc.setLinks(rdGscLinks);
+		
 		result.setPrimaryPid(rdGsc.getPid());
 
 		result.insertObject(rdGsc, ObjStatus.INSERT, rdGsc.pid());

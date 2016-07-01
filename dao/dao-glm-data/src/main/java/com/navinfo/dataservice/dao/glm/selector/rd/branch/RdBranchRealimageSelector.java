@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.rd.branch;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchName;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchRealimage;
 
 public class RdBranchRealimageSelector implements ISelector {
@@ -55,15 +57,7 @@ public class RdBranchRealimageSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				realimage.setBranchPid(resultSet.getInt("branch_pid"));
-
-				realimage.setImageType(resultSet.getInt("image_type"));
-
-				realimage.setRealCode(resultSet.getString("real_code"));
-
-				realimage.setArrowCode(resultSet.getString("arrow_code"));
-
-				realimage.setRowId(resultSet.getString("row_id"));
+				setAttr(realimage, resultSet);
 			} else {
 
 				throw new DataNotFoundException("数据不存在");
@@ -123,15 +117,7 @@ public class RdBranchRealimageSelector implements ISelector {
 
 				RdBranchRealimage realimage = new RdBranchRealimage();
 
-				realimage.setBranchPid(resultSet.getInt("branch_pid"));
-
-				realimage.setImageType(resultSet.getInt("image_type"));
-
-				realimage.setRealCode(resultSet.getString("real_code"));
-
-				realimage.setArrowCode(resultSet.getString("arrow_code"));
-
-				realimage.setRowId(resultSet.getString("row_id"));
+				setAttr(realimage, resultSet);
 
 				rows.add(realimage);
 			}
@@ -161,4 +147,16 @@ public class RdBranchRealimageSelector implements ISelector {
 		return rows;
 	}
 
+	private void setAttr(RdBranchRealimage realimage, ResultSet resultSet)
+			throws SQLException {
+		realimage.setBranchPid(resultSet.getInt("branch_pid"));
+
+		realimage.setImageType(resultSet.getInt("image_type"));
+
+		realimage.setRealCode(resultSet.getString("real_code"));
+
+		realimage.setArrowCode(resultSet.getString("arrow_code"));
+
+		realimage.setRowId(resultSet.getString("row_id"));
+	}
 }

@@ -92,10 +92,7 @@ public class GdbExportScriptsInterface {
 				path += "/";
 			}
 
-			ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-					new String[] { "dubbo-consumer-4scripts.xml" });
-			context.start();
-			new ApplicationContextUtil().setApplicationContext(context);
+			JobScriptsInterface.initContext();
 
 			Map<Integer, Map<Integer, Set<Integer>>> map = getProvinceMeshList();
 

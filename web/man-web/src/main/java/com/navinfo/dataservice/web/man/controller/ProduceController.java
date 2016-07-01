@@ -10,7 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.api.job.iface.JobApiService;
+import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
@@ -46,7 +46,7 @@ public class ProduceController extends BaseController {
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
 			//long userId=2;
-			JobApiService jobApi=(JobApiService) ApplicationContextUtil.getBean("jobApiService");
+			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			/*
 			 * {"gridIds":[213424,343434,23423432],"stopTime":"yyyymmddhh24miss","dataType":"POI"//POI,ALL}
 			 * jobType:releaseFmIdbDailyJob/releaseFmIdbMonthlyJob
@@ -84,7 +84,7 @@ public class ProduceController extends BaseController {
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
 			//long userId=2;
-			JobApiService jobApi=(JobApiService) ApplicationContextUtil.getBean("jobApiService");
+			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			/*
 			 * {"gridIds":[213424,343434,23423432],"stopTime":"yyyymmddhh24miss","dataType":"POI"//POI,ALL}
 			 * jobType:releaseFmIdbDailyJob/releaseFmIdbMonthlyJob
@@ -121,7 +121,7 @@ public class ProduceController extends BaseController {
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
 			//long userId=2;
-			JobApiService jobApi=(JobApiService) ApplicationContextUtil.getBean("jobApiService");
+			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			/*
 			 * {"gridIds":[213424,343434,23423432],"stopTime":"yyyymmddhh24miss"}
 			 * jobType:releaseFmidbDaily/releaseFmidbMonthly

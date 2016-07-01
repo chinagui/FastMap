@@ -16,7 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.api.job.iface.JobApiService;
+import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -394,7 +394,7 @@ public class EditController extends BaseController {
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
 			//long userId=2;
-			JobApiService apiService=(JobApiService) ApplicationContextUtil.getBean("jobApiService");
+			JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			long jobId=apiService.createJob("editPoiBaseRelease", jobReq, userId, "POI行编提交");	
 			return new ModelAndView("jsonView", success(jobId));
 		} catch (Exception e) {

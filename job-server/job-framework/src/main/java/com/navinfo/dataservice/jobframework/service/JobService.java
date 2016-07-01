@@ -38,7 +38,7 @@ public class JobService {
 		return SingletonHolder.INSTANCE;
 	}
 	
-	public long create(String jobType,JSONObject request,long userId,String descp)throws ServiceException{
+	public int create(String jobType,JSONObject request,long userId,String descp)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
@@ -65,7 +65,7 @@ public class JobService {
 	public List<JobInfo> getAllJob()throws ServiceException{
 		return null;
 	}
-	public JobInfo getJobById(long jobId)throws ServiceException{
+	public JobInfo getJobById(int jobId)throws ServiceException{
 		Connection conn = null;
 		JobInfo jobInfo = null;
 		try{

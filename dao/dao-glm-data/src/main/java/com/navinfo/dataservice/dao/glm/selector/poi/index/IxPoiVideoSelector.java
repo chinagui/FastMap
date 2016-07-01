@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.poi.index;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
 
 
@@ -59,19 +61,10 @@ public class IxPoiVideoSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				video.setPoiPid(resultSet.getInt("poi_pid"));
-
-				video.setVideoId(resultSet.getInt("video_id"));				
+				setAttr(video, resultSet);
 				
-				video.setStatus(resultSet.getString("status"));
-					
-				video.setMemo(resultSet.getString("memo"));	
-
-				video.setRowId(resultSet.getString("row_id"));
-				
-				video.setuDate(resultSet.getString("u_date"));
 			} else {
-				
+
 				throw new DataNotFoundException("数据不存在");
 			}
 		} catch (Exception e) {
@@ -128,17 +121,7 @@ public class IxPoiVideoSelector implements ISelector {
 
 				IxPoiVideo video = new IxPoiVideo();
 
-				video.setPoiPid(resultSet.getInt("poi_pid"));
-
-				video.setVideoId(resultSet.getInt("video_id"));				
-				
-				video.setStatus(resultSet.getString("status"));
-					
-				video.setMemo(resultSet.getString("memo"));	
-
-				video.setRowId(resultSet.getString("row_id"));
-				
-				video.setuDate(resultSet.getString("u_date"));
+				setAttr(video, resultSet);
 
 				rows.add(video);
 			}
@@ -166,6 +149,23 @@ public class IxPoiVideoSelector implements ISelector {
 		}
 
 		return rows;
+	}
+	
+	
+	
+	private void setAttr(IxPoiVideo video,ResultSet resultSet) throws SQLException
+	{
+		video.setPoiPid(resultSet.getInt("poi_pid"));
+
+		video.setVideoId(resultSet.getInt("video_id"));				
+		
+		video.setStatus(resultSet.getString("status"));
+			
+		video.setMemo(resultSet.getString("memo"));	
+
+		video.setRowId(resultSet.getString("row_id"));
+		
+		video.setuDate(resultSet.getString("u_date"));
 	}
 
 }

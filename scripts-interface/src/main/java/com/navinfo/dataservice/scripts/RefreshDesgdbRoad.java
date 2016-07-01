@@ -55,6 +55,7 @@ public class RefreshDesgdbRoad {
 				req1.put("targetDbId", desdb.getDbId());
 				req1.put("featureType", GlmTable.FEATURE_TYPE_ROAD);
 				req1.put("gdbVersion", gdbVersion);
+				req1.put("truncateData", true);
 				info1.setRequest(req1);
 				AbstractJob job1 = JobCreateStrategy.createAsMethod(info1);
 				job1.run();

@@ -154,12 +154,7 @@ public class SubtaskController extends BaseController {
 			
 			Page page = SubtaskService.getInstance().listPage(stage,condition,order,pageSize,curPageNum);
 			
-//			List<?> result=JsonOperation.beanToJsonList((List<?>)page.getResult());
-			List s = new ArrayList();
-			s.add("subtaskName");
-			String[] ss = (String[]) s.toArray(new String[s.size()]);
-
-			List<?> result=JsonOperation.beanToJsonListWithFilter((List<?>)page.getResult(), ss);
+			List<?> result=JsonOperation.beanToJsonList((List<?>)page.getResult());
 
 			page.setResult(result.toArray());
 			

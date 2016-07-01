@@ -346,7 +346,6 @@ public class SubtaskService {
 
 	}
 	
-	
 
 	public List<Subtask> list(int stage, JSONObject conditionJson, JSONObject orderJson, long pageSize,
 			long curPageNum) throws ServiceException {

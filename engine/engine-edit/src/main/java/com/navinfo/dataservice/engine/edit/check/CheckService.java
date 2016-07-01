@@ -5,7 +5,7 @@ import java.util.List;
 
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.api.job.iface.JobApiService;
+import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -47,7 +47,7 @@ public class CheckService {
 		validationRequestJSON.put("grids", grids);
 		validationRequestJSON.put("rules", rules);
 		validationRequestJSON.put("targetDbId", dbId);
-		JobApiService apiService=(JobApiService) ApplicationContextUtil.getBean("jobApiService");
+		JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
 		jobId=apiService.createJob("gdbValidation", validationRequestJSON, userId, "检查");
 		
 		return jobId;

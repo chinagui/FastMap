@@ -3,7 +3,6 @@ package com.navinfo.dataservice.web.job.controller;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -66,10 +65,18 @@ public class JobController extends BaseController {
 	public ModelAndView get(HttpServletRequest request){
 		try{
 			String jobId = URLDecode(request.getParameter("jobId"));
-			if(StringUtils.isEmpty(jobId)){
-				throw new IllegalArgumentException("jobId参数不能为空。");
+			String jobGuid = URLDecode(request.getParameter("jobGuid"));
+			JobInfo jobInfo = null;
+			if(StringUtils.isNotEmpty(jobId)){
+				jobInfo = JobService.getInstance().getJobById(Integer.valueOf(jobId));
+			}else if(StringUtils.isNotEmpty(jobGuid)){
+				jobInfo = JobService.getInstance().getJobByGuid(jobGuid);
+			}else{
+				throw new IllegalArgumentException("jobId或者jobGuid参数不能都为空。");
 			}
-			JobInfo jobInfo = JobService.getInstance().getJobById(Long.valueOf(jobId));
+			if(jobInfo==null){
+				return new ModelAndView("jsonView", fail("未找到该job信息"));
+			}
 			Map<String,Object> data = new HashMap<String,Object>();
 			data.put("jobId", jobInfo.getId());
 			data.put("createTime", DateUtils.dateToString(jobInfo.getCreateTime()));

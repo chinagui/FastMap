@@ -65,6 +65,16 @@
                     <skip>true</skip>
                 </configuration>
             </plugin>
+			<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+				<version>2.3.2</version>
+                <configuration>
+                    <excludes>
+						<exclude>**/dubbo-app-*.xml</exclude>
+					</excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 	

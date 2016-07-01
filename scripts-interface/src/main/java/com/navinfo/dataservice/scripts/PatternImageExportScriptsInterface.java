@@ -12,7 +12,7 @@ public class PatternImageExportScriptsInterface {
 		try {
 
 			String path = args[0];
-
+			JobScriptsInterface.initContext();
 			PatternImageExporter exporter = new PatternImageExporter();
 
 			exporter.export2Sqlite(path);

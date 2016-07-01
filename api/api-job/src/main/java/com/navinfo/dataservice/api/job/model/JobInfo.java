@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.api.job.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -12,7 +13,7 @@ import net.sf.json.JSONObject;
 * @date 2016年3月25日 下午4:04:34 
 * @Description: 不属于任何
 */
-public class JobInfo {
+public class JobInfo implements Serializable{
 	private int id;
 	private String type;
 	private Date createTime;

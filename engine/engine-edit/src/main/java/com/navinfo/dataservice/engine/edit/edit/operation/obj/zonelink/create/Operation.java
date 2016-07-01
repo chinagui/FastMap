@@ -12,6 +12,9 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
+import com.navinfo.dataservice.engine.edit.comm.util.EditUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.ZoneLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -62,6 +65,8 @@ public class Operation implements IOperation {
 		//挂接的线被打断的操作
 		this.breakLine(result);
         
+		EditUtils.handleResult(ZoneLink.class, result);
+		
 		return msg;
 	}
 	/*

@@ -76,7 +76,7 @@ public class Command extends AbstractCommand {
 			{
 				JSONObject linkObj = linkAttrArray.getJSONObject(i);
 				
-				int level = linkObj.getInt("level_index");
+				int level = linkObj.getInt("zlevel");
 				
 				int pid = linkObj.getInt("pid");
 				

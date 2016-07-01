@@ -26,6 +26,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.pidservice.PidService;
+import com.navinfo.dataservice.engine.edit.comm.util.EditUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.ZoneLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -69,7 +70,7 @@ public class Operation implements IOperation {
 		if (command.getLinkPids() != null) {
 			// ZONELINK
 			if (command.getLinkType().equals(ObjType.ZONELINK.toString())) {
-				this.createFaceByAdLink(command.getLinks());
+				this.createFaceByZoneLink(command.getLinks());
 			}
 			// RDLINK
 			if (command.getLinkType().equals(ObjType.RDLINK.toString())) {
@@ -81,13 +82,17 @@ public class Operation implements IOperation {
 					zoneLinks.add(this.createLinkOfFace(GeoTranslator.transform(
 							link.getGeometry(), 0.00001, 5), maps));
 				}
-				this.createFaceByAdLink(zoneLinks);
+				this.createFaceByZoneLink(zoneLinks);
 			}
 		}
 		// 创建
 		if (command.getGeometry() != null) {
 			this.createFaceByGeometry(result);
 		}
+		
+		//设置返回的外层pid为face的pid
+		EditUtils.handleResult(ZoneFace.class, result);
+		
 		return null;
 	}
 
@@ -98,7 +103,7 @@ public class Operation implements IOperation {
 	 *            传入要创建面的几何
 	 * @throws Exception
 	 */
-	public  void createFaceByAdLink(List<IObj> objList) throws Exception {
+	public  void createFaceByZoneLink(List<IObj> objList) throws Exception {
 		List<Geometry> list = new ArrayList<Geometry>();
 		Set<String> meshes = new HashSet<String>();
 		List<ZoneLink> zoneLinks = new ArrayList<ZoneLink>();

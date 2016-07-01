@@ -7,7 +7,7 @@ xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
 
 	<dubbo:reference id="datahubApi" interface="com.navinfo.dataservice.api.datahub.iface.DatahubApi" />
 	<dubbo:reference id="manApi" interface="com.navinfo.dataservice.api.man.iface.ManApi" />
-	<dubbo:reference id="jobApiService" interface="com.navinfo.dataservice.api.job.iface.JobApiService" />
+	<dubbo:reference id="jobApi" interface="com.navinfo.dataservice.api.job.iface.JobApi" />
 	
 	<dubbo:service interface="com.navinfo.dataservice.api.edit.iface.DatalockApi" ref="datalockApi" />  
 	

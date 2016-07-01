@@ -3,18 +3,15 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.rwlink.create;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.collections.CollectionUtils;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
+import com.navinfo.dataservice.engine.edit.comm.util.EditUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.RwLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -72,19 +69,7 @@ public class Operation implements IOperation {
 		this.breakLine(result);
 		
 		//往result中设置新增的pid（setPrimaryPid）
-		List<IRow> addObjList = result.getAddObjects();
-		
-		if(CollectionUtils.isNotEmpty(addObjList))
-		{
-			for(IRow row : addObjList)
-			{
-				if(row instanceof RwLink)
-				{
-					result.setPrimaryPid(row.parentPKValue());
-					break;
-				}
-			}
-		}
+		EditUtils.handleResult(RwLink.class, result);
 		
 		return msg;
 	}

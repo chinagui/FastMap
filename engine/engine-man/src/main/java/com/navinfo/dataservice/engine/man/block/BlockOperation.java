@@ -114,7 +114,7 @@ public class BlockOperation {
 		}
 	}
 
-	public static List<HashMap> queryBlockByGroup(Connection conn, String selectSql, List<Object> values)
+	public static List<HashMap> queryBlockByGroup(Connection conn, String selectSql, int stage)
 			throws Exception {
 		try {
 			QueryRunner run = new QueryRunner();
@@ -124,9 +124,17 @@ public class BlockOperation {
 					while (rs.next()) {
 						HashMap map = new HashMap<String, Integer>();
 						map.put("blockId", rs.getInt("BLOCK_ID"));
-						map.put("planStartDate", rs.getDate("planStartDate"));
-						map.put("planEndDate", rs.getDate("planEndDate"));
-						map.put("descp", rs.getString("DESCP"));
+						map.put("cityId", rs.getInt("CITY_ID"));
+						map.put("blockName", rs.getString("BLOCK_NAME"));
+						CLOB clob = (CLOB) rs.getObject("GEOMETRY");
+						String clobStr = DataBaseUtils.clob2String(clob);
+						try {
+							map.put("geometry", Geojson.wkt2Geojson(clobStr));
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						map.put("planStatus", rs.getInt("PLAN_STATUS"));
 
 						list.add(map);
 					}
@@ -134,10 +142,8 @@ public class BlockOperation {
 				}
 
 			};
-			if (null == values || values.size() == 0) {
-				return run.query(conn, selectSql, rsHandler);
-			}
-			return run.query(conn, selectSql, rsHandler, values.toArray());
+			
+			return run.query(conn, selectSql, rsHandler, stage);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

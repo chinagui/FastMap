@@ -16,6 +16,8 @@ public class PropConstant {
 	
 	public static final String tipsTableName = "hbase.tablename.tips";
 	
+	public static final String trackLinesTableName = "hbase.tablename.tracklines";
+	
 	public static final String photoTableName = "hbase.tablename.photo";
 	
 	public static final String linkTileTableName = "hbase.tablename.linktile";

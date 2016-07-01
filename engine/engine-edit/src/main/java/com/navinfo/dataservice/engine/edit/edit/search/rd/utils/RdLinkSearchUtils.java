@@ -37,12 +37,12 @@ public class RdLinkSearchUtils {
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 		List<RdLink> tracks = new ArrayList<RdLink>();
 		//添加当前选中的link
-		RdLink fristLink = (RdLink) linkSelector.loadById(cuurentLinkPid, true);
+		RdLink fristLink = (RdLink) linkSelector.loadByIdOnlyRdLink(cuurentLinkPid, true);
 		tracks.add(fristLink);
 		//查找当前link联通的links
 		List<RdLink> nextLinks = linkSelector.loadTrackLink(cuurentLinkPid,
 				cruuentNodePidDir, true);
-		while (nextLinks.size() > 0 && tracks.size() <= 999) {
+		while (nextLinks.size() > 0) {
 			//加载当前link
 			RdLink currentLink = (RdLink) linkSelector.loadById(cuurentLinkPid,
 					true);
@@ -72,15 +72,10 @@ public class RdLinkSearchUtils {
 			//赋值给当前cuurentLinkPid 确定方向
 			RdLink link = map.values().iterator().next();
 			cuurentLinkPid = link.getPid();
-			if (link.getDirect() == 2) {
-				cruuentNodePidDir = link.geteNodePid();
-			}
-			if (link.getDirect() == 3) {
-				cruuentNodePidDir = link.getsNodePid();
-			}
-			if (link.getDirect() == 1) {
-				cruuentNodePidDir = (cruuentNodePidDir == link.getsNodePid()) ? link
+			cruuentNodePidDir = (cruuentNodePidDir == link.getsNodePid()) ? link
 						.geteNodePid() : link.getsNodePid();
+			if(tracks.size() >= 999||tracks.contains(link)){
+				break;
 			}
 			tracks.add(link);
 			//赋值查找下一组联通links

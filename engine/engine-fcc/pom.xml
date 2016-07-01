@@ -60,5 +60,9 @@
             </exclusion>
         </exclusions>
 	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>api-metadata</artifactId>
+	</dependency>
   </dependencies>
 </project>

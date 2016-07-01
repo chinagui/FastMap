@@ -36,7 +36,7 @@ public class RdGscLinkOperator implements IOperator{
 		String sql = "insert into " + gscLink.tableName()
 				+ " (pid, zlevel, link_pid, table_name, shp_seq_num, "
 				+ "start_end, u_record, row_id) values "
-				+ "(?,?,?,?,?,?,?,?,?)";
+				+ "(?,?,?,?,?,?,?,?)";
 
 		PreparedStatement pstmt = null;
 
@@ -45,17 +45,19 @@ public class RdGscLinkOperator implements IOperator{
 
 			pstmt.setInt(1, gscLink.getPid());
 
-			pstmt.setInt(2, gscLink.getLinkPid());
+			pstmt.setInt(2, gscLink.getZlevel());
+			
+			pstmt.setInt(3, gscLink.getLinkPid());
 
-			pstmt.setString(3, gscLink.getTableName().toUpperCase());
+			pstmt.setString(4, gscLink.getTableName().toUpperCase());
 
-			pstmt.setInt(4, gscLink.getShpSeqNum());
+			pstmt.setInt(5, gscLink.getShpSeqNum());
 
-			pstmt.setInt(5, gscLink.getStartEnd());
+			pstmt.setInt(6, gscLink.getStartEnd());
 
-			pstmt.setInt(6,1);
+			pstmt.setInt(7,1);
 
-			pstmt.setString(7, gscLink.rowId());
+			pstmt.setString(8, gscLink.rowId());
 
 			pstmt.executeUpdate();
 

@@ -219,12 +219,6 @@ public class IxPoiRestaurantOperator implements IOperator {
 		sb.append(ixPoiRestaurant.getPid());
 		sb.append("," + ixPoiRestaurant.getPoiPid());
 
-		if (StringUtils.isNotEmpty(ixPoiRestaurant.getCreditCard())) {
-			sb.append(",'" + ixPoiRestaurant.getCreditCard() + "'");
-		} else {
-			sb.append(", null ");
-		}
-
 		if (StringUtils.isNotEmpty(ixPoiRestaurant.getFoodType())) {
 			sb.append(",'" + ixPoiRestaurant.getFoodType() + "'");
 		} else {

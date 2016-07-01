@@ -109,5 +109,15 @@ public class IxPoiTest extends InitApplication{
 		}
 	}
 	
-	
+	@Test
+	public void UpdatePoi0701_1(){
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":24674,\"data\":{\"poiMemo\":\"1\",\"rowId\":\"3524E56B583F6E1AE050A8C08304BA17\",\"pid\":24674,\"objStatus\":\"UPDATE\",\"gasstations\":[{\"pid\":0,\"fuelType\":\"\",\"oilType\":\"\",\"egType\":\"\",\"mgType\":\"\",\"payment\":\"\",\"service\":\"\",\"objStatus\":\"INSERT\"}],\"hotels\":[{\"pid\":0,\"poiPid\":0,\"rating\":0,\"checkinTime\":\"14:00\",\"checkoutTime\":\"12:00\",\"roomCount\":0,\"breakfast\":0,\"parking\":0,\"travelguideFlag\":0,\"objStatus\":\"INSERT\"}],\"restaurants\":[{\"pid\":0,\"poiPid\":0,\"foodType\":\"\",\"creditCard\":\"\",\"avgCost\":0,\"parking\":0,\"travelguideFlag\":0,\"objStatus\":\"INSERT\"}],\"parkings\":[{\"pid\":0,\"tollStd\":\"\",\"tollWay\":\"\",\"remark\":\"\",\"resHigh\":0,\"resWidth\":0,\"resWeigh\":0,\"certificate\":0,\"vehicle\":0,\"rowId\":\"\",\"objStatus\":\"INSERT\"}]}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

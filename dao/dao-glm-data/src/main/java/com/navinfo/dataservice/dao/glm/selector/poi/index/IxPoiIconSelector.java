@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.poi.index;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,12 +20,12 @@ import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * POI图标(3DICON)表 查询
+ * 
  * @author luyao
- *
+ * 
  */
 public class IxPoiIconSelector implements ISelector {
 
-	
 	private static Logger logger = Logger.getLogger(IxPoiIconSelector.class);
 
 	private Connection conn;
@@ -33,12 +34,13 @@ public class IxPoiIconSelector implements ISelector {
 		super();
 		this.conn = conn;
 	}
+
 	@Override
 	public IRow loadById(int id, boolean isLock) throws Exception {
 		IxPoiIcon icon = new IxPoiIcon();
 
-		StringBuilder sb = new StringBuilder(
-				 "select * from " + icon.tableName() + " WHERE rel_id = :1 and  u_record !=2");
+		StringBuilder sb = new StringBuilder("select * from "
+				+ icon.tableName() + " WHERE rel_id = :1 and  u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -61,7 +63,7 @@ public class IxPoiIconSelector implements ISelector {
 				icon.setPoiPid(resultSet.getInt("poi_pid"));
 
 				icon.setIconName(resultSet.getString("icon_name"));
-				
+
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
 				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
@@ -69,13 +71,13 @@ public class IxPoiIconSelector implements ISelector {
 				icon.setGeometry(geometry);
 
 				icon.setManageCode(resultSet.getString("manage_code"));
-				
+
 				icon.setClientFlag(resultSet.getString("client_flag"));
-				
+
 				icon.setMemo(resultSet.getString("memo"));
-				
+
 				icon.setRowId(resultSet.getString("row_id"));
-				
+
 				icon.setuDate(resultSet.getString("u_date"));
 
 				return icon;
@@ -111,7 +113,8 @@ public class IxPoiIconSelector implements ISelector {
 	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
 		IxPoiIcon icon = new IxPoiIcon();
 
-		String sql = "select * from " + icon.tableName() + " where row_id=hextoraw(:1)";
+		String sql = "select * from " + icon.tableName()
+				+ " where row_id=hextoraw(:1)";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -130,34 +133,14 @@ public class IxPoiIconSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				icon.setPid(resultSet.getInt("rel_id"));
-
-				icon.setPoiPid(resultSet.getInt("poi_pid"));
-
-				icon.setIconName(resultSet.getString("icon_name"));
-				
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
-				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
-
-				icon.setGeometry(geometry);
-
-				icon.setManageCode(resultSet.getString("manage_code"));
-				
-				icon.setClientFlag(resultSet.getString("client_flag"));
-				
-				icon.setMemo(resultSet.getString("memo"));
-				
-				icon.setRowId(resultSet.getString("row_id"));
-				
-				icon.setuDate(resultSet.getString("u_date"));
+				setAttr(icon, resultSet);
 
 			} else {
-				
+
 				throw new DataNotFoundException("数据不存在");
 			}
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -166,7 +149,7 @@ public class IxPoiIconSelector implements ISelector {
 					resultSet.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 			try {
@@ -174,7 +157,7 @@ public class IxPoiIconSelector implements ISelector {
 					pstmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
@@ -210,33 +193,12 @@ public class IxPoiIconSelector implements ISelector {
 
 				IxPoiIcon icon = new IxPoiIcon();
 
-				icon.setPid(resultSet.getInt("rel_id"));
-
-				icon.setPoiPid(resultSet.getInt("poi_pid"));
-
-				icon.setIconName(resultSet.getString("icon_name"));
-				
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
-				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
-
-				icon.setGeometry(geometry);
-
-				icon.setManageCode(resultSet.getString("manage_code"));
-				
-				icon.setClientFlag(resultSet.getString("client_flag"));
-				
-				icon.setMemo(resultSet.getString("memo"));
-				
-				icon.setRowId(resultSet.getString("row_id"));
-				
-				icon.setuDate(resultSet.getString("u_date"));
-
+				setAttr(icon, resultSet);
 
 				rows.add(icon);
 			}
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -245,7 +207,7 @@ public class IxPoiIconSelector implements ISelector {
 					resultSet.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 			try {
@@ -253,12 +215,36 @@ public class IxPoiIconSelector implements ISelector {
 					pstmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
 
 		return rows;
+	}
+
+	private void setAttr(IxPoiIcon icon, ResultSet resultSet) throws Exception {
+		icon.setPid(resultSet.getInt("rel_id"));
+
+		icon.setPoiPid(resultSet.getInt("poi_pid"));
+
+		icon.setIconName(resultSet.getString("icon_name"));
+
+		STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+		Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
+
+		icon.setGeometry(geometry);
+
+		icon.setManageCode(resultSet.getString("manage_code"));
+
+		icon.setClientFlag(resultSet.getString("client_flag"));
+
+		icon.setMemo(resultSet.getString("memo"));
+
+		icon.setRowId(resultSet.getString("row_id"));
+
+		icon.setuDate(resultSet.getString("u_date"));
 	}
 
 }

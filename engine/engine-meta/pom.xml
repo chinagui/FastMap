@@ -86,5 +86,9 @@
 	       <artifactId>dubbo</artifactId>
 			<scope>test</scope>
 	   </dependency>
+	   <dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>dao-glm-data</artifactId>
+	</dependency>
   </dependencies>
 </project>

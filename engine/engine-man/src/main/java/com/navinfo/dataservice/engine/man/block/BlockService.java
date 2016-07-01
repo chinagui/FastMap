@@ -260,26 +260,20 @@ public class BlockService {
 
 			JSONArray groupIds = json.getJSONArray("groupIds");
 			String groups = ((groupIds.toString()).replace('[', '(')).replace(']', ')');
-
-			Format format = new SimpleDateFormat("yyyyMMdd");
-			String time = format.format(DateUtilsEx.getCurDate());
+			
+			selectSql = "select b.BLOCK_ID,b.CITY_ID, b.BLOCK_NAME, b.GEOMETRY.get_wkt() as GEOMETRY,"
+					+ " b.PLAN_STATUS from block_man t,block b,task k,subtask s where t.block_id=b.block_id and b.city_id=k.city_id and k.task_id=s.task_id and t.latest=1 and k.latest=1 and s.stage=? ";
 
 			if (0 == stage) {
-				selectSql = "select t.BLOCK_ID,t.COLLECT_PLAN_START_DATE as planStartDate,t.COLLECT_PLAN_END_DATE as planEndDate,t.DESCP from block_man t where t.COLLECT_PLAN_END_DATE>=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.COLLECT_PLAN_START_DATE <=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') "
-						+ "and t.COLLECT_GROUP_ID in " + groups;
+				selectSql += "and t.COLLECT_GROUP_ID in " + groups;
+						
 			} else if (1 == stage) {
-				selectSql = "select t.BLOCK_ID,t.DAY_EDIT_PLAN_START_DATE as planStartDate,t.DAY_EDIT_PLAN_END_DATE as planEndDate,t.DESCP from block_man t where t.DAY_EDIT_PLAN_END_DATE>=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.DAY_EDIT_PLAN_START_DATE <=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.DAY_EDIT_GROUP_ID in "
-						+ groups;
+				selectSql += "and t.DAY_EDIT_GROUP_ID in "+ groups;
 			} else {
-				selectSql = "select t.BLOCK_ID,t.MONTH_EDIT_PLAN_START_DATE as planStartDate,t.MONTH_EDIT_PLAN_END_DATE as planEndDate,t.DESCP from block_man t where t.MONTH_EDIT_PLAN_END_DATE>=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.MONTH_EDIT_PLAN_START_DATE <=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.MONTH_EDIT_GROUP_ID in "
-						+ groups;
+				selectSql += "and t.MONTH_EDIT_GROUP_ID in "+ groups;
 			}
 
-			List<Object> list = new ArrayList<Object>();
-			list.add(time);
-			list.add(time);
-
-			return BlockOperation.queryBlockByGroup(conn, selectSql, list);
+			return BlockOperation.queryBlockByGroup(conn, selectSql, stage);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

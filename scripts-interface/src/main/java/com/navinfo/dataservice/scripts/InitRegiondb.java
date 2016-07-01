@@ -20,6 +20,7 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -29,6 +30,8 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.DbServerType;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.database.OracleSchema;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.expcore.ExportConfig;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
@@ -171,13 +174,14 @@ public class InitRegiondb {
 					.getDbById(dbId);
 			DbConnectConfig connConfig = DbConnectConfig.createConnectConfig(db.getConnectParam());
 			conn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
-			String sqlFile = "/com/navinfo/dataservice/scripts/resources/prj_utils.sql";
 			SqlExec sqlExec = new SqlExec(conn);
-			sqlFile = "/com/navinfo/dataservice/scripts/resources/init_edit_tables.sql";
+			String sqlFile = "/com/navinfo/dataservice/scripts/resources/init_edit_tables.sql";
 			sqlExec.executeIgnoreError(sqlFile);
-			String pckFile = "/com/navinfo/dataservice/scripts/resources/prj_utils.pck";
 			PackageExec packageExec = new PackageExec(conn);
+			String pckFile = "/com/navinfo/dataservice/scripts/resources/prj_utils.pck";
 			packageExec.execute(pckFile);
+			String pckFile2 = "/com/navinfo/dataservice/scripts/resources/create_type_function.sql";
+			packageExec.execute(pckFile2);
 			conn.commit();
 		}finally{
 			DbUtils.closeQuietly(conn);
@@ -225,6 +229,28 @@ public class InitRegiondb {
 	private static void insertDbIds(Connection conn,int regionId,int dayDbId,int monthDbId)throws Exception{
 		String sql = "UPDATE REGION SET DAILY_DB_ID=?,MONTHLY_DB_ID=? WHERE REGION_ID=?";
 		new QueryRunner().update(conn, sql,dayDbId,monthDbId,regionId);
+	}
+	
+	public static void main(String[] args){
+		Connection conn = null;
+		try{
+			JobScriptsInterface.initContext();
+			DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
+			DbInfo db = datahub.getDbById(45);
+			OracleSchema schema = new OracleSchema(DbConnectConfig.createConnectConfig(db.getConnectParam()));
+			conn = schema.getDriverManagerDataSource().getConnection();
+//			SqlExec sqlExec = new SqlExec(conn);
+			PackageExec packageExec = new PackageExec(conn);
+			String sqlFile = "/com/navinfo/dataservice/scripts/resources/create_type_function.sql";
+//			sqlExec.executeIgnoreError(sqlFile);
+			packageExec.execute(sqlFile);
+			conn.commit();
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			e.printStackTrace();
+		}finally{
+			DbUtils.closeQuietly(conn);
+		}
 	}
 
 }

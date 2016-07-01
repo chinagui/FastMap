@@ -47,4 +47,26 @@ public class JsonOperation {
 		}
 		return resultList;
 	}
+	
+	/*
+	 * 类对象转JSONObject，调用方式jsonOperation.beanToJson(taskObj,Task.class)
+	 * 
+	 */
+	public static JSONObject beanToJsonWithFilter(Object bean,String[] propertys){  
+	    JsonConfig config=new JsonConfig();  
+	    //格式要求只返回年月日
+	    config.registerJsonValueProcessor(Timestamp.class, new DateJsonValueProcessor("yyyyMMdd"));  
+	    config.registerJsonValueProcessor(Date.class, new DateJsonValueProcessor2("yyyyMMdd"));
+	    config.setExcludes((String[]) propertys);
+	    JSONObject json=JSONObject.fromObject(bean,config);  
+	    return json;
+	    } 
+	
+	public static JSONArray beanToJsonListWithFilter(List beanList,String[] propertys){
+		JSONArray resultList=new JSONArray();
+		for(int i=0;i<beanList.size();i++){
+			resultList.add(beanToJsonWithFilter(beanList.get(i),propertys));
+		}
+		return resultList;
+	}
 }

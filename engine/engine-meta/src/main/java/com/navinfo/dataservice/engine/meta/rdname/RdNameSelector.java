@@ -4,11 +4,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import org.apache.commons.dbutils.DbUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 
 public class RdNameSelector {
 
@@ -103,7 +104,7 @@ public class RdNameSelector {
 
 				}
 			}
-			
+
 			if (conn != null) {
 				try {
 					conn.close();
@@ -113,6 +114,54 @@ public class RdNameSelector {
 			}
 		}
 
+	}
+
+	/**
+	 * @Description:判断名称是否存在
+	 * @param name
+	 * @param adminId
+	 * @return 所在行政区划
+	 * @throws Exception
+	 * @author: y
+	 * @time:2016-6-28 下午3:42:20
+	 */
+	public int isNameExists(String name, int adminId) throws Exception {
+		int resultAdmin = 0;
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		Connection conn = null;
+
+		String sql = "SELECT N.ADMIN_ID									\n"
+				+ "  FROM RD_NAME N                                      \n"
+				+ " WHERE N.NAME = ?                                     \n"
+				+ "   AND (N.ADMIN_ID = ? OR N.ADMIN_ID = 214)           \n";
+
+		try {
+
+			conn = DBConnector.getInstance().getMetaConnection();
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, name);
+			pstmt.setInt(2, adminId);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+				resultAdmin = resultSet.getInt("ADMIN_ID");
+			}
+
+		} catch (Exception e) {
+
+			throw new Exception(e);
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
+		}
+
+		return resultAdmin;
 	}
 
 	public static void main(String[] args) throws Exception {

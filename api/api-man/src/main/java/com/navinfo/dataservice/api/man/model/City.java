@@ -16,6 +16,7 @@ public class City  implements Serializable{
 	private Object geometry ;
 	private Integer regionId ;
 	private Integer planStatus ;
+	private Integer adminId;
 	
 	public City (){
 	}
@@ -64,12 +65,21 @@ public class City  implements Serializable{
 	public void setPlanStatus(Integer planStatus) {
 		this.planStatus = planStatus;
 	}
+	
+	public Integer getAdminId() {
+		return adminId;
+	}
+
+	public void setAdminId(Integer adminId) {
+		this.adminId = adminId;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return "City [cityId=" + cityId +",cityName="+cityName+",provinceName="+provinceName+",geometry="+geometry+",regionId="+regionId+",planStatus="+planStatus+"]";
+		return "City [cityId=" + cityId +",cityName="+cityName+",provinceName="+provinceName+",geometry="+geometry+",regionId="+regionId+",planStatus="+planStatus+",adminId="+adminId+"]";
 	}
 
 
@@ -86,6 +96,7 @@ public class City  implements Serializable{
 		result = prime * result + ((geometry == null) ? 0 : geometry.hashCode());
 		result = prime * result + ((regionId == null) ? 0 : regionId.hashCode());
 		result = prime * result + ((planStatus == null) ? 0 : planStatus.hashCode());
+		result = prime * result + ((adminId == null) ? 0 : adminId.hashCode());
 		return result;
 	}
 
@@ -131,6 +142,11 @@ public class City  implements Serializable{
 			if (other.planStatus != null)
 				return false;
 		} else if (!planStatus.equals(other.planStatus))
+			return false;
+		if (adminId == null) {
+			if (other.adminId != null)
+				return false;
+		} else if (!adminId.equals(other.adminId))
 			return false;
 		return true;
 	}

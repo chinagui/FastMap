@@ -139,7 +139,7 @@ public class IxPoiIntroductionSelector implements ISelector {
 		ixPoiIntroduction.setPoiPid(resultSet.getInt("poi_pid"));
 		ixPoiIntroduction.setIntroduction(resultSet.getString("introduction"));
 		ixPoiIntroduction.setIntroductionEng(resultSet.getString("introduction_eng"));
-		ixPoiIntroduction.setWebsite(resultSet.getString("web_site"));
+		ixPoiIntroduction.setWebsite(resultSet.getString("website"));
 		ixPoiIntroduction.setNeighbor(resultSet.getString("neighbor"));
 		ixPoiIntroduction.setNeighborEng(resultSet.getString("neighbor_eng"));
 		ixPoiIntroduction.setTraffic(resultSet.getString("traffic"));

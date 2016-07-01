@@ -14,6 +14,11 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
+import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiPhotoOperator;
+import com.navinfo.dataservice.dao.log.LogWriter;
 
 public class DBController {
 
@@ -353,17 +358,31 @@ public class DBController {
 
 		try {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			conn.setAutoCommit(false);
 
-			List<Integer> results = new ArrayList<Integer>();
+			IxPoiPhoto photo = new IxPoiPhoto();
+			
+			photo.setPoiPid(pid);
+			photo.setPid(photoId);
+			photo.setTag(1);
+			
+			Result result = new Result();
+			
+			result.insertObject(photo, ObjStatus.INSERT, pid);
+			
+			LogWriter lw = new LogWriter(conn);
+			
+			Command command = new Command();
+			
+			lw.generateLog(command, result);
+			
+			new IxPoiPhotoOperator(conn, photo).insertRow();
+			
+			lw.recordLog(command, result);
 
-			String sql = "insert into ix_poi_photo  (poi_pid,photo_id) values  ("
-					+ pid
-					+ ",'" + photoId + "')";
-
-			pstmt = conn.prepareStatement(sql);
-
-			resultSet = pstmt.executeQuery();
-
+			conn.commit();
+			
 			conn.close();
 
 		} catch (Exception e) {

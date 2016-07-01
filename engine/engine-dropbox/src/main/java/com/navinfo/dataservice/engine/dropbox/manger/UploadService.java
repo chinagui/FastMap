@@ -26,6 +26,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.util.ZipUtils;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.photo.HBaseController;
 import com.navinfo.dataservice.engine.dropbox.dao.DBController;
 import com.navinfo.dataservice.engine.dropbox.util.DropboxUtil;
@@ -191,7 +192,7 @@ public class UploadService {
 					JSONObject jsonParam = JSONObject.fromObject(param);
 					pid = jsonParam.getInt("pid");
 					dbId = jsonParam.getInt("dbId");
-					fileType = jsonParam.getString("fileType");
+					fileType = jsonParam.getString("filetype");
 				}
 				
 			}else{
@@ -213,7 +214,7 @@ public class UploadService {
 			String photoId = hbaseController.putPhoto(fileStream);
 			
 			HashMap<Object,Object> data = new HashMap<Object,Object>();
-				
+			
 			dbController.insertIxPoiPhoto(dbId,pid,photoId);
 			data.put("PID", photoId);
 			return data;

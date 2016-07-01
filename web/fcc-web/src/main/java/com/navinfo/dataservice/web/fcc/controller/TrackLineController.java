@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
-import com.navinfo.dataservice.engine.dropbox.manger.UploadManager;
+import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
 import com.navinfo.dataservice.engine.fcc.trackline.TrackLinesUpload;
 
 @Controller
@@ -33,7 +33,7 @@ public class TrackLineController extends BaseController {
 
 			int jobId = json.getInt("jobId");
 
-			UploadManager upload = new UploadManager();
+			UploadService upload = UploadService.getInstance();
 
 			String filePath = upload.unzipByJobId(jobId);
 

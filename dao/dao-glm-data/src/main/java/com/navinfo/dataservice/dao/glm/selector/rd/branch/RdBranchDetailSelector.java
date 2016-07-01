@@ -3,17 +3,18 @@ package com.navinfo.dataservice.dao.glm.selector.rd.branch;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchName;
 
 public class RdBranchDetailSelector implements ISelector {
-
 
 	private Connection conn;
 
@@ -26,10 +27,11 @@ public class RdBranchDetailSelector implements ISelector {
 
 		RdBranchDetail detail = new RdBranchDetail();
 
-//		String sql = "select * from " + detail.tableName()
-//				+ " where detail_id=:1 and u_record!=2";
-		
-		String sql = "select a.*,c.mesh_id from " + detail.tableName()
+		// String sql = "select * from " + detail.tableName()
+		// + " where detail_id=:1 and u_record!=2";
+
+		String sql = "select a.*,c.mesh_id from "
+				+ detail.tableName()
 				+ " a,rd_branch b,rd_link c where a.detail_id=:1 and a.u_record!=2 and a.branch_pid = b.branch_pid and b.in_link_pid = c.link_pid";
 
 		if (isLock) {
@@ -49,29 +51,7 @@ public class RdBranchDetailSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				detail.setPid(resultSet.getInt("detail_id"));
-
-				detail.setBranchPid(resultSet.getInt("branch_pid"));
-
-				detail.setVoiceDir(resultSet.getInt("voice_dir"));
-
-				detail.setEstabType(resultSet.getInt("estab_type"));
-
-				detail.setNameKind(resultSet.getInt("name_kind"));
-
-				detail.setExitNum(resultSet.getString("exit_num"));
-
-				detail.setBranchType(resultSet.getInt("branch_type"));
-
-				detail.setPatternCode(resultSet.getString("pattern_code"));
-
-				detail.setArrowCode(resultSet.getString("arrow_code"));
-
-				detail.setArrowFlag(resultSet.getInt("arrow_flag"));
-
-				detail.setGuideCode(resultSet.getInt("guide_code"));
-
-				detail.setRowId(resultSet.getString("row_id"));
+				setAttr(detail, resultSet);
 				
 				detail.setMesh(resultSet.getInt("mesh_id"));
 
@@ -82,7 +62,7 @@ public class RdBranchDetailSelector implements ISelector {
 
 				for (IRow row : detail.getNames()) {
 					RdBranchName name = (RdBranchName) row;
-					
+
 					name.setMesh(detail.mesh());
 
 					detail.nameMap.put(name.getPid(), name);
@@ -146,34 +126,13 @@ public class RdBranchDetailSelector implements ISelector {
 
 				RdBranchDetail detail = new RdBranchDetail();
 
-				detail.setPid(resultSet.getInt("detail_id"));
-
-				detail.setBranchPid(resultSet.getInt("branch_pid"));
-
-				detail.setVoiceDir(resultSet.getInt("voice_dir"));
-
-				detail.setEstabType(resultSet.getInt("estab_type"));
-
-				detail.setNameKind(resultSet.getInt("name_kind"));
-
-				detail.setExitNum(resultSet.getString("exit_num"));
-
-				detail.setBranchType(resultSet.getInt("branch_type"));
-
-				detail.setPatternCode(resultSet.getString("pattern_code"));
-
-				detail.setArrowCode(resultSet.getString("arrow_code"));
-
-				detail.setArrowFlag(resultSet.getInt("arrow_flag"));
-
-				detail.setGuideCode(resultSet.getInt("guide_code"));
-
-				detail.setRowId(resultSet.getString("row_id"));
+				setAttr(detail, resultSet);
 
 				RdBranchNameSelector nameSelector = new RdBranchNameSelector(
 						conn);
 
-				detail.setNames(nameSelector.loadRowsByParentId(detail.getPid(), isLock));
+				detail.setNames(nameSelector.loadRowsByParentId(
+						detail.getPid(), isLock));
 
 				for (IRow row : detail.getNames()) {
 					RdBranchName name = (RdBranchName) row;
@@ -208,10 +167,38 @@ public class RdBranchDetailSelector implements ISelector {
 
 		return rows;
 	}
-	
+
 	@Override
 	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
 
 		return null;
+	}
+
+	private void setAttr(RdBranchDetail detail, ResultSet resultSet)
+			throws SQLException {
+
+		detail.setPid(resultSet.getInt("detail_id"));
+
+		detail.setBranchPid(resultSet.getInt("branch_pid"));
+
+		detail.setVoiceDir(resultSet.getInt("voice_dir"));
+
+		detail.setEstabType(resultSet.getInt("estab_type"));
+
+		detail.setNameKind(resultSet.getInt("name_kind"));
+
+		detail.setExitNum(resultSet.getString("exit_num"));
+
+		detail.setBranchType(resultSet.getInt("branch_type"));
+
+		detail.setPatternCode(resultSet.getString("pattern_code"));
+
+		detail.setArrowCode(resultSet.getString("arrow_code"));
+
+		detail.setArrowFlag(resultSet.getInt("arrow_flag"));
+
+		detail.setGuideCode(resultSet.getInt("guide_code"));
+
+		detail.setRowId(resultSet.getString("row_id"));
 	}
 }

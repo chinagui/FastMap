@@ -214,15 +214,18 @@ public class CompPolylineUtil {
 					break;
 				}
 			}
-			if(fromIndex>endIndex){
-				return JtsGeometryFactory.createLineString(new Coordinate[0]);
-			}
-			newCoors = new Coordinate[endIndex-fromIndex+1+1];
-			newCoors[0]=JtsGeometryConvertor.convert(mid);
-			int i = 1;
-			for(;fromIndex<=endIndex;fromIndex++){
-				newCoors[i]=coors[fromIndex];
-				i++;
+			if(fromIndex>endIndex){//如果整条线都在里头，则只保留末端点与mid组成的直线
+				newCoors = new Coordinate[2];
+				newCoors[0]=JtsGeometryConvertor.convert(mid);
+				newCoors[1]=coors[endIndex];
+			}else{
+				newCoors = new Coordinate[endIndex-fromIndex+1+1];
+				newCoors[0]=JtsGeometryConvertor.convert(mid);
+				int i = 1;
+				for(;fromIndex<=endIndex;fromIndex++){
+					newCoors[i]=coors[fromIndex];
+					i++;
+				}
 			}
 		}else{//targetLine的画线方向是从外向fromPoint画的
 			for(;endIndex>=0;endIndex--){
@@ -235,16 +238,19 @@ public class CompPolylineUtil {
 					break;
 				}
 			}
-			if(endIndex<0){
-				return JtsGeometryFactory.createLineString(new Coordinate[0]);
+			if(endIndex<0){//如果整条线都在里头，则只保留末端点与mid组成的直线
+				newCoors = new Coordinate[2];
+				newCoors[0]=JtsGeometryConvertor.convert(mid);
+				newCoors[1]=coors[0];
+			}else{
+				newCoors = new Coordinate[endIndex-fromIndex+1+1];
+				int i = 0;
+				for(;fromIndex<=endIndex;fromIndex++){
+					newCoors[i]=coors[fromIndex];
+					i++;
+				}
+				newCoors[i]=JtsGeometryConvertor.convert(mid);
 			}
-			newCoors = new Coordinate[endIndex-fromIndex+1+1];
-			int i = 0;
-			for(;fromIndex<=endIndex;fromIndex++){
-				newCoors[i]=coors[fromIndex];
-				i++;
-			}
-			newCoors[i]=JtsGeometryConvertor.convert(mid);
 		}
 		return JtsGeometryFactory.createLineString(newCoors);
 	}

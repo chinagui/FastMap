@@ -328,12 +328,12 @@ public class GeometryUtils {
 	 * @return Map<Integer,Integer> value:start_end 标识
 	 * @throws JSONException
 	 */
-	public static Integer getStartOrEndType(Geometry compared, Geometry standGeo) throws JSONException {
+	public static Integer getStartOrEndType(Coordinate[] coors, Geometry standGeo) throws JSONException {
 		int flag = 0;
-		if (compared.getBoundary().getGeometryN(0).equals(standGeo)) {
+		if (coors[0].equals(standGeo.getCoordinate())) {
 
 			flag = 1;
-		} else if (compared.getBoundary().getGeometryN(1).equals(standGeo)) {
+		} else if (coors[coors.length - 1].equals(standGeo)) {
 
 			flag = 2;
 		} else {

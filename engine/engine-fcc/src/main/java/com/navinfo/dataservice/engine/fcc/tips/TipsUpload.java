@@ -22,13 +22,17 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 /**
  * 保存上传的tips数据
@@ -45,6 +49,7 @@ class ErrorType {
 	static int Notexist = 4;
 
 	static int InvalidData = 5;
+	
 }
 
 public class TipsUpload {
@@ -54,7 +59,9 @@ public class TipsUpload {
 	private Map<String, JSONObject> updateTips = new HashMap<String, JSONObject>();
 
 	private Map<String, JSONObject> oldTips = new HashMap<String, JSONObject>();
-
+	
+	private Map<String, JSONObject> roadNameTips = new HashMap<String, JSONObject>(); //道路名tips，用户道路名入元数据库
+	
 	private String currentDate;
 
 	private int total;
@@ -127,9 +134,51 @@ public class TipsUpload {
 		htab.put(puts);
 
 		htab.close();
+		
+		//道路名入元数据库
+		importRoadNameToMeta();
 
 		return photoInfo;
 	}
+	
+	
+	/**
+	 * 道路名入元数据库
+	 */
+
+	private void importRoadNameToMeta() {
+		
+		Set<Entry<String, JSONObject>> set = roadNameTips.entrySet();
+		Iterator<Entry<String, JSONObject>> it = set.iterator();
+		while (it.hasNext()) {
+			Entry<String, JSONObject> en = it.next();
+
+			String rowkey = en.getKey();
+			// 坐标
+			JSONObject nameTipJson = en.getValue();
+			JSONObject deep = JSONObject.fromObject(nameTipJson.get("deep"));
+			JSONObject geo = deep.getJSONObject("geo");
+			JSONArray jaCoords = geo.getJSONArray("coordinates");
+			double longitude=jaCoords.getDouble(0);
+			double latitude=jaCoords.getDouble(1);
+			
+			// 名称,调用元数据库接口入库
+			MetadataApi metaApi=(MetadataApi) ApplicationContextUtil.getBean("metaApi");
+			JSONArray names = geo.getJSONArray("n_array");
+			for (Object name : names) {
+				if (name != null && StringUtils.isNotEmpty(name.toString())) {
+					try {
+						metaApi.nameImport(name.toString(), longitude, latitude, rowkey);
+					} catch (Exception e) {
+						//reasons.add(newReasonObject(rowkey, ErrorType.InvalidData));
+						e.printStackTrace();
+					}
+				}
+			}
+			
+		}
+	}
+
 
 	/**
 	 * 读取Tips文件，组装Get列表
@@ -232,6 +281,11 @@ public class TipsUpload {
 				json.put("t_dStatus", 0);
 				
 				json.put("t_mStatus", 0);
+				
+				//道路名测线
+				if(sourceType.equals("1901")){
+					roadNameTips.put(rowkey, json);
+				}
 
 				if (3 == lifecycle) {
 					insertTips.put(rowkey, json);

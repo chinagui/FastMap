@@ -86,16 +86,17 @@ public class Operation implements IOperation {
 			geojson.put("coordinates", ps);
 
 			Geometry geo = GeoTranslator.geojson2Jts(geojson, 1, 5);
-			Set<String> meshes =  CompGeometryUtil.geoToMeshesWithoutBreak(geom);
+			Set<String> meshes =  CompGeometryUtil.geoToMeshesWithoutBreak(geo);
 			// 修改线的几何属性
 			// 如果没有跨图幅只是修改线的几何
+			link.setGeometry(geo);
 			List<RdLink> links = new ArrayList<RdLink>();
 			if (meshes.size() == 1) {
 				JSONObject updateContent = new JSONObject();
 				updateContent.put("geometry", geojson);
 				updateContent.put("length", GeometryUtils.getLinkLength(geo));
 				link.fillChangeFields(updateContent);
-				link.setGeometry(geo);
+				
 				links.add(link);
 				map.put(link.getPid(), links);
 				result.insertObject(link, ObjStatus.UPDATE, link.pid());

@@ -700,7 +700,7 @@ public class SubtaskService {
 						closedSubtaskList
 								.add(subtaskList.get(i).getSubtaskId());
 					} else {
-						closedSubtaskList
+						unClosedSubtaskList
 						.add(subtaskList.get(i).getSubtaskId());
 //						unClosedSubtaskList.put(subtaskList.get(i)
 //								.getSubtaskId(), "subtask内存在未完成作业，subtask无法关闭");
@@ -716,7 +716,7 @@ public class SubtaskService {
 						closedSubtaskList
 								.add(subtaskList.get(i).getSubtaskId());
 					} else {
-						closedSubtaskList
+						unClosedSubtaskList
 						.add(subtaskList.get(i).getSubtaskId());
 //						unClosedSubtaskList.put(subtaskList.get(i)
 //								.getSubtaskId(), "subtask内存在未完成作业，subtask无法关闭");
@@ -732,7 +732,7 @@ public class SubtaskService {
 						closedSubtaskList
 								.add(subtaskList.get(i).getSubtaskId());
 					} else {
-						closedSubtaskList
+						unClosedSubtaskList
 						.add(subtaskList.get(i).getSubtaskId());
 //						unClosedSubtaskList.put(subtaskList.get(i)
 //								.getSubtaskId(), "subtask内存在未完成作业，subtask无法关闭");

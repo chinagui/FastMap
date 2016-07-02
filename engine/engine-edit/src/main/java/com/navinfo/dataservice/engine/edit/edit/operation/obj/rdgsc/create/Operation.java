@@ -84,10 +84,10 @@ public class Operation implements IOperation {
 		if (linkMap.size() < 1) {
 			throw new Exception("没有立交组成线");
 		}
-		
-		//判断是否自相交
+
+		// 判断是否自相交
 		isSelfGsc = RdGscOperateUtils.checkIsSelfGsc(linkMap);
-		
+
 		// 查询数据：1.link_pid和对象map 2.立交组成线几何的集合
 		List<Geometry> linksGeometryList = preParedData();
 
@@ -106,6 +106,7 @@ public class Operation implements IOperation {
 
 	/**
 	 * 创建立交
+	 * 
 	 * @throws Exception
 	 */
 	private void createGsc() throws Exception {
@@ -121,27 +122,28 @@ public class Operation implements IOperation {
 			int level = entry.getKey();
 
 			RdGscLink gscLink = entry.getValue();
-			
+
 			gscLink.setPid(rdGsc.getPid());
 
-			//row是link对象非Rdgsclink对象
+			// row是link对象非Rdgsclink对象
 			IRow row = linkObjMap.get(level);
-			
-			//更新立交组成线几何
+
+			// 更新立交组成线几何
 			updateLinkGeo(gscLink, row, gscGeo);
 
 			rdGscLinks.add(gscLink);
 		}
-		
+
 		rdGsc.setLinks(rdGscLinks);
-		
+
 		result.setPrimaryPid(rdGsc.getPid());
 
 		result.insertObject(rdGsc, ObjStatus.INSERT, rdGsc.pid());
 	}
-	
+
 	/**
 	 * 立交检查
+	 * 
 	 * @param interGeo
 	 * @return 立交交点
 	 * @throws Exception
@@ -193,18 +195,19 @@ public class Operation implements IOperation {
 		}
 
 	}
-	
+
 	/**
 	 * 更新组成线link的几何
+	 * 
 	 * @param gscLink
 	 * @param row
 	 * @param gscGeo
 	 * @throws Exception
 	 */
 	private void updateLinkGeo(RdGscLink gscLink, IRow row, Geometry gscGeo) throws Exception {
-		
+
 		Coordinate[] linkCoor = null;
-		
+
 		if (row instanceof RdLink) {
 			RdLink linkObj = (RdLink) row;
 
@@ -238,17 +241,19 @@ public class Operation implements IOperation {
 			}
 
 			linkCoor = GeoTranslator.geojson2Jts(jsonObj, 100000, 0).getCoordinates();
-			
+
 		}
-		
-		RdGscOperateUtils.calcShpSeqNum(gscGeo, linkCoor);
+
+		// 计算立交点序号和起终点标识
+		RdGscOperateUtils.calShpSeqNum(gscLink, gscGeo, linkCoor);
 
 		// 更新线上其他立交的形状点号
 		handleOtherGscLink(gscLink, result, linkCoor);
 	}
-	
+
 	/**
 	 * 根据立交点计算并更新组成线几何
+	 * 
 	 * @param gscLink
 	 * @param geometry
 	 * @param gscGeo

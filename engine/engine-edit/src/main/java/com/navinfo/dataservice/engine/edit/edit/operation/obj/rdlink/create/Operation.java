@@ -188,7 +188,7 @@ public class Operation implements IOperation {
 				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrdpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrdpoint.Command(
 						breakJson, breakJson.toString());
 				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrdpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrdpoint.Process(
-						breakCommand, conn);
+						breakCommand, conn,result);
 				breakProcess.innerRun();
 			}
 		}

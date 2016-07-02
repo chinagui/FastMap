@@ -17,7 +17,6 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
-import com.navinfo.dataservice.engine.edit.comm.util.EditUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.RdGscOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.RwLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -51,8 +50,7 @@ public class Operation implements IOperation {
 	public String run(Result result) throws Exception {
 		// 修行修改线信息
 		this.updateLink(result);
-
-		EditUtils.handleResult(RwLink.class, result);
+		
 		return null;
 	}
 

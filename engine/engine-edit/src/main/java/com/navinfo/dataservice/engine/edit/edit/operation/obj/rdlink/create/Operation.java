@@ -11,8 +11,6 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
-import com.navinfo.dataservice.engine.edit.comm.util.EditUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.AdminOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.RdLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -67,9 +65,6 @@ public class Operation implements IOperation {
 		this.createRdLinks(map, result);
 		// 挂接的线被打断的操作
 		this.breakLine(result);
-
-		// 往result中设置新增的pid（setPrimaryPid）
-		EditUtils.handleResult(RdLink.class, result);
 
 		return msg;
 	}

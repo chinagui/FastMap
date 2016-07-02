@@ -6,7 +6,7 @@ package com.navinfo.navicommons.geo.computation;
 * @date 2016年7月2日 上午9:56:56 
 * @Description: TODO
 */
-public abstract class Line {
+public class Line<T> {
 	
-	public abstract <T> getX();
+
 }

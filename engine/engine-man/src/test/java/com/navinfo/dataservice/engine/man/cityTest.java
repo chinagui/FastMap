@@ -21,7 +21,7 @@ public class cityTest {
 		if(dataJson==null){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}
-		CityService service = new CityService();
+		CityService service = CityService.getInstance();
 		return service.queryListByWkt(null);			
 	}
 	

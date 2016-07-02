@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.man.block;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.Format;
@@ -11,15 +10,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import oracle.sql.CLOB;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.BlockMan;
@@ -28,13 +22,15 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
-import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.sql.CLOB;
 
 /**
  * @ClassName: BlockService
@@ -42,9 +38,20 @@ import com.navinfo.navicommons.exception.ServiceException;
  * @date 2016-06-08 01:32:00
  * @Description: TODO
  */
-@Service
+
 public class BlockService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
+
+	private BlockService() {
+	}
+
+	private static class SingletonHolder {
+		private static final BlockService INSTANCE = new BlockService();
+	}
+
+	public static BlockService getInstance() {
+		return SingletonHolder.INSTANCE;
+	}
 
 	public void batchOpen(long userId, JSONObject json) throws ServiceException {
 		Connection conn = null;
@@ -124,16 +131,12 @@ public class BlockService {
 		}
 	}
 
-	public List<HashMap> listByProduce(String wkt) throws ServiceException {
+	public List<HashMap> listByProduce(JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
-
 			conn = DBConnector.getInstance().getManConnection();
-
 			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY from BLOCK t where sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE'";
-			List<Object> list = new ArrayList<Object>();
-			list.add(wkt);
-			return BlockOperation.queryProduceBlock(conn, selectSql, list);
+			return BlockOperation.queryProduceBlock(conn, selectSql, json);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -257,26 +260,20 @@ public class BlockService {
 
 			JSONArray groupIds = json.getJSONArray("groupIds");
 			String groups = ((groupIds.toString()).replace('[', '(')).replace(']', ')');
-
-			Format format = new SimpleDateFormat("yyyyMMdd");
-			String time = format.format(DateUtilsEx.getCurDate());
+			
+			selectSql = "select b.BLOCK_ID,b.CITY_ID, b.BLOCK_NAME, b.GEOMETRY.get_wkt() as GEOMETRY,"
+					+ " b.PLAN_STATUS from block_man t,block b,task k,subtask s where t.block_id=b.block_id and b.city_id=k.city_id and k.task_id=s.task_id and t.latest=1 and k.latest=1 and s.stage=? ";
 
 			if (0 == stage) {
-				selectSql = "select t.BLOCK_ID,t.COLLECT_PLAN_START_DATE as planStartDate,t.COLLECT_PLAN_END_DATE as planEndDate,t.DESCP from block_man t where t.COLLECT_PLAN_END_DATE>=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.COLLECT_PLAN_START_DATE <=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') "
-						+ "and t.COLLECT_GROUP_ID in " + groups;
+				selectSql += "and t.COLLECT_GROUP_ID in " + groups;
+						
 			} else if (1 == stage) {
-				selectSql = "select t.BLOCK_ID,t.DAY_EDIT_PLAN_START_DATE as planStartDate,t.DAY_EDIT_PLAN_END_DATE as planEndDate,t.DESCP from block_man t where t.DAY_EDIT_PLAN_END_DATE>=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.DAY_EDIT_PLAN_START_DATE <=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.DAY_EDIT_GROUP_ID in "
-						+ groups;
+				selectSql += "and t.DAY_EDIT_GROUP_ID in "+ groups;
 			} else {
-				selectSql = "select t.BLOCK_ID,t.MONTH_EDIT_PLAN_START_DATE as planStartDate,t.MONTH_EDIT_PLAN_END_DATE as planEndDate,t.DESCP from block_man t where t.MONTH_EDIT_PLAN_END_DATE>=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.MONTH_EDIT_PLAN_START_DATE <=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.MONTH_EDIT_GROUP_ID in "
-						+ groups;
+				selectSql += "and t.MONTH_EDIT_GROUP_ID in "+ groups;
 			}
 
-			List<Object> list = new ArrayList<Object>();
-			list.add(time);
-			list.add(time);
-
-			return BlockOperation.queryBlockByGroup(conn, selectSql, list);
+			return BlockOperation.queryBlockByGroup(conn, selectSql, stage);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

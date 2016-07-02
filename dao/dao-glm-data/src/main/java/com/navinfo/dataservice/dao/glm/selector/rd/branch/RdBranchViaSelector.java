@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.rd.branch;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,15 +50,7 @@ public class RdBranchViaSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				via.setBranchPid(resultSet.getInt("branch_pid"));
-
-				via.setLinkPid(resultSet.getInt("link_pid"));
-
-				via.setGroupId(resultSet.getInt("group_id"));
-
-				via.setSeqNum(resultSet.getInt("seq_num"));
-
-				via.setRowId(resultSet.getString("row_id"));
+				setAttr( via ,  resultSet);
 			} else {
 				
 				throw new DataNotFoundException("数据不存在");
@@ -117,15 +110,7 @@ public class RdBranchViaSelector implements ISelector {
 
 				RdBranchVia via = new RdBranchVia();
 
-				via.setBranchPid(resultSet.getInt("branch_pid"));
-
-				via.setLinkPid(resultSet.getInt("link_pid"));
-
-				via.setGroupId(resultSet.getInt("group_id"));
-
-				via.setSeqNum(resultSet.getInt("seq_num"));
-
-				via.setRowId(resultSet.getString("row_id"));
+				setAttr( via ,  resultSet);
 
 				rows.add(via);
 			}
@@ -214,15 +199,7 @@ public class RdBranchViaSelector implements ISelector {
 				continue;
 			}
 
-			via.setBranchPid(resultSet.getInt("topology_id"));
-
-			via.setLinkPid(resultSet.getInt("link_pid"));
-
-			via.setGroupId(resultSet.getInt("group_id"));
-
-			via.setSeqNum(resultSet.getInt("seq_num"));
-
-			via.setRowId(resultSet.getString("row_id"));
+			setAttr( via ,  resultSet);
 
 			via.iseteNodePid(resultSet.getInt("e_node_pid"));
 
@@ -275,6 +252,19 @@ public class RdBranchViaSelector implements ISelector {
 		return list;
 	}
 	
+	private void setAttr(RdBranchVia via , ResultSet resultSet)
+			throws SQLException {
 
+		via.setBranchPid(resultSet.getInt("topology_id"));
+
+		via.setLinkPid(resultSet.getInt("link_pid"));
+
+		via.setGroupId(resultSet.getInt("group_id"));
+
+		via.setSeqNum(resultSet.getInt("seq_num"));
+
+		via.setRowId(resultSet.getString("row_id"));
+
+	}
 
 }

@@ -332,7 +332,15 @@ public class CompGridUtil {
 		int yt = (int)(longY/(300000));
 		M5 = yt%8;
 		//判断在图幅线上的情况
-		if((longY%300000)<=12){//距离理想行号下图廓线距离
+		if((longY%300000)==0){//直接在理想行号图廓线上，0,0.25,0.5,1,...
+			M5_bak = M5-1;
+			if(M5_bak<0){
+				M1M2_bak--;
+				M5_bak=7;
+			}
+			M7 = 0;
+			M7_bak = 3;
+		}else if((longY%300000)<=12){//距离理想行号下图廓线距离
 			if(yt%3==2){
 				//处于横轴图廓线上
 				M5_bak = M5-1;

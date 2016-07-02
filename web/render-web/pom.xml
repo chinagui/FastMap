@@ -34,10 +34,6 @@
 	</dependency>
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>datahub</artifactId>
-	</dependency>
-	<dependency>
-		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>engine-edit</artifactId>
 	</dependency>
 	<dependency>

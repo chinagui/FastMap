@@ -29,12 +29,13 @@ public class CheckRule {
 //	public String ruleClass;
 	
 //	public Class ruleClass;
-	private Class ruleClass;
+	private Class preRuleClass;
 	
 	//accessor_type,accessor_name,variables
-	private AccessorType accessortype;
-	private String accessorName;
-	private List<VariableName> variables=new ArrayList<VariableName>();
+	private AccessorType postAccessorType;
+	private String postAccessorName;
+	private Class postRuleClass;
+	private List<VariableName> postVariables=new ArrayList<VariableName>();
 	
 	
 	public String getRuleCode(){
@@ -49,35 +50,34 @@ public class CheckRule {
 		return severity;
 	}
 	
-	public Class getRuleClass(){
-		return ruleClass;
-	}
-	
-	public CheckRule(String initRuleCode,String initRuleLog,int initSeverity,String initCheckClassPath,String accessorType,String accessorName,String variables) {
+	public CheckRule(String initRuleCode,String initRuleLog,int initSeverity,String preCheckClassPath,String postAccessorType,String postAccessorName,String postVariables) {
 
 		
 		try{
-			if(initCheckClassPath!=null && !initCheckClassPath.isEmpty()){ruleClass = Class.forName(initCheckClassPath);}
 			ruleCode = initRuleCode;
 			ruleLog = initRuleLog;
 			severity = initSeverity;
 			
-			if(accessorType==null || accessorType.isEmpty()){this.accessortype=null;}
-			else{this.accessortype=AccessorType.valueOf(accessorType);}
-			
-			this.accessorName=accessorName;
-			
-			if(variables==null || variables.isEmpty()){this.variables=null;}
+			if(preCheckClassPath!=null && !preCheckClassPath.isEmpty()){this.preRuleClass = Class.forName(preCheckClassPath);}
+						
+			if(postAccessorType==null || postAccessorType.isEmpty()){this.postAccessorType=null;}
 			else{
-				List<String> variableTmp=java.util.Arrays.asList(variables.split(","));
-				for(int i=0;i<variableTmp.size();i++)
-					{this.variables.add(Enum.valueOf(VariableName.class, variableTmp.get(i)));}}
+				this.postAccessorType=AccessorType.valueOf(postAccessorType);
+				if(this.postAccessorType==AccessorType.SQL){
+					this.postAccessorName=postAccessorName;
+					if(postVariables==null || postVariables.isEmpty()){this.postVariables=null;}
+					else{
+						List<String> variableTmp=java.util.Arrays.asList(postVariables.split(","));
+						for(int i=0;i<variableTmp.size();i++)
+							{this.postVariables.add(Enum.valueOf(VariableName.class, variableTmp.get(i)));}}
+					}
+				else{this.postRuleClass=Class.forName(postAccessorName);}
+			}			
 		}catch (ArrayIndexOutOfBoundsException e) {
             System.out.println("没有指定类名称");
         } catch (ClassNotFoundException e) {
             System.out.println("找不到指定的类");
-        }
-		
+        }		
 	}
 
 	
@@ -100,29 +100,43 @@ public class CheckRule {
 		
 	}
 
-	public AccessorType getAccessorType() {
-		return accessortype;
+	public Class getPreRuleClass() {
+		return preRuleClass;
 	}
 
-	public void setAccessorType(AccessorType accessor_type) {
-		this.accessortype = accessor_type;
+	public void setPreRuleClass(Class preRuleClass) {
+		this.preRuleClass = preRuleClass;
 	}
 
-	public String getAccessorName() {
-		return accessorName;
+	public String getPostAccessorName() {
+		return postAccessorName;
 	}
 
-	public void setAccessorName(String accessor_name) {
-		this.accessorName = accessor_name;
+	public void setPostAccessorName(String postAccessorName) {
+		this.postAccessorName = postAccessorName;
 	}
 
-	public List<VariableName> getVariables() {
-		return variables;
+	public Class getPostRuleClass() {
+		return postRuleClass;
 	}
 
-	public void setVariables(List<VariableName> variables) {
-		this.variables = variables;
+	public void setPostRuleClass(Class postRuleClass) {
+		this.postRuleClass = postRuleClass;
 	}
-	
+
+	public List<VariableName> getPostVariables() {
+		return postVariables;
+	}
+
+	public void setPostVariables(List<VariableName> postVariables) {
+		this.postVariables = postVariables;
+	}
+	public AccessorType getPostAccessorType() {
+		return postAccessorType;
+	}
+
+	public void setPostAccessorType(AccessorType postAccessorType) {
+		this.postAccessorType = postAccessorType;
+	}
 
 }

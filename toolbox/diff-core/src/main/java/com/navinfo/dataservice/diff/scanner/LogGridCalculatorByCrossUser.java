@@ -55,6 +55,7 @@ public class LogGridCalculatorByCrossUser implements LogGridCalculator {
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new DiffException(e.getMessage(),e);
 		}finally{
 			DbUtils.closeQuietly(stmt);
 			DbUtils.closeQuietly(conn);

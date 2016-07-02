@@ -59,4 +59,8 @@
 	<editsupport.poi.download.filepath.poi>/data/resources/download/poi</editsupport.poi.download.filepath.poi>
 	<editsupport.poi.download.urlpath.poi>/resources/download/poi</editsupport.poi.download.urlpath.poi>
 	<editsupport.poi.url>http://192.168.4.188</editsupport.poi.url>
+	
+<!-- MapSpotter -->
+	<mapspotter.infor.upload.url>http://192.168.4.218:8080/mapspotter/data/info/upload</mapspotter.infor.upload.url>
+	<mapspotter.infor.upload.timeout>120000</mapspotter.infor.upload.timeout>
 </configMap>

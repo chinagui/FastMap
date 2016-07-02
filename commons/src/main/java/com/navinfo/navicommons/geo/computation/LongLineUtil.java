@@ -41,17 +41,17 @@ public class LongLineUtil {
 		//所以判断P1P2跨立Q1Q2的依据是：( P1 - Q1 ) × ( Q2 - Q1 ) * ( Q2 - Q1 ) × ( P2 - Q1 ) >= 0。
 		//同理判断Q1Q2跨立P1P2的依据是：( Q1 - P1 ) × ( P2 - P1 ) * ( P2 - P1 ) × ( Q2 - P1 ) >= 0。
 		//( P1 - Q1 ) × ( Q2 - Q1 )
-		long r1 = (l1.getSpoint().getX()-l2.getSpoint().getX())*(l2.getEpoint().getY()-l2.getSpoint().getY())
-				-(l2.getEpoint().getX()-l2.getSpoint().getX())*(l1.getSpoint().getY()-l2.getSpoint().getY());
+		long r1 = ((l1.getSpoint().getX()-l2.getSpoint().getX())*(l2.getEpoint().getY()-l2.getSpoint().getY())
+				-(l2.getEpoint().getX()-l2.getSpoint().getX())*(l1.getSpoint().getY()-l2.getSpoint().getY())) >0 ? 1 :-1;
 		//( Q2 - Q1 ) × ( P2 - Q1 )
-		long r2 = (l2.getEpoint().getX()-l2.getSpoint().getX())*(l1.getEpoint().getY()-l2.getSpoint().getY())
-				-(l1.getEpoint().getX()-l2.getSpoint().getX())*(l2.getEpoint().getY()-l2.getSpoint().getY());
+		long r2 = ((l2.getEpoint().getX()-l2.getSpoint().getX())*(l1.getEpoint().getY()-l2.getSpoint().getY())
+				-(l1.getEpoint().getX()-l2.getSpoint().getX())*(l2.getEpoint().getY()-l2.getSpoint().getY())) >0 ? 1 :-1;
 		//( Q1 - P1 ) × ( P2 - P1 )
-		long r3 = (l2.getSpoint().getX()-l1.getSpoint().getX())*(l1.getEpoint().getY()-l1.getSpoint().getY())
-				-(l1.getEpoint().getX()-l1.getSpoint().getX())*(l2.getSpoint().getY()-l1.getSpoint().getY());
+		long r3 = ((l2.getSpoint().getX()-l1.getSpoint().getX())*(l1.getEpoint().getY()-l1.getSpoint().getY())
+				-(l1.getEpoint().getX()-l1.getSpoint().getX())*(l2.getSpoint().getY()-l1.getSpoint().getY())) >0 ? 1 :-1;
 		//( P2 - P1 ) × ( Q2 - P1 )
-		long r4 = (l1.getEpoint().getX()-l1.getSpoint().getX())*(l2.getEpoint().getY()-l1.getSpoint().getY())
-				-(l2.getEpoint().getX()-l1.getSpoint().getX())*(l1.getEpoint().getY()-l1.getSpoint().getY());
+		long r4 = ((l1.getEpoint().getX()-l1.getSpoint().getX())*(l2.getEpoint().getY()-l1.getSpoint().getY())
+				-(l2.getEpoint().getX()-l1.getSpoint().getX())*(l1.getEpoint().getY()-l1.getSpoint().getY())) >0 ? 1 :-1;
 		if(r1*r2<0
 		   ||r3*r4<0)
 			return false;

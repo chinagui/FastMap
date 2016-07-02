@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.move.moverwnode;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -11,9 +12,12 @@ import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.RwLinkOperateUtils;
@@ -56,7 +60,9 @@ public class Operation implements IOperation {
 
 			Geometry geo = GeoTranslator.geojson2Jts(geojson, 1, 5);
 
-			Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geo);		
+			Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geo);
+
+			link.setGeometry(geo);
 
 			if (meshes.size() == 1) {
 
@@ -68,10 +74,8 @@ public class Operation implements IOperation {
 
 				link.fillChangeFields(updateContent);
 
-				link.setGeometry(geo);			
-
 				result.insertObject(link, ObjStatus.UPDATE, link.pid());
-				
+
 			} else {
 				// 如果跨图幅就需要打断生成新的link
 				Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
@@ -98,7 +102,7 @@ public class Operation implements IOperation {
 							result);
 				}
 
-				deleteRdGsc(link, result);
+				handleRdGsc(link, result);
 
 				result.insertObject(link, ObjStatus.DELETE, link.pid());
 			}
@@ -145,25 +149,59 @@ public class Operation implements IOperation {
 	}
 
 	/**
-	 * 删除link关联的立交
+	 * 处理立交关系
 	 * 
 	 * @param link
 	 * @throws Exception
 	 */
-	private void deleteRdGsc(RwLink link, Result result) throws Exception {
+	private void handleRdGsc(RwLink deleteLink, Result result) throws Exception {
 
-		try {
-			RdGscSelector selector = new RdGscSelector(this.conn);
+		int newLinkPid = 0;
 
-			List<RdGsc> rdGscs = selector.loadRdGscLinkByLinkPid(link.getPid(),
-					"RW_LINK", true);
+		//获取 使用未移动的node做端点的新生成的link，该link继承原link的所有立交关系
+		for (IRow row : result.getAddObjects()) {
 
-			for (RdGsc gsc : rdGscs) {
-				result.insertObject(gsc, ObjStatus.DELETE, gsc.pid());
+			if (row.objType() != ObjType.RWLINK) {
+				continue;
 			}
-		} catch (Exception e) {
 
-			throw e;
+			RwLink rwLink = (RwLink) row;
+
+			if (rwLink.geteNodePid() == this.command.getNodePid()
+					|| rwLink.getsNodePid() == this.command.getNodePid()) {
+
+				newLinkPid = rwLink.pid();
+
+				break;
+			}
+		}
+
+		if (newLinkPid == 0) {
+			return;
+		}
+
+		RdGscSelector selector = new RdGscSelector(this.conn);
+
+		List<RdGsc> rdGscs = selector.loadRdGscLinkByLinkPid(deleteLink.getPid(),
+				"RW_LINK", true);
+
+		//将降立交关系link的pid更新为新生成link的pid
+		for (RdGsc gsc : rdGscs) {
+
+			for (RdGscLink gscLink : gsc.rdGscLinkMap.values()) {
+
+				if (gscLink.getLinkPid() == deleteLink.pid()
+						&& gscLink.getTableName().equals("RW_LINK")) {
+
+					JSONObject updateContent = new JSONObject();
+
+					updateContent.put("linkPid", newLinkPid);
+					
+					gscLink.fillChangeFields(updateContent);
+
+					result.insertObject(gscLink, ObjStatus.UPDATE, gsc.pid());
+				}
+			}
 		}
 	}
 

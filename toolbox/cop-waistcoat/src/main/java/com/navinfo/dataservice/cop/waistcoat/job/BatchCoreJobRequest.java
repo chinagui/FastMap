@@ -1,38 +1,88 @@
 package com.navinfo.dataservice.cop.waistcoat.job;
 
+import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
+import org.apache.commons.lang.StringUtils;
 
-/** 
-* @ClassName: BatchCoreJobRequest 
-* @author Xiao Xiaowen 
-* @date 2016年6月21日 上午11:57:17 
-* @Description: TODO
-*  
-*/
+import java.util.List;
+
+/**
+ * @ClassName: BatchCoreJobRequest
+ * @author Xiao Xiaowen
+ * @date 2016年6月21日 上午11:57:17
+ * @Description: TODO：批处理核心Job参数封装
+ *
+ */
 public class BatchCoreJobRequest extends AbstractJobRequest {
-	
+
+
+	private int executeDBId;
+	private int backupDBId;
+	private int kdbDBId;
+	private int pidDBId;
+	private List<String> ruleIds;
+
+	@Override
+	public void defineSubJobRequests() throws JobCreateException {
+
+	}
+
+	@Override
+	protected int myStepCount() throws JobException {
+		return 2;
+	}
 
 	@Override
 	public String getJobType() {
 		return "batchCore";
 	}
 
-
 	@Override
 	public void validate() throws JobException {
 
 	}
 
-	@Override
-	protected int myStepCount() throws JobException {
-		// TODO Auto-generated method stub
-		return 0;
+	public int getExecuteDBId() {
+		return executeDBId;
 	}
 
-	@Override
-	public void defineSubJobRequests() {
-		
+	public void setExecuteDBId(int executeDBId) {
+		this.executeDBId = executeDBId;
 	}
+
+	public int getBackupDBId() {
+		return backupDBId;
+	}
+
+	public void setBackupDBId(int backupDBId) {
+		this.backupDBId = backupDBId;
+	}
+
+	public int getKdbDBId() {
+		return kdbDBId;
+	}
+
+	public void setKdbDBId(int kdbDBId) {
+		this.kdbDBId = kdbDBId;
+	}
+
+	public int getPidDBId() {
+		return pidDBId;
+	}
+
+	public void setPidDBId(int pidDBId) {
+		this.pidDBId = pidDBId;
+	}
+
+	public List<String> getRuleIds() {
+		return ruleIds;
+	}
+
+	public void setRuleIds(List<String> ruleIds) {
+		this.ruleIds = ruleIds;
+	}
+
+
 
 }

@@ -71,4 +71,8 @@ public class PropConstant {
 	public static final String serverUrl = "dropbox.url";
 	
 	public static final String gdbVersion = "gdb.version";
+	
+	public static final String inforUploadUrl = "mapspotter.infor.upload.url";
+	
+	public static final String inforTimeOut = "mapspotter.infor.upload.timeout";
 }

@@ -26,7 +26,7 @@ import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
-import com.navinfo.dataservice.engine.dropbox.manger.UploadManager;
+import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
 import com.navinfo.dataservice.engine.fcc.tips.TipsExporter;
 import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
@@ -112,7 +112,7 @@ public class TipsController extends BaseController {
 
 			int jobId = json.getInt("jobId");
 
-			UploadManager upload = new UploadManager();
+			UploadService upload = UploadService.getInstance();
 
 			String filePath = upload.unzipByJobId(jobId);
 

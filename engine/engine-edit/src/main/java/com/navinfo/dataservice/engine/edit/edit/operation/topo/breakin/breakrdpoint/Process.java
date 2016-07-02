@@ -172,10 +172,9 @@ public class Process extends AbstractProcess<Command> {
 
 	}
 
-	public String runNotCommit() throws Exception {
+	public String innerRun() throws Exception {
 		String msg;
 		try {
-			this.getConn().setAutoCommit(false);
 			this.prepareData();
 			String preCheckMsg = this.preCheck();
 			if (preCheckMsg != null) {
@@ -196,9 +195,7 @@ public class Process extends AbstractProcess<Command> {
 			opRefRdGsc.run(this.getResult());
 			OpRefAdAdmin opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
 			opRefAdAdmin.run(this.getResult());
-			this.recordData();
 			this.postCheck();
-			// conn.commit();
 		} catch (Exception e) {
 
 			this.getConn().rollback();

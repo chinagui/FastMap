@@ -27,10 +27,7 @@ public class FuseRegiongdbDayPoi {
 
 		try {
 
-			ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-					new String[] { "dubbo-consumer-4scripts.xml" });
-			context.start();
-			new ApplicationContextUtil().setApplicationContext(context);
+			JobScriptsInterface.initContext();
 
 			List<Region> list = RegionService.getInstance().list();
 

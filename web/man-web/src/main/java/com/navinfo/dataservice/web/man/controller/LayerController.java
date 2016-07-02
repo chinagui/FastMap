@@ -8,7 +8,6 @@ import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -26,8 +25,6 @@ import com.navinfo.dataservice.engine.man.layer.LayerService;
 @Controller
 public class LayerController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	@Autowired
-	private LayerService service;
 
 	@RequestMapping(value = "/layer/create")
 	public ModelAndView create(HttpServletRequest request) {
@@ -55,7 +52,7 @@ public class LayerController extends BaseController {
 			long userId=2;
 			//log.info(tokenObj);
 			
-			service.create(userId, dataJson.getString("layerName"),dataJson.getString("wkt"));
+			LayerService.getInstance().create(userId, dataJson.getString("layerName"),dataJson.getString("wkt"));
 			return new ModelAndView("jsonView", success("创建成功"));
 		} catch (Exception e) {
 			log.error("创建失败，原因：" + e.getMessage(), e);
@@ -71,7 +68,7 @@ public class LayerController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
-			service.update(dataJson.getString("layerId"),
+			LayerService.getInstance().update(dataJson.getString("layerId"),
 					dataJson.getString("wkt"));
 			return new ModelAndView("jsonView", success("修改成功"));
 		} catch (Exception e) {
@@ -88,7 +85,7 @@ public class LayerController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
-			service.delete(dataJson.getString("layerId"));
+			LayerService.getInstance().delete(dataJson.getString("layerId"));
 			return new ModelAndView("jsonView", success("删除成功"));
 		} catch (Exception e) {
 			log.error("删除失败，原因：" + e.getMessage(), e);
@@ -104,7 +101,7 @@ public class LayerController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("param参数不能为空。");
 			}
-			List data = service.listByWkt(dataJson.getString("wkt"));
+			List data = LayerService.getInstance().listByWkt(dataJson.getString("wkt"));
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取明细失败，原因：" + e.getMessage(), e);

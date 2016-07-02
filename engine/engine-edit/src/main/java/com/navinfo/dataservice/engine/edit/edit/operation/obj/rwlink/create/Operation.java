@@ -11,6 +11,7 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
+import com.navinfo.dataservice.engine.edit.comm.util.EditUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.RwLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -66,7 +67,10 @@ public class Operation implements IOperation {
 		this.createRwLinks(map, result);
 		// 挂接的线被打断的操作
 		this.breakLine(result);
-
+		
+		//往result中设置新增的pid（setPrimaryPid）
+		EditUtils.handleResult(RwLink.class, result);
+		
 		return msg;
 	}
 
@@ -137,7 +141,7 @@ public class Operation implements IOperation {
 						breakJson, breakJson.toString());
 				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Process(
 						breakCommand,result,conn);
-				breakProcess.run();
+				breakProcess.innerRun();
 			}
 		}
 	}

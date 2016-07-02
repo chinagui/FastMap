@@ -6,10 +6,10 @@ import java.util.List;
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
-import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
+import com.navinfo.dataservice.impcore.flushbylog.LogFlushUtil;
 import com.navinfo.dataservice.impcore.flushbylog.LogFlusher;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
@@ -29,7 +29,8 @@ public class Day2MonthRoadJob extends AbstractJob {
 			throws JobException {
 		try{
 			this.log.info("获取大区和grid的映射关系");
-			List<Region> regionsWithGrids= queryRegionGridsMapping();
+			Day2MonthRoadJobRequest req = (Day2MonthRoadJobRequest )this.request;
+			List<Region> regionsWithGrids= LogFlushUtil.getInstance().queryRegionGridsMapping(req.getGridList());
 			HashMap<String,FlushResult> jobResponse = new HashMap<String,FlushResult> ();
 			for (Region regionInfo:regionsWithGrids){
 				List<Integer> gridListOfRegion = regionInfo.getGrids();
@@ -41,7 +42,7 @@ public class Day2MonthRoadJob extends AbstractJob {
 													dailyDb, 
 													monthlyDb, 
 													gridListOfRegion, 
-													((Day2MonthRoadJobRequest )this.request).getStopTime());
+													req.getStopTime());
 				logFlusher.setLog(this.log);
 				FlushResult result= logFlusher.perform();
 				jobResponse.put(regionInfo.getRegionId().toString(), result);
@@ -53,14 +54,6 @@ public class Day2MonthRoadJob extends AbstractJob {
 		}
 	}
 
-	private List<Region> queryRegionGridsMapping() throws Exception {
-		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
-		List<Region> regionWithGridsList= manApi.queryRegionWithGrids(((Day2MonthRoadJobRequest )this.request).getGridList());
-		return regionWithGridsList;
-	}
-
-	
-	
 
 }
 

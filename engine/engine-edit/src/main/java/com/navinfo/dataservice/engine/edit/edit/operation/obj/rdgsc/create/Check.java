@@ -8,6 +8,7 @@ import java.util.Map;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.RdGscOperateUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class Check {
@@ -62,8 +63,17 @@ public class Check {
 		if (gscGeo.getNumGeometries() != 1) {
 			throw new Exception("矩形框内线的交点有多个");
 		}
+		
+		//检查线上该点位是否存在立交
+		List<Integer> linkPidList = new ArrayList<>();
 
-		boolean flag = checkIsHasGsc(gscGeo, map);
+		for (RdGscLink rdGscLink : map.values()) {
+			if (!linkPidList.contains(rdGscLink.getLinkPid())) {
+				linkPidList.add(rdGscLink.getLinkPid());
+			}
+		}
+		
+		boolean flag = RdGscOperateUtils.checkIsHasGsc(gscGeo, linkPidList, conn);
 
 		if (flag) {
 			throw new Exception("同一点位不能重复创建立交");

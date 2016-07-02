@@ -43,6 +43,7 @@ public class RefreshRegiongdbRoad {
 				req1.put("targetDbId", r.getDailyDbId());
 				req1.put("featureType", GlmTable.FEATURE_TYPE_ROAD);
 				req1.put("gdbVersion", gdbVersion);
+				req1.put("truncateData", true);
 				info1.setRequest(req1);
 				AbstractJob job1 = JobCreateStrategy.createAsMethod(info1);
 				job1.run();
@@ -58,6 +59,7 @@ public class RefreshRegiongdbRoad {
 				req2.put("targetDbId", r.getMonthlyDbId());
 				req2.put("featureType", GlmTable.FEATURE_TYPE_ROAD);
 				req2.put("gdbVersion", gdbVersion);
+				req2.put("truncateData", true);
 				info2.setRequest(req2);
 				AbstractJob job2 = JobCreateStrategy.createAsMethod(info2);
 				job2.run();

@@ -1,62 +1,137 @@
 package com.navinfo.dataservice.scripts;
 
 import java.sql.Connection;
-import java.util.List;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
-import net.sf.json.JSONObject;
-
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.api.man.model.Region;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.datahub.service.DatahubApiImpl;
-import com.navinfo.dataservice.engine.edit.export.GdbDataExporter;
-import com.navinfo.dataservice.engine.man.region.RegionService;
+import com.navinfo.dataservice.expcore.snapshot.GdbDataExporter;
+import com.navinfo.navicommons.database.QueryRunner;
 
 public class GdbExportScriptsInterface {
+
+	private static Map<Integer, Map<Integer, Set<Integer>>> getProvinceMeshList() throws SQLException {
+	
+		Connection conn = DBConnector.getInstance().getManConnection();
+
+		QueryRunner runner = new QueryRunner();
+
+		String sql = "select a.region_id,a.monthly_db_id,c.admincode,c.mesh from region a, cp_region_province b, cp_meshlist@metadb_link c where a.region_id=b.region_id and b.admincode=c.admincode and a.monthly_db_id is not null order by region_id,admincode";
+
+		ResultSetHandler<Map<Integer, Map<Integer, Set<Integer>>>> rsh = new ResultSetHandler<Map<Integer, Map<Integer, Set<Integer>>>>() {
+
+			@Override
+			public Map<Integer, Map<Integer, Set<Integer>>> handle(ResultSet rs)
+					throws SQLException {
+				if (rs != null) {
+					Map<Integer, Map<Integer, Set<Integer>>> data = new HashMap<Integer, Map<Integer, Set<Integer>>>();
+
+					while (rs.next()) {
+
+						int dbId = rs.getInt("monthly_db_id");
+
+						int adminCode = rs.getInt("admincode");
+
+						int mesh = rs.getInt("mesh");
+
+						Map<Integer, Set<Integer>> map = null;
+						if (data.containsKey(dbId)) {
+							map = data.get(dbId);
+						} else {
+							map = new HashMap<Integer, Set<Integer>>();
+						}
+
+						Set<Integer> meshes = null;
+						if (map.containsKey(adminCode)) {
+							meshes = map.get(adminCode);
+						} else {
+							meshes = new HashSet<Integer>();
+						}
+
+						meshes.add(mesh);
+
+						map.put(adminCode, meshes);
+
+						data.put(dbId, map);
+
+					}
+					return data;
+				}
+				return null;
+			}
+		};
+
+		return runner.query(conn, sql, rsh);
+
+	}
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		
+
 		try {
-			
+
 			String path = args[0];
 			
-			ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(  
-	                new String[] { "dubbo-consumer-4scripts.xml" }); 
-			context.start();
-			new ApplicationContextUtil().setApplicationContext(context);
-			
-			List<Region> list = RegionService.getInstance().list();
-			
-			for(Region region : list){
+			if (!path.endsWith("/")) {
+				path += "/";
+			}
+
+			JobScriptsInterface.initContext();
+
+			Map<Integer, Map<Integer, Set<Integer>>> map = getProvinceMeshList();
+
+			DatahubApi datahub = (DatahubApi) ApplicationContextUtil
+					.getBean("datahubApi");
+
+			for (Map.Entry<Integer, Map<Integer, Set<Integer>>> entry : map
+					.entrySet()) {
+
+				int dbId = entry.getKey();
 				
-				DatahubApiImpl datahub = new DatahubApiImpl();
-				
-				DbInfo dbinfo = datahub.getDbById(region.getMonthlyDbId());
-				
+				System.out.println("export dbId : " + dbId);
+
+				Map<Integer, Set<Integer>> data = entry.getValue();
+
+				DbInfo dbinfo = datahub.getDbById(dbId);
+
 				DbConnectConfig connConfig = DbConnectConfig
 						.createConnectConfig(dbinfo.getConnectParam());
-				
+
 				DataSource datasource = MultiDataSourceFactory.getInstance()
-				.getDataSource(connConfig);
-				
+						.getDataSource(connConfig);
+
 				Connection conn = datasource.getConnection();
-				
-				if(!path.endsWith("/")){
-					path += "/";
+
+				for (Map.Entry<Integer, Set<Integer>> en : data.entrySet()) {
+
+					int admincode = en.getKey();
+					
+					System.out.println("export admincode "+admincode+" ...");
+					
+					Set<Integer> meshes = en.getValue();
+
+					String output = path + admincode / 10000;
+
+					String filename = GdbDataExporter.run(conn, output, meshes);
+					
+					System.out.println("export admincode "+admincode+" success: "+filename);
 				}
-				
-				path += region.getRegionId();
-				
-				GdbDataExporter.exportBaseData2Sqlite(conn, path);
 			}
 
 			System.out.println("Over.");
@@ -64,7 +139,7 @@ public class GdbExportScriptsInterface {
 		} catch (Exception e) {
 			System.out.println("Oops, something wrong...");
 			e.printStackTrace();
-			
+
 		}
 	}
 

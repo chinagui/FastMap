@@ -33,7 +33,7 @@ public class Command extends AbstractCommand {
 
 	@Override
 	public ObjType getObjType() {
-		return ObjType.RDCROSS;
+		return ObjType.RDGSC;
 	}
 
 	@Override
@@ -76,7 +76,7 @@ public class Command extends AbstractCommand {
 			{
 				JSONObject linkObj = linkAttrArray.getJSONObject(i);
 				
-				int level = linkObj.getInt("level_index");
+				int level = linkObj.getInt("zlevel");
 				
 				int pid = linkObj.getInt("pid");
 				
@@ -87,6 +87,8 @@ public class Command extends AbstractCommand {
 				link.setTableName(type);
 				
 				link.setLinkPid(pid);
+				
+				link.setZlevel(level);
 				
 				linkMap.put(level,link);
 				

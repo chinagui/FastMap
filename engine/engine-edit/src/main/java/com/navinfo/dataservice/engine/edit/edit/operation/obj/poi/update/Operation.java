@@ -820,7 +820,7 @@ public class Operation implements IOperation {
 
 					row.Unserialize(json);
 
-					// row.setPid(0);
+					row.setPid(PidService.getInstance().applyPoiParkingsId());
 
 					row.setPoiPid(ixPoi.getPid());
 
@@ -1266,7 +1266,7 @@ public class Operation implements IOperation {
 
 					row.Unserialize(json);
 
-					// row.setPid(0);
+					row.setPid(PidService.getInstance().applyPoiGasstationId());
 
 					row.setPoiPid(ixPoi.getPid());
 

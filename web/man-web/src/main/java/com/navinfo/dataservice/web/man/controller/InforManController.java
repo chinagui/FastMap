@@ -5,12 +5,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -23,6 +19,9 @@ import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.inforMan.InforManService;
 import com.navinfo.navicommons.database.Page;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 /**
  * @ClassName: InforManController
  * @author code generator
@@ -32,11 +31,11 @@ import com.navinfo.navicommons.database.Page;
 @Controller
 public class InforManController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	@Autowired
-	private InforManService service;
+	
+	private InforManService service=InforManService.getInstance();
 
 	/**
-	 * 规划管理-情报管理-查看及编辑情报信息
+	 * 规划管理-情报管理-开启情报规划
 	 * 
 	 * @param request
 	 * @return
@@ -63,7 +62,7 @@ public class InforManController extends BaseController {
 	}
 
 	/**
-	 * 规划管理-情报管理-开启情报规划
+	 * 规划管理-情报管理-查看及编辑情报信息
 	 * 
 	 * @param request
 	 * @return

@@ -8,7 +8,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -31,8 +30,8 @@ import net.sf.json.JSONObject;
 @Controller
 public class BlockController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	@Autowired
-	private BlockService service;
+
+	private BlockService service=BlockService.getInstance();
 
 	@RequestMapping(value = "/block/open")
 	public ModelAndView create(HttpServletRequest request) {
@@ -89,14 +88,10 @@ public class BlockController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			if (!(dataJson.containsKey("wkt"))) {
-				throw new IllegalArgumentException("wkt参数是必须的。");
+			if (!dataJson.containsKey("wkt") || !dataJson.containsKey("type")||!dataJson.containsKey("stage")){
+				throw new IllegalArgumentException("wkt/type/stage不能为空");
 			}
-			String wkt = dataJson.getString("wkt");
-			if (StringUtils.isEmpty(wkt)) {
-				throw new IllegalArgumentException("wkt参数值不能为空");
-			}
-			List<HashMap> data = service.listByProduce(wkt);
+			List<HashMap> data = service.listByProduce(dataJson);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取block列表失败，原因：" + e.getMessage(), e);

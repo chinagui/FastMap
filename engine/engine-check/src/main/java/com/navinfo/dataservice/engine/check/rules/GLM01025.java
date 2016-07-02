@@ -118,7 +118,6 @@ public class GLM01025 extends baseRule {
 		
 		//检查调用
 		CheckCommand checkCommand=new CheckCommand();
-		checkCommand.setProjectId(11);
 		checkCommand.setGlmList(objList);
 		checkCommand.setOperType(OperType.CREATE);
 		checkCommand.setObjType(link.objType());

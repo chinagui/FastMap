@@ -41,14 +41,14 @@ public class Day2MonRoadLogFlusher extends LogFlusher {
 			sb.append(StringUtils.join(this.getGrids(), ","));
 			sb.append(")");
 		}
-		sb.append(this.getFeatureFilter());
+		sb.append(" AND " + this.getFeatureFilter());
 		return sb.toString();
 	}
 	@Override
 	public String getFeatureFilter(){
 		String gdbVesion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 		List<String> tableNames = GlmCache.getInstance().getGlm(gdbVesion).getEditTableNames(GlmTable.FEATURE_TYPE_ROAD);
-		return " AND L.TB_NM IN ('"+StringUtils.join(tableNames,"','")+"')";
+		return "  L.TB_NM IN ('"+StringUtils.join(tableNames,"','")+"')";
 		
 	}
 	@Override

@@ -10769,7 +10769,7 @@ comment on column IX_POI_PARKING.U_FIELDS is
 /*==============================================================*/
 create table IX_POI_PHOTO  (
    POI_PID              NUMBER(10)                      not null,
-   PHOTO_ID             VARCHAR2(32),
+   PHOTO_ID             NUMBER(10),
    STATUS               VARCHAR2(100),
    MEMO                 VARCHAR2(500),
    U_RECORD             NUMBER(2)                      default 0 not null
@@ -10777,6 +10777,8 @@ create table IX_POI_PHOTO  (
    U_FIELDS             VARCHAR2(1000),
    U_DATE               VARCHAR2(14),
    ROW_ID               RAW(16),
+   PID                  VARCHAR2(32),
+   TAG                  NUMBER(3),
    constraint IXPOI_PHOTO foreign key (POI_PID)
          references IX_POI (PID)
 );

@@ -15,9 +15,12 @@ import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.edit.iface.DatalockApi;
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.impcore.commit.day.road.Day2MonthRoadJobRequest;
 import com.navinfo.dataservice.impcore.exception.LockException;
 import com.navinfo.dataservice.impcore.mover.LogMoveResult;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -228,6 +231,15 @@ public class LogFlushUtil {
 									String.valueOf(targetDbInfo.getDbServer().getPort()), 
 									targetDbInfo.getDbName());
 		return dbLinkName;
+	}
+	/**
+	 * @return 大区id和对应grid的mapping信息
+	 * @throws Exception
+	 */
+	public List<Region> queryRegionGridsMapping(List<Integer> grids) throws Exception {
+		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+		List<Region> regionWithGridsList= manApi.queryRegionWithGrids(grids);
+		return regionWithGridsList;
 	}
 	private Connection createConnection(DbInfo dbInfo ) throws Exception{
 		OracleSchema oraSchema = new OracleSchema(DbConnectConfig.createConnectConfig(dbInfo.getConnectParam()));

@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -22,6 +19,9 @@ import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * RWLINK公共方法类
@@ -49,8 +49,6 @@ public class RwLinkOperateUtils {
 		
 		link.setPid(PidService.getInstance().applyRwLinkPid());
 
-		System.out.println(link.getPid());
-		
 		result.setPrimaryPid(link.getPid());
 
 		double linkLength = GeometryUtils.getLinkLength(geo);
@@ -166,7 +164,11 @@ public class RwLinkOperateUtils {
 			pc++;
 		}
         //循环挂接的线是否完毕 如果>1 则表示完毕
-		if (tmpCs.size() > 1) {
+		if (tmpCs.size() > 0 && pc < coordinates.size()) {
+			for(int i = pc;i < coordinates.size();i++){
+				tmpCs.add(coordinates.get(i));
+			}
+			
 			tmpGeom.put("coordinates", tmpCs);
 			if (eNodePid != 0) {
 				se.put("e", eNodePid);
@@ -238,6 +240,7 @@ public class RwLinkOperateUtils {
 		link.setsNodePid(sNodePid);
 		link.seteNodePid(eNodePid);
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
+		result.setPrimaryPid(link.getPid());
 		return link;
 	}
 	
@@ -287,11 +290,13 @@ public class RwLinkOperateUtils {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
 		}
 		if (!maps.containsValue(node.get("e"))) {
-			maps.put(g.getCoordinates()[0], (int) node.get("e"));
+			maps.put(g.getCoordinates()[1], (int) node.get("e"));
 		}
 		//创建线
-		RwLinkOperateUtils.addLink(g, (int) node.get("s"),
+		RwLink link = RwLinkOperateUtils.addLink(g, (int) node.get("s"),
 				(int) node.get("e"), result);
+		
+		result.insertObject(link, ObjStatus.INSERT, link.pid());
 	}
 	
 
@@ -346,21 +351,17 @@ public class RwLinkOperateUtils {
 		
 		return link;
 	}
-	
-
-	
-
 		
 	public static List<RwLink> getCreateRwLinksWithMesh(Geometry g,
 			Map<Coordinate, Integer> maps, Result result) throws Exception {
 		List<RwLink> links = new ArrayList<RwLink>();
 		if (g != null) {
 			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
-				links.add(getCalAdLinkWithMesh(g, maps,result));
+				links.add(getCalRwLinkWithMesh(g, maps,result));
 			}
 			if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
 				for (int i = 0; i < g.getNumGeometries(); i++) {
-					links.add(getCalAdLinkWithMesh(g.getGeometryN(i), maps,result));
+					links.add(getCalRwLinkWithMesh(g.getGeometryN(i), maps,result));
 				}
 
 			}
@@ -371,7 +372,7 @@ public class RwLinkOperateUtils {
 	/*
 	 * 创建铁路线 针对跨图幅创建图廓点不能重复
 	 */
-	public static void calAdLinkWithMesh(Geometry g,Map<Coordinate, Integer> maps,
+	public static void calRwLinkWithMesh(Geometry g,Map<Coordinate, Integer> maps,
 			Result result) throws Exception {
 		//定义创建铁路线的起始Pid 默认为0
 		int sNodePid = 0;
@@ -385,7 +386,7 @@ public class RwLinkOperateUtils {
 			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
 		}
 		//创建线对应的点
-		JSONObject node = AdLinkOperateUtils.createAdNodeForLink(
+		JSONObject node = RwLinkOperateUtils.createNodeForLink(
 				g, sNodePid, eNodePid, result);
 		if (!maps.containsValue(node.get("s"))) {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
@@ -394,14 +395,16 @@ public class RwLinkOperateUtils {
 			maps.put(g.getCoordinates()[0], (int) node.get("e"));
 		}
 		//创建线
-		RwLinkOperateUtils.addLink(g, (int) node.get("s"),
+		RwLink link = RwLinkOperateUtils.addLink(g, (int) node.get("s"),
 				(int) node.get("e"), result);
+		
+		result.insertObject(link, ObjStatus.INSERT, link.pid());
 	}
 	
 	/*
 	 * 创建铁路线 针对跨图幅创建图廓点不能重复
 	 */
-	public static RwLink getCalAdLinkWithMesh(Geometry g,Map<Coordinate, Integer> maps,
+	public static RwLink getCalRwLinkWithMesh(Geometry g,Map<Coordinate, Integer> maps,
 			Result result) throws Exception {
 		//定义创建铁路线的起始Pid 默认为0
 		int sNodePid = 0;
@@ -415,7 +418,7 @@ public class RwLinkOperateUtils {
 			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
 		}
 		//创建线对应的点
-		JSONObject node = AdLinkOperateUtils.createAdNodeForLink(
+		JSONObject node = RwLinkOperateUtils.createNodeForLink(
 				g, sNodePid, eNodePid, result);
 		if (!maps.containsValue(node.get("s"))) {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
@@ -424,8 +427,12 @@ public class RwLinkOperateUtils {
 			maps.put(g.getCoordinates()[0], (int) node.get("e"));
 		}
 		//创建线
-		return RwLinkOperateUtils.addLink(g, (int) node.get("s"),
+		RwLink link =  RwLinkOperateUtils.addLink(g, (int) node.get("s"),
 				(int) node.get("e"), result);
+		
+		result.insertObject(link, ObjStatus.INSERT, link.pid());
+		
+		return link;
 	}
 
 	

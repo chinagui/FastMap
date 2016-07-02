@@ -1,17 +1,15 @@
 package com.navinfo.navicommons.geo.computation;
 
-import java.util.List;
-
-import com.navinfo.dataservice.commons.util.UuidUtils;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKTReader;
-import com.vividsolutions.jts.io.WKTWriter;
+import java.util.Set;
 
 import net.sf.json.JSONArray;
 import ch.hsr.geohash.GeoHash;
 import ch.hsr.geohash.WGS84Point;
+
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
+import com.vividsolutions.jts.io.WKTWriter;
 
 /**
  * 网格的帮助类
@@ -111,6 +109,28 @@ public class GridUtils {
 		for (int i = 0; i < grids.size(); i++) {
 			String gridId = grids.getString(i);
 
+			Geometry geo = grid2Geometry(gridId);
+			
+			if(geometry == null){
+				geometry = geo;
+			}
+			else{
+				geometry = geometry.union(geo);
+			}
+		}
+		
+
+		WKTWriter w = new WKTWriter();
+		
+		return w.write(geometry);
+	}
+	
+	public static String grids2Wkt(Set<String> grids) throws ParseException {
+
+		Geometry geometry = null;
+		
+		for (String gridId : grids) {
+			
 			Geometry geo = grid2Geometry(gridId);
 			
 			if(geometry == null){

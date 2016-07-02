@@ -153,6 +153,8 @@ public class RenderController extends BaseController {
 			int z = jsonReq.getInt("z");
 
 			int gap = jsonReq.getInt("gap");
+			
+			String mdFlag=jsonReq.getString("mdFlag");
 
 			JSONArray types = new JSONArray();
 
@@ -163,7 +165,7 @@ public class RenderController extends BaseController {
 			TipsSelector selector = new TipsSelector();
 
 			JSONArray array = selector.searchDataByTileWithGap(x, y, z, gap,
-					types);
+					types,mdFlag);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(array));

@@ -216,19 +216,9 @@ public class RdGscOperateUtils {
 
 			RdGscLink link = (RdGscLink) gscLink;
 
-			List<Integer> shpSeqNumList = RdGscOperateUtils.calcShpSeqNum(gsc.getGeometry(), linkCoor);
+			RdGscOperateUtils.calShpSeqNum(link, gsc.getGeometry(), linkCoor);
 
-			JSONObject updateContent = new JSONObject();
-
-			if (flag) {
-				// 自相交立交组成线
-				updateContent.put("shpSeqNum", shpSeqNumList.get(link.getZlevel()));
-			} else {
-				updateContent.put("shpSeqNum", shpSeqNumList.get(0));
-			}
-
-			boolean changed = link.fillChangeFields(updateContent);
-			if (changed) {
+			if (!link.changedFields().isEmpty()) {
 				result.insertObject(link, ObjStatus.UPDATE, gsc.getPid());
 			}
 		}
@@ -480,32 +470,34 @@ public class RdGscOperateUtils {
 	 * @param linkCoor
 	 * @throws Exception
 	 */
-	public static void calShpSeqNum(RdGscLink rdGscLink, Geometry gscGeo, Coordinate[] linkCoor)
-			throws Exception {
+	public static void calShpSeqNum(RdGscLink rdGscLink, Geometry gscGeo, Coordinate[] linkCoor) throws Exception {
 		List<Integer> shpSeqNumList = null;
-		
+
 		// 获取link起终点标识
 		int startEndFlag = GeometryUtils.getStartOrEndType(linkCoor, gscGeo);
 
-		rdGscLink.setStartEnd(startEndFlag);
+		rdGscLink.changedFields().put("startEnd", startEndFlag);
 
+		int seqNum = 0;
 		// 计算形状点号：SHP_SEQ_NUM
 		if (startEndFlag == 1) {
-			rdGscLink.setShpSeqNum(0);
+			seqNum = 0;
 		} else if (startEndFlag == 2) {
-			rdGscLink.setShpSeqNum(linkCoor.length - 1);
+			seqNum = linkCoor.length - 1;
 		} else {
 			shpSeqNumList = RdGscOperateUtils.calcShpSeqNum(gscGeo, linkCoor);
-			if (shpSeqNumList != null && shpSeqNumList.size()>1) {
-				rdGscLink.setShpSeqNum(shpSeqNumList.get(rdGscLink.getZlevel()));
+			if (shpSeqNumList != null && shpSeqNumList.size() > 1) {
+				seqNum = shpSeqNumList.get(rdGscLink.getZlevel());
 			} else {
-				rdGscLink.setShpSeqNum(shpSeqNumList.get(0));
+				seqNum = shpSeqNumList.get(0);
 			}
 		}
+		rdGscLink.changedFields().put("shpSeqNum", seqNum);
 	}
 
 	/**
 	 * 检查线上是否已经在已知点位存在立交点
+	 * 
 	 * @param gscGeo
 	 * @param linkPidList
 	 * @param conn
@@ -514,9 +506,9 @@ public class RdGscOperateUtils {
 	 */
 	public static boolean checkIsHasGsc(Geometry gscGeo, List<Integer> linkPidList, Connection conn) throws Exception {
 		boolean flag = false;
-		
+
 		RdGscSelector selector = new RdGscSelector(conn);
-		
+
 		List<RdGsc> rdGscList = selector.loadRdGscByInterLinkPids(linkPidList, false);
 
 		for (RdGsc gsc : rdGscList) {

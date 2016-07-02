@@ -8,6 +8,8 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.engine.check.CheckEngine;
@@ -119,7 +121,12 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
 			this.prepareData();
 
-			msg =  exeOperation();//new Operation(command, conn);
+			msg =  exeOperation();
+			
+			if(this.getCommand().getOperType().equals(OperType.CREATE))
+			{
+				handleResult(this.getCommand().getObjType(), result);
+			}
 			
 			String preCheckMsg = this.preCheck();
 
@@ -197,5 +204,17 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	public void setCheckCommand(CheckCommand checkCommand) {
 		this.checkCommand = checkCommand;
 	}
-
+	
+	public void handleResult(ObjType objType,Result result)
+	{
+		for(IRow row : result.getAddObjects())
+		{
+			if(objType.equals(row.objType()))
+			{
+				result.setPrimaryPid(row.parentPKValue());
+				
+				break;
+			}
+		}
+	}
 }

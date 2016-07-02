@@ -679,6 +679,12 @@ public class TipsUpload {
 		jsonTrack.put("t_command", command);
 
 		jsonTrack.put("t_date", currentDate);
+		
+		jsonTrack.put("t_cStatus", t_cStatus);
+		
+		jsonTrack.put("t_dStatus", t_dStatus);
+		
+		jsonTrack.put("t_mStatus", t_mStatus);
 
 		JSONObject jsonTrackInfo = new JSONObject();
 
@@ -688,12 +694,7 @@ public class TipsUpload {
 
 		jsonTrackInfo.put("handler", handler);
 		
-		jsonTrackInfo.put("t_cStatus", t_cStatus);
 		
-		jsonTrackInfo.put("t_dStatus", t_dStatus);
-		
-		jsonTrackInfo.put("t_mStatus", t_mStatus);
-
 		if (null == oldTrackInfo) {
 
 			oldTrackInfo = new JSONArray();
@@ -847,7 +848,7 @@ public class TipsUpload {
 
 		TipsUpload a = new TipsUpload();
 
-		a.run("C:/2.txt");
+		a.run("D:/4.txt");
 		System.out.println("成功");
 	}
 }

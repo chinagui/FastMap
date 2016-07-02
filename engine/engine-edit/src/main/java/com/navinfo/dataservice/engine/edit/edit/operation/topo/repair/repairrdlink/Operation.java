@@ -18,7 +18,6 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.RdGscOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.RdLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -45,7 +44,7 @@ public class Operation implements IOperation {
 		this.map = map;
 	}
 
-	public Operation(Connection conn, Command command, RdLink updateLink, RdNode snode, RdNode enode, Check check) {
+	public Operation(Connection conn, Command command) {
 
 		this.conn = conn;
 

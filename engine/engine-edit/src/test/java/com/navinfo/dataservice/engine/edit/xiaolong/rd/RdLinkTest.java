@@ -40,4 +40,17 @@ public class RdLinkTest extends InitApplication{
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
+	public void testRepairLink()
+	{
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":42,\"objId\":100005958,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46939,40.01933],[116.46939628038105,40.01910279858895],[116.4694,40.01891],[116.46940673430642,40.018544038215886],[116.46941,40.01821],[116.46942,40.01737]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

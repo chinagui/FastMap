@@ -519,4 +519,19 @@ public class RdGscOperateUtils {
 		}
 		return flag;
 	}
+	
+	public static boolean isMoveGscLink(Geometry linkGeo,List<RdGsc> gscList)
+	{
+		boolean flag = false;
+		
+		for(RdGsc rdGsc : gscList)
+		{
+			if(rdGsc.getGeometry().distance(linkGeo)>1)
+			{
+				flag = true;
+			}
+		}
+		
+		return flag;
+	}
 }

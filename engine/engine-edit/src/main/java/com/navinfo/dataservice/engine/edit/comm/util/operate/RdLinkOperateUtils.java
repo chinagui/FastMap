@@ -254,7 +254,7 @@ public class RdLinkOperateUtils {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
 		}
 		if (!maps.containsValue(node.get("e"))) {
-			maps.put(g.getCoordinates()[0], (int) node.get("e"));
+			maps.put(g.getCoordinates()[1], (int) node.get("e"));
 		}
 		RdNode sNode = new RdNode();
 		sNode.setPid((int) node.get("s"));

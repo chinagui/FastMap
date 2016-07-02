@@ -399,7 +399,7 @@ public class ZoneLinkOperateUtils {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
 		}
 		if (!maps.containsValue(node.get("e"))) {
-			maps.put(g.getCoordinates()[0], (int) node.get("e"));
+			maps.put(g.getCoordinates()[1], (int) node.get("e"));
 		}
 		//创建线
 		ZoneLinkOperateUtils.addLink(g, (int) node.get("s"),
@@ -429,7 +429,7 @@ public class ZoneLinkOperateUtils {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
 		}
 		if (!maps.containsValue(node.get("e"))) {
-			maps.put(g.getCoordinates()[0], (int) node.get("e"));
+			maps.put(g.getCoordinates()[1], (int) node.get("e"));
 		}
 		//创建线
 		return ZoneLinkOperateUtils.getAddLink(g, (int) node.get("s"),

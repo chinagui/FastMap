@@ -17,7 +17,6 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
-import com.navinfo.dataservice.engine.edit.comm.util.EditUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.RdGscOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.RwLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -51,8 +50,7 @@ public class Operation implements IOperation {
 	public String run(Result result) throws Exception {
 		// 修行修改线信息
 		this.updateLink(result);
-
-		EditUtils.handleResult(RwLink.class, result);
+		
 		return null;
 	}
 
@@ -74,8 +72,11 @@ public class Operation implements IOperation {
 			if (isChanged) {
 				result.insertObject(this.command.getUpdateLink(), ObjStatus.UPDATE, this.command.getLinkPid());
 			}
-
-			links.add(this.command.getUpdateLink());
+			//拷贝原link，set属性
+			RwLink link = new RwLink();
+			link.copy(this.command.getUpdateLink());
+			link.setGeometry(GeoTranslator.geojson2Jts(this.command.getLinkGeom(),100000,0));
+			links.add(link);
 		} else {
 			Iterator<String> it = meshes.iterator();
 			Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
@@ -122,9 +123,11 @@ public class Operation implements IOperation {
 						gscLink.setLinkPid(link.getPid());
 
 						// 计算立交点序号和起终点标识
-						RdGscOperateUtils.calShpSeqNum(gscLink, gscGeo, link.getGeometry().getCoordinates());
-
-						result.insertObject(link, ObjStatus.UPDATE, gsc.getPid());
+						RdGscOperateUtils.calShpSeqNum(gscLink, gscGeo, linkGeo.getCoordinates());
+						
+						if (!gscLink.changedFields().isEmpty()) {
+							result.insertObject(gscLink, ObjStatus.UPDATE, gsc.getPid());
+						}
 					}
 				}
 			}

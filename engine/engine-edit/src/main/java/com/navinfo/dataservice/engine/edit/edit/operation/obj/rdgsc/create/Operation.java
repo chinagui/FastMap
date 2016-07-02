@@ -111,8 +111,6 @@ public class Operation implements IOperation {
 	 */
 	private void createGsc() throws Exception {
 
-		List<IRow> rdGscLinks = new ArrayList<IRow>();
-
 		Geometry gscGeo = checkHasInter(interGeometry);
 
 		RdGsc rdGsc = RdGscOperateUtils.addRdGsc(gscGeo);
@@ -130,12 +128,11 @@ public class Operation implements IOperation {
 
 			// 更新立交组成线几何
 			updateLinkGeo(gscLink, row, gscGeo);
-
-			rdGscLinks.add(gscLink);
+			
+			if (!gscLink.changedFields().isEmpty()) {
+				result.insertObject(gscLink, ObjStatus.INSERT, gscLink.getPid());
+			}
 		}
-
-		rdGsc.setLinks(rdGscLinks);
-
 		result.setPrimaryPid(rdGsc.getPid());
 
 		result.insertObject(rdGsc, ObjStatus.INSERT, rdGsc.pid());

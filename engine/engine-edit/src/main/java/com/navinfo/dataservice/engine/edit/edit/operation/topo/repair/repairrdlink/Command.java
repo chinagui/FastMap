@@ -3,11 +3,15 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairrdl
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import java.util.List;
+
 import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 
 public class Command extends AbstractCommand {
@@ -21,6 +25,18 @@ public class Command extends AbstractCommand {
 	private JSONArray interLines;
 	
 	private JSONArray interNodes;
+	
+	private RdLink updateLink;
+	
+	private List<RdGsc> gscList;
+
+	public List<RdGsc> getGscList() {
+		return gscList;
+	}
+
+	public void setGscList(List<RdGsc> gscList) {
+		this.gscList = gscList;
+	}
 
 	public int getLinkPid() {
 		return linkPid;
@@ -36,6 +52,14 @@ public class Command extends AbstractCommand {
 
 	public JSONArray getInterNodes() {
 		return interNodes;
+	}
+	
+	public RdLink getUpdateLink() {
+		return updateLink;
+	}
+
+	public void setUpdateLink(RdLink updateLink) {
+		this.updateLink = updateLink;
 	}
 
 	@Override
@@ -73,8 +97,6 @@ public class Command extends AbstractCommand {
 		this.interLines = data.getJSONArray("interLinks");
 		
 		this.interNodes = data.getJSONArray("interNodes");
-		
-		
 	}
 
 }

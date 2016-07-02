@@ -1,23 +1,27 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairrdlink;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
-import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
-import com.navinfo.dataservice.engine.edit.comm.util.operate.AdminOperateUtils;
-import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.RdGscOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.RdLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
-import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -29,330 +33,69 @@ public class Operation implements IOperation {
 
 	private Command command;
 
-	private RdLink updateLink;
-
-	private RdNode enode;
-
-	private RdNode snode;
-
 	private Connection conn;
+	
+	private Map<Integer, List<RdLink>> map;
+
+	public Map<Integer, List<RdLink>> getMap() {
+		return map;
+	}
+
+	public void setMap(Map<Integer, List<RdLink>> map) {
+		this.map = map;
+	}
 
 	public Operation(Connection conn, Command command, RdLink updateLink, RdNode snode, RdNode enode, Check check) {
 
 		this.conn = conn;
 
 		this.command = command;
-
-		this.updateLink = updateLink;
-
-		this.enode = enode;
-
-		this.snode = snode;
-
 	}
 
 	@Override
 	public String run(Result result) throws Exception {
 
-		JSONObject content = new JSONObject();
-
-		result.setPrimaryPid(updateLink.getPid());
-
-		content.put("geometry", command.getLinkGeom());
-
-		// 判断端点有没有移动，如果移动，则需要分离节点
-
-		JSONArray coords = command.getLinkGeom().getJSONArray("coordinates");
-
-		JSONArray scoord = coords.getJSONArray(0);
-
-		double slon = scoord.getDouble(0);
-		double slat = scoord.getDouble(1);
-
-		JSONArray ecoord = coords.getJSONArray(coords.size() - 1);
-
-		double elon = ecoord.getDouble(0);
-		double elat = ecoord.getDouble(1);
-
-		Geometry geo = GeoTranslator.transform(updateLink.getGeometry(), 0.00001, 5);
-
-		Coordinate[] oldCoords = geo.getCoordinates();
-
-		boolean sNodeDepart = checkDepartSNode(oldCoords[0], slon, slat);
-
-		boolean eNodeDepart = checkDepartENode(oldCoords[oldCoords.length - 1], elon, elat);
-
-		com.navinfo.dataservice.engine.edit.edit.operation.topo.depart.departrdnode.Process departProcess = null;
-
-		if (sNodeDepart || eNodeDepart) {
-
-			JSONObject json = new JSONObject();
-
-			json.put("dbId", command.getDbId());
-
-			JSONObject data = new JSONObject();
-
-			data.put("linkPid", updateLink.getPid());
-
-			if (sNodeDepart) {
-				data.put("sNodePid", updateLink.getsNodePid());
-
-				data.put("slon", slon);
-
-				data.put("slat", slat);
+		Map<Integer, List<RdLink>> map = new HashMap<Integer, List<RdLink>>();
+		List<RdLink> links = new ArrayList<RdLink>();
+		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(GeoTranslator.geojson2Jts(command.getLinkGeom()));
+		if (meshes.size() == 1) {
+			JSONObject content = new JSONObject();
+			result.setPrimaryPid(this.command.getUpdateLink().getPid());
+			content.put("geometry", command.getLinkGeom());
+			boolean isChanged = this.command.getUpdateLink().fillChangeFields(content);
+			if (isChanged) {
+				result.insertObject(this.command.getUpdateLink(), ObjStatus.UPDATE, this.command.getLinkPid());
 			}
-
-			if (eNodeDepart) {
-				data.put("eNodePid", updateLink.geteNodePid());
-
-				data.put("elon", elon);
-
-				data.put("elat", elat);
-			}
-
-			json.put("data", data);
-
-			com.navinfo.dataservice.engine.edit.edit.operation.topo.depart.departrdnode.Command departCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.depart.departrdnode.Command(
-					json, json.toString());
-
-			departProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.depart.departrdnode.Process(
-					departCommand, conn);
-
-			departProcess.preCheck();
-
-			departProcess.prepareData();
-
-			departProcess.processRefObj();
-
-			departProcess.recordData();
-
-		}
-
-		if (command.getInterLines().size() == 0 && command.getInterNodes().size() == 0) {
-			// 没有挂接到别的link或node上
-
-			if (sNodeDepart) { // 需要新增节点
-
-				RdNode node = NodeOperateUtils.createRdNode(slon, slat);
-
-				content.put("sNodePid", node.getPid());
-
-				result.insertObject(node, ObjStatus.INSERT, node.pid());
-			}
-
-			if (eNodeDepart) {
-
-				RdNode node = NodeOperateUtils.createRdNode(elon, elat);
-
-				content.put("eNodePid", node.getPid());
-
-				result.insertObject(node, ObjStatus.INSERT, node.pid());
-			}
-
-		} else if ((command.getInterLines().size() == 1 || command.getInterLines().size() == 2)
-				&& command.getInterNodes().size() == 0) {
-			// 只挂接到link上
-
-			int sNodePid = updateLink.getsNodePid();
-
-			int eNodePid = updateLink.geteNodePid();
-
-			if (sNodeDepart) { // 需要新增节点
-
-				RdNode node = NodeOperateUtils.createRdNode(slon, slat);
-
-				content.put("sNodePid", node.getPid());
-
-				sNodePid = node.getPid();
-
-				result.insertObject(node, ObjStatus.INSERT, node.pid());
-			}
-
-			if (eNodeDepart) {
-
-				RdNode node = NodeOperateUtils.createRdNode(elon, elat);
-
-				content.put("eNodePid", node.getPid());
-
-				eNodePid = node.getPid();
-
-				result.insertObject(node, ObjStatus.INSERT, node.pid());
-			}
-
-			this.breakLine(sNodePid, eNodePid);
-
-		} else if (command.getInterLines().size() == 0
-				&& (command.getInterNodes().size() == 1 || command.getInterNodes().size() == 2)) {
-			// link的一个端点挂接到另外一组link的端点
-			for (int i = 0; i < command.getInterNodes().size(); i++) {
-				JSONObject mountNode = command.getInterNodes().getJSONObject(i);
-
-				int nodePid = mountNode.getInt("nodePid");
-
-				int pid = mountNode.getInt("pid");
-
-				if (nodePid == updateLink.getsNodePid()) {
-					content.put("sNodePid", pid);
-
-					if (!sNodeDepart) { // 如果是分离节点，需要保留该node，否则不保留
-						result.insertObject(snode, ObjStatus.DELETE, snode.pid());
-					}
-				} else {
-					content.put("eNodePid", pid);
-
-					if (!eNodeDepart) { // 如果是分离节点，需要保留该node，否则不保留
-						result.insertObject(enode, ObjStatus.DELETE, enode.pid());
-					}
-				}
-			}
-
-		} else if (command.getInterLines().size() == 1 && command.getInterNodes().size() == 1) {
-			// link的一个端点打断另外一根link、link的一个端点挂接到另外一组link的端点
-
-			for (int i = 0; i < command.getInterNodes().size(); i++) {
-				JSONObject mountNode = command.getInterNodes().getJSONObject(i);
-
-				int nodePid = mountNode.getInt("nodePid");
-
-				int pid = mountNode.getInt("pid");
-
-				if (nodePid == updateLink.getsNodePid()) {
-					content.put("sNodePid", pid);
-
-					if (!sNodeDepart) { // 如果是分离节点，需要保留该node，否则不保留
-						result.insertObject(snode, ObjStatus.DELETE, snode.pid());
-					}
-				} else {
-					content.put("eNodePid", pid);
-
-					if (!eNodeDepart) { // 如果是分离节点，需要保留该node，否则不保留
-						result.insertObject(enode, ObjStatus.DELETE, enode.pid());
-					}
-				}
-			}
-
-			int sNodePid = updateLink.getsNodePid();
-
-			int eNodePid = updateLink.geteNodePid();
-
-			if (content.containsKey("eNodePid")) {
-				if (sNodeDepart) { // 需要新增节点
-
-					RdNode node = NodeOperateUtils.createRdNode(slon, slat);
-
-					content.put("sNodePid", node.getPid());
-
-					sNodePid = node.getPid();
-
-					result.insertObject(node, ObjStatus.INSERT, node.pid());
-				}
-			} else {
-				if (eNodeDepart) {
-
-					RdNode node = NodeOperateUtils.createRdNode(elon, elat);
-
-					content.put("eNodePid", node.getPid());
-
-					eNodePid = node.getPid();
-
-					result.insertObject(node, ObjStatus.INSERT, node.pid());
-				}
-			}
-
-			this.breakLine(sNodePid, eNodePid);
+			//拷贝原link，set属性
+			RdLink link = new RdLink();
+			link.copy(this.command.getUpdateLink());
+			link.setGeometry(GeoTranslator.geojson2Jts(this.command.getLinkGeom(),100000,0));
+			links.add(link);
 		} else {
-			// 错误请求
-		}
-		
-		Geometry g = GeoTranslator.geojson2Jts(command.getLinkGeom());
-
-		Set<String> meshes =  CompGeometryUtil.geoToMeshesWithoutBreak(g);
-
-		// 跨图幅
-		if (meshes.size() > 1) {
-			//在图幅处打断重新生成新的link
-			Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
-			maps.put(g.getCoordinates()[0], updateLink.getsNodePid());
-			maps.put(g.getCoordinates()[g.getCoordinates().length - 1], updateLink.geteNodePid());
 			Iterator<String> it = meshes.iterator();
+			Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
+			Geometry g = GeoTranslator.transform(this.command.getUpdateLink().getGeometry(), 0.00001, 5);
+			maps.put(g.getCoordinates()[0], this.command.getUpdateLink().getsNodePid());
+			maps.put(g.getCoordinates()[g.getCoordinates().length - 1], this.command.getUpdateLink().geteNodePid());
 			while (it.hasNext()) {
 				String meshIdStr = it.next();
-				Geometry geomInter = MeshUtils.linkInterMeshPolygon(g, MeshUtils.mesh2Jts(meshIdStr));
-				geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-				this.createRdLinkWithMesh(geomInter, maps, result);
-			}
-			//删掉原始link
-			result.insertObject(updateLink, ObjStatus.DELETE, updateLink.pid());
-		}
-		else
-		{
-			//没有跨图幅只是修改属性
-			boolean isChanged = updateLink.fillChangeFields(content);
+				Geometry geomInter = GeoTranslator.transform(MeshUtils.linkInterMeshPolygon(
+						GeoTranslator.geojson2Jts(command.getLinkGeom()), MeshUtils.mesh2Jts(meshIdStr)), 1, 5);
+				links.addAll(RdLinkOperateUtils.getCreateRdLinksWithMesh(geomInter, maps, result));
 
-			if (isChanged) {
-				result.insertObject(updateLink, ObjStatus.UPDATE, updateLink.pid());
 			}
-
+			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE, this.command.getLinkPid());
 		}
-		
+		// 处理对立交的影响
+		if (CollectionUtils.isNotEmpty(this.command.getGscList())) {
+			handleEffectOnRdGsc(this.command.getGscList(), links, result);
+		}
+		map.put(this.command.getLinkPid(), links);
+		this.map = map;
 		return null;
 	}
 	
-	/*
-	 * 创建RDLINK针对跨图幅有两种情况 1.跨图幅和图幅交集是LineString 2.跨图幅和图幅交集是MultineString
-	 * 跨图幅需要生成和图廓线的交点
-	 */
-	private void createRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result) throws Exception {
-		if (g != null) {
-
-			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
-				calRdLinkWithMesh(g, maps, result);
-			}
-			if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
-				for (int i = 0; i < g.getNumGeometries(); i++) {
-					calRdLinkWithMesh(g.getGeometryN(i), maps, result);
-				}
-
-			}
-		}
-	}
-	
-	/*
-	 * 创建RDLINK 针对跨图幅创建图廓点不能重复
-	 */
-	private void calRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result) throws Exception {
-		// 定义创建RDLINK的起始Pid 默认为0
-		int sNodePid = 0;
-		int eNodePid = 0;
-		// 判断新创建的线起点对应的pid是否存在，如果存在取出赋值
-		if (maps.containsKey(g.getCoordinates()[0])) {
-			sNodePid = maps.get(g.getCoordinates()[0]);
-		}
-		// 判断新创建的线终始点对应的pid是否存在，如果存在取出赋值
-		if (maps.containsKey(g.getCoordinates()[g.getCoordinates().length - 1])) {
-			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
-		}
-		// 创建线对应的点
-		JSONObject node = RdLinkOperateUtils.createRdNodeForLink(g, sNodePid, eNodePid, result);
-		if (!maps.containsValue(node.get("s"))) {
-			maps.put(g.getCoordinates()[0], (int) node.get("s"));
-		}
-		if (!maps.containsValue(node.get("e"))) {
-			maps.put(g.getCoordinates()[0], (int) node.get("e"));
-		}
-		// 创建线
-		RdLink link = RdLinkOperateUtils.addLink(g, (int) node.get("s"), (int) node.get("e"), result);
-		
-		link.setKind(updateLink.getKind());
-
-		link.setLaneNum(updateLink.getLaneNum());
-		
-		AdminOperateUtils.SetAdminInfo4Link(link, conn);
-		
-		result.insertObject(link, ObjStatus.INSERT, link.pid());
-	}
-	
-	public void breakLine(int sNodePid, int eNodePid) throws Exception {
+	public void breakLine(int sNodePid, int eNodePid,Result result) throws Exception {
 
 		JSONArray coords = command.getLinkGeom().getJSONArray("coordinates");
 
@@ -366,7 +109,7 @@ public class Operation implements IOperation {
 			breakJson.put("dbId", command.getDbId());
 
 			int nodePid = interLine.getInt("nodePid");
-			if (nodePid == updateLink.getsNodePid()) {
+			if (nodePid == command.getUpdateLink().getsNodePid()) {
 				data.put("breakNodePid", sNodePid);
 
 				JSONArray coord = coords.getJSONArray(0);
@@ -391,43 +134,42 @@ public class Operation implements IOperation {
 			com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrdpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrdpoint.Command(
 					breakJson, breakJson.toString());
 			com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrdpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrdpoint.Process(
-					breakCommand, conn);
+					breakCommand, conn,result);
 			breakProcess.innerRun();
 		}
 	}
+	
+	/**
+	 * 处理对立交的影响
+	 * @param gscList
+	 * @param linkList
+	 * @param result
+	 * @throws Exception
+	 */
+	private void handleEffectOnRdGsc(List<RdGsc> gscList, List<RdLink> linkList, Result result) throws Exception {
+		for (RdGsc gsc : gscList) {
+			Geometry gscGeo = gsc.getGeometry();
 
-	private boolean checkDepartSNode(Coordinate oldPoint, double lon, double lat) throws Exception {
+			for (RdLink link : linkList) {
+				Geometry linkGeo = link.getGeometry();
 
-		if (lon != oldPoint.x || lat != oldPoint.y) {
-			// 移动了几何，如果挂接了多条link，需要分离节点
+				if (gscGeo.distance(linkGeo) < 1) {
+					List<IRow> gscLinkList = gsc.getLinks();
 
-			RdNodeSelector selector = new RdNodeSelector(conn);
+					if (gscLinkList.size() == 1) {
+						RdGscLink gscLink = (RdGscLink) gscLinkList.get(0);
 
-			int count = selector.loadRdLinkCountOnNode(updateLink.getsNodePid());
+						gscLink.setLinkPid(link.getPid());
 
-			if (count > 1) {
-				return true;
+						// 计算立交点序号和起终点标识
+						RdGscOperateUtils.calShpSeqNum(gscLink, gscGeo, linkGeo.getCoordinates());
+						
+						if (!gscLink.changedFields().isEmpty()) {
+							result.insertObject(gscLink, ObjStatus.UPDATE, gsc.getPid());
+						}
+					}
+				}
 			}
 		}
-
-		return false;
 	}
-
-	private boolean checkDepartENode(Coordinate oldPoint, double lon, double lat) throws Exception {
-
-		if (lon != oldPoint.x || lat != oldPoint.y) {
-			// 移动了几何，如果挂接了多条link，需要分离节点
-
-			RdNodeSelector selector = new RdNodeSelector(conn);
-
-			int count = selector.loadRdLinkCountOnNode(updateLink.geteNodePid());
-
-			if (count > 1) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 }

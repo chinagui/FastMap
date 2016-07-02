@@ -244,6 +244,17 @@ public class GeoTranslator {
 		return g;
 	}
 	
+	public static JGeometry wkt2JGrometry(String wktStr) throws GeometryExceptionWithContext{
+		
+		WKT wkt = new WKT();  
+		
+		JGeometry geom = wkt.toJGeometry(wktStr.getBytes());  
+		
+		geom.setSRID(8307);
+		
+		return geom;
+	}
+	
 	public static JGeometry Jts2JGeometry(Geometry jts, double scale, int precision) throws GeometryExceptionWithContext{
 		
 		WKT wkt = new WKT();  

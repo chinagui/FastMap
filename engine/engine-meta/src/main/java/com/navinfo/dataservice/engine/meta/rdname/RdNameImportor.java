@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.engine.meta.rdname;
 
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.sf.json.JSONObject;
 
@@ -56,11 +58,12 @@ public class RdNameImportor {
 		String meshes[] = MeshUtils.point2Meshes(longitude, latitude);
 		int adminId = new MeshSelector().getAdminIdByLocation(longitude,
 				latitude);
-		//int adminId =11000;
 		if (!exitsInMeshAdmin(meshes, name)) {
 			String srcResume = rowkey + ","
 					+ DateUtils.dateToString(new Date(), "yyyy-MM-dd");
 			insertNameAndTeilen(name, DEFAULT_LANG_CODE, adminId, srcResume);
+		}else{
+			System.out.println(name+"已存在");
 		}
 
 	}
@@ -93,7 +96,7 @@ public class RdNameImportor {
 
 		if (name.contains("高速公路")
 				|| (name.contains("高架") && !name.endsWith("高架桥"))
-				|| name.contains("快速") ||false ) {
+				|| name.contains("快速") ||isAandNuber(name) ) {
 			rdName.setRoadType(1);//高速
 			rdName.setAdminId(214);
 		}
@@ -105,6 +108,21 @@ public class RdNameImportor {
 		teilen.teilenName(rdNameNew.getNameId(), rdNameNew.getNameGroupId(),
 				rdNameNew.getLangCode(), rdNameNew.getRoadType());
 
+	}
+
+	/**
+	 * @Description:判断名称是不是A+数字
+	 * @param name
+	 * @return
+	 * @author: y
+	 * @time:2016-7-2 下午3:53:35
+	 */
+	private boolean isAandNuber(String name) {
+		String regex = "^A[0-9]+$"; 
+		Pattern pattern = Pattern.compile(regex);
+		//需要转换成半角在匹配
+		Matcher matcher=pattern.matcher(ExcelReader.f2h(name));
+		return matcher.matches();
 	}
 
 	/**
@@ -195,32 +213,12 @@ public class RdNameImportor {
 	private boolean isIgnoreName(String name) {
 		for (String rn : ignoreNames) {
 			if (rn.equals(name) || ExcelReader.h2f(rn).equals(name)) {
+				System.out.println("name:"+name+"不满足入库名称条件");
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public static void main(String[] args) {
-		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-				new String[] { "dubbo-consumer.xml"});
-		context.start();
-		new ApplicationContextUtil().setApplicationContext(context);
-		RdNameImportor importor = new RdNameImportor();
-		try {
-		/*	String name="唐延A1路";
-			String regex = "^[0-9]+$"; 
-			Pattern pattern = Pattern.compile(regex);
-			Matcher matcher=pattern.matcher(name);
-			while (matcher.find()) {
-				String srcStr = matcher.group();
-				System.out.println(srcStr);
-			}*/
-			importor.importName("测试名称路", 116.49266, 40.20926, "test_imp1");
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 
 }

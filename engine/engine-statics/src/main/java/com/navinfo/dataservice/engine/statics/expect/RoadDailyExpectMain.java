@@ -94,7 +94,6 @@ public class RoadDailyExpectMain {
 
 			log.info("all sub task finish");
 			log.info("-- end stat:" + col_name_block);
-			System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

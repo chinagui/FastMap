@@ -134,7 +134,7 @@ public class PoiDailyExpectStat implements Runnable {
 
 				Document doc = new Document();
 
-				doc.put("block_id", blockId);
+				doc.put("block_id", block.getBlockId());
 
 				doc.put("stat_date", statDate);
 

@@ -17,6 +17,7 @@ import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.engine.statics.StatMain;
+import com.navinfo.dataservice.engine.statics.expect.ExpectStatusMain;
 import com.navinfo.dataservice.engine.statics.expect.PoiCollectExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.PoiDailyExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadCollectExpectMain;
@@ -26,9 +27,6 @@ import com.navinfo.dataservice.engine.statics.poidaily.PoiDailyMain;
 import com.navinfo.dataservice.engine.statics.roadcollect.RoadCollectMain;
 import com.navinfo.dataservice.engine.statics.roaddaily.RoadDailyMain;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
-import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKTReader;
 
 public class StaticsService {
 	private StaticsService() {
@@ -42,6 +40,14 @@ public class StaticsService {
 		return SingletonHolder.INSTANCE;
 	}
 
+	/**
+	 * 查询grid的最新一天的统计信息
+	 * 
+	 * @param grids
+	 * @param poiColName
+	 * @param roadColName
+	 * @return
+	 */
 	public List<GridStatInfo> getLatestStatByGrids(List<String> grids,
 			String poiColName, String roadColName) {
 
@@ -140,6 +146,16 @@ public class StaticsService {
 		return list;
 	}
 
+	/**
+	 * 
+	 * 查询grid的变迁图
+	 * 
+	 * @param grids
+	 * @param stage
+	 * @param type
+	 * @param date
+	 * @return
+	 */
 	public List<GridChangeStatInfo> getChangeStatByGrids(Set<String> grids,
 			int stage, int type, String date) {
 
@@ -231,17 +247,46 @@ public class StaticsService {
 		return list;
 	}
 
+	/**
+	 * 查询Block是否达到预期的状态，0未达到，1已达到
+	 * @param blocks
+	 * @return
+	 */
 	public Map<Integer, Integer> getExpectStatusByBlocks(Set<Integer> blocks) {
 
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-
-		for (Integer block : blocks) {
-			map.put(block, block%2);
+		
+		for(Integer block : blocks){
+			map.put(block, 0);
 		}
 
+		MongoDao md = new MongoDao(StatMain.db_name);
+
+		MongoCursor<Document> iter = md
+				.find(ExpectStatusMain.col_name_block,Filters.in("block_id", blocks)
+								)
+				.batchSize(blocks.size()).iterator();
+
+		while (iter.hasNext()) {
+			
+			Document doc = iter.next();
+			
+			int status = doc.getInteger("status");
+			
+			int blockId = doc.getInteger("block_id");
+			
+			map.put(blockId, status);
+			
+		}
+		
 		return map;
 	}
 	
+	/**
+	 * 查询城市的是否达到预期的状态， 0未达到，1达到
+	 * @param citys
+	 * @return
+	 */
 	public Map<Integer, Integer> getExpectStatusByCitys(Set<Integer> citys) {
 
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
@@ -253,6 +298,15 @@ public class StaticsService {
 		return map;
 	}
 
+	/**
+	 * 
+	 * 查询Block的预期统计信息
+	 * 
+	 * @param blockId
+	 * @param stage
+	 * @param type
+	 * @return
+	 */
 	public List<BlockExpectStatInfo> getExpectStatByBlock(int blockId,
 			int stage, int type) {
 

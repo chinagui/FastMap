@@ -3,12 +3,15 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairrdl
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.RdGscOperateUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -107,5 +110,21 @@ public class Check {
 	private void throwException(String msg) throws Exception {
 		throw new Exception(msg);
 	}
-
+	
+	/**
+	 * 检查修行的线修行的点上是否有立交存在
+	 * @param linkPid
+	 * @param geo
+	 * @param conn
+	 * @return
+	 * @throws Exception
+	 */
+	public boolean checkIsGscPoint(int linkPid,Geometry geo,Connection conn) throws Exception
+	{
+		List<Integer> linkPidList = new ArrayList<>();
+		
+		linkPidList.add(linkPid);
+		
+		return RdGscOperateUtils.checkIsHasGsc(geo, linkPidList, conn);
+	}
 }

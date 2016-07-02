@@ -51,7 +51,7 @@ public class TipsSelectorTest {
 		types.add(1901);
 		try {
 			System.out.println(selector.searchDataByTileWithGap(107944, 49615, 17,
-					20, types));
+					20, types,"m"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

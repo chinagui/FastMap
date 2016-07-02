@@ -2,6 +2,7 @@ package com.navinfo.dataservice.web.man.controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -152,8 +153,16 @@ public class SubtaskController extends BaseController {
 			//作业阶段
 			int stage = dataJson.getInt("stage");
 			
-			Page page = SubtaskService.getInstance().listPage(stage,condition,order,pageSize,curPageNum);
+//			Page page = SubtaskService.getInstance().list(stage,condition,order,pageSize,curPageNum);
+//			
+//			List<?> result=JsonOperation.beanToJsonList((List<?>)page.getResult());
+//			
+//			page.setResult(result.toArray());
+//			
+//            return new ModelAndView("jsonView", success(page));
 			
+			Page page = SubtaskService.getInstance().listPage(stage,condition,order,pageSize,curPageNum);
+
 			List<?> result=JsonOperation.beanToJsonList((List<?>)page.getResult());
 
 			page.setResult(result.toArray());
@@ -300,12 +309,14 @@ public class SubtaskController extends BaseController {
 			JSONArray subtaskIds = dataJson.getJSONArray("subtaskIds");
 			
 			List<Integer> subtaskIdList = (List<Integer>)JSONArray.toCollection(subtaskIds,Integer.class);
-			HashMap<Object,Object> unClosedSubtaskList = SubtaskService.getInstance().close(subtaskIdList);
+//			HashMap<Object,Object> unClosedSubtaskList = SubtaskService.getInstance().close(subtaskIdList);
+			List<Integer> unClosedSubtaskList = SubtaskService.getInstance().close(subtaskIdList);
 			
 			if(unClosedSubtaskList.isEmpty()){
 				return new ModelAndView("jsonView", success("关闭成功"));
 			}else{
-				return new ModelAndView("jsonView", success(unClosedSubtaskList));
+				String message = unClosedSubtaskList.toString() + "内存在未完成作业，subtask无法关闭";
+				return new ModelAndView("jsonView", success(message));
 			}
 			
 			

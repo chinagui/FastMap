@@ -121,7 +121,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
 			this.prepareData();
 
-			msg =  exeOperation();//new Operation(command, conn);
+			msg =  exeOperation();
 			
 			if(this.getCommand().getOperType().equals(OperType.CREATE))
 			{

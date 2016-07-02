@@ -246,6 +246,10 @@ public class Operation implements IOperation {
 
 		// 计算立交点序号和起终点标识
 		RdGscOperateUtils.calShpSeqNum(gscLink, gscGeo, linkCoor);
+		
+		if (!gscLink.changedFields().isEmpty()) {
+			result.insertObject(gscLink, ObjStatus.UPDATE, gscLink.getPid());
+		}
 
 		// 更新线上其他立交的形状点号
 		handleOtherGscLink(gscLink, result, linkCoor);

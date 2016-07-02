@@ -106,7 +106,7 @@ public class TipsSelector {
 				
 				//日编月编状态
 				
-				if("m".equals(mdFlag)){
+				if("d".equals(mdFlag)){
 					
 					m.put("a", json.getString("t_dStatus"));
 					

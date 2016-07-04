@@ -48,7 +48,7 @@ public class DBController {
 				autoId = rs.getInt(1);
 			}
 
-			String sql = "insert into dropbox_upload(upload_id,file_name,file_path,md5,file_size,chunk_size) values(:1,:2,:3,:4,:5,:6)";
+			String sql = "insert into dropbox_upload(upload_id,file_name,file_path,file_md5,file_size,chunk_size) values(:1,:2,:3,:4,:5,:6)";
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -230,7 +230,7 @@ public class DBController {
 
 				String filePath = resultSet.getString("file_path");
 
-				String md5 = resultSet.getString("md5");
+				String md5 = resultSet.getString("file_md5");
 
 				json.put("fileName", fileName);
 

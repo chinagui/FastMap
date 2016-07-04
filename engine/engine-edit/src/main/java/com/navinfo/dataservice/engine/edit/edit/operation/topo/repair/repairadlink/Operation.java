@@ -73,12 +73,13 @@ public class Operation implements IOperation {
 			result.setPrimaryPid(this.command.getUpdateLink().getPid());
 			content.put("geometry", command.getLinkGeom());
 			boolean isChanged = this.command.getUpdateLink().fillChangeFields(content);
+			AdLink adLink = new AdLink();
+			adLink.copy(this.command.getUpdateLink());
 			if (isChanged) {
 				result.insertObject(this.command.getUpdateLink(), ObjStatus.UPDATE, this.command.getLinkPid());
-				this.command.getUpdateLink().setGeometry(GeoTranslator.geojson2Jts(command.getLinkGeom(), 100000, 0));
+				adLink.setGeometry(GeoTranslator.geojson2Jts(command.getLinkGeom(), 100000, 0));
 			}
-
-			links.add(this.command.getUpdateLink());
+			links.add(adLink);
 		} else {
 			Iterator<String> it = meshes.iterator();
 			Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();

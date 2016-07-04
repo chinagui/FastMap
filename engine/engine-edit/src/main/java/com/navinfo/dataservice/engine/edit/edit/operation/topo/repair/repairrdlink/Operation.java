@@ -83,7 +83,7 @@ public class Operation implements IOperation {
 				links.addAll(RdLinkOperateUtils.getCreateRdLinksWithMesh(geomInter, maps, result));
 
 			}
-			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE, this.command.getLinkPid());
+			deleteRdLink(this.command.getUpdateLink(),result);
 		}
 		// 处理对立交的影响
 		if (CollectionUtils.isNotEmpty(this.command.getGscList())) {
@@ -94,6 +94,26 @@ public class Operation implements IOperation {
 		return null;
 	}
 	
+	/**
+	 * @param rdLink 
+	 * @throws Exception 
+	 * 
+	 */
+	private void deleteRdLink(RdLink rdLink,Result result) throws Exception {
+		JSONObject deleteJson = new JSONObject();
+		// 要打断线的pid
+		deleteJson.put("objId", rdLink.getPid());
+		// 要打断线的project_id
+		deleteJson.put("dbId", command.getDbId());
+		// 组装打断线的参数
+		// 保证是同一个连接
+		com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterdlink.Command deleteCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterdlink.Command(
+				deleteJson, deleteJson.toString());
+		com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterdlink.Process deleteProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterdlink.Process(
+				deleteCommand, result, conn);
+		deleteProcess.innerRun();
+	}
+
 	public void breakLine(int sNodePid, int eNodePid,Result result) throws Exception {
 
 		JSONArray coords = command.getLinkGeom().getJSONArray("coordinates");

@@ -285,7 +285,9 @@ public class Transaction {
 			}
 		case RWNODE:
 			switch (operType) {
-
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Command(
+						json, requester);
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwnode.update.Command(
 						json, requester);
@@ -296,7 +298,6 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.move.moverwnode.Command(
 						json, requester);
 			}
-			
 			
 		case RWLINK:
 			switch (operType) {

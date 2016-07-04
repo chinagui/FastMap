@@ -140,13 +140,13 @@ public class PoiDailyExpectStat implements Runnable {
 
 				doc.put("stat_time", stat_time);
 
-				doc.put("finish", finish);
+				doc.put("finish",  Double.valueOf(finish));
 
-				doc.put("expect", expectFinish);
+				doc.put("expect",  Double.valueOf(expectFinish));
 
 				doc.put("percent", percent);
 
-				doc.put("total", total);
+				doc.put("total",  Double.valueOf(total));
 
 				list.add(doc);
 			}

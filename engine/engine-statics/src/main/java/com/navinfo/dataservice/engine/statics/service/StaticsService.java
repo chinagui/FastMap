@@ -337,7 +337,7 @@ public class StaticsService {
 		MongoDao md = new MongoDao(StatMain.db_name);
 
 		MongoCursor<Document> iter = md
-				.find(colName, Filters.eq("block_id", String.valueOf(blockId)))
+				.find(colName, Filters.eq("block_id", blockId))
 				.sort(Sorts.descending("stat_date")).iterator();
 
 		while (iter.hasNext()) {

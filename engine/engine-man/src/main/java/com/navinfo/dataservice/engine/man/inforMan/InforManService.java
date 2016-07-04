@@ -151,12 +151,11 @@ public class InforManService {
 					   valueSql += " MONTH_PRODUCE_PLAN_END_DATE=?";
 					values.add(bean.getMonthProducePlanEndDate());
 				}
-				;
+				
 				if (bean != null && bean.getInforId() != null && StringUtils.isNotEmpty(bean.getInforId().toString())) {
 					valueSql += " where INFOR_ID=?";
 					values.add(bean.getInforId());
 				}
-				;
 				run.update(conn, updateSql+valueSql, values.toArray());
 			}
 		} catch (Exception e) {

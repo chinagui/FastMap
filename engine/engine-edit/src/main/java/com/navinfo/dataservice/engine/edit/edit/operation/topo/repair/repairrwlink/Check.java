@@ -1,13 +1,9 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairrwlink;
 
-import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.engine.edit.comm.util.operate.RdGscOperateUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -46,23 +42,6 @@ public class Check {
 				throwException("相邻形状点不可过近，不能小于2m");
 			}
 		}
-	}
-	
-	/**
-	 * 检查修行的线修行的点上是否有立交存在
-	 * @param linkPid
-	 * @param geo
-	 * @param conn
-	 * @return
-	 * @throws Exception
-	 */
-	public boolean checkIsGscPoint(int linkPid,Geometry geo,Connection conn) throws Exception
-	{
-		List<Integer> linkPidList = new ArrayList<>();
-		
-		linkPidList.add(linkPid);
-		
-		return RdGscOperateUtils.checkIsHasGsc(geo, linkPidList, conn);
 	}
 	
 	private void throwException(String msg) throws Exception {

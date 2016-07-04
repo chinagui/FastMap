@@ -338,7 +338,7 @@ public class StaticsService {
 
 		MongoCursor<Document> iter = md
 				.find(colName, Filters.eq("block_id", blockId))
-				.sort(Sorts.descending("stat_date")).iterator();
+				.sort(Sorts.ascending("stat_date")).iterator();
 
 		while (iter.hasNext()) {
 

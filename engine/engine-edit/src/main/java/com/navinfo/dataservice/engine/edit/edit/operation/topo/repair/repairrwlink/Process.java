@@ -46,7 +46,7 @@ public class Process extends AbstractProcess<Command> {
 		
 		RdGscSelector selector = new RdGscSelector(this.getConn());
 		
-		List<RdGsc> rdGscList = selector.onlyLoadRdGscLinkByLinkPid(this.getCommand().getLinkPid(), "RD_LINK", true);
+		List<RdGsc> rdGscList = selector.onlyLoadRdGscLinkByLinkPid(this.getCommand().getLinkPid(), "RW_LINK", true);
 
 		boolean flag = RdGscOperateUtils.isMoveGscLink(geo, rdGscList);
 

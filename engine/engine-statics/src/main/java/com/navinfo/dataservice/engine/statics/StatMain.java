@@ -64,6 +64,6 @@ public class StatMain {
 				new ExpectStatusMain(db_name, stat_time).runStat();
 			}
 		}
-
+		System.exit(0);
 	}
 }

@@ -593,7 +593,7 @@ public class Transaction {
 		case RWNODE:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwlink.create.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Process(
 						command);
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwnode.update.Process(

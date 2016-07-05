@@ -129,6 +129,7 @@ public class Operation implements IOperation {
 			this.face.setMesh(meshId);
 			this.reCaleFaceGeometry(adLinks);
 		} else {
+			this.updateFlag =false;
 			Geometry geom = GeoTranslator.getCalLineToPython(list);
 			this.createFaceWithMesh(meshes, geom, 0);
 		}

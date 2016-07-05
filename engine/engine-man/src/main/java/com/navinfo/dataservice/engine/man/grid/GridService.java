@@ -1,7 +1,7 @@
 package com.navinfo.dataservice.engine.man.grid;
 
+import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.man.model.Grid;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
@@ -211,16 +211,30 @@ public class GridService {
 
 			List<String> gridList = new ArrayList<String>();
 			gridList.addAll((Collection<? extends String>) grids);
-			String InClause = buildInClause("g.grid_id", gridList);
+			int size=gridList.size();
+			//当size超过1000时，才转clob，提高效率
+			String InClause = null;
+			Clob clobGrids=null;
+			if (size>1000){
+				clobGrids=conn.createClob();
+				clobGrids.setString(1, StringUtils.join(gridList, ","));
+				InClause = " g.grid_id IN (select to_number(column_value) from table(clob_to_table(?)))";
+			}else{
+				InClause = buildInClause("g.grid_id", gridList);
+			}
+			
 
 			//获取待分配的grid
 			List<HashMap> waitAssignGrids=new ArrayList<HashMap>();
-			waitAssignGrids=GridOperation.queryGirdBySql(conn, waitAssignSql+InClause);
-			
 			//获取已分配的grid
 			List<HashMap> alreadyAssignGrids=new ArrayList<HashMap>();
-			alreadyAssignGrids=GridOperation.queryGirdBySql(conn, alreadyAssignSql+InClause,json.getInt("stage"));
-			
+			if (size>1000){
+				waitAssignGrids=GridOperation.queryGirdBySql(conn, waitAssignSql+InClause,clobGrids);
+				alreadyAssignGrids=GridOperation.queryGirdBySql(conn, alreadyAssignSql+InClause,json.getInt("stage"),clobGrids);
+			}else{
+				waitAssignGrids=GridOperation.queryGirdBySql(conn, waitAssignSql+InClause,null);
+				alreadyAssignGrids=GridOperation.queryGirdBySql(conn, alreadyAssignSql+InClause,json.getInt("stage"),null);
+			}
 			
 			List<HashMap> allGrids=new ArrayList<HashMap>();
 			allGrids.addAll(waitAssignGrids);

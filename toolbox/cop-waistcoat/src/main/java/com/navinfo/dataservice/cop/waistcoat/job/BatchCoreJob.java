@@ -32,8 +32,9 @@ public class BatchCoreJob extends AbstractJob {
 	public void execute() throws JobException {
 		BatchCoreJobRequest req = (BatchCoreJobRequest)request;
 		BatchCoreParams batchParams = analyzeBatchParams(req);
+		Connection conn = null;
 		try {
-			Connection conn = DBConnector.getInstance().getConnectionById(req.getExecuteDBId());
+			conn = DBConnector.getInstance().getConnectionById(req.getExecuteDBId());
 			String batchPrepareResult = prepareBatch(conn, batchParams);
 			response("批处理准备步骤完成",null);
 
@@ -51,6 +52,16 @@ public class BatchCoreJob extends AbstractJob {
 
 		} catch (Exception e) {
 			throw new JobException(e.getMessage(),e);
+		}
+		finally
+		{
+			try {
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw new JobException(e.getMessage(),e);
+			}
 		}
 	}
 
@@ -95,12 +106,12 @@ public class BatchCoreJob extends AbstractJob {
 			batchParams.setKdbSid(kdbDBInfo.getDbName());
 
 			//解析DMS(PID)库参数
-			DbInfo pidManDBInfo = datahub.getDbById(req.getPidDBId());
-			batchParams.setDmsUserName(pidManDBInfo.getDbUserName());
-			batchParams.setDmsPasswd(pidManDBInfo.getDbUserPasswd());
-			batchParams.setDmsHost(pidManDBInfo.getDbServer().getIp());
-			batchParams.setDmsPort(Integer.toString(pidManDBInfo.getDbServer().getPort()));
-			batchParams.setDmsSid(pidManDBInfo.getDbName());
+			String[] pidManDBInfos = req.getPidDbInfo().split(",");
+			batchParams.setDmsUserName(pidManDBInfos[4]);
+			batchParams.setDmsPasswd(pidManDBInfos[5]);
+			batchParams.setDmsHost(pidManDBInfos[1]);
+			batchParams.setDmsPort(pidManDBInfos[2]);
+			batchParams.setDmsSid(pidManDBInfos[3]);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -198,7 +209,7 @@ public class BatchCoreJob extends AbstractJob {
 		}
 		catch(SQLException e) {
 			try {
-				String errInfo = statement.getString(16);
+				String errInfo = statement.getString(2);
 				batchResult = errInfo;
 			}catch(SQLException ex) {
 				batchResult = "获取批处理执行过程中获取异常信息失败";

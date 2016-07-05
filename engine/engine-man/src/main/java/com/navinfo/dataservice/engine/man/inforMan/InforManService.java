@@ -9,6 +9,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.man.model.BlockMan;
 import com.navinfo.dataservice.api.man.model.InforMan;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.json.JsonOperation;
@@ -46,6 +47,8 @@ public class InforManService {
 			// 持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
+			JSONArray blockIdArray = json.getJSONArray("blockIds");
+			json.remove("blockIds");
 			InforMan bean = (InforMan) JsonOperation.jsonToBean(json, InforMan.class);
 			String createSql = "insert into infor_man (INFOR_ID, INFOR_STATUS, DESCP, CREATE_USER_ID, "
 					+ "COLLECT_PLAN_START_DATE, COLLECT_PLAN_END_DATE, DAY_EDIT_PLAN_START_DATE, DAY_EDIT_PLAN_END_DATE, MONTH_EDIT_PLAN_START_DATE, MONTH_EDIT_PLAN_END_DATE, DAY_PRODUCE_PLAN_START_DATE, DAY_PRODUCE_PLAN_END_DATE, MONTH_PRODUCE_PLAN_START_DATE, MONTH_PRODUCE_PLAN_END_DATE) values(?,?,?,?,"
@@ -60,6 +63,8 @@ public class InforManService {
 					+ bean.getMonthProducePlanStartDate() + "','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"
 					+ bean.getMonthProducePlanEndDate() + "','yyyy-mm-dd hh24:mi:ss.ff'))";
 			run.update(conn, createSql, bean.getInforId(), 1, bean.getDescp(), userId);
+			
+			InforManOperation.insertInforBlockMapping(conn,blockIdArray,bean.getInforId());
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

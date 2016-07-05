@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.impcore.commit.day.road;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -12,6 +13,7 @@ import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.sql.SqlClause;
 import com.navinfo.dataservice.impcore.flushbylog.LogFlusher;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -27,7 +29,8 @@ public class Day2MonRoadLogFlusher extends LogFlusher {
 				FmEditLock.TYPE_COMMIT);
 	}
 	@Override
-	public  String getPrepareSql() throws Exception{
+	public  SqlClause getPrepareSql() throws Exception{
+		List<Object> values = new ArrayList<Object> ();
 		StringBuilder sb = new StringBuilder();
 		sb.append("INSERT INTO ");
 		sb.append(this.getTempTable());
@@ -37,12 +40,15 @@ public class Day2MonRoadLogFlusher extends LogFlusher {
 			sb.append(this.getStopTime()+ "','yyyymmddhh24miss')"); 
 		}
 		if(this.getGrids()!=null&&this.getGrids().size()>0){
-			sb.append(" AND T.GRID_ID IN (");
-			sb.append(StringUtils.join(this.getGrids(), ","));
-			sb.append(")");
+			SqlClause inClause = SqlClause.genInClauseWithMulInt(this.getSourceDbConn(),this.getGrids()," T.GRID_ID ");
+			if (inClause!=null)
+				sb .append(" AND "+ inClause.getSql());
+			values.addAll(inClause.getValues());
 		}
+		
 		sb.append(" AND " + this.getFeatureFilter());
-		return sb.toString();
+		SqlClause sqlClause = new SqlClause(sb.toString(),values);
+		return sqlClause;
 	}
 	@Override
 	public String getFeatureFilter(){

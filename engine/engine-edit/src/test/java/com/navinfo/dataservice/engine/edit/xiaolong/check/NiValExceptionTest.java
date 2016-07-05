@@ -5,6 +5,7 @@ import java.sql.Connection;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 
@@ -43,5 +44,25 @@ public class NiValExceptionTest extends InitApplication {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Test
+	public void testCheck() throws Exception
+	{
+		String parameter = "{\"dbId\":42,\"type\":2,\"id\":\"9aab29cf60bbbc997f12d8368b5920c2\"}";
+		
+		JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+		int dbId = jsonReq.getInt("dbId");
+
+		String id = jsonReq.getString("id");
+
+		int type = jsonReq.getInt("type");
+
+		Connection conn = DBConnector.getInstance().getConnectionById(dbId);
+
+		NiValExceptionOperator selector = new NiValExceptionOperator(conn);
+
+		selector.updateCheckLogStatus(id, type);
 	}
 }

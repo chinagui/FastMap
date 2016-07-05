@@ -254,7 +254,7 @@ public class RdLinkOperateUtils {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
 		}
 		if (!maps.containsValue(node.get("e"))) {
-			maps.put(g.getCoordinates()[0], (int) node.get("e"));
+			maps.put(g.getCoordinates()[1], (int) node.get("e"));
 		}
 		RdNode sNode = new RdNode();
 		sNode.setPid((int) node.get("s"));
@@ -368,4 +368,64 @@ public class RdLinkOperateUtils {
 		link.setSpeedlimits(speedlimits);
 
 	}
+	
+	/**
+	 * 生成跨图幅的线
+	 * @param g
+	 * @param maps
+	 * @param result
+	 * @return
+	 * @throws Exception
+	 */
+	public static List<RdLink> getCreateRdLinksWithMesh(Geometry g,
+			Map<Coordinate, Integer> maps, Result result) throws Exception {
+		List<RdLink> links = new ArrayList<RdLink>();
+		if (g != null) {
+			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
+				links.add(getCalRdLinkWithMesh(g, maps,result));
+			}
+			if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
+				for (int i = 0; i < g.getNumGeometries(); i++) {
+					links.add(getCalRdLinkWithMesh(g.getGeometryN(i), maps,result));
+				}
+
+			}
+		}
+		return links;
+	}
+	
+	/*
+	 * 创建道路线 针对跨图幅创建图廓点不能重复
+	 */
+	public static RdLink getCalRdLinkWithMesh(Geometry g,Map<Coordinate, Integer> maps,
+			Result result) throws Exception {
+		//定义创建道路线的起始Pid 默认为0
+		int sNodePid = 0;
+		int eNodePid = 0;
+		//判断新创建的线起点对应的pid是否存在，如果存在取出赋值
+		if (maps.containsKey(g.getCoordinates()[0])) {
+			sNodePid = maps.get(g.getCoordinates()[0]);
+		}
+		//判断新创建的线终始点对应的pid是否存在，如果存在取出赋值
+		if (maps.containsKey(g.getCoordinates()[g.getCoordinates().length - 1])) {
+			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
+		}
+		//创建线对应的点
+		JSONObject node = RdLinkOperateUtils.createRdNodeForLink(
+				g, sNodePid, eNodePid, result);
+		if (!maps.containsValue(node.get("s"))) {
+			maps.put(g.getCoordinates()[0], (int) node.get("s"));
+		}
+		if (!maps.containsValue(node.get("e"))) {
+			maps.put(g.getCoordinates()[0], (int) node.get("e"));
+		}
+		//创建线
+		RdLink link =  RdLinkOperateUtils.addLink(g, (int) node.get("s"),
+				(int) node.get("e"), result);
+		
+		result.insertObject(link, ObjStatus.INSERT, link.pid());
+		
+		return link;
+	}
+	
 }

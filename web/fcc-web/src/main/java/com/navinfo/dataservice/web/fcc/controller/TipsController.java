@@ -76,9 +76,11 @@ public class TipsController extends BaseController {
 
 			String rowkey = jsonReq.getString("rowkey");
 
-			int stage = jsonReq.getInt("stage");
+			//int stage = jsonReq.getInt("stage");
 
 			int handler = jsonReq.getInt("handler");
+			
+			String mdFlag= jsonReq.getString("mdFlag");
 
 			int pid = -1;
 
@@ -88,7 +90,7 @@ public class TipsController extends BaseController {
 
 			TipsOperator op = new TipsOperator();
 
-			op.update(rowkey, stage, handler, pid);
+			op.update(rowkey,  handler, pid,mdFlag);
 
 			return new ModelAndView("jsonView", success());
 

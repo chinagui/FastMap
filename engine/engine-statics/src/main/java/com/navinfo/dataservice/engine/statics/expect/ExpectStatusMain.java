@@ -17,18 +17,18 @@ import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.OracleDao;
 import com.navinfo.dataservice.engine.statics.tools.StatInit;
 
-public class RoadCollectExpectMain {
-	private Logger log = LogManager.getLogger(RoadCollectExpectMain.class);
+public class ExpectStatusMain {
+	private Logger log = LogManager.getLogger(ExpectStatusMain.class);
 
 	private static CountDownLatch countDownLatch = null;
 
-	public static final String col_name_block = "fm_stat_expect_collect_road_block";
+	public static final String col_name_block = "fm_stat_expect_status_block";
 
 	private String db_name;
 	private String stat_date;
 	private String stat_time;
 
-	public RoadCollectExpectMain(String dbn, String stat_time) {
+	public ExpectStatusMain(String dbn, String stat_time) {
 		this.db_name = dbn;
 		this.stat_date = stat_time.substring(0, 8);
 		this.stat_time = stat_time;
@@ -55,11 +55,9 @@ public class RoadCollectExpectMain {
 			md.createCollection(col_name_block);
 			md.getCollection(col_name_block).createIndex(
 					new BasicDBObject("block_id", 1));
-			md.getCollection(col_name_block).createIndex(
-					new BasicDBObject("stat_date", 1));
 			log.info("-- -- create mongo collection " + col_name_block + " ok");
 			log.info("-- -- create mongo index on " + col_name_block
-					+ "(block_id，stat_date) ok");
+					+ "(block_id) ok");
 		}
 
 		// 清空统计数据
@@ -78,7 +76,7 @@ public class RoadCollectExpectMain {
 			initMongoDb(db_name);
 			// 初始化 datahub环境
 			StatInit.initDatahubDb();
-
+			
 			List<BlockMan> list = OracleDao.getBlockManList();
 
 			ExecutorService executorService = Executors.newCachedThreadPool();
@@ -86,14 +84,15 @@ public class RoadCollectExpectMain {
 			countDownLatch = new CountDownLatch(1);
 
 			log.info("-- -- 创建统计进程 block_man_id：");
-			executorService.submit(new RoadCollectExpectStat(countDownLatch,
-					list, db_name, col_name_block, stat_date, stat_time));
+			executorService.submit(new ExpectStatusStat(countDownLatch, list,
+					 db_name, col_name_block, stat_date, stat_time));
 
 			countDownLatch.await();
 			executorService.shutdown();
 
 			log.info("all sub task finish");
 			log.info("-- end stat:" + col_name_block);
+			System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

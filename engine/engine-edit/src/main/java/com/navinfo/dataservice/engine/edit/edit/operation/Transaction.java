@@ -285,7 +285,9 @@ public class Transaction {
 			}
 		case RWNODE:
 			switch (operType) {
-
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Command(
+						json, requester);
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwnode.update.Command(
 						json, requester);
@@ -296,7 +298,6 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.move.moverwnode.Command(
 						json, requester);
 			}
-			
 			
 		case RWLINK:
 			switch (operType) {
@@ -592,7 +593,7 @@ public class Transaction {
 		case RWNODE:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwlink.create.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Process(
 						command);
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.rwnode.update.Process(
@@ -626,16 +627,16 @@ public class Transaction {
 		case ZONENODE:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadpoint.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakzonepoint.Process(
 						command);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.zonenode.update.Process(
 						command);
 			case MOVE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.move.movezonenode.Process(
 						command);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleteadnode.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deletezonenode.Process(
 						command);
 			}
 		case ZONELINK:

@@ -135,19 +135,19 @@ public class PoiCollectExpectStat implements Runnable {
 
 				Document doc = new Document();
 
-				doc.put("block_id", blockId);
+				doc.put("block_id", block.getBlockId());
 
 				doc.put("stat_date", statDate);
 
 				doc.put("stat_time", stat_time);
 
-				doc.put("finish", finish);
+				doc.put("finish", Double.valueOf(finish));
 
-				doc.put("expect", expectFinish);
+				doc.put("expect", Double.valueOf(expectFinish));
 
 				doc.put("percent", percent);
 
-				doc.put("total", total);
+				doc.put("total", Double.valueOf(total));
 
 				list.add(doc);
 			}

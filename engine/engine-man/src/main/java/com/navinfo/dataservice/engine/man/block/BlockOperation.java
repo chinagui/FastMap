@@ -360,11 +360,12 @@ public class BlockOperation {
 						map.put("blockName", rs.getString("block_name"));
 						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						map.put("taskName", rs.getString("name"));
-						map.put("taskPlanStartDate ", rs.getString("plan_start_date"));
-						map.put("taskPlanEndDate ", rs.getString("plan_end_date"));
-						map.put("taskMonthStartDate ", rs.getString("month_edit_plan_start_date"));
-						map.put("taskMonthEndDate ", rs.getString("month_edit_plan_end_date"));
+						map.put("taskPlanStartDate", rs.getString("plan_start_date"));
+						map.put("taskPlanEndDate", rs.getString("plan_end_date"));
+						map.put("taskMonthStartDate", rs.getString("month_edit_plan_start_date"));
+						map.put("taskMonthEndDate", rs.getString("month_edit_plan_end_date"));
 						map.put("status", rs.getInt("status"));
+						map.put("cityId", rs.getString("city_id"));
 					
 						list.add(map);
 					}
@@ -384,7 +385,7 @@ public class BlockOperation {
 						map.put("blockName", rs.getString("block_name"));
 						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						map.put("status", rs.getInt("status"));
-					
+						map.put("cityId", rs.getInt("city_id"));
 						list.add(map);
 					}
 					return list;

@@ -34,7 +34,7 @@ public class Process extends AbstractProcess<Command> {
 
 		RdGscSelector selector = new RdGscSelector(this.getConn());
 
-		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(this.getCommand().getLinkPid(), "RD_LINK", true);
+		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(this.getCommand().getLinkPid(), "RW_LINK", true);
 
 		this.getCommand().setRdGscs(rdGscList);
 	}

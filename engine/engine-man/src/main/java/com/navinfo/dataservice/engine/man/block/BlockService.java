@@ -396,13 +396,13 @@ public class BlockService {
 
 			String inforId = json.getString("inforId");
 
-			String selectSql = "select distinct i.block_id,t.block_name,b.status,k.name,to_char(k.plan_start_date, 'yyyymmdd') plan_start_date,"
+			String selectSql = "select distinct i.block_id,t.block_name,t.city_id,b.status,k.name,to_char(k.plan_start_date, 'yyyymmdd') plan_start_date,"
 					+ "to_char(k.plan_end_date, 'yyyymmdd') plan_end_date,"
 					+ " to_char(k.month_edit_plan_start_date, 'yyyymmdd') month_edit_plan_start_date,"
 					+ "to_char(k.month_edit_plan_end_date, 'yyyymmdd') month_edit_plan_end_date "
 					+ " from infor_block_mapping i, block t, task k,block_man b where  i.block_id = t.block_id and i.block_id=b.block_id"
 					+ " and t.city_id = k.city_id and k.latest = 1 and i.infor_id ='" + inforId + "'";
-			String selectSqlNotOpen = "select t.block_id,t.block_name,0 status from infor_block_mapping i,block t where t.plan_status=0 and"
+			String selectSqlNotOpen = "select t.block_id,t.block_name,t.city_id,0 status from infor_block_mapping i,block t where t.plan_status=0 and"
 					+ " i.block_id=t.block_id and not exists （select 1 from block_man b where b.block_id=t.block_id）and  i.infor_id ='"
 					+ inforId + "'";
 

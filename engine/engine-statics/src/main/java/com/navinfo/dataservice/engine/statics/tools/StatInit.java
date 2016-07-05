@@ -11,9 +11,10 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.navicommons.exception.ServiceException;
-import com.mongodb.client.model.Filters;
 
 public class StatInit {
 
@@ -132,6 +133,28 @@ public class StatInit {
 				map.put(id, cnt);
 			}
 
+		}
+		return map;
+	}
+	
+	/**
+	 * 
+	 * 获取最新的预期统计信息
+	 * @param db_name
+	 * @param col_name
+	 * @param key
+	 * @return
+	 */
+	public static Map<Integer, Integer> getLatestExpectStat(String db_name, String col_name, String key, String date) {
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+
+		MongoCursor<Document> iter = new MongoDao(db_name).find(col_name, null).sort(Sorts.descending("stat_date")).iterator();
+		while (iter.hasNext()) {
+			JSONObject json = JSONObject.fromObject(iter.next());
+			Integer value = json.getInt(key);
+			if(!map.containsKey(value)){
+				map.put(value, json.getInt("percent"));
+			}
 		}
 		return map;
 	}

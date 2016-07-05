@@ -263,12 +263,10 @@ public class SubtaskOperation {
 			String closedSubtaskStr = "(";
 			
 			closedSubtaskStr += StringUtils.join(closedSubtaskList.toArray(),",") + ")";
-			
-			closedSubtaskStr += ")";
 						
 			String updateSql = "update SUBTASK "
 					+ "set STATUS=0 "
-					+ "where SUBTASK_ID in"
+					+ "where SUBTASK_ID in "
 					+ closedSubtaskStr;	
 			
 

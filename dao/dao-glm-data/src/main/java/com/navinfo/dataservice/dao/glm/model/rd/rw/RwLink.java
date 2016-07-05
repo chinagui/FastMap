@@ -65,7 +65,7 @@ public class RwLink implements IObj {
 
 	// 线路渲染颜色
 	private String color;
-
+	
 	// 行记录ID
 	private String rowId;
 
@@ -234,6 +234,17 @@ public class RwLink implements IObj {
 
 	@Override
 	public void copy(IRow row) {
+		RwLink link = (RwLink) row;
+		this.setColor(link.getColor());
+		this.setDetailFlag(link.getDetailFlag());
+		this.setEditFlag(link.getEditFlag());
+		this.seteNodePid(link.geteNodePid());
+		this.setsNodePid(link.getsNodePid());
+		this.setFeaturePid(link.getFeaturePid());
+		this.setForm(link.getForm());
+		this.setGeometry(link.getGeometry());
+		this.setKind(link.getKind());
+		this.setPid(link.getPid());
 	}
 
 	@Override

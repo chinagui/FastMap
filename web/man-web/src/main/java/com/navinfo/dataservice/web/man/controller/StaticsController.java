@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
@@ -29,7 +30,7 @@ public class StaticsController extends BaseController {
 	 * @return
 	 */
 	@RequestMapping(value = "/statics/change/grid/query")
-	public ModelAndView queryGridChange(HttpServletRequest request) {
+	public ModelAndView queryGridChangeStat(HttpServletRequest request) {
 		try {
 			String parameter = request.getParameter("parameter");
 			if (StringUtils.isEmpty(parameter)) {
@@ -60,7 +61,7 @@ public class StaticsController extends BaseController {
 	 * @return
 	 */
 	@RequestMapping(value = "/statics/expect/block/listByWkt")
-	public ModelAndView listBlockExpectByWkt(HttpServletRequest request) {
+	public ModelAndView listBlockExpectStatByWkt(HttpServletRequest request) {
 		try {
 			String parameter = request.getParameter("parameter");
 			if (StringUtils.isEmpty(parameter)) {
@@ -72,7 +73,57 @@ public class StaticsController extends BaseController {
 			}
 			String wkt = dataJson.getString("wkt");
 			List<HashMap> data = StaticsService.getInstance()
-					.blockExpectStaticQuery(wkt);
+					.blockExpectStatQuery(wkt);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("创建失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 * 获取单个block的预期统计信息
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/statics/expect/block/query")
+	public ModelAndView queryBlockExpectStat(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			int blockId = dataJson.getInt("blockId");
+			int type = dataJson.getInt("type");
+			int stage = dataJson.getInt("stage");
+			List<BlockExpectStatInfo> gridStatObjList = StaticsService
+					.getInstance()
+					.blockExpectStatQuery(blockId, stage, type);
+			return new ModelAndView("jsonView", success(gridStatObjList));
+		} catch (Exception e) {
+			log.error("创建失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	@RequestMapping(value = "/statics/expect/city/listByWkt")
+	public ModelAndView listCityExpectStatByWkt(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			String wkt = dataJson.getString("wkt");
+			List<HashMap> data = StaticsService.getInstance()
+					.cityExpectStatQuery(wkt);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("创建失败，原因：" + e.getMessage(), e);

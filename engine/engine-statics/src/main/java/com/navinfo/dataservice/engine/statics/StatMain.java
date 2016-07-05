@@ -3,6 +3,11 @@ package com.navinfo.dataservice.engine.statics;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.navinfo.dataservice.engine.statics.expect.ExpectStatusMain;
+import com.navinfo.dataservice.engine.statics.expect.PoiCollectExpectMain;
+import com.navinfo.dataservice.engine.statics.expect.PoiDailyExpectMain;
+import com.navinfo.dataservice.engine.statics.expect.RoadCollectExpectMain;
+import com.navinfo.dataservice.engine.statics.expect.RoadDailyExpectMain;
 import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectMain;
 import com.navinfo.dataservice.engine.statics.poidaily.PoiDailyMain;
 import com.navinfo.dataservice.engine.statics.roadcollect.RoadCollectMain;
@@ -28,7 +33,9 @@ public class StatMain {
 	// 统计 seasion
 	private static final String flag_season_poi = "sp";
 	private static final String flag_season_road = "sr";
-
+	// 统计预期图
+	private static final String flag_expect_stat="es";
+	
 	/**
 	 * @param args
 	 */
@@ -49,9 +56,14 @@ public class StatMain {
 				new PoiSeasonMain(db_name, stat_time).runStat();
 			} else if (flag.equalsIgnoreCase(flag_season_road)) {
 				new RoadSeasonMain(db_name, stat_time).runStat();
+			} else if (flag.equalsIgnoreCase(flag_expect_stat)) {
+				new PoiCollectExpectMain(db_name, stat_time).runStat();
+				new RoadCollectExpectMain(db_name, stat_time).runStat();
+				new PoiDailyExpectMain(db_name, stat_time).runStat();
+				new RoadDailyExpectMain(db_name, stat_time).runStat();
+				new ExpectStatusMain(db_name, stat_time).runStat();
 			}
-
 		}
-
+		System.exit(0);
 	}
 }

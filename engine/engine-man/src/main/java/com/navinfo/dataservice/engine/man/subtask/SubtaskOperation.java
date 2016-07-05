@@ -263,12 +263,10 @@ public class SubtaskOperation {
 			String closedSubtaskStr = "(";
 			
 			closedSubtaskStr += StringUtils.join(closedSubtaskList.toArray(),",") + ")";
-			
-			closedSubtaskStr += ")";
 						
 			String updateSql = "update SUBTASK "
 					+ "set STATUS=0 "
-					+ "where SUBTASK_ID in"
+					+ "where SUBTASK_ID in "
 					+ closedSubtaskStr;	
 			
 
@@ -669,21 +667,21 @@ public class SubtaskOperation {
 					+ "and c.region_id = r.region_id "
 					+ "and st.EXE_USER_ID = " + bean.getExeUserId() + " ";
 
-			if (bean.getStage() != 0) {
+			if (bean.getStage() != null) {
 				conditionSql_task = conditionSql_task + " and st.STAGE = "
 						+ bean.getStage();
 				conditionSql_block = conditionSql_block + " and st.STAGE = "
 						+ bean.getStage();
 			}
 
-			if (bean.getType() != 0) {
+			if (bean.getType() != null) {
 				conditionSql_task = conditionSql_task + " and st.TYPE = "
 						+ bean.getType();
 				conditionSql_block = conditionSql_block + " and st.TYPE = "
 						+ bean.getType();
 			}
 
-			if (bean.getStatus() != 0) {
+			if (bean.getStatus() != null) {
 				conditionSql_task = conditionSql_task + " and st.STATUS = "
 						+ bean.getStatus();
 				conditionSql_block = conditionSql_block + " and st.STATUS = "
@@ -708,13 +706,24 @@ public class SubtaskOperation {
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 						
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
-						subtask.put("name", rs.getString("NAME"));
+//						subtask.put("name", rs.getString("NAME"));
+//						subtask.put("descp", rs.getString("DESCP"));
+						if(rs.getString("NAME") != null){
+							subtask.put("name", rs.getString("NAME"));
+						}else{
+							subtask.put("name", "");
+						}
+						if(rs.getString("descp") != null){
+							subtask.put("descp", rs.getString("DESCP"));
+						}else{
+							subtask.put("descp", "");
+						}
+
 						subtask.put("stage", rs.getInt("STAGE"));
 						subtask.put("type", rs.getInt("TYPE"));
-						subtask.put("planStartDate", DateUtils.dateToString(rs
-								.getTimestamp("PLAN_START_DATE")));
-						subtask.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
-						subtask.put("descp", rs.getString("DESCP"));
+						subtask.put("planStartDate", rs
+								.getTimestamp("PLAN_START_DATE"));
+						subtask.put("planEndDate", rs.getTimestamp("PLAN_END_DATE"));
 						subtask.put("status", rs.getInt("STATUS"));
 						
 						if (1 == rs.getInt("STAGE")) {
@@ -806,21 +815,21 @@ public class SubtaskOperation {
 					+ ",r.MONTHLY_DB_ID"
 					+ ",TO_CHAR(st.GEOMETRY.get_wkt())";
 
-			if (bean.getStage() != 0) {
+			if (bean.getStage() != null) {
 				conditionSql_task = conditionSql_task + " and st.STAGE = "
 						+ bean.getStage();
 				conditionSql_block = conditionSql_block + " and st.STAGE = "
 						+ bean.getStage();
 			}
 
-			if (bean.getType() != 0) {
+			if (bean.getType() != null) {
 				conditionSql_task = conditionSql_task + " and st.TYPE = "
 						+ bean.getType();
 				conditionSql_block = conditionSql_block + " and st.TYPE = "
 						+ bean.getType();
 			}
 
-			if (bean.getStatus() != 0) {
+			if (bean.getStatus() != null) {
 				conditionSql_task = conditionSql_task + " and st.STATUS = "
 						+ bean.getStatus();
 				conditionSql_block = conditionSql_block + " and st.STATUS = "
@@ -846,13 +855,22 @@ public class SubtaskOperation {
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 						
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
-						subtask.put("name", rs.getString("NAME"));
+//						subtask.put("name", rs.getString("NAME"));
+//						subtask.put("descp", rs.getString("DESCP"));
+						if(rs.getString("NAME") != null){
+							subtask.put("name", rs.getString("NAME"));
+						}else{
+							subtask.put("name", "");
+						}
+						if(rs.getString("descp") != null){
+							subtask.put("descp", rs.getString("DESCP"));
+						}else{
+							subtask.put("descp", "");
+						}
 						subtask.put("stage", rs.getInt("STAGE"));
 						subtask.put("type", rs.getInt("TYPE"));
-						subtask.put("planStartDate", DateUtils.dateToString(rs
-								.getTimestamp("PLAN_START_DATE")));
-						subtask.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
-						subtask.put("descp", rs.getString("DESCP"));
+						subtask.put("planStartDate", rs.getTimestamp("PLAN_START_DATE"));
+						subtask.put("planEndDate", rs.getTimestamp("PLAN_END_DATE"));
 						subtask.put("status", rs.getInt("STATUS"));
 						subtask.put("dbId", rs.getString("GEOMETRY"));
 						

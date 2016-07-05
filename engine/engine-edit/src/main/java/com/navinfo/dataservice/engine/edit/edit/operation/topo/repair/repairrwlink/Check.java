@@ -43,7 +43,7 @@ public class Check {
 			}
 		}
 	}
-
+	
 	private void throwException(String msg) throws Exception {
 		throw new Exception(msg);
 	}

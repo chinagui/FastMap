@@ -22,24 +22,15 @@ public class NiValExceptionOperator {
 
 	private Connection conn;
 
-	private int projectId;
-
 	private String gdbVersion;
 
 	public NiValExceptionOperator() {
 
 	}
 
-	public NiValExceptionOperator(Connection conn) {
-		this.conn = conn;
-
-	}
-
-	public NiValExceptionOperator(Connection conn, int projectId)
+	public NiValExceptionOperator(Connection conn)
 			throws Exception {
 		this.conn = conn;
-
-		this.projectId = projectId;
 		this.gdbVersion=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 
 		//ProjectSelector selector = new ProjectSelector();
@@ -94,7 +85,7 @@ public class NiValExceptionOperator {
 	public void insertCheckLog(String ruleId, String loc, String targets,
 			int meshId, String worker) throws Exception {
 
-		String sql = "merge into ni_val_exception a using ( select * from ( select :1 as MD5_CODE from dual) where MD5_CODE not in ( select MD5_CODE          from ni_val_exception          where MD5_CODE is not null        union all        select MD5_CODE          from ck_exception          where MD5_CODE is not null          )) b on (a.MD5_CODE = b.MD5_CODE) when not matched then   insert     (MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
+		String sql = "merge into ni_val_exception a using ( select * from ( select :1 as MD5_CODE from dual) where MD5_CODE not in ( select MD5_CODE          from ni_val_exception          where MD5_CODE is not null        union all        select RESERVED as MDS_CODE          from ck_exception          where RESERVED is not null          )) b on (a.MD5_CODE = b.MD5_CODE) when not matched then   insert     (MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 
 		try {
@@ -147,7 +138,7 @@ public class NiValExceptionOperator {
 	public void insertCheckLog(String ruleId, String loc, String targets,
 			int meshId, String log, String worker) throws Exception {
 
-		String sql = "merge into ni_val_exception a using ( select * from ( select :1 as MD5_CODE from dual) where MD5_CODE not in ( select MD5_CODE          from ni_val_exception          where MD5_CODE is not null        union all        select MD5_CODE          from ck_exception          where MD5_CODE is not null          )) b on (a.MD5_CODE = b.MD5_CODE) when not matched then   insert     (MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
+		String sql = "merge into ni_val_exception a using ( select * from ( select :1 as MD5_CODE from dual) where MD5_CODE not in ( select MD5_CODE          from ni_val_exception          where MD5_CODE is not null        union all        select reserved as MD5_CODE          from ck_exception          where reserved is not null          )) b on (a.MD5_CODE = b.MD5_CODE) when not matched then   insert     (MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 
 		try {
@@ -303,7 +294,7 @@ public class NiValExceptionOperator {
 
 				ckexception.setRowId(UuidUtils.genUuid());
 
-				sql = "insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, reserved, extended, task_id, qa_task_id, qa_status, worker, qa_worker, u_date, row_id, u_record) select :1,ruleid, task_name,:2,groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, mesh_id, scope_flag, province_name, map_scale, null, extended, task_id, qa_task_id, qa_status, worker, qa_worker, u_date,:3,1 from ni_val_exception a where a.MD5_CODE=:4";
+				sql = "insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, reserved, extended, task_id, qa_task_id, qa_status, worker, qa_worker, row_id, u_record) select :1,ruleid, task_name,:2,groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, mesh_id, scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker,:3,1 from ni_val_exception a where a.MD5_CODE=:4";
 
 				pstmt = conn.prepareStatement(sql);
 				
@@ -367,7 +358,7 @@ public class NiValExceptionOperator {
 			pstmt.executeUpdate();
 
 			if (result != null) {
-				LogWriter writer = new LogWriter(conn, projectId);
+				LogWriter writer = new LogWriter(conn);
 
 				Command command = new Command();
 
@@ -450,8 +441,7 @@ public class NiValExceptionOperator {
 		OracleAddress oa1 = new OracleAddress(username1, password1, port1, ip1,
 				serviceName1);
 
-		NiValExceptionOperator op = new NiValExceptionOperator(oa1.getConn(),
-				11);
+		NiValExceptionOperator op = new NiValExceptionOperator(oa1.getConn());
 
 		// op.insertCheckLog("3213131", "POINT(116.1313 37.131)",
 		// "[RD_LINK,32131]", 13, "13");

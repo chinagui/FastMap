@@ -52,7 +52,9 @@ public class Process extends AbstractProcess<Command> {
 			// 创建铁路点有关铁路线具体操作
 			OpTopo operation = new OpTopo(this.getCommand(), check, this.getConn());
 			msg = operation.run(this.getResult());
-			this.recordData();
+			// 打断线对立交影响
+			OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand(), this.getConn());
+			opRefRdGsc.run(this.getResult());
 		} catch (Exception e) {
 
 			this.getConn().rollback();

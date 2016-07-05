@@ -39,6 +39,15 @@ public class Glm {
 	public Map<String, GlmTable> getEditTables() {
 		return editTables;
 	}
+	public GlmTable getGlmTable(String tableName){
+		if(editTables!=null&&editTables.get(tableName)!=null){
+			return editTables.get(tableName);
+		}
+		if(extendTables!=null&&extendTables.get(tableName)!=null){
+			return extendTables.get(tableName);
+		}
+		return null;
+	}
 	public void setAllTables(Map<String, GlmTable> tables) {
 		if(tables!=null){
 			editTables = new HashMap<String,GlmTable>();

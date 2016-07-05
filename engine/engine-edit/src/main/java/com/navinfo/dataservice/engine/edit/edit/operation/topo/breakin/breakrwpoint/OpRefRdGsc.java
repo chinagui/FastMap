@@ -151,7 +151,7 @@ public class OpRefRdGsc implements IOperation {
 			RdGscLink rdGscLink = (RdGscLink) row;
 
 			// 找到打断的那条link
-			if (rdGscLink.getPid() == command.getLinkPid()) {
+			if (rdGscLink.getLinkPid() == command.getLinkPid()) {
 
 				Geometry link1Geo = command.getsRwLink().getGeometry();
 

@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
-
 import com.alibaba.druid.util.StringUtils;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
@@ -34,6 +32,8 @@ import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
+
+import net.sf.json.JSONObject;
 
 /**
  * 
@@ -68,8 +68,8 @@ public class Operation implements IOperation {
 		// 既有线构成面
 		if (command.getLinkPids() != null) {
 			// ZONELINK
-			if (command.getLinkType().equals(ObjType.ADLINK.toString())) {
-				this.createFaceByAdLink(command.getLinks());
+			if (command.getLinkType().equals(ObjType.ZONELINK.toString())) {
+				this.createFaceByZoneLink(command.getLinks());
 			}
 			// RDLINK
 			if (command.getLinkType().equals(ObjType.RDLINK.toString())) {
@@ -81,13 +81,14 @@ public class Operation implements IOperation {
 					zoneLinks.add(this.createLinkOfFace(GeoTranslator.transform(
 							link.getGeometry(), 0.00001, 5), maps));
 				}
-				this.createFaceByAdLink(zoneLinks);
+				this.createFaceByZoneLink(zoneLinks);
 			}
 		}
 		// 创建
 		if (command.getGeometry() != null) {
 			this.createFaceByGeometry(result);
 		}
+		
 		return null;
 	}
 
@@ -98,7 +99,7 @@ public class Operation implements IOperation {
 	 *            传入要创建面的几何
 	 * @throws Exception
 	 */
-	public  void createFaceByAdLink(List<IObj> objList) throws Exception {
+	public  void createFaceByZoneLink(List<IObj> objList) throws Exception {
 		List<Geometry> list = new ArrayList<Geometry>();
 		Set<String> meshes = new HashSet<String>();
 		List<ZoneLink> zoneLinks = new ArrayList<ZoneLink>();
@@ -198,7 +199,7 @@ public class Operation implements IOperation {
 		// 如果不跨图幅
 		if (meshes.size() == 1) {
 			// 生成起始node
-			ZoneNode Node = (ZoneNode) NodeOperateUtils.createNode(sPoint.x, sPoint.y,ObjType.ADNODE);
+			ZoneNode Node = (ZoneNode) NodeOperateUtils.createNode(sPoint.x, sPoint.y,ObjType.ZONENODE);
 			result.insertObject(Node, ObjStatus.INSERT, Node.pid());
 			this.createFace();
 			List<ZoneLink> links = new ArrayList<ZoneLink>();
@@ -357,11 +358,6 @@ public class Operation implements IOperation {
 
 		JSONObject updateContent = new JSONObject();
 		g = GeoTranslator.transform(g, 0.00001, 5);
-
-		String meshId =  CompGeometryUtil.geoToMeshesWithoutBreak(g).iterator().next();
-		if (!StringUtils.isEmpty(meshId)) {
-			updateContent.put("mesh", Integer.parseInt(meshId));
-		}
 		updateContent.put("geometry", GeoTranslator.jts2Geojson(g));
 		updateContent.put("area", GeometryUtils.getCalculateArea(g));
 		updateContent.put("perimeter", GeometryUtils.getLinkLength(g));

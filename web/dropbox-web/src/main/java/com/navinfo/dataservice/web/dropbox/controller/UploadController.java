@@ -16,7 +16,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
-import com.navinfo.dataservice.engine.dropbox.manger.UploadManager;
+import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
 
 @Controller
 public class UploadController extends BaseController {
@@ -41,7 +41,7 @@ public class UploadController extends BaseController {
 
 			int chunkSize = json.getInt("chunkSize");
 
-			UploadManager upload = new UploadManager();
+			UploadService upload = UploadService.getInstance();
 
 			int jobId = upload.startUpload(fileName, md5, fileSize, chunkSize);
 
@@ -68,7 +68,7 @@ public class UploadController extends BaseController {
 
 			int jobId = json.getInt("jobId");
 
-			UploadManager upload = new UploadManager();
+			UploadService upload = UploadService.getInstance();
 
 			List<Integer> chunkList = upload.checkChunk(jobId);
 
@@ -91,7 +91,7 @@ public class UploadController extends BaseController {
 
 		try {
 
-			UploadManager upload = new UploadManager();
+			UploadService upload = UploadService.getInstance();
 
 			upload.uploadChunk(request);
 
@@ -116,7 +116,7 @@ public class UploadController extends BaseController {
 
 			int jobId = json.getInt("jobId");
 
-			UploadManager upload = new UploadManager();
+			UploadService upload = UploadService.getInstance();
 
 			upload.finishUpload(jobId);
 
@@ -138,7 +138,7 @@ public class UploadController extends BaseController {
 
 		try {
 
-			UploadManager upload = new UploadManager();
+			UploadService upload = UploadService.getInstance();
 
 			HashMap<Object,Object> data = upload.uploadResource(request);
 			if(!data.isEmpty()){

@@ -66,7 +66,7 @@ public class Operation implements IOperation {
 		this.createRwLinks(map, result);
 		// 挂接的线被打断的操作
 		this.breakLine(result);
-
+		
 		return msg;
 	}
 
@@ -137,7 +137,7 @@ public class Operation implements IOperation {
 						breakJson, breakJson.toString());
 				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Process(
 						breakCommand,result,conn);
-				breakProcess.run();
+				breakProcess.innerRun();
 			}
 		}
 	}

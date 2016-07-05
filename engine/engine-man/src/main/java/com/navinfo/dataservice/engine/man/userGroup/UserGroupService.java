@@ -34,7 +34,16 @@ import net.sf.json.JSONObject;
 public class UserGroupService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
-	
+	private UserGroupService() {
+	}
+
+	private static class SingletonHolder {
+		private static final UserGroupService INSTANCE = new UserGroupService();
+	}
+
+	public static UserGroupService getInstance() {
+		return SingletonHolder.INSTANCE;
+	}
 	public void create(UserGroup  bean)throws ServiceException{
 		Connection conn = null;
 		try{

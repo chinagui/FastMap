@@ -55,7 +55,7 @@ public class OracleSchemaPhysicalCreator implements DbPhysicalCreator{
 //			conProps.put("internal_logon", "sysdba");
 			DriverManagerDataSource dataSource = new DriverManagerDataSource();
 			dataSource.setDriverClassName("oracle.jdbc.driver.OracleDriver");
-			String url = MultiDataSourceFactory.createOracleJdbcUrl(suDb.getDbServer().getIp(), suDb.getDbServer().getPort(), suDb.getDbName());
+			String url = MultiDataSourceFactory.createOracleJdbcUrl(suDb.getDbServer().getIp(), suDb.getDbServer().getPort(), suDb.getDbServer().getServiceName());
 			dataSource.setUrl(url);
 			/*
 			 * dataSource.setUsername(sysName);

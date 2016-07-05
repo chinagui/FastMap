@@ -2,7 +2,9 @@ package com.navinfo.dataservice.web.man.controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -58,6 +60,9 @@ public class SubtaskController extends BaseController {
 			//根据gridIds获取wkt
 			JSONArray gridIds = dataJson.getJSONArray("gridIds");
 			String wkt = GridUtils.grids2Wkt(gridIds);
+			if(wkt.contains("MULTIPOLYGON")){
+				return new ModelAndView("jsonView",exception("请输入符合条件的grids"));
+			}
 			Object[] gridIdList = dataJson.getJSONArray("gridIds").toArray();
 			dataJson.put("gridIds",gridIdList);
 			
@@ -148,8 +153,20 @@ public class SubtaskController extends BaseController {
 			//作业阶段
 			int stage = dataJson.getInt("stage");
 			
+//			Page page = SubtaskService.getInstance().list(stage,condition,order,pageSize,curPageNum);
+//			
+//			List<?> result=JsonOperation.beanToJsonList((List<?>)page.getResult());
+//			
+//			page.setResult(result.toArray());
+//			
+//            return new ModelAndView("jsonView", success(page));
+			
 			Page page = SubtaskService.getInstance().listPage(stage,condition,order,pageSize,curPageNum);
-            
+
+			List<?> result=JsonOperation.beanToJsonList((List<?>)page.getResult());
+
+			page.setResult(result.toArray());
+			
             return new ModelAndView("jsonView", success(page));
 		
 		}catch(Exception e){
@@ -186,6 +203,10 @@ public class SubtaskController extends BaseController {
             
             Page page = SubtaskService.getInstance().listByUserPage(bean,snapshot,pageSize,curPageNum);
             
+            List<?> result=JsonOperation.beanToJsonList((List<?>)page.getResult());
+			
+			page.setResult(result);
+            
             return new ModelAndView("jsonView", success(page));
             
 		}catch(Exception e){
@@ -215,15 +236,20 @@ public class SubtaskController extends BaseController {
 			HashMap<String, Object> data = new HashMap<String, Object>();
 			if(subtask!=null&&subtask.getSubtaskId()!=null){
 				data.put("subtaskId", subtask.getSubtaskId());
-				data.put("geometry", subtask.getGeometry());
+//				data.put("geometry", subtask.getGeometry());
 				data.put("stage", subtask.getStage());
 				data.put("type", subtask.getType());
-				data.put("planStartDate", DateUtils.dateToString(subtask.getPlanStartDate()));
-				data.put("planEndDate", DateUtils.dateToString(subtask.getPlanEndDate()));
+				data.put("planStartDate", subtask.getPlanStartDate());
+				data.put("planEndDate", subtask.getPlanEndDate());
 				data.put("descp", subtask.getDescp());
+				data.put("name", subtask.getName());
 				data.put("gridIds", subtask.getGridIds());
+				data.put("dbId", subtask.getDbId());
 			}
-			return new ModelAndView("jsonView", success(data));
+			
+			JSONObject result = JsonOperation.beanToJson(data);
+			
+			return new ModelAndView("jsonView", success(result));
 			
 		}catch(Exception e){
 			log.error("获取明细失败，原因："+e.getMessage(), e);
@@ -282,14 +308,15 @@ public class SubtaskController extends BaseController {
 			
 			JSONArray subtaskIds = dataJson.getJSONArray("subtaskIds");
 			
-			List<Integer> subtaskIdList = (List<Integer>)JSONArray.toCollection(subtaskIds,Integer.class); 
-			
+			List<Integer> subtaskIdList = (List<Integer>)JSONArray.toCollection(subtaskIds,Integer.class);
+//			HashMap<Object,Object> unClosedSubtaskList = SubtaskService.getInstance().close(subtaskIdList);
 			List<Integer> unClosedSubtaskList = SubtaskService.getInstance().close(subtaskIdList);
 			
 			if(unClosedSubtaskList.isEmpty()){
 				return new ModelAndView("jsonView", success("关闭成功"));
 			}else{
-				return new ModelAndView("jsonView", success(unClosedSubtaskList));
+				String message = unClosedSubtaskList.toString() + "内存在未完成作业，subtask无法关闭";
+				return new ModelAndView("jsonView", success(message));
 			}
 			
 			

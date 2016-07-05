@@ -54,6 +54,17 @@ public class IxPoiTest extends InitApplication{
 		
 		//System.out.println(jsonObject);
 	}
+	@Test
+	public void UpdatePoi0624(){
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":1626,\"data\":{\"addresses\":[{\"nameGroupId\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"eewerew\",\"pid\":1626,\"objStatus\":\"INSERT\"}],\"pid\":1626}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	
 	
 }

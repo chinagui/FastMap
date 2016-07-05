@@ -136,6 +136,7 @@ public class RdGsc implements IObj  {
 	@Override
 	public boolean fillChangeFields(JSONObject json) throws Exception {
 		
+		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {

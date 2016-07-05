@@ -56,7 +56,6 @@ public class Process extends AbstractProcess<Command> {
 			//创建行政区划点有关行政区划面具体操作类
 			OpRefAdFace opRefAdFace = new OpRefAdFace(this.getCommand(),this.getConn());
 			opRefAdFace.run(this.getResult());
-			this.recordData();
 		} catch (Exception e) {
 			
 			this.getConn().rollback();

@@ -114,7 +114,13 @@ public class RdBranchTest extends InitApplication{
 	}
 	
 
-	
+	@Test
+	public void updateRdBranchTest_OutLink() throws Exception {
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"RDBRANCH\",\"objId\":\"100000806\",\"data\":{\"nodePid\":\"51728089\",\"inLinkPid\":\"58253132\",\"outLinkPid\":\"58253135\",\"pid\":100000806,\"objStatus\": \"UPDATE\"}}";
+		log.info(parameter);
+		Transaction t = new Transaction(parameter);		;
+		String msg = t.run();
+	}
 	
 	
 	

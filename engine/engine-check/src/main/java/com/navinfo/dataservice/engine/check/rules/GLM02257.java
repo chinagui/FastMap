@@ -263,12 +263,11 @@ public class GLM02257 extends baseRule {
 		
 		//检查调用
 		CheckCommand checkCommand=new CheckCommand();
-		checkCommand.setProjectId(11);
 		checkCommand.setGlmList(objList);
 		checkCommand.setOperType(OperType.UPDATE);
 		checkCommand.setObjType(link.objType());
 		
-		CheckEngine checkEngine=new CheckEngine(checkCommand,conn,11);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
 		checkEngine.postCheck();
 		
 	}

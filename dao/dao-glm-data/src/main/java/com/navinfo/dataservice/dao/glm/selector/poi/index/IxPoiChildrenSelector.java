@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.poi.index;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildrenForAndroid;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
 
 /**
  * POI父子关系子表 查询
@@ -63,15 +65,7 @@ public class IxPoiChildrenSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				poiChildren.setGroupId (resultSet.getInt("group_id"));
-
-				poiChildren.setChildPoiPid(resultSet.getInt("child_poi_pid"));
-				
-				poiChildren.setRelationType(resultSet.getInt("relation_type"));
-
-				poiChildren.setRowId(resultSet.getString("row_id"));
-				
-				poiChildren.setuDate(resultSet.getString("u_date"));
+				setAttr( poiChildren, resultSet);
 			} else {
 				
 				throw new DataNotFoundException("数据不存在");
@@ -130,13 +124,7 @@ public class IxPoiChildrenSelector implements ISelector {
 
 				IxPoiChildren poiChildren = new IxPoiChildren();
 				
-				poiChildren.setGroupId (resultSet.getInt("group_id"));
-
-				poiChildren.setChildPoiPid(resultSet.getInt("child_poi_pid"));
-				
-				poiChildren.setRelationType(resultSet.getInt("relation_type"));
-
-				poiChildren.setRowId(resultSet.getString("row_id"));
+				setAttr( poiChildren, resultSet);
 
 				rows.add(poiChildren);
 			}
@@ -193,13 +181,7 @@ public class IxPoiChildrenSelector implements ISelector {
 
 				IxPoiChildren poiChildren = new IxPoiChildren();
 				
-				poiChildren.setGroupId (resultSet.getInt("group_id"));
-
-				poiChildren.setChildPoiPid(resultSet.getInt("child_poi_pid"));
-				
-				poiChildren.setRelationType(resultSet.getInt("relation_type"));
-
-				poiChildren.setRowId(resultSet.getString("row_id"));
+				setAttr( poiChildren, resultSet);
 
 				rows.add(poiChildren);
 			}
@@ -283,6 +265,19 @@ public class IxPoiChildrenSelector implements ISelector {
 
 		}		
 		return rows;
+	}
+	
+	private void setAttr(IxPoiChildren poiChildren,ResultSet resultSet) throws SQLException
+	{
+		poiChildren.setGroupId (resultSet.getInt("group_id"));
+
+		poiChildren.setChildPoiPid(resultSet.getInt("child_poi_pid"));
+		
+		poiChildren.setRelationType(resultSet.getInt("relation_type"));
+
+		poiChildren.setRowId(resultSet.getString("row_id"));
+		
+		poiChildren.setuDate(resultSet.getString("u_date"));
 	}
 	
 }

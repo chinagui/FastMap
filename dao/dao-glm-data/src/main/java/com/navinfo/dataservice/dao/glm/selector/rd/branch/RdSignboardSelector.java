@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.rd.branch;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,8 +17,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboardName;
 
 public class RdSignboardSelector implements ISelector {
 
-	private static Logger logger = Logger
-			.getLogger(RdSignboardSelector.class);
+	private static Logger logger = Logger.getLogger(RdSignboardSelector.class);
 
 	private Connection conn;
 
@@ -50,32 +50,24 @@ public class RdSignboardSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				signboard.setPid(resultSet.getInt("signboard_id"));
-
-				signboard.setBranchPid(resultSet.getInt("branch_pid"));
-				
-				signboard.setArrowCode(resultSet.getString("arrow_code"));
-				
-				signboard.setBackimageCode(resultSet.getString("backimage_code"));
-
-				signboard.setRowId(resultSet.getString("row_id"));
+				setAttr(signboard, resultSet);
 
 				RdSignboardNameSelector nameSelector = new RdSignboardNameSelector(
 						conn);
 
 				signboard.setNames(nameSelector.loadRowsByParentId(id, isLock));
 
-				for(IRow row : signboard.getNames()){
-					RdSignboardName name = (RdSignboardName)row;
-					
+				for (IRow row : signboard.getNames()) {
+					RdSignboardName name = (RdSignboardName) row;
+
 					signboard.nameMap.put(name.getPid(), name);
 				}
 			} else {
-				
+
 				throw new DataNotFoundException("数据不存在");
 			}
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -84,7 +76,7 @@ public class RdSignboardSelector implements ISelector {
 					resultSet.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 			try {
@@ -92,7 +84,7 @@ public class RdSignboardSelector implements ISelector {
 					pstmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
@@ -129,31 +121,24 @@ public class RdSignboardSelector implements ISelector {
 
 				RdSignboard signboard = new RdSignboard();
 
-				signboard.setPid(resultSet.getInt("signboard_id"));
-
-				signboard.setBranchPid(resultSet.getInt("branch_pid"));
-				
-				signboard.setArrowCode(resultSet.getString("arrow_code"));
-				
-				signboard.setBackimageCode(resultSet.getString("backimage_code"));
-
-				signboard.setRowId(resultSet.getString("row_id"));
+				setAttr(signboard, resultSet);
 
 				RdSignboardNameSelector nameSelector = new RdSignboardNameSelector(
 						conn);
 
-				signboard.setNames(nameSelector.loadRowsByParentId(signboard.getPid(), isLock));
+				signboard.setNames(nameSelector.loadRowsByParentId(
+						signboard.getPid(), isLock));
 
-				for(IRow row : signboard.getNames()){
-					RdSignboardName name = (RdSignboardName)row;
-					
+				for (IRow row : signboard.getNames()) {
+					RdSignboardName name = (RdSignboardName) row;
+
 					signboard.nameMap.put(name.getPid(), name);
 				}
 
 				rows.add(signboard);
 			}
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -162,7 +147,7 @@ public class RdSignboardSelector implements ISelector {
 					resultSet.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 			try {
@@ -170,7 +155,7 @@ public class RdSignboardSelector implements ISelector {
 					pstmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
@@ -182,5 +167,19 @@ public class RdSignboardSelector implements ISelector {
 	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
 
 		return null;
+	}
+
+	private void setAttr(RdSignboard signboard, ResultSet resultSet)
+			throws SQLException {
+
+		signboard.setPid(resultSet.getInt("signboard_id"));
+
+		signboard.setBranchPid(resultSet.getInt("branch_pid"));
+
+		signboard.setArrowCode(resultSet.getString("arrow_code"));
+
+		signboard.setBackimageCode(resultSet.getString("backimage_code"));
+
+		signboard.setRowId(resultSet.getString("row_id"));
 	}
 }

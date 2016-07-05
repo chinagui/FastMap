@@ -258,6 +258,8 @@ public class Geojson {
 
 					point.add(lonlat2Pixel(point.getDouble(0),
 							point.getDouble(1), z, px, py));
+					
+					newline.add(point);
 				}
 
 				coords.add(newline);

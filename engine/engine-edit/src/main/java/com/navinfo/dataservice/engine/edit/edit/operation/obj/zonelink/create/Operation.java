@@ -6,8 +6,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -17,6 +15,8 @@ import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONObject;
 
 /**
  * @author zhaokk  创建ZONE线参数基础类
@@ -61,7 +61,7 @@ public class Operation implements IOperation {
 		this.createZoneLinks(map,result);
 		//挂接的线被打断的操作
 		this.breakLine(result);
-        
+		
 		return msg;
 	}
 	/*
@@ -137,11 +137,11 @@ public class Operation implements IOperation {
 				breakJson.put("data", data);
 				//组装打断线的参数
 				//保证是同一个连接
-				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadpoint.Command(
+				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakzonepoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakzonepoint.Command(
 						breakJson, breakJson.toString());
-				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadpoint.Process(
+				com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakzonepoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakzonepoint.Process(
 						breakCommand,result, conn);
-				breakProcess.run();
+				breakProcess.innerRun();
 			}
 		}
 	}

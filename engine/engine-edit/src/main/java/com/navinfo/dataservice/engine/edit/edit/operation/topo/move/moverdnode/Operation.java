@@ -54,7 +54,7 @@ public class Operation implements IOperation {
 	}
 
 	private void updateLinkGeomtry(Result result) throws Exception {
-
+		Map<Integer, List<RdLink>> map = new HashMap<Integer, List<RdLink>>();
 		for (RdLink link : command.getLinks()) {
 
 			Geometry geom = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
@@ -86,16 +86,17 @@ public class Operation implements IOperation {
 			geojson.put("coordinates", ps);
 
 			Geometry geo = GeoTranslator.geojson2Jts(geojson, 1, 5);
-			Set<String> meshes =  CompGeometryUtil.geoToMeshesWithoutBreak(geom);
+			Set<String> meshes =  CompGeometryUtil.geoToMeshesWithoutBreak(geo);
 			// 修改线的几何属性
 			// 如果没有跨图幅只是修改线的几何
+			link.setGeometry(geo);
 			List<RdLink> links = new ArrayList<RdLink>();
 			if (meshes.size() == 1) {
 				JSONObject updateContent = new JSONObject();
 				updateContent.put("geometry", geojson);
 				updateContent.put("length", GeometryUtils.getLinkLength(geo));
 				link.fillChangeFields(updateContent);
-				link.setGeometry(geo);
+				
 				links.add(link);
 				map.put(link.getPid(), links);
 				result.insertObject(link, ObjStatus.UPDATE, link.pid());
@@ -118,6 +119,7 @@ public class Operation implements IOperation {
 				result.insertObject(link, ObjStatus.DELETE, link.pid());
 			}
 		}
+		this.map = map;
 	}
 
 	private void updateNodeGeometry(Result result) throws Exception {
@@ -140,9 +142,9 @@ public class Operation implements IOperation {
 
 		// 组装更新线的参数
 		// 保证是同一个连接
-		com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.update.Command updatecommand = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.update.Command(
+		com.navinfo.dataservice.engine.edit.edit.operation.obj.rdnode.update.Command updatecommand = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdnode.update.Command(
 				updateContent, command.getRequester());
-		com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.update.Process process = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdlink.update.Process(
+		com.navinfo.dataservice.engine.edit.edit.operation.obj.rdnode.update.Process process = new com.navinfo.dataservice.engine.edit.edit.operation.obj.rdnode.update.Process(
 				updatecommand, result, conn);
 		process.innerRun();
 	}

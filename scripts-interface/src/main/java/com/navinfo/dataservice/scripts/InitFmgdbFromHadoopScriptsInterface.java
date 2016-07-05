@@ -14,13 +14,10 @@ public class InitFmgdbFromHadoopScriptsInterface {
 
 		try {
 
-//			String path = args[0];
+			String path = args[0];
 
-			String path = "c:/out.txt";
-			ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-					new String[] { "dubbo-consumer-4scripts.xml" });
-			context.start();
-			new ApplicationContextUtil().setApplicationContext(context);
+//			String path = "c:/out.txt";
+			JobScriptsInterface.initContext();
 
 			DeepInfoImporter importer = new DeepInfoImporter();
 

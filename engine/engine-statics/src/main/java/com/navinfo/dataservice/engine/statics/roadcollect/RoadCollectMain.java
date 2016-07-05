@@ -31,9 +31,9 @@ public class RoadCollectMain {
 	private String col_name_tips_block = "track_length_block_stat";
 	private String col_name_tips_city = "track_length_city_stat";
 	// 季度库
-	private String col_name_seasion_grid = "road_season_grid_stat";
-	private String col_name_seasion_block = "road_season_block_stat";
-	private String col_name_seasion_city = "road_season_city_stat";
+	public static String col_name_seasion_grid = "road_season_grid_stat";
+	public static String col_name_seasion_block = "road_season_block_stat";
+	public static String col_name_seasion_city = "road_season_city_stat";
 
 	public RoadCollectMain(String dbn, String stat_time) {
 		this.db_name = dbn;

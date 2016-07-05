@@ -2,16 +2,12 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairrdl
 
 import java.util.List;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.engine.edit.comm.util.operate.RdGscOperateUtils;
-import com.navinfo.dataservice.engine.edit.comm.util.operate.RdLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess;
-import com.vividsolutions.jts.geom.Geometry;
 
 public class Process extends AbstractProcess<Command> {
 
@@ -45,23 +41,12 @@ public class Process extends AbstractProcess<Command> {
 
 		check.checkShapePointDistance(this.getCommand().getLinkGeom());
 
-		Geometry geo = GeoTranslator.geojson2Jts(this.getCommand().getLinkGeom());
-		
-		RdGscSelector selector = new RdGscSelector(this.getConn());
-		
-		List<RdGsc> rdGscList = selector.onlyLoadRdGscLinkByLinkPid(this.getCommand().getLinkPid(), "RD_LINK", true);
-		
-		boolean flag = RdGscOperateUtils.isMoveGscLink(geo, rdGscList);
-
-		if (flag) {
-			throw new Exception("不容许去除有立交关系的形状点");
-		}
-
 		return null;
 	}
 
 	@Override
 	public String exeOperation() throws Exception {
+		check.checkIsMoveGscPoint(this.getCommand().getLinkGeom(), this.getConn(), this.getCommand().getLinkPid());
 		return new Operation(this.getConn(), this.getCommand()).run(this.getResult());
 	}
 

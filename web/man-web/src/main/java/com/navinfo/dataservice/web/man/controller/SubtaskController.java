@@ -153,19 +153,11 @@ public class SubtaskController extends BaseController {
 			//作业阶段
 			int stage = dataJson.getInt("stage");
 			
-//			Page page = SubtaskService.getInstance().list(stage,condition,order,pageSize,curPageNum);
-//			
-//			List<?> result=JsonOperation.beanToJsonList((List<?>)page.getResult());
-//			
-//			page.setResult(result.toArray());
-//			
-//            return new ModelAndView("jsonView", success(page));
-			
 			Page page = SubtaskService.getInstance().listPage(stage,condition,order,pageSize,curPageNum);
 
-			List<?> result=JsonOperation.beanToJsonList((List<?>)page.getResult());
-
-			page.setResult(result.toArray());
+//			List<?> result=JsonOperation.beanToJsonList((List<?>)page.getResult());
+//
+//			page.setResult(result.toArray());
 			
             return new ModelAndView("jsonView", success(page));
 		
@@ -203,9 +195,9 @@ public class SubtaskController extends BaseController {
             
             Page page = SubtaskService.getInstance().listByUserPage(bean,snapshot,pageSize,curPageNum);
             
-            List<?> result=JsonOperation.beanToJsonList((List<?>)page.getResult());
-			
-			page.setResult(result);
+//            List<?> result=JsonOperation.beanToJsonList((List<?>)page.getResult());
+//			
+//			page.setResult(result);
             
             return new ModelAndView("jsonView", success(page));
             

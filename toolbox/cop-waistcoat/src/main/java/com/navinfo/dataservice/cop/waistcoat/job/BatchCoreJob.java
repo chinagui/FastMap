@@ -32,8 +32,9 @@ public class BatchCoreJob extends AbstractJob {
 	public void execute() throws JobException {
 		BatchCoreJobRequest req = (BatchCoreJobRequest)request;
 		BatchCoreParams batchParams = analyzeBatchParams(req);
+		Connection conn = null;
 		try {
-			Connection conn = DBConnector.getInstance().getConnectionById(req.getExecuteDBId());
+			conn = DBConnector.getInstance().getConnectionById(req.getExecuteDBId());
 			String batchPrepareResult = prepareBatch(conn, batchParams);
 			response("批处理准备步骤完成",null);
 
@@ -51,6 +52,16 @@ public class BatchCoreJob extends AbstractJob {
 
 		} catch (Exception e) {
 			throw new JobException(e.getMessage(),e);
+		}
+		finally
+		{
+			try {
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw new JobException(e.getMessage(),e);
+			}
 		}
 	}
 

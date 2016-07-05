@@ -147,7 +147,7 @@ public class GridOperation {
 			ResultSet rs = stmt.executeQuery();
 			List<Integer> listType = new ArrayList();
 			int TypeTotal = 0;
-			String flagType = null;
+			String flagType = "";
 			while (rs.next()) {
 				listType.add(rs.getInt(1));
 			}

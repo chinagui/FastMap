@@ -238,6 +238,9 @@ public class SubtaskController extends BaseController {
 				data.put("gridIds", subtask.getGridIds());
 				data.put("dbId", subtask.getDbId());
 			}
+			else{
+				throw new Exception("该任务不存在");
+			}
 			
 			JSONObject result = JsonOperation.beanToJson(data);
 			

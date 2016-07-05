@@ -282,7 +282,11 @@ public class ZoneLinkOperateUtils {
 			pc++;
 		}
         //循环挂接的线是否完毕 如果>1 则表示完毕
-		if (tmpCs.size() > 1) {
+		if (tmpCs.size() > 0 && pc < coordinates.size()) {
+			for(int i = pc;i < coordinates.size();i++){
+				tmpCs.add(coordinates.get(i));
+			}
+			
 			tmpGeom.put("coordinates", tmpCs);
 			if (eNodePid != 0) {
 				se.put("e", eNodePid);
@@ -395,7 +399,7 @@ public class ZoneLinkOperateUtils {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
 		}
 		if (!maps.containsValue(node.get("e"))) {
-			maps.put(g.getCoordinates()[0], (int) node.get("e"));
+			maps.put(g.getCoordinates()[1], (int) node.get("e"));
 		}
 		//创建线
 		ZoneLinkOperateUtils.addLink(g, (int) node.get("s"),
@@ -425,7 +429,7 @@ public class ZoneLinkOperateUtils {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
 		}
 		if (!maps.containsValue(node.get("e"))) {
-			maps.put(g.getCoordinates()[0], (int) node.get("e"));
+			maps.put(g.getCoordinates()[1], (int) node.get("e"));
 		}
 		//创建线
 		return ZoneLinkOperateUtils.getAddLink(g, (int) node.get("s"),

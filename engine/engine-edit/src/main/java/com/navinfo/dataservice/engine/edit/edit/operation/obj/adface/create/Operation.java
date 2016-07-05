@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
-
 import com.alibaba.druid.util.StringUtils;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
@@ -27,16 +25,16 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.pidservice.PidService;
-import com.navinfo.dataservice.engine.edit.comm.util.EditUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.AdLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
-import com.navinfo.navicommons.exception.GeoComputationException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
+
+import net.sf.json.JSONObject;
 
 /**
  * 
@@ -93,12 +91,11 @@ public class Operation implements IOperation {
 				this.createFaceByAdLink(adLinks);
 			}
 		}
+		
 		// 创建
 		if (command.getGeometry() != null) {
 			this.createFaceByGeometry(result);
 		}
-		
-		EditUtils.handleResult(AdFace.class, result);
 		
 		return null;
 	}
@@ -132,6 +129,7 @@ public class Operation implements IOperation {
 			this.face.setMesh(meshId);
 			this.reCaleFaceGeometry(adLinks);
 		} else {
+			this.updateFlag =false;
 			Geometry geom = GeoTranslator.getCalLineToPython(list);
 			this.createFaceWithMesh(meshes, geom, 0);
 		}
@@ -369,11 +367,6 @@ public class Operation implements IOperation {
 
 		JSONObject updateContent = new JSONObject();
 		g = GeoTranslator.transform(g, 0.00001, 5);
-
-		String meshId =  CompGeometryUtil.geoToMeshesWithoutBreak(g).iterator().next();
-		if (!StringUtils.isEmpty(meshId)) {
-			updateContent.put("mesh", Integer.parseInt(meshId));
-		}
 		updateContent.put("geometry", GeoTranslator.jts2Geojson(g));
 		updateContent.put("area", GeometryUtils.getCalculateArea(g));
 		updateContent.put("perimeter", GeometryUtils.getLinkLength(g));

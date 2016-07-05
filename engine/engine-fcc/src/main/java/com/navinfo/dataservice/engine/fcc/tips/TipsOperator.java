@@ -27,11 +27,12 @@ public class TipsOperator {
 	 * 修改tips
 	 * 
 	 * @param rowkey
+	 * @param mdFlag 
 	 * @param content
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean update(String rowkey, int stage, int handler, int pid)
+	public boolean update(String rowkey, int handler, int pid, String mdFlag)
 			throws Exception {
 
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
@@ -64,11 +65,37 @@ public class TipsOperator {
 		}
 
 		JSONArray trackInfo = track.getJSONArray("t_trackInfo");
+		
+		int stage = 1;
+		
+		int tDStatus = track.getInt("t_dStatus");
+		
+		int tMStatus = track.getInt("t_mStatus");
 
 		JSONObject jo = new JSONObject();
+		
+		if("d".equals(mdFlag)){
+			
+			stage = 2;
+			
+			tDStatus = 1;
+			
+		}
 
+		else if("m".equals(mdFlag)){
+			
+			stage = 3;
+			
+			tMStatus = 1;
+
+		}
+		
 		jo.put("stage", stage);
-
+		
+		track.put("t_mStatus", tMStatus);
+		
+		track.put("t_dStatus", tDStatus);
+		
 		String date = StringUtils.getCurrentTime();
 
 		jo.put("date", date);
@@ -105,6 +132,10 @@ public class TipsOperator {
 		solrIndex.put("stage", stage);
 
 		solrIndex.put("t_date", date);
+		
+		solrIndex.put("t_dStatus", tDStatus);
+		
+		solrIndex.put("t_mStatus", tMStatus);
 
 		if (0 == lifecycle) {
 			solrIndex.put("t_lifecycle", 2);

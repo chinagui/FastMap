@@ -6,12 +6,12 @@ import java.sql.ResultSet;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONObject;
 
 public class Check {
 
@@ -107,5 +107,5 @@ public class Check {
 	private void throwException(String msg) throws Exception {
 		throw new Exception(msg);
 	}
-
+	
 }

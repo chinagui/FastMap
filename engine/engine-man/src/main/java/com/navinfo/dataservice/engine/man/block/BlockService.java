@@ -151,29 +151,29 @@ public class BlockService {
 		try {
 
 			conn = DBConnector.getInstance().getManConnection();
-
+			String wkt=json.getString("wkt");
 			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']',
 					')');
 
-			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY,t.PLAN_STATUS,t.CITY_ID from BLOCK t where PLAN_STATUS in "
+			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY,t.PLAN_STATUS,t.CITY_ID from BLOCK t where t.PLAN_STATUS in "
 					+ planningStatus;
 
 			if (StringUtils.isNotEmpty(json.getString("snapshot"))) {
 				if ("1".equals(json.getString("snapshot"))) {
-					selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.PLAN_STATUS from BLOCK t where PLAN_STATUS in "
+					selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.PLAN_STATUS,t.CITY_ID from BLOCK t where t.PLAN_STATUS in "
 							+ planningStatus;
 				}
 			}
 			;
 			if (!json.containsKey("relation") || ("intersect".equals(json.getString("relation")))) {
-				selectSql += " and SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
+				selectSql += " and SDO_ANYINTERACT(t.geometry,sdo_geometry('"+wkt+"',8307))='TRUE'";
 			} else {
 				if ("within".equals(json.getString("relation"))) {
-					selectSql += " and sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE'";
+					selectSql += " and sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry('"+wkt+"', 8307)), 'DISTANCE=0') = 'TRUE'";
 				}
 			}
 
-			return BlockOperation.queryBlockBySql(conn, selectSql, json.getString("wkt"));
+			return BlockOperation.queryBlockBySql(conn, selectSql);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -194,12 +194,12 @@ public class BlockService {
 
 			String selectSql = "select t.BLOCK_ID,t.CITY_ID, t.BLOCK_NAME, t.GEOMETRY.get_wkt() as GEOMETRY,"
 					+ " t.PLAN_STATUS, k.name taskName, b.collect_group_id, b.day_edit_group_id,"
-					+ " b.month_edit_group_id, to_char(b.collect_plan_start_date, 'yyyy-mm-dd') collect_plan_start_date, to_char(b.collect_plan_end_date, 'yyyy-mm-dd') collect_plan_end_date,"
-					+ " to_char(b.day_edit_plan_start_date, 'yyyy-mm-dd') day_edit_plan_start_date, to_char(b.day_edit_plan_end_date, 'yyyy-mm-dd') day_edit_plan_end_date, to_char(b.month_edit_plan_start_date, 'yyyy-mm-dd') month_edit_plan_start_date,"
-					+ " to_char(b.month_edit_plan_end_date, 'yyyy-mm-dd') month_edit_plan_end_date,to_char(b.day_produce_plan_start_date, 'yyyy-mm-dd') day_produce_plan_start_date,"
-					+ " to_char(b.day_produce_plan_end_date, 'yyyy-mm-dd') day_produce_plan_end_date,"
-					+ " to_char(b.month_produce_plan_start_date, 'yyyy-mm-dd') month_produce_plan_start_date,"
-					+ " to_char(b.month_produce_plan_end_date, 'yyyy-mm-dd') month_produce_plan_end_date"
+					+ " b.month_edit_group_id, to_char(b.collect_plan_start_date, 'yyyymmdd') collect_plan_start_date, to_char(b.collect_plan_end_date, 'yyyymmdd') collect_plan_end_date,"
+					+ " to_char(b.day_edit_plan_start_date, 'yyyymmdd') day_edit_plan_start_date, to_char(b.day_edit_plan_end_date, 'yyyymmdd') day_edit_plan_end_date, to_char(b.month_edit_plan_start_date, 'yyyymmdd') month_edit_plan_start_date,"
+					+ " to_char(b.month_edit_plan_end_date, 'yyyymmdd') month_edit_plan_end_date,to_char(b.day_produce_plan_start_date, 'yyyymmdd') day_produce_plan_start_date,"
+					+ " to_char(b.day_produce_plan_end_date, 'yyyymmdd') day_produce_plan_end_date,"
+					+ " to_char(b.month_produce_plan_start_date, 'yyyymmdd') month_produce_plan_start_date,"
+					+ " to_char(b.month_produce_plan_end_date, 'yyyymmdd') month_produce_plan_end_date"
 					+ " from BLOCK t, BLOCK_MAN b, TASK k where t.BLOCK_ID = ?"
 					+ " and t.block_id = b.block_id and t.city_id = k.city_id and k.latest = 1 and b.latest=1";
 			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
@@ -260,26 +260,20 @@ public class BlockService {
 
 			JSONArray groupIds = json.getJSONArray("groupIds");
 			String groups = ((groupIds.toString()).replace('[', '(')).replace(']', ')');
-
-			Format format = new SimpleDateFormat("yyyyMMdd");
-			String time = format.format(DateUtilsEx.getCurDate());
+			
+			selectSql = "select b.BLOCK_ID,b.CITY_ID, b.BLOCK_NAME, b.GEOMETRY.get_wkt() as GEOMETRY,"
+					+ " b.PLAN_STATUS from block_man t,block b,task k,subtask s where t.block_id=b.block_id and b.city_id=k.city_id and k.task_id=s.task_id and t.latest=1 and k.latest=1 and s.stage=? ";
 
 			if (0 == stage) {
-				selectSql = "select t.BLOCK_ID,t.COLLECT_PLAN_START_DATE as planStartDate,t.COLLECT_PLAN_END_DATE as planEndDate,t.DESCP from block_man t where t.COLLECT_PLAN_END_DATE>=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.COLLECT_PLAN_START_DATE <=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') "
-						+ "and t.COLLECT_GROUP_ID in " + groups;
+				selectSql += "and t.COLLECT_GROUP_ID in " + groups;
+						
 			} else if (1 == stage) {
-				selectSql = "select t.BLOCK_ID,t.DAY_EDIT_PLAN_START_DATE as planStartDate,t.DAY_EDIT_PLAN_END_DATE as planEndDate,t.DESCP from block_man t where t.DAY_EDIT_PLAN_END_DATE>=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.DAY_EDIT_PLAN_START_DATE <=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.DAY_EDIT_GROUP_ID in "
-						+ groups;
+				selectSql += "and t.DAY_EDIT_GROUP_ID in "+ groups;
 			} else {
-				selectSql = "select t.BLOCK_ID,t.MONTH_EDIT_PLAN_START_DATE as planStartDate,t.MONTH_EDIT_PLAN_END_DATE as planEndDate,t.DESCP from block_man t where t.MONTH_EDIT_PLAN_END_DATE>=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.MONTH_EDIT_PLAN_START_DATE <=TO_DATE(?, 'YYYY/MM/DD-HH24:MI:SS') and t.MONTH_EDIT_GROUP_ID in "
-						+ groups;
+				selectSql += "and t.MONTH_EDIT_GROUP_ID in "+ groups;
 			}
 
-			List<Object> list = new ArrayList<Object>();
-			list.add(time);
-			list.add(time);
-
-			return BlockOperation.queryBlockByGroup(conn, selectSql, list);
+			return BlockOperation.queryBlockByGroup(conn, selectSql, stage);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -330,21 +324,21 @@ public class BlockService {
 					+ "m.DAY_EDIT_GROUP_ID,(select distinct group_name from user_group"
 					+ "  where group_id = m.DAY_EDIT_GROUP_ID) DAY_EDIT_GROUP, m.MONTH_EDIT_GROUP_ID,(select distinct group_name"
 					+ "  from user_group where group_id = m.MONTH_EDIT_GROUP_ID) MONTH_EDIT_GROUP,"
-					+ " to_char(m.COLLECT_PLAN_START_DATE, 'yyyy-mm-dd') COLLECT_PLAN_START_DATE,"
-					+ " to_char(m.COLLECT_PLAN_END_DATE, 'yyyy-mm-dd') COLLECT_PLAN_END_DATE,"
-					+ " to_char(m.DAY_EDIT_PLAN_START_DATE, 'yyyy-mm-dd') DAY_EDIT_PLAN_START_DATE,"
-					+ " to_char(m.DAY_EDIT_PLAN_END_DATE, 'yyyy-mm-dd') DAY_EDIT_PLAN_END_DATE,"
-					+ " to_char(m.MONTH_EDIT_PLAN_START_DATE, 'yyyy-mm-dd') MONTH_EDIT_PLAN_START_DATE,"
-					+ " to_char(m.MONTH_EDIT_PLAN_END_DATE, 'yyyy-mm-dd') MONTH_EDIT_PLAN_END_DATE,"
-					+ " to_char(m.DAY_PRODUCE_PLAN_START_DATE, 'yyyy-mm-dd') DAY_PRODUCE_PLAN_START_DATE,"
-					+ " to_char(m.DAY_PRODUCE_PLAN_END_DATE, 'yyyy-mm-dd') DAY_PRODUCE_PLAN_END_DATE,"
-					+ " to_char(m.MONTH_PRODUCE_PLAN_START_DATE, 'yyyy-mm-dd') MONTH_PRODUCE_PLAN_START_DATE,"
-					+ " to_char(m.MONTH_PRODUCE_PLAN_END_DATE, 'yyyy-mm-dd') MONTH_PRODUCE_PLAN_END_DATE,"
+					+ " to_char(m.COLLECT_PLAN_START_DATE, 'yyyymmdd') COLLECT_PLAN_START_DATE,"
+					+ " to_char(m.COLLECT_PLAN_END_DATE, 'yyyymmdd') COLLECT_PLAN_END_DATE,"
+					+ " to_char(m.DAY_EDIT_PLAN_START_DATE, 'yyyymmdd') DAY_EDIT_PLAN_START_DATE,"
+					+ " to_char(m.DAY_EDIT_PLAN_END_DATE, 'yyyymmdd') DAY_EDIT_PLAN_END_DATE,"
+					+ " to_char(m.MONTH_EDIT_PLAN_START_DATE, 'yyyymmdd') MONTH_EDIT_PLAN_START_DATE,"
+					+ " to_char(m.MONTH_EDIT_PLAN_END_DATE, 'yyyymmdd') MONTH_EDIT_PLAN_END_DATE,"
+					+ " to_char(m.DAY_PRODUCE_PLAN_START_DATE, 'yyyymmdd') DAY_PRODUCE_PLAN_START_DATE,"
+					+ " to_char(m.DAY_PRODUCE_PLAN_END_DATE, 'yyyymmdd') DAY_PRODUCE_PLAN_END_DATE,"
+					+ " to_char(m.MONTH_PRODUCE_PLAN_START_DATE, 'yyyymmdd') MONTH_PRODUCE_PLAN_START_DATE,"
+					+ " to_char(m.MONTH_PRODUCE_PLAN_END_DATE, 'yyyymmdd') MONTH_PRODUCE_PLAN_END_DATE,"
 					+ " t.BLOCK_NAME," + " nvl(u.user_real_name, '') USER_REAL_NAME," + " m.STATUS," + " k.TASK_ID,"
-					+ " k.NAME," + " to_char(k.PLAN_START_DATE, 'yyyy-mm-dd') PLAN_START_DATE,"
-					+ " to_char(k.PLAN_END_DATE, 'yyyy-mm-dd') PLAN_END_DATE,"
-					+ " to_char(k.MONTH_EDIT_PLAN_START_DATE, 'yyyy-mm-dd') TASK_START_DATE,"
-					+ " to_char(k.MONTH_EDIT_PLAN_END_DATE, 'yyyy-mm-dd') TASK_END_DATE"
+					+ " k.NAME," + " to_char(k.PLAN_START_DATE, 'yyyymmdd') PLAN_START_DATE,"
+					+ " to_char(k.PLAN_END_DATE, 'yyyymmdd') PLAN_END_DATE,"
+					+ " to_char(k.MONTH_EDIT_PLAN_START_DATE, 'yyyymmdd') TASK_START_DATE,"
+					+ " to_char(k.MONTH_EDIT_PLAN_END_DATE, 'yyyymmdd') TASK_END_DATE"
 					+ " from block_man m, block t, user_info u, task k, user_group u"
 					+ " where m.block_id = t.block_id(+) and m.latest = 1 and m.create_user_id = u.user_id(+)"
 					+ " and t.city_id = k.city_id(+)" + " and k.latest = 1" + "and m.collect_group_id = u.group_id(+)";
@@ -402,13 +396,13 @@ public class BlockService {
 
 			String inforId = json.getString("inforId");
 
-			String selectSql = "select distinct i.block_id,t.block_name,b.status,k.name,to_char(k.plan_start_date, 'yyyy-mm-dd') plan_start_date,"
-					+ "to_char(k.plan_end_date, 'yyyy-mm-dd') plan_end_date,"
-					+ " to_char(k.month_edit_plan_start_date, 'yyyy-mm-dd') month_edit_plan_start_date,"
-					+ "to_char(k.month_edit_plan_end_date, 'yyyy-mm-dd') month_edit_plan_end_date "
+			String selectSql = "select distinct i.block_id,t.block_name,t.city_id,b.status,k.name,to_char(k.plan_start_date, 'yyyymmdd') plan_start_date,"
+					+ "to_char(k.plan_end_date, 'yyyymmdd') plan_end_date,"
+					+ " to_char(k.month_edit_plan_start_date, 'yyyymmdd') month_edit_plan_start_date,"
+					+ "to_char(k.month_edit_plan_end_date, 'yyyymmdd') month_edit_plan_end_date "
 					+ " from infor_block_mapping i, block t, task k,block_man b where  i.block_id = t.block_id and i.block_id=b.block_id"
 					+ " and t.city_id = k.city_id and k.latest = 1 and i.infor_id ='" + inforId + "'";
-			String selectSqlNotOpen = "select t.block_id,t.block_name,0 status from infor_block_mapping i,block t where t.plan_status=0 and"
+			String selectSqlNotOpen = "select t.block_id,t.block_name,t.city_id,0 status from infor_block_mapping i,block t where t.plan_status=0 and"
 					+ " i.block_id=t.block_id and not exists （select 1 from block_man b where b.block_id=t.block_id）and  i.infor_id ='"
 					+ inforId + "'";
 

@@ -17,7 +17,7 @@ public class RdBranchTest extends InitApplication{
 	
 	@Test
 	public void createRdBranchTest_1() throws Exception {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"branchType\":1,\"inLinkPid\":596721,\"nodePid\":471913,\"outLinkPid\":596721}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"branchType\":1,\"inLinkPid\":100006668,\"nodePid\": 100023804,\"outLinkPid\":100006671}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);
 		String msg = t.run();
@@ -25,15 +25,23 @@ public class RdBranchTest extends InitApplication{
 	
 	@Test
 	public void updateRdBranchTest_1() throws Exception {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"inLinkPid\":596721,\"nodePid\":471913,\"outLinkPid\":596721,\"pid\":100000728,\"details\":[{\"objStatus\":\"UPDATE\",\"arrowCode\":\"123\",\"nameKind\":3,\"pid\":100000250}]}}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"inLinkPid\":100006668,\"nodePid\": 100023804,\"outLinkPid\":100006671,\"pid\":100000728,\"details\":[{\"objStatus\":\"UPDATE\",\"arrowCode\":\"123\",\"nameKind\":3,\"pid\":100000250}]}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);		;
 		String msg = t.run();
 	}
 	
 	@Test
+	public void createRdBranchTest_2() throws Exception {
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"branchType\":2,\"inLinkPid\":100006717,\"nodePid\": 100023848,\"outLinkPid\": 100006720}}";
+		log.info(parameter);
+		Transaction t = new Transaction(parameter);
+		String msg = t.run();
+	}
+	
+	@Test
 	public void createRdBranchTest_6() throws Exception {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"branchType\":6,\"inLinkPid\":596721,\"nodePid\":471913,\"outLinkPid\":596721}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"branchType\":6,\"inLinkPid\":100006668,\"nodePid\": 100023804,\"outLinkPid\":100006671}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);
 		String msg = t.run();
@@ -41,7 +49,7 @@ public class RdBranchTest extends InitApplication{
 	
 	@Test
 	public void updateRdBranchTest_6() throws Exception {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"inLinkPid\":596721,\"nodePid\":471913,\"outLinkPid\":596721,\"pid\":100000728,\"signasreals\":[{\"objStatus\":\"UPDATE\",\"arrowCode\":\"123\",\"svgfileCode\":\"3\",\"pid\":100005932}]}}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"inLinkPid\":100006668,\"nodePid\": 100023804,\"outLinkPid\":100006671,\"pid\":100000728,\"signasreals\":[{\"objStatus\":\"UPDATE\",\"arrowCode\":\"123\",\"svgfileCode\":\"3\",\"pid\":100005932}]}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);		;
 		String msg = t.run();
@@ -49,7 +57,7 @@ public class RdBranchTest extends InitApplication{
 	
 	@Test
 	public void createRdBranchTest_8() throws Exception {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"branchType\":8,\"inLinkPid\":596721,\"nodePid\":471913,\"outLinkPid\":596721}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"branchType\":8,\"inLinkPid\":100006668,\"nodePid\": 100023804,\"outLinkPid\":100006671}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);
 		String msg = t.run();
@@ -57,7 +65,7 @@ public class RdBranchTest extends InitApplication{
 	
 	@Test
 	public void updateRdBranchTest_8() throws Exception {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"inLinkPid\":596721,\"nodePid\":471913,\"outLinkPid\":596721,\"pid\":100000728,\"schematics\":[{\"objStatus\":\"UPDATE\",\"arrowCode\":\"123\",\"schematicCode\":\"321\",\"pid\":100005921}]}}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"inLinkPid\":100006668,\"nodePid\": 100023804,\"outLinkPid\":100006671,\"pid\":100000728,\"schematics\":[{\"objStatus\":\"UPDATE\",\"arrowCode\":\"123\",\"schematicCode\":\"321\",\"pid\":100005921}]}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);		;
 		String msg = t.run();
@@ -65,7 +73,7 @@ public class RdBranchTest extends InitApplication{
 	
 	@Test
 	public void createRdBranchTest_9() throws Exception {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"branchType\":9,\"inLinkPid\":596721,\"nodePid\":471913,\"outLinkPid\":596721}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"branchType\":9,\"inLinkPid\":100006668,\"nodePid\": 100023804,\"outLinkPid\":100006671}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);
 		String msg = t.run();
@@ -73,7 +81,7 @@ public class RdBranchTest extends InitApplication{
 	
 	@Test
 	public void updateRdBranchTest_9() throws Exception {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"inLinkPid\":596721,\"nodePid\":471913,\"outLinkPid\":596721,\"pid\":100000728,\"signboards\":[{\"objStatus\":\"UPDATE\",\"arrowCode\":\"123\",\"backimageCode\":\"3\",\"pid\":100005904}]}}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"inLinkPid\":100006668,\"nodePid\": 100023804,\"outLinkPid\":100006671,\"pid\":100000728,\"signboards\":[{\"objStatus\":\"UPDATE\",\"arrowCode\":\"123\",\"backimageCode\":\"3\",\"pid\":100005904}]}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);		;
 		String msg = t.run();
@@ -82,7 +90,7 @@ public class RdBranchTest extends InitApplication{
 	
 	@Test
 	public void createRdBranchTest_5() throws Exception {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"branchType\":5,\"inLinkPid\":596721,\"nodePid\":471913,\"outLinkPid\":596721}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"branchType\":5,\"inLinkPid\":100006668,\"nodePid\": 100023804,\"outLinkPid\":100006671}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);
 		String msg = t.run();
@@ -90,7 +98,7 @@ public class RdBranchTest extends InitApplication{
 	
 	@Test
 	public void updateRdBranchTest_5() throws Exception {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"inLinkPid\":596721,\"nodePid\":471913,\"outLinkPid\":596721,\"pid\":100000728,\"realimages\":[{\"objStatus\":\"UPDATE\",\"arrowCode\":\"123\",\"realCode\":\"3\",\"rowId\":\"2A81085C8F504EAC969CF0968FC42EF3\"}]}}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"inLinkPid\":100006668,\"nodePid\": 100023804,\"outLinkPid\":100006671,\"pid\":100000728,\"realimages\":[{\"objStatus\":\"UPDATE\",\"arrowCode\":\"123\",\"realCode\":\"3\",\"rowId\":\"2A81085C8F504EAC969CF0968FC42EF3\"}]}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);		;
 		String msg = t.run();
@@ -99,7 +107,7 @@ public class RdBranchTest extends InitApplication{
 	
 	@Test
 	public void createRdBranchTest_7() throws Exception {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"branchType\":7,\"inLinkPid\":596721,\"nodePid\":471913,\"outLinkPid\":596721}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"branchType\":7,\"inLinkPid\":100006668,\"nodePid\": 100023804,\"outLinkPid\":100006671}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);
 		String msg = t.run();
@@ -107,7 +115,7 @@ public class RdBranchTest extends InitApplication{
 	
 	@Test
 	public void updateRdBranchTest_7() throws Exception {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"inLinkPid\":596721,\"nodePid\":471913,\"outLinkPid\":596721,\"pid\":100000728,\"seriesbranches\":[{\"objStatus\":\"UPDATE\",\"arrowCode\":\"123\",\"patternCode\":\"3\",\"rowId\":\"33EE2D15EC5A47F2AC92D144DDD69F7E\"}]}}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"pid\":100000857,\"objStatus\":\"UPDATE\",\"seriesbranches\":[{\"objStatus\":\"UPDATE\",\"arrowCode\":\"123\",\"patternCode\":\"3\",\"rowId\":\"043E31E7F09345FE87A94E52F518D5FB\"}]}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);		;
 		String msg = t.run();

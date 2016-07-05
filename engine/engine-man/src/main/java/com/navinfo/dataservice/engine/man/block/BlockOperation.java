@@ -37,7 +37,7 @@ public class BlockOperation {
 		// TODO Auto-generated constructor stub
 	}
 
-	public static List<HashMap> queryBlockBySql(Connection conn, String selectSql, String wkt) throws Exception {
+	public static List<HashMap> queryBlockBySql(Connection conn, String selectSql) throws Exception {
 		try {
 			QueryRunner run = new QueryRunner();
 			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>() {
@@ -49,10 +49,9 @@ public class BlockOperation {
 						map.put("blockName", rs.getString("BLOCK_NAME"));
 						map.put("planningStatus", rs.getInt("PLAN_STATUS"));
 						map.put("cityId", rs.getInt("CITY_ID"));
-
-						CLOB clob = (CLOB) rs.getObject("geometry");
-						String clobStr = DataBaseUtils.clob2String(clob);
 						try {
+							CLOB clob = (CLOB) rs.getObject("geometry");
+							String clobStr = DataBaseUtils.clob2String(clob);
 							map.put("geometry", Geojson.wkt2Geojson(clobStr));
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
@@ -64,7 +63,7 @@ public class BlockOperation {
 				}
 
 			};
-			return run.query(conn, selectSql, rsHandler, wkt);
+			return run.query(conn, selectSql, rsHandler);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -114,7 +113,7 @@ public class BlockOperation {
 		}
 	}
 
-	public static List<HashMap> queryBlockByGroup(Connection conn, String selectSql, List<Object> values)
+	public static List<HashMap> queryBlockByGroup(Connection conn, String selectSql, int stage)
 			throws Exception {
 		try {
 			QueryRunner run = new QueryRunner();
@@ -124,9 +123,17 @@ public class BlockOperation {
 					while (rs.next()) {
 						HashMap map = new HashMap<String, Integer>();
 						map.put("blockId", rs.getInt("BLOCK_ID"));
-						map.put("planStartDate", rs.getDate("planStartDate"));
-						map.put("planEndDate", rs.getDate("planEndDate"));
-						map.put("descp", rs.getString("DESCP"));
+						map.put("cityId", rs.getInt("CITY_ID"));
+						map.put("blockName", rs.getString("BLOCK_NAME"));
+						CLOB clob = (CLOB) rs.getObject("GEOMETRY");
+						String clobStr = DataBaseUtils.clob2String(clob);
+						try {
+							map.put("geometry", Geojson.wkt2Geojson(clobStr));
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						map.put("planStatus", rs.getInt("PLAN_STATUS"));
 
 						list.add(map);
 					}
@@ -134,10 +141,8 @@ public class BlockOperation {
 				}
 
 			};
-			if (null == values || values.size() == 0) {
-				return run.query(conn, selectSql, rsHandler);
-			}
-			return run.query(conn, selectSql, rsHandler, values.toArray());
+			
+			return run.query(conn, selectSql, rsHandler, stage);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -354,11 +359,12 @@ public class BlockOperation {
 						map.put("blockName", rs.getString("block_name"));
 						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						map.put("taskName", rs.getString("name"));
-						map.put("taskPlanStartDate ", rs.getString("plan_start_date"));
-						map.put("taskPlanEndDate ", rs.getString("plan_end_date"));
-						map.put("taskMonthStartDate ", rs.getString("month_edit_plan_start_date"));
-						map.put("taskMonthEndDate ", rs.getString("month_edit_plan_end_date"));
+						map.put("taskPlanStartDate", rs.getString("plan_start_date"));
+						map.put("taskPlanEndDate", rs.getString("plan_end_date"));
+						map.put("taskMonthStartDate", rs.getString("month_edit_plan_start_date"));
+						map.put("taskMonthEndDate", rs.getString("month_edit_plan_end_date"));
 						map.put("status", rs.getInt("status"));
+						map.put("cityId", rs.getString("city_id"));
 					
 						list.add(map);
 					}
@@ -378,7 +384,7 @@ public class BlockOperation {
 						map.put("blockName", rs.getString("block_name"));
 						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						map.put("status", rs.getInt("status"));
-					
+						map.put("cityId", rs.getInt("city_id"));
 						list.add(map);
 					}
 					return list;

@@ -5,6 +5,7 @@ import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -180,6 +181,7 @@ public class SubtaskService {
 			String selectSql = "select distinct s.SUBTASK_ID"
 					+ ",s.STAGE"
 					+ ",s.EXE_USER_ID"
+					+ ",u.user_real_name"
 					+ ",s.TYPE"
 					+ ",s.PLAN_START_DATE"
 					+ ",s.PLAN_END_DATE"
@@ -211,8 +213,9 @@ public class SubtaskService {
 			}
 
 			selectSql = selectSql
-					+ " from SUBTASK s, Task t, Block b, Block_man bm "
+					+ " from SUBTASK s, Task t, Block b, Block_man bm,user_info u "
 					+ " where (s.block_id=b.block_id or s.task_id=t.task_id)"
+					+ " and u.user_id = s.exe_user_id"
 					+ " and b.block_id = bm.block_id" + " and bm.latest=1"
 					+ " and s.stage=" + stage;
 			
@@ -227,6 +230,10 @@ public class SubtaskService {
 						break;
 					}
 					if ("ExeUserId".equals(key)) {selectSql+=" and s.EXE_USER_ID="+conditionJson.getInt(key);break;}
+					if ("ExeUserName".equals(key)) {
+						selectSql+=" and u.user_real_name like '%" + conditionJson.getString(key) +"%'";
+						break;
+					}
 					if ("blockName".equals(key)) {
 						selectSql+=" and s.block_id = b.block_id and b.block_name like '%" + conditionJson.getString(key) +"%'";
 						break;
@@ -253,6 +260,7 @@ public class SubtaskService {
 
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
 				public Page handle(ResultSet rs) throws SQLException {
+					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					List<HashMap<Object,Object>> list = new ArrayList<HashMap<Object,Object>>();
 					Page page = new Page(curPageNum);
 				    page.setPageSize(pageSize);
@@ -263,26 +271,16 @@ public class SubtaskService {
 						}
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
-//						subtask.put("subtaskName", rs.getString("NAME"));
-//						subtask.put("descp", rs.getString("DESCP"));
-						if(rs.getString("NAME") != null){
-							subtask.put("subtaskName", rs.getString("NAME"));
-						}else{
-							subtask.put("subtaskName", "");
-						}
-						if(rs.getString("descp") != null){
-							subtask.put("descp", rs.getString("DESCP"));
-						}else{
-							subtask.put("descp", "");
-						}
+						subtask.put("subtaskName", rs.getString("NAME"));
+						subtask.put("descp", rs.getString("DESCP"));
 
 						subtask.put("geometry", rs.getString("GEOMETRY"));
 						subtask.put("stage", rs.getInt("STAGE"));
 						subtask.put("type", rs.getInt("TYPE"));
 						subtask.put("status", rs.getInt("STATUS"));
 						subtask.put("ExeUserId", rs.getInt("EXE_USER_ID"));
-						subtask.put("planStartDate", rs.getTimestamp("PLAN_START_DATE"));
-						subtask.put("planEndDate", rs.getTimestamp("PLAN_END_DATE"));
+						subtask.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
+						subtask.put("planEndDate", df.format(rs.getTimestamp("PLAN_END_DATE")));
 						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						if(rs.getInt("group_id")>0){
 							subtask.put("groupId", rs.getInt("group_id"));
@@ -297,18 +295,18 @@ public class SubtaskService {
 							subtask.put("blockName", rs.getString("block_name"));
 							//采集
 							if(0 == rs.getInt("STAGE")){
-								subtask.put("BlockCollectPlanStartDate", rs.getTimestamp("COLLECT_PLAN_START_DATE"));
-								subtask.put("BlockCollectPlanEndDate",rs.getTimestamp("COLLECT_PLAN_END_DATE"));
+								subtask.put("BlockCollectPlanStartDate", df.format(rs.getTimestamp("COLLECT_PLAN_START_DATE")));
+								subtask.put("BlockCollectPlanEndDate",df.format(rs.getTimestamp("COLLECT_PLAN_END_DATE")));
 							}
 							//日编
 							else if(1 == rs.getInt("STAGE")){
-								subtask.put("BlockDayEditPlanStartDate", rs.getTimestamp("DAY_EDIT_PLAN_START_DATE"));
-								subtask.put("BlockDayEditPlanEndDate", rs.getTimestamp("DAY_EDIT_PLAN_END_DATE"));
+								subtask.put("BlockDayEditPlanStartDate", df.format(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE")));
+								subtask.put("BlockDayEditPlanEndDate", df.format(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE")));
 							}
 							//月编
 							else if(2 == rs.getInt("STAGE")){
-								subtask.put("BlockCMonthEditPlanStartDate", rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE_b"));
-								subtask.put("BlockCMonthEditPlanEndDate", rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE_b"));
+								subtask.put("BlockCMonthEditPlanStartDate", df.format(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE_b")));
+								subtask.put("BlockCMonthEditPlanEndDate", df.format(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE_b")));
 							}
 						}
 						// 与task关联，返回task信息。
@@ -319,8 +317,8 @@ public class SubtaskService {
 							subtask.put("taskName", rs.getString("task_name"));
 							// 月编
 							if(2 == rs.getInt("STAGE")){
-								subtask.put("TaskCMonthEditPlanStartDate", rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE_t"));
-								subtask.put("TaskCMonthEditPlanEndDate", rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE_t"));
+								subtask.put("TaskCMonthEditPlanStartDate", df.format(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE_t")));
+								subtask.put("TaskCMonthEditPlanEndDate", df.format(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE_t")));
 							}
 						}
 
@@ -346,10 +344,9 @@ public class SubtaskService {
 
 	}
 	
-	
 
-	public List<Subtask> list(int stage, JSONObject conditionJson, JSONObject orderJson, long pageSize,
-			long curPageNum) throws ServiceException {
+	public Page list(int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
+			final int curPageNum) throws ServiceException {
 		Connection conn = null;
 		try {
 			QueryRunner run = new QueryRunner();
@@ -432,11 +429,17 @@ public class SubtaskService {
 					if ("planEndDate".equals(key)) {selectSql+=" order by s.PLAN_END_DATE "+orderJson.getString(key);break;}}
 			}else{selectSql += " order by block_id";}
 
-			ResultSetHandler<List<Subtask>> rsHandler = new ResultSetHandler<List<Subtask>>() {
+			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
 
-				public List<Subtask> handle(ResultSet rs) throws SQLException {
+				public Page handle(ResultSet rs) throws SQLException {
+					Page page = new Page(curPageNum);
+				    page.setPageSize(pageSize);
+				    int total = 0;
 					List<Subtask> list = new ArrayList<Subtask>();
 					while (rs.next()) {
+						if(total==0){
+							total=rs.getInt("TOTAL_RECORD_NUM_");
+						}
 						Subtask subtask = new Subtask();
 						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
 						subtask.setName(rs.getString("NAME"));
@@ -456,61 +459,45 @@ public class SubtaskService {
 						}
 						// 与block关联，返回block信息。
 						if (rs.getInt("block_id") > 0) {
-							// block
-							Block block = new Block();
-							block.setBlockId(rs.getInt("block_id"));
-							block.setBlockName(rs.getString("block_name"));
-							subtask.setBlock(block);
-							// blockMan
-							BlockMan blockMan = new BlockMan();
+							subtask.setBlockId(rs.getInt("block_id"));
+							subtask.setBlockName(rs.getString("block_name"));
 							// 采集
 							if (0 == rs.getInt("STAGE")) {
-								blockMan.setCollectPlanStartDate(DateUtils.dateToString(rs
-										.getTimestamp("COLLECT_PLAN_START_DATE")));
-								blockMan.setCollectPlanStartDate(DateUtils.dateToString(rs
-										.getTimestamp("COLLECT_PLAN_END_DATE")));
+								subtask.setBlockCollectPlanEndDate(rs.getTimestamp("COLLECT_PLAN_START_DATE"));
+								subtask.setBlockCollectPlanStartDate(rs.getTimestamp("COLLECT_PLAN_END_DATE"));
 							}
 							// 日编
 							if (1 == rs.getInt("STAGE")) {
-								blockMan.setDayEditPlanStartDate(DateUtils.dateToString(rs
-										.getTimestamp("DAY_EDIT_PLAN_START_DATE")));
-								blockMan.setDayEditPlanStartDate(DateUtils.dateToString(rs
-										.getTimestamp("DAY_EDIT_PLAN_END_DATE")));
+								subtask.setBlockDayEditPlanStartDate(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE"));
+								subtask.setBlockDayEditPlanStartDate(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE"));
 							}
 							// 月编
 							if (2 == rs.getInt("STAGE")) {
-								blockMan.setMonthEditPlanStartDate(DateUtils.dateToString(rs
-										.getTimestamp("MONTH_EDIT_PLAN_START_DATE_b")));
-								blockMan.setMonthEditPlanStartDate(DateUtils.dateToString(rs
-										.getTimestamp("MONTH_EDIT_PLAN_END_DATE_b")));
+								subtask.setBlockCMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE_b"));
+								subtask.setBlockCMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE_b"));
 							}
 
-							subtask.setBlockMan(blockMan);
 						}
 
 						// 与task关联，返回task信息。
 						if (rs.getInt("task_id") > 0) {
 							// task
-							Task task = new Task();
-							task.setTaskId(rs.getInt("task_id"));
-							task.setDescp(rs.getString("task_descp"));
-							task.setName(rs.getString("task_name"));
+							subtask.setTaskId(rs.getInt("task_id"));
+							subtask.setTaskName(rs.getString("task_name"));
 
 							// 月编
 							if (2 == rs.getInt("STAGE")) {
-								task.setMonthEditPlanStartDate(rs
-										.getTimestamp("MONTH_EDIT_PLAN_START_DATE_t"));
-								task.setMonthEditPlanStartDate(rs
-										.getTimestamp("MONTH_EDIT_PLAN_END_DATE_t"));
+								subtask.setTaskCMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE_t"));
+								subtask.setTaskCMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE_t"));
 							}
-
-							subtask.setTask(task);
 						}
 
 						list.add(subtask);
 					}
 
-					return list;
+					page.setTotalCount(total);
+					page.setResult(list);
+					return page;
 				}
 
 			};
@@ -676,7 +663,7 @@ public class SubtaskService {
 	/*
 	 * 关闭多个子任务。 参数：Subtask对象列表，List<Subtask>
 	 */
-	public HashMap<Object,Object> close(List<Integer> subtaskIdList)
+	public List<Integer> close(List<Integer> subtaskIdList)
 			throws ServiceException {
 		Connection conn = null;
 		try {
@@ -688,7 +675,8 @@ public class SubtaskService {
 			List<Subtask> subtaskList = SubtaskOperation
 					.getSubtaskListByIdList(conn, subtaskIdList);
 
-			HashMap<Object,Object> unClosedSubtaskList = new HashMap<Object,Object>();
+//			HashMap<Object,Object> unClosedSubtaskList = new HashMap<Object,Object>();
+			List<Integer> unClosedSubtaskList = new ArrayList<Integer>();
 			List<Integer> closedSubtaskList = new ArrayList<Integer>();
 
 			StaticsApi staticsApi = (StaticsApi) ApplicationContextUtil
@@ -704,8 +692,10 @@ public class SubtaskService {
 						closedSubtaskList
 								.add(subtaskList.get(i).getSubtaskId());
 					} else {
-						unClosedSubtaskList.put(subtaskList.get(i)
-								.getSubtaskId(), "subtask内存在未完成作业，subtask无法关闭");
+						unClosedSubtaskList
+						.add(subtaskList.get(i).getSubtaskId());
+//						unClosedSubtaskList.put(subtaskList.get(i)
+//								.getSubtaskId(), "subtask内存在未完成作业，subtask无法关闭");
 					}
 				}
 
@@ -718,8 +708,10 @@ public class SubtaskService {
 						closedSubtaskList
 								.add(subtaskList.get(i).getSubtaskId());
 					} else {
-						unClosedSubtaskList.put(subtaskList.get(i)
-								.getSubtaskId(), "subtask内存在未完成作业，subtask无法关闭");
+						unClosedSubtaskList
+						.add(subtaskList.get(i).getSubtaskId());
+//						unClosedSubtaskList.put(subtaskList.get(i)
+//								.getSubtaskId(), "subtask内存在未完成作业，subtask无法关闭");
 					}
 				}
 
@@ -732,8 +724,10 @@ public class SubtaskService {
 						closedSubtaskList
 								.add(subtaskList.get(i).getSubtaskId());
 					} else {
-						unClosedSubtaskList.put(subtaskList.get(i)
-								.getSubtaskId(), "subtask内存在未完成作业，subtask无法关闭");
+						unClosedSubtaskList
+						.add(subtaskList.get(i).getSubtaskId());
+//						unClosedSubtaskList.put(subtaskList.get(i)
+//								.getSubtaskId(), "subtask内存在未完成作业，subtask无法关闭");
 					}
 				}
 				

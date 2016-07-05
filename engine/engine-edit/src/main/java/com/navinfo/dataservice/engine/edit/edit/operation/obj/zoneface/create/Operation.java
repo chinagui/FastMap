@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
-
 import com.alibaba.druid.util.StringUtils;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
@@ -26,7 +24,6 @@ import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.pidservice.PidService;
-import com.navinfo.dataservice.engine.edit.comm.util.EditUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.ZoneLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -35,6 +32,8 @@ import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
+
+import net.sf.json.JSONObject;
 
 /**
  * 
@@ -90,9 +89,6 @@ public class Operation implements IOperation {
 			this.createFaceByGeometry(result);
 		}
 		
-		//设置返回的外层pid为face的pid
-		EditUtils.handleResult(ZoneFace.class, result);
-		
 		return null;
 	}
 
@@ -125,6 +121,7 @@ public class Operation implements IOperation {
 			this.face.setMesh(meshId);
 			this.reCaleFaceGeometry(zoneLinks);
 		} else {
+			this.updateFlag =false;
 			Geometry geom = GeoTranslator.getCalLineToPython(list);
 			this.createFaceWithMesh(meshes, geom, 0);
 		}
@@ -362,11 +359,6 @@ public class Operation implements IOperation {
 
 		JSONObject updateContent = new JSONObject();
 		g = GeoTranslator.transform(g, 0.00001, 5);
-
-		String meshId =  CompGeometryUtil.geoToMeshesWithoutBreak(g).iterator().next();
-		if (!StringUtils.isEmpty(meshId)) {
-			updateContent.put("mesh", Integer.parseInt(meshId));
-		}
 		updateContent.put("geometry", GeoTranslator.jts2Geojson(g));
 		updateContent.put("area", GeometryUtils.getCalculateArea(g));
 		updateContent.put("perimeter", GeometryUtils.getLinkLength(g));

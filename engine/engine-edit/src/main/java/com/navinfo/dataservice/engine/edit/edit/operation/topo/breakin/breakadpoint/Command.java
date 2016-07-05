@@ -46,18 +46,10 @@ public class Command extends AbstractCommand {
 		this.eAdLink = eAdLink;
 	}
 
-	public List<AdFaceTopo> getAdFaceTopos() {
-		return adFaceTopos;
-	}
-
-	public void setAdFaceTopos(List<AdFaceTopo> adFaceTopos) {
-		this.adFaceTopos = adFaceTopos;
-	}
 
 	private GeometryFactory geometryFactory = new GeometryFactory();
 	private Point point;
 	private int linkPid;
-	private List<AdFaceTopo> adFaceTopos;
 
 	@Override
 	public OperType getOperType() {

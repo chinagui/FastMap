@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.rd.branch;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchRealimage;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchSchematic;
 
 public class RdBranchSchematicSelector implements ISelector {
@@ -29,7 +31,8 @@ public class RdBranchSchematicSelector implements ISelector {
 
 		RdBranchSchematic schematic = new RdBranchSchematic();
 
-		String sql = "select * from " + schematic.tableName() +" where schematic_id=:1";
+		String sql = "select * from " + schematic.tableName()
+				+ " where schematic_id=:1";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -48,23 +51,13 @@ public class RdBranchSchematicSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				schematic.setPid(resultSet.getInt("schematic_id"));
-				
-				schematic.setBranchPid(resultSet.getInt("branch_pid"));
-				
-				schematic.setSchematicCode(resultSet.getString("schematic_code"));
-				
-				schematic.setArrowCode(resultSet.getString("arrow_code"));
-				
-				schematic.setMemo(resultSet.getString("memo"));
-
-				schematic.setRowId(resultSet.getString("row_id"));
+				setAttr(schematic, resultSet);
 			} else {
-				
+
 				throw new DataNotFoundException("数据不存在");
 			}
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -73,7 +66,7 @@ public class RdBranchSchematicSelector implements ISelector {
 					resultSet.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 			try {
@@ -81,7 +74,7 @@ public class RdBranchSchematicSelector implements ISelector {
 					pstmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
@@ -123,22 +116,12 @@ public class RdBranchSchematicSelector implements ISelector {
 
 				RdBranchSchematic schematic = new RdBranchSchematic();
 
-				schematic.setPid(resultSet.getInt("schematic_id"));
-				
-				schematic.setBranchPid(resultSet.getInt("branch_pid"));
-				
-				schematic.setSchematicCode(resultSet.getString("schematic_code"));
-				
-				schematic.setArrowCode(resultSet.getString("arrow_code"));
-				
-				schematic.setMemo(resultSet.getString("memo"));
-
-				schematic.setRowId(resultSet.getString("row_id"));
+				setAttr(schematic, resultSet);
 
 				rows.add(schematic);
 			}
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -147,7 +130,7 @@ public class RdBranchSchematicSelector implements ISelector {
 					resultSet.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 			try {
@@ -155,7 +138,7 @@ public class RdBranchSchematicSelector implements ISelector {
 					pstmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
@@ -163,4 +146,19 @@ public class RdBranchSchematicSelector implements ISelector {
 		return rows;
 	}
 
+	private void setAttr(RdBranchSchematic schematic, ResultSet resultSet)
+			throws SQLException {
+		schematic.setPid(resultSet.getInt("schematic_id"));
+
+		schematic.setBranchPid(resultSet.getInt("branch_pid"));
+
+		schematic.setSchematicCode(resultSet.getString("schematic_code"));
+
+		schematic.setArrowCode(resultSet.getString("arrow_code"));
+
+		schematic.setMemo(resultSet.getString("memo"));
+
+		schematic.setRowId(resultSet.getString("row_id"));
+
+	}
 }

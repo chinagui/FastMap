@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.rd.branch;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,22 +56,9 @@ public class RdBranchSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				branch.setPid(resultSet.getInt("branch_pid"));
-
-				branch.setInLinkPid(resultSet.getInt("in_link_pid"));
-
-				branch.setNodePid(resultSet.getInt("node_pid"));
-
-				branch.setOutLinkPid(resultSet.getInt("out_link_pid"));
-
-				branch.setRelationshipType(resultSet
-						.getInt("relationship_type"));
-
-				branch.setRowId(resultSet.getString("row_id"));
+				setAttr( branch,  resultSet);
 				
-				int meshId = resultSet.getInt("mesh_id");
-				
-				branch.setMesh(meshId);
+				int meshId = resultSet.getInt("mesh_id");			
 
 				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
 						conn);
@@ -252,22 +240,8 @@ public class RdBranchSelector implements ISelector {
 
 			if (resultSet.next()) {
 				
-				int meshId = resultSet.getInt("mesh_id");
-
-				branch.setPid(resultSet.getInt("branch_pid"));
-
-				branch.setInLinkPid(resultSet.getInt("in_link_pid"));
-
-				branch.setNodePid(resultSet.getInt("node_pid"));
-
-				branch.setOutLinkPid(resultSet.getInt("out_link_pid"));
-
-				branch.setRelationshipType(resultSet
-						.getInt("relationship_type"));
-
-				branch.setRowId(resultSet.getString("row_id"));
+				setAttr( branch,  resultSet);
 				
-				branch.setMesh(meshId);
 				if(branchType >=0 && branchType <= 4){
 					RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
 							conn);
@@ -389,22 +363,7 @@ public class RdBranchSelector implements ISelector {
 			while(resultSet.next()){
 				RdBranch branch = new RdBranch();
 				
-				int meshId = resultSet.getInt("mesh_id");
-				
-				branch.setPid(resultSet.getInt("branch_pid"));
-
-				branch.setInLinkPid(resultSet.getInt("in_link_pid"));
-
-				branch.setNodePid(resultSet.getInt("node_pid"));
-
-				branch.setOutLinkPid(resultSet.getInt("out_link_pid"));
-
-				branch.setRelationshipType(resultSet
-						.getInt("relationship_type"));
-
-				branch.setRowId(resultSet.getString("row_id"));
-				
-				branch.setMesh(meshId);
+				setAttr( branch,  resultSet);
 				
 				branchs.add(branch);
 			}
@@ -461,27 +420,11 @@ public class RdBranchSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 			
 			while(resultSet.next()){
-				int meshId = resultSet.getInt("mesh_id");
 				
 				RdBranch branch = new RdBranch();
 				
-				branch.setPid(resultSet.getInt("branch_pid"));
-
-				branch.setInLinkPid(resultSet.getInt("in_link_pid"));
-
-				branch.setNodePid(resultSet.getInt("node_pid"));
-
-				branch.setOutLinkPid(resultSet.getInt("out_link_pid"));
-
-				branch.setRelationshipType(resultSet
-						.getInt("relationship_type"));
-
-				branch.setRowId(resultSet.getString("row_id"));
-				
-				branch.isetOutNodePid(resultSet.getInt("out_node_pid"));
-				
-				branch.setMesh(meshId);
-				
+				setAttr( branch,  resultSet);
+branch.isetOutNodePid(resultSet.getInt("out_node_pid"));				
 				branchs.add(branch);
 			}
 		} catch (Exception e) {
@@ -535,21 +478,8 @@ public class RdBranchSelector implements ISelector {
 				
 				int id = resultSet.getInt("branch_pid");
 				
-				branch.setPid(resultSet.getInt("branch_pid"));
-
-				branch.setInLinkPid(resultSet.getInt("in_link_pid"));
-
-				branch.setNodePid(resultSet.getInt("node_pid"));
-
-				branch.setOutLinkPid(resultSet.getInt("out_link_pid"));
-
-				branch.setRelationshipType(resultSet
-						.getInt("relationship_type"));
-
-				branch.setRowId(resultSet.getString("row_id"));
+				setAttr( branch,  resultSet);
 				
-				branch.setMesh(meshId);
-
 				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
 						conn);
 
@@ -661,25 +591,12 @@ public class RdBranchSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 			
 			while(resultSet.next()){
-				
 				int meshId = resultSet.getInt("mesh_id");
+				
 				
 				RdBranch branch = new RdBranch();
 
-				branch.setPid(resultSet.getInt("branch_pid"));
-
-				branch.setInLinkPid(resultSet.getInt("in_link_pid"));
-
-				branch.setNodePid(resultSet.getInt("node_pid"));
-
-				branch.setOutLinkPid(resultSet.getInt("out_link_pid"));
-
-				branch.setRelationshipType(resultSet
-						.getInt("relationship_type"));
-
-				branch.setRowId(resultSet.getString("row_id"));
-				
-				branch.setMesh(meshId);
+				setAttr( branch,  resultSet);
 
 				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
 						conn);
@@ -828,20 +745,7 @@ public class RdBranchSelector implements ISelector {
 				
 				RdBranch branch = new RdBranch();
 
-				branch.setPid(resultSet.getInt("branch_pid"));
-
-				branch.setInLinkPid(resultSet.getInt("in_link_pid"));
-
-				branch.setNodePid(resultSet.getInt("node_pid"));
-
-				branch.setOutLinkPid(resultSet.getInt("out_link_pid"));
-
-				branch.setRelationshipType(resultSet
-						.getInt("relationship_type"));
-
-				branch.setRowId(resultSet.getString("row_id"));
-				
-				branch.setMesh(meshId);
+				setAttr( branch,  resultSet);
 
 				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
 						conn);
@@ -956,5 +860,27 @@ public class RdBranchSelector implements ISelector {
 		}
 		
 		return branchs;
+	}
+	
+	private void setAttr(RdBranch branch, ResultSet resultSet)
+			throws SQLException {
+
+		int meshId = resultSet.getInt("mesh_id");
+		
+		branch.setPid(resultSet.getInt("branch_pid"));
+
+		branch.setInLinkPid(resultSet.getInt("in_link_pid"));
+
+		branch.setNodePid(resultSet.getInt("node_pid"));
+
+		branch.setOutLinkPid(resultSet.getInt("out_link_pid"));
+
+		branch.setRelationshipType(resultSet
+				.getInt("relationship_type"));
+
+		branch.setRowId(resultSet.getString("row_id"));
+		
+		branch.setMesh(meshId);
+
 	}
 }

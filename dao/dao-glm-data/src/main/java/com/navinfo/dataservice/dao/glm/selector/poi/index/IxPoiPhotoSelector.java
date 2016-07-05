@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.poi.index;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
 
 /**
  * POI照片查询
@@ -58,21 +60,7 @@ public class IxPoiPhotoSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				photo.setPoiPid(resultSet.getInt("poi_pid"));
-
-				photo.setPhotoId(resultSet.getInt("photo_id"));			
-				
-				photo.setPid(resultSet.getString("pid"));
-				
-				photo.setStatus(resultSet.getString("status"));
-					
-				photo.setMemo(resultSet.getString("memo"));
-				
-				photo.setTag(resultSet.getInt("tag"));
-
-				photo.setRowId(resultSet.getString("row_id"));
-				
-				photo.setuDate(resultSet.getString("u_date"));
+				setAttr( photo, resultSet);
 			} else {
 				
 				throw new DataNotFoundException("数据不存在");
@@ -131,21 +119,7 @@ public class IxPoiPhotoSelector implements ISelector {
 
 				IxPoiPhoto photo = new IxPoiPhoto();
 
-				photo.setPoiPid(resultSet.getInt("poi_pid"));
-
-				photo.setPhotoId(resultSet.getInt("photo_id"));				
-				
-				photo.setStatus(resultSet.getString("status"));
-					
-				photo.setMemo(resultSet.getString("memo"));	
-
-				photo.setRowId(resultSet.getString("row_id"));
-				
-				photo.setuDate(resultSet.getString("u_date"));
-				
-				photo.setTag(resultSet.getInt("tag"));
-				
-				photo.setPid(resultSet.getString("pid"));
+				setAttr( photo, resultSet);
 
 				rows.add(photo);
 			}
@@ -175,4 +149,22 @@ public class IxPoiPhotoSelector implements ISelector {
 		return rows;
 	}
 
+	private void setAttr(IxPoiPhoto photo,ResultSet resultSet) throws SQLException
+	{
+		photo.setPoiPid(resultSet.getInt("poi_pid"));
+
+		photo.setPhotoId(resultSet.getInt("photo_id"));				
+		
+		photo.setStatus(resultSet.getString("status"));
+			
+		photo.setMemo(resultSet.getString("memo"));	
+
+		photo.setRowId(resultSet.getString("row_id"));
+		
+		photo.setuDate(resultSet.getString("u_date"));
+		
+		photo.setTag(resultSet.getInt("tag"));
+		
+		photo.setPid(resultSet.getString("pid"));
+	}
 }

@@ -38,7 +38,7 @@ public class TipsSelectorTest {
 	
 	
     //根据瓦片扩圈获取Tips数据
-	@Test
+	//@Test
 	public void testSearchDataByTileWithGap() {
 		JSONArray types = new JSONArray();
 		types.add(1301);
@@ -51,7 +51,7 @@ public class TipsSelectorTest {
 		types.add(1901);
 		try {
 			System.out.println(selector.searchDataByTileWithGap(107944, 49615, 17,
-					20, types));
+					20, types,"m"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -73,11 +73,11 @@ public class TipsSelectorTest {
 		
 		
 		//根据rowkey获取单个tips的详细信息
-		//@Test
+		@Test
 		public void testSearchDataByRowkey() {
 			try {
 				System.out.println("sorl by rowkey:");
-				System.out.println(selector.searchDataByRowkey("021401e52571a598aa4e618692e0bfb702f728"));
+				System.out.println(selector.searchDataByRowkey("021806d2379145037f471ebda56b88a659999"));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -119,7 +119,7 @@ public class TipsSelectorTest {
 	         * @author erikas
 	         * @throws Exception
 		 */
-		@org.junit.Test
+		//@org.junit.Test
 		public void testReg() throws Exception {
 		//  ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅩⅪⅫ⑴⑵⑶
 			

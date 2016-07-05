@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.man.subtask;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -263,12 +264,10 @@ public class SubtaskOperation {
 			String closedSubtaskStr = "(";
 			
 			closedSubtaskStr += StringUtils.join(closedSubtaskList.toArray(),",") + ")";
-			
-			closedSubtaskStr += ")";
 						
 			String updateSql = "update SUBTASK "
 					+ "set STATUS=0 "
-					+ "where SUBTASK_ID in"
+					+ "where SUBTASK_ID in "
 					+ closedSubtaskStr;	
 			
 
@@ -697,6 +696,7 @@ public class SubtaskOperation {
 			
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
 				public Page handle(ResultSet rs) throws SQLException {
+					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					List<HashMap<Object,Object>> list = new ArrayList<HashMap<Object,Object>>();
 					Page page = new Page(curPageNum);
 				    page.setPageSize(pageSize);
@@ -708,24 +708,13 @@ public class SubtaskOperation {
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 						
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
-//						subtask.put("name", rs.getString("NAME"));
-//						subtask.put("descp", rs.getString("DESCP"));
-						if(rs.getString("NAME") != null){
-							subtask.put("name", rs.getString("NAME"));
-						}else{
-							subtask.put("name", "");
-						}
-						if(rs.getString("descp") != null){
-							subtask.put("descp", rs.getString("DESCP"));
-						}else{
-							subtask.put("descp", "");
-						}
+						subtask.put("name", rs.getString("NAME"));
+						subtask.put("descp", rs.getString("DESCP"));
 
 						subtask.put("stage", rs.getInt("STAGE"));
 						subtask.put("type", rs.getInt("TYPE"));
-						subtask.put("planStartDate", rs
-								.getTimestamp("PLAN_START_DATE"));
-						subtask.put("planEndDate", rs.getTimestamp("PLAN_END_DATE"));
+						subtask.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
+						subtask.put("planEndDate", df.format(rs.getTimestamp("PLAN_END_DATE")));
 						subtask.put("status", rs.getInt("STATUS"));
 						
 						if (1 == rs.getInt("STAGE")) {
@@ -846,6 +835,7 @@ public class SubtaskOperation {
 
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
 				public Page handle(ResultSet rs) throws SQLException {
+					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					List<HashMap<Object,Object>> list = new ArrayList<HashMap<Object,Object>>();
 					Page page = new Page(curPageNum);
 				    page.setPageSize(pageSize);
@@ -857,22 +847,13 @@ public class SubtaskOperation {
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 						
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
-//						subtask.put("name", rs.getString("NAME"));
-//						subtask.put("descp", rs.getString("DESCP"));
-						if(rs.getString("NAME") != null){
-							subtask.put("name", rs.getString("NAME"));
-						}else{
-							subtask.put("name", "");
-						}
-						if(rs.getString("descp") != null){
-							subtask.put("descp", rs.getString("DESCP"));
-						}else{
-							subtask.put("descp", "");
-						}
+						subtask.put("name", rs.getString("NAME"));
+						subtask.put("descp", rs.getString("DESCP"));
+
 						subtask.put("stage", rs.getInt("STAGE"));
 						subtask.put("type", rs.getInt("TYPE"));
-						subtask.put("planStartDate", rs.getTimestamp("PLAN_START_DATE"));
-						subtask.put("planEndDate", rs.getTimestamp("PLAN_END_DATE"));
+						subtask.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
+						subtask.put("planEndDate", df.format(rs.getTimestamp("PLAN_END_DATE")));
 						subtask.put("status", rs.getInt("STATUS"));
 						subtask.put("dbId", rs.getString("GEOMETRY"));
 						

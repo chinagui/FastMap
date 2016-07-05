@@ -98,11 +98,10 @@ public class StaticsController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			int blockId = dataJson.getInt("blockId");
-			int type = dataJson.getInt("type");
 			int stage = dataJson.getInt("stage");
-			List<BlockExpectStatInfo> gridStatObjList = StaticsService
+			HashMap gridStatObjList = StaticsService
 					.getInstance()
-					.blockExpectStatQuery(blockId, stage, type);
+					.blockExpectStatQuery(blockId, stage);
 			return new ModelAndView("jsonView", success(gridStatObjList));
 		} catch (Exception e) {
 			log.error("创建失败，原因：" + e.getMessage(), e);

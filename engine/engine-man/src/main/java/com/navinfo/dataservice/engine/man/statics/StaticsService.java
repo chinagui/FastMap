@@ -92,10 +92,20 @@ public class StaticsService {
 		return data;
 	}
 	
-	public List<BlockExpectStatInfo> blockExpectStatQuery(int blockId, int stage, int type) throws JSONException, Exception{
+	public HashMap blockExpectStatQuery(int blockId, int stage) throws JSONException, Exception{
 		StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
 	
-		return api.getExpectStatByBlock(blockId, stage, type);
+		HashMap data = new HashMap();
+		
+		List<BlockExpectStatInfo> poiStat = api.getExpectStatByBlock(blockId, stage, 0);
+		
+		List<BlockExpectStatInfo> roadStat = api.getExpectStatByBlock(blockId, stage, 1);
+		
+		data.put("poi", poiStat);
+		
+		data.put("road", roadStat);
+		
+		return data;
 	}
 	
 	public List<HashMap> cityExpectStatQuery(String wkt) throws JSONException, Exception{

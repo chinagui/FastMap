@@ -209,7 +209,7 @@ public class BatchCoreJob extends AbstractJob {
 		}
 		catch(SQLException e) {
 			try {
-				String errInfo = statement.getString(16);
+				String errInfo = statement.getString(2);
 				batchResult = errInfo;
 			}catch(SQLException ex) {
 				batchResult = "获取批处理执行过程中获取异常信息失败";

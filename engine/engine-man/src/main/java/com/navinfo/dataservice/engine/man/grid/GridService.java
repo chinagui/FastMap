@@ -218,7 +218,7 @@ public class GridService {
 			if (size>1000){
 				clobGrids=conn.createClob();
 				clobGrids.setString(1, StringUtils.join(gridList, ","));
-				InClause = " g.grid_id IN (select to_number(column_value) from table(clob_to_table(?)))";
+				InClause = " and g.grid_id IN (select to_number(column_value) from table(clob_to_table(?)))";
 			}else{
 				InClause = buildInClause("g.grid_id", gridList);
 			}

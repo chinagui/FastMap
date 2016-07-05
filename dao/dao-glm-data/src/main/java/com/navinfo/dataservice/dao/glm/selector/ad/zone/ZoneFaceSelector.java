@@ -179,14 +179,14 @@ public class ZoneFaceSelector implements ISelector {
 				face.setRowId(resultSet.getString("row_id"));
 
 				faces.add(face);
-				List<IRow> adFaceTopo = new ZoneFaceTopoSelector(conn).loadRowsByParentId(face.getPid(), isLock);
+				List<IRow> zoneFaceTopo = new ZoneFaceTopoSelector(conn).loadRowsByParentId(face.getPid(), isLock);
 
-				for (IRow row : adFaceTopo) {
+				for (IRow row : zoneFaceTopo) {
 					row.setMesh(face.mesh());
 				}
-				face.setFaceTopos(adFaceTopo);
+				face.setFaceTopos(zoneFaceTopo);
 
-				for (IRow row : adFaceTopo) {
+				for (IRow row : zoneFaceTopo) {
 					ZoneFaceTopo obj = (ZoneFaceTopo) row;
 
 					face.adFaceTopoMap.put(obj.rowId(), obj);

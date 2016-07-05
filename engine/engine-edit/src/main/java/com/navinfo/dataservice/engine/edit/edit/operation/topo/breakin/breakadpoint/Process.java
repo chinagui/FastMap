@@ -29,9 +29,6 @@ public class Process extends AbstractProcess<Command> {
 	}
 	public boolean prepareData() throws Exception {
 		// 获取此ADLINK上行政取区划面拓扑关系
-			List<AdFaceTopo> adFaceTopos= new AdFaceTopoSelector(this.getConn())
-							.loadByLinkPid(this.getCommand().getLinkPid(), true);
-			this.getCommand().setAdFaceTopos(adFaceTopos);
 			List<AdFace> faces = new  AdFaceSelector(this.getConn())
 								.loadAdFaceByLinkId(this.getCommand().getLinkPid(), true);
 			this.getCommand().setFaces(faces);

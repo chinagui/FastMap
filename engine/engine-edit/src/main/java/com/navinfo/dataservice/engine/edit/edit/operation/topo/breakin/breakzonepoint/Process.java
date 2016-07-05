@@ -28,9 +28,6 @@ public class Process extends AbstractProcess<Command> {
 	}
 	public boolean prepareData() throws Exception {
 		// 获取此ZONELINK上行政取区划面拓扑关系
-			List<ZoneFaceTopo> zoneFaceTopos= new ZoneFaceTopoSelector(this.getConn())
-							.loadByLinkPid(this.getCommand().getLinkPid(), true);
-			this.getCommand().setZoneFaceTopos(zoneFaceTopos);
 			List<ZoneFace> faces = new  ZoneFaceSelector(this.getConn())
 								.loadZoneFaceByLinkId(this.getCommand().getLinkPid(), true);
 			this.getCommand().setFaces(faces);

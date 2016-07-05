@@ -48,7 +48,7 @@ public class ReleaseFmIdbMonthlyJobRequest extends AbstractJobRequest {
 	@Override
 	protected int myStepCount() throws JobException {
 		// TODO Auto-generated method stub
-		return 1;
+		return 2;
 	}
 
 	

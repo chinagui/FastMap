@@ -11,12 +11,16 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.man.model.BlockMan;
 import com.navinfo.dataservice.api.man.model.InforMan;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class InforManOperation {
 	private static Logger log = LoggerRepos.getLogger(InforManOperation.class);
@@ -119,6 +123,27 @@ public class InforManOperation {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询列表失败，原因为:" + e.getMessage(), e);
+		}
+	}
+	
+	public static void insertInforBlockMapping(Connection conn,JSONArray blockArray,String inforId) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String createSql = "insert into infor_block_mapping(infor_id,block_id) values(?,?)";
+
+			Object[][] param = new Object[blockArray.size()][];
+			for (int i = 0; i < blockArray.size(); i++) {
+				int blockId = blockArray.getInt(i);
+				Object[] obj = new Object[] { inforId, blockId};
+				param[i] = obj;
+			}
+
+			run.batch(conn, createSql, param);	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("插入失败，原因为:"+e.getMessage(),e);
 		}
 	}
 

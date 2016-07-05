@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
@@ -44,4 +46,6 @@ public interface StaticsApi {
 	public Map<Integer, Integer> getExpectStatusByCitys(Set<Integer> citys);
 	
 	public List<BlockExpectStatInfo> getExpectStatByBlock(int blockId, int stage, int type);
+	
+	public JSONObject getStatBySubtask(int subtaskId);
 }

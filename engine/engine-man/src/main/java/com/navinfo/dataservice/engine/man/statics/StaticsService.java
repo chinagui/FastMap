@@ -133,4 +133,13 @@ public class StaticsService {
 		
 		return data;
 	}
+	
+	public JSONObject subtaskStatQuery(int subtaskId) throws JSONException, Exception{
+		
+		StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+		
+		return api.getStatBySubtask(subtaskId);
+	}
+	
+	
 }

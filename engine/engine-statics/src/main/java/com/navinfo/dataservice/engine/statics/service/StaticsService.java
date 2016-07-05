@@ -361,6 +361,37 @@ public class StaticsService {
 
 	}
 	
+	public JSONObject getStatBySubtask(int subtaskId){
+		
+		JSONObject data = new JSONObject();
+		
+		data.put("subtaskId", subtaskId);
+		
+		data.put("percent", 20);
+		
+		JSONObject poi = new JSONObject();
+		
+		poi.put("total", 2000);
+		
+		poi.put("finish", 400);
+		
+		poi.put("working", 1600);
+		
+		data.put("poi", poi);
+		
+		JSONObject road = new JSONObject();
+		
+		road.put("total", 2000);
+		
+		road.put("finish", 400);
+		
+		road.put("working", 1600);
+		
+		data.put("road", road);
+		
+		return data;
+	}
+	
 	public static void main(String[] args) throws Exception {
 //		String wkt = "POLYGON ((116.55736132939865 40.37309069499443, 116.88314510913636 40.37309069499443, 116.88314510913636 40.25788148053289, 116.55736132939865 40.25788148053289, 116.55736132939865 40.37309069499443))";
 //		

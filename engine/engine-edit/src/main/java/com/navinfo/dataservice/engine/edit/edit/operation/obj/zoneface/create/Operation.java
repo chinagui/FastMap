@@ -358,11 +358,6 @@ public class Operation implements IOperation {
 
 		JSONObject updateContent = new JSONObject();
 		g = GeoTranslator.transform(g, 0.00001, 5);
-
-		String meshId =  CompGeometryUtil.geoToMeshesWithoutBreak(g).iterator().next();
-		if (!StringUtils.isEmpty(meshId)) {
-			updateContent.put("mesh", Integer.parseInt(meshId));
-		}
 		updateContent.put("geometry", GeoTranslator.jts2Geojson(g));
 		updateContent.put("area", GeometryUtils.getCalculateArea(g));
 		updateContent.put("perimeter", GeometryUtils.getLinkLength(g));

@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.man.grid;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,18 +25,19 @@ public class GridOperation {
 		// TODO Auto-generated constructor stub
 	}
 
-	public static List<HashMap> queryGirdBySql(Connection conn,String selectSql,final int stage) throws Exception{
-		try{
+	public static List<HashMap> queryGirdBySql(Connection conn, String selectSql, final int stage, Clob clobGrids)
+			throws Exception {
+		try {
 			QueryRunner run = new QueryRunner();
-			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
+			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>() {
 				public List<HashMap> handle(ResultSet rs) throws SQLException {
 					List<HashMap> list = new ArrayList<HashMap>();
-					while(rs.next()){
+					while (rs.next()) {
 						HashMap map = new HashMap<String, Integer>();
 						map.put("gridId", rs.getInt("grid_id"));
 						map.put("status", 2);
 						try {
-							map.put("type", GridOperation.getGridType(rs.getInt("grid_id"),stage));
+							map.put("type", GridOperation.getGridType(rs.getInt("grid_id"), stage));
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -44,23 +46,26 @@ public class GridOperation {
 					}
 					return list;
 				}
-	    		
-	    	};
-	    	return run.query(conn, selectSql, rsHandler);			
-		}catch(Exception e){
+
+			};
+			if (null == clobGrids) {
+				return run.query(conn, selectSql, rsHandler);
+			}
+			return run.query(conn, selectSql, rsHandler, clobGrids);
+		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("查询grid失败:"+e.getMessage(),e);
+			throw new Exception("查询grid失败:" + e.getMessage(), e);
 		}
 	}
-	
-	public static List<HashMap> queryGirdBySql(Connection conn,String selectSql) throws Exception{
-		try{
+
+	public static List<HashMap> queryGirdBySql(Connection conn, String selectSql, Clob clobGrids) throws Exception {
+		try {
 			QueryRunner run = new QueryRunner();
-			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
+			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>() {
 				public List<HashMap> handle(ResultSet rs) throws SQLException {
 					List<HashMap> list = new ArrayList<HashMap>();
-					while(rs.next()){
+					while (rs.next()) {
 						HashMap map = new HashMap<String, Integer>();
 						map.put("gridId", rs.getInt("grid_id"));
 						map.put("status", 1);
@@ -69,16 +74,19 @@ public class GridOperation {
 					}
 					return list;
 				}
-	    		
-	    	};
-	    	return run.query(conn, selectSql, rsHandler);			
-		}catch(Exception e){
+
+			};
+			if (null == clobGrids) {
+				return run.query(conn, selectSql, rsHandler);
+			}
+			return run.query(conn, selectSql, rsHandler, clobGrids);
+
+		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("查询grid失败:"+e.getMessage(),e);
+			throw new Exception("查询grid失败:" + e.getMessage(), e);
 		}
 	}
-
 
 	// public static List<HashMap> queryProduceBlock(Connection conn,String
 	// selectSql,List<Object> values) throws Exception{

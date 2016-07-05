@@ -520,6 +520,12 @@ public class RdGscOperateUtils {
 		return flag;
 	}
 	
+	/**
+	 * 判断移动的形状点是否是立交点位
+	 * @param linkGeo 立交组成线
+	 * @param gscList 立交集
+	 * @return T/F
+	 */
 	public static boolean isMoveGscLink(Geometry linkGeo,List<RdGsc> gscList)
 	{
 		boolean flag = false;
@@ -529,6 +535,7 @@ public class RdGscOperateUtils {
 			if(rdGsc.getGeometry().distance(linkGeo)>1)
 			{
 				flag = true;
+				break;
 			}
 		}
 		

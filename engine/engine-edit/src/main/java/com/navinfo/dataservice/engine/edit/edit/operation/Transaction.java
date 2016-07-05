@@ -627,16 +627,16 @@ public class Transaction {
 		case ZONENODE:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadpoint.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakzonepoint.Process(
 						command);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.adnode.update.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.zonenode.update.Process(
 						command);
 			case MOVE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.move.movezonenode.Process(
 						command);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleteadnode.Process(
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deletezonenode.Process(
 						command);
 			}
 		case ZONELINK:

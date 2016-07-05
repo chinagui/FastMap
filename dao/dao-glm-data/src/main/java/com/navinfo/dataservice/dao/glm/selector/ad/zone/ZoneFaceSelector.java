@@ -179,14 +179,14 @@ public class ZoneFaceSelector implements ISelector {
 				face.setRowId(resultSet.getString("row_id"));
 
 				faces.add(face);
-				List<IRow> adFaceTopo = new ZoneFaceTopoSelector(conn).loadRowsByParentId(face.getPid(), isLock);
+				List<IRow> zoneFaceTopo = new ZoneFaceTopoSelector(conn).loadRowsByParentId(face.getPid(), isLock);
 
-				for (IRow row : adFaceTopo) {
+				for (IRow row : zoneFaceTopo) {
 					row.setMesh(face.mesh());
 				}
-				face.setFaceTopos(adFaceTopo);
+				face.setFaceTopos(zoneFaceTopo);
 
-				for (IRow row : adFaceTopo) {
+				for (IRow row : zoneFaceTopo) {
 					ZoneFaceTopo obj = (ZoneFaceTopo) row;
 
 					face.adFaceTopoMap.put(obj.rowId(), obj);
@@ -222,7 +222,7 @@ public class ZoneFaceSelector implements ISelector {
 
 		List<ZoneFace> faces = new ArrayList<ZoneFace>();
 
-		String sql = "select  a.*  from zone_face a ,zone_face_topo t,zone_link l,zone_node n  t where a.u_record != 2  and a.face_id = t.face_pid and t.link_pid = l.link_pid and (l.s_node_pid = :1 or l.e_node_pid = :2) ";
+		String sql = "select  a.*  from zone_face a ,zone_face_topo t,zone_link l where a.u_record != 2  and a.face_pid = t.face_pid and t.link_pid = l.link_pid and (l.s_node_pid = :1 or l.e_node_pid = :2) ";
 		
 		if (isLock) {
 			sql += " for update nowait";
@@ -236,6 +236,8 @@ public class ZoneFaceSelector implements ISelector {
 			pstmt = this.conn.prepareStatement(sql);
 
 			pstmt.setInt(1, nodePid);
+			
+			pstmt.setInt(2, nodePid);
 
 			resultSet = pstmt.executeQuery();
 

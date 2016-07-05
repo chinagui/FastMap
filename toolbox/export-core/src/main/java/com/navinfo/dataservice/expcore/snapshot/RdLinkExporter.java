@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.expcore.snapshot;
 
 import java.io.ByteArrayInputStream;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,12 +17,14 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
+import org.apache.commons.lang.StringUtils;
+
 public class RdLinkExporter {
 
-	public static void run(Connection sqliteConn,
-			Statement stmt, Connection conn, String operateDate)
+	public static void run(Connection sqliteConn, Statement stmt,
+			Connection conn, String operateDate, Set<Integer> meshes)
 			throws Exception {
-		
+
 		// creating a LINESTRING table
 		stmt.execute("create table gdb_rdLine(pid integer primary key)");
 		stmt.execute("select addgeometrycolumn('gdb_rdLine','geometry',4326,'GEOMETRY','XY')");
@@ -53,11 +56,16 @@ public class RdLinkExporter {
 
 		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
 
-		Statement stmt2 = conn.createStatement();
+		String sql = "select a.*,        display_text.name,        styleFactors1.types,        styleFactors2.lane_types,        speedlimits.from_speed_limit,        speedlimits.to_speed_limit,        forms.forms   from rd_link a,        (select max(name1)||'/'||max(name2)||'/'||max(name3)||'/'||max(name4) name,link_pid from ( select a.link_pid, case when name_class=1 and seq_num=1 then b.name else null end as name1,  case when name_class=1 and seq_num=2 then b.name else null end as name2,  case when name_class=2 and seq_num=1 then b.name else null end as name3,    case when name_class=2 and seq_num=2 then b.name else null end as name4            from rd_link_name a, rd_name b          where a.name_groupid = b.name_groupid            and b.lang_code = 'CHI'            and a.u_record != 2) group by link_pid) display_text,        (select link_pid,                listagg(type, ',') within group(order by type) types           from (select a.link_pid, type                   from rd_link_limit a                  where type in (0, 4, 5, 6)                    and a.u_record != 2)          group by link_pid) styleFactors1,        (select link_pid,                listagg(lane_type, ',') within group(order by lane_type) lane_types           from rd_lane a          where a.u_record != 2          group by link_pid) styleFactors2,        (select link_pid, from_speed_limit, to_speed_limit           from rd_link_speedlimit a          where speed_type = 0            and a.u_record != 2) speedlimits,        (select link_pid,                listagg(form_of_way, ',') within group(order by form_of_way) forms           from rd_link_form          where u_record != 2          group by link_pid) forms  where a.link_pid = display_text.link_pid(+)    and a.link_pid = styleFactors1.link_pid(+)    and a.link_pid = styleFactors2.link_pid(+)    and a.link_pid = speedlimits.link_pid(+)    and a.link_pid = forms.link_pid(+)    and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
 
-		String sql = "select a.*,        display_text.name,        styleFactors1.types,        styleFactors2.lane_types,        speedlimits.from_speed_limit,        speedlimits.to_speed_limit,        forms.forms   from rd_link a,        (select max(name1)||'/'||max(name2)||'/'||max(name3)||'/'||max(name4) name,link_pid from ( select a.link_pid, case when name_class=1 and seq_num=1 then b.name else null end as name1,  case when name_class=1 and seq_num=2 then b.name else null end as name2,  case when name_class=2 and seq_num=1 then b.name else null end as name3,    case when name_class=2 and seq_num=2 then b.name else null end as name4            from rd_link_name a, rd_name b          where a.name_groupid = b.name_groupid            and b.lang_code = 'CHI'            and a.u_record != 2) group by link_pid) display_text,        (select link_pid,                listagg(type, ',') within group(order by type) types           from (select a.link_pid, type                   from rd_link_limit a                  where type in (0, 4, 5, 6)                    and a.u_record != 2)          group by link_pid) styleFactors1,        (select link_pid,                listagg(lane_type, ',') within group(order by lane_type) lane_types           from rd_lane a          where a.u_record != 2          group by link_pid) styleFactors2,        (select link_pid, from_speed_limit, to_speed_limit           from rd_link_speedlimit a          where speed_type = 0            and a.u_record != 2) speedlimits,        (select link_pid,                listagg(form_of_way, ',') within group(order by form_of_way) forms           from rd_link_form          where u_record != 2          group by link_pid) forms  where a.link_pid = display_text.link_pid(+)    and a.link_pid = styleFactors1.link_pid(+)    and a.link_pid = styleFactors2.link_pid(+)    and a.link_pid = speedlimits.link_pid(+)    and a.link_pid = forms.link_pid(+)    and a.u_record != 2";
+		Clob clob = conn.createClob();
+		clob.setString(1, StringUtils.join(meshes, ","));
 
-		ResultSet resultSet = stmt2.executeQuery(sql);
+		PreparedStatement stmt2 = conn.prepareStatement(sql);
+
+		stmt2.setClob(1, clob);
+
+		ResultSet resultSet = stmt2.executeQuery();
 
 		resultSet.setFetchSize(5000);
 
@@ -248,7 +256,7 @@ public class RdLinkExporter {
 		JGeometry geom = JGeometry.load(struct);
 
 		WKT wkt = new WKT();
-		
+
 		String geometry = new String(wkt.fromJGeometry(geom));
 
 		json.put("geometry", geometry);
@@ -343,7 +351,7 @@ public class RdLinkExporter {
 
 		return json;
 	}
-	
+
 	private static int computeStyle(int paveStatus, int isViaduct,
 			JSONArray forms, JSONArray styleFactors) {
 

@@ -43,10 +43,10 @@ public class RdLinkTest extends InitApplication{
 	{
 		//
 		//parameter={"command":"CREATE","dbId":42,"data":{"eNodePid":0,"sNodePid":0,"geometry":{"type":"LineString","coordinates":},"catchLinks":[]},"type":"RDLINK"}
-		String line= "[[116.4810861647129,40.00894023983557],[116.48119228907093,40.0088646046339],[116.48106068372725,40.008772804215624]]";
+		String line= "[[116.74960479140282,39.00004566522346],[116.749634295702,38.99995186416615]]";
 		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"dbId\":42," +
 				"\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\"," +
-				"\"coordinates\":"+line+"},\"catchLinks\":[{\"linkPid\":100006225,\"lon\":116.48119228907093,\"lat\":40.0088646046339}]}}";
+				"\"coordinates\":"+line+"},\"catchLinks\":[]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

@@ -43,7 +43,7 @@ public class UserInfoController extends BaseController {
 			if (StringUtils.isEmpty(parameter)) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
@@ -52,7 +52,7 @@ public class UserInfoController extends BaseController {
 
 			if (dataJson.containsKey("deviceToken")
 					&& dataJson.containsKey("devicePlatform")
-					&& dataJson.containsKey("deviceVersion")) {
+					&& dataJson.containsKey("deviceVersion")) {					
 				userDevice.setDeviceToken(dataJson.getString("deviceToken"));
 				userDevice.setDevicePlatform(dataJson
 						.getString("devicePlatform"));

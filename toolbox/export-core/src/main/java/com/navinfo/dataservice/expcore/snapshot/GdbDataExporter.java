@@ -4,6 +4,7 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.util.Set;
 
 import org.apache.uima.pear.util.FileUtil;
 import org.sqlite.SQLiteConfig;
@@ -19,7 +20,7 @@ public class GdbDataExporter {
 	 * @param dir
 	 * @throws Exception
 	 */
-	public static void run(Connection conn, String dir)
+	public static String run(Connection conn, String dir, Set<Integer> meshes)
 			throws Exception {
 
 		File file = new File(dir + "/tmp");
@@ -59,31 +60,34 @@ public class GdbDataExporter {
 		String operateDate = StringUtils.getCurrentTime();
 
 		System.out.println("exporting rdline");
-
-		RdLinkExporter.run(sqliteConn, stmt, conn, operateDate);
+		
+		RdLinkExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
 
 		System.out.println("exporting rdnode");
 
-		RdNodeExporter.run(sqliteConn, stmt, conn, operateDate);
+		RdNodeExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
 
 		System.out.println("exporting bkline");
 
-		BkLinkExporter.run(sqliteConn, stmt, conn, operateDate);
+		BkLinkExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
 
 		System.out.println("exporting bkface");
 
-		BkFaceExporter.run(sqliteConn, stmt, conn, operateDate);
+		BkFaceExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
 
 		System.out.println("exporting rdlinegsc");
 
-		RdGscExporter.run(sqliteConn, stmt, conn, operateDate);
+		RdGscExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
 
 		sqliteConn.close();
 
+		String zipfile = dir + "/" + operateDate + ".zip";
 		// 压缩文件
-		ZipUtils.zipFile(dir + "/tmp/", dir + "/" + operateDate + ".zip");
+		ZipUtils.zipFile(dir + "/tmp/", zipfile);
 
 		FileUtil.deleteDirectory(file);
+		
+		return zipfile;
 
 	}
 }

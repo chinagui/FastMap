@@ -13,13 +13,17 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
-import com.navinfo.dataservice.engine.dropbox.dao.DBController;
+import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
 
 @Controller
-public class InforController extends BaseController{
-	private static final Logger logger = Logger.getLogger(InforController.class);
+public class InforController extends BaseController {
+	private static final Logger logger = Logger
+			.getLogger(InforController.class);
+
 	/**
 	 * 
 	 * @param request
@@ -31,36 +35,30 @@ public class InforController extends BaseController{
 	public ModelAndView uploadInfor(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		String parameter = request.getParameter("parameter");
-		
-		try{
-//			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+
+		try {
 			JSONObject json = JSONObject.fromObject(parameter);
 
 			int jobId = json.getInt("jobId");
-			
-			String filePath = getInforFilePath(jobId);
-			//TODO:调用mapspoter提供的接口：将文件路径作为输入参数
-			return new ModelAndView("jsonView", success());
-		}catch(Exception e){
+
+			UploadService upload = UploadService.getInstance();
+
+			String filePath = upload.unzipByJobId(jobId);
+
+			String url = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.inforUploadUrl);
+
+			String result = upload.uploadFile(url, "infor.json", filePath);
+
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
 			String logid = Log4jUtils.genLogid();
 
 			Log4jUtils.error(logger, logid, parameter, e);
 
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
-		
+
 	}
-	
-	private String getInforFilePath(int jobId) throws Exception{
-		
-		JSONObject uploadInfo = new DBController().getUploadInfo(jobId);
 
-		String fileName = uploadInfo.getString("fileName");
-
-		String filePath = uploadInfo.getString("filePath") + "/" + jobId;
-
-		return (filePath + "/" + fileName);
-		
-	}
-	
 }

@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.json.JSONObject;
+
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
@@ -62,5 +64,10 @@ public class StaticsApiImpl implements StaticsApi {
 	@Override
 	public Map<Integer, Integer> getExpectStatusByCitys(Set<Integer> citys) {
 		return StaticsService.getInstance().getExpectStatusByCitys(citys);
+	}
+
+	@Override
+	public JSONObject getStatBySubtask(int subtaskId) {
+		return StaticsService.getInstance().getStatBySubtask(subtaskId);
 	}
 }

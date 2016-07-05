@@ -3,6 +3,10 @@ package com.navinfo.dataservice.edit.job;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -46,13 +50,22 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		try{
 			log.info("check exception1");
 			//判断是否有检查错误，有检查错误则直接返回不进行后续步骤
-			if(!hasException(releaseJobRequest)){
+			List<Integer> errorGrid=hasException(releaseJobRequest);
+			List<Integer> allGrid=releaseJobRequest.getGridIds();
+			//将有错误的grid排除
+			allGrid.removeAll(errorGrid);
+			if(errorGrid.size()!=0){
 				log.error("has exception,connot commit!");
-				super.response("grids中有检查错误，不能提交！",null);
-				throw new Exception("grids中有检查错误，不能提交！");}
+				Map<String, List<Integer>> returnGrid=new HashMap<String, List<Integer>>();
+				returnGrid.put("有检查错误的grid", errorGrid);
+				super.response("grids中有检查错误，不能提交！",returnGrid);}
+			if(allGrid.size()==0){
+				throw new Exception("所有grid均存在检查错误，终止提交操作！");
+			}
 			//1对grids提取数据执行gdb检查
 			log.info("start gdb check");
 			JobInfo valJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
+			releaseJobRequest.getSubJobRequest("validation").setAttrValue("grids", allGrid);
 			AbstractJob valJob = JobCreateStrategy.createAsSubJob(valJobInfo,
 					releaseJobRequest.getSubJobRequest("validation"), this);
 			valJob.run();
@@ -64,13 +77,21 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			log.info("end gdb check");
 			//判断是否有检查错误，有检查错误则直接返回不进行后续步骤
 			log.info("check exception2");
-			if(!hasException(releaseJobRequest)){
+			errorGrid=hasException(releaseJobRequest);
+			//将有错误的grid排除
+			allGrid.removeAll(errorGrid);
+			if(errorGrid.size()!=0){
 				log.error("has exception,connot commit!");
-				super.response("grids中有检查错误，不能提交！",null);
-				throw new Exception("grids中有检查错误，不能提交！");}			
+				Map<String, List<Integer>> returnGrid=new HashMap<String, List<Integer>>();
+				returnGrid.put("有检查错误的grid", errorGrid);
+				super.response("grids中有检查错误，不能提交！",returnGrid);}
+			if(allGrid.size()==0){
+				throw new Exception("所有grid均存在检查错误，终止提交操作！");
+			}
 			//对grids执行批处理
 			log.info("start gdb batch");
 			JobInfo batchJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
+			releaseJobRequest.getSubJobRequest("batch").setAttrValue("grids", allGrid);
 			//releaseJobRequest.getSubJobRequest("batch").setAttrValue("batchDbId", valDbId);
 			AbstractJob batchJob = JobCreateStrategy.createAsSubJob(batchJobInfo,
 					releaseJobRequest.getSubJobRequest("batch"), this);
@@ -161,24 +182,24 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 	 * 是否有检查错误 false:有检查错误 true：无检查错误
 	 * @return
 	 */
-	public boolean hasException(EditPoiBaseReleaseJobRequest releaseJobRequest) throws Exception{
+	public List<Integer> hasException(EditPoiBaseReleaseJobRequest releaseJobRequest) throws Exception{
 		Connection conn = null;
 		try{
-			String sql="SELECT 1 FROM NI_VAL_EXCEPTION_GRID G "
+			String sql="SELECT DISTINCT G.GRID_ID FROM NI_VAL_EXCEPTION_GRID G "
 					+ "WHERE G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(releaseJobRequest.getGridIds(),",")+")";
 			conn = DBConnector.getInstance().getConnectionById(releaseJobRequest.getTargetDbId());
-			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>(){
-				public Integer handle(ResultSet rs) throws SQLException {
+			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>(){
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> errorGrid=new ArrayList<Integer>();
 					while(rs.next()){
-						return rs.getInt(1);
+						errorGrid.add(rs.getInt(1));
 					}
-					return 0;
+					return errorGrid;
 				}	    		
 			};		
 			QueryRunner run = new QueryRunner();		
-			int exceptionCount=run.query(conn, sql,rsHandler);
-			if(exceptionCount==0){return true;}
-			else{return false;}
+			List<Integer> errorGrid=run.query(conn, sql,rsHandler);
+			return errorGrid;
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

@@ -1,20 +1,30 @@
 package com.navinfo.dataservice.web.man.controller;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import net.sf.json.JSONObject;
 
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.api.job.iface.JobApiService;
+import com.navinfo.dataservice.api.job.iface.JobApi;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.navicommons.database.QueryRunner;
 
 /** 
 * @ClassName: BlockController 
@@ -46,7 +56,7 @@ public class ProduceController extends BaseController {
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
 			//long userId=2;
-			JobApiService jobApi=(JobApiService) ApplicationContextUtil.getBean("jobApiService");
+			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			/*
 			 * {"gridIds":[213424,343434,23423432],"stopTime":"yyyymmddhh24miss","dataType":"POI"//POI,ALL}
 			 * jobType:releaseFmIdbDailyJob/releaseFmIdbMonthlyJob
@@ -84,14 +94,32 @@ public class ProduceController extends BaseController {
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
 			//long userId=2;
-			JobApiService jobApi=(JobApiService) ApplicationContextUtil.getBean("jobApiService");
+			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			/*
 			 * {"gridIds":[213424,343434,23423432],"stopTime":"yyyymmddhh24miss","dataType":"POI"//POI,ALL}
 			 * jobType:releaseFmIdbDailyJob/releaseFmIdbMonthlyJob
 			 */
-			//TODO
+			Connection conn = null;
+			List<Integer> gridIds=new ArrayList<Integer>();
+			try{
+				QueryRunner run = new QueryRunner();
+				conn = DBConnector.getInstance().getManConnection();
+				String selectSql = "select g.grid_id from grid g where g.city_id in ("+StringUtils.join(dataJson.getJSONArray("cityIds"), ",")+")";		
+				ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>(){
+					public List<Integer> handle(ResultSet rs) throws SQLException {
+						List<Integer> list = new ArrayList<Integer>();
+						while(rs.next()){
+								list.add(rs.getInt("GRID_ID"));
+								}
+						return list;
+					}	    		
+		    	};
+		    	gridIds= run.query(conn, selectSql, rsHandler);
+			}finally{
+				DbUtils.closeQuietly(conn);
+			}
 			JSONObject jobDataJson=new JSONObject();
-			jobDataJson.put("gridList", dataJson.get("gridIds"));
+			jobDataJson.put("gridList", gridIds);
 			jobDataJson.put("stopTime", "20160616000000");
 			long jobId=jobApi.createJob("releaseFmIdbMonthlyJob", jobDataJson,userId, "月出品");
 			return new ModelAndView("jsonView", success(jobId));
@@ -121,7 +149,7 @@ public class ProduceController extends BaseController {
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
 			//long userId=2;
-			JobApiService jobApi=(JobApiService) ApplicationContextUtil.getBean("jobApiService");
+			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			/*
 			 * {"gridIds":[213424,343434,23423432],"stopTime":"yyyymmddhh24miss"}
 			 * jobType:releaseFmidbDaily/releaseFmidbMonthly

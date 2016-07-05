@@ -79,8 +79,12 @@ public class PinyinConverter {
 	public static void main(String[] args) throws Exception {
 
 		PinyinConverter py = new PinyinConverter();
+		
+		
 
 		String[] res = py.convert("北京市");
+		
+		System.out.println(res);
 
 		System.out.println(res[0]);
 

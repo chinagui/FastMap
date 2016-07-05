@@ -1,18 +1,22 @@
 package com.navinfo.dataservice.expcore.snapshot;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Set;
 
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
+import org.apache.commons.lang.StringUtils;
+
 public class RdNodeExporter {
 	public static void run(Connection sqliteConn,
-			Statement stmt, Connection conn, String operateDate)
+			Statement stmt, Connection conn, String operateDate, Set<Integer> meshes)
 			throws Exception {
 		// creating a LINESTRING table
 		stmt.execute("create table gdb_rdNode(pid integer primary key)");
@@ -30,11 +34,16 @@ public class RdNodeExporter {
 
 		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
 
-		Statement stmt2 = conn.createStatement();
+		String sql = "select b.node_pid,b.geometry,c.mesh_id,a.is_main from rd_cross_node a,rd_node b,rd_node_mesh c where c.node_pid=b.node_pid and a.node_pid=b.node_pid and a.u_record!=2 and b.u_record!=2 and c.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
 
-		String oraSql = "select b.node_pid,b.geometry,c.mesh_id,a.is_main from rd_cross_node a,rd_node b,rd_node_mesh c where c.node_pid=b.node_pid and a.node_pid=b.node_pid and a.u_record!=2 and b.u_record!=2";
+		Clob clob = conn.createClob();
+		clob.setString(1, StringUtils.join(meshes, ","));
 
-		ResultSet resultSet = stmt2.executeQuery(oraSql);
+		PreparedStatement stmt2 = conn.prepareStatement(sql);
+
+		stmt2.setClob(1, clob);
+		
+		ResultSet resultSet = stmt2.executeQuery();
 
 		resultSet.setFetchSize(5000);
 

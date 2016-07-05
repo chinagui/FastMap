@@ -98,11 +98,10 @@ public class StaticsController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			int blockId = dataJson.getInt("blockId");
-			int type = dataJson.getInt("type");
 			int stage = dataJson.getInt("stage");
-			List<BlockExpectStatInfo> gridStatObjList = StaticsService
+			HashMap gridStatObjList = StaticsService
 					.getInstance()
-					.blockExpectStatQuery(blockId, stage, type);
+					.blockExpectStatQuery(blockId, stage);
 			return new ModelAndView("jsonView", success(gridStatObjList));
 		} catch (Exception e) {
 			log.error("创建失败，原因：" + e.getMessage(), e);
@@ -124,6 +123,27 @@ public class StaticsController extends BaseController {
 			String wkt = dataJson.getString("wkt");
 			List<HashMap> data = StaticsService.getInstance()
 					.cityExpectStatQuery(wkt);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("创建失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	@RequestMapping(value = "/statics/subtask/query")
+	public ModelAndView querySubtaskStat(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			int subtaskId = dataJson.getInt("subtaskId");
+			JSONObject data = StaticsService.getInstance()
+					.subtaskStatQuery(subtaskId);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("创建失败，原因：" + e.getMessage(), e);

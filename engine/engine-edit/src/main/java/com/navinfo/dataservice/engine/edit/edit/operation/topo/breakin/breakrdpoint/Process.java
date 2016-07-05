@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
@@ -58,10 +59,11 @@ public class Process extends AbstractProcess<Command> {
 		this.jaDisplayLink = new JSONArray();
 	}
 
-	public Process(AbstractCommand command, Connection conn) throws Exception {
+	public Process(AbstractCommand command, Connection conn,Result result) throws Exception {
 		super(command);
 
 		this.setConn(conn);
+		this.setResult(result);
 
 		this.jaDisplayLink = new JSONArray();
 	}

@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.poi.index;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParentForAndroid;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 
 /**
  * POI父子关系父表 查询
@@ -246,17 +248,7 @@ public class IxPoiParentSelector implements ISelector{
 
 				IxPoiParent poiParent = new IxPoiParent();
 
-				poiParent.setPid(resultSet.getInt("group_id"));
-
-				poiParent.setParentPoiPid(resultSet.getInt("parent_poi_pid"));
-
-				poiParent.setTenantFlag(resultSet.getInt("tenant_flag"));
-				
-				poiParent.setMemo (resultSet.getString("memo"));
-				
-				poiParent.setRowId(resultSet.getString("row_id"));
-				
-				poiParent.setuDate(resultSet.getString("u_date"));
+				setAttr( poiParent, resultSet);
 				
 				// 获取IX_POI_PARENT对应的关联数据
 				// ix_poi_children
@@ -333,17 +325,7 @@ public class IxPoiParentSelector implements ISelector{
 
 				IxPoiParent poiParent = new IxPoiParent();
 
-				poiParent.setPid(resultSet.getInt("group_id"));
-
-				poiParent.setParentPoiPid(resultSet.getInt("parent_poi_pid"));
-
-				poiParent.setTenantFlag(resultSet.getInt("tenant_flag"));
-				
-				poiParent.setMemo (resultSet.getString("memo"));
-				
-				poiParent.setRowId(resultSet.getString("row_id"));
-				
-				poiParent.setuDate(resultSet.getString("u_date"));
+				setAttr( poiParent, resultSet);
 				
 				rows.add(poiParent);
 			}
@@ -434,6 +416,21 @@ public class IxPoiParentSelector implements ISelector{
 
 		}
 		return rows;
+	}
+	
+	private void setAttr(IxPoiParent poiParent,ResultSet resultSet) throws SQLException
+	{
+		poiParent.setPid(resultSet.getInt("group_id"));
+
+		poiParent.setParentPoiPid(resultSet.getInt("parent_poi_pid"));
+
+		poiParent.setTenantFlag(resultSet.getInt("tenant_flag"));
+		
+		poiParent.setMemo (resultSet.getString("memo"));
+		
+		poiParent.setRowId(resultSet.getString("row_id"));
+		
+		poiParent.setuDate(resultSet.getString("u_date"));
 	}
 
 }

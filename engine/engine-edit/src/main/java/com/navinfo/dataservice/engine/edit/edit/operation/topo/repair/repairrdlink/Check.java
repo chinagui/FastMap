@@ -4,14 +4,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
+import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.RdGscOperateUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONObject;
 
 public class Check {
 
@@ -103,9 +107,23 @@ public class Check {
 			}
 		}
 	}
+	
+	public void checkIsMoveGscPoint(JSONObject linkGeo, Connection conn, int linkPid) throws Exception {
+		Geometry geo = GeoTranslator.geojson2Jts(linkGeo, 100000, 0);
 
+		RdGscSelector selector = new RdGscSelector(conn);
+
+		List<RdGsc> rdGscList = selector.onlyLoadRdGscLinkByLinkPid(linkPid, "RD_LINK", true);
+
+		boolean flag = RdGscOperateUtils.isMoveGscLink(geo, rdGscList);
+
+		if (flag) {
+			throw new Exception("不容许去除有立交关系的形状点");
+		}
+	}
+	
 	private void throwException(String msg) throws Exception {
 		throw new Exception(msg);
 	}
-
+	
 }

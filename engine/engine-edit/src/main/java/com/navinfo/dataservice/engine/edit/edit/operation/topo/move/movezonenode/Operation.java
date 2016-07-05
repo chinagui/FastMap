@@ -86,16 +86,16 @@ public class Operation implements IOperation {
 			geojson.put("type", "LineString");
 			geojson.put("coordinates", ps);
 			Geometry geo = GeoTranslator.geojson2Jts(geojson, 1, 5);
-			Set<String> meshes =  CompGeometryUtil.geoToMeshesWithoutBreak(geom);
+			Set<String> meshes =  CompGeometryUtil.geoToMeshesWithoutBreak(geo);
 			// 修改线的几何属性
 			// 如果没有跨图幅只是修改线的几何
+			link.setGeometry(geo);
 			List<ZoneLink> links = new ArrayList<ZoneLink>();
 			if (meshes.size() == 1) {
 				JSONObject updateContent = new JSONObject();
 				updateContent.put("geometry", geojson);
 				updateContent.put("length", GeometryUtils.getLinkLength(geo));
 				link.fillChangeFields(updateContent);
-				link.setGeometry(geo);
 				links.add(link);
 				map.put(link.getPid(), links);
 				result.insertObject(link, ObjStatus.UPDATE, link.pid());
@@ -183,7 +183,7 @@ public class Operation implements IOperation {
 					com.navinfo.dataservice.engine.edit.edit.operation.obj.zoneface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.edit.operation.obj.zoneface.create.Operation(result);
 					List<IObj> objs = new ArrayList<IObj>();
 					objs.addAll(links);
-					opFace.createFaceByAdLink(objs);
+					opFace.createFaceByZoneLink(objs);
 					result.insertObject(face, ObjStatus.DELETE, face.getPid());
 				}
 				else{

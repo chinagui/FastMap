@@ -7,7 +7,6 @@ import java.sql.SQLException;
 
 import net.sf.json.JSONObject;
 
-import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
@@ -123,11 +122,68 @@ public class MeshSelector {
 
 			return adminId;
 		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
 		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+
+				}
+			}
+		}
+
+	}
+	
+	/**
+	 * @Description:通过图幅号获取行政区划
+	 * @param meshId
+	 * @return
+	 * @throws ServiceException
+	 * @author: y
+	 * @time:2016-6-28 下午1:53:19
+	 */
+	public int getAdminIdByMesh(String meshId)
+			throws ServiceException {
+
+		Connection conn = null;
+		
+		try{
+			String selectSql = "select admincode from cp_meshlist where mesh = :1";
+
+			QueryRunner run = new QueryRunner();
+
+			conn = DBConnector.getInstance().getMetaConnection();
+			
+			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
+				public Integer handle(ResultSet rs) throws SQLException {
+					if (rs.next()) {
+						return rs.getInt("admincode");
+					}
+					return 0;
+				}
+
+			};
+			
+			int adminId = run.query(conn, selectSql, rsHandler, meshId);
+			
+			if(adminId == 0){
+				throw new ServiceException("未找到对应的省市");
+			}
+
+			return adminId;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+
+				}
+			}
 		}
 
 	}

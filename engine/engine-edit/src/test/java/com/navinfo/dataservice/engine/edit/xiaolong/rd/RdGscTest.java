@@ -27,7 +27,7 @@ public class RdGscTest extends InitApplication{
 	
 	@Test
 	public void testCreate() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDGSC\",\"dbId\":8,\"data\":{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[116.46834969520569,40.028041639054926],[116.46834969520569,40.02857563725303],[116.46884322166441,40.02857563725303],[116.46884322166441,40.028041639054926],[116.46834969520569,40.028041639054926]]]},\"linkObjs\":[{\"pid\":\"100004083\",\"level_index\":0},{\"pid\":\"100004084\",\"level_index\":1}]}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDGSC\",\"dbId\":42,\"data\":{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[116.47078111767769,40.01556543009353],[116.47078111767769,40.015605487427464],[116.47083476185797,40.015605487427464],[116.47083476185797,40.01556543009353],[116.47078111767769,40.01556543009353]]]},\"linkObjs\":[{\"pid\":736908,\"type\":\"RDLINK\",\"zlevel\":1},{\"pid\":100006059,\"type\":\"RWLINK\",\"zlevel\":0}]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -39,13 +39,13 @@ public class RdGscTest extends InitApplication{
 	
 	@Test
 	public void testDelete() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDGSC\",\"dbId\":42,\"objId\":100002897}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDGSC\",\"dbId\":42,\"objId\":100002946}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
 			System.out.println(msg);
 		} catch (Exception e) {
-			e.printStackTrace();
+			e.printStackTrace();	
 		}
 	}
 
@@ -99,7 +99,7 @@ public class RdGscTest extends InitApplication{
 	@Test //新增铁路立交
 	public void testAddNewRwGsc()
 	{
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDGSC\",\"dbId\":42,\"data\":{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[116.47743701934816,40.01310853533514],[116.47743701934816,40.01331396470674],[116.47776961326599,40.01331396470674],[116.47776961326599,40.01310853533514],[116.47743701934816,40.01310853533514]]]},\"linkObjs\":[{\"pid\":\" 100006095\",\"level_index\":0,\"type\":\"RWLINK\"},{\"pid\":\" 100006094\",\"level_index\":1,\"type\":\"RWLINK\"}]}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDGSC\",\"dbId\":42,\"data\":{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[116.47628769278528,40.014403757182116],[116.47628769278528,40.01445408648021],[116.47639498114584,40.01445408648021],[116.47639498114584,40.014403757182116],[116.47628769278528,40.014403757182116]]]},\"linkObjs\":[{\"pid\":\"100006640\",\"type\":\"RWLINK\",\"zlevel\":0},{\"pid\":\"100006641\",\"type\":\"RWLINK\",\"zlevel\":1}]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -153,6 +153,19 @@ public class RdGscTest extends InitApplication{
 	public void testAddRwRdGsc()
 	{
 		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDGSC\",\"dbId\":42,\"data\":{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[116.4768898487091,40.01065566087148],[116.4768898487091,40.011124055769244],[116.47757649421692,40.011124055769244],[116.47757649421692,40.01065566087148],[116.4768898487091,40.01065566087148]]]},\"linkObjs\":[{\"pid\":\"100005914\",\"level_index\":0,\"type\":\"RWLINK\"},{\"pid\":\"100005983\",\"level_index\":1,\"type\":\"RDLINK\"}]}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void repairRwLink()
+	{
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":42,\"objId\":100006637,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.47341,40.02349],[116.47314548492432,40.023284762950325],[116.47275,40.02298],[116.47244,40.02274],[116.47256,40.02185],[116.47278,40.02187],[116.47295,40.02192]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RWLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

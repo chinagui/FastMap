@@ -69,7 +69,7 @@ public class RdBranchTest extends InitApplication {
 	@Test
 	public void testDeleteBranch()
 	{
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"detailId\":100005930,\"rowId\":\"\",\"branchType\":6}";
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":42,\"type\":\"RDBRANCH\",\"detailId\":100005938,\"rowId\":\"\",\"branchType\":8}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

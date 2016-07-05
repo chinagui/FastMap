@@ -59,12 +59,20 @@ public class TipsSelector {
 	}
 
 	/**
-	 * 范围瓦片查询Tips
-	 * 
+	 * @Description:范围瓦片查询Tips
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param gap
+	 * @param types
+	 * @param mdFlag
+	 * @return
 	 * @throws Exception
+	 * @author: y
+	 * @time:2016-7-2 上午10:08:16
 	 */
 	public JSONArray searchDataByTileWithGap(int x, int y, int z, int gap,
-			JSONArray types) throws Exception {
+			JSONArray types, String mdFlag) throws Exception {
 		JSONArray array = new JSONArray();
 
 		try {
@@ -95,8 +103,20 @@ public class TipsSelector {
 				snapshot.setG(geojson.getJSONArray("coordinates"));
 
 				JSONObject m = new JSONObject();
+				
+				//日编月编状态
+				
+				if("d".equals(mdFlag)){
+					
+					m.put("a", json.getString("t_dStatus"));
+					
+				}
+				else if("m".equals(mdFlag)){
+					
+					m.put("a", json.getString("t_mStatus"));
+					
+				}
 
-				m.put("a", json.getString("stage"));
 
 				m.put("b", json.getString("t_lifecycle"));
 				
@@ -184,6 +204,8 @@ public class TipsSelector {
 					m.put("e", String.valueOf(deep.getInt("dir")));
 				}else if(type == 1111){
 					m.put("c", String.valueOf(deep.getDouble("agl")));
+					m.put("d", String.valueOf(deep.getDouble("value")));
+					m.put("e", String.valueOf(deep.getDouble("se")));
 				}else if(type == 1113){
 					m.put("c", String.valueOf(deep.getDouble("agl")));
 				}else if(type == 1202 ){
@@ -755,6 +777,9 @@ public class TipsSelector {
 //		ConfigLoader
 //				.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
 		TipsSelector selector = new TipsSelector();
+		JSONArray types = new JSONArray();
+		types.add(1515);
+		//selector.searchDataByTileWithGap(107946, 49617, 17, 20, types);
 		selector.searchDataByRowkey("123");
 //		System.out.println(selector.searchDataByRowkey("0212014bb47de20366413db30504af53243a00"));
 		JSONArray grid = JSONArray

@@ -16,6 +16,8 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 
 public class ZoneFaceSearch implements ISearch {
 
@@ -27,7 +29,11 @@ public class ZoneFaceSearch implements ISearch {
 
 	@Override
 	public IObj searchDataByPid(int pid) throws Exception {
-		return null;
+		ZoneFaceSelector selector = new ZoneFaceSelector(conn);
+
+		IObj obj = (IObj) selector.loadById(pid, false);
+
+		return obj;
 	}
 
 	@Override

@@ -1,10 +1,13 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairrwlink;
 
+import java.util.List;
+
 import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 
@@ -28,6 +31,8 @@ public class Command extends AbstractCommand {
 	
 	private RwLink updateLink;
 	
+	private List<RdGsc> gscList;
+	
 	public RwLink getUpdateLink() {
 		return updateLink;
 	}
@@ -40,6 +45,14 @@ public class Command extends AbstractCommand {
 
 	public int getLinkPid() {
 		return linkPid;
+	}
+	
+	public List<RdGsc> getGscList() {
+		return gscList;
+	}
+
+	public void setGscList(List<RdGsc> gscList) {
+		this.gscList = gscList;
 	}
 
 	public JSONObject getLinkGeom() {

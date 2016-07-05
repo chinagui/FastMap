@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.poi.index;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAudio;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
 
 /**
  * POI音频查询
@@ -59,17 +61,7 @@ public class IxPoiAudioSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				audio.setPoiPid(resultSet.getInt("poi_pid"));
-
-				audio.setAudioId(resultSet.getInt("audio_id"));
-				
-				audio.setStatus(resultSet.getString("status"));
-
-				audio.setMemo(resultSet.getString("memo"));
-
-				audio.setRowId(resultSet.getString("row_id"));
-				
-				audio.setuDate(resultSet.getString("u_date"));
+				setAttr( audio, resultSet);
 			} else {
 				
 				throw new DataNotFoundException("数据不存在");
@@ -128,15 +120,7 @@ public class IxPoiAudioSelector implements ISelector {
 
 				IxPoiAudio audio = new IxPoiAudio();
 
-				audio.setPoiPid(resultSet.getInt("poi_pid"));
-
-				audio.setAudioId(resultSet.getInt("audio_id"));
-				
-				audio.setStatus(resultSet.getString("status"));
-
-				audio.setMemo(resultSet.getString("memo"));
-
-				audio.setRowId(resultSet.getString("row_id"));
+				setAttr( audio, resultSet);
 
 				rows.add(audio);
 			}
@@ -164,6 +148,21 @@ public class IxPoiAudioSelector implements ISelector {
 		}
 
 		return rows;
+	}
+	
+	private void setAttr(IxPoiAudio audio,ResultSet resultSet) throws SQLException
+	{
+		audio.setPoiPid(resultSet.getInt("poi_pid"));
+
+		audio.setAudioId(resultSet.getInt("audio_id"));
+		
+		audio.setStatus(resultSet.getString("status"));
+
+		audio.setMemo(resultSet.getString("memo"));
+
+		audio.setRowId(resultSet.getString("row_id"));
+		
+		audio.setuDate(resultSet.getString("u_date"));
 	}
 
 }

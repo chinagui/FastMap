@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.poi.index;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +11,7 @@ import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameTone;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
 
 /**
  * POI名称语音语调表
@@ -52,23 +54,8 @@ public class IxPoiNameToneSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				ixPoiNameTone.setNameId(resultSet.getInt("name_id"));
-
-				ixPoiNameTone.setToneA(resultSet.getString("tone_a"));
-
-				ixPoiNameTone.setToneB(resultSet.getString("tone_b"));
-
-				ixPoiNameTone.setLhA(resultSet.getString("lh_a"));
-
-				ixPoiNameTone.setLhB(resultSet.getString("lh_b"));
-
-				ixPoiNameTone.setJyutp(resultSet.getString("jyutp"));
-
-				ixPoiNameTone.setMemo(resultSet.getString("memo"));
-
-				ixPoiNameTone.setRowId(resultSet.getString("row_id"));
+				setAttr( ixPoiNameTone, resultSet);
 				
-				ixPoiNameTone.setuDate(resultSet.getString("u_date"));
 			} else {
 				throw new DataNotFoundException("数据不存在");
 			}
@@ -124,23 +111,7 @@ public class IxPoiNameToneSelector implements ISelector {
 
 				IxPoiNameTone ixPoiNameTone = new IxPoiNameTone();
 
-				ixPoiNameTone.setNameId(resultSet.getInt("name_id"));
-
-				ixPoiNameTone.setToneA(resultSet.getString("tone_a"));
-
-				ixPoiNameTone.setToneB(resultSet.getString("tone_b"));
-
-				ixPoiNameTone.setLhA(resultSet.getString("lh_a"));
-
-				ixPoiNameTone.setLhB(resultSet.getString("lh_b"));
-
-				ixPoiNameTone.setJyutp(resultSet.getString("jyutp"));
-
-				ixPoiNameTone.setMemo(resultSet.getString("memo"));
-
-				ixPoiNameTone.setRowId(resultSet.getString("row_id"));
-				
-				ixPoiNameTone.setuDate(resultSet.getString("u_date"));
+				setAttr( ixPoiNameTone, resultSet);
 
 				rows.add(ixPoiNameTone);
 			}
@@ -168,6 +139,27 @@ public class IxPoiNameToneSelector implements ISelector {
 		}
 
 		return rows;
+	}
+	
+	private void setAttr(IxPoiNameTone ixPoiNameTone,ResultSet resultSet) throws SQLException
+	{
+		ixPoiNameTone.setNameId(resultSet.getInt("name_id"));
+
+		ixPoiNameTone.setToneA(resultSet.getString("tone_a"));
+
+		ixPoiNameTone.setToneB(resultSet.getString("tone_b"));
+
+		ixPoiNameTone.setLhA(resultSet.getString("lh_a"));
+
+		ixPoiNameTone.setLhB(resultSet.getString("lh_b"));
+
+		ixPoiNameTone.setJyutp(resultSet.getString("jyutp"));
+
+		ixPoiNameTone.setMemo(resultSet.getString("memo"));
+
+		ixPoiNameTone.setRowId(resultSet.getString("row_id"));
+		
+		ixPoiNameTone.setuDate(resultSet.getString("u_date"));
 	}
 
 }

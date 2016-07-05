@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.api.job.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /** 
@@ -8,7 +9,7 @@ import java.util.Date;
 * @date 2016年3月29日 下午1:29:36 
 * @Description: TODO
 */
-public class JobStep {
+public class JobStep implements Serializable{
 	private long jobId;
 	private int stepSeq;
 	private String stepMsg;

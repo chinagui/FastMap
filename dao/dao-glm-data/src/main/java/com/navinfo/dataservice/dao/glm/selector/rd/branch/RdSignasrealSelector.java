@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.rd.branch;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
 
 public class RdSignasrealSelector implements ISelector {
@@ -48,17 +50,7 @@ public class RdSignasrealSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				signasreal.setPid(resultSet.getInt("signboard_id"));
-
-				signasreal.setBranchPid(resultSet.getInt("branch_pid"));
-
-				signasreal.setSvgfileCode(resultSet.getString("svgfile_code"));
-
-				signasreal.setArrowCode(resultSet.getString("arrow_code"));
-
-				signasreal.setMemo(resultSet.getString("memo"));
-
-				signasreal.setRowId(resultSet.getString("row_id"));
+				setAttr(signasreal, resultSet);
 			} else {
 
 				throw new DataNotFoundException("数据不存在");
@@ -123,17 +115,7 @@ public class RdSignasrealSelector implements ISelector {
 
 				RdSignasreal signasreal = new RdSignasreal();
 
-				signasreal.setPid(resultSet.getInt("signboard_id"));
-
-				signasreal.setBranchPid(resultSet.getInt("branch_pid"));
-
-				signasreal.setSvgfileCode(resultSet.getString("svgfile_code"));
-
-				signasreal.setArrowCode(resultSet.getString("arrow_code"));
-
-				signasreal.setMemo(resultSet.getString("memo"));
-
-				signasreal.setRowId(resultSet.getString("row_id"));
+				setAttr(signasreal, resultSet);
 
 				rows.add(signasreal);
 			}
@@ -161,6 +143,22 @@ public class RdSignasrealSelector implements ISelector {
 		}
 
 		return rows;
+	}
+
+	private void setAttr(RdSignasreal signasreal, ResultSet resultSet)
+			throws SQLException {
+
+		signasreal.setPid(resultSet.getInt("signboard_id"));
+
+		signasreal.setBranchPid(resultSet.getInt("branch_pid"));
+
+		signasreal.setSvgfileCode(resultSet.getString("svgfile_code"));
+
+		signasreal.setArrowCode(resultSet.getString("arrow_code"));
+
+		signasreal.setMemo(resultSet.getString("memo"));
+
+		signasreal.setRowId(resultSet.getString("row_id"));
 	}
 
 }

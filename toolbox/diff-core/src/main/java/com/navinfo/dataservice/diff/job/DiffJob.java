@@ -47,7 +47,6 @@ public class DiffJob extends AbstractJob
 	private  Logger log = Logger
 			.getLogger(DiffJob.class);
 
-	private DiffJobRequest diffConfig;
 	private DataAccess leftAccess;
 	private DataAccess rightAccess;
 	private Set<GlmTable> diffTables;
@@ -71,7 +70,7 @@ public class DiffJob extends AbstractJob
 	}
 	
 	@Override
-	public void execute() {
+	public void execute() throws JobException{
 		try {
 			init();
 			response("差分初始化完成。",null);
@@ -85,20 +84,22 @@ public class DiffJob extends AbstractJob
 			response("完整履历填充完成。",null);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
+			throw new JobException(e.getMessage(),e);
 		}finally {
 			shutDownPoolExecutor();
 		}
 	}
 
 	public void init()throws InitException{
+		DiffJobRequest req = (DiffJobRequest)request;
 		//glmcache中没发现表的主键，使用row_id做主键
 		try{
 			//shcema
 			DatahubApi datahub=(DatahubApi)ApplicationContextUtil.getBean("datahubApi");
-			DbInfo leftDb = datahub.getDbById(diffConfig.getLeftDbId());
+			DbInfo leftDb = datahub.getDbById(req.getLeftDbId());
 			OracleSchema leftSchema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(leftDb.getConnectParam()));
-			DbInfo rightDb = datahub.getDbById(diffConfig.getRightDbId());
+			DbInfo rightDb = datahub.getDbById(req.getRightDbId());
 			OracleSchema rightSchema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(rightDb.getConnectParam()));
 			//安装EQUALS
@@ -116,10 +117,10 @@ public class DiffJob extends AbstractJob
 			gridCalc = new LogGridCalculatorByCrossUser(leftSchema,rightSchema.getConnConfig().getUserName());
 			//diffTables
 			diffTables = new HashSet<GlmTable>();
-			Glm glm = GlmCache.getInstance().getGlm(diffConfig.getGdbVersion());
+			Glm glm = GlmCache.getInstance().getGlm(req.getGdbVersion());
 			
-			List<String> specific = diffConfig.getSpecificTables();
-			List<String> excluded = diffConfig.getExcludedTables();
+			List<String> specific = req.getSpecificTables();
+			List<String> excluded = req.getExcludedTables();
 			if(specific!=null&&specific.size()>0){
 				for(String name:specific){
 					diffTables.add(glm.getEditTables().get(name));
@@ -271,6 +272,7 @@ public class DiffJob extends AbstractJob
 	
 
 	protected void calcLogDetailGrid(){
+		final String gdbVersion = request.getGdbVersion();
 		//初始线程池
 		int poolSize = 10;
 		try {
@@ -293,10 +295,11 @@ public class DiffJob extends AbstractJob
 				@Override
 				public void run() {
 					try{
-						gridCalc.calc(table,diffConfig.getGdbVersion());
+						gridCalc.calc(table,gdbVersion);
 						latch4LogGrid.countDown();
 						log.debug("填充履历grid号完成，表名为：" + table.getName());
 					}catch(Exception e){
+						log.debug("填充履历Grid失败，表名为：" + table.getName());
 						throw new ThreadExecuteException("表名："+table.getName()+"差分失败。",e);
 					}
 				}
@@ -308,8 +311,8 @@ public class DiffJob extends AbstractJob
 		} catch (InterruptedException e) {
 			log.warn("线程被打断");
 		}
-		if (logPoolExecutor.getExceptions().size() > 0)
-			throw new ServiceRtException("计算履历grid号时发生异常", logPoolExecutor
+		if (logGridPoolExecutor.getExceptions().size() > 0)
+			throw new ServiceRtException("计算履历grid号时发生异常", logGridPoolExecutor
 					.getExceptions().get(0));
 		log.debug("各计算履历grid号任务执行完成,用时：" + (System.currentTimeMillis() - t) + "ms");
 		//关闭线程池

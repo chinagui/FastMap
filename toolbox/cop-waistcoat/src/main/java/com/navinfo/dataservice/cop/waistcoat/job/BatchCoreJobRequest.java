@@ -20,7 +20,7 @@ public class BatchCoreJobRequest extends AbstractJobRequest {
 	private int executeDBId;
 	private int backupDBId;
 	private int kdbDBId;
-	private int pidDBId;
+	private String pidDbInfo;
 	private List<String> ruleIds;
 
 	@Override
@@ -67,12 +67,12 @@ public class BatchCoreJobRequest extends AbstractJobRequest {
 		this.kdbDBId = kdbDBId;
 	}
 
-	public int getPidDBId() {
-		return pidDBId;
+	public String getPidDbInfo() {
+		return pidDbInfo;
 	}
 
-	public void setPidDBId(int pidDBId) {
-		this.pidDBId = pidDBId;
+	public void setPidDbInfo(String pidDbInfo) {
+		this.pidDbInfo = pidDbInfo;
 	}
 
 	public List<String> getRuleIds() {

@@ -8,10 +8,9 @@ import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.edit.iface.DatalockApi;
 import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.api.job.model.JobInfo;
-import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datarow.CkResultTool;
 import com.navinfo.dataservice.bizcommons.datarow.PhysicalDeleteRow;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -106,8 +105,12 @@ public class GdbBatchJob extends AbstractJob {
 			if (copyBakDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
 				throw new Exception("批处理备份子版本库复制数据时job执行失败。");
 			}
-			// 5. 在批处理子版本上执行批处理
-			// ...
+			// 5. 在批处理子版本上执行批处理s
+			req.getSubJobRequest("batch").setAttrValue("executeDBId", batchDbId);
+			req.getSubJobRequest("batch").setAttrValue("backupDBId", bakDbId);
+			DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
+			req.getSubJobRequest("batch").setAttrValue("kdbDBId", metaDb.getDbId());
+			req.getSubJobRequest("batch").setAttrValue("", "");
 			// 6. 执行差分
 			req.getSubJobRequest("diff").setAttrValue("leftDbId", batchDbId);
 			req.getSubJobRequest("diff").setAttrValue("rightDbId", bakDbId);
@@ -118,7 +121,7 @@ public class GdbBatchJob extends AbstractJob {
 				throw new Exception("差分时job执行失败。");
 			}
 			//7. 差分履历会大区库
-			req.getSubJobRequest("commit").setAttrValue("batchDbId", batchDbId);
+			req.getSubJobRequest("commit").setAttrValue("logDbId", batchDbId);
 			req.getSubJobRequest("commit").setAttrValue("targetDbId", req.getTargetDbId());
 			req.getSubJobRequest("commit").setAttrValue("grids", JSONArray.fromObject(req.getGrids()));
 			JobInfo commitJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());

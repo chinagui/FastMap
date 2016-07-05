@@ -151,29 +151,29 @@ public class BlockService {
 		try {
 
 			conn = DBConnector.getInstance().getManConnection();
-
+			String wkt=json.getString("wkt");
 			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']',
 					')');
 
-			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY,t.PLAN_STATUS,t.CITY_ID from BLOCK t where PLAN_STATUS in "
+			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY,t.PLAN_STATUS,t.CITY_ID from BLOCK t where t.PLAN_STATUS in "
 					+ planningStatus;
 
 			if (StringUtils.isNotEmpty(json.getString("snapshot"))) {
 				if ("1".equals(json.getString("snapshot"))) {
-					selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.PLAN_STATUS from BLOCK t where PLAN_STATUS in "
+					selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.PLAN_STATUS,t.CITY_ID from BLOCK t where t.PLAN_STATUS in "
 							+ planningStatus;
 				}
 			}
 			;
 			if (!json.containsKey("relation") || ("intersect".equals(json.getString("relation")))) {
-				selectSql += " and SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
+				selectSql += " and SDO_ANYINTERACT(t.geometry,sdo_geometry('"+wkt+"',8307))='TRUE'";
 			} else {
 				if ("within".equals(json.getString("relation"))) {
-					selectSql += " and sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE'";
+					selectSql += " and sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry('"+wkt+"', 8307)), 'DISTANCE=0') = 'TRUE'";
 				}
 			}
 
-			return BlockOperation.queryBlockBySql(conn, selectSql, json.getString("wkt"));
+			return BlockOperation.queryBlockBySql(conn, selectSql);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

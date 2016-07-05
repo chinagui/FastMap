@@ -620,8 +620,8 @@ public class SubtaskService {
 
 			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>() {
 				public Subtask handle(ResultSet rs) throws SQLException {
-					Subtask subtask = new Subtask();
-					while (rs.next()) {
+					if (rs.next()) {
+						Subtask subtask = new Subtask();
 						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
 						subtask.setName(rs.getString("NAME"));
 						subtask.setStage(rs.getInt("STAGE"));
@@ -647,7 +647,7 @@ public class SubtaskService {
 						}
 						return subtask;
 					}
-					return subtask;
+					return null;
 				}
 	
 			};

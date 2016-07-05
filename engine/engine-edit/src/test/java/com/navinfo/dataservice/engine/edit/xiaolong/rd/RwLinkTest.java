@@ -117,7 +117,7 @@ public class RwLinkTest extends InitApplication {
 	@Test //测试线的修行
 	public void testRepairRwLink()
 	{
-		String parameter = "{\"command\":\"REPAIR\",\"dbId\":42,\"objId\":100005906,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46848,40.01558],[116.46901488304137,40.0154709357768],[116.46973,40.01552]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RWLINK\"}";
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":42,\"objId\":100006797,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.49725,40.03237],[116.49772,40.03206],[116.50189876556396,40.03059657720054],[116.49799,40.03058],[116.49644,40.03009]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RWLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

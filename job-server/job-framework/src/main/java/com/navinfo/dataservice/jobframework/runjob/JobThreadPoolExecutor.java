@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -14,6 +15,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 
@@ -80,8 +82,9 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor implements Observe
 	public boolean execute(JobInfo jobInfo){
 		log.debug("开始将任务加入job池。jobIdentity："+jobInfo.getIdentity());
 		//
+		Set<String> set = null;
 		try{
-			Set<String> set = jobPool.get(jobInfo.getType().toString());
+			set = jobPool.get(jobInfo.getType().toString());
 			if(set!=null){
 				if(set.contains(jobInfo.getIdentity())){
 					log.debug("job(jobIdentity:"+jobInfo.getIdentity()+")加入执行池中失败：job已经开始执行。");
@@ -99,6 +102,12 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor implements Observe
 			log.debug("开始执行job(jobIdentity:"+jobInfo.getIdentity()+")......");
 			return true;
 		}catch(Exception e){
+			if(e instanceof JobCreateException
+					||e instanceof RejectedExecutionException){
+				if(set!=null){
+					set.remove(jobInfo.getIdentity());
+				}
+			}
 			log.debug("执行job(jobIdentity:"+jobInfo.getIdentity()+")失败："+e.getMessage());
 			log.error(e);
 		}

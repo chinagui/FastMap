@@ -42,17 +42,21 @@ public class JobController extends BaseController {
 	@RequestMapping(value = "/create")
 	public ModelAndView create(HttpServletRequest request){
 		try{
-			String jobType = URLDecode(request.getParameter("jobType"));
-			JSONObject jobRequest = JSONObject.fromObject(URLDecode(request.getParameter("request")));
-			String userId = URLDecode(request.getParameter("userId"));
-			String descp = URLDecode(request.getParameter("descp"));
-			if(StringUtils.isEmpty(jobType)){
+			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (paraJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(paraJson.get("jobType")==null){
 				throw new IllegalArgumentException("jobType参数不能为空。");
 			}
-			if(jobRequest==null){
+			if(paraJson.get("request")==null){
 				throw new IllegalArgumentException("request参数不能为空。");
 			}
-			long jobId = JobService.getInstance().create(jobType, jobRequest, Long.valueOf(userId), descp);
+			String jobType = paraJson.getString("jobType");;
+			JSONObject jobRequest = paraJson.getJSONObject("request");
+			int userId = (int)paraJson.get("userId");
+			String descp = (String)paraJson.get("descp");
+			int jobId = JobService.getInstance().create(jobType, jobRequest, Long.valueOf(userId), descp);
 			Map<String,Object> data = new HashMap<String,Object>();
 			data.put("jobId", jobId);
 			return new ModelAndView("jsonView", success("job已创建。",data));
@@ -64,12 +68,17 @@ public class JobController extends BaseController {
 	@RequestMapping(value = "/get")
 	public ModelAndView get(HttpServletRequest request){
 		try{
-			String jobId = URLDecode(request.getParameter("jobId"));
-			String jobGuid = URLDecode(request.getParameter("jobGuid"));
+			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (paraJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
 			JobInfo jobInfo = null;
-			if(StringUtils.isNotEmpty(jobId)){
+			if(paraJson.get("jobId")!=null){
+				int jobId = paraJson.getInt("jobId");
 				jobInfo = JobService.getInstance().getJobById(Integer.valueOf(jobId));
-			}else if(StringUtils.isNotEmpty(jobGuid)){
+			}else if(paraJson.get("jobGuid")!=null){
+				String jobGuid = paraJson.getString("jobGuid");
 				jobInfo = JobService.getInstance().getJobByGuid(jobGuid);
 			}else{
 				throw new IllegalArgumentException("jobId或者jobGuid参数不能都为空。");

@@ -35,8 +35,8 @@ public class OpRefAdFace implements IOperation {
 	public String run(Result result) throws Exception {
 
 		this.result = result;
-		if (command.getZoneFaceTopos() != null
-				&& command.getZoneFaceTopos().size() > 0) {
+		if (command.getFaces() != null
+				&& command.getFaces().size() > 0) {
 			this.handleAdFaceTopo();
 		}
 		return null;

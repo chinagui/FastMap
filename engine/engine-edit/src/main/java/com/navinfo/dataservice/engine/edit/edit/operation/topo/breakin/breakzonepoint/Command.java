@@ -24,7 +24,7 @@ public class Command extends AbstractCommand {
 	private List<ZoneFace> faces;
 	private Point point;
 	private int linkPid;
-	private List<ZoneFaceTopo> zoneFaceTopos;
+
 
 	public List<ZoneFace> getFaces() {
 		return faces;
@@ -78,14 +78,6 @@ public class Command extends AbstractCommand {
 
 	public void seteZoneLink(ZoneLink eZoneLink) {
 		this.eZoneLink = eZoneLink;
-	}
-
-	public List<ZoneFaceTopo> getZoneFaceTopos() {
-		return zoneFaceTopos;
-	}
-
-	public void setZoneFaceTopos(List<ZoneFaceTopo> zoneFaceTopos) {
-		this.zoneFaceTopos = zoneFaceTopos;
 	}
 
 	public int getLinkPid() {

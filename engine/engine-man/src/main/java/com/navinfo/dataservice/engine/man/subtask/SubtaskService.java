@@ -5,6 +5,7 @@ import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -259,6 +260,7 @@ public class SubtaskService {
 
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
 				public Page handle(ResultSet rs) throws SQLException {
+					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					List<HashMap<Object,Object>> list = new ArrayList<HashMap<Object,Object>>();
 					Page page = new Page(curPageNum);
 				    page.setPageSize(pageSize);
@@ -269,26 +271,16 @@ public class SubtaskService {
 						}
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
-//						subtask.put("subtaskName", rs.getString("NAME"));
-//						subtask.put("descp", rs.getString("DESCP"));
-						if(rs.getString("NAME") != null){
-							subtask.put("subtaskName", rs.getString("NAME"));
-						}else{
-							subtask.put("subtaskName", "");
-						}
-						if(rs.getString("descp") != null){
-							subtask.put("descp", rs.getString("DESCP"));
-						}else{
-							subtask.put("descp", "");
-						}
+						subtask.put("subtaskName", rs.getString("NAME"));
+						subtask.put("descp", rs.getString("DESCP"));
 
 						subtask.put("geometry", rs.getString("GEOMETRY"));
 						subtask.put("stage", rs.getInt("STAGE"));
 						subtask.put("type", rs.getInt("TYPE"));
 						subtask.put("status", rs.getInt("STATUS"));
 						subtask.put("ExeUserId", rs.getInt("EXE_USER_ID"));
-						subtask.put("planStartDate", rs.getTimestamp("PLAN_START_DATE"));
-						subtask.put("planEndDate", rs.getTimestamp("PLAN_END_DATE"));
+						subtask.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
+						subtask.put("planEndDate", df.format(rs.getTimestamp("PLAN_END_DATE")));
 						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						if(rs.getInt("group_id")>0){
 							subtask.put("groupId", rs.getInt("group_id"));
@@ -303,18 +295,18 @@ public class SubtaskService {
 							subtask.put("blockName", rs.getString("block_name"));
 							//采集
 							if(0 == rs.getInt("STAGE")){
-								subtask.put("BlockCollectPlanStartDate", rs.getTimestamp("COLLECT_PLAN_START_DATE"));
-								subtask.put("BlockCollectPlanEndDate",rs.getTimestamp("COLLECT_PLAN_END_DATE"));
+								subtask.put("BlockCollectPlanStartDate", df.format(rs.getTimestamp("COLLECT_PLAN_START_DATE")));
+								subtask.put("BlockCollectPlanEndDate",df.format(rs.getTimestamp("COLLECT_PLAN_END_DATE")));
 							}
 							//日编
 							else if(1 == rs.getInt("STAGE")){
-								subtask.put("BlockDayEditPlanStartDate", rs.getTimestamp("DAY_EDIT_PLAN_START_DATE"));
-								subtask.put("BlockDayEditPlanEndDate", rs.getTimestamp("DAY_EDIT_PLAN_END_DATE"));
+								subtask.put("BlockDayEditPlanStartDate", df.format(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE")));
+								subtask.put("BlockDayEditPlanEndDate", df.format(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE")));
 							}
 							//月编
 							else if(2 == rs.getInt("STAGE")){
-								subtask.put("BlockCMonthEditPlanStartDate", rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE_b"));
-								subtask.put("BlockCMonthEditPlanEndDate", rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE_b"));
+								subtask.put("BlockCMonthEditPlanStartDate", df.format(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE_b")));
+								subtask.put("BlockCMonthEditPlanEndDate", df.format(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE_b")));
 							}
 						}
 						// 与task关联，返回task信息。
@@ -325,8 +317,8 @@ public class SubtaskService {
 							subtask.put("taskName", rs.getString("task_name"));
 							// 月编
 							if(2 == rs.getInt("STAGE")){
-								subtask.put("TaskCMonthEditPlanStartDate", rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE_t"));
-								subtask.put("TaskCMonthEditPlanEndDate", rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE_t"));
+								subtask.put("TaskCMonthEditPlanStartDate", df.format(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE_t")));
+								subtask.put("TaskCMonthEditPlanEndDate", df.format(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE_t")));
 							}
 						}
 

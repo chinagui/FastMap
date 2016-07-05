@@ -205,7 +205,7 @@ public class GridService {
 			Set<?> grids = (Set<?>) CompGeometryUtil.geo2GridsWithoutBreak(polygon);
 
 			String waitAssignSql = "select g.grid_id from grid g,block b where g.block_id=b.block_id and b.plan_status=1 and not exists "
-					+ "(select s.subtask_id from subtask_grid_mapping s where s.grid_id=g.grid_id)";
+					+ "(select s.subtask_id from subtask_grid_mapping s,subtask k where s.grid_id = g.grid_id and s.subtask_id=k.subtask_id and k.stage="+json.getInt("stage")+")";
 			String alreadyAssignSql = "select distinct g.grid_id from subtask_grid_mapping g,subtask s where g.subtask_id=s.subtask_id "
 					+ "and s.stage=" + json.getInt("stage");
 

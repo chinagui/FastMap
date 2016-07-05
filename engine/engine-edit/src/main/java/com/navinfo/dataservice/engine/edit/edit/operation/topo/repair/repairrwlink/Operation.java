@@ -43,7 +43,6 @@ public class Operation implements IOperation {
 	public Operation(Command command) {
 
 		this.command = command;
-
 	}
 
 	@Override
@@ -119,8 +118,8 @@ public class Operation implements IOperation {
 
 					if (gscLinkList.size() == 1) {
 						RdGscLink gscLink = (RdGscLink) gscLinkList.get(0);
-
-						gscLink.setLinkPid(link.getPid());
+						
+						gscLink.changedFields().put("linkPid", link.getPid());
 
 						// 计算立交点序号和起终点标识
 						RdGscOperateUtils.calShpSeqNum(gscLink, gscGeo, linkGeo.getCoordinates());

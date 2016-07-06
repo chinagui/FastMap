@@ -14,6 +14,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.lang.StringUtils;
 import org.hbase.async.KeyValue;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -97,7 +98,7 @@ public class TipsSelector {
 
 				JSONObject geojson = JSONObject.fromObject(json
 						.getString("g_location"));
-
+				//渲染的坐标都是屏幕坐标
 				Geojson.coord2Pixel(geojson, z, px, py);
 
 				snapshot.setG(geojson.getJSONArray("coordinates"));
@@ -126,6 +127,17 @@ public class TipsSelector {
 				m.put("h", g_guide.getJSONArray("coordinates"));
 
 				JSONObject deep = JSONObject.fromObject(json.getString("deep"));
+				
+				//g字段重新赋值的（显示坐标：取Tips的geo）
+				if (type == 1604 || type == 1601 || type == 1602 || type == 1605 || type == 1606 ) {
+
+					JSONObject deepGeo = deep.getJSONObject("geo");
+
+					Geojson.coord2Pixel(deepGeo, z, px, py);
+
+					snapshot.setG(deepGeo.getJSONArray("coordinates"));
+					
+				}
 
 				if (type == 1201) {
 					m.put("c", String.valueOf(deep.getInt("kind")));
@@ -140,7 +152,9 @@ public class TipsSelector {
 						|| type == 1403 || type == 1401 || type == 1402
 						|| type == 1405 || type == 1406 || type == 1409
 						|| type == 1105 || type == 1109 || type == 1107
-						|| type ==1110 ) {
+						|| type == 1110 || type == 1104 || type == 1111
+						|| type == 1113 || type == 1304 || type == 1305
+						|| type == 1404 || type == 1804  ) {
 
 					if(deep.containsKey("agl")){
 						m.put("c", String.valueOf(deep.getDouble("agl")));
@@ -174,7 +188,7 @@ public class TipsSelector {
 						m.put("d", deep.getString("name"));
 					}
 
-				else if(type == 1109){
+					else if(type == 1109){
 						
 						String tp = TipsSelectorUtils.convertElecEyeKind(deep.getInt("tp"));
 						
@@ -190,7 +204,13 @@ public class TipsSelector {
 						
 						m.put("d", d);
 					}
-					
+					else if(type == 1104){
+						m.put("d", String.valueOf(deep.getInt("tp")));
+						m.put("e", String.valueOf(deep.getInt("dir")));
+					}else if(type == 1111){
+						m.put("d", String.valueOf(deep.getDouble("value")));
+						m.put("e", String.valueOf(deep.getDouble("se")));
+					}
 
 				}else if(type == 1106){
 					m.put("c",  String.valueOf(deep.getInt("tp")));
@@ -198,47 +218,59 @@ public class TipsSelector {
 					m.put("c",  String.valueOf(deep.getInt("inCt")));
 				}else if(type == 1103){
 					m.put("c",  String.valueOf(deep.getInt("loc")));
-				}else if(type == 1104){
-					m.put("c", String.valueOf(deep.getDouble("agl")));
-					m.put("d", String.valueOf(deep.getInt("tp")));
-					m.put("e", String.valueOf(deep.getInt("dir")));
-				}else if(type == 1111){
-					m.put("c", String.valueOf(deep.getDouble("agl")));
-					m.put("d", String.valueOf(deep.getDouble("value")));
-					m.put("e", String.valueOf(deep.getDouble("se")));
-				}else if(type == 1113){
-					m.put("c", String.valueOf(deep.getDouble("agl")));
-				}else if(type == 1202 ){
-					m.put("c",  String.valueOf(deep.getInt("num")));
-				}else if(type == 1304){
-					m.put("c", String.valueOf(deep.getDouble("agl")));
-				}else if(type == 1305){
-					m.put("c", String.valueOf(deep.getDouble("agl")));
-				}else if(type == 1404){
-					m.put("c", String.valueOf(deep.getDouble("agl")));
-				}else if(type == 1502){
+				}
+				else if( type == 1510  || type == 1514 || type == 1501 || type == 1515
+						|| type == 1502||type == 1503 || type == 1504
+						|| type == 1505 || type == 1506
+						|| type == 1508 || type == 1513
+						|| type == 1512 || type == 1516 
+						|| type == 1507 || type == 1511
+						|| type == 1517  ){
 					JSONObject gSLoc = deep.getJSONObject("gSLoc");
 					Geojson.coord2Pixel(gSLoc, z, px, py);
 					JSONObject gELoc = deep.getJSONObject("gELoc");
 					Geojson.coord2Pixel(gELoc, z, px, py);
 					m.put("c", gSLoc.getJSONArray("coordinates"));
 					m.put("d", gELoc.getJSONArray("coordinates"));
+					
+					if(type ==1510 || type == 1507 || type == 1511){
+						
+						m.put("e", deep.getString("name"));
+					}
+					
+					if( type == 1517){
+						
+						int tp=deep.getInt("tp");
+						
+						JSONArray vts=deep.getJSONArray("vt");
+						
+						String time =deep.getString("time");
+						
+						String vtName="";
+						//类型拼接
+						for (Object vt : vts) {
+							vtName+="、"+TipsSelectorUtils.convertUsageFeeVehicleType(Integer.parseInt(String.valueOf(vt)));
+						}
+						if(StringUtils.isNotEmpty(vtName)){
+							
+							vtName=vtName.substring(1);
+						}
+						m.put("e", TipsSelectorUtils.convertUsageFeeType(tp)+"|"+time+"|"+vtName);
+					}
+				}
+				else if (type == 1604 ||type == 1601 || type == 1602 || type == 1605 || type == 1606 ) {
+
+					m.put("c", geojson.getJSONArray("coordinates"));
+					
+					if(type == 1601 || type == 1602 ){
+						
+						m.put("d", geojson.getString("name"));
+					}
+					
 				}
 				
-				else if (type == 1510 || type == 1514 || type == 1501 || type == 1515) {
 
-					JSONObject gSLoc = deep.getJSONObject("gSLoc");
-
-					Geojson.coord2Pixel(gSLoc, z, px, py);
-
-					m.put("c", gSLoc.getJSONArray("coordinates"));
-
-					JSONObject gELoc = deep.getJSONObject("gELoc");
-
-					Geojson.coord2Pixel(gELoc, z, px, py);
-
-					m.put("d", gELoc.getJSONArray("coordinates"));
-				}else if (type == 1801 || type == 1803 || type ==  1806){
+				else if (type == 1801 || type ==  1806){
 					JSONArray feedbacks = JSONArray.fromObject(json.getString("feedback"));
 					
 					JSONArray a = new JSONArray();
@@ -271,6 +303,24 @@ public class TipsSelector {
 						}
 					}
 					m.put("c", a);
+				}
+				
+				else if ( type == 1803 ){
+					
+					m.put("c",  String.valueOf(deep.getDouble("agl")));
+					
+					int tp = deep.getInt("tp");
+					
+					if(tp==1||tp==2){
+						
+						m.put("d",  deep.getString("pcd"));
+						
+					}
+					//暂时不实现
+					else if(tp==3){
+						
+					}
+					
 				}
 
 				snapshot.setM(m);
@@ -442,7 +492,7 @@ public class TipsSelector {
 					|| type == 1403|| type == 1401 || type == 1402
 					|| type == 1405|| type == 1406 || type == 1409 
 					|| type == 1105 || type == 1107 || type == 1703
-					 || type == 1404) {
+					 || type == 1404 || type == 1804) {
 				JSONObject f = deep.getJSONObject("in");
 
 				if (f.getInt("type") == 1) {
@@ -454,7 +504,11 @@ public class TipsSelector {
 				if (f.getInt("type") == 1) {
 					linkPids.add(Integer.valueOf(f.getString("id")));
 				}
-			} else if (type == 1604 || type == 1514 || type== 1515 || type==1502) {
+			} else if (type == 1604 || type == 1514 || type== 1515 || type==1502  
+					|| type==1503  || type==1504  || type==1505  || type==1506  
+					|| type==1508  || type==1513  || type==1512  || type==1516
+					|| type==1517  || type==1605  || type==1606   
+					) {
 				JSONArray a = deep.getJSONArray("f_array");
 
 				for (int i = 0; i < a.size(); i++) {
@@ -500,7 +554,7 @@ public class TipsSelector {
 					.getString("g_location"));
 
 			snapshot.setG(glocation.getJSONArray("coordinates"));
-
+			
 			JSONObject m = new JSONObject();
 
 			m.put("a", json.getString("stage"));
@@ -512,6 +566,16 @@ public class TipsSelector {
 			m.put("f", DateUtils.stringToLong(operateDate, "yyyyMMddHHmmss"));
 
 			JSONObject deep = JSONObject.fromObject(json.getString("deep"));
+			
+			
+			//几个g需要显示：取Tips的geo
+			if(type == 160e4||type == 1601 ||type == 1602 || type == 1605 || type == 1606){
+				
+				JSONObject deepGeo = deep.getJSONObject("geo");
+
+				snapshot.setG(deepGeo.getJSONArray("coordinates"));
+
+			}
 			
 			//e字段的返回结果，不同类型不同
 			//f
@@ -581,7 +645,7 @@ public class TipsSelector {
 			}
 			//in
 			else if (type == 1301 || type == 1407 || type == 1302
-					|| type == 1403 || type == 1404) {
+					|| type == 1403 || type == 1404 || type == 1804) {
 				JSONObject f = deep.getJSONObject("in");
 
 				if (f.getInt("type") == 1) {
@@ -648,8 +712,11 @@ public class TipsSelector {
 				
 				m.put("e", name);
 			}
-			
-			else if (type == 1604 || type == 1514 || type == 1515 || type == 1502) {
+			//f_array
+			else if (type == 1604 || type == 1514 || type == 1515 || type == 1502
+					|| type==1503  || type==1504  || type==1505  || type==1506  
+					|| type==1508  || type==1513  || type==1512  || type==1516
+					|| type==1517  || type==1605  || type==1606 ) {
 				JSONArray a = deep.getJSONArray("f_array");
 
 				boolean hasLink = false;
@@ -719,7 +786,12 @@ public class TipsSelector {
 				if (a.size() > 0) {
 					m.put("e", a.get(0));
 				}
-			} else if (type == 1501){
+			} else if (type == 1507 || type == 1511
+					|| type == 1601  || type == 1602 ) {
+				
+					m.put("e", deep.getString("name"));
+			}
+			else if (type == 1501){
 				m.put("e", "上下线分离");
 			} else if (type == 1801){
 				m.put("e", "立交");

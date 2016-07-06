@@ -18,6 +18,7 @@ import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.sql.SqlClause;
 import com.navinfo.dataservice.impcore.flushbylog.LogFlusher;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -33,14 +34,15 @@ public class Day2MonPoiLogFlusher extends LogFlusher {
 				FmEditLock.TYPE_COMMIT);
 	}
 	@Override
-	public  String getPrepareSql() throws Exception{
+	public  SqlClause getPrepareSql() throws Exception{
 			StringBuilder sb = new StringBuilder();
 			sb.append("INSERT INTO ");
 			sb.append(this.getTempTable());
 			sb.append(" SELECT DISTINCT P.OP_ID,P.OP_DT FROM LOG_OPERATION P,LOG_DETAIL L,LOG_DETAIL_GRID T  WHERE P.OP_ID=L.OP_ID AND L.ROW_ID=T.LOG_ROW_ID AND P.COM_STA = 0 ");
 			sb.append(" AND "+this.getFeatureFilter());
 			sb.append(" AND EXISTS(SELECT 1 FROM POI_EDIT_STATUS I WHERE L.TB_ROW_ID=I.ROW_ID AND I.STATUS=3)");
-			return sb.toString();
+			SqlClause sqlClause = new SqlClause(sb.toString(),null);
+			return sqlClause;
 	}
 	@Override
 	public String getFeatureFilter(){

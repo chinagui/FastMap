@@ -65,15 +65,28 @@ public class IxPoiSearch implements ISearch {
 		sb.append("SELECT PID, KIND_CODE, X_GUIDE, Y_GUIDE, GEOMETRY, ROW_ID ");
 		sb.append("FROM IX_POI WHERE ");
 		sb.append("SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' ");
-		sb.append("AND U_RECORD != 2) ");
+		sb.append("AND U_RECORD != 2), ");
+		
+		sb.append("TMP2 AS (SELECT DISTINCT PARENT_POI_PID FROM IX_POI_PARENT P, TMP1 A  ");
+		sb.append("WHERE P.PARENT_POI_PID = A.PID AND P.U_RECORD != 2),  ");
+		
+		sb.append("TMP3 AS (SELECT DISTINCT CHILD_POI_PID FROM IX_POI_CHILDREN C, TMP1 A  ");
+		sb.append("WHERE C.CHILD_POI_PID = A.PID AND C.U_RECORD != 2), ");			
+		
+		sb.append("TMP4 AS (SELECT PN.NAME, PN.POI_PID FROM IX_POI_NAME PN, TMP1 A   ");
+		sb.append("WHERE PN.POI_PID = A.PID AND PN.LANG_CODE = 'CHI' AND PN.NAME_CLASS = 1 AND PN.NAME_TYPE = 2 AND PN.U_RECORD != 2) ");	
+		
 		sb.append("SELECT A.*, B.STATUS, ");
+		
 		sb.append("(SELECT /*+ leading(P,A) use hash(P,A)*/ ");		
-		sb.append("COUNT(1) FROM IX_POI_PARENT P WHERE ");
-		sb.append("P.PARENT_POI_PID = A.PID AND P.U_RECORD != 2) PARENTCOUNT, ");
-		sb.append("(SELECT /*+ leading(P,A) use hash(P,A)*/ ");
-		sb.append("COUNT(1) FROM IX_POI_CHILDREN C WHERE C.CHILD_POI_PID = A.PID AND C.U_RECORD != 2) CHILDCOUNT, ");
-		sb.append("(SELECT /*+ leading(P,A) use hash(P,A)*/ NAME FROM IX_POI_NAME P ");
-		sb.append("WHERE P.POI_PID = A.PID AND P.LANG_CODE = 'CHI' AND P.NAME_CLASS = 1 AND P.NAME_TYPE = 2 AND P.U_RECORD != 2) NAME ");
+		sb.append("COUNT(1) FROM TMP2 P WHERE P.PARENT_POI_PID = A.PID) PARENTCOUNT, ");
+		
+		sb.append("(SELECT /*+ leading(C,A) use hash(C,A)*/ ");
+		sb.append("COUNT(1) FROM TMP3 C WHERE C.CHILD_POI_PID = A.PID) CHILDCOUNT, ");
+		
+		sb.append("(SELECT /*+ leading(PN,A) use hash(PN,A)*/ NAME FROM TMP4 PN ");		
+		sb.append("WHERE PN.POI_PID = A.PID ) NAME ");
+		
 		sb.append("FROM TMP1 A, POI_EDIT_STATUS B WHERE A.ROW_ID = B.ROW_ID ");
 		
 		PreparedStatement pstmt = null;

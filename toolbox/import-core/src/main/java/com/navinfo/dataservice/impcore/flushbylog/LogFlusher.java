@@ -27,6 +27,7 @@ import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.sql.SqlClause;
 import com.navinfo.dataservice.commons.util.NaviListUtils;
 import com.navinfo.dataservice.impcore.exception.LockException;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -160,7 +161,7 @@ public abstract class LogFlusher {
 			e.printStackTrace();
 		}
 	}
-	public  abstract String getPrepareSql() throws Exception;
+	public  abstract SqlClause getPrepareSql() throws Exception;
 	/**
 	 * 实现类可以覆盖改方法的实现,根据刷履历的要素类型,实现preparesql的生成,以及 刷履历sql的定制化
 	 * @return
@@ -293,9 +294,13 @@ public abstract class LogFlusher {
 	 */
 	private  int prepareLog()throws Exception{
 		QueryRunner run = new QueryRunner();
-		String sql = this.getPrepareSql();
-		this.log.debug(sql);
-		return run.update(this.sourceDbConn, sql);
+		SqlClause sqlClause = this.getPrepareSql();
+		this.log.debug(sqlClause.getSql());
+		if (sqlClause==null) return 0;
+		if (sqlClause.getValues()==null || sqlClause.getValues().size()==0){
+			return run.update(this.sourceDbConn, sqlClause.getSql());
+		}
+		return run.update(this.sourceDbConn, sqlClause.getSql(),sqlClause.getValues().toArray());
 	}
 	private  void prepareAndLockLog()throws LockException{
 		try{

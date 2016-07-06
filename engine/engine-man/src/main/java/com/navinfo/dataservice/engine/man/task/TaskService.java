@@ -46,11 +46,12 @@ public class TaskService {
 	 * @param json
 	 * @throws Exception
 	 */
-	public void create(long userId,JSONObject json) throws Exception{
+	public String create(long userId,JSONObject json) throws Exception{
 		Connection conn = null;
+		int total=0;
 		try{
 			if(!json.containsKey("tasks")){
-				return;
+				return "任务批量创建"+total+"个成功，0个失败";
 			}			
 			JSONArray taskArray=json.getJSONArray("tasks");
 			conn = DBConnector.getInstance().getManConnection();
@@ -59,7 +60,9 @@ public class TaskService {
 				Task bean = (Task) JsonOperation.jsonToBean(taskJson,Task.class);
 				bean.setCreateUserId((int) userId);
 				createWithBean(conn,bean);
-			}			
+				total+=1;
+			}
+			return "任务批量创建"+total+"个成功，0个失败";
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -86,10 +89,11 @@ public class TaskService {
 		}
 	}
 	
-	public void update(JSONObject json) throws Exception{
+	public String update(JSONObject json) throws Exception{
 		Connection conn = null;
+		int total=0;
 		try{
-			if(!json.containsKey("tasks")){return;}
+			if(!json.containsKey("tasks")){return "任务批量修改"+total+"个成功，0个失败";}
 			
 			JSONArray taskArray=json.getJSONArray("tasks");
 			
@@ -98,8 +102,10 @@ public class TaskService {
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
 				Task bean=(Task) JsonOperation.jsonToBean(taskJson,Task.class);
-				TaskOperation.updateTask(conn, bean);				
+				TaskOperation.updateTask(conn, bean);		
+				total+=1;
 			}			
+			return "任务批量修改"+total+"个成功，0个失败";
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

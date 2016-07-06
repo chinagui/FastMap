@@ -110,7 +110,14 @@ public class GdbBatchJob extends AbstractJob {
 			req.getSubJobRequest("batch").setAttrValue("backupDBId", bakDbId);
 			DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
 			req.getSubJobRequest("batch").setAttrValue("kdbDBId", metaDb.getDbId());
-			req.getSubJobRequest("batch").setAttrValue("", "");
+			req.getSubJobRequest("batch").setAttrValue("pidDbInfo", req.getPidDbInfo());
+			req.getSubJobRequest("batch").setAttrValue("ruleIds", req.getRules());
+			JobInfo batchJobInfo = new JobInfo(jobInfo.getId(),jobInfo.getGuid());
+			AbstractJob batchJob = JobCreateStrategy.createAsSubJob(batchJobInfo, req.getSubJobRequest("batch"),this);
+			batchJob.run();
+			if(batchJob.getJobInfo().getResponse().getInt("exeStatus")!=3){
+				throw new Exception("批处理过程中job执行失败。");
+			}
 			// 6. 执行差分
 			req.getSubJobRequest("diff").setAttrValue("leftDbId", batchDbId);
 			req.getSubJobRequest("diff").setAttrValue("rightDbId", bakDbId);

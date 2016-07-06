@@ -109,7 +109,7 @@ public class GridLockManager{
     		throw new LockException("申请锁失败：根据dbId查询区域时发生错误，"+e.getMessage(),e);
     	}
 		if (r == null) {
-			throw new LockException("申请锁失败：根据batchDbId未查询到匹配的区域");
+			throw new LockException("申请锁失败：根据dbId未查询到匹配的区域");
 		}
 		String dbType = null;
 		if (r.getDailyDbId() == dbId) {

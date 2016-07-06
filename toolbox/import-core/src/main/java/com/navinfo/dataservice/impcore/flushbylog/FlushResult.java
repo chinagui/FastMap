@@ -26,7 +26,6 @@ public class FlushResult {
 	private int logOpMoved;
 	private int logDetailMoved;
 	private int logDetailGridMoved;
-	private boolean isSuccess;
 	private List<List> failedLog=new ArrayList<List>();
 
 	private List<String> insertFailedList = new ArrayList<String>();
@@ -205,7 +204,7 @@ public class FlushResult {
 	}
 	
 	public boolean isSuccess() {
-		return getFailedTotal()>0;
+		return getFailedTotal()==0;
 	}
 	
 	public void print() {

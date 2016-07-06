@@ -41,6 +41,7 @@ public abstract class LogSelector {
 		Connection conn = null;
 		try{
 			int logOperationCount = 0;
+			conn = logSchema.getPoolDataSource().getConnection();
 			tempTable = LogFlushUtil.getInstance().createTempTable(conn);
 			logOperationCount+=selectLog(conn);
 			logOperationCount+=extendLog(conn);

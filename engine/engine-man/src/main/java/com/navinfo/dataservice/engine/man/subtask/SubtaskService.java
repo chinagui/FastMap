@@ -151,16 +151,19 @@ public class SubtaskService {
 	/*
 	 * 批量修改子任务详细信息。 参数：Subtask对象列表
 	 */
-	public void update(List<Subtask> subtaskList) throws ServiceException {
+	public List<Integer> update(List<Subtask> subtaskList) throws ServiceException {
 		Connection conn = null;
 		try {
 			// 持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 
+			List<Integer> updatedSubtaskIdList = new ArrayList<Integer>();
 			for (int i = 0; i < subtaskList.size(); i++) {
 				SubtaskOperation.updateSubtask(conn, subtaskList.get(i));
+				updatedSubtaskIdList.add(subtaskList.get(i).getSubtaskId());
 			}
+			return updatedSubtaskIdList;
 
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -617,8 +620,8 @@ public class SubtaskService {
 
 			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>() {
 				public Subtask handle(ResultSet rs) throws SQLException {
-					Subtask subtask = new Subtask();
-					while (rs.next()) {
+					if (rs.next()) {
+						Subtask subtask = new Subtask();
 						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
 						subtask.setName(rs.getString("NAME"));
 						subtask.setStage(rs.getInt("STAGE"));
@@ -644,7 +647,7 @@ public class SubtaskService {
 						}
 						return subtask;
 					}
-					return subtask;
+					return null;
 				}
 	
 			};
@@ -675,7 +678,6 @@ public class SubtaskService {
 			List<Subtask> subtaskList = SubtaskOperation
 					.getSubtaskListByIdList(conn, subtaskIdList);
 
-//			HashMap<Object,Object> unClosedSubtaskList = new HashMap<Object,Object>();
 			List<Integer> unClosedSubtaskList = new ArrayList<Integer>();
 			List<Integer> closedSubtaskList = new ArrayList<Integer>();
 
@@ -692,10 +694,7 @@ public class SubtaskService {
 						closedSubtaskList
 								.add(subtaskList.get(i).getSubtaskId());
 					} else {
-						unClosedSubtaskList
-						.add(subtaskList.get(i).getSubtaskId());
-//						unClosedSubtaskList.put(subtaskList.get(i)
-//								.getSubtaskId(), "subtask内存在未完成作业，subtask无法关闭");
+						unClosedSubtaskList.add(subtaskList.get(i).getSubtaskId());
 					}
 				}
 
@@ -705,13 +704,9 @@ public class SubtaskService {
 					Boolean flg = SubtaskOperation.isDailyEditReadyToClose(
 							staticsApi, subtaskList.get(i));
 					if (flg) {
-						closedSubtaskList
-								.add(subtaskList.get(i).getSubtaskId());
+						closedSubtaskList.add(subtaskList.get(i).getSubtaskId());
 					} else {
-						unClosedSubtaskList
-						.add(subtaskList.get(i).getSubtaskId());
-//						unClosedSubtaskList.put(subtaskList.get(i)
-//								.getSubtaskId(), "subtask内存在未完成作业，subtask无法关闭");
+						unClosedSubtaskList.add(subtaskList.get(i).getSubtaskId());
 					}
 				}
 
@@ -721,13 +716,9 @@ public class SubtaskService {
 					Boolean flg = SubtaskOperation.isMonthlyEditReadyToClose(
 							staticsApi, subtaskList.get(i));
 					if (flg) {
-						closedSubtaskList
-								.add(subtaskList.get(i).getSubtaskId());
+						closedSubtaskList.add(subtaskList.get(i).getSubtaskId());
 					} else {
-						unClosedSubtaskList
-						.add(subtaskList.get(i).getSubtaskId());
-//						unClosedSubtaskList.put(subtaskList.get(i)
-//								.getSubtaskId(), "subtask内存在未完成作业，subtask无法关闭");
+						unClosedSubtaskList.add(subtaskList.get(i).getSubtaskId());
 					}
 				}
 				

@@ -56,8 +56,8 @@ public class TaskController extends BaseController {
 			}
 			long userId=tokenObj.getUserId();
 			//long userId=2;
-			TaskService.getInstance().create(userId,dataJson);
-			return new ModelAndView("jsonView", success("创建成功"));
+			String msg=TaskService.getInstance().create(userId,dataJson);
+			return new ModelAndView("jsonView", success(msg));
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
@@ -73,8 +73,8 @@ public class TaskController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			TaskService.getInstance().update(dataJson);					
-			return new ModelAndView("jsonView", success("修改成功"));
+			String msg=TaskService.getInstance().update(dataJson);					
+			return new ModelAndView("jsonView", success(msg));
 		}catch(Exception e){
 			log.error("修改失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
@@ -97,7 +97,8 @@ public class TaskController extends BaseController {
 			}
 			JSONArray taskIds=dataJson.getJSONArray("taskIds");
 			HashMap<String,String> errorTask=TaskService.getInstance().close(JSONArray.toList(taskIds));			
-			return new ModelAndView("jsonView", success(errorTask));
+			String msg="任务批量关闭"+(taskIds.size()-errorTask.size())+"个成功，"+errorTask.size()+"个失败";
+			return new ModelAndView("jsonView", success(msg));
 		}catch(Exception e){
 			log.error("删除失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

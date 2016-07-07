@@ -52,6 +52,23 @@ public class RdNameImportTest {
 			
 			System.out.println("测试完成");
 			
+			
+			
+/*			DELETE FROM RD_NAME N
+			 WHERE NAME_GROUPID IN
+			       ( SELECT NAME_GROUPID
+			                  FROM RD_NAME
+			                 WHERE SRC_RESUME LIKE '%test_imp1%'
+			        )
+			        
+			        
+			        
+			SELECT * FROM RD_NAME N
+			 WHERE NAME_GROUPID IN
+			       ( SELECT NAME_GROUPID
+			                  FROM RD_NAME
+			                 WHERE SRC_RESUME LIKE '%test_imp1%'
+			        )*/
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

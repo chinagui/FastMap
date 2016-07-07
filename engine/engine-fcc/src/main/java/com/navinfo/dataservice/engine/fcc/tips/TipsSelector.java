@@ -617,7 +617,7 @@ public class TipsSelector {
 						} else {
 							name += "(单方向)";
 						}
-				} else if (type == 1101 || type == 1111 || type == 1113) {
+				} else if (type == 1113) {
 					
 					JSONArray  arr=deep.getJSONArray("value");
 					
@@ -633,7 +633,14 @@ public class TipsSelector {
 						valueStr=valueStr.substring(1);
 					}
 					name += "(" + valueStr + "km/h)";
-				} else if (type == 1202) {
+				}
+				 else if (type == 1101|| type == 1111 ) {
+						
+					 double value=deep.getDouble("value");
+					 
+					 name += "(" + Math.round(value) + "km/h)";
+					} 
+				else if (type == 1202) {
 					
 					int side = deep.getInt("side");
 					

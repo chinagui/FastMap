@@ -67,6 +67,7 @@ public class GdbBatchJob extends AbstractJob {
 				req.getSubJobRequest("expBatchDb").setAttrValue("sourceDbId", req.getTargetDbId());
 				batchDbId = createBatchDbJob.getJobInfo().getResponse().getInt("outDbId");
 				req.getSubJobRequest("expBatchDb").setAttrValue("targetDbId", batchDbId);
+				req.getSubJobRequest("expBatchDb").setAttrValue("meshExtendCount", req.getExtendCount());
 				Set<String> meshes = new HashSet<String>();
 				for (Integer g : req.getGrids()) {
 					int m = g / 100;

@@ -177,6 +177,8 @@ public class InitRegiondb {
 			SqlExec sqlExec = new SqlExec(conn);
 			String sqlFile = "/com/navinfo/dataservice/scripts/resources/init_edit_tables.sql";
 			sqlExec.executeIgnoreError(sqlFile);
+			String sqlFile2 = "/com/navinfo/dataservice/scripts/resources/prj_utils.sql";
+			sqlExec.execute(sqlFile2);
 			PackageExec packageExec = new PackageExec(conn);
 			String pckFile = "/com/navinfo/dataservice/scripts/resources/prj_utils.pck";
 			packageExec.execute(pckFile);

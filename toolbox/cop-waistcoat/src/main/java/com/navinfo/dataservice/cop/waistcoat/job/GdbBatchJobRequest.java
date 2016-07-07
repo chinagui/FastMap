@@ -23,6 +23,7 @@ import net.sf.json.JSONObject;
 public class GdbBatchJobRequest extends AbstractJobRequest {
 	protected List<Integer> grids;
 	protected List<String> rules;
+	protected int extendCount=0;
 	protected int targetDbId;//批处理的导出源库
 	protected int batchDbId=0;//如果存在可用的子版本库，可以直接使用，不用再创建
 	protected String pidDbInfo;
@@ -46,7 +47,7 @@ public class GdbBatchJobRequest extends AbstractJobRequest {
 			AbstractJobRequest expBatchDb = JobCreateStrategy.createJobRequest("gdbExport", null);
 			expBatchDb.setAttrValue("condition", "mesh");
 			expBatchDb.setAttrValue("featureType", "all");
-			expBatchDb.setAttrValue("dataIntegrity", false);
+			expBatchDb.setAttrValue("dataIntegrity", true);
 			subJobRequests.put("expBatchDb", expBatchDb);
 		}
 		//createBakDb
@@ -95,6 +96,14 @@ public class GdbBatchJobRequest extends AbstractJobRequest {
 
 	public void setRules(List<String> rules) {
 		this.rules = rules;
+	}
+
+	public int getExtendCount() {
+		return extendCount;
+	}
+
+	public void setExtendCount(int extendCount) {
+		this.extendCount = extendCount;
 	}
 
 	public int getTargetDbId() {

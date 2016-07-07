@@ -22,9 +22,11 @@ import net.sf.json.JSONObject;
 */
 public class GdbBatchJobRequest extends AbstractJobRequest {
 	protected List<Integer> grids;
-	protected List<Integer> rules;
+	protected List<String> rules;
+	protected int extendCount=0;
 	protected int targetDbId;//批处理的导出源库
 	protected int batchDbId=0;//如果存在可用的子版本库，可以直接使用，不用再创建
+	protected String pidDbInfo;
 
 	@Override
 	protected int myStepCount() throws JobException {
@@ -45,7 +47,7 @@ public class GdbBatchJobRequest extends AbstractJobRequest {
 			AbstractJobRequest expBatchDb = JobCreateStrategy.createJobRequest("gdbExport", null);
 			expBatchDb.setAttrValue("condition", "mesh");
 			expBatchDb.setAttrValue("featureType", "all");
-			expBatchDb.setAttrValue("dataIntegrity", false);
+			expBatchDb.setAttrValue("dataIntegrity", true);
 			subJobRequests.put("expBatchDb", expBatchDb);
 		}
 		//createBakDb
@@ -59,7 +61,8 @@ public class GdbBatchJobRequest extends AbstractJobRequest {
 		copyBakDb.setAttrValue("featureType", "all");
 		subJobRequests.put("copyBakDb", copyBakDb);
 		//batch
-		//...
+		AbstractJobRequest batch = JobCreateStrategy.createJobRequest("batchCore", null);
+		subJobRequests.put("batch", batch);
 		//diff
 		AbstractJobRequest diff = JobCreateStrategy.createJobRequest("diff", null);
 		subJobRequests.put("diff", diff);
@@ -87,12 +90,20 @@ public class GdbBatchJobRequest extends AbstractJobRequest {
 		this.grids = grids;
 	}
 
-	public List<Integer> getRules() {
+	public List<String> getRules() {
 		return rules;
 	}
 
-	public void setRules(List<Integer> rules) {
+	public void setRules(List<String> rules) {
 		this.rules = rules;
+	}
+
+	public int getExtendCount() {
+		return extendCount;
+	}
+
+	public void setExtendCount(int extendCount) {
+		this.extendCount = extendCount;
 	}
 
 	public int getTargetDbId() {
@@ -109,6 +120,14 @@ public class GdbBatchJobRequest extends AbstractJobRequest {
 
 	public void setBatchDbId(int batchDbId) {
 		this.batchDbId = batchDbId;
+	}
+
+	public String getPidDbInfo() {
+		return pidDbInfo;
+	}
+
+	public void setPidDbInfo(String pidDbInfo) {
+		this.pidDbInfo = pidDbInfo;
 	}
 
 	@Override

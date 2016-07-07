@@ -69,7 +69,7 @@ public class GdbImportJob extends AbstractJob {
 		// 根据批处理的目标库找到对应的大区
 		try {
 			DatalockApi datalock = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
-			editLock = datalock.lockGrid(req.getTargetDbId(), FmEditLock.LOCK_OBJ_ALL, req.getGrids(), FmEditLock.TYPE_COMMIT, jobInfo.getId());
+//			editLock = datalock.lockGrid(req.getTargetDbId(), FmEditLock.LOCK_OBJ_ALL, req.getGrids(), FmEditLock.TYPE_COMMIT, jobInfo.getId());
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw new LockException("加锁发生错误," + e.getMessage(), e);

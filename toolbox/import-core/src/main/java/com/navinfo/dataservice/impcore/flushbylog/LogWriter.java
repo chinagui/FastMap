@@ -160,8 +160,8 @@ public class LogWriter {
 			int result = pstmt.executeUpdate();
 			return result;
 		} catch (Exception e) {
-			System.out.println(sb.toString());
-			e.printStackTrace();
+			log.info(sb.toString());
+			log.error(e.getMessage(),e);
 
 			return 0;
 		} finally {
@@ -257,9 +257,8 @@ public class LogWriter {
 			return result;
 
 		} catch (Exception e) {
-			System.out.println(sb.toString());
-			e.printStackTrace();
-
+			log.info(sb.toString());
+			log.error(e.getMessage(),e);
 			return 0;
 		} finally {
 			try {
@@ -285,8 +284,8 @@ public class LogWriter {
 			return result;
 
 		} catch (Exception e) {
-			System.out.println(sb.toString());
-			e.printStackTrace();
+			log.info(sb.toString());
+			log.error(e.getMessage(),e);
 
 			return 0;
 		} finally {

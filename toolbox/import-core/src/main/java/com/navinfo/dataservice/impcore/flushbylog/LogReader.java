@@ -29,7 +29,7 @@ public class LogReader {
 		ResultSet rs = sourceStmt.executeQuery(logQuerySql);
 		rs.setFetchSize(1000);
 		this.rs = rs;
-		this.st = st;
+		this.st = sourceStmt;
 		return rs;
 	}
 	/**

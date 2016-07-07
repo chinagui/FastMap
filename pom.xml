@@ -14,7 +14,7 @@
 		<module>web</module>
 		<module>scripts-interface</module>
 		<module>code-generator</module>
-    <module>api</module>
+		<module>api</module>
   </modules>
 
     <packaging>pom</packaging>

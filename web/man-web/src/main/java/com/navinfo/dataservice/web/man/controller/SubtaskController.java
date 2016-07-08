@@ -238,6 +238,7 @@ public class SubtaskController extends BaseController {
 				data.put("name", subtask.getName());
 				data.put("gridIds", subtask.getGridIds());
 				data.put("dbId", subtask.getDbId());
+				data.put("geometry", subtask.getGeometry());
 			}
 			else{
 				throw new Exception("该任务不存在");

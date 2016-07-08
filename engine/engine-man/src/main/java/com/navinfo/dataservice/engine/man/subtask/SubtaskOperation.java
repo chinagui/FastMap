@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.man.subtask;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -560,63 +561,19 @@ public class SubtaskOperation {
 			if (inClause!=null)
 				value.add(inClause.getValues().get(0));
 			
-//			value.add(bean.getGeometry());
 			value.add(bean.getStage());
 			value.add(bean.getType());
 			value.add(bean.getCreateUserId());
 			value.add(bean.getExeUserId());
-//			value.add("sysdate");
+			value.add(new Timestamp(System.currentTimeMillis()).toString().substring(0, 10));
 			value.add(1);
 			value.add(bean.getPlanStartDate().toString().substring(0, 10));
 			value.add(bean.getPlanEndDate().toString().substring(0, 10));
 			value.add(bean.getDescp());
 
 			String createSql = "insert into SUBTASK " ;
-//			String column = "(SUBTASK_ID, NAME, GEOMETRY, STAGE, TYPE, CREATE_USER_ID, EXE_USER_ID, CREATE_DATE, STATUS, PLAN_START_DATE, PLAN_END_DATE, DESCP";
-			String column = "(SUBTASK_ID, NAME, GEOMETRY, STAGE, TYPE, CREATE_USER_ID, EXE_USER_ID, STATUS, PLAN_START_DATE, PLAN_END_DATE, DESCP";
-			String values = "values(?,?,sdo_geometry(?,8307),?,?,?,?,?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),to_date(?,'yyyy-MM-dd HH24:MI:ss'),?";
-//			String values = "values(?,?,sdo_geometry(?,8307),?,?,?,?,?,?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),to_date(?,'yyyy-MM-dd HH24:MI:ss'),?";
-//			String values = " values("
-//					+ bean.getSubtaskId()
-//					+ ",'"
-//					+ bean.getName()
-//					+ "',"
-//					+ "sdo_geometry("
-//					+ "'"
-//					+ bean.getGeometry()
-//					+ "',8307)"
-//					+ ","
-//					+ bean.getStage()
-//					+ ","
-//					+ bean.getType()
-//					+ ","
-//					+ bean.getCreateUserId()
-//					+ ","
-//					+ bean.getExeUserId()
-//					+ ", sysdate"
-//					+ ","
-//					+ "1"
-//					+ ",to_date('"
-//					+ bean.getPlanStartDate().toString().substring(0, 10)
-//					+ "','yyyy-MM-dd HH24:MI:ss')"
-//					+ ",to_date('"
-//					+ bean.getPlanEndDate().toString().substring(0, 10)
-//					+ "','yyyy-MM-dd HH24:MI:ss')"
-//					+ ",'"
-//					+ bean.getDescp()
-//					+ "'";
-//			if(0!=bean.getBlockId()){
-//				column += ", BLOCK_ID)";
-//				values += ","
-//						+ bean.getBlockId()
-//						+ ")";
-//			}else{
-//				column += ", TASK_ID)";
-//				values += ","
-//						+ bean.getTaskId()
-//						+ ")";
-//			}
-
+			String column = "(SUBTASK_ID, NAME, GEOMETRY, STAGE, TYPE, CREATE_USER_ID, EXE_USER_ID, CREATE_DATE, STATUS, PLAN_START_DATE, PLAN_END_DATE, DESCP";
+			String values = "values(?,?,sdo_geometry(?,8307),?,?,?,?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),to_date(?,'yyyy-MM-dd HH24:MI:ss'),?";
 			
 			if(0!=bean.getBlockId()){
 				column += ", BLOCK_ID)";

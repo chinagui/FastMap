@@ -1154,7 +1154,7 @@ public class UploadOperation {
 					newParkingsArray.add(oldDelJson);
 				}
 				
-				poiJson.put("gasstations", newParkingsArray);
+				poiJson.put("parkings", newParkingsArray);
 			}
 			
 			// 酒店

@@ -348,9 +348,16 @@ public class UploadOperation {
 			// geometry按SDO_GEOMETRY格式原值转出
 			Geometry geometry = new WKTReader().read(jo.getString("geometry"));
 			poi.setGeometry(GeoTranslator.transform(geometry, 100000, 5));
-			poi.setxGuide(jo.getJSONObject("guide").getDouble("longitude"));
-			poi.setyGuide(jo.getJSONObject("guide").getDouble("latitude"));
-			poi.setLinkPid(jo.getJSONObject("guide").getInt("linkPid"));
+			if (jo.getJSONObject("guide").size()>0) {
+				poi.setxGuide(jo.getJSONObject("guide").getDouble("longitude"));
+				poi.setyGuide(jo.getJSONObject("guide").getDouble("latitude"));
+				poi.setLinkPid(jo.getJSONObject("guide").getInt("linkPid"));
+			} else {
+				poi.setxGuide(0);
+				poi.setyGuide(0);
+				poi.setLinkPid(0);
+			}
+			
 			poi.setChain(jo.getString("chain"));
 			poi.setOpen24h(jo.getInt("open24H"));
 			// meshid非0时原值转出；为0时根据几何计算；
@@ -372,8 +379,10 @@ public class UploadOperation {
 				fieldState += "改连锁品牌|";
 			}
 			if (jo.has("hotel")) {
-				if (!jo.getJSONObject("hotel").getString("rating").isEmpty()) {
-					fieldState += "改酒店星级|";
+				if (jo.getJSONObject("hotel").has("rating")) {
+					if (!jo.getJSONObject("hotel").getString("rating").isEmpty()) {
+						fieldState += "改酒店星级|";
+					}
 				}
 			}
 			if (fieldState.length()>0) {
@@ -408,7 +417,12 @@ public class UploadOperation {
 			}
 			poi.setLog(outDoorLog);
 			poi.setSportsVenue(jo.getString("sportsVenues"));
-			poi.setIndoor(jo.getJSONObject("indoor").getInt("type"));
+			if (jo.getJSONObject("indoor").has("type")) {
+				poi.setIndoor(jo.getJSONObject("indoor").getInt("type"));
+			} else {
+				poi.setIndoor(0);
+			}
+			
 			poi.setVipFlag(jo.getString("vipFlag"));
 			poi.setuRecord(1);
 			
@@ -672,9 +686,15 @@ public class UploadOperation {
 			Geometry geometry = new WKTReader().read(jo.getString("geometry"));
 			JSONObject geometryObj = GeoTranslator.jts2Geojson(geometry);
 			poiJson.put("geometry", geometryObj);
-			poiJson.put("xGuide", jo.getJSONObject("guide").getDouble("longitude"));
-			poiJson.put("yGuide", jo.getJSONObject("guide").getDouble("latitude"));
-			poiJson.put("linkPid", jo.getJSONObject("guide").getInt("linkPid"));
+			if (jo.getJSONObject("guide").size()>0) {
+				poiJson.put("xGuide", jo.getJSONObject("guide").getDouble("longitude"));
+				poiJson.put("yGuide", jo.getJSONObject("guide").getDouble("latitude"));
+				poiJson.put("linkPid", jo.getJSONObject("guide").getInt("linkPid"));
+			} else {
+				poiJson.put("xGuide", 0);
+				poiJson.put("yGuide", 0);
+				poiJson.put("linkPid", 0);
+			}
 			poiJson.put("chain", jo.getString("chain"));
 			poiJson.put("open24h", jo.getInt("open24H"));
 			// meshid非0时原值转出；为0时根据几何计算；
@@ -703,8 +723,10 @@ public class UploadOperation {
 			
 			if (jo.has("hotel")) {
 				JSONObject hotelJSONObj = jo.getJSONObject("hotel");
-				if (!hotelJSONObj.getString("rating").equals(hotelOld.getRating())) {
-					fieldState += "改酒店星级|";
+				if (hotelJSONObj.has("rating")) {
+					if (!hotelJSONObj.getString("rating").equals(hotelOld.getRating())) {
+						fieldState += "改酒店星级|";
+					}
 				}
 			}
 			
@@ -740,7 +762,11 @@ public class UploadOperation {
 			}
 			poiJson.put("log", outDoorLog);
 			poiJson.put("sportsVenue", jo.getString("sportsVenues"));
-			poiJson.put("indoor", jo.getJSONObject("indoor").getInt("type"));
+			if (jo.getJSONObject("indoor").has("type")) {
+				poiJson.put("indoor", jo.getJSONObject("indoor").getInt("type"));
+			} else {
+				poiJson.put("indoor",0);
+			}
 			poiJson.put("vipFlag", jo.getString("vipFlag"));
 			poiJson.put("objStatus", ObjStatus.UPDATE.toString());
 			
@@ -1022,54 +1048,57 @@ public class UploadOperation {
 			
 			// 加油站
 			if (jo.containsKey("gasStation")) {
-				
 				List<IRow> gasList = oldPoi.getGasstations();
 				JSONObject gasObj = jo.getJSONObject("gasStation");
 				JSONArray oldArray = new JSONArray();
 				JSONArray newGasArray = new JSONArray();
-				for (IRow oldGas:gasList) {
-					IxPoiGasstation oldPoiGas = (IxPoiGasstation) oldGas;
-					JSONObject oldPoiGasObj = oldPoiGas.Serialize(null);
-					oldArray.add(oldPoiGasObj);
-				}
-				List<String> newRowIdList = new ArrayList<String>();
-				newRowIdList.add(gasObj.getString("rowId"));
-				IxPoiGasstation gasStation = new IxPoiGasstation();
-				gasStation.setPoiPid(pid);
-				gasStation.setServiceProv(gasObj.getString("servicePro"));
-				gasStation.setFuelType(gasObj.getString("fuelType"));
-				gasStation.setOilType(gasObj.getString("oilType"));
-				gasStation.setEgType(gasObj.getString("egType"));
-				gasStation.setMgType(gasObj.getString("mgType"));
-				gasStation.setPayment(gasObj.getString("payment"));
-				gasStation.setService(gasObj.getString("service"));
-				gasStation.setOpenHour(gasObj.getString("openHour"));
-				gasStation.setRowId(gasObj.getString("rowId"));
-				JSONObject newGasStation = (JSONObject)gasStation.Serialize(null).remove("pid");
-				// 差分,区分新增修改
-				int ret = getDifferent(oldArray,newGasStation);
-				if (ret == 0) {
-					newGasStation.put("pid", PidService.getInstance().applyPoiGasstationId());
-					newGasStation.put("objStatus", ObjStatus.INSERT.toString());
-					newGasArray.add(newGasStation);
-				} else if (ret == 1) {
-					String oldRowId = "";
+				if (!gasObj.isEmpty()) {
 					for (IRow oldGas:gasList) {
 						IxPoiGasstation oldPoiGas = (IxPoiGasstation) oldGas;
-						if (oldPoiGas.getRowId().equals(gasObj.getString("rowId"))) {
-							oldRowId = oldPoiGas.getRowId();
-							break;
-						}
+						JSONObject oldPoiGasObj = oldPoiGas.Serialize(null);
+						oldArray.add(oldPoiGasObj);
 					}
-					newGasStation.put("pid", oldRowId);
-					newGasStation.put("objStatus", ObjStatus.UPDATE.toString());
-					newGasArray.add(newGasStation);
+					List<String> newRowIdList = new ArrayList<String>();
+					newRowIdList.add(gasObj.getString("rowId"));
+					IxPoiGasstation gasStation = new IxPoiGasstation();
+					gasStation.setPoiPid(pid);
+					gasStation.setServiceProv(gasObj.getString("servicePro"));
+					gasStation.setFuelType(gasObj.getString("fuelType"));
+					gasStation.setOilType(gasObj.getString("oilType"));
+					gasStation.setEgType(gasObj.getString("egType"));
+					gasStation.setMgType(gasObj.getString("mgType"));
+					gasStation.setPayment(gasObj.getString("payment"));
+					gasStation.setService(gasObj.getString("service"));
+					gasStation.setOpenHour(gasObj.getString("openHour"));
+					gasStation.setRowId(gasObj.getString("rowId"));
+					JSONObject newGasStation = (JSONObject)gasStation.Serialize(null).remove("pid");
+					// 差分,区分新增修改
+					int ret = getDifferent(oldArray,newGasStation);
+					if (ret == 0) {
+						newGasStation.put("pid", PidService.getInstance().applyPoiGasstationId());
+						newGasStation.put("objStatus", ObjStatus.INSERT.toString());
+						newGasArray.add(newGasStation);
+					} else if (ret == 1) {
+						String oldRowId = "";
+						for (IRow oldGas:gasList) {
+							IxPoiGasstation oldPoiGas = (IxPoiGasstation) oldGas;
+							if (oldPoiGas.getRowId().equals(gasObj.getString("rowId"))) {
+								oldRowId = oldPoiGas.getRowId();
+								break;
+							}
+						}
+						newGasStation.put("pid", oldRowId);
+						newGasStation.put("objStatus", ObjStatus.UPDATE.toString());
+						newGasArray.add(newGasStation);
+					}
+				}else if (gasList.size()>0) {
+					// 删除的数据
+					IxPoiGasstation oldPoiGas = (IxPoiGasstation)gasList.get(0);
+					JSONObject oldDelJson = oldPoiGas.Serialize(null);
+					oldDelJson.put("objStatus", ObjStatus.DELETE.toString());
+					
+					newGasArray.add(oldDelJson);
 				}
-				
-				// 差分，区分删除的数据
-				JSONArray oldDelJson = getOldDel(oldArray,newRowIdList);
-				
-				newGasArray.addAll(oldDelJson);
 				
 				poiJson.put("gasstations", newGasArray);
 			}
@@ -1080,117 +1109,124 @@ public class UploadOperation {
 				JSONObject parkingsObj = jo.getJSONObject("parkings");
 				JSONArray oldArray = new JSONArray();
 				JSONArray newParkingsArray = new JSONArray();
-				for (IRow oldParkings:parkingsList) {
-					IxPoiParking oldPoiParkings = (IxPoiParking) oldParkings;
-					JSONObject oldPoiParkingsObj = oldPoiParkings.Serialize(null);
-					oldArray.add(oldPoiParkingsObj);
-				}
-				List<String> newRowIdList = new ArrayList<String>();
-				newRowIdList.add(parkingsObj.getString("rowId"));
-				IxPoiParking parkings = new IxPoiParking();
-				parkings.setPoiPid(pid);
-				parkings.setParkingType(parkingsObj.getString("buildingType"));
-				parkings.setTollStd(parkingsObj.getString("tollStd"));
-				parkings.setTollDes(parkingsObj.getString("tollDes"));
-				parkings.setTollWay(parkingsObj.getString("tollWay"));
-				parkings.setPayment(parkingsObj.getString("payment"));
-				parkings.setRemark(parkingsObj.getString("remark"));
-				parkings.setOpenTiime(parkingsObj.getString("openTime"));
-				parkings.setTotalNum(parkingsObj.getInt("totalNum"));
-				parkings.setResHigh(parkingsObj.getInt("resHigh"));
-				parkings.setResWidth(parkingsObj.getInt("resWidth"));
-				parkings.setResWeigh(parkingsObj.getInt("resWeigh"));
-				parkings.setCertificate(parkingsObj.getInt("certificate"));
-				parkings.setVehicle(parkingsObj.getInt("vehicle"));
-				parkings.setHaveSpecialplace(parkingsObj.getString("haveSpecialPlace"));
-				parkings.setWomenNum(parkingsObj.getInt("womenNum"));
-				parkings.setHandicapNum(parkingsObj.getInt("handicapNum"));
-				parkings.setMiniNum(parkingsObj.getInt("miniNum"));
-				parkings.setVipNum(parkingsObj.getInt("vipNum"));
-				parkings.setRowId(parkingsObj.getString("rowId"));
-				JSONObject newParkings = (JSONObject) parkings.Serialize(null).remove("pid");
-				// 差分,区分新增修改
-				int ret = getDifferent(oldArray,newParkings);
-				if (ret == 0) {
-					newParkings.put("pid", PidService.getInstance().applyPoiParkingsId());
-					newParkings.put("objStatus", ObjStatus.INSERT.toString());
-					newParkingsArray.add(newParkings);
-				} else if (ret == 1) {
-					String oldRowId = "";
+				if (!parkingsObj.isEmpty()) {
 					for (IRow oldParkings:parkingsList) {
 						IxPoiParking oldPoiParkings = (IxPoiParking) oldParkings;
-						if (oldPoiParkings.getRowId().equals(parkingsObj.getString("rowId"))) {
-							oldRowId = oldPoiParkings.getRowId();
-							break;
-						}
+						JSONObject oldPoiParkingsObj = oldPoiParkings.Serialize(null);
+						oldArray.add(oldPoiParkingsObj);
 					}
-					newParkings.put("pid", oldRowId);
-					newParkings.put("objStatus", ObjStatus.UPDATE.toString());
-					newParkingsArray.add(newParkings);
+					List<String> newRowIdList = new ArrayList<String>();
+					newRowIdList.add(parkingsObj.getString("rowId"));
+					IxPoiParking parkings = new IxPoiParking();
+					parkings.setPoiPid(pid);
+					parkings.setParkingType(parkingsObj.getString("buildingType"));
+					parkings.setTollStd(parkingsObj.getString("tollStd"));
+					parkings.setTollDes(parkingsObj.getString("tollDes"));
+					parkings.setTollWay(parkingsObj.getString("tollWay"));
+					parkings.setPayment(parkingsObj.getString("payment"));
+					parkings.setRemark(parkingsObj.getString("remark"));
+					parkings.setOpenTiime(parkingsObj.getString("openTime"));
+					parkings.setTotalNum(parkingsObj.getInt("totalNum"));
+					parkings.setResHigh(parkingsObj.getInt("resHigh"));
+					parkings.setResWidth(parkingsObj.getInt("resWidth"));
+					parkings.setResWeigh(parkingsObj.getInt("resWeigh"));
+					parkings.setCertificate(parkingsObj.getInt("certificate"));
+					parkings.setVehicle(parkingsObj.getInt("vehicle"));
+					parkings.setHaveSpecialplace(parkingsObj.getString("haveSpecialPlace"));
+					parkings.setWomenNum(parkingsObj.getInt("womenNum"));
+					parkings.setHandicapNum(parkingsObj.getInt("handicapNum"));
+					parkings.setMiniNum(parkingsObj.getInt("miniNum"));
+					parkings.setVipNum(parkingsObj.getInt("vipNum"));
+					parkings.setRowId(parkingsObj.getString("rowId"));
+					JSONObject newParkings = (JSONObject) parkings.Serialize(null).remove("pid");
+					// 差分,区分新增修改
+					int ret = getDifferent(oldArray,newParkings);
+					if (ret == 0) {
+						newParkings.put("pid", PidService.getInstance().applyPoiParkingsId());
+						newParkings.put("objStatus", ObjStatus.INSERT.toString());
+						newParkingsArray.add(newParkings);
+					} else if (ret == 1) {
+						String oldRowId = "";
+						for (IRow oldParkings:parkingsList) {
+							IxPoiParking oldPoiParkings = (IxPoiParking) oldParkings;
+							if (oldPoiParkings.getRowId().equals(parkingsObj.getString("rowId"))) {
+								oldRowId = oldPoiParkings.getRowId();
+								break;
+							}
+						}
+						newParkings.put("pid", oldRowId);
+						newParkings.put("objStatus", ObjStatus.UPDATE.toString());
+						newParkingsArray.add(newParkings);
+					}
+				} else if (parkingsList.size()>0) {
+					// 删除的数据
+					IxPoiParking oldPoiParking = (IxPoiParking)parkingsList.get(0);
+					JSONObject oldDelJson = oldPoiParking.Serialize(null);
+					oldDelJson.put("objStatus", ObjStatus.DELETE.toString());
+					
+					newParkingsArray.add(oldDelJson);
 				}
 				
-				// 差分，区分删除的数据
-				JSONArray oldDelJson = getOldDel(oldArray,newRowIdList);
-				
-				newParkingsArray.addAll(oldDelJson);
-				
-				poiJson.put("gasstations", newParkingsArray);
+				poiJson.put("parkings", newParkingsArray);
 			}
 			
 			// 酒店
 			if (jo.containsKey("hotel")) {
-				
 				List<IRow> hotelList = oldPoi.getHotels();
 				JSONObject hotelObj = jo.getJSONObject("hotel");
 				JSONArray oldArray = new JSONArray();
 				JSONArray newHotelArray = new JSONArray();
-				for (IRow oldHotel:hotelList) {
-					IxPoiHotel oldPoiHotel = (IxPoiHotel) oldHotel;
-					JSONObject oldPoiHotelObj = oldPoiHotel.Serialize(null);
-					oldArray.add(oldPoiHotelObj);
-				}
-				List<String> newRowIdList = new ArrayList<String>();
-				newRowIdList.add(hotelObj.getString("rowId"));
-				IxPoiHotel hotel = new IxPoiHotel();
-				hotel.setPoiPid(pid);
-				hotel.setCreditCard(hotelObj.getString("creditCards"));
-				hotel.setRating(hotelObj.getInt("rating"));
-				hotel.setCheckinTime(hotelObj.getString("checkInTime"));
-				hotel.setCheckoutTime(hotelObj.getString("checkOutTime"));
-				hotel.setRoomCount(hotelObj.getInt("roomCount"));
-				hotel.setRoomType(hotelObj.getString("roomType"));
-				hotel.setRoomPrice(hotelObj.getString("roomPrice"));
-				hotel.setBreakfast(hotelObj.getInt("breakfast"));
-				hotel.setService(hotelObj.getString("service"));
-				hotel.setParking(hotelObj.getInt("parking"));
-				hotel.setLongDescription(hotelObj.getString("description"));
-				hotel.setOpenHour(hotelObj.getString("openHour"));
-				hotel.setRowId(hotelObj.getString("rowId"));
-				JSONObject newHotel = (JSONObject)hotel.Serialize(null).remove("pid");
-				// 差分,区分新增修改
-				int ret = getDifferent(oldArray,newHotel);
-				if (ret == 0) {
-					newHotel.put("pid", PidService.getInstance().applyPoiHotelId());
-					newHotel.put("objStatus", ObjStatus.INSERT.toString());
-					newHotelArray.add(newHotel);
-				} else if (ret == 1) {
-					String oldRowId = "";
+				if (!hotelObj.isEmpty()) {
 					for (IRow oldHotel:hotelList) {
 						IxPoiHotel oldPoiHotel = (IxPoiHotel) oldHotel;
-						if (oldPoiHotel.getRowId().equals(hotelObj.getString("rowId"))) {
-							oldRowId = oldPoiHotel.getRowId();
-							break;
-						}
+						JSONObject oldPoiHotelObj = oldPoiHotel.Serialize(null);
+						oldArray.add(oldPoiHotelObj);
 					}
-					newHotel.put("pid", oldRowId);
-					newHotel.put("objStatus", ObjStatus.UPDATE.toString());
-					newHotelArray.add(newHotel);
+					List<String> newRowIdList = new ArrayList<String>();
+					newRowIdList.add(hotelObj.getString("rowId"));
+					IxPoiHotel hotel = new IxPoiHotel();
+					hotel.setPoiPid(pid);
+					hotel.setCreditCard(hotelObj.getString("creditCards"));
+					hotel.setRating(hotelObj.getInt("rating"));
+					hotel.setCheckinTime(hotelObj.getString("checkInTime"));
+					hotel.setCheckoutTime(hotelObj.getString("checkOutTime"));
+					hotel.setRoomCount(hotelObj.getInt("roomCount"));
+					hotel.setRoomType(hotelObj.getString("roomType"));
+					hotel.setRoomPrice(hotelObj.getString("roomPrice"));
+					hotel.setBreakfast(hotelObj.getInt("breakfast"));
+					hotel.setService(hotelObj.getString("service"));
+					hotel.setParking(hotelObj.getInt("parking"));
+					hotel.setLongDescription(hotelObj.getString("description"));
+					hotel.setOpenHour(hotelObj.getString("openHour"));
+					hotel.setRowId(hotelObj.getString("rowId"));
+					JSONObject newHotel = (JSONObject)hotel.Serialize(null).remove("pid");
+					// 差分,区分新增修改
+					int ret = getDifferent(oldArray,newHotel);
+					if (ret == 0) {
+						newHotel.put("pid", PidService.getInstance().applyPoiHotelId());
+						newHotel.put("objStatus", ObjStatus.INSERT.toString());
+						newHotelArray.add(newHotel);
+					} else if (ret == 1) {
+						String oldRowId = "";
+						for (IRow oldHotel:hotelList) {
+							IxPoiHotel oldPoiHotel = (IxPoiHotel) oldHotel;
+							if (oldPoiHotel.getRowId().equals(hotelObj.getString("rowId"))) {
+								oldRowId = oldPoiHotel.getRowId();
+								break;
+							}
+						}
+						newHotel.put("pid", oldRowId);
+						newHotel.put("objStatus", ObjStatus.UPDATE.toString());
+						newHotelArray.add(newHotel);
+					}
+				} else if (hotelList.size()>0) {
+					// 删除的数据
+					IxPoiHotel oldPoiHotel = (IxPoiHotel)hotelList.get(0);
+					JSONObject oldDelJson = oldPoiHotel.Serialize(null);
+					oldDelJson.put("objStatus", ObjStatus.DELETE.toString());
+					
+					newHotelArray.add(oldDelJson);
 				}
-				
-				// 差分，区分删除的数据
-				JSONArray oldDelJson = getOldDel(oldArray,newRowIdList);
-				
-				newHotelArray.addAll(oldDelJson);
 				
 				poiJson.put("hotels", newHotelArray);
 			}
@@ -1201,48 +1237,52 @@ public class UploadOperation {
 				JSONObject foodtypesObj = jo.getJSONObject("foodtypes");
 				JSONArray oldArray = new JSONArray();
 				JSONArray newFoodtypeArray = new JSONArray();
-				for (IRow oldFoodtype:foodtypeList) {
-					IxPoiRestaurant oldPoiFoodtype = (IxPoiRestaurant) oldFoodtype;
-					JSONObject oldPoiFoodtypeObj = oldPoiFoodtype.Serialize(null);
-					oldArray.add(oldPoiFoodtypeObj);
-				}
-				List<String> newRowIdList = new ArrayList<String>();
-				newRowIdList.add(foodtypesObj.getString("rowId"));
-				IxPoiRestaurant foodtypes = new IxPoiRestaurant();
-				foodtypes.setPoiPid(pid);
-				foodtypes.setFoodType(foodtypesObj.getString("foodtype"));
-				foodtypes.setCreditCard(foodtypesObj.getString("creditCards"));
-				foodtypes.setAvgCost(foodtypesObj.getInt("avgCost"));
-				foodtypes.setParking(foodtypesObj.getInt("parking"));
-				foodtypes.setOpenHour(foodtypesObj.getString("openHour"));
-				foodtypes.setRowId(foodtypesObj.getString("rowId"));
-				JSONObject newFoodtype = (JSONObject)foodtypes.Serialize(null).remove("pid");
-				// 差分,区分新增修改
-				int ret = getDifferent(oldArray,newFoodtype);
-				if (ret == 0) {
-					newFoodtype.put("pid", PidService.getInstance().applyPoiFoodId());
-					newFoodtype.put("objStatus", ObjStatus.INSERT.toString());
-					newFoodtypeArray.add(newFoodtype);
-				} else if (ret == 1) {
-					String oldRowId = "";
+				if (!foodtypesObj.isEmpty()) {
 					for (IRow oldFoodtype:foodtypeList) {
 						IxPoiRestaurant oldPoiFoodtype = (IxPoiRestaurant) oldFoodtype;
-						if (oldPoiFoodtype.getRowId().equals(foodtypesObj.getString("rowId"))) {
-							oldRowId = oldPoiFoodtype.getRowId();
-							break;
-						}
+						JSONObject oldPoiFoodtypeObj = oldPoiFoodtype.Serialize(null);
+						oldArray.add(oldPoiFoodtypeObj);
 					}
-					newFoodtype.put("pid", oldRowId);
-					newFoodtype.put("objStatus", ObjStatus.UPDATE.toString());
-					newFoodtypeArray.add(newFoodtype);
+					List<String> newRowIdList = new ArrayList<String>();
+					newRowIdList.add(foodtypesObj.getString("rowId"));
+					IxPoiRestaurant foodtypes = new IxPoiRestaurant();
+					foodtypes.setPoiPid(pid);
+					foodtypes.setFoodType(foodtypesObj.getString("foodtype"));
+					foodtypes.setCreditCard(foodtypesObj.getString("creditCards"));
+					foodtypes.setAvgCost(foodtypesObj.getInt("avgCost"));
+					foodtypes.setParking(foodtypesObj.getInt("parking"));
+					foodtypes.setOpenHour(foodtypesObj.getString("openHour"));
+					foodtypes.setRowId(foodtypesObj.getString("rowId"));
+					JSONObject newFoodtype = foodtypes.Serialize(null);
+					// 差分,区分新增修改
+					int ret = getDifferent(oldArray,newFoodtype);
+					if (ret == 0) {
+						newFoodtype.put("pid", PidService.getInstance().applyPoiFoodId());
+						newFoodtype.put("objStatus", ObjStatus.INSERT.toString());
+						newFoodtypeArray.add(newFoodtype);
+					} else if (ret == 1) {
+						String oldRowId = "";
+						for (IRow oldFoodtype:foodtypeList) {
+							IxPoiRestaurant oldPoiFoodtype = (IxPoiRestaurant) oldFoodtype;
+							if (oldPoiFoodtype.getRowId().equals(foodtypesObj.getString("rowId"))) {
+								oldRowId = oldPoiFoodtype.getRowId();
+								break;
+							}
+						}
+						newFoodtype.put("pid", oldRowId);
+						newFoodtype.put("objStatus", ObjStatus.UPDATE.toString());
+						newFoodtypeArray.add(newFoodtype);
+					}
+				} else if (foodtypeList.size()>0) {
+					// 删除的数据
+					IxPoiRestaurant oldPoiFoodtype = (IxPoiRestaurant)foodtypeList.get(0);
+					JSONObject oldDelJson = oldPoiFoodtype.Serialize(null);
+					oldDelJson.put("objStatus", ObjStatus.DELETE.toString());
+					
+					newFoodtypeArray.add(oldDelJson);
 				}
 				
-				// 差分，区分删除的数据
-				JSONArray oldDelJson = getOldDel(oldArray,newRowIdList);
-				
-				newFoodtypeArray.addAll(oldDelJson);
-				
-				poiJson.put("hotels", newFoodtypeArray);
+				poiJson.put("restaurants", newFoodtypeArray);
 
 			}
 			
@@ -1351,7 +1391,7 @@ public class UploadOperation {
 
 				String filePath = resultSet.getString("file_path");
 
-				String md5 = resultSet.getString("md5");
+				String md5 = resultSet.getString("file_md5");
 
 				json.put("fileName", fileName);
 

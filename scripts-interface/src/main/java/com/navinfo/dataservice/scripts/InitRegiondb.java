@@ -224,8 +224,13 @@ public class InitRegiondb {
 	}
 	
 	private static void insertGrids(Connection conn,int regionId)throws Exception{
+		QueryRunner run = new QueryRunner();
 		String sql = "UPDATE GRID G SET G.REGION_ID=? WHERE TRUNC(G.GRID_ID/100) IN (SELECT P.MESH FROM CP_MESHLIST@METADB_LINK P,CP_REGION_PROVINCE T WHERE P.ADMINCODE=T.ADMINCODE AND T.REGION_ID=?)";
-		new QueryRunner().update(conn, sql, regionId,regionId);
+		run.update(conn, sql, regionId,regionId);
+		String sql2 = "UPDATE GRID_LOCK_DAY SET REGION_ID=?,HANDLE_REGION_ID=? WHERE GRID_ID IN (SELECT GRID_ID FROM GRID WHERE REGION_ID=?)";
+		run.update(conn, sql2, regionId,regionId,regionId);
+		String sql3 = "UPDATE GRID_LOCK_MONTH SET REGION_ID=?,HANDLE_REGION_ID=? WHERE GRID_ID IN (SELECT GRID_ID FROM GRID WHERE REGION_ID=?)";
+		run.update(conn, sql3, regionId,regionId,regionId);
 	}
 
 	private static void insertDbIds(Connection conn,int regionId,int dayDbId,int monthDbId)throws Exception{

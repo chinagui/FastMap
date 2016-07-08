@@ -767,44 +767,27 @@ public class SubtaskOperation {
 					+ ",st.STATUS"
 					+ ",r.DAILY_DB_ID"
 					+ ",r.MONTHLY_DB_ID"
-					+ ",TO_CHAR(st.GEOMETRY.get_wkt()) AS GEOMETRY"
-					+ ",listagg(sgm.GRID_ID, ',') within group(order by st.SUBTASK_ID) as GRID_ID ";
+					+ ",TO_CHAR(st.GEOMETRY.get_wkt()) AS GEOMETRY";
 
 			String fromSql_task = " from subtask st"
 					+ ",task t"
 					+ ",city c"
-					+ ",region r"
-					+ ",subtask_grid_mapping sgm ";
+					+ ",region r";
 
 			String fromSql_block = " from subtask st"
 					+ ",block b"
 					+ ",city c"
-					+ ",region r"
-					+ ",subtask_grid_mapping sgm ";
+					+ ",region r";
 
 			String conditionSql_task = " where st.task_id = t.task_id "
 					+ "and t.city_id = c.city_id "
 					+ "and c.region_id = r.region_id "
-					+ "and st.EXE_USER_ID = " + bean.getExeUserId() 
-					+ " and st.subtask_id = sgm.subtask_id ";
+					+ "and st.EXE_USER_ID = " + bean.getExeUserId();
 
 			String conditionSql_block = " where st.block_id = b.block_id "
 					+ "and b.city_id = c.city_id "
 					+ "and c.region_id = r.region_id "
-					+ "and st.EXE_USER_ID = " + bean.getExeUserId() 
-					+ " and st.subtask_id = sgm.subtask_id ";
-
-			String groupBySql = " group by st.SUBTASK_ID"
-					+ ",st.NAME"
-					+ ",st.DESCP"
-					+ ",st.PLAN_START_DATE"
-					+ ",st.PLAN_END_DATE"
-					+ ",st.STAGE"
-					+ ",st.TYPE"
-					+ ",st.STATUS"
-					+ ",r.DAILY_DB_ID"
-					+ ",r.MONTHLY_DB_ID"
-					+ ",TO_CHAR(st.GEOMETRY.get_wkt())";
+					+ "and st.EXE_USER_ID = " + bean.getExeUserId();
 
 			if (bean.getStage() != null) {
 				conditionSql_task = conditionSql_task + " and st.STAGE = "
@@ -826,12 +809,11 @@ public class SubtaskOperation {
 				conditionSql_block = conditionSql_block + " and st.STATUS = "
 						+ bean.getStatus();
 			}
-
+			
 			selectSql = selectSql + fromSql_task
-					+ conditionSql_task + groupBySql
-					+ " union all " + selectSql
-					+ fromSql_block + conditionSql_block
-					+ groupBySql;
+			+ conditionSql_task
+			+ " union all " + selectSql
+			+ fromSql_block + conditionSql_block;
 
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
 				public Page handle(ResultSet rs) throws SQLException {
@@ -857,9 +839,14 @@ public class SubtaskOperation {
 						subtask.put("status", rs.getInt("STATUS"));
 						subtask.put("dbId", rs.getString("GEOMETRY"));
 						
-						String gridIds = rs.getString("GRID_ID");
-						String[] gridIdList = gridIds.split(",");
-						subtask.put("gridIds", ArrayUtil.convertList(Arrays.asList(gridIdList)));
+						try {
+							List<Integer> gridIds = getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
+							subtask.put("gridIds", gridIds);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+												
 						subtask.put("geometry", rs.getString("GEOMETRY"));
 						
 						if (1 == rs.getInt("STAGE")) {
@@ -881,6 +868,39 @@ public class SubtaskOperation {
 			};
 
 			return run.query(curPageNum, pageSize, conn, selectSql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+		}
+
+	}
+
+
+	/**
+	 * @param int1
+	 * @return
+	 * @throws Exception 
+	 */
+	public static List<Integer> getGridIdsBySubtaskId(int subtaskId) throws Exception {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			String selectSql = "select sgm.grid_id from subtask_grid_mapping sgm where sgm.subtask_id = " + subtaskId;
+			
+			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> gridIds= new ArrayList<Integer>(); 
+					while (rs.next()) {
+						gridIds.add(rs.getInt("grid_id"));
+					}
+					return gridIds;
+				}
+			};
+
+			return run.query(conn, selectSql, rsHandler);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

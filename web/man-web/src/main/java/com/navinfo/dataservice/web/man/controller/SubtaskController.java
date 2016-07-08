@@ -164,10 +164,6 @@ public class SubtaskController extends BaseController {
 			int stage = dataJson.getInt("stage");
 			
 			Page page = SubtaskService.getInstance().listPage(stage,condition,order,pageSize,curPageNum);
-
-//			List<?> result=JsonOperation.beanToJsonList((List<?>)page.getResult());
-//
-//			page.setResult(result.toArray());
 			
             return new ModelAndView("jsonView", success(page));
 		
@@ -205,10 +201,6 @@ public class SubtaskController extends BaseController {
             
             Page page = SubtaskService.getInstance().listByUserPage(bean,snapshot,pageSize,curPageNum);
             
-//            List<?> result=JsonOperation.beanToJsonList((List<?>)page.getResult());
-//			
-//			page.setResult(result);
-            
             return new ModelAndView("jsonView", success(page));
             
 		}catch(Exception e){
@@ -238,7 +230,6 @@ public class SubtaskController extends BaseController {
 			HashMap<String, Object> data = new HashMap<String, Object>();
 			if(subtask!=null&&subtask.getSubtaskId()!=null){
 				data.put("subtaskId", subtask.getSubtaskId());
-//				data.put("geometry", subtask.getGeometry());
 				data.put("stage", subtask.getStage());
 				data.put("type", subtask.getType());
 				data.put("planStartDate", subtask.getPlanStartDate());

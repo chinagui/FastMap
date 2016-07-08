@@ -103,16 +103,13 @@ public class SubtaskService {
 					+ ",s.status"
 					+ ", TO_CHAR(s.geometry.get_wkt()) as geometry"
 					+ ",s.descp"
-					+ ",listagg(sgm.GRID_ID, ',') within group(order by s.SUBTASK_ID) as GRID_ID"
-					+ " from subtask s ,subtask_grid_mapping sgm "
-					+ "where s.subtask_id = sgm.subtask_id "
-					+ " and SDO_GEOM.RELATE(geometry, 'ANYINTERACT', "
+					+ " from subtask s "
+					+ "where SDO_GEOM.RELATE(geometry, 'ANYINTERACT', "
 					+ "sdo_geometry("
 					+ "'"
 					+ wkt
 					+ "',8307)"
-					+ ", 0.000005) ='TRUE'"
-					+ "group by s.subtask_id, s.name, s.type, s.stage,s.status, s.descp,TO_CHAR(s.geometry.get_wkt())";
+					+ ", 0.000005) ='TRUE'";
 
 			ResultSetHandler<List<Subtask>> rsHandler = new ResultSetHandler<List<Subtask>>() {
 				public List<Subtask> handle(ResultSet rs) throws SQLException {
@@ -126,10 +123,15 @@ public class SubtaskService {
 						subtask.setType(rs.getInt("type"));
 						subtask.setStage(rs.getInt("stage"));
 						subtask.setStatus(rs.getInt("status"));
-						String gridIds = rs.getString("GRID_ID");
 						
-						String[] gridIdList = gridIds.split(",");
-						subtask.setGridIds(ArrayUtil.convertList(Arrays.asList(gridIdList)));
+						try {
+							List<Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
+							subtask.setGridIds(gridIds);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
 						list.add(subtask);
 					}
 					return list;
@@ -572,50 +574,33 @@ public class SubtaskService {
 					+ ",st.STATUS"
 					+ ",r.DAILY_DB_ID"
 					+ ",r.MONTHLY_DB_ID"
-					+ ",TO_CHAR(st.GEOMETRY.get_wkt()) AS GEOMETRY"
-					+ ",listagg(sgm.GRID_ID, ',') within group(order by st.SUBTASK_ID) as GRID_ID ";
+					+ ",TO_CHAR(st.GEOMETRY.get_wkt()) AS GEOMETRY";
 
 			String fromSql_task = " from subtask st"
 					+ ",task t"
 					+ ",city c"
-					+ ",region r"
-					+ ",subtask_grid_mapping sgm ";
+					+ ",region r";
 
 			String fromSql_block = " from subtask st"
 					+ ",block b"
 					+ ",city c"
-					+ ",region r"
-					+ ",subtask_grid_mapping sgm ";
+					+ ",region r";
 
 			String conditionSql_task = " where st.task_id = t.task_id "
 					+ "and t.city_id = c.city_id "
 					+ "and c.region_id = r.region_id "
-					+ " and st.subtask_id = sgm.subtask_id "
 					+ " and st.SUBTASK_ID=" + subtaskId;
 
 			String conditionSql_block = " where st.block_id = b.block_id "
 					+ "and b.city_id = c.city_id "
 					+ "and c.region_id = r.region_id "
-					+ " and st.subtask_id = sgm.subtask_id "
 					+ " and st.SUBTASK_ID=" + subtaskId;
 
-			String groupBySql = " group by st.SUBTASK_ID"
-					+ ",st.NAME"
-					+ ",st.DESCP"
-					+ ",st.PLAN_START_DATE"
-					+ ",st.PLAN_END_DATE"
-					+ ",st.STAGE"
-					+ ",st.TYPE"
-					+ ",st.STATUS"
-					+ ",r.DAILY_DB_ID"
-					+ ",r.MONTHLY_DB_ID"
-					+ ",TO_CHAR(st.GEOMETRY.get_wkt())";
 			
 			selectSql = selectSql + fromSql_task
-					+ conditionSql_task + groupBySql
+					+ conditionSql_task
 					+ " union all " + selectSql
-					+ fromSql_block + conditionSql_block
-					+ groupBySql;
+					+ fromSql_block + conditionSql_block;
 			
 
 			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>() {
@@ -633,10 +618,18 @@ public class SubtaskService {
 						subtask.setStatus(rs.getInt("STATUS"));
 	
 						subtask.setGeometry(rs.getString("GEOMETRY"));
+						
+						try {
+							List<Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
+							subtask.setGridIds(gridIds);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 	
-						String gridIds = rs.getString("GRID_ID");
-						String[] gridIdList = gridIds.split(",");
-						subtask.setGridIds(ArrayUtil.convertList(Arrays.asList(gridIdList)));
+//						String gridIds = rs.getString("GRID_ID");
+//						String[] gridIdList = gridIds.split(",");
+//						subtask.setGridIds(ArrayUtil.convertList(Arrays.asList(gridIdList)));
 	
 						if (1 == rs.getInt("STAGE")) {
 							subtask.setDbId(rs.getInt("DAILY_DB_ID"));
@@ -799,7 +792,7 @@ public class SubtaskService {
 			if(snapshot==1){
 				page = SubtaskOperation.getListByUserSnapshotPage(conn, bean,curPageNum,pageSize);
 			}else{
-				page = SubtaskOperation.getListByUserPage(conn, bean,curPageNum,pageSize);
+				page = SubtaskOperation.getListByUserPage(conn, bean,curPageNum,pageSize);		
 			}
 			
 			return page;

@@ -73,6 +73,42 @@ public class GridService {
 			DbUtils.closeQuietly(conn);
 		}
 	}
+	
+	/*
+	 * 根据taskId获取gridId list
+	 */
+	public List<Integer> getGridListByTaskId(Integer taskId) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "select g.grid_id"
+					+ " from task t, grid g"
+					+ " where t.city_id = g.city_id"
+					+ " and t.task_id = " + taskId;;
+
+			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> gridList = new ArrayList<Integer>();
+					while (rs.next()) {
+						gridList.add(rs.getInt("grid_id"));
+					}
+					return gridList;
+				}
+	
+			};
+
+			return run.query(conn, selectSql,rsHandler);
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("根据taskId查询grid失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 
 	public List<Grid> list() throws Exception {
 		String sql = "SELECT GRID_ID,REGION_ID,CITY_ID,BLOCK_ID FROM GRID";

@@ -342,7 +342,7 @@ public class UploadOperation {
 		JSONObject retObj = new JSONObject();
 		try{
 			// POI主表
-			int pid = jo.getInt("pid");
+			int pid = PidService.getInstance().applyPoiPid();
 			poi.setPid(pid);
 			poi.setKindCode(jo.getString("kindCode"));
 			// geometry按SDO_GEOMETRY格式原值转出

@@ -97,7 +97,8 @@ public class InforManController extends BaseController {
 			}
 			JSONArray inforManIds = dataJson.getJSONArray("inforIds");
 			service.close(JSONArray.toList(inforManIds));
-			return new ModelAndView("jsonView", success("情报已关闭"));
+			String msg="批量关闭"+inforManIds.size()+"个成功，0个失败";
+			return new ModelAndView("jsonView", success(msg));
 		} catch (Exception e) {
 			log.error("删除失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

@@ -57,16 +57,50 @@ public class IxPoiSearch implements ISearch {
 			int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as  (select pid, kind_code,x_guide, y_guide, geometry, row_id     from ix_poi    where sdo_relate(geometry, sdo_geometry(    :1    , 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2),  tmp2 as  (SELECT COUNT(1) PARENTCOUNT     FROM IX_POI_PARENT P, tmp1 a    WHERE p.parent_poi_pid = a.PID      and p.u_record != 2),  tmp3 as  (SELECT COUNT(1) CHILDCOUNT     FROM IX_POI_CHILDREN P, tmp1 a    WHERE p.child_poi_pid = a.PID      and p.u_record != 2) select  a.*,  b.status,  c.PARENTCOUNT,  d.CHILDCOUNT,  (SELECT NAME     FROM ix_poi_name p    WHERE p.POI_PID = a.PID      AND p.LANG_CODE = 'CHI'      AND p.NAME_CLASS = 1      AND p.NAME_TYPE = 2      AND p.u_record != 2) NAME   from tmp1 a, poi_edit_status b, tmp2 c, tmp3 d  where a.row_id = b.row_id";
+		//String sql = "with tmp1 as  (select pid, kind_code,x_guide, y_guide, geometry, row_id     from ix_poi    where sdo_relate(geometry, sdo_geometry(    :1    , 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2),  tmp2 as  (SELECT COUNT(1) PARENTCOUNT     FROM IX_POI_PARENT P, tmp1 a    WHERE p.parent_poi_pid = a.PID      and p.u_record != 2),  tmp3 as  (SELECT COUNT(1) CHILDCOUNT     FROM IX_POI_CHILDREN P, tmp1 a    WHERE p.child_poi_pid = a.PID      and p.u_record != 2) select  a.*,  b.status,  c.PARENTCOUNT,  d.CHILDCOUNT,  (SELECT NAME     FROM ix_poi_name p    WHERE p.POI_PID = a.PID      AND p.LANG_CODE = 'CHI'      AND p.NAME_CLASS = 1      AND p.NAME_TYPE = 2      AND p.u_record != 2) NAME   from tmp1 a, poi_edit_status b, tmp2 c, tmp3 d  where a.row_id = b.row_id";
+		
+		StringBuilder sb=new StringBuilder();
+		
+		sb.append("WITH TMP1 AS ( ");
+		sb.append("SELECT PID, KIND_CODE, X_GUIDE, Y_GUIDE, GEOMETRY, ROW_ID ");
+		sb.append("FROM IX_POI WHERE ");
+		sb.append("SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' ");
+		sb.append("AND U_RECORD != 2), ");
+		
+		sb.append("TMP2 AS (SELECT DISTINCT PARENT_POI_PID FROM IX_POI_PARENT P, TMP1 A  ");
+		sb.append("WHERE P.PARENT_POI_PID = A.PID AND P.U_RECORD != 2),  ");
+		
+		sb.append("TMP3 AS (SELECT DISTINCT CHILD_POI_PID FROM IX_POI_CHILDREN C, TMP1 A  ");
+		sb.append("WHERE C.CHILD_POI_PID = A.PID AND C.U_RECORD != 2), ");			
+		
+		sb.append("TMP4 AS (SELECT PN.NAME, PN.POI_PID FROM IX_POI_NAME PN, TMP1 A   ");
+		sb.append("WHERE PN.POI_PID = A.PID AND PN.LANG_CODE = 'CHI' AND PN.NAME_CLASS = 1 AND PN.NAME_TYPE = 2 AND PN.U_RECORD != 2) ");	
+		
+		sb.append("SELECT A.*, B.STATUS, ");
+		
+		sb.append("(SELECT /*+ leading(P,A) use hash(P,A)*/ ");		
+		sb.append("COUNT(1) FROM TMP2 P WHERE P.PARENT_POI_PID = A.PID) PARENTCOUNT, ");
+		
+		sb.append("(SELECT /*+ leading(C,A) use hash(C,A)*/ ");
+		sb.append("COUNT(1) FROM TMP3 C WHERE C.CHILD_POI_PID = A.PID) CHILDCOUNT, ");
+		
+		sb.append("(SELECT /*+ leading(PN,A) use hash(PN,A)*/ NAME FROM TMP4 PN ");		
+		sb.append("WHERE PN.POI_PID = A.PID ) NAME ");
+		
+		sb.append("FROM TMP1 A, POI_EDIT_STATUS B WHERE A.ROW_ID = B.ROW_ID ");
 		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 
 		try {
-			pstmt = conn.prepareStatement(sql);
+			//pstmt = conn.prepareStatement(sql);
 
-			System.out.println(sql);
+			//System.out.println(sql);
+			
+			pstmt = conn.prepareStatement(sb.toString());
+
+			System.out.println(sb.toString());
 
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 

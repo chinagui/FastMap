@@ -96,14 +96,11 @@ public class AdAdmin implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -113,31 +110,25 @@ public class AdAdmin implements IObj {
 
 	@Override
 	public void copy(IRow row) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public Map<String, Object> changedFields() {
-		// TODO Auto-generated method stub
 		return this.changedFields;
 	}
 
 	@Override
 	public String parentPKName() {
-		// TODO Auto-generated method stub
 		return "region_id";
 	}
 
 	@Override
 	public int parentPKValue() {
-		// TODO Auto-generated method stub
-		return 0;
+		return pid;
 	}
 
 	@Override
 	public String parentTableName() {
-		// TODO Auto-generated method stub
 		return "ad_admin";
 	}
 
@@ -295,6 +286,7 @@ public class AdAdmin implements IObj {
 
 	@Override
 	public boolean fillChangeFields(JSONObject json) throws Exception {
+		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {
@@ -378,25 +370,21 @@ public class AdAdmin implements IObj {
 
 	@Override
 	public boolean Unserialize(JSONObject json) throws Exception {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public List<IRow> relatedRows() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int pid() {
-		// TODO Auto-generated method stub
 		return this.getPid();
 	}
 
 	@Override
 	public String primaryKey() {
-		// TODO Auto-generated method stub
 		return "region_id";
 	}
 

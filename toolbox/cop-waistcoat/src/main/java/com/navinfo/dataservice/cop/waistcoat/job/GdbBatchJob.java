@@ -8,10 +8,9 @@ import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.edit.iface.DatalockApi;
 import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.api.job.model.JobInfo;
-import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datarow.CkResultTool;
 import com.navinfo.dataservice.bizcommons.datarow.PhysicalDeleteRow;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -68,6 +67,7 @@ public class GdbBatchJob extends AbstractJob {
 				req.getSubJobRequest("expBatchDb").setAttrValue("sourceDbId", req.getTargetDbId());
 				batchDbId = createBatchDbJob.getJobInfo().getResponse().getInt("outDbId");
 				req.getSubJobRequest("expBatchDb").setAttrValue("targetDbId", batchDbId);
+				req.getSubJobRequest("expBatchDb").setAttrValue("meshExtendCount", req.getExtendCount());
 				Set<String> meshes = new HashSet<String>();
 				for (Integer g : req.getGrids()) {
 					int m = g / 100;
@@ -106,8 +106,19 @@ public class GdbBatchJob extends AbstractJob {
 			if (copyBakDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
 				throw new Exception("批处理备份子版本库复制数据时job执行失败。");
 			}
-			// 5. 在批处理子版本上执行批处理
-			// ...
+			// 5. 在批处理子版本上执行批处理s
+			req.getSubJobRequest("batch").setAttrValue("executeDBId", batchDbId);
+			req.getSubJobRequest("batch").setAttrValue("backupDBId", bakDbId);
+			DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
+			req.getSubJobRequest("batch").setAttrValue("kdbDBId", metaDb.getDbId());
+			req.getSubJobRequest("batch").setAttrValue("pidDbInfo", req.getPidDbInfo());
+			req.getSubJobRequest("batch").setAttrValue("ruleIds", req.getRules());
+			JobInfo batchJobInfo = new JobInfo(jobInfo.getId(),jobInfo.getGuid());
+			AbstractJob batchJob = JobCreateStrategy.createAsSubJob(batchJobInfo, req.getSubJobRequest("batch"),this);
+			batchJob.run();
+			if(batchJob.getJobInfo().getResponse().getInt("exeStatus")!=3){
+				throw new Exception("批处理过程中job执行失败。");
+			}
 			// 6. 执行差分
 			req.getSubJobRequest("diff").setAttrValue("leftDbId", batchDbId);
 			req.getSubJobRequest("diff").setAttrValue("rightDbId", bakDbId);
@@ -118,7 +129,7 @@ public class GdbBatchJob extends AbstractJob {
 				throw new Exception("差分时job执行失败。");
 			}
 			//7. 差分履历会大区库
-			req.getSubJobRequest("commit").setAttrValue("batchDbId", batchDbId);
+			req.getSubJobRequest("commit").setAttrValue("logDbId", batchDbId);
 			req.getSubJobRequest("commit").setAttrValue("targetDbId", req.getTargetDbId());
 			req.getSubJobRequest("commit").setAttrValue("grids", JSONArray.fromObject(req.getGrids()));
 			JobInfo commitJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());

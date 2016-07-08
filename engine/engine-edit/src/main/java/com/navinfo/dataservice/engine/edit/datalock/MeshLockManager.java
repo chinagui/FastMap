@@ -17,6 +17,8 @@ import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.navicommons.database.QueryRunner;
 
+import net.sf.json.JSONObject;
+
 /** 
  * @ClassName: MeshLockManager 
  * @author Xiao Xiaowen 
@@ -391,6 +393,11 @@ public class MeshLockManager{
 //			for(int i=0;i<1001;i++){
 //				meshes.add(100000+i);
 //			}
+			JSONObject j = new JSONObject();
+			String d = (String)null;
+			String e = (String)j.get("A");
+			System.out.println(d);
+			System.out.println(e);
 			System.out.println("over.");
 		}catch(Exception e){
 			e.printStackTrace();

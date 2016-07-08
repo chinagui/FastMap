@@ -8,29 +8,40 @@ import java.util.regex.Pattern;
 import net.sf.json.JSONArray;
 
 import org.junit.Test;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
-import com.navinfo.navicommons.geo.GeoUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 public class TipsSelectorTest {
 
 	TipsSelector selector = new TipsSelector();
+	
 
 	//根据网格、类型、作业状态获取tips的snapshot列表（rowkey，点位，类型）
-	//@Test
+//	@Test
 	public void testGetSnapshot() {
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+				new String[] { "dubbo-consumer.xml"});
+		context.start();
+		new ApplicationContextUtil().setApplicationContext(context);
+		
 		JSONArray grid = JSONArray
 				.fromObject("[59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");
 		System.out.println(grid.toString());
 		JSONArray stage = new JSONArray();
+		stage.add(0);
 		stage.add(1);
+		stage.add(2);
+		stage.add(3);
+		stage.add(4);
 		int type = 1101;
-		int projectId = 11;
+		int dbId = 11;
 		try {
 			System.out.println(selector.getSnapshot(grid, stage, type,
-					projectId));
+					dbId));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -38,17 +49,17 @@ public class TipsSelectorTest {
 	
 	
     //根据瓦片扩圈获取Tips数据
-	//@Test
+	@Test
 	public void testSearchDataByTileWithGap() {
 		JSONArray types = new JSONArray();
-		types.add(1301);
+	/*	types.add(1301);
 		types.add(1205);
 		types.add(1401);
 		types.add(1110);
 		types.add(1515);
 		types.add(1105);
 		types.add(1806);
-		types.add(1901);
+		types.add(1901);*/
 		try {
 			System.out.println(selector.searchDataByTileWithGap(107944, 49615, 17,
 					20, types,"m"));
@@ -73,11 +84,11 @@ public class TipsSelectorTest {
 		
 		
 		//根据rowkey获取单个tips的详细信息
-		@Test
+	//	@Test
 		public void testSearchDataByRowkey() {
 			try {
 				System.out.println("sorl by rowkey:");
-				System.out.println(selector.searchDataByRowkey("021806d2379145037f471ebda56b88a659999"));
+				System.out.println(selector.searchDataByRowkey("0212055b268d5faff94b59b94ad7aec3348d4f"));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

@@ -23,7 +23,7 @@ public class SqlClause {
 	public List<Object> getValues() {
 		return values;
 	}
-	private SqlClause(String sql, List<Object> values) {
+	public SqlClause(String sql, List<Object> values) {
 		super();
 		this.sql = sql;
 		this.values = values;

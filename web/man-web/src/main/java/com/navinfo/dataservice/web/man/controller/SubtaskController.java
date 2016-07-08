@@ -238,6 +238,9 @@ public class SubtaskController extends BaseController {
 				data.put("gridIds", subtask.getGridIds());
 				data.put("dbId", subtask.getDbId());
 			}
+			else{
+				throw new Exception("该任务不存在");
+			}
 			
 			JSONObject result = JsonOperation.beanToJson(data);
 			
@@ -272,9 +275,11 @@ public class SubtaskController extends BaseController {
 				subtaskList.add(subtask);
 			}
 			
-			SubtaskService.getInstance().update(subtaskList);
+			List<Integer> updatedSubtaskIdList = SubtaskService.getInstance().update(subtaskList);
 			
-			return new ModelAndView("jsonView", success("修改成功"));
+			String message = "批量修改子任务：" + updatedSubtaskIdList.size() + "个成功，" + (subtaskList.size() - updatedSubtaskIdList.size()) + "个失败。";
+			
+			return new ModelAndView("jsonView", success(message));
 			
 		}catch(Exception e){
 			log.error("更新失败，原因："+e.getMessage(), e);
@@ -301,17 +306,12 @@ public class SubtaskController extends BaseController {
 			JSONArray subtaskIds = dataJson.getJSONArray("subtaskIds");
 			
 			List<Integer> subtaskIdList = (List<Integer>)JSONArray.toCollection(subtaskIds,Integer.class);
-//			HashMap<Object,Object> unClosedSubtaskList = SubtaskService.getInstance().close(subtaskIdList);
 			List<Integer> unClosedSubtaskList = SubtaskService.getInstance().close(subtaskIdList);
 			
-			if(unClosedSubtaskList.isEmpty()){
-				return new ModelAndView("jsonView", success("关闭成功"));
-			}else{
-				String message = unClosedSubtaskList.toString() + "内存在未完成作业，subtask无法关闭";
-				return new ModelAndView("jsonView", success(message));
-			}
+			String message = "批量关闭子任务：" + (subtaskIdList.size() - unClosedSubtaskList.size()) + "个成功，" + unClosedSubtaskList.size() + "个失败。";
 			
-			
+			return new ModelAndView("jsonView", success(message));
+		
 		}catch(Exception e){
 			log.error("批量关闭失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

@@ -70,7 +70,7 @@ public class LogFlushUtil {
 				EditLog editLog = new EditLog(opType, rowId, opId, rowId,newValue, tableName, tableRowId);
 				ILogWriteListener listener = new LogWriteListener(flushResult);
 				logWriter.write(editLog , listener );
-
+				
 			}
 			return flushResult;
 		}finally{

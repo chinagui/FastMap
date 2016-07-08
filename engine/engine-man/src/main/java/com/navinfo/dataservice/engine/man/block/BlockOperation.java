@@ -37,7 +37,7 @@ public class BlockOperation {
 		// TODO Auto-generated constructor stub
 	}
 
-	public static List<HashMap> queryBlockBySql(Connection conn, String selectSql, String wkt) throws Exception {
+	public static List<HashMap> queryBlockBySql(Connection conn, String selectSql) throws Exception {
 		try {
 			QueryRunner run = new QueryRunner();
 			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>() {
@@ -49,10 +49,9 @@ public class BlockOperation {
 						map.put("blockName", rs.getString("BLOCK_NAME"));
 						map.put("planningStatus", rs.getInt("PLAN_STATUS"));
 						map.put("cityId", rs.getInt("CITY_ID"));
-
-						CLOB clob = (CLOB) rs.getObject("geometry");
-						String clobStr = DataBaseUtils.clob2String(clob);
 						try {
+							CLOB clob = (CLOB) rs.getObject("geometry");
+							String clobStr = DataBaseUtils.clob2String(clob);
 							map.put("geometry", Geojson.wkt2Geojson(clobStr));
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
@@ -64,7 +63,7 @@ public class BlockOperation {
 				}
 
 			};
-			return run.query(conn, selectSql, rsHandler, wkt);
+			return run.query(conn, selectSql, rsHandler);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

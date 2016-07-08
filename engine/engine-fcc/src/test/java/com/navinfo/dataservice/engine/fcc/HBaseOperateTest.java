@@ -26,12 +26,16 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.filter.CompareFilter.CompareOp;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
+import org.apache.hadoop.hbase.filter.RegexStringComparator;
 import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
+import org.apache.hadoop.hbase.filter.SubstringComparator;
 import org.apache.hadoop.hbase.util.Bytes;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.HBaseController;
 
@@ -44,9 +48,9 @@ import com.navinfo.dataservice.dao.fcc.HBaseController;
  */
 public class HBaseOperateTest {
 
-	// static String tableName=HBaseConstant.tipTab;
+	 static String tableName=HBaseConstant.tipTab;
 
-	static String tableName = HBaseConstant.trackLineTab;
+	//static String tableName = HBaseConstant.trackLineTab;
 
 	public static Configuration configuration;
 	static {
@@ -140,6 +144,70 @@ public class HBaseOperateTest {
 				}
 
 			}
+			
+			htab.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			
+		}
+
+	}
+	
+	
+	
+	/*
+	 * 单条件按查询，查询多条记录
+	 * 
+	 * @param tableName
+	 */
+	public static void QueryByCondition4() {
+
+		try {
+			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+			Table htab = hbaseConn.getTable(TableName.valueOf(tableName));
+			System.out.println("查询啊~~");
+			
+			Scan scan = new Scan();
+			scan.addColumn(Bytes.toBytes("data"),Bytes.toBytes("track"));
+			//scan.addFamily(Bytes.toBytes("attribute"));
+			
+			RegexStringComparator comp = new RegexStringComparator(".],\"t_cStatus\"."); // or (\W|^)test(\W|$) if you want complete words only  
+			
+			//SubstringComparator comp = new SubstringComparator("test"); 
+
+			SingleColumnValueFilter filter = new SingleColumnValueFilter(Bytes.toBytes("data"), Bytes.toBytes("track"),CompareOp.NOT_EQUAL, comp);
+			//查询t_lifecycle=1
+			//RegexStringComparator comp2 = new RegexStringComparator(".\"t_lifecycle\":1,."); 
+			
+			//RegexStringComparator comp2 = new RegexStringComparator(".\"t_lifecycle\":0,."); 
+			
+			//SingleColumnValueFilter filter2 = new SingleColumnValueFilter(Bytes.toBytes("data"), Bytes.toBytes("track"),CompareOp.EQUAL, comp2);
+			
+			filter.setFilterIfMissing(true);
+			//filter2.setFilterIfMissing(true);
+			//scan.setFilter(filter2);
+			scan.setFilter(filter);
+			
+			//scan 'tracklines_sprint5',{COLUMN => 'attribute', FILTER =>"(SingleColumnValueFilter('attribute','attribute:a_uuid',=,'binary:uuid1'))"}
+
+			//s.setFilter(filter);
+			ResultScanner rs = htab.getScanner(scan);
+			int count=0;
+					
+			for (Result r : rs) {
+				System.out.println("获得到rowkey:" + new String(r.getRow()));
+				for (KeyValue keyValue : r.raw()) {
+					System.out.println("列：" + new String(keyValue.getFamily())
+							+ "====值:" + new String(keyValue.getValue()));
+				}
+				
+				System.out.println("获得到rowkey:" + new String(r.getRow()));
+				count++;
+
+				//update(new String(r.getRow()));
+			}
+			System.out.println("总条数："+count);
 			
 			htab.close();
 		} catch (Exception e) {
@@ -373,10 +441,11 @@ public class HBaseOperateTest {
 
 	public static void main(String[] args) throws Exception {
 		HBaseOperateTest test = new HBaseOperateTest();
+		String rowkey = "0212055b268d5faff94b59b94ad7aec3348d4f";
 		// test.QueryAll();
-		// test.QueryByCondition1();
-		 test.QueryByCondition2();
-	//	String rowkey = "rowkey001";
+		 //test.QueryByCondition1(rowkey);
+		 test.QueryByCondition4();
+		
 	//	test.insertData();
 		//test.selectByFilter();
 		// test.QueryByCondition1(rowkey);
@@ -393,6 +462,69 @@ public class HBaseOperateTest {
 			}
 
 		}*/
+	}
+	
+	
+	
+	/**
+	 * 修改tips(增加三个字段)
+	 * 
+	 * @param rowkey
+	 * @param mdFlag 
+	 * @param content
+	 * @return
+	 * @throws Exception
+	 */
+	public static boolean update(String rowkey)
+			throws Exception {
+
+		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+
+		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+
+		Get get = new Get(rowkey.getBytes());
+
+		get.addColumn("data".getBytes(), "track".getBytes());
+
+
+		Result result = htab.get(get);
+
+		if (result.isEmpty()) {
+			return false;
+		}
+
+		Put put = new Put(rowkey.getBytes());
+
+		JSONObject track = JSONObject.fromObject(new String(result.getValue(
+				"data".getBytes(), "track".getBytes())));
+
+		int lifecycle = track.getInt("t_lifecycle");
+
+		if (0 == lifecycle) {
+			track.put("t_lifecycle", 2);
+		}
+
+		JSONArray trackInfo = track.getJSONArray("t_trackInfo");
+		
+		
+		track.put("t_cStatus", 1);
+		
+		track.put("t_dStatus", 0);
+		
+		track.put("t_mStatus", 0);
+		
+		String date = StringUtils.getCurrentTime();
+
+		track.put("t_trackInfo", trackInfo);
+
+		track.put("t_date", date);
+
+		put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
+				.getBytes());
+
+		htab.put(put);
+
+		return true;
 	}
 
 }

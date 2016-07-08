@@ -348,9 +348,16 @@ public class UploadOperation {
 			// geometry按SDO_GEOMETRY格式原值转出
 			Geometry geometry = new WKTReader().read(jo.getString("geometry"));
 			poi.setGeometry(GeoTranslator.transform(geometry, 100000, 5));
-			poi.setxGuide(jo.getJSONObject("guide").getDouble("longitude"));
-			poi.setyGuide(jo.getJSONObject("guide").getDouble("latitude"));
-			poi.setLinkPid(jo.getJSONObject("guide").getInt("linkPid"));
+			if (jo.getJSONObject("guide").size()>0) {
+				poi.setxGuide(jo.getJSONObject("guide").getDouble("longitude"));
+				poi.setyGuide(jo.getJSONObject("guide").getDouble("latitude"));
+				poi.setLinkPid(jo.getJSONObject("guide").getInt("linkPid"));
+			} else {
+				poi.setxGuide(0);
+				poi.setyGuide(0);
+				poi.setLinkPid(0);
+			}
+			
 			poi.setChain(jo.getString("chain"));
 			poi.setOpen24h(jo.getInt("open24H"));
 			// meshid非0时原值转出；为0时根据几何计算；
@@ -679,9 +686,15 @@ public class UploadOperation {
 			Geometry geometry = new WKTReader().read(jo.getString("geometry"));
 			JSONObject geometryObj = GeoTranslator.jts2Geojson(geometry);
 			poiJson.put("geometry", geometryObj);
-			poiJson.put("xGuide", jo.getJSONObject("guide").getDouble("longitude"));
-			poiJson.put("yGuide", jo.getJSONObject("guide").getDouble("latitude"));
-			poiJson.put("linkPid", jo.getJSONObject("guide").getInt("linkPid"));
+			if (jo.getJSONObject("guide").size()>0) {
+				poiJson.put("xGuide", jo.getJSONObject("guide").getDouble("longitude"));
+				poiJson.put("yGuide", jo.getJSONObject("guide").getDouble("latitude"));
+				poiJson.put("linkPid", jo.getJSONObject("guide").getInt("linkPid"));
+			} else {
+				poiJson.put("xGuide", 0);
+				poiJson.put("yGuide", 0);
+				poiJson.put("linkPid", 0);
+			}
 			poiJson.put("chain", jo.getString("chain"));
 			poiJson.put("open24h", jo.getInt("open24H"));
 			// meshid非0时原值转出；为0时根据几何计算；
@@ -1378,7 +1391,7 @@ public class UploadOperation {
 
 				String filePath = resultSet.getString("file_path");
 
-				String md5 = resultSet.getString("md5");
+				String md5 = resultSet.getString("file_md5");
 
 				json.put("fileName", fileName);
 

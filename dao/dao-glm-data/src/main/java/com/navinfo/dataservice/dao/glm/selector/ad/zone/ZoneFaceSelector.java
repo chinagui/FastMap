@@ -140,17 +140,21 @@ public class ZoneFaceSelector implements ISelector {
 	public List<ZoneFace> loadZoneFaceByLinkId(int linkPid, boolean isLock)
 			throws Exception {
 		List<ZoneFace> faces = new ArrayList<ZoneFace>();
-		String sql = "select  a.*  from zone_face a ,zone_face_topo t where a.u_record != 2  and a.face_pid = t.face_pid and t.link_pid = :1 ";
-		
+		StringBuilder bf = new StringBuilder();
+        bf.append("select b.* from zone_face b where b.face_pid in (select a.face_pid ");
+        bf.append("  FROM zone_face a, zone_face_topo t");
+        bf.append(" WHERE     a.u_record != 2  AND T.u_record != 2");
+        bf.append("  AND a.face_pid = t.face_pid");
+        bf.append(" AND t.link_pid = :1 group by a.face_pid)");
 		if (isLock) {
-			sql += " for update nowait";
+			 bf.append( " for update nowait");
 		}
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 
 		try {
-			pstmt = this.conn.prepareStatement(sql);
+			pstmt = this.conn.prepareStatement(bf.toString());
 
 			pstmt.setInt(1, linkPid);
 
@@ -222,18 +226,23 @@ public class ZoneFaceSelector implements ISelector {
 
 		List<ZoneFace> faces = new ArrayList<ZoneFace>();
 
-		String sql = "select  a.*  from zone_face a ,zone_face_topo t,zone_link l where a.u_record != 2  and a.face_pid = t.face_pid and t.link_pid = l.link_pid and (l.s_node_pid = :1 or l.e_node_pid = :2) ";
+		StringBuilder  builder = new StringBuilder();
+		builder.append(" SELECT b.* from zone_face b where b.face_pid in (select a.face_pid ");
+		builder.append(" FROM zone_face a, zone_face_topo t, zone_link l ");
+		builder.append(" WHERE a.u_record != 2 and t.u_record != 2 and l.u_record != 2 ");
+		builder.append(" AND a.face_pid = t.face_pid");
+		builder.append(" AND t.link_pid = l.link_pid");
+		builder.append(" AND (l.s_node_pid = :1 OR l.e_node_pid = :2) group by a.face_pid)");
 		
 		if (isLock) {
-			sql += " for update nowait";
+			builder.append(" for update nowait");
 		}
-
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 
 		try {
-			pstmt = this.conn.prepareStatement(sql);
+			pstmt = this.conn.prepareStatement(builder.toString());
 
 			pstmt.setInt(1, nodePid);
 			

@@ -380,9 +380,7 @@ public class UploadOperation {
 			}
 			if (jo.has("hotel")) {
 				if (jo.getJSONObject("hotel").has("rating")) {
-					if (!jo.getJSONObject("hotel").getString("rating").isEmpty()) {
-						fieldState += "改酒店星级|";
-					}
+					fieldState += "改酒店星级|";
 				}
 			}
 			if (fieldState.length()>0) {
@@ -724,7 +722,7 @@ public class UploadOperation {
 			if (jo.has("hotel")) {
 				JSONObject hotelJSONObj = jo.getJSONObject("hotel");
 				if (hotelJSONObj.has("rating")) {
-					if (!hotelJSONObj.getString("rating").equals(hotelOld.getRating())) {
+					if (hotelJSONObj.getInt("rating") != hotelOld.getRating()) {
 						fieldState += "改酒店星级|";
 					}
 				}

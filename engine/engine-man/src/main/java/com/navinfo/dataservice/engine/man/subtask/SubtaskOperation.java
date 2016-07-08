@@ -21,6 +21,7 @@ import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.sql.SqlClause;
 import com.navinfo.dataservice.commons.util.ArrayUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
@@ -550,50 +551,86 @@ public class SubtaskOperation {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
+			
+			List<Object> value=new ArrayList();
+			value.add(bean.getSubtaskId());
+			value.add(bean.getName());
+			
+			SqlClause inClause = SqlClause.genGeoClauseWithGeoString(conn,bean.getGeometry());
+			if (inClause!=null)
+				value.add(inClause.getValues().get(0));
+			
+//			value.add(bean.getGeometry());
+			value.add(bean.getStage());
+			value.add(bean.getType());
+			value.add(bean.getCreateUserId());
+			value.add(bean.getExeUserId());
+//			value.add("sysdate");
+			value.add(1);
+			value.add(bean.getPlanStartDate().toString().substring(0, 10));
+			value.add(bean.getPlanEndDate().toString().substring(0, 10));
+			value.add(bean.getDescp());
+
 			String createSql = "insert into SUBTASK " ;
-			String column = "(SUBTASK_ID, NAME, GEOMETRY, STAGE, TYPE, CREATE_USER_ID, EXE_USER_ID, CREATE_DATE, STATUS, PLAN_START_DATE, PLAN_END_DATE, DESCP";
-			String values = " values("
-					+ bean.getSubtaskId()
-					+ ",'"
-					+ bean.getName()
-					+ "',"
-					+ "sdo_geometry("
-					+ "'"
-					+ bean.getGeometry()
-					+ "',8307)"
-					+ ","
-					+ bean.getStage()
-					+ ","
-					+ bean.getType()
-					+ ","
-					+ bean.getCreateUserId()
-					+ ","
-					+ bean.getExeUserId()
-					+ ", sysdate"
-					+ ","
-					+ "1"
-					+ ",to_date('"
-					+ bean.getPlanStartDate().toString().substring(0, 10)
-					+ "','yyyy-MM-dd HH24:MI:ss')"
-					+ ",to_date('"
-					+ bean.getPlanEndDate().toString().substring(0, 10)
-					+ "','yyyy-MM-dd HH24:MI:ss')"
-					+ ",'"
-					+ bean.getDescp()
-					+ "'";
+//			String column = "(SUBTASK_ID, NAME, GEOMETRY, STAGE, TYPE, CREATE_USER_ID, EXE_USER_ID, CREATE_DATE, STATUS, PLAN_START_DATE, PLAN_END_DATE, DESCP";
+			String column = "(SUBTASK_ID, NAME, GEOMETRY, STAGE, TYPE, CREATE_USER_ID, EXE_USER_ID, STATUS, PLAN_START_DATE, PLAN_END_DATE, DESCP";
+			String values = "values(?,?,sdo_geometry(?,8307),?,?,?,?,?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),to_date(?,'yyyy-MM-dd HH24:MI:ss'),?";
+//			String values = "values(?,?,sdo_geometry(?,8307),?,?,?,?,?,?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),to_date(?,'yyyy-MM-dd HH24:MI:ss'),?";
+//			String values = " values("
+//					+ bean.getSubtaskId()
+//					+ ",'"
+//					+ bean.getName()
+//					+ "',"
+//					+ "sdo_geometry("
+//					+ "'"
+//					+ bean.getGeometry()
+//					+ "',8307)"
+//					+ ","
+//					+ bean.getStage()
+//					+ ","
+//					+ bean.getType()
+//					+ ","
+//					+ bean.getCreateUserId()
+//					+ ","
+//					+ bean.getExeUserId()
+//					+ ", sysdate"
+//					+ ","
+//					+ "1"
+//					+ ",to_date('"
+//					+ bean.getPlanStartDate().toString().substring(0, 10)
+//					+ "','yyyy-MM-dd HH24:MI:ss')"
+//					+ ",to_date('"
+//					+ bean.getPlanEndDate().toString().substring(0, 10)
+//					+ "','yyyy-MM-dd HH24:MI:ss')"
+//					+ ",'"
+//					+ bean.getDescp()
+//					+ "'";
+//			if(0!=bean.getBlockId()){
+//				column += ", BLOCK_ID)";
+//				values += ","
+//						+ bean.getBlockId()
+//						+ ")";
+//			}else{
+//				column += ", TASK_ID)";
+//				values += ","
+//						+ bean.getTaskId()
+//						+ ")";
+//			}
+
+			
 			if(0!=bean.getBlockId()){
 				column += ", BLOCK_ID)";
-				values += ","
-						+ bean.getBlockId()
-						+ ")";
+				value.add(bean.getBlockId());
+				values += ",?)";
+
 			}else{
 				column += ", TASK_ID)";
-				values += ","
-						+ bean.getTaskId()
-						+ ")";
+				value.add(bean.getTaskId());
+				values += ",?)";
 			}
 			createSql += column+values;
-			run.update(conn, createSql);
+
+			run.update(conn, createSql,value.toArray());
 
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -905,6 +942,8 @@ public class SubtaskOperation {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 
 	}

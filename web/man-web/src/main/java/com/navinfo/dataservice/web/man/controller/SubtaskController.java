@@ -26,6 +26,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.geo.computation.GridUtils;
@@ -57,13 +58,22 @@ public class SubtaskController extends BaseController {
 			}
 			
 			long userId = tokenObj.getUserId();
+			JSONArray gridIds = new JSONArray();
+			
+			//创建区域专项子任务
+			if(dataJson.containsKey("taskId")){
+				List<Integer> gridIdList = GridService.getInstance().getGridListByTaskId(dataJson.getInt("taskId"));
+				gridIds.addAll(gridIdList);
+			}else{
+				gridIds = dataJson.getJSONArray("gridIds");
+			}
 			//根据gridIds获取wkt
-			JSONArray gridIds = dataJson.getJSONArray("gridIds");
 			String wkt = GridUtils.grids2Wkt(gridIds);
 			if(wkt.contains("MULTIPOLYGON")){
 				return new ModelAndView("jsonView",exception("请输入符合条件的grids"));
 			}
-			Object[] gridIdList = dataJson.getJSONArray("gridIds").toArray();
+			
+			Object[] gridIdList = gridIds.toArray();
 			dataJson.put("gridIds",gridIdList);
 			
 			Subtask bean = (Subtask) JsonOperation.jsonToBean(dataJson,Subtask.class);

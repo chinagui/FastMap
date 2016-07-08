@@ -127,7 +127,7 @@ public class Check {
 				
 				Coordinate[] cs = geo.getCoordinates();
 				
-				int midP = (int)Math.round(cs.length/2);
+				int midP = (int)Math.round(cs.length/2.0);
 				
 				double x = cs[midP].x;
 				

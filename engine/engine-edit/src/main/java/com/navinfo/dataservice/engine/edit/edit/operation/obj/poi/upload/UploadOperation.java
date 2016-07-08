@@ -424,8 +424,7 @@ public class UploadOperation {
 			poi.setVipFlag(jo.getString("vipFlag"));
 			poi.setuRecord(1);
 			
-			UuidUtils uuid = new UuidUtils();
-			poi.setRowId(uuid.genUuid());
+			poi.setRowId(UuidUtils.genUuid());
 			
 			// 名称
 			if (!poi.getOldName().isEmpty()) {
@@ -439,7 +438,7 @@ public class UploadOperation {
 				poiName.setNameClass(1);
 				poiName.setNameType(2);
 				poiName.setName(poi.getOldName());
-				poiName.setRowId(uuid.genUuid());
+				poiName.setRowId(UuidUtils.genUuid());
 				nameList.add(poiName);
 				poi.setNames(nameList);
 			}
@@ -454,7 +453,7 @@ public class UploadOperation {
 				poiAddress.setNameGroupid(1);
 				poiAddress.setLangCode("CHI");
 				poiAddress.setFullname(poi.getOldAddress());
-				poiAddress.setRowId(uuid.genUuid());
+				poiAddress.setRowId(UuidUtils.genUuid());
 				addressList.add(poiAddress);
 				poi.setAddresses(addressList);
 			}
@@ -541,7 +540,7 @@ public class UploadOperation {
 				List<IRow> parentList = new ArrayList<IRow>();
 				parent.setPid(groupId);
 				parent.setParentPoiPid(pid);
-				parent.setRowId(uuid.genUuid());
+				parent.setRowId(UuidUtils.genUuid());
 				parentList.add(parent);
 				poi.setParents(parentList);
 				
@@ -768,8 +767,6 @@ public class UploadOperation {
 			poiJson.put("vipFlag", jo.getString("vipFlag"));
 			poiJson.put("objStatus", ObjStatus.UPDATE.toString());
 			
-			UuidUtils uuid = new UuidUtils();
-			
 			// 名称
 			List<IRow> oldNameList = oldPoi.getNames();
 			String oldNameStr = "";
@@ -795,7 +792,7 @@ public class UploadOperation {
 					poiName.put("nameClass",1);
 					poiName.put("nameType", 2);
 					poiName.put("name", poiJson.getString("oldName"));
-					poiName.put("rowId", uuid.genUuid());
+					poiName.put("rowId", UuidUtils.genUuid());
 					nameList.add(poiName);
 					poiJson.put("names", nameList);
 				} else if (!oldNameStr.equals(poiJson.getString("oldName"))) {
@@ -838,7 +835,7 @@ public class UploadOperation {
 					poiAddress.put("nameGroupid", 1);
 					poiAddress.put("langCode", "CHI");
 					poiAddress.put("fullname",poiJson.getString("oldAddress"));
-					poiAddress.put("rowId", uuid.genUuid());
+					poiAddress.put("rowId", UuidUtils.genUuid());
 					addressList.add(poiAddress);
 					poiJson.put("addresses", addressList);
 				} else if (!oldAddressStr.equals(poiJson.getString("oldAddress"))) {
@@ -984,7 +981,7 @@ public class UploadOperation {
 					parent.put("objStatus", ObjStatus.INSERT.toString());
 					parent.put("pid", groupId);
 					parent.put("parentPoiPid", pid);
-					parent.put("rowId", uuid.genUuid());
+					parent.put("rowId", UuidUtils.genUuid());
 					parentList.add(parent);
 					poiJson.put("parent", parentList);
 				}

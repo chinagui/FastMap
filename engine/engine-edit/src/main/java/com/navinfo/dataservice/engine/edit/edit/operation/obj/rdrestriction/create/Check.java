@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.edit.operation.obj.rdrestriction.cre
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.List;
 import java.util.Set;
 
@@ -15,9 +16,9 @@ public class Check {
 		
 		String sql = "select link_pid from rd_link where kind in (11,13) and link_pid in ("+StringUtils.join(linkPids, ",")+") and rownum=1";
 		
-		PreparedStatement pstmt = conn.prepareStatement(sql);
+		Statement pstmt = conn.createStatement();
 
-		ResultSet resultSet = pstmt.executeQuery();
+		ResultSet resultSet = pstmt.executeQuery(sql);
 
 		boolean flag = false;
 

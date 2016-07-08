@@ -6,6 +6,4 @@
 
 	<dubbo:service interface="com.navinfo.dataservice.api.statics.iface.StaticsApi" ref="staticsApi" />
 	<dubbo:reference id="datahubApi" interface="com.navinfo.dataservice.api.datahub.iface.DatahubApi" timeout="5000"/>
-	
-	<dubbo:service interface="com.navinfo.dataservice.api.statics.iface.StaticsApi" ref="staticsApi" />
 </beans>

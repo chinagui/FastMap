@@ -37,9 +37,14 @@ public class GdbValidationJob extends AbstractJob {
 		try {
 			// 1. 创建检查子版本库库
 			int valDbId = 0;
+			OracleSchema valSchema = null;
+			DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
 			if(req.getValDbId()>0){
 				valDbId = req.getValDbId();
 				jobInfo.getResponse().put("valDbId", valDbId);
+				DbInfo valDb = datahub.getDbById(valDbId);
+				valSchema = new OracleSchema(
+						DbConnectConfig.createConnectConfig(valDb.getConnectParam()));
 			}else if(req.getSubJobRequest("createValDb")!=null&&req.getSubJobRequest("expValDb")!=null){
 				JobInfo createValDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
 				AbstractJob createValDbJob = JobCreateStrategy.createAsSubJob(createValDbJobInfo,
@@ -48,10 +53,10 @@ public class GdbValidationJob extends AbstractJob {
 				if (createValDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
 					throw new Exception("创建检查子版本库是job执行失败。");
 				}
-				// 2.给检查子版本库导数据
-				req.getSubJobRequest("expValDb").setAttrValue("sourceDbId", req.getTargetDbId());
 				valDbId = createValDbJob.getJobInfo().getResponse().getInt("outDbId");
 				jobInfo.getResponse().put("valDbId", valDbId);
+				// 2.给检查子版本库导数据
+				req.getSubJobRequest("expValDb").setAttrValue("sourceDbId", req.getTargetDbId());
 				req.getSubJobRequest("expValDb").setAttrValue("targetDbId", valDbId);
 				Set<String> meshes = new HashSet<String>();
 				for (Integer g : req.getGrids()) {
@@ -67,22 +72,24 @@ public class GdbValidationJob extends AbstractJob {
 				}
 
 				//cop 子版本物理删除逻辑删除数据
-				DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
-				DbInfo batDb = datahub.getDbById(valDbId);
-				OracleSchema batSchema = new OracleSchema(
-						DbConnectConfig.createConnectConfig(batDb.getConnectParam()));
-				PhysicalDeleteRow.doDelete(batSchema);
+				DbInfo valDb = datahub.getDbById(valDbId);
+				valSchema = new OracleSchema(
+						DbConnectConfig.createConnectConfig(valDb.getConnectParam()));
+				PhysicalDeleteRow.doDelete(valSchema);
 			}
 			// 2. 在检查子版本上执行检查
-			//检查前预处理
-			DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
-			DbInfo valDb = datahub.getDbById(valDbId);
-			OracleSchema valSchema = new OracleSchema(
-					DbConnectConfig.createConnectConfig(valDb.getConnectParam()));
-			PhysicalDeleteRow.doDelete(valSchema);
-			// ...检查
-			
-			// 3. 检查结果后处理
+			req.getSubJobRequest("val").setAttrValue("executeDBId", valDbId);
+			req.getSubJobRequest("val").setAttrValue("ruleIds", req.getRules());
+			DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
+			req.getSubJobRequest("val").setAttrValue("kdbDBId", metaDb.getDbId());
+			req.getSubJobRequest("val").setAttrValue("timeOut", req.getTimeOut());
+			JobInfo valJobInfo = new JobInfo(jobInfo.getId(),jobInfo.getGuid());
+			AbstractJob valJob = JobCreateStrategy.createAsSubJob(valJobInfo, req.getSubJobRequest("val"), this);
+			valJob.run();
+			if(valJob.getJobInfo().getResponse().getInt("exeStatus")!=3){
+				throw new Exception("检查job内部执行失败。");
+			}
+			// 3. 检查结果搬迁
 			CkResultTool.generateCkMd5(valSchema);
 			CkResultTool.generateCkResultObject(valSchema);
 			CkResultTool.generateCkResultGrid(valSchema);
@@ -90,7 +97,7 @@ public class GdbValidationJob extends AbstractJob {
 			OracleSchema tarSchema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(tarDb.getConnectParam()));
 			CkResultTool.moveNiVal(valSchema, tarSchema, req.getGrids());
-			response("批处理生成的检查结果后处理及搬迁完毕。",null);
+			response("检查生成的检查结果后处理及搬迁完毕。",null);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(), e);

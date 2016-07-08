@@ -48,6 +48,10 @@
 		class="com.navinfo.dataservice.cop.waistcoat.job.GdbValidationJob"
 	 	request="com.navinfo.dataservice.cop.waistcoat.job.GdbValidationJobRequest"
 	/>
+		<type name="checkCore" 
+		class="com.navinfo.dataservice.cop.waistcoat.job.CheckCoreJob"
+	 	request="com.navinfo.dataservice.cop.waistcoat.job.CheckCoreJobRequest"
+	/>
 	<type name="gdbImport" 
 		class="com.navinfo.dataservice.impcore.job.GdbImportJob"
 	 	request="com.navinfo.dataservice.impcore.job.GdbImportJobRequest"

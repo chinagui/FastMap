@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import net.sf.json.JSONArray;
+
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
@@ -65,17 +67,19 @@ public class EditPoiBaseReleaseJobRequest extends AbstractJobRequest {
 		//validation
 		List<String> checkRule=new ArrayList<String>();
 		checkRule.add("GLM01004");
+		this.setCheckRules(checkRule);
 		AbstractJobRequest validation = JobCreateStrategy.createJobRequest("gdbValidation", null);
 		validation.setAttrValue("grids", gridIds);
-		validation.setAttrValue("rules", checkRule);
+		validation.setAttrValue("rules", JSONArray.fromObject(this.checkRules));
 		validation.setAttrValue("targetDbId", targetDbId);
 		subJobRequests.put("validation", validation);
 		//batch
 		List<String> batchRule=new ArrayList<String>();
 		batchRule.add("BATCH_LANE_PARKING_FLAG");
+		this.setBatchRules(batchRule);
 		AbstractJobRequest batch = JobCreateStrategy.createJobRequest("gdbBatch", null);
 		batch.setAttrValue("grids", gridIds);
-		batch.setAttrValue("rules", batchRule);
+		batch.setAttrValue("rules", JSONArray.fromObject(this.batchRules));
 		batch.setAttrValue("targetDbId", targetDbId);
 		subJobRequests.put("batch", batch);
 	}

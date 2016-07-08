@@ -59,7 +59,7 @@ public class CheckSuitLoader {
 							CheckRule myCheckRule = CheckRuleLoader.getInstance().getCheckRule(ruleCode);							
 							if(myCheckRule != null){
 								checkRuleList.add(myCheckRule);
-								if("POST"==paras[2] && myCheckRule.getPostVariables()!=null && myCheckRule.getPostVariables().size()>0){
+								if("POST".equals(paras[2]) && myCheckRule.getPostVariables()!=null && myCheckRule.getPostVariables().size()>0){
 									variablesList.removeAll(myCheckRule.getPostVariables());
 									variablesList.addAll(myCheckRule.getPostVariables());}
 							}							

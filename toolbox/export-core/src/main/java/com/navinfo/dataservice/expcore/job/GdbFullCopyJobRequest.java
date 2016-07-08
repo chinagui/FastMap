@@ -16,11 +16,11 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 */
 public class GdbFullCopyJobRequest extends AbstractJobRequest {
 	protected int sourceDbId=0;
-	protected String sourceDbInfo;//"oracle,ip,port,dbname/sid,user name,user passwd"
+	protected String sourceDbInfo;//"ORALCE,ip,port,sid,user name,user passwd"
 	protected String featureType;//poi,road,all,GlmTable.FEATURE_TYPE_XXX
 	protected boolean truncateData=false;//导入数据之前，是否清空目标库，只会清空导出目标表
 	protected int targetDbId=0;
-	protected String targetDbInfo;//"oracle,ip,port,dbname/sid,user name,user passwd"
+	protected String targetDbInfo;//"ORACLE,ip,port,sid,user name,user passwd"
 	protected boolean multiThread4Output=true;
 	protected Map<String,String> tableReNames;
 	protected List<String> specificTables;

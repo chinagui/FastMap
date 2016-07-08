@@ -86,7 +86,7 @@ public class BatchCoreJob extends AbstractJob {
 			batchParams.setBatchPasswd(batchDBInfo.getDbUserPasswd());
 			batchParams.setBatchHost(batchDBInfo.getDbServer().getIp());
 			batchParams.setBatchPort(Integer.toString(batchDBInfo.getDbServer().getPort()));
-			batchParams.setBatchSid(batchDBInfo.getDbName());
+			batchParams.setBatchSid(batchDBInfo.getDbServer().getServiceName());
 
 
 			//解析备份库参数
@@ -95,7 +95,7 @@ public class BatchCoreJob extends AbstractJob {
 			batchParams.setBackupPasswd(backupDBInfo.getDbUserPasswd());
 			batchParams.setBackupHost(backupDBInfo.getDbServer().getIp());
 			batchParams.setBackupPort(Integer.toString(backupDBInfo.getDbServer().getPort()));
-			batchParams.setBackupSid(backupDBInfo.getDbName());
+			batchParams.setBackupSid(backupDBInfo.getDbServer().getServiceName());
 
 			//解析元数据库参数
 			DbInfo kdbDBInfo = datahub.getDbById(req.getKdbDBId());
@@ -103,7 +103,7 @@ public class BatchCoreJob extends AbstractJob {
 			batchParams.setKdbPasswd(kdbDBInfo.getDbUserPasswd());
 			batchParams.setKdbHost(kdbDBInfo.getDbServer().getIp());
 			batchParams.setKdbPort(Integer.toString(kdbDBInfo.getDbServer().getPort()));
-			batchParams.setKdbSid(kdbDBInfo.getDbName());
+			batchParams.setKdbSid(kdbDBInfo.getDbServer().getServiceName());
 
 			//解析DMS(PID)库参数
 			String[] pidManDBInfos = req.getPidDbInfo().split(",");

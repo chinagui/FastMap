@@ -24,7 +24,7 @@ public class RdLinkTest extends InitApplication{
 	
 	private Connection conn;
 	public RdLinkTest() throws Exception {
-		this.conn = DBConnector.getInstance().getConnectionById(11);
+		//this.conn = DBConnector.getInstance().getConnectionById(11);
 	}
 	
 	public void testDelete() {
@@ -84,10 +84,13 @@ public class RdLinkTest extends InitApplication{
 	}
 	
 	@Test
+	
+	
+	//{"command":"UPDOWNDEPART","type":"RDLINK","dbId":43,"distance":"10.0","data":{"linkPids":[100006797,100006790,100006789,719802,719801,596719,582698,574124,588624,724729,724731,724721,724722,572598,574104,574105,584128,574101,581392,730940,86927696,19613244,19613245,727663,584391,730945,730947,727854,15444003,15444004,732739,722007,88026242,88026245,88026246,19613249,19613248,723176,721348,723185,85206511,86035226,86035225,719835,584262,86035239]}}
 	public void departRdLink()
 	{
-		String line  = "[20465744,20465745,14226884]";
-		String parameter =  "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"distance\":25.3,\"projectId\":11,\"data\":{\"linkPids\":"+line+"}}";
+		String line  = "[100006797,100006790,100006789,719802,719801,596719,582698,574124,588624,724729,724731,724721,724722,572598,574104,574105,584128,574101,581392,730940,86927696,19613244,19613245,727663,584391,730945,730947,727854,15444003,15444004,732739,722007,88026242,88026245,88026246,19613249,19613248,723176,721348,723185,85206511,86035226,86035225,719835,584262,86035239]";
+		String parameter =  "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"distance\":25.3,\"dbId\":43,\"data\":{\"linkPids\":"+line+"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

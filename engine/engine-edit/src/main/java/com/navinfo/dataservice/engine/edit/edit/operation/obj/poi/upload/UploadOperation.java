@@ -1338,7 +1338,7 @@ public class UploadOperation {
 
 			JSONObject json = new JSONObject();
 
-			String sql = "select * from dropbox_upload where job_id = :1";
+			String sql = "select * from dropbox_upload where upload_id = :1";
 
 			pstmt = conn.prepareStatement(sql);
 

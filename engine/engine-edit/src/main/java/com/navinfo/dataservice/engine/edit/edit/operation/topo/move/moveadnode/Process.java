@@ -63,6 +63,7 @@ public class Process extends AbstractProcess<Command> {
 		
 		lockAdNode();
 		lockAdLink();
+		lockAdFace();
 		return false;
 	}
 

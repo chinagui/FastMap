@@ -11,6 +11,7 @@ import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.bizcommons.datarow.CkResultTool;
 import com.navinfo.dataservice.bizcommons.datarow.PhysicalDeleteRow;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -111,7 +112,9 @@ public class GdbBatchJob extends AbstractJob {
 			req.getSubJobRequest("batch").setAttrValue("backupDBId", bakDbId);
 			DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
 			req.getSubJobRequest("batch").setAttrValue("kdbDBId", metaDb.getDbId());
-			req.getSubJobRequest("batch").setAttrValue("pidDbInfo", req.getPidDbInfo());
+			req.getSubJobRequest("batch").setAttrValue("pidDbInfo",
+					SystemConfigFactory.getSystemConfig().getValue("dms.pid.dbInfo"));
+//			req.getSubJobRequest("batch").setAttrValue("pidDbInfo", req.getPidDbInfo());
 			req.getSubJobRequest("batch").setAttrValue("ruleIds", req.getRules());
 			JobInfo batchJobInfo = new JobInfo(jobInfo.getId(),jobInfo.getGuid());
 			AbstractJob batchJob = JobCreateStrategy.createAsSubJob(batchJobInfo, req.getSubJobRequest("batch"),this);
@@ -160,7 +163,7 @@ public class GdbBatchJob extends AbstractJob {
 		// 根据批处理的目标库找到对应的大区
 		try {
 			DatalockApi datalock = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
-//			editLock = datalock.lockGrid(req.getTargetDbId(), FmEditLock.LOCK_OBJ_ALL, req.getGrids(), FmEditLock.TYPE_BATCH, jobInfo.getId());
+			editLock = datalock.lockGrid(req.getTargetDbId(), FmEditLock.LOCK_OBJ_ALL, req.getGrids(), FmEditLock.TYPE_BATCH, jobInfo.getId());
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw new LockException("加锁发生错误," + e.getMessage(), e);

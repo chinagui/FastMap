@@ -31,7 +31,7 @@ public class CheckCoreJobRequest extends AbstractJobRequest {
     }
     @Override
     public String getJobType() {
-		return "CheckCore";
+		return "checkCore";
 	}
 
     @Override

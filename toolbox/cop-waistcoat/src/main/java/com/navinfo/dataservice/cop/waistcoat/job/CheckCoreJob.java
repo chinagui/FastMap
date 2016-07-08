@@ -85,7 +85,7 @@ public class CheckCoreJob extends AbstractJob {
             checkParams.setCheckPasswd(checkDBInfo.getDbUserPasswd());
             checkParams.setCheckHost(checkDBInfo.getDbServer().getIp());
             checkParams.setCheckPort(Integer.toString(checkDBInfo.getDbServer().getPort()));
-            checkParams.setCheckSid(checkDBInfo.getDbName());
+            checkParams.setCheckSid(checkDBInfo.getDbServer().getServiceName());
 
             //解析元数据库参数
             DbInfo kdbDBInfo = datahub.getDbById(req.getKdbDBId());
@@ -93,7 +93,7 @@ public class CheckCoreJob extends AbstractJob {
             checkParams.setKdbPasswd(kdbDBInfo.getDbUserPasswd());
             checkParams.setKdbHost(kdbDBInfo.getDbServer().getIp());
             checkParams.setKdbPort(Integer.toString(kdbDBInfo.getDbServer().getPort()));
-            checkParams.setKdbSid(kdbDBInfo.getDbName());
+            checkParams.setKdbSid(kdbDBInfo.getDbServer().getServiceName());
 
         } catch (Exception e) {
             e.printStackTrace();

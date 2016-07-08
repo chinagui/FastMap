@@ -19,9 +19,10 @@ import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 */
 public class GdbValidationJobRequest extends AbstractJobRequest {
 	protected List<Integer> grids;
-	protected List<Integer> rules;
+	protected List<String> rules;
 	protected int targetDbId;
 	protected int valDbId=0;
+	protected int timeOut;
 	
 	@Override
 	public String getJobType() {
@@ -31,7 +32,7 @@ public class GdbValidationJobRequest extends AbstractJobRequest {
 	@Override
 	public void validate() throws JobException {
 		if(valDbId<1&&(this.getSubJobRequest("createValDb")==null||this.getSubJobRequest("expValDb")==null)){
-			throw new JobException("检查的子版本库为指定，且未指定新创建方式。");
+			throw new JobException("检查的子版本库未指定，且未指定新创建方式。");
 		}
 	}
 
@@ -43,11 +44,11 @@ public class GdbValidationJobRequest extends AbstractJobRequest {
 		this.grids = grids;
 	}
 
-	public List<Integer> getRules() {
+	public List<String> getRules() {
 		return rules;
 	}
 
-	public void setRules(List<Integer> rules) {
+	public void setRules(List<String> rules) {
 		this.rules = rules;
 	}
 
@@ -65,6 +66,15 @@ public class GdbValidationJobRequest extends AbstractJobRequest {
 
 	public void setValDbId(int valDbId) {
 		this.valDbId = valDbId;
+	}
+
+
+	public int getTimeOut() {
+		return timeOut;
+	}
+
+	public void setTimeOut(int timeOut) {
+		this.timeOut = timeOut;
 	}
 
 	@Override
@@ -85,11 +95,8 @@ public class GdbValidationJobRequest extends AbstractJobRequest {
 			subJobRequests.put("expValDb", expValDb);
 		}
 		//createBakDb
-		AbstractJobRequest createBakDb = JobCreateStrategy.createJobRequest("createDb", null);
-		createBakDb.setAttrValue("serverType", DbServerType.TYPE_ORACLE);
-		createBakDb.setAttrValue("bizType", BizType.DB_COP_VERSION);
-		createBakDb.setAttrValue("descp", "batch bak db");
-		subJobRequests.put("createBakDb", createBakDb);
+		AbstractJobRequest val = JobCreateStrategy.createJobRequest("checkCore", null);
+		subJobRequests.put("val", val);
 		
 	}
 

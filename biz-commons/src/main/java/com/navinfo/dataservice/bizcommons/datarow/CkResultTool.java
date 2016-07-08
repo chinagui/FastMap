@@ -130,7 +130,7 @@ public class CkResultTool {
 		try{
 			log.debug("开始计算并更新NI_VAL_EXCEPTION_GRID表");
 			conn = schema.getDriverManagerDataSource().getConnection();
-			String sql = "SELECT RESERVED,TARGETS FROM NI_VAL_EXCEPTION";
+			String sql = "SELECT MD5_CODE,TARGETS FROM NI_VAL_EXCEPTION";
 			String insertSql = "INSERT INTO NI_VAL_EXCEPTION_GRID (MD5_CODE,GRID_ID) VALUES (?,?)";
 			QueryRunner runner = new QueryRunner();
 			Map<String,String> rows = runner.query(conn, sql, new ResultSetHandler<Map<String,String>>(){
@@ -139,7 +139,7 @@ public class CkResultTool {
 				public Map<String,String> handle(ResultSet rs) throws SQLException {
 					Map<String,String> rows= new HashMap<String,String>();
 					while(rs.next()){
-						rows.put(rs.getString("RESERVED"),DataBaseUtils.clob2String((CLOB)rs.getClob("TARGETS")));
+						rows.put(rs.getString("MD5_CODE"),DataBaseUtils.clob2String((CLOB)rs.getClob("TARGETS")));
 					}
 					return rows;
 				}

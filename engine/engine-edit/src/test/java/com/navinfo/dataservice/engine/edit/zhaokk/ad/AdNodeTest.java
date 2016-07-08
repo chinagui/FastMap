@@ -55,7 +55,8 @@ public class AdNodeTest extends InitApplication{
 
 	@Test
 	public void moveAdNodeTest() throws Exception {
-		String parameter = "{\"command\":\"MOVE\",\"projectId\":11,\"objId\":100021744,\"data\":{\"longitude\":116.4741861820221,\"latitude\":40.01400009432636},\"type\":\"ADNODE\"}";
+		//parameter:{"command":"MOVE","dbId":43,"objId":"100024205","data":{"longitude":116.47495463490485,"latitude":40.00968804544376},"type":"ADNOD
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":43,\"objId\":100024205,\"data\":{\"longitude\":116.47495463490485,\"latitude\":40.00968804544376},\"type\":\"ADNODE\"}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);
 		;

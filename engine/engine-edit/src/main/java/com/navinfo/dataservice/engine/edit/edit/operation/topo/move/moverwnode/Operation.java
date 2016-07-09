@@ -62,8 +62,6 @@ public class Operation implements IOperation {
 
 			Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geo);
 
-			link.setGeometry(geo);
-
 			if (meshes.size() == 1) {
 
 				JSONObject updateContent = new JSONObject();
@@ -80,10 +78,10 @@ public class Operation implements IOperation {
 				// 如果跨图幅就需要打断生成新的link
 				Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
 
-				maps.put(link.getGeometry().getCoordinates()[0],
+				maps.put(geo.getCoordinates()[0],
 						link.getsNodePid());
 
-				maps.put(link.getGeometry().getCoordinates()[link.getGeometry()
+				maps.put(geo.getCoordinates()[geo
 						.getCoordinates().length - 1], link.geteNodePid());
 
 				Iterator<String> it = meshes.iterator();

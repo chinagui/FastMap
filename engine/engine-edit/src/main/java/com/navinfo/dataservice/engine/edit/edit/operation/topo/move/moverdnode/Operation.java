@@ -89,7 +89,6 @@ public class Operation implements IOperation {
 			Set<String> meshes =  CompGeometryUtil.geoToMeshesWithoutBreak(geo);
 			// 修改线的几何属性
 			// 如果没有跨图幅只是修改线的几何
-			link.setGeometry(geo);
 			List<RdLink> links = new ArrayList<RdLink>();
 			if (meshes.size() == 1) {
 				JSONObject updateContent = new JSONObject();
@@ -103,8 +102,8 @@ public class Operation implements IOperation {
 			//如果跨图幅就需要打断生成新的link
 			}else{
 				Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
-				maps.put(link.getGeometry().getCoordinates()[0], link.getsNodePid());
-				maps.put(link.getGeometry().getCoordinates()[link.getGeometry().getCoordinates().length-1], link.geteNodePid());
+				maps.put(geo.getCoordinates()[0], link.getsNodePid());
+				maps.put(geo.getCoordinates()[geo.getCoordinates().length-1], link.geteNodePid());
 				Iterator<String> it = meshes.iterator();
 				while (it.hasNext()) {
 					String meshIdStr = it.next();

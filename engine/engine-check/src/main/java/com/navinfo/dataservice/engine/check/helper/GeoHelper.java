@@ -29,7 +29,7 @@ public class GeoHelper {
 	public static Geometry getMidPointByLine(Geometry geo) throws Exception{
 		Coordinate[] cs = geo.getCoordinates();
 		
-		int midP = (int)Math.round(cs.length/2);
+		int midP = (int)Math.round(cs.length/2d);
 		double x = 0;
 		double y = 0;
 		if (cs.length%2==0){

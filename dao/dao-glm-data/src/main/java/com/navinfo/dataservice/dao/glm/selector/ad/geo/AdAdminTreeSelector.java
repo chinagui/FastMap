@@ -214,7 +214,10 @@ public class AdAdminTreeSelector implements ISelector {
 				}
 			}
 		} catch (Exception e) {
-			result.setPart(null);
+			if(result != null)
+			{
+				result.setPart(null);
+			}
 
 			e.printStackTrace();
 		}

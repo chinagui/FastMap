@@ -274,7 +274,7 @@ public class Operation implements IOperation {
 	 */
 	@SuppressWarnings("null")
 	public void reCaleFaceGeometry(List<ZoneLink> links) throws Exception {
-		if (links == null && links.size() < 1) {
+		if (links != null && links.size() < 1) {
 			throw new Exception("重新维护面的形状:发现面没有组成link");
 		}
 		ZoneLink currLink = null;

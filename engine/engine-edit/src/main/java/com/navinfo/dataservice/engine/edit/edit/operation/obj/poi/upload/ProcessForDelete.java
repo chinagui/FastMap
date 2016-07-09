@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.upload;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -20,7 +21,7 @@ public class ProcessForDelete extends AbstractProcess<CommandForDelete> {
 
 	private IxPoi ixPoi;
 
-	private List<IxPoiParent> ixPoiParents;
+	private List<IxPoiParent> ixPoiParents = new ArrayList<>();
 
 	private IxPoiChildren ixPoiChildren;
 

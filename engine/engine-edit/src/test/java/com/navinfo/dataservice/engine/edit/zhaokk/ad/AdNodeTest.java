@@ -56,7 +56,13 @@ public class AdNodeTest extends InitApplication{
 	@Test
 	public void moveAdNodeTest() throws Exception {
 		//parameter:{"command":"MOVE","dbId":43,"objId":"100024205","data":{"longitude":116.47495463490485,"latitude":40.00968804544376},"type":"ADNOD
-		String parameter = "{\"command\":\"MOVE\",\"dbId\":43,\"objId\":100024205,\"data\":{\"longitude\":116.47495463490485,\"latitude\":40.00968804544376},\"type\":\"ADNODE\"}";
+		
+		 //"command":"MOVE","dbId":43,"objId":100024218,"data":{"longitude":118.12453866004942,"latitude":38.41672864505162},"type":"ADNOD
+		
+		//{"command":"MOVE","dbId":43,"objId":100024212,"data":{"longitude":116.47598460316658,"latitude":40.009492877187725},"type":"ADNODE"}
+		
+		//parameter:{"command":"MOVE","dbId":43,"objId":100024229,"data":{"longitude":116.47151872515678,"latitude":40.010259166187225},"type":"ADNODE"}
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":43,\"objId\":100024229,\"data\":{\"longitude\":116.47151872515678,\"latitude\":40.010259166187225},\"type\":\"ADNODE\"}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);
 		;

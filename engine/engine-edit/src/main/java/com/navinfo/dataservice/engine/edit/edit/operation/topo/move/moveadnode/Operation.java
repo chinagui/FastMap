@@ -80,7 +80,8 @@ public class Operation implements IOperation {
 				ps[0][0] = lon;
 
 				ps[0][1] = lat;
-			} else {
+			} 
+			if(link.geteNodePid() == nodePid) {
 				ps[ps.length - 1][0] = lon;
 
 				ps[ps.length - 1][1] = lat;

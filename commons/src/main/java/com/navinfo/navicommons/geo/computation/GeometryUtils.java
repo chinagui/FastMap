@@ -333,7 +333,7 @@ public class GeometryUtils {
 		if (coors[0].equals(standGeo.getCoordinate())) {
 
 			flag = 1;
-		} else if (coors[coors.length - 1].equals(standGeo)) {
+		} else if (coors[coors.length - 1].equals(standGeo.getCoordinate())) {
 
 			flag = 2;
 		} else {

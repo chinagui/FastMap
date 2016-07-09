@@ -238,20 +238,28 @@ public final class DateUtilsEx {
             switch (day) {
                 case 1:
                     weekCn = "星期日";
+                    break;
                 case 2:
                     weekCn = "星期一";
+                    break;
                 case 3:
                     weekCn = "星期二";
+                    break;
                 case 4:
                     weekCn = "星期三";
+                    break;
                 case 5:
                     weekCn = "星期四";
+                    break;
                 case 6:
                     weekCn = "星期五";
+                    break;
                 case 7:
                     weekCn = "星期六";
+                    break;
                 default:
                     weekCn = "";
+                    break;
             }
         }
         return weekCn;

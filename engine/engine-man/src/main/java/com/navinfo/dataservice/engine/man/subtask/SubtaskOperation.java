@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.engine.man.subtask;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,6 +24,7 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.sql.SqlClause;
 import com.navinfo.dataservice.commons.util.ArrayUtil;
@@ -28,6 +32,8 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
+
+import oracle.sql.STRUCT;
 
 /** 
  * @ClassName: SubtaskOperation
@@ -281,243 +287,6 @@ public class SubtaskOperation {
 		}
 	}
 
-
-	/**
-	 * @param conn
-	 * @param bean
-	 * @param currentPageNum
-	 * @param pageSize
-	 * @return
-	 * @throws Exception 
-	 */
-	public static List<Subtask> getListByUser(Connection conn, Subtask bean, int currentPageNum, int pageSize) throws Exception {
-		// TODO Auto-generated method stub
-		try{
-			QueryRunner run = new QueryRunner();
-			String selectSql = "select st.SUBTASK_ID "
-					+ ",st.NAME"
-					+ ",st.DESCP"
-					+ ",st.PLAN_START_DATE"
-					+ ",st.PLAN_END_DATE"
-					+ ",st.STAGE"
-					+ ",st.TYPE"
-					+ ",st.STATUS"
-					+ ",r.DAILY_DB_ID"
-					+ ",r.MONTHLY_DB_ID"
-					+ ",TO_CHAR(st.GEOMETRY.get_wkt()) AS GEOMETRY"
-					+ ",listagg(sgm.GRID_ID, ',') within group(order by st.SUBTASK_ID) as GRID_ID ";
-
-			String fromSql_task = " from subtask st"
-					+ ",task t"
-					+ ",city c"
-					+ ",region r"
-					+ ",subtask_grid_mapping sgm ";
-
-			String fromSql_block = " from subtask st"
-					+ ",block b"
-					+ ",city c"
-					+ ",region r"
-					+ ",subtask_grid_mapping sgm ";
-
-			String conditionSql_task = " where st.task_id = t.task_id "
-					+ "and t.city_id = c.city_id "
-					+ "and c.region_id = r.region_id "
-					+ "and st.EXE_USER_ID = " + bean.getExeUserId() 
-					+ " and st.subtask_id = sgm.subtask_id ";
-
-			String conditionSql_block = " where st.block_id = b.block_id "
-					+ "and b.city_id = c.city_id "
-					+ "and c.region_id = r.region_id "
-					+ "and st.EXE_USER_ID = " + bean.getExeUserId() 
-					+ " and st.subtask_id = sgm.subtask_id ";
-
-			String groupBySql = " group by st.SUBTASK_ID"
-					+ ",st.NAME"
-					+ ",st.DESCP"
-					+ ",st.PLAN_START_DATE"
-					+ ",st.PLAN_END_DATE"
-					+ ",st.STAGE"
-					+ ",st.TYPE"
-					+ ",st.STATUS"
-					+ ",r.DAILY_DB_ID"
-					+ ",r.MONTHLY_DB_ID"
-					+ ",TO_CHAR(st.GEOMETRY.get_wkt())";
-
-			if (bean.getStage() != 0) {
-				conditionSql_task = conditionSql_task + " and st.STAGE = "
-						+ bean.getStage();
-				conditionSql_block = conditionSql_block + " and st.STAGE = "
-						+ bean.getStage();
-			}
-
-			if (bean.getType() != 0) {
-				conditionSql_task = conditionSql_task + " and st.TYPE = "
-						+ bean.getType();
-				conditionSql_block = conditionSql_block + " and st.TYPE = "
-						+ bean.getType();
-			}
-
-			if (bean.getStatus() != 0) {
-				conditionSql_task = conditionSql_task + " and st.STATUS = "
-						+ bean.getStatus();
-				conditionSql_block = conditionSql_block + " and st.STATUS = "
-						+ bean.getStatus();
-			}
-
-			selectSql = selectSql + fromSql_task
-					+ conditionSql_task + groupBySql
-					+ " union all " + selectSql
-					+ fromSql_block + conditionSql_block
-					+ groupBySql;
-
-			ResultSetHandler<List<Subtask>> rsHandler = new ResultSetHandler<List<Subtask>>() {
-				public List<Subtask> handle(ResultSet rs) throws SQLException {
-					List<Subtask> list = new ArrayList<Subtask>();
-					while (rs.next()) {
-						Subtask subtask = new Subtask();
-						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
-						subtask.setName(rs.getString("NAME"));
-						subtask.setStage(rs.getInt("STAGE"));
-						subtask.setType(rs.getInt("TYPE"));
-						subtask.setPlanStartDate(rs
-								.getTimestamp("PLAN_START_DATE"));
-						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
-						subtask.setDescp(rs.getString("DESCP"));
-						subtask.setStatus(rs.getInt("STATUS"));
-
-						subtask.setGeometry(rs.getString("GEOMETRY"));
-
-						String gridIds = rs.getString("GRID_ID");
-						String[] gridIdList = gridIds.split(",");
-						subtask.setGridIds(ArrayUtil.convertList(Arrays.asList(gridIdList)));
-
-						if (1 == rs.getInt("STAGE")) {
-							subtask.setDbId(rs.getInt("DAILY_DB_ID"));
-						} else if (2 == rs.getInt("STAGE")) {
-							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
-						} else {
-							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
-						}
-						list.add(subtask);
-
-					}
-					return list;
-				}
-
-			};
-
-			return run.query(pageSize, currentPageNum, conn, selectSql,
-					rsHandler);
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
-		}
-
-	}
-
-
-	/**
-	 * @param conn
-	 * @param bean
-	 * @param currentPageNum
-	 * @param pageSize
-	 * @return
-	 * @throws Exception 
-	 */
-	public static List<Subtask> getListByUserSnapshot(Connection conn, Subtask bean, int currentPageNum, int pageSize) throws Exception {
-		// TODO Auto-generated method stub
-		try{
-			QueryRunner run = new QueryRunner();
-			String selectSql = "select st.SUBTASK_ID " + ",st.NAME"
-					+ ",st.DESCP" + ",st.PLAN_START_DATE" + ",st.PLAN_END_DATE"
-					+ ",st.STAGE" + ",st.TYPE" + ",st.STATUS"
-					+ ",r.DAILY_DB_ID" + ",r.MONTHLY_DB_ID";
-
-			String fromSql_task = " from subtask st" + ",task t" + ",city c"
-					+ ",region r";
-
-			String fromSql_block = " from subtask st" + ",block b" + ",city c"
-					+ ",region r";
-
-			String conditionSql_task = " where st.task_id = t.task_id "
-					+ "and t.city_id = c.city_id "
-					+ "and c.region_id = r.region_id "
-					+ "and st.EXE_USER_ID = " + bean.getExeUserId() + " ";
-
-			String conditionSql_block = " where st.block_id = b.block_id "
-					+ "and b.city_id = c.city_id "
-					+ "and c.region_id = r.region_id "
-					+ "and st.EXE_USER_ID = " + bean.getExeUserId() + " ";
-
-			if (bean.getStage() != 0) {
-				conditionSql_task = conditionSql_task + " and st.STAGE = "
-						+ bean.getStage();
-				conditionSql_block = conditionSql_block + " and st.STAGE = "
-						+ bean.getStage();
-			}
-
-			if (bean.getType() != 0) {
-				conditionSql_task = conditionSql_task + " and st.TYPE = "
-						+ bean.getType();
-				conditionSql_block = conditionSql_block + " and st.TYPE = "
-						+ bean.getType();
-			}
-
-			if (bean.getStatus() != 0) {
-				conditionSql_task = conditionSql_task + " and st.STATUS = "
-						+ bean.getStatus();
-				conditionSql_block = conditionSql_block + " and st.STATUS = "
-						+ bean.getStatus();
-			}
-
-
-			selectSql = selectSql + fromSql_task + conditionSql_task
-						+ " union all " + selectSql
-						+ fromSql_block + conditionSql_block;
-
-			ResultSetHandler<List<Subtask>> rsHandler = new ResultSetHandler<List<Subtask>>() {
-				public List<Subtask> handle(ResultSet rs) throws SQLException {
-					List<Subtask> list = new ArrayList<Subtask>();
-					while (rs.next()) {
-						Subtask subtask = new Subtask();
-						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
-						subtask.setName(rs.getString("NAME"));
-						subtask.setStage(rs.getInt("STAGE"));
-						subtask.setType(rs.getInt("TYPE"));
-						subtask.setPlanStartDate(rs
-								.getTimestamp("PLAN_START_DATE"));
-						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
-						subtask.setDescp(rs.getString("DESCP"));
-						subtask.setStatus(rs.getInt("STATUS"));
-						
-						if (1 == rs.getInt("STAGE")) {
-							subtask.setDbId(rs.getInt("DAILY_DB_ID"));
-						} else if (2 == rs.getInt("STAGE")) {
-							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
-						} else {
-							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
-						}
-
-						list.add(subtask);
-
-					}
-					return list;
-				}
-
-			};
-
-			return run.query(pageSize, currentPageNum, conn, selectSql,
-					rsHandler);
-
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
-		}
-	}
-
-
 	/**
 	 * @param conn
 	 * @param bean
@@ -734,7 +503,7 @@ public class SubtaskOperation {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
 		}
 	}
 
@@ -761,7 +530,7 @@ public class SubtaskOperation {
 					+ ",st.STATUS"
 					+ ",r.DAILY_DB_ID"
 					+ ",r.MONTHLY_DB_ID"
-					+ ",TO_CHAR(st.GEOMETRY.get_wkt()) AS GEOMETRY";
+					+ ",st.GEOMETRY";
 
 			String fromSql_task = " from subtask st"
 					+ ",task t"
@@ -822,6 +591,10 @@ public class SubtaskOperation {
 						}
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 						
+						Subtask subtaskk = new Subtask();
+						subtaskk.setSubtaskId(rs.getInt("SUBTASK_ID"));
+						subtaskk.setGeometry(rs.getString("GEOMETRY"));
+						
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
 						subtask.put("name", rs.getString("NAME"));
 						subtask.put("descp", rs.getString("DESCP"));
@@ -831,7 +604,14 @@ public class SubtaskOperation {
 						subtask.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
 						subtask.put("planEndDate", df.format(rs.getTimestamp("PLAN_END_DATE")));
 						subtask.put("status", rs.getInt("STATUS"));
-						subtask.put("dbId", rs.getString("GEOMETRY"));
+						
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							subtask.put("geometry", GeoTranslator.struct2Wkt(struct));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 						
 						try {
 							List<Integer> gridIds = getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
@@ -841,7 +621,6 @@ public class SubtaskOperation {
 							e.printStackTrace();
 						}
 												
-						subtask.put("geometry", rs.getString("GEOMETRY"));
 						
 						if (1 == rs.getInt("STAGE")) {
 							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
@@ -865,7 +644,7 @@ public class SubtaskOperation {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
 		}
 
 	}

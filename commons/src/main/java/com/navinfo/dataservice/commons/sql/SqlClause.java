@@ -77,10 +77,9 @@ public class SqlClause {
 		
 	}
 	
-	/**通过输入的List<String>型的数据，和列名称，生成 oracle的in clause；不负责conn的关闭 
+	/**通过输入的String型的wkt数据，生成 oracle的in clause；不负责conn的关闭 
 	 * @param conn 数据库连接
-	 * @param inValues List<Integer> 
-	 * @param column 列名称
+	 * @param inValues String 
 	 * @return SqlCluase 对象，可以为空；
 	 * @throws SQLException
 	 */

@@ -96,15 +96,13 @@ public class RdRestrictionSearch implements ISearch {
 
 				jsonM.put("c", String.valueOf((int)angle));
 
-				double[] point = null;
+				double[] point = geom.getPoint();
 
 				JSONArray geo = new JSONArray();
 
 				geo.add(point[0]);
 
 				geo.add(point[1]);
-				
-				
 
 				snapshot.setG(JSONArray.fromObject(point));
 

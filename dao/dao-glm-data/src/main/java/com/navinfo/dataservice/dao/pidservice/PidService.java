@@ -3,6 +3,8 @@ package com.navinfo.dataservice.dao.pidservice;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.apache.commons.dbutils.DbUtils;
+
 
 public class PidService {
 	public static class PidRangeCombine {
@@ -365,10 +367,7 @@ public class PidService {
 			throw e;
 
 		} finally {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-			}
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 
 		return pid;
@@ -414,10 +413,7 @@ public class PidService {
 			throw e;
 
 		} finally {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-			}
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 
 		return pid;

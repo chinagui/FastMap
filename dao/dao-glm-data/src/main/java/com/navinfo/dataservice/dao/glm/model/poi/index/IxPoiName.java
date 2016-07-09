@@ -307,7 +307,7 @@ public class IxPoiName implements IObj {
 
 	@Override
 	public int mesh() {
-		return this.mesh();
+		return 0;
 	}
 
 	@Override

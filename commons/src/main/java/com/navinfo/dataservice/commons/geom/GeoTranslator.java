@@ -221,6 +221,23 @@ public class GeoTranslator {
 
 		return g;
 	}
+	
+	/**
+	 * Oracle几何体转wkt几何
+	 * 
+	 * @param struct
+	 *            Oracle几何
+	 * @return wkt几何
+	 * @throws Exception
+	 */
+	public static String struct2Wkt(STRUCT struct) throws Exception {
+
+		JGeometry geom = JGeometry.load(struct);
+
+		String w = new String(new WKT().fromJGeometry(geom));
+
+		return w;
+	}
 
 	/**
 	 * Oracle几何体转JTS几何，按比例缩放，并截取精度

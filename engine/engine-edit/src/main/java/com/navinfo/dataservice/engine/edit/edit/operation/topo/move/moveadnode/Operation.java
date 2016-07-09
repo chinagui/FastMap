@@ -93,21 +93,23 @@ public class Operation implements IOperation {
 			Set<String> meshes =  CompGeometryUtil.geoToMeshesWithoutBreak(geo);
 			// 修改线的几何属性
 			// 如果没有跨图幅只是修改线的几何
-			link.setGeometry(geo);
 			List<AdLink> links = new ArrayList<AdLink>();
 			if (meshes.size() == 1) {
 				JSONObject updateContent = new JSONObject();
 				updateContent.put("geometry", geojson);
 				updateContent.put("length", GeometryUtils.getLinkLength(geo));
 				link.fillChangeFields(updateContent);
-				links.add(link);
+				AdLink  adLink = new  AdLink();
+				adLink.copy(link);
+				adLink.setGeometry(GeoTranslator.geojson2Jts(geojson, 100000, 5));
+				links.add(adLink);
 				map.put(link.getPid(), links);
 				result.insertObject(link, ObjStatus.UPDATE, link.pid());
 			//如果跨图幅就需要打断生成新的link
 			}else{
 				Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
-				maps.put(link.getGeometry().getCoordinates()[0], link.getsNodePid());
-				maps.put(link.getGeometry().getCoordinates()[link.getGeometry().getCoordinates().length-1], link.geteNodePid());
+				maps.put(geo.getCoordinates()[0], link.getsNodePid());
+				maps.put(geo.getCoordinates()[link.getGeometry().getCoordinates().length-1], link.geteNodePid());
 				Iterator<String> it = meshes.iterator();
 				while (it.hasNext()) {
 					String meshIdStr = it.next();

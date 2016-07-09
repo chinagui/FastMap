@@ -952,7 +952,7 @@ public class UploadOperation {
 						photoIdList.add(photoId);
 						photoObj.put("objStatus", ObjStatus.INSERT.toString());
 						photoObj.put("poiPid", pid);
-						photoObj.put("photoId", photoId);
+						photoObj.put("pid", photoId);
 						// TODO tag
 						photoObj.put("rowId", photoId);
 						photoList.add(photoObj);

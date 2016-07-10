@@ -7,9 +7,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.dao.pidservice.PidService.PidRangeCombine;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 public class PidServiceUtils {
 	
@@ -130,10 +132,7 @@ public class PidServiceUtils {
 		}catch(Exception e){
 			throw e;
 		}finally{
-			try {
-				proc.close();
-			} catch (SQLException e) {
-			}
+			DbUtils.close(proc);
 		}
 		
 		return pid;
@@ -167,10 +166,7 @@ public class PidServiceUtils {
 			
 			throw e;
 		}finally{
-			try{
-				pstmt.close();
-			}catch(SQLException e){
-			}
+			DBUtils.closeStatement(pstmt);
 		}
 	}
 }

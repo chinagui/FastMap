@@ -205,12 +205,16 @@ public class AdAdminNameSelector implements ISelector {
 			pstmt.setInt(1, id);
 
 			pstmt.setInt(2, 2);
-
-			pstmt.setString(3, langCode);
-
-			// 非删除状态
-			pstmt.setInt(4, nameClass);
-
+			
+			if(langCode != null)
+			{
+				pstmt.setString(3, langCode);
+			}
+			if(nameClass != null)
+			{
+				// 非删除状态
+				pstmt.setInt(4, nameClass);
+			}
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {

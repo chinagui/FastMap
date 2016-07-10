@@ -76,5 +76,29 @@ public class SqlClause {
 		return null;
 		
 	}
+	
+	/**通过输入的String型的wkt数据，生成 oracle的in clause；不负责conn的关闭 
+	 * @param conn 数据库连接
+	 * @param inValues String 
+	 * @return SqlCluase 对象，可以为空；
+	 * @throws SQLException
+	 */
+	public static SqlClause genGeoClauseWithGeoString(Connection conn,String Geo) throws SQLException{
+		String ixTablesInClause = null;
+		List<Object> prepareParaValues = new ArrayList<Object>();
+		if(StringUtils.isNotEmpty(Geo)){
+			if(Geo.length()>1000){
+				Clob clobTables = conn.createClob();
+				clobTables.setString(1, Geo);
+				ixTablesInClause = "sdo_geometry(?,8307)";
+				prepareParaValues.add(clobTables);
+			}else{
+				ixTablesInClause = "sdo_geometry(" + Geo + ",8307)";
+			}
+			return new SqlClause(ixTablesInClause,prepareParaValues);
+		}
+		return null;
+		
+	}
 }
 

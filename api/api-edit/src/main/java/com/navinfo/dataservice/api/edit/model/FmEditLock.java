@@ -1,12 +1,14 @@
 package com.navinfo.dataservice.api.edit.model;
 
+import java.io.Serializable;
+
 /** 
  * @ClassName: FmMesh4Lock 
  * @author Xiao Xiaowen 
  * @date 2015-12-18 下午4:51:29 
  * @Description: TODO
  */
-public class FmEditLock {
+public class FmEditLock  implements Serializable{
 	public final static int TYPE_CHECK = 1;
 	public final static int TYPE_BATCH = 2;
 	public final static int TYPE_BORROW =3;

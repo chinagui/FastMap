@@ -72,6 +72,7 @@ public class EditPoiBaseReleaseJobRequest extends AbstractJobRequest {
 		validation.setAttrValue("grids", gridIds);
 		validation.setAttrValue("rules", JSONArray.fromObject(this.checkRules));
 		validation.setAttrValue("targetDbId", targetDbId);
+		validation.setAttrValue("timeOut", 600);
 		subJobRequests.put("validation", validation);
 		//batch
 		List<String> batchRule=new ArrayList<String>();

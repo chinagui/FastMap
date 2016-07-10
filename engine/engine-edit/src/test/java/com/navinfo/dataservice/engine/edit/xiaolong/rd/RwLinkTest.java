@@ -152,4 +152,17 @@ public class RwLinkTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
+	public void testMoveRwPoint()
+	{
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":25,\"objId\":100007115,\"data\":{\"longitude\":116.47797346115112,\"latitude\":40.02029408726943},\"type\":\"RWNODE\"}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

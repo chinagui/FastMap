@@ -72,6 +72,7 @@ public class Process extends AbstractProcess<Command> {
 		}
 
 		lockAdNode();
+		lockAdFace();
 		return true;
 	}
 

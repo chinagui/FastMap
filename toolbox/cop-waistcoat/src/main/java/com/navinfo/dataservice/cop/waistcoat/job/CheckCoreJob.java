@@ -45,14 +45,19 @@ public class CheckCoreJob extends AbstractJob {
                     checkParams.getKdbPasswd(), checkParams.getKdbHost(), checkParams.getKdbPort(), checkParams.getKdbSid(), checkRuleIds, timeOut, null);
 
             if (checkResult.indexOf("<code>0</code>") > 0) {
-                    checkResult = "环境检测成功";
+                    checkResult = "环境检测失败";
+            }else{
+            	checkResult = "环境检测成功";
             }
             response("环境监测步骤完成", null);
 
             if (checkResult.equals("环境检测成功")) {
                 String checkExecuteResult = checkMgr.execCheck();
+                if(checkExecuteResult.indexOf("<code>1</code>")>0) {
+                    checkExecuteResult = "检查执行成功";
+                }
                 response("检查执行步骤完成", null);
-                if (!checkExecuteResult.equals("批处理执行成功")) {
+                if (!checkExecuteResult.equals("检查执行成功")) {
                         throw new JobException(checkExecuteResult);
                 }
             } else {
@@ -157,7 +162,7 @@ public class CheckCoreJob extends AbstractJob {
 			return checkPort;
 		}
 
-        public void setCheckPort(String batchPort) {
+        public void setCheckPort(String checkPort) {
 			this.checkPort = checkPort;
 		}
 

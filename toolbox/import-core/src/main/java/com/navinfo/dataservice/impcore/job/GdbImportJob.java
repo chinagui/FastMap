@@ -35,6 +35,8 @@ public class GdbImportJob extends AbstractJob {
 
 	@Override
 	public void execute() throws JobException {
+		LogSelector logSelector = null;
+		boolean commitStatus = false;
 		try{
 			GdbImportJobRequest req = (GdbImportJobRequest)request;
 			//1. 履历选择
@@ -42,7 +44,7 @@ public class GdbImportJob extends AbstractJob {
 			DbInfo logDbInfo = datahub.getDbById(req.getLogDbId());
 			OracleSchema logSchema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(logDbInfo.getConnectParam()));
-			LogSelector logSelector = new DefaultLogSelector(logSchema);
+			logSelector = new DefaultLogSelector(logSchema);
 			String tempTable = logSelector.select();
 			response("履历选择完成",null);
 			//2. 履历刷库
@@ -56,9 +58,18 @@ public class GdbImportJob extends AbstractJob {
 			LogMover logMover = new DefaultLogMover(logSchema, tarSchema, tempTable, null);
 			logMover.move();
 			response("履历搬迁完成",null);
+			commitStatus=true;
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			throw new JobException("job执行过程出错，"+e.getMessage(),e);
+		}finally{
+			if(logSelector!=null){
+				try{
+					logSelector.unselect(commitStatus);
+				}catch(Exception e){
+					log.warn("履历重置状态时发生错误，请手工对应。"+e.getMessage(),e);
+				}
+			}
 		}
 				
 	}

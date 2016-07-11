@@ -24,7 +24,6 @@ import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
-import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 
 /**
  * @ClassName: UserInfoService
@@ -35,7 +34,7 @@ import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 @Service
 public class UserInfoService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	
+
 	private UserInfoService() {
 	}
 
@@ -403,21 +402,21 @@ public class UserInfoService {
 	 * @param userDevice
 	 * @throws ServiceException
 	 */
-	public HashMap<Object,Object> login(UserInfo userInfo, UserDevice userDevice) throws ServiceException {
+	public HashMap<Object, Object> login(UserInfo userInfo, UserDevice userDevice) throws ServiceException {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			HashMap<Object,Object> result = new HashMap<Object,Object>();
-			
-			HashMap<Object,Object> user = UserInfoOperation.loginGetUserInfo(conn,userInfo,userDevice);
-			
-			if(user.isEmpty()){
+			HashMap<Object, Object> result = new HashMap<Object, Object>();
+
+			HashMap<Object, Object> user = UserInfoOperation.loginGetUserInfo(conn, userInfo, userDevice);
+
+			if (user.isEmpty()) {
 				return result;
 			}
-			
-			if((userDevice.getDeviceToken()!=null)&&(userDevice.getDevicePlatform()!=null)&&(userDevice.getDeviceVersion()!=null)&&(!user.containsKey("deviceId"))){
-				int deviceId = UserInfoOperation.insertIntoUserDevice(conn,(long)user.get("userId"),userDevice);
+
+			if ((userDevice.getDeviceToken() != null) && (userDevice.getDevicePlatform() != null) && (userDevice.getDeviceVersion() != null) && (!user.containsKey("deviceId"))) {
+				int deviceId = UserInfoOperation.insertIntoUserDevice(conn, (long) user.get("userId"), userDevice);
 				user.put("deviceId", deviceId);
 			}
 
@@ -468,7 +467,6 @@ public class UserInfoService {
 						model.setUserPhone(rs.getString("USER_PHONE"));
 						model.setUserLevel(rs.getInt("USER_LEVEL"));
 						model.setUserScore(rs.getInt("USER_SCORE"));
-						model.setUserIcon(rs.getObject("USER_ICON"));
 						model.setUserGpsid(rs.getString("USER_GPSID"));
 						list.add(model);
 					}
@@ -486,7 +484,7 @@ public class UserInfoService {
 		}
 	}
 
-	public List<String> getUploadTime(UserInfo bean,String deviceId) throws ServiceException {
+	public List<String> getUploadTime(Integer userId, String deviceId) throws ServiceException {
 		Connection conn = null;
 		try {
 			QueryRunner run = new QueryRunner();
@@ -495,7 +493,7 @@ public class UserInfoService {
 
 			List<Object> values = new ArrayList<Object>();
 
-			values.add(bean.getUserId());
+			values.add(userId);
 			values.add(deviceId);
 
 			ResultSetHandler<List<String>> rsHandler = new ResultSetHandler<List<String>>() {

@@ -111,7 +111,7 @@ public class Operation implements IOperation {
 		List<Geometry> list = new ArrayList<Geometry>();
 		Set<String> meshes = new HashSet<String>();
 		List<AdLink> adLinks = new ArrayList<AdLink>();
-		for (IObj obj : command.getLinks()) {
+		for (IObj obj : objList) {
 			AdLink link = (AdLink) obj;
 			adLinks.add(link);
 			if (link.getMeshes().size() == 1) {

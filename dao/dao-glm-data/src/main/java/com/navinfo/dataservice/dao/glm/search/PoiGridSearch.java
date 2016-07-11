@@ -21,7 +21,9 @@ import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiNameSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
@@ -93,7 +95,8 @@ public class PoiGridSearch {
 			pstmt = conn.prepareStatement(sb.toString());
 			
 			GridUtils gu = new GridUtils();
-			String wkt = gu.grid2Wkt(gridDate.getString("grid"));
+			String grid = gridDate.getString("grid");
+			String wkt = gu.grid2Wkt(grid);
 
 			pstmt.setString(1, wkt);
 			resultSet = pstmt.executeQuery();
@@ -101,6 +104,18 @@ public class PoiGridSearch {
 			while(resultSet.next()){
 				IxPoi ixPoi = new IxPoi();
 				setAttr(ixPoi,resultSet);
+				
+				Coordinate coord = ixPoi.getGeometry().getCoordinate();
+				String[] grids = CompGridUtil.point2Grids(coord.x,coord.y);
+				boolean inside=false;
+				for(String gridId : grids){
+					if(gridId.equals(grid)){
+						inside=true;
+					}
+				}
+				if(!inside){
+					continue;
+				}
 				
 				int id = ixPoi.getPid();
 				
@@ -174,7 +189,7 @@ public class PoiGridSearch {
 
 		STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
-		Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
+		Geometry geometry = GeoTranslator.struct2Jts(struct);
 
 		ixPoi.setGeometry(geometry);
 

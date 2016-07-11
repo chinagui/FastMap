@@ -60,9 +60,15 @@ public class AdNodeTest extends InitApplication{
 		 //"command":"MOVE","dbId":43,"objId":100024218,"data":{"longitude":118.12453866004942,"latitude":38.41672864505162},"type":"ADNOD
 		
 		//{"command":"MOVE","dbId":43,"objId":100024212,"data":{"longitude":116.47598460316658,"latitude":40.009492877187725},"type":"ADNODE"}
-		
+		//parameter:{"command":"MOVE","dbId":43,"objId":100024236,"data":{"longitude":116.87455013394354,"latitude":39.083246104984354},"type":"ADNOD
 		//parameter:{"command":"MOVE","dbId":43,"objId":100024229,"data":{"longitude":116.47151872515678,"latitude":40.010259166187225},"type":"ADNODE"}
-		String parameter = "{\"command\":\"MOVE\",\"dbId\":43,\"objId\":100024229,\"data\":{\"longitude\":116.47151872515678,\"latitude\":40.010259166187225},\"type\":\"ADNODE\"}";
+		//{"command":"MOVE","dbId":43,"objId":100024246,"data":{"longitude":118.24985817074774,"latitude":39.08358234931854},"type":"ADNODE"}
+		
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":43,\"objId\":100024261,\"data\":{\"longitude\":118.24988767504692,\"latitude\":39.08328982724847},\"type\":\"ADNODE\"}";
+		
+		
+		
+		//{"command":"MOVE","dbId":43,"objId":100024261,"data":{"longitude":118.24988767504692,"latitude":39.08328982724847},"type":"ADNODE"}
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);
 		;

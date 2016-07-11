@@ -93,7 +93,10 @@ public class SqlClause {
 				ixTablesInClause = "sdo_geometry(?,8307)";
 				prepareParaValues.add(clobTables);
 			}else{
+				Clob clobTables = conn.createClob();
+				clobTables.setString(1, Geo);
 				ixTablesInClause = "sdo_geometry(" + Geo + ",8307)";
+				prepareParaValues.add(clobTables);
 			}
 			return new SqlClause(ixTablesInClause,prepareParaValues);
 		}

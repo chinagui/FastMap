@@ -216,7 +216,7 @@ public class InforManService {
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 
-			String selectSql = "select i.infor_id," + " i.infor_name," + " i.infor_level," + " i.descp,"
+			String selectSql = "select i.infor_id," + " i.infor_name," + " i.descp,"
 					+ " nvl(u.user_real_name, '') user_name,"
 					+ " to_char(i.collect_plan_start_date, 'yyyymmdd') collect_plan_start_date,"
 					+ " to_char(i.collect_plan_end_date, 'yyyymmdd') collect_plan_end_date,"

@@ -163,8 +163,9 @@ public class SubtaskController extends BaseController {
 			//作业阶段
 			int stage = dataJson.getInt("stage");
 			
-//			Page page = SubtaskService.getInstance().listPage(stage,condition,order,pageSize,curPageNum);
 			Page page = SubtaskService.getInstance().list(stage,condition,order,pageSize,curPageNum);
+			
+			List result=JsonOperation.beanToJsonList((List)page.getResult());
 			
             return new ModelAndView("jsonView", success(page));
 		

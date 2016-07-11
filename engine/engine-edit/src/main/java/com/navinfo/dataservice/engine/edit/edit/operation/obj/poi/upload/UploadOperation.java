@@ -335,7 +335,6 @@ public class UploadOperation {
 	 * @param version
 	 * @return
 	 */
-	@SuppressWarnings("static-access")
 	private JSONObject obj2PoiForInsert(JSONObject jo,String version) {
 		IxPoi poi = new IxPoi();
 		String fid = jo.getString("fid");
@@ -666,7 +665,6 @@ public class UploadOperation {
 	 * @param conn
 	 * @return
 	 */
-	@SuppressWarnings("static-access")
 	private JSONObject obj2PoiForUpdate(JSONObject jo,String version,Connection conn) {
 		String fid = jo.getString("fid");
 		JSONObject retObj = new JSONObject();
@@ -779,7 +777,7 @@ public class UploadOperation {
 					break;
 				}
 			}
-			if (!poiJson.getString("oldName").isEmpty() && !oldNameStr.isEmpty()) {
+			if (!poiJson.getString("oldName").isEmpty() || !oldNameStr.isEmpty()) {
 				if (oldNameStr.isEmpty()) {
 					JSONArray nameList = new JSONArray();
 					JSONObject poiName = new JSONObject();
@@ -824,7 +822,7 @@ public class UploadOperation {
 					break;
 				}
 			}
-			if (!poiJson.getString("oldAddress").isEmpty() && !oldAddressStr.isEmpty()) {
+			if (!poiJson.getString("oldAddress").isEmpty() || !oldAddressStr.isEmpty()) {
 				if (oldAddressStr.isEmpty()) {
 					JSONArray addressList = new JSONArray();
 					JSONObject poiAddress = new JSONObject();

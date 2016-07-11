@@ -100,7 +100,7 @@ public class InforManController extends BaseController {
 			String msg="批量关闭"+inforManIds.size()+"个成功，0个失败";
 			return new ModelAndView("jsonView", success(msg));
 		} catch (Exception e) {
-			log.error("删除失败，原因：" + e.getMessage(), e);
+			log.error("情报规划批量关闭失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}

@@ -93,14 +93,14 @@ public class TaskController extends BaseController {
 		try{			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
 			if(dataJson==null){
-				throw new IllegalArgumentException("param参数不能为空。");
+				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			JSONArray taskIds=dataJson.getJSONArray("taskIds");
 			HashMap<String,String> errorTask=TaskService.getInstance().close(JSONArray.toList(taskIds));			
 			String msg="任务批量关闭"+(taskIds.size()-errorTask.size())+"个成功，"+errorTask.size()+"个失败";
 			return new ModelAndView("jsonView", success(msg));
 		}catch(Exception e){
-			log.error("删除失败，原因："+e.getMessage(), e);
+			log.error("任务批量关闭失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
@@ -155,26 +155,8 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView", success(JsonOperation.beanToJsonList(data)));
 			//return new ModelAndView("jsonView", success(data.getResult()));
 		}catch(Exception e){
-			log.error("获取列表失败，原因："+e.getMessage(), e);
+			log.error("获取全部列表失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	
-	/*
-	 *  20160607 by zhangxiaoyi 删除，此次生产管理平台的设计中不涉及该接口的使用
-	 */
-	/*@RequestMapping(value = "/task/query")
-	public ModelAndView query(HttpServletRequest request){
-		try{
-			String taskId = request.getParameter("taskId");			
-			if(StringUtils.isEmpty(taskId)){
-				throw new IllegalArgumentException("taskId参数不能为空。");
-			}
-			HashMap data = service.query(Integer.valueOf(taskId));			
-			return new ModelAndView("jsonView", success(data));
-		}catch(Exception e){
-			log.error("获取明细失败，原因："+e.getMessage(), e);
-			return new ModelAndView("jsonView",exception(e));
-		}
-	}*/
 }

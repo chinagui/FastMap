@@ -49,6 +49,7 @@ public class BlockOperation {
 						map.put("blockName", rs.getString("BLOCK_NAME"));
 						map.put("planningStatus", rs.getInt("PLAN_STATUS"));
 						map.put("cityId", rs.getInt("CITY_ID"));
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						try {
 							CLOB clob = (CLOB) rs.getObject("geometry");
 							String clobStr = DataBaseUtils.clob2String(clob);

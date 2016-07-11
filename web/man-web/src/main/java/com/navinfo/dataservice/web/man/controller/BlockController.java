@@ -46,8 +46,11 @@ public class BlockController extends BaseController {
 			}
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			long userId = tokenObj.getUserId();
-			service.batchOpen(userId, dataJson);
-			return new ModelAndView("jsonView", success("创建成功"));
+			JSONArray blockArray = dataJson.getJSONArray("blocks");
+			int blockSize=blockArray.size();
+			int updateCount=service.batchOpen(userId, dataJson);
+			String message = "批量开启block：" + updateCount + "个成功，" + (blockSize - updateCount) + "个失败。";
+			return new ModelAndView("jsonView", success(message));
 		} catch (Exception e) {
 			log.error("创建失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
@@ -67,8 +70,12 @@ public class BlockController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			service.batchUpdate(dataJson);
-			return new ModelAndView("jsonView", success("修改成功"));
+			
+			JSONArray blockArray = dataJson.getJSONArray("blocks");
+			int blockSize=blockArray.size();
+			int updateCount=service.batchUpdate(dataJson);
+			String message = "批量修改block：" + updateCount + "个成功，" + (blockSize - updateCount) + "个失败。";
+			return new ModelAndView("jsonView", success(message));
 		} catch (Exception e) {
 			log.error("修改失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

@@ -54,7 +54,7 @@ public class CityService {
 					
 			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']', ')');
 			
-			String selectSql = "select t.CITY_ID,t.CITY_NAME, t.geometry.get_wkt() as geometry,t.plan_status from CITY t where t.PLAN_STATUS in "+planningStatus
+			String selectSql = "select t.CITY_ID,t.CITY_NAME, t.geometry.get_wkt() as geometry,t.plan_status k.task_id from CITY t, task k where t.city_id=k.city_id(+) and k.latest=1 and t.PLAN_STATUS in "+planningStatus
 					+" and SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
 		
 			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
@@ -70,6 +70,7 @@ public class CityService {
 							map.put("geometry", Geojson.wkt2Geojson(clobStr));
 							map.put("planningStatus", rs.getInt("plan_status"));
 							map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+							map.put("taskId", rs.getInt("task_id"));
 							list.add(map);
 						} catch (ParseException e) {
 							// TODO Auto-generated catch block

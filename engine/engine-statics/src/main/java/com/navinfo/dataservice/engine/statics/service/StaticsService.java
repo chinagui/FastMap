@@ -367,25 +367,25 @@ public class StaticsService {
 		
 		data.put("subtaskId", subtaskId);
 		
-		data.put("percent", 20);
+		data.put("percent", 10);
 		
 		JSONObject poi = new JSONObject();
 		
-		poi.put("total", 2000);
+		poi.put("total", 30);
 		
-		poi.put("finish", 400);
+		poi.put("finish", 1);
 		
-		poi.put("working", 1600);
+		poi.put("working", 29);
 		
 		data.put("poi", poi);
 		
 		JSONObject road = new JSONObject();
 		
-		road.put("total", 2000);
+		road.put("total", 27);
 		
-		road.put("finish", 400);
+		road.put("finish", 4);
 		
-		road.put("working", 1600);
+		road.put("working", 23);
 		
 		data.put("road", road);
 		

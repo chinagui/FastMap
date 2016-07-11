@@ -119,10 +119,12 @@ public class InforManController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			InforMan data = service.query(dataJson.getString("inforId"));
-			if (null == data) {
-				return new ModelAndView("jsonView", fail("该情报规划不存在"));
+			if(data!=null){
+				return new ModelAndView("jsonView", success(JsonOperation.beanToJson(data)));
 			}
-			return new ModelAndView("jsonView", success(JsonOperation.beanToJson(data)));
+			else{
+				return new ModelAndView("jsonView", success(null));
+			}
 		} catch (Exception e) {
 			log.error("获取明细失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

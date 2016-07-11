@@ -88,7 +88,6 @@ public class InforManOperation {
 						HashMap map = new HashMap();
 						map.put("inforId", rs.getString("infor_id"));
 						map.put("inforName", rs.getString("infor_name"));
-						map.put("inforLevel", rs.getString("infor_level"));
 						map.put("descp", rs.getString("descp"));
 						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						map.put("userName", rs.getString("user_name"));

@@ -55,7 +55,7 @@ public abstract class LogSelector {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw e;
 		}finally{
-			DbUtils.closeQuietly(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 

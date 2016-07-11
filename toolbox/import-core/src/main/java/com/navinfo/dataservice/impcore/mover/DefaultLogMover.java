@@ -1,8 +1,15 @@
 package com.navinfo.dataservice.impcore.mover;
 
+import java.sql.Connection;
+
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.database.OracleSchema;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.RandomUtil;
+import com.navinfo.navicommons.database.sql.DbLinkCreator;
 
 /** 
 * @ClassName: DefaultLogMover 
@@ -12,7 +19,7 @@ import com.navinfo.dataservice.commons.database.OracleSchema;
 *  
 */
 public class DefaultLogMover extends LogMover {
-	
+	Logger log = LoggerRepos.getLogger(this.getClass());
 	public DefaultLogMover(OracleSchema logSchema, OracleSchema tarSchema,String tempTable,String tempFailLogTable) {
 		super(logSchema, tarSchema);
 		this.tempTable=tempTable;
@@ -23,6 +30,23 @@ public class DefaultLogMover extends LogMover {
 	protected String dbLinkName;
 	@Override
 	public LogMoveResult move() throws Exception {
+		
+		Connection conn = null;
+		try{
+			//create db link
+			DbLinkCreator cr = new DbLinkCreator();
+			dbLinkName = tarSchema.getConnConfig().getUserName()+"_"+RandomUtil.nextNumberStr(4);
+			cr.create(dbLinkName, false, logSchema.getPoolDataSource(), tarSchema.getConnConfig().getUserName(), tarSchema.getConnConfig().getUserPasswd(), tarSchema.getConnConfig().getServerIp(), String.valueOf(tarSchema.getConnConfig().getServerPort()), tarSchema.getConnConfig().getServiceName());
+			conn = logSchema.getPoolDataSource().getConnection();
+			run.update(conn, operationSql());
+			run.update(conn, detailSql());
+			run.update(conn, gridSql());
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 		return null;
 	}
 	protected String detailSql(){

@@ -40,6 +40,7 @@ public class ZoneLinkTest extends InitApplication{
 	{
 		//{"command":"REPAIR","dbId":42,"objId":100034125,"data":{"geometry":{"type":"LineString","coordinates":[[116.49603,38.00015],[116.49610787630081,37.999949311603245],[116.49624,38.00013],[116.49603,38.00015]]},"interLinks":[],"interNodes":[]},"type":"ZONELINK"}
 		//{"command":"REPAIR","dbId":42,"objId":100034144,"data":{"geometry":{"type":"LineString","coordinates":[[116.49564,38.00018],[116.49548,38.00011],[116.49573370814322,37.999949311603245],[116.49564,38.00018]]},"interLinks":[],"interNodes":[]},"type":"ZONELINK"}
+		
 		String parameter = "{\"command\":\"REPAIR\",\"dbId\":42,\"objId\":100034144,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.49564,38.00018],[116.49548,38.00011],[116.49573370814322,37.999949311603245],[116.49564,38.00018]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"ZONELINK\"}";
 		
 		log.info(parameter);

@@ -778,7 +778,7 @@ public class IxPoiSelector implements ISelector {
 
 		ixPoi.setExPriority(resultSet.getString("ex_priority"));
 
-		ixPoi.setEditFlag(resultSet.getInt("edition_flag"));
+		ixPoi.setEditionFlag(resultSet.getString("edition_flag"));
 
 		ixPoi.setPoiMemo(resultSet.getString("poi_memo"));
 

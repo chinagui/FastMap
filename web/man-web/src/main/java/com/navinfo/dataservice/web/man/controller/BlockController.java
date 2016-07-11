@@ -203,8 +203,7 @@ public class BlockController extends BaseController {
 
 			List<Integer> unClosedBlock = BlockService.getInstance().close(blockIdList);
 
-			String message = "批量关闭block：" + unClosedBlock.size() + "个成功，" + (blockIdList.size() - unClosedBlock.size()) + "个失败。";
-			
+			String message = "批量关闭block：" + (blockIdList.size() - unClosedBlock.size()) + "个成功，" + unClosedBlock.size() + "个失败。";			
 			return new ModelAndView("jsonView", success(message));
 
 		} catch (Exception e) {

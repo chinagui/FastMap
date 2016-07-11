@@ -328,6 +328,7 @@ public class SubtaskOperation {
 			
 			SqlClause inClause = SqlClause.genGeoClauseWithGeoString(conn,bean.getGeometry());
 			if (inClause!=null)
+//				value.add(inClause.getSql());
 				value.add(inClause.getValues().get(0));
 			
 			value.add(bean.getStage());
@@ -343,7 +344,8 @@ public class SubtaskOperation {
 			String createSql = "insert into SUBTASK " ;
 			String column = "(SUBTASK_ID, NAME, GEOMETRY, STAGE, TYPE, CREATE_USER_ID, EXE_USER_ID, CREATE_DATE, STATUS, PLAN_START_DATE, PLAN_END_DATE, DESCP";
 			String values = "values(?,?,sdo_geometry(?,8307),?,?,?,?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),to_date(?,'yyyy-MM-dd HH24:MI:ss'),?";
-			
+//			String values = "values(?,?,?,?,?,?,?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),to_date(?,'yyyy-MM-dd HH24:MI:ss'),?";
+
 			if(0!=bean.getBlockId()){
 				column += ", BLOCK_ID)";
 				value.add(bean.getBlockId());

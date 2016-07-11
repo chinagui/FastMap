@@ -363,7 +363,7 @@ public class SubtaskOperation {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}
 	}
 
@@ -395,7 +395,7 @@ public class SubtaskOperation {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}
 	}
 

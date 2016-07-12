@@ -52,6 +52,10 @@ public class RdGscOperateUtils {
 				// 交点和形状点重合
 				if (lon == jaPE.getDouble(0) && lat == jaPE.getDouble(1)) {
 					hasFound = true;
+					if(i>0)
+					{
+						ja1.add(jaPS);
+					}
 					if (i == jaLink.size() - 2) {
 						ja1.add(jaPE);
 					}

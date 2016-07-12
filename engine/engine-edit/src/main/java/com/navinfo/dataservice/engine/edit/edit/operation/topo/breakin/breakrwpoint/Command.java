@@ -1,4 +1,5 @@
 package com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint;
+
 import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -14,16 +15,25 @@ import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONObject;
 
 /**
- * 铁路点基础参数类 
+ * 铁路点基础参数类
+ * 
  * @author zhangxiaolong
  *
  */
 public class Command extends AbstractCommand {
 	private String requester;
-	private RwLink  sRwLink;
-	private RwLink  eRwLink;
-	
+	private RwLink sRwLink;
+	private RwLink eRwLink;
+	private int breakNodePid = 0;
 	private List<RdGsc> rdGscs;
+
+	public int getBreakNodePid() {
+		return breakNodePid;
+	}
+
+	public void setBreakNodePid(int breakNodePid) {
+		this.breakNodePid = breakNodePid;
+	}
 
 	public RwLink getsRwLink() {
 		return sRwLink;
@@ -58,7 +68,7 @@ public class Command extends AbstractCommand {
 	public OperType getOperType() {
 		return OperType.CREATE;
 	}
-	
+
 	@Override
 	public ObjType getObjType() {
 		return ObjType.RWNODE;
@@ -77,13 +87,16 @@ public class Command extends AbstractCommand {
 		this.rdGscs = rdGscs;
 	}
 
-	public Command(JSONObject json, String requester) throws Exception{
+	public Command(JSONObject json, String requester) throws Exception {
 		this.requester = requester;
 		this.setDbId(json.getInt("dbId"));
 		this.linkPid = json.getInt("objId");
 		JSONObject data = json.getJSONObject("data");
-		double lng = Math.round(data.getDouble("longitude")*100000)/100000.0;
-		double lat = Math.round(data.getDouble("latitude")*100000)/100000.0;
+		double lng = Math.round(data.getDouble("longitude") * 100000) / 100000.0;
+		double lat = Math.round(data.getDouble("latitude") * 100000) / 100000.0;
+		if (data.containsKey("breakNodePid")) {
+			this.setBreakNodePid(data.getInt("breakNodePid"));
+		}
 		Coordinate coord = new Coordinate(lng, lat);
 		this.eRwLink = new RwLink();
 		this.sRwLink = new RwLink();

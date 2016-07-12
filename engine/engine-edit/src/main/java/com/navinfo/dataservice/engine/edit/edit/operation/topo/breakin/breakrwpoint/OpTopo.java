@@ -121,9 +121,15 @@ public class OpTopo implements IOperation {
 	 */
 	private void  createLinksForRwNode(RwLink rwLink,JSONArray sArray,JSONArray eArray,Result result) throws Exception {
 		log.debug("3 生成打断点的信息");
-		RwNode node = (RwNode) NodeOperateUtils.createNode(command.getPoint().getX(), command.getPoint().getY(),ObjType.RWNODE);
-		result.insertObject(node, ObjStatus.INSERT, node.pid());
-		log.debug("3.1 打断点的pid = "+node.pid());
+		int breakNodePid=0;
+		if(this.command.getBreakNodePid() == 0){
+			RwNode node = (RwNode) NodeOperateUtils.createNode(command.getPoint().getX(), command.getPoint().getY(),ObjType.RWNODE);
+			result.insertObject(node, ObjStatus.INSERT, node.pid());
+			breakNodePid =  node.pid();
+		}else{
+			breakNodePid = this.command.getBreakNodePid();
+		}
+		log.debug("3.1 打断点的pid = "+breakNodePid);
 		JSONObject sGeojson = new JSONObject();
 		sGeojson.put("type", "LineString");
 		sGeojson.put("coordinates", sArray);
@@ -131,11 +137,11 @@ public class OpTopo implements IOperation {
 		eGeojson.put("type", "LineString");
 		eGeojson.put("coordinates", eArray);
 		log.debug("4 组装 第一条link 的信息");
-		RwLink slink =(RwLink)RwLinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(sGeojson,0.00001,5),rwLink.getsNodePid(),node.pid(), rwLink,result);
+		RwLink slink =(RwLink)RwLinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(sGeojson,0.00001,5),rwLink.getsNodePid(),breakNodePid, rwLink,result);
 		command.setsRwLink(slink);
 		log.debug("4.1 生成第一条link信息 pid = "+slink.getPid());
 		log.debug("5 组装 第一条link 的信息");
-		RwLink elink =(RwLink)RwLinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(eGeojson,0.00001,5),node.pid(),rwLink.geteNodePid(),rwLink, result);
+		RwLink elink =(RwLink)RwLinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(eGeojson,0.00001,5),breakNodePid,rwLink.geteNodePid(),rwLink, result);
 		command.seteRwLink(elink);
 		log.debug("5.1 生成第二条link信息 pid = "+elink.getPid());
 	}

@@ -328,7 +328,7 @@ public class DownloadOperation {
 			}
 			
 			GeoTranslator trans = new GeoTranslator();
-			String geometry = trans.jts2Wkt(poi.getGeometry());
+			String geometry = trans.jts2Wkt(poi.getGeometry(),1,5);
 			jsonObj.put("geometry", geometry);
 			
 			jsonObj.put("t_operateDate", "");

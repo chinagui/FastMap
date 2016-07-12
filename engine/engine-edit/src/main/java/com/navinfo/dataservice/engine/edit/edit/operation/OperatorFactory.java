@@ -23,6 +23,15 @@ import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkKind;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNodeMesh;
+import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
+import com.navinfo.dataservice.dao.glm.model.lu.LuFaceName;
+import com.navinfo.dataservice.dao.glm.model.lu.LuFaceTopo;
+import com.navinfo.dataservice.dao.glm.model.lu.LuFeature;
+import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
+import com.navinfo.dataservice.dao.glm.model.lu.LuLinkKind;
+import com.navinfo.dataservice.dao.glm.model.lu.LuLinkMesh;
+import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
+import com.navinfo.dataservice.dao.glm.model.lu.LuNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiAdvertisement;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiAttraction;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiBuilding;
@@ -111,6 +120,15 @@ import com.navinfo.dataservice.dao.glm.operator.ad.zone.ZoneLinkMeshOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.ZoneLinkOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.ZoneNodeMeshOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.zone.ZoneNodeOperator;
+import com.navinfo.dataservice.dao.glm.operator.lu.LuFaceNameOperator;
+import com.navinfo.dataservice.dao.glm.operator.lu.LuFaceOperator;
+import com.navinfo.dataservice.dao.glm.operator.lu.LuFaceTopoOperator;
+import com.navinfo.dataservice.dao.glm.operator.lu.LuFeatureOperator;
+import com.navinfo.dataservice.dao.glm.operator.lu.LuLinkKindOperator;
+import com.navinfo.dataservice.dao.glm.operator.lu.LuLinkMeshOperator;
+import com.navinfo.dataservice.dao.glm.operator.lu.LuLinkOperator;
+import com.navinfo.dataservice.dao.glm.operator.lu.LuNodeMeshOperator;
+import com.navinfo.dataservice.dao.glm.operator.lu.LuNodeOperator;
 import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiAdvertisementOperator;
 import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiAttractionOperator;
 import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiBuildingOperator;
@@ -196,8 +214,7 @@ public class OperatorFactory {
 	 *            操作结果
 	 * @throws Exception
 	 */
-	public static void recordData(Connection conn, Result result)
-			throws Exception {
+	public static void recordData(Connection conn, Result result) throws Exception {
 		for (IRow obj : result.getDelObjects()) {
 
 			getOperator(conn, obj).deleteRow();
@@ -224,8 +241,7 @@ public class OperatorFactory {
 	 * @return
 	 * @throws Exception
 	 */
-	private static IOperator getOperator(Connection conn, IRow obj)
-			throws Exception {
+	private static IOperator getOperator(Connection conn, IRow obj) throws Exception {
 		switch (obj.objType()) {
 		case RDLINK:
 			return new RdLinkOperator(conn, (RdLink) obj);
@@ -260,11 +276,9 @@ public class OperatorFactory {
 		case RDRESTRICTION:
 			return new RdRestrictionOperator(conn, (RdRestriction) obj);
 		case RDRESTRICTIONDETAIL:
-			return new RdRestrictionDetailOperator(conn,
-					(RdRestrictionDetail) obj);
+			return new RdRestrictionDetailOperator(conn, (RdRestrictionDetail) obj);
 		case RDRESTRICTIONCONDITION:
-			return new RdRestrictionConditionOperator(conn,
-					(RdRestrictionCondition) obj);
+			return new RdRestrictionConditionOperator(conn, (RdRestrictionCondition) obj);
 		case RDRESTRICTIONVIA:
 			return new RdRestrictionViaOperator(conn, (RdRestrictionVia) obj);
 		case RDCROSS:
@@ -376,18 +390,15 @@ public class OperatorFactory {
 		case IXPOIINTRODUCTION:
 			return new IxPoiIntroductionOperator(conn, (IxPoiIntroduction) obj);
 		case IXPOIADVERTISEMENT:
-			return new IxPoiAdvertisementOperator(conn,
-					(IxPoiAdvertisement) obj);
+			return new IxPoiAdvertisementOperator(conn, (IxPoiAdvertisement) obj);
 		case IXPOIGASSTATION:
 			return new IxPoiGasstationOperator(conn, (IxPoiGasstation) obj);
 		case IXPOICHARGINGSTATION:
-			return new IxPoiChargingStationOperator(conn,
-					(IxPoiChargingStation) obj);
+			return new IxPoiChargingStationOperator(conn, (IxPoiChargingStation) obj);
 		case IXPOICHARGINGPLOT:
 			return new IxPoiChargingPlotOperator(conn, (IxPoiChargingPlot) obj);
 		case IXPOICHARGINGPLOTPH:
-			return new IxPoiChargingPlotPhOperator(conn,
-					(IxPoiChargingPlotPh) obj);
+			return new IxPoiChargingPlotPhOperator(conn, (IxPoiChargingPlotPh) obj);
 		case IXPOIPARKING:
 			return new IxPoiParkingOperator(conn, (IxPoiParking) obj);
 		case IXPOIATTRACTION:
@@ -397,11 +408,11 @@ public class OperatorFactory {
 		case IXPOIRESTAURANT:
 			return new IxPoiRestaurantOperator(conn, (IxPoiRestaurant) obj);
 		case IXPOICARRENTAL:
-			return new IxPoiCarrentalOperator(conn, (IxPoiCarrental) obj);	
+			return new IxPoiCarrentalOperator(conn, (IxPoiCarrental) obj);
 		case ZONEFACE:
 			return new ZoneFaceOperator(conn, (ZoneFace) obj);
 		case ZONEFACETOPO:
-			return new ZoneFaceTopoOperator(conn, (ZoneFaceTopo)obj);
+			return new ZoneFaceTopoOperator(conn, (ZoneFaceTopo) obj);
 		case ZONELINK:
 			return new ZoneLinkOperator(conn, (ZoneLink) obj);
 		case ZONELINKKIND:
@@ -412,6 +423,24 @@ public class OperatorFactory {
 			return new ZoneNodeOperator(conn, (ZoneNode) obj);
 		case ZONENODEMESH:
 			return new ZoneNodeMeshOperator(conn, (ZoneNodeMesh) obj);
+		case LUNODE:
+			return new LuNodeOperator(conn, (LuNode) obj);
+		case LULINK:
+			return new LuLinkOperator(conn, (LuLink) obj);
+		case LUFACE:
+			return new LuFaceOperator(conn, (LuFace) obj);
+		case LUNODEMESH:
+			return new LuNodeMeshOperator(conn, (LuNodeMesh) obj);
+		case LULINKKIND:
+			return new LuLinkKindOperator(conn, (LuLinkKind) obj);
+		case LULINKMESH:
+			return new LuLinkMeshOperator(conn, (LuLinkMesh) obj);
+		case LUFACENAME:
+			return new LuFaceNameOperator(conn, (LuFaceName) obj);
+		case LUFACETOPO:
+			return new LuFaceTopoOperator(conn, (LuFaceTopo) obj);
+		case LUFEATURE:
+			return new LuFeatureOperator(conn, (LuFeature) obj);
 		default:
 			return null;
 		}

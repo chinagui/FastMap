@@ -123,9 +123,16 @@ public class OpTopo implements IOperation {
 	 */
 	private void  createLinksForADNode(AdLink adLink,JSONArray sArray,JSONArray eArray,Result result) throws Exception {
 		log.debug("3 生成打断点的信息");
-		AdNode node = NodeOperateUtils.createAdNode(command.getPoint().getX(), command.getPoint().getY());
-		result.insertObject(node, ObjStatus.INSERT, node.pid());
-		log.debug("3.1 打断点的pid = "+node.pid());
+		int breakNodePid=0;
+		if(this.command.getBreakNodePid() == 0){
+			AdNode node = NodeOperateUtils.createAdNode(command.getPoint().getX(), command.getPoint().getY());
+			result.insertObject(node, ObjStatus.INSERT, node.pid());
+			breakNodePid =  node.pid();
+		}else{
+			breakNodePid = this.command.getBreakNodePid();
+		}
+		
+		log.debug("3.1 打断点的pid = "+breakNodePid);
 		JSONObject sGeojson = new JSONObject();
 		sGeojson.put("type", "LineString");
 		sGeojson.put("coordinates", sArray);
@@ -133,11 +140,11 @@ public class OpTopo implements IOperation {
 		eGeojson.put("type", "LineString");
 		eGeojson.put("coordinates", eArray);
 		log.debug("4 组装 第一条link 的信息");
-		AdLink slink =(AdLink)AdLinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(sGeojson,0.00001,5),adLink.getsNodePid(),node.pid(), adLink,result);
+		AdLink slink =(AdLink)AdLinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(sGeojson,0.00001,5),adLink.getsNodePid(),breakNodePid, adLink,result);
 		command.setsAdLink(slink);
 		log.debug("4.1 生成第一条link信息 pid = "+slink.getPid());
 		log.debug("5 组装 第一条link 的信息");
-		AdLink elink =(AdLink)AdLinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(eGeojson,0.00001,5),node.pid(),adLink.geteNodePid(),adLink, result);
+		AdLink elink =(AdLink)AdLinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(eGeojson,0.00001,5),breakNodePid,adLink.geteNodePid(),adLink, result);
 		command.seteAdLink(elink);
 		log.debug("5.1 生成第二条link信息 pid = "+elink.getPid());
 	}

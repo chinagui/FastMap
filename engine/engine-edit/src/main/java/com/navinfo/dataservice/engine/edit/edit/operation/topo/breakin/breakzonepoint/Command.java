@@ -24,7 +24,16 @@ public class Command extends AbstractCommand {
 	private List<ZoneFace> faces;
 	private Point point;
 	private int linkPid;
+	private int breakNodePid = 0;
 
+
+	public int getBreakNodePid() {
+		return breakNodePid;
+	}
+
+	public void setBreakNodePid(int breakNodePid) {
+		this.breakNodePid = breakNodePid;
+	}
 
 	public List<ZoneFace> getFaces() {
 		return faces;
@@ -58,6 +67,9 @@ public class Command extends AbstractCommand {
 		JSONObject data = json.getJSONObject("data");
 		double lng = Math.round(data.getDouble("longitude")*100000)/100000.0;
 		double lat = Math.round(data.getDouble("latitude")*100000)/100000.0;
+		if(data.containsKey("breakNodePid")){
+			this.setBreakNodePid(data.getInt("breakNodePid"));
+		}
 		Coordinate coord = new Coordinate(lng, lat);
 		this.eZoneLink = new ZoneLink();
 		this.sZoneLink = new ZoneLink();

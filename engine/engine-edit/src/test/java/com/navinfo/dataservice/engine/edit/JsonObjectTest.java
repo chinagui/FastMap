@@ -124,7 +124,7 @@ public class JsonObjectTest {
 		//POLYGON ((115.85776 40.00000, 115.86218 40.00000, 115.85937 40.00290, 115.85776 40.00000))
 		// POLYGON ((115.86218 40.00000, 115.85776 40.00000, 115.85664 39.99797, 115.86471 39.99739, 115.86218 40.00000))
 		//POINT (115.85937 40.00290)   115.85664 39.99797, 115.86471 39.99739
-		String str4 = "{ \"type\": \"LineString\",\"coordinates\": [ [116.74960479140282,39.00004566522346],[116.749634295702,38.99995186416615]]}";
+		String str4 = "{ \"type\": \"LineString\",\"coordinates\": [ [117.16941,39.4998],[117.16955,39.50021],[117.16941,39.4998]]}";
 		//JSONObject geometry = JSONObject.fromObject(str2);
 		//JSONObject geometry11 = JSONObject.fromObject(str3);
 		JSONObject geometry111 = JSONObject.fromObject(str4);

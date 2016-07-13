@@ -9,6 +9,9 @@ import com.navinfo.dataservice.dao.glm.search.AdFaceSearch;
 import com.navinfo.dataservice.dao.glm.search.AdLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.AdNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.IxPoiSearch;
+import com.navinfo.dataservice.dao.glm.search.LuFaceSearch;
+import com.navinfo.dataservice.dao.glm.search.LuLinkSearch;
+import com.navinfo.dataservice.dao.glm.search.LuNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdBranchSearch;
 import com.navinfo.dataservice.dao.glm.search.RdCrossSearch;
 import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
@@ -83,6 +86,12 @@ public class SearchFactory {
 			return new ZoneLinkSearch(conn);
 		case ZONEFACE:
 			return new ZoneFaceSearch(conn);
+		case LUNODE:
+			return new LuNodeSearch(conn);
+		case LULINK:
+			return new LuLinkSearch(conn);
+		case LUFACE:
+			return new LuFaceSearch(conn);
 		default:
 			return null;
 		}

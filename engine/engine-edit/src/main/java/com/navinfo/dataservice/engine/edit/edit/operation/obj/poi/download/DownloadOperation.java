@@ -86,8 +86,6 @@ public class DownloadOperation {
 	 */
 	public void export(JSONArray gridDateList,  String folderName,
 			String fileName) throws Exception {
-
-
 		if (!folderName.endsWith("/")) {
 			folderName += "/";
 		}
@@ -95,17 +93,21 @@ public class DownloadOperation {
 		fileName = folderName + fileName;
 
 		PrintWriter pw = new PrintWriter(fileName);
-		
-		List<IRow> data = new PoiGridSearch().getPoiByGrids(gridDateList);
+		try {
+			
+			List<IRow> data = new PoiGridSearch().getPoiByGrids(gridDateList);
 
-		JSONArray ja = changeData(data);
+			JSONArray ja = changeData(data);
 
-		for (int j = 0; j < ja.size(); j++) {
-			pw.println(ja.getJSONObject(j).toString());
+			for (int j = 0; j < ja.size(); j++) {
+				pw.println(ja.getJSONObject(j).toString());
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			pw.close();
+
 		}
-
-		pw.close();
-
 	}
 	
 	/**
@@ -326,7 +328,7 @@ public class DownloadOperation {
 			}
 			
 			GeoTranslator trans = new GeoTranslator();
-			String geometry = trans.jts2Wkt(poi.getGeometry(),0.00001, 5);
+			String geometry = trans.jts2Wkt(poi.getGeometry(),1,5);
 			jsonObj.put("geometry", geometry);
 			
 			jsonObj.put("t_operateDate", "");

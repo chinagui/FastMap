@@ -69,7 +69,7 @@ public class ProduceController extends BaseController {
 			long jobId=jobApi.createJob("releaseFmIdbDailyJob", jobDataJson, userId, "日出品");
 			return new ModelAndView("jsonView", success(jobId));
 		}catch(Exception e){
-			log.error("创建失败，原因："+e.getMessage(), e);
+			log.error("日出品失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
@@ -124,7 +124,7 @@ public class ProduceController extends BaseController {
 			long jobId=jobApi.createJob("releaseFmIdbMonthlyJob", jobDataJson,userId, "月出品");
 			return new ModelAndView("jsonView", success(jobId));
 		}catch(Exception e){
-			log.error("创建失败，原因："+e.getMessage(), e);
+			log.error("月出品失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
@@ -157,20 +157,11 @@ public class ProduceController extends BaseController {
 			JSONObject jobDataJson=new JSONObject();
 			jobDataJson.put("gridList", dataJson.get("gridIds"));
 			jobDataJson.put("stopTime", "20160616000000");
-			//jobDataJson.put("featureType", "ROAD");
-			//String featureType = (String) dataJson.get("featureType");//featureType:POI,ROAD
-			//dataJson.put("featureType", dataJson.get("featureType"));//featureType:POI,ROAD
-			//TODO 道路日落月，poi后台定时脚本
-			/*long jobId=0;
-			if (featureType.equals("POI")){
-				jobId=jobApi.createJob("day2MonthPoiJob", dataJson, userId, "POI月融合");	
-				return new ModelAndView("jsonView", success(jobId));
-			}*/
 			long jobId=jobApi.createJob("day2MonthRoadJob", jobDataJson, userId, "ROAD月融合");	
 			return new ModelAndView("jsonView", success(jobId));
 			
 		}catch(Exception e){
-			log.error("创建失败，原因："+e.getMessage(), e);
+			log.error("道路融合失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}

@@ -49,6 +49,7 @@ public class BlockOperation {
 						map.put("blockName", rs.getString("BLOCK_NAME"));
 						map.put("planningStatus", rs.getInt("PLAN_STATUS"));
 						map.put("cityId", rs.getInt("CITY_ID"));
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						try {
 							CLOB clob = (CLOB) rs.getObject("geometry");
 							String clobStr = DataBaseUtils.clob2String(clob);
@@ -400,6 +401,31 @@ public class BlockOperation {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
+		}
+	}
+	
+	/**
+	 * @param conn
+	 * @param blockList
+	 * @throws Exception
+	 */
+	public static void openBlockByBlockIdList(Connection conn, List<Integer> blockList) throws Exception {
+		// TODO Auto-generated method stub
+		try {
+			QueryRunner run = new QueryRunner();
+			if (!blockList.isEmpty()) {
+				String BlockIds = "(";
+				BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
+
+				String updateSql = "update block" + " set plan_status = 1" + " where block_id in " + BlockIds;
+
+				run.update(conn, updateSql);
+			}
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("更新失败，原因为:" + e.getMessage(), e);
 		}
 	}
 

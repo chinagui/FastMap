@@ -108,10 +108,9 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	public  void createFaceByAdLink(List<IObj> objList) throws Exception {
-		List<Geometry> list = new ArrayList<Geometry>();
 		Set<String> meshes = new HashSet<String>();
 		List<AdLink> adLinks = new ArrayList<AdLink>();
-		for (IObj obj : command.getLinks()) {
+		for (IObj obj : objList) {
 			AdLink link = (AdLink) obj;
 			adLinks.add(link);
 			if (link.getMeshes().size() == 1) {
@@ -120,7 +119,6 @@ public class Operation implements IOperation {
 					meshes.add(String.valueOf(adlinkmesh.getMeshId()));
 				}
 			}
-			list.add(GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
 		}
 		if (meshes.size() == 1) {
 			int meshId = Integer.parseInt(meshes.iterator().next());
@@ -130,8 +128,8 @@ public class Operation implements IOperation {
 			this.reCaleFaceGeometry(adLinks);
 		} else {
 			this.updateFlag =false;
-			Geometry geom = GeoTranslator.getCalLineToPython(list);
-			this.createFaceWithMesh(meshes, geom, 0);
+			Geometry geom = GeoTranslator.transform(this.getPolygonGeometry(adLinks), 0.00001, 5);
+			this.createFaceWithMesh(meshes, geom,objList, 1);
 		}
 	}
 
@@ -144,15 +142,16 @@ public class Operation implements IOperation {
 	 *            创建面表示 0 根据几何，1 根据既有线
 	 * @throws Exception
 	 */
-	private void createFaceWithMesh(Set<String> meshes, Geometry geom, int flag)
+	private void createFaceWithMesh(Set<String> meshes, Geometry geom,List<IObj> objList, int flag)
 			throws Exception {
 		Iterator<String> it = meshes.iterator();
 		Map<Coordinate, Integer> mapNode = new HashMap<Coordinate, Integer>();
 		Map<Geometry, AdLink> mapLink = new HashMap<Geometry, AdLink>();
 		if (flag == 1) {
-			for (IObj obj : command.getLinks()) {
+			for (IObj obj : objList) {
 				AdLink adLink = (AdLink) obj;
-				mapLink.put(adLink.getGeometry(), adLink);
+				mapLink.put(GeoTranslator.transform(
+						adLink.getGeometry(), 0.00001, 5), adLink);
 			}
 		}
 		while (it.hasNext()) {
@@ -217,7 +216,7 @@ public class Operation implements IOperation {
 			this.reCaleFaceGeometry(links);
 		}// 如果跨图幅
 		else {
-			this.createFaceWithMesh(meshes, geom, 0);
+			this.createFaceWithMesh(meshes, geom,null, 0);
 		}
 
 	}
@@ -342,6 +341,41 @@ public class Operation implements IOperation {
 					this.face);
 		}
 
+	}
+	/**
+	 * 根据传入的link 重组PolygonGeometry
+	 * */
+	private Geometry getPolygonGeometry(List<AdLink> links) throws Exception{
+		if (links.size() < 1) {
+			throw new Exception("重新维护面的形状:发现面没有组成link");
+		}
+		AdLink currLink = null;
+		for (AdLink adLink : links) {
+			currLink = adLink;
+			break;
+		}
+		if (currLink == null) {
+			throw new Exception("重新维护面的形状:发现面没有组成link");
+		}
+		// 获取当前LINK和NODE
+		int startNodePid = currLink.getsNodePid();
+		int currNodePid = startNodePid;
+		Map<AdLink, Integer> map = new HashMap<AdLink, Integer>();
+		map.put(currLink, 1);
+		List<Geometry> list = new ArrayList<Geometry>();
+		list.add(currLink.getGeometry());
+		Map<Integer, AdLink> currLinkAndPidMap = new HashMap<Integer, AdLink>();
+		currLinkAndPidMap.put(currNodePid, currLink);
+		// 获取下一条联通的LINK
+		while (AdLinkOperateUtils.getNextLink(links, currLinkAndPidMap)) {
+			if (currLinkAndPidMap.keySet().iterator().next() == startNodePid) {
+				break;
+			}
+			list.add(currLinkAndPidMap.get(
+					currLinkAndPidMap.keySet().iterator().next()).getGeometry());
+
+		}
+		return GeoTranslator.getCalLineToPython(list);
 	}
 
 	/*

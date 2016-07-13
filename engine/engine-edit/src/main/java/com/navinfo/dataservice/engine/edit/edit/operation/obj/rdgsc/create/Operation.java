@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -30,6 +32,8 @@ import net.sf.json.JSONObject;
  *
  */
 public class Operation implements IOperation {
+
+	protected Logger log = Logger.getLogger(this.getClass());
 
 	private Command command;
 
@@ -77,17 +81,21 @@ public class Operation implements IOperation {
 
 		this.result = result;
 
+		log.info("开始创建立交");
+
 		// link的pid和层级的映射关系:key:zlevel value:link对象(pid和线类型)
 		Map<Integer, RdGscLink> linkMap = command.getLinkMap();
 
 		// 立交组成线分两种：1.一条link组成线 2.多条link组成线
 		if (linkMap.size() < 1) {
+			log.error("传递参数有问题：没有立交组成线");
 			throw new Exception("没有立交组成线");
 		}
 
 		// 判断是否自相交
 		isSelfGsc = RdGscOperateUtils.checkIsSelfGsc(linkMap);
 
+		log.info("组装新建立交需要的数据");
 		// 查询数据：1.link_pid和对象map 2.立交组成线几何的集合
 		List<Geometry> linksGeometryList = preParedData();
 
@@ -110,10 +118,12 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void createGsc() throws Exception {
-
+		
 		Geometry gscGeo = checkHasInter(interGeometry);
 
 		RdGsc rdGsc = RdGscOperateUtils.addRdGsc(gscGeo);
+
+		log.info("新建立交组成线");
 
 		for (Entry<Integer, RdGscLink> entry : command.getLinkMap().entrySet()) {
 
@@ -128,7 +138,7 @@ public class Operation implements IOperation {
 
 			// 更新立交组成线几何
 			updateLinkGeo(gscLink, row, gscGeo);
-			
+
 			if (!gscLink.changedFields().isEmpty()) {
 				result.insertObject(gscLink, ObjStatus.INSERT, gscLink.getPid());
 			}
@@ -155,9 +165,12 @@ public class Operation implements IOperation {
 
 			// 立交组成线和矩形框交点
 			gscGeo = interGeo.intersection(spatial);
-
+			
 			// 立交检查：1.点位是否重复 2.是否和矩形框有交点
 			check.checkGsc(gscGeo, command.getLinkMap());
+
+			// 立交检查：1.检查立交组成线是否正确
+			check.checkGscLink(gscGeo, linkObjMap);
 
 			// 创建立交
 		} else {

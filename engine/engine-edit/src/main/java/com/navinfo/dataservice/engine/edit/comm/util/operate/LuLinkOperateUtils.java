@@ -369,7 +369,7 @@ public class LuLinkOperateUtils {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
 		}
 		if (!maps.containsValue(node.get("e"))) {
-			maps.put(g.getCoordinates()[0], (int) node.get("e"));
+			maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) node.get("e"));
 		}
 		// 创建线
 		LuLinkOperateUtils.getLuLink(g, (int) node.get("s"),
@@ -400,7 +400,7 @@ public class LuLinkOperateUtils {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
 		}
 		if (!maps.containsValue(node.get("e"))) {
-			maps.put(g.getCoordinates()[0], (int) node.get("e"));
+			maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) node.get("e"));
 		}
 		// 创建线
 		return LuLinkOperateUtils.getLuLink(g, (int) node.get("s"),

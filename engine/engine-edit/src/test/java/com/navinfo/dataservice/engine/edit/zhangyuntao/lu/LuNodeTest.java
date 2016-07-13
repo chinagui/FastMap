@@ -27,14 +27,14 @@ public class LuNodeTest extends InitApplication{
 
 	@Test
 	public void createLuNodeTest() throws Exception {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"LUNODE\",\"dbId\":43,\"projectId\":11,\"objId\":100034447,\"data\":{\"longitude\":116.22590,\"latitude\":39.77897}}";
+		String parameter = "{'command':'CREATE','dbId':43,'objId':100034532,'data':{'longitude':116.48378868782932,'latitude':40.30710911418436},'type':'LUNODE'}";
 		Transaction t = new Transaction(parameter);
 		;
 		String msg = t.run();
 	}
 	@Test
 	public void deleteLuNodeTest() throws Exception {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"LUNODE\",\"dbId\":43,\"objId\":100034469}}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"LUNODE\",\"dbId\":43,\"objId\":100034553}}";
 		Transaction t = new Transaction(parameter);
 		;
 		String msg = t.run();
@@ -50,8 +50,7 @@ public class LuNodeTest extends InitApplication{
 
 	@Test
 	public void moveLuNodeTest() throws Exception {
-		//parameter:{"command":"MOVE","dbId":43,"objId":"100024205","data":{"longitude":116.47495463490485,"latitude":40.00968804544376},"type":"ADNOD
-		String parameter = "{\"command\":\"MOVE\",\"dbId\":43,\"objId\":100034474,\"data\":{\"longitude\":116.47495463490485,\"latitude\":40.00968804544376},\"type\":\"LUNODE\"}";
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":43,\"objId\":100034556,\"data\":{\"longitude\":116.47495463490485,\"latitude\":40.00968804544376},\"type\":\"LUNODE\"}";
 		Transaction t = new Transaction(parameter);
 		;
 		String msg = t.run();

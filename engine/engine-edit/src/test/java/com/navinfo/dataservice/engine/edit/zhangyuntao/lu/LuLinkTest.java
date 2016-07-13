@@ -37,8 +37,7 @@ public class LuLinkTest extends InitApplication {
 
 	@Test
 	public void createLuLinkTest() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"LULINK\",\"projectId\":11,\"dbId\":43,"
-				+ "\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.13002,39.96655],[116.12874,39.96190]]},\"catchLinks\":[]}}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":43,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.48640632629393,40.31965310390446],[116.48340225219727,40.305254482468364]]},\"catchLinks\":[]},\"type\":\"LULINK\"}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);
 		;
@@ -52,13 +51,13 @@ public class LuLinkTest extends InitApplication {
 
 	@Test
 	public void deleteLuLinkTest() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"LULINK\",\"dbId\":43,\"projectId\":11,\"objId\":100034446}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"LULINK\",\"dbId\":43,\"projectId\":11,\"objId\":100034527}";
 		log.info(parameter);
 		System.out.println(parameter + "-------------------");
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
-		} catch (Exception e) {
+		} catch (Exception e) {	
 			e.printStackTrace();
 		}
 
@@ -67,7 +66,7 @@ public class LuLinkTest extends InitApplication {
 	// 打断一条LINK
 	@Test
 	public void breakLuLinkTest() {
-		String parameter = "{\"command\":\"BREAK\",\"dbId\":43,\"objId\":100034450,\"data\":{\"longitude\":116.12940,\"latitude\":39.96430},\"type\":\"LULINK\"}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":43,\"objId\":100034525,\"data\":{\"longitude\":116.48408486591549,\"latitude\":40.30854271853128},\"type\":\"LUNODE\"}";
 
 		log.info(parameter);
 		System.out.println(parameter + "-------------------");
@@ -101,7 +100,7 @@ public class LuLinkTest extends InitApplication {
 
 	@Test
 	public void tesRepairtLuLink() {
-		String parameter = "{\"command\":\"REPAIR\",\"dbId\":43,\"projectId\":11,\"objId\":100034447,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.62528,39.25022],[116.62528,39.25006],[116.62535838820631,39.25011395094421],[116.62544,39.25017],[116.62528,39.25022]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"LULINK\"}";
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":43,\"projectId\":11,\"objId\":100034528,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.62528,39.25022],[116.62528,39.25006],[116.62535838820631,39.25011395094421],[116.62544,39.25017],[116.62528,39.25022]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"LULINK\"}";
 
 		log.info(parameter);
 		System.out.println(parameter + "-------------------");

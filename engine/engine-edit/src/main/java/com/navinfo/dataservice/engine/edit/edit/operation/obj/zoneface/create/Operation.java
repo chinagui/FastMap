@@ -123,7 +123,7 @@ public class Operation implements IOperation {
 		} else {
 			this.updateFlag =false;
 			Geometry geom = GeoTranslator.getCalLineToPython(list);
-			this.createFaceWithMesh(meshes, geom, 0);
+			this.createFaceWithMesh(meshes, geom, objList,0);
 		}
 	}
 
@@ -136,13 +136,13 @@ public class Operation implements IOperation {
 	 *            创建面表示 0 根据几何，1 根据既有线
 	 * @throws Exception
 	 */
-	private void createFaceWithMesh(Set<String> meshes, Geometry geom, int flag)
+	private void createFaceWithMesh(Set<String> meshes, Geometry geom, List<IObj> objList,int flag)
 			throws Exception {
 		Iterator<String> it = meshes.iterator();
 		Map<Coordinate, Integer> mapNode = new HashMap<Coordinate, Integer>();
 		Map<Geometry, ZoneLink> mapLink = new HashMap<Geometry, ZoneLink>();
 		if (flag == 1) {
-			for (IObj obj : command.getLinks()) {
+			for (IObj obj : objList) {
 				ZoneLink zoneLink = (ZoneLink) obj;
 				mapLink.put(zoneLink.getGeometry(), zoneLink);
 			}
@@ -209,7 +209,7 @@ public class Operation implements IOperation {
 			this.reCaleFaceGeometry(links);
 		}// 如果跨图幅
 		else {
-			this.createFaceWithMesh(meshes, geom, 0);
+			this.createFaceWithMesh(meshes, geom,null, 0);
 		}
 
 	}

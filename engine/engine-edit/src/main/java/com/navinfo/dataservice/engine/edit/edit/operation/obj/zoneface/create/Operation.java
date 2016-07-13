@@ -17,6 +17,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
@@ -24,6 +25,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.pidservice.PidService;
+import com.navinfo.dataservice.engine.edit.comm.util.operate.AdLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.ZoneLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -100,7 +102,6 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	public  void createFaceByZoneLink(List<IObj> objList) throws Exception {
-		List<Geometry> list = new ArrayList<Geometry>();
 		Set<String> meshes = new HashSet<String>();
 		List<ZoneLink> zoneLinks = new ArrayList<ZoneLink>();
 		for (IObj obj : objList) {
@@ -112,7 +113,6 @@ public class Operation implements IOperation {
 					meshes.add(String.valueOf(adlinkmesh.getMeshId()));
 				}
 			}
-			list.add(GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
 		}
 		if (meshes.size() == 1) {
 			int meshId = Integer.parseInt(meshes.iterator().next());
@@ -122,8 +122,8 @@ public class Operation implements IOperation {
 			this.reCaleFaceGeometry(zoneLinks);
 		} else {
 			this.updateFlag =false;
-			Geometry geom = GeoTranslator.getCalLineToPython(list);
-			this.createFaceWithMesh(meshes, geom, objList,0);
+			Geometry geom = GeoTranslator.transform(this.getPolygonGeometry(zoneLinks), 0.00001, 5);
+			this.createFaceWithMesh(meshes, geom,objList, 1);
 		}
 	}
 
@@ -144,7 +144,8 @@ public class Operation implements IOperation {
 		if (flag == 1) {
 			for (IObj obj : objList) {
 				ZoneLink zoneLink = (ZoneLink) obj;
-				mapLink.put(zoneLink.getGeometry(), zoneLink);
+				mapLink.put(GeoTranslator.transform(
+						zoneLink.getGeometry(), 0.00001, 5), zoneLink);
 			}
 		}
 		while (it.hasNext()) {
@@ -335,7 +336,41 @@ public class Operation implements IOperation {
 		}
 
 	}
+	/**
+	 * 根据传入的link 重组PolygonGeometry
+	 * */
+	private Geometry getPolygonGeometry(List<ZoneLink> links) throws Exception{
+		if (links != null && links.size() < 1) {
+			throw new Exception("重新维护面的形状:发现面没有组成link");
+		}
+		ZoneLink currLink = null;
+		for (ZoneLink zoneLink : links) {
+			currLink = zoneLink;
+			break;
+		}
+		if (currLink == null) {
+			throw new Exception("重新维护面的形状:发现面没有组成link");
+		}
+		// 获取当前LINK和NODE
+		int startNodePid = currLink.getsNodePid();
+		int currNodePid = startNodePid;
+		List<Geometry> list = new ArrayList<Geometry>();
+		list.add(currLink.getGeometry());
+		Map<Integer, ZoneLink> currLinkAndPidMap = new HashMap<Integer, ZoneLink>();
+		currLinkAndPidMap.put(currNodePid, currLink);
+		// 获取下一条联通的LINK
+		while (ZoneLinkOperateUtils.getNextLink(links, currLinkAndPidMap)) {
+			if (currLinkAndPidMap.keySet().iterator().next() == startNodePid) {
+				break;
+			}
+			list.add(currLinkAndPidMap.get(
+					currLinkAndPidMap.keySet().iterator().next()).getGeometry());
 
+		}
+		
+		return GeoTranslator.getCalLineToPython(list);
+	
+	}
 	/*
 	 * 更新面的几何属性
 	 */

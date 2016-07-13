@@ -1,12 +1,12 @@
 package com.navinfo.dataservice.engine.edit.edit.operation;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * 操作控制器
@@ -298,7 +298,7 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.move.moverwnode.Command(
 						json, requester);
 			}
-			
+
 		case RWLINK:
 			switch (operType) {
 			case CREATE:
@@ -309,13 +309,13 @@ public class Transaction {
 						json, requester);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deleterwlink.Command(
-						json,requester);
+						json, requester);
 			case REPAIR:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairrwlink.Command(
-						json,requester);
+						json, requester);
 			case BREAK:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Command(
-						json,requester);
+						json, requester);
 			}
 		case ZONENODE:
 			switch (operType) {
@@ -357,6 +357,48 @@ public class Transaction {
 						json, requester);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.zoneface.delete.Command(
+						json, requester);
+			}
+		case LUNODE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breaklupoint.Command(
+						json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.lunode.update.Command(
+						json, requester);
+			case MOVE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.move.movelunode.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deletelunode.Command(
+						json, requester);
+			}
+		case LULINK:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.lulink.create.Command(
+						json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.lulink.update.Command(
+						json, requester);
+			case BREAK:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breaklupoint.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deletelulink.Command(
+						json, requester);
+			case REPAIR:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairlulink.Command(
+						json, requester);
+			}
+		case LUFACE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.luface.create.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.luface.delete.Command(
 						json, requester);
 			}
 		}
@@ -623,7 +665,7 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrwpoint.Process(
 						command);
 			}
-			
+
 		case ZONENODE:
 			switch (operType) {
 			case CREATE:
@@ -666,8 +708,50 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.zoneface.delete.Process(
 						command);
 			}
+		case LUNODE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breaklupoint.Process(
+						command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.lunode.update.Process(
+						command);
+			case MOVE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.move.movelunode.Process(
+						command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deletelunode.Process(
+						command);
+			}
+		case LULINK:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.lulink.create.Process(
+						command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.lulink.update.Process(
+						command);
+			case BREAK:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breaklupoint.Process(
+						command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.delete.deletelulink.Process(
+						command);
+			case REPAIR:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.topo.repair.repairlulink.Process(
+						command);
+			}
+		case LUFACE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.luface.create.Process(
+						command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.edit.operation.obj.luface.delete.Process(
+						command);
+			}
 		}
-		
+
 		throw new Exception("不支持的操作类型");
 
 	}

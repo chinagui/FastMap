@@ -394,7 +394,7 @@ public class AdLinkOperateUtils {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
 		}
 		if (!maps.containsValue(node.get("e"))) {
-			maps.put(g.getCoordinates()[1], (int) node.get("e"));
+			maps.put(g.getCoordinates()[g.getCoordinates().length-1], (int) node.get("e"));
 		}
 		//创建线
 		AdLinkOperateUtils.addLink(g, (int) node.get("s"),
@@ -424,7 +424,7 @@ public class AdLinkOperateUtils {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
 		}
 		if (!maps.containsValue(node.get("e"))) {
-			maps.put(g.getCoordinates()[1], (int) node.get("e"));
+			maps.put(g.getCoordinates()[g.getCoordinates().length-1], (int) node.get("e"));
 		}
 		//创建线
 		return AdLinkOperateUtils.getAddLink(g, (int) node.get("s"),

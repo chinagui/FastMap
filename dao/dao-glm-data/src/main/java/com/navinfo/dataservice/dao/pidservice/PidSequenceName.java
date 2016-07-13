@@ -44,7 +44,7 @@ public class PidSequenceName {
 	
 	public static final String signboardIdName = "SEQ_RD_SIGNBOARD";
 	
-	public static final String signboardNameIdName = "RD_SIGNBOARD_NAME";
+	public static final String signboardNameIdName = "SEQ_RD_SIGNBOARD_NAME";
 	
 	public static final String branchNameIdName = "SEQ_RD_BRANCH_NAME";
 	

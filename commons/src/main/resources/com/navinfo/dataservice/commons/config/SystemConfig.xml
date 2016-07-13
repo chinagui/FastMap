@@ -14,6 +14,8 @@
 	<SYS.dataSource.maxIdle>10</SYS.dataSource.maxIdle>
 	<SYS.dataSource.minIdle>2</SYS.dataSource.minIdle>
 	<SYS.dataSource.maxWait>1000</SYS.dataSource.maxWait>
+	<datasource.sql.type>dbcp</datasource.sql.type>
+	<datasource.sql.stat.enable>true</datasource.sql.stat.enable>
     <glm.ignore.table.prefix>TEMP_,TMP_,NI_,MDRT_,PIPELINE_,SYS_,STAT_,SHD_,B_,NN_,TMAU_,TASK_EXTENT,AU_,TMC_,LOG_,CK_RULE</glm.ignore.table.prefix>
 <!-- scripts interface part -->
 	<scripts.dir>F:\\Fm_Projects_Doc\\scripts\\</scripts.dir>

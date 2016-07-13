@@ -28,7 +28,7 @@ import net.sf.json.JSONObject;
 * 
 */
 public abstract class AbstractJob implements Runnable {
-
+	
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected JobInfo jobInfo;
 	

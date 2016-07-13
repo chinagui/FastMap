@@ -75,4 +75,8 @@ public class PropConstant {
 	public static final String inforUploadUrl = "mapspotter.infor.upload.url";
 	
 	public static final String inforTimeOut = "mapspotter.infor.upload.timeout";
+	
+	public static final String dataSourceType="datasource.sql.type";
+	
+	public static final String dataSourceStatEnable="datasource.sql.stat.enable";
 }

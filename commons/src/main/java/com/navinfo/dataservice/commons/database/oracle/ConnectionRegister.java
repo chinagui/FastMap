@@ -105,7 +105,7 @@ public class ConnectionRegister {
 		else if (conn instanceof MyDriverManagerConnectionWrapper) {
 			// ((MyDriverManagerConnectionWrapper) conn).serverClose();
 			pro = ((MyDriverManagerConnectionWrapper) conn).getSessionProperties();
-		} else {
+		}else {
 			log.warn("当前连接不支持注册");
 		}
 		if (pro != null) {

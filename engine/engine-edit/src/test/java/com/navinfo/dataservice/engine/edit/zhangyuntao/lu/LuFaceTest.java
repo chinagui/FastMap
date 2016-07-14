@@ -19,8 +19,7 @@ public class LuFaceTest extends InitApplication {
 
 	@Test
 	public void createFaceTest() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"LUFACE\",\"projectId\":11,\"dbId\":43,"
-				+ "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[117.01995000243186,39.250035216523884],[117.0199567079544,39.24992720818254],[117.020246386528,39.25004560193254],[117.01995000243186,39.250035216523884]]}}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"LUFACE\",\"dbId\":43,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.12778425216673,40.66462393693607],[116.12915754318236,40.665608653941],[116.12951159477232,40.66479483927713],[116.12778425216673,40.66462393693607]]}}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);
 		;

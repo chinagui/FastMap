@@ -38,6 +38,7 @@ public class Process extends AbstractProcess<Command> {
 		}
 
 		lockLuNode();
+		lockLuFace();
 		return true;
 	}
 	

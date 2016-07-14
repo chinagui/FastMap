@@ -3,6 +3,9 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakrdp
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.json.JSONException;
+
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
@@ -20,6 +23,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
@@ -196,24 +200,32 @@ public class Command extends AbstractCommand {
 		this.adAdmins = adAdmins;
 	}
 
-	public Command(JSONObject json, String requester) {
+	public Command(JSONObject json, String requester) throws JSONException {
 		this.requester = requester;
 
 		this.linkPid = json.getInt("objId");
 
 		JSONObject data = json.getJSONObject("data");
 
-		double lng = Math.round(data.getDouble("longitude")*100000)/100000.0;
+		JSONObject geoPoint = new JSONObject();
 
-		double lat = Math.round(data.getDouble("latitude")*100000)/100000.0;
+		geoPoint.put("type", "Point");
+
+		geoPoint.put("coordinates", new double[] {data.getDouble("longitude"),
+				data.getDouble("latitude") });
+		
+		Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
+		
+		if(data.containsKey("breakNodePid")){
+			this.setBreakNodePid(data.getInt("breakNodePid"));
+		}
+		Coordinate coord = new Coordinate(geometry.getCoordinate().x, geometry.getCoordinate().y);
 
 		this.setDbId(json.getInt("dbId"));
 
 		if (data.containsKey("breakNodePid")) {
 			this.breakNodePid = data.getInt("breakNodePid");
 		}
-
-		Coordinate coord = new Coordinate(lng, lat);
 
 		this.point = geometryFactory.createPoint(coord);
 

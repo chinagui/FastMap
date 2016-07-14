@@ -37,7 +37,7 @@ public class LuLinkTest extends InitApplication {
 
 	@Test
 	public void createLuLinkTest() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":43,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.48640632629393,40.31965310390446],[116.48340225219727,40.305254482468364]]},\"catchLinks\":[]},\"type\":\"LULINK\"}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":43,\"data\":{\"eNodePid\":100025076,\"sNodePid\":100025074,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.12568140029907,40.66640618267723],[116.12719416618347,40.66460766049978]]},\"catchLinks\":[{\"nodePid\":100025074,\"lon\":116.12568140029907,\"lat\":40.66640618267723},{\"nodePid\":100025076,\"lon\":116.12719416618347,\"lat\":40.66460766049978}]},\"type\":\"LULINK\"}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);
 		;
@@ -127,4 +127,5 @@ public class LuLinkTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
+	
 }

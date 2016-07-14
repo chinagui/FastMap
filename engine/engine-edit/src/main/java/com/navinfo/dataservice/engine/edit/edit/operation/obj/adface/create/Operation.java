@@ -150,8 +150,17 @@ public class Operation implements IOperation {
 		if (flag == 1) {
 			for (IObj obj : objList) {
 				AdLink adLink = (AdLink) obj;
-				mapLink.put(GeoTranslator.transform(
-						adLink.getGeometry(), 0.00001, 5), adLink);
+				Geometry geometry = GeoTranslator.transform(
+						adLink.getGeometry(), 0.00001, 5);
+				mapLink.put(geometry, adLink);
+				
+				if(!mapNode.containsValue(geometry.getCoordinates()[0])){
+						mapNode.put(geometry.getCoordinates()[0], adLink.getsNodePid());
+				}
+				if(!mapNode.containsValue(geometry.getCoordinates()[geometry.getCoordinates().length-1])){
+						mapNode.put(geometry.getCoordinates()[geometry.getCoordinates().length-1], adLink.geteNodePid());
+				}
+				
 			}
 		}
 		while (it.hasNext()) {
@@ -164,26 +173,46 @@ public class Operation implements IOperation {
 			while (itLine.hasNext()) {
 				LineString[] lineStrings = itLine.next();
 				List<AdLink> links = new ArrayList<AdLink>();
-				// 创建线
-				for (LineString lineString : lineStrings) {
+				for(LineString lineString:lineStrings){
 					AdLink adLink = null;
-					if (mapLink.containsKey(lineString)) {
-						adLink = mapLink.get(lineString);
-					} else {
-						if (MeshUtils.isMeshLine(lineString)) {
-							if (mapLink.containsKey(lineString.reverse())) {
-								adLink = mapLink.get(lineString.reverse());
-							}else{
-								adLink = this.createLinkOfFace(lineString, mapNode);
-								mapLink.put(lineString, adLink);
-							}
-						} else {
+					if(MeshUtils.isMeshLine(lineString)){
+						if (mapLink.containsKey(lineString.reverse())) {
+							adLink = mapLink.get(lineString.reverse());
+						}else if(mapLink.containsKey(lineString)){
+							adLink = mapLink.get(lineString);
+						}
+						else{
 							adLink = this.createLinkOfFace(lineString, mapNode);
 							mapLink.put(lineString, adLink);
 						}
+						
+					}else{
+						if(flag == 0){
+							if (mapLink.containsKey(lineString)) {
+								adLink = mapLink.get(lineString);
+							}
+							else{
+								adLink = this.createLinkOfFace(lineString, mapNode);
+								mapLink.put(lineString, adLink);
+							}
+							
+						}else{
+
+							Iterator<Geometry> itLinks=mapLink.keySet().iterator();
+							while(itLinks.hasNext()){
+								Geometry g = itLinks.next();
+								if(lineString.contains(g)){
+									links.add(mapLink.get(g));
+								}
+
+							}
+							
+						}
+						
 					}
 					links.add(adLink);
 				}
+				// 创建线
 				this.createFace();
 				this.reCaleFaceGeometry(links);
 			}

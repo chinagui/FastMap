@@ -66,8 +66,7 @@ public class Operation implements IOperation {
 
 			double lat = command.getLatitude();
 
-			Geometry geom = GeoTranslator.transform(link.getGeometry(),
-					0.00001, 5);
+			Geometry geom = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
 			Coordinate[] cs = geom.getCoordinates();
 			double[][] ps = new double[cs.length][2];
 
@@ -81,7 +80,8 @@ public class Operation implements IOperation {
 				ps[0][0] = lon;
 
 				ps[0][1] = lat;
-			} else {
+			}
+			if (link.geteNodePid() == nodePid) {
 				ps[ps.length - 1][0] = lon;
 
 				ps[ps.length - 1][1] = lat;
@@ -90,7 +90,7 @@ public class Operation implements IOperation {
 			geojson.put("type", "LineString");
 			geojson.put("coordinates", ps);
 			Geometry geo = GeoTranslator.geojson2Jts(geojson, 1, 5);
-			Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geom);
+			Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geo);
 			// 修改线的几何属性
 			// 如果没有跨图幅只是修改线的几何
 			List<LuLink> links = new ArrayList<LuLink>();
@@ -100,25 +100,23 @@ public class Operation implements IOperation {
 				updateContent.put("length", GeometryUtils.getLinkLength(geo));
 				link.fillChangeFields(updateContent);
 				link.setGeometry(geo);
-				links.add(link);
+				LuLink luLink = new LuLink();
+				luLink.copy(link);
+				luLink.setGeometry(GeoTranslator.geojson2Jts(geojson, 100000, 5));
+				links.add(luLink);
 				map.put(link.getPid(), links);
 				result.insertObject(link, ObjStatus.UPDATE, link.pid());
 				// 如果跨图幅就需要打断生成新的link
 			} else {
 				Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
-				maps.put(link.getGeometry().getCoordinates()[0],
-						link.getsNodePid());
-				maps.put(link.getGeometry().getCoordinates()[link.getGeometry()
-						.getCoordinates().length - 1], link.geteNodePid());
+				maps.put(geo.getCoordinates()[0], link.getsNodePid());
+				maps.put(geo.getCoordinates()[link.getGeometry().getCoordinates().length - 1], link.geteNodePid());
 				Iterator<String> it = meshes.iterator();
 				while (it.hasNext()) {
 					String meshIdStr = it.next();
-					Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo,
-							MeshUtils.mesh2Jts(meshIdStr));
-					geomInter = GeoTranslator.geojson2Jts(
-							GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					links.addAll(LuLinkOperateUtils.getCreateLuLinksWithMesh(
-							geomInter, maps, result));
+					Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo, MeshUtils.mesh2Jts(meshIdStr));
+					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
+					links.addAll(LuLinkOperateUtils.getCreateLuLinksWithMesh(geomInter, maps, result));
 
 				}
 				map.put(link.getPid(), links);
@@ -137,8 +135,7 @@ public class Operation implements IOperation {
 		// 计算点的几何形状
 		JSONObject geojson = new JSONObject();
 		geojson.put("type", "Point");
-		geojson.put("coordinates", new double[] { command.getLongitude(),
-				command.getLatitude() });
+		geojson.put("coordinates", new double[] { command.getLongitude(), command.getLatitude() });
 		JSONObject updateNodeJson = new JSONObject();
 		// 要移动点的project_id
 		updateNodeJson.put("dbId", command.getDbId());
@@ -176,8 +173,7 @@ public class Operation implements IOperation {
 						}
 						links.addAll(this.map.get(obj.getLinkPid()));
 					} else {
-						links.add((LuLink) new LuLinkSelector(conn).loadById(
-								obj.getLinkPid(), true));
+						links.add((LuLink) new LuLinkSelector(conn).loadById(obj.getLinkPid(), true));
 					}
 
 					result.insertObject(obj, ObjStatus.DELETE, face.getPid());

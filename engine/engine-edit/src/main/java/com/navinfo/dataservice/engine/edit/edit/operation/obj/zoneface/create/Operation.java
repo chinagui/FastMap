@@ -152,7 +152,7 @@ public class Operation implements IOperation {
 						mapNode.put(geometry.getCoordinates()[0], zoneLink.getsNodePid());
 				}
 				if(!mapNode.containsValue(geometry.getCoordinates()[geometry.getCoordinates().length-1])){
-						mapNode.put(geometry.getCoordinates()[geometry.getCoordinates().length-1], zoneLink.getsNodePid());
+						mapNode.put(geometry.getCoordinates()[geometry.getCoordinates().length-1], zoneLink.geteNodePid());
 				}
 			}
 		}
@@ -165,29 +165,49 @@ public class Operation implements IOperation {
 			Iterator<LineString[]> itLine = set.iterator();
 			while (itLine.hasNext()) {
 				LineString[] lineStrings = itLine.next();
-				List<ZoneLink> zoneLinks = new ArrayList<ZoneLink>();
-				// 创建线
-				for (LineString lineString : lineStrings) {
+				List<ZoneLink> links = new ArrayList<ZoneLink>();
+				for(LineString lineString:lineStrings){
 					ZoneLink zoneLink = null;
-					if (mapLink.containsKey(lineString)) {
-						zoneLink = mapLink.get(lineString);
-					} else {
-						if (MeshUtils.isMeshLine(lineString)) {
-							if (mapLink.containsKey(lineString.reverse())) {
-								zoneLink = mapLink.get(lineString.reverse());
-							}else{
-								zoneLink = this.createLinkOfFace(lineString, mapNode);
-								mapLink.put(lineString, zoneLink);
-							}
-						} else {
+					if(MeshUtils.isMeshLine(lineString)){
+						if (mapLink.containsKey(lineString.reverse())) {
+							zoneLink = mapLink.get(lineString.reverse());
+						}else if(mapLink.containsKey(lineString)){
+							zoneLink = mapLink.get(lineString);
+						}
+						else{
 							zoneLink = this.createLinkOfFace(lineString, mapNode);
 							mapLink.put(lineString, zoneLink);
 						}
+						
+					}else{
+						if(flag == 0){
+							if (mapLink.containsKey(lineString)) {
+								zoneLink = mapLink.get(lineString);
+							}
+							else{
+								zoneLink = this.createLinkOfFace(lineString, mapNode);
+								mapLink.put(lineString, zoneLink);
+							}
+							
+						}else{
+
+							Iterator<Geometry> itLinks=mapLink.keySet().iterator();
+							while(itLinks.hasNext()){
+								Geometry g = itLinks.next();
+								if(lineString.contains(g)){
+									links.add(mapLink.get(g));
+								}
+
+							}
+							
+						}
+						
 					}
-					zoneLinks.add(zoneLink);
+					links.add(zoneLink);
 				}
+				// 创建线
 				this.createFace();
-				this.reCaleFaceGeometry(zoneLinks);
+				this.reCaleFaceGeometry(links);
 			}
 
 		}

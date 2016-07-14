@@ -133,14 +133,19 @@ public class Command extends AbstractCommand{
 			
 			for(int i=0;i<array.size();i++){
 				JSONObject jo = array.getJSONObject(i);
+
+				JSONObject geoPoint = new JSONObject();
+
+				geoPoint.put("type", "Point");
+
+				geoPoint.put("coordinates", new double[] {jo.getDouble("lon"),
+						jo.getDouble("lat") });
 				
-				double lon = Math.round(jo.getDouble("lon")*100000)/100000.0;
+				Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
 				
-				double lat = Math.round(jo.getDouble("lat")*100000)/100000.0;
+				jo.put("lon",geometry.getCoordinate().x);
 				
-				jo.put("lon",lon);
-				
-				jo.put("lat", lat);
+				jo.put("lat", geometry.getCoordinate().y);
 				
 				this.catchLinks.add(jo);
 			}

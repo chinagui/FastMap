@@ -334,8 +334,9 @@ public class UploadOperation {
 	 * @param jo
 	 * @param version
 	 * @return
+	 * @throws Exception 
 	 */
-	private JSONObject obj2PoiForInsert(JSONObject jo,String version) {
+	private JSONObject obj2PoiForInsert(JSONObject jo,String version) throws Exception {
 		IxPoi poi = new IxPoi();
 		String fid = jo.getString("fid");
 		JSONObject retObj = new JSONObject();
@@ -378,7 +379,10 @@ public class UploadOperation {
 				fieldState += "改连锁品牌|";
 			}
 			if (jo.has("hotel")) {
-				if (jo.getJSONObject("hotel").has("rating")) {
+				
+				JSONObject hotel = jo.getJSONObject("hotel");
+				
+				if (!hotel.isNullObject() && hotel.has("rating")) {
 					fieldState += "改酒店星级|";
 				}
 			}
@@ -414,8 +418,10 @@ public class UploadOperation {
 			}
 			poi.setLog(outDoorLog);
 			poi.setSportsVenue(jo.getString("sportsVenues"));
-			if (jo.getJSONObject("indoor").has("type")) {
-				poi.setIndoor(jo.getJSONObject("indoor").getInt("type"));
+			
+			JSONObject indoor = jo.getJSONObject("indoor");
+			if (!indoor.isNullObject() && indoor.has("type")) {
+				poi.setIndoor(indoor.getInt("type"));
 			} else {
 				poi.setIndoor(0);
 			}
@@ -654,6 +660,7 @@ public class UploadOperation {
 			retObj.put("flag", 0);
 			String errstr = "fid:" + fid + ":" + e.getMessage();
 			retObj.put("ret", errstr);
+			throw e;
 		}
 		return retObj;
 	}
@@ -711,15 +718,23 @@ public class UploadOperation {
 				fieldState += "改连锁品牌|";
 			}
 			List<IRow> hotelListIRow = oldPoi.getHotels();
-			IxPoiHotel hotelOld = new IxPoiHotel();
+			IxPoiHotel hotelOld = null;
 			if (hotelListIRow.size()>0) {
 				hotelOld = (IxPoiHotel) hotelListIRow.get(0);
 			}
 			
 			if (jo.has("hotel")) {
-				JSONObject hotelJSONObj = jo.getJSONObject("hotel");
-				if (hotelJSONObj.has("rating")) {
-					if (hotelJSONObj.getInt("rating") != hotelOld.getRating()) {
+				JSONObject hotel = jo.getJSONObject("hotel");
+				
+				if(!hotel.isNullObject() && hotelOld == null){
+					fieldState += "改酒店星级|";
+				}
+				else if(hotel.isNullObject() && hotelOld != null){
+					fieldState += "改酒店星级|";
+				}
+				else if(!hotel.isNullObject()){
+					
+					if (hotel == null || hotel.getInt("rating") != hotelOld.getRating()) {
 						fieldState += "改酒店星级|";
 					}
 				}
@@ -757,8 +772,10 @@ public class UploadOperation {
 			}
 			poiJson.put("log", outDoorLog);
 			poiJson.put("sportsVenue", jo.getString("sportsVenues"));
-			if (jo.getJSONObject("indoor").has("type")) {
-				poiJson.put("indoor", jo.getJSONObject("indoor").getInt("type"));
+			
+			JSONObject indoor = jo.getJSONObject("indoor");
+			if (!indoor.isNullObject() && indoor.has("type")) {
+				poiJson.put("indoor", indoor.getInt("type"));
 			} else {
 				poiJson.put("indoor",0);
 			}

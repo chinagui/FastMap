@@ -150,8 +150,17 @@ public class Operation implements IOperation {
 		if (flag == 1) {
 			for (IObj obj : objList) {
 				AdLink adLink = (AdLink) obj;
-				mapLink.put(GeoTranslator.transform(
-						adLink.getGeometry(), 0.00001, 5), adLink);
+				Geometry geometry = GeoTranslator.transform(
+						adLink.getGeometry(), 0.00001, 5);
+				mapLink.put(geometry, adLink);
+				
+				if(!mapNode.containsValue(geometry.getCoordinates()[0])){
+						mapNode.put(geometry.getCoordinates()[0], adLink.getsNodePid());
+				}
+				if(!mapNode.containsValue(geometry.getCoordinates()[geometry.getCoordinates().length-1])){
+						mapNode.put(geometry.getCoordinates()[geometry.getCoordinates().length-1], adLink.getsNodePid());
+				}
+				
 			}
 		}
 		while (it.hasNext()) {

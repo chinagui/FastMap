@@ -144,8 +144,16 @@ public class Operation implements IOperation {
 		if (flag == 1) {
 			for (IObj obj : objList) {
 				ZoneLink zoneLink = (ZoneLink) obj;
-				mapLink.put(GeoTranslator.transform(
-						zoneLink.getGeometry(), 0.00001, 5), zoneLink);
+				Geometry geometry = GeoTranslator.transform(
+						zoneLink.getGeometry(), 0.00001, 5);
+				mapLink.put(geometry, zoneLink);
+				
+				if(!mapNode.containsValue(geometry.getCoordinates()[0])){
+						mapNode.put(geometry.getCoordinates()[0], zoneLink.getsNodePid());
+				}
+				if(!mapNode.containsValue(geometry.getCoordinates()[geometry.getCoordinates().length-1])){
+						mapNode.put(geometry.getCoordinates()[geometry.getCoordinates().length-1], zoneLink.getsNodePid());
+				}
 			}
 		}
 		while (it.hasNext()) {

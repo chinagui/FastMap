@@ -158,7 +158,7 @@ public class Operation implements IOperation {
 						mapNode.put(geometry.getCoordinates()[0], adLink.getsNodePid());
 				}
 				if(!mapNode.containsValue(geometry.getCoordinates()[geometry.getCoordinates().length-1])){
-						mapNode.put(geometry.getCoordinates()[geometry.getCoordinates().length-1], adLink.getsNodePid());
+						mapNode.put(geometry.getCoordinates()[geometry.getCoordinates().length-1], adLink.geteNodePid());
 				}
 				
 			}
@@ -173,26 +173,46 @@ public class Operation implements IOperation {
 			while (itLine.hasNext()) {
 				LineString[] lineStrings = itLine.next();
 				List<AdLink> links = new ArrayList<AdLink>();
-				// 创建线
-				for (LineString lineString : lineStrings) {
+				for(LineString lineString:lineStrings){
 					AdLink adLink = null;
-					if (mapLink.containsKey(lineString)) {
-						adLink = mapLink.get(lineString);
-					} else {
-						if (MeshUtils.isMeshLine(lineString)) {
-							if (mapLink.containsKey(lineString.reverse())) {
-								adLink = mapLink.get(lineString.reverse());
-							}else{
-								adLink = this.createLinkOfFace(lineString, mapNode);
-								mapLink.put(lineString, adLink);
-							}
-						} else {
+					if(MeshUtils.isMeshLine(lineString)){
+						if (mapLink.containsKey(lineString.reverse())) {
+							adLink = mapLink.get(lineString.reverse());
+						}else if(mapLink.containsKey(lineString)){
+							adLink = mapLink.get(lineString);
+						}
+						else{
 							adLink = this.createLinkOfFace(lineString, mapNode);
 							mapLink.put(lineString, adLink);
 						}
+						
+					}else{
+						if(flag == 0){
+							if (mapLink.containsKey(lineString)) {
+								adLink = mapLink.get(lineString);
+							}
+							else{
+								adLink = this.createLinkOfFace(lineString, mapNode);
+								mapLink.put(lineString, adLink);
+							}
+							
+						}else{
+
+							Iterator<Geometry> itLinks=mapLink.keySet().iterator();
+							while(itLinks.hasNext()){
+								Geometry g = itLinks.next();
+								if(lineString.contains(g)){
+									links.add(mapLink.get(g));
+								}
+
+							}
+							
+						}
+						
 					}
 					links.add(adLink);
 				}
+				// 创建线
 				this.createFace();
 				this.reCaleFaceGeometry(links);
 			}

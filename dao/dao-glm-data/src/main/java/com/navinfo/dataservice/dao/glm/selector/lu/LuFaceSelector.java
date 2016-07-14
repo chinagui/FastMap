@@ -7,8 +7,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import oracle.sql.STRUCT;
-
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -17,6 +15,8 @@ import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFaceName;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFaceTopo;
+
+import oracle.sql.STRUCT;
 
 public class LuFaceSelector implements ISelector {
 
@@ -33,8 +33,8 @@ public class LuFaceSelector implements ISelector {
 	public IRow loadById(int id, boolean isLock) throws Exception {
 		LuFace face = new LuFace();
 
-		StringBuilder sb = new StringBuilder("select * from "
-				+ face.tableName() + " WHERE face_pid = :1 and  u_record !=2");
+		StringBuilder sb = new StringBuilder(
+				"select * from " + face.tableName() + " WHERE face_pid = :1 and  u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -83,8 +83,7 @@ public class LuFaceSelector implements ISelector {
 		}
 	}
 
-	private void setAttr(boolean isLock, LuFace face, ResultSet resultSet)
-			throws SQLException, Exception {
+	private void setAttr(boolean isLock, LuFace face, ResultSet resultSet) throws SQLException, Exception {
 		face.setPid(resultSet.getInt("face_pid"));
 
 		face.setFeaturePid(resultSet.getInt("feature_pid"));
@@ -105,8 +104,7 @@ public class LuFaceSelector implements ISelector {
 
 		face.setRowId(resultSet.getString("row_id"));
 
-		List<IRow> luFaceTopo = new LuFaceTopoSelector(conn)
-				.loadRowsByParentId(face.pid(), isLock);
+		List<IRow> luFaceTopo = new LuFaceTopoSelector(conn).loadRowsByParentId(face.pid(), isLock);
 
 		for (IRow row : luFaceTopo) {
 			row.setMesh(face.mesh());
@@ -120,8 +118,7 @@ public class LuFaceSelector implements ISelector {
 			face.luFaceTopoMap.put(obj.rowId(), obj);
 		}
 
-		List<IRow> luFaceNames = new LuFaceNameSelector(conn)
-				.loadRowsByParentId(face.getPid(), isLock);
+		List<IRow> luFaceNames = new LuFaceNameSelector(conn).loadRowsByParentId(face.getPid(), isLock);
 
 		for (IRow row : luFaceNames) {
 			LuFaceName obj = (LuFaceName) row;
@@ -138,8 +135,7 @@ public class LuFaceSelector implements ISelector {
 	}
 
 	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock)
-			throws Exception {
+	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
 		List<IRow> faces = new ArrayList<IRow>();
 
 		String sql = "select  a.*  from lu_face a where a.u_record != 2  and a.feature_pid = :1 ";
@@ -194,15 +190,19 @@ public class LuFaceSelector implements ISelector {
 		return faces;
 	}
 
-	public List<LuFace> loadLuFaceByLinkId(int linkPid, boolean isLock)
-			throws Exception {
+	public List<LuFace> loadLuFaceByLinkId(int linkPid, boolean isLock) throws Exception {
 
 		List<LuFace> faces = new ArrayList<LuFace>();
 
-		String sql = "select  a.*  from lu_face a ,lu_face_topo t where a.u_record != 2  and a.face_pid = t.face_pid and t.link_pid = :1 ";
+		StringBuilder bf = new StringBuilder();
+		bf.append("select b.* from lu_face b where b.face_pid in (select a.face_pid ");
+		bf.append("  FROM lu_face a, lu_face_topo t");
+		bf.append(" WHERE     a.u_record != 2  AND T.U_RECORD != 2");
+		bf.append("  AND a.face_pid = t.face_pid");
+		bf.append(" AND t.link_pid = :1 group by a.face_pid)");
 
 		if (isLock) {
-			sql += " for update nowait";
+			bf.append(" for update nowait");
 		}
 
 		PreparedStatement pstmt = null;
@@ -210,7 +210,7 @@ public class LuFaceSelector implements ISelector {
 		ResultSet resultSet = null;
 
 		try {
-			pstmt = this.conn.prepareStatement(sql);
+			pstmt = this.conn.prepareStatement(bf.toString());
 
 			pstmt.setInt(1, linkPid);
 
@@ -251,15 +251,20 @@ public class LuFaceSelector implements ISelector {
 		return faces;
 	}
 
-	public List<LuFace> loadLuFaceByNodeId(int nodePid, boolean isLock)
-			throws Exception {
+	public List<LuFace> loadLuFaceByNodeId(int nodePid, boolean isLock) throws Exception {
 
 		List<LuFace> faces = new ArrayList<LuFace>();
 
-		String sql = "select  a.*  from lu_face a ,lu_face_topo t,lu_link l,lu_node n where a.u_record != 2  and a.face_pid = t.face_pid and t.link_pid = l.link_pid and (l.s_node_pid = :1 or l.e_node_pid = :2) ";
-
+		StringBuilder builder = new StringBuilder();
+		builder.append(" SELECT b.* from lu_face b where b.face_pid in (select a.face_pid ");
+		builder.append(" FROM lu_face a, lu_face_topo t, ad_link l ");
+		builder.append(" WHERE a.u_record != 2 and t.u_record != 2 and l.u_record != 2");
+		builder.append(" AND a.face_pid = t.face_pid");
+		builder.append(" AND t.link_pid = l.link_pid");
+		builder.append(" AND (l.s_node_pid = :1 OR l.e_node_pid = :2) group by a.face_pid)");
+		
 		if (isLock) {
-			sql += " for update nowait";
+			builder.append(" for update nowait");
 		}
 
 		PreparedStatement pstmt = null;
@@ -267,10 +272,10 @@ public class LuFaceSelector implements ISelector {
 		ResultSet resultSet = null;
 
 		try {
-			pstmt = this.conn.prepareStatement(sql);
+			pstmt = this.conn.prepareStatement(builder.toString());
 
 			pstmt.setInt(1, nodePid);
-			
+
 			pstmt.setInt(2, nodePid);
 
 			resultSet = pstmt.executeQuery();

@@ -33,8 +33,7 @@ public class LuLinkOperateUtils {
 	 * 
 	 * @return 有则返回 true, 没有则返回 false
 	 */
-	public static boolean getNextLink(List<LuLink> links,
-			Map<Integer, LuLink> map) throws Exception {
+	public static boolean getNextLink(List<LuLink> links, Map<Integer, LuLink> map) throws Exception {
 		int nextNodePid = 0;
 		int currNodePid = map.keySet().iterator().next();
 		LuLink currLink = map.get(map.keySet().iterator().next());
@@ -47,8 +46,7 @@ public class LuLinkOperateUtils {
 			if (link.getPid() == currLink.getPid()) {
 				continue;
 			}
-			if (link.getsNodePid() == nextNodePid
-					|| link.geteNodePid() == nextNodePid) {
+			if (link.getsNodePid() == nextNodePid || link.geteNodePid() == nextNodePid) {
 				map.clear();
 				map.put(nextNodePid, link);
 				return true;
@@ -59,9 +57,8 @@ public class LuLinkOperateUtils {
 
 	/**
 	 * 根据线段几何以及起始点创建LuLink
-	 * */
-	public static LuLink getLuLink(Geometry g, int sNodePid, int eNodePid,
-			Result result) throws Exception {
+	 */
+	public static LuLink getLuLink(Geometry g, int sNodePid, int eNodePid, Result result) throws Exception {
 		LuLink link = new LuLink();
 		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
 		link.setPid(PidService.getInstance().applyLuLinkPid());
@@ -80,10 +77,11 @@ public class LuLinkOperateUtils {
 	}
 
 	/**
-	 * 根据线段几何以及起始点创建LuLink</br> 新创建的LuLink集成原sourceLink除Pid外其他属性
-	 * */
-	public static IRow addLinkBySourceLink(Geometry g, int sNodePid,
-			int eNodePid, LuLink sourcelink, Result result) throws Exception {
+	 * 根据线段几何以及起始点创建LuLink</br>
+	 * 新创建的LuLink集成原sourceLink除Pid外其他属性
+	 */
+	public static IRow addLinkBySourceLink(Geometry g, int sNodePid, int eNodePid, LuLink sourcelink, Result result)
+			throws Exception {
 		LuLink link = new LuLink();
 		link.copy(sourcelink);
 		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
@@ -120,12 +118,13 @@ public class LuLinkOperateUtils {
 	}
 
 	/**
-	 * 根据线段几何创建起始点LuNode信息并返回 </br> 注:如起始点结束点已存在则使用原有点 如不存在则创建新的LuNode</br>
+	 * 根据线段几何创建起始点LuNode信息并返回 </br>
+	 * 注:如起始点结束点已存在则使用原有点 如不存在则创建新的LuNode</br>
 	 * 
 	 * @return 返回格式{ 's' : startLuNodePid, 'e' : endLuNodePid }
 	 */
-	public static JSONObject createLuNodeForLink(Geometry g, int sNodePid,
-			int eNodePid, Result result) throws Exception {
+	public static JSONObject createLuNodeForLink(Geometry g, int sNodePid, int eNodePid, Result result)
+			throws Exception {
 		JSONObject node = new JSONObject();
 		if (0 == sNodePid) {
 			Coordinate point = g.getCoordinates()[0];
@@ -159,12 +158,10 @@ public class LuLinkOperateUtils {
 	 * @param catchLinks
 	 *            挂接的线和点的集合
 	 */
-	public static Map<Geometry, JSONObject> splitLink(Geometry geometry,
-			int sNodePid, int eNodePid, JSONArray catchLinks, Result result)
-			throws Exception {
+	public static Map<Geometry, JSONObject> splitLink(Geometry geometry, int sNodePid, int eNodePid,
+			JSONArray catchLinks, Result result) throws Exception {
 		Map<Geometry, JSONObject> maps = new HashMap<Geometry, JSONObject>();
-		JSONArray coordinates = GeoTranslator.jts2Geojson(geometry)
-				.getJSONArray("coordinates");
+		JSONArray coordinates = GeoTranslator.jts2Geojson(geometry).getJSONArray("coordinates");
 		JSONObject tmpGeom = new JSONObject();
 		// 组装要生成的Link
 		tmpGeom.put("type", "LineString");
@@ -176,10 +173,8 @@ public class LuLinkOperateUtils {
 
 		int pc = 1;
 		// 挂接的第一个点是Link的几何属性第一个点
-		if (tmpCs.getJSONArray(0).getDouble(0) == catchLinks.getJSONObject(0)
-				.getDouble("lon")
-				&& tmpCs.getJSONArray(0).getDouble(1) == catchLinks
-						.getJSONObject(0).getDouble("lat")) {
+		if (tmpCs.getJSONArray(0).getDouble(0) == catchLinks.getJSONObject(0).getDouble("lon")
+				&& tmpCs.getJSONArray(0).getDouble(1) == catchLinks.getJSONObject(0).getDouble("lat")) {
 			p = 1;
 		}
 		JSONObject se = new JSONObject();
@@ -206,10 +201,8 @@ public class LuLinkOperateUtils {
 		while (p < catchLinks.size() && pc < coordinates.size()) {
 			tmpCs.add(coordinates.getJSONArray(pc));
 
-			if (coordinates.getJSONArray(pc).getDouble(0) == catchLinks
-					.getJSONObject(p).getDouble("lon")
-					&& coordinates.getJSONArray(pc).getDouble(1) == catchLinks
-							.getJSONObject(p).getDouble("lat")) {
+			if (coordinates.getJSONArray(pc).getDouble(0) == catchLinks.getJSONObject(p).getDouble("lon")
+					&& coordinates.getJSONArray(pc).getDouble(1) == catchLinks.getJSONObject(p).getDouble("lat")) {
 
 				tmpGeom.put("coordinates", tmpCs);
 				if (catchLinks.getJSONObject(p).containsKey("nodePid")) {
@@ -250,7 +243,11 @@ public class LuLinkOperateUtils {
 			pc++;
 		}
 		// 循环挂接的线是否完毕 如果>1 则表示完毕
-		if (tmpCs.size() > 1) {
+		if (tmpCs.size() > 0 && pc < coordinates.size()) {
+			for (int i = pc; i < coordinates.size(); i++) {
+				tmpCs.add(coordinates.get(i));
+			}
+
 			tmpGeom.put("coordinates", tmpCs);
 			if (eNodePid != 0) {
 				se.put("e", eNodePid);
@@ -275,8 +272,8 @@ public class LuLinkOperateUtils {
 	/**
 	 * 移动LuLink的壹个端点, 根据移动后位置重新生成LuLink的几何模型并返回
 	 */
-	public static Geometry caleLinkGeomertyForMvNode(LuLink link, int nodePid,
-			double lon, double lat) throws JSONException {
+	public static Geometry caleLinkGeomertyForMvNode(LuLink link, int nodePid, double lon, double lat)
+			throws JSONException {
 		Geometry geom = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
 		Coordinate[] cs = geom.getCoordinates();
 		double[][] ps = new double[cs.length][2];
@@ -309,8 +306,7 @@ public class LuLinkOperateUtils {
 	 * 3.跨图幅需要生成和图廓线的交点
 	 */
 
-	public static void createLuLinkWithMesh(Geometry g,
-			Map<Coordinate, Integer> maps, Result result) throws Exception {
+	public static void createLuLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result) throws Exception {
 		if (g != null) {
 
 			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
@@ -318,26 +314,23 @@ public class LuLinkOperateUtils {
 			}
 			if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
 				for (int i = 0; i < g.getNumGeometries(); i++) {
-					LuLinkOperateUtils.calLuLinkWithMesh(g.getGeometryN(i),
-							maps, result);
+					LuLinkOperateUtils.calLuLinkWithMesh(g.getGeometryN(i), maps, result);
 				}
 
 			}
 		}
 	}
 
-	public static List<LuLink> getCreateLuLinksWithMesh(Geometry g,
-			Map<Coordinate, Integer> maps, Result result) throws Exception {
+	public static List<LuLink> getCreateLuLinksWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result)
+			throws Exception {
 		List<LuLink> links = new ArrayList<LuLink>();
 		if (g != null) {
 			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
-				links.add(LuLinkOperateUtils.getCalLuLinkWithMesh(g, maps,
-						result));
+				links.add(LuLinkOperateUtils.getCalLuLinkWithMesh(g, maps, result));
 			}
 			if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
 				for (int i = 0; i < g.getNumGeometries(); i++) {
-					links.add(LuLinkOperateUtils.getCalLuLinkWithMesh(
-							g.getGeometryN(i), maps, result));
+					links.add(LuLinkOperateUtils.getCalLuLinkWithMesh(g.getGeometryN(i), maps, result));
 				}
 
 			}
@@ -348,8 +341,7 @@ public class LuLinkOperateUtils {
 	/*
 	 * 创建土地利用线
 	 */
-	public static void calLuLinkWithMesh(Geometry g,
-			Map<Coordinate, Integer> maps, Result result) throws Exception {
+	public static void calLuLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result) throws Exception {
 		// 定义创建土地利用线的起始Pid 默认为0
 		int sNodePid = 0;
 		int eNodePid = 0;
@@ -359,12 +351,10 @@ public class LuLinkOperateUtils {
 		}
 		// 根据对比g的最后一个Coordinate判断终止点是否已经存在
 		if (maps.containsKey(g.getCoordinates()[g.getCoordinates().length - 1])) {
-			eNodePid = maps
-					.get(g.getCoordinates()[g.getCoordinates().length - 1]);
+			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
 		}
 		// 创建线对应的点
-		JSONObject node = LuLinkOperateUtils.createLuNodeForLink(g, sNodePid,
-				eNodePid, result);
+		JSONObject node = LuLinkOperateUtils.createLuNodeForLink(g, sNodePid, eNodePid, result);
 		if (!maps.containsValue(node.get("s"))) {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
 		}
@@ -372,15 +362,14 @@ public class LuLinkOperateUtils {
 			maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) node.get("e"));
 		}
 		// 创建线
-		LuLinkOperateUtils.getLuLink(g, (int) node.get("s"),
-				(int) node.get("e"), result);
+		LuLinkOperateUtils.getLuLink(g, (int) node.get("s"), (int) node.get("e"), result);
 	}
 
 	/*
 	 * 创建土地利用线并返回
 	 */
-	public static LuLink getCalLuLinkWithMesh(Geometry g,
-			Map<Coordinate, Integer> maps, Result result) throws Exception {
+	public static LuLink getCalLuLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result)
+			throws Exception {
 		// 定义创建行政区划线的起始Pid 默认为0
 		int sNodePid = 0;
 		int eNodePid = 0;
@@ -390,12 +379,10 @@ public class LuLinkOperateUtils {
 		}
 		// 判断新创建的线终始点对应的pid是否存在，如果存在取出赋值
 		if (maps.containsKey(g.getCoordinates()[g.getCoordinates().length - 1])) {
-			eNodePid = maps
-					.get(g.getCoordinates()[g.getCoordinates().length - 1]);
+			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
 		}
 		// 创建线对应的点
-		JSONObject node = LuLinkOperateUtils.createLuNodeForLink(g, sNodePid,
-				eNodePid, result);
+		JSONObject node = LuLinkOperateUtils.createLuNodeForLink(g, sNodePid, eNodePid, result);
 		if (!maps.containsValue(node.get("s"))) {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
 		}
@@ -403,15 +390,13 @@ public class LuLinkOperateUtils {
 			maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) node.get("e"));
 		}
 		// 创建线
-		return LuLinkOperateUtils.getLuLink(g, (int) node.get("s"),
-				(int) node.get("e"), result);
+		return LuLinkOperateUtils.getLuLink(g, (int) node.get("s"), (int) node.get("e"), result);
 	}
 
 	/*
 	 * 创建生成一条LuLink
 	 */
-	public static void addLink(Geometry g, int sNodePid, int eNodePid,
-			Result result) throws Exception {
+	public static void addLink(Geometry g, int sNodePid, int eNodePid, Result result) throws Exception {
 		LuLink link = new LuLink();
 		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
 		link.setPid(PidService.getInstance().applyLuLinkPid());

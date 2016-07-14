@@ -58,42 +58,35 @@ public class Operation implements IOperation {
 	private void updateLink(Result result) throws Exception {
 		Map<Integer, List<LuLink>> map = new HashMap<Integer, List<LuLink>>();
 		List<LuLink> links = new ArrayList<LuLink>();
-		Set<String> meshes = CompGeometryUtil
-				.geoToMeshesWithoutBreak(GeoTranslator.geojson2Jts(command
-						.getLinkGeom()));
+		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(GeoTranslator.geojson2Jts(command.getLinkGeom()));
 		if (meshes.size() == 1) {
 			JSONObject content = new JSONObject();
 			result.setPrimaryPid(this.command.getUpdateLink().getPid());
 			content.put("geometry", command.getLinkGeom());
-			boolean isChanged = this.command.getUpdateLink().fillChangeFields(
-					content);
+			boolean isChanged = this.command.getUpdateLink().fillChangeFields(content);
+
+			LuLink luLink = new LuLink();
+			luLink.copy(this.command.getUpdateLink());
 			if (isChanged) {
-				result.insertObject(this.command.getUpdateLink(),
-						ObjStatus.UPDATE, this.command.getLinkPid());
+				result.insertObject(this.command.getUpdateLink(), ObjStatus.UPDATE, this.command.getLinkPid());
+				luLink.setGeometry(GeoTranslator.geojson2Jts(command.getLinkGeom(), 100000, 0));
 			}
 
-			links.add(this.command.getUpdateLink());
+			links.add(luLink);
 		} else {
 			Iterator<String> it = meshes.iterator();
 			Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
-			Geometry g = GeoTranslator.transform(this.command.getUpdateLink()
-					.getGeometry(), 0.00001, 5);
-			maps.put(g.getCoordinates()[0], this.command.getUpdateLink()
-					.getsNodePid());
-			maps.put(g.getCoordinates()[g.getCoordinates().length - 1],
-					this.command.getUpdateLink().geteNodePid());
+			Geometry g = GeoTranslator.transform(this.command.getUpdateLink().getGeometry(), 0.00001, 5);
+			maps.put(g.getCoordinates()[0], this.command.getUpdateLink().getsNodePid());
+			maps.put(g.getCoordinates()[g.getCoordinates().length - 1], this.command.getUpdateLink().geteNodePid());
 			while (it.hasNext()) {
 				String meshIdStr = it.next();
-				Geometry geomInter = GeoTranslator.transform(
-						MeshUtils.linkInterMeshPolygon(GeoTranslator
-								.geojson2Jts(command.getLinkGeom()), MeshUtils
-								.mesh2Jts(meshIdStr)), 1, 5);
-				links.addAll(LuLinkOperateUtils.getCreateLuLinksWithMesh(
-						geomInter, maps, result));
+				Geometry geomInter = GeoTranslator.transform(MeshUtils.linkInterMeshPolygon(
+						GeoTranslator.geojson2Jts(command.getLinkGeom()), MeshUtils.mesh2Jts(meshIdStr)), 1, 5);
+				links.addAll(LuLinkOperateUtils.getCreateLuLinksWithMesh(geomInter, maps, result));
 
 			}
-			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE,
-					this.command.getLinkPid());
+			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE, this.command.getLinkPid());
 		}
 		map.put(this.command.getLinkPid(), links);
 		this.map = map;
@@ -118,8 +111,7 @@ public class Operation implements IOperation {
 						}
 						links.addAll(this.map.get(obj.getLinkPid()));
 					} else {
-						links.add((LuLink) new LuLinkSelector(conn).loadById(
-								obj.getLinkPid(), true));
+						links.add((LuLink) new LuLinkSelector(conn).loadById(obj.getLinkPid(), true));
 					}
 
 					result.insertObject(obj, ObjStatus.DELETE, face.getPid());

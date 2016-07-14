@@ -53,17 +53,16 @@ public class OpTopo implements IOperation {
 		Point point = command.getPoint();
 		long lon = (long) (point.getX() * 100000);
 		long lat = (long) (point.getY() * 100000);
-		
+
 		// 打断后线段两条线段的几何属性
 		JSONArray ja1 = new JSONArray();
 		JSONArray ja2 = new JSONArray();
-		
+
 		boolean hasFound = false;
-		
+
 		result.setPrimaryPid(command.getLinkPid());
 		// 获取需要打断的土地利用线的信息 并将该线删除
-		LuLink luLink = (LuLink) new LuLinkSelector(conn).loadById(
-				command.getLinkPid(), true);
+		LuLink luLink = (LuLink) new LuLinkSelector(conn).loadById(command.getLinkPid(), true);
 		result.insertObject(luLink, ObjStatus.DELETE, luLink.pid());
 
 		// 获取打断前线段的几何属性
@@ -84,10 +83,8 @@ public class OpTopo implements IOperation {
 					hasFound = true;
 				}
 				// 打断点在线段上
-				else if (GeoTranslator.isIntersection(
-						new double[] { jaPS.getDouble(0), jaPS.getDouble(1) },
-						new double[] { jaPE.getDouble(0), jaPE.getDouble(1) },
-						new double[] { lon, lat })) {
+				else if (GeoTranslator.isIntersection(new double[] { jaPS.getDouble(0), jaPS.getDouble(1) },
+						new double[] { jaPE.getDouble(0), jaPE.getDouble(1) }, new double[] { lon, lat })) {
 					ja1.add(new double[] { lon, lat });
 					ja2.add(new double[] { lon, lat });
 					hasFound = true;
@@ -115,8 +112,10 @@ public class OpTopo implements IOperation {
 	}
 
 	/**
-	 * 土地利用点 、线生成和关系维护:</br> 1.生成打断点的信息 </br> 2.根据link1
-	 * 和link2的几何属性生成新的一组link</br> 3.维护link和点的关系 以及维护linkMesh的关系
+	 * 土地利用点 、线生成和关系维护:</br>
+	 * 1.生成打断点的信息 </br>
+	 * 2.根据link1 和link2的几何属性生成新的一组link</br>
+	 * 3.维护link和点的关系 以及维护linkMesh的关系
 	 * 
 	 * @param luLink
 	 *            要打断的link
@@ -128,29 +127,33 @@ public class OpTopo implements IOperation {
 	 * 
 	 * @throws Exception
 	 */
-	private void createLinksForLUNode(LuLink luLink, JSONArray sArray,
-			JSONArray eArray, Result result) throws Exception {
-		// 生成打断点
-		LuNode node = NodeOperateUtils.createLuNode(command.getPoint().getX(),
-				command.getPoint().getY());
-		result.insertObject(node, ObjStatus.INSERT, node.pid());
+	private void createLinksForLUNode(LuLink luLink, JSONArray sArray, JSONArray eArray, Result result)
+			throws Exception {
+		int breakNodePid = 0;
+		if (this.command.getBreakNodePid() == 0) {
+			LuNode node = NodeOperateUtils.createLuNode(command.getPoint().getX(), command.getPoint().getY());
+			result.insertObject(node, ObjStatus.INSERT, node.pid());
+			breakNodePid = node.pid();
+		} else {
+			breakNodePid = this.command.getBreakNodePid();
+		}
+
+		log.debug("3.1 打断点的pid = " + breakNodePid);
 
 		// 生成打断后的第一条土地利用线
 		JSONObject sGeojson = new JSONObject();
 		sGeojson.put("type", "LineString");
 		sGeojson.put("coordinates", sArray);
-		LuLink slink = (LuLink) LuLinkOperateUtils.addLinkBySourceLink(
-				GeoTranslator.geojson2Jts(sGeojson, 0.00001, 5),
-				luLink.getsNodePid(), node.pid(), luLink, result);
+		LuLink slink = (LuLink) LuLinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(sGeojson, 0.00001, 5),
+				luLink.getsNodePid(), breakNodePid, luLink, result);
 		command.setsLuLink(slink);
 
 		// 生成打断后的第二条土地利用线
 		JSONObject eGeojson = new JSONObject();
 		eGeojson.put("type", "LineString");
 		eGeojson.put("coordinates", eArray);
-		LuLink elink = (LuLink) LuLinkOperateUtils.addLinkBySourceLink(
-				GeoTranslator.geojson2Jts(eGeojson, 0.00001, 5), node.pid(),
-				luLink.geteNodePid(), luLink, result);
+		LuLink elink = (LuLink) LuLinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(eGeojson, 0.00001, 5),
+				breakNodePid, luLink.geteNodePid(), luLink, result);
 		command.seteLuLink(elink);
 	}
 

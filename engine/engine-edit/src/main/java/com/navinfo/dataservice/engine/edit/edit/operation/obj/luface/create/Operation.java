@@ -58,8 +58,7 @@ public class Operation implements IOperation {
 		this.result = result;
 	}
 
-	public Operation(Command command, Check check, Connection conn,
-			Result result) {
+	public Operation(Command command, Check check, Connection conn, Result result) {
 		this.command = command;
 
 		this.check = check;
@@ -84,8 +83,7 @@ public class Operation implements IOperation {
 				List<IObj> luLinks = new ArrayList<IObj>();
 				for (IObj obj : command.getLinks()) {
 					RdLink link = (RdLink) obj;
-					luLinks.add(this.createLinkOfFace(GeoTranslator.transform(
-							link.getGeometry(), 0.00001, 5), maps));
+					luLinks.add(this.createLinkOfFace(GeoTranslator.transform(link.getGeometry(), 0.00001, 5), maps));
 				}
 				this.createFaceByLuLink(luLinks);
 			}
@@ -125,6 +123,7 @@ public class Operation implements IOperation {
 			this.face.setMesh(meshId);
 			this.reCaleFaceGeometry(luLinks);
 		} else {
+			this.updateFlag = false;
 			Geometry geom = GeoTranslator.getCalLineToPython(list);
 			this.createFaceWithMesh(meshes, geom, 0);
 		}
@@ -139,8 +138,7 @@ public class Operation implements IOperation {
 	 *            创建面表示 0 根据几何，1 根据既有线
 	 * @throws Exception
 	 */
-	private void createFaceWithMesh(Set<String> meshes, Geometry geom, int flag)
-			throws Exception {
+	private void createFaceWithMesh(Set<String> meshes, Geometry geom, int flag) throws Exception {
 		Iterator<String> it = meshes.iterator();
 		Map<Coordinate, Integer> mapNode = new HashMap<Coordinate, Integer>();
 		Map<Geometry, LuLink> mapLink = new HashMap<Geometry, LuLink>();
@@ -153,8 +151,7 @@ public class Operation implements IOperation {
 		while (it.hasNext()) {
 			String meshIdStr = it.next();
 			// 获取每个图幅中闭合线的数组
-			Set<LineString[]> set = CompGeometryUtil.cut(
-					JtsGeometryFactory.createPolygon(geom.getCoordinates()),
+			Set<LineString[]> set = CompGeometryUtil.cut(JtsGeometryFactory.createPolygon(geom.getCoordinates()),
 					meshIdStr);
 			Iterator<LineString[]> itLine = set.iterator();
 			while (itLine.hasNext()) {
@@ -170,8 +167,7 @@ public class Operation implements IOperation {
 							if (mapLink.containsKey(lineString.reverse())) {
 								luLink = mapLink.get(lineString.reverse());
 							} else {
-								luLink = this.createLinkOfFace(lineString,
-										mapNode);
+								luLink = this.createLinkOfFace(lineString, mapNode);
 								mapLink.put(lineString, luLink);
 							}
 						} else {
@@ -208,38 +204,32 @@ public class Operation implements IOperation {
 			result.insertObject(Node, ObjStatus.INSERT, Node.pid());
 			this.createFace();
 			List<LuLink> links = new ArrayList<LuLink>();
-			links.add(LuLinkOperateUtils.getLuLink(geom, Node.getPid(),
-					Node.getPid(), result));
+			links.add(LuLinkOperateUtils.getLuLink(geom, Node.getPid(), Node.getPid(), result));
 			this.reCaleFaceGeometry(links);
-		}// 如果跨图幅
+		} // 如果跨图幅
 		else {
 			this.createFaceWithMesh(meshes, geom, 0);
 		}
 
 	}
 
-	private LuLink createLinkOfFace(Geometry g, Map<Coordinate, Integer> maps)
-			throws Exception {
+	private LuLink createLinkOfFace(Geometry g, Map<Coordinate, Integer> maps) throws Exception {
 		int sNodePid = 0;
 		int eNodePid = 0;
 		if (maps.containsKey(g.getCoordinates()[0])) {
 			sNodePid = maps.get(g.getCoordinates()[0]);
 		}
 		if (maps.containsKey(g.getCoordinates()[g.getCoordinates().length - 1])) {
-			eNodePid = maps
-					.get(g.getCoordinates()[g.getCoordinates().length - 1]);
+			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
 		}
-		JSONObject node = LuLinkOperateUtils.createLuNodeForLink(g, sNodePid,
-				eNodePid, result);
+		JSONObject node = LuLinkOperateUtils.createLuNodeForLink(g, sNodePid, eNodePid, result);
 		if (!maps.containsValue(node.get("s"))) {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
 		}
 		if (!maps.containsValue(node.get("e"))) {
-			maps.put(g.getCoordinates()[g.getCoordinates().length - 1],
-					(int) node.get("e"));
+			maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) node.get("e"));
 		}
-		return LuLinkOperateUtils.getLuLink(g, (int) node.get("s"),
-				(int) node.get("e"), result);
+		return LuLinkOperateUtils.getLuLink(g, (int) node.get("s"), (int) node.get("e"), result);
 	}
 
 	/*
@@ -304,10 +294,8 @@ public class Operation implements IOperation {
 				break;
 			}
 			index++;
-			map.put(currLinkAndPidMap.get(currLinkAndPidMap.keySet().iterator()
-					.next()), index);
-			list.add(currLinkAndPidMap.get(
-					currLinkAndPidMap.keySet().iterator().next()).getGeometry());
+			map.put(currLinkAndPidMap.get(currLinkAndPidMap.keySet().iterator().next()), index);
+			list.add(currLinkAndPidMap.get(currLinkAndPidMap.keySet().iterator().next()).getGeometry());
 
 		}
 		// 线几何组成面的几何
@@ -333,8 +321,7 @@ public class Operation implements IOperation {
 			this.updateGeometry(GeoTranslator.getPolygonToPoints(c1), this.face);
 
 		} else {
-			this.createFaceGeometry(GeoTranslator.getPolygonToPoints(c1),
-					this.face);
+			this.createFaceGeometry(GeoTranslator.getPolygonToPoints(c1), this.face);
 		}
 
 	}
@@ -346,8 +333,7 @@ public class Operation implements IOperation {
 		face.setGeometry(g);
 		// 缩放计算面积和周长
 		g = GeoTranslator.transform(g, 0.00001, 5);
-		String meshId = CompGeometryUtil.geoToMeshesWithoutBreak(g).iterator()
-				.next();
+		String meshId = CompGeometryUtil.geoToMeshesWithoutBreak(g).iterator().next();
 		if (!StringUtils.isEmpty(meshId)) {
 			face.setMeshId(Integer.parseInt(meshId));
 		}
@@ -363,11 +349,6 @@ public class Operation implements IOperation {
 		JSONObject updateContent = new JSONObject();
 		g = GeoTranslator.transform(g, 0.00001, 5);
 
-		String meshId = CompGeometryUtil.geoToMeshesWithoutBreak(g).iterator()
-				.next();
-		if (!StringUtils.isEmpty(meshId)) {
-			updateContent.put("mesh", Integer.parseInt(meshId));
-		}
 		updateContent.put("geometry", GeoTranslator.jts2Geojson(g));
 		updateContent.put("area", GeometryUtils.getCalculateArea(g));
 		updateContent.put("perimeter", GeometryUtils.getLinkLength(g));
@@ -392,8 +373,7 @@ public class Operation implements IOperation {
 		for (int i = result.getAddObjects().size() - 1; i >= 0; i--) {
 			if (result.getAddObjects().get(i) instanceof LuFaceTopo) {
 				newIndex++;
-				((LuFaceTopo) result.getAddObjects().get(i))
-						.setSeqNum(newIndex);
+				((LuFaceTopo) result.getAddObjects().get(i)).setSeqNum(newIndex);
 
 			}
 		}

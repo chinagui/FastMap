@@ -2,14 +2,18 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.move.movezonenod
 
 import java.util.List;
 
+import org.json.JSONException;
+
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
+import com.vividsolutions.jts.geom.Geometry;
 /**
  * @author zhaokk
  * Zone点参数基础类 
@@ -56,13 +60,22 @@ public class Command extends AbstractCommand {
 		this.faces = faces;
 	}
 	
-	public Command(JSONObject json,String requester){
+	public Command(JSONObject json,String requester) throws JSONException{
 		
 		this.nodePid = json.getInt("objId");
 		
-		this.longitude = Math.round(json.getJSONObject("data").getDouble("longitude")*100000)/100000.0;
+		JSONObject geoPoint = new JSONObject();
+
+		geoPoint.put("type", "Point");
+
+		geoPoint.put("coordinates", new double[] {json.getJSONObject("data").getDouble("longitude"),
+				json.getJSONObject("data").getDouble("latitude") });
 		
-		this.latitude = Math.round(json.getJSONObject("data").getDouble("latitude")*100000)/100000.0;
+		Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
+		
+		this.longitude = geometry.getCoordinate().x;
+		
+		this.latitude = geometry.getCoordinate().y;
 		
 		this.setDbId(json.getInt("dbId"));
 	}

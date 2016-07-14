@@ -4,6 +4,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
+import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -133,14 +134,19 @@ public class Command extends AbstractCommand{
 			
 			for(int i=0;i<array.size();i++){
 				JSONObject jo = array.getJSONObject(i);
+
+				JSONObject geoPoint = new JSONObject();
+
+				geoPoint.put("type", "Point");
+
+				geoPoint.put("coordinates", new double[] {jo.getDouble("lon"),
+						jo.getDouble("lat") });
 				
-				double lon = Math.round(jo.getDouble("lon")*100000)/100000.0;
+				Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
 				
-				double lat = Math.round(jo.getDouble("lat")*100000)/100000.0;
+				jo.put("lon",geometry.getCoordinate().x);
 				
-				jo.put("lon",lon);
-				
-				jo.put("lat", lat);
+				jo.put("lat", geometry.getCoordinate().y);
 				
 				this.catchLinks.add(jo);
 			}
@@ -148,5 +154,22 @@ public class Command extends AbstractCommand{
 			this.catchLinks = new JSONArray();
 		}
 	}
-
+	
+	public static void main(String[] args) throws JSONException {
+		double lon1 = 116.45236587696671;
+		double lat1 = 40.05121688373498;
+		double lon = Math.round(lon1*100000)/100000.0;
+		
+		double lat = Math.round(lat1*100000)/100000.0;
+		
+		System.out.println(lon+":"+lat);
+		
+		JSONObject data = new JSONObject();
+		
+		data.put("geometry", "{\"type\":\"LineString\",\"coordinates\":[[116.45119428634644,40.051738918700195],[116.45236587696671,40.05121288373498],[116.45455241203307,40.05076162010255]]}");
+		
+		Geometry geometry = GeoTranslator.geojson2Jts(data.getJSONObject("geometry"), 1, 5);
+		
+		System.out.println(geometry);
+	}
 }

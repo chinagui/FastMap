@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
@@ -11,6 +12,7 @@ import com.navinfo.dataservice.dao.glm.model.lu.LuFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
@@ -103,12 +105,19 @@ public class Command extends AbstractCommand {
 		this.setDbId(json.getInt("dbId"));
 		this.linkPid = json.getInt("objId");
 		JSONObject data = json.getJSONObject("data");
-		double lng = Math.round(data.getDouble("longitude") * 100000) / 100000.0;
-		double lat = Math.round(data.getDouble("latitude") * 100000) / 100000.0;
-		if (data.containsKey("breakNodePid")) {
+		JSONObject geoPoint = new JSONObject();
+
+		geoPoint.put("type", "Point");
+
+		geoPoint.put("coordinates", new double[] {data.getDouble("lon"),
+				data.getDouble("lat") });
+		
+		Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
+		
+		if(data.containsKey("breakNodePid")){
 			this.setBreakNodePid(data.getInt("breakNodePid"));
 		}
-		Coordinate coord = new Coordinate(lng, lat);
+		Coordinate coord = new Coordinate(geometry.getCoordinate().x, geometry.getCoordinate().y);
 		this.sLuLink = new LuLink();
 		this.eLuLink = new LuLink();
 		this.point = geometryFactory.createPoint(coord);

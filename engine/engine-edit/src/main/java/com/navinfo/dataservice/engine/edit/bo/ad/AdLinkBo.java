@@ -14,16 +14,16 @@ import com.vividsolutions.jts.geom.Point;
  * @date 2016年7月15日
  * @Description: BoAdLink.java
  */
-public class BoAdLink {
+public class AdLinkBo {
 	protected AdLink adLink;
 	protected List<AdLinkMesh> meshes;
-	protected BoAdNode sNode;
-	protected BoAdNode eNode;
+	protected AdNodeBo sNode;
+	protected AdNodeBo eNode;
 	
 	public Result breakoff(Point point){
 		return null;
 	}
-	public Result breakoff(BoAdNode node){
+	public Result breakoff(AdNodeBo node){
 		return null;
 	}
 	

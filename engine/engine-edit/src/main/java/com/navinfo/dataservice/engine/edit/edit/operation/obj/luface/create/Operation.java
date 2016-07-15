@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
-
 import com.alibaba.druid.util.StringUtils;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
@@ -35,6 +33,8 @@ import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
+
+import net.sf.json.JSONObject;
 
 /**
  * 
@@ -102,7 +102,6 @@ public class Operation implements IOperation {
 	 *            传入构成面的线
 	 */
 	public void createFaceByLuLink(List<IObj> linkList) throws Exception {
-		List<Geometry> list = new ArrayList<Geometry>();
 		Set<String> meshes = new HashSet<String>();
 		List<LuLink> luLinks = new ArrayList<LuLink>();
 		for (IObj obj : linkList) {
@@ -114,7 +113,6 @@ public class Operation implements IOperation {
 					meshes.add(String.valueOf(lulinkmesh.getMeshId()));
 				}
 			}
-			list.add(GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
 		}
 		if (meshes.size() == 1) {
 			int meshId = Integer.parseInt(meshes.iterator().next());
@@ -124,8 +122,8 @@ public class Operation implements IOperation {
 			this.reCaleFaceGeometry(luLinks);
 		} else {
 			this.updateFlag = false;
-			Geometry geom = GeoTranslator.getCalLineToPython(list);
-			this.createFaceWithMesh(meshes, geom, 0);
+			Geometry geom = GeoTranslator.transform(this.getPolygonGeometry(luLinks), 0.00001, 5);
+			this.createFaceWithMesh(meshes, geom, linkList, 1);
 		}
 	}
 
@@ -138,14 +136,23 @@ public class Operation implements IOperation {
 	 *            创建面表示 0 根据几何，1 根据既有线
 	 * @throws Exception
 	 */
-	private void createFaceWithMesh(Set<String> meshes, Geometry geom, int flag) throws Exception {
+	private void createFaceWithMesh(Set<String> meshes, Geometry geom, List<IObj> objList, int flag) throws Exception {
 		Iterator<String> it = meshes.iterator();
 		Map<Coordinate, Integer> mapNode = new HashMap<Coordinate, Integer>();
 		Map<Geometry, LuLink> mapLink = new HashMap<Geometry, LuLink>();
 		if (flag == 1) {
-			for (IObj obj : command.getLinks()) {
+			for (IObj obj : objList) {
 				LuLink luLink = (LuLink) obj;
-				mapLink.put(luLink.getGeometry(), luLink);
+				Geometry geometry = GeoTranslator.transform(luLink.getGeometry(), 0.00001, 5);
+				mapLink.put(geometry, luLink);
+
+				if (!mapNode.containsValue(geometry.getCoordinates()[0])) {
+					mapNode.put(geometry.getCoordinates()[0], luLink.getsNodePid());
+				}
+				if (!mapNode.containsValue(geometry.getCoordinates()[geometry.getCoordinates().length - 1])) {
+					mapNode.put(geometry.getCoordinates()[geometry.getCoordinates().length - 1], luLink.geteNodePid());
+				}
+
 			}
 		}
 		while (it.hasNext()) {
@@ -157,26 +164,39 @@ public class Operation implements IOperation {
 			while (itLine.hasNext()) {
 				LineString[] lineStrings = itLine.next();
 				List<LuLink> links = new ArrayList<LuLink>();
-				// 创建线
 				for (LineString lineString : lineStrings) {
 					LuLink luLink = null;
-					if (mapLink.containsKey(lineString)) {
-						luLink = mapLink.get(lineString);
-					} else {
-						if (MeshUtils.isMeshLine(lineString)) {
-							if (mapLink.containsKey(lineString.reverse())) {
-								luLink = mapLink.get(lineString.reverse());
-							} else {
-								luLink = this.createLinkOfFace(lineString, mapNode);
-								mapLink.put(lineString, luLink);
-							}
+					if (MeshUtils.isMeshLine(lineString)) {
+						if (mapLink.containsKey(lineString.reverse())) {
+							luLink = mapLink.get(lineString.reverse());
+						} else if (mapLink.containsKey(lineString)) {
+							luLink = mapLink.get(lineString);
 						} else {
 							luLink = this.createLinkOfFace(lineString, mapNode);
 							mapLink.put(lineString, luLink);
 						}
+						links.add(luLink);
+					} else {
+						if (flag == 0) {
+							if (mapLink.containsKey(lineString)) {
+								luLink = mapLink.get(lineString);
+							} else {
+								luLink = this.createLinkOfFace(lineString, mapNode);
+								mapLink.put(lineString, luLink);
+							}
+							links.add(luLink);
+						} else {
+							Iterator<Geometry> itLinks = mapLink.keySet().iterator();
+							while (itLinks.hasNext()) {
+								Geometry g = itLinks.next();
+								if (lineString.contains(g)) {
+									links.add(mapLink.get(g));
+								}
+							}
+						}
 					}
-					links.add(luLink);
 				}
+				// 创建线
 				this.createFace();
 				this.reCaleFaceGeometry(links);
 			}
@@ -200,15 +220,15 @@ public class Operation implements IOperation {
 		// 如果不跨图幅
 		if (meshes.size() == 1) {
 			// 生成起始node
-			LuNode Node = NodeOperateUtils.createLuNode(sPoint.x, sPoint.y);
-			result.insertObject(Node, ObjStatus.INSERT, Node.pid());
+			LuNode node = NodeOperateUtils.createLuNode(sPoint.x, sPoint.y);
+			result.insertObject(node, ObjStatus.INSERT, node.pid());
 			this.createFace();
 			List<LuLink> links = new ArrayList<LuLink>();
-			links.add(LuLinkOperateUtils.getLuLink(geom, Node.getPid(), Node.getPid(), result));
+			links.add(LuLinkOperateUtils.getLuLink(geom, node.getPid(), node.getPid(), result));
 			this.reCaleFaceGeometry(links);
 		} // 如果跨图幅
 		else {
-			this.createFaceWithMesh(meshes, geom, 0);
+			this.createFaceWithMesh(meshes, geom, null, 0);
 		}
 
 	}
@@ -216,11 +236,13 @@ public class Operation implements IOperation {
 	private LuLink createLinkOfFace(Geometry g, Map<Coordinate, Integer> maps) throws Exception {
 		int sNodePid = 0;
 		int eNodePid = 0;
-		if (maps.containsKey(g.getCoordinates()[0])) {
-			sNodePid = maps.get(g.getCoordinates()[0]);
+		Coordinate firstCoord = g.getCoordinates()[0];
+		if (maps.containsKey(firstCoord)) {
+			sNodePid = maps.get(firstCoord);
 		}
-		if (maps.containsKey(g.getCoordinates()[g.getCoordinates().length - 1])) {
-			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
+		Coordinate lastCoord = g.getCoordinates()[g.getCoordinates().length - 1];
+		if (maps.containsKey(lastCoord)) {
+			eNodePid = maps.get(lastCoord);
 		}
 		JSONObject node = LuLinkOperateUtils.createLuNodeForLink(g, sNodePid, eNodePid, result);
 		if (!maps.containsValue(node.get("s"))) {
@@ -264,10 +286,10 @@ public class Operation implements IOperation {
 	}
 
 	/**
-	 * 按照LuLinks重新维护LuFace
+	 * 根据传入的link 重组PolygonGeometry
 	 */
-	public void reCaleFaceGeometry(List<LuLink> links) throws Exception {
-		if (links == null || links.size() < 1) {
+	private Geometry getPolygonGeometry(List<LuLink> links) throws Exception {
+		if (links.size() < 1) {
 			throw new Exception("重新维护面的形状:发现面没有组成link");
 		}
 		LuLink currLink = null;
@@ -276,8 +298,37 @@ public class Operation implements IOperation {
 			break;
 		}
 		if (currLink == null) {
-			return;
+			throw new Exception("重新维护面的形状:发现面没有组成link");
 		}
+		// 获取当前LINK和NODE
+		int startNodePid = currLink.getsNodePid();
+		int currNodePid = startNodePid;
+		Map<LuLink, Integer> map = new HashMap<LuLink, Integer>();
+		map.put(currLink, 1);
+		List<Geometry> list = new ArrayList<Geometry>();
+		list.add(currLink.getGeometry());
+		Map<Integer, LuLink> currLinkAndPidMap = new HashMap<Integer, LuLink>();
+		currLinkAndPidMap.put(currNodePid, currLink);
+		// 获取下一条联通的LINK
+		while (LuLinkOperateUtils.getNextLink(links, currLinkAndPidMap)) {
+			if (currLinkAndPidMap.keySet().iterator().next() == startNodePid) {
+				break;
+			}
+			list.add(currLinkAndPidMap.get(currLinkAndPidMap.keySet().iterator().next()).getGeometry());
+
+		}
+		return GeoTranslator.getCalLineToPython(list);
+	}
+
+	/**
+	 * 按照LuLinks重新维护LuFace
+	 */
+	public void reCaleFaceGeometry(List<LuLink> links) throws Exception {
+		if (links == null || links.size() < 1 || null == links.get(0)) {
+			throw new Exception("重新维护面的形状:发现面没有组成link");
+		}
+		LuLink currLink = links.get(0);
+
 		// 获取当前LINK和NODE
 		int startNodePid = currLink.getsNodePid();
 		int currNodePid = startNodePid;
@@ -290,12 +341,14 @@ public class Operation implements IOperation {
 		currLinkAndPidMap.put(currNodePid, currLink);
 		// 获取下一条联通的LINK
 		while (LuLinkOperateUtils.getNextLink(links, currLinkAndPidMap)) {
-			if (currLinkAndPidMap.keySet().iterator().next() == startNodePid) {
+			Integer nextNodePid = currLinkAndPidMap.keySet().iterator().next();
+			if (nextNodePid == startNodePid) {
 				break;
 			}
 			index++;
-			map.put(currLinkAndPidMap.get(currLinkAndPidMap.keySet().iterator().next()), index);
-			list.add(currLinkAndPidMap.get(currLinkAndPidMap.keySet().iterator().next()).getGeometry());
+			LuLink nextLink = currLinkAndPidMap.get(nextNodePid);
+			map.put(nextLink, index);
+			list.add(nextLink.getGeometry());
 
 		}
 		// 线几何组成面的几何
@@ -327,7 +380,7 @@ public class Operation implements IOperation {
 	}
 
 	/*
-	 * 更新面的几何属性
+	 * 创建面
 	 */
 	private void createFaceGeometry(Geometry g, LuFace face) throws Exception {
 		face.setGeometry(g);
@@ -338,11 +391,12 @@ public class Operation implements IOperation {
 			face.setMeshId(Integer.parseInt(meshId));
 		}
 		face.setPerimeter(GeometryUtils.getLinkLength(g));
+		face.setArea(GeometryUtils.getCalculateArea(g));
 		result.insertObject(face, ObjStatus.INSERT, face.getPid());
 	}
 
 	/*
-	 * 更新面的几何属性
+	 * 更新面
 	 */
 	private void updateGeometry(Geometry g, LuFace face) throws Exception {
 

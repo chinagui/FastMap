@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.engine.edit.InitApplication;
-import com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.download.DownloadOperation;
+import com.navinfo.dataservice.engine.edit.operation.obj.poi.download.DownloadOperation;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;

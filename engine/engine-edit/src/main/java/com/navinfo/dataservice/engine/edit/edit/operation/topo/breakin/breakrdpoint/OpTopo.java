@@ -15,6 +15,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 public class OpTopo implements IOperation {
@@ -80,9 +81,9 @@ public class OpTopo implements IOperation {
 
 		Point point = command.getPoint();
 
-		double lon = point.getX() * 100000;
-
-		double lat = point.getY() * 100000;
+		Geometry geo = GeoTranslator.transform(point, 100000, 5);
+		double lon = geo.getCoordinate().x;
+		double lat = geo.getCoordinate().y;
 
 		JSONArray ja1 = new JSONArray();
 

@@ -37,7 +37,9 @@ public class LuLinkTest extends InitApplication {
 
 	@Test
 	public void createLuLinkTest() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":43,\"data\":{\"eNodePid\":100025076,\"sNodePid\":100025074,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.12568140029907,40.66640618267723],[116.12719416618347,40.66460766049978]]},\"catchLinks\":[{\"nodePid\":100025074,\"lon\":116.12568140029907,\"lat\":40.66640618267723},{\"nodePid\":100025076,\"lon\":116.12719416618347,\"lat\":40.66460766049978}]},\"type\":\"LULINK\"}";
+//		String parameter = "{\"command\":\"CREATE\",\"dbId\":43,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.23831272125244,40.91574217557029],[116.23770117759705,40.913731485583625]]},\"catchLinks\":[]},\"type\":\"LULINK\"}";
+//		String parameter = "{\"command\":\"CREATE\",\"dbId\":43,\"data\":{\"eNodePid\":0,\"sNodePid\":100034583,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.23769044876099,40.91373148558362],[116.24097347259521,40.914599008521996]]},\"catchLinks\":[{\"nodePid\":100034583,\"lon\":116.23769044876099,\"lat\":40.91373148558362}]},\"type\":\"LULINK\"}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":43,\"data\":{\"eNodePid\":100034582,\"sNodePid\":100034584,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.24096274375916,40.9146071161593],[116.23830199241638,40.91574217557027]]},\"catchLinks\":[{\"nodePid\":100034584,\"lon\":116.24096274375916,\"lat\":40.9146071161593},{\"nodePid\":100034582,\"lon\":116.23830199241638,\"lat\":40.91574217557027}]},\"type\":\"LULINK\"}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);
 		;

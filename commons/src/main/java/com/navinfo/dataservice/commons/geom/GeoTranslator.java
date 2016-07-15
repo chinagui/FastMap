@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.commons.geom;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,11 +16,13 @@ import org.mapfish.geo.MfGeoJSONWriter;
 import org.mapfish.geo.MfGeometry;
 
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.commons.util.ArrayUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.geom.util.AffineTransformation;
@@ -564,11 +567,13 @@ public class GeoTranslator {
 	        		 list.add(c[i]);
 	        	 }
 	        }
+		  list = getOrderCoordinate(list, gList);
 	      list.add(c[0]);
 	      Coordinate[] c1 = new Coordinate[list.size()];
 	      for(int i = 0  ; i < list.size();  i++){
 	        	c1[i] = list.get(i);
 	       }
+	      
 	      return geoFactory.createPolygon(c1);
 	  
 	 }
@@ -583,5 +588,37 @@ public class GeoTranslator {
 		 public  static Geometry getPolygonToPoints(Coordinate[] c) throws Exception{
 			 return geoFactory.createPolygon(c);
 		  
+		 }
+		 public static List<Coordinate> getOrderCoordinate(List<Coordinate> coordinates,List<Geometry> gList) throws JSONException {
+
+			 List<Coordinate> rlist = new ArrayList<Coordinate>();
+			 Coordinate currentCoordinate =coordinates.get(0);
+			 rlist.add(currentCoordinate);
+			 int size = coordinates.size();
+			 while(rlist.size() !=size){
+				 coordinates.removeAll(rlist);
+				 for(Coordinate coordinate:coordinates){
+					 if(isGoordinateToLine(currentCoordinate,coordinate,gList)){
+						 rlist.add(coordinate);
+						 currentCoordinate = coordinate;
+						 break;
+					 }
+				 }
+				 
+			 }
+			 return rlist;
+		}
+		 
+		public static boolean isGoordinateToLine(Coordinate c1,Coordinate c2,List<Geometry> gList){
+			Coordinate[] coordinates = new Coordinate[2];
+			coordinates[0]=c1;
+			coordinates[1]=c2;
+			 for(Geometry g:gList){
+				LineString line=geoFactory.createLineString(g.getCoordinates());
+				if(line.contains(geoFactory.createLineString(coordinates))||line.contains(geoFactory.createLineString(coordinates).reverse())){
+					return true;
+				}
+			 }
+			 return false;
 		 }
 }

@@ -18,8 +18,9 @@ public class LuFaceTest extends InitApplication {
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	@Test
-	public void createFaceTest() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"LUFACE\",\"dbId\":43,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.12778425216673,40.66462393693607],[116.12915754318236,40.665608653941],[116.12951159477232,40.66479483927713],[116.12778425216673,40.66462393693607]]}}}";
+	public void createFaceByGeometryTest() {
+//		String parameter = "{\"command\":\"CREATE\",\"type\":\"LUFACE\",\"dbId\":43,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46976590156555,40.09303544721415],[116.47152543067932,40.093027239657374],[116.47086024284361,40.09217364834912],[116.46976590156555,40.09303544721415]]}}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"ADFACE\",\"dbId\":43,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.24781847000122,40.918117629692105],[116.2487518787384,40.91345582170584],[116.25728130340576,40.91704746980017],[116.24781847000122,40.918117629692105]]}}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);
 		;
@@ -32,9 +33,8 @@ public class LuFaceTest extends InitApplication {
 	}
 
 	@Test
-	public void createFaceByAdLInkTest() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"LUFACE\",\"dbId\":43,\"linkType\":\"LULINK\",\"projectId\":11,"
-				+ "\"data\":{\"linkPids\":[100034455,100034454]}}";
+	public void createFaceByLuLInkTest() {
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"ADFACE\",\"linkType\":\"ADLINK\",\"dbId\":43,\"data\":{\"linkPids\":[\"100035661\",\"100035663\",\"100035666\"]}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);
 		;
@@ -45,5 +45,5 @@ public class LuFaceTest extends InitApplication {
 		}
 
 	}
-
+	
 }

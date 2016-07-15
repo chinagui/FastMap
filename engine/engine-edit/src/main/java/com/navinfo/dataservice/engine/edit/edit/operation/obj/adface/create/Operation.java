@@ -185,6 +185,7 @@ public class Operation implements IOperation {
 							adLink = this.createLinkOfFace(lineString, mapNode);
 							mapLink.put(lineString, adLink);
 						}
+						links.add(adLink);
 						
 					}else{
 						if(flag == 0){
@@ -195,6 +196,7 @@ public class Operation implements IOperation {
 								adLink = this.createLinkOfFace(lineString, mapNode);
 								mapLink.put(lineString, adLink);
 							}
+							links.add(adLink);
 							
 						}else{
 
@@ -210,7 +212,7 @@ public class Operation implements IOperation {
 						}
 						
 					}
-					links.add(adLink);
+					
 				}
 				// 创建线
 				this.createFace();

@@ -23,7 +23,10 @@ public class Process extends AbstractProcess<Command> {
 		super(command);
 	}
 	public Process(Command command,Result result,Connection conn) throws Exception {
-		super(command);
+		super();
+		this.setCommand(command);
+		// 初始化检查参数
+		this.initCheckCommand();
 		this.setConn(conn);
 		this.setResult(result);
 	}

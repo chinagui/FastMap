@@ -110,11 +110,7 @@ public class LuLinkOperateUtils {
 
 		mesh.setMesh(meshId);
 
-		List<IRow> meshes = new ArrayList<IRow>();
-
-		meshes.add(mesh);
-
-		link.setMeshes(meshes);
+		link.getMeshes().add(mesh);
 	}
 
 	/**

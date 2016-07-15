@@ -175,7 +175,7 @@ public class Operation implements IOperation {
 							luLink = this.createLinkOfFace(lineString, mapNode);
 							mapLink.put(lineString, luLink);
 						}
-
+						links.add(luLink);
 					} else {
 						if (flag == 0) {
 							if (mapLink.containsKey(lineString)) {
@@ -184,22 +184,17 @@ public class Operation implements IOperation {
 								luLink = this.createLinkOfFace(lineString, mapNode);
 								mapLink.put(lineString, luLink);
 							}
-
+							links.add(luLink);
 						} else {
-
 							Iterator<Geometry> itLinks = mapLink.keySet().iterator();
 							while (itLinks.hasNext()) {
 								Geometry g = itLinks.next();
 								if (lineString.contains(g)) {
 									links.add(mapLink.get(g));
 								}
-
 							}
-
 						}
-
 					}
-					links.add(luLink);
 				}
 				// 创建线
 				this.createFace();
@@ -225,11 +220,11 @@ public class Operation implements IOperation {
 		// 如果不跨图幅
 		if (meshes.size() == 1) {
 			// 生成起始node
-			LuNode Node = NodeOperateUtils.createLuNode(sPoint.x, sPoint.y);
-			result.insertObject(Node, ObjStatus.INSERT, Node.pid());
+			LuNode node = NodeOperateUtils.createLuNode(sPoint.x, sPoint.y);
+			result.insertObject(node, ObjStatus.INSERT, node.pid());
 			this.createFace();
 			List<LuLink> links = new ArrayList<LuLink>();
-			links.add(LuLinkOperateUtils.getLuLink(geom, Node.getPid(), Node.getPid(), result));
+			links.add(LuLinkOperateUtils.getLuLink(geom, node.getPid(), node.getPid(), result));
 			this.reCaleFaceGeometry(links);
 		} // 如果跨图幅
 		else {
@@ -241,11 +236,13 @@ public class Operation implements IOperation {
 	private LuLink createLinkOfFace(Geometry g, Map<Coordinate, Integer> maps) throws Exception {
 		int sNodePid = 0;
 		int eNodePid = 0;
-		if (maps.containsKey(g.getCoordinates()[0])) {
-			sNodePid = maps.get(g.getCoordinates()[0]);
+		Coordinate firstCoord = g.getCoordinates()[0];
+		if (maps.containsKey(firstCoord)) {
+			sNodePid = maps.get(firstCoord);
 		}
-		if (maps.containsKey(g.getCoordinates()[g.getCoordinates().length - 1])) {
-			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
+		Coordinate lastCoord = g.getCoordinates()[g.getCoordinates().length - 1];
+		if (maps.containsKey(lastCoord)) {
+			eNodePid = maps.get(lastCoord);
 		}
 		JSONObject node = LuLinkOperateUtils.createLuNodeForLink(g, sNodePid, eNodePid, result);
 		if (!maps.containsValue(node.get("s"))) {
@@ -327,17 +324,11 @@ public class Operation implements IOperation {
 	 * 按照LuLinks重新维护LuFace
 	 */
 	public void reCaleFaceGeometry(List<LuLink> links) throws Exception {
-		if (links == null || links.size() < 1) {
+		if (links == null || links.size() < 1 || null == links.get(0)) {
 			throw new Exception("重新维护面的形状:发现面没有组成link");
 		}
-		LuLink currLink = null;
-		for (LuLink luLink : links) {
-			currLink = luLink;
-			break;
-		}
-		if (currLink == null) {
-			return;
-		}
+		LuLink currLink = links.get(0);
+
 		// 获取当前LINK和NODE
 		int startNodePid = currLink.getsNodePid();
 		int currNodePid = startNodePid;
@@ -350,12 +341,14 @@ public class Operation implements IOperation {
 		currLinkAndPidMap.put(currNodePid, currLink);
 		// 获取下一条联通的LINK
 		while (LuLinkOperateUtils.getNextLink(links, currLinkAndPidMap)) {
-			if (currLinkAndPidMap.keySet().iterator().next() == startNodePid) {
+			Integer nextNodePid = currLinkAndPidMap.keySet().iterator().next();
+			if (nextNodePid == startNodePid) {
 				break;
 			}
 			index++;
-			map.put(currLinkAndPidMap.get(currLinkAndPidMap.keySet().iterator().next()), index);
-			list.add(currLinkAndPidMap.get(currLinkAndPidMap.keySet().iterator().next()).getGeometry());
+			LuLink nextLink = currLinkAndPidMap.get(nextNodePid);
+			map.put(nextLink, index);
+			list.add(nextLink.getGeometry());
 
 		}
 		// 线几何组成面的几何
@@ -387,7 +380,7 @@ public class Operation implements IOperation {
 	}
 
 	/*
-	 * 更新面的几何属性
+	 * 创建面
 	 */
 	private void createFaceGeometry(Geometry g, LuFace face) throws Exception {
 		face.setGeometry(g);
@@ -398,11 +391,12 @@ public class Operation implements IOperation {
 			face.setMeshId(Integer.parseInt(meshId));
 		}
 		face.setPerimeter(GeometryUtils.getLinkLength(g));
+		face.setArea(GeometryUtils.getCalculateArea(g));
 		result.insertObject(face, ObjStatus.INSERT, face.getPid());
 	}
 
 	/*
-	 * 更新面的几何属性
+	 * 更新面
 	 */
 	private void updateGeometry(Geometry g, LuFace face) throws Exception {
 

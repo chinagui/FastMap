@@ -229,7 +229,7 @@ public class LuNodeOperator implements IOperator {
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + luNode.tableName() + " set u_record=2 where node_pid=" + luNode.getPid();
+		String sql = "update " + luNode.tableName() + " set u_record=2 where " + luNode.primaryKey() + "=" + luNode.getPid();
 
 		stmt.addBatch(sql);
 

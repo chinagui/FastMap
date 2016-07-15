@@ -32,6 +32,8 @@ public class LuFace implements IObj {
 	
 	private int kind;
 	
+	private double area;
+	
 	private double perimeter;
 	
 	private int meshId;
@@ -363,6 +365,14 @@ public class LuFace implements IObj {
 
 	public void setLuFaceNameMap(Map<String, LuFaceName> luFaceNameMap) {
 		this.luFaceNameMap = luFaceNameMap;
+	}
+
+	public double getArea() {
+		return area;
+	}
+
+	public void setArea(double area) {
+		this.area = area;
 	}
 
 }

@@ -44,6 +44,9 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	}
 
 	private String postCheckMsg;
+	
+	public AbstractProcess() {
+	}
 
 	public AbstractProcess(AbstractCommand command) throws Exception {
 		this.command = (T) command;

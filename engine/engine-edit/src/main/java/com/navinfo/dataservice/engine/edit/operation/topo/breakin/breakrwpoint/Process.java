@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrwpoint;
 import java.sql.Connection;
 import java.util.List;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
@@ -23,7 +24,10 @@ public class Process extends AbstractProcess<Command> {
 	}
 
 	public Process(Command command, Result result, Connection conn) throws Exception {
-		super(command);
+		super();
+		this.setCommand(command);
+		// 初始化检查参数
+		this.initCheckCommand();
 		this.setConn(conn);
 		this.setResult(result);
 	}

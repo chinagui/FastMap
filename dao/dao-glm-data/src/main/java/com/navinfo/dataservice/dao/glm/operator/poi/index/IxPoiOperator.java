@@ -939,10 +939,10 @@ public class IxPoiOperator implements IOperator {
 		sb.append(" USING (SELECT '" + ixPoi.getRowId()
 				+ "' as a, 1 as b," 
 				+ freshFlag 
-				+ " as c,"
+				+ " as c,'"
 				+ rawFields
-				+ " as d,"
-				+ "to_timestamp(sysdate,'yyyy-mm--dd hh24:mi:ss.ff') as e"
+				+ "' as d,"
+				+ "sysdate as e"
 				+"  FROM dual) T2 ");
 		sb.append(" ON ( T1.row_id=T2.a) ");
 		sb.append(" WHEN MATCHED THEN ");
@@ -953,6 +953,7 @@ public class IxPoiOperator implements IOperator {
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
 			pstmt.executeUpdate();
+			
 		} catch (Exception e) {
 			throw e;
 
@@ -960,6 +961,9 @@ public class IxPoiOperator implements IOperator {
 			try {
 				if (pstmt != null) {
 					pstmt.close();
+				}
+				if (conn != null) {
+					conn.close();
 				}
 			} catch (Exception e) {
 

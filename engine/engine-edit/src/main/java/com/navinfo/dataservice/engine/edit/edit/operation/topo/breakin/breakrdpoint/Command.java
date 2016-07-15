@@ -211,8 +211,8 @@ public class Command extends AbstractCommand {
 
 		geoPoint.put("type", "Point");
 
-		geoPoint.put("coordinates", new double[] {data.getDouble("lon"),
-				data.getDouble("lat") });
+		geoPoint.put("coordinates", new double[] {data.getDouble("longitude"),
+				data.getDouble("latitude") });
 		
 		Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
 		

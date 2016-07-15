@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.LuLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 public class OpTopo implements IOperation {
@@ -51,8 +52,9 @@ public class OpTopo implements IOperation {
 	private void breakPoint(Result result) throws Exception {
 		// 打断点的信息
 		Point point = command.getPoint();
-		long lon = (long) (point.getX() * 100000);
-		long lat = (long) (point.getY() * 100000);
+		Geometry geo = GeoTranslator.transform(point, 100000, 5);
+		double lon = geo.getCoordinate().x;
+		double lat = geo.getCoordinate().y;
 
 		// 打断后线段两条线段的几何属性
 		JSONArray ja1 = new JSONArray();

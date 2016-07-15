@@ -18,6 +18,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.ZoneLinkOperateUtils;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 /**
@@ -57,8 +58,9 @@ public class OpTopo implements IOperation {
 	 */
 	private void breakPoint(Result result) throws Exception {
 		Point point = command.getPoint();
-		long lon = (long) (point.getX() * 100000);
-		long lat = (long) (point.getY() * 100000);
+		Geometry geo = GeoTranslator.transform(point, 100000, 5);
+		double lon = geo.getCoordinate().x;
+		double lat = geo.getCoordinate().y;
 	    JSONArray ja1 = new JSONArray();
 		JSONArray ja2 = new JSONArray();
 		boolean hasFound = false;

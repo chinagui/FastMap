@@ -953,7 +953,7 @@ public class IxPoiOperator implements IOperator {
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
 			pstmt.executeUpdate();
-			conn.commit();
+			
 		} catch (Exception e) {
 			throw e;
 
@@ -961,6 +961,9 @@ public class IxPoiOperator implements IOperator {
 			try {
 				if (pstmt != null) {
 					pstmt.close();
+				}
+				if (conn != null) {
+					conn.close();
 				}
 			} catch (Exception e) {
 

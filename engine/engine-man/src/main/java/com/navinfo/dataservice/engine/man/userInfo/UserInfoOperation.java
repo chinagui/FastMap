@@ -41,13 +41,14 @@ public class UserInfoOperation {
 					+ "' and d.device_version = '"
 					+ userDevice.getDeviceVersion()
 					+ "' then d.device_id else 0 end) AS device_id "
-					+ " from user_info u, role r, role_user_mapping rum, user_device d "
+					+ ",(case when uu.device_id = d.device_id and d.user_id = uu.user_id then 1 else 0 end) AS upload "
+					+ " from user_info u, role r, role_user_mapping rum, user_device d, user_upload uu "
 					+ " where u.user_id = rum.user_id "
 					+ " and u.user_id = d.user_id(+) "
+					+ " and u.user_id = uu.user_id(+) "
 					+ " and rum.role_id = r.role_id "
 					+ " and u.user_nick_name = '" + userInfo.getUserNickName() + "'"
 					+ " and u.user_password = '" + userInfo.getUserPassword() + "'";
-
 
 
 			ResultSetHandler<HashMap<Object,Object>> rsHandler = new ResultSetHandler<HashMap<Object,Object>>() {
@@ -59,7 +60,12 @@ public class UserInfoOperation {
 							map.put("userRealName", rs.getString("user_real_name"));
 							map.put("roleName", rs.getString("role_name"));
 						}
-						if(rs.getInt("device_id")!=0){
+						if(rs.getInt("device_id") != 0){
+							map.put("upload", rs.getInt("upload"));
+							map.put("deviceId",rs.getInt("device_id"));
+						}
+						if((rs.getInt("device_id") != 0) && (rs.getInt("upload") == 1)){
+							map.put("upload", rs.getInt("upload"));
 							map.put("deviceId",rs.getInt("device_id"));
 							return map;
 						}
@@ -119,5 +125,35 @@ public class UserInfoOperation {
 			log.error(e.getMessage(), e);
 			throw new Exception("插入userDevice，原因为:"+e.getMessage(),e);
 		}
+	}
+
+	/**
+	 * @param conn
+	 * @param userId
+	 * @param deviceId
+	 * @throws Exception 
+	 */
+	public static void insertIntoUserUpload(Connection conn, long userId, int deviceId) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			// 插入user_upload
+			String createSql = "insert into user_upload"
+					+ " (user_id,device_id) "
+					+ "values("
+					+ userId
+					+ ","
+					+ deviceId 
+					+ ")";
+
+			run.update(conn, createSql);
+			
+			
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("插入userDevice，原因为:"+e.getMessage(),e);
+		}
+		
 	}
 }

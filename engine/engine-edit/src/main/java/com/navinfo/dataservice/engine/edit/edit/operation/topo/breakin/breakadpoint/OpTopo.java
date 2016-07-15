@@ -2,9 +2,6 @@ package com.navinfo.dataservice.engine.edit.edit.operation.topo.breakin.breakadp
 
 import java.sql.Connection;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -16,7 +13,11 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.AdLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.comm.util.operate.NodeOperateUtils;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * @author zhaokk
@@ -55,8 +56,9 @@ public class OpTopo implements IOperation {
 	 */
 	private void breakPoint(Result result) throws Exception {
 		Point point = command.getPoint();
-		long lon = (long) (point.getX() * 100000);
-		long lat = (long) (point.getY() * 100000);
+		Geometry geo = GeoTranslator.transform(point, 100000, 5);
+		double lon = geo.getCoordinate().x;
+		double lat = geo.getCoordinate().y;
 	    JSONArray ja1 = new JSONArray();
 		JSONArray ja2 = new JSONArray();
 		boolean hasFound = false;

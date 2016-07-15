@@ -15,9 +15,9 @@ import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
-import com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.android.Operation;
-import com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.download.DownloadOperation;
-import com.navinfo.dataservice.engine.edit.edit.operation.obj.poi.upload.UploadOperation;
+import com.navinfo.dataservice.engine.edit.operation.obj.poi.android.Operation;
+import com.navinfo.dataservice.engine.edit.operation.obj.poi.download.DownloadOperation;
+import com.navinfo.dataservice.engine.edit.operation.obj.poi.upload.UploadOperation;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;

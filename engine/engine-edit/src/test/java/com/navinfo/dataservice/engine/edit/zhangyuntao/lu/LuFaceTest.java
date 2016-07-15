@@ -5,7 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.engine.edit.InitApplication;
-import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
+import com.navinfo.dataservice.engine.edit.operation.Transaction;
 
 public class LuFaceTest extends InitApplication {
 

@@ -3,7 +3,7 @@ package com.navinfo.dataservice.engine.edit.xiaolong.zone;
 import org.junit.Test;
 
 import com.navinfo.dataservice.engine.edit.InitApplication;
-import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
+import com.navinfo.dataservice.engine.edit.operation.Transaction;
 
 public class ZoneLinkTest extends InitApplication{
 

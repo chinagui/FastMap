@@ -178,7 +178,7 @@ public class Operation implements IOperation {
 							zoneLink = this.createLinkOfFace(lineString, mapNode);
 							mapLink.put(lineString, zoneLink);
 						}
-						
+						links.add(zoneLink);
 					}else{
 						if(flag == 0){
 							if (mapLink.containsKey(lineString)) {
@@ -188,7 +188,7 @@ public class Operation implements IOperation {
 								zoneLink = this.createLinkOfFace(lineString, mapNode);
 								mapLink.put(lineString, zoneLink);
 							}
-							
+							links.add(zoneLink);
 						}else{
 
 							Iterator<Geometry> itLinks=mapLink.keySet().iterator();
@@ -203,7 +203,7 @@ public class Operation implements IOperation {
 						}
 						
 					}
-					links.add(zoneLink);
+					
 				}
 				// 创建线
 				this.createFace();

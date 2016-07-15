@@ -226,11 +226,6 @@ public class UploadOperation {
 						int flag = perRetObj.getInt("flag");
 						if (flag == 1) {
 							poi.Unserialize(perRetObj.getJSONObject("ret"));
-							
-							// 鲜度验证，POI状态更新
-							String rawFields = jo.getString("rawFields");
-							new IxPoiOperator(conn,poi.getRowId(),0,rawFields) ;
-							
 							Result result = new Result();
 							result.setOperStage(OperStage.Collect);
 							JSONObject poiObj = new JSONObject();
@@ -243,6 +238,10 @@ public class UploadOperation {
 							poiProcess.setResult(result);
 							poiProcess.run();
 							count++;
+							
+							// 鲜度验证，POI状态更新
+							String rawFields = jo.getString("rawFields");
+							new IxPoiOperator(conn,poi.getRowId(),0,rawFields) ;
 						} else if (flag == 0) {
 							errList.add(perRetObj.getJSONObject("ret"));
 						}
@@ -280,16 +279,6 @@ public class UploadOperation {
 						int flag = perRetObj.getInt("flag");
 						if (flag == 1) {
 							JSONObject poiJson = perRetObj.getJSONObject("ret");
-							
-							// 鲜度验证，POI状态更新
-							boolean freshFlag = perRetObj.getBoolean("freshFlag");
-							String rawFields = jo.getString("rawFields");
-							if (freshFlag) {
-								new IxPoiOperator(conn,poiJson.getString("rowId"),1,rawFields) ;
-							} else {
-								new IxPoiOperator(conn,poiJson.getString("rowId"),0,rawFields) ;
-							}
-							
 							JSONObject commandJson = new JSONObject();
 							commandJson.put("dbId", Integer.parseInt(dbId));
 							commandJson.put("data", poiJson);
@@ -299,6 +288,15 @@ public class UploadOperation {
 							Process updateProcess = new Process(updateCommand);
 							updateProcess.run();
 							count++;
+							
+							// 鲜度验证，POI状态更新
+							boolean freshFlag = perRetObj.getBoolean("freshFlag");
+							String rawFields = jo.getString("rawFields");
+							if (freshFlag) {
+								new IxPoiOperator(conn,poiJson.getString("rowId"),1,rawFields) ;
+							} else {
+								new IxPoiOperator(conn,poiJson.getString("rowId"),0,rawFields) ;
+							}
 						} else if (flag == 0) {
 							errList.add(perRetObj.getJSONObject("ret"));
 						}
@@ -337,11 +335,6 @@ public class UploadOperation {
 						JSONObject poiObj = new JSONObject();
 						poiObj.put("dbId", dbId);
 						poiObj.put("objId", pid);
-						// 鲜度验证，POI状态更新
-						String rawFields = jo.getString("rawFields");
-						IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
-						JSONObject poiRowId = ixPoiSelector.getRowIdById(pid);
-						new IxPoiOperator(conn,poiRowId.getString("rowId"),0,rawFields) ;
 						try {
 							Result result = new Result();
 							result.setOperStage(OperStage.Collect);
@@ -350,6 +343,12 @@ public class UploadOperation {
 							poiProcess.setResult(result);
 							poiProcess.run();
 							count++;
+							
+							// 鲜度验证，POI状态更新
+							String rawFields = jo.getString("rawFields");
+							IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
+							JSONObject poiRowId = ixPoiSelector.getRowIdById(pid);
+							new IxPoiOperator(conn,poiRowId.getString("rowId"),0,rawFields) ;
 						} catch (Exception e) {
 							JSONObject errObj = new JSONObject();
 							errObj.put("fid", fid);

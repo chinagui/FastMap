@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.edit.zhangyuntao.lu;
 
 import java.sql.Connection;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.junit.Before;
@@ -10,18 +9,12 @@ import org.junit.Test;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
-import com.navinfo.dataservice.engine.edit.search.rd.utils.RdLinkSearchUtils;
 
 import net.sf.json.JSONObject;
 
-/**
- * @author zhaokk
- *
- */
 public class LuLinkTest extends InitApplication {
 
 	@Override

@@ -257,7 +257,7 @@ public class LuFaceSelector implements ISelector {
 
 		StringBuilder builder = new StringBuilder();
 		builder.append(" SELECT b.* from lu_face b where b.face_pid in (select a.face_pid ");
-		builder.append(" FROM lu_face a, lu_face_topo t, ad_link l ");
+		builder.append(" FROM lu_face a, lu_face_topo t, lu_link l ");
 		builder.append(" WHERE a.u_record != 2 and t.u_record != 2 and l.u_record != 2");
 		builder.append(" AND a.face_pid = t.face_pid");
 		builder.append(" AND t.link_pid = l.link_pid");

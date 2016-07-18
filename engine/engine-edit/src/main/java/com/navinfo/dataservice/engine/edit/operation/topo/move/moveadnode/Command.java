@@ -1,0 +1,101 @@
+package com.navinfo.dataservice.engine.edit.operation.topo.move.moveadnode;
+
+import java.util.List;
+
+import org.json.JSONException;
+
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
+import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
+import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONObject;
+/**
+ * @author zhaokk
+ * 移动行政区划点参数基础类 
+ */
+public class Command extends AbstractCommand {
+	
+	private int nodePid;
+	
+	private double longitude;
+	
+	private double latitude;
+	
+	private String requester;
+	
+	private List<AdLink> links;
+	private List<AdFace> faces;
+
+	public List<AdLink> getLinks() {
+		return links;
+	}
+
+	public void setLinks(List<AdLink> links) {
+		this.links = links;
+	}
+
+	public List<AdFace> getFaces() {
+		return faces;
+	}
+
+	public void setFaces(List<AdFace> faces) {
+		this.faces = faces;
+	}
+	
+	public Command(JSONObject json,String requester) throws JSONException{
+		
+		this.nodePid = json.getInt("objId");
+		
+		JSONObject geoPoint = new JSONObject();
+
+		geoPoint.put("type", "Point");
+
+		geoPoint.put("coordinates", new double[] {json.getJSONObject("data").getDouble("longitude"),
+				json.getJSONObject("data").getDouble("latitude") });
+		
+		Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
+		
+		this.longitude = geometry.getCoordinate().x;
+		
+		this.latitude = geometry.getCoordinate().y;
+		
+		this.setDbId(json.getInt("dbId"));
+	}
+
+	@Override
+	public OperType getOperType() {
+		
+		return OperType.MOVE;
+	}
+
+	@Override
+	public String getRequester() {
+		
+		return requester;
+	}
+
+	@Override
+	public ObjType getObjType() {
+		
+		return ObjType.ADNODE;
+	}
+
+	public int getNodePid() {
+		return nodePid;
+	}
+
+	public double getLongitude() {
+		return longitude;
+	}
+
+	public double getLatitude() {
+		return latitude;
+	}
+
+
+	
+}

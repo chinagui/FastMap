@@ -20,8 +20,6 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFaceName;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFaceTopo;
-import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
-import com.navinfo.dataservice.dao.glm.model.lu.LuLinkMesh;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class LuFaceOperator implements IOperator {
@@ -259,7 +257,7 @@ public class LuFaceOperator implements IOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + luFace.tableName()
-				+ " set u_record=2 where node_pid=" + luFace.getPid();
+				+ " set u_record=2 where face_pid =" + luFace.getPid();
 
 		stmt.addBatch(sql);
 

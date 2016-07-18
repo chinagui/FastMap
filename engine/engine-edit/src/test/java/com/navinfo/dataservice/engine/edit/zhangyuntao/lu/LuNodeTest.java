@@ -50,7 +50,8 @@ public class LuNodeTest extends InitApplication{
 
 	@Test
 	public void moveLuNodeTest() throws Exception {
-		String parameter = "{\"command\":\"MOVE\",\"dbId\":43,\"objId\":100034556,\"data\":{\"longitude\":116.47495463490485,\"latitude\":40.00968804544376},\"type\":\"LUNODE\"}";
+//		String parameter = "{\"command\":\"MOVE\",\"dbId\":43,\"objId\":100034556,\"data\":{\"longitude\":116.47495463490485,\"latitude\":40.00968804544376},\"type\":\"LUNODE\"}";
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":43,\"objId\":100034613,\"data\":{\"longitude\":116.501727104187,\"latitude\":40.49919726480543},\"type\":\"LUNODE\"}";
 		Transaction t = new Transaction(parameter);
 		;
 		String msg = t.run();

@@ -37,7 +37,7 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public String preCheck() throws Exception {
 		super.preCheck();
-		check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
+		//check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
 
 		check.checkShapePointDistance(this.getCommand().getLinkGeom());
 

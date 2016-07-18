@@ -44,15 +44,11 @@ public class SqlHelper {
 	}
 
 	/**
-	 * 执行SQL语句不返回查询的操作，返回受影响的行数
-	 * 
+	 * 执行update操作，返回受影响的行数
 	 * @param sql
-	 *            SQL语句
-	 * @return 受影响的行数
-	 * @throws ClassNotFoundException
-	 * @throws SQLException
+	 * @return
 	 */
-	public static int executeNonQuery(String sql) {
+	public static int executeUpdateSql(String sql) {
 		int result = -1;
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -70,11 +66,8 @@ public class SqlHelper {
 
 	/**
 	 * 执行Insert语句，返回Insert成功之后标识列的值
-	 * 
-	 * @param sql
-	 * @return
-	 * @throws ClassNotFoundException
-	 * @throws SQLException
+	 * @param sql 执行的SQL
+	 * @return 返回执行后的标识
 	 */
 	public static int executeIdentity(String sql) {
 		int identity = -1;
@@ -87,7 +80,6 @@ public class SqlHelper {
 			ps.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
 			rs = ps.getGeneratedKeys();
 			if (rs.next()) {
-				// identity = rs.getInt("GENERATED_KEYS");
 				identity = rs.getInt(1);
 			}
 		} catch (Exception e) {
@@ -99,16 +91,11 @@ public class SqlHelper {
 	}
 
 	/**
-	 * 执行不返回结果集的存储过程
-	 * 
-	 * @param sql
-	 *            存储过程名称
-	 * @param params
-	 *            存储过程参数
-	 * @throws ClassNotFoundException
-	 * @throws SQLException
+	 * 执行不返回结果集SQL
+	 * @param sql 查询SQL
+ 	 * @param params 参数
 	 */
-	public static void executeNonQuery(String sql, SqlParameter... params) {
+	public static void executeUpdateByParams(String sql, SqlParameter... params) {
 		Connection con = null;
 		CallableStatement cs = null;
 		try {
@@ -116,7 +103,6 @@ public class SqlHelper {
 			cs = con.prepareCall(sql);
 			setSqlParameter(cs, params);
 			cs.executeUpdate();
-			getSqlParameter(cs, params);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -125,15 +111,11 @@ public class SqlHelper {
 	}
 
 	/**
-	 * 执行返回聚合函数的操作
-	 * 
-	 * @param sql
-	 *            含有聚合函数的SQL语句
-	 * @return 聚合函数的执行结果
-	 * @throws SQLException
-	 * @throws ClassNotFoundException
+	 * 执行含有聚合函数的sql，返回函数值
+	 * @param sql 
+	 * @return
 	 */
-	public static int executeScalar(String sql) {
+	public static int executeQuerySql(String sql) {
 		int result = -1;
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -155,16 +137,9 @@ public class SqlHelper {
 
 	/**
 	 * 执行返回泛型集合的SQL语句
-	 * 
-	 * @param cls
-	 *            泛型类型
-	 * @param sql
-	 *            查询SQL语句
-	 * @return 泛型集合
-	 * @throws ClassNotFoundException
-	 * @throws SQLException
-	 * @throws InstantiationException
-	 * @throws IllegalAccessException
+	 * @param cls 泛型类型
+	 * @param sql 查询SQL
+	 * @return 返回泛型对象的几何
 	 */
 	public static <T> List<T> executeList(Class<T> cls, String sql) {
 		List<T> list = new ArrayList<T>();
@@ -188,19 +163,11 @@ public class SqlHelper {
 	}
 
 	/**
-	 * 执行返回泛型集合的存储过程
-	 * 
+	 * 执行返回泛型集合的SQL语句
 	 * @param cls
-	 *            泛型类型
 	 * @param sql
-	 *            存储过程名称
 	 * @param params
-	 *            存储过程参数
-	 * @return 泛型集合
-	 * @throws ClassNotFoundException
-	 * @throws SQLException
-	 * @throws InstantiationException
-	 * @throws IllegalAccessException
+	 * @return
 	 */
 	public static <T> List<T> executeList(Class<T> cls, String sql, SqlParameter... params) {
 		List<T> list = new ArrayList<T>();
@@ -226,16 +193,9 @@ public class SqlHelper {
 
 	/**
 	 * 执行返回泛型类型对象的SQL语句
-	 * 
-	 * @param cls
-	 *            泛型类型
-	 * @param sql
-	 *            SQL语句
-	 * @return 泛型类型对象
-	 * @throws SQLException
-	 * @throws ClassNotFoundException
-	 * @throws InstantiationException
-	 * @throws IllegalAccessException
+	 * @param cls 泛型类
+	 * @param sql 查询sql
+	 * @return 查询对象
 	 */
 	public static <T> T executeEntity(Class<T> cls, String sql) {
 		T obj = null;
@@ -259,19 +219,11 @@ public class SqlHelper {
 	}
 
 	/**
-	 * 执行返回泛型类型对象的存储过程
-	 * 
-	 * @param cls
-	 *            泛型类型
-	 * @param sql
-	 *            SQL语句
-	 * @param params
-	 *            存储过程参数
-	 * @return 泛型类型对象
-	 * @throws SQLException
-	 * @throws ClassNotFoundException
-	 * @throws InstantiationException
-	 * @throws IllegalAccessException
+	 *  执行返回泛型类型对象的存储过程
+	 * @param cls 泛型对象
+	 * @param sql sql语句
+	 * @param params 参数
+	 * @return 泛型类型的对象
 	 */
 	public static <T> T executeEntity(Class<T> cls, String sql, SqlParameter... params) {
 		T obj = null;

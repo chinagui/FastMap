@@ -118,7 +118,7 @@ public class Check {
 		boolean flag = RdGscOperateUtils.isMoveGscLink(geo, rdGscList);
 
 		if (flag) {
-			throw new Exception("不容许去除有立交关系的形状点");
+			throw new Exception("不允许去除有立交关系的形状点");
 		}
 	}
 	

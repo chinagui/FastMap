@@ -113,9 +113,9 @@ public class StatInit {
 	public static Map<String, Integer> getCheckFromDaily(String db_name, String col_name, String key, String stat_date) throws ServiceException {
 		Map<String, Integer> map = new HashMap<String, Integer>();
 		Map<String, String> grid2blockORcity = new HashMap<String, String>();
-		if (key == "block") {
+		if (key.equals("block")) {
 			grid2blockORcity = OracleDao.getGrid2Block();
-		} else if (key == "city") {
+		} else if (key.equals("city")) {
 			grid2blockORcity = OracleDao.getGrid2City();
 		}
 		BasicDBObject query = new BasicDBObject();

@@ -332,7 +332,7 @@ public class SolrController {
 
 		StringBuilder builder = new StringBuilder();
 
-		builder.append("wkt:\"intersects(" + wkt + ")\"  AND stage:(1 3)");
+		builder.append("wkt:\"intersects(" + wkt + ")\"  AND stage:(1 2 3)");
 
 		if (types.size() > 0) {
 

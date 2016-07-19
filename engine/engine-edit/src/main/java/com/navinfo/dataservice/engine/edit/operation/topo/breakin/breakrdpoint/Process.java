@@ -59,9 +59,11 @@ public class Process extends AbstractProcess<Command> {
 		this.jaDisplayLink = new JSONArray();
 	}
 
-	public Process(AbstractCommand command, Connection conn,Result result) throws Exception {
-		super(command);
-
+	public Process(Command command, Connection conn,Result result) throws Exception {
+		super();
+		this.setCommand(command);
+		// 初始化检查参数
+		this.initCheckCommand();
 		this.setConn(conn);
 		this.setResult(result);
 

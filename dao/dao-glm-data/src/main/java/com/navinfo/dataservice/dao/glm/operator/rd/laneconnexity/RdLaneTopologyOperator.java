@@ -17,168 +17,19 @@ import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
+import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 
-public class RdLaneTopologyOperator implements IOperator {
+public class RdLaneTopologyOperator extends AbstractOperator {
 
 	private static Logger logger = Logger
 			.getLogger(RdLaneTopologyOperator.class);
 
-	private Connection conn;
-
 	private RdLaneTopology topo;
 
-	public RdLaneTopologyOperator(Connection conn,
-			RdLaneTopology topo) {
-		this.conn = conn;
+	public RdLaneTopologyOperator(Connection conn, RdLaneTopology topo) {
+		super(conn);
 
 		this.topo = topo;
-	}
-
-	@Override
-	public void insertRow() throws Exception {
-
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.insertRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-			
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
-	}
-
-	@Override
-	public void updateRow() throws Exception {
-
-		StringBuilder sb = new StringBuilder("update " + topo.tableName()
-				+ " set u_record=3,");
-
-		PreparedStatement pstmt = null;
-
-		try {
-
-			Set<Entry<String, Object>> set = topo.changedFields().entrySet();
-
-			Iterator<Entry<String, Object>> it = set.iterator();
-
-			while (it.hasNext()) {
-				Entry<String, Object> en = it.next();
-
-				String column = en.getKey();
-
-				Object columnValue = en.getValue();
-
-				Field field = topo.getClass().getDeclaredField(column);
-				
-				field.setAccessible(true);
-
-				Object value = field.get(topo);
-
-				column = StringUtils.toColumnName(column);
-
-				if (value instanceof String || value == null) {
-
-					if (!StringUtils.isStringSame(String.valueOf(value),
-							String.valueOf(columnValue))) {
-						
-						if(columnValue==null){
-							sb.append(column + "=null,");
-						}
-						else{
-							sb.append(column + "='" + String.valueOf(columnValue)
-									+ "',");
-						}
-						
-					}
-
-				} else if (value instanceof Double) {
-
-					if (Double.parseDouble(String.valueOf(value)) != Double
-							.parseDouble(String.valueOf(columnValue))) {
-						sb.append(column
-								+ "="
-								+ Double.parseDouble(String
-										.valueOf(columnValue)) + ",");
-					}
-
-				} else if (value instanceof Integer) {
-
-					if (Integer.parseInt(String.valueOf(value)) != Integer
-							.parseInt(String.valueOf(columnValue))) {
-						sb.append(column + "="
-								+ Integer.parseInt(String.valueOf(columnValue))
-								+ ",");
-					}
-
-				}
-			}
-			sb.append(" where topology_id=" + topo.getPid());
-
-			String sql = sb.toString();
-
-			sql = sql.replace(", where", " where");
-
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.executeUpdate();
-
-		} catch (Exception e) {
-			
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
-	}
-
-	@Override
-	public void deleteRow() throws Exception {
-
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.deleteRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-			
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
 	}
 
 	@Override
@@ -212,17 +63,80 @@ public class RdLaneTopologyOperator implements IOperator {
 		stmt.addBatch(sb.toString());
 
 		for (IRow r : topo.getVias()) {
-			RdLaneViaOperator op = new RdLaneViaOperator(conn,
-					(RdLaneVia) r);
+			RdLaneViaOperator op = new RdLaneViaOperator(conn, (RdLaneVia) r);
 
 			op.insertRow2Sql(stmt);
 		}
 	}
 
 	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
-			throws Exception {
+	public void updateRow2Sql(Statement stmt) throws Exception {
 
+		StringBuilder sb = new StringBuilder("update " + topo.tableName()
+				+ " set u_record=3,");
+
+		Set<Entry<String, Object>> set = topo.changedFields().entrySet();
+
+		Iterator<Entry<String, Object>> it = set.iterator();
+
+		while (it.hasNext()) {
+			Entry<String, Object> en = it.next();
+
+			String column = en.getKey();
+
+			Object columnValue = en.getValue();
+
+			Field field = topo.getClass().getDeclaredField(column);
+
+			field.setAccessible(true);
+
+			Object value = field.get(topo);
+
+			column = StringUtils.toColumnName(column);
+
+			if (value instanceof String || value == null) {
+
+				if (!StringUtils.isStringSame(String.valueOf(value),
+						String.valueOf(columnValue))) {
+
+					if (columnValue == null) {
+						sb.append(column + "=null,");
+					} else {
+						sb.append(column + "='" + String.valueOf(columnValue)
+								+ "',");
+					}
+					this.setChanged(true);
+
+				}
+
+			} else if (value instanceof Double) {
+
+				if (Double.parseDouble(String.valueOf(value)) != Double
+						.parseDouble(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Double.parseDouble(String.valueOf(columnValue))
+							+ ",");
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof Integer) {
+
+				if (Integer.parseInt(String.valueOf(value)) != Integer
+						.parseInt(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Integer.parseInt(String.valueOf(columnValue))
+							+ ",");
+					this.setChanged(true);
+				}
+
+			}
+		}
+		sb.append(" where topology_id=" + topo.getPid());
+
+		String sql = sb.toString();
+
+		sql = sql.replace(", where", " where");
+		stmt.addBatch(sql);
 	}
 
 	@Override
@@ -234,8 +148,7 @@ public class RdLaneTopologyOperator implements IOperator {
 		stmt.addBatch(sql);
 
 		for (IRow r : topo.getVias()) {
-			RdLaneViaOperator op = new RdLaneViaOperator(conn,
-					(RdLaneVia) r);
+			RdLaneViaOperator op = new RdLaneViaOperator(conn, (RdLaneVia) r);
 
 			op.deleteRow2Sql(stmt);
 		}

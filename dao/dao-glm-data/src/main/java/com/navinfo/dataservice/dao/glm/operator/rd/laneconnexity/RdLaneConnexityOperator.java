@@ -17,170 +17,20 @@ import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
+import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 
-public class RdLaneConnexityOperator implements IOperator {
+public class RdLaneConnexityOperator extends AbstractOperator {
 
 	private static Logger logger = Logger
 			.getLogger(RdLaneConnexityOperator.class);
 
-	private Connection conn;
-
 	private RdLaneConnexity connexity;
 
 	public RdLaneConnexityOperator(Connection conn, RdLaneConnexity connexity) {
-		this.conn = conn;
+		super(conn);
 
 		this.connexity = connexity;
 	}
-
-	@Override
-	public void insertRow() throws Exception {
-
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.insertRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-			
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
-	}
-
-	@Override
-	public void updateRow() throws Exception {
-
-		StringBuilder sb = new StringBuilder("update " + connexity.tableName()
-				+ " set u_record=3,");
-
-		PreparedStatement pstmt = null;
-
-		try {
-
-			Set<Entry<String, Object>> set = connexity.changedFields()
-					.entrySet();
-
-			Iterator<Entry<String, Object>> it = set.iterator();
-
-			while (it.hasNext()) {
-				Entry<String, Object> en = it.next();
-
-				String column = en.getKey();
-
-				Object columnValue = en.getValue();
-
-				Field field = connexity.getClass().getDeclaredField(column);
-				
-				field.setAccessible(true);
-
-				Object value = field.get(connexity);
-
-				column = StringUtils.toColumnName(column);
-
-				if (value instanceof String || value == null) {
-
-					if (!StringUtils.isStringSame(String.valueOf(value),
-							String.valueOf(columnValue))) {
-						
-						if(columnValue==null){
-							sb.append(column + "=null,");
-						}
-						else{
-							sb.append(column + "='" + String.valueOf(columnValue)
-									+ "',");
-						}
-						
-					}
-
-				} else if (value instanceof Double) {
-
-					if (Double.parseDouble(String.valueOf(value)) != Double
-							.parseDouble(String.valueOf(columnValue))) {
-						sb.append(column
-								+ "="
-								+ Double.parseDouble(String
-										.valueOf(columnValue)) + ",");
-					}
-
-				} else if (value instanceof Integer) {
-
-					if (Integer.parseInt(String.valueOf(value)) != Integer
-							.parseInt(String.valueOf(columnValue))) {
-						sb.append(column + "="
-								+ Integer.parseInt(String.valueOf(columnValue))
-								+ ",");
-					}
-
-				}
-			}
-			sb.append(" where pid=" + connexity.getPid());
-
-			String sql = sb.toString();
-
-			sql = sql.replace(", where", " where");
-
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.executeUpdate();
-
-		} catch (Exception e) {
-			
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
-	}
-
-	@Override
-	public void deleteRow() throws Exception {
-
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.deleteRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-			
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
-	}
-
 	@Override
 	public void insertRow2Sql(Statement stmt) throws Exception {
 
@@ -205,15 +55,15 @@ public class RdLaneConnexityOperator implements IOperator {
 		}
 
 		sb.append("," + connexity.getConflictFlag());
-		
+
 		sb.append("," + connexity.getKgFlag());
-		
+
 		sb.append("," + connexity.getLaneNum());
-		
+
 		sb.append("," + connexity.getLeftExtend());
-		
+
 		sb.append("," + connexity.getRightExtend());
-		
+
 		sb.append("," + connexity.getSrcFlag());
 
 		sb.append(",1,'" + connexity.rowId() + "')");
@@ -221,16 +71,80 @@ public class RdLaneConnexityOperator implements IOperator {
 		stmt.addBatch(sb.toString());
 
 		for (IRow r : connexity.getTopos()) {
-			RdLaneTopologyOperator op = new RdLaneTopologyOperator(
-					conn, (RdLaneTopology) r);
+			RdLaneTopologyOperator op = new RdLaneTopologyOperator(conn,
+					(RdLaneTopology) r);
 
 			op.insertRow2Sql(stmt);
 		}
 	}
 
 	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
-			throws Exception {
+	public void updateRow2Sql(Statement stmt) throws Exception {
+		StringBuilder sb = new StringBuilder("update " + connexity.tableName()
+				+ " set u_record=3,");
+
+		Set<Entry<String, Object>> set = connexity.changedFields().entrySet();
+
+		Iterator<Entry<String, Object>> it = set.iterator();
+
+		while (it.hasNext()) {
+			Entry<String, Object> en = it.next();
+
+			String column = en.getKey();
+
+			Object columnValue = en.getValue();
+
+			Field field = connexity.getClass().getDeclaredField(column);
+
+			field.setAccessible(true);
+
+			Object value = field.get(connexity);
+
+			column = StringUtils.toColumnName(column);
+
+			if (value instanceof String || value == null) {
+
+				if (!StringUtils.isStringSame(String.valueOf(value),
+						String.valueOf(columnValue))) {
+
+					if (columnValue == null) {
+						sb.append(column + "=null,");
+					} else {
+						sb.append(column + "='" + String.valueOf(columnValue)
+								+ "',");
+					}
+					this.setChanged(true);
+
+				}
+
+			} else if (value instanceof Double) {
+
+				if (Double.parseDouble(String.valueOf(value)) != Double
+						.parseDouble(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Double.parseDouble(String.valueOf(columnValue))
+							+ ",");
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof Integer) {
+
+				if (Integer.parseInt(String.valueOf(value)) != Integer
+						.parseInt(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Integer.parseInt(String.valueOf(columnValue))
+							+ ",");
+					this.setChanged(true);
+				}
+
+			}
+		}
+		sb.append(" where pid=" + connexity.getPid());
+
+		String sql = sb.toString();
+
+		sql = sql.replace(", where", " where");
+		stmt.addBatch(sql);
 
 	}
 
@@ -243,8 +157,8 @@ public class RdLaneConnexityOperator implements IOperator {
 		stmt.addBatch(sql);
 
 		for (IRow r : connexity.getTopos()) {
-			RdLaneTopologyOperator op = new RdLaneTopologyOperator(
-					conn, (RdLaneTopology) r);
+			RdLaneTopologyOperator op = new RdLaneTopologyOperator(conn,
+					(RdLaneTopology) r);
 
 			op.deleteRow2Sql(stmt);
 		}

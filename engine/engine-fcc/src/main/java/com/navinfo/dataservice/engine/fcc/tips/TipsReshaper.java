@@ -105,15 +105,15 @@ public class TipsReshaper {
 
 			solrIndex.put("handler", handler);
 			
-			int t_cStatus = lastTrack.getInt("t_cStatus");
+			int t_cStatus = trackjo.getInt("t_cStatus");
 
 			solrIndex.put("t_cStatus", t_cStatus);
 			
-			int t_dStatus = lastTrack.getInt("t_dStatus");
+			int t_dStatus = trackjo.getInt("t_dStatus");
 
 			solrIndex.put("t_dStatus", t_dStatus);
 			
-			int t_mStatus = lastTrack.getInt("t_mStatus");
+			int t_mStatus = trackjo.getInt("t_mStatus");
 
 			solrIndex.put("t_mStatus", t_mStatus);
 

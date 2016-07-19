@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
@@ -44,6 +46,9 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	}
 
 	private String postCheckMsg;
+	
+	public AbstractProcess() {
+	}
 
 	public AbstractProcess(AbstractCommand command) throws Exception {
 		this.command = (T) command;
@@ -139,17 +144,19 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 			this.prepareData();
 
 			msg = exeOperation();
+			
+			checkResult();
 
 			if (this.getCommand().getOperType().equals(OperType.CREATE)
 					&& !this.getCommand().getObjType().equals(ObjType.RDBRANCH)) {
 				handleResult(this.getCommand().getObjType(), result);
 			}
 
-			String preCheckMsg = this.preCheck();
+			/*String preCheckMsg = this.preCheck();
 
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
-			}
+			}*/
 			this.recordData();
 
 			this.postCheck();
@@ -170,6 +177,17 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		}
 
 		return msg;
+	}
+
+	/**
+	 * 检查请求是否执行了某些操作
+	 * @throws Exception 
+	 */
+	private void checkResult() throws Exception {
+		if(CollectionUtils.isEmpty(result.getAddObjects()) && CollectionUtils.isEmpty(result.getUpdateObjects()) &&CollectionUtils.isEmpty(result.getDelObjects()))
+		{
+			throw new Exception("属性值未发生变化");
+		}
 	}
 
 	/*

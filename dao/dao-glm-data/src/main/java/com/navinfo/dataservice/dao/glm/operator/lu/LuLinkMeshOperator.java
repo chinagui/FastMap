@@ -2,10 +2,9 @@ package com.navinfo.dataservice.dao.glm.operator.lu;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.Iterator;
-import java.util.List;
+
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -13,57 +12,47 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
-import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLinkMesh;
+import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 
-public class LuLinkMeshOperator implements IOperator {
+public class LuLinkMeshOperator extends AbstractOperator {
 
 	private static Logger logger = Logger.getLogger(LuLinkMeshOperator.class);
 
-	private Connection conn;
+	
 
 	private LuLinkMesh luLinkMesh;
 
 	public LuLinkMeshOperator(Connection conn, LuLinkMesh luLinkMesh) {
-		this.conn = conn;
+		super(conn);
 		this.luLinkMesh = luLinkMesh;
 	}
 
+
 	@Override
-	public void insertRow() throws Exception {
-		Statement stmt = null;
+	public void insertRow2Sql(Statement stmt) throws Exception {
+		luLinkMesh.setRowId(UuidUtils.genUuid());
 
-		try {
-			stmt = conn.createStatement();
+		StringBuilder sb = new StringBuilder("insert into ");
 
-			this.insertRow2Sql(stmt);
+		sb.append(luLinkMesh.tableName());
 
-			stmt.executeBatch();
+		sb.append("(link_pid, mesh_id, u_record, row_id) values (");
 
-		} catch (Exception e) {
+		sb.append(luLinkMesh.getLinkPid());
 
-			throw e;
+		sb.append("," + luLinkMesh.getMeshId());
 
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
+		sb.append(",1,'" + luLinkMesh.getRowId() + "')");
 
-			}
-
-		}
+		stmt.addBatch(sb.toString());
 	}
 
 	@Override
-	public void updateRow() throws Exception {
+	public void updateRow2Sql(Statement stmt)
+			throws Exception {
 		StringBuilder sb = new StringBuilder("update " + luLinkMesh.tableName()
 				+ " set u_record=3,");
-
-		PreparedStatement pstmt = null;
-
-		try {
 
 			Set<Entry<String, Object>> set = luLinkMesh.changedFields()
 					.entrySet();
@@ -96,6 +85,7 @@ public class LuLinkMeshOperator implements IOperator {
 							sb.append(column + "='"
 									+ String.valueOf(columnValue) + "',");
 						}
+						this.setChanged(true);
 
 					}
 
@@ -107,6 +97,7 @@ public class LuLinkMeshOperator implements IOperator {
 								+ "="
 								+ Double.parseDouble(String
 										.valueOf(columnValue)) + ",");
+						this.setChanged(true);
 					}
 
 				} else if (value instanceof Integer) {
@@ -116,6 +107,7 @@ public class LuLinkMeshOperator implements IOperator {
 						sb.append(column + "="
 								+ Integer.parseInt(String.valueOf(columnValue))
 								+ ",");
+						this.setChanged(true);
 					}
 
 				}
@@ -126,74 +118,7 @@ public class LuLinkMeshOperator implements IOperator {
 
 			sql = sql.replace(", where", " where");
 
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.executeUpdate();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-	}
-
-	@Override
-	public void deleteRow() throws Exception {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.deleteRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-		}
-	}
-
-	@Override
-	public void insertRow2Sql(Statement stmt) throws Exception {
-		luLinkMesh.setRowId(UuidUtils.genUuid());
-
-		StringBuilder sb = new StringBuilder("insert into ");
-
-		sb.append(luLinkMesh.tableName());
-
-		sb.append("(link_pid, mesh_id, u_record, row_id) values (");
-
-		sb.append(luLinkMesh.getLinkPid());
-
-		sb.append("," + luLinkMesh.getMeshId());
-
-		sb.append(",1,'" + luLinkMesh.getRowId() + "')");
-
-		stmt.addBatch(sb.toString());
-	}
-
-	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
-			throws Exception {
+			stmt.addBatch(sql);
 	}
 
 	@Override

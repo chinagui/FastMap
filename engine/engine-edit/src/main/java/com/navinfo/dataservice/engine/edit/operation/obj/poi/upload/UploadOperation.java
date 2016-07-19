@@ -471,7 +471,7 @@ public class UploadOperation {
 			poi.setVipFlag(jo.getString("vipFlag"));
 			poi.setuRecord(1);
 			
-			poi.setRowId(UuidUtils.genUuid());
+			poi.setRowId(UuidUtils.genUuid().toUpperCase());
 			
 			// 名称
 			if (!poi.getOldName().isEmpty()) {

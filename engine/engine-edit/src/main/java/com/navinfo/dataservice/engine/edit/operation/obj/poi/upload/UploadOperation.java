@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -122,7 +124,7 @@ public class UploadOperation {
 			// fid在IX_POI.POI_NUM中查找不到，并且待上传数据lifecycle不为1，为新增
 			// fid能找到，并且待上传数据lifecycle不为1且对应的IX_POI.U_RECORD不为2（删除），即为修改
 			// fid能找到，并且待上传数据lifecycle为1，即为删除
-			String subQuery = "SELECT u_record FROM ix_poi WHERE poi_num=:1";
+			String subQuery = "SELECT u_record,pid FROM ix_poi WHERE poi_num=:1";
 			JSONObject insertObj= new JSONObject();
 			JSONObject updateObj = new JSONObject();
 			JSONObject deleteObj = new JSONObject();
@@ -141,14 +143,32 @@ public class UploadOperation {
 					JSONObject poi = dataList.get(i);
 					String fid = poi.getString("fid");
 					int lifecycle = poi.getInt("t_lifecycle");
-					int uRecord = qRunner.queryForInt(conn, subQuery, fid);
+					PreparedStatement stmt = null;
+					ResultSet rs = null;
+					int uRecord = -1;
+					int pid = 0;
+					try {
+						stmt = conn.prepareStatement(subQuery);
+						stmt.setString(1, fid);
+						rs = stmt.executeQuery();
+						if (rs.next()) {
+							uRecord = rs.getInt("u_record");
+							pid = rs.getInt("pid");
+						}
+					} catch (Exception e) {
+						throw e;
+					} finally {
+						DbUtils.closeQuietly(rs);
+						DbUtils.closeQuietly(stmt);
+					}
+					
 					// 判断每一条数据是新增、修改还是删除
 					if (uRecord != -1) {
 						// 能找到，判断lifecycle和u_record
+						poi.put("pid", pid);
 						if (lifecycle == 1) {
 							deleteList.add(poi);
 						} else {
-							
 							if (uRecord == 2) {
 								String errstr = "fid:" + fid + "为修改数据，但库中u_record为2";
 								errList.add(errstr);

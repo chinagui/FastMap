@@ -15,156 +15,22 @@ import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwFeature;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
+import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 
 /**
  * 铁路要素操作类
+ * 
  * @author zhangxiaolong
- *
+ * 
  */
-public class RwFeatureOperator implements IOperator {
-
-	private Connection conn;
+public class RwFeatureOperator extends AbstractOperator {
 
 	private RwFeature rwFeature;
 
 	public RwFeatureOperator(Connection conn, RwFeature rwFeature) {
-		this.conn = conn;
+		super(conn);
 
 		this.rwFeature = rwFeature;
-	}
-
-	@Override
-	public void insertRow() throws Exception {
-
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.insertRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-		}
-	}
-
-	@Override
-	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + rwFeature.tableName() + " set u_record=3,");
-
-		PreparedStatement pstmt = null;
-
-		try {
-
-			Set<Entry<String, Object>> set = rwFeature.changedFields().entrySet();
-
-			Iterator<Entry<String, Object>> it = set.iterator();
-
-			while (it.hasNext()) {
-				Entry<String, Object> en = it.next();
-
-				String column = en.getKey();
-
-				Object columnValue = en.getValue();
-
-				Field field = rwFeature.getClass().getDeclaredField(column);
-
-				field.setAccessible(true);
-
-				column = StringUtils.toColumnName(column);
-
-				Object value = field.get(rwFeature);
-
-				if (value instanceof String || value == null) {
-
-					if (!StringUtils.isStringSame(String.valueOf(value), String.valueOf(columnValue))) {
-
-						if (columnValue == null) {
-							sb.append(column + "=null,");
-						} else {
-							sb.append(column + "='" + String.valueOf(columnValue) + "',");
-						}
-
-					}
-
-				} else if (value instanceof Double) {
-
-					if (Double.parseDouble(String.valueOf(value)) != Double.parseDouble(String.valueOf(columnValue))) {
-						sb.append(column + "=" + Double.parseDouble(String.valueOf(columnValue)) + ",");
-					}
-
-				} else if (value instanceof Integer) {
-
-					if (Integer.parseInt(String.valueOf(value)) != Integer.parseInt(String.valueOf(columnValue))) {
-						sb.append(column + "=" + Integer.parseInt(String.valueOf(columnValue)) + ",");
-					}
-
-				}
-			}
-			sb.append(" where feature_pid=" + rwFeature.getPid());
-
-			sb.append(")");
-
-			String sql = sb.toString();
-
-			sql = sql.replace(", where", " where");
-
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.executeUpdate();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-	}
-
-	@Override
-	public void deleteRow() throws Exception {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.deleteRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-		}
 	}
 
 	@Override
@@ -191,13 +57,81 @@ public class RwFeatureOperator implements IOperator {
 	}
 
 	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt) throws Exception {
+	public void updateRow2Sql(Statement stmt) throws Exception {
+		StringBuilder sb = new StringBuilder("update " + rwFeature.tableName()
+				+ " set u_record=3,");
 
+		Set<Entry<String, Object>> set = rwFeature.changedFields().entrySet();
+
+		Iterator<Entry<String, Object>> it = set.iterator();
+
+		while (it.hasNext()) {
+			Entry<String, Object> en = it.next();
+
+			String column = en.getKey();
+
+			Object columnValue = en.getValue();
+
+			Field field = rwFeature.getClass().getDeclaredField(column);
+
+			field.setAccessible(true);
+
+			column = StringUtils.toColumnName(column);
+
+			Object value = field.get(rwFeature);
+
+			if (value instanceof String || value == null) {
+
+				if (!StringUtils.isStringSame(String.valueOf(value),
+						String.valueOf(columnValue))) {
+
+					if (columnValue == null) {
+						sb.append(column + "=null,");
+					} else {
+						sb.append(column + "='" + String.valueOf(columnValue)
+								+ "',");
+					}
+					this.setChanged(true);
+
+				}
+
+			} else if (value instanceof Double) {
+
+				if (Double.parseDouble(String.valueOf(value)) != Double
+						.parseDouble(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Double.parseDouble(String.valueOf(columnValue))
+							+ ",");
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof Integer) {
+
+				if (Integer.parseInt(String.valueOf(value)) != Integer
+						.parseInt(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Integer.parseInt(String.valueOf(columnValue))
+							+ ",");
+					this.setChanged(true);
+				}
+
+			}
+		}
+		sb.append(" where feature_pid=" + rwFeature.getPid());
+
+		sb.append(")");
+
+		String sql = sb.toString();
+
+		sql = sql.replace(", where", " where");
+
+		stmt.addBatch(sql);
 	}
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + rwFeature.tableName() + " set u_record=2,u_date=" + StringUtils.getCurrentTime()
+		String sql = "update " + rwFeature.tableName()
+				+ " set u_record=2,u_date=" + StringUtils.getCurrentTime()
 				+ " where feature_pid=" + rwFeature.getPid();
 
 		stmt.addBatch(sql);

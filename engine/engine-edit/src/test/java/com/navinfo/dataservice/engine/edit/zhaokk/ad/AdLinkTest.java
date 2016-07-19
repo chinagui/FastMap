@@ -38,7 +38,7 @@ public class AdLinkTest extends InitApplication{
 	
 	@Test
 	public  void createAdLinkTest() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"ADLINK\",\"projectId\":11," +
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"ADLINK\",\"dbId\":42," +
 		"\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[117.37423092126846,38.91671492709221],[117.37430199980734,38.91657301643589]]},\"catchLinks\":[]}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);;

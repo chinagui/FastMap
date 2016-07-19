@@ -13,5 +13,6 @@ public interface DatahubApi {
 	DbInfo getDbById(int dbId)throws Exception;
 	DbInfo getSuperDb(DbInfo db)throws Exception;
 	DbInfo getOnlyDbByType(String bizType)throws Exception;
+	DbInfo getReuseDb(String bizType)throws Exception;
 
 }

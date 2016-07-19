@@ -7,5 +7,5 @@ package com.navinfo.dataservice.engine.edit.bo.ad;
  * @Description: BoAdNode.java
  */
 public class AdNodeBo {
-
+	
 }

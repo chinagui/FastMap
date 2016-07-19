@@ -317,6 +317,32 @@ public class DbService {
 		}
 		return db;
 	}
+	/**
+	 * 如果没找到可重复使用的库，返回null
+	 * @param bizType:业务类型
+	 * @return
+	 * @throws Exception
+	 */
+	public DbInfo getReuseDb(String bizType)throws Exception{
+		DbInfo db=null;
+		Connection conn = null;
+		try{
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			String lockSql = "SELECT T.DB_ID FROM DB_REUSE T WHERE EXISTS (SELECT 1 FROM DB_HUB P WHERE T.DB_ID=P.DB_ID AND P.BIZ_TYPE=?) AND ROWNUM=1";
+			QueryRunner run = new QueryRunner();
+			int dbId = run.queryForInt(conn, lockSql,bizType);
+			if(dbId>0){
+				db = getDbById(dbId);
+			}
+			return db;
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("从管理库中查询出现sql或格式错误，原因："+e.getMessage(),e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 	public static void main(String[] args){
 		try{
 //			String conString = dbMan.getDbConnectStrByPid(1L);

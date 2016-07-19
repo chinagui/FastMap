@@ -12,18 +12,17 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 
 import net.sf.json.JSONObject;
 
-
 public class PatternImageUploader {
 
 	public void run(String fileName) throws Exception {
 
-		Date currentDate = new Date();
-
-		String sql = "insert into SC_MODEL_MATCH_G values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		String sql = "insert into SC_MODEL_MATCH_G values (?,?,?,?,?,?,?,?,?,?,?,?,sysdate,?,?,?,?,?,sysdate)";
 
 		PreparedStatement pstmt = null;
 
 		Connection conn = null;
+
+		Scanner scanner = null;
 
 		try {
 			conn = DBConnector.getInstance().getMetaConnection();
@@ -32,7 +31,7 @@ public class PatternImageUploader {
 
 			int counter = 0;
 
-			Scanner scanner = new Scanner(new FileInputStream(fileName));
+			scanner = new Scanner(new FileInputStream(fileName));
 
 			while (scanner.hasNextLine()) {
 
@@ -64,22 +63,18 @@ public class PatternImageUploader {
 
 				pstmt.setString(12, "");
 
-				pstmt.setDate(13, (java.sql.Date) currentDate);
+				pstmt.setString(13, "");
 
 				pstmt.setString(14, "");
 
 				pstmt.setString(15, "");
 
-				pstmt.setString(16, "");
-
 				ByteArrayInputStream stream = new ByteArrayInputStream(json
 						.getString("content").getBytes());
 
-				pstmt.setBlob(17, stream);
+				pstmt.setBlob(16, stream);
 
-				pstmt.setInt(18, 0);
-
-				pstmt.setDate(19, (java.sql.Date) currentDate);
+				pstmt.setInt(17, 0);
 
 				pstmt.executeUpdate();
 
@@ -114,6 +109,9 @@ public class PatternImageUploader {
 				}
 			}
 
+			if (scanner != null) {
+				scanner.close();
+			}
 		}
 	}
 }

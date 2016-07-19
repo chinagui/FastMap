@@ -702,7 +702,11 @@ public class UploadOperation {
 			retObj.put("flag", 0);
 			JSONObject errObj = new JSONObject();
 			errObj.put("fid", fid);
-			errObj.put("reason", e.getMessage());
+			String errStr = e.getMessage();
+			if (errStr == null) {
+				errStr = "";
+			}
+			errObj.put("reason", errStr);
 			retObj.put("ret", errObj);
 		}
 		return retObj;
@@ -1410,7 +1414,11 @@ public class UploadOperation {
 			retObj.put("flag", 0);
 			JSONObject errObj = new JSONObject();
 			errObj.put("fid", fid);
-			errObj.put("reason", e.getMessage());
+			String errStr = e.getMessage();
+			if (errStr == null) {
+				errStr = "";
+			}
+			errObj.put("reason", errStr);
 			retObj.put("ret", errObj);
 		}
 		

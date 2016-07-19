@@ -37,35 +37,29 @@ public class TileBuilder {
 
 		Statement stmt = conn.createStatement();
 
-		String sql = "select a.*,b.server_ip,b.server_port from db_hub a, db_server b where a.server_id=b.server_id and a.biz_type='regionRoad'";
+		String sql = "select a.*,b.server_ip,b.server_port,b.service_name from db_hub a, db_server b where a.server_id=b.server_id and a.biz_type='regionRoad'";
 
 		ResultSet rs = stmt.executeQuery(sql);
 
 		while (rs.next()) {
 
 			String dbId = rs.getString("db_id");
-
-			String dbName = rs.getString("db_name");
-
-			String dbUserName = rs.getString("db_user_name");
-
-			String dbUserPasswd = rs.getString("db_user_passwd");
-
-			String serverIp = rs.getString("server_ip");
-
-			String serverPort = rs.getString("server_port");
+			
+			if(dbId==null || dbId.isEmpty()){
+				continue;
+			}
 
 			Configuration conf = new Configuration();
 
-			conf.set("username", dbUserName);
+			conf.set("username", rs.getString("db_user_name"));
 
-			conf.set("password", dbUserPasswd);
+			conf.set("password", rs.getString("db_user_passwd"));
 
-			conf.set("serviceName", dbName);
+			conf.set("serviceName", rs.getString("service_name"));
 
-			conf.set("ip", serverIp);
+			conf.set("ip", rs.getString("server_ip"));
 
-			conf.set("port", serverPort);
+			conf.set("port", rs.getString("server_port"));
 
 			conf.set("dbId", dbId);
 			
@@ -125,9 +119,17 @@ public class TileBuilder {
 
 			String monthlyDbId = rs.getString("monthly_db_id");
 
-			list.add(map.get(dailyDbId));
+			Configuration dailyConf = map.get(dailyDbId);
 			
-			list.add(map.get(monthlyDbId));
+			if(dailyConf != null){
+				list.add(dailyConf);
+			}
+			
+			Configuration monthlyConf = map.get(monthlyDbId);
+			
+			if(monthlyConf != null){
+				list.add(monthlyConf);
+			}
 		}
 		
 		rs.close();

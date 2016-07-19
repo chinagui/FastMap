@@ -19,177 +19,24 @@ import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
 import com.navinfo.dataservice.dao.glm.model.lu.LuNodeMesh;
+import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 import com.vividsolutions.jts.geom.Geometry;
 
-public class LuNodeOperator implements IOperator {
+public class LuNodeOperator extends AbstractOperator {
 
 	private static Logger logger = Logger.getLogger(LuNodeOperator.class);
 	
-	private Connection conn;
+	
 	
 	private LuNode luNode;
 	
 	public LuNodeOperator(Connection conn, LuNode luNode){
-		this.conn = conn;
+		super(conn);
 		
 		this.luNode = luNode;
 	}
 	
-	@Override
-	public void insertRow() throws Exception {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.insertRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-	}
-
-	@Override
-	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + luNode.tableName() + " set u_record=3,");
-
-		PreparedStatement pstmt = null;
-
-		try {
-
-			Set<Entry<String, Object>> set = luNode.changedFields().entrySet();
-
-			Iterator<Entry<String, Object>> it = set.iterator();
-
-			boolean isChanged = false;
-
-			while (it.hasNext()) {
-				Entry<String, Object> en = it.next();
-
-				String column = en.getKey();
-
-				Object columnValue = en.getValue();
-
-				Field field = luNode.getClass().getDeclaredField(column);
-
-				field.setAccessible(true);
-
-				Object value = field.get(luNode);
-
-				column = StringUtils.toColumnName(column);
-
-				if (value instanceof String || value == null) {
-
-					if (!StringUtils.isStringSame(String.valueOf(value), String.valueOf(columnValue))) {
-
-						if (columnValue == null) {
-							sb.append(column + "=null,");
-						} else {
-							sb.append(column + "='" + String.valueOf(columnValue) + "',");
-						}
-						isChanged = true;
-					}
-
-				} else if (value instanceof Double) {
-
-					if (Double.parseDouble(String.valueOf(value)) != Double.parseDouble(String.valueOf(columnValue))) {
-						sb.append(column + "=" + Double.parseDouble(String.valueOf(columnValue)) + ",");
-
-						isChanged = true;
-					}
-
-				} else if (value instanceof Integer) {
-
-					if (Integer.parseInt(String.valueOf(value)) != Integer.parseInt(String.valueOf(columnValue))) {
-						sb.append(column + "=" + Integer.parseInt(String.valueOf(columnValue)) + ",");
-
-						isChanged = true;
-					}
-
-				} else if (value instanceof Geometry) {
-					// 先降级转WKT
-
-					String oldWkt = GeoTranslator.jts2Wkt((Geometry) value, 0.00001, 5);
-
-					String newWkt = Geojson.geojson2Wkt(columnValue.toString());
-
-					if (!StringUtils.isStringSame(oldWkt, newWkt)) {
-						sb.append("geometry=sdo_geometry('" + String.valueOf(newWkt) + "',8307),");
-
-						isChanged = true;
-					}
-				}
-			}
-			sb.append(" where node_pid=" + luNode.getPid());
-
-			String sql = sb.toString();
-
-			sql = sql.replace(", where", " where");
-
-			if (isChanged) {
-
-				pstmt = conn.prepareStatement(sql);
-
-				pstmt.executeUpdate();
-
-			}
-
-		} catch (Exception e) {
-			logger.debug("");
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-	}
-
-	@Override
-	public void deleteRow() throws Exception {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.deleteRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-		}
-
-	}
-
+	
 	@Override
 	public void insertRow2Sql(Statement stmt) throws Exception {
 		luNode.setRowId(UuidUtils.genUuid());
@@ -222,9 +69,80 @@ public class LuNodeOperator implements IOperator {
 	}
 
 	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
+	public void updateRow2Sql(Statement stmt)
 			throws Exception {
+		StringBuilder sb = new StringBuilder("update " + luNode.tableName() + " set u_record=3,");
 
+
+			Set<Entry<String, Object>> set = luNode.changedFields().entrySet();
+
+			Iterator<Entry<String, Object>> it = set.iterator();
+
+
+			while (it.hasNext()) {
+				Entry<String, Object> en = it.next();
+
+				String column = en.getKey();
+
+				Object columnValue = en.getValue();
+
+				Field field = luNode.getClass().getDeclaredField(column);
+
+				field.setAccessible(true);
+
+				Object value = field.get(luNode);
+
+				column = StringUtils.toColumnName(column);
+
+				if (value instanceof String || value == null) {
+
+					if (!StringUtils.isStringSame(String.valueOf(value), String.valueOf(columnValue))) {
+
+						if (columnValue == null) {
+							sb.append(column + "=null,");
+						} else {
+							sb.append(column + "='" + String.valueOf(columnValue) + "',");
+						}
+						this.setChanged(true);
+					}
+
+				} else if (value instanceof Double) {
+
+					if (Double.parseDouble(String.valueOf(value)) != Double.parseDouble(String.valueOf(columnValue))) {
+						sb.append(column + "=" + Double.parseDouble(String.valueOf(columnValue)) + ",");
+
+						this.setChanged(true);
+					}
+
+				} else if (value instanceof Integer) {
+
+					if (Integer.parseInt(String.valueOf(value)) != Integer.parseInt(String.valueOf(columnValue))) {
+						sb.append(column + "=" + Integer.parseInt(String.valueOf(columnValue)) + ",");
+
+						this.setChanged(true);
+					}
+
+				} else if (value instanceof Geometry) {
+					// 先降级转WKT
+
+					String oldWkt = GeoTranslator.jts2Wkt((Geometry) value, 0.00001, 5);
+
+					String newWkt = Geojson.geojson2Wkt(columnValue.toString());
+
+					if (!StringUtils.isStringSame(oldWkt, newWkt)) {
+						sb.append("geometry=sdo_geometry('" + String.valueOf(newWkt) + "',8307),");
+
+						this.setChanged(true);
+					}
+				}
+			}
+			sb.append(" where node_pid=" + luNode.getPid());
+
+			String sql = sb.toString();
+
+			sql = sql.replace(", where", " where");
+
+			stmt.addBatch(sql);
 	}
 
 	@Override

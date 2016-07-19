@@ -17,180 +17,19 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 import com.vividsolutions.jts.geom.Geometry;
 
-public class RdSpeedlimitOperator implements IOperator {
+public class RdSpeedlimitOperator extends AbstractOperator {
 
 	private static Logger logger = Logger.getLogger(RdSpeedlimitOperator.class);
-
-	private Connection conn;
 
 	private RdSpeedlimit speedlimit;
 
 	public RdSpeedlimitOperator(Connection conn, RdSpeedlimit speedlimit) {
-		this.conn = conn;
+		super(conn);
 
 		this.speedlimit = speedlimit;
-	}
-
-
-	@Override
-	public void insertRow() throws Exception {
-
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.insertRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-			
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
-	}
-
-	@Override
-	public void updateRow() throws Exception {
-
-		StringBuilder sb = new StringBuilder("update " + speedlimit.tableName()
-				+ " set u_record=3,");
-
-		PreparedStatement pstmt = null;
-
-		try {
-
-			Set<Entry<String, Object>> set = speedlimit.changedFields().entrySet();
-
-			Iterator<Entry<String, Object>> it = set.iterator();
-
-			while (it.hasNext()) {
-				Entry<String, Object> en = it.next();
-
-				String column = en.getKey();
-
-				Object columnValue = en.getValue();
-
-				Field field = speedlimit.getClass().getDeclaredField(column);
-				
-				field.setAccessible(true);
-
-				Object value = field.get(speedlimit);
-
-				column = StringUtils.toColumnName(column);
-
-				if (value instanceof String || value == null) {
-
-					if (!StringUtils.isStringSame(String.valueOf(value),
-							String.valueOf(columnValue))) {
-						
-						if(columnValue==null){
-							sb.append(column + "=null,");
-						}
-						else{
-							sb.append(column + "='" + String.valueOf(columnValue)
-									+ "',");
-						}
-						
-					}
-
-				} else if (value instanceof Double) {
-
-					if (Double.parseDouble(String.valueOf(value)) != Double
-							.parseDouble(String.valueOf(columnValue))) {
-						sb.append(column
-								+ "="
-								+ Double.parseDouble(String
-										.valueOf(columnValue)) + ",");
-					}
-
-				} else if (value instanceof Integer) {
-
-					if (Integer.parseInt(String.valueOf(value)) != Integer
-							.parseInt(String.valueOf(columnValue))) {
-						sb.append(column + "="
-								+ Integer.parseInt(String.valueOf(columnValue))
-								+ ",");
-					}
-
-				} else if (value instanceof Geometry) {
-					// 先降级转WKT
-
-					String oldWkt = GeoTranslator.jts2Wkt((Geometry) value,
-							0.00001, 5);
-
-					String newWkt = Geojson.geojson2Wkt(columnValue.toString());
-
-					if (!StringUtils.isStringSame(oldWkt, newWkt)) {
-						sb.append("geometry=sdo_geometry('"
-								+ String.valueOf(newWkt) + "',8307),");
-					}
-				}
-			}
-			sb.append(" where pid=" + speedlimit.getPid());
-
-			String sql = sb.toString();
-
-			sql = sql.replace(", where", " where");
-
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.executeUpdate();
-
-		} catch (Exception e) {
-			
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
-	}
-
-	@Override
-	public void deleteRow() throws Exception {
-
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.deleteRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-			
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
 	}
 
 	@Override
@@ -207,57 +46,58 @@ public class RdSpeedlimitOperator implements IOperator {
 		sb.append(speedlimit.getPid());
 
 		sb.append("," + speedlimit.getLinkPid());
-		
+
 		sb.append("," + speedlimit.getDirect());
-		
+
 		sb.append("," + speedlimit.getSpeedValue());
-		
+
 		sb.append("," + speedlimit.getSpeedType());
-		
+
 		sb.append("," + speedlimit.getTollgateFlag());
-		
+
 		sb.append("," + speedlimit.getSpeedDependent());
-		
+
 		sb.append("," + speedlimit.getSpeedFlag());
-		
+
 		sb.append("," + speedlimit.getLimitSrc());
-		
+
 		if (speedlimit.getTimeDomain() == null) {
 			sb.append(",null");
 		} else {
 			sb.append(",'" + speedlimit.getTimeDomain() + "'");
 		}
-		
+
 		sb.append("," + speedlimit.getCaptureFlag());
-		
+
 		if (speedlimit.getDescript() == null) {
 			sb.append(",null");
 		} else {
 			sb.append(",'" + speedlimit.getDescript() + "'");
 		}
-		
+
 		sb.append("," + speedlimit.getMeshId());
-		
+
 		sb.append("," + speedlimit.getStatus());
-		
+
 		sb.append("," + speedlimit.getCkStatus());
-		
+
 		sb.append("," + speedlimit.getAdjaFlag());
-		
+
 		sb.append("," + speedlimit.getRecStatusIn());
-		
+
 		sb.append("," + speedlimit.getRecStatusOut());
-		
+
 		if (speedlimit.getTimeDescript() == null) {
 			sb.append(",null");
 		} else {
 			sb.append(",'" + speedlimit.getTimeDescript() + "'");
 		}
-		
-		String wkt = GeoTranslator.jts2Wkt(speedlimit.getGeometry(), 0.00001, 5);
+
+		String wkt = GeoTranslator
+				.jts2Wkt(speedlimit.getGeometry(), 0.00001, 5);
 
 		sb.append(",sdo_geometry('" + wkt + "',8307)");
-		
+
 		if (speedlimit.getLaneSpeedValue() == null) {
 			sb.append(",null");
 		} else {
@@ -271,9 +111,86 @@ public class RdSpeedlimitOperator implements IOperator {
 	}
 
 	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
-			throws Exception {
+	public void updateRow2Sql(Statement stmt) throws Exception {
+		StringBuilder sb = new StringBuilder("update " + speedlimit.tableName()
+				+ " set u_record=3,");
 
+		Set<Entry<String, Object>> set = speedlimit.changedFields().entrySet();
+
+		Iterator<Entry<String, Object>> it = set.iterator();
+
+		while (it.hasNext()) {
+			Entry<String, Object> en = it.next();
+
+			String column = en.getKey();
+
+			Object columnValue = en.getValue();
+
+			Field field = speedlimit.getClass().getDeclaredField(column);
+
+			field.setAccessible(true);
+
+			Object value = field.get(speedlimit);
+
+			column = StringUtils.toColumnName(column);
+
+			if (value instanceof String || value == null) {
+
+				if (!StringUtils.isStringSame(String.valueOf(value),
+						String.valueOf(columnValue))) {
+
+					if (columnValue == null) {
+						sb.append(column + "=null,");
+					} else {
+						sb.append(column + "='" + String.valueOf(columnValue)
+								+ "',");
+					}
+					this.setChanged(true);
+
+				}
+
+			} else if (value instanceof Double) {
+
+				if (Double.parseDouble(String.valueOf(value)) != Double
+						.parseDouble(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Double.parseDouble(String.valueOf(columnValue))
+							+ ",");
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof Integer) {
+
+				if (Integer.parseInt(String.valueOf(value)) != Integer
+						.parseInt(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Integer.parseInt(String.valueOf(columnValue))
+							+ ",");
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof Geometry) {
+				// 先降级转WKT
+
+				String oldWkt = GeoTranslator.jts2Wkt((Geometry) value,
+						0.00001, 5);
+
+				String newWkt = Geojson.geojson2Wkt(columnValue.toString());
+
+				if (!StringUtils.isStringSame(oldWkt, newWkt)) {
+					sb.append("geometry=sdo_geometry('"
+							+ String.valueOf(newWkt) + "',8307),");
+					this.setChanged(true);
+				}
+			}
+		}
+		sb.append(" where pid=" + speedlimit.getPid());
+
+		String sql = sb.toString();
+
+		sql = sql.replace(", where", " where");
+
+		stmt.addBatch(sql);
 	}
 
 	@Override

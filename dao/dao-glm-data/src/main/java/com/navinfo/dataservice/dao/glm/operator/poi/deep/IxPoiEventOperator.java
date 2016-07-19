@@ -31,6 +31,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiIntroduction;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiTourroute;
+import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchOperator;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -40,173 +41,15 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author zhaokk
  * 
  */
-public class IxPoiEventOperator implements IOperator {
+public class IxPoiEventOperator extends AbstractOperator {
 
 	private static Logger logger = Logger.getLogger(IxPoiEventOperator.class);
 
-	private Connection conn;
 	private IxPoiEvent ixPoiEvent;
 
 	public IxPoiEventOperator(Connection conn, IxPoiEvent ixPoiEvent) {
-		this.conn = conn;
+		super(conn);
 		this.ixPoiEvent = ixPoiEvent;
-	}
-
-	@Override
-	public void insertRow() throws Exception {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.insertRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-
-	}
-
-	@Override
-	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoiEvent.tableName()
-				+ " set u_record=3,u_date='" + StringUtils.getCurrentTime()
-				+ "',");
-
-		PreparedStatement pstmt = null;
-
-		try {
-
-			Set<Entry<String, Object>> set = ixPoiEvent.changedFields()
-					.entrySet();
-
-			Iterator<Entry<String, Object>> it = set.iterator();
-
-			boolean isChanged = false;
-
-			while (it.hasNext()) {
-				Entry<String, Object> en = it.next();
-
-				String column = en.getKey();
-
-				Object columnValue = en.getValue();
-
-				Field field = ixPoiEvent.getClass().getDeclaredField(column);
-
-				field.setAccessible(true);
-
-				Object value = field.get(ixPoiEvent);
-
-				column = StringUtils.toColumnName(column);
-
-				if (value instanceof String || value == null) {
-
-					if (!StringUtils.isStringSame(String.valueOf(value),
-							String.valueOf(columnValue))) {
-
-						if (columnValue == null) {
-							sb.append(column + "=null,");
-						} else {
-							sb.append(column + "='"
-									+ String.valueOf(columnValue) + "',");
-						}
-						isChanged = true;
-					}
-
-				} else if (value instanceof Double) {
-
-					if (Double.parseDouble(String.valueOf(value)) != Double
-							.parseDouble(String.valueOf(columnValue))) {
-						sb.append(column
-								+ "="
-								+ Double.parseDouble(String
-										.valueOf(columnValue)) + ",");
-
-						isChanged = true;
-					}
-
-				} else if (value instanceof Integer) {
-
-					if (Integer.parseInt(String.valueOf(value)) != Integer
-							.parseInt(String.valueOf(columnValue))) {
-						sb.append(column + "="
-								+ Integer.parseInt(String.valueOf(columnValue))
-								+ ",");
-
-						isChanged = true;
-					}
-
-				}
-			}
-			sb.append(" where event_id    =" + ixPoiEvent.getPid());
-
-			String sql = sb.toString();
-
-			sql = sql.replace(", where", " where");
-
-			if (isChanged) {
-
-				pstmt = conn.prepareStatement(sql);
-
-				pstmt.executeUpdate();
-
-			}
-
-		} catch (Exception e) {
-			logger.debug("");
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-
-	}
-
-	@Override
-	public void deleteRow() throws Exception {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.deleteRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-		}
-
 	}
 
 	@Override
@@ -216,105 +59,170 @@ public class IxPoiEventOperator implements IOperator {
 		sb.append(ixPoiEvent.tableName());
 		sb.append("(event_id, event_name, event_name_eng, event_kind, event_kind_eng, event_desc, event_desc_eng, start_date, end_date, detail_time, detail_time_eng, city, poi_pid, photo_name, reserved,memo, u_date,u_record,row_id) values (");
 		sb.append(ixPoiEvent.getPid());
-		if(StringUtils.isNotEmpty(ixPoiEvent.getEventName())){
+		if (StringUtils.isNotEmpty(ixPoiEvent.getEventName())) {
 			sb.append(",'" + ixPoiEvent.getEventName() + "'");
-		}else{
+		} else {
 			sb.append(", null ");
 		}
-		if(StringUtils.isNotEmpty(ixPoiEvent.getEventNameEng())){
+		if (StringUtils.isNotEmpty(ixPoiEvent.getEventNameEng())) {
 			sb.append(",'" + ixPoiEvent.getEventNameEng() + "'");
-		}else{
+		} else {
 			sb.append(", null ");
 		}
-		if(StringUtils.isNotEmpty(ixPoiEvent.getEventKind())){
+		if (StringUtils.isNotEmpty(ixPoiEvent.getEventKind())) {
 			sb.append(",'" + ixPoiEvent.getEventKind() + "'");
-		}else{
+		} else {
 			sb.append(", null ");
 		}
-		if(StringUtils.isNotEmpty(ixPoiEvent.getEventKindEng())){
+		if (StringUtils.isNotEmpty(ixPoiEvent.getEventKindEng())) {
 			sb.append(",'" + ixPoiEvent.getEventKindEng() + "'");
-		}else{
+		} else {
 			sb.append(", null ");
 		}
-		
-		if(StringUtils.isNotEmpty(ixPoiEvent.getEventDesc())){
+
+		if (StringUtils.isNotEmpty(ixPoiEvent.getEventDesc())) {
 			sb.append(",'" + ixPoiEvent.getEventDesc() + "'");
-		}else{
+		} else {
 			sb.append(", null ");
 		}
-		if(StringUtils.isNotEmpty(ixPoiEvent.getEventDescEng())){
+		if (StringUtils.isNotEmpty(ixPoiEvent.getEventDescEng())) {
 			sb.append(",'" + ixPoiEvent.getEventDescEng() + "'");
-		}else{
+		} else {
 			sb.append(", null ");
 		}
-		
-		if(StringUtils.isNotEmpty(ixPoiEvent.getStartDate())){
+
+		if (StringUtils.isNotEmpty(ixPoiEvent.getStartDate())) {
 			sb.append(",'" + ixPoiEvent.getStartDate() + "'");
-		}else{
+		} else {
 			sb.append(", null ");
 		}
-		
-		if(StringUtils.isNotEmpty(ixPoiEvent.getEndDate())){
+
+		if (StringUtils.isNotEmpty(ixPoiEvent.getEndDate())) {
 			sb.append(",'" + ixPoiEvent.getEndDate() + "'");
-		}else{
+		} else {
 			sb.append(", null ");
 		}
-		if(StringUtils.isNotEmpty(ixPoiEvent.getDetailTime())){
+		if (StringUtils.isNotEmpty(ixPoiEvent.getDetailTime())) {
 			sb.append(",'" + ixPoiEvent.getDetailTime() + "'");
-		}else{
+		} else {
 			sb.append(", null ");
 		}
-		if(StringUtils.isNotEmpty(ixPoiEvent.getDetailTimeEng())){
+		if (StringUtils.isNotEmpty(ixPoiEvent.getDetailTimeEng())) {
 			sb.append(",'" + ixPoiEvent.getDetailTimeEng() + "'");
-		}else{
+		} else {
 			sb.append(", null ");
 		}
-		
-		if(StringUtils.isNotEmpty(ixPoiEvent.getCity())){
+
+		if (StringUtils.isNotEmpty(ixPoiEvent.getCity())) {
 			sb.append(",'" + ixPoiEvent.getCity() + "'");
-		}else{
+		} else {
 			sb.append(", null ");
 		}
-		
-		if(StringUtils.isNotEmpty(ixPoiEvent.getPoiPid())){
+
+		if (StringUtils.isNotEmpty(ixPoiEvent.getPoiPid())) {
 			sb.append(",'" + ixPoiEvent.getPoiPid() + "'");
-		}else{
+		} else {
 			sb.append(", null ");
 		}
-		
-		if(StringUtils.isNotEmpty(ixPoiEvent.getPhotoName())){
+
+		if (StringUtils.isNotEmpty(ixPoiEvent.getPhotoName())) {
 			sb.append(",'" + ixPoiEvent.getPhotoName() + "'");
-		}else{
+		} else {
 			sb.append(", null ");
 		}
-		
-		if(StringUtils.isNotEmpty(ixPoiEvent.getReserved())){
+
+		if (StringUtils.isNotEmpty(ixPoiEvent.getReserved())) {
 			sb.append(",'" + ixPoiEvent.getReserved() + "'");
-		}else{
+		} else {
 			sb.append(", null ");
 		}
-		
-		if(StringUtils.isNotEmpty(ixPoiEvent.getMemo())){
+
+		if (StringUtils.isNotEmpty(ixPoiEvent.getMemo())) {
 			sb.append(",'" + ixPoiEvent.getMemo() + "'");
-		}else{
+		} else {
 			sb.append(", null ");
 		}
-		sb.append(",'" + StringUtils.getCurrentTime()+"'");
+		sb.append(",'" + StringUtils.getCurrentTime() + "'");
 		sb.append(",1,'" + ixPoiEvent.rowId() + "')");
 		stmt.addBatch(sb.toString());
 	}
 
 	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
-			throws Exception {
+	public void updateRow2Sql(Statement stmt) throws Exception {
+		StringBuilder sb = new StringBuilder("update " + ixPoiEvent.tableName()
+				+ " set u_record=3,u_date='" + StringUtils.getCurrentTime()
+				+ "',");
 
+		Set<Entry<String, Object>> set = ixPoiEvent.changedFields().entrySet();
+
+		Iterator<Entry<String, Object>> it = set.iterator();
+
+		while (it.hasNext()) {
+			Entry<String, Object> en = it.next();
+
+			String column = en.getKey();
+
+			Object columnValue = en.getValue();
+
+			Field field = ixPoiEvent.getClass().getDeclaredField(column);
+
+			field.setAccessible(true);
+
+			Object value = field.get(ixPoiEvent);
+
+			column = StringUtils.toColumnName(column);
+
+			if (value instanceof String || value == null) {
+
+				if (!StringUtils.isStringSame(String.valueOf(value),
+						String.valueOf(columnValue))) {
+
+					if (columnValue == null) {
+						sb.append(column + "=null,");
+					} else {
+						sb.append(column + "='" + String.valueOf(columnValue)
+								+ "',");
+					}
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof Double) {
+
+				if (Double.parseDouble(String.valueOf(value)) != Double
+						.parseDouble(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Double.parseDouble(String.valueOf(columnValue))
+							+ ",");
+
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof Integer) {
+
+				if (Integer.parseInt(String.valueOf(value)) != Integer
+						.parseInt(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Integer.parseInt(String.valueOf(columnValue))
+							+ ",");
+
+					this.setChanged(true);
+				}
+
+			}
+		}
+		sb.append(" where event_id    =" + ixPoiEvent.getPid());
+
+		String sql = sb.toString();
+
+		sql = sql.replace(", where", " where");
+		stmt.addBatch(sql);
 	}
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiEvent.tableName()
-				+ " set u_record=2 ,u_date='"+StringUtils.getCurrentTime()+"' where   event_id      ="
-				+ ixPoiEvent.getPid();
+				+ " set u_record=2 ,u_date='" + StringUtils.getCurrentTime()
+				+ "' where   event_id      =" + ixPoiEvent.getPid();
 		stmt.addBatch(sql);
 	}
 

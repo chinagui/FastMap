@@ -20,188 +20,21 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLinkKind;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLinkMesh;
+import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 import com.vividsolutions.jts.geom.Geometry;
 
-public class LuLinkOperator implements IOperator {
+public class LuLinkOperator extends AbstractOperator {
 
 	private static Logger logger = Logger.getLogger(LuLinkOperator.class);
-
-	private Connection conn;
 
 	private LuLink luLink;
 
 	public LuLinkOperator(Connection conn, LuLink luLink) {
-		this.conn = conn;
+		super(conn);
 
 		this.luLink = luLink;
 	}
 
-	@Override
-	public void insertRow() throws Exception {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.insertRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-	}
-
-	@Override
-	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + luLink.tableName()
-				+ " set u_record=3,");
-
-		PreparedStatement pstmt = null;
-
-		try {
-
-			Set<Entry<String, Object>> set = luLink.changedFields().entrySet();
-
-			Iterator<Entry<String, Object>> it = set.iterator();
-
-			boolean isChanged = false;
-
-			while (it.hasNext()) {
-				Entry<String, Object> en = it.next();
-
-				String column = en.getKey();
-
-				Object columnValue = en.getValue();
-
-				Field field = luLink.getClass().getDeclaredField(column);
-
-				field.setAccessible(true);
-
-				Object value = field.get(luLink);
-
-				column = StringUtils.toColumnName(column);
-
-				if (value instanceof String || value == null) {
-
-					if (!StringUtils.isStringSame(String.valueOf(value),
-							String.valueOf(columnValue))) {
-
-						if (columnValue == null) {
-							sb.append(column + "=null,");
-						} else {
-							sb.append(column + "='"
-									+ String.valueOf(columnValue) + "',");
-						}
-						isChanged = true;
-					}
-
-				} else if (value instanceof Double) {
-
-					if (Double.parseDouble(String.valueOf(value)) != Double
-							.parseDouble(String.valueOf(columnValue))) {
-						sb.append(column
-								+ "="
-								+ Double.parseDouble(String
-										.valueOf(columnValue)) + ",");
-
-						isChanged = true;
-					}
-
-				} else if (value instanceof Integer) {
-
-					if (Integer.parseInt(String.valueOf(value)) != Integer
-							.parseInt(String.valueOf(columnValue))) {
-						sb.append(column + "="
-								+ Integer.parseInt(String.valueOf(columnValue))
-								+ ",");
-
-						isChanged = true;
-					}
-
-				} else if (value instanceof Geometry) {
-					// 先降级转WKT
-
-					String oldWkt = GeoTranslator.jts2Wkt((Geometry) value,
-							0.00001, 5);
-
-					String newWkt = Geojson.geojson2Wkt(columnValue.toString());
-
-					if (!StringUtils.isStringSame(oldWkt, newWkt)) {
-						sb.append("geometry=sdo_geometry('"
-								+ String.valueOf(newWkt) + "',8307),");
-
-						isChanged = true;
-					}
-				}
-			}
-			sb.append(" where link_pid=" + luLink.getPid());
-
-			String sql = sb.toString();
-
-			sql = sql.replace(", where", " where");
-
-			if (isChanged) {
-
-				pstmt = conn.prepareStatement(sql);
-
-				pstmt.executeUpdate();
-
-			}
-
-		} catch (Exception e) {
-			logger.debug("");
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-	}
-
-	@Override
-	public void deleteRow() throws Exception {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.deleteRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-		}
-
-	}
 
 	@Override
 	public void insertRow2Sql(Statement stmt) throws Exception {
@@ -236,7 +69,7 @@ public class LuLinkOperator implements IOperator {
 
 			ap.insertRow2Sql(stmt);
 		}
-		
+
 		for (IRow r : luLink.getLinkKinds()) {
 			LuLinkKindOperator ap = new LuLinkKindOperator(conn, (LuLinkKind) r);
 
@@ -245,9 +78,90 @@ public class LuLinkOperator implements IOperator {
 	}
 
 	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
-			throws Exception {
+	public void updateRow2Sql(Statement stmt) throws Exception {
+		StringBuilder sb = new StringBuilder("update " + luLink.tableName()
+				+ " set u_record=3,");
 
+			Set<Entry<String, Object>> set = luLink.changedFields().entrySet();
+
+			Iterator<Entry<String, Object>> it = set.iterator();
+
+
+
+			while (it.hasNext()) {
+				Entry<String, Object> en = it.next();
+
+				String column = en.getKey();
+
+				Object columnValue = en.getValue();
+
+				Field field = luLink.getClass().getDeclaredField(column);
+
+				field.setAccessible(true);
+
+				Object value = field.get(luLink);
+
+				column = StringUtils.toColumnName(column);
+
+				if (value instanceof String || value == null) {
+
+					if (!StringUtils.isStringSame(String.valueOf(value),
+							String.valueOf(columnValue))) {
+
+						if (columnValue == null) {
+							sb.append(column + "=null,");
+						} else {
+							sb.append(column + "='"
+									+ String.valueOf(columnValue) + "',");
+						}
+						this.setChanged(true);
+					}
+
+				} else if (value instanceof Double) {
+
+					if (Double.parseDouble(String.valueOf(value)) != Double
+							.parseDouble(String.valueOf(columnValue))) {
+						sb.append(column
+								+ "="
+								+ Double.parseDouble(String
+										.valueOf(columnValue)) + ",");
+
+						this.setChanged(true);
+					}
+
+				} else if (value instanceof Integer) {
+
+					if (Integer.parseInt(String.valueOf(value)) != Integer
+							.parseInt(String.valueOf(columnValue))) {
+						sb.append(column + "="
+								+ Integer.parseInt(String.valueOf(columnValue))
+								+ ",");
+
+						this.setChanged(true);
+					}
+
+				} else if (value instanceof Geometry) {
+					// 先降级转WKT
+
+					String oldWkt = GeoTranslator.jts2Wkt((Geometry) value,
+							0.00001, 5);
+
+					String newWkt = Geojson.geojson2Wkt(columnValue.toString());
+
+					if (!StringUtils.isStringSame(oldWkt, newWkt)) {
+						sb.append("geometry=sdo_geometry('"
+								+ String.valueOf(newWkt) + "',8307),");
+
+						this.setChanged(true);
+					}
+				}
+			}
+			sb.append(" where link_pid=" + luLink.getPid());
+
+			String sql = sb.toString();
+
+			sql = sql.replace(", where", " where");
+			stmt.addBatch(sql);
 	}
 
 	@Override
@@ -262,7 +176,7 @@ public class LuLinkOperator implements IOperator {
 
 			ap.deleteRow2Sql(stmt);
 		}
-		
+
 		for (IRow r : luLink.getLinkKinds()) {
 			LuLinkKindOperator ap = new LuLinkKindOperator(conn, (LuLinkKind) r);
 

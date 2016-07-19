@@ -2,10 +2,8 @@ package com.navinfo.dataservice.dao.glm.operator.ad.geo;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -13,65 +11,40 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
-import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminPart;
+import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.gsc.RdGscLinkOperator;
 
-public class AdAdminPartOperator implements IOperator {
+public class AdAdminPartOperator extends AbstractOperator {
 	private static Logger logger = Logger.getLogger(RdGscLinkOperator.class);
-
-	private Connection conn;
 	private AdAdminPart adminPart;
 	public AdAdminPartOperator(Connection conn, AdAdminPart adminPart) {
-		this.conn = conn;
+		super(conn);
 		this.adminPart = adminPart;
 	}
+
 	@Override
-	public void insertRow() throws Exception {
+	public void insertRow2Sql(Statement stmt) throws Exception {
 		adminPart.setRowId(UuidUtils.genUuid());
 
-		String sql = "insert into " + adminPart.tableName()
-				+ " (group_id, region_id_down,u_record,row_id) values "
-				+ "(?,?,?,?)";
+		StringBuilder sb = new StringBuilder("insert into ");
 
-		PreparedStatement pstmt = null;
+		sb.append(adminPart.tableName());
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+		sb.append("(group_id, region_id_down,u_record,row_id) values (");
 
-			pstmt.setInt(1, adminPart.getGroupId());
-
-			pstmt.setInt(2, adminPart.getRegionIdDown());
-			pstmt.setInt(3, 1);
-			pstmt.setString(4, adminPart.rowId());
-			pstmt.executeUpdate();
-
-		} catch (Exception e) {
-			
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
-		
-
+		sb.append(adminPart.getGroupId());
+		sb.append("," + adminPart.getRegionIdDown());
+		sb.append(",1,'" + adminPart.rowId() + "')");
+		stmt.addBatch(sb.toString());
 	}
 
 	@Override
-	public void updateRow() throws Exception {
+	public void updateRow2Sql(Statement stmt)
+			throws Exception {
 		StringBuilder sb = new StringBuilder("update " + adminPart.tableName()
 				+ " set u_record=3,");
 
-		PreparedStatement pstmt = null;
-
-		try {
 
 			Set<Entry<String, Object>> set = adminPart.changedFields().entrySet();
 
@@ -134,107 +107,9 @@ public class AdAdminPartOperator implements IOperator {
 
 			sql = sql.replace(", where", " where");
 
-			pstmt = conn.prepareStatement(sql);
+			stmt.addBatch(sql);
 
-			pstmt.executeUpdate();
-
-		} catch (Exception e) {
-			
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
 		
-
-	}
-
-	@Override
-	public void deleteRow() throws Exception {
-		String sql = "update " + adminPart.tableName()
-				+ " set u_record=? where row_id=hextoraw(?)";
-
-		PreparedStatement pstmt = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setInt(1, 2);
-
-			pstmt.setString(2, adminPart.rowId());
-
-			pstmt.executeUpdate();
-
-		} catch (Exception e) {
-			
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
-
-	}
-
-	@Override
-	public void insertRow2Sql(Statement stmt) throws Exception {
-		adminPart.setRowId(UuidUtils.genUuid());
-
-		StringBuilder sb = new StringBuilder("insert into ");
-
-		sb.append(adminPart.tableName());
-
-		sb.append("(group_id, region_id_down,u_record,row_id) values (");
-
-		sb.append(adminPart.getGroupId());
-		sb.append("," + adminPart.getRegionIdDown());
-		sb.append(",1,'" + adminPart.rowId() + "')");
-		stmt.addBatch(sb.toString());
-	}
-
-	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
-			throws Exception {
-		StringBuilder sb = new StringBuilder("update " + adminPart.tableName()
-				+ " set u_record=3,");
-
-		for (int i = 0; i < fieldNames.size(); i++) {
-
-			if (i > 0) {
-				sb.append(",");
-			}
-
-			String column = StringUtils.toColumnName(fieldNames.get(i));
-
-			sb.append(column);
-
-			sb.append("=");
-
-			Field field = adminPart.getClass().getDeclaredField(fieldNames.get(i));
-
-			Object value = field.get(adminPart);
-
-			sb.append(value);
-
-		}
-
-		sb.append(" where row_id=hextoraw('"+adminPart.getRowId()+"')");
-
-		stmt.addBatch(sb.toString());
-
 	}
 
 	@Override

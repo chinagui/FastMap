@@ -56,14 +56,15 @@ public abstract class AbstractOperator implements IOperator {
 	@Override
 	public void updateRow() throws Exception {
 
-		if (isChanged) {
+		
 			Statement stmt = null;
 			try {
 				stmt = conn.createStatement();
 
 				this.updateRow2Sql(stmt);
-
-				stmt.executeBatch();
+				if (isChanged) {
+					stmt.executeBatch();
+				}
 
 			} catch (Exception e) {
 
@@ -79,7 +80,7 @@ public abstract class AbstractOperator implements IOperator {
 				}
 			}
 
-		}
+		
 
 	}
 

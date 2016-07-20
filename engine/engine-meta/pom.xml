@@ -23,7 +23,7 @@
 				         <encoding>UTF-8</encoding>
 				         <compilerArguments>
 				                  <verbose />
-				                  <bootclasspath>${java.home}\lib\rt.jar</bootclasspath>
+				                  <bootclasspath>${java.home}/lib/rt.jar</bootclasspath>
 				           </compilerArguments>
 				     </configuration>
 				</plugin>

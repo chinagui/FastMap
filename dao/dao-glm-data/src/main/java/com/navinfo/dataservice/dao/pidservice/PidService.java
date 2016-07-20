@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.dao.pidservice;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 
 import org.apache.commons.dbutils.DbUtils;
 
@@ -143,7 +142,15 @@ public class PidService {
 		return applyPid(PidSequenceName.ckExceptionIdName);
 
 	}
+	
+	/**
+	 * 申请rd_trafficsignal
+	 */
+	public synchronized int applyRdTrafficsignalPid() throws Exception {
+		return applyPid(PidSequenceName.rdTrafficsignal);
 
+	}
+	
 	/**
 	 * 申请ad_admin_pid
 	 */

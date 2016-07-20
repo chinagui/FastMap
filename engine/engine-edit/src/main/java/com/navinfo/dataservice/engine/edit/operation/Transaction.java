@@ -376,7 +376,22 @@ public class Transaction {
 			default:
 				break;
 			}
+		case RDTRAFFICSIGNAL:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.create.Command(json,
+						requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.delete.Command(json,
+						requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Command(json,
+						requester);
+			default:
+				break;
+			}
 		}
+
 		throw new Exception("不支持的操作类型");
 	}
 
@@ -656,6 +671,17 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceyepair.create.Process(command);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceyepair.delete.Process(command);
+			default:
+				break;
+			}
+		case RDTRAFFICSIGNAL:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.create.Process(command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.delete.Process(command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Process(command);
 			default:
 				break;
 			}

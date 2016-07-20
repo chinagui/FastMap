@@ -10,9 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONArray;
-import oracle.sql.STRUCT;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -34,6 +31,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkWalkstair;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import oracle.sql.STRUCT;
 
 public class RdLinkSelector implements ISelector {
 
@@ -1936,15 +1936,157 @@ public class RdLinkSelector implements ISelector {
 		
 	}
 	
-//	public static void main(String[] args) throws Exception {
-//		Connection conn = DBConnector.getInstance().getConnectionById(11);
-//		
-//		RdLinkSelector se = new RdLinkSelector(conn);
-//		List<Integer> s = new ArrayList<Integer>();
-//		
-//		s.add(13474060);
-//		s.add(13474059);
-//		JSONArray a = se.loadGeomtryByLinkPids(s);
-//		System.out.println(a);
-//	}
+	/**
+	 * 查询nodePid作为link通行方向终点的link(form类型除外)
+	 * @param nodePid
+	 * @param isLock
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<RdLink> loadInLinkByNodePid(int nodePid,int form,boolean isLock) throws Exception 
+	{
+		List<RdLink> list = new ArrayList<RdLink>();
+		
+		String sql = "SELECT a.* FROM rd_link a left join RD_LINK_FORM b on a.LINK_PID = b.link_pid WHERE b.FORM_OF_WAY != :5 and((a.e_node_pid = :1 AND a.direct = 3) OR (a.s_node_pid = :2 AND a.direct = 2) OR (a.direct = 1 AND (a.s_node_pid =:3 OR a.e_node_pid = :4)))";
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+			
+			pstmt.setInt(1, nodePid);
+			pstmt.setInt(2, nodePid);
+			pstmt.setInt(3, nodePid);
+			pstmt.setInt(4, nodePid);
+			pstmt.setInt(5, form);
+			
+			resultSet = pstmt.executeQuery();
+			
+			while(resultSet.next()) {
+				RdLink rdLink = new RdLink();
+				rdLink.setPid(resultSet.getInt("link_pid"));
+
+				rdLink.setDirect(resultSet.getInt("direct"));
+
+				rdLink.seteNodePid(resultSet.getInt("e_node_pid"));
+
+				rdLink.setFunctionClass(resultSet.getInt("function_class"));
+
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
+
+				rdLink.setGeometry(geometry);
+
+				rdLink.setKind(resultSet.getInt("kind"));
+
+				rdLink.setLaneLeft(resultSet.getInt("lane_left"));
+
+				rdLink.setLaneNum(resultSet.getInt("lane_num"));
+
+				rdLink.setLaneRight(resultSet.getInt("lane_right"));
+
+				rdLink.setMultiDigitized(resultSet.getInt("multi_digitized"));
+
+				rdLink.setsNodePid(resultSet.getInt("s_node_pid"));
+
+				rdLink.setRowId(resultSet.getString("row_id"));
+
+				rdLink.setAppInfo(resultSet.getInt("app_info"));
+
+				rdLink.setTollInfo(resultSet.getInt("toll_info"));
+
+				rdLink.setRouteAdopt(resultSet.getInt("route_adopt"));
+
+				rdLink.setDevelopState(resultSet.getInt("develop_state"));
+
+				rdLink.setImiCode(resultSet.getInt("imi_code"));
+
+				rdLink.setSpecialTraffic(resultSet.getInt("special_traffic"));
+
+				rdLink.setUrban(resultSet.getInt("urban"));
+
+				rdLink.setPaveStatus(resultSet.getInt("pave_status"));
+
+				rdLink.setLaneWidthLeft(resultSet.getInt("lane_width_left"));
+
+				rdLink.setLaneWidthRight(resultSet.getInt("lane_width_right"));
+
+				rdLink.setLaneClass(resultSet.getInt("lane_class"));
+
+				rdLink.setWidth(resultSet.getInt("width"));
+
+				rdLink.setIsViaduct(resultSet.getInt("is_viaduct"));
+
+				rdLink.setLeftRegionId(resultSet.getInt("left_region_id"));
+
+				rdLink.setRightRegionId(resultSet.getInt("right_region_id"));
+
+				rdLink.setLength(resultSet.getDouble("length"));
+
+				rdLink.setMeshId(resultSet.getInt("mesh_id"));
+
+				rdLink.setOnewayMark(resultSet.getInt("oneway_mark"));
+
+				rdLink.setStreetLight(resultSet.getInt("street_light"));
+
+				rdLink.setParkingLot(resultSet.getInt("parking_lot"));
+
+				rdLink.setAdasFlag(resultSet.getInt("adas_flag"));
+
+				rdLink.setSidewalkFlag(resultSet.getInt("sidewalk_flag"));
+
+				rdLink.setWalkstairFlag(resultSet.getInt("walkstair_flag"));
+
+				rdLink.setDiciType(resultSet.getInt("dici_type"));
+
+				rdLink.setWalkFlag(resultSet.getInt("walk_flag"));
+
+				rdLink.setDifGroupid(resultSet.getString("dif_groupid"));
+
+				rdLink.setSrcFlag(resultSet.getInt("src_flag"));
+
+				rdLink.setDigitalLevel(resultSet.getInt("digital_level"));
+
+				rdLink.setEditFlag(resultSet.getInt("edit_flag"));
+
+				rdLink.setTruckFlag(resultSet.getInt("truck_flag"));
+
+				rdLink.setOriginLinkPid(resultSet.getInt("origin_link_pid"));
+
+				rdLink.setCenterDivider(resultSet.getInt("center_divider"));
+
+				rdLink.setParkingFlag(resultSet.getInt("parking_flag"));
+
+				rdLink.setMemo(resultSet.getString("memo"));
+				list.add(rdLink);
+			}
+		}catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+		
+		return list;
+	}
+	
 }

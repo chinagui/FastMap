@@ -10,7 +10,6 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.check.CheckCommand;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 
 import net.sf.json.JSONObject;
 

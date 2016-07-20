@@ -4,7 +4,6 @@ import java.sql.Connection;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 
 import net.sf.json.JSONObject;
 

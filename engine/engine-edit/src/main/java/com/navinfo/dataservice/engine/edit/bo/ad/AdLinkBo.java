@@ -7,33 +7,30 @@ import java.util.List;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
-import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.vividsolutions.jts.geom.Point;
 
-/** 
+/**
  * @ClassName: BoAdLink
  * @author xiaoxiaowen4127
  * @date 2016年7月15日
  * @Description: BoAdLink.java
  */
-public class AdLinkBo {
+public class AdLinkBo extends LinkBo{
 	private AdLink adLink;
 	private List<AdLinkMesh> meshes;
 	private AdNodeBo sNode;
 	private AdNodeBo eNode;
-	private Connection conn;
 	
-	public AdLinkBo(Connection conn, int linkPid){
-		this.conn=conn;
-		
-		AdLinkSelector selector = new AdLinkSelector(conn);
-		
-		this.adLink = selector.loadById(linkPid, isLock);
+	public AdLinkBo(Connection conn, int linkPid, boolean isLock) {
+		this.conn = conn;
+		this.isLock = isLock;
+		this.adLink = PoFactory.getInstance().getByPK(conn, AdLink.class, linkPid, isLock);
 	}
-	
-	public void breakoff(Result result, Point point){
-	}
-	public void breakoff(Result result, AdNodeBo node){
+
+
+	@Override
+	public BreakResult breakoff(Point point) {
+		return super.breakoff(point);
 	}
 
 	public AdLink getAdLink() {
@@ -50,11 +47,11 @@ public class AdLinkBo {
 				this.meshes=new ArrayList<AdLinkMesh>();
 			}
 			else{
-				
+				this.meshes=PoFactory.getInstance().getByFK(conn, AdLinkMesh.class, "linkPid", this.adLink.getPid(), isLock);
 			}
 		}
 		
-		return this.meshes
+		return this.meshes;
 	}
 
 	public void setMeshes(List<AdLinkMesh> meshes) {
@@ -62,6 +59,9 @@ public class AdLinkBo {
 	}
 
 	public AdNodeBo getsNode() {
+		if(null==sNode){
+			sNode = new AdNodeBo(conn, this.adLink.getsNodePid(), isLock);
+		}
 		return sNode;
 	}
 
@@ -70,11 +70,14 @@ public class AdLinkBo {
 	}
 
 	public AdNodeBo geteNode() {
+		if(null==eNode){
+			eNode = new AdNodeBo(conn, this.adLink.geteNodePid(), isLock);
+		}
 		return eNode;
 	}
 
 	public void seteNode(AdNodeBo eNode) {
 		this.eNode = eNode;
 	}
-	
+
 }

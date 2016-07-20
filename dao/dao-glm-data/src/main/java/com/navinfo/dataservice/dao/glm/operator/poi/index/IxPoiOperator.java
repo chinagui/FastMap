@@ -875,9 +875,6 @@ public class IxPoiOperator extends AbstractOperator {
 				if (pstmt != null) {
 					pstmt.close();
 				}
-				if (conn != null) {
-					conn.close();
-				}
 			} catch (Exception e) {
 
 			}

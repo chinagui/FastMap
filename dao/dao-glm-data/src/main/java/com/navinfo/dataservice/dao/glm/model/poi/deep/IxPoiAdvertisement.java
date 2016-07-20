@@ -29,15 +29,10 @@ public class IxPoiAdvertisement implements IObj {
 	private int  priority = 1;//广告点优先级
 	private String  startTime ;//广告生效时间
 	private String  endTime;//广告到期时间
-	private int mesh;
 	private String rowId;
 	// 更新时间
 	private String uDate;
 
-	public int getMesh() {
-		return mesh;
-	}
-	
 	public String getuDate() {
 		return uDate;
 	}
@@ -266,14 +261,11 @@ public class IxPoiAdvertisement implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-		
 	}
 
 	@Override

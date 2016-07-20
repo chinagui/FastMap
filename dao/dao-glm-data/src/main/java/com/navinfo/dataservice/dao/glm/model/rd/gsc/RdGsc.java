@@ -25,8 +25,6 @@ public class RdGsc implements IObj  {
 	
 	private int pid;
 	
-	private int meshId;
-	
 	private Geometry geometry;
 	
 	private  int processFlag = 0 ;
@@ -201,13 +199,11 @@ public class RdGsc implements IObj  {
 	}
 	@Override
 	public int mesh() {
-		return this.meshId;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.meshId = mesh;
-		
 	}
 
 	@Override

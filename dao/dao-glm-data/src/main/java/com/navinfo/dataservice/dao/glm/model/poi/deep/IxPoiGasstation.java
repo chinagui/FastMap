@@ -34,14 +34,9 @@ public class IxPoiGasstation implements IObj {
 	private String memo;// 备注信息
 	private String openHour;//营业时间  
 	private String photoName;//全景照片
-	private int mesh;
 	private String rowId;
 	private int uRecord=0;
 	private String uDate;
-
-	public int getMesh() {
-		return mesh;
-	}
 
 	public int getPoiPid() {
 		return poiPid;
@@ -319,14 +314,11 @@ public class IxPoiGasstation implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-		
 	}
 
 	@Override

@@ -27,8 +27,6 @@ public class IxPoiParent implements IObj {
 	
 	private String rowId;
 	
-	private int mesh;
-	
 	private int pid;
 	
 	private int parentPoiPid;//父POI号码
@@ -240,12 +238,11 @@ public class IxPoiParent implements IObj {
 
 	@Override
 	public int mesh() {
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
 	}
 
 	@Override

@@ -159,7 +159,7 @@ public class AdLinkSelector implements ISelector {
 				
 				//loadRowsByParentId已经查询了mesh,是否可以不做设置
 				for (IRow row : forms) {
-					row.setMesh(adLink.getMesh());
+					row.setMesh(adLink.mesh());
 				}
 
 				adLink.setMeshes(forms);

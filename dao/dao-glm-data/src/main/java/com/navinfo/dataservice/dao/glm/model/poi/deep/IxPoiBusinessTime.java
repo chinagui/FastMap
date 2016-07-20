@@ -36,7 +36,6 @@ public class IxPoiBusinessTime implements IRow {
 	private String timeSrt;// 营业开始日期
 	private String timeDue;// 营业时长
 	private String reserved;// 预留字段
-	private int mesh;
 	// 更新时间
 	private String uDate;
 
@@ -142,10 +141,6 @@ public class IxPoiBusinessTime implements IRow {
 
 	public void setReserved(String reserved) {
 		this.reserved = reserved;
-	}
-
-	public int getMesh() {
-		return mesh;
 	}
 
 	private String rowId;
@@ -330,14 +325,11 @@ public class IxPoiBusinessTime implements IRow {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-
 	}
 
 }

@@ -146,10 +146,10 @@ public class Operation implements IOperation {
 				Geometry geometry = GeoTranslator.transform(luLink.getGeometry(), 0.00001, 5);
 				mapLink.put(geometry, luLink);
 
-				if (!mapNode.containsValue(geometry.getCoordinates()[0])) {
+				if (!mapNode.containsKey(geometry.getCoordinates()[0])) {
 					mapNode.put(geometry.getCoordinates()[0], luLink.getsNodePid());
 				}
-				if (!mapNode.containsValue(geometry.getCoordinates()[geometry.getCoordinates().length - 1])) {
+				if (!mapNode.containsKey(geometry.getCoordinates()[geometry.getCoordinates().length - 1])) {
 					mapNode.put(geometry.getCoordinates()[geometry.getCoordinates().length - 1], luLink.geteNodePid());
 				}
 

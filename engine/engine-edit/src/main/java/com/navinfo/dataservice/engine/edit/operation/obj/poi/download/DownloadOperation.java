@@ -127,7 +127,7 @@ public class DownloadOperation {
 			jsonObj.put("fid", poi.getPoiNum());
 			IxPoiName poiName = (IxPoiName)poi.getNames().get(0);
 			if (poiName.getName() == null) {
-				jsonObj.put("name", JSONNull.getInstance());
+				jsonObj.put("name", "");
 			} else {
 				jsonObj.put("name", poiName.getName());
 			}
@@ -137,7 +137,7 @@ public class DownloadOperation {
 			jsonObj.put("meshid", poi.getMeshId());
 			
 			if (poi.getKindCode() == null) {
-				jsonObj.put("kindCode", JSONNull.getInstance());
+				jsonObj.put("kindCode", "");
 			} else {
 				jsonObj.put("kindCode", poi.getKindCode());
 			}
@@ -155,13 +155,13 @@ public class DownloadOperation {
 			
 			IxPoiAddress address = (IxPoiAddress)poi.getAddresses().get(0);
 			if (address.getFullname() == null) {
-				jsonObj.put("address", JSONNull.getInstance());
+				jsonObj.put("address", "");
 			} else {
 				jsonObj.put("address", address.getFullname());
 			}
 			
 			if (poi.getPostCode() == null) {
-				jsonObj.put("postCode", JSONNull.getInstance());
+				jsonObj.put("postCode", "");
 			} else {
 				jsonObj.put("postCode", poi.getPostCode());
 			}
@@ -169,7 +169,7 @@ public class DownloadOperation {
 			JSONObject indoor = new JSONObject();
 			indoor.put("type", poi.getIndoor());
 			if (address.getFloor() == null) {
-				indoor.put("floor", JSONNull.getInstance());
+				indoor.put("floor", "");
 			} else {
 				indoor.put("floor", address.getFloor());
 			}
@@ -183,26 +183,26 @@ public class DownloadOperation {
 			jsonObj.put("open24H", open24H);
 			
 			if (poi.getLevel() == null) {
-				jsonObj.put("level", JSONNull.getInstance());
+				jsonObj.put("level", "");
 			} else {
 				jsonObj.put("level", poi.getLevel());
 			}
 			
 			if (poi.getSportsVenue() == null) {
-				jsonObj.put("sportsVenues", JSONNull.getInstance());
+				jsonObj.put("sportsVenues", "");
 			} else {
 				jsonObj.put("sportsVenues", poi.getSportsVenue());
 			}
 			
 			if (poi.getVipFlag() == null) {
-				jsonObj.put("vipFlag", JSONNull.getInstance());
+				jsonObj.put("vipFlag", "");
 			} else {
 				jsonObj.put("vipFlag", poi.getVipFlag());
 			}
 			
 			IxPoiParentForAndroid parent = (IxPoiParentForAndroid)poi.getParents().get(0);
 			if (parent.getPoiNum() == null) {
-				jsonObj.put("parentFid", JSONNull.getInstance());
+				jsonObj.put("parentFid", "");
 			} else {
 				jsonObj.put("parentFid", parent.getPoiNum());
 			}
@@ -226,7 +226,7 @@ public class DownloadOperation {
 				JSONObject contact = new JSONObject();
 				IxPoiContact poiContact = (IxPoiContact) contacts;
 				if (poiContact.getContact() == null) {
-					contact.put("number", JSONNull.getInstance());
+					contact.put("number", "");
 				} else {
 					contact.put("number", poiContact.getContact());
 				}
@@ -278,13 +278,13 @@ public class DownloadOperation {
 				IxPoiRestaurant restaurant = (IxPoiRestaurant) restaurantList.get(0);
 				JSONObject foodtype = new JSONObject();
 				if (restaurant.getFoodType() == null) {
-					foodtype.put("foodtype", JSONNull.getInstance());
+					foodtype.put("foodtype", "");
 				} else {
 					foodtype.put("foodtype", restaurant.getFoodType());
 				}
 				
 				if (restaurant.getCreditCard() == null) {
-					foodtype.put("creditCards", JSONNull.getInstance());
+					foodtype.put("creditCards", "");
 				} else {
 					foodtype.put("creditCards", restaurant.getCreditCard());
 				}
@@ -292,7 +292,7 @@ public class DownloadOperation {
 				foodtype.put("parking", restaurant.getParking());
 				
 				if (restaurant.getOpenHour() == null) {
-					foodtype.put("openHour", JSONNull.getInstance());
+					foodtype.put("openHour", "");
 				} else {
 					foodtype.put("openHour", restaurant.getOpenHour());
 				}
@@ -309,24 +309,24 @@ public class DownloadOperation {
 				IxPoiParking parking = (IxPoiParking) parkingsList.get(0);
 				JSONObject parkings = new JSONObject();
 				if (parking.getTollStd() == null) {
-					parkings.put("tollStd", JSONNull.getInstance());
+					parkings.put("tollStd", "");
 				} else {
 					parkings.put("tollStd", parking.getTollStd());
 				}
 				
 				if (parking.getTollDes() == null) {
-					parkings.put("tollDes", JSONNull.getInstance());
+					parkings.put("tollDes", "");
 				} else {
 					parkings.put("tollDes", parking.getTollDes());
 				}
 				
 				if (parking.getTollWay() == null) {
-					parkings.put("tollWay", JSONNull.getInstance());
+					parkings.put("tollWay", "");
 				} else {
 					parkings.put("tollWay", parking.getTollWay());
 				}
 				if (parking.getOpenTiime() == null) {
-					parkings.put("openTime", JSONNull.getInstance());
+					parkings.put("openTime", "");
 				} else {
 					parkings.put("openTime", parking.getOpenTiime());
 				}
@@ -334,19 +334,19 @@ public class DownloadOperation {
 				parkings.put("totalNum", parking.getTotalNum());
 				
 				if (parking.getPayment() == null) {
-					parkings.put("payment", JSONNull.getInstance());
+					parkings.put("payment", "");
 				} else {
 					parkings.put("payment", parking.getPayment());
 				}
 				
 				if (parking.getRemark() == null) {
-					parkings.put("remark", JSONNull.getInstance());
+					parkings.put("remark", "");
 				} else {
 					parkings.put("remark", parking.getRemark());
 				}
 				
 				if (parking.getParkingType() == null) {
-					parkings.put("buildingType", JSONNull.getInstance());
+					parkings.put("buildingType", "");
 				} else {
 					parkings.put("buildingType", parking.getParkingType());
 				}
@@ -358,7 +358,7 @@ public class DownloadOperation {
 				parkings.put("vehicle", parking.getVehicle());
 				
 				if (parking.getHaveSpecialplace() == null) {
-					parkings.put("haveSpecialPlace", JSONNull.getInstance());
+					parkings.put("haveSpecialPlace", "");
 				} else {
 					parkings.put("haveSpecialPlace", parking.getHaveSpecialplace());
 				}
@@ -380,25 +380,25 @@ public class DownloadOperation {
 				hotelObj.put("rating", hotel.getRating());
 				
 				if (hotel.getCreditCard() == null) {
-					hotelObj.put("creditCards", JSONNull.getInstance());
+					hotelObj.put("creditCards", "");
 				} else {
 					hotelObj.put("creditCards", hotel.getCreditCard());
 				}
 				
 				if (hotel.getLongDescription() == null) {
-					hotelObj.put("description", JSONNull.getInstance());
+					hotelObj.put("description", "");
 				} else {
 					hotelObj.put("description", hotel.getLongDescription());
 				}
 				
 				if (hotel.getCheckinTime() == null) {
-					hotelObj.put("checkInTime", JSONNull.getInstance());
+					hotelObj.put("checkInTime", "");
 				} else {
 					hotelObj.put("checkInTime", hotel.getCheckinTime());
 				}
 				
 				if (hotel.getCheckoutTime() == null) {
-					hotelObj.put("checkOutTime", JSONNull.getInstance());
+					hotelObj.put("checkOutTime", "");
 				} else {
 					hotelObj.put("checkOutTime", hotel.getCheckoutTime());
 				}
@@ -406,13 +406,13 @@ public class DownloadOperation {
 				hotelObj.put("roomCount", hotel.getRoomCount());
 				
 				if (hotel.getRoomType() == null) {
-					hotelObj.put("roomType", JSONNull.getInstance());
+					hotelObj.put("roomType", "");
 				} else {
 					hotelObj.put("roomType", hotel.getRoomType());
 				}
 				
 				if (hotel.getRoomPrice() == null) {
-					hotelObj.put("roomPrice", JSONNull.getInstance());
+					hotelObj.put("roomPrice", "");
 				} else {
 					hotelObj.put("roomPrice", hotel.getRoomPrice());
 				}
@@ -420,7 +420,7 @@ public class DownloadOperation {
 				hotelObj.put("breakfast", hotel.getBreakfast());
 				
 				if (hotel.getService() == null) {
-					hotelObj.put("service", JSONNull.getInstance());
+					hotelObj.put("service", "");
 				} else {
 					hotelObj.put("service", hotel.getService());
 				}
@@ -428,7 +428,7 @@ public class DownloadOperation {
 				hotelObj.put("parking", hotel.getParking());
 				
 				if (hotel.getOpenHour() == null) {
-					hotelObj.put("openHour", JSONNull.getInstance());
+					hotelObj.put("openHour", "");
 				} else {
 					hotelObj.put("openHour", hotel.getOpenHour());
 				}
@@ -447,49 +447,49 @@ public class DownloadOperation {
 				IxPoiGasstation gas = (IxPoiGasstation) gasStationList.get(0);
 				JSONObject gasStation = new JSONObject();
 				if (gas.getFuelType() == null) {
-					gasStation.put("fuelType", JSONNull.getInstance());
+					gasStation.put("fuelType", "");
 				} else {
 					gasStation.put("fuelType", gas.getFuelType());
 				}
 				
 				if (gas.getOilType() == null) {
-					gasStation.put("oilType", JSONNull.getInstance());
+					gasStation.put("oilType", "");
 				} else {
 					gasStation.put("oilType", gas.getOilType());
 				}
 				
 				if (gas.getEgType() == null) {
-					gasStation.put("egType", JSONNull.getInstance());
+					gasStation.put("egType", "");
 				} else {
 					gasStation.put("egType", gas.getEgType());
 				}
 				
 				if (gas.getMgType() == null) {
-					gasStation.put("mgType", JSONNull.getInstance());
+					gasStation.put("mgType", "");
 				} else {
 					gasStation.put("mgType", gas.getMgType());
 				}
 				
 				if (gas.getPayment() == null) {
-					gasStation.put("payment", JSONNull.getInstance());
+					gasStation.put("payment", "");
 				} else {
 					gasStation.put("payment", gas.getPayment());
 				}
 				
 				if (gas.getService() == null) {
-					gasStation.put("service", JSONNull.getInstance());
+					gasStation.put("service", "");
 				} else {
 					gasStation.put("service", gas.getService());
 				}
 				
 				if (gas.getServiceProv() == null) {
-					gasStation.put("servicePro", JSONNull.getInstance());
+					gasStation.put("servicePro", "");
 				} else {
 					gasStation.put("servicePro", gas.getServiceProv());
 				}
 				
 				if (gas.getOpenHour() == null) {
-					gasStation.put("openHour", JSONNull.getInstance());
+					gasStation.put("openHour", "");
 				} else {
 					gasStation.put("openHour", gas.getOpenHour());
 				}
@@ -502,7 +502,7 @@ public class DownloadOperation {
 			
 			jsonObj.put("attachments", new ArrayList<Object>());
 			if (poi.getChain() == null) {
-				jsonObj.put("chain", JSONNull.getInstance());
+				jsonObj.put("chain", "");
 			} else {
 				jsonObj.put("chain", poi.getChain());
 			}

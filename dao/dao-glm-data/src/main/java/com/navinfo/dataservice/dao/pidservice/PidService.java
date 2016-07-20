@@ -397,4 +397,17 @@ public class PidService {
 		return this.applyPid(PidSequenceName.luFacePidName);
 	}
 
+	/**
+	 * 申请rd_electroniceye
+	 */
+	public synchronized int applyElectroniceyePid() throws Exception {
+		return this.applyPid(PidSequenceName.rdElectroniceyePidName);
+	}
+
+	/**
+	 * 申请rd_eleceye_pair
+	 */
+	public synchronized int applyEleceyePairPid() throws Exception {
+		return this.applyPid(PidSequenceName.rdEleceyePairPidName);
+	}
 }

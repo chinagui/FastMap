@@ -22,9 +22,9 @@ public abstract class AbstractOperator {
 	
 	protected Connection conn;
 	
-	public abstract void createCmd(JSONObject data);
+	public abstract void createCmd(JSONObject data) throws CommandCreateException;
 	
-    public abstract void loadData();
+    public abstract void loadData() throws Exception;
     
     public abstract Result execute();
     

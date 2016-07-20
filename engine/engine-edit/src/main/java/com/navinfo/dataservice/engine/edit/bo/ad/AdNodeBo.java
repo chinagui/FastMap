@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.edit.bo.ad;
 
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+
 /** 
  * @ClassName: BoAdNode
  * @author xiaoxiaowen4127
@@ -7,5 +9,5 @@ package com.navinfo.dataservice.engine.edit.bo.ad;
  * @Description: BoAdNode.java
  */
 public class AdNodeBo {
-
+	protected AdNode adNode;
 }

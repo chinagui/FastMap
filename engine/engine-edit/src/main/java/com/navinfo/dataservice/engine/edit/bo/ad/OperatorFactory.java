@@ -1,9 +1,8 @@
 package com.navinfo.dataservice.engine.edit.bo.ad;
 
-
 import net.sf.json.JSONObject;
 
-/** 
+/**
  * @ClassName: OperatorFactory
  * @author xiaoxiaowen4127
  * @date 2016年7月15日
@@ -11,24 +10,33 @@ import net.sf.json.JSONObject;
  */
 public class OperatorFactory {
 	private volatile static OperatorFactory instance;
-	public static OperatorFactory getInstance(){
-		if(instance==null){
-			synchronized(OperatorFactory.class){
-				if(instance==null){
-					instance=new OperatorFactory();
+
+	public static OperatorFactory getInstance() {
+		if (instance == null) {
+			synchronized (OperatorFactory.class) {
+				if (instance == null) {
+					instance = new OperatorFactory();
 				}
 			}
 		}
 		return instance;
 	}
-	private OperatorFactory(){
+
+	private OperatorFactory() {
+
+	}
+
+	public AbstractOperator create(String opType, String objType,
+			JSONObject data) throws Exception {
+		// ...
+		// createCmd();
+
+		Class<?> clazz = Class.forName(objType + opType + "Operator");
+		AbstractOperator op = (AbstractOperator) clazz.newInstance();
+
+		op.createCmd(data);
 		
+		return op;
 	}
-	
-	public AbstractOperator create(String opType,String objType,JSONObject data)throws Exception{
-		//...
-		//createCmd();
-		return null;
-	}
-	
+
 }

@@ -9,8 +9,8 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.edit.InitApplication;
-import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
-import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
+import com.navinfo.dataservice.engine.edit.operation.Transaction;
+import com.navinfo.dataservice.engine.edit.search.SearchProcess;
 
 import net.sf.json.JSONObject;
 
@@ -104,7 +104,7 @@ public class RwLinkTest extends InitApplication {
 	@Test//删除rw_link_name 自测问题：rw_node的点在图幅上的时候删除有问题，图幅计算的老问题
 	public void testDeleteRwLink()
 	{
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"RWLINK\",\"dbId\":42,\"objId\":100006734}";
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":25,\"type\":\"RWLINK\",\"objId\":100007122}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

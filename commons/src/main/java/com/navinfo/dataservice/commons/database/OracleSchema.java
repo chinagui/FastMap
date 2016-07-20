@@ -3,6 +3,8 @@ package com.navinfo.dataservice.commons.database;
 import java.sql.SQLException;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -21,7 +23,7 @@ public class OracleSchema {
 	}
 	protected DbConnectConfig connConfig;
 	protected DriverManagerDataSource dds;
-	protected BasicDataSource bds;
+	protected DataSource bds;
 
 	public DbConnectConfig getConnConfig() {
 		return connConfig;
@@ -37,10 +39,10 @@ public class OracleSchema {
 		String serverType = connConfig.getServerType();
 		if(DbServerType.TYPE_ORACLE.equals(serverType)){
 			
-			String url = MultiDataSourceFactory.createOracleJdbcUrl(
+			String url = DataSourceUtil.createOracleJdbcUrl(
 					connConfig.getServerIp(),connConfig.getServerPort(),connConfig.getServiceName());
 			dds = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(DbServerType.TYPE_ORACLE
-					, MultiDataSourceFactory.getDriverClassName(DbServerType.TYPE_ORACLE)
+					, DataSourceUtil.getDriverClassName(DbServerType.TYPE_ORACLE)
 					,url,connConfig.getUserName(), connConfig.getUserPasswd());
 			return dds;
 		}else{
@@ -48,7 +50,7 @@ public class OracleSchema {
 		}
 	}
 	
-	public synchronized BasicDataSource getPoolDataSource() throws SQLException{
+	public synchronized DataSource getPoolDataSource() throws SQLException{
 		if(bds!=null){
 			return bds;
 		}
@@ -64,15 +66,7 @@ public class OracleSchema {
 			bds = null;
 		}else{
 			//
-			if (bds != null && !bds.isClosed()) {
-				try {
-					log.debug("关闭连接池. url:"+bds.getUrl()+",username:"+bds.getUsername());
-					bds.close();
-					bds = null;
-				} catch (Exception e) {
-					log.error(e.getMessage(), e);
-				}
-			}
+			DataSourceUtil.close(bds);
 		}
 	}
 }

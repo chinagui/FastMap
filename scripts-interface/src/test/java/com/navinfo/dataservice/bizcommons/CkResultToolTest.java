@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.bizcommons;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,6 +32,24 @@ public class CkResultToolTest extends ClassPathXmlAppContextInit {
 			DbInfo db = datahub.getDbById(192);
 			OracleSchema schema = new OracleSchema(DbConnectConfig.createConnectConfig(db.getConnectParam()));
 			CkResultTool.generateCkResultGrid(schema);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void moveNiVal_01(){
+		try{
+			DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
+			DbInfo dbSrc = datahub.getDbById(100);
+			OracleSchema srcSchema = new OracleSchema(DbConnectConfig.createConnectConfig(dbSrc.getConnectParam()));
+			DbInfo tarDb = datahub.getDbById(25);
+			OracleSchema tarSchema = new OracleSchema(DbConnectConfig.createConnectConfig(tarDb.getConnectParam()));
+			Set<Integer> grids = new HashSet<Integer>();
+			grids.add(59567101);
+			grids.add(59567102);
+			grids.add(59567103);
+			CkResultTool.moveNiVal(srcSchema, tarSchema, grids);
 		}catch(Exception e){
 			e.printStackTrace();
 		}

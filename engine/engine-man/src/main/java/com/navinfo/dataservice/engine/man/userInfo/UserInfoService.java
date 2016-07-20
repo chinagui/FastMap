@@ -414,11 +414,23 @@ public class UserInfoService {
 			if (user.isEmpty()) {
 				return result;
 			}
-
-			if ((userDevice.getDeviceToken() != null) && (userDevice.getDevicePlatform() != null) && (userDevice.getDeviceVersion() != null) && (!user.containsKey("deviceId"))) {
+			
+			if(!user.containsKey("deviceId")){
+				user.put("deviceId", 0);
+				user.put("upload", 0);
+			}
+			
+			//插入user_device
+			if (((int)user.get("deviceId")==0) && (userDevice.getDeviceToken() != null) && (userDevice.getDevicePlatform() != null) && (userDevice.getDeviceVersion() != null)) {
 				int deviceId = UserInfoOperation.insertIntoUserDevice(conn, (long) user.get("userId"), userDevice);
 				user.put("deviceId", deviceId);
 			}
+			
+			//插入user_upload
+			if(((int)user.get("upload")==0) && ((int)user.get("deviceId")!=0)){
+				UserInfoOperation.insertIntoUserUpload(conn,(long) user.get("userId"),(int) user.get("deviceId"));
+			}
+
 
 			if (!user.isEmpty()) {
 				AccessToken access_token = AccessTokenFactory.generate((long) (user.get("userId")));

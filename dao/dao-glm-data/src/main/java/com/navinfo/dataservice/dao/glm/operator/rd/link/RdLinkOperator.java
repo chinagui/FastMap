@@ -36,18 +36,17 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSidewalk;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkWalkstair;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
+import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 import com.vividsolutions.jts.geom.Geometry;
 
-public class RdLinkOperator implements IOperator {
+public class RdLinkOperator extends AbstractOperator {
 
 	private static Logger logger = Logger.getLogger(RdLinkOperator.class);
-
-	private Connection conn;
 
 	private RdLink rdLink;
 
 	public RdLinkOperator(Connection conn, RdLink rdLink) {
-		this.conn = conn;
+		super(conn);
 
 		this.rdLink = rdLink;
 	}
@@ -118,29 +117,31 @@ public class RdLinkOperator implements IOperator {
 			pstmt.setInt(25, rdLink.getRightRegionId());
 
 			STRUCT struct = null;
-			
-			JGeometry geom = GeoTranslator.Jts2JGeometry(rdLink.getGeometry(), 0.00001, 5);
-			
-			if(conn instanceof DruidPooledConnection){
-				ConnectionProxyImpl impl = (ConnectionProxyImpl)((DruidPooledConnection)conn).getConnection();
-				
-				struct = JGeometry.store (geom, impl.getRawObject());  
-			}
-			else if(conn instanceof MyDriverManagerConnectionWrapper){
-				Connection originConn = ((MyDriverManagerConnectionWrapper) conn).getDelegate();
-				struct = JGeometry.store (geom, originConn);
-			}
-			else if (conn instanceof MyPoolGuardConnectionWrapper){
-				Connection originConn = ((MyPoolGuardConnectionWrapper) conn).getDelegate();
+
+			JGeometry geom = GeoTranslator.Jts2JGeometry(rdLink.getGeometry(),
+					0.00001, 5);
+
+			if (conn instanceof DruidPooledConnection) {
+				ConnectionProxyImpl impl = (ConnectionProxyImpl) ((DruidPooledConnection) conn)
+						.getConnection();
+
+				struct = JGeometry.store(geom, impl.getRawObject());
+			} else if (conn instanceof MyDriverManagerConnectionWrapper) {
+				Connection originConn = ((MyDriverManagerConnectionWrapper) conn)
+						.getDelegate();
+				struct = JGeometry.store(geom, originConn);
+			} else if (conn instanceof MyPoolGuardConnectionWrapper) {
+				Connection originConn = ((MyPoolGuardConnectionWrapper) conn)
+						.getDelegate();
 				if (originConn instanceof MyPoolableConnection) {
-					originConn = ((MyPoolableConnection) originConn).getDelegate();
+					originConn = ((MyPoolableConnection) originConn)
+							.getDelegate();
 				}
-				struct = JGeometry.store (geom, originConn); 
+				struct = JGeometry.store(geom, originConn);
+			} else {
+				struct = JGeometry.store(geom, conn);
 			}
-			else{
-				struct = JGeometry.store (geom, conn);  
-			}
-			
+
 			pstmt.setObject(26, struct);
 
 			pstmt.setDouble(27, rdLink.getLength());
@@ -294,230 +295,170 @@ public class RdLinkOperator implements IOperator {
 	}
 
 	@Override
-	public void updateRow() throws Exception {
-
-		StringBuilder sb = new StringBuilder("update " + rdLink.tableName()
-				+ " set u_record=3,");
-
-		PreparedStatement pstmt = null;
-
-		try {
-
-			Set<Entry<String, Object>> set = rdLink.changedFields().entrySet();
-
-			Iterator<Entry<String, Object>> it = set.iterator();
-
-			boolean isChanged = false;
-
-			while (it.hasNext()) {
-				Entry<String, Object> en = it.next();
-
-				String column = en.getKey();
-
-				Object columnValue = en.getValue();
-
-				Field field = rdLink.getClass().getDeclaredField(column);
-
-				field.setAccessible(true);
-
-				column = StringUtils.toColumnName(column);
-
-				Object value = field.get(rdLink);
-
-				if (value instanceof String || value == null) {
-
-					if (!StringUtils.isStringSame(String.valueOf(value),
-							String.valueOf(columnValue))) {
-
-						if (columnValue == null) {
-							sb.append(column + "=null,");
-						} else {
-							sb.append(column + "='"
-									+ String.valueOf(columnValue) + "',");
-						}
-
-						isChanged = true;
-
-					}
-
-				} else if (value instanceof Double) {
-
-					if (Double.parseDouble(String.valueOf(value)) != Double
-							.parseDouble(String.valueOf(columnValue))) {
-						sb.append(column
-								+ "="
-								+ Double.parseDouble(String
-										.valueOf(columnValue)) + ",");
-
-						isChanged = true;
-					}
-
-				} else if (value instanceof Integer) {
-
-					if (Integer.parseInt(String.valueOf(value)) != Integer
-							.parseInt(String.valueOf(columnValue))) {
-						sb.append(column + "="
-								+ Integer.parseInt(String.valueOf(columnValue))
-								+ ",");
-
-						isChanged = true;
-					}
-
-				} else if (value instanceof Geometry) {
-					// 先降级转WKT
-
-					String oldWkt = GeoTranslator.jts2Wkt((Geometry) value,
-							0.00001, 5);
-
-					String newWkt = Geojson.geojson2Wkt(columnValue.toString());
-
-					if (!StringUtils.isStringSame(oldWkt, newWkt)) {
-						sb.append("geometry=sdo_geometry('"
-								+ String.valueOf(newWkt) + "',8307),");
-
-						isChanged = true;
-					}
-				}
-			}
-			sb.append(" where link_pid=" + rdLink.getPid());
-
-			String sql = sb.toString();
-
-			sql = sql.replace(", where", " where");
-
-			if (isChanged) {
-				pstmt = conn.prepareStatement(sql);
-				pstmt.executeUpdate();
-			}
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-	}
-
-	@Override
-	public void deleteRow() throws Exception {
-
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			// 先删除LINK关联的子表,再删除LINK
-			for (IRow r : rdLink.getForms()) {
-				RdLinkFormOperator op = new RdLinkFormOperator(conn,
-						(RdLinkForm) r);
-
-				op.deleteRow2Sql(stmt);
-			}
-
-			for (IRow r : rdLink.getLimits()) {
-				RdLinkLimitOperator op = new RdLinkLimitOperator(conn,
-						(RdLinkLimit) r);
-
-				op.deleteRow2Sql(stmt);
-			}
-
-			for (IRow r : rdLink.getNames()) {
-				RdLinkNameOperator op = new RdLinkNameOperator(conn,
-						(RdLinkName) r);
-
-				op.deleteRow2Sql(stmt);
-			}
-
-			for (IRow r : rdLink.getRtics()) {
-				RdLinkRticOperator op = new RdLinkRticOperator(conn,
-						(RdLinkRtic) r);
-
-				op.deleteRow2Sql(stmt);
-			}
-
-			for (IRow r : rdLink.getIntRtics()) {
-				RdLinkIntRticOperator op = new RdLinkIntRticOperator(conn,
-						(RdLinkIntRtic) r);
-
-				op.deleteRow2Sql(stmt);
-			}
-
-			for (IRow r : rdLink.getLimitTrucks()) {
-				RdLinkLimitTruckOperator op = new RdLinkLimitTruckOperator(
-						conn, (RdLinkLimitTruck) r);
-
-				op.deleteRow2Sql(stmt);
-			}
-
-			for (IRow r : rdLink.getSidewalks()) {
-				RdLinkSidewalkOperator op = new RdLinkSidewalkOperator(conn,
-						(RdLinkSidewalk) r);
-
-				op.deleteRow2Sql(stmt);
-			}
-
-			for (IRow r : rdLink.getWalkstairs()) {
-				RdLinkWalkstairOperator op = new RdLinkWalkstairOperator(conn,
-						(RdLinkWalkstair) r);
-
-				op.deleteRow2Sql(stmt);
-			}
-
-			for (IRow r : rdLink.getZones()) {
-				RdLinkZoneOperator op = new RdLinkZoneOperator(conn,
-						(RdLinkZone) r);
-
-				op.deleteRow2Sql(stmt);
-			}
-
-			for (IRow r : rdLink.getSpeedlimits()) {
-				RdLinkSpeedlimitOperator op = new RdLinkSpeedlimitOperator(
-						conn, (RdLinkSpeedlimit) r);
-
-				op.deleteRow2Sql(stmt);
-			}
-
-			this.deleteRow2Sql(stmt);
-
-			stmt.executeBatch();
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-
-	}
-
-	@Override
 	public void insertRow2Sql(Statement stmt) throws Exception {
 
 	}
 
 	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
-			throws Exception {
+	public void updateRow2Sql(Statement stmt) throws Exception {
+		StringBuilder sb = new StringBuilder("update " + rdLink.tableName()
+				+ " set u_record=3,");
+
+		Set<Entry<String, Object>> set = rdLink.changedFields().entrySet();
+
+		Iterator<Entry<String, Object>> it = set.iterator();
+
+		while (it.hasNext()) {
+			Entry<String, Object> en = it.next();
+
+			String column = en.getKey();
+
+			Object columnValue = en.getValue();
+
+			Field field = rdLink.getClass().getDeclaredField(column);
+
+			field.setAccessible(true);
+
+			column = StringUtils.toColumnName(column);
+
+			Object value = field.get(rdLink);
+
+			if (value instanceof String || value == null) {
+
+				if (!StringUtils.isStringSame(String.valueOf(value),
+						String.valueOf(columnValue))) {
+
+					if (columnValue == null) {
+						sb.append(column + "=null,");
+					} else {
+						sb.append(column + "='" + String.valueOf(columnValue)
+								+ "',");
+					}
+
+					this.setChanged(true);
+
+				}
+
+			} else if (value instanceof Double) {
+
+				if (Double.parseDouble(String.valueOf(value)) != Double
+						.parseDouble(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Double.parseDouble(String.valueOf(columnValue))
+							+ ",");
+
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof Integer) {
+
+				if (Integer.parseInt(String.valueOf(value)) != Integer
+						.parseInt(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Integer.parseInt(String.valueOf(columnValue))
+							+ ",");
+
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof Geometry) {
+				// 先降级转WKT
+
+				String oldWkt = GeoTranslator.jts2Wkt((Geometry) value,
+						0.00001, 5);
+
+				String newWkt = Geojson.geojson2Wkt(columnValue.toString());
+
+				if (!StringUtils.isStringSame(oldWkt, newWkt)) {
+					sb.append("geometry=sdo_geometry('"
+							+ String.valueOf(newWkt) + "',8307),");
+
+					this.setChanged(true);
+				}
+			}
+		}
+		sb.append(" where link_pid=" + rdLink.getPid());
+
+		String sql = sb.toString();
+
+		sql = sql.replace(", where", " where");
+		stmt.addBatch(sql);
 
 	}
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
+		// 先删除LINK关联的子表,再删除LINK
+		for (IRow r : rdLink.getForms()) {
+			RdLinkFormOperator op = new RdLinkFormOperator(conn,
+					(RdLinkForm) r);
+
+			op.deleteRow2Sql(stmt);
+		}
+
+		for (IRow r : rdLink.getLimits()) {
+			RdLinkLimitOperator op = new RdLinkLimitOperator(conn,
+					(RdLinkLimit) r);
+
+			op.deleteRow2Sql(stmt);
+		}
+
+		for (IRow r : rdLink.getNames()) {
+			RdLinkNameOperator op = new RdLinkNameOperator(conn,
+					(RdLinkName) r);
+
+			op.deleteRow2Sql(stmt);
+		}
+
+		for (IRow r : rdLink.getRtics()) {
+			RdLinkRticOperator op = new RdLinkRticOperator(conn,
+					(RdLinkRtic) r);
+
+			op.deleteRow2Sql(stmt);
+		}
+
+		for (IRow r : rdLink.getIntRtics()) {
+			RdLinkIntRticOperator op = new RdLinkIntRticOperator(conn,
+					(RdLinkIntRtic) r);
+
+			op.deleteRow2Sql(stmt);
+		}
+
+		for (IRow r : rdLink.getLimitTrucks()) {
+			RdLinkLimitTruckOperator op = new RdLinkLimitTruckOperator(
+					conn, (RdLinkLimitTruck) r);
+
+			op.deleteRow2Sql(stmt);
+		}
+
+		for (IRow r : rdLink.getSidewalks()) {
+			RdLinkSidewalkOperator op = new RdLinkSidewalkOperator(conn,
+					(RdLinkSidewalk) r);
+
+			op.deleteRow2Sql(stmt);
+		}
+
+		for (IRow r : rdLink.getWalkstairs()) {
+			RdLinkWalkstairOperator op = new RdLinkWalkstairOperator(conn,
+					(RdLinkWalkstair) r);
+
+			op.deleteRow2Sql(stmt);
+		}
+
+		for (IRow r : rdLink.getZones()) {
+			RdLinkZoneOperator op = new RdLinkZoneOperator(conn,
+					(RdLinkZone) r);
+
+			op.deleteRow2Sql(stmt);
+		}
+
+		for (IRow r : rdLink.getSpeedlimits()) {
+			RdLinkSpeedlimitOperator op = new RdLinkSpeedlimitOperator(
+					conn, (RdLinkSpeedlimit) r);
+
+			op.deleteRow2Sql(stmt);
+		}
+
 
 		String sql = "update rd_link set u_record=2 where link_pid = "
 				+ rdLink.getPid();

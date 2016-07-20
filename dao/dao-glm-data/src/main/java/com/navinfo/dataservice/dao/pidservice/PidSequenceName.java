@@ -44,7 +44,7 @@ public class PidSequenceName {
 	
 	public static final String signboardIdName = "SEQ_RD_SIGNBOARD";
 	
-	public static final String signboardNameIdName = "RD_SIGNBOARD_NAME";
+	public static final String signboardNameIdName = "SEQ_RD_SIGNBOARD_NAME";
 	
 	public static final String branchNameIdName = "SEQ_RD_BRANCH_NAME";
 	
@@ -83,4 +83,10 @@ public class PidSequenceName {
 	public static final String poiRestaurantIdName = "SEQ_POI_RESTAURANT";
 	
 	public static final String rdNameIdName = "SEQ_RD_NAME";
+
+	public static final String luNodePidName = "SEQ_LU_NODE";
+	
+	public static final String luLinkPidName = "SEQ_LU_LINK";
+	
+	public static final String luFacePidName = "SEQ_LU_FACE";
 }

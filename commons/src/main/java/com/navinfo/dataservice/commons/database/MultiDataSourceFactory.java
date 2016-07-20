@@ -8,6 +8,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import javax.sql.DataSource;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.BooleanUtils;
@@ -15,9 +17,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.mongodb.MongoClient;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.oracle.MyDriverManagerDataSource;
 import com.navinfo.dataservice.commons.database.oracle.MyDriverManagerConnectionWrapper;
 import com.navinfo.dataservice.commons.database.oracle.PoolDataSource;
@@ -33,8 +37,8 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
  */
 public class MultiDataSourceFactory {
 
-	private static Logger log = Logger.getLogger(MultiDataSourceFactory.class);
-	private Map<String, BasicDataSource> dataSourceMap = new HashMap<String, BasicDataSource>();
+	private static Logger log = LoggerRepos.getLogger(MultiDataSourceFactory.class);
+	private Map<String, DataSource> dataSourceMap = new HashMap<String, DataSource>();
 	private SystemConfig systemConfig = SystemConfigFactory.getSystemConfig();
 	private Set<String> noCacheBizType = null;
 	private static class SingletonHolder{
@@ -78,7 +82,7 @@ public class MultiDataSourceFactory {
 	 * @return
 	 * @throws SQLException
 	 */
-	public synchronized BasicDataSource getSysDataSource() {
+	public synchronized DataSource getSysDataSource() {
 		return getDataSource(PoolDataSource.SYS_KEY,systemConfig,true);
 	}
 	/**
@@ -87,7 +91,7 @@ public class MultiDataSourceFactory {
 	 * @return
 	 * @throws SQLException
 	 */
-	public BasicDataSource getDataSourceByKey(String dataSourceKey) {
+	public DataSource getDataSourceByKey(String dataSourceKey) {
 
 		return dataSourceMap.get(dataSourceKey);
 	}
@@ -125,43 +129,60 @@ public class MultiDataSourceFactory {
 	 * @throws SQLException
 	 */
 
-	public BasicDataSource getDataSource(DbConnectConfig connConfig) throws SQLException{
+	public DataSource getDataSource(DbConnectConfig connConfig) throws SQLException{
 		if(!(DbServerType.TYPE_ORACLE.equals(connConfig.getServerType())
 				||DbServerType.TYPE_MYSQL.equals(connConfig.getServerType()))){
 			throw new SQLException("非ORACLE,MYSQL类型库，无法通过此方法获取连接类");
 		}
 		String key = connConfig.getKey();
-		BasicDataSource dataSource = dataSourceMap.get(key);
-		if (dataSource == null || dataSource.isClosed()) {
-			try {
-				String serverType = connConfig.getServerType();
-				String driveClassName = getDriverClassName(serverType);
-				String ip = connConfig.getServerIp();
-				Integer port = connConfig.getServerPort();
-				String name = DbServerType.TYPE_ORACLE.equals(connConfig.getServerType())?connConfig.getServiceName():connConfig.getDbName();
-				String url = createJdbcUrl(serverType,ip,port,name);
-				String username = connConfig.getUserName();
-				String password = connConfig.getUserPasswd();
-				int initialSize = SystemConfigFactory.getSystemConfig().getIntValue(PoolDataSource.SYS_KEY + ".dataSource.initialSize", 2);
-				int maxActive = SystemConfigFactory.getSystemConfig().getIntValue(PoolDataSource.SYS_KEY + ".dataSource.maxActive", 25);
-				log.debug("=============================DBINFO==========================");
-				log.debug("url:"+url);
-				log.debug("username:"+username);
-				log.debug("password:"+password);
-				String validationQuery = getValidationQuery(serverType);
-				dataSource = createDBCPPoolDataSource(serverType,driveClassName, url, username, password, initialSize, maxActive,validationQuery);
-				//根据配置的业务类型 库来缓存
-				String bizType = connConfig.getBizType();
-				if (StringUtils.isNotEmpty(bizType)&&(!noCacheBizType.contains(bizType))){
-					dataSourceMap.put(key, dataSource);
-				}
-			} catch (Exception e) {
-				log.error(e.getMessage(),e);
-				throw new SQLException(e);
-			}
-
-		} else
+		DataSource dataSource = dataSourceMap.get(key);
+		if(dataSource!=null&&DataSourceUtil.isEnable(dataSource)){
 			log.debug("find datasource from cache,key=" + key);
+			return dataSource;
+		}
+		//缓存中没找到，新建并加入缓存
+		try {
+			String serverType = connConfig.getServerType();
+			String driveClassName = DataSourceUtil.getDriverClassName(serverType);
+			String ip = connConfig.getServerIp();
+			Integer port = connConfig.getServerPort();
+			String name = DbServerType.TYPE_ORACLE.equals(connConfig.getServerType())?connConfig.getServiceName():connConfig.getDbName();
+			String url = DataSourceUtil.createJdbcUrl(serverType,ip,port,name);
+			String username = connConfig.getUserName();
+			String password = connConfig.getUserPasswd();
+			int initialSize = SystemConfigFactory.getSystemConfig().getIntValue(PoolDataSource.SYS_KEY + ".dataSource.initialSize", 2);
+			int maxActive = SystemConfigFactory.getSystemConfig().getIntValue(PoolDataSource.SYS_KEY + ".dataSource.maxActive", 25);
+			log.debug("=============================DBINFO==========================");
+			log.debug("url:"+url);
+			log.debug("username:"+username);
+			log.debug("password:"+password);
+			String validationQuery = DataSourceUtil.getValidationQuery(serverType);
+			String dsType = SystemConfigFactory.getSystemConfig().getValue(PropConstant.dataSourceType,"dbcp");
+	    	DataSource newdataSource=null;
+			if(dsType.equals("druid")){
+	    		newdataSource = createDruidDataSource(serverType,driveClassName, url, username, password, initialSize, maxActive,validationQuery);
+	    	}else{
+	    		newdataSource = createDBCPPoolDataSource(serverType,driveClassName, url, username, password, initialSize, maxActive,validationQuery);
+	    	}
+			//根据配置的业务类型 库来缓存
+			String bizType = connConfig.getBizType();
+			if (StringUtils.isNotEmpty(bizType)&&(!noCacheBizType.contains(bizType))){
+				synchronized(this){
+					dataSource = dataSourceMap.get(key);
+					if(dataSource==null||(!DataSourceUtil.isEnable(dataSource))){
+						dataSource = newdataSource;
+						dataSourceMap.put(key, newdataSource);
+					}else{
+						DataSourceUtil.close(newdataSource);
+						newdataSource = null;
+					}
+				}
+				dataSourceMap.put(key, dataSource);
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+			throw new SQLException(e);
+		}
 		return dataSource;
 	}
 
@@ -174,46 +195,87 @@ public class MultiDataSourceFactory {
 	 * @throws SQLException
 	 */
 
-	private BasicDataSource getDataSource(String dataSourceKey, SystemConfig config, boolean cache) {
-		log = LoggerRepos.getLogger(log);
-		BasicDataSource dataSource = dataSourceMap.get(dataSourceKey);
-		if (dataSource == null || dataSource.isClosed()) {
-			try {
-				String dSeKey = dataSourceKey + ".";
-				String serverType = config.getValue(dSeKey + "server.type");
-				String driveClassName = config.getValue(dSeKey + "jdbc.driverClassName");
-				String url = config.getValue(dSeKey + "jdbc.url");
-				String username = config.getValue(dSeKey + "jdbc.username");
-				String password = config.getValue(dSeKey + "jdbc.password");
-				int initialSize = config.getIntValue(dSeKey + "dataSource.initialSize", 1);
-				int maxActive = config.getIntValue(dSeKey + "dataSource.maxActive", 1);
-				log.debug("=============================DBINFO==========================");
-				log.debug("url:"+url);
-				log.debug("username:"+username);
-				log.debug("password:"+password);
-				String validationQuery = config.getValue(dSeKey+"dataSource.validationQuery");
-				BasicDataSource newdataSource = createDBCPPoolDataSource(serverType,driveClassName, url, username, password, initialSize, maxActive,validationQuery);
-				if (cache){
-					synchronized(this){
-						dataSource = dataSourceMap.get(dataSourceKey);
-						if(dataSource==null||dataSource.isClosed()){
-							dataSource = newdataSource;
-							dataSourceMap.put(dataSourceKey, newdataSource);
-						}else{
-							newdataSource.close();
-							newdataSource = null;
-						}
+	private DataSource getDataSource(String dataSourceKey, SystemConfig config, boolean cache) {
+		
+		DataSource dataSource = dataSourceMap.get(dataSourceKey);
+		if(dataSource!=null&&DataSourceUtil.isEnable(dataSource)){
+			log.debug("find datasource from cache,key=" + dataSourceKey);
+			return dataSource;
+		}
+		//缓存中没找到，新建并加入缓存
+		try {
+			String dSeKey = dataSourceKey + ".";
+			String serverType = config.getValue(dSeKey + "server.type");
+			String driveClassName = config.getValue(dSeKey + "jdbc.driverClassName");
+			String url = config.getValue(dSeKey + "jdbc.url");
+			String username = config.getValue(dSeKey + "jdbc.username");
+			String password = config.getValue(dSeKey + "jdbc.password");
+			int initialSize = config.getIntValue(dSeKey + "dataSource.initialSize", 1);
+			int maxActive = config.getIntValue(dSeKey + "dataSource.maxActive", 1);
+			log.debug("=============================DBINFO==========================");
+			log.debug("url:"+url);
+			log.debug("username:"+username);
+			log.debug("password:"+password);
+			String validationQuery = config.getValue(dSeKey+"dataSource.validationQuery");
+			String dsType = SystemConfigFactory.getSystemConfig().getValue(PropConstant.dataSourceType,"dbcp");
+			DataSource newdataSource=null;
+			if(dsType.equals("druid")){
+	    		newdataSource = createDruidDataSource(serverType,driveClassName, url, username, password, initialSize, maxActive,validationQuery);
+	    	}else{
+	    		newdataSource = createDBCPPoolDataSource(serverType,driveClassName, url, username, password, initialSize, maxActive,validationQuery);
+	    	}
+			if (cache){
+				synchronized(this){
+					dataSource = dataSourceMap.get(dataSourceKey);
+					if(dataSource==null||(!DataSourceUtil.isEnable(dataSource))){
+						dataSource = newdataSource;
+						dataSourceMap.put(dataSourceKey, newdataSource);
+					}else{
+						DataSourceUtil.close(newdataSource);
+						newdataSource = null;
 					}
 				}
-			} catch (Exception e) {
-				throw new DataSourceException(e);
 			}
-
-		} else
-			log.debug("find datasource from cache,key=" + dataSourceKey);
+		} catch (Exception e) {
+			throw new DataSourceException(e);
+		}
 		return dataSource;
 
 	}
+	private DruidDataSource createDruidDataSource(String serverType,
+			String driveClassName,
+			String url,
+			String username,
+			String password,
+			int initialSize,
+			int maxActive,String validationQuery)
+			throws SQLException {
+		DruidDataSource ds = new DruidDataSource();
+		
+		ds.setUrl(url);
+		ds.setUsername(username);
+		ds.setPassword(password);
+		ds.setInitialSize(initialSize);
+		ds.setMaxActive(maxActive);
+		ds.setAccessToUnderlyingConnectionAllowed(true);
+		ds.setUseGlobalDataSourceStat(true);
+		ds.setAccessToUnderlyingConnectionAllowed(true);
+		ds.setTestWhileIdle(true);
+		ds.setTestOnBorrow(false);
+		ds.setTestOnReturn(false);
+		ds.setDefaultAutoCommit(false);
+		ds.setValidationQuery(validationQuery);
+		ds.setValidationQueryTimeout(1);
+		ds.setTimeBetweenEvictionRunsMillis(30000);
+		//统计开关
+		String statEnable= SystemConfigFactory.getSystemConfig().getValue(PropConstant.dataSourceStatEnable);
+		if(StringUtils.isNotEmpty(statEnable)&&statEnable.equalsIgnoreCase("true")){
+			ds.setFilters("stat");
+		}
+		return ds;
+	}
+
+	
 	/**
 	 * 创建普通的basicDataSource
 	 */
@@ -324,10 +386,10 @@ public class MultiDataSourceFactory {
 	 * @throws SQLException
 	 */
 	public void shutdown() throws SQLException {
-		Iterator<BasicDataSource> dataSourceIte = dataSourceMap.values().iterator();
+		Iterator<DataSource> dataSourceIte = dataSourceMap.values().iterator();
 		while (dataSourceIte.hasNext()) {
-			BasicDataSource basicDataSource = dataSourceIte.next();
-			basicDataSource.close();
+			DataSource dataSource = dataSourceIte.next();
+			DataSourceUtil.close(dataSource);
 		}
 	}
 
@@ -346,77 +408,14 @@ public class MultiDataSourceFactory {
 		return oracleConnection;
 	}
 
-	public static String getDriverClassName(String serverType){
-		if(DbServerType.TYPE_ORACLE.equals(serverType)){
-			return "oracle.jdbc.driver.OracleDriver";
-		}else if(DbServerType.TYPE_MYSQL.equals(serverType)){
-			return "com.mysql.jdbc.Driver";
-		}else{
-			throw new DataSourceException("不支持的数据库类型，找不到相应的jdbc.Driver");
-		}
-	}
-	public static String getValidationQuery(String serverType){
-		if(DbServerType.TYPE_ORACLE.equals(serverType)){
-			return "select sysdate from dual";
-		}else if(DbServerType.TYPE_MYSQL.equals(serverType)){
-			return "select 1";
-		}else{
-			throw new DataSourceException("不支持的数据库类型，找不到相应的jdbc.Driver");
-		}
-	}
-	/**
-	 * 
-	 * @param host
-	 * @param port
-	 * @param name:oracle-Service name，mysql-DBNAME
-	 * @return
-	 */
-	public static String createJdbcUrl(String serverType,String host,Integer port,String name){
-		if(DbServerType.TYPE_ORACLE.equals(serverType)){
-			return createOracleJdbcUrl(host,port,name);
-		}else if(DbServerType.TYPE_MYSQL.equals(serverType)){
-			return createMysqlJdbcUrl(host,port,name);
-		}else{
-			throw new DataSourceException("不支持的数据库类型，无法生成相应的URL");
-		}
-	}
-	public static String createOracleJdbcUrl(String host, Integer port, String serverName) {
-		//
-		// 判断ip个数，如果是多个，则表示rac
-		String url = "jdbc:oracle:thin:@" + host + ":" + port + "/" + serverName;
-		/*String url = "jdbc:oracle:thin:@ (DESCRIPTION =\r\n" + 
-				"		(ADDRESS_LIST =\r\n" + 
-				"		(ADDRESS = (PROTOCOL = TCP)(HOST = "+host+")(PORT = "+port+"))\r\n" + 
-				"		)\r\n" + 
-				"		(CONNECT_DATA =\r\n" + 
-				"		(SERVICE_NAME = "+serverName+")\r\n" + 
-				"		)\r\n" + 
-				"		)";
-		*/
-//		log.debug(url);
-		
-		return url;
-
-	}
 	
-	public static String createMysqlJdbcUrl(String host, Integer port, String dbName) {
-		return "jdbc:mysql://"+host+":"+port+"/"+"dbName";
-
-	}
-
 	public void closeDataSource(String key) {
-		BasicDataSource bds = dataSourceMap.get(key);
-		if (bds != null && !bds.isClosed()) {
+		DataSource ds = dataSourceMap.get(key);
+		if(ds!=null){
 			synchronized(this){
 				dataSourceMap.remove(key);
 			}
-			try {
-				log.debug("关闭连接池. url:"+bds.getUrl()+",username:"+bds.getUsername());
-				bds.close();
-				bds = null;
-			} catch (Exception e) {
-				log.error(e.getMessage(), e);
-			}
+			DataSourceUtil.close(ds);
 		}
 	}
 	

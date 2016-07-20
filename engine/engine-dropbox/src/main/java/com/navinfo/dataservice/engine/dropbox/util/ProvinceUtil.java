@@ -9,7 +9,7 @@ import java.util.TreeMap;
 
 public class ProvinceUtil {
 
-	private final String defaultConfigFile = "/com/navinfo/dataservice/engine/dropbox/config/province.properties";
+	private final String defaultConfigFile = "/province.properties";
 
 	private static class SingletonHolder {
 		private static final ProvinceUtil INSTANCE = new ProvinceUtil();

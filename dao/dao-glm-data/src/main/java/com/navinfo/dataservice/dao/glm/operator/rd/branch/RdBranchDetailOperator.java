@@ -17,167 +17,19 @@ import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchName;
+import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 
-public class RdBranchDetailOperator implements IOperator {
+public class RdBranchDetailOperator extends AbstractOperator {
 
 	private static Logger logger = Logger
 			.getLogger(RdBranchDetailOperator.class);
 
-	private Connection conn;
-
 	private RdBranchDetail detail;
 
 	public RdBranchDetailOperator(Connection conn, RdBranchDetail detail) {
-		this.conn = conn;
+		super(conn);
 
 		this.detail = detail;
-	}
-
-	@Override
-	public void insertRow() throws Exception {
-
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.insertRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-	}
-
-	@Override
-	public void updateRow() throws Exception {
-
-		StringBuilder sb = new StringBuilder("update " + detail.tableName()
-				+ " set u_record=3,");
-
-		PreparedStatement pstmt = null;
-
-		try {
-
-			Set<Entry<String, Object>> set = detail.changedFields().entrySet();
-
-			Iterator<Entry<String, Object>> it = set.iterator();
-
-			while (it.hasNext()) {
-				Entry<String, Object> en = it.next();
-
-				String column = en.getKey();
-
-				Object columnValue = en.getValue();
-
-				Field field = detail.getClass().getDeclaredField(column);
-
-				field.setAccessible(true);
-
-				Object value = field.get(detail);
-
-				column = StringUtils.toColumnName(column);
-
-				if (value instanceof String || value==null) {
-
-					if (!StringUtils.isStringSame(String.valueOf(value),
-							String.valueOf(columnValue))) {
-						
-						if(columnValue==null){
-							sb.append(column + "=null,");
-						}
-						else{
-							sb.append(column + "='" + String.valueOf(columnValue)
-									+ "',");
-						}
-						
-					}
-
-				} else if (value instanceof Double) {
-
-					if (Double.parseDouble(String.valueOf(value)) != Double
-							.parseDouble(String.valueOf(columnValue))) {
-						sb.append(column
-								+ "="
-								+ Double.parseDouble(String
-										.valueOf(columnValue)) + ",");
-					}
-
-				} else if (value instanceof Integer) {
-
-					if (Integer.parseInt(String.valueOf(value)) != Integer
-							.parseInt(String.valueOf(columnValue))) {
-						sb.append(column + "="
-								+ Integer.parseInt(String.valueOf(columnValue))
-								+ ",");
-					}
-
-				}
-			}
-			sb.append(" where detail_id=" + detail.getPid());
-
-			String sql = sb.toString();
-
-			sql = sql.replace(", where", " where");
-
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.executeUpdate();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-	}
-
-	@Override
-	public void deleteRow() throws Exception {
-
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.deleteRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
 	}
 
 	@Override
@@ -239,9 +91,72 @@ public class RdBranchDetailOperator implements IOperator {
 	}
 
 	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
-			throws Exception {
+	public void updateRow2Sql(Statement stmt) throws Exception {
+		StringBuilder sb = new StringBuilder("update " + detail.tableName()
+				+ " set u_record=3,");
 
+		Set<Entry<String, Object>> set = detail.changedFields().entrySet();
+
+		Iterator<Entry<String, Object>> it = set.iterator();
+
+		while (it.hasNext()) {
+			Entry<String, Object> en = it.next();
+
+			String column = en.getKey();
+
+			Object columnValue = en.getValue();
+
+			Field field = detail.getClass().getDeclaredField(column);
+
+			field.setAccessible(true);
+
+			Object value = field.get(detail);
+
+			column = StringUtils.toColumnName(column);
+
+			if (value instanceof String || value == null) {
+
+				if (!StringUtils.isStringSame(String.valueOf(value),
+						String.valueOf(columnValue))) {
+
+					if (columnValue == null) {
+						sb.append(column + "=null,");
+					} else {
+						sb.append(column + "='" + String.valueOf(columnValue)
+								+ "',");
+					}
+					this.setChanged(true);
+
+				}
+
+			} else if (value instanceof Double) {
+
+				if (Double.parseDouble(String.valueOf(value)) != Double
+						.parseDouble(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Double.parseDouble(String.valueOf(columnValue))
+							+ ",");
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof Integer) {
+
+				if (Integer.parseInt(String.valueOf(value)) != Integer
+						.parseInt(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Integer.parseInt(String.valueOf(columnValue))
+							+ ",");
+					this.setChanged(true);
+				}
+
+			}
+		}
+		sb.append(" where detail_id=" + detail.getPid());
+
+		String sql = sb.toString();
+
+		sql = sql.replace(", where", " where");
+		stmt.addBatch(sql);
 	}
 
 	@Override

@@ -17,209 +17,18 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchName;
+import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 
-public class RdBranchNameOperator implements IOperator {
+public class RdBranchNameOperator extends AbstractOperator {
 
 	private static Logger logger = Logger.getLogger(RdBranchNameOperator.class);
-
-	private Connection conn;
 
 	private RdBranchName name;
 
 	public RdBranchNameOperator(Connection conn, RdBranchName name) {
-		this.conn = conn;
+		super(conn);
 
 		this.name = name;
-	}
-
-	@Override
-	public void insertRow() throws Exception {
-
-		name.setRowId(UuidUtils.genUuid());
-
-		String sql = "insert into "
-				+ name.tableName()
-				+ " (name_id, seq_num, name_groupid, detail_id, name_class, lang_code, code_type, name, "
-				+ "phonetic, src_flag, voice_file, u_record, row_id) values "
-				+ "(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13)";
-
-		PreparedStatement pstmt = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setInt(1, name.getPid());
-
-			pstmt.setInt(2, name.getSeqNum());
-
-			pstmt.setInt(3, name.getNameGroupid());
-
-			pstmt.setInt(4, name.getDetailId());
-
-			pstmt.setInt(5, name.getNameClass());
-
-			pstmt.setString(6, name.getLangCode());
-
-			pstmt.setInt(7, name.getCodeType());
-
-			pstmt.setString(8, name.getName());
-
-			pstmt.setString(9, name.getPhonetic());
-
-			pstmt.setInt(10, name.getSrcFlag());
-
-			pstmt.setString(11, name.getVoiceFile());
-
-			pstmt.setInt(12, 1);
-
-			pstmt.setString(13, name.rowId());
-
-			pstmt.executeUpdate();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-	}
-
-	@Override
-	public void updateRow() throws Exception {
-
-		StringBuilder sb = new StringBuilder("update " + name.tableName()
-				+ " set u_record=3,");
-
-		PreparedStatement pstmt = null;
-
-		try {
-
-			Set<Entry<String, Object>> set = name.changedFields().entrySet();
-
-			Iterator<Entry<String, Object>> it = set.iterator();
-
-			while (it.hasNext()) {
-				Entry<String, Object> en = it.next();
-
-				String column = en.getKey();
-
-				Object columnValue = en.getValue();
-
-				Field field = name.getClass().getDeclaredField(column);
-
-				field.setAccessible(true);
-
-				Object value = field.get(name);
-
-				column = StringUtils.toColumnName(column);
-
-				if (value instanceof String || value==null ) {
-
-					if (!StringUtils.isStringSame(String.valueOf(value),
-							String.valueOf(columnValue))) {
-						
-						if(columnValue==null){
-							sb.append(column + "=null,");
-						}
-						else{
-							sb.append(column + "='" + String.valueOf(columnValue)
-									+ "',");
-						}
-						
-					}
-
-				} else if (value instanceof Double) {
-
-					if (Double.parseDouble(String.valueOf(value)) != Double
-							.parseDouble(String.valueOf(columnValue))) {
-						sb.append(column
-								+ "="
-								+ Double.parseDouble(String
-										.valueOf(columnValue)) + ",");
-					}
-
-				} else if (value instanceof Integer) {
-
-					if (Integer.parseInt(String.valueOf(value)) != Integer
-							.parseInt(String.valueOf(columnValue))) {
-						sb.append(column + "="
-								+ Integer.parseInt(String.valueOf(columnValue))
-								+ ",");
-					}
-
-				} else if (value instanceof JSONObject) {
-					if (!StringUtils.isStringSame(value.toString(),
-							String.valueOf(columnValue))) {
-						sb.append("geometry=sdo_geometry('"
-								+ String.valueOf(columnValue) + "',8307),");
-					}
-				}
-			}
-			sb.append(" where name_id=" + name.getPid());
-
-			String sql = sb.toString();
-
-			sql = sql.replace(", where", " where");
-
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.executeUpdate();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-	}
-
-	@Override
-	public void deleteRow() throws Exception {
-
-		String sql = "update " + name.tableName()
-				+ " set u_record=? where name_id=?";
-
-		PreparedStatement pstmt = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setInt(1, 2);
-
-			pstmt.setInt(2, name.getPid());
-
-			pstmt.executeUpdate();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
 	}
 
 	@Override
@@ -278,37 +87,81 @@ public class RdBranchNameOperator implements IOperator {
 	}
 
 	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
-			throws Exception {
+	public void updateRow2Sql(Statement stmt) throws Exception {
 
 		StringBuilder sb = new StringBuilder("update " + name.tableName()
 				+ " set u_record=3,");
 
-		for (int i = 0; i < fieldNames.size(); i++) {
+		Set<Entry<String, Object>> set = name.changedFields().entrySet();
 
-			if (i > 0) {
-				sb.append(",");
-			}
+		Iterator<Entry<String, Object>> it = set.iterator();
 
-			String column = StringUtils.toColumnName(fieldNames.get(i));
+		while (it.hasNext()) {
+			Entry<String, Object> en = it.next();
 
-			sb.append(column);
+			String column = en.getKey();
 
-			sb.append("=");
+			Object columnValue = en.getValue();
 
-			Field field = name.getClass().getDeclaredField(fieldNames.get(i));
+			Field field = name.getClass().getDeclaredField(column);
+
+			field.setAccessible(true);
 
 			Object value = field.get(name);
 
-			sb.append(value);
+			column = StringUtils.toColumnName(column);
 
+			if (value instanceof String || value == null) {
+
+				if (!StringUtils.isStringSame(String.valueOf(value),
+						String.valueOf(columnValue))) {
+
+					if (columnValue == null) {
+						sb.append(column + "=null,");
+					} else {
+						sb.append(column + "='" + String.valueOf(columnValue)
+								+ "',");
+					}
+					this.setChanged(true);
+
+				}
+
+			} else if (value instanceof Double) {
+
+				if (Double.parseDouble(String.valueOf(value)) != Double
+						.parseDouble(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Double.parseDouble(String.valueOf(columnValue))
+							+ ",");
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof Integer) {
+
+				if (Integer.parseInt(String.valueOf(value)) != Integer
+						.parseInt(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Integer.parseInt(String.valueOf(columnValue))
+							+ ",");
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof JSONObject) {
+				if (!StringUtils.isStringSame(value.toString(),
+						String.valueOf(columnValue))) {
+					sb.append("geometry=sdo_geometry('"
+							+ String.valueOf(columnValue) + "',8307),");
+					this.setChanged(true);
+				}
+			}
 		}
+		sb.append(" where name_id=" + name.getPid());
 
-		sb.append(" where name_id=");
+		String sql = sb.toString();
 
-		sb.append(name.getPid());
+		sql = sql.replace(", where", " where");
 
-		stmt.addBatch(sb.toString());
+		stmt.addBatch(sql);
 	}
 
 	@Override

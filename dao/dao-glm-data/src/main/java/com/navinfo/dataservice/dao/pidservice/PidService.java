@@ -5,7 +5,6 @@ import java.sql.SQLException;
 
 import org.apache.commons.dbutils.DbUtils;
 
-
 public class PidService {
 	public static class PidRangeCombine {
 
@@ -125,23 +124,21 @@ public class PidService {
 		return applyPid(PidSequenceName.signasrealIdName);
 
 	}
-	
+
 	public synchronized int applyBranchSchematic() throws Exception {
 		return applyPid(PidSequenceName.schematicIdName);
 
 	}
-	
+
 	public synchronized int applyRdSignboard() throws Exception {
 		return applyPid(PidSequenceName.signboardIdName);
 
 	}
-	
+
 	public synchronized int applyRdSignboardName() throws Exception {
 		return applyPid(PidSequenceName.signboardNameIdName);
 	}
-	
 
-	
 	public synchronized int applyCkExceptionId() throws Exception {
 		return applyPid(PidSequenceName.ckExceptionIdName);
 
@@ -169,14 +166,14 @@ public class PidService {
 	public synchronized int applyAdNodePid() throws Exception {
 		return applyPid(PidSequenceName.adAdminNodeName);
 	}
-	
+
 	/**
 	 * 申请rw_node_pid
 	 */
 	public synchronized int applyRwNodePid() throws Exception {
 		return applyPid(PidSequenceName.rwNodeName);
 	}
-	
+
 	/**
 	 * 申请rw_link_pid
 	 */
@@ -225,7 +222,7 @@ public class PidService {
 	public synchronized int applyRdGscPid() throws Exception {
 		return applyPid(PidSequenceName.rdGscPidName);
 	}
-	
+
 	/**
 	 * 申请PoiPid
 	 */
@@ -233,7 +230,7 @@ public class PidService {
 		return applyPid(PidSequenceName.poiPidName);
 
 	}
-	
+
 	/**
 	 * 申请PoiNameId
 	 */
@@ -249,7 +246,7 @@ public class PidService {
 		return applyPid(PidSequenceName.poiAddressIdName);
 
 	}
-	
+
 	/**
 	 * 申请PoiGroupId
 	 */
@@ -257,7 +254,7 @@ public class PidService {
 		return applyPid(PidSequenceName.poiGroupIdName);
 
 	}
-	
+
 	/**
 	 * 申请PoiGasstationId
 	 */
@@ -265,21 +262,21 @@ public class PidService {
 		return applyPid(PidSequenceName.poiGasstationIdName);
 
 	}
-	
+
 	/**
 	 * 申请PoiParkingsId
 	 */
 	public synchronized int applyPoiParkingsId() throws Exception {
 		return applyPid(PidSequenceName.poiParkingsIdName);
 	}
-	
+
 	/**
 	 * 申请PoiHotelId
 	 */
 	public synchronized int applyPoiHotelId() throws Exception {
 		return applyPid(PidSequenceName.poiHotelIdName);
 	}
-	
+
 	/**
 	 * 申请PoiFoodId
 	 */
@@ -309,7 +306,7 @@ public class PidService {
 		return applyPid(PidSequenceName.poiRestaurantIdName);
 
 	}
-	
+
 	/**
 	 * 申请zone_node_pid
 	 */
@@ -317,6 +314,7 @@ public class PidService {
 		return applyPid(PidSequenceName.ZoneNodeName);
 
 	}
+
 	/**
 	 * 申请zone_link_pid
 	 */
@@ -324,12 +322,14 @@ public class PidService {
 		return applyPid(PidSequenceName.ZoneLinkName);
 
 	}
+
 	/**
 	 * 申请zone_face_pid
 	 */
 	public synchronized int applyZoneFacePid() throws Exception {
 		return applyPid(PidSequenceName.ZoneFaceName);
 	}
+
 	private int applyPid(final String pidSeqName) throws Exception {
 		Connection conn = null;
 
@@ -339,27 +339,23 @@ public class PidService {
 
 			conn.setAutoCommit(false);
 
-			String pidRange = PidServiceUtils.getPidRange(conn,
-					pidSeqName);
+			String pidRange = PidServiceUtils.getPidRange(conn, pidSeqName);
 
 			if (pidRange != null) {
 				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
 
 				if (prc.getPid() != -1) {
-					PidServiceUtils.updatePidRange(conn,
-							pidSeqName, prc.getPidRange());
+					PidServiceUtils.updatePidRange(conn, pidSeqName, prc.getPidRange());
 
 					pid = prc.getPid();
 				} else {
 					// 剩餘範圍不足,需要從ID分配器搬運新的PID
-					pid = PidServiceUtils.transportPid(conn, 5000,
-							pidSeqName);
+					pid = PidServiceUtils.transportPid(conn, 5000, pidSeqName);
 				}
 			} else {
 				// 不存在對應的序列,報錯且拋出異常
 
-				pid = PidServiceUtils.transportPid(conn, 5000,
-						pidSeqName);
+				pid = PidServiceUtils.transportPid(conn, 5000, pidSeqName);
 			}
 
 		} catch (Exception e) {
@@ -372,52 +368,33 @@ public class PidService {
 
 		return pid;
 	}
-	
-	
+
 	/**
 	 * 申請rd_name pid
 	 */
 	public synchronized int applyRdNamePid() throws Exception {
-
-		Connection conn = null;
-
-		int pid = 0;
-		try {
-			conn = PidServicePool.getInstance().getConnection();
-
-			conn.setAutoCommit(false);
-
-			String pidRange = PidServiceUtils.getPidRange(conn,
-					PidSequenceName.rdNameIdName);
-
-			if (pidRange != null) {
-				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
-
-				if (prc.getPid() != -1) {
-					PidServiceUtils.updatePidRange(conn,
-							PidSequenceName.rdNameIdName, prc.getPidRange());
-
-					pid = prc.getPid();
-				} else {
-					// 剩餘範圍不足,需要從ID分配器搬運新的PID
-					pid = PidServiceUtils.transportPid(conn, 5000,
-							PidSequenceName.rdNameIdName);
-				}
-			} else {
-				pid = PidServiceUtils.transportPid(conn, 5000,
-						PidSequenceName.rdNameIdName);
-			}
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-
-		return pid;
-
+		return applyPid(PidSequenceName.rdNameIdName);
 	}
-	
+
+	/**
+	 * 申请lu_node_pid
+	 */
+	public synchronized int applyLuNodePid() throws Exception {
+		return this.applyPid(PidSequenceName.luNodePidName);
+	}
+
+	/**
+	 * 申请lu_link_pid
+	 */
+	public synchronized int applyLuLinkPid() throws Exception {
+		return this.applyPid(PidSequenceName.luLinkPidName);
+	}
+
+	/**
+	 * 申请lu_face_pid
+	 */
+	public synchronized int applyLuFacePid() throws Exception {
+		return this.applyPid(PidSequenceName.luFacePidName);
+	}
+
 }

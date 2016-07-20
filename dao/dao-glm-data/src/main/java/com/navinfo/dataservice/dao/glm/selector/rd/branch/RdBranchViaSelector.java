@@ -201,7 +201,7 @@ public class RdBranchViaSelector implements ISelector {
 				continue;
 			}
 
-			via.setBranchPid(resultSet.getInt("topology_id"));
+			via.setBranchPid(resultSet.getInt("branch_pid"));
 
 			via.setLinkPid(resultSet.getInt("link_pid"));
 

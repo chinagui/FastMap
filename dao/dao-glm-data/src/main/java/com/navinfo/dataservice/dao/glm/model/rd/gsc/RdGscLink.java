@@ -17,7 +17,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 public class RdGscLink implements IRow {
 	private int pid ;
-	private int mesh;
 	private int zlevel = 0;
 	private int linkPid = 0;
 	private String tableName;
@@ -218,13 +217,11 @@ public class RdGscLink implements IRow {
 
 	@Override
 	public int mesh() {
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-		
 	}
 
 	public String getRowId() {

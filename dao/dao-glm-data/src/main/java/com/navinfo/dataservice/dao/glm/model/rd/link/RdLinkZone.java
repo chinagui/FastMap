@@ -17,8 +17,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 public class RdLinkZone implements IRow {
 	
-	private int mesh;
-
 	private String rowId;
 
 	private int linkPid;
@@ -222,14 +220,11 @@ public class RdLinkZone implements IRow {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		// TODO Auto-generated method stub
-		this.mesh=mesh;
 	}
 
 }

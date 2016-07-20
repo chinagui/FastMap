@@ -25,8 +25,6 @@ public class IxPoiVideo implements IRow {
 
 	private String rowId;
 
-	private int mesh;
-
 	private int poiPid;// POI号码
 
 	private int videoId;// 视频号码
@@ -228,12 +226,11 @@ public class IxPoiVideo implements IRow {
 
 	@Override
 	public int mesh() {
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
 	}
 
 }

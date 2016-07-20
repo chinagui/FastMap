@@ -26,7 +26,6 @@ public class IxPoiBuilding implements IRow {
 	private int poiPid = 0;
 	private String floorUsed;// 大厦或租户可用的楼层
 	private String floorEmpty;// 大厦或租户空缺的楼层
-	private int mesh;
 	private String rowId;
 	// 更新时间
 	private String uDate;
@@ -235,14 +234,11 @@ public class IxPoiBuilding implements IRow {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-
 	}
 
 }

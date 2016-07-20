@@ -29,7 +29,6 @@ public class IxPoiCarrental implements IRow {
 	private String howToGo;// 周边交通路线
 	private String phone400;// 400 电话
 	private String website;// 主页网址
-	private int mesh;
 	private String rowId;
 	// 更新时间
 	private String uDate;
@@ -154,10 +153,6 @@ public class IxPoiCarrental implements IRow {
 		this.website = website;
 	}
 
-	public int getMesh() {
-		return mesh;
-	}
-
 	@Override
 	public String parentTableName() {
 		// TODO Auto-generated method stub
@@ -266,14 +261,11 @@ public class IxPoiCarrental implements IRow {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-
 	}
 
 }

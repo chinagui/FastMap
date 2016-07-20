@@ -19,8 +19,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 public class RdRestriction implements IObj {
 	
-	private int mesh;
-
 	private int pid;
 
 	private int inLinkPid;
@@ -191,8 +189,6 @@ public class RdRestriction implements IObj {
 
 		this.details = new ArrayList<IRow>();
 		
-		this.mesh = restrict.mesh();
-
 		for (IRow detail : restrict.details) {
 
 			RdRestrictionDetail detailCopy = new RdRestrictionDetail();
@@ -319,14 +315,11 @@ public class RdRestriction implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		// TODO Auto-generated method stub
-		this.mesh=mesh;
 	}
 
 	@Override

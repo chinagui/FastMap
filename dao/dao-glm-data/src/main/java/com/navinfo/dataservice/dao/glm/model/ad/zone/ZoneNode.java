@@ -30,8 +30,6 @@ public class ZoneNode implements IObj {
 	
 	private String rowId;
 	
-	private int mesh;
-	
 	private int pid;
 	
 	private int kind=1;//种别
@@ -269,13 +267,11 @@ public class ZoneNode implements IObj {
 
 	@Override
 	public int mesh() {
-		
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh=mesh;
 	}
 
 	@Override

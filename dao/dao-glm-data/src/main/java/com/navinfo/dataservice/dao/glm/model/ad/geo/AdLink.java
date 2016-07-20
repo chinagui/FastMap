@@ -43,8 +43,6 @@ public class AdLink implements IObj {
 
 	private String rowId;
 
-	private int mesh;
-
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	private List<IRow> meshes = new ArrayList<IRow>();
@@ -390,10 +388,6 @@ public class AdLink implements IObj {
 
 	public String getRowId() {
 		return rowId;
-	}
-
-	public int getMesh() {
-		return mesh;
 	}
 
 }

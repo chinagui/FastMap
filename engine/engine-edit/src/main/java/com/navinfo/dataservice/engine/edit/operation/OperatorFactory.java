@@ -74,6 +74,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
+import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePair;
+import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
+import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
@@ -171,6 +174,9 @@ import com.navinfo.dataservice.dao.glm.operator.rd.cross.RdCrossLinkOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.cross.RdCrossNameOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.cross.RdCrossNodeOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.cross.RdCrossOperator;
+import com.navinfo.dataservice.dao.glm.operator.rd.eleceye.RdEleceyePairOperator;
+import com.navinfo.dataservice.dao.glm.operator.rd.eleceye.RdEleceyePartOperator;
+import com.navinfo.dataservice.dao.glm.operator.rd.eleceye.RdElectroniceyeOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.gsc.RdGscLinkOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.gsc.RdGscOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.laneconnexity.RdLaneConnexityOperator;
@@ -441,6 +447,12 @@ public class OperatorFactory {
 			return new LuFaceTopoOperator(conn, (LuFaceTopo) obj);
 		case LUFEATURE:
 			return new LuFeatureOperator(conn, (LuFeature) obj);
+		case RDELECTRONICEYE:
+			return new RdElectroniceyeOperator(conn, (RdElectroniceye) obj);
+		case RDELECEYEPART:
+			return new RdEleceyePartOperator(conn, (RdEleceyePart) obj);
+		case RDELECEYEPAIR:
+			return new RdEleceyePairOperator(conn, (RdEleceyePair) obj);
 		default:
 			return null;
 		}

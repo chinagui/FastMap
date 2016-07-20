@@ -1,0 +1,15 @@
+insert into pid_storage values('SEQ_RD_ELECTRONICEYE','100281909-200000000');
+
+insert into pid_storage values('SEQ_RD_ELECEYE_PAIR','100281909-200000000');
+
+insert into glm_grid_map values('RD_ELECTRONICEYE','','',0,'240+');
+insert into glm_grid_map values('RD_ELECTRONICEYE','','',0,'250+');
+insert into glm_grid_map values('RD_ELECTRONICEYE','','',0,'250+');
+
+insert into glm_grid_map values('RD_ELECEYE_PAIR','','',0,'240+');
+insert into glm_grid_map values('RD_ELECEYE_PAIR','','',0,'250+');
+insert into glm_grid_map values('RD_ELECEYE_PAIR','','',0,'250+');
+
+insert into glm_grid_map values('RD_ELECEYE_PART','','',0,'240+');
+insert into glm_grid_map values('RD_ELECEYE_PART','','',0,'250+');
+insert into glm_grid_map values('RD_ELECEYE_PART','','',0,'250+');

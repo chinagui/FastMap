@@ -39,4 +39,8 @@ public class DatahubApiImpl implements DatahubApi {
 	public DbInfo getReuseDb(String bizType)throws Exception{
 		return DbService.getInstance().getReuseDb(bizType);
 	}
+	@Override
+	public DbInfo getReuseDb(String bizType,int refDbId)throws Exception{
+		return DbService.getInstance().getReuseDb(bizType,refDbId);
+	}
 }

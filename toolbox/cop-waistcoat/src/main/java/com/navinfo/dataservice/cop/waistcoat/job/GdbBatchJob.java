@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.datahub.model.BizType;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.edit.iface.DatalockApi;
 import com.navinfo.dataservice.api.edit.model.FmEditLock;
@@ -52,54 +53,81 @@ public class GdbBatchJob extends AbstractJob {
 			DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
 			if(req.getBatchDbId()!=0){
 				batchDbId = req.getBatchDbId();
-				//cop 子版本物理删除逻辑删除数据
+				jobInfo.getResponse().put("batDbId", batchDbId);
 				DbInfo batDb = datahub.getDbById(batchDbId);
 				batSchema = new OracleSchema(
 						DbConnectConfig.createConnectConfig(batDb.getConnectParam()));
 			}else{
-				JobInfo createBatchDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
-				AbstractJob createBatchDbJob = JobCreateStrategy.createAsSubJob(createBatchDbJobInfo,
-						req.getSubJobRequest("createBatchDb"), this);
-				createBatchDbJob.run();
-				if (createBatchDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
-					throw new Exception("创建批处理子版本库是job执行失败。");
+				//在找是否利用可重复使用的库,重用的库是空库，需要导数据
+				if(req.isReuseDb()){
+					DbInfo batDb = datahub.getReuseDb(BizType.DB_COP_VERSION);
+					if(batDb!=null){
+						batSchema = new OracleSchema(
+								DbConnectConfig.createConnectConfig(batDb.getConnectParam()));
+					}
+				}
+				//未设置利用重用的库，或者未找到可重用的库，需要新建库
+				if(batSchema==null&&req.getSubJobRequest("createBatchDb")!=null){
+					JobInfo createBatchDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
+					AbstractJob createBatchDbJob = JobCreateStrategy.createAsSubJob(createBatchDbJobInfo,
+							req.getSubJobRequest("createBatchDb"), this);
+					createBatchDbJob.run();
+					if (createBatchDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
+						throw new Exception("创建批处理子版本库是job执行失败。");
+					}
+					batchDbId = createBatchDbJob.getJobInfo().getResponse().getInt("outDbId");
+					jobInfo.getResponse().put("batDbId", batchDbId);
+				}else{
+					throw new Exception("未设置创建批处理子版本库request参数。");
 				}
 				// 2.批处理库导数据
-				req.getSubJobRequest("expBatchDb").setAttrValue("sourceDbId", req.getTargetDbId());
-				batchDbId = createBatchDbJob.getJobInfo().getResponse().getInt("outDbId");
-				req.getSubJobRequest("expBatchDb").setAttrValue("targetDbId", batchDbId);
-				req.getSubJobRequest("expBatchDb").setAttrValue("meshExtendCount", req.getExtendCount());
-				Set<String> meshes = new HashSet<String>();
-				for (Integer g : req.getGrids()) {
-					int m = g / 100;
-					meshes.add(m < 99999 ? "0" + String.valueOf(m) : String.valueOf(m));
+				if(req.getSubJobRequest("expBatchDb")!=null){
+					req.getSubJobRequest("expBatchDb").setAttrValue("sourceDbId", req.getTargetDbId());
+					req.getSubJobRequest("expBatchDb").setAttrValue("targetDbId", batchDbId);
+					req.getSubJobRequest("expBatchDb").setAttrValue("meshExtendCount", req.getExtendCount());
+					Set<String> meshes = new HashSet<String>();
+					for (Integer g : req.getGrids()) {
+						int m = g / 100;
+						meshes.add(m < 99999 ? "0" + String.valueOf(m) : String.valueOf(m));
+					}
+					req.getSubJobRequest("expBatchDb").setAttrValue("conditionParams", JSONArray.fromObject(meshes));
+					JobInfo expBatchDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
+					AbstractJob expBatchDbJob = JobCreateStrategy.createAsSubJob(expBatchDbJobInfo, req.getSubJobRequest("expBatchDb"), this);
+					expBatchDbJob.run();
+					if (expBatchDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
+						throw new Exception("批处理子版本库导数据时job执行失败。");
+					}
+					//cop 子版本物理删除逻辑删除数据
+					DbInfo batDb = datahub.getDbById(batchDbId);
+					batSchema = new OracleSchema(
+							DbConnectConfig.createConnectConfig(batDb.getConnectParam()));
+					PhysicalDeleteRow.doDelete(batSchema);
+				}else{
+					throw new Exception("未设置给批处理子版本库导数据的request参数。");
 				}
-				req.getSubJobRequest("expBatchDb").setAttrValue("conditionParams", JSONArray.fromObject(meshes));
-				JobInfo expBatchDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
-				AbstractJob expBatchDbJob = JobCreateStrategy.createAsSubJob(expBatchDbJobInfo, req.getSubJobRequest("expBatchDb"), this);
-				expBatchDbJob.run();
-				if (expBatchDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
-					throw new Exception("批处理子版本库导数据时job执行失败。");
-				}
-				//cop 子版本物理删除逻辑删除数据
-				DbInfo batDb = datahub.getDbById(batchDbId);
-				batSchema = new OracleSchema(
-						DbConnectConfig.createConnectConfig(batDb.getConnectParam()));
-				PhysicalDeleteRow.doDelete(batSchema);
 			}
-			
 			// 3.创建批处理子版本备份库
-			req.getSubJobRequest("createBakDb").setAttrValue("refDbId", batchDbId);
-			JobInfo createBakDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
-			AbstractJob createBakDbJob = JobCreateStrategy.createAsSubJob(createBakDbJobInfo, req.getSubJobRequest("createBakDb"),
-					this);
-			createBakDbJob.run();
-			if (createBakDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
-				throw new Exception("创建备份子版本库时job执行失败。");
+			int bakDbId=0;
+			//在找是否利用可重复使用的库,重用的库是空库，需要导数据
+			if(req.isReuseDb()){
+				DbInfo bakDbInfo = datahub.getReuseDb(BizType.DB_COP_VERSION,batchDbId);
+				if(bakDbInfo!=null)bakDbId=bakDbInfo.getDbId();
+			}
+			if(bakDbId>0&&req.getSubJobRequest("createBakDb")!=null){
+				req.getSubJobRequest("createBakDb").setAttrValue("refDbId", batchDbId);
+				JobInfo createBakDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
+				AbstractJob createBakDbJob = JobCreateStrategy.createAsSubJob(createBakDbJobInfo, req.getSubJobRequest("createBakDb"),
+						this);
+				createBakDbJob.run();
+				if (createBakDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
+					throw new Exception("创建备份子版本库时job执行失败。");
+				}
+				bakDbId = createBakDbJob.getJobInfo().getResponse().getInt("outDbId");
+			}else{
+				throw new Exception("未设置创建批处理备份子版本库的request参数。");
 			}
 			// 4.给批处理备份子版本复制数据
 			req.getSubJobRequest("copyBakDb").setAttrValue("sourceDbId", batchDbId);
-			int bakDbId = createBakDbJob.getJobInfo().getResponse().getInt("outDbId");
 			req.getSubJobRequest("copyBakDb").setAttrValue("targetDbId", bakDbId);
 			JobInfo copyBakDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
 			AbstractJob copyBakDbJob = JobCreateStrategy.createAsSubJob(copyBakDbJobInfo, req.getSubJobRequest("copyBakDb"), this);

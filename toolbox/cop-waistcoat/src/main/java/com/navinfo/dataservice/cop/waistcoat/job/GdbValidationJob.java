@@ -49,7 +49,7 @@ public class GdbValidationJob extends AbstractJob {
 						DbConnectConfig.createConnectConfig(valDb.getConnectParam()));
 			}else{
 				//在找是否利用可重复使用的库,重用的库是空库，需要导数据
-				if(req.isReuseValDb()){
+				if(req.isReuseDb()){
 					DbInfo valDb = datahub.getReuseDb(BizType.DB_COP_VERSION);
 					if(valDb!=null){
 						valSchema = new OracleSchema(

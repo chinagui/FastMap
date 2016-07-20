@@ -315,12 +315,7 @@ public class GridService {
 			
 			for(int i=0;i<GridStatList.size();i++){
 				GridStatInfo statInfo=GridStatList.get(i);
-				int a=1;
-				if(statInfo.getGridId().equals("60563600"))
-				{
-					
-					a++;
-				}
+	
 				if (0==type && statInfo.getPercentPoi()==100){
 					gridProduce.add(statInfo.getGridId());
 				}

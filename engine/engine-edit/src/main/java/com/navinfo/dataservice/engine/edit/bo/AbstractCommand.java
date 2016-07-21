@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.bo.ad;
+package com.navinfo.dataservice.engine.edit.bo;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -14,6 +14,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.dao.glm.iface.ICommand;
 
 /**
  * @ClassName: AbstractCommand
@@ -21,7 +22,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
  * @date 2016年7月15日
  * @Description: AbstractCommand.java
  */
-public abstract class AbstractCommand {
+public abstract class AbstractCommand implements ICommand{
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 
 	public abstract void validate() throws Exception;

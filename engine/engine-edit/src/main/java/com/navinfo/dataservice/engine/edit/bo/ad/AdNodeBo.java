@@ -1,8 +1,8 @@
 package com.navinfo.dataservice.engine.edit.bo.ad;
 
-import java.sql.Connection;
-
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+import com.navinfo.dataservice.engine.edit.bo.NodeBo;
 
 /** 
  * @ClassName: BoAdNode
@@ -11,9 +11,18 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
  * @Description: BoAdNode.java
  */
 public class AdNodeBo extends NodeBo{
-	public AdNodeBo(Connection conn, int nodePid, boolean isLock) {
-		this.adNode = PoFactory.getInstance().getByPK(conn, AdNode.class, nodePid, isLock);
-	}
 	
 	protected AdNode adNode;
+
+	@Override
+	public void setPo(IObj po) {
+		this.adNode=(AdNode)po;
+		this.geometry=adNode.getGeometry();
+	}
+
+	@Override
+	public IObj getPo() {
+		// TODO Auto-generated method stub
+		return adNode;
+	}
 }

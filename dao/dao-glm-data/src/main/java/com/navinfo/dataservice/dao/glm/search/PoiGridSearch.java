@@ -84,7 +84,7 @@ public class PoiGridSearch {
 		StringBuffer sb = new StringBuffer();
 		sb.append("SELECT poi_num,pid,mesh_id,kind_code,link_pid,x_guide,y_guide,post_code,open_24h,chain,u_record,geometry,\"LEVEL\",sports_venue,indoor,vip_flag  ");
 		sb.append(" FROM ix_poi");
-		sb.append(" WHERE  sdo_within_distance(geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE' ");
+		sb.append(" WHERE sdo_within_distance(geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE' ");
 		if (!gridDate.getString("date").isEmpty()){
 			sb.append(" AND u_date>'"+gridDate.getString("date")+"'");
 		}

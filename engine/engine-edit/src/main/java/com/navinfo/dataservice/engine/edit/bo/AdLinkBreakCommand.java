@@ -1,4 +1,7 @@
-package com.navinfo.dataservice.engine.edit.bo.ad;
+package com.navinfo.dataservice.engine.edit.bo;
+
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.iface.OperType;
 
 /** 
  * @ClassName: AdLinkBreakCommand
@@ -49,6 +52,27 @@ public class AdLinkBreakCommand extends AbstractCommand {
 	public void validate() throws Exception {
 		// TODO Auto-generated method stub
 		
+	}
+
+
+	@Override
+	public OperType getOperType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public String getRequester() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public ObjType getObjType() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

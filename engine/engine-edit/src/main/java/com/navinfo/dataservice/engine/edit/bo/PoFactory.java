@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.bo.ad;
+package com.navinfo.dataservice.engine.edit.bo;
 
 import java.sql.Connection;
 import java.util.List;
@@ -9,7 +9,7 @@ public class PoFactory {
 
 	public static PoFactory getInstance() {
 		if (instance == null) {
-			synchronized (OperatorFactory.class) {
+			synchronized (PoFactory.class) {
 				if (instance == null) {
 					instance = new PoFactory();
 				}
@@ -34,4 +34,5 @@ public class PoFactory {
 	public <T> List<T> getByFK(Connection conn, Class<T> clazz, String fkName, int fkValue, boolean isLock){
 		return null;
 	}
+	
 }

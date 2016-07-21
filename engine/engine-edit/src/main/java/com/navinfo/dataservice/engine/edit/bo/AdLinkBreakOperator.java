@@ -1,12 +1,17 @@
-package com.navinfo.dataservice.engine.edit.bo.ad;
+package com.navinfo.dataservice.engine.edit.bo;
 
 import java.util.List;
 
+import net.sf.json.JSONObject;
+
+import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
+import com.navinfo.dataservice.engine.edit.bo.ad.AdFaceBo;
+import com.navinfo.dataservice.engine.edit.bo.ad.AdLinkBo;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
-
-import net.sf.json.JSONObject;
 
 /** 
  * @ClassName: AdLinkBreakOperator
@@ -30,16 +35,19 @@ public class AdLinkBreakOperator extends AbstractOperator {
 
 	@Override
 	public void loadData() throws Exception {
-		this.adLinkBo = new AdLinkBo(conn, cmd.getLinkPid(), true);
+		
+		IObj po = PoFactory.getInstance().getByPK(conn, AdLink.class, cmd.getLinkPid(), true);
+		this.adLinkBo = (AdLinkBo) BoFactory.getInstance().create(po);
 		this.adLinkBo.getMeshes();
 		this.adLinkBo.getsNode();
 		this.adLinkBo.geteNode();
 		
-		
+		AdFaceBo faceBo = new AdFaceBo();
+		this.adFaceBoList = faceBo.query(conn, cmd.getLinkPid(), true);
 	}
 
 	@Override
-	public Result execute() {
+	public Result execute() throws Exception {
 		
 		GeometryFactory factory = new GeometryFactory();
 		Coordinate coord = new Coordinate(this.cmd.getLongitude(),this.cmd.getLatitude());
@@ -53,4 +61,5 @@ public class AdLinkBreakOperator extends AbstractOperator {
 		
 		return result;
 	}
+	
 }

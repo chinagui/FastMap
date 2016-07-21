@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.bo.ad;
+package com.navinfo.dataservice.engine.edit.bo;
 
 import net.sf.json.JSONObject;
 
@@ -28,8 +28,6 @@ public class OperatorFactory {
 
 	public AbstractOperator create(String opType, String objType,
 			JSONObject data) throws Exception {
-		// ...
-		// createCmd();
 
 		Class<?> clazz = Class.forName(objType + opType + "Operator");
 		AbstractOperator op = (AbstractOperator) clazz.newInstance();

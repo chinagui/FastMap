@@ -3,12 +3,6 @@ package com.navinfo.dataservice.dao.glm.iface;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
-
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchRealimage;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -177,5 +171,11 @@ public class Result implements ISerializable {
 		System.out.println(logs.toString());
 		return logs.toString();
 
+	}
+	
+	public void add(Result result) {
+		this.listAddIRow.addAll(result.getAddObjects());
+		this.listUpdateIRow.addAll(result.getUpdateObjects());
+		this.listDelIRow.addAll(result.getDelObjects());
 	}
 }

@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -36,7 +35,7 @@ public class RdElectroniceyeSearch implements ISearch {
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt) {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
-		String sql = "select a.pid, a.geometry from rd_electroniceye a where a.u_record <> 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
+		String sql = "select a.pid, a.direct, a.geometry from rd_electroniceye a where a.u_record <> 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
@@ -46,9 +45,15 @@ public class RdElectroniceyeSearch implements ISearch {
 			while (resultSet.next()) {
 				SearchSnapshot snapshot = new SearchSnapshot();
 
-				snapshot.setT(12);
+				snapshot.setT(26);
 
 				snapshot.setI(String.valueOf(resultSet.getInt("pid")));
+
+				JSONObject m = new JSONObject();
+
+				m.put("a", resultSet.getInt("direct"));
+				
+				snapshot.setM(m);
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
@@ -80,14 +85,74 @@ public class RdElectroniceyeSearch implements ISearch {
 
 	@Override
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
-		String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-		return this.searchDataBySpatial(wkt);
+		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+		String sql = "select a.pid, a.direct, a.geometry from rd_electroniceye a where a.u_record <> 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+
+			pstmt.setString(1, wkt);
+
+			resultSet = pstmt.executeQuery();
+
+			double px = MercatorProjection.tileXToPixelX(x);
+
+			double py = MercatorProjection.tileYToPixelY(y);
+
+			while (resultSet.next()) {
+				SearchSnapshot snapshot = new SearchSnapshot();
+
+				snapshot.setT(26);
+
+				snapshot.setI(resultSet.getString("pid"));
+				
+				JSONObject m = new JSONObject();
+
+				m.put("a", resultSet.getInt("direct"));
+				
+				snapshot.setM(m);
+				
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
+
+				Geojson.point2Pixel(geojson, z, px, py);
+
+				snapshot.setG(geojson.getJSONArray("coordinates"));
+
+				list.add(snapshot);
+			}
+		} catch (Exception e) {
+
+			throw new Exception(e);
+		} finally {
+			if (resultSet != null) {
+				try {
+					resultSet.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+		}
+
+		return list;
 	}
 	
-	public static void main(String[] args) {
-		String wkt = MercatorProjection.getWktWithGap(215885, 99231, 18, 80);
-		System.out.println(256 << 18);
-		
-	}
 
 }

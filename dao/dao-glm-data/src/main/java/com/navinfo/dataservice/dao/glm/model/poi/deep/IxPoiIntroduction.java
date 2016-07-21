@@ -33,7 +33,6 @@ public class IxPoiIntroduction implements IObj {
 	private String neighborEng;// 简介信息
 	private String traffic; // 交通枢纽
 	private String trafficEng;// 交通枢纽英文
-	private int mesh;
 	private String rowId;
 	// 更新时间
 	private String uDate;
@@ -44,10 +43,6 @@ public class IxPoiIntroduction implements IObj {
 
 	public void setuDate(String uDate) {
 		this.uDate = uDate;
-	}
-
-	public int getMesh() {
-		return mesh;
 	}
 
 	public int getPoiPid() {
@@ -285,14 +280,11 @@ public class IxPoiIntroduction implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-
 	}
 
 	@Override

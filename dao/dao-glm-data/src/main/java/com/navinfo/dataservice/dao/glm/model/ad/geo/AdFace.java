@@ -207,6 +207,7 @@ public class AdFace implements IObj {
 	public List<List<IRow>> children() {
 
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
+		children.add(faceTopos);
 
 		return children;
 	}

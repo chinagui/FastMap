@@ -37,7 +37,6 @@ public class IxPoiChargingStation implements IObj {
 	private int parkingFees = 0;// 停车收费
 	private String parkingInfo;// 停 车 收 费 备注
 	private int availableState = 0;// 可用状态
-	private int mesh;
 	private String rowId;
 	// 更新时间
 	private String uDate;
@@ -48,10 +47,6 @@ public class IxPoiChargingStation implements IObj {
 
 	public void setuDate(String uDate) {
 		this.uDate = uDate;
-	}
-
-	public int getMesh() {
-		return mesh;
 	}
 
 	public int getPoiPid() {
@@ -321,14 +316,11 @@ public class IxPoiChargingStation implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-
 	}
 
 	@Override

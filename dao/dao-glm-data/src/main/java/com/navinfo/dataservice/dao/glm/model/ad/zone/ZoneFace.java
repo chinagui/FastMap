@@ -213,6 +213,7 @@ public class ZoneFace implements IObj {
 
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
 
+		children.add(faceTopos);
 		return children;
 	}
 

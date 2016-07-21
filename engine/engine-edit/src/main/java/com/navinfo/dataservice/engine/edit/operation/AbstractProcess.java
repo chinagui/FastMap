@@ -152,11 +152,11 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 				handleResult(this.getCommand().getObjType(), result);
 			}
 
-			/*String preCheckMsg = this.preCheck();
+			String preCheckMsg = this.preCheck();
 
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
-			}*/
+			}
 			this.recordData();
 
 			this.postCheck();

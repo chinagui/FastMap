@@ -19,8 +19,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 public class RdBranchDetail implements IObj {
 	
-	private int mesh;
-
 	private int pid;
 
 	private int branchPid;
@@ -252,8 +250,9 @@ public class RdBranchDetail implements IObj {
 
 	@Override
 	public List<List<IRow>> children() {
-
-		return null;
+		List<List<IRow>> children = new ArrayList<List<IRow>>();
+		children.add(this.names);
+		return children;
 	}
 
 	@Override
@@ -346,14 +345,11 @@ public class RdBranchDetail implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		// TODO Auto-generated method stub
-		this.mesh=mesh;
 	}
 
 	@Override

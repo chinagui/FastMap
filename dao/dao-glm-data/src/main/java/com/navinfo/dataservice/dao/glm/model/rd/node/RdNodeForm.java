@@ -17,8 +17,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 public class RdNodeForm implements IRow {
 	
-	private int mesh;
-
 	private int nodePid;
 
 	private int formOfWay = 1;
@@ -125,7 +123,6 @@ public class RdNodeForm implements IRow {
 
 		this.auxiFlag = form.auxiFlag;
 		
-		this.mesh = form.mesh();
 	}
 
 	@Override
@@ -219,14 +216,11 @@ public class RdNodeForm implements IRow {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		// TODO Auto-generated method stub
-		this.mesh=mesh;
 	}
 
 }

@@ -17,8 +17,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 public class RdBranchVia implements IRow {
 
-	private int mesh;
-	
 	private int branchPid;
 
 	private int linkPid;
@@ -258,14 +256,11 @@ public class RdBranchVia implements IRow {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		// TODO Auto-generated method stub
-		this.mesh=mesh;
 	}
 
 }

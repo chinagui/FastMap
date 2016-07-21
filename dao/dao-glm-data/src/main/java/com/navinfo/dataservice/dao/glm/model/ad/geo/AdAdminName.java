@@ -27,7 +27,6 @@ public class AdAdminName implements IObj {
 	
 	private int linkPid = 0;
 	private int srcFlag = 0;
-	private int meshId = 0;
     private String rowId;
     private Map<String, Object> changedFields = new HashMap<String, Object>();
     
@@ -239,13 +238,11 @@ public class AdAdminName implements IObj {
 
 	@Override
 	public int mesh() {
-		return this.meshId;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.meshId= mesh;
-		
 	}
 
 	@Override

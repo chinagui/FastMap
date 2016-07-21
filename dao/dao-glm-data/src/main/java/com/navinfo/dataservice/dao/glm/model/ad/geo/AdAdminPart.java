@@ -21,7 +21,6 @@ public class AdAdminPart implements IRow {
 
 	private int groupId;
 	private int regionIdDown;
-	private int meshId = 0;
     private String rowId;
     private String objType;
     public String getRowId() {
@@ -183,13 +182,11 @@ public class AdAdminPart implements IRow {
 
 	@Override
 	public int mesh() {
-		return this.meshId;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.meshId= mesh;
-		
 	}
 
 	@Override

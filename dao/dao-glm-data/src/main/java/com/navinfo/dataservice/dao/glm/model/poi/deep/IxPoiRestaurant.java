@@ -38,7 +38,6 @@ public class IxPoiRestaurant implements IObj {
 	private String photoName;//照片名称
 	
 	private int  travelguideFlag  = 0;//是 否 属 于travel  guide所需 POI
-	private int mesh;
 	private String rowId;
 	private int uRecord=0;
 	private String uDate;
@@ -57,10 +56,6 @@ public class IxPoiRestaurant implements IObj {
 
 	public void setLongDescripEng(String longDescripEng) {
 		this.longDescripEng = longDescripEng;
-	}
-
-	public int getMesh() {
-		return mesh;
 	}
 
 	public int getPoiPid() {
@@ -358,14 +353,11 @@ public class IxPoiRestaurant implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-		
 	}
 
 	@Override

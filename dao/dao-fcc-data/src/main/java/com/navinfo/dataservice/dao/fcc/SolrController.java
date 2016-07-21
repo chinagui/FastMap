@@ -326,13 +326,31 @@ public class SolrController {
 		return snapshots;
 	}
 
-	public List<JSONObject> queryTipsWebType(String wkt, JSONArray types)
+	public List<JSONObject> queryTipsWebType(String wkt, JSONArray types,JSONArray stages)
 			throws SolrServerException, IOException {
 		List<JSONObject> snapshots = new ArrayList<JSONObject>();
 
 		StringBuilder builder = new StringBuilder();
+		
+		//builder.append("wkt:\"intersects(" + wkt + ")\"  AND stage:(1 2 3)");	
+		
+		builder.append("wkt:\"intersects(" + wkt + ")\" " );
+		
+		if (stages.size() > 0) {
 
-		builder.append("wkt:\"intersects(" + wkt + ")\"  AND stage:(1 2 3)");
+			builder.append(" AND stage:(");
+
+			for (int i = 0; i < stages.size(); i++) {
+				int stage = stages.getInt(i);
+
+				if (i > 0) {
+					builder.append(" ");
+				}
+				builder.append(stage);
+			}
+
+			builder.append(")");
+		}
 
 		if (types.size() > 0) {
 
@@ -446,4 +464,5 @@ public class SolrController {
 
 		return sb.toString();
 	}
+
 }

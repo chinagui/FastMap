@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.create;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -19,7 +21,7 @@ public class Command extends AbstractCommand{
 	
 	private int nodePid;
 	
-	private Set<Integer> linkPidSet;
+	private Map<Integer,List<Integer>> nodeLinkPidMap;
 	
 	private RdCross cross;
 
@@ -38,7 +40,7 @@ public class Command extends AbstractCommand{
 	
 	@Override
 	public ObjType getObjType() {
-		return ObjType.RWLINK;
+		return ObjType.RDTRAFFICSIGNAL;
 	}
 
 	@Override
@@ -46,12 +48,12 @@ public class Command extends AbstractCommand{
 		return requester;
 	}
 
-	public Set<Integer> getLinkPidSet() {
-		return linkPidSet;
+	public Map<Integer, List<Integer>> getNodeLinkPidMap() {
+		return nodeLinkPidMap;
 	}
 
-	public void setLinkPidSet(Set<Integer> linkPidSet) {
-		this.linkPidSet = linkPidSet;
+	public void setNodeLinkPidMap(Map<Integer, List<Integer>> nodeLinkPidMap) {
+		this.nodeLinkPidMap = nodeLinkPidMap;
 	}
 
 	public Command(JSONObject json, String requester) throws Exception{

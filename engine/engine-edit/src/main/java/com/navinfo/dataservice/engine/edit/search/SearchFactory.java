@@ -21,6 +21,7 @@ import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdRestrictionSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSpeedlimitSearch;
+import com.navinfo.dataservice.dao.glm.search.RdTrafficsignalSearch;
 import com.navinfo.dataservice.dao.glm.search.RwLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.RwNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.ZoneFaceSearch;
@@ -92,6 +93,8 @@ public class SearchFactory {
 			return new LuLinkSearch(conn);
 		case LUFACE:
 			return new LuFaceSearch(conn);
+		case RDTRAFFICSIGNAL:
+			return new RdTrafficsignalSearch(conn);
 		default:
 			return null;
 		}

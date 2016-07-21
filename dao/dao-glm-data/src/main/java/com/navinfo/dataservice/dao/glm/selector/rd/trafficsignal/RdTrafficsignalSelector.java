@@ -51,6 +51,18 @@ public class RdTrafficsignalSelector implements ISelector {
 			if (resultSet.next()) {
 				rdTrafficsignal.setPid(id);
 				
+				rdTrafficsignal.setFlag(resultSet.getInt("flag"));
+				
+				rdTrafficsignal.setKgFlag(resultSet.getInt("kg_flag"));
+				
+				rdTrafficsignal.setLinkPid(resultSet.getInt("link_pid"));
+				
+				rdTrafficsignal.setNodePid(resultSet.getInt("node_pid"));
+				
+				rdTrafficsignal.setLocation(resultSet.getInt("location"));
+				
+				rdTrafficsignal.setType(resultSet.getInt("type"));
+				
 				rdTrafficsignal.setRowId(resultSet.getString("row_id"));
 			}
 		} catch (Exception e) {

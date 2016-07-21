@@ -1042,6 +1042,7 @@ public class IxPoi implements IObj {
 		children.add(this.getParents());
 		children.add(this.getPhotos());
 		children.add(this.getVideoes());
+		children.add(this.getChildren());
 		
 		//deep
 		children.add(this.getParkings());

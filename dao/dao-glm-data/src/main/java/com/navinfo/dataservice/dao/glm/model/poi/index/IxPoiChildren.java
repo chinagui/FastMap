@@ -25,8 +25,6 @@ public class IxPoiChildren implements IRow {
 
 	private String rowId;
 	
-	private int mesh;
-	
 	private int groupId;//POI组号码
 	
 	private int childPoiPid;//子POI号码
@@ -227,12 +225,11 @@ public class IxPoiChildren implements IRow {
 
 	@Override
 	public int mesh() {
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
 	}
 
 }

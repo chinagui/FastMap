@@ -41,7 +41,6 @@ public class IxPoiTourroute implements IObj {
 	private String reserved;// 预留字段
 
 	private int travelguideFlag = 0;// 是 否 属 于travel guide所需 POI
-	private int mesh;
 	private String rowId;
 
 	// 更新时间
@@ -53,10 +52,6 @@ public class IxPoiTourroute implements IObj {
 
 	public void setuDate(String uDate) {
 		this.uDate = uDate;
-	}
-
-	public int getMesh() {
-		return mesh;
 	}
 
 	public String getRowId() {
@@ -350,14 +345,11 @@ public class IxPoiTourroute implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-
 	}
 
 	@Override

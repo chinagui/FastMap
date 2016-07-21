@@ -581,7 +581,7 @@ public class TipsSelector {
 				m.put("a", json.getString("t_dStatus"));
 				
 			}
-			else if("d".equals(mdFlag)){
+			else if("m".equals(mdFlag)){
 				
 				m.put("a", json.getString("t_mStatus"));
 			}
@@ -835,7 +835,6 @@ public class TipsSelector {
 				}
 			} else if (type == 1507 || type == 1511
 					|| type == 1601  || type == 1602 ) {
-				System.out.println(json.getString("id")+"\ndeep:"+deep);
 					m.put("e", deep.getString("name"));
 			}
 			else if (type == 1501){

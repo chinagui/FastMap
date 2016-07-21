@@ -73,7 +73,7 @@ public class TipsSelector {
 	 * @time:2016-7-2 上午10:08:16
 	 */
 	public JSONArray searchDataByTileWithGap(int x, int y, int z, int gap,
-			JSONArray types, String mdFlag) throws Exception {
+			JSONArray types,String mdFlag) throws Exception {
 		JSONArray array = new JSONArray();
 
 		try {
@@ -83,8 +83,26 @@ public class TipsSelector {
 			double px = MercatorProjection.tileXToPixelX(x);
 
 			double py = MercatorProjection.tileYToPixelY(y);
+			
+			JSONArray stages=new JSONArray();
+			
+			if ("d".equals(mdFlag)) {
 
-			List<JSONObject> snapshots = conn.queryTipsWebType(wkt, types);
+				stages.add(1);
+
+				stages.add(2);
+
+			} else if ("m".equals(mdFlag)) {
+
+				stages.add(1);
+
+				stages.add(2);
+
+				stages.add(3);
+			}
+
+
+			List<JSONObject> snapshots = conn.queryTipsWebType(wkt, types,stages);
 
 			for (JSONObject json : snapshots) {
 
@@ -458,11 +476,12 @@ public class TipsSelector {
 	 * @param grids
 	 * @param stages
 	 * @param type
+	 * @param mdFlag  d:日编，m:月编。
 	 * @return
 	 * @throws Exception
 	 */
 	public JSONArray getSnapshot(JSONArray grids, JSONArray stages, int type,
-			int dbId) throws Exception {
+			int dbId, String mdFlag) throws Exception {
 		JSONArray jsonData = new JSONArray();
 
 		String wkt = GridUtils.grids2Wkt(grids);
@@ -556,8 +575,18 @@ public class TipsSelector {
 			snapshot.setG(glocation.getJSONArray("coordinates"));
 			
 			JSONObject m = new JSONObject();
+			
+			if("d".equals(mdFlag)){
+				
+				m.put("a", json.getString("t_dStatus"));
+				
+			}
+			else if("d".equals(mdFlag)){
+				
+				m.put("a", json.getString("t_mStatus"));
+			}
 
-			m.put("a", json.getString("stage"));
+			
 
 			m.put("b", json.getString("t_lifecycle"));
 
@@ -806,7 +835,7 @@ public class TipsSelector {
 				}
 			} else if (type == 1507 || type == 1511
 					|| type == 1601  || type == 1602 ) {
-				
+				System.out.println(json.getString("id")+"\ndeep:"+deep);
 					m.put("e", deep.getString("name"));
 			}
 			else if (type == 1501){
@@ -879,7 +908,7 @@ public class TipsSelector {
 		stage.add(1);
 		int type = 1101;
 		int projectId=11;
-		System.out.println(selector.getSnapshot(grid, stage, type, projectId));
+		System.out.println(selector.getSnapshot(grid, stage, type, projectId,"m"));
 		// System.out.println(selector.getStats(a, b));
 
 		// JSONArray types = new JSONArray();

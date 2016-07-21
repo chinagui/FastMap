@@ -163,7 +163,8 @@ public class RenderController extends BaseController {
 			}
 
 			TipsSelector selector = new TipsSelector();
-
+			
+			
 			JSONArray array = selector.searchDataByTileWithGap(x, y, z, gap,
 					types,mdFlag);
 

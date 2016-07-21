@@ -1,47 +1,73 @@
 package com.navinfo.dataservice.engine.fcc;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.Table;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.google.gson.JsonObject;
+import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
+import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.fcc.HBaseConnector;
+import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
+import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
+import com.vividsolutions.jts.io.ParseException;
 
 public class TipsSelectorTest {
 
-	TipsSelector selector = new TipsSelector();
+	TipsSelector solrSelector = new TipsSelector();
+	
+	
+	private SolrController conn = new SolrController();
 	
 
 	//根据网格、类型、作业状态获取tips的snapshot列表（rowkey，点位，类型）
-//	@Test
+	@Test
 	public void testGetSnapshot() {
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-				new String[] { "dubbo-consumer.xml"});
+				new String[] { "dubbo-consumer-datahub.xml"});
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
 		
+		
+	/*	JSONArray grid = JSONArray
+				.fromObject("[60560301,60560302,60560303,60560311,60560312,60560313,60560322,60560323,60560331,60560332,60560333,60560320,60560330,60560300,60560321,60560310]");
+	    */
 		JSONArray grid = JSONArray
-				.fromObject("[59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");
+			.fromObject("[59567232,59567233]");
+
+	
 		System.out.println(grid.toString());
 		JSONArray stage = new JSONArray();
-		stage.add(0);
-		stage.add(1);
-		stage.add(2);
 		stage.add(3);
-		stage.add(4);
-		int type = 1101;
-		int dbId = 11;
+		stage.add(1);
+		
+		//红绿灯、红绿灯方位、大门、坡度、条件限速、车道限速、车道数、匝道、停车场出入口link、禁止穿行、禁止驶入、提左提右、一般道路方面、路面覆盖、测线
+		//1102、1103 、1104、1106、1111、1113、1202
+		int type = 1507;
+		int dbId = 25;
 		try {
-			System.out.println(selector.getSnapshot(grid, stage, type,
-					dbId));
+			System.out.println(solrSelector.getSnapshot(grid, stage, type,
+					dbId,"m"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -49,7 +75,7 @@ public class TipsSelectorTest {
 	
 	
     //根据瓦片扩圈获取Tips数据
-	@Test
+	//@Test
 	public void testSearchDataByTileWithGap() {
 		JSONArray types = new JSONArray();
 	/*	types.add(1301);
@@ -61,7 +87,7 @@ public class TipsSelectorTest {
 		types.add(1806);
 		types.add(1901);*/
 		try {
-			System.out.println(selector.searchDataByTileWithGap(107944, 49615, 17,
+			System.out.println(solrSelector.searchDataByTileWithGap(107944, 49615, 17,
 					20, types,"m"));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -76,7 +102,7 @@ public class TipsSelectorTest {
 					.fromObject("[59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");
 			JSONArray stage = new JSONArray();
 			try {
-				System.out.println(selector.getStats(grid, stage));
+				System.out.println(solrSelector.getStats(grid, stage));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -84,11 +110,11 @@ public class TipsSelectorTest {
 		
 		
 		//根据rowkey获取单个tips的详细信息
-	//	@Test
+		//@Test
 		public void testSearchDataByRowkey() {
 			try {
 				System.out.println("sorl by rowkey:");
-				System.out.println(selector.searchDataByRowkey("0212055b268d5faff94b59b94ad7aec3348d4f"));
+				System.out.println(solrSelector.searchDataByRowkey("11111146543817"));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -100,7 +126,7 @@ public class TipsSelectorTest {
 		public void testSearchDataBySpatial() {
 			try {
 				JSONArray ja =
-						selector.searchDataBySpatial("POLYGON ((113.70469 26.62879, 119.70818 26.62879, 119.70818 29.62948, 113.70469 29.62948, 113.70469 26.62879))");
+						solrSelector.searchDataBySpatial("POLYGON ((113.70469 26.62879, 119.70818 26.62879, 119.70818 29.62948, 113.70469 29.62948, 113.70469 26.62879))");
 
 				System.out.println(ja.size());
 			} catch (Exception e) {
@@ -197,7 +223,171 @@ public class TipsSelectorTest {
 	        return String.valueOf(sum);
 	    }
 	    
+	  // @Test
+	    public  void  testQuerySolr(){
+	    	System.out.println("查询rowkey");
+	    	/*JSONArray grids = JSONArray
+					.fromObject("[60560301,60560302,60560303,60560311,60560312,60560313,60560322,60560323,60560331,60560332,60560333,60560320,60560330,60560300,60560321,60560310]");
+	    	*/
+	    	
+	    	JSONArray grids = JSONArray
+					.fromObject("[59567233]");
+			
+	    	//[59567303,59567313]
+	    /*	JSONArray grids = JSONArray
+			.fromObject("[60560303,60560311,60560312,60560313,60560322]");
+	    	*/
+	    	
+	    	System.out.println(grids.toString());
+			JSONArray stages = new JSONArray();
+			stages.add(0);
+			stages.add(1);
+			stages.add(2);
+			stages.add(3);
+			stages.add(4);
+			//没找到：1113  1202
+			//红绿灯、红绿灯方位、大门、坡度、条件限速、车道限速、车道数、匝道、停车场出入口link、禁止穿行、禁止驶入、提左提右、一般道路方面、路面覆盖、测线、2001
+			//1102、1103 、1104、1106、1111、1113、1202、1207、1208、1304、1305、1404、1405、1502
+			
+			//int [] types={1102,1103,1104,1106,1111,1113,1202,1207,1208,1304,1305,1404,1405,1502};
+			
+			int [] types={1507,1512,1511,1516,1517,1605,1606,1601,1602,1804};
+			
+			
+			//int [] types={1202,1207,1304,1305};
+		
+			for (int i = 0; i < types.length; i++) {
+				int type = types[i];
+	    		String wkt;
+				try {
+					wkt = GridUtils.grids2Wkt(grids);
+					List<JSONObject> tips = conn.queryTipsWeb(wkt, type, stages);
+					if(tips==null||tips.size()==0){
+						System.out.println("type:"+type+"在"+grids+"没有找到");
+					}
+					int count=0;
+					String ids="";
+		    		for (JSONObject json : tips) {
+		    			ids+=","+json.get("id");
+		    			update(json.get("id").toString());
+		    			count++;
+		    			if(count==10)  break;
+		    		}
+		    		if(StringUtils.isNotEmpty(ids)){
+		    			System.out.println("type:"+type+"找到数据rowkeys:"+ids);
+		    		}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 
+	    		
+	    }
+	    
+	    
+	    
+	    
+	    /**
+		 * 修改tips(增加三个字段)
+		 * 
+		 * @param rowkey
+		 * @param mdFlag 
+		 * @param content
+		 * @return
+		 * @throws Exception
+		 */
+		public  boolean update(String rowkey)
+				throws Exception {
+
+			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+
+			Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+
+			Get get = new Get(rowkey.getBytes());
+
+			get.addColumn("data".getBytes(), "track".getBytes());
+
+			Result result = htab.get(get);
+
+			if (result.isEmpty()) {
+				return false;
+			}
+
+			Put put = new Put(rowkey.getBytes());
+
+			JSONObject track = JSONObject.fromObject(new String(result.getValue(
+					"data".getBytes(), "track".getBytes())));
+
+
+			JSONArray trackInfo = track.getJSONArray("t_trackInfo");
+			
+			int i=0;
+			
+			for (Object obj:trackInfo) {
+				
+				JSONObject info=JSONObject.fromObject(obj);
+				i++;
+				
+				info.put("stage", 1);
+				trackInfo.add(info);
+				
+				if(i==1) break;
+				
+				
+			}
+			
+			
+			track.put("t_lifecycle", 2);
+			
+			track.put("t_cStatus", 1);
+			
+			track.put("t_dStatus", 0);
+			
+			track.put("t_mStatus", 0);
+			
+			String date = StringUtils.getCurrentTime();
+
+			track.put("t_trackInfo", trackInfo);
+
+			track.put("t_date", date);
+			
+
+			put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
+					.getBytes());
+
+			htab.put(put);
+			
+			
+			JSONObject solrIndex = conn.getById(rowkey);
+
+			solrIndex.put("t_lifecycle", 2);
+
+			solrIndex.put("t_date", date);
+			
+			solrIndex.put("t_cStatus", 1);
+			
+			solrIndex.put("t_dStatus", 0);
+			
+			solrIndex.put("t_mStatus", 0);
+			
+			solrIndex.put("stage", 1);
+			
+			conn.addTips(solrIndex);
+
+
+			return true;
+		}
+
+		//@Test
+		public void testGrid2Location(){
+			
+			double [] l=GridUtils.grid2Location("59567233");
+			System.out.println("grid2Location_____________");
+			for (double d : l) {
+				System.out.println(d);
+			}
+		}
 
 
 }

@@ -65,7 +65,6 @@ public class ProduceController extends BaseController {
 			JSONObject jobDataJson=new JSONObject();
 			jobDataJson.put("gridList", dataJson.get("gridIds"));
 			jobDataJson.put("featureType", dataJson.get("dataType"));
-			jobDataJson.put("stopTime", "20160616000000");
 			long jobId=jobApi.createJob("releaseFmIdbDailyJob", jobDataJson, userId, "日出品");
 			return new ModelAndView("jsonView", success(jobId));
 		}catch(Exception e){

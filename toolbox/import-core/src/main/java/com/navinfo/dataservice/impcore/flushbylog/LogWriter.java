@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Iterator;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import net.sf.json.JSONObject;
@@ -90,20 +91,19 @@ public class LogWriter {
 			sb.append(",u_record) ");
 
 			sb.append("values(");
-
+			this.log.debug("json"+json);
 			it = json.keys();
 
 			tmpPos = 0;
-
-			while (it.hasNext()) {
-				sb.append(":");
-
-				sb.append(++tmpPos);
-
-				if (tmpPos < keySize) {
-
-					sb.append(",");
+			this.log.debug(json.keys());
+			int i =0;
+			for (Object key : json.keySet()){
+				if (i==0){
+					sb.append("?");
+				}else{
+					sb.append(",?");
 				}
+				i++;
 			}
 
 			sb.append(",1)");

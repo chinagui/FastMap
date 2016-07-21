@@ -32,9 +32,9 @@ public class DefaultLogMover extends LogMover {
 	public LogMoveResult move() throws Exception {
 		
 		Connection conn = null;
+		DbLinkCreator cr = new DbLinkCreator();
 		try{
 			//create db link
-			DbLinkCreator cr = new DbLinkCreator();
 			dbLinkName = tarSchema.getConnConfig().getUserName()+"_"+RandomUtil.nextNumberStr(4);
 			cr.create(dbLinkName, false, logSchema.getPoolDataSource(), tarSchema.getConnConfig().getUserName(), tarSchema.getConnConfig().getUserPasswd(), tarSchema.getConnConfig().getServerIp(), String.valueOf(tarSchema.getConnConfig().getServerPort()), tarSchema.getConnConfig().getServiceName());
 			conn = logSchema.getPoolDataSource().getConnection();
@@ -45,6 +45,7 @@ public class DefaultLogMover extends LogMover {
 			log.error(e.getMessage(),e);
 			DbUtils.rollbackAndCloseQuietly(conn);
 		}finally{
+			if(cr!=null) cr.drop(dbLinkName, false, logSchema.getPoolDataSource());
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 		return null;

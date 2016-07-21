@@ -12,6 +12,16 @@ import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePair;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
 
+/**
+ * @Title: RdEleceyePairSelector.java
+ * @Prject: dao-glm-data
+ * @Package: com.navinfo.dataservice.dao.glm.selector.rd.eleceye
+ * @Description: 查询区间测速电子眼
+ * @author zhangyt
+ * @date: 2016年7月20日 下午5:45:28
+ * @version: v1.0
+ *
+ */
 public class RdEleceyePairSelector implements ISelector {
 
 	private Connection conn;
@@ -20,6 +30,9 @@ public class RdEleceyePairSelector implements ISelector {
 		this.conn = conn;
 	}
 
+	/** 
+	 * 根据RdEleceyePair的GroupId查询
+	 */
 	@Override
 	public IRow loadById(int id, boolean isLock) throws Exception {
 		RdEleceyePair pair = new RdEleceyePair();
@@ -85,7 +98,10 @@ public class RdEleceyePairSelector implements ISelector {
 
 		return pair;
 	}
-
+	
+	/**
+	 * 根据RdEleceyePair的RowId查询
+	 */
 	@Override
 	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
 		RdEleceyePair pair = new RdEleceyePair();

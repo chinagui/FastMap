@@ -17,6 +17,16 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import oracle.sql.STRUCT;
 
+/**
+ * @Title: RdElectroniceyeSelector.java
+ * @Prject: dao-glm-data
+ * @Package: com.navinfo.dataservice.dao.glm.selector.rd.eleceye
+ * @Description: 查询电子眼
+ * @author zhangyt
+ * @date: 2016年7月20日 下午5:46:19
+ * @version: v1.0
+ *
+ */
 public class RdElectroniceyeSelector implements ISelector {
 
 	private Connection conn;
@@ -24,7 +34,10 @@ public class RdElectroniceyeSelector implements ISelector {
 	public RdElectroniceyeSelector(Connection conn) {
 		this.conn = conn;
 	}
-
+	
+	/**
+	 * 根据RdElectroniceye的Pid查询
+	 */
 	@Override
 	public IRow loadById(int id, boolean isLock) throws Exception {
 		RdElectroniceye eleceye = new RdElectroniceye();
@@ -95,7 +108,10 @@ public class RdElectroniceyeSelector implements ISelector {
 
 		return eleceye;
 	}
-
+	
+	/**
+	 * 根据RdElectroniceye的RowId查询
+	 */
 	@Override
 	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
 		RdElectroniceye eleceye = new RdElectroniceye();

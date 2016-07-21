@@ -15,6 +15,16 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+/**
+ * @Title: RdEleceyePart.java
+ * @Prject: dao-glm-data
+ * @Package: com.navinfo.dataservice.dao.glm.model.rd.eleceye
+ * @Description: 区间测速电子眼主表
+ * @author zhangyt
+ * @date: 2016年7月20日 下午5:40:16
+ * @version: v1.0
+ *
+ */
 public class RdEleceyePart implements IRow {
 
 	private int groupId;

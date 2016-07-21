@@ -23,6 +23,7 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public boolean prepareData() throws Exception {
+		// 根据pairId加载RdEleceyePart和RdEleceyePair
 		Command command = this.getCommand();
 		RdEleceyePartSelector selector = new RdEleceyePartSelector(this.getConn());
 		List<RdEleceyePart> parts = new ArrayList<RdEleceyePart>();

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
-import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -21,6 +20,16 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 
+/**
+ * @Title: RdElectroniceye.java
+ * @Prject: dao-glm-data
+ * @Package: com.navinfo.dataservice.dao.glm.model.rd.eleceye
+ * @Description: 电子眼表
+ * @author zhangyt
+ * @date: 2016年7月20日 下午5:38:58
+ * @version: v1.0
+ *
+ */
 public class RdElectroniceye implements IObj {
 
 	private int pid;

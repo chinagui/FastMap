@@ -8,15 +8,19 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import net.sf.json.JSONObject;
 
 public class Command extends AbstractCommand {
-	
+
+	public static final int ENTRY_KIND = 20;
+
+	public static final int EXIT_KIND = 21;
+
 	private String requester;
-	
+
 	private RdElectroniceye entryEleceye;
-	
+
 	private RdElectroniceye exitEleceye;
-	
+
 	private int eleceyePid1;
-	
+
 	private int eleceyePid2;
 
 	public RdElectroniceye getEntryEleceye() {
@@ -69,10 +73,10 @@ public class Command extends AbstractCommand {
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 		this.setDbId(json.getInt("dbId"));
-		
+
 		JSONObject data = json.getJSONObject("data");
-		this.eleceyePid1 = data.getInt("pid1");
-		this.eleceyePid2 = data.getInt("pid2");
+		this.eleceyePid1 = data.getInt("startPid");
+		this.eleceyePid2 = data.getInt("endPid");
 	}
 
 }

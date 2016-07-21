@@ -22,12 +22,14 @@ public class Operation implements IOperation {
 		RdElectroniceye entryEleceye = command.getEntryEleceye();
 		RdElectroniceye exitEleceye = command.getExitEleceye();
 		
+		// 添加区间测速电子眼配对信息
 		RdEleceyePair pair = new RdEleceyePair();
 		pair.setPid(PidService.getInstance().applyEleceyePairPid());
 		pair.setRowId(UuidUtils.genUuid());
 		pair.setMesh(entryEleceye.mesh());
 		result.insertObject(pair, ObjStatus.INSERT, pair.getPid());
 		
+		// 添加区间测速电子眼的起始电子眼
 		RdEleceyePart part = new RdEleceyePart();
 		part.setEleceyePid(entryEleceye.pid());
 		part.setGroupId(pair.pid());
@@ -35,6 +37,7 @@ public class Operation implements IOperation {
 		part.setRowId(UuidUtils.genUuid());
 		result.insertObject(part, ObjStatus.INSERT, part.getEleceyePid());
 		
+		// 添加区间测速电子眼的结束电子眼
 		part = new RdEleceyePart();
 		part.setEleceyePid(exitEleceye.pid());
 		part.setGroupId(pair.pid());

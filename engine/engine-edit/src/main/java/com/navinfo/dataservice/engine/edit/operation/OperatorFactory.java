@@ -105,6 +105,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdAdminDetailOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdAdminGroupOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdAdminNameOperator;
@@ -205,6 +206,7 @@ import com.navinfo.dataservice.dao.glm.operator.rd.rw.RwLinkNameOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.rw.RwLinkOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.rw.RwNodeOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.speedlimit.RdSpeedlimitOperator;
+import com.navinfo.dataservice.dao.glm.operator.rd.trafficsignal.RdTrafficsignalOperator;
 
 /**
  * 操作类工厂
@@ -453,6 +455,8 @@ public class OperatorFactory {
 			return new RdEleceyePartOperator(conn, (RdEleceyePart) obj);
 		case RDELECEYEPAIR:
 			return new RdEleceyePairOperator(conn, (RdEleceyePair) obj);
+		case RDTRAFFICSIGNAL:
+			return new RdTrafficsignalOperator(conn, (RdTrafficsignal) obj);
 		default:
 			return null;
 		}

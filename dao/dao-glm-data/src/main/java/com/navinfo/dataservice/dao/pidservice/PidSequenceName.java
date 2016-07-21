@@ -93,5 +93,6 @@ public class PidSequenceName {
 	public static final String rdElectroniceyePidName = "SEQ_RD_ELECTRONICEYE";
 
 	public static final String rdEleceyePairPidName = "SEQ_RD_ELECEYE_PAIR";
-
+	
+	public static final String rdTrafficsignal = "SEQ_RD_TRAFFICSIGNAL";
 }

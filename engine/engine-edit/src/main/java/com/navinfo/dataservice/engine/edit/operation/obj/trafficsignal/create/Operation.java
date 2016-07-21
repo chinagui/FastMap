@@ -1,8 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.create;
 
-import java.util.Set;
-
-import org.apache.commons.collections.CollectionUtils;
+import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -23,15 +22,23 @@ public class Operation implements IOperation {
 	public String run(Result result) throws Exception {
 		String msg = null;
 
-		Set<Integer> linkPidSet = this.command.getLinkPidSet();
+		Map<Integer,List<Integer>> nodeLinkPidMap = this.command.getNodeLinkPidMap();
 		
-		if(CollectionUtils.isNotEmpty(linkPidSet))
+		if(nodeLinkPidMap.size()>0)
 		{
-			for(Integer pid : linkPidSet)
+			//复合路口和简单路口通用写法
+			for(Map.Entry<Integer, List<Integer>> entry: nodeLinkPidMap.entrySet())
 			{
-				RdTrafficsignal rdTrafficsignal = createRdTrafficSignal(pid);
+				int nodePid = entry.getKey();
 				
-				result.insertObject(rdTrafficsignal, ObjStatus.INSERT, rdTrafficsignal.pid());
+				List<Integer> linkPidList = entry.getValue();
+				
+				for(int linkPid : linkPidList)
+				{
+					RdTrafficsignal rdTrafficsignal = createRdTrafficSignal(nodePid,linkPid);
+					
+					result.insertObject(rdTrafficsignal, ObjStatus.INSERT, rdTrafficsignal.pid());
+				}
 			}
 			//维护路口关系
 			RdCross cross = this.command.getCross();
@@ -53,14 +60,14 @@ public class Operation implements IOperation {
 	 * @param linkPid 进入线Pid
 	 * @throws Exception 
 	 */
-	private RdTrafficsignal createRdTrafficSignal(int linkPid) throws Exception {
+	private RdTrafficsignal createRdTrafficSignal(int nodePid,int linkPid) throws Exception {
 		RdTrafficsignal rdTrafficsignal = new RdTrafficsignal();
 		
 		rdTrafficsignal.setPid(PidService.getInstance().applyRdTrafficsignalPid());
 		
 		rdTrafficsignal.setLinkPid(linkPid);
 		
-		rdTrafficsignal.setNodePid(this.command.getNodePid());
+		rdTrafficsignal.setNodePid(nodePid);
 		
 		//默认为受控制
 		rdTrafficsignal.setFlag(1);

@@ -175,12 +175,14 @@ public class GlmGridCalculator {
 	 * @return
 	 */
 	private String assembleQueryGeoSql(String tableName,String rowId){
+		System.out.println();
 		StringBuilder sb = new StringBuilder();
 		GlmGridRefInfo refInfo = getGlmGridRefInfoMap().get(tableName);
 		sb.append(refInfo.getEditQuerySql());
 		sb.append(" AND P.ROW_ID = HEXTORAW('");
 		sb.append(rowId);
 		sb.append("')");
+		System.out.println(sb.toString());
 		return sb.toString();
 		
 	}

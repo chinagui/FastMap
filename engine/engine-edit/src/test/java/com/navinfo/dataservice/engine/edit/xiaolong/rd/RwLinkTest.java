@@ -8,6 +8,7 @@ import org.junit.Test;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.search.RwLinkSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -29,17 +30,36 @@ public class RwLinkTest extends InitApplication {
 		try {
 			conn = DBConnector.getInstance().getConnectionById(42);
 
-			String parameter = "{\"type\":\"RWLINK\",\"dbId\":42,\"objId\":100006019}";
+			String parameter = "{\"type\":\"RWLINK\",\"dbId\":42,\"objId\":100007138}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByPid(ObjType.RWLINK, 100006019).Serialize(ObjLevel.BRIEF));
+			System.out.println(p.searchDataByPid(ObjType.RWLINK, 100007138).Serialize(ObjLevel.BRIEF));
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Test
+	public void testRwRender()
+	{
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(42);
+
+			String parameter = "{\"type\":\"RWLINK\",\"dbId\":42,\"objId\":100007138}";
+
+			RwLinkSearch search = new RwLinkSearch(conn);
+			
+			search.searchDataByTileWithGap(107951, 49621, 17, 20);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 	
 	@Test

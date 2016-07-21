@@ -5,6 +5,7 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 
@@ -20,6 +21,8 @@ public class Command extends AbstractCommand  implements ICommand {
 	private String requester;
 
 	private RdTrafficsignal rdTrafficsignal;
+	
+	private RdCross rdCross;
 
 	private int pid;
 	
@@ -39,7 +42,7 @@ public class Command extends AbstractCommand  implements ICommand {
 	
 	@Override
 	public ObjType getObjType() {
-		return ObjType.ADADMIN;
+		return ObjType.RDTRAFFICSIGNAL;
 	}
 	
 	public RdTrafficsignal getRdTrafficsignal() {
@@ -62,6 +65,14 @@ public class Command extends AbstractCommand  implements ICommand {
 
 		this.pid = json.getInt("objId");
 		
+	}
+
+	public RdCross getRdCross() {
+		return rdCross;
+	}
+
+	public void setRdCross(RdCross rdCross) {
+		this.rdCross = rdCross;
 	}
 
 }

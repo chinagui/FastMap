@@ -35,5 +35,17 @@ public class RdTrafficSignalTest extends InitApplication{
 			e.printStackTrace();
 		}
 	}
-
+	
+	@Test
+	public void testUpdateTrafficSignal()
+	{
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDTRAFFICSIGNAL\",\"dbId\":42,\"data\":{\"type\":2,\"rowId\":\"78D984F13079444FB6DDBA25A52FAF69\",\"pid\":100000089,\"objStatus\":\"UPDATE\",\"kgFlag\":\"2\"}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

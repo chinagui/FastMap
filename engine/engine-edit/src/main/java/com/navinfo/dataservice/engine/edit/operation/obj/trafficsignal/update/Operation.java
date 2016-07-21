@@ -25,7 +25,7 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 		
-		RdTrafficsignal rdTrafficsignal = new RdTrafficsignal();
+		RdTrafficsignal rdTrafficsignal = this.command.getRdTrafficsignal();
 		
 		JSONObject content = command.getContent();
 

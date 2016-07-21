@@ -2,7 +2,6 @@ package com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.create;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 

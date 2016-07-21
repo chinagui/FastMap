@@ -17,6 +17,16 @@ import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePair;
 import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 import com.vividsolutions.jts.geom.Geometry;
 
+/**
+ * @Title: RdEleceyePairOperator.java
+ * @Prject: dao-glm-data
+ * @Package: com.navinfo.dataservice.dao.glm.operator.rd.eleceye
+ * @Description: 数据库操作(区间测速电子眼)
+ * @author zhangyt
+ * @date: 2016年7月20日 下午5:42:36
+ * @version: v1.0
+ *
+ */
 public class RdEleceyePairOperator extends AbstractOperator {
 
 	private static Logger logger = Logger.getLogger(RdEleceyePairOperator.class);

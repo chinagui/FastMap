@@ -22,7 +22,10 @@ public class Operation implements IOperation {
 		this.command = command;
 		this.conn = conn;
 	}
-
+	
+	/*
+	 * 创建电子眼信息并保存
+	 */
 	@Override
 	public String run(Result result) throws Exception {
 		String resultMsg = null;

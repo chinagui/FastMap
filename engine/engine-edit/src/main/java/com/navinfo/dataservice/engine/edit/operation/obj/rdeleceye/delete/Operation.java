@@ -14,6 +14,7 @@ public class Operation implements IOperation {
 
 	@Override
 	public String run(Result result) throws Exception {
+		// 删除电子眼
 		result.insertObject(this.command.getEleceye(), ObjStatus.DELETE, this.command.getEleceye().parentPKValue());
 
 		return null;

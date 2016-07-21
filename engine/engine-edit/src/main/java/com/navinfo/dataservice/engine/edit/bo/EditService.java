@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.bo.ad;
+package com.navinfo.dataservice.engine.edit.bo;
 
 import net.sf.json.JSONObject;
 

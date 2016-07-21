@@ -11,12 +11,12 @@ import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
 
 @Controller
@@ -32,7 +32,7 @@ public class InforController extends BaseController {
 	 * @throws IOException
 	 */
 	@RequestMapping(value = "/import/infor/")
-	public ModelAndView uploadInfor(HttpServletRequest request,
+	public void uploadInfor(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		String parameter = request.getParameter("parameter");
 
@@ -50,13 +50,16 @@ public class InforController extends BaseController {
 
 			String result = upload.uploadFile(url, "infor.json", filePath);
 
-			return new ModelAndView("jsonView", success(result));
+			response.getWriter().println(
+					ResponseUtils.assembleRegularResult(JSONObject
+							.fromObject(result)));
 		} catch (Exception e) {
 			String logid = Log4jUtils.genLogid();
 
 			Log4jUtils.error(logger, logid, parameter, e);
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage()));
 		}
 
 	}

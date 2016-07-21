@@ -1,8 +1,9 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.create;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
@@ -45,7 +46,7 @@ public class Process extends AbstractProcess<Command> {
 
 		this.getCommand().setCross(cross);
 
-		Set<Integer> linkPidSet = new HashSet<>();
+		Map<Integer,List<Integer>> nodeLinkPidMap = new HashMap<>();
 		
 		//复合路口和简单路口统一处理
 		List<IRow> nodes = cross.getNodes();
@@ -55,13 +56,17 @@ public class Process extends AbstractProcess<Command> {
 		for (IRow row : nodes) {
 			List<RdLink> links = linkSelector.loadInLinkByNodePid(((RdCrossNode) row).getNodePid(), 50, true);
 			
+			List<Integer> linkPidList = new ArrayList<>();
+			
 			for(RdLink link : links)
 			{
-				linkPidSet.add(link.getPid());
+				linkPidList.add(link.getPid());
 			}
+			
+			nodeLinkPidMap.put(((RdCrossNode) row).getNodePid(), linkPidList);
 		}
 
-		this.getCommand().setLinkPidSet(linkPidSet);
+		this.getCommand().setNodeLinkPidMap(nodeLinkPidMap);
 
 		return false;
 	}

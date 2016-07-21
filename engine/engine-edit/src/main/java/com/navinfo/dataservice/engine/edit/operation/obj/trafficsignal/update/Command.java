@@ -50,7 +50,7 @@ public class Command extends AbstractCommand  implements ICommand {
 	
 	@Override
 	public ObjType getObjType() {
-		return ObjType.ADADMIN;
+		return ObjType.RDTRAFFICSIGNAL;
 	}
 
 	@Override

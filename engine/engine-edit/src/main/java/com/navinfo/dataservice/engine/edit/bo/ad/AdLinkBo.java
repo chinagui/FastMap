@@ -35,7 +35,7 @@ import com.vividsolutions.jts.geom.Point;
 public class AdLinkBo extends LinkBo {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 
-	private AdLink adLink;
+	private AdLink po;
 	private List<AdLinkMesh> meshes;
 	private AdNodeBo sNode;
 	private AdNodeBo eNode;
@@ -44,9 +44,9 @@ public class AdLinkBo extends LinkBo {
 	public BreakResult breakoff(Point point) throws Exception {
 		BreakResult result = super.breakoff(point);
 
-		result.setPrimaryPid(adLink.getPid());
+		result.setPrimaryPid(po.getPid());
 		log.info("2 删除要打断的行政区划线信息");
-		result.insertObject(adLink, ObjStatus.DELETE, adLink.pid());
+		result.insertObject(po, ObjStatus.DELETE, po.pid());
 		result.setTargetLinkBo(this);
 
 		log.debug("3 生成打断点的信息");
@@ -57,14 +57,14 @@ public class AdLinkBo extends LinkBo {
 
 		log.debug("4 组装 第一条link 的信息");
 		AdLink slink = this.addLinkBySourceLink(result.getNewLeftGeometry(),
-				adLink.getsNodePid(), breakNodePid, adLink);
+				po.getsNodePid(), breakNodePid, po);
 		result.setNewLeftLink((LinkBo) BoFactory.getInstance().create(slink));
 		result.insertObject(slink, ObjStatus.INSERT, slink.pid());
 		log.debug("4.1 生成第一条link信息 pid = " + slink.getPid());
 
 		log.debug("5 组装 第一条link 的信息");
 		AdLink elink = this.addLinkBySourceLink(result.getNewRightGeometry(),
-				breakNodePid, adLink.geteNodePid(), adLink);
+				breakNodePid, po.geteNodePid(), po);
 		result.setNewRightLink((LinkBo) BoFactory.getInstance().create(elink));
 		result.insertObject(elink, ObjStatus.INSERT, elink.pid());
 		log.debug("5.1 生成第二条link信息 pid = " + elink.getPid());
@@ -73,20 +73,21 @@ public class AdLinkBo extends LinkBo {
 	}
 
 	public AdLink getAdLink() {
-		return adLink;
+		return po;
 	}
 
 	public void setAdLink(AdLink adLink) {
-		this.adLink = adLink;
+		this.po = adLink;
 	}
 
 	public List<AdLinkMesh> getMeshes() {
 		if (null == this.meshes) {
-			if (this.adLink.getPid() == 0) {
+			if (this.po.getPid() == 0) {
 				this.meshes = new ArrayList<AdLinkMesh>();
 			} else {
-				this.meshes = PoFactory.getInstance().getByFK(conn,
-						AdLinkMesh.class, "linkPid", this.adLink.getPid(),
+				//能够唯一确定关联字段的可以使用this
+				this.meshes = PoFactory.getInstance().list(conn,
+						AdLinkMesh.class, this.po,
 						isLock);
 			}
 		}
@@ -100,8 +101,10 @@ public class AdLinkBo extends LinkBo {
 
 	public AdNodeBo getsNode() throws Exception {
 		if (null == sNode) {
-			IObj po = PoFactory.getInstance().getByPK(conn, AdNode.class,
-					this.adLink.getsNodePid(), isLock);
+			AdLink queryPo = new AdLink();
+			queryPo.setsNodePid(this.po.getsNodePid());
+			IObj po = PoFactory.getInstance().get(conn, AdNode.class,
+					queryPo, isLock);
 			sNode = (AdNodeBo) BoFactory.getInstance().create(po);
 		}
 		return sNode;
@@ -113,8 +116,10 @@ public class AdLinkBo extends LinkBo {
 
 	public AdNodeBo geteNode() throws Exception {
 		if (null == eNode) {
-			IObj po = PoFactory.getInstance().getByPK(conn, AdNode.class,
-					this.adLink.geteNodePid(), isLock);
+			AdLink queryPo = new AdLink();
+			queryPo.seteNodePid(this.po.geteNodePid());
+			IObj po = PoFactory.getInstance().get(conn, AdNode.class,
+					queryPo, isLock);
 			eNode = (AdNodeBo) BoFactory.getInstance().create(po);
 		}
 		return eNode;
@@ -126,8 +131,8 @@ public class AdLinkBo extends LinkBo {
 
 	@Override
 	public void setPo(IObj po) {
-		this.adLink = (AdLink) po;
-		this.geometry = adLink.getGeometry();
+		this.po = (AdLink) po;
+		this.geometry = this.po.getGeometry();
 	}
 
 	private AdLink addLinkBySourceLink(Geometry g, int sNodePid, int eNodePid,
@@ -164,6 +169,6 @@ public class AdLinkBo extends LinkBo {
 	@Override
 	public IObj getPo() {
 		// TODO Auto-generated method stub
-		return adLink;
+		return po;
 	}
 }

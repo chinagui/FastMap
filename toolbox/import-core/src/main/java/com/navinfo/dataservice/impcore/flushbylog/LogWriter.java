@@ -14,6 +14,7 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
+import com.navinfo.dataservice.commons.database.oracle.MyPoolGuardConnectionWrapper;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 
@@ -87,8 +88,9 @@ public class LogWriter {
 					sb.append(it.next());
 				}
 			}
-
-			sb.append(",u_record) ");
+			if(sb.indexOf(",u_record")==-1){
+				sb.append(",u_record) ");
+			}
 
 			sb.append("values(");
 			this.log.debug("json"+json);
@@ -148,10 +150,16 @@ public class LogWriter {
 								.getBytes());
 	
 						jg.setSRID(8307);
+						if (this.targetDbConn instanceof MyPoolGuardConnectionWrapper){
+							STRUCT s = JGeometry.store(jg, ((MyPoolGuardConnectionWrapper)this.targetDbConn).getDelegate());
+							pstmt.setObject(tmpPos, s);
+						}else{
+							STRUCT s = JGeometry.store(jg, this.targetDbConn);
+							pstmt.setObject(tmpPos, s);
+						}
+						
 	
-						STRUCT s = JGeometry.store(jg, this.targetDbConn);
-	
-						pstmt.setObject(tmpPos, s);
+						
 					}
 				}
 

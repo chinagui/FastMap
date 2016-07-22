@@ -10,9 +10,7 @@ import java.util.Set;
 
 import net.sf.json.JSONObject;
 
-import com.alibaba.dubbo.common.json.JSON;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;

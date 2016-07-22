@@ -100,7 +100,7 @@ public class DefaultLogMover extends LogMover {
 		StringBuilder sb = new StringBuilder();
 		sb.append("INSERT INTO LOG_DAY_RELEASE@");
 		sb.append(dbLinkName);
-		sb.append("(OP_ID) SELECT L.OP_ID FROM ");
+		sb.append("(OP_ID) SELECT distinct L.OP_ID FROM ");
 		sb.append(tempTable);
 		sb.append(" T,LOG_DETAIL L WHERE T.OP_ID=L.OP_ID");
 		if(StringUtils.isNotEmpty(tempFailLogTable)){

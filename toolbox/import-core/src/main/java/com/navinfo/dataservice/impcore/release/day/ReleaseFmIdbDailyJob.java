@@ -78,7 +78,10 @@ public class ReleaseFmIdbDailyJob extends AbstractJob {
 					this.log.info("完成出品状态更新");
 					jobResponse.put(regionInfo.getRegionId().toString(), result);
 					commitStatus=true;
-				}finally{
+				}catch(Exception e){
+					throw new JobException(e);
+				}
+				finally{
 					unselectLog(logSelector,commitStatus);
 					unlockSourceDbGrid(lockHookId);
 				}

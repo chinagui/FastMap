@@ -34,20 +34,20 @@ import com.vividsolutions.jts.geom.Geometry;
  * @Description: BoAdLink.java
  */
 public class AdFaceBo extends FaceBo {
-	protected AdFace adFace;
+	protected AdFace po;
 	protected List<AdFaceTopo> topos;
 
 	public Result breakoff(LinkBo oldLink, LinkBo newLeftLink,
 			LinkBo newRightLink) throws Exception {
 		BreakResult result = new BreakResult();
 		List<AdLink> links = new ArrayList<AdLink>();
-		for (IRow iRow : adFace.getFaceTopos()) {
+		for (IRow iRow : po.getFaceTopos()) {
 			AdFaceTopo obj = (AdFaceTopo) iRow;
 			if (obj.getLinkPid() != oldLink.getPo().pid()) {
-				links.add((AdLink) PoFactory.getInstance().getByPK(conn,
-						AdLink.class, obj.getLinkPid(), false));
+				links.add((AdLink) PoFactory.getInstance().get(conn,
+						AdLink.class, obj, false));
 			}
-			result.insertObject(obj, ObjStatus.DELETE, adFace.getPid());
+			result.insertObject(obj, ObjStatus.DELETE, po.getPid());
 		}
 		links.add((AdLink) newLeftLink.getPo());
 		links.add((AdLink) newRightLink.getPo());
@@ -81,9 +81,9 @@ public class AdFaceBo extends FaceBo {
 		for (AdLink link : map.keySet()) {
 			AdFaceTopo faceTopo = new AdFaceTopo();
 			faceTopo.setLinkPid(link.getPid());
-			faceTopo.setFacePid(adFace.getPid());
+			faceTopo.setFacePid(po.getPid());
 			faceTopo.setSeqNum(map.get(link));
-			result.insertObject(faceTopo, ObjStatus.INSERT, adFace.getPid());
+			result.insertObject(faceTopo, ObjStatus.INSERT, po.getPid());
 		}
 		Geometry g = GeoTranslator.getCalLineToPython(list);
 		Coordinate[] c1 = new Coordinate[g.getCoordinates().length];
@@ -98,7 +98,7 @@ public class AdFaceBo extends FaceBo {
 			c1 = g.getCoordinates();
 		}
 
-		this.updateGeometry(GeoTranslator.getPolygonToPoints(c1), this.adFace,
+		this.updateGeometry(GeoTranslator.getPolygonToPoints(c1), this.po,
 				result);
 
 		return result;
@@ -117,13 +117,13 @@ public class AdFaceBo extends FaceBo {
 
 	@Override
 	public void setPo(IObj po) {
-		this.adFace = (AdFace) po;
-		this.geometry = adFace.getGeometry();
+		this.po = (AdFace) po;
+		this.geometry = this.po.getGeometry();
 	}
 
 	@Override
 	public IObj getPo() {
-		return adFace;
+		return po;
 	}
 
 	private void reverseFaceTopo(Result result) {

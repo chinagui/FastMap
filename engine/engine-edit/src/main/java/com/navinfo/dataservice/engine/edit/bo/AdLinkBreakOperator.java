@@ -36,7 +36,9 @@ public class AdLinkBreakOperator extends AbstractOperator {
 	@Override
 	public void loadData() throws Exception {
 		
-		IObj po = PoFactory.getInstance().getByPK(conn, AdLink.class, cmd.getLinkPid(), true);
+		AdLink link = new AdLink();
+		link.setPid(cmd.getLinkPid());
+		IObj po = PoFactory.getInstance().get(conn, link, true);
 		this.adLinkBo = (AdLinkBo) BoFactory.getInstance().create(po);
 		this.adLinkBo.getMeshes();
 		this.adLinkBo.getsNode();

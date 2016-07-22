@@ -39,8 +39,10 @@ public class Process extends AbstractProcess<Command> {
 			
 			IRow rdTrafficSignal = rdTrafficsignalSelector.loadByNodeId(nodePid, true);
 			
-			trafficsignals.add(rdTrafficSignal);
-
+			if(rdTrafficSignal != null)
+			{
+				trafficsignals.add(rdTrafficSignal);
+			}
 		}
 		
 		this.getCommand().setTrafficsignals(trafficsignals);

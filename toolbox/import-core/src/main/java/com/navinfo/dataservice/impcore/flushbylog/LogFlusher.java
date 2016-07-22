@@ -137,10 +137,10 @@ public abstract class LogFlusher {
 			rollbackConnections();
 			throw e ;
 		}finally{
-			this.closeConnections();
 			unlockTargetDbGrid(targetGridLockHookId);
 			dropMonthDbLink();
 			unlockSourceDbGrid(sourceGridLockHookId);
+			this.closeConnections();
 		}
 		return flushResult;
 	}
@@ -199,7 +199,7 @@ public abstract class LogFlusher {
 									this.targetDbInfo.getDbUserPasswd(), 
 									this.targetDbInfo.getDbServer().getIp(), 
 									String.valueOf(this.targetDbInfo.getDbServer().getPort()), 
-									this.targetDbInfo.getDbName());
+									oraSchema.getConnConfig().getServiceName());
 		this.targetDbLink = dbLinkName;
 	}
 	/*

@@ -1,12 +1,16 @@
 package com.navinfo.dataservice.impcore.selector;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.database.OracleSchema;
+import com.navinfo.dataservice.commons.sql.SqlClause;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.navicommons.database.QueryRunner;
 
 /** 
  * 默认的履历选择器，只是根据履历的逻辑，不包含选择表，选择编辑状态等业务
@@ -22,7 +26,14 @@ public class DefaultLogSelector extends LogSelector {
 	}
 	@Override
 	protected int selectLog(Connection conn) throws Exception{
-		return run.update(conn, getPrepareSql());
+		QueryRunner run = new QueryRunner();
+		SqlClause sqlClause = this.getPrepareSql(conn);
+		this.log.debug(sqlClause.getSql());
+		if (sqlClause==null) return 0;
+		if (sqlClause.getValues()==null || sqlClause.getValues().size()==0){
+			return run.update(conn, sqlClause.getSql());
+		}
+		return run.update(conn, sqlClause.getSql(),sqlClause.getValues().toArray());
 	}
 	@Override
 	protected int extendLog(Connection conn)throws Exception{
@@ -50,7 +61,8 @@ public class DefaultLogSelector extends LogSelector {
 		}
 	}
 	
-	protected String getPrepareSql() throws Exception{
+	protected SqlClause getPrepareSql(Connection conn) throws Exception{
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("INSERT INTO ");
 		sb.append(tempTable);
@@ -59,12 +71,15 @@ public class DefaultLogSelector extends LogSelector {
 			sb.append(" AND P.OP_DT<=TO_DATE('");
 			sb.append(DateUtils.dateToString(stopTime, DateUtils.DATE_COMPACTED_FORMAT)+ "','yyyymmddhh24miss')"); 
 		}
+		List<Object> values = new ArrayList<Object> ();
 		if(grids!=null&&grids.size()>0){
-			sb.append(" AND T.GRID_ID IN (");
-			sb.append(StringUtils.join(grids, ","));
-			sb.append(")");
+			SqlClause inClause = SqlClause.genInClauseWithMulInt(conn,grids," T.GRID_ID ");
+			if (inClause!=null)
+				sb .append(" AND "+ inClause.getSql());
+			values.addAll(inClause.getValues());
 		}
-		return sb.toString();
+		SqlClause sqlClause = new SqlClause(sb.toString(),values);
+		return sqlClause;
 	}
 
 	protected String getExtendLogSql() {

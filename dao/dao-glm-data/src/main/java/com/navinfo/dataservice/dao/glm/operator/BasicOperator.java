@@ -16,6 +16,7 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
@@ -45,12 +46,12 @@ public class BasicOperator extends AbstractOperator {
 	public BasicOperator(Connection conn, IRow row) throws Exception {
 		super(conn);
 		this.row = row;
-		this.modifyPoiStatus();
 	}
 
 	@Override
 	public void insertRow2Sql(Statement stmt) throws Exception {
 		this.generateInsertSql(stmt, row);
+		this.modifyPoiStatus();
 	}
 
 	/***
@@ -71,6 +72,9 @@ public class BasicOperator extends AbstractOperator {
 		value.append(" values ( ");
 		for (Field f : fields) {
 			if (isBasicType(f)) {
+				if(f.getModifiers() == 4 ){
+					continue;
+				}
 				f.setAccessible(true);
 				Object oj = f.get(row);
 				if (oj instanceof Integer) {
@@ -91,7 +95,7 @@ public class BasicOperator extends AbstractOperator {
 				String name = f.getName().toString();
 				if ((StringUtils.toColumnName(name).equals(M_U_RECORD)))
 					continue;
-				if(row instanceof IxPoi){
+				if (row instanceof IxPoi) {
 					if ((StringUtils.toColumnName(name).equals("status")))
 						continue;
 				}
@@ -99,22 +103,20 @@ public class BasicOperator extends AbstractOperator {
 					key.append(M_U_DATE + ",");
 					value.append("'" + StringUtils.getCurrentTime() + "',");
 				} else if (StringUtils.toColumnName(name).equals(M_PID)) {
-					 try{
-						 key.append(c.getMethod(M_PRIMARYKEY).invoke(row) + ",");
-						 value.append(oj + ",");
-						 
-					 }catch (Exception e) {
-							if (e instanceof NoSuchMethodException) {
-								 key.append(StringUtils.toColumnName(name) + ",");
-								 value.append(oj + ",");
-							}
-					 }
-					
+					try {
+						key.append(c.getMethod(M_PRIMARYKEY).invoke(row) + ",");
+						value.append(oj + ",");
+
+					} catch (Exception e) {
+						if (e instanceof NoSuchMethodException) {
+							key.append(StringUtils.toColumnName(name) + ",");
+							value.append(oj + ",");
+						}
+					}
+
 				} else if (StringUtils.toColumnName(name).equals(M_ROW_ID)) {
 					key.append(M_ROW_ID + ",");
-					if(row.rowId() == null || row.rowId() == "" ){
-						row.setRowId(UuidUtils.genUuid());
-					}
+					row.setRowId(UuidUtils.genUuid());
 					value.append("'" + row.rowId() + "',");
 				} else {
 					key.append(StringUtils.toColumnName(name) + ",");
@@ -126,6 +128,7 @@ public class BasicOperator extends AbstractOperator {
 		}
 		key.append(M_U_RECORD + ")");
 		value.append(1 + ")");
+		System.out.println(key + " " + value);
 		stmt.addBatch(key.append(value).toString());
 		if (row.children() != null) {
 			List<List<IRow>> lists = row.children();
@@ -217,6 +220,7 @@ public class BasicOperator extends AbstractOperator {
 		String sql = sb.toString();
 		sql = sql.replace(", where", " where");
 		stmt.addBatch(sql);
+		this.modifyPoiStatus();
 
 	}
 
@@ -235,12 +239,14 @@ public class BasicOperator extends AbstractOperator {
 				return " where row_id=hextoraw('" + row.rowId() + "')";
 			}
 		}
+
 		return "";
 	}
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		this.generateDeleteSql(stmt, row);
+		this.modifyPoiStatus();
 	}
 
 	/***
@@ -306,8 +312,8 @@ public class BasicOperator extends AbstractOperator {
 	private void addConditionForPoi(StringBuilder sb) {
 		if (row instanceof IxPoi || row instanceof IxPoiChildren
 				|| row instanceof IxPoiParent) {
-			sb.append(",u_date = " + StringUtils.getCurrentTime()+",");
-		}else{
+			sb.append(",u_date = " + StringUtils.getCurrentTime() + ",");
+		} else {
 			sb.append(",");
 		}
 
@@ -333,7 +339,7 @@ public class BasicOperator extends AbstractOperator {
 			upatePoiStatus();
 
 		}
-		
+
 	}
 
 	/**
@@ -369,5 +375,17 @@ public class BasicOperator extends AbstractOperator {
 
 		}
 
+	}
+	public static void main(String[] args) {
+		AdFace adFace = new AdFace();
+		adFace.setArea(2332);
+		Field[] fields =adFace.getClass().getDeclaredFields();
+		for(Field f :fields){
+			System.out.println(f.getModifiers());
+			//f.setAccessible(true);
+			
+			System.out.println(f);
+			System.out.println();
+		}
 	}
 }

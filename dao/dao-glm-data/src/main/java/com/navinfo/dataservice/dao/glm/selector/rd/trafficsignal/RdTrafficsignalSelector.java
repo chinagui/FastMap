@@ -146,6 +146,10 @@ public class RdTrafficsignalSelector implements ISelector {
 				
 				rdTrafficsignal.setRowId(resultSet.getString("row_id"));
 			}
+			else
+			{
+				return null;
+			}
 		} catch (Exception e) {
 
 			throw e;
@@ -216,6 +220,10 @@ public class RdTrafficsignalSelector implements ISelector {
 				rdTrafficsignal.setType(resultSet.getInt("type"));
 				
 				rdTrafficsignal.setRowId(resultSet.getString("row_id"));
+			}
+			else
+			{
+				return null;
 			}
 		} catch (Exception e) {
 

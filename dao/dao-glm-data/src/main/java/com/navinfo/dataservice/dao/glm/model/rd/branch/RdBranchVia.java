@@ -29,36 +29,54 @@ public class RdBranchVia implements IRow {
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
-	private int sNodePid;
 	
-	private int eNodePid;
-	
-	private int inNodePid;
-	
-	
+	// outNodePid不属于模型字段导致反射生成sql语句错误，因此特殊处理。
+	private Map<String, Integer> notGeoliveField = new HashMap<String, Integer>();
+
 
 	public int igetInNodePid() {
-		return inNodePid;
+
+		if (notGeoliveField.containsKey("inNodePid")) {
+
+			return notGeoliveField.get("inNodePid");
+		}
+
+		return 0;
 	}
 
 	public void isetInNodePid(int inNodePid) {
-		this.inNodePid = inNodePid;
+
+		notGeoliveField.put("inNodePid", inNodePid);
 	}
 
 	public int igetsNodePid() {
-		return sNodePid;
+
+		if (notGeoliveField.containsKey("sNodePid")) {
+
+			return notGeoliveField.get("sNodePid");
+		}
+
+		return 0;
 	}
 
 	public void isetsNodePid(int sNodePid) {
-		this.sNodePid = sNodePid;
+
+		notGeoliveField.put("sNodePid", sNodePid);
 	}
 
 	public int igeteNodePid() {
-		return eNodePid;
+
+		if (notGeoliveField.containsKey("eNodePid")) {
+
+			return notGeoliveField.get("eNodePid");
+		}
+
+		return 0;
 	}
 
 	public void iseteNodePid(int eNodePid) {
-		this.eNodePid = eNodePid;
+
+		notGeoliveField.put("eNodePid", eNodePid);
 	}
 
 	public String getRowId() {

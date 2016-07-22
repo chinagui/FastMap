@@ -24,8 +24,8 @@ import com.navinfo.navicommons.database.QueryRunner;
  */
 public class ReleaseDailyLogFlusher extends LogFlusher {
 	public ReleaseDailyLogFlusher(int regionId, DbInfo sourceDbInfo,
-			DbInfo targetDbInfo, List<Integer> grids, String stopTime,String featureType) {
-		super(regionId, sourceDbInfo, targetDbInfo, grids, stopTime, 
+			DbInfo targetDbInfo, List<Integer> grids,String featureType) {
+		super(regionId, sourceDbInfo, targetDbInfo, grids,null , 
 				featureType,//LogFlusher.FEATURE_POI,
 				FmEditLock.TYPE_RELEASE);
 	}
@@ -39,13 +39,9 @@ public class ReleaseDailyLogFlusher extends LogFlusher {
 				"  FROM LOG_OPERATION P, LOG_DETAIL L, LOG_DETAIL_GRID T,LOG_DAY_RELEASE R\r\n" + 
 				" WHERE P.OP_ID = L.OP_ID\r\n" + 
 				"   AND L.ROW_ID = T.LOG_ROW_ID\r\n" + 
-				"   AND P.COM_STA = 1\r\n" + 
+//				"   AND P.COM_STA = 1\r\n" + 
 				"   AND P.OP_ID = R.OP_ID\r\n") ; 
 		sb.append(getRelStaClause());
-		if(StringUtils.isNotEmpty(this.getStopTime())){
-			sb.append(" AND P.OP_DT<=TO_DATE('");
-			sb.append(this.getStopTime()+ "','yyyymmddhh24miss')"); 
-		}
 		if(this.getGrids()!=null&&this.getGrids().size()>0){
 			SqlClause inClause = SqlClause.genInClauseWithMulInt(this.getSourceDbConn(),this.getGrids()," T.GRID_ID ");
 			if (inClause!=null)
@@ -75,7 +71,7 @@ public class ReleaseDailyLogFlusher extends LogFlusher {
 		}
 		String gdbVesion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 		List<String> tableNames = GlmCache.getInstance().getGlm(gdbVesion).getEditTableNames(glmFeatureType);
-		return " AND L.TB_NM IN ('"+StringUtils.join(tableNames,"','")+"')";
+		return " L.TB_NM IN ('"+StringUtils.join(tableNames,"','")+"')";
 		
 	}
 	@Override

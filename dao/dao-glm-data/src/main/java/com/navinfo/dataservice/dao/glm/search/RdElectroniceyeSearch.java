@@ -52,7 +52,7 @@ public class RdElectroniceyeSearch implements ISearch {
 				JSONObject m = new JSONObject();
 
 				m.put("a", resultSet.getInt("direct"));
-				
+
 				snapshot.setM(m);
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
@@ -87,8 +87,8 @@ public class RdElectroniceyeSearch implements ISearch {
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select a.pid, a.direct, a.geometry from rd_electroniceye a where a.u_record <> 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
-		
+		String sql = "select a.pid, a.direct, a.geometry from rd_electroniceye a where a.u_record <> 2 and sdo_relate(a.geometry, sdo_geometry(:1, 8307),'mask=anyinteract') = 'TRUE'";
+
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -112,13 +112,13 @@ public class RdElectroniceyeSearch implements ISearch {
 				snapshot.setT(26);
 
 				snapshot.setI(resultSet.getString("pid"));
-				
+
 				JSONObject m = new JSONObject();
 
 				m.put("a", resultSet.getInt("direct"));
-				
+
 				snapshot.setM(m);
-				
+
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
 				JSONObject geojson = Geojson.spatial2Geojson(struct);
@@ -153,6 +153,9 @@ public class RdElectroniceyeSearch implements ISearch {
 
 		return list;
 	}
-	
 
+	public static void main(String[] args) throws Exception {
+		String wkt = MercatorProjection.getWktWithGap(107949, 49614, 17, 80);
+		System.out.println(wkt);
+	}
 }

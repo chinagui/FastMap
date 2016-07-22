@@ -34,7 +34,7 @@ public class RdElectroniceyeSelector implements ISelector {
 	public RdElectroniceyeSelector(Connection conn) {
 		this.conn = conn;
 	}
-	
+
 	/**
 	 * 根据RdElectroniceye的Pid查询
 	 */
@@ -108,7 +108,7 @@ public class RdElectroniceyeSelector implements ISelector {
 
 		return eleceye;
 	}
-	
+
 	/**
 	 * 根据RdElectroniceye的RowId查询
 	 */
@@ -171,6 +171,76 @@ public class RdElectroniceyeSelector implements ISelector {
 	@Override
 	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
 		return null;
+	}
+
+	public List<RdElectroniceye> loadListByRdLinkId(int rdLinkPid, boolean isLock) throws Exception {
+		List<RdElectroniceye> eleceyes = new ArrayList<RdElectroniceye>();
+		RdElectroniceye eleceye = new RdElectroniceye();
+
+		String sql = "select a.*,b.mesh_id from " + eleceye.tableName()
+				+ " a, rd_link b where a.link_pid = :1 and a.u_record != 2 and a.link_pid = b.link_pid";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, rdLinkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				eleceye = new RdElectroniceye();
+				this.setAttr(eleceye, resultSet);
+				
+				List<IRow> parts = new RdEleceyePartSelector(conn).loadRowsByEleceyePid(eleceye.pid(), isLock);
+				for (IRow row : parts) {
+					RdEleceyePart part = (RdEleceyePart) row;
+					part.setMesh(resultSet.getInt("mesh_id"));
+					eleceye.partMap.put(part.rowId(), part);
+
+					List<IRow> pairs = new ArrayList<IRow>();
+					RdEleceyePair pair = (RdEleceyePair) new RdEleceyePairSelector(conn).loadById(part.getGroupId(), false);
+					pair.setMesh(resultSet.getInt("mesh_id"));
+					pairs.add(pair);
+					eleceye.setPairs(pairs);
+					eleceye.pairMap.put(pair.pid(), pair);
+				}
+				eleceye.setParts(parts);
+				
+				eleceyes.add(eleceye);
+			}
+			
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return eleceyes;
 	}
 
 	private void setAttr(RdElectroniceye eleceye, ResultSet resultSet) throws Exception {

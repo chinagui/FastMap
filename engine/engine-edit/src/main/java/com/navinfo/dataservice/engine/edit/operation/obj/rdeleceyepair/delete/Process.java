@@ -27,14 +27,14 @@ public class Process extends AbstractProcess<Command> {
 		Command command = this.getCommand();
 		RdEleceyePartSelector selector = new RdEleceyePartSelector(this.getConn());
 		List<RdEleceyePart> parts = new ArrayList<RdEleceyePart>();
-		List<IRow> rows = selector.loadRowsByGroupId(command.getGroupId(), false);
+		List<IRow> rows = selector.loadRowsByGroupId(command.getGroupId(), true);
 		for (IRow row : rows) {
 			parts.add((RdEleceyePart) row);
 		}
 		command.setParts(parts);
 
 		command.setPair(
-				(RdEleceyePair) new RdEleceyePairSelector(this.getConn()).loadById(command.getGroupId(), false));
+				(RdEleceyePair) new RdEleceyePairSelector(this.getConn()).loadById(command.getGroupId(), true));
 
 		return false;
 	}

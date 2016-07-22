@@ -210,6 +210,8 @@ public class Process extends AbstractProcess<Command> {
 		lockRdGsc();
 
 		lockAdAdmin();
+		
+		lockRdTrafficSignal();
 
 		return true;
 	}

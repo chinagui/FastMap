@@ -66,6 +66,8 @@ public class CompPolylineUtil {
 					leftCurFirstLine.setSpoint(leftMidNode);
 					DoubleLine rightPreLastLine = rightResults[i-1].getLastLine();
 					DoubleLine rightCurFirstLine = rightResults[i].getFirstLine();
+					System.out.println(rightPreLastLine);
+					System.out.println(rightCurFirstLine);
 					DoublePoint rightMidNode = CompLineUtil.LineExtIntersect(rightPreLastLine,rightCurFirstLine);
 					rightPreLastLine.setEpoint(rightMidNode);
 					rightCurFirstLine.setSpoint(rightMidNode);

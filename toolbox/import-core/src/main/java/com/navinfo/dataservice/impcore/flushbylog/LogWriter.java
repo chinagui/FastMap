@@ -151,7 +151,7 @@ public class LogWriter {
 	
 						jg.setSRID(8307);
 						if (this.targetDbConn instanceof MyPoolGuardConnectionWrapper){
-							STRUCT s = JGeometry.store(jg, ((MyPoolGuardConnectionWrapper)this.targetDbConn).getDelegate());
+							STRUCT s = JGeometry.store(jg, ((MyPoolGuardConnectionWrapper)this.targetDbConn).getInnermostDelegate());
 							pstmt.setObject(tmpPos, s);
 						}else{
 							STRUCT s = JGeometry.store(jg, this.targetDbConn);

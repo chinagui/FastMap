@@ -37,7 +37,7 @@ public class RdLinkName implements IRow {
 
 	private int code;
 	
-	public String name;
+	protected String name;
 
 	public String getInputTime() {
 		return inputTime;

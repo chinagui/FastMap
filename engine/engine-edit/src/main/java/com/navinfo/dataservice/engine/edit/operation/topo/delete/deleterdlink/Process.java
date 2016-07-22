@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
@@ -28,6 +29,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
@@ -55,6 +57,15 @@ public class Process extends AbstractProcess<Command> {
 				this.getCommand().getLinkPid(), true);
 
 		this.getCommand().setLink(link);
+	}
+	
+	public void lockRdTrafficSignal() throws Exception
+	{
+		RdTrafficsignalSelector rdTrafficsignalSelector = new RdTrafficsignalSelector(this.getConn());
+		
+		RdTrafficsignal row = rdTrafficsignalSelector.loadByLinkPid(this.getCommand().getLinkPid(), true);
+		
+		this.getCommand().setTrafficSignal(row);
 	}
 
 	// 锁定盲端节点
@@ -369,23 +380,8 @@ public class Process extends AbstractProcess<Command> {
 		return null;
 	}
 
-	private void releaseResource(PreparedStatement pstmt, ResultSet resultSet) {
-		try {
-			resultSet.close();
-		} catch (Exception e) {
-
-		}
-
-		try {
-			pstmt.close();
-		} catch (Exception e) {
-
-		}
-	}
-
 	@Override
 	public String exeOperation() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

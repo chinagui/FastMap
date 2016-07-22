@@ -51,27 +51,30 @@ public class GdbValidationJob extends AbstractJob {
 				//在找是否利用可重复使用的库,重用的库是空库，需要导数据
 				if(req.isReuseDb()){
 					DbInfo valDb = datahub.getReuseDb(BizType.DB_COP_VERSION);
+					
 					if(valDb!=null){
-						valSchema = new OracleSchema(
-								DbConnectConfig.createConnectConfig(valDb.getConnectParam()));
+						valDbId=valDb.getDbId();
+					}else{//未设置利用重用的库，或者未找到可重用的库，需要新建库
+						if(req.getSubJobRequest("createValDb")!=null){
+							JobInfo createValDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
+							AbstractJob createValDbJob = JobCreateStrategy.createAsSubJob(createValDbJobInfo,
+									req.getSubJobRequest("createValDb"), this);
+							createValDbJob.run();
+							if (createValDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
+								throw new Exception("创建检查子版本库时job执行失败。");
+							}
+							valDbId = createValDbJob.getJobInfo().getResponse().getInt("outDbId");
+							valDb = datahub.getDbById(valDbId);
+						}else{
+							throw new Exception("未设置创建检查子版本库request参数。");
+						}
 					}
-				}
-				//未设置利用重用的库，或者未找到可重用的库，需要新建库
-				if(valSchema==null&&req.getSubJobRequest("createValDb")!=null){
-					JobInfo createValDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
-					AbstractJob createValDbJob = JobCreateStrategy.createAsSubJob(createValDbJobInfo,
-							req.getSubJobRequest("createValDb"), this);
-					createValDbJob.run();
-					if (createValDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
-						throw new Exception("创建检查子版本库时job执行失败。");
-					}
-					valDbId = createValDbJob.getJobInfo().getResponse().getInt("outDbId");
 					jobInfo.getResponse().put("valDbId", valDbId);
-				}else{
-					throw new Exception("未设置创建检查子版本库request参数。");
+					valSchema = new OracleSchema(
+							DbConnectConfig.createConnectConfig(valDb.getConnectParam()));
 				}
+				// 给检查子版本库导数据
 				if(req.getSubJobRequest("expValDb")!=null){
-					// 给检查子版本库导数据
 					req.getSubJobRequest("expValDb").setAttrValue("sourceDbId", req.getTargetDbId());
 					req.getSubJobRequest("expValDb").setAttrValue("targetDbId", valDbId);
 					Set<String> meshes = new HashSet<String>();

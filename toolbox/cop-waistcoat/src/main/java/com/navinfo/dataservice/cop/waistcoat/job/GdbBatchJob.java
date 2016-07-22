@@ -58,28 +58,32 @@ public class GdbBatchJob extends AbstractJob {
 				batSchema = new OracleSchema(
 						DbConnectConfig.createConnectConfig(batDb.getConnectParam()));
 			}else{
-				//在找是否利用可重复使用的库,重用的库是空库，需要导数据
+				//先找是否利用可重复使用的库,重用的库是空库，需要导数据
+				DbInfo batDb = null;
 				if(req.isReuseDb()){
-					DbInfo batDb = datahub.getReuseDb(BizType.DB_COP_VERSION);
-					if(batDb!=null){
-						batSchema = new OracleSchema(
-								DbConnectConfig.createConnectConfig(batDb.getConnectParam()));
-					}
+					batDb = datahub.getReuseDb(BizType.DB_COP_VERSION);
 				}
 				//未设置利用重用的库，或者未找到可重用的库，需要新建库
-				if(batSchema==null&&req.getSubJobRequest("createBatchDb")!=null){
-					JobInfo createBatchDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
-					AbstractJob createBatchDbJob = JobCreateStrategy.createAsSubJob(createBatchDbJobInfo,
-							req.getSubJobRequest("createBatchDb"), this);
-					createBatchDbJob.run();
-					if (createBatchDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
-						throw new Exception("创建批处理子版本库是job执行失败。");
-					}
-					batchDbId = createBatchDbJob.getJobInfo().getResponse().getInt("outDbId");
-					jobInfo.getResponse().put("batDbId", batchDbId);
+				if(batDb!=null){
+					batchDbId=batDb.getDbId();
 				}else{
-					throw new Exception("未设置创建批处理子版本库request参数。");
+					if(req.getSubJobRequest("createBatchDb")!=null){
+						JobInfo createBatchDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
+						AbstractJob createBatchDbJob = JobCreateStrategy.createAsSubJob(createBatchDbJobInfo,
+								req.getSubJobRequest("createBatchDb"), this);
+						createBatchDbJob.run();
+						if (createBatchDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
+							throw new Exception("创建批处理子版本库是job执行失败。");
+						}
+						batchDbId = createBatchDbJob.getJobInfo().getResponse().getInt("outDbId");
+						jobInfo.getResponse().put("batDbId", batchDbId);
+						batDb = datahub.getDbById(batchDbId);
+					}else{
+						throw new Exception("未设置创建批处理子版本库request参数。");
+					}
 				}
+				batSchema = new OracleSchema(
+						DbConnectConfig.createConnectConfig(batDb.getConnectParam()));
 				// 2.批处理库导数据
 				if(req.getSubJobRequest("expBatchDb")!=null){
 					req.getSubJobRequest("expBatchDb").setAttrValue("sourceDbId", req.getTargetDbId());
@@ -98,9 +102,6 @@ public class GdbBatchJob extends AbstractJob {
 						throw new Exception("批处理子版本库导数据时job执行失败。");
 					}
 					//cop 子版本物理删除逻辑删除数据
-					DbInfo batDb = datahub.getDbById(batchDbId);
-					batSchema = new OracleSchema(
-							DbConnectConfig.createConnectConfig(batDb.getConnectParam()));
 					PhysicalDeleteRow.doDelete(batSchema);
 				}else{
 					throw new Exception("未设置给批处理子版本库导数据的request参数。");
@@ -108,23 +109,25 @@ public class GdbBatchJob extends AbstractJob {
 			}
 			// 3.创建批处理子版本备份库
 			int bakDbId=0;
-			//在找是否利用可重复使用的库,重用的库是空库，需要导数据
+			//先找是否利用可重复使用的库,重用的库是空库，需要导数据
 			if(req.isReuseDb()){
 				DbInfo bakDbInfo = datahub.getReuseDb(BizType.DB_COP_VERSION,batchDbId);
 				if(bakDbInfo!=null)bakDbId=bakDbInfo.getDbId();
 			}
-			if(bakDbId>0&&req.getSubJobRequest("createBakDb")!=null){
-				req.getSubJobRequest("createBakDb").setAttrValue("refDbId", batchDbId);
-				JobInfo createBakDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
-				AbstractJob createBakDbJob = JobCreateStrategy.createAsSubJob(createBakDbJobInfo, req.getSubJobRequest("createBakDb"),
-						this);
-				createBakDbJob.run();
-				if (createBakDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
-					throw new Exception("创建备份子版本库时job执行失败。");
+			if(bakDbId==0){
+				if(req.getSubJobRequest("createBakDb")!=null){
+					req.getSubJobRequest("createBakDb").setAttrValue("refDbId", batchDbId);
+					JobInfo createBakDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
+					AbstractJob createBakDbJob = JobCreateStrategy.createAsSubJob(createBakDbJobInfo, req.getSubJobRequest("createBakDb"),
+							this);
+					createBakDbJob.run();
+					if (createBakDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
+						throw new Exception("创建备份子版本库时job执行失败。");
+					}
+					bakDbId = createBakDbJob.getJobInfo().getResponse().getInt("outDbId");
+				}else{
+					throw new Exception("未设置创建批处理备份子版本库的request参数。");
 				}
-				bakDbId = createBakDbJob.getJobInfo().getResponse().getInt("outDbId");
-			}else{
-				throw new Exception("未设置创建批处理备份子版本库的request参数。");
 			}
 			// 4.给批处理备份子版本复制数据
 			req.getSubJobRequest("copyBakDb").setAttrValue("sourceDbId", batchDbId);

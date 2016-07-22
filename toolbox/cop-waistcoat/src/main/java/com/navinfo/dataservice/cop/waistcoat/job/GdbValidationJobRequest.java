@@ -23,7 +23,7 @@ public class GdbValidationJobRequest extends AbstractJobRequest {
 	protected int targetDbId;
 	protected int valDbId=0;
 	protected int timeOut;
-	protected boolean reuseDb=false;
+	protected boolean reuseDb=true;
 	
 	@Override
 	public String getJobType() {

@@ -328,11 +328,13 @@ public class DbService {
 		Connection conn = null;
 		try{
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-			String lockSql = "SELECT T.DB_ID FROM DB_REUSE T WHERE EXISTS (SELECT 1 FROM DB_HUB P WHERE T.DB_ID=P.DB_ID AND P.BIZ_TYPE=?) AND ROWNUM=1";
+			String selSql = "SELECT T.DB_ID FROM DB_REUSE T WHERE EXISTS (SELECT 1 FROM DB_HUB P WHERE T.DB_ID=P.DB_ID AND P.BIZ_TYPE=?) AND T.USING_STATUS=0 AND ROWNUM=1 FOR UPDATE";
 			QueryRunner run = new QueryRunner();
-			int dbId = run.queryForInt(conn, lockSql,bizType);
+			int dbId = run.queryForInt(conn, selSql,bizType);
 			if(dbId>0){
 				db = getDbById(dbId);
+				String lockSql = "UPDATE DB_REUSE SET USING_STATUS=1 WHERE DB_ID=?";
+				run.update(conn, lockSql, dbId);
 			}
 			return db;
 		}catch (Exception e) {
@@ -356,12 +358,14 @@ public class DbService {
 		Connection conn = null;
 		try{
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-			String lockSql = "SELECT T.DB_ID FROM DB_REUSE T WHERE EXISTS (SELECT 1 FROM DB_HUB P WHERE T.DB_ID=P.DB_ID AND P.BIZ_TYPE=?"
-					+ " AND P.SERVER_ID=(SELECT SERVER_ID FROM DB_HUB WHERE DB_ID=?)) AND ROWNUM=1";
+			String selSql = "SELECT T.DB_ID FROM DB_REUSE T WHERE EXISTS (SELECT 1 FROM DB_HUB P WHERE T.DB_ID=P.DB_ID AND P.BIZ_TYPE=?"
+					+ " AND P.SERVER_ID=(SELECT SERVER_ID FROM DB_HUB WHERE DB_ID=?)) AND T.USING_STATUS=0 AND ROWNUM=1 FOR UPDATE";
 			QueryRunner run = new QueryRunner();
-			int dbId = run.queryForInt(conn, lockSql,bizType,refDbId);
+			int dbId = run.queryForInt(conn, selSql,bizType,refDbId);
 			if(dbId>0){
 				db = getDbById(dbId);
+				String lockSql = "UPDATE DB_REUSE SET USING_STATUS=1 WHERE DB_ID=?";
+				run.update(conn, lockSql, dbId);
 			}
 			return db;
 		}catch (Exception e) {

@@ -30,7 +30,7 @@ public class EleceyeTest extends InitApplication {
 
 	@Test
 	public void createEleceye() {
-		String requester = "{'dbId':43,'command':'CREATE','type':'RDELECTRONICEYE','data':{'direct':3,'longitude':116.48378868782932,'latitude':40.30710911418436,'linkPid':13677569}}";
+		String requester = "{'dbId':43,'command':'CREATE','type':'RDELECTRONICEYE','data':{'direct':3,'longitude':116.49138868782932,'latitude':40.01445911418436,'linkPid':85518434}}";
 		TestUtil.run(requester);
 	}
 	

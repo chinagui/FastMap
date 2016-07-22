@@ -33,6 +33,7 @@ public abstract class AbstractOperator implements IOperator {
 
 		try {
 			stmt = conn.createStatement();
+			
 			this.insertRow2Sql(stmt);
    
 			stmt.executeBatch();

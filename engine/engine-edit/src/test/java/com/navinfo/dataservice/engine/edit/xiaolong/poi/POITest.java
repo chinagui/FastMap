@@ -72,7 +72,7 @@ public class POITest extends InitApplication{
 	@Test
 	public void testDeletePoi()
 	{
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"IXPOI\",\"dbId\":42,\"objId\":642692}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"IXPOI\",\"dbId\":42,\"objId\":1152117063}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

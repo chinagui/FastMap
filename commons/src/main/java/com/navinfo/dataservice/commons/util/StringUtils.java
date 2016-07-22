@@ -35,9 +35,15 @@ public class StringUtils {
 	 * @return 列名
 	 */
 	public static String toColumnName(String fieldName) {
+		
 
+		if (fieldName.equals("open24h")) {
+			return "open_24h";
+		}
+		if (fieldName.equals("level")) {
+			return"\"LEVEL\"";
+		} 
 		StringBuilder sb = new StringBuilder();
-
 		for (int i = 0; i < fieldName.length(); i++) {
 			char c = fieldName.charAt(i);
 			if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
@@ -49,6 +55,7 @@ public class StringUtils {
 
 		return sb.toString().toLowerCase();
 	}
+
 
 	/**
 	 * 判断字符串是否相等
@@ -217,14 +224,15 @@ public class StringUtils {
     
 	public static void main(String[] args) {
 
-//		List<Integer> integers =  new ArrayList<Integer>();
-//		integers.add(1);
-//		integers.add(2);
-//		integers.add(3);
-//		System.out.println(integers);
-//		System.out.println(integers.toString().replace("[", "").replace("]", ""));
+		/*if (column.equals("open24h")) {
+			column = "open_24h";
+		} else if (column.equals("level")) {
+			column = "\"LEVEL\"";
+		} else {
+
+			column = StringUtils.toColumnName(column);
+		}*/
 		
-		String a = "20|30|120";
-		System.out.println(laneSpeedValue2M(a));
+		System.out.println(toColumnName("level"));
 	}
 }

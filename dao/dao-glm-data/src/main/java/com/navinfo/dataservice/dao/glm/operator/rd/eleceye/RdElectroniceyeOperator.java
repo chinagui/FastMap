@@ -15,6 +15,9 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePair;
+import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 import com.vividsolutions.jts.geom.Geometry;
@@ -76,6 +79,19 @@ public class RdElectroniceyeOperator extends AbstractOperator {
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 
 		String sql = "update " + eleceye.tableName() + " set u_record = 2 where pid = " + eleceye.pid();
+		
+		
+		for(IRow row : eleceye.getParts()){
+			RdEleceyePart part = (RdEleceyePart) row;
+			RdEleceyePartOperator opEleceyePart = new RdEleceyePartOperator(conn, part);
+			opEleceyePart.deleteRow2Sql(stmt);
+		}
+		
+		for(IRow row : eleceye.getPairs()){
+			RdEleceyePair pair = (RdEleceyePair) row;
+			RdEleceyePairOperator opEleceyePair = new RdEleceyePairOperator(conn, pair);
+			opEleceyePair.deleteRow2Sql(stmt);
+		}
 
 		stmt.addBatch(sql);
 	}

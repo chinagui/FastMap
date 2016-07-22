@@ -28,7 +28,7 @@ public class RwLinkName implements IRow {
 	
 	private String rowId;
 	
-	private Object name;
+	private String name;
 	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
@@ -40,11 +40,11 @@ public class RwLinkName implements IRow {
 		this.linkPid = linkPid;
 	}
 	
-	public Object getName() {
+	public String getName() {
 		return name;
 	}
 
-	public void setName(Object name) {
+	public void setName(String name) {
 		this.name = name;
 	}
 

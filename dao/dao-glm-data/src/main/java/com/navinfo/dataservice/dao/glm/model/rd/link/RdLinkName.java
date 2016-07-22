@@ -37,7 +37,7 @@ public class RdLinkName implements IRow {
 
 	private int code;
 	
-	public Object name;
+	public String name;
 
 	public String getInputTime() {
 		return inputTime;
@@ -237,11 +237,11 @@ public class RdLinkName implements IRow {
 		return rowId;
 	}
 	
-	public Object getName() {
+	public String getName() {
 		return name;
 	}
 
-	public void setName(Object name) {
+	public void setName(String name) {
 		this.name = name;
 	}
 

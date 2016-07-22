@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.commons.util;
 
-import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 import net.sf.json.processors.JsonValueProcessor;
@@ -24,7 +23,7 @@ public class JsonUtils {
 						}
 
 						if (JSONUtils.mayBeJSON(value.toString())) {
-							return "\"" + value.toString() + "\"";
+							return "\"" + value + "\"";
 						}
 
 						return value;

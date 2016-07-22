@@ -100,8 +100,17 @@ public class BasicOperator extends AbstractOperator {
 					key.append(M_U_DATE + ",");
 					value.append("'" + StringUtils.getCurrentTime() + "',");
 				} else if (StringUtils.toColumnName(name).equals(M_PID)) {
-					key.append(c.getMethod(M_PRIMARYKEY).invoke(row) + ",");
-					value.append(oj + ",");
+					 try{
+						 key.append(c.getMethod(M_PRIMARYKEY).invoke(row) + ",");
+						 value.append(oj + ",");
+						 
+					 }catch (Exception e) {
+							if (e instanceof NoSuchMethodException) {
+								 key.append(StringUtils.toColumnName(name).equals(M_PID) + ",");
+								 value.append(oj + ",");
+							}
+					 }
+					
 				} else if (StringUtils.toColumnName(name).equals(M_ROW_ID)) {
 					key.append(M_ROW_ID + ",");
 					if(row.rowId() == null || row.rowId() == "" ){

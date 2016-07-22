@@ -1077,7 +1077,7 @@ public class UploadOperation {
 			if (oldParentList.size()>0) {
 				IRow oldParentIRow = oldParentList.get(0);
 				IxPoiParent oldParent = (IxPoiParent)oldParentIRow;
-				groupId = oldParent.getGroupId();
+				groupId = oldParent.getPid();
 			} 
 			if (!(jo.getJSONArray("relateChildren").size()>0) || !(oldParentList.size()>0)) {
 				

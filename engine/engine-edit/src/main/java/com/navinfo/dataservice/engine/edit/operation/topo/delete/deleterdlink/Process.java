@@ -1,8 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +17,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
@@ -28,6 +27,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
@@ -55,6 +55,15 @@ public class Process extends AbstractProcess<Command> {
 				this.getCommand().getLinkPid(), true);
 
 		this.getCommand().setLink(link);
+	}
+	
+	public void lockRdTrafficSignal() throws Exception
+	{
+		RdTrafficsignalSelector rdTrafficsignalSelector = new RdTrafficsignalSelector(this.getConn());
+		
+		RdTrafficsignal row = rdTrafficsignalSelector.loadByLinkPid(this.getCommand().getLinkPid(), true);
+		
+		this.getCommand().setTrafficSignal(row);
 	}
 
 	// 锁定盲端节点
@@ -214,6 +223,9 @@ public class Process extends AbstractProcess<Command> {
 		this.getCommand().setAdAdmins(adAdminList);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.engine.edit.operation.AbstractProcess#run()
+	 */
 	@Override
 	public String run() throws Exception {
 
@@ -252,6 +264,9 @@ public class Process extends AbstractProcess<Command> {
 
 				IOperation opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
 				opRefAdAdmin.run(this.getResult());
+				
+				IOperation opRefTrafficsignal = new OpRefTrafficsignal(this.getCommand());
+				opRefTrafficsignal.run(this.getResult());
 
 				recordData();
 
@@ -310,6 +325,14 @@ public class Process extends AbstractProcess<Command> {
 				}
 
 				infects.put("ADADMIN", infectList);
+				
+				infectList = new ArrayList<Integer>();
+
+				RdTrafficsignal rdTrafficsignal  = this.getCommand().getTrafficSignal();
+				
+				infectList.add(rdTrafficsignal.getPid());
+				
+				infects.put("RDTRAFFICSIGNAL", infectList);
 
 				return JSONObject.fromObject(infects).toString();
 			}
@@ -355,6 +378,8 @@ public class Process extends AbstractProcess<Command> {
 			opRefRdGsc.run(this.getResult());
 			IOperation opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
 			opRefAdAdmin.run(this.getResult());
+			IOperation opRefTrafficsignal = new OpRefTrafficsignal(this.getCommand());
+			opRefTrafficsignal.run(this.getResult());
 
 			recordData();
 
@@ -369,23 +394,8 @@ public class Process extends AbstractProcess<Command> {
 		return null;
 	}
 
-	private void releaseResource(PreparedStatement pstmt, ResultSet resultSet) {
-		try {
-			resultSet.close();
-		} catch (Exception e) {
-
-		}
-
-		try {
-			pstmt.close();
-		} catch (Exception e) {
-
-		}
-	}
-
 	@Override
 	public String exeOperation() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

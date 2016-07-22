@@ -120,4 +120,16 @@ public class IxPoiTest extends InitApplication{
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
+	public void UpdatePoi0719_1(){
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":2245,\"data\":{\"open24h\":\"1\",\"rowId\":\"3524E56B2B2D6E1AE050A8C08304BA17\",\"pid\":2245,\"objStatus\":\"UPDATE\",\"level\":\"B2\",\"indoor\":\"3\"}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

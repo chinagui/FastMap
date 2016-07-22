@@ -2,16 +2,13 @@ package com.navinfo.dataservice.dao.glm.operator.poi.index;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
-import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
 import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 
@@ -69,8 +66,8 @@ public class IxPoiAddressOperator extends AbstractOperator {
 			sb.append(",null");
 		}
 
-		if (StringUtils.isNotEmpty(ixPoiAddress.getRodename())) {
-			sb.append(",'" + ixPoiAddress.getRodename() + "'");
+		if (StringUtils.isNotEmpty(ixPoiAddress.getRoadname())) {
+			sb.append(",'" + ixPoiAddress.getRoadname() + "'");
 		} else {
 			sb.append(",null");
 		}
@@ -141,8 +138,8 @@ public class IxPoiAddressOperator extends AbstractOperator {
 			sb.append(",null");
 		}
 
-		if (StringUtils.isNotEmpty(ixPoiAddress.getHousesum())) {
-			sb.append(",'" + ixPoiAddress.getHousesum() + "'");
+		if (StringUtils.isNotEmpty(ixPoiAddress.getHousenum())) {
+			sb.append(",'" + ixPoiAddress.getHousenum() + "'");
 		} else {
 			sb.append(",null");
 		}
@@ -261,8 +258,8 @@ public class IxPoiAddressOperator extends AbstractOperator {
 			sb.append(",null");
 		}
 
-		if (StringUtils.isNotEmpty(ixPoiAddress.getSubsumPhonetic())) {
-			sb.append(",'" + ixPoiAddress.getSubsumPhonetic() + "'");
+		if (StringUtils.isNotEmpty(ixPoiAddress.getSubnumPhonetic())) {
+			sb.append(",'" + ixPoiAddress.getSubnumPhonetic() + "'");
 		} else {
 			sb.append(",null");
 		}

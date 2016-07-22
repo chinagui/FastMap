@@ -131,6 +131,12 @@ public class RdBranchTest extends InitApplication{
 	}
 	
 	
-	
+	@Test
+	public void updateRdBranchTest_0719() throws Exception {
+		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":42,\"data\":{\"signboards\":[{\"backimageCode\":\"0HXS12O8G31\",\"pid\":46235158,\"objStatus\":\"UPDATE\",\"arrowCode\":\"3HXS12O8G32\"}],\"pid\":46452565}}";
+		log.info(parameter);
+		Transaction t = new Transaction(parameter);		;
+		String msg = t.run();
+	}
 
 }

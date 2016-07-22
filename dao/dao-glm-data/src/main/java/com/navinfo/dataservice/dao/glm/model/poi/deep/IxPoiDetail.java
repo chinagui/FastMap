@@ -36,7 +36,6 @@ public class IxPoiDetail implements IRow {
 	private String cardType;// 支 持 信用卡类型
 	private int hospitalClass = 0;// 医院等级
 	private String memo;
-	private int mesh;
 	private String rowId;
 	// 更新时间
 	private String uDate;
@@ -135,10 +134,6 @@ public class IxPoiDetail implements IRow {
 
 	public void setHospitalClass(int hospitalClass) {
 		this.hospitalClass = hospitalClass;
-	}
-
-	public int getMesh() {
-		return mesh;
 	}
 
 	public int getPoiPid() {
@@ -320,14 +315,11 @@ public class IxPoiDetail implements IRow {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-
 	}
 
 }

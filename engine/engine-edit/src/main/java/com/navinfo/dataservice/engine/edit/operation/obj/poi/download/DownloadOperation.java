@@ -25,6 +25,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParentForAndroid;
 import com.navinfo.dataservice.dao.glm.search.PoiGridSearch;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 public class DownloadOperation {
@@ -125,28 +126,54 @@ public class DownloadOperation {
 			
 			jsonObj.put("fid", poi.getPoiNum());
 			IxPoiName poiName = (IxPoiName)poi.getNames().get(0);
-			jsonObj.put("name", poiName.getName());
-			jsonObj.put("pid", poi.getPid());
-			jsonObj.put("meshid", poi.getMeshId());
-			jsonObj.put("kindCode", poi.getKindCode());
-			
-			JSONObject guide = new JSONObject();
-			if  (poi.getLinkPid()==0 && poi.getxGuide()==0 && poi.getyGuide()==0) {
-				guide = null;
+			if (poiName.getName() == null) {
+				jsonObj.put("name", "");
 			} else {
+				jsonObj.put("name", poiName.getName());
+			}
+			
+			jsonObj.put("pid", poi.getPid());
+			
+			jsonObj.put("meshid", poi.getMeshId());
+			
+			if (poi.getKindCode() == null) {
+				jsonObj.put("kindCode", "");
+			} else {
+				jsonObj.put("kindCode", poi.getKindCode());
+			}
+			
+			if  (poi.getLinkPid()==0 && poi.getxGuide()==0 && poi.getyGuide()==0) {
+				jsonObj.put("guide", JSONNull.getInstance());
+			} else {
+				JSONObject guide = new JSONObject();
 				guide.put("linkPid", poi.getLinkPid());
 				guide.put("longitude", poi.getxGuide());
 				guide.put("latitude", poi.getyGuide());
+				jsonObj.put("guide", guide);
 			}
-			jsonObj.put("guide", guide);
+			
 			
 			IxPoiAddress address = (IxPoiAddress)poi.getAddresses().get(0);
-			jsonObj.put("address", address.getFullname());
-			jsonObj.put("postCode", poi.getPostCode());
+			if (address.getFullname() == null) {
+				jsonObj.put("address", "");
+			} else {
+				jsonObj.put("address", address.getFullname());
+			}
+			
+			if (poi.getPostCode() == null) {
+				jsonObj.put("postCode", "");
+			} else {
+				jsonObj.put("postCode", poi.getPostCode());
+			}
 			
 			JSONObject indoor = new JSONObject();
 			indoor.put("type", poi.getIndoor());
-			indoor.put("floor", address.getFloor());
+			if (address.getFloor() == null) {
+				indoor.put("floor", "");
+			} else {
+				indoor.put("floor", address.getFloor());
+			}
+			
 			jsonObj.put("indoor", indoor);
 			
 			int open24H = poi.getOpen24h();
@@ -155,12 +182,30 @@ public class DownloadOperation {
 			}
 			jsonObj.put("open24H", open24H);
 			
-			jsonObj.put("level", poi.getLevel());
-			jsonObj.put("sportsVenues", poi.getSportsVenue());
-			jsonObj.put("vipFlag", poi.getVipFlag());
+			if (poi.getLevel() == null) {
+				jsonObj.put("level", "");
+			} else {
+				jsonObj.put("level", poi.getLevel());
+			}
+			
+			if (poi.getSportsVenue() == null) {
+				jsonObj.put("sportsVenues", "");
+			} else {
+				jsonObj.put("sportsVenues", poi.getSportsVenue());
+			}
+			
+			if (poi.getVipFlag() == null) {
+				jsonObj.put("vipFlag", "");
+			} else {
+				jsonObj.put("vipFlag", poi.getVipFlag());
+			}
 			
 			IxPoiParentForAndroid parent = (IxPoiParentForAndroid)poi.getParents().get(0);
-			jsonObj.put("parentFid", parent.getPoiNum());
+			if (parent.getPoiNum() == null) {
+				jsonObj.put("parentFid", "");
+			} else {
+				jsonObj.put("parentFid", parent.getPoiNum());
+			}
 			
 			List<IRow> childrenList = poi.getChildren();
 			List<JSONObject> childrenArray = new ArrayList<JSONObject>();
@@ -180,8 +225,14 @@ public class DownloadOperation {
 			for (IRow contacts:contactsList) {
 				JSONObject contact = new JSONObject();
 				IxPoiContact poiContact = (IxPoiContact) contacts;
-				contact.put("number", poiContact.getContact());
+				if (poiContact.getContact() == null) {
+					contact.put("number", "");
+				} else {
+					contact.put("number", poiContact.getContact());
+				}
+				
 				contact.put("type", poiContact.getContactType());
+				
 				int linkman = poiContact.getContactDepart();
 				if (linkman == 0) {
 					contact.put("linkman", "");
@@ -226,35 +277,92 @@ public class DownloadOperation {
 			if (restaurantList.size()>0) {
 				IxPoiRestaurant restaurant = (IxPoiRestaurant) restaurantList.get(0);
 				JSONObject foodtype = new JSONObject();
-				foodtype.put("foodtype", restaurant.getFoodType());
-				foodtype.put("creditCards", restaurant.getCreditCard());
+				if (restaurant.getFoodType() == null) {
+					foodtype.put("foodtype", "");
+				} else {
+					foodtype.put("foodtype", restaurant.getFoodType());
+				}
+				
+				if (restaurant.getCreditCard() == null) {
+					foodtype.put("creditCards", "");
+				} else {
+					foodtype.put("creditCards", restaurant.getCreditCard());
+				}
+				
 				foodtype.put("parking", restaurant.getParking());
-				foodtype.put("openHour", restaurant.getOpenHour());
+				
+				if (restaurant.getOpenHour() == null) {
+					foodtype.put("openHour", "");
+				} else {
+					foodtype.put("openHour", restaurant.getOpenHour());
+				}
+				
 				foodtype.put("avgCost", restaurant.getAvgCost());
 				foodtype.put("rowId", restaurant.getRowId());
 				jsonObj.put("foodtypes", foodtype);
 			} else {
-				jsonObj.put("foodtypes", null);
+				jsonObj.put("foodtypes", JSONNull.getInstance());
 			}
 			
 			List<IRow> parkingsList = poi.getParkings();
 			if (parkingsList.size()>0) {
 				IxPoiParking parking = (IxPoiParking) parkingsList.get(0);
 				JSONObject parkings = new JSONObject();
-				parkings.put("tollStd", parking.getTollStd());
-				parkings.put("tollDes", parking.getTollDes());
-				parkings.put("tollWay", parking.getTollWay());
-				parkings.put("openTime", parking.getOpenTiime());
+				if (parking.getTollStd() == null) {
+					parkings.put("tollStd", "");
+				} else {
+					parkings.put("tollStd", parking.getTollStd());
+				}
+				
+				if (parking.getTollDes() == null) {
+					parkings.put("tollDes", "");
+				} else {
+					parkings.put("tollDes", parking.getTollDes());
+				}
+				
+				if (parking.getTollWay() == null) {
+					parkings.put("tollWay", "");
+				} else {
+					parkings.put("tollWay", parking.getTollWay());
+				}
+				if (parking.getOpenTiime() == null) {
+					parkings.put("openTime", "");
+				} else {
+					parkings.put("openTime", parking.getOpenTiime());
+				}
+				
 				parkings.put("totalNum", parking.getTotalNum());
-				parkings.put("payment", parking.getPayment());
-				parkings.put("remark", parking.getRemark());
-				parkings.put("buildingType", parking.getParkingType());
+				
+				if (parking.getPayment() == null) {
+					parkings.put("payment", "");
+				} else {
+					parkings.put("payment", parking.getPayment());
+				}
+				
+				if (parking.getRemark() == null) {
+					parkings.put("remark", "");
+				} else {
+					parkings.put("remark", parking.getRemark());
+				}
+				
+				if (parking.getParkingType() == null) {
+					parkings.put("buildingType", "");
+				} else {
+					parkings.put("buildingType", parking.getParkingType());
+				}
+				
 				parkings.put("resHigh", parking.getResHigh());
 				parkings.put("resWidth", parking.getResWidth());
 				parkings.put("resWeigh", parking.getResWeigh());
 				parkings.put("certificate", parking.getCertificate());
 				parkings.put("vehicle", parking.getVehicle());
-				parkings.put("haveSpecialPlace", parking.getHaveSpecialplace());
+				
+				if (parking.getHaveSpecialplace() == null) {
+					parkings.put("haveSpecialPlace", "");
+				} else {
+					parkings.put("haveSpecialPlace", parking.getHaveSpecialplace());
+				}
+				
 				parkings.put("womenNum", parking.getWomenNum());
 				parkings.put("handicapNum", parking.getHandicapNum());
 				parkings.put("miniNum", parking.getMiniNum());
@@ -262,7 +370,7 @@ public class DownloadOperation {
 				parkings.put("rowId", parking.getRowId());
 				jsonObj.put("parkings", parkings);
 			} else {
-				jsonObj.put("parkings", null);
+				jsonObj.put("parkings", JSONNull.getInstance());
 			}
 			
 			List<IRow> hotelList = poi.getHotels();
@@ -270,46 +378,135 @@ public class DownloadOperation {
 				IxPoiHotel hotel = (IxPoiHotel) hotelList.get(0);
 				JSONObject hotelObj = new JSONObject();
 				hotelObj.put("rating", hotel.getRating());
-				hotelObj.put("creditCards", hotel.getCreditCard());
-				hotelObj.put("description", hotel.getLongDescription());
-				hotelObj.put("checkInTime", hotel.getCheckinTime());
-				hotelObj.put("checkOutTime", hotel.getCheckoutTime());
+				
+				if (hotel.getCreditCard() == null) {
+					hotelObj.put("creditCards", "");
+				} else {
+					hotelObj.put("creditCards", hotel.getCreditCard());
+				}
+				
+				if (hotel.getLongDescription() == null) {
+					hotelObj.put("description", "");
+				} else {
+					hotelObj.put("description", hotel.getLongDescription());
+				}
+				
+				if (hotel.getCheckinTime() == null) {
+					hotelObj.put("checkInTime", "");
+				} else {
+					hotelObj.put("checkInTime", hotel.getCheckinTime());
+				}
+				
+				if (hotel.getCheckoutTime() == null) {
+					hotelObj.put("checkOutTime", "");
+				} else {
+					hotelObj.put("checkOutTime", hotel.getCheckoutTime());
+				}
+				
 				hotelObj.put("roomCount", hotel.getRoomCount());
-				hotelObj.put("roomType", hotel.getRoomType());
-				hotelObj.put("roomPrice", hotel.getRoomPrice());
+				
+				if (hotel.getRoomType() == null) {
+					hotelObj.put("roomType", "");
+				} else {
+					hotelObj.put("roomType", hotel.getRoomType());
+				}
+				
+				if (hotel.getRoomPrice() == null) {
+					hotelObj.put("roomPrice", "");
+				} else {
+					hotelObj.put("roomPrice", hotel.getRoomPrice());
+				}
+				
 				hotelObj.put("breakfast", hotel.getBreakfast());
-				hotelObj.put("service", hotel.getService());
+				
+				if (hotel.getService() == null) {
+					hotelObj.put("service", "");
+				} else {
+					hotelObj.put("service", hotel.getService());
+				}
+				
 				hotelObj.put("parking", hotel.getParking());
-				hotelObj.put("openHour", hotel.getOpenHour());
+				
+				if (hotel.getOpenHour() == null) {
+					hotelObj.put("openHour", "");
+				} else {
+					hotelObj.put("openHour", hotel.getOpenHour());
+				}
+				
 				hotelObj.put("rowId", hotel.getRowId());
 				jsonObj.put("hotel", hotelObj);
 			} else {
-				jsonObj.put("hotel", null);
+				jsonObj.put("hotel", JSONNull.getInstance());
 			}
 			
-			jsonObj.put("chargingStation", null);
+			jsonObj.put("chargingStation", JSONNull.getInstance());
 			jsonObj.put("chargingPole", new ArrayList<Object>());
 			
 			List<IRow> gasStationList = poi.getGasstations();
 			if (gasStationList.size()>0) {
 				IxPoiGasstation gas = (IxPoiGasstation) gasStationList.get(0);
 				JSONObject gasStation = new JSONObject();
-				gasStation.put("fuelType", gas.getFuelType());
-				gasStation.put("oilType", gas.getOilType());
-				gasStation.put("egType", gas.getEgType());
-				gasStation.put("mgType", gas.getMgType());
-				gasStation.put("payment", gas.getPayment());
-				gasStation.put("service", gas.getService());
-				gasStation.put("servicePro", gas.getServiceProv());
-				gasStation.put("openHour", gas.getOpenHour());
+				if (gas.getFuelType() == null) {
+					gasStation.put("fuelType", "");
+				} else {
+					gasStation.put("fuelType", gas.getFuelType());
+				}
+				
+				if (gas.getOilType() == null) {
+					gasStation.put("oilType", "");
+				} else {
+					gasStation.put("oilType", gas.getOilType());
+				}
+				
+				if (gas.getEgType() == null) {
+					gasStation.put("egType", "");
+				} else {
+					gasStation.put("egType", gas.getEgType());
+				}
+				
+				if (gas.getMgType() == null) {
+					gasStation.put("mgType", "");
+				} else {
+					gasStation.put("mgType", gas.getMgType());
+				}
+				
+				if (gas.getPayment() == null) {
+					gasStation.put("payment", "");
+				} else {
+					gasStation.put("payment", gas.getPayment());
+				}
+				
+				if (gas.getService() == null) {
+					gasStation.put("service", "");
+				} else {
+					gasStation.put("service", gas.getService());
+				}
+				
+				if (gas.getServiceProv() == null) {
+					gasStation.put("servicePro", "");
+				} else {
+					gasStation.put("servicePro", gas.getServiceProv());
+				}
+				
+				if (gas.getOpenHour() == null) {
+					gasStation.put("openHour", "");
+				} else {
+					gasStation.put("openHour", gas.getOpenHour());
+				}
+				
 				gasStation.put("rowId", gas.getRowId());
 				jsonObj.put("gasStation", gasStation);
 			} else {
-				jsonObj.put("gasStation", null);
+				jsonObj.put("gasStation", JSONNull.getInstance());
 			}
 			
 			jsonObj.put("attachments", new ArrayList<Object>());
-			jsonObj.put("chain", poi.getChain());
+			if (poi.getChain() == null) {
+				jsonObj.put("chain", "");
+			} else {
+				jsonObj.put("chain", poi.getChain());
+			}
+			
 			jsonObj.put("rawFields", "");
 			
 			switch (poi.getuRecord()) {

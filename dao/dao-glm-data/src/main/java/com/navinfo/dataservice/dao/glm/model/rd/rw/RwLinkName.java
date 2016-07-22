@@ -28,7 +28,7 @@ public class RwLinkName implements IRow {
 	
 	private String rowId;
 	
-	private String name;
+	protected String name;
 	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	

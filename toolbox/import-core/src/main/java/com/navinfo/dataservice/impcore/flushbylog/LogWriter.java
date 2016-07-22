@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Iterator;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import net.sf.json.JSONObject;
@@ -13,6 +14,7 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
+import com.navinfo.dataservice.commons.database.oracle.MyPoolGuardConnectionWrapper;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 
@@ -86,24 +88,24 @@ public class LogWriter {
 					sb.append(it.next());
 				}
 			}
-
-			sb.append(",u_record) ");
+			if(sb.indexOf(",u_record")==-1){
+				sb.append(",u_record) ");
+			}
 
 			sb.append("values(");
-
+			this.log.debug("json"+json);
 			it = json.keys();
 
 			tmpPos = 0;
-
-			while (it.hasNext()) {
-				sb.append(":");
-
-				sb.append(++tmpPos);
-
-				if (tmpPos < keySize) {
-
-					sb.append(",");
+			this.log.debug(json.keys());
+			int i =0;
+			for (Object key : json.keySet()){
+				if (i==0){
+					sb.append("?");
+				}else{
+					sb.append(",?");
 				}
+				i++;
 			}
 
 			sb.append(",1)");
@@ -148,10 +150,16 @@ public class LogWriter {
 								.getBytes());
 	
 						jg.setSRID(8307);
+						if (this.targetDbConn instanceof MyPoolGuardConnectionWrapper){
+							STRUCT s = JGeometry.store(jg, ((MyPoolGuardConnectionWrapper)this.targetDbConn).getDelegate());
+							pstmt.setObject(tmpPos, s);
+						}else{
+							STRUCT s = JGeometry.store(jg, this.targetDbConn);
+							pstmt.setObject(tmpPos, s);
+						}
+						
 	
-						STRUCT s = JGeometry.store(jg, this.targetDbConn);
-	
-						pstmt.setObject(tmpPos, s);
+						
 					}
 				}
 

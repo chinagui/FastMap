@@ -88,7 +88,13 @@ public class LogWriter {
 					sb.append(it.next());
 				}
 			}
-			if(sb.indexOf(",u_record")==-1){
+			boolean hasUrecord = false;
+			if(sb.indexOf(",u_record")!=-1){
+				hasUrecord=true;
+			}
+			if (hasUrecord){
+				sb.append(") ");
+			}else{
 				sb.append(",u_record) ");
 			}
 
@@ -107,8 +113,12 @@ public class LogWriter {
 				}
 				i++;
 			}
-
-			sb.append(",1)");
+			if (hasUrecord){
+				sb.append(") ");
+			}else{
+				sb.append(",1)");
+			}
+			
 
 			it = json.keys();
 
@@ -151,7 +161,7 @@ public class LogWriter {
 	
 						jg.setSRID(8307);
 						if (this.targetDbConn instanceof MyPoolGuardConnectionWrapper){
-							STRUCT s = JGeometry.store(jg, ((MyPoolGuardConnectionWrapper)this.targetDbConn).getDelegate());
+							STRUCT s = JGeometry.store(jg, ((MyPoolGuardConnectionWrapper)this.targetDbConn).getInnermostDelegate());
 							pstmt.setObject(tmpPos, s);
 						}else{
 							STRUCT s = JGeometry.store(jg, this.targetDbConn);
@@ -254,9 +264,13 @@ public class LogWriter {
 	
 						jg.setSRID(8307);
 	
-						STRUCT s = JGeometry.store(jg, this.targetDbConn);
-	
-						pstmt.setObject(tmpPos, s);
+						if (this.targetDbConn instanceof MyPoolGuardConnectionWrapper){
+							STRUCT s = JGeometry.store(jg, ((MyPoolGuardConnectionWrapper)this.targetDbConn).getInnermostDelegate());
+							pstmt.setObject(tmpPos, s);
+						}else{
+							STRUCT s = JGeometry.store(jg, this.targetDbConn);
+							pstmt.setObject(tmpPos, s);
+						}
 					}
 				}
 

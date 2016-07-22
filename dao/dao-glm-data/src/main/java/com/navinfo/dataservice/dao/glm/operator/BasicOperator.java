@@ -306,7 +306,7 @@ public class BasicOperator extends AbstractOperator {
 	private void addConditionForPoi(StringBuilder sb) {
 		if (row instanceof IxPoi || row instanceof IxPoiChildren
 				|| row instanceof IxPoiParent) {
-			sb.append(",u_date = " + StringUtils.getCurrentTime());
+			sb.append(",u_date = " + StringUtils.getCurrentTime()+",");
 		}else{
 			sb.append(",");
 		}

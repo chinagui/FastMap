@@ -21,7 +21,7 @@ public class Process extends AbstractProcess<Command> {
 	public boolean prepareData() throws Exception {
 		// 根据EleceyePid加载需要删除的RdElectroniceye
 		RdElectroniceyeSelector selector = new RdElectroniceyeSelector(this.getConn());
-		this.getCommand().setEleceye((RdElectroniceye) selector.loadById(this.getCommand().getPid(), false));
+		this.getCommand().setEleceye((RdElectroniceye) selector.loadById(this.getCommand().getPid(), true));
 		return false;
 	}
 

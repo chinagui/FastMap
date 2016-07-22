@@ -20,7 +20,7 @@ public class Process extends AbstractProcess<Command> {
 	public boolean prepareData() throws Exception {
 		// 根据EleceyePid加载需要更新的RdElectroniceye
 		this.getCommand().setEleceye((RdElectroniceye) new RdElectroniceyeSelector(this.getConn())
-				.loadById(this.getCommand().getPid(), false));
+				.loadById(this.getCommand().getPid(), true));
 		return false;
 	}
 

@@ -2,10 +2,8 @@ package com.navinfo.dataservice.dao.glm.operator.rd.eleceye;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -15,11 +13,20 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
-import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
 import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 import com.vividsolutions.jts.geom.Geometry;
 
+/**
+ * @Title: RdEleceyePartOperator.java
+ * @Prject: dao-glm-data
+ * @Package: com.navinfo.dataservice.dao.glm.operator.rd.eleceye
+ * @Description: 数据库操作(区间测速电子眼组成)
+ * @author zhangyt
+ * @date: 2016年7月20日 下午5:44:10
+ * @version: v1.0
+ *
+ */
 public class RdEleceyePartOperator extends AbstractOperator {
 
 	private static Logger logger = Logger.getLogger(RdEleceyePartOperator.class);

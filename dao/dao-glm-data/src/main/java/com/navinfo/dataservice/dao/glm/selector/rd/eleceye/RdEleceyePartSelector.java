@@ -12,6 +12,16 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
 
+/**
+ * @Title: RdEleceyePartSelector.java
+ * @Prject: dao-glm-data
+ * @Package: com.navinfo.dataservice.dao.glm.selector.rd.eleceye
+ * @Description: 查询区间测速电子眼组成
+ * @author zhangyt
+ * @date: 2016年7月20日 下午5:45:47
+ * @version: v1.0
+ *
+ */
 public class RdEleceyePartSelector implements ISelector {
 
 	private Connection conn;
@@ -24,7 +34,10 @@ public class RdEleceyePartSelector implements ISelector {
 	public IRow loadById(int id, boolean isLock) throws Exception {
 		return null;
 	}
-
+	
+	/**
+	 * 根据RdEleceyePart的RowId查询
+	 */
 	@Override
 	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
 		RdEleceyePart part = new RdEleceyePart();
@@ -86,6 +99,9 @@ public class RdEleceyePartSelector implements ISelector {
 		return null;
 	}
 	
+	/**
+	 * 根据RdEleceyePart的GroupId查询
+	 */
 	public List<IRow> loadRowsByGroupId(int groupId, boolean isLock) throws Exception {
 		List<IRow> rows = new ArrayList<IRow>();
 
@@ -140,6 +156,9 @@ public class RdEleceyePartSelector implements ISelector {
 		return rows;
 	}
 	
+	/**
+	 * 根据RdEleceyePart的EleceyePid查询
+	 */
 	public List<IRow> loadRowsByEleceyePid(int eleceyePid, boolean isLock) throws Exception {
 		List<IRow> rows = new ArrayList<IRow>();
 

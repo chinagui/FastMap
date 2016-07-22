@@ -1,12 +1,15 @@
-package com.navinfo.dataservice.engine.edit.bo.ad;
+package com.navinfo.dataservice.engine.edit.bo;
 
 import java.sql.Connection;
+
+import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-
-import net.sf.json.JSONObject;
+import com.navinfo.dataservice.dao.log.LogWriter;
+import com.navinfo.dataservice.engine.edit.operation.OperatorFactory;
+import com.navinfo.dataservice.engine.edit.operation.PoiMsgPublisher;
 
 /** 
  * @ClassName: AbstractOperator
@@ -22,14 +25,19 @@ public abstract class AbstractOperator {
 	
 	protected Connection conn;
 	
-	public abstract void createCmd(JSONObject data);
+	public abstract void createCmd(JSONObject data) throws CommandCreateException;
 	
-    public abstract void loadData();
+    public abstract void loadData() throws Exception;
     
-    public abstract Result execute();
+    public abstract Result execute() throws Exception;
     
-    public void flush(){
-    	
+    public void flush(Result result) throws Exception{
+    	LogWriter lw = new LogWriter(conn);
+		lw.generateLog(cmd, result);
+		OperatorFactory.recordData(conn, result);
+		lw.recordLog(cmd, result);
+
+//		PoiMsgPublisher.publish(result);
     }
     
     public AbstractCommand getCmd() {

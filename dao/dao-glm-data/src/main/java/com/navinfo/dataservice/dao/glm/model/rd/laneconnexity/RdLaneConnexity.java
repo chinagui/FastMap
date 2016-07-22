@@ -258,11 +258,6 @@ public class RdLaneConnexity implements IObj {
 
 		children.add(this.getTopos());
 
-		for (IRow r : this.getTopos()) {
-
-			children.addAll(r.children());
-		}
-
 		return children;
 	}
 

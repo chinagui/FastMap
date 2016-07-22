@@ -233,11 +233,6 @@ public class RdRestriction implements IObj {
 
 		children.add(this.getDetails());
 
-		for (IRow r : this.getDetails()) {
-
-			children.addAll(r.children());
-		}
-
 		return children;
 	}
 

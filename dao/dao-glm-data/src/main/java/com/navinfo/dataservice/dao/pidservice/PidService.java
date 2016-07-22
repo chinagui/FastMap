@@ -417,4 +417,11 @@ public class PidService {
 	public synchronized int applyEleceyePairPid() throws Exception {
 		return this.applyPid(PidSequenceName.rdEleceyePairPidName);
 	}
+	
+	/**
+	 * 申请rd_warninginfo
+	 */
+	public synchronized int applyRdWarninginfoPid() throws Exception {
+		return this.applyPid(PidSequenceName.rdWarninginfo);
+	}
 }

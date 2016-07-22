@@ -35,7 +35,7 @@ public class IxPoiAddress implements IObj {
 	
 	private String fullname;//地址全称
 	
-	private String rodename;//地址道路名
+	private String roadname;//地址道路名
 	
 	private String addrname;//地址门牌号
 	
@@ -55,7 +55,7 @@ public class IxPoiAddress implements IObj {
 	
 	private String prefix;//前缀
 	
-	private String housesum;//门牌号
+	private String housenum;//门牌号
 	
 	private String type;//类型名
 	
@@ -101,7 +101,7 @@ public class IxPoiAddress implements IObj {
 	
 	private String typePhonetic;//类型名发音
 	
-	private String subsumPhonetic;//子号发音
+	private String subnumPhonetic;//子号发音
 	
 	private String surfixPhonetic;//后缀名发音
 	
@@ -173,12 +173,12 @@ public class IxPoiAddress implements IObj {
 		this.fullname = fullname;
 	}
 
-	public String getRodename() {
-		return rodename;
+	public String getRoadname() {
+		return roadname;
 	}
 
-	public void setRodename(String rodename) {
-		this.rodename = rodename;
+	public void setRoadname(String roadname) {
+		this.roadname = roadname;
 	}
 
 	public String getAddrname() {
@@ -251,14 +251,6 @@ public class IxPoiAddress implements IObj {
 
 	public void setPrefix(String prefix) {
 		this.prefix = prefix;
-	}
-
-	public String getHousesum() {
-		return housesum;
-	}
-
-	public void setHousesum(String housesum) {
-		this.housesum = housesum;
 	}
 
 	public String getType() {
@@ -437,12 +429,20 @@ public class IxPoiAddress implements IObj {
 		this.typePhonetic = typePhonetic;
 	}
 
-	public String getSubsumPhonetic() {
-		return subsumPhonetic;
+	public String getHousenum() {
+		return housenum;
 	}
 
-	public void setSubsumPhonetic(String subsumPhonetic) {
-		this.subsumPhonetic = subsumPhonetic;
+	public void setHousenum(String housenum) {
+		this.housenum = housenum;
+	}
+
+	public String getSubnumPhonetic() {
+		return subnumPhonetic;
+	}
+
+	public void setSubnumPhonetic(String subnumPhonetic) {
+		this.subnumPhonetic = subnumPhonetic;
 	}
 
 	public String getSurfixPhonetic() {

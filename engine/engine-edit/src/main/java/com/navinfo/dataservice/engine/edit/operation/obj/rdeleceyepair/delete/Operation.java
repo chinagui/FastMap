@@ -15,9 +15,11 @@ public class Operation implements IOperation {
 
 	@Override
 	public String run(Result result) throws Exception {
+		// 删除区间测速电子眼
 		for (RdEleceyePart part : command.getParts()) {
 			result.insertObject(part, ObjStatus.DELETE, part.getEleceyePid());
 		}
+		// 删除区间测速电子眼配对信息
 		if (null != command.getPair()) {
 			result.insertObject(command.getPair(), ObjStatus.DELETE, command.getPair().getPid());
 		}

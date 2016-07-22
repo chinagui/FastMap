@@ -51,6 +51,18 @@ public class RdTrafficsignalSelector implements ISelector {
 			if (resultSet.next()) {
 				rdTrafficsignal.setPid(id);
 				
+				rdTrafficsignal.setFlag(resultSet.getInt("flag"));
+				
+				rdTrafficsignal.setKgFlag(resultSet.getInt("kg_flag"));
+				
+				rdTrafficsignal.setLinkPid(resultSet.getInt("link_pid"));
+				
+				rdTrafficsignal.setNodePid(resultSet.getInt("node_pid"));
+				
+				rdTrafficsignal.setLocation(resultSet.getInt("location"));
+				
+				rdTrafficsignal.setType(resultSet.getInt("type"));
+				
 				rdTrafficsignal.setRowId(resultSet.getString("row_id"));
 			}
 		} catch (Exception e) {
@@ -88,5 +100,146 @@ public class RdTrafficsignalSelector implements ISelector {
 	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
 		return null;
 	}
+	
+	/**
+	 * 根据nodePid查询交通信号等（1:1）
+	 * @param id
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public IRow loadByNodeId(int id, boolean isLock) throws Exception {
+		RdTrafficsignal rdTrafficsignal = new RdTrafficsignal();
 
+		StringBuilder sb = new StringBuilder(
+				"select * from " + rdTrafficsignal.tableName() + " where node_pid = :1 and u_record !=2");
+
+		if (isLock) {
+			sb.append(" for update nowait");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setInt(1, id);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+				rdTrafficsignal.setPid(id);
+				
+				rdTrafficsignal.setFlag(resultSet.getInt("flag"));
+				
+				rdTrafficsignal.setKgFlag(resultSet.getInt("kg_flag"));
+				
+				rdTrafficsignal.setLinkPid(resultSet.getInt("link_pid"));
+				
+				rdTrafficsignal.setNodePid(resultSet.getInt("node_pid"));
+				
+				rdTrafficsignal.setLocation(resultSet.getInt("location"));
+				
+				rdTrafficsignal.setType(resultSet.getInt("type"));
+				
+				rdTrafficsignal.setRowId(resultSet.getString("row_id"));
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return rdTrafficsignal;
+	}
+	
+	/**
+	 * 根据LinkPid查询交通信号灯（1:1）
+	 * @param id
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public RdTrafficsignal loadByLinkPid(int id, boolean isLock) throws Exception {
+		RdTrafficsignal rdTrafficsignal = new RdTrafficsignal();
+
+		StringBuilder sb = new StringBuilder(
+				"select * from " + rdTrafficsignal.tableName() + " where link_pid = :1 and u_record !=2");
+
+		if (isLock) {
+			sb.append(" for update nowait");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setInt(1, id);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+				rdTrafficsignal.setPid(id);
+				
+				rdTrafficsignal.setFlag(resultSet.getInt("flag"));
+				
+				rdTrafficsignal.setKgFlag(resultSet.getInt("kg_flag"));
+				
+				rdTrafficsignal.setLinkPid(resultSet.getInt("link_pid"));
+				
+				rdTrafficsignal.setNodePid(resultSet.getInt("node_pid"));
+				
+				rdTrafficsignal.setLocation(resultSet.getInt("location"));
+				
+				rdTrafficsignal.setType(resultSet.getInt("type"));
+				
+				rdTrafficsignal.setRowId(resultSet.getString("row_id"));
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return rdTrafficsignal;
+	}
 }

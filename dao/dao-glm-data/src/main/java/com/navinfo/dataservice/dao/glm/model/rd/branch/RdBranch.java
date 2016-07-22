@@ -61,14 +61,21 @@ public class RdBranch implements IObj {
 
 	public Map<String, RdBranchVia> viaMap = new HashMap<String, RdBranchVia>();
 
-	private int outNodePid;
+	//outNodePid不属于模型字段导致反射生成sql语句错误，因此特殊处理。
+	private Map<String,Integer> notGeoliveField=new  HashMap<String,Integer>();
 
 	public int igetOutNodePid() {
-		return outNodePid;
+
+		if (notGeoliveField.containsKey("outNodePid")) {
+			
+			return notGeoliveField.get("outNodePid");
+		}
+
+		return 0;
 	}
 
 	public void isetOutNodePid(int outNodePid) {
-		this.outNodePid = outNodePid;
+		notGeoliveField.put("outNodePid", outNodePid);
 	}
 
 	@Override

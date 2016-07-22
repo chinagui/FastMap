@@ -35,7 +35,7 @@ public class IxPoiParent implements IObj {
 	
 	private String memo;//备注信息
 	
-	private int groupId=0; // POI组号码
+	
 	
 	private int uRecord=0;
 	
@@ -105,13 +105,6 @@ public class IxPoiParent implements IObj {
 		this.rowId = rowId;
 	}
 
-	public int getGroupId() {
-		return groupId;
-	}
-
-	public void setGroupId(int groupId) {
-		this.groupId = groupId;
-	}
 
 	public int getuRecord() {
 		return uRecord;

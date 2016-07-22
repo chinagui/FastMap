@@ -6,8 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -18,8 +19,6 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
-import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
-import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiOperator;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -106,7 +105,7 @@ public class BasicOperator extends AbstractOperator {
 						 
 					 }catch (Exception e) {
 							if (e instanceof NoSuchMethodException) {
-								 key.append(StringUtils.toColumnName(name).equals(M_PID) + ",");
+								 key.append(StringUtils.toColumnName(name) + ",");
 								 value.append(oj + ",");
 							}
 					 }

@@ -16,6 +16,7 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
@@ -71,6 +72,9 @@ public class BasicOperator extends AbstractOperator {
 		value.append(" values ( ");
 		for (Field f : fields) {
 			if (isBasicType(f)) {
+				if(f.getModifiers() == 4 ){
+					continue;
+				}
 				f.setAccessible(true);
 				Object oj = f.get(row);
 				if (oj instanceof Integer) {
@@ -371,5 +375,17 @@ public class BasicOperator extends AbstractOperator {
 
 		}
 
+	}
+	public static void main(String[] args) {
+		AdFace adFace = new AdFace();
+		adFace.setArea(2332);
+		Field[] fields =adFace.getClass().getDeclaredFields();
+		for(Field f :fields){
+			System.out.println(f.getModifiers());
+			//f.setAccessible(true);
+			
+			System.out.println(f);
+			System.out.println();
+		}
 	}
 }

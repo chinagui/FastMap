@@ -337,7 +337,7 @@ public class Process extends AbstractProcess<Command> {
 				
 				for(RdElectroniceye eleceye : this.getCommand().getElectroniceyes()){
 
-					infectList.add(rdTrafficsignal.getPid());
+					infectList.add(eleceye.getPid());
 				}
 
 				infects.put("RDELECTRONICEYE", infectList);

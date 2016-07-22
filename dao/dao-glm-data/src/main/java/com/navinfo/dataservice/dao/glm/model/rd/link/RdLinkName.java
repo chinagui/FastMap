@@ -19,8 +19,6 @@ public class RdLinkName implements IRow {
 
 	private String rowId;
 
-	private String name;
-
 	private int seqNum = 1;
 
 	private int nameType;
@@ -38,6 +36,8 @@ public class RdLinkName implements IRow {
 	private int routeAtt;
 
 	private int code;
+	
+	public Object name;
 
 	public String getInputTime() {
 		return inputTime;
@@ -91,14 +91,6 @@ public class RdLinkName implements IRow {
 
 	public RdLinkName() {
 
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public int getSeqNum() {
@@ -196,8 +188,6 @@ public class RdLinkName implements IRow {
 
 		RdLinkName nameSource = (RdLinkName) row;
 
-		this.setName(nameSource.getName());
-
 		this.setNameClass(nameSource.getNameClass());
 
 		this.setNameType(nameSource.getNameType());
@@ -207,6 +197,8 @@ public class RdLinkName implements IRow {
 		this.setSeqNum(nameSource.getSeqNum());
 
 		this.setMesh(row.mesh());
+		
+		this.name = nameSource.getName();
 	}
 
 	@Override
@@ -243,6 +235,14 @@ public class RdLinkName implements IRow {
 	public String rowId() {
 
 		return rowId;
+	}
+	
+	public Object getName() {
+		return name;
+	}
+
+	public void setName(Object name) {
+		this.name = name;
 	}
 
 	@Override

@@ -24,7 +24,7 @@ public class JsonUtils {
 						}
 
 						if (JSONUtils.mayBeJSON(value.toString())) {
-							return "\"" + value + "\"";
+							return "\"" + value.toString() + "\"";
 						}
 
 						return value;

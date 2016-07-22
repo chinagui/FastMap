@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -88,7 +87,7 @@ public class RdElectroniceyeSearch implements ISearch {
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select a.pid, a.direct, a.geometry from rd_electroniceye a where a.u_record <> 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
+		String sql = "select a.pid, a.direct, a.geometry from rd_electroniceye a where a.u_record <> 2 and sdo_relate(a.geometry, sdo_geometry(:1, 8307),'mask=anyinteract') = 'TRUE'";
 
 		PreparedStatement pstmt = null;
 
@@ -156,8 +155,7 @@ public class RdElectroniceyeSearch implements ISearch {
 	}
 
 	public static void main(String[] args) throws Exception {
-		Connection conn = DBConnector.getInstance().getConnectionById(43);
-
-		
+		String wkt = MercatorProjection.getWktWithGap(107949, 49614, 17, 80);
+		System.out.println(wkt);
 	}
 }

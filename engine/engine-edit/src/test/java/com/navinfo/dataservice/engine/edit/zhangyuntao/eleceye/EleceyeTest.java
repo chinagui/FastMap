@@ -1,14 +1,25 @@
 package com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
+import com.navinfo.dataservice.dao.glm.search.RdElectroniceyeSearch;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
+import com.navinfo.dataservice.engine.edit.search.SearchProcess;
+
+import net.sf.json.JSONObject;
 
 public class EleceyeTest extends InitApplication {
 
@@ -62,6 +73,28 @@ public class EleceyeTest extends InitApplication {
 			e.printStackTrace();
 		}
 		
+	}
+	
+	@Test
+	public void testSearch() throws Exception {
+		String parameter = "{\"projectId\":42,\"type\":\"RDELECTRONICEYE\",\"pid\":40583219}";
+		JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+		String objType = jsonReq.getString("type");
+
+		int projectId = jsonReq.getInt("projectId");
+
+		int pid = jsonReq.getInt("pid");
+		SearchProcess p = new SearchProcess(
+				DBConnector.getInstance().getConnectionById(projectId));
+		List<ObjType> list = new ArrayList<ObjType>();
+		list.add(ObjType.valueOf(objType));
+		
+		JSONObject json = p.searchDataByTileWithGap(list, 107935, 49592, 17, 80);
+
+		
+		IObj obj = p.searchDataByPid(ObjType.valueOf(objType), pid);
+		System.out.println(obj.pid());
 	}
 	
 }

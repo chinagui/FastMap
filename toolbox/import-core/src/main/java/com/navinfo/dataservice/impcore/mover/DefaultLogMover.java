@@ -45,7 +45,7 @@ public class DefaultLogMover extends LogMover {
 			log.error(e.getMessage(),e);
 			DbUtils.rollbackAndCloseQuietly(conn);
 		}finally{
-			if(cr!=null) cr.drop(dbLinkName, false, logSchema.getPoolDataSource());
+//			if(cr!=null) cr.drop(dbLinkName, false, logSchema.getPoolDataSource());
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 		return null;
@@ -86,7 +86,7 @@ public class DefaultLogMover extends LogMover {
 		sb.append(dbLinkName);
 		sb.append("(OP_ID,US_ID,OP_CMD,OP_DT) SELECT L.OP_ID,L.US_ID,L.OP_CMD,L.OP_DT FROM LOG_OPERATION L,");
 		sb.append(tempTable);
-		sb.append(" T,LOG_DETAIL D WHERE L.OP_ID=T.OP_ID  AND L.OP_ID=D.OP_ID");
+		sb.append(" T WHERE L.OP_ID=T.OP_ID  ");
 		if(StringUtils.isNotEmpty(tempFailLogTable)){
 		}
 		return sb.toString();

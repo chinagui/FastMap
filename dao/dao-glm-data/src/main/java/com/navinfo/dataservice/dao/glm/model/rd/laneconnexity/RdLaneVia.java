@@ -25,13 +25,7 @@ public class RdLaneVia implements IRow {
 
 	private int seqNum = 1;
 
-	private String rowId;
-	
-	private int sNodePid;
-
-	private int eNodePid;
-
-	private int inNodePid;
+	private String rowId;	
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -54,28 +48,52 @@ public class RdLaneVia implements IRow {
 		return JSONObject.fromObject(this,JsonUtils.getStrConfig());
 	}
 
-	public int igetsNodePid() {
-		return sNodePid;
-	}
-
-	public void isetsNodePid(int sNodePid) {
-		this.sNodePid = sNodePid;
-	}
-
-	public int igeteNodePid() {
-		return eNodePid;
-	}
-
-	public void iseteNodePid(int eNodePid) {
-		this.eNodePid = eNodePid;
-	}
+	// outNodePid不属于模型字段导致反射生成sql语句错误，因此特殊处理。
+	private Map<String, Integer> notGeoliveField = new HashMap<String, Integer>();
 
 	public int igetInNodePid() {
-		return inNodePid;
+
+		if (notGeoliveField.containsKey("inNodePid")) {
+
+			return notGeoliveField.get("inNodePid");
+		}
+
+		return 0;
 	}
 
 	public void isetInNodePid(int inNodePid) {
-		this.inNodePid = inNodePid;
+
+		notGeoliveField.put("inNodePid", inNodePid);
+	}
+
+	public int igetsNodePid() {
+
+		if (notGeoliveField.containsKey("sNodePid")) {
+
+			return notGeoliveField.get("sNodePid");
+		}
+
+		return 0;
+	}
+
+	public void isetsNodePid(int sNodePid) {
+
+		notGeoliveField.put("sNodePid", sNodePid);
+	}
+
+	public int igeteNodePid() {
+
+		if (notGeoliveField.containsKey("eNodePid")) {
+
+			return notGeoliveField.get("eNodePid");
+		}
+
+		return 0;
+	}
+
+	public void iseteNodePid(int eNodePid) {
+
+		notGeoliveField.put("eNodePid", eNodePid);
 	}
 
 	@Override

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
@@ -338,7 +337,7 @@ public class Process extends AbstractProcess<Command> {
 				
 				for(RdElectroniceye eleceye : this.getCommand().getElectroniceyes()){
 
-					infectList.add(rdTrafficsignal.getPid());
+					infectList.add(eleceye.getPid());
 				}
 
 				infects.put("RDELECTRONICEYE", infectList);

@@ -45,12 +45,12 @@ public class BasicOperator extends AbstractOperator {
 	public BasicOperator(Connection conn, IRow row) throws Exception {
 		super(conn);
 		this.row = row;
-		this.modifyPoiStatus();
 	}
 
 	@Override
 	public void insertRow2Sql(Statement stmt) throws Exception {
 		this.generateInsertSql(stmt, row);
+		this.modifyPoiStatus();
 	}
 
 	/***
@@ -91,7 +91,7 @@ public class BasicOperator extends AbstractOperator {
 				String name = f.getName().toString();
 				if ((StringUtils.toColumnName(name).equals(M_U_RECORD)))
 					continue;
-				if(row instanceof IxPoi){
+				if (row instanceof IxPoi) {
 					if ((StringUtils.toColumnName(name).equals("status")))
 						continue;
 				}
@@ -99,22 +99,20 @@ public class BasicOperator extends AbstractOperator {
 					key.append(M_U_DATE + ",");
 					value.append("'" + StringUtils.getCurrentTime() + "',");
 				} else if (StringUtils.toColumnName(name).equals(M_PID)) {
-					 try{
-						 key.append(c.getMethod(M_PRIMARYKEY).invoke(row) + ",");
-						 value.append(oj + ",");
-						 
-					 }catch (Exception e) {
-							if (e instanceof NoSuchMethodException) {
-								 key.append(StringUtils.toColumnName(name) + ",");
-								 value.append(oj + ",");
-							}
-					 }
-					
+					try {
+						key.append(c.getMethod(M_PRIMARYKEY).invoke(row) + ",");
+						value.append(oj + ",");
+
+					} catch (Exception e) {
+						if (e instanceof NoSuchMethodException) {
+							key.append(StringUtils.toColumnName(name) + ",");
+							value.append(oj + ",");
+						}
+					}
+
 				} else if (StringUtils.toColumnName(name).equals(M_ROW_ID)) {
 					key.append(M_ROW_ID + ",");
-					if(row.rowId() == null || row.rowId() == "" ){
-						row.setRowId(UuidUtils.genUuid());
-					}
+					row.setRowId(UuidUtils.genUuid());
 					value.append("'" + row.rowId() + "',");
 				} else {
 					key.append(StringUtils.toColumnName(name) + ",");
@@ -126,6 +124,7 @@ public class BasicOperator extends AbstractOperator {
 		}
 		key.append(M_U_RECORD + ")");
 		value.append(1 + ")");
+		System.out.println(key + " " + value);
 		stmt.addBatch(key.append(value).toString());
 		if (row.children() != null) {
 			List<List<IRow>> lists = row.children();
@@ -217,6 +216,7 @@ public class BasicOperator extends AbstractOperator {
 		String sql = sb.toString();
 		sql = sql.replace(", where", " where");
 		stmt.addBatch(sql);
+		this.modifyPoiStatus();
 
 	}
 
@@ -235,12 +235,14 @@ public class BasicOperator extends AbstractOperator {
 				return " where row_id=hextoraw('" + row.rowId() + "')";
 			}
 		}
+
 		return "";
 	}
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		this.generateDeleteSql(stmt, row);
+		this.modifyPoiStatus();
 	}
 
 	/***
@@ -306,8 +308,8 @@ public class BasicOperator extends AbstractOperator {
 	private void addConditionForPoi(StringBuilder sb) {
 		if (row instanceof IxPoi || row instanceof IxPoiChildren
 				|| row instanceof IxPoiParent) {
-			sb.append(",u_date = " + StringUtils.getCurrentTime()+",");
-		}else{
+			sb.append(",u_date = " + StringUtils.getCurrentTime() + ",");
+		} else {
 			sb.append(",");
 		}
 
@@ -333,7 +335,7 @@ public class BasicOperator extends AbstractOperator {
 			upatePoiStatus();
 
 		}
-		
+
 	}
 
 	/**

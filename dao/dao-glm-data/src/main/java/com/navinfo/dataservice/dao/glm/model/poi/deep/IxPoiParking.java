@@ -38,7 +38,6 @@ public class IxPoiParking implements IObj {
 	private double resWidth = 0;//限宽
 	private double resWeigh = 0;//限重
 	private int  vehicle = 0;//停放车辆类型 
-	private String memo;// 备注信息
 	private String photoName;//全景照片
 	private int certificate = 0; //入口凭证
 	private int uRecord=0;
@@ -318,14 +317,6 @@ public class IxPoiParking implements IObj {
 		this.payment = payment;
 	}
 
-
-	public String getMemo() {
-		return memo;
-	}
-
-	public void setMemo(String memo) {
-		this.memo = memo;
-	}
 
 
 	public String getPhotoName() {

@@ -152,4 +152,16 @@ public class AdLinkTest extends InitApplication{
 				e.printStackTrace();
 			}
 	}
+	@Test
+	public  void testSave(){
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"ADLINK\",\"objId\":100036035,\"data\":{\"kind\":2,\"pid\":100036035,\"objStatus\":\"UPDATE\"}}";
+		log.info(parameter);
+		Transaction t = new Transaction(parameter);;
+		try {
+			String msg = t.run();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		//parameter:{"command":"UPDATE","dbId":42,"type":"ADLINK","objId":100036035,"data":{"kind":2,"pid":100036035,"objStatus":"UPDATE"}}
+	}
 }

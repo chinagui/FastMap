@@ -92,7 +92,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			log.info("start gdb batch");
 			JobInfo batchJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
 			releaseJobRequest.getSubJobRequest("batch").setAttrValue("grids", allGrid);
-			//releaseJobRequest.getSubJobRequest("batch").setAttrValue("batchDbId", valDbId);
+			releaseJobRequest.getSubJobRequest("batch").setAttrValue("batchDbId", valDbId);
 			AbstractJob batchJob = JobCreateStrategy.createAsSubJob(batchJobInfo,
 					releaseJobRequest.getSubJobRequest("batch"), this);
 			batchJob.run();

@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.datahub.model.BizType;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.bizcommons.datarow.CkResultTool;
@@ -36,46 +37,66 @@ public class GdbValidationJob extends AbstractJob {
 		//1. 创建检查子版本
 		try {
 			// 1. 创建检查子版本库库
-			int valDbId = 0;
 			OracleSchema valSchema = null;
 			DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
+			int valDbId = 0;
+			//先找是否有传入的库，传入的库不需要导数据
 			if(req.getValDbId()>0){
 				valDbId = req.getValDbId();
 				jobInfo.getResponse().put("valDbId", valDbId);
 				DbInfo valDb = datahub.getDbById(valDbId);
 				valSchema = new OracleSchema(
 						DbConnectConfig.createConnectConfig(valDb.getConnectParam()));
-			}else if(req.getSubJobRequest("createValDb")!=null&&req.getSubJobRequest("expValDb")!=null){
-				JobInfo createValDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
-				AbstractJob createValDbJob = JobCreateStrategy.createAsSubJob(createValDbJobInfo,
-						req.getSubJobRequest("createValDb"), this);
-				createValDbJob.run();
-				if (createValDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
-					throw new Exception("创建检查子版本库是job执行失败。");
+			}else{
+				//在找是否利用可重复使用的库,重用的库是空库，需要导数据
+				if(req.isReuseDb()){
+					DbInfo valDb = datahub.getReuseDb(BizType.DB_COP_VERSION);
+					
+					if(valDb!=null){
+						valDbId=valDb.getDbId();
+					}else{//未设置利用重用的库，或者未找到可重用的库，需要新建库
+						if(req.getSubJobRequest("createValDb")!=null){
+							JobInfo createValDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
+							AbstractJob createValDbJob = JobCreateStrategy.createAsSubJob(createValDbJobInfo,
+									req.getSubJobRequest("createValDb"), this);
+							createValDbJob.run();
+							if (createValDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
+								throw new Exception("创建检查子版本库时job执行失败。");
+							}
+							valDbId = createValDbJob.getJobInfo().getResponse().getInt("outDbId");
+							valDb = datahub.getDbById(valDbId);
+						}else{
+							throw new Exception("未设置创建检查子版本库request参数。");
+						}
+					}
+					jobInfo.getResponse().put("valDbId", valDbId);
+					valSchema = new OracleSchema(
+							DbConnectConfig.createConnectConfig(valDb.getConnectParam()));
 				}
-				valDbId = createValDbJob.getJobInfo().getResponse().getInt("outDbId");
-				jobInfo.getResponse().put("valDbId", valDbId);
-				// 2.给检查子版本库导数据
-				req.getSubJobRequest("expValDb").setAttrValue("sourceDbId", req.getTargetDbId());
-				req.getSubJobRequest("expValDb").setAttrValue("targetDbId", valDbId);
-				Set<String> meshes = new HashSet<String>();
-				for (Integer g : req.getGrids()) {
-					int m = g / 100;
-					meshes.add(m < 99999 ? "0" + String.valueOf(m) : String.valueOf(m));
+				// 给检查子版本库导数据
+				if(req.getSubJobRequest("expValDb")!=null){
+					req.getSubJobRequest("expValDb").setAttrValue("sourceDbId", req.getTargetDbId());
+					req.getSubJobRequest("expValDb").setAttrValue("targetDbId", valDbId);
+					Set<String> meshes = new HashSet<String>();
+					for (Integer g : req.getGrids()) {
+						int m = g / 100;
+						meshes.add(m < 99999 ? "0" + String.valueOf(m) : String.valueOf(m));
+					}
+					req.getSubJobRequest("expValDb").setAttrValue("conditionParams", JSONArray.fromObject(meshes));
+					JobInfo expValDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
+					AbstractJob expValDbJob = JobCreateStrategy.createAsSubJob(expValDbJobInfo, req.getSubJobRequest("expValDb"), this);
+					expValDbJob.run();
+					if (expValDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
+						throw new Exception("批处理子版本库导数据时job执行失败。");
+					}
+					//cop 子版本物理删除逻辑删除数据
+					DbInfo valDb = datahub.getDbById(valDbId);
+					valSchema = new OracleSchema(
+							DbConnectConfig.createConnectConfig(valDb.getConnectParam()));
+					PhysicalDeleteRow.doDelete(valSchema);
+				}else{
+					throw new Exception("未设置给检查子版本库导数据的request参数。");
 				}
-				req.getSubJobRequest("expValDb").setAttrValue("conditionParams", JSONArray.fromObject(meshes));
-				JobInfo expValDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
-				AbstractJob expValDbJob = JobCreateStrategy.createAsSubJob(expValDbJobInfo, req.getSubJobRequest("expValDb"), this);
-				expValDbJob.run();
-				if (expValDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
-					throw new Exception("批处理子版本库导数据时job执行失败。");
-				}
-
-				//cop 子版本物理删除逻辑删除数据
-				DbInfo valDb = datahub.getDbById(valDbId);
-				valSchema = new OracleSchema(
-						DbConnectConfig.createConnectConfig(valDb.getConnectParam()));
-				PhysicalDeleteRow.doDelete(valSchema);
 			}
 			// 2. 在检查子版本上执行检查
 			req.getSubJobRequest("val").setAttrValue("executeDBId", valDbId);

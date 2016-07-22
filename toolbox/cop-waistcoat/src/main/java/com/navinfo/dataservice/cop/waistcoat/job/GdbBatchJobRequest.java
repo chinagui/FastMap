@@ -27,6 +27,7 @@ public class GdbBatchJobRequest extends AbstractJobRequest {
 	protected int targetDbId;//批处理的导出源库
 	protected int batchDbId=0;//如果存在可用的子版本库，可以直接使用，不用再创建
 	protected String pidDbInfo;
+	protected boolean reuseDb=true;
 
 	@Override
 	protected int myStepCount() throws JobException {
@@ -128,6 +129,14 @@ public class GdbBatchJobRequest extends AbstractJobRequest {
 
 	public void setPidDbInfo(String pidDbInfo) {
 		this.pidDbInfo = pidDbInfo;
+	}
+
+	public boolean isReuseDb() {
+		return reuseDb;
+	}
+
+	public void setReuseDb(boolean reuseDb) {
+		this.reuseDb = reuseDb;
 	}
 
 	@Override

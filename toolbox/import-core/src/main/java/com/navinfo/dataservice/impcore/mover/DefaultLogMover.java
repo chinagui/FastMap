@@ -41,6 +41,7 @@ public class DefaultLogMover extends LogMover {
 			run.update(conn, operationSql());
 			run.update(conn, detailSql());
 			run.update(conn, gridSql());
+			run.update(conn,dayReleaseSql());
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -88,8 +89,25 @@ public class DefaultLogMover extends LogMover {
 		sb.append(tempTable);
 		sb.append(" T WHERE L.OP_ID=T.OP_ID  ");
 		if(StringUtils.isNotEmpty(tempFailLogTable)){
+			sb.append(" AND NOT EXISTS(SELECT 1 FROM ");
+			sb.append(tempFailLogTable);
+			sb.append(" F WHERE F.ROW_ID=D.ROW_ID)");
 		}
 		return sb.toString();
 	}
 
+	protected String dayReleaseSql(){
+		StringBuilder sb = new StringBuilder();
+		sb.append("INSERT INTO LOG_DAY_RELEASE@");
+		sb.append(dbLinkName);
+		sb.append("(OP_ID) SELECT L.OP_ID FROM ");
+		sb.append(tempTable);
+		sb.append(" T,LOG_DETAIL L WHERE T.OP_ID=L.OP_ID");
+		if(StringUtils.isNotEmpty(tempFailLogTable)){
+			sb.append(" AND NOT EXISTS(SELECT 1 FROM ");
+			sb.append(tempFailLogTable);
+			sb.append(" F WHERE F.ROW_ID=L.ROW_ID)");
+		}
+		return sb.toString();
+	}
 }

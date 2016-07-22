@@ -71,7 +71,7 @@ public class Command extends AbstractCommand implements ICommand{
 		}
 		
 		if (data.containsKey("nodePid")) {
-			this.setLinkPid(data.getInt("nodePid"));
+			this.setNodePid(data.getInt("nodePid"));
 		}
 		else
 		{

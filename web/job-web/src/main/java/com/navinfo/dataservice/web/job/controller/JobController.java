@@ -15,6 +15,7 @@ import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.job.model.JobStep;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.jobframework.service.JobService;
 
@@ -54,7 +55,8 @@ public class JobController extends BaseController {
 			}
 			String jobType = paraJson.getString("jobType");;
 			JSONObject jobRequest = paraJson.getJSONObject("request");
-			int userId = (int)paraJson.get("userId");
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			int userId = (int) tokenObj.getUserId();
 			String descp = (String)paraJson.get("descp");
 			int jobId = JobService.getInstance().create(jobType, jobRequest, Long.valueOf(userId), descp);
 			Map<String,Object> data = new HashMap<String,Object>();

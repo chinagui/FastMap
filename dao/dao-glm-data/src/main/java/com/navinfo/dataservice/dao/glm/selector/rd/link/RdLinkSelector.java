@@ -1947,7 +1947,7 @@ public class RdLinkSelector implements ISelector {
 	{
 		List<RdLink> list = new ArrayList<RdLink>();
 		
-		String sql = "SELECT a.* FROM rd_link a left join RD_LINK_FORM b on a.LINK_PID = b.link_pid WHERE b.FORM_OF_WAY != :5 and((a.e_node_pid = :1 AND a.direct = 3) OR (a.s_node_pid = :2 AND a.direct = 2) OR (a.direct = 1 AND (a.s_node_pid =:3 OR a.e_node_pid = :4)))";
+		String sql = "SELECT a.* FROM rd_link a left join RD_LINK_FORM b on a.LINK_PID = b.link_pid WHERE b.FORM_OF_WAY != :1 and((a.e_node_pid = :2 AND a.direct = 3) OR (a.s_node_pid = :3 AND a.direct = 2) OR (a.direct = 1 AND (a.s_node_pid =:4 OR a.e_node_pid = :5)))";
 		
 		PreparedStatement pstmt = null;
 
@@ -1956,11 +1956,11 @@ public class RdLinkSelector implements ISelector {
 		try {
 			pstmt = conn.prepareStatement(sql);
 			
-			pstmt.setInt(1, nodePid);
+			pstmt.setInt(1, form);
 			pstmt.setInt(2, nodePid);
 			pstmt.setInt(3, nodePid);
 			pstmt.setInt(4, nodePid);
-			pstmt.setInt(5, form);
+			pstmt.setInt(5, nodePid);
 			
 			resultSet = pstmt.executeQuery();
 			

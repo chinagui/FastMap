@@ -16,7 +16,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 public class RdLaneVia implements IRow {
-	
+
 	private int topologyId;
 
 	private int linkPid;
@@ -25,7 +25,7 @@ public class RdLaneVia implements IRow {
 
 	private int seqNum = 1;
 
-	private String rowId;	
+	private String rowId;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -45,55 +45,38 @@ public class RdLaneVia implements IRow {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
 
-		return JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
 	}
 
-	// outNodePid不属于模型字段导致反射生成sql语句错误，因此特殊处理。
-	private Map<String, Integer> notGeoliveField = new HashMap<String, Integer>();
+	// sNodePid、eNodePid、inNodePid不属于模型字段，使用protected修饰符。
+	protected int sNodePid;
+
+	protected int eNodePid;
+
+	protected int inNodePid;
 
 	public int igetInNodePid() {
-
-		if (notGeoliveField.containsKey("inNodePid")) {
-
-			return notGeoliveField.get("inNodePid");
-		}
-
-		return 0;
+		return inNodePid;
 	}
 
 	public void isetInNodePid(int inNodePid) {
-
-		notGeoliveField.put("inNodePid", inNodePid);
+		this.inNodePid = inNodePid;
 	}
 
 	public int igetsNodePid() {
-
-		if (notGeoliveField.containsKey("sNodePid")) {
-
-			return notGeoliveField.get("sNodePid");
-		}
-
-		return 0;
+		return sNodePid;
 	}
 
 	public void isetsNodePid(int sNodePid) {
-
-		notGeoliveField.put("sNodePid", sNodePid);
+		this.sNodePid = sNodePid;
 	}
 
 	public int igeteNodePid() {
-
-		if (notGeoliveField.containsKey("eNodePid")) {
-
-			return notGeoliveField.get("eNodePid");
-		}
-
-		return 0;
+		return eNodePid;
 	}
 
 	public void iseteNodePid(int eNodePid) {
-
-		notGeoliveField.put("eNodePid", eNodePid);
+		this.eNodePid = eNodePid;
 	}
 
 	@Override
@@ -200,7 +183,7 @@ public class RdLaneVia implements IRow {
 
 	@Override
 	public boolean fillChangeFields(JSONObject json) throws Exception {
-		
+
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {
@@ -210,45 +193,43 @@ public class RdLaneVia implements IRow {
 
 			if (json.get(key) instanceof JSONArray) {
 				continue;
-			}  else {
+			} else {
 				if (!"objStatus".equals(key)) {
-					
+
 					Field field = this.getClass().getDeclaredField(key);
-					
+
 					field.setAccessible(true);
-					
+
 					Object objValue = field.get(this);
-					
+
 					String oldValue = null;
-					
-					if (objValue == null){
+
+					if (objValue == null) {
 						oldValue = "null";
-					}else{
+					} else {
 						oldValue = String.valueOf(objValue);
 					}
-					
+
 					String newValue = json.getString(key);
-					
-					if (!newValue.equals(oldValue)){
+
+					if (!newValue.equals(oldValue)) {
 						Object value = json.get(key);
-						
-						if(value instanceof String){
+
+						if (value instanceof String) {
 							changedFields.put(key, newValue.replace("'", "''"));
-						}
-						else{
+						} else {
 							changedFields.put(key, value);
 						}
 
 					}
 
-					
 				}
 			}
 		}
-		
-		if (changedFields.size() >0){
+
+		if (changedFields.size() > 0) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 

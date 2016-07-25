@@ -44,21 +44,15 @@ public class RdRestrictionDetail implements IObj {
 
 	public Map<String, RdRestrictionCondition> conditionMap = new HashMap<String, RdRestrictionCondition>();
 
-	// outNodePid不属于模型字段导致反射生成sql语句错误，因此特殊处理。
-	private Map<String, Integer> notGeoliveField = new HashMap<String, Integer>();
+	//outNodePid不属于模型字段，使用protected修饰符。
+	protected int outNodePid;
 
 	public int igetOutNodePid() {
-
-		if (notGeoliveField.containsKey("outNodePid")) {
-
-			return notGeoliveField.get("outNodePid");
-		}
-
-		return 0;
+		return outNodePid;
 	}
 
 	public void isetOutNodePid(int outNodePid) {
-		notGeoliveField.put("outNodePid", outNodePid);
+		this.outNodePid = outNodePid;
 	}
 
 	public RdRestrictionDetail() {

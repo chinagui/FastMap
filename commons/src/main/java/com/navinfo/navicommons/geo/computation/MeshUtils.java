@@ -22,7 +22,8 @@ public abstract class MeshUtils {
 
 	public static void main(String[] args) throws Exception {
 //		System.out.println(""+second2Decimal(300.0));
-		String[] results = point2Meshes(116.74963, 39.0);
+//		String[] results = point2Meshes(116.74963, 39.0);
+		Set<String> results = getNeighborMeshSet("605602",2);
 		System.out.println(StringUtils.join(results,","));
 //		List<String> results = lonlat2MeshIds(76.01,30.33333);
 //		System.out.println(StringUtils.join(results,","));

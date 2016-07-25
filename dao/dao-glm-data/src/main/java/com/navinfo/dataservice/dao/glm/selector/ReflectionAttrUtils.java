@@ -14,15 +14,14 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Types;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+
 import oracle.sql.STRUCT;
+
 public class ReflectionAttrUtils {
-
-
-
-
 
 	/**
 	 * 将一条记录转成一个对象
@@ -50,14 +49,16 @@ public class ReflectionAttrUtils {
 			}
 			for (int j = 1; j <= columnCount; j++) {
 				String columnName = rsm.getColumnName(j);
-				if (fieldName.equalsIgnoreCase(StringUtils.toColumnName(columnName))) {
+				if (columnName.equalsIgnoreCase(StringUtils.toColumnName(fieldName))) {
 					int columnType = rsm.getColumnType(j);
 					Object value = rs.getObject(j);
-					if (Types.VARBINARY == columnType && fieldName.equals("rowId")) {
-						String rowId = rs.getString(columnName);
-						field.setAccessible(true);
-						field.set(row, rowId);
-						break;
+					// if (Types.VARBINARY == columnType && fieldName.equals("rowId")) {
+					if (Types.VARBINARY == columnType || Types.VARCHAR == columnType) {
+						// String rowId = rs.getString(columnName);
+						// field.setAccessible(true);
+						// field.set(row, rowId);
+						// break;
+						value = rs.getString(columnName);
 					}
 					if (Types.NUMERIC == columnType) {
 						if (value.toString().contains(".")) {
@@ -69,6 +70,9 @@ public class ReflectionAttrUtils {
 					if (Types.STRUCT == columnType) {
 						value = GeoTranslator.struct2Jts((STRUCT) value, 100000, 0);
 					}
+					if (Types.TIMESTAMP == columnType) {
+						value = rs.getTimestamp(columnName);
+					}
 					field.setAccessible(true);
 					field.set(row, value);
 					break;
@@ -76,9 +80,5 @@ public class ReflectionAttrUtils {
 			}
 		}
 	}
-
-
-
-
 
 }

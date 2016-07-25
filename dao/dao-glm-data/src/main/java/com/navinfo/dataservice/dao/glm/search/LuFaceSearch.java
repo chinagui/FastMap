@@ -55,7 +55,7 @@ public class LuFaceSearch implements ISearch {
 			while (resultSet.next()) {
 				SearchSnapshot snapshot = new SearchSnapshot();
 
-				snapshot.setT(13);
+				snapshot.setT(30);
 
 				snapshot.setI(String.valueOf(resultSet.getInt("face_pid")));
 

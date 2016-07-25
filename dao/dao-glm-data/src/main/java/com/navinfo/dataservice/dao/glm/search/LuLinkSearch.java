@@ -65,7 +65,7 @@ public class LuLinkSearch implements ISearch {
 
 				snapshot.setM(m);
 
-				snapshot.setT(12);
+				snapshot.setT(29);
 
 				snapshot.setI(String.valueOf(resultSet.getInt("link_pid")));
 

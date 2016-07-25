@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.json.DateJsonValueProcessor;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -202,6 +203,8 @@ public class RdElectroniceye implements IObj {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
 		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+		// 设置序列化的date格式
+		jsonConfig.registerJsonValueProcessor(java.util.Date.class, new DateJsonValueProcessor("yyyy-MM-dd hh:mm:ss"));  
 		JSONObject json = JSONObject.fromObject(this, jsonConfig);
 		return json;
 	}
@@ -222,6 +225,16 @@ public class RdElectroniceye implements IObj {
 						RdEleceyePart row = new RdEleceyePart();
 						row.Unserialize(jo);
 						parts.add(row);
+					}
+					break;
+				case "pairs":
+					pairs.clear();
+					ja = json.getJSONArray(key);
+					for (int i = 0; i < ja.size(); i++) {
+						JSONObject jo = ja.getJSONObject(i);
+						RdEleceyePair row = new RdEleceyePair();
+						row.Unserialize(jo);
+						pairs.add(row);
 					}
 					break;
 				}

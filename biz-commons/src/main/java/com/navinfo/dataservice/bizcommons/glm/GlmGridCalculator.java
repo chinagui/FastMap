@@ -115,8 +115,9 @@ public class GlmGridCalculator {
 	 * @param rowIds
 	 * @param dataConn：数据所在库的连接
 	 * @return: key-value:key-rowId,value-grid号码字符串数组
+	 * @throws Exception 
 	 */
-	public String[] calc(String tableName,String rowId,Connection dataConn)throws SQLException{
+	public String[] calc(String tableName,String rowId,Connection dataConn)throws Exception{
 		String sql = assembleQueryGeoSql(tableName,rowId);
 		String[] grids = run.query(dataConn, sql, new SingleRowGridHandler(tableName));
 		return grids;
@@ -173,16 +174,21 @@ public class GlmGridCalculator {
 	 * 
 	 * @param type:rowid/log
 	 * @return
+	 * @throws Exception 
 	 */
-	private String assembleQueryGeoSql(String tableName,String rowId){
-		StringBuilder sb = new StringBuilder();
-		GlmGridRefInfo refInfo = getGlmGridRefInfoMap().get(tableName);
-		sb.append(refInfo.getEditQuerySql());
-		sb.append(" AND P.ROW_ID = HEXTORAW('");
-		sb.append(rowId);
-		sb.append("')");
-		return sb.toString();
-		
+	private String assembleQueryGeoSql(String tableName,String rowId) throws Exception{
+		try {
+			StringBuilder sb = new StringBuilder();
+			GlmGridRefInfo refInfo = getGlmGridRefInfoMap().get(tableName);
+			sb.append(refInfo.getEditQuerySql());
+			sb.append(" AND P.ROW_ID = HEXTORAW('");
+			sb.append(rowId);
+			sb.append("')");
+			return sb.toString();
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new Exception("表:"+tableName+"未配置GLM_GRID_MAP信息");
+		}
 	}
 
 	/**

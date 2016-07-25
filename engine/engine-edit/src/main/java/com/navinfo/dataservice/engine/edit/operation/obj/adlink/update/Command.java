@@ -14,8 +14,6 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 public class Command extends AbstractCommand  {
 
 	private String requester;
-
-//	private int projectId;
 	
 	private int linkPid;
 	

@@ -46,28 +46,28 @@ public class PidService {
 	 */
 	public synchronized int applyLinkPid() throws Exception {
 
-		return applyPid(PidSequenceName.linkPidName);
+		return applyPid(PidSequenceName.rdLinkPidName);
 	}
 
 	/**
 	 * 申請node_pid
 	 */
 	public synchronized int applyNodePid() throws Exception {
-		return applyPid(PidSequenceName.nodePidName);
+		return applyPid(PidSequenceName.rdNodePidName);
 	}
 
 	/**
 	 * 申請rd_restriciton pid
 	 */
 	public synchronized int applyRestrictionPid() throws Exception {
-		return applyPid(PidSequenceName.restrictPidName);
+		return applyPid(PidSequenceName.rdRestrictPidName);
 	}
 
 	/**
 	 * 申請rd_restriction_detail pid
 	 */
 	public synchronized int applyRestrictionDetailPid() throws Exception {
-		return applyPid(PidSequenceName.restrictDetailPidName);
+		return applyPid(PidSequenceName.rdRestrictDetailPidName);
 
 	}
 
@@ -75,7 +75,7 @@ public class PidService {
 	 * 申請node_name_id
 	 */
 	public synchronized int applyNodeNameId() throws Exception {
-		return applyPid(PidSequenceName.nodeNameIdName);
+		return applyPid(PidSequenceName.rdNodeNamePidName);
 
 	}
 
@@ -83,63 +83,63 @@ public class PidService {
 	 * 申請rdspeedlimit pid
 	 */
 	public synchronized int applySpeedLimitPid() throws Exception {
-		return applyPid(PidSequenceName.speedLimitPidName);
+		return applyPid(PidSequenceName.rdSpeedLimitPidName);
 
 	}
 
 	public synchronized int applyLaneConnexityPid() throws Exception {
-		return applyPid(PidSequenceName.laneConnexityPidName);
+		return applyPid(PidSequenceName.rdLaneConnexityPidName);
 	}
 
 	public synchronized int applyLaneTopologyPid() throws Exception {
-		return applyPid(PidSequenceName.laneTopologyPidName);
+		return applyPid(PidSequenceName.rdLaneTopologyPidName);
 
 	}
 
 	public synchronized int applyRdCrossPid() throws Exception {
-		return applyPid(PidSequenceName.crossPidName);
+		return applyPid(PidSequenceName.rdCrossPidName);
 
 	}
 
 	public synchronized int applyRdCrossNameId() throws Exception {
-		return applyPid(PidSequenceName.crossNameIdName);
+		return applyPid(PidSequenceName.rdCrossNamePidName);
 	}
 
 	public synchronized int applyBranchPid() throws Exception {
-		return applyPid(PidSequenceName.branchPidName);
+		return applyPid(PidSequenceName.rdBranchPidName);
 
 	}
 
 	public synchronized int applyBranchDetailId() throws Exception {
-		return applyPid(PidSequenceName.branchDetailIdName);
+		return applyPid(PidSequenceName.rdBranchDetailPidName);
 
 	}
 
 	public synchronized int applyBranchNameId() throws Exception {
-		return applyPid(PidSequenceName.branchNameIdName);
+		return applyPid(PidSequenceName.rdBranchNamePidName);
 	}
 
 	public synchronized int applyRdSignasreal() throws Exception {
-		return applyPid(PidSequenceName.signasrealIdName);
+		return applyPid(PidSequenceName.rdSignasrealPidName);
 
 	}
 
 	public synchronized int applyBranchSchematic() throws Exception {
-		return applyPid(PidSequenceName.schematicIdName);
+		return applyPid(PidSequenceName.rdSchematicPidName);
 
 	}
 
 	public synchronized int applyRdSignboard() throws Exception {
-		return applyPid(PidSequenceName.signboardIdName);
+		return applyPid(PidSequenceName.rdSignboardPidName);
 
 	}
 
 	public synchronized int applyRdSignboardName() throws Exception {
-		return applyPid(PidSequenceName.signboardNameIdName);
+		return applyPid(PidSequenceName.rdSignboardNamePidName);
 	}
 
 	public synchronized int applyCkExceptionId() throws Exception {
-		return applyPid(PidSequenceName.ckExceptionIdName);
+		return applyPid(PidSequenceName.ckExceptionPidName);
 
 	}
 	
@@ -147,7 +147,7 @@ public class PidService {
 	 * 申请rd_trafficsignal
 	 */
 	public synchronized int applyRdTrafficsignalPid() throws Exception {
-		return applyPid(PidSequenceName.rdTrafficsignal);
+		return applyPid(PidSequenceName.rdTrafficsignalPidName);
 
 	}
 	
@@ -171,28 +171,28 @@ public class PidService {
 	 * 申请ad_node_pid
 	 */
 	public synchronized int applyAdNodePid() throws Exception {
-		return applyPid(PidSequenceName.adAdminNodeName);
+		return applyPid(PidSequenceName.adNodePidName);
 	}
 
 	/**
 	 * 申请rw_node_pid
 	 */
 	public synchronized int applyRwNodePid() throws Exception {
-		return applyPid(PidSequenceName.rwNodeName);
+		return applyPid(PidSequenceName.rwNodePidName);
 	}
 
 	/**
 	 * 申请rw_link_pid
 	 */
 	public synchronized int applyRwLinkPid() throws Exception {
-		return applyPid(PidSequenceName.rwLinkName);
+		return applyPid(PidSequenceName.rwLinkPidName);
 	}
 
 	/**
 	 * 申请ad_link_pid
 	 */
 	public synchronized int applyAdLinkPid() throws Exception {
-		return applyPid(PidSequenceName.adAdminLinkName);
+		return applyPid(PidSequenceName.adLinkPidName);
 
 	}
 
@@ -200,7 +200,7 @@ public class PidService {
 	 * 申请ad_face_pid
 	 */
 	public synchronized int applyAdFacePid() throws Exception {
-		return applyPid(PidSequenceName.adAdminFaceName);
+		return applyPid(PidSequenceName.adFacePidName);
 
 	}
 
@@ -242,7 +242,7 @@ public class PidService {
 	 * 申请PoiNameId
 	 */
 	public synchronized int applyPoiNameId() throws Exception {
-		return applyPid(PidSequenceName.poiNameIdName);
+		return applyPid(PidSequenceName.poiNamePidName);
 
 	}
 
@@ -250,7 +250,7 @@ public class PidService {
 	 * 申请PoiAddressId
 	 */
 	public synchronized int applyPoiAddressId() throws Exception {
-		return applyPid(PidSequenceName.poiAddressIdName);
+		return applyPid(PidSequenceName.poiAddressPidName);
 
 	}
 
@@ -258,7 +258,7 @@ public class PidService {
 	 * 申请PoiGroupId
 	 */
 	public synchronized int applyPoiGroupId() throws Exception {
-		return applyPid(PidSequenceName.poiGroupIdName);
+		return applyPid(PidSequenceName.poiGroupPidName);
 
 	}
 
@@ -266,7 +266,7 @@ public class PidService {
 	 * 申请PoiGasstationId
 	 */
 	public synchronized int applyPoiGasstationId() throws Exception {
-		return applyPid(PidSequenceName.poiGasstationIdName);
+		return applyPid(PidSequenceName.poiGasstationPidName);
 
 	}
 
@@ -274,35 +274,35 @@ public class PidService {
 	 * 申请PoiParkingsId
 	 */
 	public synchronized int applyPoiParkingsId() throws Exception {
-		return applyPid(PidSequenceName.poiParkingsIdName);
+		return applyPid(PidSequenceName.poiParkingsPidName);
 	}
 
 	/**
 	 * 申请PoiHotelId
 	 */
 	public synchronized int applyPoiHotelId() throws Exception {
-		return applyPid(PidSequenceName.poiHotelIdName);
+		return applyPid(PidSequenceName.poiHotelIdPidName);
 	}
 
 	/**
 	 * 申请PoiFoodId
 	 */
 	public synchronized int applyPoiFoodId() throws Exception {
-		return applyPid(PidSequenceName.poiFoodIdName);
+		return applyPid(PidSequenceName.poiFoodIdPidName);
 	}
 
 	/**
 	 * 申请PoiIconId
 	 */
 	public synchronized int applyPoiIconId() throws Exception {
-		return applyPid(PidSequenceName.poiIconIdName);
+		return applyPid(PidSequenceName.poiIconIdPidName);
 	}
 
 	/**
 	 * 申请PoiAttractionId
 	 */
 	public synchronized int applyPoiAttractionId() throws Exception {
-		return applyPid(PidSequenceName.poiAttractionIdName);
+		return applyPid(PidSequenceName.poiAttractionPidName);
 
 	}
 
@@ -310,7 +310,7 @@ public class PidService {
 	 * 申请PoiRestaurantId
 	 */
 	public synchronized int applyPoiRestaurantId() throws Exception {
-		return applyPid(PidSequenceName.poiRestaurantIdName);
+		return applyPid(PidSequenceName.poiRestaurantPidName);
 
 	}
 
@@ -318,7 +318,7 @@ public class PidService {
 	 * 申请zone_node_pid
 	 */
 	public synchronized int applyZoneNodePid() throws Exception {
-		return applyPid(PidSequenceName.ZoneNodeName);
+		return applyPid(PidSequenceName.zoneNodePidName);
 
 	}
 
@@ -326,7 +326,7 @@ public class PidService {
 	 * 申请zone_link_pid
 	 */
 	public synchronized int applyZoneLinkPid() throws Exception {
-		return applyPid(PidSequenceName.ZoneLinkName);
+		return applyPid(PidSequenceName.zoneLinkPidName);
 
 	}
 
@@ -334,7 +334,7 @@ public class PidService {
 	 * 申请zone_face_pid
 	 */
 	public synchronized int applyZoneFacePid() throws Exception {
-		return applyPid(PidSequenceName.ZoneFaceName);
+		return applyPid(PidSequenceName.zoneFacePidName);
 	}
 
 	private int applyPid(final String pidSeqName) throws Exception {
@@ -380,7 +380,7 @@ public class PidService {
 	 * 申請rd_name pid
 	 */
 	public synchronized int applyRdNamePid() throws Exception {
-		return applyPid(PidSequenceName.rdNameIdName);
+		return applyPid(PidSequenceName.rdNameIdPidName);
 	}
 
 	/**
@@ -422,12 +422,12 @@ public class PidService {
 	 * 申请rd_warninginfo
 	 */
 	public synchronized int applyRdWarninginfoPid() throws Exception {
-		return this.applyPid(PidSequenceName.rdWarninginfo);
+		return this.applyPid(PidSequenceName.rdWarninginfoPidName);
 	}
 	/**
 	 * 申请rd_slope
 	 */
 	public synchronized int applyRdSlopePid() throws Exception {
-		return this.applyPid(PidSequenceName.rdSlopeName);
+		return this.applyPid(PidSequenceName.rdSlopePidName);
 	}
 }

@@ -97,4 +97,6 @@ public class PidSequenceName {
 	public static final String rdTrafficsignal = "SEQ_RD_TRAFFICSIGNAL";
 	
 	public static final String rdWarninginfo = "SEQ_RD_WARNINGINFO";
+	
+	public static final String rdSlopeName = "SEQ_RD_SLOPE";
 }

@@ -24,8 +24,10 @@ import com.navinfo.dataservice.engine.statics.expect.RoadCollectExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadDailyExpectMain;
 import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectMain;
 import com.navinfo.dataservice.engine.statics.poidaily.PoiDailyMain;
+import com.navinfo.dataservice.engine.statics.poimonthly.PoiMonthlyMain;
 import com.navinfo.dataservice.engine.statics.roadcollect.RoadCollectMain;
 import com.navinfo.dataservice.engine.statics.roaddaily.RoadDailyMain;
+import com.navinfo.dataservice.engine.statics.roadmonthly.RoadMonthlyMain;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 
 public class StaticsService {
@@ -174,9 +176,9 @@ public class StaticsService {
 			}
 		} else { // 月编
 			if (type == 0) {
-				colName = PoiDailyMain.col_name_grid;
+				colName = PoiMonthlyMain.col_name_grid;
 			} else {
-				colName = RoadDailyMain.col_name_grid;
+				colName = RoadMonthlyMain.col_name_grid;
 			}
 		}
 		MongoDao md = new MongoDao(StatMain.db_name);

@@ -11,6 +11,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePair;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 
 /**
  * @Title: RdEleceyePairSelector.java
@@ -58,7 +59,8 @@ public class RdEleceyePairSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				setAttr(pair, resultSet);
+//				setAttr(pair, resultSet);
+				ReflectionAttrUtils.executeResultSet(pair, resultSet);
 
 			} else {
 
@@ -126,7 +128,8 @@ public class RdEleceyePairSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				setAttr(pair, resultSet);
+//				setAttr(pair, resultSet);
+				ReflectionAttrUtils.executeResultSet(pair, resultSet);
 
 			} else {
 

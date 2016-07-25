@@ -54,7 +54,7 @@ public class RdElectroniceye implements IObj {
 
 	private Geometry geometry;
 
-	private int srcFlag = 1;
+	private String srcFlag = "1";
 
 	private Date creationDate;
 
@@ -329,11 +329,11 @@ public class RdElectroniceye implements IObj {
 		this.geometry = geometry;
 	}
 
-	public int getSrcFlag() {
+	public String getSrcFlag() {
 		return srcFlag;
 	}
 
-	public void setSrcFlag(int srcFlag) {
+	public void setSrcFlag(String srcFlag) {
 		this.srcFlag = srcFlag;
 	}
 

@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePair;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 import oracle.sql.STRUCT;
@@ -62,7 +63,8 @@ public class RdElectroniceyeSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				setAttr(eleceye, resultSet);
+//				setAttr(eleceye, resultSet);
+				ReflectionAttrUtils.executeResultSet(eleceye, resultSet);
 
 			} else {
 
@@ -136,7 +138,8 @@ public class RdElectroniceyeSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				setAttr(eleceye, resultSet);
+//				setAttr(eleceye, resultSet);
+				ReflectionAttrUtils.executeResultSet(eleceye, resultSet);
 
 			} else {
 
@@ -197,7 +200,8 @@ public class RdElectroniceyeSelector implements ISelector {
 
 			while (resultSet.next()) {
 				eleceye = new RdElectroniceye();
-				this.setAttr(eleceye, resultSet);
+//				this.setAttr(eleceye, resultSet);
+				ReflectionAttrUtils.executeResultSet(eleceye, resultSet);
 				
 				List<IRow> parts = new RdEleceyePartSelector(conn).loadRowsByEleceyePid(eleceye.pid(), isLock);
 				for (IRow row : parts) {
@@ -256,7 +260,7 @@ public class RdElectroniceyeSelector implements ISelector {
 		STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 		Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
 		eleceye.setGeometry(geometry);
-		eleceye.setSrcFlag(resultSet.getInt("src_flag"));
+		eleceye.setSrcFlag(resultSet.getString("src_flag"));
 		eleceye.setCreationDate(resultSet.getDate("creation_date"));
 		eleceye.setHighViolation(resultSet.getInt("high_violation"));
 		eleceye.setRowId(resultSet.getString("row_id"));

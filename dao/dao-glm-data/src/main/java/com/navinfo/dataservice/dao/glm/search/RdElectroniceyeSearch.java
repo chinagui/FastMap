@@ -155,7 +155,7 @@ public class RdElectroniceyeSearch implements ISearch {
 	}
 
 	public static void main(String[] args) throws Exception {
-		String wkt = MercatorProjection.getWktWithGap(107949, 49614, 17, 80);
+		String wkt = MercatorProjection.getWktWithGap(107953, 49615, 17, 80);
 		System.out.println(wkt);
 	}
 }

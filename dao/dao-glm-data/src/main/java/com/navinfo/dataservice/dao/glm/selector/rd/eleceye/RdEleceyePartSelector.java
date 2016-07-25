@@ -11,6 +11,7 @@ import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 
 /**
  * @Title: RdEleceyePartSelector.java
@@ -62,7 +63,8 @@ public class RdEleceyePartSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				setAttr(part, resultSet);
+//				setAttr(part, resultSet);
+				ReflectionAttrUtils.executeResultSet(part, resultSet);
 
 			} else {
 
@@ -126,7 +128,8 @@ public class RdEleceyePartSelector implements ISelector {
 
 				RdEleceyePart part = new RdEleceyePart();
 
-				setAttr(part, resultSet);
+//				setAttr(part, resultSet);
+				ReflectionAttrUtils.executeResultSet(part, resultSet);
 
 				rows.add(part);
 			}
@@ -183,7 +186,8 @@ public class RdEleceyePartSelector implements ISelector {
 
 				RdEleceyePart part = new RdEleceyePart();
 
-				setAttr(part, resultSet);
+//				setAttr(part, resultSet);
+				ReflectionAttrUtils.executeResultSet(part, resultSet);
 
 				rows.add(part);
 			}

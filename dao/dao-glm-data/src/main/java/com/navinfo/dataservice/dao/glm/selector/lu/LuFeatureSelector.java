@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFeature;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 
 public class LuFeatureSelector implements ISelector {
 
@@ -48,7 +49,9 @@ public class LuFeatureSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
-				setAttr(feature, resultSet, isLock);
+//				setAttr(feature, resultSet, isLock);
+				ReflectionAttrUtils.executeResultSet(feature, resultSet);
+				this.setChildren(feature, resultSet, isLock);
 
 				return feature;
 			} else {
@@ -83,6 +86,19 @@ public class LuFeatureSelector implements ISelector {
 			throws SQLException, Exception {
 		feature.setPid(resultSet.getInt("feature_pid"));
 		feature.setRowId(resultSet.getString("row_id"));
+
+		List<IRow> faces = new LuFaceSelector(this.conn).loadRowsByParentId(
+				feature.pid(), isLock);
+		feature.setFaces(faces);
+
+		for (IRow row : faces) {
+			LuFace face = (LuFace) row;
+			feature.faceMap.put(face.rowId(), face);
+		}
+	}
+	
+	private void setChildren(LuFeature feature, ResultSet resultSet, boolean isLock)
+			throws SQLException, Exception {
 
 		List<IRow> faces = new LuFaceSelector(this.conn).loadRowsByParentId(
 				feature.pid(), isLock);

@@ -6,8 +6,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import oracle.sql.STRUCT;
-
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -15,7 +13,10 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
 import com.navinfo.dataservice.dao.glm.model.lu.LuNodeMesh;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.vividsolutions.jts.geom.Geometry;
+
+import oracle.sql.STRUCT;
 
 public class LuNodeSelector implements ISelector{
 	
@@ -51,7 +52,9 @@ public class LuNodeSelector implements ISelector{
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
-				this.setAttr(resultSet, luNode, isLock);
+//				this.setAttr(resultSet, luNode, isLock);
+				ReflectionAttrUtils.executeResultSet(luNode, resultSet);
+				this.setChildren(resultSet, luNode, isLock);
 				return luNode;
 			} else {
 
@@ -119,6 +122,20 @@ public class LuNodeSelector implements ISelector{
 		
 	}
 	
+	private void setChildren(ResultSet resultSet, LuNode luNode, boolean isLock) throws Exception{
+
+		List<IRow> forms = new LuNodeMeshSelector(conn).loadRowsByParentId(luNode.pid(), isLock);
+
+		luNode.setMeshes(forms);
+
+		for (IRow row : luNode.getMeshes()) {
+			LuNodeMesh mesh = (LuNodeMesh) row;
+
+			luNode.meshMap.put(mesh.rowId(), mesh);
+		}
+		
+	}
+	
 	// 加载盲端节点
 		public List<LuNode> loadEndLuNodeByLinkPid(int linkPid, boolean isLock)
 				throws Exception {
@@ -145,7 +162,9 @@ public class LuNodeSelector implements ISelector{
 
 					LuNode luNode = new LuNode();
 
-					this.setAttr(resultSet, luNode, isLock);
+//					this.setAttr(resultSet, luNode, isLock);
+					ReflectionAttrUtils.executeResultSet(luNode, resultSet);
+					this.setChildren(resultSet, luNode, isLock);
 
 					nodes.add(luNode);
 				}

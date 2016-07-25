@@ -2,19 +2,14 @@ package com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye;
 
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
-import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
-import com.navinfo.dataservice.dao.glm.search.RdElectroniceyeSearch;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -30,7 +25,7 @@ public class EleceyeTest extends InitApplication {
 
 	@Test
 	public void createEleceye() {
-		String requester = "{'dbId':43,'command':'CREATE','type':'RDELECTRONICEYE','data':{'direct':3,'longitude':116.49138868782932,'latitude':40.01445911418436,'linkPid':85518434}}";
+		String requester = "{'dbId':42,'command':'CREATE','type':'RDELECTRONICEYE','data':{'direct':3,'longitude':116.50291868782932,'latitude':40.01112911418436,'linkPid':85518434}}";
 		TestUtil.run(requester);
 	}
 	
@@ -90,7 +85,7 @@ public class EleceyeTest extends InitApplication {
 		List<ObjType> list = new ArrayList<ObjType>();
 		list.add(ObjType.valueOf(objType));
 		
-		JSONObject json = p.searchDataByTileWithGap(list, 107935, 49592, 17, 80);
+		JSONObject json = p.searchDataByTileWithGap(list, 107953, 49592, 17, 80);
 
 		
 		IObj obj = p.searchDataByPid(ObjType.valueOf(objType), pid);

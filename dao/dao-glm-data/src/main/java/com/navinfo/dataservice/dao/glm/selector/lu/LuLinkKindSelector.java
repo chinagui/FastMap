@@ -13,6 +13,7 @@ import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLinkKind;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 
 public class LuLinkKindSelector implements ISelector {
 	
@@ -52,7 +53,8 @@ public class LuLinkKindSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				setAttr(mesh, resultSet);
+//				setAttr(mesh, resultSet);
+				ReflectionAttrUtils.executeResultSet(mesh, resultSet);
 			} else {
 				
 				throw new DataNotFoundException("数据不存在");
@@ -120,7 +122,8 @@ public class LuLinkKindSelector implements ISelector {
 
 				LuLinkKind mesh = new LuLinkKind();
 
-				setAttr(mesh, resultSet);
+//				setAttr(mesh, resultSet);
+				ReflectionAttrUtils.executeResultSet(mesh, resultSet);
 
 				rows.add(mesh);
 			}

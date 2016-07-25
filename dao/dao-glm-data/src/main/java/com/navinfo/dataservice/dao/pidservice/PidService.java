@@ -424,4 +424,10 @@ public class PidService {
 	public synchronized int applyRdWarninginfoPid() throws Exception {
 		return this.applyPid(PidSequenceName.rdWarninginfo);
 	}
+	/**
+	 * 申请rd_slope
+	 */
+	public synchronized int applyRdSlopePid() throws Exception {
+		return this.applyPid(PidSequenceName.rdSlopeName);
+	}
 }

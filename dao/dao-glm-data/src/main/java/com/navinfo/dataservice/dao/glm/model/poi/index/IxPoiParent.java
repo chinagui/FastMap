@@ -27,8 +27,6 @@ public class IxPoiParent implements IObj {
 	
 	private String rowId;
 	
-	private int mesh;
-	
 	private int pid;
 	
 	private int parentPoiPid;//父POI号码
@@ -37,7 +35,7 @@ public class IxPoiParent implements IObj {
 	
 	private String memo;//备注信息
 	
-	private int groupId=0; // POI组号码
+	
 	
 	private int uRecord=0;
 	
@@ -107,13 +105,6 @@ public class IxPoiParent implements IObj {
 		this.rowId = rowId;
 	}
 
-	public int getGroupId() {
-		return groupId;
-	}
-
-	public void setGroupId(int groupId) {
-		this.groupId = groupId;
-	}
 
 	public int getuRecord() {
 		return uRecord;
@@ -240,12 +231,11 @@ public class IxPoiParent implements IObj {
 
 	@Override
 	public int mesh() {
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
 	}
 
 	@Override

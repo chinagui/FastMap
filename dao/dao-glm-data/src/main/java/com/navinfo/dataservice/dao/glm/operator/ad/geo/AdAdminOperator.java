@@ -62,7 +62,7 @@ public class AdAdminOperator extends AbstractOperator {
 		sb.append("," + admin.getNameGroupid());
 		sb.append("," + admin.getSide());
 		sb.append("," + admin.getRoadFlag());
-		sb.append("," + admin.getpMeshId());
+		sb.append("," + admin.getPmeshId());
 		sb.append("," + admin.getJisCode());
 		sb.append("," + admin.getMeshId());
 		sb.append("," + admin.getEditFlag());

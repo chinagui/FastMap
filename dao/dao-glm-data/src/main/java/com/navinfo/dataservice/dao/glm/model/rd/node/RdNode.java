@@ -23,8 +23,6 @@ import com.vividsolutions.jts.geom.Geometry;
 
 public class RdNode implements IObj {
 	
-	private int mesh;
-
 	private String rowId;
 
 	private int pid;
@@ -477,14 +475,11 @@ public class RdNode implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		// TODO Auto-generated method stub
-		this.mesh=mesh;
 	}
 
 	@Override

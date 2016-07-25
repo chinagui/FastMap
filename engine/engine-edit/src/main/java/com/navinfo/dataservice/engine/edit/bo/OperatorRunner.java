@@ -1,18 +1,19 @@
-package com.navinfo.dataservice.engine.edit.bo.ad;
+package com.navinfo.dataservice.engine.edit.bo;
 
 import java.sql.Connection;
+
+import net.sf.json.JSONObject;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-
-import net.sf.json.JSONObject;
+import com.navinfo.dataservice.dao.log.LogWriter;
+import com.navinfo.dataservice.engine.edit.operation.OperatorFactory;
+import com.navinfo.dataservice.engine.edit.operation.PoiMsgPublisher;
 
 /** 
  * @ClassName: OperatorRunner
@@ -30,6 +31,15 @@ public class OperatorRunner {
 			op.loadData();
 			Result result = op.execute();
 			CheckCommand checkCmd=null;
+//			String preCheckMsg = preCheck();
+//			if (preCheckMsg != null) {
+//				throw new Exception(preCheckMsg);
+//			}
+			op.flush(result);
+
+//			postCheck();
+
+			conn.commit();
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(),e);

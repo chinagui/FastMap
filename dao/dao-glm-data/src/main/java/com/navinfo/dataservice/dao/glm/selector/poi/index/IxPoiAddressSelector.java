@@ -157,7 +157,7 @@ public class IxPoiAddressSelector implements ISelector {
 		
 		ixPoiAddress.setFullnamePhonetic(resultSet.getString("fullname_phonetic"));
 		
-		ixPoiAddress.setRodename(resultSet.getString("roadname"));
+		ixPoiAddress.setRoadname(resultSet.getString("roadname"));
 		
 		ixPoiAddress.setRoadnamePhonetic(resultSet.getString("roadname_phonetic"));
 		
@@ -181,7 +181,7 @@ public class IxPoiAddressSelector implements ISelector {
 		
 		ixPoiAddress.setPrefix(resultSet.getString("prefix"));
 		
-		ixPoiAddress.setHousesum(resultSet.getString("housenum"));
+		ixPoiAddress.setHousenum(resultSet.getString("housenum"));
 		
 		ixPoiAddress.setType(resultSet.getString("type"));
 		
@@ -221,7 +221,7 @@ public class IxPoiAddressSelector implements ISelector {
 		
 		ixPoiAddress.setTypePhonetic(resultSet.getString("type_phonetic"));
 		
-		ixPoiAddress.setSubsumPhonetic(resultSet.getString("subnum_phonetic"));
+		ixPoiAddress.setSubnumPhonetic(resultSet.getString("subnum_phonetic"));
 		
 		ixPoiAddress.setSurfixPhonetic(resultSet.getString("surfix_phonetic"));
 		

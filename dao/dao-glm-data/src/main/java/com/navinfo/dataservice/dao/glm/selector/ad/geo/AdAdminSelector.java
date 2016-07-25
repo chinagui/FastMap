@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import oracle.sql.STRUCT;
-
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
@@ -17,6 +15,8 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminName;
+
+import oracle.sql.STRUCT;
 
 public class AdAdminSelector implements ISelector {
 
@@ -49,8 +49,6 @@ public class AdAdminSelector implements ISelector {
 
 				adAdmin.setPid(resultSet.getInt("region_id"));
 
-				adAdmin.setRegionId(resultSet.getInt("region_id"));
-
 				adAdmin.setAdminId(resultSet.getInt("admin_id"));
 
 				adAdmin.setExtendId(resultSet.getInt("extend_id"));
@@ -78,7 +76,7 @@ public class AdAdminSelector implements ISelector {
 				adAdmin.setRowId(resultSet.getString("row_id"));
 
 				// ad_admin_name
-				List<IRow> adAdminNameList = new AdAdminNameSelector(conn).loadRowsByParentId(adAdmin.getRegionId(),
+				List<IRow> adAdminNameList = new AdAdminNameSelector(conn).loadRowsByParentId(adAdmin.getPid(),
 						isLock);
 
 				for (IRow row : adAdminNameList) {
@@ -219,8 +217,6 @@ public class AdAdminSelector implements ISelector {
 
 				adAdmin.setPid(resultSet.getInt("region_id"));
 
-				adAdmin.setRegionId(resultSet.getInt("region_id"));
-
 				adAdmin.setLinkPid(resultSet.getInt("link_pid"));
 
 				adAdmin.setNameGroupid(resultSet.getInt("name_groupid"));
@@ -234,7 +230,7 @@ public class AdAdminSelector implements ISelector {
 				adAdmin.setRowId(resultSet.getString("row_id"));
 
 				// ad_admin_name
-				List<IRow> adAdminNameList = new AdAdminNameSelector(conn).loadRowsByParentId(adAdmin.getRegionId(),
+				List<IRow> adAdminNameList = new AdAdminNameSelector(conn).loadRowsByParentId(adAdmin.getPid(),
 						isLock);
 
 				for (IRow row : adAdminNameList) {
@@ -318,8 +314,6 @@ public class AdAdminSelector implements ISelector {
 
 				adAdmin.setPid(resultSet.getInt("region_id"));
 
-				adAdmin.setRegionId(resultSet.getInt("region_id"));
-
 				adAdmin.setLinkPid(resultSet.getInt("link_pid"));
 
 				adAdmin.setNameGroupid(resultSet.getInt("name_groupid"));
@@ -333,7 +327,7 @@ public class AdAdminSelector implements ISelector {
 				adAdmin.setRowId(resultSet.getString("row_id"));
 
 				// ad_admin_name
-				List<IRow> adAdminNameList = new AdAdminNameSelector(conn).loadRowsByParentId(adAdmin.getRegionId(),
+				List<IRow> adAdminNameList = new AdAdminNameSelector(conn).loadRowsByParentId(adAdmin.getPid(),
 						isLock);
 
 				for (IRow row : adAdminNameList) {

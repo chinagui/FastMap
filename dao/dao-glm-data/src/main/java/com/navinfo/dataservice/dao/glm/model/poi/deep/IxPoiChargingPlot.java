@@ -45,7 +45,6 @@ public class IxPoiChargingPlot implements IRow {
 	private int locationType = 0;// 充电桩位置类型
 	private String payment = "4";// 支付方式
 	private String memo;
-	private int mesh;
 	private String rowId;
 	// 更新时间
 	private String uDate;
@@ -56,10 +55,6 @@ public class IxPoiChargingPlot implements IRow {
 
 	public void setuDate(String uDate) {
 		this.uDate = uDate;
-	}
-
-	public int getMesh() {
-		return mesh;
 	}
 
 	public int getPoiPid() {
@@ -401,14 +396,11 @@ public class IxPoiChargingPlot implements IRow {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-
 	}
 
 }

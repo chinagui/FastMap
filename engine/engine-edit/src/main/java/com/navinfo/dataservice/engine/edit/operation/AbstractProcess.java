@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -152,11 +153,11 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 				handleResult(this.getCommand().getObjType(), result);
 			}
 
-			/*String preCheckMsg = this.preCheck();
+			String preCheckMsg = this.preCheck();
 
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
-			}*/
+			}
 			this.recordData();
 
 			this.postCheck();
@@ -186,7 +187,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	private void checkResult() throws Exception {
 		if(CollectionUtils.isEmpty(result.getAddObjects()) && CollectionUtils.isEmpty(result.getUpdateObjects()) &&CollectionUtils.isEmpty(result.getDelObjects()))
 		{
-			throw new Exception("属性值未发生变化");
+			throw new DataNotChangeException("属性值未发生变化");
 		}
 	}
 

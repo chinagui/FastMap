@@ -74,6 +74,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
+import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePair;
+import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
+import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
@@ -102,6 +105,8 @@ import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
+import com.navinfo.dataservice.dao.glm.operator.BasicOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdAdminDetailOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdAdminGroupOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdAdminNameOperator;
@@ -171,6 +176,9 @@ import com.navinfo.dataservice.dao.glm.operator.rd.cross.RdCrossLinkOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.cross.RdCrossNameOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.cross.RdCrossNodeOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.cross.RdCrossOperator;
+import com.navinfo.dataservice.dao.glm.operator.rd.eleceye.RdEleceyePairOperator;
+import com.navinfo.dataservice.dao.glm.operator.rd.eleceye.RdEleceyePartOperator;
+import com.navinfo.dataservice.dao.glm.operator.rd.eleceye.RdElectroniceyeOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.gsc.RdGscLinkOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.gsc.RdGscOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.laneconnexity.RdLaneConnexityOperator;
@@ -199,6 +207,7 @@ import com.navinfo.dataservice.dao.glm.operator.rd.rw.RwLinkNameOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.rw.RwLinkOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.rw.RwNodeOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.speedlimit.RdSpeedlimitOperator;
+import com.navinfo.dataservice.dao.glm.operator.rd.trafficsignal.RdTrafficsignalOperator;
 
 /**
  * 操作类工厂
@@ -241,8 +250,9 @@ public class OperatorFactory {
 	 * @return
 	 * @throws Exception
 	 */
-	private static IOperator getOperator(Connection conn, IRow obj) throws Exception {
-		switch (obj.objType()) {
+	private static IOperator getOperator(Connection conn, IRow row) throws Exception {
+		return new BasicOperator(conn, row);
+		/*switch (obj.objType()) {
 		case RDLINK:
 			return new RdLinkOperator(conn, (RdLink) obj);
 		case RDLINKFORM:
@@ -441,8 +451,16 @@ public class OperatorFactory {
 			return new LuFaceTopoOperator(conn, (LuFaceTopo) obj);
 		case LUFEATURE:
 			return new LuFeatureOperator(conn, (LuFeature) obj);
+		case RDELECTRONICEYE:
+			return new RdElectroniceyeOperator(conn, (RdElectroniceye) obj);
+		case RDELECEYEPART:
+			return new RdEleceyePartOperator(conn, (RdEleceyePart) obj);
+		case RDELECEYEPAIR:
+			return new RdEleceyePairOperator(conn, (RdEleceyePair) obj);
+		case RDTRAFFICSIGNAL:
+			return new RdTrafficsignalOperator(conn, (RdTrafficsignal) obj);
 		default:
 			return null;
-		}
+		}*/
 	}
 }

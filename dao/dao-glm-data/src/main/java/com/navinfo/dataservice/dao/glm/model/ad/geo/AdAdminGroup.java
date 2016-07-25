@@ -22,7 +22,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 public class AdAdminGroup implements IObj {
 	private int groupId;
 	private int regionIdUp;
-	private int meshId = 0;
 	private int pid;
     private String rowId;
     private String objType;
@@ -189,13 +188,11 @@ public class AdAdminGroup implements IObj {
 
 	@Override
 	public int mesh() {
-		return this.meshId;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.meshId= mesh;
-		
 	}
 
 	@Override

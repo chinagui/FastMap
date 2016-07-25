@@ -92,7 +92,7 @@ public class JobCreateStrategy {
 		return req;
 	}
 	private static void loadMapping(){
-		String mappingFile = "/com/navinfo/dataservice/jobframework/job-class.xml";
+		String mappingFile = "/job-class.xml";
 		jobClassMap = new HashMap<String,Class<?>>();
 		requestClassMap = new HashMap<String,Class<?>>();
 		//加载管理库的信息

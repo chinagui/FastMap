@@ -278,11 +278,13 @@ public class TipsController extends BaseController {
 			JSONArray stage = jsonReq.getJSONArray("stage");
 
 			int dbId = jsonReq.getInt("dbId");
+			
+			String mdFlag = jsonReq.getString("mdFlag");
 
 			TipsSelector selector = new TipsSelector();
 
 			JSONArray array = selector.getSnapshot(grids, stage, type,
-					dbId);
+					dbId,mdFlag);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(array));

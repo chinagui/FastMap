@@ -1,0 +1,68 @@
+﻿<configMap>
+
+<!-- common part -->
+	<!--管理数据库的连接 -->
+	<SYS.server.type>ORACLE</SYS.server.type>
+	<SYS.jdbc.driverClassName>oracle.jdbc.driver.OracleDriver</SYS.jdbc.driverClassName>
+	<SYS.jdbc.url>jdbc:oracle:thin:@192.168.4.131:1521/orcl</SYS.jdbc.url>
+	<SYS.dataSource.validationQuery>select 1 from dual</SYS.dataSource.validationQuery>
+	
+	<SYS.jdbc.username>fm_sys_sp5</SYS.jdbc.username>
+	<SYS.jdbc.password>fm_sys_sp5</SYS.jdbc.password>
+	<SYS.dataSource.initialSize>2</SYS.dataSource.initialSize>
+	<SYS.dataSource.maxActive>25</SYS.dataSource.maxActive>
+	<SYS.dataSource.maxIdle>10</SYS.dataSource.maxIdle>
+	<SYS.dataSource.minIdle>2</SYS.dataSource.minIdle>
+	<SYS.dataSource.maxWait>1000</SYS.dataSource.maxWait>
+	<datasource.sql.type>dbcp</datasource.sql.type>
+	<datasource.sql.stat.enable>true</datasource.sql.stat.enable>
+    <glm.ignore.table.prefix>TEMP_,TMP_,NI_,MDRT_,PIPELINE_,SYS_,STAT_,SHD_,B_,NN_,TMAU_,TASK_EXTENT,AU_,TMC_,LOG_,CK_RULE</glm.ignore.table.prefix>
+<!-- scripts interface part -->
+	<scripts.dir>F:\\Fm_Projects_Doc\\scripts\\</scripts.dir>
+<!-- datahub part -->	
+	<!-- 数据库服务器默认选择策略，random,只能配置不需要传参的策略类型 -->
+	<dbserver.strategy.default>random</dbserver.strategy.default>
+	<dbserver.cache.enable>false</dbserver.cache.enable>
+	<datahub.oracle.defaultTablespaces>USERS</datahub.oracle.defaultTablespaces>
+	
+<!-- expcore part -->
+    <!--每个任务执行的内部线程数-->
+    <export.multiThread.inputPoolSize>10</export.multiThread.inputPoolSize>
+    <export.multiThread.outputPoolSize>10</export.multiThread.outputPoolSize>
+    <target.file.dir>/u01/dms_test/apache-tomcat-6.0.29/webapps/download/</target.file.dir>
+    <exclude.table.columns>NI_VAL_EXCEPTION:MESH_ID</exclude.table.columns>
+    
+<!-- solr address part -->
+ 	<solr.address>http://192.168.4.130:8081/solr/tips_sprint5/</solr.address>
+ 	
+<!-- hbase address part -->
+ 	<hbase.address>192.168.3.156</hbase.address>
+ 	<hbase.tablename.tips>tips_sprint5</hbase.tablename.tips>
+ 	<hbase.tablename.tracklines>tracklines_sprint5</hbase.tablename.tracklines>
+ 	<hbase.tablename.photo>photo</hbase.tablename.photo>
+ 	<hbase.tablename.linktile>link_tile</hbase.tablename.linktile>
+<!-- MQ -->
+	<main.mq.uri>amqp://fos:fos@192.168.4.188:5672</main.mq.uri>
+	<main.mq.cacheSize.channel>20</main.mq.cacheSize.channel>
+
+<!-- Dropbox -->
+	<dropbox.upload.path>/data/resources/upload</dropbox.upload.path>
+	<dropbox.download.filepath.nds>/data/resources/download/nds</dropbox.download.filepath.nds>
+	<dropbox.download.filepath.tips>/data/resources/download/tips</dropbox.download.filepath.tips>
+	<dropbox.download.filepath.basedata>/data/resources/download/basedata</dropbox.download.filepath.basedata>
+ 	<dropbox.download.filepath.patternimg>/data/resources/download/patternimg</dropbox.download.filepath.patternimg>
+ 	<dropbox.download.urlpath.nds>/resources/download/nds</dropbox.download.urlpath.nds>
+	<dropbox.download.urlpath.tips>/resources/download/tips</dropbox.download.urlpath.tips>
+	<dropbox.download.urlpath.basedata>/resources/download/basedata</dropbox.download.urlpath.basedata>
+	<dropbox.download.urlpath.patternimg>/resources/download/patternimg</dropbox.download.urlpath.patternimg>
+ 	<dropbox.url>http://192.168.4.188</dropbox.url>
+ 	
+<!-- POI -->
+	<editsupport.poi.download.filepath.poi>/data/resources/download/poi</editsupport.poi.download.filepath.poi>
+	<editsupport.poi.download.urlpath.poi>/resources/download/poi</editsupport.poi.download.urlpath.poi>
+	<editsupport.poi.url>http://192.168.4.188</editsupport.poi.url>
+	
+<!-- MapSpotter -->
+	<mapspotter.infor.upload.url>http://192.168.4.128:8080/mapspotter/data/info/upload</mapspotter.infor.upload.url>
+	<mapspotter.infor.upload.timeout>120000</mapspotter.infor.upload.timeout>
+</configMap>

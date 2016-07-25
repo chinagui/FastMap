@@ -32,19 +32,21 @@ public class DefaultLogMover extends LogMover {
 	public LogMoveResult move() throws Exception {
 		
 		Connection conn = null;
+		DbLinkCreator cr = new DbLinkCreator();
 		try{
 			//create db link
-			DbLinkCreator cr = new DbLinkCreator();
 			dbLinkName = tarSchema.getConnConfig().getUserName()+"_"+RandomUtil.nextNumberStr(4);
 			cr.create(dbLinkName, false, logSchema.getPoolDataSource(), tarSchema.getConnConfig().getUserName(), tarSchema.getConnConfig().getUserPasswd(), tarSchema.getConnConfig().getServerIp(), String.valueOf(tarSchema.getConnConfig().getServerPort()), tarSchema.getConnConfig().getServiceName());
 			conn = logSchema.getPoolDataSource().getConnection();
 			run.update(conn, operationSql());
 			run.update(conn, detailSql());
 			run.update(conn, gridSql());
+			run.update(conn,dayReleaseSql());
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			DbUtils.rollbackAndCloseQuietly(conn);
 		}finally{
+//			if(cr!=null) cr.drop(dbLinkName, false, logSchema.getPoolDataSource());
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 		return null;
@@ -85,10 +87,27 @@ public class DefaultLogMover extends LogMover {
 		sb.append(dbLinkName);
 		sb.append("(OP_ID,US_ID,OP_CMD,OP_DT) SELECT L.OP_ID,L.US_ID,L.OP_CMD,L.OP_DT FROM LOG_OPERATION L,");
 		sb.append(tempTable);
-		sb.append(" T,LOG_DETAIL D WHERE L.OP_ID=T.OP_ID  AND L.OP_ID=D.OP_ID");
+		sb.append(" T WHERE L.OP_ID=T.OP_ID  ");
 		if(StringUtils.isNotEmpty(tempFailLogTable)){
+			sb.append(" AND NOT EXISTS(SELECT 1 FROM ");
+			sb.append(tempFailLogTable);
+			sb.append(" F WHERE F.ROW_ID=D.ROW_ID)");
 		}
 		return sb.toString();
 	}
 
+	protected String dayReleaseSql(){
+		StringBuilder sb = new StringBuilder();
+		sb.append("INSERT INTO LOG_DAY_RELEASE@");
+		sb.append(dbLinkName);
+		sb.append("(OP_ID) SELECT distinct L.OP_ID FROM ");
+		sb.append(tempTable);
+		sb.append(" T,LOG_DETAIL L WHERE T.OP_ID=L.OP_ID");
+		if(StringUtils.isNotEmpty(tempFailLogTable)){
+			sb.append(" AND NOT EXISTS(SELECT 1 FROM ");
+			sb.append(tempFailLogTable);
+			sb.append(" F WHERE F.ROW_ID=L.ROW_ID)");
+		}
+		return sb.toString();
+	}
 }

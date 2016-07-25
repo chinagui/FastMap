@@ -40,8 +40,7 @@ public class AdAdmin implements IObj {
 	private int pid;
 	private int roadFlag =0 ;
 	
-	private int pMeshId = 0;
-	private int regionId;
+	private int pmeshId = 0;
 	private int jisCode = 0;
 	private int meshId = 0;
     public int getMeshId() {
@@ -84,14 +83,6 @@ public class AdAdmin implements IObj {
 	@Override
 	public String tableName() {
 		return "ad_admin";
-	}
-	
-	public int getRegionId() {
-		return regionId;
-	}
-
-	public void setRegionId(int regionId) {
-		this.regionId = regionId;
 	}
 
 	@Override
@@ -204,12 +195,12 @@ public class AdAdmin implements IObj {
 		this.side = side;
 	}
 
-	public int getpMeshId() {
-		return pMeshId;
+	public int getPmeshId() {
+		return pmeshId;
 	}
 
-	public void setpMeshId(int pMeshId) {
-		this.pMeshId = pMeshId;
+	public void setPmeshId(int pmeshId) {
+		this.pmeshId = pmeshId;
 	}
 
 	public int getJisCode() {

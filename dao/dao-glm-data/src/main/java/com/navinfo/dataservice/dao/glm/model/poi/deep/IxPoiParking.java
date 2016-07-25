@@ -38,7 +38,6 @@ public class IxPoiParking implements IObj {
 	private double resWidth = 0;//限宽
 	private double resWeigh = 0;//限重
 	private int  vehicle = 0;//停放车辆类型 
-	private String memo;// 备注信息
 	private String photoName;//全景照片
 	private int certificate = 0; //入口凭证
 	private int uRecord=0;
@@ -205,13 +204,8 @@ public class IxPoiParking implements IObj {
 	private int handicapNum = 0;//残障停车位数量
 	private int miniNum = 0;//迷你停车位数量
 	private int vipNum = 0;//专用停车位数量
-	private int mesh;
 	private String rowId;
 	
-
-	public int getMesh() {
-		return mesh;
-	}
 
 	public int getPoiPid() {
 		return poiPid;
@@ -324,14 +318,6 @@ public class IxPoiParking implements IObj {
 	}
 
 
-	public String getMemo() {
-		return memo;
-	}
-
-	public void setMemo(String memo) {
-		this.memo = memo;
-	}
-
 
 	public String getPhotoName() {
 		return photoName;
@@ -440,14 +426,11 @@ public class IxPoiParking implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-		
 	}
 
 	@Override

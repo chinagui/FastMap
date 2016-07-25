@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -22,9 +20,12 @@ import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.LuLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -63,6 +64,11 @@ public class Operation implements IOperation {
 			JSONObject content = new JSONObject();
 			result.setPrimaryPid(this.command.getUpdateLink().getPid());
 			content.put("geometry", command.getLinkGeom());
+			Geometry geo = GeoTranslator.geojson2Jts(command.getLinkGeom());
+			double length = 0;
+			if (null != geo)
+				length = GeometryUtils.getLinkLength(geo);
+			content.put("length", length);
 			boolean isChanged = this.command.getUpdateLink().fillChangeFields(content);
 
 			LuLink luLink = new LuLink();

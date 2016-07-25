@@ -19,8 +19,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 public class RdRestrictionDetail implements IObj {
 	
-	private int mesh;
-
 	private int pid;
 
 	private int restricPid;
@@ -39,19 +37,21 @@ public class RdRestrictionDetail implements IObj {
 
 	private List<IRow> vias = new ArrayList<IRow>();
 
-	private int outNodePid;
-
+	
 	private String rowId;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	public Map<String, RdRestrictionCondition> conditionMap = new HashMap<String, RdRestrictionCondition>();
 
+	//outNodePid不属于模型字段，使用protected修饰符。
+	protected int outNodePid;
+
 	public int igetOutNodePid() {
 		return outNodePid;
 	}
 
-	public void setOutNodePid(int outNodePid) {
+	public void isetOutNodePid(int outNodePid) {
 		this.outNodePid = outNodePid;
 	}
 
@@ -248,8 +248,6 @@ public class RdRestrictionDetail implements IObj {
 
 		this.conditions = new ArrayList<IRow>();
 		
-		this.mesh = detail.mesh();
-
 		for (IRow condition : detail.conditions) {
 
 			RdRestrictionCondition condCopy = new RdRestrictionCondition();
@@ -387,14 +385,11 @@ public class RdRestrictionDetail implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		// TODO Auto-generated method stub
-		this.mesh=mesh;
 	}
 
 	@Override

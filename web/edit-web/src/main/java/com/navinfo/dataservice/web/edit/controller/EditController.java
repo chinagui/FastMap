@@ -20,6 +20,7 @@ import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
@@ -66,7 +67,14 @@ public class EditController extends BaseController {
 			json.put("pid", t.getPid());
 
 			return new ModelAndView("jsonView", success(json));
-		} catch (Exception e) {
+		}
+		catch (DataNotChangeException e)
+		{
+			logger.error(e.getMessage(), e);
+			
+			return new ModelAndView("jsonView", success(e.getMessage()));
+		}
+		catch (Exception e) {
 
 			logger.error(e.getMessage(), e);
 

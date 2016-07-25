@@ -1,4 +1,3 @@
-E:\workspace\github2\DataService\web\edit-web\src\main\webapp\WEB-INF\classes
 D:\apache-maven-2.2.1\local\javax\xml\bind\jaxb-api\2.2.2\jaxb-api-2.2.2.jar
 D:\apache-maven-2.2.1\local\javax\xml\stream\stax-api\1.0-2\stax-api-1.0-2.jar
 D:\apache-maven-2.2.1\local\javax\activation\activation\1.1\activation-1.1.jar
@@ -127,7 +126,6 @@ D:\apache-maven-2.2.1\local\stax\stax-api\1.0.1\stax-api-1.0.1.jar
 D:\apache-maven-2.2.1\local\org\hbase\asynchbase\1.6.0\asynchbase-1.6.0.jar
 D:\apache-maven-2.2.1\local\com\stumbleupon\async\1.4.0\async-1.4.0.jar
 D:\apache-maven-2.2.1\local\org\apache\uima\uimaj-core\2.3.1\uimaj-core-2.3.1.jar
-D:\apache-maven-2.2.1\local\org\xerial\sqlite-jdbc\3.8.11\sqlite-jdbc-3.8.11.jar
 E:\workspace\github2\DataService\dao\dao-glm-data\target\classes
 E:\workspace\github2\DataService\dao\dao-glm-data\target\test-classes
 E:\workspace\github2\DataService\api\api-datahub\target\classes
@@ -175,16 +173,19 @@ D:\apache-maven-2.2.1\local\org\fusesource\leveldbjni\leveldbjni-all\1.8\leveldb
 D:\apache-maven-2.2.1\local\org\apache\hadoop\hadoop-mapreduce-client-shuffle\2.5.1\hadoop-mapreduce-client-shuffle-2.5.1.jar
 D:\apache-maven-2.2.1\local\org\apache\hadoop\hadoop-mapreduce-client-jobclient\2.5.1\hadoop-mapreduce-client-jobclient-2.5.1.jar
 D:\apache-maven-2.2.1\local\commons-daemon\commons-daemon\1.0.13\commons-daemon-1.0.13.jar
-E:\workspace\github2\DataService\api\api-edit\target\classes
-E:\workspace\github2\DataService\api\api-edit\target\test-classes
-E:\workspace\github2\DataService\api\api-metadata\target\classes
-E:\workspace\github2\DataService\api\api-metadata\target\test-classes
+D:\apache-maven-2.2.1\local\org\xerial\sqlite-jdbc\3.8.11\sqlite-jdbc-3.8.11.jar
 D:\apache-maven-2.2.1\local\com\github\sgroschupf\zkclient\0.1\zkclient-0.1.jar
 D:\apache-maven-2.2.1\local\com\alibaba\dubbo\2.4.9\dubbo-2.4.9.jar
 D:\apache-maven-2.2.1\local\org\javassist\javassist\3.15.0-GA\javassist-3.15.0-GA.jar
 D:\apache-maven-2.2.1\local\org\jboss\netty\netty\3.2.5.Final\netty-3.2.5.Final.jar
+E:\workspace\github2\DataService\api\api-edit\target\classes
+E:\workspace\github2\DataService\api\api-edit\target\test-classes
+E:\workspace\github2\DataService\api\api-metadata\target\classes
+E:\workspace\github2\DataService\api\api-metadata\target\test-classes
 D:\apache-maven-2.2.1\local\io\netty\netty\3.7.0.Final\netty-3.7.0.Final.jar
 D:\apache-maven-2.2.1\local\cglib\cglib\2.2\cglib-2.2.jar
 D:\apache-maven-2.2.1\local\org\springframework\spring-context-support\4.2.0.RELEASE\spring-context-support-4.2.0.RELEASE.jar
 D:\apache-maven-2.2.1\local\org\springframework\spring-test\4.2.0.RELEASE\spring-test-4.2.0.RELEASE.jar
 D:\apache-maven-2.2.1\local\org\springframework\spring-oxm\4.2.0.RELEASE\spring-oxm-4.2.0.RELEASE.jar
+D:\apache-maven-2.2.1\local\net\bull\javamelody\javamelody-core\1.60.0\javamelody-core-1.60.0.jar
+D:\apache-maven-2.2.1\local\org\jrobin\jrobin\1.5.9\jrobin-1.5.9.jar

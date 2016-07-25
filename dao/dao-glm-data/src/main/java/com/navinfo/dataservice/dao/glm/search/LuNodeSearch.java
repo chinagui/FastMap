@@ -79,7 +79,7 @@ public class LuNodeSearch implements ISearch {
 
 				snapshot.setM(m);
 
-				snapshot.setT(17);
+				snapshot.setT(28);
 
 				snapshot.setI(resultSet.getString("node_pid"));
 

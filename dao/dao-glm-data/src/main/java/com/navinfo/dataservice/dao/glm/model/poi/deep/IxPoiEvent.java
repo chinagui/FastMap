@@ -149,12 +149,7 @@ public class IxPoiEvent implements IObj {
 	private String photoName;// 照片名称
 	private String memo;
 	private String reserved;// 预留字段
-	private int mesh;
 	private String rowId;
-
-	public int getMesh() {
-		return mesh;
-	}
 
 	public String getRowId() {
 		return rowId;
@@ -351,14 +346,11 @@ public class IxPoiEvent implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-
 	}
 
 	@Override

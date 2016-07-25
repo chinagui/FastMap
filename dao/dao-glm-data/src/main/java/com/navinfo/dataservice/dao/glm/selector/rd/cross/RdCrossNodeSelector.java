@@ -155,5 +155,70 @@ public class RdCrossNodeSelector implements ISelector {
 
 		return null;
 	}
+	
+	/**
+	 * 根据nodePid查询路口
+	 * @param nodePid
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public IRow loadByNodeId(int nodePid,boolean isLock) throws Exception
+	{
+		RdCrossNode node = new RdCrossNode();
 
+		String sql = "select * from " + node.tableName() + " where node_pid=(:1)";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, nodePid);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+
+				node.setNodePid(resultSet.getInt("node_pid"));
+
+				node.setPid(resultSet.getInt("pid"));
+
+				node.setIsMain(resultSet.getInt("is_main"));
+
+				node.setRowId(resultSet.getString("row_id"));
+			} else {
+				throw new DataNotFoundException("Node:"+nodePid+" 不是路口组成点");
+			}
+		} catch (Exception e) {
+			logger.error("根据nodePid："+nodePid+" 查询路口出错");
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+				
+			}
+
+		}
+
+		return node;
+	}
 }

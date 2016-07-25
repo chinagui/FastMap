@@ -2,21 +2,22 @@ package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink;
 
 import java.util.List;
 
-import net.sf.json.JSONObject;
-
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
+
+import net.sf.json.JSONObject;
 
 public class Command extends AbstractCommand {
 	
@@ -43,6 +44,10 @@ public class Command extends AbstractCommand {
 	private List<RdGsc> rdGscs;
 	
 	private List<AdAdmin> adAdmins;
+	
+	private RdTrafficsignal trafficSignal;
+	
+	private List<RdElectroniceye> electroniceyes;
 	
 	private boolean isCheckInfect = false;
 	
@@ -96,6 +101,14 @@ public class Command extends AbstractCommand {
 
 	public void setRestrictions(List<RdRestriction> restrictions) {
 		this.restrictions = restrictions;
+	}
+	
+	public RdTrafficsignal getTrafficSignal() {
+		return trafficSignal;
+	}
+
+	public void setTrafficSignal(RdTrafficsignal trafficSignal) {
+		this.trafficSignal = trafficSignal;
 	}
 
 	public Command(JSONObject json,String requester) {
@@ -167,6 +180,14 @@ public class Command extends AbstractCommand {
 
 	public void setRdGscs(List<RdGsc> rdGscs) {
 		this.rdGscs = rdGscs;
+	}
+
+	public List<RdElectroniceye> getElectroniceyes() {
+		return electroniceyes;
+	}
+
+	public void setElectroniceyes(List<RdElectroniceye> electroniceyes) {
+		this.electroniceyes = electroniceyes;
 	}
 
 //	public void createGlmList() throws Exception {

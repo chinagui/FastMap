@@ -132,5 +132,15 @@ public class RdBranchTest extends InitApplication{
 	
 	
 	
+	
+	
+	@Test
+	public void createRdBranchTest_0719() throws Exception {
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"RDBRANCH\",\"data\":{\"branchType\":3,\"inLinkPid\":722876,\"nodePid\":469534,\"outLinkPid\":577197}}";
+		
+		log.info(parameter);
+		Transaction t = new Transaction(parameter);		;
+		String msg = t.run();
+	}
 
 }

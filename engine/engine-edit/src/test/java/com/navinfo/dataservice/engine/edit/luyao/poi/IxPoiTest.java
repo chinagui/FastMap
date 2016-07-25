@@ -120,4 +120,56 @@ public class IxPoiTest extends InitApplication{
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
+	public void UpdatePoi0719_1(){
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":2245,\"data\":{\"open24h\":\"1\",\"rowId\":\"3524E56B2B2D6E1AE050A8C08304BA17\",\"pid\":2245,\"objStatus\":\"UPDATE\",\"level\":\"B2\",\"indoor\":\"3\"}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void UpdatePoi0722_1(){
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":1152117073,\"data\":{\"names\":[{\"pid\":0,\"poiPid\":0,\"nameGroupid\":1,\"langCode\":\"CHI\",\"nameClass\":1,\"nameType\":2,\"name\":\"123\",\"namePhonetic\":\"\",\"keywords\":\"\",\"nidbPid\":\"\",\"rowId\":\"\",\"objStatus\":\"INSERT\"}],\"gasstations\":[{\"pid\":0,\"fuelType\":\"\",\"oilType\":\"\",\"egType\":\"\",\"mgType\":\"\",\"payment\":\"\",\"service\":\"\",\"objStatus\":\"INSERT\"}],\"hotels\":[{\"pid\":0,\"poiPid\":0,\"rating\":0,\"checkinTime\":\"14:00\",\"checkoutTime\":\"12:00\",\"roomCount\":0,\"breakfast\":0,\"parking\":0,\"travelguideFlag\":0,\"objStatus\":\"INSERT\"}],\"restaurants\":[{\"pid\":0,\"poiPid\":0,\"foodType\":\"\",\"creditCard\":\"\",\"avgCost\":0,\"parking\":0,\"travelguideFlag\":0,\"objStatus\":\"INSERT\"}],\"parkings\":[{\"pid\":0,\"tollStd\":\"\",\"tollWay\":\"\",\"remark\":\"\",\"resHigh\":0,\"resWidth\":0,\"resWeigh\":0,\"certificate\":0,\"vehicle\":0,\"rowId\":\"\",\"objStatus\":\"INSERT\"}],\"rowId\":\"48439C613C774811A1BD4443837582AC\",\"pid\":1152117073}}";
+		
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void UpdatePoi0722_2(){
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":1094,\"data\":{\"indoor\":\"3\",\"rowId\":\"3524E56B293E6E1AE050A8C08304BA17\",\"pid\":1094,\"objStatus\":\"UPDATE\"}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void UpdatePoi0722_3(){
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"IXPOIPARENT\",\"objId\":79142379,\"parentPid\":1981}";
+		
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
 }

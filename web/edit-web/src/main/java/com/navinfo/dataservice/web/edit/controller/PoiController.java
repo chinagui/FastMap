@@ -6,6 +6,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,9 +21,7 @@ import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.engine.edit.operation.obj.poi.android.Operation;
 import com.navinfo.dataservice.engine.edit.operation.obj.poi.download.DownloadOperation;
 import com.navinfo.dataservice.engine.edit.operation.obj.poi.upload.UploadOperation;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import com.navinfo.dataservice.engine.photo.CollectorImport;
 
 @Controller
 public class PoiController extends BaseController{
@@ -81,6 +82,8 @@ public class PoiController extends BaseController{
 
 			UploadOperation operation = new UploadOperation();
 			JSONObject retArray = operation.importPoi(filePath + "/poi.txt");
+			
+			CollectorImport.importPhoto(filePath);
 			
 			return new ModelAndView("jsonView", success(retArray));
 		}catch(Exception e){

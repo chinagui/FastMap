@@ -147,7 +147,7 @@ public class RdElectroniceye implements IObj {
 	@Override
 	public List<List<IRow>> children() {
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
-		children.add(this.parts);
+		// children.add(this.parts);
 		return children;
 	}
 

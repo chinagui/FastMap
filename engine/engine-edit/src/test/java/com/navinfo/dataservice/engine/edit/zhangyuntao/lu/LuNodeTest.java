@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.zhangyuntao.lu;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +9,8 @@ import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
 import com.navinfo.dataservice.engine.edit.InitApplication;
@@ -17,8 +20,8 @@ import com.navinfo.dataservice.engine.edit.search.SearchProcess;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-public class LuNodeTest extends InitApplication{
-	
+public class LuNodeTest extends InitApplication {
+
 	@Override
 	@Before
 	public void init() {
@@ -32,6 +35,7 @@ public class LuNodeTest extends InitApplication{
 		;
 		String msg = t.run();
 	}
+
 	@Test
 	public void deleteLuNodeTest() throws Exception {
 		String parameter = "{\"command\":\"DELETE\",\"type\":\"LUNODE\",\"dbId\":43,\"objId\":100034553}}";
@@ -39,7 +43,7 @@ public class LuNodeTest extends InitApplication{
 		;
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void updateLuNodeTest() throws Exception {
 		String parameter = "{\"command\":\"UPDATE\",\"dbId\":43,\"type\":\"LUNODE\",\"projectId\":11,\"data\":{\"form\":\"7\",\"pid\":100034474,\"objStatus\":\"UPDATE\"}}";
@@ -50,7 +54,8 @@ public class LuNodeTest extends InitApplication{
 
 	@Test
 	public void moveLuNodeTest() throws Exception {
-//		String parameter = "{\"command\":\"MOVE\",\"dbId\":43,\"objId\":100034556,\"data\":{\"longitude\":116.47495463490485,\"latitude\":40.00968804544376},\"type\":\"LUNODE\"}";
+		// String parameter =
+		// "{\"command\":\"MOVE\",\"dbId\":43,\"objId\":100034556,\"data\":{\"longitude\":116.47495463490485,\"latitude\":40.00968804544376},\"type\":\"LUNODE\"}";
 		String parameter = "{\"command\":\"MOVE\",\"dbId\":43,\"objId\":100034613,\"data\":{\"longitude\":116.501727104187,\"latitude\":40.49919726480543},\"type\":\"LUNODE\"}";
 		Transaction t = new Transaction(parameter);
 		;
@@ -81,8 +86,7 @@ public class LuNodeTest extends InitApplication{
 		}
 
 		try {
-			SearchProcess p = new SearchProcess(
-					DBConnector.getInstance().getConnectionById(projectId));
+			SearchProcess p = new SearchProcess(DBConnector.getInstance().getConnectionById(projectId));
 			JSONObject data = p.searchDataByTileWithGap(types, x, y, z, gap);
 
 			System.out.println(ResponseUtils.assembleRegularResult(data));
@@ -92,4 +96,19 @@ public class LuNodeTest extends InitApplication{
 
 	}
 
+	@Test
+	public void testSearchLuNode() {
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(43);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			System.out.println(p.searchDataByPid(ObjType.LUNODE, 100034532).Serialize(ObjLevel.FULL));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 }

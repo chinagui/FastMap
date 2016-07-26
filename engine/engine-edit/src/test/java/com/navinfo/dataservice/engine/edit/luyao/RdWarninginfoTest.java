@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.json.JSONObject;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,7 +11,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.warninginfo.RdWarninginfoSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -35,53 +33,37 @@ public class RdWarninginfoTest  extends InitApplication{
 		
 		String msg = t.run();
 	}
+	
+	@Test
+	public void updateTest() throws Exception {
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDWARNINGINFO\",\"dbId\":42,\"data\":{\"validDis\":1,\"warnDis\":1,\"pid\":100000020,\"objStatus\":\"UPDATE\"}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 
 	@Test
 	public void deleteTest() throws Exception {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"RWNODE\",\"dbId\":42,\"objId\":5419}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDWARNINGINFO\",\"dbId\":42,\"objId\":100000020}";
 		
 		Transaction t = new Transaction(parameter);
 		
 		String msg = t.run();
 	}
-
-	@Test
-	public void updateTest() throws Exception {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"ADNODE\",\"projectId\":11,\"data\":{\"inLinkPid\":100005725,\"nodePid\":469291,\"outLinkPid\":719802,\"pid\":100000670,\"realimages\":[{\"objStatus\":\"UPDATE\",\"arrowCode\":\"\",\"branchPid\":100000670,\"imageType\":1,\"realCode\":\"123\",\"rowId\":\"C95ED1D783924C2B8F51FE6914A50C68\"}]}}";
-		
-		Transaction t = new Transaction(parameter);
-
-		String msg = t.run();
-	}
-
 	
 	
 	@Test
 	public void testGetByPid() {
-		Connection conn;
+		
 		try {
+			Connection conn = DBConnector.getInstance().getConnectionById(42);
 
-			String parameter ="{\"dbId\":42,\"type\":\"RDBRANCH\",\"detailId\":0,\"rowId\":\"41937B0F3A6842929633FA164D077DDC\",\"branchType\":5}";			
-			
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			RdWarninginfoSelector selector = new RdWarninginfoSelector(conn);
 
-			int dbId = jsonReq.getInt("dbId");
+			IRow jsonObject = selector.loadById(100000021, false);
 
-			conn = DBConnector.getInstance().getConnectionById(dbId);
-
-			if (jsonReq.containsKey("detailId")) {
-				int detailId = jsonReq.getInt("detailId");
-				int branchType = jsonReq.getInt("branchType");
-				String rowId = jsonReq.getString("rowId");
-				RdBranchSelector selector = new RdBranchSelector(conn);
-				IRow row = selector.loadByDetailId(detailId, branchType, rowId, false);
-
-				if (row != null) {
-
-					System.out.println(row.Serialize(ObjLevel.FULL));
-				}
-			}
-
+			System.out.println(jsonObject.Serialize(ObjLevel.FULL));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -94,13 +76,13 @@ public class RdWarninginfoTest  extends InitApplication{
 	{
 		Connection conn = null;
 		try{
-			conn = DBConnector.getInstance().getConnectionById(8);
+			conn = DBConnector.getInstance().getConnectionById(42);
 			
 			SearchProcess p = new SearchProcess(conn);
 			
 			List<ObjType> objType = new ArrayList<>();
 			
-			objType.add(ObjType.IXPOI);
+			objType.add(ObjType.RDWARNINGINFO);
 
 			System.out.println(p.searchDataByTileWithGap(objType, 107937, 49616, 17, 80));
 

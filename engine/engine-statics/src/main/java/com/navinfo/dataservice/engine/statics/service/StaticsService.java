@@ -20,8 +20,10 @@ import com.navinfo.dataservice.engine.statics.StatMain;
 import com.navinfo.dataservice.engine.statics.expect.ExpectStatusMain;
 import com.navinfo.dataservice.engine.statics.expect.PoiCollectExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.PoiDailyExpectMain;
+import com.navinfo.dataservice.engine.statics.expect.PoiMonthlyExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadCollectExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadDailyExpectMain;
+import com.navinfo.dataservice.engine.statics.expect.RoadMonthlyExpectMain;
 import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectMain;
 import com.navinfo.dataservice.engine.statics.poidaily.PoiDailyMain;
 import com.navinfo.dataservice.engine.statics.poimonthly.PoiMonthlyMain;
@@ -128,7 +130,7 @@ public class StaticsService {
 
 			info.setFinishRoad(road.getDouble("finish"));
 
-			info.setPercentRoad((int)road.getDouble("percent"));
+			info.setPercentRoad((int)road.getDouble("all_percent"));
 
 			info.setTotalRoad(road.getDouble("total"));
 
@@ -328,9 +330,9 @@ public class StaticsService {
 			}
 		} else { // 月编
 			if (type == 0) {
-				colName = PoiDailyExpectMain.col_name_block;
+				colName = PoiMonthlyExpectMain.col_name_block;
 			} else {
-				colName = RoadDailyExpectMain.col_name_block;
+				colName = RoadMonthlyExpectMain.col_name_block;
 			}
 		}
 

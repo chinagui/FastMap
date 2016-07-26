@@ -14,6 +14,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.RdWarninginfoUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
@@ -86,6 +87,7 @@ public class Operation implements IOperation {
 			geojson.put("coordinates", ps);
 
 			Geometry geo = GeoTranslator.geojson2Jts(geojson, 1, 5);
+			
 			Set<String> meshes =  CompGeometryUtil.geoToMeshesWithoutBreak(geo);
 			// 修改线的几何属性
 			// 如果没有跨图幅只是修改线的几何
@@ -115,7 +117,10 @@ public class Operation implements IOperation {
 
 				}
 				map.put(link.getPid(), links);
+				
 				result.insertObject(link, ObjStatus.DELETE, link.pid());
+				
+				UpdataRelationObj(link,links,result);
 			}
 		}
 		this.map = map;
@@ -146,5 +151,16 @@ public class Operation implements IOperation {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdnode.update.Process process = new com.navinfo.dataservice.engine.edit.operation.obj.rdnode.update.Process(
 				updatecommand, result, conn);
 		process.innerRun();
+	}
+
+	
+	private void UpdataRelationObj(RdLink oldLink, List<RdLink> newLinks,Result result) throws Exception
+	{
+		// 维护警示信息
+		RdWarninginfoUtils warninginfoUtils = new RdWarninginfoUtils(
+				this.conn);
+		
+		warninginfoUtils.breakRdLink(oldLink.getPid(), newLinks,
+				result);
 	}
 }

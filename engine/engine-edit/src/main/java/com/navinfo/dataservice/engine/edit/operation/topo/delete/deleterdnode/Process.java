@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
@@ -30,6 +31,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelecto
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
+import com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.RdWarninginfoUtils;
 
 public class Process extends AbstractProcess<Command> {
 
@@ -246,10 +248,14 @@ public class Process extends AbstractProcess<Command> {
 				opRefRdGsc.run(this.getResult());
 
 				IOperation opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
-				opRefAdAdmin.run(this.getResult());
+				opRefAdAdmin.run(this.getResult());	
+				
+				UpdataRelationObj();
 				
 				recordData();
+				
 				postCheck();
+				
 				getConn().commit();
 			} else {
 				Map<String, List<Integer>> infects = new HashMap<String, List<Integer>>();
@@ -287,8 +293,19 @@ public class Process extends AbstractProcess<Command> {
 				}
 
 				infects.put("RDRESTRICTION", infectList);
-
+				
+				//维护警示信息
 				infectList = new ArrayList<Integer>();
+
+				RdWarninginfoUtils warninginfoUtils=new RdWarninginfoUtils(this.getConn());
+				
+				List<RdWarninginfo> warninginfos = warninginfoUtils.GetWarninginfoByNode(this.getCommand().getNodePid());
+				
+				for (RdWarninginfo warninginfo : warninginfos) {
+					infectList.add(warninginfo.getPid());
+				}
+
+				infects.put("RDWARNINGINFO", infectList);
 
 				return JSONObject.fromObject(infects).toString();
 			}
@@ -329,4 +346,11 @@ public class Process extends AbstractProcess<Command> {
 		return null;
 	}
 
+	
+	private void UpdataRelationObj() throws Exception
+	{
+		//维护警示信息
+		RdWarninginfoUtils  warninginfoUtils=new RdWarninginfoUtils(this.getConn());
+		warninginfoUtils.DeleteByNode(this.getCommand().getNodePid(), this.getResult());
+	}
 }

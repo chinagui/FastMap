@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
+import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
@@ -32,6 +33,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelect
 import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
+import com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.RdWarninginfoUtils;
 
 import net.sf.json.JSONObject;
 
@@ -267,6 +269,8 @@ public class Process extends AbstractProcess<Command> {
 				IOperation opRefElectroniceye = new OpRefElectroniceye(this.getCommand());
 				opRefElectroniceye.run(this.getResult());
 
+				UpdataRelationObj();
+				
 				recordData();
 
 				postCheck();
@@ -341,6 +345,19 @@ public class Process extends AbstractProcess<Command> {
 				}
 
 				infects.put("RDELECTRONICEYE", infectList);
+				
+				//维护警示信息
+				infectList = new ArrayList<Integer>();
+
+				RdWarninginfoUtils warninginfoUtils=new RdWarninginfoUtils(this.getConn());
+				
+				List<RdWarninginfo> warninginfos = warninginfoUtils.GetWarninginfoByLink(this.getCommand().getLinkPid());
+				
+				for (RdWarninginfo warninginfo : warninginfos) {
+					infectList.add(warninginfo.getPid());
+				}
+
+				infects.put("RDWARNINGINFO", infectList);
 
 				return JSONObject.fromObject(infects).toString();
 			}
@@ -390,6 +407,8 @@ public class Process extends AbstractProcess<Command> {
 			IOperation opRefElectroniceye = new OpRefElectroniceye(this.getCommand());
 			opRefElectroniceye.run(this.getResult());
 
+			UpdataRelationObj();
+			
 			recordData();
 
 			postCheck();
@@ -406,6 +425,13 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public String exeOperation() {
 		return null;
+	}
+	
+	private void UpdataRelationObj() throws Exception
+	{
+		//维护警示信息
+		RdWarninginfoUtils  warninginfoUtils=new RdWarninginfoUtils(this.getConn());
+		warninginfoUtils.DeleteByLink(this.getCommand().getLinkPid(), this.getResult());
 	}
 
 }

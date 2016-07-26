@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.dao.glm.model.ad.geo;
+package com.navinfo.dataservice.dao.glm.model.rd.slope;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -6,46 +6,45 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
-
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.vividsolutions.jts.geom.Geometry;
 
-public class AdFace implements IObj {
+/***
+ * 坡度模型
+ * 
+ * @author zhaokk
+ * 
+ */
+public class RdSlope implements IObj {
 
 	private String rowId;
 
-	private int pid;
+	private int pid;// 坡度号码 
 
-	protected int regionId;
+	private int nodePid;// NODE 号码
 
-	private Geometry geometry;
+	private int linkPid;//LINK 号码
 
-	private double area;
+	private int type = 1; // 坡度类型 0 未调查1 水平2 上坡 3 下坡
 
-	private double perimeter;
-
-	private int meshId;
-
-	private int editFlag = 1;
-
+	private int angle = 0;// 坡度角度
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
+	public Map<String, RdSlopeVia> rdSlopeMap = new HashMap<String, RdSlopeVia>();
+	private List<IRow> slopeVias = new ArrayList<IRow>();
 
-	private List<IRow> faceTopos = new ArrayList<IRow>();
+	public List<IRow> getSlopeVias() {
+		return slopeVias;
+	}
 
-	public Map<String, AdFaceTopo> adFaceTopoMap = new HashMap<String, AdFaceTopo>();
-
-	public AdFace() {
-
+	public void setSlopeVias(List<IRow> slopeVias) {
+		this.slopeVias = slopeVias;
 	}
 
 	public int getPid() {
@@ -56,58 +55,10 @@ public class AdFace implements IObj {
 		this.pid = nodePid;
 	}
 
-	public int getRegionId() {
-		return regionId;
-	}
-
-	public void setRegionId(int regionId) {
-		this.regionId = regionId;
-	}
-
-	public double getArea() {
-		return area;
-	}
-
-	public void setArea(double area) {
-		this.area = area;
-	}
-
-	public double getPerimeter() {
-		return perimeter;
-	}
-
-	public void setPerimeter(double perimeter) {
-		this.perimeter = perimeter;
-	}
-
-	public int getMeshId() {
-		return meshId;
-	}
-
-	public void setMeshId(int meshId) {
-		this.meshId = meshId;
-	}
-
-	public int getEditFlag() {
-		return editFlag;
-	}
-
-	public void setEditFlag(int editFlag) {
-		this.editFlag = editFlag;
-	}
-
-	public Geometry getGeometry() {
-		return geometry;
-	}
-
-	public void setGeometry(Geometry geometry) {
-		this.geometry = geometry;
-	}
-
 	@Override
 	public String tableName() {
 
-		return "ad_face";
+		return "rd_slope";
 	}
 
 	@Override
@@ -124,7 +75,7 @@ public class AdFace implements IObj {
 	@Override
 	public ObjType objType() {
 
-		return ObjType.ADFACE;
+		return ObjType.RDSLOPE;
 	}
 
 	@Override
@@ -139,31 +90,6 @@ public class AdFace implements IObj {
 
 	@Override
 	public boolean Unserialize(JSONObject json) throws Exception {
-
-		@SuppressWarnings("rawtypes")
-		Iterator keys = json.keys();
-
-		while (keys.hasNext()) {
-			String key = (String) keys.next();
-
-			JSONArray ja = null;
-
-			if (json.get(key) instanceof JSONArray) {
-
-			} else if ("geometry".equals(key)) {
-
-				Geometry jts = GeoTranslator.geojson2Jts(json.getJSONObject(key), 100000, 0);
-
-				this.setGeometry(jts);
-
-			} else {
-				Field f = this.getClass().getDeclaredField(key);
-
-				f.setAccessible(true);
-
-				f.set(this, json.get(key));
-			}
-		}
 
 		return true;
 	}
@@ -194,7 +120,7 @@ public class AdFace implements IObj {
 	@Override
 	public String parentPKName() {
 
-		return "face_pid";
+		return "pid";
 	}
 
 	@Override
@@ -207,24 +133,19 @@ public class AdFace implements IObj {
 	public List<List<IRow>> children() {
 
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
-		children.add(faceTopos);
-
+		children.add(this.getSlopeVias());
 		return children;
 	}
 
 	@Override
 	public String parentTableName() {
 
-		return "ad_face";
+		return "rd_slope";
 	}
 
 	@Override
 	public String rowId() {
 
-		return rowId;
-	}
-
-	public String getRowId() {
 		return rowId;
 	}
 
@@ -237,6 +158,7 @@ public class AdFace implements IObj {
 	@Override
 	public boolean fillChangeFields(JSONObject json) throws Exception {
 
+		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {
@@ -244,17 +166,6 @@ public class AdFace implements IObj {
 
 			if (json.get(key) instanceof JSONArray) {
 				continue;
-			} else if ("geometry".equals(key)) {
-
-				JSONObject geojson = json.getJSONObject(key);
-
-				String wkt = Geojson.geojson2Wkt(geojson.toString());
-
-				String oldwkt = GeoTranslator.jts2Wkt(geometry, 0.00001, 5);
-
-				if (!wkt.equals(oldwkt)) {
-					changedFields.put(key, json.getJSONObject(key));
-				}
 			} else {
 				if (!"objStatus".equals(key)) {
 
@@ -294,29 +205,55 @@ public class AdFace implements IObj {
 		} else {
 			return false;
 		}
+	}
 
+	public int getNodePid() {
+		return nodePid;
+	}
+
+	public void setNodePid(int nodePid) {
+		this.nodePid = nodePid;
+	}
+
+	public int getLinkPid() {
+		return linkPid;
+	}
+
+	public void setLinkPid(int linkPid) {
+		this.linkPid = linkPid;
+	}
+
+	public int getType() {
+		return type;
+	}
+
+	public void setType(int type) {
+		this.type = type;
+	}
+
+	public int getAngle() {
+		return angle;
+	}
+
+	public void setAngle(int angle) {
+		this.angle = angle;
+	}
+
+	public String getRowId() {
+		return rowId;
 	}
 
 	@Override
 	public int mesh() {
-		return meshId;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.meshId = mesh;
 	}
 
 	@Override
 	public String primaryKey() {
-		return "face_pid";
-	}
-
-	public List<IRow> getFaceTopos() {
-		return faceTopos;
-	}
-
-	public void setFaceTopos(List<IRow> faceTopos) {
-		this.faceTopos = faceTopos;
+		return "pid";
 	}
 }

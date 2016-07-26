@@ -146,10 +146,8 @@ public class HBaseController {
 
 		return result;
 	}
-
-	public String putPhoto(InputStream in) throws Exception{
-		
-		String rowkey = UuidUtils.genUuid();
+	
+	public void putPhoto(String rowkey, InputStream in) throws Exception{
 		
 		Photo photo = new Photo();
 		
@@ -178,6 +176,11 @@ public class HBaseController {
 		
 		htab.put(put);
 		
+	}
+
+	public String putPhoto(InputStream in) throws Exception{
+		String rowkey = UuidUtils.genUuid();
+		putPhoto(rowkey, in);
 		return rowkey;
 	}
 }

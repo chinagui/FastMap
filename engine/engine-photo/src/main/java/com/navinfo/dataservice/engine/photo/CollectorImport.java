@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.photo;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -18,8 +19,30 @@ import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.FileUtils;
 import com.navinfo.dataservice.dao.photo.HBaseConnector;
+import com.navinfo.dataservice.dao.photo.HBaseController;
 
 public class CollectorImport {
+	
+	public static void importPhoto(String dir) throws Exception{
+		
+		File file = new File(dir);
+
+		if (!file.exists()) {
+			return;
+		}
+		
+		File[] files = file.listFiles();
+
+		HBaseController controller = new HBaseController();
+		
+		for (File f : files) {
+			if(f.isFile() && f.getName().endsWith(".jpg")){
+				FileInputStream in = new FileInputStream(f);
+				controller.putPhoto(f.getName().replace(".jpg", ""),in);
+				in.close();
+			}
+		}
+	}
 
 	public static void importPhoto(Map<String,Photo> map,String dir) throws Exception{
 		

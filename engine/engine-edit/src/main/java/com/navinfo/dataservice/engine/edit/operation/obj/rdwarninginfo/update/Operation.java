@@ -23,6 +23,13 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 
+		String msg = update( result);
+
+		return msg;
+	}
+	
+	private String update(Result result)throws Exception
+	{
 		JSONObject content = command.getContent();
 
 		if (!content.containsKey("objStatus")) {

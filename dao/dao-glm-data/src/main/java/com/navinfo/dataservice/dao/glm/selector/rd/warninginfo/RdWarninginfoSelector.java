@@ -4,27 +4,29 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 
-public class RdWarninginfoSelector implements ISelector{
+public class RdWarninginfoSelector implements ISelector {
 
-	
 	private Connection conn;
 
 	public RdWarninginfoSelector(Connection conn) {
 		this.conn = conn;
 	}
+
 	@Override
 	public IRow loadById(int id, boolean isLock) throws Exception {
 		RdWarninginfo obj = new RdWarninginfo();
 
-		String sql = "select a.* from "
-				+ obj.tableName()
+		String sql = "select a.* from " + obj.tableName()
 				+ " a where a.pid=:1 and a.u_record!=2 ";
 
 		if (isLock) {
@@ -44,7 +46,7 @@ public class RdWarninginfoSelector implements ISelector{
 
 			if (resultSet.next()) {
 
-				setAttr(obj, resultSet);
+				ReflectionAttrUtils.executeResultSet(obj, resultSet);
 
 			} else {
 
@@ -89,30 +91,145 @@ public class RdWarninginfoSelector implements ISelector{
 		return null;
 	}
 
-	
-	private void setAttr(RdWarninginfo obj, ResultSet resultSet)
-			throws SQLException {
+	public List<RdWarninginfo> loadByNode(int nodePid, boolean isLock)
+			throws Exception {
+		List<RdWarninginfo> rows = new ArrayList<RdWarninginfo>();
 
-		obj.setPid(resultSet.getInt("pid"));
+		String sql = "select a.* from rd_warninginfo a where a.u_record!=:1,a.node_pid=:2";
 
-		obj.setLinkPid(resultSet.getInt("link_pid"));
+		if (isLock) {
+			sql += " for update nowait";
+		}
 
-		obj.setNodePid(resultSet.getInt("node_pid"));
+		PreparedStatement pstmt = null;
 
-		obj.setTypeCode(resultSet.getString("type_code"));
+		ResultSet resultSet = null;
 
-		obj.setValidDis(resultSet.getInt("valid_dis"));
+		try {
+			pstmt = this.conn.prepareStatement(sql);
 
-		obj.setWarnDis(resultSet.getInt("warn_dis"));
+			pstmt.setInt(1, 2);
 
-		obj.setTimeDomain(resultSet.getString("time_domain"));
+			pstmt.setInt(2, nodePid);
 
-		obj.setVehicle(resultSet.getInt("vehicle"));
+			resultSet = pstmt.executeQuery();
 
-		obj.setDescript(resultSet.getString("descript"));
-		
-		obj.setRowId(resultSet.getString("row_id"));
+			while (resultSet.next()) {
+
+				RdWarninginfo obj = new RdWarninginfo();
+
+				ReflectionAttrUtils.executeResultSet(obj, resultSet);
+
+				rows.add(obj);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return rows;
 	}
-	
-	
+
+	public List<RdWarninginfo> loadByLink(int linkPid, boolean isLock)
+			throws Exception {
+		List<RdWarninginfo> rows = new ArrayList<RdWarninginfo>();
+
+		String sql = "select a.* from rd_warninginfo a where a.u_record!=:1,a.link_pid=:2";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, 2);
+
+			pstmt.setInt(2, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				RdWarninginfo obj = new RdWarninginfo();
+
+				ReflectionAttrUtils.executeResultSet(obj, resultSet);
+
+				rows.add(obj);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return rows;
+	}
+
+	/*
+	 * private void setAttr(RdWarninginfo obj, ResultSet resultSet) throws
+	 * SQLException {
+	 * 
+	 * obj.setPid(resultSet.getInt("pid"));
+	 * 
+	 * obj.setLinkPid(resultSet.getInt("link_pid"));
+	 * 
+	 * obj.setNodePid(resultSet.getInt("node_pid"));
+	 * 
+	 * obj.setTypeCode(resultSet.getString("type_code"));
+	 * 
+	 * obj.setValidDis(resultSet.getInt("valid_dis"));
+	 * 
+	 * obj.setWarnDis(resultSet.getInt("warn_dis"));
+	 * 
+	 * obj.setTimeDomain(resultSet.getString("time_domain"));
+	 * 
+	 * obj.setVehicle(resultSet.getInt("vehicle"));
+	 * 
+	 * obj.setDescript(resultSet.getString("descript"));
+	 * 
+	 * obj.setRowId(resultSet.getString("row_id")); }
+	 */
+
 }

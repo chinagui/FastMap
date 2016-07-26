@@ -39,6 +39,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionViaSele
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
+import com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.RdWarninginfoUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Point;
 
@@ -199,6 +200,10 @@ public class Process extends AbstractProcess<Command> {
 			opRefRdGsc.run(this.getResult());
 			OpRefAdAdmin opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
 			opRefAdAdmin.run(this.getResult());
+			
+			UpdataRelationObj();
+			
+			
 			this.postCheck();
 		} catch (Exception e) {
 
@@ -236,6 +241,9 @@ public class Process extends AbstractProcess<Command> {
 				opRefRdGsc.run(this.getResult());
 				OpRefAdAdmin opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
 				opRefAdAdmin.run(this.getResult());
+				
+				UpdataRelationObj();
+				
 				this.recordData();
 				this.postCheck();
 				this.getConn().commit();
@@ -392,4 +400,15 @@ public class Process extends AbstractProcess<Command> {
 		return null;
 	}
 
+	private void UpdataRelationObj() throws Exception
+	{
+		// 维护警示信息
+		RdWarninginfoUtils warninginfoUtils = new RdWarninginfoUtils(
+				this.getConn());
+		List<RdLink> newLinks = new ArrayList<RdLink>();
+		newLinks.add(this.getCommand().getLink1());
+		newLinks.add(this.getCommand().getLink2());
+		warninginfoUtils.breakRdLink(this.getCommand().getLinkPid(), newLinks,
+				this.getResult());
+	}
 }

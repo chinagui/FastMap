@@ -23,6 +23,7 @@ import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdRestrictionSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSpeedlimitSearch;
 import com.navinfo.dataservice.dao.glm.search.RdTrafficsignalSearch;
+import com.navinfo.dataservice.dao.glm.search.RdWarninginfoSearch;
 import com.navinfo.dataservice.dao.glm.search.RwLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.RwNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.ZoneFaceSearch;
@@ -98,6 +99,8 @@ public class SearchFactory {
 			return new RdTrafficsignalSearch(conn);
 		case RDELECTRONICEYE:
 			return new RdElectroniceyeSearch(conn);
+		case RDWARNINGINFO:
+			return new RdWarninginfoSearch(conn);
 		default:
 			return null;
 		}

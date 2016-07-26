@@ -20,6 +20,13 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 
+		String msg = delete(result);
+
+		return msg;
+	}
+	
+	private String delete(Result result)
+	{
 		result.insertObject(rdWarninginfo, ObjStatus.DELETE, command.getPid());
 
 		return null;

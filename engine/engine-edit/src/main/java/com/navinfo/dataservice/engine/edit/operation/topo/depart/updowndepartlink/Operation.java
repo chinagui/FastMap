@@ -28,6 +28,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkRtic;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
+import com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.RdWarninginfoUtils;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompLineUtil;
@@ -64,6 +65,8 @@ public class Operation implements IOperation {
 		this.createDepartLinks(result);
 		// 2.删除soucelinks
 		this.delSourceLinks(result);
+		// 3.维护关联要素
+		this.updataRelationObj( result);
 		return null;
 	}
 	/*
@@ -615,6 +618,18 @@ public class Operation implements IOperation {
 	private void delSourceLinks(Result result){
 		for(RdLink link:command.getLinks()){
 			result.insertObject(link, ObjStatus.DELETE, link.pid());
+		}
+	}
+	
+	
+	private void updataRelationObj(Result result) throws Exception
+	{
+		//维护警示信息
+		RdWarninginfoUtils  warninginfoUtils=new RdWarninginfoUtils(conn);
+		
+		for(RdLink link:command.getLinks()){
+			
+			warninginfoUtils.DeleteByLink(link.pid(), result);
 		}
 	}
 	/**

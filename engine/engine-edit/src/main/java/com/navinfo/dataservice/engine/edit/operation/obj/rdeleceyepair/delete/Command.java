@@ -63,11 +63,7 @@ public class Command extends AbstractCommand{
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 		this.setDbId(json.getInt("dbId"));
-		
-		JSONObject data = json.getJSONObject("data");
-		this.groupId = data.getInt("pid");
+		this.groupId = json.getInt("objId");
 	}
-	
-	
 
 }

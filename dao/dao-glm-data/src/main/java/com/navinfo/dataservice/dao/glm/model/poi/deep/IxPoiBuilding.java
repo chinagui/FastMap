@@ -110,25 +110,21 @@ public class IxPoiBuilding implements IRow {
 
 	@Override
 	public Map<String, Object> changedFields() {
-		// TODO Auto-generated method stub
 		return this.changedFields;
 	}
 
 	@Override
 	public String parentPKName() {
-		// TODO Auto-generated method stub
-		return "pid";
+		return "POI_PID";
 	}
 
 	@Override
 	public int parentPKValue() {
-		// TODO Auto-generated method stub
 		return this.getPoiPid();
 	}
 
 	@Override
 	public String parentTableName() {
-		// TODO Auto-generated method stub
 		return "ix_poi";
 	}
 
@@ -239,6 +235,11 @@ public class IxPoiBuilding implements IRow {
 
 	@Override
 	public void setMesh(int mesh) {
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+		return null;
 	}
 
 }

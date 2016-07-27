@@ -17,6 +17,7 @@ import java.sql.Types;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 
 import oracle.sql.STRUCT;
@@ -40,8 +41,8 @@ public class ReflectionAttrUtils {
 		for (int i = 0; i < fields.length; i++) {
 			Field field = fields[i];
 			String fieldName = field.getName();
-			if (fieldName.equals("pid")) {
-				String pkName = row.parentPKName();
+			if (fieldName.equals("pid") && row instanceof IObj) {
+				String pkName = ((IObj)row).primaryKey();
 				Object value = rs.getInt(pkName);
 				field.setAccessible(true);
 				field.set(row, value);

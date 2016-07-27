@@ -18,6 +18,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFaceTopo;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class LuFace implements IObj {
@@ -373,6 +374,14 @@ public class LuFace implements IObj {
 
 	public void setArea(double area) {
 		this.area = area;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
+		childMap.put(LuFaceTopo.class, faceTopos);
+		childMap.put(LuFaceName.class, faceNames);
+		return childMap;
 	}
 
 }

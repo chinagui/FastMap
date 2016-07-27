@@ -7,10 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -19,6 +15,10 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 /**
  * 
  * 
@@ -151,8 +151,6 @@ public class ZoneFace implements IObj {
 		while (keys.hasNext()) {
 			String key = (String) keys.next();
 
-			JSONArray ja = null;
-
 			if (json.get(key) instanceof JSONArray) {
 
 			} else if ("geometry".equals(key)) {
@@ -242,6 +240,7 @@ public class ZoneFace implements IObj {
 	@Override
 	public boolean fillChangeFields(JSONObject json) throws Exception {
 
+		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {
@@ -323,5 +322,12 @@ public class ZoneFace implements IObj {
 
 	public void setFaceTopos(List<IRow> faceTopos) {
 		this.faceTopos = faceTopos;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
+		childMap.put(ZoneFaceTopo.class, faceTopos);
+		return childMap;
 	}
 }

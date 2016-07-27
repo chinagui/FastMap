@@ -319,4 +319,11 @@ public class AdFace implements IObj {
 	public void setFaceTopos(List<IRow> faceTopos) {
 		this.faceTopos = faceTopos;
 	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
+		childMap.put(AdFaceTopo.class, faceTopos);
+		return childMap;
+	}
 }

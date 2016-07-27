@@ -156,12 +156,12 @@ public class IxPoiIcon implements IObj {
 
 	@Override
 	public String parentPKName() {
-		return "rel_id";
+		return "POI_PID";
 	}
 
 	@Override
 	public int parentPKValue() {
-		return this.pid;
+		return this.getPoiPid();
 	}
 
 	@Override
@@ -290,6 +290,15 @@ public class IxPoiIcon implements IObj {
 	@Override
 	public String primaryKey() {
 		return "rel_id";
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

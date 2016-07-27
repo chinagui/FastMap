@@ -86,4 +86,6 @@ public interface IRow extends ISerializable {
 	public int mesh();
 	
 	public void setMesh(int mesh);
+	
+	public Map<Class<? extends IRow>,List<IRow>> childMap(); 
 }

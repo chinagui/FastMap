@@ -205,12 +205,12 @@ public class IxPoiEntryimage implements IRow {
 
 	@Override
 	public String parentPKName() {
-		return "pid";
+		return "POI_PID";
 	}
 
 	@Override
 	public int parentPKValue() {
-		return this.poiPid;
+		return this.getPoiPid();
 	}
 
 	@Override
@@ -281,6 +281,11 @@ public class IxPoiEntryimage implements IRow {
 
 	@Override
 	public void setMesh(int mesh) {
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+		return null;
 	}
 
 }

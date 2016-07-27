@@ -561,17 +561,17 @@ public class IxPoiAddress implements IObj {
 
 	@Override
 	public String parentPKName() {
-		return "name_id";
+		return "POI_PID";
 	}
 
 	@Override
 	public int parentPKValue() {
-		return this.pid;
+		return this.getPoiPid();
 	}
 
 	@Override
 	public String parentTableName() {
-		return "ix_poi_address";
+		return "ix_poi";
 	}
 
 	@Override
@@ -681,6 +681,11 @@ public class IxPoiAddress implements IObj {
 	@Override
 	public String primaryKey() {
 		return "name_id";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+		return null;
 	}
 
 }

@@ -375,4 +375,9 @@ public class LuFace implements IObj {
 		this.area = area;
 	}
 
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+		return null;
+	}
+
 }

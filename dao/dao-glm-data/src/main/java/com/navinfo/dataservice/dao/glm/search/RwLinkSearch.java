@@ -6,18 +6,17 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
-
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
-import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwNodeSelector;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 
-public class RwLinkSearch implements ISearch {
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
+
+public class RwLinkSearch extends AbstractSearch implements ISearch {
 
 	private Connection conn;
 
@@ -27,11 +26,7 @@ public class RwLinkSearch implements ISearch {
 
 	@Override
 	public IObj searchDataByPid(int pid) throws Exception {
-		RwLinkSelector selector = new RwLinkSelector(conn);
-
-		IObj obj = (IObj) selector.loadById(pid, false);
-
-		return obj;
+		return searchDataByPid(RwLink.class, pid, conn);
 	}
 
 	@Override

@@ -190,7 +190,6 @@ public class IxPoiTourroute implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -204,8 +203,6 @@ public class IxPoiTourroute implements IObj {
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -215,25 +212,20 @@ public class IxPoiTourroute implements IObj {
 
 	@Override
 	public void copy(IRow row) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public Map<String, Object> changedFields() {
-		// TODO Auto-generated method stub
 		return this.changedFields;
 	}
 
 	@Override
 	public String parentPKName() {
-		// TODO Auto-generated method stub
 		return "tour_id";
 	}
 
 	@Override
 	public int parentPKValue() {
-		// TODO Auto-generated method stub
 		return this.getPid();
 	}
 
@@ -367,6 +359,15 @@ public class IxPoiTourroute implements IObj {
 	@Override
 	public String primaryKey() {
 		return "tour_id";
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

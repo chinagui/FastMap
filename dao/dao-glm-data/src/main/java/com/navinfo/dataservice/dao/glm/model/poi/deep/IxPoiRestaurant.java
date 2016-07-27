@@ -121,7 +121,6 @@ public class IxPoiRestaurant implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -132,13 +131,9 @@ public class IxPoiRestaurant implements IObj {
 	public void setPid(int pid) {
 		this.pid = pid;
 	}
-
-	
-
 	
 	@Override
 	public void setStatus(ObjStatus os) {
-		// TODO Auto-generated method stub
 		
 	}
 
@@ -149,32 +144,26 @@ public class IxPoiRestaurant implements IObj {
 
 	@Override
 	public void copy(IRow row) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public Map<String, Object> changedFields() {
-		// TODO Auto-generated method stub
 		return this.changedFields;
 	}
 
 	@Override
 	public String parentPKName() {
-		// TODO Auto-generated method stub
-		return "restaurant_id";
+		return "POI_PID";
 	}
 
 	@Override
 	public int parentPKValue() {
-		// TODO Auto-generated method stub
-		return this.getPid();
+		return this.getPoiPid();
 	}
 
 	@Override
 	public String parentTableName() {
-		// TODO Auto-generated method stub
-		return "ix_poi_restaurant";
+		return "ix_poi";
 	}
 
 	public Map<String, Object> getChangedFields() {
@@ -189,12 +178,6 @@ public class IxPoiRestaurant implements IObj {
 	public List<List<IRow>> children() {
 		return null;
 	}
-
-	
-
-	
-
-
 	
 	public String getLongDescription() {
 		return longDescription;
@@ -203,8 +186,6 @@ public class IxPoiRestaurant implements IObj {
 	public void setLongDescription(String longDescription) {
 		this.longDescription = longDescription;
 	}
-
-	
 
 	public String getOpenHour() {
 		return openHour;
@@ -362,13 +343,11 @@ public class IxPoiRestaurant implements IObj {
 
 	@Override
 	public List<IRow> relatedRows() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int pid() {
-		// TODO Auto-generated method stub
 		return this.getPid();
 	}
 
@@ -377,5 +356,9 @@ public class IxPoiRestaurant implements IObj {
 		return "restaurant_id";
 	}
 
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+		return null;
+	}
 
 }

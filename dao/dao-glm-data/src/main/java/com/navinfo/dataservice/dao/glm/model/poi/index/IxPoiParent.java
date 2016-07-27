@@ -156,17 +156,17 @@ public class IxPoiParent implements IObj {
 
 	@Override
 	public String parentPKName() {
-		return "group_id";
+		return "PARENT_POI_PID";
 	}
 
 	@Override
 	public int parentPKValue() {
-		return this.getPid();
+		return this.getParentPoiPid();
 	}
 
 	@Override
 	public String parentTableName() {
-		return "ix_poi_parent";
+		return "ix_poi";
 	}
 
 	@Override
@@ -279,6 +279,15 @@ public class IxPoiParent implements IObj {
 	@Override
 	public String primaryKey() {
 		return "group_id";
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

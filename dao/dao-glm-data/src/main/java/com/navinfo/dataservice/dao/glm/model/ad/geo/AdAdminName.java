@@ -285,14 +285,17 @@ public class AdAdminName implements IObj {
 
 	@Override
 	public int pid() {
-		// TODO Auto-generated method stub
 		return this.getPid();
 	}
 
 	@Override
 	public String primaryKey() {
-		// TODO Auto-generated method stub
 		return "name_id";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+		return null;
 	}
 
 }

@@ -54,7 +54,7 @@ public class SubtaskController extends BaseController {
 
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
-				throw new IllegalArgumentException("param参数不能为空。");
+				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			
 			long userId = tokenObj.getUserId();
@@ -99,7 +99,7 @@ public class SubtaskController extends BaseController {
 
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
-				throw new IllegalArgumentException("param参数不能为空。");
+				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			
 			//获取几何范围
@@ -137,7 +137,7 @@ public class SubtaskController extends BaseController {
 			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
-				throw new IllegalArgumentException("param参数不能为空。");
+				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			
 			int curPageNum= 1;//默认为第一页
@@ -163,8 +163,9 @@ public class SubtaskController extends BaseController {
 			//作业阶段
 			int stage = dataJson.getInt("stage");
 			
-//			Page page = SubtaskService.getInstance().listPage(stage,condition,order,pageSize,curPageNum);
 			Page page = SubtaskService.getInstance().list(stage,condition,order,pageSize,curPageNum);
+			
+			List result=JsonOperation.beanToJsonList((List)page.getResult());
 			
             return new ModelAndView("jsonView", success(page));
 		
@@ -180,7 +181,7 @@ public class SubtaskController extends BaseController {
 
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
-				throw new IllegalArgumentException("param参数不能为空。");
+				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			
 			int curPageNum= 1;//默认为第一页
@@ -220,7 +221,7 @@ public class SubtaskController extends BaseController {
 			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
-				throw new IllegalArgumentException("param参数不能为空。");
+				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			
 			Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
@@ -264,7 +265,7 @@ public class SubtaskController extends BaseController {
 
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
-				throw new IllegalArgumentException("param参数不能为空。");
+				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			
 			if(!dataJson.containsKey("subtasks")){
@@ -299,7 +300,7 @@ public class SubtaskController extends BaseController {
 			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
-				throw new IllegalArgumentException("param参数不能为空。");
+				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			
 			if(!dataJson.containsKey("subtaskIds")){

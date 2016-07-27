@@ -21,7 +21,7 @@ public class TrackLineController extends BaseController {
 
 	private static final Logger logger = Logger.getLogger(TrackLineController.class);
 
-	@RequestMapping(value = "/trackline/import")
+	@RequestMapping(value = "/track/import")
 	public ModelAndView imporTrackLine(HttpServletRequest request
 			) throws ServletException, IOException {
 
@@ -37,17 +37,17 @@ public class TrackLineController extends BaseController {
 
 			String filePath = upload.unzipByJobId(jobId);
 
-			TrackLinesUpload tipsUploader = new TrackLinesUpload();
+			TrackLinesUpload trackUploader = new TrackLinesUpload();
 
-			tipsUploader.run(filePath + "/"+ "tips.txt");
+			trackUploader.run(filePath + "/"+ "Datum_Track.json");
 
 			JSONObject result = new JSONObject();
 
-			result.put("total", tipsUploader.getTotal());
+			result.put("total", trackUploader.getTotal());
 
-			result.put("failed", tipsUploader.getFailed());
+			result.put("failed", trackUploader.getFailed());
 
-			result.put("reasons", tipsUploader.getResultJsonArr());
+			result.put("reasons", trackUploader.getResultJsonArr());
 
 			return new ModelAndView("jsonView", success(result));
 

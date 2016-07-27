@@ -25,8 +25,6 @@ public class AdFaceTopo implements IRow {
 
 	private String rowId;
 
-	private int mesh;
-
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	public AdFaceTopo() {
@@ -182,12 +180,11 @@ public class AdFaceTopo implements IRow {
 
 	@Override
 	public int mesh() {
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
 	}
 
 	public int getFacePid() {
@@ -218,8 +215,4 @@ public class AdFaceTopo implements IRow {
 		return rowId;
 	}
 
-	public int getMesh() {
-		return mesh;
-	}
-	
 }

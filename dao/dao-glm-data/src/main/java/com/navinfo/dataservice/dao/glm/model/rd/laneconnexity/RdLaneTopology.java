@@ -19,8 +19,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 public class RdLaneTopology implements IObj {
 
-	private int mesh;
-	
 	private String rowId;
 
 	private int pid;
@@ -42,9 +40,6 @@ public class RdLaneTopology implements IObj {
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
 	public Map<String,RdLaneVia> viaMap = new HashMap<String,RdLaneVia>();
-
-	private int outNodePid;
-	
 	
 	public RdLaneTopology() {
 
@@ -66,6 +61,9 @@ public class RdLaneTopology implements IObj {
 	public int getPid() {
 		return pid;
 	}
+
+	//outNodePid不属于模型字段，使用protected修饰符。
+	protected int outNodePid;
 
 	public int igetOutNodePid() {
 		return outNodePid;
@@ -316,19 +314,34 @@ public class RdLaneTopology implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		// TODO Auto-generated method stub
-		this.mesh=mesh;
 	}
 
 	@Override
 	public String primaryKey() {
 		// TODO Auto-generated method stub
 		return "topology_id";
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

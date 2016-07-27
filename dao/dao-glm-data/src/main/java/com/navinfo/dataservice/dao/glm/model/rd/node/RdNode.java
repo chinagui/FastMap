@@ -23,8 +23,6 @@ import com.vividsolutions.jts.geom.Geometry;
 
 public class RdNode implements IObj {
 	
-	private int mesh;
-
 	private String rowId;
 
 	private int pid;
@@ -477,19 +475,34 @@ public class RdNode implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		// TODO Auto-generated method stub
-		this.mesh=mesh;
 	}
 
 	@Override
 	public String primaryKey() {
 		// TODO Auto-generated method stub
 		return "node_pid";
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

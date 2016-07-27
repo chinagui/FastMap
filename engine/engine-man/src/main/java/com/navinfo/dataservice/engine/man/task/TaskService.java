@@ -3,10 +3,8 @@ package com.navinfo.dataservice.engine.man.task;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
@@ -32,7 +30,7 @@ import net.sf.json.JSONObject;
 
 public class TaskService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-	
+	private TaskService(){}
 	private static class SingletonHolder{
 		private static final TaskService INSTANCE =new TaskService();
 	}

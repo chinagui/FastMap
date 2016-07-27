@@ -41,6 +41,7 @@ import oracle.sql.CLOB;
 
 public class BlockService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
+	private List blockIdList;
 
 	private BlockService() {
 	}
@@ -53,13 +54,14 @@ public class BlockService {
 		return SingletonHolder.INSTANCE;
 	}
 
-	public void batchOpen(long userId, JSONObject json) throws ServiceException {
+	public int batchOpen(long userId, JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			JSONArray blockArray = json.getJSONArray("blocks");
-
+			int updateCount=0;
+			List<Integer> blockIdList = new ArrayList<Integer>();
 			String createSql = "insert into block_man (BLOCK_MAN_ID, CREATE_USER_ID,BLOCK_ID,COLLECT_GROUP_ID, COLLECT_PLAN_START_DATE,"
 					+ "COLLECT_PLAN_END_DATE,DAY_EDIT_GROUP_ID,DAY_EDIT_PLAN_START_DATE,DAY_EDIT_PLAN_END_DATE,MONTH_EDIT_GROUP_ID,"
 					+ "MONTH_EDIT_PLAN_START_DATE,MONTH_EDIT_PLAN_END_DATE,DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,"
@@ -81,9 +83,13 @@ public class BlockService {
 						block.getString("monthProducePlanStartDate"), block.getString("monthProducePlanEndDate"),
 						block.getString("descp") };
 				param[i] = obj;
+				blockIdList.add(block.getInt("blockId"));
 			}
+			BlockOperation.openBlockByBlockIdList(conn, blockIdList);
 
-			run.batch(conn, createSql, param);
+			int[] rows=run.batch(conn, createSql, param);
+			updateCount=rows.length;
+			return updateCount;
 
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -94,14 +100,14 @@ public class BlockService {
 		}
 	}
 
-	public void batchUpdate(JSONObject json) throws ServiceException {
+	public int batchUpdate(JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
 
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			JSONArray blockArray = json.getJSONArray("blocks");
-
+			int updateCount=0;
 			String createSql = "update block_man set COLLECT_GROUP_ID=?, COLLECT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
 					+ "COLLECT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_GROUP_ID=?,DAY_EDIT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_EDIT_GROUP_ID=?,"
 					+ "MONTH_EDIT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_EDIT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
@@ -120,7 +126,9 @@ public class BlockService {
 				param[i] = obj;
 			}
 
-			run.batch(conn, createSql, param);
+			int[] rows=run.batch(conn, createSql, param);
+			updateCount=rows.length;
+			return updateCount;
 
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -151,7 +159,7 @@ public class BlockService {
 		try {
 
 			conn = DBConnector.getInstance().getManConnection();
-			String wkt=json.getString("wkt");
+			String wkt = json.getString("wkt");
 			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']',
 					')');
 
@@ -166,10 +174,11 @@ public class BlockService {
 			}
 			;
 			if (!json.containsKey("relation") || ("intersect".equals(json.getString("relation")))) {
-				selectSql += " and SDO_ANYINTERACT(t.geometry,sdo_geometry('"+wkt+"',8307))='TRUE'";
+				selectSql += " and SDO_ANYINTERACT(t.geometry,sdo_geometry('" + wkt + "',8307))='TRUE'";
 			} else {
 				if ("within".equals(json.getString("relation"))) {
-					selectSql += " and sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry('"+wkt+"', 8307)), 'DISTANCE=0') = 'TRUE'";
+					selectSql += " and sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry('" + wkt
+							+ "', 8307)), 'DISTANCE=0') = 'TRUE'";
 				}
 			}
 
@@ -260,17 +269,17 @@ public class BlockService {
 
 			JSONArray groupIds = json.getJSONArray("groupIds");
 			String groups = ((groupIds.toString()).replace('[', '(')).replace(']', ')');
-			
+
 			selectSql = "select b.BLOCK_ID,b.CITY_ID, b.BLOCK_NAME, b.GEOMETRY.get_wkt() as GEOMETRY,"
 					+ " b.PLAN_STATUS from block_man t,block b,task k,subtask s where t.block_id=b.block_id and b.city_id=k.city_id and k.task_id=s.task_id and t.latest=1 and k.latest=1 and s.stage=? ";
 
 			if (0 == stage) {
 				selectSql += "and t.COLLECT_GROUP_ID in " + groups;
-						
+
 			} else if (1 == stage) {
-				selectSql += "and t.DAY_EDIT_GROUP_ID in "+ groups;
+				selectSql += "and t.DAY_EDIT_GROUP_ID in " + groups;
 			} else {
-				selectSql += "and t.MONTH_EDIT_GROUP_ID in "+ groups;
+				selectSql += "and t.MONTH_EDIT_GROUP_ID in " + groups;
 			}
 
 			return BlockOperation.queryBlockByGroup(conn, selectSql, stage);

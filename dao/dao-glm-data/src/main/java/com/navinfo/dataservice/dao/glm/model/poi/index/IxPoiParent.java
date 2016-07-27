@@ -17,42 +17,38 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
-
 /**
  * POI父子关系父表
+ * 
  * @author luyao
  *
  */
 public class IxPoiParent implements IObj {
-	
+
 	private String rowId;
-	
-	private int mesh;
-	
+
 	private int pid;
-	
-	private int parentPoiPid;//父POI号码
-	
-	private int tenantFlag=0;//有无租户
-	
-	private String memo;//备注信息
-	
-	private int groupId=0; // POI组号码
-	
-	private int uRecord=0;
-	
+
+	private int parentPoiPid;// 父POI号码
+
+	private int tenantFlag = 0;// 有无租户
+
+	private String memo;// 备注信息
+
+	private int uRecord = 0;
+
 	private String uDate;
-	
+
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
-	
+
 	private List<IRow> poiChildrens = new ArrayList<IRow>();
-	
+
 	public Map<String, IxPoiChildren> poiChildrenMap = new HashMap<String, IxPoiChildren>();
 
 	public IxPoiParent() {
 
 	}
-	
+
 	public int getPid() {
 		return pid;
 	}
@@ -92,12 +88,12 @@ public class IxPoiParent implements IObj {
 	public void setPoiChildrens(List<IRow> poiChildrens) {
 		this.poiChildrens = poiChildrens;
 	}
-	
+
 	@Override
 	public String rowId() {
 		return rowId;
 	}
-	
+
 	public String getRowId() {
 		return rowId;
 	}
@@ -105,14 +101,6 @@ public class IxPoiParent implements IObj {
 	@Override
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
-	}
-
-	public int getGroupId() {
-		return groupId;
-	}
-
-	public void setGroupId(int groupId) {
-		this.groupId = groupId;
 	}
 
 	public int getuRecord() {
@@ -139,13 +127,13 @@ public class IxPoiParent implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		
+
 		return null;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		
+
 	}
 
 	@Override
@@ -155,7 +143,7 @@ public class IxPoiParent implements IObj {
 
 	@Override
 	public void copy(IRow row) {
-		
+
 	}
 
 	@Override
@@ -165,25 +153,25 @@ public class IxPoiParent implements IObj {
 
 	@Override
 	public String parentPKName() {
-		return "group_id";
+		return "PARENT_POI_PID";
 	}
 
 	@Override
 	public int parentPKValue() {
-		return this.getPid();
+		return this.getParentPoiPid();
 	}
 
 	@Override
 	public String parentTableName() {
-		return "ix_poi_parent";
+		return "ix_poi";
 	}
 
 	@Override
 	public List<List<IRow>> children() {
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
-		
+
 		children.add(this.getPoiChildrens());
-		
+
 		return children;
 	}
 
@@ -240,17 +228,16 @@ public class IxPoiParent implements IObj {
 
 	@Override
 	public int mesh() {
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
 	}
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		return JSONObject.fromObject(this, JsonUtils.getStrConfig());		
+		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
 	}
 
 	@Override
@@ -277,7 +264,7 @@ public class IxPoiParent implements IObj {
 
 	@Override
 	public List<IRow> relatedRows() {
-		
+
 		return null;
 	}
 
@@ -289,6 +276,24 @@ public class IxPoiParent implements IObj {
 	@Override
 	public String primaryKey() {
 		return "group_id";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>, List<IRow>> childMap = new HashMap<>();
+
+		childMap.put(IxPoiChildren.class, poiChildrens);
+
+		return childMap;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

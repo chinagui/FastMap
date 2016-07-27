@@ -11,6 +11,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.database.DataSourceUtil;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
@@ -55,7 +56,7 @@ public class OracleSchemaPhysicalCreator implements DbPhysicalCreator{
 //			conProps.put("internal_logon", "sysdba");
 			DriverManagerDataSource dataSource = new DriverManagerDataSource();
 			dataSource.setDriverClassName("oracle.jdbc.driver.OracleDriver");
-			String url = MultiDataSourceFactory.createOracleJdbcUrl(suDb.getDbServer().getIp(), suDb.getDbServer().getPort(), suDb.getDbServer().getServiceName());
+			String url = DataSourceUtil.createOracleJdbcUrl(suDb.getDbServer().getIp(), suDb.getDbServer().getPort(), suDb.getDbServer().getServiceName());
 			dataSource.setUrl(url);
 			/*
 			 * dataSource.setUsername(sysName);

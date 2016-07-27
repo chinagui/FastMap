@@ -41,6 +41,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiIcon;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
+import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiAdvertisementOperator;
 import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiAttractionOperator;
 import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiBuildingOperator;
@@ -65,14 +66,16 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author zhangxiaolong
  * 
  */
-public class IxPoiOperator implements IOperator {
-
-	private Connection conn;
+public class IxPoiOperator extends AbstractOperator {
 
 	private IxPoi ixPoi;
 
+	private int freshFlag;
+
+	private String rawFields;
+
 	public IxPoiOperator(Connection conn, IxPoi ixPoi) throws Exception {
-		this.conn = conn;
+		super(conn);
 		this.ixPoi = ixPoi;
 		if (org.apache.commons.lang.StringUtils.isBlank(ixPoi.rowId())) {
 			ixPoi.setRowId(UuidUtils.genUuid());
@@ -81,183 +84,23 @@ public class IxPoiOperator implements IOperator {
 	}
 
 	public IxPoiOperator(Connection conn, String rowId) throws Exception {
-		this.conn = conn;
+		super(conn);
 		ixPoi = new IxPoi();
 		ixPoi.setRowId(rowId);
 		upatePoiStatus();
 	}
 
-	@Override
-	public void insertRow() throws Exception {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.insertRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-		}
+	public IxPoiOperator(Connection conn, String rowId, int freshFlag,
+			String rawFields) throws Exception {
+		super(conn);
+		ixPoi = new IxPoi();
+		ixPoi.setRowId(rowId);
+		this.freshFlag = freshFlag;
+		this.rawFields = rawFields;
+		upatePoiStatusForAndroid();
 	}
 
-	@Override
-	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + ixPoi.tableName()
-				+ " set u_record=3,u_date= '"+StringUtils.getCurrentTime()+"' ,");
-
-		PreparedStatement pstmt = null;
-
-		try {
-
-			Set<Entry<String, Object>> set = ixPoi.changedFields().entrySet();
-
-			Iterator<Entry<String, Object>> it = set.iterator();
-
-			boolean isChanged = false;
-
-			while (it.hasNext()) {
-				Entry<String, Object> en = it.next();
-
-				String column = en.getKey();
-
-				Object columnValue = en.getValue();
-
-				Field field = ixPoi.getClass().getDeclaredField(column);
-
-				field.setAccessible(true);
-
-				Object value = field.get(ixPoi);
-
-				if (column.equals("open24h")) {
-					column = "open_24h";
-				} else if (column.equals("level")) {
-					column = "\"LEVEL\"";
-				} else {
-
-					column = StringUtils.toColumnName(column);
-				}
-
-				if (value instanceof String || value == null) {
-
-					if (!StringUtils.isStringSame(String.valueOf(value),
-							String.valueOf(columnValue))) {
-
-						if (columnValue == null) {
-							sb.append(column + "=null,");
-						} else {
-							sb.append(column + "='"
-									+ String.valueOf(columnValue) + "',");
-						}
-						isChanged = true;
-					}
-
-				} else if (value instanceof Double) {
-
-					if (Double.parseDouble(String.valueOf(value)) != Double
-							.parseDouble(String.valueOf(columnValue))) {
-						sb.append(column
-								+ "="
-								+ Double.parseDouble(String
-										.valueOf(columnValue)) + ",");
-
-						isChanged = true;
-					}
-
-				} else if (value instanceof Integer) {
-
-					if (Integer.parseInt(String.valueOf(value)) != Integer
-							.parseInt(String.valueOf(columnValue))) {
-						sb.append(column + "="
-								+ Integer.parseInt(String.valueOf(columnValue))
-								+ ",");
-
-						isChanged = true;
-					}
-
-				} else if (value instanceof Geometry) {
-					// 先降级转WKT
-
-					String oldWkt = GeoTranslator.jts2Wkt((Geometry) value,
-							0.00001, 5);
-
-					String newWkt = Geojson.geojson2Wkt(columnValue.toString());
-
-					if (!StringUtils.isStringSame(oldWkt, newWkt)) {
-						sb.append("geometry=sdo_geometry('"
-								+ String.valueOf(newWkt) + "',8307),");
-
-						isChanged = true;
-					}
-				}
-			}
-			sb.append(" where pid=" + ixPoi.getPid());
-
-			String sql = sb.toString();
-
-			sql = sql.replace(", where", " where");
-
-			if (isChanged) {
-
-				pstmt = conn.prepareStatement(sql);
-
-				pstmt.executeUpdate();
-
-			}
-
-		} catch (Exception e) {
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-	}
-
-	@Override
-	public void deleteRow() throws Exception {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.deleteRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-		}
-	}
-
+	
 	@Override
 	public void insertRow2Sql(Statement stmt) throws Exception {
 
@@ -679,14 +522,103 @@ public class IxPoiOperator implements IOperator {
 	}
 
 	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
-			throws Exception {
+	public void updateRow2Sql(Statement stmt) throws Exception {
+		StringBuilder sb = new StringBuilder("update " + ixPoi.tableName()
+				+ " set u_record=3,u_date= '" + StringUtils.getCurrentTime()
+				+ "' ,");
+
+		Set<Entry<String, Object>> set = ixPoi.changedFields().entrySet();
+
+		Iterator<Entry<String, Object>> it = set.iterator();
+
+		while (it.hasNext()) {
+			Entry<String, Object> en = it.next();
+
+			String column = en.getKey();
+
+			Object columnValue = en.getValue();
+
+			Field field = ixPoi.getClass().getDeclaredField(column);
+
+			field.setAccessible(true);
+
+			Object value = field.get(ixPoi);
+
+			if (column.equals("open24h")) {
+				column = "open_24h";
+			} else if (column.equals("level")) {
+				column = "\"LEVEL\"";
+			} else {
+
+				column = StringUtils.toColumnName(column);
+			}
+
+			if (value instanceof String || value == null) {
+
+				if (!StringUtils.isStringSame(String.valueOf(value),
+						String.valueOf(columnValue))) {
+
+					if (columnValue == null) {
+						sb.append(column + "=null,");
+					} else {
+						sb.append(column + "='" + String.valueOf(columnValue)
+								+ "',");
+					}
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof Double) {
+
+				if (Double.parseDouble(String.valueOf(value)) != Double
+						.parseDouble(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Double.parseDouble(String.valueOf(columnValue))
+							+ ",");
+
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof Integer) {
+
+				if (Integer.parseInt(String.valueOf(value)) != Integer
+						.parseInt(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Integer.parseInt(String.valueOf(columnValue))
+							+ ",");
+
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof Geometry) {
+				// 先降级转WKT
+
+				String oldWkt = GeoTranslator.jts2Wkt((Geometry) value,
+						0.00001, 5);
+
+				String newWkt = Geojson.geojson2Wkt(columnValue.toString());
+
+				if (!StringUtils.isStringSame(oldWkt, newWkt)) {
+					sb.append("geometry=sdo_geometry('"
+							+ String.valueOf(newWkt) + "',8307),");
+
+					this.setChanged(true);
+				}
+			}
+		}
+		sb.append(" where pid=" + ixPoi.getPid());
+
+		String sql = sb.toString();
+
+		sql = sql.replace(", where", " where");
+		stmt.addBatch(sql);
 
 	}
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update " + ixPoi.tableName() + " set u_record=2,u_date= '"+StringUtils.getCurrentTime()+"'  where pid=" + ixPoi.getPid();
+		String sql = "update " + ixPoi.tableName()
+				+ " set u_record=2,u_date= '" + StringUtils.getCurrentTime()
+				+ "'  where pid=" + ixPoi.getPid();
 
 		stmt.addBatch(sql);
 
@@ -880,7 +812,7 @@ public class IxPoiOperator implements IOperator {
 	}
 
 	/**
-	 * poi操作修改poi状态为已作业，限度信息为0 zhaokk sourceFlag 0 web 1 Android
+	 * poi操作修改poi状态为已作业，鲜度信息为0 zhaokk sourceFlag 0 web 1 Android
 	 * 
 	 * @param row
 	 * @throws Exception
@@ -891,9 +823,9 @@ public class IxPoiOperator implements IOperator {
 				+ "' as a, 2 as b,0 as c FROM dual) T2 ");
 		sb.append(" ON ( T1.row_id=T2.a) ");
 		sb.append(" WHEN MATCHED THEN ");
-		sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.b ");
+		sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c ");
 		sb.append(" WHEN NOT MATCHED THEN ");
-		sb.append(" INSERT (T1.row_id,T1.status,T1.fresh_verified) VALUES(T2.a,T2.b,T2.b)");
+		sb.append(" INSERT (T1.row_id,T1.status,T1.fresh_verified) VALUES(T2.a,T2.b,T2.c)");
 		PreparedStatement pstmt = null;
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
@@ -913,4 +845,41 @@ public class IxPoiOperator implements IOperator {
 		}
 
 	}
+
+	/**
+	 * poi操作修改poi状态为待作业 by wdb
+	 * 
+	 * @param row
+	 * @throws Exception
+	 */
+	public void upatePoiStatusForAndroid() throws Exception {
+		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
+		sb.append(" USING (SELECT '" + ixPoi.getRowId() + "' as a, 1 as b,"
+				+ freshFlag + " as c,'" + rawFields + "' as d,"
+				+ "sysdate as e" + "  FROM dual) T2 ");
+		sb.append(" ON ( T1.row_id=T2.a) ");
+		sb.append(" WHEN MATCHED THEN ");
+		sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c,T1.is_upload = T2.b,T1.raw_fields = T2.d,T1.upload_date = T2.e ");
+		sb.append(" WHEN NOT MATCHED THEN ");
+		sb.append(" INSERT (T1.row_id,T1.status,T1.fresh_verified,T1.is_upload,T1.raw_fields,T1.upload_date) VALUES(T2.a,T2.b,T2.c,T2.b,T2.d,T2.e)");
+		PreparedStatement pstmt = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.executeUpdate();
+			conn.commit();
+		} catch (Exception e) {
+			throw e;
+
+		} finally {
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+	}
+
 }

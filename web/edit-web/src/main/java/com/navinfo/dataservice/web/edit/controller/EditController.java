@@ -20,6 +20,7 @@ import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
@@ -30,8 +31,8 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
-import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
-import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
+import com.navinfo.dataservice.engine.edit.operation.Transaction;
+import com.navinfo.dataservice.engine.edit.search.SearchProcess;
 import com.navinfo.navicommons.database.QueryRunner;
 
 import net.sf.json.JSONArray;
@@ -66,7 +67,14 @@ public class EditController extends BaseController {
 			json.put("pid", t.getPid());
 
 			return new ModelAndView("jsonView", success(json));
-		} catch (Exception e) {
+		}
+		catch (DataNotChangeException e)
+		{
+			logger.error(e.getMessage(), e);
+			
+			return new ModelAndView("jsonView", success(e.getMessage()));
+		}
+		catch (Exception e) {
 
 			logger.error(e.getMessage(), e);
 

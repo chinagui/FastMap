@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.engine.edit.InitApplication;
-import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
+import com.navinfo.dataservice.engine.edit.operation.Transaction;
 
 public class RdLinkTest extends InitApplication{
 	
@@ -31,7 +31,7 @@ public class RdLinkTest extends InitApplication{
 	@Test
 	public void testAddRdLink()
 	{
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46895051002502,40.025075819137506],[116.46738632493417,40.02477644044782],[116.4666223526001,40.02477183584991]]},\"catchLinks\":[{\"linkPid\":100006568,\"lon\":116.46738632493417,\"lat\":40.02477644044782}]},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46895051002502,40.025075819137506],[116.46738632493417,40.02477644044782],[116.4666223526001,40.02477183584991]]},\"catchLinks\":,\"type\":\"RDLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

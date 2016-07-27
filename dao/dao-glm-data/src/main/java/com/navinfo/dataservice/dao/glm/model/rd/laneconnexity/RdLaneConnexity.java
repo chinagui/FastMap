@@ -19,8 +19,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 public class RdLaneConnexity implements IObj {
 	
-	private int mesh;
-
 	private int pid;
 
 	private String rowId;
@@ -260,11 +258,6 @@ public class RdLaneConnexity implements IObj {
 
 		children.add(this.getTopos());
 
-		for (IRow r : this.getTopos()) {
-
-			children.addAll(r.children());
-		}
-
 		return children;
 	}
 
@@ -342,19 +335,26 @@ public class RdLaneConnexity implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		// TODO Auto-generated method stub
-		this.mesh=mesh;
 	}
 
 	@Override
 	public String primaryKey() {
 		// TODO Auto-generated method stub
 		return "pid";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		return null;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		return null;
 	}
 }

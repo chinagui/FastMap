@@ -25,7 +25,6 @@ public class IxPoiChargingPlotPh implements IRow {
 
 	private int poiPid = 0;
 	private String photoName;// 充电桩分组照片
-	private int mesh;
 	private String rowId;
 	// 更新时间
 	private String uDate;
@@ -44,10 +43,6 @@ public class IxPoiChargingPlotPh implements IRow {
 
 	public void setPhotoName(String photoName) {
 		this.photoName = photoName;
-	}
-
-	public int getMesh() {
-		return mesh;
 	}
 
 	public int getPoiPid() {
@@ -105,25 +100,21 @@ public class IxPoiChargingPlotPh implements IRow {
 
 	@Override
 	public Map<String, Object> changedFields() {
-		// TODO Auto-generated method stub
 		return this.changedFields;
 	}
 
 	@Override
 	public String parentPKName() {
-		// TODO Auto-generated method stub
-		return "pid";
+		return "poi_pid";
 	}
 
 	@Override
 	public int parentPKValue() {
-		// TODO Auto-generated method stub
 		return this.getPoiPid();
 	}
 
 	@Override
 	public String parentTableName() {
-		// TODO Auto-generated method stub
 		return "ix_poi";
 	}
 
@@ -221,14 +212,10 @@ public class IxPoiChargingPlotPh implements IRow {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-
 	}
-
 }

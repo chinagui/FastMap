@@ -25,8 +25,6 @@ public class RdGsc implements IObj  {
 	
 	private int pid;
 	
-	private int meshId;
-	
 	private Geometry geometry;
 	
 	private  int processFlag = 0 ;
@@ -201,13 +199,11 @@ public class RdGsc implements IObj  {
 	}
 	@Override
 	public int mesh() {
-		return this.meshId;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.meshId = mesh;
-		
 	}
 
 	@Override
@@ -254,6 +250,24 @@ public class RdGsc implements IObj  {
 
 	public String getRowId() {
 		return rowId;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }

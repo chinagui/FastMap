@@ -515,7 +515,7 @@ public class IxPoiSelector implements ISelector {
         buffer.append(" AND ipn.name_type = 2 ");
         buffer.append(" AND name_class = 1"); 
         buffer.append(" AND ps.status = "+type+"");
-        buffer.append(" AND sdo_relate(ip.geometry, sdo_geometry(    '"+g+"'  , 8307), 'mask=anyinteract') = 'TRUE' ");
+        buffer.append(" AND sdo_within_distance(ip.geometry, sdo_geometry(    '"+g+"'  , 8307), 'mask=anyinteract') = 'TRUE' ");
         if( pid != 0){
         	buffer.append(" AND ip.pid = "+pid+"");
         }else{
@@ -656,7 +656,7 @@ public class IxPoiSelector implements ISelector {
 	
 	/**
 	 * 根据rowId获取POI（返回名称和分类）
-	 * @param gridDate
+	 * @param rowId
 	 * @return
 	 * @throws Exception
 	 */
@@ -681,6 +681,59 @@ public class IxPoiSelector implements ISelector {
 			if (resultSet.next()) {
 				ret.put("name", resultSet.getString("name"));
 				ret.put("kindCode", resultSet.getString("kind_code"));
+			}
+			
+			return ret;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+	}
+	
+	/**
+	 * 根据pid获取POI的rowId
+	 * @param 
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject getRowIdById(int pid) throws Exception {
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		
+		
+		StringBuffer sb = new StringBuffer();
+		sb.append("SELECT row_id");
+		sb.append(" FROM ix_poi");
+		sb.append(" WHERE pid=:1");
+		
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setInt(1, pid);
+			resultSet = pstmt.executeQuery();
+			
+			JSONObject ret = new JSONObject();
+			if (resultSet.next()) {
+				ret.put("rowId", resultSet.getString("row_id"));
 			}
 			
 			return ret;

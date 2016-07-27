@@ -38,7 +38,6 @@ public class IxPoiParking implements IObj {
 	private double resWidth = 0;//限宽
 	private double resWeigh = 0;//限重
 	private int  vehicle = 0;//停放车辆类型 
-	private String memo;// 备注信息
 	private String photoName;//全景照片
 	private int certificate = 0; //入口凭证
 	private int uRecord=0;
@@ -205,13 +204,8 @@ public class IxPoiParking implements IObj {
 	private int handicapNum = 0;//残障停车位数量
 	private int miniNum = 0;//迷你停车位数量
 	private int vipNum = 0;//专用停车位数量
-	private int mesh;
 	private String rowId;
 	
-
-	public int getMesh() {
-		return mesh;
-	}
 
 	public int getPoiPid() {
 		return poiPid;
@@ -240,11 +234,9 @@ public class IxPoiParking implements IObj {
 	public String tableName() {
 		return "ix_poi_parking";
 	}
-	
 
 	@Override
 	public ObjStatus status() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -255,14 +247,9 @@ public class IxPoiParking implements IObj {
 	public void setPid(int pid) {
 		this.pid = pid;
 	}
-
-	
-
 	
 	@Override
 	public void setStatus(ObjStatus os) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -272,32 +259,27 @@ public class IxPoiParking implements IObj {
 
 	@Override
 	public void copy(IRow row) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public Map<String, Object> changedFields() {
-		// TODO Auto-generated method stub
 		return this.changedFields;
 	}
 
 	@Override
 	public String parentPKName() {
-		// TODO Auto-generated method stub
-		return "parking_id";
+		return "POI_PID";
 	}
 
 	@Override
 	public int parentPKValue() {
-		// TODO Auto-generated method stub
-		return this.getPid();
+		return this.getPoiPid();
 	}
 
 	@Override
 	public String parentTableName() {
-		// TODO Auto-generated method stub
-		return "ix_poi_parking";
+		return "ix_poi";
 	}
 
 	public Map<String, Object> getChangedFields() {
@@ -323,14 +305,6 @@ public class IxPoiParking implements IObj {
 		this.payment = payment;
 	}
 
-
-	public String getMemo() {
-		return memo;
-	}
-
-	public void setMemo(String memo) {
-		this.memo = memo;
-	}
 
 
 	public String getPhotoName() {
@@ -359,6 +333,7 @@ public class IxPoiParking implements IObj {
 
 	@Override
 	public boolean fillChangeFields(JSONObject json) throws Exception {
+		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {
@@ -440,31 +415,40 @@ public class IxPoiParking implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-		
 	}
 
 	@Override
 	public List<IRow> relatedRows() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int pid() {
-		// TODO Auto-generated method stub
 		return this.getPid();
 	}
 
 	@Override
 	public String primaryKey() {
 		return "parking_id";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 

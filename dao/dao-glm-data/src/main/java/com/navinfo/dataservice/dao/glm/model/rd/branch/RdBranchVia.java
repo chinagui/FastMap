@@ -17,8 +17,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 public class RdBranchVia implements IRow {
 
-	private int mesh;
-	
 	private int branchPid;
 
 	private int linkPid;
@@ -30,14 +28,13 @@ public class RdBranchVia implements IRow {
 	private String rowId;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
-	
-	private int sNodePid;
-	
-	private int eNodePid;
-	
-	private int inNodePid;
-	
-	
+
+	// sNodePid、eNodePid、inNodePid不属于模型字段，使用protected修饰符。
+	protected int sNodePid;
+
+	protected int eNodePid;
+
+	protected int inNodePid;
 
 	public int igetInNodePid() {
 		return inNodePid;
@@ -79,7 +76,7 @@ public class RdBranchVia implements IRow {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
 
-		return JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
 	}
 
 	@Override
@@ -202,7 +199,7 @@ public class RdBranchVia implements IRow {
 
 	@Override
 	public boolean fillChangeFields(JSONObject json) throws Exception {
-		
+
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {
@@ -212,45 +209,43 @@ public class RdBranchVia implements IRow {
 
 			if (json.get(key) instanceof JSONArray) {
 				continue;
-			}  else {
+			} else {
 				if (!"objStatus".equals(key)) {
-					
+
 					Field field = this.getClass().getDeclaredField(key);
-					
+
 					field.setAccessible(true);
-					
+
 					Object objValue = field.get(this);
-					
+
 					String oldValue = null;
-					
-					if (objValue == null){
+
+					if (objValue == null) {
 						oldValue = "null";
-					}else{
+					} else {
 						oldValue = String.valueOf(objValue);
 					}
-					
+
 					String newValue = json.getString(key);
-					
-					if (!newValue.equals(oldValue)){
+
+					if (!newValue.equals(oldValue)) {
 						Object value = json.get(key);
-						
-						if(value instanceof String){
+
+						if (value instanceof String) {
 							changedFields.put(key, newValue.replace("'", "''"));
-						}
-						else{
+						} else {
 							changedFields.put(key, value);
 						}
 
 					}
 
-					
 				}
 			}
 		}
-		
-		if (changedFields.size() >0){
+
+		if (changedFields.size() > 0) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 
@@ -258,14 +253,11 @@ public class RdBranchVia implements IRow {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		// TODO Auto-generated method stub
-		this.mesh=mesh;
 	}
 
 }

@@ -18,8 +18,8 @@ public class taskTest {
 		if(dataJson==null){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}
-		TaskService service = new TaskService();
-		service.create(1,dataJson);			
+		//TaskService service = new TaskService();
+		//service.create(1,dataJson);			
 	}
 	
 	public static void taskTestUpdate() throws Exception {
@@ -32,8 +32,8 @@ public class taskTest {
 		if(dataJson==null){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}
-		TaskService service = new TaskService();
-		service.update(dataJson);			
+		//TaskService service = new TaskService();
+		//service.update(dataJson);			
 	}
 	
 	public static void main(String[] agr) throws Exception{

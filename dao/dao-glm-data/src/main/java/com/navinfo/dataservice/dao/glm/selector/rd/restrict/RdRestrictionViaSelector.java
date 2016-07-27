@@ -256,10 +256,7 @@ public class RdRestrictionViaSelector implements ISelector {
 
 			} else {
 
-				RdRestrictionViaOperator op = new RdRestrictionViaOperator(
-						conn, via);
-
-				listVia = op.repaireViaDirect(listVia, preSNodePid,
+				listVia = repaireViaDirect(listVia, preSNodePid,
 						preENodePid, linkPid);
 
 				list.add(listVia);
@@ -293,5 +290,45 @@ public class RdRestrictionViaSelector implements ISelector {
 		}
 
 		return list;
+	}
+	
+
+	// 维护经过线方向
+	public List<Entry<Integer, RdRestrictionVia>> repaireViaDirect(
+			List<Entry<Integer, RdRestrictionVia>> vias, int preSNodePid,
+			int preENodePid, int linkPid) {
+		List<Entry<Integer, RdRestrictionVia>> newVias = new ArrayList<Entry<Integer, RdRestrictionVia>>();
+
+		for (Entry<Integer, RdRestrictionVia> entry : vias) {
+			RdRestrictionVia v = entry.getValue();
+
+			if (v.getLinkPid() == linkPid) {
+
+				if (preSNodePid != 0 && preENodePid != 0) {
+					if (v.igetsNodePid() == preSNodePid
+							|| v.igetsNodePid() == preENodePid) {
+
+					} else {
+						int tempPid = v.igetsNodePid();
+
+						v.isetsNodePid(v.igeteNodePid());
+
+						v.iseteNodePid(tempPid);
+					}
+				} else {
+					if (v.igeteNodePid() == v.igetInNodePid()) {
+						int tempPid = v.igetsNodePid();
+
+						v.isetsNodePid(v.igeteNodePid());
+
+						v.iseteNodePid(tempPid);
+					}
+				}
+			}
+
+			newVias.add(new AbstractMap.SimpleEntry(entry.getKey(), v));
+		}
+
+		return newVias;
 	}
 }

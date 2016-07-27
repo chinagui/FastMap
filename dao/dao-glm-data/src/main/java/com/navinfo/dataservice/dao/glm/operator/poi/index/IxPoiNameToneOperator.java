@@ -13,6 +13,7 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameTone;
+import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 
 /**
  * POI名称语音语调表 操作类
@@ -20,165 +21,14 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameTone;
  * @author zhangxiaolong
  * 
  */
-public class IxPoiNameToneOperator implements IOperator {
-
-	private Connection conn;
+public class IxPoiNameToneOperator extends AbstractOperator {
 
 	private IxPoiNameTone ixPoiNameTone;
 
 	public IxPoiNameToneOperator(Connection conn, IxPoiNameTone ixPoiNameTone) {
-		this.conn = conn;
+		super(conn);
 
 		this.ixPoiNameTone = ixPoiNameTone;
-	}
-
-	@Override
-	public void insertRow() throws Exception {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.insertRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-		}
-	}
-
-	@Override
-	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update "
-				+ ixPoiNameTone.tableName() + " set u_record=3,u_date= '"+StringUtils.getCurrentTime()+"' ,");
-
-		PreparedStatement pstmt = null;
-
-		try {
-
-			Set<Entry<String, Object>> set = ixPoiNameTone.changedFields()
-					.entrySet();
-
-			Iterator<Entry<String, Object>> it = set.iterator();
-
-			while (it.hasNext()) {
-				Entry<String, Object> en = it.next();
-
-				String column = en.getKey();
-
-				Object columnValue = en.getValue();
-
-				Field field = ixPoiNameTone.getClass().getDeclaredField(column);
-
-				field.setAccessible(true);
-
-				Object value = field.get(ixPoiNameTone);
-
-				column = StringUtils.toColumnName(column);
-
-				if (value instanceof String || value == null) {
-
-					if (!StringUtils.isStringSame(String.valueOf(value),
-							String.valueOf(columnValue))) {
-
-						if (columnValue == null) {
-							sb.append(column + "=null,");
-						} else {
-							sb.append(column + "='"
-									+ String.valueOf(columnValue) + "',");
-						}
-
-					}
-
-				} else if (value instanceof Double) {
-
-					if (Double.parseDouble(String.valueOf(value)) != Double
-							.parseDouble(String.valueOf(columnValue))) {
-						sb.append(column
-								+ "="
-								+ Double.parseDouble(String
-										.valueOf(columnValue)) + ",");
-					}
-
-				} else if (value instanceof Integer) {
-
-					if (Integer.parseInt(String.valueOf(value)) != Integer
-							.parseInt(String.valueOf(columnValue))) {
-						sb.append(column + "="
-								+ Integer.parseInt(String.valueOf(columnValue))
-								+ ",");
-					}
-
-				}
-			}
-			sb.append(" where name_id= " + ixPoiNameTone.getNameId());
-
-			sb.append("')");
-
-			String sql = sb.toString();
-
-			sql = sql.replace(", where", " where");
-
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.executeUpdate();
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-	}
-
-	@Override
-	public void deleteRow() throws Exception {
-		String sql = "update " + ixPoiNameTone.tableName()
-				+ " set u_record=? where row_id=hextoraw(?)";
-
-		PreparedStatement pstmt = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setInt(1, 2);
-
-			pstmt.setString(2, ixPoiNameTone.rowId());
-
-			pstmt.executeUpdate();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
 	}
 
 	@Override
@@ -240,15 +90,83 @@ public class IxPoiNameToneOperator implements IOperator {
 	}
 
 	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
-			throws Exception {
+	public void updateRow2Sql(Statement stmt) throws Exception {
+		StringBuilder sb = new StringBuilder("update "
+				+ ixPoiNameTone.tableName() + " set u_record=3,u_date= '"
+				+ StringUtils.getCurrentTime() + "' ,");
 
+		Set<Entry<String, Object>> set = ixPoiNameTone.changedFields()
+				.entrySet();
+
+		Iterator<Entry<String, Object>> it = set.iterator();
+
+		while (it.hasNext()) {
+			Entry<String, Object> en = it.next();
+
+			String column = en.getKey();
+
+			Object columnValue = en.getValue();
+
+			Field field = ixPoiNameTone.getClass().getDeclaredField(column);
+
+			field.setAccessible(true);
+
+			Object value = field.get(ixPoiNameTone);
+
+			column = StringUtils.toColumnName(column);
+
+			if (value instanceof String || value == null) {
+
+				if (!StringUtils.isStringSame(String.valueOf(value),
+						String.valueOf(columnValue))) {
+
+					if (columnValue == null) {
+						sb.append(column + "=null,");
+					} else {
+						sb.append(column + "='" + String.valueOf(columnValue)
+								+ "',");
+					}
+					this.setChanged(true);
+
+				}
+
+			} else if (value instanceof Double) {
+
+				if (Double.parseDouble(String.valueOf(value)) != Double
+						.parseDouble(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Double.parseDouble(String.valueOf(columnValue))
+							+ ",");
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof Integer) {
+
+				if (Integer.parseInt(String.valueOf(value)) != Integer
+						.parseInt(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Integer.parseInt(String.valueOf(columnValue))
+							+ ",");
+					this.setChanged(true);
+				}
+
+			}
+		}
+		sb.append(" where name_id= " + ixPoiNameTone.getNameId());
+
+		sb.append("')");
+
+		String sql = sb.toString();
+
+		sql = sql.replace(", where", " where");
+		stmt.addBatch(sql);
 	}
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		String sql = "update " + ixPoiNameTone.tableName()
-				+ " set u_record=2,u_date= '"+StringUtils.getCurrentTime()+"'  where name_id=" + ixPoiNameTone.getNameId();
+				+ " set u_record=2,u_date= '" + StringUtils.getCurrentTime()
+				+ "'  where name_id=" + ixPoiNameTone.getNameId();
 
 		stmt.addBatch(sql);
 	}

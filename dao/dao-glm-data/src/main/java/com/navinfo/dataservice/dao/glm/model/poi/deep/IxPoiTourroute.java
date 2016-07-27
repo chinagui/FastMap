@@ -41,7 +41,6 @@ public class IxPoiTourroute implements IObj {
 	private String reserved;// 预留字段
 
 	private int travelguideFlag = 0;// 是 否 属 于travel guide所需 POI
-	private int mesh;
 	private String rowId;
 
 	// 更新时间
@@ -53,10 +52,6 @@ public class IxPoiTourroute implements IObj {
 
 	public void setuDate(String uDate) {
 		this.uDate = uDate;
-	}
-
-	public int getMesh() {
-		return mesh;
 	}
 
 	public String getRowId() {
@@ -195,7 +190,6 @@ public class IxPoiTourroute implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -209,8 +203,6 @@ public class IxPoiTourroute implements IObj {
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -220,31 +212,25 @@ public class IxPoiTourroute implements IObj {
 
 	@Override
 	public void copy(IRow row) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public Map<String, Object> changedFields() {
-		// TODO Auto-generated method stub
 		return this.changedFields;
 	}
 
 	@Override
 	public String parentPKName() {
-		// TODO Auto-generated method stub
 		return "tour_id";
 	}
 
 	@Override
 	public int parentPKValue() {
-		// TODO Auto-generated method stub
 		return this.getPid();
 	}
 
 	@Override
 	public String parentTableName() {
-		// TODO Auto-generated method stub
 		return "ix_poi_tourroute";
 	}
 
@@ -350,14 +336,11 @@ public class IxPoiTourroute implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-
 	}
 
 	@Override
@@ -375,6 +358,24 @@ public class IxPoiTourroute implements IObj {
 	@Override
 	public String primaryKey() {
 		return "tour_id";
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

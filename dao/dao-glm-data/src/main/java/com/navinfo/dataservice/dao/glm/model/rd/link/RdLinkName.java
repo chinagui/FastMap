@@ -17,11 +17,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 public class RdLinkName implements IRow {
 
-	private int mesh;
-
 	private String rowId;
-
-	private String name;
 
 	private int seqNum = 1;
 
@@ -40,6 +36,8 @@ public class RdLinkName implements IRow {
 	private int routeAtt;
 
 	private int code;
+	
+	protected String name;
 
 	public String getInputTime() {
 		return inputTime;
@@ -93,14 +91,6 @@ public class RdLinkName implements IRow {
 
 	public RdLinkName() {
 
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public int getSeqNum() {
@@ -198,8 +188,6 @@ public class RdLinkName implements IRow {
 
 		RdLinkName nameSource = (RdLinkName) row;
 
-		this.setName(nameSource.getName());
-
 		this.setNameClass(nameSource.getNameClass());
 
 		this.setNameType(nameSource.getNameType());
@@ -209,6 +197,8 @@ public class RdLinkName implements IRow {
 		this.setSeqNum(nameSource.getSeqNum());
 
 		this.setMesh(row.mesh());
+		
+		this.name = nameSource.getName();
 	}
 
 	@Override
@@ -245,6 +235,14 @@ public class RdLinkName implements IRow {
 	public String rowId() {
 
 		return rowId;
+	}
+	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	@Override
@@ -306,14 +304,10 @@ public class RdLinkName implements IRow {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		// TODO Auto-generated method stub
-		this.mesh = mesh;
 	}
-
 }

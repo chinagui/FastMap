@@ -72,6 +72,7 @@
                 <configuration>
                     <excludes>
 						<exclude>**/dubbo-app-*.xml</exclude>
+						<exclude>**/job-class.xml</exclude>
 					</excludes>
                 </configuration>
             </plugin>
@@ -467,7 +468,11 @@
 				<artifactId>ezmorph</artifactId>
 				<version>1.0.6</version>
 			</dependency>
-						
+			<dependency>
+                <groupId>net.bull.javamelody</groupId>
+                <artifactId>javamelody-core</artifactId>
+                <version>1.60.0</version>
+            </dependency>
 			<!-- utils end -->
 			<!-- spring start -->
 			<dependency>

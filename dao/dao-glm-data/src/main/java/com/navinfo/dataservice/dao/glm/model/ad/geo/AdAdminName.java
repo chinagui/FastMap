@@ -27,7 +27,6 @@ public class AdAdminName implements IObj {
 	
 	private int linkPid = 0;
 	private int srcFlag = 0;
-	private int meshId = 0;
     private String rowId;
     private Map<String, Object> changedFields = new HashMap<String, Object>();
     
@@ -239,13 +238,11 @@ public class AdAdminName implements IObj {
 
 	@Override
 	public int mesh() {
-		return this.meshId;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.meshId= mesh;
-		
 	}
 
 	@Override
@@ -288,14 +285,30 @@ public class AdAdminName implements IObj {
 
 	@Override
 	public int pid() {
-		// TODO Auto-generated method stub
 		return this.getPid();
 	}
 
 	@Override
 	public String primaryKey() {
-		// TODO Auto-generated method stub
 		return "name_id";
 	}
+
 
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childList()
+	 */
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -18,175 +18,23 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
+import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * 铁路线link操作类
+ * 
  * @author zhangxiaolong
- *
+ * 
  */
-public class RwLinkOperator implements IOperator {
-
-	private Connection conn;
+public class RwLinkOperator extends AbstractOperator {
 
 	private RwLink rwLink;
 
 	public RwLinkOperator(Connection conn, RwLink rwLink) {
-		this.conn = conn;
+		super(conn);
 
 		this.rwLink = rwLink;
-	}
-
-	@Override
-	public void insertRow() throws Exception {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.insertRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-		}
-	}
-
-	@Override
-	public void updateRow() throws Exception {
-		StringBuilder sb = new StringBuilder("update " + rwLink.tableName() + " set u_record=3,");
-
-		PreparedStatement pstmt = null;
-
-		try {
-
-			Set<Entry<String, Object>> set = rwLink.changedFields().entrySet();
-
-			Iterator<Entry<String, Object>> it = set.iterator();
-
-			boolean isChanged = false;
-
-			while (it.hasNext()) {
-				Entry<String, Object> en = it.next();
-
-				String column = en.getKey();
-
-				Object columnValue = en.getValue();
-
-				Field field = rwLink.getClass().getDeclaredField(column);
-
-				field.setAccessible(true);
-
-				column = StringUtils.toColumnName(column);
-
-				Object value = field.get(rwLink);
-
-				if (value instanceof String || value == null) {
-
-					if (!StringUtils.isStringSame(String.valueOf(value), String.valueOf(columnValue))) {
-
-						if (columnValue == null) {
-							sb.append(column + "=null,");
-						} else {
-							sb.append(column + "='" + String.valueOf(columnValue) + "',");
-						}
-
-						isChanged = true;
-
-					}
-
-				} else if (value instanceof Double) {
-
-					if (Double.parseDouble(String.valueOf(value)) != Double.parseDouble(String.valueOf(columnValue))) {
-						sb.append(column + "=" + Double.parseDouble(String.valueOf(columnValue)) + ",");
-
-						isChanged = true;
-					}
-
-				} else if (value instanceof Integer) {
-
-					if (Integer.parseInt(String.valueOf(value)) != Integer.parseInt(String.valueOf(columnValue))) {
-						sb.append(column + "=" + Integer.parseInt(String.valueOf(columnValue)) + ",");
-
-						isChanged = true;
-					}
-
-				} else if (value instanceof Geometry) {
-					// 先降级转WKT
-
-					String oldWkt = GeoTranslator.jts2Wkt((Geometry) value, 0.00001, 5);
-
-					String newWkt = Geojson.geojson2Wkt(columnValue.toString());
-
-					if (!StringUtils.isStringSame(oldWkt, newWkt)) {
-						sb.append("geometry=sdo_geometry('" + String.valueOf(newWkt) + "',8307),");
-
-						isChanged = true;
-					}
-				}
-			}
-			sb.append(" where link_pid=" + rwLink.getPid());
-
-			String sql = sb.toString();
-
-			sql = sql.replace(", where", " where");
-
-			if (isChanged) {
-				pstmt = conn.prepareStatement(sql);
-				pstmt.executeUpdate();
-			}
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-	}
-
-	@Override
-	public void deleteRow() throws Exception {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.deleteRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-		}
 	}
 
 	@Override
@@ -197,8 +45,7 @@ public class RwLinkOperator implements IOperator {
 
 		sb.append(rwLink.tableName());
 
-		sb.append(
-				"(LINK_PID, FEATURE_PID, S_NODE_PID, E_NODE_PID, KIND, FORM, LENGTH, GEOMETRY, MESH_ID, SCALE, DETAIL_FLAG, EDIT_FLAG, COLOR, U_RECORD, ROW_ID) values (");
+		sb.append("(LINK_PID, FEATURE_PID, S_NODE_PID, E_NODE_PID, KIND, FORM, LENGTH, GEOMETRY, MESH_ID, SCALE, DETAIL_FLAG, EDIT_FLAG, COLOR, U_RECORD, ROW_ID) values (");
 
 		sb.append(rwLink.getPid());
 
@@ -225,13 +72,10 @@ public class RwLinkOperator implements IOperator {
 		sb.append("," + rwLink.getDetailFlag());
 
 		sb.append("," + rwLink.getEditFlag());
-		
-		if(StringUtils.isNotEmpty(rwLink.getColor()))
-		{
-			sb.append(",'" + rwLink.getColor()+"'");
-		}
-		else
-		{
+
+		if (StringUtils.isNotEmpty(rwLink.getColor())) {
+			sb.append(",'" + rwLink.getColor() + "'");
+		} else {
 			sb.append(",null");
 		}
 
@@ -255,13 +99,95 @@ public class RwLinkOperator implements IOperator {
 	}
 
 	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt) throws Exception {
+	public void updateRow2Sql(Statement stmt) throws Exception {
+		StringBuilder sb = new StringBuilder("update " + rwLink.tableName()
+				+ " set u_record=3,");
 
+		Set<Entry<String, Object>> set = rwLink.changedFields().entrySet();
+
+		Iterator<Entry<String, Object>> it = set.iterator();
+
+		while (it.hasNext()) {
+			Entry<String, Object> en = it.next();
+
+			String column = en.getKey();
+
+			Object columnValue = en.getValue();
+
+			Field field = rwLink.getClass().getDeclaredField(column);
+
+			field.setAccessible(true);
+
+			column = StringUtils.toColumnName(column);
+
+			Object value = field.get(rwLink);
+
+			if (value instanceof String || value == null) {
+
+				if (!StringUtils.isStringSame(String.valueOf(value),
+						String.valueOf(columnValue))) {
+
+					if (columnValue == null) {
+						sb.append(column + "=null,");
+					} else {
+						sb.append(column + "='" + String.valueOf(columnValue)
+								+ "',");
+					}
+
+					this.setChanged(true);
+
+				}
+
+			} else if (value instanceof Double) {
+
+				if (Double.parseDouble(String.valueOf(value)) != Double
+						.parseDouble(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Double.parseDouble(String.valueOf(columnValue))
+							+ ",");
+
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof Integer) {
+
+				if (Integer.parseInt(String.valueOf(value)) != Integer
+						.parseInt(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Integer.parseInt(String.valueOf(columnValue))
+							+ ",");
+
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof Geometry) {
+				// 先降级转WKT
+
+				String oldWkt = GeoTranslator.jts2Wkt((Geometry) value,
+						0.00001, 5);
+
+				String newWkt = Geojson.geojson2Wkt(columnValue.toString());
+
+				if (!StringUtils.isStringSame(oldWkt, newWkt)) {
+					sb.append("geometry=sdo_geometry('"
+							+ String.valueOf(newWkt) + "',8307),");
+
+					this.setChanged(true);
+				}
+			}
+		}
+		sb.append(" where link_pid=" + rwLink.getPid());
+
+		String sql = sb.toString();
+
+		sql = sql.replace(", where", " where");
+		stmt.addBatch(sql);
 	}
 
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
-		String sql = "update rw_link set u_record=2 where link_pid = " + rwLink.getPid();
+		String sql = "update rw_link set u_record=2 where link_pid = "
+				+ rwLink.getPid();
 
 		stmt.addBatch(sql);
 

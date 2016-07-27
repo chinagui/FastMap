@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.engine.edit.InitApplication;
-import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
+import com.navinfo.dataservice.engine.edit.operation.Transaction;
 
 public class AdFaceTest extends InitApplication {
 	
@@ -20,7 +20,7 @@ public class AdFaceTest extends InitApplication {
 	
 	@Test
 	public  void createFaceTest() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"ADFACE\",\"projectId\":11," +
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"ADFACE\",\"dbId\":42," +
 				"\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[117.01995000243186,39.250035216523884],[117.0199567079544,39.24992720818254],[117.020246386528,39.25004560193254],[117.01995000243186,39.250035216523884]]}}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);;

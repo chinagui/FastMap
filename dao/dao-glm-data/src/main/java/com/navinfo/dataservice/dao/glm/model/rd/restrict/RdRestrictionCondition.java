@@ -17,8 +17,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 public class RdRestrictionCondition implements IRow {
 	
-	private int mesh;
-
 	private String rowId;
 
 	private int detailId;
@@ -185,8 +183,6 @@ public class RdRestrictionCondition implements IRow {
 
 		this.resOut = condition.resOut;
 		
-		this.mesh = condition.mesh();
-
 	}
 
 	@Override
@@ -283,13 +279,11 @@ public class RdRestrictionCondition implements IRow {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		// TODO Auto-generated method stub
-		this.mesh=mesh;
 	}
+
 }

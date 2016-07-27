@@ -4,7 +4,7 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import com.navinfo.dataservice.engine.edit.InitApplication;
-import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
+import com.navinfo.dataservice.engine.edit.operation.Transaction;
 
 public class RdBranchTest extends InitApplication{
 
@@ -132,5 +132,15 @@ public class RdBranchTest extends InitApplication{
 	
 	
 	
+	
+	
+	@Test
+	public void createRdBranchTest_0719() throws Exception {
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"RDBRANCH\",\"data\":{\"branchType\":3,\"inLinkPid\":722876,\"nodePid\":469534,\"outLinkPid\":577197}}";
+		
+		log.info(parameter);
+		Transaction t = new Transaction(parameter);		;
+		String msg = t.run();
+	}
 
 }

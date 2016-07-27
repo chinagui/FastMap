@@ -7,9 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -17,9 +14,10 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
-public class RdBranch implements IObj {
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
-	private int mesh;
+public class RdBranch implements IObj {
 
 	private int pid;
 
@@ -63,7 +61,9 @@ public class RdBranch implements IObj {
 
 	public Map<String, RdBranchVia> viaMap = new HashMap<String, RdBranchVia>();
 
-	private int outNodePid;
+	
+	//outNodePid不属于模型字段，使用protected修饰符。
+	protected int outNodePid;
 
 	public int igetOutNodePid() {
 		return outNodePid;
@@ -468,32 +468,36 @@ public class RdBranch implements IObj {
 
 	@Override
 	public List<IRow> relatedRows() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int pid() {
-		// TODO Auto-generated method stub
 		return this.getPid();
 	}
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		// TODO Auto-generated method stub
-		this.mesh = mesh;
 	}
 
 	@Override
 	public String primaryKey() {
-		// TODO Auto-generated method stub
 		return "branch_pid";
 	}
 
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		return null;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<>();
+		return childMap;
+	}
 }

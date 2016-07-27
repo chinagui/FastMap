@@ -36,7 +36,6 @@ public class IxPoiDetail implements IRow {
 	private String cardType;// 支 持 信用卡类型
 	private int hospitalClass = 0;// 医院等级
 	private String memo;
-	private int mesh;
 	private String rowId;
 	// 更新时间
 	private String uDate;
@@ -137,10 +136,6 @@ public class IxPoiDetail implements IRow {
 		this.hospitalClass = hospitalClass;
 	}
 
-	public int getMesh() {
-		return mesh;
-	}
-
 	public int getPoiPid() {
 		return poiPid;
 	}
@@ -173,14 +168,11 @@ public class IxPoiDetail implements IRow {
 
 	@Override
 	public ObjStatus status() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -190,31 +182,25 @@ public class IxPoiDetail implements IRow {
 
 	@Override
 	public void copy(IRow row) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public Map<String, Object> changedFields() {
-		// TODO Auto-generated method stub
 		return this.changedFields;
 	}
 
 	@Override
 	public String parentPKName() {
-		// TODO Auto-generated method stub
-		return "pid";
+		return "poi_pid";
 	}
 
 	@Override
 	public int parentPKValue() {
-		// TODO Auto-generated method stub
 		return this.getPoiPid();
 	}
 
 	@Override
 	public String parentTableName() {
-		// TODO Auto-generated method stub
 		return "ix_poi";
 	}
 
@@ -320,14 +306,10 @@ public class IxPoiDetail implements IRow {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-
 	}
-
 }

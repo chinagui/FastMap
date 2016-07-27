@@ -19,8 +19,8 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
-import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
-import com.navinfo.dataservice.engine.edit.edit.search.SearchProcess;
+import com.navinfo.dataservice.engine.edit.operation.Transaction;
+import com.navinfo.dataservice.engine.edit.search.SearchProcess;
 import com.navinfo.navicommons.database.QueryRunner;
 
 import net.sf.json.JSONObject;
@@ -72,7 +72,7 @@ public class POITest extends InitApplication{
 	@Test
 	public void testDeletePoi()
 	{
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"IXPOI\",\"dbId\":42,\"objId\":642692}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"IXPOI\",\"dbId\":42,\"objId\":1152117063}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

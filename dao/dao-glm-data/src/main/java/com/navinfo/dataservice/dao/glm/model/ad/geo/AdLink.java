@@ -7,10 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -18,8 +14,11 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 
 public class AdLink implements IObj {
 
@@ -43,8 +42,6 @@ public class AdLink implements IObj {
 
 	private String rowId;
 
-	private int mesh;
-
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	private List<IRow> meshes = new ArrayList<IRow>();
@@ -52,8 +49,6 @@ public class AdLink implements IObj {
 	public Map<String, AdNode> nodeMap = new HashMap<String, AdNode>();
 
 	public Map<String, AdLinkMesh> meshMap = new HashMap<String, AdLinkMesh>();
-
-	public Map<String, AdLinkMesh> adLinkMeshMap = new HashMap<String, AdLinkMesh>();
 
 	public AdLink() {
 	}
@@ -392,8 +387,16 @@ public class AdLink implements IObj {
 		return rowId;
 	}
 
-	public int getMesh() {
-		return mesh;
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
+		childMap.put(AdLinkMesh.class, meshes);
+		return childMap;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		return null;
 	}
 
 }

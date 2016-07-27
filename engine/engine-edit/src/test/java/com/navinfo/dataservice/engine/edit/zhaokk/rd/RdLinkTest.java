@@ -11,8 +11,8 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
-import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
-import com.navinfo.dataservice.engine.edit.edit.search.rd.utils.RdLinkSearchUtils;
+import com.navinfo.dataservice.engine.edit.operation.Transaction;
+import com.navinfo.dataservice.engine.edit.search.rd.utils.RdLinkSearchUtils;
 
 public class RdLinkTest extends InitApplication{
 	
@@ -97,6 +97,25 @@ public class RdLinkTest extends InitApplication{
 			System.out.println("kkv5");
 		}
 		
+	}
+	@Test
+	
+	public void breankRdLink(){
+		//05d420113061454b8b45083f2ff15dd8
+		
+		//AFABA38D96AC41E09E0A385F653C8FA0
+		//72ade565c57c4747986b6402382908d6
+		//parameter:{"command":"BREAK","dbId":42,"objId":100007804,"data":{"longitude":116.64105676404851,"latitude":39.827078818848676},"type":"RDLINK"}
+		//access_token:00000002IRBME52A8A7DE96FAC8D03B1AB9ECA00A2977965
+		//parameter:{"command":"CREATE","dbId":42,"objId":100007804,"data":{"longitude":116.64105541766425,"latitude":39.827078822935626},"type":"RDNODE"}
+		String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100007804,\"data\":{\"longitude\":116.64105676404851,\"latitude\":39.827078818848676},\"type\":\"RDLINK\"}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Test

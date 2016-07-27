@@ -187,30 +187,40 @@ public class CkResultTool {
 	}
 
 	public static void moveNiVal(OracleSchema srcSchema,OracleSchema targetSchema,Collection<Integer> grids)throws Exception{
-		Connection conn=null;
+		Connection tarConn=null;
+		Connection srcConn=null;
 		try{
-			conn = targetSchema.getDriverManagerDataSource().getConnection();
+			tarConn = targetSchema.getDriverManagerDataSource().getConnection();
+			srcConn = srcSchema.getDriverManagerDataSource().getConnection();
 			//create db link
 			DbLinkCreator cr = new DbLinkCreator();
-			String dbLinkName = targetSchema.getConnConfig().getUserName()+"_"+RandomUtil.nextNumberStr(4);
+			String dbLinkName = srcSchema.getConnConfig().getUserName()+"_"+RandomUtil.nextNumberStr(4);
 			cr.create(dbLinkName, false, targetSchema.getDriverManagerDataSource(), srcSchema.getConnConfig().getUserName(), srcSchema.getConnConfig().getUserPasswd()
 					, srcSchema.getConnConfig().getServerIp(), String.valueOf(srcSchema.getConnConfig().getServerPort()), srcSchema.getConnConfig().getServiceName());
 			
 			QueryRunner runner = new QueryRunner();
-			String sql = "INSERT INTO NI_VAL_EXCEPTION SELECT "+DataRowTool.getSelectColumnString(conn,"NI_VAL_EXCEPTION")+" FROM NI_VAL_EXCEPTION@"+dbLinkName+" T WHERE EXISTS (SELECT 1 FROM NI_VAL_EXCEPTION_GRID@"+dbLinkName+" G WHERE T.MD5_CODE=G.MD5_CODE AND G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(grids,",")+"))";
-			runner.execute(conn, sql);
-			sql = "INSERT INTO CK_RESULT_OBJECT SELECT "+DataRowTool.getSelectColumnString(conn,"CK_RESULT_OBJECT")+" FROM CK_RESULT_OBJECT@"+dbLinkName+" T WHERE EXISTS (SELECT 1 FROM NI_VAL_EXCEPTION_GRID@"+dbLinkName+" G WHERE T.MD5_CODE=G.MD5_CODE AND G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(grids,",")+"))";
-			runner.execute(conn, sql);
-			sql = "INSERT INTO NI_VAL_EXCEPTION_GRID SELECT "+DataRowTool.getSelectColumnString(conn,"NI_VAL_EXCEPTION_GRID")+" FROM NI_VAL_EXCEPTION_GRID@"+dbLinkName+" T WHERE T.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(grids,",")+")";
-			runner.execute(conn, sql);
+			String tempTable = "TEMP_MOVE_NI_"+RandomUtil.nextNumberStr(4);
+			log.debug("temp table:"+tempTable);
+			String sql = "CREATE TABLE "+tempTable+"(MD5_CODE VARCHAR2(32))";
+			runner.update(srcConn, sql);
+			sql = "INSERT INTO "+tempTable+"@"+dbLinkName+" SELECT MD5_CODE FROM NI_VAL_EXCEPTION@"+dbLinkName+" T WHERE EXISTS(SELECT 1 FROM NI_VAL_EXCEPTION_GRID@"+dbLinkName+" G WHERE T.MD5_CODE=G.MD5_CODE AND G.GRID_ID IN("+org.apache.commons.lang.StringUtils.join(grids,",")+")) AND NOT EXISTS(SELECT 1 FROM NI_VAL_EXCEPTION P WHERE T.MD5_CODE=P.MD5_CODE)";
+			runner.update(tarConn, sql);
+			sql = "INSERT INTO NI_VAL_EXCEPTION SELECT "+DataRowTool.getSelectColumnString(tarConn,"NI_VAL_EXCEPTION")+" FROM NI_VAL_EXCEPTION@"+dbLinkName+" WHERE MD5_CODE IN (SELECT MD5_CODE FROM "+tempTable+"@"+dbLinkName+")";
+			runner.execute(tarConn, sql);
+			sql = "INSERT INTO CK_RESULT_OBJECT SELECT "+DataRowTool.getSelectColumnString(tarConn,"CK_RESULT_OBJECT")+" FROM CK_RESULT_OBJECT@"+dbLinkName+" WHERE MD5_CODE IN (SELECT MD5_CODE FROM "+tempTable+"@"+dbLinkName+")";
+			runner.execute(tarConn, sql);
+			sql = "INSERT INTO NI_VAL_EXCEPTION_GRID SELECT "+DataRowTool.getSelectColumnString(tarConn,"NI_VAL_EXCEPTION_GRID")+" FROM NI_VAL_EXCEPTION_GRID@"+dbLinkName+" WHERE MD5_CODE IN (SELECT MD5_CODE FROM "+tempTable+"@"+dbLinkName+")";
+			runner.execute(tarConn, sql);
 			//删除dblink
 			cr.drop(dbLinkName, false, targetSchema.getDriverManagerDataSource());
 		}catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
+			DbUtils.rollbackAndCloseQuietly(srcConn);
+			DbUtils.rollbackAndCloseQuietly(tarConn);
 			log.error(e.getMessage(), e);
 			throw new Exception("搬检查结果错误，原因："+e.getMessage(),e);
 		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.commitAndCloseQuietly(srcConn);
+			DbUtils.commitAndCloseQuietly(tarConn);
 		}
 	}
 }

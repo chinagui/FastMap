@@ -110,7 +110,6 @@ public class AdAdminDetail implements IObj {
 	private String audioFile;
 	private String reserved;
 	private String memo ;
-	private int meshId = 0;
     private String rowId;
     private Map<String, Object> changedFields = new HashMap<String, Object>();
 	@Override
@@ -244,13 +243,11 @@ public class AdAdminDetail implements IObj {
 
 	@Override
 	public int mesh() {
-		return this.meshId;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.meshId= mesh;
-		
 	}
 
 	@Override
@@ -266,20 +263,27 @@ public class AdAdminDetail implements IObj {
 
 	@Override
 	public List<IRow> relatedRows() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int pid() {
-		// TODO Auto-generated method stub
 		return this.getPid();
 	}
 
 	@Override
 	public String primaryKey() {
-		// TODO Auto-generated method stub
 		return "admin_id";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		return null;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		return null;
 	}
 
 }

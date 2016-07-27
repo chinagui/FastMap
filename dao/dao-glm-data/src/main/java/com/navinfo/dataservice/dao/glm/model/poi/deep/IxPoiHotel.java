@@ -120,8 +120,6 @@ public class IxPoiHotel implements IObj {
 		this.longDescripEng = longDescripEng;
 	}
 
-
-
 	private String  openHourEng;//英文版的详细营业时间的文字描述
 	private String telephone ;//电话  
 	private String address ;//地址
@@ -129,13 +127,7 @@ public class IxPoiHotel implements IObj {
 	private String photoName;//照片名称
 	
 	private int  travelguideFlag  = 0;//是 否 属 于travel  guide所需 POI
-	private int mesh;
 	private String rowId;
-	
-
-	public int getMesh() {
-		return mesh;
-	}
 
 	public int getPoiPid() {
 		return poiPid;
@@ -168,7 +160,6 @@ public class IxPoiHotel implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -198,8 +189,6 @@ public class IxPoiHotel implements IObj {
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -209,32 +198,26 @@ public class IxPoiHotel implements IObj {
 
 	@Override
 	public void copy(IRow row) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public Map<String, Object> changedFields() {
-		// TODO Auto-generated method stub
 		return this.changedFields;
 	}
 
 	@Override
 	public String parentPKName() {
-		// TODO Auto-generated method stub
-		return "hotel_id";
+		return "POI_PID";
 	}
 
 	@Override
 	public int parentPKValue() {
-		// TODO Auto-generated method stub
-		return this.getPid();
+		return this.getPoiPid();
 	}
 
 	@Override
 	public String parentTableName() {
-		// TODO Auto-generated method stub
-		return "ix_poi_hotel";
+		return "ix_poi";
 	}
 
 	public Map<String, Object> getChangedFields() {
@@ -249,12 +232,6 @@ public class IxPoiHotel implements IObj {
 	public List<List<IRow>> children() {
 		return null;
 	}
-
-	
-
-	
-
-
 	
 	public String getLongDescription() {
 		return longDescription;
@@ -413,31 +390,40 @@ public class IxPoiHotel implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-		
 	}
 
 	@Override
 	public List<IRow> relatedRows() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int pid() {
-		// TODO Auto-generated method stub
 		return this.getPid();
 	}
 
 	@Override
 	public String primaryKey() {
 		return "hotel_id";
+	}
+	
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 

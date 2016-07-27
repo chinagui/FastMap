@@ -12,7 +12,7 @@ import org.junit.Test;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
-import com.navinfo.dataservice.engine.edit.edit.operation.Transaction;
+import com.navinfo.dataservice.engine.edit.operation.Transaction;
 
 public class IxPoiTest extends InitApplication{
 	
@@ -33,7 +33,7 @@ public class IxPoiTest extends InitApplication{
 	}
 	@Test
 	public void MovePoi(){
-		String parameter = "{\"command\":\"MOVE\",\"type\":\"IXPOI\",\"dbId\":8,\"data\":{\"longitude\":116.39552235603331,\"latitude\":39.90676527744907,\"linkPid\":625962}}";
+		String parameter = "{\"command\":\"MOVE\",\"type\":\"IXPOI\",\"dbId\":42,\"data\":{\"longitude\":116.39552235603331,\"latitude\":39.90676527744907,\"linkPid\":625962}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -56,7 +56,7 @@ public class IxPoiTest extends InitApplication{
 	}
 	@Test
 	public void UpdatePoi0624(){
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":1626,\"data\":{\"addresses\":[{\"nameGroupId\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"eewerew\",\"pid\":1626,\"objStatus\":\"INSERT\"}],\"pid\":1626}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":1152117067,\"data\":{\"addresses\":[{\"nameGroupid\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"eewerew\",\"pid\":1626,\"objStatus\":\"INSERT\"}],\"pid\":1152117067}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

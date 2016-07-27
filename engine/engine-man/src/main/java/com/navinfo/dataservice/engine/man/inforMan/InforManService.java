@@ -216,7 +216,7 @@ public class InforManService {
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 
-			String selectSql = "select i.infor_id," + " i.infor_name," + " i.infor_level," + " i.descp,"
+			String selectSql = "select i.infor_id," + " i.descp,"
 					+ " nvl(u.user_real_name, '') user_name,"
 					+ " to_char(i.collect_plan_start_date, 'yyyymmdd') collect_plan_start_date,"
 					+ " to_char(i.collect_plan_end_date, 'yyyymmdd') collect_plan_end_date,"
@@ -242,9 +242,6 @@ public class InforManService {
 					if ("createUserName".equals(key)) {
 						selectSql += " and u.USER_REAL_NAME like '%" + conditionJson.getString(key) + "%'";
 					}
-					if ("inforName".equals(key)) {
-						selectSql += " and i.infor_name like '%" + conditionJson.getString(key) + "%'";
-					}
 				}
 			}
 			if (null != orderJson && !orderJson.isEmpty()) {
@@ -253,10 +250,6 @@ public class InforManService {
 					String key = (String) keys.next();
 					if ("inforStatus".equals(key)) {
 						selectSql += (" order by i.infor_status " + orderJson.getString("inforStatus"));
-						break;
-					}
-					if ("inforLevel".equals(key)) {
-						selectSql += (" order by i.infor_level " + orderJson.getString("inforLevel"));
 						break;
 					}
 					if ("inforId".equals(key)) {

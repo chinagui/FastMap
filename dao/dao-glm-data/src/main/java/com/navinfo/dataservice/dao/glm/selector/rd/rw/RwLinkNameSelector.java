@@ -35,9 +35,9 @@ public class RwLinkNameSelector implements ISelector {
 
 		String sql = "select a.*,b.name from rw_link_name a,rd_name b where link_pid =:1 and a.name_groupid=b.name_groupid(+) and b.lang_code(+)='CHI' and a.u_record!=2";
 
-		if (isLock) {
+		/*if (isLock) {
 			sql += " for update nowait";
-		}
+		}*/
 
 		PreparedStatement pstmt = null;
 

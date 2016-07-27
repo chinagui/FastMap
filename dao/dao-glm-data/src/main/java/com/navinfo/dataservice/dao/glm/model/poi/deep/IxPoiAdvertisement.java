@@ -29,15 +29,10 @@ public class IxPoiAdvertisement implements IObj {
 	private int  priority = 1;//广告点优先级
 	private String  startTime ;//广告生效时间
 	private String  endTime;//广告到期时间
-	private int mesh;
 	private String rowId;
 	// 更新时间
 	private String uDate;
 
-	public int getMesh() {
-		return mesh;
-	}
-	
 	public String getuDate() {
 		return uDate;
 	}
@@ -133,8 +128,6 @@ public class IxPoiAdvertisement implements IObj {
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -144,32 +137,26 @@ public class IxPoiAdvertisement implements IObj {
 
 	@Override
 	public void copy(IRow row) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public Map<String, Object> changedFields() {
-		// TODO Auto-generated method stub
 		return this.changedFields;
 	}
 
 	@Override
 	public String parentPKName() {
-		// TODO Auto-generated method stub
-		return "advertise_id";
+		return "POI_PID";
 	}
 
 	@Override
 	public int parentPKValue() {
-		// TODO Auto-generated method stub
-		return this.getPid();
+		return this.getPoiPid();
 	}
 
 	@Override
 	public String parentTableName() {
-		// TODO Auto-generated method stub
-		return "ix_poi_advertisement";
+		return "ix_poi";
 	}
 
 	public Map<String, Object> getChangedFields() {
@@ -266,31 +253,40 @@ public class IxPoiAdvertisement implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
-		return this.mesh;
+		return 0;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		this.mesh = mesh;
-		
 	}
 
 	@Override
 	public List<IRow> relatedRows() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int pid() {
-		// TODO Auto-generated method stub
 		return this.getPid();
 	}
 
 	@Override
 	public String primaryKey() {
 		return "advertise_id";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 

@@ -21,54 +21,77 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminDetail;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminGroup;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminName;
+import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 import com.navinfo.dataservice.dao.glm.operator.rd.gsc.RdGscLinkOperator;
 import com.vividsolutions.jts.geom.Geometry;
 
-public class AdAdminOperator implements IOperator {
+public class AdAdminOperator extends AbstractOperator {
 	private static Logger logger = Logger.getLogger(RdGscLinkOperator.class);
-
-	private Connection conn;
 	private AdAdmin admin;
 
 	public AdAdminOperator(Connection conn, AdAdmin admin) {
-		this.conn = conn;
+		super(conn);
 		this.admin = admin;
 	}
-
 	@Override
-	public void insertRow() throws Exception {
-		Statement stmt = null;
+	public void insertRow2Sql(Statement stmt) throws Exception {
+		admin.setRowId(UuidUtils.genUuid());
 
-		try {
-			stmt = conn.createStatement();
+		StringBuilder sb = new StringBuilder("insert into ");
 
-			this.insertRow2Sql(stmt);
+		sb.append(admin.tableName());
 
-			stmt.executeBatch();
+		sb.append("(region_id, admin_id,extend_id,admin_type,"
+				+ "capital,population,geometry,link_pid,name_groupId,side,"
+				+ "road_flag,pmesh_id,jis_code,mesh_id,edit_flag,memo,u_record,row_id) values (");
 
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
+		sb.append(admin.pid());
+		System.out.println(admin.pid());
+		sb.append("," + admin.getAdminId());
+		sb.append("," + admin.getExtendId());
+		sb.append("," + admin.getAdminType());
+		sb.append("," + admin.getCapital());
+		if (admin.getPopulation() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + admin.getPopulation() + "'");
 		}
+		String wkt = GeoTranslator.jts2Wkt(admin.getGeometry(), 0.00001, 5);
+		sb.append(",sdo_geometry('" + wkt + "',8307)");
+		sb.append("," + admin.getLinkPid());
+		sb.append("," + admin.getNameGroupid());
+		sb.append("," + admin.getSide());
+		sb.append("," + admin.getRoadFlag());
+		sb.append("," + admin.getPmeshId());
+		sb.append("," + admin.getJisCode());
+		sb.append("," + admin.getMeshId());
+		sb.append("," + admin.getEditFlag());
+		if (admin.getMemo() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + admin.getMemo() + "'");
+		}
+		sb.append(",1,'" + admin.rowId() + "')");
+		stmt.addBatch(sb.toString());
+		for (IRow row : admin.getGroups()) {
+			AdAdminGroupOperator op = new AdAdminGroupOperator(conn, (AdAdminGroup) row);
+			op.insertRow2Sql(stmt);
+		}
+		for (IRow row : admin.getNames()) {
+			AdAdminNameOperator op = new AdAdminNameOperator(conn, (AdAdminName) row);
+			op.insertRow2Sql(stmt);
+		}
+		for (IRow row : admin.getDetails()) {
+			AdAdminDetailOperator op = new AdAdminDetailOperator(conn, (AdAdminDetail) row);
+			op.insertRow2Sql(stmt);
+		}
+
 	}
 
 	@Override
-	public void updateRow() throws Exception {
+	public void updateRow2Sql(Statement stmt) throws Exception {
 		StringBuilder sb = new StringBuilder("update " + admin.tableName() + " set u_record=3,");
 
-		PreparedStatement pstmt = null;
-
-		try {
 
 			Set<Entry<String, Object>> set = admin.changedFields().entrySet();
 
@@ -136,140 +159,8 @@ public class AdAdminOperator implements IOperator {
 
 			sql = sql.replace(", where", " where");
 
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.executeUpdate();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-
-	}
-
-	@Override
-	public void deleteRow() throws Exception {
-		Statement stmt = null;
-
-		try {
-			stmt = conn.createStatement();
-
-			this.deleteRow2Sql(stmt);
-
-			stmt.executeBatch();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-
-	}
-
-	@Override
-	public void insertRow2Sql(Statement stmt) throws Exception {
-		admin.setRowId(UuidUtils.genUuid());
-
-		StringBuilder sb = new StringBuilder("insert into ");
-
-		sb.append(admin.tableName());
-
-		sb.append("(region_id, admin_id,extend_id,admin_type,"
-				+ "capital,population,geometry,link_pid,name_groupId,side,"
-				+ "road_flag,pmesh_id,jis_code,mesh_id,edit_flag,memo,u_record,row_id) values (");
-
-		sb.append(admin.pid());
-		System.out.println(admin.pid());
-		sb.append("," + admin.getAdminId());
-		sb.append("," + admin.getExtendId());
-		sb.append("," + admin.getAdminType());
-		sb.append("," + admin.getCapital());
-		if (admin.getPopulation() == null) {
-			sb.append(",null");
-		} else {
-			sb.append(",'" + admin.getPopulation() + "'");
-		}
-		String wkt = GeoTranslator.jts2Wkt(admin.getGeometry(), 0.00001, 5);
-		sb.append(",sdo_geometry('" + wkt + "',8307)");
-		sb.append("," + admin.getLinkPid());
-		sb.append("," + admin.getNameGroupid());
-		sb.append("," + admin.getSide());
-		sb.append("," + admin.getRoadFlag());
-		sb.append("," + admin.getpMeshId());
-		sb.append("," + admin.getJisCode());
-		sb.append("," + admin.getMeshId());
-		sb.append("," + admin.getEditFlag());
-		if (admin.getMemo() == null) {
-			sb.append(",null");
-		} else {
-			sb.append(",'" + admin.getMemo() + "'");
-		}
-		sb.append(",1,'" + admin.rowId() + "')");
-		stmt.addBatch(sb.toString());
-		for (IRow row : admin.getGroups()) {
-			AdAdminGroupOperator op = new AdAdminGroupOperator(conn, (AdAdminGroup) row);
-			op.insertRow2Sql(stmt);
-		}
-		for (IRow row : admin.getNames()) {
-			AdAdminNameOperator op = new AdAdminNameOperator(conn, (AdAdminName) row);
-			op.insertRow2Sql(stmt);
-		}
-		for (IRow row : admin.getDetails()) {
-			AdAdminDetailOperator op = new AdAdminDetailOperator(conn, (AdAdminDetail) row);
-			op.insertRow2Sql(stmt);
-		}
-
-	}
-
-	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt) throws Exception {
-		StringBuilder sb = new StringBuilder("update " + admin.tableName() + " set u_record=3,");
-
-		for (int i = 0; i < fieldNames.size(); i++) {
-
-			if (i > 0) {
-				sb.append(",");
-			}
-
-			String column = StringUtils.toColumnName(fieldNames.get(i));
-
-			sb.append(column);
-
-			sb.append("=");
-
-			Field field = admin.getClass().getDeclaredField(fieldNames.get(i));
-
-			Object value = field.get(admin);
-
-			sb.append(value);
-
-		}
-
-		sb.append(" where group_id =");
-
-		sb.append(admin.pid());
-
-		stmt.addBatch(sb.toString());
-
+		    stmt.addBatch(sql);
+		
 	}
 
 	@Override

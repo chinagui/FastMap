@@ -105,6 +105,14 @@ public class DbConnectConfig {
 		return this.serverType+this.serverIp+String.valueOf(this.serverPort)
 		+(DbServerType.TYPE_ORACLE.equals(serverType)?serviceName:dbName)+this.userName+userPasswd;
 	};
+	
+	/**
+	 * 
+	 * @param connectString:"ORALCE,ip,port,sid,username/dbname,user passwd"
+	 * @param bizType
+	 * @return
+	 * @throws Exception
+	 */
 	public static DbConnectConfig createConnectConfig(String connectString,String bizType)throws Exception{
 		if(StringUtils.isEmpty(connectString))throw new Exception("连接参数为空");
 		String[] conArr = connectString.split(",");

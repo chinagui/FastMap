@@ -17,71 +17,55 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
+import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 
-public class RdLinkZoneOperator implements IOperator {
+public class RdLinkZoneOperator extends AbstractOperator {
 
 	private static Logger logger = Logger.getLogger(RdLinkZoneOperator.class);
 
-	private Connection conn;
+	
 
 	private RdLinkZone zone;
 
 	public RdLinkZoneOperator(Connection conn, RdLinkZone zone) {
-		this.conn = conn;
+		super(conn);
 
 		this.zone = zone;
 	}
 
 	@Override
-	public void insertRow() throws Exception {
+	public void insertRow2Sql(Statement stmt) throws Exception {
 
 		zone.setRowId(UuidUtils.genUuid());
 
 		StringBuilder sb = new StringBuilder(
-				"insert into rd_link_zone(link_pid,region_id,type,side,u_record,row_id) values (:1,:2,:3,:4,1,:5)");
+				"insert into rd_link_zone(link_pid,region_id,type,side,u_record,row_id) values (");
 
-		PreparedStatement pstmt = null;
+		sb.append(zone.getLinkPid());
+		
+		sb.append(",");
 
-		try {
-			pstmt = conn.prepareStatement(sb.toString());
+		sb.append(zone.getRegionId());
 
-			pstmt.setInt(1, zone.getLinkPid());
-			
-			pstmt.setInt(2, zone.getRegionId());
+		sb.append(",");
 
-			pstmt.setInt(3, zone.getType());
+		sb.append(zone.getType());
 
-			pstmt.setInt(4, zone.getSide());
+		sb.append(",");
 
-			pstmt.setString(5, zone.getRowId());
+		sb.append(zone.getSide());
 
-			pstmt.execute();
-		} catch (Exception e) {
-			
-			throw e;
+		sb.append(",1,'" + zone.getRowId() + "')");
 
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
+		stmt.addBatch(sb.toString());
 	}
 
 	@Override
-	public void updateRow() throws Exception {
-
+	public void updateRow2Sql( Statement stmt) throws Exception{
 		StringBuilder sb = new StringBuilder("update " + zone.tableName()
 				+ " set u_record=3,");
 
-		PreparedStatement pstmt = null;
-
-		try {
-
+	
 			Set<Entry<String, Object>> set = zone.changedFields().entrySet();
 
 			Iterator<Entry<String, Object>> it = set.iterator();
@@ -113,6 +97,7 @@ public class RdLinkZoneOperator implements IOperator {
 							sb.append(column + "='" + String.valueOf(columnValue)
 									+ "',");
 						}
+						this.setChanged(true);
 						
 					}
 
@@ -124,6 +109,7 @@ public class RdLinkZoneOperator implements IOperator {
 								+ "="
 								+ Double.parseDouble(String
 										.valueOf(columnValue)) + ",");
+						this.setChanged(true);
 					}
 
 				} else if (value instanceof Integer) {
@@ -133,6 +119,7 @@ public class RdLinkZoneOperator implements IOperator {
 						sb.append(column + "="
 								+ Integer.parseInt(String.valueOf(columnValue))
 								+ ",");
+						this.setChanged(true);
 					}
 
 				} else if (value instanceof JSONObject) {
@@ -140,6 +127,7 @@ public class RdLinkZoneOperator implements IOperator {
 							String.valueOf(columnValue))) {
 						sb.append("geometry=sdo_geometry('"
 								+ String.valueOf(columnValue) + "',8307),");
+						this.setChanged(true);
 					}
 				}
 			}
@@ -148,88 +136,7 @@ public class RdLinkZoneOperator implements IOperator {
 			String sql = sb.toString();
 
 			sql = sql.replace(", where", " where");
-
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.executeUpdate();
-
-		} catch (Exception e) {
-			
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
-	}
-
-	@Override
-	public void deleteRow() throws Exception {
-
-		String sql = "update " + zone.tableName()
-				+ " set u_record=2 where row_id=hextoraw(?)";
-
-		PreparedStatement pstmt = null;
-
-		try {
-			pstmt = this.conn.prepareStatement(sql);
-
-			pstmt.setString(1, zone.getRowId());
-
-			pstmt.executeUpdate();
-
-		} catch (Exception e) {
-			
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
-	}
-
-	@Override
-	public void insertRow2Sql(Statement stmt) throws Exception {
-
-		zone.setRowId(UuidUtils.genUuid());
-
-		StringBuilder sb = new StringBuilder(
-				"insert into rd_link_zone(link_pid,region_id,type,side,u_record,row_id) values (");
-
-		sb.append(zone.getLinkPid());
-		
-		sb.append(",");
-
-		sb.append(zone.getRegionId());
-
-		sb.append(",");
-
-		sb.append(zone.getType());
-
-		sb.append(",");
-
-		sb.append(zone.getSide());
-
-		sb.append(",1,'" + zone.getRowId() + "')");
-
-		stmt.addBatch(sb.toString());
-	}
-
-	@Override
-	public void updateRow2Sql(List<String> columns, Statement stmt) {
-
+			stmt.addBatch(sql);
 	}
 
 	@Override

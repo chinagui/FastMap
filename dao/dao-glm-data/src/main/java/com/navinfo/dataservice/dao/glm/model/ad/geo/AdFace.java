@@ -26,7 +26,7 @@ public class AdFace implements IObj {
 
 	private int pid;
 
-	private int regionId;
+	protected int regionId;
 
 	private Geometry geometry;
 
@@ -207,6 +207,7 @@ public class AdFace implements IObj {
 	public List<List<IRow>> children() {
 
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
+		children.add(faceTopos);
 
 		return children;
 	}
@@ -317,5 +318,17 @@ public class AdFace implements IObj {
 
 	public void setFaceTopos(List<IRow> faceTopos) {
 		this.faceTopos = faceTopos;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
+		childMap.put(AdFaceTopo.class, faceTopos);
+		return childMap;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		return null;
 	}
 }

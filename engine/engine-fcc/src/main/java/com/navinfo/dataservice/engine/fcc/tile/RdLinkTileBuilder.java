@@ -520,9 +520,13 @@ public class RdLinkTileBuilder {
 							if (degree >= 1) {
 								if (px != prePx || py != prePy) {
 
-									jap.add(px);
+									JSONArray array = new JSONArray();
 
-									jap.add(py);
+									array.add(px);
+
+									array.add(py);
+
+									jap.add(array);
 								}
 								prePx = px;
 								prePy = py;

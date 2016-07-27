@@ -143,7 +143,7 @@ public class SubtaskOperation {
 			//POI
 			if(0==subtask.getType()){
 				for(int j=0;j<gridStatInfoColArr.size();j++){
-					if(1 > (int)gridStatInfoColArr.get(j).getPercentPoi()){
+					if(100 > (int)gridStatInfoColArr.get(j).getPercentPoi()){
 						return false;
 					}
 				}
@@ -152,7 +152,7 @@ public class SubtaskOperation {
 			//道路
 			else if(1==subtask.getType()){
 				for(int j=0;j<gridStatInfoColArr.size();j++){
-					if(1 > (int)gridStatInfoColArr.get(j).getPercentRoad()){
+					if(100 > (int)gridStatInfoColArr.get(j).getPercentRoad()){
 						return false;
 					}
 				}
@@ -161,9 +161,9 @@ public class SubtaskOperation {
 			//一体化
 			else if(2==subtask.getType()){
 				for(int j=0;j<gridStatInfoColArr.size();j++){
-					if((1 > (int)gridStatInfoColArr.get(j).getPercentPoi()) 
+					if((100 > (int)gridStatInfoColArr.get(j).getPercentPoi()) 
 							|| 
-							(1 > (int)gridStatInfoColArr.get(j).getPercentRoad())){
+							(100 > (int)gridStatInfoColArr.get(j).getPercentRoad())){
 						return false;
 					}
 				}
@@ -187,7 +187,7 @@ public class SubtaskOperation {
 			//POI
 			if(0==subtask.getType()){
 				for(int j=0;j<gridStatInfoDailyEditArr.size();j++){
-					if(1 > (int)gridStatInfoDailyEditArr.get(j).getPercentPoi()){
+					if(100 > (int)gridStatInfoDailyEditArr.get(j).getPercentPoi()){
 						return false;
 					}
 				}
@@ -196,7 +196,7 @@ public class SubtaskOperation {
 			//道路
 			else if(1==subtask.getType()){
 				for(int j=0;j<gridStatInfoDailyEditArr.size();j++){
-					if(1 > (int)gridStatInfoDailyEditArr.get(j).getPercentRoad()){
+					if(100 > (int)gridStatInfoDailyEditArr.get(j).getPercentRoad()){
 						return false;
 					}
 				}
@@ -205,9 +205,9 @@ public class SubtaskOperation {
 			//一体化
 			else if(2==subtask.getType()){
 				for(int j=0;j<gridStatInfoDailyEditArr.size();j++){
-					if((1 > (int)gridStatInfoDailyEditArr.get(j).getPercentPoi()) 
+					if((100 > (int)gridStatInfoDailyEditArr.get(j).getPercentPoi()) 
 							|| 
-							(1 > (int)gridStatInfoDailyEditArr.get(j).getPercentRoad())){
+							(100 > (int)gridStatInfoDailyEditArr.get(j).getPercentRoad())){
 						return false;
 					}
 				}
@@ -231,7 +231,7 @@ public class SubtaskOperation {
 			//POI
 			if(0==subtask.getType()){
 				for(int j=0;j<gridStatInfoMonthlyEditArr.size();j++){
-					if(1 > (int)gridStatInfoMonthlyEditArr.get(j).getPercentPoi()){
+					if(100 > (int)gridStatInfoMonthlyEditArr.get(j).getPercentPoi()){
 						return false;
 					}
 				}
@@ -240,7 +240,7 @@ public class SubtaskOperation {
 			//道路
 			else if(1==subtask.getType()){
 				for(int j=0;j<gridStatInfoMonthlyEditArr.size();j++){
-					if(1 > (int)gridStatInfoMonthlyEditArr.get(j).getPercentRoad()){
+					if(100 > (int)gridStatInfoMonthlyEditArr.get(j).getPercentRoad()){
 						return false;
 					}
 				}
@@ -249,9 +249,9 @@ public class SubtaskOperation {
 			//一体化
 			else if(2==subtask.getType()){
 				for(int j=0;j<gridStatInfoMonthlyEditArr.size();j++){
-					if((1 > (int)gridStatInfoMonthlyEditArr.get(j).getPercentPoi()) 
+					if((100 > (int)gridStatInfoMonthlyEditArr.get(j).getPercentPoi()) 
 							|| 
-							(1 > (int)gridStatInfoMonthlyEditArr.get(j).getPercentRoad())){
+							(100 > (int)gridStatInfoMonthlyEditArr.get(j).getPercentRoad())){
 						return false;
 					}
 				}
@@ -328,6 +328,7 @@ public class SubtaskOperation {
 			
 			SqlClause inClause = SqlClause.genGeoClauseWithGeoString(conn,bean.getGeometry());
 			if (inClause!=null)
+//				value.add(inClause.getSql());
 				value.add(inClause.getValues().get(0));
 			
 			value.add(bean.getStage());
@@ -343,7 +344,8 @@ public class SubtaskOperation {
 			String createSql = "insert into SUBTASK " ;
 			String column = "(SUBTASK_ID, NAME, GEOMETRY, STAGE, TYPE, CREATE_USER_ID, EXE_USER_ID, CREATE_DATE, STATUS, PLAN_START_DATE, PLAN_END_DATE, DESCP";
 			String values = "values(?,?,sdo_geometry(?,8307),?,?,?,?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),to_date(?,'yyyy-MM-dd HH24:MI:ss'),?";
-			
+//			String values = "values(?,?,?,?,?,?,?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),to_date(?,'yyyy-MM-dd HH24:MI:ss'),?";
+
 			if(0!=bean.getBlockId()){
 				column += ", BLOCK_ID)";
 				value.add(bean.getBlockId());
@@ -361,7 +363,7 @@ public class SubtaskOperation {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}
 	}
 
@@ -393,7 +395,7 @@ public class SubtaskOperation {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}
 	}
 

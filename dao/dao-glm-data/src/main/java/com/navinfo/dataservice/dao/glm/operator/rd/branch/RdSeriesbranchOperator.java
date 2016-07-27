@@ -15,194 +15,19 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
+import com.navinfo.dataservice.dao.glm.operator.AbstractOperator;
 
-public class RdSeriesbranchOperator implements IOperator {
+public class RdSeriesbranchOperator extends AbstractOperator {
 
 	private static Logger logger = Logger
 			.getLogger(RdSeriesbranchOperator.class);
 
-	private Connection conn;
-
 	private RdSeriesbranch seriesbranch;
 
 	public RdSeriesbranchOperator(Connection conn, RdSeriesbranch seriesbranch) {
-		this.conn = conn;
+		super(conn);
 
 		this.seriesbranch = seriesbranch;
-	}
-
-	@Override
-	public void insertRow() throws Exception {
-
-		seriesbranch.setRowId(UuidUtils.genUuid());
-
-		String sql = "insert into "
-				+ seriesbranch.tableName()
-				+ " (branch_pid, type, voice_dir, pattern_code, arrow_code, arrow_flag, u_record, row_id) values "
-				+ "(:1,:2,:3,:4,:5,:6,:7,:8)";
-
-		PreparedStatement pstmt = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setInt(1, seriesbranch.getBranchPid());
-
-			pstmt.setInt(2, seriesbranch.getType());
-
-			pstmt.setInt(3, seriesbranch.getVoiceDir());
-
-			pstmt.setString(4, seriesbranch.getPatternCode());
-
-			pstmt.setString(5, seriesbranch.getArrowCode());
-
-			pstmt.setInt(6, seriesbranch.getArrowFlag());
-
-			pstmt.setInt(7, 1);
-
-			pstmt.setString(8, seriesbranch.rowId());
-
-			pstmt.executeUpdate();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-	}
-
-	@Override
-	public void updateRow() throws Exception {
-
-		StringBuilder sb = new StringBuilder("update "
-				+ seriesbranch.tableName() + " set u_record=3,");
-
-		PreparedStatement pstmt = null;
-
-		try {
-
-			Set<Entry<String, Object>> set = seriesbranch.changedFields()
-					.entrySet();
-
-			Iterator<Entry<String, Object>> it = set.iterator();
-
-			while (it.hasNext()) {
-				Entry<String, Object> en = it.next();
-
-				String column = en.getKey();
-
-				Object columnValue = en.getValue();
-
-				Field field = seriesbranch.getClass().getDeclaredField(column);
-
-				field.setAccessible(true);
-
-				Object value = field.get(seriesbranch);
-
-				column = StringUtils.toColumnName(column);
-
-				if (value instanceof String || value == null) {
-
-					if (!StringUtils.isStringSame(String.valueOf(value),
-							String.valueOf(columnValue))) {
-
-						if (columnValue == null) {
-							sb.append(column + "=null,");
-						} else {
-							sb.append(column + "='"
-									+ String.valueOf(columnValue) + "',");
-						}
-
-					}
-
-				} else if (value instanceof Double) {
-
-					if (Double.parseDouble(String.valueOf(value)) != Double
-							.parseDouble(String.valueOf(columnValue))) {
-						sb.append(column
-								+ "="
-								+ Double.parseDouble(String
-										.valueOf(columnValue)) + ",");
-					}
-
-				} else if (value instanceof Integer) {
-
-					if (Integer.parseInt(String.valueOf(value)) != Integer
-							.parseInt(String.valueOf(columnValue))) {
-						sb.append(column + "="
-								+ Integer.parseInt(String.valueOf(columnValue))
-								+ ",");
-					}
-
-				}
-			}
-			sb.append(" where row_id=hextoraw('" + seriesbranch.getRowId()
-					+ "')");
-
-			String sql = sb.toString();
-
-			sql = sql.replace(", where", " where");
-
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.executeUpdate();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-	}
-
-	@Override
-	public void deleteRow() throws Exception {
-
-		String sql = "update " + seriesbranch.tableName()
-				+ " set u_record=? where row_id=hextoraw(?)";
-
-		PreparedStatement pstmt = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setInt(1, 2);
-
-			pstmt.setString(2, seriesbranch.rowId());
-
-			pstmt.executeUpdate();
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
 	}
 
 	@Override
@@ -244,9 +69,74 @@ public class RdSeriesbranchOperator implements IOperator {
 	}
 
 	@Override
-	public void updateRow2Sql(List<String> fieldNames, Statement stmt)
-			throws Exception {
+	public void updateRow2Sql(Statement stmt) throws Exception {
 
+		StringBuilder sb = new StringBuilder("update "
+				+ seriesbranch.tableName() + " set u_record=3,");
+
+		Set<Entry<String, Object>> set = seriesbranch.changedFields()
+				.entrySet();
+
+		Iterator<Entry<String, Object>> it = set.iterator();
+
+		while (it.hasNext()) {
+			Entry<String, Object> en = it.next();
+
+			String column = en.getKey();
+
+			Object columnValue = en.getValue();
+
+			Field field = seriesbranch.getClass().getDeclaredField(column);
+
+			field.setAccessible(true);
+
+			Object value = field.get(seriesbranch);
+
+			column = StringUtils.toColumnName(column);
+
+			if (value instanceof String || value == null) {
+
+				if (!StringUtils.isStringSame(String.valueOf(value),
+						String.valueOf(columnValue))) {
+
+					if (columnValue == null) {
+						sb.append(column + "=null,");
+					} else {
+						sb.append(column + "='" + String.valueOf(columnValue)
+								+ "',");
+					}
+					this.setChanged(true);
+
+				}
+
+			} else if (value instanceof Double) {
+
+				if (Double.parseDouble(String.valueOf(value)) != Double
+						.parseDouble(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Double.parseDouble(String.valueOf(columnValue))
+							+ ",");
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof Integer) {
+
+				if (Integer.parseInt(String.valueOf(value)) != Integer
+						.parseInt(String.valueOf(columnValue))) {
+					sb.append(column + "="
+							+ Integer.parseInt(String.valueOf(columnValue))
+							+ ",");
+					this.setChanged(true);
+				}
+
+			}
+		}
+		sb.append(" where row_id=hextoraw('" + seriesbranch.getRowId() + "')");
+
+		String sql = sb.toString();
+
+		sql = sql.replace(", where", " where");
+		stmt.addBatch(sql);
 	}
 
 	@Override

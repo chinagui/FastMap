@@ -402,6 +402,17 @@ public class Transaction {
 			default:
 				break;
 			}	
+		case RDSLOPE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create.Command(json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.delete.Command(json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.update.Command(json, requester);
+			default:
+				break;
+			}	
 		}
 
 		throw new Exception("不支持的操作类型");
@@ -709,6 +720,18 @@ public class Transaction {
 			default:
 				break;
 			}	
+			
+		case RDSLOPE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create.Process(command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create.Process(command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create.Process(command);
+			default:
+				break;
+			}
 		}
 
 		throw new Exception("不支持的操作类型");

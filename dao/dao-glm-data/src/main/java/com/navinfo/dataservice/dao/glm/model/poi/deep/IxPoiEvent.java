@@ -363,7 +363,13 @@ public class IxPoiEvent implements IObj {
 	}
 
 	@Override
-	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		return null;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, Map<? extends Object, ? extends IRow>> childMap() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 

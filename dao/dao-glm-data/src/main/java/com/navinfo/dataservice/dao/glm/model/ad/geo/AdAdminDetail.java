@@ -263,28 +263,26 @@ public class AdAdminDetail implements IObj {
 
 	@Override
 	public List<IRow> relatedRows() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int pid() {
-		// TODO Auto-generated method stub
 		return this.getPid();
 	}
 
 	@Override
 	public String primaryKey() {
-		// TODO Auto-generated method stub
 		return "admin_id";
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
-	 */
 	@Override
-	public Map<Class<? extends IRow>, List<IRow>> childMap() {
-		// TODO Auto-generated method stub
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		return null;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, Map<? extends Object, ? extends IRow>> childMap() {
 		return null;
 	}
 

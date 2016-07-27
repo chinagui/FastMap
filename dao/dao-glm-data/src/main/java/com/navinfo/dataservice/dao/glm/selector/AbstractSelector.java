@@ -14,6 +14,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 
@@ -57,14 +58,17 @@ public class AbstractSelector implements ISelector {
 
 			if (resultSet.next()) {
 				ReflectionAttrUtils.executeResultSet(row, resultSet);
+				
+				if(row instanceof IObj)
+				{
+					Map<Class<? extends IRow>, List<IRow>> childMap = ((IObj)row).childList();
 
-				Map<Class<? extends IRow>, List<IRow>> childMap = row.childMap();
-
-				for (Map.Entry<Class<? extends IRow>, List<IRow>> entry : childMap.entrySet()) {
-					Class<? extends IRow> cls = entry.getKey();
-					List<IRow> childRows = loadRowsByClassParentId(cls, id, isLock);
-					if (CollectionUtils.isNotEmpty(childRows)) {
-						entry.getValue().addAll(childRows);
+					for (Map.Entry<Class<? extends IRow>, List<IRow>> entry : childMap.entrySet()) {
+						Class<? extends IRow> cls = entry.getKey();
+						List<IRow> childRows = loadRowsByClassParentId(cls, id, isLock);
+						if (CollectionUtils.isNotEmpty(childRows)) {
+							entry.getValue().addAll(childRows);
+						}
 					}
 				}
 			} else {

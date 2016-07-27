@@ -1611,7 +1611,7 @@ public class IxPoi implements IObj {
 	}
 
 	@Override
-	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
 		Map<Class<? extends IRow>, List<IRow>> childMap = new HashMap<>();
 		// 设置子表IX_POI_NAME
 		childMap.put(IxPoiName.class, names);
@@ -1692,6 +1692,15 @@ public class IxPoi implements IObj {
 		childMap.put(IxPoiCarrental.class, carrentals);
 
 		return childMap;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>, Map<? extends Object, ? extends IRow>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

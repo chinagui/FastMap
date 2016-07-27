@@ -215,9 +215,4 @@ public class ZoneLinkKind implements IRow {
 		return rowId;
 	}
 
-	@Override
-	public Map<Class<? extends IRow>, List<IRow>> childMap() {
-		return null;
-	}
-
 }

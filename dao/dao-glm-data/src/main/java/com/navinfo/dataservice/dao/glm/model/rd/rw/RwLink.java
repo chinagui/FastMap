@@ -65,7 +65,7 @@ public class RwLink implements IObj {
 
 	// 线路渲染颜色
 	private String color;
-	
+
 	// 行记录ID
 	private String rowId;
 
@@ -428,16 +428,6 @@ public class RwLink implements IObj {
 	public List<IRow> relatedRows() {
 		return null;
 	}
-	
-	@Override
-	public Map<Class<? extends IRow>,List<IRow>> childMap()
-	{
-		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
-		
-		childMap.put(RwLinkName.class, names);
-		
-		return childMap;
-	}
 
 	@Override
 	public int pid() {
@@ -447,6 +437,20 @@ public class RwLink implements IObj {
 	@Override
 	public String primaryKey() {
 		return "link_pid";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>, List<IRow>> childMap = new HashMap<>();
+
+		childMap.put(RwLinkName.class, names);
+
+		return childMap;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, Map<? extends Object, ? extends IRow>> childMap() {
+		return null;
 	}
 
 }

@@ -380,12 +380,17 @@ public class AdAdmin implements IObj {
 	}
 
 	@Override
-	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
 		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
 		childMap.put(AdAdminGroup.class, groups);
 		childMap.put(AdAdminName.class, names);
 		childMap.put(AdAdminDetail.class, details);
 		return childMap;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, Map<? extends Object, ? extends IRow>> childMap() {
+		return null;
 	}
 
 }

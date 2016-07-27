@@ -386,12 +386,13 @@ public class RdElectroniceye implements IObj {
 		this.pairs = pairs;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
-	 */
 	@Override
-	public Map<Class<? extends IRow>, List<IRow>> childMap() {
-		// TODO Auto-generated method stub
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		return null;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, Map<? extends Object, ? extends IRow>> childMap() {
 		return null;
 	}
 

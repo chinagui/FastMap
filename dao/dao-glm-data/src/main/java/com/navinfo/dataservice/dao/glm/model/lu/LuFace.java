@@ -377,11 +377,20 @@ public class LuFace implements IObj {
 	}
 
 	@Override
-	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
 		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
 		childMap.put(LuFaceTopo.class, faceTopos);
 		childMap.put(LuFaceName.class, faceNames);
 		return childMap;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>, Map<? extends Object, ? extends IRow>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

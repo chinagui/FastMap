@@ -330,11 +330,20 @@ public class LuLink implements IObj {
 	}
 
 	@Override
-	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
 		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
 		childMap.put(LuLinkKind.class, linkKinds);
 		childMap.put(LuLinkMesh.class, meshes);
 		return childMap;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>, Map<? extends Object, ? extends IRow>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -247,9 +247,4 @@ public class IxPoiContact implements IRow {
 	public void setMesh(int mesh) {
 	}
 
-	@Override
-	public Map<Class<? extends IRow>, List<IRow>> childMap() {
-		return null;
-	}
-
 }

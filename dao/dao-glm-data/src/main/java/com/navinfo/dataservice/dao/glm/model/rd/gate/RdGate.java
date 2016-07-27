@@ -198,7 +198,7 @@ public class RdGate implements IObj {
 
 		while (keys.hasNext()) {
 			String key = (String) keys.next();
-
+			
 			if (json.get(key) instanceof JSONArray) {
 				continue;
 			}  else {

@@ -119,7 +119,6 @@ public enum ObjType {
 	
 	RDSLOPE,
 	RDSLOPEVIA,
-	
 	RDGATE,
 	RDGATECONDITION,
 

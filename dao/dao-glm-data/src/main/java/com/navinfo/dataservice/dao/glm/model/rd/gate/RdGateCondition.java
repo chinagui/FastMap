@@ -115,7 +115,7 @@ public class RdGateCondition implements IObj {
 	public boolean fillChangeFields(JSONObject json) throws Exception {
 		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
-
+		
 		while (keys.hasNext()) {
 			String key = (String) keys.next();
 

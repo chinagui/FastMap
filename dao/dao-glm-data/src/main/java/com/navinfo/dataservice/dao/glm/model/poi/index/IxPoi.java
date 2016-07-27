@@ -1613,12 +1613,83 @@ public class IxPoi implements IObj {
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childMap() {
 		Map<Class<? extends IRow>, List<IRow>> childMap = new HashMap<>();
-
+		// 设置子表IX_POI_NAME
+		childMap.put(IxPoiName.class, names);
+		
+		//设置POI_EDIT_STATUS
+		//TODO
+		
+		// 设置子表IX_POI_ADDRESS
 		childMap.put(IxPoiAddress.class, addresses);
-		
+
+		// 设置子表IX_POI_CONTACT
+		childMap.put(IxPoiContact.class, contacts);
+
+		// 设置子表IX_POI_FLAG
+		childMap.put(IxPoiFlag.class, flags);
+
+		// 设置子表IX_POI_ENTRYIMAGE
+		childMap.put(IxPoiEntryimage.class, entryImages);
+
+		// 设置子表IX_POI_ICON
+		childMap.put(IxPoiIcon.class, icons);
+
+		// 设置子表IX_POI_PHOTO*
+		childMap.put(IxPoiPhoto.class, photos);
+
+		// 设置子表IX_POI_AUDIO*
 		childMap.put(IxPoiAudio.class, audioes);
+
+		// 设置子表IX_POI_VIDEO*
+		childMap.put(IxPoiVideo.class, videoes);
+
+		// 设置子表IX_POI_PARENT
+		childMap.put(IxPoiParent.class, parents);
 		
+		//设置poi的子
+		//TODO
+		
+		// 设置子表IX_POI_PARKING
+		childMap.put(IxPoiParking.class, parkings);
+
+		// 设置子表IX_POI_DETAIL
+		childMap.put(IxPoiDetail.class, details);
+
+		// 设置子表IX_POI_BUSINESSTIME
+		childMap.put(IxPoiBusinessTime.class, businesstimes);
+
+		// 设置子表IX_POI_CHARGINGSTATION
+		childMap.put(IxPoiChargingStation.class, chargingstations);
+
+		// 设置子表IX_POI_CHARGINGPLOT
 		childMap.put(IxPoiChargingPlot.class, chargingplots);
+
+		// 设置子表IX_POI_CHARGINGPLOT_PH
+		childMap.put(IxPoiChargingPlotPh.class, chargingplotPhs);
+
+		// 设置子表IX_POI_BUILDING
+		childMap.put(IxPoiBuilding.class, buildings);
+
+		// 设置子表IX_POI_ADVERTISEMENT
+		childMap.put(IxPoiAdvertisement.class, advertisements);
+
+		// 设置子表IX_POI_GASSTATION
+		childMap.put(IxPoiGasstation.class, gasstations);
+
+		// 设置子表IX_POI_INTRODUCTION
+		childMap.put(IxPoiIntroduction.class, introductions);
+
+		// 设置子表IX_POI_ATTRACTION
+		childMap.put(IxPoiAttraction.class, attractions);
+
+		// 设置子表IX_POI_HOTEL
+		childMap.put(IxPoiHotel.class, hotels);
+
+		// 设置子表IX_POI_RESTAURANT
+		childMap.put(IxPoiRestaurant.class, restaurants);
+
+		// 设置子表IX_POI_CARRENTAL
+		childMap.put(IxPoiCarrental.class, carrentals);
 
 		return childMap;
 	}

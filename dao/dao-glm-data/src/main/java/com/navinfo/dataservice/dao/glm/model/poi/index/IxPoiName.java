@@ -405,13 +405,15 @@ public class IxPoiName implements IObj {
 		return "name_id";
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
-	 */
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childMap() {
-		// TODO Auto-generated method stub
-		return null;
+		Map<Class<? extends IRow>, List<IRow>> childMap = new HashMap<>();
+		
+		childMap.put(IxPoiNameTone.class,nameTones);
+		
+		childMap.put(IxPoiNameFlag.class,nameFlags);
+		
+		return childMap;
 	}
 
 }

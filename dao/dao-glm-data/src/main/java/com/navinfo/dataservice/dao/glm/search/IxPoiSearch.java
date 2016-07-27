@@ -61,34 +61,7 @@ public class IxPoiSearch implements ISearch {
 		
 		StringBuilder sb=new StringBuilder();
 		
-		sb.append("WITH TMP1 AS ( ");
-		sb.append("SELECT PID, KIND_CODE, X_GUIDE, Y_GUIDE, GEOMETRY, ROW_ID ");
-		sb.append("FROM IX_POI WHERE ");
-		sb.append("SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' ");
-		sb.append("AND U_RECORD != 2), ");
-		
-		sb.append("TMP2 AS (SELECT DISTINCT PARENT_POI_PID FROM IX_POI_PARENT P, TMP1 A  ");
-		sb.append("WHERE P.PARENT_POI_PID = A.PID AND P.U_RECORD != 2),  ");
-		
-		sb.append("TMP3 AS (SELECT DISTINCT CHILD_POI_PID FROM IX_POI_CHILDREN C, TMP1 A  ");
-		sb.append("WHERE C.CHILD_POI_PID = A.PID AND C.U_RECORD != 2), ");			
-		
-		sb.append("TMP4 AS (SELECT PN.NAME, PN.POI_PID FROM IX_POI_NAME PN, TMP1 A   ");
-		sb.append("WHERE PN.POI_PID = A.PID AND PN.LANG_CODE = 'CHI' AND PN.NAME_CLASS = 1 AND PN.NAME_TYPE = 2 AND PN.U_RECORD != 2) ");	
-		
-		sb.append("SELECT A.*, B.STATUS, ");
-		
-		sb.append("(SELECT /*+ leading(P,A) use hash(P,A)*/ ");		
-		sb.append("COUNT(1) FROM TMP2 P WHERE P.PARENT_POI_PID = A.PID) PARENTCOUNT, ");
-		
-		sb.append("(SELECT /*+ leading(C,A) use hash(C,A)*/ ");
-		sb.append("COUNT(1) FROM TMP3 C WHERE C.CHILD_POI_PID = A.PID) CHILDCOUNT, ");
-		
-		sb.append("(SELECT /*+ leading(PN,A) use hash(PN,A)*/ NAME FROM TMP4 PN ");		
-		sb.append("WHERE PN.POI_PID = A.PID ) NAME ");
-		
-		sb.append("FROM TMP1 A, POI_EDIT_STATUS B WHERE A.ROW_ID = B.ROW_ID ");
-		
+		sb.append("WITH TMP1 AS  (SELECT PID, KIND_CODE, X_GUIDE, Y_GUIDE, GEOMETRY, ROW_ID     FROM IX_POI    WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1 , 8307), 'MASK=ANYINTERACT') =          'TRUE'      AND U_RECORD != 2), TMP2 AS  (SELECT PN.NAME, PN.POI_PID     FROM IX_POI_NAME PN, TMP1 A    WHERE PN.POI_PID = A.PID      AND PN.LANG_CODE = 'CHI'      AND PN.NAME_CLASS = 1      AND PN.NAME_TYPE = 2      AND PN.U_RECORD != 2) SELECT A.*,        B.STATUS,        (SELECT COUNT(1)           FROM IX_POI_PARENT P          WHERE P.PARENT_POI_PID = A.PID            AND P.U_RECORD != 2) PARENTCOUNT,        (SELECT COUNT(1)           FROM IX_POI_CHILDREN C          WHERE C.CHILD_POI_PID = A.PID            AND C.U_RECORD != 2) CHILDCOUNT,        T.NAME   FROM TMP1 A, POI_EDIT_STATUS B, TMP2 T  WHERE A.ROW_ID = B.ROW_ID    AND T.POI_PID = A.PID");
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -100,11 +73,7 @@ public class IxPoiSearch implements ISearch {
 			
 			pstmt = conn.prepareStatement(sb.toString());
 
-			System.out.println(sb.toString());
-
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-
-			System.out.println(wkt);
 
 			pstmt.setString(1, wkt);
 

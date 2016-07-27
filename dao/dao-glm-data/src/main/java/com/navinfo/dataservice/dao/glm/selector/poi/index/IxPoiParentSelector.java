@@ -10,28 +10,27 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParentForAndroid;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 
 /**
  * POI父子关系父表 查询
  * @author luyao
  *
  */
-public class IxPoiParentSelector implements ISelector{
+public class IxPoiParentSelector extends AbstractSelector{
 
 	private static Logger logger = Logger.getLogger(IxPoiParentSelector.class);
 
 	private Connection conn;
 
 	public IxPoiParentSelector(Connection conn) {
-		super();
+		super(conn);
 		this.conn = conn;
+		this.setCls(IxPoiParent.class);
 	}
-	
 	
 	@Override
 	public IRow loadById(int id, boolean isLock) throws Exception {
@@ -108,11 +107,6 @@ public class IxPoiParentSelector implements ISelector{
 			}
 
 		}
-	}
-
-	@Override
-	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
-		return null;
 	}
 
 	/**

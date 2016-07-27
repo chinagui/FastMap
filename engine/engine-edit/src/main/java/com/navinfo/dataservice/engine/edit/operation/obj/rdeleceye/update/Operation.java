@@ -31,8 +31,8 @@ public class Operation implements IOperation {
 		boolean isChanged = eleceye.fillChangeFields(content);
 
 		if (isChanged) {
-			result.insertObject(eleceye, ObjStatus.UPDATE, eleceye.parentPKValue());
-
+			result.insertObject(eleceye, ObjStatus.UPDATE, eleceye.pid());
+			result.setPrimaryPid(eleceye.pid());
 		}
 	}
 

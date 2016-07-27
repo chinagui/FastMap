@@ -22,7 +22,6 @@ import com.navinfo.dataservice.dao.glm.iface.ISelector;
  * @ClassName: BasicSelector
  * @author Zhang Xiaolong
  * @date 2016年7月26日 下午2:14:18
- * @Description: TODO
  */
 public class AbstractSelector implements ISelector {
 
@@ -57,19 +56,20 @@ public class AbstractSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
-				ReflectionAttrUtils.executeResultSet(row, resultSet);
-				
-				if(row instanceof IObj)
-				{
-					Map<Class<? extends IRow>, List<IRow>> childMap = ((IObj)row).childList();
 
-					for (Map.Entry<Class<? extends IRow>, List<IRow>> entry : childMap.entrySet()) {
-						Class<? extends IRow> cls = entry.getKey();
-						List<IRow> childRows = loadRowsByClassParentId(cls, id, isLock);
-						if (CollectionUtils.isNotEmpty(childRows)) {
-							entry.getValue().addAll(childRows);
-						}
-					}
+				// 设置主表信息
+				ReflectionAttrUtils.executeResultSet(row, resultSet);
+
+				// 设置子表信息
+				if (row instanceof IObj) {
+					IObj obj = (IObj) row;
+					// 子表list map
+					Map<Class<? extends IRow>, List<IRow>> childList = obj.childList();
+
+					// 子表map
+					Map<Class<? extends IRow>, Map<String, ?>> childMap = obj.childMap();
+					
+					setChildValue(obj,childList,childMap,isLock);
 				}
 			} else {
 				throw new Exception("查询的PID为：" + id + "的" + row.tableName().toUpperCase() + "不存在");
@@ -211,4 +211,24 @@ public class AbstractSelector implements ISelector {
 		return rows;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void setChildValue(IObj obj, Map<Class<? extends IRow>, List<IRow>> childList,
+			Map<Class<? extends IRow>, Map<String, ?>> childMap, boolean isLock) throws Exception {
+		for (Map.Entry<Class<? extends IRow>, List<IRow>> entry : childList.entrySet()) {
+			Class<? extends IRow> cls = entry.getKey();
+			List<IRow> values = entry.getValue();
+			List<IRow> childRows = loadRowsByClassParentId(cls, obj.pid(), isLock);
+			if (CollectionUtils.isNotEmpty(childRows)) {
+				values.addAll(childRows);
+			}
+
+			Map map = childMap.get(cls);
+
+			if (map != null) {
+				for (IRow row : values) {
+					map.put(row.rowId(), row);
+				}
+			}
+		}
+	}
 }

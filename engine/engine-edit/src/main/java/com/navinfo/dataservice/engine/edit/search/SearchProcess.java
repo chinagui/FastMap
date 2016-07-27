@@ -4,12 +4,6 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-import net.sf.json.processors.JsonValueProcessor;
-import net.sf.json.util.JSONUtils;
-
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
@@ -18,18 +12,25 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
+import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminTreeSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
-import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkKindSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.RdLinkSearchUtils;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+import net.sf.json.processors.JsonValueProcessor;
+import net.sf.json.util.JSONUtils;
 
 /**
  * 查询进程
@@ -246,11 +247,11 @@ public class SearchProcess {
 
 					int detailId = condition.getInt("detailId");
 					int branchType = condition.getInt("branchType");
-					String rowId =condition.getString("rowId");
+					String rowId = condition.getString("rowId");
 
 					RdBranchSelector selector = new RdBranchSelector(conn);
 
-					IRow row = selector.loadByDetailId(detailId,branchType,rowId, false);
+					IRow row = selector.loadByDetailId(detailId, branchType, rowId, false);
 
 					array.add(row.Serialize(ObjLevel.FULL));
 				}
@@ -291,12 +292,24 @@ public class SearchProcess {
 			case ZONELINK:
 				if (condition.containsKey("nodePid")) {
 					int nodePid = condition.getInt("nodePid");
-					
+
 					ZoneLinkSelector selector = new ZoneLinkSelector(this.conn);
-					
+
 					List<ZoneLink> zoneLinks = selector.loadByNodePid(nodePid, true);
-					
+
 					for (ZoneLink link : zoneLinks) {
+						array.add(link.Serialize(ObjLevel.BRIEF));
+					}
+				}
+			case LULINK:
+				if (condition.containsKey("nodePid")) {
+					int nodePid = condition.getInt("nodePid");
+
+					LuLinkSelector selector = new LuLinkSelector(this.conn);
+
+					List<LuLink> luLinks = selector.loadByNodePid(nodePid, true);
+
+					for (LuLink link : luLinks) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
 				}

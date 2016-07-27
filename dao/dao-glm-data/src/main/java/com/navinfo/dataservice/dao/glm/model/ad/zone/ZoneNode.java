@@ -346,18 +346,16 @@ public class ZoneNode implements IObj {
 
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
-		childMap.put(AdNodeMesh.class, meshes);
-		return childMap;
+		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<>();
+		childList.put(AdNodeMesh.class, meshes);
+		return childList;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
-	 */
 	@Override
 	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
-		// TODO Auto-generated method stub
-		return null;
+		Map<Class<? extends IRow>,Map<String,?>>childMap = new HashMap<>();
+		childMap.put(AdNodeMesh.class, meshMap);
+		return childMap;
 	}
 
 }

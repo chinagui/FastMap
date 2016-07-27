@@ -30,7 +30,7 @@ public class Operation implements IOperation {
 		// 添加区间测速电子眼配对信息
 		RdEleceyePair pair = new RdEleceyePair();
 		pair.setPid(PidService.getInstance().applyEleceyePairPid());
-		result.insertObject(pair, ObjStatus.INSERT, pair.getPid());
+		result.insertObject(pair, ObjStatus.INSERT, pair.pid());
 		
 		// 添加区间测速电子眼的起始电子眼
 		createRdEleceyePart(result, entryEleceye, pair.pid());

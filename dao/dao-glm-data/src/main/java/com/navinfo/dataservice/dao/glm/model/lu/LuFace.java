@@ -7,10 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -18,41 +14,43 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFaceTopo;
 import com.vividsolutions.jts.geom.Geometry;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+
 public class LuFace implements IObj {
-	
+
 	private int pid;
-	
+
 	private String rowId;
-	
+
 	private int featurePid;
-	
+
 	private Geometry geometry;
-	
+
 	private int kind;
-	
+
 	private double area;
-	
+
 	private double perimeter;
-	
+
 	private int meshId;
-	
+
 	private int editFlag = 1;
-	
+
 	private int detailFlag;
-	
+
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	private List<IRow> faceTopos = new ArrayList<IRow>();
-	
-	public Map<String, LuFaceTopo> luFaceTopoMap = new HashMap<String, LuFaceTopo>();
-	
-	private List<IRow> faceNames = new ArrayList<IRow>();
-	
-	public Map<String, LuFaceName> luFaceNameMap = new HashMap<String, LuFaceName>();
 
+	public Map<String, LuFaceTopo> luFaceTopoMap = new HashMap<String, LuFaceTopo>();
+
+	private List<IRow> faceNames = new ArrayList<IRow>();
+
+	public Map<String, LuFaceName> luFaceNameMap = new HashMap<String, LuFaceName>();
 
 	public LuFace() {
 	}
@@ -88,8 +86,8 @@ public class LuFace implements IObj {
 
 	@Override
 	public void copy(IRow row) {
-		LuFace sourceFace = (LuFace)row;
-		
+		LuFace sourceFace = (LuFace) row;
+
 		this.detailFlag = sourceFace.getDetailFlag();
 		this.editFlag = sourceFace.getEditFlag();
 		this.featurePid = sourceFace.getFeaturePid();
@@ -100,13 +98,13 @@ public class LuFace implements IObj {
 		this.pid = sourceFace.getPid();
 		this.rowId = sourceFace.getRowId();
 		this.faceNames = new ArrayList<IRow>();
-		for(IRow name : sourceFace.getFaceNames()){
+		for (IRow name : sourceFace.getFaceNames()) {
 			LuFaceName fn = new LuFaceName();
 			fn.copy(name);
 			this.faceNames.add(fn);
 		}
 		this.faceTopos = new ArrayList<IRow>();
-		for(IRow topo : sourceFace.getFaceTopos()){
+		for (IRow topo : sourceFace.getFaceTopos()) {
 			LuFaceTopo ft = new LuFaceTopo();
 			ft.copy(topo);
 			this.faceTopos.add(ft);
@@ -138,7 +136,7 @@ public class LuFace implements IObj {
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
 		children.add(this.faceTopos);
 		children.add(this.faceNames);
-		
+
 		return children;
 	}
 
@@ -222,6 +220,7 @@ public class LuFace implements IObj {
 		return json;
 	}
 
+	@SuppressWarnings("unused")
 	@Override
 	public boolean Unserialize(JSONObject json) throws Exception {
 
@@ -251,21 +250,6 @@ public class LuFace implements IObj {
 		}
 
 		return true;
-	}
-
-	@Override
-	public List<IRow> relatedRows() {
-		return null;
-	}
-
-	@Override
-	public int pid() {
-		return this.pid;
-	}
-
-	@Override
-	public String primaryKey() {
-		return "face_pid";
 	}
 
 	public int getPid() {
@@ -378,19 +362,33 @@ public class LuFace implements IObj {
 
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
+		Map<Class<? extends IRow>, List<IRow>> childMap = new HashMap<>();
 		childMap.put(LuFaceTopo.class, faceTopos);
 		childMap.put(LuFaceName.class, faceNames);
 		return childMap;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
-	 */
 	@Override
-	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
-		// TODO Auto-generated method stub
+	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
+		Map<Class<? extends IRow>, Map<String, ?>> childMap = new HashMap<>();
+		childMap.put(LuFaceTopo.class, luFaceTopoMap);
+		childMap.put(LuFaceName.class, luFaceNameMap);
+		return childMap;
+	}
+
+	@Override
+	public List<IRow> relatedRows() {
 		return null;
+	}
+
+	@Override
+	public int pid() {
+		return this.pid;
+	}
+
+	@Override
+	public String primaryKey() {
+		return "face_pid";
 	}
 
 }

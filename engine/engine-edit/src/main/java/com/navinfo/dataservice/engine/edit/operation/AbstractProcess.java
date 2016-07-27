@@ -185,7 +185,11 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	 * @throws Exception 
 	 */
 	private void checkResult() throws Exception {
-		if(CollectionUtils.isEmpty(result.getAddObjects()) && CollectionUtils.isEmpty(result.getUpdateObjects()) &&CollectionUtils.isEmpty(result.getDelObjects()))
+		if(this.getCommand().getObjType().equals(ObjType.IXPOI))
+		{
+			return;
+		}
+		else if(CollectionUtils.isEmpty(result.getAddObjects()) && CollectionUtils.isEmpty(result.getUpdateObjects()) &&CollectionUtils.isEmpty(result.getDelObjects()))
 		{
 			throw new DataNotChangeException("属性值未发生变化");
 		}

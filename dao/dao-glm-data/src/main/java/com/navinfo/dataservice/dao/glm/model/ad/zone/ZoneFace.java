@@ -18,6 +18,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.vividsolutions.jts.geom.Geometry;
 /**
  * 
@@ -323,5 +324,12 @@ public class ZoneFace implements IObj {
 
 	public void setFaceTopos(List<IRow> faceTopos) {
 		this.faceTopos = faceTopos;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
+		childMap.put(ZoneFaceTopo.class, faceTopos);
+		return childMap;
 	}
 }

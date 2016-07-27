@@ -428,6 +428,16 @@ public class RwLink implements IObj {
 	public List<IRow> relatedRows() {
 		return null;
 	}
+	
+	@Override
+	public Map<Class<? extends IRow>,List<IRow>> childMap()
+	{
+		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
+		
+		childMap.put(RwLinkName.class, names);
+		
+		return childMap;
+	}
 
 	@Override
 	public int pid() {

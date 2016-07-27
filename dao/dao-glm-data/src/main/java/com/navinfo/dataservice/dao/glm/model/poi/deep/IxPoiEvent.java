@@ -355,19 +355,22 @@ public class IxPoiEvent implements IObj {
 
 	@Override
 	public List<IRow> relatedRows() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int pid() {
-		// TODO Auto-generated method stub
 		return this.getPid();
 	}
 
 	@Override
 	public String primaryKey() {
 		return "event_id";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+		return null;
 	}
 
 }

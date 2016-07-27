@@ -231,17 +231,17 @@ public class IxPoiName implements IObj {
 
 	@Override
 	public String parentPKName() {
-		return "name_id";
+		return "POI_PID";
 	}
 
 	@Override
 	public int parentPKValue() {
-		return this.getPid();
+		return this.getPoiPid();
 	}
 
 	@Override
 	public String parentTableName() {
-		return "ix_poi_name";
+		return "ix_poi";
 	}
 
 	@Override
@@ -403,6 +403,15 @@ public class IxPoiName implements IObj {
 	@Override
 	public String primaryKey() {
 		return "name_id";
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

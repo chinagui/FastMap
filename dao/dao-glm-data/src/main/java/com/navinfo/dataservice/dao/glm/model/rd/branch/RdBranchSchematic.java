@@ -256,4 +256,13 @@ public class RdBranchSchematic implements IObj {
 		return "schematic_id";
 	}
 
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

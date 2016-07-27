@@ -379,4 +379,13 @@ public class AdAdmin implements IObj {
 		return "region_id";
 	}
 
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
+		childMap.put(AdAdminGroup.class, groups);
+		childMap.put(AdAdminName.class, names);
+		childMap.put(AdAdminDetail.class, details);
+		return childMap;
+	}
+
 }

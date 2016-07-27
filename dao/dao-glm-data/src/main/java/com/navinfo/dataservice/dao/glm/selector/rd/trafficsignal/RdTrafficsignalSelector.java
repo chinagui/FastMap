@@ -8,9 +8,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 
 /** 
 * @ClassName: RdTrafficsignalSelector 
@@ -49,43 +52,15 @@ public class RdTrafficsignalSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
-				rdTrafficsignal.setPid(id);
-				
-				rdTrafficsignal.setFlag(resultSet.getInt("flag"));
-				
-				rdTrafficsignal.setKgFlag(resultSet.getInt("kg_flag"));
-				
-				rdTrafficsignal.setLinkPid(resultSet.getInt("link_pid"));
-				
-				rdTrafficsignal.setNodePid(resultSet.getInt("node_pid"));
-				
-				rdTrafficsignal.setLocation(resultSet.getInt("location"));
-				
-				rdTrafficsignal.setType(resultSet.getInt("type"));
-				
-				rdTrafficsignal.setRowId(resultSet.getString("row_id"));
+				ReflectionAttrUtils.executeResultSet(rdTrafficsignal, resultSet);
 			}
 		} catch (Exception e) {
 
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return rdTrafficsignal;
@@ -130,21 +105,7 @@ public class RdTrafficsignalSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
-				rdTrafficsignal.setPid(id);
-				
-				rdTrafficsignal.setFlag(resultSet.getInt("flag"));
-				
-				rdTrafficsignal.setKgFlag(resultSet.getInt("kg_flag"));
-				
-				rdTrafficsignal.setLinkPid(resultSet.getInt("link_pid"));
-				
-				rdTrafficsignal.setNodePid(resultSet.getInt("node_pid"));
-				
-				rdTrafficsignal.setLocation(resultSet.getInt("location"));
-				
-				rdTrafficsignal.setType(resultSet.getInt("type"));
-				
-				rdTrafficsignal.setRowId(resultSet.getString("row_id"));
+				ReflectionAttrUtils.executeResultSet(rdTrafficsignal, resultSet);
 			}
 			else
 			{
@@ -155,22 +116,8 @@ public class RdTrafficsignalSelector implements ISelector {
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return rdTrafficsignal;
@@ -205,21 +152,7 @@ public class RdTrafficsignalSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
-				rdTrafficsignal.setPid(id);
-				
-				rdTrafficsignal.setFlag(resultSet.getInt("flag"));
-				
-				rdTrafficsignal.setKgFlag(resultSet.getInt("kg_flag"));
-				
-				rdTrafficsignal.setLinkPid(resultSet.getInt("link_pid"));
-				
-				rdTrafficsignal.setNodePid(resultSet.getInt("node_pid"));
-				
-				rdTrafficsignal.setLocation(resultSet.getInt("location"));
-				
-				rdTrafficsignal.setType(resultSet.getInt("type"));
-				
-				rdTrafficsignal.setRowId(resultSet.getString("row_id"));
+				ReflectionAttrUtils.executeResultSet(rdTrafficsignal, resultSet);
 			}
 			else
 			{
@@ -230,22 +163,8 @@ public class RdTrafficsignalSelector implements ISelector {
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return rdTrafficsignal;

@@ -210,4 +210,9 @@ public class AdAdminTree implements IObj {
 		return null;
 	}
 
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+		return null;
+	}
+
 }

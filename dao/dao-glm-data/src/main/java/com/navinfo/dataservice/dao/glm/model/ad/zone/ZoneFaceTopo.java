@@ -219,5 +219,10 @@ public class ZoneFaceTopo implements IRow {
 	public String getRowId() {
 		return rowId;
 	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childMap() {
+		return null;
+	}
 	
 }

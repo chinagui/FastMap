@@ -104,8 +104,11 @@ public class UploadOperation {
 				String manQuery = "SELECT daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id=:1";
 				String dbId = qRunner.queryForString(manConn, manQuery, grid);
 				if (dbId.isEmpty()){
-					String errstr = "fid:" + jo.getString("fid") + "不在已知grid内";
-					errList.add(errstr);
+					JSONObject errObj = new JSONObject();
+					errObj.put("fid", jo.getString("fid"));
+					String errStr ="不在已知grid内";
+					errObj.put("reason", errStr);
+					errList.add(errObj.toString());
 					continue;
 				}
 				
@@ -170,8 +173,11 @@ public class UploadOperation {
 							deleteList.add(poi);
 						} else {
 							if (uRecord == 2) {
-								String errstr = "fid:" + fid + "为修改数据，但库中u_record为2";
-								errList.add(errstr);
+								JSONObject errObj = new JSONObject();
+								errObj.put("fid", fid);
+								String errStr ="数据为修改数据，但库中u_record为2";
+								errObj.put("reason", errStr);
+								errList.add(errObj.toString());
 							} else {
 								updateList.add(poi);
 							}
@@ -179,8 +185,11 @@ public class UploadOperation {
 					} else {
 						// 找不到，判断lifecycle是否为1
 						if (lifecycle == 1) {
-							String errstr = "fid:" + fid + "在库中找不到对应数据，但lifecycle为1";
-							errList.add(errstr);
+							JSONObject errObj = new JSONObject();
+							errObj.put("fid", fid);
+							String errStr ="数据在库中找不到对应数据，但lifecycle为1";
+							errObj.put("reason", errStr);
+							errList.add(errObj.toString());
 						} else {
 							insertList.add(poi);
 						}

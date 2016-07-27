@@ -14,28 +14,16 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminGroup;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminPart;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminTree;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 
-public class AdAdminTreeSelector implements ISelector {
+public class AdAdminTreeSelector extends AbstractSelector {
 
 	private Connection conn;
 
 	public AdAdminTreeSelector(Connection conn) {
+		super(conn);
 		this.conn = conn;
-	}
-
-	@Override
-	public IRow loadById(int id, boolean isLock) throws Exception {
-		return null;
-	}
-
-	@Override
-	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
-		return null;
-	}
-
-	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
-		return null;
+		this.setCls(AdAdminTree.class);
 	}
 
 	public IRow loadRowsBySubTaskId(int subtaskId, boolean isLock) throws Exception {
@@ -150,9 +138,7 @@ public class AdAdminTreeSelector implements ISelector {
 			if (resultSet.next()) {
 				int group_id = resultSet.getInt("group_id");
 
-				AdAdminGroupSelector groupSelector = new AdAdminGroupSelector(conn);
-
-				AdAdminGroup group = (AdAdminGroup) groupSelector.loadById(group_id, isLock);
+				AdAdminGroup group = (AdAdminGroup) new AbstractSelector(AdAdminGroup.class,conn).loadById(group_id, isLock);
 
 				if (group == null) {
 					return result;

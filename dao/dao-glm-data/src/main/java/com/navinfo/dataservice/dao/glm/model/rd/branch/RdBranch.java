@@ -496,24 +496,8 @@ public class RdBranch implements IObj {
 	}
 
 	@Override
-	public Map<Class<? extends IRow>, Map<? extends Object, ? extends IRow>> childMap() {
-		Map<Class<? extends IRow>,Map<?,? extends IRow>> childMap = new HashMap<>();
-		
-		childMap.put(RdBranchDetail.class, detailMap);
-		
-		childMap.put(RdSignboard.class, signboardMap);
-		
-		childMap.put(RdSignasreal.class, signasrealMap);
-		
-		childMap.put(RdSeriesbranch.class, seriesbranchMap);
-		
-		childMap.put(RdBranchRealimage.class, realimageMap);
-
-		childMap.put(RdBranchSchematic.class, schematicMap);
-
-		childMap.put(RdBranchVia.class, viaMap);
-
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<>();
 		return childMap;
 	}
-
 }

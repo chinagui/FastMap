@@ -31,5 +31,5 @@ public interface IObj extends IRow {
 	 * 主表对应的子表list。key：Class.class value:模型中子表的Map
 	 * @return
 	 */
-	public Map<Class<? extends IRow>,Map<? extends Object,? extends IRow>> childMap(); 
+	public Map<Class<? extends IRow>,Map<String,?>> childMap(); 
 }

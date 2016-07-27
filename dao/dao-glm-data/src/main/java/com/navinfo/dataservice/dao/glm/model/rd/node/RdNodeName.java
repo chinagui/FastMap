@@ -299,7 +299,7 @@ public class RdNodeName implements IObj {
 	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
 	 */
 	@Override
-	public Map<Class<? extends IRow>, Map<? extends Object, ? extends IRow>> childMap() {
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -258,7 +258,7 @@ public class AdAdminGroup implements IObj {
 	}
 
 	@Override
-	public Map<Class<? extends IRow>, Map<? extends Object, ? extends IRow>> childMap() {
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
 		return null;
 	}
 

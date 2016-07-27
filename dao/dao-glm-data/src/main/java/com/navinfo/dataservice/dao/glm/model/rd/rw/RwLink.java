@@ -441,16 +441,21 @@ public class RwLink implements IObj {
 
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		Map<Class<? extends IRow>, List<IRow>> childMap = new HashMap<>();
+		Map<Class<? extends IRow>, List<IRow>> childList = new HashMap<>();
 
-		childMap.put(RwLinkName.class, names);
+		childList.put(RwLinkName.class, names);
 
-		return childMap;
+		return childList;
 	}
 
 	@Override
-	public Map<Class<? extends IRow>, Map<? extends Object, ? extends IRow>> childMap() {
-		return null;
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		
+		Map<Class<? extends IRow>,Map<String ,?>> childMap = new HashMap<>();
+		
+		childMap.put(RwLinkName.class, linkNameMap);
+		
+		return childMap;
 	}
 
 }

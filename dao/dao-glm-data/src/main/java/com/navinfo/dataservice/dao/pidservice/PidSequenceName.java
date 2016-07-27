@@ -99,4 +99,10 @@ public class PidSequenceName {
 	public static final String rdWarninginfoPidName = "SEQ_RD_WARNINGINFO";
 	
 	public static final String rdSlopePidName = "SEQ_RD_SLOPE";
+	
+	public static final String lcNodePidName = "SEQ_LC_NODE";
+
+	public static final String lcLinkPidName = "SEQ_LC_LINK";
+
+	public static final String lcFacePidName = "SEQ_LC_FACE";
 }

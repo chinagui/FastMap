@@ -288,10 +288,9 @@ public class RdGate implements IObj {
 	}
 
 	@Override
-	public Map<Class<? extends IRow>, Map<? extends Object, ? extends IRow>> childMap() {
+	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	
 }

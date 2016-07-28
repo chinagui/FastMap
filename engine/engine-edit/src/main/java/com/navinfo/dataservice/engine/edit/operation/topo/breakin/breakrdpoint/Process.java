@@ -201,7 +201,7 @@ public class Process extends AbstractProcess<Command> {
 			OpRefAdAdmin opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
 			opRefAdAdmin.run(this.getResult());
 			
-			UpdataRelationObj();
+			updataRelationObj();
 			
 			
 			this.postCheck();
@@ -242,7 +242,7 @@ public class Process extends AbstractProcess<Command> {
 				OpRefAdAdmin opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
 				opRefAdAdmin.run(this.getResult());
 				
-				UpdataRelationObj();
+				updataRelationObj();
 				
 				this.recordData();
 				this.postCheck();
@@ -400,7 +400,7 @@ public class Process extends AbstractProcess<Command> {
 		return null;
 	}
 
-	private void UpdataRelationObj() throws Exception
+	private void updataRelationObj() throws Exception
 	{
 		// 维护警示信息
 		RdWarninginfoUtils warninginfoUtils = new RdWarninginfoUtils(

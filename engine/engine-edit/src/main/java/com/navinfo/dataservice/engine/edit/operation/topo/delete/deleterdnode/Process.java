@@ -250,7 +250,7 @@ public class Process extends AbstractProcess<Command> {
 				IOperation opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
 				opRefAdAdmin.run(this.getResult());	
 				
-				UpdataRelationObj();
+				updataRelationObj();
 				
 				recordData();
 				
@@ -299,7 +299,7 @@ public class Process extends AbstractProcess<Command> {
 
 				RdWarninginfoUtils warninginfoUtils=new RdWarninginfoUtils(this.getConn());
 				
-				List<RdWarninginfo> warninginfos = warninginfoUtils.GetWarninginfoByNode(this.getCommand().getNodePid());
+				List<RdWarninginfo> warninginfos = warninginfoUtils.getWarninginfoByNode(this.getCommand().getNodePid());
 				
 				for (RdWarninginfo warninginfo : warninginfos) {
 					infectList.add(warninginfo.getPid());
@@ -347,10 +347,10 @@ public class Process extends AbstractProcess<Command> {
 	}
 
 	
-	private void UpdataRelationObj() throws Exception
+	private void updataRelationObj() throws Exception
 	{
 		//维护警示信息
 		RdWarninginfoUtils  warninginfoUtils=new RdWarninginfoUtils(this.getConn());
-		warninginfoUtils.DeleteByNode(this.getCommand().getNodePid(), this.getResult());
+		warninginfoUtils.deleteByNode(this.getCommand().getNodePid(), this.getResult());
 	}
 }

@@ -626,11 +626,8 @@ public class Operation implements IOperation {
 	{
 		//维护警示信息
 		RdWarninginfoUtils  warninginfoUtils=new RdWarninginfoUtils(conn);
-		
-		for(RdLink link:command.getLinks()){
-			
-			warninginfoUtils.DeleteByLink(link.pid(), result);
-		}
+
+		warninginfoUtils.batchDeleteByLink(command.getLinks(), result);
 	}
 	/**
 	 * @param startLine

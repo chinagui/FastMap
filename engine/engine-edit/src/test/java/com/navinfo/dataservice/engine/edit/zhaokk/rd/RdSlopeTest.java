@@ -28,7 +28,7 @@ public class RdSlopeTest extends InitApplication{
 	}
 	@Test
 	public void TestAdd() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDSLOPE\",\"dbId\":42,\"data\":{\"inNodePid\": 100024984,\"outLinkPid\":100008030}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDSLOPE\",\"dbId\":42,\"data\":{\"inNodePid\": 100024990,\"outLinkPid\":100008036,\"linkPids\":[100008037,100008038]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

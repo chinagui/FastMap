@@ -99,4 +99,6 @@ public class PidSequenceName {
 	public static final String rdWarninginfoPidName = "SEQ_RD_WARNINGINFO";
 	
 	public static final String rdSlopePidName = "SEQ_RD_SLOPE";
+	
+	public static final String rdGatePidName = "SEQ_RD_GATE";
 }

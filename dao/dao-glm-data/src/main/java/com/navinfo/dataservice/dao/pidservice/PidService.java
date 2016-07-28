@@ -430,4 +430,11 @@ public class PidService {
 	public synchronized int applyRdSlopePid() throws Exception {
 		return this.applyPid(PidSequenceName.rdSlopePidName);
 	}
+	
+	/**
+	 * 申请applyRdGate
+	 */
+	public synchronized int applyRdGate() throws Exception {
+		return applyPid(PidSequenceName.rdGatePidName);
+	}
 }

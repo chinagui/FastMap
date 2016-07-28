@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.xiaolong.rd;
 
 import java.sql.Connection;
+import java.util.Map.Entry;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -8,6 +9,8 @@ import org.junit.Test;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
 import com.navinfo.dataservice.dao.glm.search.RwLinkSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
@@ -28,15 +31,18 @@ public class RwLinkTest extends InitApplication {
 	{
 		Connection conn;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(42);
-
-			String parameter = "{\"type\":\"RWLINK\",\"dbId\":42,\"objId\":100007138}";
-
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			conn = DBConnector.getInstance().getConnectionById(25);
 
 			SearchProcess p = new SearchProcess(conn);
+			
+			RwLink obj = (RwLink) p.searchDataByPid(ObjType.RWLINK, 100007164);
 
-			System.out.println(p.searchDataByPid(ObjType.RWLINK, 100007138).Serialize(ObjLevel.BRIEF));
+			System.out.println(obj.Serialize(ObjLevel.BRIEF));
+			
+			for(Entry<String, RwLinkName> entry : obj.linkNameMap.entrySet())
+			{
+				System.out.println(entry.getKey()+":value:"+entry.getValue().Serialize(null));
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -137,7 +143,7 @@ public class RwLinkTest extends InitApplication {
 	@Test //测试线的修行
 	public void testRepairRwLink()
 	{
-		String parameter = "{\"command\":\"REPAIR\",\"dbId\":42,\"objId\":100006797,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.49725,40.03237],[116.49772,40.03206],[116.50189876556396,40.03059657720054],[116.49799,40.03058],[116.49644,40.03009]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RWLINK\"}";
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":42,\"objId\":100007141,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.41928,40.0348],[116.41908824443816,40.034371302620706],[116.41819,40.03448]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RWLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

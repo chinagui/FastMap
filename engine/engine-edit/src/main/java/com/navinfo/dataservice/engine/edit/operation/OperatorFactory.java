@@ -106,7 +106,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
-import com.navinfo.dataservice.dao.glm.operator.BasicOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdAdminDetailOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdAdminGroupOperator;
 import com.navinfo.dataservice.dao.glm.operator.ad.geo.AdAdminNameOperator;
@@ -250,9 +249,9 @@ public class OperatorFactory {
 	 * @return
 	 * @throws Exception
 	 */
-	private static IOperator getOperator(Connection conn, IRow row) throws Exception {
-		return new BasicOperator(conn, row);
-		/*switch (obj.objType()) {
+	private static IOperator getOperator(Connection conn, IRow obj) throws Exception {
+		//return new BasicOperator(conn, row);
+		switch (obj.objType()) {
 		case RDLINK:
 			return new RdLinkOperator(conn, (RdLink) obj);
 		case RDLINKFORM:
@@ -461,6 +460,6 @@ public class OperatorFactory {
 			return new RdTrafficsignalOperator(conn, (RdTrafficsignal) obj);
 		default:
 			return null;
-		}*/
+		}
 	}
 }

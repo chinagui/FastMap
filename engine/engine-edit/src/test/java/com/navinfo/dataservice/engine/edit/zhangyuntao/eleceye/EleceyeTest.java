@@ -5,13 +5,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
+import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -94,6 +97,26 @@ public class EleceyeTest extends InitApplication {
 
 		IObj obj = p.searchDataByPid(ObjType.valueOf(objType), pid);
 		// System.out.println(obj.Serialize(ObjLevel.FULL));
+	}
+
+	@Test
+	public void testSearchById() throws Exception {
+		String parameter = "{\"dbId\":42,\"type\":\"RDELECTRONICEYE\",\"pid\":100281943}";
+		JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+		String objType = jsonReq.getString("type");
+
+		int dbId = jsonReq.getInt("dbId");
+
+		Connection conn = DBConnector.getInstance().getConnectionById(dbId);
+
+		int pid = jsonReq.getInt("pid");
+
+		SearchProcess p = new SearchProcess(conn);
+
+		IObj obj = p.searchDataByPid(ObjType.valueOf(objType), pid);
+
+		obj.Serialize(ObjLevel.FULL);
 	}
 
 	@Test

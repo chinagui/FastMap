@@ -66,7 +66,7 @@ public class Command extends AbstractCommand {
 		this.requester = requester;
 		JSONObject data = json.getJSONObject("data");
 		this.setDbId(json.getInt("dbId"));
-		this.setInNodePid(data.getInt("odePid"));
+		this.setInNodePid(data.getInt("nodePid"));
 		this.setOutLinkPid(data.getInt("linkPid"));
 		if (data.containsKey("linkPids")) {
 			seriesLinkPids = new ArrayList<Integer>();

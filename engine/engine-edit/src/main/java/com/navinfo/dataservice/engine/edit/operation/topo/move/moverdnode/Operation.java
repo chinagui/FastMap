@@ -162,5 +162,7 @@ public class Operation implements IOperation {
 		
 		warninginfoUtils.breakRdLink(oldLink.getPid(), newLinks,
 				result);
+		
+		// 维护路口
 	}
 }

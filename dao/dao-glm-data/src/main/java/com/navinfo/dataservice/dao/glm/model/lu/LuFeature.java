@@ -233,13 +233,11 @@ public class LuFeature implements IObj{
 		return childMap;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
-	 */
 	@Override
 	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
-		// TODO Auto-generated method stub
-		return null;
+		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<Class<? extends IRow>,Map<String,?>>();
+		childMap.put(LuFace.class, faceMap);
+		return childMap;
 	}
 
 }

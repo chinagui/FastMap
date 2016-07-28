@@ -310,25 +310,16 @@ public class RdBranchName implements IObj {
 
 	@Override
 	public String primaryKey() {
-		// TODO Auto-generated method stub
 		return "name_id";
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
-	 */
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
-	 */
 	@Override
 	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

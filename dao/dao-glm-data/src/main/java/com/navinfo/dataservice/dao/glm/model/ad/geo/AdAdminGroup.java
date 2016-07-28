@@ -252,14 +252,16 @@ public class AdAdminGroup implements IObj {
 
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
-		childMap.put(AdAdminPart.class, parts);
-		return childMap;
+		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<>();
+		childList.put(AdAdminPart.class, parts);
+		return childList;
 	}
 
 	@Override
 	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
-		return null;
+		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<>();
+		childMap.put(AdAdminPart.class, adAdminPartMap);
+		return childMap;
 	}
 
 }

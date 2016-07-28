@@ -6,108 +6,27 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import oracle.sql.STRUCT;
-
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
-import com.vividsolutions.jts.geom.Geometry;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 
-public class AdNodeSelector implements ISelector {
+import oracle.sql.STRUCT;
+
+public class AdNodeSelector extends AbstractSelector {
 
 	private static Logger logger = Logger.getLogger(AdFaceSelector.class);
 
 	private Connection conn;
 
 	public AdNodeSelector(Connection conn) {
-		super();
+		super(conn);
 		this.conn = conn;
+		this.setCls(AdNode.class);
 	}
-
-	@Override
-	public IRow loadById(int id, boolean isLock) throws Exception {
-		AdNode adNode = new AdNode();
-
-		StringBuilder sb = new StringBuilder(
-				"select * from " + adNode.tableName() + " WHERE node_pid = :1 and  u_record !=2");
-
-		if (isLock) {
-			sb.append(" for update nowait");
-		}
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = conn.prepareStatement(sb.toString());
-
-			pstmt.setInt(1, id);
-
-			resultSet = pstmt.executeQuery();
-
-			if (resultSet.next()) {
-				adNode.setPid(id);
-
-				adNode.setKind(resultSet.getInt("kind"));
-
-				adNode.setForm(resultSet.getInt("form"));
-
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
-				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
-
-				adNode.setGeometry(geometry);
-
-				adNode.setEditFlag(resultSet.getInt("edit_flag"));
-				
-				adNode.setRowId(resultSet.getString("row_id"));
-
-				// 获取AD_Node对应的关联数据
-
-				// ad_node_mesh
-				List<IRow> forms = new AdNodeMeshSelector(conn).loadRowsByParentId(id, isLock);
-
-				adNode.setMeshes(forms);
-
-				for (IRow row : adNode.getMeshes()) {
-					AdNodeMesh mesh = (AdNodeMesh) row;
-
-					adNode.meshMap.put(mesh.rowId(), mesh);
-				}
-
-				return adNode;
-			} else {
-
-				throw new Exception("对应AD_NODE不存在!");
-			}
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-	}
+	
 	// 加载盲端节点
 	public List<AdNode> loadEndAdNodeByLinkPid(int linkPid, boolean isLock)
 			throws Exception {
@@ -146,9 +65,7 @@ public class AdNodeSelector implements ISelector {
 
 				node.setRowId(resultSet.getString("row_id"));
 
-				AdNodeMeshSelector mesh = new AdNodeMeshSelector(conn);
-
-				node.setMeshes(mesh.loadRowsByParentId(node.getPid(), isLock));
+				node.setMeshes(new AbstractSelector(AdNodeMesh.class,conn).loadRowsByParentId(node.getPid(), isLock));
 
 				nodes.add(node);
 			}
@@ -178,21 +95,12 @@ public class AdNodeSelector implements ISelector {
 		return nodes;
 	}
 
-	@Override
-	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
-		return null;
-	}
-
-	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
-		return null;
-	}
 	public int loadAdLinkCountOnNode(int nodePid)
 			throws Exception {
 
 		String sql = "select count(1) count from ad_link a where a.s_node_pid=:1 or a.e_node_pid=:2";
 		
-		PreparedStatement pstmt = null;
+		PreparedStatement pstmt = null;	
 
 		ResultSet resultSet = null;
 

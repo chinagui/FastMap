@@ -30,6 +30,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiIntroduction;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiTourroute;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiEditStatusSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
@@ -1617,7 +1618,7 @@ public class IxPoi implements IObj {
 		childMap.put(IxPoiName.class, names);
 		
 		//设置POI_EDIT_STATUS
-		//TODO
+		childMap.put(IxPoiEditStatus.class, names);
 		
 		// 设置子表IX_POI_ADDRESS
 		childMap.put(IxPoiAddress.class, addresses);
@@ -1647,7 +1648,7 @@ public class IxPoi implements IObj {
 		childMap.put(IxPoiParent.class, parents);
 		
 		//设置poi的子
-		//TODO
+		childMap.put(IxPoiChildren.class, children);
 		
 		// 设置子表IX_POI_PARKING
 		childMap.put(IxPoiParking.class, parkings);
@@ -1694,12 +1695,8 @@ public class IxPoi implements IObj {
 		return childMap;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
-	 */
 	@Override
 	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

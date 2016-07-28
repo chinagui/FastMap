@@ -40,7 +40,7 @@ public class RdBranchTest extends InitApplication {
 		Connection conn;
 		try {
 
-			String parameter = "{\"dbId\":42,\"type\":\"RDBRANCH\",\"detailId\":100000650,\"branchType\":5,\"rowId\":\"50ca9e99f5ac41d8bb58525977af70b0\"}";
+			String parameter = "{\"dbId\":25,\"type\":\"RDBRANCH\",\"detailId\":\"111401467052\",\"rowId\":\"\",\"branchType\":9}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -70,6 +70,20 @@ public class RdBranchTest extends InitApplication {
 	public void testDeleteBranch()
 	{
 		String parameter = "{\"command\":\"DELETE\",\"dbId\":42,\"type\":\"RDBRANCH\",\"detailId\":100005938,\"rowId\":\"\",\"branchType\":8}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(t.getLogs());
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testUpdateBranch()
+	{
+		String parameter = "{\"dbId\":25,\"type\":\"RDBRANCH\",\"detailId\":\"111401467052\",\"rowId\":\"\",\"branchType\":9}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

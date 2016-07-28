@@ -17,6 +17,9 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.search.AbstractSearch;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
@@ -38,9 +41,9 @@ public class POITest extends InitApplication{
 		try {
 			Connection conn = DBConnector.getInstance().getConnectionById(42);
 
-			IxPoiSelector selector = new IxPoiSelector(conn);
+			AbstractSearch search = new AbstractSearch();
 
-			IRow jsonObject = selector.loadById(5651968, false);
+			IRow jsonObject = search.searchDataByPid(IxPoi.class, 55005996, conn);
 
 			System.out.println(jsonObject.Serialize(ObjLevel.FULL));
 		} catch (Exception e) {
@@ -84,7 +87,7 @@ public class POITest extends InitApplication{
 	
 	@Test
 	public void addPoi(){
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":42,\"data\":{\"longitude\":116.39552235603331,\"latitude\":39.90676527744907,\"linkPid\":625962}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":25,\"type\":\"IXPOIPARENT\",\"objId\":690895,\"parentPid\":7172445}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

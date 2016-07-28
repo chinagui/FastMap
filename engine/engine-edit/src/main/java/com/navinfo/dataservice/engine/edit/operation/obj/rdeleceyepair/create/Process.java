@@ -31,14 +31,14 @@ public class Process extends AbstractProcess<Command> {
 		RdElectroniceyeSelector selector = new RdElectroniceyeSelector(this.getConn());
 
 		RdElectroniceye eleceye = (RdElectroniceye) selector.loadById(command.getEleceyePid1(), true);
-		if (Command.ENTRY_KIND == eleceye.getKind()) {
-			command.setEntryEleceye(eleceye);
-			eleceye = (RdElectroniceye) selector.loadById(command.getEleceyePid2(), true);
+		if (Command.EXIT_KIND == eleceye.getKind()) {
 			command.setExitEleceye(eleceye);
+			eleceye = (RdElectroniceye) selector.loadById(command.getEleceyePid2(), true);
+			command.setEntryEleceye(eleceye);
 		} else {
-			command.setExitEleceye(eleceye);
-			eleceye = (RdElectroniceye) selector.loadById(command.getEleceyePid2(), true);
 			command.setEntryEleceye(eleceye);
+			eleceye = (RdElectroniceye) selector.loadById(command.getEleceyePid2(), true);
+			command.setExitEleceye(eleceye);
 		}
 
 		return false;

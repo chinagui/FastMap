@@ -21,6 +21,8 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEditStatus;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiEditStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
 
@@ -32,7 +34,7 @@ import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
 public class AbstractSelector implements ISelector {
 
 	private IRow row;
-	
+
 	private Class<?> cls;
 
 	private Connection conn;
@@ -40,12 +42,12 @@ public class AbstractSelector implements ISelector {
 	public AbstractSelector(Connection conn) {
 		this.conn = conn;
 	}
-	
+
 	public AbstractSelector(Class<?> cls, Connection conn) throws InstantiationException, IllegalAccessException {
 		this.cls = cls;
 		this.conn = conn;
 	}
-	
+
 	@Override
 	public IRow loadById(int id, boolean isLock) throws Exception {
 		this.row = (IRow) cls.newInstance();
@@ -163,10 +165,11 @@ public class AbstractSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
+				IRow rowInner =  (IRow) cls.newInstance();
+				
+				ReflectionAttrUtils.executeResultSet(rowInner, resultSet);
 
-				ReflectionAttrUtils.executeResultSet(row, resultSet);
-
-				rows.add(row);
+				rows.add(rowInner);
 			}
 		} catch (Exception e) {
 
@@ -180,14 +183,22 @@ public class AbstractSelector implements ISelector {
 		return rows;
 	}
 
-	private List<IRow> loadRowsByClassParentId(Class<? extends IRow> cls, int id, boolean isLock) throws Exception { List<IRow> rows = new ArrayList<IRow>();
+	private List<IRow> loadRowsByClassParentId(Class<? extends IRow> cls, int id, boolean isLock) throws Exception {
+		List<IRow> rows = new ArrayList<IRow>();
 
 		IRow row = cls.newInstance();
 
-		String sql = "select * from " + row.tableName() + " where " + row.parentPKName() + "=:1 and u_record!=:2";
+		String sql = "";
 
-		if (isLock) {
-			sql += " for update nowait";
+		if (row instanceof RdLinkName || row instanceof RwLinkName) {
+			sql = "select a.*,b.name from " + row.tableName() + " a,rd_name b where a." + row.parentPKName()
+					+ " =:1 and a.name_groupid=b.name_groupid(+) and b.lang_code(+)='CHI' and a.u_record!=:2";
+		} else {
+			sql = "select * from " + row.tableName() + " where " + row.parentPKName() + "=:1 and u_record!=:2";
+
+			if (isLock) {
+				sql += " for update nowait";
+			}
 		}
 
 		PreparedStatement pstmt = null;
@@ -201,15 +212,15 @@ public class AbstractSelector implements ISelector {
 
 			pstmt.setInt(2, 2);
 
-			System.out.println(sql);
-
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
 
-				ReflectionAttrUtils.executeResultSet(row, resultSet);
+				IRow rowInner =  (IRow) cls.newInstance();
+				
+				ReflectionAttrUtils.executeResultSet(rowInner, resultSet);
 
-				rows.add(row);
+				rows.add(rowInner);
 			}
 		} catch (Exception e) {
 
@@ -231,23 +242,18 @@ public class AbstractSelector implements ISelector {
 			List<IRow> values = entry.getValue();
 			// 特殊场景处理 1.POI父子关系查询
 			if (cls.equals(IxPoiParent.class) && obj instanceof IxPoi) {
-				handlePoiParent((IxPoi)obj,isLock);
+				handlePoiParent((IxPoi) obj, isLock);
 			} else if (cls.equals(IxPoiChildren.class) && obj instanceof IxPoi) {
-				handlePoiChildren((IxPoi)obj,isLock);
-			}
-			else if(cls.equals(IxPoiEditStatus.class) && obj instanceof IxPoi)
-			{
-				//特殊场景：2.POI_EDIT_STATUS
-				handlePoiEditStatus((IxPoi)obj,isLock);
-			}
-			else
-			{
+				handlePoiChildren((IxPoi) obj, isLock);
+			} else if (cls.equals(IxPoiEditStatus.class) && obj instanceof IxPoi) {
+				// 特殊场景：2.POI_EDIT_STATUS
+				handlePoiEditStatus((IxPoi) obj, isLock);
+			} else {
 				List<IRow> childRows = loadRowsByClassParentId(cls, obj.pid(), isLock);
 				if (CollectionUtils.isNotEmpty(childRows)) {
 					values.addAll(childRows);
 				}
-				if(childMap != null)
-				{
+				if (childMap != null) {
 					Map map = childMap.get(cls);
 					if (map != null) {
 						for (IRow row : values) {
@@ -262,19 +268,19 @@ public class AbstractSelector implements ISelector {
 	/**
 	 * @param ixPoi
 	 * @param isLock
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	private void handlePoiEditStatus(IxPoi ixPoi, boolean isLock) throws Exception {
 		IxPoiEditStatusSelector ixPoiEditStatusSelector = new IxPoiEditStatusSelector(conn);
-		
+
 		int status = ixPoiEditStatusSelector.loadStatusByRowId(ixPoi.rowId(), isLock);
-		
+
 		ixPoi.setStatus(status);
-		
+
 	}
 
 	/**
-	 * @throws Exception 
+	 * @throws Exception
 	 * 
 	 */
 	private void handlePoiParent(IxPoi ixPoi, boolean isLock) throws Exception {
@@ -317,7 +323,7 @@ public class AbstractSelector implements ISelector {
 			}
 		}
 	}
-	
+
 	public IRow getRow() {
 		return row;
 	}

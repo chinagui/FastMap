@@ -432,6 +432,14 @@ public class PidService {
 	}
 	
 	/**
+
+	 * 申请applyRdGate
+	 */
+	public synchronized int applyRdGate() throws Exception {
+		return applyPid(PidSequenceName.rdGatePidName);
+	}
+	
+	/**
 	 * 申请lc_node_pid
 	 */
 	public synchronized int applyLcNodePid() throws Exception {

@@ -7,7 +7,7 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
 public class Process extends AbstractProcess<Command> {
 	
-	private Check check;
+	private Check check = new Check();
 
 	public Process() {
 		super();
@@ -19,7 +19,8 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String preCheck() throws Exception {
-		check.checkRdEleceyePair(this.getCommand());
+		// check.checkRdEleceyePair(this.getCommand());
+		// check.isHasRdEleceyePair(this.getCommand());
 		return null;
 	}
 

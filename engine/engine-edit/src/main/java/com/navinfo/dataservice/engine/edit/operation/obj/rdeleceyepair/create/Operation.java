@@ -36,6 +36,9 @@ public class Operation implements IOperation {
 		createRdEleceyePart(result, entryEleceye, pair.pid());
 		// 添加区间测速电子眼的结束电子眼
 		createRdEleceyePart(result, exitEleceye, pair.pid());
+		
+		// 将起始点pid返回前台
+		result.setPrimaryPid(entryEleceye.pid());
 	}
 
 	private void createRdEleceyePart(Result result, RdElectroniceye eleceye, int pairPid) {

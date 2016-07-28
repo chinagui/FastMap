@@ -77,4 +77,56 @@ public class LcFaceSelector extends AbstractSelector {
 		}
 		return faces;
 	}
+
+	public List<LcFace> loadLcFaceByNodeId(int nodePid, boolean isLock) throws Exception {
+		List<LcFace> faces = new ArrayList<LcFace>();
+		StringBuilder builder = new StringBuilder();
+		builder.append(" SELECT b.* from lc_face b where b.face_pid in (select a.face_pid ");
+		builder.append(" FROM lc_face a, lc_face_topo t, ad_link l ");
+		builder.append(" WHERE a.u_record != 2 and t.u_record != 2 and l.u_record != 2");
+		builder.append(" AND a.face_pid = t.face_pid");
+		builder.append(" AND t.link_pid = l.link_pid");
+		builder.append(" AND (l.s_node_pid = :1 OR l.e_node_pid = :2) group by a.face_pid)");
+		if (isLock) {
+			builder.append(" for update nowait");
+		}
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = this.conn.prepareStatement(builder.toString());
+			pstmt.setInt(1, nodePid);
+			pstmt.setInt(2, nodePid);
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				LcFace face = new LcFace();
+				ReflectionAttrUtils.executeResultSet(face, resultSet);
+				faces.add(face);
+				List<IRow> lcFaceTopo = new LcFaceTopoSelector(conn).loadRowsByParentId(face.getPid(), isLock);
+				for (IRow row : lcFaceTopo) {
+					row.setMesh(face.mesh());
+				}
+				face.setTopos(lcFaceTopo);
+				for (IRow row : lcFaceTopo) {
+					LcFaceTopo obj = (LcFaceTopo) row;
+					face.lcFaceTopoMap.put(obj.rowId(), obj);
+				}
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+			}
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+			}
+		}
+		return faces;
+	}
 }

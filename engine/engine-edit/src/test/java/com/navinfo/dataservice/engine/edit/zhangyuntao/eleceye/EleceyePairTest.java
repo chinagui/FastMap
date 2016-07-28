@@ -14,6 +14,7 @@ public class EleceyePairTest extends InitApplication {
 	@Test
 	public void createEleceyePair(){
 		String requester = "{'dbId':43,'command':'CREATE','type':'RDELECEYEPAIR','data':{'pid1':100281917,'pid2':100281916}}";
+		requester = "{\"command\":\"CREATE\",\"type\":\"RDELECEYEPAIR\",\"dbId\":42,\"data\":{\"startPid\":\"32943636\",\"endPid\":\"32943641\"}}";
 		TestUtil.run(requester);
 	}
 	

@@ -21,6 +21,8 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEditStatus;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiEditStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
 
@@ -183,11 +185,20 @@ public class AbstractSelector implements ISelector {
 	private List<IRow> loadRowsByClassParentId(Class<? extends IRow> cls, int id, boolean isLock) throws Exception { List<IRow> rows = new ArrayList<IRow>();
 
 		IRow row = cls.newInstance();
+		
+		String sql = "";
+		
+		if(row instanceof RdLinkName || row instanceof RwLinkName)
+		{
+			sql = "select a.*,b.name from "+row.tableName()+" a,rd_name b where a."+row.parentPKName()+" =:1 and a.name_groupid=b.name_groupid(+) and b.lang_code(+)='CHI' and a.u_record!=2";
+		}
+		else
+		{
+			sql = "select * from " + row.tableName() + " where " + row.parentPKName() + "=:1 and u_record!=:2";
 
-		String sql = "select * from " + row.tableName() + " where " + row.parentPKName() + "=:1 and u_record!=:2";
-
-		if (isLock) {
-			sql += " for update nowait";
+			if (isLock) {
+				sql += " for update nowait";
+			}
 		}
 
 		PreparedStatement pstmt = null;
@@ -200,8 +211,6 @@ public class AbstractSelector implements ISelector {
 			pstmt.setInt(1, id);
 
 			pstmt.setInt(2, 2);
-
-			System.out.println(sql);
 
 			resultSet = pstmt.executeQuery();
 

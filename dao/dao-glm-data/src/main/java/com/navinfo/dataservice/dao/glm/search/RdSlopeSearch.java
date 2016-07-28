@@ -55,7 +55,7 @@ public class RdSlopeSearch implements ISearch {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
 		
-		String sql = "WITH tmp1 AS (	SELECT a.geometry,b.pid,b.type FROM rd_node a,rd_slope b WHERE sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' AND a.NODE_PID = b.NODE_PID and a.u_record != 2) select a.pid,tmp1.geometry as geometry  from rd_slope a,tmp1 WHERE a.node_pid = tmp1.node_pid AND a.u_record != 2";
+		String sql = "WITH tmp1 AS (	SELECT a.geometry,b.pid,b.type,a.node_pid FROM rd_node a,rd_slope b WHERE sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' AND a.NODE_PID = b.NODE_PID and a.u_record != 2) select a.pid,tmp1.geometry as geometry  from rd_slope a,tmp1 WHERE a.node_pid = tmp1.node_pid AND a.u_record != 2";
 		
 		PreparedStatement pstmt = null;
 

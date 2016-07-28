@@ -398,6 +398,6 @@ public class AdAdmin implements IObj {
 		childMap.put(AdAdminGroup.class, adAdminGroupMap);
 		childMap.put(AdAdminName.class, adAdminNameMap);
 		childMap.put(AdAdminDetail.class, adAdminDetailMap);
-		return null;
+		return childMap;
 	}
 }

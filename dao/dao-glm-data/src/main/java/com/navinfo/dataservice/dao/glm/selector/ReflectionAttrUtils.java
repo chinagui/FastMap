@@ -42,7 +42,7 @@ public class ReflectionAttrUtils {
 			Field field = fields[i];
 			String fieldName = field.getName();
 			if (fieldName.equals("pid") && row instanceof IObj) {
-				String pkName = ((IObj)row).primaryKey();
+				String pkName = ((IObj) row).primaryKey();
 				Object value = rs.getInt(pkName);
 				field.setAccessible(true);
 				field.set(row, value);
@@ -53,29 +53,26 @@ public class ReflectionAttrUtils {
 				if (columnName.equalsIgnoreCase(StringUtils.toColumnName(fieldName))) {
 					int columnType = rsm.getColumnType(j);
 					Object value = rs.getObject(j);
-					// if (Types.VARBINARY == columnType && fieldName.equals("rowId")) {
-					if (Types.VARBINARY == columnType || Types.VARCHAR == columnType) {
-						// String rowId = rs.getString(columnName);
-						// field.setAccessible(true);
-						// field.set(row, rowId);
-						// break;
-						value = rs.getString(columnName);
-					}
-					if (Types.NUMERIC == columnType) {
-						if (value.toString().contains(".")) {
-							value = ((BigDecimal) value).doubleValue();
-						} else {
-							value = Integer.parseInt(value.toString());
+					if (value != null) {
+						if (Types.VARBINARY == columnType || Types.VARCHAR == columnType) {
+							value = rs.getString(columnName);
 						}
+						if (Types.NUMERIC == columnType) {
+							if (value.toString().contains(".")) {
+								value = ((BigDecimal) value).doubleValue();
+							} else {
+								value = Integer.parseInt(value.toString());
+							}
+						}
+						if (Types.STRUCT == columnType) {
+							value = GeoTranslator.struct2Jts((STRUCT) value, 100000, 0);
+						}
+						if (Types.TIMESTAMP == columnType) {
+							value = rs.getTimestamp(columnName);
+						}
+						field.setAccessible(true);
+						field.set(row, value);
 					}
-					if (Types.STRUCT == columnType) {
-						value = GeoTranslator.struct2Jts((STRUCT) value, 100000, 0);
-					}
-					if (Types.TIMESTAMP == columnType) {
-						value = rs.getTimestamp(columnName);
-					}
-					field.setAccessible(true);
-					field.set(row, value);
 					break;
 				}
 			}

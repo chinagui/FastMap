@@ -165,10 +165,11 @@ public class AbstractSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
+				IRow rowInner =  (IRow) cls.newInstance();
+				
+				ReflectionAttrUtils.executeResultSet(rowInner, resultSet);
 
-				ReflectionAttrUtils.executeResultSet(row, resultSet);
-
-				rows.add(row);
+				rows.add(rowInner);
 			}
 		} catch (Exception e) {
 
@@ -215,9 +216,11 @@ public class AbstractSelector implements ISelector {
 
 			while (resultSet.next()) {
 
-				ReflectionAttrUtils.executeResultSet(row, resultSet);
+				IRow rowInner =  (IRow) cls.newInstance();
+				
+				ReflectionAttrUtils.executeResultSet(rowInner, resultSet);
 
-				rows.add(row);
+				rows.add(rowInner);
 			}
 		} catch (Exception e) {
 

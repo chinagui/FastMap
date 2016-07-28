@@ -93,7 +93,7 @@ public class RdWarninginfoSelector implements ISelector {
 			throws Exception {
 		List<RdWarninginfo> rows = new ArrayList<RdWarninginfo>();
 
-		String sql = "select a.* from rd_warninginfo a where a.u_record!=:1,a.node_pid=:2";
+		String sql = "select a.* from rd_warninginfo a where a.u_record!=:1 and a.node_pid=:2";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -151,7 +151,7 @@ public class RdWarninginfoSelector implements ISelector {
 			throws Exception {
 		List<RdWarninginfo> rows = new ArrayList<RdWarninginfo>();
 
-		String sql = "select a.* from rd_warninginfo a where a.u_record!=:1,a.link_pid=:2";
+		String sql = "select a.* from rd_warninginfo a where a.u_record!=:1 and a.link_pid=:2";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -247,7 +247,7 @@ public class RdWarninginfoSelector implements ISelector {
 			strLinkPids.append(" " + pid.toString() +",");
 		}
 
-		String sql = "select a.* from rd_warninginfo a where a.u_record!=:1,a.link_pid in ( "
+		String sql = "select a.* from rd_warninginfo a where a.u_record!=:1 and a.link_pid in ( "
 				+ strLinkPids.toString() + ") ";
 
 		if (isLock) {

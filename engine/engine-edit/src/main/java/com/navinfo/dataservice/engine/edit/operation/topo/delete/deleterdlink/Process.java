@@ -269,7 +269,7 @@ public class Process extends AbstractProcess<Command> {
 				IOperation opRefElectroniceye = new OpRefElectroniceye(this.getCommand());
 				opRefElectroniceye.run(this.getResult());
 
-				UpdataRelationObj();
+				updataRelationObj();
 				
 				recordData();
 
@@ -351,7 +351,7 @@ public class Process extends AbstractProcess<Command> {
 
 				RdWarninginfoUtils warninginfoUtils=new RdWarninginfoUtils(this.getConn());
 				
-				List<RdWarninginfo> warninginfos = warninginfoUtils.GetWarninginfoByLink(this.getCommand().getLinkPid());
+				List<RdWarninginfo> warninginfos = warninginfoUtils.getWarninginfoByLink(this.getCommand().getLinkPid());
 				
 				for (RdWarninginfo warninginfo : warninginfos) {
 					infectList.add(warninginfo.getPid());
@@ -407,7 +407,7 @@ public class Process extends AbstractProcess<Command> {
 			IOperation opRefElectroniceye = new OpRefElectroniceye(this.getCommand());
 			opRefElectroniceye.run(this.getResult());
 
-			UpdataRelationObj();
+			updataRelationObj();
 			
 			recordData();
 
@@ -427,11 +427,11 @@ public class Process extends AbstractProcess<Command> {
 		return null;
 	}
 	
-	private void UpdataRelationObj() throws Exception
+	private void updataRelationObj() throws Exception
 	{
 		//维护警示信息
 		RdWarninginfoUtils  warninginfoUtils=new RdWarninginfoUtils(this.getConn());
-		warninginfoUtils.DeleteByLink(this.getCommand().getLinkPid(), this.getResult());
+		warninginfoUtils.deleteByLink(this.getCommand().getLinkPid(), this.getResult());
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.json.JSONObject;
@@ -28,7 +29,7 @@ public class RdWarninginfoUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<RdWarninginfo> GetWarninginfoByLink(int linkPid)
+	public List<RdWarninginfo> getWarninginfoByLink(int linkPid)
 			throws Exception {
 
 		RdWarninginfoSelector selector = new RdWarninginfoSelector(conn);
@@ -46,7 +47,7 @@ public class RdWarninginfoUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<RdWarninginfo> GetWarninginfoByNode(int nodePid)
+	public List<RdWarninginfo> getWarninginfoByNode(int nodePid)
 			throws Exception {
 
 		RdWarninginfoSelector selector = new RdWarninginfoSelector(conn);
@@ -70,7 +71,7 @@ public class RdWarninginfoUtils {
 	public void breakRdLink(int oldLinkPid, List<RdLink> newLinks, Result result)
 			throws Exception {
 
-		List<RdWarninginfo> warninginfos = GetWarninginfoByLink(oldLinkPid);
+		List<RdWarninginfo> warninginfos = getWarninginfoByLink(oldLinkPid);
 
 		for (RdWarninginfo warninginfo : warninginfos) {
 
@@ -96,9 +97,9 @@ public class RdWarninginfoUtils {
 	 * @param conn
 	 * @throws Exception
 	 */
-	public void DeleteByNode(int nodePid, Result result) throws Exception {
+	public void deleteByNode(int nodePid, Result result) throws Exception {
 
-		List<RdWarninginfo> warninginfos = GetWarninginfoByNode(nodePid);
+		List<RdWarninginfo> warninginfos = getWarninginfoByNode(nodePid);
 
 		for (RdWarninginfo warninginfo : warninginfos) {
 
@@ -115,9 +116,43 @@ public class RdWarninginfoUtils {
 	 * @param conn
 	 * @throws Exception
 	 */
-	public void DeleteByLink(int linkPid, Result result) throws Exception {
+	public void deleteByLink(int linkPid, Result result) throws Exception {
 
-		List<RdWarninginfo> warninginfos = GetWarninginfoByLink(linkPid);
+		List<RdWarninginfo> warninginfos = getWarninginfoByLink(linkPid);
+
+		for (RdWarninginfo warninginfo : warninginfos) {
+
+			result.insertObject(warninginfo, ObjStatus.DELETE,
+					warninginfo.getPid());
+		}
+	}
+	
+	
+	/**
+	 * 批量删除link维护警示信息
+	 * 
+	 * @param linkPid
+	 * @param result
+	 * @param conn
+	 * @throws Exception
+	 */
+	public void batchDeleteByLink(List<RdLink> links, Result result) throws Exception {
+		
+		if(links.isEmpty())
+		{
+			return;
+		}
+		
+		List<Integer> linkPids=new ArrayList<Integer>();
+		
+		for(RdLink link :links)
+		{
+			linkPids.add(link.getPid());
+		}
+		
+		RdWarninginfoSelector selector = new RdWarninginfoSelector(conn);
+
+		List<RdWarninginfo> warninginfos = selector.loadByLinks(linkPids, true);
 
 		for (RdWarninginfo warninginfo : warninginfos) {
 

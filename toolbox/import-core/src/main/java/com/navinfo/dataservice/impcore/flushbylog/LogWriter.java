@@ -298,8 +298,11 @@ public class LogWriter {
 				String keyName = it.next();
 
 				Object valObj = json.get(keyName);
-
-				sb.append(keyName);
+				if ("level".equalsIgnoreCase(keyName)||"log".equalsIgnoreCase(keyName)){
+					sb.append("\""+keyName.toUpperCase()+"\"");
+				}else{
+					sb.append(keyName);
+				}
 
 				sb.append("=:");
 

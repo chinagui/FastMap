@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -22,6 +23,7 @@ import net.sf.json.JSONObject;
 public class EleceyeTest extends InitApplication {
 
 	@Override
+	@Before
 	public void init() {
 		super.initContext();
 	}
@@ -41,16 +43,16 @@ public class EleceyeTest extends InitApplication {
 
 	@Test
 	public void deleteEleceye() {
-		String requester = "{'dbId':43,'command':'DELETE','type':'RDELECTRONICEYE','data':{'pid':100281916}}";
+		String requester = "{'dbId':43,'command':'DELETE','type':'RDELECTRONICEYE','objId':100281916}";
 		TestUtil.run(requester);
 	}
 
 	@Test
 	public void getEleceye() {
 		try {
-			Connection conn = DBConnector.getInstance().getConnectionById(43);
+			Connection conn = DBConnector.getInstance().getConnectionById(42);
 			RdElectroniceyeSelector selector = new RdElectroniceyeSelector(conn);
-			RdElectroniceye eleceye = (RdElectroniceye) selector.loadById(100281916, false);
+			RdElectroniceye eleceye = (RdElectroniceye) selector.loadById(46800247, false);
 			eleceye.getPairs();
 			eleceye.getParts();
 		} catch (Exception e) {

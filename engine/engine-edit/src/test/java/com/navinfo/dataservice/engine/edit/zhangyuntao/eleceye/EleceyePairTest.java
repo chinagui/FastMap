@@ -23,7 +23,7 @@ public class EleceyePairTest extends InitApplication {
 	
 	@Test
 	public void deleteEleceyePair(){
-		String requester = "{'dbId':43,'command':'DELETE','type':'RDELECEYEPAIR','data':{'pid':100281916}}";
+		String requester = "{'dbId':42,'command':'DELETE','type':'RDELECEYEPAIR','objId':100281965}";
 		TestUtil.run(requester);
 	}
 	

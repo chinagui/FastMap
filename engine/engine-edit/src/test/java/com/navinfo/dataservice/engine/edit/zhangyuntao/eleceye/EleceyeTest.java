@@ -34,6 +34,13 @@ public class EleceyeTest extends InitApplication {
 		String requester = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"RDELECTRONICEYE\",\"data\":{\"linkPid\":19613251,\"direct\":1,\"longitude\":116.46289037031201,\"latitude\":40.007340083841214}}";
 		TestUtil.run(requester);
 	}
+	
+	@Test
+	public void moveEleceye() {
+		// String requester = "{'dbId':42,'command':'CREATE','type':'RDELECTRONICEYE','data':{'direct':3,'longitude':116.50291868782932,'latitude':40.01112911418436,'linkPid':85518434}}";
+		String requester = "{\"command\":\"MOVE\",\"dbId\":42,\"type\":\"RDELECTRONICEYE\",\"data\":{\"linkPid\":19613252,\"pid\":32943645,\"longitude\":116.46281037031202,\"latitude\":40.007310083841214}}";
+		TestUtil.run(requester);
+	}
 
 	@Test
 	public void updateEleceye() {

@@ -45,7 +45,7 @@ public class RdEleceyePairSelector implements ISelector {
 		// a.group_id = :1 and a.u_record != 2 and a.group_id = b.group_id and
 		// b.eleceye_pid = c.pid and c.link_pid = d.link_pid";
 
-		String sql = "select a.group_id,a.u_record,a.u_fields,a.u_date, a.row_id from " + pair.tableName() + " a where a.group_id = :1" ;
+		String sql = "select a.group_id,a.u_record,a.u_fields,a.u_date, a.row_id from " + pair.tableName() + " a where a.group_id = :1 and a.u_record != 2" ;
 		if (isLock) {
 			sql += " for update nowait";
 		}

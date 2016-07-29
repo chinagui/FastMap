@@ -19,8 +19,8 @@ public class RdGateCondition implements IObj {
 	
 	private String rowId;
 	private int pid;
-	private int validObj;
-	private String timeDomain;
+	private int validObj = 0;
+	private String timeDomain = "";
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	public int getPid() {

@@ -312,6 +312,7 @@ public class LogWriter {
 		return "level".equalsIgnoreCase(filed)
 				||"log".equalsIgnoreCase(filed)
 				||"label".equalsIgnoreCase(filed)
+				||"tag".equalsIgnoreCase(filed)
 				||"type".equalsIgnoreCase(filed);
 	}
 

@@ -2,25 +2,22 @@ package com.navinfo.dataservice.impcore.flushbylog;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.commons.database.oracle.MyPoolGuardConnectionWrapper;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtils;
 
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
-
-import com.alibaba.dubbo.common.utils.CollectionUtils;
-import com.navinfo.dataservice.commons.database.oracle.MyPoolGuardConnectionWrapper;
-import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.util.DateUtils;
 
 /*
  * @author MaYunFei
@@ -152,13 +149,13 @@ public class LogWriter {
 				if ("changed_fields".equalsIgnoreCase(filed)||"status".equalsIgnoreCase(filed)){
 					continue;
 				}
-				if (++tmpPos < keySize) {
+				if (0==tmpPos){
 					sb.append(filed);
-
-					sb.append(",");
-				} else {
-					sb.append(filed);
+				}else{
+					sb.append(","+filed);
 				}
+				tmpPos++;
+				
 			}
 			boolean hasUrecord = false;
 			if(sb.indexOf(",u_record")!=-1){

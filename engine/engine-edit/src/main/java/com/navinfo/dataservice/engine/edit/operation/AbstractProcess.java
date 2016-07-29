@@ -47,7 +47,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	}
 
 	private String postCheckMsg;
-	
+
 	public AbstractProcess() {
 	}
 
@@ -145,11 +145,13 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 			this.prepareData();
 
 			msg = exeOperation();
-			
+
 			checkResult();
 
 			if (this.getCommand().getOperType().equals(OperType.CREATE)
-					&& !this.getCommand().getObjType().equals(ObjType.RDBRANCH)) {
+					&& !this.getCommand().getObjType().equals(ObjType.RDBRANCH)
+					&& !this.getCommand().getObjType().equals(ObjType.RDELECEYEPAIR)
+					&& !this.getCommand().getObjType().equals(ObjType.LUFACE)) {
 				handleResult(this.getCommand().getObjType(), result);
 			}
 
@@ -182,11 +184,14 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
 	/**
 	 * 检查请求是否执行了某些操作
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
 	private void checkResult() throws Exception {
-		if(CollectionUtils.isEmpty(result.getAddObjects()) && CollectionUtils.isEmpty(result.getUpdateObjects()) &&CollectionUtils.isEmpty(result.getDelObjects()))
-		{
+		if (this.getCommand().getObjType().equals(ObjType.IXPOI)) {
+			return;
+		} else if (CollectionUtils.isEmpty(result.getAddObjects()) && CollectionUtils.isEmpty(result.getUpdateObjects())
+				&& CollectionUtils.isEmpty(result.getDelObjects())) {
 			throw new DataNotChangeException("属性值未发生变化");
 		}
 	}

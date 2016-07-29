@@ -205,5 +205,4 @@ public class RdSlopeVia implements IRow {
 	public String getRowId() {
 		return rowId;
 	}
-
 }

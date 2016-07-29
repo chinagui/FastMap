@@ -430,4 +430,33 @@ public class PidService {
 	public synchronized int applyRdSlopePid() throws Exception {
 		return this.applyPid(PidSequenceName.rdSlopePidName);
 	}
+	
+	/**
+
+	 * 申请applyRdGate
+	 */
+	public synchronized int applyRdGate() throws Exception {
+		return applyPid(PidSequenceName.rdGatePidName);
+	}
+	
+	/**
+	 * 申请lc_node_pid
+	 */
+	public synchronized int applyLcNodePid() throws Exception {
+		return this.applyPid(PidSequenceName.lcNodePidName);
+	}
+
+	/**
+	 * 申请lc_link_pid
+	 */
+	public synchronized int applyLcLinkPid() throws Exception {
+		return this.applyPid(PidSequenceName.lcLinkPidName);
+	}
+
+	/**
+	 * 申请lc_face_pid
+	 */
+	public synchronized int applyLcFacePid() throws Exception {
+		return this.applyPid(PidSequenceName.lcFacePidName);
+	}
 }

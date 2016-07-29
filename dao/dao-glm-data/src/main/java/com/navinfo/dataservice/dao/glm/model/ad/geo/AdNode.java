@@ -327,4 +327,19 @@ public class AdNode implements IObj {
 	public void setKind(int kind) {
 		this.kind = kind;
 	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<>();
+		childList.put(AdNodeMesh.class, meshes);
+		return childList;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<>();
+		childMap.put(AdNodeMesh.class, meshMap);
+		return childMap;
+	}
+
 }

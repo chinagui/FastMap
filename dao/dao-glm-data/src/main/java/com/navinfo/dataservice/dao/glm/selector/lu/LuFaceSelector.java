@@ -85,7 +85,7 @@ public class LuFaceSelector implements ISelector {
 
 	private void setAttr(boolean isLock, LuFace face, ResultSet resultSet) throws SQLException, Exception {
 
-		List<IRow> luFaceTopo = new LuFaceTopoSelector(conn).loadRowsByParentId(face.pid(), isLock);
+		List<IRow> luFaceTopo = new LuFaceTopoSelector(conn).loadRowsByParentId(face.getPid(), isLock);
 
 		for (IRow row : luFaceTopo) {
 			row.setMesh(face.mesh());
@@ -112,7 +112,7 @@ public class LuFaceSelector implements ISelector {
 
 	private void setChildren(boolean isLock, LuFace face, ResultSet resultSet) throws SQLException, Exception {
 
-		List<IRow> luFaceTopo = new LuFaceTopoSelector(conn).loadRowsByParentId(face.pid(), isLock);
+		List<IRow> luFaceTopo = new LuFaceTopoSelector(conn).loadRowsByParentId(face.getPid(), isLock);
 
 		for (IRow row : luFaceTopo) {
 			row.setMesh(face.mesh());

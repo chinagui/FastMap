@@ -13,8 +13,6 @@ import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
 
-import net.sf.json.JSONObject;
-
 public class LuLinkTest extends InitApplication {
 
 	@Override
@@ -75,25 +73,6 @@ public class LuLinkTest extends InitApplication {
 	}
 
 	@Test
-	public void testSearchLuLink() {
-		String parameter = "{\"projectId\":11,\"type\":\"LULINK\",\"pid\":100034447}";
-
-		Connection conn;
-		try {
-			conn = DBConnector.getInstance().getConnectionById(43);
-
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-
-			SearchProcess p = new SearchProcess(conn);
-
-			System.out.println(p.searchDataByPid(ObjType.LULINK, 100034447).Serialize(ObjLevel.FULL));
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Test
 	public void tesRepairtLuLink() {
 		String parameter = "{\"command\":\"REPAIR\",\"dbId\":43,\"projectId\":11,\"objId\":100034528,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.62528,39.25022],[116.62528,39.25006],[116.62535838820631,39.25011395094421],[116.62544,39.25017],[116.62528,39.25022]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"LULINK\"}";
 
@@ -109,14 +88,14 @@ public class LuLinkTest extends InitApplication {
 	}
 
 	@Test
-	public void testSearchLuNode() {
+	public void testSearchLuLink() {
 		Connection conn;
 		try {
 			conn = DBConnector.getInstance().getConnectionById(43);
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByPid(ObjType.LUNODE, 100034469).Serialize(ObjLevel.FULL));
+			System.out.println(p.searchDataByPid(ObjType.LULINK, 100034528).Serialize(ObjLevel.FULL));
 
 		} catch (Exception e) {
 			e.printStackTrace();

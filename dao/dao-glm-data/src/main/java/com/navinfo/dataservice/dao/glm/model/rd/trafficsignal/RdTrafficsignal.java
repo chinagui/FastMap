@@ -279,4 +279,14 @@ public class RdTrafficsignal implements IObj {
 		return "pid";
 	}
 
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		return null;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		return null;
+	}
+
 }

@@ -285,4 +285,5 @@ public class RdRestrictionCondition implements IRow {
 	@Override
 	public void setMesh(int mesh) {
 	}
+
 }

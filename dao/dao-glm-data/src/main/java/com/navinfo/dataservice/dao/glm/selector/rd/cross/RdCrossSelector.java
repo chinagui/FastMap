@@ -11,21 +11,22 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 
-public class RdCrossSelector implements ISelector {
+public class RdCrossSelector extends AbstractSelector {
 
 	private static Logger logger = Logger.getLogger(RdCrossSelector.class);
 
 	private Connection conn;
 
 	public RdCrossSelector(Connection conn) {
+		super(conn);
 		this.conn = conn;
-
+		this.setCls(RdCross.class);
 	}
 
 	@Override
@@ -59,53 +60,10 @@ public class RdCrossSelector implements ISelector {
 				cross.setKgFlag(resultSet.getInt("kg_flag"));
 				
 				cross.setMesh(resultSet.getInt("mesh_id"));
-
-				List<IRow> links = new RdCrossLinkSelector(conn)
-						.loadRowsByParentId(id, isLock);
 				
-				for(IRow row : links){
-					row.setMesh(cross.mesh());
-				}
-
-				cross.setLinks(links);
-				
-				for (IRow row : cross.getLinks()) {
-					RdCrossLink obj = (RdCrossLink) row;
-
-					cross.linkMap.put(obj.rowId(), obj);
-				}
-
-				List<IRow> nodes = new RdCrossNodeSelector(conn)
-						.loadRowsByParentId(id, isLock);
-				
-				for(IRow row : nodes){
-					row.setMesh(cross.mesh());
-				}
-
-				cross.setNodes(nodes);
-				
-				for (IRow row : cross.getNodes()) {
-					RdCrossNode obj = (RdCrossNode) row;
-
-					cross.nodeMap.put(obj.rowId(), obj);
-				}
-
-				List<IRow> names = new RdCrossNameSelector(conn)
-						.loadRowsByParentId(id, isLock);
-				
-				for(IRow row : names){
-					row.setMesh(cross.mesh());
-				}
-
-				cross.setNames(names);
-				
-				for (IRow row : cross.getNames()) {
-					RdCrossName obj = (RdCrossName) row;
-
-					cross.nameMap.put(obj.rowId(), obj);
-				}
-
 				cross.setRowId(resultSet.getString("row_id"));
+
+				setChildData(cross, isLock);
 
 			} else {
 				
@@ -135,19 +93,6 @@ public class RdCrossSelector implements ISelector {
 		}
 
 		return cross;
-	}
-
-	@Override
-	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
-
-		return null;
-	}
-
-	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock)
-			throws Exception {
-
-		return null;
 	}
 	
 	/**
@@ -216,34 +161,9 @@ public class RdCrossSelector implements ISelector {
 				
 				cross.setMesh(resultSet.getInt("mesh_id"));
 
-				List<IRow> links = new RdCrossLinkSelector(conn)
-						.loadRowsByParentId(cross.getPid(), isLock);
-				
-				for(IRow row : links){
-					row.setMesh(cross.mesh());
-				}
-
-				cross.setLinks(links);
-				
-				List<IRow> nodes = new RdCrossNodeSelector(conn)
-						.loadRowsByParentId(cross.getPid(), isLock);
-				
-				for(IRow row : nodes){
-					row.setMesh(cross.mesh());
-				}
-
-				cross.setNodes(nodes);
-				
-				List<IRow> names = new RdCrossNameSelector(conn)
-						.loadRowsByParentId(cross.getPid(), isLock);
-				
-				for(IRow row : names){
-					row.setMesh(cross.mesh());
-				}
-
-				cross.setNames(names);
-				
 				cross.setRowId(resultSet.getString("row_id"));
+				
+				setChildData(cross,isLock);
 
 				result.add(cross);
 			}
@@ -304,52 +224,9 @@ public class RdCrossSelector implements ISelector {
 				
 				cross.setMesh(resultSet.getInt("mesh_id"));
 
-				List<IRow> links = new RdCrossLinkSelector(conn)
-						.loadRowsByParentId(cross.getPid(), isLock);
-				
-				for(IRow row : links){
-					row.setMesh(cross.mesh());
-				}
-
-				cross.setLinks(links);
-				
-				for (IRow row : cross.getLinks()) {
-					RdCrossLink obj = (RdCrossLink) row;
-
-					cross.linkMap.put(obj.rowId(), obj);
-				}
-
-				List<IRow> nodes = new RdCrossNodeSelector(conn)
-						.loadRowsByParentId(cross.getPid(), isLock);
-				
-				for(IRow row : nodes){
-					row.setMesh(cross.mesh());
-				}
-
-				cross.setNodes(nodes);
-				
-				for (IRow row : cross.getNodes()) {
-					RdCrossNode obj = (RdCrossNode) row;
-
-					cross.nodeMap.put(obj.rowId(), obj);
-				}
-
-				List<IRow> names = new RdCrossNameSelector(conn)
-						.loadRowsByParentId(cross.getPid(), isLock);
-				
-				for(IRow row : names){
-					row.setMesh(cross.mesh());
-				}
-
-				cross.setNames(names);
-				
-				for (IRow row : cross.getNames()) {
-					RdCrossName obj = (RdCrossName) row;
-
-					cross.nameMap.put(obj.rowId(), obj);
-				}
-
 				cross.setRowId(resultSet.getString("row_id"));
+				
+				setChildData(cross,isLock);
 
 			} else {
 				
@@ -379,5 +256,53 @@ public class RdCrossSelector implements ISelector {
 		}
 
 		return cross;
+	}
+	
+	private void setChildData(RdCross cross,boolean isLock) throws Exception
+	{
+		List<IRow> links = new AbstractSelector(RdCrossLink.class,conn)
+				.loadRowsByParentId(cross.getPid(), isLock);
+		
+		for(IRow row : links){
+			row.setMesh(cross.mesh());
+		}
+
+		cross.setLinks(links);
+		
+		for (IRow row : cross.getLinks()) {
+			RdCrossLink obj = (RdCrossLink) row;
+
+			cross.linkMap.put(obj.rowId(), obj);
+		}
+
+		List<IRow> nodes = new AbstractSelector(RdCrossNode.class,conn)
+				.loadRowsByParentId(cross.getPid(), isLock);
+		
+		for(IRow row : nodes){
+			row.setMesh(cross.mesh());
+		}
+
+		cross.setNodes(nodes);
+		
+		for (IRow row : cross.getNodes()) {
+			RdCrossNode obj = (RdCrossNode) row;
+
+			cross.nodeMap.put(obj.rowId(), obj);
+		}
+
+		List<IRow> names = new AbstractSelector(RdCrossName.class,conn)
+				.loadRowsByParentId(cross.getPid(), isLock);
+		
+		for(IRow row : names){
+			row.setMesh(cross.mesh());
+		}
+
+		cross.setNames(names);
+		
+		for (IRow row : cross.getNames()) {
+			RdCrossName obj = (RdCrossName) row;
+
+			cross.nameMap.put(obj.rowId(), obj);
+		}
 	}
 }

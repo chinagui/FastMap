@@ -147,7 +147,7 @@ public class RdElectroniceye implements IObj {
 	@Override
 	public List<List<IRow>> children() {
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
-		children.add(this.parts);
+		// children.add(this.parts);
 		return children;
 	}
 
@@ -384,6 +384,16 @@ public class RdElectroniceye implements IObj {
 
 	public void setPairs(List<IRow> pairs) {
 		this.pairs = pairs;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		return null;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		return null;
 	}
 
 }

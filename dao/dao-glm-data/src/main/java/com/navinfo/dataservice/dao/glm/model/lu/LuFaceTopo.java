@@ -212,5 +212,4 @@ public class LuFaceTopo implements IRow {
 	public String getRowId() {
 		return rowId;
 	}
-
 }

@@ -77,7 +77,7 @@ public class RdGateSearch implements ISearch {
 
 				snapshot.setM(m);
 
-				snapshot.setT(24);
+				snapshot.setT(23);
 
 				snapshot.setI(resultSet.getString("pid"));
 

@@ -15,6 +15,7 @@ import com.navinfo.dataservice.dao.glm.search.LuNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdBranchSearch;
 import com.navinfo.dataservice.dao.glm.search.RdCrossSearch;
 import com.navinfo.dataservice.dao.glm.search.RdElectroniceyeSearch;
+import com.navinfo.dataservice.dao.glm.search.RdGateSearch;
 import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLaneConnexitySearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkIntRticSearch;
@@ -104,6 +105,8 @@ public class SearchFactory {
 			return new RdWarninginfoSearch(conn);
 		case RDSLOPE:
 			return new RdSlopeSearch(conn);
+		case RDGATE:
+			return new RdGateSearch(conn);
 		default:
 			return null;
 		}

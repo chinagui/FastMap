@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.database.oracle.MyPoolGuardConnectionWrapper;
@@ -322,6 +323,7 @@ public class LogWriter {
 					}else{
 						sb.append(keyName);
 					}
+
 				}
 
 				sb.append("=:");
@@ -333,8 +335,12 @@ public class LogWriter {
 					sb.append(",");
 				}
 			}
-
-			sb.append(",u_record=3 where row_id = hextoraw('");
+			if (StringUtils.endsWith(sb.toString(), ",")){
+				sb.append("u_record=3 where row_id = hextoraw('");
+			}else{
+				sb.append(",u_record=3 where row_id = hextoraw('");
+			}
+			
 
 			sb.append(editLog.getTableRowId());
 

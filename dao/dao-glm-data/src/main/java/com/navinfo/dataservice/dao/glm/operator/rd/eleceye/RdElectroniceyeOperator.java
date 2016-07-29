@@ -155,7 +155,7 @@ public class RdElectroniceyeOperator extends AbstractOperator {
 				}
 			}
 		}
-		sb.append(" where row_id = '" + eleceye.rowId() + "'");
+		sb.append(" where row_id = hextoraw('" + eleceye.rowId() + "')");
 
 		String sql = sb.toString();
 

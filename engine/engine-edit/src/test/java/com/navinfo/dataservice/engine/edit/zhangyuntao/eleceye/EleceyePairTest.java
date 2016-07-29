@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.engine.edit.InitApplication;
@@ -7,6 +8,7 @@ import com.navinfo.dataservice.engine.edit.InitApplication;
 public class EleceyePairTest extends InitApplication {
 
 	@Override
+	@Before
 	public void init() {
 		super.initContext();
 	}

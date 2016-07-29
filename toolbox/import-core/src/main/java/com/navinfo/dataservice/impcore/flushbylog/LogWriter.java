@@ -342,7 +342,7 @@ public class LogWriter {
 					sb.append(",");
 				}
 			}
-			if (StringUtils.endsWith(sb.toString(), ",")){
+			if (keySize==0||StringUtils.endsWith(sb.toString(), ",")){
 				sb.append("u_record=3 where row_id = hextoraw('");
 			}else{
 				sb.append(",u_record=3 where row_id = hextoraw('");

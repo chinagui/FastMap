@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.database.oracle.MyPoolGuardConnectionWrapper;
@@ -146,16 +147,28 @@ public class LogWriter {
 				if("IX_POI".equalsIgnoreCase(tableName)&& !includeFiledsSet.contains(filed) ){
 					continue;
 				}
-				if ("changed_fields".equalsIgnoreCase(filed)||"status".equalsIgnoreCase(filed)){
+				if (isExcludeField(filed)){
 					continue;
 				}
-				if (++tmpPos < keySize) {
-					sb.append(filed);
-
-					sb.append(",");
-				} else {
-					sb.append(filed);
+				filed = unescapeField(filed);
+				boolean isOracleKey = isOracleKey(filed);
+				if (0==tmpPos){
+					if (isOracleKey){
+						sb.append("\""+filed.toUpperCase()+"\"");
+					}else{
+						sb.append(filed);
+					}
+					
+				}else{
+					if (isOracleKey){
+						sb.append(",\""+filed.toUpperCase()+"\"");
+					}else{
+						sb.append(","+filed);
+					}
+					
 				}
+				tmpPos++;
+				
 			}
 			boolean hasUrecord = false;
 			if(sb.indexOf(",u_record")!=-1){
@@ -178,7 +191,7 @@ public class LogWriter {
 				if("IX_POI".equalsIgnoreCase(tableName)&& !includeFiledsSet.contains(key.toString()) ){
 					continue;
 				}
-				if ("changed_fields".equalsIgnoreCase(key.toString())||"status".equalsIgnoreCase(key.toString())){
+				if (isExcludeField(key.toString())){
 					continue;
 				}
 				if (i==0){
@@ -206,7 +219,7 @@ public class LogWriter {
 				if("IX_POI".equalsIgnoreCase(tableName)&& !includeFiledsSet.contains(keyName) ){
 					continue;
 				}
-				if ("changed_fields".equalsIgnoreCase(keyName.toString())||"status".equalsIgnoreCase(keyName.toString())){
+				if (isExcludeField(keyName.toString())){
 					continue;
 				}
 				tmpPos++;
@@ -271,6 +284,30 @@ public class LogWriter {
 		}
 	}
 
+	private boolean isExcludeField(String filed) {
+		return "changed_fields".equalsIgnoreCase(filed)
+				||"status".equalsIgnoreCase(filed)
+				||"rd_gate_condition_map".equalsIgnoreCase(filed)
+				;
+	}
+	//特殊字段进行转换
+	private String unescapeField(String filed) {
+		if ("name_group_id".equalsIgnoreCase(filed)){
+			filed="name_groupid";
+		}
+		if ("open_2_4h".equalsIgnoreCase(filed)){
+			filed="open_24h";
+		}
+		return filed;
+	}
+
+	private boolean isOracleKey(String filed) {
+		return "level".equalsIgnoreCase(filed)
+				||"log".equalsIgnoreCase(filed)
+				||"label".equalsIgnoreCase(filed)
+				||"type".equalsIgnoreCase(filed);
+	}
+
 	private int updateData(EditLog editLog) {
 
 		PreparedStatement pstmt = null;
@@ -296,10 +333,12 @@ public class LogWriter {
 
 			while (it.hasNext()) {
 				String keyName = it.next();
-
-				Object valObj = json.get(keyName);
-
-				sb.append(keyName);
+				keyName = unescapeField(keyName);
+				if (isOracleKey(keyName)){
+					sb.append("\""+keyName.toUpperCase()+"\"");
+				}else {
+					sb.append(keyName);
+				}
 
 				sb.append("=:");
 
@@ -310,8 +349,12 @@ public class LogWriter {
 					sb.append(",");
 				}
 			}
-
-			sb.append(",u_record=3 where row_id = hextoraw('");
+			if (keySize==0||StringUtils.endsWith(sb.toString(), ",")){ 
+				sb.append("u_record=3 where row_id = hextoraw('");
+			}else{
+				sb.append(",u_record=3 where row_id = hextoraw('");
+			}
+			
 
 			sb.append(editLog.getTableRowId());
 

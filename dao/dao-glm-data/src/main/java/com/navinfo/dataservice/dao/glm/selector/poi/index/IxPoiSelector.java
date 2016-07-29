@@ -513,6 +513,7 @@ public class IxPoiSelector implements ISelector {
         buffer.append(" WHERE     ip.pid = ipn.poi_pid and ip.row_id = ps.row_id ");
         buffer.append(" AND lang_code = 'CHI'");
         buffer.append(" AND ipn.name_type = 2 ");
+        buffer.append(" AND ip.u_record != 2 ");
         buffer.append(" AND name_class = 1"); 
         buffer.append(" AND ps.status = "+type+"");
         buffer.append(" AND sdo_within_distance(ip.geometry, sdo_geometry(    '"+g+"'  , 8307), 'mask=anyinteract') = 'TRUE' ");

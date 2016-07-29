@@ -17,4 +17,19 @@ public class Check {
 		if (Command.ENTRY_KIND != startKind || Command.EXIT_KIND != endKind)
 			throw new Exception("匹配限速配对电子眼所选电子眼类型不对");
 	}
+	
+	public void isHasRdEleceyePair(Command command)throws Exception{
+		RdElectroniceye startEleceye = command.getEntryEleceye();
+		RdElectroniceye endEleceye = command.getEntryEleceye();
+		
+		if(null == startEleceye.getPairs() || startEleceye.getPairs().isEmpty()){
+		}else{
+			throw new Exception("起始区间测速电子眼已存在配对信息");
+		}
+		
+		if(null == endEleceye.getPairs() || endEleceye.getPairs().isEmpty()){
+		}else{
+			throw new Exception("结束区间测速电子眼已存在配对信息");
+		}
+	}
 }

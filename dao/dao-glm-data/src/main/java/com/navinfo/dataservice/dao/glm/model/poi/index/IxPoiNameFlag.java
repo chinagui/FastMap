@@ -208,5 +208,4 @@ public class IxPoiNameFlag implements IRow {
 	@Override
 	public void setMesh(int mesh) {
 	}
-
 }

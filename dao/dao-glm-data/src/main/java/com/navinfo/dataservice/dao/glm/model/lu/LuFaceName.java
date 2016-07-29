@@ -255,5 +255,4 @@ public class LuFaceName implements IRow {
 	public void setNameGroupid(int nameGroupid) {
 		this.nameGroupid = nameGroupid;
 	}
-
 }

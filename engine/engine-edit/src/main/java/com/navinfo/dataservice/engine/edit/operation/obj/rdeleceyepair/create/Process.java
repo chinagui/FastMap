@@ -7,7 +7,7 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
 public class Process extends AbstractProcess<Command> {
 	
-	private Check check;
+	private Check check = new Check();
 
 	public Process() {
 		super();
@@ -19,7 +19,8 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String preCheck() throws Exception {
-		check.checkRdEleceyePair(this.getCommand());
+		// check.checkRdEleceyePair(this.getCommand());
+		// check.isHasRdEleceyePair(this.getCommand());
 		return null;
 	}
 
@@ -30,14 +31,14 @@ public class Process extends AbstractProcess<Command> {
 		RdElectroniceyeSelector selector = new RdElectroniceyeSelector(this.getConn());
 
 		RdElectroniceye eleceye = (RdElectroniceye) selector.loadById(command.getEleceyePid1(), true);
-		if (Command.ENTRY_KIND == eleceye.getKind()) {
-			command.setEntryEleceye(eleceye);
-			eleceye = (RdElectroniceye) selector.loadById(command.getEleceyePid2(), true);
+		if (Command.EXIT_KIND == eleceye.getKind()) {
 			command.setExitEleceye(eleceye);
+			eleceye = (RdElectroniceye) selector.loadById(command.getEleceyePid2(), true);
+			command.setEntryEleceye(eleceye);
 		} else {
-			command.setExitEleceye(eleceye);
-			eleceye = (RdElectroniceye) selector.loadById(command.getEleceyePid2(), true);
 			command.setEntryEleceye(eleceye);
+			eleceye = (RdElectroniceye) selector.loadById(command.getEleceyePid2(), true);
+			command.setExitEleceye(eleceye);
 		}
 
 		return false;

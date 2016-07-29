@@ -128,7 +128,6 @@ public class RdEleceyePartSelector implements ISelector {
 
 				RdEleceyePart part = new RdEleceyePart();
 
-//				setAttr(part, resultSet);
 				ReflectionAttrUtils.executeResultSet(part, resultSet);
 
 				rows.add(part);
@@ -215,12 +214,5 @@ public class RdEleceyePartSelector implements ISelector {
 		}
 
 		return rows;
-	}
-
-	private void setAttr(RdEleceyePart part, ResultSet resultSet) throws SQLException {
-		part.setGroupId(resultSet.getInt("group_id"));
-		part.setEleceyePid(resultSet.getInt("eleceye_pid"));
-		part.setMesh(resultSet.getInt("mesh_id"));
-		part.setRowId(resultSet.getString("row_id"));
 	}
 }

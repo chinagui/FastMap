@@ -329,6 +329,20 @@ public class LuLink implements IObj {
 		this.linkKinds = linkKinds;
 	}
 
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
+		childMap.put(LuLinkKind.class, linkKinds);
+		childMap.put(LuLinkMesh.class, meshes);
+		return childMap;
+	}
 
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<Class<? extends IRow>,Map<String,?>>();
+		childMap.put(LuLinkKind.class, linkKindMap);
+		childMap.put(LuLinkMesh.class, meshMap);
+		return null;
+	}
 
 }

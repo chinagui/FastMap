@@ -5,9 +5,7 @@ import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
-import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceTopoSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 

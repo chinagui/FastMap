@@ -7,10 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -19,6 +15,10 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 
 public class RdGsc implements IObj  {
 	private String rowId;
@@ -250,6 +250,20 @@ public class RdGsc implements IObj  {
 
 	public String getRowId() {
 		return rowId;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
+		childList.put(RdGscLink.class, links);
+		return childList;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<Class<? extends IRow>,Map<String,?>>();
+		childMap.put(RdGscLink.class, rdGscLinkMap);
+		return childMap;
 	}
 	
 }

@@ -77,7 +77,6 @@ public class IxPoiIntroduction implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -147,8 +146,6 @@ public class IxPoiIntroduction implements IObj {
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -158,32 +155,26 @@ public class IxPoiIntroduction implements IObj {
 
 	@Override
 	public void copy(IRow row) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public Map<String, Object> changedFields() {
-		// TODO Auto-generated method stub
 		return this.changedFields;
 	}
 
 	@Override
 	public String parentPKName() {
-		// TODO Auto-generated method stub
-		return "introduction_id";
+		return "POI_PID";
 	}
 
 	@Override
 	public int parentPKValue() {
-		// TODO Auto-generated method stub
-		return this.getPid();
+		return this.getPoiPid();
 	}
 
 	@Override
 	public String parentTableName() {
-		// TODO Auto-generated method stub
-		return "ix_poi_introduction";
+		return "ix_poi";
 	}
 
 	public Map<String, Object> getChangedFields() {
@@ -289,19 +280,31 @@ public class IxPoiIntroduction implements IObj {
 
 	@Override
 	public List<IRow> relatedRows() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int pid() {
-		// TODO Auto-generated method stub
 		return this.getPid();
 	}
 
 	@Override
 	public String primaryKey() {
 		return "introduction_id";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

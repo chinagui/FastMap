@@ -179,5 +179,4 @@ public class RdEleceyePart implements IRow {
 	public String getRowId() {
 		return rowId;
 	}
-
 }

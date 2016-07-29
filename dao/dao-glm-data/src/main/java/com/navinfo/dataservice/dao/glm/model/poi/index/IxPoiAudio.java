@@ -153,12 +153,12 @@ public class IxPoiAudio implements IRow {
 
 	@Override
 	public String parentPKName() {
-		return "pid";
+		return "poi_pid";
 	}
 
 	@Override
 	public int parentPKValue() {
-		return this.poiPid;
+		return this.getPoiPid();
 	}
 
 	@Override

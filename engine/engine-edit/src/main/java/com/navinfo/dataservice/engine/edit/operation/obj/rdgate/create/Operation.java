@@ -35,6 +35,21 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 		try {
+			String resultMsg = null;
+			createGate(result);
+			return resultMsg;
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * 创建大门
+	 * @param result
+	 * @throws Exception
+	 */
+	public void createGate(Result result) throws Exception {
+		try {
 			this.result = result;
 			RdGate rdGate = new RdGate();
 			rdGate.setPid(PidService.getInstance().applyRdGate());
@@ -47,9 +62,6 @@ public class Operation implements IOperation {
 		} catch (Exception e) {
 			throw e;
 		}
-		
-		
-		return null;
 	}
 	
 	/**

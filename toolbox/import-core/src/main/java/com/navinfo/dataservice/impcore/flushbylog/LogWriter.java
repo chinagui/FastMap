@@ -147,7 +147,7 @@ public class LogWriter {
 				if("IX_POI".equalsIgnoreCase(tableName)&& !includeFiledsSet.contains(filed) ){
 					continue;
 				}
-				if (isExcludeField(filed)){
+				if (isExcludeField(filed,tableName)){
 					continue;
 				}
 				filed = unescapeField(filed);
@@ -191,7 +191,7 @@ public class LogWriter {
 				if("IX_POI".equalsIgnoreCase(tableName)&& !includeFiledsSet.contains(key.toString()) ){
 					continue;
 				}
-				if (isExcludeField(key.toString())){
+				if (isExcludeField(key.toString(),tableName)){
 					continue;
 				}
 				if (i==0){
@@ -219,7 +219,7 @@ public class LogWriter {
 				if("IX_POI".equalsIgnoreCase(tableName)&& !includeFiledsSet.contains(keyName) ){
 					continue;
 				}
-				if (isExcludeField(keyName.toString())){
+				if (isExcludeField(keyName.toString(),tableName)){
 					continue;
 				}
 				tmpPos++;
@@ -284,10 +284,14 @@ public class LogWriter {
 		}
 	}
 
-	private boolean isExcludeField(String filed) {
+	private boolean isExcludeField(String filed,String tableName) {
 		return "changed_fields".equalsIgnoreCase(filed)
 				||"status".equalsIgnoreCase(filed)
 				||"rd_gate_condition_map".equalsIgnoreCase(filed)
+				||("ix_poi_restaurant".endsWith(tableName)&&"mesh".equalsIgnoreCase(filed))
+				||("ad_face_topo".endsWith(tableName)&&"mesh".equalsIgnoreCase(filed))
+				||("ad_face_topo".endsWith(tableName)&&"mesh".equalsIgnoreCase(filed))
+				||("ad_link".endsWith(tableName)&&"mesh".equalsIgnoreCase(filed))
 				;
 	}
 	//特殊字段进行转换
@@ -297,6 +301,9 @@ public class LogWriter {
 		}
 		if ("open_2_4h".equalsIgnoreCase(filed)){
 			filed="open_24h";
+		}
+		if ("p_mesh_id".equalsIgnoreCase(filed)){
+			filed="pmesh_id";
 		}
 		return filed;
 	}

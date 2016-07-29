@@ -22,9 +22,9 @@ public class RdGate implements IObj {
 	private int inLinkPid;
 	private int nodePid;
 	private int outLinkPid;
-	private int type;
-	private int dir;
-	private int fee;
+	private int type = 2;
+	private int dir = 2;
+	private int fee = 0;
 	private String rowId;
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	private List<IRow> condition = new ArrayList<IRow>();

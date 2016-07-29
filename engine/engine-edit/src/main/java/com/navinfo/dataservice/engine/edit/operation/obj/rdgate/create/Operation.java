@@ -93,10 +93,9 @@ public class Operation implements IOperation {
 		List<IRow> conditionList = new ArrayList<IRow>();
 		RdGateCondition conditionOne = new RdGateCondition();
 		conditionOne.setPid(pid);
-		conditionOne.setValidObj(0);
-		conditionOne.setTimeDomain("");
 		conditionList.add(conditionOne);
 		RdGateCondition conditionTwo = new RdGateCondition();
+		conditionTwo.setPid(pid);
 		conditionTwo.setValidObj(1);
 		conditionList.add(conditionTwo);
 		return conditionList;

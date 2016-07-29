@@ -35,7 +35,7 @@ public class EleceyeTest extends InitApplication {
 
 	@Test
 	public void updateEleceye() {
-		String requester = "{'dbId':43,'command':'UPDATE','type':'RDELECTRONICEYE','data':{'pid':100281918,'kind':20,'objStatus':'UPDATE'}}";
+		String requester = "{\"command\":\"UPDATE\",\"type\":\"RDELECTRONICEYE\",\"dbId\":42,\"data\":{\"location\":4,\"rowId\":\"3524E60474A46E1AE050A8C08304BA17\",\"pid\":32943645,\"objStatus\":\"UPDATE\"}}";
 		TestUtil.run(requester);
 	}
 

@@ -147,7 +147,7 @@ public class LogWriter {
 				if("IX_POI".equalsIgnoreCase(tableName)&& !includeFiledsSet.contains(filed) ){
 					continue;
 				}
-				if ("changed_fields".equalsIgnoreCase(filed)||"status".equalsIgnoreCase(filed)){
+				if (isExcludeField(filed)){
 					continue;
 				}
 				filed = unescapeField(filed);
@@ -191,7 +191,7 @@ public class LogWriter {
 				if("IX_POI".equalsIgnoreCase(tableName)&& !includeFiledsSet.contains(key.toString()) ){
 					continue;
 				}
-				if ("changed_fields".equalsIgnoreCase(key.toString())||"status".equalsIgnoreCase(key.toString())){
+				if (isExcludeField(key.toString())){
 					continue;
 				}
 				if (i==0){
@@ -219,7 +219,7 @@ public class LogWriter {
 				if("IX_POI".equalsIgnoreCase(tableName)&& !includeFiledsSet.contains(keyName) ){
 					continue;
 				}
-				if ("changed_fields".equalsIgnoreCase(keyName.toString())||"status".equalsIgnoreCase(keyName.toString())){
+				if (isExcludeField(keyName.toString())){
 					continue;
 				}
 				tmpPos++;
@@ -282,6 +282,13 @@ public class LogWriter {
 
 			}
 		}
+	}
+
+	private boolean isExcludeField(String filed) {
+		return "changed_fields".equalsIgnoreCase(filed)
+				||"status".equalsIgnoreCase(filed)
+				||"rd_gate_condition_map".equalsIgnoreCase(filed)
+				;
 	}
 	//特殊字段进行转换
 	private String unescapeField(String filed) {

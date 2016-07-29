@@ -739,14 +739,6 @@ public class IxPoi implements IObj {
 		this.oldYGuide = oldYGuide;
 	}
 
-	public Map<String, Object> getChangedFields() {
-		return changedFields;
-	}
-
-	public void setChangedFields(Map<String, Object> changedFields) {
-		this.changedFields = changedFields;
-	}
-
 	public List<IRow> getAddresses() {
 		return addresses;
 	}

@@ -149,10 +149,21 @@ public class LogWriter {
 				if ("changed_fields".equalsIgnoreCase(filed)||"status".equalsIgnoreCase(filed)){
 					continue;
 				}
+				boolean isOracleKey = isOracleKey(filed);
 				if (0==tmpPos){
-					sb.append(filed);
+					if (isOracleKey){
+						sb.append("\""+filed.toUpperCase()+"\"");
+					}else{
+						sb.append(filed);
+					}
+					
 				}else{
-					sb.append(","+filed);
+					if (isOracleKey){
+						sb.append(",\""+filed.toUpperCase()+"\"");
+					}else{
+						sb.append(","+filed);
+					}
+					
 				}
 				tmpPos++;
 				
@@ -271,6 +282,13 @@ public class LogWriter {
 		}
 	}
 
+	private boolean isOracleKey(String filed) {
+		return "level".equalsIgnoreCase(filed)
+				||"log".equalsIgnoreCase(filed)
+				||"label".equalsIgnoreCase(filed)
+				||"type".equalsIgnoreCase(filed);
+	}
+
 	private int updateData(EditLog editLog) {
 
 		PreparedStatement pstmt = null;
@@ -296,10 +314,15 @@ public class LogWriter {
 
 			while (it.hasNext()) {
 				String keyName = it.next();
-
-				Object valObj = json.get(keyName);
-
-				sb.append(keyName);
+				if (isOracleKey(keyName)){
+					sb.append("\""+keyName.toUpperCase()+"\"");
+				}else {
+					if ("open_2_4h".equalsIgnoreCase(keyName)){
+						sb.append("OPEN_24H");
+					}else{
+						sb.append(keyName);
+					}
+				}
 
 				sb.append("=:");
 

@@ -1,18 +1,15 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdgate.update;
 
-import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
+
+import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 	
-	protected Logger log = Logger.getLogger(this.getClass());
-
 	private Command command;
-
-	private Result result;
 	
 	public Operation(Command command) {
 		this.command = command;
@@ -21,12 +18,24 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 		try {
-			this.result = result;
-			this.result.insertObject(command.getRdGate(), ObjStatus.UPDATE, command.getRdGate().getPid());
+			updateRdGate(result);
 		} catch (Exception e) {
 			throw e;
 		}
 		return null;
+	}
+	
+	public void updateRdGate(Result result) throws Exception {
+		JSONObject content = command.getContent();
+
+		RdGate rdGate = command.getRdGate();
+
+		boolean isChanged = rdGate.fillChangeFields(content);
+
+		if (isChanged) {
+			result.insertObject(rdGate, ObjStatus.UPDATE, rdGate.pid());
+			result.setPrimaryPid(rdGate.pid());
+		}
 	}
 
 }

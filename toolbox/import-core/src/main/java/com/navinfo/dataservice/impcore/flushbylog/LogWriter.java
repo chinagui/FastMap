@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.database.oracle.MyPoolGuardConnectionWrapper;
@@ -149,6 +150,7 @@ public class LogWriter {
 				if ("changed_fields".equalsIgnoreCase(filed)||"status".equalsIgnoreCase(filed)){
 					continue;
 				}
+				filed = unescapeField(filed);
 				boolean isOracleKey = isOracleKey(filed);
 				if (0==tmpPos){
 					if (isOracleKey){
@@ -281,6 +283,16 @@ public class LogWriter {
 			}
 		}
 	}
+	//特殊字段进行转换
+	private String unescapeField(String filed) {
+		if ("name_group_id".equalsIgnoreCase(filed)){
+			filed="name_groupid";
+		}
+		if ("open_2_4h".equalsIgnoreCase(filed)){
+			filed="open_24h";
+		}
+		return filed;
+	}
 
 	private boolean isOracleKey(String filed) {
 		return "level".equalsIgnoreCase(filed)
@@ -314,14 +326,11 @@ public class LogWriter {
 
 			while (it.hasNext()) {
 				String keyName = it.next();
+				keyName = unescapeField(keyName);
 				if (isOracleKey(keyName)){
 					sb.append("\""+keyName.toUpperCase()+"\"");
 				}else {
-					if ("open_2_4h".equalsIgnoreCase(keyName)){
-						sb.append("OPEN_24H");
-					}else{
-						sb.append(keyName);
-					}
+					sb.append(keyName);
 				}
 
 				sb.append("=:");
@@ -333,8 +342,12 @@ public class LogWriter {
 					sb.append(",");
 				}
 			}
-
-			sb.append(",u_record=3 where row_id = hextoraw('");
+			if (StringUtils.endsWith(sb.toString(), ",")){
+				sb.append("u_record=3 where row_id = hextoraw('");
+			}else{
+				sb.append(",u_record=3 where row_id = hextoraw('");
+			}
+			
 
 			sb.append(editLog.getTableRowId());
 

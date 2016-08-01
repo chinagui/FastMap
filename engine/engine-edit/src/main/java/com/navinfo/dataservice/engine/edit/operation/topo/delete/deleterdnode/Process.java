@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
@@ -19,7 +17,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
-import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
+import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
@@ -29,10 +27,13 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.warninginfo.RdWarninginfoSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 import com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink.OpRefRdWarninginfo;
+
+import net.sf.json.JSONObject;
 
 public class Process extends AbstractProcess<Command> {
 
@@ -45,8 +46,7 @@ public class Process extends AbstractProcess<Command> {
 
 		RdLinkSelector selector = new RdLinkSelector(this.getConn());
 
-		List<RdLink> links = selector.loadByNodePid(this.getCommand()
-				.getNodePid(), true);
+		List<RdLink> links = selector.loadByNodePid(this.getCommand().getNodePid(), true);
 
 		List<Integer> linkPids = new ArrayList<Integer>();
 
@@ -63,8 +63,7 @@ public class Process extends AbstractProcess<Command> {
 
 		RdNodeSelector selector = new RdNodeSelector(this.getConn());
 
-		RdNode node = (RdNode) selector.loadById(
-				this.getCommand().getNodePid(), true);
+		RdNode node = (RdNode) selector.loadById(this.getCommand().getNodePid(), true);
 
 		this.getCommand().setNode(node);
 
@@ -110,23 +109,18 @@ public class Process extends AbstractProcess<Command> {
 	public void lockRdRestriction() throws Exception {
 		// 获取进入线为该link的交限
 
-		RdRestrictionSelector restriction = new RdRestrictionSelector(
-				this.getConn());
+		RdRestrictionSelector restriction = new RdRestrictionSelector(this.getConn());
 
-		List<RdRestriction> restrictions = restriction
-				.loadRdRestrictionByNodePid(this.getCommand().getNodePid(),
-						true);
+		List<RdRestriction> restrictions = restriction.loadRdRestrictionByNodePid(this.getCommand().getNodePid(), true);
 
 		this.getCommand().setRestrictions(restrictions);
 	}
 
 	public void lockRdLaneConnexity() throws Exception {
 
-		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(
-				this.getConn());
+		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(this.getConn());
 
-		List<RdLaneConnexity> lanes = selector.loadRdLaneConnexityByNodePid(
-				this.getCommand().getNodePid(), true);
+		List<RdLaneConnexity> lanes = selector.loadRdLaneConnexityByNodePid(this.getCommand().getNodePid(), true);
 
 		this.getCommand().setLanes(lanes);
 	}
@@ -135,8 +129,7 @@ public class Process extends AbstractProcess<Command> {
 
 		RdBranchSelector selector = new RdBranchSelector(this.getConn());
 
-		List<RdBranch> branches = selector.loadRdBranchByNodePid(this
-				.getCommand().getNodePid(), true);
+		List<RdBranch> branches = selector.loadRdBranchByNodePid(this.getCommand().getNodePid(), true);
 
 		this.getCommand().setBranches(branches);
 	}
@@ -145,9 +138,8 @@ public class Process extends AbstractProcess<Command> {
 
 		RdCrossSelector selector = new RdCrossSelector(this.getConn());
 
-		List<RdCross> crosses = selector.loadRdCrossByNodeOrLink(this
-				.getCommand().getNodePids(), this.getCommand().getLinkPids(),
-				true);
+		List<RdCross> crosses = selector.loadRdCrossByNodeOrLink(this.getCommand().getNodePids(),
+				this.getCommand().getLinkPids(), true);
 
 		this.getCommand().setCrosses(crosses);
 	}
@@ -156,8 +148,7 @@ public class Process extends AbstractProcess<Command> {
 
 		RdSpeedlimitSelector selector = new RdSpeedlimitSelector(this.getConn());
 
-		List<RdSpeedlimit> limits = selector.loadSpeedlimitByLinkPids(this
-				.getCommand().getLinkPids(), true);
+		List<RdSpeedlimit> limits = selector.loadSpeedlimitByLinkPids(this.getCommand().getLinkPids(), true);
 
 		this.getCommand().setLimits(limits);
 	}
@@ -166,8 +157,7 @@ public class Process extends AbstractProcess<Command> {
 
 		RdGscSelector selector = new RdGscSelector(this.getConn());
 
-		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPids(this
-				.getCommand().getLinkPids(), "RD_LINK", true);
+		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPids(this.getCommand().getLinkPids(), "RD_LINK", true);
 
 		this.getCommand().setRdGscs(rdGscList);
 	}
@@ -175,8 +165,7 @@ public class Process extends AbstractProcess<Command> {
 	private void lockAdAdmin() throws Exception {
 		AdAdminSelector selector = new AdAdminSelector(this.getConn());
 
-		List<AdAdmin> adAdminList = selector.loadRowsByLinkPids(this
-				.getCommand().getLinkPids(), true);
+		List<AdAdmin> adAdminList = selector.loadRowsByLinkPids(this.getCommand().getLinkPids(), true);
 
 		this.getCommand().setAdAdmins(adAdminList);
 	}
@@ -246,9 +235,9 @@ public class Process extends AbstractProcess<Command> {
 
 				prepareData();
 
-				Map<String, List<Integer>> infects = confirmRelationObj();				
+				Map<String, List<Integer>> infects = confirmRelationObj();
 
-				return JSONObject.fromObject(infects).toString();	
+				return JSONObject.fromObject(infects).toString();
 			}
 
 		} catch (Exception e) {
@@ -302,12 +291,11 @@ public class Process extends AbstractProcess<Command> {
 		opRefBranch.run(this.getResult());
 
 		// 路口
-		IOperation opRefCross = new OpRefCross(this.getCommand());
+		IOperation opRefCross = new OpRefCross(this.getCommand(), this.getConn());
 		opRefCross.run(this.getResult());
 
 		// 车信
-		IOperation opRefLaneConnexity = new OpRefLaneConnexity(
-				this.getCommand());
+		IOperation opRefLaneConnexity = new OpRefLaneConnexity(this.getCommand());
 		opRefLaneConnexity.run(this.getResult());
 
 		// 限速
@@ -323,10 +311,8 @@ public class Process extends AbstractProcess<Command> {
 		opRefAdAdmin.run(this.getResult());
 
 		// 警示信息
-		OpRefRdWarninginfo opRefRdWarninginfo = new OpRefRdWarninginfo(
-				this.getConn());
-		opRefRdWarninginfo
-				.run(this.getResult(), this.getCommand().getNodePid());
+		OpRefRdWarninginfo opRefRdWarninginfo = new OpRefRdWarninginfo(this.getConn());
+		opRefRdWarninginfo.run(this.getResult(), this.getCommand().getNodePid());
 	}
 
 	/**
@@ -373,14 +359,25 @@ public class Process extends AbstractProcess<Command> {
 
 		infects.put("RDRESTRICTION", infectList);
 
-		//警示信息		
+		// 警示信息
 		RdWarninginfoSelector selector = new RdWarninginfoSelector(this.getConn());
 
 		infectList = selector.loadPidByNode(this.getCommand().getNodePid(), true);
 
 		infects.put("RDWARNINGINFO", infectList);
-		
+
+		// 信号灯
+		RdTrafficsignalSelector trafficsignalSelector = new RdTrafficsignalSelector(this.getConn());
+
+		List<RdTrafficsignal> trafficsignals = trafficsignalSelector.loadByNodeId(true,
+				this.getCommand().getNodePid());
+
+		for (RdTrafficsignal trafficsignal : trafficsignals) {
+			infectList.add(trafficsignal.getPid());
+		}
+
+		infects.put("RDTRAFFICSIGNAL", infectList);
+
 		return infects;
-		
 	}
 }

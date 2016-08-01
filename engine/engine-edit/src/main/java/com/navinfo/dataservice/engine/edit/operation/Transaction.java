@@ -1,12 +1,12 @@
 package com.navinfo.dataservice.engine.edit.operation;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * 操作控制器
@@ -122,7 +122,7 @@ public class Transaction {
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdcross.update.Command(json, requester);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.operation.obj.rdcross.delete.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deletecross.Command(json, requester);
 			}
 		case RDBRANCH:
 			switch (operType) {
@@ -491,7 +491,7 @@ public class Transaction {
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdcross.update.Process(command);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.operation.obj.rdcross.delete.Process(command);
+				return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deletecross.Process(command);
 			}
 		case RDBRANCH:
 			switch (operType) {

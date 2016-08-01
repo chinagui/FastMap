@@ -33,12 +33,18 @@ public class OpTopo implements IOperation {
 		RdCross cross = command.getCross();
 
 		result.insertObject(cross, ObjStatus.DELETE, cross.pid());
-		
+
 		result.setPrimaryPid(cross.getPid());
 
+		updateLinkForm(result);
+
+		return msg;
+	}
+
+	private void updateLinkForm(Result result) throws Exception {
 		RdLinkFormSelector selector = new RdLinkFormSelector(conn);
 
-		for (IRow row : cross.getLinks()) {
+		for (IRow row : command.getCross().getLinks()) {
 			RdCrossLink crosslink = (RdCrossLink) row;
 
 			int linkPid = crosslink.getLinkPid();
@@ -53,22 +59,20 @@ public class OpTopo implements IOperation {
 
 				if (form.getFormOfWay() == 50) { // 交叉点内道路
 					form.changedFields().put("formOfWay", 1);
-					
+
 					targetRow = form;
 				}
 			}
 
-			if(targetRow != null){
-				if (forms.size()==1) {
-					result.insertObject(targetRow, ObjStatus.UPDATE, cross.pid());
-				}
-				else{
-					result.insertObject(targetRow, ObjStatus.DELETE, cross.pid());
+			if (targetRow != null) {
+				if (forms.size() == 1) {
+					result.insertObject(targetRow, ObjStatus.UPDATE, command.getCross().pid());
+				} else {
+					result.insertObject(targetRow, ObjStatus.DELETE, command.getCross().pid());
 				}
 			}
 
 		}
-		return msg;
 	}
 
 }

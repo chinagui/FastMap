@@ -8,9 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -28,7 +25,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
-import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchViaSelector;
@@ -48,6 +44,9 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Point;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class Process extends AbstractProcess<Command> {
 
@@ -454,15 +453,18 @@ public class Process extends AbstractProcess<Command> {
 		infects.put("RDWARNINGINFO", infectList);
 
 		// 信号灯
-		infectList = new ArrayList<Integer>();
-		
 		RdTrafficsignalSelector trafficSelector = new RdTrafficsignalSelector(this.getConn());
 
-		RdTrafficsignal rdTrafficsignal = trafficSelector.loadByLinkPid(this.getCommand().getLinkPid(), true);
+		RdTrafficsignal rdTrafficsignal = trafficSelector.loadByLinkPid(true,this.getCommand().getLinkPid()).get(0);
 		
-		infectList.add(rdTrafficsignal.getPid());
+		if(rdTrafficsignal != null)
+		{
+			infectList = new ArrayList<Integer>();
+			
+			infectList.add(rdTrafficsignal.getPid());
 
-		infects.put("RDTRAFFICSIGNAL", infectList);
+			infects.put("RDTRAFFICSIGNAL", infectList);
+		}
 
 		return infects;
 

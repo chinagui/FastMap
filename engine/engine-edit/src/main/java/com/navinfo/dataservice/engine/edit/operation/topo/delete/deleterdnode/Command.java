@@ -2,9 +2,6 @@ package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdnode;
 
 import java.util.List;
 
-import net.sf.json.JSONObject;
-
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
@@ -17,6 +14,8 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
+
+import net.sf.json.JSONObject;
 
 public class Command extends AbstractCommand {
 	

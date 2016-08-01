@@ -76,15 +76,18 @@ public class Operation implements IOperation {
 
 		RdTrafficsignalSelector selector = new RdTrafficsignalSelector(conn);
 
-		RdTrafficsignal rdTrafficsignal = selector.loadByLinkPid(linkPid, true);
+		RdTrafficsignal rdTrafficsignal = selector.loadByLinkPid(true,linkPid).get(0);
+		
+		if(rdTrafficsignal != null)
+		{
+			for (RdLink link : newLinks) {
 
-		for (RdLink link : newLinks) {
+				if (link.getsNodePid() == rdTrafficsignal.getNodePid() || link.geteNodePid() == rdTrafficsignal.getNodePid()) {
 
-			if (link.getsNodePid() == rdTrafficsignal.getNodePid() || link.geteNodePid() == rdTrafficsignal.getNodePid()) {
+					rdTrafficsignal.changedFields().put("linkPid", link.getPid());
 
-				rdTrafficsignal.changedFields().put("linkPid", link.getPid());
-
-				result.insertObject(rdTrafficsignal, ObjStatus.UPDATE, rdTrafficsignal.pid());
+					result.insertObject(rdTrafficsignal, ObjStatus.UPDATE, rdTrafficsignal.pid());
+				}
 			}
 		}
 	}

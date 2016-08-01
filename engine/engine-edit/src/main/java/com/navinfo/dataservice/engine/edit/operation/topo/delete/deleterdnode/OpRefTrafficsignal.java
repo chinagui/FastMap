@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink;
+package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdnode;
 
 import java.sql.Connection;
 import java.util.List;

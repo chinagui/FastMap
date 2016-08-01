@@ -44,14 +44,6 @@ public class LcFeature implements IObj {
 		this.pid = pid;
 	}
 
-	public Map<String, Object> getChangedFields() {
-		return changedFields;
-	}
-
-	public void setChangedFields(Map<String, Object> changedFields) {
-		this.changedFields = changedFields;
-	}
-
 	public String getRowId() {
 		return rowId;
 	}

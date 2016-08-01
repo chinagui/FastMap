@@ -58,14 +58,6 @@ public class LcLinkKind implements IRow{
 		this.form = form;
 	}
 
-	public Map<String, Object> getChangedFields() {
-		return changedFields;
-	}
-
-	public void setChangedFields(Map<String, Object> changedFields) {
-		this.changedFields = changedFields;
-	}
-
 	public String getRowId() {
 		return rowId;
 	}

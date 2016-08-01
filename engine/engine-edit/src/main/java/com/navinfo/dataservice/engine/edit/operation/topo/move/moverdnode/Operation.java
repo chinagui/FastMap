@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -22,6 +20,8 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -174,5 +174,10 @@ public class Operation implements IOperation {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Operation warninginOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Operation(
 				this.conn);
 		warninginOperation.breakRdLink(oldLink.getPid(), newLinks, result);
+		
+		//维护信号灯
+		com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation trafficSignalOperation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation(
+				this.conn);
+		trafficSignalOperation.breakRdLink(oldLink.getPid(), newLinks, result);
 	}
 }

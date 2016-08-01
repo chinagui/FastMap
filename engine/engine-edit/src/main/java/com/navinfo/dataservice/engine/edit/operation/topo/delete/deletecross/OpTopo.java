@@ -37,6 +37,11 @@ public class OpTopo implements IOperation {
 		result.setPrimaryPid(cross.getPid());
 
 		updateLinkForm(result);
+		
+		//删除信号灯
+		OpRefTrafficsignal opRefTrafficsignal = new OpRefTrafficsignal(conn);
+		
+		opRefTrafficsignal.run(result, cross.getNodes());
 
 		return msg;
 	}

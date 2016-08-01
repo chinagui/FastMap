@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
@@ -60,7 +61,7 @@ public class Operation implements IOperation {
 	 * @param conn
 	 * @throws Exception
 	 */
-	public void deleteByNode(Result result,List<RdCrossNode> crossNodes) throws Exception {		
+	public void deleteByNode(Result result,List<IRow> crossNodes) throws Exception {		
 
 		if (conn == null || CollectionUtils.isEmpty(crossNodes)) {
 			return;
@@ -69,7 +70,7 @@ public class Operation implements IOperation {
 		
 		for(int i=0;i<crossNodes.size();i++)
 		{
-			crossNodePids[i] = crossNodes.get(i).getPid();
+			crossNodePids[i] = ((RdCrossNode)crossNodes.get(i)).getNodePid();
 		}
 		
 		RdTrafficsignalSelector selector = new RdTrafficsignalSelector(conn);

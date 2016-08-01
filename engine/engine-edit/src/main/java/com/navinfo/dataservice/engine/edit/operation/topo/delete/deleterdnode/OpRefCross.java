@@ -28,7 +28,7 @@ public class OpRefCross implements IOperation {
 
 		List<Integer> nodePids = command.getNodePids();
 
-		List<RdCrossNode> allNodes = new ArrayList<RdCrossNode>();
+		List<IRow> allNodes = new ArrayList<IRow>();
 
 		for (RdCross cross : command.getCrosses()) {
 			allNodes.addAll(deleteCross(cross, result, nodePids));
@@ -40,9 +40,9 @@ public class OpRefCross implements IOperation {
 		return null;
 	}
 
-	private List<RdCrossNode> deleteCross(RdCross cross, Result result, List<Integer> nodePids) {
+	private List<IRow> deleteCross(RdCross cross, Result result, List<Integer> nodePids) {
 
-		List<RdCrossNode> nodes = new ArrayList<RdCrossNode>();
+		List<IRow> nodes = new ArrayList<IRow>();
 
 		// 判断线上是否还存在其他路口：1.存在,将关系表数据删除2.不存在，直接讲路口删除
 		for (IRow row : cross.getNodes()) {
@@ -56,7 +56,7 @@ public class OpRefCross implements IOperation {
 		if (nodes.size() == cross.getNodes().size()) {
 			result.insertObject(cross, ObjStatus.DELETE, cross.pid());
 		} else {
-			for (RdCrossNode node : nodes) {
+			for (IRow node : nodes) {
 				result.insertObject(node, ObjStatus.DELETE, cross.pid());
 			}
 

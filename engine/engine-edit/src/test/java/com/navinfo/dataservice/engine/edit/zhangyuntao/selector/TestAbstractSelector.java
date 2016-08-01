@@ -3,11 +3,12 @@ package com.navinfo.dataservice.engine.edit.zhangyuntao.selector;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import org.apache.commons.dbutils.DbUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 
@@ -48,51 +49,77 @@ public abstract class TestAbstractSelector<T extends IRow> {
 		this.conn = conn;
 	}
 
-	public IRow loadById(int id, boolean isLock) throws Exception {
-		T t = clazz.newInstance();
-		StringBuffer sb = new StringBuffer();
-		sb.append("select * from ");
-		sb.append(clazz.getMethod("tableName").invoke(t) + " ");
-		sb.append("where ");
-		sb.append(clazz.getMethod("parentPKName").invoke(t) + " ");
-		sb.append("= :1 ");
+	public IRow loadById(int id, boolean isLock) {
+		T t = null;
+		StringBuffer sb = null;
+		try {
+			t = clazz.newInstance();
+			sb = new StringBuffer();
+			sb.append("select * from ");
+			sb.append(clazz.getMethod("tableName").invoke(t) + " ");
+			sb.append("where ");
 
-		if (isLock) {
-			sb.append("for update nowait");
+			sb.append(clazz.getMethod("parentPKName").invoke(t) + " ");
+
+			sb.append("= :1 ");
+
+			if (isLock) {
+				sb.append("for update nowait");
+			}
+		} catch (Exception e1) {
 		}
 
 		PreparedStatement ptst = null;
 		ResultSet resultSet = null;
-		ptst = this.conn.prepareStatement(sb.toString());
-		ptst.setInt(1, id);
-		resultSet = ptst.executeQuery();
-		if (resultSet.next()) {
-			ReflectionAttrUtils.executeResultSet(t, resultSet);
-			this.loadChildren(t, isLock);
+		try {
+			ptst = this.conn.prepareStatement(sb.toString());
+			ptst.setInt(1, id);
+			resultSet = ptst.executeQuery();
+			if (resultSet.next()) {
+				ReflectionAttrUtils.executeResultSet(t, resultSet);
+				this.loadChildren(t, isLock);
+			}
+		} catch (Exception e) {
+			new SQLException(e.getMessage(), "loadById查询出错");
+		} finally {
+			DbUtils.closeQuietly(conn);
+			DbUtils.closeQuietly(ptst);
 		}
-
 		return t;
 	}
 
-	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
-		T t = clazz.newInstance();
-		StringBuffer sb = new StringBuffer();
-		sb.append("select * from ");
-		sb.append(clazz.getMethod("tableName").invoke(t) + " ");
-		sb.append("where row_id ");
-		sb.append("= hextoraw(:1) ");
+	public IRow loadByRowId(String rowId, boolean isLock) {
+		T t = null;
+		StringBuffer sb = null;
+		try {
+			t = clazz.newInstance();
+			sb = new StringBuffer();
+			sb.append("select * from ");
+			sb.append(clazz.getMethod("tableName").invoke(t) + " ");
+			sb.append("where row_id ");
+			sb.append("= hextoraw(:1) ");
 
-		if (isLock) {
-			sb.append("for update nowait");
+			if (isLock) {
+				sb.append("for update nowait");
+			}
+		} catch (Exception e) {
+
 		}
 
 		PreparedStatement ptst = null;
 		ResultSet resultSet = null;
-		ptst = this.conn.prepareStatement(sb.toString());
-		ptst.setString(1, rowId);
-		resultSet = ptst.executeQuery();
-		if (resultSet.next()) {
-			ReflectionAttrUtils.executeResultSet(t, resultSet);
+		try {
+			ptst = this.conn.prepareStatement(sb.toString());
+			ptst.setString(1, rowId);
+			resultSet = ptst.executeQuery();
+			if (resultSet.next()) {
+				ReflectionAttrUtils.executeResultSet(t, resultSet);
+			}
+		} catch (Exception e) {
+			new SQLException(e.getMessage(), "loadByRowId查询出错");
+		} finally {
+			DbUtils.closeQuietly(conn);
+			DbUtils.closeQuietly(ptst);
 		}
 
 		return t;
@@ -100,27 +127,39 @@ public abstract class TestAbstractSelector<T extends IRow> {
 
 	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
 		List<IRow> rows = new ArrayList<IRow>();
-		T t = clazz.newInstance();
+		T t = null;
+		StringBuffer sb = null;
 
-		StringBuffer sb = new StringBuffer();
-		sb.append("select * from ");
-		sb.append(clazz.getMethod("tableName").invoke(t) + " ");
-		sb.append("where ");
-		sb.append(clazz.getMethod("parentPKName").invoke(t) + " ");
-		sb.append("= :1 ");
-		if (isLock) {
-			sb.append("for update nowait");
+		try {
+			t = clazz.newInstance();
+			sb = new StringBuffer();
+			sb.append("select * from ");
+			sb.append(clazz.getMethod("tableName").invoke(t) + " ");
+			sb.append("where ");
+			sb.append(clazz.getMethod("parentPKName").invoke(t) + " ");
+			sb.append("= :1 ");
+			if (isLock) {
+				sb.append("for update nowait");
+			}
+		} catch (Exception e) {
 		}
 
 		PreparedStatement ptst = null;
 		ResultSet resultSet = null;
-		ptst = this.conn.prepareStatement(sb.toString());
-		ptst.setInt(1, id);
-		resultSet = ptst.executeQuery();
-		while (resultSet.next()) {
-			t = clazz.newInstance();
-			ReflectionAttrUtils.executeResultSet(t, resultSet);
-			rows.add(t);
+		try {
+			ptst = this.conn.prepareStatement(sb.toString());
+			ptst.setInt(1, id);
+			resultSet = ptst.executeQuery();
+			while (resultSet.next()) {
+				t = clazz.newInstance();
+				ReflectionAttrUtils.executeResultSet(t, resultSet);
+				rows.add(t);
+			}
+		} catch (Exception e) {
+			new SQLException(e.getMessage(), "loadRowsByParentId查询出错");
+		} finally {
+			DbUtils.closeQuietly(conn);
+			DbUtils.closeQuietly(ptst);
 		}
 		return rows;
 	}

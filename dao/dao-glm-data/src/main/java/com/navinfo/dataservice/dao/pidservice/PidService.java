@@ -459,4 +459,11 @@ public class PidService {
 	public synchronized int applyLcFacePid() throws Exception {
 		return this.applyPid(PidSequenceName.lcFacePidName);
 	}
+	
+	/**
+	 * 申请rd_se
+	 */
+	public synchronized int applyRdSePid() throws Exception {
+		return this.applyPid(PidSequenceName.rdSePidName);
+	}
 }

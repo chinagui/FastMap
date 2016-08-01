@@ -93,12 +93,6 @@ public class GlmGridRefInfo {
 		diffQuerySql = "SELECT L.ROW_ID,R1.GEOMETRY,0 MESH_ID FROM "+tableName+" P,RD_CROSS_NODE R2,RD_NODE R1,LOG_DETAIL L"
 				+ " WHERE P.NODE_PID=R2.NODE_PID AND R2.NODE_PID=R1.NODE_PID AND P.ROW_ID=L.TB_ROW_ID AND L.TB_NM = '"+tableName+"' ";
 	}
-	private void generateSqlRdSlope(){
-		editQuerySql = "SELECT P.ROW_ID,R1.GEOMETRY,0 MESH_ID FROM "+tableName+" P,RD_NODE R1"
-				+ " WHERE P.NODE_PID=R1.NODE_PID";
-		diffQuerySql = "SELECT L.ROW_ID,R1.GEOMETRY,0 MESH_ID FROM "+tableName+" P,RD_NODE R1,LOG_DETAIL L"
-				+ " WHERE P.NODE_PID=R1.NODE_PID  AND P.ROW_ID=L.TB_ROW_ID AND L.TB_NM = '"+tableName+"' ";
-	}
 	private void generateSql(){
 		if(tableName.equals("RD_CROSS")||
 				tableName.equals("RD_CROSS_NAME")){
@@ -108,11 +102,6 @@ public class GlmGridRefInfo {
 		if(tableName.equals("RD_TRAFFICSIGNAL"))
 		{
 			generateSqlForTrafficSignal();
-			return;
-		}
-		if(tableName.equals("RD_SLOPE"))
-		{
-			generateSqlRdSlope();
 			return;
 		}
 		StringBuilder sb4E = new StringBuilder();//edit查询grid使用sql

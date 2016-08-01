@@ -25,10 +25,12 @@ public class RdSlopeTest extends InitApplication{
 	private Connection conn;
 	public RdSlopeTest() throws Exception {
 		//this.conn = DBConnector.getInstance().getConnectionById(11);
+		//parameter={"command":"CREATE","dbId":42,"type":"RDSLOPE","data":{"nodePid":100022836,"linkPid":100007426,"linkPids":[100007427]}}
 	}
 	@Test
 	public void TestAdd() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDSLOPE\",\"dbId\":42,\"data\":{\"inNodePid\": 100024990,\"outLinkPid\":100008036,\"linkPids\":[100008037,100008038]}}";
+		
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDSLOPE\",\"dbId\":42,\"data\":{\"nodePid\": 100022836,\"linkPid\":100007426,\"linkPids\":[100007427]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

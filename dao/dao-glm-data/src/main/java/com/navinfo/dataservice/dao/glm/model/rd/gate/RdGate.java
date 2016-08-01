@@ -26,7 +26,7 @@ public class RdGate implements IObj {
 	private int dir = 2;
 	private int fee = 0;
 	private String rowId;
-	private Map<String, Object> changedFields = new HashMap<String, Object>();
+	public Map<String, Object> changedFields = new HashMap<String, Object>();
 	private List<IRow> condition = new ArrayList<IRow>();
 	public Map<String, RdGateCondition> rdGateConditionMap = new HashMap<String, RdGateCondition>();
 
@@ -103,14 +103,6 @@ public class RdGate implements IObj {
 
 	public void setCondition(List<IRow> condition) {
 		this.condition = condition;
-	}
-
-	public Map<String, RdGateCondition> getRdGateConditionMap() {
-		return rdGateConditionMap;
-	}
-
-	public void setRdGateConditionMap(Map<String, RdGateCondition> rdGateConditionMap) {
-		this.rdGateConditionMap = rdGateConditionMap;
 	}
 
 	public String getRowId() {

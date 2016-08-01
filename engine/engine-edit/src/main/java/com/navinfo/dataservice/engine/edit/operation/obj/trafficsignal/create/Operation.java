@@ -24,6 +24,16 @@ public class Operation implements IOperation {
 
 		Map<Integer,List<Integer>> nodeLinkPidMap = this.command.getNodeLinkPidMap();
 		
+		createRdTrafficSignal(result,nodeLinkPidMap);
+		
+		return msg;
+	}
+
+	/**
+	 * @param nodeLinkPidMap
+	 * @throws Exception 
+	 */
+	private void createRdTrafficSignal(Result result,Map<Integer, List<Integer>> nodeLinkPidMap) throws Exception {
 		if(nodeLinkPidMap.size()>0)
 		{
 			//复合路口和简单路口通用写法
@@ -53,7 +63,6 @@ public class Operation implements IOperation {
 			throw new Exception("该路口没有进入线可以创建信号灯");
 		}
 		
-		return msg;
 	}
 
 	/**

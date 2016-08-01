@@ -37,6 +37,8 @@ public class Process extends AbstractProcess<Command> {
 		RdCrossNodeSelector selector = new RdCrossNodeSelector(this.getConn());
 
 		IRow crossNode = selector.loadByNodeId(nodePid, true);
+		
+		check.checkHasCross(crossNode);
 
 		RdCrossSelector crossSelector = new RdCrossSelector(this.getConn());
 
@@ -45,7 +47,8 @@ public class Process extends AbstractProcess<Command> {
 		check.checkHasTrafficSignal(cross);
 
 		this.getCommand().setCross(cross);
-
+		
+		//key：nodePid，value：node组成的Link
 		Map<Integer,List<Integer>> nodeLinkPidMap = new HashMap<>();
 		
 		//复合路口和简单路口统一处理

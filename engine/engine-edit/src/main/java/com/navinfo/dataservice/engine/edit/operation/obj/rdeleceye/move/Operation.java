@@ -32,6 +32,7 @@ public class Operation implements IOperation {
 		boolean isChanged = electroniceye.fillChangeFields(this.command.getContent());
 		if (isChanged) {
 			result.insertObject(electroniceye, ObjStatus.UPDATE, electroniceye.pid());
+			result.setPrimaryPid(electroniceye.pid());
 		}
 		return null;
 	}

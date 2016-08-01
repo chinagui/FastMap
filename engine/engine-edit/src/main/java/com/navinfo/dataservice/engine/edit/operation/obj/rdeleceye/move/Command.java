@@ -25,7 +25,7 @@ public class Command extends AbstractCommand {
 
 	private int pid;
 
-	private JSONObject content;
+	private JSONObject content = new JSONObject();
 
 	public RdElectroniceye getEleceye() {
 		return eleceye;
@@ -63,11 +63,8 @@ public class Command extends AbstractCommand {
 
 		JSONObject geoPoint = new JSONObject();
 		geoPoint.put("type", "Point");
-		geoPoint.put("coordinates", new double[] { latitude, longitude });
-		try {
-			content.put("geometry", GeoTranslator.geojson2Jts(geoPoint, 100000, 0));
-		} catch (JSONException e) {
-		}
+		geoPoint.put("coordinates", new double[] { longitude, latitude });
+		content.put("geometry", geoPoint);
 		content.put("linkPid", linkPid);
 	}
 

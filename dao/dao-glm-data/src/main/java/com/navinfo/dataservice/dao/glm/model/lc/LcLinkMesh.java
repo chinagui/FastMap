@@ -48,14 +48,6 @@ public class LcLinkMesh implements IRow{
 		this.meshId = meshId;
 	}
 
-	public Map<String, Object> getChangedFields() {
-		return changedFields;
-	}
-
-	public void setChangedFields(Map<String, Object> changedFields) {
-		this.changedFields = changedFields;
-	}
-
 	public String getRowId() {
 		return rowId;
 	}

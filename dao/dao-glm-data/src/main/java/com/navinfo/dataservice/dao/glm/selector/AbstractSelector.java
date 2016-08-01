@@ -82,8 +82,11 @@ public class AbstractSelector implements ISelector {
 
 					// 子表map
 					Map<Class<? extends IRow>, Map<String, ?>> childMap = obj.childMap();
-
-					setChildValue(obj, childList, childMap, isLock);
+					
+					if(childList.size() > 0)
+					{
+						setChildValue(obj, childList, childMap, isLock);
+					}
 				}
 			} else {
 				throw new Exception("查询的PID为：" + id + "的" + row.tableName().toUpperCase() + "不存在");

@@ -57,9 +57,7 @@ public class Operation implements IOperation {
 
 		Map<Integer, List<RdLink>> map = new HashMap<Integer, List<RdLink>>();
 		List<RdLink> links = new ArrayList<RdLink>();
-		Set<String> meshes = CompGeometryUtil
-				.geoToMeshesWithoutBreak(GeoTranslator.geojson2Jts(command
-						.getLinkGeom()));
+		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(GeoTranslator.geojson2Jts(command.getLinkGeom()));
 		if (meshes.size() == 1) {
 			JSONObject content = new JSONObject();
 			result.setPrimaryPid(this.command.getUpdateLink().getPid());
@@ -69,35 +67,26 @@ public class Operation implements IOperation {
 			if (null != geo)
 				length = GeometryUtils.getLinkLength(geo);
 			content.put("length", length);
-			boolean isChanged = this.command.getUpdateLink().fillChangeFields(
-					content);
+			boolean isChanged = this.command.getUpdateLink().fillChangeFields(content);
 			if (isChanged) {
-				result.insertObject(this.command.getUpdateLink(),
-						ObjStatus.UPDATE, this.command.getLinkPid());
+				result.insertObject(this.command.getUpdateLink(), ObjStatus.UPDATE, this.command.getLinkPid());
 			}
 			// 拷贝原link，set属性
 			RdLink link = new RdLink();
 			link.copy(this.command.getUpdateLink());
-			link.setGeometry(GeoTranslator.geojson2Jts(
-					this.command.getLinkGeom(), 100000, 0));
+			link.setGeometry(GeoTranslator.geojson2Jts(this.command.getLinkGeom(), 100000, 0));
 			links.add(link);
 		} else {
 			Iterator<String> it = meshes.iterator();
 			Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
-			Geometry g = GeoTranslator.transform(this.command.getUpdateLink()
-					.getGeometry(), 0.00001, 5);
-			maps.put(g.getCoordinates()[0], this.command.getUpdateLink()
-					.getsNodePid());
-			maps.put(g.getCoordinates()[g.getCoordinates().length - 1],
-					this.command.getUpdateLink().geteNodePid());
+			Geometry g = GeoTranslator.transform(this.command.getUpdateLink().getGeometry(), 0.00001, 5);
+			maps.put(g.getCoordinates()[0], this.command.getUpdateLink().getsNodePid());
+			maps.put(g.getCoordinates()[g.getCoordinates().length - 1], this.command.getUpdateLink().geteNodePid());
 			while (it.hasNext()) {
 				String meshIdStr = it.next();
-				Geometry geomInter = GeoTranslator.transform(
-						MeshUtils.linkInterMeshPolygon(GeoTranslator
-								.geojson2Jts(command.getLinkGeom()), MeshUtils
-								.mesh2Jts(meshIdStr)), 1, 5);
-				links.addAll(RdLinkOperateUtils.getCreateRdLinksWithMesh(
-						geomInter, maps, result));
+				Geometry geomInter = GeoTranslator.transform(MeshUtils.linkInterMeshPolygon(
+						GeoTranslator.geojson2Jts(command.getLinkGeom()), MeshUtils.mesh2Jts(meshIdStr)), 1, 5);
+				links.addAll(RdLinkOperateUtils.getCreateRdLinksWithMesh(geomInter, maps, result));
 
 			}
 			deleteRdLink(this.command.getUpdateLink(), result);
@@ -135,8 +124,7 @@ public class Operation implements IOperation {
 		deleteProcess.innerRun();
 	}
 
-	public void breakLine(int sNodePid, int eNodePid, Result result)
-			throws Exception {
+	public void breakLine(int sNodePid, int eNodePid, Result result) throws Exception {
 
 		JSONArray coords = command.getLinkGeom().getJSONArray("coordinates");
 
@@ -188,8 +176,7 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	private void handleEffectOnRdGsc(List<RdGsc> gscList,
-			List<RdLink> linkList, Result result) throws Exception {
+	private void handleEffectOnRdGsc(List<RdGsc> gscList, List<RdLink> linkList, Result result) throws Exception {
 		for (RdGsc gsc : gscList) {
 			Geometry gscGeo = gsc.getGeometry();
 
@@ -205,12 +192,10 @@ public class Operation implements IOperation {
 						gscLink.setLinkPid(link.getPid());
 
 						// 计算立交点序号和起终点标识
-						RdGscOperateUtils.calShpSeqNum(gscLink, gscGeo,
-								linkGeo.getCoordinates());
+						RdGscOperateUtils.calShpSeqNum(gscLink, gscGeo, linkGeo.getCoordinates());
 
 						if (!gscLink.changedFields().isEmpty()) {
-							result.insertObject(gscLink, ObjStatus.UPDATE,
-									gsc.getPid());
+							result.insertObject(gscLink, ObjStatus.UPDATE, gsc.getPid());
 						}
 					}
 				}
@@ -223,8 +208,7 @@ public class Operation implements IOperation {
 	 * 
 	 * @throws Exception
 	 */
-	private void updataRelationObj(RdLink oldLink, List<RdLink> newLinks,
-			Result result) throws Exception {
+	private void updataRelationObj(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
 		// 移动、打断均需要处理的要素
 
 		// 打断时才处理的要素
@@ -235,5 +219,10 @@ public class Operation implements IOperation {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Operation warninginOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Operation(
 				this.conn);
 		warninginOperation.breakRdLink(oldLink.getPid(), newLinks, result);
+
+		// 维护信号灯
+		com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation trafficSignalOperation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation(
+				this.conn);
+		trafficSignalOperation.breakRdLink(oldLink.getPid(), newLinks, result);
 	}
 }

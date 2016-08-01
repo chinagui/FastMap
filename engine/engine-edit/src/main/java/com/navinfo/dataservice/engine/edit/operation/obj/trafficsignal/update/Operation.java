@@ -3,6 +3,9 @@ package com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update;
 import java.sql.Connection;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.hadoop.hbase.client.ConnectionUtils;
+
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -76,10 +79,12 @@ public class Operation implements IOperation {
 
 		RdTrafficsignalSelector selector = new RdTrafficsignalSelector(conn);
 
-		RdTrafficsignal rdTrafficsignal = selector.loadByLinkPid(true,linkPid).get(0);
+		List<RdTrafficsignal> rdTrafficsignals = selector.loadByLinkPid(true,linkPid);
 		
-		if(rdTrafficsignal != null)
+		if(CollectionUtils.isNotEmpty(rdTrafficsignals))
 		{
+			RdTrafficsignal rdTrafficsignal = rdTrafficsignals.get(0);
+			
 			for (RdLink link : newLinks) {
 
 				if (link.getsNodePid() == rdTrafficsignal.getNodePid() || link.geteNodePid() == rdTrafficsignal.getNodePid()) {

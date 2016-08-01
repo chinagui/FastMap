@@ -50,6 +50,7 @@ public class Operation implements IOperation {
 		RdLinkSelector linkSelector = new RdLinkSelector(this.conn);
 
 		for (IRow row : nodes) {
+			//link form：50为交叉口道路
 			List<RdLink> links = linkSelector.loadInLinkByNodePid(((RdCrossNode) row).getNodePid(), 50, true);
 
 			List<Integer> linkPidList = new ArrayList<>();

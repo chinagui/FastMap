@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -455,13 +457,12 @@ public class Process extends AbstractProcess<Command> {
 		// 信号灯
 		RdTrafficsignalSelector trafficSelector = new RdTrafficsignalSelector(this.getConn());
 
-		RdTrafficsignal rdTrafficsignal = trafficSelector.loadByLinkPid(true,this.getCommand().getLinkPid()).get(0);
-		
-		if(rdTrafficsignal != null)
-		{
+		List<RdTrafficsignal> rdTrafficsignals = trafficSelector.loadByLinkPid(true, this.getCommand().getLinkPid());
+
+		if (CollectionUtils.isNotEmpty(rdTrafficsignals)) {
 			infectList = new ArrayList<Integer>();
-			
-			infectList.add(rdTrafficsignal.getPid());
+
+			infectList.add(rdTrafficsignals.get(0).getPid());
 
 			infects.put("RDTRAFFICSIGNAL", infectList);
 		}

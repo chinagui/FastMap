@@ -83,7 +83,7 @@ public class AbstractSelector implements ISelector {
 					// 子表map
 					Map<Class<? extends IRow>, Map<String, ?>> childMap = obj.childMap();
 					
-					if(childList.size() > 0)
+					if(childList != null)
 					{
 						setChildValue(obj, childList, childMap, isLock);
 					}

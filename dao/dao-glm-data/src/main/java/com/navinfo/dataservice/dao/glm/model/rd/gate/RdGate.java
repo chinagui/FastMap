@@ -268,14 +268,14 @@ public class RdGate implements IObj {
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
 		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
-		childList.put(RdGate.class, condition);
+		childList.put(RdGateCondition.class, condition);
 		return childList;
 	}
 
 	@Override
 	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
 		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<Class<? extends IRow>,Map<String,?>>();
-		childMap.put(RdGate.class, rdGateConditionMap);
+		childMap.put(RdGateCondition.class, rdGateConditionMap);
 		return childMap;
 	}
 

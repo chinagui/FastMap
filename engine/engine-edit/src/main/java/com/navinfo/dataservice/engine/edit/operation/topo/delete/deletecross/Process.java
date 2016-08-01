@@ -292,6 +292,11 @@ public class Process extends AbstractProcess<Command> {
 
 		opRefLaneConnexity.run(this.getResult());
 
+		// 删除信号灯
+		OpRefTrafficsignal opRefTrafficsignal = new OpRefTrafficsignal(this.getConn());
+
+		opRefTrafficsignal.run(this.getResult(), this.getCommand().getCross().getNodes());
+
 		IOperation opRefBranch = new OpRefRdBranch(this.getCommand());
 
 		return opRefBranch.run(this.getResult());

@@ -41,14 +41,7 @@ public class RdTrafficsignalSelector extends AbstractSelector {
 	 */
 	public List<RdTrafficsignal> loadByNodeId(boolean isLock, int... ids) throws Exception {
 		List<RdTrafficsignal> rows = new ArrayList<RdTrafficsignal>();
-
-		StringBuilder sb = new StringBuilder(
-				"select * from rd_trafficsignal where node_pid in(:1) and u_record !=2");
-
-		if (isLock) {
-			sb.append(" for update nowait");
-		}
-
+		
 		StringBuilder idParameter = new StringBuilder();
 
 		for (int id : ids) {
@@ -56,6 +49,14 @@ public class RdTrafficsignalSelector extends AbstractSelector {
 		}
 
 		idParameter.deleteCharAt(idParameter.lastIndexOf(","));
+		
+		StringBuilder sb = new StringBuilder(
+				"select * from rd_trafficsignal where node_pid in("+idParameter.toString()+") and u_record !=2");
+
+		if (isLock) {
+			sb.append(" for update nowait");
+		}
+
 
 		PreparedStatement pstmt = null;
 
@@ -63,8 +64,6 @@ public class RdTrafficsignalSelector extends AbstractSelector {
 
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
-
-			pstmt.setString(1, idParameter.toString());
 
 			resultSet = pstmt.executeQuery();
 
@@ -96,14 +95,7 @@ public class RdTrafficsignalSelector extends AbstractSelector {
 	public List<RdTrafficsignal> loadByLinkPid(boolean isLock, int... ids) throws Exception {
 		
 		List<RdTrafficsignal> rows = new ArrayList<RdTrafficsignal>();
-
-		StringBuilder sb = new StringBuilder(
-				"select * from rd_trafficsignal where link_pid in (:1) and u_record !=2");
-
-		if (isLock) {
-			sb.append(" for update nowait");
-		}
-
+		
 		StringBuilder idParameter = new StringBuilder();
 
 		for (int id : ids) {
@@ -112,14 +104,19 @@ public class RdTrafficsignalSelector extends AbstractSelector {
 
 		idParameter.deleteCharAt(idParameter.lastIndexOf(","));
 
+		StringBuilder sb = new StringBuilder(
+				"select * from rd_trafficsignal where link_pid in ("+idParameter.toString()+") and u_record !=2");
+
+		if (isLock) {
+			sb.append(" for update nowait");
+		}
+
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
-
-			pstmt.setString(1, idParameter.toString());
 
 			resultSet = pstmt.executeQuery();
 

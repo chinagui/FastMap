@@ -106,7 +106,7 @@ public class AbstractSelector implements ISelector {
 	@Override
 	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
 		this.row = (IRow) cls.newInstance();
-		String sql = "select * from " + row.tableName() + " where row_id=hextoraw(:1)";
+		String sql = "select * from " + row.tableName() + " where row_id=hextoraw(:1) and u_record !=2 ";
 
 		if (isLock) {
 			sql += " for update nowait";

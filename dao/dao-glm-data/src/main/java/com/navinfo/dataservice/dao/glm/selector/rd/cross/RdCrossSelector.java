@@ -34,7 +34,7 @@ public class RdCrossSelector extends AbstractSelector {
 
 		RdCross cross = new RdCross();
 
-		String sql = "select a.*,c.mesh_id from rd_cross a, rd_cross_node b,rd_node_mesh c where a.pid=b.pid and b.node_pid=c.node_pid and a.pid=:1";
+		String sql = "select a.*,c.mesh_id from rd_cross a, rd_cross_node b,rd_node_mesh c where a.pid=b.pid and b.node_pid=c.node_pid and a.pid=:1 and a.u_record !=2";
 
 		PreparedStatement pstmt = null;
 

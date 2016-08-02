@@ -3,15 +3,14 @@ package com.navinfo.dataservice.dao.glm.selector.rd.eleceye;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 /**
  * @Title: RdEleceyePartSelector.java
@@ -23,82 +22,14 @@ import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
  * @version: v1.0
  *
  */
-public class RdEleceyePartSelector implements ISelector {
+public class RdEleceyePartSelector extends AbstractSelector {
 
 	private Connection conn;
 
 	public RdEleceyePartSelector(Connection conn) {
+		super(conn);
 		this.conn = conn;
-	}
-
-	@Override
-	public IRow loadById(int id, boolean isLock) throws Exception {
-		return null;
-	}
-	
-	/**
-	 * 根据RdEleceyePart的RowId查询
-	 */
-	@Override
-	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
-		RdEleceyePart part = new RdEleceyePart();
-
-		String sql = "select a.*,c.mesh_id from " + part.tableName()
-				+ " a, rd_electroniceye b, rd_link c where a.row_id = :1 and a.u_record != 2 and a.eleceye_pid = b.eleceye_pid and b.link_pid = c.link_pid";
-
-		if (isLock) {
-			sql += " for update nowait";
-		}
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = this.conn.prepareStatement(sql);
-
-			pstmt.setString(1, rowId);
-
-			resultSet = pstmt.executeQuery();
-
-			if (resultSet.next()) {
-
-//				setAttr(part, resultSet);
-				ReflectionAttrUtils.executeResultSet(part, resultSet);
-
-			} else {
-
-				throw new DataNotFoundException("数据不存在");
-			}
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-
-		return part;
-	}
-
-	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
-		return null;
+		this.setCls(RdEleceyePart.class);
 	}
 	
 	/**
@@ -137,22 +68,8 @@ public class RdEleceyePartSelector implements ISelector {
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
 		}
 
 		return rows;
@@ -185,7 +102,6 @@ public class RdEleceyePartSelector implements ISelector {
 
 				RdEleceyePart part = new RdEleceyePart();
 
-//				setAttr(part, resultSet);
 				ReflectionAttrUtils.executeResultSet(part, resultSet);
 
 				rows.add(part);
@@ -195,24 +111,9 @@ public class RdEleceyePartSelector implements ISelector {
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
 		}
-
 		return rows;
 	}
 }

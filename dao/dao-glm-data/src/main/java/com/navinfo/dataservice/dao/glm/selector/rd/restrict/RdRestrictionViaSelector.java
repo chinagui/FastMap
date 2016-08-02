@@ -7,8 +7,8 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
-import com.navinfo.dataservice.dao.glm.operator.rd.restrict.RdRestrictionViaOperator;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
@@ -121,10 +121,7 @@ public class RdRestrictionViaSelector extends AbstractSelector {
 			}
 
 			if (listVia.size() > 0) {
-				RdRestrictionViaOperator op = new RdRestrictionViaOperator(
-						conn, null);
-
-				listVia = op.repaireViaDirect(listVia, preSNodePid,
+				listVia = this.repaireViaDirect(listVia, preSNodePid,
 						preENodePid, linkPid);
 
 				list.add(listVia);

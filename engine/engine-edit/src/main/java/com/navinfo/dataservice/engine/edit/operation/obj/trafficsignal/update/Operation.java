@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.hadoop.hbase.client.ConnectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -83,15 +82,16 @@ public class Operation implements IOperation {
 		
 		if(CollectionUtils.isNotEmpty(rdTrafficsignals))
 		{
-			RdTrafficsignal rdTrafficsignal = rdTrafficsignals.get(0);
-			
-			for (RdLink link : newLinks) {
+			for(RdTrafficsignal rdTrafficsignal : rdTrafficsignals)
+			{
+				for (RdLink link : newLinks) {
 
-				if (link.getsNodePid() == rdTrafficsignal.getNodePid() || link.geteNodePid() == rdTrafficsignal.getNodePid()) {
+					if (link.getsNodePid() == rdTrafficsignal.getNodePid() || link.geteNodePid() == rdTrafficsignal.getNodePid()) {
 
-					rdTrafficsignal.changedFields().put("linkPid", link.getPid());
+						rdTrafficsignal.changedFields().put("linkPid", link.getPid());
 
-					result.insertObject(rdTrafficsignal, ObjStatus.UPDATE, rdTrafficsignal.pid());
+						result.insertObject(rdTrafficsignal, ObjStatus.UPDATE, rdTrafficsignal.pid());
+					}
 				}
 			}
 		}

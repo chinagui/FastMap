@@ -342,6 +342,12 @@ public class Operation implements IOperation {
 					}
 
 					if (!ObjStatus.INSERT.toString().equals(cond.getString("objStatus"))) {
+						
+						for (IRow row : signboard.getNames()) {
+							RdSignboardName name = (RdSignboardName) row;
+
+							signboard.nameMap.put(name.getPid(), name);
+						}
 
 						RdSignboardName name = signboard.nameMap.get(cond.getInt("pid"));
 

@@ -9,9 +9,10 @@ import java.util.Set;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkFormSelector;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.meta.ScRoadFormsCoexist;
@@ -58,7 +59,7 @@ public class GLM01187 extends baseRule {
 				RdLinkSelector rdSelector=new RdLinkSelector(getConn());
 				RdLink rdLink=(RdLink) rdSelector.loadByIdOnlyRdLink(linkPid, false);
 				
-				RdLinkFormSelector rdFormSelector=new RdLinkFormSelector(getConn());
+				ISelector rdFormSelector = new AbstractSelector(RdLinkForm.class, getConn());
 				List<IRow> rdLinkFormList=rdFormSelector.loadRowsByParentId(rdLink.getPid(), false);
 				
 				checkWithRdLink(rdLink,rdLinkFormList,linkPidList);

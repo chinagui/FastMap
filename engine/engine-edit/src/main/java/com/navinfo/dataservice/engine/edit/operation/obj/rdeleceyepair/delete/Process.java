@@ -6,7 +6,7 @@ import java.util.List;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePair;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
-import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdEleceyePairSelector;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdEleceyePartSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
@@ -25,7 +25,7 @@ public class Process extends AbstractProcess<Command> {
 	public boolean prepareData() throws Exception {
 		// 根据pairId加载RdEleceyePair和RdEleceyePart
 		Command command = this.getCommand();
-		command.setPair((RdEleceyePair) new RdEleceyePairSelector(this.getConn()).loadById(command.getGroupId(), true));
+		command.setPair((RdEleceyePair) new AbstractSelector(RdEleceyePair.class,this.getConn()).loadById(command.getGroupId(), true));
 
 		RdEleceyePartSelector selector = new RdEleceyePartSelector(this.getConn());
 		List<IRow> rows = selector.loadRowsByGroupId(command.getGroupId(), true);

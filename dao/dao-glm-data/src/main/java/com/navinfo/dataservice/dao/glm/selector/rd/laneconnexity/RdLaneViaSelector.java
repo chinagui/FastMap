@@ -8,175 +8,32 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import com.navinfo.dataservice.commons.exception.DataNotFoundException;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
-import com.navinfo.dataservice.dao.glm.operator.rd.laneconnexity.RdLaneViaOperator;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
-public class RdLaneViaSelector implements ISelector {
+public class RdLaneViaSelector extends AbstractSelector {
 
 	private Connection conn;
 
 	public RdLaneViaSelector(Connection conn) {
+		super(conn);
 		this.conn = conn;
+		this.setCls(RdLaneVia.class);
 	}
 
-	@Override
-	public IRow loadById(int id, boolean isLock) throws Exception {
-
-		return null;
-	}
-
-	@Override
-	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
-
-		RdLaneVia via = new RdLaneVia();
-
-		String sql = "select * from " + via.tableName()
-				+ " where row_id=hextoraw(:1) and u_record!=2";
-
-		if (isLock) {
-			sql += " for update nowait";
-		}
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setString(1, rowId);
-
-			resultSet = pstmt.executeQuery();
-
-			if (resultSet.next()) {
-
-				via.setTopologyId(resultSet.getInt("topology_id"));
-
-				via.setLinkPid(resultSet.getInt("link_pid"));
-
-				via.setGroupId(resultSet.getInt("group_id"));
-
-				via.setSeqNum(resultSet.getInt("seq_num"));
-
-				via.setRowId(resultSet.getString("row_id"));
-			} else {
-				
-				throw new DataNotFoundException("数据不存在");
-			}
-		} catch (Exception e) {
-			
-			throw e;
-
-		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
-
-		return via;
-	}
-
-	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock)
-			throws Exception {
-
-		List<IRow> rows = new ArrayList<IRow>();
-
-		String sql = "select * from rd_lane_via where topology_id=:1 and u_record!=:2 order by seq_num";
-
-		if (isLock) {
-			sql += " for update nowait";
-		}
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setInt(1, id);
-
-			pstmt.setInt(2, 2);
-
-			resultSet = pstmt.executeQuery();
-
-			while (resultSet.next()) {
-
-				RdLaneVia via = new RdLaneVia();
-
-				via.setTopologyId(resultSet.getInt("topology_id"));
-
-				via.setLinkPid(resultSet.getInt("link_pid"));
-
-				via.setGroupId(resultSet.getInt("group_id"));
-
-				via.setSeqNum(resultSet.getInt("seq_num"));
-
-				via.setRowId(resultSet.getString("row_id"));
-
-				rows.add(via);
-			}
-		} catch (Exception e) {
-			
-			throw e;
-
-		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
-
-		return rows;
-	}
-
-	
-	public List<List<Entry<Integer, RdLaneVia>>> loadRdLaneViaByLinkPid(
-			int linkPid, boolean isLock) throws Exception {
+	public List<List<Entry<Integer, RdLaneVia>>> loadRdLaneViaByLinkPid(int linkPid, boolean isLock) throws Exception {
 		List<List<Entry<Integer, RdLaneVia>>> list = new ArrayList<List<Entry<Integer, RdLaneVia>>>();
 
 		List<Entry<Integer, RdLaneVia>> listVia = new ArrayList<Entry<Integer, RdLaneVia>>();
 
-//		String sql = "select a.*, b.s_node_pid, b.e_node_pid, d.node_pid in_node_pid   from rd_lane_via    a,    " +
-//				"    rd_link               b,        rd_lane_connexity        d,        rd_lane_topology e " +
-//				" where a.link_pid = b.link_pid    and a.topology_id = e.topology_id    and e.connexity_pid = d.pid    and exists (select null           from rd_lane_via c          where link_pid = :1   " +
-//				"         and a.topology_id = c.topology_id)  order by a.topology_id, a.seq_num ";
-		
-		String sql = "select a.*, b.s_node_pid, b.e_node_pid,d.pid, d.node_pid in_node_pid,f.mesh_id   from rd_lane_via    a,    " +
-				"    rd_link               b,        rd_lane_connexity        d,        rd_lane_topology e,rd_link f " +
-				" where a.link_pid = b.link_pid    and a.topology_id = e.topology_id    and e.connexity_pid = d.pid    and exists (select null           from rd_lane_via c          where link_pid = :1   " +
-				"         and a.topology_id = c.topology_id) and d.in_link_pid = f.link_pid  order by a.topology_id, a.seq_num ";
-		
-		if (isLock){
+		String sql = "select a.*, b.s_node_pid, b.e_node_pid,d.pid, d.node_pid in_node_pid,f.mesh_id   from rd_lane_via    a,    "
+				+ "    rd_link               b,        rd_lane_connexity        d,        rd_lane_topology e,rd_link f "
+				+ " where a.link_pid = b.link_pid    and a.topology_id = e.topology_id    and e.connexity_pid = d.pid    and exists (select null           from rd_lane_via c          where link_pid = :1   "
+				+ "         and a.topology_id = c.topology_id) and d.in_link_pid = f.link_pid  order by a.topology_id, a.seq_num ";
+
+		if (isLock) {
 			sql += " for update nowait ";
 		}
 
@@ -224,40 +81,19 @@ public class RdLaneViaSelector implements ISelector {
 				continue;
 			}
 
-			via.setTopologyId(resultSet.getInt("topology_id"));
+			ReflectionAttrUtils.executeResultSet(via, resultSet);
 
-			via.setLinkPid(resultSet.getInt("link_pid"));
-
-			via.setGroupId(resultSet.getInt("group_id"));
-
-			via.setSeqNum(resultSet.getInt("seq_num"));
-
-			via.setRowId(resultSet.getString("row_id"));
-
-			via.iseteNodePid(resultSet.getInt("e_node_pid"));
-
-			via.isetsNodePid(resultSet.getInt("s_node_pid"));
-
-			via.isetInNodePid(resultSet.getInt("in_node_pid"));
-			
-			via.setMesh(resultSet.getInt("mesh_id"));
-			
 			int pid = resultSet.getInt("pid");
 
 			if (!isChanged) {
 				listVia.add(new AbstractMap.SimpleEntry(pid, via));
-
 			} else {
 
-				RdLaneViaOperator op = new RdLaneViaOperator(
-						conn, via);
-
-				listVia = op.repaireViaDirect(listVia, preSNodePid,
-						preENodePid, linkPid);
+				listVia = this.repaireViaDirect(listVia, preSNodePid, preENodePid, linkPid);
 
 				list.add(listVia);
 
-				listVia = new ArrayList<Entry<Integer,RdLaneVia>>();
+				listVia = new ArrayList<Entry<Integer, RdLaneVia>>();
 
 				listVia.add(new AbstractMap.SimpleEntry(pid, via));
 
@@ -267,25 +103,52 @@ public class RdLaneViaSelector implements ISelector {
 		}
 
 		if (listVia.size() > 0) {
-			RdLaneViaOperator op = new RdLaneViaOperator(conn,
-					null);
-
-			listVia = op.repaireViaDirect(listVia, preSNodePid, preENodePid,
-					linkPid);
+			listVia = this.repaireViaDirect(listVia, preSNodePid, preENodePid, linkPid);
 
 			list.add(listVia);
 		}
-		try {
-
-			resultSet.close();
-
-			pstmt.close();
-
-		} catch (Exception e) {
-			
-		}
-
+		DBUtils.closeResultSet(resultSet);
+		DBUtils.closeStatement(pstmt);
 		return list;
 	}
 	
+	// 维护经过线方向
+		public List<Entry<Integer, RdLaneVia>> repaireViaDirect(
+				List<Entry<Integer, RdLaneVia>> vias, int preSNodePid,
+				int preENodePid, int linkPid) {
+			List<Entry<Integer, RdLaneVia>> newVias = new ArrayList<Entry<Integer, RdLaneVia>>();
+
+			for (Entry<Integer, RdLaneVia> entry : vias) {
+
+				RdLaneVia v = entry.getValue();
+
+				if (v.getLinkPid() == linkPid) {
+
+					if (preSNodePid != 0 && preENodePid != 0) {
+						if (v.igetsNodePid() == preSNodePid
+								|| v.igetsNodePid() == preENodePid) {
+
+						} else {
+							int tempPid = v.igetsNodePid();
+
+							v.isetsNodePid(v.igeteNodePid());
+
+							v.iseteNodePid(tempPid);
+						}
+					} else {
+						if (v.igeteNodePid() == v.igetInNodePid()) {
+							int tempPid = v.igetsNodePid();
+
+							v.isetsNodePid(v.igeteNodePid());
+
+							v.iseteNodePid(tempPid);
+						}
+					}
+				}
+
+				newVias.add(new AbstractMap.SimpleEntry(entry.getKey(), v));
+			}
+
+			return newVias;
+		}
 }

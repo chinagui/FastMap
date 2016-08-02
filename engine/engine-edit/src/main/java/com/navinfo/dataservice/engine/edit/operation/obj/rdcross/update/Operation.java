@@ -3,11 +3,9 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdcross.update;
 import java.sql.Connection;
 import java.util.List;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
@@ -15,8 +13,11 @@ import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkFormSelector;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -265,7 +266,7 @@ public class Operation implements IOperation {
 			result.insertObject(node, ObjStatus.INSERT, cross.pid());
 		}
 		
-		RdLinkFormSelector selector = new RdLinkFormSelector(conn);
+		ISelector selector = new AbstractSelector(RdLinkForm.class, conn);
 		
 		for(IRow row : cross.getLinks()){
 			RdCrossLink crosslink = (RdCrossLink)row;

@@ -11,6 +11,7 @@ import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 /**
  * POI联系方式表查询selector
@@ -66,22 +67,10 @@ public class IxPoiContactSelector extends AbstractSelector {
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
 
-			}
+			DBUtils.closeResultSet(resultSet);
 
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
+			DBUtils.closeStatement(pstmt);
 		}
 
 		return rows;

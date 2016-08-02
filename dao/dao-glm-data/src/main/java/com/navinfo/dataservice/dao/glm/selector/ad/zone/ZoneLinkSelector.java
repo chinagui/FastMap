@@ -15,6 +15,8 @@ import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkKind;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkMesh;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 import oracle.sql.STRUCT;
@@ -26,8 +28,6 @@ import oracle.sql.STRUCT;
  *
  */
 public class ZoneLinkSelector extends AbstractSelector  {
-	
-	private static Logger logger = Logger.getLogger(ZoneLinkSelector.class);
 
 	private Connection conn;
 
@@ -65,18 +65,9 @@ public class ZoneLinkSelector extends AbstractSelector  {
 			while (resultSet.next()) {
 				ZoneLink zoneLink = new ZoneLink();
 
-				zoneLink.setPid(resultSet.getInt("link_pid"));
-				zoneLink.setsNodePid(resultSet.getInt("s_node_pid"));
-				zoneLink.seteNodePid(resultSet.getInt("e_node_pid"));
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
-				zoneLink.setGeometry(geometry);
-				zoneLink.setLength(resultSet.getInt("length"));
-				zoneLink.setScale(resultSet.getInt("scale"));
-				zoneLink.setEditFlag(resultSet.getInt("edit_flag"));
-				zoneLink.setRowId(resultSet.getString("row_id"));
-				List<IRow> forms = new ZoneLinkMeshSelector(conn).loadRowsByParentId(zoneLink.getPid(), isLock);
-				List<IRow> kinds = new ZoneLinkKindSelector(conn).loadRowsByParentId(zoneLink.getPid(), isLock);
+				ReflectionAttrUtils.executeResultSet(zoneLink, resultSet);
+				List<IRow> forms = new AbstractSelector(ZoneLinkMesh.class,conn).loadRowsByParentId(zoneLink.getPid(), isLock);
+				List<IRow> kinds = new AbstractSelector(ZoneLinkKind.class,conn).loadRowsByParentId(zoneLink.getPid(), isLock);
 
 				for (IRow row : forms) {
 					ZoneLinkMesh mesh = (ZoneLinkMesh) row;
@@ -94,21 +85,8 @@ public class ZoneLinkSelector extends AbstractSelector  {
 				throw e;
 
 			} finally {
-				try {
-					if (resultSet != null) {
-						resultSet.close();
-					}
-				} catch (Exception e) {
-
-				}
-
-				try {
-					if (pstmt != null) {
-						pstmt.close();
-					}
-				} catch (Exception e) {
-
-				}
+				DBUtils.closeResultSet(resultSet);
+				DBUtils.closeStatement(pstmt);
 
 			}
 				

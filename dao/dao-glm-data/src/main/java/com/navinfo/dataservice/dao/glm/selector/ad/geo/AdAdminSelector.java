@@ -7,17 +7,16 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminName;
+
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 public class AdAdminSelector extends AbstractSelector {
-
-	private static Logger logger = Logger.getLogger(AdFaceSelector.class);
 
 	private Connection conn;
 
@@ -26,11 +25,13 @@ public class AdAdminSelector extends AbstractSelector {
 		this.conn = conn;
 		this.setCls(AdAdmin.class);
 	}
-	
-	public AdAdmin loadByAdminId(int adadminId, boolean isLock) throws Exception {
+
+	public AdAdmin loadByAdminId(int adadminId, boolean isLock)
+			throws Exception {
 		AdAdmin adAdmin = new AdAdmin();
 
-		String sql = "select * from " + adAdmin.tableName() + " where admin_id =:1 and  u_record !=2";
+		String sql = "select * from " + adAdmin.tableName()
+				+ " where admin_id =:1 and  u_record !=2";
 
 		PreparedStatement pstmt = null;
 
@@ -59,22 +60,8 @@ public class AdAdminSelector extends AbstractSelector {
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
 		}
 
 		return adAdmin;
@@ -88,7 +75,8 @@ public class AdAdminSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<AdAdmin> loadRowsByLinkId(int id, boolean isLock) throws Exception {
+	public List<AdAdmin> loadRowsByLinkId(int id, boolean isLock)
+			throws Exception {
 
 		List<AdAdmin> adAdminList = new ArrayList<AdAdmin>();
 
@@ -112,57 +100,17 @@ public class AdAdminSelector extends AbstractSelector {
 			while (resultSet.next()) {
 				AdAdmin adAdmin = new AdAdmin();
 
-				adAdmin.setPid(resultSet.getInt("region_id"));
-
-				adAdmin.setLinkPid(resultSet.getInt("link_pid"));
-
-				adAdmin.setNameGroupid(resultSet.getInt("name_groupid"));
-
-				adAdmin.setSide(resultSet.getInt("side"));
-
-				adAdmin.setMeshId(resultSet.getInt("MESH_ID"));
-
-				adAdmin.setEditFlag(resultSet.getInt("edit_flag"));
-
-				adAdmin.setRowId(resultSet.getString("row_id"));
-
-				// ad_admin_name
-				List<IRow> adAdminNameList = new AdAdminNameSelector(conn).loadRowsByParentId(adAdmin.getPid(),
-						isLock);
-
-				for (IRow row : adAdminNameList) {
-					row.setMesh(adAdmin.mesh());
-				}
-
-				adAdmin.setNames(adAdminNameList);
-
-				for (IRow row : adAdminNameList) {
-					AdAdminName obj = (AdAdminName) row;
-
-					adAdmin.adAdminNameMap.put(obj.rowId(), obj);
-				}
+				ReflectionAttrUtils.executeResultSet(adAdmin, resultSet);
+				this.setChildData(adAdmin, isLock);
+				adAdminList.add(adAdmin);
 			}
 		} catch (Exception e) {
 
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
 		}
 		return adAdminList;
 	}
@@ -175,7 +123,8 @@ public class AdAdminSelector extends AbstractSelector {
 	 * @return 代表点对象集合
 	 * @throws Exception
 	 */
-	public List<AdAdmin> loadRowsByLinkPids(List<Integer> linkPids, boolean isLock) throws Exception {
+	public List<AdAdmin> loadRowsByLinkPids(List<Integer> linkPids,
+			boolean isLock) throws Exception {
 		List<AdAdmin> adAdminList = new ArrayList<AdAdmin>();
 
 		if (linkPids.size() == 0) {
@@ -191,7 +140,8 @@ public class AdAdminSelector extends AbstractSelector {
 		}
 		s.deleteCharAt(s.lastIndexOf(","));
 
-		String sql = "SELECT * FROM ad_admin WHERE link_pid in (" + s.toString() + ") and u_record!=2";
+		String sql = "SELECT * FROM ad_admin WHERE link_pid in ("
+				+ s.toString() + ") and u_record!=2";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -209,59 +159,39 @@ public class AdAdminSelector extends AbstractSelector {
 			while (resultSet.next()) {
 				AdAdmin adAdmin = new AdAdmin();
 
-				adAdmin.setPid(resultSet.getInt("region_id"));
-
-				adAdmin.setLinkPid(resultSet.getInt("link_pid"));
-
-				adAdmin.setNameGroupid(resultSet.getInt("name_groupid"));
-
-				adAdmin.setSide(resultSet.getInt("side"));
-
-				adAdmin.setMeshId(resultSet.getInt("MESH_ID"));
-
-				adAdmin.setEditFlag(resultSet.getInt("edit_flag"));
-
-				adAdmin.setRowId(resultSet.getString("row_id"));
-
-				// ad_admin_name
-				List<IRow> adAdminNameList = new AdAdminNameSelector(conn).loadRowsByParentId(adAdmin.getPid(),
-						isLock);
-
-				for (IRow row : adAdminNameList) {
-					row.setMesh(adAdmin.mesh());
-				}
-
-				adAdmin.setNames(adAdminNameList);
-
-				for (IRow row : adAdminNameList) {
-					AdAdminName obj = (AdAdminName) row;
-
-					adAdmin.adAdminNameMap.put(obj.rowId(), obj);
-				}
+				ReflectionAttrUtils.executeResultSet(adAdmin, resultSet);
+				this.setChildData(adAdmin, isLock);
+				adAdminList.add(adAdmin);
 			}
 		} catch (Exception e) {
 
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
 
 		}
 		return adAdminList;
+
+	}
+
+	private void setChildData(AdAdmin adAdmin, boolean isLock) throws Exception {
+		// ad_admin_name
+		List<IRow> adAdminNameList = new AdAdminNameSelector(conn)
+				.loadRowsByParentId(adAdmin.getPid(), isLock);
+
+		for (IRow row : adAdminNameList) {
+			row.setMesh(adAdmin.mesh());
+		}
+
+		adAdmin.setNames(adAdminNameList);
+
+		for (IRow row : adAdminNameList) {
+			AdAdminName obj = (AdAdminName) row;
+
+			adAdmin.adAdminNameMap.put(obj.rowId(), obj);
+		}
 	}
 
 }

@@ -165,14 +165,6 @@ public class AdAdminDetail implements IObj {
 	public String parentTableName() {
 		return "ad_admin";
 	}
-	public Map<String, Object> getChangedFields() {
-		return changedFields;
-	}
-
-	public void setChangedFields(Map<String, Object> changedFields) {
-		this.changedFields = changedFields;
-	}
-
 	@Override
 	public List<List<IRow>> children() {
 		return null;

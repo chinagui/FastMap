@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiHotel;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
@@ -66,22 +68,8 @@ public class IxPoiHotelSelector extends AbstractSelector {
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt); 
 		}
 	}
 	

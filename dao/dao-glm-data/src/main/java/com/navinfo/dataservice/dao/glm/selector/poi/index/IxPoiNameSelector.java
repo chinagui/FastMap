@@ -9,6 +9,7 @@ import java.util.List;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 /**
  * POI名称表selector
@@ -50,22 +51,10 @@ public class IxPoiNameSelector extends AbstractSelector {
 		} catch (Exception e) {
 			throw e;
 		}finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-				
-			}
 
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
+			DBUtils.closeResultSet(resultSet);
 
+			DBUtils.closeStatement(pstmt);
 		}
 		
 	}

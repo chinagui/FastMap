@@ -3,144 +3,22 @@ package com.navinfo.dataservice.dao.glm.selector.rd.branch;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.navinfo.dataservice.commons.exception.DataNotFoundException;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
-import com.navinfo.dataservice.dao.glm.operator.rd.branch.RdBranchViaOperator;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
-public class RdBranchViaSelector implements ISelector {
+public class RdBranchViaSelector extends AbstractSelector {
 
 	private Connection conn;
 
 	public RdBranchViaSelector(Connection conn) {
+		super(conn);
 		this.conn = conn;
-	}
-
-	@Override
-	public IRow loadById(int id, boolean isLock) throws Exception {
-
-		return null;
-	}
-
-	@Override
-	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
-
-		RdBranchVia via = new RdBranchVia();
-
-		String sql = "select a.*,c.mesh_id from "
-				+ via.tableName()
-				+ " a,rd_branch b,rd_link c where a.row_id=hextoraw('"
-				+ rowId
-				+ "') and a.u_record!=2 and a.branch_pid = b.branch_pid and b.in_link_pid = c.link_pid ";
-
-		if (isLock) {
-			sql += " for update nowait";
-		}
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			resultSet = pstmt.executeQuery();
-
-			if (resultSet.next()) {
-
-				setAttr(via, resultSet);
-			} else {
-
-				throw new DataNotFoundException("数据不存在");
-			}
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-
-		return via;
-	}
-
-	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock)
-			throws Exception {
-
-		List<IRow> rows = new ArrayList<IRow>();
-
-		String sql = "select * from rd_branch_via where branch_pid=:1 and u_record!=:2";
-
-		if (isLock) {
-			sql += " for update nowait";
-		}
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setInt(1, id);
-
-			pstmt.setInt(2, 2);
-
-			resultSet = pstmt.executeQuery();
-
-			while (resultSet.next()) {
-
-				RdBranchVia via = new RdBranchVia();
-
-				setAttr(via, resultSet);
-
-				rows.add(via);
-			}
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-
-		return rows;
+		this.setCls(RdBranchVia.class);
 	}
 
 	public List<List<RdBranchVia>> loadRdBranchViaByLinkPid(int linkPid,
@@ -201,30 +79,14 @@ public class RdBranchViaSelector implements ISelector {
 				continue;
 			}
 
-			via.setBranchPid(resultSet.getInt("branch_pid"));
-
-			via.setLinkPid(resultSet.getInt("link_pid"));
-
-			via.setGroupId(resultSet.getInt("group_id"));
-
-			via.setSeqNum(resultSet.getInt("seq_num"));
-
-			via.setRowId(resultSet.getString("row_id"));
-
-			via.iseteNodePid(resultSet.getInt("e_node_pid"));
-
-			via.isetsNodePid(resultSet.getInt("s_node_pid"));
-
-			via.setMesh(resultSet.getInt("mesh_id"));
+			ReflectionAttrUtils.executeResultSet(via, resultSet);
 
 			if (!isChanged) {
 				listVia.add(via);
 
 			} else {
 
-				RdBranchViaOperator op = new RdBranchViaOperator(conn, via);
-
-				listVia = op.repaireViaDirect(listVia, preSNodePid,
+				listVia = this.repaireViaDirect(listVia, preSNodePid,
 						preENodePid, linkPid);
 
 				list.add(listVia);
@@ -239,39 +101,50 @@ public class RdBranchViaSelector implements ISelector {
 		}
 
 		if (listVia.size() > 0) {
-			RdBranchViaOperator op = new RdBranchViaOperator(conn, null);
 
-			listVia = op.repaireViaDirect(listVia, preSNodePid, preENodePid,
+			listVia = this.repaireViaDirect(listVia, preSNodePid, preENodePid,
 					linkPid);
 
 			list.add(listVia);
 		}
-		try {
-
-			resultSet.close();
-
-			pstmt.close();
-
-		} catch (Exception e) {
-
-		}
-
+		DBUtils.closeResultSet(resultSet);
+		DBUtils.closeStatement(pstmt);
 		return list;
 	}
+	
+	// 维护经过线方向
+		public List<RdBranchVia> repaireViaDirect(List<RdBranchVia> vias,
+				int preSNodePid, int preENodePid, int linkPid) {
+			List<RdBranchVia> newVias = new ArrayList<RdBranchVia>();
 
-	private void setAttr(RdBranchVia via, ResultSet resultSet)
-			throws SQLException {
+			for (RdBranchVia v : vias) {
+				if (v.getLinkPid() == linkPid) {
 
-		via.setBranchPid(resultSet.getInt("branch_pid"));
+					if (preSNodePid != 0 && preENodePid != 0) {
+						if (v.igetsNodePid() == preSNodePid
+								|| v.igetsNodePid() == preENodePid) {
 
-		via.setLinkPid(resultSet.getInt("link_pid"));
+						} else {
+							int tempPid = v.igetsNodePid();
 
-		via.setGroupId(resultSet.getInt("group_id"));
+							v.isetsNodePid(v.igeteNodePid());
 
-		via.setSeqNum(resultSet.getInt("seq_num"));
+							v.iseteNodePid(tempPid);
+						}
+					} else {
+						if (v.igeteNodePid() == v.igetInNodePid()) {
+							int tempPid = v.igetsNodePid();
 
-		via.setRowId(resultSet.getString("row_id"));
+							v.isetsNodePid(v.igeteNodePid());
 
-	}
+							v.iseteNodePid(tempPid);
+						}
+					}
+				}
 
+				newVias.add(v);
+			}
+
+			return newVias;
+		}
 }

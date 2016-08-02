@@ -6,8 +6,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.json.JSONObject;
-
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -17,8 +15,10 @@ import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
-import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiPhotoOperator;
+import com.navinfo.dataservice.dao.glm.operator.BasicOperator;
 import com.navinfo.dataservice.dao.log.LogWriter;
+
+import net.sf.json.JSONObject;
 
 public class DBController {
 
@@ -377,7 +377,7 @@ public class DBController {
 			
 			lw.generateLog(command, result);
 			
-			new IxPoiPhotoOperator(conn, photo).insertRow();
+			new BasicOperator(conn, photo).insertRow();
 			
 			lw.recordLog(command, result);
 

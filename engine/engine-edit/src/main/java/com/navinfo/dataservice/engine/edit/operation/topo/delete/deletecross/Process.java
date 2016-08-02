@@ -7,16 +7,17 @@ import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchRealimage;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchSchematic;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
-import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchDetailSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchRealimageSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSchematicSelector;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchViaSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdSeriesbranchSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdSignasrealSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdSignboardSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneTopologySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionDetailSelector;
@@ -203,29 +204,17 @@ public class Process extends AbstractProcess<Command> {
 
 				branch.setRowId(resultSet.getString("row_id"));
 
-				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(getConn());
+				branch.setDetails(new AbstractSelector(RdBranchDetail.class, getConn()).loadRowsByParentId(branch.getPid(), true));
 
-				branch.setDetails(detailSelector.loadRowsByParentId(branch.getPid(), true));
+				branch.setSignboards(new AbstractSelector(RdSignboard.class, getConn()).loadRowsByParentId(branch.getPid(), true));
 
-				RdSignboardSelector signboardSelector = new RdSignboardSelector(getConn());
+				branch.setSignasreals(new AbstractSelector(RdSignasreal.class, getConn()).loadRowsByParentId(branch.getPid(), true));
 
-				branch.setSignboards(signboardSelector.loadRowsByParentId(branch.getPid(), true));
+				branch.setSeriesbranches(new AbstractSelector(RdSeriesbranch.class, getConn()).loadRowsByParentId(branch.getPid(), true));
 
-				RdSignasrealSelector signasrealSelector = new RdSignasrealSelector(getConn());
+				branch.setRealimages(new AbstractSelector(RdBranchRealimage.class, getConn()).loadRowsByParentId(branch.getPid(), true));
 
-				branch.setSignasreals(signasrealSelector.loadRowsByParentId(branch.getPid(), true));
-
-				RdSeriesbranchSelector seriesbranchSelector = new RdSeriesbranchSelector(getConn());
-
-				branch.setSeriesbranches(seriesbranchSelector.loadRowsByParentId(branch.getPid(), true));
-
-				RdBranchRealimageSelector realimageSelector = new RdBranchRealimageSelector(getConn());
-
-				branch.setRealimages(realimageSelector.loadRowsByParentId(branch.getPid(), true));
-
-				RdBranchSchematicSelector schematicSelector = new RdBranchSchematicSelector(getConn());
-
-				branch.setSchematics(schematicSelector.loadRowsByParentId(branch.getPid(), true));
+				branch.setSchematics(new AbstractSelector(RdBranchSchematic.class, getConn()).loadRowsByParentId(branch.getPid(), true));
 
 				RdBranchViaSelector viaSelector = new RdBranchViaSelector(getConn());
 

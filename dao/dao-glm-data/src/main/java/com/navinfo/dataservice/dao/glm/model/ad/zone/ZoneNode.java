@@ -102,18 +102,6 @@ public class ZoneNode implements IObj {
 
 
 
-	public Map<String, Object> getChangedFields() {
-		return changedFields;
-	}
-
-
-
-	public void setChangedFields(Map<String, Object> changedFields) {
-		this.changedFields = changedFields;
-	}
-
-
-
 	public List<IRow> getMeshes() {
 		return meshes;
 	}

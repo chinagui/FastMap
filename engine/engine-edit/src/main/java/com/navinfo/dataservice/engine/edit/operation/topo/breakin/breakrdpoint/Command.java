@@ -11,6 +11,7 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
+import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
@@ -72,6 +73,8 @@ public class Command extends AbstractCommand {
 	private List<RdGsc> rdGscs;
 	
 	private List<AdAdmin> adAdmins;
+	
+	private List<RdElectroniceye> eleceyes;
 
 	private boolean isCheckInfect = false;
 
@@ -198,6 +201,14 @@ public class Command extends AbstractCommand {
 
 	public void setAdAdmins(List<AdAdmin> adAdmins) {
 		this.adAdmins = adAdmins;
+	}
+
+	public List<RdElectroniceye> getEleceyes() {
+		return eleceyes;
+	}
+
+	public void setEleceyes(List<RdElectroniceye> eleceyes) {
+		this.eleceyes = eleceyes;
 	}
 
 	public Command(JSONObject json, String requester) throws JSONException {

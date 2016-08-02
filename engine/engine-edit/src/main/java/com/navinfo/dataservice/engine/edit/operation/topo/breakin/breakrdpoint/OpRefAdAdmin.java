@@ -41,7 +41,7 @@ public class OpRefAdAdmin implements IOperation {
 
 		for (AdAdmin ad : list) {
 
-			Map<String, Object> changedFields = ad.getChangedFields();
+			Map<String, Object> changedFields = ad.changedFields();
 			// 代表点和线1的距离
 			double line1Length = ad.getGeometry().distance(command.getLink1().getGeometry());
 

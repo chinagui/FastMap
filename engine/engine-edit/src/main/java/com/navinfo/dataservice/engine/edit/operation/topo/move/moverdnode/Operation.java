@@ -57,8 +57,7 @@ public class Operation implements IOperation {
 		Map<Integer, List<RdLink>> map = new HashMap<Integer, List<RdLink>>();
 		for (RdLink link : command.getLinks()) {
 
-			Geometry geom = GeoTranslator.transform(link.getGeometry(),
-					0.00001, 5);
+			Geometry geom = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
 
 			Coordinate[] cs = geom.getCoordinates();
 
@@ -105,17 +104,13 @@ public class Operation implements IOperation {
 			} else {
 				Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
 				maps.put(geo.getCoordinates()[0], link.getsNodePid());
-				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1],
-						link.geteNodePid());
+				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1], link.geteNodePid());
 				Iterator<String> it = meshes.iterator();
 				while (it.hasNext()) {
 					String meshIdStr = it.next();
-					Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo,
-							MeshUtils.mesh2Jts(meshIdStr));
-					geomInter = GeoTranslator.geojson2Jts(
-							GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					RdLinkOperateUtils.createRdLinkWithMesh(geomInter, maps,
-							link, result, links);
+					Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo, MeshUtils.mesh2Jts(meshIdStr));
+					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
+					RdLinkOperateUtils.createRdLinkWithMesh(geomInter, maps, link, result, links);
 
 				}
 				map.put(link.getPid(), links);
@@ -133,8 +128,7 @@ public class Operation implements IOperation {
 
 		geojson.put("type", "Point");
 
-		geojson.put("coordinates", new double[] { command.getLongitude(),
-				command.getLatitude() });
+		geojson.put("coordinates", new double[] { command.getLongitude(), command.getLatitude() });
 
 		JSONObject updateContent = new JSONObject();
 
@@ -161,21 +155,27 @@ public class Operation implements IOperation {
 	 * 
 	 * @throws Exception
 	 */
-	private void updataRelationObj(RdLink oldLink, List<RdLink> newLinks,
-			Result result) throws Exception {
-		//移动、打断均需要处理的要素
+	private void updataRelationObj(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
+		/*
+		 * 任何情况均需要处理的元素
+		 */
+		// 电子眼
+		com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move.Operation eleceyeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move.Operation(this.conn);
+		eleceyeOperation.moveEleceye(oldLink, newLinks, result);
 
-		
-		//打断时才处理的要素
+		/*
+		 * 条件以下为仅打断情况下需要处理的元素 (size < 2说明没有进行打断操作)
+		 */
 		if (newLinks.size() < 2) {
 			return;
 		}
+
 		// 警示信息
 		com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Operation warninginOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Operation(
 				this.conn);
 		warninginOperation.breakRdLink(oldLink.getPid(), newLinks, result);
-		
-		//维护信号灯
+
+		// 维护信号灯
 		com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation trafficSignalOperation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation(
 				this.conn);
 		trafficSignalOperation.breakRdLink(oldLink.getPid(), newLinks, result);

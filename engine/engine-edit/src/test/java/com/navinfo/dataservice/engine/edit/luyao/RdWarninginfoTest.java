@@ -90,5 +90,16 @@ public class RdWarninginfoTest  extends InitApplication{
 			e.printStackTrace();
 		}
 	}
+	
+	
+	@Test
+	public void updateTest_0801_01() throws Exception {
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"RDWARNINGINFO\",\"objId\":100000031,\"data\":{\"typeCode\":\"10102\",\"rowId\":\"BC2024CC301646BA94C3388BA13F11CF\",\"pid\":100000031,\"objStatus\":\"UPDATE\"}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+
 
 }

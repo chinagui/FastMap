@@ -308,14 +308,6 @@ public class LuFace implements IObj {
 		this.faceTopos = faceTopos;
 	}
 
-	public Map<String, LuFaceTopo> getLuFaceTopoMap() {
-		return luFaceTopoMap;
-	}
-
-	public void setLuFaceTopoMap(Map<String, LuFaceTopo> luFaceTopoMap) {
-		this.luFaceTopoMap = luFaceTopoMap;
-	}
-
 	public String getRowId() {
 		return rowId;
 	}
@@ -342,14 +334,6 @@ public class LuFace implements IObj {
 
 	public void setFaceNames(List<IRow> faceNames) {
 		this.faceNames = faceNames;
-	}
-
-	public Map<String, LuFaceName> getLuFaceNameMap() {
-		return luFaceNameMap;
-	}
-
-	public void setLuFaceNameMap(Map<String, LuFaceName> luFaceNameMap) {
-		this.luFaceNameMap = luFaceNameMap;
 	}
 
 	public double getArea() {

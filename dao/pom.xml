@@ -14,6 +14,7 @@
 		<module>dao-mq</module>
 		<module>dao-glm-data</module>
 		<module>dao-photo</module>
+		<module>dao-shm</module>
     </modules>
     <packaging>pom</packaging>
     <name>dao</name>

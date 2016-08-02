@@ -37,7 +37,7 @@ public class BatchCoreJob extends AbstractJob {
 			conn = DBConnector.getInstance().getConnectionById(req.getExecuteDBId());
 			String batchPrepareResult = prepareBatch(conn, batchParams);
 			response("批处理准备步骤完成",null);
-
+			log.debug(batchPrepareResult);
 			if(batchPrepareResult.equals("批处理准备成功")) {
 				String batchRuleIds = StringUtils.join(req.getRuleIds(), ",");
 				String batchExecuteResult = executeBatch(conn, batchRuleIds);

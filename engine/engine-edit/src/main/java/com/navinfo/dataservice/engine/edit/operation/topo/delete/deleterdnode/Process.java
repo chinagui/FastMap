@@ -11,6 +11,7 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -21,6 +22,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
@@ -313,6 +315,10 @@ public class Process extends AbstractProcess<Command> {
 		// 警示信息
 		OpRefRdWarninginfo opRefRdWarninginfo = new OpRefRdWarninginfo(this.getConn());
 		opRefRdWarninginfo.run(this.getResult(), this.getCommand().getNodePid());
+		
+		// 电子眼
+		OpRefRdElectroniceye opRefRdElectroniceye = new OpRefRdElectroniceye(this.getConn(), this.getCommand());
+		opRefRdElectroniceye.run(this.getResult());
 	}
 
 	/**
@@ -377,6 +383,17 @@ public class Process extends AbstractProcess<Command> {
 		}
 
 		infects.put("RDTRAFFICSIGNAL", infectList);
+		
+		infectList = new ArrayList<Integer>();
+		RdElectroniceyeSelector rdElectroniceyeSelector = new RdElectroniceyeSelector(this.getConn());
+		List<RdElectroniceye> rdElectroniceyes = null;
+		for(Integer linkPid : this.getCommand().getLinkPids()){
+			rdElectroniceyes = rdElectroniceyeSelector.loadListByRdLinkId(linkPid, true);
+			for(RdElectroniceye eleceye : rdElectroniceyes){
+				infectList.add(eleceye.pid());
+			}
+		}
+		infects.put("RDELECTRONICEYE", infectList);
 
 		return infects;
 	}

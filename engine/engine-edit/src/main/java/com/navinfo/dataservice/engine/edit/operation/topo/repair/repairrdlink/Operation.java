@@ -209,9 +209,16 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void updataRelationObj(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
-		// 移动、打断均需要处理的要素
+		/*
+		 * 任何情况均需要处理的元素
+		 */
+		// 电子眼
+		com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move.Operation eleceyeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move.Operation(this.conn);
+		eleceyeOperation.moveEleceye(oldLink, newLinks, result);
 
-		// 打断时才处理的要素
+		/*
+		 * 条件以下为仅打断情况下需要处理的元素 (size < 2说明没有进行打断操作)
+		 */
 		if (newLinks.size() < 2) {
 			return;
 		}

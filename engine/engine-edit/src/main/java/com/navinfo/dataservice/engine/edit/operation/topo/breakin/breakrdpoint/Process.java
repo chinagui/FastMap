@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -24,6 +26,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchViaSelector;
@@ -37,6 +40,8 @@ import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionDetailS
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionViaSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.warninginfo.RdWarninginfoSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -59,7 +64,7 @@ public class Process extends AbstractProcess<Command> {
 		this.jaDisplayLink = new JSONArray();
 	}
 
-	public Process(Command command, Connection conn,Result result) throws Exception {
+	public Process(Command command, Connection conn, Result result) throws Exception {
 		super();
 		this.setCommand(command);
 		// 初始化检查参数
@@ -199,6 +204,9 @@ public class Process extends AbstractProcess<Command> {
 			opRefRdGsc.run(this.getResult());
 			OpRefAdAdmin opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
 			opRefAdAdmin.run(this.getResult());
+
+			updataRelationObj();
+
 			this.postCheck();
 		} catch (Exception e) {
 
@@ -222,125 +230,23 @@ public class Process extends AbstractProcess<Command> {
 					throw new Exception(preCheckMsg);
 				}
 				IOperation operation = null;
+
 				operation = new OpTopo(this.getCommand(), this.getConn(), this.rdLinkBreakpoint, jaDisplayLink);
+
 				msg = operation.run(this.getResult());
-				OpRefRestrict opRefRestrict = new OpRefRestrict(this.getCommand());
-				opRefRestrict.run(this.getResult());
-				OpRefBranch opRefBranch = new OpRefBranch(this.getCommand());
-				opRefBranch.run(this.getResult());
-				OpRefLaneConnexity opRefLaneConnexity = new OpRefLaneConnexity(this.getCommand());
-				opRefLaneConnexity.run(this.getResult());
-				OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(this.getCommand());
-				opRefSpeedlimit.run(this.getResult());
-				OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand(), this.getConn());
-				opRefRdGsc.run(this.getResult());
-				OpRefAdAdmin opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
-				opRefAdAdmin.run(this.getResult());
+
+				updataRelationObj();
+
 				this.recordData();
+
 				this.postCheck();
+
 				this.getConn().commit();
 			} else {
-				Map<String, List<Integer>> infects = new HashMap<String, List<Integer>>();
 
-				List<List<RdBranchVia>> branchVias = this.getCommand().getBranchVias();
+				this.prepareData();
 
-				List<Integer> infectList = new ArrayList<Integer>();
-
-				for (List<RdBranchVia> listVias : branchVias) {
-					for (RdBranchVia via : listVias) {
-						infectList.add(via.getLinkPid());
-					}
-				}
-
-				infects.put("RDBRANCHVIA", infectList);
-
-				infectList = new ArrayList<Integer>();
-
-				for (RdBranch branch : this.getCommand().getInBranchs()) {
-					infectList.add(branch.getPid());
-				}
-
-				for (RdBranch branch : this.getCommand().getOutBranchs()) {
-					infectList.add(branch.getPid());
-				}
-
-				infects.put("RDBRANCH", infectList);
-
-				infectList = new ArrayList<Integer>();
-
-				for (RdLaneConnexity laneConn : this.getCommand().getLaneConnextys()) {
-					infectList.add(laneConn.getPid());
-				}
-
-				infects.put("RDLANECONNEXITY", infectList);
-
-				infectList = new ArrayList<Integer>();
-
-				for (RdLaneTopology topo : this.getCommand().getLaneTopologys()) {
-					infectList.add(topo.getPid());
-				}
-
-				infects.put("RDLANETOPOLOGY", infectList);
-
-				infectList = new ArrayList<Integer>();
-
-				for (List<Entry<Integer, RdLaneVia>> listVias : this.getCommand().getLaneVias()) {
-					for (Entry<Integer, RdLaneVia> entry : listVias) {
-						infectList.add(entry.getKey());
-					}
-				}
-
-				infects.put("RDLANEVIA", infectList);
-
-				infectList = new ArrayList<Integer>();
-
-				for (RdSpeedlimit limit : this.getCommand().getSpeedlimits()) {
-					infectList.add(limit.getPid());
-				}
-
-				infects.put("RDSPEEDLIMIT", infectList);
-
-				infectList = new ArrayList<Integer>();
-
-				for (RdRestriction res : this.getCommand().getRestrictions()) {
-					infectList.add(res.getPid());
-				}
-
-				infects.put("RDRESTRICTION", infectList);
-
-				infectList = new ArrayList<Integer>();
-
-				for (RdRestrictionDetail detail : this.getCommand().getRestrictionDetails()) {
-					infectList.add(detail.getPid());
-				}
-
-				infects.put("RDRESTRICTIONDETAIL", infectList);
-
-				infectList = new ArrayList<Integer>();
-
-				for (List<Entry<Integer, RdRestrictionVia>> vias : this.getCommand().geListRestrictVias()) {
-					for (Entry<Integer, RdRestrictionVia> entry : vias) {
-						infectList.add(entry.getKey());
-					}
-				}
-
-				infects.put("RDRESTRICTIONVIA", infectList);
-
-				infectList = new ArrayList<Integer>();
-
-				for (RdGsc rdGsc : this.getCommand().getRdGscs()) {
-					infectList.add(rdGsc.getPid());
-				}
-
-				infects.put("RDGSC", infectList);
-
-				infectList = new ArrayList<Integer>();
-
-				for (AdAdmin adAdmin : this.getCommand().getAdAdmins()) {
-					infectList.add(adAdmin.getPid());
-				}
-
-				infects.put("ADADMIN", infectList);
+				Map<String, List<Integer>> infects = confirmRelationObj();
 
 				msg = JSONObject.fromObject(infects).toString();
 
@@ -388,8 +294,180 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/**
+	 * 维护关联要素
+	 * 
+	 * @throws Exception
+	 */
+	private void updataRelationObj() throws Exception {
+		List<RdLink> newLinks = new ArrayList<RdLink>();
+
+		newLinks.add(this.getCommand().getLink1());
+
+		newLinks.add(this.getCommand().getLink2());
+
+		int oldLink = this.getCommand().getLinkPid();
+
+		// 交限
+		OpRefRestrict opRefRestrict = new OpRefRestrict(this.getCommand());
+		opRefRestrict.run(this.getResult());
+
+		// 分歧
+		OpRefBranch opRefBranch = new OpRefBranch(this.getCommand());
+		opRefBranch.run(this.getResult());
+		// 车信
+		OpRefLaneConnexity opRefLaneConnexity = new OpRefLaneConnexity(this.getCommand());
+		opRefLaneConnexity.run(this.getResult());
+		// 限速
+		OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(this.getCommand());
+		opRefSpeedlimit.run(this.getResult());
+		// 立交
+		OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand(), this.getConn());
+		opRefRdGsc.run(this.getResult());
+		// 行政区划
+		OpRefAdAdmin opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
+		opRefAdAdmin.run(this.getResult());
+		// 警示信息
+		OpRefRdWarninginfo opRefRdWarninginfo = new OpRefRdWarninginfo(this.getConn());
+		opRefRdWarninginfo.run(this.getResult(), oldLink, newLinks);
+		// 信号灯
+		OpRefRdTrafficsignal ofOpRefRdTrafficsignal = new OpRefRdTrafficsignal(this.getConn());
+		ofOpRefRdTrafficsignal.run(this.getResult(), oldLink, newLinks);
+	}
+
+	/**
+	 * 打断link影响到的关联要素
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	private Map<String, List<Integer>> confirmRelationObj() throws Exception {
+		Map<String, List<Integer>> infects = new HashMap<String, List<Integer>>();
+
+		List<List<RdBranchVia>> branchVias = this.getCommand().getBranchVias();
+
+		List<Integer> infectList = new ArrayList<Integer>();
+
+		for (List<RdBranchVia> listVias : branchVias) {
+			for (RdBranchVia via : listVias) {
+				infectList.add(via.getLinkPid());
+			}
+		}
+
+		infects.put("RDBRANCHVIA", infectList);
+
+		infectList = new ArrayList<Integer>();
+
+		for (RdBranch branch : this.getCommand().getInBranchs()) {
+			infectList.add(branch.getPid());
+		}
+
+		for (RdBranch branch : this.getCommand().getOutBranchs()) {
+			infectList.add(branch.getPid());
+		}
+
+		infects.put("RDBRANCH", infectList);
+
+		infectList = new ArrayList<Integer>();
+
+		for (RdLaneConnexity laneConn : this.getCommand().getLaneConnextys()) {
+			infectList.add(laneConn.getPid());
+		}
+
+		infects.put("RDLANECONNEXITY", infectList);
+
+		infectList = new ArrayList<Integer>();
+
+		for (RdLaneTopology topo : this.getCommand().getLaneTopologys()) {
+			infectList.add(topo.getPid());
+		}
+
+		infects.put("RDLANETOPOLOGY", infectList);
+
+		infectList = new ArrayList<Integer>();
+
+		for (List<Entry<Integer, RdLaneVia>> listVias : this.getCommand().getLaneVias()) {
+			for (Entry<Integer, RdLaneVia> entry : listVias) {
+				infectList.add(entry.getKey());
+			}
+		}
+
+		infects.put("RDLANEVIA", infectList);
+
+		infectList = new ArrayList<Integer>();
+
+		for (RdSpeedlimit limit : this.getCommand().getSpeedlimits()) {
+			infectList.add(limit.getPid());
+		}
+
+		infects.put("RDSPEEDLIMIT", infectList);
+
+		infectList = new ArrayList<Integer>();
+
+		for (RdRestriction res : this.getCommand().getRestrictions()) {
+			infectList.add(res.getPid());
+		}
+
+		infects.put("RDRESTRICTION", infectList);
+
+		infectList = new ArrayList<Integer>();
+
+		for (RdRestrictionDetail detail : this.getCommand().getRestrictionDetails()) {
+			infectList.add(detail.getPid());
+		}
+
+		infects.put("RDRESTRICTIONDETAIL", infectList);
+
+		infectList = new ArrayList<Integer>();
+
+		for (List<Entry<Integer, RdRestrictionVia>> vias : this.getCommand().geListRestrictVias()) {
+			for (Entry<Integer, RdRestrictionVia> entry : vias) {
+				infectList.add(entry.getKey());
+			}
+		}
+
+		infects.put("RDRESTRICTIONVIA", infectList);
+
+		infectList = new ArrayList<Integer>();
+
+		for (RdGsc rdGsc : this.getCommand().getRdGscs()) {
+			infectList.add(rdGsc.getPid());
+		}
+
+		infects.put("RDGSC", infectList);
+
+		infectList = new ArrayList<Integer>();
+
+		for (AdAdmin adAdmin : this.getCommand().getAdAdmins()) {
+			infectList.add(adAdmin.getPid());
+		}
+
+		infects.put("ADADMIN", infectList);
+
+		// 警示信息
+		RdWarninginfoSelector selector = new RdWarninginfoSelector(this.getConn());
+
+		infectList = selector.loadPidByLink(this.getCommand().getLinkPid(), true);
+
+		infects.put("RDWARNINGINFO", infectList);
+
+		// 信号灯
+		RdTrafficsignalSelector trafficSelector = new RdTrafficsignalSelector(this.getConn());
+
+		List<RdTrafficsignal> rdTrafficsignals = trafficSelector.loadByLinkPid(true, this.getCommand().getLinkPid());
+
+		if (CollectionUtils.isNotEmpty(rdTrafficsignals)) {
+			infectList = new ArrayList<Integer>();
+
+			infectList.add(rdTrafficsignals.get(0).getPid());
+
+			infects.put("RDTRAFFICSIGNAL", infectList);
+		}
+
+		return infects;
+
+	}
 }

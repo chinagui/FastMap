@@ -18,6 +18,10 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -235,16 +239,6 @@ public class RdLink implements IObj {
 		this.names = names;
 	}
 
-	private List<Relate> relates;
-
-	public List<Relate> getRelates() {
-		return relates;
-	}
-
-	public void setRelates(List<Relate> relates) {
-		this.relates = relates;
-	}
-
 	public int getPid() {
 		return pid;
 	}
@@ -325,8 +319,7 @@ public class RdLink implements IObj {
 
 			json.put("kind", kind);
 
-			json.put("geometry",
-					GeoTranslator.jts2Geojson(geometry, 0.00001, 5));
+			json.put("geometry", GeoTranslator.jts2Geojson(geometry, 0.00001, 5));
 
 			return json;
 		}
@@ -404,8 +397,7 @@ public class RdLink implements IObj {
 
 			} else if ("geometry".equals(key)) {
 
-				Geometry jts = GeoTranslator.geojson2Jts(
-						json.getJSONObject(key), 100000, 0);
+				Geometry jts = GeoTranslator.geojson2Jts(json.getJSONObject(key), 100000, 0);
 
 				this.setGeometry(jts);
 
@@ -764,9 +756,9 @@ public class RdLink implements IObj {
 
 				if (!wkt.equals(oldwkt)) {
 					double length = GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(geojson));
-					
+
 					changedFields.put("length", length);
-					
+
 					changedFields.put(key, json.getJSONObject(key));
 				}
 			} else {
@@ -790,11 +782,10 @@ public class RdLink implements IObj {
 
 					if (!newValue.equals(oldValue)) {
 						Object value = json.get(key);
-						
-						if(value instanceof String){
+
+						if (value instanceof String) {
 							changedFields.put(key, newValue.replace("'", "''"));
-						}
-						else{
+						} else {
 							changedFields.put(key, value);
 						}
 
@@ -1142,19 +1133,48 @@ public class RdLink implements IObj {
 
 	@Override
 	public int mesh() {
-		// TODO Auto-generated method stub
 		return this.meshId;
 	}
 
 	@Override
 	public void setMesh(int mesh) {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
 	public String primaryKey() {
-		// TODO Auto-generated method stub
 		return "link_pid";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>, List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
+		childList.put(RdLinkName.class, names);
+		childList.put(RdLinkForm.class, forms);
+		childList.put(RdLinkLimit.class, limits);
+		childList.put(RdLinkIntRtic.class, intRtics);
+		childList.put(RdLinkRtic.class, rtics);
+		childList.put(RdLinkLimitTruck.class, limitTrucks);
+		childList.put(RdLinkSidewalk.class, sidewalks);
+		childList.put(RdLinkSpeedlimit.class, speedlimits);
+		childList.put(RdLinkWalkstair.class, walkstairs);
+		childList.put(RdLinkZone.class, zones);
+		return childList;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
+		Map<Class<? extends IRow>, Map<String, ?>> childMap = new HashMap<Class<? extends IRow>, Map<String, ?>>();
+		childMap.put(RdLinkName.class, nameMap);
+		childMap.put(RdLinkForm.class, formMap);
+		childMap.put(RdLinkLimit.class, limitMap);
+		childMap.put(RdLinkIntRtic.class, intRticMap);
+		childMap.put(RdLinkRtic.class, rticMap);
+		childMap.put(RdLinkLimitTruck.class, limitTruckMap);
+		childMap.put(RdLinkSidewalk.class, sidewalkMap);
+		childMap.put(RdLinkSpeedlimit.class, speedlimitMap);
+		childMap.put(RdLinkWalkstair.class, walkstairMap);
+		childMap.put(RdLinkZone.class, zoneMap);
+		return childMap;
 	}
 
 }

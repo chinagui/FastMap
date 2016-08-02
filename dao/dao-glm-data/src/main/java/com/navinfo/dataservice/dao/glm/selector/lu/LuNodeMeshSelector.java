@@ -13,6 +13,7 @@ import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.lu.LuNodeMesh;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 
 public class LuNodeMeshSelector implements ISelector {
 
@@ -53,7 +54,8 @@ public class LuNodeMeshSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
-				setAttr(mesh, resultSet);
+//				setAttr(mesh, resultSet);
+				ReflectionAttrUtils.executeResultSet(mesh, resultSet);
 			} else {
 
 				throw new DataNotFoundException("数据不存在");
@@ -122,7 +124,8 @@ public class LuNodeMeshSelector implements ISelector {
 
 				LuNodeMesh mesh = new LuNodeMesh();
 
-				setAttr(mesh, resultSet);
+//				setAttr(mesh, resultSet);
+				ReflectionAttrUtils.executeResultSet(mesh, resultSet);
 
 				rows.add(mesh);
 			}

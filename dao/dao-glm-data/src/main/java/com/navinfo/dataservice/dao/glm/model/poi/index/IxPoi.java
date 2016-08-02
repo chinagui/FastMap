@@ -7,10 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -34,8 +30,12 @@ import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiIntroduction;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiTourroute;
-import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiEditStatusSelector;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 
 /**
  * POI基础信息表
@@ -45,162 +45,162 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class IxPoi implements IObj {
 
-	//POI号码
-	private int pid ;
+	// POI号码
+	private int pid;
 
-	//种别代码
+	// 种别代码
 	private String kindCode;
 
-	//显示坐标
+	// 显示坐标
 	private Geometry geometry;
 
-	//引导X坐标
+	// 引导X坐标
 	private double xGuide = 0;
 
-	//引导Y坐标
+	// 引导Y坐标
 	private double yGuide = 0;
 
-	//引导LINK
+	// 引导LINK
 	private int linkPid = 0;
 
-	//位置关系
+	// 位置关系
 	private int side = 0;
 
-	//引导LINK名称
+	// 引导LINK名称
 	private int nameGroupid = 0;
 
-	//道路标志
+	// 道路标志
 	private int roadFlag = 0;
 
-	//永久图幅号
+	// 永久图幅号
 	private int pmeshId = 0;
 
-	//真实城市
+	// 真实城市
 	private int adminReal = 0;
 
-	//重要度
+	// 重要度
 	private int importance = 0;
-	
-	//连锁品牌
+
+	// 连锁品牌
 	private String chain;
 
-	//机场代码
+	// 机场代码
 	private String airportCode;
 
-	//出入口标识
+	// 出入口标识
 	private int accessFlag = 0;
-	
-	//全天营业
+
+	// 全天营业
 	private int open24h = 0;
 
-	//详细图幅
+	// 详细图幅
 	private String meshId5k;
 
-	//MESH_ID
+	// MESH_ID
 	private int meshId = 0;
 
-	//区划号码
+	// 区划号码
 	private int regionId = 0;
 
-	//邮政编码
+	// 邮政编码
 	private String postCode;
-	
-	//差分产品ID
+
+	// 差分产品ID
 	private String difGroupid;
 
-	//编辑标识
+	// 编辑标识
 	private int editFlag = 1;
 
-	//预留信息
+	// 预留信息
 	private String reserved;
 
-	//记录状态
+	// 记录状态
 	private int state = 0;
 
-	//字段状态
+	// 字段状态
 	private String fieldState;
 
-	//标记
+	// 标记
 	private String label;
 
-	//POI类型
+	// POI类型
 	private int type = 0;
 
-	//地址标志
+	// 地址标志
 	private int addressFlag = 0;
 
-	//提取优先级
+	// 提取优先级
 	private String exPriority;
 
-	//作业季标识
+	// 作业季标识
 	private String editionFlag;
 
-	//备注信息
+	// 备注信息
 	private String poiMemo;
 
-	//OLD乡镇
+	// OLD乡镇
 	private String oldBlockcode;
 
-	//OLD名称
+	// OLD名称
 	private String oldName;
 
-	//OLD地址
+	// OLD地址
 	private String oldAddress;
 
-	//OLD种别
+	// OLD种别
 	private String oldKind;
 
-	//POI编号
+	// POI编号
 	private String poiNum;
 
-	//外业LOG
+	// 外业LOG
 	private String log;
 
-	//任务编号
+	// 任务编号
 	private int taskId = 0;
 
-	//数据采集版本
+	// 数据采集版本
 	private String dataVersion;
 
-	//外业任务编号
+	// 外业任务编号
 	private int fieldTaskId = 0;
-	
-	//验证标识
+
+	// 验证标识
 	private int verifiedFlag = 9;
 
-	//采集更新时间
+	// 采集更新时间
 	private String collectTime;
 
-	//几何调整标识
+	// 几何调整标识
 	private int geoAdjustFlag = 9;
 
-	//精编标识
+	// 精编标识
 	private int fullAttrFlag = 9;
 
-	//外业采集 引导X坐标
+	// 外业采集 引导X坐标
 	private double oldXGuide = 0;
 
-	//外业采集 引导Y坐标
+	// 外业采集 引导Y坐标
 	private double oldYGuide = 0;
 
-	//行记录ID
+	// 行记录ID
 	private String rowId;
-	
-	//更新记录*
+
+	// 更新记录*
 	private int uRecord;
-	//POI等级
-	
+	// POI等级
+
 	private String level = "A";
-	//运动场馆
+	// 运动场馆
 	private String sportsVenue;
-	//内部标示
+	// 内部标示
 	private int indoor = 0;
-	//VIP表示
+	// VIP表示
 	private String vipFlag;
 	// 更新时间
 	private String uDate;
-	
-	//POI状态：1：待作业,2：已作业,3：已提交
+
+	// POI状态：1：待作业,2：已作业,3：已提交
 	private int status;
 
 	public String getLevel() {
@@ -210,7 +210,7 @@ public class IxPoi implements IObj {
 	public void setLevel(String level) {
 		this.level = level;
 	}
-	
+
 	public int getStatus() {
 		return status;
 	}
@@ -288,7 +288,7 @@ public class IxPoi implements IObj {
 	private List<IRow> children = new ArrayList<IRow>();
 
 	public Map<String, IxPoiChildren> childrenMap = new HashMap<String, IxPoiChildren>();
-	
+
 	private List<IRow> photos = new ArrayList<IRow>();
 
 	public Map<String, IxPoiPhoto> photoMap = new HashMap<String, IxPoiPhoto>();
@@ -296,73 +296,73 @@ public class IxPoi implements IObj {
 	private List<IRow> videoes = new ArrayList<IRow>();
 
 	public Map<String, IxPoiVideo> videoMap = new HashMap<String, IxPoiVideo>();
-	
+
 	private List<IRow> parkings = new ArrayList<IRow>();
-	
+
 	public Map<String, IxPoiParking> parkingMap = new HashMap<String, IxPoiParking>();
-	
+
 	private List<IRow> tourroutes = new ArrayList<IRow>();
-	
+
 	public Map<String, IxPoiTourroute> tourrouteMap = new HashMap<String, IxPoiTourroute>();
-	
+
 	private List<IRow> events = new ArrayList<IRow>();
-	
+
 	public Map<String, IxPoiEvent> eventMap = new HashMap<String, IxPoiEvent>();
-	
+
 	private List<IRow> details = new ArrayList<IRow>();
-	
+
 	public Map<String, IxPoiDetail> detailMap = new HashMap<String, IxPoiDetail>();
-	
+
 	private List<IRow> businesstimes = new ArrayList<IRow>();
-	
+
 	public Map<String, IxPoiBusinessTime> businesstimeMap = new HashMap<String, IxPoiBusinessTime>();
-	
+
 	private List<IRow> chargingstations = new ArrayList<IRow>();
-	
+
 	public Map<String, IxPoiChargingStation> chargingstationMap = new HashMap<String, IxPoiChargingStation>();
-	
+
 	private List<IRow> chargingplots = new ArrayList<IRow>();
-	
+
 	public Map<String, IxPoiChargingPlot> chargingplotMap = new HashMap<String, IxPoiChargingPlot>();
-	
+
 	private List<IRow> chargingplotPhs = new ArrayList<IRow>();
-	
+
 	public Map<String, IxPoiChargingPlotPh> chargingplotPhMap = new HashMap<String, IxPoiChargingPlotPh>();
-	
+
 	private List<IRow> buildings = new ArrayList<IRow>();
-	
+
 	public Map<String, IxPoiBuilding> buildingMap = new HashMap<String, IxPoiBuilding>();
-	
+
 	private List<IRow> advertisements = new ArrayList<IRow>();
-	
+
 	public Map<String, IxPoiAdvertisement> advertisementMap = new HashMap<String, IxPoiAdvertisement>();
-	
+
 	private List<IRow> gasstations = new ArrayList<IRow>();
-	
+
 	public Map<String, IxPoiGasstation> gasstationMap = new HashMap<String, IxPoiGasstation>();
-	
+
 	private List<IRow> introductions = new ArrayList<IRow>();
-	
+
 	public Map<String, IxPoiIntroduction> introductionMap = new HashMap<String, IxPoiIntroduction>();
-	
+
 	private List<IRow> attractions = new ArrayList<IRow>();
-	
+
 	public Map<String, IxPoiAttraction> attractionMap = new HashMap<String, IxPoiAttraction>();
-	
+
 	private List<IRow> hotels = new ArrayList<IRow>();
-	
+
 	public Map<String, IxPoiHotel> hotelMap = new HashMap<String, IxPoiHotel>();
-	
+
 	private List<IRow> restaurants = new ArrayList<IRow>();
-	
+
 	public Map<String, IxPoiRestaurant> restaurantMap = new HashMap<String, IxPoiRestaurant>();
-	
+
 	private List<IRow> carrentals = new ArrayList<IRow>();
-	
+
 	public Map<String, IxPoiCarrental> carrentalMap = new HashMap<String, IxPoiCarrental>();
-	
+
 	private List<IRow> operateRefs = new ArrayList<IRow>();
-	
+
 	public List<IRow> getOperateRefs() {
 		return operateRefs;
 	}
@@ -739,14 +739,6 @@ public class IxPoi implements IObj {
 		this.oldYGuide = oldYGuide;
 	}
 
-	public Map<String, Object> getChangedFields() {
-		return changedFields;
-	}
-
-	public void setChangedFields(Map<String, Object> changedFields) {
-		this.changedFields = changedFields;
-	}
-
 	public List<IRow> getAddresses() {
 		return addresses;
 	}
@@ -826,7 +818,7 @@ public class IxPoi implements IObj {
 	public void setVideoes(List<IRow> videoes) {
 		this.videoes = videoes;
 	}
-	
+
 	public List<IRow> getParkings() {
 		return parkings;
 	}
@@ -966,7 +958,7 @@ public class IxPoi implements IObj {
 	public void setuRecord(int uRecord) {
 		this.uRecord = uRecord;
 	}
-	
+
 	public List<IRow> getChildren() {
 		return children;
 	}
@@ -1031,7 +1023,7 @@ public class IxPoi implements IObj {
 	@Override
 	public List<List<IRow>> children() {
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
-		//index
+		// index
 		children.add(this.getAddresses());
 		children.add(this.getAudioes());
 		children.add(this.getContacts());
@@ -1043,8 +1035,8 @@ public class IxPoi implements IObj {
 		children.add(this.getPhotos());
 		children.add(this.getVideoes());
 		children.add(this.getChildren());
-		
-		//deep
+
+		// deep
 		children.add(this.getParkings());
 		children.add(this.getTourroutes());
 		children.add(this.getEvents());
@@ -1061,7 +1053,7 @@ public class IxPoi implements IObj {
 		children.add(this.getHotels());
 		children.add(this.getRestaurants());
 		children.add(this.getCarrentals());
-		
+
 		return children;
 	}
 
@@ -1084,9 +1076,10 @@ public class IxPoi implements IObj {
 				String oldwkt = GeoTranslator.jts2Wkt(geometry, 0.00001, 5);
 
 				if (!wkt.equals(oldwkt)) {
-//					double length = GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(geojson));
-//
-//					changedFields.put("length", length);
+					// double length =
+					// GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(geojson));
+					//
+					// changedFields.put("length", length);
 
 					changedFields.put(key, json.getJSONObject(key));
 				}
@@ -1282,9 +1275,9 @@ public class IxPoi implements IObj {
 					break;
 				case "children":
 					children.clear();
-					
+
 					ja = json.getJSONArray(key);
-					
+
 					for (int i = 0; i < ja.size(); i++) {
 						JSONObject jo = ja.getJSONObject(i);
 
@@ -1608,6 +1601,95 @@ public class IxPoi implements IObj {
 	@Override
 	public String primaryKey() {
 		return "pid";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>, List<IRow>> childMap = new HashMap<>();
+		// 设置子表IX_POI_NAME
+		childMap.put(IxPoiName.class, names);
+		
+		//设置POI_EDIT_STATUS
+		childMap.put(IxPoiEditStatus.class, names);
+		
+		// 设置子表IX_POI_ADDRESS
+		childMap.put(IxPoiAddress.class, addresses);
+
+		// 设置子表IX_POI_CONTACT
+		childMap.put(IxPoiContact.class, contacts);
+
+		// 设置子表IX_POI_FLAG
+		childMap.put(IxPoiFlag.class, flags);
+
+		// 设置子表IX_POI_ENTRYIMAGE
+		childMap.put(IxPoiEntryimage.class, entryImages);
+
+		// 设置子表IX_POI_ICON
+		childMap.put(IxPoiIcon.class, icons);
+
+		// 设置子表IX_POI_PHOTO*
+		childMap.put(IxPoiPhoto.class, photos);
+
+		// 设置子表IX_POI_AUDIO*
+		childMap.put(IxPoiAudio.class, audioes);
+
+		// 设置子表IX_POI_VIDEO*
+		childMap.put(IxPoiVideo.class, videoes);
+
+		// 设置子表IX_POI_PARENT
+		childMap.put(IxPoiParent.class, parents);
+		
+		//设置poi的子
+		childMap.put(IxPoiChildren.class, children);
+		
+		// 设置子表IX_POI_PARKING
+		childMap.put(IxPoiParking.class, parkings);
+
+		// 设置子表IX_POI_DETAIL
+		childMap.put(IxPoiDetail.class, details);
+
+		// 设置子表IX_POI_BUSINESSTIME
+		childMap.put(IxPoiBusinessTime.class, businesstimes);
+
+		// 设置子表IX_POI_CHARGINGSTATION
+		childMap.put(IxPoiChargingStation.class, chargingstations);
+
+		// 设置子表IX_POI_CHARGINGPLOT
+		childMap.put(IxPoiChargingPlot.class, chargingplots);
+
+		// 设置子表IX_POI_CHARGINGPLOT_PH
+		childMap.put(IxPoiChargingPlotPh.class, chargingplotPhs);
+
+		// 设置子表IX_POI_BUILDING
+		childMap.put(IxPoiBuilding.class, buildings);
+
+		// 设置子表IX_POI_ADVERTISEMENT
+		childMap.put(IxPoiAdvertisement.class, advertisements);
+
+		// 设置子表IX_POI_GASSTATION
+		childMap.put(IxPoiGasstation.class, gasstations);
+
+		// 设置子表IX_POI_INTRODUCTION
+		childMap.put(IxPoiIntroduction.class, introductions);
+
+		// 设置子表IX_POI_ATTRACTION
+		childMap.put(IxPoiAttraction.class, attractions);
+
+		// 设置子表IX_POI_HOTEL
+		childMap.put(IxPoiHotel.class, hotels);
+
+		// 设置子表IX_POI_RESTAURANT
+		childMap.put(IxPoiRestaurant.class, restaurants);
+
+		// 设置子表IX_POI_CARRENTAL
+		childMap.put(IxPoiCarrental.class, carrentals);
+
+		return childMap;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		return null;
 	}
 
 }

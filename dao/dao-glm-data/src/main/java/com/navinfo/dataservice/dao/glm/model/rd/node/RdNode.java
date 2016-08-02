@@ -18,6 +18,9 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -484,7 +487,24 @@ public class RdNode implements IObj {
 
 	@Override
 	public String primaryKey() {
-		// TODO Auto-generated method stub
 		return "node_pid";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
+		childList.put(RdNodeName.class, names);
+		childList.put(RdNodeMesh.class, meshes);
+		childList.put(RdNodeForm.class, forms);
+		return childList;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<Class<? extends IRow>,Map<String,?>>();
+		childMap.put(RdNodeName.class, nameMap);
+		childMap.put(RdNodeMesh.class, meshMap);
+		childMap.put(RdNodeForm.class, formMap);
+		return childMap;
 	}
 }

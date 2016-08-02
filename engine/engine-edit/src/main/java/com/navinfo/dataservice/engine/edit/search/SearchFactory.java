@@ -15,14 +15,17 @@ import com.navinfo.dataservice.dao.glm.search.LuNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdBranchSearch;
 import com.navinfo.dataservice.dao.glm.search.RdCrossSearch;
 import com.navinfo.dataservice.dao.glm.search.RdElectroniceyeSearch;
+import com.navinfo.dataservice.dao.glm.search.RdGateSearch;
 import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLaneConnexitySearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkIntRticSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdRestrictionSearch;
+import com.navinfo.dataservice.dao.glm.search.RdSlopeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSpeedlimitSearch;
 import com.navinfo.dataservice.dao.glm.search.RdTrafficsignalSearch;
+import com.navinfo.dataservice.dao.glm.search.RdWarninginfoSearch;
 import com.navinfo.dataservice.dao.glm.search.RwLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.RwNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.ZoneFaceSearch;
@@ -98,6 +101,12 @@ public class SearchFactory {
 			return new RdTrafficsignalSearch(conn);
 		case RDELECTRONICEYE:
 			return new RdElectroniceyeSearch(conn);
+		case RDWARNINGINFO:
+			return new RdWarninginfoSearch(conn);
+		case RDSLOPE:
+			return new RdSlopeSearch(conn);
+		case RDGATE:
+			return new RdGateSearch(conn);
 		default:
 			return null;
 		}

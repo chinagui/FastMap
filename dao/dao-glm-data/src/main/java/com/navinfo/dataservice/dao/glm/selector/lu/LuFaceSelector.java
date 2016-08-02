@@ -9,14 +9,12 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFaceName;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFaceTopo;
-
-import oracle.sql.STRUCT;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 
 public class LuFaceSelector implements ISelector {
 
@@ -52,8 +50,10 @@ public class LuFaceSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
-				setAttr(isLock, face, resultSet);
-
+//				setAttr(isLock, face, resultSet);
+				ReflectionAttrUtils.executeResultSet(face, resultSet);
+				this.setChildren(isLock, face, resultSet);
+				
 				return face;
 			} else {
 
@@ -84,27 +84,8 @@ public class LuFaceSelector implements ISelector {
 	}
 
 	private void setAttr(boolean isLock, LuFace face, ResultSet resultSet) throws SQLException, Exception {
-		face.setPid(resultSet.getInt("face_pid"));
 
-		face.setFeaturePid(resultSet.getInt("feature_pid"));
-
-		STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
-		face.setGeometry(GeoTranslator.struct2Jts(struct, 100000, 0));
-
-		face.setKind(resultSet.getInt("kind"));
-
-		face.setPerimeter(resultSet.getDouble("perimeter"));
-
-		face.setMeshId(resultSet.getInt("mesh_id"));
-
-		face.setEditFlag(resultSet.getInt("edit_flag"));
-
-		face.setDetailFlag(resultSet.getInt("detail_flag"));
-
-		face.setRowId(resultSet.getString("row_id"));
-
-		List<IRow> luFaceTopo = new LuFaceTopoSelector(conn).loadRowsByParentId(face.pid(), isLock);
+		List<IRow> luFaceTopo = new LuFaceTopoSelector(conn).loadRowsByParentId(face.getPid(), isLock);
 
 		for (IRow row : luFaceTopo) {
 			row.setMesh(face.mesh());
@@ -129,6 +110,33 @@ public class LuFaceSelector implements ISelector {
 
 	}
 
+	private void setChildren(boolean isLock, LuFace face, ResultSet resultSet) throws SQLException, Exception {
+
+		List<IRow> luFaceTopo = new LuFaceTopoSelector(conn).loadRowsByParentId(face.getPid(), isLock);
+
+		for (IRow row : luFaceTopo) {
+			row.setMesh(face.mesh());
+		}
+
+		face.setFaceTopos(luFaceTopo);
+
+		for (IRow row : luFaceTopo) {
+			LuFaceTopo obj = (LuFaceTopo) row;
+
+			face.luFaceTopoMap.put(obj.rowId(), obj);
+		}
+
+		List<IRow> luFaceNames = new LuFaceNameSelector(conn).loadRowsByParentId(face.getPid(), isLock);
+
+		for (IRow row : luFaceNames) {
+			LuFaceName obj = (LuFaceName) row;
+
+			face.luFaceNameMap.put(obj.rowId(), obj);
+		}
+		face.setFaceNames(luFaceNames);
+
+	}
+	
 	@Override
 	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
 		return null;
@@ -159,7 +167,9 @@ public class LuFaceSelector implements ISelector {
 
 				LuFace face = new LuFace();
 
-				this.setAttr(isLock, face, resultSet);
+//				this.setAttr(isLock, face, resultSet);
+				ReflectionAttrUtils.executeResultSet(face, resultSet);
+				this.setChildren(isLock, face, resultSet);
 
 				faces.add(face);
 
@@ -220,7 +230,9 @@ public class LuFaceSelector implements ISelector {
 
 				LuFace face = new LuFace();
 
-				this.setAttr(isLock, face, resultSet);
+//				this.setAttr(isLock, face, resultSet);
+				ReflectionAttrUtils.executeResultSet(face, resultSet);
+				this.setChildren(isLock, face, resultSet);
 
 				faces.add(face);
 
@@ -284,8 +296,10 @@ public class LuFaceSelector implements ISelector {
 
 				LuFace face = new LuFace();
 
-				this.setAttr(isLock, face, resultSet);
-
+//				this.setAttr(isLock, face, resultSet);
+				ReflectionAttrUtils.executeResultSet(face, resultSet);
+				this.setChildren(isLock, face, resultSet);
+				
 				faces.add(face);
 			}
 		} catch (Exception e) {

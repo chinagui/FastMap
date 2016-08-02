@@ -11,6 +11,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePair;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 
 /**
  * @Title: RdEleceyePairSelector.java
@@ -30,17 +31,21 @@ public class RdEleceyePairSelector implements ISelector {
 		this.conn = conn;
 	}
 
-	/** 
+	/**
 	 * 根据RdEleceyePair的GroupId查询
 	 */
 	@Override
 	public IRow loadById(int id, boolean isLock) throws Exception {
 		RdEleceyePair pair = new RdEleceyePair();
 
-		String sql = "select  distinct(a.group_id),a.u_record,a.u_fields,a.u_date, a.row_id,c.mesh_id from "
-				+ pair.tableName()
-				+ " a,rd_eleceye_part b,rd_electroniceye c, rd_link d where a.group_id = :1 and a.u_record != 2 and a.group_id = b.group_id and b.eleceye_pid = c.pid and c.link_pid = d.link_pid";
+		// String sql = "select a.group_id,a.u_record,a.u_fields,a.u_date,
+		// a.row_id,c.mesh_id from "
+		// + pair.tableName()
+		// + " a,rd_eleceye_part b,rd_electroniceye c, rd_link d where
+		// a.group_id = :1 and a.u_record != 2 and a.group_id = b.group_id and
+		// b.eleceye_pid = c.pid and c.link_pid = d.link_pid";
 
+		String sql = "select a.group_id,a.u_record,a.u_fields,a.u_date, a.row_id from " + pair.tableName() + " a where a.group_id = :1 and a.u_record != 2" ;
 		if (isLock) {
 			sql += " for update nowait";
 		}
@@ -58,7 +63,8 @@ public class RdEleceyePairSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				setAttr(pair, resultSet);
+				// setAttr(pair, resultSet);
+				ReflectionAttrUtils.executeResultSet(pair, resultSet);
 
 			} else {
 
@@ -68,7 +74,6 @@ public class RdEleceyePairSelector implements ISelector {
 			List<IRow> parts = new RdEleceyePartSelector(conn).loadRowsByGroupId(pair.pid(), isLock);
 			for (IRow row : parts) {
 				RdEleceyePart part = (RdEleceyePart) row;
-				part.setMesh(resultSet.getInt("mesh_id"));
 				pair.partMap.put(part.rowId(), part);
 			}
 			pair.setParts(parts);
@@ -98,7 +103,7 @@ public class RdEleceyePairSelector implements ISelector {
 
 		return pair;
 	}
-	
+
 	/**
 	 * 根据RdEleceyePair的RowId查询
 	 */
@@ -126,7 +131,8 @@ public class RdEleceyePairSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				setAttr(pair, resultSet);
+				// setAttr(pair, resultSet);
+				ReflectionAttrUtils.executeResultSet(pair, resultSet);
 
 			} else {
 

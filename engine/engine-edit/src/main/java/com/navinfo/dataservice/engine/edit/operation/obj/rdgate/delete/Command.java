@@ -1,21 +1,17 @@
-package com.navinfo.dataservice.engine.edit.operation.obj.rdcross.delete;
+package com.navinfo.dataservice.engine.edit.operation.obj.rdgate.delete;
 
-import java.util.List;
-
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 
 import net.sf.json.JSONObject;
 
 public class Command extends AbstractCommand {
-
-	private String requester;
 	
-	private List<IRow> trafficsignals;
-
+	private String requester;
 	private int pid;
+	private RdGate rdGate;
 	
 	public int getPid() {
 		return pid;
@@ -25,22 +21,17 @@ public class Command extends AbstractCommand {
 		this.pid = pid;
 	}
 
-	public List<IRow> getTrafficsignals() {
-		return trafficsignals;
+	public RdGate getRdGate() {
+		return rdGate;
 	}
 
-	public void setTrafficsignals(List<IRow> trafficsignals) {
-		this.trafficsignals = trafficsignals;
+	public void setRdGate(RdGate rdGate) {
+		this.rdGate = rdGate;
 	}
 
 	@Override
 	public OperType getOperType() {
 		return OperType.DELETE;
-	}
-	
-	@Override
-	public ObjType getObjType() {
-		return ObjType.RDCROSS;
 	}
 
 	@Override
@@ -48,13 +39,17 @@ public class Command extends AbstractCommand {
 		return requester;
 	}
 
+	@Override
+	public ObjType getObjType() {
+		return ObjType.RDGATE;
+	}
+	
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 
 		this.setDbId(json.getInt("dbId"));
-
 		this.pid = json.getInt("objId");
-		
+
 	}
 
 }

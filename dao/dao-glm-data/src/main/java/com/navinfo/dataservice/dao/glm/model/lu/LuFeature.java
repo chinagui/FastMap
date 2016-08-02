@@ -226,4 +226,18 @@ public class LuFeature implements IObj{
 		this.faceMap = faceMap;
 	}
 
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
+		childMap.put(LuFace.class, faces);
+		return childMap;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<Class<? extends IRow>,Map<String,?>>();
+		childMap.put(LuFace.class, faceMap);
+		return childMap;
+	}
+
 }

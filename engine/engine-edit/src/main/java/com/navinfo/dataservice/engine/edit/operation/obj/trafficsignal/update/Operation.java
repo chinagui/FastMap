@@ -1,9 +1,17 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update;
 
+import java.sql.Connection;
+import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.hadoop.hbase.client.ConnectionUtils;
+
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
+import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
 
 import net.sf.json.JSONObject;
 
@@ -18,8 +26,14 @@ public class Operation implements IOperation {
 
 	private Command command;
 
+	private Connection conn = null;
+
 	public Operation(Command command) {
 		this.command = command;
+	}
+
+	public Operation(Connection conn) {
+		this.conn = conn;
 	}
 
 	@Override
@@ -45,5 +59,41 @@ public class Operation implements IOperation {
 		}
 
 		return null;
+	}
+
+	/**
+	 * 打断link维护信号灯
+	 * 
+	 * @param oldLinkPid
+	 *            被打断的link
+	 * @param newLinks
+	 *            新生成的link组
+	 * @param result
+	 * @param conn
+	 * @throws Exception
+	 */
+	public void breakRdLink(int linkPid, List<RdLink> newLinks, Result result) throws Exception {
+		if (conn == null) {
+			return;
+		}
+
+		RdTrafficsignalSelector selector = new RdTrafficsignalSelector(conn);
+
+		List<RdTrafficsignal> rdTrafficsignals = selector.loadByLinkPid(true,linkPid);
+		
+		if(CollectionUtils.isNotEmpty(rdTrafficsignals))
+		{
+			RdTrafficsignal rdTrafficsignal = rdTrafficsignals.get(0);
+			
+			for (RdLink link : newLinks) {
+
+				if (link.getsNodePid() == rdTrafficsignal.getNodePid() || link.geteNodePid() == rdTrafficsignal.getNodePid()) {
+
+					rdTrafficsignal.changedFields().put("linkPid", link.getPid());
+
+					result.insertObject(rdTrafficsignal, ObjStatus.UPDATE, rdTrafficsignal.pid());
+				}
+			}
+		}
 	}
 }

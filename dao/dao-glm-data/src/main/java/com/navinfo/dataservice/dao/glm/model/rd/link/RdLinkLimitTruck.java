@@ -276,5 +276,4 @@ public class RdLinkLimitTruck implements IRow {
 	@Override
 	public void setMesh(int mesh) {
 	}
-
 }

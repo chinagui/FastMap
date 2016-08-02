@@ -36,8 +36,7 @@ public class LuLinkSearch implements ISearch {
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataBySpatial(String wkt)
-			throws Exception {
+	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
@@ -65,7 +64,7 @@ public class LuLinkSearch implements ISearch {
 
 				snapshot.setM(m);
 
-				snapshot.setT(12);
+				snapshot.setT(29);
 
 				snapshot.setI(String.valueOf(resultSet.getInt("link_pid")));
 
@@ -103,19 +102,17 @@ public class LuLinkSearch implements ISearch {
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByCondition(String condition)
-			throws Exception {
+	public List<SearchSnapshot> searchDataByCondition(String condition) throws Exception {
 
 		return null;
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
-			int gap) throws Exception {
+	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select a.link_pid,        a.geometry,        a.kind,  a.s_node_pid,        a.e_node_pid   from lu_link a          where a.u_record != 2      and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
+		String sql = "select a.link_pid, a.geometry, a.s_node_pid, a.e_node_pid from lu_link a where a.u_record != 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
 
 		PreparedStatement pstmt = null;
 
@@ -143,11 +140,9 @@ public class LuLinkSearch implements ISearch {
 
 				m.put("b", resultSet.getString("e_node_pid"));
 
-				m.put("c", resultSet.getInt("kind"));
-
 				snapshot.setM(m);
 
-				snapshot.setT(12);
+				snapshot.setT(29);
 
 				snapshot.setI(String.valueOf(resultSet.getInt("link_pid")));
 
@@ -197,8 +192,7 @@ public class LuLinkSearch implements ISearch {
 
 		LuLinkSearch search = new LuLinkSearch(conn);
 
-		List<SearchSnapshot> res = search.searchDataByTileWithGap(215829,
-				99329, 18, 20);
+		List<SearchSnapshot> res = search.searchDataByTileWithGap(215829, 99329, 18, 20);
 
 		for (SearchSnapshot s : res) {
 			System.out.println(s.Serialize(null));

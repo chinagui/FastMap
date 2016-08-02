@@ -3,33 +3,19 @@ package com.navinfo.dataservice.dao.glm.selector.poi.index;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.List;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ISelector;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEditStatus;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 
-public class IxPoiEditStatusSelector implements ISelector {
+public class IxPoiEditStatusSelector extends AbstractSelector {
 
 	private Connection conn;
 
 	public IxPoiEditStatusSelector(Connection conn) {
+		super(conn);
 		this.conn = conn;
-	}
-
-	@Override
-	public IRow loadById(int id, boolean isLock) throws Exception {
-		return null;
-	}
-
-	@Override
-	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
-		return null;
-	}
-
-	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
-		return null;
+		this.setCls(IxPoiEditStatus.class);
 	}
 
 	public int loadStatusByRowId(String rowId, boolean isLock) throws Exception {

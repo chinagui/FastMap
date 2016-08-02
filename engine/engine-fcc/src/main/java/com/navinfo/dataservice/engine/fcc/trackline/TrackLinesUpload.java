@@ -112,7 +112,7 @@ public class TrackLinesUpload {
 	
 				trackLine.put("a_segmentId", segmentId);*/
 	
-				//判断在hbase库中是否已经存在，存在则使用库中的rowkey
+				//通过id判断数据在hbase库中是否已经存在，存在则使用库中的rowkey
 				String rowkey =extisRowKey(json.getString("id"),htab);
 	
 				if(rowkey==null){
@@ -125,14 +125,14 @@ public class TrackLinesUpload {
 				put.addColumn("attribute".getBytes(), "a_uuid".getBytes(),
 						json.getString("id").getBytes());
 				
-				put.addColumn("attribute".getBytes(), "startTime".getBytes(),
-						json.getString("id").getBytes());
+				put.addColumn("attribute".getBytes(), "a_startTime".getBytes(),
+						json.getString("startTime").getBytes());
 				
 				put.addColumn("attribute".getBytes(), "a_endTime".getBytes(),
-						Bytes.toBytes(json.getInt("userId")));
+						Bytes.toBytes(json.getInt("endTime")));
 				
-				put.addColumn("attribute".getBytes(), "a_uuid".getBytes(),
-						json.getString("id").getBytes());
+				put.addColumn("attribute".getBytes(), "a_user".getBytes(),
+						json.getString("userId").getBytes());
 				
 				put.addColumn("attribute".getBytes(), "a_geometry".getBytes(),
 						json.getString("geometry").getBytes());
@@ -241,7 +241,6 @@ public class TrackLinesUpload {
 		try {
 			Scan scan = new Scan();
 			scan.addColumn(Bytes.toBytes("attribute"), Bytes.toBytes("a_uuid"));
-			// scan.addFamily(Bytes.toBytes("attribute"));
 			SingleColumnValueFilter filter = new SingleColumnValueFilter(
 					Bytes.toBytes("attribute"), Bytes.toBytes("a_uuid"),
 					CompareOp.EQUAL, Bytes.toBytes(uuid));
@@ -250,13 +249,11 @@ public class TrackLinesUpload {
 			ResultScanner rs = htab.getScanner(scan);
 			for (Result r : rs) {
 				if (r != null && r.getRow() != null) {
-					
-						System.out.println("获得到rowkey:" + new String(r.getRow()));
-						for (KeyValue keyValue : r.raw()) {
+						//System.out.println("获得到rowkey:" + new String(r.getRow()));
+						/*for (KeyValue keyValue : r.raw()) {
 							System.out.println("列：" + new String(keyValue.getFamily())
 									+ "====值:" + new String(keyValue.getValue()));
-						}
-
+						}*/
 					return new String(r.getRow());
 				}
 

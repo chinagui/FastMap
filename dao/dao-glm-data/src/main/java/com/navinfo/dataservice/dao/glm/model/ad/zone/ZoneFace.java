@@ -7,10 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -19,6 +15,10 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 /**
  * 
  * 
@@ -47,7 +47,7 @@ public class ZoneFace implements IObj {
 
 	private List<IRow> faceTopos = new ArrayList<IRow>();
 
-	public Map<String, ZoneFaceTopo> adFaceTopoMap = new HashMap<String, ZoneFaceTopo>();
+	public Map<String, ZoneFaceTopo> zoneFaceTopoMap = new HashMap<String, ZoneFaceTopo>();
 
 	public ZoneFace() {
 
@@ -151,8 +151,6 @@ public class ZoneFace implements IObj {
 		while (keys.hasNext()) {
 			String key = (String) keys.next();
 
-			JSONArray ja = null;
-
 			if (json.get(key) instanceof JSONArray) {
 
 			} else if ("geometry".equals(key)) {
@@ -242,6 +240,7 @@ public class ZoneFace implements IObj {
 	@Override
 	public boolean fillChangeFields(JSONObject json) throws Exception {
 
+		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {
@@ -324,4 +323,19 @@ public class ZoneFace implements IObj {
 	public void setFaceTopos(List<IRow> faceTopos) {
 		this.faceTopos = faceTopos;
 	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<>();
+		childList.put(ZoneFaceTopo.class, faceTopos);
+		return childList;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<>();
+		childMap.put(ZoneFaceTopo.class, zoneFaceTopoMap);
+		return childMap;
+	}
+
 }

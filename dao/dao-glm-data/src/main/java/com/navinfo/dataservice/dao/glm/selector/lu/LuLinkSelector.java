@@ -7,8 +7,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import oracle.sql.STRUCT;
-
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -16,7 +14,10 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLinkMesh;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.vividsolutions.jts.geom.Geometry;
+
+import oracle.sql.STRUCT;
 
 public class LuLinkSelector implements ISelector {
 	
@@ -52,7 +53,9 @@ public class LuLinkSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
-				setAttr(isLock, luLink, resultSet);
+//				setAttr(isLock, luLink, resultSet);
+				ReflectionAttrUtils.executeResultSet(luLink, resultSet);
+				this.setChildren(isLock, luLink, resultSet);
 
 				return luLink;
 			} else {
@@ -103,6 +106,20 @@ public class LuLinkSelector implements ISelector {
 		luLink.setEditFlag(resultSet.getInt("edit_flag"));
 		
 		luLink.setRowId(resultSet.getString("row_id"));
+
+		List<IRow> forms = new LuLinkMeshSelector(conn).loadRowsByParentId(luLink.pid(), isLock);
+		
+		luLink.setMeshes(forms);
+
+		for (IRow row : luLink.getMeshes()) {
+			LuLinkMesh mesh = (LuLinkMesh) row;
+
+			luLink.meshMap.put(mesh.rowId(), mesh);
+		}
+	}
+	
+	private void setChildren(boolean isLock, LuLink luLink, ResultSet resultSet)
+			throws SQLException, Exception {
 
 		List<IRow> forms = new LuLinkMeshSelector(conn).loadRowsByParentId(luLink.pid(), isLock);
 		

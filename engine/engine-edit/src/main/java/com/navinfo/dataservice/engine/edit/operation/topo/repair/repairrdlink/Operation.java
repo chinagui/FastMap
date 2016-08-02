@@ -34,7 +34,7 @@ public class Operation implements IOperation {
 	private Command command;
 
 	private Connection conn;
-	
+
 	private Map<Integer, List<RdLink>> map;
 
 	public Map<Integer, List<RdLink>> getMap() {
@@ -64,17 +64,17 @@ public class Operation implements IOperation {
 			content.put("geometry", command.getLinkGeom());
 			Geometry geo = GeoTranslator.geojson2Jts(command.getLinkGeom());
 			double length = 0;
-			if(null != geo)
+			if (null != geo)
 				length = GeometryUtils.getLinkLength(geo);
 			content.put("length", length);
 			boolean isChanged = this.command.getUpdateLink().fillChangeFields(content);
 			if (isChanged) {
 				result.insertObject(this.command.getUpdateLink(), ObjStatus.UPDATE, this.command.getLinkPid());
 			}
-			//拷贝原link，set属性
+			// 拷贝原link，set属性
 			RdLink link = new RdLink();
 			link.copy(this.command.getUpdateLink());
-			link.setGeometry(GeoTranslator.geojson2Jts(this.command.getLinkGeom(),100000,0));
+			link.setGeometry(GeoTranslator.geojson2Jts(this.command.getLinkGeom(), 100000, 0));
 			links.add(link);
 		} else {
 			Iterator<String> it = meshes.iterator();
@@ -89,8 +89,12 @@ public class Operation implements IOperation {
 				links.addAll(RdLinkOperateUtils.getCreateRdLinksWithMesh(geomInter, maps, result));
 
 			}
-			deleteRdLink(this.command.getUpdateLink(),result);
+			deleteRdLink(this.command.getUpdateLink(), result);
+
 		}
+
+		updataRelationObj(this.command.getUpdateLink(), links, result);
+
 		// 处理对立交的影响
 		if (CollectionUtils.isNotEmpty(this.command.getGscList())) {
 			handleEffectOnRdGsc(this.command.getGscList(), links, result);
@@ -99,13 +103,13 @@ public class Operation implements IOperation {
 		this.map = map;
 		return null;
 	}
-	
+
 	/**
-	 * @param rdLink 
-	 * @throws Exception 
+	 * @param rdLink
+	 * @throws Exception
 	 * 
 	 */
-	private void deleteRdLink(RdLink rdLink,Result result) throws Exception {
+	private void deleteRdLink(RdLink rdLink, Result result) throws Exception {
 		JSONObject deleteJson = new JSONObject();
 		// 要打断线的pid
 		deleteJson.put("objId", rdLink.getPid());
@@ -120,7 +124,7 @@ public class Operation implements IOperation {
 		deleteProcess.innerRun();
 	}
 
-	public void breakLine(int sNodePid, int eNodePid,Result result) throws Exception {
+	public void breakLine(int sNodePid, int eNodePid, Result result) throws Exception {
 
 		JSONArray coords = command.getLinkGeom().getJSONArray("coordinates");
 
@@ -159,13 +163,14 @@ public class Operation implements IOperation {
 			com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command(
 					breakJson, breakJson.toString());
 			com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process(
-					breakCommand, conn,result);
+					breakCommand, conn, result);
 			breakProcess.innerRun();
 		}
 	}
-	
+
 	/**
 	 * 处理对立交的影响
+	 * 
 	 * @param gscList
 	 * @param linkList
 	 * @param result
@@ -188,7 +193,7 @@ public class Operation implements IOperation {
 
 						// 计算立交点序号和起终点标识
 						RdGscOperateUtils.calShpSeqNum(gscLink, gscGeo, linkGeo.getCoordinates());
-						
+
 						if (!gscLink.changedFields().isEmpty()) {
 							result.insertObject(gscLink, ObjStatus.UPDATE, gsc.getPid());
 						}
@@ -196,5 +201,28 @@ public class Operation implements IOperation {
 				}
 			}
 		}
+	}
+
+	/**
+	 * 维护关联要素
+	 * 
+	 * @throws Exception
+	 */
+	private void updataRelationObj(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
+		// 移动、打断均需要处理的要素
+
+		// 打断时才处理的要素
+		if (newLinks.size() < 2) {
+			return;
+		}
+		// 警示信息
+		com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Operation warninginOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Operation(
+				this.conn);
+		warninginOperation.breakRdLink(oldLink.getPid(), newLinks, result);
+
+		// 维护信号灯
+		com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation trafficSignalOperation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation(
+				this.conn);
+		trafficSignalOperation.breakRdLink(oldLink.getPid(), newLinks, result);
 	}
 }

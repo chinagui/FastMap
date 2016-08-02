@@ -23,18 +23,17 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public boolean prepareData() throws Exception {
-		// 根据pairId加载RdEleceyePart和RdEleceyePair
+		// 根据pairId加载RdEleceyePair和RdEleceyePart
 		Command command = this.getCommand();
+		command.setPair((RdEleceyePair) new RdEleceyePairSelector(this.getConn()).loadById(command.getGroupId(), true));
+
 		RdEleceyePartSelector selector = new RdEleceyePartSelector(this.getConn());
-		List<RdEleceyePart> parts = new ArrayList<RdEleceyePart>();
 		List<IRow> rows = selector.loadRowsByGroupId(command.getGroupId(), true);
+		List<RdEleceyePart> parts = new ArrayList<RdEleceyePart>();
 		for (IRow row : rows) {
 			parts.add((RdEleceyePart) row);
 		}
 		command.setParts(parts);
-
-		command.setPair(
-				(RdEleceyePair) new RdEleceyePairSelector(this.getConn()).loadById(command.getGroupId(), true));
 
 		return false;
 	}

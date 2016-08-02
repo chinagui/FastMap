@@ -17,29 +17,23 @@ public class Operation implements IOperation {
 
 	@Override
 	public String run(Result result) throws Exception {
-		JSONObject content = command.getContent();
-
-		if (content.containsKey("objStatus")) {
-
-			RdElectroniceye eleceye = command.getEleceye();
-
-			if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
-				// 删除电子眼
-				result.insertObject(eleceye, ObjStatus.DELETE, eleceye.parentPKValue());
-
-				return null;
-			} else {
-				// 修改电子眼
-				boolean isChanged = eleceye.fillChangeFields(content);
-
-				if (isChanged) {
-					result.insertObject(eleceye, ObjStatus.UPDATE, eleceye.parentPKValue());
-
-				}
-			}
-		}
+		updateRdElectroniceye(result);
 
 		return null;
+	}
+
+	public void updateRdElectroniceye(Result result) throws Exception {
+		JSONObject content = command.getContent();
+
+		RdElectroniceye eleceye = command.getEleceye();
+
+		// 修改电子眼
+		boolean isChanged = eleceye.fillChangeFields(content);
+
+		if (isChanged) {
+			result.insertObject(eleceye, ObjStatus.UPDATE, eleceye.pid());
+			result.setPrimaryPid(eleceye.pid());
+		}
 	}
 
 }

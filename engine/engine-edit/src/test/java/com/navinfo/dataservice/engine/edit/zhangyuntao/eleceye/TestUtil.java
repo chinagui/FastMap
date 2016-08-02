@@ -7,6 +7,7 @@ public class TestUtil {
 		Transaction t = new Transaction(requester);
 		try {
 			t.run();
+			System.out.println(t.getPid());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

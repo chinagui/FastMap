@@ -13,6 +13,7 @@ import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFaceName;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 
 public class LuFaceNameSelector implements ISelector {
 
@@ -47,8 +48,8 @@ public class LuFaceNameSelector implements ISelector {
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
-				setAttr(faceName, resultSet);
-
+//				setAttr(faceName, resultSet);
+				ReflectionAttrUtils.executeResultSet(faceName, resultSet);
 				return faceName;
 			} else {
 
@@ -101,8 +102,8 @@ public class LuFaceNameSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				setAttr(luFaceName, resultSet);
-
+//				setAttr(luFaceName, resultSet);
+				ReflectionAttrUtils.executeResultSet(luFaceName, resultSet);
 			} else {
 
 				throw new DataNotFoundException("数据不存在");
@@ -171,7 +172,8 @@ public class LuFaceNameSelector implements ISelector {
 			while (resultSet.next()) {
 				LuFaceName luFaceName = new LuFaceName();
 
-				this.setAttr(luFaceName, resultSet);
+//				this.setAttr(luFaceName, resultSet);
+				ReflectionAttrUtils.executeResultSet(luFaceName, resultSet);
 
 				list.add(luFaceName);
 			}

@@ -167,7 +167,7 @@ public class RdCrossNodeSelector implements ISelector {
 	{
 		RdCrossNode node = new RdCrossNode();
 
-		String sql = "select * from " + node.tableName() + " where node_pid=(:1)";
+		String sql = "select * from " + node.tableName() + " where node_pid=(:1) and u_record !=2 ";
 
 		if (isLock) {
 			sql += " for update nowait";

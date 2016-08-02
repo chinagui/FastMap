@@ -13,6 +13,7 @@ import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFaceTopo;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 
 public class LuFaceTopoSelector implements ISelector {
 
@@ -52,7 +53,8 @@ public class LuFaceTopoSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				setAttr(luFaceTopo, resultSet);
+//				setAttr(luFaceTopo, resultSet);
+				ReflectionAttrUtils.executeResultSet(luFaceTopo, resultSet);
 
 			} else {
 
@@ -122,8 +124,9 @@ public class LuFaceTopoSelector implements ISelector {
 			while (resultSet.next()) {
 				LuFaceTopo luFaceTopo = new LuFaceTopo();
 
-				this.setAttr(luFaceTopo, resultSet);
-
+//				this.setAttr(luFaceTopo, resultSet);
+				ReflectionAttrUtils.executeResultSet(luFaceTopo, resultSet);
+				
 				list.add(luFaceTopo);
 			}
 		} catch (Exception e) {
@@ -175,7 +178,8 @@ public class LuFaceTopoSelector implements ISelector {
 			while (resultSet.next()) {
 				LuFaceTopo luFaceTopo = new LuFaceTopo();
 				
-				this.setAttr(luFaceTopo, resultSet);
+//				this.setAttr(luFaceTopo, resultSet);
+				ReflectionAttrUtils.executeResultSet(luFaceTopo, resultSet);
 				
 				luFaceTopos.add(luFaceTopo);
 			} 

@@ -224,31 +224,25 @@ public class IxPoiEvent implements IObj {
 
 	@Override
 	public void copy(IRow row) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public Map<String, Object> changedFields() {
-		// TODO Auto-generated method stub
 		return this.changedFields;
 	}
 
 	@Override
 	public String parentPKName() {
-		// TODO Auto-generated method stub
 		return "event_id";
 	}
 
 	@Override
 	public int parentPKValue() {
-		// TODO Auto-generated method stub
 		return this.getPid();
 	}
 
 	@Override
 	public String parentTableName() {
-		// TODO Auto-generated method stub
 		return "ix_poi_event";
 	}
 
@@ -355,19 +349,28 @@ public class IxPoiEvent implements IObj {
 
 	@Override
 	public List<IRow> relatedRows() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int pid() {
-		// TODO Auto-generated method stub
 		return this.getPid();
 	}
 
 	@Override
 	public String primaryKey() {
 		return "event_id";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		return null;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

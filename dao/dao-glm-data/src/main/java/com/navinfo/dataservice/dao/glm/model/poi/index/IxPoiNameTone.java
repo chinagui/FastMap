@@ -172,7 +172,6 @@ public class IxPoiNameTone implements IRow {
 
 	@Override
 	public void copy(IRow row) {
-		// TODO Auto-generated method stub
 	}
 
 	@Override

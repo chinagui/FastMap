@@ -246,9 +246,7 @@ public class SubtaskController extends BaseController {
 				throw new Exception("该任务不存在");
 			}
 			
-			JSONObject result = JsonOperation.beanToJson(data);
-			
-			return new ModelAndView("jsonView", success(result));
+			return new ModelAndView("jsonView", success(data));
 			
 		}catch(Exception e){
 			log.error("获取明细失败，原因："+e.getMessage(), e);

@@ -3,18 +3,19 @@ package com.navinfo.dataservice.dao.glm.search;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.commons.util.DisplayUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
 
 import net.sf.json.JSONObject;
+import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
 public class RdElectroniceyeSearch implements ISearch {
@@ -34,48 +35,7 @@ public class RdElectroniceyeSearch implements ISearch {
 
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt) {
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
-		String sql = "select a.pid, a.direct, a.geometry from rd_electroniceye a where a.u_record <> 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-		try {
-			pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, wkt);
-			resultSet = pstmt.executeQuery();
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
-
-				snapshot.setT(26);
-
-				snapshot.setI(String.valueOf(resultSet.getInt("pid")));
-
-				JSONObject m = new JSONObject();
-
-				m.put("a", resultSet.getInt("direct"));
-
-				snapshot.setM(m);
-
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
-				JSONObject jo = Geojson.spatial2Geojson(struct);
-
-				snapshot.setG(jo.getJSONArray("coordinates"));
-
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if (null != resultSet)
-					resultSet.close();
-				if (null != pstmt)
-					pstmt.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		return list;
+		return null;
 	}
 
 	@Override
@@ -87,7 +47,8 @@ public class RdElectroniceyeSearch implements ISearch {
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select a.pid, a.direct, a.geometry from rd_electroniceye a where a.u_record <> 2 and sdo_relate(a.geometry, sdo_geometry(:1, 8307),'mask=anyinteract') = 'TRUE'";
+		// String sql = "select pid, direct, angle, geometry from rd_electroniceye where sdo_relate(geometry, sdo_geometry(:1, 8307),'mask=anyinteract') = 'TRUE' and u_record != 2";
+		String sql = "with tmp1 as (select link_pid, geometry from rd_link where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' and u_record != 2) select a.pid, a.direct, a.geometry point_geom, b.geometry link_geom from rd_electroniceye a, tmp1 b where a.link_pid = b.link_pid and u_record != 2";
 
 		PreparedStatement pstmt = null;
 
@@ -117,9 +78,13 @@ public class RdElectroniceyeSearch implements ISearch {
 
 				m.put("a", resultSet.getInt("direct"));
 
+				double angle = calAngle(resultSet);
+
+				m.put("b", angle);
+
 				snapshot.setM(m);
 
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+				STRUCT struct = (STRUCT) resultSet.getObject("point_geom");
 
 				JSONObject geojson = Geojson.spatial2Geojson(struct);
 
@@ -154,8 +119,70 @@ public class RdElectroniceyeSearch implements ISearch {
 		return list;
 	}
 
+	// 计算角度
+	private double calAngle(ResultSet resultSet) throws Exception {
+
+		double angle = 0;
+
+		STRUCT struct1 = (STRUCT) resultSet.getObject("point_geom");
+
+		JGeometry geom1 = JGeometry.load(struct1);
+
+		double[] point = geom1.getFirstPoint();
+
+		STRUCT struct2 = (STRUCT) resultSet.getObject("link_geom");
+
+		JGeometry geom2 = JGeometry.load(struct2);
+
+		int ps = geom2.getNumPoints();
+
+		int startIndex = 0;
+
+		for (int i = 0; i < ps - 1; i++) {
+			double sx = geom2.getOrdinatesArray()[i * 2];
+
+			double sy = geom2.getOrdinatesArray()[i * 2 + 1];
+
+			double ex = geom2.getOrdinatesArray()[(i + 1) * 2];
+
+			double ey = geom2.getOrdinatesArray()[(i + 1) * 2 + 1];
+
+			if (isBetween(sx, ex, point[0]) && isBetween(sy, ey, point[1])) {
+				startIndex = i;
+				break;
+			}
+		}
+
+		StringBuilder sb = new StringBuilder("LINESTRING (");
+
+		sb.append(geom2.getOrdinatesArray()[startIndex * 2]);
+
+		sb.append(" ");
+
+		sb.append(geom2.getOrdinatesArray()[startIndex * 2 + 1]);
+
+		sb.append(", ");
+
+		sb.append(geom2.getOrdinatesArray()[(startIndex + 1) * 2]);
+
+		sb.append(" ");
+
+		sb.append(geom2.getOrdinatesArray()[(startIndex + 1) * 2 + 1]);
+
+		sb.append(")");
+
+		angle = DisplayUtils.calIncloudedAngle(sb.toString(), resultSet.getInt("direct"));
+
+		return angle;
+
+	}
+
+	private static boolean isBetween(double a, double b, double c) {
+		return b > a ? c >= a && c <= b : c >= b && c <= a;
+	}
+
 	public static void main(String[] args) throws Exception {
-		String wkt = MercatorProjection.getWktWithGap(107949, 49614, 17, 80);
+		String wkt = MercatorProjection.getWktWithGap(107953, 49615, 17, 80);
 		System.out.println(wkt);
 	}
 }

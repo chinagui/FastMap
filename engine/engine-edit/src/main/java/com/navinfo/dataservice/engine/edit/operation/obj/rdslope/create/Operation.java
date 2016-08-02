@@ -53,7 +53,7 @@ public class Operation implements IOperation {
 					RdSlopeVia slopeVia = new RdSlopeVia();
 					slopeVia.setSlopePid(slope.getPid());
 					slopeVia.setLinkPid(this.command.getSeriesLinkPids().get(i));
-					slopeVia.setSeqNum(i);
+					slopeVia.setSeqNum(i+1);
 					rdSlopeVias.add(slopeVia);
 				}
 				slope.setSlopeVias(rdSlopeVias);

@@ -69,7 +69,7 @@ public class Operation implements IOperation {
 							this.command.getPid());
 				}
 				for (int i = 0; i < this.command.getSeriesLinkPids().size(); i++) {
-					this.addRdSlope(result, i);
+					this.addRdSlope(result, i+1);
 				}
 
 			} else {
@@ -86,7 +86,7 @@ public class Operation implements IOperation {
 				}
 				if (sourceSize < currentSize) {
 					for (int i = sourceSize; i <= currentSize; i++) {
-						this.addRdSlope(result, i);
+						this.addRdSlope(result, i+1);
 					}
 				}
 

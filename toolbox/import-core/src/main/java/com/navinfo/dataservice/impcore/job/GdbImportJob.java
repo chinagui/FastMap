@@ -15,6 +15,7 @@ import com.navinfo.dataservice.impcore.mover.DefaultLogMover;
 import com.navinfo.dataservice.impcore.mover.LogMoveResult;
 import com.navinfo.dataservice.impcore.mover.LogMover;
 import com.navinfo.dataservice.impcore.selector.DefaultLogSelector;
+import com.navinfo.dataservice.impcore.selector.FullAndNonLockSelector;
 import com.navinfo.dataservice.impcore.selector.LogSelector;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.exception.LockException;
@@ -45,7 +46,11 @@ public class GdbImportJob extends AbstractJob {
 			DbInfo logDbInfo = datahub.getDbById(req.getLogDbId());
 			OracleSchema logSchema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(logDbInfo.getConnectParam()));
-			logSelector = new DefaultLogSelector(logSchema);
+			if("default".equals(req.getImpType())){
+				logSelector = new DefaultLogSelector(logSchema);
+			}else if("fullAndNonLock".equals(req.getImpType())){
+				logSelector = new FullAndNonLockSelector(logSchema);
+			}
 			String tempTable = logSelector.select();
 			response("履历选择完成",null);
 			//2. 履历刷库

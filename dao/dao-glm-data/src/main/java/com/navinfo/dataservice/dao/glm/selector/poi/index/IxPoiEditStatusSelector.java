@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEditStatus;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 public class IxPoiEditStatusSelector extends AbstractSelector {
 
@@ -48,22 +49,10 @@ public class IxPoiEditStatusSelector extends AbstractSelector {
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
 
-			}
+			DBUtils.closeResultSet(resultSet);
 
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
+			DBUtils.closeStatement(pstmt);
 		}
 		return status;
 	}

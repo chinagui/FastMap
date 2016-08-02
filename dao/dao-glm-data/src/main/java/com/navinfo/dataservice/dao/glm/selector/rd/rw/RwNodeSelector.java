@@ -5,15 +5,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-
-import oracle.sql.STRUCT;
-
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ISelector;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNodeMesh;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 /**
  * 铁路点查询类
@@ -21,12 +20,14 @@ import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNodeMesh;
  * @author zhangxiaolong
  * 
  */
-public class RwNodeSelector implements ISelector {
+public class RwNodeSelector extends AbstractSelector {
 
 	private Connection conn;
 
 	public RwNodeSelector(Connection conn) {
+		super(conn);
 		this.conn = conn;
+		this.setCls(RwNode.class);
 	}
 
 	@Override
@@ -53,18 +54,8 @@ public class RwNodeSelector implements ISelector {
 
 			if (resultSet.next()) {
 
-				setAttr(rwNode, resultSet);
-
-				List<IRow> meshes = new RwNodeMeshSelector(conn)
-						.loadRowsByParentId(id, isLock);
-
-				rwNode.setMeshes(meshes);
-
-				for (IRow row : rwNode.getMeshes()) {
-					RwNodeMesh obj = (RwNodeMesh) row;
-
-					rwNode.meshMap.put(obj.rowId(), obj);
-				}
+				ReflectionAttrUtils.executeResultSet(rwNode, resultSet);
+				this.setChildData(rwNode, isLock);
 
 			}
 			else
@@ -76,35 +67,11 @@ public class RwNodeSelector implements ISelector {
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
 		}
 
 		return rwNode;
-	}
-
-	@Override
-	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
-		return null;
-	}
-
-	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock)
-			throws Exception {
-		return null;
 	}
 
 	// 加载盲端节点
@@ -148,21 +115,9 @@ public class RwNodeSelector implements ISelector {
 
 				RwNode node = new RwNode();
 
-				setAttr(node, resultSet);
-
-				RwNodeMeshSelector meshSelector = new RwNodeMeshSelector(conn);
-
-				List<IRow> meshes = meshSelector.loadRowsByParentId(
-						node.getPid(), isLock);
-
-				node.setMeshes(meshes);
-
-				for (IRow row : meshes) {
-					RwNodeMesh mesh = (RwNodeMesh) row;
-
-					node.meshMap.put(mesh.rowId(), mesh);
-				}
-
+				ReflectionAttrUtils.executeResultSet(node, resultSet);
+                this.setChildData(node, isLock);
+				
 				nodes.add(node);
 			}
 		} catch (Exception e) {
@@ -170,22 +125,8 @@ public class RwNodeSelector implements ISelector {
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
 		}
 
 		return nodes;
@@ -216,51 +157,13 @@ public class RwNodeSelector implements ISelector {
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
 		}
 
 		return 0;
 	}
 
-	/**
-	 * 设置属性
-	 * 
-	 * @param node
-	 *            node对象
-	 * @param resultSet
-	 *            结果集
-	 * @throws Exception
-	 */
-	private void setAttr(RwNode node, ResultSet resultSet) throws Exception {
-		node.setPid(resultSet.getInt("node_pid"));
-
-		node.setKind(resultSet.getInt("kind"));
-
-		node.setForm(resultSet.getInt("form"));
-
-		STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
-		node.setGeometry(GeoTranslator.struct2Jts(struct, 100000, 0));
-
-		node.setEditFlag(resultSet.getInt("edit_flag"));
-
-		node.setRowId(resultSet.getString("row_id"));
-	}
 
 	/**
 	 * 通过pid查rwnode，返回的rwnode中包含关联rwlink
@@ -291,6 +194,21 @@ public class RwNodeSelector implements ISelector {
 		}
 
 		return rwNode;
+	}
+	private void setChildData(RwNode node, boolean isLock)
+			throws Exception {
+
+		List<IRow> meshes = new AbstractSelector(RdNodeMesh.class,conn).loadRowsByParentId(node.getPid(), isLock);
+
+		node.setMeshes(meshes);
+
+		for (IRow row : meshes) {
+			RwNodeMesh mesh = (RwNodeMesh) row;
+
+			node.meshMap.put(mesh.rowId(), mesh);
+		}
+
+
 	}
 	
 }

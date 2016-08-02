@@ -25,10 +25,6 @@ public class RdCrossLink implements IRow {
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
-	public RdCrossLink() {
-
-	}
-
 	public int getPid() {
 		return pid;
 	}

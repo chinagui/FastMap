@@ -16,6 +16,8 @@ import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 public class RdCrossSelector extends AbstractSelector {
 
@@ -29,72 +31,6 @@ public class RdCrossSelector extends AbstractSelector {
 		this.setCls(RdCross.class);
 	}
 
-	@Override
-	public IRow loadById(int id, boolean isLock) throws Exception {
-
-		RdCross cross = new RdCross();
-
-		String sql = "select a.*,c.mesh_id from rd_cross a, rd_cross_node b,rd_node_mesh c where a.pid=b.pid and b.node_pid=c.node_pid and a.pid=:1 and a.u_record !=2";
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = this.conn.prepareStatement(sql);
-
-			pstmt.setInt(1, id);
-
-			resultSet = pstmt.executeQuery();
-
-			if (resultSet.next()) {
-
-				cross.setPid(resultSet.getInt("pid"));
-
-				cross.setType(resultSet.getInt("type"));
-
-				cross.setSignal(resultSet.getInt("signal"));
-
-				cross.setElectroeye(resultSet.getInt("electroeye"));
-
-				cross.setKgFlag(resultSet.getInt("kg_flag"));
-				
-				cross.setMesh(resultSet.getInt("mesh_id"));
-				
-				cross.setRowId(resultSet.getString("row_id"));
-
-				setChildData(cross, isLock);
-
-			} else {
-				
-				throw new DataNotFoundException("数据不存在");
-			}
-		} catch (Exception e) {
-			
-			throw e;
-
-		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
-
-		return cross;
-	}
-	
 	/**
 	 * 
 	 * 获取node或者link所在的路口
@@ -149,19 +85,7 @@ public class RdCrossSelector extends AbstractSelector {
 				
 				RdCross cross = new RdCross();
 
-				cross.setPid(resultSet.getInt("pid"));
-
-				cross.setType(resultSet.getInt("type"));
-
-				cross.setSignal(resultSet.getInt("signal"));
-
-				cross.setElectroeye(resultSet.getInt("electroeye"));
-
-				cross.setKgFlag(resultSet.getInt("kg_flag"));
-				
-				cross.setMesh(resultSet.getInt("mesh_id"));
-
-				cross.setRowId(resultSet.getString("row_id"));
+				ReflectionAttrUtils.executeResultSet(cross, resultSet);
 				
 				setChildData(cross,isLock);
 
@@ -172,22 +96,8 @@ public class RdCrossSelector extends AbstractSelector {
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
 		}
 
 		return result;
@@ -212,19 +122,7 @@ public class RdCrossSelector extends AbstractSelector {
 
 			if (resultSet.next()) {
 
-				cross.setPid(resultSet.getInt("pid"));
-
-				cross.setType(resultSet.getInt("type"));
-
-				cross.setSignal(resultSet.getInt("signal"));
-
-				cross.setElectroeye(resultSet.getInt("electroeye"));
-
-				cross.setKgFlag(resultSet.getInt("kg_flag"));
-				
-				cross.setMesh(resultSet.getInt("mesh_id"));
-
-				cross.setRowId(resultSet.getString("row_id"));
+				ReflectionAttrUtils.executeResultSet(cross, resultSet);
 				
 				setChildData(cross,isLock);
 
@@ -237,24 +135,9 @@ public class RdCrossSelector extends AbstractSelector {
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
 		}
-
 		return cross;
 	}
 	

@@ -87,10 +87,10 @@ public class Operation implements IOperation {
 				Geometry geomInter = GeoTranslator.transform(MeshUtils.linkInterMeshPolygon(
 						GeoTranslator.geojson2Jts(command.getLinkGeom()), MeshUtils.mesh2Jts(meshIdStr)), 1, 5);
 				links.addAll(RdLinkOperateUtils.getCreateRdLinksWithMesh(geomInter, maps, result));
-
+				
 			}
 			deleteRdLink(this.command.getUpdateLink(), result);
-
+			
 		}
 
 		updataRelationObj(this.command.getUpdateLink(), links, result);

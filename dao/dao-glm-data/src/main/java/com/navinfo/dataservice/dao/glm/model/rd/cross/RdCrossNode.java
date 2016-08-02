@@ -27,10 +27,6 @@ public class RdCrossNode implements IRow {
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
-	public RdCrossNode() {
-
-	}
-
 	public int getPid() {
 		return pid;
 	}

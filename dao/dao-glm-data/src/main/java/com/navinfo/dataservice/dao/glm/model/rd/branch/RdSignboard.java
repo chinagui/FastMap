@@ -7,15 +7,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class RdSignboard implements IObj {
 
@@ -283,25 +283,18 @@ public class RdSignboard implements IObj {
 
 	@Override
 	public String primaryKey() {
-		// TODO Auto-generated method stub
 		return "signboard_id";
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
-	 */
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		// TODO Auto-generated method stub
-		return null;
+		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
+		childList.put(RdSignboardName.class, names);
+		return childList;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
-	 */
 	@Override
 	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

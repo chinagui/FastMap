@@ -8,15 +8,14 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeName;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
-
-import oracle.sql.STRUCT;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 public class RdNodeSelector extends AbstractSelector {
 
@@ -57,27 +56,7 @@ public class RdNodeSelector extends AbstractSelector {
 
 				RdNode node = new RdNode();
 
-				node.setPid(resultSet.getInt("node_pid"));
-
-				node.setKind(resultSet.getInt("kind"));
-
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
-				node.setGeometry(GeoTranslator.struct2Jts(struct, 100000, 0));
-
-				node.setAdasFlag(resultSet.getInt("adas_flag"));
-
-				node.setEditFlag(resultSet.getInt("edit_flag"));
-
-				node.setDifGroupid(resultSet.getString("dif_groupid"));
-
-				node.setSrcFlag(resultSet.getInt("src_flag"));
-
-				node.setDigitalLevel(resultSet.getInt("digital_level"));
-
-				node.setReserved(resultSet.getString("reserved"));
-
-				node.setRowId(resultSet.getString("row_id"));
+				ReflectionAttrUtils.executeResultSet(node, resultSet);
 
 				setChildData(node,isLock);
 
@@ -88,22 +67,8 @@ public class RdNodeSelector extends AbstractSelector {
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
 		}
 
 		return nodes;
@@ -135,27 +100,7 @@ public class RdNodeSelector extends AbstractSelector {
 
 				RdNode node = new RdNode();
 
-				node.setPid(resultSet.getInt("node_pid"));
-
-				node.setKind(resultSet.getInt("kind"));
-
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
-				node.setGeometry(GeoTranslator.struct2Jts(struct, 100000, 0));
-
-				node.setAdasFlag(resultSet.getInt("adas_flag"));
-
-				node.setEditFlag(resultSet.getInt("edit_flag"));
-
-				node.setDifGroupid(resultSet.getString("dif_groupid"));
-
-				node.setSrcFlag(resultSet.getInt("src_flag"));
-
-				node.setDigitalLevel(resultSet.getInt("digital_level"));
-
-				node.setReserved(resultSet.getString("reserved"));
-
-				node.setRowId(resultSet.getString("row_id"));
+				ReflectionAttrUtils.executeResultSet(node, resultSet);
 
 				setChildData(node,isLock);
 
@@ -166,22 +111,8 @@ public class RdNodeSelector extends AbstractSelector {
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
 		}
 
 		return nodes;
@@ -214,22 +145,8 @@ public class RdNodeSelector extends AbstractSelector {
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
 		}
 		
 		return 0;

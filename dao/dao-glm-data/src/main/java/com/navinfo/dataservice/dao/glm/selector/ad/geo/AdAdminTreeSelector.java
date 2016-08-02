@@ -9,12 +9,12 @@ import java.util.List;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminGroup;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminPart;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminTree;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 public class AdAdminTreeSelector extends AbstractSelector {
 
@@ -207,6 +207,10 @@ public class AdAdminTreeSelector extends AbstractSelector {
 
 			e.printStackTrace();
 		}
+		finally{
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
 
 		return result;
 	}
@@ -250,21 +254,8 @@ public class AdAdminTreeSelector extends AbstractSelector {
 			}
 		} catch (Exception e) {
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
 
 		}
 

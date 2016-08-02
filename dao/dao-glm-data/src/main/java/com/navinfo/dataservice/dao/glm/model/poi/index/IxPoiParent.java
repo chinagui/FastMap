@@ -292,8 +292,11 @@ public class IxPoiParent implements IObj {
 	 */
 	@Override
 	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
-		// TODO Auto-generated method stub
-		return null;
+		Map<Class<? extends IRow>, Map<String, ?>> childMap = new HashMap<Class<? extends IRow>, Map<String, ?>>();
+		
+		childMap.put(IxPoiChildren.class,  poiChildrenMap);
+		
+		return childMap;
 	}
 
 }

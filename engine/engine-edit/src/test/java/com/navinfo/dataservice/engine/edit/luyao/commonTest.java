@@ -92,5 +92,26 @@ public class commonTest  extends InitApplication{
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
+	public void createRdNode0801() throws Exception
+	{
+		//parameter:{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025193,\"data\":{\"longitude\":116.62476941943167,\"latitude\":39.999848815977785},\"type\":\"RDNODE\"}
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025193,\"data\":{\"longitude\":116.62476941943167,\"latitude\":39.999848815977785},\"type\":\"RDNODE\"}";
+		
+		Transaction t = new Transaction(parameter);
+		String msg = t.run();
+	}
+	
+	@Test
+	public void create0801_02() throws Exception
+	{
+		//parameter:{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025193,\"data\":{\"longitude\":116.62476941943167,\"latitude\":39.999848815977785},\"type\":\"RDNODE\"}
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025230,\"data\":{\"longitude\":116.37464940547943,\"latitude\":40.04856675348115},\"type\":\"RDNODE\"}";
+		
+		Transaction t = new Transaction(parameter);
+		String msg = t.run();
+	}
+	
 
 }

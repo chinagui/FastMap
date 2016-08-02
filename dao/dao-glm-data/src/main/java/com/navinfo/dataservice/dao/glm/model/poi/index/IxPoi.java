@@ -30,6 +30,16 @@ import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiIntroduction;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiTourroute;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkIntRtic;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimitTruck;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkRtic;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSidewalk;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkWalkstair;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiEditStatusSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -41,7 +51,7 @@ import net.sf.json.JsonConfig;
  * POI基础信息表
  * 
  * @author zhangxiaolong
- *
+ * 
  */
 public class IxPoi implements IObj {
 
@@ -1568,7 +1578,8 @@ public class IxPoi implements IObj {
 
 			} else if ("geometry".equals(key)) {
 
-				Geometry jts = GeoTranslator.geojson2Jts(json.getJSONObject(key), 100000, 0);
+				Geometry jts = GeoTranslator.geojson2Jts(
+						json.getJSONObject(key), 100000, 0);
 
 				this.setGeometry(jts);
 
@@ -1608,10 +1619,10 @@ public class IxPoi implements IObj {
 		Map<Class<? extends IRow>, List<IRow>> childMap = new HashMap<>();
 		// 设置子表IX_POI_NAME
 		childMap.put(IxPoiName.class, names);
-		
-		//设置POI_EDIT_STATUS
+
+		// 设置POI_EDIT_STATUS
 		childMap.put(IxPoiEditStatus.class, names);
-		
+
 		// 设置子表IX_POI_ADDRESS
 		childMap.put(IxPoiAddress.class, addresses);
 
@@ -1638,10 +1649,10 @@ public class IxPoi implements IObj {
 
 		// 设置子表IX_POI_PARENT
 		childMap.put(IxPoiParent.class, parents);
-		
-		//设置poi的子
+
+		// 设置poi的子
 		childMap.put(IxPoiChildren.class, children);
-		
+
 		// 设置子表IX_POI_PARKING
 		childMap.put(IxPoiParking.class, parkings);
 
@@ -1688,8 +1699,88 @@ public class IxPoi implements IObj {
 	}
 
 	@Override
-	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
-		return null;
+	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
+		Map<Class<? extends IRow>, Map<String, ?>> childMap = new HashMap<Class<? extends IRow>, Map<String, ?>>();
+
+		// 设置子表IX_POI_NAME
+		childMap.put(IxPoiName.class, nameMap);
+
+		// 设置POI_EDIT_STATUS,模型无此表特殊处理
+		childMap.put(IxPoiEditStatus.class, nameMap);
+
+		// 设置子表IX_POI_ADDRESS
+		childMap.put(IxPoiAddress.class, addressMap);
+
+		// 设置子表IX_POI_CONTACT
+		childMap.put(IxPoiContact.class, contactMap);
+
+		// 设置子表IX_POI_FLAG
+		childMap.put(IxPoiFlag.class, flagMap);
+
+		// 设置子表IX_POI_ENTRYIMAGE
+		childMap.put(IxPoiEntryimage.class, entryImageMap);
+
+		// 设置子表IX_POI_ICON
+		childMap.put(IxPoiIcon.class, iconMap);
+
+		// 设置子表IX_POI_PHOTO*
+		childMap.put(IxPoiPhoto.class, photoMap);
+
+		// 设置子表IX_POI_AUDIO*
+		childMap.put(IxPoiAudio.class, audioMap);
+
+		// 设置子表IX_POI_VIDEO*
+		childMap.put(IxPoiVideo.class, videoMap);
+
+		// 设置子表IX_POI_PARENT
+		childMap.put(IxPoiParent.class, parentMap);
+
+		// 设置poi的子
+		childMap.put(IxPoiChildren.class, childrenMap);
+
+		// 设置子表IX_POI_PARKING
+		childMap.put(IxPoiParking.class, parkingMap);
+
+		// 设置子表IX_POI_DETAIL
+		childMap.put(IxPoiDetail.class, detailMap);
+
+		// 设置子表IX_POI_BUSINESSTIME
+		childMap.put(IxPoiBusinessTime.class, businesstimeMap);
+
+		// 设置子表IX_POI_CHARGINGSTATION
+		childMap.put(IxPoiChargingStation.class, chargingstationMap);
+
+		// 设置子表IX_POI_CHARGINGPLOT
+		childMap.put(IxPoiChargingPlot.class, chargingplotMap);
+
+		// 设置子表IX_POI_CHARGINGPLOT_PH
+		childMap.put(IxPoiChargingPlotPh.class, chargingplotPhMap);
+
+		// 设置子表IX_POI_BUILDING
+		childMap.put(IxPoiBuilding.class, buildingMap);
+
+		// 设置子表IX_POI_ADVERTISEMENT
+		childMap.put(IxPoiAdvertisement.class, advertisementMap);
+
+		// 设置子表IX_POI_GASSTATION
+		childMap.put(IxPoiGasstation.class, gasstationMap);
+
+		// 设置子表IX_POI_INTRODUCTION
+		childMap.put(IxPoiIntroduction.class, introductionMap);
+
+		// 设置子表IX_POI_ATTRACTION
+		childMap.put(IxPoiAttraction.class, attractionMap);
+
+		// 设置子表IX_POI_HOTEL
+		childMap.put(IxPoiHotel.class, hotelMap);
+
+		// 设置子表IX_POI_RESTAURANT
+		childMap.put(IxPoiRestaurant.class, restaurantMap);
+
+		// 设置子表IX_POI_CARRENTAL
+		childMap.put(IxPoiCarrental.class, carrentalMap);
+
+		return childMap;
 	}
 
 }

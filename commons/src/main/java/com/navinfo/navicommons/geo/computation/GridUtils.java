@@ -1,5 +1,6 @@
 package com.navinfo.navicommons.geo.computation;
 
+import java.util.List;
 import java.util.Set;
 
 import net.sf.json.JSONArray;
@@ -15,6 +16,16 @@ import com.vividsolutions.jts.io.WKTWriter;
  * 网格的帮助类
  */
 public class GridUtils {
+	
+	public static void main(String[] args) {
+		try{
+			JSONArray grids = JSONArray.fromObject(new Integer[]{60560303,60560302});
+			String wkt = GridUtils.grids2Wkt(grids);
+			System.out.println(wkt);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 
 	/**
 	 * 获取网格的左下、右上端点的经纬度

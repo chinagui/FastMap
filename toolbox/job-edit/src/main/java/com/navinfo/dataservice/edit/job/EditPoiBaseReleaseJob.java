@@ -64,41 +64,41 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			}
 			//1对grids提取数据执行gdb检查
 			log.info("start gdb check");
-			JobInfo valJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
-			releaseJobRequest.getSubJobRequest("validation").setAttrValue("grids", allGrid);
-			AbstractJob valJob = JobCreateStrategy.createAsSubJob(valJobInfo,
-					releaseJobRequest.getSubJobRequest("validation"), this);
-			valJob.run();
-			if (valJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
-				throw new Exception("执行检查时job执行失败。");
-			}
-			int valDbId=valJob.getJobInfo().getResponse().getInt("valDbId");
-			jobInfo.getResponse().put("val&BatchDbId", valDbId);
+//			JobInfo valJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
+//			releaseJobRequest.getSubJobRequest("validation").setAttrValue("grids", allGrid);
+//			AbstractJob valJob = JobCreateStrategy.createAsSubJob(valJobInfo,
+//					releaseJobRequest.getSubJobRequest("validation"), this);
+//			valJob.run();
+//			if (valJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
+//				throw new Exception("执行检查时job执行失败。");
+//			}
+//			int valDbId=valJob.getJobInfo().getResponse().getInt("valDbId");
+//			jobInfo.getResponse().put("val&BatchDbId", valDbId);
 			log.info("end gdb check");
 			//判断是否有检查错误，有检查错误则直接返回不进行后续步骤
-			log.info("check exception2");
-			errorGrid=hasException(releaseJobRequest);
-			//将有错误的grid排除
-			allGrid.removeAll(errorGrid);
-			if(errorGrid.size()!=0){
-				log.error("has exception,connot commit!");
-				Map<String, List<Integer>> returnGrid=new HashMap<String, List<Integer>>();
-				returnGrid.put("有检查错误的grid", errorGrid);
-				super.response("grids中有检查错误，不能提交！",returnGrid);}
-			if(allGrid.size()==0){
-				throw new Exception("所有grid均存在检查错误，终止提交操作！");
-			}
+//			log.info("check exception2");
+//			errorGrid=hasException(releaseJobRequest);
+//			//将有错误的grid排除
+//			allGrid.removeAll(errorGrid);
+//			if(errorGrid.size()!=0){
+//				log.error("has exception,connot commit!");
+//				Map<String, List<Integer>> returnGrid=new HashMap<String, List<Integer>>();
+//				returnGrid.put("有检查错误的grid", errorGrid);
+//				super.response("grids中有检查错误，不能提交！",returnGrid);}
+//			if(allGrid.size()==0){
+//				throw new Exception("所有grid均存在检查错误，终止提交操作！");
+//			}
 			//对grids执行批处理
 			log.info("start gdb batch");
-			JobInfo batchJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
-			releaseJobRequest.getSubJobRequest("batch").setAttrValue("grids", allGrid);
-			releaseJobRequest.getSubJobRequest("batch").setAttrValue("batchDbId", valDbId);
-			AbstractJob batchJob = JobCreateStrategy.createAsSubJob(batchJobInfo,
-					releaseJobRequest.getSubJobRequest("batch"), this);
-			batchJob.run();
-			if (batchJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
-				throw new Exception("批处理时job执行失败。");
-			}
+//			JobInfo batchJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
+//			releaseJobRequest.getSubJobRequest("batch").setAttrValue("grids", allGrid);
+//			releaseJobRequest.getSubJobRequest("batch").setAttrValue("batchDbId", valDbId);
+//			AbstractJob batchJob = JobCreateStrategy.createAsSubJob(batchJobInfo,
+//					releaseJobRequest.getSubJobRequest("batch"), this);
+//			batchJob.run();
+//			if (batchJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
+//				throw new Exception("批处理时job执行失败。");
+//			}
 			log.info("end gdb batch");
 			//修改数据提交状态
 			log.info("start change poi_edit_status=3 commit");
@@ -163,7 +163,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 					+ " WHERE E.STATUS = 2"
 					+ "   AND EXISTS (SELECT 1"
 					+ "          FROM IX_POI P"
-					+ "         WHERE SDO_RELATE(P.GEOMETRY,SDO_GEOMETRY('"+wkt+"',8307),'MASK=ANYINTERACT') = 'TRUE'"
+					+ "         WHERE SDO_WITHIN_DISTANCE(P.GEOMETRY,SDO_GEOMETRY('"+wkt+"',8307),'MASK=ANYINTERACT') = 'TRUE'"
 					+ "           AND P.ROW_ID = E.ROW_ID)";
 			
 			conn = DBConnector.getInstance().getConnectionById(releaseJobRequest.getTargetDbId());

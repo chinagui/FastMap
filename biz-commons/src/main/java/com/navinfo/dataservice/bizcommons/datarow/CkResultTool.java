@@ -152,24 +152,26 @@ public class CkResultTool {
 			stmt = conn.prepareStatement(insertSql);
 			for(Map.Entry<String, String> entry:rows.entrySet()){
 				String value = StringUtils.removeBlankChar(entry.getValue());
-				if(value!=null&&value.length()>2){
+				if(value!=null&&value.length()>2){//有的检查结果给出的targets里头为空
 					String subValue = value.substring(1, value.length()-1);
 					log.debug(subValue);
 					for(String table:subValue.split("\\];\\[")){
 						String[] arr = table.split(",");
 						String pidColName = glm.getTablePidColName(arr[0]);
 						String[] grids = calculator.calc(arr[0], pidColName,Long.valueOf(arr[1]), conn);
-						for(String grid:grids){
-							stmt.setString(1, entry.getKey());
-							stmt.setLong(2, Long.valueOf(grid));
-							stmt.addBatch();
-						    count++;
-						    if (count % 1000 == 0) {
-								stmt.executeBatch();
-								stmt.clearBatch();
+						if(grids!=null){//有的检查结果给出的targets里头的要素不存在，所以计算不了
+							for(String grid:grids){
+								stmt.setString(1, entry.getKey());
+								stmt.setLong(2, Long.valueOf(grid));
+								stmt.addBatch();
+							    count++;
+							    if (count % 1000 == 0) {
+									stmt.executeBatch();
+									stmt.clearBatch();
+								}
 							}
+							break;//只取第一个要素计算grid
 						}
-						break;//只取第一个要素计算grid
 					}
 				}
 			}
@@ -203,8 +205,12 @@ public class CkResultTool {
 			log.debug("temp table:"+tempTable);
 			String sql = "CREATE TABLE "+tempTable+"(MD5_CODE VARCHAR2(32))";
 			runner.update(srcConn, sql);
+			//grid在范围内的
 			sql = "INSERT INTO "+tempTable+"@"+dbLinkName+" SELECT MD5_CODE FROM NI_VAL_EXCEPTION@"+dbLinkName+" T WHERE EXISTS(SELECT 1 FROM NI_VAL_EXCEPTION_GRID@"+dbLinkName+" G WHERE T.MD5_CODE=G.MD5_CODE AND G.GRID_ID IN("+org.apache.commons.lang.StringUtils.join(grids,",")+")) AND NOT EXISTS(SELECT 1 FROM NI_VAL_EXCEPTION P WHERE T.MD5_CODE=P.MD5_CODE)";
 			runner.update(tarConn, sql);
+			//没计算出grid的检查结果
+			sql = "INSERT INTO "+tempTable+"@"+dbLinkName+" SELECT MD5_CODE FROM NI_VAL_EXCEPTION@"+dbLinkName+" T WHERE NOT EXISTS(SELECT 1 FROM NI_VAL_EXCEPTION_GRID@"+dbLinkName+" G WHERE T.MD5_CODE=G.MD5_CODE) AND NOT EXISTS(SELECT 1 FROM NI_VAL_EXCEPTION P WHERE T.MD5_CODE=P.MD5_CODE)";
+			runner.update(tarConn,sql);
 			sql = "INSERT INTO NI_VAL_EXCEPTION SELECT "+DataRowTool.getSelectColumnString(tarConn,"NI_VAL_EXCEPTION")+" FROM NI_VAL_EXCEPTION@"+dbLinkName+" WHERE MD5_CODE IN (SELECT MD5_CODE FROM "+tempTable+"@"+dbLinkName+")";
 			runner.execute(tarConn, sql);
 			sql = "INSERT INTO CK_RESULT_OBJECT SELECT "+DataRowTool.getSelectColumnString(tarConn,"CK_RESULT_OBJECT")+" FROM CK_RESULT_OBJECT@"+dbLinkName+" WHERE MD5_CODE IN (SELECT MD5_CODE FROM "+tempTable+"@"+dbLinkName+")";

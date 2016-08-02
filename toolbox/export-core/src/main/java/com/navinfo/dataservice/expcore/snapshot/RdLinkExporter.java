@@ -27,7 +27,7 @@ public class RdLinkExporter {
 
 		// creating a LINESTRING table
 		stmt.execute("create table gdb_rdLine(pid integer primary key)");
-		stmt.execute("select addgeometrycolumn('gdb_rdLine','geometry',4326,'GEOMETRY','XY')");
+		stmt.execute("select addgeometrycolumn('gdb_rdLine','geometry',4326,'GEOMETRY','XY')");//给表添加GEOMETRY字段
 		stmt.execute("select createspatialindex('gdb_rdLine','geometry')");
 		stmt.execute("alter table gdb_rdLine add display_style text;");
 		stmt.execute("alter table gdb_rdLine add display_text text;");

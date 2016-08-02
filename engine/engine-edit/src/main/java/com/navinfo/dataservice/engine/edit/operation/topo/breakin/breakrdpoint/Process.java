@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
+import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
@@ -30,6 +31,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchViaSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneTopologySelector;
@@ -171,6 +173,11 @@ public class Process extends AbstractProcess<Command> {
 			List<AdAdmin> adAdminList = adSelector.loadRowsByLinkId(this.getCommand().getLinkPid(), true);
 
 			this.getCommand().setAdAdmins(adAdminList);
+
+			// 获取由该link作为关联link的电子眼
+			RdElectroniceyeSelector eleceyeSelector = new RdElectroniceyeSelector(this.getConn());
+			List<RdElectroniceye> eleceyes = eleceyeSelector.loadListByRdLinkId(this.getCommand().getLinkPid(), true);
+			this.getCommand().setEleceyes(eleceyes);
 
 			return true;
 
@@ -336,6 +343,9 @@ public class Process extends AbstractProcess<Command> {
 		// 信号灯
 		OpRefRdTrafficsignal ofOpRefRdTrafficsignal = new OpRefRdTrafficsignal(this.getConn());
 		ofOpRefRdTrafficsignal.run(this.getResult(), oldLink, newLinks);
+		// 电子眼
+		OpRefRdElectroniceye opRefRdElectroniceye = new OpRefRdElectroniceye(this.getConn());
+		opRefRdElectroniceye.run(this.getResult(), oldLink, newLinks);
 	}
 
 	/**
@@ -466,6 +476,15 @@ public class Process extends AbstractProcess<Command> {
 
 			infects.put("RDTRAFFICSIGNAL", infectList);
 		}
+
+		// 电子眼
+		RdElectroniceyeSelector eleceyeSelector = new RdElectroniceyeSelector(this.getConn());
+		List<RdElectroniceye> eleceyes = eleceyeSelector.loadListByRdLinkId(this.getCommand().getLinkPid(), true);
+		for(RdElectroniceye eleceye : eleceyes){
+			infectList = new ArrayList<Integer>();
+			infectList.add(eleceye.pid());
+		}
+		infects.put("RDELECTRONICEYE", infectList);
 
 		return infects;
 

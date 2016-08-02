@@ -3,7 +3,6 @@ package com.navinfo.dataservice.dao.glm.selector.poi.index;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +13,8 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildrenForAndroid;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 /**
  * POI父子关系子表 查询
@@ -59,7 +60,7 @@ public class IxPoiChildrenSelector extends AbstractSelector {
 
 				IxPoiChildren poiChildren = new IxPoiChildren();
 				
-				setAttr( poiChildren, resultSet);
+				ReflectionAttrUtils.executeResultSet(poiChildren, resultSet);
 
 				rows.add(poiChildren);
 			}
@@ -68,22 +69,9 @@ public class IxPoiChildrenSelector extends AbstractSelector {
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
+			DBUtils.closeResultSet(resultSet);
+			
+			DBUtils.closeStatement(pstmt);
 		}
 
 		return rows;
@@ -125,37 +113,14 @@ public class IxPoiChildrenSelector extends AbstractSelector {
 		}catch(Exception e){
 			throw e;
 		}finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-				
-			}
 
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
 
 		}		
 		return rows;
 	}
 	
-	private void setAttr(IxPoiChildren poiChildren,ResultSet resultSet) throws SQLException
-	{
-		poiChildren.setGroupId (resultSet.getInt("group_id"));
-
-		poiChildren.setChildPoiPid(resultSet.getInt("child_poi_pid"));
-		
-		poiChildren.setRelationType(resultSet.getInt("relation_type"));
-
-		poiChildren.setRowId(resultSet.getString("row_id"));
-		
-		poiChildren.setuDate(resultSet.getString("u_date"));
-	}
 	
 }

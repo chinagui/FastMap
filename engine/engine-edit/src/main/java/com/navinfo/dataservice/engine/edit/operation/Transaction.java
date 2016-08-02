@@ -744,9 +744,9 @@ public class Transaction {
 			case CREATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create.Process(command);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create.Process(command);
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.delete.Process(command);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create.Process(command);
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.update.Process(command);
 			default:
 				break;
 			}
@@ -756,9 +756,9 @@ public class Transaction {
 			case CREATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdgate.create.Process(command);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.operation.obj.rdgate.create.Process(command);
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdgate.delete.Process(command);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.operation.obj.rdgate.create.Process(command);
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdgate.update.Process(command);
 			default:
 				break;
 			}

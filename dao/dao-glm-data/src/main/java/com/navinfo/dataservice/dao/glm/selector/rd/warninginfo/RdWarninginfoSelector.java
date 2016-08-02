@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
@@ -72,22 +74,8 @@ public class RdWarninginfoSelector extends  AbstractSelector{
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 
 		return rows;
@@ -145,21 +133,8 @@ public class RdWarninginfoSelector extends  AbstractSelector{
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 
 		}
 
@@ -242,50 +217,14 @@ public class RdWarninginfoSelector extends  AbstractSelector{
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 
 		}
 
 		return rows;
 	}
 
-	/*
-	 * private void setAttr(RdWarninginfo obj, ResultSet resultSet) throws
-	 * SQLException {
-	 * 
-	 * obj.setPid(resultSet.getInt("pid"));
-	 * 
-	 * obj.setLinkPid(resultSet.getInt("link_pid"));
-	 * 
-	 * obj.setNodePid(resultSet.getInt("node_pid"));
-	 * 
-	 * obj.setTypeCode(resultSet.getString("type_code"));
-	 * 
-	 * obj.setValidDis(resultSet.getInt("valid_dis"));
-	 * 
-	 * obj.setWarnDis(resultSet.getInt("warn_dis"));
-	 * 
-	 * obj.setTimeDomain(resultSet.getString("time_domain"));
-	 * 
-	 * obj.setVehicle(resultSet.getInt("vehicle"));
-	 * 
-	 * obj.setDescript(resultSet.getString("descript"));
-	 * 
-	 * obj.setRowId(resultSet.getString("row_id")); }
-	 */
+	
 
 }

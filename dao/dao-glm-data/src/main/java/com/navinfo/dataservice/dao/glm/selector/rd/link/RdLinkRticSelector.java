@@ -17,7 +17,7 @@ public class RdLinkRticSelector implements ISelector {
 	private static Logger logger = Logger.getLogger(RdLinkRticSelector.class);
 
 	private Connection conn;
-
+    
 	public RdLinkRticSelector(Connection conn) {
 		this.conn = conn;
 

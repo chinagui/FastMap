@@ -5,6 +5,8 @@ package com.navinfo.dataservice.dao.glm.iface;
  */
 public enum ObjType {
 
+	RDDIRECTROUTE,
+	RDDIRECTROUTEVIA,
 	RDLINK, 
 	RDNODE, 
 	RDRESTRICTION,

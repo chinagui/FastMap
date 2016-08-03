@@ -384,6 +384,7 @@ public class Process extends AbstractProcess<Command> {
 
 		infects.put("RDTRAFFICSIGNAL", infectList);
 		
+		// 电子眼
 		infectList = new ArrayList<Integer>();
 		RdElectroniceyeSelector rdElectroniceyeSelector = new RdElectroniceyeSelector(this.getConn());
 		List<RdElectroniceye> rdElectroniceyes = null;

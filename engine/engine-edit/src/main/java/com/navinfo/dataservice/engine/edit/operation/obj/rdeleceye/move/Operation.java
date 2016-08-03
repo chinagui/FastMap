@@ -11,9 +11,11 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
+import com.navinfo.navicommons.geo.GeoUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.util.GeometryTransformer;
 
 import net.sf.json.JSONObject;
 
@@ -97,11 +99,14 @@ public class Operation implements IOperation {
 				JSONObject geoPoint = new JSONObject();
 				geoPoint.put("type", "Point");
 				geoPoint.put("coordinates", new double[] { point.x, point.y });
-				// 更新电子眼的坐标字段
-				eleceye.changedFields().put("geometry", geoPoint);
 				for (RdLink link : newLinks) {
 					// 判断新生成的坐标处在哪条新生成的线段上并更新电子眼的linkpid字段
 					if (isOnTheLine(GeoTranslator.geojson2Jts(geoPoint), link.getGeometry())) {
+						// 更新电子眼的坐标字段
+						Geometry tmpGeo = GeoTranslator.geojson2Jts(geoPoint);
+						geoPoint = GeoTranslator.jts2Geojson(tmpGeo, 0.00001, 5);
+						eleceye.changedFields().put("geometry", geoPoint);
+						
 						eleceye.changedFields().put("linkPid", link.pid());
 						result.insertObject(eleceye, ObjStatus.UPDATE, eleceye.pid());
 						break;
@@ -122,7 +127,7 @@ public class Operation implements IOperation {
 	 * @return true 是，false 否
 	 */
 	private boolean isOnTheLine(Geometry point, Geometry line) {
-		return line.intersects(point);
+		return line.distance(point) <= 1;
 	}
 
 	/**

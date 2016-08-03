@@ -61,7 +61,12 @@ public class ReflectionAttrUtils {
 							if (value.toString().contains(".")) {
 								value = ((BigDecimal) value).doubleValue();
 							} else {
-								value = Integer.parseInt(value.toString());
+								System.out.println("name:"+columnName+";value:"+value);
+								if(columnName.equals("VEHICLE"))
+								{
+									System.out.println();
+								}
+								value = ((BigDecimal) value).intValue();
 							}
 						}
 						if (Types.STRUCT == columnType) {

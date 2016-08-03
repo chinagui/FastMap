@@ -24,7 +24,7 @@ public class RdNodeTest extends InitApplication {
 
 	@Test
 	public void testBreak() {
-		String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100008233,\"data\":{\"longitude\":116.50439938748717,\"latitude\":40.14198148683055},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100008261,\"data\":{\"longitude\":116.50592938748717,\"latitude\":40.14143148683055},\"type\":\"RDLINK\"}";
 		TestUtil.run(parameter);
 	}
 	
@@ -36,7 +36,8 @@ public class RdNodeTest extends InitApplication {
 	
 	@Test
 	public void testMove(){
-		String parameter = "{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025265,\"data\":{\"longitude\":116.50664091110228,\"latitude\":40.14254182096566},\"type\":\"RDNODE\"}";
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025302,\"data\":{\"longitude\":116.50697350502014,\"latitude\":40.141557623890094},\"type\":\"RDNODE\"}";
+		parameter = "{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025378,\"data\":{\"longitude\":116.50605275367737,\"latitude\":40.142110160100965},\"type\":\"RDNODE\"}";
 		TestUtil.run(parameter);
 	}
 }

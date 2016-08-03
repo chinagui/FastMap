@@ -287,7 +287,7 @@ public class RdRestrictionDetail implements IObj {
 	@Override
 	public String parentPKName() {
 
-		return "pid";
+		return "restric_pid";
 	}
 
 	@Override

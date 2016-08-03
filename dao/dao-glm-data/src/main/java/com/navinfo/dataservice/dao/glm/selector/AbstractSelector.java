@@ -52,7 +52,7 @@ public class AbstractSelector implements ISelector {
 	public IRow loadById(int id, boolean isLock) throws Exception {
 		this.row = (IRow) cls.newInstance();
 		StringBuilder sb = new StringBuilder(
-				"select * from " + row.tableName() + " where " + row.parentPKName() + " = :1 and u_record !=2");
+				"select * from " + row.tableName() + " where " + ((IObj)row).primaryKey()+ " = :1 and u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -64,6 +64,8 @@ public class AbstractSelector implements ISelector {
 
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
+			
+			System.out.println(sb.toString());
 
 			pstmt.setInt(1, id);
 

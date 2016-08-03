@@ -214,7 +214,7 @@ public class RdLaneTopology implements IObj {
 	@Override
 	public String parentPKName() {
 
-		return "pid";
+		return "connexity_pid";
 	}
 
 	@Override
@@ -302,13 +302,11 @@ public class RdLaneTopology implements IObj {
 
 	@Override
 	public List<IRow> relatedRows() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int pid() {
-		// TODO Auto-generated method stub
 		return pid;
 	}
 
@@ -323,25 +321,16 @@ public class RdLaneTopology implements IObj {
 
 	@Override
 	public String primaryKey() {
-		// TODO Auto-generated method stub
 		return "topology_id";
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
-	 */
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
-	 */
 	@Override
 	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }

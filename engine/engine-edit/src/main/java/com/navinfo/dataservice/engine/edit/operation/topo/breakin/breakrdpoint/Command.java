@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
+import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
@@ -75,6 +76,8 @@ public class Command extends AbstractCommand {
 	private List<AdAdmin> adAdmins;
 	
 	private List<RdElectroniceye> eleceyes;
+	
+	private List<RdGate> gates;
 
 	private boolean isCheckInfect = false;
 
@@ -296,6 +299,14 @@ public class Command extends AbstractCommand {
 
 	public void setRdGscs(List<RdGsc> rdGscs) {
 		this.rdGscs = rdGscs;
+	}
+
+	public List<RdGate> getGates() {
+		return gates;
+	}
+
+	public void setGates(List<RdGate> gates) {
+		this.gates = gates;
 	}
 
 //	public void createGlmList() throws Exception {

@@ -17,6 +17,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
+import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
@@ -32,6 +33,7 @@ import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchViaSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.gate.RdGateSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneTopologySelector;
@@ -178,7 +180,12 @@ public class Process extends AbstractProcess<Command> {
 			RdElectroniceyeSelector eleceyeSelector = new RdElectroniceyeSelector(this.getConn());
 			List<RdElectroniceye> eleceyes = eleceyeSelector.loadListByRdLinkId(this.getCommand().getLinkPid(), true);
 			this.getCommand().setEleceyes(eleceyes);
-
+			
+			// 获取由该link作为关联link的大门
+			RdGateSelector gateSelector = new RdGateSelector(this.getConn());
+			List<RdGate> gates = gateSelector.loadByLink(this.getCommand().getLinkPid(),true);
+			this.getCommand().setGates(gates);
+			
 			return true;
 
 		} catch (SQLException e) {
@@ -346,6 +353,9 @@ public class Process extends AbstractProcess<Command> {
 		// 电子眼
 		OpRefRdElectroniceye opRefRdElectroniceye = new OpRefRdElectroniceye(this.getConn());
 		opRefRdElectroniceye.run(this.getResult(), oldLink, newLinks);
+		// 大门
+		OpRefRdGate opRefRdGate = new OpRefRdGate(this.getConn());
+		opRefRdGate.run(this.getResult(), oldLink, newLinks);
 	}
 
 	/**
@@ -480,11 +490,20 @@ public class Process extends AbstractProcess<Command> {
 		// 电子眼
 		RdElectroniceyeSelector eleceyeSelector = new RdElectroniceyeSelector(this.getConn());
 		List<RdElectroniceye> eleceyes = eleceyeSelector.loadListByRdLinkId(this.getCommand().getLinkPid(), true);
+		infectList = new ArrayList<Integer>();
 		for(RdElectroniceye eleceye : eleceyes){
-			infectList = new ArrayList<Integer>();
 			infectList.add(eleceye.pid());
 		}
 		infects.put("RDELECTRONICEYE", infectList);
+		
+		// 大门
+		RdGateSelector gateSelector = new RdGateSelector(this.getConn());
+		List<RdGate> gates = gateSelector.loadByLink(this.getCommand().getLinkPid(), true);
+		infectList = new ArrayList<Integer>();
+		for(RdGate gate : gates){
+			infectList.add(gate.pid());
+		}
+		infects.put("RDGATE", infectList);
 
 		return infects;
 

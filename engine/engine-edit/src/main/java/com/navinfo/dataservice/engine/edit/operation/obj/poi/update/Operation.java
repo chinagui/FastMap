@@ -127,7 +127,7 @@ public class Operation implements IOperation {
 
 		updataIxPoiChildren(result, content);
 
-		BasicOperator operator = new BasicOperator(this.conn, null);
+		BasicOperator operator = new BasicOperator(this.conn, this.ixPoi);
 
 		operator.upatePoiStatus();
 

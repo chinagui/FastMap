@@ -92,7 +92,7 @@ public class RdTrafficsignalSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<RdTrafficsignal> loadByLinkPid(boolean isLock, int... ids) throws Exception {
+	public List<RdTrafficsignal> loadByLinkPid(boolean isLock, Integer... ids) throws Exception {
 		
 		List<RdTrafficsignal> rows = new ArrayList<RdTrafficsignal>();
 		

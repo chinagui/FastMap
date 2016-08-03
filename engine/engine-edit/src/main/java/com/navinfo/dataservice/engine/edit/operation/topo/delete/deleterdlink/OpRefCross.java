@@ -28,19 +28,13 @@ public class OpRefCross implements IOperation {
 
 		List<Integer> nodePids = command.getNodePids();
 
-		List<IRow> allNodes = new ArrayList<IRow>();
-
 		for (RdCross cross : command.getCrosses()) {
-			allNodes.addAll(deleteCross(cross, result, nodePids));
+			deleteCross(cross, result, nodePids);
 		}
-
-		// 信号灯
-		OpRefTrafficsignal opRefTrafficsignal = new OpRefTrafficsignal(conn);
-		opRefTrafficsignal.run(result, allNodes);
 		return null;
 	}
 
-	private List<IRow> deleteCross(RdCross cross, Result result, List<Integer> nodePids) {
+	private void deleteCross(RdCross cross, Result result, List<Integer> nodePids) {
 
 		List<IRow> nodes = new ArrayList<IRow>();
 
@@ -69,6 +63,5 @@ public class OpRefCross implements IOperation {
 				}
 			}
 		}
-		return nodes;
 	}
 }

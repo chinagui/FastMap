@@ -1,7 +1,5 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdnode;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -258,29 +256,14 @@ public class Process extends AbstractProcess<Command> {
 		return null;
 	}
 
-	private void releaseResource(PreparedStatement pstmt, ResultSet resultSet) {
-		try {
-			resultSet.close();
-		} catch (Exception e) {
-
-		}
-
-		try {
-			pstmt.close();
-		} catch (Exception e) {
-
-		}
-	}
-
 	@Override
 	public String exeOperation() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	/**
 	 * 维护关联要素
-	 * 
+	 * 	
 	 * @throws Exception
 	 */
 	private void updataRelationObj() throws Exception {
@@ -293,7 +276,7 @@ public class Process extends AbstractProcess<Command> {
 		opRefBranch.run(this.getResult());
 
 		// 路口
-		IOperation opRefCross = new OpRefCross(this.getCommand(), this.getConn());
+		IOperation opRefCross = new OpRefCross(this.getCommand());
 		opRefCross.run(this.getResult());
 
 		// 车信
@@ -315,10 +298,14 @@ public class Process extends AbstractProcess<Command> {
 		// 警示信息
 		OpRefRdWarninginfo opRefRdWarninginfo = new OpRefRdWarninginfo(this.getConn());
 		opRefRdWarninginfo.run(this.getResult(), this.getCommand().getNodePid());
-		
+
 		// 电子眼
 		OpRefRdElectroniceye opRefRdElectroniceye = new OpRefRdElectroniceye(this.getConn(), this.getCommand());
 		opRefRdElectroniceye.run(this.getResult());
+
+		// 信号灯
+		OpRefTrafficsignal opRefRdTrafficsignal = new OpRefTrafficsignal(this.getConn());
+		opRefRdTrafficsignal.run(this.getResult(),this.getCommand().getLinkPids());
 	}
 
 	/**
@@ -375,22 +362,21 @@ public class Process extends AbstractProcess<Command> {
 		// 信号灯
 		RdTrafficsignalSelector trafficsignalSelector = new RdTrafficsignalSelector(this.getConn());
 
-		List<RdTrafficsignal> trafficsignals = trafficsignalSelector.loadByNodeId(true,
-				this.getCommand().getNodePid());
+		List<RdTrafficsignal> trafficsignals = trafficsignalSelector.loadByNodeId(true, this.getCommand().getNodePid());
 
 		for (RdTrafficsignal trafficsignal : trafficsignals) {
 			infectList.add(trafficsignal.getPid());
 		}
 
 		infects.put("RDTRAFFICSIGNAL", infectList);
-		
+
 		// 电子眼
 		infectList = new ArrayList<Integer>();
 		RdElectroniceyeSelector rdElectroniceyeSelector = new RdElectroniceyeSelector(this.getConn());
 		List<RdElectroniceye> rdElectroniceyes = null;
-		for(Integer linkPid : this.getCommand().getLinkPids()){
+		for (Integer linkPid : this.getCommand().getLinkPids()) {
 			rdElectroniceyes = rdElectroniceyeSelector.loadListByRdLinkId(linkPid, true);
-			for(RdElectroniceye eleceye : rdElectroniceyes){
+			for (RdElectroniceye eleceye : rdElectroniceyes) {
 				infectList.add(eleceye.pid());
 			}
 		}

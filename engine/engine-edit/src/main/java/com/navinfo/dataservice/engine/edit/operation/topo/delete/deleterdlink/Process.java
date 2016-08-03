@@ -340,10 +340,14 @@ public class Process extends AbstractProcess<Command> {
 		// 警示信息
 		OpRefRdWarninginfo opRefRdWarninginfo = new OpRefRdWarninginfo(this.getConn());
 		opRefRdWarninginfo.run(this.getResult(), this.getCommand().getLinkPid());
-		
+
 		// 大门
 		OpRefRdGate opRefRdGate = new OpRefRdGate(this.getConn());
 		opRefRdGate.run(this.getResult(), this.getCommand().getLinkPid());
+
+		// 信号灯
+		OpRefTrafficsignal opRefRdTrafficsignal = new OpRefTrafficsignal(this.getConn());
+		opRefRdTrafficsignal.run(this.getResult(), this.getCommand().getLinkPid());
 
 	}
 
@@ -405,7 +409,7 @@ public class Process extends AbstractProcess<Command> {
 		}
 
 		infects.put("ADADMIN", infectList);
-		
+
 		// 警示信息
 		RdWarninginfoSelector selector = new RdWarninginfoSelector(this.getConn());
 
@@ -420,7 +424,7 @@ public class Process extends AbstractProcess<Command> {
 				this.getCommand().getLinkPid());
 
 		infectList = new ArrayList<Integer>();
-		
+
 		for (RdTrafficsignal trafficsignal : trafficsignals) {
 			infectList.add(trafficsignal.getPid());
 		}
@@ -432,19 +436,19 @@ public class Process extends AbstractProcess<Command> {
 		List<RdElectroniceye> eleceyes = rdElectroniceyeSelector.loadListByRdLinkId(this.getCommand().getLinkPid(),
 				true);
 		infectList = new ArrayList<Integer>();
-		
+
 		for (RdElectroniceye eleceye : eleceyes) {
 			infectList.add(eleceye.pid());
 		}
 		infects.put("RDELECTRONICEYE", infectList);
-		
+
 		// 大门
 		RdGateSelector rdGateSelector = new RdGateSelector(this.getConn());
-		List<RdGate> rdGate = rdGateSelector.loadByLink(this.getCommand().getLinkPid(),true);
-		
+		List<RdGate> rdGate = rdGateSelector.loadByLink(this.getCommand().getLinkPid(), true);
+
 		infectList = new ArrayList<Integer>();
-		
-		for (RdGate gate:rdGate) {
+
+		for (RdGate gate : rdGate) {
 			infectList.add(gate.getPid());
 		}
 		infects.put("RDGATE", infectList);

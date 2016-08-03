@@ -26,7 +26,6 @@ import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
@@ -89,8 +88,7 @@ public class Operation implements IOperation {
 				links.addAll(RdLinkOperateUtils.getCreateRdLinksWithMesh(geomInter, maps, result));
 				
 			}
-			deleteRdLink(this.command.getUpdateLink(), result);
-			
+			deleteRdLink(result);
 		}
 
 		updataRelationObj(this.command.getUpdateLink(), links, result);
@@ -109,64 +107,53 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 * 
 	 */
-	private void deleteRdLink(RdLink rdLink, Result result) throws Exception {
-		JSONObject deleteJson = new JSONObject();
-		// 要打断线的pid
-		deleteJson.put("objId", rdLink.getPid());
-		// 要打断线的project_id
-		deleteJson.put("dbId", command.getDbId());
-		// 组装打断线的参数
-		// 保证是同一个连接
-		com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink.Command deleteCommand = new com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink.Command(
-				deleteJson, deleteJson.toString());
-		com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink.Process deleteProcess = new com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink.Process(
-				deleteCommand, result, conn);
-		deleteProcess.innerRun();
+	private void deleteRdLink(Result result) throws Exception {
+		result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE, this.command.getLinkPid());
 	}
 
-	public void breakLine(int sNodePid, int eNodePid, Result result) throws Exception {
-
-		JSONArray coords = command.getLinkGeom().getJSONArray("coordinates");
-
-		for (int i = 0; i < command.getInterLines().size(); i++) {
-			// link的一个端点打断另外一根link
-			JSONObject interLine = command.getInterLines().getJSONObject(i);
-			JSONObject breakJson = new JSONObject();
-			JSONObject data = new JSONObject();
-
-			breakJson.put("objId", interLine.getInt("pid"));
-			breakJson.put("dbId", command.getDbId());
-
-			int nodePid = interLine.getInt("nodePid");
-			if (nodePid == command.getUpdateLink().getsNodePid()) {
-				data.put("breakNodePid", sNodePid);
-
-				JSONArray coord = coords.getJSONArray(0);
-
-				double lon = coord.getDouble(0);
-				double lat = coord.getDouble(1);
-
-				data.put("longitude", lon);
-				data.put("latitude", lat);
-			} else {
-				data.put("breakNodePid", eNodePid);
-
-				JSONArray coord = coords.getJSONArray(coords.size() - 1);
-
-				double lon = coord.getDouble(0);
-				double lat = coord.getDouble(1);
-
-				data.put("longitude", lon);
-				data.put("latitude", lat);
-			}
-			breakJson.put("data", data);
-			com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command(
-					breakJson, breakJson.toString());
-			com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process(
-					breakCommand, conn, result);
-			breakProcess.innerRun();
-		}
-	}
+//	public void breakLine(int sNodePid, int eNodePid, Result result) throws Exception {
+//
+//		JSONArray coords = command.getLinkGeom().getJSONArray("coordinates");
+//
+//		for (int i = 0; i < command.getInterLines().size(); i++) {
+//			// link的一个端点打断另外一根link
+//			JSONObject interLine = command.getInterLines().getJSONObject(i);
+//			JSONObject breakJson = new JSONObject();
+//			JSONObject data = new JSONObject();
+//
+//			breakJson.put("objId", interLine.getInt("pid"));
+//			breakJson.put("dbId", command.getDbId());
+//
+//			int nodePid = interLine.getInt("nodePid");
+//			if (nodePid == command.getUpdateLink().getsNodePid()) {
+//				data.put("breakNodePid", sNodePid);
+//
+//				JSONArray coord = coords.getJSONArray(0);
+//
+//				double lon = coord.getDouble(0);
+//				double lat = coord.getDouble(1);
+//
+//				data.put("longitude", lon);
+//				data.put("latitude", lat);
+//			} else {
+//				data.put("breakNodePid", eNodePid);
+//
+//				JSONArray coord = coords.getJSONArray(coords.size() - 1);
+//
+//				double lon = coord.getDouble(0);
+//				double lat = coord.getDouble(1);
+//
+//				data.put("longitude", lon);
+//				data.put("latitude", lat);
+//			}
+//			breakJson.put("data", data);
+//			com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command(
+//					breakJson, breakJson.toString());
+//			com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process(
+//					breakCommand, conn, result);
+//			breakProcess.innerRun();
+//		}
+//	}
 
 	/**
 	 * 处理对立交的影响

@@ -43,7 +43,7 @@ public class POITest extends InitApplication{
 
 			AbstractSearch search = new AbstractSearch();
 
-			IRow jsonObject = search.searchDataByPid(IxPoi.class, 55005996, conn);
+			IRow jsonObject = search.searchDataByPid(IxPoi.class, 73352736, conn);
 
 			System.out.println(jsonObject.Serialize(ObjLevel.FULL));
 		} catch (Exception e) {
@@ -100,7 +100,7 @@ public class POITest extends InitApplication{
 	@Test
 	public void testUpdatePoi()
 	{
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":100000106,\"data\":{\"kindCode\":\"110101\",\"pid\":100000106,\"objStatus\":\"UPDATE\",\"chain\":\"2487\",\"open24h\":\"1\",\"postCode\":\"0777711\",\"poiMemo\":\"备注\",\"level\":\"B2\",\"indoor\":\"3\",\"names\":[{\"pid\":100000106,\"poiPid\":0,\"nameGroupid\":1,\"langCode\":\"CHI\",\"nameClass\":1,\"nameType\":2,\"name\":\"名称\",\"namePhonetic\":null,\"keywords\":null,\"nidbPid\":null,\"objStatus\":\"INSERT\"}],\"addresses\":[{\"pid\":100000106,\"nameGroupid\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"地址\",\"objStatus\":\"INSERT\"}],\"contacts\":[{\"poiPid\":0,\"contactType\":1,\"contact\":\"010-123456\",\"contactDepart\":0,\"priority\":1,\"pid\":100000106,\"objStatus\":\"INSERT\"},{\"poiPid\":0,\"contactType\":1,\"contact\":\"010-654321\",\"contactDepart\":0,\"priority\":1,\"pid\":100000106,\"objStatus\":\"INSERT\"}],\"photos\":[{\"photoId\":0,\"status\":\"\",\"memo\":0,\"pid\":100000106,\"objStatus\":\"INSERT\"},{\"photoId\":0,\"status\":\"\",\"memo\":0,\"pid\":100000106,\"objStatus\":\"INSERT\"},{\"photoId\":0,\"status\":\"\",\"memo\":0,\"pid\":100000106,\"objStatus\":\"INSERT\"},{\"photoId\":0,\"status\":\"\",\"memo\":0,\"pid\":100000106,\"objStatus\":\"INSERT\"},{\"photoId\":0,\"status\":\"\",\"memo\":0,\"pid\":100000106,\"objStatus\":\"INSERT\"},{\"photoId\":0,\"status\":\"\",\"memo\":0,\"pid\":100000106,\"objStatus\":\"INSERT\"}]}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":20928963,\"data\":{\"contacts\":[{\"poiPid\":0,\"rowId\":\"42A096761F65438990B6A0AA4293DE2A\",\"objStatus\":\"UPDATE\",\"contact\":\"010-22222222\"}],\"rowId\":\"3524E590CA526E1AE050A8C08304BA17\",\"pid\":20928963}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

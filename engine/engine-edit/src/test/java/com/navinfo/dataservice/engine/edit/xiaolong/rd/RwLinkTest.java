@@ -31,11 +31,11 @@ public class RwLinkTest extends InitApplication {
 	{
 		Connection conn;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(25);
+			conn = DBConnector.getInstance().getConnectionById(42);
 
 			SearchProcess p = new SearchProcess(conn);
 			
-			RwLink obj = (RwLink) p.searchDataByPid(ObjType.RWLINK, 100007164);
+			RwLink obj = (RwLink) p.searchDataByPid(ObjType.RWLINK, 100007144);
 
 			System.out.println(obj.Serialize(ObjLevel.BRIEF));
 			
@@ -191,4 +191,5 @@ public class RwLinkTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
+
 }

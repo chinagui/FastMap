@@ -68,7 +68,7 @@ public class RdTrafficSignalTest extends InitApplication{
 	@Test
 	public void testDeleteTrafficSignal()
 	{
-		String parameter = "{\"command\":\"DELETE\",\"dbId\":25,\"type\":\"RDTRAFFICSIGNAL\",\"objId\":100000127}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDTRAFFICSIGNAL\",\"dbId\":42,\"objId\":100000191}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

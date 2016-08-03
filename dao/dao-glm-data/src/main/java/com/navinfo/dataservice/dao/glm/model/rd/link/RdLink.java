@@ -455,6 +455,8 @@ public class RdLink implements IObj {
 	@Override
 	public void copy(IRow row) {
 		RdLink sourceLink = (RdLink) row;
+		
+		this.setPid(sourceLink.getPid());
 
 		this.setsNodePid(sourceLink.getsNodePid());
 

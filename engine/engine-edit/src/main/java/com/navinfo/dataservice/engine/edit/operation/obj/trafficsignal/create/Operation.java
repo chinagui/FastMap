@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.create;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,15 @@ public class Operation implements IOperation {
 			List<Integer> linkPidList = new ArrayList<>();
 
 			for (RdLink link : links) {
+				Collection<List<Integer>> values = nodeLinkPidMap.values();
+				
+				for(List<Integer> pidList : values)
+				{
+					if(pidList.contains(link.getPid()))
+					{
+						continue;
+					}
+				}
 				linkPidList.add(link.getPid());
 			}
 

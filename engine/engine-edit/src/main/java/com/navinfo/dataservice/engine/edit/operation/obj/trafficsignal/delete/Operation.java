@@ -46,9 +46,9 @@ public class Operation implements IOperation {
 		if(cross != null)
 		{
 			cross.changedFields().put("signal", 0);
+			
+			result.insertObject(cross, ObjStatus.UPDATE, cross.getPid());
 		}
-		
-		result.insertObject(cross, ObjStatus.UPDATE, cross.getPid());
 				
 		return null;
 	}
@@ -92,7 +92,7 @@ public class Operation implements IOperation {
 	 * @param conn
 	 * @throws Exception
 	 */
-	public void deleteByLink(Result result,int ... linkPids) throws Exception {		
+	public void deleteByLink(Result result,Integer ... linkPids) throws Exception {		
 
 		if (conn == null || linkPids.length == 0) {
 			return;

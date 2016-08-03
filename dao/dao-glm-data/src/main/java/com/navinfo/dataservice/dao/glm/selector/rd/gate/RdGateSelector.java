@@ -27,7 +27,7 @@ public class RdGateSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<RdGate> loadByLink(int linkPid) throws Exception {
+	public List<RdGate> loadByLink(int linkPid,boolean isLock) throws Exception {
 		
 		List<RdGate> rows = new ArrayList<RdGate>();
 		
@@ -37,6 +37,10 @@ public class RdGateSelector extends AbstractSelector {
 		
 		try {
 			String sql = "SELECT pid FROM rd_gate WHERE in_link_pid=:1 or out_link_pid=:1";
+			
+			if (isLock) {
+				sql += " for update nowait";
+			}
 			
 			pstmt = conn.prepareStatement(sql);
 

@@ -51,7 +51,7 @@ public class Operation implements IOperation {
 		}
 		RdGateSelector rdSelector = new RdGateSelector(conn);
 		try {
-			List<RdGate> rdGateList = rdSelector.loadByLink(linkPid);
+			List<RdGate> rdGateList = rdSelector.loadByLink(linkPid,true);
 			for (RdGate rdGate:rdGateList) {
 				result.insertObject(rdGate, ObjStatus.DELETE, rdGate.parentPKValue());
 			}

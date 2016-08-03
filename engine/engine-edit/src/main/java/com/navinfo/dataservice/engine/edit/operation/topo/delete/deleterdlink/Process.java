@@ -440,7 +440,7 @@ public class Process extends AbstractProcess<Command> {
 		
 		// 大门
 		RdGateSelector rdGateSelector = new RdGateSelector(this.getConn());
-		List<RdGate> rdGate = rdGateSelector.loadByLink(this.getCommand().getLinkPid());
+		List<RdGate> rdGate = rdGateSelector.loadByLink(this.getCommand().getLinkPid(),true);
 		
 		infectList = new ArrayList<Integer>();
 		

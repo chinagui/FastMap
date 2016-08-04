@@ -344,7 +344,6 @@ public class RdLaneConnexity implements IObj {
 
 	@Override
 	public String primaryKey() {
-		// TODO Auto-generated method stub
 		return "pid";
 	}
 

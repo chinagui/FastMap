@@ -3,15 +3,15 @@ package com.navinfo.dataservice.impcore.deepinfo;
 import java.sql.Connection;
 import java.sql.Statement;
 
-import net.sf.json.JSONObject;
-import net.sf.json.util.JSONUtils;
-
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
-import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiParkingOperator;
+import com.navinfo.dataservice.dao.glm.operator.BasicOperator;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.impcore.exception.DataErrorException;
+
+import net.sf.json.JSONObject;
+import net.sf.json.util.JSONUtils;
 
 public class ParkingImporter {
 	
@@ -102,7 +102,7 @@ public class ParkingImporter {
 
 		parking.setVipNum(parkings.getInt("vipNum"));
 
-		IxPoiParkingOperator operator = new IxPoiParkingOperator(conn, parking);
+		BasicOperator operator = new BasicOperator(conn, parking);
 
 		operator.insertRow2Sql(stmt);
 

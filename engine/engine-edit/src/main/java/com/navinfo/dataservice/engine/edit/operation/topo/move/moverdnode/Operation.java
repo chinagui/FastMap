@@ -91,11 +91,20 @@ public class Operation implements IOperation {
 			// 修改线的几何属性
 			// 如果没有跨图幅只是修改线的几何
 			List<RdLink> links = new ArrayList<RdLink>();
+			// 由于使用时原线的几何还没有进行更新，创建新的集合用于存放修改过geometry的link
+			List<RdLink> newGeoLinks = new ArrayList<RdLink>();
 			if (meshes.size() == 1) {
 				JSONObject updateContent = new JSONObject();
 				updateContent.put("geometry", geojson);
 				updateContent.put("length", GeometryUtils.getLinkLength(geo));
 				link.fillChangeFields(updateContent);
+
+				// 添加修改过几何的RDLINK，该集合用于修改关联要素
+				RdLink geoLink = new RdLink();
+				geoLink.copy(link);
+				Geometry tmpGeo = GeoTranslator.geojson2Jts(geojson, 100000, 5);
+				geoLink.setGeometry(tmpGeo);
+				newGeoLinks.add(geoLink);
 
 				links.add(link);
 				map.put(link.getPid(), links);
@@ -113,12 +122,15 @@ public class Operation implements IOperation {
 					RdLinkOperateUtils.createRdLinkWithMesh(geomInter, maps, link, result, links);
 
 				}
+				// 添加新生成的RDLINK的集合，该集合用于修改关联要素
+				newGeoLinks.addAll(links);
+
 				map.put(link.getPid(), links);
 
 				result.insertObject(link, ObjStatus.DELETE, link.pid());
 			}
 
-			updataRelationObj(link, links, result);
+			updataRelationObj(link, newGeoLinks, result);
 		}
 		this.map = map;
 	}
@@ -160,7 +172,8 @@ public class Operation implements IOperation {
 		 * 任何情况均需要处理的元素
 		 */
 		// 电子眼
-		com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move.Operation eleceyeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move.Operation(this.conn);
+		com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move.Operation eleceyeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move.Operation(
+				this.conn);
 		eleceyeOperation.moveEleceye(oldLink, newLinks, result);
 
 		/*

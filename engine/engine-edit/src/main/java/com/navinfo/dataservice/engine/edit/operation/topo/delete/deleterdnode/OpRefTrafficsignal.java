@@ -6,7 +6,6 @@ package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdnode;
 import java.sql.Connection;
 import java.util.List;
 
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 
 /** 
@@ -23,12 +22,12 @@ public class OpRefTrafficsignal{
 		this.conn = conn;
 	}
 	
-	public String run(Result result,List<IRow> allNodes) throws Exception {
+	public String run(Result result,List<Integer> linkPids) throws Exception {
 		
 		com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.delete.Operation trafficSignalOperation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.delete.Operation(
 				conn);
 
-		trafficSignalOperation.deleteByNode(result,allNodes);
+		trafficSignalOperation.deleteByLink(result,(Integer [])linkPids.toArray(new Integer[linkPids.size()]));
 		
 		return null;
 	}

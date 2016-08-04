@@ -238,7 +238,7 @@ public class AdAdminGroup implements IObj {
 
 	@Override
 	public String primaryKey() {
-		return "region_id";
+		return "group_id";
 	}
 
 	@Override

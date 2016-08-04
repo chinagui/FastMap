@@ -1,4 +1,7 @@
-package com.navinfo.dataservice.dao.glm.model.rd.slope;
+/**
+ * 
+ */
+package com.navinfo.dataservice.dao.glm.model.rd.inter;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -6,34 +9,66 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-/**
- * 
- * 道路:坡度接续 LINK 表
- * @author zhaokk
- *
- */
-public class RdSlopeVia implements IRow {
 
-	private int slopePid ;//坡度号码 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
-	private int linkPid;//LINK 号码幅号码 
-
-	private int seqNum =1 ;//LINK 序号;
+/** 
+* @ClassName: RdInterLink 
+* @author Zhang Xiaolong
+* @date 2016年8月3日 上午11:47:57 
+* @Description: TODO
+*/
+public class RdInterLink implements IRow {
+	
+	private int pid;
+	
+	private int seqNum;
+	
+	private int linkPid;
+	
 	private String rowId;
-
+	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
+
+	public int getPid() {
+		return pid;
+	}
+
+	public void setPid(int pid) {
+		this.pid = pid;
+	}
+
+	public int getSeqNum() {
+		return seqNum;
+	}
+
+	public void setSeqNum(int seqNum) {
+		this.seqNum = seqNum;
+	}
+
+	public int getLinkPid() {
+		return linkPid;
+	}
+
+	public void setLinkPid(int linkPid) {
+		this.linkPid = linkPid;
+	}
+
+	public String getRowId() {
+		return rowId;
+	}
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+
+		return json;
 	}
 
 	@Override
@@ -52,7 +87,6 @@ public class RdSlopeVia implements IRow {
 				f.setAccessible(true);
 
 				f.set(this, json.get(key));
-
 			}
 
 		}
@@ -61,7 +95,7 @@ public class RdSlopeVia implements IRow {
 
 	@Override
 	public String rowId() {
-		return rowId;
+		return this.rowId;
 	}
 
 	@Override
@@ -71,7 +105,7 @@ public class RdSlopeVia implements IRow {
 
 	@Override
 	public String tableName() {
-		return "rd_slope_via";
+		return "RD_INTER_LINK";
 	}
 
 	@Override
@@ -81,16 +115,22 @@ public class RdSlopeVia implements IRow {
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
 	}
 
 	@Override
 	public ObjType objType() {
-		return ObjType.RDSLOPEVIA;
+		return ObjType.RDINTERLINK;
 	}
 
 	@Override
 	public void copy(IRow row) {
+		RdInterLink interLink = (RdInterLink) row;
+
+		this.pid = interLink.pid;
+		
+		this.linkPid = interLink.linkPid;
+		
+		this.seqNum = interLink.seqNum;
 	}
 
 	@Override
@@ -100,17 +140,17 @@ public class RdSlopeVia implements IRow {
 
 	@Override
 	public String parentPKName() {
-		return "slope_pid";
+		return "pid";
 	}
 
 	@Override
 	public int parentPKValue() {
-		return this.getSlopePid();
+		return this.pid;
 	}
 
 	@Override
 	public String parentTableName() {
-		return "rd_slope";
+		return "RD_INTER";
 	}
 
 	@Override
@@ -176,33 +216,5 @@ public class RdSlopeVia implements IRow {
 
 	@Override
 	public void setMesh(int mesh) {
-	}
-
-	public int getLinkPid() {
-		return linkPid;
-	}
-
-	public void setLinkPid(int linkPid) {
-		this.linkPid = linkPid;
-	}
-
-	public int getSlopePid() {
-		return slopePid;
-	}
-
-	public void setSlopePid(int slopePid) {
-		this.slopePid = slopePid;
-	}
-
-	public int getSeqNum() {
-		return seqNum;
-	}
-
-	public void setSeqNum(int seqNum) {
-		this.seqNum = seqNum;
-	}
-
-	public String getRowId() {
-		return rowId;
 	}
 }

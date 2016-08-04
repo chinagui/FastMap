@@ -40,7 +40,7 @@ public class RdBranchTest extends InitApplication {
 		Connection conn;
 		try {
 
-			String parameter = "{\"dbId\":25,\"type\":\"RDBRANCH\",\"detailId\":\"111401467052\",\"rowId\":\"\",\"branchType\":9}";
+			String parameter = "{\"dbId\":42,\"type\":\"RDBRANCH\",\"detailId\":\"97660\",\"rowId\":\"\",\"branchType\":3}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 

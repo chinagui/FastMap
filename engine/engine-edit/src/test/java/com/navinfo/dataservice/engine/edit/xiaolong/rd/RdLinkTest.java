@@ -40,7 +40,7 @@ public class RdLinkTest extends InitApplication{
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByPid(ObjType.RDLINK, 100007138).Serialize(ObjLevel.BRIEF));
+			System.out.println(p.searchDataByPid(ObjType.RDRESTRICTION, 29119).Serialize(ObjLevel.BRIEF));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -62,7 +62,7 @@ public class RdLinkTest extends InitApplication{
 	@Test
 	public void testAddRdLink()
 	{
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46895051002502,40.025075819137506],[116.46738632493417,40.02477644044782],[116.4666223526001,40.02477183584991]]},\"catchLinks\":,\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":25,\"type\":\"RDLINK\",\"objId\":577195,\"data\":{\"limits\":[false,false,{\"linkPid\":577195,\"rowId\":\"3657658936FF2443E050A8C083049593\",\"type\":9,\"limitDir\":0,\"timeDomain\":\"[[(t2)(t6)]*[(h7m0)(h20m0)]]\",\"vehicle\":0,\"tollType\":9,\"weather\":9,\"inputTime\":\"\",\"processFlag\":0,\"objStatus\":\"DELETE\"}],\"pid\":577195}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -75,7 +75,7 @@ public class RdLinkTest extends InitApplication{
 	@Test
 	public void testRepairLink()
 	{
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"objId\":100008040,\"data\":{\"longitude\":116.66654182223411,\"latitude\":40.283555172551544},\"type\":\"RDNODE\"}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":25,\"type\":\"RDLINK\",\"objId\":50113355,\"data\":{\"names\":[{\"linkPid\":50113355,\"rowId\":\"\",\"nameGroupid\":2625347,\"name\":\"京宝三纬路\",\"seqNum\":1,\"nameClass\":1,\"inputTime\":\"\",\"nameType\":0,\"srcFlag\":9,\"routeAtt\":0,\"code\":0,\"objStatus\":\"INSERT\"}],\"pid\":50113355}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

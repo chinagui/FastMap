@@ -45,7 +45,7 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	public void delByLink(int linkPid,Result result) throws Exception {
+	public void delByLink(int linkPid, Result result) throws Exception {
 		if (conn == null) {
 			return;
 		}
@@ -59,5 +59,26 @@ public class Operation implements IOperation {
 			throw e;
 		}
 	}
-
+	
+	/**
+	 * 删除node维护大门
+	 * @param linkPid
+	 * @param conn
+	 * @param result
+	 * @throws Exception
+	 */
+	public void delByNode(int nodePid, Result result) throws Exception {
+		if (conn == null) {
+			return;
+		}
+		RdGateSelector rdSelector = new RdGateSelector(conn);
+		try {
+			List<RdGate> rdGateList = rdSelector.loadByNode(nodePid,true);
+			for (RdGate rdGate:rdGateList) {
+				result.insertObject(rdGate, ObjStatus.DELETE, rdGate.parentPKValue());
+			}
+		} catch (Exception e) {
+			throw e;
+		}
+	}
 }

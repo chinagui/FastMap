@@ -15,6 +15,7 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 */
 public class GdbImportJobRequest extends AbstractJobRequest {
 
+	protected String impType="default";//default,fullAndNonLock
 	protected int logDbId;
 	protected int targetDbId;
 	protected List<Integer> grids;
@@ -31,6 +32,14 @@ public class GdbImportJobRequest extends AbstractJobRequest {
 	public void validate() throws JobException {
 		// TODO Auto-generated method stub
 
+	}
+
+	public String getImpType() {
+		return impType;
+	}
+
+	public void setImpType(String impType) {
+		this.impType = impType;
 	}
 
 	public int getLogDbId() {

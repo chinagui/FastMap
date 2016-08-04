@@ -18,6 +18,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
 import com.vividsolutions.jts.geom.Geometry;
 
 
@@ -57,19 +58,13 @@ public class ZoneNode implements IObj {
 		this.pid = pid;
 	}
 
-
-
 	public int getKind() {
 		return kind;
 	}
 
-
-
 	public void setKind(int kind) {
 		this.kind = kind;
 	}
-
-
 
 	public int getForm() {
 		return form;
@@ -103,18 +98,6 @@ public class ZoneNode implements IObj {
 
 	public void setEditFlag(int editFlag) {
 		this.editFlag = editFlag;
-	}
-
-
-
-	public Map<String, Object> getChangedFields() {
-		return changedFields;
-	}
-
-
-
-	public void setChangedFields(Map<String, Object> changedFields) {
-		this.changedFields = changedFields;
 	}
 
 
@@ -336,7 +319,6 @@ public class ZoneNode implements IObj {
 
 	@Override
 	public List<IRow> relatedRows() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -348,6 +330,20 @@ public class ZoneNode implements IObj {
 	@Override
 	public String primaryKey() {
 		return "node_pid";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<>();
+		childList.put(AdNodeMesh.class, meshes);
+		return childList;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		Map<Class<? extends IRow>,Map<String,?>>childMap = new HashMap<>();
+		childMap.put(AdNodeMesh.class, meshMap);
+		return childMap;
 	}
 
 }

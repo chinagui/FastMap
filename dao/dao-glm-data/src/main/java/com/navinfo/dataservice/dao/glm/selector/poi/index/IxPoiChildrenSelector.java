@@ -3,157 +3,36 @@ package com.navinfo.dataservice.dao.glm.selector.poi.index;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildrenForAndroid;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 /**
  * POI父子关系子表 查询
  * @author luyao
  *
  */
-public class IxPoiChildrenSelector implements ISelector {
+public class IxPoiChildrenSelector extends AbstractSelector {
 
 	private static Logger logger = Logger.getLogger(IxPoiChildrenSelector.class);
 
 	private Connection conn;
 	
 	public IxPoiChildrenSelector(Connection conn) {
-		super();
+		super(conn);
 		this.conn = conn;
-	}
-	
-	
-	
-	@Override
-	public IRow loadById(int id, boolean isLock) throws Exception {
-		
-		return null;
+		this.setCls(IxPoiChildren.class);
 	}
 
-	@Override
-	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
-		
-		IxPoiChildren poiChildren = new IxPoiChildren();
-
-		String sql = "select * from " + poiChildren.tableName() + " where row_id=hextoraw(:1)";
-
-		if (isLock) {
-			sql += " for update nowait";
-		}
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = this.conn.prepareStatement(sql);
-
-			pstmt.setString(1, rowId);
-
-			resultSet = pstmt.executeQuery();
-
-			if (resultSet.next()) {
-
-				setAttr( poiChildren, resultSet);
-			} else {
-				
-				throw new DataNotFoundException("数据不存在");
-			}
-		} catch (Exception e) {
-			
-			throw e;
-
-		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
-
-		return poiChildren;
-	}
-
-	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock)
-			throws Exception {
-		List<IRow> rows = new ArrayList<IRow>();
-
-		String sql = "select * from ix_poi_children where group_id=:1 and u_record!=:2";
-
-		if (isLock) {
-			sql += " for update nowait";
-		}
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = this.conn.prepareStatement(sql);
-
-			pstmt.setInt(1, id);
-
-			pstmt.setInt(2, 2);
-
-			resultSet = pstmt.executeQuery();
-
-			while (resultSet.next()) {
-
-				IxPoiChildren poiChildren = new IxPoiChildren();
-				
-				setAttr( poiChildren, resultSet);
-
-				rows.add(poiChildren);
-			}
-		} catch (Exception e) {
-			
-			throw e;
-
-		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-		}
-
-		return rows;
-	}
-	
 	public List<IRow> loadRowsByPoiId(int id, boolean isLock)
 			throws Exception {
 		List<IRow> rows = new ArrayList<IRow>();
@@ -181,7 +60,7 @@ public class IxPoiChildrenSelector implements ISelector {
 
 				IxPoiChildren poiChildren = new IxPoiChildren();
 				
-				setAttr( poiChildren, resultSet);
+				ReflectionAttrUtils.executeResultSet(poiChildren, resultSet);
 
 				rows.add(poiChildren);
 			}
@@ -190,22 +69,9 @@ public class IxPoiChildrenSelector implements ISelector {
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
-
+			DBUtils.closeResultSet(resultSet);
+			
+			DBUtils.closeStatement(pstmt);
 		}
 
 		return rows;
@@ -247,37 +113,14 @@ public class IxPoiChildrenSelector implements ISelector {
 		}catch(Exception e){
 			throw e;
 		}finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-				
-			}
 
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-				
-			}
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
 
 		}		
 		return rows;
 	}
 	
-	private void setAttr(IxPoiChildren poiChildren,ResultSet resultSet) throws SQLException
-	{
-		poiChildren.setGroupId (resultSet.getInt("group_id"));
-
-		poiChildren.setChildPoiPid(resultSet.getInt("child_poi_pid"));
-		
-		poiChildren.setRelationType(resultSet.getInt("relation_type"));
-
-		poiChildren.setRowId(resultSet.getString("row_id"));
-		
-		poiChildren.setuDate(resultSet.getString("u_date"));
-	}
 	
 }

@@ -12,7 +12,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkFormSelector;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 
@@ -74,8 +74,6 @@ public class Operation implements IOperation {
 		
 		List<Integer> linkPids = command.getLinkPids();
 		
-		RdLinkFormSelector selector = new RdLinkFormSelector(conn);
-		
 		for (int i=0; i<linkPids.size();i++) {
 			
 			int linkPid = linkPids.get(i);
@@ -91,7 +89,7 @@ public class Operation implements IOperation {
 			links.add(link);
 			
 			//维护道路形态
-			List<IRow> forms = selector.loadRowsByParentId(linkPid, true);
+			List<IRow> forms = new AbstractSelector(RdLinkForm.class, conn).loadRowsByParentId(linkPid, true);
 			
 			boolean needAdd = true;
 			

@@ -130,14 +130,11 @@ public class AdAdminDetail implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -147,41 +144,27 @@ public class AdAdminDetail implements IObj {
 
 	@Override
 	public void copy(IRow row) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public Map<String, Object> changedFields() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public String parentPKName() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int parentPKValue() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
 	public String parentTableName() {
-		// TODO Auto-generated method stub
 		return "ad_admin";
 	}
-	public Map<String, Object> getChangedFields() {
-		return changedFields;
-	}
-
-	public void setChangedFields(Map<String, Object> changedFields) {
-		this.changedFields = changedFields;
-	}
-
 	@Override
 	public List<List<IRow>> children() {
 		return null;
@@ -263,20 +246,27 @@ public class AdAdminDetail implements IObj {
 
 	@Override
 	public List<IRow> relatedRows() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int pid() {
-		// TODO Auto-generated method stub
 		return this.getPid();
 	}
 
 	@Override
 	public String primaryKey() {
-		// TODO Auto-generated method stub
 		return "admin_id";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		return null;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		return null;
 	}
 
 }

@@ -1,12 +1,12 @@
 package com.navinfo.dataservice.engine.edit.operation;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * 操作控制器
@@ -122,7 +122,7 @@ public class Transaction {
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdcross.update.Command(json, requester);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.operation.obj.rdcross.delete.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deletecross.Command(json, requester);
 			}
 		case RDBRANCH:
 			switch (operType) {
@@ -364,6 +364,8 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.delete.Command(json, requester);
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.update.Command(json, requester);
+			case MOVE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move.Command(json, requester);
 			}
 		case RDELECEYEPAIR:
 			switch (operType) {
@@ -390,18 +392,43 @@ public class Transaction {
 			default:
 				break;
 			}
-			
+
 		case RDWARNINGINFO:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.create.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.create.Command(json,
+						requester);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.delete.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.delete.Command(json,
+						requester);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Command(json,
+						requester);
 			default:
 				break;
-			}	
+			}
+		case RDSLOPE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create.Command(json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.delete.Command(json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.update.Command(json, requester);
+			default:
+				break;
+			}
+		case RDGATE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdgate.create.Command(json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdgate.delete.Command(json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdgate.update.Command(json, requester);
+			default:
+				break;
+			}
 		}
 
 		throw new Exception("不支持的操作类型");
@@ -464,7 +491,7 @@ public class Transaction {
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdcross.update.Process(command);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.operation.obj.rdcross.delete.Process(command);
+				return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deletecross.Process(command);
 			}
 		case RDBRANCH:
 			switch (operType) {
@@ -676,6 +703,8 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.delete.Process(command);
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.update.Process(command);
+			case MOVE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move.Process(command);
 			}
 		case RDELECEYEPAIR:
 			switch (operType) {
@@ -697,7 +726,7 @@ public class Transaction {
 			default:
 				break;
 			}
-			
+
 		case RDWARNINGINFO:
 			switch (operType) {
 			case CREATE:
@@ -708,7 +737,31 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Process(command);
 			default:
 				break;
-			}	
+			}
+
+		case RDSLOPE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create.Process(command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.delete.Process(command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.update.Process(command);
+			default:
+				break;
+			}
+
+		case RDGATE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdgate.create.Process(command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdgate.delete.Process(command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdgate.update.Process(command);
+			default:
+				break;
+			}
 		}
 
 		throw new Exception("不支持的操作类型");

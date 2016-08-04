@@ -34,7 +34,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
-import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiOperator;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.engine.edit.operation.obj.poi.update.Command;
@@ -104,8 +103,11 @@ public class UploadOperation {
 				String manQuery = "SELECT daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id=:1";
 				String dbId = qRunner.queryForString(manConn, manQuery, grid);
 				if (dbId.isEmpty()){
-					String errstr = "fid:" + jo.getString("fid") + "不在已知grid内";
-					errList.add(errstr);
+					JSONObject errObj = new JSONObject();
+					errObj.put("fid", jo.getString("fid"));
+					String errStr ="不在已知grid内";
+					errObj.put("reason", errStr);
+					errList.add(errObj.toString());
 					continue;
 				}
 				
@@ -170,8 +172,11 @@ public class UploadOperation {
 							deleteList.add(poi);
 						} else {
 							if (uRecord == 2) {
-								String errstr = "fid:" + fid + "为修改数据，但库中u_record为2";
-								errList.add(errstr);
+								JSONObject errObj = new JSONObject();
+								errObj.put("fid", fid);
+								String errStr ="数据为修改数据，但库中u_record为2";
+								errObj.put("reason", errStr);
+								errList.add(errObj.toString());
 							} else {
 								updateList.add(poi);
 							}
@@ -179,8 +184,11 @@ public class UploadOperation {
 					} else {
 						// 找不到，判断lifecycle是否为1
 						if (lifecycle == 1) {
-							String errstr = "fid:" + fid + "在库中找不到对应数据，但lifecycle为1";
-							errList.add(errstr);
+							JSONObject errObj = new JSONObject();
+							errObj.put("fid", fid);
+							String errStr ="数据在库中找不到对应数据，但lifecycle为1";
+							errObj.put("reason", errStr);
+							errList.add(errObj.toString());
 						} else {
 							insertList.add(poi);
 						}
@@ -261,7 +269,7 @@ public class UploadOperation {
 							
 							// 鲜度验证，POI状态更新
 							String rawFields = jo.getString("rawFields");
-							new IxPoiOperator(conn,poi.getRowId(),0,rawFields) ;
+							upatePoiStatusForAndroid(conn,poi.getRowId(),0,rawFields) ;
 						} else if (flag == 0) {
 							errList.add(perRetObj.getJSONObject("ret"));
 						}
@@ -313,9 +321,9 @@ public class UploadOperation {
 							boolean freshFlag = perRetObj.getBoolean("freshFlag");
 							String rawFields = jo.getString("rawFields");
 							if (freshFlag) {
-								new IxPoiOperator(conn,poiJson.getString("rowId"),1,rawFields) ;
+								upatePoiStatusForAndroid(conn,poiJson.getString("rowId"),1,rawFields) ;
 							} else {
-								new IxPoiOperator(conn,poiJson.getString("rowId"),0,rawFields) ;
+								upatePoiStatusForAndroid(conn,poiJson.getString("rowId"),0,rawFields) ;
 							}
 						} else if (flag == 0) {
 							errList.add(perRetObj.getJSONObject("ret"));
@@ -368,7 +376,7 @@ public class UploadOperation {
 							String rawFields = jo.getString("rawFields");
 							IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
 							JSONObject poiRowId = ixPoiSelector.getRowIdById(pid);
-							new IxPoiOperator(conn,poiRowId.getString("rowId"),0,rawFields) ;
+							upatePoiStatusForAndroid(conn,poiRowId.getString("rowId"),0,rawFields) ;
 						} catch (Exception e) {
 							JSONObject errObj = new JSONObject();
 							errObj.put("fid", fid);
@@ -1504,7 +1512,36 @@ public class UploadOperation {
 			throw e;
 		}
 	}
+	
+	/**
+	 * poi操作修改poi状态为待作业
+	 * 
+	 * @param row
+	 * @throws Exception
+	 */
+	public void upatePoiStatusForAndroid(Connection conn, String rowId, int freshFlag,String rawFields) throws Exception {
+		IxPoi ixPoi = new IxPoi();
+		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
+		sb.append(" USING (SELECT '" + ixPoi.getRowId() + "' as a, 1 as b,"
+				+ freshFlag + " as c,'" + rawFields + "' as d,"
+				+ "sysdate as e" + "  FROM dual) T2 ");
+		sb.append(" ON ( T1.row_id=T2.a) ");
+		sb.append(" WHEN MATCHED THEN ");
+		sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c,T1.is_upload = T2.b,T1.raw_fields = T2.d,T1.upload_date = T2.e ");
+		sb.append(" WHEN NOT MATCHED THEN ");
+		sb.append(" INSERT (T1.row_id,T1.status,T1.fresh_verified,T1.is_upload,T1.raw_fields,T1.upload_date) VALUES(T2.a,T2.b,T2.c,T2.b,T2.d,T2.e)");
+		PreparedStatement pstmt = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.executeUpdate();
+			conn.commit();
+		} catch (Exception e) {
+			throw e;
 
+		} finally {
+			DBUtils.closeStatement(pstmt);
+		}
+	}
 	
 	public JSONObject getUploadInfo(int jobId) throws Exception {
 

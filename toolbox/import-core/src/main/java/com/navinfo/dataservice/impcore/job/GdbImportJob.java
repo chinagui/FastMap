@@ -12,8 +12,10 @@ import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
 import com.navinfo.dataservice.impcore.flusher.DefaultLogFlusher;
 import com.navinfo.dataservice.impcore.flusher.LogFlusher;
 import com.navinfo.dataservice.impcore.mover.DefaultLogMover;
+import com.navinfo.dataservice.impcore.mover.LogMoveResult;
 import com.navinfo.dataservice.impcore.mover.LogMover;
 import com.navinfo.dataservice.impcore.selector.DefaultLogSelector;
+import com.navinfo.dataservice.impcore.selector.FullAndNonLockSelector;
 import com.navinfo.dataservice.impcore.selector.LogSelector;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.exception.LockException;
@@ -44,7 +46,11 @@ public class GdbImportJob extends AbstractJob {
 			DbInfo logDbInfo = datahub.getDbById(req.getLogDbId());
 			OracleSchema logSchema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(logDbInfo.getConnectParam()));
-			logSelector = new DefaultLogSelector(logSchema);
+			if("default".equals(req.getImpType())){
+				logSelector = new DefaultLogSelector(logSchema);
+			}else if("fullAndNonLock".equals(req.getImpType())){
+				logSelector = new FullAndNonLockSelector(logSchema);
+			}
 			String tempTable = logSelector.select();
 			response("履历选择完成",null);
 			//2. 履历刷库
@@ -55,9 +61,14 @@ public class GdbImportJob extends AbstractJob {
 			FlushResult result = logFlusher.flush();
 			response("履历刷库完成",null);
 			//3. 履历搬迁
-			LogMover logMover = new DefaultLogMover(logSchema, tarSchema, tempTable, null);
-			logMover.move();
-			response("履历搬迁完成",null);
+			if(req.getLogDbId()==req.getTargetDbId()){
+				response("履历搬迁完成,相同库无须搬履历",null);
+			}else{
+				LogMover logMover = new DefaultLogMover(logSchema, tarSchema, tempTable, null);
+				LogMoveResult moveResult = logMover.move();
+				response("履历搬迁完成->Operation:"+moveResult.getLogOperationMoveCount()+",Detail:"
+						+moveResult.getLogDetailMoveCount()+",Grid:"+moveResult.getLogDetailGridMoveCount(),null);
+			}
 			commitStatus=true;
 		}catch(Exception e){
 			log.error(e.getMessage(),e);

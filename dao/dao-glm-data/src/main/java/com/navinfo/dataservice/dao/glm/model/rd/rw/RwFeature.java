@@ -261,4 +261,18 @@ public class RwFeature implements IObj {
 		return "feature_pid";
 	}
 
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
+		childList.put(RwLink.class, links);
+		return childList;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<Class<? extends IRow>,Map<String,?>>();
+		childMap.put(RwLink.class,rwLinkMap);
+		return childMap;
+	}
+
 }

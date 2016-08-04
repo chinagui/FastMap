@@ -79,6 +79,7 @@ public class RdGscLink implements IRow {
 
 	@Override
 	public boolean Unserialize(JSONObject json) throws Exception {
+		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {
@@ -165,6 +166,7 @@ public class RdGscLink implements IRow {
 	@Override
 	public boolean fillChangeFields(JSONObject json) throws Exception {
 
+		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {

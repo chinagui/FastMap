@@ -22,7 +22,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
  * POI名称表
  * 
  * @author zhangxiaolong
- *
+ * 
  */
 public class IxPoiName implements IObj {
 
@@ -47,11 +47,11 @@ public class IxPoiName implements IObj {
 	private String nidbPid;// 现有PID
 
 	private String rowId;
-	
-	private int uRecord=0;
-	
+
+	private int uRecord = 0;
+
 	private String uDate;
-	
+
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	private List<IRow> nameTones = new ArrayList<IRow>();
@@ -231,17 +231,17 @@ public class IxPoiName implements IObj {
 
 	@Override
 	public String parentPKName() {
-		return "name_id";
+		return "POI_PID";
 	}
 
 	@Override
 	public int parentPKValue() {
-		return this.getPid();
+		return this.getPoiPid();
 	}
 
 	@Override
 	public String parentTableName() {
-		return "ix_poi_name";
+		return "ix_poi";
 	}
 
 	@Override
@@ -403,6 +403,33 @@ public class IxPoiName implements IObj {
 	@Override
 	public String primaryKey() {
 		return "name_id";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>, List<IRow>> childMap = new HashMap<>();
+
+		childMap.put(IxPoiNameTone.class, nameTones);
+
+		childMap.put(IxPoiNameFlag.class, nameFlags);
+
+		return childMap;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
+	 */
+	@Override
+	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
+		Map<Class<? extends IRow>, Map<String, ?>> childMap = new HashMap<Class<? extends IRow>, Map<String, ?>>();
+
+		childMap.put(IxPoiNameTone.class, nameToneMap);
+
+		childMap.put(IxPoiNameFlag.class, nameFlagMap);
+
+		return childMap;
 	}
 
 }

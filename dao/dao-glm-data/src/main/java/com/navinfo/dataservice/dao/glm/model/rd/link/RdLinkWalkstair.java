@@ -237,4 +237,5 @@ public class RdLinkWalkstair implements IRow {
 	@Override
 	public void setMesh(int mesh) {
 	}
+
 }

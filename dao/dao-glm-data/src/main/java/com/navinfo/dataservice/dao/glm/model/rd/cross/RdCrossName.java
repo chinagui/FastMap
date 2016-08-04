@@ -36,10 +36,6 @@ public class RdCrossName implements IObj {
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
-	public RdCrossName() {
-
-	}
-
 	public int getNameId() {
 		return nameId;
 	}
@@ -286,7 +282,16 @@ public class RdCrossName implements IObj {
 
 	@Override
 	public String primaryKey() {
-		// TODO Auto-generated method stub
 		return "name_id";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		return null;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		return null;
 	}
 }

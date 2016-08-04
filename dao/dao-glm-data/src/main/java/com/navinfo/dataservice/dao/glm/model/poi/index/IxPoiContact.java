@@ -169,12 +169,12 @@ public class IxPoiContact implements IRow {
 
 	@Override
 	public String parentPKName() {
-		return "pid";
+		return "POI_PID";
 	}
 
 	@Override
 	public int parentPKValue() {
-		return this.poiPid;
+		return this.getPoiPid();
 	}
 
 	@Override

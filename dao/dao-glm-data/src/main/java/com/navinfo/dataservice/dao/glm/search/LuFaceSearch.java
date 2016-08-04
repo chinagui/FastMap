@@ -103,7 +103,7 @@ public class LuFaceSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select a.face_pid,        a.geometry   from lu_face a          where a.u_record != 2      and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
+		String sql = "select a.face_pid, a.geometry from lu_face a where a.u_record != 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
 
 		PreparedStatement pstmt = null;
 
@@ -125,7 +125,7 @@ public class LuFaceSearch implements ISearch {
 			while (resultSet.next()) {
 				SearchSnapshot snapshot = new SearchSnapshot();
 
-				snapshot.setT(13);
+				snapshot.setT(30);
 
 				snapshot.setI(String.valueOf(resultSet.getInt("face_pid")));
 

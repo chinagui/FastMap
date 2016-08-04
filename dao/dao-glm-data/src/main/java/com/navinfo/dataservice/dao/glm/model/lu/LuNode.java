@@ -294,4 +294,18 @@ public class LuNode implements IObj {
 		return rowId;
 	}
 
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
+		childMap.put(LuNodeMesh.class, meshes);
+		return childMap;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<Class<? extends IRow>,Map<String,?>>();
+		childMap.put(LuNodeMesh.class, meshMap);
+		return childMap;
+	}
+
 }

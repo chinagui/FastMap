@@ -2,19 +2,18 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkFormSelector;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.check.meta.ScRoadFormsCoexist;
 import com.navinfo.dataservice.engine.check.meta.ScRoadKindForm;
 import com.navinfo.dataservice.engine.check.model.utils.RdLinkFormUtils;
 import com.navinfo.dataservice.engine.check.model.utils.RdLinkUtils;
@@ -48,7 +47,7 @@ public class GLM01221 extends baseRule {
 						&& !changedFields.containsKey("multiDigitized") && !changedFields.containsKey("imiCode")
 						&& !changedFields.containsKey("isViaduct")){continue;}
 				
-				RdLinkFormSelector rdFormSelector=new RdLinkFormSelector(getConn());
+				ISelector rdFormSelector = new AbstractSelector(RdLinkForm.class, getConn());
 				List<IRow> rdLinkFormList=rdFormSelector.loadRowsByParentId(rdLink.getPid(), false);
 				
 				checkWithRdLink(rdLink,rdLinkFormList,linkPidList);

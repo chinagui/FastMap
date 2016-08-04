@@ -7,10 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -18,8 +14,11 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 /**
  * 
  * ZONE:LINK 表
@@ -386,13 +385,6 @@ public class ZoneLink implements IObj {
 		this.editFlag = editFlag;
 	}
 
-	public Map<String, Object> getChangedFields() {
-		return changedFields;
-	}
-
-	public void setChangedFields(Map<String, Object> changedFields) {
-		this.changedFields = changedFields;
-	}
 
 	public List<IRow> getMeshes() {
 		return meshes;
@@ -401,6 +393,19 @@ public class ZoneLink implements IObj {
 		return rowId;
 	}
 
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<>();
+		childList.put(ZoneLinkMesh.class, meshes);
+		childList.put(ZoneLinkKind.class, kinds);
+		return childList;
+	}
 
-
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<>();
+		childMap.put(ZoneLinkMesh.class, meshMap);
+		childMap.put(ZoneLinkKind.class, kindMap);
+		return childMap;
+	}
 }

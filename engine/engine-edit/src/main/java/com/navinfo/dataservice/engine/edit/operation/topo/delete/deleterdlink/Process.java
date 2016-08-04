@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
+import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -23,6 +24,7 @@ import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.gate.RdGateSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
@@ -30,6 +32,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.warninginfo.RdWarninginfoSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
@@ -55,14 +58,6 @@ public class Process extends AbstractProcess<Command> {
 		RdLink link = (RdLink) selector.loadById(this.getCommand().getLinkPid(), true);
 
 		this.getCommand().setLink(link);
-	}
-
-	public void lockRdTrafficSignal() throws Exception {
-		RdTrafficsignalSelector rdTrafficsignalSelector = new RdTrafficsignalSelector(this.getConn());
-
-		RdTrafficsignal row = rdTrafficsignalSelector.loadByLinkPid(this.getCommand().getLinkPid(), true);
-
-		this.getCommand().setTrafficSignal(row);
 	}
 
 	// 锁定盲端节点
@@ -204,8 +199,6 @@ public class Process extends AbstractProcess<Command> {
 
 		lockAdAdmin();
 
-		lockRdTrafficSignal();
-
 		lockRdElectroniceye();
 
 		return true;
@@ -238,34 +231,10 @@ public class Process extends AbstractProcess<Command> {
 				prepareData();
 
 				IOperation op = new OpTopo(this.getCommand());
+
 				op.run(this.getResult());
 
-				IOperation opRefRestrict = new OpRefRestrict(this.getCommand());
-				opRefRestrict.run(this.getResult());
-
-				IOperation opRefBranch = new OpRefBranch(this.getCommand());
-				opRefBranch.run(this.getResult());
-
-				IOperation opRefCross = new OpRefCross(this.getCommand());
-				opRefCross.run(this.getResult());
-
-				IOperation opRefLaneConnexity = new OpRefLaneConnexity(this.getCommand());
-				opRefLaneConnexity.run(this.getResult());
-
-				IOperation opRefSpeedlimit = new OpRefSpeedlimit(this.getCommand());
-				opRefSpeedlimit.run(this.getResult());
-
-				IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand());
-				opRefRdGsc.run(this.getResult());
-
-				IOperation opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
-				opRefAdAdmin.run(this.getResult());
-
-				IOperation opRefTrafficsignal = new OpRefTrafficsignal(this.getCommand());
-				opRefTrafficsignal.run(this.getResult());
-
-				IOperation opRefElectroniceye = new OpRefElectroniceye(this.getCommand());
-				opRefElectroniceye.run(this.getResult());
+				updataRelationObj();
 
 				recordData();
 
@@ -273,74 +242,10 @@ public class Process extends AbstractProcess<Command> {
 
 				this.getConn().commit();
 			} else {
-				Map<String, List<Integer>> infects = new HashMap<String, List<Integer>>();
 
-				List<Integer> infectList = new ArrayList<Integer>();
+				prepareData();
 
-				infectList = new ArrayList<Integer>();
-
-				for (RdBranch branch : this.getCommand().getBranches()) {
-					infectList.add(branch.getPid());
-				}
-
-				infects.put("RDBRANCH", infectList);
-
-				infectList = new ArrayList<Integer>();
-
-				for (RdLaneConnexity laneConn : this.getCommand().getLanes()) {
-					infectList.add(laneConn.getPid());
-				}
-
-				infects.put("RDLANECONNEXITY", infectList);
-
-				infectList = new ArrayList<Integer>();
-
-				for (RdSpeedlimit limit : this.getCommand().getLimits()) {
-					infectList.add(limit.getPid());
-				}
-
-				infects.put("RDSPEEDLIMIT", infectList);
-
-				infectList = new ArrayList<Integer>();
-
-				for (RdRestriction res : this.getCommand().getRestrictions()) {
-					infectList.add(res.getPid());
-				}
-
-				infects.put("RDRESTRICTION", infectList);
-
-				infectList = new ArrayList<Integer>();
-
-				for (RdGsc rdGsc : this.getCommand().getRdGscs()) {
-					infectList.add(rdGsc.getPid());
-				}
-
-				infects.put("RDGSC", infectList);
-
-				infectList = new ArrayList<Integer>();
-
-				for (AdAdmin adAdmin : this.getCommand().getAdAdmins()) {
-					infectList.add(adAdmin.getPid());
-				}
-
-				infects.put("ADADMIN", infectList);
-
-				infectList = new ArrayList<Integer>();
-
-				RdTrafficsignal rdTrafficsignal = this.getCommand().getTrafficSignal();
-
-				infectList.add(rdTrafficsignal.getPid());
-
-				infects.put("RDTRAFFICSIGNAL", infectList);
-
-				infectList = new ArrayList<Integer>();
-				
-				for(RdElectroniceye eleceye : this.getCommand().getElectroniceyes()){
-
-					infectList.add(eleceye.getPid());
-				}
-
-				infects.put("RDELECTRONICEYE", infectList);
+				Map<String, List<Integer>> infects = confirmRelationObj();
 
 				return JSONObject.fromObject(infects).toString();
 			}
@@ -369,26 +274,12 @@ public class Process extends AbstractProcess<Command> {
 				throw new Exception(preCheckMsg);
 			}
 			prepareData();
+
 			IOperation op = new OpTopo(this.getCommand());
+
 			op.run(this.getResult());
-			IOperation opRefRestrict = new OpRefRestrict(this.getCommand());
-			opRefRestrict.run(this.getResult());
-			IOperation opRefBranch = new OpRefBranch(this.getCommand());
-			opRefBranch.run(this.getResult());
-			IOperation opRefCross = new OpRefCross(this.getCommand());
-			opRefCross.run(this.getResult());
-			IOperation opRefLaneConnexity = new OpRefLaneConnexity(this.getCommand());
-			opRefLaneConnexity.run(this.getResult());
-			IOperation opRefSpeedlimit = new OpRefSpeedlimit(this.getCommand());
-			opRefSpeedlimit.run(this.getResult());
-			IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand());
-			opRefRdGsc.run(this.getResult());
-			IOperation opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
-			opRefAdAdmin.run(this.getResult());
-			IOperation opRefTrafficsignal = new OpRefTrafficsignal(this.getCommand());
-			opRefTrafficsignal.run(this.getResult());
-			IOperation opRefElectroniceye = new OpRefElectroniceye(this.getCommand());
-			opRefElectroniceye.run(this.getResult());
+
+			updataRelationObj();
 
 			recordData();
 
@@ -406,6 +297,163 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public String exeOperation() {
 		return null;
+	}
+
+	/**
+	 * 维护关联要素
+	 * 
+	 * @throws Exception
+	 */
+	private void updataRelationObj() throws Exception {
+		// 交限
+		IOperation opRefRestrict = new OpRefRestrict(this.getCommand());
+		opRefRestrict.run(this.getResult());
+
+		// 分歧
+		IOperation opRefBranch = new OpRefBranch(this.getCommand());
+		opRefBranch.run(this.getResult());
+
+		// 路口
+		IOperation opRefCross = new OpRefCross(this.getCommand(), this.getConn());
+		opRefCross.run(this.getResult());
+
+		// 车信
+		IOperation opRefLaneConnexity = new OpRefLaneConnexity(this.getCommand());
+		opRefLaneConnexity.run(this.getResult());
+
+		// 限速
+		IOperation opRefSpeedlimit = new OpRefSpeedlimit(this.getCommand());
+		opRefSpeedlimit.run(this.getResult());
+
+		// 立交
+		IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand());
+		opRefRdGsc.run(this.getResult());
+
+		// 行政区划
+		IOperation opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
+		opRefAdAdmin.run(this.getResult());
+
+		// 电子眼
+		IOperation opRefElectroniceye = new OpRefElectroniceye(this.getCommand());
+		opRefElectroniceye.run(this.getResult());
+
+		// 警示信息
+		OpRefRdWarninginfo opRefRdWarninginfo = new OpRefRdWarninginfo(this.getConn());
+		opRefRdWarninginfo.run(this.getResult(), this.getCommand().getLinkPid());
+
+		// 大门
+		OpRefRdGate opRefRdGate = new OpRefRdGate(this.getConn());
+		opRefRdGate.run(this.getResult(), this.getCommand().getLinkPid());
+
+		// 信号灯
+		OpRefTrafficsignal opRefRdTrafficsignal = new OpRefTrafficsignal(this.getConn());
+		opRefRdTrafficsignal.run(this.getResult(), this.getCommand().getLinkPid());
+
+	}
+
+	/**
+	 * 删除link影响到的关联要素
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	private Map<String, List<Integer>> confirmRelationObj() throws Exception {
+		Map<String, List<Integer>> infects = new HashMap<String, List<Integer>>();
+
+		List<Integer> infectList = new ArrayList<Integer>();
+
+		infectList = new ArrayList<Integer>();
+
+		for (RdBranch branch : this.getCommand().getBranches()) {
+			infectList.add(branch.getPid());
+		}
+
+		infects.put("RDBRANCH", infectList);
+
+		infectList = new ArrayList<Integer>();
+
+		for (RdLaneConnexity laneConn : this.getCommand().getLanes()) {
+			infectList.add(laneConn.getPid());
+		}
+
+		infects.put("RDLANECONNEXITY", infectList);
+
+		infectList = new ArrayList<Integer>();
+
+		for (RdSpeedlimit limit : this.getCommand().getLimits()) {
+			infectList.add(limit.getPid());
+		}
+
+		infects.put("RDSPEEDLIMIT", infectList);
+
+		infectList = new ArrayList<Integer>();
+
+		for (RdRestriction res : this.getCommand().getRestrictions()) {
+			infectList.add(res.getPid());
+		}
+
+		infects.put("RDRESTRICTION", infectList);
+
+		infectList = new ArrayList<Integer>();
+
+		for (RdGsc rdGsc : this.getCommand().getRdGscs()) {
+			infectList.add(rdGsc.getPid());
+		}
+
+		infects.put("RDGSC", infectList);
+
+		infectList = new ArrayList<Integer>();
+
+		for (AdAdmin adAdmin : this.getCommand().getAdAdmins()) {
+			infectList.add(adAdmin.getPid());
+		}
+
+		infects.put("ADADMIN", infectList);
+
+		// 警示信息
+		RdWarninginfoSelector selector = new RdWarninginfoSelector(this.getConn());
+
+		infectList = selector.loadPidByLink(this.getCommand().getLinkPid(), true);
+
+		infects.put("RDWARNINGINFO", infectList);
+
+		// 信号灯
+		RdTrafficsignalSelector trafficsignalSelector = new RdTrafficsignalSelector(this.getConn());
+
+		List<RdTrafficsignal> trafficsignals = trafficsignalSelector.loadByLinkPid(true,
+				this.getCommand().getLinkPid());
+
+		infectList = new ArrayList<Integer>();
+
+		for (RdTrafficsignal trafficsignal : trafficsignals) {
+			infectList.add(trafficsignal.getPid());
+		}
+
+		infects.put("RDTRAFFICSIGNAL", infectList);
+
+		// 电子眼
+		RdElectroniceyeSelector rdElectroniceyeSelector = new RdElectroniceyeSelector(this.getConn());
+		List<RdElectroniceye> eleceyes = rdElectroniceyeSelector.loadListByRdLinkId(this.getCommand().getLinkPid(),
+				true);
+		infectList = new ArrayList<Integer>();
+
+		for (RdElectroniceye eleceye : eleceyes) {
+			infectList.add(eleceye.pid());
+		}
+		infects.put("RDELECTRONICEYE", infectList);
+
+		// 大门
+		RdGateSelector rdGateSelector = new RdGateSelector(this.getConn());
+		List<RdGate> rdGate = rdGateSelector.loadByLink(this.getCommand().getLinkPid(), true);
+
+		infectList = new ArrayList<Integer>();
+
+		for (RdGate gate : rdGate) {
+			infectList.add(gate.getPid());
+		}
+		infects.put("RDGATE", infectList);
+
+		return infects;
 	}
 
 }

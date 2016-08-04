@@ -108,15 +108,6 @@ public class AdAdminGroup implements IObj {
 		return "ad_admin";
 	}
 
-	
-	public Map<String, Object> getChangedFields() {
-		return changedFields;
-	}
-
-	public void setChangedFields(Map<String, Object> changedFields) {
-		this.changedFields = changedFields;
-	}
-
 	@Override
 	public List<List<IRow>> children() {
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
@@ -247,7 +238,21 @@ public class AdAdminGroup implements IObj {
 
 	@Override
 	public String primaryKey() {
-		return "region_id";
+		return "group_id";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<>();
+		childList.put(AdAdminPart.class, parts);
+		return childList;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<>();
+		childMap.put(AdAdminPart.class, adAdminPartMap);
+		return childMap;
 	}
 
 }

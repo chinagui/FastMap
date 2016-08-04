@@ -214,7 +214,7 @@ public class RdLaneTopology implements IObj {
 	@Override
 	public String parentPKName() {
 
-		return "pid";
+		return "connexity_pid";
 	}
 
 	@Override
@@ -302,13 +302,11 @@ public class RdLaneTopology implements IObj {
 
 	@Override
 	public List<IRow> relatedRows() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int pid() {
-		// TODO Auto-generated method stub
 		return pid;
 	}
 
@@ -323,7 +321,16 @@ public class RdLaneTopology implements IObj {
 
 	@Override
 	public String primaryKey() {
-		// TODO Auto-generated method stub
 		return "topology_id";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		return null;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		return null;
 	}
 }

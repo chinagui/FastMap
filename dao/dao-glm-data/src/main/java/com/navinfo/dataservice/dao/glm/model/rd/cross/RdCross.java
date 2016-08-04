@@ -7,15 +7,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class RdCross implements IObj {
 	
@@ -405,8 +405,25 @@ public class RdCross implements IObj {
 
 	@Override
 	public String primaryKey() {
-		// TODO Auto-generated method stub
 		return "pid";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
+		childList.put(RdCrossName.class, names);
+		childList.put(RdCrossNode.class, nodes);
+		childList.put(RdCrossLink.class, links);
+		return childList;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<Class<? extends IRow>,Map<String,?>>();
+		childMap.put(RdCrossName.class, nameMap);
+		childMap.put(RdCrossNode.class, nodeMap);
+		childMap.put(RdCrossLink.class, linkMap);
+		return childMap;
 	}
 
 }

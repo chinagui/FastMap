@@ -218,4 +218,18 @@ public class RdEleceyePair implements IObj {
 		this.parts = parts;
 	}
 
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
+		childList.put(RdEleceyePart.class, parts);
+		return childList;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<Class<? extends IRow>,Map<String,?>>();
+		childMap.put(RdEleceyePart.class, partMap);
+		return childMap;
+	}
+
 }

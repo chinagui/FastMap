@@ -180,7 +180,7 @@ public class IxPoiPhoto implements IRow {
 
 	@Override
 	public String parentPKName() {
-		return "pid";
+		return "poi_pid";
 	}
 
 	@Override

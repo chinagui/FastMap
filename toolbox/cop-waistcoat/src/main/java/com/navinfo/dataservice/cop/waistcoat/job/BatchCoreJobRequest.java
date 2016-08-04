@@ -3,6 +3,9 @@ package com.navinfo.dataservice.cop.waistcoat.job;
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
+
+import net.sf.json.JSONObject;
+
 import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
@@ -40,7 +43,6 @@ public class BatchCoreJobRequest extends AbstractJobRequest {
 
 	@Override
 	public void validate() throws JobException {
-
 	}
 
 	public int getExecuteDBId() {

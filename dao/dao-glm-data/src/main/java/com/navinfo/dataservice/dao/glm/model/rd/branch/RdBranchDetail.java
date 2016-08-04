@@ -354,8 +354,18 @@ public class RdBranchDetail implements IObj {
 
 	@Override
 	public String primaryKey() {
-		// TODO Auto-generated method stub
 		return "detail_id";
 	}
 
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
+		childList.put(RdBranchName.class, names);
+		return childList;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		return null;
+	}
 }

@@ -10,6 +10,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
+import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -21,6 +22,7 @@ import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.gate.RdGateSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
@@ -306,6 +308,10 @@ public class Process extends AbstractProcess<Command> {
 		// 信号灯
 		OpRefTrafficsignal opRefRdTrafficsignal = new OpRefTrafficsignal(this.getConn());
 		opRefRdTrafficsignal.run(this.getResult(),this.getCommand().getLinkPids());
+		
+		// 大门
+		OpRefRdGate opRefRdGate = new OpRefRdGate(this.getConn());
+		opRefRdGate.run(this.getResult(), this.getCommand().getNodePid());
 	}
 
 	/**
@@ -381,6 +387,17 @@ public class Process extends AbstractProcess<Command> {
 			}
 		}
 		infects.put("RDELECTRONICEYE", infectList);
+		
+		// 大门
+		RdGateSelector rdGateSelector = new RdGateSelector(this.getConn());
+		infectList = new ArrayList<Integer>();
+		for (Integer linkPid : this.getCommand().getLinkPids()) {
+			List<RdGate> rdGate = rdGateSelector.loadByLink(linkPid, true);
+			for (RdGate gate : rdGate) {
+				infectList.add(gate.getPid());
+			}
+		}
+		infects.put("RDGATE", infectList);
 
 		return infects;
 	}

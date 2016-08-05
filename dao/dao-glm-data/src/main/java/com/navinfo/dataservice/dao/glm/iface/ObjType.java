@@ -129,6 +129,7 @@ public enum ObjType {
 	RDELECEYEPART,
 	
 	RDSE,
+	RDSPEEDBUMP,
 
 	LCNODE,
 	LCNODEMESH,

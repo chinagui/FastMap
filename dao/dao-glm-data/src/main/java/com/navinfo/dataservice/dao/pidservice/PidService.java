@@ -476,4 +476,11 @@ public class PidService {
 	public synchronized int applyRdSePid() throws Exception {
 		return this.applyPid(PidSequenceName.rdSePidName);
 	}
+	
+	/**
+	 * 申请rd_inter
+	 */
+	public synchronized int applyRdInterPid() throws Exception {
+		return this.applyPid(PidSequenceName.rdInterName);
+	}
 }

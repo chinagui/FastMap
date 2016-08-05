@@ -109,5 +109,8 @@ public class PidSequenceName {
 	public static final String lcFacePidName = "SEQ_LC_FACE";
 	
 	public static final String rdSePidName = "SEQ_RD_SE";
+	
+	public static final String rdDirectrouteName = "SEQ_RD_DIRECTROUTE";
+	
 
 }

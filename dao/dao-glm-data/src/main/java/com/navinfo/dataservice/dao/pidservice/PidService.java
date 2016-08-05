@@ -152,6 +152,16 @@ public class PidService {
 	}
 	
 	/**
+	 * 申请 顺行pid
+	 * @return
+	 * @throws Exception
+	 */
+	public synchronized int applyRdDirectroutePid() throws Exception {
+		return applyPid(PidSequenceName.rdDirectrouteName);
+
+	}
+	
+	/**
 	 * 申请ad_admin_pid
 	 */
 	public synchronized int applyAdAdminPid() throws Exception {

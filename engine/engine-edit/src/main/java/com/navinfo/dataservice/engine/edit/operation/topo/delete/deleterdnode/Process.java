@@ -35,7 +35,6 @@ import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignal
 import com.navinfo.dataservice.dao.glm.selector.rd.warninginfo.RdWarninginfoSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
-import com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink.OpRefRdWarninginfo;
 
 import net.sf.json.JSONObject;
 
@@ -301,7 +300,7 @@ public class Process extends AbstractProcess<Command> {
 
 		// 警示信息
 		OpRefRdWarninginfo opRefRdWarninginfo = new OpRefRdWarninginfo(this.getConn());
-		opRefRdWarninginfo.run(this.getResult(), this.getCommand().getNodePid());
+		opRefRdWarninginfo.run(this.getResult(), this.getCommand());
 
 		// 电子眼
 		OpRefRdElectroniceye opRefRdElectroniceye = new OpRefRdElectroniceye(this.getConn(), this.getCommand());

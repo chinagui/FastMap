@@ -29,15 +29,15 @@ public class RdDirectroute implements IObj {
 
 	private int outLinkPid;// 退出link
 
-	private int flag;// 顺行标志
+	private int flag=2;// 顺行标志
 
-	private int processFlag;// 处理标志
+	private int processFlag=1;// 处理标志
 
-	private int relationshipType;// 关系类型
+	private int relationshipType=1;// 关系类型
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
-	private List<IRow> directrouteVias = new ArrayList<IRow>();
+	private List<IRow> vias = new ArrayList<IRow>();
 
 	public Map<String, RdDirectrouteVia> directrouteViaMap = new HashMap<String, RdDirectrouteVia>();
 
@@ -99,6 +99,16 @@ public class RdDirectroute implements IObj {
 
 	public String getRowId() {
 		return rowId;
+	}
+	
+	
+
+	public List<IRow> getVias() {
+		return vias;
+	}
+
+	public void setVias(List<IRow> directrouteVias) {
+		this.vias = directrouteVias;
 	}
 
 	@Override
@@ -163,7 +173,7 @@ public class RdDirectroute implements IObj {
 	public List<List<IRow>> children() {
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
 
-		children.add(this.directrouteVias);
+		children.add(this.vias);
 
 		return children;
 	}
@@ -277,7 +287,7 @@ public class RdDirectroute implements IObj {
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
 		Map<Class<? extends IRow>, List<IRow>> childMap = new HashMap<>();
 
-		childMap.put(RdDirectrouteVia.class, directrouteVias);
+		childMap.put(RdDirectrouteVia.class, this.vias);
 
 		return childMap;
 	}

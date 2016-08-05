@@ -429,6 +429,18 @@ public class Transaction {
 			default:
 				break;
 			}
+			
+		case RDDIRECTROUTE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.create.Command(json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.delete.Command(json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.update.Command(json, requester);
+			default:
+				break;
+			}
 		}
 
 		throw new Exception("不支持的操作类型");
@@ -759,6 +771,18 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdgate.delete.Process(command);
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdgate.update.Process(command);
+			default:
+				break;
+			}
+			
+		case RDDIRECTROUTE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.create.Process(command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.delete.Process(command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.update.Process(command);
 			default:
 				break;
 			}

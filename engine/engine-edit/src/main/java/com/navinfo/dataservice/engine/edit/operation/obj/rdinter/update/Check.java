@@ -5,7 +5,11 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
+import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
+import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdInterSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
@@ -45,7 +49,7 @@ public class Check {
 	 * @param linkList
 	 * @throws Exception
 	 */
-	public void checkLinkDirect(List<RdLink> linkList) throws Exception {
+	private void checkLinkDirect(List<RdLink> linkList) throws Exception {
 		if (CollectionUtils.isNotEmpty(linkList)) {
 			for (RdLink link : linkList) {
 				if (link.getImiCode() != 1 && link.getImiCode() != 2) {
@@ -57,9 +61,10 @@ public class Check {
 
 	/**
 	 * @param conn
+	 * @param inter 
 	 * @throws Exception
 	 */
-	public void hasNodeIsInter(Connection conn) throws Exception {
+	public void hasNodeIsInter(Connection conn, RdInter inter) throws Exception {
 		RdInterSelector selector = new RdInterSelector(conn);
 
 		StringBuffer buf = new StringBuffer();
@@ -76,7 +81,7 @@ public class Check {
 				}
 			}
 		}
-
+		
 		String nodePids = buf.deleteCharAt(buf.lastIndexOf(",")).toString();
 		
 		List<Integer> interPidList = selector.loadInterPidByNodePid(nodePids, false);
@@ -88,9 +93,55 @@ public class Check {
 		//检查点形态是否正确
 		this.checkNodeDirect(conn,nodePids);
 		
-		List<RdLink> linkList = new RdLinkSelector(conn).loadLinkPidByNodePids(nodePids, true);
+		List<RdLink> linkList = checkLinkIsCorrect(buf,inter,conn);
 		
 		//检查线的形态是否正确
 		this.checkLinkDirect(linkList);
+	}
+
+	/**
+	 * @throws Exception 
+	 * 
+	 */
+	private List<RdLink> checkLinkIsCorrect(StringBuffer buf,RdInter inter,Connection conn) throws Exception {
+		for(IRow row : inter.getNodes())
+		{
+			RdInterNode interNode = (RdInterNode) row; 
+			
+			buf.append(","+interNode.getNodePid()+",");
+		}
+		
+		String allNodePids = buf.deleteCharAt(buf.lastIndexOf(",")).toString();
+				
+		List<RdLink> linkList = new RdLinkSelector(conn).loadLinkPidByNodePids(allNodePids, true);
+		
+		for(RdLink link : linkList)
+		{
+			for(IRow row : inter.getLinks())
+			{
+				RdInterLink interLink = (RdInterLink) row;
+				
+				if(link.getPid() == interLink.getLinkPid())
+				{
+					linkList.remove(link);
+					break;
+				}
+			}
+		}
+		
+		JSONArray linkArray = this.command.getNodeArray();
+		
+		for (int i = 0; i < linkArray.size(); i++) {
+			JSONObject json = linkArray.getJSONObject(i);
+
+			if (json.containsKey("objStatus")) {
+
+				if (ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+					buf.append(json.getInt("linkPid") + ",");
+				}
+			}
+		}
+		
+		return linkList;
 	}
 }

@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
@@ -16,7 +15,7 @@ import net.sf.json.JSONObject;
 * @date 2016年7月20日 下午7:39:18 
 * @Description: TODO
  */
-public class Command extends AbstractCommand  implements ICommand {
+public class Command extends AbstractCommand {
 
 	private String requester;
 

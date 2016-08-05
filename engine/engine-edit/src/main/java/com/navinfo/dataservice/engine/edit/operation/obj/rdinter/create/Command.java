@@ -60,6 +60,11 @@ public class Command extends AbstractCommand{
 		JSONObject data = json.getJSONObject("data");
 
 		this.nodeArray = data.getJSONArray("nodes");
+		
+		if(data.containsKey("links"))
+		{
+			this.linkArray = data.getJSONArray("links");
+		}
 	}
 
 	public JSONArray getLinkArray() {

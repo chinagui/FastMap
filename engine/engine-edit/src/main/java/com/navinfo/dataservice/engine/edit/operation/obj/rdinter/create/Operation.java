@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdinter.create;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
@@ -37,20 +38,23 @@ public class Operation implements IOperation {
 		rdInter.setPid(PidService.getInstance().applyAdAdminGroupPid());
 		
 		JSONArray linkArray = this.command.getLinkArray();
-		//设置子表rd_inter_link
-		for(int i = 0; i<linkArray.size();i++)
+		if(linkArray != null)
 		{
-			int linkPid = linkArray.getInt(i);
-			
-			RdInterLink interLink = new RdInterLink();
-			
-			interLink.setLinkPid(linkPid);
-			
-			interLink.setPid(rdInter.getPid());
-			
-			interLink.setSeqNum(i+1);
-			
-			rdInter.getLinks().add(interLink);
+			//设置子表rd_inter_link
+			for(int i = 0; i<linkArray.size();i++)
+			{
+				int linkPid = linkArray.getInt(i);
+				
+				RdInterLink interLink = new RdInterLink();
+				
+				interLink.setLinkPid(linkPid);
+				
+				interLink.setPid(rdInter.getPid());
+				
+				interLink.setSeqNum(i+1);
+				
+				rdInter.getLinks().add(interLink);
+			}
 		}
 		
 		JSONArray nodeArray = this.command.getNodeArray();
@@ -67,5 +71,7 @@ public class Operation implements IOperation {
 			
 			rdInter.getNodes().add(interNode);
 		}
+		
+		result.insertObject(rdInter, ObjStatus.INSERT, rdInter.getPid());
 	}
 }

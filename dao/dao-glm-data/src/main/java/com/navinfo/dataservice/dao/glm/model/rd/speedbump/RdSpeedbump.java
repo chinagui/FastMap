@@ -107,7 +107,7 @@ public class RdSpeedbump implements IObj {
 
 	@Override
 	public ObjType objType() {
-		return null;
+		return ObjType.RDSPEEDBUMP;
 	}
 
 	@Override

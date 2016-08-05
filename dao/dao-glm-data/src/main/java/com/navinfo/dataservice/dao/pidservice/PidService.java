@@ -483,4 +483,11 @@ public class PidService {
 	public synchronized int applyRdInterPid() throws Exception {
 		return this.applyPid(PidSequenceName.rdInterName);
 	}
+	
+	/**
+	 * 申请rd_speedbump
+	 */
+	public synchronized int applyRdSpeedbumpPid() throws Exception {
+		return this.applyPid(PidSequenceName.rdSpeedbumpName);
+	}
 }

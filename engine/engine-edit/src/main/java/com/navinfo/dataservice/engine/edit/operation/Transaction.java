@@ -441,6 +441,17 @@ public class Transaction {
 			default:
 				break;
 			}
+		case RDINTER:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.create.Command(json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Command(json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Command(json, requester);
+			default:
+				break;
+			}
 		}
 
 		throw new Exception("不支持的操作类型");
@@ -783,6 +794,17 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.delete.Process(command);
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.update.Process(command);
+			default:
+				break;
+			}
+		case RDINTER:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.create.Process(command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Process(command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Process(command);
 			default:
 				break;
 			}

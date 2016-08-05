@@ -61,10 +61,6 @@ public class ReflectionAttrUtils {
 							if (value.toString().contains(".")) {
 								value = ((BigDecimal) value).doubleValue();
 							} else {
-								if(columnName.equals("VEHICLE"))
-								{
-									System.out.println();
-								}
 								value = ((BigDecimal) value).intValue();
 							}
 						}

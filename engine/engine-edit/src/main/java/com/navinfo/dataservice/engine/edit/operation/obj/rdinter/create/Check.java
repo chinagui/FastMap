@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdinter.create;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -38,7 +39,14 @@ public class Check {
 			}
 			else
 			{
-				if(!(linkPids.containsAll(linkList) && linkList.containsAll(linkPids)))
+				List<Integer> dbLinkPids = new ArrayList<>();
+				
+				for(RdLink link :linkList)
+				{
+					dbLinkPids.add(link.getPid());
+				}
+				
+				if(!(linkPids.containsAll(dbLinkPids) && dbLinkPids.containsAll(linkPids)))
 				{
 					throw new Exception("传递的link参数不正确：link_pid错误");
 				}
@@ -50,7 +58,7 @@ public class Check {
 		}
 		else
 		{
-			new Exception("传递的link参数不正确：缺失link参数");
+			throw new Exception("传递的link参数不正确：缺失link参数");
 		}
 			
 	}
@@ -87,7 +95,7 @@ public class Check {
 			{
 				if(link.getImiCode() != 1 && link.getImiCode() !=2)
 				{
-					throw new Exception("link:"+link.getPid()+"不具有'I、M'属性");
+					throw new Exception("link:"+link.getPid()+"不具有'I、M'属性,不允许制作");
 				}
 			}
 		}

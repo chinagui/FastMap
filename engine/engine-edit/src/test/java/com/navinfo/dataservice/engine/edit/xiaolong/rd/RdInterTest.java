@@ -12,7 +12,10 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.edit.InitApplication;
+import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
+
+import net.sf.json.JSONObject;
 
 /** 
 * @ClassName: RdInterTest 
@@ -38,6 +41,56 @@ public class RdInterTest extends InitApplication{
 
 			System.out.println(p.searchDataByPid(ObjType.RDINTER, 46933234).Serialize(ObjLevel.BRIEF));
 
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testAddRdInter() {
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"RDINTER\",\"data\":{\"nodes\":[100025459,100025462,100025460],\"links\":[100008377]}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			
+			String log = t.getLogs();
+			
+			JSONObject json = new JSONObject();
+
+			json.put("result", msg);
+
+			json.put("log", log);
+
+			json.put("check", t.getCheckLog());
+
+			json.put("pid", t.getPid());
+			
+			System.out.println(json.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testUpdateRdInter() {
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"RDINTER\",\"data\":{\"pid\":100000750,\"nodes\":[{\"nodePid\":100025461,\"objStatus\":\"INSERT\"}],\"links\":[]}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			
+			String log = t.getLogs();
+			
+			JSONObject json = new JSONObject();
+
+			json.put("result", msg);
+
+			json.put("log", log);
+
+			json.put("check", t.getCheckLog());
+
+			json.put("pid", t.getPid());
+			
+			System.out.println(json.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

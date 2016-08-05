@@ -86,7 +86,7 @@ public class Operation implements IOperation {
 				Geometry geomInter = GeoTranslator.transform(MeshUtils.linkInterMeshPolygon(
 						GeoTranslator.geojson2Jts(command.getLinkGeom()), MeshUtils.mesh2Jts(meshIdStr)), 1, 5);
 				links.addAll(RdLinkOperateUtils.getCreateRdLinksWithMesh(geomInter, maps, result));
-				
+
 			}
 			deleteRdLink(result);
 		}
@@ -111,49 +111,54 @@ public class Operation implements IOperation {
 		result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE, this.command.getLinkPid());
 	}
 
-//	public void breakLine(int sNodePid, int eNodePid, Result result) throws Exception {
-//
-//		JSONArray coords = command.getLinkGeom().getJSONArray("coordinates");
-//
-//		for (int i = 0; i < command.getInterLines().size(); i++) {
-//			// link的一个端点打断另外一根link
-//			JSONObject interLine = command.getInterLines().getJSONObject(i);
-//			JSONObject breakJson = new JSONObject();
-//			JSONObject data = new JSONObject();
-//
-//			breakJson.put("objId", interLine.getInt("pid"));
-//			breakJson.put("dbId", command.getDbId());
-//
-//			int nodePid = interLine.getInt("nodePid");
-//			if (nodePid == command.getUpdateLink().getsNodePid()) {
-//				data.put("breakNodePid", sNodePid);
-//
-//				JSONArray coord = coords.getJSONArray(0);
-//
-//				double lon = coord.getDouble(0);
-//				double lat = coord.getDouble(1);
-//
-//				data.put("longitude", lon);
-//				data.put("latitude", lat);
-//			} else {
-//				data.put("breakNodePid", eNodePid);
-//
-//				JSONArray coord = coords.getJSONArray(coords.size() - 1);
-//
-//				double lon = coord.getDouble(0);
-//				double lat = coord.getDouble(1);
-//
-//				data.put("longitude", lon);
-//				data.put("latitude", lat);
-//			}
-//			breakJson.put("data", data);
-//			com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command(
-//					breakJson, breakJson.toString());
-//			com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process(
-//					breakCommand, conn, result);
-//			breakProcess.innerRun();
-//		}
-//	}
+	// public void breakLine(int sNodePid, int eNodePid, Result result) throws
+	// Exception {
+	//
+	// JSONArray coords = command.getLinkGeom().getJSONArray("coordinates");
+	//
+	// for (int i = 0; i < command.getInterLines().size(); i++) {
+	// // link的一个端点打断另外一根link
+	// JSONObject interLine = command.getInterLines().getJSONObject(i);
+	// JSONObject breakJson = new JSONObject();
+	// JSONObject data = new JSONObject();
+	//
+	// breakJson.put("objId", interLine.getInt("pid"));
+	// breakJson.put("dbId", command.getDbId());
+	//
+	// int nodePid = interLine.getInt("nodePid");
+	// if (nodePid == command.getUpdateLink().getsNodePid()) {
+	// data.put("breakNodePid", sNodePid);
+	//
+	// JSONArray coord = coords.getJSONArray(0);
+	//
+	// double lon = coord.getDouble(0);
+	// double lat = coord.getDouble(1);
+	//
+	// data.put("longitude", lon);
+	// data.put("latitude", lat);
+	// } else {
+	// data.put("breakNodePid", eNodePid);
+	//
+	// JSONArray coord = coords.getJSONArray(coords.size() - 1);
+	//
+	// double lon = coord.getDouble(0);
+	// double lat = coord.getDouble(1);
+	//
+	// data.put("longitude", lon);
+	// data.put("latitude", lat);
+	// }
+	// breakJson.put("data", data);
+	// com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command
+	// breakCommand = new
+	// com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command(
+	// breakJson, breakJson.toString());
+	// com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process
+	// breakProcess = new
+	// com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process(
+	// breakCommand, conn, result);
+	// breakProcess.innerRun();
+	// }
+	// }
 
 	/**
 	 * 处理对立交的影响
@@ -200,7 +205,8 @@ public class Operation implements IOperation {
 		 * 任何情况均需要处理的元素
 		 */
 		// 电子眼
-		com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move.Operation eleceyeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move.Operation(this.conn);
+		com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move.Operation eleceyeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move.Operation(
+				this.conn);
 		eleceyeOperation.moveEleceye(oldLink, newLinks, result);
 
 		/*
@@ -218,5 +224,10 @@ public class Operation implements IOperation {
 		com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation trafficSignalOperation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation(
 				this.conn);
 		trafficSignalOperation.breakRdLink(oldLink.getPid(), newLinks, result);
+
+		// 分岔路提示
+		com.navinfo.dataservice.engine.edit.operation.obj.rdse.update.Operation rdSeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdse.update.Operation(
+				this.conn);
+		rdSeOperation.breakRdSe(result, oldLink.pid(), newLinks);
 	}
 }

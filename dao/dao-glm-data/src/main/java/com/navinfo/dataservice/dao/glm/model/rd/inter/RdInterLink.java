@@ -28,7 +28,7 @@ public class RdInterLink implements IRow {
 	
 	private int pid;
 	
-	private int seqNum;
+	private int seqNum = 1;
 	
 	private int linkPid;
 	

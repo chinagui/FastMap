@@ -113,4 +113,6 @@ public class PidSequenceName {
 	public static final String rdDirectrouteName = "SEQ_RD_DIRECTROUTE";
 	
 	public static final String rdInterName = "SEQ_RD_INTER";
+	
+	public static final String rdSpeedbumpName = "SEQ_RD_SPEEDBUMP";
 }

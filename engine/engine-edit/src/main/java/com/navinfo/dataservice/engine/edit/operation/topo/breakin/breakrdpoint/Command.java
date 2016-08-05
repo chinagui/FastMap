@@ -22,6 +22,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
+import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -78,6 +79,8 @@ public class Command extends AbstractCommand {
 	private List<RdElectroniceye> eleceyes;
 	
 	private List<RdGate> gates;
+	
+	private List<RdSe> rdSes;
 
 	private boolean isCheckInfect = false;
 
@@ -212,6 +215,14 @@ public class Command extends AbstractCommand {
 
 	public void setEleceyes(List<RdElectroniceye> eleceyes) {
 		this.eleceyes = eleceyes;
+	}
+
+	public List<RdSe> getRdSes() {
+		return rdSes;
+	}
+
+	public void setRdSes(List<RdSe> rdSes) {
+		this.rdSes = rdSes;
 	}
 
 	public Command(JSONObject json, String requester) throws JSONException {

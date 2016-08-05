@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
@@ -28,6 +29,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexity
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.se.RdSeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.warninginfo.RdWarninginfoSelector;
@@ -265,7 +267,7 @@ public class Process extends AbstractProcess<Command> {
 
 	/**
 	 * 维护关联要素
-	 * 	
+	 * 
 	 * @throws Exception
 	 */
 	private void updataRelationObj() throws Exception {
@@ -307,11 +309,15 @@ public class Process extends AbstractProcess<Command> {
 
 		// 信号灯
 		OpRefTrafficsignal opRefRdTrafficsignal = new OpRefTrafficsignal(this.getConn());
-		opRefRdTrafficsignal.run(this.getResult(),this.getCommand().getLinkPids());
-		
+		opRefRdTrafficsignal.run(this.getResult(), this.getCommand().getLinkPids());
+
 		// 大门
 		OpRefRdGate opRefRdGate = new OpRefRdGate(this.getConn());
 		opRefRdGate.run(this.getResult(), this.getCommand().getNodePid());
+
+		// 分岔路提示
+		OpRefRdSe opRefRdSe = new OpRefRdSe(this.getConn(), this.getCommand());
+		opRefRdSe.run(this.getResult());
 	}
 
 	/**
@@ -387,7 +393,7 @@ public class Process extends AbstractProcess<Command> {
 			}
 		}
 		infects.put("RDELECTRONICEYE", infectList);
-		
+
 		// 大门
 		RdGateSelector rdGateSelector = new RdGateSelector(this.getConn());
 		infectList = new ArrayList<Integer>();
@@ -398,6 +404,18 @@ public class Process extends AbstractProcess<Command> {
 			}
 		}
 		infects.put("RDGATE", infectList);
+
+		// 分岔路提示
+		infectList = new ArrayList<Integer>();
+		RdSeSelector rdSeSelector = new RdSeSelector(this.getConn());
+		List<RdSe> rdSes = null;
+		for (Integer linkPid : this.getCommand().getLinkPids()) {
+			rdSes = rdSeSelector.loadRdSesWithLinkPid(linkPid, true);
+			for (RdSe rdSe : rdSes) {
+				infectList.add(rdSe.pid());
+			}
+		}
+		infects.put("RDSE", infectList);
 
 		return infects;
 	}

@@ -16,14 +16,12 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFace;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.engine.edit.utils.LcLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
@@ -54,8 +52,7 @@ public class Operation implements IOperation {
 		this.result = result;
 	}
 
-	public Operation(Command command, Check check, Connection conn,
-			Result result) {
+	public Operation(Command command, Check check, Connection conn, Result result) {
 		this.command = command;
 
 		this.check = check;
@@ -70,29 +67,14 @@ public class Operation implements IOperation {
 
 		// 既有线构成面
 		if (command.getLinkPids() != null) {
-			// LCLINK
-			if (command.getLinkType().equals(ObjType.ADLINK.toString())) {
-				this.createFaceByLcLink(command.getLinks());
-			}
-			// RDLINK
-			if (command.getLinkType().equals(ObjType.RDLINK.toString())) {
-				// 根据RDLINK生成LCLINK
-				Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
-				List<IObj> adLinks = new ArrayList<IObj>();
-				for (IObj obj : command.getLinks()) {
-					RdLink link = (RdLink) obj;
-					adLinks.add(this.createLinkOfFace(GeoTranslator.transform(
-							link.getGeometry(), 0.00001, 5), maps));
-				}
-				this.createFaceByLcLink(adLinks);
-			}
+			this.createFaceByLcLink(command.getLinks());
 		}
-		
+
 		// 创建
 		if (command.getGeometry() != null) {
 			this.createFaceByGeometry(result);
 		}
-		
+
 		return null;
 	}
 
@@ -103,7 +85,7 @@ public class Operation implements IOperation {
 	 *            传入要创建面的几何
 	 * @throws Exception
 	 */
-	public  void createFaceByLcLink(List<IObj> objList) throws Exception {
+	public void createFaceByLcLink(List<IObj> objList) throws Exception {
 		Set<String> meshes = new HashSet<String>();
 		List<LcLink> lcLinks = new ArrayList<LcLink>();
 		for (IObj obj : objList) {
@@ -123,9 +105,9 @@ public class Operation implements IOperation {
 			this.face.setMesh(meshId);
 			this.reCaleFaceGeometry(lcLinks);
 		} else {
-			this.updateFlag =false;
+			this.updateFlag = false;
 			Geometry geom = GeoTranslator.transform(this.getPolygonGeometry(lcLinks), 0.00001, 5);
-			this.createFaceWithMesh(meshes, geom,objList, 1);
+			this.createFaceWithMesh(meshes, geom, objList, 1);
 		}
 	}
 
@@ -138,77 +120,72 @@ public class Operation implements IOperation {
 	 *            创建面表示 0 根据几何，1 根据既有线
 	 * @throws Exception
 	 */
-	private void createFaceWithMesh(Set<String> meshes, Geometry geom,List<IObj> objList, int flag)
-			throws Exception {
+	private void createFaceWithMesh(Set<String> meshes, Geometry geom, List<IObj> objList, int flag) throws Exception {
 		Iterator<String> it = meshes.iterator();
 		Map<Coordinate, Integer> mapNode = new HashMap<Coordinate, Integer>();
 		Map<Geometry, LcLink> mapLink = new HashMap<Geometry, LcLink>();
 		if (flag == 1) {
 			for (IObj obj : objList) {
 				LcLink adLink = (LcLink) obj;
-				Geometry geometry = GeoTranslator.transform(
-						adLink.getGeometry(), 0.00001, 5);
+				Geometry geometry = GeoTranslator.transform(adLink.getGeometry(), 0.00001, 5);
 				mapLink.put(geometry, adLink);
-				
-				if(!mapNode.containsValue(geometry.getCoordinates()[0])){
-						mapNode.put(geometry.getCoordinates()[0], adLink.getsNodePid());
+
+				if (!mapNode.containsValue(geometry.getCoordinates()[0])) {
+					mapNode.put(geometry.getCoordinates()[0], adLink.getsNodePid());
 				}
-				if(!mapNode.containsValue(geometry.getCoordinates()[geometry.getCoordinates().length-1])){
-						mapNode.put(geometry.getCoordinates()[geometry.getCoordinates().length-1], adLink.geteNodePid());
+				if (!mapNode.containsValue(geometry.getCoordinates()[geometry.getCoordinates().length - 1])) {
+					mapNode.put(geometry.getCoordinates()[geometry.getCoordinates().length - 1], adLink.geteNodePid());
 				}
-				
+
 			}
 		}
 		while (it.hasNext()) {
 			String meshIdStr = it.next();
 			// 获取每个图幅中闭合线的数组
-			Set<LineString[]> set = CompGeometryUtil.cut(
-					JtsGeometryFactory.createPolygon(geom.getCoordinates()),
+			Set<LineString[]> set = CompGeometryUtil.cut(JtsGeometryFactory.createPolygon(geom.getCoordinates()),
 					meshIdStr);
 			Iterator<LineString[]> itLine = set.iterator();
 			while (itLine.hasNext()) {
 				LineString[] lineStrings = itLine.next();
 				List<LcLink> links = new ArrayList<LcLink>();
-				for(LineString lineString:lineStrings){
+				for (LineString lineString : lineStrings) {
 					LcLink adLink = null;
-					if(MeshUtils.isMeshLine(lineString)){
+					if (MeshUtils.isMeshLine(lineString)) {
 						if (mapLink.containsKey(lineString.reverse())) {
 							adLink = mapLink.get(lineString.reverse());
-						}else if(mapLink.containsKey(lineString)){
+						} else if (mapLink.containsKey(lineString)) {
 							adLink = mapLink.get(lineString);
-						}
-						else{
+						} else {
 							adLink = this.createLinkOfFace(lineString, mapNode);
 							mapLink.put(lineString, adLink);
 						}
 						links.add(adLink);
-						
-					}else{
-						if(flag == 0){
+
+					} else {
+						if (flag == 0) {
 							if (mapLink.containsKey(lineString)) {
 								adLink = mapLink.get(lineString);
-							}
-							else{
+							} else {
 								adLink = this.createLinkOfFace(lineString, mapNode);
 								mapLink.put(lineString, adLink);
 							}
 							links.add(adLink);
-							
-						}else{
 
-							Iterator<Geometry> itLinks=mapLink.keySet().iterator();
-							while(itLinks.hasNext()){
+						} else {
+
+							Iterator<Geometry> itLinks = mapLink.keySet().iterator();
+							while (itLinks.hasNext()) {
 								Geometry g = itLinks.next();
-								if(lineString.contains(g)){
+								if (lineString.contains(g)) {
 									links.add(mapLink.get(g));
 								}
 
 							}
-							
+
 						}
-						
+
 					}
-					
+
 				}
 				// 创建线
 				this.createFace();
@@ -238,38 +215,32 @@ public class Operation implements IOperation {
 			result.insertObject(Node, ObjStatus.INSERT, Node.pid());
 			this.createFace();
 			List<LcLink> links = new ArrayList<LcLink>();
-			links.add(LcLinkOperateUtils.getAddLink(geom, Node.getPid(),
-					Node.getPid(), result));
+			links.add(LcLinkOperateUtils.getAddLink(geom, Node.getPid(), Node.getPid(), result));
 			this.reCaleFaceGeometry(links);
-		}// 如果跨图幅
+		} // 如果跨图幅
 		else {
-			this.createFaceWithMesh(meshes, geom,null, 0);
+			this.createFaceWithMesh(meshes, geom, null, 0);
 		}
 
 	}
 
-	private LcLink createLinkOfFace(Geometry g, Map<Coordinate, Integer> maps)
-			throws Exception {
+	private LcLink createLinkOfFace(Geometry g, Map<Coordinate, Integer> maps) throws Exception {
 		int sNodePid = 0;
 		int eNodePid = 0;
 		if (maps.containsKey(g.getCoordinates()[0])) {
 			sNodePid = maps.get(g.getCoordinates()[0]);
 		}
 		if (maps.containsKey(g.getCoordinates()[g.getCoordinates().length - 1])) {
-			eNodePid = maps
-					.get(g.getCoordinates()[g.getCoordinates().length - 1]);
+			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
 		}
-		JSONObject node = LcLinkOperateUtils.createLcNodeForLink(g, sNodePid,
-				eNodePid, result);
+		JSONObject node = LcLinkOperateUtils.createLcNodeForLink(g, sNodePid, eNodePid, result);
 		if (!maps.containsValue(node.get("s"))) {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
 		}
 		if (!maps.containsValue(node.get("e"))) {
-			maps.put(g.getCoordinates()[g.getCoordinates().length - 1],
-					(int) node.get("e"));
+			maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) node.get("e"));
 		}
-		return LcLinkOperateUtils.getAddLink(g, (int) node.get("s"),
-				(int) node.get("e"), result);
+		return LcLinkOperateUtils.getAddLink(g, (int) node.get("s"), (int) node.get("e"), result);
 	}
 
 	/*
@@ -334,10 +305,8 @@ public class Operation implements IOperation {
 				break;
 			}
 			index++;
-			map.put(currLinkAndPidMap.get(currLinkAndPidMap.keySet().iterator()
-					.next()), index);
-			list.add(currLinkAndPidMap.get(
-					currLinkAndPidMap.keySet().iterator().next()).getGeometry());
+			map.put(currLinkAndPidMap.get(currLinkAndPidMap.keySet().iterator().next()), index);
+			list.add(currLinkAndPidMap.get(currLinkAndPidMap.keySet().iterator().next()).getGeometry());
 
 		}
 		// 线几何组成面的几何
@@ -361,17 +330,17 @@ public class Operation implements IOperation {
 		// 更新面的几何属性
 		if (this.updateFlag) {
 			this.updateGeometry(GeoTranslator.getPolygonToPoints(c1), this.face);
-			
+
 		} else {
-			this.createFaceGeometry(GeoTranslator.getPolygonToPoints(c1),
-					this.face);
+			this.createFaceGeometry(GeoTranslator.getPolygonToPoints(c1), this.face);
 		}
 
 	}
+
 	/**
 	 * 根据传入的link 重组PolygonGeometry
-	 * */
-	private Geometry getPolygonGeometry(List<LcLink> links) throws Exception{
+	 */
+	private Geometry getPolygonGeometry(List<LcLink> links) throws Exception {
 		if (links.size() < 1) {
 			throw new Exception("重新维护面的形状:发现面没有组成link");
 		}
@@ -397,8 +366,7 @@ public class Operation implements IOperation {
 			if (currLinkAndPidMap.keySet().iterator().next() == startNodePid) {
 				break;
 			}
-			list.add(currLinkAndPidMap.get(
-					currLinkAndPidMap.keySet().iterator().next()).getGeometry());
+			list.add(currLinkAndPidMap.get(currLinkAndPidMap.keySet().iterator().next()).getGeometry());
 
 		}
 		return GeoTranslator.getCalLineToPython(list);
@@ -411,7 +379,7 @@ public class Operation implements IOperation {
 		face.setGeometry(g);
 		// 缩放计算面积和周长
 		g = GeoTranslator.transform(g, 0.00001, 5);
-		String meshId =  CompGeometryUtil.geoToMeshesWithoutBreak(g).iterator().next();
+		String meshId = CompGeometryUtil.geoToMeshesWithoutBreak(g).iterator().next();
 		if (!StringUtils.isEmpty(meshId)) {
 			face.setMeshId(Integer.parseInt(meshId));
 		}
@@ -452,8 +420,7 @@ public class Operation implements IOperation {
 		for (int i = result.getAddObjects().size() - 1; i >= 0; i--) {
 			if (result.getAddObjects().get(i) instanceof LcFaceTopo) {
 				newIndex++;
-				((LcFaceTopo) result.getAddObjects().get(i))
-						.setSeqNum(newIndex);
+				((LcFaceTopo) result.getAddObjects().get(i)).setSeqNum(newIndex);
 
 			}
 		}

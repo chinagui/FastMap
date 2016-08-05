@@ -26,16 +26,6 @@ public class Command extends AbstractCommand implements ICommand {
 		this.links = links;
 	}
 
-	private String linkType;
-
-	public String getLinkType() {
-		return linkType;
-	}
-
-	public void setLinkType(String linkType) {
-		this.linkType = linkType;
-	}
-
 	public List<Integer> getLinkPids() {
 		return linkPids;
 	}
@@ -77,7 +67,6 @@ public class Command extends AbstractCommand implements ICommand {
 
 		}
 		if (data.containsKey("linkPids")) {
-			this.linkType = json.getString("linkType");
 			JSONArray array = data.getJSONArray("linkPids");
 			linkPids = new ArrayList<Integer>();
 			for (int i = 0; i < array.size(); i++) {

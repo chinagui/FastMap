@@ -357,6 +357,42 @@ public class Transaction {
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.luface.delete.Command(json, requester);
 			}
+		case LCNODE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklcpoint.Command(json,
+						requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.lcnode.update.Command(json, requester);
+			case MOVE:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.move.movelcnode.Command(json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deletelcnode.Command(json,
+						requester);
+			}
+		case LCLINK:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.lclink.create.Command(json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.lclink.update.Command(json, requester);
+			case BREAK:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklcpoint.Command(json,
+						requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deletelclink.Command(json,
+						requester);
+			case REPAIR:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlclink.Command(json,
+						requester);
+			}
+		case LCFACE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.lcface.create.Command(json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.lcface.delete.Command(json, requester);
+			}
 		case RDELECTRONICEYE:
 			switch (operType) {
 			case CREATE:
@@ -853,6 +889,37 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.delete.Process(command);
 			default:
 				break;
+			}
+		case LCNODE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklcpoint.Process(command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.lcnode.update.Process(command);
+			case MOVE:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.move.movelcnode.Process(command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deletelcnode.Process(command);
+			}
+		case LCLINK:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.lclink.create.Process(command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.lclink.update.Process(command);
+			case BREAK:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklcpoint.Process(command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deletelclink.Process(command);
+			case REPAIR:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlclink.Process(command);
+			}
+		case LCFACE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.lcface.create.Process(command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.lcface.delete.Process(command);
 			}
 		}
 

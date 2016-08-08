@@ -9,6 +9,9 @@ import com.navinfo.dataservice.dao.glm.search.AdFaceSearch;
 import com.navinfo.dataservice.dao.glm.search.AdLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.AdNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.IxPoiSearch;
+import com.navinfo.dataservice.dao.glm.search.LcFaceSearch;
+import com.navinfo.dataservice.dao.glm.search.LcLinkSearch;
+import com.navinfo.dataservice.dao.glm.search.LcNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.LuFaceSearch;
 import com.navinfo.dataservice.dao.glm.search.LuLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.LuNodeSearch;
@@ -112,6 +115,12 @@ public class SearchFactory {
 			return new RdGateSearch(conn);
 		case RDINTER:
 			return new RdInterSearch(conn);
+		case LCNODE:
+			return new LcNodeSearch(conn);
+		case LCLINK:
+			return new LcLinkSearch(conn);
+		case LCFACE:
+			return new LcFaceSearch(conn);
 		case RDSE:
 			return new RdSeSearch(conn);
 		case RDSPEEDBUMP:

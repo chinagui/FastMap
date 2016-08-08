@@ -36,7 +36,7 @@ public class RdGateSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 		
 		try {
-			String sql = "SELECT pid FROM rd_gate WHERE in_link_pid=:1 or out_link_pid=:1";
+			String sql = "SELECT pid FROM rd_gate WHERE (in_link_pid=:1 or out_link_pid=:1) and u_record!=2";
 			
 			if (isLock) {
 				sql += " for update nowait";
@@ -71,7 +71,7 @@ public class RdGateSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 		
 		try {
-			String sql = "SELECT pid FROM rd_gate WHERE node_pid=:1";
+			String sql = "SELECT pid FROM rd_gate WHERE node_pid=:1 and u_record!=2";
 			
 			if (isLock) {
 				sql += " for update nowait";

@@ -11,10 +11,12 @@ public class OpRefRdGate {
 		this.conn = conn;
 	}
 
-	public String run(Result result, int nodePid) throws Exception {
+	public String run(Result result, Command command) throws Exception {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdgate.delete.Operation rdOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgate.delete.Operation(
 				conn);
-		rdOperation.delByNode(nodePid, result);
+		for (int pid : command.getLinkPids()) {
+			rdOperation.delByLink(pid, result);
+		}
 
 		return null;
 	}

@@ -63,40 +63,5 @@ public class RdGateSelector extends AbstractSelector {
 		}
 	}
 	
-	public List<RdGate> loadByNode(int nodePid,boolean isLock) throws Exception {
-		List<RdGate> rows = new ArrayList<RdGate>();
-		
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-		
-		try {
-			String sql = "SELECT pid FROM rd_gate WHERE node_pid=:1 and u_record!=2";
-			
-			if (isLock) {
-				sql += " for update nowait";
-			}
-			
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setInt(1, nodePid);
-
-			resultSet = pstmt.executeQuery();
-			
-			while (resultSet.next()) {
-				AbstractSelector abSelector = new AbstractSelector(RdGate.class,conn);
-				RdGate rdGate = (RdGate) abSelector.loadById(resultSet.getInt("pid"), false);
-				rows.add(rdGate);
-			}
-			
-			return rows;
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
-		}
-	}
-	
 	
 }

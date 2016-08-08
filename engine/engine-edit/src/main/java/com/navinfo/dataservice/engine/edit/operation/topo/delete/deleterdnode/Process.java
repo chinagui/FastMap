@@ -314,7 +314,7 @@ public class Process extends AbstractProcess<Command> {
 
 		// 大门
 		OpRefRdGate opRefRdGate = new OpRefRdGate(this.getConn());
-		opRefRdGate.run(this.getResult(), this.getCommand().getNodePid());
+		opRefRdGate.run(this.getResult(), this.getCommand());
 
 		// 分岔路提示
 		OpRefRdSe opRefRdSe = new OpRefRdSe(this.getConn(), this.getCommand());

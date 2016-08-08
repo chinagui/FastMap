@@ -23,7 +23,9 @@ import com.navinfo.dataservice.dao.glm.search.RdLinkIntRticSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdRestrictionSearch;
+import com.navinfo.dataservice.dao.glm.search.RdSeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSlopeSearch;
+import com.navinfo.dataservice.dao.glm.search.RdSpeedbumpSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSpeedlimitSearch;
 import com.navinfo.dataservice.dao.glm.search.RdTrafficsignalSearch;
 import com.navinfo.dataservice.dao.glm.search.RdWarninginfoSearch;
@@ -110,6 +112,10 @@ public class SearchFactory {
 			return new RdGateSearch(conn);
 		case RDINTER:
 			return new RdInterSearch(conn);
+		case RDSE:
+			return new RdSeSearch(conn);
+		case RDSPEEDBUMP:
+			return new RdSpeedbumpSearch(conn);
 		default:
 			return null;
 		}

@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
+import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -19,6 +20,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminTreeSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
@@ -310,6 +312,18 @@ public class SearchProcess {
 					List<LuLink> luLinks = selector.loadByNodePid(nodePid, true);
 
 					for (LuLink link : luLinks) {
+						array.add(link.Serialize(ObjLevel.BRIEF));
+					}
+				}
+			case LCLINK:
+				if (condition.containsKey("nodePid")) {
+					int nodePid = condition.getInt("nodePid");
+
+					LcLinkSelector selector = new LcLinkSelector(this.conn);
+
+					List<LcLink> lcLinks = selector.loadByNodePid(nodePid, true);
+
+					for (LcLink link : lcLinks) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
 				}

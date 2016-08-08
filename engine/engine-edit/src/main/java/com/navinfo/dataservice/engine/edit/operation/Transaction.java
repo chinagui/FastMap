@@ -122,7 +122,8 @@ public class Transaction {
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdcross.update.Command(json, requester);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deletecross.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deletecross.Command(json,
+						requester);
 			}
 		case RDBRANCH:
 			switch (operType) {
@@ -429,15 +430,18 @@ public class Transaction {
 			default:
 				break;
 			}
-			
+
 		case RDDIRECTROUTE:
 			switch (operType) {
 			case CREATE:
-				return new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.create.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.create.Command(json,
+						requester);
 			case DELETE:
-				return new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.delete.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.delete.Command(json,
+						requester);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.update.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.update.Command(json,
+						requester);
 			default:
 				break;
 			}
@@ -449,6 +453,28 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Command(json, requester);
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Command(json, requester);
+			default:
+				break;
+			}
+		case RDSE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdse.create.Command(json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdse.delete.Command(json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdse.update.Command(json, requester);
+			default:
+				break;
+			}
+		case RDSPEEDBUMP:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.create.Command(json,
+						requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.delete.Command(json,
+						requester);
 			default:
 				break;
 			}
@@ -785,7 +811,7 @@ public class Transaction {
 			default:
 				break;
 			}
-			
+
 		case RDDIRECTROUTE:
 			switch (operType) {
 			case CREATE:
@@ -805,6 +831,26 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Process(command);
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Process(command);
+			default:
+				break;
+			}
+		case RDSE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdse.create.Process(command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdse.delete.Process(command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdse.update.Process(command);
+			default:
+				break;
+			}
+		case RDSPEEDBUMP:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.create.Process(command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.delete.Process(command);
 			default:
 				break;
 			}

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.zhangyuntao.rdse;
+package com.navinfo.dataservice.engine.edit.zhangyuntao.rd;
 
 import org.junit.Test;
 

@@ -17,7 +17,6 @@ import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
-import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 
@@ -73,8 +72,6 @@ public class RdInterSearch implements ISearch {
 			pstmt.setString(1, wkt);
 			
 			pstmt.setString(2, wkt);
-			
-			System.out.println(wkt);
 
 			resultSet = pstmt.executeQuery();
 

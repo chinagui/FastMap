@@ -32,7 +32,7 @@ public class RdSpeedbumpSelector extends AbstractSelector {
 		List<RdSpeedbump> speedbumps = new ArrayList<RdSpeedbump>();
 		String sql = "select * from rd_speedbump where link_pid = :1 and u_record != 2";
 		if (isLock) {
-			sql += " for update no wait";
+			sql += " for update nowait";
 		}
 		PreparedStatement pstmt = null;
 

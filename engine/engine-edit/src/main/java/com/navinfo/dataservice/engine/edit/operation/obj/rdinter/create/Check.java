@@ -29,7 +29,18 @@ public class Check {
 		
 		List<RdLink> linkList = new RdLinkSelector(conn).loadLinkPidByNodePids(nodePids, true);
 		
-		if(linkList != null && command.getLinkArray().size()>0)
+		//检查link参数正确性
+		checkLink(linkList);
+			
+	}
+	
+	/**
+	 * 检查link参数正确性
+	 * @param linkList link集合
+	 * @throws Exception
+	 */
+	private void checkLink(List<RdLink> linkList) throws Exception {
+		if(linkList != null && command.getLinkArray() != null && command.getLinkArray().size()>0)
 		{
 			@SuppressWarnings("unchecked")
 			List<Integer> linkPids = (List<Integer>) JSONArray.toCollection(command.getLinkArray());
@@ -60,9 +71,8 @@ public class Check {
 		{
 			throw new Exception("传递的link参数不正确：缺失link参数");
 		}
-			
 	}
-	
+
 	/**
 	 * 检查node是否正确
 	 * @param conn

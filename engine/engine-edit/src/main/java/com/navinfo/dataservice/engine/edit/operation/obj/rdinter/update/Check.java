@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -49,7 +50,7 @@ public class Check {
 	 * @param linkList
 	 * @throws Exception
 	 */
-	private void checkLinkDirect(List<RdLink> linkList) throws Exception {
+	private void checkLinkAttribute(List<RdLink> linkList) throws Exception {
 		if (CollectionUtils.isNotEmpty(linkList)) {
 			for (RdLink link : linkList) {
 				if (link.getImiCode() != 1 && link.getImiCode() != 2) {
@@ -96,7 +97,7 @@ public class Check {
 		List<RdLink> linkList = checkLinkIsCorrect(buf,inter,conn);
 		
 		//检查线的形态是否正确
-		this.checkLinkDirect(linkList);
+		this.checkLinkAttribute(linkList);
 	}
 
 	/**
@@ -108,12 +109,15 @@ public class Check {
 		{
 			RdInterNode interNode = (RdInterNode) row; 
 			
-			buf.append(","+interNode.getNodePid()+",");
+			buf.append(","+interNode.getNodePid());
 		}
 		
-		String allNodePids = buf.deleteCharAt(buf.lastIndexOf(",")).toString();
+		String allNodePids = buf.toString();
 				
 		List<RdLink> linkList = new RdLinkSelector(conn).loadLinkPidByNodePids(allNodePids, true);
+		
+		//后台计算出需要新增的rd_inter_link集合
+		List<RdLink> resultList = new ArrayList<>();
 		
 		for(RdLink link : linkList)
 		{
@@ -121,27 +125,92 @@ public class Check {
 			{
 				RdInterLink interLink = (RdInterLink) row;
 				
-				if(link.getPid() == interLink.getLinkPid())
+				if(link.getPid() != interLink.getLinkPid())
 				{
-					linkList.remove(link);
+					resultList.add(link);
 					break;
 				}
 			}
 		}
 		
-		JSONArray linkArray = this.command.getNodeArray();
+		JSONArray linkArray = this.command.getLinkArray();
 		
-		for (int i = 0; i < linkArray.size(); i++) {
-			JSONObject json = linkArray.getJSONObject(i);
+		JSONArray compareArray = new JSONArray();
+		
+		if(linkArray != null)
+		{
+			for (int i = 0; i < linkArray.size(); i++) {
+				JSONObject json = linkArray.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+				if (json.containsKey("objStatus")) {
 
-				if (ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
-					buf.append(json.getInt("linkPid") + ",");
+					if (ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+						compareArray.add(json.getInt("linkPid"));
+					}
 				}
 			}
 		}
 		
+		checkLink(resultList,compareArray);
+		
 		return linkList;
+	}
+	
+	/**
+	 * 检查link参数正确性
+	 * @param linkList link集合
+	 * @throws Exception
+	 */
+	private void checkLink(List<RdLink> linkList,JSONArray linkArray) throws Exception {
+		if(linkList != null && linkArray != null && linkArray.size()>0)
+		{
+			@SuppressWarnings("unchecked")
+			List<Integer> linkPids = (List<Integer>) JSONArray.toCollection(linkArray);
+			if(linkList.size() != linkPids.size())
+			{
+				new Exception("传递的link参数不正确:包含的link个数错误");
+			}
+			else
+			{
+				List<Integer> dbLinkPids = new ArrayList<>();
+				
+				for(RdLink link :linkList)
+				{
+					dbLinkPids.add(link.getPid());
+				}
+				
+				if(!(linkPids.containsAll(dbLinkPids) && dbLinkPids.containsAll(linkPids)))
+				{
+					throw new Exception("传递的link参数不正确：link_pid错误");
+				}
+				else
+				{
+					this.checkLinkDirect(linkList);
+				}
+			}
+		}
+		else
+		{
+			throw new Exception("传递的link参数不正确：缺失link参数");
+		}
+	}
+	
+	/**
+	 * 检查link是否正确
+	 * @param linkList
+	 * @throws Exception
+	 */
+	private void checkLinkDirect(List<RdLink> linkList) throws Exception
+	{
+		if(CollectionUtils.isNotEmpty(linkList))
+		{
+			for(RdLink link : linkList)
+			{
+				if(link.getImiCode() != 1 && link.getImiCode() !=2)
+				{
+					throw new Exception("link:"+link.getPid()+"不具有'I、M'属性,不允许制作");
+				}
+			}
+		}
 	}
 }

@@ -28,6 +28,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
+import com.navinfo.dataservice.dao.glm.model.rd.speedbump.RdSpeedbump;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
@@ -45,6 +46,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionDetailS
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionViaSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.se.RdSeSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.speedbump.RdSpeedbumpSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.warninginfo.RdWarninginfoSelector;
@@ -192,6 +194,11 @@ public class Process extends AbstractProcess<Command> {
 			RdSeSelector rdSeSelector = new RdSeSelector(this.getConn());
 			List<RdSe> rdSes = rdSeSelector.loadRdSesWithLinkPid(this.getCommand().getLinkPid(), true);
 			this.getCommand().setRdSes(rdSes);
+
+			// 获取该link关联的减速带
+			RdSpeedbumpSelector speedbumpSelector = new RdSpeedbumpSelector(this.getConn());
+			List<RdSpeedbump> speedbumps = speedbumpSelector.loadByLinkPid(this.getCommand().getLinkPid(), true);
+			this.getCommand().setRdSpeedbumps(speedbumps);
 
 			return true;
 
@@ -366,6 +373,9 @@ public class Process extends AbstractProcess<Command> {
 		// 分岔路提示
 		OpRefRdSe opRefRdSe = new OpRefRdSe(this.getConn());
 		opRefRdSe.run(this.getResult(), oldLink, newLinks);
+		// 减速带
+		OpRefRdSpeedbum opRefRdSpeedbum = new OpRefRdSpeedbum(this.getConn());
+		opRefRdSpeedbum.run(this.getResult(), oldLink, newLinks);
 	}
 
 	/**
@@ -519,6 +529,13 @@ public class Process extends AbstractProcess<Command> {
 			infectList.add(rdSe.pid());
 		}
 		infects.put("RDSE", infectList);
+		
+		// 减速带
+		infectList = new ArrayList<Integer>();
+		for (RdSpeedbump speedbump : this.getCommand().getRdSpeedbumps()) {
+			infectList.add(speedbump.pid());
+		}
+		infects.put("RDSPEEDBUMP", infectList);
 
 		return infects;
 

@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
+import com.navinfo.dataservice.dao.glm.model.rd.speedbump.RdSpeedbump;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
@@ -32,6 +33,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.se.RdSeSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.speedbump.RdSpeedbumpSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.warninginfo.RdWarninginfoSelector;
@@ -355,6 +357,10 @@ public class Process extends AbstractProcess<Command> {
 		OpRefRdSe opRefRdSe = new OpRefRdSe(this.getCommand(), this.getConn());
 		opRefRdSe.run(this.getResult());
 
+		// 减速带
+		OpRefRdSpeedbump opRefRdSpeedbump = new OpRefRdSpeedbump(this.getCommand(), this.getConn());
+		opRefRdSpeedbump.run(this.getResult());
+
 	}
 
 	/**
@@ -468,6 +474,16 @@ public class Process extends AbstractProcess<Command> {
 			infectList.add(rdSe.pid());
 		}
 		infects.put("RDSE", infectList);
+
+		// 减速带
+		RdSpeedbumpSelector rdSpeedbumpSelector = new RdSpeedbumpSelector(this.getConn());
+		List<RdSpeedbump> rdSpeedbumps = rdSpeedbumpSelector.loadByLinkPid(this.getCommand().getLinkPid(), true);
+		infectList = new ArrayList<Integer>();
+
+		for (RdSpeedbump rdSpeedbump : rdSpeedbumps) {
+			infectList.add(rdSpeedbump.pid());
+		}
+		infects.put("RDSPEEDBUMP", infectList);
 
 		return infects;
 	}

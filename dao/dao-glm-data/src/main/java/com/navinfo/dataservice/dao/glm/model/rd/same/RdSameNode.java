@@ -102,8 +102,6 @@ public class RdSameNode implements IObj {
 
 	@Override
 	public void copy(IRow row) {
-
-		
 	}
 
 	@Override
@@ -174,8 +172,7 @@ public class RdSameNode implements IObj {
 	@Override
 	public boolean fillChangeFields(JSONObject json) throws Exception {
 		
-
-
+		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {

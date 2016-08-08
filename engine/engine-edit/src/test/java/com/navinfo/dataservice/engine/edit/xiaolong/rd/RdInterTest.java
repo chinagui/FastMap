@@ -4,13 +4,18 @@
 package com.navinfo.dataservice.engine.edit.xiaolong.rd;
 
 import java.sql.Connection;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.search.RdInterSearch;
+import com.navinfo.dataservice.dao.glm.search.RwLinkSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -47,7 +52,7 @@ public class RdInterTest extends InitApplication {
 
 	@Test
 	public void testAddRdInter() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"RDINTER\",\"data\":{\"nodes\":[100025459,100025462,100025460],\"links\":[100008377]}}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"RDINTER\",\"data\":{\"links\":[100008413],\"nodes\":[100025497,100025498]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -118,5 +123,24 @@ public class RdInterTest extends InitApplication {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Test
+	public void testCRFINTERRender()
+	{
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(42);
+
+			RdInterSearch search = new RdInterSearch(conn);
+			
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(107925, 49608, 17, 80);
+			
+			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 }

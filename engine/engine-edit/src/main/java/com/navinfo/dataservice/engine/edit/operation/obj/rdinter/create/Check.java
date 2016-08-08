@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdInterSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
@@ -119,6 +120,11 @@ public class Check {
 		RdInterSelector selector = new RdInterSelector(conn);
 		
 		String nodePids = JsonUtils.getStringValueFromJSONArray(this.command.getNodeArray());
+		
+		if(StringUtils.isEmpty(nodePids))
+		{
+			throw new Exception("CRF交叉点制作参数必须包含node");
+		}
 		
 		List<Integer> interPidList = selector.loadInterPidByNodePid(nodePids, false);
 		

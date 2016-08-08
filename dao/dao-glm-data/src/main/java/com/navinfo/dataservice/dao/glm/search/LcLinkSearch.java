@@ -115,7 +115,7 @@ public class LcLinkSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select a.link_pid, a.geometry, a.kind, a.s_node_pid, a.e_node_pid from lc_link a where a.u_record != 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
+		String sql = "select a.link_pid, a.geometry, a.s_node_pid, a.e_node_pid from lc_link a where a.u_record != 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
 
 		PreparedStatement pstmt = null;
 
@@ -143,8 +143,6 @@ public class LcLinkSearch implements ISearch {
 
 				m.put("b", resultSet.getString("e_node_pid"));
 				
-				m.put("c", resultSet.getInt("kind"));
-
 				snapshot.setM(m);
 
 				snapshot.setT(12);

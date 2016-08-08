@@ -323,6 +323,12 @@ public class Process extends AbstractProcess<Command> {
 		// 减速带
 		OpRefRdSpeedbump opRdSpeedbump = new OpRefRdSpeedbump(this.getCommand(), this.getConn());
 		opRdSpeedbump.run(this.getResult());
+		
+		
+		// 坡度
+		OpRefRdSlope opRefRdSlope = new OpRefRdSlope(this.getConn());
+		opRefRdSlope.run(this.getResult(), this.getCommand());
+
 	}
 
 	/**

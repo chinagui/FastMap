@@ -35,6 +35,7 @@ public class LcNodeTest extends InitApplication {
 	public void testSearchByGap() {
 		String parameter = "{\"projectId\":11,\"gap\":80,\"types\":[\"ADNODE\"],\"z\":17,\"x\":107945,\"y\":49615}";
 		parameter = "{\"dbId\":43,\"gap\":80,\"types\":[\"LCNODE\"],\"z\":19,\"x\":431743,\"y\":198519}";
+		parameter = "{\"dbId\":42,\"gap\":80,\"types\":[\"RDSPEEDBUMP\"],\"z\":17,\"x\":107920,\"y\":49615}";
 		JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 		JSONArray type = jsonReq.getJSONArray("types");

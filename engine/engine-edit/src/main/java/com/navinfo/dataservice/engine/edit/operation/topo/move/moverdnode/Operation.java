@@ -192,9 +192,16 @@ public class Operation implements IOperation {
 		com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation trafficSignalOperation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation(
 				this.conn);
 		trafficSignalOperation.breakRdLink(oldLink.getPid(), newLinks, result);
-		
+
 		// 分岔路提示
-		com.navinfo.dataservice.engine.edit.operation.obj.rdse.update.Operation rdSeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdse.update.Operation(this.conn);
+		com.navinfo.dataservice.engine.edit.operation.obj.rdse.update.Operation rdSeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdse.update.Operation(
+				this.conn);
 		rdSeOperation.breakRdSe(result, oldLink.pid(), newLinks);
+
+		// 减速带
+		com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Operation rdSpeedbumpOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Operation(
+				this.conn);
+		rdSpeedbumpOpeartion.breakSpeedbump(result, oldLink.getPid(), newLinks);
+
 	}
 }

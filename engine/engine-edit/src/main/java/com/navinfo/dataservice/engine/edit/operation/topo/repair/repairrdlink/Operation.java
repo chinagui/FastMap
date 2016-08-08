@@ -229,5 +229,10 @@ public class Operation implements IOperation {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdse.update.Operation rdSeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdse.update.Operation(
 				this.conn);
 		rdSeOperation.breakRdSe(result, oldLink.pid(), newLinks);
+
+		// 减速带
+		com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Operation rdSpeedbumpOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Operation(
+				this.conn);
+		rdSpeedbumpOpeartion.breakSpeedbump(result, oldLink.getPid(), newLinks);
 	}
 }

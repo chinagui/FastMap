@@ -103,6 +103,7 @@ public class Operation implements IOperation {
 				// 添加修改过几何的RDLINK，该集合用于修改关联要素
 				RdLink geoLink = new RdLink();
 				geoLink.copy(link);
+				geoLink.setPid(link.getPid());
 				Geometry tmpGeo = GeoTranslator.geojson2Jts(geojson, 100000, 5);
 				geoLink.setGeometry(tmpGeo);
 				newGeoLinks.add(geoLink);

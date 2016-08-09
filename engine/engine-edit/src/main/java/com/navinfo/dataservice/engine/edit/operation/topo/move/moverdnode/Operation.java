@@ -14,6 +14,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
@@ -168,6 +169,10 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void updataRelationObj(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
+		
+		CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
+
+		List<RdLink> sortLinks = calLinkOperateUtils.sortLink(newLinks);
 		/*
 		 * 任何情况均需要处理的元素
 		 */
@@ -206,6 +211,6 @@ public class Operation implements IOperation {
 		//顺行
 		com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.update.Operation(
 				conn);
-		operation.breakRdLink(oldLink, newLinks, result);
+		operation.breakRdLink(oldLink, sortLinks, result);
 	}
 }

@@ -10,6 +10,7 @@ import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
+import com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye.TestUtil;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -29,6 +30,12 @@ public class LcNodeTest extends InitApplication {
 	@Override
 	public void init() {
 		super.initContext();
+	}
+
+	@Test
+	public void testCreate() {
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":43,\"objId\":88607,\"data\":{\"longitude\":116.37290115103418,\"latitude\":40.03036002019759},\"type\":\"LCNODE\"}";
+		TestUtil.run(parameter);
 	}
 
 	@Test

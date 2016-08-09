@@ -58,7 +58,8 @@ public class Operation implements IOperation {
 		Map<Integer, List<RdLink>> map = new HashMap<Integer, List<RdLink>>();
 		for (RdLink link : command.getLinks()) {
 
-			Geometry geom = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
+			Geometry geom = GeoTranslator.transform(link.getGeometry(),
+					0.00001, 5);
 
 			Coordinate[] cs = geom.getCoordinates();
 
@@ -103,6 +104,7 @@ public class Operation implements IOperation {
 				// 添加修改过几何的RDLINK，该集合用于修改关联要素
 				RdLink geoLink = new RdLink();
 				geoLink.copy(link);
+				geoLink.setPid(link.getPid());
 				Geometry tmpGeo = GeoTranslator.geojson2Jts(geojson, 100000, 5);
 				geoLink.setGeometry(tmpGeo);
 				newGeoLinks.add(geoLink);
@@ -114,13 +116,17 @@ public class Operation implements IOperation {
 			} else {
 				Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
 				maps.put(geo.getCoordinates()[0], link.getsNodePid());
-				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1], link.geteNodePid());
+				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1],
+						link.geteNodePid());
 				Iterator<String> it = meshes.iterator();
 				while (it.hasNext()) {
 					String meshIdStr = it.next();
-					Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo, MeshUtils.mesh2Jts(meshIdStr));
-					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					RdLinkOperateUtils.createRdLinkWithMesh(geomInter, maps, link, result, links);
+					Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo,
+							MeshUtils.mesh2Jts(meshIdStr));
+					geomInter = GeoTranslator.geojson2Jts(
+							GeoTranslator.jts2Geojson(geomInter), 1, 5);
+					RdLinkOperateUtils.createRdLinkWithMesh(geomInter, maps,
+							link, result, links);
 
 				}
 				// 添加新生成的RDLINK的集合，该集合用于修改关联要素
@@ -141,7 +147,8 @@ public class Operation implements IOperation {
 
 		geojson.put("type", "Point");
 
-		geojson.put("coordinates", new double[] { command.getLongitude(), command.getLatitude() });
+		geojson.put("coordinates", new double[] { command.getLongitude(),
+				command.getLatitude() });
 
 		JSONObject updateContent = new JSONObject();
 
@@ -168,8 +175,9 @@ public class Operation implements IOperation {
 	 * 
 	 * @throws Exception
 	 */
-	private void updataRelationObj(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
-		
+	private void updataRelationObj(RdLink oldLink, List<RdLink> newLinks,
+			Result result) throws Exception {
+
 		CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
 
 		List<RdLink> sortLinks = calLinkOperateUtils.sortLink(newLinks);
@@ -207,8 +215,13 @@ public class Operation implements IOperation {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Operation rdSpeedbumpOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Operation(
 				this.conn);
 		rdSpeedbumpOpeartion.breakSpeedbump(result, oldLink.getPid(), newLinks);
-		
-		//顺行
+
+		// 坡度
+		com.navinfo.dataservice.engine.edit.operation.obj.rdslope.update.Operation rdSlopeOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.update.Operation(
+				this.conn);
+		rdSlopeOpeartion.breakRdLink(oldLink.getPid(), newLinks, result);
+
+		// 顺行
 		com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.update.Operation(
 				conn);
 		operation.breakRdLink(oldLink, sortLinks, result);

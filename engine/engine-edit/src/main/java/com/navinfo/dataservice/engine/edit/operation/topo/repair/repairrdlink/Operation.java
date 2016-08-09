@@ -256,7 +256,10 @@ public class Operation implements IOperation {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Operation rdSpeedbumpOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Operation(
 				this.conn);
 		rdSpeedbumpOpeartion.breakSpeedbump(result, oldLink.getPid(), newLinks);
-
+		// 坡度
+		com.navinfo.dataservice.engine.edit.operation.obj.rdslope.update.Operation rdSlopeOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.update.Operation(
+				this.conn);
+		rdSlopeOpeartion.breakRdLink(oldLink.getPid(), newLinks, result);
 		// 顺行
 		com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.update.Operation(
 				conn);

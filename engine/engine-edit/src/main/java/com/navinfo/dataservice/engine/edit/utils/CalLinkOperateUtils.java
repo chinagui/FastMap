@@ -150,41 +150,50 @@ public class CalLinkOperateUtils {
 
 		return null;
 	}
-	
 
 	/**
 	 * 将一组link按顺序挂接
+	 * 
 	 * @param rdlinks
 	 * @return
 	 */
 	public List<RdLink> sortLink(List<RdLink> rdlinks) {
-		
+
 		List<RdLink> sortLinks = new ArrayList<RdLink>();
-		
-		if(rdlinks==null||rdlinks.size()==0)
-		{
+
+		if (rdlinks == null || rdlinks.size() == 0) {
+
 			return sortLinks;
-		}		
+		}
 
-		List<RdLink> bufferLinks = new ArrayList<RdLink>();
+		if (rdlinks.size() < 3) {
 
-		bufferLinks.addAll(rdlinks);
-		
-		int sTargetNodePid=bufferLinks.get(0).getsNodePid();
-		
-		int eTargetNodePid=bufferLinks.get(0).geteNodePid();
+			return rdlinks;
+		}
 
-		sortLinks = getNextLink(sTargetNodePid, bufferLinks, sortLinks);
+		List<RdLink> cacheLinks = new ArrayList<RdLink>();
 
-		sortLinks = getNextLink(eTargetNodePid, bufferLinks, sortLinks);
+		cacheLinks.addAll(rdlinks);
+
+		int sTargetNodePid = cacheLinks.get(0).getsNodePid();
+
+		int eTargetNodePid = cacheLinks.get(0).geteNodePid();
+
+		cacheLinks.remove(0);
+
+		sortLinks.add(cacheLinks.get(0));
+
+		sortLinks = getConnectLink(sTargetNodePid, cacheLinks, sortLinks, 1);
+
+		sortLinks = getConnectLink(eTargetNodePid, cacheLinks, sortLinks, 0);
 
 		return sortLinks;
 	}
 
-	private List<RdLink> getNextLink(int targetNodePid,
-			List<RdLink> bufferLinks, List<RdLink> sortLinks) {
+	private List<RdLink> getConnectLink(int targetNodePid,
+			List<RdLink> cacheLinks, List<RdLink> sortLinks, int type) {
 
-		for (RdLink link : bufferLinks) {
+		for (RdLink link : cacheLinks) {
 			if (targetNodePid != link.getsNodePid()
 					&& targetNodePid != link.geteNodePid()) {
 				continue;
@@ -196,11 +205,17 @@ public class CalLinkOperateUtils {
 				targetNodePid = link.getsNodePid();
 			}
 
-			sortLinks.add(link);
+			if (type == 1) {
+				
+				sortLinks.add(link);
+			} else {
+				
+				sortLinks.add(0, link);
+			}
 
-			bufferLinks.remove(link);
+			cacheLinks.remove(link);
 
-			return getNextLink(targetNodePid, bufferLinks, sortLinks);
+			return getConnectLink(targetNodePid, cacheLinks, sortLinks, type);
 		}
 
 		return sortLinks;

@@ -91,7 +91,7 @@ public class RdDirectrouteSelector extends AbstractSelector {
 
 		List<RdDirectroute> rows = new ArrayList<RdDirectroute>();
 
-		String sql = "select a.* from rd_directroute a where a.in_link_pid=:1 or a.out_link_pid=:1 and a.u_record!=2";
+		String sql = "select a.* from rd_directroute a where a.in_link_pid=:1 or a.out_link_pid=:2 and a.u_record!=2";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -105,6 +105,8 @@ public class RdDirectrouteSelector extends AbstractSelector {
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setInt(1, linkPid);
+			
+			pstmt.setInt(2, linkPid);
 
 			resultSet = pstmt.executeQuery();
 

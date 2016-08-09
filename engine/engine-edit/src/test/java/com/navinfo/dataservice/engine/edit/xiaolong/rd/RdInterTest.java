@@ -134,7 +134,7 @@ public class RdInterTest extends InitApplication {
 
 			RdInterSearch search = new RdInterSearch(conn);
 			
-			List<SearchSnapshot> data = search.searchDataByTileWithGap(107925, 49608, 17, 80);
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(107943, 49614, 17, 80);
 			
 			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
 

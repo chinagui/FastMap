@@ -17,7 +17,10 @@ import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.search.RdInterSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSameNodeSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
+import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
+
+import net.sf.json.JSONObject;
 
 /** 
 * @ClassName: RdSameNodeTest 
@@ -56,7 +59,7 @@ public class RdSameNodeTest extends InitApplication {
 
 			RdSameNodeSearch search = new RdSameNodeSearch(conn);
 			
-			List<SearchSnapshot> data = search.searchDataByTileWithGap(107925, 49608, 17, 80);
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(107945, 49614, 17, 80);
 			
 			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
 
@@ -64,5 +67,30 @@ public class RdSameNodeTest extends InitApplication {
 			e.printStackTrace();
 		}
 		
+	}
+	
+	@Test
+	public void testAddRdSameNode() {
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"nodes\":[{\"nodePid\":100025860,\"type\":\"ADNODE\",\"isMain\":1},{\"nodePid\":100000746,\"type\":\"ZONENODE\",\"isMain\":0}]},\"type\":\"RDSAMENODE\"}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+
+			String log = t.getLogs();
+
+			JSONObject json = new JSONObject();
+
+			json.put("result", msg);
+
+			json.put("log", log);
+
+			json.put("check", t.getCheckLog());
+
+			json.put("pid", t.getPid());
+
+			System.out.println(json.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

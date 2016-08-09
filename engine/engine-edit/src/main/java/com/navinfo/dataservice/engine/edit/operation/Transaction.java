@@ -514,6 +514,13 @@ public class Transaction {
 			default:
 				break;
 			}
+		case RDSAMENODE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Command(json, requester);
+			default:
+				break;
+			}
 		}
 
 		throw new Exception("不支持的操作类型");
@@ -920,6 +927,13 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.operation.obj.lcface.create.Process(command);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.lcface.delete.Process(command);
+			}
+		case RDSAMENODE:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Process(command);
+			default:
+				break;
 			}
 		}
 

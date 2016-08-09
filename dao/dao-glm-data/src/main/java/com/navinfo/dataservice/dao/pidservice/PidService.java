@@ -490,4 +490,11 @@ public class PidService {
 	public synchronized int applyRdSpeedbumpPid() throws Exception {
 		return this.applyPid(PidSequenceName.rdSpeedbumpName);
 	}
+	
+	/**
+	 * 申请rd_samenode
+	 */
+	public synchronized int applyRdSameNodePid() throws Exception {
+		return this.applyPid(PidSequenceName.rdSamenodeName);
+	}
 }

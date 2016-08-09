@@ -12,6 +12,7 @@ import java.util.List;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
@@ -115,31 +116,34 @@ public class RdInterSearch implements ISearch {
 				JSONObject jsonM = new JSONObject();
 				
 				String linkPids = resultSet.getString("link_pids");
+				
+				if(StringUtils.isNotEmpty(linkPids))
+				{
+					String []linkSplits = linkPids.split(",");
 
-				String []linkSplits = linkPids.split(",");
+					String wktLinks = resultSet.getString("link_wkts");
 
-				String wktLinks = resultSet.getString("link_wkts");
+					JSONArray gLinkArray = new JSONArray();
 
-				JSONArray gLinkArray = new JSONArray();
+					String []linkWktSplits = wktLinks.split(";");
 
-				String []linkWktSplits = wktLinks.split(";");
-
-				for (int i = 0; i < linkSplits.length; i++) {
-					JSONObject gObject = new JSONObject();
-					
-					JSONObject geojson = Geojson.wkt2Geojson(linkWktSplits[i]);
-
-					JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
-
-						gObject.put("g", jo.getJSONArray("coordinates"));
-						gObject.put("i", linkSplits[i]);
+					for (int i = 0; i < linkSplits.length; i++) {
+						JSONObject gObject = new JSONObject();
 						
-						gLinkArray.add(gObject);
+						JSONObject geojson = Geojson.wkt2Geojson(linkWktSplits[i]);
+
+						JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
+
+							gObject.put("g", jo.getJSONArray("coordinates"));
+							gObject.put("i", linkSplits[i]);
+							
+							gLinkArray.add(gObject);
+					}
+					
+					jsonM.put("a", gLinkArray);
+					
+					snapshot.setM(jsonM);
 				}
-				
-				jsonM.put("a", gLinkArray);
-				
-				snapshot.setM(jsonM);
 
 				list.add(snapshot);
 			}

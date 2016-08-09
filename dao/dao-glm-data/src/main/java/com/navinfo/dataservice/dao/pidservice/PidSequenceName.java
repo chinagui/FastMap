@@ -115,4 +115,6 @@ public class PidSequenceName {
 	public static final String rdInterName = "SEQ_RD_INTER";
 	
 	public static final String rdSpeedbumpName = "SEQ_RD_SPEEDBUMP";
+
+	public static final String rdSamenodeName = "SEQ_RD_SAMENODE";
 }

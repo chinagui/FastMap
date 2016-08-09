@@ -33,6 +33,7 @@ import oracle.spatial.util.WKT;
 public class GlmGridCalculator {
 
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
+	private String tableName;
 	public GlmGridCalculator(String gdbVersion,GlmGridCalculatorLock lock){
 		this.gdbVersion=gdbVersion;
 	}
@@ -63,6 +64,10 @@ public class GlmGridCalculator {
 					Map<String,GlmGridRefInfo> map = new HashMap<String,GlmGridRefInfo>();
 					while(rs.next()){
 						String tableName = rs.getString("TABLE_NAME");
+						if(tableName.equals("RD_SAMENODE"))
+						{
+							System.out.println(1);
+						}
 						GlmGridRefInfo info = new GlmGridRefInfo(tableName);
 						info.setGridRefCol(rs.getString("REF_COL_NAME"));
 						info.setSingleMesh(rs.getInt("SINGLE_MESH")==1?true:false);
@@ -121,9 +126,14 @@ public class GlmGridCalculator {
 	public String[] calc(String tableName,String rowId,Connection dataConn)throws SQLException{
 		log.debug("calc :"+tableName+"-"+rowId);
 		String sql = assembleQueryGeoSql(tableName,rowId);
+		if(tableName.equals("RD_SAMENODE") && this.getTableName() != null)
+		{
+			sql = sql.replaceAll("RD_NODE", this.getTableName());
+		}
 		String[] grids = run.query(dataConn, sql, new SingleRowGridHandler(tableName));
 		return grids;
 	}
+	
 	/**
 	 * 给定表的row_id查询所属grid
 	 * @param tableName
@@ -345,7 +355,11 @@ public class GlmGridCalculator {
 		
 	}
 	
-	public static void main(String[] args){
+	public String getTableName() {
+		return tableName;
 	}
-	
+
+	public void setTableName(String tableName) {
+		this.tableName = tableName;
+	}
 }

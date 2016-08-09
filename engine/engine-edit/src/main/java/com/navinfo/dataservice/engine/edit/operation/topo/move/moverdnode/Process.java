@@ -1,8 +1,11 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
@@ -17,6 +20,13 @@ public class Process extends AbstractProcess<Command> {
 		// TODO Auto-generated constructor stub
 	}
 	
+	public Process(Command command, Result result, Connection conn) throws Exception {
+		super();
+		this.setCommand(command);
+		this.setResult(result);
+		this.setConn(conn);
+		this.initCheckCommand();
+	}
 	private RdNode updateNode;
 	
 	
@@ -49,5 +59,32 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public String exeOperation() throws Exception {
 		return new Operation(this.getCommand(),updateNode,this.getConn()).run(this.getResult());
+	}
+	
+	public String innerRun() throws Exception {
+		String msg;
+		try {
+			this.prepareData();
+
+			String preCheckMsg = this.preCheck();
+
+			if (preCheckMsg != null) {
+				throw new Exception(preCheckMsg);
+			}
+
+			IOperation operation = new Operation(this.getCommand(), updateNode,this.getConn());
+
+			msg = operation.run(this.getResult());
+
+			this.postCheck();
+
+		} catch (Exception e) {
+
+			this.getConn().rollback();
+
+			throw e;
+		}
+
+		return msg;
 	}
 }

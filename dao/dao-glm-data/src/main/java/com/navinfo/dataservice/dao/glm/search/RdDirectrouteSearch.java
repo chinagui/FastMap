@@ -59,7 +59,7 @@ public class RdDirectrouteSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH TMP1 AS (SELECT NODE_PID, GEOMETRY FROM RD_NODE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT /*+ index(c) */ A.PID, C.GEOMETRY POINT_GEOM FROM RD_DIRECTROUTE A, RD_NODE C WHERE A.NODE_PID = C.NODE_PID AND A.U_RECORD != 2 AND C.U_RECORD != 2";
+		String sql = "WITH TMP1 AS (SELECT NODE_PID, GEOMETRY FROM RD_NODE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT  A.PID, C.GEOMETRY POINT_GEOM FROM RD_DIRECTROUTE A, TMP1 C WHERE A.NODE_PID = C.NODE_PID AND A.U_RECORD != 2 ";
 		
 		PreparedStatement pstmt = null;
 

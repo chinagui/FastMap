@@ -508,6 +508,9 @@ public class Transaction {
 			case CREATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.create.Command(json,
 						requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Command(json,
+						requester);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.delete.Command(json,
 						requester);
@@ -892,6 +895,8 @@ public class Transaction {
 			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.create.Process(command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Process(command);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.delete.Process(command);
 			default:

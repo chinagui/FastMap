@@ -21,7 +21,10 @@ public class Operation implements IOperation {
 
 	private Connection conn;
 
-	public Operation() {
+	private Command command;
+
+	public Operation(Command command) {
+		this.command = command;
 	}
 
 	public Operation(Connection conn) {
@@ -30,6 +33,10 @@ public class Operation implements IOperation {
 
 	@Override
 	public String run(Result result) throws Exception {
+		boolean isChange = this.command.getSpeedbump().fillChangeFields(this.command.getContent());
+		if (isChange) {
+			result.insertObject(this.command.getSpeedbump(), ObjStatus.UPDATE, this.command.getSpeedbump().pid());
+		}
 		return null;
 	}
 

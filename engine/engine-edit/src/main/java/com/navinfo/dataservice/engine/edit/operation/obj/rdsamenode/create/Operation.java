@@ -90,9 +90,9 @@ public class Operation implements IOperation {
 			rdSameNode.getParts().add(sameNodePart);
 		}
 
-		//更新点的坐标
-		updateNodeGeo(mainNodePid, mainTableName.toUpperCase(), nodeMap,result);
-		
+		// 更新点的坐标
+		updateNodeGeo(mainNodePid, mainTableName.toUpperCase(), nodeMap, result);
+
 		result.insertObject(rdSameNode, ObjStatus.INSERT, rdSameNode.getPid());
 	}
 
@@ -104,15 +104,16 @@ public class Operation implements IOperation {
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 */
-	private void updateNodeGeo(int mainNodePid, String tableName, Map<Integer,ObjType > nodeMap,Result result) throws Exception {
+	private void updateNodeGeo(int mainNodePid, String tableName, Map<Integer, ObjType> nodeMap, Result result)
+			throws Exception {
 		if (mainNodePid != 0 && StringUtils.isNotEmpty(tableName)) {
 			RdSameNodeSelector sameNodeSelector = new RdSameNodeSelector(conn);
-			
+
 			Geometry nodeGeo = sameNodeSelector.getGeoByNodePidAndTableName(mainNodePid, tableName, true);
-			
-			//组装参数
+
+			// 组装参数
 			JSONObject updateContent = new JSONObject();
-			
+
 			updateContent.put("dbId", command.getDbId());
 
 			JSONObject data = new JSONObject();
@@ -122,55 +123,69 @@ public class Operation implements IOperation {
 			data.put("latitude", nodeGeo.getCoordinate().y);
 
 			updateContent.put("data", data);
-			
-			for(Map.Entry<Integer,ObjType > entry : nodeMap.entrySet())
-			{
+
+			for (Map.Entry<Integer, ObjType> entry : nodeMap.entrySet()) {
 				int nodePid = entry.getKey();
-				
+
 				ObjType type = entry.getValue();
-				
-				updateContent.put("objId", nodePid);
-				
-				switch (type) {
-				case RDNODE:
-					com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Command(
-							updateContent, command.getRequester());
-					com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Process process = new com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Process(
-							updatecommand, result, conn);
-					process.innerRun();
-					break;
-				case ADNODE:
-					com.navinfo.dataservice.engine.edit.operation.topo.move.moveadnode.Command adCommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.moveadnode.Command(
-							updateContent, command.getRequester());
-					com.navinfo.dataservice.engine.edit.operation.topo.move.moveadnode.Process adProcess = new com.navinfo.dataservice.engine.edit.operation.topo.move.moveadnode.Process(
-							adCommand, result, conn);
-					adProcess.innerRun();
-					break;
-				case ZONENODE:
-					com.navinfo.dataservice.engine.edit.operation.topo.move.movezonenode.Command zoneCommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.movezonenode.Command(
-							updateContent, command.getRequester());
-					com.navinfo.dataservice.engine.edit.operation.topo.move.movezonenode.Process zoneProcess = new com.navinfo.dataservice.engine.edit.operation.topo.move.movezonenode.Process(
-							zoneCommand, result, conn);
-					zoneProcess.innerRun();
-					break;
-				case RWNODE:
-					com.navinfo.dataservice.engine.edit.operation.topo.move.moverwnode.Command rwCommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.moverwnode.Command(
-							updateContent, command.getRequester());
-					com.navinfo.dataservice.engine.edit.operation.topo.move.moverwnode.Process rwProcess = new com.navinfo.dataservice.engine.edit.operation.topo.move.moverwnode.Process(
-							rwCommand, result, conn);
-					rwProcess.innerRun();
-					break;
-				case LUNODE:
-					com.navinfo.dataservice.engine.edit.operation.topo.move.movelunode.Command luCommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.movelunode.Command(
-							updateContent, command.getRequester());
-					com.navinfo.dataservice.engine.edit.operation.topo.move.movelunode.Process luProcess = new com.navinfo.dataservice.engine.edit.operation.topo.move.movelunode.Process(
-							luCommand, result, conn);
-					luProcess.innerRun();
-					break;
-				default:
-					break;
+
+				Geometry moveNode = sameNodeSelector.getGeoByNodePidAndTableName(nodePid,
+						ReflectionAttrUtils.getTableNameByObjType(type), true);
+
+				if (moveNode.distance(nodeGeo) != 0) {
+					updateContent.put("objId", nodePid);
+					
+					//调用移动接口
+					moveNode(type,updateContent,result);
 				}
 			}
+		}
+	}
+
+	/**
+	 * 调用点的移动接口，维护点的坐标
+	 * @param type
+	 * @throws Exception
+	 */
+	private void moveNode(ObjType type, JSONObject updateContent, Result result) throws Exception {
+		switch (type) {
+		case RDNODE:
+			com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Command(
+					updateContent, command.getRequester());
+			com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Process process = new com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Process(
+					updatecommand, result, conn);
+			process.innerRun();
+			break;
+		case ADNODE:
+			com.navinfo.dataservice.engine.edit.operation.topo.move.moveadnode.Command adCommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.moveadnode.Command(
+					updateContent, command.getRequester());
+			com.navinfo.dataservice.engine.edit.operation.topo.move.moveadnode.Process adProcess = new com.navinfo.dataservice.engine.edit.operation.topo.move.moveadnode.Process(
+					adCommand, result, conn);
+			adProcess.innerRun();
+			break;
+		case ZONENODE:
+			com.navinfo.dataservice.engine.edit.operation.topo.move.movezonenode.Command zoneCommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.movezonenode.Command(
+					updateContent, command.getRequester());
+			com.navinfo.dataservice.engine.edit.operation.topo.move.movezonenode.Process zoneProcess = new com.navinfo.dataservice.engine.edit.operation.topo.move.movezonenode.Process(
+					zoneCommand, result, conn);
+			zoneProcess.innerRun();
+			break;
+		case RWNODE:
+			com.navinfo.dataservice.engine.edit.operation.topo.move.moverwnode.Command rwCommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.moverwnode.Command(
+					updateContent, command.getRequester());
+			com.navinfo.dataservice.engine.edit.operation.topo.move.moverwnode.Process rwProcess = new com.navinfo.dataservice.engine.edit.operation.topo.move.moverwnode.Process(
+					rwCommand, result, conn);
+			rwProcess.innerRun();
+			break;
+		case LUNODE:
+			com.navinfo.dataservice.engine.edit.operation.topo.move.movelunode.Command luCommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.movelunode.Command(
+					updateContent, command.getRequester());
+			com.navinfo.dataservice.engine.edit.operation.topo.move.movelunode.Process luProcess = new com.navinfo.dataservice.engine.edit.operation.topo.move.movelunode.Process(
+					luCommand, result, conn);
+			luProcess.innerRun();
+			break;
+		default:
+			break;
 		}
 	}
 }

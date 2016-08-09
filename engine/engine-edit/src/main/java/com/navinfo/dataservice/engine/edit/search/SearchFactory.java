@@ -17,6 +17,7 @@ import com.navinfo.dataservice.dao.glm.search.LuLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.LuNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdBranchSearch;
 import com.navinfo.dataservice.dao.glm.search.RdCrossSearch;
+import com.navinfo.dataservice.dao.glm.search.RdDirectrouteSearch;
 import com.navinfo.dataservice.dao.glm.search.RdElectroniceyeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdGateSearch;
 import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
@@ -128,6 +129,9 @@ public class SearchFactory {
 			return new RdSpeedbumpSearch(conn);
 		case RDSAMENODE:
 			return new RdSameNodeSearch(conn);
+		case RDDIRECTROUTE:
+			return new RdDirectrouteSearch(conn);	
+			
 		default:
 			return null;
 		}

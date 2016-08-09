@@ -377,7 +377,9 @@ public class Process extends AbstractProcess<Command> {
 		// 减速带
 		OpRefRdSpeedbum opRefRdSpeedbum = new OpRefRdSpeedbum(this.getConn());
 		opRefRdSpeedbum.run(this.getResult(), oldLink, newLinks);
-		
+		//坡度
+		OpRefRdSlope opRefRdSlope = new OpRefRdSlope(this.getConn());
+		opRefRdSlope.run(this.getResult(), oldLink, newLinks);
 		// 顺行
 		OpRefRdDirectroute opRefRdDirectroute = new OpRefRdDirectroute(this.getConn());
 		opRefRdDirectroute.run(this.getResult(), this.rdLinkBreakpoint, newLinks);

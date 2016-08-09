@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -34,6 +37,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchViaSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.gate.RdGateSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
@@ -54,9 +58,6 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Point;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 public class Process extends AbstractProcess<Command> {
 
@@ -376,6 +377,10 @@ public class Process extends AbstractProcess<Command> {
 		// 减速带
 		OpRefRdSpeedbum opRefRdSpeedbum = new OpRefRdSpeedbum(this.getConn());
 		opRefRdSpeedbum.run(this.getResult(), oldLink, newLinks);
+		
+		// 顺行
+		OpRefRdDirectroute opRefRdDirectroute = new OpRefRdDirectroute(this.getConn());
+		opRefRdDirectroute.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
 	}
 
 	/**
@@ -490,7 +495,7 @@ public class Process extends AbstractProcess<Command> {
 		// 警示信息
 		RdWarninginfoSelector selector = new RdWarninginfoSelector(this.getConn());
 
-		infectList = selector.loadPidByLink(this.getCommand().getLinkPid(), true);
+		infectList = selector.loadPidByLink(this.getCommand().getLinkPid(), false);
 
 		infects.put("RDWARNINGINFO", infectList);
 
@@ -536,6 +541,13 @@ public class Process extends AbstractProcess<Command> {
 			infectList.add(speedbump.pid());
 		}
 		infects.put("RDSPEEDBUMP", infectList);
+		
+		//顺行
+		RdDirectrouteSelector directrouteSelector=new RdDirectrouteSelector(this.getConn());
+		
+		infectList = directrouteSelector.loadPidByLink(this.getCommand().getLinkPid(), false);
+
+		infects.put("RDDIRECTROUTE", infectList);
 
 		return infects;
 

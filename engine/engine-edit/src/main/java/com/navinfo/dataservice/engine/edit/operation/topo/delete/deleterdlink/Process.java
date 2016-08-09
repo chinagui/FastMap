@@ -25,6 +25,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.gate.RdGateSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
@@ -388,10 +389,13 @@ public class Process extends AbstractProcess<Command> {
 				this.getCommand(), this.getConn());
 		opRefRdSpeedbump.run(this.getResult());
 		// 坡度
-		OpRefRdSlope opRefSlope = new OpRefRdSlope(
+		OpRefRdSlope opRefSlope = new OpRefRdSlope(this.getConn());
+		opRefSlope.run(this.getResult(), this.getCommand().getLinkPid());
+
+		// 顺行
+		OpRefRdDirectroute opRefRdDirectroute = new OpRefRdDirectroute(
 				this.getConn());
-		opRefSlope
-				.run(this.getResult(), this.getCommand().getLinkPid());
+		opRefRdDirectroute.run(this.getResult(), this.getCommand().getLink());
 
 	}
 
@@ -459,7 +463,7 @@ public class Process extends AbstractProcess<Command> {
 				this.getConn());
 
 		infectList = selector.loadPidByLink(this.getCommand().getLinkPid(),
-				true);
+				false);
 
 		infects.put("RDWARNINGINFO", infectList);
 
@@ -524,6 +528,13 @@ public class Process extends AbstractProcess<Command> {
 			infectList.add(rdSpeedbump.pid());
 		}
 		infects.put("RDSPEEDBUMP", infectList);
+
+		// 顺行
+		RdDirectrouteSelector directrouteSelector = new RdDirectrouteSelector(
+				this.getConn());
+		infectList = directrouteSelector.loadPidByLink(this.getCommand()
+				.getLinkPid(), false);
+		infects.put("RDDIRECTROUTE", infectList);
 
 		return infects;
 	}

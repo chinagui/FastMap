@@ -103,15 +103,14 @@ public class commonTest  extends InitApplication{
 		String msg = t.run();
 	}
 	
-	@Test
-	public void create0801_02() throws Exception
+	
+@Test
+	public void updata0805_01() throws Exception
 	{
 		//parameter:{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025193,\"data\":{\"longitude\":116.62476941943167,\"latitude\":39.999848815977785},\"type\":\"RDNODE\"}
-		String parameter = "{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025230,\"data\":{\"longitude\":116.37464940547943,\"latitude\":40.04856675348115},\"type\":\"RDNODE\"}";
-		
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"RDWARNINGINFO\",\"objId\":100000024,\"data\":{\"vehicle\":2415919105,\"rowId\":\"78B7FD0037F64D82BB2364A483F1590C\",\"pid\":100000024,\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
 		String msg = t.run();
 	}
 	
-
 }

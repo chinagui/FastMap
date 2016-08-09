@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.move.moveadnode;
 
+import java.sql.Connection;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
@@ -20,6 +23,14 @@ public class Process extends AbstractProcess<Command> {
 	
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
+	}
+	
+	public Process(Command command, Result result, Connection conn) throws Exception {
+		super();
+		this.setCommand(command);
+		this.setResult(result);
+		this.setConn(conn);
+		this.initCheckCommand();
 	}
 
 	private AdNode updateNode;
@@ -71,5 +82,31 @@ public class Process extends AbstractProcess<Command> {
 	public String exeOperation() throws Exception {
 		return new Operation(this.getCommand(),updateNode,this.getConn()).run(this.getResult());
 	}
+	
+	public String innerRun() throws Exception {
+		String msg;
+		try {
+			this.prepareData();
 
+			String preCheckMsg = this.preCheck();
+
+			if (preCheckMsg != null) {
+				throw new Exception(preCheckMsg);
+			}
+
+			IOperation operation = new Operation(this.getCommand(), updateNode,this.getConn());
+
+			msg = operation.run(this.getResult());
+
+			this.postCheck();
+
+		} catch (Exception e) {
+
+			this.getConn().rollback();
+
+			throw e;
+		}
+
+		return msg;
+	}
 }

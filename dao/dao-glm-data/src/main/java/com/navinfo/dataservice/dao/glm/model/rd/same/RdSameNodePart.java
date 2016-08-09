@@ -24,7 +24,7 @@ public class RdSameNodePart implements IRow {
 	
 	private int groupId;
 	
-	private int nodeId = 0;
+	private int nodePid = 0;
 	
 	private String rowId;
 	
@@ -40,12 +40,16 @@ public class RdSameNodePart implements IRow {
 		this.groupId = groupId;
 	}
 
-	public int getNodeId() {
-		return nodeId;
+	public int getNodePid() {
+		return nodePid;
 	}
 
-	public void setNodeId(int nodeId) {
-		this.nodeId = nodeId;
+	public void setNodePid(int nodePid) {
+		this.nodePid = nodePid;
+	}
+
+	public String getRowId() {
+		return rowId;
 	}
 
 	public String getTableName() {

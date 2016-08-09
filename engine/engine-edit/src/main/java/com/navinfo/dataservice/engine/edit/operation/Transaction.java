@@ -521,6 +521,8 @@ public class Transaction {
 			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Command(json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Command(json, requester);
 			default:
 				break;
 			}
@@ -937,6 +939,8 @@ public class Transaction {
 			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Process(command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Process(command);
 			default:
 				break;
 			}

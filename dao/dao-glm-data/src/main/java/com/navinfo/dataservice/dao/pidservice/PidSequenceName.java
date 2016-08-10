@@ -117,4 +117,8 @@ public class PidSequenceName {
 	public static final String rdSpeedbumpName = "SEQ_RD_SPEEDBUMP";
 
 	public static final String rdSamenodeName = "SEQ_RD_SAMENODE";
+
+	public static final String rdTollgate = "SEQ_RD_TOLLGATE";
+	
+	public static final String rdTollgateName = "SEQ_RD_TOLLGATE_NAME";
 }

@@ -38,11 +38,11 @@ public class LuFaceTest extends InitApplication {
 	public void testSearchLuFace() {
 		Connection conn;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(43);
+			conn = DBConnector.getInstance().getConnectionById(42);
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByPid(ObjType.LUFACE, 100034508).Serialize(ObjLevel.FULL));
+			System.out.println(p.searchDataByPid(ObjType.LUFACE, 100034535).Serialize(ObjLevel.FULL));
 
 		} catch (Exception e) {
 		}

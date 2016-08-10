@@ -117,7 +117,7 @@ public class LuFaceName implements IRow {
 
 	@Override
 	public String parentPKName() {
-		return "face_id";
+		return "face_pid";
 	}
 
 	@Override

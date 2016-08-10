@@ -53,7 +53,7 @@ public class RdInterSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 		try {
 			StringBuilder sb = new StringBuilder(
-					"select a.* from rd_inter a,RD_INTER_NODE b where a.PID = b.PID and b.NODE_PID in("+nodePidStr+") and a.u_record !=2 and b.u_record !=2");
+					"select distinct a.* from rd_inter a,RD_INTER_NODE b where a.PID = b.PID and b.NODE_PID in("+nodePidStr+") and a.u_record !=2 and b.u_record !=2");
 //			if (isLock) {
 //				sb.append(" for update nowait");
 //			}

@@ -5,6 +5,7 @@ import java.sql.Connection;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 
 /**
  * 
@@ -36,5 +37,14 @@ public class Operation implements IOperation {
 		//TODO
 		return null;
 	}
-
+	
+	/**
+	 * 删除线维护同一关系
+	 * @param linkPid 
+	 * @param result
+	 * @throws Exception
+	 */
+	public void deleteByLink(RdLink link, Result result) throws Exception {
+		
+	}
 }

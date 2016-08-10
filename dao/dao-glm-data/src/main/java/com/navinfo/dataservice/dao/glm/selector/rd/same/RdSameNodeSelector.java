@@ -6,11 +6,15 @@ package com.navinfo.dataservice.dao.glm.selector.rd.same;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNode;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -132,5 +136,45 @@ public class RdSameNodeSelector extends AbstractSelector {
 			DBUtils.closeResultSet(resultSet);
 			DBUtils.closeStatement(pstmt);
 		}
+	}
+	
+	/**
+	 * 根据nodePid查询CRF交叉点对象
+	 * @param nodePidStr
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdSameNode> loadSameNodeByNodePids(String nodePidStr,String tableName,boolean isLock) throws Exception
+	{
+		List<RdSameNode> sameNodeList = new ArrayList<>();
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			StringBuilder sb = new StringBuilder(
+					"select distinct a.* from rd_samenode a,RD_samenode_part b where a.group_id = b.group_id and b.NODE_PID in("+nodePidStr+") and upper(b.table_name) = "+tableName.toUpperCase()+" and a.u_record !=2 and b.u_record !=2");
+			if (isLock) {
+				sb.append(" for update nowait");
+			}
+			pstmt = conn.prepareStatement(sb.toString());
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdSameNode sameNode = new RdSameNode();
+				
+				ReflectionAttrUtils.executeResultSet(sameNode, resultSet);
+				
+				List<IRow> parts = new AbstractSelector(RdSameNodePart.class,conn).loadRowsByParentId(sameNode.getPid(), isLock);
+				
+				sameNodeList.add(sameNode);
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return sameNodeList;
 	}
 }

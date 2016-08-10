@@ -57,7 +57,7 @@ public class RdInterSearch implements ISearch {
 		
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 		
-		String sql = "WITH tmp1 AS (	SELECT node_pid FROM rd_node WHERE sdo_relate(geometry, sdo_geometry( :1 , 8307), 'mask=anyinteract') = 'TRUE' AND u_record != 2), tmp2 as（ SELECT /*+ index(b) */ pid, listagg(a.node_pid, ',') within group( ORDER BY a.node_pid) node_pids, listagg(sdo_util.to_wktgeometry_varchar(b. geometry), ',') within group( ORDER BY a.node_pid) node_wkts FROM rd_inter_node a, rd_node b WHERE EXISTS (	SELECT NULL FROM tmp1 C WHERE a.node_pid = C.node_pid) AND a.node_pid = b.node_pid AND a.u_record != 2 AND b.u_record != 2 GROUP BY a.pid）, tmp3 AS (	SELECT link_pid FROM rd_link WHERE sdo_relate(geometry, sdo_geometry( :2 , 8307), 'mask=anyinteract') = 'TRUE' AND u_record != 2), tmp4 as（ SELECT /*+ index(b) */ pid, listagg(a.link_pid, ',') within group( ORDER BY a.link_pid) link_pids, listagg(sdo_util.to_wktgeometry_varchar(b. geometry), ';') within group( ORDER BY a.link_pid) link_wkts FROM rd_inter_link a, rd_link b WHERE EXISTS (	SELECT NULL FROM tmp3 C WHERE a.link_pid = C.link_pid) AND a.link_pid = b.link_pid AND a.u_record != 2 AND b.u_record != 2 GROUP BY a.pid） SELECT tmp2.*,tmp4.link_pids,tmp4.link_wkts FROM tmp2 left join tmp4 on tmp2.pid = tmp4.pid";
+		String sql = "WITH tmp1 AS (	SELECT node_pid FROM rd_node WHERE sdo_relate(geometry, sdo_geometry( :1, 8307), 'mask=anyinteract') = 'TRUE' AND u_record != 2), tmp2 as（ SELECT /*+ index(b) */ pid, listagg(a.node_pid, ',') within group( ORDER BY a.node_pid) node_pids, listagg(sdo_util.to_wktgeometry_varchar(b. geometry), ',') within group( ORDER BY a.node_pid) node_wkts FROM rd_inter_node a, rd_node b WHERE EXISTS (	SELECT NULL FROM tmp1 C WHERE a.node_pid = C.node_pid) AND a.node_pid = b.node_pid AND a.u_record != 2 AND b.u_record != 2 GROUP BY a.pid）, tmp3 AS (	SELECT link_pid FROM rd_link WHERE sdo_relate(geometry, sdo_geometry(:2, 8307), 'mask=anyinteract') = 'TRUE' AND u_record != 2), tmp4 as（ SELECT /*+ index(b) */ pid, listagg(a.link_pid, ',') within group( ORDER BY a.link_pid) link_pids,listagg(b.s_node_pid, ',') within group( ORDER BY a.link_pid) s_node_pids,listagg(b.e_node_pid, ',') within group( ORDER BY a.link_pid) e_node_pids, listagg(sdo_util.to_wktgeometry_varchar(b. geometry), ';') within group( ORDER BY a.link_pid) link_wkts FROM rd_inter_link a, rd_link b WHERE EXISTS (	SELECT NULL FROM tmp3 C WHERE a.link_pid = C.link_pid) AND a.link_pid = b.link_pid AND a.u_record != 2 AND b.u_record != 2 GROUP BY a.pid） SELECT tmp2.*,tmp4.link_pids,tmp4.link_wkts,s_node_pids,e_node_pids FROM tmp2 LEFT JOIN tmp4 ON tmp2.pid = tmp4.pid";
 		
 		PreparedStatement pstmt = null;
 
@@ -69,6 +69,8 @@ public class RdInterSearch implements ISearch {
 			pstmt = conn.prepareStatement(sql);
 
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+			
+			System.out.println(wkt);
 
 			pstmt.setString(1, wkt);
 			
@@ -126,6 +128,10 @@ public class RdInterSearch implements ISearch {
 					JSONArray gLinkArray = new JSONArray();
 
 					String []linkWktSplits = wktLinks.split(";");
+					
+					String sNodePids[] = resultSet.getString("s_node_pids").split(",");
+					
+					String eNodePids[] = resultSet.getString("e_node_pids").split(",");
 
 					for (int i = 0; i < linkSplits.length; i++) {
 						JSONObject gObject = new JSONObject();
@@ -136,6 +142,8 @@ public class RdInterSearch implements ISearch {
 
 							gObject.put("g", jo.getJSONArray("coordinates"));
 							gObject.put("i", linkSplits[i]);
+							gObject.put("s", sNodePids[i]);
+							gObject.put("e", eNodePids[i]);
 							
 							gLinkArray.add(gObject);
 					}

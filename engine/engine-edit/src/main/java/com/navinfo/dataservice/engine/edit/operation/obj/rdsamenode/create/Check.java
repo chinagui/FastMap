@@ -22,9 +22,9 @@ public class Check {
 		JSONArray nodeArray = this.command.getNodeArray();
 
 		if (nodeArray == null) {
-			throw new Exception("同一点组成node不能为空");
+			throw new Exception("同一点关系组成node不能为空");
 		} else if (nodeArray.size() < 2) {
-			throw new Exception("同一点组成node不能少于2个");
+			throw new Exception("同一点关系组成node不能少于2个");
 		}
 
 		RdSameNodeSelector sameNodeSelector = new RdSameNodeSelector(conn);

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.dao.glm.model.rd.directroute;
+package com.navinfo.dataservice.dao.glm.model.rd.voiceguide;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -16,9 +16,9 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideVia;
+import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectrouteVia;
 
-public class RdDirectroute implements IObj {
+public class RdVoiceguide implements IObj {
 
 	private String rowId;
 
@@ -28,19 +28,11 @@ public class RdDirectroute implements IObj {
 
 	private int nodePid;// 进入node
 
-	private int outLinkPid;// 退出link
-
-	private int flag=2;// 顺行标志
-
-	private int processFlag=1;// 处理标志
-
-	private int relationshipType=1;// 关系类型
-
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
-	private List<IRow> vias = new ArrayList<IRow>();
+	private List<IRow> details = new ArrayList<IRow>();
 
-	public Map<String, RdDirectrouteVia> directrouteViaMap = new HashMap<String, RdDirectrouteVia>();
+	public Map<String, RdVoiceguideDetail> detailMap = new HashMap<String, RdVoiceguideDetail>();
 
 	public int getPid() {
 		return pid;
@@ -66,50 +58,16 @@ public class RdDirectroute implements IObj {
 		this.nodePid = nodePid;
 	}
 
-	public int getOutLinkPid() {
-		return outLinkPid;
+	public List<IRow> getDetails() {
+		return details;
 	}
 
-	public void setOutLinkPid(int outLinkPid) {
-		this.outLinkPid = outLinkPid;
-	}
-
-	public int getFlag() {
-		return flag;
-	}
-
-	public void setFlag(int flag) {
-		this.flag = flag;
-	}
-
-	public int getProcessFlag() {
-		return processFlag;
-	}
-
-	public void setProcessFlag(int processFlag) {
-		this.processFlag = processFlag;
-	}
-
-	public int getRelationshipType() {
-		return relationshipType;
-	}
-
-	public void setRelationshipType(int relationshipType) {
-		this.relationshipType = relationshipType;
+	public void setDetails(List<IRow> details) {
+		this.details = details;
 	}
 
 	public String getRowId() {
 		return rowId;
-	}
-	
-	
-
-	public List<IRow> getVias() {
-		return vias;
-	}
-
-	public void setVias(List<IRow> directrouteVias) {
-		this.vias = directrouteVias;
 	}
 
 	@Override
@@ -124,7 +82,7 @@ public class RdDirectroute implements IObj {
 
 	@Override
 	public String tableName() {
-		return "rd_directroute";
+		return "rd_voiceguide";
 	}
 
 	@Override
@@ -141,7 +99,7 @@ public class RdDirectroute implements IObj {
 
 	@Override
 	public ObjType objType() {
-		return ObjType.RDDIRECTROUTE;
+		return ObjType.RDVOICEGUIDE;
 	}
 
 	@Override
@@ -167,14 +125,15 @@ public class RdDirectroute implements IObj {
 
 	@Override
 	public String parentTableName() {
-		return "rd_directroute";
+		return "rd_voiceguide";
 	}
 
 	@Override
 	public List<List<IRow>> children() {
+
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
 
-		children.add(this.vias);
+		children.add(this.details);
 
 		return children;
 	}
@@ -259,9 +218,9 @@ public class RdDirectroute implements IObj {
 
 			if (json.get(key) instanceof JSONArray) {
 				switch (key) {
-				
-				case "vias":
-					vias.clear();
+
+				case "details":
+					details.clear();
 
 					ja = json.getJSONArray(key);
 
@@ -272,7 +231,7 @@ public class RdDirectroute implements IObj {
 
 						row.Unserialize(jo);
 
-						vias.add(row);
+						details.add(row);
 					}
 
 					break;
@@ -310,7 +269,7 @@ public class RdDirectroute implements IObj {
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
 		Map<Class<? extends IRow>, List<IRow>> childMap = new HashMap<>();
 
-		childMap.put(RdDirectrouteVia.class, this.vias);
+		childMap.put(RdVoiceguideDetail.class, this.details);
 
 		return childMap;
 	}
@@ -319,7 +278,7 @@ public class RdDirectroute implements IObj {
 	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
 		Map<Class<? extends IRow>, Map<String, ?>> childMap = new HashMap<Class<? extends IRow>, Map<String, ?>>();
 
-		childMap.put(RdDirectrouteVia.class, directrouteViaMap);
+		childMap.put(RdVoiceguideDetail.class, detailMap);
 
 		return childMap;
 	}

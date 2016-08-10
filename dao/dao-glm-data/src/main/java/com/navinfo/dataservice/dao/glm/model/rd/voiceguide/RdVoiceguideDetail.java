@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.dao.glm.model.rd.directroute;
+package com.navinfo.dataservice.dao.glm.model.rd.voiceguide;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -16,31 +16,30 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideVia;
 
-public class RdDirectroute implements IObj {
+public class RdVoiceguideDetail implements IObj {
 
 	private String rowId;
 
 	private int pid;
 
-	private int inLinkPid;// 进入link
-
-	private int nodePid;// 进入node
+	private int voiceguidePid;// 语音引导
 
 	private int outLinkPid;// 退出link
 
-	private int flag=2;// 顺行标志
+	private int guideCode = 0;// 语音代码
 
-	private int processFlag=1;// 处理标志
+	private int guideType = 0;// 语音类型
 
-	private int relationshipType=1;// 关系类型
+	private int processFlag = 1;// 处理标志
+
+	private int relationshipType = 1;// 关系类型
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	private List<IRow> vias = new ArrayList<IRow>();
 
-	public Map<String, RdDirectrouteVia> directrouteViaMap = new HashMap<String, RdDirectrouteVia>();
+	public Map<String, RdVoiceguideVia> directrouteViaMap = new HashMap<String, RdVoiceguideVia>();
 
 	public int getPid() {
 		return pid;
@@ -50,20 +49,12 @@ public class RdDirectroute implements IObj {
 		this.pid = pid;
 	}
 
-	public int getInLinkPid() {
-		return inLinkPid;
+	public int getVoiceguidePid() {
+		return voiceguidePid;
 	}
 
-	public void setInLinkPid(int inLinkPid) {
-		this.inLinkPid = inLinkPid;
-	}
-
-	public int getNodePid() {
-		return nodePid;
-	}
-
-	public void setNodePid(int nodePid) {
-		this.nodePid = nodePid;
+	public void setVoiceguidePid(int voiceguidePid) {
+		this.voiceguidePid = voiceguidePid;
 	}
 
 	public int getOutLinkPid() {
@@ -74,12 +65,20 @@ public class RdDirectroute implements IObj {
 		this.outLinkPid = outLinkPid;
 	}
 
-	public int getFlag() {
-		return flag;
+	public int getGuideCode() {
+		return guideCode;
 	}
 
-	public void setFlag(int flag) {
-		this.flag = flag;
+	public void setGuideCode(int guideCode) {
+		this.guideCode = guideCode;
+	}
+
+	public int getGuideType() {
+		return guideType;
+	}
+
+	public void setGuideType(int guideType) {
+		this.guideType = guideType;
 	}
 
 	public int getProcessFlag() {
@@ -98,18 +97,16 @@ public class RdDirectroute implements IObj {
 		this.relationshipType = relationshipType;
 	}
 
-	public String getRowId() {
-		return rowId;
-	}
-	
-	
-
 	public List<IRow> getVias() {
 		return vias;
 	}
 
-	public void setVias(List<IRow> directrouteVias) {
-		this.vias = directrouteVias;
+	public void setVias(List<IRow> vias) {
+		this.vias = vias;
+	}
+
+	public String getRowId() {
+		return rowId;
 	}
 
 	@Override
@@ -124,7 +121,7 @@ public class RdDirectroute implements IObj {
 
 	@Override
 	public String tableName() {
-		return "rd_directroute";
+		return "rd_voiceguide_detail";
 	}
 
 	@Override
@@ -141,7 +138,7 @@ public class RdDirectroute implements IObj {
 
 	@Override
 	public ObjType objType() {
-		return ObjType.RDDIRECTROUTE;
+		return ObjType.RDVOICEGUIDEDETAIL;
 	}
 
 	@Override
@@ -157,21 +154,22 @@ public class RdDirectroute implements IObj {
 
 	@Override
 	public String parentPKName() {
-		return "pid";
+		return "voiceguide_pid";
 	}
 
 	@Override
 	public int parentPKValue() {
-		return this.getPid();
+		return this.voiceguidePid;
 	}
 
 	@Override
 	public String parentTableName() {
-		return "rd_directroute";
+		return "rd_voiceguide";
 	}
 
 	@Override
 	public List<List<IRow>> children() {
+
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
 
 		children.add(this.vias);
@@ -259,7 +257,6 @@ public class RdDirectroute implements IObj {
 
 			if (json.get(key) instanceof JSONArray) {
 				switch (key) {
-				
 				case "vias":
 					vias.clear();
 
@@ -268,7 +265,7 @@ public class RdDirectroute implements IObj {
 					for (int i = 0; i < ja.size(); i++) {
 						JSONObject jo = ja.getJSONObject(i);
 
-						RdDirectrouteVia row = new RdDirectrouteVia();
+						RdVoiceguideVia row = new RdVoiceguideVia();
 
 						row.Unserialize(jo);
 
@@ -297,30 +294,32 @@ public class RdDirectroute implements IObj {
 
 	@Override
 	public int pid() {
-		// TODO Auto-generated method stub
 		return this.pid;
 	}
 
 	@Override
 	public String primaryKey() {
-		return "pid";
+		return "detail_id";
 	}
 
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
+
 		Map<Class<? extends IRow>, List<IRow>> childMap = new HashMap<>();
 
-		childMap.put(RdDirectrouteVia.class, this.vias);
+		childMap.put(RdVoiceguideVia.class, this.vias);
 
 		return childMap;
 	}
 
 	@Override
 	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
+
 		Map<Class<? extends IRow>, Map<String, ?>> childMap = new HashMap<Class<? extends IRow>, Map<String, ?>>();
 
-		childMap.put(RdDirectrouteVia.class, directrouteViaMap);
+		childMap.put(RdVoiceguideVia.class, directrouteViaMap);
 
 		return childMap;
 	}
+
 }

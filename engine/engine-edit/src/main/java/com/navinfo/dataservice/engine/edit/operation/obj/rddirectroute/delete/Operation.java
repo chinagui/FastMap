@@ -54,14 +54,15 @@ public class Operation implements IOperation {
 
 		RdDirectrouteSelector selector = new RdDirectrouteSelector(conn);
 
+		
 		List<RdDirectroute> directroutes = selector.loadByInOutLink(
 				oldLink.getPid(), true);
-
+		// 删除link做进入线或退出线的顺行
 		for (RdDirectroute directroute : directroutes) {
 
 			deleteRdDirectroute(result, directroute);
 		}
-
+		
 		directroutes = selector.loadByPassLink(oldLink.getPid(), true);
 
 		for (RdDirectroute directroute : directroutes) {
@@ -74,25 +75,31 @@ public class Operation implements IOperation {
 			Result result) throws Exception {
 
 		if (directroute.getVias().size() == 0) {
+
 			return;
 		}
 
 		Map<Integer, List<RdDirectrouteVia>> viaGroupId = new HashMap<Integer, List<RdDirectrouteVia>>();
 
 		for (IRow row : directroute.getVias()) {
+
 			RdDirectrouteVia via = (RdDirectrouteVia) row;
 
 			if (viaGroupId.get(via.getGroupId()) == null) {
+
 				viaGroupId.put(via.getGroupId(),
 						new ArrayList<RdDirectrouteVia>());
 			}
 
 			viaGroupId.get(via.getGroupId()).add(via);
 		}
-
+		
+		//1：如果该经过线所属的经过线组对应的顺行信息只有这一组经过线，则删除该顺行信息、顺行信息所包括经过线信息等。
+        //2：如果该经过线所属的经过线组对应的顺行信息有多组经过线，则删除该经过线所属经过线组（同组号）信息。
 		int groupCount = viaGroupId.size();
 
 		for (int key : viaGroupId.keySet()) {
+
 			List<RdDirectrouteVia> value = viaGroupId.get(key);
 
 			RdDirectrouteVia oldVia = null;
@@ -100,11 +107,13 @@ public class Operation implements IOperation {
 			for (RdDirectrouteVia via : value) {
 
 				if (via.getLinkPid() == oldLink.getPid()) {
+
 					oldVia = via;
 
 					break;
 				}
 			}
+
 			if (oldVia == null) {
 				continue;
 			}
@@ -113,15 +122,17 @@ public class Operation implements IOperation {
 
 				result.insertObject(via, ObjStatus.DELETE, via.getPid());
 			}
-			groupCount--;
 
+			groupCount--;
 		}
 
 		if (groupCount == 0) {
+
+			// 清空子表，防止重复删除
+			directroute.children().clear();
+
 			result.insertObject(directroute, ObjStatus.DELETE,
 					directroute.getPid());
 		}
-
 	}
-
 }

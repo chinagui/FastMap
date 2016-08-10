@@ -18,7 +18,7 @@ public class RdDirectrouteTest extends InitApplication{
 
 	@Test
 	public void createTest_1() throws Exception {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDDIRECTROUTE\",\"dbId\":42,\"data\":{\"branchType\":1,\"inLinkPid\":100006668,\"nodePid\": 100023804,\"outLinkPid\":100006671}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDDIRECTROUTE\",\"dbId\":42,\"data\":{\"inLinkPid\":100006668,\"nodePid\": 100023804,\"outLinkPid\":100006671}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);
 		String msg = t.run();
@@ -28,7 +28,7 @@ public class RdDirectrouteTest extends InitApplication{
 	public void updateTest_1() throws Exception {
 		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDDIRECTROUTE\",\"dbId\":42,\"data\":{\"flag\":2,\"processFlag\": 1,\"objStatus\":\"UPDATE\",\"pid\":100000000}}";
 		log.info(parameter);
-		Transaction t = new Transaction(parameter);		;
+		Transaction t = new Transaction(parameter);	
 		String msg = t.run();
 	}
 	

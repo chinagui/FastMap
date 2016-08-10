@@ -22,6 +22,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
+import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
@@ -37,6 +38,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchViaSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdInterSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.gate.RdGateSelector;
@@ -383,6 +385,9 @@ public class Process extends AbstractProcess<Command> {
 		// 顺行
 		OpRefRdDirectroute opRefRdDirectroute = new OpRefRdDirectroute(this.getConn());
 		opRefRdDirectroute.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
+		//CRF交叉点
+		OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
+		opRefRdInter.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
 	}
 
 	/**
@@ -550,7 +555,18 @@ public class Process extends AbstractProcess<Command> {
 		infectList = directrouteSelector.loadPidByLink(this.getCommand().getLinkPid(), false);
 
 		infects.put("RDDIRECTROUTE", infectList);
-
+		
+		//CRF交叉点
+		RdInterSelector interSelector = new RdInterSelector(this.getConn());
+		
+		RdInterLink interLink = interSelector.loadByLinkPid(this.getCommand().getLinkPid(), false);
+		
+		infectList = new ArrayList<Integer>();
+		
+		infectList.add(interLink.getPid());
+		
+		infects.put("RDINTER", infectList);
+		
 		return infects;
 
 	}

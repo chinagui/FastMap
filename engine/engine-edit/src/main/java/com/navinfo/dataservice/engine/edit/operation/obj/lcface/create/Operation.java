@@ -93,8 +93,8 @@ public class Operation implements IOperation {
 			lcLinks.add(link);
 			if (link.getMeshes().size() == 1) {
 				for (IRow iRow : link.getMeshes()) {
-					LcLinkMesh adlinkmesh = (LcLinkMesh) iRow;
-					meshes.add(String.valueOf(adlinkmesh.getMeshId()));
+					LcLinkMesh lclinkmesh = (LcLinkMesh) iRow;
+					meshes.add(String.valueOf(lclinkmesh.getMeshId()));
 				}
 			}
 		}
@@ -126,15 +126,15 @@ public class Operation implements IOperation {
 		Map<Geometry, LcLink> mapLink = new HashMap<Geometry, LcLink>();
 		if (flag == 1) {
 			for (IObj obj : objList) {
-				LcLink adLink = (LcLink) obj;
-				Geometry geometry = GeoTranslator.transform(adLink.getGeometry(), 0.00001, 5);
-				mapLink.put(geometry, adLink);
+				LcLink lcLink = (LcLink) obj;
+				Geometry geometry = GeoTranslator.transform(lcLink.getGeometry(), 0.00001, 5);
+				mapLink.put(geometry, lcLink);
 
 				if (!mapNode.containsValue(geometry.getCoordinates()[0])) {
-					mapNode.put(geometry.getCoordinates()[0], adLink.getsNodePid());
+					mapNode.put(geometry.getCoordinates()[0], lcLink.getsNodePid());
 				}
 				if (!mapNode.containsValue(geometry.getCoordinates()[geometry.getCoordinates().length - 1])) {
-					mapNode.put(geometry.getCoordinates()[geometry.getCoordinates().length - 1], adLink.geteNodePid());
+					mapNode.put(geometry.getCoordinates()[geometry.getCoordinates().length - 1], lcLink.geteNodePid());
 				}
 
 			}
@@ -149,27 +149,27 @@ public class Operation implements IOperation {
 				LineString[] lineStrings = itLine.next();
 				List<LcLink> links = new ArrayList<LcLink>();
 				for (LineString lineString : lineStrings) {
-					LcLink adLink = null;
+					LcLink lcLink = null;
 					if (MeshUtils.isMeshLine(lineString)) {
 						if (mapLink.containsKey(lineString.reverse())) {
-							adLink = mapLink.get(lineString.reverse());
+							lcLink = mapLink.get(lineString.reverse());
 						} else if (mapLink.containsKey(lineString)) {
-							adLink = mapLink.get(lineString);
+							lcLink = mapLink.get(lineString);
 						} else {
-							adLink = this.createLinkOfFace(lineString, mapNode);
-							mapLink.put(lineString, adLink);
+							lcLink = this.createLinkOfFace(lineString, mapNode);
+							mapLink.put(lineString, lcLink);
 						}
-						links.add(adLink);
+						links.add(lcLink);
 
 					} else {
 						if (flag == 0) {
 							if (mapLink.containsKey(lineString)) {
-								adLink = mapLink.get(lineString);
+								lcLink = mapLink.get(lineString);
 							} else {
-								adLink = this.createLinkOfFace(lineString, mapNode);
-								mapLink.put(lineString, adLink);
+								lcLink = this.createLinkOfFace(lineString, mapNode);
+								mapLink.put(lineString, lcLink);
 							}
-							links.add(adLink);
+							links.add(lcLink);
 
 						} else {
 
@@ -246,7 +246,7 @@ public class Operation implements IOperation {
 	/*
 	 * 添加Link和FaceTopo关系
 	 */
-	public void addLink(Map<LcLink, Integer> map) {
+	public void lcdLink(Map<LcLink, Integer> map) {
 		List<IRow> lcFaceTopos = new ArrayList<IRow>();
 		for (LcLink link : map.keySet()) {
 			LcFaceTopo faceTopo = new LcFaceTopo();
@@ -313,7 +313,7 @@ public class Operation implements IOperation {
 		if (this.updateFlag) {
 			this.createFaceTop(map);
 		} else {
-			this.addLink(map);
+			this.lcdLink(map);
 		}
 		Geometry g = GeoTranslator.getCalLineToPython(list);
 		Coordinate[] c1 = new Coordinate[g.getCoordinates().length];

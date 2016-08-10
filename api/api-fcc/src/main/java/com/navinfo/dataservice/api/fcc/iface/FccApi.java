@@ -4,6 +4,6 @@ import net.sf.json.JSONArray;
 
 public interface FccApi {
 	
-	public JSONArray searchDataBySpatial(String wkt) throws Exception;
+	public JSONArray searchDataBySpatial(String wkt, int type, JSONArray stages) throws Exception;
 
 }

@@ -497,4 +497,18 @@ public class PidService {
 	public synchronized int applyRdSameNodePid() throws Exception {
 		return this.applyPid(PidSequenceName.rdSamenodeName);
 	}
+	
+	/**
+	 * 申请rd_tollgate
+	 */
+	public synchronized int applyRdTollgatePid() throws Exception {
+		return this.applyPid(PidSequenceName.rdTollgate);
+	}
+	
+	/**
+	 * 申请rd_tollgate_name
+	 */
+	public synchronized int applyRdTollgateNamePid() throws Exception {
+		return this.applyPid(PidSequenceName.rdTollgateName);
+	}
 }

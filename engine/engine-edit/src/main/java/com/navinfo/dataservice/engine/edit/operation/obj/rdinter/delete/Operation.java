@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -9,9 +10,11 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
-import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
-import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
+import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
+import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
+import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterNode;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdInterSelector;
 
 /**
  * 
@@ -45,49 +48,77 @@ public class Operation implements IOperation {
 	}
 	
 	/**
-	 * 删除link维护信息
-	 * 
 	 * @param linkPid
 	 * @param result
-	 * @param conn
 	 * @throws Exception
 	 */
-	public void deleteByNode(Result result,List<IRow> crossNodes) throws Exception {		
+	public void deleteByLink(RdLink link, Result result) throws Exception {
+		RdInterSelector interSelector = new RdInterSelector(conn);
 
-		if (conn == null || CollectionUtils.isEmpty(crossNodes)) {
-			return;
+		String nodePids = link.getsNodePid() + "," + link.geteNodePid();
+
+		// 根据nodePids查询组成的CRF交叉点
+		List<RdInter> rdInters = interSelector.loadInterByNodePid(nodePids, true);
+
+		if (CollectionUtils.isNotEmpty(rdInters)) {
+			List<Integer> nodePidList = new ArrayList<>();
+
+			nodePidList.add(link.getsNodePid());
+
+			nodePidList.add(link.geteNodePid());
+
+			for (RdInter rdInter : rdInters) {
+				// 删除的线单独参与某一个CRF交叉点的时候，删除线需要删除主表对象以及所有子表数据
+				List<IRow> nodes = rdInter.getNodes();
+
+				if (nodes.size() == 1) {
+					RdInterNode interNode = (RdInterNode) nodes.get(0);
+
+					if (nodePidList.contains(interNode.getNodePid())) {
+						result.insertObject(rdInter, ObjStatus.DELETE, rdInter.getPid());
+						break;
+					}
+				} else if (nodes.size() == 2) {
+					RdInterNode interNode_1 = (RdInterNode) nodes.get(0);
+
+					RdInterNode interNode_2 = (RdInterNode) nodes.get(1);
+					if (nodePidList.contains(interNode_1.getNodePid())
+							&& nodePidList.contains(interNode_2.getNodePid())) {
+						result.insertObject(rdInter, ObjStatus.DELETE, rdInter.getPid());
+						break;
+					}
+				}
+				//只删除子表数据
+				List<IRow> links = rdInter.getLinks();
+				
+				deleteInterNodeAndInterLink(link,nodes,links,result);
+			}
 		}
-		int [] crossNodePids = new int[crossNodes.size()];
-		
-		for(int i=0;i<crossNodes.size();i++)
+	}
+
+	/**
+	 * 删除子表数据
+	 * @param link 原始删除的link
+	 * @param nodes crf交叉点组成node
+	 * @param links crf交叉点组成link
+	 * @param result 结果集
+	 */
+	private void deleteInterNodeAndInterLink(RdLink link, List<IRow> nodes, List<IRow> links, Result result) {
+
+		for (IRow row : nodes) {
+			RdInterNode interNode = (RdInterNode) row;
+			if (interNode.getNodePid() == link.getsNodePid() || interNode.getNodePid() == link.geteNodePid()) {
+				result.insertObject(interNode, ObjStatus.DELETE, interNode.getNodePid());
+			}
+		}
+		for(IRow row : links)
 		{
-			crossNodePids[i] = ((RdCrossNode)crossNodes.get(i)).getNodePid();
-		}
-		
-		RdTrafficsignalSelector selector = new RdTrafficsignalSelector(conn);
-
-		List<RdTrafficsignal> trafficsignals = selector.loadByNodeId(true,crossNodePids);
-
-		for (RdTrafficsignal trafficsignal : trafficsignals) {
-
-			result.insertObject(trafficsignal, ObjStatus.DELETE,
-					trafficsignal.getPid());
+			RdInterLink interLink = (RdInterLink)row;
+			if(interLink.getLinkPid() == link.getPid())
+			{
+				result.insertObject(interLink, ObjStatus.DELETE, interLink.getLinkPid());
+			}
 		}
 	}
 	
-	/**
-	 * 删除link维护信息
-	 * 
-	 * @param linkPid
-	 * @param result
-	 * @param conn
-	 * @throws Exception
-	 */
-	public void deleteByLink(Result result,int ... linkPids) throws Exception {		
-
-		if (conn == null || linkPids.length == 0) {
-			return;
-		}
-	}
-
 }

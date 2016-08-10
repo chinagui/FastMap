@@ -24,7 +24,7 @@ public class OpRefRdInter{
 	
 	public String run(Result result,Command command) throws Exception {
 		
-		com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Operation rdinterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Operation(
+		com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Operation rdinterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Operation(
 				this.conn);
 		for (RdLink link : command.getLinks()) {
 			rdinterOperation.deleteByLink(link, result);

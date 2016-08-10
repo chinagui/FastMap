@@ -175,7 +175,14 @@ public class RdNameSelector {
 		System.out.println(selector.searchByName("", 10, 1));
 	}
 	
-	
+	/**
+	 * web端查询rdName
+	 * @author wangdongbin
+	 * @param params
+	 * @param tips
+	 * @return
+	 * @throws Exception
+	 */
 	@SuppressWarnings({ "static-access", "unchecked" })
 	public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exception {
 		
@@ -203,7 +210,18 @@ public class RdNameSelector {
 			sql.append(",a.SUFFIX,a.NAME_PHONETIC,a.TYPE_PHONETIC,a.BASE_PHONETIC,a.PREFIX_PHONETIC,a.INFIX_PHONETIC");
 			sql.append(",a.SUFFIX_PHONETIC,a.SRC_FLAG,a.ROAD_TYPE,a.ADMIN_ID,a.CODE_TYPE,a.VOICE_FILE,a.SRC_RESUME");
 			sql.append(",a.PA_REGION_ID,a.SPLIT_FLAG,a.MEMO,a.ROUTE_ID,a.PROCESS_FLAG,a.CITY");
-			sql.append(" from rd_name a where a.name in ()");
+			sql.append(" from rd_name a where a.name in (");
+			
+			String tmep = "";
+			for (int i=0;i<tips.size();i++) {
+				JSONObject tipsObj = tips.getJSONObject(i);
+				sql.append(tmep);
+				tmep = ",";
+				sql.append("'");
+				sql.append(tipsObj.getString("id"));
+				sql.append("'");
+			}
+			sql.append(")");
 			
 			// 添加过滤器条件
 			for (int i=0;i<paramList.size();i++) {

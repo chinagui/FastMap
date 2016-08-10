@@ -121,4 +121,6 @@ public class PidSequenceName {
 	public static final String rdTollgate = "SEQ_RD_TOLLGATE";
 	
 	public static final String rdTollgateName = "SEQ_RD_TOLLGATE_NAME";
+	
+	public  static final String rdLanePidName = "SEQ_RD_LANE";
 }

@@ -339,6 +339,13 @@ public class PidService {
 		return applyPid(PidSequenceName.zoneLinkPidName);
 
 	}
+	/**
+	 * 申请zone_link_pid
+	 */
+	public synchronized int applyRdLanePid() throws Exception {
+		return applyPid(PidSequenceName.rdLanePidName);
+
+	}
 
 	/**
 	 * 申请zone_face_pid

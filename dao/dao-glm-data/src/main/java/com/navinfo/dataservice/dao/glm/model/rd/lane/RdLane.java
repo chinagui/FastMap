@@ -35,7 +35,7 @@ public class RdLane implements IObj {
 									// Forming&Ending)
 	private int laneDir = 1;// 1 无2 顺方向3 逆方向
 	private int laneType = 1;// 车道类型
-	private int arrowDir = 9 ;//转向箭头
+	private String arrowDir = "9" ;//转向箭头
 	private int laneMark = 0;//车道标线
 	private int width =0 ;//车道宽度
 	private int restrictHeight= 0;//车道限高
@@ -112,11 +112,11 @@ public class RdLane implements IObj {
 		this.laneType = laneType;
 	}
 
-	public int getArrowDir() {
+	public String getArrowDir() {
 		return arrowDir;
 	}
 
-	public void setArrowDir(int arrowDir) {
+	public void setArrowDir(String arrowDir) {
 		this.arrowDir = arrowDir;
 	}
 

@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -16,6 +17,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterNode;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
+import com.sun.tools.classfile.Opcode.Set;
 
 /**
  * @ClassName: RdInterSelector
@@ -49,14 +51,17 @@ public class RdInterSelector extends AbstractSelector {
 	public List<RdInter> loadInterByNodePid(String nodePidStr,boolean isLock) throws Exception
 	{
 		List<RdInter> interList = new ArrayList<>();
+		
+		HashSet<Integer> pidSet = new HashSet<Integer>();
+		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
 			StringBuilder sb = new StringBuilder(
-					"select distinct a.* from rd_inter a,RD_INTER_NODE b where a.PID = b.PID and b.NODE_PID in("+nodePidStr+") and a.u_record !=2 and b.u_record !=2");
-//			if (isLock) {
-//				sb.append(" for update nowait");
-//			}
+					"select a.* from rd_inter a,RD_INTER_NODE b where a.PID = b.PID and b.NODE_PID in("+nodePidStr+") and a.u_record !=2 and b.u_record !=2");
+			if (isLock) {
+				sb.append(" for update nowait");
+			}
 			pstmt = conn.prepareStatement(sb.toString());
 
 			resultSet = pstmt.executeQuery();
@@ -64,17 +69,24 @@ public class RdInterSelector extends AbstractSelector {
 			while (resultSet.next()) {
 				RdInter rdInter = new RdInter();
 				
-				ReflectionAttrUtils.executeResultSet(rdInter, resultSet);
+				int pid = resultSet.getInt("pid");
 				
-				List<IRow> interLinkList = new AbstractSelector(RdInterLink.class,conn).loadRowsByParentId(rdInter.getPid(), isLock);
-				
-				rdInter.setLinks(interLinkList);
-				
-				List<IRow> interNodeList = new AbstractSelector(RdInterNode.class,conn).loadRowsByParentId(rdInter.getPid(), isLock);
-				
-				rdInter.setNodes(interNodeList);
-				
-				interList.add(rdInter);
+				if(!pidSet.contains(pid))
+				{
+					ReflectionAttrUtils.executeResultSet(rdInter, resultSet);
+					
+					List<IRow> interLinkList = new AbstractSelector(RdInterLink.class,conn).loadRowsByParentId(rdInter.getPid(), isLock);
+					
+					rdInter.setLinks(interLinkList);
+					
+					List<IRow> interNodeList = new AbstractSelector(RdInterNode.class,conn).loadRowsByParentId(rdInter.getPid(), isLock);
+					
+					rdInter.setNodes(interNodeList);
+					
+					interList.add(rdInter);
+					
+					pidSet.add(pid);
+				}
 			}
 		} catch (Exception e) {
 			throw e;

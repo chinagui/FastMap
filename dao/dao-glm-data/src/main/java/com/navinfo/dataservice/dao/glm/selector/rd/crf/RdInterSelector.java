@@ -17,7 +17,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterNode;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
-import com.sun.tools.classfile.Opcode.Set;
 
 /**
  * @ClassName: RdInterSelector

@@ -337,6 +337,10 @@ public class Process extends AbstractProcess<Command> {
 		// CRF交叉点
 		OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
 		opRefRdInter.run(this.getResult(), this.getCommand());
+
+		// 同一点关系
+		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
+		opRefRdSameNode.run(getResult(), this.getCommand());
 	}
 
 	/**
@@ -462,14 +466,13 @@ public class Process extends AbstractProcess<Command> {
 
 		// CRF交叉点
 		RdInterSelector interSelector = new RdInterSelector(this.getConn());
-		
+
 		StringBuilder sb = new StringBuilder();
-		
-		for(RdLink link : this.getCommand().getLinks())
-		{
+
+		for (RdLink link : this.getCommand().getLinks()) {
 			sb.append(link.getsNodePid() + "," + link.geteNodePid());
 		}
-		
+
 		infectList = interSelector.loadInterPidByNodePid(sb.deleteCharAt(sb.lastIndexOf(",")).toString(), false);
 
 		infects.put("RDINTER", infectList);

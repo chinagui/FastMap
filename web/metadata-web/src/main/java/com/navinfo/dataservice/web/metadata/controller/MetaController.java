@@ -9,16 +9,15 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.log4j.Logger;
 import org.apache.uima.pear.util.FileUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -36,6 +35,9 @@ import com.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
 import com.navinfo.dataservice.engine.meta.patternimage.PatternImageSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 @Controller
 public class MetaController extends BaseController {
@@ -550,6 +552,37 @@ public class MetaController extends BaseController {
 			KindCodeSelector selector = new KindCodeSelector();
 
 			JSONArray data = selector.queryKindInfo(region);
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	@RequestMapping(value = "/rdname/websearch")
+	public ModelAndView searchRdNameForWeb(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			RdNameSelector selector = new RdNameSelector();
+			
+			int subtaskId = jsonReq.getInt("subtaskId");
+			
+			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+			
+			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+			
+			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
+			
+			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry());
+			
+			JSONObject data = selector.searchForWeb(jsonReq,tips);
 
 			return new ModelAndView("jsonView", success(data));
 

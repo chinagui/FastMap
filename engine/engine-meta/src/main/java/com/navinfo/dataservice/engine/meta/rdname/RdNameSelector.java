@@ -3,13 +3,17 @@ package com.navinfo.dataservice.engine.meta.rdname;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.util.StringUtils;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 
 public class RdNameSelector {
 
@@ -169,5 +173,126 @@ public class RdNameSelector {
 		RdNameSelector selector = new RdNameSelector();
 
 		System.out.println(selector.searchByName("", 10, 1));
+	}
+	
+	
+	@SuppressWarnings({ "static-access", "unchecked" })
+	public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exception {
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		Connection conn = null;
+		try {
+			JSONObject result = new JSONObject();
+			
+			conn = DBConnector.getInstance().getMetaConnection();
+			
+			JSONArray paramList =  params.getJSONArray("params");
+			String sortby = params.getString("sortby");
+			int pageSize = params.getInt("pageSize");
+			int pageNum = params.getInt("pageNum");
+			
+			StringUtils sUtils = new StringUtils();
+			
+			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT * ");
+			sql.append(" FROM (SELECT c.*, rownum rn");
+			sql.append(" FROM (select a.NAME_ID,a.NAME_GROUPID,a.LANG_CODE,a.NAME,a.TYPE,a.BASE,a.PREFIX,a.INFIX");
+			sql.append(",a.SUFFIX,a.NAME_PHONETIC,a.TYPE_PHONETIC,a.BASE_PHONETIC,a.PREFIX_PHONETIC,a.INFIX_PHONETIC");
+			sql.append(",a.SUFFIX_PHONETIC,a.SRC_FLAG,a.ROAD_TYPE,a.ADMIN_ID,a.CODE_TYPE,a.VOICE_FILE,a.SRC_RESUME");
+			sql.append(",a.PA_REGION_ID,a.SPLIT_FLAG,a.MEMO,a.ROUTE_ID,a.PROCESS_FLAG,a.CITY");
+			sql.append(" from rd_name a where a.name in ()");
+			
+			// 添加过滤器条件
+			for (int i=0;i<paramList.size();i++) {
+				JSONObject colum = paramList.getJSONObject(i);
+				Iterator<String> keys = colum.keys();
+				while (keys.hasNext()) {
+					String key = keys.next();
+					String columnName = sUtils.toColumnName(key);
+					sql.append(" and a.");
+					sql.append(columnName);
+					sql.append("=");
+					sql.append(colum.getString(key));
+				}
+			}
+			
+			// 添加排序条件
+			int index = sortby.indexOf("-");
+			if (index != -1) {
+				String sortbyName = sUtils.toColumnName(sortby.substring(1));
+				sql.append(" ORDER BY a.");
+				sql.append(sortbyName);
+				sql.append(" DESC");
+			} else {
+				String sortbyName = sUtils.toColumnName(sortby);
+				sql.append(" ORDER BY a.");
+				sql.append(sortbyName);
+				sql.append(" ASC");
+			}
+			
+			sql.append(" ) c");
+			sql.append(" WHERE rownum <= :1)  WHERE rn >= :2");
+			
+			int startRow = pageNum * pageSize + 1;
+
+			int endRow = (pageNum + 1) * pageSize;
+
+			pstmt = conn.prepareStatement(sql.toString());
+
+			pstmt.setInt(1, endRow);
+
+			pstmt.setInt(2, startRow);
+
+			resultSet = pstmt.executeQuery();
+			
+			int total = 0;
+			
+			List<JSONObject> data = new ArrayList<JSONObject>();
+			
+			while (resultSet.next()) {
+				total++;
+				JSONObject rdNameObj = new JSONObject();
+				rdNameObj.put("nameId", resultSet.getInt("NAME_ID"));
+				rdNameObj.put("nameGroupid", resultSet.getInt("NAME_GROUPID"));
+				rdNameObj.put("longCode", resultSet.getString("LANG_CODE"));
+				rdNameObj.put("name", resultSet.getString("NAME"));
+				rdNameObj.put("type", resultSet.getString("TYPE"));
+				rdNameObj.put("base", resultSet.getString("BASE"));
+				rdNameObj.put("prefix", resultSet.getString("PREFIX"));
+				rdNameObj.put("infix", resultSet.getString("INFIX"));
+				rdNameObj.put("suffix", resultSet.getString("SUFFIX"));
+				rdNameObj.put("namePhonetic", resultSet.getString("NAME_PHONETIC"));
+				rdNameObj.put("typePhonetic", resultSet.getString("TYPE_PHONETIC"));
+				rdNameObj.put("basePhonetic", resultSet.getString("BASE_PHONETIC"));
+				rdNameObj.put("prefixPhonetic", resultSet.getString("PREFIX_PHONETIC"));
+				rdNameObj.put("infixPhonetic", resultSet.getString("INFIX_PHONETIC"));
+				rdNameObj.put("suffixPhonetic", resultSet.getString("SUFFIX_PHONETIC"));
+				rdNameObj.put("srcFlag", resultSet.getInt("SRC_FLAG"));
+				rdNameObj.put("roadType", resultSet.getInt("ROAD_TYPE"));
+				rdNameObj.put("adminId", resultSet.getInt("ADMIN_ID"));
+				rdNameObj.put("codeType", resultSet.getInt("CODE_TYPE"));
+				rdNameObj.put("voiceFile", resultSet.getString("VOICE_FILE"));
+				rdNameObj.put("srcResume", resultSet.getString("SRC_RESUME"));
+				rdNameObj.put("paRegionId", resultSet.getInt("PA_REGION_ID"));
+				rdNameObj.put("splitFlag", resultSet.getInt("SPLIT_FLAG"));
+				rdNameObj.put("memo", resultSet.getString("MEMO"));
+				rdNameObj.put("routeId", resultSet.getInt("ROUTE_ID"));
+				rdNameObj.put("processFlag", resultSet.getInt("PROCESS_FLAG"));
+				rdNameObj.put("city", resultSet.getString("CITY"));
+				data.add(rdNameObj);
+			}
+			result.put("total", total);
+			result.put("data", data);
+			return result;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
+		}
 	}
 }

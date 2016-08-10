@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -85,31 +84,41 @@ public class Operation implements IOperation {
 			}
 			// 当电子眼坐标不再所有的新生成线段
 			if (!isOnTheLine) {
-				// 将所有新生成的线段进行连接
-				List<Geometry> geoms = new ArrayList<Geometry>();
-				for (RdLink link : newLinks) {
-					geoms.add(link.getGeometry());
-				}
-				JSONObject geoLink = GeometryUtils.connectLinks(geoms);
-				Geometry intactLink = GeoTranslator.geojson2Jts(geoLink);
+				Coordinate minPoint = null;
+				double minLength = 0;
+				int minLinkPid = 0;
 				// 计算电子眼原坐标与新生成线段最近的壹个点的坐标
-				Coordinate point = this.GetNearestPointOnLine(eleceye.getGeometry().getCoordinate(), intactLink);
-				JSONObject geoPoint = new JSONObject();
-				geoPoint.put("type", "Point");
-				geoPoint.put("coordinates", new double[] { point.x, point.y });
-				for (RdLink link : newLinks) {
-					// 判断新生成的坐标处在哪条新生成的线段上并更新电子眼的linkpid字段
-					if (isOnTheLine(GeoTranslator.geojson2Jts(geoPoint), link.getGeometry())) {
-						// 更新电子眼的坐标字段
-						Geometry tmpGeo = GeoTranslator.geojson2Jts(geoPoint);
-						geoPoint = GeoTranslator.jts2Geojson(tmpGeo, 0.00001, 5);
-						eleceye.changedFields().put("geometry", geoPoint);
-						
-						eleceye.changedFields().put("linkPid", link.pid());
-						result.insertObject(eleceye, ObjStatus.UPDATE, eleceye.pid());
-						break;
+				Coordinate eleceyeCoor = eleceye.getGeometry().getCoordinate();
+				for (RdLink rdLink : newLinks) {
+					Coordinate tmpPoint = this.GetNearestPointOnLine(eleceyeCoor, rdLink.getGeometry());
+					double tmpLength = GeometryUtils.getDistance(eleceyeCoor, tmpPoint);
+					if (minLength == 0 || tmpLength < minLength) {
+						minLength = tmpLength;
+						minLinkPid = rdLink.pid();
+						minPoint = tmpPoint;
 					}
 				}
+				JSONObject geoPoint = new JSONObject();
+				geoPoint.put("type", "Point");
+				geoPoint.put("coordinates", new double[] { minPoint.x, minPoint.y });
+//				for (RdLink link : newLinks) {
+//					// 判断新生成的坐标处在哪条新生成的线段上并更新电子眼的linkpid字段
+//					if (isOnTheLine(GeoTranslator.geojson2Jts(geoPoint), link.getGeometry())) {
+//						// 更新电子眼的坐标字段
+//						Geometry tmpGeo = GeoTranslator.geojson2Jts(geoPoint);
+//						geoPoint = GeoTranslator.jts2Geojson(tmpGeo, 0.00001, 5);
+//						eleceye.changedFields().put("geometry", geoPoint);
+//
+//						eleceye.changedFields().put("linkPid", link.pid());
+//						result.insertObject(eleceye, ObjStatus.UPDATE, eleceye.pid());
+//						break;
+//					}
+//				}
+				Geometry tmpGeo = GeoTranslator.geojson2Jts(geoPoint);
+				geoPoint = GeoTranslator.jts2Geojson(tmpGeo, 0.00001, 5);
+				eleceye.changedFields().put("geometry", geoPoint);
+				eleceye.changedFields().put("linkPid", minLinkPid);
+				result.insertObject(eleceye, ObjStatus.UPDATE, eleceye.pid());
 			}
 		}
 		return null;

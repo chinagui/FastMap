@@ -373,6 +373,10 @@ public class Process extends AbstractProcess<Command> {
 		// CRF交叉点
 		OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
 		opRefRdInter.run(this.getResult(), this.getCommand().getLink());
+		
+		//同一点关系
+		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
+		opRefRdSameNode.run(getResult(), this.getCommand().getLink());
 	}
 
 	/**

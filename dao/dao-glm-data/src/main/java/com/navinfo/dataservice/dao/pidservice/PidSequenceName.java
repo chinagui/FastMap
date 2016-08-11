@@ -93,13 +93,13 @@ public class PidSequenceName {
 	public static final String rdElectroniceyePidName = "SEQ_RD_ELECTRONICEYE";
 
 	public static final String rdEleceyePairPidName = "SEQ_RD_ELECEYE_PAIR";
-	
+
 	public static final String rdTrafficsignalPidName = "SEQ_RD_TRAFFICSIGNAL";
-	
+
 	public static final String rdWarninginfoPidName = "SEQ_RD_WARNINGINFO";
-	
+
 	public static final String rdSlopePidName = "SEQ_RD_SLOPE";
-	
+
 	public static final String rdGatePidName = "SEQ_RD_GATE";
 
 	public static final String lcNodePidName = "SEQ_LC_NODE";
@@ -107,18 +107,25 @@ public class PidSequenceName {
 	public static final String lcLinkPidName = "SEQ_LC_LINK";
 
 	public static final String lcFacePidName = "SEQ_LC_FACE";
-	
+
 	public static final String rdSePidName = "SEQ_RD_SE";
-	
+
 	public static final String rdDirectrouteName = "SEQ_RD_DIRECTROUTE";
-	
+
 	public static final String rdInterName = "SEQ_RD_INTER";
-	
+
 	public static final String rdSpeedbumpName = "SEQ_RD_SPEEDBUMP";
 
 	public static final String rdSamenodeName = "SEQ_RD_SAMENODE";
 
 	public static final String rdTollgate = "SEQ_RD_TOLLGATE";
-	
+
 	public static final String rdTollgateName = "SEQ_RD_TOLLGATE_NAME";
+
+	public static final String rdLanePidName = "SEQ_RD_LANE";
+
+	public static final String rdVoiceguideName = "SEQ_RD_VOICEGUIDE";
+
+	public static final String rdVoiceguideDetailName = "SEQ_RD_VOICEGUIDE_DETAIL";
+
 }

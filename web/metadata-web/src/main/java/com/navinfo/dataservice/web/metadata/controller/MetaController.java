@@ -563,6 +563,14 @@ public class MetaController extends BaseController {
 		}
 	}
 	
+	/**
+	 * web端查询rdName
+	 * @author wangdongbin
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
 	@RequestMapping(value = "/rdname/websearch")
 	public ModelAndView searchRdNameForWeb(HttpServletRequest request)
 			throws ServletException, IOException {
@@ -580,7 +588,7 @@ public class MetaController extends BaseController {
 			
 			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
 			
-			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry());
+			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
 			
 			JSONObject data = selector.searchForWeb(jsonReq,tips);
 

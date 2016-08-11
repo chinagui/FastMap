@@ -917,4 +917,27 @@ public class TipsSelector {
 		// 17,
 		// 20, types));
 	}
+	
+	/**
+	 * 范围查询Tips
+	 * 分类查询
+	 * 
+	 * @param wkt
+	 * @return Tips JSON数组
+	 * @throws Exception
+	 */
+	public JSONArray searchDataBySpatial(String wkt, int type, JSONArray stages) throws Exception {
+		JSONArray array = new JSONArray();
+
+		List<JSONObject> snapshots = conn.queryTipsWeb(wkt,type,stages);
+
+		for (JSONObject snapshot : snapshots) {
+
+			snapshot.put("t", 1);
+
+			array.add(snapshot);
+		}
+
+		return array;
+	}
 }

@@ -30,8 +30,7 @@ public class Process extends AbstractProcess<Command> {
 	public void lockLuLink() throws Exception {
 
 		LuLinkSelector selector = new LuLinkSelector(this.getConn());
-		List<LuLink> links = selector.loadByNodePid(this.getCommand()
-				.getNodePid(), true);
+		List<LuLink> links = selector.loadByNodePid(this.getCommand().getNodePid(), true);
 		List<Integer> linkPids = new ArrayList<Integer>();
 		for (LuLink link : links) {
 			linkPids.add(link.getPid());
@@ -48,8 +47,7 @@ public class Process extends AbstractProcess<Command> {
 
 		LuNodeSelector selector = new LuNodeSelector(this.getConn());
 
-		LuNode node = (LuNode) selector.loadById(
-				this.getCommand().getNodePid(), true);
+		LuNode node = (LuNode) selector.loadById(this.getCommand().getNodePid(), true);
 
 		this.getCommand().setNode(node);
 
@@ -154,6 +152,9 @@ public class Process extends AbstractProcess<Command> {
 	public String exeOperation() throws Exception {
 		// 删除土地利用点有关土地利用点、线具体操作
 		new OpTopo(this.getCommand()).run(this.getResult());
+		// 同一点关系
+		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
+		opRefRdSameNode.run(getResult(), this.getCommand());
 		// 删除土地利用点有关土地利用面具体操作
 		return new OpRefLuFace(this.getCommand()).run(this.getResult());
 	}

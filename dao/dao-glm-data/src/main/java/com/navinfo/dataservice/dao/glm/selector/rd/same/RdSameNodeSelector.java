@@ -98,6 +98,7 @@ public class RdSameNodeSelector extends AbstractSelector {
 
 	/**
 	 * 根据表名称和nodePid查询几何
+	 * 
 	 * @param nodePid
 	 * @param tableName
 	 * @param isLock
@@ -138,26 +139,29 @@ public class RdSameNodeSelector extends AbstractSelector {
 			DBUtils.closeStatement(pstmt);
 		}
 	}
-	
+
 	/**
 	 * 根据nodePid查询CRF交叉点对象
+	 * 
 	 * @param nodePidStr
 	 * @param isLock
 	 * @return
 	 * @throws Exception
 	 */
-	public List<RdSameNode> loadSameNodeByNodePids(String nodePidStr,String tableName,boolean isLock) throws Exception
-	{
+	public List<RdSameNode> loadSameNodeByNodePids(String nodePidStr, String tableName, boolean isLock)
+			throws Exception {
 		List<RdSameNode> sameNodeList = new ArrayList<>();
-		
+
 		HashSet<Integer> pidSet = new HashSet<Integer>();
-		
+
 		PreparedStatement pstmt = null;
-		
+
 		ResultSet resultSet = null;
 		try {
 			StringBuilder sb = new StringBuilder(
-					"select a.* from rd_samenode a,rd_samenode_part b where a.group_id = b.group_id and b.NODE_PID in("+nodePidStr+") and upper(b.table_name) = "+tableName.toUpperCase()+" and a.u_record !=2 and b.u_record !=2");
+					"select a.* from rd_samenode a,rd_samenode_part b where a.group_id = b.group_id and b.NODE_PID in("
+							+ nodePidStr + ") and upper(b.table_name) = '" + tableName.toUpperCase()
+							+ "' and a.u_record !=2 and b.u_record !=2");
 			if (isLock) {
 				sb.append(" for update nowait");
 			}
@@ -167,19 +171,19 @@ public class RdSameNodeSelector extends AbstractSelector {
 
 			while (resultSet.next()) {
 				RdSameNode sameNode = new RdSameNode();
-				
+
 				int pid = resultSet.getInt("pid");
-				
-				if(!pidSet.contains(pid))
-				{
+
+				if (!pidSet.contains(pid)) {
 					ReflectionAttrUtils.executeResultSet(sameNode, resultSet);
-					
-					List<IRow> parts = new AbstractSelector(RdSameNodePart.class,conn).loadRowsByParentId(sameNode.getPid(), isLock);
-					
+
+					List<IRow> parts = new AbstractSelector(RdSameNodePart.class, conn)
+							.loadRowsByParentId(sameNode.getPid(), isLock);
+
 					sameNode.setParts(parts);
-					
+
 					sameNodeList.add(sameNode);
-					
+
 					pidSet.add(pid);
 				}
 			}
@@ -190,5 +194,35 @@ public class RdSameNodeSelector extends AbstractSelector {
 			DBUtils.closeStatement(pstmt);
 		}
 		return sameNodeList;
+	}
+
+	public List<Integer> loadLinkByNodePids(String tableName, String nodePids, boolean isLock) throws Exception {
+		List<Integer> linkPidList = new ArrayList<>();
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		try {
+			StringBuilder sb = new StringBuilder("select link_pid from " + tableName + " where s_node_pid in("
+					+ nodePids + ") and e_node_pid in(" + nodePids + ") and u_record !=2");
+			if (isLock) {
+				sb.append(" for update nowait");
+			}
+			pstmt = conn.prepareStatement(sb.toString());
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				int pid = resultSet.getInt("link_pid");
+
+				linkPidList.add(pid);
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return linkPidList;
 	}
 }

@@ -77,7 +77,7 @@ public class RdInterTest extends InitApplication {
 
 	@Test
 	public void testUpdateRdInter() {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"RDINTER\",\"data\":{\"pid\":100000750,\"nodes\":[{\"nodePid\":100025461,\"objStatus\":\"INSERT\"}],\"links\":[{\"linkPid\":100008378,\"objStatus\":\"INSERT\"}]}}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDINTER\",\"dbId\":42,\"data\":{\"objStatus\":\"UPDATE\",\"pid\":100000759,\"links\":[100006596,100006598,100006599,100006614,100006613],\"nodes\":[100023749,100023753,100023754,100023755,100023764]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

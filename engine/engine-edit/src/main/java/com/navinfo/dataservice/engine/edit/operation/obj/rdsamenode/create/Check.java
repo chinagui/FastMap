@@ -2,7 +2,10 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create;
 
 import java.sql.Connection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
@@ -30,8 +33,8 @@ public class Check {
 		}
 
 		RdSameNodeSelector sameNodeSelector = new RdSameNodeSelector(conn);
-		
-		Map<String,StringBuilder> nodePids = new HashMap<>();
+
+		Map<String, StringBuilder> nodePids = new HashMap<>();
 
 		for (int i = 0; i < nodeArray.size(); i++) {
 			JSONObject obj = nodeArray.getJSONObject(i);
@@ -39,37 +42,43 @@ public class Check {
 			int nodePid = obj.getInt("nodePid");
 
 			String tableName = ReflectionAttrUtils.getTableNameByObjType(ObjType.valueOf(obj.getString("type")));
-			
-			if(nodePids.get(tableName) != null)
-			{
-				nodePids.get(tableName).append(","+nodePid);
-			}
-			else
-			{
-				nodePids.put(tableName, new StringBuilder(nodePid));
+
+			if (nodePids.get(tableName) != null) {
+				nodePids.get(tableName).append("," + nodePid);
+			} else {
+				nodePids.put(tableName, new StringBuilder().append(nodePid));
 			}
 
 			RdSameNodePart sameNodePart = sameNodeSelector.loadByNodePidAndTableName(nodePid, tableName, true);
-			
-			if(sameNodePart != null)
-			{
-				throw new Exception("node点："+nodePid+"已经存在同一关系，不能重复创建");
+
+			if (sameNodePart != null) {
+				throw new Exception("node点：" + nodePid + "已经存在同一关系，不能重复创建");
 			}
 		}
-		
-		//检查node是否属于某条link
-		checkNodesForOneLink(nodePids);
+
+		// 检查node是否属于某条link
+		checkNodesForOneLink(nodePids, conn);
 	}
 
 	/**
 	 * @param nodePids
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
 	 */
-	private void checkNodesForOneLink(Map<String, StringBuilder> nodePids) {
-		for(Map.Entry<String, StringBuilder> entry : nodePids.entrySet())
-		{
-			String tableName = entry.getKey();
+	private void checkNodesForOneLink(Map<String, StringBuilder> nodePids, Connection conn) throws Exception {
+		for (Map.Entry<String, StringBuilder> entry : nodePids.entrySet()) {
+			String tableName = entry.getKey().replace("_NODE", "_LINK");
+
+			String nodePidStr = entry.getValue().toString();
+
+			RdSameNodeSelector selector = new RdSameNodeSelector(conn);
+
+			List<Integer> linkPidList = selector.loadLinkByNodePids(tableName, nodePidStr, false);
 			
-			String nodePidStr = entry.getValue().deleteCharAt(entry.getValue().lastIndexOf(",")).toString();
+			if(CollectionUtils.isNotEmpty(linkPidList))
+			{
+				throw new Exception("同一条link的两个点不能做同一点");
+			}
 		}
 	}
 }

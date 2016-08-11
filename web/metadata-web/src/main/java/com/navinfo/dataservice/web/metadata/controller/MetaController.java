@@ -34,6 +34,8 @@ import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import com.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
 import com.navinfo.dataservice.engine.meta.patternimage.PatternImageSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
+import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
+import com.navinfo.dataservice.engine.meta.rdname.RdNameOperation;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
 
 import net.sf.json.JSONArray;
@@ -601,5 +603,65 @@ public class MetaController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
+	
+	/**
+	 * web端插入或更新rdName
+	 * @author wangdongbin
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/rdname/websave")
+	public ModelAndView webSave(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			RdNameImportor importor = new RdNameImportor();
+			
+			JSONObject data = importor.importRdNameFromWeb(jsonReq);
+			
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+	
+			logger.error(e.getMessage(), e);
+	
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	/**
+	 * web端道路名拆分接口
+	 * @author wangdongbin
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/rdname/webteilen")
+	public ModelAndView webTeilen(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			JSONArray dataList = jsonReq.getJSONArray("data");
+			
+			RdNameOperation operation = new RdNameOperation();
+			
+			operation.teilenRdName(dataList);
+			
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+	
+			logger.error(e.getMessage(), e);
+	
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	
 
 }

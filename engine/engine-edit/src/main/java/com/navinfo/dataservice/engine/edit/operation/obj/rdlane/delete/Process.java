@@ -1,8 +1,8 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete;
 
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
-import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
-import com.navinfo.dataservice.dao.glm.selector.rd.slope.RdSlopeSelector;
+import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
+import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
@@ -24,8 +24,11 @@ public class Process extends AbstractProcess<Command> implements IProcess {
 	}
 	@Override
 	public boolean prepareData() throws Exception {
-		RdSlope slope  = (RdSlope)new RdSlopeSelector(this.getConn()).loadById(this.getCommand().getPid(), true);
-		this.getCommand().setSlope(slope);
+		RdLaneSelector selector =new RdLaneSelector(this.getConn());
+		RdLane lane  = (RdLane)selector.loadById(this.getCommand().getPid(), true);
+		this.getCommand().setRdLane(lane);
+		this.getCommand().setLanes(selector.loadByLink(lane.getLinkPid(), lane.getLaneDir(), true));
+		
 		return true;
 	}
 

@@ -157,7 +157,7 @@ public class RdSameNodeSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 		try {
 			StringBuilder sb = new StringBuilder(
-					"select distinct a.* from rd_samenode a,rd_samenode_part b where a.group_id = b.group_id and b.NODE_PID in("+nodePidStr+") and upper(b.table_name) = "+tableName.toUpperCase()+" and a.u_record !=2 and b.u_record !=2");
+					"select a.* from rd_samenode a,rd_samenode_part b where a.group_id = b.group_id and b.NODE_PID in("+nodePidStr+") and upper(b.table_name) = "+tableName.toUpperCase()+" and a.u_record !=2 and b.u_record !=2");
 			if (isLock) {
 				sb.append(" for update nowait");
 			}

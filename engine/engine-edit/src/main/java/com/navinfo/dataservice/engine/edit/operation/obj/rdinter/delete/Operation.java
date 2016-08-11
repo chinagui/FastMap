@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.mysql.fabric.xmlrpc.base.Array;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -121,4 +122,13 @@ public class Operation implements IOperation {
 		}
 	}
 	
+	public static void main(String[] args) {
+		List<Integer> list1 = new ArrayList<>();
+		list1.add(1);
+		list1.add(2);
+		List<Integer> list2 = new ArrayList<>();
+		list2 = list1;
+		list2.add(3);
+		System.out.println(list1);
+	}
 }

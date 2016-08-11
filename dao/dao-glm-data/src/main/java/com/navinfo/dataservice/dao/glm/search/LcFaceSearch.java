@@ -54,7 +54,7 @@ public class LcFaceSearch implements ISearch {
 			while (resultSet.next()) {
 				SearchSnapshot snapshot = new SearchSnapshot();
 
-				snapshot.setT(13);
+				snapshot.setT(32);
 
 				snapshot.setI(String.valueOf(resultSet.getInt("face_pid")));
 
@@ -124,7 +124,7 @@ public class LcFaceSearch implements ISearch {
 			while (resultSet.next()) {
 				SearchSnapshot snapshot = new SearchSnapshot();
 
-				snapshot.setT(13);
+				snapshot.setT(32);
 
 				snapshot.setI(String.valueOf(resultSet.getInt("face_pid")));
 

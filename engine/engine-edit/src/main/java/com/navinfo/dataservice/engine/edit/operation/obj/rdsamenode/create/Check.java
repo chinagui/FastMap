@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create;
 
 import java.sql.Connection;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
@@ -28,6 +30,8 @@ public class Check {
 		}
 
 		RdSameNodeSelector sameNodeSelector = new RdSameNodeSelector(conn);
+		
+		Map<String,StringBuilder> nodePids = new HashMap<>();
 
 		for (int i = 0; i < nodeArray.size(); i++) {
 			JSONObject obj = nodeArray.getJSONObject(i);
@@ -35,6 +39,15 @@ public class Check {
 			int nodePid = obj.getInt("nodePid");
 
 			String tableName = ReflectionAttrUtils.getTableNameByObjType(ObjType.valueOf(obj.getString("type")));
+			
+			if(nodePids.get(tableName) != null)
+			{
+				nodePids.get(tableName).append(","+nodePid);
+			}
+			else
+			{
+				nodePids.put(tableName, new StringBuilder(nodePid));
+			}
 
 			RdSameNodePart sameNodePart = sameNodeSelector.loadByNodePidAndTableName(nodePid, tableName, true);
 			
@@ -42,6 +55,21 @@ public class Check {
 			{
 				throw new Exception("node点："+nodePid+"已经存在同一关系，不能重复创建");
 			}
+		}
+		
+		//检查node是否属于某条link
+		checkNodesForOneLink(nodePids);
+	}
+
+	/**
+	 * @param nodePids
+	 */
+	private void checkNodesForOneLink(Map<String, StringBuilder> nodePids) {
+		for(Map.Entry<String, StringBuilder> entry : nodePids.entrySet())
+		{
+			String tableName = entry.getKey();
+			
+			String nodePidStr = entry.getValue().deleteCharAt(entry.getValue().lastIndexOf(",")).toString();
 		}
 	}
 }

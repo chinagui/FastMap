@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
@@ -56,7 +57,9 @@ public class Operation implements IOperation {
 		if (content.containsKey("links")) {
 			updateLink(result, content);
 		}
-
+		
+		result.setPrimaryPid(rdInter.parentPKValue());
+		
 		return null;
 	}
 
@@ -70,42 +73,26 @@ public class Operation implements IOperation {
 	private void updateNode(Result result, JSONObject content) throws Exception {
 		JSONArray subObj = content.getJSONArray("nodes");
 
-		for (int i = 0; i < subObj.size(); i++) {
+		for (IRow interNode : rdInter.getNodes()) {
+			RdInterNode node = (RdInterNode) interNode;
 
-			JSONObject json = subObj.getJSONObject(i);
-
-			if (json.containsKey("objStatus")) {
-
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
-
-					RdInterNode row = rdInter.nodeMap.get(json.getString("rowId"));
-
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的RdInterNode不存在");
-					}
-
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, rdInter.pid());
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
-
-						boolean isChanged = row.fillChangeFields(json);
-
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, rdInter.pid());
-						}
-					}
-				} else {
-					RdInterNode rdInterNode = new RdInterNode();
-
-					rdInterNode.setNodePid(json.getInt("nodePid"));
-
-					rdInterNode.setPid(rdInter.getPid());
-
-					result.insertObject(rdInterNode, ObjStatus.INSERT, rdInterNode.getPid());
-				}
+			if (!subObj.contains(node.getNodePid())) {
+				result.insertObject(node, ObjStatus.DELETE, rdInter.pid());
+			} else {
+				subObj.remove((Integer)node.getNodePid());
 			}
 		}
+		for (int i = 0; i < subObj.size(); i++) {
+
+			RdInterNode rdInterNode = new RdInterNode();
+
+			rdInterNode.setNodePid(subObj.getInt(i));
+
+			rdInterNode.setPid(rdInter.getPid());
+
+			result.insertObject(rdInterNode, ObjStatus.INSERT, rdInterNode.getPid());
+		}
+
 	}
 
 	/**
@@ -118,41 +105,25 @@ public class Operation implements IOperation {
 	private void updateLink(Result result, JSONObject content) throws Exception {
 		JSONArray subObj = content.getJSONArray("links");
 
+		for (IRow interLink : rdInter.getLinks()) {
+			RdInterLink link = (RdInterLink) interLink;
+
+			if (!subObj.contains(link.getLinkPid())) {
+				result.insertObject(interLink, ObjStatus.DELETE, rdInter.pid());
+			} else {
+				subObj.remove((Integer)link.getLinkPid());
+			}
+		}
+
 		for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+			RdInterLink rdInterLink = new RdInterLink();
 
-			if (json.containsKey("objStatus")) {
+			rdInterLink.setLinkPid(subObj.getInt(i));
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+			rdInterLink.setPid(rdInter.getPid());
 
-					RdInterLink row = rdInter.linkMap.get(json.getString("rowId"));
-
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的RdInterLink不存在");
-					}
-
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, rdInter.pid());
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
-
-						boolean isChanged = row.fillChangeFields(json);
-
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, rdInter.pid());
-						}
-					}
-				} else {
-					RdInterLink rdInterLink = new RdInterLink();
-
-					rdInterLink.setLinkPid(json.getInt("linkPid"));
-
-					rdInterLink.setPid(rdInter.getPid());
-
-					result.insertObject(rdInterLink, ObjStatus.INSERT, rdInterLink.getPid());
-				}
-			}
+			result.insertObject(rdInterLink, ObjStatus.INSERT, rdInterLink.getPid());
 		}
 	}
 

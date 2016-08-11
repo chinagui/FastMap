@@ -18,7 +18,7 @@ public class RdTollgateName implements IRow {
 
 	private int nameId;
 	private int pid;
-	private int nameGroupId = 1;
+	private int nameGroupid = 1;
 	private String langCode = "CHI";
 	private String name;
 	private String phonetic;
@@ -41,12 +41,13 @@ public class RdTollgateName implements IRow {
 		this.pid = pid;
 	}
 
-	public int getNameGroupId() {
-		return nameGroupId;
+
+	public int getNameGroupid() {
+		return nameGroupid;
 	}
 
-	public void setNameGroupId(int nameGroupId) {
-		this.nameGroupId = nameGroupId;
+	public void setNameGroupid(int nameGroupid) {
+		this.nameGroupid = nameGroupid;
 	}
 
 	public String getLangCode() {
@@ -111,7 +112,7 @@ public class RdTollgateName implements IRow {
 	public void copy(IRow row) {
 		RdTollgateName tollgateName = (RdTollgateName) row;
 		this.pid = tollgateName.getPid();
-		this.nameGroupId = tollgateName.getNameGroupId();
+		this.nameGroupid = tollgateName.getNameGroupid();
 		this.langCode = tollgateName.getLangCode();
 		this.name = tollgateName.getName();
 		this.phonetic = tollgateName.getPhonetic();

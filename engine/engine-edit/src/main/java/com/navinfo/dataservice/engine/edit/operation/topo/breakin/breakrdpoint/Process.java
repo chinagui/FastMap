@@ -34,6 +34,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.dao.glm.model.rd.speedbump.RdSpeedbump;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
@@ -54,6 +55,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionViaSele
 import com.navinfo.dataservice.dao.glm.selector.rd.se.RdSeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedbump.RdSpeedbumpSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.tollgate.RdTollgateSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.warninginfo.RdWarninginfoSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
@@ -202,6 +204,12 @@ public class Process extends AbstractProcess<Command> {
 			RdSpeedbumpSelector speedbumpSelector = new RdSpeedbumpSelector(this.getConn());
 			List<RdSpeedbump> speedbumps = speedbumpSelector.loadByLinkPid(this.getCommand().getLinkPid(), true);
 			this.getCommand().setRdSpeedbumps(speedbumps);
+
+			// 获取该link关联的收费站
+			RdTollgateSelector tollgateSelector = new RdTollgateSelector(this.getConn());
+			List<RdTollgate> tollgates = tollgateSelector.loadRdTollgatesWithLinkPid(this.getCommand().getLinkPid(),
+					true);
+			this.getCommand().setRdTollgates(tollgates);
 
 			return true;
 
@@ -379,15 +387,18 @@ public class Process extends AbstractProcess<Command> {
 		// 减速带
 		OpRefRdSpeedbum opRefRdSpeedbum = new OpRefRdSpeedbum(this.getConn());
 		opRefRdSpeedbum.run(this.getResult(), oldLink, newLinks);
-		//坡度
+		// 坡度
 		OpRefRdSlope opRefRdSlope = new OpRefRdSlope(this.getConn());
 		opRefRdSlope.run(this.getResult(), oldLink, newLinks);
 		// 顺行
 		OpRefRdDirectroute opRefRdDirectroute = new OpRefRdDirectroute(this.getConn());
 		opRefRdDirectroute.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
-		//CRF交叉点
+		// CRF交叉点
 		OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
 		opRefRdInter.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
+		// 收费站
+		OpRefRdTollgate opRefRdTollgate = new OpRefRdTollgate(this.getConn());
+		opRefRdTollgate.run(this.getResult(), oldLink, newLinks);
 	}
 
 	/**
@@ -541,31 +552,38 @@ public class Process extends AbstractProcess<Command> {
 			infectList.add(rdSe.pid());
 		}
 		infects.put("RDSE", infectList);
-		
+
 		// 减速带
 		infectList = new ArrayList<Integer>();
 		for (RdSpeedbump speedbump : this.getCommand().getRdSpeedbumps()) {
 			infectList.add(speedbump.pid());
 		}
 		infects.put("RDSPEEDBUMP", infectList);
-		
-		//顺行
-		RdDirectrouteSelector directrouteSelector=new RdDirectrouteSelector(this.getConn());
-		
+
+		// 顺行
+		RdDirectrouteSelector directrouteSelector = new RdDirectrouteSelector(this.getConn());
+
 		infectList = directrouteSelector.loadPidByLink(this.getCommand().getLinkPid(), false);
 
 		infects.put("RDDIRECTROUTE", infectList);
-		
-		//CRF交叉点
+
+		// CRF交叉点
 		RdInterSelector interSelector = new RdInterSelector(this.getConn());
-		
+
 		RdInterLink interLink = interSelector.loadByLinkPid(this.getCommand().getLinkPid(), false);
-		
+
 		infectList = new ArrayList<Integer>();
-		
+
 		infectList.add(interLink.getPid());
-		
+
 		infects.put("RDINTER", infectList);
+		
+		// 收费站
+		infectList = new ArrayList<Integer>();
+		for (RdTollgate tdTollgate : this.getCommand().getRdTollgates()) {
+			infectList.add(tdTollgate.pid());
+		}
+		infects.put("RDTOLLGATE", infectList);
 		
 		return infects;
 

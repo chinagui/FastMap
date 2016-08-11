@@ -531,7 +531,7 @@ public class Transaction {
 			case CREATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.create.Command(json, requester);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.create.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.update.Command(json, requester);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.delete.Command(json, requester);
 			default:
@@ -960,7 +960,7 @@ public class Transaction {
 			case CREATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.create.Process(command);
 			case UPDATE:
-				return new com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.create.Process(command);
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.update.Process(command);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.delete.Process(command);
 			default:

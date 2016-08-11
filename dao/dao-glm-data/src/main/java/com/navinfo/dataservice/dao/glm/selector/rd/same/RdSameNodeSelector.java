@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -148,11 +149,15 @@ public class RdSameNodeSelector extends AbstractSelector {
 	public List<RdSameNode> loadSameNodeByNodePids(String nodePidStr,String tableName,boolean isLock) throws Exception
 	{
 		List<RdSameNode> sameNodeList = new ArrayList<>();
+		
+		HashSet<Integer> pidSet = new HashSet<Integer>();
+		
 		PreparedStatement pstmt = null;
+		
 		ResultSet resultSet = null;
 		try {
 			StringBuilder sb = new StringBuilder(
-					"select distinct a.* from rd_samenode a,RD_samenode_part b where a.group_id = b.group_id and b.NODE_PID in("+nodePidStr+") and upper(b.table_name) = "+tableName.toUpperCase()+" and a.u_record !=2 and b.u_record !=2");
+					"select a.* from rd_samenode a,rd_samenode_part b where a.group_id = b.group_id and b.NODE_PID in("+nodePidStr+") and upper(b.table_name) = "+tableName.toUpperCase()+" and a.u_record !=2 and b.u_record !=2");
 			if (isLock) {
 				sb.append(" for update nowait");
 			}
@@ -163,11 +168,20 @@ public class RdSameNodeSelector extends AbstractSelector {
 			while (resultSet.next()) {
 				RdSameNode sameNode = new RdSameNode();
 				
-				ReflectionAttrUtils.executeResultSet(sameNode, resultSet);
+				int pid = resultSet.getInt("pid");
 				
-				List<IRow> parts = new AbstractSelector(RdSameNodePart.class,conn).loadRowsByParentId(sameNode.getPid(), isLock);
-				
-				sameNodeList.add(sameNode);
+				if(!pidSet.contains(pid))
+				{
+					ReflectionAttrUtils.executeResultSet(sameNode, resultSet);
+					
+					List<IRow> parts = new AbstractSelector(RdSameNodePart.class,conn).loadRowsByParentId(sameNode.getPid(), isLock);
+					
+					sameNode.setParts(parts);
+					
+					sameNodeList.add(sameNode);
+					
+					pidSet.add(pid);
+				}
 			}
 		} catch (Exception e) {
 			throw e;

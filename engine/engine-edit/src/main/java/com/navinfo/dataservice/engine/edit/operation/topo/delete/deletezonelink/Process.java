@@ -12,9 +12,11 @@ import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneNodeSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
+
 /**
  * 
  * 删除ZONE线执行类
+ * 
  * @author zhaokk
  *
  */
@@ -83,6 +85,9 @@ public class Process extends AbstractProcess<Command> {
 		// 删除行政区划线有关行政区划点、线具体操作
 		IOperation op = new OpTopo(this.getCommand());
 		op.run(this.getResult());
+		// 同一点关系
+		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
+		opRefRdSameNode.run(getResult(), this.getCommand().getLink());
 		// 删除行政区划线有关行政区划面具体操作
 		IOperation opAdFace = new OpRefAdFace(this.getCommand());
 		return opAdFace.run(this.getResult());

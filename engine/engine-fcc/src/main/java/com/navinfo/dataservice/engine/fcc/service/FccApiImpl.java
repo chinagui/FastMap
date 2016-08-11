@@ -8,10 +8,10 @@ import net.sf.json.JSONArray;
 public class FccApiImpl implements FccApi{
 
 	@Override
-	public JSONArray searchDataBySpatial(String wkt) throws Exception {
+	public JSONArray searchDataBySpatial(String wkt, int type, JSONArray stages) throws Exception {
 		try {
 			TipsSelector selector = new TipsSelector();
-			JSONArray array = selector.searchDataBySpatial(wkt);
+			JSONArray array = selector.searchDataBySpatial(wkt,type,stages);
 			return array;
 		} catch (Exception e) {
 			throw e;

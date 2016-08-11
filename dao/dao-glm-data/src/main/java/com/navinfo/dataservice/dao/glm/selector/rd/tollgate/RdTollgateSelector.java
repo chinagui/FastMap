@@ -8,7 +8,10 @@ import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
+import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgateName;
+import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgatePassage;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 
@@ -56,6 +59,22 @@ public class RdTollgateSelector extends AbstractSelector {
 			while (resultSet.next()) {
 				RdTollgate rdTollgate = new RdTollgate();
 				ReflectionAttrUtils.executeResultSet(rdTollgate, resultSet);
+				
+				RdTollgateNameSelector tollgateNameSelector = new RdTollgateNameSelector(this.conn);
+				List<IRow> tollgateNames = tollgateNameSelector.loadRowsByParentId(rdTollgate.pid(), true);
+				for(IRow row : tollgateNames){
+					RdTollgateName tollgateName = (RdTollgateName) row;
+					rdTollgate.tollgateNameMap.put(tollgateName.rowId(), tollgateName);
+				}
+				rdTollgate.setTollgateNames(tollgateNames);
+				RdTollgatePassageSelector tollgatePassageSelector = new RdTollgatePassageSelector(this.conn);
+				List<IRow> tollgatePassages = tollgatePassageSelector.loadRowsByParentId(rdTollgate.pid(), true);
+				for(IRow row : tollgatePassages){
+					RdTollgatePassage tollgatePassage = (RdTollgatePassage) row;
+					rdTollgate.tollgatePassageMap.put(tollgatePassage.rowId(), tollgatePassage);
+				}
+				rdTollgate.setTollgatePassages(tollgatePassages);
+				
 				rdTollgates.add(rdTollgate);
 			}
 		} catch (Exception e) {

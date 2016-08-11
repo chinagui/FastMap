@@ -253,6 +253,10 @@ public class Operation implements IOperation {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Operation rdinterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Operation(
 				this.conn);
 		rdinterOperation.breakRdLink(oldLink, newLinks, result);
+		// 收费站
+		com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.update.Operation rdTollgateOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.update.Operation(
+				this.conn);
+		rdTollgateOpeartion.breakRdTollgate(result, oldLink.getPid(), newLinks);
 	}
 
 }

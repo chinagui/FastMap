@@ -25,6 +25,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.dao.glm.model.rd.speedbump.RdSpeedbump;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -84,7 +85,9 @@ public class Command extends AbstractCommand {
 	private List<RdSe> rdSes;
 	
 	private List<RdSpeedbump> rdSpeedbumps;
-
+	
+	private List<RdTollgate> rdTollgates;
+	
 	private boolean isCheckInfect = false;
 
 	public boolean isCheckInfect() {
@@ -234,6 +237,14 @@ public class Command extends AbstractCommand {
 
 	public void setRdSpeedbumps(List<RdSpeedbump> rdSpeedbumps) {
 		this.rdSpeedbumps = rdSpeedbumps;
+	}
+
+	public List<RdTollgate> getRdTollgates() {
+		return rdTollgates;
+	}
+
+	public void setRdTollgates(List<RdTollgate> rdTollgates) {
+		this.rdTollgates = rdTollgates;
 	}
 
 	public Command(JSONObject json, String requester) throws JSONException {

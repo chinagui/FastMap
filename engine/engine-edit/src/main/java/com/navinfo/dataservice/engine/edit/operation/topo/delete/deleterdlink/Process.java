@@ -21,6 +21,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.dao.glm.model.rd.speedbump.RdSpeedbump;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
@@ -37,6 +38,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelecto
 import com.navinfo.dataservice.dao.glm.selector.rd.se.RdSeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedbump.RdSpeedbumpSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.tollgate.RdTollgateSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.warninginfo.RdWarninginfoSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
@@ -373,10 +375,14 @@ public class Process extends AbstractProcess<Command> {
 		// CRF交叉点
 		OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
 		opRefRdInter.run(this.getResult(), this.getCommand().getLink());
-		
-		//同一点关系
+
+		// 同一点关系
 		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
 		opRefRdSameNode.run(getResult(), this.getCommand().getLink());
+
+		// 收费站
+		OpRefRdTollgate opRefRdTollgate = new OpRefRdTollgate(this.getCommand(), this.getConn());
+		opRefRdTollgate.run(this.getResult());
 	}
 
 	/**
@@ -511,10 +517,19 @@ public class Process extends AbstractProcess<Command> {
 
 		RdLink link = this.getCommand().getLink();
 
-		infectList = interSelector.loadInterPidByNodePid(link.getsNodePid()+","+link.geteNodePid(), false);
+		infectList = interSelector.loadInterPidByNodePid(link.getsNodePid() + "," + link.geteNodePid(), false);
 
 		infects.put("RDINTER", infectList);
-		
+
+		// 收费站
+		RdTollgateSelector rdTollgateSelector = new RdTollgateSelector(this.getConn());
+		List<RdTollgate> rdTollgates = rdTollgateSelector.loadRdTollgatesWithLinkPid(this.getCommand().getLinkPid(), true);
+		infectList = new ArrayList<Integer>();
+		for (RdTollgate rdTollgate: rdTollgates) {
+			infectList.add(rdTollgate.pid());
+		}
+		infects.put("RDTOLLGATE", infectList);
+
 		return infects;
 	}
 

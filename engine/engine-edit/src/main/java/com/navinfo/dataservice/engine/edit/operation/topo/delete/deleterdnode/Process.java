@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.dao.glm.model.rd.speedbump.RdSpeedbump;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
@@ -35,6 +36,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelecto
 import com.navinfo.dataservice.dao.glm.selector.rd.se.RdSeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedbump.RdSpeedbumpSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.tollgate.RdTollgateSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.warninginfo.RdWarninginfoSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
@@ -341,6 +343,10 @@ public class Process extends AbstractProcess<Command> {
 		// 同一点关系
 		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
 		opRefRdSameNode.run(getResult(), this.getCommand());
+
+		// 收费站
+		OpRefRdTollgate opRefRdTollgate = new OpRefRdTollgate(this.getConn(), this.getCommand());
+		opRefRdTollgate.run(this.getResult());
 	}
 
 	/**
@@ -476,6 +482,18 @@ public class Process extends AbstractProcess<Command> {
 		infectList = interSelector.loadInterPidByNodePid(sb.deleteCharAt(sb.lastIndexOf(",")).toString(), false);
 
 		infects.put("RDINTER", infectList);
+
+		// 收费站
+		infectList = new ArrayList<Integer>();
+		RdTollgateSelector rdTollgateSelector = new RdTollgateSelector(this.getConn());
+		List<RdTollgate> rdTollgates = null;
+		for (Integer linkPid : this.getCommand().getLinkPids()) {
+			rdTollgates = rdTollgateSelector.loadRdTollgatesWithLinkPid(linkPid, true);
+			for (RdTollgate rdTollgate : rdTollgates) {
+				infectList.add(rdTollgate.pid());
+			}
+		}
+		infects.put("RDTOLLGATE", infectList);
 		return infects;
 	}
 }

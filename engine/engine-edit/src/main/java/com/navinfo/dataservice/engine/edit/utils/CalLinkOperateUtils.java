@@ -175,49 +175,64 @@ public class CalLinkOperateUtils {
 
 		cacheLinks.addAll(rdlinks);
 
-		int sTargetNodePid = cacheLinks.get(0).getsNodePid();
+		int targetNodePid = cacheLinks.get(0).getsNodePid();
 
-		int eTargetNodePid = cacheLinks.get(0).geteNodePid();
+		getConnectLink(targetNodePid, cacheLinks, sortLinks, 1);
 
-		cacheLinks.remove(0);
-
-		sortLinks.add(cacheLinks.get(0));
-
-		sortLinks = getConnectLink(sTargetNodePid, cacheLinks, sortLinks, 1);
-
-		sortLinks = getConnectLink(eTargetNodePid, cacheLinks, sortLinks, 0);
+		getConnectLink(targetNodePid, cacheLinks, sortLinks, 0);
 
 		return sortLinks;
 	}
 
-	private List<RdLink> getConnectLink(int targetNodePid,
-			List<RdLink> cacheLinks, List<RdLink> sortLinks, int type) {
+	/**
+	 * 获取挂接link
+	 * 
+	 * @param targetNodePid
+	 *            连接点
+	 * @param cacheLinks
+	 *            link池
+	 * @param sortLinks
+	 *            有序link
+	 * @param type
+	 *            挂接类型 1：顺向、2：逆向
+	 */
+	private void getConnectLink(int targetNodePid, List<RdLink> cacheLinks,
+			List<RdLink> sortLinks, int type) {
+
+		RdLink connectLink = null;
 
 		for (RdLink link : cacheLinks) {
+
 			if (targetNodePid != link.getsNodePid()
 					&& targetNodePid != link.geteNodePid()) {
 				continue;
 			}
-
-			if (targetNodePid == link.getsNodePid()) {
-				targetNodePid = link.geteNodePid();
-			} else {
-				targetNodePid = link.getsNodePid();
+			if (sortLinks.contains(link)) {
+				continue;
 			}
 
+			targetNodePid = (targetNodePid == link.getsNodePid()) ? link
+					.geteNodePid() : link.getsNodePid();
+
 			if (type == 1) {
-				
+
 				sortLinks.add(link);
+
 			} else {
-				
+
 				sortLinks.add(0, link);
 			}
 
-			cacheLinks.remove(link);
+			connectLink = link;
 
-			return getConnectLink(targetNodePid, cacheLinks, sortLinks, type);
+			break;
 		}
 
-		return sortLinks;
+		if (connectLink != null) {
+
+			cacheLinks.remove(connectLink);
+
+			getConnectLink(targetNodePid, cacheLinks, sortLinks, type);
+		}
 	}
 }

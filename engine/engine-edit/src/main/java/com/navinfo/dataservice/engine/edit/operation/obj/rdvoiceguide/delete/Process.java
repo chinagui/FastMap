@@ -11,23 +11,23 @@ public class Process extends AbstractProcess<Command> {
 		super(command);
 	}
 
-	private RdVoiceguide voiceguide;
-
 	@Override
 	public boolean prepareData() throws Exception {
 
-		AbstractSelector selector = new AbstractSelector(this.getConn());
+		AbstractSelector selector = new AbstractSelector(RdVoiceguide.class,
+				this.getConn());
 
-		this.voiceguide = (RdVoiceguide) selector.loadById(this.getCommand()
-				.getPid(), true);
+		RdVoiceguide voiceguide = (RdVoiceguide) selector.loadById(this
+				.getCommand().getPid(), true);
 
+		this.getCommand().setVoiceguide(voiceguide);
+		
 		return true;
 	}
 
 	@Override
 	public String exeOperation() throws Exception {
 
-		return new Operation(this.getCommand(), this.voiceguide).run(this
-				.getResult());
+		return new Operation(this.getCommand()).run(this.getResult());
 	}
 }

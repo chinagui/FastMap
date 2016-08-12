@@ -2,8 +2,6 @@ package com.navinfo.dataservice.engine.edit.zhangyuntao.other.extend;
 
 import java.lang.reflect.Method;
 
-import org.junit.Test;
-
 /**
  * @Title: Test.java
  * @Description: TODO
@@ -13,7 +11,12 @@ import org.junit.Test;
  */
 public class TestExtend {
 	public static void main(String[] args) {
-		testException();
+		Parent p = new Parent();
+		p.modCount = 100;
+		Parent.InnerP innerP = p.new InnerP();
+		innerP.setX();
+		System.out.println(innerP.getX());
+//		testException();
 		// Child c1 = new Child();
 		// c1.setA(1);
 		// c1.setB(2);

@@ -32,9 +32,9 @@ public class RdTollgate implements IObj {
 	private int locationFlag;
 	private String rowId;
 	public Map<String, Object> changedFields = new HashMap<String, Object>();
-	private List<IRow> tollgateNames = new ArrayList<IRow>();
+	private List<IRow> names = new ArrayList<IRow>();
 	public Map<String, RdTollgateName> tollgateNameMap = new HashMap<String, RdTollgateName>();
-	private List<IRow> tollgatePassages = new ArrayList<IRow>();
+	private List<IRow> passages = new ArrayList<IRow>();
 	public Map<String, RdTollgatePassage> tollgatePassageMap = new HashMap<String, RdTollgatePassage>();
 
 	public int getPid() {
@@ -137,20 +137,21 @@ public class RdTollgate implements IObj {
 		return rowId;
 	}
 
-	public List<IRow> getTollgateNames() {
-		return tollgateNames;
+
+	public List<IRow> getNames() {
+		return names;
 	}
 
-	public void setTollgateNames(List<IRow> tollgateNames) {
-		this.tollgateNames = tollgateNames;
+	public void setNames(List<IRow> names) {
+		this.names = names;
 	}
 
-	public List<IRow> getTollgatePassages() {
-		return tollgatePassages;
+	public List<IRow> getPassages() {
+		return passages;
 	}
 
-	public void setTollgatePassages(List<IRow> tollgatePassages) {
-		this.tollgatePassages = tollgatePassages;
+	public void setPassages(List<IRow> passages) {
+		this.passages = passages;
 	}
 
 	@Override
@@ -210,8 +211,8 @@ public class RdTollgate implements IObj {
 	@Override
 	public List<List<IRow>> children() {
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
-		children.add(this.getTollgateNames());
-		children.add(this.getTollgatePassages());
+		children.add(this.getNames());
+		children.add(this.getPassages());
 		return children;
 	}
 
@@ -305,8 +306,8 @@ public class RdTollgate implements IObj {
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
 		Map<Class<? extends IRow>, List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
-		childList.put(RdTollgateName.class, tollgateNames);
-		childList.put(RdTollgatePassage.class, tollgatePassages);
+		childList.put(RdTollgateName.class, names);
+		childList.put(RdTollgatePassage.class, passages);
 		return childList;
 	}
 

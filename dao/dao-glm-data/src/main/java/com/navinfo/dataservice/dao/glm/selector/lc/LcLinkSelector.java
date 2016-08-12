@@ -31,7 +31,7 @@ public class LcLinkSelector extends AbstractSelector {
 	public List<LcLink> loadByNodePid(int nodePid, boolean isLock) throws Exception {
 		List<LcLink> links = new ArrayList<LcLink>();
 		StringBuilder sb = new StringBuilder(
-				"select * from ad_link where (s_node_pid = :1 or e_node_pid = :2) and u_record!=2");
+				"select * from lc_link where (s_node_pid = :1 or e_node_pid = :2) and u_record!=2");
 		if (isLock) {
 			sb.append(" for update nowait");
 		}

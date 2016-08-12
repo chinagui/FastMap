@@ -21,12 +21,8 @@ public class RdDirectrouteSelector extends AbstractSelector {
 	private static Logger logger = Logger
 			.getLogger(RdDirectrouteSelector.class);
 
-	private Connection conn;
-
 	public RdDirectrouteSelector(Connection conn) {
-		super(conn);
-		this.conn = conn;
-		this.setCls(RdDirectroute.class);
+		super(RdDirectroute.class, conn);
 	}
 
 	public RdDirectroute loadByLinkNodeLink(int inLinkPid, int nodePid,
@@ -45,7 +41,7 @@ public class RdDirectrouteSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 
 		try {
-			pstmt = conn.prepareStatement(sql);
+			pstmt = getConn().prepareStatement(sql);
 
 			pstmt.setInt(1, inLinkPid);
 
@@ -59,7 +55,7 @@ public class RdDirectrouteSelector extends AbstractSelector {
 				ReflectionAttrUtils.executeResultSet(directroute, resultSet);
 
 				directroute.setVias(new AbstractSelector(
-						RdDirectrouteVia.class, conn).loadRowsByParentId(
+						RdDirectrouteVia.class, getConn()).loadRowsByParentId(
 						directroute.getPid(), isLock));
 
 			} else {
@@ -102,10 +98,10 @@ public class RdDirectrouteSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 
 		try {
-			pstmt = conn.prepareStatement(sql);
+			pstmt = getConn().prepareStatement(sql);
 
 			pstmt.setInt(1, linkPid);
-			
+
 			pstmt.setInt(2, linkPid);
 
 			resultSet = pstmt.executeQuery();
@@ -117,7 +113,7 @@ public class RdDirectrouteSelector extends AbstractSelector {
 				ReflectionAttrUtils.executeResultSet(directroute, resultSet);
 
 				directroute.setVias(new AbstractSelector(
-						RdDirectrouteVia.class, conn).loadRowsByParentId(
+						RdDirectrouteVia.class, getConn()).loadRowsByParentId(
 						directroute.getPid(), isLock));
 
 				rows.add(directroute);
@@ -160,7 +156,7 @@ public class RdDirectrouteSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 
 		try {
-			pstmt = conn.prepareStatement(sql);
+			pstmt = getConn().prepareStatement(sql);
 
 			pstmt.setInt(1, linkPid);
 
@@ -173,7 +169,7 @@ public class RdDirectrouteSelector extends AbstractSelector {
 				ReflectionAttrUtils.executeResultSet(directroute, resultSet);
 
 				directroute.setVias(new AbstractSelector(
-						RdDirectrouteVia.class, conn).loadRowsByParentId(
+						RdDirectrouteVia.class, getConn()).loadRowsByParentId(
 						directroute.getPid(), isLock));
 
 				rows.add(directroute);

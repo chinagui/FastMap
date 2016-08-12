@@ -3,8 +3,10 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.delete;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -13,6 +15,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectrouteVia;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 
@@ -34,12 +37,12 @@ public class Operation implements IOperation {
 	public String run(Result result) throws Exception {
 		String msg = null;
 
-		msg = deleteRdDirectroute(result, command.getDirectroute());
+		msg = delete(result, command.getDirectroute());
 
 		return msg;
 	}
 
-	public String deleteRdDirectroute(Result result, RdDirectroute directroute) {
+	public String delete(Result result, RdDirectroute directroute) {
 
 		result.insertObject(directroute, ObjStatus.DELETE, directroute.pid());
 
@@ -54,15 +57,14 @@ public class Operation implements IOperation {
 
 		RdDirectrouteSelector selector = new RdDirectrouteSelector(conn);
 
-		
 		List<RdDirectroute> directroutes = selector.loadByInOutLink(
 				oldLink.getPid(), true);
 		// 删除link做进入线或退出线的顺行
 		for (RdDirectroute directroute : directroutes) {
 
-			deleteRdDirectroute(result, directroute);
+			delete(result, directroute);
 		}
-		
+
 		directroutes = selector.loadByPassLink(oldLink.getPid(), true);
 
 		for (RdDirectroute directroute : directroutes) {
@@ -79,60 +81,40 @@ public class Operation implements IOperation {
 			return;
 		}
 
-		Map<Integer, List<RdDirectrouteVia>> viaGroupId = new HashMap<Integer, List<RdDirectrouteVia>>();
+		// 需要删除的经过线组
+		Set<Integer> deleteGroupId = new HashSet<Integer>();
+
+		// 所有经过线组
+		Set<Integer> sumGroupId = new HashSet<Integer>();
 
 		for (IRow row : directroute.getVias()) {
 
 			RdDirectrouteVia via = (RdDirectrouteVia) row;
 
-			if (viaGroupId.get(via.getGroupId()) == null) {
-
-				viaGroupId.put(via.getGroupId(),
-						new ArrayList<RdDirectrouteVia>());
+			if (via.getLinkPid() == oldLink.pid()) {
+				deleteGroupId.add(via.getGroupId());
 			}
 
-			viaGroupId.get(via.getGroupId()).add(via);
+			sumGroupId.add(via.getGroupId());
 		}
-		
-		//1：如果该经过线所属的经过线组对应的顺行信息只有这一组经过线，则删除该顺行信息、顺行信息所包括经过线信息等。
-        //2：如果该经过线所属的经过线组对应的顺行信息有多组经过线，则删除该经过线所属经过线组（同组号）信息。
-		int groupCount = viaGroupId.size();
 
-		for (int key : viaGroupId.keySet()) {
+		// 需要删除的经过线组数与总经过线组数一致，删除该顺行
+		if (sumGroupId.size() == deleteGroupId.size()) {
 
-			List<RdDirectrouteVia> value = viaGroupId.get(key);
+			delete(result, directroute);
 
-			RdDirectrouteVia oldVia = null;
+		} else {
+			// 按组删除经过线
+			for (IRow rowVia : directroute.getVias()) {
 
-			for (RdDirectrouteVia via : value) {
+				RdDirectrouteVia via = (RdDirectrouteVia) rowVia;
 
-				if (via.getLinkPid() == oldLink.getPid()) {
+				if (deleteGroupId.contains(via.getGroupId())) {
 
-					oldVia = via;
-
-					break;
+					result.insertObject(via, ObjStatus.DELETE,
+							directroute.pid());
 				}
 			}
-
-			if (oldVia == null) {
-				continue;
-			}
-
-			for (RdDirectrouteVia via : value) {
-
-				result.insertObject(via, ObjStatus.DELETE, via.getPid());
-			}
-
-			groupCount--;
-		}
-
-		if (groupCount == 0) {
-
-			// 清空子表，防止重复删除
-			directroute.children().clear();
-
-			result.insertObject(directroute, ObjStatus.DELETE,
-					directroute.getPid());
 		}
 	}
 }

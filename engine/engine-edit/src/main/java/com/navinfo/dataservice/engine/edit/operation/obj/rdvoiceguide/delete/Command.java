@@ -4,6 +4,7 @@ import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 
 public class Command extends AbstractCommand {
@@ -12,12 +13,22 @@ public class Command extends AbstractCommand {
 
 	private int pid;
 	
+	private RdVoiceguide voiceguide;
+	
 	public int getPid() {
 		return pid;
 	}
 
 	public void setPid(int pid) {
 		this.pid = pid;
+	}	
+	
+	public RdVoiceguide getVoiceguide() {
+		return voiceguide;
+	}
+
+	public void setVoiceguide(RdVoiceguide voiceguide) {
+		this.voiceguide = voiceguide;
 	}
 
 	@Override

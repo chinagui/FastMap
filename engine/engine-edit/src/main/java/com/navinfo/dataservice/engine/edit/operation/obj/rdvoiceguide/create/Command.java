@@ -43,7 +43,6 @@ public class Command extends AbstractCommand {
 	public void setOutLinkPids(List<Integer> outLinkPids) {
 		this.outLinkPids = outLinkPids;
 	}
-	
 
 	@Override
 	public OperType getOperType() {
@@ -70,7 +69,7 @@ public class Command extends AbstractCommand {
 		this.nodePid = data.getInt("nodePid");
 
 		this.inLinkPid = data.getInt("inLinkPid");
-		
+
 		JSONArray array = data.getJSONArray("outLinkPids");
 
 		outLinkPids = new ArrayList<Integer>();
@@ -80,9 +79,9 @@ public class Command extends AbstractCommand {
 			int pid = array.getInt(i);
 
 			if (!outLinkPids.contains(pid)) {
+
 				outLinkPids.add(pid);
 			}
 		}
 	}
 }
-

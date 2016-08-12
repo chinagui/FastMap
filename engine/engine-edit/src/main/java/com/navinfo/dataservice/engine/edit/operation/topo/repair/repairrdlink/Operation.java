@@ -18,6 +18,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -73,6 +74,7 @@ public class Operation implements IOperation {
 			// 拷贝原link，set属性
 			RdLink link = new RdLink();
 			link.copy(this.command.getUpdateLink());
+			link.setPid(this.command.getUpdateLink().pid());
 			link.setGeometry(GeoTranslator.geojson2Jts(this.command.getLinkGeom(), 100000, 0));
 			links.add(link);
 		} else {
@@ -201,6 +203,11 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void updataRelationObj(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
+
+		CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
+
+		List<RdLink> sortLinks = calLinkOperateUtils.sortLink(newLinks);
+
 		/*
 		 * 任何情况均需要处理的元素
 		 */
@@ -234,5 +241,22 @@ public class Operation implements IOperation {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Operation rdSpeedbumpOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Operation(
 				this.conn);
 		rdSpeedbumpOpeartion.breakSpeedbump(result, oldLink.getPid(), newLinks);
+		// 坡度
+		com.navinfo.dataservice.engine.edit.operation.obj.rdslope.update.Operation rdSlopeOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.update.Operation(
+				this.conn);
+		rdSlopeOpeartion.breakRdLink(oldLink.getPid(), newLinks, result);
+		// 顺行
+		com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.update.Operation(
+				conn);
+		operation.breakRdLink(oldLink, sortLinks, result);
+		// 维护CRF交叉点
+		com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Operation rdinterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Operation(
+				this.conn);
+		rdinterOperation.breakRdLink(oldLink, newLinks, result);
+		// 收费站
+		com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.update.Operation rdTollgateOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.update.Operation(
+				this.conn);
+		rdTollgateOpeartion.breakRdTollgate(result, oldLink.getPid(), newLinks);
 	}
+
 }

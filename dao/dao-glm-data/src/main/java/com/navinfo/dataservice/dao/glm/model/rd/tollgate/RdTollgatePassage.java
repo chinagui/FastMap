@@ -15,9 +15,9 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class RdTollgatePassage implements IRow {
-	
+
 	private int pid;
-	private int seqNum;
+	private int seqNum = 1;
 	private int tollForm;
 	private int cardType;
 	private int vehicle;
@@ -87,7 +87,7 @@ public class RdTollgatePassage implements IRow {
 
 	@Override
 	public void setRowId(String rowId) {
-		this.rowId=rowId;
+		this.rowId = rowId;
 	}
 
 	@Override
@@ -148,51 +148,49 @@ public class RdTollgatePassage implements IRow {
 	public boolean fillChangeFields(JSONObject json) throws Exception {
 		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
-		
+
 		while (keys.hasNext()) {
 			String key = (String) keys.next();
 
 			if (json.get(key) instanceof JSONArray) {
 				continue;
-			}  else {
-				if ( !"objStatus".equals(key)) {
-					
+			} else {
+				if (!"objStatus".equals(key)) {
+
 					Field field = this.getClass().getDeclaredField(key);
-					
+
 					field.setAccessible(true);
-					
+
 					Object objValue = field.get(this);
-					
+
 					String oldValue = null;
-					
-					if (objValue == null){
+
+					if (objValue == null) {
 						oldValue = "null";
-					}else{
+					} else {
 						oldValue = String.valueOf(objValue);
 					}
-					
+
 					String newValue = json.getString(key);
-					
-					if (!newValue.equals(oldValue)){
+
+					if (!newValue.equals(oldValue)) {
 						Object value = json.get(key);
-						
-						if(value instanceof String){
+
+						if (value instanceof String) {
 							changedFields.put(key, newValue.replace("'", "''"));
-						}
-						else{
+						} else {
 							changedFields.put(key, value);
 						}
 
 					}
 
-					
 				}
 			}
 		}
-		
-		if (changedFields.size() >0){
+
+		if (changedFields.size() > 0) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}

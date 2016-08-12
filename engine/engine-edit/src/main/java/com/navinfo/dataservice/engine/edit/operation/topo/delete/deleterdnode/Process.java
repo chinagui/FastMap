@@ -19,10 +19,13 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.dao.glm.model.rd.speedbump.RdSpeedbump;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdInterSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.gate.RdGateSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
@@ -33,6 +36,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelecto
 import com.navinfo.dataservice.dao.glm.selector.rd.se.RdSeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedbump.RdSpeedbumpSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.tollgate.RdTollgateSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.warninginfo.RdWarninginfoSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
@@ -314,7 +318,7 @@ public class Process extends AbstractProcess<Command> {
 
 		// 大门
 		OpRefRdGate opRefRdGate = new OpRefRdGate(this.getConn());
-		opRefRdGate.run(this.getResult(), this.getCommand().getNodePid());
+		opRefRdGate.run(this.getResult(), this.getCommand());
 
 		// 分岔路提示
 		OpRefRdSe opRefRdSe = new OpRefRdSe(this.getConn(), this.getCommand());
@@ -323,6 +327,26 @@ public class Process extends AbstractProcess<Command> {
 		// 减速带
 		OpRefRdSpeedbump opRdSpeedbump = new OpRefRdSpeedbump(this.getCommand(), this.getConn());
 		opRdSpeedbump.run(this.getResult());
+
+		// 坡度
+		OpRefRdSlope opRefRdSlope = new OpRefRdSlope(this.getConn());
+		opRefRdSlope.run(this.getResult(), this.getCommand());
+
+		// 顺行
+		OpRefRdDirectroute opRefRdDirectroute = new OpRefRdDirectroute(this.getConn());
+		opRefRdDirectroute.run(this.getResult(), this.getCommand());
+
+		// CRF交叉点
+		OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
+		opRefRdInter.run(this.getResult(), this.getCommand());
+
+		// 同一点关系
+		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
+		opRefRdSameNode.run(getResult(), this.getCommand());
+
+		// 收费站
+		OpRefRdTollgate opRefRdTollgate = new OpRefRdTollgate(this.getConn(), this.getCommand());
+		opRefRdTollgate.run(this.getResult());
 	}
 
 	/**
@@ -370,9 +394,13 @@ public class Process extends AbstractProcess<Command> {
 		infects.put("RDRESTRICTION", infectList);
 
 		// 警示信息
+		infectList = new ArrayList<Integer>();
+
 		RdWarninginfoSelector selector = new RdWarninginfoSelector(this.getConn());
 
-		infectList = selector.loadPidByNode(this.getCommand().getNodePid(), true);
+		for (Integer linkPid : this.getCommand().getLinkPids()) {
+			infectList.addAll(selector.loadPidByLink(linkPid, false));
+		}
 
 		infects.put("RDWARNINGINFO", infectList);
 
@@ -434,6 +462,38 @@ public class Process extends AbstractProcess<Command> {
 		}
 		infects.put("RDSPEEDBUMP", infectList);
 
+		// 顺行
+		infectList = new ArrayList<Integer>();
+		RdDirectrouteSelector directrouteSelector = new RdDirectrouteSelector(this.getConn());
+		for (Integer linkPid : this.getCommand().getLinkPids()) {
+			infectList.addAll(directrouteSelector.loadPidByLink(linkPid, false));
+		}
+		infects.put("RDDIRECTROUTE", infectList);
+
+		// CRF交叉点
+		RdInterSelector interSelector = new RdInterSelector(this.getConn());
+
+		StringBuilder sb = new StringBuilder();
+
+		for (RdLink link : this.getCommand().getLinks()) {
+			sb.append(link.getsNodePid() + "," + link.geteNodePid());
+		}
+
+		infectList = interSelector.loadInterPidByNodePid(sb.deleteCharAt(sb.lastIndexOf(",")).toString(), false);
+
+		infects.put("RDINTER", infectList);
+
+		// 收费站
+		infectList = new ArrayList<Integer>();
+		RdTollgateSelector rdTollgateSelector = new RdTollgateSelector(this.getConn());
+		List<RdTollgate> rdTollgates = null;
+		for (Integer linkPid : this.getCommand().getLinkPids()) {
+			rdTollgates = rdTollgateSelector.loadRdTollgatesWithLinkPid(linkPid, true);
+			for (RdTollgate rdTollgate : rdTollgates) {
+				infectList.add(rdTollgate.pid());
+			}
+		}
+		infects.put("RDTOLLGATE", infectList);
 		return infects;
 	}
 }

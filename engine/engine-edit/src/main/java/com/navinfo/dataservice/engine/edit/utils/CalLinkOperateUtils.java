@@ -6,17 +6,22 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+
 public class CalLinkOperateUtils {
-	
+
 	/**
 	 * 计算关系类型
+	 * 
 	 * @param conn
-	 * @param nodePid 进入点
-	 * @param outLinkPid 退出线
+	 * @param nodePid
+	 *            进入点
+	 * @param outLinkPid
+	 *            退出线
 	 * @return
 	 * @throws Exception
 	 */
-	public int getRelationShipType(Connection conn,int nodePid, int outLinkPid)
+	public int getRelationShipType(Connection conn, int nodePid, int outLinkPid)
 			throws Exception {
 
 		String sql = "with c1 as (select node_pid from rd_cross_node a where exists (select null from rd_cross_node b where a.pid=b.pid and b.node_pid=:1))  select count(1) count from rd_link c where c.link_pid=:2 and (c.s_node_pid=:3 or c.e_node_pid=:4 or exists(select null from c1 where c.s_node_pid=c1.node_pid or c.e_node_pid=c1.node_pid))";
@@ -68,18 +73,22 @@ public class CalLinkOperateUtils {
 
 		return 1;
 	}
-	
+
 	/**
 	 * 计算经过线
+	 * 
 	 * @param conn
-	 * @param inLinkPid 进入线
-	 * @param nodePid 进入点
-	 * @param outLinkPid 退出线
+	 * @param inLinkPid
+	 *            进入线
+	 * @param nodePid
+	 *            进入点
+	 * @param outLinkPid
+	 *            退出线
 	 * @return
 	 * @throws Exception
 	 */
-	public List<Integer> calViaLinks(Connection conn,int inLinkPid, int nodePid, int outLinkPid)
-			throws Exception {
+	public List<Integer> calViaLinks(Connection conn, int inLinkPid,
+			int nodePid, int outLinkPid) throws Exception {
 
 		String sql = "select * from table(package_utils.get_restrict_points(:1,:2,:3))";
 
@@ -142,5 +151,73 @@ public class CalLinkOperateUtils {
 		return null;
 	}
 
+	/**
+	 * 将一组link按顺序挂接
+	 * 
+	 * @param rdlinks
+	 * @return
+	 */
+	public List<RdLink> sortLink(List<RdLink> rdlinks) {
 
+		List<RdLink> sortLinks = new ArrayList<RdLink>();
+
+		if (rdlinks == null || rdlinks.size() == 0) {
+
+			return sortLinks;
+		}
+
+		if (rdlinks.size() < 3) {
+
+			return rdlinks;
+		}
+
+		List<RdLink> cacheLinks = new ArrayList<RdLink>();
+
+		cacheLinks.addAll(rdlinks);
+
+		int sTargetNodePid = cacheLinks.get(0).getsNodePid();
+
+		int eTargetNodePid = cacheLinks.get(0).geteNodePid();
+
+		cacheLinks.remove(0);
+
+		sortLinks.add(cacheLinks.get(0));
+
+		sortLinks = getConnectLink(sTargetNodePid, cacheLinks, sortLinks, 1);
+
+		sortLinks = getConnectLink(eTargetNodePid, cacheLinks, sortLinks, 0);
+
+		return sortLinks;
+	}
+
+	private List<RdLink> getConnectLink(int targetNodePid,
+			List<RdLink> cacheLinks, List<RdLink> sortLinks, int type) {
+
+		for (RdLink link : cacheLinks) {
+			if (targetNodePid != link.getsNodePid()
+					&& targetNodePid != link.geteNodePid()) {
+				continue;
+			}
+
+			if (targetNodePid == link.getsNodePid()) {
+				targetNodePid = link.geteNodePid();
+			} else {
+				targetNodePid = link.getsNodePid();
+			}
+
+			if (type == 1) {
+				
+				sortLinks.add(link);
+			} else {
+				
+				sortLinks.add(0, link);
+			}
+
+			cacheLinks.remove(link);
+
+			return getConnectLink(targetNodePid, cacheLinks, sortLinks, type);
+		}
+
+		return sortLinks;
+	}
 }

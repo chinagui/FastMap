@@ -65,7 +65,7 @@ public class LcLinkSearch implements ISearch {
 
 				snapshot.setM(m);
 
-				snapshot.setT(12);
+				snapshot.setT(31);
 
 				snapshot.setI(String.valueOf(resultSet.getInt("link_pid")));
 
@@ -145,7 +145,7 @@ public class LcLinkSearch implements ISearch {
 				
 				snapshot.setM(m);
 
-				snapshot.setT(12);
+				snapshot.setT(31);
 
 				snapshot.setI(String.valueOf(resultSet.getInt("link_pid")));
 

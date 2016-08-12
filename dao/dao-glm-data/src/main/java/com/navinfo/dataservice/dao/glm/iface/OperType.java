@@ -12,4 +12,5 @@ public enum OperType {
 	DEPART,
 	MOVE,
 	UPDOWNDEPART,
+	BATCH,
 }

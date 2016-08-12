@@ -17,24 +17,24 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class RdTollgate implements IObj {
-	
+
 	private int pid;
 	private int inLinkPid;
 	private int nodePid;
 	private int outLinkPid;
-	private int type=0;
-	private int passageNum=0;
-	private int etcFigureCode=0;
-	private String hwName="";
-	private int feeType=2;
-	private int feeStd=0;
-	private int systemId=0;
-	private int locationFlag=0;
+	private int type;
+	private int passageNum;
+	private String etcFigureCode;
+	private String hwName;
+	private int feeType = 2;
+	private int feeStd;
+	private int systemId;
+	private int locationFlag;
 	private String rowId;
 	public Map<String, Object> changedFields = new HashMap<String, Object>();
-	private List<IRow> tollgateName = new ArrayList<IRow>();
+	private List<IRow> names = new ArrayList<IRow>();
 	public Map<String, RdTollgateName> tollgateNameMap = new HashMap<String, RdTollgateName>();
-	private List<IRow> tollgatePassage = new ArrayList<IRow>();
+	private List<IRow> passages = new ArrayList<IRow>();
 	public Map<String, RdTollgatePassage> tollgatePassageMap = new HashMap<String, RdTollgatePassage>();
 
 	public int getPid() {
@@ -85,11 +85,11 @@ public class RdTollgate implements IObj {
 		this.passageNum = passageNum;
 	}
 
-	public int getEtcFigureCode() {
+	public String getEtcFigureCode() {
 		return etcFigureCode;
 	}
 
-	public void setEtcFigureCode(int etcFigureCode) {
+	public void setEtcFigureCode(String etcFigureCode) {
 		this.etcFigureCode = etcFigureCode;
 	}
 
@@ -137,20 +137,21 @@ public class RdTollgate implements IObj {
 		return rowId;
 	}
 
-	public List<IRow> getTollgateName() {
-		return tollgateName;
+
+	public List<IRow> getNames() {
+		return names;
 	}
 
-	public void setTollgateName(List<IRow> tollgateName) {
-		this.tollgateName = tollgateName;
+	public void setNames(List<IRow> names) {
+		this.names = names;
 	}
 
-	public List<IRow> getTollgatePassage() {
-		return tollgatePassage;
+	public List<IRow> getPassages() {
+		return passages;
 	}
 
-	public void setTollgatePassage(List<IRow> tollgatePassage) {
-		this.tollgatePassage = tollgatePassage;
+	public void setPassages(List<IRow> passages) {
+		this.passages = passages;
 	}
 
 	@Override
@@ -210,8 +211,8 @@ public class RdTollgate implements IObj {
 	@Override
 	public List<List<IRow>> children() {
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
-		children.add(this.getTollgateName());
-		children.add(this.getTollgatePassage());
+		children.add(this.getNames());
+		children.add(this.getPassages());
 		return children;
 	}
 
@@ -219,51 +220,49 @@ public class RdTollgate implements IObj {
 	public boolean fillChangeFields(JSONObject json) throws Exception {
 		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
-		
+
 		while (keys.hasNext()) {
 			String key = (String) keys.next();
 
 			if (json.get(key) instanceof JSONArray) {
 				continue;
-			}  else {
-				if ( !"objStatus".equals(key)) {
-					
+			} else {
+				if (!"objStatus".equals(key)) {
+
 					Field field = this.getClass().getDeclaredField(key);
-					
+
 					field.setAccessible(true);
-					
+
 					Object objValue = field.get(this);
-					
+
 					String oldValue = null;
-					
-					if (objValue == null){
+
+					if (objValue == null) {
 						oldValue = "null";
-					}else{
+					} else {
 						oldValue = String.valueOf(objValue);
 					}
-					
+
 					String newValue = json.getString(key);
-					
-					if (!newValue.equals(oldValue)){
+
+					if (!newValue.equals(oldValue)) {
 						Object value = json.get(key);
-						
-						if(value instanceof String){
+
+						if (value instanceof String) {
 							changedFields.put(key, newValue.replace("'", "''"));
-						}
-						else{
+						} else {
 							changedFields.put(key, value);
 						}
 
 					}
 
-					
 				}
 			}
 		}
-		
-		if (changedFields.size() >0){
+
+		if (changedFields.size() > 0) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
@@ -281,7 +280,6 @@ public class RdTollgate implements IObj {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
 		JSONObject json = JSONObject.fromObject(this);
-
 		return json;
 	}
 
@@ -307,15 +305,15 @@ public class RdTollgate implements IObj {
 
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
-		childList.put(RdTollgateName.class, tollgateName);
-		childList.put(RdTollgatePassage.class, tollgatePassage);
+		Map<Class<? extends IRow>, List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
+		childList.put(RdTollgateName.class, names);
+		childList.put(RdTollgatePassage.class, passages);
 		return childList;
 	}
 
 	@Override
 	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
-		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<Class<? extends IRow>,Map<String,?>>();
+		Map<Class<? extends IRow>, Map<String, ?>> childMap = new HashMap<Class<? extends IRow>, Map<String, ?>>();
 		childMap.put(RdTollgateName.class, tollgateNameMap);
 		childMap.put(RdTollgatePassage.class, tollgatePassageMap);
 		return childMap;

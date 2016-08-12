@@ -24,7 +24,7 @@ public class RdLinkTest extends InitApplication{
 
 	@Test
 	public void testDelete(){
-		String parameter = "{\"command\":\"DELETE\",\"dbId\":42,\"type\":\"RDLINK\",\"objId\":100008233}";
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":42,\"type\":\"RDLINK\",\"objId\":100008436}";
 		TestUtil.run(parameter);
 	}
 }

@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideVia;
 
 public class RdDirectroute implements IObj {
 
@@ -247,13 +248,36 @@ public class RdDirectroute implements IObj {
 
 	@Override
 	public boolean Unserialize(JSONObject json) throws Exception {
+		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {
 
 			String key = (String) keys.next();
 
-			if (!"objStatus".equals(key)) {
+			JSONArray ja = null;
+
+			if (json.get(key) instanceof JSONArray) {
+				switch (key) {
+				
+				case "vias":
+					vias.clear();
+
+					ja = json.getJSONArray(key);
+
+					for (int i = 0; i < ja.size(); i++) {
+						JSONObject jo = ja.getJSONObject(i);
+
+						RdDirectrouteVia row = new RdDirectrouteVia();
+
+						row.Unserialize(jo);
+
+						vias.add(row);
+					}
+
+					break;
+				}
+			} else if (!"objStatus".equals(key)) {
 
 				Field f = this.getClass().getDeclaredField(key);
 
@@ -261,7 +285,6 @@ public class RdDirectroute implements IObj {
 
 				f.set(this, json.get(key));
 			}
-
 		}
 		return true;
 	}

@@ -26,5 +26,16 @@ public class RdNodeTest extends InitApplication{
 		}
 	}
 	
+	@Test
+	public void testDelete() {
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":42,\"type\":\"RDNODE\",\"objId\":469358}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	
 }

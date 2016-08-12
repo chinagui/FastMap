@@ -35,7 +35,7 @@ public class Operation implements IOperation {
 		
 		RdInter rdInter = new RdInter();
 		
-		rdInter.setPid(PidService.getInstance().applyAdAdminGroupPid());
+		rdInter.setPid(PidService.getInstance().applyRdInterPid());
 		
 		JSONArray linkArray = this.command.getLinkArray();
 		if(linkArray != null)

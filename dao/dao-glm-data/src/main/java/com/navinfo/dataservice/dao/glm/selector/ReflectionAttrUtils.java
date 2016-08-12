@@ -19,6 +19,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 import oracle.sql.STRUCT;
 
@@ -78,5 +79,22 @@ public class ReflectionAttrUtils {
 			}
 		}
 	}
-
+	
+	public static String getTableNameByObjType(ObjType objType) throws Exception
+	{
+		switch (objType) {
+		case RDNODE:
+			return "RD_NODE";
+		case ADNODE:
+			return "AD_NODE";
+		case ZONENODE:
+			return "ZONE_NODE";
+		case LUNODE:
+			return "LU_NODE";
+		case RWNODE:
+			return "RW_NODE";
+		default:
+			throw new Exception("不支持的对象类型:"+objType.toString());
+		}
+	}
 }

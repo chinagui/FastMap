@@ -25,6 +25,8 @@ public class Command extends AbstractCommand {
 	
 	private List<RdLink> links;
 	
+	private JSONObject json;
+	
 	public List<RdLink> getLinks() {
 		return links;
 	}
@@ -36,6 +38,8 @@ public class Command extends AbstractCommand {
 	public Command(JSONObject json,String requester) throws JSONException{
 		
 		this.nodePid = json.getInt("objId");
+		
+		this.json = json;
 		
 		JSONObject geoPoint = new JSONObject();
 
@@ -83,6 +87,12 @@ public class Command extends AbstractCommand {
 		return latitude;
 	}
 
+	public JSONObject getJson() {
+		return json;
+	}
 
+	public void setJson(JSONObject json) {
+		this.json = json;
+	}
 	
 }

@@ -56,7 +56,7 @@ public class Check {
 			}
 		}
 
-		// 检查node是否属于某条link
+		// 检查node是否属于某一单一link的起点和终点
 		checkNodesForOneLink(nodePids, conn);
 	}
 

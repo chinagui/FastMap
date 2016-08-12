@@ -80,6 +80,12 @@ public class ReflectionAttrUtils {
 		}
 	}
 	
+	/**
+	 * 枚举类型转表名称
+	 * @param objType
+	 * @return
+	 * @throws Exception
+	 */
 	public static String getTableNameByObjType(ObjType objType) throws Exception
 	{
 		switch (objType) {
@@ -97,4 +103,29 @@ public class ReflectionAttrUtils {
 			throw new Exception("不支持的对象类型:"+objType.toString());
 		}
 	}
+	
+	/**
+	 * 表名称转为枚举对象类型
+	 * @param tableName
+	 * @return
+	 * @throws Exception
+	 */
+	public static ObjType getObjTypeByTableName(String tableName) throws Exception
+	{
+		switch (tableName) {
+		case "RD_NODE":
+			return ObjType.RDNODE;
+		case "AD_NODE":
+			return ObjType.ADNODE;
+		case "ZONE_NODE":
+			return ObjType.ZONENODE;
+		case "LU_NODE":
+			return ObjType.LUNODE;
+		case "RW_NODE":
+			return ObjType.RWNODE;
+		default:
+			throw new Exception("不支持的表名转对象名称:"+tableName);
+		}
+	}
+	
 }

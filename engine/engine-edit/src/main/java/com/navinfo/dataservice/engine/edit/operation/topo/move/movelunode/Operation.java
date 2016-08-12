@@ -8,13 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFaceTopo;
@@ -27,6 +26,8 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONObject;
 
 /**
  * 移动土地利用点具体操作类
@@ -122,11 +123,24 @@ public class Operation implements IOperation {
 				map.put(link.getPid(), links);
 				result.insertObject(link, ObjStatus.DELETE, link.pid());
 			}
-
+			updataRelationObj(link, links, result);
 		}
 		this.map = map;
 	}
-
+	
+	/**
+	 * @param link
+	 * @param links
+	 * @param result
+	 * @throws Exception 
+	 */
+	private void updataRelationObj(LuLink link, List<LuLink> links, Result result) throws Exception {
+		// 同一点关系
+		com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
+				null, this.conn);
+		sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.LUNODE, result);
+	}
+	
 	/*
 	 * 更新土地利用点信息
 	 */

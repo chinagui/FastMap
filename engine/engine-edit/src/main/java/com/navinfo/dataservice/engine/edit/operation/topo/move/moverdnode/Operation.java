@@ -11,6 +11,7 @@ import java.util.Set;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
@@ -31,8 +32,6 @@ public class Operation implements IOperation {
 	private RdNode updateNode;
 
 	private Connection conn;
-
-	private Map<Integer, List<RdLink>> map;
 
 	public Operation(Command command, RdNode updateNode, Connection conn) {
 		this.command = command;
@@ -134,7 +133,6 @@ public class Operation implements IOperation {
 
 			updataRelationObj(link, newGeoLinks, result);
 		}
-		this.map = map;
 	}
 
 	private void updateNodeGeometry(Result result) throws Exception {
@@ -182,6 +180,10 @@ public class Operation implements IOperation {
 				this.conn);
 		eleceyeOperation.moveEleceye(oldLink, newLinks, result);
 
+		// 同一点关系
+		com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
+				null, this.conn);
+		sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.RDNODE, result);
 		/*
 		 * 条件以下为仅打断情况下需要处理的元素 (size < 2说明没有进行打断操作)
 		 */
@@ -223,7 +225,7 @@ public class Operation implements IOperation {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Operation rdinterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Operation(
 				this.conn);
 		rdinterOperation.breakRdLink(oldLink, newLinks, result);
-		
+
 		// 收费站
 		com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.update.Operation rdTollgateOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.update.Operation(
 				this.conn);

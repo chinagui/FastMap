@@ -1,19 +1,18 @@
 package com.navinfo.dataservice.engine.meta.rdname;
 
+import java.lang.reflect.Field;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.sf.json.JSONObject;
-
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.commons.util.RomanUtils;
 import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
+
+import net.sf.json.JSONObject;
 
 /**
  * @ClassName: RdNameImportor.java
@@ -219,6 +218,72 @@ public class RdNameImportor {
 		}
 		return false;
 	}
+	
+	/**
+	 * web端保存rdName
+	 * @author wangdongbin
+	 * @param rdName
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject importRdNameFromWeb(JSONObject params) throws Exception {
+		JSONObject result = new JSONObject();
+		
+		RdNameSelector selector = new RdNameSelector();
+		
+		RdName rdName = Json2Obj(params);
+		
+		// 判断是否存在重复name
+		JSONObject rdNameExists = selector.checkRdNameExists(rdName);
+		
+		// 存在重复name
+		if (rdNameExists.size() > 0) {
+			result.put("flag", -1);
+			result.put("data", rdNameExists);
+			return result;
+		}
+		
+		RdNameOperation operation = new RdNameOperation();
+		// 新增或更新一条道路名
+		RdName rdNameNew = operation.saveOrUpdate(rdName);
+		
+		JSONObject json = JSONObject.fromObject(rdNameNew);
+		
+		result.put("flag", 1);
+		result.put("data", json);
+		
+		return result;
+	}
+	
+	/**
+	 * 将前台的json转为对象
+	 * @author wangdongbin
+	 * @param params
+	 * @return
+	 * @throws Exception
+	 */
+	@SuppressWarnings("rawtypes")
+	private RdName Json2Obj(JSONObject params) throws Exception {
+		RdName rdName = new RdName();
+		
+		try {
+			Iterator keys = params.keys();
+			while (keys.hasNext()) {
+				String key = (String) keys.next();
+				
+				Field f = rdName.getClass().getDeclaredField(key);
 
+				f.setAccessible(true);
 
+				f.set(rdName, params.get(key));
+			}
+			
+			rdName.setName(ExcelReader.h2f(rdName.getName()));
+			
+			return rdName;
+		} catch (Exception e) {
+			throw e;
+		}
+		
+	}
 }

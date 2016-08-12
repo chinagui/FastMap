@@ -210,7 +210,7 @@ public class RdNameSelector {
 			sql.append(",a.SUFFIX,a.NAME_PHONETIC,a.TYPE_PHONETIC,a.BASE_PHONETIC,a.PREFIX_PHONETIC,a.INFIX_PHONETIC");
 			sql.append(",a.SUFFIX_PHONETIC,a.SRC_FLAG,a.ROAD_TYPE,a.ADMIN_ID,a.CODE_TYPE,a.VOICE_FILE,a.SRC_RESUME");
 			sql.append(",a.PA_REGION_ID,a.SPLIT_FLAG,a.MEMO,a.ROUTE_ID,a.PROCESS_FLAG,a.CITY");
-			sql.append(" from rd_name a where a.name in (");
+			sql.append(" from rd_name a where a.SRC_RESUME in (");
 			
 			String tmep = "";
 			for (int i=0;i<tips.size();i++) {
@@ -232,21 +232,25 @@ public class RdNameSelector {
 					String columnName = sUtils.toColumnName(key);
 					sql.append(" and a.");
 					sql.append(columnName);
-					sql.append("=");
+					sql.append("='");
 					sql.append(colum.getString(key));
+					sql.append("'");
 				}
 			}
+			
+			sql.append(" ORDER BY a.NAME_GROUPID,a.NAME_ID");
+			
 			
 			// 添加排序条件
 			int index = sortby.indexOf("-");
 			if (index != -1) {
 				String sortbyName = sUtils.toColumnName(sortby.substring(1));
-				sql.append(" ORDER BY a.");
+				sql.append(" , a.");
 				sql.append(sortbyName);
 				sql.append(" DESC");
 			} else {
 				String sortbyName = sUtils.toColumnName(sortby);
-				sql.append(" ORDER BY a.");
+				sql.append(" , a.");
 				sql.append(sortbyName);
 				sql.append(" ASC");
 			}
@@ -272,35 +276,7 @@ public class RdNameSelector {
 			
 			while (resultSet.next()) {
 				total++;
-				JSONObject rdNameObj = new JSONObject();
-				rdNameObj.put("nameId", resultSet.getInt("NAME_ID"));
-				rdNameObj.put("nameGroupid", resultSet.getInt("NAME_GROUPID"));
-				rdNameObj.put("longCode", resultSet.getString("LANG_CODE"));
-				rdNameObj.put("name", resultSet.getString("NAME"));
-				rdNameObj.put("type", resultSet.getString("TYPE"));
-				rdNameObj.put("base", resultSet.getString("BASE"));
-				rdNameObj.put("prefix", resultSet.getString("PREFIX"));
-				rdNameObj.put("infix", resultSet.getString("INFIX"));
-				rdNameObj.put("suffix", resultSet.getString("SUFFIX"));
-				rdNameObj.put("namePhonetic", resultSet.getString("NAME_PHONETIC"));
-				rdNameObj.put("typePhonetic", resultSet.getString("TYPE_PHONETIC"));
-				rdNameObj.put("basePhonetic", resultSet.getString("BASE_PHONETIC"));
-				rdNameObj.put("prefixPhonetic", resultSet.getString("PREFIX_PHONETIC"));
-				rdNameObj.put("infixPhonetic", resultSet.getString("INFIX_PHONETIC"));
-				rdNameObj.put("suffixPhonetic", resultSet.getString("SUFFIX_PHONETIC"));
-				rdNameObj.put("srcFlag", resultSet.getInt("SRC_FLAG"));
-				rdNameObj.put("roadType", resultSet.getInt("ROAD_TYPE"));
-				rdNameObj.put("adminId", resultSet.getInt("ADMIN_ID"));
-				rdNameObj.put("codeType", resultSet.getInt("CODE_TYPE"));
-				rdNameObj.put("voiceFile", resultSet.getString("VOICE_FILE"));
-				rdNameObj.put("srcResume", resultSet.getString("SRC_RESUME"));
-				rdNameObj.put("paRegionId", resultSet.getInt("PA_REGION_ID"));
-				rdNameObj.put("splitFlag", resultSet.getInt("SPLIT_FLAG"));
-				rdNameObj.put("memo", resultSet.getString("MEMO"));
-				rdNameObj.put("routeId", resultSet.getInt("ROUTE_ID"));
-				rdNameObj.put("processFlag", resultSet.getInt("PROCESS_FLAG"));
-				rdNameObj.put("city", resultSet.getString("CITY"));
-				data.add(rdNameObj);
+				data.add(result2Json(resultSet));
 			}
 			result.put("total", total);
 			result.put("data", data);
@@ -311,6 +287,109 @@ public class RdNameSelector {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
 			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 判断是否存在重复的名称
+	 * @author wangdongbin
+	 * @param rdName
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject checkRdNameExists(RdName rdName) throws Exception {
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		Connection conn = null;
+		
+		// 检查是否存在同一行政区划、同一道路类型（默认是未区分）的相同的道路名数据
+		//（对于“行政区划”为“全国”时，不判断是否重名，即允许重复名称记录存在，但NAME_GROUPID不同；）
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT * FROM rd_name");
+		sb.append(" WHERE name=:1");
+		sb.append(" AND road_type=:2");
+		sb.append(" AND admin_id=:3");
+		// “行政区划”为“全国”
+		if (rdName.getAdminId() == 214 && rdName.getNameGroupId() != 0) {
+			sb.append(" AND name_groupid=:4");
+		}
+		try {
+			
+			conn = DBConnector.getInstance().getMetaConnection();
+			
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setString(1, rdName.getName());
+
+			pstmt.setInt(2, rdName.getRoadType());
+			
+			pstmt.setInt(3, rdName.getAdminId());
+			
+			if (rdName.getAdminId() == 214) {
+				pstmt.setInt(4, rdName.getNameGroupId());
+			}
+
+			resultSet = pstmt.executeQuery();
+			
+			JSONObject resultObj = new JSONObject();
+			
+			if (resultSet.next()) {
+				resultObj = result2Json(resultSet);
+			}
+			
+			return resultObj;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	
+	/**
+	 * 将查询结果转为json型
+	 * @param resultSet
+	 * @return
+	 * @throws Exception
+	 */
+	private JSONObject result2Json(ResultSet resultSet) throws Exception{
+		JSONObject rdNameObj = new JSONObject();
+		try {
+			rdNameObj.put("nameId", resultSet.getInt("NAME_ID"));
+			rdNameObj.put("nameGroupid", resultSet.getInt("NAME_GROUPID"));
+			rdNameObj.put("longCode", resultSet.getString("LANG_CODE"));
+			rdNameObj.put("name", resultSet.getString("NAME"));
+			rdNameObj.put("type", resultSet.getString("TYPE"));
+			rdNameObj.put("base", resultSet.getString("BASE"));
+			rdNameObj.put("prefix", resultSet.getString("PREFIX"));
+			rdNameObj.put("infix", resultSet.getString("INFIX"));
+			rdNameObj.put("suffix", resultSet.getString("SUFFIX"));
+			rdNameObj.put("namePhonetic", resultSet.getString("NAME_PHONETIC"));
+			rdNameObj.put("typePhonetic", resultSet.getString("TYPE_PHONETIC"));
+			rdNameObj.put("basePhonetic", resultSet.getString("BASE_PHONETIC"));
+			rdNameObj.put("prefixPhonetic", resultSet.getString("PREFIX_PHONETIC"));
+			rdNameObj.put("infixPhonetic", resultSet.getString("INFIX_PHONETIC"));
+			rdNameObj.put("suffixPhonetic", resultSet.getString("SUFFIX_PHONETIC"));
+			rdNameObj.put("srcFlag", resultSet.getInt("SRC_FLAG"));
+			rdNameObj.put("roadType", resultSet.getInt("ROAD_TYPE"));
+			rdNameObj.put("adminId", resultSet.getInt("ADMIN_ID"));
+			rdNameObj.put("codeType", resultSet.getInt("CODE_TYPE"));
+			rdNameObj.put("voiceFile", resultSet.getString("VOICE_FILE"));
+			rdNameObj.put("srcResume", resultSet.getString("SRC_RESUME"));
+			rdNameObj.put("paRegionId", resultSet.getInt("PA_REGION_ID"));
+			rdNameObj.put("splitFlag", resultSet.getInt("SPLIT_FLAG"));
+			rdNameObj.put("memo", resultSet.getString("MEMO"));
+			rdNameObj.put("routeId", resultSet.getInt("ROUTE_ID"));
+			rdNameObj.put("processFlag", resultSet.getInt("PROCESS_FLAG"));
+			rdNameObj.put("city", resultSet.getString("CITY"));
+			return rdNameObj;
+		} catch (Exception e) {
+			throw e;
 		}
 	}
 }

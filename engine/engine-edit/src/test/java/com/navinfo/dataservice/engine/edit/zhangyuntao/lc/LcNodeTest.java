@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.zhangyuntao.lc;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +8,7 @@ import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -72,5 +74,17 @@ public class LcNodeTest extends InitApplication {
 			e.printStackTrace();
 		}
 
+	}
+	
+	@Test
+	public void searchById(){
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(43);
+			SearchProcess p = new SearchProcess(conn);
+			System.out.println(p.searchDataByPid(ObjType.LCNODE, 100034670).Serialize(ObjLevel.FULL));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

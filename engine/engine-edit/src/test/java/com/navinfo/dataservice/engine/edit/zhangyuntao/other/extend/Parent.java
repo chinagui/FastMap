@@ -8,7 +8,9 @@ package com.navinfo.dataservice.engine.edit.zhangyuntao.other.extend;
  * @version: v1.0
  */
 public class Parent {
-	protected int a;
+	protected int a = 2;
+	
+	protected int modCount = 0;
 
 	public int getA() {
 		return a;
@@ -16,11 +18,29 @@ public class Parent {
 
 	public void setA(int a) {
 		this.a = a;
+		this.a = Parent.this.modCount;
 	}
 
 	@Override
 	public String toString() {
 		return "a = " + a;
+	}
+	
+	class InnerP{
+		private int x;
+		
+		public void setX(){
+			x = Parent.this.modCount;
+		}
+
+		public int getX() {
+			return x;
+		}
+
+		public void setX(int x) {
+			this.x = x;
+		}
+		
 	}
 
 }

@@ -267,4 +267,17 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 			}
 		}
 	}
+
+//	public void handleResult(ObjType objType, Result result) {
+//		for (IRow row : result.getAddObjects()) {
+//			if (objType.equals(row.objType())) {
+//				if (row instanceof IObj) {
+//					IObj obj = (IObj) row;
+//					result.setPrimaryPid(obj.pid());
+//				} else {
+//					result.setPrimaryPid(row.parentPKValue());
+//				}
+//			}
+//		}
+//	}
 }

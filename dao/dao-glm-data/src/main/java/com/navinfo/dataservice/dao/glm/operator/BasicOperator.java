@@ -15,6 +15,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
@@ -102,7 +103,7 @@ public class BasicOperator extends AbstractOperator {
 				if (StringUtils.toColumnName(name).equals(M_U_DATE)) {
 					key.append(M_U_DATE + ",");
 					value.append("'" + StringUtils.getCurrentTime() + "',");
-				} else if (StringUtils.toColumnName(name).equals(M_PID)) {
+				} else if (StringUtils.toColumnName(name).equals(M_PID) && row instanceof IObj) {
 					try {
 						key.append(c.getMethod(M_PRIMARYKEY).invoke(row) + ",");
 						value.append(oj + ",");

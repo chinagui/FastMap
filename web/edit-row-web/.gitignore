@@ -1,0 +1,12 @@
+.project
+.settings
+/target
+.classpath
+.#webclasspath
+/logs
+/bin
+/work
+.mvnclasspath
+.tomcatplugin
+.springBeans
+.mymetadata

@@ -10,6 +10,7 @@ import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
+import com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye.TestUtil;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -30,7 +31,11 @@ public class LcLinkTest extends InitApplication{
 	public void init() {
 		super.initContext();
 	}
-
+	@Test
+	public void createLuLinkTest() {
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":43,\"data\":{\"eNodePid\":100034582,\"sNodePid\":100034584,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.24096274375916,40.9146071161593],[116.23830199241638,40.91574217557027]]},\"catchLinks\":[{\"nodePid\":100034584,\"lon\":116.24096274375916,\"lat\":40.9146071161593},{\"nodePid\":100034582,\"lon\":116.23830199241638,\"lat\":40.91574217557027}]},\"type\":\"LCLINK\"}";
+		TestUtil.run(parameter);
+	}
 	@Test
 	public void testSearchByGap() {
 		String parameter = "{\"projectId\":11,\"gap\":80,\"types\":[\"ADNODE\"],\"z\":17,\"x\":107945,\"y\":49615}";

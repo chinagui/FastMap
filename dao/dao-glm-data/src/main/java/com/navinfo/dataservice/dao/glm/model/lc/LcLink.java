@@ -147,7 +147,7 @@ public class LcLink implements IObj {
 
 	@Override
 	public ObjType objType() {
-		return null;
+		return ObjType.LCLINK;
 	}
 
 	@Override

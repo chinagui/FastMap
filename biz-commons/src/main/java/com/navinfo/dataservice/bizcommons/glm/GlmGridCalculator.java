@@ -64,10 +64,6 @@ public class GlmGridCalculator {
 					Map<String,GlmGridRefInfo> map = new HashMap<String,GlmGridRefInfo>();
 					while(rs.next()){
 						String tableName = rs.getString("TABLE_NAME");
-						if(tableName.equals("RD_SAMENODE"))
-						{
-							System.out.println(1);
-						}
 						GlmGridRefInfo info = new GlmGridRefInfo(tableName);
 						info.setGridRefCol(rs.getString("REF_COL_NAME"));
 						info.setSingleMesh(rs.getInt("SINGLE_MESH")==1?true:false);

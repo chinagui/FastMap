@@ -105,7 +105,7 @@ public class LcLinkMesh implements IRow{
 
 	@Override
 	public ObjType objType() {
-		return null;
+		return ObjType.LCLINKMESH;
 	}
 
 	@Override

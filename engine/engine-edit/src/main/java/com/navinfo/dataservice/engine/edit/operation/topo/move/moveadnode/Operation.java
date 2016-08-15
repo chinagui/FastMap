@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
@@ -36,7 +37,7 @@ public class Operation implements IOperation {
 	private Command command;
 
 	private AdNode updateNode;
-    private Map<Integer, List<AdLink>> map;
+	private Map<Integer, List<AdLink>> map;
 	private Connection conn;
 
 	public Operation(Command command, AdNode updateNode, Connection conn) {
@@ -61,11 +62,11 @@ public class Operation implements IOperation {
 		Map<Integer, List<AdLink>> map = new HashMap<Integer, List<AdLink>>();
 		for (AdLink link : command.getLinks()) {
 			int nodePid = updateNode.pid();
-			
+
 			double lon = command.getLongitude();
-			
+
 			double lat = command.getLatitude();
-			
+
 			Geometry geom = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
 			Coordinate[] cs = geom.getCoordinates();
 			double[][] ps = new double[cs.length][2];
@@ -80,8 +81,8 @@ public class Operation implements IOperation {
 				ps[0][0] = lon;
 
 				ps[0][1] = lat;
-			} 
-			if(link.geteNodePid() == nodePid) {
+			}
+			if (link.geteNodePid() == nodePid) {
 				ps[ps.length - 1][0] = lon;
 
 				ps[ps.length - 1][1] = lat;
@@ -90,7 +91,7 @@ public class Operation implements IOperation {
 			geojson.put("type", "LineString");
 			geojson.put("coordinates", ps);
 			Geometry geo = GeoTranslator.geojson2Jts(geojson, 1, 5);
-			Set<String> meshes =  CompGeometryUtil.geoToMeshesWithoutBreak(geo);
+			Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geo);
 			// 修改线的几何属性
 			// 如果没有跨图幅只是修改线的几何
 			List<AdLink> links = new ArrayList<AdLink>();
@@ -99,36 +100,44 @@ public class Operation implements IOperation {
 				updateContent.put("geometry", geojson);
 				updateContent.put("length", GeometryUtils.getLinkLength(geo));
 				link.fillChangeFields(updateContent);
-				AdLink  adLink = new  AdLink();
+				AdLink adLink = new AdLink();
 				adLink.copy(link);
 				adLink.setGeometry(GeoTranslator.geojson2Jts(geojson, 100000, 5));
 				links.add(adLink);
 				map.put(link.getPid(), links);
 				result.insertObject(link, ObjStatus.UPDATE, link.pid());
-			//如果跨图幅就需要打断生成新的link
-			}else{
+				// 如果跨图幅就需要打断生成新的link
+			} else {
 				Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
 				maps.put(geo.getCoordinates()[0], link.getsNodePid());
-				maps.put(geo.getCoordinates()[link.getGeometry().getCoordinates().length-1], link.geteNodePid());
+				maps.put(geo.getCoordinates()[link.getGeometry().getCoordinates().length - 1], link.geteNodePid());
 				Iterator<String> it = meshes.iterator();
 				while (it.hasNext()) {
 					String meshIdStr = it.next();
-					Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo,
-							MeshUtils.mesh2Jts(meshIdStr));
-					geomInter = GeoTranslator.geojson2Jts(
-							GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					links.addAll(AdLinkOperateUtils.getCreateAdLinksWithMesh(geomInter, maps,result));
+					Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo, MeshUtils.mesh2Jts(meshIdStr));
+					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
+					links.addAll(AdLinkOperateUtils.getCreateAdLinksWithMesh(geomInter, maps, result));
 
 				}
 				map.put(link.getPid(), links);
 				result.insertObject(link, ObjStatus.DELETE, link.pid());
 			}
-
-			
-
-			
+			updataRelationObj(link, links, result);
 		}
-		this.map= map;
+		this.map = map;
+	}
+
+	/**
+	 * @param link
+	 * @param links
+	 * @param result
+	 * @throws Exception 
+	 */
+	private void updataRelationObj(AdLink link, List<AdLink> links, Result result) throws Exception {
+		// 同一点关系
+		com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
+				null, this.conn);
+		sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.ADNODE, result);
 	}
 
 	/*
@@ -158,48 +167,50 @@ public class Operation implements IOperation {
 				updatecommand, result, conn);
 		process.innerRun();
 	}
-/**
- * 移动Adnode 修改行政区划面信息
- * @param result
- * @throws Exception
- */
+
+	/**
+	 * 移动Adnode 修改行政区划面信息
+	 * 
+	 * @param result
+	 * @throws Exception
+	 */
 	private void updateFaceGeomtry(Result result) throws Exception {
 		if (command.getFaces() != null && command.getFaces().size() > 0) {
-			
+
 			for (AdFace face : command.getFaces()) {
 				boolean flag = false;
 				List<AdLink> links = new ArrayList<AdLink>();
 				for (IRow iRow : face.getFaceTopos()) {
 					AdFaceTopo obj = (AdFaceTopo) iRow;
-				    if(this.map.containsKey(obj.getLinkPid())){
-				    	if(this.map.get(obj.getLinkPid()).size() > 1){
-				    		flag =true;
+					if (this.map.containsKey(obj.getLinkPid())) {
+						if (this.map.get(obj.getLinkPid()).size() > 1) {
+							flag = true;
 						}
-				    	links.addAll(this.map.get(obj.getLinkPid()));
-				    }else{
-				    	links.add((AdLink) new AdLinkSelector(conn).loadById(
-							obj.getLinkPid(), true));
-				    }
-					
+						links.addAll(this.map.get(obj.getLinkPid()));
+					} else {
+						links.add((AdLink) new AdLinkSelector(conn).loadById(obj.getLinkPid(), true));
+					}
+
 					result.insertObject(obj, ObjStatus.DELETE, face.getPid());
-					
+
 				}
-				if(flag){
-					//如果跨图幅需要重新生成面并且删除原有面信息
-					com.navinfo.dataservice.engine.edit.operation.obj.adface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.operation.obj.adface.create.Operation(result);
+				if (flag) {
+					// 如果跨图幅需要重新生成面并且删除原有面信息
+					com.navinfo.dataservice.engine.edit.operation.obj.adface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.operation.obj.adface.create.Operation(
+							result);
 					List<IObj> objs = new ArrayList<IObj>();
 					objs.addAll(links);
 					opFace.createFaceByAdLink(objs);
 					result.insertObject(face, ObjStatus.DELETE, face.getPid());
-				}
-				else{
-					//如果不跨图幅只需要维护面的行政几何
-					com.navinfo.dataservice.engine.edit.operation.obj.adface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.operation.obj.adface.create.Operation(result,face);
+				} else {
+					// 如果不跨图幅只需要维护面的行政几何
+					com.navinfo.dataservice.engine.edit.operation.obj.adface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.operation.obj.adface.create.Operation(
+							result, face);
 					opFace.reCaleFaceGeometry(links);
 				}
-				
-		}
-	}
 
- }
+			}
+		}
+
+	}
 }

@@ -82,7 +82,7 @@ public class LcFeature implements IObj {
 
 	@Override
 	public ObjType objType() {
-		return null;
+		return ObjType.LCFEATURE;
 	}
 
 	@Override

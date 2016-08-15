@@ -619,11 +619,13 @@ public class MetaController extends BaseController {
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			
+			JSONObject data = jsonReq.getJSONObject("data");
+			
 			RdNameImportor importor = new RdNameImportor();
 			
-			JSONObject data = importor.importRdNameFromWeb(jsonReq);
+			JSONObject result = importor.importRdNameFromWeb(data);
 			
-			return new ModelAndView("jsonView", success(data));
+			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {
 	
 			logger.error(e.getMessage(), e);

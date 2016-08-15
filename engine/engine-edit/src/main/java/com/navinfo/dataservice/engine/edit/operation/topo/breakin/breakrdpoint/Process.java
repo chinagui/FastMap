@@ -399,6 +399,10 @@ public class Process extends AbstractProcess<Command> {
 		// 收费站
 		OpRefRdTollgate opRefRdTollgate = new OpRefRdTollgate(this.getConn());
 		opRefRdTollgate.run(this.getResult(), oldLink, newLinks);
+		
+		// 语音引导
+		OpRefRdVoiceguide opRefRdVoiceguide = new OpRefRdVoiceguide(this.getConn());
+		opRefRdVoiceguide.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
 	}
 
 	/**

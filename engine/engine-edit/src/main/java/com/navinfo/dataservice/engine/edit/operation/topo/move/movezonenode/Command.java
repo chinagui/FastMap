@@ -31,6 +31,8 @@ public class Command extends AbstractCommand {
 	private List<ZoneLink> links;
 	private List<ZoneFace> faces;
 	private ZoneNode zoneNode;
+	
+	private JSONObject json;
 
 	public ZoneNode getZoneNode() {
 		return zoneNode;
@@ -61,6 +63,8 @@ public class Command extends AbstractCommand {
 	}
 	
 	public Command(JSONObject json,String requester) throws JSONException{
+		
+		this.json = json;
 		
 		this.nodePid = json.getInt("objId");
 		
@@ -110,6 +114,12 @@ public class Command extends AbstractCommand {
 		return latitude;
 	}
 
+	public JSONObject getJson() {
+		return json;
+	}
 
+	public void setJson(JSONObject json) {
+		this.json = json;
+	}
 	
 }

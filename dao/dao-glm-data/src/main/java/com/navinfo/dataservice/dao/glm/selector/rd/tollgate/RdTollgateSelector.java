@@ -66,14 +66,14 @@ public class RdTollgateSelector extends AbstractSelector {
 					RdTollgateName tollgateName = (RdTollgateName) row;
 					rdTollgate.tollgateNameMap.put(tollgateName.rowId(), tollgateName);
 				}
-				rdTollgate.setTollgateNames(tollgateNames);
+				rdTollgate.setNames(tollgateNames);
 				RdTollgatePassageSelector tollgatePassageSelector = new RdTollgatePassageSelector(this.conn);
 				List<IRow> tollgatePassages = tollgatePassageSelector.loadRowsByParentId(rdTollgate.pid(), true);
 				for(IRow row : tollgatePassages){
 					RdTollgatePassage tollgatePassage = (RdTollgatePassage) row;
 					rdTollgate.tollgatePassageMap.put(tollgatePassage.rowId(), tollgatePassage);
 				}
-				rdTollgate.setTollgatePassages(tollgatePassages);
+				rdTollgate.setPassages(tollgatePassages);
 				
 				rdTollgates.add(rdTollgate);
 			}

@@ -247,7 +247,7 @@ public class LcFace implements IObj {
 
 	@Override
 	public ObjType objType() {
-		return null;
+		return ObjType.LCFACE;
 	}
 
 	@Override

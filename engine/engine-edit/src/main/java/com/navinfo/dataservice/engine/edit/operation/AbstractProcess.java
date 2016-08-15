@@ -151,7 +151,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 			if (this.getCommand().getOperType().equals(OperType.CREATE)
 					&& !this.getCommand().getObjType().equals(ObjType.RDBRANCH)
 					&& !this.getCommand().getObjType().equals(ObjType.RDELECEYEPAIR)
-					&& !this.getCommand().getObjType().equals(ObjType.LUFACE)) {
+					&& !this.getCommand().getObjType().equals(ObjType.LUFACE)
+					&& !this.getCommand().getObjType().equals(ObjType.LCFACE)) {
 				handleResult(this.getCommand().getObjType(), result);
 			}
 

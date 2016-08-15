@@ -115,7 +115,7 @@ public class LcFaceTopo implements IRow {
 
 	@Override
 	public ObjType objType() {
-		return null;
+		return ObjType.LCFACETOPO;
 	}
 
 	@Override

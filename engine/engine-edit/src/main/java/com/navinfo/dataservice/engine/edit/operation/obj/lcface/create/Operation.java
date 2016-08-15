@@ -386,6 +386,7 @@ public class Operation implements IOperation {
 		face.setArea(GeometryUtils.getCalculateArea(g));
 		face.setPerimeter(GeometryUtils.getLinkLength(g));
 		result.insertObject(face, ObjStatus.INSERT, face.getPid());
+		result.setPrimaryPid(face.pid());
 	}
 
 	/*

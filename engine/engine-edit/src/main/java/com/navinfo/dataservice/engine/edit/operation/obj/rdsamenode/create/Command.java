@@ -32,7 +32,7 @@ public class Command extends AbstractCommand{
 	
 	@Override
 	public ObjType getObjType() {
-		return ObjType.RDINTER;
+		return ObjType.RDSAMENODE;
 	}
 
 	@Override

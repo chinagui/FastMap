@@ -11,6 +11,7 @@ import java.util.Set;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
@@ -31,8 +32,6 @@ public class Operation implements IOperation {
 	private RdNode updateNode;
 
 	private Connection conn;
-
-	private Map<Integer, List<RdLink>> map;
 
 	public Operation(Command command, RdNode updateNode, Connection conn) {
 		this.command = command;
@@ -58,7 +57,8 @@ public class Operation implements IOperation {
 		Map<Integer, List<RdLink>> map = new HashMap<Integer, List<RdLink>>();
 		for (RdLink link : command.getLinks()) {
 
-			Geometry geom = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
+			Geometry geom = GeoTranslator.transform(link.getGeometry(),
+					0.00001, 5);
 
 			Coordinate[] cs = geom.getCoordinates();
 
@@ -115,13 +115,17 @@ public class Operation implements IOperation {
 			} else {
 				Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
 				maps.put(geo.getCoordinates()[0], link.getsNodePid());
-				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1], link.geteNodePid());
+				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1],
+						link.geteNodePid());
 				Iterator<String> it = meshes.iterator();
 				while (it.hasNext()) {
 					String meshIdStr = it.next();
-					Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo, MeshUtils.mesh2Jts(meshIdStr));
-					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					RdLinkOperateUtils.createRdLinkWithMesh(geomInter, maps, link, result, links);
+					Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo,
+							MeshUtils.mesh2Jts(meshIdStr));
+					geomInter = GeoTranslator.geojson2Jts(
+							GeoTranslator.jts2Geojson(geomInter), 1, 5);
+					RdLinkOperateUtils.createRdLinkWithMesh(geomInter, maps,
+							link, result, links);
 
 				}
 				// 添加新生成的RDLINK的集合，该集合用于修改关联要素
@@ -134,7 +138,6 @@ public class Operation implements IOperation {
 
 			updataRelationObj(link, newGeoLinks, result);
 		}
-		this.map = map;
 	}
 
 	private void updateNodeGeometry(Result result) throws Exception {
@@ -142,7 +145,8 @@ public class Operation implements IOperation {
 
 		geojson.put("type", "Point");
 
-		geojson.put("coordinates", new double[] { command.getLongitude(), command.getLatitude() });
+		geojson.put("coordinates", new double[] { command.getLongitude(),
+				command.getLatitude() });
 
 		JSONObject updateContent = new JSONObject();
 
@@ -169,7 +173,8 @@ public class Operation implements IOperation {
 	 * 
 	 * @throws Exception
 	 */
-	private void updataRelationObj(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
+	private void updataRelationObj(RdLink oldLink, List<RdLink> newLinks,
+			Result result) throws Exception {
 
 		CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
 
@@ -182,6 +187,11 @@ public class Operation implements IOperation {
 				this.conn);
 		eleceyeOperation.moveEleceye(oldLink, newLinks, result);
 
+		// 同一点关系
+		com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
+				null, this.conn);
+		sameNodeOperation.moveMainNodeForTopo(this.command.getJson(),
+				ObjType.RDNODE, result);
 		/*
 		 * 条件以下为仅打断情况下需要处理的元素 (size < 2说明没有进行打断操作)
 		 */
@@ -223,10 +233,15 @@ public class Operation implements IOperation {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Operation rdinterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Operation(
 				this.conn);
 		rdinterOperation.breakRdLink(oldLink, newLinks, result);
-		
+
 		// 收费站
 		com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.update.Operation rdTollgateOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.update.Operation(
 				this.conn);
 		rdTollgateOpeartion.breakRdTollgate(result, oldLink.getPid(), newLinks);
+
+		// 语音引导
+		com.navinfo.dataservice.engine.edit.operation.obj.rdvoiceguide.update.Operation voiceguideOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdvoiceguide.update.Operation(
+				conn);
+		voiceguideOperation.breakRdLink(oldLink, sortLinks, result);
 	}
 }

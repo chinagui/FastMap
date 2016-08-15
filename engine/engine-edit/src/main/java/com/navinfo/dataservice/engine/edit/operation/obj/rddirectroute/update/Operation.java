@@ -15,6 +15,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectrouteVia;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 
@@ -55,6 +56,8 @@ public class Operation implements IOperation {
 
 			return null;
 		}
+
+		result.setPrimaryPid(directroute.pid());
 
 		if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
 
@@ -167,36 +170,19 @@ public class Operation implements IOperation {
 
 		} else {
 
-			int lastViaLinkPid = 0;
+			// 任意经过线组的最后一个经过线
+			RdDirectrouteVia lastVia = (RdDirectrouteVia) directroute.getVias()
+					.get(0);
 
-			// 获取任意经过线组的最后一个经过线对应的linkpid
-			int groupId = directroute.getVias().indexOf(0);
+			for (IRow rowVia : directroute.getVias()) {
 
-			List<RdDirectrouteVia> directrouteVias = new ArrayList<RdDirectrouteVia>();
+				RdDirectrouteVia via = (RdDirectrouteVia) rowVia;
 
-			for (IRow row : directroute.getVias()) {
+				if (lastVia.getGroupId() == via.getGroupId()
+						&& lastVia.getSeqNum() < via.getSeqNum()) {
 
-				RdDirectrouteVia via = (RdDirectrouteVia) row;
-
-				if (via.getGroupId() == groupId) {
-
-					directrouteVias.add(via);
+					lastVia = via;
 				}
-			}
-
-			for (RdDirectrouteVia via : directrouteVias) {
-
-				if (via.getSeqNum() == directrouteVias.size()) {
-
-					lastViaLinkPid = via.getLinkPid();
-
-					break;
-				}
-			}
-
-			if (lastViaLinkPid == 0) {
-
-				return;
 			}
 
 			RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
@@ -204,9 +190,10 @@ public class Operation implements IOperation {
 			List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
 					oldLink.getsNodePid(), false);
 
-			if (linkPids.contains(lastViaLinkPid)) {
+			if (linkPids.contains(lastVia.getLinkPid())) {
 
 				connectionNodePid = oldLink.getsNodePid();
+
 			} else {
 
 				connectionNodePid = oldLink.geteNodePid();
@@ -283,6 +270,7 @@ public class Operation implements IOperation {
 				continue;
 			}
 
+			// 与进入线或前一个经过线的连接点
 			int connectionNodePid = 0;
 
 			// 打断的是第一个经过线link
@@ -309,16 +297,15 @@ public class Operation implements IOperation {
 				List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
 						oldLink.getsNodePid(), false);
 
-				if (linkPids.contains(preLinkPid)) {
-					connectionNodePid = oldLink.getsNodePid();
-				} else {
-					connectionNodePid = oldLink.geteNodePid();
-				}
+				connectionNodePid = linkPids.contains(preLinkPid) ? oldLink
+						.getsNodePid() : oldLink.geteNodePid();
 			}
 
 			if (newLinks.get(0).getsNodePid() == connectionNodePid
 					|| newLinks.get(0).geteNodePid() == connectionNodePid) {
+
 				for (int i = 0; i < newLinks.size(); i++) {
+
 					RdDirectrouteVia newVia = new RdDirectrouteVia();
 
 					newVia.setPid(oldVia.getPid());

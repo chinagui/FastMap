@@ -63,6 +63,6 @@
 	<editsupport.poi.url>http://192.168.4.188</editsupport.poi.url>
 	
 <!-- MapSpotter -->
-	<mapspotter.infor.upload.url>http://192.168.4.128:8080/mapspotter/data/info/upload</mapspotter.infor.upload.url>
+	<mapspotter.infor.upload.url>http://192.168.4.188:8000/service/mapspotter/data/info/upload</mapspotter.infor.upload.url>
 	<mapspotter.infor.upload.timeout>120000</mapspotter.infor.upload.timeout>
 </configMap>

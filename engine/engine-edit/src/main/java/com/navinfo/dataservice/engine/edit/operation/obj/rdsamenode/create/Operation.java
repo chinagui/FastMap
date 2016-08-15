@@ -2,16 +2,23 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create;
 
 import java.sql.Connection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
+import com.navinfo.dataservice.dao.glm.model.lu.LuLinkKind;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNode;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.same.RdSameNodeSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.vividsolutions.jts.geom.Geometry;
@@ -134,9 +141,9 @@ public class Operation implements IOperation {
 
 				if (moveNode.distance(nodeGeo) != 0) {
 					updateContent.put("objId", nodePid);
-					
-					//调用移动接口
-					moveNode(type,updateContent,result);
+
+					// 调用移动接口
+					moveNode(type, updateContent, result);
 				}
 			}
 		}
@@ -144,6 +151,7 @@ public class Operation implements IOperation {
 
 	/**
 	 * 调用点的移动接口，维护点的坐标
+	 * 
 	 * @param type
 	 * @throws Exception
 	 */
@@ -186,6 +194,148 @@ public class Operation implements IOperation {
 			break;
 		default:
 			break;
+		}
+	}
+
+	/**
+	 * 移动主要素，其他从要素跟随移动：优先级顺序（RDNODE>ADNODE>RWNODE>ZONENODE>LUNODE）
+	 * 
+	 * @param updateContent
+	 * @param type
+	 * @param result
+	 * @throws Exception
+	 */
+	public void moveMainNodeForTopo(JSONObject updateContent, ObjType type, Result result) throws Exception {
+		int nodePid = updateContent.getInt("objId");
+
+		RdSameNodeSelector sameNodeSelector = new RdSameNodeSelector(conn);
+
+		String tableName = ReflectionAttrUtils.getTableNameByObjType(type);
+
+		List<RdSameNode> sameNodeList = sameNodeSelector.loadSameNodeByNodePids(String.valueOf(nodePid), tableName,
+				true);
+
+		if (CollectionUtils.isNotEmpty(sameNodeList)) {
+			if (sameNodeList.size() == 1) {
+				RdSameNode sameNode = sameNodeList.get(0);
+
+				List<IRow> sameNodePart = sameNode.getParts();
+
+				// 定义需要移动的partNode
+				Map<ObjType, JSONObject> movePartNodeMap = new HashMap<>();
+
+				for (IRow row : sameNodePart) {
+					RdSameNodePart part = (RdSameNodePart) row;
+
+					ObjType partType = ReflectionAttrUtils.getObjTypeByTableName(part.getTableName());
+
+					updateContent.put("objId", nodePid);
+
+					movePartNodeMap.put(partType, updateContent);
+				}
+
+				handleMovePartNodeMap(nodePid, type, movePartNodeMap, result);
+			} else {
+				throw new Exception(type.toString() + "点:" + nodePid + "的同一点关系不唯一");
+			}
+		}
+	}
+
+	/**
+	 * （RDNODE>ADNODE>RWNODE>ZONENODE>LUNODE）
+	 * 
+	 * @param nodePid
+	 * @param type
+	 * @param movePartNodeMap
+	 * @throws Exception
+	 */
+	private void handleMovePartNodeMap(int nodePid, ObjType type, Map<ObjType, JSONObject> movePartNodeMap,
+			Result result) throws Exception {
+
+		if (movePartNodeMap.size() > 0) {
+			switch (type) {
+			case RDNODE:
+				moveNodeFromNodeMap(type,nodePid,movePartNodeMap,result);
+				break;
+			case ADNODE:
+				if (movePartNodeMap.containsKey(ObjType.RDNODE)) {
+					throw new Exception("node不是该同一关系中的主要素，不允许移动操作");
+				}
+				else
+				{
+					moveNodeFromNodeMap(type,nodePid,movePartNodeMap,result);
+				}
+				break;
+			case RWNODE:
+				if (movePartNodeMap.containsKey(ObjType.RDNODE) || movePartNodeMap.containsKey(ObjType.ADNODE)) {
+					throw new Exception("node不是该同一关系中的主要素，不允许移动操作");
+				}
+				else
+				{
+					moveNodeFromNodeMap(type,nodePid,movePartNodeMap,result);
+				}
+				break;
+			case ZONENODE:
+				if (movePartNodeMap.containsKey(ObjType.RDNODE) || movePartNodeMap.containsKey(ObjType.ADNODE)
+						|| movePartNodeMap.containsKey(ObjType.RWNODE)) {
+					throw new Exception("node不是该同一关系中的主要素，不允许移动操作");
+				}
+				else
+				{
+					moveNodeFromNodeMap(type,nodePid,movePartNodeMap,result);
+				}
+				break;
+			case LUNODE:
+				LuLinkSelector selector = new LuLinkSelector(conn);
+				if (movePartNodeMap.containsKey(ObjType.RDNODE) || movePartNodeMap.containsKey(ObjType.ADNODE)
+						|| movePartNodeMap.containsKey(ObjType.RWNODE)
+						|| movePartNodeMap.containsKey(ObjType.ZONENODE)) {
+					throw new Exception("node不是该同一关系中的主要素，不允许移动操作");
+				} else {
+					List<LuLink> luLinkList = selector.loadByNodePid(nodePid, true);
+
+					boolean isMoveMainNode = false;
+
+					for (LuLink luLink : luLinkList) {
+						for (IRow luLinkKind : luLink.getLinkKinds()) {
+							LuLinkKind kind = (LuLinkKind) luLinkKind;
+
+							if (kind.getKind() == 21) {
+								isMoveMainNode = true;
+								break;
+							}
+						}
+						if (isMoveMainNode) {
+							break;
+						}
+					}
+
+					if (!isMoveMainNode) {
+						throw new Exception("node不是该同一关系中的主要素，不允许移动操作");
+					}
+					else
+					{
+						moveNodeFromNodeMap(type,nodePid,movePartNodeMap,result);
+					}
+				}
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+	private void moveNodeFromNodeMap(ObjType type,int nodePid,Map<ObjType, JSONObject> movePartNodeMap, Result result) throws Exception {
+		for (Map.Entry<ObjType, JSONObject> nodeMap : movePartNodeMap.entrySet()) {
+			
+			ObjType partType = nodeMap.getKey();
+			
+			JSONObject updateContent = nodeMap.getValue();
+			
+			if(!(type.equals(partType) && updateContent.getInt("objId") == nodePid))
+			{
+				moveNode(partType, updateContent, result);
+			}
 		}
 	}
 }

@@ -36,6 +36,7 @@ import com.navinfo.dataservice.dao.glm.search.RdSpeedbumpSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSpeedlimitSearch;
 import com.navinfo.dataservice.dao.glm.search.RdTollgateSearch;
 import com.navinfo.dataservice.dao.glm.search.RdTrafficsignalSearch;
+import com.navinfo.dataservice.dao.glm.search.RdVariableSpeedSearch;
 import com.navinfo.dataservice.dao.glm.search.RdVoiceguideSearch;
 import com.navinfo.dataservice.dao.glm.search.RdWarninginfoSearch;
 import com.navinfo.dataservice.dao.glm.search.RwLinkSearch;
@@ -143,6 +144,8 @@ public class SearchFactory {
 			return new RdRoadSearch(conn);
 		case RDVOICEGUIDE:
 			return new RdVoiceguideSearch(conn);
+		case RDVARIABLESPEED:
+			return new RdVariableSpeedSearch(conn);
 		default:
 			return null;
 		}

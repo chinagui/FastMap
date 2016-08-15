@@ -569,6 +569,20 @@ public class Transaction {
 			default:
 				break;
 			}
+		case RDVARIABLESPEED:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.create.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.delete.Command(
+						json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.update.Command(
+						json, requester);
+			default:
+				break;
+			}
 		case RDSE:
 			switch (operType) {
 			case CREATE:
@@ -1125,6 +1139,20 @@ public class Transaction {
 						command);
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Process(
+						command);
+			default:
+				break;
+			}
+		case RDVARIABLESPEED:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.create.Process(
+						command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.delete.Process(
+						command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.update.Process(
 						command);
 			default:
 				break;

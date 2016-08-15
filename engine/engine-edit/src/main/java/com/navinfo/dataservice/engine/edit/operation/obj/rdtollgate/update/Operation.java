@@ -46,6 +46,7 @@ public class Operation implements IOperation {
 		if (isChange) {
 			result.insertObject(tollgate, ObjStatus.UPDATE, tollgate.pid());
 		}
+		result.setPrimaryPid(tollgate.pid());
 
 		if (content.containsKey("passages")) {
 			updatePassage(result, content.getJSONArray("passages"));

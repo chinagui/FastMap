@@ -496,6 +496,13 @@ public class PidService {
 	}
 
 	/**
+	 * 申请rd_object
+	 */
+	public synchronized int applyRdObjectPid() throws Exception {
+		return this.applyPid(PidSequenceName.rdObjectName);
+	}
+	
+	/**
 	 * 申请rd_speedbump
 	 */
 	public synchronized int applyRdSpeedbumpPid() throws Exception {

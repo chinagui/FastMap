@@ -12,6 +12,7 @@
     <modules>
     <module>edit-control-row</module>
     <module>edit-control-column</module>   
+    <module>edit-control-app</module>
     </modules>
     <packaging>pom</packaging>
     <name>edit-control</name>

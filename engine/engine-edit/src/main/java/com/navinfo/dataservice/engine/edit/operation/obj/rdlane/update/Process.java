@@ -4,9 +4,9 @@ import java.sql.Connection;
 
 import com.navinfo.dataservice.dao.glm.iface.Result;
 
-import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
+import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 
-import com.navinfo.dataservice.dao.glm.selector.rd.slope.RdSlopeSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
@@ -33,9 +33,9 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public boolean prepareData() throws Exception {
-		RdSlope slope = (RdSlope) new RdSlopeSelector(this.getConn()).loadById(
-				this.getCommand().getPid(), true);
-		this.getCommand().setSlope(slope);
+		RdLane lane = (RdLane) new RdLaneSelector(this.getConn()).loadById(this
+				.getCommand().getLanePid(), true);
+		this.getCommand().setRdLane(lane);
 		return true;
 	}
 }

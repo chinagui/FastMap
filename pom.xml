@@ -15,6 +15,7 @@
 		<module>scripts-interface</module>
 		<module>code-generator</module>
 		<module>api</module>
+		<module>edit-control</module>
   </modules>
 
     <packaging>pom</packaging>

@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.move.movelcnode;
 
+import java.sql.Connection;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFace;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
@@ -16,7 +19,7 @@ public class Process extends AbstractProcess<Command> {
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
 	}
-
+	
 	private LcNode updateNode;
 	private List<LcFace> lcFaces;
 
@@ -45,7 +48,7 @@ public class Process extends AbstractProcess<Command> {
 		lockLcFace();
 		return false;
 	}
-
+	
 	@Override
 	public String exeOperation() throws Exception {
 		return new Operation(this.getCommand(), updateNode, this.getConn()).run(this.getResult());

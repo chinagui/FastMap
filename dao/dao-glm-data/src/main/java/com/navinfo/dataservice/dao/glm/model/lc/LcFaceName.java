@@ -155,7 +155,7 @@ public class LcFaceName implements IRow {
 
 	@Override
 	public ObjType objType() {
-		return null;
+		return ObjType.LCFACENAME;
 	}
 
 	@Override

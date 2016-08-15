@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -15,14 +14,14 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-public class RdTollgateName implements IObj {
-	
+public class RdTollgateName implements IRow {
+
 	private int nameId;
 	private int pid;
-	private int nameGroupId=1;
-	private String langCode="CHI";
-	private String name="";
-	private String phonetic="";
+	private int nameGroupid = 1;
+	private String langCode = "CHI";
+	private String name;
+	private String phonetic;
 	private String rowId;
 	public Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -42,12 +41,13 @@ public class RdTollgateName implements IObj {
 		this.pid = pid;
 	}
 
-	public int getNameGroupId() {
-		return nameGroupId;
+
+	public int getNameGroupid() {
+		return nameGroupid;
 	}
 
-	public void setNameGroupId(int nameGroupId) {
-		this.nameGroupId = nameGroupId;
+	public void setNameGroupid(int nameGroupid) {
+		this.nameGroupid = nameGroupid;
 	}
 
 	public String getLangCode() {
@@ -112,7 +112,7 @@ public class RdTollgateName implements IObj {
 	public void copy(IRow row) {
 		RdTollgateName tollgateName = (RdTollgateName) row;
 		this.pid = tollgateName.getPid();
-		this.nameGroupId = tollgateName.getNameGroupId();
+		this.nameGroupid = tollgateName.getNameGroupid();
 		this.langCode = tollgateName.getLangCode();
 		this.name = tollgateName.getName();
 		this.phonetic = tollgateName.getPhonetic();
@@ -147,51 +147,49 @@ public class RdTollgateName implements IObj {
 	public boolean fillChangeFields(JSONObject json) throws Exception {
 		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
-		
+
 		while (keys.hasNext()) {
 			String key = (String) keys.next();
 
 			if (json.get(key) instanceof JSONArray) {
 				continue;
-			}  else {
-				if ( !"objStatus".equals(key)) {
-					
+			} else {
+				if (!"objStatus".equals(key)) {
+
 					Field field = this.getClass().getDeclaredField(key);
-					
+
 					field.setAccessible(true);
-					
+
 					Object objValue = field.get(this);
-					
+
 					String oldValue = null;
-					
-					if (objValue == null){
+
+					if (objValue == null) {
 						oldValue = "null";
-					}else{
+					} else {
 						oldValue = String.valueOf(objValue);
 					}
-					
+
 					String newValue = json.getString(key);
-					
-					if (!newValue.equals(oldValue)){
+
+					if (!newValue.equals(oldValue)) {
 						Object value = json.get(key);
-						
-						if(value instanceof String){
+
+						if (value instanceof String) {
 							changedFields.put(key, newValue.replace("'", "''"));
-						}
-						else{
+						} else {
 							changedFields.put(key, value);
 						}
 
 					}
 
-					
 				}
 			}
 		}
-		
-		if (changedFields.size() >0){
+
+		if (changedFields.size() > 0) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
@@ -203,7 +201,6 @@ public class RdTollgateName implements IObj {
 
 	@Override
 	public void setMesh(int mesh) {
-
 	}
 
 	@Override
@@ -215,31 +212,6 @@ public class RdTollgateName implements IObj {
 	@Override
 	public boolean Unserialize(JSONObject json) throws Exception {
 		return false;
-	}
-
-	@Override
-	public List<IRow> relatedRows() {
-		return null;
-	}
-
-	@Override
-	public int pid() {
-		return nameId;
-	}
-
-	@Override
-	public String primaryKey() {
-		return "nameId";
-	}
-
-	@Override
-	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		return null;
-	}
-
-	@Override
-	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
-		return null;
 	}
 
 }

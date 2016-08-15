@@ -1,7 +1,5 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleteadnode;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,19 +18,18 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 import com.navinfo.dataservice.engine.edit.operation.OperatorFactory;
 
 /**
- * @author zhaokk
- * 行政区划点删除操作类
+ * @author zhaokk 行政区划点删除操作类
  */
 
 public class Process extends AbstractProcess<Command> {
-	
+
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
 		// TODO Auto-generated constructor stub
 	}
 
 	protected Logger log = Logger.getLogger(this.getClass());
-	
+
 	/*
 	 * 加载行政区划点对应的行政区划线
 	 */
@@ -41,13 +38,14 @@ public class Process extends AbstractProcess<Command> {
 		AdLinkSelector selector = new AdLinkSelector(this.getConn());
 		List<AdLink> links = selector.loadByNodePid(this.getCommand().getNodePid(), true);
 		List<Integer> linkPids = new ArrayList<Integer>();
-		for(AdLink link : links){
+		for (AdLink link : links) {
 			linkPids.add(link.getPid());
 		}
 		this.getCommand().setLinks(links);
-		
+
 		this.getCommand().setLinkPids(linkPids);
 	}
+
 	/*
 	 * 加载行政区划点对应的行政区点
 	 */
@@ -60,6 +58,7 @@ public class Process extends AbstractProcess<Command> {
 		this.getCommand().setNode(node);
 
 	}
+
 	/*
 	 * 加载行政区划点对应的行政区盲端节点
 	 */
@@ -68,19 +67,18 @@ public class Process extends AbstractProcess<Command> {
 		AdNodeSelector selector = new AdNodeSelector(this.getConn());
 
 		List<Integer> nodePids = new ArrayList<Integer>();
-		
+
 		nodePids.add(this.getCommand().getNodePid());
 
 		List<AdNode> nodes = new ArrayList<AdNode>();
 
-		for (Integer linkPid: this.getCommand().getLinkPids()) {
+		for (Integer linkPid : this.getCommand().getLinkPids()) {
 
-			List<AdNode> list = selector.loadEndAdNodeByLinkPid(linkPid,
-					true);
+			List<AdNode> list = selector.loadEndAdNodeByLinkPid(linkPid, true);
 
 			for (AdNode node : list) {
 				int nodePid = node.getPid();
-				
+
 				if (nodePids.contains(nodePid)) {
 					continue;
 				}
@@ -96,27 +94,27 @@ public class Process extends AbstractProcess<Command> {
 
 		this.getCommand().setNodePids(nodePids);
 	}
+
 	/*
 	 * 加载行政区划点对应的行政区划线
 	 */
-		public void lockAdFace() throws Exception {
+	public void lockAdFace() throws Exception {
 
-			AdFaceSelector selector = new AdFaceSelector(this.getConn());
+		AdFaceSelector selector = new AdFaceSelector(this.getConn());
 
-			List<AdFace> faces = new ArrayList<AdFace>();
+		List<AdFace> faces = new ArrayList<AdFace>();
 
-			for (Integer linkPid: this.getCommand().getLinkPids()) {
+		for (Integer linkPid : this.getCommand().getLinkPids()) {
 
-				List<AdFace> list = selector.loadAdFaceByLinkId(linkPid,
-						true);
+			List<AdFace> list = selector.loadAdFaceByLinkId(linkPid, true);
 
-				for (AdFace face : list) {
-					faces.add(face);
-					
-				}
+			for (AdFace face : list) {
+				faces.add(face);
+
 			}
-			this.getCommand().setFaces(faces);
 		}
+		this.getCommand().setFaces(faces);
+	}
 
 	@Override
 	public boolean prepareData() throws Exception {
@@ -142,14 +140,14 @@ public class Process extends AbstractProcess<Command> {
 		lockAdFace();
 		return true;
 	}
-	
+
 	@Override
 	public boolean recordData() throws Exception {
-		
+
 		LogWriter lw = new LogWriter(this.getConn());
-		
+
 		lw.generateLog(this.getCommand(), this.getResult());
-		
+
 		OperatorFactory.recordData(this.getConn(), this.getResult());
 
 		lw.recordLog(this.getCommand(), this.getResult());
@@ -157,25 +155,15 @@ public class Process extends AbstractProcess<Command> {
 		return true;
 	}
 
-	private void releaseResource(PreparedStatement pstmt, ResultSet resultSet) {
-		try {
-			resultSet.close();
-		} catch (Exception e) {
-
-		}
-
-		try {
-			pstmt.close();
-		} catch (Exception e) {
-
-		}
-	}
 	@Override
 	public String exeOperation() throws Exception {
-		//删除行政区划点有关行政区划点、线具体操作
+		// 删除行政区划点有关行政区划点、线具体操作
 		IOperation op = new OpTopo(this.getCommand());
 		op.run(this.getResult());
-		//删除行政区划点有关行政区划面具体操作
+		// 同一点关系
+		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
+		opRefRdSameNode.run(getResult(), this.getCommand());
+		// 删除行政区划点有关行政区划面具体操作
 		IOperation opAdFace = new OpRefAdFace(this.getCommand());
 		return opAdFace.run(this.getResult());
 	}

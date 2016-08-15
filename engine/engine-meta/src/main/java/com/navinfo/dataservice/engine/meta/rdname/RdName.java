@@ -102,6 +102,10 @@ public class RdName {
 	protected int   uRecord;
 	/*更新字段*/
 	protected String   uFields;
+	/*地级市名称 add by wangdongbin*/
+	protected String city;
+	/*是否操作城市字段 add by wangdongbin*/
+	protected boolean isCity=false;
 	
 
 
@@ -368,6 +372,22 @@ public class RdName {
 	 */
 	public void setuFields(String uFields) {
 		this.uFields = uFields;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public boolean isCity() {
+		return isCity;
+	}
+
+	public void setCity(boolean isCity) {
+		this.isCity = isCity;
 	}
 
 	/**

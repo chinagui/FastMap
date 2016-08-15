@@ -1,0 +1,44 @@
+package com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update;
+
+import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObject;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
+import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
+
+/**
+ * 
+ * @ClassName: Process
+ * @author Zhang Xiaolong
+ * @date 2016年7月20日 下午7:39:42
+ * @Description: TODO
+ */
+public class Process extends AbstractProcess<Command> {
+	public Process(AbstractCommand command) throws Exception {
+		super(command);
+	}
+
+	private Check check = new Check(this.getCommand());
+
+	@Override
+	public String preCheck() throws Exception {
+		super.preCheck();
+		return null;
+	}
+
+	@Override
+	public void postCheck() throws Exception {
+		super.postCheck();
+	}
+
+	@Override
+	public boolean prepareData() throws Exception {
+		this.getCommand().setRdObject((RdObject) new AbstractSelector(RdObject.class, getConn()).loadById(this.getCommand().getPid(),true));
+		return true;
+	}
+
+	@Override
+	public String exeOperation() throws Exception {
+		return new Operation(this.getCommand()).run(this.getResult());
+	}
+
+}

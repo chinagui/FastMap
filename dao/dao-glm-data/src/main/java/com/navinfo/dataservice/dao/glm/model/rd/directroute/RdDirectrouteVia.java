@@ -23,9 +23,9 @@ public class RdDirectrouteVia implements IRow {
 
 	private int linkPid;// LINK号码
 
-	private int groupId;// LINK组号
+	private int groupId=1;// LINK组号
 
-	private int seqNum;// link序号
+	private int seqNum=1;// link序号
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 

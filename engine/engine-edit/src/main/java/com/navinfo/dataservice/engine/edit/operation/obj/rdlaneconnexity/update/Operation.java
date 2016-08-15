@@ -29,7 +29,6 @@ public class Operation implements IOperation {
 		this.lane = lane;
 
 		this.conn = conn;
-
 	}
 
 	@Override

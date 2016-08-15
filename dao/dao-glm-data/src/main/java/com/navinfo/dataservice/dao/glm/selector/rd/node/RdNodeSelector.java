@@ -153,6 +153,43 @@ public class RdNodeSelector extends AbstractSelector {
 	}
 	
 	/**
+	 * 根据nodepid查询node形态
+	 * @param nodePids nodepid组成的sql中in中字符串
+	 * @return
+	 * @throws Exception
+	 */
+	public List<Integer> loadRdNodeWays(String nodePids)
+			throws Exception {
+
+		String sql = "select FORM_OF_WAY from RD_NODE_FORM where node_pid in("+nodePids+") and u_record !=2";
+		
+		List<Integer> result = new ArrayList<>();
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+				result.add(resultSet.getInt("FORM_OF_WAY"));
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		
+		return result;
+	}
+	
+	/**
 	 * 设置子表数据
 	 * @param node
 	 * @param isLock

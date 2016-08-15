@@ -26,6 +26,7 @@ import com.navinfo.dataservice.dao.glm.search.RdLaneConnexitySearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkIntRticSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
+import com.navinfo.dataservice.dao.glm.search.RdObjectSearch;
 import com.navinfo.dataservice.dao.glm.search.RdRestrictionSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSameNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSeSearch;
@@ -134,6 +135,8 @@ public class SearchFactory {
 			return new RdDirectrouteSearch(conn);	
 		case RDTOLLGATE:
 			return new RdTollgateSearch(conn);
+		case RDOBJECT:
+			return new RdObjectSearch(conn);
 		default:
 			return null;
 		}

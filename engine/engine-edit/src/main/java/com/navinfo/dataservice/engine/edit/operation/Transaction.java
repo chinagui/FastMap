@@ -637,6 +637,20 @@ public class Transaction {
 				break;
 			}
 
+		case RDROAD:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdroad.create.Command(
+						json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdroad.update.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdroad.delete.Command(
+						json, requester);
+			default:
+				break;
+			}
 		}
 
 		throw new Exception("不支持的操作类型");
@@ -1221,6 +1235,20 @@ public class Transaction {
 						command);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdvoiceguide.delete.Process(
+						command);
+			default:
+				break;
+			}
+		case RDROAD:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdroad.create.Process(
+						command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdroad.update.Process(
+						command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdroad.delete.Process(
 						command);
 			default:
 				break;

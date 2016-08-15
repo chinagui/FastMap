@@ -28,6 +28,7 @@ import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdObjectSearch;
 import com.navinfo.dataservice.dao.glm.search.RdRestrictionSearch;
+import com.navinfo.dataservice.dao.glm.search.RdRoadSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSameNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSlopeSearch;
@@ -35,6 +36,7 @@ import com.navinfo.dataservice.dao.glm.search.RdSpeedbumpSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSpeedlimitSearch;
 import com.navinfo.dataservice.dao.glm.search.RdTollgateSearch;
 import com.navinfo.dataservice.dao.glm.search.RdTrafficsignalSearch;
+import com.navinfo.dataservice.dao.glm.search.RdVoiceguideSearch;
 import com.navinfo.dataservice.dao.glm.search.RdWarninginfoSearch;
 import com.navinfo.dataservice.dao.glm.search.RwLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.RwNodeSearch;
@@ -132,11 +134,15 @@ public class SearchFactory {
 		case RDSAMENODE:
 			return new RdSameNodeSearch(conn);
 		case RDDIRECTROUTE:
-			return new RdDirectrouteSearch(conn);	
+			return new RdDirectrouteSearch(conn);
 		case RDTOLLGATE:
 			return new RdTollgateSearch(conn);
 		case RDOBJECT:
 			return new RdObjectSearch(conn);
+		case RDROAD:
+			return new RdRoadSearch(conn);
+		case RDVOICEGUIDE:
+			return new RdVoiceguideSearch(conn);
 		default:
 			return null;
 		}

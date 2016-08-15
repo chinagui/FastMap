@@ -1,8 +1,9 @@
-package com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete;
+package com.navinfo.dataservice.engine.edit.operation.obj.rdobject.delete;
 
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObject;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 
@@ -19,7 +20,7 @@ public class Command extends AbstractCommand  implements ICommand {
 
 	private String requester;
 
-	private RdInter rdInter;
+	private RdObject rdObject;
 
 	private int pid;
 	
@@ -39,7 +40,7 @@ public class Command extends AbstractCommand  implements ICommand {
 	
 	@Override
 	public ObjType getObjType() {
-		return ObjType.RDINTER;
+		return ObjType.RDOBJECT;
 	}
 	
 	@Override
@@ -56,11 +57,11 @@ public class Command extends AbstractCommand  implements ICommand {
 		
 	}
 
-	public RdInter getRdInter() {	
-		return rdInter;
+	public RdObject getRdObject() {
+		return rdObject;
 	}
 
-	public void setRdInter(RdInter rdInter) {
-		this.rdInter = rdInter;
+	public void setRdObject(RdObject rdObject) {
+		this.rdObject = rdObject;
 	}
 }

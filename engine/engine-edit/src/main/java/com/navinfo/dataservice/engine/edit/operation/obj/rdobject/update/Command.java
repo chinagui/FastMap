@@ -1,8 +1,8 @@
-package com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update;
+package com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
-import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
+import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObject;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 
 import net.sf.json.JSONArray;
@@ -21,11 +21,13 @@ public class Command extends AbstractCommand {
 
 	private JSONObject content;
 	
-	private JSONArray nodeArray;
+	private JSONArray interArray;
+	
+	private JSONArray roadArray;
 	
 	private JSONArray linkArray;
 	
-	private RdInter rdInter;
+	private RdObject rdObject;
 	
 	private int pid;
 	
@@ -52,20 +54,12 @@ public class Command extends AbstractCommand {
 	
 	@Override
 	public ObjType getObjType() {
-		return ObjType.RDINTER;
+		return ObjType.RDOBJECT;
 	}
 
 	@Override
 	public String getRequester() {
 		return requester;
-	}
-
-	public RdInter getRdInter() {
-		return rdInter;
-	}
-
-	public void setRdInter(RdInter rdInter) {
-		this.rdInter = rdInter;
 	}
 
 	public Command(JSONObject json, String requester) {
@@ -77,22 +71,36 @@ public class Command extends AbstractCommand {
 		
 		this.pid = this.content.getInt("pid");
 		
-		if(content.containsKey("nodes"))
+		if(content.containsKey("inters"))
 		{
-			nodeArray = content.getJSONArray("nodes");
+			this.interArray = content.getJSONArray("inters");
 		}
+		
+		if(content.containsKey("roads"))
+		{
+			this.roadArray = content.getJSONArray("roads");
+		}
+		
 		if(content.containsKey("links"))
 		{
-			linkArray = content.getJSONArray("links");
+			this.linkArray = content.getJSONArray("links");
 		}
 	}
 
-	public JSONArray getNodeArray() {
-		return nodeArray;
+	public JSONArray getInterArray() {
+		return interArray;
 	}
 
-	public void setNodeArray(JSONArray nodeArray) {
-		this.nodeArray = nodeArray;
+	public void setInterArray(JSONArray interArray) {
+		this.interArray = interArray;
+	}
+
+	public JSONArray getRoadArray() {
+		return roadArray;
+	}
+
+	public void setRoadArray(JSONArray roadArray) {
+		this.roadArray = roadArray;
 	}
 
 	public JSONArray getLinkArray() {
@@ -101,5 +109,13 @@ public class Command extends AbstractCommand {
 
 	public void setLinkArray(JSONArray linkArray) {
 		this.linkArray = linkArray;
+	}
+
+	public RdObject getRdObject() {
+		return rdObject;
+	}
+
+	public void setRdObject(RdObject rdObject) {
+		this.rdObject = rdObject;
 	}
 }

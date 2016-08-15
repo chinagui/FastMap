@@ -555,6 +555,20 @@ public class Transaction {
 			default:
 				break;
 			}
+		case RDOBJECT:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.create.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.delete.Command(
+						json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Command(
+						json, requester);
+			default:
+				break;
+			}
 		case RDSE:
 			switch (operType) {
 			case CREATE:
@@ -1083,6 +1097,20 @@ public class Transaction {
 						command);
 			case UPDATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Process(
+						command);
+			default:
+				break;
+			}
+		case RDOBJECT:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.create.Process(
+						command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.delete.Process(
+						command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Process(
 						command);
 			default:
 				break;

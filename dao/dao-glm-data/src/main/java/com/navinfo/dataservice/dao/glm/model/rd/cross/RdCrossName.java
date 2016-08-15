@@ -6,17 +6,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.util.JsonUtils;
-import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
-public class RdCrossName implements IObj {
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+public class RdCrossName implements IRow {
 
 	private int nameId;
 
@@ -136,12 +135,6 @@ public class RdCrossName implements IObj {
 	}
 
 	@Override
-	public List<IRow> relatedRows() {
-
-		return null;
-	}
-
-	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
 
 		return JSONObject.fromObject(this,JsonUtils.getStrConfig());
@@ -174,12 +167,6 @@ public class RdCrossName implements IObj {
 	public Map<String, Object> changedFields() {
 
 		return this.changedFields;
-	}
-
-	@Override
-	public int pid() {
-
-		return this.getNameId();
 	}
 
 	@Override
@@ -278,20 +265,5 @@ public class RdCrossName implements IObj {
 
 	@Override
 	public void setMesh(int mesh) {
-	}
-
-	@Override
-	public String primaryKey() {
-		return "name_id";
-	}
-
-	@Override
-	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		return null;
-	}
-
-	@Override
-	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
-		return null;
 	}
 }

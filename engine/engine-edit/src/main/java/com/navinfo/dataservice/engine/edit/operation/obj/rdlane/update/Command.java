@@ -1,63 +1,43 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update;
 
-import java.util.List;
-
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
-import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
+import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
+
 /**
- * @author zhaokk
- * 修改坡度参数基础类 
+ * @author zhaokk 修改详细车道参数基础类
  */
 public class Command extends AbstractCommand {
 
 	private String requester;
+	private RdLane rdLane;
 
 	private JSONObject content;
-	
-	private int outLinkPid;
-	
-	private List<Integer> seriesLinkPids;// 持续links
-	
-	private RdSlope slope;
-	
-	public RdSlope getSlope() {
-		return slope;
-	}
 
-	public void setSlope(RdSlope slope) {
-		this.slope = slope;
-	}
-
-	private int pid;
-	
-	public int getPid() {
-		return pid;
-	}
-
-	public void setPid(int pid) {
-		this.pid = pid;
-	}
-
-	public JSONObject getContent() {
-		return content;
-	}
+	private int lanePid;
 
 	public void setContent(JSONObject content) {
 		this.content = content;
+	}
+
+	public RdLane getRdLane() {
+		return rdLane;
+	}
+
+	public void setRdLane(RdLane rdLane) {
+		this.rdLane = rdLane;
 	}
 
 	@Override
 	public OperType getOperType() {
 		return OperType.UPDATE;
 	}
-	
+
 	@Override
 	public ObjType getObjType() {
-		return ObjType.RDSLOPE;
+		return ObjType.RDLANE;
 	}
 
 	@Override
@@ -69,36 +49,20 @@ public class Command extends AbstractCommand {
 		this.requester = requester;
 		this.setDbId(json.getInt("dbId"));
 		this.content = json.getJSONObject("data");
-		this.pid = this.content.getInt("pid");
-		if(this.content.containsKey("linkPid")){
-			this.setOutLinkPid(this.content.getInt("linkPid"));
-		}
-		if(this.content.containsKey("linkPids")){
-			JSONArray array = this.content.getJSONArray("linkPids");
-			for (int i = 0; i < array.size(); i++) {
-				int pid = array.getInt(i);
-				if (!this.getSeriesLinkPids().contains(pid)) {
-					this.getSeriesLinkPids().add(pid);
-				}
-			}
-		}
+		this.lanePid = this.content.getInt("pid");
 
 	}
 
-	public int getOutLinkPid() {
-		return outLinkPid;
+	public int getLanePid() {
+		return lanePid;
 	}
 
-	public void setOutLinkPid(int outLinkPid) {
-		this.outLinkPid = outLinkPid;
+	public void setLanePid(int lanePid) {
+		this.lanePid = lanePid;
 	}
 
-	public List<Integer> getSeriesLinkPids() {
-		return seriesLinkPids;
-	}
-
-	public void setSeriesLinkPids(List<Integer> seriesLinkPids) {
-		this.seriesLinkPids = seriesLinkPids;
+	public JSONObject getContent() {
+		return content;
 	}
 
 }

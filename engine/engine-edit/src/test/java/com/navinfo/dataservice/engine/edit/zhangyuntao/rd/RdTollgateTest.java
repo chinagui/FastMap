@@ -39,15 +39,15 @@ public class RdTollgateTest extends InitApplication {
 		String parameter = "{'command':'DELETE', 'dbId':42, 'type':'RDTOLLGATE', 'objId':100034747}";
 		TestUtil.run(parameter);
 	}
-	
+
 	@Test
-	public void update(){
+	public void update() {
 		String parameter = "{'command':'UPDATE', 'dbId':42, 'type':'RDTOLLGATE', data:{'pid':100034747, 'type':2, 'names':[{'nameGroupid':11, 'rowId':'7AA43E40216E4B06829B2A89D049A6F9', 'objStatus':'UPDATE'}]}}";
 		TestUtil.run(parameter);
 	}
-	
+
 	@Test
-	public void searchById(){
+	public void searchById() {
 		Connection conn;
 		try {
 			conn = DBConnector.getInstance().getConnectionById(42);
@@ -59,5 +59,11 @@ public class RdTollgateTest extends InitApplication {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Test
+	public void insertName() {
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDTOLLGATE\",\"dbId\":42,\"data\":{\"names\":[{\"pid\":0,\"nameId\":0,\"nameGroupid\":1,\"langCode\":\"CHI\",\"name\":\"收费站\",\"phonetic\":\"Shou+Fei+Zhan\",\"uFields\":null,\"uDate\":null,\"rowId\":null,\"uRecord\":0,\"objStatus\":\"INSERT\"}],\"rowId\":\"51CDF2FF7CF84FA693BC9E06053D0CDF\",\"pid\":100034754}}";
+		TestUtil.run(parameter);
 	}
 }

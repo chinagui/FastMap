@@ -27,14 +27,14 @@ import net.sf.json.JSONObject;
 public class Operation implements IOperation {
 
 	private Command command;
-	
+
 	private Connection conn;
 
 	public Operation(Command command) {
 		this.command = command;
 	}
-	
-	public Operation(Connection conn){
+
+	public Operation(Connection conn) {
 		this.conn = conn;
 	}
 
@@ -46,6 +46,7 @@ public class Operation implements IOperation {
 		if (isChange) {
 			result.insertObject(tollgate, ObjStatus.UPDATE, tollgate.pid());
 		}
+		result.setPrimaryPid(tollgate.pid());
 
 		if (content.containsKey("passages")) {
 			updatePassage(result, content.getJSONArray("passages"));
@@ -75,11 +76,11 @@ public class Operation implements IOperation {
 					}
 				} else if (ObjStatus.DELETE.toString().equals(objStatus)) {
 					result.insertObject(passage, ObjStatus.DELETE, passage.getPid());
+				} else if (ObjStatus.INSERT.toString().equals(objStatus)) {
+					passage = new RdTollgatePassage();
+					passage.setPid(this.command.getTollgate().getPid());
+					result.insertObject(passage, ObjStatus.INSERT, passage.getPid());
 				}
-			} else {
-				passage = new RdTollgatePassage();
-				passage.setPid(this.command.getTollgate().getPid());
-				result.insertObject(passage, ObjStatus.INSERT, passage.getPid());
 			}
 		}
 
@@ -102,16 +103,16 @@ public class Operation implements IOperation {
 					}
 				} else if (ObjStatus.DELETE.toString().equals(objStatus)) {
 					result.insertObject(name, ObjStatus.DELETE, name.getNameId());
+				} else if (ObjStatus.INSERT.toString().equals(objStatus)) {
+					name = new RdTollgateName();
+					name.setNameId(PidService.getInstance().applyRdTollgateNamePid());
+					name.setPid(this.command.getTollgate().getPid());
+					result.insertObject(name, ObjStatus.INSERT, name.getNameId());
 				}
-			} else {
-				name = new RdTollgateName();
-				name.setNameId(PidService.getInstance().applyRdTollgateNamePid());
-				name.setPid(this.command.getTollgate().getPid());
-				result.insertObject(name, ObjStatus.INSERT, name.getNameId());
 			}
 		}
 	}
-	
+
 	/**
 	 * 根据被删除的RdLink的Pid、新生成的RdLink<br>
 	 * 维护原RdLink上关联的收费站
@@ -125,7 +126,7 @@ public class Operation implements IOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	public String breakRdTollgate(Result result, int oldLinkPid, List<RdLink> newLinks) throws Exception{
+	public String breakRdTollgate(Result result, int oldLinkPid, List<RdLink> newLinks) throws Exception {
 		RdTollgateSelector selector = new RdTollgateSelector(this.conn);
 		// 查询所有与被删除RdLink关联的收费站
 		List<RdTollgate> rdTollgates = selector.loadRdTollgatesWithLinkPid(oldLinkPid, true);

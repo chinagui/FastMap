@@ -196,7 +196,7 @@ public class RdNameSelector {
 			
 			conn = DBConnector.getInstance().getMetaConnection();
 			
-			JSONArray paramList =  params.getJSONArray("params");
+			JSONObject param =  params.getJSONObject("params");
 			String sortby = params.getString("sortby");
 			int pageSize = params.getInt("pageSize");
 			int pageNum = params.getInt("pageNum");
@@ -224,35 +224,34 @@ public class RdNameSelector {
 			sql.append(")");
 			
 			// 添加过滤器条件
-			for (int i=0;i<paramList.size();i++) {
-				JSONObject colum = paramList.getJSONObject(i);
-				Iterator<String> keys = colum.keys();
-				while (keys.hasNext()) {
-					String key = keys.next();
-					String columnName = sUtils.toColumnName(key);
-					sql.append(" and a.");
-					sql.append(columnName);
-					sql.append("='");
-					sql.append(colum.getString(key));
-					sql.append("'");
-				}
+			Iterator<String> keys = param.keys();
+			while (keys.hasNext()) {
+				String key = keys.next();
+				String columnName = sUtils.toColumnName(key);
+				sql.append(" and a.");
+				sql.append(columnName);
+				sql.append("='");
+				sql.append(param.getString(key));
+				sql.append("'");
 			}
 			
 			sql.append(" ORDER BY a.NAME_GROUPID,a.NAME_ID");
 			
 			
 			// 添加排序条件
-			int index = sortby.indexOf("-");
-			if (index != -1) {
-				String sortbyName = sUtils.toColumnName(sortby.substring(1));
-				sql.append(" , a.");
-				sql.append(sortbyName);
-				sql.append(" DESC");
-			} else {
-				String sortbyName = sUtils.toColumnName(sortby);
-				sql.append(" , a.");
-				sql.append(sortbyName);
-				sql.append(" ASC");
+			if (sortby.length()>0) {
+				int index = sortby.indexOf("-");
+				if (index != -1) {
+					String sortbyName = sUtils.toColumnName(sortby.substring(1));
+					sql.append(" , a.");
+					sql.append(sortbyName);
+					sql.append(" DESC");
+				} else {
+					String sortbyName = sUtils.toColumnName(sortby);
+					sql.append(" , a.");
+					sql.append(sortbyName);
+					sql.append(" ASC");
+				}
 			}
 			
 			sql.append(" ) c");

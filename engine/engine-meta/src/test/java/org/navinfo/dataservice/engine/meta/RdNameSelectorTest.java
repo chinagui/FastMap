@@ -6,7 +6,6 @@ package org.navinfo.dataservice.engine.meta;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
@@ -36,7 +35,7 @@ public class RdNameSelectorTest {
 	@Test
 	public void testGetRdName()
 	{
-		String parameter = "{\"subtaskId\":\"163\",\"pageNum\":1,\"pageSize\":20,\"params\":{}}";
+		String parameter = "{\"subtaskId\":\"163\",\"pageNum\":1,\"pageSize\":20,\"params\":{},sortby:\"\"}";
 
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -54,7 +53,7 @@ public class RdNameSelectorTest {
 			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
 			
 			JSONObject data = selector.searchForWeb(jsonReq,tips);
-
+			
 			System.out.println(data);
 
 		} catch (Exception e) {

@@ -87,10 +87,8 @@ public class Transaction {
 			case UPDOWNDEPART:
 				return new com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink.Command(
 						json, requester);
-				// case DEPART:
-				// return new
-				// com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Command(
-				// json, requester);
+			case BATCH:
+				return new com.navinfo.dataservice.engine.edit.operation.batch.rdlink.Command(json, requester);
 			}
 		case RDNODE:
 			switch (operType) {
@@ -673,10 +671,8 @@ public class Transaction {
 			case UPDOWNDEPART:
 				return new com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink.Process(
 						command);
-				// case DEPART:
-				// return new
-				// com.navinfo.dataservice.engine.edit.edit.operation.topo.departnode.Process(
-				// command);
+			case BATCH:
+				return new com.navinfo.dataservice.engine.edit.operation.batch.rdlink.Process(command);				
 			}
 		case RDNODE:
 			switch (operType) {

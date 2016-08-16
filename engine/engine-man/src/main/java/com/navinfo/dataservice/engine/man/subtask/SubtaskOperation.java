@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -25,6 +26,8 @@ import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.sql.SqlClause;
@@ -36,7 +39,9 @@ import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.exception.ServiceException;
 
+import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
 /** 
@@ -74,6 +79,10 @@ public class SubtaskOperation {
 			if (bean!=null&&bean.getPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " PLAN_END_DATE= " + "to_timestamp('" + bean.getPlanEndDate()+ "','yyyy-mm-dd hh24:mi:ss.ff')";
+			};
+			if (bean!=null&&bean.getStatus()!=null && StringUtils.isNotEmpty(bean.getStatus().toString())){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " STATUS= " + bean.getStatus();
 			};
 			
 			
@@ -715,5 +724,257 @@ public class SubtaskOperation {
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
 		}
 		
+	}
+
+
+
+	/**
+	 * @param stage
+	 * @param conditionJson
+	 * @param orderJson
+	 * @param pageSize
+	 * @param curPageNum
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public static Page getList(int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
+			final int curPageNum) throws ServiceException {
+		Connection conn = null;
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			
+			String selectSql = "select s.SUBTASK_ID,s.STAGE,s.EXE_USER_ID,u.user_real_name,s.TYPE,s.PLAN_START_DATE,s.PLAN_END_DATE,s.DESCP,s.NAME,s.STATUS,s.GEOMETRY";
+			
+			String selectBlockSql = ",b.block_id,b.block_name,-1 as task_id,'' as task_name";
+			String selectTaskSql = ",-1 as block_id,'' as block_name,t.task_id,t.name as task_name";
+	
+			// 0采集，1日编，2月编，
+			if (0 == stage) {
+				selectBlockSql += ",bm.COLLECT_PLAN_START_DATE AS COLLECT_PLAN_START_DATE,bm.COLLECT_PLAN_END_DATE AS COLLECT_PLAN_END_DATE,bm.COLLECT_GROUP_ID AS group_id";
+			} else if (1 == stage) {
+				selectBlockSql += ",bm.DAY_EDIT_PLAN_START_DATE AS DAY_EDIT_PLAN_START_DATE,bm.DAY_EDIT_PLAN_END_DATE AS DAY_EDIT_PLAN_END_DATE,bm.DAY_EDIT_GROUP_ID AS group_id";
+			} else if (2 == stage) {
+				selectBlockSql += ",bm.MONTH_EDIT_PLAN_START_DATE AS MONTH_EDIT_PLAN_START_DATE,bm.MONTH_EDIT_PLAN_END_DATE AS MONTH_EDIT_PLAN_END_DATE,bm.MONTH_EDIT_GROUP_ID AS group_id";
+				selectTaskSql += ",t.MONTH_EDIT_PLAN_START_DATE AS MONTH_EDIT_PLAN_START_DATE,t.MONTH_EDIT_PLAN_END_DATE AS MONTH_EDIT_PLAN_END_DATE,t.MONTH_EDIT_GROUP_ID AS group_id";
+			}
+	
+			String fromBlockSql = " from SUBTASK s, Block b, Block_man bm, user_info u where s.block_id = b.block_id and u.user_id = s.exe_user_id and b.block_id = bm.block_id and bm.latest = 1";
+			String fromTaskSql = " from SUBTASK s, Task t, user_info u where s.task_id = t.task_id and u.user_id = s.exe_user_id";
+			String conditionSql = " and s.stage = " + stage;
+			
+			//查询条件
+			if(null!=conditionJson && !conditionJson.isEmpty()){
+				Iterator keys = conditionJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if ("subtaskId".equals(key)) {conditionSql+=" and s.SUBTASK_ID="+conditionJson.getInt(key);}
+					if ("subtaskName".equals(key)) {	
+						conditionSql+=" and s.NAME like '%" + conditionJson.getString(key) +"%'";
+					}
+					if ("ExeUserId".equals(key)) {conditionSql+=" and s.EXE_USER_ID="+conditionJson.getInt(key);}
+					if ("ExeUserName".equals(key)) {
+						conditionSql+=" and u.user_real_name like '%" + conditionJson.getString(key) +"%'";
+					}
+					if ("blockName".equals(key)) {
+						conditionSql+=" and s.block_id = b.block_id and b.block_name like '%" + conditionJson.getString(key) +"%'";
+					}
+					if ("blockId".equals(key)) {conditionSql+=" and s.block_id="+conditionJson.getInt(key);}
+					if ("taskId".equals(key)) {conditionSql+=" and s.task_id="+conditionJson.getInt(key);}
+					if ("taskName".equals(key)) {
+						conditionSql+=" and s.task_id = t.task_id and t.name like '%" + conditionJson.getInt(key) +"%'";
+					}
+					if ("status".equals(key)) {
+						conditionSql+=" and s.status in (" + StringUtils.join(conditionJson.getJSONArray(key).toArray(),",") +")";
+					}
+				}
+			}
+			
+			String orderSql = "";
+			
+			// 排序
+			if(null!=orderJson && !orderJson.isEmpty()){
+				Iterator keys = orderJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if ("status".equals(key)) {orderSql+=" order by s.status "+orderJson.getString(key);}
+					if ("subtaskId".equals(key)) {orderSql+=" order by s.SUBTASK_ID "+orderJson.getString(key);}
+					if ("blockId".equals(key)) {orderSql+=" order by block_id "+orderJson.getString(key);}
+					if ("planStartDate".equals(key)) {orderSql+=" order by s.PLAN_START_DATE "+orderJson.getString(key);}
+					if ("planEndDate".equals(key)) {orderSql+=" order by s.PLAN_END_DATE "+orderJson.getString(key);}
+				}
+			}else{orderSql += " order by block_id";}
+	
+			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
+				public Page handle(ResultSet rs) throws SQLException {
+					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					List<HashMap<Object,Object>> list = new ArrayList<HashMap<Object,Object>>();
+					Page page = new Page(curPageNum);
+				    page.setPageSize(pageSize);
+				    int total = 0;
+					while (rs.next()) {
+						if(total==0){
+							total=rs.getInt("TOTAL_RECORD_NUM_");
+						}
+						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
+						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
+						subtask.put("subtaskName", rs.getString("NAME"));
+						subtask.put("descp", rs.getString("DESCP"));
+	
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							subtask.put("geometry", GeoTranslator.struct2Wkt(struct));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+	
+						subtask.put("stage", rs.getInt("STAGE"));
+						subtask.put("type", rs.getInt("TYPE"));
+						subtask.put("status", rs.getInt("STATUS"));
+						subtask.put("ExeUserId", rs.getInt("EXE_USER_ID"));
+						subtask.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
+						subtask.put("planEndDate", df.format(rs.getTimestamp("PLAN_END_DATE")));
+						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						subtask.put("groupId", rs.getInt("group_id"));
+						
+						// 与block关联，返回block信息。
+						if (rs.getInt("block_id") > 0) {
+							// block
+							subtask.put("blockId", rs.getInt("block_id"));
+							subtask.put("blockName", rs.getString("block_name"));
+							//采集
+							if(0 == rs.getInt("STAGE")){
+								subtask.put("BlockCollectPlanStartDate", df.format(rs.getTimestamp("COLLECT_PLAN_START_DATE")));
+								subtask.put("BlockCollectPlanEndDate",df.format(rs.getTimestamp("COLLECT_PLAN_END_DATE")));
+							}
+							//日编
+							else if(1 == rs.getInt("STAGE")){
+								subtask.put("BlockDayEditPlanStartDate", df.format(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE")));
+								subtask.put("BlockDayEditPlanEndDate", df.format(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE")));
+							}
+							//月编
+							else if(2 == rs.getInt("STAGE")){
+								subtask.put("BlockCMonthEditPlanStartDate", df.format(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE")));
+								subtask.put("BlockCMonthEditPlanEndDate", df.format(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE")));
+							}
+						}
+						// 与task关联，返回task信息。
+						if (rs.getInt("task_id") > 0) {
+							// task
+							subtask.put("taskId", rs.getInt("task_id"));
+							subtask.put("taskName", rs.getString("task_name"));
+							// 月编
+							if(2 == rs.getInt("STAGE")){
+								subtask.put("TaskCMonthEditPlanStartDate", df.format(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE")));
+								subtask.put("TaskCMonthEditPlanEndDate", df.format(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE")));
+							}
+						}
+	
+						list.add(subtask);
+					}
+	
+					page.setTotalCount(total);
+					page.setResult(list);
+					return page;
+				}
+	
+			};
+			if (2 == stage){
+				selectSql = selectSql + selectBlockSql + fromBlockSql + conditionSql + " union all " + selectSql + selectTaskSql + fromTaskSql + conditionSql + orderSql;
+			}else{
+				selectSql = selectSql + selectBlockSql + fromBlockSql + conditionSql + orderSql;
+			}
+			return run.query(curPageNum, pageSize, conn, selectSql, rsHandler);
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+
+	/**
+	 * @param stage
+	 * @param conditionJson
+	 * @param orderJson
+	 * @param pageSize
+	 * @param curPageNum
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public static Page getListSnapshot(int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
+			final int curPageNum) throws ServiceException {
+		Connection conn = null;
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			
+			String selectSql = "select s.SUBTASK_ID,s.STAGE,s.NAME,s.STATUS from subtask s where s.stage=" + stage;
+			
+			//查询条件
+			if(null!=conditionJson && !conditionJson.isEmpty()){
+				Iterator keys = conditionJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if ("subtaskId".equals(key)) {selectSql+=" and s.SUBTASK_ID="+conditionJson.getInt(key);}
+					if ("subtaskName".equals(key)) {	
+						selectSql+=" and s.NAME like '%" + conditionJson.getString(key) +"%'";
+					}
+					if ("status".equals(key)) {
+						selectSql+=" and s.status in (" + StringUtils.join(conditionJson.getJSONArray(key).toArray(),",") +")";
+					}
+				}
+			}
+			
+			// 排序
+			if(null!=orderJson && !orderJson.isEmpty()){
+				Iterator keys = orderJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if ("status".equals(key)) {selectSql+=" order by s.status "+orderJson.getString(key);}
+					if ("subtaskId".equals(key)) {selectSql+=" order by s.SUBTASK_ID "+orderJson.getString(key);}
+				}
+			}
+			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
+				public Page handle(ResultSet rs) throws SQLException {
+					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					List<HashMap<Object,Object>> list = new ArrayList<HashMap<Object,Object>>();
+					Page page = new Page(curPageNum);
+				    page.setPageSize(pageSize);
+				    int total = 0;
+					while (rs.next()) {
+						if(total==0){
+							total=rs.getInt("TOTAL_RECORD_NUM_");
+						}
+						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
+						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
+						subtask.put("subtaskName", rs.getString("NAME"));
+
+						subtask.put("status", rs.getInt("STATUS"));
+	
+						list.add(subtask);
+					}
+	
+					page.setTotalCount(total);
+					page.setResult(list);
+					return page;
+				}
+	
+			};
+
+			return run.query(curPageNum, pageSize, conn, selectSql, rsHandler);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 }

@@ -74,7 +74,7 @@ public class LayerController extends BaseController {
 	/**
 	 * 修改重点区块。
 		原则：
-		通过layerId修改重点区块的坐标wkt
+		通过layerId修改重点区块的坐标wkt,layerName
 		使用场景：
 		规划管理页面--重点区块图层--重点区块图层编辑
 	 * @param request
@@ -88,8 +88,11 @@ public class LayerController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空");
 			}
-			LayerService.getInstance().update(dataJson.getString("layerId"),
-					dataJson.getString("wkt"));
+			String wkt=null;
+			if(dataJson.containsKey("wkt")){wkt=dataJson.getString("wkt");}
+			String layerName=null;
+			if(dataJson.containsKey("layerName")){wkt=dataJson.getString("layerName");}
+			LayerService.getInstance().update(dataJson.getString("layerId"),wkt,layerName);
 			return new ModelAndView("jsonView", success("修改成功"));
 		} catch (Exception e) {
 			log.error("修改失败，原因：" + e.getMessage(), e);

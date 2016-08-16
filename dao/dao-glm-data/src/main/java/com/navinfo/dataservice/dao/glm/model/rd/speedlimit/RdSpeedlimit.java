@@ -387,26 +387,34 @@ public class RdSpeedlimit implements IObj {
 	@Override
 	public boolean fillChangeFields(JSONObject json) throws Exception {
 
-		Iterator keys = json.keys();
+		Iterator<?> keys = json.keys();
 
 		while (keys.hasNext()) {
 			String key = (String) keys.next();
 
 			if (json.get(key) instanceof JSONArray) {
 				continue;
-			} else if ("geometry".equals(key)) {
-
-				JSONObject geojson = json.getJSONObject(key);
-
+			} else if ("longitude".equals(key)) {
+				
+				JSONObject geojson = new JSONObject();
+				
+				double longitude = json.getDouble("longitude");
+				
+				double latitude = json.getDouble("latitude");
+				
+				geojson.put("type", "Point");
+				
+				geojson.put("coordinates", new double[] { longitude, latitude });
+				
 				String wkt = Geojson.geojson2Wkt(geojson.toString());
 
 				String oldwkt = GeoTranslator.jts2Wkt(geometry, 0.00001, 5);
 
 				if (!wkt.equals(oldwkt)) {
-					changedFields.put(key, json.getJSONObject(key));
+					changedFields.put("geometry", geojson);
 				}
 			} else {
-				if (!"objStatus".equals(key)) {
+				if (!"objStatus".equals(key) && !"latitude".equals(key)) {
 
 					Field field = this.getClass().getDeclaredField(key);
 

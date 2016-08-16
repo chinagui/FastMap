@@ -248,7 +248,7 @@ public class RdNameSelector {
 					sql.append(sortbyName);
 					sql.append(" DESC");
 				} else {
-					String sortbyName = sUtils.toColumnName(sortby);
+					String sortbyName = sUtils.toColumnName(sortby.substring(1));
 					sql.append(" , a.");
 					sql.append(sortbyName);
 					sql.append(" ASC");

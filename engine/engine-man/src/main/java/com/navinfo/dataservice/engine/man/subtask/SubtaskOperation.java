@@ -940,6 +940,8 @@ public class SubtaskOperation {
 					if ("status".equals(key)) {selectSql+=" order by s.status "+orderJson.getString(key);}
 					if ("subtaskId".equals(key)) {selectSql+=" order by s.SUBTASK_ID "+orderJson.getString(key);}
 				}
+			}else{
+				selectSql+=" order by s.status desc";
 			}
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
 				public Page handle(ResultSet rs) throws SQLException {

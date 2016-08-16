@@ -229,11 +229,13 @@ public class RdNameSelector {
 			while (keys.hasNext()) {
 				String key = keys.next();
 				String columnName = sUtils.toColumnName(key);
-				sql.append(" and a.");
-				sql.append(columnName);
-				sql.append("='");
-				sql.append(param.getString(key));
-				sql.append("'");
+				if (!param.getString(key).isEmpty()) {
+					sql.append(" and a.");
+					sql.append(columnName);
+					sql.append("='");
+					sql.append(param.getString(key));
+					sql.append("'");
+				}
 			}
 			
 			sql.append(" ORDER BY a.NAME_GROUPID,a.NAME_ID");

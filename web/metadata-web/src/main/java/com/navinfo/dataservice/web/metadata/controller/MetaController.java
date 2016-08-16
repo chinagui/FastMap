@@ -664,6 +664,28 @@ public class MetaController extends BaseController {
 		}
 	}
 	
+	/**
+	 * 获取nametype
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/rdname/nametype")
+	public ModelAndView webNameType(HttpServletRequest request)
+			throws ServletException, IOException {
+		try {
+			RdNameSelector selector = new RdNameSelector();
+			
+			JSONArray data = selector.getNameType();
+			
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
 	
+			logger.error(e.getMessage(), e);
+	
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
 
 }

@@ -86,13 +86,11 @@ public class SubtaskController extends BaseController {
 	 */
 	@ApiOperation(value = "创建subtask", notes = "创建subtask")  
     @ResponseBody 
-//	@RequestMapping(value = "/subtask/create")
 	@RequestMapping(value = { "/create" }, method = {RequestMethod.POST,RequestMethod.GET})
 	public NullResponse create(@ApiParam(required =true, name = "access_token", value="接口调用凭证")@RequestParam( value = "access_token") String access_token
 			,@ApiParam(required =true, name = "parameter", value="{<br/>\"blockId\":\"\",blockId，与taskId只能传一个<br/>\"taskId\":\"\",taskId，与blockId只能传一个<br/>\"type\":\"\",作业要素（0POI，1Road，2一体化）<br/>\"stage\":\"\",作业阶段（0采集，1日编，2月编）<br/>\"descp\":\"\",任务描述<br/>\"planStartDate\":\"\",计划开始时间<br/>\"planEndDate\":\"\",计划结束时间<br/>\"exeUserId\":\"\",作业人员<br/>\"gridIds\":\"\"grid数组<br/>}")@RequestParam( value = "parameter") String parameter
-			,@ApiParam(required =true, name = "file", value="文件")@RequestParam( value = "file") MultipartFile file
+//			,@ApiParam(required =true, name = "file", value="文件")@RequestParam( value = "file") MultipartFile file
 			,HttpServletRequest request){
-//	public ModelAndView create(HttpServletRequest request){
 		try{	
 
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
@@ -116,7 +114,6 @@ public class SubtaskController extends BaseController {
 			String wkt = GridUtils.grids2Wkt(gridIds);
 			if(wkt.contains("MULTIPOLYGON")){
 				throw new IllegalArgumentException("请输入符合条件的grids");
-//				return new ModelAndView("jsonView",exception("请输入符合条件的grids"));
 			}
 			
 			Object[] gridIdList = gridIds.toArray();
@@ -127,15 +124,13 @@ public class SubtaskController extends BaseController {
 			bean.setGeometry(wkt);
 				
 			SubtaskService.getInstance().create(bean);	
-			
-//			return new ModelAndView("jsonView", success("创建成功"));
+
 			NullResponse result = new NullResponse(0,"创建成功",null);
 			return result;
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);
 			NullResponse result = new NullResponse(-1,e.getMessage(),null);
 			return result;
-//			return new ModelAndView("jsonView",exception(e));
 		}
 	}
 	

@@ -34,6 +34,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ArrayUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.xinge.XingeUtil;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -60,12 +61,11 @@ public class SubtaskService {
 	}
 
 	/*
-	 * 创建一个子任务。 参数1：Subtask对象 参数2：ArrayList<Integer>，组成Subtask的gridId列表
+	 * 创建一个子任务。 参数1：Subtask对象
 	 */
 	public void create(Subtask bean)throws ServiceException {
 		Connection conn = null;
 		try {
-			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			// 获取subtaskId
 			int subtaskId = SubtaskOperation.getSubtaskId(conn, bean);
@@ -77,6 +77,12 @@ public class SubtaskService {
 			
 			// 插入SUBTASK_GRID_MAPPING
 			SubtaskOperation.insertSubtaskGridMapping(conn, bean);
+			
+			//消息发布
+			if(bean.getStatus()==1){
+				SubtaskOperation.pushMessage(bean.getCreateUserId(),bean.getExeUserId(),bean.getName());
+
+			}	
 
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

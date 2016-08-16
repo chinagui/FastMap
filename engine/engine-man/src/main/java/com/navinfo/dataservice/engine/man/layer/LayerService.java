@@ -11,6 +11,7 @@ import oracle.sql.CLOB;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -55,11 +56,29 @@ public class LayerService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public void update(String layerId,String wkt)throws Exception{
+	public void update(String layerId,String wkt,String layerName)throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();			
-			String updateSql = "update customised_layer set GEOMETRY=sdo_geometry('"+wkt+"',8307) where LAYER_ID="+layerId;			
+			//String updateSql = "update customised_layer set GEOMETRY=sdo_geometry('"+wkt+"',8307) where LAYER_ID="+layerId;			
+			
+			String baseSql = "update customised_layer set ";
+			QueryRunner run = new QueryRunner();
+			String updateSql="";
+			List<Object> values=new ArrayList();
+			if (wkt!=null && StringUtils.isNotEmpty(wkt)){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql+=" GEOMETRY=sdo_geometry('?',8307) ";
+				values.add(wkt);
+			};
+			if (layerName!=null&& StringUtils.isNotEmpty(layerName)){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql+=" LAYER_NAME=? ";
+				values.add(layerName);
+			};
+			updateSql+=" where LAYER_ID=?";
+			values.add(layerId);
+			
 			DbOperation.exeUpdateOrInsertBySql(conn, updateSql);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

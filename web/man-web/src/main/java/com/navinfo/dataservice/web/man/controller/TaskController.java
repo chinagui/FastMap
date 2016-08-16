@@ -69,11 +69,14 @@ public class TaskController extends BaseController {
 	@RequestMapping(value = "/task/update")
 	public ModelAndView update(HttpServletRequest request){
 		try{
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			String msg=TaskService.getInstance().update(dataJson);					
+			long userId=tokenObj.getUserId();
+			//long userId=2;
+			String msg=TaskService.getInstance().update(userId,dataJson);					
 			return new ModelAndView("jsonView", success(msg));
 		}catch(Exception e){
 			log.error("修改失败，原因："+e.getMessage(), e);

@@ -10,14 +10,15 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.xinge.XingeUtil;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
-
 /** 
 * @ClassName:  UserDeviceService 
 * @author code generator
@@ -27,7 +28,6 @@ import com.navinfo.navicommons.exception.ServiceException;
 @Service
 public class UserDeviceService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
-
 	
 	public void create(UserDevice  bean)throws ServiceException{
 		Connection conn = null;
@@ -49,6 +49,47 @@ public class UserDeviceService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 信鸽消息推送接口
+	 * 例如 pushMessage(1,"title_test","msg_content",XingeUtil.PUSH_MSG_TYPE_PROJECT,null)
+	 * @param userId 需要推送的用户id 
+	 * @param title 消息的标题，必须有值
+	 * @param content 消息的详细内容，可为空
+	 * @param msgType 消息类型，参考com.navinfo.dataservice.commons.xinge.XingeUtil.java常量PUSH_MSG_TYPE_*
+	 * @param otherInfo 其他消息内容，可为空
+	 * @return boolean类型，成功返回true，失败false
+	 */
+	public boolean pushMessage(long userId,String title,String content,int msgType,String otherInfo){
+		try{
+			UserDevice dObj=new UserDevice();
+			dObj.setUserId((int) userId);
+			List<UserDevice> deviceList = this.list(dObj);
+			if (deviceList.isEmpty() || deviceList.size()==0){
+				log.warn("用户没有登录设备");
+				return false;}
+			if(title.isEmpty()){
+				log.warn("消息为空");
+				return false;}
+			if(content.isEmpty()){content="";}
+			JSONObject msgReturn=new JSONObject();
+			for(int i=0;i<deviceList.size();i++){
+				UserDevice dtmp=deviceList.get(i);
+				XingeUtil xingeUtil=new XingeUtil(dtmp.getDevicePlatform(), dtmp.getDeviceToken(),
+						title, content, msgType, otherInfo);
+				msgReturn=xingeUtil.pushSingleDevice();
+			}
+			if(msgReturn.getInt("ret_code")==-1){
+				log.error(msgReturn);
+				return false;}
+			return true;
+		}catch(Exception e){
+			log.error("消息推送失败，原因为:"+e.getMessage(), e);
+			return false;
+			//throw new ServiceException("消息推送失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
 	public void update(UserDevice bean)throws ServiceException{
 		Connection conn = null;
 		try{

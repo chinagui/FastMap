@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -29,7 +30,10 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.sql.SqlClause;
 import com.navinfo.dataservice.commons.util.ArrayUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.xinge.XingeUtil;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
+import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -336,7 +340,7 @@ public class SubtaskOperation {
 			value.add(bean.getCreateUserId());
 			value.add(bean.getExeUserId());
 			value.add(new Timestamp(System.currentTimeMillis()).toString().substring(0, 10));
-			value.add(1);
+			value.add(bean.getStatus());
 			value.add(bean.getPlanStartDate().toString().substring(0, 10));
 			value.add(bean.getPlanEndDate().toString().substring(0, 10));
 			value.add(bean.getDescp());
@@ -344,7 +348,6 @@ public class SubtaskOperation {
 			String createSql = "insert into SUBTASK " ;
 			String column = "(SUBTASK_ID, NAME, GEOMETRY, STAGE, TYPE, CREATE_USER_ID, EXE_USER_ID, CREATE_DATE, STATUS, PLAN_START_DATE, PLAN_END_DATE, DESCP";
 			String values = "values(?,?,sdo_geometry(?,8307),?,?,?,?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),to_date(?,'yyyy-MM-dd HH24:MI:ss'),?";
-//			String values = "values(?,?,?,?,?,?,?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),to_date(?,'yyyy-MM-dd HH24:MI:ss'),?";
 
 			if(0!=bean.getBlockId()){
 				column += ", BLOCK_ID)";
@@ -684,5 +687,33 @@ public class SubtaskOperation {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 
+	}
+	
+
+	/**
+	 * @param createUserId
+	 * @param exeUserId 
+	 * @param name
+	 * @return
+	 * @throws Exception 
+	 */
+	public static Object pushMessage(Integer createUserId, Integer exeUserId, String subtaskName) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			String msgTitle="子任务通知";
+			UserDeviceService userDeviceService=new UserDeviceService();
+			UserInfoService userService=UserInfoService.getInstance();
+			UserInfo userObj=userService.queryUserInfoByUserId((int)createUserId);
+			String msgContent="【Fastmap】通知："+userObj.getUserRealName()+"已分配“"+subtaskName+"”子任务；请下载数据，安排作业！";
+			userDeviceService.pushMessage(exeUserId, msgTitle, msgContent, 
+					XingeUtil.PUSH_MSG_TYPE_PROJECT, "");
+			
+			return null;
+		
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+		}
+		
 	}
 }

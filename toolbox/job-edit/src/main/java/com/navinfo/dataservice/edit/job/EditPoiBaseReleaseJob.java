@@ -102,7 +102,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			log.info("end gdb batch");
 			//修改数据提交状态
 			log.info("start change poi_edit_status=3 commit");
-			commitPoi(releaseJobRequest);
+			commitPoi(allGrid,releaseJobRequest);
 			log.info("end change poi_edit_status=3 commit");
 			super.response("POI行编提交成功！",null);
 		}catch (Exception e){
@@ -154,10 +154,10 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 	 * @param releaseJobRequest
 	 * @throws Exception
 	 */
-	public void commitPoi(EditPoiBaseReleaseJobRequest releaseJobRequest) throws Exception{
+	public void commitPoi(List<Integer> grids,EditPoiBaseReleaseJobRequest releaseJobRequest) throws Exception{
 		Connection conn = null;
 		try{
-			String wkt = GridUtils.grids2Wkt((JSONArray) releaseJobRequest.getGridIds());
+			String wkt = GridUtils.grids2Wkt((JSONArray) grids);
 			String sql="UPDATE POI_EDIT_STATUS E"
 					+ " SET E.STATUS = 3"
 					+ " WHERE E.STATUS = 2"
@@ -186,7 +186,11 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		Connection conn = null;
 		try{
 			String sql="SELECT DISTINCT G.GRID_ID FROM NI_VAL_EXCEPTION_GRID G "
-					+ "WHERE G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(releaseJobRequest.getGridIds(),",")+")";
+					+ "WHERE G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(releaseJobRequest.getGridIds(),",")+")"
+							+ " AND EXISTS ("
+							+ " SELECT 1 FROM CK_RESULT_OBJECT O "
+							+ " WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')"
+							+ "   AND O.MD5_CODE=G.MD5_CODE)";
 			conn = DBConnector.getInstance().getConnectionById(releaseJobRequest.getTargetDbId());
 			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>(){
 				public List<Integer> handle(ResultSet rs) throws SQLException {

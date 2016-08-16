@@ -30,26 +30,30 @@ public class DefaultLogMover extends LogMover {
 	protected String dbLinkName;
 	@Override
 	public LogMoveResult move() throws Exception {
-		
 		Connection conn = null;
 		DbLinkCreator cr = new DbLinkCreator();
 		try{
+			LogMoveResult  result = new LogMoveResult();
 			//create db link
 			dbLinkName = tarSchema.getConnConfig().getUserName()+"_"+RandomUtil.nextNumberStr(4);
 			cr.create(dbLinkName, false, logSchema.getPoolDataSource(), tarSchema.getConnConfig().getUserName(), tarSchema.getConnConfig().getUserPasswd(), tarSchema.getConnConfig().getServerIp(), String.valueOf(tarSchema.getConnConfig().getServerPort()), tarSchema.getConnConfig().getServiceName());
 			conn = logSchema.getPoolDataSource().getConnection();
-			run.update(conn, operationSql());
-			run.update(conn, detailSql());
-			run.update(conn, gridSql());
+			result.setLogOperationMoveCount(
+					run.update(conn, operationSql()));
+			result.setLogDetailMoveCount(
+					run.update(conn, detailSql()));
+			result.setLogDetailGridMoveCount(
+					run.update(conn, gridSql()));
 			run.update(conn,dayReleaseSql());
+			return result;
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
 		}finally{
 //			if(cr!=null) cr.drop(dbLinkName, false, logSchema.getPoolDataSource());
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-		return null;
 	}
 	protected String detailSql(){
 		StringBuilder sb = new StringBuilder();

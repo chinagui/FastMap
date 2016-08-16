@@ -9,20 +9,35 @@ import com.navinfo.dataservice.dao.glm.search.AdFaceSearch;
 import com.navinfo.dataservice.dao.glm.search.AdLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.AdNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.IxPoiSearch;
+import com.navinfo.dataservice.dao.glm.search.LcFaceSearch;
+import com.navinfo.dataservice.dao.glm.search.LcLinkSearch;
+import com.navinfo.dataservice.dao.glm.search.LcNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.LuFaceSearch;
 import com.navinfo.dataservice.dao.glm.search.LuLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.LuNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdBranchSearch;
 import com.navinfo.dataservice.dao.glm.search.RdCrossSearch;
+import com.navinfo.dataservice.dao.glm.search.RdDirectrouteSearch;
 import com.navinfo.dataservice.dao.glm.search.RdElectroniceyeSearch;
+import com.navinfo.dataservice.dao.glm.search.RdGateSearch;
 import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
+import com.navinfo.dataservice.dao.glm.search.RdInterSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLaneConnexitySearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkIntRticSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
+import com.navinfo.dataservice.dao.glm.search.RdObjectSearch;
 import com.navinfo.dataservice.dao.glm.search.RdRestrictionSearch;
+import com.navinfo.dataservice.dao.glm.search.RdRoadSearch;
+import com.navinfo.dataservice.dao.glm.search.RdSameNodeSearch;
+import com.navinfo.dataservice.dao.glm.search.RdSeSearch;
+import com.navinfo.dataservice.dao.glm.search.RdSlopeSearch;
+import com.navinfo.dataservice.dao.glm.search.RdSpeedbumpSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSpeedlimitSearch;
+import com.navinfo.dataservice.dao.glm.search.RdTollgateSearch;
 import com.navinfo.dataservice.dao.glm.search.RdTrafficsignalSearch;
+import com.navinfo.dataservice.dao.glm.search.RdVariableSpeedSearch;
+import com.navinfo.dataservice.dao.glm.search.RdVoiceguideSearch;
 import com.navinfo.dataservice.dao.glm.search.RdWarninginfoSearch;
 import com.navinfo.dataservice.dao.glm.search.RwLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.RwNodeSearch;
@@ -101,6 +116,36 @@ public class SearchFactory {
 			return new RdElectroniceyeSearch(conn);
 		case RDWARNINGINFO:
 			return new RdWarninginfoSearch(conn);
+		case RDSLOPE:
+			return new RdSlopeSearch(conn);
+		case RDGATE:
+			return new RdGateSearch(conn);
+		case RDINTER:
+			return new RdInterSearch(conn);
+		case LCNODE:
+			return new LcNodeSearch(conn);
+		case LCLINK:
+			return new LcLinkSearch(conn);
+		case LCFACE:
+			return new LcFaceSearch(conn);
+		case RDSE:
+			return new RdSeSearch(conn);
+		case RDSPEEDBUMP:
+			return new RdSpeedbumpSearch(conn);
+		case RDSAMENODE:
+			return new RdSameNodeSearch(conn);
+		case RDDIRECTROUTE:
+			return new RdDirectrouteSearch(conn);
+		case RDTOLLGATE:
+			return new RdTollgateSearch(conn);
+		case RDOBJECT:
+			return new RdObjectSearch(conn);
+		case RDROAD:
+			return new RdRoadSearch(conn);
+		case RDVOICEGUIDE:
+			return new RdVoiceguideSearch(conn);
+		case RDVARIABLESPEED:
+			return new RdVariableSpeedSearch(conn);
 		default:
 			return null;
 		}

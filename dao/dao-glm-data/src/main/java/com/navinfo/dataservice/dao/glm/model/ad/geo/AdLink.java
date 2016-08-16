@@ -367,13 +367,6 @@ public class AdLink implements IObj {
 		this.editFlag = editFlag;
 	}
 
-	public Map<String, Object> getChangedFields() {
-		return changedFields;
-	}
-
-	public void setChangedFields(Map<String, Object> changedFields) {
-		this.changedFields = changedFields;
-	}
 
 	public List<IRow> getMeshes() {
 		return meshes;
@@ -389,14 +382,16 @@ public class AdLink implements IObj {
 
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
-		childMap.put(AdLinkMesh.class, meshes);
-		return childMap;
+		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<>();
+		childList.put(AdLinkMesh.class, meshes);
+		return childList;
 	}
 
 	@Override
 	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
-		return null;
+		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<>();
+		childMap.put(AdLinkMesh.class, meshMap);
+		return childMap;
 	}
 
 }

@@ -3,103 +3,214 @@ package com.navinfo.dataservice.dao.glm.selector.rd.slope;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.dbutils.DbUtils;
 
-import org.apache.log4j.Logger;
-
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ISelector;
-
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlopeVia;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 
-public class RdSlopeSelector implements ISelector {
-
-	private static Logger logger = Logger.getLogger(RdSlopeSelector.class);
+/***
+ * 
+ * @author zhaokk
+ * 
+ */
+public class RdSlopeSelector extends AbstractSelector {
 
 	private Connection conn;
 
 	public RdSlopeSelector(Connection conn) {
-		super();
+		super(conn);
 		this.conn = conn;
+		this.setCls(RdSlope.class);
 	}
 
-	@Override
-	public IRow loadById(int id, boolean isLock) throws Exception {
-		RdSlope slpoe = new RdSlope();
+	/***
+	 * 
+	 * 通过退出线查找坡度信息
+	 * 
+	 * @param linkPid
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdSlope> loadByOutLink(int linkPid, boolean isLock)
+			throws Exception {
 
-		StringBuilder sb = new StringBuilder("select * from "
-				+ slpoe.tableName() + " WHERE pid = :1 and  u_record !=2");
-
-		if (isLock) {
-			sb.append(" for update nowait");
-		}
+		List<RdSlope> rows = new ArrayList<RdSlope>();
 
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 
 		try {
-			pstmt = conn.prepareStatement(sb.toString());
+			String sql = "SELECT pid FROM rd_slope WHERE link_pid =:1 and u_record !=2";
 
-			pstmt.setInt(1, id);
+			if (isLock) {
+				sql += " for update nowait";
+			}
+
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
 
 			resultSet = pstmt.executeQuery();
 
-			if (resultSet.next()) {
-				ReflectionAttrUtils.executeResultSet(slpoe, resultSet);
-				// 获取AD_Node对应的关联数据
-
-				// ad_node_mesh
-				List<IRow> slopeVias = new RdSlopeViaSelector(conn)
-						.loadRowsByParentId(id, isLock);
-
-				slpoe.setSlopeVias(slopeVias);
-
-				for (IRow row : slpoe.getSlopeVias()) {
-					RdSlopeVia rdSlopeVia = (RdSlopeVia) row;
-
-					slpoe.rdSlopeMap.put(rdSlopeVia.rowId(), rdSlopeVia);
-				}
-
-				return slpoe;
-			} else {
-
-				throw new Exception("对应RD_SLOPE不存在!");
+			while (resultSet.next()) {
+				AbstractSelector abSelector = new AbstractSelector(
+						RdSlope.class, conn);
+				RdSlope slope = (RdSlope) abSelector.loadById(
+						resultSet.getInt("pid"), false);
+				rows.add(slope);
 			}
+
+			return rows;
 		} catch (Exception e) {
-
 			throw e;
-
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 	}
 
-	@Override
-	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
-		return null;
+	/***
+	 * 
+	 * 通过退出线查找坡度信息
+	 * 
+	 * @param linkPid
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdSlopeVia> loadBySeriesLink(int linkPid, boolean isLock)
+			throws Exception {
+
+		List<RdSlopeVia> rows = new ArrayList<RdSlopeVia>();
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			String sql = "SELECT link_pid,slope_pid,seq_num FROM rd_slope_via WHERE link_pid =:1 and u_record !=2";
+
+			if (isLock) {
+				sql += " for update nowait";
+			}
+
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdSlopeVia slopeVia = new RdSlopeVia();
+				ReflectionAttrUtils.executeResultSet(slopeVia, resultSet);
+				rows.add(slopeVia);
+			}
+
+			return rows;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+
 	}
 
-	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock)
+	/***
+	 * 
+	 * 通过接续link关联的接续link
+	 * 
+	 * @param linkPid
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public RdLink loadBySeriesRelationLink(int slopePid, int seqNum, boolean isLock)
 			throws Exception {
-		return null;
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		RdLink link = null;
+		try {
+			String sql = "SELECT rs.link_pid,rl.s_node_pid,rl.e_node_pid FROM rd_slope_via rs ,rd_link rl WHERE rs.link_pid = rl.link_pid and  rs.slope_pid =:1 and rs.seqNum = :2 and rs.u_record !=2 and rl.u_record !=2";
+
+			if (isLock) {
+				sql += " for update nowait";
+			}
+
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, slopePid);
+			pstmt.setInt(2, seqNum);
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+				link = new RdLink();
+				ReflectionAttrUtils.executeResultSet(link, resultSet);
+			}
+
+			return link;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+
 	}
+	
+	
+	
+	/***
+	 * 
+	 * 通过接续link关联的接续link
+	 * 
+	 * @param linkPid
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public RdLink loadByOutLinkBySlopePid(int slopePid, boolean isLock)
+			throws Exception {
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		RdLink link = null;
+		try {
+			String sql = "SELECT rs.link_pid,rl.s_node_pid,rl.e_node_pid FROM rd_slope rs ,rd_link rl WHERE rs.link_pid = rl.link_pid and  rs.slope_pid =:1 and rs.u_record !=2 and rl.u_record !=2";
+
+			if (isLock) {
+				sql += " for update nowait";
+			}
+
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, slopePid);
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+				link = new RdLink();
+				ReflectionAttrUtils.executeResultSet(link, resultSet);
+			}
+
+			return link;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+
+	}
+	
+	
+	
+
 }

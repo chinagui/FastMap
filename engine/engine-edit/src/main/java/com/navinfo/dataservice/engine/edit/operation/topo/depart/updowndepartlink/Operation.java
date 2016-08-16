@@ -8,11 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.text.StyledEditorKit.BoldAction;
-
 import net.sf.json.JSONObject;
+
 import org.apache.log4j.Logger;
-import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
@@ -20,7 +18,6 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkIntRtic;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
@@ -28,16 +25,11 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkRtic;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
-import com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.RdWarninginfoUtils;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdLinkOperateUtils;
-import com.navinfo.navicommons.geo.computation.CompLineUtil;
 import com.navinfo.navicommons.geo.computation.CompPolylineUtil;
-import com.navinfo.navicommons.geo.computation.JGeometryUtil;
-import com.sun.research.ws.wadl.Link;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 
@@ -621,16 +613,17 @@ public class Operation implements IOperation {
 		}
 	}
 	
-	
+	/**
+	 * 维护关联要素
+	 * 
+	 * @throws Exception
+	 */
 	private void updataRelationObj(Result result) throws Exception
 	{
-		//维护警示信息
-		RdWarninginfoUtils  warninginfoUtils=new RdWarninginfoUtils(conn);
-		
-		for(RdLink link:command.getLinks()){
-			
-			warninginfoUtils.DeleteByLink(link.pid(), result);
-		}
+		//维护警示信息		
+		com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.delete.Operation  warninginfoOperation=new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.delete.Operation(conn);
+
+		warninginfoOperation.batchDeleteByLink(command.getLinks(), result);
 	}
 	/**
 	 * @param startLine

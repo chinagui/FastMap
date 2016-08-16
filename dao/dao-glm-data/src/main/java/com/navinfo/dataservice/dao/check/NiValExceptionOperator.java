@@ -60,10 +60,12 @@ public class NiValExceptionOperator {
 					String pidColName = glm.getTablePidColName(arr[0]);
 					String[] grids = calculator.calc(arr[0], pidColName,
 							Long.valueOf(arr[1]), conn);
-					for (String grid : grids) {
-						stmt.setString(1, md5);
-						stmt.setLong(2, Long.valueOf(grid));
-						stmt.addBatch();
+					if(grids!=null){
+						for (String grid : grids) {
+							stmt.setString(1, md5);
+							stmt.setLong(2, Long.valueOf(grid));
+							stmt.addBatch();
+						}
 					}
 				}
 			}

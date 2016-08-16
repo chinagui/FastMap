@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +33,7 @@ import oracle.spatial.util.WKT;
 public class GlmGridCalculator {
 
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
+	private String tableName;
 	public GlmGridCalculator(String gdbVersion,GlmGridCalculatorLock lock){
 		this.gdbVersion=gdbVersion;
 	}
@@ -105,6 +107,7 @@ public class GlmGridCalculator {
 		return getGlmGridRefInfoMap().get(tableName);
 	}
 	public String[] calc(String tableName,String pidColName,long pid,Connection dataConn)throws SQLException{
+		log.debug("calc :"+tableName+"-"+pidColName+"-"+pid);
 		String sql = assembleQueryGeoSql(tableName,pidColName,pid);
 		String[] grids = run.query(dataConn, sql, new SingleRowGridHandler(tableName));
 		return grids;
@@ -115,13 +118,18 @@ public class GlmGridCalculator {
 	 * @param rowIds
 	 * @param dataConn：数据所在库的连接
 	 * @return: key-value:key-rowId,value-grid号码字符串数组
-	 * @throws Exception 
 	 */
-	public String[] calc(String tableName,String rowId,Connection dataConn)throws Exception{
+	public String[] calc(String tableName,String rowId,Connection dataConn)throws SQLException{
+		log.debug("calc :"+tableName+"-"+rowId);
 		String sql = assembleQueryGeoSql(tableName,rowId);
+		if(tableName.equals("RD_SAMENODE") && this.getTableName() != null)
+		{
+			sql = sql.replaceAll("RD_NODE", this.getTableName());
+		}
 		String[] grids = run.query(dataConn, sql, new SingleRowGridHandler(tableName));
 		return grids;
 	}
+	
 	/**
 	 * 给定表的row_id查询所属grid
 	 * @param tableName
@@ -174,21 +182,16 @@ public class GlmGridCalculator {
 	 * 
 	 * @param type:rowid/log
 	 * @return
-	 * @throws Exception 
 	 */
-	private String assembleQueryGeoSql(String tableName,String rowId) throws Exception{
-		try {
-			StringBuilder sb = new StringBuilder();
-			GlmGridRefInfo refInfo = getGlmGridRefInfoMap().get(tableName);
-			sb.append(refInfo.getEditQuerySql());
-			sb.append(" AND P.ROW_ID = HEXTORAW('");
-			sb.append(rowId);
-			sb.append("')");
-			return sb.toString();
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			throw new Exception("表:"+tableName+"未配置GLM_GRID_MAP信息");
-		}
+	private String assembleQueryGeoSql(String tableName,String rowId){
+		StringBuilder sb = new StringBuilder();
+		GlmGridRefInfo refInfo = getGlmGridRefInfoMap().get(tableName);
+		sb.append(refInfo.getEditQuerySql());
+		sb.append(" AND P.ROW_ID = HEXTORAW('");
+		sb.append(rowId);
+		sb.append("')");
+		return sb.toString();
+		
 	}
 
 	/**
@@ -227,6 +230,13 @@ public class GlmGridCalculator {
 		sb.append(" AND L.OP_TP IN ("+StringUtils.join(logOpTypes,",")+")");
 		return sb.toString();
 	}
+	/**
+	 * 一次查询的一条记录的grid号
+	 * @ClassName: SingleRowGridHandler
+	 * @author xiaoxiaowen4127
+	 * @date 2016年7月27日
+	 * @Description: GlmGridCalculator.java
+	 */
 	class SingleRowGridHandler implements ResultSetHandler<String[]>{
 		
 		private String tableName;
@@ -236,52 +246,50 @@ public class GlmGridCalculator {
 
 		@Override
 		public String[] handle(ResultSet rs) throws SQLException {
-			if("CK_EXCEPTION".equals(tableName)){
-				WKT wkt = new WKT();
-				while(rs.next()){
-					String rowId = null;
-					try{
+			String rowId = null;
+			try{
+				Set<String> rowGrids = new HashSet<String>();
+				if("CK_EXCEPTION".equals(tableName)){
+					WKT wkt = new WKT();
+					while(rs.next()){
 						rowId = rs.getString("ROW_ID");
 						JGeometry geo = wkt.toJGeometry(rs.getBytes("GEOMETRY"));
-						Set<String> rowGrids = null;
 						int meshId = rs.getInt("MESH_ID");
 						if(meshId>0){
-							rowGrids = JGeometryUtil.intersectGeometryGrid(geo, String.valueOf(meshId));
+							rowGrids.addAll(JGeometryUtil.intersectGeometryGrid(geo, String.valueOf(meshId)));
 						}else{
 							String[] meshes = JGeometryUtil.geo2MeshIds(geo);
-							rowGrids = JGeometryUtil.intersectGeometryGrid(geo, meshes);
+							rowGrids.addAll(JGeometryUtil.intersectGeometryGrid(geo, meshes));
 						}
-						return rowGrids.toArray(new String[0]);
-					}catch(Exception e){
-						throw new SQLException("查询的geometry可能格式错误，无法转换为object。row_id:"+rowId,e);
 					}
-				}
-			}else{
-				while(rs.next()){
-					String rowId = null;
-					try{
+				}else{
+					while(rs.next()){
 						rowId = rs.getString("ROW_ID");
 						JGeometry geo = null;
 						geo = JGeometry.load(rs.getBytes("GEOMETRY"));
-						Set<String> rowGrids = null;
 						int meshId = rs.getInt("MESH_ID");
 						if(meshId>0){
-							rowGrids = JGeometryUtil.intersectGeometryGrid(geo, String.valueOf(meshId));
+							rowGrids.addAll(JGeometryUtil.intersectGeometryGrid(geo, String.valueOf(meshId)));
 						}else{
 							String[] meshes = JGeometryUtil.geo2MeshIds(geo);
-							rowGrids = JGeometryUtil.intersectGeometryGrid(geo, meshes);
+							rowGrids.addAll(JGeometryUtil.intersectGeometryGrid(geo, meshes));
 						}
-						return rowGrids.toArray(new String[0]);
-					}catch(Exception e){
-					    log.error(e.getMessage());
-						throw new SQLException("查询的geometry可能格式错误，无法转换为object。row_id:"+rowId,e);
 					}
 				}
+				return rowGrids.toArray(new String[0]);
+			}catch(Exception e){
+				throw new SQLException("查询的geometry可能格式错误，无法转换为object。row_id:"+rowId,e);
 			}
-			return null;
 		}
-		
 	}
+
+	/**
+	 * 一次查询多条记录的grid号
+	 * @ClassName: MultiRowGridHandler
+	 * @author xiaoxiaowen4127
+	 * @date 2016年7月27日
+	 * @Description: GlmGridCalculator.java
+	 */
 	class MultiRowGridHandler implements ResultSetHandler<Map<String,String[]>>{
 		private String tableName;
 		public MultiRowGridHandler(String tableName){
@@ -290,55 +298,64 @@ public class GlmGridCalculator {
 
 		@Override
 		public Map<String, String[]> handle(ResultSet rs) throws SQLException {
-			Map<String,String[]> gs = new HashMap<String,String[]>();
-			if("CK_EXCEPTION".equals(tableName)){
-				WKT wkt = new WKT();
-				while(rs.next()){
-					String rowId = null;
-					try{
+			String rowId = null;
+			try{
+				Map<String,String[]> results = new HashMap<String,String[]>();
+				Map<String,Set<String>> gs = new HashMap<String,Set<String>>();
+				if("CK_EXCEPTION".equals(tableName)){
+					WKT wkt = new WKT();
+					while(rs.next()){
 						rowId = rs.getString("ROW_ID");
+						Set<String> rowGrids = gs.get(rowId);
+						if(rowGrids==null){
+							rowGrids = new HashSet<String>();
+							gs.put(rowId, rowGrids);
+						}
 						JGeometry geo = wkt.toJGeometry(rs.getBytes("GEOMETRY"));
-						Set<String> rowGrids = null;
 						int meshId = rs.getInt("MESH_ID");
 						if(meshId>0){
-							rowGrids = JGeometryUtil.intersectGeometryGrid(geo, String.valueOf(meshId));
+							rowGrids.addAll(JGeometryUtil.intersectGeometryGrid(geo, String.valueOf(meshId)));
 						}else{
 							String[] meshes = JGeometryUtil.geo2MeshIds(geo);
-							rowGrids = JGeometryUtil.intersectGeometryGrid(geo, meshes);
+							rowGrids.addAll(JGeometryUtil.intersectGeometryGrid(geo, meshes));
 						}
-						gs.put(rowId, rowGrids.toArray(new String[0]));
-					}catch(Exception e){
-						throw new SQLException("查询的geometry可能格式错误，无法转换为object。row_id:"+rowId,e);
 					}
-				}
-			}else{
-				while(rs.next()){
-					String rowId = null;
-					try{
+				}else{
+					while(rs.next()){
 						rowId = rs.getString("ROW_ID");
+						Set<String> rowGrids = gs.get(rowId);
+						if(rowGrids==null){
+							rowGrids = new HashSet<String>();
+							gs.put(rowId, rowGrids);
+						}
 						JGeometry geo = null;
 						geo = JGeometry.load(rs.getBytes("GEOMETRY"));
-						Set<String> rowGrids = null;
 						int meshId = rs.getInt("MESH_ID");
 						if(meshId>0){
-							rowGrids = JGeometryUtil.intersectGeometryGrid(geo, String.valueOf(meshId));
+							rowGrids.addAll(JGeometryUtil.intersectGeometryGrid(geo, String.valueOf(meshId)));
 						}else{
 							String[] meshes = JGeometryUtil.geo2MeshIds(geo);
-							rowGrids = JGeometryUtil.intersectGeometryGrid(geo, meshes);
+							rowGrids.addAll(JGeometryUtil.intersectGeometryGrid(geo, meshes));
 						}
-						gs.put(rowId, rowGrids.toArray(new String[0]));
-					}catch(Exception e){
-						log.error(e.getMessage());
-						throw new SQLException("查询的geometry可能格式错误，无法转换为object。row_id:"+rowId,e);
 					}
 				}
+				//convert to array
+				for(Map.Entry<String, Set<String>> entry:gs.entrySet()){
+					results.put(entry.getKey(), entry.getValue().toArray(new String[0]));
+				}
+				return results;
+			}catch(Exception e){
+				throw new SQLException("查询的geometry可能格式错误，无法转换为object。row_id:"+rowId,e);
 			}
-			return gs;
 		}
 		
 	}
 	
-	public static void main(String[] args){
+	public String getTableName() {
+		return tableName;
 	}
-	
+
+	public void setTableName(String tableName) {
+		this.tableName = tableName;
+	}
 }

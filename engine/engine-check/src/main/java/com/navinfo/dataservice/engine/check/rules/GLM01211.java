@@ -7,10 +7,11 @@ import java.util.Set;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkFormSelector;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.graph.HashSetRdLinkAndPid;
@@ -86,7 +87,7 @@ public class GLM01211 extends baseRule {
 				RdLinkSelector rdSelector=new RdLinkSelector(getConn());
 				RdLink rdLink=(RdLink) rdSelector.loadByIdOnlyRdLink(linkPid, false);
 				
-				RdLinkFormSelector rdFormSelector=new RdLinkFormSelector(getConn());
+				ISelector rdFormSelector = new AbstractSelector(RdLinkForm.class, getConn());
 				//非环岛link不查此规则
 				List<IRow> forms=rdFormSelector.loadRowsByParentId(linkPid, false);
 				rdLink.setForms(forms);

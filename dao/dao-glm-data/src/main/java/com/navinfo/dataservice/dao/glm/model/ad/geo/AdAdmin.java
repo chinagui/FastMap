@@ -61,6 +61,10 @@ public class AdAdmin implements IObj {
     
     public Map<String, AdAdminName> adAdminNameMap = new HashMap<String, AdAdminName>();
     
+    public Map<String, AdAdminGroup> adAdminGroupMap = new HashMap<String, AdAdminGroup>();
+    
+    public Map<String, AdAdminDetail> adAdminDetailMap = new HashMap<String, AdAdminDetail>();
+    
 	@Override
 	public String rowId() {
 		return rowId;
@@ -234,13 +238,6 @@ public class AdAdmin implements IObj {
 		this.memo = memo;
 	}
 
-	public Map<String, Object> getChangedFields() {
-		return changedFields;
-	}
-
-	public void setChangedFields(Map<String, Object> changedFields) {
-		this.changedFields = changedFields;
-	}
 
 	@Override
 	public List<List<IRow>> children() {
@@ -381,15 +378,19 @@ public class AdAdmin implements IObj {
 
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
-		childMap.put(AdAdminGroup.class, groups);
-		childMap.put(AdAdminName.class, names);
-		childMap.put(AdAdminDetail.class, details);
-		return childMap;
+		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<>();
+		childList.put(AdAdminGroup.class, groups);
+		childList.put(AdAdminName.class, names);
+		childList.put(AdAdminDetail.class, details);
+		return childList;
 	}
 
 	@Override
 	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
-		return null;
+		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<>();
+		childMap.put(AdAdminGroup.class, adAdminGroupMap);
+		childMap.put(AdAdminName.class, adAdminNameMap);
+		childMap.put(AdAdminDetail.class, adAdminDetailMap);
+		return childMap;
 	}
 }

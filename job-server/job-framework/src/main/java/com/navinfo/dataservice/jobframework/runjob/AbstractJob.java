@@ -51,9 +51,9 @@ public abstract class AbstractJob implements Runnable {
 	@Override
 	public void run() {
 		try{
+			initLogger();
 			jobInfo.setResponse(new JSONObject());
 			volidateRequest();
-			initLogger();
 			lock();
 			jobInfo.setStatus(2);
 			response("检查、初始化任务执行环境及相关操作已完成...",jobInfo.getStatus());
@@ -107,14 +107,14 @@ public abstract class AbstractJob implements Runnable {
 	}
 	
 	public void volidateRequest()throws JobException{
-		log.info("开始验证request参数...");
+		log.debug("开始验证request参数:"+JSONObject.fromObject(request).toString());
 		try{
 			request.validate();
 			log.info("验证request参数完成。");
 		}catch(Exception e){
 			throw new JobException(e.getMessage(),e);
 		}
-	};
+	}
 	public abstract void execute()throws JobException;
 	
 	/**

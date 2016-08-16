@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.commons.util;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 import net.sf.json.processors.JsonValueProcessor;
@@ -57,5 +58,14 @@ public class JsonUtils {
 			return value.toString();
 		}
 		
+	}
+	
+	public static String getStringValueFromJSONArray(JSONArray array)
+	{
+		if(array != null)
+		{
+			return array.toString().replace("[", "").replace("]", "");
+		}
+		return null;
 	}
 }

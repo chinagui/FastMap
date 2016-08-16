@@ -5,30 +5,31 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchRealimage;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchSchematic;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
-import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchDetailSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchRealimageSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSchematicSelector;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchViaSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdSeriesbranchSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdSignasrealSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdSignboardSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneTopologySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionDetailSelector;
+import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
 public class Process extends AbstractProcess<Command> {
 
-	public Process(Command command) throws Exception {
+	public Process(AbstractCommand command) throws Exception {
 		super(command);
 	}
+
 	public void lockRdCross() throws Exception {
 		// 获取该cross对象
 		RdCrossSelector selector = new RdCrossSelector(this.getConn());
@@ -72,35 +73,33 @@ public class Process extends AbstractProcess<Command> {
 
 				restrict.setRowId(resultSet.getString("row_id"));
 
-				RdRestrictionDetailSelector detail = new RdRestrictionDetailSelector(
-						getConn());
+				RdRestrictionDetailSelector detail = new RdRestrictionDetailSelector(getConn());
 
-				restrict.setDetails(detail.loadRowsByParentId(
-						restrict.getPid(), true));
+				restrict.setDetails(detail.loadRowsByParentId(restrict.getPid(), true));
 
 				result.add(restrict);
 			}
-			
+
 			this.getCommand().setRestricts(result);
 		} catch (Exception e) {
-			
+
 			throw e;
 		} finally {
 			try {
 				resultSet.close();
 			} catch (Exception e) {
-				
+
 			}
 
 			try {
 				pstmt.close();
 			} catch (Exception e) {
-				
+
 			}
 		}
 
 	}
-	
+
 	public void lockRdLaneConnexity() throws Exception {
 		List<RdLaneConnexity> result = new ArrayList<RdLaneConnexity>();
 
@@ -121,56 +120,55 @@ public class Process extends AbstractProcess<Command> {
 
 			while (resultSet.next()) {
 				RdLaneConnexity laneConn = new RdLaneConnexity();
-				
+
 				laneConn.setPid(resultSet.getInt("pid"));
-				
+
 				laneConn.setRowId(resultSet.getString("row_id"));
-				
+
 				laneConn.setInLinkPid(resultSet.getInt("in_link_pid"));
-				
+
 				laneConn.setNodePid(resultSet.getInt("node_pid"));
-				
+
 				laneConn.setLaneInfo(resultSet.getString("lane_info"));
-				
+
 				laneConn.setConflictFlag(resultSet.getInt("conflict_flag"));
-				
+
 				laneConn.setKgFlag(resultSet.getInt("kg_flag"));
-				
+
 				laneConn.setLaneNum(resultSet.getInt("lane_num"));
-				
+
 				laneConn.setLeftExtend(resultSet.getInt("left_extend"));
-				
+
 				laneConn.setRightExtend(resultSet.getInt("right_extend"));
-				
+
 				laneConn.setSrcFlag(resultSet.getInt("src_flag"));
-				
-				RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(
-						getConn());
+
+				RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(getConn());
 
 				laneConn.setTopos(topoSelector.loadRowsByParentId(laneConn.getPid(), true));
-				
+
 				result.add(laneConn);
 			}
-			
+
 			this.getCommand().setLanes(result);
 		} catch (Exception e) {
-			
+
 			throw e;
 		} finally {
 			try {
 				resultSet.close();
 			} catch (Exception e) {
-				
+
 			}
 
 			try {
 				pstmt.close();
 			} catch (Exception e) {
-				
+
 			}
 		}
 	}
-	
+
 	public void lockRdBranch() throws Exception {
 
 		List<RdBranch> result = new ArrayList<RdBranch>();
@@ -191,7 +189,7 @@ public class Process extends AbstractProcess<Command> {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
-				
+
 				RdBranch branch = new RdBranch();
 
 				branch.setPid(resultSet.getInt("branch_pid"));
@@ -202,69 +200,46 @@ public class Process extends AbstractProcess<Command> {
 
 				branch.setOutLinkPid(resultSet.getInt("out_link_pid"));
 
-				branch.setRelationshipType(resultSet
-						.getInt("relationship_type"));
+				branch.setRelationshipType(resultSet.getInt("relationship_type"));
 
 				branch.setRowId(resultSet.getString("row_id"));
 
-				RdBranchDetailSelector detailSelector = new RdBranchDetailSelector(
-						getConn());
+				branch.setDetails(new AbstractSelector(RdBranchDetail.class, getConn()).loadRowsByParentId(branch.getPid(), true));
 
-				branch.setDetails(detailSelector.loadRowsByParentId(branch.getPid(), true));
+				branch.setSignboards(new AbstractSelector(RdSignboard.class, getConn()).loadRowsByParentId(branch.getPid(), true));
 
-				RdSignboardSelector signboardSelector = new RdSignboardSelector(
-						getConn());
+				branch.setSignasreals(new AbstractSelector(RdSignasreal.class, getConn()).loadRowsByParentId(branch.getPid(), true));
 
-				branch.setSignboards(signboardSelector.loadRowsByParentId(branch.getPid(), true));
+				branch.setSeriesbranches(new AbstractSelector(RdSeriesbranch.class, getConn()).loadRowsByParentId(branch.getPid(), true));
 
-				RdSignasrealSelector signasrealSelector = new RdSignasrealSelector(
-						getConn());
+				branch.setRealimages(new AbstractSelector(RdBranchRealimage.class, getConn()).loadRowsByParentId(branch.getPid(), true));
 
-				branch.setSignasreals(signasrealSelector.loadRowsByParentId(branch.getPid(),
-						true));
-
-				RdSeriesbranchSelector seriesbranchSelector = new RdSeriesbranchSelector(
-						getConn());
-
-				branch.setSeriesbranches(seriesbranchSelector
-						.loadRowsByParentId(branch.getPid(), true));
-
-				RdBranchRealimageSelector realimageSelector = new RdBranchRealimageSelector(
-						getConn());
-
-				branch.setRealimages(realimageSelector.loadRowsByParentId(branch.getPid(),
-						true));
-
-				RdBranchSchematicSelector schematicSelector = new RdBranchSchematicSelector(
-						getConn());
-
-				branch.setSchematics(schematicSelector.loadRowsByParentId(branch.getPid(),
-						true));
+				branch.setSchematics(new AbstractSelector(RdBranchSchematic.class, getConn()).loadRowsByParentId(branch.getPid(), true));
 
 				RdBranchViaSelector viaSelector = new RdBranchViaSelector(getConn());
 
 				branch.setVias(viaSelector.loadRowsByParentId(branch.getPid(), true));
 
 			}
-			
+
 			this.getCommand().setBranches(result);
 		} catch (Exception e) {
-			
+
 			throw e;
 		} finally {
 			try {
 				resultSet.close();
 			} catch (Exception e) {
-				
+
 			}
 
 			try {
 				pstmt.close();
 			} catch (Exception e) {
-				
+
 			}
 		}
-	
+
 	}
 
 	@Override
@@ -275,7 +250,7 @@ public class Process extends AbstractProcess<Command> {
 		if (null != msg) {
 			throw new Exception(msg);
 		}
-		
+
 		lockRdCross();
 
 		if (this.getCommand().getCross() == null) {
@@ -284,32 +259,37 @@ public class Process extends AbstractProcess<Command> {
 		}
 
 		lockRdRestriction();
-		
+
 		lockRdLaneConnexity();
-		
+
 		lockRdBranch();
 
 		return true;
 	}
 
-@Override
-public String exeOperation() throws Exception {
-	IOperation op = new OpTopo(this.getCommand(), getConn());
+	@Override
+	public String exeOperation() throws Exception {
+		IOperation op = new OpTopo(this.getCommand(), getConn());
 
-	op.run(this.getResult());
+		op.run(this.getResult());
 
-	IOperation opRefRestrict = new OpRefRdRestriction(this.getCommand());
+		IOperation opRefRestrict = new OpRefRdRestriction(this.getCommand());
 
-	opRefRestrict.run(this.getResult());
-	
-	IOperation opRefLaneConnexity = new OpRefRdLaneConnexity(this.getCommand());
+		opRefRestrict.run(this.getResult());
 
-	opRefLaneConnexity.run(this.getResult());
-	
-	IOperation opRefBranch = new OpRefRdBranch(this.getCommand());
+		IOperation opRefLaneConnexity = new OpRefRdLaneConnexity(this.getCommand());
 
-	return opRefBranch.run(this.getResult());
+		opRefLaneConnexity.run(this.getResult());
 
-}
+		// 删除信号灯
+		OpRefTrafficsignal opRefTrafficsignal = new OpRefTrafficsignal(this.getConn());
+
+		opRefTrafficsignal.run(this.getResult(), this.getCommand().getCross().getNodes());
+
+		IOperation opRefBranch = new OpRefRdBranch(this.getCommand());
+
+		return opRefBranch.run(this.getResult());
+
+	}
 
 }

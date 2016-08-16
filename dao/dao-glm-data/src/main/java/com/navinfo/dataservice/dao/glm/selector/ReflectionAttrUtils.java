@@ -19,6 +19,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 import oracle.sql.STRUCT;
 
@@ -42,7 +43,7 @@ public class ReflectionAttrUtils {
 			Field field = fields[i];
 			String fieldName = field.getName();
 			if (fieldName.equals("pid") && row instanceof IObj) {
-				String pkName = ((IObj)row).primaryKey();
+				String pkName = ((IObj) row).primaryKey();
 				Object value = rs.getInt(pkName);
 				field.setAccessible(true);
 				field.set(row, value);
@@ -53,33 +54,78 @@ public class ReflectionAttrUtils {
 				if (columnName.equalsIgnoreCase(StringUtils.toColumnName(fieldName))) {
 					int columnType = rsm.getColumnType(j);
 					Object value = rs.getObject(j);
-					// if (Types.VARBINARY == columnType && fieldName.equals("rowId")) {
-					if (Types.VARBINARY == columnType || Types.VARCHAR == columnType) {
-						// String rowId = rs.getString(columnName);
-						// field.setAccessible(true);
-						// field.set(row, rowId);
-						// break;
-						value = rs.getString(columnName);
-					}
-					if (Types.NUMERIC == columnType) {
-						if (value.toString().contains(".")) {
-							value = ((BigDecimal) value).doubleValue();
-						} else {
-							value = Integer.parseInt(value.toString());
+					if (value != null) {
+						if (Types.VARBINARY == columnType || Types.VARCHAR == columnType) {
+							value = rs.getString(columnName);
 						}
+						if (Types.NUMERIC == columnType) {
+							if (value.toString().contains(".")) {
+								value = ((BigDecimal) value).doubleValue();
+							} else {
+								value = ((BigDecimal) value).intValue();
+							}
+						}
+						if (Types.STRUCT == columnType) {
+							value = GeoTranslator.struct2Jts((STRUCT) value, 100000, 0);
+						}
+						if (Types.TIMESTAMP == columnType) {
+							value = rs.getTimestamp(columnName);
+						}
+						field.setAccessible(true);
+						field.set(row, value);
 					}
-					if (Types.STRUCT == columnType) {
-						value = GeoTranslator.struct2Jts((STRUCT) value, 100000, 0);
-					}
-					if (Types.TIMESTAMP == columnType) {
-						value = rs.getTimestamp(columnName);
-					}
-					field.setAccessible(true);
-					field.set(row, value);
 					break;
 				}
 			}
 		}
 	}
-
+	
+	/**
+	 * 枚举类型转表名称
+	 * @param objType
+	 * @return
+	 * @throws Exception
+	 */
+	public static String getTableNameByObjType(ObjType objType) throws Exception
+	{
+		switch (objType) {
+		case RDNODE:
+			return "RD_NODE";
+		case ADNODE:
+			return "AD_NODE";
+		case ZONENODE:
+			return "ZONE_NODE";
+		case LUNODE:
+			return "LU_NODE";
+		case RWNODE:
+			return "RW_NODE";
+		default:
+			throw new Exception("不支持的对象类型:"+objType.toString());
+		}
+	}
+	
+	/**
+	 * 表名称转为枚举对象类型
+	 * @param tableName
+	 * @return
+	 * @throws Exception
+	 */
+	public static ObjType getObjTypeByTableName(String tableName) throws Exception
+	{
+		switch (tableName) {
+		case "RD_NODE":
+			return ObjType.RDNODE;
+		case "AD_NODE":
+			return ObjType.ADNODE;
+		case "ZONE_NODE":
+			return ObjType.ZONENODE;
+		case "LU_NODE":
+			return ObjType.LUNODE;
+		case "RW_NODE":
+			return ObjType.RWNODE;
+		default:
+			throw new Exception("不支持的表名转对象名称:"+tableName);
+		}
+	}
+	
 }

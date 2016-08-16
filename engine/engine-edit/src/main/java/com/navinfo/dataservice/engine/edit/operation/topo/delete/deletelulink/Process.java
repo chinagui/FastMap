@@ -18,7 +18,6 @@ public class Process extends AbstractProcess<Command> {
 		super(command);
 	}
 
-	
 	@Override
 	public boolean prepareData() throws Exception {
 
@@ -41,36 +40,38 @@ public class Process extends AbstractProcess<Command> {
 		lockLuFace();
 		return true;
 	}
-	
+
 	private void lockLuNode() throws Exception {
 		LuNodeSelector selector = new LuNodeSelector(this.getConn());
 		List<LuNode> nodes = selector.loadEndLuNodeByLinkPid(this.getCommand().getLinkPid(), false);
 		this.getCommand().setNodes(nodes);
-		
+
 		List<Integer> nodePids = new ArrayList<Integer>();
-		for(LuNode node : nodes){
+		for (LuNode node : nodes) {
 			nodePids.add(node.getPid());
 		}
 		this.getCommand().setNodePids(nodePids);
 	}
 
-
 	private void lockLuLink() throws Exception {
 		LuLinkSelector selector = new LuLinkSelector(this.getConn());
-		LuLink link = (LuLink)selector.loadById(this.getCommand().getLinkPid(), true);
+		LuLink link = (LuLink) selector.loadById(this.getCommand().getLinkPid(), true);
 		this.getCommand().setLink(link);
 	}
-	
-	private void lockLuFace() throws Exception{
+
+	private void lockLuFace() throws Exception {
 		LuFaceSelector selector = new LuFaceSelector(this.getConn());
 		List<LuFace> faces = selector.loadLuFaceByLinkId(this.getCommand().getLinkPid(), true);
 		this.getCommand().setFaces(faces);
 	}
 
-
 	@Override
 	public String exeOperation() throws Exception {
 		new OpTopo(this.getCommand()).run(this.getResult());
+		// 同一点关系
+		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
+		opRefRdSameNode.run(getResult(), this.getCommand().getLink());
+		
 		return new OpRefLuFace(this.getCommand()).run(this.getResult());
 	}
 

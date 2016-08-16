@@ -3,10 +3,9 @@
  */
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink;
 
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import java.sql.Connection;
+
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 
 /** 
 * @ClassName: OpRefTrafficsignal 
@@ -14,23 +13,21 @@ import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 * @date 2016年7月21日 下午5:03:21 
 * @Description: TODO
 */
-public class OpRefTrafficsignal implements IOperation{
+public class OpRefTrafficsignal{
 	
-	private Command command;
+	private Connection conn;
 
-	public OpRefTrafficsignal(Command command) {
-		this.command = command;
-
+	public OpRefTrafficsignal(Connection conn) {
+		this.conn = conn;
 	}
 	
-	@Override
-	public String run(Result result) throws Exception {
+	public String run(Result result,int linkPid) throws Exception {
 		
-		RdTrafficsignal rdTrafficsignal = this.command.getTrafficSignal();
-		if(rdTrafficsignal != null)
-		{
-			result.insertObject(rdTrafficsignal, ObjStatus.DELETE, rdTrafficsignal.getPid());
-		}
+		com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.delete.Operation trafficSignalOperation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.delete.Operation(
+				conn);
+
+		trafficSignalOperation.deleteByLink(result, linkPid);
+		
 		return null;
 	}
 

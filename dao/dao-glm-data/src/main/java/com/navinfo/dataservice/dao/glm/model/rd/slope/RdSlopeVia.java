@@ -100,12 +100,12 @@ public class RdSlopeVia implements IRow {
 
 	@Override
 	public String parentPKName() {
-		return "pid";
+		return "slope_pid";
 	}
 
 	@Override
 	public int parentPKValue() {
-		return this.getLinkPid();
+		return this.getSlopePid();
 	}
 
 	@Override

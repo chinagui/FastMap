@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.database.OracleSchema;
@@ -45,9 +46,12 @@ public abstract class LogSelector {
 			tempTable = LogFlushUtil.getInstance().createTempTable(conn);
 			logOperationCount+=selectLog(conn);
 			logOperationCount+=extendLog(conn);
-			int result = run.update(conn, getOperationLockSql());
-			if(result<logOperationCount){
-				throw new LockException("部分履历已经被其他回库操作锁定,请稍候再试。");
+			String lockSql = getOperationLockSql();
+			if(StringUtils.isNotEmpty(lockSql)){
+				int result = run.update(conn, lockSql);
+				if(result<logOperationCount){
+					throw new LockException("部分履历已经被其他回库操作锁定,请稍候再试。");
+				}
 			}
 			return tempTable;
 		}catch(Exception e){
@@ -66,6 +70,17 @@ public abstract class LogSelector {
 		sb.append(" T WHERE L.OP_ID=T.OP_ID) AND L.LOCK_STA=0");
 		return sb.toString();
 	}
+	protected String getUnlockLogSql(boolean commitStatus){
+		StringBuilder sb = new StringBuilder();
+		sb.append("UPDATE LOG_OPERATION L SET L.LOCK_STA=0 ");
+		if(commitStatus){
+			sb.append(",L.COM_STA=1,L.COM_DT=SYSDATE");
+		}
+		sb.append(" WHERE EXISTS (SELECT 1 FROM ");
+		sb.append(tempTable);
+		sb.append(" T WHERE L.OP_ID=T.OP_ID)");
+		return sb.toString();
+	}
 	protected abstract int selectLog(Connection conn)throws Exception;
 	protected abstract int extendLog(Connection conn)throws Exception;
 	/**
@@ -73,5 +88,18 @@ public abstract class LogSelector {
 	 * @param commitStatus
 	 * @throws Exception
 	 */
-	public abstract void unselect(boolean commitStatus)throws Exception;
+	public void unselect(boolean commitStatus) throws Exception {
+		String sql = getUnlockLogSql(commitStatus);
+		if(StringUtils.isEmpty(sql))return;
+		Connection conn = null;
+		try{
+			conn = logSchema.getPoolDataSource().getConnection();
+			run.update(conn, getUnlockLogSql(commitStatus));
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

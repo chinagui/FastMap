@@ -3,15 +3,15 @@ package com.navinfo.dataservice.impcore.deepinfo;
 import java.sql.Connection;
 import java.sql.Statement;
 
-import net.sf.json.JSONObject;
-import net.sf.json.util.JSONUtils;
-
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiGasstation;
-import com.navinfo.dataservice.dao.glm.operator.poi.deep.IxPoiGasstationOperator;
+import com.navinfo.dataservice.dao.glm.operator.BasicOperator;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.impcore.exception.DataErrorException;
+
+import net.sf.json.JSONObject;
+import net.sf.json.util.JSONUtils;
 
 public class GasStationImporter {
 	public static int run(Result result, Connection conn,
@@ -77,7 +77,7 @@ public class GasStationImporter {
 			throw new DataErrorException("openHour length too long");
 		}
 
-		IxPoiGasstationOperator operator = new IxPoiGasstationOperator(conn,
+		BasicOperator operator = new BasicOperator(conn,
 				gas);
 
 		operator.insertRow2Sql(stmt);

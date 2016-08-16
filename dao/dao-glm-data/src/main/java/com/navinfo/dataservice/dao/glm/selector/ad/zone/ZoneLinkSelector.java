@@ -6,22 +6,20 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import oracle.sql.STRUCT;
-
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkKind;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkMesh;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNodeMesh;
-import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkMeshSelector;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.vividsolutions.jts.geom.Geometry;
+
+import oracle.sql.STRUCT;
 
 
 /**
@@ -29,114 +27,16 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author zhaokk
  *
  */
-public class ZoneLinkSelector implements ISelector  {
-	
-	private static Logger logger = Logger.getLogger(ZoneLinkSelector.class);
+public class ZoneLinkSelector extends AbstractSelector  {
 
 	private Connection conn;
 
 	public ZoneLinkSelector(Connection conn) {
-		super();
+		super(conn);
 		this.conn = conn;
+		this.setCls(ZoneLink.class);
 	}
 
-	@Override
-	public IRow loadById(int id, boolean isLock) throws Exception {
-		ZoneLink link = new ZoneLink();
-
-		StringBuilder sb = new StringBuilder(
-				"select * from " + link.tableName() + " WHERE link_pid = :1 and  u_record !=2");
-
-		if (isLock) {
-			sb.append(" for update nowait");
-		}
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = conn.prepareStatement(sb.toString());
-
-			pstmt.setInt(1, id);
-
-			resultSet = pstmt.executeQuery();
-
-			if (resultSet.next()) {
-				link.setPid(id);
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
-				link.setGeometry(geometry);
-				link.setEditFlag(resultSet.getInt("edit_flag"));
-				link.setLength(resultSet.getDouble("length"));
-				link.setsNodePid(resultSet.getInt("s_node_pid"));
-				link.seteNodePid(resultSet.getInt("e_node_pid"));
-				link.setRowId(resultSet.getString("row_id"));
-				link.setScale(resultSet.getInt("scale"));
-				// 获取Zone_Node对应的关联数据
-
-				// zone_link_mesh
-				List<IRow> meshes = new ZoneLinkMeshSelector(conn).loadRowsByParentId(id, isLock);
-
-				link.setMeshes(meshes);
-
-				for (IRow row : link.getMeshes()) {
-					ZoneLinkMesh mesh = (ZoneLinkMesh) row;
-
-					link.meshMap.put(mesh.rowId(), mesh);
-				}
-				// zone_link_kind
-				List<IRow> kinds = new ZoneLinkKindSelector(conn).loadRowsByParentId(id, isLock);
-
-				link.setKinds(kinds);
-
-				for (IRow row : link.getKinds()) {
-					ZoneLinkKind kind = (ZoneLinkKind) row;
-
-					link.kindMap.put(kind.rowId(), kind);
-				}
-				return link;
-			} else {
-
-				throw new Exception("对应ZONE_Link不存在!");
-			}
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-	}
-
-	@Override
-	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock)
-			throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
 	public List<ZoneLink> loadByNodePid(int nodePid, boolean isLock)
 			throws Exception {
 
@@ -165,18 +65,9 @@ public class ZoneLinkSelector implements ISelector  {
 			while (resultSet.next()) {
 				ZoneLink zoneLink = new ZoneLink();
 
-				zoneLink.setPid(resultSet.getInt("link_pid"));
-				zoneLink.setsNodePid(resultSet.getInt("s_node_pid"));
-				zoneLink.seteNodePid(resultSet.getInt("e_node_pid"));
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
-				zoneLink.setGeometry(geometry);
-				zoneLink.setLength(resultSet.getInt("length"));
-				zoneLink.setScale(resultSet.getInt("scale"));
-				zoneLink.setEditFlag(resultSet.getInt("edit_flag"));
-				zoneLink.setRowId(resultSet.getString("row_id"));
-				List<IRow> forms = new ZoneLinkMeshSelector(conn).loadRowsByParentId(zoneLink.getPid(), isLock);
-				List<IRow> kinds = new ZoneLinkKindSelector(conn).loadRowsByParentId(zoneLink.getPid(), isLock);
+				ReflectionAttrUtils.executeResultSet(zoneLink, resultSet);
+				List<IRow> forms = new AbstractSelector(ZoneLinkMesh.class,conn).loadRowsByParentId(zoneLink.getPid(), isLock);
+				List<IRow> kinds = new AbstractSelector(ZoneLinkKind.class,conn).loadRowsByParentId(zoneLink.getPid(), isLock);
 
 				for (IRow row : forms) {
 					ZoneLinkMesh mesh = (ZoneLinkMesh) row;
@@ -194,21 +85,8 @@ public class ZoneLinkSelector implements ISelector  {
 				throw e;
 
 			} finally {
-				try {
-					if (resultSet != null) {
-						resultSet.close();
-					}
-				} catch (Exception e) {
-
-				}
-
-				try {
-					if (pstmt != null) {
-						pstmt.close();
-					}
-				} catch (Exception e) {
-
-				}
+				DBUtils.closeResultSet(resultSet);
+				DBUtils.closeStatement(pstmt);
 
 			}
 				

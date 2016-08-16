@@ -22,11 +22,11 @@ public class RdGate implements IObj {
 	private int inLinkPid;
 	private int nodePid;
 	private int outLinkPid;
-	private int type;
-	private int dir;
-	private int fee;
+	private int type = 2;
+	private int dir = 2;
+	private int fee = 0;
 	private String rowId;
-	private Map<String, Object> changedFields = new HashMap<String, Object>();
+	public Map<String, Object> changedFields = new HashMap<String, Object>();
 	private List<IRow> condition = new ArrayList<IRow>();
 	public Map<String, RdGateCondition> rdGateConditionMap = new HashMap<String, RdGateCondition>();
 
@@ -97,28 +97,12 @@ public class RdGate implements IObj {
 		this.fee = fee;
 	}
 
-	public Map<String, Object> getChangedFields() {
-		return changedFields;
-	}
-
-	public void setChangedFields(Map<String, Object> changedFields) {
-		this.changedFields = changedFields;
-	}
-
 	public List<IRow> getCondition() {
 		return condition;
 	}
 
 	public void setCondition(List<IRow> condition) {
 		this.condition = condition;
-	}
-
-	public Map<String, RdGateCondition> getRdGateConditionMap() {
-		return rdGateConditionMap;
-	}
-
-	public void setRdGateConditionMap(Map<String, RdGateCondition> rdGateConditionMap) {
-		this.rdGateConditionMap = rdGateConditionMap;
 	}
 
 	public String getRowId() {
@@ -283,14 +267,16 @@ public class RdGate implements IObj {
 
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		// TODO Auto-generated method stub
-		return null;
+		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
+		childList.put(RdGateCondition.class, condition);
+		return childList;
 	}
 
 	@Override
-	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
-		// TODO Auto-generated method stub
-		return null;
+	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<Class<? extends IRow>,Map<String,?>>();
+		childMap.put(RdGateCondition.class, rdGateConditionMap);
+		return childMap;
 	}
 
 }

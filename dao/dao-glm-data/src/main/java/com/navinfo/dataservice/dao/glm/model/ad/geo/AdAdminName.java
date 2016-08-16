@@ -168,14 +168,6 @@ public class AdAdminName implements IObj {
 		// TODO Auto-generated method stub
 		return "ad_admin";
 	}
-	public Map<String, Object> getChangedFields() {
-		return changedFields;
-	}
-
-	public void setChangedFields(Map<String, Object> changedFields) {
-		this.changedFields = changedFields;
-	}
-
 	@Override
 	public List<List<IRow>> children() {
 		return null;
@@ -292,23 +284,14 @@ public class AdAdminName implements IObj {
 	public String primaryKey() {
 		return "name_id";
 	}
-
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childList()
-	 */
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
-	 */
 	@Override
 	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }

@@ -2,6 +2,9 @@ package com.navinfo.dataservice.engine.edit.operation.obj.poi.update;
 
 import java.sql.Connection;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -33,12 +36,8 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameTone;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
-import com.navinfo.dataservice.dao.glm.operator.poi.index.IxPoiOperator;
-import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
+import com.navinfo.dataservice.dao.glm.operator.BasicOperator;
 import com.navinfo.dataservice.dao.pidservice.PidService;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -123,13 +122,12 @@ public class Operation implements IOperation {
 		updataIxPoiRestaurant(result, content);
 
 		updataIxPoiCarrental(result, content);
-		
+
 		updataIxPoiParent(result, content);
-		
+
 		updataIxPoiChildren(result, content);
 
-		IxPoiOperator operator = new IxPoiOperator(this.conn,
-				new IxPoiSelector(this.conn).loadRowIdByPid(ixPoi.pid(), false));
+		BasicOperator operator = new BasicOperator(this.conn, this.ixPoi);
 
 		operator.upatePoiStatus();
 
@@ -1561,7 +1559,7 @@ public class Operation implements IOperation {
 		}
 
 	}
-	
+
 	private void updataIxPoiParent(Result result, JSONObject content)
 			throws Exception {
 		if (!content.containsKey("parent")) {
@@ -1607,7 +1605,7 @@ public class Operation implements IOperation {
 					row.Unserialize(json);
 
 					row.setPid(json.getInt("pid"));
-					
+
 					row.setParentPoiPid(ixPoi.getPid());
 
 					row.setMesh(ixPoi.mesh());
@@ -1618,7 +1616,7 @@ public class Operation implements IOperation {
 		}
 
 	}
-	
+
 	private void updataIxPoiChildren(Result result, JSONObject content)
 			throws Exception {
 		if (!content.containsKey("children")) {
@@ -1662,7 +1660,7 @@ public class Operation implements IOperation {
 					IxPoiChildren row = new IxPoiChildren();
 
 					row.Unserialize(json);
-					
+
 					row.setGroupId(json.getInt("groupId"));
 
 					row.setChildPoiPid(ixPoi.getPid());

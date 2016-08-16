@@ -11,6 +11,8 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
+import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
+import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
@@ -20,7 +22,10 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
+import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
+import com.navinfo.dataservice.dao.glm.model.rd.speedbump.RdSpeedbump;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -72,7 +77,17 @@ public class Command extends AbstractCommand {
 	private List<RdGsc> rdGscs;
 	
 	private List<AdAdmin> adAdmins;
-
+	
+	private List<RdElectroniceye> eleceyes;
+	
+	private List<RdGate> gates;
+	
+	private List<RdSe> rdSes;
+	
+	private List<RdSpeedbump> rdSpeedbumps;
+	
+	private List<RdTollgate> rdTollgates;
+	
 	private boolean isCheckInfect = false;
 
 	public boolean isCheckInfect() {
@@ -200,6 +215,38 @@ public class Command extends AbstractCommand {
 		this.adAdmins = adAdmins;
 	}
 
+	public List<RdElectroniceye> getEleceyes() {
+		return eleceyes;
+	}
+
+	public void setEleceyes(List<RdElectroniceye> eleceyes) {
+		this.eleceyes = eleceyes;
+	}
+
+	public List<RdSe> getRdSes() {
+		return rdSes;
+	}
+
+	public void setRdSes(List<RdSe> rdSes) {
+		this.rdSes = rdSes;
+	}
+
+	public List<RdSpeedbump> getRdSpeedbumps() {
+		return rdSpeedbumps;
+	}
+
+	public void setRdSpeedbumps(List<RdSpeedbump> rdSpeedbumps) {
+		this.rdSpeedbumps = rdSpeedbumps;
+	}
+
+	public List<RdTollgate> getRdTollgates() {
+		return rdTollgates;
+	}
+
+	public void setRdTollgates(List<RdTollgate> rdTollgates) {
+		this.rdTollgates = rdTollgates;
+	}
+
 	public Command(JSONObject json, String requester) throws JSONException {
 		this.requester = requester;
 
@@ -285,6 +332,14 @@ public class Command extends AbstractCommand {
 
 	public void setRdGscs(List<RdGsc> rdGscs) {
 		this.rdGscs = rdGscs;
+	}
+
+	public List<RdGate> getGates() {
+		return gates;
+	}
+
+	public void setGates(List<RdGate> gates) {
+		this.gates = gates;
 	}
 
 //	public void createGlmList() throws Exception {

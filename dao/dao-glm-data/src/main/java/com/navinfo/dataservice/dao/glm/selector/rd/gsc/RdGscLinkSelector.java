@@ -9,97 +9,22 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
-public class RdGscLinkSelector implements ISelector {
+public class RdGscLinkSelector extends AbstractSelector {
 
 	private static Logger logger = Logger.getLogger(RdCrossSelector.class);
 
 	private Connection conn;
 
 	public RdGscLinkSelector(Connection conn) {
+		super(conn);
 		this.conn = conn;
-	}
-
-	@Override
-	public IRow loadById(int id, boolean isLock) throws Exception {
-		return null;
-	}
-
-	@Override
-	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
-		return null;
-	}
-
-	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
-		List<IRow> rows = new ArrayList<IRow>();
-
-		String sql = "select * from rd_gsc_link where pid=:1 and u_record!=:2";
-
-		if (isLock) {
-			sql += " for update nowait";
-		}
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = this.conn.prepareStatement(sql);
-
-			pstmt.setInt(1, id);
-
-			pstmt.setInt(2, 2);
-
-			resultSet = pstmt.executeQuery();
-
-			while (resultSet.next()) {
-
-				RdGscLink link = new RdGscLink();
-
-				link.setPid(resultSet.getInt("pid"));
-
-				link.setZlevel(resultSet.getInt("zlevel"));
-
-				link.setLinkPid(resultSet.getInt("link_pid"));
-
-				link.setTableName(resultSet.getString("table_name"));
-
-				link.setShpSeqNum(resultSet.getInt("shp_seq_num"));
-
-				link.setStartEnd(resultSet.getInt("start_end"));
-
-				link.setRowId(resultSet.getString("row_id"));
-
-				rows.add(link);
-			}
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-
-		return rows;
+		this.setCls(RdGscLink.class);
 	}
 	
 	public List<IRow> loadRowsByParentIdAndLinkId(int parentId,int linkId, boolean isLock) throws Exception {
@@ -130,19 +55,7 @@ public class RdGscLinkSelector implements ISelector {
 
 				RdGscLink link = new RdGscLink();
 
-				link.setPid(resultSet.getInt("pid"));
-
-				link.setZlevel(resultSet.getInt("zlevel"));
-
-				link.setLinkPid(resultSet.getInt("link_pid"));
-
-				link.setTableName(resultSet.getString("table_name"));
-
-				link.setShpSeqNum(resultSet.getInt("shp_seq_num"));
-
-				link.setStartEnd(resultSet.getInt("start_end"));
-
-				link.setRowId(resultSet.getString("row_id"));
+				ReflectionAttrUtils.executeResultSet(link, resultSet);
 
 				rows.add(link);
 			}
@@ -151,22 +64,8 @@ public class RdGscLinkSelector implements ISelector {
 			throw e;
 
 		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
 		}
 
 		return rows;

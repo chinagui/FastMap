@@ -43,23 +43,6 @@ public class DefaultLogSelector extends LogSelector {
 		}
 		return result;
 	}
-
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.impcore.selector.LogSelector#unselect(boolean)
-	 */
-	@Override
-	public void unselect(boolean commitStatus) throws Exception {
-		Connection conn = null;
-		try{
-			conn = logSchema.getPoolDataSource().getConnection();
-			run.update(conn, getUnlockLogSql(commitStatus));
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(),e);
-		}finally{
-			DbUtils.rollbackAndCloseQuietly(conn);
-		}
-	}
 	
 	protected SqlClause getPrepareSql(Connection conn) throws Exception{
 		
@@ -91,17 +74,4 @@ public class DefaultLogSelector extends LogSelector {
 		sb.append(" T1 WHERE L1.OP_ID=T1.OP_ID AND L1.ROW_ID=L.ROW_ID AND P.OP_DT<=T1.OP_DT) AND P.OP_ID=L.OP_ID AND P.COM_STA=0) TP ON (T.OP_ID=TP.OP_ID) WHEN NOT MATCHED THEN INSERT VALUES (TP.OP_ID,TP.OP_DT)");
 		return sb.toString();
 	}
-	
-	protected String getUnlockLogSql(boolean commitStatus){
-		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE LOG_OPERATION L SET L.LOCK_STA=0 ");
-		if(commitStatus){
-			sb.append(",L.COM_STA=1,L.COM_DT=SYSDATE");
-		}
-		sb.append(" WHERE EXISTS (SELECT 1 FROM ");
-		sb.append(tempTable);
-		sb.append(" T WHERE L.OP_ID=T.OP_ID)");
-		return sb.toString();
-	}
-
 }

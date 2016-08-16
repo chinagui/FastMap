@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -15,13 +14,13 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-public class RdGateCondition implements IObj {
+public class RdGateCondition implements IRow {
 	
 	private String rowId;
 	private int pid;
-	private int validObj;
-	private String timeDomain;
-	private Map<String, Object> changedFields = new HashMap<String, Object>();
+	private int validObj = 0;
+	private String timeDomain = "";
+	public Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	public int getPid() {
 		return pid;
@@ -94,11 +93,6 @@ public class RdGateCondition implements IObj {
 	@Override
 	public String parentPKName() {
 		return "pid";
-	}
-
-	@Override
-	public int parentPKValue() {
-		return this.pid();
 	}
 
 	@Override
@@ -187,35 +181,12 @@ public class RdGateCondition implements IObj {
 		return false;
 	}
 
-	@Override
-	public List<IRow> relatedRows() {
-		return null;
-	}
-
-	@Override
-	public int pid() {
-		return pid;
-	}
-
-	@Override
-	public String primaryKey() {
-		return "pid";
-	}
-
 	public String getRowId() {
 		return rowId;
 	}
 
 	@Override
-	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		// TODO Auto-generated method stub
-		return null;
+	public int parentPKValue() {
+		return this.getPid();
 	}
-
-	@Override
-	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

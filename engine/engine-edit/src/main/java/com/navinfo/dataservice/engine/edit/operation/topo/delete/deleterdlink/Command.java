@@ -14,7 +14,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
-import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 
 import net.sf.json.JSONObject;
@@ -44,8 +43,6 @@ public class Command extends AbstractCommand {
 	private List<RdGsc> rdGscs;
 	
 	private List<AdAdmin> adAdmins;
-	
-	private RdTrafficsignal trafficSignal;
 	
 	private List<RdElectroniceye> electroniceyes;
 	
@@ -101,14 +98,6 @@ public class Command extends AbstractCommand {
 
 	public void setRestrictions(List<RdRestriction> restrictions) {
 		this.restrictions = restrictions;
-	}
-	
-	public RdTrafficsignal getTrafficSignal() {
-		return trafficSignal;
-	}
-
-	public void setTrafficSignal(RdTrafficsignal trafficSignal) {
-		this.trafficSignal = trafficSignal;
 	}
 
 	public Command(JSONObject json,String requester) {

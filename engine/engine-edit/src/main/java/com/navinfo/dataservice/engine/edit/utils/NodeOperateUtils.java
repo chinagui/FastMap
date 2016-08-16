@@ -10,6 +10,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNodeMesh;
+import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
 import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
 import com.navinfo.dataservice.dao.glm.model.lu.LuNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
@@ -182,6 +183,34 @@ public class NodeOperateUtils {
 		LuNode node = new LuNode();
 		// 申请pid
 		node.setPid(PidService.getInstance().applyLuNodePid());
+		// 获取点的几何信息
+		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y), 100000, 0));
+		// 维护Node图幅信息
+		// 判断是否图廓点
+		if (MeshUtils.isPointAtMeshBorder(x, y)) {
+			node.setForm(1);
+		}
+		List<IRow> nodeMeshs = new ArrayList<IRow>();
+
+		for (String mesh : MeshUtils.point2Meshes(x, y)) {
+
+			LuNodeMesh nodeMesh = new LuNodeMesh();
+			nodeMesh.setNodePid(node.getPid());
+			nodeMesh.setMeshId(Integer.parseInt(mesh));
+			nodeMeshs.add(nodeMesh);
+		}
+		node.setMeshes(nodeMeshs);
+		return node;
+	}
+	
+	/**
+	 * 创建土地覆盖点公共方法
+	 */
+	public static LcNode createLcNode(double x, double y) throws Exception {
+
+		LcNode node = new LcNode();
+		// 申请pid
+		node.setPid(PidService.getInstance().applyLcNodePid());
 		// 获取点的几何信息
 		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y), 100000, 0));
 		// 维护Node图幅信息

@@ -84,6 +84,9 @@ public class Process extends AbstractProcess<Command> {
 		// 删除铁路线有铁路点、线具体操作
 		IOperation op = new OpTopo(this.getCommand());
 		op.run(this.getResult());
+		// 同一点关系
+		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
+		opRefRdSameNode.run(getResult(), this.getCommand().getLink());
 		IOperation opRwLink = new OpRefRwGsc(this.getCommand());
 		return opRwLink.run(this.getResult());
 	}

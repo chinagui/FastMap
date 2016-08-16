@@ -9,6 +9,8 @@ import org.junit.Test;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 
+import net.sf.json.JSONObject;
+
 /** 
 * @ClassName: RdTrafficSignalTest 
 * @author Zhang Xiaolong
@@ -26,7 +28,34 @@ public class RdTrafficSignalTest extends InitApplication{
 	
 	@Test
 	public void testAddTrafficSignal() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"RDTRAFFICSIGNAL\",\"data\":{\"nodePid\":\"741991\"}}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":25,\"type\":\"RDTRAFFICSIGNAL\",\"data\":{\"nodePid\":\"100024912\"}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			
+			String log = t.getLogs();
+			
+			System.out.println(log);
+			JSONObject json = new JSONObject();
+
+			json.put("result", msg);
+
+			json.put("log", log);
+
+			json.put("check", t.getCheckLog());
+
+			json.put("pid", t.getPid());
+			
+			System.out.println(json.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testUpdateTrafficSignal()
+	{
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDTRAFFICSIGNAL\",\"dbId\":42,\"data\":{\"type\":2,\"rowId\":\"78D984F13079444FB6DDBA25A52FAF69\",\"pid\":100000089,\"objStatus\":\"UPDATE\",\"location\":\"10\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -37,9 +66,9 @@ public class RdTrafficSignalTest extends InitApplication{
 	}
 	
 	@Test
-	public void testUpdateTrafficSignal()
+	public void testDeleteTrafficSignal()
 	{
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDTRAFFICSIGNAL\",\"dbId\":42,\"data\":{\"type\":2,\"rowId\":\"78D984F13079444FB6DDBA25A52FAF69\",\"pid\":100000089,\"objStatus\":\"UPDATE\",\"location\":\"10\"}}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDTRAFFICSIGNAL\",\"dbId\":42,\"objId\":100000191}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

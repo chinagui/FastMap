@@ -112,15 +112,6 @@ public class AdAdminPart implements IRow {
 		// TODO Auto-generated method stub
 		return "ad_admin_group";
 	}
-
-	public Map<String, Object> getChangedFields() {
-		return changedFields;
-	}
-
-	public void setChangedFields(Map<String, Object> changedFields) {
-		this.changedFields = changedFields;
-	}
-
 	@Override
 	public List<List<IRow>> children() {
 		return null;

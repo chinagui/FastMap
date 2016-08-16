@@ -20,9 +20,7 @@ public class Operation implements IOperation {
 
 	public void deleteRdEleceyePair(Result result) {
 		// 删除区间测速电子眼配对信息(同时删除子表信息)
-		if (null != command.getPair()) {
-			result.insertObject(command.getPair(), ObjStatus.DELETE, command.getPair().getPid());
-		}
+		result.insertObject(command.getPair(), ObjStatus.DELETE, command.getPair().pid());
 	}
 
 }

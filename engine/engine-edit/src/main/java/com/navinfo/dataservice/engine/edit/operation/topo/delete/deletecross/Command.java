@@ -2,9 +2,6 @@ package com.navinfo.dataservice.engine.edit.operation.topo.delete.deletecross;
 
 import java.util.List;
 
-import net.sf.json.JSONObject;
-
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
@@ -13,13 +10,13 @@ import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 
+import net.sf.json.JSONObject;
+
 public class Command extends AbstractCommand {
 	
 	private String requester;
 
 	private int pid;
-	
-//	private int projectId;
 	
 	private RdCross cross;
 	
@@ -69,20 +66,11 @@ public class Command extends AbstractCommand {
 		this.pid = pid;
 	}
 
-//	public int getProjectId() {
-//		return projectId;
-//	}
-//
-//	public void setProjectId(int projectId) {
-//		this.projectId = projectId;
-//	}
-
 	public Command(JSONObject json,String requester) {
 		this.requester = requester;
 		
 		this.pid = json.getInt("objId");
 		
-//		this.projectId = json.getInt("projectId");
 		this.setDbId(json.getInt("dbId"));
 	}
 

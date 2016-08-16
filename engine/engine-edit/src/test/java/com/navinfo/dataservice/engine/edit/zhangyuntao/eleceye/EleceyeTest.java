@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -22,36 +23,43 @@ import net.sf.json.JSONObject;
 public class EleceyeTest extends InitApplication {
 
 	@Override
+	@Before
 	public void init() {
 		super.initContext();
 	}
 
 	@Test
 	public void createEleceye() {
-		// String requester =
-		// "{'dbId':42,'command':'CREATE','type':'RDELECTRONICEYE','data':{'direct':3,'longitude':116.50291868782932,'latitude':40.01112911418436,'linkPid':85518434}}";
+		// String requester = "{'dbId':42,'command':'CREATE','type':'RDELECTRONICEYE','data':{'direct':3,'longitude':116.50291868782932,'latitude':40.01112911418436,'linkPid':85518434}}";
 		String requester = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"RDELECTRONICEYE\",\"data\":{\"linkPid\":19613251,\"direct\":1,\"longitude\":116.46289037031201,\"latitude\":40.007340083841214}}";
+		TestUtil.run(requester);
+	}
+	
+	@Test
+	public void moveEleceye() {
+		// String requester = "{'dbId':42,'command':'CREATE','type':'RDELECTRONICEYE','data':{'direct':3,'longitude':116.50291868782932,'latitude':40.01112911418436,'linkPid':85518434}}";
+		String requester = "{\"command\":\"MOVE\",\"dbId\":42,\"type\":\"RDELECTRONICEYE\",\"data\":{\"linkPid\":19613252,\"pid\":32943645,\"longitude\":116.46281037031202,\"latitude\":40.007310083841214}}";
 		TestUtil.run(requester);
 	}
 
 	@Test
 	public void updateEleceye() {
-		String requester = "{'dbId':43,'command':'UPDATE','type':'RDELECTRONICEYE','data':{'pid':100281918,'kind':20,'objStatus':'UPDATE'}}";
+		String requester = "{\"command\":\"UPDATE\",\"type\":\"RDELECTRONICEYE\",\"dbId\":42,\"data\":{\"location\":4,\"rowId\":\"3524E60474A46E1AE050A8C08304BA17\",\"pid\":32943645,\"objStatus\":\"UPDATE\"}}";
 		TestUtil.run(requester);
 	}
 
 	@Test
 	public void deleteEleceye() {
-		String requester = "{'dbId':43,'command':'DELETE','type':'RDELECTRONICEYE','data':{'pid':100281916}}";
+		String requester = "{'dbId':43,'command':'DELETE','type':'RDELECTRONICEYE','objId':100281916}";
 		TestUtil.run(requester);
 	}
 
 	@Test
 	public void getEleceye() {
 		try {
-			Connection conn = DBConnector.getInstance().getConnectionById(43);
+			Connection conn = DBConnector.getInstance().getConnectionById(42);
 			RdElectroniceyeSelector selector = new RdElectroniceyeSelector(conn);
-			RdElectroniceye eleceye = (RdElectroniceye) selector.loadById(100281916, false);
+			RdElectroniceye eleceye = (RdElectroniceye) selector.loadById(46800247, false);
 			eleceye.getPairs();
 			eleceye.getParts();
 		} catch (Exception e) {
@@ -94,6 +102,26 @@ public class EleceyeTest extends InitApplication {
 
 		IObj obj = p.searchDataByPid(ObjType.valueOf(objType), pid);
 		// System.out.println(obj.Serialize(ObjLevel.FULL));
+	}
+
+	@Test
+	public void testSearchById() throws Exception {
+		String parameter = "{\"dbId\":42,\"type\":\"RDELECTRONICEYE\",\"pid\":100281943}";
+		JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+		String objType = jsonReq.getString("type");
+
+		int dbId = jsonReq.getInt("dbId");
+
+		Connection conn = DBConnector.getInstance().getConnectionById(dbId);
+
+		int pid = jsonReq.getInt("pid");
+
+		SearchProcess p = new SearchProcess(conn);
+
+		IObj obj = p.searchDataByPid(ObjType.valueOf(objType), pid);
+
+		obj.Serialize(ObjLevel.FULL);
 	}
 
 	@Test

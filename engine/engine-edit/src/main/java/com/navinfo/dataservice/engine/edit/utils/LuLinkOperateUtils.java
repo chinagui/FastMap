@@ -17,6 +17,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
+import com.navinfo.dataservice.dao.glm.model.lu.LuLinkKind;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
 import com.navinfo.dataservice.dao.pidservice.PidService;
@@ -73,6 +74,11 @@ public class LuLinkOperateUtils {
 		link.seteNodePid(eNodePid);
 		result.setPrimaryPid(link.pid());
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
+		
+		// 创建LuLinkKind
+		LuLinkKind kind = new LuLinkKind();
+		kind.setLinkPid(link.pid());
+		result.insertObject(kind, ObjStatus.INSERT, kind.getLinkPid());
 		return link;
 	}
 
@@ -103,13 +109,9 @@ public class LuLinkOperateUtils {
 	 * 维护LuLink子表LuLinkMesh数据
 	 */
 	private static void setLinkChildren(LuLink link, int meshId) {
-
 		LuLinkMesh mesh = new LuLinkMesh();
-
 		mesh.setLinkPid(link.getPid());
-
 		mesh.setMesh(meshId);
-
 		link.getMeshes().add(mesh);
 	}
 
@@ -407,6 +409,11 @@ public class LuLinkOperateUtils {
 		link.seteNodePid(eNodePid);
 		result.setPrimaryPid(link.pid());
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
+		
+		// 创建LuLinkKind
+		LuLinkKind kind = new LuLinkKind();
+		kind.setLinkPid(link.pid());
+		result.insertObject(kind, ObjStatus.INSERT, kind.getLinkPid());
 	}
 
 }

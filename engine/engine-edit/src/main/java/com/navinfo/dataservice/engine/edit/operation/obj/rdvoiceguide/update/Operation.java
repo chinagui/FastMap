@@ -58,7 +58,7 @@ public class Operation implements IOperation {
 		JSONObject content = command.getContent();
 
 		// 详细信息无变化 不处理
-		if (content.containsKey("details")) {
+		if (!content.containsKey("details")) {
 
 			return null;
 		}
@@ -94,7 +94,7 @@ public class Operation implements IOperation {
 			JSONObject json = details.getJSONObject(i);
 
 			// detail未标记变化 不处理
-			if (json.containsKey("objStatus")) {
+			if (!json.containsKey("objStatus")) {
 				continue;
 			}
 

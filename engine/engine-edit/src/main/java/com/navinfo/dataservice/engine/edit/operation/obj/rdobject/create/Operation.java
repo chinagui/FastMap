@@ -7,9 +7,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObject;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectInter;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectLink;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectRoad;
-import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
-import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
-import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterNode;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 
 import net.sf.json.JSONArray;

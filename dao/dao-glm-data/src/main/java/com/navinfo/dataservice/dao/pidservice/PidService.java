@@ -214,6 +214,14 @@ public class PidService {
 		return applyPid(PidSequenceName.adFacePidName);
 
 	}
+	
+	/**
+	 * 申请RD_VARIABLE_SPEED
+	 */
+	public synchronized int applyRdVariableSpeedPid() throws Exception {
+		return applyPid(PidSequenceName.rdVariableSpeedName);
+
+	}
 
 	/**
 	 * 申请rtic代码

@@ -50,7 +50,7 @@ public class RdLaneSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 
 		try {
-			String sql = "SELECT * FROM rd_lane WHERE link_pid =:1 and u_record !=2";
+			String sql = "SELECT lane_pid FROM rd_lane WHERE link_pid =:1 and u_record !=2";
 			if (laneDir != 0) {
 				sql += " and lane_dir = :2 ";
 			}
@@ -68,9 +68,9 @@ public class RdLaneSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
-				RdLane lane = new RdLane();
-				ReflectionAttrUtils.executeResultSet(lane, resultSet);
-				lanes.add(lane);
+				RdLane slope = (RdLane)this.loadById(
+						resultSet.getInt("pid"), false);
+				lanes.add(slope);
 			}
 
 			return lanes;

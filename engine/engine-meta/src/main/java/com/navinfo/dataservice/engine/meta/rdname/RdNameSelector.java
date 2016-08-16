@@ -206,22 +206,23 @@ public class RdNameSelector {
 			StringBuilder sql = new StringBuilder();
 			sql.append("SELECT * ");
 			sql.append(" FROM (SELECT c.*, rownum rn");
-			sql.append(" FROM (select a.NAME_ID,a.NAME_GROUPID,a.LANG_CODE,a.NAME,a.TYPE,a.BASE,a.PREFIX,a.INFIX");
-			sql.append(",a.SUFFIX,a.NAME_PHONETIC,a.TYPE_PHONETIC,a.BASE_PHONETIC,a.PREFIX_PHONETIC,a.INFIX_PHONETIC");
-			sql.append(",a.SUFFIX_PHONETIC,a.SRC_FLAG,a.ROAD_TYPE,a.ADMIN_ID,a.CODE_TYPE,a.VOICE_FILE,a.SRC_RESUME");
-			sql.append(",a.PA_REGION_ID,a.SPLIT_FLAG,a.MEMO,a.ROUTE_ID,a.PROCESS_FLAG,a.CITY");
-			sql.append(" from rd_name a where a.SRC_RESUME in (");
+			sql.append(" FROM (select * ");
+			sql.append(" from rd_name a where 1=1");
 			
 			String tmep = "";
-			for (int i=0;i<tips.size();i++) {
-				JSONObject tipsObj = tips.getJSONObject(i);
-				sql.append(tmep);
-				tmep = ",";
-				sql.append("'");
-				sql.append(tipsObj.getString("id"));
-				sql.append("'");
+			if (tips.size()>0) {
+				sql.append(" a.SRC_RESUME in (");
+				for (int i=0;i<tips.size();i++) {
+					JSONObject tipsObj = tips.getJSONObject(i);
+					sql.append(tmep);
+					tmep = ",";
+					sql.append("'");
+					sql.append(tipsObj.getString("id"));
+					sql.append("'");
+				}
+				sql.append(")");
 			}
-			sql.append(")");
+			
 			
 			// 添加过滤器条件
 			Iterator<String> keys = param.keys();
@@ -385,7 +386,7 @@ public class RdNameSelector {
 			rdNameObj.put("memo", resultSet.getString("MEMO"));
 			rdNameObj.put("routeId", resultSet.getInt("ROUTE_ID"));
 			rdNameObj.put("processFlag", resultSet.getInt("PROCESS_FLAG"));
-			rdNameObj.put("city", resultSet.getString("CITY"));
+//			rdNameObj.put("city", resultSet.getString("CITY"));
 			return rdNameObj;
 		} catch (Exception e) {
 			throw e;

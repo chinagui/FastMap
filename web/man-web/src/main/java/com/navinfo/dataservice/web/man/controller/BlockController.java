@@ -218,7 +218,10 @@ public class BlockController extends BaseController {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			JSONObject condition = dataJson.getJSONObject("condition");
 			JSONObject order = dataJson.getJSONObject("order");
-
+			if (!dataJson.containsKey("pageNum")){
+				List<HashMap> data = service.listAll(condition, order);
+				return new ModelAndView("jsonView", success(data));
+			}
 			int curPageNum = 1;// 默认为第一页
 			String curPage = dataJson.getString("pageNum");
 			if (StringUtils.isNotEmpty(curPage)) {

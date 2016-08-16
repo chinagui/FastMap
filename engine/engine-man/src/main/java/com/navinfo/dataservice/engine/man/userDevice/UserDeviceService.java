@@ -60,10 +60,10 @@ public class UserDeviceService {
 	 * @param otherInfo 其他消息内容，可为空
 	 * @return boolean类型，成功返回true，失败false
 	 */
-	public boolean pushMessage(int userId,String title,String content,String msgType,String otherInfo){
+	public boolean pushMessage(long userId,String title,String content,int msgType,String otherInfo){
 		try{
 			UserDevice dObj=new UserDevice();
-			dObj.setUserId(userId);
+			dObj.setUserId((int) userId);
 			List<UserDevice> deviceList = this.list(dObj);
 			if (deviceList.isEmpty() || deviceList.size()==0){
 				log.warn("用户没有登录设备");

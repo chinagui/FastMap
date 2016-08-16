@@ -27,7 +27,7 @@ public class XingeUtil {
 	String deviceToken="";
 	String title="";
 	String content="";
-	String msgType="";
+	int msgType=0;
 	String otherInfo=""; 
 	
 	public static long iosAccessId = 2100042998;
@@ -36,7 +36,7 @@ public class XingeUtil {
 	public static long androidAccessId = 2100042998;
 	public static String androidSecrectKey = "a547532e1c19cdb1e013651ff68798a8";
 
-	public XingeUtil(String devicePlatform,String deviceToken,String title,String content,String msgType,String otherInfo) {
+	public XingeUtil(String devicePlatform,String deviceToken,String title,String content,int msgType,String otherInfo) {
 		this.devicePlatform=devicePlatform;
 		this.deviceToken=deviceToken;
 		this.title=title;

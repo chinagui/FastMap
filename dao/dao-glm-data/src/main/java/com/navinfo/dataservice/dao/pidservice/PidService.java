@@ -350,12 +350,21 @@ public class PidService {
 	}
 
 	/**
-	 * 申请zone_link_pid
+	 * 申请rd_lane_pid
 	 */
 	public synchronized int applyRdLanePid() throws Exception {
 		return applyPid(PidSequenceName.rdLanePidName);
 
 	}
+	
+	/**
+	 * 申请rd_lane_topo_pid
+	 */
+	public synchronized int applyRdLaneTopoPid() throws Exception {
+		return applyPid(PidSequenceName.rdLanetopoPidName);
+
+	}
+
 
 	/**
 	 * 申请zone_face_pid

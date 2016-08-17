@@ -142,7 +142,7 @@ public class ScPointAdminArea {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray getAdminArea() throws Exception {
+	public JSONArray getAdminArea(int pageSize,int pageNum) throws Exception {
 		
 		PreparedStatement pstmt = null;
 
@@ -150,12 +150,20 @@ public class ScPointAdminArea {
 
 		Connection conn = null;
 		
-		String sql = "SELECT adminareacode,whole from SC_POINT_ADMINAREA";
+		String sql = "SELECT * FROM (SELECT c.*, rownum rn FROM (SELECT adminareacode,whole from SC_POINT_ADMINAREA)c WHERE rownum<= :1) WHERE rn>= :2";
 		
 		try {
 			conn = DBConnector.getInstance().getMetaConnection();
 			
+			int startRow = pageNum * pageSize + 1;
+
+			int endRow = (pageNum + 1) * pageSize;
+			
 			pstmt = conn.prepareStatement(sql);
+			
+			pstmt.setInt(1, endRow);
+
+			pstmt.setInt(2, startRow);
 			
 			resultSet = pstmt.executeQuery();
 			

@@ -142,7 +142,7 @@ public class ScPointAdminArea {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject getAdminArea(int pageSize,int pageNum) throws Exception {
+	public JSONObject getAdminArea(int pageSize,int pageNum,String name) throws Exception {
 		
 		PreparedStatement pstmt = null;
 
@@ -152,7 +152,11 @@ public class ScPointAdminArea {
 		
 		JSONObject result = new JSONObject();
 		
-		String sql = "SELECT * FROM (SELECT c.*, rownum rn FROM (SELECT COUNT (1) OVER (PARTITION BY 1) total,adminareacode,whole from SC_POINT_ADMINAREA)c WHERE rownum<= :1) WHERE rn>= :2";
+		String sql = "SELECT * FROM (SELECT c.*, rownum rn FROM (SELECT COUNT (1) OVER (PARTITION BY 1) total,adminareacode,whole from SC_POINT_ADMINAREA";
+		if (!name.isEmpty()) {
+			sql +=  " where name='"+name+"'";
+		}
+		sql += ")c WHERE rownum<= :1) WHERE rn>= :2";
 		
 		try {
 			conn = DBConnector.getInstance().getMetaConnection();

@@ -228,7 +228,7 @@ public class RdNameSelector {
 			Iterator<String> keys = param.keys();
 			while (keys.hasNext()) {
 				String key = keys.next();
-				if (key.equals("name")) {
+				if (key.equals("name") && (!param.getString(key).isEmpty())) {
 					sql.append(" and a.name like '%");
 					sql.append(param.getString(key));
 					sql.append("%'");

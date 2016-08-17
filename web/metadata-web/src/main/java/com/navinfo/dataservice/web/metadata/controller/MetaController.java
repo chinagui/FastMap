@@ -682,9 +682,14 @@ public class MetaController extends BaseController {
 			int pageSize = jsonReq.getInt("pageSize");
 			int pageNum = jsonReq.getInt("pageNum");
 			
+			String name = "";
+			if (jsonReq.containsKey("name")) {
+				name = jsonReq.getString("name");
+			}
+			
 			ScRoadnameTypename typename = new ScRoadnameTypename();
 			
-			JSONObject data = typename.getNameType(pageNum,pageSize);
+			JSONObject data = typename.getNameType(pageNum,pageSize,name);
 			
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
@@ -712,9 +717,14 @@ public class MetaController extends BaseController {
 			int pageSize = jsonReq.getInt("pageSize");
 			int pageNum = jsonReq.getInt("pageNum");
 			
+			String name = "";
+			if (jsonReq.containsKey("name")) {
+				name = jsonReq.getString("name");
+			}
+			
 			ScPointAdminArea adminarea = new ScPointAdminArea();
 			
-			JSONObject data = adminarea.getAdminArea(pageSize,pageNum);
+			JSONObject data = adminarea.getAdminArea(pageSize,pageNum,name);
 			
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {

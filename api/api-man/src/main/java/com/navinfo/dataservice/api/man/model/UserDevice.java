@@ -20,11 +20,12 @@ public class UserDevice  {
 	private String deviceModel ;
 	private String deviceSystemVersion ;
 	private String deviceDescendantVersion ;
+	private Integer status ;
 	
 	public UserDevice (){
 	}
 	
-	public UserDevice (Integer deviceId ,Integer userId,String deviceToken,String devicePlatform,String deviceVersion,String deviceModel,String deviceSystemVersion,String deviceDescendantVersion){
+	public UserDevice (Integer deviceId ,Integer userId,String deviceToken,String devicePlatform,String deviceVersion,String deviceModel,String deviceSystemVersion,String deviceDescendantVersion,Integer status){
 		this.deviceId=deviceId ;
 		this.userId=userId ;
 		this.deviceToken=deviceToken ;
@@ -33,6 +34,7 @@ public class UserDevice  {
 		this.deviceModel=deviceModel ;
 		this.deviceSystemVersion=deviceSystemVersion ;
 		this.deviceDescendantVersion=deviceDescendantVersion ;
+		this.status=status ;
 	}
 	public Integer getDeviceId() {
 		return deviceId;
@@ -82,12 +84,18 @@ public class UserDevice  {
 	public void setDeviceDescendantVersion(String deviceDescendantVersion) {
 		this.deviceDescendantVersion = deviceDescendantVersion;
 	}
+	public Integer getStatus() {
+		return status;
+	}
+	public void setStatus(Integer status) {
+		this.status = status;
+	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return "UserDevice [deviceId=" + deviceId +",userId="+userId+",deviceToken="+deviceToken+",devicePlatform="+devicePlatform+",deviceVersion="+deviceVersion+",deviceModel="+deviceModel+",deviceSystemVersion="+deviceSystemVersion+",deviceDescendantVersion="+deviceDescendantVersion+"]";
+		return "UserDevice [deviceId=" + deviceId +",userId="+userId+",deviceToken="+deviceToken+",devicePlatform="+devicePlatform+",deviceVersion="+deviceVersion+",deviceModel="+deviceModel+",deviceSystemVersion="+deviceSystemVersion+",deviceDescendantVersion="+deviceDescendantVersion+ ",deviceId=" + deviceId +"]";
 	}
 
 

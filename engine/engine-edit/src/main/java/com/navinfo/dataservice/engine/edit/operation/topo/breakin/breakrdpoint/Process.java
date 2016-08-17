@@ -399,10 +399,14 @@ public class Process extends AbstractProcess<Command> {
 		// 收费站
 		OpRefRdTollgate opRefRdTollgate = new OpRefRdTollgate(this.getConn());
 		opRefRdTollgate.run(this.getResult(), oldLink, newLinks);
-		
+
 		// 语音引导
 		OpRefRdVoiceguide opRefRdVoiceguide = new OpRefRdVoiceguide(this.getConn());
 		opRefRdVoiceguide.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
+
+		// 可变限速
+		OpRefRdVariableSpeed opRefRdVariableSpeed = new OpRefRdVariableSpeed(this.getConn());
+		opRefRdVariableSpeed.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
 	}
 
 	/**
@@ -581,14 +585,14 @@ public class Process extends AbstractProcess<Command> {
 		infectList.add(interLink.getPid());
 
 		infects.put("RDINTER", infectList);
-		
+
 		// 收费站
 		infectList = new ArrayList<Integer>();
 		for (RdTollgate tdTollgate : this.getCommand().getRdTollgates()) {
 			infectList.add(tdTollgate.pid());
 		}
 		infects.put("RDTOLLGATE", infectList);
-		
+
 		return infects;
 
 	}

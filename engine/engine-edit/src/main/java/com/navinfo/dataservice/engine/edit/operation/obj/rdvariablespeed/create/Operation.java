@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.create;
 
-import java.sql.Connection;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -16,12 +15,8 @@ public class Operation implements IOperation {
 
 	private Command command;
 
-	private Connection conn;
-
-	public Operation(Command command, Connection conn) {
+	public Operation(Command command) {
 		this.command = command;
-
-		this.conn = conn;
 	}
 
 	@Override
@@ -65,6 +60,8 @@ public class Operation implements IOperation {
 				variableSpeedVia.setVspeedPid(variableSpeed.getPid());
 				
 				variableSpeedVia.setSeqNum(i+1);
+				
+				variableSpeed.getVias().add(variableSpeedVia);
 			}
 		}
 		

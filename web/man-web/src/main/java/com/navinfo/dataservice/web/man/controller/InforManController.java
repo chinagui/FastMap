@@ -35,7 +35,7 @@ public class InforManController extends BaseController {
 	private InforManService service=InforManService.getInstance();
 
 	/**
-	 * 规划管理-情报管理-开启情报规划
+	 * 规划管理-情报管理-情报规划-保存情报为草稿
 	 * 
 	 * @param request
 	 * @return

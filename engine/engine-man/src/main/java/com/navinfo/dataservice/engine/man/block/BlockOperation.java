@@ -27,6 +27,7 @@ import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.CLOB;
 
@@ -478,6 +479,44 @@ public class BlockOperation {
 
 				run.update(conn, updateSql);
 			}
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("更新失败，原因为:" + e.getMessage(), e);
+		}
+	}
+
+	
+	/**
+	 * @param conn
+	 * @param blockList
+	 * @throws Exception
+	 */
+	public static List queryOperationBlocks(Connection conn, JSONArray blockArray) throws Exception {
+		// TODO Auto-generated method stub
+		try {
+			QueryRunner run = new QueryRunner();
+			List<Integer> updateBlockList = new ArrayList<Integer>();
+			List<Integer> blockList = new ArrayList<Integer>();
+			
+			for (int i = 0; i < blockArray.size(); i++) {
+				JSONObject block = blockArray.getJSONObject(i);
+				blockList.add(block.getInt("blockId"));
+			}
+			String BlockIds = "(";
+			BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
+			
+			String selectSql = "select block_id from block_man where block_id in " + BlockIds;
+
+			PreparedStatement stmt = conn.prepareStatement(selectSql);
+			ResultSet rs = stmt.executeQuery();
+			List<String> gridList = new ArrayList();
+			while (rs.next()) {
+				updateBlockList.add(rs.getInt(1));
+			}
+			
+			return updateBlockList;
 
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

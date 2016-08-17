@@ -60,7 +60,7 @@ public class BlockService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			JSONArray blockArray = json.getJSONArray("blocks");
-			int updateCount=0;
+			int updateCount = 0;
 			List<Integer> blockIdList = new ArrayList<Integer>();
 			String createSql = "insert into block_man (BLOCK_MAN_ID, CREATE_USER_ID,BLOCK_ID,COLLECT_GROUP_ID, COLLECT_PLAN_START_DATE,"
 					+ "COLLECT_PLAN_END_DATE,DAY_EDIT_GROUP_ID,DAY_EDIT_PLAN_START_DATE,DAY_EDIT_PLAN_END_DATE,MONTH_EDIT_GROUP_ID,"
@@ -72,8 +72,13 @@ public class BlockService {
 					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?)";
 
 			Object[][] param = new Object[blockArray.size()][];
+			List<Integer> updateBlockList = BlockOperation.queryOperationBlocks(conn, blockArray);
 			for (int i = 0; i < blockArray.size(); i++) {
 				JSONObject block = blockArray.getJSONObject(i);
+				if (updateBlockList.contains(block.getInt("blockId"))) {
+					continue;
+				}
+
 				Object[] obj = new Object[] { userId, block.getInt("blockId"), block.getInt("collectGroupId"),
 						block.getString("collectPlanStartDate"), block.getString("collectPlanEndDate"),
 						block.getInt("dayEditGroupId"), block.getString("dayEditPlanStartDate"),
@@ -87,8 +92,8 @@ public class BlockService {
 			}
 			BlockOperation.openBlockByBlockIdList(conn, blockIdList);
 
-			int[] rows=run.batch(conn, createSql, param);
-			updateCount=rows.length;
+			int[] rows = run.batch(conn, createSql, param);
+			updateCount = rows.length;
 			return updateCount;
 
 		} catch (Exception e) {
@@ -107,27 +112,30 @@ public class BlockService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			JSONArray blockArray = json.getJSONArray("blocks");
-			int updateCount=0;
+			int updateCount = 0;
 			String createSql = "update block_man set COLLECT_GROUP_ID=?, COLLECT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
 					+ "COLLECT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_GROUP_ID=?,DAY_EDIT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_EDIT_GROUP_ID=?,"
 					+ "MONTH_EDIT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_EDIT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
 					+ "MONTH_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'), DESCP=? where BLOCK_ID=?";
 
 			Object[][] param = new Object[blockArray.size()][];
+			List<Integer> updateBlockList = BlockOperation.queryOperationBlocks(conn, blockArray);
 			for (int i = 0; i < blockArray.size(); i++) {
 				JSONObject block = blockArray.getJSONObject(i);
 				BlockMan bean = (BlockMan) JSONObject.toBean(block, BlockMan.class);
-				Object[] obj = new Object[] { bean.getCollectGroupId(), bean.getCollectPlanStartDate(),
-						bean.getCollectPlanEndDate(), bean.getDayEditGroupId(), bean.getDayEditPlanStartDate(),
-						bean.getDayEditPlanEndDate(), bean.getMonthEditGroupId(), bean.getMonthEditPlanStartDate(),
-						bean.getMonthEditPlanEndDate(), bean.getDayProducePlanStartDate(),
-						bean.getDayProducePlanEndDate(), bean.getMonthProducePlanStartDate(),
-						bean.getMonthProducePlanStartDate(), bean.getDescp(), bean.getBlockId() };
-				param[i] = obj;
+				if (updateBlockList.contains(bean.getBlockId())) {
+					Object[] obj = new Object[] { bean.getCollectGroupId(), bean.getCollectPlanStartDate(),
+							bean.getCollectPlanEndDate(), bean.getDayEditGroupId(), bean.getDayEditPlanStartDate(),
+							bean.getDayEditPlanEndDate(), bean.getMonthEditGroupId(), bean.getMonthEditPlanStartDate(),
+							bean.getMonthEditPlanEndDate(), bean.getDayProducePlanStartDate(),
+							bean.getDayProducePlanEndDate(), bean.getMonthProducePlanStartDate(),
+							bean.getMonthProducePlanStartDate(), bean.getDescp(), bean.getBlockId() };
+					param[i] = obj;
+				}
 			}
 
-			int[] rows=run.batch(conn, createSql, param);
-			updateCount=rows.length;
+			int[] rows = run.batch(conn, createSql, param);
+			updateCount = rows.length;
 			return updateCount;
 
 		} catch (Exception e) {
@@ -365,9 +373,9 @@ public class BlockService {
 						selectSql += " and t.block_name like '%" + conditionJson.getString(key) + "%'";
 					}
 					if ("status".equals(key)) {
-						String planningStatus = ((conditionJson.getJSONArray(key).toString()).replace('[', '(')).replace(']',
-								')');
-						selectSql += " and t.plan_status in " + planningStatus ;
+						String planningStatus = ((conditionJson.getJSONArray(key).toString()).replace('[', '('))
+								.replace(']', ')');
+						selectSql += " and t.plan_status in " + planningStatus;
 					}
 				}
 			}
@@ -401,9 +409,8 @@ public class BlockService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	
-	public List listAll(JSONObject conditionJson, JSONObject orderJson)
-			throws Exception {
+
+	public List listAll(JSONObject conditionJson, JSONObject orderJson) throws Exception {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
@@ -444,9 +451,9 @@ public class BlockService {
 						selectSql += " and t.block_name like '%" + conditionJson.getString(key) + "%'";
 					}
 					if ("status".equals(key)) {
-						String planningStatus = ((conditionJson.getJSONArray(key).toString()).replace('[', '(')).replace(']',
-								')');
-						selectSql += " and t.plan_status in " + planningStatus ;
+						String planningStatus = ((conditionJson.getJSONArray(key).toString()).replace('[', '('))
+								.replace(']', ')');
+						selectSql += " and t.plan_status in " + planningStatus;
 					}
 				}
 			}

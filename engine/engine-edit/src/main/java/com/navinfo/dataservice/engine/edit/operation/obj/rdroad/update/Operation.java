@@ -43,6 +43,8 @@ public class Operation implements IOperation {
 	private String update(Result result) throws Exception {
 
 		int roadPid = this.command.getRoad().pid();
+		
+		result.setPrimaryPid(roadPid);
 
 		for (IRow row : this.command.getRoad().getLinks()) {
 

@@ -48,7 +48,7 @@ public class Operation implements IOperation {
 
 			RdRoadLink roadLink = (RdRoadLink) row;
 
-			result.insertObject(roadLink, ObjStatus.INSERT, roadPid);
+			result.insertObject(roadLink, ObjStatus.DELETE, roadPid);
 		}
 
 		int seqNum = 1;

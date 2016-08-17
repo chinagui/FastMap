@@ -56,6 +56,8 @@ public class Operation implements IOperation {
 
 			detail.setPid(PidService.getInstance().applyRdVoiceguideDetailPid());
 
+			detail.setVoiceguidePid(voiceguide.getPid());
+
 			detail.setRelationshipType(calLinkOperateUtils.getRelationShipType(
 					conn, command.getNodePid(), outLinkPid));
 

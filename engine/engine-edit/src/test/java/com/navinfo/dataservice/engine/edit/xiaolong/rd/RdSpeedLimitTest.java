@@ -18,6 +18,7 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.edit.InitApplication;
+import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
 
 import net.sf.json.JSONObject;
@@ -97,6 +98,26 @@ public class RdSpeedLimitTest extends InitApplication{
 	@Test
 	public void testUpdate()
 	{
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDSPEEDLIMIT\",\"projectId\":11,\"data\":{\"speedValue\":\"62\",\"pid\":20178,\"objStatus\":\"UPDATE\"}}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDSPEEDLIMIT\",\"dbId\":42,\"data\":{\"objStatus\":\"UPDATE\",\"pid\":19824,\"direct\":3,\"longitude\":116.47722244262695,\"latitude\":40.11502311310502}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+
+			String log = t.getLogs();
+
+			JSONObject json = new JSONObject();
+
+			json.put("result", msg);
+
+			json.put("log", log);
+
+			json.put("check", t.getCheckLog());
+
+			json.put("pid", t.getPid());
+
+			System.out.println(json.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

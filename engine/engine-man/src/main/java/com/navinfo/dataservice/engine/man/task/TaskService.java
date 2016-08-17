@@ -12,10 +12,14 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.engine.man.city.CityOperation;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
+import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.xinge.XingeUtil;
 import com.navinfo.navicommons.database.Page;
 
 import net.sf.json.JSONArray;
@@ -50,15 +54,29 @@ public class TaskService {
 		try{
 			if(!json.containsKey("tasks")){
 				return "任务批量创建"+total+"个成功，0个失败";
-			}			
+			}
+			int isPushMsg=1;
+			if(json.containsKey("isPushMsg")){
+				isPushMsg=json.getInt("isPushMsg");
+			}
 			JSONArray taskArray=json.getJSONArray("tasks");
 			conn = DBConnector.getInstance().getManConnection();
+			String msgTitle="任务通知";
+			UserDeviceService userDeviceService=new UserDeviceService();
+			UserInfoService userService=UserInfoService.getInstance();
+			UserInfo userObj=userService.queryUserInfoByUserId((int)userId);
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
 				Task bean = (Task) JsonOperation.jsonToBean(taskJson,Task.class);
 				bean.setCreateUserId((int) userId);
 				createWithBean(conn,bean);
 				total+=1;
+				//消息发布
+				if(isPushMsg==1){
+					String msgContent="【Fastmap】通知："+userObj.getUserRealName()+"已分配“"+bean.getName()+"”任务；请下载数据，安排作业！";
+					userDeviceService.pushMessage(userId, msgTitle, msgContent, 
+							XingeUtil.PUSH_MSG_TYPE_PROJECT, "");
+				}				
 			}
 			return "任务批量创建"+total+"个成功，0个失败";
 		}catch(Exception e){
@@ -87,7 +105,7 @@ public class TaskService {
 		}
 	}
 	
-	public String update(JSONObject json) throws Exception{
+	public String update(long userId,JSONObject json) throws Exception{
 		Connection conn = null;
 		int total=0;
 		try{
@@ -96,12 +114,26 @@ public class TaskService {
 			JSONArray taskArray=json.getJSONArray("tasks");
 			
 			conn = DBConnector.getInstance().getManConnection();
+			int isPushMsg=1;
+			if(json.containsKey("isPushMsg")){
+				isPushMsg=json.getInt("isPushMsg");
+			}
+			String msgTitle="任务通知";
+			UserDeviceService userDeviceService=new UserDeviceService();
+			UserInfoService userService=UserInfoService.getInstance();
+			UserInfo userObj=userService.queryUserInfoByUserId((int)userId);
 			
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
 				Task bean=(Task) JsonOperation.jsonToBean(taskJson,Task.class);
 				TaskOperation.updateTask(conn, bean);		
 				total+=1;
+				//消息发布
+				if(isPushMsg==1){
+					String msgContent="【Fastmap】通知："+userObj.getUserRealName()+"已分配“"+bean.getName()+"”任务；请下载数据，安排作业！";
+					userDeviceService.pushMessage(userId, msgTitle, msgContent, 
+							XingeUtil.PUSH_MSG_TYPE_PROJECT, "");
+				}	
 			}			
 			return "任务批量修改"+total+"个成功，0个失败";
 		}catch(Exception e){
@@ -133,7 +165,7 @@ public class TaskService {
 					if ("createUserId".equals(key)) {selectSql+=" and T.create_user_id="+conditionJson.getInt(key);}
 					if ("descp".equals(key)) {selectSql+=" and T.descp='"+conditionJson.getString(key)+"'";}
 					if ("name".equals(key)) {selectSql+=" and T.name like '%"+conditionJson.getString(key)+"%'";}
-					if ("status".equals(key)) {selectSql+=" and T.status="+conditionJson.getInt(key);}
+					if ("status".equals(key)) {selectSql+=" and T.status in ("+conditionJson.getJSONArray(key).join(",")+")";}
 					if ("createUserName".equals(key)) {selectSql+=" and U.USER_REAL_NAME like '%"+conditionJson.getString(key)+"%'";}
 					if ("cityName".equals(key)) {selectSql+=" and C.CITY_NAME like '%"+conditionJson.getString(key)+"%'";}
 					}
@@ -182,7 +214,7 @@ public class TaskService {
 					if ("createUserId".equals(key)) {selectSql+=" and T.create_user_id="+conditionJson.getInt(key);}
 					if ("descp".equals(key)) {selectSql+=" and T.descp='"+conditionJson.getString(key)+"'";}
 					if ("name".equals(key)) {selectSql+=" and T.name like '%"+conditionJson.getString(key)+"%'";}
-					if ("status".equals(key)) {selectSql+=" and T.status="+conditionJson.getInt(key);}
+					if ("status".equals(key)) {selectSql+=" and T.status in ("+conditionJson.getJSONArray(key).join(",")+")";}
 					if ("createUserName".equals(key)) {selectSql+=" and U.USER_REAL_NAME like '%"+conditionJson.getString(key)+"%'";}
 					if ("cityName".equals(key)) {selectSql+=" and C.CITY_NAME like '%"+conditionJson.getString(key)+"%'";}
 					}

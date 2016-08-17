@@ -13,7 +13,9 @@ public class PidSequenceName {
 
 	public static final String adLinkPidName = "SEQ_AD_LINK";
 	public static final String adFacePidName = "SEQ_AD_FACE";
-
+	
+	public static final String rdVariableSpeedName = "SEQ_RD_VARIABLE_SPEED";
+	
 	public static final String rdLinkPidName = "SEQ_RD_LINK";
 
 	public static final String rdNodePidName = "SEQ_RD_NODE";

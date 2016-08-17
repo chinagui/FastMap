@@ -156,4 +156,192 @@ public class UserInfoOperation {
 		}
 		
 	}
+
+	/**
+	 * @param conn
+	 * @param userInfo
+	 * @return
+	 * @throws Exception 
+	 */
+	public static UserInfo getUserInfoByNickNameAndPassword(Connection conn, UserInfo userInfo) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			// 插入user_upload
+			String querySql = "select u.user_id,u.user_real_name"
+					+ " from user_info u"
+					+ " where u.user_nick_name = '" + userInfo.getUserNickName() + "'"
+					+ " and u.user_password = '" + userInfo.getUserPassword() + "'";
+			
+			
+			ResultSetHandler<UserInfo> rsHandler = new ResultSetHandler<UserInfo>() {
+				public UserInfo handle(ResultSet rs) throws SQLException {
+					UserInfo user = new UserInfo();
+					if (rs.next()) {
+						user.setUserId(rs.getInt("user_id"));
+						user.setUserRealName(rs.getString("user_real_name"));
+					}
+					return user;
+				}
+
+			};
+
+			UserInfo user = run.query(conn, querySql, rsHandler);
+			return user;
+			
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询user_info出错，原因为:"+e.getMessage(),e);
+		}
+	}
+
+	/**
+	 * @param conn
+	 * @param userInfo
+	 * @return
+	 * @throws Exception 
+	 */
+	public static String getUserRole(Connection conn, UserInfo userInfo) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			// 插入user_upload
+			String querySql = "select r.role_name"
+					+ " from role r,role_user_mapping rum"
+					+ " where rum.user_id = " + userInfo.getUserId()
+					+ " and rum.role_id = r.role_id ";
+					
+			ResultSetHandler<String> rsHandler = new ResultSetHandler<String>() {
+				public String handle(ResultSet rs) throws SQLException {
+					String role = new String();
+					if (rs.next()) {
+						role = rs.getString("role_name");
+					}
+					return role;
+				}
+
+			};
+
+			String role = run.query(conn, querySql, rsHandler);
+			return role;
+			
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询用户角色，原因为:"+e.getMessage(),e);
+		}
+	}
+
+	/**
+	 * @param conn
+	 * @param userInfo
+	 * @param userDevice
+	 * @return
+	 * @throws Exception 
+	 */
+	public static UserDevice getUserDevice(Connection conn, UserInfo userInfo, UserDevice userDevice) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			// 插入user_upload
+			String querySql = "select d.device_id"
+					+ " from user_device d"
+					+ " where d.device_token = '" + userDevice.getDeviceToken() + "'" 
+					+ " and d.device_platform = '" + userDevice.getDevicePlatform() + "'"
+					+ " and d.device_version = '" + userDevice.getDeviceVersion() + "'"
+					+ " and d.user_id = " + userInfo.getUserId();
+					
+			ResultSetHandler<UserDevice> rsHandler = new ResultSetHandler<UserDevice>() {
+				public UserDevice handle(ResultSet rs) throws SQLException {
+					UserDevice device = new UserDevice();
+					if (rs.next()) {
+						device.setDeviceId(rs.getInt("device_id")); 
+					}
+					return device;
+				}
+
+			};
+
+			UserDevice device = run.query(conn, querySql, rsHandler);
+			return device;
+			
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询userDevice，原因为:"+e.getMessage(),e);
+		}
+	}
+
+	/**
+	 * @param conn
+	 * @param userId
+	 * @param deviceId
+	 * @return
+	 * @throws Exception 
+	 */
+	public static int getUserDeviceUpload(Connection conn, Integer userId, int deviceId) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			// 查询该用户该设备upload信息
+			String querySql = "select count(1) as upload"
+					+ " from user_upload uu"
+					+ " where uu.user_id = " + userId
+					+ " and uu.device_id = " + deviceId;
+					
+			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
+				public Integer handle(ResultSet rs) throws SQLException {
+					int upload = 0;
+					if (rs.next()) {
+						upload = rs.getInt("upload"); 
+					}
+					return upload;
+				}
+	
+			};
+	
+			int upload = run.query(conn, querySql, rsHandler);
+			return upload;
+			
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询userDevice，原因为:"+e.getMessage(),e);
+		}
+	}
+
+	/**
+	 * @param conn
+	 * @param userId
+	 * @param deviceId
+	 * @throws Exception 
+	 */
+	public static void updateDeviceStatus(Connection conn, long userId, int deviceId) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			// 更新user_device状态信息
+			String updateSql = "update user_device set status = 0"
+					+ " where user_id = " + userId
+					+ " and device_id != " + deviceId;
+					
+	
+			run.update(conn, updateSql);
+			
+			updateSql = "update user_device set status = 1"
+					+ " where user_id = " + userId
+					+ " and device_id = " + deviceId;
+					
+	
+			run.update(conn, updateSql);
+			
+			
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询userDevice，原因为:"+e.getMessage(),e);
+		}
+		
+	}
 }

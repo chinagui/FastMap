@@ -415,43 +415,85 @@ public class UserInfoService {
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 			HashMap<Object, Object> result = new HashMap<Object, Object>();
-
-			HashMap<Object, Object> user = UserInfoOperation.loginGetUserInfo(conn, userInfo, userDevice);
-
-			if (user.isEmpty()) {
+			
+			//根据userInfo获取用户信息
+			UserInfo user_info = UserInfoOperation.getUserInfoByNickNameAndPassword(conn, userInfo);
+			if(user_info.getUserId() == null){
 				return result;
 			}
 			
-			if(!user.containsKey("deviceId")){
-				user.put("deviceId", 0);
-				user.put("upload", 0);
-			}
+			//查询角色信息
+			String role = UserInfoOperation.getUserRole(conn, user_info);
 			
-			//插入user_device
-			if (((int)user.get("deviceId")==0) && (userDevice.getDeviceToken() != null) && (userDevice.getDevicePlatform() != null) && (userDevice.getDeviceVersion() != null)) {
-				int deviceId = UserInfoOperation.insertIntoUserDevice(conn, (long) user.get("userId"), userDevice);
-				user.put("deviceId", deviceId);
+			//userDevice，如果存在该用户该device记录，获取device_id；如果不存在，添加该用户该device记录，
+			int deviceId = 0;
+			if(userDevice.getDeviceToken()!=null && userDevice.getDevicePlatform()!=null && userDevice.getDeviceVersion()!=null){
+				UserDevice user_device = UserInfoOperation.getUserDevice(conn, user_info,userDevice);
+				if(user_device.getDeviceId() == null){
+					deviceId = UserInfoOperation.insertIntoUserDevice(conn, (long) user_info.getUserId(), userDevice);
+				}else{
+					deviceId = user_device.getDeviceId();
+				}
+				//更新用户设备状态
+				UserInfoOperation.updateDeviceStatus(conn, (long) user_info.getUserId(), deviceId);
 			}
-			
-			//插入user_upload
-			if(((int)user.get("upload")==0) && ((int)user.get("deviceId")!=0)){
-				UserInfoOperation.insertIntoUserUpload(conn,(long) user.get("userId"),(int) user.get("deviceId"));
-			}
-
-
-			if (!user.isEmpty()) {
-				AccessToken access_token = AccessTokenFactory.generate((long) (user.get("userId")));
-				if (access_token != null) {
-					result.put("access_token", access_token.getTokenString());
-					result.put("expires_in", access_token.getTimestamp());
-					result.put("role", user.get("roleName"));
-					result.put("deviceId", user.get("deviceId"));
-					result.put("userId", user.get("userId"));
-					result.put("userRealName", user.get("userRealName"));
+		
+			//查询user_upload，若无则添加
+			if(deviceId!=0){
+				int upload = UserInfoOperation.getUserDeviceUpload(conn, user_info.getUserId(),deviceId);
+				if(upload==0){
+					UserInfoOperation.insertIntoUserUpload(conn,user_info.getUserId(),deviceId);
 				}
 			}
-
+			
+			//生成access_token
+			AccessToken access_token = AccessTokenFactory.generate((long) (user_info.getUserId()));
+			if (access_token != null) {
+				result.put("access_token", access_token.getTokenString());
+				result.put("expires_in", access_token.getTimestamp());
+				result.put("role", role);
+				result.put("deviceId", deviceId);
+				result.put("userId", user_info.getUserId());
+				result.put("userRealName", user_info.getUserRealName());
+			}
 			return result;
+
+//			HashMap<Object, Object> user = UserInfoOperation.loginGetUserInfo(conn, userInfo, userDevice);
+//
+//			if (user.isEmpty()) {
+//				return result;
+//			}
+//			
+//			if(!user.containsKey("deviceId")){
+//				user.put("deviceId", 0);
+//				user.put("upload", 0);
+//			}
+//			
+//			//插入user_device
+//			if (((int)user.get("deviceId")==0) && (userDevice.getDeviceToken() != null) && (userDevice.getDevicePlatform() != null) && (userDevice.getDeviceVersion() != null)) {
+//				int deviceId = UserInfoOperation.insertIntoUserDevice(conn, (long) user.get("userId"), userDevice);
+//				user.put("deviceId", deviceId);
+//			}
+//			
+//			//插入user_upload
+//			if(((int)user.get("upload")==0) && ((int)user.get("deviceId")!=0)){
+//				UserInfoOperation.insertIntoUserUpload(conn,(long) user.get("userId"),(int) user.get("deviceId"));
+//			}
+//
+//
+//			if (!user.isEmpty()) {
+//				AccessToken access_token = AccessTokenFactory.generate((long) (user.get("userId")));
+//				if (access_token != null) {
+//					result.put("access_token", access_token.getTokenString());
+//					result.put("expires_in", access_token.getTimestamp());
+//					result.put("role", user.get("roleName"));
+//					result.put("deviceId", user.get("deviceId"));
+//					result.put("userId", user.get("userId"));
+//					result.put("userRealName", user.get("userRealName"));
+//				}
+//			}
+//
+//			return result;
 
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

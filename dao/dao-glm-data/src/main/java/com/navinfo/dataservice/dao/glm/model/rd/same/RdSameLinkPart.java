@@ -116,7 +116,7 @@ public class RdSameLinkPart implements IRow {
 
 	@Override
 	public ObjType objType() {
-		return ObjType.RDSAMELINK;
+		return ObjType.RDSAMELINKPART;
 	}
 
 	@Override

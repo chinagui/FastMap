@@ -31,6 +31,8 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
+import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLink;
+import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLinkPart;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNode;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -699,6 +701,14 @@ public class LogWriter {
 				RdSameNodePart part = (RdSameNodePart) sameNode.getParts().get(0);
 				String nodeTableName = part.getTableName().toUpperCase();
 				gridCalculator.setTableName(nodeTableName);
+			}
+			
+			if(r.objType() == ObjType.RDSAMELINK)
+			{
+				RdSameLink sameLink = (RdSameLink) r;
+				RdSameLinkPart part = (RdSameLinkPart) sameLink.getParts().get(0);
+				String tableName = part.getTableName().toUpperCase();
+				gridCalculator.setTableName(tableName);
 			}
 			
 			// 查询对象的grid，并生成LogDetailGrid

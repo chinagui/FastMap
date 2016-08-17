@@ -55,6 +55,8 @@ public class Operation implements IOperation {
 			RdVoiceguideDetail detail = new RdVoiceguideDetail();
 
 			detail.setPid(PidService.getInstance().applyRdVoiceguideDetailPid());
+			
+			detail.setOutLinkPid(outLinkPid);
 
 			detail.setVoiceguidePid(voiceguide.getPid());
 

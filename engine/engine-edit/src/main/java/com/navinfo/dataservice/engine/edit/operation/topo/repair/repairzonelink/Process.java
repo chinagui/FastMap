@@ -1,4 +1,8 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink;
+import java.sql.Connection;
+
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
@@ -18,6 +22,14 @@ public class Process extends AbstractProcess<Command> {
 		// TODO Auto-generated constructor stub
 	}
 
+	
+	public Process(Command command, Result result, Connection conn) throws Exception {
+		super();
+		this.setCommand(command);
+		this.setResult(result);
+		this.setConn(conn);
+		this.initCheckCommand();
+	}
 	
 	@Override
 	public boolean prepareData() throws Exception {
@@ -42,6 +54,34 @@ public class Process extends AbstractProcess<Command> {
 	public String exeOperation() throws Exception {
 		// TODO Auto-generated method stub
 		return new Operation(this.getConn(), this.getCommand()).run(this.getResult());
+	}
+
+	
+	public String innerRun() throws Exception {
+		String msg;
+		try {
+			this.prepareData();
+
+			String preCheckMsg = this.preCheck();
+
+			if (preCheckMsg != null) {
+				throw new Exception(preCheckMsg);
+			}
+
+			IOperation operation = new Operation(this.getConn(), this.getCommand());
+
+			msg = operation.run(this.getResult());
+
+			this.postCheck();
+
+		} catch (Exception e) {
+
+			this.getConn().rollback();
+
+			throw e;
+		}
+
+		return msg;
 	}
 
 }

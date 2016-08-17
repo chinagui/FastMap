@@ -23,7 +23,8 @@ import com.navinfo.dataservice.engine.check.CheckEngine;
  * @date 上午10:54:43
  * @Description: Abstractprocess.java
  */
-public abstract class AbstractProcess<T extends AbstractCommand> implements IProcess {
+public abstract class AbstractProcess<T extends AbstractCommand> implements
+		IProcess {
 	private T command;
 	private Result result;
 	private Connection conn;
@@ -54,7 +55,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	public AbstractProcess(AbstractCommand command) throws Exception {
 		this.command = (T) command;
 		this.result = new Result();
-		this.conn = DBConnector.getInstance().getConnectionById(this.command.getDbId());
+		this.conn = DBConnector.getInstance().getConnectionById(
+				this.command.getDbId());
 		// 初始化检查参数
 		this.initCheckCommand();
 	}
@@ -150,7 +152,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
 			if (this.getCommand().getOperType().equals(OperType.CREATE)
 					&& !this.getCommand().getObjType().equals(ObjType.RDBRANCH)
-					&& !this.getCommand().getObjType().equals(ObjType.RDELECEYEPAIR)
+					&& !this.getCommand().getObjType()
+							.equals(ObjType.RDELECEYEPAIR)
 					&& !this.getCommand().getObjType().equals(ObjType.LUFACE)
 					&& !this.getCommand().getObjType().equals(ObjType.LCFACE)) {
 				handleResult(this.getCommand().getObjType(), result);
@@ -167,6 +170,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
 			conn.commit();
 
+			System.out.print("操作成功\r\n");
+
 		} catch (Exception e) {
 
 			conn.rollback();
@@ -175,6 +180,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		} finally {
 			try {
 				conn.close();
+
+				System.out.print("结束\r\n");
 			} catch (Exception e) {
 
 			}
@@ -191,7 +198,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	private void checkResult() throws Exception {
 		if (this.getCommand().getObjType().equals(ObjType.IXPOI)) {
 			return;
-		} else if (CollectionUtils.isEmpty(result.getAddObjects()) && CollectionUtils.isEmpty(result.getUpdateObjects())
+		} else if (CollectionUtils.isEmpty(result.getAddObjects())
+				&& CollectionUtils.isEmpty(result.getUpdateObjects())
 				&& CollectionUtils.isEmpty(result.getDelObjects())) {
 			throw new DataNotChangeException("属性值未发生变化");
 		}
@@ -268,16 +276,16 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		}
 	}
 
-//	public void handleResult(ObjType objType, Result result) {
-//		for (IRow row : result.getAddObjects()) {
-//			if (objType.equals(row.objType())) {
-//				if (row instanceof IObj) {
-//					IObj obj = (IObj) row;
-//					result.setPrimaryPid(obj.pid());
-//				} else {
-//					result.setPrimaryPid(row.parentPKValue());
-//				}
-//			}
-//		}
-//	}
+	// public void handleResult(ObjType objType, Result result) {
+	// for (IRow row : result.getAddObjects()) {
+	// if (objType.equals(row.objType())) {
+	// if (row instanceof IObj) {
+	// IObj obj = (IObj) row;
+	// result.setPrimaryPid(obj.pid());
+	// } else {
+	// result.setPrimaryPid(row.parentPKValue());
+	// }
+	// }
+	// }
+	// }
 }

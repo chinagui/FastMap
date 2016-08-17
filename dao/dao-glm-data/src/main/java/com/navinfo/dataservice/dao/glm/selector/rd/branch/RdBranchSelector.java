@@ -31,7 +31,7 @@ public class RdBranchSelector extends AbstractSelector {
 	}
 
 	@Override
-	public IRow loadById(int id, boolean isLock) throws Exception {
+	public IRow loadById(int id, boolean isLock, boolean ... loadChild) throws Exception {
 
 		RdBranch branch = new RdBranch();
 

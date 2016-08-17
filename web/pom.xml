@@ -19,6 +19,8 @@
         <module>man-web</module>
         <module>dropbox-web</module>
         <module>statics-web</module>
+		<module>edit-column-web</module>
+		<module>edit-row-web</module>
     </modules>
     <packaging>pom</packaging>
     <name>web</name>

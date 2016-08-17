@@ -114,7 +114,7 @@ public class RdVariableSpeedVia implements IRow{
 
 	@Override
 	public String parentTableName() {
-		return "rd_variable_speed_via";
+		return "rd_variable_speed";
 	}
 
 	@Override

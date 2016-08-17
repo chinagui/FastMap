@@ -28,7 +28,7 @@ public class ScRoadnameTypename {
 		
 		JSONObject result = new JSONObject();
 		
-		String sql = "SELECT * FROM (SELECT c.*, rownum rn FROM (SELECT COUNT (1) OVER (PARTITION BY 1) total,* from SC_ROADNAME_TYPENAME)c WHERE rownum<= :1) WHERE rn>= :2";
+		String sql = "SELECT * FROM (SELECT c.*, rownum rn FROM (SELECT COUNT (1) OVER (PARTITION BY 1) total,s.* from SC_ROADNAME_TYPENAME s)c WHERE rownum<= :1) WHERE rn>= :2";
 		
 		try {
 			conn = DBConnector.getInstance().getMetaConnection();

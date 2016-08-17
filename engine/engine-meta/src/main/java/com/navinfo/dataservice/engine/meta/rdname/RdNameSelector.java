@@ -206,7 +206,7 @@ public class RdNameSelector {
 			StringBuilder sql = new StringBuilder();
 			sql.append("SELECT * ");
 			sql.append(" FROM (SELECT c.*, rownum rn");
-			sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,* ");
+			sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
 			sql.append(" from rd_name a where 1=1");
 			
 			String tmep = "";

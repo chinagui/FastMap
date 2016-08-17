@@ -69,6 +69,10 @@
 		<artifactId>api-metadata</artifactId>
 	</dependency>
 	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>api-fcc</artifactId>
+	</dependency>
+	<dependency>
 		   <groupId>org.apache.zookeeper</groupId>
 		   <artifactId>zookeeper</artifactId>
 		   <type>pom</type>

@@ -72,6 +72,9 @@ public class SubtaskService {
 			int subtaskId = SubtaskOperation.getSubtaskId(conn, bean);
 
 			bean.setSubtaskId(subtaskId);
+			if(bean.getStatus()== null){
+				bean.setStatus(1);
+			}
 			
 			// 插入subtask
 			SubtaskOperation.insertSubtask(conn, bean);

@@ -249,7 +249,7 @@ public class Operation implements IOperation {
 			if (changed) {
 				result.insertObject(linkObj, ObjStatus.UPDATE, linkObj.pid());
 			}
-
+			
 			linkCoor = GeoTranslator.geojson2Jts(jsonObj, 100000, 0).getCoordinates();
 
 		}

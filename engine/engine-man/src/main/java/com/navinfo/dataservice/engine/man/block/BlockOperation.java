@@ -27,6 +27,7 @@ import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.CLOB;
 
@@ -276,7 +277,7 @@ public class BlockOperation {
 	}
 
 	/*
-	 * 查询block list
+	 *分页 查询block list
 	 */
 	public static Page selectBlockList(Connection conn, String selectSql, List<Object> values, final int currentPageNum,
 			final int pageSize) throws Exception {
@@ -330,6 +331,63 @@ public class BlockOperation {
 				return run.query(currentPageNum, pageSize, conn, selectSql, rsHandler);
 			}
 			return run.query(currentPageNum, pageSize, conn, selectSql, rsHandler, values.toArray());
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询列表失败，原因为:" + e.getMessage(), e);
+		}
+	}
+	
+	
+	/*
+	 *不分页 查询block list
+	 */
+	public static List selectAllBlock(Connection conn, String selectSql, List<Object> values) throws Exception {
+		try {
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<List> rsHandler = new ResultSetHandler<List>() {
+				public List handle(ResultSet rs) throws SQLException {
+					List<HashMap> list = new ArrayList<HashMap>();
+					while (rs.next()) {
+						HashMap map = new HashMap();
+						map.put("blockId", rs.getInt("BLOCK_ID"));
+						map.put("blockName", rs.getString("BLOCK_NAME"));
+						map.put("descp", rs.getString("DESCP"));
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						map.put("createUserName", rs.getString("USER_REAL_NAME"));
+						map.put("collectPlanStartDate", rs.getString("COLLECT_PLAN_START_DATE"));
+						map.put("collectPlanEndDate", rs.getString("COLLECT_PLAN_END_DATE"));
+						map.put("collectGroupId", rs.getInt("COLLECT_GROUP_ID"));
+						map.put("collectGroup", rs.getString("COLLECT_GROUP"));
+						map.put("dayEditPlanStartDate", rs.getString("DAY_EDIT_PLAN_START_DATE"));
+						map.put("dayEditPlanEndDate", rs.getString("DAY_EDIT_PLAN_END_DATE"));
+						map.put("dayEditGroupId", rs.getInt("DAY_EDIT_GROUP_ID"));
+						map.put("dayEditGroup", rs.getString("DAY_EDIT_GROUP"));
+						map.put("dayProducePlanStartDate", rs.getString("DAY_PRODUCE_PLAN_START_DATE"));
+						map.put("dayProducePlanEndDate", rs.getString("DAY_PRODUCE_PLAN_END_DATE"));
+						map.put("monthEditPlanStartDate", rs.getString("MONTH_EDIT_PLAN_START_DATE"));
+						map.put("monthEditPlanEndDate", rs.getString("MONTH_EDIT_PLAN_END_DATE"));
+						map.put("monthEditGroupId", rs.getInt("MONTH_EDIT_GROUP_ID"));
+						map.put("monthEditGroup", rs.getString("MONTH_EDIT_GROUP"));
+						map.put("monthProducePlanStartDate", rs.getString("MONTH_PRODUCE_PLAN_START_DATE"));
+						map.put("monthProducePlanEndDate", rs.getString("MONTH_PRODUCE_PLAN_END_DATE"));
+						map.put("status", rs.getInt("STATUS"));
+						map.put("taskId", rs.getInt("TASK_ID"));
+						map.put("taskName", rs.getString("NAME"));
+						map.put("taskPlanStartDate", rs.getString("PLAN_START_DATE"));
+						map.put("taskPlanEndDate", rs.getString("PLAN_END_DATE"));
+						map.put("taskMonthStartDate", rs.getString("TASK_START_DATE"));
+						map.put("taskMonthEndDate", rs.getString("TASK_END_DATE"));
+						list.add(map);
+					}
+					return list;
+				}
+
+			};
+			if (null == values || values.size() == 0) {
+				return run.query(conn, selectSql, rsHandler);
+			}
+			return run.query(conn, selectSql, rsHandler, values.toArray());
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -421,6 +479,44 @@ public class BlockOperation {
 
 				run.update(conn, updateSql);
 			}
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("更新失败，原因为:" + e.getMessage(), e);
+		}
+	}
+
+	
+	/**
+	 * @param conn
+	 * @param blockList
+	 * @throws Exception
+	 */
+	public static List queryOperationBlocks(Connection conn, JSONArray blockArray) throws Exception {
+		// TODO Auto-generated method stub
+		try {
+			QueryRunner run = new QueryRunner();
+			List<Integer> updateBlockList = new ArrayList<Integer>();
+			List<Integer> blockList = new ArrayList<Integer>();
+			
+			for (int i = 0; i < blockArray.size(); i++) {
+				JSONObject block = blockArray.getJSONObject(i);
+				blockList.add(block.getInt("blockId"));
+			}
+			String BlockIds = "(";
+			BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
+			
+			String selectSql = "select block_id from block_man where block_id in " + BlockIds;
+
+			PreparedStatement stmt = conn.prepareStatement(selectSql);
+			ResultSet rs = stmt.executeQuery();
+			List<String> gridList = new ArrayList();
+			while (rs.next()) {
+				updateBlockList.add(rs.getInt(1));
+			}
+			
+			return updateBlockList;
 
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

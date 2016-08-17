@@ -131,10 +131,12 @@ public class Operation implements IOperation {
 			Result result) {
 		for (RdVariableSpeed rdVariableSpeed : rdVariableViaSpeedList) {
 			List<IRow> viaList = rdVariableSpeed.getVias();
-
+			
+			boolean hasFindStartLink = false;
+			
 			for (IRow row : viaList) {
 				RdVariableSpeedVia via = (RdVariableSpeedVia) row;
-
+				
 				if (via.getLinkPid() == oldLink.getPid()) {
 
 					//删除原始线作为经过线的情况
@@ -153,6 +155,8 @@ public class Operation implements IOperation {
 							rdVariableSpeedVia.setVspeedPid(rdVariableSpeed.getPid());
 
 							result.insertObject(rdVariableSpeedVia, ObjStatus.INSERT, via.getLinkPid());
+							
+							hasFindStartLink = true;
 						} else {
 							RdVariableSpeedVia rdVariableSpeedVia2 = new RdVariableSpeedVia();
 
@@ -165,7 +169,7 @@ public class Operation implements IOperation {
 							result.insertObject(rdVariableSpeedVia2, ObjStatus.INSERT, via.getLinkPid());
 						}
 					}
-				} else {
+				} else if(hasFindStartLink) {
 					// 更新其他接续线的seqNum
 					via.changedFields().put("seqNum", via.getSeqNum() + 1);
 
@@ -200,7 +204,7 @@ public class Operation implements IOperation {
 
 						rdVariableSpeedVia.setVspeedPid(rdVariableSpeed.getPid());
 
-						result.insertObject(rdVariableSpeed, ObjStatus.INSERT, rdVariableSpeed.getPid());
+						result.insertObject(rdVariableSpeedVia, ObjStatus.INSERT, rdVariableSpeedVia.getLinkPid());
 
 						// 更新其他接续link的序号
 						List<IRow> rdViaList = rdVariableSpeed.getVias();

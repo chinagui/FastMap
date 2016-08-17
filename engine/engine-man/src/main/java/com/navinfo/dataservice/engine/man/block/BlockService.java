@@ -60,7 +60,7 @@ public class BlockService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			JSONArray blockArray = json.getJSONArray("blocks");
-			int updateCount=0;
+			int updateCount = 0;
 			List<Integer> blockIdList = new ArrayList<Integer>();
 			String createSql = "insert into block_man (BLOCK_MAN_ID, CREATE_USER_ID,BLOCK_ID,COLLECT_GROUP_ID, COLLECT_PLAN_START_DATE,"
 					+ "COLLECT_PLAN_END_DATE,DAY_EDIT_GROUP_ID,DAY_EDIT_PLAN_START_DATE,DAY_EDIT_PLAN_END_DATE,MONTH_EDIT_GROUP_ID,"
@@ -72,8 +72,13 @@ public class BlockService {
 					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?)";
 
 			Object[][] param = new Object[blockArray.size()][];
+			List<Integer> updateBlockList = BlockOperation.queryOperationBlocks(conn, blockArray);
 			for (int i = 0; i < blockArray.size(); i++) {
 				JSONObject block = blockArray.getJSONObject(i);
+				if (updateBlockList.contains(block.getInt("blockId"))) {
+					continue;
+				}
+
 				Object[] obj = new Object[] { userId, block.getInt("blockId"), block.getInt("collectGroupId"),
 						block.getString("collectPlanStartDate"), block.getString("collectPlanEndDate"),
 						block.getInt("dayEditGroupId"), block.getString("dayEditPlanStartDate"),
@@ -87,8 +92,8 @@ public class BlockService {
 			}
 			BlockOperation.openBlockByBlockIdList(conn, blockIdList);
 
-			int[] rows=run.batch(conn, createSql, param);
-			updateCount=rows.length;
+			int[] rows = run.batch(conn, createSql, param);
+			updateCount = rows.length;
 			return updateCount;
 
 		} catch (Exception e) {
@@ -107,27 +112,30 @@ public class BlockService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			JSONArray blockArray = json.getJSONArray("blocks");
-			int updateCount=0;
+			int updateCount = 0;
 			String createSql = "update block_man set COLLECT_GROUP_ID=?, COLLECT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
 					+ "COLLECT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_GROUP_ID=?,DAY_EDIT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_EDIT_GROUP_ID=?,"
 					+ "MONTH_EDIT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_EDIT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
 					+ "MONTH_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'), DESCP=? where BLOCK_ID=?";
 
 			Object[][] param = new Object[blockArray.size()][];
+			List<Integer> updateBlockList = BlockOperation.queryOperationBlocks(conn, blockArray);
 			for (int i = 0; i < blockArray.size(); i++) {
 				JSONObject block = blockArray.getJSONObject(i);
 				BlockMan bean = (BlockMan) JSONObject.toBean(block, BlockMan.class);
-				Object[] obj = new Object[] { bean.getCollectGroupId(), bean.getCollectPlanStartDate(),
-						bean.getCollectPlanEndDate(), bean.getDayEditGroupId(), bean.getDayEditPlanStartDate(),
-						bean.getDayEditPlanEndDate(), bean.getMonthEditGroupId(), bean.getMonthEditPlanStartDate(),
-						bean.getMonthEditPlanEndDate(), bean.getDayProducePlanStartDate(),
-						bean.getDayProducePlanEndDate(), bean.getMonthProducePlanStartDate(),
-						bean.getMonthProducePlanStartDate(), bean.getDescp(), bean.getBlockId() };
-				param[i] = obj;
+				if (updateBlockList.contains(bean.getBlockId())) {
+					Object[] obj = new Object[] { bean.getCollectGroupId(), bean.getCollectPlanStartDate(),
+							bean.getCollectPlanEndDate(), bean.getDayEditGroupId(), bean.getDayEditPlanStartDate(),
+							bean.getDayEditPlanEndDate(), bean.getMonthEditGroupId(), bean.getMonthEditPlanStartDate(),
+							bean.getMonthEditPlanEndDate(), bean.getDayProducePlanStartDate(),
+							bean.getDayProducePlanEndDate(), bean.getMonthProducePlanStartDate(),
+							bean.getMonthProducePlanStartDate(), bean.getDescp(), bean.getBlockId() };
+					param[i] = obj;
+				}
 			}
 
-			int[] rows=run.batch(conn, createSql, param);
-			updateCount=rows.length;
+			int[] rows = run.batch(conn, createSql, param);
+			updateCount = rows.length;
 			return updateCount;
 
 		} catch (Exception e) {
@@ -364,6 +372,11 @@ public class BlockService {
 					if ("blockName".equals(key)) {
 						selectSql += " and t.block_name like '%" + conditionJson.getString(key) + "%'";
 					}
+					if ("status".equals(key)) {
+						String planningStatus = ((conditionJson.getJSONArray(key).toString()).replace('[', '('))
+								.replace(']', ')');
+						selectSql += " and t.plan_status in " + planningStatus;
+					}
 				}
 			}
 			if (null != orderJson && !orderJson.isEmpty()) {
@@ -388,6 +401,84 @@ public class BlockService {
 				selectSql += " order by m.block_id";
 			}
 			return BlockOperation.selectBlockList(conn, selectSql, null, currentPageNum, pageSize);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	public List listAll(JSONObject conditionJson, JSONObject orderJson) throws Exception {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+
+			String selectSql = "select distinct m.BLOCK_ID,m.DESCP,m.COLLECT_GROUP_ID,u.GROUP_NAME COLLECT_GROUP,"
+					+ "m.DAY_EDIT_GROUP_ID,(select distinct group_name from user_group"
+					+ "  where group_id = m.DAY_EDIT_GROUP_ID) DAY_EDIT_GROUP, m.MONTH_EDIT_GROUP_ID,(select distinct group_name"
+					+ "  from user_group where group_id = m.MONTH_EDIT_GROUP_ID) MONTH_EDIT_GROUP,"
+					+ " to_char(m.COLLECT_PLAN_START_DATE, 'yyyymmdd') COLLECT_PLAN_START_DATE,"
+					+ " to_char(m.COLLECT_PLAN_END_DATE, 'yyyymmdd') COLLECT_PLAN_END_DATE,"
+					+ " to_char(m.DAY_EDIT_PLAN_START_DATE, 'yyyymmdd') DAY_EDIT_PLAN_START_DATE,"
+					+ " to_char(m.DAY_EDIT_PLAN_END_DATE, 'yyyymmdd') DAY_EDIT_PLAN_END_DATE,"
+					+ " to_char(m.MONTH_EDIT_PLAN_START_DATE, 'yyyymmdd') MONTH_EDIT_PLAN_START_DATE,"
+					+ " to_char(m.MONTH_EDIT_PLAN_END_DATE, 'yyyymmdd') MONTH_EDIT_PLAN_END_DATE,"
+					+ " to_char(m.DAY_PRODUCE_PLAN_START_DATE, 'yyyymmdd') DAY_PRODUCE_PLAN_START_DATE,"
+					+ " to_char(m.DAY_PRODUCE_PLAN_END_DATE, 'yyyymmdd') DAY_PRODUCE_PLAN_END_DATE,"
+					+ " to_char(m.MONTH_PRODUCE_PLAN_START_DATE, 'yyyymmdd') MONTH_PRODUCE_PLAN_START_DATE,"
+					+ " to_char(m.MONTH_PRODUCE_PLAN_END_DATE, 'yyyymmdd') MONTH_PRODUCE_PLAN_END_DATE,"
+					+ " t.BLOCK_NAME," + " nvl(u.user_real_name, '') USER_REAL_NAME," + " m.STATUS," + " k.TASK_ID,"
+					+ " k.NAME," + " to_char(k.PLAN_START_DATE, 'yyyymmdd') PLAN_START_DATE,"
+					+ " to_char(k.PLAN_END_DATE, 'yyyymmdd') PLAN_END_DATE,"
+					+ " to_char(k.MONTH_EDIT_PLAN_START_DATE, 'yyyymmdd') TASK_START_DATE,"
+					+ " to_char(k.MONTH_EDIT_PLAN_END_DATE, 'yyyymmdd') TASK_END_DATE"
+					+ " from block_man m, block t, user_info u, task k, user_group u"
+					+ " where m.block_id = t.block_id(+) and m.latest = 1 and m.create_user_id = u.user_id(+)"
+					+ " and t.city_id = k.city_id(+)" + " and k.latest = 1" + "and m.collect_group_id = u.group_id(+)";
+			if (null != conditionJson && !conditionJson.isEmpty()) {
+				Iterator keys = conditionJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if ("blockId".equals(key)) {
+						selectSql += " and t.block_id=" + conditionJson.getInt(key);
+					}
+					if ("createUserName".equals(key)) {
+						selectSql += " and u.USER_REAL_NAME like '%" + conditionJson.getString(key) + "%'";
+					}
+					if ("blockName".equals(key)) {
+						selectSql += " and t.block_name like '%" + conditionJson.getString(key) + "%'";
+					}
+					if ("status".equals(key)) {
+						String planningStatus = ((conditionJson.getJSONArray(key).toString()).replace('[', '('))
+								.replace(']', ')');
+						selectSql += " and t.plan_status in " + planningStatus;
+					}
+				}
+			}
+			if (null != orderJson && !orderJson.isEmpty()) {
+				Iterator keys = orderJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if ("collectPlanStartDate".equals(key)) {
+						selectSql += (" order by t.COLLECT_PLAN_START_DATE "
+								+ orderJson.getString("collectPlanStartDate"));
+						break;
+					}
+					if ("collectPlanEndDate".equals(key)) {
+						selectSql += (" order by t.COLLECT_PLAN_END_DATE " + orderJson.getString("collectPlanEndDate"));
+						break;
+					}
+					if ("blockId".equals(key)) {
+						selectSql += (" order by m.block_id " + orderJson.getString("blockId"));
+						break;
+					}
+				}
+			} else {
+				selectSql += " order by m.block_id";
+			}
+			return BlockOperation.selectAllBlock(conn, selectSql, null);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

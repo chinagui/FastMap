@@ -83,6 +83,37 @@ public class BlockController extends BaseController {
 	}
 
 	/**
+	 * 规划管理-block管理-block规划-保存
+	 * @param request
+	 * @return
+	 */
+	
+	@RequestMapping(value = "/block/save")
+	public ModelAndView blockSave(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			JSONArray blockArray = dataJson.getJSONArray("blocks");
+			int blockSize=blockArray.size();
+			int insertCount=service.batchOpen(userId, dataJson);
+			int updateCount=service.batchUpdate(dataJson);
+			String message = "批量保存block：" + updateCount + "个成功，" + (blockSize - (insertCount+updateCount)) + "个失败。";
+			return new ModelAndView("jsonView", success(message));
+		} catch (Exception e) {
+			log.error("保存失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
 	 * 根据几何范围，查询范围内的可出品的block并返回
 	 * 
 	 * @param request
@@ -218,7 +249,10 @@ public class BlockController extends BaseController {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			JSONObject condition = dataJson.getJSONObject("condition");
 			JSONObject order = dataJson.getJSONObject("order");
-
+			if (!dataJson.containsKey("pageNum")){
+				List<HashMap> data = service.listAll(condition, order);
+				return new ModelAndView("jsonView", success(data));
+			}
 			int curPageNum = 1;// 默认为第一页
 			String curPage = dataJson.getString("pageNum");
 			if (StringUtils.isNotEmpty(curPage)) {

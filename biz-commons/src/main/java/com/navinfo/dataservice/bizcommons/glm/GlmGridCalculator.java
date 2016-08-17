@@ -127,6 +127,10 @@ public class GlmGridCalculator {
 		{
 			sql = sql.replaceAll("RD_NODE", this.getTableName());
 		}
+		if(tableName.equals("RD_SAMELINK") && this.getTableName() != null)
+		{
+			sql = sql.replaceAll("RD_LINK", this.getTableName());
+		}
 		String[] grids = run.query(dataConn, sql, new SingleRowGridHandler(tableName));
 		return grids;
 	}

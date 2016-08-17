@@ -206,7 +206,7 @@ public class RdNameSelector {
 			StringBuilder sql = new StringBuilder();
 			sql.append("SELECT * ");
 			sql.append(" FROM (SELECT c.*, rownum rn");
-			sql.append(" FROM (select * ");
+			sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
 			sql.append(" from rd_name a where 1=1");
 			
 			String tmep = "";
@@ -283,7 +283,9 @@ public class RdNameSelector {
 			List<JSONObject> data = new ArrayList<JSONObject>();
 			
 			while (resultSet.next()) {
-				total++;
+				if (total == 0) {
+					total = resultSet.getInt("total");
+				}
 				data.add(result2Json(resultSet));
 			}
 			result.put("total", total);
@@ -369,7 +371,7 @@ public class RdNameSelector {
 		try {
 			rdNameObj.put("nameId", resultSet.getInt("NAME_ID"));
 			rdNameObj.put("nameGroupid", resultSet.getInt("NAME_GROUPID"));
-			rdNameObj.put("longCode", resultSet.getString("LANG_CODE"));
+			rdNameObj.put("langCode", resultSet.getString("LANG_CODE"));
 			rdNameObj.put("name", resultSet.getString("NAME"));
 			rdNameObj.put("type", resultSet.getString("TYPE"));
 			rdNameObj.put("base", resultSet.getString("BASE"));

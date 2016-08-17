@@ -50,12 +50,13 @@ public class RdLaneTopoDetail implements IObj {
 		this.inLinkPid = inLinkPid;
 	}
 
-	public int getNode_pid() {
-		return node_pid;
+
+	public int getNodePid() {
+		return nodePid;
 	}
 
-	public void setNode_pid(int node_pid) {
-		this.node_pid = node_pid;
+	public void setNodePid(int nodePid) {
+		this.nodePid = nodePid;
 	}
 
 	public int getOutLinkPid() {
@@ -125,7 +126,7 @@ public class RdLaneTopoDetail implements IObj {
 	private int intLanePid; // 进入车道 
 	private int outLanePid; // 退出车道
 	private int inLinkPid ;// 进入 LINK 
-	private int node_pid;  //进入 NODE 
+	private int nodePid;  //进入 NODE 
 	private int outLinkPid;//退出 LINK 
 	private int reachDir = 0; //通达方向 
 	private int timeDomain;//时间段 

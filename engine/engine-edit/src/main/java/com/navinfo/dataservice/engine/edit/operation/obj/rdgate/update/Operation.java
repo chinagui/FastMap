@@ -1,15 +1,18 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdgate.update;
 
 import java.sql.Connection;
+import java.util.Iterator;
 import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
+import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGateCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.gate.RdGateSelector;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
@@ -47,6 +50,41 @@ public class Operation implements IOperation {
 			result.insertObject(rdGate, ObjStatus.UPDATE, rdGate.pid());
 			result.setPrimaryPid(rdGate.pid());
 		}
+		
+		if (content.containsKey("condition")) {
+			updateCondition(result,content.getJSONArray("condition"));
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void updateCondition(Result result, JSONArray array) throws Exception {
+		try {
+			Iterator<JSONObject> iterator = array.iterator();
+			RdGateCondition condition = null;
+			JSONObject conditionObj = null;
+			while (iterator.hasNext()) {
+				conditionObj = iterator.next();
+				if (conditionObj.containsKey("objStatus")) {
+					String objStatus = conditionObj.getString("objStatus");
+					condition = this.command.getRdGate().rdGateConditionMap.get(conditionObj.getString("rowId"));
+					if (ObjStatus.UPDATE.toString().equals(objStatus)) {
+						boolean isChange = condition.fillChangeFields(conditionObj);
+						if (isChange) {
+							result.insertObject(condition, ObjStatus.UPDATE, condition.getPid());
+						}
+					} else if (ObjStatus.DELETE.toString().equals(objStatus)) {
+						result.insertObject(condition, ObjStatus.DELETE, condition.getPid());
+					} else if (ObjStatus.INSERT.toString().equals(objStatus)) {
+						condition = new RdGateCondition();
+						condition.setPid(this.command.getPid());
+						result.insertObject(condition, ObjStatus.INSERT, condition.getPid());
+					}
+				}
+			}
+		} catch (Exception e) {
+			throw e;
+		}
+		
 	}
 	
 	/**

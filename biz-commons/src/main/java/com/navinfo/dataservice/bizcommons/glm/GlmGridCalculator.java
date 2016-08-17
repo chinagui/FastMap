@@ -118,13 +118,18 @@ public class GlmGridCalculator {
 	 * @param rowIds
 	 * @param dataConn：数据所在库的连接
 	 * @return: key-value:key-rowId,value-grid号码字符串数组
+	 * @throws Exception 
 	 */
-	public String[] calc(String tableName,String rowId,Connection dataConn)throws SQLException{
+	public String[] calc(String tableName,String rowId,Connection dataConn)throws Exception{
 		log.debug("calc :"+tableName+"-"+rowId);
 		String sql = assembleQueryGeoSql(tableName,rowId);
 		if(tableName.equals("RD_SAMENODE") && this.getTableName() != null)
 		{
 			sql = sql.replaceAll("RD_NODE", this.getTableName());
+		}
+		if(tableName.equals("RD_SAMELINK") && this.getTableName() != null)
+		{
+			sql = sql.replaceAll("RD_LINK", this.getTableName());
 		}
 		String[] grids = run.query(dataConn, sql, new SingleRowGridHandler(tableName));
 		return grids;
@@ -182,14 +187,20 @@ public class GlmGridCalculator {
 	 * 
 	 * @param type:rowid/log
 	 * @return
+	 * @throws Exception 
 	 */
-	private String assembleQueryGeoSql(String tableName,String rowId){
+	private String assembleQueryGeoSql(String tableName,String rowId) throws Exception{
 		StringBuilder sb = new StringBuilder();
 		GlmGridRefInfo refInfo = getGlmGridRefInfoMap().get(tableName);
-		sb.append(refInfo.getEditQuerySql());
-		sb.append(" AND P.ROW_ID = HEXTORAW('");
-		sb.append(rowId);
-		sb.append("')");
+		try {
+			sb.append(refInfo.getEditQuerySql());
+			sb.append(" AND P.ROW_ID = HEXTORAW('");
+			sb.append(rowId);
+			sb.append("')");
+		} catch (Exception e) {
+			throw new Exception("表"+tableName+"未在glm_grid_map中配置映射关系");
+		}
+		
 		return sb.toString();
 		
 	}

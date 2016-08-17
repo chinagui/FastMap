@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.meta.area;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -135,4 +136,54 @@ public class ScPointAdminArea {
 		DbUtils.commitAndCloseQuietly(conn);
 	}
   }
+	
+	/**
+	 * 获取行政区划号和名称
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray getAdminArea(int pageSize,int pageNum) throws Exception {
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		Connection conn = null;
+		
+		String sql = "SELECT * FROM (SELECT c.*, rownum rn FROM (SELECT adminareacode,whole from SC_POINT_ADMINAREA)c WHERE rownum<= :1) WHERE rn>= :2";
+		
+		try {
+			conn = DBConnector.getInstance().getMetaConnection();
+			
+			int startRow = pageNum * pageSize + 1;
+
+			int endRow = (pageNum + 1) * pageSize;
+			
+			pstmt = conn.prepareStatement(sql);
+			
+			pstmt.setInt(1, endRow);
+
+			pstmt.setInt(2, startRow);
+			
+			resultSet = pstmt.executeQuery();
+			
+			JSONArray result = new JSONArray();
+			
+			while (resultSet.next()) {
+				JSONObject data = new JSONObject();
+				data.put("adminareacode", resultSet.getInt("adminareacode"));
+				data.put("whole", resultSet.getString("whole"));
+				result.add(data);
+			}
+			
+			return result;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
 }

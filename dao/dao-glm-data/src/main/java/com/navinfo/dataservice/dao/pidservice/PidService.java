@@ -214,7 +214,7 @@ public class PidService {
 		return applyPid(PidSequenceName.adFacePidName);
 
 	}
-	
+
 	/**
 	 * 申请RD_VARIABLE_SPEED
 	 */
@@ -350,10 +350,18 @@ public class PidService {
 	}
 
 	/**
-	 * 申请zone_link_pid
+	 * 申请rd_lane_pid
 	 */
 	public synchronized int applyRdLanePid() throws Exception {
 		return applyPid(PidSequenceName.rdLanePidName);
+
+	}
+
+	/**
+	 * 申请rd_lane_topo_pid
+	 */
+	public synchronized int applyRdLaneTopoPid() throws Exception {
+		return applyPid(PidSequenceName.rdLanetopoPidName);
 
 	}
 
@@ -509,7 +517,7 @@ public class PidService {
 	public synchronized int applyRdObjectPid() throws Exception {
 		return this.applyPid(PidSequenceName.rdObjectName);
 	}
-	
+
 	/**
 	 * 申请rd_speedbump
 	 */
@@ -522,6 +530,13 @@ public class PidService {
 	 */
 	public synchronized int applyRdSameNodePid() throws Exception {
 		return this.applyPid(PidSequenceName.rdSamenodeName);
+	}
+
+	/**
+	 * 申请rd_samelink
+	 */
+	public synchronized int applyRdSameLinkPid() throws Exception {
+		return this.applyPid(PidSequenceName.rdSamelinkName);
 	}
 
 	/**

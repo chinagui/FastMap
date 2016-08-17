@@ -228,13 +228,19 @@ public class RdNameSelector {
 			Iterator<String> keys = param.keys();
 			while (keys.hasNext()) {
 				String key = keys.next();
-				String columnName = sUtils.toColumnName(key);
-				if (!param.getString(key).isEmpty()) {
-					sql.append(" and a.");
-					sql.append(columnName);
-					sql.append("='");
+				if (key.equals("name")) {
+					sql.append(" and a.name like '%");
 					sql.append(param.getString(key));
-					sql.append("'");
+					sql.append("%'");
+				} else {
+					String columnName = sUtils.toColumnName(key);
+					if (!param.getString(key).isEmpty()) {
+						sql.append(" and a.");
+						sql.append(columnName);
+						sql.append("='");
+						sql.append(param.getString(key));
+						sql.append("'");
+					}
 				}
 			}
 			
@@ -351,7 +357,6 @@ public class RdNameSelector {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	
 	
 	/**
 	 * 将查询结果转为json型

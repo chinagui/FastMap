@@ -24,11 +24,13 @@ import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
 import com.navinfo.dataservice.dao.glm.search.RdInterSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLaneConnexitySearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkIntRticSearch;
+import com.navinfo.dataservice.dao.glm.search.RdLinkRticSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdObjectSearch;
 import com.navinfo.dataservice.dao.glm.search.RdRestrictionSearch;
 import com.navinfo.dataservice.dao.glm.search.RdRoadSearch;
+import com.navinfo.dataservice.dao.glm.search.RdSameLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSameNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSlopeSearch;
@@ -82,6 +84,8 @@ public class SearchFactory {
 			return new RdBranchSearch(conn);
 		case RDLINKINTRTIC:
 			return new RdLinkIntRticSearch(conn);
+		case RDLINKRTIC:
+			return new RdLinkRticSearch(conn);			
 		case RDGSC:
 			return new RdGscSearch(conn);
 		case ADLINK:
@@ -134,6 +138,8 @@ public class SearchFactory {
 			return new RdSpeedbumpSearch(conn);
 		case RDSAMENODE:
 			return new RdSameNodeSearch(conn);
+		case RDSAMELINK:
+			return new RdSameLinkSearch(conn);
 		case RDDIRECTROUTE:
 			return new RdDirectrouteSearch(conn);
 		case RDTOLLGATE:

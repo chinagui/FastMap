@@ -205,6 +205,33 @@ public class SearchProcess {
 				break;
 
 			case RDLINK:
+				
+				if (condition.containsKey("queryType")) 
+				{
+					int linkPid=0;
+					int direct=0;
+					
+					String queryType= condition.getString("queryType");
+					
+				
+					switch (queryType) {
+				
+					case "RDLINKSPEEDLIMIT":
+					
+					
+						
+						break;
+					case "RDSPEEDLIMIT":
+						
+						
+						break;
+					default:
+						break;
+					}
+					
+					
+				}
+				
 				if (condition.containsKey("nodePid")) {
 
 					int nodePid = condition.getInt("nodePid");

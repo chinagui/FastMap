@@ -684,7 +684,7 @@ public class MetaController extends BaseController {
 			
 			ScRoadnameTypename typename = new ScRoadnameTypename();
 			
-			JSONArray data = typename.getNameType(pageNum,pageSize);
+			JSONObject data = typename.getNameType(pageNum,pageSize);
 			
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
@@ -714,7 +714,7 @@ public class MetaController extends BaseController {
 			
 			ScPointAdminArea adminarea = new ScPointAdminArea();
 			
-			JSONArray data = adminarea.getAdminArea(pageSize,pageNum);
+			JSONObject data = adminarea.getAdminArea(pageSize,pageNum);
 			
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {

@@ -352,7 +352,6 @@ public class RdNameSelector {
 		}
 	}
 	
-	
 	/**
 	 * 将查询结果转为json型
 	 * @param resultSet

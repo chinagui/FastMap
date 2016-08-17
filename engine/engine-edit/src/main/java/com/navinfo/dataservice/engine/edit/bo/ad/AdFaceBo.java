@@ -17,8 +17,9 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
+import com.navinfo.dataservice.engine.edit.bo.AbstractBo;
 import com.navinfo.dataservice.engine.edit.bo.BoFactory;
-import com.navinfo.dataservice.engine.edit.bo.BreakResult;
+import com.navinfo.dataservice.engine.edit.bo.LinkBreakResult;
 import com.navinfo.dataservice.engine.edit.bo.FaceBo;
 import com.navinfo.dataservice.engine.edit.bo.LinkBo;
 import com.navinfo.dataservice.engine.edit.bo.PoFactory;
@@ -35,11 +36,10 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class AdFaceBo extends FaceBo {
 	protected AdFace po;
-	protected List<AdFaceTopo> topos;
 
 	public Result breakoff(LinkBo oldLink, LinkBo newLeftLink,
 			LinkBo newRightLink) throws Exception {
-		BreakResult result = new BreakResult();
+		LinkBreakResult result = new LinkBreakResult();
 		List<AdLink> links = new ArrayList<AdLink>();
 		for (IRow iRow : po.getFaceTopos()) {
 			AdFaceTopo obj = (AdFaceTopo) iRow;
@@ -118,7 +118,6 @@ public class AdFaceBo extends FaceBo {
 	@Override
 	public void setPo(IObj po) {
 		this.po = (AdFace) po;
-		this.geometry = this.po.getGeometry();
 	}
 
 	@Override
@@ -148,5 +147,24 @@ public class AdFaceBo extends FaceBo {
 		updateContent.put("perimeter", GeometryUtils.getLinkLength(g));
 		face.fillChangeFields(updateContent);
 		result.insertObject(face, ObjStatus.UPDATE, face.getPid());
+	}
+
+	@Override
+	public AdFaceBo copy() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Geometry getGeometry() {
+		return po.getGeometry();
+	}
+
+
+	@Override
+	public void setGeometry(Geometry geo) {
+		this.po.setGeometry(geo);
+		
+		
 	}
 }

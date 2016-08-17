@@ -4,6 +4,6 @@ import com.vividsolutions.jts.geom.Geometry;
 
 
 public abstract class NodeBo extends AbstractBo{
-
-	protected Geometry geometry;
+	public abstract Geometry getGeometry();
+	public abstract void setGeometry(Geometry geo);
 }

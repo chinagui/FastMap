@@ -2,7 +2,9 @@ package com.navinfo.dataservice.engine.edit.bo.ad;
 
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+import com.navinfo.dataservice.engine.edit.bo.AbstractBo;
 import com.navinfo.dataservice.engine.edit.bo.NodeBo;
+import com.vividsolutions.jts.geom.Geometry;
 
 /** 
  * @ClassName: BoAdNode
@@ -12,17 +14,31 @@ import com.navinfo.dataservice.engine.edit.bo.NodeBo;
  */
 public class AdNodeBo extends NodeBo{
 	
-	protected AdNode adNode;
+	protected AdNode po;
 
 	@Override
 	public void setPo(IObj po) {
-		this.adNode=(AdNode)po;
-		this.geometry=adNode.getGeometry();
+		this.po=(AdNode)po;
 	}
 
 	@Override
 	public IObj getPo() {
-		// TODO Auto-generated method stub
-		return adNode;
+		return po;
+	}
+
+	@Override
+	public Geometry getGeometry() {
+		return po.getGeometry();
+	}
+
+	@Override
+	public void setGeometry(Geometry geo) {
+		this.po.setGeometry(geo);
+		
+	}
+
+	@Override
+	public AdNodeBo copy() throws Exception {
+		return null;
 	}
 }

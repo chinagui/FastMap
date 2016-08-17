@@ -4,13 +4,12 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.vividsolutions.jts.geom.Geometry;
 
 
-public class BreakResult extends Result {
+public class LinkBreakResult extends Result {
 
 	protected LinkBo targetLinkBo;
 	protected LinkBo newLeftLink;
 	protected LinkBo newRightLink;
-	protected Geometry newLeftGeometry;
-	protected Geometry newRightGeometry;
+	protected NodeBo newNode;
 	public LinkBo getTargetLinkBo() {
 		return targetLinkBo;
 	}
@@ -29,17 +28,10 @@ public class BreakResult extends Result {
 	public void setNewRightLink(LinkBo newRightLink) {
 		this.newRightLink = newRightLink;
 	}
-	public Geometry getNewLeftGeometry() {
-		return newLeftGeometry;
+	public NodeBo getNewNode() {
+		return newNode;
 	}
-	public void setNewLeftGeometry(Geometry newLeftGeometry) {
-		this.newLeftGeometry = newLeftGeometry;
+	public void setNewNode(NodeBo newNode) {
+		this.newNode = newNode;
 	}
-	public Geometry getNewRightGeometry() {
-		return newRightGeometry;
-	}
-	public void setNewRightGeometry(Geometry newRightGeometry) {
-		this.newRightGeometry = newRightGeometry;
-	}
-	
 }

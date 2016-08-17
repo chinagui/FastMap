@@ -45,7 +45,7 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	public void delByLink(int linkPid,Result result) throws Exception {
+	public void delByLink(int linkPid, Result result) throws Exception {
 		if (conn == null) {
 			return;
 		}
@@ -59,5 +59,5 @@ public class Operation implements IOperation {
 			throw e;
 		}
 	}
-
+	
 }

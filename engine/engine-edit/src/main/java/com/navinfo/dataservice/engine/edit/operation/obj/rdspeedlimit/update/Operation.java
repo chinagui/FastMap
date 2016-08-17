@@ -40,7 +40,7 @@ public class Operation implements IOperation {
 				}
 			}
 		}
-
+		result.setPrimaryPid(limit.getPid());
 		return null;
 	}
 

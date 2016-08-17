@@ -105,7 +105,7 @@ public class LcNodeMesh implements IRow{
 
 	@Override
 	public ObjType objType() {
-		return null;
+		return ObjType.LCNODEMESH;
 	}
 
 	@Override

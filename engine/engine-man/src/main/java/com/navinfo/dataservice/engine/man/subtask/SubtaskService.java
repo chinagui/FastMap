@@ -18,6 +18,7 @@ import oracle.sql.STRUCT;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +35,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ArrayUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.xinge.XingeUtil;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -60,23 +62,31 @@ public class SubtaskService {
 	}
 
 	/*
-	 * 创建一个子任务。 参数1：Subtask对象 参数2：ArrayList<Integer>，组成Subtask的gridId列表
+	 * 创建一个子任务。 参数1：Subtask对象
 	 */
 	public void create(Subtask bean)throws ServiceException {
 		Connection conn = null;
 		try {
-			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			// 获取subtaskId
 			int subtaskId = SubtaskOperation.getSubtaskId(conn, bean);
 
 			bean.setSubtaskId(subtaskId);
+			if(bean.getStatus()== null){
+				bean.setStatus(1);
+			}
 			
 			// 插入subtask
 			SubtaskOperation.insertSubtask(conn, bean);
 			
 			// 插入SUBTASK_GRID_MAPPING
 			SubtaskOperation.insertSubtaskGridMapping(conn, bean);
+			
+			//消息发布
+			if(bean.getStatus()==1){
+				SubtaskOperation.pushMessage(bean.getCreateUserId(),bean.getExeUserId(),bean.getName());
+
+			}	
 
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -159,13 +169,17 @@ public class SubtaskService {
 		Connection conn = null;
 		try {
 			// 持久化
-			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 
 			List<Integer> updatedSubtaskIdList = new ArrayList<Integer>();
 			for (int i = 0; i < subtaskList.size(); i++) {
 				SubtaskOperation.updateSubtask(conn, subtaskList.get(i));
 				updatedSubtaskIdList.add(subtaskList.get(i).getSubtaskId());
+				
+				//消息发布
+				if(subtaskList.get(i)!=null&&subtaskList.get(i).getStatus()!=null &&subtaskList.get(i).getStatus()==1){
+					SubtaskOperation.pushMessage(subtaskList.get(i).getCreateUserId(),subtaskList.get(i).getExeUserId(),subtaskList.get(i).getName());
+				}
 			}
 			return updatedSubtaskIdList;
 
@@ -180,153 +194,19 @@ public class SubtaskService {
 	
 	
 	public Page list(int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
-			final int curPageNum) throws ServiceException {
+			final int curPageNum,int snapshot) throws ServiceException {
 		Connection conn = null;
 		try {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = "select s.SUBTASK_ID,s.STAGE,s.EXE_USER_ID,u.user_real_name,s.TYPE,s.PLAN_START_DATE,s.PLAN_END_DATE,s.DESCP,s.NAME,s.STATUS,s.GEOMETRY";
-			
-			String selectBlockSql = ",b.block_id,b.block_name,-1 as task_id,'' as task_name";
-			String selectTaskSql = ",-1 as block_id,'' as block_name,t.task_id,t.name as task_name";
-
-			// 0采集，1日编，2月编，
-			if (0 == stage) {
-				selectBlockSql += ",bm.COLLECT_PLAN_START_DATE AS COLLECT_PLAN_START_DATE,bm.COLLECT_PLAN_END_DATE AS COLLECT_PLAN_END_DATE,bm.COLLECT_GROUP_ID AS group_id";
-			} else if (1 == stage) {
-				selectBlockSql += ",bm.DAY_EDIT_PLAN_START_DATE AS DAY_EDIT_PLAN_START_DATE,bm.DAY_EDIT_PLAN_END_DATE AS DAY_EDIT_PLAN_END_DATE,bm.DAY_EDIT_GROUP_ID AS group_id";
-			} else if (2 == stage) {
-				selectBlockSql += ",bm.MONTH_EDIT_PLAN_START_DATE AS MONTH_EDIT_PLAN_START_DATE,bm.MONTH_EDIT_PLAN_END_DATE AS MONTH_EDIT_PLAN_END_DATE,bm.MONTH_EDIT_GROUP_ID AS group_id";
-				selectTaskSql += ",t.MONTH_EDIT_PLAN_START_DATE AS MONTH_EDIT_PLAN_START_DATE,t.MONTH_EDIT_PLAN_END_DATE AS MONTH_EDIT_PLAN_END_DATE,t.MONTH_EDIT_GROUP_ID AS group_id";
-			}
-
-			String fromBlockSql = " from SUBTASK s, Block b, Block_man bm, user_info u where s.block_id = b.block_id and u.user_id = s.exe_user_id and b.block_id = bm.block_id and bm.latest = 1";
-			String fromTaskSql = " from SUBTASK s, Task t, user_info u where s.task_id = t.task_id and u.user_id = s.exe_user_id";
-			String conditionSql = " and s.stage = " + stage;
-			
-			//查询条件
-			if(null!=conditionJson && !conditionJson.isEmpty()){
-				Iterator keys = conditionJson.keys();
-				while (keys.hasNext()) {
-					String key = (String) keys.next();
-					if ("subtaskId".equals(key)) {conditionSql+=" and s.SUBTASK_ID="+conditionJson.getInt(key);break;}
-					if ("subtaskName".equals(key)) {	
-						conditionSql+=" and s.NAME like '%" + conditionJson.getString(key) +"%'";
-						break;
-					}
-					if ("ExeUserId".equals(key)) {conditionSql+=" and s.EXE_USER_ID="+conditionJson.getInt(key);break;}
-					if ("ExeUserName".equals(key)) {
-						conditionSql+=" and u.user_real_name like '%" + conditionJson.getString(key) +"%'";
-						break;
-					}
-					if ("blockName".equals(key)) {
-						conditionSql+=" and s.block_id = b.block_id and b.block_name like '%" + conditionJson.getString(key) +"%'";
-						break;
-					}
-					if ("blockId".equals(key)) {conditionSql+=" and s.block_id="+conditionJson.getInt(key);break;}
-					if ("taskId".equals(key)) {conditionSql+=" and s.task_id="+conditionJson.getInt(key);break;}
-					if ("taskName".equals(key)) {
-						conditionSql+=" and s.task_id = t.task_id and t.name like '%" + conditionJson.getInt(key) +"%'";
-						break;
-					}
-				}
-			}
-			
-			String orderSql = "";
-			
-			// 排序
-			if(null!=orderJson && !orderJson.isEmpty()){
-				Iterator keys = orderJson.keys();
-				while (keys.hasNext()) {
-					String key = (String) keys.next();
-					if ("status".equals(key)) {orderSql+=" order by s.status "+orderJson.getString(key);break;}
-					if ("subtaskId".equals(key)) {orderSql+=" order by s.SUBTASK_ID "+orderJson.getString(key);break;}
-					if ("blockId".equals(key)) {orderSql+=" order by block_id "+orderJson.getString(key);break;}
-					if ("planStartDate".equals(key)) {orderSql+=" order by s.PLAN_START_DATE "+orderJson.getString(key);break;}
-					if ("planEndDate".equals(key)) {orderSql+=" order by s.PLAN_END_DATE "+orderJson.getString(key);break;}}
-			}else{orderSql += " order by block_id";}
-
-			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
-				public Page handle(ResultSet rs) throws SQLException {
-					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-					List<HashMap<Object,Object>> list = new ArrayList<HashMap<Object,Object>>();
-					Page page = new Page(curPageNum);
-				    page.setPageSize(pageSize);
-				    int total = 0;
-					while (rs.next()) {
-						if(total==0){
-							total=rs.getInt("TOTAL_RECORD_NUM_");
-						}
-						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
-						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
-						subtask.put("subtaskName", rs.getString("NAME"));
-						subtask.put("descp", rs.getString("DESCP"));
-
-						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-						try {
-							subtask.put("geometry", GeoTranslator.struct2Wkt(struct));
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-
-						subtask.put("stage", rs.getInt("STAGE"));
-						subtask.put("type", rs.getInt("TYPE"));
-						subtask.put("status", rs.getInt("STATUS"));
-						subtask.put("ExeUserId", rs.getInt("EXE_USER_ID"));
-						subtask.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
-						subtask.put("planEndDate", df.format(rs.getTimestamp("PLAN_END_DATE")));
-						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
-						subtask.put("groupId", rs.getInt("group_id"));
-						
-						// 与block关联，返回block信息。
-						if (rs.getInt("block_id") > 0) {
-							// block
-							subtask.put("blockId", rs.getInt("block_id"));
-							subtask.put("blockName", rs.getString("block_name"));
-							//采集
-							if(0 == rs.getInt("STAGE")){
-								subtask.put("BlockCollectPlanStartDate", df.format(rs.getTimestamp("COLLECT_PLAN_START_DATE")));
-								subtask.put("BlockCollectPlanEndDate",df.format(rs.getTimestamp("COLLECT_PLAN_END_DATE")));
-							}
-							//日编
-							else if(1 == rs.getInt("STAGE")){
-								subtask.put("BlockDayEditPlanStartDate", df.format(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE")));
-								subtask.put("BlockDayEditPlanEndDate", df.format(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE")));
-							}
-							//月编
-							else if(2 == rs.getInt("STAGE")){
-								subtask.put("BlockCMonthEditPlanStartDate", df.format(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE")));
-								subtask.put("BlockCMonthEditPlanEndDate", df.format(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE")));
-							}
-						}
-						// 与task关联，返回task信息。
-						if (rs.getInt("task_id") > 0) {
-							// task
-							subtask.put("taskId", rs.getInt("task_id"));
-							subtask.put("taskName", rs.getString("task_name"));
-							// 月编
-							if(2 == rs.getInt("STAGE")){
-								subtask.put("TaskCMonthEditPlanStartDate", df.format(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE")));
-								subtask.put("TaskCMonthEditPlanEndDate", df.format(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE")));
-							}
-						}
-
-						list.add(subtask);
-					}
-
-					page.setTotalCount(total);
-					page.setResult(list);
-					return page;
-				}
-
-			};
-			if (2 == stage){
-				selectSql = selectSql + selectBlockSql + fromBlockSql + conditionSql + " union all " + selectSql + selectTaskSql + fromTaskSql + conditionSql + orderSql;
+			//返回简略信息
+			if (snapshot==1){
+				Page page = SubtaskOperation.getListSnapshot(stage,conditionJson,orderJson,pageSize,curPageNum);
+				return page;
 			}else{
-				selectSql = selectSql + selectBlockSql + fromBlockSql + conditionSql;
-			}
-			return run.query(curPageNum, pageSize, conn, selectSql, rsHandler);
+				Page page = SubtaskOperation.getList(stage,conditionJson,orderJson,pageSize,curPageNum);
+				return page;
+			}		
 
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

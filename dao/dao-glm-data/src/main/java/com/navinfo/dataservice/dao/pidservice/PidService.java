@@ -142,7 +142,7 @@ public class PidService {
 		return applyPid(PidSequenceName.ckExceptionPidName);
 
 	}
-	
+
 	/**
 	 * 申请rd_trafficsignal
 	 */
@@ -150,7 +150,18 @@ public class PidService {
 		return applyPid(PidSequenceName.rdTrafficsignalPidName);
 
 	}
-	
+
+	/**
+	 * 申请 顺行pid
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public synchronized int applyRdDirectroutePid() throws Exception {
+		return applyPid(PidSequenceName.rdDirectrouteName);
+
+	}
+
 	/**
 	 * 申请ad_admin_pid
 	 */
@@ -201,6 +212,14 @@ public class PidService {
 	 */
 	public synchronized int applyAdFacePid() throws Exception {
 		return applyPid(PidSequenceName.adFacePidName);
+
+	}
+	
+	/**
+	 * 申请RD_VARIABLE_SPEED
+	 */
+	public synchronized int applyRdVariableSpeedPid() throws Exception {
+		return applyPid(PidSequenceName.rdVariableSpeedName);
 
 	}
 
@@ -331,6 +350,14 @@ public class PidService {
 	}
 
 	/**
+	 * 申请zone_link_pid
+	 */
+	public synchronized int applyRdLanePid() throws Exception {
+		return applyPid(PidSequenceName.rdLanePidName);
+
+	}
+
+	/**
 	 * 申请zone_face_pid
 	 */
 	public synchronized int applyZoneFacePid() throws Exception {
@@ -352,7 +379,8 @@ public class PidService {
 				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
 
 				if (prc.getPid() != -1) {
-					PidServiceUtils.updatePidRange(conn, pidSeqName, prc.getPidRange());
+					PidServiceUtils.updatePidRange(conn, pidSeqName,
+							prc.getPidRange());
 
 					pid = prc.getPid();
 				} else {
@@ -417,28 +445,29 @@ public class PidService {
 	public synchronized int applyEleceyePairPid() throws Exception {
 		return this.applyPid(PidSequenceName.rdEleceyePairPidName);
 	}
-	
+
 	/**
 	 * 申请rd_warninginfo
 	 */
 	public synchronized int applyRdWarninginfoPid() throws Exception {
 		return this.applyPid(PidSequenceName.rdWarninginfoPidName);
 	}
+
 	/**
 	 * 申请rd_slope
 	 */
 	public synchronized int applyRdSlopePid() throws Exception {
 		return this.applyPid(PidSequenceName.rdSlopePidName);
 	}
-	
-	/**
 
+	/**
+	 * 
 	 * 申请applyRdGate
 	 */
 	public synchronized int applyRdGate() throws Exception {
 		return applyPid(PidSequenceName.rdGatePidName);
 	}
-	
+
 	/**
 	 * 申请lc_node_pid
 	 */
@@ -459,11 +488,73 @@ public class PidService {
 	public synchronized int applyLcFacePid() throws Exception {
 		return this.applyPid(PidSequenceName.lcFacePidName);
 	}
-	
+
 	/**
 	 * 申请rd_se
 	 */
 	public synchronized int applyRdSePid() throws Exception {
 		return this.applyPid(PidSequenceName.rdSePidName);
+	}
+
+	/**
+	 * 申请rd_inter
+	 */
+	public synchronized int applyRdInterPid() throws Exception {
+		return this.applyPid(PidSequenceName.rdInterName);
+	}
+
+	/**
+	 * 申请rd_object
+	 */
+	public synchronized int applyRdObjectPid() throws Exception {
+		return this.applyPid(PidSequenceName.rdObjectName);
+	}
+	
+	/**
+	 * 申请rd_speedbump
+	 */
+	public synchronized int applyRdSpeedbumpPid() throws Exception {
+		return this.applyPid(PidSequenceName.rdSpeedbumpName);
+	}
+
+	/**
+	 * 申请rd_samenode
+	 */
+	public synchronized int applyRdSameNodePid() throws Exception {
+		return this.applyPid(PidSequenceName.rdSamenodeName);
+	}
+
+	/**
+	 * 申请rd_tollgate
+	 */
+	public synchronized int applyRdTollgatePid() throws Exception {
+		return this.applyPid(PidSequenceName.rdTollgate);
+	}
+
+	/**
+	 * 申请rd_tollgate_name
+	 */
+	public synchronized int applyRdTollgateNamePid() throws Exception {
+		return this.applyPid(PidSequenceName.rdTollgateName);
+	}
+
+	/**
+	 * 申请rd_voiceguide
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public synchronized int applyRdVoiceguidePid() throws Exception {
+		return applyPid(PidSequenceName.rdVoiceguideName);
+	}
+
+	/**
+	 * 申请rd_voiceguide_detail
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public synchronized int applyRdVoiceguideDetailPid() throws Exception {
+		return applyPid(PidSequenceName.rdVoiceguideDetailName);
 	}
 }

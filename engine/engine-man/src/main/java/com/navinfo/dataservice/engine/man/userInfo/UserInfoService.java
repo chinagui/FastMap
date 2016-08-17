@@ -396,6 +396,13 @@ public class UserInfoService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	public UserInfo queryUserInfoByUserId(int userId) throws Exception{
+		UserInfo selectUser=new UserInfo();
+		selectUser.setUserId((int)userId);
+		UserInfo userObj=this.query(selectUser);
+		return userObj;
+	}
 
 	/**
 	 * @param userInfo

@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
+import com.navinfo.dataservice.dao.glm.model.lc.LcLinkKind;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
 import com.navinfo.dataservice.dao.pidservice.PidService;
@@ -23,6 +24,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
 public class LcLinkOperateUtils {
 
 	/*
@@ -70,6 +72,11 @@ public class LcLinkOperateUtils {
 		link.seteNodePid(eNodePid);
 		result.setPrimaryPid(link.pid());
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
+
+		// 创建LcLinkKind
+		LcLinkKind kind = new LcLinkKind();
+		kind.setLinkPid(link.pid());
+		result.insertObject(kind, ObjStatus.INSERT, kind.getLinkPid());
 	}
 
 	/*
@@ -92,6 +99,11 @@ public class LcLinkOperateUtils {
 		link.seteNodePid(eNodePid);
 		result.setPrimaryPid(link.pid());
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
+
+		// 创建LcLinkKind
+		LcLinkKind kind = new LcLinkKind();
+		kind.setLinkPid(link.pid());
+		result.insertObject(kind, ObjStatus.INSERT, kind.getLinkPid());
 		return link;
 	}
 
@@ -125,9 +137,7 @@ public class LcLinkOperateUtils {
 	 * @param link
 	 */
 	private static LcLinkMesh getLinkChildren(LcLink link, int meshId) {
-
 		LcLinkMesh mesh = new LcLinkMesh();
-
 		mesh.setLinkPid(link.getPid());
 		mesh.setMesh(meshId);
 		mesh.setMeshId(meshId);

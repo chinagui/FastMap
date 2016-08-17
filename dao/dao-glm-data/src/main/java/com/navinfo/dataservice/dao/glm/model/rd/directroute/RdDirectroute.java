@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideVia;
 
 public class RdDirectroute implements IObj {
 
@@ -29,15 +30,15 @@ public class RdDirectroute implements IObj {
 
 	private int outLinkPid;// 退出link
 
-	private int flag;// 顺行标志
+	private int flag=2;// 顺行标志
 
-	private int processFlag;// 处理标志
+	private int processFlag=1;// 处理标志
 
-	private int relationshipType;// 关系类型
+	private int relationshipType=1;// 关系类型
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
-	private List<IRow> directrouteVias = new ArrayList<IRow>();
+	private List<IRow> vias = new ArrayList<IRow>();
 
 	public Map<String, RdDirectrouteVia> directrouteViaMap = new HashMap<String, RdDirectrouteVia>();
 
@@ -99,6 +100,16 @@ public class RdDirectroute implements IObj {
 
 	public String getRowId() {
 		return rowId;
+	}
+	
+	
+
+	public List<IRow> getVias() {
+		return vias;
+	}
+
+	public void setVias(List<IRow> directrouteVias) {
+		this.vias = directrouteVias;
 	}
 
 	@Override
@@ -163,7 +174,7 @@ public class RdDirectroute implements IObj {
 	public List<List<IRow>> children() {
 		List<List<IRow>> children = new ArrayList<List<IRow>>();
 
-		children.add(this.directrouteVias);
+		children.add(this.vias);
 
 		return children;
 	}
@@ -237,13 +248,36 @@ public class RdDirectroute implements IObj {
 
 	@Override
 	public boolean Unserialize(JSONObject json) throws Exception {
+		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
 
 		while (keys.hasNext()) {
 
 			String key = (String) keys.next();
 
-			if (!"objStatus".equals(key)) {
+			JSONArray ja = null;
+
+			if (json.get(key) instanceof JSONArray) {
+				switch (key) {
+				
+				case "vias":
+					vias.clear();
+
+					ja = json.getJSONArray(key);
+
+					for (int i = 0; i < ja.size(); i++) {
+						JSONObject jo = ja.getJSONObject(i);
+
+						RdDirectrouteVia row = new RdDirectrouteVia();
+
+						row.Unserialize(jo);
+
+						vias.add(row);
+					}
+
+					break;
+				}
+			} else if (!"objStatus".equals(key)) {
 
 				Field f = this.getClass().getDeclaredField(key);
 
@@ -251,7 +285,6 @@ public class RdDirectroute implements IObj {
 
 				f.set(this, json.get(key));
 			}
-
 		}
 		return true;
 	}
@@ -277,7 +310,7 @@ public class RdDirectroute implements IObj {
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
 		Map<Class<? extends IRow>, List<IRow>> childMap = new HashMap<>();
 
-		childMap.put(RdDirectrouteVia.class, directrouteVias);
+		childMap.put(RdDirectrouteVia.class, this.vias);
 
 		return childMap;
 	}

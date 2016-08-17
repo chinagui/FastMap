@@ -24,6 +24,9 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
+		// 同一点关系
+		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
+		opRefRdSameNode.run(getResult(), this.getCommand());
 		return new Operation(this.getCommand()).run(this.getResult());
 	}
 
@@ -61,8 +64,7 @@ public class Process extends AbstractProcess<Command> {
 
 		RwLinkSelector rwLinkSelector = new RwLinkSelector(this.getConn());
 
-		List<RwLink> links = rwLinkSelector.loadByNodePid(this.getCommand()
-				.getNodePid(), true);
+		List<RwLink> links = rwLinkSelector.loadByNodePid(this.getCommand().getNodePid(), true);
 
 		this.getCommand().setLinks(links);
 	}
@@ -122,8 +124,7 @@ public class Process extends AbstractProcess<Command> {
 
 		for (RwLink link : links) {
 
-			List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(
-					link.getPid(), "RW_LINK", true);
+			List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(link.getPid(), "RW_LINK", true);
 			rdGscs.addAll(rdGscList);
 		}
 

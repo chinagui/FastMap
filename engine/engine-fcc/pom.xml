@@ -12,7 +12,10 @@
 	<packaging>jar</packaging>
 	<build />
 	<dependencies>
-
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>api-fcc</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>

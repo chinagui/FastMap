@@ -151,7 +151,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 			if (this.getCommand().getOperType().equals(OperType.CREATE)
 					&& !this.getCommand().getObjType().equals(ObjType.RDBRANCH)
 					&& !this.getCommand().getObjType().equals(ObjType.RDELECEYEPAIR)
-					&& !this.getCommand().getObjType().equals(ObjType.LUFACE)) {
+					&& !this.getCommand().getObjType().equals(ObjType.LUFACE)
+					&& !this.getCommand().getObjType().equals(ObjType.LCFACE)) {
 				handleResult(this.getCommand().getObjType(), result);
 			}
 
@@ -266,4 +267,17 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 			}
 		}
 	}
+
+//	public void handleResult(ObjType objType, Result result) {
+//		for (IRow row : result.getAddObjects()) {
+//			if (objType.equals(row.objType())) {
+//				if (row instanceof IObj) {
+//					IObj obj = (IObj) row;
+//					result.setPrimaryPid(obj.pid());
+//				} else {
+//					result.setPrimaryPid(row.parentPKValue());
+//				}
+//			}
+//		}
+//	}
 }

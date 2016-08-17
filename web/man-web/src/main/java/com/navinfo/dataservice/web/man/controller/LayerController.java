@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.web.man.controller;
 
 import java.io.BufferedReader;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -12,10 +13,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.layer.LayerService;
+import com.navinfo.dataservice.engine.man.task.TaskService;
 
 /**
  * @ClassName: CustomisedLayerController
@@ -74,7 +78,7 @@ public class LayerController extends BaseController {
 	/**
 	 * 修改重点区块。
 		原则：
-		通过layerId修改重点区块的坐标wkt
+		通过layerId修改重点区块的坐标wkt,layerName
 		使用场景：
 		规划管理页面--重点区块图层--重点区块图层编辑
 	 * @param request
@@ -88,8 +92,11 @@ public class LayerController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空");
 			}
-			LayerService.getInstance().update(dataJson.getString("layerId"),
-					dataJson.getString("wkt"));
+			String wkt=null;
+			if(dataJson.containsKey("wkt")){wkt=dataJson.getString("wkt");}
+			String layerName=null;
+			if(dataJson.containsKey("layerName")){wkt=dataJson.getString("layerName");}
+			LayerService.getInstance().update(dataJson.getString("layerId"),wkt,layerName);
 			return new ModelAndView("jsonView", success("修改成功"));
 		} catch (Exception e) {
 			log.error("修改失败，原因：" + e.getMessage(), e);
@@ -142,6 +149,25 @@ public class LayerController extends BaseController {
 		} catch (Exception e) {
 			log.error("根据geo获取重点区块列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/*
+	 * 规划管理页面--重点区块图层--搜索
+	 */
+	@RequestMapping(value = "/layer/listAll")
+	public ModelAndView listAll(HttpServletRequest request){
+		try{	
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
+			JSONObject condition = dataJson.getJSONObject("condition");			
+			JSONObject order = dataJson.getJSONObject("order");
+			
+			List<HashMap> data = LayerService.getInstance().listAll(condition,order);			
+			return new ModelAndView("jsonView", success(JsonOperation.beanToJsonList(data)));
+			//return new ModelAndView("jsonView", success(data.getResult()));
+		}catch(Exception e){
+			log.error("获取全部列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
 		}
 	}
 }

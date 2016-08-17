@@ -31,6 +31,8 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
+import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNode;
+import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -690,7 +692,15 @@ public class LogWriter {
 			ld.setRowId(UuidUtils.genUuid());
 
 			ld.setTbRowId(r.rowId());
-
+			
+			if(r.objType() == ObjType.RDSAMENODE)
+			{
+				RdSameNode sameNode = (RdSameNode) r;
+				RdSameNodePart part = (RdSameNodePart) sameNode.getParts().get(0);
+				String nodeTableName = part.getTableName().toUpperCase();
+				gridCalculator.setTableName(nodeTableName);
+			}
+			
 			// 查询对象的grid，并生成LogDetailGrid
 			String[] grids = gridCalculator.calc(ld.getTbNm().toUpperCase(),
 					ld.getTbRowId(), conn);

@@ -675,10 +675,16 @@ public class MetaController extends BaseController {
 	@RequestMapping(value = "/rdname/nametype")
 	public ModelAndView webNameType(HttpServletRequest request)
 			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
 		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			int pageSize = jsonReq.getInt("pageSize");
+			int pageNum = jsonReq.getInt("pageNum");
+			
 			ScRoadnameTypename typename = new ScRoadnameTypename();
 			
-			JSONArray data = typename.getNameType();
+			JSONArray data = typename.getNameType(pageNum,pageSize);
 			
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
@@ -699,11 +705,16 @@ public class MetaController extends BaseController {
 	@RequestMapping(value = "/rdname/adminarea")
 	public ModelAndView webAdminarea(HttpServletRequest request)
 			throws ServletException, IOException {
-		
+		String parameter = request.getParameter("parameter");
 		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			int pageSize = jsonReq.getInt("pageSize");
+			int pageNum = jsonReq.getInt("pageNum");
+			
 			ScPointAdminArea adminarea = new ScPointAdminArea();
 			
-			JSONArray data = adminarea.getAdminArea();
+			JSONArray data = adminarea.getAdminArea(pageSize,pageNum);
 			
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {

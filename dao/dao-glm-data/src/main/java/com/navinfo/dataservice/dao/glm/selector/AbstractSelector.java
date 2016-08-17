@@ -14,6 +14,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
@@ -207,26 +208,39 @@ public class AbstractSelector implements ISelector {
 		return rows;
 	}
 
-	private List<IRow> loadRowsByClassParentId(Class<? extends IRow> cls,
-			int id, boolean isLock) throws Exception {
+	/**
+	 * 查询子表并且按照需求进行排序
+	 * @param cls 查询的子表class类型
+	 * @param id 主表pid
+	 * @param isLock 是否锁表
+	 * @param order 排序
+	 * @return 子表集合
+	 * @throws Exception
+	 */
+	public List<IRow> loadRowsByClassParentId(Class<? extends IRow> cls,
+			int id, boolean isLock,String order) throws Exception {
 		List<IRow> rows = new ArrayList<IRow>();
 
 		IRow row = cls.newInstance();
 
-		String sql = "";
+		StringBuilder sql = new StringBuilder();
 
 		if (row instanceof RdLinkName || row instanceof RwLinkName) {
-			sql = "select a.*,b.name from "
+			sql.append("select a.*,b.name from "
 					+ row.tableName()
 					+ " a,rd_name b where a."
 					+ row.parentPKName()
-					+ " =:1 and a.name_groupid=b.name_groupid(+) and b.lang_code(+)='CHI' and a.u_record!=:2";
+					+ " =:1 and a.name_groupid=b.name_groupid(+) and b.lang_code(+)='CHI' and a.u_record!=:2");
 		} else {
-			sql = "select * from " + row.tableName() + " where "
-					+ row.parentPKName() + "=:1 and u_record!=:2";
+			sql.append("select * from " + row.tableName() + " where "
+					+ row.parentPKName() + "=:1 and u_record!=:2");
+			if(StringUtils.isNotEmpty(order))
+			{
+				sql.append(" order by "+order);
+			}
 
 			if (isLock) {
-				sql += " for update nowait";
+				sql.append(" for update nowait");
 			}
 		}
 
@@ -235,10 +249,8 @@ public class AbstractSelector implements ISelector {
 		ResultSet resultSet = null;
 
 		try {
-			pstmt = this.conn.prepareStatement(sql);
-
-			System.out.println(sql);
-
+			pstmt = this.conn.prepareStatement(sql.toString());
+			
 			pstmt.setInt(1, id);
 
 			pstmt.setInt(2, 2);
@@ -285,7 +297,7 @@ public class AbstractSelector implements ISelector {
 				handlePoiEditStatus((IxPoi) obj, isLock);
 			} else {
 				List<IRow> childRows = loadRowsByClassParentId(cls, obj.pid(),
-						isLock);
+						isLock,null);
 				if (CollectionUtils.isNotEmpty(childRows)) {
 					for(IRow row : childRows)
 					{

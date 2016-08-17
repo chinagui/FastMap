@@ -37,6 +37,7 @@ import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameOperation;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
+import com.navinfo.dataservice.engine.meta.rdname.ScRoadnameTypename;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -675,9 +676,9 @@ public class MetaController extends BaseController {
 	public ModelAndView webNameType(HttpServletRequest request)
 			throws ServletException, IOException {
 		try {
-			RdNameSelector selector = new RdNameSelector();
+			ScRoadnameTypename typename = new ScRoadnameTypename();
 			
-			JSONArray data = selector.getNameType();
+			JSONArray data = typename.getNameType();
 			
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
@@ -688,4 +689,28 @@ public class MetaController extends BaseController {
 		}
 	}
 
+	/**
+	 * 获取行政区划
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/rdname/adminarea")
+	public ModelAndView webAdminarea(HttpServletRequest request)
+			throws ServletException, IOException {
+		
+		try {
+			ScPointAdminArea adminarea = new ScPointAdminArea();
+			
+			JSONArray data = adminarea.getAdminArea();
+			
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+	
+			logger.error(e.getMessage(), e);
+	
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
 }

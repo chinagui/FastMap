@@ -117,6 +117,8 @@ public class RdVariableSpeedSelector extends AbstractSelector {
 			while (resultSet.next()) {
 				RdVariableSpeed rdVariableSpeed = new RdVariableSpeed();
 				ReflectionAttrUtils.executeResultSet(rdVariableSpeed, resultSet);
+				List<IRow> vias = this.loadRowsByClassParentId(RdVariableSpeedVia.class,rdVariableSpeed.getPid(), isLock,"seq_num");
+				rdVariableSpeed.setVias(vias);
 				rdVariableSpeeds.add(rdVariableSpeed);
 			}
 		} catch (Exception e) {

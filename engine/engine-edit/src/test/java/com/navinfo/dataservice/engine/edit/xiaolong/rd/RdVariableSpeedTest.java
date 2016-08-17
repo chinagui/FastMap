@@ -49,7 +49,7 @@ public class RdVariableSpeedTest extends InitApplication {
 	@Test
 	public void testAdd()
 	{
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDVARIABLESPEED\",\"dbId\":43,\"data\":{\"inLinkPid\":572675,\"outLinkPid\":88026338,\"nodePid\":470000}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDVARIABLESPEED\",\"dbId\":42,\"data\":{\"inLinkPid\":100008725,\"outLinkPid\":100008727,\"nodePid\":100025838,\"vias\":[100008729,100008730]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -67,6 +67,19 @@ public class RdVariableSpeedTest extends InitApplication {
 			json.put("pid", t.getPid());
 
 			System.out.println(json.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testBreakRdLink()
+	{
+		String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100008729,\"data\":{\"longitude\":116.42629419345741,\"latitude\":40.023691997213426},\"type\":\"RDLINK\"}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

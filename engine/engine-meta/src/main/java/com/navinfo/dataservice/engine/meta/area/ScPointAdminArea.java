@@ -142,7 +142,7 @@ public class ScPointAdminArea {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray getAdminArea(int pageSize,int pageNum) throws Exception {
+	public JSONObject getAdminArea(int pageSize,int pageNum) throws Exception {
 		
 		PreparedStatement pstmt = null;
 
@@ -150,7 +150,9 @@ public class ScPointAdminArea {
 
 		Connection conn = null;
 		
-		String sql = "SELECT * FROM (SELECT c.*, rownum rn FROM (SELECT adminareacode,whole from SC_POINT_ADMINAREA)c WHERE rownum<= :1) WHERE rn>= :2";
+		JSONObject result = new JSONObject();
+		
+		String sql = "SELECT * FROM (SELECT c.*, rownum rn FROM (SELECT COUNT (1) OVER (PARTITION BY 1) total,adminareacode,whole from SC_POINT_ADMINAREA)c WHERE rownum<= :1) WHERE rn>= :2";
 		
 		try {
 			conn = DBConnector.getInstance().getMetaConnection();
@@ -167,14 +169,22 @@ public class ScPointAdminArea {
 			
 			resultSet = pstmt.executeQuery();
 			
-			JSONArray result = new JSONArray();
+			JSONArray dataList = new JSONArray();
+			
+			int total = 0;
 			
 			while (resultSet.next()) {
+				if (total == 0) {
+					total = resultSet.getInt("total");
+				}
 				JSONObject data = new JSONObject();
 				data.put("adminareacode", resultSet.getInt("adminareacode"));
 				data.put("whole", resultSet.getString("whole"));
-				result.add(data);
+				dataList.add(data);
 			}
+			
+			result.put("total", total);
+			result.put("data", dataList);
 			
 			return result;
 		} catch (Exception e) {

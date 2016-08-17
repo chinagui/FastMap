@@ -18,7 +18,7 @@ public class ScRoadnameTypename {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray getNameType(int pageNum,int pageSize) throws Exception {
+	public JSONObject getNameType(int pageNum,int pageSize) throws Exception {
 		
 		PreparedStatement pstmt = null;
 
@@ -26,7 +26,9 @@ public class ScRoadnameTypename {
 
 		Connection conn = null;
 		
-		String sql = "SELECT * FROM (SELECT c.*, rownum rn FROM (SELECT * from SC_ROADNAME_TYPENAME)c WHERE rownum<= :1) WHERE rn>= :2";
+		JSONObject result = new JSONObject();
+		
+		String sql = "SELECT * FROM (SELECT c.*, rownum rn FROM (SELECT COUNT (1) OVER (PARTITION BY 1) total,* from SC_ROADNAME_TYPENAME)c WHERE rownum<= :1) WHERE rn>= :2";
 		
 		try {
 			conn = DBConnector.getInstance().getMetaConnection();
@@ -43,9 +45,14 @@ public class ScRoadnameTypename {
 			
 			resultSet = pstmt.executeQuery();
 			
-			JSONArray result = new JSONArray();
+			JSONArray dataList = new JSONArray();
+			
+			int total = 0;
 			
 			while (resultSet.next()) {
+				if (total == 0) {
+					total = resultSet.getInt("total");
+				}
 				JSONObject data = new JSONObject();
 				data.put("id", resultSet.getInt("id"));
 				data.put("name", resultSet.getString("name"));
@@ -53,8 +60,11 @@ public class ScRoadnameTypename {
 				data.put("englishname", resultSet.getString("englishname"));
 				data.put("regionFlag", resultSet.getString("region_flag"));
 				data.put("langCode", resultSet.getString("lang_code"));
-				result.add(data);
+				dataList.add(data);
 			}
+			
+			result.put("total", total);
+			result.put("data", dataList);
 			
 			return result;
 		} catch (Exception e) {

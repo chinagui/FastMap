@@ -6,14 +6,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.bson.Document;
 
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.JtsGeometryConvertor;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.io.WKTReader;
 
 public class test {
 
@@ -61,7 +65,7 @@ public class test {
 		}
 	}
 
-	public static void main(String[] args) throws Exception {
+	public static void json() {
 		/*
 		 * //JsonObject和JsonArray区别就是JsonObject是对象形式，JsonArray是数组形式
 		 * //创建JsonObject第一种方法 JSONObject jsonObject = new JSONObject();
@@ -93,12 +97,63 @@ public class test {
 		 * arrayList); System.out.println("jsonObject2：" + jsonObject2);
 		 */
 		HashMap<String, JSONObject> hashMap = new HashMap<String, JSONObject>();
-		JSONObject obj1= new JSONObject();
+		JSONObject obj1 = new JSONObject();
 		obj1.put("UserName", "ZHULI");
-		JSONObject obj2= new JSONObject();
+		JSONObject obj2 = new JSONObject();
 		obj2.put("age", "30");
 		hashMap.put("110", obj1);
 		hashMap.put("111", obj2);
 		System.out.println("jsonObject2：" + JSONObject.fromObject(hashMap));
+	}
+
+	public static void jtsPoint() throws Exception {
+		// instance from Coordinate
+		Coordinate[] cdlist = new Coordinate[] { new Coordinate(0, 0), new Coordinate(2, 2), new Coordinate(3, 3) };
+		LineString p1 = new GeometryFactory().createLineString(cdlist);
+		System.out.println(p1);
+		System.out.println(p1.getCoordinateSequence());
+		// instance from CoordinateArraySequence
+		// CoordinateSequence cslist = new CoordinateArraySequence();
+		// Geometry p1 = new GeometryFactory().createLineString(cslist);
+		// System.out.println(p1);
+
+	}
+
+	public static void jtsPolygon() throws Exception {
+		// touches 是 intersects 的子集 
+		WKTReader wktr=new WKTReader();
+		
+		Geometry  p1= wktr.read("POLYGON((0 0,0 1,1 1,1 0,0 0))");
+		Geometry  p2= wktr.read("POLYGON((1 0,1 1,2 1,2 0,1 0))");
+		Geometry  p3= wktr.read("POLYGON((0.5 0,0.5 1,2 1,2 0,0.5 0))");
+	
+		
+		System.out.println(p1.intersects(p2));
+		System.out.println(p1.touches(p2));
+		
+		System.out.println(p1.intersects(p3));
+		System.out.println(p1.touches(p3));
+		
+	}
+
+	public static void jts1() throws Exception {
+		// read a geometry from a WKT string (using the default geometry
+		// factory)
+		Geometry ls1 = new WKTReader().read("LINESTRING (0 0, 10 10, 20 20)");
+		System.out.println("Geometry 1: " + ls1);
+
+		// create a geometry by specifying the coordinates directly
+		Coordinate[] cd = new Coordinate[] { new Coordinate(0, 0), new Coordinate(10, 10), new Coordinate(20, 20) };
+		// use the default factory, which gives full double-precision
+		Geometry ls2 = new GeometryFactory().createLineString(cd);
+		System.out.println("Geometry 2: " + ls2);
+
+		// compute the intersection of the two geometries
+		Geometry g3 = ls1.intersection(ls2);
+		System.out.println("G1 intersection G2: " + g3);
+	}
+
+	public static void main(String[] args) throws Exception {
+		jtsPolygon();
 	}
 }

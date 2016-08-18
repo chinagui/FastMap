@@ -1,14 +1,24 @@
 package com.navinfo.dataservice.engine.edit.search.rd.utils;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
+
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineSegment;
 
@@ -24,30 +34,160 @@ public class RdLinkSearchUtils {
 		this.conn = conn;
 	}
 
-	public List<RdLink> getConnectLinks(int linkPid, int direct)
-			throws Exception {
+	/**
+	 * 查询link串，批量修改限速使用。
+	 * 
+	 * @param linkPid
+	 *            关联link
+	 * @param direct
+	 *            限速方向
+	 * @param queryType
+	 *            限速类型：1点限速，2线限速
+	 * @return
+	 * @throws Exception
+	 */
+	public List<Integer> getConnectLinks(int linkPid, int direct,
+			String queryType) throws Exception {
 
-		List<RdLink> links = new ArrayList<RdLink>();
+		List<Integer> nextLinkPids = new ArrayList<Integer>();
 
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 
 		RdLink targetLink = (RdLink) linkSelector.loadByIdOnlyRdLink(linkPid,
-				true);
-		links.add(targetLink);
-		
-		int nodePid=0;
-		
-		if(direct==2)
-		{
-			nodePid=targetLink.geteNodePid();
-		}
-		
-		
-		
-	
+				false);
 
-		
-		return links;
+		if (targetLink == null) {
+
+			return nextLinkPids;
+		}
+
+		int nodePid = 0;
+
+		if (direct == 2) {
+
+			nodePid = targetLink.geteNodePid();
+
+		} else if (direct == 3) {
+
+			nodePid = targetLink.getsNodePid();
+		}
+
+		getConnectLink(targetLink, nodePid, nextLinkPids, queryType);
+
+		return nextLinkPids;
+	}
+
+	private void getConnectLink(RdLink targetLink, int connectNodePid,
+			List<Integer> linkPids, String type) throws Exception {
+
+		if (!linkPids.contains(targetLink.getPid())) {
+
+			linkPids.add(targetLink.getPid());
+		}
+
+		String sql = "WITH TMP1 AS (SELECT LINK_PID, S_NODE_PID, E_NODE_PID, DIRECT, GEOMETRY FROM RD_LINK T WHERE ((S_NODE_PID = :1 AND DIRECT = 2) OR (E_NODE_PID = :2 AND DIRECT = 3) OR ((S_NODE_PID = :3 OR E_NODE_PID = :4) AND DIRECT = 1)) AND U_RECORD != 2)  SELECT B.*, (SELECT COUNT(1) FROM RD_SPEEDLIMIT S WHERE S.LINK_PID = B.LINK_PID AND S.U_RECORD != 2 AND (B.DIRECT = S.DIRECT OR (B.DIRECT = 1 AND ((B.S_NODE_PID = :5 AND S.DIRECT = 2) OR (B.E_NODE_PID = :6 AND S.DIRECT = 3))))) RDSPEEDLIMIT, (SELECT COUNT(1) FROM RD_LINK_SPEEDLIMIT L WHERE L.LINK_PID = B.LINK_PID AND L.U_RECORD != 2 AND L.SPEED_TYPE = 0 AND ((B.DIRECT = 2 AND L.FROM_SPEED_LIMIT > 0) OR (B.DIRECT = 3 AND L.TO_SPEED_LIMIT > 0) OR (B.DIRECT = 1 AND ((B.S_NODE_PID = :7 AND L.FROM_SPEED_LIMIT > 0) OR (B.E_NODE_PID = :8 AND L.TO_SPEED_LIMIT > 0))))) RDLINKSPEEDLIMIT FROM TMP1 B";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+
+			System.out.println(sql);
+
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, connectNodePid);
+			pstmt.setInt(2, connectNodePid);
+			pstmt.setInt(3, connectNodePid);
+			pstmt.setInt(4, connectNodePid);
+			pstmt.setInt(5, connectNodePid);
+			pstmt.setInt(6, connectNodePid);
+			pstmt.setInt(7, connectNodePid);
+			pstmt.setInt(8, connectNodePid);
+
+			resultSet = pstmt.executeQuery();
+
+			int speedlimitCount = -1;
+
+			int linkspeedlimitCount = -1;
+
+			RdLink nextLink = new RdLink();
+
+			double minAngle = Double.MAX_VALUE;
+
+			LineSegment targetlineSegment = getLineSegment(targetLink,
+					connectNodePid);
+
+			while (resultSet.next()) {
+
+				int linkPid = resultSet.getInt("LINK_PID");
+
+				if (linkPid == targetLink.getPid()) {
+					continue;
+				}
+
+				Geometry linkGeometry = GeoTranslator.struct2Jts(
+						(STRUCT) resultSet.getObject("GEOMETRY"), 100000, 0);
+
+				int sNodePid = resultSet.getInt("S_NODE_PID");
+
+				int eNodePid = resultSet.getInt("E_NODE_PID");
+
+				RdLink link = new RdLink();
+
+				link.setPid(linkPid);
+
+				link.setGeometry(linkGeometry);
+
+				link.setsNodePid(sNodePid);
+
+				link.seteNodePid(eNodePid);
+
+				LineSegment lineSegment = getLineSegment(link, connectNodePid);
+
+				double angle = AngleCalculator.getnMinAngle(targetlineSegment,
+						lineSegment);
+
+				if (angle < minAngle) {
+
+					minAngle = angle;
+
+					nextLink = link;
+
+					speedlimitCount = resultSet.getInt("RDSPEEDLIMIT");
+
+					linkspeedlimitCount = resultSet.getInt("RDLINKSPEEDLIMIT");
+				}
+			}
+
+			if (speedlimitCount == -1 || linkspeedlimitCount == -1) {
+				return;
+			}
+
+			if (type == "RDSPEEDLIMIT" && speedlimitCount > 0) {
+				return;
+			}
+
+			if (type == "RDLINKSPEEDLIMIT"
+					&& (speedlimitCount > 0 || linkspeedlimitCount > 0)) {
+				return;
+			}
+
+			int targetNodePid = nextLink.getsNodePid() == connectNodePid ? nextLink
+					.geteNodePid() : nextLink.getsNodePid();
+
+			getConnectLink(nextLink, targetNodePid, linkPids, type);
+
+		} catch (Exception e) {
+
+			throw new Exception(e);
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+		}
+
 	}
 
 	/*
@@ -114,6 +254,15 @@ public class RdLinkSearchUtils {
 		return tracks;
 	}
 
+	/**
+	 * 获取link指定端点处的直线几何
+	 * 
+	 * @param link
+	 *            线
+	 * @param nodePidDir
+	 *            指定端点
+	 * @return 以指定端点为起点的直线几何
+	 */
 	private LineSegment getLineSegment(RdLink link, int nodePidDir) {
 		LineSegment lineSegment = null;
 		if (link.getsNodePid() == nodePidDir) {
@@ -130,5 +279,4 @@ public class RdLinkSearchUtils {
 		}
 		return lineSegment;
 	}
-
 }

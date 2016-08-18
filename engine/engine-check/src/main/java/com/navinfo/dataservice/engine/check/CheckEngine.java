@@ -21,7 +21,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.CheckRule;
 import com.navinfo.dataservice.engine.check.core.CheckSuitLoader;
 import com.navinfo.dataservice.engine.check.core.NiValException;
-import com.navinfo.dataservice.engine.check.core.PostRuleExecuter;
+import com.navinfo.dataservice.engine.check.core.RuleExecuter;
 import com.navinfo.dataservice.engine.check.core.VariableName;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.vividsolutions.jts.geom.Geometry;
@@ -29,7 +29,8 @@ import com.vividsolutions.jts.geom.Geometry;
 public class CheckEngine {
 	private CheckCommand checkCommand = null;
 	private Connection conn;
-	private List<VariableName> myCheckSuitVariables=new ArrayList<VariableName>();
+	private List<VariableName> myCheckSuitPostVariables=new ArrayList<VariableName>();
+	private List<VariableName> myCheckSuitPreVariables=new ArrayList<VariableName>();
 	
 	public Connection getConn() {
 		return conn;
@@ -63,31 +64,8 @@ public class CheckEngine {
 		String suitCode = objType.toString()+"_"+operType.toString()+"_"+checkType;
 		log.info(suitCode);
 		List<CheckRule> myCheckSuit = CheckSuitLoader.getInstance().getCheckSuit(suitCode);
-		this.myCheckSuitVariables=CheckSuitLoader.getInstance().getCheckSuitVariables(suitCode);
-		return myCheckSuit;
-	}
-	
-	private List<CheckRule> getRulesTest(ObjType objType, OperType operType,String checkType) throws Exception{
-		String initRuleCode="test2";
-		String initRuleLog="testsql";
-		int initSeverity=1;
-		String initCheckClassPath=null;
-		String accessorType="SQL";
-		String accessorName="select r.geometry,'[RD_LINK,'||r.link_pid||']',R.MESH_ID from rd_link r where r.kind in (10,11,15) and r.link_pid=RDLINK_PID";
-		String variables="RDLINK_PID";
-		CheckRule rule=new CheckRule(initRuleCode,initRuleLog,initSeverity,initCheckClassPath,accessorType,accessorName,variables);
-		
-		String ruleCode="GLM01197";
-		String ruleLog="log";
-		String ruleClass="com.navinfo.dataservice.engine.check.rules.GLM01197";
-		
-		CheckRule rule2=new CheckRule(ruleCode,ruleLog,1,ruleClass,null,null,null);
-		CheckRule rule3=new CheckRule(ruleCode,ruleLog,1,ruleClass,null,null,null);
-		List<CheckRule> myCheckSuit = new ArrayList<CheckRule>();
-		//myCheckSuit.add(rule);
-		myCheckSuit.add(rule2);
-		myCheckSuit.add(rule3);
-		this.myCheckSuitVariables.addAll(rule.getPostVariables());
+		this.myCheckSuitPostVariables=CheckSuitLoader.getInstance().getCheckSuitPostVariables(suitCode);
+		this.myCheckSuitPreVariables=CheckSuitLoader.getInstance().getCheckSuitPreVariables(suitCode);
 		return myCheckSuit;
 	}
 	
@@ -109,24 +87,19 @@ public class CheckEngine {
 		log.info("start preCheck");
 		//isValidConn();
 		//获取前检查需要执行规则列表
-		List<CheckRule> rulesList=getRules(checkCommand.getObjType(),checkCommand.getOperType(),"PRE");		
-		for (int i=0;i<rulesList.size();i++){
+		List<CheckRule> rulesList=getRules(checkCommand.getObjType(),checkCommand.getOperType(),"PRE");
+		RuleExecuter ruleExecuterObj=new RuleExecuter(this.checkCommand,this.myCheckSuitPreVariables,this.conn);
+		for (int i=0;i<rulesList.size();i++){			
 			CheckRule rule=rulesList.get(i);
-			baseRule obj = (baseRule) rule.getPreRuleClass().newInstance();
-			obj.setRuleDetail(rule);
-			obj.setConn(this.conn);
 			try{
-			//调用规则的前检查
-				obj.preCheck(this.checkCommand);				
-				if(obj.getCheckResultList().size()!=0){
+				String logMsg=ruleExecuterObj.exePreRule(rule);
+				if(logMsg!=null && !logMsg.isEmpty()){
 					log.info("end preCheck");
-					return obj.getCheckResultList().get(0).getInformation();
-					}
-			}catch(Exception e) {
-				log.error("error preCheck",e);
-				return null;
-			}
-		}
+					return logMsg;}
+				}
+			catch(Exception e){
+				log.error("error preCheck"+rule.getRuleCode(),e);
+			}}
 		log.info("end preCheck");
 		return null;
 	}
@@ -140,11 +113,11 @@ public class CheckEngine {
 		//获取后检查需要执行规则列表
 		List<CheckRule> rulesList=getRules(this.checkCommand.getObjType(),this.checkCommand.getOperType(),"POST");
 		List<NiValException> checkResultList = new ArrayList<NiValException>();
-		PostRuleExecuter ruleExecuterObj=new PostRuleExecuter(this.checkCommand,this.myCheckSuitVariables,this.conn);
+		RuleExecuter ruleExecuterObj=new RuleExecuter(this.checkCommand,this.myCheckSuitPostVariables,this.conn);
 		for (int i=0;i<rulesList.size();i++){
 			CheckRule rule=rulesList.get(i);
 			try{
-				List<NiValException> resultTmp=ruleExecuterObj.exeRule(rule);
+				List<NiValException> resultTmp=ruleExecuterObj.exePostRule(rule);
 				if(resultTmp.size()>0){checkResultList.addAll(resultTmp);}}
 			catch(Exception e){
 				log.error("error postCheck"+rule.getRuleCode(),e);

@@ -94,7 +94,7 @@ public class SelectorUtils {
 				}
 				JSONObject json = new JSONObject();
 				json.put("pid", resultSet.getInt("pid"));
-				json.put("name", resultSet.getInt("pid"));
+				json.put("name", resultSet.getString("name"));
 				json.put("type", tableName);
 
 				array.add(json);

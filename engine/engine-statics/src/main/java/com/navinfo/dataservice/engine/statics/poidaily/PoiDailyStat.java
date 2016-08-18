@@ -61,7 +61,7 @@ public class PoiDailyStat implements Runnable {
 		try {
 			QueryRunner run = new QueryRunner();
 
-			String sql = "select ip.pid, ip.geometry from ix_poi ip, poi_edit_status pes where ip.row_id = pes.row_id and pes.status=3";
+			String sql = "select ip.pid,ip.geometry,ip.row_id from ix_poi ip, poi_edit_status pes where ip.row_id = pes.row_id and pes.status=3";
 			return run.query(conn, sql, new ResultSetHandler<Map<String, JSONObject>>() {
 
 				@Override
@@ -76,16 +76,20 @@ public class PoiDailyStat implements Runnable {
 							String grid_id = CompGridUtil.point2Grids(geo.getCoordinate().x, geo.getCoordinate().y)[0];
 
 							int pid = rs.getInt("pid");
+							String row_id = rs.getString("row_id");
+							JSONObject tmp = new JSONObject();
+							tmp.put("pid", pid);
+							tmp.put("row_id", row_id);
 							if (map.containsKey(grid_id)) {
 								JSONObject obj = map.get(grid_id);
 								obj.put("finish", obj.getInt("finish") + 1);
-								obj.put("finish_pids", obj.getJSONArray("finish_pids").element(pid));
+								obj.put("finish_pids", obj.getJSONArray("finish_pids").element(tmp));
 								map.put(grid_id, obj);
 
 							} else {
 								JSONObject obj = new JSONObject();
 								obj.put("finish", 1);
-								obj.put("finish_pids", new JSONArray().element(pid));
+								obj.put("finish_pids", new JSONArray().element(tmp));
 
 								map.put(grid_id, obj);
 							}

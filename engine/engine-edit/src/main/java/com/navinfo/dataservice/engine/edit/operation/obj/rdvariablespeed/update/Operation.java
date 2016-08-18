@@ -22,7 +22,7 @@ public class Operation implements IOperation {
 	private RdVariableSpeed variableSpeed;
 
 	private Connection conn;
-	
+
 	public Operation(Connection conn) {
 		this.conn = conn;
 	}
@@ -40,13 +40,10 @@ public class Operation implements IOperation {
 
 		JSONObject content = command.getContent();
 
-		if (content.containsKey("objStatus")) {
+		boolean isChanged = variableSpeed.fillChangeFields(content);
 
-			boolean isChanged = variableSpeed.fillChangeFields(content);
-
-			if (isChanged) {
-				result.insertObject(variableSpeed, ObjStatus.UPDATE, variableSpeed.pid());
-			}
+		if (isChanged) {
+			result.insertObject(variableSpeed, ObjStatus.UPDATE, variableSpeed.pid());
 		}
 
 		// 接续线子表
@@ -131,19 +128,19 @@ public class Operation implements IOperation {
 			Result result) {
 		for (RdVariableSpeed rdVariableSpeed : rdVariableViaSpeedList) {
 			List<IRow> viaList = rdVariableSpeed.getVias();
-			
+
 			boolean hasFindStartLink = false;
-			
+
 			for (IRow row : viaList) {
 				RdVariableSpeedVia via = (RdVariableSpeedVia) row;
-				
+
 				if (via.getLinkPid() == oldLink.getPid()) {
 
-					//删除原始线作为经过线的情况
+					// 删除原始线作为经过线的情况
 					result.insertObject(via, ObjStatus.DELETE, via.getLinkPid());
-					
+
 					int oldSNodePid = oldLink.getsNodePid();
-					
+
 					for (RdLink newLink : newLinks) {
 						if (newLink.getsNodePid() == oldSNodePid || newLink.geteNodePid() == oldSNodePid) {
 							RdVariableSpeedVia rdVariableSpeedVia = new RdVariableSpeedVia();
@@ -155,7 +152,7 @@ public class Operation implements IOperation {
 							rdVariableSpeedVia.setVspeedPid(rdVariableSpeed.getPid());
 
 							result.insertObject(rdVariableSpeedVia, ObjStatus.INSERT, via.getLinkPid());
-							
+
 							hasFindStartLink = true;
 						} else {
 							RdVariableSpeedVia rdVariableSpeedVia2 = new RdVariableSpeedVia();
@@ -169,7 +166,7 @@ public class Operation implements IOperation {
 							result.insertObject(rdVariableSpeedVia2, ObjStatus.INSERT, via.getLinkPid());
 						}
 					}
-				} else if(hasFindStartLink) {
+				} else if (hasFindStartLink) {
 					// 更新其他接续线的seqNum
 					via.changedFields().put("seqNum", via.getSeqNum() + 1);
 

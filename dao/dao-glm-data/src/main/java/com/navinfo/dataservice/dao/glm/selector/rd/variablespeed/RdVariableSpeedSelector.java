@@ -150,11 +150,15 @@ public class RdVariableSpeedSelector extends AbstractSelector {
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
-			StringBuilder sb = new StringBuilder("select * from RD_VARIABLE_SPEED where u_record !=2 and (in_link_pid = ：1 or out_link_pid = :2)");
+			StringBuilder sb = new StringBuilder("select * from RD_VARIABLE_SPEED where u_record !=2 and (in_link_pid = :1 or out_link_pid = :2)");
 			if (isLock) {
 				sb.append(" for update nowait");
 			}
 			pstmt = getConn().prepareStatement(sb.toString());
+			
+			pstmt.setInt(1, linkPid);
+			
+			pstmt.setInt(2, linkPid);
 
 			resultSet = pstmt.executeQuery();
 
@@ -173,7 +177,7 @@ public class RdVariableSpeedSelector extends AbstractSelector {
 	}
 
 	/**
-	 * 根据接续线查询
+	 * 根据接续线查询可变限速对象
 	 * 
 	 * @param viaLinkPid
 	 * @param isLock
@@ -214,5 +218,39 @@ public class RdVariableSpeedSelector extends AbstractSelector {
 		}
 		return rdVariableSpeeds;
 	}
+	
+	/**
+	 * 根据接续线查询接续线对象
+	 * 
+	 * @param viaLinkPid
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdVariableSpeedVia> loadRdVariableSpeedVia(Integer viaLinkPid, boolean isLock) throws Exception {
+		List<RdVariableSpeedVia> rdVariableSpeeds = new ArrayList<>();
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			StringBuilder sb = new StringBuilder(
+					"select * from rd_variable_speed_via where link_pid = :1 and u_record !=2");
+			if (isLock) {
+				sb.append(" for update nowait");
+			}
+			pstmt = getConn().prepareStatement(sb.toString());
+			
+			pstmt.setInt(1, viaLinkPid);
 
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return rdVariableSpeeds;
+	}
 }

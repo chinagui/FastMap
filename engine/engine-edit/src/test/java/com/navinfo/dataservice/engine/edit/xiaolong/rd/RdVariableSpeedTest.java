@@ -75,7 +75,19 @@ public class RdVariableSpeedTest extends InitApplication {
 	@Test
 	public void testBreakRdLink()
 	{
-		String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100008729,\"data\":{\"longitude\":116.42629419345741,\"latitude\":40.023691997213426},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDVARIABLESPEED\",\"dbId\":43,\"data\":{\"pid\":\"100000072\",\"inLinkPid\":\"578706\",\"outLinkPid\":\"578707\",\"nodePid\":\"471781\",\"vias\":[578705]}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testDelete() {
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":42,\"type\":\"RDLINK\",\"objId\":14905231}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

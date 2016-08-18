@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update;
 
+import java.sql.Connection;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -23,10 +25,16 @@ public class Operation implements IOperation {
 	private Command command;
 
 	private RdLink updateLink;
+	private Connection conn;
 
 	public Operation(Command command, RdLink updateLink) {
 		this.command = command;
 
+		this.updateLink = updateLink;
+	}
+	public Operation(Command command, RdLink updateLink,Connection conn) {
+		this.command = command;
+		this.conn =conn;
 		this.updateLink = updateLink;
 	}
 
@@ -118,7 +126,7 @@ public class Operation implements IOperation {
 
 			this.saveZones(result, array);
 		}
-
+		this.refRdlaneForRdlink(result);
 		return null;
 	}
 
@@ -594,5 +602,23 @@ public class Operation implements IOperation {
 
 		}
 
+	}
+	/***
+	 * 修改LINK信息维护详细车道信息
+	 * zhaokk
+	 * @throws Exception 
+	 */
+	private void  refRdlaneForRdlink(Result result) throws Exception{
+		
+		int kind =this.command.getUpdateContent().getInt("kind");
+	    if(this.updateLink.getKind() !=kind) {
+	    	com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(conn);
+	    	if(this.updateLink.getKind() <= 7 && kind > 7){
+	    		operation.caleRdLinesForRdLink(result, this.updateLink, 1);
+	    	}
+	    	if(this.updateLink.getKind() > 7 && kind <=7){
+	    		operation.caleRdLinesForRdLink(result, this.updateLink, 0);
+	    	}
+	    }	
 	}
 }

@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
+import com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye.TestUtil;
 
 public class LuLinkTest extends InitApplication {
 
@@ -40,6 +41,12 @@ public class LuLinkTest extends InitApplication {
 			e.printStackTrace();
 		}
 
+	}
+	
+	@Test
+	public void update(){
+		String requester = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"LULINK\",\"objId\":100034774,\"data\":{\"linkKinds\":[{\"kind\":3,\"rowId\":\"62EE6A6C0F7E47DDA278FAD24FFD071D\",\"objStatus\":\"UPDATE\"}],\"rowId\":\"150CA45F49BD414B8AADBA44B97398FC\",\"pid\":100034774}}";
+		TestUtil.run(requester);
 	}
 
 	@Test

@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.dao.glm.model.rd.tollgate;
 
 import java.lang.reflect.Field;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -20,7 +21,7 @@ public class RdTollgatePassage implements IRow {
 	private int seqNum = 1;
 	private int tollForm;
 	private int cardType;
-	private int vehicle;
+	private BigInteger vehicle = new BigInteger("0");
 	private String rowId;
 	public Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -56,13 +57,6 @@ public class RdTollgatePassage implements IRow {
 		this.cardType = cardType;
 	}
 
-	public int getVehicle() {
-		return vehicle;
-	}
-
-	public void setVehicle(int vehicle) {
-		this.vehicle = vehicle;
-	}
 
 	public String getRowId() {
 		return rowId;
@@ -78,6 +72,14 @@ public class RdTollgatePassage implements IRow {
 	@Override
 	public boolean Unserialize(JSONObject json) throws Exception {
 		return false;
+	}
+
+	public BigInteger getVehicle() {
+		return vehicle;
+	}
+
+	public void setVehicle(BigInteger vehicle) {
+		this.vehicle = vehicle;
 	}
 
 	@Override
@@ -116,7 +118,7 @@ public class RdTollgatePassage implements IRow {
 		this.seqNum = tollgate.getSeqNum();
 		this.tollForm = tollgate.getTollForm();
 		this.cardType = tollgate.getCardType();
-		this.vehicle = tollgate.getVehicle();
+		this.vehicle = tollgate.vehicle;
 	}
 
 	@Override

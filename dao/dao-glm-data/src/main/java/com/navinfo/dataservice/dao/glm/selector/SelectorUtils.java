@@ -48,7 +48,7 @@ public class SelectorUtils {
 		StringBuilder bufferCondition = new StringBuilder();
 		if (tableName.equals(ObjType.RDLINK.toString())) {
 			bufferCondition
-					.append(" select  /*+ leading(iln,rn) use_hash(iln,rn)*/  COUNT (1) OVER (PARTITION BY 1) total,rln.link_pid,rn.name from rd_link_name rln,rd_name rn where rln.name_class=1 and rn.lang_code = 'CHI' and   rn.name_groupid = rln.name_groupId");
+					.append(" select  /*+ leading(iln,rn) use_hash(iln,rn)*/  COUNT (1) OVER (PARTITION BY 1) total,rln.link_pid pid,rn.name from rd_link_name rln,rd_name rn where rln.name_class=1 and rn.lang_code = 'CHI' and   rn.name_groupid = rln.name_groupId");
 			if (object.containsKey("name")) {
 				bufferCondition.append(" and rn.name like '%"
 						+ object.getString("name") + "%' ");
@@ -59,7 +59,7 @@ public class SelectorUtils {
 		}
 		if (tableName.equals(ObjType.IXPOI.toString())) {
 			bufferCondition
-					.append(" select COUNT (1) OVER (PARTITION BY 1) total,ipn.poi_pid,ipn.name from ix_poi_name ipn where ipn.name_class=1 and ipn.name_type =2 and ipn.lang_code = 'CHI' ");
+					.append(" select COUNT (1) OVER (PARTITION BY 1) total,ipn.poi_pid pid,ipn.name from ix_poi_name ipn where ipn.name_class=1 and ipn.name_type =2 and ipn.lang_code = 'CHI' ");
 			if (object.containsKey("name")) {
 				bufferCondition.append(" and ipn.name like '%"
 						+ object.getString("name") + "%' ");

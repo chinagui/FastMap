@@ -48,7 +48,7 @@ public class SelectorUtils {
 		StringBuilder bufferCondition = new StringBuilder();
 		if (tableName.equals(ObjType.RDLINK.toString())) {
 			bufferCondition
-					.append(" select  /*+ leading(iln,rn) use_hash(iln,rn)*/  COUNT (1) OVER (PARTITION BY 1) total,rln.link_pid,rn.name from rd_link_name rln,rd_name rn where rlm.name_class=1 and rn.lang_code = 'CHI' and   rn.name_groupid = rln.name_groupId");
+					.append(" select  /*+ leading(iln,rn) use_hash(iln,rn)*/  COUNT (1) OVER (PARTITION BY 1) total,rln.link_pid,rn.name from rd_link_name rln,rd_name rn where rln.name_class=1 and rn.lang_code = 'CHI' and   rn.name_groupid = rln.name_groupId");
 			if (object.containsKey("name")) {
 				bufferCondition.append(" and rn.name like '%"
 						+ object.getString("name") + "%' ");
@@ -120,14 +120,14 @@ public class SelectorUtils {
 	public static void main(String[] args) throws Exception {
 		int startRow = 1;
 		int endRow = 1 * 5;
-		String tableName = "IXPOI";
+		String tableName = "RDLINK";
 		JSONObject object = new JSONObject();
 		object.put("name", "北京");
 		StringBuilder buffer = new StringBuilder();
 		StringBuilder bufferCondition = new StringBuilder();
 		if (tableName.equals(ObjType.RDLINK.toString())) {
 			bufferCondition
-					.append(" select  /*+ leading(iln,rn) use_hash(iln,rn)*/  COUNT (1) OVER (PARTITION BY 1) total,rln.link_pid,rn.name from rd_link_name rln,rd_name rn where  rn.name_groupid = rln.name_groupId");
+					.append(" select  /*+ leading(iln,rn) use_hash(iln,rn)*/  COUNT (1) OVER (PARTITION BY 1) total,rln.link_pid,rn.name from rd_link_name rln,rd_name rn where rln.name_class=1 and rn.lang_code = 'CHI' and   rn.name_groupid = rln.name_groupId");
 			if (object.containsKey("name")) {
 				bufferCondition.append(" and rn.name like '%"
 						+ object.getString("name") + "%' ");

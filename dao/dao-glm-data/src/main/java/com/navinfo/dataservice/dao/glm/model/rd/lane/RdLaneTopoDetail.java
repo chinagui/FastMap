@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.dao.glm.model.rd.lane;
 
 import java.lang.reflect.Field;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,8 +16,10 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+
 /**
  * 道路:详细车道连通表，仅记录客车（小汽车）可通行的车道连通关系
+ * 
  * @author zhaokaikai
  *
  */
@@ -50,7 +53,6 @@ public class RdLaneTopoDetail implements IObj {
 		this.inLinkPid = inLinkPid;
 	}
 
-
 	public int getNodePid() {
 		return nodePid;
 	}
@@ -83,11 +85,11 @@ public class RdLaneTopoDetail implements IObj {
 		this.timeDomain = timeDomain;
 	}
 
-	public int getVehicle() {
+	public BigInteger getVehicle() {
 		return vehicle;
 	}
 
-	public void setVehicle(int vehicle) {
+	public void setVehicle(BigInteger vehicle) {
 		this.vehicle = vehicle;
 	}
 
@@ -123,24 +125,24 @@ public class RdLaneTopoDetail implements IObj {
 		this.rcFlag = rcFlag;
 	}
 
-	private int intLanePid; // 进入车道 
+	private int intLanePid; // 进入车道
 	private int outLanePid; // 退出车道
-	private int inLinkPid ;// 进入 LINK 
-	private int nodePid;  //进入 NODE 
-	private int outLinkPid;//退出 LINK 
-	private int reachDir = 0; //通达方向 
-	private int timeDomain;//时间段 
-	private int vehicle = 0;//车辆类型 
-	private int tollForm = 0;//收费方式
-	private int cardType = 0;//领卡类型
-	private int topologyId = 0;//车信连通号码
-	private int rcFlag  = 0 ; //车道连通关系来源
-	
+	private int inLinkPid;// 进入 LINK
+	private int nodePid; // 进入 NODE
+	private int outLinkPid;// 退出 LINK
+	private int reachDir = 0; // 通达方向
+	private int timeDomain;// 时间段
+	private BigInteger vehicle = new BigInteger("0");// 车辆类型
+	private int tollForm = 0;// 收费方式
+	private int cardType = 0;// 领卡类型
+	private int topologyId = 0;// 车信连通号码
+	private int rcFlag = 0; // 车道连通关系来源
+
 	private List<IRow> topoVias = new ArrayList<IRow>();
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	public Map<String, RdLaneTopoVia> mapVia = new HashMap<>();
-	
+
 	public RdLaneTopoDetail() {
 
 	}
@@ -244,9 +246,6 @@ public class RdLaneTopoDetail implements IObj {
 		children.add(topoVias);
 		return children;
 	}
-
-
-
 
 	public List<IRow> getTopoVias() {
 		return topoVias;

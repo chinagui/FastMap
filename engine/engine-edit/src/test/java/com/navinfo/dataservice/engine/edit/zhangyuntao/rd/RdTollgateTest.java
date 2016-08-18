@@ -43,6 +43,7 @@ public class RdTollgateTest extends InitApplication {
 	@Test
 	public void update() {
 		String parameter = "{'command':'UPDATE', 'dbId':42, 'type':'RDTOLLGATE', data:{'pid':100034747, 'type':2, 'names':[{'nameGroupid':11, 'rowId':'7AA43E40216E4B06829B2A89D049A6F9', 'objStatus':'UPDATE'}]}}";
+		parameter = "{\"command\":\"UPDATE\",\"type\":\"RDVARIABLESPEED\",\"dbId\":43,\"data\":{\"location\":6,\"pid\":100000075,\"objStatus\":\"UPDATE\",\"vehicle\":2147483648}}";
 		TestUtil.run(parameter);
 	}
 
@@ -50,11 +51,11 @@ public class RdTollgateTest extends InitApplication {
 	public void searchById() {
 		Connection conn;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(42);
+			conn = DBConnector.getInstance().getConnectionById(43);
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByPid(ObjType.RDTOLLGATE, 100034747).Serialize(ObjLevel.FULL));
+			System.out.println(p.searchDataByPid(ObjType.RDVARIABLESPEED, 100000075).Serialize(ObjLevel.FULL));
 
 		} catch (Exception e) {
 			e.printStackTrace();

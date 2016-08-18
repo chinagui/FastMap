@@ -85,7 +85,7 @@ public class Operation implements IOperation {
 			AdminOperateUtils.SetAdminInfo4Link(link, conn);
 
 			// 设置Link的urban属性
-//			UrbanBatchUtils.updateUrban(link, this.conn, result);
+			// UrbanBatchUtils.updateUrban(link, this.conn, result);
 
 			result.insertObject(link, ObjStatus.INSERT, link.pid());
 		}
@@ -143,10 +143,9 @@ public class Operation implements IOperation {
 		link.setLaneNum(command.getLaneNum());
 
 		AdminOperateUtils.SetAdminInfo4Link(link, conn);
-		
-		// 设置Link的urban属性
-//		UrbanBatchUtils.updateUrban(link, this.conn, result);
 
+		// 设置Link的urban属性
+		// UrbanBatchUtils.updateUrban(link, this.conn, result);
 
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
 	}

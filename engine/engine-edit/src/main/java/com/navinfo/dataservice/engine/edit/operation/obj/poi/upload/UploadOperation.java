@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.poi.upload;
 
 import java.io.FileInputStream;
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -52,12 +53,13 @@ import net.sf.json.JSONObject;
 public class UploadOperation {
 	/**
 	 * 读取txt，解析，入库
+	 * 
 	 * @param fileName
 	 * @return
 	 * @throws Exception
 	 */
 	@SuppressWarnings("resource")
-	public JSONObject importPoi(String fileName)throws Exception{
+	public JSONObject importPoi(String fileName) throws Exception {
 		JSONObject retObj = new JSONObject();
 		Scanner importPois = new Scanner(new FileInputStream(fileName));
 		JSONArray ja = new JSONArray();
@@ -73,14 +75,15 @@ public class UploadOperation {
 		retObj = changeData(ja);
 		return retObj;
 	}
-	
+
 	/**
 	 * 数据解析分类
+	 * 
 	 * @param line
 	 * @return
 	 */
 	@SuppressWarnings("static-access")
-	private JSONObject changeData(JSONArray ja) throws Exception{
+	private JSONObject changeData(JSONArray ja) throws Exception {
 		JSONObject retObj = new JSONObject();
 		List<String> errList = new ArrayList<String>();
 		Connection manConn = null;
@@ -89,28 +92,28 @@ public class UploadOperation {
 		String version = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 		QueryRunner qRunner = new QueryRunner();
 		try {
-			Map<String,List<JSONObject>> data = new HashMap<String,List<JSONObject>>();
+			Map<String, List<JSONObject>> data = new HashMap<String, List<JSONObject>>();
 			manConn = DBConnector.getInstance().getManConnection();
-			for (int i=0;i<ja.size();i++) {
+			for (int i = 0; i < ja.size(); i++) {
 				JSONObject jo = ja.getJSONObject(i);
-				
+
 				// 坐标确定grid，grid确定区库ID
 				String wkt = jo.getString("geometry");
 				Geometry point = new WKTReader().read(wkt);
-				Coordinate[] coordinate =point.getCoordinates();
+				Coordinate[] coordinate = point.getCoordinates();
 				CompGridUtil gridUtil = new CompGridUtil();
 				String grid = gridUtil.point2Grids(coordinate[0].x, coordinate[0].y)[0];
 				String manQuery = "SELECT daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id=:1";
 				String dbId = qRunner.queryForString(manConn, manQuery, grid);
-				if (dbId.isEmpty()){
+				if (dbId.isEmpty()) {
 					JSONObject errObj = new JSONObject();
 					errObj.put("fid", jo.getString("fid"));
-					String errStr ="不在已知grid内";
+					String errStr = "不在已知grid内";
 					errObj.put("reason", errStr);
 					errList.add(errObj.toString());
 					continue;
 				}
-				
+
 				if (!data.containsKey(dbId)) {
 					List<JSONObject> dataList = new ArrayList<JSONObject>();
 					dataList.add(jo);
@@ -121,16 +124,16 @@ public class UploadOperation {
 					data.put(dbId, dataList);
 				}
 			}
-			
+
 			// 确认每个点属于新增、修改还是删除
 			// fid在IX_POI.POI_NUM中查找不到，并且待上传数据lifecycle不为1，为新增
 			// fid能找到，并且待上传数据lifecycle不为1且对应的IX_POI.U_RECORD不为2（删除），即为修改
 			// fid能找到，并且待上传数据lifecycle为1，即为删除
 			String subQuery = "SELECT u_record,pid FROM ix_poi WHERE poi_num=:1";
-			JSONObject insertObj= new JSONObject();
+			JSONObject insertObj = new JSONObject();
 			JSONObject updateObj = new JSONObject();
 			JSONObject deleteObj = new JSONObject();
-			for (Iterator<String> iter = data.keySet().iterator();iter.hasNext();){
+			for (Iterator<String> iter = data.keySet().iterator(); iter.hasNext();) {
 				// 创建连接，查找FID是否存在
 				String dbId = iter.next();
 				if (conn != null) {
@@ -141,7 +144,7 @@ public class UploadOperation {
 				List<JSONObject> insertList = new ArrayList<JSONObject>();
 				List<JSONObject> updateList = new ArrayList<JSONObject>();
 				List<JSONObject> deleteList = new ArrayList<JSONObject>();
-				for (int i=0;i<dataList.size();i++) {
+				for (int i = 0; i < dataList.size(); i++) {
 					JSONObject poi = dataList.get(i);
 					String fid = poi.getString("fid");
 					int lifecycle = poi.getInt("t_lifecycle");
@@ -163,7 +166,7 @@ public class UploadOperation {
 						DbUtils.closeQuietly(rs);
 						DbUtils.closeQuietly(stmt);
 					}
-					
+
 					// 判断每一条数据是新增、修改还是删除
 					if (uRecord != -1) {
 						// 能找到，判断lifecycle和u_record
@@ -174,7 +177,7 @@ public class UploadOperation {
 							if (uRecord == 2) {
 								JSONObject errObj = new JSONObject();
 								errObj.put("fid", fid);
-								String errStr ="数据为修改数据，但库中u_record为2";
+								String errStr = "数据为修改数据，但库中u_record为2";
 								errObj.put("reason", errStr);
 								errList.add(errObj.toString());
 							} else {
@@ -186,7 +189,7 @@ public class UploadOperation {
 						if (lifecycle == 1) {
 							JSONObject errObj = new JSONObject();
 							errObj.put("fid", fid);
-							String errStr ="数据在库中找不到对应数据，但lifecycle为1";
+							String errStr = "数据在库中找不到对应数据，但lifecycle为1";
 							errObj.put("reason", errStr);
 							errList.add(errObj.toString());
 						} else {
@@ -194,36 +197,36 @@ public class UploadOperation {
 						}
 					}
 				}
-				
+
 				// 将数据分为新增、修改和删除三组，key值为区库ID
 				insertObj.put(dbId, insertList);
 				updateObj.put(dbId, updateList);
 				deleteObj.put(dbId, deleteList);
-				
+
 			}
-			
+
 			// 数据入库处理
-			JSONObject insertRet = insertData(insertObj,version);
-			JSONObject updateRet = updateData(updateObj,version);
+			JSONObject insertRet = insertData(insertObj, version);
+			JSONObject updateRet = updateData(updateObj, version);
 			JSONObject deleteRet = deleteData(deleteObj);
-			
+
 			int insertCount = insertRet.getInt("success");
 			int updateCount = updateRet.getInt("success");
 			int deleteCount = deleteRet.getInt("success");
-			
+
 			int total = insertCount + updateCount + deleteCount;
-			
+
 			@SuppressWarnings("unchecked")
-			List<String> insertFail = (List<String>)insertRet.get("fail");
+			List<String> insertFail = (List<String>) insertRet.get("fail");
 			@SuppressWarnings("unchecked")
-			List<String> updateFail = (List<String>)updateRet.get("fail");
+			List<String> updateFail = (List<String>) updateRet.get("fail");
 			@SuppressWarnings("unchecked")
-			List<String> deleteFail = (List<String>)deleteRet.get("fail");
-			
+			List<String> deleteFail = (List<String>) deleteRet.get("fail");
+
 			errList.addAll(insertFail);
 			errList.addAll(updateFail);
 			errList.addAll(deleteFail);
-			
+
 			retObj.put("success", total);
 			retObj.put("fail", errList);
 			return retObj;
@@ -234,23 +237,23 @@ public class UploadOperation {
 			DBUtils.closeConnection(manConn);
 		}
 	}
-	
+
 	// 处理新增数据
 	@SuppressWarnings("unchecked")
-	private JSONObject insertData(JSONObject insertObj,String version) throws Exception{
+	private JSONObject insertData(JSONObject insertObj, String version) throws Exception {
 		JSONObject retObj = new JSONObject();
 		int count = 0;
 		List<JSONObject> errList = new ArrayList<JSONObject>();
 		try {
-			for (Iterator<String> iter = insertObj.keySet().iterator();iter.hasNext();){
+			for (Iterator<String> iter = insertObj.keySet().iterator(); iter.hasNext();) {
 				String dbId = iter.next();
 				Connection conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
 				try {
 					List<JSONObject> poiList = (List<JSONObject>) insertObj.get(dbId);
-					for (int i=0;i<poiList.size();i++) {
+					for (int i = 0; i < poiList.size(); i++) {
 						JSONObject jo = poiList.get(i);
 						IxPoi poi = new IxPoi();
-						JSONObject perRetObj = obj2PoiForInsert(jo,version);
+						JSONObject perRetObj = obj2PoiForInsert(jo, version);
 						int flag = perRetObj.getInt("flag");
 						if (flag == 1) {
 							poi.Unserialize(perRetObj.getJSONObject("ret"));
@@ -266,14 +269,14 @@ public class UploadOperation {
 							poiProcess.setResult(result);
 							poiProcess.run();
 							count++;
-							
+
 							// 鲜度验证，POI状态更新
 							String rawFields = jo.getString("rawFields");
-							upatePoiStatusForAndroid(conn,poi.getRowId(),0,rawFields) ;
+							upatePoiStatusForAndroid(conn, poi.getRowId(), 0, rawFields);
 						} else if (flag == 0) {
 							errList.add(perRetObj.getJSONObject("ret"));
 						}
-						
+
 					}
 				} catch (Exception e) {
 					throw e;
@@ -286,24 +289,24 @@ public class UploadOperation {
 			return retObj;
 		} catch (Exception e) {
 			throw e;
-		} 
+		}
 	}
-	
+
 	// 处理更新数据
 	@SuppressWarnings("unchecked")
-	private JSONObject updateData(JSONObject updateObj,String version) throws Exception {
+	private JSONObject updateData(JSONObject updateObj, String version) throws Exception {
 		JSONObject retObj = new JSONObject();
 		int count = 0;
 		List<JSONObject> errList = new ArrayList<JSONObject>();
 		try {
-			for (Iterator<String> iter = updateObj.keySet().iterator();iter.hasNext();){
+			for (Iterator<String> iter = updateObj.keySet().iterator(); iter.hasNext();) {
 				String dbId = iter.next();
 				Connection conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
 				try {
 					List<JSONObject> poiList = (List<JSONObject>) updateObj.get(dbId);
-					for (int i=0;i<poiList.size();i++) {
+					for (int i = 0; i < poiList.size(); i++) {
 						JSONObject jo = poiList.get(i);
-						JSONObject perRetObj = obj2PoiForUpdate(jo, version,conn);
+						JSONObject perRetObj = obj2PoiForUpdate(jo, version, conn);
 						int flag = perRetObj.getInt("flag");
 						if (flag == 1) {
 							JSONObject poiJson = perRetObj.getJSONObject("ret");
@@ -312,18 +315,18 @@ public class UploadOperation {
 							commandJson.put("data", poiJson);
 							commandJson.put("objId", poiJson.getInt("pid"));
 							// 调用一次更新
-							Command updateCommand = new Command(commandJson,null);
+							Command updateCommand = new Command(commandJson, null);
 							Process updateProcess = new Process(updateCommand);
 							updateProcess.run();
 							count++;
-							
+
 							// 鲜度验证，POI状态更新
 							boolean freshFlag = perRetObj.getBoolean("freshFlag");
 							String rawFields = jo.getString("rawFields");
 							if (freshFlag) {
-								upatePoiStatusForAndroid(conn,poiJson.getString("rowId"),1,rawFields) ;
+								upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 1, rawFields);
 							} else {
-								upatePoiStatusForAndroid(conn,poiJson.getString("rowId"),0,rawFields) ;
+								upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 0, rawFields);
 							}
 						} else if (flag == 0) {
 							errList.add(perRetObj.getJSONObject("ret"));
@@ -343,7 +346,6 @@ public class UploadOperation {
 		}
 	}
 
-
 	// 处理删除数据
 	@SuppressWarnings("unchecked")
 	private JSONObject deleteData(JSONObject deleteObj) throws Exception {
@@ -351,12 +353,12 @@ public class UploadOperation {
 		int count = 0;
 		List<JSONObject> errList = new ArrayList<JSONObject>();
 		try {
-			for (Iterator<String> iter = deleteObj.keySet().iterator();iter.hasNext();){
+			for (Iterator<String> iter = deleteObj.keySet().iterator(); iter.hasNext();) {
 				String dbId = iter.next();
 				Connection conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
 				try {
 					List<JSONObject> poiList = (List<JSONObject>) deleteObj.get(dbId);
-					for (int i=0;i<poiList.size();i++) {
+					for (int i = 0; i < poiList.size(); i++) {
 						JSONObject jo = poiList.get(i);
 						int pid = jo.getInt("pid");
 						String fid = jo.getString("fid");
@@ -371,12 +373,12 @@ public class UploadOperation {
 							poiProcess.setResult(result);
 							poiProcess.run();
 							count++;
-							
+
 							// 鲜度验证，POI状态更新
 							String rawFields = jo.getString("rawFields");
 							IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
 							JSONObject poiRowId = ixPoiSelector.getRowIdById(pid);
-							upatePoiStatusForAndroid(conn,poiRowId.getString("rowId"),0,rawFields) ;
+							upatePoiStatusForAndroid(conn, poiRowId.getString("rowId"), 0, rawFields);
 						} catch (Exception e) {
 							JSONObject errObj = new JSONObject();
 							errObj.put("fid", fid);
@@ -389,7 +391,7 @@ public class UploadOperation {
 				} finally {
 					DBUtils.closeConnection(conn);
 				}
-				
+
 			}
 			retObj.put("success", count);
 			retObj.put("fail", errList);
@@ -398,19 +400,20 @@ public class UploadOperation {
 			throw e;
 		}
 	}
-	
+
 	/**
 	 * 新增数据解析
+	 * 
 	 * @param jo
 	 * @param version
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	private JSONObject obj2PoiForInsert(JSONObject jo,String version) throws Exception {
+	private JSONObject obj2PoiForInsert(JSONObject jo, String version) throws Exception {
 		IxPoi poi = new IxPoi();
 		String fid = jo.getString("fid");
 		JSONObject retObj = new JSONObject();
-		try{
+		try {
 			// POI主表
 			int pid = PidService.getInstance().applyPoiPid();
 			poi.setPid(pid);
@@ -418,7 +421,7 @@ public class UploadOperation {
 			// geometry按SDO_GEOMETRY格式原值转出
 			Geometry geometry = new WKTReader().read(jo.getString("geometry"));
 			poi.setGeometry(GeoTranslator.transform(geometry, 100000, 5));
-			if (jo.getJSONObject("guide").size()>0) {
+			if (jo.getJSONObject("guide").size() > 0) {
 				poi.setxGuide(jo.getJSONObject("guide").getDouble("longitude"));
 				poi.setyGuide(jo.getJSONObject("guide").getDouble("latitude"));
 				poi.setLinkPid(jo.getJSONObject("guide").getInt("linkPid"));
@@ -427,7 +430,7 @@ public class UploadOperation {
 				poi.setyGuide(0);
 				poi.setLinkPid(0);
 			}
-			
+
 			poi.setChain(jo.getString("chain"));
 			poi.setOpen24h(jo.getInt("open24H"));
 			// meshid非0时原值转出；为0时根据几何计算；
@@ -438,9 +441,9 @@ public class UploadOperation {
 			}
 			poi.setMesh(meshId);
 			poi.setPostCode(jo.getString("postCode"));
-			//如果KIND_CODE有修改，则追加“改种别代码”；
-			//如果CHAIN有修改，则追加“改连锁品牌”；
-			//如果IX_POI_HOTEL.RATING有修改,则追加“改酒店星级”；
+			// 如果KIND_CODE有修改，则追加“改种别代码”；
+			// 如果CHAIN有修改，则追加“改连锁品牌”；
+			// 如果IX_POI_HOTEL.RATING有修改,则追加“改酒店星级”；
 			String fieldState = "";
 			if (!jo.getString("kindCode").isEmpty()) {
 				fieldState += "改种别代码|";
@@ -449,15 +452,15 @@ public class UploadOperation {
 				fieldState += "改连锁品牌|";
 			}
 			if (jo.has("hotel")) {
-				
+
 				JSONObject hotel = jo.getJSONObject("hotel");
-				
+
 				if (!hotel.isNullObject() && hotel.has("rating")) {
 					fieldState += "改酒店星级|";
 				}
 			}
-			if (fieldState.length()>0) {
-				fieldState = fieldState.substring(0, fieldState.length()-1);
+			if (fieldState.length() > 0) {
+				fieldState = fieldState.substring(0, fieldState.length() - 1);
 			}
 			poi.setFieldState(fieldState);
 			poi.setOldName(jo.getString("name"));
@@ -483,24 +486,24 @@ public class UploadOperation {
 			if (!poi.getGeometry().isEmpty()) {
 				outDoorLog += "改RELATION|";
 			}
-			if (outDoorLog.length()>0) {
-				outDoorLog = outDoorLog.substring(0,outDoorLog.length()-1);
+			if (outDoorLog.length() > 0) {
+				outDoorLog = outDoorLog.substring(0, outDoorLog.length() - 1);
 			}
 			poi.setLog(outDoorLog);
 			poi.setSportsVenue(jo.getString("sportsVenues"));
-			
+
 			JSONObject indoor = jo.getJSONObject("indoor");
 			if (!indoor.isNullObject() && indoor.has("type")) {
 				poi.setIndoor(indoor.getInt("type"));
 			} else {
 				poi.setIndoor(0);
 			}
-			
+
 			poi.setVipFlag(jo.getString("vipFlag"));
 			poi.setuRecord(1);
-			
+
 			poi.setRowId(UuidUtils.genUuid().toUpperCase());
-			
+
 			// 名称
 			if (!poi.getOldName().isEmpty()) {
 				List<IRow> nameList = new ArrayList<IRow>();
@@ -517,7 +520,7 @@ public class UploadOperation {
 				nameList.add(poiName);
 				poi.setNames(nameList);
 			}
-			
+
 			// 地址
 			if (!poi.getOldAddress().isEmpty()) {
 				List<IRow> addressList = new ArrayList<IRow>();
@@ -532,12 +535,12 @@ public class UploadOperation {
 				addressList.add(poiAddress);
 				poi.setAddresses(addressList);
 			}
-			
+
 			// 联系方式
-			if (jo.getJSONArray("contacts").size()>0) {
+			if (jo.getJSONArray("contacts").size() > 0) {
 				JSONArray contactsList = jo.getJSONArray("contacts");
 				List<IRow> contacts = new ArrayList<IRow>();
-				for (int k=0;k<contactsList.size();k++) {
+				for (int k = 0; k < contactsList.size(); k++) {
 					JSONObject contactObj = contactsList.getJSONObject(k);
 					IxPoiContact contact = new IxPoiContact();
 					contact.setPoiPid(pid);
@@ -545,35 +548,35 @@ public class UploadOperation {
 					contact.setContact(contactObj.getString("number"));
 					String linkman = contactObj.getString("linkman");
 					String linkmanNum = "";
-					if (linkman.indexOf("总机")>=0){
-						linkmanNum = "1" + linkmanNum ;
+					if (linkman.indexOf("总机") >= 0) {
+						linkmanNum = "1" + linkmanNum;
 					} else {
-						linkmanNum = "0" + linkmanNum ;
+						linkmanNum = "0" + linkmanNum;
 					}
-					if (linkman.indexOf("客服")>=0){
-						linkmanNum = "1" + linkmanNum ;
+					if (linkman.indexOf("客服") >= 0) {
+						linkmanNum = "1" + linkmanNum;
 					} else {
-						linkmanNum = "0" + linkmanNum ;
+						linkmanNum = "0" + linkmanNum;
 					}
-					if (linkman.indexOf("预订")>=0){
-						linkmanNum = "1" + linkmanNum ;
+					if (linkman.indexOf("预订") >= 0) {
+						linkmanNum = "1" + linkmanNum;
 					} else {
-						linkmanNum = "0" + linkmanNum ;
+						linkmanNum = "0" + linkmanNum;
 					}
-					if (linkman.indexOf("销售")>=0){
-						linkmanNum = "1" + linkmanNum ;
+					if (linkman.indexOf("销售") >= 0) {
+						linkmanNum = "1" + linkmanNum;
 					} else {
-						linkmanNum = "0" + linkmanNum ;
+						linkmanNum = "0" + linkmanNum;
 					}
-					if (linkman.indexOf("维修")>=0){
-						linkmanNum = "1" + linkmanNum ;
+					if (linkman.indexOf("维修") >= 0) {
+						linkmanNum = "1" + linkmanNum;
 					} else {
-						linkmanNum = "0" + linkmanNum ;
+						linkmanNum = "0" + linkmanNum;
 					}
-					if (linkman.indexOf("其他")>=0){
-						linkmanNum = "1" + linkmanNum ;
+					if (linkman.indexOf("其他") >= 0) {
+						linkmanNum = "1" + linkmanNum;
 					} else {
-						linkmanNum = "0" + linkmanNum ;
+						linkmanNum = "0" + linkmanNum;
 					}
 					int contactInt = Integer.parseInt(linkmanNum, 2);
 					contact.setContactDepart(contactInt);
@@ -583,15 +586,15 @@ public class UploadOperation {
 				}
 				poi.setContacts(contacts);
 			}
-			
+
 			// 照片
 			JSONArray attachments = jo.getJSONArray("attachments");
 			List<String> photoIdList = new ArrayList<String>();
 			List<IRow> photoList = new ArrayList<IRow>();
-			for (int k=0;k<attachments.size();k++) {
+			for (int k = 0; k < attachments.size(); k++) {
 				JSONObject photo = attachments.getJSONObject(k);
 				int type = photo.getInt("type");
-				if (type==1) {
+				if (type == 1) {
 					String photoId = photo.getString("id");
 					if (!photoIdList.contains(photoId)) {
 						photoIdList.add(photoId);
@@ -604,12 +607,12 @@ public class UploadOperation {
 					}
 				}
 			}
-			if (photoList.size()>0) {
+			if (photoList.size() > 0) {
 				poi.setPhotos(photoList);
 			}
-			
+
 			// 父子关系
-			if (jo.getJSONArray("relateChildren").size()>0) {
+			if (jo.getJSONArray("relateChildren").size() > 0) {
 				int groupId = PidService.getInstance().applyPoiGroupId();
 				IxPoiParent parent = new IxPoiParent();
 				List<IRow> parentList = new ArrayList<IRow>();
@@ -618,10 +621,10 @@ public class UploadOperation {
 				parent.setRowId(UuidUtils.genUuid());
 				parentList.add(parent);
 				poi.setParents(parentList);
-				
+
 				JSONArray relateChildren = jo.getJSONArray("relateChildren");
 				List<IRow> childrenList = new ArrayList<IRow>();
-				for (int k=0;k<relateChildren.size();k++) {
+				for (int k = 0; k < relateChildren.size(); k++) {
 					JSONObject children = relateChildren.getJSONObject(k);
 					IxPoiChildren poiChildren = new IxPoiChildren();
 					poiChildren.setGroupId(groupId);
@@ -632,9 +635,9 @@ public class UploadOperation {
 				}
 				poi.setChildren(childrenList);
 			}
-			
+
 			// 加油站
-			if (jo.getJSONObject("gasStation").size()>0) {
+			if (jo.getJSONObject("gasStation").size() > 0) {
 				JSONObject gasObj = jo.getJSONObject("gasStation");
 				IxPoiGasstation gasStation = new IxPoiGasstation();
 				List<IRow> gasList = new ArrayList<IRow>();
@@ -652,9 +655,9 @@ public class UploadOperation {
 				gasList.add(gasStation);
 				poi.setGasstations(gasList);
 			}
-			
+
 			// 停车场
-			if (jo.getJSONObject("parkings").size()>0) {
+			if (jo.getJSONObject("parkings").size() > 0) {
 				JSONObject parkingsObj = jo.getJSONObject("parkings");
 				IxPoiParking parkings = new IxPoiParking();
 				List<IRow> parkingsList = new ArrayList<IRow>();
@@ -672,7 +675,7 @@ public class UploadOperation {
 				parkings.setResWidth(parkingsObj.getInt("resWidth"));
 				parkings.setResWeigh(parkingsObj.getInt("resWeigh"));
 				parkings.setCertificate(parkingsObj.getInt("certificate"));
-				parkings.setVehicle(parkingsObj.getInt("vehicle"));
+				parkings.setVehicle(new BigInteger(String.valueOf(parkingsObj.getDouble("vehicle"))));
 				parkings.setHaveSpecialplace(parkingsObj.getString("haveSpecialPlace"));
 				parkings.setWomenNum(parkingsObj.getInt("womenNum"));
 				parkings.setHandicapNum(parkingsObj.getInt("handicapNum"));
@@ -682,9 +685,9 @@ public class UploadOperation {
 				parkingsList.add(parkings);
 				poi.setParkings(parkingsList);
 			}
-			
+
 			// 酒店
-			if (jo.getJSONObject("hotel").size()>0) {
+			if (jo.getJSONObject("hotel").size() > 0) {
 				JSONObject hotelObj = jo.getJSONObject("hotel");
 				IxPoiHotel hotel = new IxPoiHotel();
 				List<IRow> hotelList = new ArrayList<IRow>();
@@ -706,9 +709,9 @@ public class UploadOperation {
 				hotelList.add(hotel);
 				poi.setHotels(hotelList);
 			}
-			
+
 			// 餐馆
-			if (jo.getJSONObject("foodtypes").size()>0) {
+			if (jo.getJSONObject("foodtypes").size() > 0) {
 				JSONObject foodtypesObj = jo.getJSONObject("foodtypes");
 				IxPoiRestaurant foodtypes = new IxPoiRestaurant();
 				List<IRow> foodtypesList = new ArrayList<IRow>();
@@ -723,7 +726,7 @@ public class UploadOperation {
 				foodtypesList.add(foodtypes);
 				poi.setRestaurants(foodtypesList);
 			}
-			
+
 			retObj.put("flag", 1);
 			retObj.put("ret", poi.Serialize(null));
 		} catch (Exception e) {
@@ -739,15 +742,16 @@ public class UploadOperation {
 		}
 		return retObj;
 	}
-	
+
 	/**
-	 *  更新数据解析
+	 * 更新数据解析
+	 * 
 	 * @param jo
 	 * @param version
 	 * @param conn
 	 * @return
 	 */
-	private JSONObject obj2PoiForUpdate(JSONObject jo,String version,Connection conn) {
+	private JSONObject obj2PoiForUpdate(JSONObject jo, String version, Connection conn) {
 		String fid = jo.getString("fid");
 		JSONObject retObj = new JSONObject();
 		boolean freshFlag = true;
@@ -764,7 +768,7 @@ public class UploadOperation {
 			Geometry geometry = new WKTReader().read(jo.getString("geometry"));
 			JSONObject geometryObj = GeoTranslator.jts2Geojson(geometry);
 			poiJson.put("geometry", geometryObj);
-			if (jo.getJSONObject("guide").size()>0) {
+			if (jo.getJSONObject("guide").size() > 0) {
 				poiJson.put("xGuide", jo.getJSONObject("guide").getDouble("longitude"));
 				poiJson.put("yGuide", jo.getJSONObject("guide").getDouble("latitude"));
 				poiJson.put("linkPid", jo.getJSONObject("guide").getInt("linkPid"));
@@ -783,9 +787,9 @@ public class UploadOperation {
 			}
 			poiJson.put("meshId", meshId);
 			poiJson.put("postCode", jo.getString("postCode"));
-			//如果KIND_CODE有修改，则追加“改种别代码”；
-			//如果CHAIN有修改，则追加“改连锁品牌”；
-			//如果IX_POI_HOTEL.RATING有修改,则追加“改酒店星级”；
+			// 如果KIND_CODE有修改，则追加“改种别代码”；
+			// 如果CHAIN有修改，则追加“改连锁品牌”；
+			// 如果IX_POI_HOTEL.RATING有修改,则追加“改酒店星级”；
 			String fieldState = "";
 			if (!jo.getString("kindCode").equals(oldPoi.getKindCode())) {
 				fieldState += "改种别代码|";
@@ -795,32 +799,30 @@ public class UploadOperation {
 			}
 			List<IRow> hotelListIRow = oldPoi.getHotels();
 			IxPoiHotel hotelOld = null;
-			if (hotelListIRow.size()>0) {
+			if (hotelListIRow.size() > 0) {
 				hotelOld = (IxPoiHotel) hotelListIRow.get(0);
 			}
-			
+
 			if (jo.has("hotel")) {
 				JSONObject hotel = jo.getJSONObject("hotel");
-				
-				if(!hotel.isNullObject() && hotelOld == null){
+
+				if (!hotel.isNullObject() && hotelOld == null) {
 					fieldState += "改酒店星级|";
-				}
-				else if(hotel.isNullObject() && hotelOld != null){
+				} else if (hotel.isNullObject() && hotelOld != null) {
 					fieldState += "改酒店星级|";
-				}
-				else if(!hotel.isNullObject()){
-					
+				} else if (!hotel.isNullObject()) {
+
 					if (hotel == null || hotel.getInt("rating") != hotelOld.getRating()) {
 						fieldState += "改酒店星级|";
 					}
 				}
 			}
-			
-			if (fieldState.length()>0) {
-				fieldState = fieldState.substring(0, fieldState.length()-1);
+
+			if (fieldState.length() > 0) {
+				fieldState = fieldState.substring(0, fieldState.length() - 1);
 			}
 			poiJson.put("fieldState", fieldState);
-			poiJson.put("oldName",jo.getString("name"));
+			poiJson.put("oldName", jo.getString("name"));
 			poiJson.put("oldAddress", jo.getString("address"));
 			poiJson.put("oldKind", jo.getString("kindCode"));
 			poiJson.put("poiNum", jo.getString("fid"));
@@ -843,35 +845,35 @@ public class UploadOperation {
 			if (!geometry.equals(oldPoi.getGeometry())) {
 				outDoorLog += "改RELATION|";
 			}
-			if (outDoorLog.length()>0) {
-				outDoorLog = outDoorLog.substring(0,outDoorLog.length()-1);
+			if (outDoorLog.length() > 0) {
+				outDoorLog = outDoorLog.substring(0, outDoorLog.length() - 1);
 			}
 			poiJson.put("log", outDoorLog);
 			poiJson.put("sportsVenue", jo.getString("sportsVenues"));
-			
+
 			JSONObject indoor = jo.getJSONObject("indoor");
 			if (!indoor.isNullObject() && indoor.has("type")) {
 				poiJson.put("indoor", indoor.getInt("type"));
 			} else {
-				poiJson.put("indoor",0);
+				poiJson.put("indoor", 0);
 			}
 			poiJson.put("vipFlag", jo.getString("vipFlag"));
 			poiJson.put("rowId", oldPoi.getRowId());
-			
+
 			poiJson.put("objStatus", ObjStatus.UPDATE.toString());
-			
+
 			// 鲜度验证
 			if (oldPoi.fillChangeFields(poiJson)) {
 				freshFlag = false;
 			}
-			
+
 			// 名称
 			List<IRow> oldNameList = oldPoi.getNames();
 			String oldNameStr = "";
 			IxPoiName oldNameObjChi = new IxPoiName();
-			for (IRow oldNameObj:oldNameList) {
-				IxPoiName oldName = (IxPoiName)oldNameObj;
-				if (oldName.getNameClass()==1 && oldName.getNameType()==2 && oldName.getLangCode().equals("CHI")) {
+			for (IRow oldNameObj : oldNameList) {
+				IxPoiName oldName = (IxPoiName) oldNameObj;
+				if (oldName.getNameClass() == 1 && oldName.getNameType() == 2 && oldName.getLangCode().equals("CHI")) {
 					oldNameStr = oldName.getName();
 					oldNameObjChi = oldName;
 					break;
@@ -887,7 +889,7 @@ public class UploadOperation {
 					poiName.put("poiPid", pid);
 					poiName.put("nameGroupid", 1);
 					poiName.put("langCode", "CHI");
-					poiName.put("nameClass",1);
+					poiName.put("nameClass", 1);
 					poiName.put("nameType", 2);
 					poiName.put("name", poiJson.getString("oldName"));
 					poiName.put("rowId", UuidUtils.genUuid());
@@ -903,7 +905,7 @@ public class UploadOperation {
 					poiName.put("poiPid", oldNameObjChi.getPoiPid());
 					poiName.put("nameGroupid", oldNameObjChi.getNameGroupid());
 					poiName.put("langCode", oldNameObjChi.getLangCode());
-					poiName.put("nameClass",oldNameObjChi.getNameClass());
+					poiName.put("nameClass", oldNameObjChi.getNameClass());
 					poiName.put("nameType", oldNameObjChi.getNameType());
 					poiName.put("name", poiJson.getString("oldName"));
 					poiName.put("rowId", oldNameObjChi.getRowId());
@@ -913,13 +915,13 @@ public class UploadOperation {
 					freshFlag = false;
 				}
 			}
-			
+
 			// 地址
 			List<IRow> oldAddressList = oldPoi.getAddresses();
 			String oldAddressStr = "";
 			IxPoiAddress oldAddressObjChi = new IxPoiAddress();
-			for (IRow oldAddressObj:oldAddressList) {
-				IxPoiAddress oldAddress = (IxPoiAddress)oldAddressObj;
+			for (IRow oldAddressObj : oldAddressList) {
+				IxPoiAddress oldAddress = (IxPoiAddress) oldAddressObj;
 				if (oldAddress.getLangCode().equals("CHI")) {
 					oldAddressStr = oldAddress.getFullname();
 					oldAddressObjChi = oldAddress;
@@ -936,7 +938,7 @@ public class UploadOperation {
 					poiAddress.put("poiPid", pid);
 					poiAddress.put("nameGroupid", 1);
 					poiAddress.put("langCode", "CHI");
-					poiAddress.put("fullname",poiJson.getString("oldAddress"));
+					poiAddress.put("fullname", poiJson.getString("oldAddress"));
 					poiAddress.put("rowId", UuidUtils.genUuid());
 					addressList.add(poiAddress);
 					poiJson.put("addresses", addressList);
@@ -950,7 +952,7 @@ public class UploadOperation {
 					poiAddress.put("poiPid", oldAddressObjChi.getPoiPid());
 					poiAddress.put("nameGroupid", oldAddressObjChi.getNameGroupid());
 					poiAddress.put("langCode", oldAddressObjChi.getLangCode());
-					poiAddress.put("fullname",poiJson.getString("oldAddress"));
+					poiAddress.put("fullname", poiJson.getString("oldAddress"));
 					poiAddress.put("rowId", oldAddressObjChi.getRowId());
 					addressList.add(poiAddress);
 					poiJson.put("addresses", addressList);
@@ -958,68 +960,68 @@ public class UploadOperation {
 					freshFlag = false;
 				}
 			}
-			
+
 			// 联系方式
 			if (jo.containsKey("contacts")) {
 				JSONArray contactsList = jo.getJSONArray("contacts");
 				List<IRow> oldContactsList = oldPoi.getContacts();
-				
+
 				JSONArray oldArray = new JSONArray();
-				for (IRow irow:oldContactsList) {
-					IxPoiContact temp = (IxPoiContact)irow;
+				for (IRow irow : oldContactsList) {
+					IxPoiContact temp = (IxPoiContact) irow;
 					oldArray.add(temp.Serialize(null));
 				}
-				
+
 				JSONArray newContactArray = new JSONArray();
-				
+
 				List<String> newRowIdList = new ArrayList<String>();
-				for (int k=0;k<contactsList.size();k++) {
+				for (int k = 0; k < contactsList.size(); k++) {
 					JSONObject contactObj = contactsList.getJSONObject(k);
 					newRowIdList.add(contactObj.getString("rowId"));
-					
+
 					JSONObject newContact = new JSONObject();
 					newContact.put("poiPid", pid);
 					newContact.put("contactType", contactObj.getInt("type"));
 					newContact.put("contact", contactObj.getString("number"));
 					String linkman = contactObj.getString("linkman");
 					String linkmanNum = "";
-					if (linkman.indexOf("总机")>=0){
-						linkmanNum = "1" + linkmanNum ;
+					if (linkman.indexOf("总机") >= 0) {
+						linkmanNum = "1" + linkmanNum;
 					} else {
-						linkmanNum = "0" + linkmanNum ;
+						linkmanNum = "0" + linkmanNum;
 					}
-					if (linkman.indexOf("客服")>=0){
-						linkmanNum = "1" + linkmanNum ;
+					if (linkman.indexOf("客服") >= 0) {
+						linkmanNum = "1" + linkmanNum;
 					} else {
-						linkmanNum = "0" + linkmanNum ;
+						linkmanNum = "0" + linkmanNum;
 					}
-					if (linkman.indexOf("预订")>=0){
-						linkmanNum = "1" + linkmanNum ;
+					if (linkman.indexOf("预订") >= 0) {
+						linkmanNum = "1" + linkmanNum;
 					} else {
-						linkmanNum = "0" + linkmanNum ;
+						linkmanNum = "0" + linkmanNum;
 					}
-					if (linkman.indexOf("销售")>=0){
-						linkmanNum = "1" + linkmanNum ;
+					if (linkman.indexOf("销售") >= 0) {
+						linkmanNum = "1" + linkmanNum;
 					} else {
-						linkmanNum = "0" + linkmanNum ;
+						linkmanNum = "0" + linkmanNum;
 					}
-					if (linkman.indexOf("维修")>=0){
-						linkmanNum = "1" + linkmanNum ;
+					if (linkman.indexOf("维修") >= 0) {
+						linkmanNum = "1" + linkmanNum;
 					} else {
-						linkmanNum = "0" + linkmanNum ;
+						linkmanNum = "0" + linkmanNum;
 					}
-					if (linkman.indexOf("其他")>=0){
-						linkmanNum = "1" + linkmanNum ;
+					if (linkman.indexOf("其他") >= 0) {
+						linkmanNum = "1" + linkmanNum;
 					} else {
-						linkmanNum = "0" + linkmanNum ;
+						linkmanNum = "0" + linkmanNum;
 					}
 					int contactInt = Integer.parseInt(linkmanNum, 2);
 					newContact.put("contactDepart", contactInt);
 					newContact.put("priority", contactObj.getInt("priority"));
 					newContact.put("rowId", contactObj.getString("rowId"));
-					
+
 					// 差分,区分新增修改
-					int ret = getDifferent(oldArray,newContact);
+					int ret = getDifferent(oldArray, newContact);
 					if (ret == 0) {
 						newContact.put("objStatus", ObjStatus.INSERT.toString());
 						newContactArray.add(newContact);
@@ -1032,34 +1034,34 @@ public class UploadOperation {
 						freshFlag = false;
 					}
 				}
-				
+
 				// 差分，区分删除的数据
-				JSONArray oldDelJson = getOldDel(oldArray,newRowIdList);
-				
-				if (oldDelJson.size()>0) {
+				JSONArray oldDelJson = getOldDel(oldArray, newRowIdList);
+
+				if (oldDelJson.size() > 0) {
 					// 鲜度验证
 					freshFlag = false;
 				}
-				
+
 				newContactArray.addAll(oldDelJson);
-				
+
 				poiJson.put("contacts", newContactArray);
 			}
-			
+
 			// 照片
 			JSONArray attachments = jo.getJSONArray("attachments");
 			List<IRow> oldPhotoList = oldPoi.getPhotos();
 			List<String> photoIdList = new ArrayList<String>();
 			JSONArray photoList = new JSONArray();
-			for (IRow oldPhotoIRow:oldPhotoList) {
+			for (IRow oldPhotoIRow : oldPhotoList) {
 				IxPoiPhoto oldPhoto = (IxPoiPhoto) oldPhotoIRow;
 				photoIdList.add(oldPhoto.getPid());
 			}
-			for (int k=0;k<attachments.size();k++) {
+			for (int k = 0; k < attachments.size(); k++) {
 				JSONObject photo = attachments.getJSONObject(k);
-				
+
 				int type = photo.getInt("type");
-				if (type==1) {
+				if (type == 1) {
 					String photoId = photo.getString("id");
 					if (!photoIdList.contains(photoId)) {
 						JSONObject photoObj = new JSONObject();
@@ -1075,22 +1077,22 @@ public class UploadOperation {
 					}
 				}
 			}
-			if (photoList.size()>0) {
+			if (photoList.size() > 0) {
 				poiJson.put("photos", photoList);
 			}
-			
+
 			// 父
 			List<IRow> oldParentList = oldPoi.getParents();
 			int groupId = 0;
-			if (oldParentList.size()>0) {
+			if (oldParentList.size() > 0) {
 				IRow oldParentIRow = oldParentList.get(0);
-				IxPoiParent oldParent = (IxPoiParent)oldParentIRow;
+				IxPoiParent oldParent = (IxPoiParent) oldParentIRow;
 				groupId = oldParent.getPid();
-			} 
-			if (!(jo.getJSONArray("relateChildren").size()>0) || !(oldParentList.size()>0)) {
-				
+			}
+			if (!(jo.getJSONArray("relateChildren").size() > 0) || !(oldParentList.size() > 0)) {
+
 				// 新增
-				if (jo.getJSONArray("relateChildren").size()>0 && oldParentList.size()==0) {
+				if (jo.getJSONArray("relateChildren").size() > 0 && oldParentList.size() == 0) {
 					JSONObject parent = new JSONObject();
 					JSONArray parentList = new JSONArray();
 					groupId = PidService.getInstance().applyPoiGroupId();
@@ -1104,11 +1106,11 @@ public class UploadOperation {
 					freshFlag = false;
 				}
 				// 删除
-				if (jo.getJSONArray("relateChildren").size()==0 && oldParentList.size()>0) {
+				if (jo.getJSONArray("relateChildren").size() == 0 && oldParentList.size() > 0) {
 					JSONObject parent = new JSONObject();
 					JSONArray parentList = new JSONArray();
 					IRow oldParentIRow = oldParentList.get(0);
-					IxPoiParent oldParent = (IxPoiParent)oldParentIRow;
+					IxPoiParent oldParent = (IxPoiParent) oldParentIRow;
 					parent.put("objStatus", ObjStatus.DELETE.toString());
 					parent.put("pid", oldParent.getPid());
 					parent.put("parentPoiPid", oldParent.getPid());
@@ -1119,19 +1121,19 @@ public class UploadOperation {
 					freshFlag = false;
 				}
 			}
-			
+
 			// 子
 			if (jo.containsKey("relateChildren")) {
 				List<IRow> oldChildIRow = oldPoi.getChildren();
 				JSONArray oldArray = new JSONArray();
-				for (IRow oldChild:oldChildIRow) {
+				for (IRow oldChild : oldChildIRow) {
 					IxPoiChildren oldPoiChild = (IxPoiChildren) oldChild;
 					oldArray.add(oldPoiChild.Serialize(null));
 				}
 				JSONArray childrenArry = jo.getJSONArray("relateChildren");
 				JSONArray newChildrenArray = new JSONArray();
 				List<String> newRowIdList = new ArrayList<String>();
-				for (int k=0;k<childrenArry.size();k++) {
+				for (int k = 0; k < childrenArry.size(); k++) {
 					JSONObject children = childrenArry.getJSONObject(k);
 					JSONObject newChildren = new JSONObject();
 					newRowIdList.add(children.getString("rowId"));
@@ -1139,9 +1141,9 @@ public class UploadOperation {
 					newChildren.put("childPoiPid", children.getInt("childPid"));
 					newChildren.put("relationType", children.getInt("type"));
 					newChildren.put("rowId", children.getString("rowId"));
-					
+
 					// 差分,区分新增修改
-					int ret = getDifferent(oldArray,newChildren);
+					int ret = getDifferent(oldArray, newChildren);
 					if (ret == 0) {
 						newChildren.put("objStatus", ObjStatus.INSERT.toString());
 						newChildrenArray.add(newChildren);
@@ -1154,20 +1156,20 @@ public class UploadOperation {
 						freshFlag = false;
 					}
 				}
-				
+
 				// 差分，区分删除的数据
-				JSONArray oldDelJson = getOldDel(oldArray,newRowIdList);
-				
-				if (oldDelJson.size()>0) {
+				JSONArray oldDelJson = getOldDel(oldArray, newRowIdList);
+
+				if (oldDelJson.size() > 0) {
 					// 鲜度验证
 					freshFlag = false;
 				}
-				
+
 				newChildrenArray.addAll(oldDelJson);
-				
+
 				poiJson.put("children", newChildrenArray);
 			}
-			
+
 			// 加油站
 			if (jo.containsKey("gasStation")) {
 				List<IRow> gasList = oldPoi.getGasstations();
@@ -1175,7 +1177,7 @@ public class UploadOperation {
 				JSONArray oldArray = new JSONArray();
 				JSONArray newGasArray = new JSONArray();
 				if (!gasObj.isEmpty()) {
-					for (IRow oldGas:gasList) {
+					for (IRow oldGas : gasList) {
 						IxPoiGasstation oldPoiGas = (IxPoiGasstation) oldGas;
 						JSONObject oldPoiGasObj = oldPoiGas.Serialize(null);
 						oldArray.add(oldPoiGasObj);
@@ -1194,7 +1196,7 @@ public class UploadOperation {
 					newGasStation.put("openHour", gasObj.getString("openHour"));
 					newGasStation.put("rowId", gasObj.getString("rowId"));
 					// 差分,区分新增修改
-					int ret = getDifferent(oldArray,newGasStation);
+					int ret = getDifferent(oldArray, newGasStation);
 					if (ret == 0) {
 						newGasStation.put("pid", PidService.getInstance().applyPoiGasstationId());
 						newGasStation.put("objStatus", ObjStatus.INSERT.toString());
@@ -1203,7 +1205,7 @@ public class UploadOperation {
 						freshFlag = false;
 					} else if (ret == 1) {
 						int oldPid = 0;
-						for (IRow oldGas:gasList) {
+						for (IRow oldGas : gasList) {
 							IxPoiGasstation oldPoiGas = (IxPoiGasstation) oldGas;
 							if (oldPoiGas.getRowId().equals(gasObj.getString("rowId"))) {
 								oldPid = oldPoiGas.getPid();
@@ -1216,20 +1218,20 @@ public class UploadOperation {
 						// 鲜度验证
 						freshFlag = false;
 					}
-				}else if (gasList.size()>0) {
+				} else if (gasList.size() > 0) {
 					// 删除的数据
-					IxPoiGasstation oldPoiGas = (IxPoiGasstation)gasList.get(0);
+					IxPoiGasstation oldPoiGas = (IxPoiGasstation) gasList.get(0);
 					JSONObject oldDelJson = oldPoiGas.Serialize(null);
 					oldDelJson.put("objStatus", ObjStatus.DELETE.toString());
-					
+
 					newGasArray.add(oldDelJson);
 					// 鲜度验证
 					freshFlag = false;
 				}
-				
+
 				poiJson.put("gasstations", newGasArray);
 			}
-			
+
 			// 停车场
 			if (jo.containsKey("parkings")) {
 				List<IRow> parkingsList = oldPoi.getParkings();
@@ -1237,7 +1239,7 @@ public class UploadOperation {
 				JSONArray oldArray = new JSONArray();
 				JSONArray newParkingsArray = new JSONArray();
 				if (!parkingsObj.isEmpty()) {
-					for (IRow oldParkings:parkingsList) {
+					for (IRow oldParkings : parkingsList) {
 						IxPoiParking oldPoiParkings = (IxPoiParking) oldParkings;
 						JSONObject oldPoiParkingsObj = oldPoiParkings.Serialize(null);
 						oldArray.add(oldPoiParkingsObj);
@@ -1266,7 +1268,7 @@ public class UploadOperation {
 					newParkings.put("vipNum", parkingsObj.getInt("vipNum"));
 					newParkings.put("rowId", parkingsObj.getString("rowId"));
 					// 差分,区分新增修改
-					int ret = getDifferent(oldArray,newParkings);
+					int ret = getDifferent(oldArray, newParkings);
 					if (ret == 0) {
 						newParkings.put("pid", PidService.getInstance().applyPoiParkingsId());
 						newParkings.put("objStatus", ObjStatus.INSERT.toString());
@@ -1275,7 +1277,7 @@ public class UploadOperation {
 						freshFlag = false;
 					} else if (ret == 1) {
 						int oldPid = 0;
-						for (IRow oldParkings:parkingsList) {
+						for (IRow oldParkings : parkingsList) {
 							IxPoiParking oldPoiParkings = (IxPoiParking) oldParkings;
 							if (oldPoiParkings.getRowId().equals(parkingsObj.getString("rowId"))) {
 								oldPid = oldPoiParkings.getPid();
@@ -1288,20 +1290,20 @@ public class UploadOperation {
 						// 鲜度验证
 						freshFlag = false;
 					}
-				} else if (parkingsList.size()>0) {
+				} else if (parkingsList.size() > 0) {
 					// 删除的数据
-					IxPoiParking oldPoiParking = (IxPoiParking)parkingsList.get(0);
+					IxPoiParking oldPoiParking = (IxPoiParking) parkingsList.get(0);
 					JSONObject oldDelJson = oldPoiParking.Serialize(null);
 					oldDelJson.put("objStatus", ObjStatus.DELETE.toString());
-					
+
 					newParkingsArray.add(oldDelJson);
 					// 鲜度验证
 					freshFlag = false;
 				}
-				
+
 				poiJson.put("parkings", newParkingsArray);
 			}
-			
+
 			// 酒店
 			if (jo.containsKey("hotel")) {
 				List<IRow> hotelList = oldPoi.getHotels();
@@ -1309,7 +1311,7 @@ public class UploadOperation {
 				JSONArray oldArray = new JSONArray();
 				JSONArray newHotelArray = new JSONArray();
 				if (!hotelObj.isEmpty()) {
-					for (IRow oldHotel:hotelList) {
+					for (IRow oldHotel : hotelList) {
 						IxPoiHotel oldPoiHotel = (IxPoiHotel) oldHotel;
 						JSONObject oldPoiHotelObj = oldPoiHotel.Serialize(null);
 						oldArray.add(oldPoiHotelObj);
@@ -1332,7 +1334,7 @@ public class UploadOperation {
 					newHotel.put("openHour", hotelObj.getString("openHour"));
 					newHotel.put("rowId", hotelObj.getString("rowId"));
 					// 差分,区分新增修改
-					int ret = getDifferent(oldArray,newHotel);
+					int ret = getDifferent(oldArray, newHotel);
 					if (ret == 0) {
 						newHotel.put("pid", PidService.getInstance().applyPoiHotelId());
 						newHotel.put("objStatus", ObjStatus.INSERT.toString());
@@ -1341,7 +1343,7 @@ public class UploadOperation {
 						freshFlag = false;
 					} else if (ret == 1) {
 						int oldPid = 0;
-						for (IRow oldHotel:hotelList) {
+						for (IRow oldHotel : hotelList) {
 							IxPoiHotel oldPoiHotel = (IxPoiHotel) oldHotel;
 							if (oldPoiHotel.getRowId().equals(hotelObj.getString("rowId"))) {
 								oldPid = oldPoiHotel.getPid();
@@ -1354,28 +1356,28 @@ public class UploadOperation {
 						// 鲜度验证
 						freshFlag = false;
 					}
-				} else if (hotelList.size()>0) {
+				} else if (hotelList.size() > 0) {
 					// 删除的数据
-					IxPoiHotel oldPoiHotel = (IxPoiHotel)hotelList.get(0);
+					IxPoiHotel oldPoiHotel = (IxPoiHotel) hotelList.get(0);
 					JSONObject oldDelJson = oldPoiHotel.Serialize(null);
 					oldDelJson.put("objStatus", ObjStatus.DELETE.toString());
-					
+
 					newHotelArray.add(oldDelJson);
 					// 鲜度验证
 					freshFlag = false;
 				}
-				
+
 				poiJson.put("hotels", newHotelArray);
 			}
-			
+
 			// 餐馆
-			if (jo.getJSONObject("foodtypes").size()>0) {
+			if (jo.getJSONObject("foodtypes").size() > 0) {
 				List<IRow> foodtypeList = oldPoi.getRestaurants();
 				JSONObject foodtypesObj = jo.getJSONObject("foodtypes");
 				JSONArray oldArray = new JSONArray();
 				JSONArray newFoodtypeArray = new JSONArray();
 				if (!foodtypesObj.isEmpty()) {
-					for (IRow oldFoodtype:foodtypeList) {
+					for (IRow oldFoodtype : foodtypeList) {
 						IxPoiRestaurant oldPoiFoodtype = (IxPoiRestaurant) oldFoodtype;
 						JSONObject oldPoiFoodtypeObj = oldPoiFoodtype.Serialize(null);
 						oldArray.add(oldPoiFoodtypeObj);
@@ -1387,11 +1389,11 @@ public class UploadOperation {
 					newFoodtype.put("foodType", foodtypesObj.getString("foodtype"));
 					newFoodtype.put("creditCard", foodtypesObj.getString("creditCards"));
 					newFoodtype.put("avgCost", foodtypesObj.getInt("avgCost"));
-					newFoodtype.put("parking",foodtypesObj.getInt("parking"));
-					newFoodtype.put("openHour",foodtypesObj.getString("openHour"));
-					newFoodtype.put("rowId",foodtypesObj.getString("rowId"));
+					newFoodtype.put("parking", foodtypesObj.getInt("parking"));
+					newFoodtype.put("openHour", foodtypesObj.getString("openHour"));
+					newFoodtype.put("rowId", foodtypesObj.getString("rowId"));
 					// 差分,区分新增修改
-					int ret = getDifferent(oldArray,newFoodtype);
+					int ret = getDifferent(oldArray, newFoodtype);
 					if (ret == 0) {
 						newFoodtype.put("pid", PidService.getInstance().applyPoiFoodId());
 						newFoodtype.put("objStatus", ObjStatus.INSERT.toString());
@@ -1400,7 +1402,7 @@ public class UploadOperation {
 						freshFlag = false;
 					} else if (ret == 1) {
 						int oldPid = 0;
-						for (IRow oldFoodtype:foodtypeList) {
+						for (IRow oldFoodtype : foodtypeList) {
 							IxPoiRestaurant oldPoiFoodtype = (IxPoiRestaurant) oldFoodtype;
 							if (oldPoiFoodtype.getRowId().equals(foodtypesObj.getString("rowId"))) {
 								oldPid = oldPoiFoodtype.getPid();
@@ -1413,21 +1415,21 @@ public class UploadOperation {
 						// 鲜度验证
 						freshFlag = false;
 					}
-				} else if (foodtypeList.size()>0) {
+				} else if (foodtypeList.size() > 0) {
 					// 删除的数据
-					IxPoiRestaurant oldPoiFoodtype = (IxPoiRestaurant)foodtypeList.get(0);
+					IxPoiRestaurant oldPoiFoodtype = (IxPoiRestaurant) foodtypeList.get(0);
 					JSONObject oldDelJson = oldPoiFoodtype.Serialize(null);
 					oldDelJson.put("objStatus", ObjStatus.DELETE.toString());
-					
+
 					newFoodtypeArray.add(oldDelJson);
 					// 鲜度验证
 					freshFlag = false;
 				}
-				
+
 				poiJson.put("restaurants", newFoodtypeArray);
 
 			}
-			
+
 			retObj.put("flag", 1);
 			retObj.put("ret", poiJson);
 			retObj.put("freshFlag", freshFlag);
@@ -1442,7 +1444,7 @@ public class UploadOperation {
 			errObj.put("reason", errStr);
 			retObj.put("ret", errObj);
 		}
-		
+
 		return retObj;
 	}
 
@@ -1453,7 +1455,7 @@ public class UploadOperation {
 			int ret = 0;
 			boolean theSame = false;
 			boolean change = false;
-			for (int i=0;i<oldArray.size();i++) {
+			for (int i = 0; i < oldArray.size(); i++) {
 				String newRowid = newObj.getString("rowId");
 				JSONObject old = oldArray.getJSONObject(i);
 				if (old.getString("rowId").equals(newRowid)) {
@@ -1474,9 +1476,9 @@ public class UploadOperation {
 								break;
 							}
 						}
-						
+
 					}
-				} 
+				}
 			}
 			// rowid相同,但无修改字段，不处理，返回2
 			if (theSame && !change) {
@@ -1487,15 +1489,15 @@ public class UploadOperation {
 			throw e;
 		}
 	}
-	
+
 	// 差分，区分删除的数据
 	private JSONArray getOldDel(JSONArray oldArray, List<String> newRowIdList) throws Exception {
 		try {
 			JSONArray retArray = new JSONArray();
-			for (int i=0;i<oldArray.size();i++) {
+			for (int i = 0; i < oldArray.size(); i++) {
 				boolean flag = true;
 				JSONObject jsonObj = oldArray.getJSONObject(i);
-				for (String rowid:newRowIdList) {
+				for (String rowid : newRowIdList) {
 					if (rowid.equals(jsonObj.getString("rowId"))) {
 						flag = false;
 						break;
@@ -1512,24 +1514,26 @@ public class UploadOperation {
 			throw e;
 		}
 	}
-	
+
 	/**
 	 * poi操作修改poi状态为待作业
 	 * 
 	 * @param row
 	 * @throws Exception
 	 */
-	public void upatePoiStatusForAndroid(Connection conn, String rowId, int freshFlag,String rawFields) throws Exception {
+	public void upatePoiStatusForAndroid(Connection conn, String rowId, int freshFlag, String rawFields)
+			throws Exception {
 		IxPoi ixPoi = new IxPoi();
 		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
-		sb.append(" USING (SELECT '" + ixPoi.getRowId() + "' as a, 1 as b,"
-				+ freshFlag + " as c,'" + rawFields + "' as d,"
-				+ "sysdate as e" + "  FROM dual) T2 ");
+		sb.append(" USING (SELECT '" + ixPoi.getRowId() + "' as a, 1 as b," + freshFlag + " as c,'" + rawFields
+				+ "' as d," + "sysdate as e" + "  FROM dual) T2 ");
 		sb.append(" ON ( T1.row_id=T2.a) ");
 		sb.append(" WHEN MATCHED THEN ");
-		sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c,T1.is_upload = T2.b,T1.raw_fields = T2.d,T1.upload_date = T2.e ");
+		sb.append(
+				" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c,T1.is_upload = T2.b,T1.raw_fields = T2.d,T1.upload_date = T2.e ");
 		sb.append(" WHEN NOT MATCHED THEN ");
-		sb.append(" INSERT (T1.row_id,T1.status,T1.fresh_verified,T1.is_upload,T1.raw_fields,T1.upload_date) VALUES(T2.a,T2.b,T2.c,T2.b,T2.d,T2.e)");
+		sb.append(
+				" INSERT (T1.row_id,T1.status,T1.fresh_verified,T1.is_upload,T1.raw_fields,T1.upload_date) VALUES(T2.a,T2.b,T2.c,T2.b,T2.d,T2.e)");
 		PreparedStatement pstmt = null;
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
@@ -1542,7 +1546,7 @@ public class UploadOperation {
 			DBUtils.closeStatement(pstmt);
 		}
 	}
-	
+
 	public JSONObject getUploadInfo(int jobId) throws Exception {
 
 		Connection conn = null;
@@ -1591,5 +1595,5 @@ public class UploadOperation {
 			DBUtils.closeStatement(pstmt);
 		}
 	}
-	
+
 }

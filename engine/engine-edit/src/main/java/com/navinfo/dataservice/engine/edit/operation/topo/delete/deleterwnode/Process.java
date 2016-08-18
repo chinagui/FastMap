@@ -24,9 +24,6 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
-		// 同一点关系
-		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
-		opRefRdSameNode.run(getResult(), this.getCommand());
 		return new Operation(this.getCommand()).run(this.getResult());
 	}
 

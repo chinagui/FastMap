@@ -72,17 +72,15 @@ public class LayerService {
 			List<Object> values=new ArrayList();
 			if (wkt!=null && StringUtils.isNotEmpty(wkt)){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" GEOMETRY=sdo_geometry('?',8307) ";
-				values.add(wkt);
+				updateSql+=" GEOMETRY=sdo_geometry('"+wkt+"',8307) ";
 			};
 			if (layerName!=null&& StringUtils.isNotEmpty(layerName)){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" LAYER_NAME=? ";
-				values.add(layerName);
+				updateSql+=" LAYER_NAME='"+layerName+"'";
 			};
 			updateSql+=" where LAYER_ID=?";
 			values.add(layerId);
-			run.update(conn, baseSql+updateSql,values.toArray());
+			run.update(conn, baseSql+updateSql);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

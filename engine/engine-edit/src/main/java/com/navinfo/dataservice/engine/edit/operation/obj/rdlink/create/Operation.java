@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.utils.AdminOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdLinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.utils.batch.UrbanBatchUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -83,6 +84,9 @@ public class Operation implements IOperation {
 
 			AdminOperateUtils.SetAdminInfo4Link(link, conn);
 
+			// 设置Link的urban属性
+//			UrbanBatchUtils.updateUrban(link, this.conn, result);
+
 			result.insertObject(link, ObjStatus.INSERT, link.pid());
 		}
 	}
@@ -139,6 +143,10 @@ public class Operation implements IOperation {
 		link.setLaneNum(command.getLaneNum());
 
 		AdminOperateUtils.SetAdminInfo4Link(link, conn);
+		
+		// 设置Link的urban属性
+//		UrbanBatchUtils.updateUrban(link, this.conn, result);
+
 
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
 	}
@@ -188,7 +196,7 @@ public class Operation implements IOperation {
 				com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command(
 						breakJson, breakJson.toString());
 				com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process(
-						breakCommand, conn,result);
+						breakCommand, conn, result);
 				breakProcess.innerRun();
 			}
 		}

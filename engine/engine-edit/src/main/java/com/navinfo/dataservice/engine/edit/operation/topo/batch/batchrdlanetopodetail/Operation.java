@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlanetopo;
+package com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlanetopodetail;
 
 import java.util.List;
 
@@ -9,8 +9,6 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 
 import com.navinfo.dataservice.dao.glm.iface.Result;
-
-import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneTopoDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneTopoVia;
 import com.navinfo.dataservice.dao.pidservice.PidService;
@@ -52,7 +50,8 @@ public class Operation implements IOperation {
 			}
 			result.insertObject(detail, ObjStatus.INSERT, detail.getPid());
 		}
-		for(RdLaneTopoDetail detail:this.command.getDelToptInfos()){
+		for(IRow row:this.command.getDelToptInfos()){
+			RdLaneTopoDetail detail = (RdLaneTopoDetail)row;
 			result.insertObject(detail,ObjStatus.DELETE, detail.getPid());
 		}
 	}

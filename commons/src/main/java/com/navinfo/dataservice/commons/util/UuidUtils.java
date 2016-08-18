@@ -2,6 +2,7 @@ package com.navinfo.dataservice.commons.util;
 
 import java.util.UUID;
 
+
 /** 
 * @ClassName: UuidUtils 
 * @author Xiao Xiaowen 
@@ -16,5 +17,9 @@ public class UuidUtils {
 	 */
 	public static String genUuid() {
 		return UUID.randomUUID().toString().replaceAll("-", "");
+	}
+	public static void main(String[] args) {
+		
+		System.out.println(genUuid());
 	}
 }

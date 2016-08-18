@@ -24,32 +24,32 @@ import com.vividsolutions.jts.geom.Geometry;
 public class LuLink implements IObj {
 
 	private int pid;
-	
+
 	private String rowId;
-	
+
 	private int sNodePid;
-	
+
 	private int eNodePid;
-	
+
 	private Geometry geometry;
-	
+
 	private double length;
-	
+
 	private int editFlag = 1;
-	
+
 	private List<IRow> linkKinds = new ArrayList<IRow>();
-	
-	public Map<String, LuLinkKind> linkKindMap = new HashMap<String, LuLinkKind>(); 
+
+	public Map<String, LuLinkKind> linkKindMap = new HashMap<String, LuLinkKind>();
 
 	private List<IRow> meshes = new ArrayList<IRow>();
 
 	public Map<String, LuLinkMesh> meshMap = new HashMap<String, LuLinkMesh>();
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
-	
-	public LuLink(){
+
+	public LuLink() {
 	}
-	
+
 	@Override
 	public String rowId() {
 		return this.rowId;
@@ -81,8 +81,8 @@ public class LuLink implements IObj {
 
 	@Override
 	public void copy(IRow row) {
-		LuLink sourceLink = (LuLink)row;
-		
+		LuLink sourceLink = (LuLink) row;
+
 		this.eNodePid = sourceLink.eNodePid;
 		this.geometry = sourceLink.geometry;
 		this.length = sourceLink.length;
@@ -90,7 +90,7 @@ public class LuLink implements IObj {
 		this.rowId = sourceLink.rowId;
 		this.sNodePid = sourceLink.sNodePid;
 		this.meshes = new ArrayList<IRow>();
-		for(IRow mesh : sourceLink.meshes){
+		for (IRow mesh : sourceLink.meshes) {
 			LuLinkMesh linkMesh = new LuLinkMesh();
 			linkMesh.copy(mesh);
 			linkMesh.setLinkPid(this.pid);
@@ -331,18 +331,18 @@ public class LuLink implements IObj {
 
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		Map<Class<? extends IRow>,List<IRow>> childMap = new HashMap<>();
+		Map<Class<? extends IRow>, List<IRow>> childMap = new HashMap<>();
 		childMap.put(LuLinkKind.class, linkKinds);
 		childMap.put(LuLinkMesh.class, meshes);
 		return childMap;
 	}
 
 	@Override
-	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
-		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<Class<? extends IRow>,Map<String,?>>();
+	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
+		Map<Class<? extends IRow>, Map<String, ?>> childMap = new HashMap<Class<? extends IRow>, Map<String, ?>>();
 		childMap.put(LuLinkKind.class, linkKindMap);
 		childMap.put(LuLinkMesh.class, meshMap);
-		return null;
+		return childMap;
 	}
 
 }

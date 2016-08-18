@@ -54,7 +54,7 @@ public class AbstractSelector implements ISelector {
 	}
 
 	@Override
-	public IRow loadById(int id, boolean isLock, boolean... loadChild) throws Exception {
+	public IRow loadById(int id, boolean isLock, boolean... noChild) throws Exception {
 		this.row = (IRow) cls.newInstance();
 		StringBuilder sb = new StringBuilder(
 				"select * from " + row.tableName() + " where " + ((IObj) row).primaryKey() + " = :1 and u_record !=2");
@@ -77,7 +77,7 @@ public class AbstractSelector implements ISelector {
 			if (resultSet.next()) {
 				// 设置主表信息
 				ReflectionAttrUtils.executeResultSet(row, resultSet);
-				if (loadChild != null && loadChild[0]) {
+				if (noChild == null || noChild.length == 0) {
 					if (row instanceof IObj) {
 						IObj obj = (IObj) row;
 						// 子表list map
@@ -134,7 +134,7 @@ public class AbstractSelector implements ISelector {
 	}
 
 	@Override
-	public List<IRow> loadByIds(List<Integer> idList, boolean isLock, boolean... loadChild)
+	public List<IRow> loadByIds(List<Integer> idList, boolean isLock, boolean... noChild)
 			throws Exception {
 		List<IRow> rowList = new ArrayList<>();
 		this.row = (IRow) cls.newInstance();
@@ -159,7 +159,7 @@ public class AbstractSelector implements ISelector {
 				IRow row = (IRow) cls.newInstance();
 				ReflectionAttrUtils.executeResultSet(row, resultSet);
 				// 设置子表信息
-				if (loadChild != null && loadChild[0]) {
+				if (noChild == null) {
 					if (row instanceof IObj) {
 						IObj obj = (IObj) row;
 						// 子表list map

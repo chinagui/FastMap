@@ -18,7 +18,7 @@ public interface ISelector {
 	 * @return IRow
 	 * @throws Exception
 	 */
-	public IRow loadById(int id, boolean isLock,boolean ... loadChild) throws Exception;
+	public IRow loadById(int id, boolean isLock,boolean ... noChild) throws Exception;
 	
 	/**
 	 * 查询主表和对应的Class的子表
@@ -38,7 +38,7 @@ public interface ISelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<IRow> loadByIds(List<Integer> idList, boolean isLock,boolean... loadChild) throws Exception;
+	public List<IRow> loadByIds(List<Integer> idList, boolean isLock,boolean... noChild) throws Exception;
 
 	/**
 	 * 根据rowid获取一行记录

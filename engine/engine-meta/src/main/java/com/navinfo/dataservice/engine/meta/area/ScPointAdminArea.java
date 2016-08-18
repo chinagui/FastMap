@@ -3,6 +3,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -22,6 +24,17 @@ import com.navinfo.navicommons.exception.ServiceException;
  */
 public class ScPointAdminArea {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
+	
+	private Connection conn;
+	
+	public ScPointAdminArea() {
+		
+	}
+	
+	public ScPointAdminArea(Connection conn) {
+		this.conn = conn;
+	}
+	
 	/**
 	 * 根据省份获取电话列表
 	 * @param name
@@ -198,6 +211,37 @@ public class ScPointAdminArea {
 			DbUtils.closeQuietly(pstmt);
 			DbUtils.closeQuietly(conn);
 		}
+	}
+	
+	
+	public Map<String, String> getAdminMap() throws Exception {
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		
+		String sql = "select distinct adminareacode,whole from SC_POINT_ADMINAREA";
+		
+		Map<String,String> adminMap = new HashMap<String,String>();
+		
+		try {
+			
+			pstmt = conn.prepareStatement(sql);
+			
+			resultSet = pstmt.executeQuery();
+			
+			while (resultSet.next()) {
+				adminMap.put(resultSet.getString("adminareacode"), resultSet.getString("whole"));
+			}
+			
+			return adminMap;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+		
 	}
 	
 }

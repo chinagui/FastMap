@@ -29,7 +29,10 @@ public class CheckRule {
 //	public String ruleClass;
 	
 //	public Class ruleClass;
+	private AccessorType preAccessorType;
+	private String preAccessorName;
 	private Class preRuleClass;
+	private List<VariableName> preVariables=new ArrayList<VariableName>();
 	
 	//accessor_type,accessor_name,variables
 	private AccessorType postAccessorType;
@@ -50,7 +53,7 @@ public class CheckRule {
 		return severity;
 	}
 	
-	public CheckRule(String initRuleCode,String initRuleLog,int initSeverity,String preCheckClassPath,String postAccessorType,String postAccessorName,String postVariables) {
+	public CheckRule(String initRuleCode,String initRuleLog,int initSeverity,String preAccessorType,String preAccessorName,String preVariables,String postAccessorType,String postAccessorName,String postVariables) {
 
 		
 		try{
@@ -58,8 +61,20 @@ public class CheckRule {
 			ruleLog = initRuleLog;
 			severity = initSeverity;
 			
-			if(preCheckClassPath!=null && !preCheckClassPath.isEmpty()){this.preRuleClass = Class.forName(preCheckClassPath);}
-						
+			if(preAccessorType==null || preAccessorType.isEmpty()){this.preAccessorType=null;}
+			else{
+				this.preAccessorType=AccessorType.valueOf(preAccessorType);
+				if(this.preAccessorType==AccessorType.SQL){
+					this.preAccessorName=preAccessorName;
+					if(preVariables==null || preVariables.isEmpty()){this.preVariables=null;}
+					else{
+						List<String> variableTmp=java.util.Arrays.asList(preVariables.split(","));
+						for(int i=0;i<variableTmp.size();i++)
+							{this.preVariables.add(Enum.valueOf(VariableName.class, variableTmp.get(i)));}}
+					}
+				else{this.preRuleClass=Class.forName(preAccessorName);}
+			}	
+			
 			if(postAccessorType==null || postAccessorType.isEmpty()){this.postAccessorType=null;}
 			else{
 				this.postAccessorType=AccessorType.valueOf(postAccessorType);
@@ -137,6 +152,30 @@ public class CheckRule {
 
 	public void setPostAccessorType(AccessorType postAccessorType) {
 		this.postAccessorType = postAccessorType;
+	}
+
+	public AccessorType getPreAccessorType() {
+		return preAccessorType;
+	}
+
+	public void setPreAccessorType(AccessorType preAccessorType) {
+		this.preAccessorType = preAccessorType;
+	}
+
+	public String getPreAccessorName() {
+		return preAccessorName;
+	}
+
+	public void setPreAccessorName(String preAccessorName) {
+		this.preAccessorName = preAccessorName;
+	}
+
+	public List<VariableName> getPreVariables() {
+		return preVariables;
+	}
+
+	public void setPreVariables(List<VariableName> preVariables) {
+		this.preVariables = preVariables;
 	}
 
 }

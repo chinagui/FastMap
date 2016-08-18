@@ -83,7 +83,7 @@ public class LayerService {
 			updateSql+=" where LAYER_ID=?";
 			values.add(layerId);
 			
-			DbOperation.exeUpdateOrInsertBySql(conn, updateSql);
+			DbOperation.exeUpdateOrInsertBySql(conn, baseSql+updateSql);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

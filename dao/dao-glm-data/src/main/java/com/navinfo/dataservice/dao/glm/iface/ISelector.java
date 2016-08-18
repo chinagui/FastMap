@@ -38,7 +38,7 @@ public interface ISelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<IRow> loadByIds(List<Integer> idList, boolean isLock,boolean... noChild) throws Exception;
+	public List<IRow> loadByIds(List<Integer> idList, boolean isLock,boolean loadChild) throws Exception;
 
 	/**
 	 * 根据rowid获取一行记录

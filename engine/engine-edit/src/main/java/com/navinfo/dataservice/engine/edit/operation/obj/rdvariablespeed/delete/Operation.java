@@ -8,6 +8,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeed;
+import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeedVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.variablespeed.RdVariableSpeedSelector;
 
 public class Operation implements IOperation {
@@ -47,6 +48,13 @@ public class Operation implements IOperation {
 		for(RdVariableSpeed rdVariableSpeed : variableSpeedList)
 		{
 			result.insertObject(rdVariableSpeed, ObjStatus.DELETE, rdVariableSpeed.getPid());
+		}
+		
+		List<RdVariableSpeedVia> viaList = selector.loadRdVariableSpeedVia(link.getPid(), true);
+		
+		for(RdVariableSpeedVia via : viaList)
+		{
+			result.insertObject(via, ObjStatus.DELETE, via.getLinkPid());
 		}
 	}
 }

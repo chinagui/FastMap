@@ -23,7 +23,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.vividsolutions.jts.geom.Geometry;
 
-public class PostRuleExecuter {
+public class RuleExecuter {
 	
 	CheckCommand checkCommand=new CheckCommand();
 	private List<IRow> dataList=new ArrayList<IRow>();
@@ -34,7 +34,7 @@ public class PostRuleExecuter {
 	
 	private static Logger log = Logger.getLogger(CheckEngine.class);
 
-	public PostRuleExecuter(CheckCommand checkCommand,List<VariableName> checkSuitVariables,Connection conn) {
+	public RuleExecuter(CheckCommand checkCommand,List<VariableName> checkSuitVariables,Connection conn) {
 		// TODO Auto-generated constructor stub
 		this.checkCommand=checkCommand;
 		this.setDataList(checkCommand.getGlmList());
@@ -76,12 +76,12 @@ public class PostRuleExecuter {
 		this.dataList = dataList;
 	}
 	
-	public List<NiValException> exeRule(CheckRule rule) throws Exception{
+	public String exePreRule(CheckRule rule) throws Exception{
 		try{
 			log.info("start exe "+rule.getRuleCode());
-			if(rule.getPostAccessorType()==AccessorType.SQL){
-				return exeSqlRule(rule);
-			}else{return exeJavaRule(rule);}}
+			if(rule.getPreAccessorType()==AccessorType.SQL){
+				return exePreSqlRule(rule);
+			}else{return exePreJavaRule(rule);}}
 		finally{
 			log.info("end exe "+rule.getRuleCode());}
 	}
@@ -89,7 +89,76 @@ public class PostRuleExecuter {
 	/*
 	 * 执行java写的检查规则
 	 */
-	private List<NiValException> exeJavaRule(CheckRule rule) throws Exception{
+	private String exePreJavaRule(CheckRule rule) throws Exception{
+		baseRule obj = (baseRule) rule.getPreRuleClass().newInstance();
+		obj.setLoader(loader);
+		obj.setRuleDetail(rule);
+		obj.setConn(this.conn);
+		//调用规则的后检查
+		try{
+			obj.preCheck(this.checkCommand);
+		}catch(Exception e) {
+			log.error("error exejavacheck",e);
+		}
+		List<NiValException> preResult=obj.getCheckResultList();
+		if(preResult==null || preResult.size()==0){return "";}
+		return preResult.get(0).getInformation();
+	}
+	
+	/*
+	 * 执行sql语句写的检查规则
+	 */
+	private String exePreSqlRule(CheckRule rule) throws Exception{
+		String sql=rule.getPreAccessorName();
+		List<String> sqlList=new ArrayList<String>();
+		List<String> sqlListTmp=new ArrayList<String>();
+		sqlList.add(sql);
+		List<VariableName> variableList=rule.getPreVariables();
+		//将sql语句中的参数进行替换，形成可执行的sql语句
+		for(int i=0;i<variableList.size();i++){
+			Set<String> variableValueList=variablesValueMap.get(variableList.get(i));
+			if(variableValueList==null || variableValueList.size()==0){
+				sqlListTmp=new ArrayList<String>();
+				sqlList=new ArrayList<String>();
+				break;
+			}
+			if(sqlListTmp.size()!=0){sqlList=sqlListTmp;sqlListTmp=new ArrayList<String>();}
+			for(int m=0;m<sqlList.size();m++){
+				Iterator<String> varIterator=variableValueList.iterator();
+				while(varIterator.hasNext()){
+					sqlListTmp.add(sqlList.get(m).replaceAll(variableList.get(i).toString(), varIterator.next()));
+				}
+			}
+		}
+		if(sqlListTmp.size()!=0){sqlList=sqlListTmp;}
+		//执行sql语句
+		checkResultDatabaseOperator getObj=new checkResultDatabaseOperator();
+		getObj.setRule(rule);
+		for(int i=0;i<sqlList.size();i++){
+			List<Object> resultList=new ArrayList<Object>();
+			resultList=getObj.exeSelect(this.conn, sqlList.get(i));
+			if (resultList.size()>0){
+				for(int j=0;j<resultList.size();j++){
+					return ((NiValException) resultList.get(j)).getInformation();}
+				}
+		}
+		return "";
+	}
+	
+	public List<NiValException> exePostRule(CheckRule rule) throws Exception{
+		try{
+			log.info("start exe "+rule.getRuleCode());
+			if(rule.getPostAccessorType()==AccessorType.SQL){
+				return exePostSqlRule(rule);
+			}else{return exePostJavaRule(rule);}}
+		finally{
+			log.info("end exe "+rule.getRuleCode());}
+	}
+	
+	/*
+	 * 执行java写的检查规则
+	 */
+	private List<NiValException> exePostJavaRule(CheckRule rule) throws Exception{
 		baseRule obj = (baseRule) rule.getPostRuleClass().newInstance();
 		obj.setLoader(loader);
 		obj.setRuleDetail(rule);
@@ -106,7 +175,7 @@ public class PostRuleExecuter {
 	/*
 	 * 执行sql语句写的检查规则
 	 */
-	private List<NiValException> exeSqlRule(CheckRule rule) throws Exception{
+	private List<NiValException> exePostSqlRule(CheckRule rule) throws Exception{
 		String sql=rule.getPostAccessorName();
 		List<String> sqlList=new ArrayList<String>();
 		List<String> sqlListTmp=new ArrayList<String>();

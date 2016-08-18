@@ -78,8 +78,7 @@ public class LayerService {
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" LAYER_NAME='"+layerName+"'";
 			};
-			updateSql+=" where LAYER_ID=?";
-			values.add(layerId);
+			updateSql+=" where LAYER_ID="+layerId;
 			run.update(conn, baseSql+updateSql);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

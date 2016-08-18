@@ -33,7 +33,8 @@ public class Check {
 		}
 
 		RdSameNodeSelector sameNodeSelector = new RdSameNodeSelector(conn);
-
+		
+		//key：tableName,value:nodePid
 		Map<String, StringBuilder> nodePids = new HashMap<>();
 
 		for (int i = 0; i < nodeArray.size(); i++) {
@@ -58,6 +59,17 @@ public class Check {
 
 		// 检查node是否属于某一单一link的起点和终点
 		checkNodesForOneLink(nodePids, conn);
+		
+		//检查node挂接的link中的LULINK
+		checkNodesForLuLink(nodePids, conn);
+	}
+
+	/**
+	 * @param nodePids
+	 * @param conn
+	 */
+	private void checkNodesForLuLink(Map<String, StringBuilder> nodePids, Connection conn) {
+		
 	}
 
 	/**

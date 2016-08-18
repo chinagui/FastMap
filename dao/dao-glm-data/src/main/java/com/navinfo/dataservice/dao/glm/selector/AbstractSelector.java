@@ -134,7 +134,7 @@ public class AbstractSelector implements ISelector {
 	}
 
 	@Override
-	public List<IRow> loadByIds(List<Integer> idList, boolean isLock, boolean... noChild)
+	public List<IRow> loadByIds(List<Integer> idList, boolean isLock, boolean loadChild)
 			throws Exception {
 		List<IRow> rowList = new ArrayList<>();
 		this.row = (IRow) cls.newInstance();
@@ -159,7 +159,7 @@ public class AbstractSelector implements ISelector {
 				IRow row = (IRow) cls.newInstance();
 				ReflectionAttrUtils.executeResultSet(row, resultSet);
 				// 设置子表信息
-				if (noChild == null) {
+				if (loadChild) {
 					if (row instanceof IObj) {
 						IObj obj = (IObj) row;
 						// 子表list map

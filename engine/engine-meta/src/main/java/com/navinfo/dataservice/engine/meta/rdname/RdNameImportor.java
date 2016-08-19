@@ -271,6 +271,10 @@ public class RdNameImportor {
 			while (keys.hasNext()) {
 				String key = (String) keys.next();
 				
+				if (key.equals("objStatus")) {
+					continue;
+				}
+				
 				Field f = rdName.getClass().getDeclaredField(key);
 
 				f.setAccessible(true);

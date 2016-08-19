@@ -35,7 +35,7 @@ public class RdNameSelectorTest {
 	@Test
 	public void testGetRdName()
 	{
-		String parameter = "{\"subtaskId\":\"163\",\"pageNum\":1,\"pageSize\":20,\"params\":{},sortby:\"\"}";
+		String parameter = "{\"subtaskId\":\"163\",\"pageNum\":1,\"pageSize\":20,\"params\":{\"name\":\"\"},sortby:\"\"}";
 
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);

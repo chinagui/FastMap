@@ -181,13 +181,8 @@ public class RdNameOperation {
 					rdName = saveName(rdName);
 				} else {
 					// 英文/葡文名
-					if (checkEngName(rdName.getNameGroupId())) {
-						// 已存在英文/葡文名
-						new Exception("已存在英文/葡文名");
-					} else {
-						rdName.setCity(true);
-						rdName = saveName(rdName);
-					}
+					rdName.setCity(true);
+					rdName = saveName(rdName);
 				}
 			} else {
 				// 修改

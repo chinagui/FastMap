@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.dao.glm.model.rd.lane;
 
 import java.lang.reflect.Field;
-import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -33,7 +32,7 @@ public class RdLaneCondition implements IRow {
 
 	private String rowId;
 
-	private BigInteger vehicle = new BigInteger("0");// 车辆类型
+	private long vehicle = 0;// 车辆类型
 
 	private String vehicleTime;// 车辆时间段
 
@@ -144,11 +143,11 @@ public class RdLaneCondition implements IRow {
 		this.directionTime = directionTime;
 	}
 
-	public BigInteger getVehicle() {
+	public long getVehicle() {
 		return vehicle;
 	}
 
-	public void setVehicle(BigInteger vehicle) {
+	public void setVehicle(long vehicle) {
 		this.vehicle = vehicle;
 	}
 

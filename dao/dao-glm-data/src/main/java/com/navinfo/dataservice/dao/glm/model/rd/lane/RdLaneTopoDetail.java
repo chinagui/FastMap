@@ -1,21 +1,21 @@
 package com.navinfo.dataservice.dao.glm.model.rd.lane;
 
 import java.lang.reflect.Field;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * 道路:详细车道连通表，仅记录客车（小汽车）可通行的车道连通关系
@@ -85,11 +85,11 @@ public class RdLaneTopoDetail implements IObj {
 		this.timeDomain = timeDomain;
 	}
 
-	public BigInteger getVehicle() {
+	public long getVehicle() {
 		return vehicle;
 	}
 
-	public void setVehicle(BigInteger vehicle) {
+	public void setVehicle(long vehicle) {
 		this.vehicle = vehicle;
 	}
 
@@ -132,7 +132,7 @@ public class RdLaneTopoDetail implements IObj {
 	private int outLinkPid;// 退出 LINK
 	private int reachDir = 0; // 通达方向
 	private int timeDomain;// 时间段
-	private BigInteger vehicle = new BigInteger("0");// 车辆类型
+	private long vehicle = 0;// 车辆类型
 	private int tollForm = 0;// 收费方式
 	private int cardType = 0;// 领卡类型
 	private int topologyId = 0;// 车信连通号码

@@ -48,8 +48,6 @@ public class ReflectionAttrUtils {
 			map.put(fieldToProperty(rsm.getColumnName(i), row), rs.getObject(i));
 		}
 		for (String fieldName : map.keySet()) {
-			if ("uRecord".equals(fieldName) || "uDate".equals(fieldName) || "uFields".equals(fieldName))
-				continue;
 			Field field = null;
 			if (fieldName.equals("pid") && row instanceof IObj) {
 				field = clazz.getDeclaredField("pid");
@@ -57,7 +55,14 @@ public class ReflectionAttrUtils {
 				field.set(row, Integer.valueOf(map.get("pid").toString()));
 				continue;
 			}
-			field = clazz.getDeclaredField(fieldName);
+			try {
+				field = clazz.getDeclaredField(fieldName);
+			} catch (NoSuchFieldException e) {
+				if ("uRecord".equals(fieldName) || "uFields".equals(fieldName) || "uDate".equals(fieldName))
+					continue;
+				System.out.println(fieldName + "在" + clazz.getName() + "中没有对应的属性");
+				continue;
+			}
 			Object value = map.get(fieldName);
 			if (null != value) {
 				switch (field.getType().getName()) {
@@ -69,6 +74,9 @@ public class ReflectionAttrUtils {
 					break;
 				case "int":
 					value = Integer.valueOf(value.toString());
+					break;
+				case "long":
+					value = Long.valueOf(value.toString());
 					break;
 				case "double":
 					value = Double.valueOf(value.toString());

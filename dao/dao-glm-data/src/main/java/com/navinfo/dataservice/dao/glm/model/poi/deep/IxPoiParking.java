@@ -1,14 +1,10 @@
 package com.navinfo.dataservice.dao.glm.model.poi.deep;
 
 import java.lang.reflect.Field;
-import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -16,6 +12,9 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 /**
  * 索引:POI 深度信息(停车场类)  
  * @author zhaokk
@@ -38,7 +37,7 @@ public class IxPoiParking implements IObj {
 	private double resHigh = 0;//限高
 	private double resWidth = 0;//限宽
 	private double resWeigh = 0;//限重
-	private BigInteger vehicle = new BigInteger("0");//停放车辆类型 
+	private long vehicle = 0;//停放车辆类型 
 	private String photoName;//全景照片
 	private int certificate = 0; //入口凭证
 	private int uRecord=0;
@@ -142,11 +141,11 @@ public class IxPoiParking implements IObj {
 		this.resWeigh = resWeigh;
 	}
 
-	public BigInteger getVehicle() {
+	public long getVehicle() {
 		return vehicle;
 	}
 
-	public void setVehicle(BigInteger vehicle) {
+	public void setVehicle(long vehicle) {
 		this.vehicle = vehicle;
 	}
 

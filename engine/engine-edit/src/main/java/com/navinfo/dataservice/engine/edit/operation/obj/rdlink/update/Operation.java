@@ -32,11 +32,14 @@ public class Operation implements IOperation {
 
 		this.updateLink = updateLink;
 	}
-	public Operation(Command command, RdLink updateLink,Connection conn) {
+
+	public Operation(Command command, RdLink updateLink, Connection conn) {
 		this.command = command;
-		this.conn =conn;
+		this.conn = conn;
 		this.updateLink = updateLink;
 	}
+
+	public final int KIND = 7;
 
 	@Override
 	public String run(Result result) throws Exception {
@@ -46,7 +49,8 @@ public class Operation implements IOperation {
 
 			if (ObjStatus.DELETE.toString().equals(
 					content.getString("objStatus"))) {
-				result.insertObject(updateLink, ObjStatus.DELETE, updateLink.pid());
+				result.insertObject(updateLink, ObjStatus.DELETE,
+						updateLink.pid());
 
 				return null;
 			} else {
@@ -54,7 +58,8 @@ public class Operation implements IOperation {
 				boolean isChanged = updateLink.fillChangeFields(content);
 
 				if (isChanged) {
-					result.insertObject(updateLink, ObjStatus.UPDATE, updateLink.pid());
+					result.insertObject(updateLink, ObjStatus.UPDATE,
+							updateLink.pid());
 				}
 			}
 		}
@@ -131,11 +136,11 @@ public class Operation implements IOperation {
 	}
 
 	private void saveForms(Result result, JSONArray forms) throws Exception {
-		
+
 		int deleteCount = 0;
-		
+
 		int insertCount = 0;
-		
+
 		for (int i = 0; i < forms.size(); i++) {
 
 			JSONObject formJson = forms.getJSONObject(i);
@@ -147,16 +152,17 @@ public class Operation implements IOperation {
 
 					RdLinkForm form = updateLink.formMap.get(formJson
 							.getString("rowId"));
-					if(form == null)
-					{
-						throw new Exception("rowId为"+formJson
-								.getString("rowId")+"的RdLinkForm不存在");
+					if (form == null) {
+						throw new Exception("rowId为"
+								+ formJson.getString("rowId")
+								+ "的RdLinkForm不存在");
 					}
-					
+
 					if (ObjStatus.DELETE.toString().equals(
 							formJson.getString("objStatus"))) {
-						result.insertObject(form, ObjStatus.DELETE, updateLink.pid());
-						
+						result.insertObject(form, ObjStatus.DELETE,
+								updateLink.pid());
+
 						deleteCount++;
 
 					} else if (ObjStatus.UPDATE.toString().equals(
@@ -165,35 +171,37 @@ public class Operation implements IOperation {
 						boolean isChanged = form.fillChangeFields(formJson);
 
 						if (isChanged) {
-							result.insertObject(form, ObjStatus.UPDATE, updateLink.pid());
+							result.insertObject(form, ObjStatus.UPDATE,
+									updateLink.pid());
 						}
 					}
 				} else {
 					RdLinkForm form = new RdLinkForm();
 
 					form.Unserialize(formJson);
-					
+
 					form.setLinkPid(this.updateLink.getPid());
-					
+
 					form.setMesh(this.updateLink.getMeshId());
 
-					result.insertObject(form, ObjStatus.INSERT, updateLink.pid());
+					result.insertObject(form, ObjStatus.INSERT,
+							updateLink.pid());
 
 					insertCount++;
 				}
 			}
 
 		}
-		
-		if(insertCount==0 && deleteCount==updateLink.getForms().size()){
-			//rd_link_form被清空时，自动添加一条
-			
+
+		if (insertCount == 0 && deleteCount == updateLink.getForms().size()) {
+			// rd_link_form被清空时，自动添加一条
+
 			RdLinkForm form = new RdLinkForm();
-			
+
 			form.setLinkPid(this.updateLink.getPid());
-			
+
 			form.setMesh(this.updateLink.getMeshId());
-			
+
 			result.insertObject(form, ObjStatus.INSERT, this.updateLink.pid());
 		}
 
@@ -215,7 +223,8 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							limitJson.getString("objStatus"))) {
-						result.insertObject(limit, ObjStatus.DELETE, updateLink.pid());
+						result.insertObject(limit, ObjStatus.DELETE,
+								updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							limitJson.getString("objStatus"))) {
@@ -223,19 +232,21 @@ public class Operation implements IOperation {
 						boolean isChanged = limit.fillChangeFields(limitJson);
 
 						if (isChanged) {
-							result.insertObject(limit, ObjStatus.UPDATE, updateLink.pid());
+							result.insertObject(limit, ObjStatus.UPDATE,
+									updateLink.pid());
 						}
 					}
 				} else {
 					RdLinkLimit limit = new RdLinkLimit();
 
 					limit.Unserialize(limitJson);
-					
+
 					limit.setLinkPid(this.updateLink.getPid());
-					
+
 					limit.setMesh(this.updateLink.getMeshId());
 
-					result.insertObject(limit, ObjStatus.INSERT, updateLink.pid());
+					result.insertObject(limit, ObjStatus.INSERT,
+							updateLink.pid());
 
 				}
 			}
@@ -260,7 +271,8 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							json.getString("objStatus"))) {
-						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
+						result.insertObject(obj, ObjStatus.DELETE,
+								updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							json.getString("objStatus"))) {
@@ -268,16 +280,17 @@ public class Operation implements IOperation {
 						boolean isChanged = obj.fillChangeFields(json);
 
 						if (isChanged) {
-							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
+							result.insertObject(obj, ObjStatus.UPDATE,
+									updateLink.pid());
 						}
 					}
 				} else {
 					RdLinkLimitTruck obj = new RdLinkLimitTruck();
 
 					obj.Unserialize(json);
-					
+
 					obj.setLinkPid(this.updateLink.getPid());
-					
+
 					obj.setMesh(this.updateLink.getMeshId());
 
 					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
@@ -306,7 +319,8 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							json.getString("objStatus"))) {
-						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
+						result.insertObject(obj, ObjStatus.DELETE,
+								updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							json.getString("objStatus"))) {
@@ -314,16 +328,17 @@ public class Operation implements IOperation {
 						boolean isChanged = obj.fillChangeFields(json);
 
 						if (isChanged) {
-							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
+							result.insertObject(obj, ObjStatus.UPDATE,
+									updateLink.pid());
 						}
 					}
 				} else {
 					RdLinkSpeedlimit obj = new RdLinkSpeedlimit();
 
 					obj.Unserialize(json);
-					
+
 					obj.setLinkPid(this.updateLink.getPid());
-					
+
 					obj.setMesh(this.updateLink.getMeshId());
 
 					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
@@ -351,7 +366,8 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							json.getString("objStatus"))) {
-						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
+						result.insertObject(obj, ObjStatus.DELETE,
+								updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							json.getString("objStatus"))) {
@@ -359,16 +375,17 @@ public class Operation implements IOperation {
 						boolean isChanged = obj.fillChangeFields(json);
 
 						if (isChanged) {
-							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
+							result.insertObject(obj, ObjStatus.UPDATE,
+									updateLink.pid());
 						}
 					}
 				} else {
 					RdLinkSidewalk obj = new RdLinkSidewalk();
 
 					obj.Unserialize(json);
-					
+
 					obj.setLinkPid(this.updateLink.getPid());
-					
+
 					obj.setMesh(this.updateLink.getMeshId());
 
 					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
@@ -397,7 +414,8 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							json.getString("objStatus"))) {
-						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
+						result.insertObject(obj, ObjStatus.DELETE,
+								updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							json.getString("objStatus"))) {
@@ -405,16 +423,17 @@ public class Operation implements IOperation {
 						boolean isChanged = obj.fillChangeFields(json);
 
 						if (isChanged) {
-							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
+							result.insertObject(obj, ObjStatus.UPDATE,
+									updateLink.pid());
 						}
 					}
 				} else {
 					RdLinkWalkstair obj = new RdLinkWalkstair();
 
 					obj.Unserialize(json);
-					
+
 					obj.setLinkPid(this.updateLink.getPid());
-					
+
 					obj.setMesh(this.updateLink.getMeshId());
 
 					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
@@ -442,7 +461,8 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							json.getString("objStatus"))) {
-						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
+						result.insertObject(obj, ObjStatus.DELETE,
+								updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							json.getString("objStatus"))) {
@@ -450,16 +470,17 @@ public class Operation implements IOperation {
 						boolean isChanged = obj.fillChangeFields(json);
 
 						if (isChanged) {
-							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
+							result.insertObject(obj, ObjStatus.UPDATE,
+									updateLink.pid());
 						}
 					}
 				} else {
 					RdLinkRtic obj = new RdLinkRtic();
 
 					obj.Unserialize(json);
-					
+
 					obj.setLinkPid(this.updateLink.getPid());
-					
+
 					obj.setMesh(this.updateLink.getMeshId());
 
 					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
@@ -487,7 +508,8 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							json.getString("objStatus"))) {
-						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
+						result.insertObject(obj, ObjStatus.DELETE,
+								updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							json.getString("objStatus"))) {
@@ -495,16 +517,17 @@ public class Operation implements IOperation {
 						boolean isChanged = obj.fillChangeFields(json);
 
 						if (isChanged) {
-							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
+							result.insertObject(obj, ObjStatus.UPDATE,
+									updateLink.pid());
 						}
 					}
 				} else {
 					RdLinkIntRtic obj = new RdLinkIntRtic();
 
 					obj.Unserialize(json);
-					
+
 					obj.setLinkPid(this.updateLink.getPid());
-					
+
 					obj.setMesh(this.updateLink.getMeshId());
 
 					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
@@ -532,7 +555,8 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							json.getString("objStatus"))) {
-						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
+						result.insertObject(obj, ObjStatus.DELETE,
+								updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							json.getString("objStatus"))) {
@@ -540,16 +564,17 @@ public class Operation implements IOperation {
 						boolean isChanged = obj.fillChangeFields(json);
 
 						if (isChanged) {
-							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
+							result.insertObject(obj, ObjStatus.UPDATE,
+									updateLink.pid());
 						}
 					}
 				} else {
 					RdLinkZone obj = new RdLinkZone();
 
 					obj.Unserialize(json);
-					
+
 					obj.setLinkPid(this.updateLink.getPid());
-					
+
 					obj.setMesh(this.updateLink.getMeshId());
 
 					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
@@ -577,7 +602,8 @@ public class Operation implements IOperation {
 
 					if (ObjStatus.DELETE.toString().equals(
 							nameJson.getString("objStatus"))) {
-						result.insertObject(name, ObjStatus.DELETE, updateLink.pid());
+						result.insertObject(name, ObjStatus.DELETE,
+								updateLink.pid());
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							nameJson.getString("objStatus"))) {
@@ -585,7 +611,8 @@ public class Operation implements IOperation {
 						boolean isChanged = name.fillChangeFields(nameJson);
 
 						if (isChanged) {
-							result.insertObject(name, ObjStatus.UPDATE, updateLink.pid());
+							result.insertObject(name, ObjStatus.UPDATE,
+									updateLink.pid());
 						}
 					}
 				} else {
@@ -594,8 +621,9 @@ public class Operation implements IOperation {
 					name.Unserialize(nameJson);
 
 					name.setLinkPid(this.updateLink.getPid());
-					
-					result.insertObject(name, ObjStatus.INSERT, updateLink.pid());
+
+					result.insertObject(name, ObjStatus.INSERT,
+							updateLink.pid());
 
 				}
 			}
@@ -603,22 +631,51 @@ public class Operation implements IOperation {
 		}
 
 	}
+
 	/***
-	 * 修改LINK信息维护详细车道信息
-	 * zhaokk
-	 * @throws Exception 
+	 * 修改LINK信息维护详细车道信息 zhaokk
+	 * 
+	 * @throws Exception
 	 */
-	private void  refRdlaneForRdlink(Result result) throws Exception{
-		
-		int kind =this.command.getUpdateContent().getInt("kind");
-	    if(this.updateLink.getKind() !=kind) {
-	    	com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(conn);
-	    	if(this.updateLink.getKind() <= 7 && kind > 7){
-	    		operation.caleRdLinesForRdLink(result, this.updateLink, 1);
-	    	}
-	    	if(this.updateLink.getKind() > 7 && kind <=7){
-	    		operation.caleRdLinesForRdLink(result, this.updateLink, 0);
-	    	}
-	    }	
+	private void refRdlaneForRdlink(Result result) throws Exception {
+		// rdLink 种类变更维护车道信息
+		this.refRdLaneForRdlinkKind(result);
 	}
+
+	/***
+	 * 种类变更维护车道信息
+	 * 
+	 * @param result
+	 * @throws Exception
+	 */
+	private void refRdLaneForRdlinkKind(Result result) throws Exception {
+		if (this.command.getUpdateContent().containsKey("kind")) {
+			int kind = this.command.getUpdateContent().getInt("kind");
+			if (this.updateLink.getKind() != kind) {
+				com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
+						conn);
+				if (this.updateLink.getKind() <= KIND && kind > KIND) {
+					operation.caleRdLinesForRdLink(result, this.updateLink, 1);
+				}
+				if (this.updateLink.getKind() > KIND && kind <= KIND) {
+					operation.caleRdLinesForRdLink(result, this.updateLink, 0);
+				}
+			}
+		}
+	}
+
+	/***
+	 * link形态表属性变更维护车道信息
+	 * 
+	 * @param result
+	 * @throws Exception
+	 */
+	private void refRdLaneForRdlinkAttr(Result result) throws Exception{
+		if (this.command.getUpdateContent().containsKey("forms")) {
+			JSONArray forms = this.command.getUpdateContent().getJSONArray("forms");
+			for(int i =0 ;i < forms.size();i++){
+				
+			}
+		}
+		}
 }

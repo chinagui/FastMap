@@ -26,6 +26,7 @@ import com.navinfo.dataservice.dao.glm.search.RdLaneConnexitySearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkIntRticSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkRticSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
+import com.navinfo.dataservice.dao.glm.search.RdLinkSpeedLimitSearch;
 import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdObjectSearch;
 import com.navinfo.dataservice.dao.glm.search.RdRestrictionSearch;
@@ -80,6 +81,8 @@ public class SearchFactory {
 			return new RdLaneConnexitySearch(conn);
 		case RDSPEEDLIMIT:
 			return new RdSpeedlimitSearch(conn);
+		case RDLINKSPEEDLIMIT:
+			return new RdLinkSpeedLimitSearch(conn);
 		case RDBRANCH:
 			return new RdBranchSearch(conn);
 		case RDLINKINTRTIC:

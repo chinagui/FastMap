@@ -84,6 +84,10 @@ public class RdLinkSearchUtils {
 
 			linkPids.add(targetLink.getPid());
 		}
+		if (linkPids.size() > 998) {
+
+			return;
+		}
 
 		String sql = "WITH TMP1 AS (SELECT LINK_PID, S_NODE_PID, E_NODE_PID, DIRECT, GEOMETRY FROM RD_LINK T WHERE ((S_NODE_PID = :1 AND DIRECT = 2) OR (E_NODE_PID = :2 AND DIRECT = 3) OR ((S_NODE_PID = :3 OR E_NODE_PID = :4) AND DIRECT = 1)) AND U_RECORD != 2)  SELECT B.*, (SELECT COUNT(1) FROM RD_SPEEDLIMIT S WHERE S.LINK_PID = B.LINK_PID AND S.U_RECORD != 2 AND (B.DIRECT = S.DIRECT OR (B.DIRECT = 1 AND ((B.S_NODE_PID = :5 AND S.DIRECT = 2) OR (B.E_NODE_PID = :6 AND S.DIRECT = 3))))) RDSPEEDLIMIT, (SELECT COUNT(1) FROM RD_LINK_SPEEDLIMIT L WHERE L.LINK_PID = B.LINK_PID AND L.U_RECORD != 2 AND L.SPEED_TYPE = 0 AND ((B.DIRECT = 2 AND L.FROM_SPEED_LIMIT > 0) OR (B.DIRECT = 3 AND L.TO_SPEED_LIMIT > 0) OR (B.DIRECT = 1 AND ((B.S_NODE_PID = :7 AND L.FROM_SPEED_LIMIT > 0) OR (B.E_NODE_PID = :8 AND L.TO_SPEED_LIMIT > 0))))) RDLINKSPEEDLIMIT FROM TMP1 B";
 
@@ -165,11 +169,11 @@ public class RdLinkSearchUtils {
 				return;
 			}
 
-			if (type == "RDSPEEDLIMIT" && speedlimitCount > 0) {
+			if (type.equals("RDSPEEDLIMIT") && speedlimitCount > 0) {
 				return;
 			}
 
-			if (type == "RDLINKSPEEDLIMIT"
+			if (type.equals("RDLINKSPEEDLIMIT")
 					&& (speedlimitCount > 0 || linkspeedlimitCount > 0)) {
 				return;
 			}

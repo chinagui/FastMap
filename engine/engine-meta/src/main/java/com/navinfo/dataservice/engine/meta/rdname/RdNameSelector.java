@@ -326,6 +326,9 @@ public class RdNameSelector {
 		if (rdName.getAdminId() == 214 && rdName.getNameGroupId() != 0) {
 			sb.append(" AND name_groupid=:4");
 		}
+		if (rdName.getNameId() != null) {
+			sb.append(" AND name_id !='"+rdName.getNameId()+"'");
+		}
 		try {
 			
 			conn = DBConnector.getInstance().getMetaConnection();

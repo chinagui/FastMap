@@ -219,8 +219,8 @@ public class SearchProcess {
 
 					String queryType = condition.getString("queryType");
 
-					if (queryType == "RDLINKSPEEDLIMIT"
-							|| queryType == "RDSPEEDLIMIT") {
+					if (queryType.equals("RDLINKSPEEDLIMIT")
+							|| queryType.equals("RDSPEEDLIMIT")) {
 
 						int linkPid = condition.getInt("linkPid");
 

@@ -58,7 +58,7 @@ public class RdSpeedlimitSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as  (select link_pid, geometry     from rd_link    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2) select a.pid,        a.speed_type,        a.direct,        a.capture_flag,        a.speed_flag,        a.speed_value,        a.lane_speed_value,        a.speed_dependent,        b.geometry link_geom,        a.geometry point_geom   from rd_speedlimit a, tmp1 b  where a.link_pid = b.link_pid    and a.u_record != 2 and a.speed_type in (0,3,4)";
+		String sql = "with tmp1 as  (select link_pid, geometry     from rd_link    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2) select a.pid,     a.link_pid,    a.speed_type,        a.direct,        a.capture_flag,        a.speed_flag,        a.speed_value,        a.lane_speed_value,        a.speed_dependent,        b.geometry link_geom,        a.geometry point_geom   from rd_speedlimit a, tmp1 b  where a.link_pid = b.link_pid    and a.u_record != 2 and a.speed_type in (0,3,4)";
 
 		PreparedStatement pstmt = null;
 
@@ -155,6 +155,10 @@ public class RdSpeedlimitSearch implements ISearch {
 
 				snapshot.setG(Geojson.lonlat2Pixel(geom2.getFirstPoint()[0],
 						geom2.getFirstPoint()[1], z, px, py));
+				
+				jsonM.put("d", resultSet.getInt("direct"));
+				
+				jsonM.put("e", resultSet.getInt("link_pid"));
 
 				snapshot.setM(jsonM);
 

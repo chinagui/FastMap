@@ -95,40 +95,48 @@ public class Check {
 					List<LuLink> luLinkList = selector.loadByNodePids(luNodePids, true);
 
 					for (LuLink luLink : luLinkList) {
+						
 						int sNodePid = luLink.getsNodePid();
 
 						int eNodePid = luLink.geteNodePid();
+						
+						if(sNodePid == Integer.parseInt(luNodePidArray[0]) || sNodePid == Integer.parseInt(luNodePidArray[1]))
+						{
+							List<IRow> linkKindList = luLink.getLinkKinds();
+							
+							if (nodeKindMap.get(sNodePid) == null) {
+								Set<Integer> nodeKindList = new HashSet<>();
+								for (IRow row : linkKindList) {
+									LuLinkKind kind = (LuLinkKind) row;
 
-						List<IRow> linkKindList = luLink.getLinkKinds();
+									nodeKindList.add(kind.getKind());
+								}
+								nodeKindMap.put(sNodePid, nodeKindList);
+							} else {
+								for (IRow row : linkKindList) {
+									LuLinkKind kind = (LuLinkKind) row;
 
-						if (nodeKindMap.get(sNodePid) == null) {
-							Set<Integer> nodeKindList = new HashSet<>();
-							for (IRow row : linkKindList) {
-								LuLinkKind kind = (LuLinkKind) row;
-
-								nodeKindList.add(kind.getKind());
-							}
-							nodeKindMap.put(sNodePid, nodeKindList);
-						} else {
-							for (IRow row : linkKindList) {
-								LuLinkKind kind = (LuLinkKind) row;
-
-								nodeKindMap.get(sNodePid).add(kind.getKind());
+									nodeKindMap.get(sNodePid).add(kind.getKind());
+								}
 							}
 						}
-						if (nodeKindMap.get(eNodePid) == null) {
-							Set<Integer> nodeKindList = new HashSet<>();
-							for (IRow row : linkKindList) {
-								LuLinkKind kind = (LuLinkKind) row;
+						if(eNodePid == Integer.parseInt(luNodePidArray[0])||eNodePid == Integer.parseInt(luNodePidArray[1]))
+						{
+							List<IRow> linkKindList = luLink.getLinkKinds();
+							if (nodeKindMap.get(eNodePid) == null) {
+								Set<Integer> nodeKindList = new HashSet<>();
+								for (IRow row : linkKindList) {
+									LuLinkKind kind = (LuLinkKind) row;
 
-								nodeKindList.add(kind.getKind());
-							}
-							nodeKindMap.put(eNodePid, nodeKindList);
-						} else {
-							for (IRow row : linkKindList) {
-								LuLinkKind kind = (LuLinkKind) row;
+									nodeKindList.add(kind.getKind());
+								}
+								nodeKindMap.put(eNodePid, nodeKindList);
+							} else {
+								for (IRow row : linkKindList) {
+									LuLinkKind kind = (LuLinkKind) row;
 
-								nodeKindMap.get(eNodePid).add(kind.getKind());
+									nodeKindMap.get(eNodePid).add(kind.getKind());
+								}
 							}
 						}
 					}
@@ -146,9 +154,9 @@ public class Check {
 				deFaultLuNodeKind.add(22);
 				deFaultLuNodeKind.add(23);
 				
-				Set<Integer> firstLuNodeSet = nodeKindMap.get(0);
+				Set<Integer> firstLuNodeSet = nodeKindMap.get(Integer.parseInt(luNodePidArray[0]));
 
-				Set<Integer> secondLuNodeSet = nodeKindMap.get(1);
+				Set<Integer> secondLuNodeSet = nodeKindMap.get(Integer.parseInt(luNodePidArray[1]));
 				
 				if(deFaultLuNodeKind.containsAll(firstLuNodeSet) && deFaultLuNodeKind.containsAll(secondLuNodeSet))
 				{

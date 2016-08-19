@@ -21,6 +21,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdLinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.utils.batch.UrbanBatchUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -77,6 +78,8 @@ public class Operation implements IOperation {
 			link.setPid(this.command.getUpdateLink().pid());
 			link.setGeometry(GeoTranslator.geojson2Jts(this.command.getLinkGeom(), 100000, 0));
 			links.add(link);
+			// 设置Link的urban属性
+			UrbanBatchUtils.updateUrban(this.command.getUpdateLink(), link.getGeometry(), conn);
 		} else {
 			Iterator<String> it = meshes.iterator();
 			Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
@@ -87,8 +90,13 @@ public class Operation implements IOperation {
 				String meshIdStr = it.next();
 				Geometry geomInter = GeoTranslator.transform(MeshUtils.linkInterMeshPolygon(
 						GeoTranslator.geojson2Jts(command.getLinkGeom()), MeshUtils.mesh2Jts(meshIdStr)), 1, 5);
-				links.addAll(RdLinkOperateUtils.getCreateRdLinksWithMesh(geomInter, maps, result));
-
+				List<RdLink> rdLinkds = RdLinkOperateUtils.getCreateRdLinksWithMesh(geomInter, maps, result);
+				links.addAll(rdLinkds);
+				
+				for(RdLink link : rdLinkds){
+					// 设置Link的urban属性
+					UrbanBatchUtils.updateUrban(link, null, conn);
+				}
 			}
 			deleteRdLink(result);
 		}

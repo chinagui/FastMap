@@ -78,10 +78,10 @@ public class UserDeviceService {
 				XingeUtil xingeUtil=new XingeUtil(dtmp.getDevicePlatform(), dtmp.getDeviceToken(),
 						title, content, msgType, otherInfo);
 				msgReturn=xingeUtil.pushSingleDevice();
+				if(msgReturn.getInt("ret_code")==-1){
+					log.error(msgReturn);
+					return false;}
 			}
-			if(msgReturn.getInt("ret_code")==-1){
-				log.error(msgReturn);
-				return false;}
 			return true;
 		}catch(Exception e){
 			log.error("消息推送失败，原因为:"+e.getMessage(), e);

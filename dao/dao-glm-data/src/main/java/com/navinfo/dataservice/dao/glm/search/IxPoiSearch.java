@@ -5,19 +5,31 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
+import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiNameSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 public class IxPoiSearch implements ISearch {
 
@@ -174,4 +186,68 @@ public class IxPoiSearch implements ISearch {
 		Connection conn = DBConnector.getInstance().getConnectionById(11);
 		new IxPoiSearch(conn).searchDataByTileWithGap(215890, 99229, 18, 80);
 	}
+	
+	// nameUnify
+	public JSONArray searchColumnPoiByRowId(List<String> rowIds,String type,String langCode) throws Exception {
+
+		boolean isLock = true;
+		
+		Connection metaConn = null;
+		
+		JSONArray dataList = new JSONArray();
+		
+		try {
+			IxPoiSelector poiSelector = new IxPoiSelector(conn);
+			IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
+			MetadataApi apiService=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+			
+			metaConn = DBConnector.getInstance().getMetaConnection();
+			
+			Map<String,String> chianMap = apiService.getChainMap(metaConn);
+			
+			Map<String,String> kindCodeMap = apiService.getKindCodeMap(metaConn);
+			
+			Map<String,String> adminMap =  apiService.getAdminMap(metaConn);
+			
+			Map<String,String> characterMap = apiService.getCharacterMap(metaConn);
+			
+			for (String rowId:rowIds) {
+				IxPoi poi = (IxPoi) poiSelector.loadByRowId(rowId, isLock);
+				List<IRow> nameList = nameSelector.loadRowsByParentId(poi.getPid(), isLock);
+				poi.setNames(nameList);
+				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class,conn).loadRowsByParentId(poi.getPid(), isLock));
+				JSONObject poiObj = poi.Serialize(null);
+				poiObj.put("photoCount", poi.getPhotos().size());
+				poiObj.put("parentName", nameSelector.loadByIdForColumn(poi.getPid(), langCode));
+				poiObj.put("chainName", chianMap.get(poi.getChain()));
+				poiObj.put("kindCodeName", kindCodeMap.get(poi.getKindCode()));
+				poiObj.put("detailArea", adminMap.get(Integer.toString(poi.getAdminReal())));
+				
+				// 参考信息
+				List<String> msgList = new ArrayList<String>();
+				for (IRow temp:nameList) {
+					IxPoiName name = (IxPoiName) temp;
+					if (name.getLangCode().equals("CHT") && name.getNameType()==1 && name.getNameClass()==1) {
+						for (int i=0;i<name.getName().length();i++) {
+							if (characterMap.containsKey(name.getName().substring(i, i+1))) {
+								String correct = characterMap.get(name.getName().substring(i, i+1));
+								if (correct.isEmpty()) {
+									correct = "";
+								} 
+								msgList.add(name.getName().substring(i, i+1) + "&" + correct);
+							}
+						}
+					}
+				}
+				poiObj.put("namerefMsg", msgList);
+				dataList.add(poiObj);
+			}
+			return dataList;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(metaConn);
+		}
+	}
+	
 }

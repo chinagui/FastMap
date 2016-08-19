@@ -63,7 +63,7 @@ public class EngineCheckTest {
 		checkCommand.setObjType(link.objType());
 		
 		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
-		checkEngine.postCheck();
+		checkEngine.preCheck();
 		conn.commit();
 		System.out.println("end");
 	}
@@ -74,7 +74,7 @@ public class EngineCheckTest {
 		String preRuleClass="com.navinfo.dataservice.engine.check.rules.GLM01205";
 		String postRuleClass="com.navinfo.dataservice.engine.check.rules.GLM01205";
 		
-		CheckRule rule=new CheckRule(ruleCode,ruleLog,1,preRuleClass,"JAVA",postRuleClass,null);
+		CheckRule rule=new CheckRule(ruleCode,ruleLog,1,"JAVA",preRuleClass,null,"JAVA",postRuleClass,null);
 		return rule;
 	}
 	/**
@@ -85,13 +85,13 @@ public class EngineCheckTest {
 	public void exeCheckRule() throws Exception{
 		System.out.println("start");
 		RdLink link=new RdLink();
-		/*String str= "{ \"type\": \"LineString\",\"coordinates\": [ [116.17659, 39.97508], [116.16144, 39.94844],[116.20427, 39.94322],[116.20427, 39.94322], [116.17659, 39.97508] ]}";
+		String str= "{ \"type\": \"LineString\",\"coordinates\": [ [116.17659, 39.97508], [116.16144, 39.94844],[116.20427, 39.94322],[116.20427, 39.94322], [116.17659, 39.97508] ]}";
 		JSONObject geometry = JSONObject.fromObject(str);
 		Geometry geometry2=GeoTranslator.geojson2Jts(geometry, 1, 5);
 		link.setGeometry(geometry2);
 		link.setPid(233335);
 		link.setsNodePid(2);
-		link.seteNodePid(2);*/
+		link.seteNodePid(2);
 		
 		Connection conn = DBConnector.getInstance().getConnectionById(42);
 		
@@ -105,7 +105,7 @@ public class EngineCheckTest {
 		//检查调用
 		CheckCommand checkCommand=new CheckCommand();
 		checkCommand.setGlmList(objList);
-		checkCommand.setOperType(OperType.CREATE);
+		checkCommand.setOperType(OperType.UPDATE);
 		checkCommand.setObjType(link.objType());
 		
 		CheckRule rule=getRule();
@@ -117,5 +117,11 @@ public class EngineCheckTest {
 		//调用规则的后检查
 		obj.postCheck(checkCommand);
 		System.out.println("end");
+	}
+	
+	public static void main(String[] args) throws Exception{
+		EngineCheckTest test=new EngineCheckTest();
+		test.init();
+		test.exeCheckEngine();
 	}
 }

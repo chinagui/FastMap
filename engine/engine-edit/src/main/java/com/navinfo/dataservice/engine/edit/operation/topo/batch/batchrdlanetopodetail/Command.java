@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlanetopo;
+package com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlanetopodetail;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,12 +20,12 @@ public class Command extends AbstractCommand {
 
 	private String requester;
 	private List<RdLaneTopoDetail> laneToptInfos;//车道联通信息
-	private List<RdLaneTopoDetail> delToptInfos;//要删除车道联通信息
-	public List<RdLaneTopoDetail> getDelToptInfos() {
+	private List<IRow> delToptInfos;//要删除车道联通信息
+	public List<IRow> getDelToptInfos() {
 		return delToptInfos;
 	}
 
-	public void setDelToptInfos(List<RdLaneTopoDetail> delToptInfos) {
+	public void setDelToptInfos(List<IRow> delToptInfos) {
 		this.delToptInfos = delToptInfos;
 	}
 

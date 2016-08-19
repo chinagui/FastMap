@@ -1,11 +1,11 @@
 package com.navinfo.dataservice.engine.meta.kindcode;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -14,10 +14,25 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.ServiceException;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class KindCodeSelector {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
+	
+	private Connection conn;
+	
+	public KindCodeSelector() {
+		
+	}
+	
+	public KindCodeSelector(Connection conn) {
+		this.conn = conn;
+	}
+	
 
 	/**
 	 * 用SC_POINT_POICODE_NEW的 CLASS_CODE去重，id与code均为CLASS_CODE，name为CLASS_NAME
@@ -328,6 +343,35 @@ public class KindCodeSelector {
 			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public Map<String,String> getKindCodeMap() throws Exception {
+		
+		String sql = "select distinct kind_code,kind_name from SC_POINT_POICODE_NEW";
+		
+		ResultSet resultSet = null;
+		
+		PreparedStatement pstmt = null;
+		
+		Map<String,String> kindCodeMap = new HashMap<String,String>();
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			
+			resultSet = pstmt.executeQuery();
+			
+			while (resultSet.next()) {
+				kindCodeMap.put(resultSet.getString("kind_code"), resultSet.getString("kind_name"));
+			}
+			
+			return kindCodeMap;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
 		}
 	}
 

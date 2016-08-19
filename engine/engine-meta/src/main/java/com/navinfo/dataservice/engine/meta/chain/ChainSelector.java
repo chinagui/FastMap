@@ -1,24 +1,24 @@
 package com.navinfo.dataservice.engine.meta.chain;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.ServiceException;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * e获取chain值
@@ -29,6 +29,17 @@ import com.navinfo.navicommons.exception.ServiceException;
 public class ChainSelector {
 
 	private Logger log = LoggerRepos.getLogger(this.getClass());
+	
+	
+	private Connection conn;
+	
+	public ChainSelector() {
+		
+	}
+	
+	public ChainSelector(Connection conn) {
+		this.conn = conn;
+	}
 
 	/**
 	 * 根据kindCode获取chain值
@@ -158,4 +169,38 @@ public class ChainSelector {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 查询品牌名称
+	 * @param chainCode
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<String, String> getChainMap() throws Exception{
+		
+		String sql = "SELECT distinct chain_code,chain_name FROM SC_POINT_CHAIN_CODE";
+		
+		ResultSet resultSet = null;
+		
+		PreparedStatement pstmt = null;
+		
+		Map<String,String> chainMap = new HashMap<String,String>();
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				chainMap.put(resultSet.getString("chain_code"), resultSet.getString("chain_name"));
+			}
+			return chainMap;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+		}
+	}
+	
+	
 }

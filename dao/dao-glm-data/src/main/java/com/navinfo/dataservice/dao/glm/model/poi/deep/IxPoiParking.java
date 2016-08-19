@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.dao.glm.model.poi.deep;
 
 import java.lang.reflect.Field;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -37,7 +38,7 @@ public class IxPoiParking implements IObj {
 	private double resHigh = 0;//限高
 	private double resWidth = 0;//限宽
 	private double resWeigh = 0;//限重
-	private int  vehicle = 0;//停放车辆类型 
+	private BigInteger vehicle = new BigInteger("0");//停放车辆类型 
 	private String photoName;//全景照片
 	private int certificate = 0; //入口凭证
 	private int uRecord=0;
@@ -141,15 +142,13 @@ public class IxPoiParking implements IObj {
 		this.resWeigh = resWeigh;
 	}
 
-	public int getVehicle() {
+	public BigInteger getVehicle() {
 		return vehicle;
 	}
 
-	public void setVehicle(int vehicle) {
+	public void setVehicle(BigInteger vehicle) {
 		this.vehicle = vehicle;
 	}
-
-	
 
 	public int getWomenNum() {
 		return womenNum;

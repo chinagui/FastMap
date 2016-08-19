@@ -11,6 +11,7 @@ package com.navinfo.dataservice.dao.glm.selector;
  */
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Types;
@@ -35,8 +36,7 @@ public class ReflectionAttrUtils {
 	 * @return 泛型类型对象
 	 * @throws Exception
 	 */
-	public static void executeResultSet(IRow row, ResultSet rs)
-			throws Exception {
+	public static void executeResultSet(IRow row, ResultSet rs) throws Exception {
 		ResultSetMetaData rsm = rs.getMetaData();
 		int columnCount = rsm.getColumnCount();
 		Field[] fields = row.getClass().getDeclaredFields();
@@ -52,25 +52,27 @@ public class ReflectionAttrUtils {
 			}
 			for (int j = 1; j <= columnCount; j++) {
 				String columnName = rsm.getColumnName(j);
-				if (columnName.equalsIgnoreCase(StringUtils
-						.toColumnName(fieldName))) {
+				if (columnName.equalsIgnoreCase(StringUtils.toColumnName(fieldName))) {
 					int columnType = rsm.getColumnType(j);
 					Object value = rs.getObject(j);
 					if (value != null) {
-						if (Types.VARBINARY == columnType
-								|| Types.VARCHAR == columnType) {
+						if (Types.VARBINARY == columnType || Types.VARCHAR == columnType) {
 							value = rs.getString(columnName);
 						}
 						if (Types.NUMERIC == columnType) {
 							if (value.toString().contains(".")) {
 								value = ((BigDecimal) value).doubleValue();
 							} else {
-								value = ((BigDecimal) value).intValue();
+								BigDecimal tempValue = (BigDecimal) value;
+								if (tempValue.doubleValue() > Integer.MAX_VALUE) {
+									value = BigInteger.valueOf(tempValue.longValue());
+								} else {
+									value = tempValue.intValue();
+								}
 							}
 						}
 						if (Types.STRUCT == columnType) {
-							value = GeoTranslator.struct2Jts((STRUCT) value,
-									100000, 0);
+							value = GeoTranslator.struct2Jts((STRUCT) value, 100000, 0);
 						}
 						if (Types.TIMESTAMP == columnType) {
 							value = rs.getTimestamp(columnName);
@@ -91,8 +93,7 @@ public class ReflectionAttrUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public static String getTableNameByObjType(ObjType objType)
-			throws Exception {
+	public static String getTableNameByObjType(ObjType objType) throws Exception {
 		switch (objType) {
 		case RDNODE:
 			return "RD_NODE";
@@ -126,8 +127,7 @@ public class ReflectionAttrUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public static ObjType getObjTypeByTableName(String tableName)
-			throws Exception {
+	public static ObjType getObjTypeByTableName(String tableName) throws Exception {
 		switch (tableName) {
 		case "RD_NODE":
 			return ObjType.RDNODE;

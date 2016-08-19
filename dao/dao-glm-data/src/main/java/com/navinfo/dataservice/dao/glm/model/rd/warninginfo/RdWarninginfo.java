@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.dao.glm.model.rd.warninginfo;
 
 import java.lang.reflect.Field;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -31,7 +32,7 @@ public class RdWarninginfo implements IObj {
 
 	private String timeDomain;
 
-	private int vehicle=0;
+	private BigInteger vehicle = new BigInteger("0");
 
 	private String descript;
 
@@ -95,11 +96,11 @@ public class RdWarninginfo implements IObj {
 		this.timeDomain = timeDomain;
 	}
 
-	public int getVehicle() {
+	public BigInteger getVehicle() {
 		return vehicle;
 	}
 
-	public void setVehicle(int vehicle) {
+	public void setVehicle(BigInteger vehicle) {
 		this.vehicle = vehicle;
 	}
 

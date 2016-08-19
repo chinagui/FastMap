@@ -14,7 +14,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
@@ -25,7 +24,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.check.CheckEngine;
-import com.navinfo.dataservice.engine.check.core.AccessorType;
+import com.navinfo.dataservice.engine.check.core.NiValException;
 import com.navinfo.dataservice.engine.edit.check.CheckService;
 
 import net.sf.json.JSONArray;
@@ -275,6 +274,69 @@ public class CheckController extends BaseController {
 			CheckEngine checkEngine = new CheckEngine(checkCommand, conn);
 			checkEngine.postCheck();
 			logger.info("end runPostCheckEngine:"+dbId+","+objType+","+operType);
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	/**
+	 * 执行单个检查
+	 * 应用场景：测试
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/check/runCheckRule")
+	public ModelAndView runCheckRule(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			//解析参数
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			int dbId=jsonReq.getInt("dbId");
+			//"command":"UPDATE","type":"RDLINK"
+			String objType=jsonReq.getString("type");
+			String operType=jsonReq.getString("command");
+			String checkType=jsonReq.getString("checkType");
+			JSONArray glmArray=jsonReq.getJSONArray("data");
+			logger.info("start runCheckRule:"+dbId+","+operType);
+			Iterator glmIterator=glmArray.iterator();
+			List<IRow> glmList=new ArrayList<IRow>();
+			while(glmIterator.hasNext()){
+				JSONObject glmTmp=(JSONObject) glmIterator.next();
+				String clasStr=glmTmp.getString("classStr");
+				JSONObject glmStr=glmTmp.getJSONObject("value");
+				IRow glmObj = (IRow) Class.forName(clasStr).newInstance();    //获取对应类  
+				glmObj.Unserialize(glmStr);
+				glmList.add(glmObj);
+			}
+			JSONArray ruleArray=jsonReq.getJSONArray("rules");
+			//构造检查参数
+			CheckCommand checkCommand = new CheckCommand();			
+			checkCommand.setObjType(Enum.valueOf(ObjType.class,objType));
+			checkCommand.setOperType(Enum.valueOf(OperType.class,operType));
+			checkCommand.setGlmList(glmList);
+			
+			Connection conn = DBConnector.getInstance().getConnectionById(dbId);	
+			//执行检查规则
+			CheckEngine cEngine=new CheckEngine(checkCommand,conn);
+			List<NiValException> checkResultList=cEngine.checkByRules(ruleArray, checkType);	
+			//返回检查结果
+			if("POST".equals(checkType)){
+				logger.info("end runCheckRule:"+dbId+","+operType);
+				return new ModelAndView("jsonView", success(checkResultList));}
+			if("PRE".equals(checkType)){
+				if(checkResultList!=null && checkResultList.size()>0){
+					logger.info("end runCheckRule:"+dbId+","+operType);
+					return new ModelAndView("jsonView", success(checkResultList.get(0).getInformation()));
+					}
+				logger.info("end runCheckRule:"+dbId+","+operType);
+				return new ModelAndView("jsonView", success());
+			}
+			logger.info("end runCheckRule:"+dbId+","+operType);
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

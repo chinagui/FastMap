@@ -76,7 +76,7 @@ public class RuleExecuter {
 		this.dataList = dataList;
 	}
 	
-	public String exePreRule(CheckRule rule) throws Exception{
+	public List<NiValException> exePreRule(CheckRule rule) throws Exception{
 		try{
 			log.info("start exe "+rule.getRuleCode());
 			if(rule.getPreAccessorType()==AccessorType.SQL){
@@ -89,7 +89,7 @@ public class RuleExecuter {
 	/*
 	 * 执行java写的检查规则
 	 */
-	private String exePreJavaRule(CheckRule rule) throws Exception{
+	private List<NiValException> exePreJavaRule(CheckRule rule) throws Exception{
 		baseRule obj = (baseRule) rule.getPreRuleClass().newInstance();
 		obj.setLoader(loader);
 		obj.setRuleDetail(rule);
@@ -101,48 +101,17 @@ public class RuleExecuter {
 			log.error("error exejavacheck",e);
 		}
 		List<NiValException> preResult=obj.getCheckResultList();
-		if(preResult==null || preResult.size()==0){return "";}
-		return preResult.get(0).getInformation();
+		if(preResult==null || preResult.size()==0){return null;}
+		return preResult;
 	}
 	
 	/*
 	 * 执行sql语句写的检查规则
 	 */
-	private String exePreSqlRule(CheckRule rule) throws Exception{
+	private List<NiValException> exePreSqlRule(CheckRule rule) throws Exception{
 		String sql=rule.getPreAccessorName();
-		List<String> sqlList=new ArrayList<String>();
-		List<String> sqlListTmp=new ArrayList<String>();
-		sqlList.add(sql);
 		List<VariableName> variableList=rule.getPreVariables();
-		//将sql语句中的参数进行替换，形成可执行的sql语句
-		for(int i=0;i<variableList.size();i++){
-			Set<String> variableValueList=variablesValueMap.get(variableList.get(i));
-			if(variableValueList==null || variableValueList.size()==0){
-				sqlListTmp=new ArrayList<String>();
-				sqlList=new ArrayList<String>();
-				break;
-			}
-			if(sqlListTmp.size()!=0){sqlList=sqlListTmp;sqlListTmp=new ArrayList<String>();}
-			for(int m=0;m<sqlList.size();m++){
-				Iterator<String> varIterator=variableValueList.iterator();
-				while(varIterator.hasNext()){
-					sqlListTmp.add(sqlList.get(m).replaceAll(variableList.get(i).toString(), varIterator.next()));
-				}
-			}
-		}
-		if(sqlListTmp.size()!=0){sqlList=sqlListTmp;}
-		//执行sql语句
-		checkResultDatabaseOperator getObj=new checkResultDatabaseOperator();
-		getObj.setRule(rule);
-		for(int i=0;i<sqlList.size();i++){
-			List<Object> resultList=new ArrayList<Object>();
-			resultList=getObj.exeSelect(this.conn, sqlList.get(i));
-			if (resultList.size()>0){
-				for(int j=0;j<resultList.size();j++){
-					return ((NiValException) resultList.get(j)).getInformation();}
-				}
-		}
-		return "";
+		return exeSqlRule(rule,sql,variableList);
 	}
 	
 	public List<NiValException> exePostRule(CheckRule rule) throws Exception{
@@ -177,10 +146,14 @@ public class RuleExecuter {
 	 */
 	private List<NiValException> exePostSqlRule(CheckRule rule) throws Exception{
 		String sql=rule.getPostAccessorName();
+		List<VariableName> variableList=rule.getPostVariables();
+		return exeSqlRule(rule,sql,variableList);
+	}
+	
+	private List<NiValException> exeSqlRule(CheckRule rule,String sql,List<VariableName> variableList) throws Exception{
 		List<String> sqlList=new ArrayList<String>();
 		List<String> sqlListTmp=new ArrayList<String>();
 		sqlList.add(sql);
-		List<VariableName> variableList=rule.getPostVariables();
 		//将sql语句中的参数进行替换，形成可执行的sql语句
 		for(int i=0;i<variableList.size();i++){
 			Set<String> variableValueList=variablesValueMap.get(variableList.get(i));
@@ -207,7 +180,7 @@ public class RuleExecuter {
 			resultList=getObj.exeSelect(this.conn, sqlList.get(i));
 			if (resultList.size()>0){
 				for(int j=0;j<resultList.size();j++){
-				niValExceptionList.add((NiValException) resultList.get(j));}
+					niValExceptionList.add((NiValException) resultList.get(j));}
 				}
 		}
 		return niValExceptionList;

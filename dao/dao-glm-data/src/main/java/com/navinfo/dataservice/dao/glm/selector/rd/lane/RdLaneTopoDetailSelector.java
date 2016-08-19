@@ -7,12 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
-import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlopeVia;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
-import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+
 
 /***
  * 
@@ -31,49 +29,32 @@ public class RdLaneTopoDetailSelector extends AbstractSelector {
 
 	/***
 	 * 
-	 * 通过Link查找车道信息 0是查询link上所有车道信息
-	 * 
-	 * @param linkPid
-	 * @param isLock
-	 * @param laneDir
-	 *            车道方向 1 无 2 顺方向 3 逆方向
-	 * @return
-	 * @throws Exception
+	 * 通过车道信息查询车道联通信息
 	 */
-	public List<RdLane> loadByLink(int linkPid, int laneDir, boolean isLock)
+	public List<IRow> loadByLanePid(int lanePid, boolean isLock)
 			throws Exception {
-
-		List<RdLane> lanes = new ArrayList<RdLane>();
-
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
+		List<Integer> topoPids = new  ArrayList<Integer>();
 
 		try {
-			String sql = "SELECT lane_pid FROM rd_lane WHERE link_pid =:1 and u_record !=2";
-			if (laneDir != 0) {
-				sql += " and lane_dir = :2 ";
-			}
+			String sql = "SELECT topo_pid FROM rd_lane_topo_detail WHERE (out_lane_pid =:1 or in_lane_pid = :2) and u_record !=2";
+
 			if (isLock) {
 				sql += " for update nowait";
 			}
 
 			pstmt = conn.prepareStatement(sql);
 
-			pstmt.setInt(1, linkPid);
-			if (laneDir != 0) {
-				pstmt.setInt(2, laneDir);
-			}
+			pstmt.setInt(1, lanePid);
 
 			resultSet = pstmt.executeQuery();
-
+           
 			while (resultSet.next()) {
-				RdLane slope = (RdLane)this.loadById(
-						resultSet.getInt("pid"), false);
-				lanes.add(slope);
+				topoPids.add(resultSet.getInt("pid"));
 			}
-
-			return lanes;
+			return new RdLaneTopoDetailSelector(conn).loadByIds(topoPids, true, true);
 		} catch (Exception e) {
 			throw e;
 		} finally {

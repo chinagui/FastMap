@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -386,6 +388,45 @@ public class NiValExceptionSelector {
 		}
 
 		return 0;
+	}
+	
+	
+	public List loadByPid(int pid, List ckRule)
+			throws Exception {
+
+		List ruleList =new ArrayList() ;
+
+		Statement stmt = null;
+
+		ResultSet rs = null;
+
+		StringBuilder sql = new StringBuilder("select ruleid from ni_val_exception where dbms_lob.instr(targets,'"+pid+"',1,1)<>0 and ruleid in "+ckRule);                          
+
+		try {
+
+			stmt = conn.createStatement();
+
+			rs = stmt.executeQuery(sql.toString());
+
+			while (rs.next()) {
+				ruleList.add(rs.getString("ruleid"));
+			}
+
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			try {
+				rs.close();
+			} catch (Exception e) {
+			}
+
+			try {
+				stmt.close();
+			} catch (Exception e) {
+			}
+		}
+
+		return ruleList;
 	}
 	
 	public static void main(String[] args) throws Exception {

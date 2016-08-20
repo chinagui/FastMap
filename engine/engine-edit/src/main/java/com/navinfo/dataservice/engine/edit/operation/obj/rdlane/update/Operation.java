@@ -7,6 +7,7 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneCondition;
 
 /**
@@ -18,6 +19,10 @@ public class Operation implements IOperation {
 
 	public Operation(Command command) {
 		this.command = command;
+
+	}
+
+	public Operation() {
 
 	}
 
@@ -35,29 +40,37 @@ public class Operation implements IOperation {
 	 */
 	private void updateRdLane(Result result) throws Exception {
 
-		JSONObject content = command.getContent();
+		this.updateRdLane(result, command.getContent(),
+				this.command.getRdLane());
+	}
+
+	public void updateRdLane(Result result, JSONObject content, RdLane rdLane)
+			throws Exception {
 
 		if (content.containsKey("objStatus")) {
 			boolean isChanged = this.command.getRdLane().fillChangeFields(
 					content);
 
 			if (isChanged) {
-				result.insertObject(this.command.getRdLane(), ObjStatus.UPDATE,
-						this.command.getRdLane().getPid());
+				result.insertObject(rdLane, ObjStatus.UPDATE, rdLane.getPid());
 			}
 
 			if (content.containsKey("conditions")) {
-				this.updateCondition(result, content.getJSONArray("conditions"));
+				this.updateCondition(result, rdLane,
+						content.getJSONArray("conditions"));
 			}
 		}
 	}
- /***
-  * 字表详细车道的时间段和车辆限制表修改
-  * @param result
-  * @param jsonArray
-  * @throws Exception
-  */
-	private void updateCondition(Result result, JSONArray jsonArray) throws Exception {
+
+	/***
+	 * 字表详细车道的时间段和车辆限制表修改
+	 * 
+	 * @param result
+	 * @param jsonArray
+	 * @throws Exception
+	 */
+	private void updateCondition(Result result, RdLane rdLane,
+			JSONArray jsonArray) throws Exception {
 		@SuppressWarnings("unchecked")
 		Iterator<JSONObject> iterator = jsonArray.iterator();
 		JSONObject jsonCondition = null;
@@ -66,10 +79,11 @@ public class Operation implements IOperation {
 			jsonCondition = iterator.next();
 			if (jsonCondition.containsKey("objStatus")) {
 				String objStatus = jsonCondition.getString("objStatus");
-				condition = this.command.getRdLane().conditionMap
-						.get(jsonCondition.getString("rowId"));
+				condition = rdLane.conditionMap.get(jsonCondition
+						.getString("rowId"));
 				if (condition == null) {
-					throw new Exception("rowId=" + jsonCondition.getString("rowId")
+					throw new Exception("rowId="
+							+ jsonCondition.getString("rowId")
 							+ "的RdLaneCondition不存在");
 				}
 				if (ObjStatus.UPDATE.toString().equals(objStatus)) {
@@ -77,7 +91,7 @@ public class Operation implements IOperation {
 							.fillChangeFields(jsonCondition);
 					if (isChange) {
 						result.insertObject(condition, ObjStatus.UPDATE,
-								this.command.getRdLane().getPid());
+								rdLane.getPid());
 					}
 				}
 			}

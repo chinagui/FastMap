@@ -24,7 +24,8 @@ import com.navinfo.dataservice.engine.edit.operation.batch.BatchRuleType;
 public class Operation implements IOperation {
 
 	private Command command;
-    private Connection conn;
+	private Connection conn;
+
 	public Operation(Command command, Connection conn) {
 		this.command = command;
 		this.conn = conn;
@@ -56,7 +57,7 @@ public class Operation implements IOperation {
 	private void batchUrbanLink(Result result) {
 		// 1.通过face查找符合的link
 		List<RdLink> links = null;
-		//算法调用公共的接口...正在开发
+		// 算法调用公共的接口...正在开发
 		for (RdLink link : links) {
 			if (link.getUrban() == 1)
 				continue;

@@ -171,6 +171,11 @@ public class Transaction {
 			case CREATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.rdlinkspeedlimit.create.Command(
 						json, requester);
+			case BATCH:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlinkspeedlimit.Command(
+						json, requester);
+			default:
+				break;
 			}
 		case ADADMIN:
 			switch (operType) {
@@ -796,6 +801,11 @@ public class Transaction {
 			case CREATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.rdlinkspeedlimit.create.Process(
 						command);
+			case BATCH:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlinkspeedlimit.Process(
+						command);
+			default:
+				break;
 			}
 		case ADADMIN:
 			switch (operType) {

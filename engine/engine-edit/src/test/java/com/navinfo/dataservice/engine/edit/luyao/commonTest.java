@@ -233,4 +233,13 @@ public class commonTest extends InitApplication {
 		}
 	}
 
+	@Test
+	public void createTest_1() throws Exception {
+
+		String parameter = "{\"command\":\"BATCH\",\"dbId\":42,\"type\":\"RDLINKSPEEDLIMIT\",\"direct\":2,\"linkPids\":[100008842,100008844,100008845],\"linkSpeedLimit\":{\"speedType\":0,\"fromSpeedLimit\":100,\"fromLimitSrc\":2,\"toSpeedLimit\":100,\"toLimitSrc\":3,\"speedClassWork\":1}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 }

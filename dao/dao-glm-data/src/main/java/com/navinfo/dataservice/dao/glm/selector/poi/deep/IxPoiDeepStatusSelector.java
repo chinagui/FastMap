@@ -10,6 +10,8 @@ import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 
+import net.sf.json.JSONObject;
+
 public class IxPoiDeepStatusSelector extends AbstractSelector {
 	
 	private Connection conn;
@@ -134,7 +136,7 @@ public class IxPoiDeepStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<String> columnQuery(int status,String secondWorkItem,long userId) throws Exception {
+	public List<String> columnQuery(int status, String secondWorkItem,long userId) throws Exception {
 		String sql = "SELECT s.row_id FROM poi_deep_status s,poi_deep_workitem_conf w "
 				+ "WHERE s.work_item_id=w.work_item_id AND s.handler=:1 AND w.second_work_item=:2 "
 				+ "AND s.second_work_status=:3";
@@ -157,6 +159,39 @@ public class IxPoiDeepStatusSelector extends AbstractSelector {
 			
 			return rowIdList;
 		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt); 
+		}
+	}
+	
+	/**
+	 * 通过rowId获取一级作业项状态和作业标记
+	 * 用于精编查询
+	 * @param rowId
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject getStatus(String rowId) throws Exception {
+		String sql = "SELECT work_item_id,first_work_status FROM poi_deep_status WHERE row_id=:1";
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, rowId);
+			resultSet = pstmt.executeQuery();
+			
+			JSONObject result = new JSONObject();
+			
+			if (resultSet.next()) {
+				result.put("workItemId", resultSet.getString("work_item_id"));
+				result.put("firstWorkStatus", resultSet.getInt("first_work_status"));
+			}
+			
+			return result;
+		}  catch (Exception e) {
 			throw e;
 		} finally {
 			DbUtils.closeQuietly(resultSet);

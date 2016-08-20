@@ -121,14 +121,14 @@ public class commonTest extends InitApplication {
 
 			objType.add(ObjType.RDDIRECTROUTE);
 
-			System.out.println(p.searchDataByTileWithGap(objType, 107926, 49598, 17, 80));
+			System.out.println(p.searchDataByTileWithGap(objType, 107926,
+					49598, 17, 80));
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
-	
+
 	@Test
 	public void getTitleWithGap_0818_1() {
 		Connection conn = null;
@@ -141,18 +141,19 @@ public class commonTest extends InitApplication {
 
 			objType.add(ObjType.ZONELINK);
 
-			System.out.println(p.searchDataByTileWithGap(objType, 431779, 198455, 19, 80));
+			System.out.println(p.searchDataByTileWithGap(objType, 431779,
+					198455, 19, 80));
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Test
 	public void getTitleWithGap_0818_2() {
-		
+
 		Connection conn = null;
-		
+
 		try {
 			conn = DBConnector.getInstance().getConnectionById(42);
 
@@ -162,43 +163,72 @@ public class commonTest extends InitApplication {
 
 			objType.add(ObjType.LULINK);
 
-			System.out.println(p.searchDataByTileWithGap(objType, 431779, 198455, 19, 80));
+			System.out.println(p.searchDataByTileWithGap(objType, 431779,
+					198455, 19, 80));
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
-	
+
 	@Test
 	public void getByCondition() {
-		
+
 		Connection conn = null;
-		
+
 		try {
-			
-			JSONObject data =new JSONObject();
-			
-			data.put("queryType", "RDLINKSPEEDLIMIT");
-			
-			data.put("linkPid", 100008827);
-			
-			data.put("direct", 2);
-			
-			conn = DBConnector.getInstance().getConnectionById(42);
+
+			String parameter = "{\"dbId\":42,\"type\":\"RDLINK\",\"data\":{\"queryType\":\"RDSPEEDLIMIT\",\"linkPid\":735584,\"direct\":2}}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String objType = jsonReq.getString("type");
+
+			int dbId = jsonReq.getInt("dbId");
+
+			JSONObject data = jsonReq.getJSONObject("data");
+
+			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			SearchProcess p = new SearchProcess(conn);
-			
-			JSONArray array = p.searchDataByCondition(ObjType.RDLINK,data);
 
-			List<ObjType> objType = new ArrayList<>();
-
-			objType.add(ObjType.LULINK);
+			JSONArray array = p.searchDataByCondition(ObjType.valueOf(objType),
+					data);
 
 			System.out.println(array);
 
 		} catch (Exception e) {
-			
+
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	@Test
+	public void getTitleWithGap_0819() {
+
+		Connection conn = null;
+
+		try {
+			conn = DBConnector.getInstance().getConnectionById(42);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			List<ObjType> objType = new ArrayList<>();
+
+			objType.add(ObjType.RDLINKSPEEDLIMIT);
+
+			System.out.println(p.searchDataByTileWithGap(objType, 107941,
+					49613, 17, 80));
+
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

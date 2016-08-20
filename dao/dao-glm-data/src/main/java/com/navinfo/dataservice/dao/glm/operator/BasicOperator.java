@@ -73,7 +73,7 @@ public class BasicOperator extends AbstractOperator {
 		value.append(" values ( ");
 		for (Field f : fields) {
 			if (isBasicType(f)) {
-				if(f.getModifiers() == 4 ){
+				if (f.getModifiers() == 4) {
 					continue;
 				}
 				f.setAccessible(true);
@@ -88,8 +88,7 @@ public class BasicOperator extends AbstractOperator {
 					oj = "'" + String.valueOf(oj) + "'";
 				}
 				if (oj instanceof Geometry) {
-					String wkt = GeoTranslator.jts2Wkt((Geometry) oj, 0.00001,
-							5);
+					String wkt = GeoTranslator.jts2Wkt((Geometry) oj, 0.00001, 5);
 
 					oj = ("sdo_geometry('" + wkt + "',8307)");
 				}
@@ -143,8 +142,7 @@ public class BasicOperator extends AbstractOperator {
 
 	@Override
 	public void updateRow2Sql(Statement stmt) throws Exception {
-		StringBuilder sb = new StringBuilder("update " + row.tableName()
-				+ " set u_record=3 ");
+		StringBuilder sb = new StringBuilder("update " + row.tableName() + " set u_record=3 ");
 		this.addConditionForPoi(sb);
 		Set<Entry<String, Object>> set = row.changedFields().entrySet();
 
@@ -167,36 +165,36 @@ public class BasicOperator extends AbstractOperator {
 
 			if (value instanceof String || value == null) {
 
-				if (!StringUtils.isStringSame(String.valueOf(value),
-						String.valueOf(columnValue))) {
+				if (!StringUtils.isStringSame(String.valueOf(value), String.valueOf(columnValue))) {
 
 					if (columnValue == null) {
 						sb.append(column + "=null,");
 					} else {
-						sb.append(column + "='" + String.valueOf(columnValue)
-								+ "',");
+						sb.append(column + "='" + String.valueOf(columnValue) + "',");
 					}
 					this.setChanged(true);
 				}
 
 			} else if (value instanceof Double) {
 
-				if (Double.parseDouble(String.valueOf(value)) != Double
-						.parseDouble(String.valueOf(columnValue))) {
-					sb.append(column + "="
-							+ Double.parseDouble(String.valueOf(columnValue))
-							+ ",");
+				if (Double.parseDouble(String.valueOf(value)) != Double.parseDouble(String.valueOf(columnValue))) {
+					sb.append(column + "=" + Double.parseDouble(String.valueOf(columnValue)) + ",");
+
+					this.setChanged(true);
+				}
+
+			} else if (value instanceof Long) {
+
+				if (Long.parseLong(String.valueOf(value)) != Long.parseLong(String.valueOf(columnValue))) {
+					sb.append(column + "=" + Long.parseLong(String.valueOf(columnValue)) + ",");
 
 					this.setChanged(true);
 				}
 
 			} else if (value instanceof Integer) {
 
-				if (Integer.parseInt(String.valueOf(value)) != Integer
-						.parseInt(String.valueOf(columnValue))) {
-					sb.append(column + "="
-							+ Integer.parseInt(String.valueOf(columnValue))
-							+ ",");
+				if (Integer.parseInt(String.valueOf(value)) != Integer.parseInt(String.valueOf(columnValue))) {
+					sb.append(column + "=" + Integer.parseInt(String.valueOf(columnValue)) + ",");
 
 					this.setChanged(true);
 				}
@@ -204,14 +202,12 @@ public class BasicOperator extends AbstractOperator {
 			} else if (value instanceof Geometry) {
 				// 先降级转WKT
 
-				String oldWkt = GeoTranslator.jts2Wkt((Geometry) value,
-						0.00001, 5);
+				String oldWkt = GeoTranslator.jts2Wkt((Geometry) value, 0.00001, 5);
 
 				String newWkt = Geojson.geojson2Wkt(columnValue.toString());
 
 				if (!StringUtils.isStringSame(oldWkt, newWkt)) {
-					sb.append("geometry=sdo_geometry('"
-							+ String.valueOf(newWkt) + "',8307),");
+					sb.append("geometry=sdo_geometry('" + String.valueOf(newWkt) + "',8307),");
 
 					this.setChanged(true);
 				}
@@ -228,10 +224,8 @@ public class BasicOperator extends AbstractOperator {
 	public String getWhereForTable(IRow row) {
 		try {
 			if (row.getClass().getMethod(M_PRIMARYKEY).invoke(row) != null) {
-				return ""
-						+ row.getClass().getMethod("M_PRIMARYKEY").invoke(row)
-						+ " = " + row.getClass().getMethod(M_PID).invoke(row)
-						+ "";
+				return "" + row.getClass().getMethod("M_PRIMARYKEY").invoke(row) + " = "
+						+ row.getClass().getMethod(M_PID).invoke(row) + "";
 			} else {
 				return " where row_id=hextoraw('" + row.rowId() + "')";
 			}
@@ -258,8 +252,7 @@ public class BasicOperator extends AbstractOperator {
 	 * @throws Exception
 	 */
 	private void generateDeleteSql(Statement stmt, IRow row) throws Exception {
-		StringBuilder sb = new StringBuilder("update " + row.tableName()
-				+ " set u_record=2 ");
+		StringBuilder sb = new StringBuilder("update " + row.tableName() + " set u_record=2 ");
 		this.addConditionForPoi(sb);
 		sb.append(getWhereForTable(row));
 		String sql = sb.toString();
@@ -311,8 +304,7 @@ public class BasicOperator extends AbstractOperator {
 	}
 
 	private void addConditionForPoi(StringBuilder sb) {
-		if (row instanceof IxPoi || row instanceof IxPoiChildren
-				|| row instanceof IxPoiParent) {
+		if (row instanceof IxPoi || row instanceof IxPoiChildren || row instanceof IxPoiParent) {
 			sb.append(",u_date = " + StringUtils.getCurrentTime() + ",");
 		} else {
 			sb.append(",");
@@ -329,14 +321,12 @@ public class BasicOperator extends AbstractOperator {
 		}
 		if (row instanceof IxPoiParent) {
 			IxPoiParent ixPoiParent = (IxPoiParent) row;
-			row.setRowId(new IxPoiSelector(conn).loadRowIdByPid(
-					ixPoiParent.getParentPoiPid(), false));
+			row.setRowId(new IxPoiSelector(conn).loadRowIdByPid(ixPoiParent.getParentPoiPid(), false));
 			upatePoiStatus();
 		}
 		if (row instanceof IxPoiChildren) {
 			IxPoiChildren ixPoiParent = (IxPoiChildren) row;
-			row.setRowId(new IxPoiSelector(conn).loadRowIdByPid(
-					ixPoiParent.getChildPoiPid(), false));
+			row.setRowId(new IxPoiSelector(conn).loadRowIdByPid(ixPoiParent.getChildPoiPid(), false));
 			upatePoiStatus();
 
 		}
@@ -351,8 +341,7 @@ public class BasicOperator extends AbstractOperator {
 	 */
 	public void upatePoiStatus() throws Exception {
 		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
-		sb.append(" USING (SELECT '" + row.rowId()
-				+ "' as a, 2 as b,0 as c FROM dual) T2 ");
+		sb.append(" USING (SELECT '" + row.rowId() + "' as a, 2 as b,0 as c FROM dual) T2 ");
 		sb.append(" ON ( T1.row_id=T2.a) ");
 		sb.append(" WHEN MATCHED THEN ");
 		sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c ");
@@ -377,14 +366,15 @@ public class BasicOperator extends AbstractOperator {
 		}
 
 	}
+
 	public static void main(String[] args) {
 		AdFace adFace = new AdFace();
 		adFace.setArea(2332);
-		Field[] fields =adFace.getClass().getDeclaredFields();
-		for(Field f :fields){
+		Field[] fields = adFace.getClass().getDeclaredFields();
+		for (Field f : fields) {
 			System.out.println(f.getModifiers());
-			//f.setAccessible(true);
-			
+			// f.setAccessible(true);
+
 			System.out.println(f);
 			System.out.println();
 		}

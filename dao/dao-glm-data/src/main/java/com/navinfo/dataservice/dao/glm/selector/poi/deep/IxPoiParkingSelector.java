@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.dao.glm.selector.poi.deep;
 
-import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -60,7 +59,7 @@ public class IxPoiParkingSelector extends AbstractSelector {
 				ixPoiParking.setResHigh(resultSet.getDouble("res_high"));
 				ixPoiParking.setResWeigh(resultSet.getDouble("res_weigh"));
 				ixPoiParking.setResWidth(resultSet.getDouble("res_width"));
-				ixPoiParking.setVehicle(new BigInteger(String.valueOf(resultSet.getDouble("vehicle"))));
+				ixPoiParking.setVehicle(resultSet.getLong("vehicle"));
 				ixPoiParking.setWomenNum(resultSet.getInt("women_num"));
 				ixPoiParking.setHandicapNum(resultSet.getInt("handicap_num"));
 				ixPoiParking.setMiniNum(resultSet.getInt("mini_num"));

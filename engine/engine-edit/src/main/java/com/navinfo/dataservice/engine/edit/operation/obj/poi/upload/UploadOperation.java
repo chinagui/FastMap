@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.poi.upload;
 
 import java.io.FileInputStream;
-import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -675,7 +674,7 @@ public class UploadOperation {
 				parkings.setResWidth(parkingsObj.getInt("resWidth"));
 				parkings.setResWeigh(parkingsObj.getInt("resWeigh"));
 				parkings.setCertificate(parkingsObj.getInt("certificate"));
-				parkings.setVehicle(new BigInteger(String.valueOf(parkingsObj.getDouble("vehicle"))));
+				parkings.setVehicle(parkingsObj.getLong("vehicle"));
 				parkings.setHaveSpecialplace(parkingsObj.getString("haveSpecialPlace"));
 				parkings.setWomenNum(parkingsObj.getInt("womenNum"));
 				parkings.setHandicapNum(parkingsObj.getInt("handicapNum"));

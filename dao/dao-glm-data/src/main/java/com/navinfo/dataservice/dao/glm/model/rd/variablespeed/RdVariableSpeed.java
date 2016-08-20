@@ -4,7 +4,6 @@
 package com.navinfo.dataservice.dao.glm.model.rd.variablespeed;
 
 import java.lang.reflect.Field;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -47,7 +46,7 @@ public class RdVariableSpeed implements IObj {
 
 	private String timeDomain;
 
-	private BigInteger vehicle = new BigInteger("0");
+	private long vehicle = 0;
 
 	private String rowId;
 
@@ -113,11 +112,11 @@ public class RdVariableSpeed implements IObj {
 		this.timeDomain = timeDomain;
 	}
 
-	public BigInteger getVehicle() {
+	public long getVehicle() {
 		return vehicle;
 	}
 
-	public void setVehicle(BigInteger vehicle) {
+	public void setVehicle(long vehicle) {
 		this.vehicle = vehicle;
 	}
 

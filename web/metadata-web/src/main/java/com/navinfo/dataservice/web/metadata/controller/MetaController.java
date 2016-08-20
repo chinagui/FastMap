@@ -734,4 +734,33 @@ public class MetaController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
+	
+	/**
+	 * 查询该组下是否存在英文/葡文名
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/rdname/group")
+	public ModelAndView webEngGroup(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			int nameGroupId = jsonReq.getInt("nameGroupId");
+			
+			RdNameOperation operation = new RdNameOperation();
+			
+			boolean result = operation.checkEngName(nameGroupId);
+			
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+	
+			logger.error(e.getMessage(), e);
+	
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
 }

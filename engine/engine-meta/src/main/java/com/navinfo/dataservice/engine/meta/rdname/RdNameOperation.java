@@ -177,17 +177,12 @@ public class RdNameOperation {
 				// 判断是新增中文名还是英文/葡文名
 				if (rdName.getLangCode() == "CHI" || rdName.getLangCode() == "CHT") {
 					// 中文名
-					rdName.setCity(true);
+//					rdName.setCity(true);
 					rdName = saveName(rdName);
 				} else {
 					// 英文/葡文名
-					if (checkEngName(rdName.getNameGroupId())) {
-						// 已存在英文/葡文名
-						new Exception("已存在英文/葡文名");
-					} else {
-						rdName.setCity(true);
-						rdName = saveName(rdName);
-					}
+//					rdName.setCity(true);
+					rdName = saveName(rdName);
 				}
 			} else {
 				// 修改
@@ -274,8 +269,8 @@ public class RdNameOperation {
 		sb.append("PROCESS_FLAG = ?,");
 		sb.append("U_RECORD = ?,");
 		sb.append("U_FIELDS = ?,");
-		sb.append("SPLIT_FLAG = ?,");
-		sb.append("CITY = ?");
+		sb.append("SPLIT_FLAG = ?");
+//		sb.append("CITY = ?");
 		sb.append(" WHERE NAME_ID = ?");
 		
 		PreparedStatement pstmt = null;
@@ -322,8 +317,8 @@ public class RdNameOperation {
 			pstmt.setInt(24, rdName.getuRecord());
 			pstmt.setString(25, rdName.getuFields());
 			pstmt.setInt(26, rdName.getSplitFlag());
-			pstmt.setString(27, rdName.getCity());
-			pstmt.setLong(28, rdName.getNameId());
+//			pstmt.setString(27, rdName.getCity());
+			pstmt.setLong(27, rdName.getNameId());
 
 			pstmt.execute();
 			

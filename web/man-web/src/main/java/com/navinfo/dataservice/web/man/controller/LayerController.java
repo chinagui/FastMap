@@ -95,7 +95,7 @@ public class LayerController extends BaseController {
 			String wkt=null;
 			if(dataJson.containsKey("wkt")){wkt=dataJson.getString("wkt");}
 			String layerName=null;
-			if(dataJson.containsKey("layerName")){wkt=dataJson.getString("layerName");}
+			if(dataJson.containsKey("layerName")){layerName=dataJson.getString("layerName");}
 			LayerService.getInstance().update(dataJson.getString("layerId"),wkt,layerName);
 			return new ModelAndView("jsonView", success("修改成功"));
 		} catch (Exception e) {

@@ -269,7 +269,7 @@ public class RdNameOperation {
 		sb.append("PROCESS_FLAG = ?,");
 		sb.append("U_RECORD = ?,");
 		sb.append("U_FIELDS = ?,");
-		sb.append("SPLIT_FLAG = ?,");
+		sb.append("SPLIT_FLAG = ?");
 //		sb.append("CITY = ?");
 		sb.append(" WHERE NAME_ID = ?");
 		
@@ -318,7 +318,7 @@ public class RdNameOperation {
 			pstmt.setString(25, rdName.getuFields());
 			pstmt.setInt(26, rdName.getSplitFlag());
 //			pstmt.setString(27, rdName.getCity());
-			pstmt.setLong(28, rdName.getNameId());
+			pstmt.setLong(27, rdName.getNameId());
 
 			pstmt.execute();
 			

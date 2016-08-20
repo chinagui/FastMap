@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -20,6 +21,8 @@ import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObject;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.navicommons.geo.computation.JGeometryUtil;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 
@@ -122,7 +125,7 @@ public class RdObjectSearch implements ISearch {
 								gObject.put("i", splits[i]);
 
 								gArray.add(gObject);
-								
+
 								nodePidSet.add(splits[i]);
 							}
 						}
@@ -152,20 +155,26 @@ public class RdObjectSearch implements ISearch {
 								JSONObject gObject = new JSONObject();
 
 								JSONObject geojson = Geojson.wkt2Geojson(linkWktSplits[i]);
-
+								
 								JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
 
 								gObject.put("g", jo.getJSONArray("coordinates"));
 								gObject.put("i", linkSplits[i]);
 
 								gLinkArray.add(gObject);
-								
+
 								linkSet.add(linkSplits[i]);
 							}
 						}
 
 						jsonM.put("a", gLinkArray);
 
+						Coordinate[] coordinates = getLineFromMuitPoint(gLinkArray,snapshot.getG());
+						
+						Geometry metry = JGeometryUtil.getPolygonFromPoint(coordinates);
+						
+						jsonM.put("b", GeoTranslator.jts2Geojson(metry).getJSONArray("coordinates"));
+						
 						snapshot.setM(jsonM);
 					}
 
@@ -196,4 +205,51 @@ public class RdObjectSearch implements ISearch {
 		return list;
 	}
 
+	private Coordinate[] getLineFromMuitPoint(JSONArray linkArray, JSONArray nodeArray) {
+		
+		List<String> pointStr = new ArrayList<>();
+
+		for (int i = 0; i < linkArray.size(); i++) {
+			JSONObject obj = linkArray.getJSONObject(i);
+
+			JSONArray pointArray = obj.getJSONArray("g");
+
+			for (int j = 0; j < pointArray.size(); j++) {
+				JSONArray point = pointArray.getJSONArray(j);
+
+				int x = point.getInt(0);
+
+				int y = point.getInt(1);
+
+				if (!pointStr.contains(x + "_" + y)) {
+					pointStr.add(x + "_" + y);
+				}
+			}
+		}
+		
+		for(int i = 0;i<nodeArray.size();i++)
+		{
+			JSONObject obj = nodeArray.getJSONObject(i);
+
+			JSONArray pointArray = obj.getJSONArray("g");
+			
+			int x = pointArray.getInt(0);
+
+			int y = pointArray.getInt(1);
+
+			if (!pointStr.contains(x + "_" + y)) {
+				pointStr.add(x + "_" + y);
+			}
+		}
+		
+		Coordinate[] coordinates = new Coordinate[pointStr.size()];
+
+		for (int i = 0; i < pointStr.size(); i++) {
+			String[] point = pointStr.get(i).split("_");
+
+			coordinates[i] = new Coordinate(Integer.parseInt(point[0]), Integer.parseInt(point[1]));
+		}
+		
+		return coordinates;
+	}
 }

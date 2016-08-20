@@ -141,7 +141,7 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 							+ String.valueOf(toLimitSrc) + ","
 							+ String.valueOf(angle);
 
-					jsonM.put("b", info);
+					jsonM.put("d", info);
 				}
 
 				snapshot.setM(jsonM);

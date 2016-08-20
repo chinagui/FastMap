@@ -24,6 +24,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEditStatus;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
+import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiEditStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
 
@@ -54,10 +55,12 @@ public class AbstractSelector implements ISelector {
 	}
 
 	@Override
-	public IRow loadById(int id, boolean isLock, boolean... noChild) throws Exception {
+	public IRow loadById(int id, boolean isLock, boolean... noChild)
+			throws Exception {
 		this.row = (IRow) cls.newInstance();
-		StringBuilder sb = new StringBuilder(
-				"select * from " + row.tableName() + " where " + ((IObj) row).primaryKey() + " = :1 and u_record !=2");
+		StringBuilder sb = new StringBuilder("select * from " + row.tableName()
+				+ " where " + ((IObj) row).primaryKey()
+				+ " = :1 and u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -81,17 +84,20 @@ public class AbstractSelector implements ISelector {
 					if (row instanceof IObj) {
 						IObj obj = (IObj) row;
 						// 子表list map
-						Map<Class<? extends IRow>, List<IRow>> childList = obj.childList();
+						Map<Class<? extends IRow>, List<IRow>> childList = obj
+								.childList();
 
 						// 子表map
-						Map<Class<? extends IRow>, Map<String, ?>> childMap = obj.childMap();
+						Map<Class<? extends IRow>, Map<String, ?>> childMap = obj
+								.childMap();
 						if (childList != null) {
 							setChildValue(obj, childList, childMap, isLock);
 						}
 					}
 				}
 			} else {
-				throw new Exception("查询的PID为：" + id + "的" + row.tableName().toUpperCase() + "不存在");
+				throw new Exception("查询的PID为：" + id + "的"
+						+ row.tableName().toUpperCase() + "不存在");
 			}
 		} catch (Exception e) {
 
@@ -107,7 +113,8 @@ public class AbstractSelector implements ISelector {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public IRow loadByIdAndChildClass(int id, boolean isLock, Class<? extends IRow>... childClass) throws Exception {
+	public IRow loadByIdAndChildClass(int id, boolean isLock,
+			Class<? extends IRow>... childClass) throws Exception {
 		try {
 			IRow row = loadById(id, isLock);
 			// 设置子表信息
@@ -115,12 +122,15 @@ public class AbstractSelector implements ISelector {
 				if (row instanceof IObj) {
 					IObj obj = (IObj) row;
 					// 子表list map
-					Map<Class<? extends IRow>, List<IRow>> childList = obj.childList();
+					Map<Class<? extends IRow>, List<IRow>> childList = obj
+							.childList();
 
 					// 子表map
-					Map<Class<? extends IRow>, Map<String, ?>> childMap = obj.childMap();
-					
-					setChildValueForClass(obj, childList, childMap, isLock, childClass);
+					Map<Class<? extends IRow>, Map<String, ?>> childMap = obj
+							.childMap();
+
+					setChildValueForClass(obj, childList, childMap, isLock,
+							childClass);
 				}
 			}
 		} catch (
@@ -134,12 +144,13 @@ public class AbstractSelector implements ISelector {
 	}
 
 	@Override
-	public List<IRow> loadByIds(List<Integer> idList, boolean isLock, boolean loadChild)
-			throws Exception {
+	public List<IRow> loadByIds(List<Integer> idList, boolean isLock,
+			boolean loadChild) throws Exception {
 		List<IRow> rowList = new ArrayList<>();
 		this.row = (IRow) cls.newInstance();
-		StringBuilder sb = new StringBuilder("select * from " + row.tableName() + " where " + ((IObj) row).primaryKey()
-				+ " in (" + StringUtils.getInteStr(idList) + ") and u_record !=2");
+		StringBuilder sb = new StringBuilder("select * from " + row.tableName()
+				+ " where " + ((IObj) row).primaryKey() + " in ("
+				+ StringUtils.getInteStr(idList) + ") and u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -163,10 +174,12 @@ public class AbstractSelector implements ISelector {
 					if (row instanceof IObj) {
 						IObj obj = (IObj) row;
 						// 子表list map
-						Map<Class<? extends IRow>, List<IRow>> childList = obj.childList();
+						Map<Class<? extends IRow>, List<IRow>> childList = obj
+								.childList();
 
 						// 子表map
-						Map<Class<? extends IRow>, Map<String, ?>> childMap = obj.childMap();
+						Map<Class<? extends IRow>, Map<String, ?>> childMap = obj
+								.childMap();
 						if (childList != null) {
 							setChildValue(obj, childList, childMap, isLock);
 						}
@@ -188,7 +201,8 @@ public class AbstractSelector implements ISelector {
 	@Override
 	public IRow loadByRowId(String rowId, boolean isLock) throws Exception {
 		this.row = (IRow) cls.newInstance();
-		String sql = "select * from " + row.tableName() + " where row_id=hextoraw(:1) and u_record !=2 ";
+		String sql = "select * from " + row.tableName()
+				+ " where row_id=hextoraw(:1) and u_record !=2 ";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -224,7 +238,8 @@ public class AbstractSelector implements ISelector {
 	}
 
 	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
+	public List<IRow> loadRowsByParentId(int id, boolean isLock)
+			throws Exception {
 		this.row = (IRow) cls.newInstance();
 
 		List<IRow> rows = new ArrayList<IRow>();
@@ -232,10 +247,14 @@ public class AbstractSelector implements ISelector {
 		String sql = "";
 
 		if (row instanceof RdLinkName || row instanceof RwLinkName) {
-			sql = "select a.*,b.name from " + row.tableName() + " a,rd_name b where a." + row.parentPKName()
+			sql = "select a.*,b.name from "
+					+ row.tableName()
+					+ " a,rd_name b where a."
+					+ row.parentPKName()
 					+ " =:1 and a.name_groupid=b.name_groupid(+) and b.lang_code(+)='CHI' and a.u_record!=:2";
 		} else {
-			sql = "select * from " + row.tableName() + " where " + row.parentPKName() + "=:1 and u_record!=:2";
+			sql = "select * from " + row.tableName() + " where "
+					+ row.parentPKName() + "=:1 and u_record!=:2";
 
 			if (isLock) {
 				sql += " for update nowait";
@@ -274,6 +293,92 @@ public class AbstractSelector implements ISelector {
 		return rows;
 	}
 
+	public List<IRow> loadRowsByParentIds(List<Integer> pids, boolean isLock)
+			throws Exception {
+		List<IRow> rows = new ArrayList<IRow>();
+
+		if (pids == null || pids.size() == 0) {
+			return rows;
+		}
+
+		List<Integer> pidsTemp = new ArrayList<Integer>();
+
+		pidsTemp.addAll(pids);
+
+		int pointsDataLimit = 100;
+
+		while (pidsTemp.size() >= pointsDataLimit) {
+
+			List<Integer> listPid = pidsTemp.subList(0, pointsDataLimit);
+
+			rows.addAll(batchLoadRowsByParentIds(listPid, isLock));
+
+			pidsTemp.subList(0, pointsDataLimit).clear();
+		}
+
+		if (!pidsTemp.isEmpty()) {
+			rows.addAll(batchLoadRowsByParentIds(pidsTemp, isLock));
+		}
+
+		return rows;
+	}
+
+	private List<IRow> batchLoadRowsByParentIds(List<Integer> idList,
+			boolean isLock) throws Exception {
+		this.row = (IRow) cls.newInstance();
+
+		List<IRow> rows = new ArrayList<IRow>();
+
+		String sql = "";
+
+		if (row instanceof RdLinkName || row instanceof RwLinkName) {
+			sql = "select a.*,b.name from "
+					+ row.tableName()
+					+ " a,rd_name b where a."
+					+ row.parentPKName()
+					+ " in ("
+					+ StringUtils.getInteStr(idList)
+					+ ") and a.name_groupid=b.name_groupid(+) and b.lang_code(+)='CHI' and a.u_record!=:2";
+		} else {
+			sql = "select * from " + row.tableName() + " where "
+					+ row.parentPKName() + " in ("
+					+ StringUtils.getInteStr(idList) + ") and u_record!=:2";
+
+			if (isLock) {
+				sql += " for update nowait";
+			}
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, 2);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				IRow rowInner = (IRow) cls.newInstance();
+
+				ReflectionAttrUtils.executeResultSet(rowInner, resultSet);
+
+				rows.add(rowInner);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+
+		return rows;
+	}
+
 	/**
 	 * 查询子表并且按照需求进行排序
 	 * 
@@ -288,7 +393,8 @@ public class AbstractSelector implements ISelector {
 	 * @return 子表集合
 	 * @throws Exception
 	 */
-	public List<IRow> loadRowsByClassParentId(Class<?> cls, int id, boolean isLock, String order) throws Exception {
+	public List<IRow> loadRowsByClassParentId(Class<?> cls, int id,
+			boolean isLock, String order) throws Exception {
 		List<IRow> rows = new ArrayList<IRow>();
 
 		IRow row = (IRow) cls.newInstance();
@@ -296,10 +402,14 @@ public class AbstractSelector implements ISelector {
 		StringBuilder sql = new StringBuilder();
 
 		if (row instanceof RdLinkName || row instanceof RwLinkName) {
-			sql.append("select a.*,b.name from " + row.tableName() + " a,rd_name b where a." + row.parentPKName()
+			sql.append("select a.*,b.name from "
+					+ row.tableName()
+					+ " a,rd_name b where a."
+					+ row.parentPKName()
 					+ " =:1 and a.name_groupid=b.name_groupid(+) and b.lang_code(+)='CHI' and a.u_record!=:2");
 		} else {
-			sql.append("select * from " + row.tableName() + " where " + row.parentPKName() + "=:1 and u_record!=:2");
+			sql.append("select * from " + row.tableName() + " where "
+					+ row.parentPKName() + "=:1 and u_record!=:2");
 			if (StringUtils.isNotEmpty(order)) {
 				sql.append(" order by " + order);
 			}
@@ -342,17 +452,22 @@ public class AbstractSelector implements ISelector {
 		return rows;
 	}
 
-	private void setChildValue(IObj obj, Map<Class<? extends IRow>, List<IRow>> childList,
-			Map<Class<? extends IRow>, Map<String, ?>> childMap, boolean isLock) throws Exception {
-		for (Map.Entry<Class<? extends IRow>, List<IRow>> entry : childList.entrySet()) {
+	private void setChildValue(IObj obj,
+			Map<Class<? extends IRow>, List<IRow>> childList,
+			Map<Class<? extends IRow>, Map<String, ?>> childMap, boolean isLock)
+			throws Exception {
+		for (Map.Entry<Class<? extends IRow>, List<IRow>> entry : childList
+				.entrySet()) {
 			Class<? extends IRow> cls = entry.getKey();
 			List<IRow> values = entry.getValue();
 			setChild(cls, obj, isLock, values, childMap);
 		}
 	}
 
-	private void setChildValueForClass(IObj obj, Map<Class<? extends IRow>, List<IRow>> childList,
-			Map<Class<? extends IRow>, Map<String, ?>> childMap, boolean isLock, Class<? extends IRow>[] childClass)
+	private void setChildValueForClass(IObj obj,
+			Map<Class<? extends IRow>, List<IRow>> childList,
+			Map<Class<? extends IRow>, Map<String, ?>> childMap,
+			boolean isLock, Class<? extends IRow>[] childClass)
 			throws Exception {
 		for (Class<? extends IRow> cls : childClass) {
 			List<IRow> values = childList.get(cls);
@@ -361,8 +476,10 @@ public class AbstractSelector implements ISelector {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void setChild(Class<? extends IRow> cls, IObj obj, boolean isLock, List<IRow> values,
-			Map<Class<? extends IRow>, Map<String, ?>> childMap) throws Exception {
+	private void setChild(Class<? extends IRow> cls, IObj obj, boolean isLock,
+			List<IRow> values,
+			Map<Class<? extends IRow>, Map<String, ?>> childMap)
+			throws Exception {
 		// 特殊场景处理 1.POI父子关系查询
 		if (cls.equals(IxPoiParent.class) && obj instanceof IxPoi) {
 			handlePoiParent((IxPoi) obj, isLock);
@@ -372,18 +489,22 @@ public class AbstractSelector implements ISelector {
 			// 特殊场景：2.POI_EDIT_STATUS
 			handlePoiEditStatus((IxPoi) obj, isLock);
 		} else {
-			List<IRow> childRows = loadRowsByClassParentId(cls, obj.pid(), isLock, null);
+			List<IRow> childRows = loadRowsByClassParentId(cls, obj.pid(),
+					isLock, null);
 			if (CollectionUtils.isNotEmpty(childRows)) {
 				for (IRow row : childRows) {
 					if (row instanceof IObj) {
 						IObj childObj = (IObj) row;
 						// 子表list map
-						Map<Class<? extends IRow>, List<IRow>> childObjList = childObj.childList();
+						Map<Class<? extends IRow>, List<IRow>> childObjList = childObj
+								.childList();
 
 						// 子表map
-						Map<Class<? extends IRow>, Map<String, ?>> childObjMap = childObj.childMap();
+						Map<Class<? extends IRow>, Map<String, ?>> childObjMap = childObj
+								.childMap();
 						if (childObjList != null) {
-							setChildValue(childObj, childObjList, childObjMap, isLock);
+							setChildValue(childObj, childObjList, childObjMap,
+									isLock);
 						}
 					}
 
@@ -407,10 +528,13 @@ public class AbstractSelector implements ISelector {
 	 * @param isLock
 	 * @throws Exception
 	 */
-	private void handlePoiEditStatus(IxPoi ixPoi, boolean isLock) throws Exception {
-		IxPoiEditStatusSelector ixPoiEditStatusSelector = new IxPoiEditStatusSelector(conn);
+	private void handlePoiEditStatus(IxPoi ixPoi, boolean isLock)
+			throws Exception {
+		IxPoiEditStatusSelector ixPoiEditStatusSelector = new IxPoiEditStatusSelector(
+				conn);
 
-		int status = ixPoiEditStatusSelector.loadStatusByRowId(ixPoi.rowId(), isLock);
+		int status = ixPoiEditStatusSelector.loadStatusByRowId(ixPoi.rowId(),
+				isLock);
 
 		ixPoi.setStatus(status);
 
@@ -424,7 +548,8 @@ public class AbstractSelector implements ISelector {
 		// 设置子表IX_POI_PARENT
 		IxPoiParentSelector ixPoiParentSelector = new IxPoiParentSelector(conn);
 
-		ixPoi.setParents(ixPoiParentSelector.loadParentRowsByPoiId(ixPoi.getPid(), isLock));
+		ixPoi.setParents(ixPoiParentSelector.loadParentRowsByPoiId(
+				ixPoi.getPid(), isLock));
 
 		for (IRow row : ixPoi.getParents()) {
 			IxPoiParent obj = (IxPoiParent) row;
@@ -437,10 +562,12 @@ public class AbstractSelector implements ISelector {
 	 * @throws Exception
 	 * 
 	 */
-	private void handlePoiChildren(IxPoi ixPoi, boolean isLock) throws Exception {
+	private void handlePoiChildren(IxPoi ixPoi, boolean isLock)
+			throws Exception {
 		IxPoiParentSelector ixPoiParentSelector = new IxPoiParentSelector(conn);
 		// 设置poi的子
-		List<IRow> parent = ixPoiParentSelector.loadRowsByParentId(ixPoi.getPid(), isLock);
+		List<IRow> parent = ixPoiParentSelector.loadRowsByParentId(
+				ixPoi.getPid(), isLock);
 
 		if (CollectionUtils.isNotEmpty(parent)) {
 			int size = parent.size();

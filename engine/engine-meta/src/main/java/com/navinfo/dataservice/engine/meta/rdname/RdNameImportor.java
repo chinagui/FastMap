@@ -271,15 +271,15 @@ public class RdNameImportor {
 			while (keys.hasNext()) {
 				String key = (String) keys.next();
 				
-				if (key.equals("objStatus")) {
+				try {
+					Field f = rdName.getClass().getDeclaredField(key);
+					
+					f.setAccessible(true);
+
+					f.set(rdName, params.get(key));
+				} catch (NoSuchFieldException e)  {
 					continue;
 				}
-				
-				Field f = rdName.getClass().getDeclaredField(key);
-
-				f.setAccessible(true);
-
-				f.set(rdName, params.get(key));
 			}
 			
 			rdName.setName(ExcelReader.h2f(rdName.getName()));

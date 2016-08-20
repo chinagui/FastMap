@@ -125,5 +125,45 @@ public class IxPoiDeepStatusSelector extends AbstractSelector {
 			DbUtils.closeQuietly(pstmt); 
 		}
 	}
+	
+	/**
+	 * 查詢当前poi已打作业标记
+	 * @param object
+	 * @return
+	 * @throws Exception
+	 */
+	public List<String> queryClassifyByRowid(Object rowId,Object taskId) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT work_item_id,handler FROM poi_deep_status s where s.row_id=:1 and s.first_work_status=1 and s.task_id=:2 ");
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		
+		List<String> workItemList=new ArrayList<String>();
+		
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setString(1, (String) rowId);
+			pstmt.setInt(2, (int) taskId);
+			
+			resultSet = pstmt.executeQuery();
+			
+			if (resultSet.next()) {
+				workItemList.add(resultSet.getString("work_item_id"));
+			}
+			
+			return workItemList;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt); 
+		}
+		
+	}
+	
+	
 
 }

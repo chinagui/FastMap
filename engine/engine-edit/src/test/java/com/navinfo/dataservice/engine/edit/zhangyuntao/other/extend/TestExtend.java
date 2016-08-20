@@ -2,6 +2,12 @@ package com.navinfo.dataservice.engine.edit.zhangyuntao.other.extend;
 
 import java.lang.reflect.Method;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
+
+import net.sf.json.JSONObject;
+
 /**
  * @Title: Test.java
  * @Description: TODO
@@ -11,12 +17,13 @@ import java.lang.reflect.Method;
  */
 public class TestExtend {
 	public static void main(String[] args) {
-		Parent p = new Parent();
-		p.modCount = 100;
-		Parent.InnerP innerP = p.new InnerP();
-		innerP.setX();
-		System.out.println(innerP.getX());
-//		testException();
+		// Parent p = new Parent();
+		// p.modCount = 100;
+		// Parent.InnerP innerP = p.new InnerP();
+		// innerP.setX();
+		// System.out.println(innerP.getX());
+
+		// testException();
 		// Child c1 = new Child();
 		// c1.setA(1);
 		// c1.setB(2);
@@ -27,6 +34,20 @@ public class TestExtend {
 		//
 		// Class<?> clazz = p1.getClass();
 		// printFunction(clazz);
+		try {
+			AdFace adFace = new AdFace();
+			JSONObject json = new JSONObject();
+			json.put("type", "Point");
+			json.put("coordinates", "[116.46554,40.08274]");
+			adFace.setGeometry(GeoTranslator.geojson2Jts(json));
+			IRow row = adFace;
+			System.out.println();
+			Class<?> clazz = Class.forName(row.getClass().getName());
+			Method method = clazz.getMethod("getGeometry");
+			System.out.println(method.invoke(row).toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static void printFunction(Class<?> clazz) {

@@ -5,10 +5,8 @@ import java.sql.Connection;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
-import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.selector.rd.tollgate.RdTollgateSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
-import com.navinfo.dataservice.engine.edit.search.SearchProcess;
 import com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye.TestUtil;
 
 /**
@@ -43,6 +41,7 @@ public class RdTollgateTest extends InitApplication {
 	@Test
 	public void update() {
 		String parameter = "{'command':'UPDATE', 'dbId':42, 'type':'RDTOLLGATE', data:{'pid':100034747, 'type':2, 'names':[{'nameGroupid':11, 'rowId':'7AA43E40216E4B06829B2A89D049A6F9', 'objStatus':'UPDATE'}]}}";
+		parameter = "{\"command\":\"UPDATE\",\"type\":\"RDVARIABLESPEED\",\"dbId\":43,\"data\":{\"location\":6,\"pid\":100000075,\"objStatus\":\"UPDATE\",\"vehicle\":2147483648}}";
 		TestUtil.run(parameter);
 	}
 
@@ -52,13 +51,18 @@ public class RdTollgateTest extends InitApplication {
 		try {
 			conn = DBConnector.getInstance().getConnectionById(42);
 
-			SearchProcess p = new SearchProcess(conn);
+//			SearchProcess p = new SearchProcess(conn);
+//
+//			System.out.println(p.searchDataByPid(ObjType.RDTOLLGATE, 1055).Serialize(ObjLevel.FULL));
+			
 
-			System.out.println(p.searchDataByPid(ObjType.RDTOLLGATE, 100034747).Serialize(ObjLevel.FULL));
+			RdTollgateSelector selector = new RdTollgateSelector(conn);
+			selector.loadRdTollgatesWithLinkPid(741886, true);
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
 	}
 
 	@Test

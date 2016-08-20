@@ -38,7 +38,7 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
-		return new Operation(this.getCommand(), updateLink).run(this.getResult());
+		return new Operation(this.getCommand(), updateLink,this.getConn()).run(this.getResult());
 	}
 	
 	public String innerRun() throws Exception {

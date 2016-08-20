@@ -12,14 +12,27 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
-import com.navinfo.dataservice.control.column.core.ColumCoreControl;
+import com.navinfo.dataservice.control.column.core.ColumnCoreControl;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+/**
+ * POI精编作业
+ * @author wangdongbin
+ *
+ */
 @Controller
 public class ColumnController extends BaseController {
 	private static final Logger logger = Logger.getLogger(ColumnController.class);
 	
+	/**
+	 * 精编作业数据申请接口
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
 	@RequestMapping(value = "/poi/deep/applyPoi")
 	public ModelAndView applyPoi(HttpServletRequest request)
 			throws ServletException, IOException {
@@ -38,12 +51,45 @@ public class ColumnController extends BaseController {
 			int groupId = jsonReq.getInt("groupId");
 
 
-			ColumCoreControl control = new ColumCoreControl();
+			ColumnCoreControl control = new ColumnCoreControl();
 
 			control.applyData(groupId, firstWorkItem, userId);
 
 			return new ModelAndView("jsonView", success());
 
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	/**
+	 * 作业数据查询接口
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/deep/columnQuery")
+	public ModelAndView columnQuery(HttpServletRequest request)
+			throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			
+			long userId = tokenObj.getUserId();
+			
+			ColumnCoreControl control = new ColumnCoreControl();
+			
+			JSONArray data = control.columnQuery(userId, jsonReq);
+			
+			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 
 			logger.error(e.getMessage(), e);

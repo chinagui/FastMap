@@ -17,26 +17,26 @@ import net.sf.json.JSONObject;
 
 /**
  * 详细车道的时间段和车辆限制表
+ * 
  * @author zhaokaikai
  *
  */
 public class RdLaneCondition implements IRow {
-	
-	private int lanePid; //车道号码 
-	/*①当车道为潮汐车道时，记录某时间段内车道的
-	通行方向，如果与 LINK 画线方向相同为顺方
-	向，反之逆方向*/
-	private int direction= 1 ;//车道方向1  无 2  顺方向3  逆方向
-	private String directionTime;//方向时间段
-	
-	private String rowId;
-	
-	private int vehicle = 0;//车辆类型 
-	
-	private String vehicleTime;//车辆时间段 
-	
-	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
+	private int lanePid; // 车道号码
+	/*
+	 * ①当车道为潮汐车道时，记录某时间段内车道的 通行方向，如果与 LINK 画线方向相同为顺方 向，反之逆方向
+	 */
+	private int direction = 1;// 车道方向1 无 2 顺方向3 逆方向
+	private String directionTime;// 方向时间段
+
+	private String rowId;
+
+	private long vehicle = 0;// 车辆类型
+
+	private String vehicleTime;// 车辆时间段
+
+	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	public String getRowId() {
 		return rowId;
@@ -143,11 +143,11 @@ public class RdLaneCondition implements IRow {
 		this.directionTime = directionTime;
 	}
 
-	public int getVehicle() {
+	public long getVehicle() {
 		return vehicle;
 	}
 
-	public void setVehicle(int vehicle) {
+	public void setVehicle(long vehicle) {
 		this.vehicle = vehicle;
 	}
 

@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.api.metadata.iface;
 
+import java.sql.Connection;
+import java.util.Map;
 
 /**
  * @author wangshishuai3966
@@ -22,5 +24,12 @@ public interface MetadataApi {
 	 */
 	
 	public void nameImport(String name,double longitude, double latitude,String rowkey)throws Exception ;
+	
+	public Map<String,String> getChainMap(Connection conn) throws Exception;
+	
+	public Map<String,String> getKindCodeMap(Connection conn) throws Exception;
+	
+	public Map<String,String> getAdminMap(Connection conn) throws Exception;
 
+	public Map<String,String> getCharacterMap(Connection conn) throws Exception;
 }

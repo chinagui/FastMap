@@ -2,35 +2,31 @@ package com.navinfo.dataservice.engine.check;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-import net.sf.json.JSONObject;
+import net.sf.json.JSONArray;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.CheckRule;
+import com.navinfo.dataservice.engine.check.core.CheckRuleLoader;
 import com.navinfo.dataservice.engine.check.core.CheckSuitLoader;
 import com.navinfo.dataservice.engine.check.core.NiValException;
 import com.navinfo.dataservice.engine.check.core.RuleExecuter;
 import com.navinfo.dataservice.engine.check.core.VariableName;
-import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.vividsolutions.jts.geom.Geometry;
 
 public class CheckEngine {
 	private CheckCommand checkCommand = null;
 	private Connection conn;
 	private List<VariableName> myCheckSuitPostVariables=new ArrayList<VariableName>();
 	private List<VariableName> myCheckSuitPreVariables=new ArrayList<VariableName>();
+	private List<CheckRule> checkRuleList=new ArrayList<CheckRule>();
 	
 	public Connection getConn() {
 		return conn;
@@ -60,19 +56,18 @@ public class CheckEngine {
 	/*
 	 * 获取本次要执行的检查规则
 	 */
-	private List<CheckRule> getRules(ObjType objType, OperType operType,String checkType) throws Exception{
+	private void getRules(ObjType objType, OperType operType,String checkType) throws Exception{
 		String suitCode = objType.toString()+"_"+operType.toString()+"_"+checkType;
 		log.info(suitCode);
-		List<CheckRule> myCheckSuit = CheckSuitLoader.getInstance().getCheckSuit(suitCode);
+		this.checkRuleList = CheckSuitLoader.getInstance().getCheckSuit(suitCode);
 		this.myCheckSuitPostVariables=CheckSuitLoader.getInstance().getCheckSuitPostVariables(suitCode);
 		this.myCheckSuitPreVariables=CheckSuitLoader.getInstance().getCheckSuitPreVariables(suitCode);
-		return myCheckSuit;
 	}
 	
 	/*
 	 * 对后检查需要保存检查结果，调用此方法将检查结果插入到Ni_val_exception中
 	 */
-	private void saveCheckResult(List<NiValException> checkResultList) throws Exception{
+	public void saveCheckResult(List<NiValException> checkResultList) throws Exception{
 		if (checkResultList==null || checkResultList.size()==0) {return;}		
 		NiValExceptionOperator check = new NiValExceptionOperator(this.conn);		
 		for(int i=0;i<checkResultList.size();i++){			
@@ -87,15 +82,30 @@ public class CheckEngine {
 		log.info("start preCheck");
 		//isValidConn();
 		//获取前检查需要执行规则列表
-		List<CheckRule> rulesList=getRules(checkCommand.getObjType(),checkCommand.getOperType(),"PRE");
+		getRules(checkCommand.getObjType(),checkCommand.getOperType(),"PRE");
+		List<NiValException> result=exePreCheck();
+		if(result!=null && result.size()>0){
+			log.info("end preCheck");
+			return result.get(0).getInformation();
+			}
+		return null;
+	}
+	
+	/*
+	 * 前检查
+	 */
+	private List<NiValException> exePreCheck() throws Exception{
+		log.info("start preCheck");
+		//获取前检查需要执行规则列表
 		RuleExecuter ruleExecuterObj=new RuleExecuter(this.checkCommand,this.myCheckSuitPreVariables,this.conn);
-		for (int i=0;i<rulesList.size();i++){			
-			CheckRule rule=rulesList.get(i);
+		for (int i=0;i<this.checkRuleList.size();i++){			
+			CheckRule rule=this.checkRuleList.get(i);
 			try{
-				String logMsg=ruleExecuterObj.exePreRule(rule);
-				if(logMsg!=null && !logMsg.isEmpty()){
+				List<NiValException> resultTmp=ruleExecuterObj.exePreRule(rule);
+				if(resultTmp!=null && resultTmp.size()>0){
 					log.info("end preCheck");
-					return logMsg;}
+					return resultTmp;
+					}
 				}
 			catch(Exception e){
 				log.error("error preCheck"+rule.getRuleCode(),e);
@@ -109,13 +119,21 @@ public class CheckEngine {
 	 */
 	public void postCheck() throws Exception{
 		log.info("start postCheck");
-		//isValidConn();
 		//获取后检查需要执行规则列表
-		List<CheckRule> rulesList=getRules(this.checkCommand.getObjType(),this.checkCommand.getOperType(),"POST");
+		getRules(this.checkCommand.getObjType(),this.checkCommand.getOperType(),"POST");
+		saveCheckResult(exePostCheck());
+		log.info("end postCheck");
+	}
+	
+	/*
+	 * 后检查
+	 */
+	private List<NiValException> exePostCheck() throws Exception{
+		log.info("start postCheck");
 		List<NiValException> checkResultList = new ArrayList<NiValException>();
 		RuleExecuter ruleExecuterObj=new RuleExecuter(this.checkCommand,this.myCheckSuitPostVariables,this.conn);
-		for (int i=0;i<rulesList.size();i++){
-			CheckRule rule=rulesList.get(i);
+		for (int i=0;i<this.checkRuleList.size();i++){
+			CheckRule rule=this.checkRuleList.get(i);
 			try{
 				List<NiValException> resultTmp=ruleExecuterObj.exePostRule(rule);
 				if(resultTmp.size()>0){checkResultList.addAll(resultTmp);}}
@@ -123,7 +141,34 @@ public class CheckEngine {
 				log.error("error postCheck"+rule.getRuleCode(),e);
 			}
 		}
-		saveCheckResult(checkResultList);
 		log.info("end postCheck");
-	}	
+		return checkResultList;
+	}
+	
+	public List<NiValException> checkByRules(JSONArray ruleCodeArray,String checkType) throws Exception{
+		getCheckByRules(ruleCodeArray,checkType);		
+		if("POST".equals(checkType)){
+			return exePostCheck();}
+		if("PRE".equals(checkType)){
+			return exePreCheck();
+		}
+		return null;
+	}
+	
+	private void getCheckByRules(JSONArray ruleCodeArray,String checkType) throws Exception{
+		Iterator ruleIter=ruleCodeArray.iterator();
+		while (ruleIter.hasNext()) {
+			String ruleStr=(String) ruleIter.next();						
+			CheckRule myCheckRule = CheckRuleLoader.getInstance().getCheckRule(ruleStr);							
+			if(myCheckRule != null){
+				this.checkRuleList.add(myCheckRule);
+				if("POST".equals(checkType) && myCheckRule.getPostVariables()!=null && myCheckRule.getPostVariables().size()>0){
+					this.myCheckSuitPostVariables.removeAll(myCheckRule.getPostVariables());
+					this.myCheckSuitPostVariables.addAll(myCheckRule.getPostVariables());}
+				if("PRE".equals(checkType) && myCheckRule.getPreVariables()!=null && myCheckRule.getPreVariables().size()>0){
+					this.myCheckSuitPreVariables.removeAll(myCheckRule.getPreVariables());
+					this.myCheckSuitPreVariables.addAll(myCheckRule.getPreVariables());}
+			}							
+		}
+	}
 }

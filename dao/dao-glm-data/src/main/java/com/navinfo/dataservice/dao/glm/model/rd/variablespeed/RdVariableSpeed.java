@@ -41,19 +41,19 @@ public class RdVariableSpeed implements IObj {
 	private int speedValue;
 
 	private int speedType;
-	
+
 	private int speedDependent;
-	
+
 	private String timeDomain;
-	
-	private int vehicle;
+
+	private long vehicle = 0;
 
 	private String rowId;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
-	
+
 	public Map<String, RdVariableSpeedVia> viaMap = new HashMap<String, RdVariableSpeedVia>();
-	
+
 	private List<IRow> vias = new ArrayList<IRow>();
 
 	public int getPid() {
@@ -63,7 +63,7 @@ public class RdVariableSpeed implements IObj {
 	public void setPid(int pid) {
 		this.pid = pid;
 	}
-	
+
 	public int getInLinkPid() {
 		return inLinkPid;
 	}
@@ -112,11 +112,11 @@ public class RdVariableSpeed implements IObj {
 		this.timeDomain = timeDomain;
 	}
 
-	public int getVehicle() {
+	public long getVehicle() {
 		return vehicle;
 	}
 
-	public void setVehicle(int vehicle) {
+	public void setVehicle(long vehicle) {
 		this.vehicle = vehicle;
 	}
 
@@ -159,7 +159,7 @@ public class RdVariableSpeed implements IObj {
 	public ObjStatus status() {
 		return null;
 	}
-	
+
 	public List<IRow> getVias() {
 		return vias;
 	}
@@ -324,14 +324,14 @@ public class RdVariableSpeed implements IObj {
 
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
+		Map<Class<? extends IRow>, List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
 		childList.put(RdVariableSpeedVia.class, vias);
 		return childList;
 	}
-	
+
 	@Override
-	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
-		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<Class<? extends IRow>,Map<String,?>>();
+	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
+		Map<Class<? extends IRow>, Map<String, ?>> childMap = new HashMap<Class<? extends IRow>, Map<String, ?>>();
 		childMap.put(RdVariableSpeedVia.class, viaMap);
 		return childMap;
 	}

@@ -326,6 +326,9 @@ public class RdNameSelector {
 		if (rdName.getAdminId() == 214 && rdName.getNameGroupId() != 0) {
 			sb.append(" AND name_groupid=:4");
 		}
+		if (rdName.getNameId() != null) {
+			sb.append(" AND name_id !='"+rdName.getNameId()+"'");
+		}
 		try {
 			
 			conn = DBConnector.getInstance().getMetaConnection();
@@ -370,7 +373,7 @@ public class RdNameSelector {
 		JSONObject rdNameObj = new JSONObject();
 		try {
 			rdNameObj.put("nameId", resultSet.getInt("NAME_ID"));
-			rdNameObj.put("nameGroupid", resultSet.getInt("NAME_GROUPID"));
+			rdNameObj.put("nameGroupId", resultSet.getInt("NAME_GROUPID"));
 			rdNameObj.put("langCode", resultSet.getString("LANG_CODE"));
 			rdNameObj.put("name", resultSet.getString("NAME"));
 			rdNameObj.put("type", resultSet.getString("TYPE"));

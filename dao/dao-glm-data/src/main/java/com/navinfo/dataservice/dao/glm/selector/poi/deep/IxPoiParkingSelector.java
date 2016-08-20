@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.dao.glm.selector.poi.deep;
 
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,8 +11,10 @@ import org.apache.commons.dbutils.DbUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+
 /**
  * 索引:POI 深度信息停车场类查询接口
+ * 
  * @author zhaokk
  *
  */
@@ -46,7 +47,7 @@ public class IxPoiParkingSelector extends AbstractSelector {
 
 			resultSet = pstmt.executeQuery();
 
-			while(resultSet.next()) {
+			while (resultSet.next()) {
 				ixPoiParking.setParkingType(resultSet.getString("parking_type"));
 				ixPoiParking.setTollStd(resultSet.getString("toll_std"));
 				ixPoiParking.setTollWay(resultSet.getString("toll_way"));
@@ -58,7 +59,7 @@ public class IxPoiParkingSelector extends AbstractSelector {
 				ixPoiParking.setResHigh(resultSet.getDouble("res_high"));
 				ixPoiParking.setResWeigh(resultSet.getDouble("res_weigh"));
 				ixPoiParking.setResWidth(resultSet.getDouble("res_width"));
-				ixPoiParking.setVehicle(resultSet.getInt("vehicle"));
+				ixPoiParking.setVehicle(resultSet.getLong("vehicle"));
 				ixPoiParking.setWomenNum(resultSet.getInt("women_num"));
 				ixPoiParking.setHandicapNum(resultSet.getInt("handicap_num"));
 				ixPoiParking.setMiniNum(resultSet.getInt("mini_num"));
@@ -67,14 +68,15 @@ public class IxPoiParkingSelector extends AbstractSelector {
 				ixPoiParking.setCertificate(resultSet.getInt("certificate"));
 				ixPoiParking.setRowId(resultSet.getString("row_id"));
 				rows.add(ixPoiParking);
-			} return rows;
+			}
+			return rows;
 		} catch (Exception e) {
 
 			throw e;
 
 		} finally {
 			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt); 
+			DbUtils.closeQuietly(pstmt);
 		}
 	}
 }

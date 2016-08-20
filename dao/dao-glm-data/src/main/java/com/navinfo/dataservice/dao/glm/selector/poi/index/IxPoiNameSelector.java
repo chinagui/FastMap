@@ -58,5 +58,36 @@ public class IxPoiNameSelector extends AbstractSelector {
 		}
 		
 	}
-	
+
+	/**
+	 * add by wangdongbin
+	 * for column query
+	 * @param id
+	 * @return
+	 * @throws Exception
+	 */
+	public String loadByIdForColumn(int id,String langCode) throws Exception{
+		String nameStr = "";
+		ResultSet resultSet = null;
+		PreparedStatement pstmt = null;
+		try {
+			String sql = "SELECT name FROM ix_poi_name where poi_pid=:1 AND name_class=1 AND name_type=2 AND lang_code=:2 AND u_record!=2";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, id);
+			pstmt.setString(2,langCode);
+			resultSet = pstmt.executeQuery();
+			if (resultSet.next()){
+				nameStr = resultSet.getString("name");
+			}
+			return nameStr;
+		} catch (Exception e) {
+			throw e;
+		}finally {
+
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+		}
+		
+	}
 }

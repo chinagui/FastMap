@@ -29,7 +29,7 @@ public class IxPoiDeepStatusSelector extends AbstractSelector {
 	public List<String> getRowIdByTaskId(int taskId,String firstWorkItem) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT s.row_id");
-		sb.append(" FROM poi_deep_status s,poi_deep_work_item_conf w");
+		sb.append(" FROM poi_deep_status s,poi_deep_workitem_conf w");
 		sb.append(" WHERE s.work_item_id=w.work_item_id");
 		sb.append(" AND s.handler=0");
 		sb.append(" AND s.task_id=:1");
@@ -37,11 +37,11 @@ public class IxPoiDeepStatusSelector extends AbstractSelector {
 		
 		if (firstWorkItem.equals("poi_englishname")) {
 			sb.append(" AND s.work_item_id != 'FM-YW-20-017'");
-			sb.append(" AND s.row_id not in (SELECT d.row_id FROM poi_deep_status d,poi_deep_work_item_conf c WHERE");
+			sb.append(" AND s.row_id not in (SELECT d.row_id FROM poi_deep_status d,poi_deep_workitem_conf c WHERE");
 			sb.append(" d.work_item_id=c.work_item_id AND c.first_work_item='poi_name'");
 			sb.append(" AND d.first_work_status != 3)");
 		} else if (firstWorkItem.equals("poi_englishaddress")) {
-			sb.append(" AND s.row_id not in (SELECT d.row_id FROM poi_deep_status d,poi_deep_work_item_conf c WHERE");
+			sb.append(" AND s.row_id not in (SELECT d.row_id FROM poi_deep_status d,poi_deep_workitem_conf c WHERE");
 			sb.append(" d.work_item_id=c.work_item_id AND c.first_work_item='poi_address'");
 			sb.append(" AND d.first_work_status != 3)");
 		}
@@ -91,7 +91,7 @@ public class IxPoiDeepStatusSelector extends AbstractSelector {
 	public int queryHandlerCount(String firstWorkItem,long userId) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT count(1) num");
-		sb.append(" FROM poi_deep_status s,poi_deep_work_item_conf w");
+		sb.append(" FROM poi_deep_status s,poi_deep_workitem_conf w");
 		sb.append(" WHERE s.work_item_id=w.work_item_id");
 		sb.append(" AND s.handler=:1");
 		sb.append(" AND w.first_work_item=:2");
@@ -127,6 +127,44 @@ public class IxPoiDeepStatusSelector extends AbstractSelector {
 	}
 	
 	/**
+	 * 查询该作业员名下未提交数据的rowId
+	 * @param status
+	 * @param secondWorkItem
+	 * @param userId
+	 * @return
+	 * @throws Exception
+	 */
+	public List<String> columnQuery(int status,String secondWorkItem,long userId) throws Exception {
+		String sql = "SELECT s.row_id FROM poi_deep_status s,poi_deep_workitem_conf w "
+				+ "WHERE s.work_item_id=w.work_item_id AND s.handler=:1 AND w.second_work_item=:2 "
+				+ "AND s.second_work_status=:3";
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setLong(1, userId);
+			pstmt.setString(2, secondWorkItem);
+			pstmt.setInt(3, status);
+			resultSet = pstmt.executeQuery();
+			
+			List<String> rowIdList = new ArrayList<String>();
+			
+			while (resultSet.next()) {
+				rowIdList.add(resultSet.getString("row_id"));
+			}
+			
+			return rowIdList;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt); 
+		}
+	}
+
+/**
 	 * 查詢当前poi已打作业标记
 	 * @param object
 	 * @return
@@ -137,7 +175,6 @@ public class IxPoiDeepStatusSelector extends AbstractSelector {
 		sb.append("SELECT work_item_id,handler FROM poi_deep_status s where s.row_id=:1 and s.first_work_status=1 and s.task_id=:2 ");
 		
 		PreparedStatement pstmt = null;
-
 		ResultSet resultSet = null;
 		
 		List<String> workItemList=new ArrayList<String>();
@@ -164,6 +201,4 @@ public class IxPoiDeepStatusSelector extends AbstractSelector {
 		
 	}
 	
-	
-
 }

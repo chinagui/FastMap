@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.meta.service;
 
 import java.sql.Connection;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
@@ -8,8 +9,10 @@ import org.springframework.stereotype.Service;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.engine.meta.chain.ChainSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHmCheckSelector;
+import com.navinfo.dataservice.engine.meta.engshort.ScEngshortSelector;
 import com.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
 import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
+import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 
 /**
@@ -69,6 +72,22 @@ public class MetadataApiImpl implements MetadataApi {
 	public Map<String, String> getCharacterMap(Connection conn) throws Exception {
 		TyCharacterFjtHmCheckSelector tyCharacterFjtHmCheckSelector = new TyCharacterFjtHmCheckSelector(conn);
 		return tyCharacterFjtHmCheckSelector.getCharacterMap();
+	}
+
+
+
+	@Override
+	public Map<String, List<String>> getNavicovpyMap(Connection conn) throws Exception {
+		PinyinConvertSelector pinyinConvertSelector = new PinyinConvertSelector(conn);
+		return pinyinConvertSelector.getNavicovpyMap();
+	}
+
+
+
+	@Override
+	public Map<String, String> getEngshortMap(Connection conn) throws Exception {
+		ScEngshortSelector scEngshortSelector = new ScEngshortSelector(conn);
+		return scEngshortSelector.getEngShortMap();
 	}
 
 

@@ -33,6 +33,9 @@ public class ColumnCoreControl {
 			
 			// 查询该作业员名下已申请的数据数量
 			for (int taskId:subTaskIds) {
+				
+				// 区分大陆，港澳任务
+				
 				Subtask subtask = apiService.queryBySubtaskId(taskId);
 				int dbId = subtask.getDbId();
 				if (dbId != oldDbId) {
@@ -135,24 +138,26 @@ public class ColumnCoreControl {
 		Connection conn = null;
 		
 		try {
-			int taskId= jsonReq.getInt("jsonReq");
+			int taskId= jsonReq.getInt("taskId");
 			
 			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
-			Subtask subtask = apiService.queryBySubtaskId(taskId);
-			int dbId = subtask.getDbId();
 			
 			String type = jsonReq.getString("type");
 			int status = jsonReq.getInt("status");
+			String firstWordItem = jsonReq.getString("firstWorkItem");
 			String secondWorkItem = jsonReq.getString("secondWorkItem");
+			
+			Subtask subtask = apiService.queryBySubtaskId(taskId);
+			int dbId = subtask.getDbId();
 			
 			// 获取未提交数据的rowId
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			IxPoiDeepStatusSelector selector = new IxPoiDeepStatusSelector(conn);
-			List<String> rowIdList = selector.columnQuery(status, secondWorkItem,userId);
+			List<String> rowIdList = selector.columnQuery(status,secondWorkItem,userId);
 			
 			IxPoiSearch poiSearch = new IxPoiSearch(conn);
 			
-			JSONArray datas = poiSearch.searchColumnPoiByRowId(rowIdList, type, "CHI");
+			JSONArray datas = poiSearch.searchColumnPoiByRowId(firstWordItem, secondWorkItem,rowIdList, type, "CHI");
 			
 			return datas;
 		} catch (Exception e) {

@@ -203,6 +203,7 @@ public class CheckController extends BaseController {
 	public ModelAndView runPreCheckEngine(HttpServletRequest request)
 			throws ServletException, IOException {
 		String parameter = request.getParameter("parameter");
+		Connection conn =null;
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			int dbId=jsonReq.getInt("dbId");
@@ -225,7 +226,7 @@ public class CheckController extends BaseController {
 			checkCommand.setObjType(Enum.valueOf(ObjType.class,objType));
 			checkCommand.setOperType(Enum.valueOf(OperType.class,operType));
 			// this.checkCommand.setGlmList(this.command.getGlmList());
-			Connection conn = DBConnector.getInstance().getConnectionById(42);	
+			conn = DBConnector.getInstance().getConnectionById(42);	
 			CheckEngine checkEngine = new CheckEngine(checkCommand, conn);
 			String error=checkEngine.preCheck();
 			logger.info("end runPreCheckEngine:"+dbId+","+objType+","+operType);
@@ -233,6 +234,14 @@ public class CheckController extends BaseController {
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 	
@@ -248,6 +257,7 @@ public class CheckController extends BaseController {
 	public ModelAndView runPostCheckEngine(HttpServletRequest request)
 			throws ServletException, IOException {
 		String parameter = request.getParameter("parameter");
+		Connection conn =null;
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			int dbId=jsonReq.getInt("dbId");
@@ -270,7 +280,7 @@ public class CheckController extends BaseController {
 			checkCommand.setObjType(Enum.valueOf(ObjType.class,objType));
 			checkCommand.setOperType(Enum.valueOf(OperType.class,operType));
 			// this.checkCommand.setGlmList(this.command.getGlmList());
-			Connection conn = DBConnector.getInstance().getConnectionById(42);	
+			conn = DBConnector.getInstance().getConnectionById(42);	
 			CheckEngine checkEngine = new CheckEngine(checkCommand, conn);
 			checkEngine.postCheck();
 			logger.info("end runPostCheckEngine:"+dbId+","+objType+","+operType);
@@ -278,6 +288,14 @@ public class CheckController extends BaseController {
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 	
@@ -293,6 +311,7 @@ public class CheckController extends BaseController {
 	public ModelAndView runCheckRule(HttpServletRequest request)
 			throws ServletException, IOException {
 		String parameter = request.getParameter("parameter");
+		Connection conn =null;
 		try {
 			//解析参数
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -320,7 +339,7 @@ public class CheckController extends BaseController {
 			checkCommand.setOperType(Enum.valueOf(OperType.class,operType));
 			checkCommand.setGlmList(glmList);
 			
-			Connection conn = DBConnector.getInstance().getConnectionById(dbId);	
+			conn = DBConnector.getInstance().getConnectionById(dbId);	
 			//执行检查规则
 			CheckEngine cEngine=new CheckEngine(checkCommand,conn);
 			List<NiValException> checkResultList=cEngine.checkByRules(ruleArray, checkType);	
@@ -341,6 +360,14 @@ public class CheckController extends BaseController {
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 }

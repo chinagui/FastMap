@@ -47,9 +47,7 @@ public class Operation implements IOperation {
 		if (this.command.getLanes().size() > 0) {
 			for (RdLane lane : this.command.getLanes()) {
 				if (lane.getPid() == this.command.getRdLane().getPid()) {
-					this.deleteRdLaneTopoDetail(result, lane.getPid());
-					result.insertObject(this.command.getRdLane(),
-							ObjStatus.DELETE, lane.getPid());
+					this.deleteRdLane(result, lane.getPid());
 					continue;
 				}
 				if (lane.getSeqNum() > this.command.getRdLane().getSeqNum()) {
@@ -61,6 +59,16 @@ public class Operation implements IOperation {
 
 		}
 
+	}
+	/***
+	 * 删除车道不需要维护对应link上其它车道信息
+	 * @param result
+	 * @param lanePid
+	 * @throws Exception
+	 */
+	public void deleteRdLane(Result result, int lanePid) throws Exception {
+		this.deleteRdLaneTopoDetail(result, lanePid);
+		result.insertObject(this.command.getRdLane(), ObjStatus.DELETE, lanePid);
 	}
 
 	/***

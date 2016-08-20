@@ -1,16 +1,21 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
+
+import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 
 import com.navinfo.dataservice.dao.glm.iface.Result;
 
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
+import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
@@ -48,48 +53,57 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void createRdLanes(Result result) throws Exception {
-		if (this.command.getLanes().size() > 0) {
-			for (RdLane lane : this.command.getLanes()) {
-				if (lane.getPid() == 0) {
-					lane.setPid(PidService.getInstance().applyRdLanePid());
-					result.insertObject(lane, ObjStatus.INSERT, lane.getPid());
-				} else {
-					for (RdLane rdLane : command.getSourceLanes()) {
-						if (lane.getPid() == rdLane.getPid()) {
-							boolean flag = false;
-							if (lane.getArrowDir() != rdLane.getArrowDir()) {
-								rdLane.changedFields().put("arrowDir",
-										lane.getArrowDir());
-								flag = true;
-							}
-							if (lane.getSeqNum() != rdLane.getSeqNum()) {
-								rdLane.changedFields().put("seqNum",
-										lane.getSeqNum());
-								flag = true;
-							}
-							if (lane.getLaneNum() != command.getLaneNum()) {
-								rdLane.changedFields().put("laneNum",
-										command.getLaneNum());
-								flag = true;
-							}
-							if (flag) {
-								result.insertObject(rdLane, ObjStatus.UPDATE,
-										rdLane.getPid());
-							}
+
+		for (int i = 0; i < this.command.getLinks().size(); i++) {
+			int laneDir = 1;
+			List<RdLane> lanes = new ArrayList<RdLane>();
+			RdLink link = (RdLink) this.command.getLinks().get(i);
+			// 计算link上原有的车道信息
+			lanes = this.caleRdLanesForDir(i, laneDir, link);
+			if (lanes.size() > 0) {
+				for (int m = 0; m < this.command.getLaneInfos().size(); m++) {
+					JSONObject jsonLaneInfo = this.command.getLaneInfos()
+							.getJSONObject(m);
+					if (i == 0) {
+						if (jsonLaneInfo.getInt("lanePid") == 0) {
+							this.createRdLane(result, link.getPid(), laneDir);
 						} else {
-							result.insertObject(rdLane, ObjStatus.DELETE,
-									rdLane.getPid());
+							for (RdLane lane : lanes) {
+
+								if (jsonLaneInfo.getInt("lanePid") == lane
+										.getPid()) {
+									// 修改Rdlane
+									com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation();
+									operation.updateRdLane(result,
+											jsonLaneInfo, lane);
+								} else {
+									// 删除RDLANE
+									com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
+											conn);
+									operation.deleteRdLane(result,
+											lane.getPid());
+								}
+							}
+
 						}
+
+					} else {
+						for (RdLane lane : lanes) {
+							// 删除rdlane
+							com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
+									conn);
+							operation.deleteRdLane(result, lane.getPid());
+						}
+						// 新增rdlane
+						this.createRdLane(result, link.getPid(), laneDir);
+
 					}
 				}
+
+			} else {
+				this.createRdLane(result, link.getPid(), laneDir);
 			}
-		} else {
-			if (this.command.getSourceLanes().size() > 0) {
-				for (RdLane rdLane : this.command.getSourceLanes()) {
-					result.insertObject(rdLane, ObjStatus.DELETE,
-							rdLane.getPid());
-				}
-			}
+
 		}
 	}
 
@@ -102,6 +116,7 @@ public class Operation implements IOperation {
 	 * 则按照总车道数生成该link车道数。如果link为单方向，则详细车道物理车道数=link总车道数，
 	 * 如果link为双方向，则详细车道单侧的物理车道数=link总车道数/2，如果总车道数为奇数时，则为(link总车道数+1)/2。
 	 * 其余属性赋默认值，车道限制不生成记录
+	 * 
 	 * @author zhaokk
 	 * @param result
 	 * @param link
@@ -117,7 +132,12 @@ public class Operation implements IOperation {
 					link.getPid(), 1, true);
 			if (flag == 1) {
 				if (lanes.size() > 0) {
-					// 删除车道信息
+					for (RdLane lane : lanes) {
+						// 删除车道信息
+						com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
+								conn);
+						operation.deleteRdLane(result, lane.getPid());
+					}
 				}
 			} else {
 				if (lanes.size() <= 0) {
@@ -163,15 +183,17 @@ public class Operation implements IOperation {
 
 		}
 	}
-/***
- * 创建车道信息
- * @param result
- * @param linkPid
- * @param seqNum
- * @param laneDir
- * @param laneNum
- * @throws Exception
- */
+
+	/***
+	 * 创建车道信息
+	 * 
+	 * @param result
+	 * @param linkPid
+	 * @param seqNum
+	 * @param laneDir
+	 * @param laneNum
+	 * @throws Exception
+	 */
 	private void createRdlane(Result result, int linkPid, int seqNum,
 			int laneDir, int laneNum) throws Exception {
 		RdLane rdLane = new RdLane();
@@ -183,7 +205,120 @@ public class Operation implements IOperation {
 		result.insertObject(rdLane, ObjStatus.INSERT, rdLane.getPid());
 	}
 
-	public static void main(String[] args) {
-		System.out.println(1 / 2);
+	/***
+	 * 根据属性传值加载RDLANE信息
+	 * 
+	 * @param result
+	 * @param linkPid
+	 * @param laneDir
+	 * @throws Exception
+	 */
+	private void createRdLane(Result result, int linkPid, int laneDir)
+			throws Exception {
+		for (int m = 0; m < this.command.getLaneInfos().size(); m++) {
+			JSONObject jsonLaneInfo = this.command.getLaneInfos()
+					.getJSONObject(m);
+			RdLane lane = new RdLane();
+			if (jsonLaneInfo.getInt("lanePid") != 0) {
+				lane = (RdLane) new RdLaneSelector(conn).loadById(
+						jsonLaneInfo.getInt("lanePid"), true, true);
+			}
+
+			lane.setPid(PidService.getInstance().applyRdLanePid());
+			lane.setLinkPid(linkPid);
+			lane.setLaneNum(this.command.getLaneInfos().size());
+			lane.setSeqNum(m + 1);
+			lane.setLaneDir(laneDir);
+			if (jsonLaneInfo.containsKey("arrowDir")) {
+				lane.setArrowDir(jsonLaneInfo.getString("arrowDir"));
+
+			}
+			if (jsonLaneInfo.containsKey("centerDivider")) {
+				lane.setCenterDivider(jsonLaneInfo.getInt("centerDivider"));
+			}
+			if (jsonLaneInfo.containsKey("laneForming")) {
+				lane.setLaneForming(jsonLaneInfo.getInt("laneForming"));
+			}
+			if (jsonLaneInfo.containsKey("laneType")) {
+				lane.setLaneType(jsonLaneInfo.getInt("laneType"));
+			}
+			if (jsonLaneInfo.containsKey("laneDivider")) {
+				lane.setLaneDivider(jsonLaneInfo.getInt("laneDivider"));
+			}
+			// 车道限速
+			if (jsonLaneInfo.containsKey("")) {
+			}
+			if (jsonLaneInfo.containsKey("contditions")) {
+				List<IRow> conditionRows = new ArrayList<IRow>();
+				for (int i = 0; i < jsonLaneInfo.getJSONArray("contditions")
+						.size(); i++) {
+					JSONObject conditionObject = jsonLaneInfo.getJSONArray(
+							"contditions").getJSONObject(i);
+					RdLaneCondition condition = new RdLaneCondition();
+
+					if (conditionObject.containsKey("direction")) {
+						condition.setDirection(conditionObject
+								.getInt("direction"));
+					}
+					if (conditionObject.containsKey("vehicleTime")) {
+						condition.setVehicleTime(conditionObject
+								.getString("vehicleTime"));
+					}
+					if (conditionObject.containsKey("vehicle")) {
+						condition
+								.setVehicle(conditionObject.getLong("vehicle"));
+					}
+					if (conditionObject.containsKey("directionTime")) {
+						condition.setDirectionTime(conditionObject
+								.getString("directionTime"));
+					}
+					conditionRows.add(condition);
+				}
+
+				lane.setConditions(conditionRows);
+			}
+
+		}
+
+	}
+
+	/***
+	 * 按照方向加载link上对应的车道信息
+	 * 
+	 * @param i
+	 * @param laneDir
+	 * @param link
+	 * @return
+	 * @throws Exception
+	 */
+	private List<RdLane> caleRdLanesForDir(int i, int laneDir, RdLink link)
+			throws Exception {
+
+		List<RdLane> lanes = new ArrayList<RdLane>();
+		if (link.getDirect() == 2 || link.getDirect() == 3) {
+			lanes = new RdLaneSelector(conn).loadByLink(link.getPid(), 0, true);
+		}
+		if (link.getDirect() == 1) {
+			if (i == 0) {
+				laneDir = this.command.getLaneDir();
+				lanes = new RdLaneSelector(conn).loadByLink(link.getPid(),
+						this.command.getLaneDir(), true);
+			} else {
+				RdLink preLink = (RdLink) this.command.getLinks().get(i - 1);
+				if (preLink.getsNodePid() == link.getsNodePid()
+						|| preLink.geteNodePid() == link.getsNodePid()) {
+					lanes = new RdLaneSelector(conn).loadByLink(link.getPid(),
+							2, true);
+					laneDir = 2;
+				} else {
+					laneDir = 3;
+					lanes = new RdLaneSelector(conn).loadByLink(link.getPid(),
+							3, true);
+
+				}
+			}
+		}
+
+		return lanes;
 	}
 }

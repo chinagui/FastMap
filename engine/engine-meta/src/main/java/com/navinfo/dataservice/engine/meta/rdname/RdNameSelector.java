@@ -373,7 +373,7 @@ public class RdNameSelector {
 		JSONObject rdNameObj = new JSONObject();
 		try {
 			rdNameObj.put("nameId", resultSet.getInt("NAME_ID"));
-			rdNameObj.put("nameGroupid", resultSet.getInt("NAME_GROUPID"));
+			rdNameObj.put("nameGroupId", resultSet.getInt("NAME_GROUPID"));
 			rdNameObj.put("langCode", resultSet.getString("LANG_CODE"));
 			rdNameObj.put("name", resultSet.getString("NAME"));
 			rdNameObj.put("type", resultSet.getString("TYPE"));

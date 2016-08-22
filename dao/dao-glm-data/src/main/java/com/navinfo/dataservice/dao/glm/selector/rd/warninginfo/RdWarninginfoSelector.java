@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
@@ -174,15 +175,9 @@ public class RdWarninginfoSelector extends AbstractSelector {
 		if (linkPids == null || linkPids.size() == 0) {
 			return rows;
 		}
-
-		StringBuilder strLinkPids = new StringBuilder();
-
-		for (Integer pid : linkPids) {
-			strLinkPids.append(" " + pid.toString() + ",");
-		}
-
+	
 		String sql = "select a.* from rd_warninginfo a where a.u_record!=:1 and a.link_pid in ( "
-				+ strLinkPids.toString() + ") ";
+				+ StringUtils.getInteStr(linkPids) + ") ";
 
 		if (isLock) {
 			sql += " for update nowait";

@@ -2,11 +2,13 @@ package com.navinfo.dataservice.control.column.core;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -17,6 +19,11 @@ import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+/**
+ * 精编业务处理类
+ * @author wangdongbin
+ *
+ */
 public class ColumnCoreControl {
 	
 	public void applyData(int groupId,String firstWorkItem,long userId) throws Exception{
@@ -165,6 +172,90 @@ public class ColumnCoreControl {
 		} finally {
 			DbUtils.closeQuietly(conn);
 		}
+	}
+	
+	/**
+	 * 保存精编数据
+	 * @param dbId
+	 * @param data
+	 * @throws Exception
+	 */
+	public void columnSave(int dbId,JSONArray data) throws Exception {
+		try {
+			for (int i=0;i<data.size();i++) {
+				JSONObject poiObj = new JSONObject();
+				poiObj.put("dbId", dbId);
+				poiObj.put("data", data.getJSONObject(i));
+				EditApi apiEdit=(EditApi) ApplicationContextUtil.getBean("editApi");
+				apiEdit.columnSave(poiObj);
+			}
+			
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * 查询精编配置表
+	 * @param secondWorkItem
+	 * @param type
+	 * @param conn
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject getDeepOpConf(String secondWorkItem,int type,Connection conn) throws Exception {
+		JSONObject result = new JSONObject();
+		
+		String sql = "SELECT * FROM poi_deep_op_conf WHERE second_work_item=:1 and type=:2";
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setString(1, secondWorkItem);
+
+			pstmt.setInt(2, type);
+
+			resultSet = pstmt.executeQuery();
+			
+			result = getDeepOpConfObj(resultSet);
+			
+			return result;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	private JSONObject getDeepOpConfObj(ResultSet resultSet) throws Exception {
+		JSONObject result = new JSONObject();
+		try {
+			if (resultSet.next()) {
+				result.put("firstWorkItem", resultSet.getString("FIRST_WORK_ITEM"));
+				result.put("secondWorkItem", resultSet.getString("SECOND_WORK_ITEM"));
+				result.put("saveExebatch", resultSet.getInt("SAVE_EXEBATCH"));
+				result.put("saveBatchrules", resultSet.getArray("SAVE_BATCHRULES"));
+				result.put("saveExecheck", resultSet.getInt("SAVE_EXECHECK"));
+				result.put("saveCkrules", resultSet.getArray("SAVE_CKRULES"));
+				result.put("saveExeclassify", resultSet.getInt("SAVE_EXECLASSIFY"));
+				result.put("saveClassifyrules", resultSet.getArray("SAVE_CLASSIFYRULES"));
+				result.put("submitExebatch", resultSet.getInt("SUBMIT_EXEBATCH"));
+				result.put("submitBatchrules", resultSet.getArray("SUBMIT_BATCHRULES"));
+				result.put("submitExecheck", resultSet.getInt("SUBMIT_EXECHECK"));
+				result.put("submitCkrules", resultSet.getArray("SUBMIT_CKRULES"));
+				result.put("submitExeclassify", resultSet.getInt("SUBMIT_EXECLASSIFY"));
+				result.put("submitClassifyrules", resultSet.getArray("SUBMIT_CLASSIFYRULES"));
+			}
+			return result;
+		} catch (Exception e) {
+			throw e;
+		}
+		
+		
 	}
 	
 }

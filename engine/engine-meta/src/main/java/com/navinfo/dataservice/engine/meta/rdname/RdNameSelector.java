@@ -331,7 +331,7 @@ public class RdNameSelector {
 		sb.append(" AND road_type=:2");
 		sb.append(" AND admin_id=:3");
 		// “行政区划”为“全国”
-		if (rdName.getAdminId() == 214 && rdName.getNameGroupId() != 0) {
+		if (rdName.getAdminId() == 214 && rdName.getNameGroupid() != 0) {
 			sb.append(" AND name_groupid=:4");
 		}
 		if (rdName.getNameId() != null) {
@@ -350,7 +350,7 @@ public class RdNameSelector {
 			pstmt.setInt(3, rdName.getAdminId());
 			
 			if (rdName.getAdminId() == 214) {
-				pstmt.setInt(4, rdName.getNameGroupId());
+				pstmt.setInt(4, rdName.getNameGroupid());
 			}
 
 			resultSet = pstmt.executeQuery();
@@ -381,7 +381,7 @@ public class RdNameSelector {
 		JSONObject rdNameObj = new JSONObject();
 		try {
 			rdNameObj.put("nameId", resultSet.getInt("NAME_ID"));
-			rdNameObj.put("nameGroupId", resultSet.getInt("NAME_GROUPID"));
+			rdNameObj.put("nameGroupid", resultSet.getInt("NAME_GROUPID"));
 			rdNameObj.put("langCode", resultSet.getString("LANG_CODE"));
 			rdNameObj.put("name", resultSet.getString("NAME"));
 			rdNameObj.put("type", resultSet.getString("TYPE"));

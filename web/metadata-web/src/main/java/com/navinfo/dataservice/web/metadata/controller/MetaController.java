@@ -760,11 +760,11 @@ public class MetaController extends BaseController {
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			
-			int nameGroupId = jsonReq.getInt("nameGroupId");
+			int nameGroupid = jsonReq.getInt("nameGroupid");
 			
 			RdNameOperation operation = new RdNameOperation();
 			
-			boolean result = operation.checkEngName(nameGroupId);
+			boolean result = operation.checkEngName(nameGroupid);
 			
 			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {

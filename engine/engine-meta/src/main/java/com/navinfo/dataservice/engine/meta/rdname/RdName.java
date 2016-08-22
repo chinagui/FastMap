@@ -20,7 +20,7 @@ public class RdName {
 	protected Integer nameId;
 
 	/* 主键 */
-	protected Integer nameGroupId;
+	protected Integer nameGroupid;
 
 	// 语言代码
 	protected String langCode;
@@ -123,12 +123,12 @@ public class RdName {
 		this.nameId = nameId;
 	}
 
-	public Integer getNameGroupId() {
-		return nameGroupId;
+	public Integer getNameGroupid() {
+		return nameGroupid;
 	}
 
-	public void setNameGroupId(Integer nameGroupId) {
-		this.nameGroupId = nameGroupId;
+	public void setNameGroupid(Integer nameGroupid) {
+		this.nameGroupid = nameGroupid;
 	}
 
 	public String getLangCode() {
@@ -407,7 +407,7 @@ public class RdName {
 	/* toString() */
 	public String toString() {
 
-		return "nameId:" + nameId + ", nameGroupId:" + nameGroupId + ","
+		return "nameId:" + nameId + ", nameGroupId:" + nameGroupid + ","
 				+ "langCode:" + langCode + "," + "name:" + name + "," + "type:"
 				+ type + "," + "base:" + base + "," + "prefix:" + prefix + ","
 				+ "infix:" + infix + "," + "suffix:" + suffix + ","
@@ -524,7 +524,7 @@ public class RdName {
 		Integer splitFlag = toInteger(data.get("splitFlag"));
 		
 		this.setName(name);
-		this.setNameGroupId(nameGroupId);
+		this.setNameGroupid(nameGroupId);
 		this.setNameId(nameId);
 
 		this.setLangCode(langCode);
@@ -580,7 +580,7 @@ public class RdName {
 		if(obj!=null){
 			obj.setNameId(rs.getInt("name_id"));
 			
-			obj.setNameGroupId(rs.getInt("name_groupid"));
+			obj.setNameGroupid(rs.getInt("name_groupid"));
 
 			obj.setName(rs.getString("name"));
 			

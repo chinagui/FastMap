@@ -135,7 +135,7 @@ public class AngleCalculator {
 	 */
 	public static double getnMinAngle(LineSegment link1, LineSegment link2){
 		
-		double a1 = getAngle(new LngLatPoint(link1.p0.x, link1.p0.y),new LngLatPoint(link1.p1.x, link1.p1.y));
+		double a1 = getAngle (new LngLatPoint(link1.p0.x, link1.p0.y),new LngLatPoint(link1.p1.x, link1.p1.y));
 		
 		double a2 = getAngle(new LngLatPoint(link2.p0.x, link2.p0.y),new LngLatPoint(link2.p1.x, link2.p1.y));
 		

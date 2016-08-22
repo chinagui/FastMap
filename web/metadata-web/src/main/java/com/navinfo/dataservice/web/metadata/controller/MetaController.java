@@ -650,12 +650,28 @@ public class MetaController extends BaseController {
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			
-			JSONArray dataList = jsonReq.getJSONArray("data");
+			int flag = jsonReq.getInt("flag");
 			
 			RdNameOperation operation = new RdNameOperation();
 			
-			operation.teilenRdName(dataList);
-			
+			if (flag>0) {
+				JSONArray dataList = jsonReq.getJSONArray("data");
+				
+				operation.teilenRdName(dataList);
+			} else {
+				int subtaskId = jsonReq.getInt("subtaskId");
+				
+				ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+				
+				Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+				
+				FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
+				
+				JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
+				
+				operation.teilenRdNameByTask(tips);
+			}
+
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 	
@@ -682,9 +698,14 @@ public class MetaController extends BaseController {
 			int pageSize = jsonReq.getInt("pageSize");
 			int pageNum = jsonReq.getInt("pageNum");
 			
+			String name = "";
+			if (jsonReq.containsKey("name")) {
+				name = jsonReq.getString("name");
+			}
+			
 			ScRoadnameTypename typename = new ScRoadnameTypename();
 			
-			JSONObject data = typename.getNameType(pageNum,pageSize);
+			JSONObject data = typename.getNameType(pageNum,pageSize,name);
 			
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
@@ -717,6 +738,35 @@ public class MetaController extends BaseController {
 			JSONObject data = adminarea.getAdminArea(pageSize,pageNum);
 			
 			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+	
+			logger.error(e.getMessage(), e);
+	
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	/**
+	 * 查询该组下是否存在英文/葡文名
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/rdname/group")
+	public ModelAndView webEngGroup(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			int nameGroupId = jsonReq.getInt("nameGroupId");
+			
+			RdNameOperation operation = new RdNameOperation();
+			
+			boolean result = operation.checkEngName(nameGroupId);
+			
+			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {
 	
 			logger.error(e.getMessage(), e);

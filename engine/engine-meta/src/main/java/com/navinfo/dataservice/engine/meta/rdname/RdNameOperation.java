@@ -177,17 +177,12 @@ public class RdNameOperation {
 				// 判断是新增中文名还是英文/葡文名
 				if (rdName.getLangCode() == "CHI" || rdName.getLangCode() == "CHT") {
 					// 中文名
-					rdName.setCity(true);
+//					rdName.setCity(true);
 					rdName = saveName(rdName);
 				} else {
 					// 英文/葡文名
-					if (checkEngName(rdName.getNameGroupId())) {
-						// 已存在英文/葡文名
-						new Exception("已存在英文/葡文名");
-					} else {
-						rdName.setCity(true);
-						rdName = saveName(rdName);
-					}
+//					rdName.setCity(true);
+					rdName = saveName(rdName);
 				}
 			} else {
 				// 修改
@@ -274,8 +269,8 @@ public class RdNameOperation {
 		sb.append("PROCESS_FLAG = ?,");
 		sb.append("U_RECORD = ?,");
 		sb.append("U_FIELDS = ?,");
-		sb.append("SPLIT_FLAG = ?,");
-		sb.append("CITY = ?");
+		sb.append("SPLIT_FLAG = ?");
+//		sb.append("CITY = ?");
 		sb.append(" WHERE NAME_ID = ?");
 		
 		PreparedStatement pstmt = null;
@@ -322,8 +317,8 @@ public class RdNameOperation {
 			pstmt.setInt(24, rdName.getuRecord());
 			pstmt.setString(25, rdName.getuFields());
 			pstmt.setInt(26, rdName.getSplitFlag());
-			pstmt.setString(27, rdName.getCity());
-			pstmt.setLong(28, rdName.getNameId());
+//			pstmt.setString(27, rdName.getCity());
+			pstmt.setLong(27, rdName.getNameId());
 
 			pstmt.execute();
 			
@@ -364,12 +359,61 @@ public class RdNameOperation {
 		try {
 			for (int i=0;i<dataList.size();i++) {
 				JSONObject data = dataList.getJSONObject(i);
-				teilen.teilenName(data.getInt("nameId"), data.getInt("nameGroupid"), data.getString("langCode"), data.getInt("roadType"));
+				teilen.teilenName(data.getInt("nameId"), data.getInt("nameGroupId"), data.getString("langCode"), data.getInt("roadType"));
 			}
 		} catch (Exception e) {
 			throw e;
 		}
 		
+	}
+	
+	/**
+	 * 整任务拆分
+	 * @param tips
+	 * @throws Exception
+	 */
+	public void teilenRdNameByTask(JSONArray tips) throws Exception {
+		RdNameTeilen teilen = new RdNameTeilen();
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		Connection conn = null;
+		
+		try {
+			conn = DBConnector.getInstance().getMetaConnection();
+			StringBuilder sql = new StringBuilder();
+			String tmep = "";
+			if (tips.size()>0) {
+				sql.append("SELECT a.name_id,a.name_groupid,a.lang_code,a.road_type");
+				sql.append(" FROM rd_name a where a.split_flag!=1");
+				sql.append(" AND a.SRC_RESUME in (");
+				for (int i=0;i<tips.size();i++) {
+					JSONObject tipsObj = tips.getJSONObject(i);
+					sql.append(tmep);
+					tmep = ",";
+					sql.append("'");
+					sql.append(tipsObj.getString("id"));
+					sql.append("'");
+				}
+				sql.append(")");
+			}
+			
+			if (sql.length()>0) {
+				pstmt = conn.prepareStatement(sql.toString());
+				resultSet = pstmt.executeQuery();
+				while (resultSet.next()) {
+					teilen.teilenName(resultSet.getInt("name_id"), resultSet.getInt("name_groupid"), resultSet.getString("lang_code"), resultSet.getInt("road_type"));
+				}
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
+		}
 	}
 	
 }

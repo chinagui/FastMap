@@ -31,7 +31,7 @@ public class RwNodeSelector extends AbstractSelector {
 	}
 
 	@Override
-	public IRow loadById(int id, boolean isLock) throws Exception {
+	public IRow loadById(int id, boolean isLock, boolean ... loadChild) throws Exception {
 		RwNode rwNode = new RwNode();
 
 		StringBuilder sb = new StringBuilder("select * from "

@@ -55,28 +55,14 @@ public class TaskService {
 			if(!json.containsKey("tasks")){
 				return "任务批量创建"+total+"个成功，0个失败";
 			}
-			int isPushMsg=1;
-			if(json.containsKey("isPushMsg")){
-				isPushMsg=json.getInt("isPushMsg");
-			}
 			JSONArray taskArray=json.getJSONArray("tasks");
 			conn = DBConnector.getInstance().getManConnection();
-			String msgTitle="任务通知";
-			UserDeviceService userDeviceService=new UserDeviceService();
-			UserInfoService userService=UserInfoService.getInstance();
-			UserInfo userObj=userService.queryUserInfoByUserId((int)userId);
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
 				Task bean = (Task) JsonOperation.jsonToBean(taskJson,Task.class);
 				bean.setCreateUserId((int) userId);
 				createWithBean(conn,bean);
-				total+=1;
-				//消息发布
-				if(isPushMsg==1){
-					String msgContent="【Fastmap】通知："+userObj.getUserRealName()+"已分配“"+bean.getName()+"”任务；请下载数据，安排作业！";
-					userDeviceService.pushMessage(userId, msgTitle, msgContent, 
-							XingeUtil.PUSH_MSG_TYPE_PROJECT, "");
-				}				
+				total+=1;			
 			}
 			return "任务批量创建"+total+"个成功，0个失败";
 		}catch(Exception e){
@@ -86,6 +72,30 @@ public class TaskService {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	
+	public String taskPushMsg(long userId,JSONArray taskIds) throws Exception{
+		String msgTitle="任务通知";
+		UserDeviceService userDeviceService=new UserDeviceService();
+		UserInfoService userService=UserInfoService.getInstance();
+		UserInfo userObj=userService.queryUserInfoByUserId((int)userId);
+		String msgContent="";
+		//String msgContent="【Fastmap】通知："+userObj.getUserRealName()+"已分配“"+bean.getName()+"”任务；请下载数据，安排作业！";
+		userDeviceService.pushMessage(userId, msgTitle, msgContent, 
+				XingeUtil.PUSH_MSG_TYPE_PROJECT, "");
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			TaskOperation.updateStatus(conn,taskIds);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("修改失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		return "发布成功";
+		
 	}
 	/**
 	 * 根据task对象生成task数据，并修改相关表状态
@@ -112,28 +122,12 @@ public class TaskService {
 			if(!json.containsKey("tasks")){return "任务批量修改"+total+"个成功，0个失败";}
 			
 			JSONArray taskArray=json.getJSONArray("tasks");
-			
 			conn = DBConnector.getInstance().getManConnection();
-			int isPushMsg=1;
-			if(json.containsKey("isPushMsg")){
-				isPushMsg=json.getInt("isPushMsg");
-			}
-			String msgTitle="任务通知";
-			UserDeviceService userDeviceService=new UserDeviceService();
-			UserInfoService userService=UserInfoService.getInstance();
-			UserInfo userObj=userService.queryUserInfoByUserId((int)userId);
-			
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
 				Task bean=(Task) JsonOperation.jsonToBean(taskJson,Task.class);
 				TaskOperation.updateTask(conn, bean);		
 				total+=1;
-				//消息发布
-				if(isPushMsg==1){
-					String msgContent="【Fastmap】通知："+userObj.getUserRealName()+"已分配“"+bean.getName()+"”任务；请下载数据，安排作业！";
-					userDeviceService.pushMessage(userId, msgTitle, msgContent, 
-							XingeUtil.PUSH_MSG_TYPE_PROJECT, "");
-				}	
 			}			
 			return "任务批量修改"+total+"个成功，0个失败";
 		}catch(Exception e){

@@ -4,13 +4,16 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -191,10 +194,15 @@ public class RdNameSelector {
 		ResultSet resultSet = null;
 
 		Connection conn = null;
+		
 		try {
 			JSONObject result = new JSONObject();
 			
 			conn = DBConnector.getInstance().getMetaConnection();
+			
+			ScPointAdminArea scPointAdminArea = new ScPointAdminArea(conn);
+					
+			Map<String,String> adminMap = scPointAdminArea.getAdminMap();
 			
 			JSONObject param =  params.getJSONObject("params");
 			String sortby = params.getString("sortby");
@@ -228,7 +236,7 @@ public class RdNameSelector {
 			Iterator<String> keys = param.keys();
 			while (keys.hasNext()) {
 				String key = keys.next();
-				if (key.equals("name")) {
+				if (key.equals("name") && (!param.getString(key).isEmpty())) {
 					sql.append(" and a.name like '%");
 					sql.append(param.getString(key));
 					sql.append("%'");
@@ -286,7 +294,7 @@ public class RdNameSelector {
 				if (total == 0) {
 					total = resultSet.getInt("total");
 				}
-				data.add(result2Json(resultSet));
+				data.add(result2Json(resultSet, adminMap));
 			}
 			result.put("total", total);
 			result.put("data", data);
@@ -326,6 +334,9 @@ public class RdNameSelector {
 		if (rdName.getAdminId() == 214 && rdName.getNameGroupId() != 0) {
 			sb.append(" AND name_groupid=:4");
 		}
+		if (rdName.getNameId() != null) {
+			sb.append(" AND name_id !='"+rdName.getNameId()+"'");
+		}
 		try {
 			
 			conn = DBConnector.getInstance().getMetaConnection();
@@ -347,7 +358,7 @@ public class RdNameSelector {
 			JSONObject resultObj = new JSONObject();
 			
 			if (resultSet.next()) {
-				resultObj = result2Json(resultSet);
+				resultObj = result2Json(resultSet,new HashMap<String,String>());
 			}
 			
 			return resultObj;
@@ -366,11 +377,11 @@ public class RdNameSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	private JSONObject result2Json(ResultSet resultSet) throws Exception{
+	private JSONObject result2Json(ResultSet resultSet,Map<String,String> adminMap) throws Exception{
 		JSONObject rdNameObj = new JSONObject();
 		try {
 			rdNameObj.put("nameId", resultSet.getInt("NAME_ID"));
-			rdNameObj.put("nameGroupid", resultSet.getInt("NAME_GROUPID"));
+			rdNameObj.put("nameGroupId", resultSet.getInt("NAME_GROUPID"));
 			rdNameObj.put("langCode", resultSet.getString("LANG_CODE"));
 			rdNameObj.put("name", resultSet.getString("NAME"));
 			rdNameObj.put("type", resultSet.getString("TYPE"));
@@ -386,7 +397,18 @@ public class RdNameSelector {
 			rdNameObj.put("suffixPhonetic", resultSet.getString("SUFFIX_PHONETIC"));
 			rdNameObj.put("srcFlag", resultSet.getInt("SRC_FLAG"));
 			rdNameObj.put("roadType", resultSet.getInt("ROAD_TYPE"));
-			rdNameObj.put("adminId", resultSet.getInt("ADMIN_ID"));
+			
+			int adminId = resultSet.getInt("ADMIN_ID");
+			rdNameObj.put("adminId", adminId);
+			if (!adminMap.isEmpty()) {
+				if (adminMap.containsKey(String.valueOf(adminId))) {
+					rdNameObj.put("adminName", adminMap.get(String.valueOf(adminId)));
+				} else {
+					rdNameObj.put("adminName","");
+				}
+				
+			}
+			
 			rdNameObj.put("codeType", resultSet.getInt("CODE_TYPE"));
 			rdNameObj.put("voiceFile", resultSet.getString("VOICE_FILE"));
 			rdNameObj.put("srcResume", resultSet.getString("SRC_RESUME"));

@@ -11,9 +11,13 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.dao.glm.search.IxPoiSearch;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector;
 
-public class ColumCoreControl {
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+public class ColumnCoreControl {
 	
 	public void applyData(int groupId,String firstWorkItem,long userId) throws Exception{
 		// 根据组号，查出子任务号
@@ -29,6 +33,9 @@ public class ColumCoreControl {
 			
 			// 查询该作业员名下已申请的数据数量
 			for (int taskId:subTaskIds) {
+				
+				// 区分大陆，港澳任务
+				
 				Subtask subtask = apiService.queryBySubtaskId(taskId);
 				int dbId = subtask.getDbId();
 				if (dbId != oldDbId) {
@@ -116,6 +123,47 @@ public class ColumCoreControl {
 			throw e;
 		} finally {
 			DbUtils.closeQuietly(pstmt); 
+		}
+	}
+	
+	/**
+	 * 作业数据查询
+	 * @param userId
+	 * @param jsonReq
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray columnQuery(long userId ,JSONObject jsonReq) throws Exception {
+		
+		Connection conn = null;
+		
+		try {
+			int taskId= jsonReq.getInt("taskId");
+			
+			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+			
+			String type = jsonReq.getString("type");
+			int status = jsonReq.getInt("status");
+			String firstWordItem = jsonReq.getString("firstWorkItem");
+			String secondWorkItem = jsonReq.getString("secondWorkItem");
+			
+			Subtask subtask = apiService.queryBySubtaskId(taskId);
+			int dbId = subtask.getDbId();
+			
+			// 获取未提交数据的rowId
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			IxPoiDeepStatusSelector selector = new IxPoiDeepStatusSelector(conn);
+			List<String> rowIdList = selector.columnQuery(status,secondWorkItem,userId);
+			
+			IxPoiSearch poiSearch = new IxPoiSearch(conn);
+			
+			JSONArray datas = poiSearch.searchColumnPoiByRowId(firstWordItem, secondWorkItem,rowIdList, type, "CHI");
+			
+			return datas;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(conn);
 		}
 	}
 	

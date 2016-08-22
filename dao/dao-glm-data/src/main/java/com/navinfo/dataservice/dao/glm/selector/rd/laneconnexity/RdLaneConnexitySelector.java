@@ -30,7 +30,7 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 	}
 
 	@Override
-	public IRow loadById(int id, boolean isLock) throws Exception {
+	public IRow loadById(int id, boolean isLock,boolean ... loadChild) throws Exception {
 
 		RdLaneConnexity connexity = new RdLaneConnexity();
 

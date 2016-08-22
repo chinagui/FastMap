@@ -1,9 +1,6 @@
-package com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlanetopo;
+package com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlanetopodetail;
 
-import java.util.List;
-
-import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
-import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneTopoDetailSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
@@ -16,6 +13,7 @@ public class Process extends AbstractProcess<Command> {
 	
 	@Override
 	public boolean prepareData() throws Exception {
+		this.getCommand().setDelToptInfos(new RdLaneTopoDetailSelector(this.getConn()).loadByIds(this.getCommand().getTopoIds(), true, true));
 		return true;
 	}
 	@Override
@@ -28,6 +26,7 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public String exeOperation() throws Exception {
 		return new Operation(this.getCommand()).run(this.getResult());
+		
 	}
 	
 }

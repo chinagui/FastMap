@@ -7,6 +7,12 @@ import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.MultiPoint;
+import com.vividsolutions.jts.triangulate.ConformingDelaunayTriangulationBuilder;
+
 import oracle.spatial.geometry.JGeometry;
 
 /** 
@@ -139,5 +145,27 @@ public class JGeometryUtil {
 		}else{
 			throw new Exception("");
 		}
+	}
+	
+	/**
+	 * 许多离散点，需要将其构造成一个外包多边
+	 * @param coordinates 离线点的coordinate集合
+	 * @return 组成的多边形
+	 */
+	public static Geometry getPolygonFromPoint(Coordinate[] coordinates)
+	{
+		GeometryFactory gf = new GeometryFactory();
+		MultiPoint mp = gf.createMultiPoint(coordinates);
+		ConformingDelaunayTriangulationBuilder builder = new ConformingDelaunayTriangulationBuilder();
+
+		builder.setSites(mp);
+		// 实际为GeometryCollection（组成的geometry紧密相连）
+		Geometry ts = builder.getTriangles(gf);
+
+		// 以0的距离进行缓冲（因为各多边形两两共边），生成一个多边形
+		// 此时则将点云构造成了多边形
+		Geometry union = ts.buffer(2);
+		
+		return union;
 	}
 }

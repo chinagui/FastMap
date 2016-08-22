@@ -39,7 +39,7 @@ public class RdElectroniceyeSelector extends AbstractSelector {
 	 * 根据RdElectroniceye的Pid查询
 	 */
 	@Override
-	public IRow loadById(int id, boolean isLock) throws Exception {
+	public IRow loadById(int id, boolean isLock, boolean ... loadChild) throws Exception {
 		RdElectroniceye eleceye = new RdElectroniceye();
 
 		String sql = "select * from " + eleceye.tableName() + " where pid = :1 and u_record != 2 ";

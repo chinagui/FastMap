@@ -35,11 +35,11 @@ public class RdVariableSpeedTest extends InitApplication {
 	public void testGetByPid() {
 		Connection conn;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(42);
+			conn = DBConnector.getInstance().getConnectionById(43);
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByPid(ObjType.RDVARIABLESPEED, 31800146).Serialize(ObjLevel.BRIEF));
+			System.out.println(p.searchDataByPid(ObjType.RDVARIABLESPEED, 100000075).Serialize(ObjLevel.BRIEF));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -75,7 +75,19 @@ public class RdVariableSpeedTest extends InitApplication {
 	@Test
 	public void testBreakRdLink()
 	{
-		String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100008729,\"data\":{\"longitude\":116.42629419345741,\"latitude\":40.023691997213426},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDVARIABLESPEED\",\"dbId\":43,\"data\":{\"pid\":\"100000072\",\"inLinkPid\":\"578706\",\"outLinkPid\":\"578707\",\"nodePid\":\"471781\",\"vias\":[578705]}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testDeleteLink() {
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":42,\"type\":\"RDLINK\",\"objId\":100008725}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

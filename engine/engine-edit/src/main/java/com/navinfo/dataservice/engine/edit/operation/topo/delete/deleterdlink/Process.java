@@ -46,6 +46,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.voiceguide.RdVoiceguideSelect
 import com.navinfo.dataservice.dao.glm.selector.rd.warninginfo.RdWarninginfoSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
+import com.navinfo.dataservice.engine.edit.operation.topo.delete.deletecross.OpRefRdLaneConnexity;
 
 public class Process extends AbstractProcess<Command> {
 
@@ -418,6 +419,15 @@ public class Process extends AbstractProcess<Command> {
 		OpRefRdVoiceguide opRefRdVoiceguide = new OpRefRdVoiceguide(
 				this.getConn());
 		opRefRdVoiceguide.run(this.getResult(), this.getCommand().getLink());
+
+		// 可变限速
+		OpRefRdVariableSpeed opRefRdVariableSpeed = new OpRefRdVariableSpeed(
+				this.getConn());
+		opRefRdVariableSpeed.run(this.getResult(), this.getCommand().getLink());
+
+		// 车道信息
+		OpRefRdLane refRdLane = new OpRefRdLane(this.getConn());
+		refRdLane.run(this.getResult(), this.getCommand().getLink().getPid());
 	}
 
 	/**

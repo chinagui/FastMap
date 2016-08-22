@@ -5,23 +5,50 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
+import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiAddressSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiNameSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 public class IxPoiSearch implements ISearch {
 
 	private Connection conn;
+	
+	private Map<String,String> CHAINMAP;
+	
+	private Map<String,String> KINDCODEMAP;
+	
+	private Map<String,String> ADMINMAP;
+	
+	private Map<String,String> CHARACTERMAP;
+	
+	private Map<String,List<String>> NAVICOVPYMAP;
+	
+	private Map<String,String> ENGSHORTMAP;
 
 	public IxPoiSearch(Connection conn) {
 		super();
@@ -174,4 +201,466 @@ public class IxPoiSearch implements ISearch {
 		Connection conn = DBConnector.getInstance().getConnectionById(11);
 		new IxPoiSearch(conn).searchDataByTileWithGap(215890, 99229, 18, 80);
 	}
+	
+	/**
+	 * 精编作业数据查询
+	 * @param firstWordItem
+	 * @param secondWorkItem
+	 * @param rowIds
+	 * @param type
+	 * @param langCode
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray searchColumnPoiByRowId(String firstWordItem,String secondWorkItem,List<String> rowIds,String type,String langCode) throws Exception {
+		
+		JSONArray dataList = new JSONArray();
+		
+		Connection metaConn = null;
+		
+		try {
+			
+			MetadataApi apiService=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+			
+			metaConn = DBConnector.getInstance().getMetaConnection();
+			
+			this.CHAINMAP = apiService.getChainMap(metaConn);
+			
+			this.KINDCODEMAP = apiService.getKindCodeMap(metaConn);
+			
+			this.ADMINMAP =  apiService.getAdminMap(metaConn);
+			
+			this.CHARACTERMAP = apiService.getCharacterMap(metaConn);
+			
+			this.NAVICOVPYMAP = apiService.getNavicovpyMap(metaConn);
+			
+			this.ENGSHORTMAP = apiService.getEngshortMap(metaConn);
+			
+			switch (firstWordItem) {
+				case "poi_name":
+					dataList = getPoiNameData(secondWorkItem,rowIds,type,langCode);
+					break;
+				case "poi_address":
+					dataList = getPoiAddressData(secondWorkItem,rowIds,type,langCode);
+					break;
+				case "poi_englishname":
+					dataList = getPoiEngnameData(secondWorkItem,rowIds,type,langCode);
+					break;
+				case "poi_englishaddress":
+					dataList = getPoiEngaddrData(secondWorkItem,rowIds,type,langCode);
+					break;
+			}
+			return dataList;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(metaConn);
+		}
+	}
+	
+	/**
+	 * poi_name作业项查询
+	 * @param secondWorkItem
+	 * @param rowIds
+	 * @param type
+	 * @param langCode
+	 * @return
+	 * @throws Exception
+	 */
+	private JSONArray getPoiNameData(String secondWorkItem,List<String> rowIds,String type,String langCode) throws Exception {
+		
+		JSONArray dataList = new JSONArray();
+		
+		try {
+			boolean isLock = true;
+			if (type.equals("integrate")) {
+				isLock = false;
+				// TODO 返回检查错误的数据
+			}
+			
+			IxPoiSelector poiSelector = new IxPoiSelector(conn);
+			IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
+			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
+			
+			for (String rowId:rowIds) {
+				IxPoi poi = (IxPoi) poiSelector.loadByRowId(rowId, isLock);
+				List<IRow> nameList = nameSelector.loadRowsByParentId(poi.getPid(), isLock);
+				poi.setNames(nameList);
+				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class,conn).loadRowsByParentId(poi.getPid(), isLock));
+				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId);
+				
+				JSONObject poiObj = poi.Serialize(null);
+				poiObj.put("photoCount", poi.getPhotos().size());
+				poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
+				poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
+				poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				poiObj.put("classifyRules", status.getString("workItemId"));
+				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
+				
+				// 港澳作业,参考信息
+				if (langCode.equals("CHT")&&(secondWorkItem.equals("nameUnify") || secondWorkItem.equals("shortName"))) {
+					List<String> msgList = getNamerefMsg(secondWorkItem,nameList);
+					poiObj.put("namerefMsg", msgList);
+				}
+				
+				// 名称统一，查询父名称
+				if (secondWorkItem.equals("nameUnify")) {
+					poiObj.put("parentName", nameSelector.loadByIdForColumn(poi.getPid(), langCode));
+				}
+				
+				// 名称拼音作业，获取拼音组
+				if (secondWorkItem.equals("namePinYin")) {
+					List<String> pyList = new ArrayList<String>();
+					for (IRow temp:nameList) {
+						IxPoiName name = (IxPoiName) temp;
+						if (name.getLangCode().equals(langCode) && name.getNameType() == 1) {
+							if (name.getNameClass()==1||name.getNameClass()==3||name.getNameClass()==5||name.getNameClass()==8) {
+								pyList = pyConvertor(name.getName());
+							}
+						}
+						
+					}
+					poiObj.put("multiPinYin", pyList);
+				}
+				
+				dataList.add(poiObj);
+			}
+			
+			return dataList;
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * poi_address作业项查询
+	 * @param secondWorkItem
+	 * @param rowIds
+	 * @param type
+	 * @param langCode
+	 * @return
+	 * @throws Exception
+	 */
+	private JSONArray getPoiAddressData(String secondWorkItem,List<String> rowIds,String type,String langCode) throws Exception {
+		JSONArray dataList = new JSONArray();
+		
+		try {
+			boolean isLock = true;
+			if (type.equals("integrate")) {
+				isLock = false;
+				// TODO 返回检查错误的数据
+			}
+			
+			IxPoiSelector poiSelector = new IxPoiSelector(conn);
+			IxPoiAddressSelector addressSelector = new IxPoiAddressSelector(conn);
+			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
+			
+			for (String rowId:rowIds) {
+				IxPoi poi = (IxPoi) poiSelector.loadByRowId(rowId, isLock);
+				List<IRow> addressList = addressSelector.loadRowsByParentId(poi.getPid(), isLock);
+				poi.setAddresses(addressList);
+				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class,conn).loadRowsByParentId(poi.getPid(), isLock));
+				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId);
+				
+				JSONObject poiObj = poi.Serialize(null);
+				poiObj.put("photoCount", poi.getPhotos().size());
+				poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
+				poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
+				poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				poiObj.put("classifyRules", status.getString("workItemId"));
+				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
+				
+				// 港澳作业,参考信息
+				if (langCode.equals("CHT")) {
+					List<String> msgList = getAddrrefMsg(addressList);
+					poiObj.put("namerefMsg", msgList);
+				}
+				
+				// 地址拼音作业，获取拼音组
+				if (secondWorkItem.equals("addrPinyin")) {
+					JSONArray addrArray = new JSONArray();
+					for (int i=0;i<addressList.size();i++) {
+						IRow temp = addressList.get(i);
+						IxPoiAddress address = (IxPoiAddress) temp;
+						JSONObject addrObj = new JSONObject();
+						if (address.getLangCode().equals(langCode)) {
+							if (!address.getAddrname().isEmpty()) {
+								List<String> addrNameMultiPinyin = pyConvertor(address.getAddrname());
+								addrObj.put("addrNameMultiPinyin", addrNameMultiPinyin);
+							}
+							if (!address.getRoadname().isEmpty()) {
+								List<String> roadNameMultiPinyin = pyConvertor(address.getRoadname());
+								addrObj.put("roadNameMultiPinyin", roadNameMultiPinyin);
+							}
+							if (!address.getFullname().isEmpty()) {
+								List<String> fullNameMultiPinyin = pyConvertor(address.getFullname());
+								addrObj.put("fullNameMultiPinyin", fullNameMultiPinyin);
+							}
+						}
+						addrArray.add(addrObj);
+					}
+					poiObj.put("addresses", addrArray);
+				}
+				
+				dataList.add(poiObj);
+			}
+			
+			return dataList;
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	
+	/**
+	 * poi_englishname作业项查询
+	 * @param secondWorkItem
+	 * @param rowIds
+	 * @param type
+	 * @param langCode
+	 * @return
+	 * @throws Exception
+	 */
+	private JSONArray getPoiEngnameData(String secondWorkItem, List<String> rowIds, String type, String langCode) throws Exception {
+		
+		JSONArray dataList = new JSONArray();
+		
+		try {
+			boolean isLock = true;
+			if (type.equals("integrate")) {
+				isLock = false;
+				// TODO 返回检查错误的数据
+			}
+			
+			IxPoiSelector poiSelector = new IxPoiSelector(conn);
+			IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
+			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
+			
+			for (String rowId:rowIds) {
+				IxPoi poi = (IxPoi) poiSelector.loadByRowId(rowId, isLock);
+				List<IRow> nameList = nameSelector.loadRowsByParentId(poi.getPid(), isLock);
+				poi.setNames(nameList);
+				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class,conn).loadRowsByParentId(poi.getPid(), isLock));
+				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId);
+				
+				JSONObject poiObj = poi.Serialize(null);
+				poiObj.put("photoCount", poi.getPhotos().size());
+				poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
+				poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
+				poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				poiObj.put("classifyRules", status.getString("workItemId"));
+				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
+				
+				dataList.add(poiObj);
+			}
+			
+			return dataList;
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * poi_englishaddress作业项查询
+	 * @param secondWorkItem
+	 * @param rowIds
+	 * @param type
+	 * @param langCode
+	 * @return
+	 */
+	private JSONArray getPoiEngaddrData(String secondWorkItem, List<String> rowIds, String type, String langCode) throws Exception {
+		JSONArray dataList = new JSONArray();
+		
+		try {
+			boolean isLock = true;
+			if (type.equals("integrate")) {
+				isLock = false;
+				// TODO 返回检查错误的数据
+			}
+			
+			IxPoiSelector poiSelector = new IxPoiSelector(conn);
+			IxPoiAddressSelector addressSelector = new IxPoiAddressSelector(conn);
+			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
+			
+			for (String rowId:rowIds) {
+				IxPoi poi = (IxPoi) poiSelector.loadByRowId(rowId, isLock);
+				List<IRow> addressList = addressSelector.loadRowsByParentId(poi.getPid(), isLock);
+				poi.setAddresses(addressList);
+				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class,conn).loadRowsByParentId(poi.getPid(), isLock));
+				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId);
+				
+				JSONObject poiObj = poi.Serialize(null);
+				poiObj.put("photoCount", poi.getPhotos().size());
+				poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
+				poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
+				poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				poiObj.put("classifyRules", status.getString("workItemId"));
+				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
+				
+				List<String> addressesList = new ArrayList<String>();
+				for (IRow temp:addressList) {
+					IxPoiAddress addr = (IxPoiAddress) temp;
+					if (addr.getLangCode().equals("ENG")) {
+						String[] addrList = addr.getFullname().split(" ");
+						for (String addrTemp:addrList) {
+							if (ENGSHORTMAP.containsKey(addrTemp)) {
+								addressesList.add(addrTemp + "&" + ENGSHORTMAP.get(addrTemp));
+							}
+						}
+						break;
+					}
+				}
+				poiObj.put("addressList", addressesList);
+				
+				dataList.add(poiObj);
+			}
+			return dataList;
+		} catch (Exception e) {
+			throw e;
+		}
+			
+	}
+	
+	/**
+	 * 获取poi_name作业，港澳作业中的参考信息
+	 * @param secondWorkItem
+	 * @param nameList
+	 * @return
+	 * @throws Exception
+	 */
+	private List<String> getNamerefMsg (String secondWorkItem,List<IRow> nameList) throws Exception {
+
+		List<String> msgList = new ArrayList<String>();
+		String name = "";
+		try {
+			for (IRow temp:nameList) {
+				IxPoiName ixPoiName = (IxPoiName) temp;
+				if (secondWorkItem.equals("nameUnify")) {
+					if (ixPoiName.getLangCode().equals("CHT") && ixPoiName.getNameType()==1 && ixPoiName.getNameClass()==1) {
+						name = ixPoiName.getName();
+					}
+				} else if (secondWorkItem.equals("shortName")) {
+					if (ixPoiName.getLangCode().equals("CHT") && ixPoiName.getNameType()==1 && ixPoiName.getNameClass()==5) {
+						name = ixPoiName.getName();
+					}
+				}
+			}
+			
+			for (int i=0;i<name.length();i++) {
+				if (CHARACTERMAP.containsKey(name.substring(i, i+1))) {
+					String correct = CHARACTERMAP.get(name.substring(i, i+1));
+					if (correct.isEmpty()) {
+						correct = "";
+					} 
+					msgList.add(name.substring(i, i+1) + "&" + correct);
+				}
+			}
+			return msgList;
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * 获取poi_address作业，港澳作业中的参考信息
+	 * @param addressList
+	 * @return
+	 * @throws Exception
+	 */
+	private List<String> getAddrrefMsg(List<IRow>addressList) throws Exception {
+		
+		String strRoad = "省名|市名|区县名|街道名|小区名|街巷名";
+		String strAddr = "标志物名|前缀|门牌号|类型名|子号|后缀|附属设施名|楼栋号|楼层|楼门号|房间号|附加信息";
+		
+		List<String> msgList = new ArrayList<String>();
+		
+		try {
+			for (IRow temp:addressList) {
+				IxPoiAddress addr = (IxPoiAddress) temp;
+				if (addr.getLangCode().equals("CHT")) {
+					String addrName = addr.getAddrname();
+					if (!addrName.isEmpty()) {
+						String[] addrNamelis = addrName.split("|");
+						String[] strAddrlis = strAddr.split("|");
+						for (int i=0;i<addrNamelis.length;i++) {
+							String addrNameSingle =addrNamelis[i];
+							if (!addrNameSingle.isEmpty()) {
+								for (int j=0;j<addrNameSingle.length();j++) {
+									if (CHARACTERMAP.containsKey(addrNameSingle.substring(i, i+1))) {
+										String correct = CHARACTERMAP.get(addrNameSingle.substring(i, i+1));
+										if (correct.isEmpty()) {
+											correct = "";
+										} 
+										msgList.add(strAddrlis[i] + "&"+ addrNameSingle.substring(j, j+1)+ "&" + correct);
+									}
+								}
+							}
+						}
+					}
+					
+					String roadName = addr.getRoadname();
+					if (!roadName.isEmpty()) {
+						String[] roadNamelis = roadName.split("|");
+						String[] strRoadlis = strRoad.split("|");
+						for (int i=0;i<roadNamelis.length;i++) {
+							String roadNameSingle =roadNamelis[i];
+							if (!roadNameSingle.isEmpty()) {
+								for (int j=0;j<roadNameSingle.length();j++) {
+									if (CHARACTERMAP.containsKey(roadNameSingle.substring(i, i+1))) {
+										String correct = CHARACTERMAP.get(roadNameSingle.substring(i, i+1));
+										if (correct.isEmpty()) {
+											correct = "";
+										} 
+										msgList.add(strRoadlis[i] + "&"+ roadNameSingle.substring(j, j+1)+ "&" + correct);
+									}
+								}
+							}
+						}
+					}
+					
+					break;
+				}
+			}
+			
+			return msgList;
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * 获取多音字拼音组
+	 * @param word
+	 * @return
+	 * @throws Exception
+	 */
+	private List<String> pyConvertor(String word) throws Exception{
+		List<String> result = new ArrayList<String>();
+		try {
+			word.replace(" ", "");
+			for (int i=0;i<word.length();i++) {
+				List<String> sigleWordList = new ArrayList<String>();
+				if (NAVICOVPYMAP.containsKey(String.valueOf(word.charAt(i)))) {
+					List<String> sigleWord = NAVICOVPYMAP.get(String.valueOf(word.charAt(i)));
+					if (sigleWord.size()>1) {
+						sigleWordList.add(Integer.toString(i));
+						sigleWordList.add(String.valueOf(word.charAt(i)));
+						for (String sigelTemp:sigleWord) {
+							String tmpPinyin = String.valueOf(sigelTemp.charAt(0)).toUpperCase() + sigelTemp.substring(1);
+							sigleWordList.add(tmpPinyin);
+						}
+						
+						result.addAll(sigleWordList);
+					}
+					
+					
+				}
+			}
+			
+			return null;
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
 }

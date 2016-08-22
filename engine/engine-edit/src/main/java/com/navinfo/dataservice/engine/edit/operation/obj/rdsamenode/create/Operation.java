@@ -178,13 +178,6 @@ public class Operation implements IOperation {
 					zoneCommand, result, conn);
 			zoneProcess.innerRun();
 			break;
-		case RWNODE:
-			com.navinfo.dataservice.engine.edit.operation.topo.move.moverwnode.Command rwCommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.moverwnode.Command(
-					updateContent, command.getRequester());
-			com.navinfo.dataservice.engine.edit.operation.topo.move.moverwnode.Process rwProcess = new com.navinfo.dataservice.engine.edit.operation.topo.move.moverwnode.Process(
-					rwCommand, result, conn);
-			rwProcess.innerRun();
-			break;
 		case LUNODE:
 			com.navinfo.dataservice.engine.edit.operation.topo.move.movelunode.Command luCommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.movelunode.Command(
 					updateContent, command.getRequester());
@@ -259,15 +252,6 @@ public class Operation implements IOperation {
 				break;
 			case ADNODE:
 				if (movePartNodeMap.containsKey(ObjType.RDNODE)) {
-					throw new Exception("node不是该同一关系中的主要素，不允许移动操作");
-				}
-				else
-				{
-					moveNodeFromNodeMap(type,nodePid,movePartNodeMap,result);
-				}
-				break;
-			case RWNODE:
-				if (movePartNodeMap.containsKey(ObjType.RDNODE) || movePartNodeMap.containsKey(ObjType.ADNODE)) {
 					throw new Exception("node不是该同一关系中的主要素，不允许移动操作");
 				}
 				else

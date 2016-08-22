@@ -38,7 +38,7 @@ public class CheckRuleLoader {
 		if (!map.containsKey(ruleCode)) {
 			synchronized(this) {
 				if (!map.containsKey(ruleCode)) {					
-					String sql = "SELECT RULE_CODE, RULE_LOG, SEVERITY, PRE_ACCESSOR_NAME,POST_ACCESSOR_TYPE,POST_ACCESSOR_NAME,POST_VARIABLES FROM CK_RULE where RULE_CODE = ? AND RULE_STATUS='E'";
+					String sql = "SELECT RULE_CODE, RULE_LOG, SEVERITY, PRE_ACCESSOR_TYPE,PRE_ACCESSOR_NAME,PRE_VARIABLES,POST_ACCESSOR_TYPE,POST_ACCESSOR_NAME,POST_VARIABLES FROM CK_RULE where RULE_CODE = ? AND RULE_STATUS='E'";
 					PreparedStatement pstmt = null;
 					ResultSet resultSet = null;
 					Connection conn = null;
@@ -50,12 +50,14 @@ public class CheckRuleLoader {
 						if (resultSet.next()) {
 							String ruleLog = resultSet.getString("RULE_LOG");	
 							int severity = resultSet.getInt("SEVERITY");							
+							String preAccessorType = resultSet.getString("PRE_ACCESSOR_TYPE");							
 							String preAccessorName = resultSet.getString("PRE_ACCESSOR_NAME");
+							String preVariables = resultSet.getString("PRE_VARIABLES");
 							//ACCESSOR_TYPE,ACCESSOR_NAME,VARIABLES
 							String postAccessorType = resultSet.getString("POST_ACCESSOR_TYPE");							
 							String postAccessorName = resultSet.getString("POST_ACCESSOR_NAME");
 							String postVariables = resultSet.getString("POST_VARIABLES");
-							CheckRule myCheckRule = new CheckRule(ruleCode,ruleLog,severity,preAccessorName,postAccessorType,postAccessorName,postVariables);							
+							CheckRule myCheckRule = new CheckRule(ruleCode,ruleLog,severity,preAccessorType,preAccessorName,preVariables,postAccessorType,postAccessorName,postVariables);							
 							map.put(ruleCode,myCheckRule);					
 						} 
 					} catch (Exception e) {

@@ -12,6 +12,7 @@ import com.navinfo.dataservice.commons.util.RomanUtils;
 import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 /**
@@ -271,11 +272,21 @@ public class RdNameImportor {
 			while (keys.hasNext()) {
 				String key = (String) keys.next();
 				
-				Field f = rdName.getClass().getDeclaredField(key);
+				if (JSONNull.getInstance() ==  params.get(key)) {
+					continue;
+				}
+				
+				try {
+					Field f = rdName.getClass().getDeclaredField(key);
+					
+					f.setAccessible(true);
 
-				f.setAccessible(true);
-
-				f.set(rdName, params.get(key));
+					
+					
+					f.set(rdName, params.get(key));
+				} catch (NoSuchFieldException e)  {
+					continue;
+				}
 			}
 			
 			rdName.setName(ExcelReader.h2f(rdName.getName()));

@@ -75,7 +75,8 @@ public class RdSameLinkTest extends InitApplication{
 	
 	@Test
 	public void createTest_2() throws Exception {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDSAMELINK\",\"dbId\":42,\"data\":{\"inLinkPid\":607312,\"nodePid\": 742411,\"outLinkPid\":607304}}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"RDSAMELINK\",\"data\":{\"links\":[{\"linkPid\":100008802,\"type\":\"RDLINK\",\"isMain\":1},{\"linkPid\":100036565,\"type\":\"ADLINK\",\"isMain\":0}]}}";
+		
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);
 		String msg = t.run();

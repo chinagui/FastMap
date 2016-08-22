@@ -105,7 +105,7 @@ public class RdNameImportor {
 		RdName rdNameNew = operation.saveName(rdName);
 		// 对道路名拆分
 		RdNameTeilen teilen = new RdNameTeilen();
-		teilen.teilenName(rdNameNew.getNameId(), rdNameNew.getNameGroupId(),
+		teilen.teilenName(rdNameNew.getNameId(), rdNameNew.getNameGroupid(),
 				rdNameNew.getLangCode(), rdNameNew.getRoadType());
 
 	}

@@ -4,6 +4,7 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -24,6 +25,7 @@ import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -364,6 +366,53 @@ public class GridService {
 			}
 
 			return gridMerge;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询可融合grid失败:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public Page subtaskList(int gridId,int stage,final int curPageNum,final int pageSize) throws ServiceException {
+		Connection conn = null;
+		try {
+
+			conn = DBConnector.getInstance().getManConnection();
+			// 根据输入girdId,stage获取子任务列表，
+			String selectSql = "select s.subtask_id, s.name, s.type,s.status from subtask s, subtask_grid_mapping sgm"
+					+ " where sgm.subtask_id = s.subtask_id"
+					+ " and sgm.grid_id = " + gridId
+					+ " and s.stage = " + stage;
+
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
+				public Page handle(ResultSet rs) throws SQLException {
+					List<HashMap<Object, Object>> list = new ArrayList<HashMap<Object, Object>>();
+					Page page = new Page(curPageNum);
+				    page.setPageSize(pageSize);
+				    int total = 0;
+					while (rs.next()) {
+						if(total==0){
+							total=rs.getInt("TOTAL_RECORD_NUM_");
+						}
+						HashMap<Object, Object> map = new HashMap<Object, Object>();
+						map.put("subtaskId", rs.getInt("subtask_id"));
+						map.put("name", rs.getInt("name"));
+						map.put("type", rs.getInt("type"));
+						map.put("status", rs.getInt("status"));
+						list.add(map);
+					}
+					page.setTotalCount(total);
+					page.setResult(list);
+					return page;
+				}
+
+			};
+
+			return run.query(curPageNum, pageSize, conn, selectSql, rsHandler);
 			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

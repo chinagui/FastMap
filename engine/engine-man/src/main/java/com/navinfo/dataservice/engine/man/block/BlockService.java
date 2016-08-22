@@ -65,7 +65,7 @@ public class BlockService {
 			String createSql = "insert into block_man (BLOCK_MAN_ID, CREATE_USER_ID,BLOCK_ID,COLLECT_GROUP_ID, COLLECT_PLAN_START_DATE,"
 					+ "COLLECT_PLAN_END_DATE,DAY_EDIT_GROUP_ID,DAY_EDIT_PLAN_START_DATE,DAY_EDIT_PLAN_END_DATE,MONTH_EDIT_GROUP_ID,"
 					+ "MONTH_EDIT_PLAN_START_DATE,MONTH_EDIT_PLAN_END_DATE,DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,"
-					+ "MONTH_PRODUCE_PLAN_START_DATE,MONTH_PRODUCE_PLAN_END_DATE,DESCP) "
+					+ "MONTH_PRODUCE_PLAN_START_DATE,MONTH_PRODUCE_PLAN_END_DATE,DESCP,STATUS) "
 					+ "values(BLOCK_MAN_SEQ.NEXTVAL,?,?,?,to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?,"
 					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?,to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
 					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
@@ -86,7 +86,7 @@ public class BlockService {
 						block.getString("monthEditPlanStartDate"), block.getString("monthEditPlanEndDate"),
 						block.getString("dayProducePlanStartDate"), block.getString("dayProducePlanEndDate"),
 						block.getString("monthProducePlanStartDate"), block.getString("monthProducePlanEndDate"),
-						block.getString("descp") };
+						block.getString("descp"),2};
 				param[i] = obj;
 				blockIdList.add(block.getInt("blockId"));
 			}
@@ -112,11 +112,12 @@ public class BlockService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			JSONArray blockArray = json.getJSONArray("blocks");
+			List blockIdList=new ArrayList();
 			int updateCount = 0;
 			String createSql = "update block_man set COLLECT_GROUP_ID=?, COLLECT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
 					+ "COLLECT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_GROUP_ID=?,DAY_EDIT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_EDIT_GROUP_ID=?,"
 					+ "MONTH_EDIT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_EDIT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
-					+ "MONTH_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'), DESCP=? where BLOCK_ID=?";
+					+ "MONTH_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'), DESCP=?,STATUS=? where BLOCK_ID=?";
 
 			Object[][] param = new Object[blockArray.size()][];
 			List<Integer> updateBlockList = BlockOperation.queryOperationBlocks(conn, blockArray);
@@ -129,12 +130,16 @@ public class BlockService {
 							bean.getDayEditPlanEndDate(), bean.getMonthEditGroupId(), bean.getMonthEditPlanStartDate(),
 							bean.getMonthEditPlanEndDate(), bean.getDayProducePlanStartDate(),
 							bean.getDayProducePlanEndDate(), bean.getMonthProducePlanStartDate(),
-							bean.getMonthProducePlanStartDate(), bean.getDescp(), bean.getBlockId() };
+							bean.getMonthProducePlanStartDate(), bean.getDescp(), bean.getStatus(),bean.getBlockId() };
 					param[i] = obj;
+					if(1==bean.getStatus()){
+						blockIdList.add(bean.getBlockId());
+					}
 				}
 			}
 
 			int[] rows = run.batch(conn, createSql, param);
+			BlockOperation.updateMainBlock(conn,blockIdList);
 			updateCount = rows.length;
 			return updateCount;
 
@@ -373,9 +378,9 @@ public class BlockService {
 						selectSql += " and t.block_name like '%" + conditionJson.getString(key) + "%'";
 					}
 					if ("status".equals(key)) {
-						String planningStatus = ((conditionJson.getJSONArray(key).toString()).replace('[', '('))
+						String status = ((conditionJson.getJSONArray(key).toString()).replace('[', '('))
 								.replace(']', ')');
-						selectSql += " and t.plan_status in " + planningStatus;
+						selectSql += " and m.status in " + status;
 					}
 				}
 			}
@@ -451,9 +456,9 @@ public class BlockService {
 						selectSql += " and t.block_name like '%" + conditionJson.getString(key) + "%'";
 					}
 					if ("status".equals(key)) {
-						String planningStatus = ((conditionJson.getJSONArray(key).toString()).replace('[', '('))
+						String status = ((conditionJson.getJSONArray(key).toString()).replace('[', '('))
 								.replace(']', ')');
-						selectSql += " and t.plan_status in " + planningStatus;
+						selectSql += " and t.status in " + status;
 					}
 				}
 			}

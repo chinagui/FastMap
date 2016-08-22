@@ -236,10 +236,40 @@ public class commonTest extends InitApplication {
 	@Test
 	public void createTest_1() throws Exception {
 
-		String parameter = "{\"command\":\"BATCH\",\"dbId\":42,\"type\":\"RDLINKSPEEDLIMIT\",\"direct\":2,\"linkPids\":[100008842,100008844,100008845],\"linkSpeedLimit\":{\"speedType\":0,\"fromSpeedLimit\":100,\"fromLimitSrc\":2,\"toSpeedLimit\":100,\"toLimitSrc\":3,\"speedClassWork\":1}}";
+		String parameter = "{\"command\":\"BATCH\",\"dbId\":42,\"type\":\"RDLINKSPEEDLIMIT\",\"data\":{\"direct\":2,\"linkPids\":[100008842,100008844,100008845],\"linkSpeedLimit\":{\"speedType\":0,\"fromSpeedLimit\":100,\"fromLimitSrc\":2,\"toSpeedLimit\":100,\"toLimitSrc\":3,\"speedClassWork\":1}}}";
 
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
+	
+		@Test
+	public void createTest_0822() throws Exception {
+
+		String parameter = "{\"command\":\"BATCH\",\"type\":\"RDLINKSPEEDLIMIT\",\"dbId\":42,\"data\":{\"linkPids\":[88026339,732545,735601],\"direct\":2,\"linkSpeedLimit\":{\"speedType\":0,\"fromSpeedLimit\":60,\"toSpeedLimit\":0,\"speedClassWork\":1}}}";
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void test_List_Sub() throws Exception {
+		List<Integer> listPid =new ArrayList<Integer>();
+		
+		listPid.add(1);
+		listPid.add(2);
+		listPid.add(3);
+		listPid.add(4);
+		
+		
+	
+		List<Integer> linkPidTemp = listPid.subList(0, 2);
+
+	
+
+		listPid.subList(0, 2).clear();
+		
+		int count=listPid.size();
+	}
+	
 }

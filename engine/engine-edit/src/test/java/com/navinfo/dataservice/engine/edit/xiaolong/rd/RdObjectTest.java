@@ -15,6 +15,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.search.RdObjectSearch;
+import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdObjectSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -136,6 +137,34 @@ public class RdObjectTest extends InitApplication {
 			List<SearchSnapshot> data = search.searchDataByTileWithGap(107892, 49725, 17, 80);
 			
 			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	@Test
+	public void testGetRdObjectName()
+	{
+		Connection conn;
+		try {
+			
+			String parameter = "{\"type\":\"RDOBJECTNAME\",\"dbId\":42,\"data\":{\"pid\":}}";
+			
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String objType = jsonReq.getString("type");
+
+			int dbId = jsonReq.getInt("dbId");
+
+			JSONObject data = jsonReq.getJSONObject("data");
+
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			System.out.println(p.searchDataByCondition(ObjType.valueOf(objType), data));
 
 		} catch (Exception e) {
 			e.printStackTrace();

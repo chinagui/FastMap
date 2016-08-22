@@ -99,7 +99,7 @@ public class RdName {
 	/* 作业状态*/
 	protected int   processFlag=0;
 	/*更新记录*/
-	protected int   uRecord;
+	protected int   uRecord = 1;
 	/*更新字段*/
 	protected String   uFields;
 	/*地级市名称 add by wangdongbin*/

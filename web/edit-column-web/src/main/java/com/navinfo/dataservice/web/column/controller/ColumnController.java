@@ -10,6 +10,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.job.iface.JobApi;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.control.column.core.ColumnCoreControl;
@@ -96,6 +98,49 @@ public class ColumnController extends BaseController {
 
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
+	}
+	
+	/**
+	 * 精编保存接口
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/deep/columnSave")
+	public ModelAndView columnSave(HttpServletRequest request)
+			throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
+			
+			int taskId = dataJson.getInt("taskId");
+			JSONArray data = dataJson.getJSONArray("data");
+			String secondWorkItem = dataJson.getString("secondWorkItem");
+			
+			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			
+			JSONObject jobDataJson=new JSONObject();
+			jobDataJson.put("taskId", taskId);
+			jobDataJson.put("userId", userId);
+			jobDataJson.put("data", data);
+			jobDataJson.put("secondWorkItem", secondWorkItem);
+			
+			long jobId=jobApi.createJob("columnSaveJob", jobDataJson, userId, "精编保存");
+			
+			
+			return new ModelAndView("jsonView", success(jobId));
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+		
 	}
 
 }

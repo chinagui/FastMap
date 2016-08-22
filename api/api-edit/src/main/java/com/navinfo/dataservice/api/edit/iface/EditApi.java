@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.api.edit.iface;
 
+import net.sf.json.JSONObject;
+
 /** 
 * @ClassName: EditApi 
 * @author Xiao Xiaowen 
@@ -9,4 +11,5 @@ package com.navinfo.dataservice.api.edit.iface;
 */
 public interface EditApi {
 	
+	public void columnSave(JSONObject dataObj) throws Exception; 
 }

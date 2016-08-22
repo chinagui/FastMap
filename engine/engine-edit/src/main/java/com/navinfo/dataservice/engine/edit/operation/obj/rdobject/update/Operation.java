@@ -3,10 +3,13 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObject;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectInter;
@@ -14,9 +17,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectLink;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectRoad;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
-import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterNode;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdInterSelector;
+import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoad;
+import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoadLink;
+import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdObjectSelector;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -154,9 +157,7 @@ public class Operation implements IOperation {
 
 			RdObjectLink objLink = (RdObjectLink) link;
 
-			if (subObj == null) {
-				result.insertObject(objLink, ObjStatus.DELETE, objLink.getLinkPid());
-			} else if (!subObj.contains(objLink.getLinkPid())) {
+			if (subObj == null || !subObj.contains(objLink.getLinkPid())) {
 				result.insertObject(objLink, ObjStatus.DELETE, objLink.getLinkPid());
 			} else {
 				subObj.remove((Integer) objLink.getLinkPid());
@@ -172,6 +173,164 @@ public class Operation implements IOperation {
 			objLink.setPid(rdObject.getPid());
 
 			result.insertObject(objLink, ObjStatus.INSERT, objLink.getLinkPid());
+		}
+	}
+
+	/**
+	 * 根据road更新CRF对象：如果属于对象的link制作成了CRF
+	 * Road，则需要讲CRF对象link子表数据删除，CRF对象road子表新增一条数据
+	 * 
+	 * @param road
+	 *            road对象
+	 * @param result
+	 *            结果集
+	 * @throws Exception
+	 */
+	public void updateRdObjectForRdRoad(RdRoad road, Result result) throws Exception {
+		List<IRow> roadLinks = road.getLinks();
+
+		List<Integer> linkPidList = new ArrayList<>();
+
+		for (IRow row : roadLinks) {
+			RdRoadLink roadLink = (RdRoadLink) row;
+
+			linkPidList.add(roadLink.getLinkPid());
+		}
+
+		RdObjectSelector selector = new RdObjectSelector(conn);
+
+		Map<String, RdObject> rdObjectMap = selector.loadRdObjectByPidAndType(StringUtils.getInteStr(linkPidList),
+				ObjType.RDLINK, true);
+
+		for (Map.Entry<String, RdObject> entry : rdObjectMap.entrySet()) {
+			String tmpPids = entry.getKey();
+
+			List<Integer> tmpPidList = StringUtils.getIntegerListByStr(tmpPids);
+			
+			RdObject rdObject = entry.getValue();
+			
+			List<IRow> links = rdObject.getLinks();
+			
+			//是否需要将road的link升级
+			boolean updateRdObject = false;
+			
+			for(IRow row : links)
+			{
+				RdObjectLink objLink = (RdObjectLink) row;
+				
+				for(Integer tmpPid : tmpPidList)
+				{
+					if (objLink.getLinkPid() == tmpPid) {
+						result.insertObject(objLink, ObjStatus.DELETE, objLink.getLinkPid());
+						updateRdObject = true;
+					}
+				}
+			}
+			
+			if(updateRdObject)
+			{
+				List<IRow> roads = rdObject.getRoads();
+				
+				List<Integer> roadPids = new ArrayList<>();
+				
+				for(IRow row : roads)
+				{
+					RdObjectRoad roadObject = (RdObjectRoad) row;
+					
+					roadPids.add(roadObject.getRoadPid());
+				}
+				
+				//传入的road如果之前在crf对象中时不做处理，不在的话加入crf对象的road子表中
+				if(!roadPids.contains(road.getPid()))
+				{
+					RdObjectRoad objRoad = new RdObjectRoad();
+					
+					objRoad.setPid(rdObject.getPid());
+					
+					objRoad.setRoadPid(road.getPid());
+					
+					result.insertObject(objRoad, ObjStatus.INSERT, objRoad.getRoadPid());
+				}
+			}
+		}
+	}
+	
+	/**
+	 * 根据inter更新CRF对象：如果属于对象的link制作成了CRF
+	 * inter，则需要讲CRF对象link子表数据删除，CRF对象inter子表新增一条数据
+	 * 
+	 * @param inter
+	 *            inter对象
+	 * @param result
+	 *            结果集
+	 * @throws Exception
+	 */
+	public void updateRdObjectForRdInter(RdInter inter, Result result) throws Exception {
+		List<IRow> interLinks = inter.getLinks();
+
+		List<Integer> linkPidList = new ArrayList<>();
+
+		for (IRow row : interLinks) {
+			RdInterLink interLink = (RdInterLink) row;
+
+			linkPidList.add(interLink.getLinkPid());
+		}
+
+		RdObjectSelector selector = new RdObjectSelector(conn);
+
+		Map<String, RdObject> rdObjectMap = selector.loadRdObjectByPidAndType(StringUtils.getInteStr(linkPidList),
+				ObjType.RDLINK, true);
+
+		for (Map.Entry<String, RdObject> entry : rdObjectMap.entrySet()) {
+			String tmpPids = entry.getKey();
+
+			List<Integer> tmpPidList = StringUtils.getIntegerListByStr(tmpPids);
+			
+			RdObject rdObject = entry.getValue();
+			
+			List<IRow> links = rdObject.getLinks();
+			
+			//是否需要将road的link升级
+			boolean updateRdObject = false;
+			
+			for(IRow row : links)
+			{
+				RdObjectLink objLink = (RdObjectLink) row;
+				
+				for(Integer tmpPid : tmpPidList)
+				{
+					if (objLink.getLinkPid() == tmpPid) {
+						result.insertObject(objLink, ObjStatus.DELETE, objLink.getLinkPid());
+						updateRdObject = true;
+					}
+				}
+			}
+			
+			if(updateRdObject)
+			{
+				List<IRow> inters = rdObject.getInters();
+				
+				List<Integer> interPids = new ArrayList<>();
+				
+				for(IRow row : inters)
+				{
+					RdObjectInter interObject = (RdObjectInter) row;
+					
+					interPids.add(interObject.getInterPid());
+				}
+				
+				//传入的road如果之前在crf对象中时不做处理，不在的话加入crf对象的road子表中
+				if(!interPids.contains(inter.getPid()))
+				{
+					RdObjectRoad objRoad = new RdObjectRoad();
+					
+					objRoad.setPid(rdObject.getPid());
+					
+					objRoad.setRoadPid(inter.getPid());
+					
+					result.insertObject(objRoad, ObjStatus.INSERT, objRoad.getRoadPid());
+				}
+			}
 		}
 	}
 }

@@ -40,8 +40,6 @@ public class Command extends AbstractCommand implements ICommand {
 		this.setDbId(json.getInt("dbId"));
 		this.setPid(json.getInt("pid"));
 		this.setRuleId(json.getString("ruleId"));
-
-		
 	}
 
 	public int getPid() {

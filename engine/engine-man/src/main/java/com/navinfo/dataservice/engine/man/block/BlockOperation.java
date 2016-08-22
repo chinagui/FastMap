@@ -263,8 +263,13 @@ public class BlockOperation {
 			if (!blockList.isEmpty()) {
 				String BlockIds = "(";
 				BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
-
+				//更新block表
 				String updateSql = "update block" + " set plan_status = 2" + " where block_id in " + BlockIds;
+
+				run.update(conn, updateSql);
+				
+				//更新block_man
+				updateSql = "update block_man" + " set status = 0" + " where latest = 1 and block_id in " + BlockIds;
 
 				run.update(conn, updateSql);
 			}

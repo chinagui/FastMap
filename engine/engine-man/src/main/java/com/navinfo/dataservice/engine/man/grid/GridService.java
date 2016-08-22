@@ -20,11 +20,13 @@ import org.apache.log4j.Logger;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.man.model.Grid;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -379,15 +381,15 @@ public class GridService {
 	public Page subtaskList(int gridId,int stage,final int curPageNum,final int pageSize) throws ServiceException {
 		Connection conn = null;
 		try {
-
 			conn = DBConnector.getInstance().getManConnection();
-			// 根据输入girdId,stage获取子任务列表，
-			String selectSql = "select s.subtask_id, s.name, s.type,s.status from subtask s, subtask_grid_mapping sgm"
-					+ " where sgm.subtask_id = s.subtask_id"
-					+ " and sgm.grid_id = " + gridId
-					+ " and s.stage = " + stage;
-
 			QueryRunner run = new QueryRunner();
+
+			String selectSql = "select s.SUBTASK_ID, s.NAME, s.TYPE,s.STATUS from SUBTASK s, SUBTASK_GRID_MAPPING sgm"
+					+ " where sgm.SUBTASK_ID = s.SUBTASK_ID"
+					+ " and sgm.GRID_ID = " + gridId
+					+ " and s.STAGE = " + stage;
+			
+
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
 				public Page handle(ResultSet rs) throws SQLException {
 					List<HashMap<Object, Object>> list = new ArrayList<HashMap<Object, Object>>();
@@ -400,7 +402,7 @@ public class GridService {
 						}
 						HashMap<Object, Object> map = new HashMap<Object, Object>();
 						map.put("subtaskId", rs.getInt("subtask_id"));
-						map.put("name", rs.getInt("name"));
+						map.put("name", rs.getString("name"));
 						map.put("type", rs.getInt("type"));
 						map.put("status", rs.getInt("status"));
 						list.add(map);
@@ -409,15 +411,14 @@ public class GridService {
 					page.setResult(list);
 					return page;
 				}
-
 			};
 
-			return run.query(curPageNum, pageSize, conn, selectSql, rsHandler);
+			return run.query(curPageNum, pageSize,conn, selectSql,rsHandler);
 			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("查询可融合grid失败:" + e.getMessage(), e);
+			throw new ServiceException("查询grid所在子任务:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}

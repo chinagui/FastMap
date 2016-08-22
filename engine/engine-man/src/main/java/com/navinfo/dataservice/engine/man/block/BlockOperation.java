@@ -512,7 +512,7 @@ public class BlockOperation {
 			String BlockIds = "(";
 			BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
 			
-			String selectSql = "select block_id from block_man where block_id in " + BlockIds;
+			String selectSql = "select block_id from block_man where status!=0 and block_id in " + BlockIds;
 
 			PreparedStatement stmt = conn.prepareStatement(selectSql);
 			ResultSet rs = stmt.executeQuery();
@@ -530,4 +530,32 @@ public class BlockOperation {
 		}
 	}
 
+	
+	
+	/**
+	 * @param conn
+	 * @param blockList
+	 * @throws Exception
+	 */
+	public static void updateMainBlock(Connection conn, List<Integer> blockList) throws Exception {
+		// TODO Auto-generated method stub
+		try {
+			QueryRunner run = new QueryRunner();
+			if (!blockList.isEmpty()) {
+				String BlockIds = "(";
+				BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
+
+				String updateSql = "update block" + " set plan_status = 1" + " where block_id in " + BlockIds;
+
+				run.update(conn, updateSql);
+			}
+			
+			//发布消息
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("更新失败，原因为:" + e.getMessage(), e);
+		}
+	}
 }

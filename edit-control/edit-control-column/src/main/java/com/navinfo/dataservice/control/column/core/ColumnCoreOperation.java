@@ -36,7 +36,7 @@ public class ColumnCoreOperation {
 			int userId=(int) mapParams.get("userId");
 			List ckRules=(List) mapParams.get("ckRules");
 			List classifyRules=(List) mapParams.get("classifyRules");
-			List dataList=(List) mapParams.get("data"); //每条数据需包含子任务号，pid
+			List dataList=(List) mapParams.get("data"); //每条数据需包含子任务号，rowId
 			
 			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 			int oldDbId = 0;

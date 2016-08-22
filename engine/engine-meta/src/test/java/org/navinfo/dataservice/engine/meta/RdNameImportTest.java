@@ -3,11 +3,19 @@ package org.navinfo.dataservice.engine.meta;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.navinfo.dataservice.api.fcc.iface.FccApi;
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
+import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /** 
  * @ClassName: RdNameImportTest.java
@@ -18,57 +26,85 @@ import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
  */
 public class RdNameImportTest {
 	
-	
-	@Test
-	public static void main(String[] args) {
+	@Before
+	public void before() {
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-				new String[] { "dubbo-consumer.xml"});
+				new String[] { "dubbo-consumer-datahub-test.xml" });
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
-		RdNameImportor importor = new RdNameImportor();
+	}
+	
+	
+//	@Test
+//	public static void main(String[] args) {
+//		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+//				new String[] { "dubbo-consumer.xml"});
+//		context.start();
+//		new ApplicationContextUtil().setApplicationContext(context);
+//		RdNameImportor importor = new RdNameImportor();
+//		try {
+//			/*importor.importName("A45", 116.49266, 40.20926, "test_imp1");
+//			importor.importName("测试高速公路", 116.49266, 40.20926, "test_imp1");
+//			importor.importName("测试高架路", 116.49266, 40.20926, "test_imp1");
+//			importor.importName("测试高架桥", 116.49266, 40.20926, "test_imp1");
+//			importor.importName("测试快速路", 116.49266, 40.20926, "test_imp1");
+//			
+//			importor.importName("N", 116.49266, 40.20926, "test_imp1");
+//			importor.importName("n", 116.49266, 40.20926, "test_imp1");
+//			importor.importName("NO", 116.49266, 40.20926, "test_imp1");
+//			importor.importName("no", 116.49266, 40.20926, "test_imp1");
+//			importor.importName("No", 116.49266, 40.20926, "test_imp1");
+//			importor.importName("无道路名", 116.49266, 40.20926, "test_imp1");
+//			importor.importName("无", 116.49266, 40.20926, "test_imp1");
+//			
+//			importor.importName("Ｎ", 116.49266, 40.20926, "test_imp1");
+//			importor.importName("ＮＯ", 116.49266, 40.20926, "test_imp1");
+//			
+//			importor.importName("测试1#路", 116.49266, 40.20926, "test_imp1");
+//			importor.importName("测试2＃路", 116.49266, 40.20926, "test_imp1");*/
+//			
+//			importor.importName("测试罗马 V 路", 116.49266, 40.20926, "test_imp1");
+//			importor.importName("测试123c路", 116.49266, 40.20926, "test_imp1");
+//			
+//			System.out.println("测试完成");
+//			
+//			
+//			
+///*			DELETE FROM RD_NAME N
+//			 WHERE NAME_GROUPID IN
+//			       ( SELECT NAME_GROUPID
+//			                  FROM RD_NAME
+//			                 WHERE SRC_RESUME LIKE '%test_imp1%'
+//			        )
+//			        
+//			        
+//			        
+//			SELECT * FROM RD_NAME N
+//			 WHERE NAME_GROUPID IN
+//			       ( SELECT NAME_GROUPID
+//			                  FROM RD_NAME
+//			                 WHERE SRC_RESUME LIKE '%test_imp1%'
+//			        )*/
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
+//	
+	
+	@Test
+	public void testGetRdName()
+	{
+		String parameter = "{\"options\":{},\"geoLiveType\":\"ROADNAME\",\"pid\":null,\"nameId\":null,\"nameGroupId\":null,\"langCode\":\"CHI\",\"name\":\"jj\",\"type\":\"\",\"base\":\"\",\"prefix\":\"\",\"infix\":\"\",\"suffix\":\"\",\"namePhonetic\":\"\",\"typePhonetic\":\"\",\"basePhonetic\":\"\",\"prefixPhonetic\":\"\",\"infixPhonetic\":\"\",\"suffixPhonetic\":\"\",\"srcFlag\":0,\"roadType\":0,\"adminId\":\"安徽省合肥市瑶海区\",\"codeType\":0,\"voiceFile\":\"\",\"srcResume\":\"\",\"paRegionId\":null,\"splitFlag\":0,\"memo\":\"\",\"routeId\":0,\"uRecord\":\"\",\"uFields\":\"\",\"city\":\"\",\"_initHooksCalled\":true}";
+
 		try {
-			/*importor.importName("A45", 116.49266, 40.20926, "test_imp1");
-			importor.importName("测试高速公路", 116.49266, 40.20926, "test_imp1");
-			importor.importName("测试高架路", 116.49266, 40.20926, "test_imp1");
-			importor.importName("测试高架桥", 116.49266, 40.20926, "test_imp1");
-			importor.importName("测试快速路", 116.49266, 40.20926, "test_imp1");
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			RdNameImportor importor = new RdNameImportor();
 			
-			importor.importName("N", 116.49266, 40.20926, "test_imp1");
-			importor.importName("n", 116.49266, 40.20926, "test_imp1");
-			importor.importName("NO", 116.49266, 40.20926, "test_imp1");
-			importor.importName("no", 116.49266, 40.20926, "test_imp1");
-			importor.importName("No", 116.49266, 40.20926, "test_imp1");
-			importor.importName("无道路名", 116.49266, 40.20926, "test_imp1");
-			importor.importName("无", 116.49266, 40.20926, "test_imp1");
+			JSONObject data = importor.importRdNameFromWeb(jsonReq);
 			
-			importor.importName("Ｎ", 116.49266, 40.20926, "test_imp1");
-			importor.importName("ＮＯ", 116.49266, 40.20926, "test_imp1");
-			
-			importor.importName("测试1#路", 116.49266, 40.20926, "test_imp1");
-			importor.importName("测试2＃路", 116.49266, 40.20926, "test_imp1");*/
-			
-			importor.importName("测试罗马 V 路", 116.49266, 40.20926, "test_imp1");
-			importor.importName("测试123c路", 116.49266, 40.20926, "test_imp1");
-			
-			System.out.println("测试完成");
-			
-			
-			
-/*			DELETE FROM RD_NAME N
-			 WHERE NAME_GROUPID IN
-			       ( SELECT NAME_GROUPID
-			                  FROM RD_NAME
-			                 WHERE SRC_RESUME LIKE '%test_imp1%'
-			        )
-			        
-			        
-			        
-			SELECT * FROM RD_NAME N
-			 WHERE NAME_GROUPID IN
-			       ( SELECT NAME_GROUPID
-			                  FROM RD_NAME
-			                 WHERE SRC_RESUME LIKE '%test_imp1%'
-			        )*/
+			System.out.println(data);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

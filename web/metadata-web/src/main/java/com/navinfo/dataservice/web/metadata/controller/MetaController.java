@@ -650,12 +650,28 @@ public class MetaController extends BaseController {
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			
-			JSONArray dataList = jsonReq.getJSONArray("data");
+			int flag = jsonReq.getInt("flag");
 			
 			RdNameOperation operation = new RdNameOperation();
 			
-			operation.teilenRdName(dataList);
-			
+			if (flag>0) {
+				JSONArray dataList = jsonReq.getJSONArray("data");
+				
+				operation.teilenRdName(dataList);
+			} else {
+				int subtaskId = jsonReq.getInt("subtaskId");
+				
+				ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+				
+				Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+				
+				FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
+				
+				JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
+				
+				operation.teilenRdNameByTask(tips);
+			}
+
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 	
@@ -717,14 +733,9 @@ public class MetaController extends BaseController {
 			int pageSize = jsonReq.getInt("pageSize");
 			int pageNum = jsonReq.getInt("pageNum");
 			
-			String name = "";
-			if (jsonReq.containsKey("name")) {
-				name = jsonReq.getString("name");
-			}
-			
 			ScPointAdminArea adminarea = new ScPointAdminArea();
 			
-			JSONObject data = adminarea.getAdminArea(pageSize,pageNum,name);
+			JSONObject data = adminarea.getAdminArea(pageSize,pageNum);
 			
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {

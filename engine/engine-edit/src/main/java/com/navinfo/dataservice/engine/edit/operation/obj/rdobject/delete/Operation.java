@@ -1,21 +1,22 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdobject.delete;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 
-import com.mysql.fabric.xmlrpc.base.Array;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
-import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
-import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterNode;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdInterSelector;
+import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObject;
+import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectInter;
+import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectLink;
+import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectRoad;
+import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdObjectSelector;
 
 /**
  * 
@@ -44,5 +45,101 @@ public class Operation implements IOperation {
 		result.insertObject(command.getRdObject(), ObjStatus.DELETE, command.getPid());
 		
 		return null;
+	}
+	
+	/**
+	 * 根据CRF组成要素的类型删除对应的CRF主表或者子表数据
+	 * 
+	 * @param pidList
+	 *            组成要素的pid集合（同一个类型要素）
+	 * @param type
+	 *            组成要素的类型
+	 * @param result
+	 *            结果集
+	 * @throws Exception
+	 */
+	public void deleteByType(List<Integer> pidList, ObjType type, Result result) throws Exception {
+		RdObjectSelector selector = new RdObjectSelector(conn);
+
+		String pids = StringUtils.getInteStr(pidList);
+
+		Map<String, RdObject> objMap = selector.loadRdObjectByPidAndType(pids, type, true);
+
+		for (Map.Entry<String, RdObject> entry : objMap.entrySet()) {
+			String tmpPids = entry.getKey();
+
+			List<Integer> tmpPidList = StringUtils.getIntegerListByStr(tmpPids);
+
+			RdObject rdObject = entry.getValue();
+
+			List<IRow> links = rdObject.getLinks();
+
+			List<IRow> roads = rdObject.getRoads();
+
+			List<IRow> inters = rdObject.getInters();
+			switch (type) {
+			case RDLINK:
+				if (CollectionUtils.isEmpty(links)) {
+					return;
+				} else if (CollectionUtils.isEmpty(roads) && CollectionUtils.isEmpty(inters)
+						&& tmpPidList.containsAll(links)) {
+					result.insertObject(rdObject, ObjStatus.DELETE, rdObject.getPid());
+					return;
+				} else {
+					for (IRow row : links) {
+
+						RdObjectLink objLink = (RdObjectLink) row;
+
+						for (int tmpPid : tmpPidList) {
+							if (objLink.getLinkPid() == tmpPid) {
+								result.insertObject(objLink, ObjStatus.DELETE, objLink.getLinkPid());
+							}
+						}
+					}
+				}
+				break;
+			case RDINTER:
+				if (CollectionUtils.isEmpty(inters)) {
+					return;
+				} else if (CollectionUtils.isEmpty(roads) && CollectionUtils.isEmpty(links) && inters.size() == 1) {
+					result.insertObject(rdObject, ObjStatus.DELETE, rdObject.getPid());
+					return;
+				} else {
+					for (IRow row : inters) {
+
+						RdObjectInter objInter = (RdObjectInter) row;
+
+						for (int tmpPid : tmpPidList) {
+							if (objInter.getInterPid() == tmpPid) {
+								result.insertObject(objInter, ObjStatus.DELETE, objInter.getInterPid());
+							}
+						}
+					}
+				}
+				break;
+			case RDROAD:
+				if (CollectionUtils.isEmpty(roads)) {
+					return;
+				} else if (CollectionUtils.isEmpty(inters) && CollectionUtils.isEmpty(links) && roads.size() == 1) {
+					result.insertObject(rdObject, ObjStatus.DELETE, rdObject.getPid());
+					return;
+				} else {
+					for (IRow row : roads) {
+
+						RdObjectRoad objRoad = (RdObjectRoad) row;
+
+						for (int tmpPid : tmpPidList) {
+							if (objRoad.getRoadPid() == tmpPid) {
+								result.insertObject(objRoad, ObjStatus.DELETE, objRoad.getRoadPid());
+							}
+						}
+					}
+				}
+				break;
+			default:
+				break;
+
+			}
+		}
 	}
 }

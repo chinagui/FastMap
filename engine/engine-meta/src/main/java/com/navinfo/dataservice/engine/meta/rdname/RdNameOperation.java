@@ -387,8 +387,8 @@ public class RdNameOperation {
 			String tmep = "";
 			if (tips.size()>0) {
 				sql.append("SELECT a.name_id,a.name_groupid,a.lang_code,a.road_type");
-				sql.append(" FROM rd_name a where 1=1");
-				sql.append(" a.SRC_RESUME in (");
+				sql.append(" FROM rd_name a where a.split_flag!=1");
+				sql.append(" AND a.SRC_RESUME in (");
 				for (int i=0;i<tips.size();i++) {
 					JSONObject tipsObj = tips.getJSONObject(i);
 					sql.append(tmep);

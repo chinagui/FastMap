@@ -16,7 +16,7 @@ import com.navinfo.dataservice.engine.check.graph.TwoNodeConnected;
  * @ClassName: RDBRANCHInLinkUnidirectional
  * @author songdongyan
  * @date 2016年8月19日
- * @Description: RDBRANCHInLinkUnidirectional.java
+ * @Description: 进入Link为单方向且通行方向不能离开路口
  */
 public class RDBRANCHInLinkUnidirectional extends baseRule {
 
@@ -40,13 +40,14 @@ public class RDBRANCHInLinkUnidirectional extends baseRule {
 				RdLinkSelector rdLinkSelector=new RdLinkSelector(this.getConn());
 				int inLinkPid = rdBranch.getInLinkPid();
 				int nodePid = rdBranch.getNodePid();
+				//进入线
 				RdLink inLink = (RdLink) rdLinkSelector.loadByIdOnlyRdLink(inLinkPid, false);
-				
+				//进入线为单方向
 				if(inLink.getDirect()!=2 && inLink.getDirect()!=3){
 					this.setCheckResult("", "", 0);
 					return;
 				}
-				
+				//经过线Pid
 				List<Integer> vialinkPids = new ArrayList<Integer>();
 				for(IRow deObj:rdBranch.getVias()){
 					if(deObj instanceof RdBranchVia){
@@ -62,9 +63,9 @@ public class RDBRANCHInLinkUnidirectional extends baseRule {
 				}else if(inLink.getDirect()==2){
 					startNode = inLink.geteNodePid();
 				}
-				
+				//经过线信息
 				List<RdLink> viaRdLinks = rdLinkSelector.loadByPids(vialinkPids,false);
-				
+				//经过线是否沿通行方向联通
 				TwoNodeConnected twoNodeConnected = new TwoNodeConnected(startNode,nodePid,viaRdLinks);
 				if(!twoNodeConnected.isConnected()){
 					this.setCheckResult("", "", 0);

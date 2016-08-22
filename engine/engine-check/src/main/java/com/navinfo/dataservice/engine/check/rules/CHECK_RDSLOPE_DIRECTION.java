@@ -8,26 +8,26 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.engine.check.graph.LinksConnectedInOneDirection;
 import com.navinfo.dataservice.engine.check.graph.TwoNodeConnected;
 
-
 /** 
- * @ClassName: RDBRANCHOutLinkUnidirectional
+ * @ClassName: CHECK_RDSLOPE_DIRECTION
  * @author songdongyan
- * @date 2016年8月19日
- * @Description: 退出Link为单方向且通行方向不能进入路口
+ * @date 2016年8月22日
+ * @Description: 道路坡度如果选择了多根link，则这些link必须是可通行方向上的接续link
  */
-public class RDBRANCHOutLinkUnidirectional extends baseRule {
+public class CHECK_RDSLOPE_DIRECTION extends baseRule {
 
 	/**
 	 * 
 	 */
-	public RDBRANCHOutLinkUnidirectional() {
+	public CHECK_RDSLOPE_DIRECTION() {
 		// TODO Auto-generated constructor stub
 	}
-	
 
 	/* (non-Javadoc)
 	 * @see com.navinfo.dataservice.engine.check.core.baseRule#preCheck(com.navinfo.dataservice.dao.check.CheckCommand)
@@ -37,39 +37,28 @@ public class RDBRANCHOutLinkUnidirectional extends baseRule {
 		// TODO Auto-generated method stub
 		for(IRow obj:checkCommand.getGlmList()){
 			//获取新建RdBranch信息
-			if(obj instanceof RdBranch ){
-				RdBranch rdBranch = (RdBranch)obj;
+			if(obj instanceof RdSlope ){
+				RdSlope rdSlope = (RdSlope)obj;
+				//记录主点
+				int startNode = rdSlope.getNodePid();
+				//接续线信息
+				List<IRow> viaLinks = rdSlope.getSlopeVias();
+				//获取退出线信息
+				int outLinkPid = rdSlope.getLinkPid();
 				RdLinkSelector rdLinkSelector=new RdLinkSelector(this.getConn());
-				int outLinkPid = rdBranch.getOutLinkPid();
-				int nodePid = rdBranch.getNodePid();
-				//退出线
 				RdLink outLink = (RdLink) rdLinkSelector.loadByIdOnlyRdLink(outLinkPid, false);
-				//推出线为单方向
-				if(outLink.getDirect()!=2 && outLink.getDirect()!=3){
+				
+				//退出是否沿通行方向
+				if(outLink.getDirect()==2 && outLink.geteNodePid() == startNode){
+					this.setCheckResult("", "", 0);
+					return;
+				}else if(outLink.getDirect()==3 && outLink.getsNodePid() == startNode){
 					this.setCheckResult("", "", 0);
 					return;
 				}
-				//经过线Pid
-				List<Integer> vialinkPids = new ArrayList<Integer>();
-				for(IRow deObj:rdBranch.getVias()){
-					if(deObj instanceof RdBranchVia){
-						RdBranchVia rdBranchVia = (RdBranchVia)deObj;
-						vialinkPids.add(rdBranchVia.getLinkPid());
-					}
-				}
-				
-				int endNode = 0;
-				
-				if(outLink.getDirect()==2){
-					endNode = outLink.getsNodePid();
-				}else if(outLink.getDirect()==3){
-					endNode = outLink.geteNodePid();
-				}
-				//经过线信息
-				List<RdLink> viaRdLinks = rdLinkSelector.loadByPids(vialinkPids,false);
-				//经过线是否沿通行方向联通
-				TwoNodeConnected twoNodeConnected = new TwoNodeConnected(nodePid,endNode,viaRdLinks);
-				if(!twoNodeConnected.isConnected()){
+				//接续线是否沿通行方向联通
+				LinksConnectedInOneDirection linksConnectedInOneDirection = new LinksConnectedInOneDirection(startNode,outLink,viaLinks);
+				if(!linksConnectedInOneDirection.isConnected()){
 					this.setCheckResult("", "", 0);
 					return;
 				}
@@ -86,6 +75,5 @@ public class RDBRANCHOutLinkUnidirectional extends baseRule {
 		// TODO Auto-generated method stub
 
 	}
-
 
 }

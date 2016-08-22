@@ -10,6 +10,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
+import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
 
 public class VariablesFactory {
 
@@ -30,6 +31,9 @@ public class VariablesFactory {
 		if(data instanceof RdBranch){
 			RdBranch rdBranch=(RdBranch) data;
 			rdNodeSet.add(String.valueOf(rdBranch.getNodePid()));}
+		if(data instanceof RdSlope){
+			RdSlope rdSlope=(RdSlope) data;
+			rdNodeSet.add(String.valueOf(rdSlope.getNodePid()));}
 		return rdNodeSet;
 	}
 	/**

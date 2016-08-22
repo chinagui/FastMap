@@ -62,7 +62,11 @@ public class RuleExecuter {
 			{variablevalue=VariablesFactory.getRdLinkPid(data);break;}
 			case RDNODE_PID:
 			{variablevalue=VariablesFactory.getRdNodePid(data);break;}
-			}
+			case RDGATE_INLINKPID:
+			{variablevalue=VariablesFactory.getRdGateInLinkPid(data);break;}
+			case RDGATE_OUTLINKPID:
+			{variablevalue=VariablesFactory.getRdGateOutLinkPid(data);break;}
+		}
 		if(!variablesValueMap.containsKey(variable)){
 			variablesValueMap.put(variable, new HashSet<String>());}
 		variablesValueMap.get(variable).addAll(variablevalue);

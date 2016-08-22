@@ -314,7 +314,7 @@ public class RdNameOperation {
 				pstmt.setNull(22, Types.INTEGER);
 			}
 			pstmt.setInt(23, rdName.getProcessFlag());
-			pstmt.setInt(24, rdName.getuRecord());
+			pstmt.setInt(24, 3);
 			pstmt.setString(25, rdName.getuFields());
 			pstmt.setInt(26, rdName.getSplitFlag());
 //			pstmt.setString(27, rdName.getCity());

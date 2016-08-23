@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.control.column.job;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 
@@ -48,6 +50,8 @@ public class ColumnSaveJob extends AbstractJob {
 			// TODO 区分大陆/港澳
 			int type = 1;
 			
+			List<String> rowIdList = new ArrayList<String>();
+			
 			PoiDeepOpConf deepOpConf = control.getDeepOpConf(secondWorItem, type, conn);
 			
 			// TODO 检查和批处理
@@ -60,7 +64,9 @@ public class ColumnSaveJob extends AbstractJob {
 			JSONArray dataArray = new JSONArray(); 
 			for (int i=0;i<data.size();i++) {
 				JSONObject temp = new JSONObject();
-				temp.put("rowId", data.getJSONObject(i).getString("rowId"));
+				String rowId = data.getJSONObject(i).getString("rowId");
+				rowIdList.add(rowId);
+				temp.put("rowId", rowId);
 				temp.put("taskId", taskId);
 				dataArray.add(temp);
 			}
@@ -68,14 +74,13 @@ public class ColumnSaveJob extends AbstractJob {
 			ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
 			columnCoreOperation.runClassify(classifyMap);
 			
-			
+			// 修改poi_deep_status表二级作业项状态
+			control.updateDeepStatus(rowIdList, conn);
 		} catch (Exception e) {
 			throw new JobException(e);
 		} finally {
 			DbUtils.closeQuietly(conn);
 		}
-		
-
 	}
 
 }

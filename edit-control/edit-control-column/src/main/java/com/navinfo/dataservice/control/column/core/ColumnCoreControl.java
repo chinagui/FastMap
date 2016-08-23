@@ -232,6 +232,34 @@ public class ColumnCoreControl {
 		}
 	}
 	
+	public void updateDeepStatus(List<String> rowIdList,Connection conn) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append("UPDATE poi_deep_status SET firstWorkStatus=2,secondWorkStatus=2 WHERE row_id in(");
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		try {
+			String temp="";
+			for (String rowId:rowIdList) {
+				sb.append(temp);
+				sb.append("'"+rowId+"'");
+				temp = ",";
+			}
+			sb.append(")");
+			
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
 	private PoiDeepOpConf getDeepOpConfObj(ResultSet resultSet) throws Exception {
 		PoiDeepOpConf result = new PoiDeepOpConf();
 		try {

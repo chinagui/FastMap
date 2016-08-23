@@ -16,10 +16,12 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneCondition;
+import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
 import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 
 /**
@@ -36,6 +38,24 @@ public class Operation implements IOperation {
 	private RdLinkForm form;
 	private RdLinkLimit limit;
 	private RdLink link;
+	private RdLaneConnexity connexity;
+	private List<String> lanInfos;
+
+	public List<String> getLanInfos() {
+		return lanInfos;
+	}
+
+	public void setLanInfos(List<String> lanInfos) {
+		this.lanInfos = lanInfos;
+	}
+
+	public RdLaneConnexity getConnexity() {
+		return connexity;
+	}
+
+	public void setConnexity(RdLaneConnexity connexity) {
+		this.connexity = connexity;
+	}
 
 	public RdLink getLink() {
 		return link;
@@ -164,6 +184,18 @@ public class Operation implements IOperation {
 		rdLane.setSeqNum(seqNum);
 		rdLane.setLaneDir(laneDir);
 		rdLane.setLaneNum(laneNum);
+		result.insertObject(rdLane, ObjStatus.INSERT, rdLane.getPid());
+	}
+
+	private void createRdlane(Result result, int linkPid, int seqNum,
+			int laneDir, int laneNum, String arrowDir) throws Exception {
+		RdLane rdLane = new RdLane();
+		rdLane.setPid(PidService.getInstance().applyRdLanePid());
+		rdLane.setLinkPid(linkPid);
+		rdLane.setSeqNum(seqNum);
+		rdLane.setLaneDir(laneDir);
+		rdLane.setLaneNum(laneNum);
+		rdLane.setArrowDir(arrowDir);
 		result.insertObject(rdLane, ObjStatus.INSERT, rdLane.getPid());
 	}
 
@@ -433,5 +465,100 @@ public class Operation implements IOperation {
 				}
 			}
 		}
+	}
+
+	/***
+	 * 1、 当车信的车道数或车信的转向箭头发生变更时，需要对详细车道进行维护。
+	 * 2、当车信车道数发生变更时，参考车信的车道数对详细车道记录及物理车道数进行维护。
+	 * 3、当车信转向箭头发生变更时，则参考车信的转向箭头，对详细车道转向箭头属性进行维护。 
+	 * 4、当车信车道数与转向箭头同时发生变化时，则先进行车道记录及物理车道数变更，再进行对应车道的转向箭头的变更
+	 * 
+	 * @param result
+	 * @throws Exception
+	 */
+	public void refRdLaneForRdLaneconnexity(Result result) throws Exception {
+		int linkPid = this.getConnexity().getInLinkPid();
+		List<String> laneInfos = this.getLanInfos();
+		int nodePid = this.getConnexity().getNodePid();
+		int laneDir = 1;
+		RdLink link = (RdLink) new RdLinkSelector(this.conn).loadById(linkPid,
+				true, false);
+		if (link.getDirect() == 1) {
+			if (nodePid == link.geteNodePid()) {
+				laneDir = 2;
+			} else {
+				laneDir = 3;
+			}
+		}
+		List<RdLane> lanes = new RdLaneSelector(this.conn).loadByLink(linkPid,
+				laneDir, true);
+		if (lanes.size() >= laneInfos.size()) {
+			for (int i = laneInfos.size(); i < lanes.size(); i++) {
+				this.deleLaneForRdLaneconnexity(result, lanes.get(i).getPid());
+			}
+			for (int i = 0; i < laneInfos.size(); i++) {
+				if (laneInfos.get(i) != lanes.get(i).getArrowDir()) {
+					this.createRdlane(result, linkPid, laneInfos.size(),
+							laneDir, i + 1, laneInfos.get(i));
+				} else {
+					if (laneInfos.size() != lanes.size()) {
+						this.updateLaneForRdLaneconnexity(result, lanes.get(i),
+								laneInfos.size());
+					}
+				}
+
+			}
+
+		} else {
+			for (int i = lanes.size(); i < laneInfos.size(); i++) {
+				this.createRdlane(result, linkPid, laneInfos.size(), laneDir,
+						i + 1, laneInfos.get(i));
+			}
+			for (int i = 0; i < lanes.size(); i++) {
+				if (laneInfos.get(i) != lanes.get(i).getArrowDir()) {
+
+					this.deleLaneForRdLaneconnexity(result, lanes.get(i)
+							.getPid());
+
+				} else {
+					if (laneInfos.size() != lanes.size()) {
+						this.updateLaneForRdLaneconnexity(result, lanes.get(i),
+								laneInfos.size());
+
+					}
+				}
+
+			}
+
+		}
+
+	}
+
+	/***
+	 * 通过车信删除车道信息
+	 * 
+	 * @param result
+	 * @param lanePid
+	 * @throws Exception
+	 */
+	private void deleLaneForRdLaneconnexity(Result result, int lanePid)
+			throws Exception {
+		com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
+				conn);
+		operation.deleteRdLane(result, lanePid);
+	}
+
+	/***
+	 * 通过车信修改车道信息
+	 * 
+	 * @param result
+	 * @param lane
+	 * @param seqNum
+	 * @throws Exception
+	 */
+	private void updateLaneForRdLaneconnexity(Result result, RdLane lane,
+			int seqNum) throws Exception {
+		lane.changedFields().put("seqNum", seqNum);
+		result.insertObject(lane, ObjStatus.UPDATE, lane.getPid());
 	}
 }

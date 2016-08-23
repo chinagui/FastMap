@@ -12,6 +12,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.column.core.ColumnCoreControl;
 import com.navinfo.dataservice.control.column.core.ColumnCoreOperation;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiDeepOpConf;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 
@@ -47,15 +48,15 @@ public class ColumnSaveJob extends AbstractJob {
 			// TODO 区分大陆/港澳
 			int type = 1;
 			
-			JSONObject deepOpConf = control.getDeepOpConf(secondWorItem, type, conn);
+			PoiDeepOpConf deepOpConf = control.getDeepOpConf(secondWorItem, type, conn);
 			
 			// TODO 检查和批处理
 			
 			// 重分类
 			HashMap<String,Object> classifyMap = new HashMap<String,Object>();
 			classifyMap.put("userId", userId);
-			classifyMap.put("ckRules", deepOpConf.getJSONArray("saveCkrules"));
-			classifyMap.put("classifyRules", deepOpConf.getJSONArray("classifyRules"));
+			classifyMap.put("ckRules", deepOpConf.getSaveCkrules());
+			classifyMap.put("classifyRules", deepOpConf.getSaveClassifyrules());
 			JSONArray dataArray = new JSONArray(); 
 			for (int i=0;i<data.size();i++) {
 				JSONObject temp = new JSONObject();

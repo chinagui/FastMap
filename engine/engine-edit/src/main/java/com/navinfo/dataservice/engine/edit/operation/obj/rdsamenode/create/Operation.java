@@ -191,6 +191,34 @@ public class Operation implements IOperation {
 	}
 
 	/**
+	 * 给打断同一线link调用的方法，在打断点位置需要创建同一点关系
+	 * 
+	 * @param result 结果集
+	 * @param sameNodeList 同一点集合
+	 * @throws Exception
+	 */
+	public void breakSameLink(Result result, List<IRow> sameNodeList) throws Exception {
+		if (CollectionUtils.isNotEmpty(sameNodeList)) {
+			RdSameNode rdSameNode = new RdSameNode();
+
+			rdSameNode.setPid(PidService.getInstance().applyRdSameNodePid());
+
+			for (IRow row : sameNodeList) {
+				RdSameNodePart sameNodePart = new RdSameNodePart();
+
+				sameNodePart.setGroupId(rdSameNode.getPid());
+
+				sameNodePart.setNodePid(row.parentPKValue());
+
+				sameNodePart.setTableName(ReflectionAttrUtils.getTableNameByObjType(row.objType()));
+
+				rdSameNode.getParts().add(sameNodePart);
+			}
+			result.insertObject(rdSameNode, ObjStatus.INSERT, rdSameNode.getPid());
+		}
+	}
+
+	/**
 	 * 移动主要素，其他从要素跟随移动：优先级顺序（RDNODE>ADNODE>RWNODE>ZONENODE>LUNODE）
 	 * 
 	 * @param updateContent
@@ -248,25 +276,21 @@ public class Operation implements IOperation {
 		if (movePartNodeMap.size() > 0) {
 			switch (type) {
 			case RDNODE:
-				moveNodeFromNodeMap(type,nodePid,movePartNodeMap,result);
+				moveNodeFromNodeMap(type, nodePid, movePartNodeMap, result);
 				break;
 			case ADNODE:
 				if (movePartNodeMap.containsKey(ObjType.RDNODE)) {
 					throw new Exception("node不是该同一关系中的主要素，不允许移动操作");
-				}
-				else
-				{
-					moveNodeFromNodeMap(type,nodePid,movePartNodeMap,result);
+				} else {
+					moveNodeFromNodeMap(type, nodePid, movePartNodeMap, result);
 				}
 				break;
 			case ZONENODE:
 				if (movePartNodeMap.containsKey(ObjType.RDNODE) || movePartNodeMap.containsKey(ObjType.ADNODE)
 						|| movePartNodeMap.containsKey(ObjType.RWNODE)) {
 					throw new Exception("node不是该同一关系中的主要素，不允许移动操作");
-				}
-				else
-				{
-					moveNodeFromNodeMap(type,nodePid,movePartNodeMap,result);
+				} else {
+					moveNodeFromNodeMap(type, nodePid, movePartNodeMap, result);
 				}
 				break;
 			case LUNODE:
@@ -296,10 +320,8 @@ public class Operation implements IOperation {
 
 					if (!isMoveMainNode) {
 						throw new Exception("node不是该同一关系中的主要素，不允许移动操作");
-					}
-					else
-					{
-						moveNodeFromNodeMap(type,nodePid,movePartNodeMap,result);
+					} else {
+						moveNodeFromNodeMap(type, nodePid, movePartNodeMap, result);
 					}
 				}
 				break;
@@ -309,15 +331,15 @@ public class Operation implements IOperation {
 		}
 	}
 
-	private void moveNodeFromNodeMap(ObjType type,int nodePid,Map<ObjType, JSONObject> movePartNodeMap, Result result) throws Exception {
+	private void moveNodeFromNodeMap(ObjType type, int nodePid, Map<ObjType, JSONObject> movePartNodeMap, Result result)
+			throws Exception {
 		for (Map.Entry<ObjType, JSONObject> nodeMap : movePartNodeMap.entrySet()) {
-			
+
 			ObjType partType = nodeMap.getKey();
-			
+
 			JSONObject updateContent = nodeMap.getValue();
-			
-			if(!(type.equals(partType) && updateContent.getInt("objId") == nodePid))
-			{
+
+			if (!(type.equals(partType) && updateContent.getInt("objId") == nodePid)) {
 				moveNode(partType, updateContent, result);
 			}
 		}

@@ -158,7 +158,7 @@ public class BlockService {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY from BLOCK t where sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE'";
+			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY from BLOCK t where sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE'";
 			return BlockOperation.queryProduceBlock(conn, selectSql, json);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -178,7 +178,7 @@ public class BlockService {
 			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']',
 					')');
 
-			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY,t.PLAN_STATUS,t.CITY_ID from BLOCK t where t.PLAN_STATUS in "
+			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY,t.PLAN_STATUS,t.CITY_ID from BLOCK t where t.PLAN_STATUS in "
 					+ planningStatus;
 
 			if (StringUtils.isNotEmpty(json.getString("snapshot"))) {
@@ -216,7 +216,7 @@ public class BlockService {
 			JSONObject obj = JSONObject.fromObject(json);
 			Block bean = (Block) JSONObject.toBean(obj, Block.class);
 
-			String selectSql = "select t.BLOCK_ID,t.CITY_ID, t.BLOCK_NAME, t.GEOMETRY.get_wkt() as GEOMETRY,"
+			String selectSql = "select t.BLOCK_ID,t.CITY_ID, t.BLOCK_NAME, t.GEOMETRY,"
 					+ " t.PLAN_STATUS, k.name taskName, b.collect_group_id, b.day_edit_group_id,"
 					+ " b.month_edit_group_id, to_char(b.collect_plan_start_date, 'yyyymmdd') collect_plan_start_date, to_char(b.collect_plan_end_date, 'yyyymmdd') collect_plan_end_date,"
 					+ " to_char(b.day_edit_plan_start_date, 'yyyymmdd') day_edit_plan_start_date, to_char(b.day_edit_plan_end_date, 'yyyymmdd') day_edit_plan_end_date, to_char(b.month_edit_plan_start_date, 'yyyymmdd') month_edit_plan_start_date,"
@@ -285,7 +285,7 @@ public class BlockService {
 			JSONArray groupIds = json.getJSONArray("groupIds");
 			String groups = ((groupIds.toString()).replace('[', '(')).replace(']', ')');
 
-			selectSql = "select b.BLOCK_ID,b.CITY_ID, b.BLOCK_NAME, b.GEOMETRY.get_wkt() as GEOMETRY,"
+			selectSql = "select b.BLOCK_ID,b.CITY_ID, b.BLOCK_NAME, b.GEOMETRY,"
 					+ " b.PLAN_STATUS from block_man t,block b,task k,subtask s where t.block_id=b.block_id and b.city_id=k.city_id and k.task_id=s.task_id and t.latest=1 and k.latest=1 and s.stage=? ";
 
 			if (0 == stage) {

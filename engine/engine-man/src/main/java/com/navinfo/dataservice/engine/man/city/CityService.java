@@ -53,7 +53,7 @@ public class CityService {
 					
 			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']', ')');
 			
-			String selectSql = " select t.CITY_ID,t.CITY_NAME, t.geometry.get_wkt() as geometry,t.plan_status, k.task_id from CITY t, (select * from task where latest=1) k where t.city_id=k.city_id(+) and t.PLAN_STATUS in "+planningStatus
+			String selectSql = " select t.CITY_ID,t.CITY_NAME, t.geometry,t.plan_status, k.task_id from CITY t, (select * from task where latest=1) k where t.city_id=k.city_id(+) and t.PLAN_STATUS in "+planningStatus
 					+" and SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
 		
 			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
@@ -64,8 +64,9 @@ public class CityService {
 							HashMap<String,Object> map = new HashMap<String,Object>();
 							map.put("cityId", rs.getInt("CITY_ID"));
 							map.put("cityName", rs.getString("CITY_NAME"));
-							STRUCT struct=(STRUCT)rs.getObject("GEOMETRY");
+							
 							try {
+								STRUCT struct=(STRUCT)rs.getObject("geometry");
 								String clobStr = GeoTranslator.struct2Wkt(struct);
 								map.put("geometry", Geojson.wkt2Geojson(clobStr));
 							} catch (Exception e1) {
@@ -103,7 +104,7 @@ public class CityService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 					
-			String selectSql = "select c.CITY_ID,c.CITY_NAME, c.geometry.get_wkt() as geometry,    case  when exists (select 1      from task t, subtask s     where c.city_id = t.city_id       and t.task_id = s.task_id) then   1  else   0    end subtask_status,    case when exists(select 1 from task t where c.city_id=t.city_id) then 1 else 0 end task_status   from city c where" 
+			String selectSql = "select c.CITY_ID,c.CITY_NAME, c.geometry,    case  when exists (select 1      from task t, subtask s     where c.city_id = t.city_id       and t.task_id = s.task_id) then   1  else   0    end subtask_status,    case when exists(select 1 from task t where c.city_id=t.city_id) then 1 else 0 end task_status   from city c where" 
 			  +	" SDO_ANYINTERACT(c.geometry,sdo_geometry(?,8307))='TRUE'";
 		
 			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
@@ -114,7 +115,7 @@ public class CityService {
 							HashMap<String,Object> map = new HashMap<String,Object>();
 							map.put("cityId", rs.getInt("CITY_ID"));
 							map.put("cityName", rs.getString("CITY_NAME"));
-							STRUCT struct=(STRUCT)rs.getObject("GEOMETRY");
+							STRUCT struct=(STRUCT)rs.getObject("geometry");
 							try {
 								String clobStr = GeoTranslator.struct2Wkt(struct);
 								map.put("geometry", Geojson.wkt2Geojson(clobStr));
@@ -164,7 +165,7 @@ public class CityService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			
-			String selectSql = "select C.CITY_ID,C.CITY_NAME, C.PROVINCE_NAME,C.GEOMETRY.get_wkt() as GEOMETRY,C.REGION_ID,C.PLAN_STATUS from CITY C where C.CITY_ID=?";
+			String selectSql = "select C.CITY_ID,C.CITY_NAME, C.PROVINCE_NAME,C.GEOMETRY,C.REGION_ID,C.PLAN_STATUS from CITY C where C.CITY_ID=?";
 			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>(){
 				public HashMap handle(ResultSet rs) throws SQLException {
 					while(rs.next()){

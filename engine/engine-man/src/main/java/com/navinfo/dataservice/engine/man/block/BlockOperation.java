@@ -53,8 +53,8 @@ public class BlockOperation {
 						map.put("planningStatus", rs.getInt("PLAN_STATUS"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));						
-						STRUCT struct=(STRUCT)rs.getObject("GEOMETRY");
 						try {
+							STRUCT struct=(STRUCT)rs.getObject("GEOMETRY");
 							String clobStr = GeoTranslator.struct2Wkt(struct);
 							map.put("geometry", Geojson.wkt2Geojson(clobStr));
 						} catch (Exception e1) {

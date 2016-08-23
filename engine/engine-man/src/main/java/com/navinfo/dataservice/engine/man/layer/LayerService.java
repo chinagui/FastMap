@@ -111,7 +111,7 @@ public class LayerService {
 		try{
 			conn =  DBConnector.getInstance().getManConnection();	
 			
-			String selectSql ="SELECT LAYER_ID,LAYER_NAME,T.GEOMETRY.GET_WKT() as GEOMETRY,CREATE_USER_ID,CREATE_DATE FROM CUSTOMISED_LAYER t"
+			String selectSql ="SELECT LAYER_ID,LAYER_NAME,T.GEOMETRY,CREATE_USER_ID,CREATE_DATE FROM CUSTOMISED_LAYER t"
 					+ " where SDO_ANYINTERACT(geometry,sdo_geometry('"+wkt+"',8307))='TRUE'";
 			return this.query(selectSql, conn);
 			/*ResultSetHandler<List<Layer>> rsHandler = new ResultSetHandler<List<Layer>>(){
@@ -176,7 +176,7 @@ public class LayerService {
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			
-			String selectSql = "SELECT LAYER_ID,LAYER_NAME,T.GEOMETRY.GET_WKT() as GEOMETRY,CREATE_USER_ID,CREATE_DATE FROM CUSTOMISED_LAYER t where 1=1";
+			String selectSql = "SELECT LAYER_ID,LAYER_NAME,T.GEOMETRY,CREATE_USER_ID,CREATE_DATE FROM CUSTOMISED_LAYER t where 1=1";
 			if(null!=conditionJson && !conditionJson.isEmpty()){
 				Iterator keys = conditionJson.keys();
 				while (keys.hasNext()) {

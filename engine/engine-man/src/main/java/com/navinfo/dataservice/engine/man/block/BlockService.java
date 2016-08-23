@@ -20,6 +20,7 @@ import com.navinfo.dataservice.api.man.model.BlockMan;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
@@ -31,6 +32,7 @@ import com.navinfo.navicommons.exception.ServiceException;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.CLOB;
+import oracle.sql.STRUCT;
 
 /**
  * @ClassName: BlockService
@@ -231,13 +233,13 @@ public class BlockService {
 						map.put("blockId", rs.getInt("BLOCK_ID"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("blockName", rs.getString("BLOCK_NAME"));
-						CLOB clob = (CLOB) rs.getObject("GEOMETRY");
-						String clobStr = DataBaseUtils.clob2String(clob);
+						STRUCT struct=(STRUCT)rs.getObject("GEOMETRY");
 						try {
+							String clobStr = GeoTranslator.struct2Wkt(struct);
 							map.put("geometry", Geojson.wkt2Geojson(clobStr));
-						} catch (Exception e) {
+						} catch (Exception e1) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
+							e1.printStackTrace();
 						}
 						map.put("planStatus", rs.getInt("PLAN_STATUS"));
 						map.put("taskName", rs.getString("taskName"));

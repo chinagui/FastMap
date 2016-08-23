@@ -20,6 +20,7 @@ import com.navinfo.dataservice.api.man.model.BlockMan;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
@@ -31,6 +32,7 @@ import com.navinfo.navicommons.exception.ServiceException;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.CLOB;
+import oracle.sql.STRUCT;
 
 /**
  * @ClassName: BlockService
@@ -156,7 +158,7 @@ public class BlockService {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY from BLOCK t where sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE'";
+			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY from BLOCK t where sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE'";
 			return BlockOperation.queryProduceBlock(conn, selectSql, json);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -176,7 +178,7 @@ public class BlockService {
 			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']',
 					')');
 
-			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY,t.PLAN_STATUS,t.CITY_ID from BLOCK t where t.PLAN_STATUS in "
+			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY,t.PLAN_STATUS,t.CITY_ID from BLOCK t where t.PLAN_STATUS in "
 					+ planningStatus;
 
 			if (StringUtils.isNotEmpty(json.getString("snapshot"))) {
@@ -214,7 +216,7 @@ public class BlockService {
 			JSONObject obj = JSONObject.fromObject(json);
 			Block bean = (Block) JSONObject.toBean(obj, Block.class);
 
-			String selectSql = "select t.BLOCK_ID,t.CITY_ID, t.BLOCK_NAME, t.GEOMETRY.get_wkt() as GEOMETRY,"
+			String selectSql = "select t.BLOCK_ID,t.CITY_ID, t.BLOCK_NAME, t.GEOMETRY,"
 					+ " t.PLAN_STATUS, k.name taskName, b.collect_group_id, b.day_edit_group_id,"
 					+ " b.month_edit_group_id, to_char(b.collect_plan_start_date, 'yyyymmdd') collect_plan_start_date, to_char(b.collect_plan_end_date, 'yyyymmdd') collect_plan_end_date,"
 					+ " to_char(b.day_edit_plan_start_date, 'yyyymmdd') day_edit_plan_start_date, to_char(b.day_edit_plan_end_date, 'yyyymmdd') day_edit_plan_end_date, to_char(b.month_edit_plan_start_date, 'yyyymmdd') month_edit_plan_start_date,"
@@ -231,13 +233,13 @@ public class BlockService {
 						map.put("blockId", rs.getInt("BLOCK_ID"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("blockName", rs.getString("BLOCK_NAME"));
-						CLOB clob = (CLOB) rs.getObject("GEOMETRY");
-						String clobStr = DataBaseUtils.clob2String(clob);
+						STRUCT struct=(STRUCT)rs.getObject("GEOMETRY");
 						try {
+							String clobStr = GeoTranslator.struct2Wkt(struct);
 							map.put("geometry", Geojson.wkt2Geojson(clobStr));
-						} catch (Exception e) {
+						} catch (Exception e1) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
+							e1.printStackTrace();
 						}
 						map.put("planStatus", rs.getInt("PLAN_STATUS"));
 						map.put("taskName", rs.getString("taskName"));
@@ -283,7 +285,7 @@ public class BlockService {
 			JSONArray groupIds = json.getJSONArray("groupIds");
 			String groups = ((groupIds.toString()).replace('[', '(')).replace(']', ')');
 
-			selectSql = "select b.BLOCK_ID,b.CITY_ID, b.BLOCK_NAME, b.GEOMETRY.get_wkt() as GEOMETRY,"
+			selectSql = "select b.BLOCK_ID,b.CITY_ID, b.BLOCK_NAME, b.GEOMETRY,"
 					+ " b.PLAN_STATUS from block_man t,block b,task k,subtask s where t.block_id=b.block_id and b.city_id=k.city_id and k.task_id=s.task_id and t.latest=1 and k.latest=1 and s.stage=? ";
 
 			if (0 == stage) {

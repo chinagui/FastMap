@@ -147,14 +147,16 @@ public class ZoneFaceSelector extends AbstractSelector {
 	}
 
 	/**
-	 * 根据传入几何参数查找与之相关联的ZoneFace面
+	 * 根据传入几何参数查找与之相关联的ZoneFace面</br>
+	 * ADMIN_TYPE类型为:</br>
+	 * KDZone（8）或AOI（9）
 	 * 
 	 * @param geometry
 	 * @return
 	 */
 	public List<ZoneFace> loadRelateFaceByGeometry(Geometry geometry) {
 		List<ZoneFace> faces = new ArrayList<ZoneFace>();
-		String sql = "select * from zone_face t1, ad_admin t2 where t1.u_record <> 2 and t2.u_record <> 2 and t1.region_id = t2.region_id and (t2.admin_type = 8 or t2.admin_type = 9) and sdo_relate(t1.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' ";
+		String sql = "select t1.geometry, t2.region_id from zone_face t1, ad_admin t2 where t1.u_record <> 2 and t2.u_record <> 2 and t1.region_id = t2.region_id and (t2.admin_type = 8 or t2.admin_type = 9) and sdo_relate(t1.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' ";
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {

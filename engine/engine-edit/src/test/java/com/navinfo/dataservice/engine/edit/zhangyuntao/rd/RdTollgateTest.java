@@ -1,11 +1,13 @@
 package com.navinfo.dataservice.engine.edit.zhangyuntao.rd;
 
 import java.sql.Connection;
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.dao.glm.selector.rd.tollgate.RdTollgateSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye.TestUtil;
 
@@ -51,13 +53,13 @@ public class RdTollgateTest extends InitApplication {
 		try {
 			conn = DBConnector.getInstance().getConnectionById(42);
 
-//			SearchProcess p = new SearchProcess(conn);
-//
-//			System.out.println(p.searchDataByPid(ObjType.RDTOLLGATE, 1055).Serialize(ObjLevel.FULL));
-			
+			// SearchProcess p = new SearchProcess(conn);
+			//
+			// System.out.println(p.searchDataByPid(ObjType.RDTOLLGATE,
+			// 1055).Serialize(ObjLevel.FULL));
 
-			RdTollgateSelector selector = new RdTollgateSelector(conn);
-			selector.loadRdTollgatesWithLinkPid(741886, true);
+			// RdTollgateSelector selector = new RdTollgateSelector(conn);
+			// RdTollgate tollgate = selector.loadById(1055, true);
 
 		} catch (Exception e) {
 			e.printStackTrace();

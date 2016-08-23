@@ -8,11 +8,7 @@ import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
-import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlopeVia;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
-import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 
 /***
  * 
@@ -68,8 +64,8 @@ public class RdLaneSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
-				RdLane slope = (RdLane)this.loadById(
-						resultSet.getInt("pid"), false);
+				RdLane slope = (RdLane) this.loadById(resultSet.getInt("pid"),
+						false);
 				lanes.add(slope);
 			}
 

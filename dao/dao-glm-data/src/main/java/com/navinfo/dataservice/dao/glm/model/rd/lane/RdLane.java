@@ -49,7 +49,7 @@ public class RdLane implements IObj {
 	private int centerDivider = 0; //中央分隔带
 	private int speedFlag = 0 ; //车道限速来源标识
     private int srcFlag  =1 ;//车道来源 
-    private int  outputFlag  =0 ;//控制产品输出 标志 
+    
 
 	private List<IRow> conditions = new ArrayList<IRow>();
 
@@ -224,13 +224,6 @@ public class RdLane implements IObj {
 		this.srcFlag = srcFlag;
 	}
 
-	public int getOutputFlag() {
-		return outputFlag;
-	}
-
-	public void setOutputFlag(int outputFlag) {
-		this.outputFlag = outputFlag;
-	}
 
 
 	public RdLane() {

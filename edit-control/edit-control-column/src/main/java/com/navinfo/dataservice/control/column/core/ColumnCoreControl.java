@@ -195,8 +195,6 @@ public class ColumnCoreControl {
 		}
 	}
 	
-	
-	
 	/**
 	 * 更新配置表状态
 	 * @param rowIdList
@@ -229,6 +227,40 @@ public class ColumnCoreControl {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
 		}
+	}
+	
+	/**
+	 * 查询二级作业项的统计信息
+	 * @param jsonReq
+	 * @param userId
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject secondWorkStatistics(JSONObject jsonReq,long userId)  throws Exception {
+		
+		Connection conn = null;
+		
+		try {
+			int taskId = jsonReq.getInt("taskId");
+			String secondWorkItem = jsonReq.getString("secondWorkItem");
+			int type = jsonReq.getInt("taskType");
+			
+			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+			Subtask subtask = apiService.queryBySubtaskId(taskId);
+			int dbId = subtask.getDbId();
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
+			
+			return ixPoiDeepStatusSelector.secondWorkStatistics(secondWorkItem, userId, type);
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			
+		}
+		
+		
 	}
 	
 }

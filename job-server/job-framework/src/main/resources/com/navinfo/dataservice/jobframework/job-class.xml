@@ -64,5 +64,9 @@
 		class="com.navinfo.dataservice.control.column.job.ColumnSaveJob"
 	 	request="com.navinfo.dataservice.control.column.job.ColumnSaveJobRequest"
 	/>
+	<type name="columnSubmitJob" 
+		class="com.navinfo.dataservice.control.column.job.ColumnSubmitJob"
+	 	request="com.navinfo.dataservice.control.column.job.ColumnSubmitJobRequest"
+	/>
 	
 </mapping>

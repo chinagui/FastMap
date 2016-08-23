@@ -191,7 +191,7 @@ public class IxPoiDeepStatusSelector extends AbstractSelector {
 			}
 			
 			return result;
-		}  catch (Exception e) {
+		} catch (Exception e) {
 			throw e;
 		} finally {
 			DbUtils.closeQuietly(resultSet);
@@ -234,6 +234,50 @@ public class IxPoiDeepStatusSelector extends AbstractSelector {
 			DbUtils.closeQuietly(pstmt); 
 		}
 		
+	}
+	
+	/**
+	 * 查询该任务下可提交数据的rowId
+	 * @param firstWorkItem
+	 * @param secondWorkItem
+	 * @param taskId
+	 * @return
+	 * @throws Exception
+	 */
+	public List<String> getRowIdForSubmit(String firstWorkItem,String secondWorkItem,int taskId) throws Exception {
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT s.row_id FROM poi_deep_status s,poi_deep_workitem_conf w WHERE s.work_item_id=w.work_item_id");
+		
+		PreparedStatement pstmt = null;
+		
+		ResultSet resultSet = null;
+		
+		try {
+			List<String> rowIdList = new ArrayList<String>();
+			
+			if (!firstWorkItem.isEmpty()) {
+				sb.append(" AND s.first_work_status=2 AND w.first_work_item='"+firstWorkItem+"'");
+			}
+			if (!secondWorkItem.isEmpty()) {
+				sb.append(" AND s.second_work_status=2 AND w.second_work_item='"+secondWorkItem+"'");
+			}
+			
+			pstmt = conn.prepareStatement(sb.toString());
+
+			resultSet = pstmt.executeQuery();
+			
+			while (resultSet.next()) {
+				rowIdList.add(resultSet.getString("row_id"));
+			}
+			
+			return rowIdList;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt); 
+		}
 	}
 	
 }

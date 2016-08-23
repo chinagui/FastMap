@@ -13,7 +13,6 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiDeepOpConf;
 import com.navinfo.dataservice.dao.glm.search.IxPoiSearch;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector;
 
@@ -196,45 +195,17 @@ public class ColumnCoreControl {
 		}
 	}
 	
+	
+	
 	/**
-	 * 查询精编配置表
-	 * @param secondWorkItem
-	 * @param type
+	 * 更新配置表状态
+	 * @param rowIdList
 	 * @param conn
-	 * @return
 	 * @throws Exception
 	 */
-	public PoiDeepOpConf getDeepOpConf(String secondWorkItem,int type,Connection conn) throws Exception {
-		PoiDeepOpConf result = new PoiDeepOpConf();
-		
-		String sql = "SELECT * FROM poi_deep_op_conf WHERE second_work_item=:1 and type=:2";
-		
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setString(1, secondWorkItem);
-
-			pstmt.setInt(2, type);
-
-			resultSet = pstmt.executeQuery();
-			
-			result = getDeepOpConfObj(resultSet);
-			
-			return result;
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
-		}
-	}
-	
-	public void updateDeepStatus(List<String> rowIdList,Connection conn) throws Exception {
+	public void updateDeepStatus(List<String> rowIdList,Connection conn,int status) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE poi_deep_status SET firstWorkStatus=2,secondWorkStatus=2 WHERE row_id in(");
+		sb.append("UPDATE poi_deep_status SET firstWorkStatus="+status+",secondWorkStatus="+status+" WHERE row_id in(");
 		
 		PreparedStatement pstmt = null;
 
@@ -258,35 +229,6 @@ public class ColumnCoreControl {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
 		}
-	}
-	
-	private PoiDeepOpConf getDeepOpConfObj(ResultSet resultSet) throws Exception {
-		PoiDeepOpConf result = new PoiDeepOpConf();
-		try {
-			if (resultSet.next()) {
-				result.setId(resultSet.getString("ID"));
-				result.setFirstWorkItem(resultSet.getString("FIRST_WORK_ITEM"));
-				result.setSecondWorkItem(resultSet.getString("SECOND_WORK_ITEM"));
-				result.setSaveExebatch(resultSet.getInt("SAVE_EXEBATCH"));
-				result.setSaveBatchrules(resultSet.getString("SAVE_BATCHRULES"));
-				result.setSaveExecheck(resultSet.getInt("SAVE_EXECHECK"));
-				result.setSaveCkrules(resultSet.getString("SAVE_CKRULES"));
-				result.setSaveExeclassify(resultSet.getInt("SAVE_EXECLASSIFY"));
-				result.setSaveClassifyrules(resultSet.getString("SAVE_CLASSIFYRULES"));
-				result.setSubmitExebatch(resultSet.getInt("SUBMIT_EXEBATCH"));
-				result.setSubmitBatchrules(resultSet.getString("SUBMIT_BATCHRULES"));
-				result.setSubmitExecheck(resultSet.getInt("SUBMIT_EXECHECK"));
-				result.setSubmitCkrules(resultSet.getString("SUBMIT_CKRULES"));
-				result.setSubmitExeclassify(resultSet.getInt("SUBMIT_EXECLASSIFY"));
-				result.setSubmitClassifyrules(resultSet.getString("SUBMIT_CLASSIFYRULES"));
-				result.setType(resultSet.getInt("type"));
-			}
-			return result;
-		} catch (Exception e) {
-			throw e;
-		}
-		
-		
 	}
 	
 }

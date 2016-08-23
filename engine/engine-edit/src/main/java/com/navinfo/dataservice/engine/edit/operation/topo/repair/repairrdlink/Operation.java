@@ -92,8 +92,8 @@ public class Operation implements IOperation {
 						GeoTranslator.geojson2Jts(command.getLinkGeom()), MeshUtils.mesh2Jts(meshIdStr)), 1, 5);
 				List<RdLink> rdLinkds = RdLinkOperateUtils.getCreateRdLinksWithMesh(geomInter, maps, result);
 				links.addAll(rdLinkds);
-				
-				for(RdLink link : rdLinkds){
+
+				for (RdLink link : rdLinkds) {
 					// 设置Link的urban属性
 					UrbanBatchUtils.updateUrban(link, null, conn);
 				}
@@ -261,6 +261,10 @@ public class Operation implements IOperation {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Operation rdinterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Operation(
 				this.conn);
 		rdinterOperation.breakRdLink(oldLink, newLinks, result);
+		// 维护CRF对象
+		com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation rdObjectOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation(
+				this.conn);
+		rdObjectOperation.breakRdObjectLink(oldLink, newLinks, result);
 		// 收费站
 		com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.update.Operation rdTollgateOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.update.Operation(
 				this.conn);

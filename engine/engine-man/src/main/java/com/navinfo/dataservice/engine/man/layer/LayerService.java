@@ -10,6 +10,7 @@ import java.util.List;
 
 import net.sf.json.JSONObject;
 import oracle.sql.CLOB;
+import oracle.sql.STRUCT;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -21,6 +22,7 @@ import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -146,9 +148,14 @@ public class LayerService {
 						HashMap<String,Object> map = new HashMap<String,Object>();
 						map.put("layerId", rs.getInt("LAYER_ID"));
 						map.put("layerName", rs.getString("LAYER_NAME"));
-						CLOB clob=(CLOB)rs.getObject("GEOMETRY");
-						String clobStr=DataBaseUtils.clob2String(clob);
-						map.put("geometry", Geojson.wkt2Geojson(clobStr));
+						STRUCT struct=(STRUCT)rs.getObject("GEOMETRY");
+						try {
+							String clobStr = GeoTranslator.struct2Wkt(struct);
+							map.put("geometry", Geojson.wkt2Geojson(clobStr));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
 						map.put("createDate", DateUtils.dateToString(rs.getTimestamp("CREATE_DATE")));
 						list.add(map);

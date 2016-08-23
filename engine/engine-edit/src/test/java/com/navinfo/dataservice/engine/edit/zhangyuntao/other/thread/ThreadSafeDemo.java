@@ -2,8 +2,10 @@ package com.navinfo.dataservice.engine.edit.zhangyuntao.other.thread;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * @Title: ThreadSafeDemo.java
@@ -42,8 +44,15 @@ public class ThreadSafeDemo {
 
 		return list.size();
 	}
-
+	
 	public static void main(String[] args) throws InterruptedException {
+		HashMap map = new HashMap();
+		System.out.println(map.put(null, 1));
+		System.out.println(map.put(null, null));
+		System.out.println(map.put(null, 1));
+		System.out.println(map.put(null, 2));
+		System.out.println(map.put(1, 1));
+		System.out.println(map.put(2, 2));
 		List unsafeList = new ArrayList();
 		List safeList = Collections.synchronizedList(new ArrayList());
 		final int N = 10000;

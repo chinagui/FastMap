@@ -21,7 +21,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdLinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.utils.batch.AdminIDBatchUtils;
 import com.navinfo.dataservice.engine.edit.utils.batch.UrbanBatchUtils;
+import com.navinfo.dataservice.engine.edit.utils.batch.ZoneIDBatchUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -80,6 +82,10 @@ public class Operation implements IOperation {
 			links.add(link);
 			// 设置Link的urban属性
 			UrbanBatchUtils.updateUrban(this.command.getUpdateLink(), link.getGeometry(), conn);
+			// 设置link的AdminId
+			AdminIDBatchUtils.updateAdminID(this.command.getUpdateLink(), link.getGeometry(), conn);
+			// 设置link的ZoneId
+			ZoneIDBatchUtils.updateZoneID(this.command.getUpdateLink(), link.getGeometry(), conn, result);
 		} else {
 			Iterator<String> it = meshes.iterator();
 			Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
@@ -92,10 +98,14 @@ public class Operation implements IOperation {
 						GeoTranslator.geojson2Jts(command.getLinkGeom()), MeshUtils.mesh2Jts(meshIdStr)), 1, 5);
 				List<RdLink> rdLinkds = RdLinkOperateUtils.getCreateRdLinksWithMesh(geomInter, maps, result);
 				links.addAll(rdLinkds);
-				
-				for(RdLink link : rdLinkds){
+
+				for (RdLink link : rdLinkds) {
 					// 设置Link的urban属性
 					UrbanBatchUtils.updateUrban(link, null, conn);
+					// 设置link的区划号码
+					AdminIDBatchUtils.updateAdminID(this.command.getUpdateLink(), link.getGeometry(), conn);
+					// 设置link的ZoneId
+					ZoneIDBatchUtils.updateZoneID(this.command.getUpdateLink(), link.getGeometry(), conn, result);
 				}
 			}
 			deleteRdLink(result);

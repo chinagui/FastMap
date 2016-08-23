@@ -2,9 +2,11 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdobject.create;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
+import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -20,6 +22,8 @@ public class Command extends AbstractCommand{
 	private JSONArray linkArray;
 	
 	private JSONArray roadArray;
+	
+	private Geometry pointGeo;
 	
 	public JSONArray getInterArray() {
 		return interArray;
@@ -59,6 +63,15 @@ public class Command extends AbstractCommand{
 		
 		JSONObject data = json.getJSONObject("data");
 		
+		JSONObject geoPoint = new JSONObject();
+
+		geoPoint.put("type", "Point");
+
+		geoPoint.put("coordinates", new double[] {data.getDouble("longitude"),
+				data.getDouble("latitude") });
+		
+		pointGeo = GeoTranslator.geojson2Jts(geoPoint, 100000, 0);
+		
 		if(data.containsKey("inters"))
 		{
 			this.interArray = data.getJSONArray("inters");
@@ -81,5 +94,13 @@ public class Command extends AbstractCommand{
 
 	public void setLinkArray(JSONArray linkArray) {
 		this.linkArray = linkArray;
+	}
+
+	public Geometry getPointGeo() {
+		return pointGeo;
+	}
+
+	public void setPointGeo(Geometry pointGeo) {
+		this.pointGeo = pointGeo;
 	}
 }

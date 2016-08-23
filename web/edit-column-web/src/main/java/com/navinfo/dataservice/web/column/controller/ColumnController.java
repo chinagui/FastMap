@@ -142,5 +142,76 @@ public class ColumnController extends BaseController {
 		}
 		
 	}
+	
+	/**
+	 * 精编提交接口
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/deep/columnSubmit")
+	public ModelAndView columnSubmit(HttpServletRequest request)
+			throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
+			
+			int taskId = dataJson.getInt("taskId");
+			String firstWorkItem = dataJson.getString("firstWorkItem");
+			String secondWorkItem = dataJson.getString("secondWorkItem");
+			
+			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			
+			JSONObject jobDataJson=new JSONObject();
+			jobDataJson.put("taskId", taskId);
+			jobDataJson.put("userId", userId);
+			jobDataJson.put("firstWorkItem", firstWorkItem);
+			jobDataJson.put("secondWorkItem", secondWorkItem);
+			
+			long jobId=jobApi.createJob("columnSubmitJob", jobDataJson, userId, "精编提交");
+			
+			return new ModelAndView("jsonView", success(jobId));
+		} catch (Exception e) {
+	
+			logger.error(e.getMessage(), e);
+	
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	/**
+	 * 查询二级作业项的统计信息
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/deep/secondWorkStatistics")
+	public ModelAndView secondWorkStatistics(HttpServletRequest request)
+			throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(URLDecode(parameter));
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
+			
+			ColumnCoreControl control = new ColumnCoreControl();
+			JSONObject result = control.secondWorkStatistics(jsonReq, userId);
+			
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+	
+			logger.error(e.getMessage(), e);
+	
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
 
 }

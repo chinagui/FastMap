@@ -24,7 +24,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEditStatus;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
-import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiEditStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
 
@@ -80,7 +79,7 @@ public class AbstractSelector implements ISelector {
 			if (resultSet.next()) {
 				// 设置主表信息
 				ReflectionAttrUtils.executeResultSet(row, resultSet);
-				if (noChild == null || noChild.length == 0) {
+				if (noChild == null || noChild[0]) {
 					if (row instanceof IObj) {
 						IObj obj = (IObj) row;
 						// 子表list map

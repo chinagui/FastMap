@@ -191,7 +191,7 @@ public class IxPoiDeepStatusSelector extends AbstractSelector {
 			}
 			
 			return result;
-		}  catch (Exception e) {
+		} catch (Exception e) {
 			throw e;
 		} finally {
 			DbUtils.closeQuietly(resultSet);
@@ -234,6 +234,104 @@ public class IxPoiDeepStatusSelector extends AbstractSelector {
 			DbUtils.closeQuietly(pstmt); 
 		}
 		
+	}
+	
+	/**
+	 * 查询该任务下可提交数据的rowId
+	 * @param firstWorkItem
+	 * @param secondWorkItem
+	 * @param taskId
+	 * @return
+	 * @throws Exception
+	 */
+	public List<String> getRowIdForSubmit(String firstWorkItem,String secondWorkItem,int taskId) throws Exception {
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT s.row_id FROM poi_deep_status s,poi_deep_workitem_conf w WHERE s.work_item_id=w.work_item_id");
+		
+		PreparedStatement pstmt = null;
+		
+		ResultSet resultSet = null;
+		
+		try {
+			List<String> rowIdList = new ArrayList<String>();
+			
+			if (!firstWorkItem.isEmpty()) {
+				sb.append(" AND s.first_work_status=2 AND w.first_work_item='"+firstWorkItem+"'");
+			}
+			if (!secondWorkItem.isEmpty()) {
+				sb.append(" AND s.second_work_status=2 AND w.second_work_item='"+secondWorkItem+"'");
+			}
+			
+			pstmt = conn.prepareStatement(sb.toString());
+
+			resultSet = pstmt.executeQuery();
+			
+			while (resultSet.next()) {
+				rowIdList.add(resultSet.getString("row_id"));
+			}
+			
+			return rowIdList;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt); 
+		}
+	}
+	
+	/**
+	 * 查询二级作业项的统计信息
+	 * @param secondWorkItem
+	 * @param userId
+	 * @param type
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject secondWorkStatistics(String secondWorkItem,long userId,int type) throws Exception {
+		
+		JSONObject result = new JSONObject();
+		
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT count(1) num,s.second_work_status");
+		sql.append(" FROM poi_deep_status s, poi_deep_workitem_conf w");
+		sql.append(" WHERE s.work_item_id = w.work_item_id");
+		sql.append(" AND w.second_work_item='"+secondWorkItem+"'");
+		sql.append(" AND s.handler="+userId);
+		sql.append(" AND w.type="+type);
+		sql.append(" group by s.second_work_status");
+		
+		PreparedStatement pstmt = null;
+		
+		ResultSet resultSet = null;
+		
+		try {
+			pstmt = conn.prepareStatement(sql.toString());
+
+			resultSet = pstmt.executeQuery();
+			
+			int total = 0;
+			int worked = 0;
+			
+			while (resultSet.next()) {
+				int tempcount = resultSet.getInt("num");
+				total += tempcount;
+				int status = resultSet.getInt("second_work_status");
+				if (status == 2) {
+					worked = tempcount;
+				}
+			}
+			
+			result.put("total", total);
+			result.put("worked", worked);
+			
+			return result;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt); 
+		}
 	}
 	
 }

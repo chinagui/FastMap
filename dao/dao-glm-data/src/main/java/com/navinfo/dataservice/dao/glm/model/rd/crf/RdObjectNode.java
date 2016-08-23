@@ -56,17 +56,17 @@ public class RdObjectNode implements IRow {
 
 	@Override
 	public String rowId() {
-		return null;
+		return this.rowId;
 	}
 
 	@Override
 	public void setRowId(String rowId) {
-
+		this.rowId = rowId;
 	}
 
 	@Override
 	public String tableName() {
-		return null;
+		return "RD_OBJECT_NODE";
 	}
 
 	@Override
@@ -81,7 +81,7 @@ public class RdObjectNode implements IRow {
 
 	@Override
 	public ObjType objType() {
-		return null;
+		return ObjType.RDOBJECTNODE;
 	}
 
 	@Override

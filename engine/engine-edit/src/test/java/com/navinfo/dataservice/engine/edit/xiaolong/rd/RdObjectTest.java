@@ -52,7 +52,7 @@ public class RdObjectTest extends InitApplication {
 
 	@Test
 	public void testAddRdObject() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"RDOBJECT\",\"data\":{\"links\":[100008941,100008939],\"inters\":[],\"roads\":[],\"longitude\":116.41258120536804,\"latitude\":40.03409200474134}}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"RDOBJECT\",\"data\":{\"links\":[100008960],\"inters\":[],\"roads\":[],\"longitude\":116.41008675098419,\"latitude\":40.041312308921576}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -127,8 +127,33 @@ public class RdObjectTest extends InitApplication {
 	}
 
 	@Test
-	public void testDelRdInter() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDINTER\",\"dbId\":42,\"objId\":100000750}";
+	public void testDelRdObject() {
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDOBJECT\",\"dbId\":42,\"objId\":100000041}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+
+			String log = t.getLogs();
+
+			JSONObject json = new JSONObject();
+
+			json.put("result", msg);
+
+			json.put("log", log);
+
+			json.put("check", t.getCheckLog());
+
+			json.put("pid", t.getPid());
+			
+			System.out.println(json.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testDelRdLink() {
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDLINK\",\"dbId\":42,\"objId\":100008960}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

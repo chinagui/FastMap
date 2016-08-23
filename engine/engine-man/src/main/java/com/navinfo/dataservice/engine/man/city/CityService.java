@@ -64,8 +64,9 @@ public class CityService {
 							HashMap<String,Object> map = new HashMap<String,Object>();
 							map.put("cityId", rs.getInt("CITY_ID"));
 							map.put("cityName", rs.getString("CITY_NAME"));
-							STRUCT struct=(STRUCT)rs.getObject("geometry");
+							
 							try {
+								STRUCT struct=(STRUCT)rs.getObject("geometry");
 								String clobStr = GeoTranslator.struct2Wkt(struct);
 								map.put("geometry", Geojson.wkt2Geojson(clobStr));
 							} catch (Exception e1) {

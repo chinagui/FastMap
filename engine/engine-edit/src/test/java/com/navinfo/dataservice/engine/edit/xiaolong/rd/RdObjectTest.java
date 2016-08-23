@@ -51,8 +51,8 @@ public class RdObjectTest extends InitApplication {
 	}
 
 	@Test
-	public void testAddRdInter() {
-		String parameter = "{\"command\":\"DELETE\",\"dbId\":42,\"type\":\"RDGATE\",\"objId\":100000000}";
+	public void testAddRdObject() {
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"RDOBJECT\",\"data\":{\"links\":[100008941,100008939],\"inters\":[],\"roads\":[],\"longitude\":116.41258120536804,\"latitude\":40.03409200474134}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -74,7 +74,33 @@ public class RdObjectTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
+	public void testBreakRdObjectLink()
+	{
+		String parameter = "{\"command\":\"BREAK\",\"type\":\"RDLINK\",\"dbId\":42,\"objId\":100008941,\"data\":{\"longitude\":116.41262214724813,\"latitude\":40.03393250878109}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
 
+			String log = t.getLogs();
+
+			JSONObject json = new JSONObject();
+
+			json.put("result", msg);
+
+			json.put("log", log);
+
+			json.put("check", t.getCheckLog());
+
+			json.put("pid", t.getPid());
+
+			System.out.println(json.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	@Test
 	public void testUpdateRdInter() {
 		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDINTER\",\"dbId\":42,\"data\":{\"objStatus\":\"UPDATE\",\"pid\":100000759,\"links\":[100006596,100006598,100006599,100006614,100006613],\"nodes\":[100023749,100023753,100023754,100023755,100023764]}}";

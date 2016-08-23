@@ -36,7 +36,9 @@ public class Operation implements IOperation {
 		
 		RdObject rdObject = new RdObject();
 		
-		rdObject.setPid(PidService.getInstance().applyRdInterPid());
+		rdObject.setPid(PidService.getInstance().applyRdObjectPid());
+		
+		rdObject.setGeometry(this.command.getPointGeo());
 		
 		JSONArray linkArray = this.command.getLinkArray();
 		if(linkArray != null)

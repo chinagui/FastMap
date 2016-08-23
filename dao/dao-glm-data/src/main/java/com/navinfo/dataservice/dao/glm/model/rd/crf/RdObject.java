@@ -122,7 +122,7 @@ public class RdObject implements IObj {
 
 	@Override
 	public String rowId() {
-		return null;
+		return this.rowId;
 	}
 
 	@Override

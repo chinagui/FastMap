@@ -65,11 +65,13 @@ public class Command extends AbstractCommand {
 
 		this.setDbId(json.getInt("dbId"));
 		
-		this.direct = json.getInt("direct");
+		JSONObject data = json.getJSONObject("data");
+		
+		this.direct = data.getInt("direct");
 
-		JSONArray array = json.getJSONArray("linkPids");
+		JSONArray array = data.getJSONArray("linkPids");
 
-		this.speedLimitContent = json.getJSONObject("linkSpeedLimit");
+		this.speedLimitContent = data.getJSONObject("linkSpeedLimit");
 
 		linkPids = new ArrayList<Integer>();
 

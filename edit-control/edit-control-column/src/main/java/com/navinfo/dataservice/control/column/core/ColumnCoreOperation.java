@@ -2,9 +2,7 @@ package com.navinfo.dataservice.control.column.core;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -13,7 +11,6 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
-import com.navinfo.dataservice.bizcommons.datarow.CkResultTool;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -39,7 +36,7 @@ public class ColumnCoreOperation {
 			int userId=(int) mapParams.get("userId");
 			List ckRules=(List) mapParams.get("ckRules");
 			List classifyRules=(List) mapParams.get("classifyRules");
-			List dataList=(List) mapParams.get("data"); //每条数据需包含子任务号，pid
+			List dataList=(List) mapParams.get("data"); //每条数据需包含子任务号，rowId
 			
 			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 			int oldDbId = 0;

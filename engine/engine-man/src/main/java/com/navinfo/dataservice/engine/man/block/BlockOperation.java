@@ -20,6 +20,7 @@ import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -30,6 +31,7 @@ import com.navinfo.navicommons.database.QueryRunner;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.CLOB;
+import oracle.sql.STRUCT;
 
 public class BlockOperation {
 	private static Logger log = LoggerRepos.getLogger(BlockOperation.class);
@@ -50,15 +52,16 @@ public class BlockOperation {
 						map.put("blockName", rs.getString("BLOCK_NAME"));
 						map.put("planningStatus", rs.getInt("PLAN_STATUS"));
 						map.put("cityId", rs.getInt("CITY_ID"));
-						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));						
 						try {
-							CLOB clob = (CLOB) rs.getObject("geometry");
-							String clobStr = DataBaseUtils.clob2String(clob);
+							STRUCT struct=(STRUCT)rs.getObject("GEOMETRY");
+							String clobStr = GeoTranslator.struct2Wkt(struct);
 							map.put("geometry", Geojson.wkt2Geojson(clobStr));
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						} catch (Exception e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
 						}
+						
 						list.add(map);
 					}
 					return list;
@@ -87,13 +90,13 @@ public class BlockOperation {
 							if (BlockOperation.checkGridFinished(rs.getInt("BLOCK_ID"),json.getInt("stage"),json.getInt("stage"))) {
 								map.put("blockId", rs.getInt("BLOCK_ID"));
 								map.put("blockName", rs.getInt("BLOCK_NAME"));
-								CLOB clob = (CLOB) rs.getObject("geometry");
-								String clobStr = DataBaseUtils.clob2String(clob);
+								STRUCT struct=(STRUCT)rs.getObject("geometry");
 								try {
+									String clobStr = GeoTranslator.struct2Wkt(struct);
 									map.put("geometry", Geojson.wkt2Geojson(clobStr));
-								} catch (Exception e) {
+								} catch (Exception e1) {
 									// TODO Auto-generated catch block
-									e.printStackTrace();
+									e1.printStackTrace();
 								}
 								list.add(map);
 							}
@@ -127,14 +130,15 @@ public class BlockOperation {
 						map.put("blockId", rs.getInt("BLOCK_ID"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("blockName", rs.getString("BLOCK_NAME"));
-						CLOB clob = (CLOB) rs.getObject("GEOMETRY");
-						String clobStr = DataBaseUtils.clob2String(clob);
+						STRUCT struct=(STRUCT)rs.getObject("GEOMETRY");
 						try {
+							String clobStr = GeoTranslator.struct2Wkt(struct);
 							map.put("geometry", Geojson.wkt2Geojson(clobStr));
-						} catch (Exception e) {
+						} catch (Exception e1) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
+							e1.printStackTrace();
 						}
+						
 						map.put("planStatus", rs.getInt("PLAN_STATUS"));
 
 						list.add(map);
@@ -263,8 +267,13 @@ public class BlockOperation {
 			if (!blockList.isEmpty()) {
 				String BlockIds = "(";
 				BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
-
+				//更新block表
 				String updateSql = "update block" + " set plan_status = 2" + " where block_id in " + BlockIds;
+
+				run.update(conn, updateSql);
+				
+				//更新block_man
+				updateSql = "update block_man" + " set status = 0" + " where latest = 1 and block_id in " + BlockIds;
 
 				run.update(conn, updateSql);
 			}
@@ -507,7 +516,7 @@ public class BlockOperation {
 			String BlockIds = "(";
 			BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
 			
-			String selectSql = "select block_id from block_man where block_id in " + BlockIds;
+			String selectSql = "select block_id from block_man where status!=0 and block_id in " + BlockIds;
 
 			PreparedStatement stmt = conn.prepareStatement(selectSql);
 			ResultSet rs = stmt.executeQuery();
@@ -525,4 +534,32 @@ public class BlockOperation {
 		}
 	}
 
+	
+	
+	/**
+	 * @param conn
+	 * @param blockList
+	 * @throws Exception
+	 */
+	public static void updateMainBlock(Connection conn, List<Integer> blockList) throws Exception {
+		// TODO Auto-generated method stub
+		try {
+			QueryRunner run = new QueryRunner();
+			if (!blockList.isEmpty()) {
+				String BlockIds = "(";
+				BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
+
+				String updateSql = "update block" + " set plan_status = 1" + " where block_id in " + BlockIds;
+
+				run.update(conn, updateSql);
+			}
+			
+			//发布消息
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("更新失败，原因为:" + e.getMessage(), e);
+		}
+	}
 }

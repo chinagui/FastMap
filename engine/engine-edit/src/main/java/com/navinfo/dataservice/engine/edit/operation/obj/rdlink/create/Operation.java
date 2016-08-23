@@ -13,7 +13,9 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.utils.AdminOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdLinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.utils.batch.AdminIDBatchUtils;
 import com.navinfo.dataservice.engine.edit.utils.batch.UrbanBatchUtils;
+import com.navinfo.dataservice.engine.edit.utils.batch.ZoneIDBatchUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -86,6 +88,10 @@ public class Operation implements IOperation {
 
 			// 设置Link的urban属性
 			UrbanBatchUtils.updateUrban(link, null, this.conn);
+			// 设置link的adminId属性
+			AdminIDBatchUtils.updateAdminID(link, null, conn);
+			// 设置link的zoneId属性
+			ZoneIDBatchUtils.updateZoneID(link, null, conn, result);
 
 			result.insertObject(link, ObjStatus.INSERT, link.pid());
 		}
@@ -146,6 +152,10 @@ public class Operation implements IOperation {
 
 		// 设置Link的urban属性
 		UrbanBatchUtils.updateUrban(link, null, this.conn);
+		// 设置link的adminId属性
+		AdminIDBatchUtils.updateAdminID(link, null, conn);
+		// 设置link的zoneId属性
+		ZoneIDBatchUtils.updateZoneID(link, null, conn, result);
 
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
 	}

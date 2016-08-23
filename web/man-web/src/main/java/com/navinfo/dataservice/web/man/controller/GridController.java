@@ -13,6 +13,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 
 import com.navinfo.dataservice.engine.man.grid.GridService;
+import com.navinfo.navicommons.database.Page;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 
@@ -94,6 +96,49 @@ public class GridController extends BaseController {
 			}
 			List<String> data = GridService.getInstance().queryMergeGrid(dataJson);
 			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("获取grid列表失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 * 作业管理
+	 * 根据输入gridId,stage，获取grid所在的subtask列表。
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/grid/subtaskList")
+	public ModelAndView subtaskList(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int gridId = 0;
+			if (!dataJson.containsKey("gridId")){
+				throw new IllegalArgumentException("gridId");
+			}
+			gridId = dataJson.getInt("gridId");
+			int stage = 0;
+			if (!dataJson.containsKey("stage")){
+				throw new IllegalArgumentException("stage");
+			}
+			stage = dataJson.getInt("stage");
+			
+			int curPageNum= 1;//默认为第一页
+			if(dataJson.containsKey("pageNum")){
+				curPageNum = dataJson.getInt("pageNum");
+			}
+			
+			int pageSize = 20;//默认页容量为20
+			if(dataJson.containsKey("pageSize")){
+				pageSize = dataJson.getInt("pageSize");
+			}
+			
+			Page page = GridService.getInstance().subtaskList(gridId,stage,curPageNum,pageSize);
+			return new ModelAndView("jsonView", success(page));
 		} catch (Exception e) {
 			log.error("获取grid列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

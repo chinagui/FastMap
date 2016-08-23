@@ -2,21 +2,29 @@ package com.navinfo.dataservice.control.column.core;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiDeepOpConf;
 import com.navinfo.dataservice.dao.glm.search.IxPoiSearch;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+/**
+ * 精编业务处理类
+ * @author wangdongbin
+ *
+ */
 public class ColumnCoreControl {
 	
 	public void applyData(int groupId,String firstWorkItem,long userId) throws Exception{
@@ -165,6 +173,120 @@ public class ColumnCoreControl {
 		} finally {
 			DbUtils.closeQuietly(conn);
 		}
+	}
+	
+	/**
+	 * 保存精编数据
+	 * @param dbId
+	 * @param data
+	 * @throws Exception
+	 */
+	public void columnSave(int dbId,JSONArray data) throws Exception {
+		try {
+			for (int i=0;i<data.size();i++) {
+				JSONObject poiObj = new JSONObject();
+				poiObj.put("dbId", dbId);
+				poiObj.put("data", data.getJSONObject(i));
+				EditApi apiEdit=(EditApi) ApplicationContextUtil.getBean("editApi");
+				apiEdit.columnSave(poiObj);
+			}
+			
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * 查询精编配置表
+	 * @param secondWorkItem
+	 * @param type
+	 * @param conn
+	 * @return
+	 * @throws Exception
+	 */
+	public PoiDeepOpConf getDeepOpConf(String secondWorkItem,int type,Connection conn) throws Exception {
+		PoiDeepOpConf result = new PoiDeepOpConf();
+		
+		String sql = "SELECT * FROM poi_deep_op_conf WHERE second_work_item=:1 and type=:2";
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setString(1, secondWorkItem);
+
+			pstmt.setInt(2, type);
+
+			resultSet = pstmt.executeQuery();
+			
+			result = getDeepOpConfObj(resultSet);
+			
+			return result;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	public void updateDeepStatus(List<String> rowIdList,Connection conn) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append("UPDATE poi_deep_status SET firstWorkStatus=2,secondWorkStatus=2 WHERE row_id in(");
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		try {
+			String temp="";
+			for (String rowId:rowIdList) {
+				sb.append(temp);
+				sb.append("'"+rowId+"'");
+				temp = ",";
+			}
+			sb.append(")");
+			
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	private PoiDeepOpConf getDeepOpConfObj(ResultSet resultSet) throws Exception {
+		PoiDeepOpConf result = new PoiDeepOpConf();
+		try {
+			if (resultSet.next()) {
+				result.setId(resultSet.getString("ID"));
+				result.setFirstWorkItem(resultSet.getString("FIRST_WORK_ITEM"));
+				result.setSecondWorkItem(resultSet.getString("SECOND_WORK_ITEM"));
+				result.setSaveExebatch(resultSet.getInt("SAVE_EXEBATCH"));
+				result.setSaveBatchrules(resultSet.getString("SAVE_BATCHRULES"));
+				result.setSaveExecheck(resultSet.getInt("SAVE_EXECHECK"));
+				result.setSaveCkrules(resultSet.getString("SAVE_CKRULES"));
+				result.setSaveExeclassify(resultSet.getInt("SAVE_EXECLASSIFY"));
+				result.setSaveClassifyrules(resultSet.getString("SAVE_CLASSIFYRULES"));
+				result.setSubmitExebatch(resultSet.getInt("SUBMIT_EXEBATCH"));
+				result.setSubmitBatchrules(resultSet.getString("SUBMIT_BATCHRULES"));
+				result.setSubmitExecheck(resultSet.getInt("SUBMIT_EXECHECK"));
+				result.setSubmitCkrules(resultSet.getString("SUBMIT_CKRULES"));
+				result.setSubmitExeclassify(resultSet.getInt("SUBMIT_EXECLASSIFY"));
+				result.setSubmitClassifyrules(resultSet.getString("SUBMIT_CLASSIFYRULES"));
+				result.setType(resultSet.getInt("type"));
+			}
+			return result;
+		} catch (Exception e) {
+			throw e;
+		}
+		
+		
 	}
 	
 }

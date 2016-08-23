@@ -80,17 +80,17 @@ public class RdNameOperation {
 			pstmt = conn.prepareStatement(insertSql);
 
 			Integer nameId = rdName.getNameId();
-			Integer nameGroupId = rdName.getNameGroupId();
+			Integer nameGroupid = rdName.getNameGroupid();
 			
 			if (rdName.getNameId() == null) {
 				nameId = applyPid();
 			}
-			if (rdName.getNameGroupId() == null) {
-				nameGroupId = applyPid();
+			if (rdName.getNameGroupid() == null) {
+				nameGroupid = applyPid();
 			}
 
 			pstmt.setLong(1, nameId);
-			pstmt.setLong(2, nameGroupId);
+			pstmt.setLong(2, nameGroupid);
 			pstmt.setString(3, rdName.getLangCode());
 			pstmt.setString(4, rdName.getName());
 			pstmt.setString(5, rdName.getType());
@@ -137,7 +137,7 @@ public class RdNameOperation {
 			pstmt.execute();
 
 			rdName.setNameId(nameId);
-			rdName.setNameGroupId(nameGroupId);
+			rdName.setNameGroupid(nameGroupid);
 			return rdName;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -202,7 +202,7 @@ public class RdNameOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean checkEngName(int nameGroupId) throws Exception {
+	public boolean checkEngName(int nameGroupid) throws Exception {
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -214,7 +214,7 @@ public class RdNameOperation {
 			conn = DBConnector.getInstance().getMetaConnection();
 			pstmt = conn.prepareStatement(sql);
 			
-			pstmt.setLong(1, nameGroupId);
+			pstmt.setLong(1, nameGroupid);
 
 			resultSet = pstmt.executeQuery();
 			
@@ -314,7 +314,7 @@ public class RdNameOperation {
 				pstmt.setNull(22, Types.INTEGER);
 			}
 			pstmt.setInt(23, rdName.getProcessFlag());
-			pstmt.setInt(24, rdName.getuRecord());
+			pstmt.setInt(24, 3);
 			pstmt.setString(25, rdName.getuFields());
 			pstmt.setInt(26, rdName.getSplitFlag());
 //			pstmt.setString(27, rdName.getCity());
@@ -323,7 +323,7 @@ public class RdNameOperation {
 			pstmt.execute();
 			
 			// 查询是否存在英文/葡文名
-			if (checkEngName(rdName.getNameGroupId())) {
+			if (checkEngName(rdName.getNameGroupid())) {
 				// 存在，则更新“道路类型（ROAD_TYPE）”、“国家编号(CODE_TYPE)”、“行政区划(ADMIN_ID)”
 				String sql = "UPDATE rd_name SET road_type=?,code_type=?,admin_id=? WHERE name_groupid=? and lang_code in ('ENG','POR')";
 				subPstms = conn.prepareStatement(sql);
@@ -331,7 +331,7 @@ public class RdNameOperation {
 				subPstms.setInt(1, rdName.getRoadType());
 				subPstms.setInt(2, rdName.getCodeType());
 				subPstms.setInt(3, rdName.getAdminId());
-				subPstms.setLong(4, rdName.getNameGroupId());
+				subPstms.setLong(4, rdName.getNameGroupid());
 				
 				subPstms.execute();
 			}

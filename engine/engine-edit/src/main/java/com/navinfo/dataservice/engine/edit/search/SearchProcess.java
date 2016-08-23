@@ -23,6 +23,7 @@ import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdObjectSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
@@ -344,6 +345,7 @@ public class SearchProcess {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
 				}
+				break;
 			case LULINK:
 				if (condition.containsKey("nodePid")) {
 					int nodePid = condition.getInt("nodePid");
@@ -357,6 +359,7 @@ public class SearchProcess {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
 				}
+				break;
 			case LCLINK:
 				if (condition.containsKey("nodePid")) {
 					int nodePid = condition.getInt("nodePid");
@@ -370,8 +373,22 @@ public class SearchProcess {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
 				}
-			}
+				break;
+			case RDOBJECTNAME:
+				if (condition.containsKey("pid")) {
+					int pid = condition.getInt("pid");
 
+					RdObjectSelector selector = new RdObjectSelector(this.conn);
+
+					List<String> names = selector
+							.getRdObjectName(pid, true);
+
+					for (String name : names) {
+						array.add(name);
+					}
+				}
+				break;
+			}
 			return array;
 		} catch (Exception e) {
 

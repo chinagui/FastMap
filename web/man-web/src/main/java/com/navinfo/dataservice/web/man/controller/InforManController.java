@@ -35,7 +35,7 @@ public class InforManController extends BaseController {
 	private InforManService service=InforManService.getInstance();
 
 	/**
-	 * 规划管理-情报管理-情报规划-保存情报为草稿
+	 * 规划管理-情报管理-情报规划-创建情报
 	 * 
 	 * @param request
 	 * @return
@@ -78,6 +78,37 @@ public class InforManController extends BaseController {
 			return new ModelAndView("jsonView", success("修改成功"));
 		} catch (Exception e) {
 			log.error("修改失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+
+	/**
+	 * 规划管理-情报管理-情报规划-保存情报
+	 * 
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/inforMan/save")
+	public ModelAndView inforSave(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			if (service.query(dataJson.getString("inforId"))==null){
+				service.create(dataJson, userId);
+			}else{
+				service.update(dataJson);
+			}
+			return new ModelAndView("jsonView", success("创建成功"));
+		} catch (Exception e) {
+			log.error("创建失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}

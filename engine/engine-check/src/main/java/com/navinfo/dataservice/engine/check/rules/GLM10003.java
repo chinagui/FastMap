@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -11,17 +12,17 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.graph.LinksConnectedInOneDirection;
 
 /** 
- * @ClassName: CHECK_RDSLOPE_DIRECTION
+ * @ClassName: GLM10003
  * @author songdongyan
  * @date 2016年8月22日
- * @Description: 道路坡度如果选择了多根link，则这些link必须是可通行方向上的接续link
+ * @Description: 有坡度信息的Link的通行方向如果是单向，并且是进入坡度信息记录主点的，报错
  */
-public class CHECK_RDSLOPE_DIRECTION extends baseRule {
+public class GLM10003 extends baseRule {
 
 	/**
 	 * 
 	 */
-	public CHECK_RDSLOPE_DIRECTION() {
+	public GLM10003() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -41,6 +42,18 @@ public class CHECK_RDSLOPE_DIRECTION extends baseRule {
 				List<IRow> viaLinks = rdSlope.getSlopeVias();
 				//获取退出线信息
 				int outLinkPid = rdSlope.getLinkPid();
+				
+				Map<String, Object> changedFields = rdSlope.changedFields();
+				
+				if(!changedFields.isEmpty()){
+					if(changedFields.containsKey("linkPid")){
+						outLinkPid = (int) changedFields.get("linkPid");
+					}
+					if(changedFields.containsKey("slopeVias")){
+						viaLinks = (List<IRow>) changedFields.get("slopeVias");
+					}
+				}
+
 				RdLinkSelector rdLinkSelector=new RdLinkSelector(this.getConn());
 				RdLink outLink = (RdLink) rdLinkSelector.loadByIdOnlyRdLink(outLinkPid, false);
 				
@@ -61,6 +74,8 @@ public class CHECK_RDSLOPE_DIRECTION extends baseRule {
 					this.setCheckResult("", "", 0);
 					return;
 				}
+				
+
 			}
 		}
 

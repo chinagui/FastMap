@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -9,19 +10,20 @@ import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.graph.LinksConnectedInOneDirection;
+import com.navinfo.dataservice.engine.check.graph.LinksContainClosedLoop;
 
 /** 
- * @ClassName: CHECK_RDSLOPE_DIRECTION
+ * @ClassName: GLM10019
  * @author songdongyan
- * @date 2016年8月22日
- * @Description: 道路坡度如果选择了多根link，则这些link必须是可通行方向上的接续link
+ * @date 2016年8月24日
+ * @Description: 同一个坡度的所有相关link均不能形成闭合环
  */
-public class CHECK_RDSLOPE_DIRECTION extends baseRule {
+public class GLM10019 extends baseRule {
 
 	/**
 	 * 
 	 */
-	public CHECK_RDSLOPE_DIRECTION() {
+	public GLM10019() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -35,29 +37,28 @@ public class CHECK_RDSLOPE_DIRECTION extends baseRule {
 			//获取新建RdBranch信息
 			if(obj instanceof RdSlope ){
 				RdSlope rdSlope = (RdSlope)obj;
-				//记录主点
-				int startNode = rdSlope.getNodePid();
+				//新增信息
 				//接续线信息
 				List<IRow> viaLinks = rdSlope.getSlopeVias();
 				//获取退出线信息
 				int outLinkPid = rdSlope.getLinkPid();
+
+				//修改信息
+				Map<String, Object> changedFields = rdSlope.changedFields();
+				if(!changedFields.isEmpty()){
+					if(changedFields.containsKey("linkPid")){
+						outLinkPid = (int) changedFields.get("linkPid");
+					}
+					if(changedFields.containsKey("slopeVias")){
+						viaLinks = (List<IRow>) changedFields.get("slopeVias");
+					}
+				}
 				RdLinkSelector rdLinkSelector=new RdLinkSelector(this.getConn());
 				RdLink outLink = (RdLink) rdLinkSelector.loadByIdOnlyRdLink(outLinkPid, false);
+				viaLinks.add(outLink);
 				
-				//退出是否沿通行方向
-				if(outLink.getDirect()==2 && outLink.geteNodePid() == startNode){
-					this.setCheckResult("", "", 0);
-					return;
-				}else if(outLink.getDirect()==3 && outLink.getsNodePid() == startNode){
-					this.setCheckResult("", "", 0);
-					return;
-				}
-				//接续线是否沿通行方向联通
-				if(viaLinks.size() == 0){
-					continue;
-				}
-				LinksConnectedInOneDirection linksConnectedInOneDirection = new LinksConnectedInOneDirection(startNode,outLink,viaLinks);
-				if(!linksConnectedInOneDirection.isConnected()){
+				LinksContainClosedLoop linksContainClosedLoop = new LinksContainClosedLoop(viaLinks);
+				if(!linksContainClosedLoop.containClosedLoop()){
 					this.setCheckResult("", "", 0);
 					return;
 				}

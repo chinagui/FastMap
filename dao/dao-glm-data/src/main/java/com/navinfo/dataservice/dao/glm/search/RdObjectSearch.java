@@ -8,14 +8,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
-import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
@@ -28,7 +27,6 @@ import com.vividsolutions.jts.io.WKTReader;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
 
 /**
  * @ClassName: RdObjectSearch
@@ -63,7 +61,7 @@ public class RdObjectSearch implements ISearch {
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = " WITH TMP1    AS (	SELECT LINK_PID, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) , tmp2 AS (	SELECT /*+ leading(A,B) use_hash(A,B)*/ C.PID, A.LINK_PID,A.GEOMETRY FROM TMP1 A, RD_ROAD_LINK B,Rd_object_road C WHERE A.LINK_PID = B.LINK_PID AND C.ROAD_PID = b.pid AND B.U_RECORD != 2 ), tmp3  AS (	SELECT /*+ leading(A,B) use_hash(A,B)*/ b.PID, A.LINK_PID,A.GEOMETRY FROM TMP1 A, Rd_object_link b WHERE A.LINK_PID = B.LINK_PID AND B.U_RECORD != 2 ), TMP4  AS (	SELECT node_pid, GEOMETRY FROM RD_NODE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:2, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) , tmp5 AS (	SELECT /*+ leading(A,B) use_hash(A,B)*/ C.PID, A.NODE_PID,A.GEOMETRY FROM TMP4 A, RD_INTER_NODE B,Rd_object_INTER C WHERE A.NODE_PID = B.NODE_PID AND C.inter_PID = b.pid AND B.U_RECORD != 2 ) , tmp7 as( SELECT tmp6.PID,listagg(tmp6.LINK_PID, ',') within group( ORDER BY tmp6.LINK_PID) AS link_pids,listagg(sdo_util.to_wktgeometry_varchar( tmp6.GEOMETRY), ';') within group( ORDER BY tmp6.LINK_PID) AS link_wkts,listagg(tmp5.node_pid, ',') within group( ORDER BY tmp5.node_pid) AS node_pids,listagg(sdo_util.to_wktgeometry_varchar( tmp5. geometry), ',') within group( ORDER BY tmp5.node_pid) AS node_wkts FROM(	SELECT * FROM tmp2 UNION ALL 	SELECT * FROM tmp3) tmp6 LEFT JOIN tmp5 ON tmp6.pid = tmp5.pid GROUP BY tmp6.pid) select tmp7.*,tmp8.GEOMETRY from tmp7 left join rd_object tmp8 on tmp7.pid = tmp8.pid";
+		String sql = "WITH TMP1    AS (	SELECT LINK_PID, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1 , 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) , tmp2 AS (	SELECT /*+ leading(A,B) use_hash(A,B)*/ C.PID, A.LINK_PID,A.GEOMETRY FROM TMP1 A, RD_ROAD_LINK B,Rd_object_road C WHERE A.LINK_PID = B.LINK_PID AND C.ROAD_PID = b.pid AND B.U_RECORD != 2 ), tmp3 AS (	SELECT /*+ leading(A,B) use_hash(A,B)*/ b.PID, A.LINK_PID,A.GEOMETRY FROM TMP1 A, Rd_object_link b WHERE A.LINK_PID = B.LINK_PID AND B.U_RECORD != 2 ), TMP4 AS (	SELECT node_pid, GEOMETRY FROM RD_NODE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:2 , 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) , tmp5 AS (	SELECT /*+ leading(A,B) use_hash(A,B)*/ C.PID, A.NODE_PID,A.GEOMETRY FROM TMP4 A, RD_INTER_NODE B,Rd_object_INTER C WHERE A.NODE_PID = B.NODE_PID AND C.inter_PID = b.pid AND B.U_RECORD != 2 ) select tmp7.*,sdo_util.to_wktgeometry_varchar( tmp8.geometry) as objGeo from( SELECT tmp6.pid,tmp6.link_pid,sdo_util.to_wktgeometry_varchar(tmp6.GEOMETRY) AS link_geo,tmp5.node_pid,sdo_util.to_wktgeometry_varchar( tmp5.geometry) AS node_geo FROM(	SELECT * FROM tmp2 UNION ALL 	SELECT * FROM tmp3) tmp6 LEFT JOIN tmp5 ON tmp6.pid = tmp5.pid) tmp7 left join rd_object tmp8 on tmp7.pid = tmp8.pid GROUP BY tmp7.pid,tmp7.link_pid,tmp7.link_geo,tmp7.node_pid,tmp7.node_geo,sdo_util.to_wktgeometry_varchar( tmp8.geometry)";
 
 		PreparedStatement pstmt = null;
 
@@ -86,107 +84,146 @@ public class RdObjectSearch implements ISearch {
 
 			double py = MercatorProjection.tileYToPixelY(y);
 
-			List<Integer> pidList = new ArrayList<>();
+			Map<Integer, Map<String, List<JSONObject>>> values = new HashMap<Integer, Map<String, List<JSONObject>>>();
 
 			while (resultSet.next()) {
 
+				List<Integer> linkPidList = new ArrayList<>();
+
+				List<Integer> nodePidList = new ArrayList<>();
+
 				int pid = resultSet.getInt("pid");
 
-				if (!pidList.contains(pid)) {
-					SearchSnapshot snapshot = new SearchSnapshot();
+				if (!values.containsKey(pid)) {
 
-					snapshot.setI(String.valueOf(resultSet.getInt("pid")));
-
-					snapshot.setT(40);
-
-					STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
-					JSONObject rdObjGeo = Geojson.spatial2Geojson(struct);
-
-					Geojson.point2Pixel(rdObjGeo, z, px, py);
-
-					snapshot.setG(rdObjGeo.getJSONArray("coordinates"));
-					
-					JSONObject jsonM = new JSONObject();
-					
-					String nodePids = resultSet.getString("node_pids");
-
-					if (StringUtils.isNotEmpty(nodePids)) {
-						Set<String> nodePidSet = new HashSet<>();
-
-						String[] splits = nodePids.split(",");
-
-						String wktPoints = resultSet.getString("node_wkts");
-
-						JSONArray gArray = new JSONArray();
-
-						String[] nodeWktSplits = wktPoints.split(",");
-
-						for (int i = 0; i < splits.length; i++) {
-
-							if (!nodePidSet.contains(splits[i])) {
-								JSONObject gObject = new JSONObject();
-
-								Geometry gNode = wktReader.read(nodeWktSplits[i]);
-
-								gObject.put("g", Geojson.lonlat2Pixel(gNode.getCoordinate().x, gNode.getCoordinate().y,
-										z, px, py));
-								gObject.put("i", splits[i]);
-
-								gArray.add(gObject);
-
-								nodePidSet.add(splits[i]);
-							}
-						}
-
-						jsonM.put("b", gArray);
-					}
-
-					String linkPids = resultSet.getString("link_pids");
-
-					Set<String> linkSet = new HashSet<>();
-
-					if (StringUtils.isNotEmpty(linkPids)) {
-
-						String[] linkSplits = linkPids.split(",");
-
-						String wktLinks = resultSet.getString("link_wkts");
-
-						JSONArray gLinkArray = new JSONArray();
-
-						String[] linkWktSplits = wktLinks.split(";");
-
-						for (int i = 0; i < linkSplits.length; i++) {
-
-							if (!linkSet.contains(linkSplits[i])) {
-								JSONObject gObject = new JSONObject();
-
-								JSONObject geojson = Geojson.wkt2Geojson(linkWktSplits[i]);
-								
-								JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
-
-								gObject.put("g", jo.getJSONArray("coordinates"));
-								gObject.put("i", linkSplits[i]);
-
-								gLinkArray.add(gObject);
-
-								linkSet.add(linkSplits[i]);
-							}
-						}
-
-						jsonM.put("a", gLinkArray);
-
-						Coordinate[] coordinates = getLineFromMuitPoint(gLinkArray,jsonM.getJSONArray("b"),snapshot.getG());
-						
-						Geometry metry = JGeometryUtil.getPolygonFromPoint(coordinates);
-						
-						jsonM.put("c", GeoTranslator.jts2Geojson(metry).getJSONArray("coordinates"));
-						
-						snapshot.setM(jsonM);
-					}
-
-					list.add(snapshot);
+					values.put(pid, new HashMap<String, List<JSONObject>>());
 				}
+
+				Map<String, List<JSONObject>> resultMap = values.get(pid);
+
+				if (!resultMap.containsKey("objGeo")) {
+					resultMap.put("objGeo", new ArrayList<JSONObject>());
+				}
+
+				List<JSONObject> objGeoList = resultMap.get("objGeo");
+
+				String objPoint = resultSet.getString("objGeo");
+
+				Geometry objNode = wktReader.read(objPoint);
+
+				JSONObject rdObjJSON = new JSONObject();
+
+				rdObjJSON.put("objGeo",
+						Geojson.lonlat2Pixel(objNode.getCoordinate().x, objNode.getCoordinate().y, z, px, py));
+
+				objGeoList.add(rdObjJSON);
+
+				resultMap.put("objGeo", objGeoList);
+
+				int linkPid = resultSet.getInt("link_pid");
+
+				if (!linkPidList.contains(linkPid)) {
+					if (!resultMap.containsKey("link")) {
+						resultMap.put("link", new ArrayList<JSONObject>());
+					}
+
+					List<JSONObject> linkList = resultMap.get("link");
+
+					JSONObject linkJSON = new JSONObject();
+
+					String linkWkt = resultSet.getString("link_geo");
+
+					JSONObject geojson = Geojson.wkt2Geojson(linkWkt);
+
+					JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
+
+					linkJSON.put("g", jo.getJSONArray("coordinates"));
+
+					linkJSON.put("i", linkPid);
+
+					linkList.add(linkJSON);
+
+					resultMap.put("link", linkList);
+
+					linkPidList.add(linkPid);
+				}
+
+				int nodePid = resultSet.getInt("node_pid");
+
+				if (!nodePidList.contains(nodePid)) {
+
+					if (!resultMap.containsKey("node")) {
+						resultMap.put("node", new ArrayList<JSONObject>());
+					}
+
+					List<JSONObject> nodeList = resultMap.get("node");
+
+					String nodeWkt = resultSet.getString("node_geo");
+
+					Geometry nodeGeo = wktReader.read(nodeWkt);
+
+					JSONObject nodeJSON = new JSONObject();
+
+					nodeJSON.put("g",
+							Geojson.lonlat2Pixel(nodeGeo.getCoordinate().x, nodeGeo.getCoordinate().y, z, px, py));
+
+					nodeJSON.put("i", nodePid);
+
+					nodeList.add(nodeJSON);
+
+					resultMap.put("node", nodeList);
+
+					nodePidList.add(nodePid);
+				}
+			}
+
+			for (Map.Entry<Integer, Map<String, List<JSONObject>>> entry : values.entrySet()) {
+				int pid = entry.getKey();
+
+				Map<String, List<JSONObject>> rdOjbMap = entry.getValue();
+
+				SearchSnapshot snapshot = new SearchSnapshot();
+
+				snapshot.setI(String.valueOf(pid));
+
+				snapshot.setT(41);
+
+				List<JSONObject> gObjList = rdOjbMap.get("objGeo");
+
+				snapshot.setG(gObjList.get(0).getJSONArray("objGeo"));
+
+				JSONArray gLinkArray = new JSONArray();
+
+				List<JSONObject> linkObjList = rdOjbMap.get("link");
+
+				for (JSONObject linkJObj : linkObjList) {
+					gLinkArray.add(linkJObj);
+				}
+
+				List<JSONObject> nodeObjList = rdOjbMap.get("node");
+
+				JSONArray gNodeArray = new JSONArray();
+
+				for (JSONObject nodeJObj : nodeObjList) {
+					gNodeArray.add(nodeJObj);
+				}
+				
+				JSONObject jsonM = new JSONObject();
+				
+				jsonM.put("a", gLinkArray);
+
+				jsonM.put("b", gNodeArray);
+				
+				Coordinate[] coordinates = getLineFromMuitPoint(gLinkArray, gNodeArray, snapshot.getG());
+
+				Geometry metry = JGeometryUtil.getPolygonFromPoint(coordinates);
+
+				jsonM.put("c", GeoTranslator.jts2Geojson(metry).getJSONArray("coordinates"));
+				
+				snapshot.setM(jsonM);
+				
+				list.add(snapshot);
+
 			}
 		} catch (Exception e) {
 
@@ -212,8 +249,8 @@ public class RdObjectSearch implements ISearch {
 		return list;
 	}
 
-	private Coordinate[] getLineFromMuitPoint(JSONArray linkArray, JSONArray nodeArray,JSONArray objNodeArray) {
-		
+	private Coordinate[] getLineFromMuitPoint(JSONArray linkArray, JSONArray nodeArray, JSONArray objNodeArray) {
+
 		List<String> pointStr = new ArrayList<>();
 
 		for (int i = 0; i < linkArray.size(); i++) {
@@ -233,13 +270,12 @@ public class RdObjectSearch implements ISearch {
 				}
 			}
 		}
-		
-		for(int i = 0;i<nodeArray.size();i++)
-		{
+
+		for (int i = 0; i < nodeArray.size(); i++) {
 			JSONObject obj = nodeArray.getJSONObject(i);
 
 			JSONArray pointArray = obj.getJSONArray("g");
-			
+
 			int x = pointArray.getInt(0);
 
 			int y = pointArray.getInt(1);
@@ -248,9 +284,8 @@ public class RdObjectSearch implements ISearch {
 				pointStr.add(x + "_" + y);
 			}
 		}
-		
-		for(int i = 0;i<objNodeArray.size();i++)
-		{
+
+		for (int i = 0; i < objNodeArray.size(); i++) {
 			int x = objNodeArray.getInt(0);
 
 			int y = objNodeArray.getInt(1);
@@ -259,7 +294,7 @@ public class RdObjectSearch implements ISearch {
 				pointStr.add(x + "_" + y);
 			}
 		}
-		
+
 		Coordinate[] coordinates = new Coordinate[pointStr.size()];
 
 		for (int i = 0; i < pointStr.size(); i++) {
@@ -267,7 +302,7 @@ public class RdObjectSearch implements ISearch {
 
 			coordinates[i] = new Coordinate(Integer.parseInt(point[0]), Integer.parseInt(point[1]));
 		}
-		
+
 		return coordinates;
 	}
 }

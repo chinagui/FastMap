@@ -50,7 +50,7 @@ public class Operation implements IOperation {
 		return null;
 	}
 
-	private String deleteByLinks(List<Integer> linkPids, Result result)
+	public String deleteByLinks(List<Integer> linkPids, Result result)
 			throws Exception {
 
 		RdRoadLinkSelector rdRoadLinkSelector = new RdRoadLinkSelector(
@@ -58,8 +58,13 @@ public class Operation implements IOperation {
 
 		List<RdRoadLink> rdRoadLinks = rdRoadLinkSelector.loadByLinks(linkPids,
 				true);
+		
+		if(rdRoadLinks.size()<1)
+		{
+			return null;
+		}
 
-		List<Integer> rdRoadPids = new ArrayList();
+		List<Integer> rdRoadPids = new ArrayList<Integer>();
 
 		for (RdRoadLink roadLink : rdRoadLinks) {
 
@@ -90,8 +95,10 @@ public class Operation implements IOperation {
 
 					isAllDelete = false;
 
-					deleteLinkbyRoad.add(roadLink.getLinkPid());
+					continue;
 				}
+
+				deleteLinkbyRoad.add(roadLink.getLinkPid());
 			}
 
 			if (isAllDelete) {

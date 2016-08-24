@@ -360,6 +360,10 @@ public class Process extends AbstractProcess<Command> {
 		OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
 		opRefRdInter.run(this.getResult(), this.getCommand());
 
+		// CRF道路
+		OpRefRdRoad opRefRdRoad = new OpRefRdRoad(this.getConn());
+		opRefRdRoad.run(this.getResult(), this.getCommand());
+
 		// 同一点关系
 		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
 		opRefRdSameNode.run(getResult(), this.getCommand());

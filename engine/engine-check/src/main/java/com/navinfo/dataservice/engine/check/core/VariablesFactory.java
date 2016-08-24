@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
+import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
@@ -38,6 +39,10 @@ public class VariablesFactory {
 			rdNodeSet.add(String.valueOf(rdSlope.getNodePid()));}
 		if(data instanceof RdWarninginfo){
 			rdNodeSet.add(String.valueOf(((RdWarninginfo) data).getNodePid()));}
+		if(data instanceof RdDirectroute){
+			rdNodeSet.add(String.valueOf(((RdDirectroute) data).getNodePid()));}
+		
+		
 		return rdNodeSet;
 	}
 	/**

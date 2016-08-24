@@ -176,7 +176,7 @@ public class RdObjectSearch implements ISearch {
 
 						jsonM.put("a", gLinkArray);
 
-						Coordinate[] coordinates = getLineFromMuitPoint(gLinkArray,snapshot.getG());
+						Coordinate[] coordinates = getLineFromMuitPoint(gLinkArray,jsonM.getJSONArray("b"),snapshot.getG());
 						
 						Geometry metry = JGeometryUtil.getPolygonFromPoint(coordinates);
 						
@@ -212,7 +212,7 @@ public class RdObjectSearch implements ISearch {
 		return list;
 	}
 
-	private Coordinate[] getLineFromMuitPoint(JSONArray linkArray, JSONArray nodeArray) {
+	private Coordinate[] getLineFromMuitPoint(JSONArray linkArray, JSONArray nodeArray,JSONArray objNodeArray) {
 		
 		List<String> pointStr = new ArrayList<>();
 
@@ -243,6 +243,17 @@ public class RdObjectSearch implements ISearch {
 			int x = pointArray.getInt(0);
 
 			int y = pointArray.getInt(1);
+
+			if (!pointStr.contains(x + "_" + y)) {
+				pointStr.add(x + "_" + y);
+			}
+		}
+		
+		for(int i = 0;i<objNodeArray.size();i++)
+		{
+			int x = objNodeArray.getInt(0);
+
+			int y = objNodeArray.getInt(1);
 
 			if (!pointStr.contains(x + "_" + y)) {
 				pointStr.add(x + "_" + y);

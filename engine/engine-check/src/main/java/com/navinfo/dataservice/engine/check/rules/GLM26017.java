@@ -56,10 +56,16 @@ public class GLM26017 extends baseRule {
 			}else if (obj instanceof RdDirectroute) {//顺行
 				RdDirectroute routeObj=(RdDirectroute) obj;
 				Map<String, Object> changedFields=routeObj.changedFields();
-				//新增执行该检查
-				if(changedFields!=null){continue;}
+				//获取退出线,新增/修改
+				int outLinkPid = routeObj.getOutLinkPid();
+				if(!changedFields.isEmpty()){
+					if(changedFields.containsKey("outLinkPid")){
+						outLinkPid = (int) changedFields.get("outLinkPid");
+					}
+				}
+
 				RdLinkSelector linkSelector=new RdLinkSelector(getConn());
-				RdLink linkObj=(RdLink) linkSelector.loadByIdOnlyRdLink(routeObj.getOutLinkPid(), false);
+				RdLink linkObj=(RdLink) linkSelector.loadByIdOnlyRdLink(outLinkPid, false);
 				boolean hasSameNode=false;
 				int nodePid=routeObj.getNodePid();
 				if(nodePid==linkObj.getsNodePid()||nodePid==linkObj.geteNodePid()){hasSameNode=true;break;}

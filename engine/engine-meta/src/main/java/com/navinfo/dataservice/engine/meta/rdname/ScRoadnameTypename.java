@@ -18,7 +18,7 @@ public class ScRoadnameTypename {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject getNameType(int pageNum,int pageSize,String name) throws Exception {
+	public JSONObject getNameType(int pageNum,int pageSize,String name,String sortby) throws Exception {
 		
 		PreparedStatement pstmt = null;
 
@@ -30,7 +30,10 @@ public class ScRoadnameTypename {
 		
 		String sql = "SELECT * FROM (SELECT c.*, rownum rn FROM (SELECT COUNT (1) OVER (PARTITION BY 1) total,s.* from SC_ROADNAME_TYPENAME s ";
 		if (!name.isEmpty()) {
-			sql +=  " where name='"+name+"'";
+			sql +=  " where s.name='"+name+"'";
+		}
+		if (!sortby.isEmpty()) {
+			sql += " ORDER BY s."+sortby;
 		}
 		sql +=	")c WHERE rownum<= :1) WHERE rn>= :2";
 		

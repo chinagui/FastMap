@@ -131,7 +131,7 @@ public class Operation implements IOperation {
 
 			this.saveZones(result, array);
 		}
-		this.refRdlaneForRdlink(result);
+		this.refRdLaneForRdlinkKind(result);
 		return null;
 	}
 
@@ -164,6 +164,7 @@ public class Operation implements IOperation {
 								updateLink.pid());
 
 						deleteCount++;
+						this.refRdLaneForRdlinkForm(result, form, 2);
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							formJson.getString("objStatus"))) {
@@ -173,8 +174,18 @@ public class Operation implements IOperation {
 						if (isChanged) {
 							result.insertObject(form, ObjStatus.UPDATE,
 									updateLink.pid());
+							RdLinkForm linkForm = new RdLinkForm();
+							linkForm.copy(form);
+							if (formJson.containsKey("formOfWay")) {
+								linkForm.setFormOfWay(formJson
+										.getInt("formOfWay"));
+								this.refRdLaneForRdlinkForm(result, linkForm, 1);
+							}
+
 						}
+
 					}
+
 				} else {
 					RdLinkForm form = new RdLinkForm();
 
@@ -189,6 +200,7 @@ public class Operation implements IOperation {
 
 					insertCount++;
 				}
+
 			}
 
 		}
@@ -225,6 +237,7 @@ public class Operation implements IOperation {
 							limitJson.getString("objStatus"))) {
 						result.insertObject(limit, ObjStatus.DELETE,
 								updateLink.pid());
+						this.refRdLaneForRdlinkLimit(result, limit, 2);
 
 					} else if (ObjStatus.UPDATE.toString().equals(
 							limitJson.getString("objStatus"))) {
@@ -234,8 +247,31 @@ public class Operation implements IOperation {
 						if (isChanged) {
 							result.insertObject(limit, ObjStatus.UPDATE,
 									updateLink.pid());
+
+							if (limitJson.containsKey("type")
+									&& limit.getType() == 2) {
+								limit.setLimitDir(1);
+								this.refRdLaneForRdlinkLimit(result, limit, 2);
+								continue;
+							}
+							RdLinkLimit linkLimit = new RdLinkLimit();
+							linkLimit.copy(limit);
+							if (limitJson.containsKey("vehicle")) {
+								linkLimit.setVehicle(limitJson
+										.getLong("vehicle"));
+							}
+							if (limitJson.containsKey("timeDmain")) {
+								linkLimit.setTimeDomain(limitJson
+										.getString("timeDmain"));
+							}
+							if (limitJson.containsKey("limitDir")) {
+								linkLimit.setLimitDir(limitJson
+										.getInt("limitDir"));
+							}
+							this.refRdLaneForRdlinkLimit(result, linkLimit, 1);
 						}
 					}
+
 				} else {
 					RdLinkLimit limit = new RdLinkLimit();
 
@@ -633,17 +669,7 @@ public class Operation implements IOperation {
 	}
 
 	/***
-	 * 修改LINK信息维护详细车道信息 zhaokk
-	 * 
-	 * @throws Exception
-	 */
-	private void refRdlaneForRdlink(Result result) throws Exception {
-		// rdLink 种类变更维护车道信息
-		this.refRdLaneForRdlinkKind(result);
-	}
-
-	/***
-	 * 种类变更维护车道信息
+	 * 种类变更维护车道信息 zhaokk
 	 * 
 	 * @param result
 	 * @throws Exception
@@ -654,11 +680,15 @@ public class Operation implements IOperation {
 			if (this.updateLink.getKind() != kind) {
 				com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
 						conn);
+				operation.setLink(this.updateLink);
 				if (this.updateLink.getKind() <= KIND && kind > KIND) {
-					operation.caleRdLinesForRdLink(result, this.updateLink, 1);
+					operation.setFlag(1);
+
+					operation.caleRdLinesForRdLinkKind(result);
 				}
 				if (this.updateLink.getKind() > KIND && kind <= KIND) {
-					operation.caleRdLinesForRdLink(result, this.updateLink, 0);
+					operation.setFlag(0);
+					operation.caleRdLinesForRdLinkKind(result);
 				}
 			}
 		}
@@ -670,12 +700,42 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	private void refRdLaneForRdlinkAttr(Result result) throws Exception{
-		if (this.command.getUpdateContent().containsKey("forms")) {
-			JSONArray forms = this.command.getUpdateContent().getJSONArray("forms");
-			for(int i =0 ;i < forms.size();i++){
-				
-			}
+	private void refRdLaneForRdlinkForm(Result result, RdLinkForm form, int flag)
+			throws Exception {
+		if (form.getFormOfWay() == 22 || form.getFormOfWay() == 20) {
+			com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
+					conn);
+			operation.setForm(form);
+			operation.setFlag(flag);
+			operation.setLink(this.updateLink);
+			operation.refRdLaneForRdlinkForm(result);
 		}
+
+	}
+
+	/****
+	 * link车辆类型限制变更 1、 当link上添加或删除车辆类型限制时，或进行车辆类型或时间段变更时，需要进行详细车道维护 2、
+	 * 当link上添加车辆类型及时间段时，则该link上对应方向上所有车道均添加该车辆类型限制及时间
+	 * 3、当link上删除车辆类型及时间时，则该link上对应方向上所有车道均删除该车辆类型限制及时间
+	 * 4、当link车辆类型或时间段变更时，则该link上对应该方向上所有车道更新为link上车辆类型及时间 说明：
+	 * ①在进行车道车辆类型更新时，如果Rd_lane_Condtion中不存在记录的，需要先增加对应车道的记录，再添加车辆类型及时间
+	 * ②在进行车道类型删除更新时，如果删除车辆类型或时间段后，RD_LANE_CONDTION中该车道的方向时间段及车辆类型均为空，
+	 * 则该RD_LANE_CONDTION记录需要删除。
+	 * 
+	 * @throws Exception
+	 */
+	private void refRdLaneForRdlinkLimit(Result result, RdLinkLimit limit,
+			int flag) throws Exception {
+		if (limit.getType() == 2
+				&& (limit.getLimitDir() == 1 || limit.getLimitDir() == 2 || limit
+						.getLimitDir() == 3)) {
+			com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
+					conn);
+			operation.setLimit(limit);
+			operation.setFlag(flag);
+			operation.setLink(this.updateLink);
+			operation.refRdLaneForRdlinkLimit(result);
 		}
+
+	}
 }

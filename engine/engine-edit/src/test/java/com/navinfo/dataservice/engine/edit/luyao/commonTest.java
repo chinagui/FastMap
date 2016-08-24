@@ -178,7 +178,7 @@ public class commonTest extends InitApplication {
 
 		try {
 
-			String parameter = "{\"dbId\":42,\"type\":\"RDLINK\",\"data\":{\"queryType\":\"RDSPEEDLIMIT\",\"linkPid\":735584,\"direct\":2}}";
+			String parameter = "{\"dbId\":42,\"type\":\"RDLINK\",\"data\":{\"queryType\":\"RDSPEEDLIMIT\",\"linkPid\":732235,\"direct\":3}}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 

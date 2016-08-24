@@ -64,7 +64,8 @@ public class OpTopo implements IOperation {
 
 		result.setPrimaryPid(command.getLinkPid());
 		// 获取需要打断的土地利用线的信息 并将该线删除
-		LuLink luLink = (LuLink) new LuLinkSelector(conn).loadById(command.getLinkPid(), true);
+		LuLink luLink = (LuLink) new LuLinkSelector(conn).loadById(
+				command.getLinkPid(), true);
 		result.insertObject(luLink, ObjStatus.DELETE, luLink.pid());
 
 		// 获取打断前线段的几何属性
@@ -85,8 +86,10 @@ public class OpTopo implements IOperation {
 					hasFound = true;
 				}
 				// 打断点在线段上
-				else if (GeoTranslator.isIntersection(new double[] { jaPS.getDouble(0), jaPS.getDouble(1) },
-						new double[] { jaPE.getDouble(0), jaPE.getDouble(1) }, new double[] { lon, lat })) {
+				else if (GeoTranslator.isIntersection(
+						new double[] { jaPS.getDouble(0), jaPS.getDouble(1) },
+						new double[] { jaPE.getDouble(0), jaPE.getDouble(1) },
+						new double[] { lon, lat })) {
 					ja1.add(new double[] { lon, lat });
 					ja2.add(new double[] { lon, lat });
 					hasFound = true;
@@ -114,10 +117,8 @@ public class OpTopo implements IOperation {
 	}
 
 	/**
-	 * 土地利用点 、线生成和关系维护:</br>
-	 * 1.生成打断点的信息 </br>
-	 * 2.根据link1 和link2的几何属性生成新的一组link</br>
-	 * 3.维护link和点的关系 以及维护linkMesh的关系
+	 * 土地利用点 、线生成和关系维护:</br> 1.生成打断点的信息 </br> 2.根据link1
+	 * 和link2的几何属性生成新的一组link</br> 3.维护link和点的关系 以及维护linkMesh的关系
 	 * 
 	 * @param luLink
 	 *            要打断的link
@@ -129,13 +130,15 @@ public class OpTopo implements IOperation {
 	 * 
 	 * @throws Exception
 	 */
-	private void createLinksForLUNode(LuLink luLink, JSONArray sArray, JSONArray eArray, Result result)
-			throws Exception {
+	private void createLinksForLUNode(LuLink luLink, JSONArray sArray,
+			JSONArray eArray, Result result) throws Exception {
 		int breakNodePid = 0;
 		if (this.command.getBreakNodePid() == 0) {
-			LuNode node = NodeOperateUtils.createLuNode(command.getPoint().getX(), command.getPoint().getY());
+			LuNode node = NodeOperateUtils.createLuNode(command.getPoint()
+					.getX(), command.getPoint().getY());
 			result.insertObject(node, ObjStatus.INSERT, node.pid());
 			breakNodePid = node.pid();
+			this.command.setBreakNode(node);
 		} else {
 			breakNodePid = this.command.getBreakNodePid();
 		}
@@ -146,7 +149,8 @@ public class OpTopo implements IOperation {
 		JSONObject sGeojson = new JSONObject();
 		sGeojson.put("type", "LineString");
 		sGeojson.put("coordinates", sArray);
-		LuLink slink = (LuLink) LuLinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(sGeojson, 0.00001, 5),
+		LuLink slink = (LuLink) LuLinkOperateUtils.addLinkBySourceLink(
+				GeoTranslator.geojson2Jts(sGeojson, 0.00001, 5),
 				luLink.getsNodePid(), breakNodePid, luLink, result);
 		command.setsLuLink(slink);
 
@@ -154,8 +158,9 @@ public class OpTopo implements IOperation {
 		JSONObject eGeojson = new JSONObject();
 		eGeojson.put("type", "LineString");
 		eGeojson.put("coordinates", eArray);
-		LuLink elink = (LuLink) LuLinkOperateUtils.addLinkBySourceLink(GeoTranslator.geojson2Jts(eGeojson, 0.00001, 5),
-				breakNodePid, luLink.geteNodePid(), luLink, result);
+		LuLink elink = (LuLink) LuLinkOperateUtils.addLinkBySourceLink(
+				GeoTranslator.geojson2Jts(eGeojson, 0.00001, 5), breakNodePid,
+				luLink.geteNodePid(), luLink, result);
 		command.seteLuLink(elink);
 	}
 

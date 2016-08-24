@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdobject.delete;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -79,10 +80,17 @@ public class Operation implements IOperation {
 			List<IRow> inters = rdObject.getInters();
 			switch (type) {
 			case RDLINK:
+				List<Integer> linksLinkPidList = new ArrayList<>();
+				for(IRow row : links)
+				{
+					RdObjectLink link = (RdObjectLink) row;
+					
+					linksLinkPidList.add(link.getLinkPid());
+				}
 				if (CollectionUtils.isEmpty(links)) {
 					return;
 				} else if (CollectionUtils.isEmpty(roads) && CollectionUtils.isEmpty(inters)
-						&& tmpPidList.containsAll(links)) {
+						&& tmpPidList.containsAll(linksLinkPidList)) {
 					result.insertObject(rdObject, ObjStatus.DELETE, rdObject.getPid());
 					return;
 				} else {
@@ -99,9 +107,16 @@ public class Operation implements IOperation {
 				}
 				break;
 			case RDINTER:
+				List<Integer> interPidList = new ArrayList<>();
+				for(IRow row : inters)
+				{
+					RdObjectInter inter = (RdObjectInter) row;
+					
+					interPidList.add(inter.getInterPid());
+				}
 				if (CollectionUtils.isEmpty(inters)) {
 					return;
-				} else if (CollectionUtils.isEmpty(roads) && CollectionUtils.isEmpty(links) && inters.size() == 1) {
+				} else if (CollectionUtils.isEmpty(roads) && CollectionUtils.isEmpty(links) && tmpPidList.containsAll(interPidList)) {
 					result.insertObject(rdObject, ObjStatus.DELETE, rdObject.getPid());
 					return;
 				} else {
@@ -118,9 +133,16 @@ public class Operation implements IOperation {
 				}
 				break;
 			case RDROAD:
+				List<Integer> roadPidList = new ArrayList<>();
+				for(IRow row : roads)
+				{
+					RdObjectRoad road = (RdObjectRoad) row;
+					
+					roadPidList.add(road.getRoadPid());
+				}
 				if (CollectionUtils.isEmpty(roads)) {
 					return;
-				} else if (CollectionUtils.isEmpty(inters) && CollectionUtils.isEmpty(links) && roads.size() == 1) {
+				} else if (CollectionUtils.isEmpty(inters) && CollectionUtils.isEmpty(links) && tmpPidList.containsAll(roadPidList)) {
 					result.insertObject(rdObject, ObjStatus.DELETE, rdObject.getPid());
 					return;
 				} else {

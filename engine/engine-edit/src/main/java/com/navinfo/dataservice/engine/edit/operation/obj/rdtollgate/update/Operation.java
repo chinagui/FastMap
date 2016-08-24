@@ -45,6 +45,9 @@ public class Operation implements IOperation {
 		boolean isChange = tollgate.fillChangeFields(content);
 		if (isChange) {
 			result.insertObject(tollgate, ObjStatus.UPDATE, tollgate.pid());
+			if(content.containsKey("passageNum")){
+				this.caleRdlaneForRdTollgate(result,content.getInt("passageNum"));
+			}
 		}
 		result.setPrimaryPid(tollgate.pid());
 
@@ -68,18 +71,22 @@ public class Operation implements IOperation {
 			jsonPassage = iterator.next();
 			if (jsonPassage.containsKey("objStatus")) {
 				String objStatus = jsonPassage.getString("objStatus");
-				passage = this.command.getTollgate().tollgatePassageMap.get(jsonPassage.getString("rowId"));
+				passage = this.command.getTollgate().tollgatePassageMap
+						.get(jsonPassage.getString("rowId"));
 				if (ObjStatus.UPDATE.toString().equals(objStatus)) {
 					boolean isChange = passage.fillChangeFields(jsonPassage);
 					if (isChange) {
-						result.insertObject(passage, ObjStatus.UPDATE, passage.getPid());
+						result.insertObject(passage, ObjStatus.UPDATE,
+								passage.getPid());
 					}
 				} else if (ObjStatus.DELETE.toString().equals(objStatus)) {
-					result.insertObject(passage, ObjStatus.DELETE, passage.getPid());
+					result.insertObject(passage, ObjStatus.DELETE,
+							passage.getPid());
 				} else if (ObjStatus.INSERT.toString().equals(objStatus)) {
 					passage = new RdTollgatePassage();
 					passage.setPid(this.command.getTollgate().getPid());
-					result.insertObject(passage, ObjStatus.INSERT, passage.getPid());
+					result.insertObject(passage, ObjStatus.INSERT,
+							passage.getPid());
 				}
 			}
 		}
@@ -95,19 +102,24 @@ public class Operation implements IOperation {
 			jsonName = iterator.next();
 			if (jsonName.containsKey("objStatus")) {
 				String objStatus = jsonName.getString("objStatus");
-				name = this.command.getTollgate().tollgateNameMap.get(jsonName.getString("rowId"));
+				name = this.command.getTollgate().tollgateNameMap.get(jsonName
+						.getString("rowId"));
 				if (ObjStatus.UPDATE.toString().equals(objStatus)) {
 					boolean isChange = name.fillChangeFields(jsonName);
 					if (isChange) {
-						result.insertObject(name, ObjStatus.UPDATE, name.getNameId());
+						result.insertObject(name, ObjStatus.UPDATE,
+								name.getNameId());
 					}
 				} else if (ObjStatus.DELETE.toString().equals(objStatus)) {
-					result.insertObject(name, ObjStatus.DELETE, name.getNameId());
+					result.insertObject(name, ObjStatus.DELETE,
+							name.getNameId());
 				} else if (ObjStatus.INSERT.toString().equals(objStatus)) {
 					name = new RdTollgateName();
-					name.setNameId(PidService.getInstance().applyRdTollgateNamePid());
+					name.setNameId(PidService.getInstance()
+							.applyRdTollgateNamePid());
 					name.setPid(this.command.getTollgate().getPid());
-					result.insertObject(name, ObjStatus.INSERT, name.getNameId());
+					result.insertObject(name, ObjStatus.INSERT,
+							name.getNameId());
 				}
 			}
 		}
@@ -126,10 +138,12 @@ public class Operation implements IOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	public String breakRdTollgate(Result result, int oldLinkPid, List<RdLink> newLinks) throws Exception {
+	public String breakRdTollgate(Result result, int oldLinkPid,
+			List<RdLink> newLinks) throws Exception {
 		RdTollgateSelector selector = new RdTollgateSelector(this.conn);
 		// 查询所有与被删除RdLink关联的收费站
-		List<RdTollgate> rdTollgates = selector.loadRdTollgatesWithLinkPid(oldLinkPid, true);
+		List<RdTollgate> rdTollgates = selector.loadRdTollgatesWithLinkPid(
+				oldLinkPid, true);
 		// 循环处理每一个收费站
 		for (RdTollgate rdTollgate : rdTollgates) {
 			// 收费站的进入点的Pid
@@ -152,5 +166,19 @@ public class Operation implements IOperation {
 		}
 		return null;
 	}
-
+	/**
+	 * 修改收费站维护车道信息
+	 * @param result
+	 * @param passageNum
+	 * @throws Exception
+	 */
+	private void caleRdlaneForRdTollgate(Result result,int passageNum) throws Exception {
+       if(passageNum > 0 ){
+    	   com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
+					conn);
+			operation.setTollgate(this.command.getTollgate());
+			operation.setPassageNum(passageNum);
+			operation.refRdLaneForTollgate(result);
+       }
+	}
 }

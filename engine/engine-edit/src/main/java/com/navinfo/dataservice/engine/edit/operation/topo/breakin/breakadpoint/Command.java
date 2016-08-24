@@ -1,29 +1,33 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint;
+
 import java.util.List;
+
+import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
-import net.sf.json.JSONObject;
-
 /**
- * @author  zhaokk 
- * 创建行政区划点基础参数类 
+ * @author zhaokk 创建行政区划点基础参数类
  */
 public class Command extends AbstractCommand {
 	private String requester;
-	private AdLink  sAdLink;
-	private AdLink  eAdLink;
+	private AdLink sAdLink;
+	private AdLink eAdLink;
 	private List<AdFace> faces;
 	private int breakNodePid = 0;
+
+	private AdNode breakNode;
+
 	public int getBreakNodePid() {
 		return breakNodePid;
 	}
@@ -56,6 +60,13 @@ public class Command extends AbstractCommand {
 		this.eAdLink = eAdLink;
 	}
 
+	public AdNode getBreakNode() {
+		return breakNode;
+	}
+
+	public void setBreakNode(AdNode breakNode) {
+		this.breakNode = breakNode;
+	}
 
 	private GeometryFactory geometryFactory = new GeometryFactory();
 	private Point point;
@@ -65,7 +76,7 @@ public class Command extends AbstractCommand {
 	public OperType getOperType() {
 		return OperType.CREATE;
 	}
-	
+
 	@Override
 	public ObjType getObjType() {
 		return ObjType.ADNODE;
@@ -76,25 +87,26 @@ public class Command extends AbstractCommand {
 		return requester;
 	}
 
-	public Command(JSONObject json, String requester) throws Exception{
+	public Command(JSONObject json, String requester) throws Exception {
 		this.requester = requester;
 		this.setDbId(json.getInt("dbId"));
 		this.linkPid = json.getInt("objId");
 		JSONObject data = json.getJSONObject("data");
-		
+
 		JSONObject geoPoint = new JSONObject();
 
 		geoPoint.put("type", "Point");
 
-		geoPoint.put("coordinates", new double[] {data.getDouble("longitude"),
+		geoPoint.put("coordinates", new double[] { data.getDouble("longitude"),
 				data.getDouble("latitude") });
-		
+
 		Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
-		
-		if(data.containsKey("breakNodePid")){
+
+		if (data.containsKey("breakNodePid")) {
 			this.setBreakNodePid(data.getInt("breakNodePid"));
 		}
-		Coordinate coord = new Coordinate(geometry.getCoordinate().x, geometry.getCoordinate().y);
+		Coordinate coord = new Coordinate(geometry.getCoordinate().x,
+				geometry.getCoordinate().y);
 		this.eAdLink = new AdLink();
 		this.sAdLink = new AdLink();
 		this.point = geometryFactory.createPoint(coord);

@@ -359,7 +359,7 @@ public class RdNameOperation {
 		try {
 			for (int i=0;i<dataList.size();i++) {
 				JSONObject data = dataList.getJSONObject(i);
-				teilen.teilenName(data.getInt("nameId"), data.getInt("nameGroupId"), data.getString("langCode"), data.getInt("roadType"));
+				teilen.teilenName(data.getInt("nameId"), data.getInt("nameGroupid"), data.getString("langCode"), data.getInt("roadType"));
 			}
 		} catch (Exception e) {
 			throw e;

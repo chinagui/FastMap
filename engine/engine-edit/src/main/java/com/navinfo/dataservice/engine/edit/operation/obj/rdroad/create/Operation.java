@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdroad.create;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,13 +16,23 @@ public class Operation implements IOperation {
 
 	private Command command;
 
-	public Operation(Command command) {
+	private Connection conn = null;
+
+	public Operation(Command command, Connection conn) {
 
 		this.command = command;
+
+		this.conn = conn;
+	}
+
+	public Operation(Connection conn) {
+
+		this.conn = conn;
 	}
 
 	@Override
 	public String run(Result result) throws Exception {
+
 		String msg = null;
 
 		msg = create(result);
@@ -37,8 +48,6 @@ public class Operation implements IOperation {
 
 		List<IRow> roadLinks = new ArrayList<IRow>();
 
-		int index = 1;
-		// 创建RdVoiceguideDetail
 		for (int i = 0; i < this.command.getLinkPids().size(); i++) {
 
 			RdRoadLink roadLink = new RdRoadLink();
@@ -55,6 +64,11 @@ public class Operation implements IOperation {
 		road.setLinks(roadLinks);
 
 		result.insertObject(road, ObjStatus.INSERT, road.pid());
+
+		com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation rdObjectUpdateOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation(
+				this.conn);
+
+		rdObjectUpdateOperation.updateRdObjectForRdRoad(road, result);
 
 		return null;
 	}

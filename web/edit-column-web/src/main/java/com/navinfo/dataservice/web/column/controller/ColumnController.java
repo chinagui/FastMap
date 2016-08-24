@@ -185,6 +185,34 @@ public class ColumnController extends BaseController {
 	}
 	
 	/**
+	 * 精编任务的统计查询
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/deep/task/statistics")
+	public ModelAndView taskStatistics(HttpServletRequest request)
+			throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(URLDecode(parameter));
+			
+			ColumnCoreControl control = new ColumnCoreControl();
+			JSONArray result = control.taskStatistics(jsonReq);
+			
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+	
+			logger.error(e.getMessage(), e);
+	
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	/**
 	 * 查询二级作业项的统计信息
 	 * @param request
 	 * @return

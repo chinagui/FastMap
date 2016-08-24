@@ -396,6 +396,9 @@ public class Process extends AbstractProcess<Command> {
 		// CRF交叉点
 		OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
 		opRefRdInter.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
+		// CRF道路
+		OpRefRdRoad opRefRdRoad = new OpRefRdRoad(this.getConn());
+		opRefRdRoad.run(this.getResult(), this.rdLinkBreakpoint, newLinks);	
 		// CRF对象
 		OpRefRdObject opRefRdObject = new OpRefRdObject(this.getConn());
 		opRefRdObject.run(this.getResult(), this.rdLinkBreakpoint, newLinks);

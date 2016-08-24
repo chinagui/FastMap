@@ -270,6 +270,11 @@ public class Operation implements IOperation {
 		// 维护CRF交叉点
 		com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Operation rdinterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Operation(
 				this.conn);
+		// 维护CRF道路
+		com.navinfo.dataservice.engine.edit.operation.obj.rdroad.update.Operation rdRoadOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdroad.update.Operation(
+				this.conn);
+		rdRoadOperation.breakRdLink(oldLink.getPid(), newLinks, result);
+
 		rdinterOperation.breakRdLink(oldLink, newLinks, result);
 		// 维护CRF对象
 		com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation rdObjectOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation(

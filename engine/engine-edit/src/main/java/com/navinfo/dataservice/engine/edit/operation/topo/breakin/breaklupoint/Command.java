@@ -10,6 +10,7 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
+import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -22,6 +23,8 @@ public class Command extends AbstractCommand {
 	private LuLink eLuLink;
 	private List<LuFace> faces;
 
+	private LuNode breakNode;
+
 	private int breakNodePid = 0;
 
 	public int getBreakNodePid() {
@@ -30,6 +33,14 @@ public class Command extends AbstractCommand {
 
 	public void setBreakNodePid(int breakNodePid) {
 		this.breakNodePid = breakNodePid;
+	}
+
+	public LuNode getBreakNode() {
+		return breakNode;
+	}
+
+	public void setBreakNode(LuNode breakNode) {
+		this.breakNode = breakNode;
 	}
 
 	private GeometryFactory geometryFactory = new GeometryFactory();
@@ -109,15 +120,16 @@ public class Command extends AbstractCommand {
 
 		geoPoint.put("type", "Point");
 
-		geoPoint.put("coordinates", new double[] {data.getDouble("longitude"),
+		geoPoint.put("coordinates", new double[] { data.getDouble("longitude"),
 				data.getDouble("latitude") });
-		
+
 		Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
-		
-		if(data.containsKey("breakNodePid")){
+
+		if (data.containsKey("breakNodePid")) {
 			this.setBreakNodePid(data.getInt("breakNodePid"));
 		}
-		Coordinate coord = new Coordinate(geometry.getCoordinate().x, geometry.getCoordinate().y);
+		Coordinate coord = new Coordinate(geometry.getCoordinate().x,
+				geometry.getCoordinate().y);
 		this.sLuLink = new LuLink();
 		this.eLuLink = new LuLink();
 		this.point = geometryFactory.createPoint(coord);

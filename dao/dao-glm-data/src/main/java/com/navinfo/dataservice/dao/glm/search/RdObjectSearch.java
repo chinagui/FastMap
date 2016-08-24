@@ -28,6 +28,7 @@ import com.vividsolutions.jts.io.WKTReader;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 /**
  * @ClassName: RdObjectSearch
@@ -62,7 +63,7 @@ public class RdObjectSearch implements ISearch {
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "  WITH TMP1 AS (	SELECT LINK_PID, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) , tmp2 as( SELECT /*+ leading(A,B) use_hash(A,B)*/ c.PID, A.LINK_PID,A.GEOMETRY FROM TMP1 A, RD_ROAD_LINK B,Rd_object_road c WHERE A.LINK_PID = B.LINK_PID  and c.ROAD_PID = b.pid and B.U_RECORD != 2 ), tmp3 as( SELECT /*+ leading(A,B) use_hash(A,B)*/ b.PID, A.LINK_PID,A.GEOMETRY FROM TMP1 A, Rd_object_link b WHERE A.LINK_PID = B.LINK_PID and B.U_RECORD != 2 ), TMP4 AS (	SELECT node_pid, GEOMETRY FROM RD_NODE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:2, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) , tmp5 as( SELECT /*+ leading(A,B) use_hash(A,B)*/ c.PID, A.NODE_PID,A.GEOMETRY FROM TMP4 A, RD_INTER_NODE B,Rd_object_INTER C WHERE A.NODE_PID = B.NODE_PID  and c.inter_PID = b.pid and B.U_RECORD != 2 ) select tmp6.PID,listagg(tmp6.LINK_PID, ',') within group( ORDER BY tmp6.LINK_PID) as link_pids,listagg(sdo_util.to_wktgeometry_varchar(tmp6.GEOMETRY), ';') within group( ORDER BY tmp6.LINK_PID) as link_wkts,listagg(tmp5.node_pid, ',') within group( ORDER BY tmp5.node_pid) as node_pids,listagg(sdo_util.to_wktgeometry_varchar(tmp5. geometry), ',') within group( ORDER BY tmp5.node_pid) as node_wkts from( select * from tmp2 union all select * from tmp3) tmp6 left join tmp5 on tmp6.pid = tmp5.pid group by tmp6.pid ";
+		String sql = " WITH TMP1    AS (	SELECT LINK_PID, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) , tmp2 AS (	SELECT /*+ leading(A,B) use_hash(A,B)*/ C.PID, A.LINK_PID,A.GEOMETRY FROM TMP1 A, RD_ROAD_LINK B,Rd_object_road C WHERE A.LINK_PID = B.LINK_PID AND C.ROAD_PID = b.pid AND B.U_RECORD != 2 ), tmp3  AS (	SELECT /*+ leading(A,B) use_hash(A,B)*/ b.PID, A.LINK_PID,A.GEOMETRY FROM TMP1 A, Rd_object_link b WHERE A.LINK_PID = B.LINK_PID AND B.U_RECORD != 2 ), TMP4  AS (	SELECT node_pid, GEOMETRY FROM RD_NODE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:2, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) , tmp5 AS (	SELECT /*+ leading(A,B) use_hash(A,B)*/ C.PID, A.NODE_PID,A.GEOMETRY FROM TMP4 A, RD_INTER_NODE B,Rd_object_INTER C WHERE A.NODE_PID = B.NODE_PID AND C.inter_PID = b.pid AND B.U_RECORD != 2 ) , tmp7 as( SELECT tmp6.PID,listagg(tmp6.LINK_PID, ',') within group( ORDER BY tmp6.LINK_PID) AS link_pids,listagg(sdo_util.to_wktgeometry_varchar( tmp6.GEOMETRY), ';') within group( ORDER BY tmp6.LINK_PID) AS link_wkts,listagg(tmp5.node_pid, ',') within group( ORDER BY tmp5.node_pid) AS node_pids,listagg(sdo_util.to_wktgeometry_varchar( tmp5. geometry), ',') within group( ORDER BY tmp5.node_pid) AS node_wkts FROM(	SELECT * FROM tmp2 UNION ALL 	SELECT * FROM tmp3) tmp6 LEFT JOIN tmp5 ON tmp6.pid = tmp5.pid GROUP BY tmp6.pid) select tmp7.*,tmp8.GEOMETRY from tmp7 left join rd_object tmp8 on tmp7.pid = tmp8.pid";
 
 		PreparedStatement pstmt = null;
 
@@ -74,8 +75,6 @@ public class RdObjectSearch implements ISearch {
 			pstmt = conn.prepareStatement(sql);
 
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-
-			System.out.println(wkt);
 
 			pstmt.setString(1, wkt);
 
@@ -100,6 +99,16 @@ public class RdObjectSearch implements ISearch {
 
 					snapshot.setT(40);
 
+					STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+					JSONObject rdObjGeo = Geojson.spatial2Geojson(struct);
+
+					Geojson.point2Pixel(rdObjGeo, z, px, py);
+
+					snapshot.setG(rdObjGeo.getJSONArray("coordinates"));
+					
+					JSONObject jsonM = new JSONObject();
+					
 					String nodePids = resultSet.getString("node_pids");
 
 					if (StringUtils.isNotEmpty(nodePids)) {
@@ -130,10 +139,8 @@ public class RdObjectSearch implements ISearch {
 							}
 						}
 
-						snapshot.setG(gArray);
+						jsonM.put("b", gArray);
 					}
-
-					JSONObject jsonM = new JSONObject();
 
 					String linkPids = resultSet.getString("link_pids");
 
@@ -173,7 +180,7 @@ public class RdObjectSearch implements ISearch {
 						
 						Geometry metry = JGeometryUtil.getPolygonFromPoint(coordinates);
 						
-						jsonM.put("b", GeoTranslator.jts2Geojson(metry).getJSONArray("coordinates"));
+						jsonM.put("c", GeoTranslator.jts2Geojson(metry).getJSONArray("coordinates"));
 						
 						snapshot.setM(jsonM);
 					}

@@ -92,7 +92,6 @@ public class Command extends AbstractCommand {
 			laneTopoDetail.setIntLanePid(this.getInLanePid());
 			laneTopoDetail.setInLinkPid(this.getInLinkPid());
 			laneTopoDetail.setNodePid(this.getNodePid());
-			laneTopoDetail.setTopologyId(jsonObject.getInt("topoId"));
 			laneTopoDetail.setOutLanePid(jsonObject.getInt("outLanePid"));
 			laneTopoDetail.setOutLinkPid(jsonObject.getInt("outLinkPid"));
 			if(jsonObject.containsKey("laneTopoVias")){

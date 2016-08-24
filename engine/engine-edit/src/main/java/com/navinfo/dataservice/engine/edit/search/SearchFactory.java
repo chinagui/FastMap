@@ -23,6 +23,7 @@ import com.navinfo.dataservice.dao.glm.search.RdGateSearch;
 import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
 import com.navinfo.dataservice.dao.glm.search.RdInterSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLaneConnexitySearch;
+import com.navinfo.dataservice.dao.glm.search.RdLaneSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkIntRticSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkRticSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
@@ -88,7 +89,7 @@ public class SearchFactory {
 		case RDLINKINTRTIC:
 			return new RdLinkIntRticSearch(conn);
 		case RDLINKRTIC:
-			return new RdLinkRticSearch(conn);			
+			return new RdLinkRticSearch(conn);
 		case RDGSC:
 			return new RdGscSearch(conn);
 		case ADLINK:
@@ -155,6 +156,8 @@ public class SearchFactory {
 			return new RdVoiceguideSearch(conn);
 		case RDVARIABLESPEED:
 			return new RdVariableSpeedSearch(conn);
+		case RDLANE:
+			return new RdLaneSearch(conn);
 		default:
 			return null;
 		}

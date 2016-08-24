@@ -87,16 +87,16 @@ public class RdObjectSelector extends AbstractSelector {
 		String sql = "";
 		switch (type) {
 		case RDROAD:
-			sql = "select a.pid,listagg(b.road_pid,',')WITHIN GROUP(order by b.pid)as mapkey from rd_object a,rd_object_road b where a.PID = b.PID and b.ROAD_PID in(" + pids
-					+ ") and a.U_RECORD !=2 and b.U_RECORD !=2 group by a.pid";
+			sql = "select a.pid,a.row_id,listagg(b.road_pid,',')WITHIN GROUP(order by b.pid)as mapkey from rd_object a,rd_object_road b where a.PID = b.PID and b.ROAD_PID in(" + pids
+					+ ") and a.U_RECORD !=2 and b.U_RECORD !=2 group by a.pid,a.row_id";
 			break;
 		case RDINTER:
-			sql = "select a.pid,listagg(b.inter_pid,',')WITHIN GROUP(order by b.pid) as mapkey from rd_object a,rd_object_inter b where a.PID = b.PID and b.inter_PID in(" + pids
-					+ ") and a.U_RECORD !=2 and b.U_RECORD !=2 group by a.pid";
+			sql = "select a.pid,a.row_id,listagg(b.inter_pid,',')WITHIN GROUP(order by b.pid) as mapkey from rd_object a,rd_object_inter b where a.PID = b.PID and b.inter_PID in(" + pids
+					+ ") and a.U_RECORD !=2 and b.U_RECORD !=2 group by a.pid,a.row_id";
 			break;
 		case RDLINK:
-			sql = "select a.pid,listagg(b.link_pid,',')WITHIN GROUP(order by b.pid) as mapkey from rd_object a,rd_object_link b where a.PID = b.PID and b.link_pid in(" + pids
-					+ ") and a.U_RECORD !=2 and b.U_RECORD !=2 group by a.pid";
+			sql = "select a.pid,a.row_id,listagg(b.link_pid,',')WITHIN GROUP(order by b.pid) as mapkey from rd_object a,rd_object_link b where a.PID = b.PID and b.link_pid in(" + pids
+					+ ") and a.U_RECORD !=2 and b.U_RECORD !=2 group by a.pid,a.row_id";
 			break;
 		default:
 			break;
@@ -110,6 +110,7 @@ public class RdObjectSelector extends AbstractSelector {
 				String mapKey = resultSet.getString("mapkey");
 				RdObject obj = new RdObject();
 				obj.setPid(resultSet.getInt("pid"));
+				obj.setRowId(resultSet.getString("row_id"));
 				List<IRow> roads = loadRowsByClassParentId(RdObjectRoad.class, obj.getPid(), isLock, null);
 				obj.setRoads(roads);
 				List<IRow> inters = loadRowsByClassParentId(RdObjectInter.class, obj.getPid(), isLock, null);

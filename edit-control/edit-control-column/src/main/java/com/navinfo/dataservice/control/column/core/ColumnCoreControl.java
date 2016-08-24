@@ -196,33 +196,31 @@ public class ColumnCoreControl {
 	}
 	
 	/**
-	 * 查询精编配置表
-	 * @param secondWorkItem
-	 * @param type
+	 * 更新配置表状态
+	 * @param rowIdList
 	 * @param conn
-	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject getDeepOpConf(String secondWorkItem,int type,Connection conn) throws Exception {
-		JSONObject result = new JSONObject();
-		
-		String sql = "SELECT * FROM poi_deep_op_conf WHERE second_work_item=:1 and type=:2";
+	public void updateDeepStatus(List<String> rowIdList,Connection conn,int status) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append("UPDATE poi_deep_status SET firstWorkStatus="+status+",secondWorkStatus="+status+" WHERE row_id in(");
 		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 		try {
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setString(1, secondWorkItem);
-
-			pstmt.setInt(2, type);
-
-			resultSet = pstmt.executeQuery();
+			String temp="";
+			for (String rowId:rowIdList) {
+				sb.append(temp);
+				sb.append("'"+rowId+"'");
+				temp = ",";
+			}
+			sb.append(")");
 			
-			result = getDeepOpConfObj(resultSet);
+			pstmt = conn.prepareStatement(sb.toString());
 			
-			return result;
+			pstmt.executeUpdate();
+			
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -231,28 +229,35 @@ public class ColumnCoreControl {
 		}
 	}
 	
-	private JSONObject getDeepOpConfObj(ResultSet resultSet) throws Exception {
-		JSONObject result = new JSONObject();
+	/**
+	 * 查询二级作业项的统计信息
+	 * @param jsonReq
+	 * @param userId
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject secondWorkStatistics(JSONObject jsonReq,long userId)  throws Exception {
+		
+		Connection conn = null;
+		
 		try {
-			if (resultSet.next()) {
-				result.put("firstWorkItem", resultSet.getString("FIRST_WORK_ITEM"));
-				result.put("secondWorkItem", resultSet.getString("SECOND_WORK_ITEM"));
-				result.put("saveExebatch", resultSet.getInt("SAVE_EXEBATCH"));
-				result.put("saveBatchrules", resultSet.getArray("SAVE_BATCHRULES"));
-				result.put("saveExecheck", resultSet.getInt("SAVE_EXECHECK"));
-				result.put("saveCkrules", resultSet.getArray("SAVE_CKRULES"));
-				result.put("saveExeclassify", resultSet.getInt("SAVE_EXECLASSIFY"));
-				result.put("saveClassifyrules", resultSet.getArray("SAVE_CLASSIFYRULES"));
-				result.put("submitExebatch", resultSet.getInt("SUBMIT_EXEBATCH"));
-				result.put("submitBatchrules", resultSet.getArray("SUBMIT_BATCHRULES"));
-				result.put("submitExecheck", resultSet.getInt("SUBMIT_EXECHECK"));
-				result.put("submitCkrules", resultSet.getArray("SUBMIT_CKRULES"));
-				result.put("submitExeclassify", resultSet.getInt("SUBMIT_EXECLASSIFY"));
-				result.put("submitClassifyrules", resultSet.getArray("SUBMIT_CLASSIFYRULES"));
-			}
-			return result;
+			int taskId = jsonReq.getInt("taskId");
+			String secondWorkItem = jsonReq.getString("secondWorkItem");
+			int type = jsonReq.getInt("taskType");
+			
+			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+			Subtask subtask = apiService.queryBySubtaskId(taskId);
+			int dbId = subtask.getDbId();
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
+			
+			return ixPoiDeepStatusSelector.secondWorkStatistics(secondWorkItem, userId, type);
 		} catch (Exception e) {
 			throw e;
+		} finally {
+			
 		}
 		
 		

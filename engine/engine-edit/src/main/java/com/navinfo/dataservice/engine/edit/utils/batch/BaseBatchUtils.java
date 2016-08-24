@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.utils.batch;
 
+import java.lang.reflect.Method;
 import java.sql.Connection;
 
 import org.json.JSONException;
@@ -86,9 +87,53 @@ public class BaseBatchUtils {
 		return faceBoundary.distance(node.getGeometry()) <= 1;
 	}
 
+	/**
+	 * 包含在ring内部，不考虑是否有交点在线上
+	 * 
+	 * @param linkGeometry
+	 * @param faceGeometry
+	 * @return
+	 */
 	protected static boolean isContainOrCover(Geometry linkGeometry, Geometry faceGeometry) {
 		return GeoRelationUtils.Interior(linkGeometry, faceGeometry)
 				|| GeoRelationUtils.InteriorAnd1Intersection(linkGeometry, faceGeometry)
 				|| GeoRelationUtils.InteriorAnd2Intersection(linkGeometry, faceGeometry);
+	}
+
+	/**
+	 * 获取IRow对象Geometry属性
+	 * 
+	 * @param row
+	 * @return
+	 * @throws Exception
+	 */
+	protected static Geometry loadGeometry(IRow row) throws Exception {
+		Class<?> clazz;
+		try {
+			clazz = Class.forName(row.getClass().getName());
+			Method method = clazz.getMethod("getGeometry");
+			return (Geometry) method.invoke(row);
+		} catch (Exception e) {
+			throw new Exception(
+					"PID为" + row.parentPKValue() + "的" + row.getClass().getSimpleName() + "对象没有找到Geometry属性");
+		}
+	}
+
+	/**
+	 * IRow对象设置RegionId
+	 * 
+	 * @param row
+	 * @param regionId
+	 * @throws Exception
+	 */
+	protected static void setRegionId(IRow row, Integer regionId) throws Exception {
+		Class<?> clazz;
+		try {
+			clazz = Class.forName(row.getClass().getName());
+			Method method = clazz.getMethod("setRegionId");
+			method.invoke(row, regionId);
+		} catch (Exception e) {
+			throw new Exception("PID为" + row.parentPKValue() + "的" + row.getClass().getSimpleName() + "对象设置RegionId失败");
+		}
 	}
 }

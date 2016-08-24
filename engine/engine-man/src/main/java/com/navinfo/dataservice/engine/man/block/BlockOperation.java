@@ -20,6 +20,7 @@ import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -30,6 +31,7 @@ import com.navinfo.navicommons.database.QueryRunner;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.CLOB;
+import oracle.sql.STRUCT;
 
 public class BlockOperation {
 	private static Logger log = LoggerRepos.getLogger(BlockOperation.class);
@@ -50,15 +52,16 @@ public class BlockOperation {
 						map.put("blockName", rs.getString("BLOCK_NAME"));
 						map.put("planningStatus", rs.getInt("PLAN_STATUS"));
 						map.put("cityId", rs.getInt("CITY_ID"));
-						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));						
 						try {
-							CLOB clob = (CLOB) rs.getObject("geometry");
-							String clobStr = DataBaseUtils.clob2String(clob);
+							STRUCT struct=(STRUCT)rs.getObject("GEOMETRY");
+							String clobStr = GeoTranslator.struct2Wkt(struct);
 							map.put("geometry", Geojson.wkt2Geojson(clobStr));
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						} catch (Exception e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
 						}
+						
 						list.add(map);
 					}
 					return list;
@@ -87,13 +90,13 @@ public class BlockOperation {
 							if (BlockOperation.checkGridFinished(rs.getInt("BLOCK_ID"),json.getInt("stage"),json.getInt("stage"))) {
 								map.put("blockId", rs.getInt("BLOCK_ID"));
 								map.put("blockName", rs.getInt("BLOCK_NAME"));
-								CLOB clob = (CLOB) rs.getObject("geometry");
-								String clobStr = DataBaseUtils.clob2String(clob);
+								STRUCT struct=(STRUCT)rs.getObject("geometry");
 								try {
+									String clobStr = GeoTranslator.struct2Wkt(struct);
 									map.put("geometry", Geojson.wkt2Geojson(clobStr));
-								} catch (Exception e) {
+								} catch (Exception e1) {
 									// TODO Auto-generated catch block
-									e.printStackTrace();
+									e1.printStackTrace();
 								}
 								list.add(map);
 							}
@@ -127,14 +130,15 @@ public class BlockOperation {
 						map.put("blockId", rs.getInt("BLOCK_ID"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("blockName", rs.getString("BLOCK_NAME"));
-						CLOB clob = (CLOB) rs.getObject("GEOMETRY");
-						String clobStr = DataBaseUtils.clob2String(clob);
+						STRUCT struct=(STRUCT)rs.getObject("GEOMETRY");
 						try {
+							String clobStr = GeoTranslator.struct2Wkt(struct);
 							map.put("geometry", Geojson.wkt2Geojson(clobStr));
-						} catch (Exception e) {
+						} catch (Exception e1) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
+							e1.printStackTrace();
 						}
+						
 						map.put("planStatus", rs.getInt("PLAN_STATUS"));
 
 						list.add(map);

@@ -93,37 +93,7 @@ public class RdLaneTopoDetail implements IObj {
 		this.vehicle = vehicle;
 	}
 
-	public int getTollForm() {
-		return tollForm;
-	}
-
-	public void setTollForm(int tollForm) {
-		this.tollForm = tollForm;
-	}
-
-	public int getCardType() {
-		return cardType;
-	}
-
-	public void setCardType(int cardType) {
-		this.cardType = cardType;
-	}
-
-	public int getTopologyId() {
-		return topologyId;
-	}
-
-	public void setTopologyId(int topologyId) {
-		this.topologyId = topologyId;
-	}
-
-	public int getRcFlag() {
-		return rcFlag;
-	}
-
-	public void setRcFlag(int rcFlag) {
-		this.rcFlag = rcFlag;
-	}
+	
 
 	private int intLanePid; // 进入车道
 	private int outLanePid; // 退出车道
@@ -133,10 +103,7 @@ public class RdLaneTopoDetail implements IObj {
 	private int reachDir = 0; // 通达方向
 	private int timeDomain;// 时间段
 	private long vehicle = 0;// 车辆类型
-	private int tollForm = 0;// 收费方式
-	private int cardType = 0;// 领卡类型
-	private int topologyId = 0;// 车信连通号码
-	private int rcFlag = 0; // 车道连通关系来源
+
 
 	private List<IRow> topoVias = new ArrayList<IRow>();
 

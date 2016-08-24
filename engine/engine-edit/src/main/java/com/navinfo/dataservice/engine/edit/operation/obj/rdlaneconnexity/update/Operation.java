@@ -1,12 +1,15 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlaneconnexity.update;
 
 import java.sql.Connection;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -44,13 +47,14 @@ public class Operation implements IOperation {
 
 				return null;
 			} else {
-				
-				if(content.containsKey("laneInfo")){
-					if(content.getString("laneInfo").length()==0){
+
+				if (content.containsKey("laneInfo")) {
+					if (content.getString("laneInfo").length() == 0) {
 						result.insertObject(lane, ObjStatus.DELETE, lane.pid());
 
 						return null;
 					}
+					this.caleRdlaneForRdLaneconnexity(result);
 				}
 
 				boolean isChanged = lane.fillChangeFields(content);
@@ -62,13 +66,13 @@ public class Operation implements IOperation {
 		}
 
 		if (content.containsKey("topos")) {
-			
+
 			Set<Integer> topoPids = new HashSet<Integer>();
-			
-			for(Integer topoPid : lane.topologyMap.keySet()){
+
+			for (Integer topoPid : lane.topologyMap.keySet()) {
 				topoPids.add(topoPid);
 			}
-			
+
 			JSONArray topos = content.getJSONArray("topos");
 
 			for (int i = 0; i < topos.size(); i++) {
@@ -90,10 +94,11 @@ public class Operation implements IOperation {
 
 						if (ObjStatus.DELETE.toString().equals(
 								json.getString("objStatus"))) {
-							
+
 							topoPids.remove(topo.getPid());
-							
-							result.insertObject(topo, ObjStatus.DELETE, lane.pid());
+
+							result.insertObject(topo, ObjStatus.DELETE,
+									lane.pid());
 
 							continue;
 						} else if (ObjStatus.UPDATE.toString().equals(
@@ -102,7 +107,8 @@ public class Operation implements IOperation {
 							boolean isChanged = topo.fillChangeFields(json);
 
 							if (isChanged) {
-								result.insertObject(topo, ObjStatus.UPDATE, lane.pid());
+								result.insertObject(topo, ObjStatus.UPDATE,
+										lane.pid());
 							}
 						}
 					} else {
@@ -114,11 +120,11 @@ public class Operation implements IOperation {
 								.applyLaneTopologyPid());
 
 						topo.setConnexityPid(lane.getPid());
-						
+
 						topo.setMesh(lane.mesh());
 
 						result.insertObject(topo, ObjStatus.INSERT, lane.pid());
-						
+
 						topoPids.add(topo.getPid());
 
 						continue;
@@ -148,7 +154,8 @@ public class Operation implements IOperation {
 
 								if (ObjStatus.DELETE.toString().equals(
 										viajson.getString("objStatus"))) {
-									result.insertObject(via, ObjStatus.DELETE, lane.pid());
+									result.insertObject(via, ObjStatus.DELETE,
+											lane.pid());
 
 									continue;
 								} else if (ObjStatus.UPDATE.toString().equals(
@@ -168,10 +175,11 @@ public class Operation implements IOperation {
 								via.Unserialize(viajson);
 
 								via.setTopologyId(json.getInt("pid"));
-								
+
 								via.setMesh(lane.mesh());
 
-								result.insertObject(via, ObjStatus.INSERT, lane.pid());
+								result.insertObject(via, ObjStatus.INSERT,
+										lane.pid());
 
 								continue;
 							}
@@ -180,16 +188,38 @@ public class Operation implements IOperation {
 					}
 				}
 			}
-			
-			if(topoPids.size() == 0){
-				
+
+			if (topoPids.size() == 0) {
+
 				result.clear();
-				
+
 				result.insertObject(lane, ObjStatus.DELETE, lane.pid());
 			}
 		}
 
 		return null;
+
+	}
+
+	/***
+	 * 修改车信维护车道信息
+	 * 
+	 * @param result
+	 * @throws Exception
+	 */
+	private void caleRdlaneForRdLaneconnexity(Result result) throws Exception {
+		String laneInfo = command.getContent().getString("laneInfo");
+
+		if (StringUtils.isNotEmpty(laneInfo)) {
+			String lanes = laneInfo.replace("[", "").replace("]", "");
+			List<String> laneList = Arrays.asList(lanes.split(","));
+			com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
+					conn);
+			operation.setLanInfos(laneList);
+			operation.setConnexity(lane);
+			operation.refRdLaneForRdLaneconnexity(result);
+
+		}
 
 	}
 

@@ -9,23 +9,22 @@ import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.man.model.City;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.DataBaseUtils;
-import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.vividsolutions.jts.io.ParseException;
 
 import net.sf.json.JSONObject;
 import oracle.sql.CLOB;
+import oracle.sql.STRUCT;
 
 /** 
 * @ClassName:  CityService 
@@ -54,7 +53,7 @@ public class CityService {
 					
 			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']', ')');
 			
-			String selectSql = " select t.CITY_ID,t.CITY_NAME, t.geometry.get_wkt() as geometry,t.plan_status, k.task_id from CITY t, (select * from task where latest=1) k where t.city_id=k.city_id(+) and t.PLAN_STATUS in "+planningStatus
+			String selectSql = " select t.CITY_ID,t.CITY_NAME, t.geometry,t.plan_status, k.task_id from CITY t, (select * from task where latest=1) k where t.city_id=k.city_id(+) and t.PLAN_STATUS in "+planningStatus
 					+" and SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
 		
 			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
@@ -65,16 +64,19 @@ public class CityService {
 							HashMap<String,Object> map = new HashMap<String,Object>();
 							map.put("cityId", rs.getInt("CITY_ID"));
 							map.put("cityName", rs.getString("CITY_NAME"));
-							CLOB clob=(CLOB)rs.getObject("geometry");
-							String clobStr=DataBaseUtils.clob2String(clob);
-							map.put("geometry", Geojson.wkt2Geojson(clobStr));
+							
+							try {
+								STRUCT struct=(STRUCT)rs.getObject("geometry");
+								String clobStr = GeoTranslator.struct2Wkt(struct);
+								map.put("geometry", Geojson.wkt2Geojson(clobStr));
+							} catch (Exception e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
 							map.put("planningStatus", rs.getInt("plan_status"));
 							map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 							map.put("taskId", rs.getInt("task_id"));
 							list.add(map);
-						} catch (ParseException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -102,7 +104,7 @@ public class CityService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 					
-			String selectSql = "select c.CITY_ID,c.CITY_NAME, c.geometry.get_wkt() as geometry,    case  when exists (select 1      from task t, subtask s     where c.city_id = t.city_id       and t.task_id = s.task_id) then   1  else   0    end subtask_status,    case when exists(select 1 from task t where c.city_id=t.city_id) then 1 else 0 end task_status   from city c where" 
+			String selectSql = "select c.CITY_ID,c.CITY_NAME, c.geometry,    case  when exists (select 1      from task t, subtask s     where c.city_id = t.city_id       and t.task_id = s.task_id) then   1  else   0    end subtask_status,    case when exists(select 1 from task t where c.city_id=t.city_id) then 1 else 0 end task_status   from city c where" 
 			  +	" SDO_ANYINTERACT(c.geometry,sdo_geometry(?,8307))='TRUE'";
 		
 			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
@@ -113,9 +115,14 @@ public class CityService {
 							HashMap<String,Object> map = new HashMap<String,Object>();
 							map.put("cityId", rs.getInt("CITY_ID"));
 							map.put("cityName", rs.getString("CITY_NAME"));
-							CLOB clob=(CLOB)rs.getObject("geometry");
-							String clobStr=DataBaseUtils.clob2String(clob);
-							map.put("geometry", Geojson.wkt2Geojson(clobStr));
+							STRUCT struct=(STRUCT)rs.getObject("geometry");
+							try {
+								String clobStr = GeoTranslator.struct2Wkt(struct);
+								map.put("geometry", Geojson.wkt2Geojson(clobStr));
+							} catch (Exception e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
 							int taskStatus = rs.getInt("task_status");
 							int subtaskStatus = rs.getInt("subtask_status");
 							
@@ -130,9 +137,6 @@ public class CityService {
 							
 							map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 							list.add(map);
-						} catch (ParseException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -161,15 +165,22 @@ public class CityService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			
-			String selectSql = "select * from CITY where CITY_ID=?";
+			String selectSql = "select C.CITY_ID,C.CITY_NAME, C.PROVINCE_NAME,C.GEOMETRY,C.REGION_ID,C.PLAN_STATUS from CITY C where C.CITY_ID=?";
 			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>(){
 				public HashMap handle(ResultSet rs) throws SQLException {
 					while(rs.next()){
 						HashMap map = new HashMap();
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("cityName", rs.getString("CITY_NAME"));
-						map.put("provinceName", rs.getString("PROVINCE_NAME"));
-						map.put("geometry", rs.getObject("GEOMETRY"));
+						map.put("provinceName", rs.getString("PROVINCE_NAME"));	
+						STRUCT struct=(STRUCT)rs.getObject("GEOMETRY");
+						try {
+							String clobStr = GeoTranslator.struct2Wkt(struct);
+							map.put("geometry", Geojson.wkt2Geojson(clobStr));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 						map.put("regionId", rs.getInt("REGION_ID"));
 						map.put("planStatus", rs.getInt("PLAN_STATUS"));
 						return map;

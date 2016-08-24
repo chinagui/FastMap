@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.navinfo.dataservice.dao.glm.model.rd.crf;
+package com.navinfo.dataservice.dao.glm.model.rd.crosswalk;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -14,91 +14,29 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-/** 
-* @ClassName: RdObjectName 
-* @author Zhang Xiaolong
-* @date 2016年8月12日 下午3:30:49 
-* @Description: TODO
-*/
-public class RdObjectName implements IRow {
-	
-	private int nameId;
-	
-	//RdObject的主键
+/**
+ * @ClassName: RdCrosswalkNode
+ * @author Zhang Xiaolong
+ * @date 2016年8月23日 下午5:37:22
+ * @Description: TODO
+ */
+public class RdCrosswalkNode implements IRow {
+
 	private int pid;
-	
-	private int nameGroupid = 1;
-	
-	//语言代码
-	private String langCode;
-	
-	//名称来源
-	private int srcFlag;
-	
-	private String name;
-	
-	//名称发音
-	private String phonetic;
-	
-	//LANDMARK坐标
-	private Geometry geometry;
-	
+
+	//节点一
+	private int firNodePid ;
+
+	//节点二
+	private int senNodePid;
+
 	private String rowId;
-	
+
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
-	
-	public String getLangCode() {
-		return langCode;
-	}
-
-	public void setLangCode(String langCode) {
-		this.langCode = langCode;
-	}
-
-	public int getSrcFlag() {
-		return srcFlag;
-	}
-
-	public void setSrcFlag(int srcFlag) {
-		this.srcFlag = srcFlag;
-	}
-
-	public int getNameId() {
-		return nameId;
-	}
-
-	public void setNameId(int nameId) {
-		this.nameId = nameId;
-	}
-
-	public int getNameGroupid() {
-		return nameGroupid;
-	}
-
-	public void setNameGroupid(int nameGroupid) {
-		this.nameGroupid = nameGroupid;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getPhonetic() {
-		return phonetic;
-	}
-
-	public void setPhonetic(String phonetic) {
-		this.phonetic = phonetic;
-	}
 
 	public int getPid() {
 		return pid;
@@ -108,12 +46,20 @@ public class RdObjectName implements IRow {
 		this.pid = pid;
 	}
 
-	public Geometry getGeometry() {
-		return geometry;
+	public int getFirNodePid() {
+		return firNodePid;
 	}
 
-	public void setGeometry(Geometry geometry) {
-		this.geometry = geometry;
+	public void setFirNodePid(int firNodePid) {
+		this.firNodePid = firNodePid;
+	}
+
+	public int getSenNodePid() {
+		return senNodePid;
+	}
+
+	public void setSenNodePid(int senNodePid) {
+		this.senNodePid = senNodePid;
 	}
 
 	public String getRowId() {
@@ -132,7 +78,7 @@ public class RdObjectName implements IRow {
 
 	@Override
 	public String tableName() {
-		return "RD_OBJECT_NAME";
+		return "RD_CROSSWALK_NODE";
 	}
 
 	@Override
@@ -147,28 +93,20 @@ public class RdObjectName implements IRow {
 
 	@Override
 	public ObjType objType() {
-		return ObjType.RDOBJECTNAME;
+		return ObjType.RDCROSSWALKNODE;
 	}
 
 	@Override
 	public void copy(IRow row) {
-		RdObjectName name = (RdObjectName) row;
+		RdCrosswalkNode node = (RdCrosswalkNode) row;
 
-		this.pid = name.pid;
-		
-		this.name = name.name;
-		
-		this.nameGroupid = name.nameGroupid;
-		
-		this.nameId = name.nameId;
-		
-		this.phonetic = name.phonetic;
-		
-		this.srcFlag = name.srcFlag;
-		
-		this.langCode = name.langCode;
-		
-		this.rowId = name.rowId;
+		this.pid = node.pid;
+
+		this.firNodePid = node.firNodePid;
+
+		this.senNodePid = node.senNodePid;
+
+		this.rowId = node.rowId;
 	}
 
 	@Override
@@ -188,7 +126,7 @@ public class RdObjectName implements IRow {
 
 	@Override
 	public String parentTableName() {
-		return "RD_OBJECT";
+		return "RD_CROSSWALK";
 	}
 
 	@Override

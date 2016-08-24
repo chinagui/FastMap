@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.navinfo.dataservice.dao.glm.model.rd.crf;
+package com.navinfo.dataservice.dao.glm.model.rd.crosswalk;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -14,91 +14,36 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-/** 
-* @ClassName: RdObjectName 
-* @author Zhang Xiaolong
-* @date 2016年8月12日 下午3:30:49 
-* @Description: TODO
-*/
-public class RdObjectName implements IRow {
-	
-	private int nameId;
-	
-	//RdObject的主键
+/**
+ * @ClassName: RdCrosswalkInfo
+ * @author Zhang Xiaolong
+ * @date 2016年8月23日 下午5:11:12
+ * @Description: TODO
+ */
+public class RdCrosswalkInfo implements IRow {
+
 	private int pid;
+
+	private int nodePid;
 	
-	private int nameGroupid = 1;
+	private int linkPid;
 	
-	//语言代码
-	private String langCode;
+	//过道类型
+	private int type;
 	
-	//名称来源
-	private int srcFlag;
+	//连接属性
+	private int attr;
 	
-	private String name;
-	
-	//名称发音
-	private String phonetic;
-	
-	//LANDMARK坐标
-	private Geometry geometry;
-	
+	//过道标牌
+	private int signage;
+
 	private String rowId;
-	
+
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
-	
-	public String getLangCode() {
-		return langCode;
-	}
-
-	public void setLangCode(String langCode) {
-		this.langCode = langCode;
-	}
-
-	public int getSrcFlag() {
-		return srcFlag;
-	}
-
-	public void setSrcFlag(int srcFlag) {
-		this.srcFlag = srcFlag;
-	}
-
-	public int getNameId() {
-		return nameId;
-	}
-
-	public void setNameId(int nameId) {
-		this.nameId = nameId;
-	}
-
-	public int getNameGroupid() {
-		return nameGroupid;
-	}
-
-	public void setNameGroupid(int nameGroupid) {
-		this.nameGroupid = nameGroupid;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getPhonetic() {
-		return phonetic;
-	}
-
-	public void setPhonetic(String phonetic) {
-		this.phonetic = phonetic;
-	}
 
 	public int getPid() {
 		return pid;
@@ -108,12 +53,44 @@ public class RdObjectName implements IRow {
 		this.pid = pid;
 	}
 
-	public Geometry getGeometry() {
-		return geometry;
+	public int getNodePid() {
+		return nodePid;
 	}
 
-	public void setGeometry(Geometry geometry) {
-		this.geometry = geometry;
+	public void setNodePid(int nodePid) {
+		this.nodePid = nodePid;
+	}
+
+	public int getLinkPid() {
+		return linkPid;
+	}
+
+	public void setLinkPid(int linkPid) {
+		this.linkPid = linkPid;
+	}
+
+	public int getType() {
+		return type;
+	}
+
+	public void setType(int type) {
+		this.type = type;
+	}
+
+	public int getAttr() {
+		return attr;
+	}
+
+	public void setAttr(int attr) {
+		this.attr = attr;
+	}
+
+	public int getSignage() {
+		return signage;
+	}
+
+	public void setSignage(int signage) {
+		this.signage = signage;
 	}
 
 	public String getRowId() {
@@ -132,7 +109,7 @@ public class RdObjectName implements IRow {
 
 	@Override
 	public String tableName() {
-		return "RD_OBJECT_NAME";
+		return "RD_CROSSWALK_INFO";
 	}
 
 	@Override
@@ -147,28 +124,26 @@ public class RdObjectName implements IRow {
 
 	@Override
 	public ObjType objType() {
-		return ObjType.RDOBJECTNAME;
+		return ObjType.RDCROSSWALKINFO;
 	}
 
 	@Override
 	public void copy(IRow row) {
-		RdObjectName name = (RdObjectName) row;
+		RdCrosswalkInfo info = (RdCrosswalkInfo) row;
 
-		this.pid = name.pid;
+		this.pid = info.pid;
+
+		this.attr = info.attr;
 		
-		this.name = name.name;
+		this.linkPid = info.linkPid;
 		
-		this.nameGroupid = name.nameGroupid;
+		this.nodePid = info.nodePid;
 		
-		this.nameId = name.nameId;
+		this.signage = info.signage;
 		
-		this.phonetic = name.phonetic;
-		
-		this.srcFlag = name.srcFlag;
-		
-		this.langCode = name.langCode;
-		
-		this.rowId = name.rowId;
+		this.type = info.type;
+
+		this.rowId = info.rowId;
 	}
 
 	@Override
@@ -188,7 +163,7 @@ public class RdObjectName implements IRow {
 
 	@Override
 	public String parentTableName() {
-		return "RD_OBJECT";
+		return "RD_CROSSWALK";
 	}
 
 	@Override

@@ -54,8 +54,11 @@ public class UrbanBatchUtils extends BaseBatchUtils {
 		// 取出与link关联的唯一面几何
 		Geometry faceGeometry = shrink(faces.get(0).getGeometry());
 		// 判断link是否完全包含于该面
-		if (null == geometry && GeoRelationUtils.Interior(linkGeometry, faceGeometry)) {
-			link.setUrban(IS_URBAN);
+		if (GeoRelationUtils.Interior(linkGeometry, faceGeometry)) {
+			if (null != geometry)
+				link.changedFields().put("urban", IS_URBAN);
+			else
+				link.setUrban(IS_URBAN);
 			// 判断link是否包含于面内并有一个端点处于面组成线上
 		} else if (GeoRelationUtils.InteriorAnd1Intersection(linkGeometry, faceGeometry)) {
 			// 判断是否起点处于ring组成线上

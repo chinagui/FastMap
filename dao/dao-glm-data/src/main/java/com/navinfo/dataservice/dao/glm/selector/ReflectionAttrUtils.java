@@ -39,7 +39,8 @@ public class ReflectionAttrUtils {
 	 * @return 泛型类型对象
 	 * @throws Exception
 	 */
-	public static void executeResultSet(IRow row, ResultSet rs) throws Exception {
+	public static void executeResultSet(IRow row, ResultSet rs)
+			throws Exception {
 		Class<?> clazz = row.getClass();
 		ResultSetMetaData rsm = rs.getMetaData();
 		int columnCount = rsm.getColumnCount();
@@ -58,9 +59,11 @@ public class ReflectionAttrUtils {
 			try {
 				field = clazz.getDeclaredField(fieldName);
 			} catch (NoSuchFieldException e) {
-				if ("uRecord".equals(fieldName) || "uFields".equals(fieldName) || "uDate".equals(fieldName))
+				if ("uRecord".equals(fieldName) || "uFields".equals(fieldName)
+						|| "uDate".equals(fieldName))
 					continue;
-				System.out.println(fieldName + "在" + clazz.getName() + "中没有对应的属性");
+				System.out.println(fieldName + "在" + clazz.getName()
+						+ "中没有对应的属性");
 				continue;
 			}
 			Object value = map.get(fieldName);
@@ -88,7 +91,8 @@ public class ReflectionAttrUtils {
 					value = new BigDecimal(value.toString());
 				case "java.sql.Date":
 				case "java.util.Date":
-					value = rs.getTimestamp(StringUtils.toColumnName(fieldName));
+					value = rs
+							.getTimestamp(StringUtils.toColumnName(fieldName));
 					break;
 				case "com.vividsolutions.jts.geom.Geometry":
 					value = GeoTranslator.struct2Jts((STRUCT) value, 100000, 0);
@@ -109,7 +113,8 @@ public class ReflectionAttrUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public static String getTableNameByObjType(ObjType objType) throws Exception {
+	public static String getTableNameByObjType(ObjType objType)
+			throws Exception {
 		switch (objType) {
 		case RDNODE:
 			return "RD_NODE";
@@ -143,7 +148,8 @@ public class ReflectionAttrUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public static ObjType getObjTypeByTableName(String tableName) throws Exception {
+	public static ObjType getObjTypeByTableName(String tableName)
+			throws Exception {
 		switch (tableName) {
 		case "RD_NODE":
 			return ObjType.RDNODE;
@@ -155,6 +161,16 @@ public class ReflectionAttrUtils {
 			return ObjType.LUNODE;
 		case "RW_NODE":
 			return ObjType.RWNODE;
+		case "RD_LINK":
+			return ObjType.RDLINK;
+		case "AD_LINK":
+			return ObjType.ADLINK;
+		case "ZONE_LINK":
+			return ObjType.ZONELINK;
+		case "LU_LINK":
+			return ObjType.LULINK;
+		case "RW_LINK":
+			return ObjType.RWLINK;
 		default:
 			throw new Exception("不支持的表名转对象名称:" + tableName);
 		}
@@ -181,7 +197,8 @@ public class ReflectionAttrUtils {
 			if (c == '_') {
 				int j = i + 1;
 				if (j < chars.length) {
-					sb.append(org.apache.commons.lang.StringUtils.upperCase(CharUtils.toString(chars[j])));
+					sb.append(org.apache.commons.lang.StringUtils
+							.upperCase(CharUtils.toString(chars[j])));
 					i++;
 				}
 			} else {

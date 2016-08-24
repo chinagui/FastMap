@@ -84,6 +84,10 @@ public class RdLinkSearchUtils {
 
 			linkPids.add(targetLink.getPid());
 		}
+		else
+		{
+			return;
+		}
 		if (linkPids.size() > 998) {
 
 			return;

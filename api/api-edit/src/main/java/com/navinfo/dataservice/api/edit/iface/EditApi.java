@@ -10,14 +10,6 @@ import net.sf.json.JSONObject;
 *  
 */
 public interface EditApi {
-/** 
-* @ClassName: EditApi 
-* @author Xiao Xiaowen 
-* @date 2016年6月8日 下午1:30:21 
-* @Description: TODO
-*  
-*/
-public interface EditApi {
 	public long applyPid(String tableName,int count)throws Exception;
 	/**
 	 * 编辑接口（包含要素的新增、修改、删除、移动、修行、打断、父子关系）
